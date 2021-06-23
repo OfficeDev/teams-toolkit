@@ -29,7 +29,11 @@ function delay(ms: number) {
 }
 
 export class AadAppClient {
-  public static async createAadApp(ctx: PluginContext, stage: string, config: ProvisionConfig, ): Promise<void> {
+  public static async createAadApp(
+    ctx: PluginContext,
+    stage: string,
+    config: ProvisionConfig
+  ): Promise<void> {
     try {
       const provisionObject = AadAppClient.getAadAppProvisionObject(
         config.displayName as string,
@@ -37,16 +41,12 @@ export class AadAppClient {
       );
       let provisionAadResponse: IAADDefinition;
       if (TokenProvider.audience === TokenAudience.AppStudio) {
-        provisionAadResponse = (await this.retryHanlder(
-          ctx,
-          stage,
-          () => AppStudio.createAADAppV2(TokenProvider.token as string, provisionObject)
+        provisionAadResponse = (await this.retryHanlder(ctx, stage, () =>
+          AppStudio.createAADAppV2(TokenProvider.token as string, provisionObject)
         )) as IAADDefinition;
       } else {
-        provisionAadResponse = (await this.retryHanlder(
-          ctx,
-          stage,
-          () => GraphClient.createAADApp(TokenProvider.token as string, provisionObject)
+        provisionAadResponse = (await this.retryHanlder(ctx, stage, () =>
+          GraphClient.createAADApp(TokenProvider.token as string, provisionObject)
         )) as IAADDefinition;
       }
 
@@ -57,20 +57,20 @@ export class AadAppClient {
     }
   }
 
-  public static async createAadAppSecret(ctx: PluginContext, stage: string, config: ProvisionConfig,): Promise<void> {
+  public static async createAadAppSecret(
+    ctx: PluginContext,
+    stage: string,
+    config: ProvisionConfig
+  ): Promise<void> {
     try {
       let createSecretObject: IAADPassword;
       if (TokenProvider.audience === TokenAudience.AppStudio) {
-        createSecretObject = (await AadAppClient.retryHanlder(
-          ctx,
-          stage,
-          () => AppStudio.createAADAppPassword(TokenProvider.token as string, config.objectId as string)
+        createSecretObject = (await AadAppClient.retryHanlder(ctx, stage, () =>
+          AppStudio.createAADAppPassword(TokenProvider.token as string, config.objectId as string)
         )) as IAADPassword;
       } else {
-        createSecretObject = (await AadAppClient.retryHanlder(
-          ctx,
-          stage,
-          () => GraphClient.createAadAppSecret(TokenProvider.token as string, config.objectId as string)
+        createSecretObject = (await AadAppClient.retryHanlder(ctx, stage, () =>
+          GraphClient.createAadAppSecret(TokenProvider.token as string, config.objectId as string)
         )) as IAADPassword;
       }
       config.password = createSecretObject.value;
@@ -88,16 +88,20 @@ export class AadAppClient {
     try {
       const updateRedirectUriObject = AadAppClient.getAadUrlObject(redirectUris);
       if (TokenProvider.audience === TokenAudience.AppStudio) {
-        await AadAppClient.retryHanlder(
-          ctx,
-          stage,
-          () => AppStudio.updateAADApp(TokenProvider.token as string, objectId as string, updateRedirectUriObject)
+        await AadAppClient.retryHanlder(ctx, stage, () =>
+          AppStudio.updateAADApp(
+            TokenProvider.token as string,
+            objectId as string,
+            updateRedirectUriObject
+          )
         );
       } else {
-        await AadAppClient.retryHanlder(
-          ctx,
-          stage,
-          () => GraphClient.updateAADApp(TokenProvider.token as string, objectId as string, updateRedirectUriObject)
+        await AadAppClient.retryHanlder(ctx, stage, () =>
+          GraphClient.updateAADApp(
+            TokenProvider.token as string,
+            objectId as string,
+            updateRedirectUriObject
+          )
         );
       }
     } catch (error) {
@@ -110,20 +114,29 @@ export class AadAppClient {
     }
   }
 
-  public static async updateAadAppIdUri(ctx: PluginContext, stage: string, objectId: string, applicationIdUri: string): Promise<void> {
+  public static async updateAadAppIdUri(
+    ctx: PluginContext,
+    stage: string,
+    objectId: string,
+    applicationIdUri: string
+  ): Promise<void> {
     try {
       const updateAppIdObject = AadAppClient.getAadApplicationIdObject(applicationIdUri);
       if (TokenProvider.audience === TokenAudience.AppStudio) {
-        await AadAppClient.retryHanlder(
-          ctx,
-          stage,
-          () => AppStudio.updateAADApp(TokenProvider.token as string, objectId as string, updateAppIdObject)
+        await AadAppClient.retryHanlder(ctx, stage, () =>
+          AppStudio.updateAADApp(
+            TokenProvider.token as string,
+            objectId as string,
+            updateAppIdObject
+          )
         );
       } else {
-        await AadAppClient.retryHanlder(
-          ctx,
-          stage,
-          () => GraphClient.updateAADApp(TokenProvider.token as string, objectId as string, updateAppIdObject)
+        await AadAppClient.retryHanlder(ctx, stage, () =>
+          GraphClient.updateAADApp(
+            TokenProvider.token as string,
+            objectId as string,
+            updateAppIdObject
+          )
         );
       }
     } catch (error) {
@@ -146,16 +159,20 @@ export class AadAppClient {
     try {
       const updatePermissionObject = AadAppClient.getAadPermissionObject(permissions);
       if (TokenProvider.audience === TokenAudience.AppStudio) {
-        await AadAppClient.retryHanlder(
-          ctx,
-          stage,
-          () => AppStudio.updateAADApp(TokenProvider.token as string, objectId as string, updatePermissionObject)
+        await AadAppClient.retryHanlder(ctx, stage, () =>
+          AppStudio.updateAADApp(
+            TokenProvider.token as string,
+            objectId as string,
+            updatePermissionObject
+          )
         );
       } else {
-        await AadAppClient.retryHanlder(
-          ctx,
-          stage,
-          () => GraphClient.updateAADApp(TokenProvider.token as string, objectId as string, updatePermissionObject)
+        await AadAppClient.retryHanlder(ctx, stage, () =>
+          GraphClient.updateAADApp(
+            TokenProvider.token as string,
+            objectId as string,
+            updatePermissionObject
+          )
         );
       }
     } catch (error) {
@@ -177,16 +194,12 @@ export class AadAppClient {
     let getAppObject: IAADDefinition;
     try {
       if (TokenProvider.audience === TokenAudience.AppStudio) {
-        getAppObject = (await this.retryHanlder(
-          ctx,
-          stage,
-          () => AppStudio.getAadApp(TokenProvider.token as string, objectId)
+        getAppObject = (await this.retryHanlder(ctx, stage, () =>
+          AppStudio.getAadApp(TokenProvider.token as string, objectId)
         )) as IAADDefinition;
       } else {
-        getAppObject = (await this.retryHanlder(
-          ctx,
-          stage,
-          () => GraphClient.getAadApp(TokenProvider.token as string, objectId)
+        getAppObject = (await this.retryHanlder(ctx, stage, () =>
+          GraphClient.getAadApp(TokenProvider.token as string, objectId)
         )) as IAADDefinition;
       }
     } catch (error) {
@@ -214,9 +227,9 @@ export class AadAppClient {
   private static async retryHanlder(
     ctx: PluginContext,
     stage: string,
-    fn: () => Promise<IAADDefinition | IAADPassword | void>,
+    fn: () => Promise<IAADDefinition | IAADPassword | void>
   ): Promise<IAADDefinition | IAADPassword | undefined | void> {
-    let retries = 10;
+    let retries = Constants.maxRetryTimes;
     let response;
     TelemetryUtils.init(ctx);
     while (retries > 0) {
@@ -229,7 +242,10 @@ export class AadAppClient {
         if (retries === 0) {
           throw error;
         } else {
-          TelemetryUtils.sendEvent(stage, {[Telemetry.methodName]: fn.toString(), [Telemetry.retryTimes]: (10-retries).toString()});
+          TelemetryUtils.sendEvent(stage, {
+            [Telemetry.methodName]: fn.toString(),
+            [Telemetry.retryTimes]: (Constants.maxRetryTimes - retries).toString(),
+          });
           await delay(5000);
         }
       }

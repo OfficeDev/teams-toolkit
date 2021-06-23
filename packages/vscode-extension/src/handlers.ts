@@ -90,11 +90,7 @@ export function getWorkspacePath(): string | undefined {
 export async function activate(): Promise<Result<Void, FxError>> {
   let result: Result<Void, FxError> = ok(Void);
   try {
-    const telemetry = new VSCodeTelemetryReporter(
-      extensionPackage.aiKey,
-      extensionPackage.name,
-      extensionPackage.version
-    );
+    const telemetry = ExtTelemetry.reporter;
     AzureAccountManager.setStatusChangeMap(
       "successfully-sign-in-azure",
       (status, token, accountInfo) => {

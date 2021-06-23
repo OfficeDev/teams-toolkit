@@ -7,12 +7,7 @@ import * as pkg from "./../../package.json";
 import { ExtTelemetry } from "./../telemetry/extTelemetry"
 
 export namespace exp {
-    const sharedProperties: {[key: string]: string} = {};
     let expService: IExperimentationService;
-
-    export function getSharedProperties(): {[key: string]: string} {
-        return sharedProperties;
-    }
 
     export function getExpService(): IExperimentationService {
         return expService;
@@ -30,11 +25,11 @@ export namespace exp {
 
     class ExperimentationTelemetry implements IExperimentationTelemetry {
         public setSharedProperty(name: string, value: string): void {
-            sharedProperties[name] = value;
+            ExtTelemetry.addSharedProperty(name, value);
         }
     
         public postEvent(eventName: string, props: Map<string, string>): void {
-            let properties = { ...sharedProperties };
+            let properties: {[key: string]: string} = {};
             props.forEach((value, key) => {
                 properties[key] = value;
             });

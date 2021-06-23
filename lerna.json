@@ -11,7 +11,9 @@
     ],
     "command": {
         "version": {
-            "message": "chore(release): publish detail"
+            "conventionalCommits": true,
+            "message": "chore(release): publish detail",
+            "allowBranch": ["main"]
         }
     },
     "publishConfig": {

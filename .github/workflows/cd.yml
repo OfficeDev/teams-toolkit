@@ -28,7 +28,7 @@ jobs:
 
     steps:
       - name: Validate inputs
-        if: ${{ github.event_name == 'workflow_dispatch' && ((github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/main') || (github.ref == 'refs/heads/dev' && (!startsWith(github.event.inputs.version, 'pre') || github.event.inputs.preid != 'alpha')) || (github.ref == 'refs/heads/main' && startsWith(github.event.inputs.version, 'pre') && github.event.inputs.preid != 'rc')) || !(github.event.inputs.preid == 'stable' && github.event.inputs.conventional-commits == 'yes' && github.ref == 'refs/heads/main') }}
+        if: ${{ github.event_name == 'workflow_dispatch' && ((github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/main') || (github.ref == 'refs/heads/dev' && (!startsWith(github.event.inputs.version, 'pre') || github.event.inputs.preid != 'alpha')) || (github.ref == 'refs/heads/main' && startsWith(github.event.inputs.version, 'pre') && github.event.inputs.preid != 'rc') || (github.ref == 'ref/heads/dev' && github.event.input.conventional-commits == 'yes') || (github.ref == 'ref/heads/main' && github.event.input.conventional-commits == 'yes' && !(github.event.input.preid == 'rc' || github.event.input.preid == 'stable'))) }}
         run: |
           exit 1
 

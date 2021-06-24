@@ -94,6 +94,7 @@ export enum TelemetryProperty {
   DebugAppId = "debug-appid",
   DebugNpmInstallName = "debug-npm-install-name",
   DebugNpmInstallExitCode = "debug-npm-install-exit-code",
+  DebugNpmInstallErrorMessage = "debug-npm-install-error-message",
   Internal = "internal",
   InternalAlias = "internal-alias",
   OSArch = "os-arch",

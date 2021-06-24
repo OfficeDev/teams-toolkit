@@ -10,6 +10,8 @@ import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
 import { getTeamsAppId } from "../utils/commonUtils";
 import { isValidProject } from "@microsoft/teamsfx-core";
+import { getNpmInstallErrorLog } from "./npmLogHandler";
+import * as path from "path";
 
 interface IRunningTeamsfxTask {
   source: string;
@@ -90,7 +92,7 @@ function onDidStartTaskProcessHandler(event: vscode.TaskProcessStartEvent): void
   }
 }
 
-function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): void {
+async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Promise<void> {
   const task = event.execution.task;
   const activeTerminal = vscode.window.activeTerminal;
 
@@ -98,10 +100,29 @@ function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): void {
     allRunningTeamsfxTasks.delete({ source: task.source, name: task.name, scope: task.scope });
   } else if (isNpmInstallTask(task)) {
     try {
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugNpmInstall, {
-        [TelemetryProperty.DebugNpmInstallName]: task.name,
-        [TelemetryProperty.DebugNpmInstallExitCode]: event.exitCode + "",
-      });
+      let npmInstallErrorMessage: string | undefined;
+      if (event.exitCode) {
+        const cwdOption = (task.execution as vscode.ShellExecution).options?.cwd;
+        if (cwdOption !== undefined) {
+          const cwd = path.join(ext.workspaceUri.fsPath, cwdOption?.replace("${workspaceFolder}/", ""));
+          const npmInstallErrorLog = await getNpmInstallErrorLog(cwd);
+          if (npmInstallErrorLog !== undefined) {
+            npmInstallErrorMessage = npmInstallErrorLog.join("\n");
+          }
+        }
+      }
+      if (npmInstallErrorMessage === undefined) {
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugNpmInstall, {
+          [TelemetryProperty.DebugNpmInstallName]: task.name,
+          [TelemetryProperty.DebugNpmInstallExitCode]: event.exitCode + "",
+        });
+      } else {
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugNpmInstall, {
+          [TelemetryProperty.DebugNpmInstallName]: task.name,
+          [TelemetryProperty.DebugNpmInstallExitCode]: event.exitCode + "",
+          [TelemetryProperty.DebugNpmInstallErrorMessage]: npmInstallErrorMessage,
+        });
+      }
     } catch {
       // ignore telemetry error
     }

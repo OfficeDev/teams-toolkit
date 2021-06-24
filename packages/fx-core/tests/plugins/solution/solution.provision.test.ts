@@ -25,6 +25,22 @@ import {
   IMessage,
   DialogType,
   Platform,
+  UserInteraction,
+  SingleSelectConfig,
+  SingleSelectResult,
+  MultiSelectConfig,
+  MultiSelectResult,
+  InputTextConfig,
+  InputTextResult,
+  SelectFileConfig,
+  SelectFileResult,
+  SelectFilesResult,
+  SelectFilesConfig,
+  SelectFolderResult,
+  SelectFolderConfig,
+  Colors,
+  RunnableTask,
+  TaskConfig,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs, { PathLike } from "fs-extra";
@@ -63,7 +79,58 @@ const expect = chai.expect;
 function instanceOfIMessage(obj: any): obj is IMessage {
   return "items" in obj;
 }
+class  MockUserInteraction implements UserInteraction {
+  selectOption(config: SingleSelectConfig) : Promise<Result<SingleSelectResult,FxError>>{
+    throw new Error("Method not implemented.");
+  }
+  selectOptions(config: MultiSelectConfig) : Promise<Result<MultiSelectResult,FxError>>{
+    throw new Error("Method not implemented.");
+  }
+  inputText(config: InputTextConfig) : Promise<Result<InputTextResult,FxError>>{
+    throw new Error("Method not implemented.");
+  }
+  selectFile(config: SelectFileConfig) : Promise<Result<SelectFileResult,FxError>>{
+    throw new Error("Method not implemented.");
+  }
+  selectFiles (config: SelectFilesConfig) : Promise<Result<SelectFilesResult,FxError>>{
+    throw new Error("Method not implemented.");
+  }
+  selectFolder(config: SelectFolderConfig) : Promise<Result<SelectFolderResult,FxError>>{
+    throw new Error("Method not implemented.");
+  }
+  
+  openUrl(link: string): Promise<Result<boolean,FxError>>{
+    throw new Error("Method not implemented.");
+  }
+  async showMessage(
+    level: "info" | "warn" | "error",
+    message: string,
+    modal: boolean,
+    ...items: string[]
+  ): Promise<Result<string|undefined,FxError>>;
 
+  async showMessage(
+    level: "info" | "warn" | "error",
+    message: Array<{content: string, color: Colors}>,
+    modal: boolean,
+    ...items: string[]
+  ): Promise<Result<string|undefined,FxError>>;
+
+  async showMessage(
+    level: "info" | "warn" | "error",
+    message: string | Array<{content: string, color: Colors}>,
+    modal: boolean,
+    ...items: string[]
+  ): Promise<Result<string|undefined,FxError>>{
+    if(modal === true && _.isEqual(["Provision", "Pricing calculator"], items)){
+      return ok("Provision");
+    }
+    throw new Error("Method not implemented.");
+  } 
+  runWithProgress<T>(task: RunnableTask<T>, config: TaskConfig, ...args:any): Promise<Result<T,FxError>>{
+    throw new Error("Method not implemented.");
+  }
+}
 class MockedDialog implements Dialog {
   async communicate(msg: DialogMsg): Promise<DialogMsg> {
     if (msg.dialogType == DialogType.Show && instanceOfIMessage(msg.content) && _.isEqual(["Provision", "Pricing calculator"], msg.content.items)) {
@@ -154,6 +221,7 @@ function mockSolutionContext(): SolutionContext {
     // app: new TeamsAppManifest(),
     config,
     dialog: new MockedDialog(),
+    ui: new MockUserInteraction(),
     answers: {platform: Platform.VSCode},
     projectSettings: undefined,
     appStudioToken: new MockedAppStudioTokenProvider,

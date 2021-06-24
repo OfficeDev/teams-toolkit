@@ -262,7 +262,7 @@ export class DotnetChecker implements IDepsChecker {
         );
         await this._logger.error(errorMessage);
       } else {
-        this._telemetry.sendEvent(DepsCheckerEvent.dotnetInstallScriptCompleted, timecost);
+        this._telemetry.sendEvent(DepsCheckerEvent.dotnetInstallScriptCompleted, {}, timecost);
       }
     } catch (error) {
       const timecost = Number(((performance.now() - start) / 1000).toFixed(2));

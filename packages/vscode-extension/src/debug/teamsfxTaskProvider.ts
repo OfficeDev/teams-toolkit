@@ -7,6 +7,7 @@ import * as constants from "./constants";
 import * as commonUtils from "./commonUtils";
 import { ProductName, VsCodeEnv } from "@microsoft/teamsfx-api";
 import { DotnetChecker } from "./depsChecker/dotnetChecker";
+import { FuncToolChecker } from "./depsChecker/funcToolChecker";
 import { detectVsCodeEnv } from "../handlers";
 import { vscodeAdapter } from "./depsChecker/vscodeAdapter";
 import { vscodeLogger } from "./depsChecker/vscodeLogger";
@@ -116,11 +117,14 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
   ): Promise<vscode.Task> {
     const command: string = constants.backendStartCommand;
     definition = definition || { type: TeamsfxTaskProvider.type, command };
+
     // NOTE: properly handle quoting and escaping to work on windows (both powershell and cmd), linux and osx
+    const funcChecker = new FuncToolChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
+    const funcExecPath: string  = await funcChecker.getFuncExecPath();
     const commandLine =
       programmingLanguage === constants.ProgrammingLanguage.typescript
-        ? 'npx func start --typescript --language-worker="--inspect=9229" --port "7071" --cors "*"'
-        : 'npx func start --javascript --language-worker="--inspect=9229" --port "7071" --cors "*"';
+        ? `${funcExecPath} start --typescript --language-worker="--inspect=9229" --port "7071" --cors "*"`
+        : `${funcExecPath} start --javascript --language-worker="--inspect=9229" --port "7071" --cors "*"`;
     const env = await commonUtils.getBackendLocalEnv();
     const options: vscode.ShellExecutionOptions = {
       cwd: projectRoot,

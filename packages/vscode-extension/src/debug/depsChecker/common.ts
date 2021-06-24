@@ -41,8 +41,6 @@ export const Messages = {
 
   defaultErrorMessage: "Install the required dependencies manually.",
 
-  // since FuncToolChecker is disabled and azure functions core tools will be installed as devDependencies now,
-  // below messages related to FuncToolChecker won't be displayed to end user.
   startInstallFunctionCoreTool: `Downloading and installing @NameVersion.`,
   finishInstallFunctionCoreTool: `Successfully installed @NameVersion.`,
   needReplaceWithFuncCoreToolV3: `You must update to @NameVersion to debug your local functions.`,
@@ -94,15 +92,13 @@ Teams Toolkit requires these dependencies.`,
 export enum DepsCheckerEvent {
   // since FuncToolChecker is disabled and azure functions core tools will be installed as devDependencies now,
   // below events related to FuncToolChecker won't be displayed to end user.
-  funcCheck = "func-check",
   funcCheckSkipped = "func-check-skipped",
-  funcInstall = "func-install",
+  funcAlreadyInstalled = "func-already-installed",
   funcInstallCompleted = "func-install-completed",
-  funcValidation = "func-validation",
-  funcValidationCompleted = "func-validation-completed",
-  funcV1Installed = "func-v1-installed",
-  funcV2Installed = "func-v2-installed",
-  funcV3Installed = "func-v3-installed",
+  funcInstallError = "func-install-error",
+  funcInstallScriptCompleted = "func-install-script-completed",
+  funcInstallScriptError = "func-install-script-error",
+  funcValidationError = "func-validation-error",
 
   dotnetCheckSkipped = "dotnet-check-skipped",
   dotnetAlreadyInstalled = "dotnet-already-installed",
@@ -120,11 +116,14 @@ export enum DepsCheckerEvent {
   nodeNotFound = "node-not-found",
   nodeNotSupportedForAzure = "node-not-supported-for-azure",
   nodeNotSupportedForSPFx = "node-not-supported-for-spfx",
+
+  npmNotFound = "npm-not-found",
+  npmAlreadyInstalled = "npm-already-installed",
 }
 
 export enum TelemtryMessages {
   failedToInstallFunc = "failed to install Func core tools.",
-  funcV1Installed = "func v1 is installed by user.",
+  failedToValidateFunc = "failed to validate func.",
   NPMNotFound = "npm is not found.",
   failedToExecDotnetScript = "failed to exec dotnet script.",
   failedToValidateDotnet = "failed to validate dotnet.",

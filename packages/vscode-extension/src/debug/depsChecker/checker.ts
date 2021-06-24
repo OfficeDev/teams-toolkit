@@ -53,7 +53,11 @@ export interface IDepsLogger {
 }
 
 export interface IDepsTelemetry {
-  sendEvent(eventName: DepsCheckerEvent, timecost?: number): void;
+  sendEvent(
+    eventName: DepsCheckerEvent,
+    properties?: { [p: string]: string },
+    timecost?: number
+  ): void;
   sendEventWithDuration(eventName: DepsCheckerEvent, action: () => Promise<void>): Promise<void>;
   sendUserErrorEvent(eventName: DepsCheckerEvent, errorMessage: string): void;
   sendSystemErrorEvent(eventName: DepsCheckerEvent, errorMessage: string, errorStack: string): void;

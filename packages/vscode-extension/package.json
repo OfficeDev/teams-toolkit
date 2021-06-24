@@ -425,6 +425,11 @@
             "description": "Ensure .NET SDK is installed.",
             "default": true
           },
+          "fx-extension.validateFuncCoreTools": {
+            "type": "boolean",
+            "description": "Ensure Azure Function Core Tools is installed.",
+            "default": true
+          },
           "fx-extension.stopTeamsToolkitTasksPostDebug": {
             "type": "boolean",
             "description": "Automatically stop all Teams Toolkit tasks when debug session ends.",

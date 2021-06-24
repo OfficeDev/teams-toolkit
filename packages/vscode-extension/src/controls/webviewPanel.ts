@@ -148,7 +148,9 @@ export class WebviewPanel {
       if ((await fs.pathExists(sampleAppPath)) && (await fs.readdir(sampleAppPath)).length > 0) {
         error.name = ExtensionErrors.FolderAlreadyExist;
         error.message = StringResources.vsc.webview.folderExist;
-        vscode.window.showErrorMessage(StringResources.vsc.webview.folderExistDialogTitle);
+        vscode.window.showErrorMessage(
+          util.format(StringResources.vsc.webview.folderExistDialogTitle, sampleAppPath)
+        );
       } else {
         const dialogManager = DialogManager.getInstance();
         const progress = dialogManager.createProgressBar(StringResources.vsc.webview.fetchData, 2);

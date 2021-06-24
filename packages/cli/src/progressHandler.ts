@@ -28,7 +28,7 @@ export class ProgressHandler {
   public async start(detail?: string) {
     this.currentStep = 0;
     this.detail = detail;
-    CLILogProvider.necessaryLog(LogLevel.Info, this.generateWholeMessage());
+    this.show();
   }
 
   public async end() {
@@ -39,6 +39,10 @@ export class ProgressHandler {
     this.detail = detail;
     this.currentStep++;
     this.totalSteps = Math.max(this.currentStep, this.totalSteps);
-    CLILogProvider.necessaryLog(LogLevel.Info, this.generateWholeMessage());
+    this.show();
+  }
+
+  private show() {
+    CLILogProvider.necessaryLog(LogLevel.Info, this.generateWholeMessage(), true);
   }
 }

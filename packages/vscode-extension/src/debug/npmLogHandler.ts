@@ -1,19 +1,18 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { spawn } from "child_process";
 import * as fs from "fs-extra";
 import * as path from "path";
 
-function getNpmCachePath(): Promise<string> {
-  const command = spawn("npm config get cache", {
-    shell: true,
-  });
-  return new Promise((resolve, reject) => {
-    command.stdout.on("data", (data) => {
-      resolve(`${data.toString().trim()}`);
-    })
-  });
+import { cpUtils } from "./depsChecker/cpUtils";
+
+async function getNpmCachePath(): Promise<string | undefined> {
+  try {
+    const result = await cpUtils.executeCommand(undefined, undefined, undefined, "npm config get cache");
+    return result.trim();
+  } catch (error) {
+    return undefined;
+  }
 }
 
 async function getLatestNpmLogFile(npmLogPath: string): Promise<string | undefined> {
@@ -29,7 +28,7 @@ async function getLatestNpmLogFile(npmLogPath: string): Promise<string | undefin
 
 export async function getNpmInstallErrorLog(cwd: string): Promise<Array<string> | undefined> {
   const npmCachePath = await getNpmCachePath();
-  if (!fs.pathExists(npmCachePath)) {
+  if (npmCachePath === undefined || !fs.pathExists(npmCachePath)) {
     return undefined;
   }
   const latestNpmLogFile = await getLatestNpmLogFile(path.join(npmCachePath, "_logs"));

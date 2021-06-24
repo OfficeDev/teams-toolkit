@@ -18,7 +18,7 @@ import { PanelType } from "./PanelType";
 import { execSync } from "child_process";
 import { isMacOS } from "../utils/commonUtils";
 import { DialogManager } from "../userInterface";
-import { ExtTelemetry } from "../telemetry/extTelemetry"
+import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   TelemetryEvent,
   TelemetryProperty,
@@ -26,6 +26,8 @@ import {
   TelemetrySuccess,
 } from "../telemetry/extTelemetryEvents";
 import { ExtensionErrors, ExtensionSource } from "../error";
+import * as StringResources from "../resources/Strings.json";
+import * as util from "util";
 
 export class WebviewPanel {
   private static readonly viewType = "react";
@@ -123,36 +125,38 @@ export class WebviewPanel {
     this.panel.webview.html = this.getHtmlForWebview(panelType);
   }
 
-  private async downloadSampleApp(msg: any){
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSampleStart, { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview, [TelemetryProperty.SampleAppName]: msg.data.appFolder });
+  private async downloadSampleApp(msg: any) {
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSampleStart, {
+      [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview,
+      [TelemetryProperty.SampleAppName]: msg.data.appFolder,
+    });
     const folder = await vscode.window.showOpenDialog({
       canSelectFiles: false,
       canSelectFolders: true,
       canSelectMany: false,
-      title: "Select folder to download the sample app",
+      title: StringResources.vsc.webview.downloadSampleTitle,
     });
 
     let downloadSuccess = false;
-    let error = new UserError(ExtensionErrors.UserCancel, "Invalid folder", ExtensionSource);
+    let error = new UserError(
+      ExtensionErrors.UserCancel,
+      StringResources.vsc.webview.invalidFolder,
+      ExtensionSource
+    );
     if (folder !== undefined) {
       const sampleAppPath = path.join(folder[0].fsPath, msg.data.appFolder);
-      if (
-        (await fs.pathExists(sampleAppPath)) &&
-        (await fs.readdir(sampleAppPath)).length > 0
-      ) {
+      if ((await fs.pathExists(sampleAppPath)) && (await fs.readdir(sampleAppPath)).length > 0) {
         error.name = ExtensionErrors.FolderAlreadyExist;
-        error.message = "Folder already exists";
-        vscode.window.showErrorMessage(
-          `Path ${sampleAppPath} alreay exists. Select a different folder.`
-        );
+        error.message = StringResources.vsc.webview.folderExist;
+        vscode.window.showErrorMessage(StringResources.vsc.webview.folderExistDialogTitle);
       } else {
         const dialogManager = DialogManager.getInstance();
-        const progress = dialogManager.createProgressBar("Fetch sample app", 2);
+        const progress = dialogManager.createProgressBar(StringResources.vsc.webview.fetchData, 2);
         progress.start();
         try {
-          progress.next(`Downloading from '${msg.data.appUrl}'`);
+          progress.next(util.format(StringResources.vsc.webview.downloadFrom, msg.data.appUrl));
           const result = await this.fetchCodeZip(msg.data.appUrl);
-          progress.next("Unzipping the sample package");
+          progress.next(StringResources.vsc.webview.unzipPackage);
           if (result !== undefined) {
             await this.saveFilesRecursively(
               new AdmZip(result.data),
@@ -161,16 +165,17 @@ export class WebviewPanel {
             );
             await this.downloadSampleHook(msg.data.appFolder, sampleAppPath);
             downloadSuccess = true;
-            vscode.commands.executeCommand(
-              "vscode.openFolder",
-              vscode.Uri.file(sampleAppPath)
-            );
+            vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(sampleAppPath));
             ext.context.globalState.update("openSampleReadme", true);
           } else {
-            error = new SystemError(ExtensionErrors.UnknwonError, "Empty zip file", ExtensionSource);
-            vscode.window.showErrorMessage("Failed to download sample app");
+            error = new SystemError(
+              ExtensionErrors.UnknwonError,
+              StringResources.vsc.webview.emptyData,
+              ExtensionSource
+            );
+            vscode.window.showErrorMessage(StringResources.vsc.webview.downloadSampleFail);
           }
-        } catch(e){
+        } catch (e) {
           error = returnSystemError(e, ExtensionSource, ExtensionErrors.UnknwonError);
         } finally {
           progress.end();
@@ -179,9 +184,17 @@ export class WebviewPanel {
     }
 
     if (downloadSuccess) {
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSample, { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview, [TelemetryProperty.SampleAppName]: msg.data.appFolder, [TelemetryProperty.Success]: TelemetrySuccess.Yes });
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSample, {
+        [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview,
+        [TelemetryProperty.SampleAppName]: msg.data.appFolder,
+        [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+      });
     } else {
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DownloadSample, error, { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview, [TelemetryProperty.SampleAppName]: msg.data.appFolder, [TelemetryProperty.Success]: TelemetrySuccess.No });
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DownloadSample, error, {
+        [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview,
+        [TelemetryProperty.SampleAppName]: msg.data.appFolder,
+        [TelemetryProperty.Success]: TelemetrySuccess.No,
+      });
     }
   }
 
@@ -190,7 +203,7 @@ export class WebviewPanel {
   }
 
   private getGlobalStepsDone() {
-    let globalStepsDone = ext.context.globalState.get("globalStepsDone", []);
+    const globalStepsDone = ext.context.globalState.get("globalStepsDone", []);
     if (this.panel && this.panel.webview) {
       this.panel.webview.postMessage({
         message: "updateStepsDone",
@@ -202,9 +215,9 @@ export class WebviewPanel {
   private getWebpageTitle(panelType: PanelType) {
     switch (panelType) {
       case PanelType.QuickStart:
-        return "Quick Start";
+        return StringResources.vsc.webview.quickStartPageTitle;
       case PanelType.SampleGallery:
-        return "Samples";
+        return StringResources.vsc.webview.samplePageTitle;
     }
   }
 
@@ -228,24 +241,27 @@ export class WebviewPanel {
       }
     );
 
-    AzureAccountManager.setStatusChangeMap("quick-start-webview", async (status, token, accountInfo) => {
-      let email = undefined;
-      if (status === "SignedIn") {
-        const token = await AzureAccountManager.getAccountCredentialAsync();
-        if (token !== undefined) {
-          email = (token as any).username ? (token as any).username : undefined;
+    AzureAccountManager.setStatusChangeMap(
+      "quick-start-webview",
+      async (status, token, accountInfo) => {
+        let email = undefined;
+        if (status === "SignedIn") {
+          const token = await AzureAccountManager.getAccountCredentialAsync();
+          if (token !== undefined) {
+            email = (token as any).username ? (token as any).username : undefined;
+          }
         }
-      }
 
-      if (this.panel && this.panel.webview) {
-        this.panel.webview.postMessage({
-          message: "azureAccountChange",
-          data: email,
-        });
-      }
+        if (this.panel && this.panel.webview) {
+          this.panel.webview.postMessage({
+            message: "azureAccountChange",
+            data: email,
+          });
+        }
 
-      return Promise.resolve();
-    });
+        return Promise.resolve();
+      }
+    );
   }
 
   private async fetchCodeZip(url: string) {
@@ -291,12 +307,14 @@ export class WebviewPanel {
       const originalId = "c314487b-f51c-474d-823e-a2c3ec82b1ff";
       const componentId = uuid.v4();
       glob.glob(`${sampleAppPath}/**/*.json`, { nodir: true, dot: true }, async (err, files) => {
-        await Promise.all(files.map(async (file) => {
-          let content = (await fs.readFile(file)).toString();
-          const reg = new RegExp(originalId, "g");
-          content = content.replace(reg, componentId);
-          await fs.writeFile(file, content);
-        }));
+        await Promise.all(
+          files.map(async (file) => {
+            let content = (await fs.readFile(file)).toString();
+            const reg = new RegExp(originalId, "g");
+            content = content.replace(reg, componentId);
+            await fs.writeFile(file, content);
+          })
+        );
       });
     }
   }

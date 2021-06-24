@@ -125,11 +125,11 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
         npmInstallLogInfo.exitCode === event.exitCode
       ) {
         properties[TelemetryProperty.DebugNpmInstallNodeVersion] =
-          npmInstallLogInfo?.nodeVersion + ""; // "undefined", or string value
-        (properties[TelemetryProperty.DebugNpmInstallNpmVersion] =
-          npmInstallLogInfo?.npmVersion + ""), // "undefined", or string value
-          (properties[TelemetryProperty.DebugNpmInstallErrorMessage] =
-            npmInstallLogInfo.errorMessage?.join("\n") + ""); // "undefined" or string value
+          npmInstallLogInfo?.nodeVersion + ""; // "undefined" or string value
+        properties[TelemetryProperty.DebugNpmInstallNpmVersion] =
+          npmInstallLogInfo?.npmVersion + ""; // "undefined" or string value
+        properties[TelemetryProperty.DebugNpmInstallErrorMessage] =
+          npmInstallLogInfo.errorMessage?.join("\n") + ""; // "undefined" or string value
       }
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugNpmInstall, properties);
     } catch {

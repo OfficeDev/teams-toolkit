@@ -480,9 +480,7 @@ export class TeamsBotImpl {
     );
 
     await handler?.next(ProgressBarConstants.DEPLOY_STEP_ZIP_FOLDER);
-    const zipBuffer = utils.zipAFolder(packDir, DeployConfigs.UN_PACK_DIRS, [
-      `${FolderNames.NODE_MODULES}/${FolderNames.KEYTAR}`,
-    ]);
+    const zipBuffer = utils.zipAFolder(packDir);
 
     // 2.2 Retrieve publishing credentials.
     let publishingUserName = "";
@@ -734,10 +732,10 @@ export class TeamsBotImpl {
     const botChannelRegistrationName = this.config.provision.botChannelRegName
       ? this.config.provision.botChannelRegName
       : ResourceNameFactory.createCommonName(
-        this.config.resourceNameSuffix,
-        this.ctx?.app.name.short,
-        MaxLengths.BOT_CHANNEL_REG_NAME
-      );
+          this.config.resourceNameSuffix,
+          this.ctx?.app.name.short,
+          MaxLengths.BOT_CHANNEL_REG_NAME
+        );
 
     Logger.info(Messages.ProvisioningAzureBotChannelRegistration);
     await AzureOperations.CreateBotChannelRegistration(

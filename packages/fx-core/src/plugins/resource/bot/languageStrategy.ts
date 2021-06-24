@@ -67,13 +67,13 @@ export class LanguageStrategy {
     }
 
     appSettings.push({
-      name: "SCM_DO_BUILD_DURING_DEPLOYMENT",
-      value: "true",
+      name: "WEBSITE_NODE_DEFAULT_VERSION",
+      value: "12.13.0",
     });
 
     appSettings.push({
-      name: "WEBSITE_NODE_DEFAULT_VERSION",
-      value: "12.13.0",
+      name: "WEBSITE_RUN_FROM_PACKAGE",
+      value: "1",
     });
 
     appSettings.forEach((p: NameValuePair) => {
@@ -91,7 +91,7 @@ export class LanguageStrategy {
     if (programmingLanguage === ProgrammingLanguage.TypeScript) {
       //Typescript needs tsc build before deploy because of windows app server. other languages don"t need it.
       try {
-        await utils.execute("npm install", packDir);
+        await utils.execute(`${Commands.NPM_INSTALL}`, packDir);
         await utils.execute("npm run build", packDir);
       } catch (e) {
         throw new CommandExecutionError(`${Commands.NPM_INSTALL},${Commands.NPM_BUILD}`, e);
@@ -101,7 +101,7 @@ export class LanguageStrategy {
     if (programmingLanguage === ProgrammingLanguage.JavaScript) {
       try {
         // fail to npm install @microsoft/teamsfx on azure web app, so pack it locally.
-        await utils.execute("npm install", packDir);
+        await utils.execute(`${Commands.NPM_INSTALL}`, packDir);
       } catch (e) {
         throw new CommandExecutionError(`${Commands.NPM_INSTALL}`, e);
       }

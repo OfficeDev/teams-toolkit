@@ -116,18 +116,20 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
       const properties: { [key: string]: string } = {
         [TelemetryProperty.DebugNpmInstallName]: task.name,
         [TelemetryProperty.DebugNpmInstallExitCode]: event.exitCode + "", // "undefined" or number value
-        [TelemetryProperty.DebugNpmInstallNodeVersion]: npmInstallLogInfo?.nodeVersion + "", // "undefined", "null" or string value
-        [TelemetryProperty.DebugNpmInstallNpmVersion]: npmInstallLogInfo?.npmVersion + "", // "undefined", "null" or string value
       };
-      // TODO: handle case sensitive path
       if (
         cwd !== undefined &&
-        npmInstallLogInfo?.cwd?.toLowerCase() === cwd.toLowerCase() &&
+        npmInstallLogInfo?.cwd !== undefined &&
+        path.relative(npmInstallLogInfo.cwd, cwd).length === 0 &&
         event.exitCode !== undefined &&
         npmInstallLogInfo.exitCode === event.exitCode
       ) {
-        properties[TelemetryProperty.DebugNpmInstallErrorMessage] =
-          npmInstallLogInfo.errorMessage?.join("\n") + ""; // "undefined", "null" or string value
+        properties[TelemetryProperty.DebugNpmInstallNodeVersion] =
+          npmInstallLogInfo?.nodeVersion + ""; // "undefined", or string value
+        (properties[TelemetryProperty.DebugNpmInstallNpmVersion] =
+          npmInstallLogInfo?.npmVersion + ""), // "undefined", or string value
+          (properties[TelemetryProperty.DebugNpmInstallErrorMessage] =
+            npmInstallLogInfo.errorMessage?.join("\n") + ""); // "undefined", "null" or string value
       }
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugNpmInstall, properties);
     } catch {

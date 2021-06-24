@@ -7,11 +7,11 @@ import * as path from "path";
 import { cpUtils } from "./depsChecker/cpUtils";
 
 export interface NpmInstallLogInfo {
-  nodeVersion: string | null;
-  npmVersion: string | null;
-  cwd: string | null;
-  exitCode: number | null;
-  errorMessage: Array<string> | null;
+  nodeVersion: string | undefined;
+  npmVersion: string | undefined;
+  cwd: string | undefined;
+  exitCode: number | undefined;
+  errorMessage: Array<string> | undefined;
 }
 
 async function getNpmCachePath(): Promise<string | undefined> {
@@ -52,30 +52,27 @@ export async function getNpmInstallLogInfo(): Promise<NpmInstallLogInfo | undefi
 
   const nodePattern = /\d+\s+verbose\s+node\s+(v.*)/;
   const nodeResult = log.match(nodePattern);
-  const nodeVersion = nodeResult ? nodeResult[1].trim() : null;
+  const nodeVersion = nodeResult ? nodeResult[1].trim() : undefined;
 
   const npmPattern = /\d+\s+verbose\s+npm\s+(v.*)/;
   const npmResult = log.match(npmPattern);
-  const npmVersion = npmResult ? npmResult[1].trim() : null;
+  const npmVersion = npmResult ? npmResult[1].trim() : undefined;
 
   const cwdPattern = /\d+\s+verbose\s+cwd\s+(.*)/;
   const cwdResult = log.match(cwdPattern);
-  const cwd = cwdResult ? cwdResult[1].trim() : null;
+  const cwd = cwdResult ? cwdResult[1].trim() : undefined;
 
   const exitCodePattern = /\d+\s+verbose\s+exit\s+\[\s+(-?\d+),\s+.*]/;
   const exitCodeResult = log.match(exitCodePattern);
-  const exitCode = exitCodeResult ? Number(exitCodeResult[1]) : null;
+  const exitCode = exitCodeResult ? Number(exitCodeResult[1]) : undefined;
 
   const errorPattern = /\d+\s+error\s+.*/g;
   const errorResults = log.match(errorPattern);
-  if (!errorResults) {
-    return undefined;
-  }
   const errorMessage = errorResults
     ? errorResults.map((value, index, array) => {
         return value.trim();
       })
-    : null;
+    : undefined;
 
   const npmInstallLogInfo: NpmInstallLogInfo = {
     nodeVersion,

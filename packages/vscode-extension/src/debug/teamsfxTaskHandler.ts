@@ -10,7 +10,7 @@ import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
 import { getTeamsAppId } from "../utils/commonUtils";
 import { isValidProject } from "@microsoft/teamsfx-core";
-import { getNpmInstallErrorLog } from "./npmLogHandler";
+import { getNpmInstallLogInfo, NpmInstallLogInfo } from "./npmLogHandler";
 import * as path from "path";
 
 interface IRunningTeamsfxTask {
@@ -61,7 +61,7 @@ function isTeamsfxTask(task: vscode.Task): boolean {
 }
 
 function displayTerminal(taskName: string): boolean {
-  const terminal = vscode.window.terminals.find(t => t.name === taskName);
+  const terminal = vscode.window.terminals.find((t) => t.name === taskName);
   if (terminal !== undefined && terminal !== vscode.window.activeTerminal) {
     terminal.show(true);
     return true;
@@ -100,29 +100,36 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
     allRunningTeamsfxTasks.delete({ source: task.source, name: task.name, scope: task.scope });
   } else if (isNpmInstallTask(task)) {
     try {
-      let npmInstallErrorMessage: string | undefined;
-      if (event.exitCode) {
-        const cwdOption = (task.execution as vscode.ShellExecution).options?.cwd;
-        if (cwdOption !== undefined) {
-          const cwd = path.join(ext.workspaceUri.fsPath, cwdOption?.replace("${workspaceFolder}/", ""));
-          const npmInstallErrorLog = await getNpmInstallErrorLog(cwd);
-          if (npmInstallErrorLog !== undefined) {
-            npmInstallErrorMessage = npmInstallErrorLog.join("\n");
-          }
-        }
+      const cwdOption = (task.execution as vscode.ShellExecution).options?.cwd;
+      let cwd: string | undefined;
+      if (cwdOption !== undefined) {
+        cwd = path.join(ext.workspaceUri.fsPath, cwdOption?.replace("${workspaceFolder}/", ""));
       }
-      if (npmInstallErrorMessage === undefined) {
-        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugNpmInstall, {
-          [TelemetryProperty.DebugNpmInstallName]: task.name,
-          [TelemetryProperty.DebugNpmInstallExitCode]: event.exitCode + "",
-        });
-      } else {
-        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugNpmInstall, {
-          [TelemetryProperty.DebugNpmInstallName]: task.name,
-          [TelemetryProperty.DebugNpmInstallExitCode]: event.exitCode + "",
-          [TelemetryProperty.DebugNpmInstallErrorMessage]: npmInstallErrorMessage,
-        });
+
+      let npmInstallLogInfo: NpmInstallLogInfo | undefined;
+      try {
+        npmInstallLogInfo = await getNpmInstallLogInfo();
+      } catch {
+        // ignore any error
       }
+
+      const properties: { [key: string]: string } = {
+        [TelemetryProperty.DebugNpmInstallName]: task.name,
+        [TelemetryProperty.DebugNpmInstallExitCode]: event.exitCode + "", // "undefined" or number value
+        [TelemetryProperty.DebugNpmInstallNodeVersion]: npmInstallLogInfo?.nodeVersion + "", // "undefined", "null" or string value
+        [TelemetryProperty.DebugNpmInstallNpmVersion]: npmInstallLogInfo?.npmVersion + "", // "undefined", "null" or string value
+      };
+      // TODO: handle case sensitive path
+      if (
+        cwd !== undefined &&
+        npmInstallLogInfo?.cwd?.toLowerCase() === cwd.toLowerCase() &&
+        event.exitCode !== undefined &&
+        npmInstallLogInfo.exitCode === event.exitCode
+      ) {
+        properties[TelemetryProperty.DebugNpmInstallErrorMessage] =
+          npmInstallLogInfo.errorMessage?.join("\n") + ""; // "undefined", "null" or string value
+      }
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugNpmInstall, properties);
     } catch {
       // ignore telemetry error
     }

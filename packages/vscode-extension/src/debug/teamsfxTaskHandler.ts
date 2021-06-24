@@ -108,7 +108,9 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
 
       let npmInstallLogInfo: NpmInstallLogInfo | undefined;
       try {
-        npmInstallLogInfo = await getNpmInstallLogInfo();
+        if (cwd !== undefined && event.exitCode !== undefined && event.exitCode !== 0) {
+          npmInstallLogInfo = await getNpmInstallLogInfo();
+        }
       } catch {
         // ignore any error
       }

@@ -129,7 +129,7 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
         (properties[TelemetryProperty.DebugNpmInstallNpmVersion] =
           npmInstallLogInfo?.npmVersion + ""), // "undefined", or string value
           (properties[TelemetryProperty.DebugNpmInstallErrorMessage] =
-            npmInstallLogInfo.errorMessage?.join("\n") + ""); // "undefined", "null" or string value
+            npmInstallLogInfo.errorMessage?.join("\n") + ""); // "undefined" or string value
       }
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugNpmInstall, properties);
     } catch {

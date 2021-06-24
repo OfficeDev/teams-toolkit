@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Constants, FrontendPathInfo } from "../constants";
+import { Constants, FrontendPathInfo, FrontendPluginInfo } from "../constants";
 import { Logger } from "../utils/logger";
 import path from "path";
 
@@ -37,14 +37,22 @@ export class FrontendPluginError extends Error {
   public message: string;
   public suggestions: string[];
   public errorType: ErrorType;
+  public helpLink?: string;
   public innerError?: Error;
 
-  constructor(errorType: ErrorType, code: string, message: string, suggestions: string[]) {
+  constructor(
+    errorType: ErrorType,
+    code: string,
+    message: string,
+    suggestions: string[],
+    helpLink?: string
+  ) {
     super(message);
     this.code = code;
     this.message = message;
     this.suggestions = suggestions;
     this.errorType = errorType;
+    this.helpLink = helpLink;
   }
 
   getMessage(): string {
@@ -121,7 +129,8 @@ export class StaticWebsiteDisabledError extends FrontendPluginError {
       ErrorType.User,
       "StaticWebsiteDisableError",
       "Static website hosting feature is disabled for Azure Storage Account.",
-      [tips.reProvision]
+      [tips.reProvision],
+      FrontendPluginInfo.HelpLink
     );
   }
 }
@@ -164,7 +173,8 @@ export class EnableStaticWebsiteError extends FrontendPluginError {
       ErrorType.User,
       "EnableStaticWebsiteError",
       "Failed to enable static website feature for Azure Storage Account.",
-      [tips.checkSystemTime, tips.checkStoragePermissions]
+      [tips.checkSystemTime, tips.checkStoragePermissions],
+      FrontendPluginInfo.HelpLink
     );
   }
 }

@@ -327,6 +327,9 @@ class MockUserInteraction implements UserInteraction {
   ): Promise<Result<string | undefined, FxError>> {
     throw new Error("Method not implemented.");
   }
+  createProgressBar(title: string, totalSteps: number): IProgressHandler {
+    throw new Error("Method not implemented.");
+  }
   async runWithProgress<T>(
     task: RunnableTask<T>,
     config: TaskConfig,

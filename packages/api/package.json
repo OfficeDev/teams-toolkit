@@ -16,7 +16,8 @@
   "scripts": {
     "lint:staged": "lint-staged",
     "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
-    "build": "tsc -p ./",
+    "build": "tsc -p ./ && npx api-extractor run --local",
+    "build:api-markdown": "npm run build && rimraf ../../docs/api && npx api-documenter markdown -i temp -o ../../docs/api",
     "prepare": "npm run build",
     "lint:fix": "eslint \"src/**/*.ts\" \"tests/**/*.ts\" --fix",
     "doc": "typedoc",
@@ -25,6 +26,8 @@
     "precommit": "lint-staged"
   },
   "devDependencies": {
+    "@microsoft/api-documenter": "^7.13.24",
+    "@microsoft/api-extractor": "^7.16.1",
     "@shared/eslint-config": "file:../eslint-config",
     "@shared/prettier-config": "file:../prettier-config",
     "@types/chai": "^4.2.14",
@@ -44,7 +47,6 @@
     "sinon": "^9.2.2",
     "ts-node": "^9.1.1",
     "tslint-config-prettier": "^1.18.0",
-    "typedoc": "^0.20.36",
     "typescript": "^4.2.3"
   },
   "dependencies": {

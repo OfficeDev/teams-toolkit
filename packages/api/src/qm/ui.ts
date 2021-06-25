@@ -103,20 +103,17 @@ export interface InputTextConfig extends UIConfig<string> {
 /**
  * single file selector config
  */
-export interface SelectFileConfig extends UIConfig<string> {
-};
+export type SelectFileConfig = UIConfig<string>
 
 /**
  * multiple files selector config
  */
-export interface SelectFilesConfig extends UIConfig<string[]> {
-};
+export type SelectFilesConfig = UIConfig<string[]>
 
 /**
  * folder selector config
  */
-export interface SelectFolderConfig extends UIConfig<string> {
-};
+export type SelectFolderConfig = UIConfig<string>
 
 /**
  * a wrapper of user input result
@@ -187,11 +184,11 @@ export interface TaskConfig {
   /**
    * whether task can be cancelled or not
    */
-  cancellable?: boolean
+  cancellable?: boolean;
   /**
    * whether to show the numeric progress of the task
    */
-  showProgress?: boolean,
+  showProgress?: boolean;
 }
 
 /**
@@ -202,11 +199,11 @@ export interface TaskGroupConfig {
    * if true, the tasks in the group are running in paralel
    * if false, the tasks are running in sequence.
    */
-  sequential?: boolean,
+  sequential?: boolean;
   /**
    * whether to terminate all tasks if some task is failed or canceled
    */
-  fastFail?: boolean
+  fastFail?: boolean;
 }
 
 /**
@@ -257,7 +254,7 @@ export interface UserInteraction {
   selectFolder: (config: SelectFolderConfig) => Promise<Result<SelectFolderResult, FxError>>;
 
   /**
-   * Opens a link externally in the browser. 
+   * Opens a link externally in the browser.
    * @param link The uri that should be opened.
    * @returns A promise indicating if open was successful.
    */
@@ -277,7 +274,7 @@ export interface UserInteraction {
   ): Promise<Result<string | undefined, FxError>>;
 
   /**
-   * Show an information/warnning/error message with different colors to users, which only works for CLI.  
+   * Show an information/warnning/error message with different colors to users, which only works for CLI.
    * @param level message level
    * @param message The message with color to show. The color only works for CLI.
    * @param items A set of items that will be rendered as actions in the message.
@@ -285,10 +282,21 @@ export interface UserInteraction {
    */
   showMessage(
     level: "info" | "warn" | "error",
-    message: Array<{ content: string, color: Colors }>,
+    message: Array<{ content: string; color: Colors }>,
     modal: boolean,
     ...items: string[]
   ): Promise<Result<string | undefined, FxError>>;
+
+  /**
+   * Create a new progress bar with the specified title and the number of steps. It will
+   * return a progress handler and you can use this handler to control the detail message
+   * of it.
+   * ${currentStep} will increase from 0 to ${totalSteps}.
+   * @param title the title of this progress bar.
+   * @param totalSteps the number of steps.
+   * @returns the handler of a progress bar
+   */
+  createProgressBar: (title: string, totalSteps: number) => IProgressHandler;
 
   /**
    * A function to run a task with progress bar. (CLI and VS Code has different UI experience for progress bar)
@@ -297,7 +305,34 @@ export interface UserInteraction {
    * @param args args for task run() API
    * @returns A promise that resolves the wrapper of task running result or FxError
    */
-  runWithProgress<T>(task: RunnableTask<T>, config: TaskConfig, ...args: any): Promise<Result<T, FxError>>;
+  runWithProgress<T>(
+    task: RunnableTask<T>,
+    config: TaskConfig,
+    ...args: any
+  ): Promise<Result<T, FxError>>;
+}
+
+export interface IProgressHandler {
+  /**
+   * Start this progress bar. After calling it, the progress bar will be seen to users with
+   * ${currentStep} = 0 and ${detail} = detail.
+   * @param detail the detail message of the next work.
+   */
+  start: (detail?: string) => Promise<void>;
+
+  /**
+   * Update the progress bar's message. After calling it, the progress bar will be seen to
+   * users with ${currentStep}++ and ${detail} = detail.
+   * This func must be called after calling start().
+   * @param detail the detail message of the next work.
+   */
+  next: (detail?: string) => Promise<void>;
+
+  /**
+   * End the progress bar. After calling it, the progress bar will disappear. This handler
+   * can be reused after calling end().
+   */
+  end: () => Promise<void>;
 }
 
 /**
@@ -305,7 +340,7 @@ export interface UserInteraction {
  */
 export class GroupOfTasks<T> implements RunnableTask<Result<T, FxError>[]> {
   name?: string;
-  current: number = 0;
+  current = 0;
   readonly total: number;
   isCanceled = false;
   tasks: RunnableTask<T>[];
@@ -334,7 +369,7 @@ export class GroupOfTasks<T> implements RunnableTask<Result<T, FxError>[]> {
             this.message = task.name;
           }
           try {
-            let taskRes = await task.run(args);
+            const taskRes = await task.run(args);
             if (taskRes.isErr() && isFastFail) {
               this.isCanceled = true;
               resolve(err(taskRes.error));
@@ -353,7 +388,7 @@ export class GroupOfTasks<T> implements RunnableTask<Result<T, FxError>[]> {
           }
         }
       } else {
-        let promiseResults = this.tasks.map((t) => t.run(args));
+        const promiseResults = this.tasks.map((t) => t.run(args));
         promiseResults.forEach((p) => {
           p.then((v) => {
             this.current++;
@@ -378,9 +413,7 @@ export class GroupOfTasks<T> implements RunnableTask<Result<T, FxError>[]> {
   }
 
   cancel() {
-    for (const task of this.tasks)
-      if (task.cancel)
-        task.cancel();
+    for (const task of this.tasks) if (task.cancel) task.cancel();
     this.isCanceled = true;
   }
 }

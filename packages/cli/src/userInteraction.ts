@@ -34,13 +34,15 @@ import {
   TaskConfig,
   assembleError,
   UserInteraction,
-  Colors
+  Colors,
+  IProgressHandler,
 } from "@microsoft/teamsfx-api";
 
 import CLILogProvider from "./commonlib/log";
 import { NotValidInputValue, UnknownError } from "./error";
 import { sleep, getColorizedString } from "./utils";
 import { ChoiceOptions } from "./prompts";
+import { ProgressHandler } from "./progressHandler";
 
 /// TODO: input can be undefined
 type ValidationType<T> = (input: T) => string | boolean | Promise<string | boolean>;
@@ -60,9 +62,9 @@ export class CLIUserInteraction implements UserInteraction {
     this.presetAnswers.set(key, value);
   }
 
-  public updatePresetAnswers(question: { [_: string]: any },answers: { [key: string]: any}) {
+  public updatePresetAnswers(question: { [_: string]: any }, answers: { [key: string]: any }) {
     for (const key in answers) {
-      if(key in question){
+      if (key in question) {
         this.updatePresetAnswer(key, answers[key]);
       }
     }
@@ -77,9 +79,9 @@ export class CLIUserInteraction implements UserInteraction {
       return;
     }
     const options = config.options as OptionItem[];
-    const labels = options.map(op => op.label);
-    const ids = options.map(op => op.id);
-    const cliNames = options.map(op => op.cliName);
+    const labels = options.map((op) => op.label);
+    const ids = options.map((op) => op.id);
+    const cliNames = options.map((op) => op.cliName);
 
     const presetAnwser = this.presetAnswers.get(config.name);
     if (presetAnwser instanceof Array) {
@@ -115,13 +117,12 @@ export class CLIUserInteraction implements UserInteraction {
   }
 
   public removePresetAnswers(keys: string[]) {
-    keys.forEach(key => this.removePresetAnswer(key));
+    keys.forEach((key) => this.removePresetAnswer(key));
   }
 
   get ciEnabled(): boolean {
     return process.env.CI_ENABLED === "true";
   }
-
 
   private async runInquirer<T>(question: DistinctQuestion): Promise<Result<T, FxError>> {
     if (this.presetAnswers.has(question.name!)) {
@@ -146,11 +147,11 @@ export class CLIUserInteraction implements UserInteraction {
       }
     }
 
-    return new Promise(async resolve => {
+    return new Promise(async (resolve) => {
       try {
         const anwsers = await inquirer.prompt([question]);
         resolve(ok(anwsers[question.name!]));
-      } catch(e) {
+      } catch (e) {
         resolve(err(UnknownError(e)));
       }
     });
@@ -169,14 +170,13 @@ export class CLIUserInteraction implements UserInteraction {
       name,
       message: chalk.whiteBright.bold(message),
       choices,
-      default:
-      defaultValue,
+      default: defaultValue,
       validate,
       prefix: chalk.blueBright("?"),
-      suffix: chalk.whiteBright.bold(":")
+      suffix: chalk.whiteBright.bold(":"),
     };
   }
-  
+
   private async singleSelect(
     name: string,
     message: string,
@@ -184,7 +184,9 @@ export class CLIUserInteraction implements UserInteraction {
     defaultValue?: string,
     validate?: ValidationType<string>
   ): Promise<Result<string, FxError>> {
-    return this.runInquirer(this.toInquirerQuestion("list", name, message, choices, defaultValue, validate));
+    return this.runInquirer(
+      this.toInquirerQuestion("list", name, message, choices, defaultValue, validate)
+    );
   }
 
   private async multiSelect(
@@ -194,7 +196,9 @@ export class CLIUserInteraction implements UserInteraction {
     defaultValue?: string[],
     validate?: ValidationType<string[]>
   ): Promise<Result<string[], FxError>> {
-    return this.runInquirer(this.toInquirerQuestion("checkbox", name, message, choices, defaultValue, validate));
+    return this.runInquirer(
+      this.toInquirerQuestion("checkbox", name, message, choices, defaultValue, validate)
+    );
   }
 
   private async input(
@@ -205,50 +209,59 @@ export class CLIUserInteraction implements UserInteraction {
     validate?: ValidationType<string>
   ): Promise<Result<string, FxError>> {
     if (!password) {
-      return this.runInquirer(this.toInquirerQuestion("input", name, message, undefined, defaultValue, validate));
+      return this.runInquirer(
+        this.toInquirerQuestion("input", name, message, undefined, defaultValue, validate)
+      );
     } else {
-      return this.runInquirer(this.toInquirerQuestion("password", name, message, undefined, defaultValue, validate));
+      return this.runInquirer(
+        this.toInquirerQuestion("password", name, message, undefined, defaultValue, validate)
+      );
     }
   }
 
   private async confirm(name: string, message: string): Promise<Result<boolean, FxError>> {
     /// TODO: add default value.
-    return this.runInquirer(this.toInquirerQuestion("confirm", name, message, undefined, undefined, undefined));
+    return this.runInquirer(
+      this.toInquirerQuestion("confirm", name, message, undefined, undefined, undefined)
+    );
   }
 
   private findIndex(choices: (string | undefined)[], answer?: string): number {
-    return choices.findIndex(choice => choice === answer);
+    return choices.findIndex((choice) => choice === answer);
   }
 
   private findIndexes(choices: (string | undefined)[], answers?: string[]): number[] {
-    const indexes = answers?.map(answer => this.findIndex(choices, answer));
-    return indexes?.filter(index => index >= 0) || [];
+    const indexes = answers?.map((answer) => this.findIndex(choices, answer));
+    return indexes?.filter((index) => index >= 0) || [];
   }
 
   private getSubArray<T = string | OptionItem>(array: T[], indexes: number[]): T[] {
-    return indexes.map(index => array[index]);
+    return indexes.map((index) => array[index]);
   }
 
-  private toChoices<T>(option: StaticOptions, defaultValue?: T): [string[] | ChoiceOptions[], T | undefined] {
+  private toChoices<T>(
+    option: StaticOptions,
+    defaultValue?: T
+  ): [string[] | ChoiceOptions[], T | undefined] {
     if (typeof option[0] === "string") {
       return [option as string[], defaultValue];
     } else {
-      const choices = (option as OptionItem[]).map(op => {
+      const choices = (option as OptionItem[]).map((op) => {
         return {
           name: op.label,
           extra: {
             description: op.description,
-            detail: op.detail
-          }
-        }
+            detail: op.detail,
+          },
+        };
       });
-      const ids = (option as OptionItem[]).map(op => op.id);
+      const ids = (option as OptionItem[]).map((op) => op.id);
       if (typeof defaultValue === "string" || typeof defaultValue === "undefined") {
         const index = this.findIndex(ids, defaultValue);
         return [choices, choices[index]?.name as any];
       } else {
         const indexes = this.findIndexes(ids, defaultValue as any);
-        return [choices, this.getSubArray(choices, indexes).map(choice => choice.name) as any];
+        return [choices, this.getSubArray(choices, indexes).map((choice) => choice.name) as any];
       }
     }
   }
@@ -257,7 +270,7 @@ export class CLIUserInteraction implements UserInteraction {
     validate?: (input: T) => string | undefined | Promise<string | undefined>
   ): ValidationType<T> {
     return (input: T) => {
-      return new Promise(async resolve => {
+      return new Promise(async (resolve) => {
         const result = await validate?.(input);
         if (result === undefined) {
           resolve(true);
@@ -265,10 +278,12 @@ export class CLIUserInteraction implements UserInteraction {
           resolve(result);
         }
       });
-    }
+    };
   }
-  
-  public async selectOption(config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> {
+
+  public async selectOption(
+    config: SingleSelectConfig
+  ): Promise<Result<SingleSelectResult, FxError>> {
     if (config.name === "subscription") {
       const subscriptions = config.options as string[];
       if (subscriptions.length === 0) {
@@ -285,7 +300,7 @@ export class CLIUserInteraction implements UserInteraction {
       }
     }
     this.updatePresetAnswerFromConfig(config);
-    return new Promise(async resolve => {
+    return new Promise(async (resolve) => {
       const [choices, defaultValue] = this.toChoices(config.options, config.default);
       const result = await this.singleSelect(
         config.name,
@@ -296,9 +311,9 @@ export class CLIUserInteraction implements UserInteraction {
       );
       if (result.isOk()) {
         const index = this.findIndex(
-          typeof choices[0] === "string" 
-            ? choices as string[]
-            : (choices as ChoiceOptions[]).map(choice => choice.name),
+          typeof choices[0] === "string"
+            ? (choices as string[])
+            : (choices as ChoiceOptions[]).map((choice) => choice.name),
           result.value
         );
         const anwser = config.options[index];
@@ -317,9 +332,11 @@ export class CLIUserInteraction implements UserInteraction {
     });
   }
 
-  public async selectOptions(config: MultiSelectConfig): Promise<Result<MultiSelectResult,FxError>> {
+  public async selectOptions(
+    config: MultiSelectConfig
+  ): Promise<Result<MultiSelectResult, FxError>> {
     this.updatePresetAnswerFromConfig(config);
-    return new Promise(async resolve => {
+    return new Promise(async (resolve) => {
       const [choices, defaultValue] = this.toChoices(config.options, config.default);
       const result = await this.multiSelect(
         config.name,
@@ -330,9 +347,9 @@ export class CLIUserInteraction implements UserInteraction {
       );
       if (result.isOk()) {
         const indexes = this.findIndexes(
-          typeof choices[0] === "string" 
-            ? choices as string[]
-            : (choices as ChoiceOptions[]).map(choice => choice.name),
+          typeof choices[0] === "string"
+            ? (choices as string[])
+            : (choices as ChoiceOptions[]).map((choice) => choice.name),
           result.value
         );
         const anwers = this.getSubArray(config.options as any[], indexes);
@@ -342,7 +359,9 @@ export class CLIUserInteraction implements UserInteraction {
           if (typeof anwers[0] === "string") {
             resolve(ok({ type: "success", result: anwers }));
           } else {
-            resolve(ok({ type: "success", result: (anwers as OptionItem[]).map(answer => answer.id) }));
+            resolve(
+              ok({ type: "success", result: (anwers as OptionItem[]).map((answer) => answer.id) })
+            );
           }
         }
       } else {
@@ -351,8 +370,8 @@ export class CLIUserInteraction implements UserInteraction {
     });
   }
 
-  public async inputText(config: InputTextConfig): Promise<Result<InputTextResult,FxError>> {
-    return new Promise(async resolve => {
+  public async inputText(config: InputTextConfig): Promise<Result<InputTextResult, FxError>> {
+    return new Promise(async (resolve) => {
       const result = await this.input(
         config.name,
         !!config.password,
@@ -368,19 +387,19 @@ export class CLIUserInteraction implements UserInteraction {
     });
   }
 
-  public async selectFile(config: SelectFileConfig): Promise<Result<SelectFileResult,FxError>> {
+  public async selectFile(config: SelectFileConfig): Promise<Result<SelectFileResult, FxError>> {
     const newConfig: InputTextConfig = {
       name: config.name,
       title: config.title,
       default: config.default || "./",
-      validation: config.validation || pathValidation
-    }
+      validation: config.validation || pathValidation,
+    };
     return this.inputText(newConfig);
   }
 
-  public async selectFiles(config: SelectFilesConfig): Promise<Result<SelectFilesResult,FxError>> {
+  public async selectFiles(config: SelectFilesConfig): Promise<Result<SelectFilesResult, FxError>> {
     const validation = async (input: string) => {
-      const strings = input.split(";").map(s => s.trim());
+      const strings = input.split(";").map((s) => s.trim());
       if (config.validation) {
         return config.validation(strings);
       } else {
@@ -392,65 +411,69 @@ export class CLIUserInteraction implements UserInteraction {
         }
       }
       return undefined;
-    }
+    };
     const newConfig: InputTextConfig = {
       name: config.name,
       title: config.title + " (Please use ';' to split file paths)",
       default: config.default?.join("; "),
-      validation
-    }
-    return new Promise(async resolve => {
+      validation,
+    };
+    return new Promise(async (resolve) => {
       const result = await this.inputText(newConfig);
       if (result.isOk()) {
-        resolve(ok( { type: "success", result: result.value.result?.split(";").map(s => s.trim()) } ));
+        resolve(
+          ok({ type: "success", result: result.value.result?.split(";").map((s) => s.trim()) })
+        );
       } else {
         resolve(err(result.error));
       }
     });
   }
 
-  public async selectFolder(config: SelectFolderConfig): Promise<Result<SelectFolderResult,FxError>> {
+  public async selectFolder(
+    config: SelectFolderConfig
+  ): Promise<Result<SelectFolderResult, FxError>> {
     const newConfig: InputTextConfig = {
       name: config.name,
       title: config.title,
       default: config.default || "./",
-      validation: config.validation || pathValidation
-    }
+      validation: config.validation || pathValidation,
+    };
     return this.inputText(newConfig);
   }
 
-  public async openUrl(link: string): Promise<Result<boolean,FxError>> {
+  public async openUrl(link: string): Promise<Result<boolean, FxError>> {
     await open(link);
     return ok(true);
   }
-  
+
   public async showMessage(
     level: "info" | "warn" | "error",
     message: string,
     modal: boolean,
     ...items: string[]
-  ): Promise<Result<string|undefined,FxError>>;
+  ): Promise<Result<string | undefined, FxError>>;
 
   public async showMessage(
     level: "info" | "warn" | "error",
-    message: Array<{content: string, color: Colors}>,
+    message: Array<{ content: string; color: Colors }>,
     modal: boolean,
     ...items: string[]
-  ): Promise<Result<string|undefined,FxError>>;
+  ): Promise<Result<string | undefined, FxError>>;
 
   public async showMessage(
     level: "info" | "warn" | "error",
-    message: string | Array<{content: string, color: Colors}>,
+    message: string | Array<{ content: string; color: Colors }>,
     modal: boolean,
     ...items: string[]
-  ): Promise<Result<string|undefined,FxError>> {
+  ): Promise<Result<string | undefined, FxError>> {
     let plainText: string;
     if (message instanceof Array) {
-      plainText = message.map(x => x.content).join("");
+      plainText = message.map((x) => x.content).join("");
     } else {
       plainText = message;
     }
-    return new Promise(async resolve => {
+    return new Promise(async (resolve) => {
       switch (items.length) {
         case 0:
           switch (level) {
@@ -505,54 +528,63 @@ export class CLIUserInteraction implements UserInteraction {
     });
   }
 
-  public async runWithProgress<T>(task: RunnableTask<T>, config: TaskConfig, ...args:any): Promise<Result<T,FxError>> {
+  public createProgressBar(title: string, totalSteps: number): IProgressHandler {
+    return new ProgressHandler(title, totalSteps);
+  }
+
+  public async runWithProgress<T>(
+    task: RunnableTask<T>,
+    config: TaskConfig,
+    ...args: any
+  ): Promise<Result<T, FxError>> {
     return new Promise(async (resolve) => {
       let lastReport = 0;
-          const showProgress = config.showProgress === true
-          const total = task.total ? task.total : 1;
-          const head = `[Teams Toolkit] ${task.name?task.name:""}`;
-          const report = async (task:RunnableTask<T>)=>{
-            const current = task.current ? task.current : 0;
-            const body = showProgress ? `: ${Math.round(current*100/total)} %` : `: [${current+1}/${total}]`;
-            const tail = task.message? ` ${task.message}` : "Prepare task.";
-            const message = `${head}${body}${tail}`;
-            if(showProgress)
-              await CLILogProvider.necessaryLog(LogLevel.Info, message);
-          };
-          task.run(args).then(async (v) => { 
+      const showProgress = config.showProgress === true;
+      const total = task.total ? task.total : 1;
+      const head = `[Teams Toolkit] ${task.name ? task.name : ""}`;
+      const report = async (task: RunnableTask<T>) => {
+        const current = task.current ? task.current : 0;
+        const body = showProgress
+          ? `: ${Math.round((current * 100) / total)} %`
+          : `: [${current + 1}/${total}]`;
+        const tail = task.message ? ` ${task.message}` : "Prepare task.";
+        const message = `${head}${body}${tail}`;
+        if (showProgress) await CLILogProvider.necessaryLog(LogLevel.Info, message);
+      };
+      task
+        .run(args)
+        .then(async (v) => {
+          report(task);
+          await sleep(100);
+          resolve(v);
+        })
+        .catch((e) => {
+          resolve(err(assembleError(e)));
+        });
+      let current;
+      if (showProgress) {
+        report(task);
+        do {
+          current = task.current ? task.current : 0;
+          const inc = ((current - lastReport) * 100) / total;
+          const delta = current - lastReport;
+          if (inc > 0) {
             report(task);
-            await sleep(100);
-            resolve(v) 
-          }).catch((e) => { 
-            resolve(err(assembleError(e)))
-          });
-          let current;
-          if(showProgress){
-            report(task);
-            do{
-              current = task.current ? task.current : 0;
-              const inc = (current-lastReport)*100/total;
-              const delta = current - lastReport;
-              if (inc > 0) {
-                report(task);
-                lastReport += delta;
-              }
-              await sleep(100);
-            } while (current < total && !task.isCanceled);
-            report(task);
-            await sleep(100);
+            lastReport += delta;
           }
-          else {
-            do{
-              report(task);
-              await sleep(100);
-              current = task.current ? task.current : 0;
-            } while (current < total && !task.isCanceled)
-          }
-          if(task.isCanceled) 
-            resolve(err(UserCancelError));
-        }
-    );
+          await sleep(100);
+        } while (current < total && !task.isCanceled);
+        report(task);
+        await sleep(100);
+      } else {
+        do {
+          report(task);
+          await sleep(100);
+          current = task.current ? task.current : 0;
+        } while (current < total && !task.isCanceled);
+      }
+      if (task.isCanceled) resolve(err(UserCancelError));
+    });
   }
 }
 
@@ -563,7 +595,7 @@ async function pathValidation(p: string): Promise<string | undefined> {
   if (await fs.pathExists(path.resolve(p))) {
     return undefined;
   } else {
-    return `${path.resolve(p)} does not exist.`
+    return `${path.resolve(p)} does not exist.`;
   }
 }
 

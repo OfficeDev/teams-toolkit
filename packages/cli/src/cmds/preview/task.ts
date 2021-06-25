@@ -4,6 +4,7 @@
 "use strict";
 
 import { spawn, SpawnOptions } from "child_process";
+import { err, FxError, ok, Result } from "@microsoft/teamsfx-api";
 
 interface TaskOptions {
     cwd?: string;
@@ -12,8 +13,8 @@ interface TaskOptions {
 
 export interface TaskResult {
     success: boolean;
-    stdout: string;
-    stderr: string;
+    stdout: string[];
+    stderr: string[];
     exitCode : number | null;
 }
 
@@ -29,22 +30,24 @@ export class Task {
     /**
      * wait for the task to end
      */
-    public async wait(): Promise<TaskResult> {
+    public async wait(startCallback: () => void, stopCallback: (result: TaskResult) => FxError | null): Promise<Result<TaskResult, FxError>> {
+        startCallback();
         const spawnOptions: SpawnOptions = {
             shell: true,
             cwd: this.options.cwd,
             env: this.options.env,
         };
         const task = spawn(this.command, spawnOptions);
-        let stdout = "", stderr = "";
+        const stdout: string[] = [];
+        const stderr: string[] = [];
         return new Promise((resolve, reject) => {
             task.stdout?.on("data", (data) => {
                 // TODO: log
-                stdout += data;
+                stdout.push(data.toString());
             });
             task.stderr?.on("data", (data) => {
                 // TODO: log
-                stderr += data;
+                stderr.push(data.toString());
             });
             task.on("exit", () => {
                 const result: TaskResult = {
@@ -53,7 +56,12 @@ export class Task {
                     stderr: stderr,
                     exitCode: task.exitCode,
                 };
-                resolve(result);
+                const error = stopCallback(result);
+                if (error) {
+                    resolve(err(error));
+                } else {
+                    resolve(ok(result));
+                }
             });
         });
     }
@@ -61,19 +69,21 @@ export class Task {
     /**
      * wait until stdout of the task matches the pattern or the task ends
      */
-    public async waitFor(pattern: RegExp): Promise<TaskResult> {
+    public async waitFor(pattern: RegExp, startCallback: () => void, stopCallback: (result: TaskResult) => FxError | null): Promise<Result<TaskResult, FxError>> {
+        startCallback();
         const spawnOptions: SpawnOptions = {
             shell: true,
             cwd: this.options.cwd,
             env: this.options.env,
         };
         const task = spawn(this.command, spawnOptions);
-        let stdout = "", stderr = "";
+        const stdout: string[] = [];
+        const stderr: string[] = [];
         return new Promise((resolve, reject) => {
             task.stdout?.on("data", (data) => {
                 // TODO: log
-                stdout += data;
-                const match = pattern.test(stdout);
+                stdout.push(data.toString());
+                const match = pattern.test(data.toString());
                 if (match) {
                     const result: TaskResult = {
                         success: true,
@@ -81,12 +91,17 @@ export class Task {
                         stderr: stderr,
                         exitCode: null,
                     };
-                    resolve(result);
+                    const error = stopCallback(result);
+                    if (error){
+                        resolve(err(error));
+                    } else {
+                        resolve(ok(result));
+                    }
                 }
             });
             task.stderr?.on("data", (data) => {
                 // TODO: log
-                stderr += data;
+                stderr.push(data.toString());
             });
 
             task.on("exit", () => {
@@ -96,7 +111,12 @@ export class Task {
                     stderr: stderr,
                     exitCode: task.exitCode,
                 };
-                resolve(result);
+                const error = stopCallback(result);
+                if (error){
+                    resolve(err(error));
+                } else {
+                    resolve(ok(result));
+                }
             });
         });
     }

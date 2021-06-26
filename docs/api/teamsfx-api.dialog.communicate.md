@@ -4,6 +4,12 @@
 
 ## Dialog.communicate property
 
+Platforms (such as VSCode, CLI) support this function to communicate with core. There are 3 dialog types. 1. Ask: core can ask platform for questions and platform will render UI for users to collect data. The return type is Answer. 2. Show: core can let platform show some messages to users.
+
+Example 1 (ask for appType): await communicate(new DialogMsg( DialogType.Ask, { type: QuestionType.Radio, description: "Which type of Teams App do you want to develop?", defaultAnswer: "tab", options: \["tab", "bot", "message"\], } ))
+
+Example 2 (show something): await communicate(new DialogMsg( DialogType.Show, { description: "Scaffold successfully!", level: MsgLevel.Info, } ))
+
 <b>Signature:</b>
 
 ```typescript

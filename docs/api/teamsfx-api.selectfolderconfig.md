@@ -2,14 +2,14 @@
 
 [Home](./index.md) &gt; [@microsoft/teamsfx-api](./teamsfx-api.md) &gt; [SelectFolderConfig](./teamsfx-api.selectfolderconfig.md)
 
-## SelectFolderConfig interface
+## SelectFolderConfig type
 
 folder selector config
 
 <b>Signature:</b>
 
 ```typescript
-export interface SelectFolderConfig extends UIConfig<string> 
+export declare type SelectFolderConfig = UIConfig<string>;
 ```
-<b>Extends:</b> [UIConfig](./teamsfx-api.uiconfig.md)<!-- -->&lt;string&gt;
+<b>References:</b> [UIConfig](./teamsfx-api.uiconfig.md)
 

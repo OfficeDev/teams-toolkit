@@ -2,14 +2,14 @@
 
 [Home](./index.md) &gt; [@microsoft/teamsfx-api](./teamsfx-api.md) &gt; [SelectFileConfig](./teamsfx-api.selectfileconfig.md)
 
-## SelectFileConfig interface
+## SelectFileConfig type
 
 single file selector config
 
 <b>Signature:</b>
 
 ```typescript
-export interface SelectFileConfig extends UIConfig<string> 
+export declare type SelectFileConfig = UIConfig<string>;
 ```
-<b>Extends:</b> [UIConfig](./teamsfx-api.uiconfig.md)<!-- -->&lt;string&gt;
+<b>References:</b> [UIConfig](./teamsfx-api.uiconfig.md)
 

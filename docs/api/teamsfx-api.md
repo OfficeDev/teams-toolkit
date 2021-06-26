@@ -102,9 +102,6 @@
 |  [ProjectSettings](./teamsfx-api.projectsettings.md) | project static settings |
 |  [ProjectStates](./teamsfx-api.projectstates.md) | project dynamic states |
 |  [RunnableTask](./teamsfx-api.runnabletask.md) | Definition of a runnable task |
-|  [SelectFileConfig](./teamsfx-api.selectfileconfig.md) | single file selector config |
-|  [SelectFilesConfig](./teamsfx-api.selectfilesconfig.md) | multiple files selector config |
-|  [SelectFolderConfig](./teamsfx-api.selectfolderconfig.md) | folder selector config |
 |  [SingleFileQuestion](./teamsfx-api.singlefilequestion.md) | Definition of single file selection |
 |  [SingleSelectConfig](./teamsfx-api.singleselectconfig.md) | single selection UI config |
 |  [SingleSelectQuestion](./teamsfx-api.singleselectquestion.md) | Definition of single selection question |
@@ -161,8 +158,11 @@
 |  [ResourceConfigs](./teamsfx-api.resourceconfigs.md) |  |
 |  [ResourceTemplate](./teamsfx-api.resourcetemplate.md) |  |
 |  [ResourceTemplates](./teamsfx-api.resourcetemplates.md) |  |
+|  [SelectFileConfig](./teamsfx-api.selectfileconfig.md) | single file selector config |
 |  [SelectFileResult](./teamsfx-api.selectfileresult.md) |  |
+|  [SelectFilesConfig](./teamsfx-api.selectfilesconfig.md) | multiple files selector config |
 |  [SelectFilesResult](./teamsfx-api.selectfilesresult.md) |  |
+|  [SelectFolderConfig](./teamsfx-api.selectfolderconfig.md) | folder selector config |
 |  [SelectFolderResult](./teamsfx-api.selectfolderresult.md) |  |
 |  [SingleSelectResult](./teamsfx-api.singleselectresult.md) |  |
 |  [SolutionConfig](./teamsfx-api.solutionconfig.md) |  |

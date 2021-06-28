@@ -23,6 +23,8 @@
       "projectDescription": "Manage your project",
       "createProjectTitle": "Create New Project",
       "createProjectDescription": "Create a new Project for Teams App",
+      "debugTitle": "Run and Debug",
+      "debugDescription": "Run and Debug",
       "addCapabilitiesTitle": "Add Capabilities",
       "addCapabilitiesDescription": "Add Capabilities",
       "addResourcesTitle": "Add Resources",

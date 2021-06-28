@@ -17,7 +17,7 @@ import { openWelcomePageAfterExtensionInstallation } from "./controls/openWelcom
 import { VsCodeUI } from "./qm/vsc_ui";
 import { exp } from "./exp";
 
-export let VS_CODE_UI:VsCodeUI;
+export let VS_CODE_UI: VsCodeUI;
 
 export async function activate(context: vscode.ExtensionContext) {
   VsCodeLogInstance.info(StringResources.vsc.extension.activate);
@@ -36,7 +36,9 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(createCmd);
 
-  // 1.2 Register the creating command.
+  const debugCmd = vscode.commands.registerCommand("fx-extension.debug", handlers.debugHandler);
+  context.subscriptions.push(debugCmd);
+
   const updateCmd = vscode.commands.registerCommand(
     "fx-extension.update",
     handlers.addResourceHandler
@@ -78,7 +80,7 @@ export async function activate(context: vscode.ExtensionContext) {
     handlers.publishHandler
   );
   context.subscriptions.push(publishCmd);
- 
+
   // 1.7 validate dependencies command (hide from UI)
   const validateDependenciesCmd = vscode.commands.registerCommand(
     "fx-extension.validate-dependencies",

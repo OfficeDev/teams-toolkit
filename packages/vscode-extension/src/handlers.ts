@@ -164,6 +164,11 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<null
   return await runCommand(Stage.create);
 }
 
+export function debugHandler(args?: any[]) {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.NavigateToDebug, getTriggerFromProperty(args));
+  vscode.commands.executeCommand("workbench.view.debug");
+}
+
 export async function addResourceHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddResourceStart, getTriggerFromProperty(args));
   const func: Func = {
@@ -608,7 +613,7 @@ export async function openAzureAccountHandler() {
 }
 
 export async function cmdHdlLoadTreeView(context: ExtensionContext) {
-  const disposables = TreeViewManagerInstance.registerTreeViews();
+  const disposables = await TreeViewManagerInstance.registerTreeViews();
   context.subscriptions.push(...disposables);
 
   // Register SignOut tree view command

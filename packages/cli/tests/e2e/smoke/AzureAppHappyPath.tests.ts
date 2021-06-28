@@ -77,8 +77,7 @@ describe("Azure App Happy Path", function () {
 
     // provision
     await execAsyncWithRetry(
-      `teamsfx provision --sql-admin-name Abc123321 --sql-password Cab232332 --sql-confirm-password Cab232332`
-      + ` --sql-skip-adding-user false`,
+      `teamsfx provision --sql-admin-name Abc123321 --sql-password Cab232332 --sql-confirm-password Cab232332`,
       {
         cwd: projectPath,
         env: process.env,

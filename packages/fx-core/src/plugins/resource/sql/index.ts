@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 import {
   err,
-  Func,
   FxError,
   Plugin,
   PluginContext,
@@ -40,10 +39,6 @@ export class SqlPlugin implements Plugin {
       () => this.sqlImpl.postProvision(ctx),
       ctx
     );
-  }
-
-  public async callFunc(func: Func, ctx: PluginContext): Promise<SqlResult> {
-    return await this.sqlImpl.callFunc(func, ctx);
   }
 
   public async getQuestions(
@@ -87,7 +82,8 @@ export class SqlPlugin implements Plugin {
         );
       }
       const errorCode = res.error.source + "." + res.error.name;
-      const errorType = res.error instanceof SystemError ? Telemetry.systemError : Telemetry.userError;
+      const errorType =
+        res.error instanceof SystemError ? Telemetry.systemError : Telemetry.userError;
       TelemetryUtils.init(ctx);
       let errorMessage = res.error.message;
       if (res.error.innerError) {

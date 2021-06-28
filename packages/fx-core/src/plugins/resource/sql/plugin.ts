@@ -7,9 +7,7 @@ import {
   ok,
   Stage,
   QTreeNode,
-  Func,
   Platform,
-  Inputs,
 } from "@microsoft/teamsfx-api";
 import { ManagementClient } from "./managementClient";
 import { ErrorMessage } from "./errors";
@@ -22,17 +20,7 @@ import { formatEndpoint, parseToken, UserType } from "./utils/commonUtils";
 import { Constants, HelpLinks, Telemetry } from "./constants";
 import { Message } from "./utils/message";
 import { TelemetryUtils } from "./utils/telemetryUtils";
-import {
-  adminNameQuestion,
-  adminPasswordQuestion,
-  confirmPasswordQuestion,
-  skipAddingUserQuestion,
-} from "./questions";
-import {
-  sqlConfirmPasswordValidatorGenerator,
-  sqlPasswordValidatorGenerator,
-  sqlUserNameValidator,
-} from "./utils/checkInput";
+import { adminNameQuestion, adminPasswordQuestion, confirmPasswordQuestion } from "./questions";
 
 export class SqlPluginImpl {
   config: SqlConfig = new SqlConfig();
@@ -82,7 +70,6 @@ export class SqlPluginImpl {
         sqlNode.addChild(new QTreeNode(adminNameQuestion));
         sqlNode.addChild(new QTreeNode(adminPasswordQuestion));
         sqlNode.addChild(new QTreeNode(confirmPasswordQuestion));
-        sqlNode.addChild(skipAddingUserQuestion);
         return ok(sqlNode);
       }
       this.init(ctx);
@@ -98,31 +85,8 @@ export class SqlPluginImpl {
         sqlNode.addChild(new QTreeNode(confirmPasswordQuestion));
       }
 
-      if (ctx.answers?.platform === Platform.CLI) {
-        sqlNode.addChild(skipAddingUserQuestion);
-      }
       return ok(sqlNode);
     }
-    return ok(undefined);
-  }
-
-  public async callFunc(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {
-    if (func.method === Constants.questionKey.adminName) {
-      const name = func.params as string;
-      const res = sqlUserNameValidator(name);
-      return ok(res);
-    } else if (func.method === Constants.questionKey.adminPassword) {
-      const password = func.params as string;
-      const name = ctx.answers![Constants.questionKey.adminName] as string;
-      const res = sqlPasswordValidatorGenerator(name)(password);
-      return ok(res);
-    } else if (func.method === Constants.questionKey.confirmPassword) {
-      const confirm = func.params as string;
-      const password = ctx.answers![Constants.questionKey.adminPassword] as string;
-      const res = sqlConfirmPasswordValidatorGenerator(password)(confirm);
-      return ok(res);
-    }
-
     return ok(undefined);
   }
 
@@ -134,14 +98,15 @@ export class SqlPluginImpl {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendEvent(Telemetry.stage.preProvision + Telemetry.startSuffix);
 
-    this.config.skipAddingUser = ctx.config.get(Constants.skipAddingUser) as boolean;
-    if (ctx.answers?.platform === Platform.CLI) {
-      const skipAddingUser = ctx.answers![Constants.questionKey.skipAddingUser] as string;
-      if (skipAddingUser) {
-        this.config.skipAddingUser = skipAddingUser === "true" ? true : false;
-        ctx.config.set(Constants.skipAddingUser, this.config.skipAddingUser);
-      }
+    const skipAddingUser = ctx.config.get(Constants.skipAddingUser);
+    if (skipAddingUser === undefined) {
+      this.config.skipAddingUser = (await ctx.azureAccountProvider?.getIdentityCredentialAsync())
+        ? false
+        : true;
+    } else {
+      this.config.skipAddingUser = skipAddingUser;
     }
+
     // sql server name
     ctx.logProvider?.debug(Message.endpoint(this.config.sqlEndpoint));
 
@@ -227,10 +192,11 @@ export class SqlPluginImpl {
     ctx.logProvider?.info(Message.startPostProvision);
     DialogUtils.init(ctx, ProgressTitle.PostProvision, ProgressTitle.PostProvisionSteps);
     TelemetryUtils.init(ctx);
-    TelemetryUtils.sendEvent(Telemetry.stage.postProvision + Telemetry.startSuffix,
-      undefined,
-      { [Telemetry.properties.skipAddingUser]: this.config.skipAddingUser ? Telemetry.valueYes : Telemetry.valueNo }
-    );
+    TelemetryUtils.sendEvent(Telemetry.stage.postProvision + Telemetry.startSuffix, undefined, {
+      [Telemetry.properties.skipAddingUser]: this.config.skipAddingUser
+        ? Telemetry.valueYes
+        : Telemetry.valueNo,
+    });
 
     const sqlClient = new SqlClient(ctx, this.config);
     const managementClient: ManagementClient = new ManagementClient(ctx, this.config);
@@ -297,10 +263,11 @@ export class SqlPluginImpl {
 
     await managementClient.deleteLocalFirewallRule();
 
-    TelemetryUtils.sendEvent(Telemetry.stage.postProvision,
-      true,
-      { [Telemetry.properties.skipAddingUser]: this.config.skipAddingUser ? Telemetry.valueYes : Telemetry.valueNo }
-    );
+    TelemetryUtils.sendEvent(Telemetry.stage.postProvision, true, {
+      [Telemetry.properties.skipAddingUser]: this.config.skipAddingUser
+        ? Telemetry.valueYes
+        : Telemetry.valueNo,
+    });
     ctx.logProvider?.info(Message.endPostProvision);
     await DialogUtils.progressBar?.end();
     return ok(undefined);

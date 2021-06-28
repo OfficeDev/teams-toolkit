@@ -148,7 +148,11 @@ export default class Preview extends YargsCommand {
       return result;
     }
 
-    // TODO: check ports
+    /* === check ports === */
+    const portsInUse = await commonUtils.getPortsInUse(includeFrontend, includeBackend, includeBot);
+    if (portsInUse.length > 0) {
+      return err(errors.PortsAlreadyInUse(portsInUse));
+    }
 
     /* === start services === */
     result = await this.startServices(

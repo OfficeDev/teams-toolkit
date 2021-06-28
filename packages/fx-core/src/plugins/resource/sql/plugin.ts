@@ -8,6 +8,7 @@ import {
   Stage,
   QTreeNode,
   Platform,
+  Func,
 } from "@microsoft/teamsfx-api";
 import { ManagementClient } from "./managementClient";
 import { ErrorMessage } from "./errors";
@@ -21,6 +22,11 @@ import { Constants, HelpLinks, Telemetry } from "./constants";
 import { Message } from "./utils/message";
 import { TelemetryUtils } from "./utils/telemetryUtils";
 import { adminNameQuestion, adminPasswordQuestion, confirmPasswordQuestion } from "./questions";
+import {
+  sqlConfirmPasswordValidatorGenerator,
+  sqlPasswordValidatorGenerator,
+  sqlUserNameValidator,
+} from "./utils/checkInput";
 
 export class SqlPluginImpl {
   config: SqlConfig = new SqlConfig();
@@ -87,6 +93,26 @@ export class SqlPluginImpl {
 
       return ok(sqlNode);
     }
+    return ok(undefined);
+  }
+
+  public async callFunc(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {
+    if (func.method === Constants.questionKey.adminName) {
+      const name = func.params as string;
+      const res = sqlUserNameValidator(name);
+      return ok(res);
+    } else if (func.method === Constants.questionKey.adminPassword) {
+      const password = func.params as string;
+      const name = ctx.answers![Constants.questionKey.adminName] as string;
+      const res = sqlPasswordValidatorGenerator(name)(password);
+      return ok(res);
+    } else if (func.method === Constants.questionKey.confirmPassword) {
+      const confirm = func.params as string;
+      const password = ctx.answers![Constants.questionKey.adminPassword] as string;
+      const res = sqlConfirmPasswordValidatorGenerator(password)(confirm);
+      return ok(res);
+    }
+
     return ok(undefined);
   }
 

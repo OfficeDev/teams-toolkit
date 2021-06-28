@@ -14,7 +14,7 @@ import {
   OptionItem,
   MultiSelectQuestion,
   SingleSelectQuestion,
-  StaticOptions
+  StaticOptions,
 } from "@microsoft/teamsfx-api";
 
 import * as constants from "./constants";
@@ -24,6 +24,14 @@ export function NotSupportedProjectType(): UserError {
     new Error(`Project type not supported`),
     constants.cliSource,
     "NotSupportedProjectType"
+  );
+}
+
+export function CannotDeployPlugin(pluginName: string): UserError {
+  return returnUserError(
+    new Error(`Cannot deploy ${pluginName} since it is not contained in the project`),
+    constants.cliSource,
+    "CannotDeployPlugin"
   );
 }
 

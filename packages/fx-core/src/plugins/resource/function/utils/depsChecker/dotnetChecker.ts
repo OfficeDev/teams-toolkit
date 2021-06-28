@@ -272,7 +272,9 @@ export class DotnetChecker implements IDepsChecker {
         }, ` +
         `command = '${command.join(" ")}', options = '${JSON.stringify(
           options
-        )}', error = '${error}', stdout = '${error.stdout}', stderr = '${error.stderr}', timecost = '${timecost}s'`;
+        )}', error = '${error}', stdout = '${error.stdout}', stderr = '${
+          error.stderr
+        }', timecost = '${timecost}s'`;
 
       this._telemetry.sendSystemErrorEvent(
         DepsCheckerEvent.dotnetInstallScriptError,
@@ -400,7 +402,9 @@ export class DotnetChecker implements IDepsChecker {
     dotnetInstallDir: string
   ): Promise<string[]> {
     const command = [
-      isWindows() ? DotnetChecker.escapeFilePath(this.getDotnetInstallScriptPath()) : this.getDotnetInstallScriptPath(),
+      isWindows()
+        ? DotnetChecker.escapeFilePath(this.getDotnetInstallScriptPath())
+        : this.getDotnetInstallScriptPath(),
       "-InstallDir",
       isWindows() ? DotnetChecker.escapeFilePath(dotnetInstallDir) : dotnetInstallDir,
       "-Channel",
@@ -453,7 +457,8 @@ export class DotnetChecker implements IDepsChecker {
         "new",
         "console",
         "--output",
-        `${samplePath}`
+        `${samplePath}`,
+        "--force"
       );
       actual = await cpUtils.executeCommand(
         undefined,

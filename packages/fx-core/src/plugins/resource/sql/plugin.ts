@@ -104,7 +104,7 @@ export class SqlPluginImpl {
         ? false
         : true;
     } else {
-      this.config.skipAddingUser = skipAddingUser;
+      this.config.skipAddingUser = skipAddingUser as boolean;
     }
 
     // sql server name

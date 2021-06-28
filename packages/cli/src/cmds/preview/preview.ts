@@ -8,6 +8,7 @@ import * as fs from "fs-extra";
 import { Argv } from "yargs";
 import {
   AzureSolutionSettings,
+  Colors,
   err,
   FxError,
   Inputs,
@@ -490,7 +491,18 @@ export default class Preview extends YargsCommand {
     }
 
     const sideloadingBar = DialogManagerInstance.createProgressBar(constants.sideloadingTitle, 1);
-    await sideloadingBar.start(`${constants.sideloadingStartMessage}${sideloadingUrl}`);
+    await sideloadingBar.start(`${constants.sideloadingStartMessage}`);
+    const message = [
+      {
+        content: `sideloading url: `,
+        color: Colors.WHITE,
+      },
+      {
+        content: sideloadingUrl,
+        color: Colors.BRIGHT_CYAN,
+      },
+    ];
+    cliLogger.necessaryLog(LogLevel.Info, utils.getColorizedString(message));
     await open(sideloadingUrl);
     await sideloadingBar.next(constants.sideloadingSuccessMessage);
     await sideloadingBar.end();

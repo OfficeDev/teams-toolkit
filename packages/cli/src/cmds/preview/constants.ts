@@ -71,7 +71,7 @@ export const ngrokStartStartMessage = `execute 'ngrok http' under ${botFolderNam
 export const ngrokStartSuccessMessage = "ngrok started successfully.";
 
 export const sideloadingTitle = "sideloading";
-export const sideloadingStartMessage = "open Teams web client: ";
+export const sideloadingStartMessage = "open Teams web client.";
 export const sideloadingSuccessMessage = "Teams web client opened successfully.";
 
 export const frontendLocalEnvPrefix = "FRONTEND_";

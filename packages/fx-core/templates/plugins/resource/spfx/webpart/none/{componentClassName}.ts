@@ -24,7 +24,7 @@ export default class <%= componentClassName %> extends BaseClientSideWebPart<I<%
               <span class="${ styles.title }">Welcome to SharePoint!</span>
               <p class="${ styles.subTitle }">Customize SharePoint experiences using Web Parts.</p>
               <p class="${ styles.description }">${escape(this.properties.description)}</p>
-              <a href="https://aka.ms/spfx" class="${ styles.button }">
+              <a href="https://aka.ms/spfx"  target="_blank" class="${ styles.button }">
                 <span class="${ styles.label }">Learn more</span>
               </a>
             </div>

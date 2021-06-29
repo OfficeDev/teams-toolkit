@@ -92,10 +92,11 @@ export const templates: {
   {
     tags: ["Easy QnA", "Bot", "JS"],
     title: "FAQ Plus",
-    description: "Conversational Bot which answers common questions, looping human when bots unable to help",
+    description:
+      "Conversational Bot which answers common questions, looping human when bots unable to help",
     sampleAppName: "faq-plus",
-    sampleAppUrl: "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip"
-  }
+    sampleAppUrl: "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip",
+  },
 ];
 
 export enum CLILogLevel {
@@ -103,3 +104,6 @@ export enum CLILogLevel {
   verbose,
   debug,
 }
+
+export const sqlPasswordQustionName = "sql-password";
+export const sqlPasswordConfirmQuestionName = "sql-confirm-password";

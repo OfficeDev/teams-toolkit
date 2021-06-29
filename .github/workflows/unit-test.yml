@@ -101,20 +101,20 @@ jobs:
     steps:
       - name: compare coverage between source branch and target branch
         run: |
-          if [ ${{ needs.source-branch-test.outputs.coverages }} -eq "{}"]; then
+          if [ '${{ needs.source-branch-test.outputs.coverages }}' == "{}"]; then
             exit 0
           fi
 
-          if [ ${{ needs.target-branch-test.outputs.coverages }} -eq "{}"]; then
+          if [ '${{ needs.target-branch-test.outputs.coverages }}' == "{}"]; then
             exit 0
           fi
 
-          mapfile -t source < <(echo ${{ needs.source-branch-test.outputs.coverages }} | jq -r 'keys[]' )
+          mapfile -t source < <(echo '${{ needs.source-branch-test.outputs.coverages }}' | jq -r 'keys[]' )
 
           for i in ${source[@]}; do
-            if [[ $(echo ${{ needs.target-branch-test.outputs.coverages }} | jq .\"$i\") != "null" ]]; then
-              targetpct=$(echo ${{ needs.target-branch-test.outputs.coverages }} | jq .\"$i\".lines.pct) 
-              sourcepct=$(echo ${{ needs.source-branch-test.outputs.coverages }} | jq .\"$i\".lines.pct) 
+            if [[ $(echo '${{ needs.target-branch-test.outputs.coverages }}' | jq .\"$i\") != "null" ]]; then
+              targetpct=$(echo '${{ needs.target-branch-test.outputs.coverages }}' | jq .\"$i\".lines.pct) 
+              sourcepct=$(echo '${{ needs.source-branch-test.outputs.coverages }}' | jq .\"$i\".lines.pct) 
               if (( $(echo "$targetpct > $sourcepct" | bc -l ) )); then
                 printf "test coverage decreased: [target]%s, [source]%s\n"  $targetpct $sourcepct
                 exit 1

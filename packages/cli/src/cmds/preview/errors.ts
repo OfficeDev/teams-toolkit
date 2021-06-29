@@ -4,6 +4,7 @@
 "use strict";
 
 import { FxError, returnUserError, UserError } from "@microsoft/teamsfx-api";
+import * as util from "util";
 
 import * as constants from "../../constants";
 
@@ -60,4 +61,15 @@ export function TeamsAppIdNotExists(): UserError {
     constants.cliSource,
     "TeamsAppIdNotExists"
   );
+}
+
+export function PortsAlreadyInUse(portsInUse: number[]): UserError {
+  const message =
+    portsInUse.length > 1
+      ? util.format(
+          "Ports: %s are already in use. Close these ports and try again.",
+          portsInUse.join(", ")
+        )
+      : util.format("Port: %s is already in use. Close this port and try again.", portsInUse[0]);
+  return returnUserError(new Error(message), constants.cliSource, "PortsAlreadyInUse");
 }

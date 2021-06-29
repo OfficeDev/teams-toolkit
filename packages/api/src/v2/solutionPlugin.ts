@@ -3,7 +3,8 @@
 "use strict";
 
 import { Result } from "neverthrow";  
-import { Context, EnvMeta, FunctionRouter, FxError, Inputs, QTreeNode, Stage, TokenProvider, Func, Json, Void } from "../index";
+import { EnvMeta, FunctionRouter, FxError, Inputs, QTreeNode, Stage, TokenProvider, Func, Json, Void } from "../index";
+import { Context } from "./types";
 
  
 export interface SolutionProvisionContext extends Context {

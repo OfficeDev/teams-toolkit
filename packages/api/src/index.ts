@@ -13,5 +13,6 @@ export * from "./manifest";
 export * from "./utils";
 export * from "./error";
 export * from "./qm";
+export * as v2 from "./v2";
 
 export * from "neverthrow";

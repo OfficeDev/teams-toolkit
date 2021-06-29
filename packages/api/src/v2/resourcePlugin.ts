@@ -3,7 +3,6 @@
 
 import { Result } from "neverthrow";
 import {
-  Context,
   EnvMeta,
   FunctionRouter,
   FxError,
@@ -15,6 +14,7 @@ import {
   Func,
   Json,
 } from "../index";
+import { Context } from "./types";
 
 export interface ResourceScaffoldResult {
   provisionTemplate: Json;
@@ -23,7 +23,7 @@ export interface ResourceScaffoldResult {
 
 export interface ResourceProvisionContext extends Context {
   envMeta: EnvMeta;
-  tokenProvider: TokenProvider;
+  
   solutionConfig: Json;
   resourceConfig: Json;
 }
@@ -31,6 +31,7 @@ export interface ResourceProvisionContext extends Context {
 export type ResourceDeployContext = ResourceProvisionContext;
  
 export interface ResourceConfigureContext extends ResourceProvisionContext {
+  deploymentConfigs: Json;
   provisionConfigs: Record<string, Json>;
 }
 
@@ -45,28 +46,47 @@ export interface ResourceProvisionResult{
   stateValues: Record<string, string>;
 } 
 
+type DeploymentConfig = Json;
+
+/**
+ * Interface for ResourcePlugins. a ResourcePlugin can hook into different lifecycles by implementing the corresponding API
+ * All lifecycles follows the same pattern of returning a Promise<Result<T, FxError>> for error handling.
+ */
 export interface ResourcePlugin {
 
   name: string;
   displayName: string;
 
-  scaffoldSourceCode?: ( ctx: Context,  inputs: Inputs ) => Promise<Result<Void, FxError>>;
+  /**
+   * scaffold source code on disk
+   * @param {Readonly<Context>} ctx - plugin's runtime context
+   * @param {Inputs} inputs - 
+   * 
+   * @return {Result<Void, FxError>} It is returning Void because side effect is expected.
+   */
+  scaffoldSourceCode?: (ctx: Readonly<Context>,  inputs: Inputs) => Promise<Result<Void, FxError>>;
 
-  scaffoldResourceTemplate?: ( ctx: Context,  inputs: Inputs ) => Promise<Result<ResourceScaffoldResult, FxError>>;
+  scaffoldResourceTemplate?: (ctx: Readonly<Context>,  inputs: Inputs) => Promise<Result<ResourceScaffoldResult, FxError>>;
 
-  provisionResource?: ( ctx: ResourceProvisionContext, inputs: Inputs ) => Promise<Result<ResourceProvisionResult, FxError>>;
+  provisionResource?: (ctx: Readonly<Context>, tokenProvider: TokenProvider, inputs: Inputs) => Promise<Result<ResourceProvisionResult, FxError>>;
 
-  configureResource?: ( ctx: ResourceConfigureContext ) => Promise<Result<Void, FxError>>;
+  // Returns a new Deployment config json
+  configureResource?: ( ctx: Readonly<ResourceConfigureContext>) => Promise<Result<DeploymentConfig, FxError>>;
 
-  buildArtifacts?: ( ctx: Context, inputs: Inputs ) => Promise<Result<Void, FxError>>;
+  // build code or build a teams app package
+  build?: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
 
-  deployArtifacts?: ( ctx: ResourceDeployContext, inputs: Inputs ) => Promise<Result<Void, FxError>>;
+  // Building teams package is now defined as a user task
+  package?: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
 
-  publishApplication?: ( ctx: ResourcePublishContext,  inputs: Inputs ) => Promise<Result<Void, FxError>>;
+  deploy?: (ctx: ResourceDeployContext, inputs: Inputs) => Promise<Result<Void, FxError>>;
+  
+  publishApplication?: (ctx: ResourcePublishContext, inputs: Inputs) => Promise<Result<Void, FxError>>;
 
-  getQuestionsForLifecycleTask?: (ask: Stage, inputs: Inputs,  ctx: Context ) => Promise<Result<QTreeNode | undefined, FxError>>;
+  getQuestionsForLifecycleTask?: (ctx: Context, ask: Stage, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
 
-  getQuestionsForUserTask?: ( router: FunctionRouter, inputs: Inputs, ctx: Context) => Promise<Result<QTreeNode | undefined, FxError>>;
+  getQuestionsForUserTask?: (ctx: Context, router: FunctionRouter, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
 
-  executeUserTask?: ( func: Func, inputs: Inputs,  ctx: Context ) => Promise<Result<unknown, FxError>>;
+  // Building teams package is now defined as a user task
+  executeUserTask?: (ctx: Context, func: Func, inputs: Inputs) => Promise<Result<unknown, FxError>>;
 }

@@ -7,11 +7,42 @@ import {
   PluginContext,
   TeamsAppManifest,
   Platform,
+  LogProvider,
   DialogMsg,
   DialogType,
   QuestionType,
+  ProjectSettings,
+  IComposeExtension,
+  IBot,
 } from "@microsoft/teamsfx-api";
 import { AppStudioClient } from "./appStudio";
+import {
+  IAppDefinition,
+  IMessagingExtension,
+  IAppDefinitionBot,
+  ITeamCommand,
+  IPersonalCommand,
+  IGroupChatCommand,
+  ICommand,
+  ICommandList,
+} from "../../solution/fx-solution/appstudio/interface";
+import {
+  BotOptionItem,
+  HostTypeOptionAzure,
+  MessageExtensionItem,
+  TabOptionItem,
+} from "../../solution/fx-solution/question";
+import {
+  TEAMS_APP_MANIFEST_TEMPLATE,
+  CONFIGURABLE_TABS_TPL,
+  STATIC_TABS_TPL,
+  BOTS_TPL,
+  COMPOSE_EXTENSIONS_TPL,
+  TEAMS_APP_SHORT_NAME_MAX_LENGTH,
+  DEFAULT_DEVELOPER_WEBSITE_URL,
+  DEFAULT_DEVELOPER_TERM_OF_USE_URL,
+  DEFAULT_DEVELOPER_PRIVACY_URL,
+} from "../../solution/fx-solution/constants";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
 import { Constants } from "./constants";
@@ -21,9 +52,188 @@ import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
 
 export class AppStudioPluginImpl {
+  public async createApp(
+    appDefinition: IAppDefinition,
+    appStudioToken: string,
+    logProvider?: LogProvider,
+    colorIconContent?: string, // base64 encoded
+    outlineIconContent?: string // base64 encoded
+  ): Promise<IAppDefinition | undefined> {
+    return await AppStudioClient.createApp(
+      appDefinition,
+      appStudioToken,
+      logProvider,
+      colorIconContent,
+      outlineIconContent
+    );
+  }
+
+  public async updateApp(
+    teamsAppId: string,
+    appDefinition: IAppDefinition,
+    appStudioToken: string,
+    logProvider?: LogProvider,
+    colorIconContent?: string,
+    outlineIconContent?: string
+  ): Promise<IAppDefinition> {
+    return await AppStudioClient.updateApp(
+      teamsAppId,
+      appDefinition,
+      appStudioToken,
+      logProvider,
+      colorIconContent,
+      outlineIconContent
+    );
+  }
+
+  /**
+   * ask app common questions to generate app manifest
+   */
+  public async createManifest(settings: ProjectSettings): Promise<TeamsAppManifest | undefined> {
+    const solutionSettings: AzureSolutionSettings =
+      settings.solutionSettings as AzureSolutionSettings;
+    if (
+      !solutionSettings.capabilities ||
+      (!solutionSettings.capabilities.includes(BotOptionItem.id) &&
+        !solutionSettings.capabilities.includes(MessageExtensionItem.id) &&
+        !solutionSettings.capabilities.includes(TabOptionItem.id))
+    ) {
+      throw new Error(`Invalid capability: ${solutionSettings.capabilities}`);
+    }
+    if (
+      HostTypeOptionAzure.id === solutionSettings.hostType ||
+      solutionSettings.capabilities.includes(BotOptionItem.id) ||
+      solutionSettings.capabilities.includes(MessageExtensionItem.id)
+    ) {
+      let manifestString = TEAMS_APP_MANIFEST_TEMPLATE;
+      manifestString = this.replaceConfigValue(manifestString, "appName", settings.appName);
+      manifestString = this.replaceConfigValue(manifestString, "version", "1.0.0");
+      const manifest: TeamsAppManifest = JSON.parse(manifestString);
+      if (solutionSettings.capabilities.includes(TabOptionItem.id)) {
+        manifest.staticTabs = STATIC_TABS_TPL;
+        manifest.configurableTabs = CONFIGURABLE_TABS_TPL;
+      }
+      if (solutionSettings.capabilities.includes(BotOptionItem.id)) {
+        manifest.bots = BOTS_TPL;
+      }
+      if (solutionSettings.capabilities.includes(MessageExtensionItem.id)) {
+        manifest.composeExtensions = COMPOSE_EXTENSIONS_TPL;
+      }
+      return manifest;
+    }
+
+    return undefined;
+  }
+
   public async validateManifest(ctx: PluginContext, manifestString: string): Promise<string[]> {
     const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
     return await AppStudioClient.validateManifest(manifestString, appStudioToken!);
+  }
+
+  public getDevAppDefinition(
+    manifest: string,
+    appId: string,
+    domains: string[],
+    webApplicationInfoResource: string,
+    ignoreIcon: boolean,
+    tabEndpoint?: string,
+    appName?: string,
+    version?: string,
+    botId?: string,
+    appNameSuffix?: string
+  ): [IAppDefinition, TeamsAppManifest] {
+    if (appName) {
+      manifest = this.replaceConfigValue(manifest, "appName", appName);
+    }
+    if (version) {
+      manifest = this.replaceConfigValue(manifest, "version", version);
+    }
+    if (botId) {
+      manifest = this.replaceConfigValue(manifest, "botId", botId);
+    }
+
+    if (tabEndpoint) {
+      manifest = this.replaceConfigValue(manifest, "baseUrl", tabEndpoint);
+    }
+
+    manifest = this.replaceConfigValue(manifest, "appClientId", appId);
+    manifest = this.replaceConfigValue(manifest, "appid", appId);
+    manifest = this.replaceConfigValue(
+      manifest,
+      "webApplicationInfoResource",
+      webApplicationInfoResource
+    );
+
+    const updatedManifest = JSON.parse(manifest) as TeamsAppManifest;
+
+    for (const domain of domains) {
+      updatedManifest.validDomains?.push(domain);
+    }
+
+    if (!tabEndpoint && updatedManifest.developer) {
+      updatedManifest.developer.websiteUrl = DEFAULT_DEVELOPER_WEBSITE_URL;
+      updatedManifest.developer.termsOfUseUrl = DEFAULT_DEVELOPER_TERM_OF_USE_URL;
+      updatedManifest.developer.privacyUrl = DEFAULT_DEVELOPER_PRIVACY_URL;
+    }
+
+    const appDefinition = this.convertToAppDefinition(updatedManifest, ignoreIcon);
+    // For local debug teams app, the app name will have a suffix to differentiate from remote teams app
+    // if the resulting short name length doesn't exceeds limit.
+    if (appNameSuffix) {
+      const shortNameLength = appNameSuffix.length + (appDefinition.shortName?.length ?? 0);
+      if (shortNameLength <= TEAMS_APP_SHORT_NAME_MAX_LENGTH) {
+        appDefinition.shortName = appDefinition.shortName + appNameSuffix;
+        appDefinition.appName = appDefinition.shortName;
+      }
+    }
+
+    return [appDefinition, updatedManifest];
+  }
+
+  public convertToAppDefinition(
+    appManifest: TeamsAppManifest,
+    ignoreIcon: boolean
+  ): IAppDefinition {
+    const appDefinition: IAppDefinition = {
+      appName: appManifest.name.short,
+      validDomains: appManifest.validDomains,
+    };
+    appDefinition.appId = appManifest.id;
+
+    appDefinition.appName = appManifest.name.short;
+    appDefinition.shortName = appManifest.name.short;
+    appDefinition.version = appManifest.version;
+
+    appDefinition.packageName = appManifest.packageName;
+    appDefinition.websiteUrl = appManifest.developer.websiteUrl;
+    appDefinition.privacyUrl = appManifest.developer.privacyUrl;
+    appDefinition.termsOfUseUrl = appManifest.developer.termsOfUseUrl;
+
+    appDefinition.shortDescription = appManifest.description.short;
+    appDefinition.longDescription = appManifest.description.full;
+
+    appDefinition.developerName = appManifest.developer.name;
+
+    appDefinition.staticTabs = appManifest.staticTabs;
+    appDefinition.configurableTabs = appManifest.configurableTabs;
+
+    appDefinition.bots = this.convertToAppDefinitionBots(appManifest);
+    appDefinition.messagingExtensions = this.convertToAppDefinitionMessagingExtensions(appManifest);
+
+    if (appManifest.webApplicationInfo) {
+      appDefinition.webApplicationInfoId = appManifest.webApplicationInfo.id;
+      appDefinition.webApplicationInfoResource = appManifest.webApplicationInfo.resource;
+    }
+
+    if (!ignoreIcon && appManifest.icons.color) {
+      appDefinition.colorIcon = appManifest.icons.color;
+    }
+
+    if (!ignoreIcon && appManifest.icons.outline) {
+      appDefinition.outlineIcon = appManifest.icons.outline;
+    }
+
+    return appDefinition;
   }
 
   public async buildTeamsAppPackage(
@@ -73,7 +283,7 @@ export class AppStudioPluginImpl {
     return zipFileName;
   }
 
-  public async publish(ctx: PluginContext): Promise<{ name: string; id: string, update: boolean }> {
+  public async publish(ctx: PluginContext): Promise<{ name: string; id: string; update: boolean }> {
     let appDirectory: string | undefined = undefined;
     let manifestString: string | undefined = undefined;
 
@@ -186,7 +396,7 @@ export class AppStudioPluginImpl {
       await publishProgress?.next(
         `Updating app definition for app ${remoteTeamsAppId} in app studio`
       );
-      const appDefinition = AppStudio.convertToAppDefinition(manifest, true);
+      const appDefinition = this.convertToAppDefinition(manifest, true);
       let appStudioToken = await ctx?.appStudioToken?.getAccessToken();
       const colorIconContent =
         manifest.icons.color && !manifest.icons.color.startsWith("https://")
@@ -196,7 +406,7 @@ export class AppStudioPluginImpl {
         manifest.icons.outline && !manifest.icons.outline.startsWith("https://")
           ? (await fs.readFile(`${appDirectory}/${manifest.icons.outline}`)).toString("base64")
           : undefined;
-      await AppStudio.updateApp(
+      await this.updateApp(
         remoteTeamsAppId!,
         appDefinition,
         appStudioToken!,
@@ -244,5 +454,80 @@ export class AppStudioPluginImpl {
     } catch (error) {
       return false;
     }
+  }
+
+  private replaceConfigValue(config: string, id: string, value: string): string {
+    if (config && id && value) {
+      const idTag = `{${id}}`;
+      while (config.includes(idTag)) {
+        config = config.replace(idTag, value);
+      }
+    }
+
+    return config;
+  }
+
+  private convertToAppDefinitionMessagingExtensions(
+    appManifest: TeamsAppManifest
+  ): IMessagingExtension[] {
+    const messagingExtensions: IMessagingExtension[] = [];
+
+    if (appManifest.composeExtensions) {
+      appManifest.composeExtensions.forEach((ext: IComposeExtension) => {
+        const me: IMessagingExtension = {
+          botId: ext.botId,
+          canUpdateConfiguration: true,
+          commands: ext.commands,
+          messageHandlers: ext.messageHandlers ?? [],
+        };
+
+        messagingExtensions.push(me);
+      });
+    }
+
+    return messagingExtensions;
+  }
+
+  private convertToAppDefinitionBots(appManifest: TeamsAppManifest): IAppDefinitionBot[] {
+    const bots: IAppDefinitionBot[] = [];
+    if (appManifest.bots) {
+      appManifest.bots.forEach((manBot: IBot) => {
+        const teamCommands: ITeamCommand[] = [];
+        const groupCommands: IGroupChatCommand[] = [];
+        const personalCommands: IPersonalCommand[] = [];
+
+        manBot?.commandLists?.forEach((list: ICommandList) => {
+          list.commands.forEach((command: ICommand) => {
+            teamCommands.push({
+              title: command.title,
+              description: command.description,
+            });
+
+            groupCommands.push({
+              title: command.title,
+              description: command.description,
+            });
+
+            personalCommands.push({
+              title: command.title,
+              description: command.description,
+            });
+          });
+        });
+
+        const bot: IAppDefinitionBot = {
+          botId: manBot.botId,
+          isNotificationOnly: manBot.isNotificationOnly ?? false,
+          supportsFiles: manBot.supportsFiles ?? false,
+          scopes: manBot.scopes,
+          teamCommands: teamCommands,
+          groupChatCommands: groupCommands,
+          personalCommands: personalCommands,
+        };
+
+        bots.push(bot);
+      });
+    }
+    return bots;
   }
 }

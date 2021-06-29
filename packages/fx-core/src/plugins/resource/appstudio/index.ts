@@ -6,22 +6,26 @@ import {
   FxError,
   ok,
   err,
+  LogProvider,
   Platform,
   Plugin,
   PluginContext,
   QTreeNode,
   Result,
   Stage,
+  TeamsAppManifest,
   DialogMsg,
   DialogType,
   MsgLevel,
   QuestionType,
   SystemError,
   UserError,
-  Colors
+  ProjectSettings,
+  Colors,
 } from "@microsoft/teamsfx-api";
 import { AppStudioPluginImpl } from "./plugin";
 import { Constants } from "./constants";
+import { IAppDefinition } from "../../solution/fx-solution/appstudio/interface";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
 import { manuallySubmitOption, autoPublishOption } from "./questions";
@@ -44,7 +48,7 @@ export class AppStudioPlugin implements Plugin {
           type: "folder",
           name: Constants.PUBLISH_PATH_QUESTION,
           title: "Please select the folder contains manifest.json and icons",
-          default: `${ctx.root}/.${ConfigFolderName}`
+          default: `${ctx.root}/.${ConfigFolderName}`,
         });
         appStudioQuestions.addChild(appPath);
 
@@ -54,7 +58,7 @@ export class AppStudioPlugin implements Plugin {
           title: "Please input the teams app id in App Studio",
         });
         appStudioQuestions.addChild(remoteTeamsAppId);
-      } else if (ctx.answers?.platform === Platform.VSCode){
+      } else if (ctx.answers?.platform === Platform.VSCode) {
         const buildOrPublish = new QTreeNode({
           name: Constants.BUILD_OR_PUBLISH_QUESTION,
           type: "singleSelect",
@@ -67,6 +71,44 @@ export class AppStudioPlugin implements Plugin {
     }
 
     return ok(appStudioQuestions);
+  }
+
+  public async createApp(
+    appDefinition: IAppDefinition,
+    appStudioToken: string,
+    logProvider?: LogProvider,
+    colorIconContent?: string, // base64 encoded
+    outlineIconContent?: string // base64 encoded
+  ): Promise<IAppDefinition | undefined> {
+    return await this.appStudioPluginImpl.createApp(
+      appDefinition,
+      appStudioToken,
+      logProvider,
+      colorIconContent,
+      outlineIconContent
+    );
+  }
+
+  public async updateApp(
+    teamsAppId: string,
+    appDefinition: IAppDefinition,
+    appStudioToken: string,
+    logProvider?: LogProvider,
+    colorIconContent?: string,
+    outlineIconContent?: string
+  ): Promise<IAppDefinition> {
+    return await this.appStudioPluginImpl.updateApp(
+      teamsAppId,
+      appDefinition,
+      appStudioToken,
+      logProvider,
+      colorIconContent,
+      outlineIconContent
+    );
+  }
+
+  public async createManifest(settings: ProjectSettings): Promise<TeamsAppManifest | undefined> {
+    return await this.appStudioPluginImpl.createManifest(settings);
   }
 
   /**
@@ -92,8 +134,15 @@ export class AppStudioPlugin implements Plugin {
       );
       const properties: { [key: string]: string } = {};
       properties[TelemetryPropertyKey.validationResult] = validationResult.join("\n");
-      const validationFailed = AppStudioResultFactory.UserError(AppStudioError.ValidationFailedError.name, errMessage);
-      TelemetryUtils.sendErrorEvent(TelemetryEventName.validateManifest, validationFailed, properties);
+      const validationFailed = AppStudioResultFactory.UserError(
+        AppStudioError.ValidationFailedError.name,
+        errMessage
+      );
+      TelemetryUtils.sendErrorEvent(
+        TelemetryEventName.validateManifest,
+        validationFailed,
+        properties
+      );
       return err(validationFailed);
     }
     const validationSuccess = "Manifest Validation succeed!";
@@ -105,6 +154,39 @@ export class AppStudioPlugin implements Plugin {
     );
     TelemetryUtils.sendSuccessEvent(TelemetryEventName.validateManifest);
     return ok(validationResult);
+  }
+
+  public getDevAppDefinition(
+    manifest: string,
+    appId: string,
+    domains: string[],
+    webApplicationInfoResource: string,
+    ignoreIcon: boolean,
+    tabEndpoint?: string,
+    appName?: string,
+    version?: string,
+    botId?: string,
+    appNameSuffix?: string
+  ): [IAppDefinition, TeamsAppManifest] {
+    return this.appStudioPluginImpl.getDevAppDefinition(
+      manifest,
+      appId,
+      domains,
+      webApplicationInfoResource,
+      ignoreIcon,
+      tabEndpoint,
+      appName,
+      version,
+      botId,
+      appNameSuffix
+    );
+  }
+
+  public convertToAppDefinition(
+    appManifest: TeamsAppManifest,
+    ignoreIcon: boolean
+  ): IAppDefinition {
+    return this.appStudioPluginImpl.convertToAppDefinition(appManifest, ignoreIcon);
   }
 
   /**
@@ -129,13 +211,9 @@ export class AppStudioPlugin implements Plugin {
         { content: "(√)Done: ", color: Colors.BRIGHT_GREEN },
         { content: "Teams Package ", color: Colors.BRIGHT_WHITE },
         { content: appPackagePath, color: Colors.BRIGHT_MAGENTA },
-        { content: " built successfully!", color: Colors.BRIGHT_WHITE }
-      ]
-      ctx.ui?.showMessage(
-        "info",
-        builtSuccess,
-        false
-      )
+        { content: " built successfully!", color: Colors.BRIGHT_WHITE },
+      ];
+      ctx.ui?.showMessage("info", builtSuccess, false);
       const properties: { [key: string]: string } = {};
       properties[TelemetryPropertyKey.buildOnly] = "true";
       TelemetryUtils.sendSuccessEvent(TelemetryEventName.buildTeamsPackage, properties);
@@ -213,7 +291,7 @@ export class AppStudioPlugin implements Plugin {
         })
       );
       const properties: { [key: string]: string } = {};
-      properties[TelemetryPropertyKey.updateExistingApp] = String(result.update); 
+      properties[TelemetryPropertyKey.updateExistingApp] = String(result.update);
       TelemetryUtils.sendSuccessEvent(TelemetryEventName.publish);
       return ok(result.id);
     } catch (error) {

@@ -2,7 +2,7 @@
   "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit (Preview)",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "2.1.1",
+  "version": "2.1.1-rc.3",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",

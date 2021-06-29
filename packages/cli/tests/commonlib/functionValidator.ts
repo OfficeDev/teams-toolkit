@@ -147,14 +147,31 @@ export class FunctionValidator {
 
     private static async runWithRetry<T>(fn: () => Promise<T>) {
         const maxTryCount = 3;
-        const intervalTimeInMS = 2000;
+        const defaultRetryAfterInSecond = 2;
+        const maxRetryAfterInSecond = 3 * 60;
+        const secondInMilliseconds = 1000;
 
         for (let i = 0; i < maxTryCount - 1; i++) {
             try {
                 const ret = await fn();
                 return ret;
-            } catch {
-                await new Promise((resolve) => setTimeout(resolve, intervalTimeInMS));
+            } catch(e) {
+                let retryAfterInSecond = defaultRetryAfterInSecond;
+                if (e.response?.status === 429) {
+                    // See https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/request-limits-and-throttling#error-code.
+                    const suggestedRetryAfter = e.response?.headers?.["retry-after"];
+                    // Explicit check, _retryAfter can be 0.
+                    if (suggestedRetryAfter !== undefined) {
+                        if (suggestedRetryAfter > maxRetryAfterInSecond) {
+                            // Don't wait too long.
+                            throw e;
+                        } else {
+                            // Take one more second for time error.
+                            retryAfterInSecond = suggestedRetryAfter + 1;
+                        }
+                    }
+                }
+                await new Promise((resolve) => setTimeout(resolve, retryAfterInSecond * secondInMilliseconds));
             }
         }
 

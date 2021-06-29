@@ -18,8 +18,14 @@ export const botPluginName = "fx-resource-bot";
 export const localDebugPluginName = "fx-resource-local-debug";
 export const solutionPluginName = "solution";
 
+export enum ProgrammingLanguage {
+  javascript = "javascript",
+  typescript = "typescript",
+}
+
+export const programmingLanguageConfigKey = "programmingLanguage";
 export const skipNgrokConfigKey = "skipNgrok";
-export const teamsAppTenantId = "teamsAppTenantId";
+export const teamsAppTenantIdConfigKey = "teamsAppTenantId";
 export const remoteTeamsAppIdConfigKey = "remoteTeamsAppId";
 export const localTeamsAppIdConfigKey = "localDebugTeamsAppId";
 
@@ -29,14 +35,22 @@ export const botFolderName = "bot";
 
 export const npmInstallCommand = "npm install";
 export const frontendStartCommand = "npx react-scripts start";
-export const backendStartJsCommand = `npx func start --javascript --language-worker="--inspect=9229" --port "7071" --cors "*"`;
-export const authStartCommand = "dotnet Microsoft.TeamsFx.SimpleAuth.dll";
+export const backendStartJsCommand = `npx func start --javascript --port "7071" --cors "*"`;
+export const backendStartTsCommand = `npx func start --typescript --port "7071" --cors "*"`;
+export const backendWatchCommand = "npx tsc --watch";
+export const authStartCommand = "dotnet Microsoft.TeamsFx.SimpleAuth.dll"; // TODO: dependency checker
 export const ngrokStartCommand = "npx ngrok http 3978 --log=stdout";
-export const botStartJsCommand = "npx nodemon --inspect=9239 --signal SIGINT index.js";
+export const botStartJsCommand = "npx nodemon --signal SIGINT index.js";
+export const botStartTsCommand =
+  "npx nodemon --exec node --signal SIGINT -r ts-node/register index.ts";
+const backendExtensionsInstallCsprojPath = "extensions.csproj";
+const backendExtensionsInstallOutputPath = "bin";
+export const backendExtensionsInstallCommand = `dotnet build ${backendExtensionsInstallCsprojPath} -o ${backendExtensionsInstallOutputPath} --ignore-failed-sources`; // TODO: dependency checker
 
 export const frontendStartPattern = /Compiled|Failed/g;
 export const backendStartPattern =
   /Worker process started and initialized|Host lock lease acquired by instance ID/g;
+export const backendWatchPattern = /.*/g;
 export const authStartPattern = /.*/g;
 export const ngrokStartPattern = /started tunnel|failed to reconnect session/g;
 export const botStartPattern = /listening|[nodemon] app crashed/g;
@@ -55,9 +69,15 @@ export const authStartSuccessMessage = `auth service started successfully.`;
 export const backendInstallTitle = "backend npm install";
 export const backendInstallStartMessage = `execute 'npm install' under ${backendFolderName} folder.`;
 export const backendInstallSuccessMessage = `${backendInstallTitle} completed successfully.`;
+export const backendExtensionsInstallTitle = "backend extensions install";
+export const backendExtensionsInstallStartMessage = "install Azure Functions binding extensions.";
+export const backendExtensionsInstallSuccessMessage = `${backendExtensionsInstallTitle} completed successfully.`;
 export const backendStartTitle = "backend start";
 export const backendStartStartMessage = `execute 'func start' under ${backendFolderName} folder.`;
 export const backendStartSuccessMessage = `backend started successfully.`;
+export const backendWatchTitle = "backend watch";
+export const backendWatchStartMessage = `execute 'tsc --watch' under ${backendFolderName} folder.`;
+export const backendWatchSuccessMessage = "backend watcher started successfully";
 
 export const botInstallTitle = "bot npm install";
 export const botInstallStartMessage = `execute 'npm install' under ${botFolderName} folder.`;

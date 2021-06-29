@@ -48,7 +48,9 @@
       "feedbackTitle": "FEEDBACK",
       "feedbackDescription": "Send feedback",
       "reportIssuesTitle": "Report issues",
-      "reportIssuesDescription": "Report issues"
+      "reportIssuesDescription": "Report issues",
+      "teamsDevPortalTitle": "Go To Teams Developer Portal",
+      "teamsDevPortalDescription": "Go To Teams Developer Portal"
     },
     "handlers": {
       "concurrentTriggerTask": "Task '%s' is still running. Wait for it to complete before starting another task.",
@@ -67,11 +69,14 @@
       "azureSignIn": "Successfully signed in to Azure account.",
       "azureSignOut": "Successfully signed out of Azure account.",
       "m365SignIn": "Successfully signed in to M365 account.",
-      "m365SignOut": "Successfully signed out of M365 account."
+      "m365SignOut": "Successfully signed out of M365 account.",
+      "signOutOfM365": "Sign out of M365: ",
+      "signOutOfAzure": "Sign out of Azure: "
     },
     "progressHandler": {
       "teamsToolkitComponent": "[Teams Toolkit]",
-      "prepareTask": " Prepare task."
+      "prepareTask": " Prepare task.",
+      "reloadNotice": "%s%s%s (Notice: You can reload the window and retry if task spends too long time.)"
     },
     "appStudioLogin": {
       "message": "The Teams Toolkit requires a Microsoft 365 organizational account where Teams is running and has been registered. You can create a free testing account from M365 Developer Program if needed.",
@@ -134,6 +139,32 @@
         "message": "userAsked"
       },
       "cancelMessage": "userCancelled"
+    },
+    "accountTree": {
+      "totalSubscriptions": "%d subscriptions discovered",
+      "signingInM365": "M365: Signing in...",
+      "signingInAzure": "Azure: Signing in...",
+      "m365AccountTooltip": "M365 ACCOUNT  \nThe Teams Toolkit requires an Microsoft 365 organizational account where Teams is running and has been registered.",
+      "azureAccountTooltip": "AZURE ACCOUNT  \nThe Teams Toolkit may require an Azure subscription to deploy the Azure resources for your project.",
+      "specifySubscription": "Specify subscription"
+    },
+    "qm": {
+      "emptySelection": "select option is empty",
+      "ok": "ok",
+      "selectFileOrFolder": "Select file/folder"
+    },
+    "webview": {
+      "downloadSampleTitle": "Select folder to download the sample app",
+      "invalidFolder": "Invalid folder",
+      "folderExist": "Folder already exists",
+      "folderExistDialogTitle": "Path %s alreay exists. Select a different folder.",
+      "fetchData": "Fetch sample app",
+      "downloadFrom": "Downloading from %s",
+      "unzipPackage": "Unzipping the sample package",
+      "emptyData": "Empty zip file",
+      "downloadSampleFail": "Failed to download sample app",
+      "quickStartPageTitle": "Quick Start",
+      "samplePageTitle": "Samples"
     }
   }
 }

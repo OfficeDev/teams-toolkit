@@ -115,7 +115,7 @@ export class VsCodeUI implements UserInteraction {
     if (option.options.length === 0) {
       return err(
         returnSystemError(
-          new Error("select option is empty"),
+          new Error(StringResources.vsc.qm.emptySelection),
           ExtensionSource,
           ExtensionErrors.EmptySelectOption
         )
@@ -199,7 +199,7 @@ export class VsCodeUI implements UserInteraction {
     if (option.options.length === 0) {
       return err(
         returnSystemError(
-          new Error("select option is empty"),
+          new Error(StringResources.vsc.qm.emptySelection),
           ExtensionSource,
           ExtensionErrors.EmptySelectOption
         )
@@ -319,7 +319,7 @@ export class VsCodeUI implements UserInteraction {
   async inputText(option: InputTextConfig): Promise<Result<InputTextResult, FxError>> {
     const okButton: QuickInputButton = {
       iconPath: Uri.file(this.context.asAbsolutePath("media/ok.svg")),
-      tooltip: "ok",
+      tooltip: StringResources.vsc.qm.ok,
     };
     const disposables: Disposable[] = [];
     try {
@@ -416,7 +416,7 @@ export class VsCodeUI implements UserInteraction {
     /// TODO: use generic constraints.
     const okButton: QuickInputButton = {
       iconPath: Uri.file(this.context.asAbsolutePath("media/ok.svg")),
-      tooltip: "ok",
+      tooltip: StringResources.vsc.qm.ok,
     };
     const disposables: Disposable[] = [];
     try {
@@ -457,7 +457,12 @@ export class VsCodeUI implements UserInteraction {
         );
 
         /// set items
-        quickPick.items = [{ label: config.prompt || "Select file/folder", detail: defaultValue }];
+        quickPick.items = [
+          {
+            label: config.prompt || StringResources.vsc.qm.selectFileOrFolder,
+            detail: defaultValue,
+          },
+        ];
         const showFileSelectDialog = async function (defaultUrl?: string) {
           fileSelectorIsOpen = true;
           const uriList: Uri[] | undefined = await window.showOpenDialog({
@@ -473,12 +478,20 @@ export class VsCodeUI implements UserInteraction {
               const results = uriList.map((u) => u.fsPath);
               const resultString = results.join(";");
               quickPick.items = [
-                { label: config.prompt || "Select file/folder", detail: resultString },
+                {
+                  label: config.prompt || StringResources.vsc.qm.selectFileOrFolder,
+                  detail: resultString,
+                },
               ];
               resolve(ok({ type: "success", result: results }));
             } else {
               const result = uriList[0].fsPath;
-              quickPick.items = [{ label: config.prompt || "Select file/folder", detail: result }];
+              quickPick.items = [
+                {
+                  label: config.prompt || StringResources.vsc.qm.selectFileOrFolder,
+                  detail: result,
+                },
+              ];
               resolve(ok({ type: "success", result: result }));
             }
           }

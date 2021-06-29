@@ -6,6 +6,7 @@ import * as path from "path";
 import { ext } from "./extensionVariables";
 import { TreeItem, TreeCategory, Result, FxError, ok } from "@microsoft/teamsfx-api";
 import * as StringResources from "./resources/Strings.json";
+import { exp } from "./exp/index";
 
 class TreeViewManager {
   private static instance: TreeViewManager;
@@ -22,7 +23,7 @@ class TreeViewManager {
     return TreeViewManager.instance;
   }
 
-  public registerTreeViews() {
+  public async registerTreeViews() {
     const disposables = [];
 
     const getStartTreeViewCommand = [
@@ -145,6 +146,21 @@ class TreeViewManager {
         { name: "publish", custom: true }
       ),
     ];
+
+    if (
+      true /*await exp.getExpService().getTreatmentVariableAsync("flight", "treatmentVariable", true)*/
+    ) {
+      const debugCommand = new TreeViewCommand(
+        StringResources.vsc.commandsTreeViewProvider.debugTitle,
+        StringResources.vsc.commandsTreeViewProvider.debugDescription,
+        "fx-extension.debug",
+        vscode.TreeItemCollapsibleState.None,
+        undefined,
+        undefined,
+        { name: "debug-alt", custom: false }
+      );
+      projectTreeViewCommand.splice(1, 0, debugCommand);
+    }
 
     const projectProvider = new CommandsTreeViewProvider(projectTreeViewCommand);
     disposables.push(vscode.window.registerTreeDataProvider("teamsfx-project", projectProvider));

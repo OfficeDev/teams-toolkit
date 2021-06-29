@@ -24,7 +24,7 @@ import {
   QTreeNode,
   Inputs,
   Platform,
-  Colors
+  Colors,
 } from "@microsoft/teamsfx-api";
 
 import { ConfigNotFoundError, ReadFileError } from "./error";
@@ -96,7 +96,7 @@ export function toYargsOptions(data: Question): Options {
   // if (choices && choices.length > 0 && data.default === undefined) {
   //   data.default = choices[0];
   // }
-  
+
   const defaultValue = data.default;
   if (defaultValue && defaultValue instanceof Array && defaultValue.length > 0) {
     data.default = defaultValue.map((item) => item.toLocaleLowerCase());
@@ -110,7 +110,8 @@ export function toYargsOptions(data: Question): Options {
       choices: choices,
       hidden: !!(data as any).hide,
       global: false,
-    }
+      type: "string",
+    };
   }
   return {
     array: data.type === "multiSelect",
@@ -119,6 +120,7 @@ export function toYargsOptions(data: Question): Options {
     choices: choices,
     hidden: !!(data as any).hide,
     global: false,
+    type: "string",
   };
 }
 
@@ -230,52 +232,56 @@ export function getTeamsAppId(rootfolder: string | undefined): any {
   return undefined;
 }
 
-export function getSystemInputs(projectPath?: string):Inputs{
-  const systemInputs:Inputs = {
+export function getSystemInputs(projectPath?: string): Inputs {
+  const systemInputs: Inputs = {
     platform: Platform.CLI,
     projectPath: projectPath,
-    correlationId: uuid.v4()
+    correlationId: uuid.v4(),
   };
   return systemInputs;
 }
 
-export function argsToInputs(params: { [_: string]: Options }, args: { [argName: string]: string|string[] }):Inputs{
+export function argsToInputs(
+  params: { [_: string]: Options },
+  args: { [argName: string]: string | string[] }
+): Inputs {
   const inputs = getSystemInputs();
   for (const name in params) {
     if (name.endsWith("folder") && args[name]) {
       inputs[name] = path.resolve(args[name] as string);
-    } 
-    else {
+    } else {
       inputs[name] = args[name];
     }
   }
-  const rootFolder = path.resolve(inputs["folder"] as string || "./");
+  const rootFolder = path.resolve((inputs["folder"] as string) || "./");
   delete inputs["folder"];
   inputs.projectPath = rootFolder;
   return inputs;
 }
 
-export function getColorizedString(message: Array<{content: string, color: Colors}>): string {
+export function getColorizedString(message: Array<{ content: string; color: Colors }>): string {
   // Color support is automatically detected by chalk
-  const colorizedMessage = message.map(item => {
-    switch(item.color) {
-      case Colors.BRIGHT_WHITE:
-        return chalk.whiteBright(item.content);
-      case Colors.WHITE:
-        return chalk.white(item.content);
-      case Colors.BRIGHT_MAGENTA:
-        return chalk.magentaBright(item.content);
-      case Colors.BRIGHT_GREEN:
-        return chalk.greenBright(item.content);
-      case Colors.BRIGHT_RED:
-        return chalk.redBright(item.content);
-      case Colors.BRIGHT_YELLOW:
-        return chalk.yellowBright(item.content);
-      case Colors.BRIGHT_CYAN:
-        return chalk.cyanBright.underline(item.content);
-      default:
-        return item.content;
-    }
-  }).join("");
+  const colorizedMessage = message
+    .map((item) => {
+      switch (item.color) {
+        case Colors.BRIGHT_WHITE:
+          return chalk.whiteBright(item.content);
+        case Colors.WHITE:
+          return chalk.white(item.content);
+        case Colors.BRIGHT_MAGENTA:
+          return chalk.magentaBright(item.content);
+        case Colors.BRIGHT_GREEN:
+          return chalk.greenBright(item.content);
+        case Colors.BRIGHT_RED:
+          return chalk.redBright(item.content);
+        case Colors.BRIGHT_YELLOW:
+          return chalk.yellowBright(item.content);
+        case Colors.BRIGHT_CYAN:
+          return chalk.cyanBright.underline(item.content);
+        default:
+          return item.content;
+      }
+    })
+    .join("");
   return colorizedMessage;
 }

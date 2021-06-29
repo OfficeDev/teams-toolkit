@@ -2,7 +2,7 @@
 
 ## 2.1.1 - June 30 2021
 
-multiple bug fixings
+Multiple bug fixings
 
 ## 2.1.0 - June 15 2021
 

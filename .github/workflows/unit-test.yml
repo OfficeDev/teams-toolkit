@@ -101,11 +101,11 @@ jobs:
     steps:
       - name: compare coverage between source branch and target branch
         run: |
-          if [ '${{ needs.source-branch-test.outputs.coverages }}' == "{}"]; then
+          if [ '${{ needs.source-branch-test.outputs.coverages }}' == "{}" ] || [ '${{ needs.source-branch-test.outputs.coverages }}' == "" ]; then
             exit 0
           fi
 
-          if [ '${{ needs.target-branch-test.outputs.coverages }}' == "{}"]; then
+          if [ '${{ needs.target-branch-test.outputs.coverages }}' == "{}" ] || [ '${{ needs.target-branch-test.outputs.coverages }}' == "" ]; then
             exit 0
           fi
 

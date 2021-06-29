@@ -379,7 +379,7 @@ export default class Preview extends YargsCommand {
       const env = await commonUtils.getFrontendLocalEnv(workspaceFolder);
       frontendStartTask = new Task(constants.frontendStartCommand, {
         cwd: frontendRoot,
-        env,
+        env: commonUtils.mergeProcessEnv(env),
       });
     }
 
@@ -389,7 +389,7 @@ export default class Preview extends YargsCommand {
       const env = await commonUtils.getAuthLocalEnv(workspaceFolder);
       authStartTask = new Task(constants.authStartCommand, {
         cwd,
-        env,
+        env: commonUtils.mergeProcessEnv(env),
       });
     }
 
@@ -397,17 +397,19 @@ export default class Preview extends YargsCommand {
     let backendWatchTask: Task | undefined;
     if (backendRoot !== undefined) {
       const env = await commonUtils.getBackendLocalEnv(workspaceFolder);
+      const mergedEnv = commonUtils.mergeProcessEnv(env);
       const command =
         programmingLanguage === constants.ProgrammingLanguage.typescript
           ? constants.backendStartTsCommand
           : constants.backendStartJsCommand;
       backendStartTask = new Task(command, {
         cwd: backendRoot,
-        env,
+        env: mergedEnv,
       });
       if (programmingLanguage === constants.ProgrammingLanguage.typescript) {
         backendWatchTask = new Task(constants.backendWatchCommand, {
           cwd: backendRoot,
+          env: mergedEnv,
         });
       }
     }
@@ -421,7 +423,7 @@ export default class Preview extends YargsCommand {
       const env = await commonUtils.getBotLocalEnv(workspaceFolder);
       botStartTask = new Task(command, {
         cwd: botRoot,
-        env,
+        env: commonUtils.mergeProcessEnv(env),
       });
     }
 

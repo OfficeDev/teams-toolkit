@@ -42,7 +42,6 @@ import {
   getSubsriptionDisplayName,
   sendErrorTelemetryThenReturnError,
 } from "./util";
-import { AppStudio } from "./appstudio/appstudio";
 import * as fs from "fs-extra";
 import {
   DEFAULT_PERMISSION_REQUEST,

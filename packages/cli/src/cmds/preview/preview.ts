@@ -155,8 +155,12 @@ export default class Preview extends YargsCommand {
     }
 
     /* === start services === */
+    const programmingLanguage = config?.config
+      ?.get(constants.solutionPluginName)
+      ?.get(constants.programmingLanguageConfigKey) as string;
     result = await this.startServices(
       workspaceFolder,
+      programmingLanguage,
       includeFrontend ? frontendRoot : undefined,
       includeBackend ? backendRoot : undefined,
       includeBot ? botRoot : undefined
@@ -181,7 +185,7 @@ export default class Preview extends YargsCommand {
 
     const tenantId = config?.config
       ?.get(constants.solutionPluginName)
-      ?.get(constants.teamsAppTenantId) as string;
+      ?.get(constants.teamsAppTenantIdConfigKey) as string;
     const localTeamsAppId = config?.config
       ?.get(constants.solutionPluginName)
       ?.get(constants.localTeamsAppIdConfigKey) as string;
@@ -267,8 +271,12 @@ export default class Preview extends YargsCommand {
     }
 
     let backendInstallTask: Task | undefined;
+    let backendExtensionsInstallTask: Task | undefined;
     if (backendRoot !== undefined) {
       backendInstallTask = new Task(constants.npmInstallCommand, {
+        cwd: backendRoot,
+      });
+      backendExtensionsInstallTask = new Task(constants.backendExtensionsInstallCommand, {
         cwd: backendRoot,
       });
     }
@@ -310,6 +318,21 @@ export default class Preview extends YargsCommand {
       false
     );
 
+    const backendExtensionsInstallBar = DialogManagerInstance.createProgressBar(
+      constants.backendExtensionsInstallTitle,
+      1
+    );
+    const backendExtensionsInstallStartCb = commonUtils.createTaskStartCb(
+      backendExtensionsInstallBar,
+      constants.backendExtensionsInstallStartMessage
+    );
+    const backendExtensionsInstallStopCb = commonUtils.createTaskStopCb(
+      constants.backendExtensionsInstallTitle,
+      backendExtensionsInstallBar,
+      constants.backendExtensionsInstallSuccessMessage,
+      false
+    );
+
     const botInstallBar = DialogManagerInstance.createProgressBar(constants.botInstallTitle, 1);
     const botInstallStartCb = commonUtils.createTaskStartCb(
       botInstallBar,
@@ -326,6 +349,10 @@ export default class Preview extends YargsCommand {
       core.localDebug(inputs),
       frontendInstallTask?.wait(frontendInstallStartCb, frontendInstallStopCb),
       backendInstallTask?.wait(backendInstallStartCb, backendInstallStopCb),
+      backendExtensionsInstallTask?.wait(
+        backendExtensionsInstallStartCb,
+        backendExtensionsInstallStopCb
+      ),
       botInstallTask?.wait(botInstallStartCb, botInstallStopCb),
     ]);
     const fxErrors: FxError[] = [];
@@ -342,6 +369,7 @@ export default class Preview extends YargsCommand {
 
   private async startServices(
     workspaceFolder: string,
+    programmingLanguage: string,
     frontendRoot: string | undefined,
     backendRoot: string | undefined,
     botRoot: string | undefined
@@ -366,18 +394,32 @@ export default class Preview extends YargsCommand {
     }
 
     let backendStartTask: Task | undefined;
+    let backendWatchTask: Task | undefined;
     if (backendRoot !== undefined) {
       const env = await commonUtils.getBackendLocalEnv(workspaceFolder);
-      backendStartTask = new Task(constants.backendStartJsCommand, {
+      const command =
+        programmingLanguage === constants.ProgrammingLanguage.typescript
+          ? constants.backendStartTsCommand
+          : constants.backendStartJsCommand;
+      backendStartTask = new Task(command, {
         cwd: backendRoot,
         env,
       });
+      if (programmingLanguage === constants.ProgrammingLanguage.typescript) {
+        backendWatchTask = new Task(constants.backendWatchCommand, {
+          cwd: backendRoot,
+        });
+      }
     }
 
     let botStartTask: Task | undefined;
     if (botRoot !== undefined) {
+      const command =
+        programmingLanguage === constants.ProgrammingLanguage.typescript
+          ? constants.botStartTsCommand
+          : constants.botStartJsCommand;
       const env = await commonUtils.getBotLocalEnv(workspaceFolder);
-      botStartTask = new Task(constants.botStartJsCommand, {
+      botStartTask = new Task(command, {
         cwd: botRoot,
         env,
       });
@@ -422,6 +464,18 @@ export default class Preview extends YargsCommand {
       true
     );
 
+    const backendWatchBar = DialogManagerInstance.createProgressBar(constants.backendWatchTitle, 1);
+    const backendWatchStartCb = commonUtils.createTaskStartCb(
+      backendWatchBar,
+      constants.backendWatchStartMessage
+    );
+    const backendWatchStopCb = commonUtils.createTaskStopCb(
+      constants.backendWatchTitle,
+      backendWatchBar,
+      constants.backendWatchSuccessMessage,
+      true
+    );
+
     const botStartBar = DialogManagerInstance.createProgressBar(constants.botStartTitle, 1);
     const botStartStartCb = commonUtils.createTaskStartCb(
       botStartBar,
@@ -445,6 +499,11 @@ export default class Preview extends YargsCommand {
         constants.backendStartPattern,
         backendStartStartCb,
         backendStartStopCb
+      ),
+      backendWatchTask?.waitFor(
+        constants.backendWatchPattern,
+        backendWatchStartCb,
+        backendWatchStopCb
       ),
       await botStartTask?.waitFor(constants.botStartPattern, botStartStartCb, botStartStopCb),
     ]);

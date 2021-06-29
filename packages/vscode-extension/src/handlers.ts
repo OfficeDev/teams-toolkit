@@ -688,25 +688,25 @@ export async function showError(e: UserError | SystemError) {
 export async function cmpAccountsHandler() {
   const signInAzureOption: VscQuickPickItem = {
     id: "signInAzure",
-    label: "Sign in to Azure",
+    label: StringResources.vsc.handlers.signInAzure,
     function: () => signInAzure(),
   };
 
   const signOutAzureOption: VscQuickPickItem = {
     id: "signOutAzure",
-    label: "Sign out of Azure: ",
+    label: StringResources.vsc.handlers.signOutOfAzure,
     function: () => signOutAzure(false),
   };
 
   const signInM365Option: VscQuickPickItem = {
     id: "signinM365",
-    label: "Sign in to M365",
+    label: StringResources.vsc.handlers.signIn365,
     function: () => signInM365(),
   };
 
   const signOutM365Option: VscQuickPickItem = {
     id: "signOutM365",
-    label: "Sign out of M365: ",
+    label: StringResources.vsc.handlers.signOutOfM365,
     function: () => signOutM365(false),
   };
 

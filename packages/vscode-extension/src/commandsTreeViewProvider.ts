@@ -33,7 +33,7 @@ class TreeViewManager {
         vscode.TreeItemCollapsibleState.None,
         TreeCategory.GettingStarted,
         undefined,
-        {name: "lightningBolt_16", custom: true}
+        { name: "lightningBolt_16", custom: true }
       ),
       new TreeViewCommand(
         StringResources.vsc.commandsTreeViewProvider.samplesTitle,
@@ -52,7 +52,7 @@ class TreeViewManager {
         TreeCategory.GettingStarted,
         undefined,
         { name: "book", custom: false }
-      )
+      ),
     ];
     const getStartedProvider = new CommandsTreeViewProvider(getStartTreeViewCommand);
     disposables.push(
@@ -143,7 +143,7 @@ class TreeViewManager {
         undefined,
         undefined,
         { name: "publish", custom: true }
-      )
+      ),
     ];
 
     const projectProvider = new CommandsTreeViewProvider(projectTreeViewCommand);
@@ -152,14 +152,14 @@ class TreeViewManager {
     const teamDevCenterTreeViewCommand = [
       //TODO temp solution
       new TreeViewCommand(
-        "Go To Teams Developer Portal",
-        "Go To Teams Developer Portal",
+        StringResources.vsc.commandsTreeViewProvider.teamsDevPortalTitle,
+        StringResources.vsc.commandsTreeViewProvider.teamsDevPortalDescription,
         "fx-extension.openAppManagement",
         vscode.TreeItemCollapsibleState.None,
         undefined,
         undefined,
         { name: "appManagement", custom: true }
-      )
+      ),
       // new TreeViewCommand(
       //   StringResources.vsc.commandsTreeViewProvider.appManagementTitle,
       //   StringResources.vsc.commandsTreeViewProvider.appManagementDescription,
@@ -193,7 +193,7 @@ class TreeViewManager {
         TreeCategory.Feedback,
         undefined,
         { name: "report", custom: false }
-      )
+      ),
     ];
     const feedbackProvider = new CommandsTreeViewProvider(feedbackTreeViewCommand);
     disposables.push(vscode.window.registerTreeDataProvider("teamsfx-feedback", feedbackProvider));
@@ -277,7 +277,10 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
         }
         originalCommand.contextValue = treeItem.contextValue;
         if (treeItem.icon) {
-          originalCommand.iconPath = { light: path.join(ext.context.extensionPath, "media", "light", `${treeItem.icon}.svg`), dark: path.join(ext.context.extensionPath, "media", "dark", `${treeItem.icon}.svg`)};
+          originalCommand.iconPath = {
+            light: path.join(ext.context.extensionPath, "media", "light", `${treeItem.icon}.svg`),
+            dark: path.join(ext.context.extensionPath, "media", "dark", `${treeItem.icon}.svg`),
+          };
         }
       }
     }
@@ -313,7 +316,7 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
           : undefined,
         typeof treeItem.parent === "number" ? (treeItem.parent as TreeCategory) : undefined,
         [],
-        treeItem.icon? {name: treeItem.icon, custom: true}: undefined,
+        treeItem.icon ? { name: treeItem.icon, custom: true } : undefined,
         treeItem.contextValue
       );
 
@@ -423,18 +426,21 @@ export class TreeViewCommand extends vscode.TreeItem {
     public collapsibleState?: vscode.TreeItemCollapsibleState,
     public category?: TreeCategory,
     public children?: TreeViewCommand[],
-    public image?: {name: string; custom: boolean},
-    public contextValue?: string,
+    public image?: { name: string; custom: boolean },
+    public contextValue?: string
   ) {
     super(label, collapsibleState ? collapsibleState : vscode.TreeItemCollapsibleState.None);
     this.description = "";
     this.contextValue = contextValue;
 
     if (image !== undefined) {
-      if(!image.custom){
+      if (!image.custom) {
         this.iconPath = new vscode.ThemeIcon(this.image!.name);
-      } else{
-        this.iconPath = { light: path.join(ext.context.extensionPath, "media", "light", `${this.image?.name}.svg`), dark: path.join(ext.context.extensionPath, "media", "dark", `${this.image?.name}.svg`)};
+      } else {
+        this.iconPath = {
+          light: path.join(ext.context.extensionPath, "media", "light", `${this.image?.name}.svg`),
+          dark: path.join(ext.context.extensionPath, "media", "dark", `${this.image?.name}.svg`),
+        };
       }
     }
 
@@ -442,7 +448,7 @@ export class TreeViewCommand extends vscode.TreeItem {
       this.command = {
         title: label,
         command: commandId,
-        arguments: [[CommandsTreeViewProvider.TreeViewFlag]]
+        arguments: [[CommandsTreeViewProvider.TreeViewFlag]],
       };
     }
   }

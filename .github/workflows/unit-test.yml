@@ -99,10 +99,16 @@ jobs:
     needs: [source-branch-test, target-branch-test]
     runs-on: ubuntu-latest
     steps:
-      - name: echo
+      - name: compare coverage between source branch and target branch
         run: |
-          echo ${{ needs.source-branch-test.outputs.coverages }}
-          echo ${{ needs.target-branch-test.outputs.coverages }}
+          if [ ${{ needs.source-branch-test.outputs.coverages }} -eq "{}"]; then
+            exit 0
+          fi
+
+          if [ ${{ needs.target-branch-test.outputs.coverages }} -eq "{}"]; then
+            exit 0
+          fi
+
           mapfile -t source < <(echo ${{ needs.source-branch-test.outputs.coverages }} | jq -r 'keys[]' )
 
           for i in ${source[@]}; do

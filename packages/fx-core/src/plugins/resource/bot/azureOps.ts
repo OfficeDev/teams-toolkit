@@ -204,8 +204,12 @@ export class AzureOperations {
       throw new ZipDeployError(e);
     }
 
-    if (!res || !utils.isHttpCodeOkOrCreated(res.status)) {
-      Logger.error(JSON.stringify(res));
+    if (!res || !utils.isHttpCodeOkOrCreated(res?.status)) {
+      Logger.error(
+        `Deploy endpoint: ${zipDeployEndpoint}, status code: ${
+          res?.status
+        }, response data: ${JSON.stringify(res?.data)}`
+      );
       throw new ZipDeployError();
     }
   }

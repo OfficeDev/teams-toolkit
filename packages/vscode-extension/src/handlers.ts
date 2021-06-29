@@ -31,7 +31,7 @@ import {
   Void,
   Tools,
 } from "@microsoft/teamsfx-api";
-import { isUserCancelError, FxCore } from "@microsoft/teamsfx-core";
+import { isUserCancelError, FxCore, InvalidProjectError } from "@microsoft/teamsfx-core";
 import DialogManagerInstance from "./userInterface";
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -558,6 +558,12 @@ export async function openManifestHandler(args?: any[]): Promise<Result<null, Fx
       workspaceFolder.uri.fsPath,
       `.${ConfigFolderName}`
     );
+    if (!(await fs.pathExists(configRoot!))) {
+      const invalidProjectError: FxError = InvalidProjectError();
+      showError(invalidProjectError);
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, invalidProjectError);
+      return err(invalidProjectError);
+    }
     const manifestFile = `${configRoot}/${constants.manifestFileName}`;
     if (fs.existsSync(manifestFile)) {
       workspace.openTextDocument(manifestFile).then((document) => {

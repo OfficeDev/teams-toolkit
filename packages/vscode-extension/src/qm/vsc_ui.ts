@@ -41,10 +41,12 @@ import {
   TaskConfig,
   UserInteraction,
   Colors,
+  IProgressHandler,
 } from "@microsoft/teamsfx-api";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import { sleep } from "../utils/commonUtils";
 import * as StringResources from "../resources/Strings.json";
+import { ProgressHandler } from "../progressHandler";
 
 export interface FxQuickPickItem extends QuickPickItem {
   id: string;
@@ -568,6 +570,11 @@ export class VsCodeUI implements UserInteraction {
       }
     });
   }
+
+  public createProgressBar(title: string, totalSteps: number): IProgressHandler {
+    return new ProgressHandler(title, totalSteps);
+  }
+
   async runWithProgress<T>(
     task: RunnableTask<T>,
     config: TaskConfig,

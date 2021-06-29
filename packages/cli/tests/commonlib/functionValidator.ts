@@ -145,13 +145,27 @@ export class FunctionValidator {
         console.log("Successfully validate Function Provision.");
     }
 
+    private static async runWithRetry<T>(fn: () => Promise<T>) {
+        const maxTryCount = 3;
+        const intervalTimeInMS = 2000;
+
+        for (let i = 0; i < maxTryCount - 1; i++) {
+            try {
+                const ret = await fn();
+                return ret;
+            } catch {
+                await new Promise((resolve) => setTimeout(resolve, intervalTimeInMS));
+            }
+        }
+
+        return fn();
+    }
+
     public static async validateDeploy(functionObject: IFunctionObject) {
         console.log("Start to validate Function Deployment.");
 
         // Disable validate deployment since we have too many requests and the test is not stable.
-        /*
-        const tokenProvider: MockAzureAccountProvider = MockAzureAccountProvider.getInstance();
-        const tokenCredential = await tokenProvider.getAccountCredentialAsync();
+        const tokenCredential = await MockAzureAccountProvider.getAccountCredentialAsync();
         const token = (await tokenCredential?.getToken())?.accessToken;
 
         const deployments = await this.getDeployments(this.subscriptionId, this.rg, functionObject.functionAppName, token as string);
@@ -159,7 +173,6 @@ export class FunctionValidator {
         const deploymentLog = await this.getDeploymentLog(this.subscriptionId, this.rg, functionObject.functionAppName, token as string, deploymentId!);
 
         chai.assert.exists(deploymentLog?.find((item: any) => item.properties.message === "Deployment successful."));
-        */
 
         console.log("Successfully validate Function Deployment.");
     }
@@ -167,7 +180,7 @@ export class FunctionValidator {
     private static async getDeployments(subscriptionId: string, rg: string, name: string, token: string) {
         try {
             axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-            const functionGetResponse = await axios.get(baseUrlListDeployments(subscriptionId, rg, name));
+            const functionGetResponse = await this.runWithRetry(() => axios.get(baseUrlListDeployments(subscriptionId, rg, name)));
 
             return functionGetResponse?.data?.value;
         } catch (error) {
@@ -179,7 +192,7 @@ export class FunctionValidator {
     private static async getDeploymentLog(subscriptionId: string, rg: string, name: string, token: string, id: string) {
         try {
             axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-            const functionGetResponse = await axios.get(baseUrlListDeploymentLogs(subscriptionId, rg, name, id));
+            const functionGetResponse = await this.runWithRetry(() => axios.get(baseUrlListDeploymentLogs(subscriptionId, rg, name, id)));
 
             return functionGetResponse?.data?.value;
         } catch (error) {
@@ -191,7 +204,7 @@ export class FunctionValidator {
     private static async getWebappConfigs(subscriptionId: string, rg: string, name: string, token: string) {
         try {
             axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-            const functionGetResponse = await axios.post(baseUrlAppSettings(subscriptionId, rg, name));
+            const functionGetResponse = await this.runWithRetry(() => axios.post(baseUrlAppSettings(subscriptionId, rg, name)));
             if (!functionGetResponse || !functionGetResponse.data || !functionGetResponse.data.properties) {
                 return undefined;
             }
@@ -206,7 +219,7 @@ export class FunctionValidator {
     private static async getWebappServicePlan(subscriptionId: string, rg: string, name: string, token:string) {
         try {
             axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-            const functionPlanResponse = await axios.get(baseUrlPlan(subscriptionId, rg, name));
+            const functionPlanResponse = await this.runWithRetry(() => axios.get(baseUrlPlan(subscriptionId, rg, name)));
             if (!functionPlanResponse || !functionPlanResponse.data || !functionPlanResponse.data.sku || !functionPlanResponse.data.sku.name) {
                 return undefined;
             }

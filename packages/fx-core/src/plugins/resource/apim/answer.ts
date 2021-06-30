@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { ApiContract } from "@azure/arm-apimanagement/src/models";
-import { ConfigMap, Inputs, OptionItem, Platform, PluginContext, Stage } from "@microsoft/teamsfx-api";
+import { Inputs, OptionItem, Platform, PluginContext } from "@microsoft/teamsfx-api";
 import { OpenAPI } from "openapi-types";
-import { QuestionConstants, ValidationConstants } from "./constants";
+import { PluginLifeCycle, QuestionConstants, ValidationConstants } from "./constants";
 import { AssertNotEmpty, BuildError, InvalidCliOptionError, NotImplemented } from "./error";
 import { IApimPluginConfig } from "./config";
 import { IOpenApiDocument } from "./interfaces/IOpenApiDocument";
@@ -19,8 +19,12 @@ export interface IAnswer {
   apiId: string | undefined;
   versionIdentity: string | undefined;
   openApiDocumentSpec?: OpenAPI.Document | undefined;
-  save(stage: Stage, apimConfig: IApimPluginConfig): void;
-  validate?(stage: Stage, apimConfig: IApimPluginConfig, projectRootDir: string): Promise<void>;
+  save(lifecycle: PluginLifeCycle, apimConfig: IApimPluginConfig): void;
+  validate?(
+    lifecycle: PluginLifeCycle,
+    apimConfig: IApimPluginConfig,
+    projectRootDir: string
+  ): Promise<void>;
 }
 
 export function buildAnswer(ctx: PluginContext): IAnswer {
@@ -41,7 +45,8 @@ export class VSCodeAnswer implements IAnswer {
     this.answer = answer;
   }
   get resourceGroupName(): string | undefined {
-    const apimService = (this.answer[QuestionConstants.VSCode.Apim.questionName] as OptionItem).data as IApimServiceResource;
+    const apimService = (this.answer[QuestionConstants.VSCode.Apim.questionName] as OptionItem)
+      .data as IApimServiceResource;
     return apimService?.resourceGroupName;
   }
   get apimServiceName(): string | undefined {
@@ -50,7 +55,8 @@ export class VSCodeAnswer implements IAnswer {
     return apimService?.serviceName;
   }
   get apiDocumentPath(): string | undefined {
-    return (this.answer[QuestionConstants.VSCode.OpenApiDocument.questionName] as OptionItem)?.label;
+    return (this.answer[QuestionConstants.VSCode.OpenApiDocument.questionName] as OptionItem)
+      ?.label;
   }
   get openApiDocumentSpec(): OpenAPI.Document | undefined {
     const openApiDocument = (this.answer[
@@ -70,17 +76,18 @@ export class VSCodeAnswer implements IAnswer {
     const api = (this.answer[QuestionConstants.VSCode.ApiVersion.questionName] as OptionItem)
       ?.data as ApiContract;
     return (
-      api?.apiVersion ?? this.answer[QuestionConstants.VSCode.NewApiVersion.questionName] as string
+      api?.apiVersion ??
+      (this.answer[QuestionConstants.VSCode.NewApiVersion.questionName] as string)
     );
   }
 
-  save(stage: Stage, apimConfig: IApimPluginConfig): void {
-    switch (stage) {
-      case Stage.update:
+  save(lifecycle: PluginLifeCycle, apimConfig: IApimPluginConfig): void {
+    switch (lifecycle) {
+      case PluginLifeCycle.Scaffold:
         apimConfig.resourceGroupName = this.resourceGroupName ?? apimConfig.resourceGroupName;
         apimConfig.serviceName = this.apimServiceName ?? apimConfig.serviceName;
         break;
-      case Stage.deploy:
+      case PluginLifeCycle.Deploy:
         apimConfig.apiDocumentPath = this.apiDocumentPath ?? apimConfig.apiDocumentPath;
         apimConfig.apiPrefix = this.apiPrefix ?? apimConfig.apiPrefix;
         break;
@@ -113,13 +120,13 @@ export class CLIAnswer implements IAnswer {
     return this.answer[QuestionConstants.CLI.ApiVersion.questionName] as string;
   }
 
-  save(stage: Stage, apimConfig: IApimPluginConfig): void {
-    switch (stage) {
-      case Stage.update:
+  save(lifecycle: PluginLifeCycle, apimConfig: IApimPluginConfig): void {
+    switch (lifecycle) {
+      case PluginLifeCycle.Scaffold:
         apimConfig.resourceGroupName = this.resourceGroupName ?? apimConfig.resourceGroupName;
         apimConfig.serviceName = this.apimServiceName ?? apimConfig.serviceName;
         break;
-      case Stage.deploy:
+      case PluginLifeCycle.Deploy:
         apimConfig.apiDocumentPath = this.apiDocumentPath ?? apimConfig.apiDocumentPath;
         apimConfig.apiPrefix = this.apiPrefix ?? apimConfig.apiPrefix;
         break;
@@ -127,11 +134,11 @@ export class CLIAnswer implements IAnswer {
   }
 
   async validate(
-    stage: Stage,
+    lifecycle: PluginLifeCycle,
     apimConfig: IApimPluginConfig,
     projectRootDir: string
   ): Promise<void> {
-    const message = await this.validateWithMessage(stage, apimConfig, projectRootDir);
+    const message = await this.validateWithMessage(lifecycle, apimConfig, projectRootDir);
     if (typeof message !== "undefined") {
       throw BuildError(InvalidCliOptionError, message);
     }
@@ -141,12 +148,12 @@ export class CLIAnswer implements IAnswer {
   // https://msazure.visualstudio.com/Microsoft%20Teams%20Extensibility/_workitems/edit/9893622
   // https://msazure.visualstudio.com/Microsoft%20Teams%20Extensibility/_workitems/edit/9823734
   private async validateWithMessage(
-    stage: Stage,
+    lifecycle: PluginLifeCycle,
     apimConfig: IApimPluginConfig,
     projectRootDir: string
   ): Promise<string | undefined> {
-    switch (stage) {
-      case Stage.update:
+    switch (lifecycle) {
+      case PluginLifeCycle.Scaffold:
         // Validate the option format
         if (typeof this.resourceGroupName !== "undefined") {
           const message = NamingRules.validate(
@@ -169,7 +176,7 @@ export class CLIAnswer implements IAnswer {
           }
         }
         break;
-      case Stage.deploy:
+      case PluginLifeCycle.Deploy:
         // Validate the option requirements
         if (!apimConfig.apiPrefix && !this.apiPrefix) {
           return ValidationConstants.CLI.emptyOptionMessage(

@@ -3,7 +3,6 @@
 import { Func, PluginContext, QTreeNode } from "@microsoft/teamsfx-api";
 import { BuildError, NotImplemented } from "../error";
 import { IApimPluginConfig } from "../config";
-import { IQuestionService } from "../questions/question";
 import * as VSCode from "../questions/vscodeQuestion";
 import * as CLI from "../questions/cliQuestion";
 
@@ -38,24 +37,6 @@ export class VscQuestionManager implements IQuestionManager {
   }
 
   async callFunc(func: Func, ctx: PluginContext): Promise<any> {
-    const questionServices: IQuestionService[] = [
-      this.apimServiceQuestion,
-      this.openApiDocumentQuestion,
-      this.apiPrefixQuestion,
-      this.apiVersionQuestion,
-      this.newApiVersionQuestion,
-      this.existingOpenApiDocumentFunc,
-    ];
-    for (const questionService of questionServices) {
-      if (
-        questionService.funcName &&
-        questionService.executeFunc &&
-        questionService.funcName === func.method
-      ) {
-        return await questionService.executeFunc(ctx);
-      }
-    }
-
     throw BuildError(NotImplemented);
   }
 

@@ -38,12 +38,17 @@ export class ApimPlugin implements Plugin {
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     return await this.executeWithFxError(PluginLifeCycle.GetQuestions, _getQuestions, ctx, stage);
   }
-  
+
   public async getQuestionsForUserTask(
     func: Func,
     ctx: PluginContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    return await this.executeWithFxError(PluginLifeCycle.GetQuestions, _getQuestionsForUserTask, ctx, func);
+    return await this.executeWithFxError(
+      PluginLifeCycle.GetQuestions,
+      _getQuestionsForUserTask,
+      ctx,
+      func
+    );
   }
 
   public async callFunc(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {
@@ -122,15 +127,12 @@ async function _getQuestions(
   const apimConfig = new ApimPluginConfig(ctx.config);
   const questionManager = await Factory.buildQuestionManager(ctx, solutionConfig);
   switch (stage) {
-    case Stage.update:
-      return await questionManager.update(ctx, apimConfig);
     case Stage.deploy:
       return await questionManager.deploy(ctx, apimConfig);
     default:
       return undefined;
   }
 }
-
 
 async function _getQuestionsForUserTask(
   ctx: PluginContext,
@@ -140,7 +142,7 @@ async function _getQuestionsForUserTask(
   const solutionConfig = new SolutionConfig(ctx.configOfOtherPlugins);
   const apimConfig = new ApimPluginConfig(ctx.config);
   const questionManager = await Factory.buildQuestionManager(ctx, solutionConfig);
-  if(func.method === "addResource"){
+  if (func.method === "addResource") {
     return await questionManager.update(ctx, apimConfig);
   }
   return undefined;
@@ -161,10 +163,10 @@ async function _scaffold(ctx: PluginContext, progressBar: ProgressBar): Promise<
   const appName = AssertNotEmpty("projectSettings.appName", ctx?.projectSettings?.appName);
 
   if (answer.validate) {
-    await answer.validate(Stage.update, apimConfig, ctx.root);
+    await answer.validate(PluginLifeCycle.Scaffold, apimConfig, ctx.root);
   }
 
-  answer.save(Stage.update, apimConfig);
+  answer.save(PluginLifeCycle.Scaffold, apimConfig);
 
   await progressBar.next(ProgressStep.Scaffold, ProgressMessages[ProgressStep.Scaffold].Scaffold);
   await scaffoldManager.scaffold(appName, ctx.root);
@@ -229,10 +231,10 @@ async function _deploy(ctx: PluginContext, progressBar: ProgressBar): Promise<vo
   const answer = buildAnswer(ctx);
 
   if (answer.validate) {
-    await answer.validate(Stage.deploy, apimConfig, ctx.root);
+    await answer.validate(PluginLifeCycle.Deploy, apimConfig, ctx.root);
   }
 
-  answer.save(Stage.deploy, apimConfig);
+  answer.save(PluginLifeCycle.Deploy, apimConfig);
 
   const apimManager = await Factory.buildApimManager(ctx, solutionConfig);
 

@@ -256,6 +256,7 @@ export enum PluginLifeCycle {
   Provision = "provision",
   PostProvision = "post-provision",
   Deploy = "deploy",
+  GetQuestionsForUserTask = "get-questions-for-user-task",
 }
 
 export enum ProgressStep {
@@ -273,6 +274,7 @@ export const PluginLifeCycleToProgressStep: { [key in PluginLifeCycle]: Progress
   [PluginLifeCycle.Provision]: ProgressStep.Provision,
   [PluginLifeCycle.PostProvision]: ProgressStep.PostProvision,
   [PluginLifeCycle.Deploy]: ProgressStep.Deploy,
+  [PluginLifeCycle.GetQuestionsForUserTask]: ProgressStep.None,
 };
 
 export const ProgressMessages: { [key in ProgressStep]: { [step: string]: string } } = {

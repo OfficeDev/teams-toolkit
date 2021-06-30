@@ -37,6 +37,8 @@ export default class Preview extends YargsCommand {
   public readonly command = `${this.commandHead}`;
   public readonly description = "Preview the current application.";
 
+  private backgroundTasks: Task[] = [];
+
   public builder(yargs: Argv): Argv<any> {
     yargs.option("local", {
       description: "Preview the application from local, exclusive with --remote",
@@ -124,6 +126,9 @@ export default class Preview extends YargsCommand {
       return err(errors.RequiredPathNotExists(botRoot));
     }
 
+    // clear background tasks
+    this.backgroundTasks = [];
+
     /* === start ngrok === */
     const skipNgrokConfig = config?.config
       ?.get(constants.localDebugPluginName)
@@ -132,6 +137,7 @@ export default class Preview extends YargsCommand {
     if (includeBot && !skipNgrok) {
       const result = await this.startNgrok(botRoot);
       if (result.isErr()) {
+        await this.terminateTasks();
         return result;
       }
     }
@@ -145,12 +151,14 @@ export default class Preview extends YargsCommand {
       includeBot && skipNgrok ? botRoot : undefined
     );
     if (result.isErr()) {
+      await this.terminateTasks();
       return result;
     }
 
     /* === check ports === */
     const portsInUse = await commonUtils.getPortsInUse(includeFrontend, includeBackend, includeBot);
     if (portsInUse.length > 0) {
+      await this.terminateTasks();
       return err(errors.PortsAlreadyInUse(portsInUse));
     }
 
@@ -166,6 +174,7 @@ export default class Preview extends YargsCommand {
       includeBot ? botRoot : undefined
     );
     if (result.isErr()) {
+      await this.terminateTasks();
       return result;
     }
 
@@ -173,12 +182,14 @@ export default class Preview extends YargsCommand {
     // re-activate to make core updated
     coreResult = await activate();
     if (coreResult.isErr()) {
+      await this.terminateTasks();
       return err(coreResult.error);
     }
     core = coreResult.value;
 
     configResult = await core.getProjectConfig(inputs);
     if (configResult.isErr()) {
+      await this.terminateTasks();
       return err(configResult.error);
     }
     config = configResult.value;
@@ -190,6 +201,7 @@ export default class Preview extends YargsCommand {
       ?.get(constants.solutionPluginName)
       ?.get(constants.localTeamsAppIdConfigKey) as string;
     if (localTeamsAppId === undefined || localTeamsAppId.length === 0) {
+      await this.terminateTasks();
       return err(errors.TeamsAppIdNotExists());
     }
 
@@ -234,6 +246,7 @@ export default class Preview extends YargsCommand {
     const ngrokStartTask = new Task(constants.ngrokStartCommand, {
       cwd: botRoot,
     });
+    this.backgroundTasks.push(ngrokStartTask);
     const ngrokStartBar = DialogManagerInstance.createProgressBar(constants.ngrokStartTitle, 1);
     const ngrokStartStartCb = commonUtils.createTaskStartCb(
       ngrokStartBar,
@@ -381,6 +394,7 @@ export default class Preview extends YargsCommand {
         cwd: frontendRoot,
         env: commonUtils.mergeProcessEnv(env),
       });
+      this.backgroundTasks.push(frontendStartTask);
     }
 
     let authStartTask: Task | undefined;
@@ -391,6 +405,7 @@ export default class Preview extends YargsCommand {
         cwd,
         env: commonUtils.mergeProcessEnv(env),
       });
+      this.backgroundTasks.push(authStartTask);
     }
 
     let backendStartTask: Task | undefined;
@@ -406,11 +421,13 @@ export default class Preview extends YargsCommand {
         cwd: backendRoot,
         env: mergedEnv,
       });
+      this.backgroundTasks.push(backendStartTask);
       if (programmingLanguage === constants.ProgrammingLanguage.typescript) {
         backendWatchTask = new Task(constants.backendWatchCommand, {
           cwd: backendRoot,
           env: mergedEnv,
         });
+        this.backgroundTasks.push(backendWatchTask);
       }
     }
 
@@ -425,6 +442,7 @@ export default class Preview extends YargsCommand {
         cwd: botRoot,
         env: commonUtils.mergeProcessEnv(env),
       });
+      this.backgroundTasks.push(botStartTask);
     }
 
     const frontendStartBar = DialogManagerInstance.createProgressBar(
@@ -573,5 +591,12 @@ export default class Preview extends YargsCommand {
     await sideloadingBar.end();
 
     return ok(null);
+  }
+
+  private async terminateTasks(): Promise<void> {
+    for (const task of this.backgroundTasks) {
+      await task.terminate();
+    }
+    this.backgroundTasks = [];
   }
 }

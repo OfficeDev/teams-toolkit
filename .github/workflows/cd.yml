@@ -105,22 +105,22 @@ jobs:
       - name: release rc npm packages to npmjs.org
         if: ${{ github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.version, 'pre') && github.event.inputs.conventional-commits == 'no'}}
         run: |
-          npx lerna publish --no-private --preid=${{ github.event.inputs.preid }} --dist-tag=${{ github.event.inputs.preid }} ${{ github.event.inputs.version }} --yes ${{ github.event.inputs.force }}
+          npx lerna publish --no-private --preid=${{ github.event.inputs.preid }} --dist-tag=${{ github.event.inputs.preid }} ${{ github.event.inputs.version }} --no-changelog --yes ${{ github.event.inputs.force }}
 
       - name: release stable npm packages to npmjs.org
         if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && !startsWith(github.event.inputs.version, 'pre') && github.event.inputs.conventional-commits == 'no'}}
         run: |
-          npx lerna publish --no-private --dist-tag=latest ${{ github.event.inputs.version }} --yes ${{ github.event.inputs.force }}
+          npx lerna publish --no-private --dist-tag=latest ${{ github.event.inputs.version }} --no-changelog --yes ${{ github.event.inputs.force }}
 
       - name: release rc npm packages to npmjs.org by conventional-commits
         if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.conventional-commits == 'yes' && github.event.inputs.preid == 'rc'}}
         run: |
-          npx lerna publish --conventional-prerelease --preid=rc --yes
+          npx lerna publish --conventional-prerelease --preid=rc --no-changelog --yes
 
       - name: release stable npm packages to npmjs.org by conventional-commits
         if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.conventional-commits == 'yes' && github.event.inputs.preid == 'stable'}}
         run: |
-          npx lerna publish --conventional-graduate --yes
+          npx lerna publish --conventional-graduate --no-changelog --yes
 
       - name: pack vsix
         id: pack-vsix

@@ -39,16 +39,16 @@ All tests are under `test/` folder. The filename ends with ".spec.ts".
 
 - Use `npm run test:unit` to run all unit tests.
 
-Integration tests and E2E tests need environment variables that are configured in GitHub Action.
+E2E tests need environment variables that are configured in GitHub Action.
 
 ## Test folder structure
 
 - test/unit/: unit tests for both browser and NodeJS.
 - test/unit/browser/: unit tests for browser only.
 - test/unit/node/: unit tests for NodeJS only.
-- test/integration/browser/: integration tests for browser only.
-- test/integration/node/: integration tests for NodeJS only.
-- test/e2e/: end to end tests.
+- test/e2e/browser/: end-to-end tests related to Azure resources for browser only.
+- test/e2e/node/: end-to-end tests related to Azure resources for NodeJS only.
+- test/ui/: UI end to end tests.
 
 # Style Guidelines
 

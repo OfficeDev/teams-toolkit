@@ -12,7 +12,7 @@ export class DialogUtils {
   public static async show(
     ctx: PluginContext,
     message: string,
-    level: MsgLevel.Info
+    level = MsgLevel.Info
   ): Promise<void> {
     await ctx.ui?.showMessage(level, message, false);
   }

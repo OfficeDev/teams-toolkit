@@ -40,6 +40,7 @@
     "out/**/*"
   ],
   "activationEvents": [
+    "*",
     "onCommand:fx-extension.openWelcome",
     "onCommand:fx-extension.openSamples",
     "onCommand:fx-extension.openDocument",

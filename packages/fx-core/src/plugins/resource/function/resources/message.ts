@@ -1,11 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import * as path from "path";
-import { FunctionPluginInfo, FunctionPluginPathInfo as PathInfo } from "../constants";
-
-export function normalizeMessage(message: string): string {
-  return `[${FunctionPluginInfo.displayName}] ${message}`;
-}
+import { FunctionPluginPathInfo as PathInfo } from "../constants";
 
 export class InfoMessages {
   public static readonly askNodeVersion: string = "Select Node version for the function app.";
@@ -20,10 +16,10 @@ export class InfoMessages {
 
   public static readonly installFunctionExtensions: string = "Installing Azure Functions binding.";
   public static readonly noChange: string = "No changes detected since last deployment.";
-  public static readonly skipDeployment: string = `Skip deployment for no changes detected. Remove ${path.join(
+  public static readonly skipDeployment: string = `Skip deployment of function project for no changes detected. To fully redeploy the function project, please remove the ${path.join(
     PathInfo.solutionFolderName,
     PathInfo.funcDeploymentFolderName
-  )} folder to force deployment.`;
+  )} folder and rerun the command.`;
   public static readonly failedToCheckDotnet = (error: Error) =>
     `Failed to check .NET SDK, error = '${error}'`;
   public static readonly failedToInstallDotnet = (error: Error) =>

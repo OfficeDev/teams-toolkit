@@ -1,8 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { LogProvider } from "@microsoft/teamsfx-api";
+import { FunctionPluginInfo } from "../constants";
 
-import { normalizeMessage } from "../resources/message";
+function normalizeLogs(message: string): string {
+  return `[${FunctionPluginInfo.displayName}] ${message}`;
+}
 
 export class Logger {
   static logger: LogProvider | undefined;
@@ -12,18 +15,18 @@ export class Logger {
   }
 
   public static debug(message: string): void {
-    this.logger?.debug(normalizeMessage(message));
+    this.logger?.debug(normalizeLogs(message));
   }
 
   public static info(message: string): void {
-    this.logger?.info(normalizeMessage(message));
+    this.logger?.info(normalizeLogs(message));
   }
 
   public static warning(message: string): void {
-    this.logger?.warning(normalizeMessage(message));
+    this.logger?.warning(normalizeLogs(message));
   }
 
   public static error(message: string): void {
-    this.logger?.error(normalizeMessage(message));
+    this.logger?.error(normalizeLogs(message));
   }
 }

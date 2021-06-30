@@ -46,7 +46,6 @@ import {
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
 import { Constants } from "./constants";
-import { AppStudio } from "../../solution/fx-solution/appstudio/appstudio";
 import { REMOTE_TEAMS_APP_ID } from "../../solution/fx-solution/constants";
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";

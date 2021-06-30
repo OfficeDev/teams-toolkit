@@ -39,46 +39,57 @@ export function buildAnswer(ctx: PluginContext): IAnswer {
   }
 }
 
-export class VSCodeAnswer implements IAnswer {
-  private answer: Inputs;
+class BaseAnswer {
+  protected answer: Inputs;
   constructor(answer: Inputs) {
     this.answer = answer;
   }
+
+  protected getOptionItem(questionName: string): OptionItem {
+    return this.answer[questionName] as OptionItem;
+  }
+
+  protected getString(questionName: string): string {
+    return this.answer[questionName] as string;
+  }
+}
+
+export class VSCodeAnswer extends BaseAnswer implements IAnswer {
+  constructor(answer: Inputs) {
+    super(answer);
+  }
+
   get resourceGroupName(): string | undefined {
-    const apimService = (this.answer[QuestionConstants.VSCode.Apim.questionName] as OptionItem)
-      .data as IApimServiceResource;
+    const apimService = this.getOptionItem(QuestionConstants.VSCode.Apim.questionName)
+      ?.data as IApimServiceResource;
     return apimService?.resourceGroupName;
   }
   get apimServiceName(): string | undefined {
-    const apimService = (this.answer[QuestionConstants.VSCode.Apim.questionName] as OptionItem)
+    const apimService = this.getOptionItem(QuestionConstants.VSCode.Apim.questionName)
       ?.data as IApimServiceResource;
     return apimService?.serviceName;
   }
   get apiDocumentPath(): string | undefined {
-    return (this.answer[QuestionConstants.VSCode.OpenApiDocument.questionName] as OptionItem)
-      ?.label;
+    return this.getOptionItem(QuestionConstants.VSCode.OpenApiDocument.questionName)?.label;
   }
   get openApiDocumentSpec(): OpenAPI.Document | undefined {
-    const openApiDocument = (this.answer[
+    const openApiDocument = this.getOptionItem(
       QuestionConstants.VSCode.OpenApiDocument.questionName
-    ] as OptionItem)?.data as IOpenApiDocument;
+    )?.data as IOpenApiDocument;
     return openApiDocument?.spec as OpenAPI.Document;
   }
   get apiPrefix(): string | undefined {
-    return this.answer[QuestionConstants.VSCode.ApiPrefix.questionName] as string;
+    return this.getString(QuestionConstants.VSCode.ApiPrefix.questionName);
   }
   get apiId(): string | undefined {
-    const api = (this.answer[QuestionConstants.VSCode.ApiVersion.questionName] as OptionItem)
+    const api = this.getOptionItem(QuestionConstants.VSCode.ApiVersion.questionName)
       ?.data as ApiContract;
     return api?.name;
   }
   get versionIdentity(): string | undefined {
-    const api = (this.answer[QuestionConstants.VSCode.ApiVersion.questionName] as OptionItem)
+    const api = this.getOptionItem(QuestionConstants.VSCode.ApiVersion.questionName)
       ?.data as ApiContract;
-    return (
-      api?.apiVersion ??
-      (this.answer[QuestionConstants.VSCode.NewApiVersion.questionName] as string)
-    );
+    return api?.apiVersion ?? this.getString(QuestionConstants.VSCode.NewApiVersion.questionName);
   }
 
   save(lifecycle: PluginLifeCycle, apimConfig: IApimPluginConfig): void {
@@ -95,29 +106,28 @@ export class VSCodeAnswer implements IAnswer {
   }
 }
 
-export class CLIAnswer implements IAnswer {
-  private answer: Inputs;
+export class CLIAnswer extends BaseAnswer implements IAnswer {
   constructor(answer: Inputs) {
-    this.answer = answer;
+    super(answer);
   }
 
   get resourceGroupName(): string | undefined {
-    return this.answer[QuestionConstants.CLI.ApimResourceGroup.questionName] as string;
+    return this.getString(QuestionConstants.CLI.ApimResourceGroup.questionName);
   }
   get apimServiceName(): string | undefined {
-    return this.answer[QuestionConstants.CLI.ApimServiceName.questionName] as string;
+    return this.getString(QuestionConstants.CLI.ApimServiceName.questionName);
   }
   get apiDocumentPath(): string | undefined {
-    return this.answer[QuestionConstants.CLI.OpenApiDocument.questionName] as string;
+    return this.getString(QuestionConstants.CLI.OpenApiDocument.questionName);
   }
   get apiPrefix(): string | undefined {
-    return this.answer[QuestionConstants.CLI.ApiPrefix.questionName] as string;
+    return this.getString(QuestionConstants.CLI.ApiPrefix.questionName);
   }
   get apiId(): string | undefined {
-    return this.answer[QuestionConstants.CLI.ApiId.questionName] as string;
+    return this.getString(QuestionConstants.CLI.ApiId.questionName);
   }
   get versionIdentity(): string | undefined {
-    return this.answer[QuestionConstants.CLI.ApiVersion.questionName] as string;
+    return this.getString(QuestionConstants.CLI.ApiVersion.questionName);
   }
 
   save(lifecycle: PluginLifeCycle, apimConfig: IApimPluginConfig): void {

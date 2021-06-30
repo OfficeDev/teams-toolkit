@@ -36,7 +36,6 @@ export class QuestionConstants {
   public static readonly VSCode = class {
     public static readonly Apim = class {
       public static readonly questionName: string = "vsc-apim-service";
-      public static readonly funcName: string = "apim-service-option";
       public static readonly description: string = "Select API Management service";
       public static readonly createNewApimOption: string = "+ Create a new API Management service";
     };
@@ -52,12 +51,10 @@ export class QuestionConstants {
     public static readonly ExistingOpenApiDocument = class {
       // Same to OpenApiDocument.questionName
       public static readonly questionName: string = "vsc-open-api-document";
-      public static readonly funcName: string = "existing-open-api-document-option";
     };
 
     public static readonly ApiPrefix = class {
       public static readonly questionName: string = "vsc-api-prefix";
-      public static readonly funcName: string = "api-prefix-default-value";
       public static readonly description: string = "Input the API name prefix.";
       public static readonly prompt: string =
         "The unique name of the API will be '{api-prefix}-{resource-suffix}-{api-version}'.";
@@ -65,14 +62,12 @@ export class QuestionConstants {
 
     public static readonly ApiVersion = class {
       public static readonly questionName: string = "vsc-api-version";
-      public static readonly funcName: string = "api-version-option";
       public static readonly description: string = "Select an API version.";
       public static readonly createNewApiVersionOption: string = "+ Create a new API version";
     };
 
     public static readonly NewApiVersion = class {
       public static readonly questionName: string = "vsc-new-api-version";
-      public static readonly funcName: string = "new-api-version-default-value";
       public static readonly description: string = "Input the API version.";
     };
   };

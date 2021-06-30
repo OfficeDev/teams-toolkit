@@ -1,21 +1,11 @@
 {{#IS_ME}}
 import { default as axios } from "axios";
 import * as querystring from "querystring";
-import { TeamsActivityHandler, CardFactory, TurnContext } from "botbuilder";
 {{/IS_ME}}
-{{#IS_BOT}}
-import {
-  TeamsActivityHandler,
-  SigninStateVerificationQuery,
-  ActionTypes,
-  CardFactory,
-  BotState,
-  TurnContext,
-} from "botbuilder";
-import { MainDialog } from "./dialogs/mainDialog";
-{{/IS_BOT}}
+import { TeamsActivityHandler, CardFactory, TurnContext{{#IS_BOT}}, SigninStateVerificationQuery, ActionTypes, BotState{{/IS_BOT}}} from "botbuilder";
+{{#IS_BOT}}import { MainDialog } from "./dialogs/mainDialog";{{/IS_BOT}}
 
-export class TeamsBot extends TeamsActivityHandler {
+export class {{#IS_BOT}}TeamsBot{{/IS_BOT}}{{^IS_BOT}}MessageExtensionBot{{/IS_BOT}} extends TeamsActivityHandler {
   {{#IS_BOT}}
   conversationState: BotState;
   userState: BotState;

@@ -118,6 +118,12 @@ export const GetConfigError: AadError = {
   message: (message: string) => message,
 };
 
+export const AppNotExistError: AadError = {
+  name: "AppNotExist",
+  message: () =>
+    `Failed to get Azure AD app or server failed. Please make sure Azure AD app exists and try again.`,
+};
+
 export class ConfigErrorMessages {
   static readonly GetDisplayNameError = "Failed to get display name.";
   static readonly GetConfigError = (configName: string, plugin: string) =>

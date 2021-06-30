@@ -15,6 +15,9 @@ export class Constants {
   static AskForEnv = "Which Azure AD app do you want to update permission for?";
   static AskForEnvName = "aad-env";
 
+  static appStudioErrorMessage =
+    "does not exist or one of its queried reference-property objects are not present.";
+
   static defaultPermissions: RequiredResourceAccess = {
     resourceAppId: "00000003-0000-0000-c000-000000000000",
     resourceAccess: [

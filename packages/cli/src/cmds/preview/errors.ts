@@ -73,3 +73,11 @@ export function PortsAlreadyInUse(portsInUse: number[]): UserError {
       : util.format("Port: %s is already in use. Close this port and try again.", portsInUse[0]);
   return returnUserError(new Error(message), constants.cliSource, "PortsAlreadyInUse");
 }
+
+export function PreviewWithoutProvision(): UserError {
+  return returnUserError(
+    new Error("Provision and deploy commands are required before preview from remote."),
+    constants.cliSource,
+    "PreviewWithoutProvision"
+  );
+}

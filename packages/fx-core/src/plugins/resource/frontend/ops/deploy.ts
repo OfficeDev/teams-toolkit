@@ -19,6 +19,7 @@ import { Utils } from "../utils";
 import fs from "fs-extra";
 import path from "path";
 import { TelemetryHelper } from "../utils/telemetry-helper";
+import { DialogUtils } from "../utils/dialog";
 
 interface DeploymentInfo {
   lastBuildTime?: string;
@@ -121,6 +122,8 @@ export class FrontendDeployment {
     await progressHandler?.next(DeploySteps.getSrcAndDest);
     await progressHandler?.next(DeploySteps.Clear);
     await progressHandler?.next(DeploySteps.Upload);
+
+    DialogUtils.show(Messages.SkipDeploy);
   }
 
   private static async hasUpdatedContent(

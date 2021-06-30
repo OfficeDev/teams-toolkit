@@ -14,11 +14,13 @@ import { Logger } from "./utils/logger";
 import { ProgressHelper } from "./utils/progress-helper";
 import { TelemetryEvent } from "./constants";
 import { TelemetryHelper } from "./utils/telemetry-helper";
+import { DialogUtils } from "./utils/dialog";
 
 export class FrontendPlugin implements Plugin {
   frontendPluginImpl = new FrontendPluginImpl();
 
   private static setContext(ctx: PluginContext): void {
+    DialogUtils.setContext(ctx);
     Logger.setLogger(ctx.logProvider);
     TelemetryHelper.setContext(ctx);
   }

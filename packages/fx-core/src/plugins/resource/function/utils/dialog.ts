@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { PluginContext } from "@microsoft/teamsfx-api";
+import { normalizeMessage } from "../resources/message";
 
 enum MsgLevel {
   Info = "info",
@@ -14,6 +15,6 @@ export class DialogUtils {
     message: string,
     level = MsgLevel.Info
   ): Promise<void> {
-    await ctx.ui?.showMessage(level, message, false);
+    await ctx.ui?.showMessage(level, normalizeMessage(message), false);
   }
 }

@@ -1,16 +1,19 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { MsgLevel, PluginContext } from "@microsoft/teamsfx-api";
+import { PluginContext } from "@microsoft/teamsfx-api";
+
+enum MsgLevel {
+  Info = "info",
+  Warn = "warn",
+  Error = "error",
+}
 
 export class DialogUtils {
   public static async show(
     ctx: PluginContext,
     message: string,
-    level = MsgLevel.Info
+    level: MsgLevel.Info
   ): Promise<void> {
-    let l: "info" | "warn" | "error" = "info";
-    if (level === MsgLevel.Warning) l = "warn";
-    else if (level === MsgLevel.Error) l = "error";
-    ctx.ui?.showMessage(l, message, false);
+    await ctx.ui?.showMessage(level, message, false);
   }
 }

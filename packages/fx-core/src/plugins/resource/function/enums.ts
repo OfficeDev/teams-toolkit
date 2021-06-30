@@ -54,7 +54,7 @@ export enum TelemetryKey {
   ErrorCode = "error-code",
   AppId = "appid",
   OSArch = "os-arch",
-  OSRelease = "os-release"
+  OSRelease = "os-release",
 }
 
 export enum TelemetryValue {
@@ -76,5 +76,6 @@ export enum FunctionEvent {
   postDeploy = "post-deploy",
   getQuestions = "get-questions",
   callFunc = "call-func",
-  scaffoldFallback = "scaffold-fallback"
+  scaffoldFallback = "scaffold-fallback",
+  skipDeploy = "skip-deploy",
 }

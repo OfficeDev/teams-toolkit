@@ -38,7 +38,7 @@ export class ApimServiceQuestion extends BaseQuestionService implements IQuestio
     this.lazyApimService = lazyApimService;
   }
 
-  public getQuestion(ctx: PluginContext): SingleSelectQuestion {
+  public getQuestion(): SingleSelectQuestion {
     return {
       type: "singleSelect",
       name: QuestionConstants.VSCode.Apim.questionName,
@@ -157,14 +157,14 @@ export class ApiPrefixQuestion extends BaseQuestionService implements IQuestionS
     super(telemetryReporter, logger);
   }
 
-  public getQuestion(ctx: PluginContext): TextInputQuestion {
+  public getQuestion(): TextInputQuestion {
     return {
       type: "text",
       name: QuestionConstants.VSCode.ApiPrefix.questionName,
       title: QuestionConstants.VSCode.ApiPrefix.description,
       prompt: QuestionConstants.VSCode.ApiPrefix.prompt,
       default: async (inputs: Inputs): Promise<string> => {
-        const apiTitle = buildAnswer(ctx)?.openApiDocumentSpec?.info.title;
+        const apiTitle = buildAnswer(inputs)?.openApiDocumentSpec?.info.title;
         let apiPrefix: string | undefined;
         if (apiTitle) {
           apiPrefix = NamingRules.apiPrefix.sanitize(apiTitle);
@@ -192,11 +192,25 @@ export class ApiVersionQuestion extends BaseQuestionService implements IQuestion
     this.lazyApimService = lazyApimService;
   }
 
-  private async getDynamicOptions(ctx: PluginContext): Promise<OptionItem[]> {
+  public getQuestion(ctx: PluginContext): SingleSelectQuestion {
+    return {
+      type: "singleSelect",
+      name: QuestionConstants.VSCode.ApiVersion.questionName,
+      title: QuestionConstants.VSCode.ApiVersion.description,
+      staticOptions: [],
+      dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
+        return this.getDynamicOptions(inputs, ctx);
+      },
+      returnObject: true,
+      skipSingleOption: false,
+    };
+  }
+
+  private async getDynamicOptions(inputs: Inputs, ctx: PluginContext): Promise<OptionItem[]> {
     const apimService = await this.lazyApimService.getValue();
     const apimConfig = new ApimPluginConfig(ctx.config);
     const solutionConfig = new SolutionConfig(ctx.configOfOtherPlugins);
-    const answer = buildAnswer(ctx);
+    const answer = buildAnswer(inputs);
     const resourceGroupName = apimConfig.resourceGroupName ?? solutionConfig.resourceGroupName;
     const serviceName = AssertConfigNotEmpty(
       TeamsToolkitComponent.ApimPlugin,
@@ -231,20 +245,6 @@ export class ApiVersionQuestion extends BaseQuestionService implements IQuestion
     };
     return [createNewApiVersionOption, ...existingApiVersionOptions];
   }
-
-  public getQuestion(ctx: PluginContext): SingleSelectQuestion {
-    return {
-      type: "singleSelect",
-      name: QuestionConstants.VSCode.ApiVersion.questionName,
-      title: QuestionConstants.VSCode.ApiVersion.description,
-      staticOptions: [],
-      dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
-        return this.getDynamicOptions(ctx);
-      },
-      returnObject: true,
-      skipSingleOption: false,
-    };
-  }
 }
 
 export class NewApiVersionQuestion extends BaseQuestionService implements IQuestionService {
@@ -258,13 +258,13 @@ export class NewApiVersionQuestion extends BaseQuestionService implements IQuest
     };
   }
 
-  public getQuestion(ctx: PluginContext): TextInputQuestion {
+  public getQuestion(): TextInputQuestion {
     return {
       type: "text",
       name: QuestionConstants.VSCode.NewApiVersion.questionName,
       title: QuestionConstants.VSCode.NewApiVersion.description,
       default: async (inputs: Inputs): Promise<string> => {
-        const apiVersion = buildAnswer(ctx)?.openApiDocumentSpec?.info.version;
+        const apiVersion = buildAnswer(inputs)?.openApiDocumentSpec?.info.version;
         let versionIdentity: string | undefined;
         if (apiVersion) {
           versionIdentity = NamingRules.versionIdentity.sanitize(apiVersion);

@@ -27,36 +27,36 @@ export interface IAnswer {
   ): Promise<void>;
 }
 
-export function buildAnswer(ctx: PluginContext): IAnswer {
-  const answers = AssertNotEmpty("ctx.answers", ctx.answers);
-  switch (answers.platform) {
+export function buildAnswer(inputs: Inputs | undefined): IAnswer {
+  inputs = AssertNotEmpty("inputs", inputs);
+  switch (inputs.platform) {
     case Platform.VSCode:
-      return new VSCodeAnswer(answers);
+      return new VSCodeAnswer(inputs);
     case Platform.CLI:
-      return new CLIAnswer(answers);
+      return new CLIAnswer(inputs);
     default:
       throw BuildError(NotImplemented);
   }
 }
 
 class BaseAnswer {
-  protected answer: Inputs;
-  constructor(answer: Inputs) {
-    this.answer = answer;
+  protected inputs: Inputs;
+  constructor(inputs: Inputs) {
+    this.inputs = inputs;
   }
 
   protected getOptionItem(questionName: string): OptionItem {
-    return this.answer[questionName] as OptionItem;
+    return this.inputs[questionName] as OptionItem;
   }
 
   protected getString(questionName: string): string {
-    return this.answer[questionName] as string;
+    return this.inputs[questionName] as string;
   }
 }
 
 export class VSCodeAnswer extends BaseAnswer implements IAnswer {
-  constructor(answer: Inputs) {
-    super(answer);
+  constructor(inputs: Inputs) {
+    super(inputs);
   }
 
   get resourceGroupName(): string | undefined {
@@ -107,8 +107,8 @@ export class VSCodeAnswer extends BaseAnswer implements IAnswer {
 }
 
 export class CLIAnswer extends BaseAnswer implements IAnswer {
-  constructor(answer: Inputs) {
-    super(answer);
+  constructor(inputs: Inputs) {
+    super(inputs);
   }
 
   get resourceGroupName(): string | undefined {

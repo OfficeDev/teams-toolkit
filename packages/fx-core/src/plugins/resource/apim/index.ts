@@ -143,7 +143,7 @@ async function _getQuestionsForUserTask(
   const apimConfig = new ApimPluginConfig(ctx.config);
   const questionManager = await Factory.buildQuestionManager(ctx, solutionConfig);
   if (func.method === "addResource") {
-    return await questionManager.update(ctx, apimConfig);
+    return await questionManager.addResource(ctx, apimConfig);
   }
   return undefined;
 }
@@ -157,7 +157,7 @@ async function _callFunc(ctx: PluginContext, progressBar: ProgressBar, func: Fun
 async function _scaffold(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {
   const solutionConfig = new SolutionConfig(ctx.configOfOtherPlugins);
   const apimConfig = new ApimPluginConfig(ctx.config);
-  const answer = buildAnswer(ctx);
+  const answer = buildAnswer(ctx.answers);
   const scaffoldManager = await Factory.buildScaffoldManager(ctx, solutionConfig);
 
   const appName = AssertNotEmpty("projectSettings.appName", ctx?.projectSettings?.appName);
@@ -228,7 +228,7 @@ async function _deploy(ctx: PluginContext, progressBar: ProgressBar): Promise<vo
   const solutionConfig = new SolutionConfig(ctx.configOfOtherPlugins);
   const apimConfig = new ApimPluginConfig(ctx.config);
   const functionConfig = new FunctionPluginConfig(ctx.configOfOtherPlugins);
-  const answer = buildAnswer(ctx);
+  const answer = buildAnswer(ctx.answers);
 
   if (answer.validate) {
     await answer.validate(PluginLifeCycle.Deploy, apimConfig, ctx.root);

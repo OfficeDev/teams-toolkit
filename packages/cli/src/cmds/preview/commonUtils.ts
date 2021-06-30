@@ -158,3 +158,16 @@ export async function getPortsInUse(
   }
   return portsInUse;
 }
+
+export function mergeProcessEnv(
+  env: { [key: string]: string | undefined } | undefined
+): { [key: string]: string | undefined } | undefined {
+  if (env === undefined) {
+    return process.env;
+  }
+  const result = Object.assign({}, process.env);
+  for (const key of Object.keys(env)) {
+    result[key] = env[key];
+  }
+  return result;
+}

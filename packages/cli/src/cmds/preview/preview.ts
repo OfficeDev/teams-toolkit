@@ -202,9 +202,36 @@ export default class Preview extends YargsCommand {
   }
 
   private async remotePreview(workspaceFolder: string): Promise<Result<null, FxError>> {
-    // TODO: get remote teams app id
+    /* === get remote teams app id === */
+    const coreResult = await activate();
+    if (coreResult.isErr()) {
+      return err(coreResult.error);
+    }
+    const core = coreResult.value;
 
-    // TODO: open teams web client
+    const inputs: Inputs = {
+      projectPath: workspaceFolder,
+      platform: Platform.CLI,
+    };
+
+    const configResult = await core.getProjectConfig(inputs);
+    if (configResult.isErr()) {
+      return err(configResult.error);
+    }
+    const config = configResult.value;
+
+    const tenantId = config?.config
+      ?.get(constants.solutionPluginName)
+      ?.get(constants.teamsAppTenantIdConfigKey) as string;
+    const remoteTeamsAppId = config?.config
+      ?.get(constants.solutionPluginName)
+      ?.get(constants.remoteTeamsAppIdConfigKey) as string;
+    if (remoteTeamsAppId === undefined || remoteTeamsAppId.length === 0) {
+      return err(errors.PreviewWithoutProvision());
+    }
+
+    /* === open teams web client === */
+    await this.openTeamsWebClient(tenantId.length === 0 ? undefined : tenantId, remoteTeamsAppId);
 
     return ok(null);
   }

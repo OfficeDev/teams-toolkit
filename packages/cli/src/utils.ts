@@ -110,6 +110,7 @@ export function toYargsOptions(data: Question): Options {
       choices: choices,
       hidden: !!(data as any).hide,
       global: false,
+      type: "string",
     };
   }
   return {
@@ -119,6 +120,7 @@ export function toYargsOptions(data: Question): Options {
     choices: choices,
     hidden: !!(data as any).hide,
     global: false,
+    type: "string",
   };
 }
 

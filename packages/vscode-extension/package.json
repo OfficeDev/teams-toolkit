@@ -98,7 +98,8 @@
         },
         {
           "id": "teamsfx-feedback",
-          "name": "Feedback"
+          "name": "Feedback",
+          "visibility": "collapsed"
         }
       ]
     },

@@ -15,6 +15,9 @@ export class Constants {
   static AskForEnv = "Which Azure AD app do you want to update permission for?";
   static AskForEnvName = "aad-env";
 
+  static statusCodeUserError = 400;
+  static statusCodeServerError = 500;
+
   static defaultPermissions: RequiredResourceAccess = {
     resourceAppId: "00000003-0000-0000-c000-000000000000",
     resourceAccess: [

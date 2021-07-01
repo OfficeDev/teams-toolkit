@@ -18,7 +18,6 @@ import { IAADPassword } from "./interfaces/IAADApplication";
 import { IAADDefinition, RequiredResourceAccess } from "./interfaces/IAADDefinition";
 import { ResultFactory } from "./results";
 import { ProvisionConfig } from "./utils/configs";
-import { DialogUtils } from "./utils/dialog";
 import { TokenAudience, TokenProvider } from "./utils/tokenProvider";
 
 function delay(ms: number) {
@@ -47,6 +46,12 @@ export class AadAppClient {
       config.clientId = provisionAadResponse.appId;
       config.objectId = provisionAadResponse.id;
     } catch (error) {
+      if (
+        error?.response?.status >= Constants.statusCodeUserError &&
+        error?.response?.status < Constants.statusCodeServerError
+      ) {
+        throw ResultFactory.UserError(CreateAppError.name, CreateAppError.message(), error);
+      }
       throw ResultFactory.SystemError(CreateAppError.name, CreateAppError.message(), error);
     }
   }
@@ -65,6 +70,12 @@ export class AadAppClient {
       }
       config.password = createSecretObject.value;
     } catch (error) {
+      if (
+        error?.response?.status >= Constants.statusCodeUserError &&
+        error?.response?.status < Constants.statusCodeServerError
+      ) {
+        throw ResultFactory.UserError(CreateSecretError.name, CreateSecretError.message(), error);
+      }
       throw ResultFactory.SystemError(CreateSecretError.name, CreateSecretError.message(), error);
     }
   }
@@ -93,8 +104,17 @@ export class AadAppClient {
         );
       }
     } catch (error) {
-      DialogUtils.show(UpdateRedirectUriError.message());
-      throw ResultFactory.UserError(
+      if (
+        error?.response?.status >= Constants.statusCodeUserError &&
+        error?.response?.status < Constants.statusCodeServerError
+      ) {
+        throw ResultFactory.UserError(
+          UpdateRedirectUriError.name,
+          UpdateRedirectUriError.message(),
+          error
+        );
+      }
+      throw ResultFactory.SystemError(
         UpdateRedirectUriError.name,
         UpdateRedirectUriError.message(),
         error
@@ -123,12 +143,22 @@ export class AadAppClient {
         );
       }
     } catch (error) {
-      throw ResultFactory.UserError(
+      if (
+        error?.response?.status >= Constants.statusCodeUserError &&
+        error?.response?.status < Constants.statusCodeServerError
+      ) {
+        throw ResultFactory.UserError(
+          UpdateAppIdUriError.name,
+          UpdateAppIdUriError.message(),
+          error,
+          undefined,
+          UpdateAppIdUriError.helpLink
+        );
+      }
+      throw ResultFactory.SystemError(
         UpdateAppIdUriError.name,
         UpdateAppIdUriError.message(),
-        error,
-        undefined,
-        UpdateAppIdUriError.helpLink
+        error
       );
     }
   }
@@ -157,6 +187,16 @@ export class AadAppClient {
         );
       }
     } catch (error) {
+      if (
+        error?.response?.status >= Constants.statusCodeUserError &&
+        error?.response?.status < Constants.statusCodeServerError
+      ) {
+        throw ResultFactory.UserError(
+          UpdatePermissionError.name,
+          UpdatePermissionError.message(),
+          error
+        );
+      }
       throw ResultFactory.SystemError(
         UpdatePermissionError.name,
         UpdatePermissionError.message(),
@@ -182,6 +222,12 @@ export class AadAppClient {
         )) as IAADDefinition;
       }
     } catch (error) {
+      if (
+        error?.response?.status >= Constants.statusCodeUserError &&
+        error?.response?.status < Constants.statusCodeServerError
+      ) {
+        throw ResultFactory.UserError(GetAppError.name, GetAppError.message(), error);
+      }
       throw ResultFactory.SystemError(GetAppError.name, GetAppError.message(), error);
     }
 

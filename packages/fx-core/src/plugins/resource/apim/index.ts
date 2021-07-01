@@ -44,7 +44,7 @@ export class ApimPlugin implements Plugin {
     ctx: PluginContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     return await this.executeWithFxError(
-      PluginLifeCycle.GetQuestions,
+      PluginLifeCycle.GetQuestionsForUserTask,
       _getQuestionsForUserTask,
       ctx,
       func

@@ -32,10 +32,8 @@ export class TelemetryUtils {
     if (!properties) {
       properties = {};
     }
-    properties[Telemetry.component] = Plugins.pluginNameComplex;
     properties[Telemetry.isSuccess] = Telemetry.yes;
-    TelemetryUtils.addAppIdInProperty(properties, this.ctx);
-    TelemetryUtils.ctx.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
+    TelemetryUtils.sendEvent(eventName, properties, measurements);
   }
 
   public static sendErrorEvent(
@@ -70,8 +68,13 @@ export class TelemetryUtils {
     };
   };
 
-  private static addAppIdInProperty(properties:{ [key: string]: string }, ctx: PluginContext): void {
-    const appId = ctx.configOfOtherPlugins.get(Plugins.solution)?.get(ConfigKeysOfOtherPlugin.remoteTeamsAppId);
+  private static addAppIdInProperty(
+    properties: { [key: string]: string },
+    ctx: PluginContext
+  ): void {
+    const appId = ctx.configOfOtherPlugins
+      .get(Plugins.solution)
+      ?.get(ConfigKeysOfOtherPlugin.remoteTeamsAppId);
     if (appId) {
       properties[Telemetry.appId] = appId as string;
     } else {

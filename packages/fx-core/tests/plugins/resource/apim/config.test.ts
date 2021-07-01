@@ -8,7 +8,12 @@ import {
   SolutionConfigKeys,
 } from "../../../../src/plugins/resource/apim/constants";
 import { ApimPluginConfig, SolutionConfig } from "../../../../src/plugins/resource/apim/config";
-import { ConfigValue, PluginIdentity, ReadonlyPluginConfig } from "@microsoft/teamsfx-api";
+import {
+  ConfigMap,
+  ConfigValue,
+  PluginIdentity,
+  ReadonlyPluginConfig,
+} from "@microsoft/teamsfx-api";
 
 describe("config", () => {
   describe("SolutionConfig", () => {
@@ -42,10 +47,10 @@ describe("config", () => {
   });
 
   describe("ApimPluginConfig", () => {
-    const configContent = new Map<string, ConfigValue>([
-      [ApimPluginConfigKeys.resourceGroupName, "test-resource-group-name"],
-      [ApimPluginConfigKeys.serviceName, 1],
-    ]);
+    const configContent = ConfigMap.fromJSON({
+      [ApimPluginConfigKeys.resourceGroupName]: "test-resource-group-name",
+      [ApimPluginConfigKeys.serviceName]: 1,
+    });
 
     const apimPluginConfig = new ApimPluginConfig(configContent);
     it("Undefined property", () => {

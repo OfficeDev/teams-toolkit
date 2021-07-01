@@ -73,10 +73,20 @@ export default class Preview extends YargsCommand {
 
     CliTelemetry.setReporter(CliTelemetry.getReporter().withRootFolder(workspaceFolder));
 
-    if (args.local || (!args.local && !args.remote)) {
-      return await this.localPreview(workspaceFolder);
+    try {
+      const previewType = args.local || (!args.local && !args.remote) ? "local" : "remote";
+      const result =
+        previewType === "local"
+          ? await this.localPreview(workspaceFolder)
+          : await this.remotePreview(workspaceFolder);
+      if (result.isErr()) {
+        throw result.error;
+      }
+      return ok(null);
+    } catch (error) {
+      await this.terminateTasks();
+      return err(error);
     }
-    return await this.remotePreview(workspaceFolder);
   }
 
   private async localPreview(workspaceFolder: string): Promise<Result<null, FxError>> {
@@ -137,7 +147,6 @@ export default class Preview extends YargsCommand {
     if (includeBot && !skipNgrok) {
       const result = await this.startNgrok(botRoot);
       if (result.isErr()) {
-        await this.terminateTasks();
         return result;
       }
     }
@@ -151,14 +160,12 @@ export default class Preview extends YargsCommand {
       includeBot && skipNgrok ? botRoot : undefined
     );
     if (result.isErr()) {
-      await this.terminateTasks();
       return result;
     }
 
     /* === check ports === */
     const portsInUse = await commonUtils.getPortsInUse(includeFrontend, includeBackend, includeBot);
     if (portsInUse.length > 0) {
-      await this.terminateTasks();
       return err(errors.PortsAlreadyInUse(portsInUse));
     }
 
@@ -174,7 +181,6 @@ export default class Preview extends YargsCommand {
       includeBot ? botRoot : undefined
     );
     if (result.isErr()) {
-      await this.terminateTasks();
       return result;
     }
 
@@ -182,14 +188,12 @@ export default class Preview extends YargsCommand {
     // re-activate to make core updated
     coreResult = await activate();
     if (coreResult.isErr()) {
-      await this.terminateTasks();
       return err(coreResult.error);
     }
     core = coreResult.value;
 
     configResult = await core.getProjectConfig(inputs);
     if (configResult.isErr()) {
-      await this.terminateTasks();
       return err(configResult.error);
     }
     config = configResult.value;
@@ -201,7 +205,6 @@ export default class Preview extends YargsCommand {
       ?.get(constants.solutionPluginName)
       ?.get(constants.localTeamsAppIdConfigKey) as string;
     if (localTeamsAppId === undefined || localTeamsAppId.length === 0) {
-      await this.terminateTasks();
       return err(errors.TeamsAppIdNotExists());
     }
 

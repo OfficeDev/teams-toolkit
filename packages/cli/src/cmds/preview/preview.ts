@@ -43,6 +43,7 @@ export default class Preview extends YargsCommand {
   public readonly command = `${this.commandHead}`;
   public readonly description = "Preview the current application.";
 
+  private backgroundTasks: Task[] = [];
   private readonly telemetryProperties: { [key: string]: string } = {};
 
   public builder(yargs: Argv): Argv<any> {
@@ -92,23 +93,28 @@ export default class Preview extends YargsCommand {
     CliTelemetry.setReporter(CliTelemetry.getReporter().withRootFolder(workspaceFolder));
 
     cliTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewStart, this.telemetryProperties);
-    const result =
-      previewType === "local"
-        ? await this.localPreview(workspaceFolder)
-        : await this.remotePreview(workspaceFolder);
-    if (result.isErr()) {
-      cliTelemetry.sendTelemetryErrorEvent(
-        TelemetryEvent.PreviewStart,
-        result.error,
-        this.telemetryProperties
-      );
-    } else {
+    try {
+      const result =
+        previewType === "local"
+          ? await this.localPreview(workspaceFolder)
+          : await this.remotePreview(workspaceFolder);
+      if (result.isErr()) {
+        throw result.error;
+      }
       cliTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewStart, {
         ...this.telemetryProperties,
         [TelemetryProperty.Success]: TelemetrySuccess.Yes,
       });
+      return ok(null);
+    } catch (error) {
+      cliTelemetry.sendTelemetryErrorEvent(
+        TelemetryEvent.PreviewStart,
+        error,
+        this.telemetryProperties
+      );
+      await this.terminateTasks();
+      return err(error);
     }
-    return result;
   }
 
   private async localPreview(workspaceFolder: string): Promise<Result<null, FxError>> {
@@ -157,6 +163,9 @@ export default class Preview extends YargsCommand {
     if (includeBot && !(await fs.pathExists(botRoot))) {
       return err(errors.RequiredPathNotExists(botRoot));
     }
+
+    // clear background tasks
+    this.backgroundTasks = [];
 
     /* === start ngrok === */
     const skipNgrokConfig = config?.config
@@ -303,6 +312,7 @@ export default class Preview extends YargsCommand {
     const ngrokStartTask = new Task(constants.ngrokStartCommand, {
       cwd: botRoot,
     });
+    this.backgroundTasks.push(ngrokStartTask);
     const ngrokStartBar = DialogManagerInstance.createProgressBar(constants.ngrokStartTitle, 1);
     const ngrokStartStartCb = commonUtils.createTaskStartCb(
       ngrokStartBar,
@@ -466,6 +476,7 @@ export default class Preview extends YargsCommand {
         cwd: frontendRoot,
         env: commonUtils.mergeProcessEnv(env),
       });
+      this.backgroundTasks.push(frontendStartTask);
     }
 
     let authStartTask: Task | undefined;
@@ -476,6 +487,7 @@ export default class Preview extends YargsCommand {
         cwd,
         env: commonUtils.mergeProcessEnv(env),
       });
+      this.backgroundTasks.push(authStartTask);
     }
 
     let backendStartTask: Task | undefined;
@@ -491,11 +503,13 @@ export default class Preview extends YargsCommand {
         cwd: backendRoot,
         env: mergedEnv,
       });
+      this.backgroundTasks.push(backendStartTask);
       if (programmingLanguage === constants.ProgrammingLanguage.typescript) {
         backendWatchTask = new Task(constants.backendWatchCommand, {
           cwd: backendRoot,
           env: mergedEnv,
         });
+        this.backgroundTasks.push(backendWatchTask);
       }
     }
 
@@ -510,6 +524,7 @@ export default class Preview extends YargsCommand {
         cwd: botRoot,
         env: commonUtils.mergeProcessEnv(env),
       });
+      this.backgroundTasks.push(botStartTask);
     }
 
     const frontendStartBar = DialogManagerInstance.createProgressBar(
@@ -687,5 +702,12 @@ export default class Preview extends YargsCommand {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
     });
     return ok(null);
+  }
+
+  private async terminateTasks(): Promise<void> {
+    for (const task of this.backgroundTasks) {
+      await task.terminate();
+    }
+    this.backgroundTasks = [];
   }
 }

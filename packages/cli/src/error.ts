@@ -132,3 +132,11 @@ export function ProjectFolderExist(path: string): UserError {
     "ProjectFolderExist"
   );
 }
+
+export function EmptySubConfigOptions(): SystemError {
+  return returnSystemError(
+    new Error(`Your Azure account has no active subscriptions. Please switch an Azure account.`),
+    constants.cliSource,
+    "EmptySubConfigOptions"
+  );
+}

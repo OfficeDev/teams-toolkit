@@ -36,10 +36,11 @@ import {
   UserInteraction,
   Colors,
   IProgressHandler,
+  returnSystemError,
 } from "@microsoft/teamsfx-api";
 
 import CLILogProvider from "./commonlib/log";
-import { NotValidInputValue, UnknownError } from "./error";
+import { EmptySubConfigOptions, NotValidInputValue, UnknownError } from "./error";
 import { sleep, getColorizedString } from "./utils";
 import { ChoiceOptions } from "./prompts";
 import { ProgressHandler } from "./progressHandler";
@@ -95,9 +96,9 @@ export class CLIUserInteraction implements UserInteraction {
       const labelSubArray1 = this.getSubArray(labels, idIndexes);
       const labelSubArray2 = this.getSubArray(labels, cliNameIndexes);
 
-      if (labelSubArray1[0]) {
+      if (labelSubArray1[0] !== undefined) {
         this.updatePresetAnswer(config.name, labelSubArray1);
-      } else if (labelSubArray2[0]) {
+      } else if (labelSubArray2[0] !== undefined) {
         this.updatePresetAnswer(config.name, labelSubArray2);
       }
     } else {
@@ -118,6 +119,10 @@ export class CLIUserInteraction implements UserInteraction {
 
   public removePresetAnswers(keys: string[]) {
     keys.forEach((key) => this.removePresetAnswer(key));
+  }
+
+  public clearPresetAnswers() {
+    this.presetAnswers = new Map();
   }
 
   get ciEnabled(): boolean {
@@ -220,9 +225,9 @@ export class CLIUserInteraction implements UserInteraction {
   }
 
   private async confirm(name: string, message: string): Promise<Result<boolean, FxError>> {
-    /// TODO: add default value.
+    /// default value is set to true.
     return this.runInquirer(
-      this.toInquirerQuestion("confirm", name, message, undefined, undefined, undefined)
+      this.toInquirerQuestion("confirm", name, message, undefined, true, undefined)
     );
   }
 
@@ -287,9 +292,7 @@ export class CLIUserInteraction implements UserInteraction {
     if (config.name === "subscription") {
       const subscriptions = config.options as string[];
       if (subscriptions.length === 0) {
-        throw new Error(
-          "Your Azure account has no active subscriptions. Please switch an Azure account."
-        );
+        return err(EmptySubConfigOptions());
       } else if (subscriptions.length === 1) {
         const sub = subscriptions[0];
         CLILogProvider.necessaryLog(
@@ -449,20 +452,6 @@ export class CLIUserInteraction implements UserInteraction {
 
   public async showMessage(
     level: "info" | "warn" | "error",
-    message: string,
-    modal: boolean,
-    ...items: string[]
-  ): Promise<Result<string | undefined, FxError>>;
-
-  public async showMessage(
-    level: "info" | "warn" | "error",
-    message: Array<{ content: string; color: Colors }>,
-    modal: boolean,
-    ...items: string[]
-  ): Promise<Result<string | undefined, FxError>>;
-
-  public async showMessage(
-    level: "info" | "warn" | "error",
     message: string | Array<{ content: string; color: Colors }>,
     modal: boolean,
     ...items: string[]
@@ -507,11 +496,12 @@ export class CLIUserInteraction implements UserInteraction {
           break;
         }
         default: {
-          /// TODO: add default value.
+          /// default value is set to the first element of items.
           const result = await this.singleSelect(
             "MySingleSelectQuestion",
             plainText,
-            modal ? items.concat("Cancel") : items
+            modal ? items.concat("Cancel") : items,
+            items[0]
           );
           if (result.isOk()) {
             if (result.value !== "Cancel") {
@@ -549,7 +539,7 @@ export class CLIUserInteraction implements UserInteraction {
           : `: [${current + 1}/${total}]`;
         const tail = task.message ? ` ${task.message}` : "Prepare task.";
         const message = `${head}${body}${tail}`;
-        if (showProgress) await CLILogProvider.necessaryLog(LogLevel.Info, message);
+        if (showProgress) CLILogProvider.necessaryLog(LogLevel.Info, message);
       };
       task
         .run(args)

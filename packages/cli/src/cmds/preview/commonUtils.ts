@@ -38,7 +38,9 @@ export function createTaskStopCb(
     } else {
       const error = TaskFailed(taskTitle);
       cliLogger.necessaryLog(LogLevel.Error, `${error.source}.${error.name}: ${error.message}`);
-      cliLogger.necessaryLog(LogLevel.Info, result.stderr[result.stderr.length - 1], true);
+      if (result.stderr.length > 0) {
+        cliLogger.necessaryLog(LogLevel.Info, result.stderr[result.stderr.length - 1], true);
+      }
       return error;
     }
   };
@@ -100,7 +102,7 @@ export async function getBotLocalEnv(
 }
 
 async function detectPortListeningImpl(port: number, host: string): Promise<boolean> {
-  return new Promise<boolean>((resolve, reject) => {
+  return new Promise<boolean>((resolve) => {
     try {
       const server = net.createServer();
       server

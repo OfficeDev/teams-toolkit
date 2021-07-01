@@ -82,12 +82,6 @@ class InternalLogger {
 
   public customLogger: Logger | undefined;
   public customLogFunction: LogFunction | undefined;
-  private defaultLogger: Logger = {
-    verbose: console.debug,
-    info: console.info,
-    warn: console.warn,
-    error: console.error,
-  };
 
   public error(message: string): void {
     this.log(LogLevel.Error, (x: Logger) => x.error, message);
@@ -121,8 +115,6 @@ class InternalLogger {
         logFunction(this.customLogger)(logMessage);
       } else if (this.customLogFunction) {
         this.customLogFunction(logLevel, logMessage);
-      } else {
-        logFunction(this.defaultLogger)(logMessage);
       }
     }
   }

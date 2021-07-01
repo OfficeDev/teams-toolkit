@@ -46,7 +46,10 @@ export class AadAppClient {
       config.clientId = provisionAadResponse.appId;
       config.objectId = provisionAadResponse.id;
     } catch (error) {
-      if (error?.response?.status >= 400 && error?.response?.status < 500) {
+      if (
+        error?.response?.status >= Constants.statusCodeUserError &&
+        error?.response?.status < Constants.statusCodeServerError
+      ) {
         throw ResultFactory.UserError(CreateAppError.name, CreateAppError.message(), error);
       }
       throw ResultFactory.SystemError(CreateAppError.name, CreateAppError.message(), error);
@@ -67,7 +70,10 @@ export class AadAppClient {
       }
       config.password = createSecretObject.value;
     } catch (error) {
-      if (error?.response?.status >= 400 && error?.response?.status < 500) {
+      if (
+        error?.response?.status >= Constants.statusCodeUserError &&
+        error?.response?.status < Constants.statusCodeServerError
+      ) {
         throw ResultFactory.UserError(CreateSecretError.name, CreateSecretError.message(), error);
       }
       throw ResultFactory.SystemError(CreateSecretError.name, CreateSecretError.message(), error);
@@ -98,7 +104,10 @@ export class AadAppClient {
         );
       }
     } catch (error) {
-      if (error?.response?.status >= 400 && error?.response?.status < 500) {
+      if (
+        error?.response?.status >= Constants.statusCodeUserError &&
+        error?.response?.status < Constants.statusCodeServerError
+      ) {
         throw ResultFactory.UserError(
           UpdateRedirectUriError.name,
           UpdateRedirectUriError.message(),
@@ -134,7 +143,10 @@ export class AadAppClient {
         );
       }
     } catch (error) {
-      if (error?.response?.status >= 400 && error?.response?.status < 500) {
+      if (
+        error?.response?.status >= Constants.statusCodeUserError &&
+        error?.response?.status < Constants.statusCodeServerError
+      ) {
         throw ResultFactory.UserError(
           UpdateAppIdUriError.name,
           UpdateAppIdUriError.message(),
@@ -175,7 +187,10 @@ export class AadAppClient {
         );
       }
     } catch (error) {
-      if (error?.response?.status >= 400 && error?.response?.status < 500) {
+      if (
+        error?.response?.status >= Constants.statusCodeUserError &&
+        error?.response?.status < Constants.statusCodeServerError
+      ) {
         throw ResultFactory.UserError(
           UpdatePermissionError.name,
           UpdatePermissionError.message(),
@@ -207,7 +222,10 @@ export class AadAppClient {
         )) as IAADDefinition;
       }
     } catch (error) {
-      if (error?.response?.status >= 400 && error?.response?.status < 500) {
+      if (
+        error?.response?.status >= Constants.statusCodeUserError &&
+        error?.response?.status < Constants.statusCodeServerError
+      ) {
         throw ResultFactory.UserError(GetAppError.name, GetAppError.message(), error);
       }
       throw ResultFactory.SystemError(GetAppError.name, GetAppError.message(), error);

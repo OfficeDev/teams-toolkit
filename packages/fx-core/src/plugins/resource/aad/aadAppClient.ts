@@ -237,15 +237,15 @@ export class AadAppClient {
 
       try {
         response = await fn();
+        TelemetryUtils.sendEvent(stage, {
+          [Telemetry.methodName]: fn.toString(),
+          [Telemetry.retryTimes]: (Constants.maxRetryTimes - retries - 1).toString(),
+        });
         return response;
       } catch (error) {
         if (retries === 0) {
           throw error;
         } else {
-          TelemetryUtils.sendEvent(stage, {
-            [Telemetry.methodName]: fn.toString(),
-            [Telemetry.retryTimes]: (Constants.maxRetryTimes - retries).toString(),
-          });
           await delay(5000);
         }
       }

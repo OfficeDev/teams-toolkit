@@ -39,3 +39,4 @@ jobs:
         token: ${{ secrets.github_token }}
         tag: 'template-tag-list'
         allowUpdates: true
+

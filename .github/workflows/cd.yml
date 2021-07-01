@@ -72,7 +72,7 @@ jobs:
             ./*.zip
 
       - name: cleanup templates
-        run: rm -rf ./*.zip
+        run: rm -rf ./*.zip && git clean -df
 
       - name: Download Simple Auth bits
         uses: nick-invision/retry@v2

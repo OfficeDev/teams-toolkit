@@ -35,7 +35,16 @@ export enum TelemetryEvent {
   Publish = "publish",
 
   InitStart = "init-start",
-  Init = "init"
+  Init = "init",
+
+  PreviewStart = "preview-start",
+  Preview = "preview",
+  PreviewNpmInstallStart = "preview-npm-install-start",
+  PreviewNpmInstall = "preview-npm-install",
+  PreviewServiceStart = "preview-service-start",
+  PreviewService = "preview-service",
+  PreviewSideloadingStart = "preview-sideloading-start",
+  PreviewSideloading = "preview-sideloading",
 }
 
 export enum TelemetryProperty {
@@ -51,22 +60,26 @@ export enum TelemetryProperty {
   Capabilities = "capabilities",
   Resources = "resources",
   Internal = "internal",
-  InternalAlias = "internal-alias"
+  InternalAlias = "internal-alias",
+  PreviewAppId = "preview-appid",
+  PreviewType = "preview-type",
+  PreviewNpmInstallName = "preview-npm-install-name",
+  PreviewServiceName = "preview-service-name",
 }
 
 export enum TelemetrySuccess {
   Yes = "yes",
-  No = "no"
+  No = "no",
 }
 
 export enum TelemetryErrorType {
   UserError = "user",
-  SystemError = "system"
+  SystemError = "system",
 }
 
 export enum TelemetryAccountType {
   Azure = "azure",
-  M365 = "m365"
+  M365 = "m365",
 }
 
 export const TelemetryComponentType = "cli";

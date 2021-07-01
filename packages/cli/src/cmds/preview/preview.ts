@@ -31,11 +31,19 @@ import activate from "../../activate";
 import { Task } from "./task";
 import DialogManagerInstance from "../../userInterface";
 import AppStudioTokenInstance from "../../commonlib/appStudioLogin";
+import cliTelemetry from "../../telemetry/cliTelemetry";
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetrySuccess,
+} from "../../telemetry/cliTelemetryEvents";
 
 export default class Preview extends YargsCommand {
   public readonly commandHead = `preview`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "Preview the current application.";
+
+  private readonly telemetryProperties: { [key: string]: string } = {};
 
   public builder(yargs: Argv): Argv<any> {
     yargs.option("local", {
@@ -61,20 +69,46 @@ export default class Preview extends YargsCommand {
     [argName: string]: boolean | string | string[] | undefined;
   }): Promise<Result<null, FxError>> {
     if (args.local && args.remote) {
-      return err(errors.ExclusiveLocalRemoteOptions());
+      cliTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewStart);
+      const error = errors.ExclusiveLocalRemoteOptions();
+      cliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Preview, error);
+      return err(error);
     }
+
+    const previewType = args.local || (!args.local && !args.remote) ? "local" : "remote";
+    this.telemetryProperties[TelemetryProperty.PreviewType] = previewType;
 
     const workspaceFolder = path.resolve(args.folder as string);
     if (!utils.isWorkspaceSupported(workspaceFolder)) {
-      return err(errors.WorkspaceNotSupported(workspaceFolder));
+      cliTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewStart, this.telemetryProperties);
+      const error = errors.WorkspaceNotSupported(workspaceFolder);
+      cliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Preview, error, this.telemetryProperties);
+      return err(error);
     }
 
+    this.telemetryProperties[TelemetryProperty.PreviewAppId] = utils.getLocalTeamsAppId(
+      workspaceFolder
+    ) as string;
     CliTelemetry.setReporter(CliTelemetry.getReporter().withRootFolder(workspaceFolder));
 
-    if (args.local || (!args.local && !args.remote)) {
-      return await this.localPreview(workspaceFolder);
+    cliTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewStart, this.telemetryProperties);
+    const result =
+      previewType === "local"
+        ? await this.localPreview(workspaceFolder)
+        : await this.remotePreview(workspaceFolder);
+    if (result.isErr()) {
+      cliTelemetry.sendTelemetryErrorEvent(
+        TelemetryEvent.PreviewStart,
+        result.error,
+        this.telemetryProperties
+      );
+    } else {
+      cliTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewStart, {
+        ...this.telemetryProperties,
+        [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+      });
     }
-    return await this.remotePreview(workspaceFolder);
+    return result;
   }
 
   private async localPreview(workspaceFolder: string): Promise<Result<null, FxError>> {
@@ -147,6 +181,10 @@ export default class Preview extends YargsCommand {
     if (result.isErr()) {
       return result;
     }
+
+    this.telemetryProperties[TelemetryProperty.PreviewAppId] = utils.getLocalTeamsAppId(
+      workspaceFolder
+    ) as string;
 
     /* === check ports === */
     const portsInUse = await commonUtils.getPortsInUse(includeFrontend, includeBackend, includeBot);
@@ -244,13 +282,17 @@ export default class Preview extends YargsCommand {
     const botInstallBar = DialogManagerInstance.createProgressBar(constants.botInstallTitle, 1);
     const botInstallStartCb = commonUtils.createTaskStartCb(
       botInstallBar,
-      constants.botInstallStartMessage
+      constants.botInstallStartMessage,
+      false,
+      constants.botInstallTitle,
+      this.telemetryProperties
     );
     const botInstallStopCb = commonUtils.createTaskStopCb(
       constants.botInstallTitle,
       botInstallBar,
       constants.botInstallSuccessMessage,
-      false
+      false,
+      this.telemetryProperties
     );
     let result = await botInstallTask.wait(botInstallStartCb, botInstallStopCb);
     if (result.isErr()) {
@@ -264,13 +306,17 @@ export default class Preview extends YargsCommand {
     const ngrokStartBar = DialogManagerInstance.createProgressBar(constants.ngrokStartTitle, 1);
     const ngrokStartStartCb = commonUtils.createTaskStartCb(
       ngrokStartBar,
-      constants.ngrokStartStartMessage
+      constants.ngrokStartStartMessage,
+      true,
+      constants.ngrokStartTitle,
+      this.telemetryProperties
     );
     const ngrokStartStopCb = commonUtils.createTaskStopCb(
       constants.ngrokStartTitle,
       ngrokStartBar,
       constants.ngrokStartSuccessMessage,
-      true
+      true,
+      this.telemetryProperties
     );
     result = await ngrokStartTask.waitFor(
       constants.ngrokStartPattern,
@@ -321,13 +367,17 @@ export default class Preview extends YargsCommand {
     );
     const frontendInstallStartCb = commonUtils.createTaskStartCb(
       frontendInstallBar,
-      constants.frontendInstallStartMessage
+      constants.frontendInstallStartMessage,
+      false,
+      constants.frontendInstallTitle,
+      this.telemetryProperties
     );
     const frontendInstallStopCb = commonUtils.createTaskStopCb(
       constants.frontendInstallTitle,
       frontendInstallBar,
       constants.frontendInstallSuccessMessage,
-      false
+      false,
+      this.telemetryProperties
     );
 
     const backendInstallBar = DialogManagerInstance.createProgressBar(
@@ -336,13 +386,17 @@ export default class Preview extends YargsCommand {
     );
     const backendInstallStartCb = commonUtils.createTaskStartCb(
       backendInstallBar,
-      constants.backendInstallStartMessage
+      constants.backendInstallStartMessage,
+      false,
+      constants.backendInstallTitle,
+      this.telemetryProperties
     );
     const backendInstallStopCb = commonUtils.createTaskStopCb(
       constants.backendInstallTitle,
       backendInstallBar,
       constants.backendInstallSuccessMessage,
-      false
+      false,
+      this.telemetryProperties
     );
 
     const backendExtensionsInstallBar = DialogManagerInstance.createProgressBar(
@@ -363,13 +417,17 @@ export default class Preview extends YargsCommand {
     const botInstallBar = DialogManagerInstance.createProgressBar(constants.botInstallTitle, 1);
     const botInstallStartCb = commonUtils.createTaskStartCb(
       botInstallBar,
-      constants.botInstallStartMessage
+      constants.botInstallStartMessage,
+      false,
+      constants.botInstallTitle,
+      this.telemetryProperties
     );
     const botInstallStopCb = commonUtils.createTaskStopCb(
       constants.botInstallTitle,
       botInstallBar,
       constants.botInstallSuccessMessage,
-      false
+      false,
+      this.telemetryProperties
     );
 
     const results = await Promise.all([
@@ -460,61 +518,81 @@ export default class Preview extends YargsCommand {
     );
     const frontendStartStartCb = commonUtils.createTaskStartCb(
       frontendStartBar,
-      constants.frontendStartStartMessage
+      constants.frontendStartStartMessage,
+      true,
+      constants.frontendStartTitle,
+      this.telemetryProperties
     );
     const frontendStartStopCb = commonUtils.createTaskStopCb(
       constants.frontendStartTitle,
       frontendStartBar,
       constants.frontendStartSuccessMessage,
-      true
+      true,
+      this.telemetryProperties
     );
 
     const authStartBar = DialogManagerInstance.createProgressBar(constants.authStartTitle, 1);
     const authStartStartCb = commonUtils.createTaskStartCb(
       authStartBar,
-      constants.authStartStartMessage
+      constants.authStartStartMessage,
+      true,
+      constants.authStartTitle,
+      this.telemetryProperties
     );
     const authStartStopCb = commonUtils.createTaskStopCb(
       constants.authStartTitle,
       authStartBar,
       constants.authStartSuccessMessage,
-      true
+      true,
+      this.telemetryProperties
     );
 
     const backendStartBar = DialogManagerInstance.createProgressBar(constants.backendStartTitle, 1);
     const backendStartStartCb = commonUtils.createTaskStartCb(
       backendStartBar,
-      constants.backendStartStartMessage
+      constants.backendStartStartMessage,
+      true,
+      constants.backendStartTitle,
+      this.telemetryProperties
     );
     const backendStartStopCb = commonUtils.createTaskStopCb(
       constants.backendStartTitle,
       backendStartBar,
       constants.backendStartSuccessMessage,
-      true
+      true,
+      this.telemetryProperties
     );
 
     const backendWatchBar = DialogManagerInstance.createProgressBar(constants.backendWatchTitle, 1);
     const backendWatchStartCb = commonUtils.createTaskStartCb(
       backendWatchBar,
-      constants.backendWatchStartMessage
+      constants.backendWatchStartMessage,
+      true,
+      constants.backendWatchTitle,
+      this.telemetryProperties
     );
     const backendWatchStopCb = commonUtils.createTaskStopCb(
       constants.backendWatchTitle,
       backendWatchBar,
       constants.backendWatchSuccessMessage,
-      true
+      true,
+      this.telemetryProperties
     );
 
     const botStartBar = DialogManagerInstance.createProgressBar(constants.botStartTitle, 1);
     const botStartStartCb = commonUtils.createTaskStartCb(
       botStartBar,
-      constants.botStartStartMessage
+      constants.botStartStartMessage,
+      true,
+      constants.botStartTitle,
+      this.telemetryProperties
     );
     const botStartStopCb = commonUtils.createTaskStopCb(
       constants.botStartTitle,
       botStartBar,
       constants.botStartSuccessMessage,
-      true
+      true,
+      this.telemetryProperties
     );
 
     const results = await Promise.all([
@@ -552,6 +630,11 @@ export default class Preview extends YargsCommand {
     tenantIdFromConfig: string | undefined,
     teamsAppId: string
   ): Promise<Result<null, FxError>> {
+    cliTelemetry.sendTelemetryEvent(
+      TelemetryEvent.PreviewSideloadingStart,
+      this.telemetryProperties
+    );
+
     let sideloadingUrl = constants.sideloadingUrl.replace(
       constants.teamsAppIdPlaceholder,
       teamsAppId
@@ -599,6 +682,10 @@ export default class Preview extends YargsCommand {
     await sideloadingBar.next(constants.sideloadingSuccessMessage);
     await sideloadingBar.end();
 
+    cliTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewSideloading, {
+      ...this.telemetryProperties,
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+    });
     return ok(null);
   }
 }

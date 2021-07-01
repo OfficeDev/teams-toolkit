@@ -13,12 +13,33 @@ import * as constants from "./constants";
 import { TaskResult } from "./task";
 import cliLogger from "../../commonlib/log";
 import { TaskFailed } from "./errors";
+import cliTelemetry from "../../telemetry/cliTelemetry";
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetrySuccess,
+} from "../../telemetry/cliTelemetryEvents";
 
 export function createTaskStartCb(
   progressBar: IProgressHandler,
-  message: string
+  message: string,
+  background?: boolean,
+  taskTitle?: string,
+  telemetryProperties?: { [key: string]: string }
 ): () => Promise<void> {
   return async () => {
+    if (background !== undefined) {
+      const event = background
+        ? TelemetryEvent.PreviewServiceStart
+        : TelemetryEvent.PreviewNpmInstallStart;
+      const key = background
+        ? TelemetryProperty.PreviewServiceName
+        : TelemetryProperty.PreviewNpmInstallName;
+      cliTelemetry.sendTelemetryEvent(event, {
+        ...telemetryProperties,
+        [key]: taskTitle as string,
+      });
+    }
     await progressBar.start(message);
   };
 }
@@ -27,16 +48,30 @@ export function createTaskStopCb(
   taskTitle: string,
   progressBar: IProgressHandler,
   successMessage: string,
-  background: boolean
+  background: boolean,
+  telemetryProperties?: { [key: string]: string }
 ): (result: TaskResult) => Promise<FxError | null> {
   return async (result: TaskResult) => {
+    const event = background ? TelemetryEvent.PreviewService : TelemetryEvent.PreviewNpmInstall;
+    const key = background
+      ? TelemetryProperty.PreviewServiceName
+      : TelemetryProperty.PreviewNpmInstallName;
     const success = background ? result.success : result.exitCode === 0;
     if (success) {
+      cliTelemetry.sendTelemetryEvent(event, {
+        ...telemetryProperties,
+        [key]: taskTitle,
+        [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+      });
       await progressBar.next(successMessage);
       await progressBar.end();
       return null;
     } else {
       const error = TaskFailed(taskTitle);
+      cliTelemetry.sendTelemetryErrorEvent(event, error, {
+        ...telemetryProperties,
+        [key]: taskTitle,
+      });
       cliLogger.necessaryLog(LogLevel.Error, `${error.source}.${error.name}: ${error.message}`);
       cliLogger.necessaryLog(LogLevel.Info, result.stderr[result.stderr.length - 1], true);
       return error;

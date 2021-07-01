@@ -232,6 +232,21 @@ export function getTeamsAppId(rootfolder: string | undefined): any {
   return undefined;
 }
 
+export function getLocalTeamsAppId(rootfolder: string | undefined): any {
+  if (!rootfolder) {
+    return undefined;
+  }
+
+  if (isWorkspaceSupported(rootfolder)) {
+    const env = getActiveEnv();
+    const envJsonPath = path.join(rootfolder, `.${ConfigFolderName}/env.${env}.json`);
+    const envJson = JSON.parse(fs.readFileSync(envJsonPath, "utf8"));
+    return envJson.solution.localTeamsAppId;
+  }
+
+  return undefined;
+}
+
 export function getSystemInputs(projectPath?: string): Inputs {
   const systemInputs: Inputs = {
     platform: Platform.CLI,

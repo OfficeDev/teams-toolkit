@@ -7,16 +7,16 @@ import { CommonConstants, DependentPluginInfo, FunctionPluginInfo } from "../con
 import { FxResult } from "../result";
 import { FunctionEvent, TelemetryKey, TelemetryValue } from "../enums";
 import { DepsCheckerEvent } from "./depsChecker/common";
-import { FunctionPluginError, UnknownFallbackError } from "../resources/errors";
+import { FunctionPluginError } from "../resources/errors";
 
 export class TelemetryHelper {
   static ctx?: PluginContext;
 
-  public static setContext(ctx: PluginContext) {
+  public static setContext(ctx: PluginContext): void {
     this.ctx = ctx;
   }
 
-  static fillCommonProperty(properties: { [key: string]: string }) {
+  static fillCommonProperty(properties: { [key: string]: string }): void {
     properties[TelemetryKey.Component] = FunctionPluginInfo.pluginName;
     properties[TelemetryKey.AppId] =
       (this.ctx?.configOfOtherPlugins
@@ -81,11 +81,24 @@ export class TelemetryHelper {
     e: FunctionPluginError,
     properties: { [key: string]: string } = {},
     measurements: { [key: string]: number } = {}
-  ) {
+  ): void {
     this.fillCommonProperty(properties);
     properties[TelemetryKey.ErrorMessage] = e.message;
     properties[TelemetryKey.ErrorCode] = e.code;
 
-    this.ctx?.telemetryReporter?.sendTelemetryEvent(FunctionEvent.scaffoldFallback, properties, measurements);
+    this.ctx?.telemetryReporter?.sendTelemetryEvent(
+      FunctionEvent.scaffoldFallback,
+      properties,
+      measurements
+    );
+  }
+
+  static sendGeneralEvent(
+    eventName: FunctionEvent | DepsCheckerEvent,
+    properties: { [key: string]: string } = {},
+    measurements: { [key: string]: number } = {}
+  ): void {
+    this.fillCommonProperty(properties);
+    this.ctx?.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
   }
 }

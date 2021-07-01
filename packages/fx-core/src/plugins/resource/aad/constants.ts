@@ -16,6 +16,8 @@ export class Constants {
   static AskForEnvName = "aad-env";
 
   static maxRetryTimes = 10;
+  static statusCodeUserError = 400;
+  static statusCodeServerError = 500;
 
   static defaultPermissions: RequiredResourceAccess = {
     resourceAppId: "00000003-0000-0000-c000-000000000000",

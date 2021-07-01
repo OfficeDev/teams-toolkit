@@ -267,17 +267,19 @@ export class DotnetChecker implements IDepsChecker {
     } catch (error) {
       const timecost = Number(((performance.now() - start) / 1000).toFixed(2));
       const errorMessage =
-          `${Messages.failToInstallDotnet.split("@NameVersion").join(installedNameWithVersion)} ${
-              Messages.dotnetInstallErrorCode
-          }, ` +
-          `command = '${command.join(" ")}', options = '${JSON.stringify(
-              options
-          )}', error = '${error}', stdout = '${error.stdout}', stderr = '${error.stderr}', timecost = '${timecost}s'`;
+        `${Messages.failToInstallDotnet.split("@NameVersion").join(installedNameWithVersion)} ${
+          Messages.dotnetInstallErrorCode
+        }, ` +
+        `command = '${command.join(" ")}', options = '${JSON.stringify(
+          options
+        )}', error = '${error}', stdout = '${error.stdout}', stderr = '${
+          error.stderr
+        }', timecost = '${timecost}s'`;
 
       this._telemetry.sendSystemErrorEvent(
-          DepsCheckerEvent.dotnetInstallScriptError,
-          TelemtryMessages.failedToExecDotnetScript,
-          errorMessage
+        DepsCheckerEvent.dotnetInstallScriptError,
+        TelemtryMessages.failedToExecDotnetScript,
+        errorMessage
       );
       // swallow the exception since later validate will find out the errors anyway
       await this._logger.error(errorMessage);
@@ -371,7 +373,7 @@ export class DotnetChecker implements IDepsChecker {
       this._telemetry.sendSystemErrorEvent(
         DepsCheckerEvent.dotnetSearchDotnetSdks,
         TelemtryMessages.failedToSearchDotnetSdks,
-        errorMessage,
+        errorMessage
       );
     }
     return sdks;
@@ -404,7 +406,9 @@ export class DotnetChecker implements IDepsChecker {
     dotnetInstallDir: string
   ): Promise<string[]> {
     const command = [
-      isWindows() ? DotnetChecker.escapeFilePath(this.getDotnetInstallScriptPath()) : this.getDotnetInstallScriptPath(),
+      isWindows()
+        ? DotnetChecker.escapeFilePath(this.getDotnetInstallScriptPath())
+        : this.getDotnetInstallScriptPath(),
       "-InstallDir",
       isWindows() ? DotnetChecker.escapeFilePath(dotnetInstallDir) : dotnetInstallDir,
       "-Channel",
@@ -457,7 +461,8 @@ export class DotnetChecker implements IDepsChecker {
         "new",
         "console",
         "--output",
-        `${samplePath}`
+        `${samplePath}`,
+        "--force"
       );
       actual = await cpUtils.executeCommand(
         undefined,

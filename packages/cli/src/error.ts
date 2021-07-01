@@ -14,7 +14,7 @@ import {
   OptionItem,
   MultiSelectQuestion,
   SingleSelectQuestion,
-  StaticOptions
+  StaticOptions,
 } from "@microsoft/teamsfx-api";
 
 import * as constants from "./constants";
@@ -24,6 +24,14 @@ export function NotSupportedProjectType(): UserError {
     new Error(`Project type not supported`),
     constants.cliSource,
     "NotSupportedProjectType"
+  );
+}
+
+export function CannotDeployPlugin(pluginName: string): UserError {
+  return returnUserError(
+    new Error(`Cannot deploy ${pluginName} since it is not contained in the project`),
+    constants.cliSource,
+    "CannotDeployPlugin"
   );
 }
 
@@ -122,5 +130,13 @@ export function ProjectFolderExist(path: string): UserError {
     new Error(`Path ${path} alreay exists. Select a different folder.`),
     constants.cliSource,
     "ProjectFolderExist"
+  );
+}
+
+export function EmptySubConfigOptions(): SystemError {
+  return returnSystemError(
+    new Error(`Your Azure account has no active subscriptions. Please switch an Azure account.`),
+    constants.cliSource,
+    "EmptySubConfigOptions"
   );
 }

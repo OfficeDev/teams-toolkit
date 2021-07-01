@@ -48,21 +48,21 @@ export async function start() {
     .options("verbose", {
       description: "Print additional information.",
       boolean: true,
-      default: false
+      default: false,
     })
     .options("debug", {
       description: "Print diagnostic information.",
       boolean: true,
-      default: false
+      default: false,
     })
     .demandCommand()
     .scriptName(constants.cliName)
     .help()
     .strict()
+    .showHelpOnFail(false, "Specify --help for available options")
     .alias("help", "h")
     .alias("v", "version")
     .version(getVersion())
-    .epilogue(
-      "For more information about the Teams Toolkit - https://aka.ms/teamsfx-learn."
-    ).argv;
+    .wrap(Math.min(100, yargs.terminalWidth()))
+    .epilogue("For more information about the Teams Toolkit - https://aka.ms/teamsfx-learn.").argv;
 }

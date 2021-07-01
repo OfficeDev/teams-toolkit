@@ -618,12 +618,7 @@ export class TeamsAppSolution implements Solution {
     const selectedPlugins = maybeSelectedPlugins.value;
     const result = await this.doScaffold(ctx, selectedPlugins);
     if (result.isOk()) {
-      await ctx.dialog?.communicate(
-        new DialogMsg(DialogType.Show, {
-          description: getStrings().solution.ScaffoldSuccessNotice,
-          level: MsgLevel.Info,
-        })
-      );
+      ctx.ui?.showMessage("info", getStrings().solution.ScaffoldSuccessNotice, false);
     }
     return result;
   }
@@ -874,12 +869,7 @@ export class TeamsAppSolution implements Solution {
         getStrings().solution.AlreadyProvisionNotice,
         ctx.projectSettings?.appName
       );
-      ctx.dialog?.communicate(
-        new DialogMsg(DialogType.Show, {
-          description: msg,
-          level: MsgLevel.Warning,
-        })
-      );
+      ctx.ui?.showMessage("warn", msg, false);
       return ok(undefined);
     }
     try {
@@ -904,12 +894,7 @@ export class TeamsAppSolution implements Solution {
           ctx.projectSettings?.appName
         );
         ctx.logProvider?.info(msg);
-        ctx.dialog?.communicate(
-          new DialogMsg(DialogType.Show, {
-            description: msg,
-            level: MsgLevel.Info,
-          })
-        );
+        ctx.ui?.showMessage("info", msg, false);
         ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
       } else {
         if (!isUserCancelError(provisionResult.error)) {
@@ -919,23 +904,6 @@ export class TeamsAppSolution implements Solution {
           );
           ctx.logProvider?.error(msg);
           ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false);
-          const resourceGroupName = ctx.config.get(GLOBAL_CONFIG)?.getString("resourceGroupName");
-          const subscriptionId = ctx.config.get(GLOBAL_CONFIG)?.getString("subscriptionId");
-          const error = provisionResult.error;
-          error.message +=
-            " " +
-            util.format(
-              getStrings().solution.ProvisionFailGuide,
-              subscriptionId,
-              resourceGroupName
-            );
-          if (error instanceof UserError) {
-            const ue = error as UserError;
-            if (!ue.helpLink) {
-              ue.helpLink = "https://aka.ms/teamsfx-solution-help";
-              (ue.source = "Solution"), (ue.name = "ProvisionFailure");
-            }
-          }
         }
       }
       return provisionResult;
@@ -982,30 +950,13 @@ export class TeamsAppSolution implements Solution {
       const username = (azureToken as any).username ? (azureToken as any).username : "";
       const subscriptionId = ctx.config.get(GLOBAL_CONFIG)?.getString("subscriptionId");
       const subscriptionName = await getSubsriptionDisplayName(azureToken!, subscriptionId!);
-
-      const confirm = (
-        await ctx.dialog?.communicate(
-          new DialogMsg(DialogType.Show, {
-            description: util.format(
-              getStrings().solution.ProvisionConfirmNotice,
-              username,
-              subscriptionName ? subscriptionName : subscriptionId
-            ),
-            level: MsgLevel.Warning,
-            items: ["Provision", "Pricing calculator"],
-            modal: true,
-          })
-        )
-      )?.getAnswer();
+      const msg = util.format(  getStrings().solution.ProvisionConfirmNotice, username, subscriptionName ? subscriptionName : subscriptionId);
+      const confirmRes = await ctx.ui?.showMessage("warn", msg, true, "Provision", "Pricing calculator");
+      const confirm = confirmRes?.isOk() ? confirmRes.value : undefined;
 
       if (confirm !== "Provision") {
         if (confirm === "Pricing calculator") {
-          await ctx.dialog?.communicate(
-            new DialogMsg(DialogType.Ask, {
-              description: "https://azure.microsoft.com/en-us/pricing/calculator/",
-              type: QuestionType.OpenExternal,
-            })
-          );
+          ctx.ui?.openUrl("https://azure.microsoft.com/en-us/pricing/calculator/");
         }
         return err(
           returnUserError(
@@ -1138,12 +1089,7 @@ export class TeamsAppSolution implements Solution {
             ctx.projectSettings?.appName
           );
           ctx.logProvider?.info(msg);
-          await ctx.dialog?.communicate(
-            new DialogMsg(DialogType.Show, {
-              description: msg,
-              level: MsgLevel.Info,
-            })
-          );
+          ctx.ui?.showMessage("info", msg, false);
         }
       } else {
         const msg = util.format(
@@ -1501,12 +1447,7 @@ export class TeamsAppSolution implements Solution {
         }
         if (!provisioned && this.spfxSelected(ctx)) {
           if (ctx.answers?.platform === Platform.VSCode) {
-            ctx.dialog?.communicate(
-              new DialogMsg(DialogType.Show, {
-                description: getStrings().solution.SPFxAskProvisionBeforePublish,
-                level: MsgLevel.Error,
-              })
-            );
+            ctx.ui?.showMessage("error", getStrings().solution.SPFxAskProvisionBeforePublish, false);
             throw CancelError;
           } else {
             return err(
@@ -2098,12 +2039,7 @@ export class TeamsAppSolution implements Solution {
     if (alreadyHaveBotOrMe && alreadyHaveTab) {
       const cannotAddCapWarnMsg =
         "Your App already has both Tab and Bot/Me, can not Add Capability.";
-      await ctx.dialog?.communicate(
-        new DialogMsg(DialogType.Show, {
-          description: cannotAddCapWarnMsg,
-          level: MsgLevel.Warning,
-        })
-      );
+      ctx.ui?.showMessage("error", cannotAddCapWarnMsg, false);
       return ok(undefined);
     }
 
@@ -2385,15 +2321,11 @@ export class TeamsAppSolution implements Solution {
       }
       ctx.logProvider?.info(`finish scaffolding ${notifications.join(",")}!`);
       ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false);
-      await ctx.dialog?.communicate(
-        new DialogMsg(DialogType.Show, {
-          description: util.format(
-            ctx.answers.platform === Platform.CLI ? getStrings().solution.AddCapabilityNoticeForCli : getStrings().solution.AddCapabilityNotice,
-            notifications.join(",")
-          ),
-          level: MsgLevel.Info,
-        })
+      const msg = util.format(
+        ctx.answers.platform === Platform.CLI ? getStrings().solution.AddCapabilityNoticeForCli : getStrings().solution.AddCapabilityNotice,
+        notifications.join(",")
       );
+      ctx.ui?.showMessage("info", msg, false);
 
       ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.AddCapability, {
         [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
@@ -2403,12 +2335,7 @@ export class TeamsAppSolution implements Solution {
       return ok({});
     }
     const cannotAddCapWarnMsg = "Add nothing";
-    await ctx.dialog?.communicate(
-      new DialogMsg(DialogType.Show, {
-        description: cannotAddCapWarnMsg,
-        level: MsgLevel.Warning,
-      })
-    );
+    ctx.ui?.showMessage("warn", cannotAddCapWarnMsg, false);
     ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.AddCapability, {
       [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
       [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,

@@ -145,13 +145,44 @@ export class FunctionValidator {
         console.log("Successfully validate Function Provision.");
     }
 
+    private static async runWithRetry<T>(fn: () => Promise<T>) {
+        const maxTryCount = 3;
+        const defaultRetryAfterInSecond = 2;
+        const maxRetryAfterInSecond = 3 * 60;
+        const secondInMilliseconds = 1000;
+
+        for (let i = 0; i < maxTryCount - 1; i++) {
+            try {
+                const ret = await fn();
+                return ret;
+            } catch(e) {
+                let retryAfterInSecond = defaultRetryAfterInSecond;
+                if (e.response?.status === 429) {
+                    // See https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/request-limits-and-throttling#error-code.
+                    const suggestedRetryAfter = e.response?.headers?.["retry-after"];
+                    // Explicit check, _retryAfter can be 0.
+                    if (suggestedRetryAfter !== undefined) {
+                        if (suggestedRetryAfter > maxRetryAfterInSecond) {
+                            // Don't wait too long.
+                            throw e;
+                        } else {
+                            // Take one more second for time error.
+                            retryAfterInSecond = suggestedRetryAfter + 1;
+                        }
+                    }
+                }
+                await new Promise((resolve) => setTimeout(resolve, retryAfterInSecond * secondInMilliseconds));
+            }
+        }
+
+        return fn();
+    }
+
     public static async validateDeploy(functionObject: IFunctionObject) {
         console.log("Start to validate Function Deployment.");
 
         // Disable validate deployment since we have too many requests and the test is not stable.
-        /*
-        const tokenProvider: MockAzureAccountProvider = MockAzureAccountProvider.getInstance();
-        const tokenCredential = await tokenProvider.getAccountCredentialAsync();
+        const tokenCredential = await MockAzureAccountProvider.getAccountCredentialAsync();
         const token = (await tokenCredential?.getToken())?.accessToken;
 
         const deployments = await this.getDeployments(this.subscriptionId, this.rg, functionObject.functionAppName, token as string);
@@ -159,7 +190,6 @@ export class FunctionValidator {
         const deploymentLog = await this.getDeploymentLog(this.subscriptionId, this.rg, functionObject.functionAppName, token as string, deploymentId!);
 
         chai.assert.exists(deploymentLog?.find((item: any) => item.properties.message === "Deployment successful."));
-        */
 
         console.log("Successfully validate Function Deployment.");
     }
@@ -167,7 +197,7 @@ export class FunctionValidator {
     private static async getDeployments(subscriptionId: string, rg: string, name: string, token: string) {
         try {
             axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-            const functionGetResponse = await axios.get(baseUrlListDeployments(subscriptionId, rg, name));
+            const functionGetResponse = await this.runWithRetry(() => axios.get(baseUrlListDeployments(subscriptionId, rg, name)));
 
             return functionGetResponse?.data?.value;
         } catch (error) {
@@ -179,7 +209,7 @@ export class FunctionValidator {
     private static async getDeploymentLog(subscriptionId: string, rg: string, name: string, token: string, id: string) {
         try {
             axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-            const functionGetResponse = await axios.get(baseUrlListDeploymentLogs(subscriptionId, rg, name, id));
+            const functionGetResponse = await this.runWithRetry(() => axios.get(baseUrlListDeploymentLogs(subscriptionId, rg, name, id)));
 
             return functionGetResponse?.data?.value;
         } catch (error) {
@@ -191,7 +221,7 @@ export class FunctionValidator {
     private static async getWebappConfigs(subscriptionId: string, rg: string, name: string, token: string) {
         try {
             axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-            const functionGetResponse = await axios.post(baseUrlAppSettings(subscriptionId, rg, name));
+            const functionGetResponse = await this.runWithRetry(() => axios.post(baseUrlAppSettings(subscriptionId, rg, name)));
             if (!functionGetResponse || !functionGetResponse.data || !functionGetResponse.data.properties) {
                 return undefined;
             }
@@ -206,7 +236,7 @@ export class FunctionValidator {
     private static async getWebappServicePlan(subscriptionId: string, rg: string, name: string, token:string) {
         try {
             axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-            const functionPlanResponse = await axios.get(baseUrlPlan(subscriptionId, rg, name));
+            const functionPlanResponse = await this.runWithRetry(() => axios.get(baseUrlPlan(subscriptionId, rg, name)));
             if (!functionPlanResponse || !functionPlanResponse.data || !functionPlanResponse.data.sku || !functionPlanResponse.data.sku.name) {
                 return undefined;
             }

@@ -9,7 +9,7 @@ import { FxError } from "../error";
  * @deprecated
  */
 export interface Dialog {
-  /*
+  /**
    * Platforms (such as VSCode, CLI) support this function to communicate with core.
    * There are 3 dialog types.
    *   1. Ask: core can ask platform for questions and platform will render UI for users to collect data.
@@ -50,7 +50,10 @@ export interface Dialog {
   createProgressBar: (title: string, totalSteps: number) => IProgressHandler;
 }
 
-export interface IProgressHandler {
+/**
+ * @deprecated
+ */
+interface IProgressHandler {
   /**
    * Start this progress bar. After calling it, the progress bar will be seen to users with
    * ${currentStep} = 0 and ${detail} = detail.

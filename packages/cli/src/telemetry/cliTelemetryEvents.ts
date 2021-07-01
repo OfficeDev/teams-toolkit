@@ -64,6 +64,10 @@ export enum TelemetryProperty {
   PreviewAppId = "preview-appid",
   PreviewType = "preview-type",
   PreviewNpmInstallName = "preview-npm-install-name",
+  PreviewNpmInstallExitCode = "preview-npm-install-exit-code",
+  PreviewNpmInstallNodeVersion = "preview-npm-install-node-version",
+  PreviewNpmInstallNpmVersion = "preview-npm-install-npm-version",
+  PreviewNpmInstallErrorMessage = "preview-npm-install-error-message",
   PreviewServiceName = "preview-service-name",
 }
 

@@ -13,6 +13,8 @@ interface TaskOptions {
 }
 
 export interface TaskResult {
+  command: string;
+  options: TaskOptions;
   success: boolean;
   stdout: string[];
   stderr: string[];
@@ -58,6 +60,8 @@ export class Task {
       });
       this.task?.on("exit", async () => {
         const result: TaskResult = {
+          command: this.command,
+          options: this.options,
           success: this.task?.exitCode === 0,
           stdout: stdout,
           stderr: stderr,
@@ -99,6 +103,8 @@ export class Task {
           if (match) {
             this.resolved = true;
             const result: TaskResult = {
+              command: this.command,
+              options: this.options,
               success: true,
               stdout: stdout,
               stderr: stderr,
@@ -122,6 +128,8 @@ export class Task {
         if (!this.resolved) {
           this.resolved = true;
           const result: TaskResult = {
+            command: this.command,
+            options: this.options,
             success: false,
             stdout: stdout,
             stderr: stderr,

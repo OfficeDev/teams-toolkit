@@ -241,7 +241,7 @@ export function getLocalTeamsAppId(rootfolder: string | undefined): any {
     const env = getActiveEnv();
     const envJsonPath = path.join(rootfolder, `.${ConfigFolderName}/env.${env}.json`);
     const envJson = JSON.parse(fs.readFileSync(envJsonPath, "utf8"));
-    return envJson.solution.localTeamsAppId;
+    return envJson.solution.localDebugTeamsAppId;
   }
 
   return undefined;

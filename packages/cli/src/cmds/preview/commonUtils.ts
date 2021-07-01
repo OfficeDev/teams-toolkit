@@ -19,6 +19,7 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../../telemetry/cliTelemetryEvents";
+import { getNpmInstallLogInfo } from "./npmLogHandler";
 
 export function createTaskStartCb(
   progressBar: IProgressHandler,
@@ -57,10 +58,17 @@ export function createTaskStopCb(
       ? TelemetryProperty.PreviewServiceName
       : TelemetryProperty.PreviewNpmInstallName;
     const success = background ? result.success : result.exitCode === 0;
+    const properties = {
+      ...telemetryProperties,
+      [key]: taskTitle,
+    };
+    if (!background) {
+      properties[TelemetryProperty.PreviewNpmInstallExitCode] =
+        (result.exitCode === null ? undefined : result.exitCode) + "";
+    }
     if (success) {
       cliTelemetry.sendTelemetryEvent(event, {
-        ...telemetryProperties,
-        [key]: taskTitle,
+        ...properties,
         [TelemetryProperty.Success]: TelemetrySuccess.Yes,
       });
       await progressBar.next(successMessage);
@@ -68,10 +76,23 @@ export function createTaskStopCb(
       return null;
     } else {
       const error = TaskFailed(taskTitle);
-      cliTelemetry.sendTelemetryErrorEvent(event, error, {
-        ...telemetryProperties,
-        [key]: taskTitle,
-      });
+      if (!background) {
+        const npmInstallLogInfo = await getNpmInstallLogInfo();
+        if (
+          npmInstallLogInfo?.cwd !== undefined &&
+          result.options.cwd !== undefined &&
+          path.relative(npmInstallLogInfo.cwd, result.options.cwd).length === 0 &&
+          result.exitCode === npmInstallLogInfo.exitCode
+        ) {
+          properties[TelemetryProperty.PreviewNpmInstallNodeVersion] =
+            npmInstallLogInfo.nodeVersion + "";
+          properties[TelemetryProperty.PreviewNpmInstallNpmVersion] =
+            npmInstallLogInfo.npmVersion + "";
+          properties[TelemetryProperty.PreviewNpmInstallErrorMessage] =
+            npmInstallLogInfo.errorMessage + "";
+        }
+      }
+      cliTelemetry.sendTelemetryErrorEvent(event, error, properties);
       cliLogger.necessaryLog(LogLevel.Error, `${error.source}.${error.name}: ${error.message}`);
       if (result.stderr.length > 0) {
         cliLogger.necessaryLog(LogLevel.Info, result.stderr[result.stderr.length - 1], true);

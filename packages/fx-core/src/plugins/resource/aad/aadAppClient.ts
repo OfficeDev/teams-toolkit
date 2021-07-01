@@ -12,7 +12,6 @@ import {
   UpdateRedirectUriError,
   GetAppError,
   GetAppConfigError,
-  AppNotExistError,
 } from "./errors";
 import { GraphClient } from "./graph";
 import { IAADPassword } from "./interfaces/IAADApplication";
@@ -47,10 +46,10 @@ export class AadAppClient {
       config.clientId = provisionAadResponse.appId;
       config.objectId = provisionAadResponse.id;
     } catch (error) {
-      if (error?.response?.data?.errorMessage.includes(Constants.appStudioErrorMessage)) {
-        throw ResultFactory.SystemError(AppNotExistError.name, AppNotExistError.message(), error);
+      if (error?.response?.status >= 400 && error?.response?.status < 500) {
+        throw ResultFactory.UserError(CreateAppError.name, CreateAppError.message(), error);
       }
-      throw ResultFactory.UserError(CreateAppError.name, CreateAppError.message(), error);
+      throw ResultFactory.SystemError(CreateAppError.name, CreateAppError.message(), error);
     }
   }
 
@@ -68,10 +67,10 @@ export class AadAppClient {
       }
       config.password = createSecretObject.value;
     } catch (error) {
-      if (error?.response?.data?.errorMessage.includes(Constants.appStudioErrorMessage)) {
-        throw ResultFactory.SystemError(AppNotExistError.name, AppNotExistError.message(), error);
+      if (error?.response?.status >= 400 && error?.response?.status < 500) {
+        throw ResultFactory.UserError(CreateSecretError.name, CreateSecretError.message(), error);
       }
-      throw ResultFactory.UserError(CreateSecretError.name, CreateSecretError.message(), error);
+      throw ResultFactory.SystemError(CreateSecretError.name, CreateSecretError.message(), error);
     }
   }
 
@@ -99,10 +98,14 @@ export class AadAppClient {
         );
       }
     } catch (error) {
-      if (error?.response?.data?.errorMessage.includes(Constants.appStudioErrorMessage)) {
-        throw ResultFactory.SystemError(AppNotExistError.name, AppNotExistError.message(), error);
+      if (error?.response?.status >= 400 && error?.response?.status < 500) {
+        throw ResultFactory.UserError(
+          UpdateRedirectUriError.name,
+          UpdateRedirectUriError.message(),
+          error
+        );
       }
-      throw ResultFactory.UserError(
+      throw ResultFactory.SystemError(
         UpdateRedirectUriError.name,
         UpdateRedirectUriError.message(),
         error
@@ -131,15 +134,19 @@ export class AadAppClient {
         );
       }
     } catch (error) {
-      if (error?.response?.data?.errorMessage.includes(Constants.appStudioErrorMessage)) {
-        throw ResultFactory.SystemError(AppNotExistError.name, AppNotExistError.message(), error);
+      if (error?.response?.status >= 400 && error?.response?.status < 500) {
+        throw ResultFactory.UserError(
+          UpdateAppIdUriError.name,
+          UpdateAppIdUriError.message(),
+          error,
+          undefined,
+          UpdateAppIdUriError.helpLink
+        );
       }
-      throw ResultFactory.UserError(
+      throw ResultFactory.SystemError(
         UpdateAppIdUriError.name,
         UpdateAppIdUriError.message(),
-        error,
-        undefined,
-        UpdateAppIdUriError.helpLink
+        error
       );
     }
   }
@@ -168,10 +175,14 @@ export class AadAppClient {
         );
       }
     } catch (error) {
-      if (error?.response?.data?.errorMessage.includes(Constants.appStudioErrorMessage)) {
-        throw ResultFactory.SystemError(AppNotExistError.name, AppNotExistError.message(), error);
+      if (error?.response?.status >= 400 && error?.response?.status < 500) {
+        throw ResultFactory.UserError(
+          UpdatePermissionError.name,
+          UpdatePermissionError.message(),
+          error
+        );
       }
-      throw ResultFactory.UserError(
+      throw ResultFactory.SystemError(
         UpdatePermissionError.name,
         UpdatePermissionError.message(),
         error
@@ -196,10 +207,10 @@ export class AadAppClient {
         )) as IAADDefinition;
       }
     } catch (error) {
-      if (error?.response?.data?.errorMessage.includes(Constants.appStudioErrorMessage)) {
-        throw ResultFactory.SystemError(AppNotExistError.name, AppNotExistError.message(), error);
+      if (error?.response?.status >= 400 && error?.response?.status < 500) {
+        throw ResultFactory.UserError(GetAppError.name, GetAppError.message(), error);
       }
-      throw ResultFactory.UserError(GetAppError.name, GetAppError.message(), error);
+      throw ResultFactory.SystemError(GetAppError.name, GetAppError.message(), error);
     }
 
     const config = new ProvisionConfig(islocalDebug);

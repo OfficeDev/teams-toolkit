@@ -433,52 +433,52 @@ export class TeamsAppSolution implements Solution {
   //   return this.reloadManifestAndCheckRequiredFields(ctx);
   // }
 
-  private async reloadManifest(ctx: SolutionContext): Promise<Result<TeamsAppManifest, FxError>> {
-    try {
-      const manifest = await fs.readJson(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`);
-      if (!manifest) {
-        return err(
-          returnSystemError(
-            new Error("Failed to read manifest file"),
-            "Solution",
-            SolutionError.FailedToLoadManifestFile
-          )
-        );
-      }
-      // Object.assign(ctx.app, manifest);
-      return ok(manifest);
-    } catch (e) {
-      return err(
-        returnSystemError(
-          new Error("Failed to read manifest file"),
-          "Solution",
-          SolutionError.FailedToLoadManifestFile
-        )
-      );
-    }
-  }
+  // private async reloadManifest(ctx: SolutionContext): Promise<Result<TeamsAppManifest, FxError>> {
+  //   try {
+  //     const manifest = await fs.readJson(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`);
+  //     if (!manifest) {
+  //       return err(
+  //         returnSystemError(
+  //           new Error("Failed to read manifest file"),
+  //           "Solution",
+  //           SolutionError.FailedToLoadManifestFile
+  //         )
+  //       );
+  //     }
+  //     // Object.assign(ctx.app, manifest);
+  //     return ok(manifest);
+  //   } catch (e) {
+  //     return err(
+  //       returnSystemError(
+  //         new Error("Failed to read manifest file"),
+  //         "Solution",
+  //         SolutionError.FailedToLoadManifestFile
+  //       )
+  //     );
+  //   }
+  // }
 
-  private async reloadManifestAndCheckRequiredFields(
-    ctx: SolutionContext
-  ): Promise<Result<TeamsAppManifest, FxError>> {
-    const result = await this.reloadManifest(ctx);
-    return result.andThen((manifest) => {
-      if (
-        manifest === undefined ||
-        manifest.name.short === undefined ||
-        manifest.name.short.length === 0
-      ) {
-        return err(
-          returnSystemError(
-            new Error("Name is missing"),
-            "Solution",
-            SolutionError.FailedToLoadManifestFile
-          )
-        );
-      }
-      return ok(manifest);
-    });
-  }
+  // private async reloadManifestAndCheckRequiredFields(
+  //   ctx: SolutionContext
+  // ): Promise<Result<TeamsAppManifest, FxError>> {
+  //   const result = await this.reloadManifest(ctx);
+  //   return result.andThen((manifest) => {
+  //     if (
+  //       manifest === undefined ||
+  //       manifest.name.short === undefined ||
+  //       manifest.name.short.length === 0
+  //     ) {
+  //       return err(
+  //         returnSystemError(
+  //           new Error("Name is missing"),
+  //           "Solution",
+  //           SolutionError.FailedToLoadManifestFile
+  //         )
+  //       );
+  //     }
+  //     return ok(manifest);
+  //   });
+  // }
 
   reloadPlugins(solutionSettings: AzureSolutionSettings): void {
     const pluginNameSet = new Set<string>();
@@ -637,7 +637,8 @@ export class TeamsAppSolution implements Solution {
     ctx: SolutionContext,
     selectedPlugins: LoadedPlugin[]
   ): Promise<Result<any, FxError>> {
-    const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx);
+    const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
+    const maybeManifest = await appStudioPlugin.reloadManifestAndCheckRequiredFields(ctx.root);
     if (maybeManifest.isErr()) {
       return maybeManifest;
     }
@@ -770,7 +771,8 @@ export class TeamsAppSolution implements Solution {
   private async createAndConfigTeamsManifest(
     ctx: SolutionContext
   ): Promise<Result<IAppDefinition, FxError>> {
-    const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx);
+    const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
+    const maybeManifest = await appStudioPlugin.reloadManifestAndCheckRequiredFields(ctx.root);
     if (maybeManifest.isErr()) {
       return err(maybeManifest.error);
     }
@@ -953,7 +955,8 @@ export class TeamsAppSolution implements Solution {
     }
     const selectedPlugins = maybeSelectedPlugins.value;
 
-    const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx);
+    const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
+    const maybeManifest = await appStudioPlugin.reloadManifestAndCheckRequiredFields(ctx.root);
     if (maybeManifest.isErr()) {
       return maybeManifest;
     }
@@ -1155,7 +1158,9 @@ export class TeamsAppSolution implements Solution {
       return res;
     }
 
-    const loadManifestResult = await this.reloadManifestAndCheckRequiredFields(ctx);
+    const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
+    const loadManifestResult = await appStudioPlugin.reloadManifestAndCheckRequiredFields(ctx.root);
+
     if (loadManifestResult.isErr()) {
       return loadManifestResult;
     }
@@ -1219,7 +1224,8 @@ export class TeamsAppSolution implements Solution {
       );
     }
 
-    const maybeManifestTpl = await this.reloadManifestAndCheckRequiredFields(ctx);
+    const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
+    const maybeManifestTpl = await appStudioPlugin.reloadManifestAndCheckRequiredFields(ctx.root);
     if (maybeManifestTpl.isErr()) {
       return err(maybeManifestTpl.error);
     }
@@ -1323,7 +1329,8 @@ export class TeamsAppSolution implements Solution {
       const checkRes = this.checkWhetherSolutionIsIdle();
       if (checkRes.isErr()) return err(checkRes.error);
 
-      const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx);
+      const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
+      const maybeManifest = await appStudioPlugin.reloadManifestAndCheckRequiredFields(ctx.root);
       if (maybeManifest.isErr()) {
         return err(maybeManifest.error);
       }
@@ -1672,7 +1679,9 @@ export class TeamsAppSolution implements Solution {
     }
 
     const selectedPlugins = maybeSelectedPlugins.value;
-    const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx);
+
+    const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
+    const maybeManifest = await appStudioPlugin.reloadManifestAndCheckRequiredFields(ctx.root);
     if (maybeManifest.isErr()) {
       return err(maybeManifest.error);
     }
@@ -1751,7 +1760,6 @@ export class TeamsAppSolution implements Solution {
       await fs.readFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`)
     ).toString();
 
-    const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
     const [appDefinition, _updatedManifest] = appStudioPlugin.getDevAppDefinition(
       manifestTpl,
       localAADId,
@@ -2144,7 +2152,8 @@ export class TeamsAppSolution implements Solution {
     const array = namespace.split("/");
     let manifest: TeamsAppManifest | undefined = undefined;
     if (isDynamicQuestion) {
-      const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx);
+      const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
+      const maybeManifest = await appStudioPlugin.reloadManifestAndCheckRequiredFields(ctx.root);
       if (maybeManifest.isErr()) {
         return err(maybeManifest.error);
       }
@@ -2489,7 +2498,10 @@ export class TeamsAppSolution implements Solution {
             await fs.readFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`)
           ).toString();
         } else {
-          const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx);
+          const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
+          const maybeManifest = await appStudioPlugin.reloadManifestAndCheckRequiredFields(
+            ctx.root
+          );
           if (maybeManifest.isErr()) {
             return maybeManifest;
           }
@@ -2570,7 +2582,10 @@ export class TeamsAppSolution implements Solution {
         const pluginName = array[1];
         const plugin = this.pluginMap.get(pluginName);
         if (plugin && plugin.executeUserTask) {
-          const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx);
+          const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
+          const maybeManifest = await appStudioPlugin.reloadManifestAndCheckRequiredFields(
+            ctx.root
+          );
           if (maybeManifest.isErr()) {
             return maybeManifest;
           }

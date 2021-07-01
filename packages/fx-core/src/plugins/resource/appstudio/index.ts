@@ -111,6 +111,12 @@ export class AppStudioPlugin implements Plugin {
     return await this.appStudioPluginImpl.createManifest(settings);
   }
 
+  public async reloadManifestAndCheckRequiredFields(
+    ctxRoot: string
+  ): Promise<Result<TeamsAppManifest, FxError>> {
+    return await this.appStudioPluginImpl.reloadManifestAndCheckRequiredFields(ctxRoot);
+  }
+
   /**
    * Validate manifest string against schema
    * @param {string} manifestString - the string of manifest.json file

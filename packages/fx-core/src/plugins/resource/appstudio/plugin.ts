@@ -2,8 +2,13 @@
 // Licensed under the MIT license.
 
 import {
+  ok,
+  err,
   AzureSolutionSettings,
   ConfigFolderName,
+  FxError,
+  returnSystemError,
+  Result,
   PluginContext,
   TeamsAppManifest,
   Platform,
@@ -46,7 +51,11 @@ import {
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
 import { Constants } from "./constants";
-import { REMOTE_TEAMS_APP_ID } from "../../solution/fx-solution/constants";
+import {
+  REMOTE_TEAMS_APP_ID,
+  REMOTE_MANIFEST,
+  SolutionError,
+} from "../../solution/fx-solution/constants";
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
 
@@ -122,6 +131,28 @@ export class AppStudioPluginImpl {
     }
 
     return undefined;
+  }
+
+  public async reloadManifestAndCheckRequiredFields(
+    ctxRoot: string
+  ): Promise<Result<TeamsAppManifest, FxError>> {
+    const result = await this.reloadManifest(ctxRoot);
+    return result.andThen((manifest) => {
+      if (
+        manifest === undefined ||
+        manifest.name.short === undefined ||
+        manifest.name.short.length === 0
+      ) {
+        return err(
+          returnSystemError(
+            new Error("Name is missing"),
+            "Solution",
+            SolutionError.FailedToLoadManifestFile
+          )
+        );
+      }
+      return ok(manifest);
+    });
   }
 
   public async validateManifest(ctx: PluginContext, manifestString: string): Promise<string[]> {
@@ -528,5 +559,30 @@ export class AppStudioPluginImpl {
       });
     }
     return bots;
+  }
+
+  private async reloadManifest(ctxRoot: string): Promise<Result<TeamsAppManifest, FxError>> {
+    try {
+      const manifest = await fs.readJson(`${ctxRoot}/.${ConfigFolderName}/${REMOTE_MANIFEST}`);
+      if (!manifest) {
+        return err(
+          returnSystemError(
+            new Error("Failed to read manifest file"),
+            "Solution",
+            SolutionError.FailedToLoadManifestFile
+          )
+        );
+      }
+      // Object.assign(ctx.app, manifest);
+      return ok(manifest);
+    } catch (e) {
+      return err(
+        returnSystemError(
+          new Error("Failed to read manifest file"),
+          "Solution",
+          SolutionError.FailedToLoadManifestFile
+        )
+      );
+    }
   }
 }

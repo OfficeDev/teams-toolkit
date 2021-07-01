@@ -52,6 +52,10 @@ describe("config", () => {
       [ApimPluginConfigKeys.serviceName]: 1,
     });
 
+    if (!configContent) {
+      throw Error("Empty test input");
+    }
+
     const apimPluginConfig = new ApimPluginConfig(configContent);
     it("Undefined property", () => {
       chai.expect(apimPluginConfig.apiPath).to.equal(undefined);
@@ -59,7 +63,9 @@ describe("config", () => {
     it("Error type property", () => {
       chai
         .expect(() => apimPluginConfig.serviceName)
-        .to.throw("Property 'serviceName' is not type 'string'");
+        .to.throw(
+          "Project configuration 'serviceName' of 'fx-resource-apim' is invalid. The value can contain only letters, numbers and hyphens. The first character must be a letter and last character must be a letter or a number."
+        );
     });
     it("Property with value", () => {
       chai.expect(apimPluginConfig.resourceGroupName).to.equal("test-resource-group-name");

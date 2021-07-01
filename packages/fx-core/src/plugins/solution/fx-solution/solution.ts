@@ -429,9 +429,9 @@ export class TeamsAppSolution implements Solution {
     return ok(Void);
   }
 
-  async open(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    return this.reloadManifestAndCheckRequiredFields(ctx);
-  }
+  // async open(ctx: SolutionContext): Promise<Result<any, FxError>> {
+  //   return this.reloadManifestAndCheckRequiredFields(ctx);
+  // }
 
   private async reloadManifest(ctx: SolutionContext): Promise<Result<TeamsAppManifest, FxError>> {
     try {
@@ -533,69 +533,69 @@ export class TeamsAppSolution implements Solution {
     return HostTypeOptionAzure.id === settings.hostType;
   }
 
-  async scaffoldOne(plugin: LoadedPlugin, ctx: SolutionContext): Promise<Result<any, FxError>> {
-    const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx);
-    if (maybeManifest.isErr()) {
-      return maybeManifest;
-    }
-    const manifest = maybeManifest.value;
-    const pctx = getPluginContext(ctx, plugin.name, manifest);
-    if (plugin.preScaffold) {
-      const result = await plugin.preScaffold(pctx);
-      if (result.isErr()) {
-        return result;
-      }
-    }
-    if (plugin.scaffold) {
-      const result = await plugin.scaffold(pctx);
-      if (result.isErr()) {
-        return result;
-      }
-    }
-    if (plugin.postScaffold) {
-      const result = await plugin.postScaffold(pctx);
-      if (result.isErr()) {
-        return result;
-      }
-    }
-    return ok(null);
-  }
+  // async scaffoldOne(plugin: LoadedPlugin, ctx: SolutionContext): Promise<Result<any, FxError>> {
+  //   const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx);
+  //   if (maybeManifest.isErr()) {
+  //     return maybeManifest;
+  //   }
+  //   const manifest = maybeManifest.value;
+  //   const pctx = getPluginContext(ctx, plugin.name, manifest);
+  //   if (plugin.preScaffold) {
+  //     const result = await plugin.preScaffold(pctx);
+  //     if (result.isErr()) {
+  //       return result;
+  //     }
+  //   }
+  //   if (plugin.scaffold) {
+  //     const result = await plugin.scaffold(pctx);
+  //     if (result.isErr()) {
+  //       return result;
+  //     }
+  //   }
+  //   if (plugin.postScaffold) {
+  //     const result = await plugin.postScaffold(pctx);
+  //     if (result.isErr()) {
+  //       return result;
+  //     }
+  //   }
+  //   return ok(null);
+  // }
 
-  async provisionOne(plugin: LoadedPlugin, ctx: SolutionContext): Promise<Result<any, FxError>> {
-    const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx);
-    if (maybeManifest.isErr()) {
-      return maybeManifest;
-    }
-    const manifest = maybeManifest.value;
+  // async provisionOne(plugin: LoadedPlugin, ctx: SolutionContext): Promise<Result<any, FxError>> {
+  //   const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx);
+  //   if (maybeManifest.isErr()) {
+  //     return maybeManifest;
+  //   }
+  //   const manifest = maybeManifest.value;
 
-    const pctx = getPluginContext(ctx, plugin.name, manifest);
-    if (plugin.preProvision) {
-      const result = await plugin.preProvision(pctx);
-      if (result.isErr()) {
-        return result;
-      }
-    }
-    if (plugin.provision) {
-      const result = await plugin.provision(pctx);
-      if (result.isErr()) {
-        return result;
-      }
-    }
-    if (plugin.postProvision) {
-      const result = await plugin.postProvision(pctx);
-      if (result.isErr()) {
-        return result;
-      }
-    }
-    return ok(null);
-  }
+  //   const pctx = getPluginContext(ctx, plugin.name, manifest);
+  //   if (plugin.preProvision) {
+  //     const result = await plugin.preProvision(pctx);
+  //     if (result.isErr()) {
+  //       return result;
+  //     }
+  //   }
+  //   if (plugin.provision) {
+  //     const result = await plugin.provision(pctx);
+  //     if (result.isErr()) {
+  //       return result;
+  //     }
+  //   }
+  //   if (plugin.postProvision) {
+  //     const result = await plugin.postProvision(pctx);
+  //     if (result.isErr()) {
+  //       return result;
+  //     }
+  //   }
+  //   return ok(null);
+  // }
 
   /**
    * update
    */
-  async update(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    return await this.executeAddResource(ctx);
-  }
+  // async update(ctx: SolutionContext): Promise<Result<any, FxError>> {
+  //   return await this.executeAddResource(ctx);
+  // }
 
   private getSelectedPlugins(ctx: SolutionContext): Result<LoadedPlugin[], FxError> {
     const settings = this.getAzureSolutionSettings(ctx);
@@ -1052,22 +1052,22 @@ export class TeamsAppSolution implements Solution {
     );
   }
 
-  private canDeploy(ctx: SolutionContext): Result<Void, FxError> {
-    if (!this.isAzureProject(ctx)) {
-      return ok(Void);
-    }
-    return this.checkWhetherSolutionIsIdle().andThen((_) => {
-      return this.checkWetherProvisionSucceeded(ctx.config)
-        ? ok(Void)
-        : err(
-            returnUserError(
-              new Error("Please provision before deploying"),
-              "Solution",
-              SolutionError.CannotDeployBeforeProvision
-            )
-          );
-    });
-  }
+  // private canDeploy(ctx: SolutionContext): Result<Void, FxError> {
+  //   if (!this.isAzureProject(ctx)) {
+  //     return ok(Void);
+  //   }
+  //   return this.checkWhetherSolutionIsIdle().andThen((_) => {
+  //     return this.checkWetherProvisionSucceeded(ctx.config)
+  //       ? ok(Void)
+  //       : err(
+  //           returnUserError(
+  //             new Error("Please provision before deploying"),
+  //             "Solution",
+  //             SolutionError.CannotDeployBeforeProvision
+  //           )
+  //         );
+  //   });
+  // }
 
   private async canPublish(
     ctx: SolutionContext,

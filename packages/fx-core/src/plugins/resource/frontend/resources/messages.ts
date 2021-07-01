@@ -35,8 +35,8 @@ export class Messages {
   static readonly EndDeploy = (name: string) => `Successfully deployed '${name}'.`;
 
   static readonly SkipBuild =
-    "Skip building tab frontend project for no changes detected since last build.";
-  static readonly SkipDeploy = `Skip deployment of tab frontend project for no change detected. To fully redeploy tab frontend project, please remove ${path.join(
+    "Skip building Tab frontend project because no changes detected since last build.";
+  static readonly SkipDeploy = `Skip deployment of Tab frontend project because no change detected. To fully redeploy Tab frontend project, please remove ${path.join(
     PathInfo.WorkingDir,
     PathInfo.TabDeploymentFolderName
   )} folder and rerun the command.`;

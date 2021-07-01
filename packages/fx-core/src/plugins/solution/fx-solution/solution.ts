@@ -904,23 +904,6 @@ export class TeamsAppSolution implements Solution {
           );
           ctx.logProvider?.error(msg);
           ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false);
-          const resourceGroupName = ctx.config.get(GLOBAL_CONFIG)?.getString("resourceGroupName");
-          const subscriptionId = ctx.config.get(GLOBAL_CONFIG)?.getString("subscriptionId");
-          const error = provisionResult.error;
-          error.message +=
-            " " +
-            util.format(
-              getStrings().solution.ProvisionFailGuide,
-              subscriptionId,
-              resourceGroupName
-            );
-          if (error instanceof UserError) {
-            const ue = error as UserError;
-            if (!ue.helpLink) {
-              ue.helpLink = "https://aka.ms/teamsfx-solution-help";
-              (ue.source = "Solution"), (ue.name = "ProvisionFailure");
-            }
-          }
         }
       }
       return provisionResult;

@@ -8,7 +8,8 @@ export const sideloadingUrl =
 export const teamsAppIdPlaceholder = "${teamsAppId}";
 export const accountHintPlaceholder = "${account-hint}";
 
-export const waitCtrlPlusC = "Press Ctrl+C to stop preview.";
+export const waitCtrlPlusC =
+  "WARN: Closing browser will not terminate the preview process, please press Ctrl+C to terminate.";
 
 export const localEnvFileName = "local.env";
 

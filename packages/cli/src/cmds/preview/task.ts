@@ -22,14 +22,18 @@ export interface TaskResult {
 }
 
 export class Task {
+  private taskTitle: string;
   private command: string;
+  private background: boolean;
   private options: TaskOptions;
 
   private resolved = false;
   private task: ChildProcess | undefined;
 
-  constructor(command: string, options: TaskOptions) {
+  constructor(taskTitle: string, command: string, background: boolean, options: TaskOptions) {
+    this.taskTitle = taskTitle;
     this.command = command;
+    this.background = background;
     this.options = options;
   }
 
@@ -37,10 +41,14 @@ export class Task {
    * wait for the task to end
    */
   public async wait(
-    startCallback: () => Promise<void>,
-    stopCallback: (result: TaskResult) => Promise<FxError | null>
+    startCallback: (taskTitle: string, background: boolean) => Promise<void>,
+    stopCallback: (
+      taskTitle: string,
+      background: boolean,
+      result: TaskResult
+    ) => Promise<FxError | null>
   ): Promise<Result<TaskResult, FxError>> {
-    await startCallback();
+    await startCallback(this.taskTitle, this.background);
     const spawnOptions: SpawnOptions = {
       shell: true,
       cwd: this.options.cwd,
@@ -67,7 +75,7 @@ export class Task {
           stderr: stderr,
           exitCode: this.task?.exitCode === undefined ? null : this.task?.exitCode,
         };
-        const error = await stopCallback(result);
+        const error = await stopCallback(this.taskTitle, this.background, result);
         if (error) {
           resolve(err(error));
         } else {
@@ -82,10 +90,14 @@ export class Task {
    */
   public async waitFor(
     pattern: RegExp,
-    startCallback: () => Promise<void>,
-    stopCallback: (result: TaskResult) => Promise<FxError | null>
+    startCallback: (taskTitle: string, background: boolean) => Promise<void>,
+    stopCallback: (
+      taskTitle: string,
+      background: boolean,
+      result: TaskResult
+    ) => Promise<FxError | null>
   ): Promise<Result<TaskResult, FxError>> {
-    await startCallback();
+    await startCallback(this.taskTitle, this.background);
     const spawnOptions: SpawnOptions = {
       shell: true,
       cwd: this.options.cwd,
@@ -110,7 +122,7 @@ export class Task {
               stderr: stderr,
               exitCode: null,
             };
-            const error = await stopCallback(result);
+            const error = await stopCallback(this.taskTitle, this.background, result);
             if (error) {
               resolve(err(error));
             } else {
@@ -135,7 +147,7 @@ export class Task {
             stderr: stderr,
             exitCode: this.task?.exitCode === undefined ? null : this.task?.exitCode,
           };
-          const error = await stopCallback(result);
+          const error = await stopCallback(this.taskTitle, this.background, result);
           if (error) {
             resolve(err(error));
           } else {

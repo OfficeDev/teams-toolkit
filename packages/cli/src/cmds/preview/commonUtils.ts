@@ -23,13 +23,11 @@ import { getNpmInstallLogInfo } from "./npmLogHandler";
 
 export function createTaskStartCb(
   progressBar: IProgressHandler,
-  message: string,
-  background?: boolean,
-  taskTitle?: string,
+  startMessage: string,
   telemetryProperties?: { [key: string]: string }
-): () => Promise<void> {
-  return async () => {
-    if (background !== undefined) {
+): (taskTitle: string, background: boolean) => Promise<void> {
+  return async (taskTitle: string, background: boolean) => {
+    if (telemetryProperties !== undefined) {
       const event = background
         ? TelemetryEvent.PreviewServiceStart
         : TelemetryEvent.PreviewNpmInstallStart;
@@ -41,18 +39,16 @@ export function createTaskStartCb(
         [key]: taskTitle as string,
       });
     }
-    await progressBar.start(message);
+    await progressBar.start(startMessage);
   };
 }
 
 export function createTaskStopCb(
-  taskTitle: string,
   progressBar: IProgressHandler,
   successMessage: string,
-  background: boolean,
   telemetryProperties?: { [key: string]: string }
-): (result: TaskResult) => Promise<FxError | null> {
-  return async (result: TaskResult) => {
+): (taskTitle: string, background: boolean, result: TaskResult) => Promise<FxError | null> {
+  return async (taskTitle: string, background: boolean, result: TaskResult) => {
     const event = background ? TelemetryEvent.PreviewService : TelemetryEvent.PreviewNpmInstall;
     const key = background
       ? TelemetryProperty.PreviewServiceName

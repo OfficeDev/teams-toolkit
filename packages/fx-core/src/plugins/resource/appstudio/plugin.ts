@@ -77,21 +77,102 @@ export class AppStudioPluginImpl {
   }
 
   public async updateApp(
-    teamsAppId: string,
     appDefinition: IAppDefinition,
     appStudioToken: string,
+    type: "localDebug" | "remote",
+    createIfNotExist: boolean,
+    teamsAppId?: string,
     logProvider?: LogProvider,
-    colorIconContent?: string,
-    outlineIconContent?: string
-  ): Promise<IAppDefinition> {
-    return await AppStudioClient.updateApp(
-      teamsAppId,
-      appDefinition,
-      appStudioToken,
-      logProvider,
-      colorIconContent,
-      outlineIconContent
-    );
+    projectRoot?: string
+  ): Promise<Result<string, FxError>> {
+    if (appStudioToken === undefined || appStudioToken.length === 0) {
+      return err(
+        returnSystemError(
+          new Error("Failed to get app studio token"),
+          "Solution",
+          SolutionError.FailedToGetAppStudioToken
+        )
+      );
+    }
+
+    if (createIfNotExist) {
+      const colorIconContent =
+        projectRoot && appDefinition.colorIcon && !appDefinition.colorIcon.startsWith("https://")
+          ? (
+              await fs.readFile(`${projectRoot}/.${ConfigFolderName}/${appDefinition.colorIcon}`)
+            ).toString("base64")
+          : undefined;
+      const outlineIconContent =
+        projectRoot &&
+        appDefinition.outlineIcon &&
+        !appDefinition.outlineIcon.startsWith("https://")
+          ? (
+              await fs.readFile(`${projectRoot}/.${ConfigFolderName}/${appDefinition.outlineIcon}`)
+            ).toString("base64")
+          : undefined;
+
+      await logProvider?.debug(`${type} appDefinition: ${JSON.stringify(appDefinition)}`);
+      const appDef = await AppStudioClient.createApp(
+        appDefinition,
+        appStudioToken,
+        logProvider,
+        colorIconContent,
+        outlineIconContent
+      );
+      teamsAppId = appDef?.teamsAppId;
+      if (!appDef?.teamsAppId) {
+        return err(
+          returnSystemError(
+            new Error(`Failed to create ${type} teams app id`),
+            "Solution",
+            type === "remote"
+              ? SolutionError.FailedToCreateAppIdInAppStudio
+              : SolutionError.FailedToCreateLocalAppIdInAppStudio
+          )
+        );
+      }
+      appDefinition.outlineIcon = appDef.outlineIcon;
+      appDefinition.colorIcon = appDef.colorIcon;
+    }
+
+    const colorIconContent =
+      projectRoot && appDefinition.colorIcon && !appDefinition.colorIcon.startsWith("https://")
+        ? (
+            await fs.readFile(`${projectRoot}/.${ConfigFolderName}/${appDefinition.colorIcon}`)
+          ).toString("base64")
+        : undefined;
+    const outlineIconContent =
+      projectRoot && appDefinition.outlineIcon && !appDefinition.outlineIcon.startsWith("https://")
+        ? (
+            await fs.readFile(`${projectRoot}/.${ConfigFolderName}/${appDefinition.outlineIcon}`)
+          ).toString("base64")
+        : undefined;
+    appDefinition.appId = teamsAppId;
+
+    try {
+      await AppStudioClient.updateApp(
+        teamsAppId!,
+        appDefinition,
+        appStudioToken,
+        logProvider,
+        colorIconContent,
+        outlineIconContent
+      );
+      return ok(teamsAppId!);
+    } catch (e) {
+      if (e instanceof Error) {
+        return err(
+          returnSystemError(
+            new Error(`Failed to update ${type} teams app manifest due to ${e.name}: ${e.message}`),
+            "Solution",
+            type === "remote"
+              ? SolutionError.FailedToUpdateAppIdInAppStudio
+              : SolutionError.FailedToUpdateLocalAppIdInAppStudio
+          )
+        );
+      }
+      throw e;
+    }
   }
 
   /**
@@ -436,7 +517,7 @@ export class AppStudioPluginImpl {
         manifest.icons.outline && !manifest.icons.outline.startsWith("https://")
           ? (await fs.readFile(`${appDirectory}/${manifest.icons.outline}`)).toString("base64")
           : undefined;
-      await this.updateApp(
+      await AppStudioClient.updateApp(
         remoteTeamsAppId!,
         appDefinition,
         appStudioToken!,

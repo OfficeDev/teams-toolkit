@@ -795,11 +795,14 @@ export class TeamsAppSolution implements Solution {
     const teamsAppId = ctx.config.get(GLOBAL_CONFIG)?.getString(REMOTE_TEAMS_APP_ID);
     if (!teamsAppId) {
       ctx.logProvider?.info(`Teams app not created`);
-      const result = await this.createAndUpdateApp(
+      const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
+      const result = await appStudioPlugin.updateApp(
         appDefinition,
         "remote",
-        ctx.logProvider,
+        true,
+        undefined,
         await ctx.appStudioToken?.getAccessToken(),
+        ctx.logProvider,
         ctx.root
       );
       if (result.isErr()) {
@@ -813,12 +816,14 @@ export class TeamsAppSolution implements Solution {
     } else {
       ctx.logProvider?.info(`Teams app already created: ${teamsAppId}`);
       appDefinition.appId = teamsAppId;
-      const result = await this.updateApp(
-        teamsAppId,
+      const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
+      const result = await appStudioPlugin.updateApp(
         appDefinition,
         "remote",
-        ctx.logProvider,
+        false,
+        teamsAppId,
         await ctx.appStudioToken?.getAccessToken(),
+        ctx.logProvider,
         ctx.root
       );
       if (result.isErr()) {
@@ -1531,131 +1536,131 @@ export class TeamsAppSolution implements Solution {
   }
 
   // Update app manifest
-  private async updateApp(
-    teamsAppId: string,
-    appDefinition: IAppDefinition,
-    type: "localDebug" | "remote",
-    logProvider?: LogProvider,
-    appStudioToken?: string,
-    projectRoot?: string
-  ): Promise<Result<string, FxError>> {
-    if (appStudioToken === undefined || appStudioToken.length === 0) {
-      return err(
-        returnSystemError(
-          new Error("Failed to get app studio token"),
-          "Solution",
-          SolutionError.FailedToGetAppStudioToken
-        )
-      );
-    }
-    appDefinition.appId = teamsAppId;
-    const colorIconContent =
-      projectRoot && appDefinition.colorIcon && !appDefinition.colorIcon.startsWith("https://")
-        ? (
-            await fs.readFile(`${projectRoot}/.${ConfigFolderName}/${appDefinition.colorIcon}`)
-          ).toString("base64")
-        : undefined;
-    const outlineIconContent =
-      projectRoot && appDefinition.outlineIcon && !appDefinition.outlineIcon.startsWith("https://")
-        ? (
-            await fs.readFile(`${projectRoot}/.${ConfigFolderName}/${appDefinition.outlineIcon}`)
-          ).toString("base64")
-        : undefined;
-    try {
-      const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
-      await appStudioPlugin.updateApp(
-        teamsAppId,
-        appDefinition,
-        appStudioToken,
-        logProvider,
-        colorIconContent,
-        outlineIconContent
-      );
-      return ok(teamsAppId);
-    } catch (e) {
-      if (e instanceof Error) {
-        return err(
-          returnSystemError(
-            new Error(`Failed to update ${type} teams app manifest due to ${e.name}: ${e.message}`),
-            "Solution",
-            type === "remote"
-              ? SolutionError.FailedToUpdateAppIdInAppStudio
-              : SolutionError.FailedToUpdateLocalAppIdInAppStudio
-          )
-        );
-      }
-      throw e;
-    }
-  }
+  // private async updateApp(
+  //   teamsAppId: string,
+  //   appDefinition: IAppDefinition,
+  //   type: "localDebug" | "remote",
+  //   logProvider?: LogProvider,
+  //   appStudioToken?: string,
+  //   projectRoot?: string
+  // ): Promise<Result<string, FxError>> {
+  //   if (appStudioToken === undefined || appStudioToken.length === 0) {
+  //     return err(
+  //       returnSystemError(
+  //         new Error("Failed to get app studio token"),
+  //         "Solution",
+  //         SolutionError.FailedToGetAppStudioToken
+  //       )
+  //     );
+  //   }
+  //   appDefinition.appId = teamsAppId;
+  //   const colorIconContent =
+  //     projectRoot && appDefinition.colorIcon && !appDefinition.colorIcon.startsWith("https://")
+  //       ? (
+  //           await fs.readFile(`${projectRoot}/.${ConfigFolderName}/${appDefinition.colorIcon}`)
+  //         ).toString("base64")
+  //       : undefined;
+  //   const outlineIconContent =
+  //     projectRoot && appDefinition.outlineIcon && !appDefinition.outlineIcon.startsWith("https://")
+  //       ? (
+  //           await fs.readFile(`${projectRoot}/.${ConfigFolderName}/${appDefinition.outlineIcon}`)
+  //         ).toString("base64")
+  //       : undefined;
+  //   try {
+  //     const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
+  //     await appStudioPlugin.updateApp(
+  //       teamsAppId,
+  //       appDefinition,
+  //       appStudioToken,
+  //       logProvider,
+  //       colorIconContent,
+  //       outlineIconContent
+  //     );
+  //     return ok(teamsAppId);
+  //   } catch (e) {
+  //     if (e instanceof Error) {
+  //       return err(
+  //         returnSystemError(
+  //           new Error(`Failed to update ${type} teams app manifest due to ${e.name}: ${e.message}`),
+  //           "Solution",
+  //           type === "remote"
+  //             ? SolutionError.FailedToUpdateAppIdInAppStudio
+  //             : SolutionError.FailedToUpdateLocalAppIdInAppStudio
+  //         )
+  //       );
+  //     }
+  //     throw e;
+  //   }
+  // }
 
-  private async createAndUpdateApp(
-    appDefinition: IAppDefinition,
-    type: "localDebug" | "remote",
-    logProvider?: LogProvider,
-    appStudioToken?: string,
-    projectRoot?: string
-  ): Promise<Result<string, FxError>> {
-    await logProvider?.debug(`${type} appDefinition: ${JSON.stringify(appDefinition)}`);
-    if (appStudioToken === undefined || appStudioToken.length === 0) {
-      return err(
-        returnSystemError(
-          new Error("Failed to get app studio token"),
-          "Solution",
-          SolutionError.FailedToGetAppStudioToken
-        )
-      );
-    }
-    const colorIconContent =
-      projectRoot && appDefinition.colorIcon && !appDefinition.colorIcon.startsWith("https://")
-        ? (
-            await fs.readFile(`${projectRoot}/.${ConfigFolderName}/${appDefinition.colorIcon}`)
-          ).toString("base64")
-        : undefined;
-    const outlineIconContent =
-      projectRoot && appDefinition.outlineIcon && !appDefinition.outlineIcon.startsWith("https://")
-        ? (
-            await fs.readFile(`${projectRoot}/.${ConfigFolderName}/${appDefinition.outlineIcon}`)
-          ).toString("base64")
-        : undefined;
-    // const appDef = await AppStudio.createApp(
-    //   appDefinition,
-    //   appStudioToken,
-    //   logProvider,
-    //   colorIconContent,
-    //   outlineIconContent
-    // );
-    const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
-    const appDef = await appStudioPlugin.createApp(
-      appDefinition,
-      appStudioToken,
-      logProvider,
-      colorIconContent,
-      outlineIconContent
-    );
-    const teamsAppId = appDef?.teamsAppId;
-    if (appDef === undefined || teamsAppId === undefined) {
-      return err(
-        returnSystemError(
-          new Error(`Failed to create ${type} teams app id`),
-          "Solution",
-          type === "remote"
-            ? SolutionError.FailedToCreateAppIdInAppStudio
-            : SolutionError.FailedToCreateLocalAppIdInAppStudio
-        )
-      );
-    }
-    appDefinition.outlineIcon = appDef.outlineIcon;
-    appDefinition.colorIcon = appDef.colorIcon;
+  // private async createAndUpdateApp(
+  //   appDefinition: IAppDefinition,
+  //   type: "localDebug" | "remote",
+  //   logProvider?: LogProvider,
+  //   appStudioToken?: string,
+  //   projectRoot?: string
+  // ): Promise<Result<string, FxError>> {
+  //   await logProvider?.debug(`${type} appDefinition: ${JSON.stringify(appDefinition)}`);
+  //   if (appStudioToken === undefined || appStudioToken.length === 0) {
+  //     return err(
+  //       returnSystemError(
+  //         new Error("Failed to get app studio token"),
+  //         "Solution",
+  //         SolutionError.FailedToGetAppStudioToken
+  //       )
+  //     );
+  //   }
+  //   const colorIconContent =
+  //     projectRoot && appDefinition.colorIcon && !appDefinition.colorIcon.startsWith("https://")
+  //       ? (
+  //           await fs.readFile(`${projectRoot}/.${ConfigFolderName}/${appDefinition.colorIcon}`)
+  //         ).toString("base64")
+  //       : undefined;
+  //   const outlineIconContent =
+  //     projectRoot && appDefinition.outlineIcon && !appDefinition.outlineIcon.startsWith("https://")
+  //       ? (
+  //           await fs.readFile(`${projectRoot}/.${ConfigFolderName}/${appDefinition.outlineIcon}`)
+  //         ).toString("base64")
+  //       : undefined;
+  // const appDef = await AppStudio.createApp(
+  //   appDefinition,
+  //   appStudioToken,
+  //   logProvider,
+  //   colorIconContent,
+  //   outlineIconContent
+  // );
+  //   const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
+  //   const appDef = await appStudioPlugin.createApp(
+  //     appDefinition,
+  //     appStudioToken,
+  //     logProvider,
+  //     colorIconContent,
+  //     outlineIconContent
+  //   );
+  //   const teamsAppId = appDef?.teamsAppId;
+  //   if (appDef === undefined || teamsAppId === undefined) {
+  //     return err(
+  //       returnSystemError(
+  //         new Error(`Failed to create ${type} teams app id`),
+  //         "Solution",
+  //         type === "remote"
+  //           ? SolutionError.FailedToCreateAppIdInAppStudio
+  //           : SolutionError.FailedToCreateLocalAppIdInAppStudio
+  //       )
+  //     );
+  //   }
+  //   appDefinition.outlineIcon = appDef.outlineIcon;
+  //   appDefinition.colorIcon = appDef.colorIcon;
 
-    return this.updateApp(
-      teamsAppId,
-      appDefinition,
-      type,
-      logProvider,
-      appStudioToken,
-      projectRoot
-    );
-  }
+  //   return this.updateApp(
+  //     teamsAppId,
+  //     appDefinition,
+  //     type,
+  //     logProvider,
+  //     appStudioToken,
+  //     projectRoot
+  //   );
+  // }
 
   async localDebug(ctx: SolutionContext): Promise<Result<any, FxError>> {
     const maybePermission = await this.getPermissionRequest(ctx);
@@ -1776,23 +1781,28 @@ export class TeamsAppSolution implements Solution {
     const localTeamsAppID = ctx.config.get(GLOBAL_CONFIG)?.getString(LOCAL_DEBUG_TEAMS_APP_ID);
     // If localTeamsAppID is present, we should reuse the teams app id.
     if (localTeamsAppID) {
-      const result = await this.updateApp(
-        localTeamsAppID,
+      const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
+      const result = await appStudioPlugin.updateApp(
         appDefinition,
         "localDebug",
-        ctx.logProvider,
+        false,
+        localTeamsAppID,
         await ctx.appStudioToken?.getAccessToken(),
+        ctx.logProvider,
         ctx.root
       );
       if (result.isErr()) {
         return result;
       }
     } else {
-      const maybeTeamsAppId = await this.createAndUpdateApp(
+      const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
+      const maybeTeamsAppId = await appStudioPlugin.updateApp(
         appDefinition,
         "localDebug",
-        ctx.logProvider,
+        true,
+        undefined,
         await ctx.appStudioToken?.getAccessToken(),
+        ctx.logProvider,
         ctx.root
       );
       if (maybeTeamsAppId.isErr()) {
@@ -2778,11 +2788,14 @@ export class TeamsAppSolution implements Solution {
     await fs.writeFile(manifestPath, manifestStr);
     const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
     const appDefinition = appStudioPlugin.convertToAppDefinition(manifest, true);
-    const maybeTeamsAppId = await this.createAndUpdateApp(
+    const maybeTeamsAppId = await appStudioPlugin.updateApp(
       appDefinition,
       "remote",
+      true,
+      undefined,
+      await ctx.appStudioToken?.getAccessToken(),
       ctx.logProvider,
-      await ctx.appStudioToken?.getAccessToken()
+      ctx.root
     );
     if (maybeTeamsAppId.isErr()) {
       return err(maybeTeamsAppId.error);

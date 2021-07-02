@@ -75,14 +75,14 @@ export class AppStudioPlugin implements Plugin {
 
   public async createApp(
     appDefinition: IAppDefinition,
-    appStudioToken: string,
+    appStudioToken?: string,
     logProvider?: LogProvider,
     colorIconContent?: string, // base64 encoded
     outlineIconContent?: string // base64 encoded
   ): Promise<IAppDefinition | undefined> {
     return await this.appStudioPluginImpl.createApp(
       appDefinition,
-      appStudioToken,
+      appStudioToken!,
       logProvider,
       colorIconContent,
       outlineIconContent
@@ -90,20 +90,22 @@ export class AppStudioPlugin implements Plugin {
   }
 
   public async updateApp(
-    teamsAppId: string,
     appDefinition: IAppDefinition,
-    appStudioToken: string,
+    type: "localDebug" | "remote",
+    createIfNotExist: boolean,
+    teamsAppId?: string,
+    appStudioToken?: string,
     logProvider?: LogProvider,
-    colorIconContent?: string,
-    outlineIconContent?: string
-  ): Promise<IAppDefinition> {
+    projectRoot?: string
+  ): Promise<Result<string, FxError>> {
     return await this.appStudioPluginImpl.updateApp(
-      teamsAppId,
       appDefinition,
-      appStudioToken,
+      appStudioToken!,
+      type,
+      createIfNotExist,
+      teamsAppId,
       logProvider,
-      colorIconContent,
-      outlineIconContent
+      projectRoot
     );
   }
 

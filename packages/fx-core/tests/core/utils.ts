@@ -282,7 +282,7 @@ class MockDialog implements Dialog {
   }
 }
 
-class MockUserInteraction implements UserInteraction {
+export class MockUserInteraction implements UserInteraction {
   selectOption(config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> {
     throw new Error("Method not implemented.");
   }

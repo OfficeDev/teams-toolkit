@@ -85,7 +85,7 @@ export class AadAppForTeamsImpl {
       }
     }
 
-    DialogUtils.init(ctx.dialog as Dialog, ProgressTitle.Provision, ProgressTitle.ProvisionSteps);
+    DialogUtils.init(ctx.ui, ProgressTitle.Provision, ProgressTitle.ProvisionSteps);
 
     let config: ProvisionConfig = new ProvisionConfig(isLocalDebug);
     await config.restoreConfigFromContext(ctx);
@@ -177,11 +177,7 @@ export class AadAppForTeamsImpl {
       return ResultFactory.Success();
     }
 
-    DialogUtils.init(
-      ctx.dialog as Dialog,
-      ProgressTitle.PostProvision,
-      ProgressTitle.PostProvisionSteps
-    );
+    DialogUtils.init(ctx.ui, ProgressTitle.PostProvision, ProgressTitle.PostProvisionSteps);
 
     await TokenProvider.init(ctx);
     const config: PostProvisionConfig = new PostProvisionConfig(isLocalDebug);
@@ -211,7 +207,7 @@ export class AadAppForTeamsImpl {
     );
     ctx.logProvider?.info(Messages.getLog(Messages.UpdateAppIdUriSuccess));
 
-    await DialogUtils.progress.end();
+    await DialogUtils.progress?.end();
     Utils.addLogAndTelemetryWithLocalDebug(
       ctx.logProvider,
       Messages.EndPostProvision,
@@ -231,11 +227,7 @@ export class AadAppForTeamsImpl {
       return ResultFactory.Success();
     }
 
-    DialogUtils.init(
-      ctx.dialog as Dialog,
-      ProgressTitle.UpdatePermission,
-      ProgressTitle.UpdatePermissionSteps
-    );
+    DialogUtils.init(ctx.ui, ProgressTitle.UpdatePermission, ProgressTitle.UpdatePermissionSteps);
 
     const configs = await AadAppForTeamsImpl.getUpdatePermissionConfigs(ctx);
     if (!configs) {
@@ -261,7 +253,7 @@ export class AadAppForTeamsImpl {
     }
     ctx.logProvider?.info(Messages.getLog(Messages.UpdatePermissionSuccess));
 
-    await DialogUtils.progress.end();
+    await DialogUtils.progress?.end();
     DialogUtils.show(Messages.UpdatePermissionSuccessMessage);
     return ResultFactory.Success();
   }

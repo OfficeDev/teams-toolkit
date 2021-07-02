@@ -12,7 +12,7 @@ import { AppStudioPlugin } from "./../../../../../src/plugins/resource/appstudio
 import { AppStudioClient } from "./../../../../../src/plugins/resource/appstudio/appStudio";
 import { PublishingState } from "./../../../../../src/plugins/resource/appstudio/interfaces/IPublishingAppDefinition";
 import { mockTokenProvider } from "./../../aad/helper";
-import { mockDialogProvider } from "./../helper";
+import { MockUserInteraction } from "./../helper";
 
 describe("Publish Teams app", () => {
   let plugin: AppStudioPlugin;
@@ -62,7 +62,7 @@ describe("Publish Teams app", () => {
       displayName: "TestApp",
     };
     sinon.stub(AppStudioClient, "getAppByTeamsAppId").resolves(mockApp);
-    ctx.dialog = mockDialogProvider;
+    ctx.ui = new MockUserInteraction();
 
     const teamsAppId = await plugin.publish(ctx);
     chai.assert.isTrue(teamsAppId.isOk());

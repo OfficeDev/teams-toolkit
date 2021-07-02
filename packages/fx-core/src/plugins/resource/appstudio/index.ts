@@ -134,12 +134,7 @@ export class AppStudioPlugin implements Plugin {
     if (validationResult.length > 0) {
       const errMessage = AppStudioError.ValidationFailedError.message(validationResult);
       ctx.logProvider?.error("Manifest Validation failed!");
-      await ctx.dialog?.communicate(
-        new DialogMsg(DialogType.Show, {
-          description: errMessage,
-          level: MsgLevel.Error,
-        })
-      );
+      ctx.ui?.showMessage("error", errMessage, false);
       const properties: { [key: string]: string } = {};
       properties[TelemetryPropertyKey.validationResult] = validationResult.join("\n");
       const validationFailed = AppStudioResultFactory.UserError(
@@ -154,12 +149,7 @@ export class AppStudioPlugin implements Plugin {
       return err(validationFailed);
     }
     const validationSuccess = "Manifest Validation succeed!";
-    await ctx.dialog?.communicate(
-      new DialogMsg(DialogType.Show, {
-        description: validationSuccess,
-        level: MsgLevel.Info,
-      })
-    );
+    ctx.ui?.showMessage("info", validationSuccess, false);
     TelemetryUtils.sendSuccessEvent(TelemetryEventName.validateManifest);
     return ok(validationResult);
   }
@@ -256,25 +246,12 @@ export class AppStudioPlugin implements Plugin {
             appDirectory,
             manifestString
           );
-          ctx.dialog
-            ?.communicate(
-              new DialogMsg(DialogType.Show, {
-                description: `Successfully created ${ctx.app.name.short} app package file at ${appPackagePath}. Send this to your administrator for approval.`,
-                level: MsgLevel.Info,
-                items: ["OK", Constants.READ_MORE],
-              })
-            )
-            .then((value) => {
-              const answer = value.getAnswer();
-              if (answer === Constants.READ_MORE) {
-                ctx.dialog?.communicate(
-                  new DialogMsg(DialogType.Ask, {
-                    description: Constants.PUBLISH_GUIDE,
-                    type: QuestionType.OpenExternal,
-                  })
-                );
-              }
-            });
+          const msg = `Successfully created ${ctx.app.name.short} app package file at ${appPackagePath}. Send this to your administrator for approval.`;
+          ctx.ui?.showMessage("info", msg, false, "OK", Constants.READ_MORE).then((value) => {
+            if (value.isOk() && value.value === Constants.READ_MORE) {
+              ctx.ui?.openUrl(Constants.PUBLISH_GUIDE);
+            }
+          });
           TelemetryUtils.sendSuccessEvent(TelemetryEventName.publish);
           return ok(appPackagePath);
         } catch (error) {
@@ -292,11 +269,10 @@ export class AppStudioPlugin implements Plugin {
     try {
       const result = await this.appStudioPluginImpl.publish(ctx);
       ctx.logProvider?.info(`Publish success!`);
-      await ctx.dialog?.communicate(
-        new DialogMsg(DialogType.Show, {
-          description: `${result.name} successfully published to the admin portal. Once approved, your app will be available for your organization.`,
-          level: MsgLevel.Info,
-        })
+      ctx.ui?.showMessage(
+        "info",
+        `${result.name} successfully published to the admin portal. Once approved, your app will be available for your organization.`,
+        false
       );
       const properties: { [key: string]: string } = {};
       properties[TelemetryPropertyKey.updateExistingApp] = String(result.update);

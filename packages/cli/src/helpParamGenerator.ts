@@ -3,7 +3,22 @@
 
 "use strict";
 
-import { Result, FxError, err, ok, Inputs, Tools, Stage, Platform, QTreeNode, Question, isAutoSkipSelect, SingleSelectQuestion, MultiSelectQuestion, OptionItem } from "@microsoft/teamsfx-api";
+import {
+  Result,
+  FxError,
+  err,
+  ok,
+  Inputs,
+  Tools,
+  Stage,
+  Platform,
+  QTreeNode,
+  Question,
+  isAutoSkipSelect,
+  SingleSelectQuestion,
+  MultiSelectQuestion,
+  OptionItem,
+} from "@microsoft/teamsfx-api";
 
 import { FxCore } from "@microsoft/teamsfx-core";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -15,6 +30,7 @@ import { CliTelemetry } from "./telemetry/cliTelemetry";
 import CLIUIInstance from "./userInteraction";
 import { flattenNodes, getSingleOptionString, toYargsOptions } from "./utils";
 import { Options } from "yargs";
+import { sqlPasswordConfirmQuestionName } from "./constants";
 
 const rootFolderNode = new QTreeNode({
   type: "folder",
@@ -32,11 +48,11 @@ export class HelpParamGenerator {
       tokenProvider: {
         azureAccountProvider: AzureAccountManager,
         graphTokenProvider: GraphTokenProvider,
-        appStudioToken: AppStudioTokenProvider
+        appStudioToken: AppStudioTokenProvider,
       },
       telemetryReporter: undefined,
       dialog: DialogManagerInstance,
-      ui: CLIUIInstance
+      ui: CLIUIInstance,
     };
     const core: FxCore = new FxCore(tools);
     return ok(core);
@@ -48,8 +64,8 @@ export class HelpParamGenerator {
 
   private static getSystemInputs(projectPath?: string, platform?: Platform): Inputs {
     const systemInputs: Inputs = {
-      platform: platform === undefined ? Platform.CLI_HELP : platform, 
-      projectPath: projectPath
+      platform: platform === undefined ? Platform.CLI_HELP : platform,
+      projectPath: projectPath,
     };
     return systemInputs;
   }
@@ -63,13 +79,12 @@ export class HelpParamGenerator {
   private static async getQuestionsForUserTask(stage: string, systemInput: Inputs, core: FxCore) {
     const func = {
       namespace: "fx-solution-azure",
-      method: stage
+      method: stage,
     };
     const result = await core.getQuestionsForUserTask(func, systemInput);
     if (result.isErr()) {
       return err(result.error);
-    }
-    else {
+    } else {
       HelpParamGenerator.setQuestionNodes(stage, result.value);
     }
     return ok(undefined);
@@ -91,22 +106,22 @@ export class HelpParamGenerator {
     const systemInput = HelpParamGenerator.getSystemInputs();
     for (const stage in Stage) {
       let result;
-      if(stage === Stage.publish){
-        result = await core.getQuestions(stage as Stage, HelpParamGenerator.getSystemInputs("",Platform.VS));
-      }
-      else{
+      if (stage === Stage.publish) {
+        result = await core.getQuestions(
+          stage as Stage,
+          HelpParamGenerator.getSystemInputs("", Platform.VS)
+        );
+      } else {
         result = await core.getQuestions(stage as Stage, systemInput);
       }
       if (result.isErr()) {
         return err(result.error);
-      }
-      else {
+      } else {
         HelpParamGenerator.setQuestionNodes(stage, result.value);
       }
     }
-    const userTasks = ["addCapability","addResource"];
-    for (const userTask of userTasks )
-    {
+    const userTasks = ["addCapability", "addResource"];
+    for (const userTask of userTasks) {
       const result = await HelpParamGenerator.getQuestionsForUserTask(userTask, systemInput, core);
       if (result.isErr()) {
         return err(result.error);
@@ -122,8 +137,7 @@ export class HelpParamGenerator {
     if (stage.startsWith("addResource")) {
       resourceName = stage.split("-")[1];
       stage = "addResource";
-    }
-    else if (stage.startsWith("addCapability")) {
+    } else if (stage.startsWith("addCapability")) {
       capabilityName = stage.split("-")[1];
       stage = "addCapability";
     }
@@ -131,27 +145,31 @@ export class HelpParamGenerator {
     let nodes: QTreeNode[] = [];
     if (resourceName && root?.children) {
       // Do CLI map for resource add
-      const mustHaveNodes = root.children.filter(node => (node.condition as any).minItems === 1);
-      const resourcesNodes = root.children.filter(node => (node.condition as any).contains === resourceName)[0];
+      const mustHaveNodes = root.children.filter((node) => (node.condition as any).minItems === 1);
+      const resourcesNodes = root.children.filter(
+        (node) => (node.condition as any).contains === resourceName
+      )[0];
       (root.data as any).default = [resourceName];
       (root.data as any).hide = true;
       root.children = undefined;
-      nodes = [root].concat(mustHaveNodes).concat(resourcesNodes ? flattenNodes(resourcesNodes) : []);
-    }
-    else if (capabilityName && root?.children){
-      // Do CLI map for capability add 
-      const capabilityNodes = root.children.filter(node => ((node.condition as any).containsAny as string[]).includes(capabilityName as string))[0];
+      nodes = [root]
+        .concat(mustHaveNodes)
+        .concat(resourcesNodes ? flattenNodes(resourcesNodes) : []);
+    } else if (capabilityName && root?.children) {
+      // Do CLI map for capability add
+      const capabilityNodes = root.children.filter((node) =>
+        ((node.condition as any).containsAny as string[]).includes(capabilityName as string)
+      )[0];
       (root.data as any).default = [capabilityName];
       (root.data as any).hide = true;
       root.children = undefined;
       nodes = [root].concat(capabilityNodes ? flattenNodes(capabilityNodes) : []);
-    }
-    else if (root) {
+    } else if (root) {
       nodes = flattenNodes(root);
     }
 
     // hide VS param for publish.
-    if (stage === Stage.publish){
+    if (stage === Stage.publish) {
       for (const node of nodes) {
         (node.data as any).hide = true;
       }
@@ -166,6 +184,15 @@ export class HelpParamGenerator {
       for (const node of nodes) {
         if (node.data.name === "folder") {
           (node.data as any).default = "./";
+        }
+      }
+    }
+
+    // hide sql-confirm-password in provision stage.
+    if (stage === Stage.provision) {
+      for (const node of nodes) {
+        if (node.data.name === sqlPasswordConfirmQuestionName) {
+          (node.data as any).hide = true;
         }
       }
     }
@@ -185,4 +212,3 @@ export class HelpParamGenerator {
     return params;
   }
 }
-

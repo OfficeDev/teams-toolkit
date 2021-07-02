@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx-core",
-  "version": "0.3.0-alpha.5",
+  "version": "0.2.1",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "license": "MIT",
@@ -15,7 +15,7 @@
     "test:simpleauth": "nyc --reporter=html --reporter=text mocha --no-timeouts --require ts-node/register tests/plugins/resource/simpleauth/**/*.test.ts",
     "test:appstudio": "nyc --reporter=html --reporter=text mocha --no-timeouts --require ts-node/register tests/plugins/resource/appstudio/**/*.test.ts",
     "test:actions": "echo 'to be implemented'",
-    "test:unit": "nyc --reporter=html --reporter=text mocha --no-timeouts --require ts-node/register tests/**/*.test.ts",
+    "test:unit": "nyc --check-coverage --reporter=html --reporter=json-summary --reporter=text mocha --no-timeouts --require ts-node/register tests/**/*.test.ts",
     "test:solution": "nyc --reporter=html --reporter=text mocha --no-timeouts --require ts-node/register tests/plugins/solution/*.test.ts",
     "test:core": "nyc --reporter=html --reporter=text mocha --no-timeouts --require ts-node/register tests/core/*.test.ts",
     "clean": "rm -rf build",
@@ -40,7 +40,7 @@
     "@azure/storage-blob": "^12.3.0",
     "@dbpiper/timer": "1.0.0-beta.2",
     "@feathersjs/hooks": "^0.6.5",
-    "@microsoft/teamsfx-api": "^0.3.0-alpha.3",
+    "@microsoft/teamsfx-api": "^0.2.1",
     "@types/jwt-decode": "3.1.0",
     "@types/proper-lockfile": "^4.1.1",
     "adm-zip": "^0.5.5",
@@ -143,5 +143,11 @@
     "*": [
       "npx prettier --config .prettierrc.js --ignore-unknown --write --ignore-path .prettierignore "
     ]
+  },
+  "nyc": {
+    "branches": 5,
+    "lines": 30,
+    "functions": 9,
+    "statements": 30
   }
 }

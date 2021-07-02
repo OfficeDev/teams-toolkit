@@ -18,6 +18,8 @@ export enum TelemetryEvent {
   CreateProjectStart = "create-project-start",
   CreateProject = "create-project",
 
+  NavigateToDebug = "navigate-to-debug",
+
   AddResourceStart = "add-resource-start",
   AddResource = "add-resource",
 
@@ -94,6 +96,9 @@ export enum TelemetryProperty {
   DebugAppId = "debug-appid",
   DebugNpmInstallName = "debug-npm-install-name",
   DebugNpmInstallExitCode = "debug-npm-install-exit-code",
+  DebugNpmInstallErrorMessage = "debug-npm-install-error-message",
+  DebugNpmInstallNodeVersion = "debug-npm-install-node-version",
+  DebugNpmInstallNpmVersion = "debug-npm-install-npm-version",
   Internal = "internal",
   InternalAlias = "internal-alias",
   OSArch = "os-arch",

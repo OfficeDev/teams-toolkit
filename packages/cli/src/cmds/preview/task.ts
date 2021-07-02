@@ -3,8 +3,9 @@
 
 "use strict";
 
-import { spawn, SpawnOptions } from "child_process";
+import { ChildProcess, spawn, SpawnOptions } from "child_process";
 import { err, FxError, ok, Result } from "@microsoft/teamsfx-api";
+import treeKill from "tree-kill";
 
 interface TaskOptions {
   cwd?: string;
@@ -12,6 +13,8 @@ interface TaskOptions {
 }
 
 export interface TaskResult {
+  command: string;
+  options: TaskOptions;
   success: boolean;
   stdout: string[];
   stderr: string[];
@@ -19,11 +22,18 @@ export interface TaskResult {
 }
 
 export class Task {
+  private taskTitle: string;
   private command: string;
+  private background: boolean;
   private options: TaskOptions;
 
-  constructor(command: string, options: TaskOptions) {
+  private resolved = false;
+  private task: ChildProcess | undefined;
+
+  constructor(taskTitle: string, command: string, background: boolean, options: TaskOptions) {
+    this.taskTitle = taskTitle;
     this.command = command;
+    this.background = background;
     this.options = options;
   }
 
@@ -31,35 +41,41 @@ export class Task {
    * wait for the task to end
    */
   public async wait(
-    startCallback: () => Promise<void>,
-    stopCallback: (result: TaskResult) => Promise<FxError | null>
+    startCallback: (taskTitle: string, background: boolean) => Promise<void>,
+    stopCallback: (
+      taskTitle: string,
+      background: boolean,
+      result: TaskResult
+    ) => Promise<FxError | null>
   ): Promise<Result<TaskResult, FxError>> {
-    await startCallback();
+    await startCallback(this.taskTitle, this.background);
     const spawnOptions: SpawnOptions = {
       shell: true,
       cwd: this.options.cwd,
       env: this.options.env,
     };
-    const task = spawn(this.command, spawnOptions);
+    this.task = spawn(this.command, spawnOptions);
     const stdout: string[] = [];
     const stderr: string[] = [];
-    return new Promise((resolve, reject) => {
-      task.stdout?.on("data", (data) => {
+    return new Promise((resolve) => {
+      this.task?.stdout?.on("data", (data) => {
         // TODO: log
         stdout.push(data.toString());
       });
-      task.stderr?.on("data", (data) => {
+      this.task?.stderr?.on("data", (data) => {
         // TODO: log
         stderr.push(data.toString());
       });
-      task.on("exit", async () => {
+      this.task?.on("exit", async () => {
         const result: TaskResult = {
-          success: task.exitCode === 0,
+          command: this.command,
+          options: this.options,
+          success: this.task?.exitCode === 0,
           stdout: stdout,
           stderr: stderr,
-          exitCode: task.exitCode,
+          exitCode: this.task?.exitCode === undefined ? null : this.task?.exitCode,
         };
-        const error = await stopCallback(result);
+        const error = await stopCallback(this.taskTitle, this.background, result);
         if (error) {
           resolve(err(error));
         } else {
@@ -74,34 +90,39 @@ export class Task {
    */
   public async waitFor(
     pattern: RegExp,
-    startCallback: () => Promise<void>,
-    stopCallback: (result: TaskResult) => Promise<FxError | null>
+    startCallback: (taskTitle: string, background: boolean) => Promise<void>,
+    stopCallback: (
+      taskTitle: string,
+      background: boolean,
+      result: TaskResult
+    ) => Promise<FxError | null>
   ): Promise<Result<TaskResult, FxError>> {
-    await startCallback();
+    await startCallback(this.taskTitle, this.background);
     const spawnOptions: SpawnOptions = {
       shell: true,
       cwd: this.options.cwd,
       env: this.options.env,
     };
-    const task = spawn(this.command, spawnOptions);
+    this.task = spawn(this.command, spawnOptions);
     const stdout: string[] = [];
     const stderr: string[] = [];
-    let success = false;
-    return new Promise((resolve, reject) => {
-      task.stdout?.on("data", async (data) => {
+    return new Promise((resolve) => {
+      this.task?.stdout?.on("data", async (data) => {
         // TODO: log
         stdout.push(data.toString());
-        if (!success) {
+        if (!this.resolved) {
           const match = pattern.test(data.toString());
           if (match) {
-            success = true;
+            this.resolved = true;
             const result: TaskResult = {
+              command: this.command,
+              options: this.options,
               success: true,
               stdout: stdout,
               stderr: stderr,
               exitCode: null,
             };
-            const error = await stopCallback(result);
+            const error = await stopCallback(this.taskTitle, this.background, result);
             if (error) {
               resolve(err(error));
             } else {
@@ -110,25 +131,51 @@ export class Task {
           }
         }
       });
-      task.stderr?.on("data", (data) => {
+      this.task?.stderr?.on("data", (data) => {
         // TODO: log
         stderr.push(data.toString());
       });
 
-      task.on("exit", async () => {
-        const result: TaskResult = {
-          success: false,
-          stdout: stdout,
-          stderr: stderr,
-          exitCode: task.exitCode,
-        };
-        const error = await stopCallback(result);
-        if (error) {
-          resolve(err(error));
-        } else {
-          resolve(ok(result));
+      this.task?.on("exit", async () => {
+        if (!this.resolved) {
+          this.resolved = true;
+          const result: TaskResult = {
+            command: this.command,
+            options: this.options,
+            success: false,
+            stdout: stdout,
+            stderr: stderr,
+            exitCode: this.task?.exitCode === undefined ? null : this.task?.exitCode,
+          };
+          const error = await stopCallback(this.taskTitle, this.background, result);
+          if (error) {
+            resolve(err(error));
+          } else {
+            resolve(ok(result));
+          }
         }
       });
+    });
+  }
+
+  public async terminate(): Promise<void> {
+    return new Promise((resolve) => {
+      if (this.task?.exitCode) {
+        resolve();
+      }
+      const pid = this.task?.pid;
+      if (pid === undefined) {
+        resolve();
+      } else {
+        treeKill(pid, (error) => {
+          if (error) {
+            // ignore any error
+            resolve();
+          } else {
+            resolve();
+          }
+        });
+      }
     });
   }
 }

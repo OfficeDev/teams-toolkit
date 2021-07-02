@@ -13,32 +13,90 @@ import * as constants from "./constants";
 import { TaskResult } from "./task";
 import cliLogger from "../../commonlib/log";
 import { TaskFailed } from "./errors";
+import cliTelemetry from "../../telemetry/cliTelemetry";
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetrySuccess,
+} from "../../telemetry/cliTelemetryEvents";
+import { getNpmInstallLogInfo } from "./npmLogHandler";
 
 export function createTaskStartCb(
   progressBar: IProgressHandler,
-  message: string
-): () => Promise<void> {
-  return async () => {
-    await progressBar.start(message);
+  startMessage: string,
+  telemetryProperties?: { [key: string]: string }
+): (taskTitle: string, background: boolean) => Promise<void> {
+  return async (taskTitle: string, background: boolean) => {
+    if (telemetryProperties !== undefined) {
+      const event = background
+        ? TelemetryEvent.PreviewServiceStart
+        : TelemetryEvent.PreviewNpmInstallStart;
+      const key = background
+        ? TelemetryProperty.PreviewServiceName
+        : TelemetryProperty.PreviewNpmInstallName;
+      cliTelemetry.sendTelemetryEvent(event, {
+        ...telemetryProperties,
+        [key]: taskTitle as string,
+      });
+    }
+    await progressBar.start(startMessage);
   };
 }
 
 export function createTaskStopCb(
-  taskTitle: string,
   progressBar: IProgressHandler,
   successMessage: string,
-  background: boolean
-): (result: TaskResult) => Promise<FxError | null> {
-  return async (result: TaskResult) => {
+  telemetryProperties?: { [key: string]: string }
+): (taskTitle: string, background: boolean, result: TaskResult) => Promise<FxError | null> {
+  return async (taskTitle: string, background: boolean, result: TaskResult) => {
+    const event = background ? TelemetryEvent.PreviewService : TelemetryEvent.PreviewNpmInstall;
+    const key = background
+      ? TelemetryProperty.PreviewServiceName
+      : TelemetryProperty.PreviewNpmInstallName;
     const success = background ? result.success : result.exitCode === 0;
+    const properties = {
+      ...telemetryProperties,
+      [key]: taskTitle,
+    };
+    if (!background) {
+      properties[TelemetryProperty.PreviewNpmInstallExitCode] =
+        (result.exitCode === null ? undefined : result.exitCode) + "";
+    }
     if (success) {
+      if (telemetryProperties !== undefined) {
+        cliTelemetry.sendTelemetryEvent(event, {
+          ...properties,
+          [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+        });
+      }
       await progressBar.next(successMessage);
       await progressBar.end();
       return null;
     } else {
       const error = TaskFailed(taskTitle);
+      if (!background && telemetryProperties !== undefined) {
+        const npmInstallLogInfo = await getNpmInstallLogInfo();
+        if (
+          npmInstallLogInfo?.cwd !== undefined &&
+          result.options.cwd !== undefined &&
+          path.relative(npmInstallLogInfo.cwd, result.options.cwd).length === 0 &&
+          result.exitCode === npmInstallLogInfo.exitCode
+        ) {
+          properties[TelemetryProperty.PreviewNpmInstallNodeVersion] =
+            npmInstallLogInfo.nodeVersion + "";
+          properties[TelemetryProperty.PreviewNpmInstallNpmVersion] =
+            npmInstallLogInfo.npmVersion + "";
+          properties[TelemetryProperty.PreviewNpmInstallErrorMessage] =
+            npmInstallLogInfo.errorMessage + "";
+        }
+      }
+      if (telemetryProperties !== undefined) {
+        cliTelemetry.sendTelemetryErrorEvent(event, error, properties);
+      }
       cliLogger.necessaryLog(LogLevel.Error, `${error.source}.${error.name}: ${error.message}`);
-      cliLogger.necessaryLog(LogLevel.Info, result.stderr[result.stderr.length - 1], true);
+      if (result.stderr.length > 0) {
+        cliLogger.necessaryLog(LogLevel.Info, result.stderr[result.stderr.length - 1], true);
+      }
       return error;
     }
   };
@@ -100,7 +158,7 @@ export async function getBotLocalEnv(
 }
 
 async function detectPortListeningImpl(port: number, host: string): Promise<boolean> {
-  return new Promise<boolean>((resolve, reject) => {
+  return new Promise<boolean>((resolve) => {
     try {
       const server = net.createServer();
       server
@@ -157,4 +215,17 @@ export async function getPortsInUse(
     }
   }
   return portsInUse;
+}
+
+export function mergeProcessEnv(
+  env: { [key: string]: string | undefined } | undefined
+): { [key: string]: string | undefined } | undefined {
+  if (env === undefined) {
+    return process.env;
+  }
+  const result = Object.assign({}, process.env);
+  for (const key of Object.keys(env)) {
+    result[key] = env[key];
+  }
+  return result;
 }

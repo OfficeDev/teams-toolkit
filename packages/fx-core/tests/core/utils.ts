@@ -325,7 +325,7 @@ export class MockUserInteraction implements UserInteraction {
     modal: boolean,
     ...items: string[]
   ): Promise<Result<string | undefined, FxError>> {
-    throw new Error("Method not implemented.");
+    return ok("");
   }
   createProgressBar(title: string, totalSteps: number): IProgressHandler {
     const handler: IProgressHandler = {

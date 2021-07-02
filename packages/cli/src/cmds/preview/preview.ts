@@ -101,17 +101,13 @@ export default class Preview extends YargsCommand {
       if (result.isErr()) {
         throw result.error;
       }
-      cliTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewStart, {
+      cliTelemetry.sendTelemetryEvent(TelemetryEvent.Preview, {
         ...this.telemetryProperties,
         [TelemetryProperty.Success]: TelemetrySuccess.Yes,
       });
       return ok(null);
     } catch (error) {
-      cliTelemetry.sendTelemetryErrorEvent(
-        TelemetryEvent.PreviewStart,
-        error,
-        this.telemetryProperties
-      );
+      cliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Preview, error, this.telemetryProperties);
       await this.terminateTasks();
       return err(error);
     }

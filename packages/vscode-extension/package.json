@@ -139,47 +139,11 @@
           "group": "inline"
         }
       ],
-      "editor/title": [
-        {
-          "command": "fx-extension.debug",
-          "when": "!inDebugMode && debuggersAvailable && fx-extension.active",
-          "group": "navigation"
-        }
-      ],
       "editor/title/run": [
         {
           "command": "fx-extension.selectAndDebug",
           "when": "!inDebugMode && debuggersAvailable && fx-extension.active",
           "group": "teamsfx"
-        },
-        {
-          "command": "fx-extension.debugDefault",
-          "when": "!inDebugMode && debuggersAvailable && fx-extension.active",
-          "group": "teamsfx"
-        }
-      ],
-      "explorer/context": [
-        {
-          "command": "fx-extension.selectAndDebug",
-          "when": "!inDebugMode && debuggersAvailable && fx-extension.active",
-          "group": "teamsfx@1"
-        },
-        {
-          "command": "fx-extension.debugDefault",
-          "when": "!inDebugMode && debuggersAvailable && fx-extension.active",
-          "group": "teamsfx@2"
-        }
-      ],
-      "editor/context": [
-        {
-          "command": "fx-extension.selectAndDebug",
-          "when": "!inDebugMode && debuggersAvailable && fx-extension.active",
-          "group": "teamsfx@1"
-        },
-        {
-          "command": "fx-extension.debugDefault",
-          "when": "!inDebugMode && debuggersAvailable && fx-extension.active",
-          "group": "teamsfx@2"
         }
       ],
       "commandPalette": [
@@ -201,6 +165,10 @@
         },
         {
           "command": "fx-extension.specifySubscription",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.selectAndDebug",
           "when": "false"
         }
       ]
@@ -314,16 +282,6 @@
       {
         "command": "fx-extension.selectAndDebug",
         "title": "Select and Start Debuging Teams App",
-        "icon": "$(run)"
-      },
-      {
-        "command": "fx-extension.debugDefault",
-        "title": "Start Debuging Teams App",
-        "icon": "$(run)"
-      },
-      {
-        "command": "fx-extension.debug",
-        "title": "Go to debug view",
         "icon": "$(run)"
       }
     ],

@@ -201,12 +201,6 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(selectDebugCmd);
 
-  const debugDefaultCmd = vscode.commands.registerCommand(
-    "fx-extension.debugDefault",
-    handlers.debugDefaultHandler
-  );
-  context.subscriptions.push(debugDefaultCmd);
-
   vscode.commands.executeCommand("setContext", "fx-extension.active", true);
 
   // 2. Call activate function of toolkit core.

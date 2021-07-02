@@ -170,7 +170,7 @@ export function debugHandler(args?: any[]) {
 }
 
 export function selectAndDebugHandler(args?: any[]) {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.NavigateToDebug, getTriggerFromProperty(args));
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.RunIconToDebug, getTriggerFromProperty(args));
   vscode.commands.executeCommand("workbench.view.debug");
   vscode.commands.executeCommand("workbench.action.debug.selectandstart");
 }

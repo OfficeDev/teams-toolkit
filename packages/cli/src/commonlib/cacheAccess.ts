@@ -114,7 +114,7 @@ export async function loadAccountId(accountName: string) {
     try {
       return await fs.readFile(accountPath + accountName, UTF8);
     } catch (err) {
-      VsCodeLogInstance.error("load home account id fail: " + err.message);
+      VsCodeLogInstance.error("read home account id fail: " + err.message);
     }
   }
 

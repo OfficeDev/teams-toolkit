@@ -61,13 +61,13 @@ import {
   HostTypeOptionSPFx,
 } from "../../../src/plugins/solution/fx-solution/question";
 import { validManifest } from "./util";
-import { AppStudio } from "../../../src/plugins/solution/fx-solution/appstudio/appstudio";
 import { IAppDefinition } from "../../../src/plugins/solution/fx-solution/appstudio/interface";
 import _ from "lodash";
 import { AadAppForTeamsPlugin } from "../../../src/plugins/resource/aad";
 import { TokenCredential } from "@azure/core-auth";
 import { TokenCredentialsBase, UserTokenCredentials } from "@azure/ms-rest-nodeauth";
 import { ResourceGroups } from "@azure/arm-resources";
+import { AppStudioClient } from "../../../src/plugins/resource/appstudio/appStudio";
 import * as solutionUtil from "../../../src/plugins/solution/fx-solution/util";
 import * as uuid from "uuid";
 
@@ -444,8 +444,8 @@ describe("provision() happy path for SPFx projects", () => {
       .withArgs(`./.${ConfigFolderName}/${REMOTE_MANIFEST}`)
       .resolves(mockedManifest);
     // mocker.stub<any, any>(fs, "pathExists").withArgs(permissionsJsonPath).resolves(true);
-    mocker.stub(AppStudio, "createApp").resolves(mockedAppDef);
-    mocker.stub(AppStudio, "updateApp").resolves(mockedAppDef);
+    mocker.stub(AppStudioClient, "createApp").resolves(mockedAppDef);
+    mocker.stub(AppStudioClient, "updateApp").resolves(mockedAppDef);
   });
 
   afterEach(() => {
@@ -502,8 +502,8 @@ describe("provision() happy path for Azure projects", () => {
       .stub<any, any>(fs, "readJson")
       .withArgs(`./.${ConfigFolderName}/${REMOTE_MANIFEST}`)
       .resolves(mockedManifest);
-    mocker.stub(AppStudio, "createApp").resolves(mockedAppDef);
-    mocker.stub(AppStudio, "updateApp").resolves(mockedAppDef);
+    mocker.stub(AppStudioClient, "createApp").resolves(mockedAppDef);
+    mocker.stub(AppStudioClient, "updateApp").resolves(mockedAppDef);
     // mocker.stub(ResourceGroups.prototype, "checkExistence").resolves({body: true});
     mocker.stub(ResourceGroups.prototype, "createOrUpdate").resolves({ name: resourceGroupName });
     mocker.stub(solutionUtil, "getSubsriptionDisplayName").resolves(mockedSubscriptionName);

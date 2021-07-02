@@ -482,6 +482,10 @@ export class TeamsAppSolution implements Solution {
     return HostTypeOptionAzure.id === settings.hostType;
   }
 
+  async update(ctx: SolutionContext): Promise<Result<any, FxError>> {
+    return await this.executeAddResource(ctx);
+  }
+
   private getSelectedPlugins(ctx: SolutionContext): Result<LoadedPlugin[], FxError> {
     const settings = this.getAzureSolutionSettings(ctx);
     const pluginNames = settings.activeResourcePlugins;

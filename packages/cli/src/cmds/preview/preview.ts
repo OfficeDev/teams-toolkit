@@ -24,7 +24,6 @@ import { YargsCommand } from "../../yargsCommand";
 import * as utils from "../../utils";
 import * as commonUtils from "./commonUtils";
 import * as constants from "./constants";
-import { CliTelemetry } from "../../telemetry/cliTelemetry";
 import cliLogger from "../../commonlib/log";
 import * as errors from "./errors";
 import activate from "../../activate";
@@ -37,6 +36,7 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../../telemetry/cliTelemetryEvents";
+import { ServiceLogWriter } from "./serviceLogProvider";
 
 export default class Preview extends YargsCommand {
   public readonly commandHead = `preview`;
@@ -45,6 +45,7 @@ export default class Preview extends YargsCommand {
 
   private backgroundTasks: Task[] = [];
   private readonly telemetryProperties: { [key: string]: string } = {};
+  private serviceLogWriter: ServiceLogWriter | undefined;
 
   public builder(yargs: Argv): Argv<any> {
     yargs.option("local", {
@@ -162,6 +163,9 @@ export default class Preview extends YargsCommand {
 
     // clear background tasks
     this.backgroundTasks = [];
+    // init service log writer
+    this.serviceLogWriter = new ServiceLogWriter();
+    await this.serviceLogWriter.init();
 
     /* === start ngrok === */
     const skipNgrokConfig = config?.config
@@ -319,7 +323,8 @@ export default class Preview extends YargsCommand {
     result = await ngrokStartTask.waitFor(
       constants.ngrokStartPattern,
       ngrokStartStartCb,
-      ngrokStartStopCb
+      ngrokStartStopCb,
+      this.serviceLogWriter
     );
     if (result.isErr()) {
       return err(result.error);
@@ -593,20 +598,33 @@ export default class Preview extends YargsCommand {
       frontendStartTask?.waitFor(
         constants.frontendStartPattern,
         frontendStartStartCb,
-        frontendStartStopCb
+        frontendStartStopCb,
+        this.serviceLogWriter
       ),
-      authStartTask?.waitFor(constants.authStartPattern, authStartStartCb, authStartStopCb),
+      authStartTask?.waitFor(
+        constants.authStartPattern,
+        authStartStartCb,
+        authStartStopCb,
+        this.serviceLogWriter
+      ),
       backendStartTask?.waitFor(
         constants.backendStartPattern,
         backendStartStartCb,
-        backendStartStopCb
+        backendStartStopCb,
+        this.serviceLogWriter
       ),
       backendWatchTask?.waitFor(
         constants.backendWatchPattern,
         backendWatchStartCb,
-        backendWatchStopCb
+        backendWatchStopCb,
+        this.serviceLogWriter
       ),
-      await botStartTask?.waitFor(constants.botStartPattern, botStartStartCb, botStartStopCb),
+      await botStartTask?.waitFor(
+        constants.botStartPattern,
+        botStartStartCb,
+        botStartStopCb,
+        this.serviceLogWriter
+      ),
     ]);
     const fxErrors: FxError[] = [];
     for (const result of results) {

@@ -20,6 +20,7 @@ import {
   TelemetrySuccess,
 } from "../../telemetry/cliTelemetryEvents";
 import { getNpmInstallLogInfo } from "./npmLogHandler";
+import { ServiceLogWriter } from "./serviceLogProvider";
 
 export function createTaskStartCb(
   progressBar: IProgressHandler,
@@ -47,8 +48,18 @@ export function createTaskStopCb(
   progressBar: IProgressHandler,
   successMessage: string,
   telemetryProperties?: { [key: string]: string }
-): (taskTitle: string, background: boolean, result: TaskResult) => Promise<FxError | null> {
-  return async (taskTitle: string, background: boolean, result: TaskResult) => {
+): (
+  taskTitle: string,
+  background: boolean,
+  result: TaskResult,
+  serviceLogWriter?: ServiceLogWriter
+) => Promise<FxError | null> {
+  return async (
+    taskTitle: string,
+    background: boolean,
+    result: TaskResult,
+    serviceLogWriter?: ServiceLogWriter
+  ) => {
     const event = background ? TelemetryEvent.PreviewService : TelemetryEvent.PreviewNpmInstall;
     const key = background
       ? TelemetryProperty.PreviewServiceName
@@ -69,7 +80,14 @@ export function createTaskStopCb(
           [TelemetryProperty.Success]: TelemetrySuccess.Yes,
         });
       }
-      await progressBar.next(successMessage);
+      let message = successMessage;
+      if (background) {
+        const serviceLogFile = await serviceLogWriter?.getLogFile(taskTitle);
+        if (serviceLogFile !== undefined) {
+          message = `${successMessage} ${constants.serviceLogHintMessage} ${serviceLogFile}`;
+        }
+      }
+      await progressBar.next(message);
       await progressBar.end();
       return null;
     } else {
@@ -94,8 +112,18 @@ export function createTaskStopCb(
         cliTelemetry.sendTelemetryErrorEvent(event, error, properties);
       }
       cliLogger.necessaryLog(LogLevel.Error, `${error.source}.${error.name}: ${error.message}`);
-      if (result.stderr.length > 0) {
-        cliLogger.necessaryLog(LogLevel.Info, result.stderr[result.stderr.length - 1], true);
+      if (background) {
+        const serviceLogFile = await serviceLogWriter?.getLogFile(taskTitle);
+        if (serviceLogFile !== undefined) {
+          cliLogger.necessaryLog(
+            LogLevel.Info,
+            `${constants.serviceLogHintMessage} ${serviceLogFile}`
+          );
+        }
+      } else {
+        if (result.stderr.length > 0) {
+          cliLogger.necessaryLog(LogLevel.Info, result.stderr[result.stderr.length - 1], true);
+        }
       }
       return error;
     }

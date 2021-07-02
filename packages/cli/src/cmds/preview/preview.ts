@@ -90,9 +90,10 @@ export default class Preview extends YargsCommand {
     this.telemetryProperties[TelemetryProperty.PreviewAppId] = utils.getLocalTeamsAppId(
       workspaceFolder
     ) as string;
-    CliTelemetry.setReporter(CliTelemetry.getReporter().withRootFolder(workspaceFolder));
 
-    cliTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewStart, this.telemetryProperties);
+    cliTelemetry
+      .withRootFolder(workspaceFolder)
+      .sendTelemetryEvent(TelemetryEvent.PreviewStart, this.telemetryProperties);
     try {
       const result =
         previewType === "local"

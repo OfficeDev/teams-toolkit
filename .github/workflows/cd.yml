@@ -86,18 +86,7 @@ jobs:
         run: rm -rf ./*.zip && git clean -df
 
       - name: Download Simple Auth bits
-        uses: nick-invision/retry@v2
-        with:
-          timeout_minutes: 10
-          max_attempts: 10
-          retry_on: error
-          shell: pwsh
-          command: |
-            $version=Get-Content packages/fx-core/templates/plugins/resource/simpleauth/version.txt
-            $tag = "simpleauth@"+$version
-            $fileName="Microsoft.TeamsFx.SimpleAuth_$version.zip"
-            $url = "https://github.com/OfficeDev/TeamsFx/releases/download/"+$tag+"/"+$fileName
-            Invoke-WebRequest $url -OutFile packages/fx-core/templates/plugins/resource/simpleauth/SimpleAuth.zip
+        uses: ./.github/workflows/download-simpleauth
 
       - name: Setup project
         run: |

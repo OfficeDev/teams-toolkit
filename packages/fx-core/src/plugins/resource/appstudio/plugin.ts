@@ -7,9 +7,6 @@ import {
   PluginContext,
   TeamsAppManifest,
   Platform,
-  DialogMsg,
-  DialogType,
-  QuestionType,
 } from "@microsoft/teamsfx-api";
 import { AppStudioClient } from "./appStudio";
 import { AppStudioError } from "./errors";
@@ -73,7 +70,7 @@ export class AppStudioPluginImpl {
     return zipFileName;
   }
 
-  public async publish(ctx: PluginContext): Promise<{ name: string; id: string, update: boolean }> {
+  public async publish(ctx: PluginContext): Promise<{ name: string; id: string; update: boolean }> {
     let appDirectory: string | undefined = undefined;
     let manifestString: string | undefined = undefined;
 
@@ -128,16 +125,8 @@ export class AppStudioPluginImpl {
             description + `Last Modified: ${existApp.lastModifiedDateTime?.toLocaleString()}\n`;
         }
         description = description + "Do you want to submit a new update?";
-        executePublishUpdate =
-          (
-            await ctx.dialog?.communicate(
-              new DialogMsg(DialogType.Ask, {
-                description: description,
-                type: QuestionType.Confirm,
-                options: ["Confirm"],
-              })
-            )
-          )?.getAnswer() === "Confirm";
+        const res = await ctx.ui?.showMessage("warn", description, true, "Confirm");
+        if (res?.isOk() && res.value === "Confirm") executePublishUpdate = true;
       }
 
       if (executePublishUpdate) {
@@ -162,7 +151,7 @@ export class AppStudioPluginImpl {
     update: boolean
   ): Promise<string> {
     const manifest: TeamsAppManifest = JSON.parse(manifestString);
-    const publishProgress = ctx.dialog?.createProgressBar(`Publishing ${manifest.name.short}`, 3);
+    const publishProgress = ctx.ui?.createProgressBar(`Publishing ${manifest.name.short}`, 3);
     try {
       // Validate manifest
       await publishProgress?.start("Validating manifest file");

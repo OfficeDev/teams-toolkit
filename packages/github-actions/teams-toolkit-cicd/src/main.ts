@@ -1,19 +1,76 @@
 import * as core from '@actions/core'
-import {wait} from './wait'
+import {ActionInputs} from './constant'
+import {Operations} from './operations'
+import {OperationType} from './enums/operationTypes'
+import {WordsToList} from './utils/words-to-list'
+import {InputsError} from './errors'
+import {Capability} from './enums/capabilities'
+import {BaseError} from './base-error'
 
 async function run(): Promise<void> {
   try {
-    const ms: string = core.getInput('milliseconds')
-    core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_RUNNER_DEBUG` to true
+    let projectRoot = core.getInput(ActionInputs.ProjectRoot)
+    if (!projectRoot && process.env.GITHUB_WORKSPACE) {
+      projectRoot = process.env.GITHUB_WORKSPACE
+    }
+    const operationType = core.getInput(ActionInputs.OperationType)
 
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
+    if (
+      !projectRoot ||
+      !operationType ||
+      !Object.values<string>(OperationType).includes(operationType)
+    ) {
+      throw new InputsError(
+        `${ActionInputs.ProjectRoot}: ${projectRoot}, ${ActionInputs.OperationType}: ${operationType}`
+      )
+    }
 
-    core.setOutput('time', new Date().toTimeString())
+    switch (operationType) {
+      case OperationType.BuildTeamsApp: {
+        let capabilities = core.getInput(ActionInputs.Capabilities)
+        if (!capabilities) {
+          // default to build all.
+          capabilities = Object.values<string>(Capability).join(',')
+        }
+
+        const capabilityList = WordsToList(capabilities)
+        if (
+          capabilityList.some(
+            (value: string) =>
+              !Object.values<string>(Capability).includes(value)
+          )
+        ) {
+          throw new InputsError(`${ActionInputs.Capabilities}: ${capabilities}`)
+        }
+
+        await Operations.BuildTeamsApp(projectRoot, capabilityList)
+        break
+      }
+      case OperationType.ProvisionHostingEnvironment:
+        await Operations.ProvisionHostingEnvironment(projectRoot)
+        break
+      case OperationType.DeployToHostingEnvironment:
+        await Operations.DeployToHostingEnvironment(projectRoot)
+        break
+      case OperationType.PackTeamsApp:
+        await Operations.PackTeamsApp(projectRoot)
+        break
+      case OperationType.ValidateManifest:
+        await Operations.ValidateTeamsAppManifest(projectRoot)
+        break
+      case OperationType.PublishTeamsApp:
+        await Operations.PublishTeamsApp(projectRoot)
+        break
+    }
   } catch (error) {
-    core.setFailed(error.message)
+    if (error instanceof BaseError) {
+      core.setFailed(error.genMessage())
+    } else {
+      core.setFailed(error.message)
+    }
   }
 }
 
 run()
+
+export default run

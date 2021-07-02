@@ -1,8 +1,8 @@
 {
-  "name": "typescript-action",
-  "version": "0.0.0",
+  "name": "teams-toolkit-cicd",
+  "version": "0.1.0",
   "private": true,
-  "description": "TypeScript template action",
+  "description": "GitHub Action to support Teams App Developers to build their workflows.",
   "main": "lib/main.js",
   "scripts": {
     "build": "tsc",
@@ -25,7 +25,10 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@actions/core": "^1.2.6"
+    "@actions/core": "^1.2.6",
+    "@actions/exec": "^1.1.0",
+    "@microsoft/teamsfx-cli": "^0.2.1",
+    "fs-extra": "^10.0.0"
   },
   "devDependencies": {
     "@types/jest": "^26.0.15",

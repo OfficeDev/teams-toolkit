@@ -1,11 +1,27 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'Teams Toolkit CI/CD'
+description: 'GitHub Action to help Teams App Developers build their CI/CD workflows.'
 inputs:
-  milliseconds: # change this
+  project-root:
+    description: 'The root of the Teams App Project. When this input is not specified, ${github.workspace} will be used.'
+    required: false
+    default: ''
+  operation-type:
+    description: 'The operation type.'
     required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+    default: 'Build Teams App'
+  capabilities:
+    description: 'Select which capability to build. Possible values are tabs, bot, SPFx.'
+    required: false
+outputs:
+  config-file-path: 
+    description: 'The full path of file env.default.json.'
+  sharepoint-package-path:
+    description: 'The path of generated SharePoint package file.'
+  package-zip-path:
+    description: 'The path of packed Teams App Package file.'
 runs:
   using: 'node12'
   main: 'dist/index.js'
+branding:
+  icon: 'archive' # ToDo: Ask PM's perspective about the icon, placeholder for now.
+  color: 'green'

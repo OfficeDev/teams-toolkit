@@ -69,32 +69,31 @@ export default class Preview extends YargsCommand {
   public async runCommand(args: {
     [argName: string]: boolean | string | string[] | undefined;
   }): Promise<Result<null, FxError>> {
-    if (args.local && args.remote) {
-      cliTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewStart);
-      const error = errors.ExclusiveLocalRemoteOptions();
-      cliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Preview, error);
-      return err(error);
-    }
-
-    const previewType = args.local || (!args.local && !args.remote) ? "local" : "remote";
-    this.telemetryProperties[TelemetryProperty.PreviewType] = previewType;
-
-    const workspaceFolder = path.resolve(args.folder as string);
-    if (!utils.isWorkspaceSupported(workspaceFolder)) {
-      cliTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewStart, this.telemetryProperties);
-      const error = errors.WorkspaceNotSupported(workspaceFolder);
-      cliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Preview, error, this.telemetryProperties);
-      return err(error);
-    }
-
-    this.telemetryProperties[TelemetryProperty.PreviewAppId] = utils.getLocalTeamsAppId(
-      workspaceFolder
-    ) as string;
-
-    cliTelemetry
-      .withRootFolder(workspaceFolder)
-      .sendTelemetryEvent(TelemetryEvent.PreviewStart, this.telemetryProperties);
     try {
+      let previewType = "";
+      if ((args.local && !args.remote) || (!args.local && !args.remote)) {
+        previewType = "local";
+      } else if (!args.local && args.remote) {
+        previewType = "remote";
+      }
+      this.telemetryProperties[TelemetryProperty.PreviewType] = previewType;
+
+      const workspaceFolder = path.resolve(args.folder as string);
+      this.telemetryProperties[TelemetryProperty.PreviewAppId] = utils.getLocalTeamsAppId(
+        workspaceFolder
+      ) as string;
+
+      cliTelemetry
+        .withRootFolder(workspaceFolder)
+        .sendTelemetryEvent(TelemetryEvent.PreviewStart, this.telemetryProperties);
+
+      if (args.local && args.remote) {
+        throw errors.ExclusiveLocalRemoteOptions();
+      }
+      if (!utils.isWorkspaceSupported(workspaceFolder)) {
+        throw errors.WorkspaceNotSupported(workspaceFolder);
+      }
+
       const result =
         previewType === "local"
           ? await this.localPreview(workspaceFolder)

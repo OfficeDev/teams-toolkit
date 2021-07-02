@@ -169,6 +169,16 @@ export function debugHandler(args?: any[]) {
   vscode.commands.executeCommand("workbench.view.debug");
 }
 
+export function selectAndDebugHandler(args?: any[]) {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.NavigateToDebug, getTriggerFromProperty(args));
+  vscode.commands.executeCommand("workbench.action.debug.selectandstart");
+}
+
+export function debugDefaultHandler(args?: any[]) {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.NavigateToDebug, getTriggerFromProperty(args));
+  vscode.commands.executeCommand("workbench.action.debug.start");
+}
+
 export async function addResourceHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddResourceStart, getTriggerFromProperty(args));
   const func: Func = {

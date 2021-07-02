@@ -193,6 +193,22 @@ export async function activate(context: vscode.ExtensionContext) {
   registerTeamsfxTaskAndDebugEvents();
 
   await handlers.cmdHdlLoadTreeView(context);
+
+  // Register local debug button
+  const selectDebugCmd = vscode.commands.registerCommand(
+    "fx-extension.selectAndDebug",
+    handlers.selectAndDebugHandler
+  );
+  context.subscriptions.push(selectDebugCmd);
+
+  const debugDefaultCmd = vscode.commands.registerCommand(
+    "fx-extension.debugDefault",
+    handlers.debugDefaultHandler
+  );
+  context.subscriptions.push(debugDefaultCmd);
+
+  vscode.commands.executeCommand("setContext", "fx-extension.active", true);
+
   // 2. Call activate function of toolkit core.
   await handlers.activate();
 

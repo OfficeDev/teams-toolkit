@@ -67,16 +67,18 @@ export function createTaskStopCb(
         (result.exitCode === null ? undefined : result.exitCode) + "";
     }
     if (success) {
-      cliTelemetry.sendTelemetryEvent(event, {
-        ...properties,
-        [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-      });
+      if (telemetryProperties !== undefined) {
+        cliTelemetry.sendTelemetryEvent(event, {
+          ...properties,
+          [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+        });
+      }
       await progressBar.next(successMessage);
       await progressBar.end();
       return null;
     } else {
       const error = TaskFailed(taskTitle);
-      if (!background) {
+      if (!background && telemetryProperties !== undefined) {
         const npmInstallLogInfo = await getNpmInstallLogInfo();
         if (
           npmInstallLogInfo?.cwd !== undefined &&
@@ -92,7 +94,9 @@ export function createTaskStopCb(
             npmInstallLogInfo.errorMessage + "";
         }
       }
-      cliTelemetry.sendTelemetryErrorEvent(event, error, properties);
+      if (telemetryProperties !== undefined) {
+        cliTelemetry.sendTelemetryErrorEvent(event, error, properties);
+      }
       cliLogger.necessaryLog(LogLevel.Error, `${error.source}.${error.name}: ${error.message}`);
       if (result.stderr.length > 0) {
         cliLogger.necessaryLog(LogLevel.Info, result.stderr[result.stderr.length - 1], true);

@@ -28,6 +28,10 @@ export class TestHelper {
           console.debug(message);
           return true;
         },
+        async warning(message: string): Promise<boolean> {
+          console.warn(message);
+          return true;
+        },
       },
       dialog: {
         createProgressBar(title: string, totalSteps: number) {

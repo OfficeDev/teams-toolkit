@@ -328,7 +328,12 @@ class MockUserInteraction implements UserInteraction {
     throw new Error("Method not implemented.");
   }
   createProgressBar(title: string, totalSteps: number): IProgressHandler {
-    throw new Error("Method not implemented.");
+    const handler: IProgressHandler = {
+      start: async (detail?: string): Promise<void> => {},
+      next: async (detail?: string): Promise<void> => {},
+      end: async (): Promise<void> => {},
+    };
+    return handler;
   }
   async runWithProgress<T>(
     task: RunnableTask<T>,

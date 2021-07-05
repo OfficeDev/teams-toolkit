@@ -19,7 +19,10 @@ export enum TelemetryEvent {
   CreateProject = "create-project",
 
   NavigateToDebug = "navigate-to-debug",
-  RunIconToDebug = "run-icon-to-debug",
+
+  EnableRunIcon = "enable-run-icon",
+  RunIconDebugStart = "run-icon-debug-start",
+  RunIconDebug = "run-icon-debug",
 
   AddResourceStart = "add-resource-start",
   AddResource = "add-resource",
@@ -106,6 +109,7 @@ export enum TelemetryProperty {
   OSRelease = "os-release",
   SampleAppName = "sample-app-name",
   CurrentAction = "current-action",
+  TeamsProjectStatus = "teams-project-status",
 }
 
 export enum TelemetrySuccess {

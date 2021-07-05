@@ -142,7 +142,7 @@
       "editor/title/run": [
         {
           "command": "fx-extension.selectAndDebug",
-          "when": "!inDebugMode && debuggersAvailable && fx-extension.active",
+          "when": "!inDebugMode && debuggersAvailable && fx-extension.runIconActive",
           "group": "teamsfx"
         }
       ],

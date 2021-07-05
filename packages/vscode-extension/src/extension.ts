@@ -16,6 +16,7 @@ import * as StringResources from "./resources/Strings.json";
 import { openWelcomePageAfterExtensionInstallation } from "./controls/openWelcomePage";
 import { VsCodeUI } from "./qm/vsc_ui";
 import { exp } from "./exp";
+import { enableRunIcon } from "./debug/runIconHandler";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -194,14 +195,13 @@ export async function activate(context: vscode.ExtensionContext) {
 
   await handlers.cmdHdlLoadTreeView(context);
 
-  // Register local debug button
-  const selectDebugCmd = vscode.commands.registerCommand(
+  // Register local debug run icon
+  const runIconCmd = vscode.commands.registerCommand(
     "fx-extension.selectAndDebug",
     handlers.selectAndDebugHandler
   );
-  context.subscriptions.push(selectDebugCmd);
-
-  vscode.commands.executeCommand("setContext", "fx-extension.active", true);
+  context.subscriptions.push(runIconCmd);
+  enableRunIcon();
 
   // 2. Call activate function of toolkit core.
   await handlers.activate();

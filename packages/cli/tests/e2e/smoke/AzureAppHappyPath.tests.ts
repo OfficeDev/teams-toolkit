@@ -22,6 +22,7 @@ import {
   setSimpleAuthSkuNameToB1,
   setBotSkuNameToB1,
   cleanUp,
+  TEN_MEGA_BYTE,
 } from "../commonUtils";
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
 
@@ -39,6 +40,7 @@ describe("Azure App Happy Path", function () {
         cwd: testFolder,
         env: process.env,
         timeout: 0,
+        maxBuffer: TEN_MEGA_BYTE,
       }
     );
     console.log(`[Successfully] scaffold to ${projectPath}`);
@@ -50,6 +52,7 @@ describe("Azure App Happy Path", function () {
       cwd: projectPath,
       env: process.env,
       timeout: 0,
+      maxBuffer: TEN_MEGA_BYTE,
     });
 
     await setBotSkuNameToB1(projectPath);
@@ -59,6 +62,7 @@ describe("Azure App Happy Path", function () {
       cwd: projectPath,
       env: process.env,
       timeout: 0,
+      maxBuffer: TEN_MEGA_BYTE,
     });
 
     // resource add apim
@@ -66,6 +70,7 @@ describe("Azure App Happy Path", function () {
       cwd: projectPath,
       env: process.env,
       timeout: 0,
+      maxBuffer: TEN_MEGA_BYTE,
     });
 
     {
@@ -79,6 +84,7 @@ describe("Azure App Happy Path", function () {
         cwd: projectPath,
         env: process.env,
         timeout: 0,
+        maxBuffer: TEN_MEGA_BYTE,
       }
     );
 
@@ -111,6 +117,7 @@ describe("Azure App Happy Path", function () {
         cwd: projectPath,
         env: process.env,
         timeout: 0,
+        maxBuffer: TEN_MEGA_BYTE,
       }
     );
 

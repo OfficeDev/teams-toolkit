@@ -32,8 +32,4 @@ export function registerRunIcon(): void {
 function enableRunIcon(): void {
   const validProject = ext.workspaceUri && isValidProject(ext.workspaceUri.fsPath);
   vscode.commands.executeCommand("setContext", "fx-extension.runIconActive", validProject);
-
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.EnableRunIcon, {
-    [TelemetryProperty.TeamsProjectStatus]: validProject ? "valid" : "invalid",
-  });
 }

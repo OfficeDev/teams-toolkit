@@ -16,7 +16,7 @@ export class InfoMessages {
 
   public static readonly installFunctionExtensions: string = "Installing Azure Functions binding.";
   public static readonly noChange: string = "No change was detected since last deployment.";
-  public static readonly skipDeployment: string = `Skip deployment of function project for no change was detected. To fully redeploy function project, please remove '${path.join(
+  public static readonly skipDeployment: string = `Skip deployment of function project because no change was detected. To fully redeploy function project, please remove '${path.join(
     PathInfo.solutionFolderName,
     PathInfo.funcDeploymentFolderName
   )}' folder and rerun the command.`;

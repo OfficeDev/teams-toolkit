@@ -8,8 +8,10 @@ import {
   ConfigFolderName,
   FxError,
   returnSystemError,
+  returnUserError,
   Result,
   PluginContext,
+  Plugin,
   TeamsAppManifest,
   Platform,
   LogProvider,
@@ -19,6 +21,7 @@ import {
   ProjectSettings,
   IComposeExtension,
   IBot,
+  ReadonlySolutionConfig,
 } from "@microsoft/teamsfx-api";
 import { AppStudioClient } from "./appStudio";
 import {
@@ -47,6 +50,18 @@ import {
   DEFAULT_DEVELOPER_WEBSITE_URL,
   DEFAULT_DEVELOPER_TERM_OF_USE_URL,
   DEFAULT_DEVELOPER_PRIVACY_URL,
+  LOCAL_DEBUG_TAB_ENDPOINT,
+  LOCAL_DEBUG_TAB_DOMAIN,
+  FRONTEND_ENDPOINT,
+  FRONTEND_DOMAIN,
+  LOCAL_DEBUG_AAD_ID,
+  REMOTE_AAD_ID,
+  LOCAL_BOT_ID,
+  BOT_ID,
+  LOCAL_DEBUG_BOT_DOMAIN,
+  BOT_DOMAIN,
+  LOCAL_WEB_APPLICATION_INFO_SOURCE,
+  WEB_APPLICATION_INFO_SOURCE,
 } from "../../solution/fx-solution/constants";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
@@ -58,6 +73,23 @@ import {
 } from "../../solution/fx-solution/constants";
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
+
+type LoadedPlugin = Plugin & { name: string; displayName: string };
+
+export enum PluginNames {
+  SQL = "fx-resource-azure-sql",
+  MSID = "fx-resource-identity",
+  FE = "fx-resource-frontend-hosting",
+  SPFX = "fx-resource-spfx",
+  BOT = "fx-resource-bot",
+  AAD = "fx-resource-aad-app-for-teams",
+  FUNC = "fx-resource-function",
+  SA = "fx-resource-simple-auth",
+  LDEBUG = "fx-resource-local-debug",
+  APIM = "fx-resource-apim",
+  APPST = "fx-resource-appstudio",
+  SOLUTION = "solution",
+}
 
 export class AppStudioPluginImpl {
   public async createApp(
@@ -345,6 +377,195 @@ export class AppStudioPluginImpl {
     }
 
     return appDefinition;
+  }
+
+  public createManifestForRemote(
+    ctx: PluginContext,
+    manifest: TeamsAppManifest,
+    pluginMap: Map<string, LoadedPlugin>
+  ): Result<[IAppDefinition, TeamsAppManifest], FxError> {
+    const maybeSelectedPlugins = this.getSelectedPlugins(ctx, pluginMap);
+    if (maybeSelectedPlugins.isErr()) {
+      return err(maybeSelectedPlugins.error);
+    }
+    const selectedPlugins = maybeSelectedPlugins.value;
+    if (selectedPlugins.some((plugin) => plugin.name === "fx-resource-bot")) {
+      const capabilities = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
+        .capabilities;
+      const hasBot = capabilities?.includes(BotOptionItem.id);
+      const hasMsgExt = capabilities?.includes(MessageExtensionItem.id);
+      if (!hasBot && !hasMsgExt) {
+        return err(
+          returnSystemError(
+            new Error("Select either Bot or Messaging Extension"),
+            "Solution",
+            SolutionError.InternelError
+          )
+        );
+      }
+    }
+    const maybeConfig = this.getConfigForCreatingManifest(ctx.config, false);
+    if (maybeConfig.isErr()) {
+      return err(maybeConfig.error);
+    }
+
+    const { tabEndpoint, tabDomain, aadId, botDomain, botId, webApplicationInfoResource } =
+      maybeConfig.value;
+
+    const validDomains: string[] = [];
+
+    if (tabDomain) {
+      validDomains.push(tabDomain);
+    }
+
+    if (botDomain) {
+      validDomains.push(botDomain);
+    }
+
+    return ok(
+      this.getDevAppDefinition(
+        JSON.stringify(manifest),
+        aadId,
+        validDomains,
+        webApplicationInfoResource,
+        false,
+        tabEndpoint,
+        manifest.name.short,
+        manifest.version,
+        botId
+      )
+    );
+  }
+
+  private getSelectedPlugins(
+    ctx: PluginContext,
+    pluginMap: Map<string, LoadedPlugin>
+  ): Result<LoadedPlugin[], FxError> {
+    const settings = this.getAzureSolutionSettings(ctx);
+    const pluginNames = settings.activeResourcePlugins;
+    const selectedPlugins = [];
+    for (const pluginName of pluginNames as string[]) {
+      const plugin = pluginMap.get(pluginName);
+      if (plugin === undefined) {
+        return err(
+          returnUserError(
+            new Error(`Plugin name ${pluginName} is not valid`),
+            "Solution",
+            SolutionError.PluginNotFound
+          )
+        );
+      }
+      selectedPlugins.push(plugin);
+    }
+    return ok(selectedPlugins);
+  }
+
+  getAzureSolutionSettings(ctx: PluginContext): AzureSolutionSettings {
+    return ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
+  }
+
+  private getConfigForCreatingManifest(
+    config: ReadonlySolutionConfig,
+    localDebug: boolean
+  ): Result<
+    {
+      tabEndpoint?: string;
+      tabDomain?: string;
+      aadId: string;
+      botDomain?: string;
+      botId?: string;
+      webApplicationInfoResource: string;
+    },
+    FxError
+  > {
+    const tabEndpoint = localDebug
+      ? String(config.get(PluginNames.LDEBUG)?.get(LOCAL_DEBUG_TAB_ENDPOINT))
+      : String(config.get(PluginNames.FE)?.get(FRONTEND_ENDPOINT));
+    const tabDomain = localDebug
+      ? String(config.get(PluginNames.LDEBUG)?.get(LOCAL_DEBUG_TAB_DOMAIN))
+      : String(config.get(PluginNames.FE)?.get(FRONTEND_DOMAIN));
+    const aadId = String(
+      config.get(PluginNames.AAD)?.get(localDebug ? LOCAL_DEBUG_AAD_ID : REMOTE_AAD_ID)
+    );
+    const botId = String(config.get(PluginNames.BOT)?.get(localDebug ? LOCAL_BOT_ID : BOT_ID));
+    const botDomain = localDebug
+      ? String(config.get(PluginNames.LDEBUG)?.get(LOCAL_DEBUG_BOT_DOMAIN))
+      : String(config.get(PluginNames.BOT)?.get(BOT_DOMAIN));
+    // This config value is set by aadPlugin.setApplicationInContext. so aadPlugin.setApplicationInContext needs to run first.
+    const webApplicationInfoResource = String(
+      config
+        .get(PluginNames.AAD)
+        ?.get(localDebug ? LOCAL_WEB_APPLICATION_INFO_SOURCE : WEB_APPLICATION_INFO_SOURCE)
+    );
+    if (!webApplicationInfoResource) {
+      return err(
+        returnSystemError(
+          new Error(
+            "Missing configuration data for manifest. Run 'provision' first. Data required: webApplicationInfoResource."
+          ),
+          "Solution",
+          localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError
+        )
+      );
+    }
+
+    if (!aadId) {
+      return err(
+        returnSystemError(
+          new Error(
+            `Missing configuration data for manifest. Run 'provision' first. Data required: ${LOCAL_DEBUG_AAD_ID}.`
+          ),
+          "Solution",
+          localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError
+        )
+      );
+    }
+    // localTabEndpoint, bots and composeExtensions can't all be undefined
+    if (!tabEndpoint && !botId) {
+      return err(
+        returnSystemError(
+          new Error(
+            `Missing configuration data for manifest. Data required: ${
+              localDebug ? LOCAL_DEBUG_TAB_ENDPOINT : FRONTEND_ENDPOINT
+            }, ${localDebug ? LOCAL_BOT_ID : BOT_ID}.`
+          ),
+          "Solution",
+          localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError
+        )
+      );
+    }
+    if ((tabEndpoint && !tabDomain) || (!tabEndpoint && tabDomain)) {
+      return err(
+        returnSystemError(
+          new Error(
+            `Invalid configuration data for manifest: ${
+              localDebug ? LOCAL_DEBUG_TAB_ENDPOINT : FRONTEND_ENDPOINT
+            }=${tabEndpoint}, ${
+              localDebug ? LOCAL_DEBUG_TAB_DOMAIN : FRONTEND_DOMAIN
+            }=${tabDomain}.`
+          ),
+          "Solution",
+          localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError
+        )
+      );
+    }
+    if (botId) {
+      if (!botDomain) {
+        return err(
+          returnSystemError(
+            new Error(
+              `Missing configuration data for manifest. Data required: ${
+                localDebug ? LOCAL_DEBUG_BOT_DOMAIN : BOT_DOMAIN
+              }.`
+            ),
+            "Solution",
+            localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError
+          )
+        );
+      }
+    }
+
+    return ok({ tabEndpoint, tabDomain, aadId, botDomain, botId, webApplicationInfoResource });
   }
 
   public async buildTeamsAppPackage(

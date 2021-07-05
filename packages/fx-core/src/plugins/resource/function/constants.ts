@@ -18,7 +18,7 @@ export class CommonConstants {
 export class FunctionPluginInfo {
   public static readonly alias: string = "BE";
   public static readonly pluginName: string = "fx-resource-function";
-  public static readonly displayName: string = "Function Plugin";
+  public static readonly displayName: string = "Function";
   public static readonly expectDotnetSDKs: string[] = ["3.1", "5.0"];
 
   public static readonly FunctionPluginPersistentConfig: FunctionConfigKey[] = [

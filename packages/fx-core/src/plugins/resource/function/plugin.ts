@@ -39,7 +39,6 @@ import {
   QuestionValidationFunc,
   RegularExpr,
 } from "./constants";
-import { DialogUtils } from "./utils/dialog";
 import { ErrorMessages, InfoMessages } from "./resources/message";
 import {
   FunctionConfigKey,
@@ -591,7 +590,6 @@ export class FunctionPluginImpl {
     const updated: boolean = await FunctionDeploy.hasUpdatedContent(workingPath, functionLanguage);
     if (!updated) {
       Logger.info(InfoMessages.noChange);
-      DialogUtils.show(ctx, InfoMessages.noChange);
       this.config.skipDeploy = true;
       return ResultFactory.Success();
     }
@@ -617,7 +615,7 @@ export class FunctionPluginImpl {
   public async deploy(ctx: PluginContext): Promise<FxResult> {
     if (this.config.skipDeploy) {
       TelemetryHelper.sendGeneralEvent(FunctionEvent.skipDeploy);
-      Logger.info(InfoMessages.skipDeployment);
+      Logger.warning(InfoMessages.skipDeployment);
       return ResultFactory.Success();
     }
 

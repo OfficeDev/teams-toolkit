@@ -80,3 +80,5 @@
 /packages/simpleauth @adashen @blackchoey @wenytang-ms
 
 /packages/function-extension @adashen @blackchoey @dilin-MS
+
+/.github/workflows/cd.yml @adashen @LongOddCode @IvanJobs @qinezh @wenytang-ms

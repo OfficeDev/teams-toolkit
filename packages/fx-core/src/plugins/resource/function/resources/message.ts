@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import * as path from "path";
 import { FunctionPluginPathInfo as PathInfo } from "../constants";
 
 export class InfoMessages {
@@ -14,10 +15,11 @@ export class InfoMessages {
     )}'.`;
 
   public static readonly installFunctionExtensions: string = "Installing Azure Functions binding.";
-  public static readonly noChange: string =
-    "Nothing to deploy; no changes detected since last deployment.";
-  public static readonly skipDeployment: string =
-    "Skip deployment.";
+  public static readonly noChange: string = "No change was detected since last deployment.";
+  public static readonly skipDeployment: string = `Skip deployment of function project because no change was detected. To fully redeploy function project, please remove '${path.join(
+    PathInfo.solutionFolderName,
+    PathInfo.funcDeploymentFolderName
+  )}' folder and rerun the command.`;
   public static readonly failedToCheckDotnet = (error: Error) =>
     `Failed to check .NET SDK, error = '${error}'`;
   public static readonly failedToInstallDotnet = (error: Error) =>
@@ -57,8 +59,8 @@ export class InfoMessages {
     `Successfully completed '${op}'. Retry count is ${count}.`;
 
   public static readonly reuseZipNotice =
-    `Found '${PathInfo.solutionFolderName}/${PathInfo.funcDeploymentFolderName}/${PathInfo.funcDeploymentZipCacheFileName}',` +
-    ". If there are errors after deployment, delete this file and retry.";
+    `Found '${PathInfo.solutionFolderName}/${PathInfo.funcDeploymentFolderName}/${PathInfo.funcDeploymentZipCacheFileName}'. ` +
+    "If there are errors after deployment, delete this file and retry.";
 }
 
 export class ErrorMessages {

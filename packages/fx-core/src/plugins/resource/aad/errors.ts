@@ -3,7 +3,6 @@
 
 import { ConfigKeys, Plugins } from "./constants";
 
-const referLogMessage = "Please refer to the log for detailed information.";
 const referHelpLink = "Please refer to the help link for further steps.";
 const aadHelpLink = "https://aka.ms/teamsfx-aad-help";
 
@@ -39,32 +38,28 @@ export const GetSkipAppConfigError: AadError = {
 
 export const CreateAppError: AadError = {
   name: "AadCreateAppError",
-  message: () => `Failed to create an app in Azure Active Directory. ${referLogMessage}`,
+  message: () => `Failed to create an app in Azure Active Directory.`,
 };
 
 export const CreateSecretError: AadError = {
   name: "AadCreateSecretError",
-  message: () =>
-    `Failed to create an application secret in Azure Active Directory. ${referLogMessage}`,
+  message: () => `Failed to create an application secret in Azure Active Directory.`,
 };
 
 export const UpdateRedirectUriError: AadError = {
   name: "UpdateRedirectUriError",
-  message: () =>
-    `Failed to update application redirect URI in Azure Active Directory. ${referLogMessage}`,
+  message: () => `Failed to update application redirect URI in Azure Active Directory.`,
 };
 
 export const UpdateAppIdUriError: AadError = {
   name: "UpdateAppIdUriError",
-  message: () =>
-    `Failed to update Application ID URI in Azure Active Directory. ${referLogMessage} ${referHelpLink}`,
+  message: () => `Failed to update Application ID URI in Azure Active Directory. ${referHelpLink}`,
   helpLink: aadHelpLink,
 };
 
 export const UpdatePermissionError: AadError = {
   name: "AadUpdatePermissionError",
-  message: () =>
-    `Failed to update application permission in Azure Active Directory. ${referLogMessage}`,
+  message: () => `Failed to update application permission in Azure Active Directory.`,
 };
 
 export const AppIdUriInvalidError: AadError = {

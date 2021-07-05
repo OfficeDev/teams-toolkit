@@ -9,7 +9,6 @@
     ],
     "command": {
         "version": {
-            "conventionalCommits": true,
             "message": "chore(release): publish detail",
             "allowBranch": ["main"]
         }

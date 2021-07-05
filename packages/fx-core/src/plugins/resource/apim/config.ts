@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ConfigValue, ReadonlySolutionConfig } from "@microsoft/teamsfx-api";
+import { PluginConfig, ReadonlySolutionConfig } from "@microsoft/teamsfx-api";
 import {
   TeamsToolkitComponent,
   ComponentRetryOperations,
@@ -54,8 +54,8 @@ export interface ISolutionConfig {
 
 export class ApimPluginConfig implements IApimPluginConfig {
   // TODO update @microsoft/teamsfx-api to the latest version
-  private readonly config: Map<string, ConfigValue>;
-  constructor(config: Map<string, ConfigValue>) {
+  private readonly config: PluginConfig;
+  constructor(config: PluginConfig) {
     this.config = config;
   }
 
@@ -133,12 +133,9 @@ export class ApimPluginConfig implements IApimPluginConfig {
   }
 
   private getValue(key: string, namingRule?: INamingRule): string | undefined {
-    const value = this.config.get(key);
-    if (typeof value !== "string" && typeof value !== "undefined") {
-      throw BuildError(InvalidPropertyType, key, "string");
-    }
+    const value = this.config.getString(key);
 
-    if (namingRule && typeof value === "string") {
+    if (namingRule && value) {
       const message = NamingRules.validate(value, namingRule);
       if (message) {
         throw BuildError(InvalidConfigValue, TeamsToolkitComponent.ApimPlugin, key, message);

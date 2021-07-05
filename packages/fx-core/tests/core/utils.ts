@@ -282,7 +282,7 @@ class MockDialog implements Dialog {
   }
 }
 
-class MockUserInteraction implements UserInteraction {
+export class MockUserInteraction implements UserInteraction {
   selectOption(config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> {
     throw new Error("Method not implemented.");
   }
@@ -325,10 +325,15 @@ class MockUserInteraction implements UserInteraction {
     modal: boolean,
     ...items: string[]
   ): Promise<Result<string | undefined, FxError>> {
-    throw new Error("Method not implemented.");
+    return ok("");
   }
   createProgressBar(title: string, totalSteps: number): IProgressHandler {
-    throw new Error("Method not implemented.");
+    const handler: IProgressHandler = {
+      start: async (detail?: string): Promise<void> => {},
+      next: async (detail?: string): Promise<void> => {},
+      end: async (): Promise<void> => {},
+    };
+    return handler;
   }
   async runWithProgress<T>(
     task: RunnableTask<T>,

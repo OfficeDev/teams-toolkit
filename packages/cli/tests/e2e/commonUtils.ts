@@ -55,7 +55,7 @@ export function getUniqueAppName() {
 }
 
 export function getSubscriptionId() {
-  return cfg.AZURE_SUBSCRIPTION_ID;
+  return cfg.AZURE_SUBSCRIPTION_ID || "";
 }
 
 const envFilePathSuffix = path.join(".fx", "env.default.json");

@@ -3,7 +3,7 @@
 import * as path from "path";
 import { ConfigFolderName, SystemError, UserError } from "@microsoft/teamsfx-api";
 
-import { FunctionPluginPathInfo as PathInfo } from "../constants";
+import { AzureInfo, FunctionPluginPathInfo as PathInfo } from "../constants";
 import { Logger } from "../utils/logger";
 
 export enum ErrorType {
@@ -30,6 +30,9 @@ const tips = {
   retryRequestForZip:
     "If the template zip file was broken, retry the command to download a new one.",
   checkFunctionExtVersion: `Check function extension version and ${PathInfo.solutionFolderName}${path.sep}${PathInfo.functionExtensionsFileName}.`,
+  registerRequiredRP: `Register ${AzureInfo.requiredResourceProviders.join(
+    ","
+  )} resource provider for your subscription manually.`,
 };
 
 export class FunctionPluginError extends Error {
@@ -129,6 +132,18 @@ export class UnzipError extends FunctionPluginError {
       tips.checkPathAccess,
       tips.retryRequestForZip,
     ]);
+  }
+}
+
+// TODO: help link for the error
+export class RegisterResourceProviderError extends FunctionPluginError {
+  constructor() {
+    super(
+      ErrorType.User,
+      "RegisterResourceProviderError",
+      "Failed to register required resource provider for function app.",
+      [tips.registerRequiredRP, tips.checkLog]
+    );
   }
 }
 
@@ -237,7 +252,12 @@ export class UploadZipError extends FunctionPluginError {
 
 export class UnknownFallbackError extends FunctionPluginError {
   constructor() {
-    super(ErrorType.System, "UnknownFallbackError", "Trigger fallback caused by unknown reason.", []);
+    super(
+      ErrorType.System,
+      "UnknownFallbackError",
+      "Trigger fallback caused by unknown reason.",
+      []
+    );
   }
 }
 

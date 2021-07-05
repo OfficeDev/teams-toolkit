@@ -40,11 +40,11 @@ export class AzureClientFactory {
     return new ResourceManagementClient(credentials, subscriptionId);
   }
 
-  public static getResourceManagementClientContext(
+  public static getResourceProviderClient(
     credentials: TokenCredentialsBase,
     subscriptionId: string
-  ): ResourceManagementClientContext {
-    return new ResourceManagementClientContext(credentials, subscriptionId);
+  ): Providers {
+    return new Providers(new ResourceManagementClientContext(credentials, subscriptionId));
   }
 }
 
@@ -71,12 +71,11 @@ export class AzureLib {
     return res.body;
   }
 
-  public static async registerResourceProvider(
-    client: ResourceManagementClientContext,
-    providerNamespace: string
-  ): Promise<Provider> {
-    const provider = new Providers(client);
-    return await provider.register(providerNamespace);
+  public static async registerResourceProviders(
+    client: Providers,
+    providerNamespaces: string[]
+  ): Promise<Provider[]> {
+    return Promise.all(providerNamespaces.map((namespace) => client.register(namespace)));
   }
 
   private static async ensureResource<T>(

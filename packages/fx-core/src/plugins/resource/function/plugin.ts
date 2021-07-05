@@ -29,8 +29,10 @@ import {
   runWithErrorCatchAndThrow,
   FunctionNameConflictError,
   FetchConfigError,
+  RegisterResourceProviderError,
 } from "./resources/errors";
 import {
+  AzureInfo,
   DefaultProvisionConfigs,
   DefaultValues,
   DependentPluginInfo,
@@ -389,16 +391,18 @@ export class FunctionPluginImpl {
     );
     const nodeVersion = await this.getValidNodeVersion(ctx);
 
-    const resourceManagementClientContext = await runWithErrorCatchAndThrow(
-      new InitAzureSDKError(),
-      () => AzureClientFactory.getResourceManagementClientContext(credential, subscriptionId)
+    Logger.info(
+      `Registering resource providers: ${AzureInfo.requiredResourceProviders.join(",")}.`
+    );
+    const providerClient = await runWithErrorCatchAndThrow(new InitAzureSDKError(), () =>
+      AzureClientFactory.getResourceProviderClient(credential, subscriptionId)
     );
     await runWithErrorCatchAndThrow(
-      new ProvisionError(""),
+      new RegisterResourceProviderError(),
       async () =>
-        await AzureLib.registerResourceProvider(
-          resourceManagementClientContext,
-          "Microsoft.Storage"
+        await AzureLib.registerResourceProviders(
+          providerClient,
+          AzureInfo.requiredResourceProviders
         )
     );
 

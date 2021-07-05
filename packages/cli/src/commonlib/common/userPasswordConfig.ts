@@ -9,13 +9,10 @@ dotenv.config();
 
 export const client_id = "7ea7c24c-b1f6-4a20-9d11-9ae12e9e7ac0";
 
-export const user = process.env.TEST_USER_NAME || "";
-export const password = process.env.TEST_USER_PASSWORD || "";
-
-export const tenant = {
-  id: process.env.TEST_TENANT_ID ? process.env.TEST_TENANT_ID : "72f988bf-86f1-41af-91ab-2d7cd011db47"
-};
-
-export const subscription = {
-  id: process.env.TEST_SUBSCRIPTION_ID || ""
-};
+export const AZURE_ACCOUNT_NAME = process.env.AZURE_ACCOUNT_NAME;
+export const AZURE_ACCOUNT_PASSWORD = process.env.AZURE_ACCOUNT_PASSWORD;
+export const AZURE_SUBSCRIPTION_ID = process.env.AZURE_SUBSCRIPTION_ID;
+export const AZURE_TENANT_ID = process.env.AZURE_TENANT_ID;
+export const M365_ACCOUNT_NAME = process.env.M365_ACCOUNT_NAME;
+export const M365_ACCOUNT_PASSWORD = process.env.M365_ACCOUNT_PASSWORD;
+export const M365_TENANT_ID = process.env.M365_TENANT_ID;

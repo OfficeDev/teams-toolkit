@@ -57,12 +57,6 @@ export class DialogManager implements Dialog {
       case DialogType.Ask: {
         return new DialogMsg(DialogType.Answer, await this.askQuestion(msg.content as IQuestion));
       }
-      // case DialogType.Show: {
-      //   return new Promise(async (resolve, reject) => {
-      //     const result = await this.showMessage(msg.content as IMessage);
-      //     resolve(new DialogMsg(DialogType.Answer, result));
-      //   });
-      // }
       case DialogType.Output: {
         let result: boolean;
         switch ((msg.content as IMessage).level) {
@@ -101,18 +95,6 @@ export class DialogManager implements Dialog {
         });
       }
     }
-  }
-
-  public createProgressBar(title: string, totalSteps: number): IProgressHandler {
-    const handler = new ProgressHandler(title, totalSteps);
-    this.progressHandlers.push(handler);
-    return handler;
-  }
-
-  public closeProgressHandlers() {
-    this.progressHandlers.forEach(async (handler) => {
-      await handler.end();
-    });
   }
 
   /**

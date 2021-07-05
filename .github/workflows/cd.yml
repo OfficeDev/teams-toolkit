@@ -22,7 +22,7 @@ jobs:
       - name: Validate CD branch
         if: ${{ github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main' && github.ref != 'refs/heads/dev' }}
         run: |
-          echo It's not allowed to run CD on other branch besides main and dev.
+          echo It's not allowed to run CD on other branch except main and dev.
           exit 1
 
       - name: Validate inputs for main
@@ -40,7 +40,7 @@ jobs:
       - name: Validate schedule
         if: ${{ github.event_name == 'schedule' && github.ref != 'refs/heads/dev' }}
         run: |
-          echo It's not allowed to run schedule release besides dev branch.
+          echo It's not allowed to run schedule release except dev branch.
           exit 1
 
       - name: Checkout branch

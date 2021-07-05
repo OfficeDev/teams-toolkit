@@ -74,7 +74,7 @@
       "m365SignOut": "Successfully signed out of M365 account.",
       "signOutOfM365": "Sign out of M365: ",
       "signOutOfAzure": "Sign out of Azure: ",
-      "invalidProject": "The project is not a valid Teams project."
+      "invalidProject": "Failed to debug Teams App. The project is not a valid Teams project."
     },
     "progressHandler": {
       "teamsToolkitComponent": "[Teams Toolkit]",

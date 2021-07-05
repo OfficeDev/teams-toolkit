@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { DialogMsg, DialogType, MsgLevel, PluginContext } from "@microsoft/teamsfx-api";
+import { MsgLevel, PluginContext } from "@microsoft/teamsfx-api";
 
 export class DialogUtils {
   public static async show(
@@ -8,10 +8,9 @@ export class DialogUtils {
     message: string,
     level = MsgLevel.Info
   ): Promise<void> {
-    const content: DialogMsg = new DialogMsg(DialogType.Show, {
-      description: message,
-      level: level,
-    });
-    await ctx.dialog?.communicate(content);
+    let l: "info" | "warn" | "error" = "info";
+    if (level === MsgLevel.Warning) l = "warn";
+    else if (level === MsgLevel.Error) l = "error";
+    ctx.ui?.showMessage(l, message, false);
   }
 }

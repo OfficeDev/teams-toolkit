@@ -5,7 +5,7 @@ import { ExtensionErrors, ExtensionSource } from "../error";
 import * as vscode from "vscode";
 import * as StringResources from "../resources/Strings.json";
 
-export async function selectAndDebug(args?: any[]): Promise<Result<null, FxError>> {
+export async function selectAndDebug(): Promise<Result<null, FxError>> {
   if (ext.workspaceUri && isValidProject(ext.workspaceUri.fsPath)) {
     vscode.commands.executeCommand("workbench.view.debug");
     vscode.commands.executeCommand("workbench.action.debug.selectandstart");
@@ -22,6 +22,7 @@ export async function selectAndDebug(args?: any[]): Promise<Result<null, FxError
 }
 
 export function registerRunIcon(): void {
+  ext.context.subscriptions.push(vscode.window.onDidChangeActiveTextEditor(enableRunIcon));
   ext.context.subscriptions.push(vscode.workspace.onDidOpenTextDocument(enableRunIcon));
   ext.context.subscriptions.push(vscode.workspace.onDidChangeWorkspaceFolders(enableRunIcon));
   enableRunIcon();

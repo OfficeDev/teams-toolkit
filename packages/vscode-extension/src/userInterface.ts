@@ -57,12 +57,12 @@ export class DialogManager implements Dialog {
       case DialogType.Ask: {
         return new DialogMsg(DialogType.Answer, await this.askQuestion(msg.content as IQuestion));
       }
-      case DialogType.Show: {
-        return new Promise(async (resolve, reject) => {
-          const result = await this.showMessage(msg.content as IMessage);
-          resolve(new DialogMsg(DialogType.Answer, result));
-        });
-      }
+      // case DialogType.Show: {
+      //   return new Promise(async (resolve, reject) => {
+      //     const result = await this.showMessage(msg.content as IMessage);
+      //     resolve(new DialogMsg(DialogType.Answer, result));
+      //   });
+      // }
       case DialogType.Output: {
         let result: boolean;
         switch ((msg.content as IMessage).level) {
@@ -162,8 +162,10 @@ export class DialogManager implements Dialog {
       },
       async (progress) => {
         await sleep(0);
-        let currentStatus: IteratorResult<IProgressStatus, Result<null, FxError>> =
-          await prog.progressIter.next();
+        let currentStatus: IteratorResult<
+          IProgressStatus,
+          Result<null, FxError>
+        > = await prog.progressIter.next();
         while (!currentStatus.done) {
           progress.report(currentStatus.value);
           await sleep(0);
@@ -181,43 +183,6 @@ export class DialogManager implements Dialog {
    */
   private async askQuestion(question: IQuestion): Promise<Answer> {
     switch (question.type) {
-      case QuestionType.Radio: {
-        // Show a radio for user to select one item.
-        let options = question.options || [];
-        if (question.defaultAnswer !== undefined) {
-          options = options.filter((value: string) => value !== question.defaultAnswer);
-          options.unshift(question.defaultAnswer);
-        }
-        if (options.length === 0) {
-          return undefined;
-        }
-        return await ext.ui.showQuickPick(options, {
-          placeHolder:
-            question.description || StringResources.vsc.userInterface.noQuestionDescription,
-          ignoreFocusOut: true,
-          canPickMany: question.multiSelect,
-        });
-      }
-      case QuestionType.Text: {
-        return await ext.ui.showInputBox({
-          value: question.defaultAnswer || "",
-          placeHolder:
-            question.description || StringResources.vsc.userInterface.noQuestionDescription,
-          ignoreFocusOut: true,
-          validateInput: question.validateInput,
-          password: question.password,
-          prompt: question.prompt,
-        });
-      }
-      case QuestionType.SelectFolder: {
-        const uri = await ext.ui.showOpenDialog({
-          canSelectFiles: false,
-          canSelectFolders: true,
-          canSelectMany: false,
-          title: question.description,
-        });
-        return uri && uri.length > 0 ? uri[0].fsPath : undefined;
-      }
       case QuestionType.OpenFolder: {
         const uri = Uri.file(question.description);
         return await ext.ui.openFolder(uri);
@@ -237,18 +202,7 @@ export class DialogManager implements Dialog {
         terminal.show();
         return undefined;
       }
-      case QuestionType.OpenExternal: {
-        const uri = Uri.parse(question.description);
-        ext.ui.openExternal(uri);
-        return undefined;
-      }
-      case QuestionType.Confirm: {
-        return await window.showWarningMessage(
-          question.description,
-          { modal: true },
-          ...(question.options ? question.options : [])
-        );
-      }
+
       default: {
         await this.showMessage({
           description: StringResources.vsc.userInterface.notImplementQuestion,

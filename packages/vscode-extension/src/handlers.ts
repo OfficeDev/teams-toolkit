@@ -24,6 +24,7 @@ import {
   UserError,
   SystemError,
   returnSystemError,
+  returnUserError,
   ConfigFolderName,
   Inputs,
   VsCodeEnv,
@@ -31,7 +32,12 @@ import {
   Void,
   Tools,
 } from "@microsoft/teamsfx-api";
-import { isUserCancelError, FxCore, InvalidProjectError } from "@microsoft/teamsfx-core";
+import {
+  isUserCancelError,
+  FxCore,
+  InvalidProjectError,
+  isValidProject,
+} from "@microsoft/teamsfx-core";
 import DialogManagerInstance from "./userInterface";
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -74,6 +80,7 @@ import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
 import { VS_CODE_UI } from "./extension";
 import { registerAccountTreeHandler } from "./accountTree";
 import * as uuid from "uuid";
+import { selectAndDebug } from "./debug/runIconHandler";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -167,6 +174,13 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<null
 export function debugHandler(args?: any[]) {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.NavigateToDebug, getTriggerFromProperty(args));
   vscode.commands.executeCommand("workbench.view.debug");
+}
+
+export async function selectAndDebugHandler(args?: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.RunIconDebugStart);
+  const result = await selectAndDebug();
+  await processResult(TelemetryEvent.RunIconDebug, result);
+  return result;
 }
 
 export async function addResourceHandler(args?: any[]): Promise<Result<null, FxError>> {

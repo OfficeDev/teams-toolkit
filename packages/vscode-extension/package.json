@@ -40,6 +40,7 @@
     "out/**/*"
   ],
   "activationEvents": [
+    "*",
     "onCommand:fx-extension.openWelcome",
     "onCommand:fx-extension.openSamples",
     "onCommand:fx-extension.openDocument",
@@ -97,7 +98,8 @@
         },
         {
           "id": "teamsfx-feedback",
-          "name": "Feedback"
+          "name": "Feedback",
+          "visibility": "collapsed"
         }
       ]
     },

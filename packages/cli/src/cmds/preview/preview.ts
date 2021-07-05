@@ -24,18 +24,28 @@ import { YargsCommand } from "../../yargsCommand";
 import * as utils from "../../utils";
 import * as commonUtils from "./commonUtils";
 import * as constants from "./constants";
-import { CliTelemetry } from "../../telemetry/cliTelemetry";
 import cliLogger from "../../commonlib/log";
 import * as errors from "./errors";
 import activate from "../../activate";
 import { Task } from "./task";
 import DialogManagerInstance from "../../userInterface";
 import AppStudioTokenInstance from "../../commonlib/appStudioLogin";
+import cliTelemetry from "../../telemetry/cliTelemetry";
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetrySuccess,
+} from "../../telemetry/cliTelemetryEvents";
+import { ServiceLogWriter } from "./serviceLogWriter";
 
 export default class Preview extends YargsCommand {
   public readonly commandHead = `preview`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "Preview the current application.";
+
+  private backgroundTasks: Task[] = [];
+  private readonly telemetryProperties: { [key: string]: string } = {};
+  private serviceLogWriter: ServiceLogWriter | undefined;
 
   public builder(yargs: Argv): Argv<any> {
     yargs.option("local", {
@@ -60,21 +70,48 @@ export default class Preview extends YargsCommand {
   public async runCommand(args: {
     [argName: string]: boolean | string | string[] | undefined;
   }): Promise<Result<null, FxError>> {
-    if (args.local && args.remote) {
-      return err(errors.ExclusiveLocalRemoteOptions());
-    }
+    try {
+      let previewType = "";
+      if ((args.local && !args.remote) || (!args.local && !args.remote)) {
+        previewType = "local";
+      } else if (!args.local && args.remote) {
+        previewType = "remote";
+      }
+      this.telemetryProperties[TelemetryProperty.PreviewType] = previewType;
 
-    const workspaceFolder = path.resolve(args.folder as string);
-    if (!utils.isWorkspaceSupported(workspaceFolder)) {
-      return err(errors.WorkspaceNotSupported(workspaceFolder));
-    }
+      const workspaceFolder = path.resolve(args.folder as string);
+      this.telemetryProperties[TelemetryProperty.PreviewAppId] = utils.getLocalTeamsAppId(
+        workspaceFolder
+      ) as string;
 
-    CliTelemetry.setReporter(CliTelemetry.getReporter().withRootFolder(workspaceFolder));
+      cliTelemetry
+        .withRootFolder(workspaceFolder)
+        .sendTelemetryEvent(TelemetryEvent.PreviewStart, this.telemetryProperties);
 
-    if (args.local || (!args.local && !args.remote)) {
-      return await this.localPreview(workspaceFolder);
+      if (args.local && args.remote) {
+        throw errors.ExclusiveLocalRemoteOptions();
+      }
+      if (!utils.isWorkspaceSupported(workspaceFolder)) {
+        throw errors.WorkspaceNotSupported(workspaceFolder);
+      }
+
+      const result =
+        previewType === "local"
+          ? await this.localPreview(workspaceFolder)
+          : await this.remotePreview(workspaceFolder);
+      if (result.isErr()) {
+        throw result.error;
+      }
+      cliTelemetry.sendTelemetryEvent(TelemetryEvent.Preview, {
+        ...this.telemetryProperties,
+        [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+      });
+      return ok(null);
+    } catch (error) {
+      cliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Preview, error, this.telemetryProperties);
+      await this.terminateTasks();
+      return err(error);
     }
-    return await this.remotePreview(workspaceFolder);
   }
 
   private async localPreview(workspaceFolder: string): Promise<Result<null, FxError>> {
@@ -124,6 +161,12 @@ export default class Preview extends YargsCommand {
       return err(errors.RequiredPathNotExists(botRoot));
     }
 
+    // clear background tasks
+    this.backgroundTasks = [];
+    // init service log writer
+    this.serviceLogWriter = new ServiceLogWriter();
+    await this.serviceLogWriter.init();
+
     /* === start ngrok === */
     const skipNgrokConfig = config?.config
       ?.get(constants.localDebugPluginName)
@@ -147,6 +190,10 @@ export default class Preview extends YargsCommand {
     if (result.isErr()) {
       return result;
     }
+
+    this.telemetryProperties[TelemetryProperty.PreviewAppId] = utils.getLocalTeamsAppId(
+      workspaceFolder
+    ) as string;
 
     /* === check ports === */
     const portsInUse = await commonUtils.getPortsInUse(includeFrontend, includeBackend, includeBot);
@@ -196,34 +243,61 @@ export default class Preview extends YargsCommand {
     /* === open teams web client === */
     await this.openTeamsWebClient(tenantId.length === 0 ? undefined : tenantId, localTeamsAppId);
 
-    cliLogger.necessaryLog(LogLevel.Info, constants.waitCtrlPlusC);
+    cliLogger.necessaryLog(LogLevel.Warning, constants.waitCtrlPlusC);
 
     return ok(null);
   }
 
   private async remotePreview(workspaceFolder: string): Promise<Result<null, FxError>> {
-    // TODO: get remote teams app id
+    /* === get remote teams app id === */
+    const coreResult = await activate();
+    if (coreResult.isErr()) {
+      return err(coreResult.error);
+    }
+    const core = coreResult.value;
 
-    // TODO: open teams web client
+    const inputs: Inputs = {
+      projectPath: workspaceFolder,
+      platform: Platform.CLI,
+    };
+
+    const configResult = await core.getProjectConfig(inputs);
+    if (configResult.isErr()) {
+      return err(configResult.error);
+    }
+    const config = configResult.value;
+
+    const tenantId = config?.config
+      ?.get(constants.solutionPluginName)
+      ?.get(constants.teamsAppTenantIdConfigKey) as string;
+    const remoteTeamsAppId = config?.config
+      ?.get(constants.solutionPluginName)
+      ?.get(constants.remoteTeamsAppIdConfigKey) as string;
+    if (remoteTeamsAppId === undefined || remoteTeamsAppId.length === 0) {
+      return err(errors.PreviewWithoutProvision());
+    }
+
+    /* === open teams web client === */
+    await this.openTeamsWebClient(tenantId.length === 0 ? undefined : tenantId, remoteTeamsAppId);
 
     return ok(null);
   }
 
   private async startNgrok(botRoot: string): Promise<Result<null, FxError>> {
     // bot npm install
-    const botInstallTask = new Task(constants.npmInstallCommand, {
+    const botInstallTask = new Task(constants.botInstallTitle, constants.npmInstallCommand, false, {
       cwd: botRoot,
     });
     const botInstallBar = DialogManagerInstance.createProgressBar(constants.botInstallTitle, 1);
     const botInstallStartCb = commonUtils.createTaskStartCb(
       botInstallBar,
-      constants.botInstallStartMessage
+      constants.botInstallStartMessage,
+      this.telemetryProperties
     );
     const botInstallStopCb = commonUtils.createTaskStopCb(
-      constants.botInstallTitle,
       botInstallBar,
       constants.botInstallSuccessMessage,
-      false
+      this.telemetryProperties
     );
     let result = await botInstallTask.wait(botInstallStartCb, botInstallStopCb);
     if (result.isErr()) {
@@ -231,24 +305,26 @@ export default class Preview extends YargsCommand {
     }
 
     // start ngrok
-    const ngrokStartTask = new Task(constants.ngrokStartCommand, {
+    const ngrokStartTask = new Task(constants.ngrokStartTitle, constants.ngrokStartCommand, true, {
       cwd: botRoot,
     });
+    this.backgroundTasks.push(ngrokStartTask);
     const ngrokStartBar = DialogManagerInstance.createProgressBar(constants.ngrokStartTitle, 1);
     const ngrokStartStartCb = commonUtils.createTaskStartCb(
       ngrokStartBar,
-      constants.ngrokStartStartMessage
+      constants.ngrokStartStartMessage,
+      this.telemetryProperties
     );
     const ngrokStartStopCb = commonUtils.createTaskStopCb(
-      constants.ngrokStartTitle,
       ngrokStartBar,
       constants.ngrokStartSuccessMessage,
-      true
+      this.telemetryProperties
     );
     result = await ngrokStartTask.waitFor(
       constants.ngrokStartPattern,
       ngrokStartStartCb,
-      ngrokStartStopCb
+      ngrokStartStopCb,
+      this.serviceLogWriter
     );
     if (result.isErr()) {
       return err(result.error);
@@ -265,25 +341,40 @@ export default class Preview extends YargsCommand {
   ): Promise<Result<null, FxError>> {
     let frontendInstallTask: Task | undefined;
     if (frontendRoot !== undefined) {
-      frontendInstallTask = new Task(constants.npmInstallCommand, {
-        cwd: frontendRoot,
-      });
+      frontendInstallTask = new Task(
+        constants.frontendInstallTitle,
+        constants.npmInstallCommand,
+        false,
+        {
+          cwd: frontendRoot,
+        }
+      );
     }
 
     let backendInstallTask: Task | undefined;
     let backendExtensionsInstallTask: Task | undefined;
     if (backendRoot !== undefined) {
-      backendInstallTask = new Task(constants.npmInstallCommand, {
-        cwd: backendRoot,
-      });
-      backendExtensionsInstallTask = new Task(constants.backendExtensionsInstallCommand, {
-        cwd: backendRoot,
-      });
+      backendInstallTask = new Task(
+        constants.backendInstallTitle,
+        constants.npmInstallCommand,
+        false,
+        {
+          cwd: backendRoot,
+        }
+      );
+      backendExtensionsInstallTask = new Task(
+        constants.backendExtensionsInstallTitle,
+        constants.backendExtensionsInstallCommand,
+        false,
+        {
+          cwd: backendRoot,
+        }
+      );
     }
 
     let botInstallTask: Task | undefined;
     if (botRoot !== undefined) {
-      botInstallTask = new Task(constants.npmInstallCommand, {
+      botInstallTask = new Task(constants.botInstallTitle, constants.npmInstallCommand, false, {
         cwd: botRoot,
       });
     }
@@ -294,13 +385,13 @@ export default class Preview extends YargsCommand {
     );
     const frontendInstallStartCb = commonUtils.createTaskStartCb(
       frontendInstallBar,
-      constants.frontendInstallStartMessage
+      constants.frontendInstallStartMessage,
+      this.telemetryProperties
     );
     const frontendInstallStopCb = commonUtils.createTaskStopCb(
-      constants.frontendInstallTitle,
       frontendInstallBar,
       constants.frontendInstallSuccessMessage,
-      false
+      this.telemetryProperties
     );
 
     const backendInstallBar = DialogManagerInstance.createProgressBar(
@@ -309,13 +400,13 @@ export default class Preview extends YargsCommand {
     );
     const backendInstallStartCb = commonUtils.createTaskStartCb(
       backendInstallBar,
-      constants.backendInstallStartMessage
+      constants.backendInstallStartMessage,
+      this.telemetryProperties
     );
     const backendInstallStopCb = commonUtils.createTaskStopCb(
-      constants.backendInstallTitle,
       backendInstallBar,
       constants.backendInstallSuccessMessage,
-      false
+      this.telemetryProperties
     );
 
     const backendExtensionsInstallBar = DialogManagerInstance.createProgressBar(
@@ -327,22 +418,20 @@ export default class Preview extends YargsCommand {
       constants.backendExtensionsInstallStartMessage
     );
     const backendExtensionsInstallStopCb = commonUtils.createTaskStopCb(
-      constants.backendExtensionsInstallTitle,
       backendExtensionsInstallBar,
-      constants.backendExtensionsInstallSuccessMessage,
-      false
+      constants.backendExtensionsInstallSuccessMessage
     );
 
     const botInstallBar = DialogManagerInstance.createProgressBar(constants.botInstallTitle, 1);
     const botInstallStartCb = commonUtils.createTaskStartCb(
       botInstallBar,
-      constants.botInstallStartMessage
+      constants.botInstallStartMessage,
+      this.telemetryProperties
     );
     const botInstallStopCb = commonUtils.createTaskStopCb(
-      constants.botInstallTitle,
       botInstallBar,
       constants.botInstallSuccessMessage,
-      false
+      this.telemetryProperties
     );
 
     const results = await Promise.all([
@@ -377,20 +466,27 @@ export default class Preview extends YargsCommand {
     let frontendStartTask: Task | undefined;
     if (frontendRoot !== undefined) {
       const env = await commonUtils.getFrontendLocalEnv(workspaceFolder);
-      frontendStartTask = new Task(constants.frontendStartCommand, {
-        cwd: frontendRoot,
-        env: commonUtils.mergeProcessEnv(env),
-      });
+      frontendStartTask = new Task(
+        constants.frontendStartTitle,
+        constants.frontendStartCommand,
+        true,
+        {
+          cwd: frontendRoot,
+          env: commonUtils.mergeProcessEnv(env),
+        }
+      );
+      this.backgroundTasks.push(frontendStartTask);
     }
 
     let authStartTask: Task | undefined;
     if (frontendRoot !== undefined) {
       const cwd = await commonUtils.getAuthServicePath(workspaceFolder);
       const env = await commonUtils.getAuthLocalEnv(workspaceFolder);
-      authStartTask = new Task(constants.authStartCommand, {
+      authStartTask = new Task(constants.authStartTitle, constants.authStartCommand, true, {
         cwd,
         env: commonUtils.mergeProcessEnv(env),
       });
+      this.backgroundTasks.push(authStartTask);
     }
 
     let backendStartTask: Task | undefined;
@@ -402,15 +498,22 @@ export default class Preview extends YargsCommand {
         programmingLanguage === constants.ProgrammingLanguage.typescript
           ? constants.backendStartTsCommand
           : constants.backendStartJsCommand;
-      backendStartTask = new Task(command, {
+      backendStartTask = new Task(constants.backendStartTitle, command, true, {
         cwd: backendRoot,
         env: mergedEnv,
       });
+      this.backgroundTasks.push(backendStartTask);
       if (programmingLanguage === constants.ProgrammingLanguage.typescript) {
-        backendWatchTask = new Task(constants.backendWatchCommand, {
-          cwd: backendRoot,
-          env: mergedEnv,
-        });
+        backendWatchTask = new Task(
+          constants.backendWatchTitle,
+          constants.backendWatchCommand,
+          true,
+          {
+            cwd: backendRoot,
+            env: mergedEnv,
+          }
+        );
+        this.backgroundTasks.push(backendWatchTask);
       }
     }
 
@@ -421,10 +524,11 @@ export default class Preview extends YargsCommand {
           ? constants.botStartTsCommand
           : constants.botStartJsCommand;
       const env = await commonUtils.getBotLocalEnv(workspaceFolder);
-      botStartTask = new Task(command, {
+      botStartTask = new Task(constants.botStartTitle, command, true, {
         cwd: botRoot,
         env: commonUtils.mergeProcessEnv(env),
       });
+      this.backgroundTasks.push(botStartTask);
     }
 
     const frontendStartBar = DialogManagerInstance.createProgressBar(
@@ -433,81 +537,94 @@ export default class Preview extends YargsCommand {
     );
     const frontendStartStartCb = commonUtils.createTaskStartCb(
       frontendStartBar,
-      constants.frontendStartStartMessage
+      constants.frontendStartStartMessage,
+      this.telemetryProperties
     );
     const frontendStartStopCb = commonUtils.createTaskStopCb(
-      constants.frontendStartTitle,
       frontendStartBar,
       constants.frontendStartSuccessMessage,
-      true
+      this.telemetryProperties
     );
 
     const authStartBar = DialogManagerInstance.createProgressBar(constants.authStartTitle, 1);
     const authStartStartCb = commonUtils.createTaskStartCb(
       authStartBar,
-      constants.authStartStartMessage
+      constants.authStartStartMessage,
+      this.telemetryProperties
     );
     const authStartStopCb = commonUtils.createTaskStopCb(
-      constants.authStartTitle,
       authStartBar,
       constants.authStartSuccessMessage,
-      true
+      this.telemetryProperties
     );
 
     const backendStartBar = DialogManagerInstance.createProgressBar(constants.backendStartTitle, 1);
     const backendStartStartCb = commonUtils.createTaskStartCb(
       backendStartBar,
-      constants.backendStartStartMessage
+      constants.backendStartStartMessage,
+      this.telemetryProperties
     );
     const backendStartStopCb = commonUtils.createTaskStopCb(
-      constants.backendStartTitle,
       backendStartBar,
       constants.backendStartSuccessMessage,
-      true
+      this.telemetryProperties
     );
 
     const backendWatchBar = DialogManagerInstance.createProgressBar(constants.backendWatchTitle, 1);
     const backendWatchStartCb = commonUtils.createTaskStartCb(
       backendWatchBar,
-      constants.backendWatchStartMessage
+      constants.backendWatchStartMessage,
+      this.telemetryProperties
     );
     const backendWatchStopCb = commonUtils.createTaskStopCb(
-      constants.backendWatchTitle,
       backendWatchBar,
       constants.backendWatchSuccessMessage,
-      true
+      this.telemetryProperties
     );
 
     const botStartBar = DialogManagerInstance.createProgressBar(constants.botStartTitle, 1);
     const botStartStartCb = commonUtils.createTaskStartCb(
       botStartBar,
-      constants.botStartStartMessage
+      constants.botStartStartMessage,
+      this.telemetryProperties
     );
     const botStartStopCb = commonUtils.createTaskStopCb(
-      constants.botStartTitle,
       botStartBar,
       constants.botStartSuccessMessage,
-      true
+      this.telemetryProperties
     );
 
     const results = await Promise.all([
       frontendStartTask?.waitFor(
         constants.frontendStartPattern,
         frontendStartStartCb,
-        frontendStartStopCb
+        frontendStartStopCb,
+        this.serviceLogWriter
       ),
-      authStartTask?.waitFor(constants.authStartPattern, authStartStartCb, authStartStopCb),
+      authStartTask?.waitFor(
+        constants.authStartPattern,
+        authStartStartCb,
+        authStartStopCb,
+        this.serviceLogWriter
+      ),
       backendStartTask?.waitFor(
         constants.backendStartPattern,
         backendStartStartCb,
-        backendStartStopCb
+        backendStartStopCb,
+        this.serviceLogWriter
       ),
       backendWatchTask?.waitFor(
         constants.backendWatchPattern,
         backendWatchStartCb,
-        backendWatchStopCb
+        backendWatchStopCb,
+        this.serviceLogWriter
       ),
-      await botStartTask?.waitFor(constants.botStartPattern, botStartStartCb, botStartStopCb),
+      await botStartTask?.waitFor(
+        constants.botStartPattern,
+        botStartStartCb,
+        botStartStopCb,
+        this.serviceLogWriter
+      ),
     ]);
     const fxErrors: FxError[] = [];
     for (const result of results) {
@@ -525,6 +642,11 @@ export default class Preview extends YargsCommand {
     tenantIdFromConfig: string | undefined,
     teamsAppId: string
   ): Promise<Result<null, FxError>> {
+    cliTelemetry.sendTelemetryEvent(
+      TelemetryEvent.PreviewSideloadingStart,
+      this.telemetryProperties
+    );
+
     let sideloadingUrl = constants.sideloadingUrl.replace(
       constants.teamsAppIdPlaceholder,
       teamsAppId
@@ -572,6 +694,17 @@ export default class Preview extends YargsCommand {
     await sideloadingBar.next(constants.sideloadingSuccessMessage);
     await sideloadingBar.end();
 
+    cliTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewSideloading, {
+      ...this.telemetryProperties,
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+    });
     return ok(null);
+  }
+
+  private async terminateTasks(): Promise<void> {
+    for (const task of this.backgroundTasks) {
+      await task.terminate();
+    }
+    this.backgroundTasks = [];
   }
 }

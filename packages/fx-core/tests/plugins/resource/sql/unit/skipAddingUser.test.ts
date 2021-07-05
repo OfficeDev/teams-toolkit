@@ -12,6 +12,7 @@ import { ApplicationTokenCredentials } from "@azure/ms-rest-nodeauth";
 import { TokenResponse } from "adal-node/lib/adal";
 import { Constants } from "../../../../../src/plugins/resource/sql/constants";
 import * as commonUtils from "../../../../../src/plugins/resource/sql/utils/commonUtils";
+import { FirewallRules, ServerAzureADAdministrators } from "@azure/arm-sql";
 
 chai.use(chaiAsPromised);
 
@@ -94,5 +95,21 @@ describe("skipAddingUser", () => {
     // Assert
     chai.assert.isTrue(preProvisionResult.isOk());
     chai.assert.isFalse(sqlPlugin.sqlImpl.config.skipAddingUser);
+  });
+
+  it("postProvision with skipAddingUser", async function () {
+    sqlPlugin.sqlImpl.config.skipAddingUser = true;
+    sqlPlugin.sqlImpl.config.sqlServer = "test-sql";
+
+    // Arrange
+    sinon.stub(FirewallRules.prototype, "createOrUpdate").resolves();
+    sinon.stub(FirewallRules.prototype, "deleteMethod").resolves();
+    sinon.stub(ServerAzureADAdministrators.prototype, "listByServer").resolves([]);
+    sinon.stub(ServerAzureADAdministrators.prototype, "createOrUpdate").resolves();
+    // Act
+    const postProvisionResult = await sqlPlugin.postProvision(pluginContext);
+
+    // Assert
+    chai.assert.isTrue(postProvisionResult.isOk());
   });
 });

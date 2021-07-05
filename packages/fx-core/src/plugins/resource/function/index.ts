@@ -64,10 +64,7 @@ export class FunctionPlugin implements Plugin {
 
   public async scaffold(ctx: PluginContext): Promise<FxResult> {
     this.setContext(ctx);
-    await StepHelperFactory.scaffoldStepHelper.start(
-      Object.entries(ScaffoldSteps).length,
-      ctx.dialog
-    );
+    await StepHelperFactory.scaffoldStepHelper.start(Object.entries(ScaffoldSteps).length, ctx.ui);
     const res = await this.runWithErrorWrapper(ctx, FunctionEvent.scaffold, () =>
       this.functionPluginImpl.scaffold(ctx)
     );
@@ -87,7 +84,7 @@ export class FunctionPlugin implements Plugin {
     this.setContext(ctx);
     await StepHelperFactory.provisionStepHelper.start(
       Object.entries(ProvisionSteps).length,
-      ctx.dialog
+      ctx.ui
     );
     const res = await this.runWithErrorWrapper(ctx, FunctionEvent.provision, () =>
       this.functionPluginImpl.provision(ctx)
@@ -100,7 +97,7 @@ export class FunctionPlugin implements Plugin {
     this.setContext(ctx);
     await StepHelperFactory.postProvisionStepHelper.start(
       Object.entries(PostProvisionSteps).length,
-      ctx.dialog
+      ctx.ui
     );
     const res = await this.runWithErrorWrapper(ctx, FunctionEvent.postProvision, () =>
       this.functionPluginImpl.postProvision(ctx)
@@ -113,7 +110,7 @@ export class FunctionPlugin implements Plugin {
     this.setContext(ctx);
     await StepHelperFactory.preDeployStepHelper.start(
       Object.entries(PreDeploySteps).length,
-      ctx.dialog
+      ctx.ui
     );
     const res = await this.runWithErrorWrapper(ctx, FunctionEvent.preDeploy, () =>
       this.functionPluginImpl.preDeploy(ctx)
@@ -124,7 +121,7 @@ export class FunctionPlugin implements Plugin {
 
   public async deploy(ctx: PluginContext): Promise<FxResult> {
     this.setContext(ctx);
-    await StepHelperFactory.deployStepHelper.start(Object.entries(DeploySteps).length, ctx.dialog);
+    await StepHelperFactory.deployStepHelper.start(Object.entries(DeploySteps).length, ctx.ui);
     const res = await this.runWithErrorWrapper(ctx, FunctionEvent.deploy, () =>
       this.functionPluginImpl.deploy(ctx)
     );

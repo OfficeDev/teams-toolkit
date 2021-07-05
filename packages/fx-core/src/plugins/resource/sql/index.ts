@@ -42,10 +42,6 @@ export class SqlPlugin implements Plugin {
     );
   }
 
-  public async callFunc(func: Func, ctx: PluginContext): Promise<SqlResult> {
-    return await this.sqlImpl.callFunc(func, ctx);
-  }
-
   public async getQuestions(
     stage: Stage,
     ctx: PluginContext

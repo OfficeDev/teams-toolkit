@@ -15,16 +15,16 @@ export class Utils {
   ) {
     if (!isLocalDebug) {
       logProvider?.info(message.log);
-      TelemetryUtils.sendEvent(message.telemetry, properties);
+      TelemetryUtils.sendSuccessEvent(message.telemetry, properties);
     } else {
       logProvider?.info(messageLocal.log);
-      TelemetryUtils.sendEvent(messageLocal.telemetry, properties);
+      TelemetryUtils.sendSuccessEvent(messageLocal.telemetry, properties);
     }
   }
 
   public static addLogAndTelemetry(logProvider: LogProvider | undefined, message: Messages) {
     logProvider?.info(message.log);
-    TelemetryUtils.sendEvent(message.telemetry);
+    TelemetryUtils.sendSuccessEvent(message.telemetry);
   }
 
   public static addLocalDebugPrefix(isLocalDebug: boolean, key: string) {

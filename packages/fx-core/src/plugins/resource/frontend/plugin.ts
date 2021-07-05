@@ -18,9 +18,11 @@ import {
   InvalidStorageNameError,
   StorageAccountAlreadyTakenError,
   runWithErrorCatchAndWrap,
+  RegisterResourceProviderError,
 } from "./resources/errors";
 import {
   AzureErrorCode,
+  AzureInfo,
   Constants,
   DependentPluginInfo,
   FrontendPathInfo,
@@ -46,6 +48,7 @@ import {
   ScaffoldSteps,
 } from "./utils/progress-helper";
 import { TemplateInfo } from "./resources/templateInfo";
+import { AzureClientFactory, AzureLib } from "./utils/azure-client";
 
 export class FrontendPluginImpl {
   private setConfigIfNotExists(ctx: PluginContext, key: string, value: unknown): void {
@@ -107,7 +110,18 @@ export class FrontendPluginImpl {
     const progressHandler = await ProgressHelper.startProvisionProgressHandler(ctx);
 
     const config = await FrontendConfig.fromPluginContext(ctx);
+    const provider = AzureClientFactory.getResourceProviderClient(
+      config.credentials,
+      config.subscriptionId
+    );
     const client = new AzureStorageClient(config);
+
+    await progressHandler?.next(ProvisionSteps.RegisterResourceProvider);
+    await runWithErrorCatchAndThrow(
+      new RegisterResourceProviderError(),
+      async () =>
+        await AzureLib.registerResourceProviders(provider, AzureInfo.RequiredResourceProviders)
+    );
 
     await progressHandler?.next(ProvisionSteps.CreateStorage);
     const createStorageErrorWrapper = (innerError: any) => {

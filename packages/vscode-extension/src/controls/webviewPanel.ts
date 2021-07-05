@@ -35,10 +35,9 @@ export class WebviewPanel {
 
   private panel: vscode.WebviewPanel;
   private panelType: PanelType = PanelType.QuickStart;
-  private readonly extensionPath: string;
   private disposables: vscode.Disposable[] = [];
 
-  public static createOrShow(extensionPath: string, panelType: PanelType) {
+  public static createOrShow(panelType: PanelType) {
     const column = vscode.window.activeTextEditor
       ? vscode.window.activeTextEditor.viewColumn
       : undefined;
@@ -50,14 +49,11 @@ export class WebviewPanel {
         .find((panel) => panel.panelType === panelType)!
         .panel.reveal(column);
     } else {
-      WebviewPanel.currentPanels.push(
-        new WebviewPanel(extensionPath, panelType, column || vscode.ViewColumn.One)
-      );
+      WebviewPanel.currentPanels.push(new WebviewPanel(panelType, column || vscode.ViewColumn.One));
     }
   }
 
-  private constructor(extensionPath: string, panelType: PanelType, column: vscode.ViewColumn) {
-    this.extensionPath = extensionPath;
+  private constructor(panelType: PanelType, column: vscode.ViewColumn) {
     this.panelType = panelType;
 
     // Create and show a new webview panel
@@ -69,7 +65,7 @@ export class WebviewPanel {
         // Enable javascript in the webview
         enableScripts: true,
         retainContextWhenHidden: true,
-        localResourceRoots: [vscode.Uri.file(path.join(this.extensionPath, "out"))],
+        localResourceRoots: [vscode.Uri.file(path.join(ext.context.extensionPath, "out"))],
       }
     );
 
@@ -100,7 +96,7 @@ export class WebviewPanel {
             await runCommand(Stage.create);
             break;
           case Commands.SwitchPanel:
-            WebviewPanel.createOrShow(this.extensionPath, msg.data);
+            WebviewPanel.createOrShow(msg.data);
             break;
           case Commands.InitAccountInfo:
             this.setStatusChangeMap();
@@ -322,10 +318,12 @@ export class WebviewPanel {
   }
 
   private getHtmlForWebview(panelType: PanelType) {
-    const scriptBasePathOnDisk = vscode.Uri.file(path.join(this.extensionPath, "out/"));
+    const scriptBasePathOnDisk = vscode.Uri.file(path.join(ext.context.extensionPath, "out/"));
     const scriptBaseUri = scriptBasePathOnDisk.with({ scheme: "vscode-resource" });
 
-    const scriptPathOnDisk = vscode.Uri.file(path.join(this.extensionPath, "out/src", "client.js"));
+    const scriptPathOnDisk = vscode.Uri.file(
+      path.join(ext.context.extensionPath, "out/src", "client.js")
+    );
     const scriptUri = scriptPathOnDisk.with({ scheme: "vscode-resource" });
 
     // Use a nonce to to only allow specific scripts to be run

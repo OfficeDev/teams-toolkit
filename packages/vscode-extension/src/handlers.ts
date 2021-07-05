@@ -474,7 +474,7 @@ export async function openDocumentHandler(args: any[]): Promise<boolean> {
 
 export async function openWelcomeHandler(args?: any[]) {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.QuickStart, getTriggerFromProperty(args));
-  WebviewPanel.createOrShow(ext.context.extensionPath, PanelType.QuickStart);
+  WebviewPanel.createOrShow(PanelType.QuickStart);
 }
 
 function getTriggerFromProperty(args?: any[]) {
@@ -534,7 +534,7 @@ async function openSampleReadmeHandler() {
 
 export async function openSamplesHandler(args?: any[]) {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Samples, getTriggerFromProperty(args));
-  WebviewPanel.createOrShow(ext.context.extensionPath, PanelType.SampleGallery);
+  WebviewPanel.createOrShow(PanelType.SampleGallery);
 }
 
 export async function openAppManagement(args?: any[]) {

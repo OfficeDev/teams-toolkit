@@ -389,6 +389,19 @@ export class FunctionPluginImpl {
     );
     const nodeVersion = await this.getValidNodeVersion(ctx);
 
+    const resourceManagementClientContext = await runWithErrorCatchAndThrow(
+      new InitAzureSDKError(),
+      () => AzureClientFactory.getResourceManagementClientContext(credential, subscriptionId)
+    );
+    await runWithErrorCatchAndThrow(
+      new ProvisionError(""),
+      async () =>
+        await AzureLib.registerResourceProvider(
+          resourceManagementClientContext,
+          "Microsoft.Storage"
+        )
+    );
+
     const storageManagementClient: StorageManagementClient = await runWithErrorCatchAndThrow(
       new InitAzureSDKError(),
       () => AzureClientFactory.getStorageManagementClient(credential, subscriptionId)

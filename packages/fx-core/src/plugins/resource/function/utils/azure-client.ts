@@ -1,12 +1,18 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ResourceManagementClient, ResourceManagementModels } from "@azure/arm-resources";
+import {
+  Providers,
+  ResourceManagementClient,
+  ResourceManagementClientContext,
+  ResourceManagementModels,
+} from "@azure/arm-resources";
 import { StorageManagementClient, StorageManagementModels } from "@azure/arm-storage";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { WebSiteManagementClient, WebSiteManagementModels } from "@azure/arm-appservice";
 
 import { InfoMessages } from "../resources/message";
 import { Logger } from "./logger";
+import { Provider } from "@azure/arm-resources/esm/models";
 
 export class AzureClientFactory {
   /* TODO: we wrap the constructor to function and further discuss whether we should make it singleton.
@@ -33,6 +39,13 @@ export class AzureClientFactory {
   ): ResourceManagementClient {
     return new ResourceManagementClient(credentials, subscriptionId);
   }
+
+  public static getResourceManagementClientContext(
+    credentials: TokenCredentialsBase,
+    subscriptionId: string
+  ): ResourceManagementClientContext {
+    return new ResourceManagementClientContext(credentials, subscriptionId);
+  }
 }
 
 type Site = WebSiteManagementModels.Site;
@@ -56,6 +69,14 @@ export class AzureLib {
       resourceGroupName
     );
     return res.body;
+  }
+
+  public static async registerResourceProvider(
+    client: ResourceManagementClientContext,
+    providerNamespace: string
+  ): Promise<Provider> {
+    const provider = new Providers(client);
+    return await provider.register(providerNamespace);
   }
 
   private static async ensureResource<T>(

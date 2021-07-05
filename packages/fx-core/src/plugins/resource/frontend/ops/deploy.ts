@@ -65,7 +65,7 @@ export class FrontendDeployment {
   }
 
   public static async skipBuild(): Promise<void> {
-    Logger.info(Messages.SkipBuild());
+    Logger.info(Messages.SkipBuild);
 
     const progressHandler = ProgressHelper.deployProgress;
     await progressHandler?.next(DeploySteps.NPMInstall);
@@ -115,7 +115,7 @@ export class FrontendDeployment {
 
   public static async skipDeployment(): Promise<void> {
     TelemetryHelper.sendGeneralEvent(TelemetryEvent.SkipDeploy);
-    Logger.info(Messages.SkipDeploy());
+    Logger.warning(Messages.SkipDeploy);
 
     const progressHandler = ProgressHelper.deployProgress;
     await progressHandler?.next(DeploySteps.getSrcAndDest);

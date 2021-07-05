@@ -98,7 +98,7 @@ export class FrontendScaffold {
       return await FrontendScaffold.fetchZipFromUrl(templateUrl);
     } catch (e) {
       Logger.debug(e.toString());
-      Logger.warning(Messages.FailedFetchTemplate());
+      Logger.warning(Messages.FailedFetchTemplate);
 
       if (e instanceof FrontendPluginError) {
         TelemetryHelper.sendScaffoldFallbackEvent(e);

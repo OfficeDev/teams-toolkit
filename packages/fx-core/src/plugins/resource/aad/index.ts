@@ -79,6 +79,7 @@ export class AadAppForTeamsPlugin implements Plugin {
         if (e.innerError.response?.data?.errorMessage) {
           errorMessage += ` Reason: ${e.innerError.response?.data?.errorMessage}`;
         }
+        e.message = errorMessage;
       }
       ctx.logProvider?.error(errorMessage);
       TelemetryUtils.init(ctx);

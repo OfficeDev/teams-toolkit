@@ -15,6 +15,10 @@ export class Constants {
   static AskForEnv = "Which Azure AD app do you want to update permission for?";
   static AskForEnvName = "aad-env";
 
+  static maxRetryTimes = 10;
+  static statusCodeUserError = 400;
+  static statusCodeServerError = 500;
+
   static defaultPermissions: RequiredResourceAccess = {
     resourceAppId: "00000003-0000-0000-c000-000000000000",
     resourceAccess: [
@@ -57,6 +61,8 @@ export class Telemetry {
   static isSuccess = "success";
   static yes = "yes";
   static no = "no";
+  static retryTimes = "retry-times";
+  static methodName = "method-name";
   static appId = "appid";
   static skip = "skip";
 }

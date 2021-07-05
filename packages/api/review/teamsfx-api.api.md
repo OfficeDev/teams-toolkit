@@ -846,22 +846,19 @@ export interface RunnableTask<T> {
 }
 
 // @public
-export interface SelectFileConfig extends UIConfig<string> {
-}
+export type SelectFileConfig = UIConfig<string>;
 
 // @public (undocumented)
 export type SelectFileResult = InputResult<string>;
 
 // @public
-export interface SelectFilesConfig extends UIConfig<string[]> {
-}
+export type SelectFilesConfig = UIConfig<string[]>;
 
 // @public (undocumented)
 export type SelectFilesResult = InputResult<string[]>;
 
 // @public
-export interface SelectFolderConfig extends UIConfig<string> {
-}
+export type SelectFolderConfig = UIConfig<string>;
 
 // @public (undocumented)
 export type SelectFolderResult = InputResult<string>;

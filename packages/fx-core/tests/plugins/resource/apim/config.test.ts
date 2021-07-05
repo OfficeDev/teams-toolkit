@@ -8,7 +8,12 @@ import {
   SolutionConfigKeys,
 } from "../../../../src/plugins/resource/apim/constants";
 import { ApimPluginConfig, SolutionConfig } from "../../../../src/plugins/resource/apim/config";
-import { ConfigValue, PluginIdentity, ReadonlyPluginConfig } from "@microsoft/teamsfx-api";
+import {
+  ConfigMap,
+  ConfigValue,
+  PluginIdentity,
+  ReadonlyPluginConfig,
+} from "@microsoft/teamsfx-api";
 
 describe("config", () => {
   describe("SolutionConfig", () => {
@@ -42,10 +47,14 @@ describe("config", () => {
   });
 
   describe("ApimPluginConfig", () => {
-    const configContent = new Map<string, ConfigValue>([
-      [ApimPluginConfigKeys.resourceGroupName, "test-resource-group-name"],
-      [ApimPluginConfigKeys.serviceName, 1],
-    ]);
+    const configContent = ConfigMap.fromJSON({
+      [ApimPluginConfigKeys.resourceGroupName]: "test-resource-group-name",
+      [ApimPluginConfigKeys.serviceName]: 1,
+    });
+
+    if (!configContent) {
+      throw Error("Empty test input");
+    }
 
     const apimPluginConfig = new ApimPluginConfig(configContent);
     it("Undefined property", () => {
@@ -54,7 +63,9 @@ describe("config", () => {
     it("Error type property", () => {
       chai
         .expect(() => apimPluginConfig.serviceName)
-        .to.throw("Property 'serviceName' is not type 'string'");
+        .to.throw(
+          "Project configuration 'serviceName' of 'fx-resource-apim' is invalid. The value can contain only letters, numbers and hyphens. The first character must be a letter and last character must be a letter or a number."
+        );
     });
     it("Property with value", () => {
       chai.expect(apimPluginConfig.resourceGroupName).to.equal("test-resource-group-name");

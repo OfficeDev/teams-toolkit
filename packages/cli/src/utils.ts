@@ -110,6 +110,7 @@ export function toYargsOptions(data: Question): Options {
       choices: choices,
       hidden: !!(data as any).hide,
       global: false,
+      type: "string",
     };
   }
   return {
@@ -119,6 +120,7 @@ export function toYargsOptions(data: Question): Options {
     choices: choices,
     hidden: !!(data as any).hide,
     global: false,
+    type: "string",
   };
 }
 
@@ -225,6 +227,21 @@ export function getTeamsAppId(rootfolder: string | undefined): any {
     const envJsonPath = path.join(rootfolder, `.${ConfigFolderName}/env.${env}.json`);
     const envJson = JSON.parse(fs.readFileSync(envJsonPath, "utf8"));
     return envJson.solution.remoteTeamsAppId;
+  }
+
+  return undefined;
+}
+
+export function getLocalTeamsAppId(rootfolder: string | undefined): any {
+  if (!rootfolder) {
+    return undefined;
+  }
+
+  if (isWorkspaceSupported(rootfolder)) {
+    const env = getActiveEnv();
+    const envJsonPath = path.join(rootfolder, `.${ConfigFolderName}/env.${env}.json`);
+    const envJson = JSON.parse(fs.readFileSync(envJsonPath, "utf8"));
+    return envJson.solution.localDebugTeamsAppId;
   }
 
   return undefined;

@@ -213,28 +213,30 @@ export class SPFxPluginImpl {
 
       if (ctx.answers?.platform === Platform.CLI) {
         const guidance = [
-          {content: "[Teams Toolkit] SharePoint package successfully built at ", color: Colors.BRIGHT_GREEN},
-          {content: dir, color: Colors.BRIGHT_MAGENTA},
-          {content: " Visit Microsoft Admin Center: ", color: Colors.BRIGHT_GREEN},
-          {content: "https://admin.microsoft.com", color: Colors.BRIGHT_CYAN},
-          {content: " and go to your tenant's SharePoint App Catalog site to upload the ", color: Colors.BRIGHT_GREEN},
-          {content: fileName, color: Colors.BRIGHT_MAGENTA},
-          {content: " Follow instructions to learn more about deploy to SharePoint: ", color: Colors.BRIGHT_GREEN},
-          {content: Constants.DEPLOY_GUIDE, color: Colors.BRIGHT_CYAN}
-        ]
+          {
+            content: "[Teams Toolkit] SharePoint package successfully built at ",
+            color: Colors.BRIGHT_GREEN,
+          },
+          { content: dir, color: Colors.BRIGHT_MAGENTA },
+          { content: " Visit Microsoft Admin Center: ", color: Colors.BRIGHT_GREEN },
+          { content: "https://admin.microsoft.com", color: Colors.BRIGHT_CYAN },
+          {
+            content: " and go to your tenant's SharePoint App Catalog site to upload the ",
+            color: Colors.BRIGHT_GREEN,
+          },
+          { content: fileName, color: Colors.BRIGHT_MAGENTA },
+          {
+            content: " Follow instructions to learn more about deploy to SharePoint: ",
+            color: Colors.BRIGHT_GREEN,
+          },
+          { content: Constants.DEPLOY_GUIDE, color: Colors.BRIGHT_CYAN },
+        ];
         ctx.ui?.showMessage("info", guidance, false);
       } else {
         const guidance = util.format(getStrings().plugins.SPFx.deployNotice, dir, fileName);
-        ctx.ui
-        ?.showMessage("info", guidance, false, "OK", Constants.READ_MORE)
-        .then((answer) => {
+        ctx.ui?.showMessage("info", guidance, false, "OK", Constants.READ_MORE).then((answer) => {
           if (answer.isOk() && answer.value === Constants.READ_MORE) {
-            ctx.dialog?.communicate(
-              new DialogMsg(DialogType.Ask, {
-                description: Constants.DEPLOY_GUIDE,
-                type: QuestionType.OpenExternal,
-              })
-            );
+            ctx.ui?.openUrl(Constants.DEPLOY_GUIDE);
           }
         });
       }
@@ -246,27 +248,19 @@ export class SPFxPluginImpl {
   }
 
   public async preDeploy(ctx: PluginContext): Promise<Result<any, FxError>> {
-    const confirm = (
-      await ctx.dialog?.communicate(
-        new DialogMsg(DialogType.Show, {
-          description: getStrings().plugins.SPFx.buildNotice,
-          level: MsgLevel.Warning,
-          items: [Constants.BUILD_SHAREPOINT_PACKAGE, Constants.READ_MORE],
-          modal: true,
-        })
-      )
-    )?.getAnswer();
-
+    const confirmRes = await ctx.ui?.showMessage(
+      "warn",
+      getStrings().plugins.SPFx.buildNotice,
+      true,
+      Constants.BUILD_SHAREPOINT_PACKAGE,
+      Constants.READ_MORE
+    );
+    const confirm = confirmRes?.isOk() ? confirmRes.value : undefined;
     switch (confirm) {
       case Constants.BUILD_SHAREPOINT_PACKAGE:
         return this.buildSPPackge(ctx);
       case Constants.READ_MORE:
-        await ctx.dialog?.communicate(
-          new DialogMsg(DialogType.Ask, {
-            description: Constants.DEPLOY_GUIDE,
-            type: QuestionType.OpenExternal,
-          })
-        );
+        ctx.ui?.openUrl(Constants.DEPLOY_GUIDE);
       default:
         return ok(undefined);
     }

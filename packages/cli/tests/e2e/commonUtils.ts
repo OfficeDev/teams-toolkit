@@ -10,16 +10,19 @@ import { v4 as uuidv4 } from "uuid";
 
 import { cfg, AadManager, ResourceGroupManager } from "../commonlib";
 
+export const TEN_MEGA_BYTE = 1024 * 1024 * 10;
 export const execAsync = promisify(exec);
 
 export async function execAsyncWithRetry(command: string, options: {
     cwd?: string;
     env?: NodeJS.ProcessEnv;
     timeout?: number;
+    maxBuffer?: number
 }, retries = 3): Promise<{
     stdout: string;
     stderr: string;
 }> {
+    options.maxBuffer = TEN_MEGA_BYTE;
     while (retries > 0) {
         retries--;
         try {
@@ -50,7 +53,7 @@ export function getUniqueAppName() {
 }
 
 export function getSubscriptionId() {
-    return cfg.subscription.id;
+    return cfg.AZURE_SUBSCRIPTION_ID;
 }
 
 const envFilePathSuffix = path.join(".fx", "env.default.json");

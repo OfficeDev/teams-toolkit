@@ -251,11 +251,6 @@ export class FuncToolChecker implements IDepsChecker {
         TelemtryMessages.failedToInstallFunc,
         error
       );
-
-      throw new DepsCheckerError(
-        Messages.failToInstallFuncCoreTool.replace("@NameVersion", displayFuncName),
-        defaultHelpLink
-      );
     }
   }
 

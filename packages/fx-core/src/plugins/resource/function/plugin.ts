@@ -391,19 +391,24 @@ export class FunctionPluginImpl {
     );
     const nodeVersion = await this.getValidNodeVersion(ctx);
 
-    Logger.info(
-      `Registering resource providers: ${AzureInfo.requiredResourceProviders.join(",")}.`
-    );
     const providerClient = await runWithErrorCatchAndThrow(new InitAzureSDKError(), () =>
       AzureClientFactory.getResourceProviderClient(credential, subscriptionId)
     );
-    await runWithErrorCatchAndThrow(
-      new RegisterResourceProviderError(),
-      async () =>
-        await AzureLib.registerResourceProviders(
-          providerClient,
-          AzureInfo.requiredResourceProviders
-        )
+
+    Logger.info(
+      InfoMessages.ensureResourceProviders(AzureInfo.requiredResourceProviders, subscriptionId)
+    );
+
+    await runWithErrorCatchAndThrow(new RegisterResourceProviderError(), async () =>
+      step(
+        StepGroup.ProvisionStepGroup,
+        ProvisionSteps.registerResourceProviders,
+        async () =>
+          await AzureLib.registerResourceProviders(
+            providerClient,
+            AzureInfo.requiredResourceProviders
+          )
+      )
     );
 
     const storageManagementClient: StorageManagementClient = await runWithErrorCatchAndThrow(
@@ -415,7 +420,7 @@ export class FunctionPluginImpl {
       InfoMessages.checkResource(ResourceType.storageAccount, storageAccountName, resourceGroupName)
     );
 
-    await runWithErrorCatchAndThrow(new ProvisionError(ResourceType.storageAccount), () =>
+    await runWithErrorCatchAndThrow(new ProvisionError(ResourceType.storageAccount), async () =>
       step(
         StepGroup.ProvisionStepGroup,
         ProvisionSteps.ensureStorageAccount,

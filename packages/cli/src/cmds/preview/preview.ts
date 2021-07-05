@@ -36,7 +36,7 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../../telemetry/cliTelemetryEvents";
-import { ServiceLogWriter } from "./serviceLogProvider";
+import { ServiceLogWriter } from "./serviceLogWriter";
 
 export default class Preview extends YargsCommand {
   public readonly commandHead = `preview`;

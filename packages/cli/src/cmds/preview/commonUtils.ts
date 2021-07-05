@@ -20,7 +20,7 @@ import {
   TelemetrySuccess,
 } from "../../telemetry/cliTelemetryEvents";
 import { getNpmInstallLogInfo } from "./npmLogHandler";
-import { ServiceLogWriter } from "./serviceLogProvider";
+import { ServiceLogWriter } from "./serviceLogWriter";
 
 export function createTaskStartCb(
   progressBar: IProgressHandler,

@@ -6,7 +6,7 @@
 import { ChildProcess, spawn, SpawnOptions } from "child_process";
 import { err, FxError, ok, Result } from "@microsoft/teamsfx-api";
 import treeKill from "tree-kill";
-import { ServiceLogWriter } from "./serviceLogProvider";
+import { ServiceLogWriter } from "./serviceLogWriter";
 
 interface TaskOptions {
   cwd?: string;

@@ -7,7 +7,7 @@
   ],
   "author": "Wang Yefu <yefuwang@microsoft.com>",
   "homepage": "https://github.com/OfficeDev/TeamsFx#readme",
-  "license": "ISC",
+  "license": "MIT",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "directories": {

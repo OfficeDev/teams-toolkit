@@ -7,8 +7,8 @@ on:
         description: "preid name(alpha, rc, stable)"
         required: true
         default: "rc"
-      skip-rc-version:
-        description: "skip bump up rc version by lerna conventional commits(yes or no)"
+      skip-version-rc:
+        description: "release RC version just with lerna publish, skip run lerna version(yes or no)"
         required: false
         default: "no"
   schedule:
@@ -22,21 +22,25 @@ jobs:
       - name: Validate CD branch
         if: ${{ github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main' && github.ref != 'refs/heads/dev' }}
         run: |
+          echo It's not allowed to run CD on other branch besides main and dev.
           exit 1
 
       - name: Validate inputs for main
         if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.preid != 'rc' && github.event.inputs.preid != 'stable' }}
         run: |
+          echo It's not allowed to release alpha on main branch.
           exit 1
 
       - name: Valiadte inputs for dev
         if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/dev' && github.event.inputs.preid != 'alpha' }}
         run: |
+          echo It's not allowed to release RC or stable on dev branch.
           exit 1
 
       - name: Validate schedule
         if: ${{ github.event_name == 'schedule' && github.ref != 'refs/heads/dev' }}
         run: |
+          echo It's not allowed to run schedule release besides dev branch.
           exit 1
 
       - name: Checkout branch
@@ -111,7 +115,7 @@ jobs:
           npx lerna publish from-package --dist-tag=alpha --yes --allow-branch dev
 
       - name: version rc npm packages to npmjs.org
-        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.preid == 'rc' && github.event.inputs.skip-rc-version == 'no'}}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.preid == 'rc' && github.event.inputs.skip-version-rc == 'no'}}
         run: |
           npx lerna version --no-private --conventional-commits --conventional-prerelease --preid=rc --no-changelog --yes
 

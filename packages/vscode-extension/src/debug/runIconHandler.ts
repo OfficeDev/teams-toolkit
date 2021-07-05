@@ -23,10 +23,15 @@ export async function selectAndDebug(args?: any[]): Promise<Result<null, FxError
   }
 }
 
-export function enableRunIcon(): void {
-  const validProject = ext.workspaceUri && isValidProject(ext.workspaceUri.fsPath);
+export function registerRunIcon(): void {
+  ext.context.subscriptions.push(vscode.workspace.onDidOpenTextDocument(enableRunIcon));
+  enableRunIcon();
+}
 
+function enableRunIcon(): void {
+  const validProject = ext.workspaceUri && isValidProject(ext.workspaceUri.fsPath);
   vscode.commands.executeCommand("setContext", "fx-extension.runIconActive", validProject);
+
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.EnableRunIcon, {
     [TelemetryProperty.TeamsProjectStatus]: validProject ? "valid" : "invalid",
   });

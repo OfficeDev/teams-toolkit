@@ -16,7 +16,7 @@ import * as StringResources from "./resources/Strings.json";
 import { openWelcomePageAfterExtensionInstallation } from "./controls/openWelcomePage";
 import { VsCodeUI } from "./qm/vsc_ui";
 import { exp } from "./exp";
-import { enableRunIcon } from "./debug/runIconHandler";
+import { registerRunIcon } from "./debug/runIconHandler";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -201,7 +201,7 @@ export async function activate(context: vscode.ExtensionContext) {
     handlers.selectAndDebugHandler
   );
   context.subscriptions.push(runIconCmd);
-  enableRunIcon();
+  registerRunIcon();
 
   // 2. Call activate function of toolkit core.
   await handlers.activate();

@@ -45,7 +45,7 @@ class DependentPluginInfo {
     public static readonly aadClientId: string = "clientId";
     public static readonly aadClientSecret: string = "clientSecret";
     public static readonly oauthHost: string = "oauthHost";
-    public static readonly tenantId: string = "tenantId";
+    public static readonly teamsAppTenantId: string = "teamsAppTenantId";
     public static readonly applicationIdUris: string = "applicationIdUris";
 
     public static readonly sqlPluginName: string = "fx-resource-azure-sql";

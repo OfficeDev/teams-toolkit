@@ -24,9 +24,9 @@ export async function selectAndDebug(args?: any[]): Promise<Result<null, FxError
 }
 
 export function enableRunIcon(): void {
-  vscode.commands.executeCommand("setContext", "fx-extension.runIconActive", true);
-
   const validProject = ext.workspaceUri && isValidProject(ext.workspaceUri.fsPath);
+
+  vscode.commands.executeCommand("setContext", "fx-extension.runIconActive", validProject);
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.EnableRunIcon, {
     [TelemetryProperty.TeamsProjectStatus]: validProject ? "valid" : "invalid",
   });

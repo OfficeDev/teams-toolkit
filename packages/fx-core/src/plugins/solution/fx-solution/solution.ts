@@ -932,23 +932,6 @@ export class TeamsAppSolution implements Solution {
     );
   }
 
-  // private canDeploy(ctx: SolutionContext): Result<Void, FxError> {
-  //   if (!this.isAzureProject(ctx)) {
-  //     return ok(Void);
-  //   }
-  //   return this.checkWhetherSolutionIsIdle().andThen((_) => {
-  //     return this.checkWetherProvisionSucceeded(ctx.config)
-  //       ? ok(Void)
-  //       : err(
-  //           returnUserError(
-  //             new Error("Please provision before deploying"),
-  //             "Solution",
-  //             SolutionError.CannotDeployBeforeProvision
-  //           )
-  //         );
-  //   });
-  // }
-
   private async canPublish(
     ctx: SolutionContext,
     manifestTpl: TeamsAppManifest
@@ -1585,6 +1568,7 @@ export class TeamsAppSolution implements Solution {
     }
     return ok(teamsAppTenantId);
   }
+
   private loadTeamsAppTenantId(
     config: SolutionConfig,
     appStudioToken?: object

@@ -147,9 +147,7 @@ class TreeViewManager {
       ),
     ];
 
-    if (
-      true /*await exp.getExpService().getTreatmentVariableAsync("flight", "treatmentVariable", true)*/
-    ) {
+    if (await exp.getExpService().getTreatmentVariableAsync("vscode", "teamstoolkitdebug", true)) {
       const debugCommand = new TreeViewCommand(
         StringResources.vsc.commandsTreeViewProvider.debugTitle,
         StringResources.vsc.commandsTreeViewProvider.debugDescription,

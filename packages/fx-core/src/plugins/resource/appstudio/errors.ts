@@ -17,6 +17,38 @@ export class AppStudioError {
     message: (param: string) => `${param} is undefined.`,
   };
 
+  public static readonly RemoteAppIdCreateFailedError = {
+    name: "RemoteAppIdCreateFailed",
+    message: "Failed to create teams app id in app studio.",
+  };
+
+  public static readonly RemoteAppIdUpdateFailedError = {
+    name: "RemoteAppIdUpdateFailed",
+    message: (errorName: string, errorMessage: string) =>
+      `Failed to update app id in app studio due to ${errorName}: ${errorMessage}.`,
+  };
+
+  public static readonly LocalAppIdCreateFailedError = {
+    name: "LocalAppIdCreateFailed",
+    message: "Failed to create localDebug teams app id in app studio.",
+  };
+
+  public static readonly LocalAppIdUpdateFailedError = {
+    name: "LocalAppIdUpdateFailed",
+    message: (errorName: string, errorMessage: string) =>
+      `Failed to update local app id in app studio due to ${errorName}: ${errorMessage}.`,
+  };
+
+  public static readonly AppStudioTokenGetFailedError = {
+    name: "AppStudioTokenGetFailed",
+    message: "Failed to get app studio token.",
+  };
+
+  public static readonly ManifestLoadFailedError = {
+    name: "ManifestLoadFailed",
+    message: (error: string) => `Failed to read manifest file. Error: ${error}.`,
+  };
+
   public static readonly ValidationFailedError = {
     name: "ManifestValidationFailed",
     message: (errors: string[]) => `Validation error: \n ${errors.join("\n")}`,

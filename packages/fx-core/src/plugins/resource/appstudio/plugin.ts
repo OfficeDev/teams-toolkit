@@ -51,11 +51,7 @@ import {
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
 import { Constants } from "./constants";
-import {
-  REMOTE_TEAMS_APP_ID,
-  REMOTE_MANIFEST,
-  SolutionError,
-} from "../../solution/fx-solution/constants";
+import { REMOTE_TEAMS_APP_ID, REMOTE_MANIFEST } from "../../solution/fx-solution/constants";
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
 
@@ -87,10 +83,9 @@ export class AppStudioPluginImpl {
   ): Promise<Result<string, FxError>> {
     if (appStudioToken === undefined || appStudioToken.length === 0) {
       return err(
-        returnSystemError(
-          new Error("Failed to get app studio token"),
-          "Solution",
-          SolutionError.FailedToGetAppStudioToken
+        AppStudioResultFactory.SystemError(
+          AppStudioError.AppStudioTokenGetFailedError.name,
+          AppStudioError.AppStudioTokenGetFailedError.message
         )
       );
     }
@@ -122,13 +117,15 @@ export class AppStudioPluginImpl {
       teamsAppId = appDef?.teamsAppId;
       if (!appDef?.teamsAppId) {
         return err(
-          returnSystemError(
-            new Error(`Failed to create ${type} teams app id`),
-            "Solution",
-            type === "remote"
-              ? SolutionError.FailedToCreateAppIdInAppStudio
-              : SolutionError.FailedToCreateLocalAppIdInAppStudio
-          )
+          type === "remote"
+            ? AppStudioResultFactory.SystemError(
+                AppStudioError.RemoteAppIdCreateFailedError.name,
+                AppStudioError.RemoteAppIdCreateFailedError.message
+              )
+            : AppStudioResultFactory.SystemError(
+                AppStudioError.LocalAppIdCreateFailedError.name,
+                AppStudioError.LocalAppIdCreateFailedError.message
+              )
         );
       }
       appDefinition.outlineIcon = appDef.outlineIcon;
@@ -162,13 +159,15 @@ export class AppStudioPluginImpl {
     } catch (e) {
       if (e instanceof Error) {
         return err(
-          returnSystemError(
-            new Error(`Failed to update ${type} teams app manifest due to ${e.name}: ${e.message}`),
-            "Solution",
-            type === "remote"
-              ? SolutionError.FailedToUpdateAppIdInAppStudio
-              : SolutionError.FailedToUpdateLocalAppIdInAppStudio
-          )
+          type === "remote"
+            ? AppStudioResultFactory.SystemError(
+                AppStudioError.RemoteAppIdUpdateFailedError.name,
+                AppStudioError.RemoteAppIdUpdateFailedError.message(e.name, e.message)
+              )
+            : AppStudioResultFactory.SystemError(
+                AppStudioError.LocalAppIdUpdateFailedError.name,
+                AppStudioError.LocalAppIdUpdateFailedError.message(e.name, e.message)
+              )
         );
       }
       throw e;
@@ -225,10 +224,9 @@ export class AppStudioPluginImpl {
         manifest.name.short.length === 0
       ) {
         return err(
-          returnSystemError(
-            new Error("Name is missing"),
-            "Solution",
-            SolutionError.FailedToLoadManifestFile
+          AppStudioResultFactory.SystemError(
+            AppStudioError.ManifestLoadFailedError.name,
+            AppStudioError.ManifestLoadFailedError.message("Name is missing")
           )
         );
       }
@@ -639,10 +637,9 @@ export class AppStudioPluginImpl {
       const manifest = await fs.readJson(`${ctxRoot}/.${ConfigFolderName}/${REMOTE_MANIFEST}`);
       if (!manifest) {
         return err(
-          returnSystemError(
-            new Error("Failed to read manifest file"),
-            "Solution",
-            SolutionError.FailedToLoadManifestFile
+          AppStudioResultFactory.SystemError(
+            AppStudioError.ManifestLoadFailedError.name,
+            AppStudioError.ManifestLoadFailedError.message("Failed to load manifest file")
           )
         );
       }
@@ -650,10 +647,9 @@ export class AppStudioPluginImpl {
       return ok(manifest);
     } catch (e) {
       return err(
-        returnSystemError(
-          new Error("Failed to read manifest file"),
-          "Solution",
-          SolutionError.FailedToLoadManifestFile
+        AppStudioResultFactory.SystemError(
+          AppStudioError.ManifestLoadFailedError.name,
+          AppStudioError.ManifestLoadFailedError.message("Failed to load manifest file")
         )
       );
     }

@@ -203,6 +203,36 @@ export function mergeSerectData(dict: Record<string, string>, configJson: Json):
   }
 }
 
+export function clearContextAndUserData(dict: Record<string, string>, configJson: Json): void {
+  for (const matcher of SecretDataMatchers) {
+    const splits = matcher.split(".");
+    const resourceId = splits[0];
+    const item = splits[1];
+
+    // Clear env.json
+    const resourceConfig: any = configJson[resourceId];
+    if (resourceConfig) {
+      if ("*" !== item) {
+        const configValue = resourceConfig[item];
+        if (configValue) {
+          delete resourceConfig[item];
+        }
+      } else {
+        for (const itemName of Object.keys(resourceConfig)) {
+          if (resourceConfig[item]) {
+            delete resourceConfig[item];
+          }
+        }
+      }
+    }
+
+    // Clear userdata
+    if (dict[matcher]) {
+      delete dict[matcher];
+    }
+  }
+}
+
 export function serializeDict(dict: Record<string, string>): string {
   const array: string[] = [];
   for (const key of Object.keys(dict)) {

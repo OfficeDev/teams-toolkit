@@ -6,7 +6,8 @@ import { ConfigFolderName, err, Inputs, Json, ProjectSettings } from "@microsoft
 import * as path from "path";
 import * as fs from "fs-extra";
 import { CoreHookContext, FxCore, NoProjectOpenedError, PathNotExistError } from "..";
-import { deserializeDict } from "../..";
+import { clearContextAndUserData, deserializeDict } from "../..";
+import { serializeDict, sperateSecretData } from "../../common";
 
 export const ProjectUpgraderMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
@@ -31,27 +32,39 @@ export async function upgradeContext(inputs: Inputs) {
   const envName = projectSettings.currentEnv;
 
   const userData = await getUserData(confFolderPath, envName as string);
+  const env = await getEnv(confFolderPath, envName as string);
+
+  // Check local AAD object id in userdata
+  // If in, means this project is upgraded
+  if (checkAppIdInUserData(userData)) {
+    return;
+  }
 
   // Check secret in userdata
-  if (!userData) {
-    // Clear userdata and env.default.json
+  // If in, means this project is not upgraded and has run debug before
+  if (!checkSecretInUserData(userData)) {
+    // Clear and save userdata and env.default.
+    clearContextAndUserData(userData, env);
+    await saveContextAndUserData(confFolderPath, envName as string, env, userData);
     return;
   }
 
-  const env = await getEnv(confFolderPath, envName as string);
   const solutionContext: any = env["solution"];
   const teamsAppId = solutionContext["localDebugTeamsAppId"] as string | undefined;
-  if (!teamsAppId) {
+
+  // Check teamsAppId in env
+  // If meets this pattern, means env file is upgraded
+  if (!teamsAppId || (teamsAppId!.startsWith("{{") && teamsAppId!.endsWith("}}"))) {
     // Clear userdata and env.default.json
-    return;
-  }
-  if (teamsAppId!.includes("{{")) {
-    // Clear userdata and env.default.json
-    console.log(1);
+    clearContextAndUserData(userData, env);
+    await saveContextAndUserData(confFolderPath, envName as string, env, userData);
   } else {
     // Move info from env.default.json to userdata
-    console.log(2);
+    const userDataMoved = sperateSecretData(env);
+    await saveContextAndUserData(confFolderPath, envName as string, env, userDataMoved);
   }
+
+  return;
 }
 
 export async function getUserData(
@@ -74,4 +87,24 @@ export async function getEnv(confFolderPath: string, envName: string): Promise<J
   const jsonFilePath = path.resolve(confFolderPath, `env.${envName}.json`);
   const configJson: Json = await fs.readJson(jsonFilePath);
   return configJson;
+}
+
+export function checkSecretInUserData(userData: Record<string, string>): boolean {
+  return userData["fx-resource-aad-app-for-teams.local_clientSecret"] ? true : false;
+}
+
+export function checkAppIdInUserData(userData: Record<string, string>): boolean {
+  return userData["fx-resource-aad-app-for-teams.local_objectId"] ? true : false;
+}
+
+export async function saveContextAndUserData(
+  confFolderPath: string,
+  envName: string,
+  context: Json,
+  userData: Record<string, string>
+): Promise<void> {
+  const jsonFilePath = path.resolve(confFolderPath, `env.${envName}.json`);
+  const localDataPath = path.resolve(confFolderPath, `${envName}.userdata`);
+  await fs.writeFile(jsonFilePath, JSON.stringify(context, null, 4));
+  await fs.writeFile(localDataPath, serializeDict(userData));
 }

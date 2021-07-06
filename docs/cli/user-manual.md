@@ -239,6 +239,11 @@ teamsfx preview --local
 teamsfx preview --remote
 ```
 
+## Local Preview Dependencies
+- Node.js
+- .NET SDK
+- Azure Functions Core Tools
+
 ## Notes
 - SPFx preview is not supported currently.
 - The logs of the background services like React will be saved in `~/.fx/cli-log/local-preview/`.

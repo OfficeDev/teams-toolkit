@@ -204,7 +204,13 @@ export class FuncToolChecker implements IDepsChecker {
   }
 
   private async cleanup(): Promise<void> {
-    await fs.emptyDir(FuncToolChecker.getDefaultInstallPath());
+    try {
+      await fs.emptyDir(FuncToolChecker.getDefaultInstallPath());
+    } catch (err) {
+      await this._logger.debug(
+        `Failed to clean up path: ${FuncToolChecker.getDefaultInstallPath()}, error: ${err}`
+      );
+    }
   }
 
   private async installFunc(): Promise<void> {

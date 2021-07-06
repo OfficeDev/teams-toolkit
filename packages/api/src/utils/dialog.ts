@@ -37,43 +37,6 @@ export interface Dialog {
    *     ))
    */
   communicate: (msg: DialogMsg) => Promise<DialogMsg>;
-
-  /**
-   * Create a new progress bar with the specified title and the number of steps. It will
-   * return a progress handler and you can use this handler to control the detail message
-   * of it.
-   * ${currentStep} will increase from 0 to ${totalSteps}.
-   * @param title the title of this progress bar.
-   * @param totalSteps the number of steps.
-   * @returns the handler of a progress bar
-   */
-  createProgressBar: (title: string, totalSteps: number) => IProgressHandler;
-}
-
-/**
- * @deprecated
- */
-interface IProgressHandler {
-  /**
-   * Start this progress bar. After calling it, the progress bar will be seen to users with
-   * ${currentStep} = 0 and ${detail} = detail.
-   * @param detail the detail message of the next work.
-   */
-  start: (detail?: string) => Promise<void>;
-
-  /**
-   * Update the progress bar's message. After calling it, the progress bar will be seen to
-   * users with ${currentStep}++ and ${detail} = detail.
-   * This func must be called after calling start().
-   * @param detail the detail message of the next work.
-   */
-  next: (detail?: string) => Promise<void>;
-
-  /**
-   * End the progress bar. After calling it, the progress bar will disappear. This handler
-   * can be reused after calling end().
-   */
-  end: () => Promise<void>;
 }
 
 /**
@@ -99,13 +62,8 @@ export interface IMessage {
  * @deprecated
  */
 export enum QuestionType {
-  Text = "Text",
-  Radio = "radio",
-  SelectFolder = "SelectFolder",
   OpenFolder = "OpenFolder",
   ExecuteCmd = "ExecuteCmd",
-  OpenExternal = "OpenExternal",
-  Confirm = "Confirm",
   UpdateGlobalState = "UpdateGlobalState",
 }
 

@@ -53,9 +53,9 @@ export class FuncPluginAdapter implements IDepsAdapter {
   }
 
   public dotnetCheckerEnabled(): boolean {
-    let enabled: boolean = true;
+    let enabled = true;
     if (this._ctx.answers && this._ctx.answers[this.dotnetSettingKey] !== undefined) {
-      enabled = <boolean>this._ctx.answers[this.dotnetSettingKey] as boolean;
+      enabled = (<boolean>this._ctx.answers[this.dotnetSettingKey]) as boolean;
     }
     return enabled;
   }
@@ -107,34 +107,23 @@ export class FuncPluginAdapter implements IDepsAdapter {
     return this.displayContinueWithLearnMoreLink(confirmMessage, dotnetManualInstallHelpLink);
   }
 
-  public async displayContinueWithLearnMoreLink(
-    message: string,
-    link: string
-  ): Promise<boolean> {
+  public async displayContinueWithLearnMoreLink(message: string, link: string): Promise<boolean> {
     if (!this._ctx.dialog) {
       // no dialog, always continue
       return true;
     }
-
-    const userSelected: string | undefined = (
-      await this._ctx.dialog.communicate(
-        new DialogMsg(DialogType.Ask, {
-          description: message,
-          type: QuestionType.Confirm,
-          options: [Messages.learnMoreButtonText, Messages.continueButtonText], // Cancel is added by default
-        })
-      )
-    ).getAnswer();
+    const res = await this._ctx.ui?.showMessage(
+      "info",
+      message,
+      true,
+      Messages.learnMoreButtonText,
+      Messages.continueButtonText
+    );
+    const userSelected: string | undefined = res?.isOk() ? res.value : undefined;
 
     if (userSelected === Messages.learnMoreButtonText) {
       this._telemetry.sendEvent(DepsCheckerEvent.clickLearnMore);
-      await this._ctx.dialog.communicate(
-        new DialogMsg(DialogType.Ask, {
-          type: QuestionType.OpenExternal,
-          description: link,
-        })
-      );
-
+      this._ctx.ui?.openUrl(link);
       return this.displayContinueWithLearnMoreLink(message, link);
     }
 

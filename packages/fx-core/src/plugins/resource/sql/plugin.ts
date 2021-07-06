@@ -257,12 +257,12 @@ export class SqlPluginImpl {
           this.config.databaseName
         );
         ctx.logProvider?.warning(
-          `[${Constants.pluginName}] ${message}. You can follow ${HelpLinks.addDBUser} to add database user ${this.config.identity}`
+          `[${Constants.pluginName}] ${message}. You can follow ${HelpLinks.default} to add database user ${this.config.identity}`
         );
       }
     } else {
       ctx.logProvider?.warning(
-        `[${Constants.pluginName}] Skip adding database user. You can follow ${HelpLinks.addDBUser} to add database user ${this.config.identity}`
+        `[${Constants.pluginName}] Skip adding database user. You can follow ${HelpLinks.default} to add database user ${this.config.identity}`
       );
     }
 

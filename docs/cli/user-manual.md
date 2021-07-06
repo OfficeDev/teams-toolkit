@@ -13,6 +13,7 @@ TeamsFx CLI is a text-based command line interface that accelerates Teams applic
 | `teamsfx build`     | Build the current application.         |
 | `teamsfx test`      | Test and validate the current application.             |
 | `teamsfx publish`   | Publish the app to Teams.             |
+| `teamsfx preview`   | Preview the current application. |
 
 ***
 
@@ -211,3 +212,29 @@ Test and validate current application. This command will validate your applicati
 
 # `teamsfx publish`
 Publish the app to Teams.
+
+***
+
+# `teamsfx preview`
+Preview the current application from local or remote.
+
+## Optional Parameters
+### `--local`
+Preview the application from local. The options are `true` and `false`. The default value is `false`. `--local` is exclusive with `--remote`.
+
+### `--remote`
+Preview the application from remote. The options are `true` and `false`. The default value is `false`. `--remote` is exclusive with `--local`.
+
+### `--folder`
+Project root directory. The default value is `./`.
+
+## Examples
+### Local Preview
+```bash
+teamsfx preview --local
+```
+
+### Remote Preview
+```bash
+teamsfx preview --remote
+```

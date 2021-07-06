@@ -145,6 +145,13 @@ export default class Preview extends YargsCommand {
     const includeBot = activeResourcePlugins.some(
       (pluginName) => pluginName === constants.botPluginName
     );
+    const includeSpfx = activeResourcePlugins.some(
+      (pluginName) => pluginName === constants.spfxPluginName
+    );
+    // TODO: remove when SPFx preview is ready
+    if (includeSpfx) {
+      return err(errors.SPFxNotSupported());
+    }
 
     const frontendRoot = path.join(workspaceFolder, constants.frontendFolderName);
     if (includeFrontend && !(await fs.pathExists(frontendRoot))) {
@@ -267,6 +274,16 @@ export default class Preview extends YargsCommand {
     }
     const config = configResult.value;
 
+    const activeResourcePlugins = (config?.settings?.solutionSettings as AzureSolutionSettings)
+      .activeResourcePlugins;
+    const includeSpfx = activeResourcePlugins.some(
+      (pluginName) => pluginName === constants.spfxPluginName
+    );
+    // TODO: remove when SPFx preview is ready
+    if (includeSpfx) {
+      return err(errors.SPFxNotSupported());
+    }
+
     const tenantId = config?.config
       ?.get(constants.solutionPluginName)
       ?.get(constants.teamsAppTenantIdConfigKey) as string;
@@ -301,7 +318,7 @@ export default class Preview extends YargsCommand {
     );
     let result = await botInstallTask.wait(botInstallStartCb, botInstallStopCb);
     if (result.isErr()) {
-      return err(result.error);
+      return err(errors.PreviewCommandFailed([result.error]));
     }
 
     // start ngrok
@@ -327,7 +344,7 @@ export default class Preview extends YargsCommand {
       this.serviceLogWriter
     );
     if (result.isErr()) {
-      return err(result.error);
+      return err(errors.PreviewCommandFailed([result.error]));
     }
     return ok(null);
   }

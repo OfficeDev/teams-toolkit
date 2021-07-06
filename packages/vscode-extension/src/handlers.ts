@@ -174,6 +174,7 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<null
 export function debugHandler(args?: any[]) {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.NavigateToDebug, getTriggerFromProperty(args));
   vscode.commands.executeCommand("workbench.view.debug");
+  vscode.commands.executeCommand("workbench.action.debug.selectandstart");
 }
 
 export async function selectAndDebugHandler(args?: any[]): Promise<Result<null, FxError>> {

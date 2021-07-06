@@ -3,7 +3,7 @@
 
 import axios, { AxiosInstance } from "axios";
 import { SystemError, LogProvider } from "@microsoft/teamsfx-api";
-import { IAppDefinition } from "../../solution/fx-solution/appstudio/interface";
+import { IAppDefinition, IAppDefinitionBot } from "../../solution/fx-solution/appstudio/interface";
 import { AppStudioError } from "./errors";
 import { IPublishingAppDenition } from "./interfaces/IPublishingAppDefinition";
 import { AppStudioResultFactory } from "./results";
@@ -18,7 +18,11 @@ export namespace AppStudioClient {
 
   const baseUrl = "https://dev.teams.microsoft.com";
 
-  // Creates a new axios instance to call app studio to prevent setting the accessToken on global instance.
+  /**
+   * Creates a new axios instance to call app studio to prevent setting the accessToken on global instance.
+   * @param {string}  appStudioToken
+   * @returns {AxiosInstance}
+   */
   function createRequesterWithToken(appStudioToken: string): AxiosInstance {
     const instance = axios.create({
       baseURL: baseUrl,
@@ -27,13 +31,21 @@ export namespace AppStudioClient {
     return instance;
   }
 
-  // Creates an app registration in app studio with the given configuration and returns the Teams app id.
+  /**
+   * Creates an app registration in app studio with the given configuration and returns the Teams app id.
+   * @param {IAppDefinition}  appDefinition
+   * @param {string}  appStudioToken
+   * @param {LogProvider} logProvider
+   * @param {string} colorIconContent - base64 encoded
+   * @param {string} outlineIconContent - base64 encoded
+   * @returns {Promise<IAppDefinition | undefined>}
+   */
   export async function createApp(
     appDefinition: IAppDefinition,
     appStudioToken: string,
     logProvider?: LogProvider,
-    colorIconContent?: string, // base64 encoded
-    outlineIconContent?: string // base64 encoded
+    colorIconContent?: string,
+    outlineIconContent?: string
   ): Promise<IAppDefinition | undefined> {
     if (appDefinition && appStudioToken) {
       try {
@@ -142,7 +154,16 @@ export namespace AppStudioClient {
     throw new Error(`Cannot get the app definition with app ID ${teamsAppId}`);
   }
 
-  // Updates an existing app if it exists with the configuration given.  Returns whether or not it was successful.
+  /**
+   * Updates an existing app if it exists with the configuration given.  Returns whether or not it was successful.
+   * @param {string}  teamsAppId
+   * @param {IAppDefinition} appDefinition
+   * @param {string}  appStudioToken
+   * @param {LogProvider} logProvider
+   * @param {string} colorIconContent - base64 encoded
+   * @param {string} outlineIconContent - base64 encoded
+   * @returns {Promise<IAppDefinition>}
+   */
   export async function updateApp(
     teamsAppId: string,
     appDefinition: IAppDefinition,

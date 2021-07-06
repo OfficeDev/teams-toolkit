@@ -73,22 +73,6 @@ export class AppStudioPlugin implements Plugin {
     return ok(appStudioQuestions);
   }
 
-  public async createApp(
-    appDefinition: IAppDefinition,
-    appStudioToken?: string,
-    logProvider?: LogProvider,
-    colorIconContent?: string, // base64 encoded
-    outlineIconContent?: string // base64 encoded
-  ): Promise<IAppDefinition | undefined> {
-    return await this.appStudioPluginImpl.createApp(
-      appDefinition,
-      appStudioToken!,
-      logProvider,
-      colorIconContent,
-      outlineIconContent
-    );
-  }
-
   public async updateApp(
     appDefinition: IAppDefinition,
     type: "localDebug" | "remote",

@@ -21,7 +21,7 @@ import {
   ProjectSettings,
   IComposeExtension,
   IBot,
-  ReadonlySolutionConfig,
+  SolutionConfig,
 } from "@microsoft/teamsfx-api";
 import { AppStudioClient } from "./appStudio";
 import {
@@ -381,6 +381,7 @@ export class AppStudioPluginImpl {
 
   public createManifestForRemote(
     ctx: PluginContext,
+    solutionConfig: SolutionConfig,
     manifest: TeamsAppManifest,
     pluginMap: Map<string, LoadedPlugin>
   ): Result<[IAppDefinition, TeamsAppManifest], FxError> {
@@ -404,7 +405,7 @@ export class AppStudioPluginImpl {
         );
       }
     }
-    const maybeConfig = this.getConfigForCreatingManifest(ctx.config, false);
+    const maybeConfig = this.getConfigForCreatingManifest(solutionConfig, false);
     if (maybeConfig.isErr()) {
       return err(maybeConfig.error);
     }
@@ -465,7 +466,7 @@ export class AppStudioPluginImpl {
   }
 
   private getConfigForCreatingManifest(
-    config: ReadonlySolutionConfig,
+    config: SolutionConfig,
     localDebug: boolean
   ): Result<
     {
@@ -479,24 +480,22 @@ export class AppStudioPluginImpl {
     FxError
   > {
     const tabEndpoint = localDebug
-      ? String(config.get(PluginNames.LDEBUG)?.get(LOCAL_DEBUG_TAB_ENDPOINT))
-      : String(config.get(PluginNames.FE)?.get(FRONTEND_ENDPOINT));
+      ? config.get(PluginNames.LDEBUG)?.getString(LOCAL_DEBUG_TAB_ENDPOINT)
+      : config.get(PluginNames.FE)?.getString(FRONTEND_ENDPOINT);
     const tabDomain = localDebug
-      ? String(config.get(PluginNames.LDEBUG)?.get(LOCAL_DEBUG_TAB_DOMAIN))
-      : String(config.get(PluginNames.FE)?.get(FRONTEND_DOMAIN));
-    const aadId = String(
-      config.get(PluginNames.AAD)?.get(localDebug ? LOCAL_DEBUG_AAD_ID : REMOTE_AAD_ID)
-    );
-    const botId = String(config.get(PluginNames.BOT)?.get(localDebug ? LOCAL_BOT_ID : BOT_ID));
+      ? config.get(PluginNames.LDEBUG)?.getString(LOCAL_DEBUG_TAB_DOMAIN)
+      : config.get(PluginNames.FE)?.getString(FRONTEND_DOMAIN);
+    const aadId = config
+      .get(PluginNames.AAD)
+      ?.getString(localDebug ? LOCAL_DEBUG_AAD_ID : REMOTE_AAD_ID);
+    const botId = config.get(PluginNames.BOT)?.getString(localDebug ? LOCAL_BOT_ID : BOT_ID);
     const botDomain = localDebug
-      ? String(config.get(PluginNames.LDEBUG)?.get(LOCAL_DEBUG_BOT_DOMAIN))
-      : String(config.get(PluginNames.BOT)?.get(BOT_DOMAIN));
+      ? config.get(PluginNames.LDEBUG)?.getString(LOCAL_DEBUG_BOT_DOMAIN)
+      : config.get(PluginNames.BOT)?.getString(BOT_DOMAIN);
     // This config value is set by aadPlugin.setApplicationInContext. so aadPlugin.setApplicationInContext needs to run first.
-    const webApplicationInfoResource = String(
-      config
-        .get(PluginNames.AAD)
-        ?.get(localDebug ? LOCAL_WEB_APPLICATION_INFO_SOURCE : WEB_APPLICATION_INFO_SOURCE)
-    );
+    const webApplicationInfoResource = config
+      .get(PluginNames.AAD)
+      ?.getString(localDebug ? LOCAL_WEB_APPLICATION_INFO_SOURCE : WEB_APPLICATION_INFO_SOURCE);
     if (!webApplicationInfoResource) {
       return err(
         returnSystemError(

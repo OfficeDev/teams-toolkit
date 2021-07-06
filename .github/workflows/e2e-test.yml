@@ -20,10 +20,10 @@ jobs:
 
     strategy:
       matrix:
-        os: [windows-latest]
+        os: [linux]
         node-version: [14]
 
-    runs-on: ${{ matrix.os }}
+    runs-on: [self-hosted, ${{ matrix.os }}, 8cpu]
 
     steps:
       - name: Checkout

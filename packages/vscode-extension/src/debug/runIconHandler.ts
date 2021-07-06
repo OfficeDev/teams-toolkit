@@ -17,7 +17,7 @@ import * as path from "path";
 export async function selectAndDebug(): Promise<Result<null, FxError>> {
   if (ext.workspaceUri && isValidProject(ext.workspaceUri.fsPath)) {
     await vscode.commands.executeCommand("workbench.view.debug");
-    vscode.commands.executeCommand("workbench.action.debug.selectandstart");
+    await vscode.commands.executeCommand("workbench.action.debug.selectandstart");
     return ok(null);
   } else {
     const error = returnUserError(
@@ -36,12 +36,14 @@ export function registerRunIcon(): void {
   enableRunIcon();
 }
 
+let lastUpdatedProjectStatusTime: number | undefined;
+
 function enableRunIcon(): void {
-  vscode.commands.executeCommand(
-    "setContext",
-    "fx-extension.runIconActive",
-    simpleValidProjectValidation()
-  );
+  if (!lastUpdatedProjectStatusTime || Date.now() - lastUpdatedProjectStatusTime > 5 * 1000) {
+    const projectStatus = simpleValidProjectValidation();
+    lastUpdatedProjectStatusTime = Date.now();
+    vscode.commands.executeCommand("setContext", "fx-extension.runIconActive", projectStatus);
+  }
 }
 
 function simpleValidProjectValidation(): boolean {

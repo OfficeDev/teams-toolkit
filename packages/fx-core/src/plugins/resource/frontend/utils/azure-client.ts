@@ -15,10 +15,35 @@ export class AzureClientFactory {
 }
 
 export class AzureLib {
-  public static async registerResourceProviders(
+  public static async ensureResource<T>(
+    createFn: () => Promise<T>,
+    findFn?: () => Promise<T | undefined>
+  ): Promise<T> {
+    const _t: T | undefined = await findFn?.();
+    return _t ?? createFn();
+  }
+
+  public static async findResourceProvider(
+    client: Providers,
+    namespace: string
+  ): Promise<Provider | undefined> {
+    const provider = await client.get(namespace);
+    if (provider.registrationState === "Registered") {
+      return provider;
+    }
+  }
+
+  public static async ensureResourceProviders(
     client: Providers,
     providerNamespaces: string[]
   ): Promise<Provider[]> {
-    return Promise.all(providerNamespaces.map((namespace) => client.register(namespace)));
+    return Promise.all(
+      providerNamespaces.map((namespace) =>
+        AzureLib.ensureResource(
+          () => client.register(namespace),
+          () => AzureLib.findResourceProvider(client, namespace)
+        )
+      )
+    );
   }
 }

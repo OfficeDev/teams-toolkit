@@ -120,7 +120,7 @@ export class FrontendPluginImpl {
     await runWithErrorCatchAndThrow(
       new RegisterResourceProviderError(),
       async () =>
-        await AzureLib.registerResourceProviders(provider, AzureInfo.RequiredResourceProviders)
+        await AzureLib.ensureResourceProviders(provider, AzureInfo.RequiredResourceProviders)
     );
 
     await progressHandler?.next(ProvisionSteps.CreateStorage);

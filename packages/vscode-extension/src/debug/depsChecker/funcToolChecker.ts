@@ -161,7 +161,7 @@ export class FuncToolChecker implements IDepsChecker {
     if (await this.isGlobalFuncInstalled()) {
       return "func";
     }
-    return "npx func";
+    return "npx azure-functions-core-tools@3";
   }
 
   private async queryFuncVersionSilently(path: string): Promise<FuncVersion | null> {
@@ -176,8 +176,8 @@ export class FuncToolChecker implements IDepsChecker {
     const output = await cpUtils.executeCommand(
       undefined,
       this._logger,
-      undefined,
-      path,
+      { shell: false },
+      this.getExecCommand(path),
       "--version"
     );
     return mapToFuncToolsVersion(output);
@@ -188,8 +188,8 @@ export class FuncToolChecker implements IDepsChecker {
       const npmVersion = await cpUtils.executeCommand(
         undefined,
         this._logger,
-        undefined,
-        "npm",
+        { shell: false },
+        this.getExecCommand("npm"),
         "--version"
       );
       this._telemetry.sendEvent(DepsCheckerEvent.npmAlreadyInstalled, {
@@ -227,8 +227,8 @@ export class FuncToolChecker implements IDepsChecker {
       await cpUtils.executeCommand(
         undefined,
         this._logger,
-        { timeout: timeout },
-        "npm",
+        { timeout: timeout, shell: false },
+        this.getExecCommand("npm"),
         "install",
         "-f",
         `${funcPackageName}@${version}`,
@@ -252,6 +252,10 @@ export class FuncToolChecker implements IDepsChecker {
         error
       );
     }
+  }
+
+  private getExecCommand(command: string): string {
+    return isWindows() ? `${command}.cmd` : command;
   }
 
   private async getFuncPSScriptPath(): Promise<string> {

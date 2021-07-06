@@ -9,10 +9,13 @@ jobs:
   e2e-tests:
     name: run e2e test on (${{ matrix.os }} node ${{ matrix.node-version }}) with source code
     env:
-      TEST_USER_NAME: ${{ secrets.TEST_USER_NAME }}
-      TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
-      TEST_SUBSCRIPTION_ID: ${{ secrets.TEST_SUBSCRIPTION_ID_2 }}
-      TEST_TENANT_ID: ${{ secrets.TEST_TENANT_ID_2 }}
+      AZURE_ACCOUNT_NAME: ${{ secrets.TEST_USER_NAME }}
+      AZURE_ACCOUNT_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.TEST_SUBSCRIPTION_ID }}
+      AZURE_TENANT_ID: ${{ secrets.TEST_TENANT_ID }}
+      M365_ACCOUNT_NAME: ${{ secrets.TEST_USER_NAME }}
+      M365_ACCOUNT_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+      M365_TENANT_ID: ${{ secrets.TEST_TENANT_ID_2 }}
       CI_ENABLED: "true"
 
     strategy:

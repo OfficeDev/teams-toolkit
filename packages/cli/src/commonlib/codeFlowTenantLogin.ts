@@ -11,9 +11,15 @@ import { LogLevel, returnSystemError, UserError, Colors } from "@microsoft/teams
 import CliCodeLogInstance from "./log";
 import * as crypto from "crypto";
 import { AddressInfo } from "net";
-import { accountPath, UTF8 } from "./cacheAccess";
+import { loadAccountId, saveAccountId, UTF8 } from "./cacheAccess";
 import open from "open";
-import { azureLoginMessage, changeLoginTenantMessage, env, m365LoginMessage, MFACode } from "./common/constant";
+import {
+  azureLoginMessage,
+  changeLoginTenantMessage,
+  env,
+  m365LoginMessage,
+  MFACode,
+} from "./common/constant";
 import * as constants from "../constants";
 import { getColorizedString } from "../utils";
 
@@ -52,18 +58,24 @@ export class CodeFlowTenantLogin {
   }
 
   async reloadCache() {
-    if (fs.existsSync(accountPath + this.accountName)) {
-      const accountCache = String(fs.readFileSync(accountPath + this.accountName, UTF8));
-      const dataCache = await this.msalTokenCache!.getAccountByHomeId(accountCache);
-      if (dataCache) {
-        this.account = dataCache;
+    if (this.accountName) {
+      const accountCache = await loadAccountId(this.accountName);
+      if (accountCache) {
+        const dataCache = await this.msalTokenCache!.getAccountByHomeId(accountCache);
+        if (dataCache) {
+          this.account = dataCache;
+        }
       }
     }
   }
 
   async login(tenantId?: string): Promise<string> {
-    const codeVerifier = CodeFlowTenantLogin.toBase64UrlEncoding(crypto.randomBytes(32).toString("base64"));
-    const codeChallenge = CodeFlowTenantLogin.toBase64UrlEncoding(await CodeFlowTenantLogin.sha256(codeVerifier));
+    const codeVerifier = CodeFlowTenantLogin.toBase64UrlEncoding(
+      crypto.randomBytes(32).toString("base64")
+    );
+    const codeChallenge = CodeFlowTenantLogin.toBase64UrlEncoding(
+      await CodeFlowTenantLogin.sha256(codeVerifier)
+    );
     let serverPort = this.port;
 
     // try get an unused port
@@ -76,7 +88,7 @@ export class CodeFlowTenantLogin {
       codeChallenge: codeChallenge,
       codeChallengeMethod: "S256",
       redirectUri: `http://localhost:${serverPort}`,
-      prompt: "select_account"
+      prompt: "select_account",
     };
 
     let deferredRedirect: Deferred<string>;
@@ -89,7 +101,7 @@ export class CodeFlowTenantLogin {
         code: req.query.code as string,
         scopes: this.scopes!,
         redirectUri: `http://localhost:${serverPort}`,
-        codeVerifier: codeVerifier
+        codeVerifier: codeVerifier,
       };
 
       this.pca!.acquireTokenByCode(tokenRequest)
@@ -98,6 +110,7 @@ export class CodeFlowTenantLogin {
             if (response.account) {
               await this.mutex?.runExclusive(async () => {
                 this.account = response.account!;
+                await saveAccountId(this.accountName!, this.account.homeAccountId);
               });
               deferredRedirect.resolve(response.accessToken);
 
@@ -139,14 +152,17 @@ export class CodeFlowTenantLogin {
       this.pca!.getAuthCodeUrl(authCodeUrlParameters).then(async (response: string) => {
         if (this.accountName == "azure") {
           const message = [
-            {content: `[${constants.cliSource}] ${azureLoginMessage}`, color: Colors.BRIGHT_WHITE },
-            {content: response, color: Colors.BRIGHT_CYAN}
+            {
+              content: `[${constants.cliSource}] ${azureLoginMessage}`,
+              color: Colors.BRIGHT_WHITE,
+            },
+            { content: response, color: Colors.BRIGHT_CYAN },
           ];
           CliCodeLogInstance.necessaryLog(LogLevel.Info, getColorizedString(message));
         } else {
           const message = [
-            {content: `[${constants.cliSource}] ${m365LoginMessage}`, color: Colors.BRIGHT_WHITE },
-            {content: response, color: Colors.BRIGHT_CYAN}
+            { content: `[${constants.cliSource}] ${m365LoginMessage}`, color: Colors.BRIGHT_WHITE },
+            { content: response, color: Colors.BRIGHT_CYAN },
           ];
           CliCodeLogInstance.necessaryLog(LogLevel.Info, getColorizedString(message));
         }
@@ -163,13 +179,16 @@ export class CodeFlowTenantLogin {
   }
 
   async logout(): Promise<boolean> {
-    const accountCache = String(fs.readFileSync(accountPath + this.accountName, UTF8));
-    const dataCache = await this.msalTokenCache!.getAccountByHomeId(accountCache);
-    if (dataCache) {
-      this.msalTokenCache?.removeAccount(dataCache);
-    }
-    if (fs.existsSync(accountPath + this.accountName)) {
-      fs.writeFileSync(accountPath + this.accountName, "", UTF8);
+    if (this.accountName) {
+      const accountCache = await loadAccountId(this.accountName);
+      if (accountCache) {
+        const dataCache = await this.msalTokenCache!.getAccountByHomeId(accountCache);
+        if (dataCache) {
+          this.msalTokenCache?.removeAccount(dataCache);
+        }
+      }
+
+      await saveAccountId(this.accountName, undefined);
     }
     return true;
   }
@@ -186,7 +205,7 @@ export class CodeFlowTenantLogin {
         return this.pca!.acquireTokenSilent({
           account: this.account,
           scopes: this.scopes!,
-          forceRefresh: false
+          forceRefresh: false,
         })
           .then((response) => {
             if (response) {
@@ -196,7 +215,10 @@ export class CodeFlowTenantLogin {
             }
           })
           .catch(async (error) => {
-            CliCodeLogInstance.necessaryLog(LogLevel.Error, "[Login] silent acquire token : " + error.message);
+            CliCodeLogInstance.necessaryLog(
+              LogLevel.Error,
+              "[Login] silent acquire token : " + error.message
+            );
             const accessToken = await this.login();
             return accessToken;
           });
@@ -235,17 +257,11 @@ export class CodeFlowTenantLogin {
   }
 
   static toBase64UrlEncoding(base64string: string) {
-    return base64string
-      .replace(/=/g, "")
-      .replace(/\+/g, "-")
-      .replace(/\//g, "_");
+    return base64string.replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
   }
 
   static sha256(s: string | Uint8Array): Promise<string> {
-    return new Promise(solve => solve(crypto
-      .createHash("sha256")
-      .update(s)
-      .digest("base64")));
+    return new Promise((solve) => solve(crypto.createHash("sha256").update(s).digest("base64")));
   }
 }
 
@@ -264,7 +280,7 @@ function sendFile(
       body = Buffer.from(data, UTF8);
       res.writeHead(200, {
         "Content-Length": body.length,
-        "Content-Type": contentType
+        "Content-Type": contentType,
       });
       res.end(body);
     }

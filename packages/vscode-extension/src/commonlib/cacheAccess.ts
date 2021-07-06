@@ -171,7 +171,7 @@ export class CryptoCachePlugin {
         const text = await this.accountCrypto.encrypt(data);
         await fs.writeFile(fileCachePath, text, UTF8);
       } catch (err) {
-        VsCodeLogInstance.error(StringResources.vsc.cacheAccess.writeTokenFail + err.message);
+        VsCodeLogInstance.error(StringResources.vsc.cacheAccess.saveTokenFail + err.message);
       }
     }
   }

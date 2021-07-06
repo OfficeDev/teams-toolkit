@@ -19,7 +19,7 @@ const cachePath = os.homedir + `/.${ConfigFolderName}/account/token.cache.`;
 const accountPath = os.homedir + `/.${ConfigFolderName}/account/homeId.cache.`;
 const cachePathEnd = ".json";
 
-export const UTF8 = "utf-8";
+export const UTF8 = "utf8";
 
 // the recommended way to use keytar in vscode, https://code.visualstudio.com/api/advanced-topics/remote-extensions#persisting-secrets
 declare const __webpack_require__: typeof require;
@@ -49,52 +49,47 @@ class AccountCrypto {
     this.keytar = getNodeModule<typeof keytarType>("keytar");
   }
 
-  public async encrypt(content: string | undefined): Promise<string | undefined> {
-    try {
-      const key = await this.getKey();
-      if (key && content) {
-        const iv = crypto.randomBytes(16);
-        const cipher = crypto.createCipheriv(this.algorithm, key, iv);
-        const encrypted = Buffer.concat([cipher.update(content), cipher.final()]);
-        return JSON.stringify({
-          i: iv.toString("hex"),
-          c: encrypted.toString("hex"),
-        });
-      }
-    } catch (err) {
-      // ignore encrypt error
-      VsCodeLogInstance.error(StringResources.vsc.cacheAccess.writeTokenFail + err.message);
+  public async encrypt(content: string): Promise<string> {
+    const key = await this.getKey();
+    if (key) {
+      const iv = crypto.randomBytes(16);
+      const cipher = crypto.createCipheriv(this.algorithm, key, iv);
+      const encrypted = Buffer.concat([cipher.update(content, UTF8), cipher.final()]);
+      const tag = cipher.getAuthTag();
+      return JSON.stringify({
+        i: iv.toString("hex"),
+        c: encrypted.toString("hex"),
+        t: tag.toString("hex"),
+      });
+    } else {
+      // no key, return plain text
+      return content;
     }
-
-    return content;
   }
 
-  public async decrypt(content: string | undefined): Promise<string | undefined> {
-    try {
-      const key = await this.getKey();
-      if (key && content) {
-        const object = JSON.parse(content);
-        const decipher = crypto.createDecipheriv(this.algorithm, key, Buffer.from(object.i, "hex"));
-        const decrpyted = Buffer.concat([
-          decipher.update(Buffer.from(object.c, "hex")),
-          decipher.final(),
-        ]);
-        return decrpyted.toString();
-      }
-    } catch (err) {
-      // ignore decrypt error
-      VsCodeLogInstance.error(StringResources.vsc.cacheAccess.readTokenFail + err.message);
+  public async decrypt(content: string): Promise<string> {
+    const key = await this.getKey();
+    if (key) {
+      const object = JSON.parse(content);
+      const decipher = crypto.createDecipheriv(this.algorithm, key, Buffer.from(object.i, "hex"));
+      decipher.setAuthTag(Buffer.from(object.t, "hex"));
+      const decrpyted = Buffer.concat([
+        decipher.update(Buffer.from(object.c, "hex")),
+        decipher.final(),
+      ]);
+      return decrpyted.toString(UTF8);
+    } else {
+      // no key, return plain text
+      return content;
     }
-
-    return content;
   }
 
   private async getKey(): Promise<string | undefined> {
     try {
       if (this.keytar) {
         let key = await this.keytar.getPassword(ProductName, this.accountName);
-        if (!key) {
-          key = crypto.randomBytes(256).toString("hex");
+        if (!key || key.length !== 32) {
+          key = crypto.randomBytes(256).toString("hex").slice(0, 32);
           await this.keytar.setPassword(ProductName, this.accountName, key);
 
           // validate key again
@@ -130,13 +125,26 @@ export class CryptoCachePlugin {
       try {
         const text = await fs.readFile(fileCachePath, UTF8);
         if (text && text.length > 0) {
-          const data = await this.accountCrypto.decrypt(text);
-          if (data) {
+          try {
+            const data = await this.accountCrypto.decrypt(text);
+            JSON.parse(data);
+            cacheContext.tokenCache.deserialize(data);
+          } catch (error) {
+            await fs.writeFile(fileCachePath, "", UTF8);
+
+            // still throw error if the plain text is not token cache
+            let needThrow = true;
             try {
-              JSON.parse(data);
-              cacheContext.tokenCache.deserialize(data);
-            } catch (error) {
-              await fs.writeFile(fileCachePath, "", UTF8);
+              const oldObj = JSON.parse(text);
+              if (oldObj.Account) {
+                needThrow = false;
+              }
+            } catch {
+              // plain text format error
+            }
+
+            if (needThrow) {
+              throw error;
             }
           }
         }

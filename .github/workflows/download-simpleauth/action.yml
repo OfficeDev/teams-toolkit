@@ -1,9 +1,0 @@
-name: "Download Simple Auth"
-description: "Download Simple Auth bits from github release"
-runs:
-    using: "composite"
-    steps:
-      - name: Download Simple Auth bits
-        shell: pwsh
-        run: |
-          ./.github/workflows/download-simpleauth/download.ps1

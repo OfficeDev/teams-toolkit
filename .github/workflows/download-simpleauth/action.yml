@@ -6,4 +6,4 @@ runs:
       - name: Download Simple Auth bits
         shell: pwsh
         run: |
-          ./.github/workflows/download-simpleauth/downloadWithRetry.ps1
+          ./.github/workflows/download-simpleauth/download.ps1

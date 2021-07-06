@@ -1,0 +1,15 @@
+{
+    "include": [
+      "src/**/*.ts"
+    ],
+    "reporter": [
+      "text-summary",
+      "html",
+      "cobertura"
+    ],
+    "exclude-after-remap": false,
+    "sourceMap": true,
+    "produce-source-map": true,
+    "instrument": true,
+    "all": true
+}

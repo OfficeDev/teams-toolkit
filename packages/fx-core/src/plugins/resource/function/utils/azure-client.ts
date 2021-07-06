@@ -71,13 +71,6 @@ export class AzureLib {
     return res.body;
   }
 
-  public static async registerResourceProviders(
-    client: Providers,
-    providerNamespaces: string[]
-  ): Promise<Provider[]> {
-    return Promise.all(providerNamespaces.map((namespace) => client.register(namespace)));
-  }
-
   private static async ensureResource<T>(
     createFn: () => Promise<T>,
     findFn?: () => Promise<T | undefined>
@@ -88,6 +81,30 @@ export class AzureLib {
     }
     Logger.info(InfoMessages.resourceExists);
     return _t;
+  }
+
+  public static async findResourceProvider(
+    client: Providers,
+    namespace: string
+  ): Promise<Provider | undefined> {
+    const provider = await client.get(namespace);
+    if (provider.registrationState === "Registered") {
+      return provider;
+    }
+  }
+
+  public static async ensureResourceProviders(
+    client: Providers,
+    providerNamespaces: string[]
+  ): Promise<Provider[]> {
+    return Promise.all(
+      providerNamespaces.map((namespace) =>
+        this.ensureResource<Provider>(
+          () => client.register(namespace),
+          () => this.findResourceProvider(client, namespace)
+        )
+      )
+    );
   }
 
   public static async findAppServicePlans(

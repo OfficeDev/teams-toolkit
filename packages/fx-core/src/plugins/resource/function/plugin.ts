@@ -404,7 +404,7 @@ export class FunctionPluginImpl {
         StepGroup.ProvisionStepGroup,
         ProvisionSteps.registerResourceProviders,
         async () =>
-          await AzureLib.registerResourceProviders(
+          await AzureLib.ensureResourceProviders(
             providerClient,
             AzureInfo.requiredResourceProviders
           )

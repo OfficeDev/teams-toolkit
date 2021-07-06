@@ -120,7 +120,7 @@ class InternalLogger {
     const logMessage = `${logHeader}${message}`;
     if (this.customLogFunction) {
       this.customLogFunction(logLevel, logMessage);
-    } else if (this.level && this.level <= logLevel && this.customLogger) {
+    } else if (this.level != undefined && this.level <= logLevel && this.customLogger) {
       logFunction(this.customLogger)(logMessage);
     }
   }

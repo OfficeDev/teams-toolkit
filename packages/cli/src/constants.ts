@@ -107,3 +107,10 @@ export enum CLILogLevel {
 
 export const sqlPasswordQustionName = "sql-password";
 export const sqlPasswordConfirmQuestionName = "sql-confirm-password";
+export const booleanParamNames = new Set<string>([
+  "verbose",
+  "version",
+  "interactive",
+  "local",
+  "remote",
+]);

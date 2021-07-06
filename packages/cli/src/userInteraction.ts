@@ -40,7 +40,12 @@ import {
 } from "@microsoft/teamsfx-api";
 
 import CLILogProvider from "./commonlib/log";
-import { EmptySubConfigOptions, NotValidInputValue, UnknownError } from "./error";
+import {
+  EmptySubConfigOptions,
+  NotValidInputValue,
+  NotValidOptionValue,
+  UnknownError,
+} from "./error";
 import { sleep, getColorizedString } from "./utils";
 import { ChoiceOptions } from "./prompts";
 import { ProgressHandler } from "./progressHandler";
@@ -319,14 +324,18 @@ export class CLIUserInteraction implements UserInteraction {
             : (choices as ChoiceOptions[]).map((choice) => choice.name),
           result.value
         );
-        const anwser = config.options[index];
-        if (config.returnObject) {
-          resolve(ok({ type: "success", result: anwser }));
+        if (index < 0) {
+          resolve(err(NotValidOptionValue(config, config.options)));
         } else {
-          if (typeof anwser === "string") {
+          const anwser = config.options[index];
+          if (config.returnObject) {
             resolve(ok({ type: "success", result: anwser }));
           } else {
-            resolve(ok({ type: "success", result: anwser.id }));
+            if (typeof anwser === "string") {
+              resolve(ok({ type: "success", result: anwser }));
+            } else {
+              resolve(ok({ type: "success", result: anwser.id }));
+            }
           }
         }
       } else {
@@ -355,6 +364,12 @@ export class CLIUserInteraction implements UserInteraction {
             : (choices as ChoiceOptions[]).map((choice) => choice.name),
           result.value
         );
+        for (const index of indexes) {
+          if (index < 0) {
+            resolve(err(NotValidOptionValue(config, config.options)));
+            return;
+          }
+        }
         const anwers = this.getSubArray(config.options as any[], indexes);
         if (config.returnObject) {
           resolve(ok({ type: "success", result: anwers }));

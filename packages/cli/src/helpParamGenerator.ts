@@ -42,6 +42,7 @@ const rootFolderNode = new QTreeNode({
 export class HelpParamGenerator {
   private static core: FxCore | undefined;
   private static questionsMap: Map<string, QTreeNode> = new Map<string, QTreeNode>();
+  private static selectQuestionNames: Map<string, string> = new Map();
   public static activate(): Result<FxCore, FxError> {
     const tools: Tools = {
       logProvider: CLILogProvider,
@@ -73,6 +74,15 @@ export class HelpParamGenerator {
   private static setQuestionNodes(stage: string, questions: QTreeNode | undefined) {
     if (questions) {
       HelpParamGenerator.questionsMap.set(stage, questions);
+      for (const node of flattenNodes(questions)) {
+        const question = node.data;
+        if (question) {
+          if (question.type === "singleSelect" || question.type === "multiSelect") {
+            // save select question names for lowercase middle ware.
+            this.selectQuestionNames.set(question.name, question.type);
+          }
+        }
+      }
     }
   }
 
@@ -90,7 +100,7 @@ export class HelpParamGenerator {
     return ok(undefined);
   }
 
-  private static getQuestionRootNodeForHelp(stage: string): QTreeNode | undefined {
+  public static getQuestionRootNodeForHelp(stage: string): QTreeNode | undefined {
     if (HelpParamGenerator.questionsMap.has(stage)) {
       return HelpParamGenerator.questionsMap.get(stage);
     }
@@ -178,12 +188,15 @@ export class HelpParamGenerator {
     // Add folder node
     if (stage !== Stage.create) {
       nodes = nodes.concat([rootFolderNode]);
-    }
-    // Set default folder value for create stage
-    else {
+    } else {
       for (const node of nodes) {
+        // Set default folder value for create stage
         if (node.data.name === "folder") {
           (node.data as any).default = "./";
+        }
+        // hide "samples" and "scratch" node due to duplicate of "new template" param
+        else if (node.data.name === "samples" || node.data.name === "scratch") {
+          (node.data as any).hide = true;
         }
       }
     }
@@ -210,5 +223,9 @@ export class HelpParamGenerator {
     });
 
     return params;
+  }
+
+  public static getSelectQuestionNames(): Map<string, string> {
+    return HelpParamGenerator.selectQuestionNames;
   }
 }

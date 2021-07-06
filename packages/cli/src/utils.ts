@@ -29,6 +29,8 @@ import {
 
 import { ConfigNotFoundError, ReadFileError } from "./error";
 import AzureAccountManager from "./commonlib/azureLogin";
+import { booleanParamNames } from "./constants";
+import { HelpParamGenerator } from "./helpParamGenerator";
 
 export function getJson<T>(jsonFilePath: string): T | undefined {
   if (jsonFilePath && fs.existsSync(jsonFilePath)) {
@@ -299,4 +301,43 @@ export function getColorizedString(message: Array<{ content: string; color: Colo
     })
     .join("");
   return colorizedMessage + "\u00A0";
+}
+
+export function lowerCaseMiddleWare(args: any) {
+  const selectQuestionNames = HelpParamGenerator.getSelectQuestionNames();
+  for (let questionName in args) {
+    if (questionName === "$0") {
+      continue;
+    }
+    // if the questionName is not lowercase, update them to the lower case one.
+    if (questionName.toLowerCase() !== questionName) {
+      const lowCaseQuestionName = questionName.toLowerCase();
+      args[lowCaseQuestionName] = args[questionName];
+      // take care of boolean param
+      if (booleanParamNames.has(lowCaseQuestionName)) {
+        if (typeof args[questionName] === "boolean") {
+          args[lowCaseQuestionName] = args[questionName];
+        } else {
+          args[lowCaseQuestionName] = args[questionName].toLowerCase() === "true" ? true : false;
+        }
+      }
+      delete args[questionName];
+      questionName = lowCaseQuestionName;
+    }
+    // if the question is a select question, convert the value to lowercase one.
+    if (selectQuestionNames.has(questionName)) {
+      if (typeof args[questionName] === "string") {
+        args[questionName] = args[questionName].toLowerCase();
+      } else {
+        args[questionName] = (args[questionName] as string[]).map((value) => value.toLowerCase());
+      }
+      // take care of multi select question(options should be array)
+      if (
+        selectQuestionNames.get(questionName) === "multiSelect" &&
+        typeof args[questionName] === "string"
+      ) {
+        args[questionName] = [args[questionName]];
+      }
+    }
+  }
 }

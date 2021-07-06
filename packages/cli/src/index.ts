@@ -11,6 +11,7 @@ import { commands } from "./cmds";
 import * as constants from "./constants";
 import { registerPrompts } from "./prompts";
 import { HelpParamGenerator } from "./helpParamGenerator";
+import { lowerCaseMiddleWare } from "./utils";
 
 /**
  * Registers cli and partner commands with yargs.
@@ -45,6 +46,7 @@ export async function start() {
   await HelpParamGenerator.initializeQuestionsForHelp();
   register(yargs);
   yargs
+    .middleware(lowerCaseMiddleWare, true)
     .options("verbose", {
       description: "Print additional information.",
       boolean: true,
@@ -64,5 +66,9 @@ export async function start() {
     .alias("v", "version")
     .version(getVersion())
     .wrap(Math.min(100, yargs.terminalWidth()))
+    // disable camel case expansion since we suppose all the cli name are lower case.
+    .parserConfiguration({
+      "camel-case-expansion": false,
+    })
     .epilogue("For more information about the Teams Toolkit - https://aka.ms/teamsfx-learn.").argv;
 }

@@ -14,6 +14,8 @@ import {
   OptionItem,
   MultiSelectQuestion,
   SingleSelectQuestion,
+  SingleSelectConfig,
+  MultiSelectConfig,
   StaticOptions,
 } from "@microsoft/teamsfx-api";
 
@@ -36,13 +38,13 @@ export function CannotDeployPlugin(pluginName: string): UserError {
 }
 
 export function NotValidOptionValue(
-  question: MultiSelectQuestion | SingleSelectQuestion,
+  question: MultiSelectQuestion | SingleSelectQuestion | SingleSelectConfig | MultiSelectConfig,
   options: StaticOptions
 ): UserError {
   if (options instanceof Array && options.length > 0 && typeof options[0] !== "string") {
     options = (options as OptionItem[]).map((op) => op.id);
   }
-  throw NotValidInputValue(question.name, `This question only supports [${options}] options`);
+  return NotValidInputValue(question.name, `This question only supports [${options}] options`);
 }
 
 export function NotValidInputValue(inputName: string, msg: string): UserError {

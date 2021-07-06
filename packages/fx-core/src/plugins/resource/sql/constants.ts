@@ -84,5 +84,5 @@ export class Telemetry {
 }
 
 export class HelpLinks {
-  static readonly addDBUser = "https://aka.ms/teamsfx-sql-help";
+  static readonly default = "https://aka.ms/teamsfx-sql-help";
 }

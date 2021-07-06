@@ -141,6 +141,13 @@
           "group": "inline"
         }
       ],
+      "editor/title/run": [
+        {
+          "command": "fx-extension.selectAndDebug",
+          "when": "!inDebugMode && debuggersAvailable && fx-extension.runIconActive",
+          "group": "teamsfx"
+        }
+      ],
       "commandPalette": [
         {
           "command": "fx-extension.signOut",
@@ -160,6 +167,10 @@
         },
         {
           "command": "fx-extension.specifySubscription",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.selectAndDebug",
           "when": "false"
         }
       ]
@@ -269,6 +280,11 @@
         "command": "fx-extension.backend-extensions-install",
         "title": "Teams - Backend Extensions Install",
         "enablement": "never"
+      },
+      {
+        "command": "fx-extension.selectAndDebug",
+        "title": "Select and Start Debuging Teams App",
+        "icon": "$(run)"
       }
     ],
     "taskDefinitions": [

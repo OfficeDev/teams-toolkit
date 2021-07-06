@@ -111,7 +111,7 @@ import * as util from "util";
 import { deepCopy, getStrings, isUserCancelError } from "../../../common/tools";
 import { getTemplatesFolder } from "../../..";
 
-type LoadedPlugin = Plugin & { name: string; displayName: string };
+export type LoadedPlugin = Plugin & { name: string; displayName: string };
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
 
 type ParamForRegisterTeamsAppAndAad = {

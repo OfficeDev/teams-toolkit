@@ -216,3 +216,6 @@ export class AppStudioPlugin implements Plugin {
     }
   }
 }
+
+
+export default new AppStudioPlugin();

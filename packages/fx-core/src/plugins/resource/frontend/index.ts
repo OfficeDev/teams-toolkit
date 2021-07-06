@@ -16,6 +16,10 @@ import { TelemetryEvent } from "./constants";
 import { TelemetryHelper } from "./utils/telemetry-helper";
 
 export class FrontendPlugin implements Plugin {
+
+  name = "fx-resource-frontend-hosting";
+  displayName = "Tab Front-end";
+
   frontendPluginImpl = new FrontendPluginImpl();
 
   private static setContext(ctx: PluginContext): void {

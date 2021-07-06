@@ -116,3 +116,5 @@ export class AadAppForTeamsPlugin implements Plugin {
     }
   }
 }
+
+export default new AadAppForTeamsPlugin();

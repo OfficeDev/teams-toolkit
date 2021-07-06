@@ -31,15 +31,23 @@ export async function selectAndDebug(): Promise<Result<null, FxError>> {
 }
 
 export function registerRunIcon(): void {
-  ext.context.subscriptions.push(vscode.window.onDidChangeActiveTextEditor(enableRunIcon));
-  ext.context.subscriptions.push(vscode.workspace.onDidChangeWorkspaceFolders(enableRunIcon));
-  enableRunIcon();
+  ext.context.subscriptions.push(
+    vscode.window.onDidChangeActiveTextEditor(() => enableRunIcon(false))
+  );
+  ext.context.subscriptions.push(
+    vscode.workspace.onDidChangeWorkspaceFolders(() => enableRunIcon(true))
+  );
+  enableRunIcon(true);
 }
 
 let lastUpdatedProjectStatusTime: number | undefined;
 
-function enableRunIcon(): void {
-  if (!lastUpdatedProjectStatusTime || Date.now() - lastUpdatedProjectStatusTime > 5 * 1000) {
+function enableRunIcon(forceUpdate: boolean): void {
+  if (
+    forceUpdate ||
+    !lastUpdatedProjectStatusTime ||
+    Date.now() - lastUpdatedProjectStatusTime > 5 * 1000
+  ) {
     const projectStatus = simpleValidProjectValidation();
     lastUpdatedProjectStatusTime = Date.now();
     vscode.commands.executeCommand("setContext", "fx-extension.runIconActive", projectStatus);

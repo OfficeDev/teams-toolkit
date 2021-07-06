@@ -121,16 +121,8 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
             npmInstallLogInfo
           ));
         }
-      } catch (e) {
+      } catch {
         // ignore any error
-        showError(new SystemError(
-          npmInstall,
-          npmInstallErrorMessage,
-          task.name,
-          e.stack,
-          issueLink,
-          e
-        ));
       }
 
       const properties: { [key: string]: string } = {

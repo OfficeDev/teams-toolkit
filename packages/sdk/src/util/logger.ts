@@ -56,7 +56,7 @@ export enum LogLevel {
 }
 
 /**
- * Update log level helper.
+ * Update log level helper. A default logger that outputs to console will be set if logger is undefined.
  *
  * @param { LogLevel } level - log level in configuration
  *
@@ -138,6 +138,16 @@ export const internalLogger: InternalLogger = new InternalLogger();
  *
  * @param {Logger} logger - custom logger. If it's undefined, custom logger will be cleared.
  *
+ * @example
+ * ```typescript
+ * setLogger({
+ *   verbose: console.debug,
+ *   info: console.info,
+ *   warn: console.warn,
+ *   error: console.error,
+ * });
+ * ```
+ *
  * @beta
  */
 export function setLogger(logger?: Logger): void {
@@ -148,6 +158,15 @@ export function setLogger(logger?: Logger): void {
  * Set custom log function. Use the function if it's set. Priority is higher than setLogger.
  *
  * @param {LogFunction} logFunction - custom log function. If it's undefined, custom log function will be cleared.
+ *
+ * @example
+ * ```typescript
+ * setLogFunction((level: LogLevel, message: string) => {
+ *   if (level === LogLevel.Error) {
+ *     console.log(message);
+ *   }
+ * });
+ * ```
  *
  * @beta
  */

@@ -13,6 +13,8 @@ import * as vscode from "vscode";
 import * as StringResources from "../resources/Strings.json";
 import * as fs from "fs-extra";
 import * as path from "path";
+import { ExtTelemetry } from "../telemetry/extTelemetry";
+import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
 
 export async function selectAndDebug(): Promise<Result<null, FxError>> {
   if (ext.workspaceUri && isValidProject(ext.workspaceUri.fsPath)) {
@@ -41,6 +43,7 @@ export function registerRunIcon(): void {
 }
 
 let lastUpdatedProjectStatusTime: number | undefined;
+let lastProjectStatus: boolean | undefined;
 
 function enableRunIcon(forceUpdate: boolean): void {
   if (
@@ -49,6 +52,14 @@ function enableRunIcon(forceUpdate: boolean): void {
     Date.now() - lastUpdatedProjectStatusTime > 5 * 1000
   ) {
     const projectStatus = simpleValidProjectValidation();
+
+    if (projectStatus !== lastProjectStatus) {
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.RunIconProjectStatus, {
+        [TelemetryProperty.ProjectStatus]: projectStatus ? "valid" : "invalid",
+      });
+    }
+
+    lastProjectStatus = projectStatus;
     lastUpdatedProjectStatusTime = Date.now();
     vscode.commands.executeCommand("setContext", "fx-extension.runIconActive", projectStatus);
   }

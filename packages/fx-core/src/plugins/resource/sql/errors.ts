@@ -89,6 +89,11 @@ export class ErrorMessage {
     message: (user: string, detail = "") => `Failed to check database user '${user}'. ${detail}`,
   };
 
+  public static readonly SqlAccessError = {
+    name: "SqlAccessError",
+    message: (sqlName: string, detail = "") => `Failed to access server '${sqlName}'. ${detail}`,
+  };
+
   public static readonly UnhandledError = {
     name: "UnhandledError",
     message: () => "Unhandled Error",
@@ -108,4 +113,6 @@ export class ErrorMessage {
     "Server identity does not have Azure Active Directory Readers permission";
 
   public static readonly GuestAdminError = `SQL admin does not have enough permission to add database user. ${ErrorMessage.GetDetail}`;
+
+  public static readonly AccessMessage = "is not allowed to access the server";
 }

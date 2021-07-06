@@ -6,6 +6,7 @@
 import { ChildProcess, spawn, SpawnOptions } from "child_process";
 import { err, FxError, ok, Result } from "@microsoft/teamsfx-api";
 import treeKill from "tree-kill";
+import { ServiceLogWriter } from "./serviceLogWriter";
 
 interface TaskOptions {
   cwd?: string;
@@ -94,8 +95,10 @@ export class Task {
     stopCallback: (
       taskTitle: string,
       background: boolean,
-      result: TaskResult
-    ) => Promise<FxError | null>
+      result: TaskResult,
+      serviceLogWriter?: ServiceLogWriter
+    ) => Promise<FxError | null>,
+    serviceLogWriter?: ServiceLogWriter
   ): Promise<Result<TaskResult, FxError>> {
     await startCallback(this.taskTitle, this.background);
     const spawnOptions: SpawnOptions = {
@@ -108,10 +111,11 @@ export class Task {
     const stderr: string[] = [];
     return new Promise((resolve) => {
       this.task?.stdout?.on("data", async (data) => {
-        // TODO: log
-        stdout.push(data.toString());
+        const dataStr = data.toString();
+        await serviceLogWriter?.write(this.taskTitle, dataStr);
+        stdout.push(dataStr);
         if (!this.resolved) {
-          const match = pattern.test(data.toString());
+          const match = pattern.test(dataStr);
           if (match) {
             this.resolved = true;
             const result: TaskResult = {
@@ -122,7 +126,12 @@ export class Task {
               stderr: stderr,
               exitCode: null,
             };
-            const error = await stopCallback(this.taskTitle, this.background, result);
+            const error = await stopCallback(
+              this.taskTitle,
+              this.background,
+              result,
+              serviceLogWriter
+            );
             if (error) {
               resolve(err(error));
             } else {
@@ -131,9 +140,10 @@ export class Task {
           }
         }
       });
-      this.task?.stderr?.on("data", (data) => {
-        // TODO: log
-        stderr.push(data.toString());
+      this.task?.stderr?.on("data", async (data) => {
+        const dataStr = data.toString();
+        await serviceLogWriter?.write(this.taskTitle, dataStr);
+        stderr.push(dataStr);
       });
 
       this.task?.on("exit", async () => {
@@ -147,7 +157,12 @@ export class Task {
             stderr: stderr,
             exitCode: this.task?.exitCode === undefined ? null : this.task?.exitCode,
           };
-          const error = await stopCallback(this.taskTitle, this.background, result);
+          const error = await stopCallback(
+            this.taskTitle,
+            this.background,
+            result,
+            serviceLogWriter
+          );
           if (error) {
             resolve(err(error));
           } else {

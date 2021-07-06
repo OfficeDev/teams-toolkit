@@ -20,26 +20,93 @@ import {
   PluginAAD,
   PluginSolution,
 } from "../../../../../src/plugins/resource/bot/resources/strings";
+import {
+  Colors,
+  FxError,
+  InputTextConfig,
+  InputTextResult,
+  IProgressHandler,
+  MultiSelectConfig,
+  MultiSelectResult,
+  ok,
+  Result,
+  RunnableTask,
+  SelectFileConfig,
+  SelectFileResult,
+  SelectFilesConfig,
+  SelectFilesResult,
+  SelectFolderConfig,
+  SelectFolderResult,
+  SingleSelectConfig,
+  SingleSelectResult,
+  TaskConfig,
+  UserInteraction,
+} from "@microsoft/teamsfx-api";
 
-export function generateFakeDialog(): Dialog {
-  return {
-    communicate: (msg: DialogMsg) => {
-      return Promise.resolve(new DialogMsg(DialogType.Answer, "default"));
-    },
-    createProgressBar: (title: string, totalSteps: number) => {
-      return {
-        start: (details?: string) => {
-          return Promise.resolve();
-        },
-        next: (details?: string) => {
-          return Promise.resolve();
-        },
-        end: (details?: string) => {
-          return Promise.resolve();
-        },
-      };
-    },
-  };
+export class MockUserInteraction implements UserInteraction {
+  selectOption(config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> {
+    throw new Error("Method not implemented.");
+  }
+  selectOptions(config: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> {
+    throw new Error("Method not implemented.");
+  }
+  inputText(config: InputTextConfig): Promise<Result<InputTextResult, FxError>> {
+    throw new Error("Method not implemented.");
+  }
+  selectFile(config: SelectFileConfig): Promise<Result<SelectFileResult, FxError>> {
+    throw new Error("Method not implemented.");
+  }
+  selectFiles(config: SelectFilesConfig): Promise<Result<SelectFilesResult, FxError>> {
+    throw new Error("Method not implemented.");
+  }
+  selectFolder(config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> {
+    throw new Error("Method not implemented.");
+  }
+
+  openUrl(link: string): Promise<Result<boolean, FxError>> {
+    throw new Error("Method not implemented.");
+  }
+  async showMessage(
+    level: "info" | "warn" | "error",
+    message: string,
+    modal: boolean,
+    ...items: string[]
+  ): Promise<Result<string | undefined, FxError>>;
+
+  async showMessage(
+    level: "info" | "warn" | "error",
+    message: Array<{ content: string; color: Colors }>,
+    modal: boolean,
+    ...items: string[]
+  ): Promise<Result<string | undefined, FxError>>;
+
+  async showMessage(
+    level: "info" | "warn" | "error",
+    message: string | Array<{ content: string; color: Colors }>,
+    modal: boolean,
+    ...items: string[]
+  ): Promise<Result<string | undefined, FxError>> {
+    return ok("default");
+  }
+  createProgressBar(title: string, totalSteps: number): IProgressHandler {
+    const handler: IProgressHandler = {
+      start: async (detail?: string): Promise<void> => {},
+      next: async (detail?: string): Promise<void> => {},
+      end: async (): Promise<void> => {},
+    };
+    return handler;
+  }
+  async runWithProgress<T>(
+    task: RunnableTask<T>,
+    config: TaskConfig,
+    ...args: any
+  ): Promise<Result<T, FxError>> {
+    return task.run(args);
+  }
+}
+
+export function generateFakeDialog(): UserInteraction {
+  return new MockUserInteraction();
 }
 export function generateFakeServiceClientCredentials(): ServiceClientCredentials {
   return {
@@ -124,7 +191,7 @@ export function newPluginContext(): PluginContext {
       ],
     ]),
     config: new ConfigMap(),
-    answers: {platform:Platform.VSCode},
+    answers: { platform: Platform.VSCode },
     projectSettings: {
       appName: "My App",
       currentEnv: "default",

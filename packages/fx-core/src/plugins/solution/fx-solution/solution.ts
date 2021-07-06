@@ -596,132 +596,132 @@ export class TeamsAppSolution implements Solution {
     return ok(JSON.stringify(permissionRequest));
   }
 
-  private createManifestForRemote(
-    ctx: SolutionContext,
-    manifest: TeamsAppManifest
-  ): Result<[IAppDefinition, TeamsAppManifest], FxError> {
-    const maybeSelectedPlugins = this.getSelectedPlugins(ctx);
-    if (maybeSelectedPlugins.isErr()) {
-      return err(maybeSelectedPlugins.error);
-    }
-    const selectedPlugins = maybeSelectedPlugins.value;
-    if (selectedPlugins.some((plugin) => plugin.name === this.botPlugin.name)) {
-      const capabilities = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
-        .capabilities;
-      const hasBot = capabilities?.includes(BotOptionItem.id);
-      const hasMsgExt = capabilities?.includes(MessageExtensionItem.id);
-      if (!hasBot && !hasMsgExt) {
-        return err(
-          returnSystemError(
-            new Error("Select either Bot or Messaging Extension"),
-            "Solution",
-            SolutionError.InternelError
-          )
-        );
-      }
-    }
-    const maybeConfig = this.getConfigForCreatingManifest(ctx.config, false);
-    if (maybeConfig.isErr()) {
-      return err(maybeConfig.error);
-    }
+  // private createManifestForRemote(
+  //   ctx: SolutionContext,
+  //   manifest: TeamsAppManifest
+  // ): Result<[IAppDefinition, TeamsAppManifest], FxError> {
+  //   const maybeSelectedPlugins = this.getSelectedPlugins(ctx);
+  //   if (maybeSelectedPlugins.isErr()) {
+  //     return err(maybeSelectedPlugins.error);
+  //   }
+  //   const selectedPlugins = maybeSelectedPlugins.value;
+  //   if (selectedPlugins.some((plugin) => plugin.name === this.botPlugin.name)) {
+  //     const capabilities = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
+  //       .capabilities;
+  //     const hasBot = capabilities?.includes(BotOptionItem.id);
+  //     const hasMsgExt = capabilities?.includes(MessageExtensionItem.id);
+  //     if (!hasBot && !hasMsgExt) {
+  //       return err(
+  //         returnSystemError(
+  //           new Error("Select either Bot or Messaging Extension"),
+  //           "Solution",
+  //           SolutionError.InternelError
+  //         )
+  //       );
+  //     }
+  //   }
+  //   const maybeConfig = this.getConfigForCreatingManifest(ctx.config, false);
+  //   if (maybeConfig.isErr()) {
+  //     return err(maybeConfig.error);
+  //   }
 
-    const { tabEndpoint, tabDomain, aadId, botDomain, botId, webApplicationInfoResource } =
-      maybeConfig.value;
+  //   const { tabEndpoint, tabDomain, aadId, botDomain, botId, webApplicationInfoResource } =
+  //     maybeConfig.value;
 
-    const validDomains: string[] = [];
+  //   const validDomains: string[] = [];
 
-    if (tabDomain) {
-      validDomains.push(tabDomain);
-    }
+  //   if (tabDomain) {
+  //     validDomains.push(tabDomain);
+  //   }
 
-    if (botDomain) {
-      validDomains.push(botDomain);
-    }
+  //   if (botDomain) {
+  //     validDomains.push(botDomain);
+  //   }
 
-    const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
-    return ok(
-      appStudioPlugin.getDevAppDefinition(
-        JSON.stringify(manifest),
-        aadId,
-        validDomains,
-        webApplicationInfoResource,
-        false,
-        tabEndpoint,
-        manifest.name.short,
-        manifest.version,
-        botId
-      )
-    );
-  }
+  //   const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
+  //   return ok(
+  //     appStudioPlugin.getDevAppDefinition(
+  //       JSON.stringify(manifest),
+  //       aadId,
+  //       validDomains,
+  //       webApplicationInfoResource,
+  //       false,
+  //       tabEndpoint,
+  //       manifest.name.short,
+  //       manifest.version,
+  //       botId
+  //     )
+  //   );
+  // }
 
   // The assumptions of this function are:
   // 1. this.manifest is not undefined(for azure projects) already contains the latest manifest(loaded via reloadManifestAndCheckRequiredFields)
   // 2. provision of frontend hosting is done and config values has already been loaded into ctx.config
-  private async createAndConfigTeamsManifest(
-    ctx: SolutionContext
-  ): Promise<Result<IAppDefinition, FxError>> {
-    const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
-    const maybeManifest = await appStudioPlugin.reloadManifestAndCheckRequiredFields(ctx.root);
-    if (maybeManifest.isErr()) {
-      return err(maybeManifest.error);
-    }
-    const manifest = maybeManifest.value;
+  // private async createAndConfigTeamsManifest(
+  //   ctx: SolutionContext
+  // ): Promise<Result<IAppDefinition, FxError>> {
+  //   const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
+  //   const maybeManifest = await appStudioPlugin.reloadManifestAndCheckRequiredFields(ctx.root);
+  //   if (maybeManifest.isErr()) {
+  //     return err(maybeManifest.error);
+  //   }
+  //   const manifest = maybeManifest.value;
 
-    let appDefinition: IAppDefinition;
-    let updatedManifest: TeamsAppManifest;
-    if (this.spfxSelected(ctx)) {
-      const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
-      appDefinition = appStudioPlugin.convertToAppDefinition(manifest, false);
-      updatedManifest = manifest;
-    } else {
-      const result = this.createManifestForRemote(ctx, manifest);
-      if (result.isErr()) {
-        return err(result.error);
-      }
-      [appDefinition, updatedManifest] = result.value;
-    }
+  //   let appDefinition: IAppDefinition;
+  //   let updatedManifest: TeamsAppManifest;
+  //   if (this.spfxSelected(ctx)) {
+  //     const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
+  //     appDefinition = appStudioPlugin.convertToAppDefinition(manifest, false);
+  //     updatedManifest = manifest;
+  //   } else {
+  //     const result = this.createManifestForRemote(ctx, manifest);
+  //     if (result.isErr()) {
+  //       return err(result.error);
+  //     }
+  //     [appDefinition, updatedManifest] = result.value;
+  //   }
 
-    const teamsAppId = ctx.config.get(GLOBAL_CONFIG)?.getString(REMOTE_TEAMS_APP_ID);
-    if (!teamsAppId) {
-      ctx.logProvider?.info(`Teams app not created`);
-      const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
-      const result = await appStudioPlugin.updateApp(
-        appDefinition,
-        "remote",
-        true,
-        undefined,
-        await ctx.appStudioToken?.getAccessToken(),
-        ctx.logProvider,
-        ctx.root
-      );
-      if (result.isErr()) {
-        return result.map((_) => appDefinition);
-      }
+  //   const teamsAppId = ctx.config.get(GLOBAL_CONFIG)?.getString(REMOTE_TEAMS_APP_ID);
+  //   if (!teamsAppId) {
+  //     ctx.logProvider?.info(`Teams app not created`);
+  //     const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
+  //     const result = await appStudioPlugin.updateApp(
+  //       appDefinition,
+  //       "remote",
+  //       true,
+  //       undefined,
+  //       await ctx.appStudioToken?.getAccessToken(),
+  //       ctx.logProvider,
+  //       ctx.root
+  //     );
+  //     if (result.isErr()) {
+  //       return result.map((_) => appDefinition);
+  //     }
 
-      ctx.logProvider?.info(`Teams app created ${result.value}`);
-      appDefinition.appId = result.value;
-      ctx.config.get(GLOBAL_CONFIG)?.set(REMOTE_TEAMS_APP_ID, result.value);
-      return ok(appDefinition);
-    } else {
-      ctx.logProvider?.info(`Teams app already created: ${teamsAppId}`);
-      appDefinition.appId = teamsAppId;
-      const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
-      const result = await appStudioPlugin.updateApp(
-        appDefinition,
-        "remote",
-        false,
-        teamsAppId,
-        await ctx.appStudioToken?.getAccessToken(),
-        ctx.logProvider,
-        ctx.root
-      );
-      if (result.isErr()) {
-        return result.map((_) => appDefinition);
-      }
-      ctx.logProvider?.info(`Teams app updated ${JSON.stringify(updatedManifest)}`);
-      return ok(appDefinition);
-    }
-  }
+  //     ctx.logProvider?.info(`Teams app created ${result.value}`);
+  //     appDefinition.appId = result.value;
+  //     ctx.config.get(GLOBAL_CONFIG)?.set(REMOTE_TEAMS_APP_ID, result.value);
+  //     return ok(appDefinition);
+  //   } else {
+  //     ctx.logProvider?.info(`Teams app already created: ${teamsAppId}`);
+  //     appDefinition.appId = teamsAppId;
+  //     const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
+  //     const result = await appStudioPlugin.updateApp(
+  //       appDefinition,
+  //       "remote",
+  //       false,
+  //       teamsAppId,
+  //       await ctx.appStudioToken?.getAccessToken(),
+  //       ctx.logProvider,
+  //       ctx.root
+  //     );
+  //     if (result.isErr()) {
+  //       return result.map((_) => appDefinition);
+  //     }
+  //     ctx.logProvider?.info(`Teams app updated ${JSON.stringify(updatedManifest)}`);
+  //     return ok(appDefinition);
+  //   }
+  // }
 
   /**
    * Checks whether solution's state is idle
@@ -925,7 +925,12 @@ export class TeamsAppSolution implements Solution {
         return ok(undefined);
       },
       async () => {
-        const result = this.createAndConfigTeamsManifest(ctx);
+        const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
+        const pluginCtx = getPluginContext(ctx, this.appStudioPlugin.name);
+        const result = appStudioPlugin.createAndConfigTeamsManifest(
+          pluginCtx,
+          maybeSelectedPlugins
+        );
         ctx.logProvider?.info("[Teams Toolkit]: configuration finished!");
         return result;
       }
@@ -958,7 +963,12 @@ export class TeamsAppSolution implements Solution {
       ).toString();
       return ok(JSON.parse(manifestString));
     } else {
-      return this.createManifestForRemote(ctx, manifestTpl).map((result) => result[1]);
+      const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
+      const maybeSelectedPlugins = this.getSelectedPlugins(ctx);
+      const pluginCtx = getPluginContext(ctx, this.appStudioPlugin.name);
+      return appStudioPlugin
+        .createManifestForRemote(pluginCtx, maybeSelectedPlugins, manifestTpl)
+        .map((result) => result[1]);
     }
   }
 
@@ -2245,9 +2255,11 @@ export class TeamsAppSolution implements Solution {
             return maybeManifest;
           }
           const manifestTpl = maybeManifest.value;
-          const manifest = this.createManifestForRemote(ctx, manifestTpl).map(
-            (result) => result[1]
-          );
+          const pluginCtx = getPluginContext(ctx, this.appStudioPlugin.name);
+          const maybeSelectedPlugins = this.getSelectedPlugins(ctx);
+          const manifest = appStudioPlugin
+            .createManifestForRemote(pluginCtx, maybeSelectedPlugins, manifestTpl)
+            .map((result) => result[1]);
           if (manifest.isOk()) {
             manifestString = JSON.stringify(manifest.value);
           } else {
@@ -2286,9 +2298,10 @@ export class TeamsAppSolution implements Solution {
           const manifestTpl: TeamsAppManifest = await fs.readJSON(
             `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`
           );
-          const manifest = this.createManifestForRemote(ctx, manifestTpl).map(
-            (result) => result[1]
-          );
+          const maybeSelectedPlugins = this.getSelectedPlugins(ctx);
+          const manifest = appStudioPlugin
+            .createManifestForRemote(pluginCtx, maybeSelectedPlugins, manifestTpl)
+            .map((result) => result[1]);
           if (manifest.isOk()) {
             manifestString = JSON.stringify(manifest.value);
           } else {

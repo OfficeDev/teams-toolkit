@@ -31,6 +31,7 @@ import { AppStudioResultFactory } from "./results";
 import { manuallySubmitOption, autoPublishOption } from "./questions";
 import { TelemetryUtils, TelemetryEventName, TelemetryPropertyKey } from "./utils/telemetry";
 
+type LoadedPlugin = Plugin & { name: string; displayName: string };
 export class AppStudioPlugin implements Plugin {
   private appStudioPluginImpl = new AppStudioPluginImpl();
 
@@ -169,6 +170,21 @@ export class AppStudioPlugin implements Plugin {
     ignoreIcon: boolean
   ): IAppDefinition {
     return this.appStudioPluginImpl.convertToAppDefinition(appManifest, ignoreIcon);
+  }
+
+  public createManifestForRemote(
+    ctx: PluginContext,
+    maybeSelectedPlugins: Result<LoadedPlugin[], FxError>,
+    manifest: TeamsAppManifest
+  ): Result<[IAppDefinition, TeamsAppManifest], FxError> {
+    return this.appStudioPluginImpl.createManifestForRemote(ctx, maybeSelectedPlugins, manifest);
+  }
+
+  public createAndConfigTeamsManifest(
+    ctx: PluginContext,
+    maybeSelectedPlugins: Result<LoadedPlugin[], FxError>
+  ): Promise<Result<IAppDefinition, FxError>> {
+    return this.appStudioPluginImpl.createAndConfigTeamsManifest(ctx, maybeSelectedPlugins);
   }
 
   /**

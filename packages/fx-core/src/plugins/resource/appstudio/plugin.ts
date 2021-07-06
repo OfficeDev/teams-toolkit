@@ -381,11 +381,9 @@ export class AppStudioPluginImpl {
 
   public createManifestForRemote(
     ctx: PluginContext,
-    solutionConfig: SolutionConfig,
-    manifest: TeamsAppManifest,
-    pluginMap: Map<string, LoadedPlugin>
+    maybeSelectedPlugins: Result<LoadedPlugin[], FxError>,
+    manifest: TeamsAppManifest
   ): Result<[IAppDefinition, TeamsAppManifest], FxError> {
-    const maybeSelectedPlugins = this.getSelectedPlugins(ctx, pluginMap);
     if (maybeSelectedPlugins.isErr()) {
       return err(maybeSelectedPlugins.error);
     }
@@ -405,7 +403,7 @@ export class AppStudioPluginImpl {
         );
       }
     }
-    const maybeConfig = this.getConfigForCreatingManifest(solutionConfig, false);
+    const maybeConfig = this.getConfigForCreatingManifest(ctx, false);
     if (maybeConfig.isErr()) {
       return err(maybeConfig.error);
     }
@@ -438,133 +436,72 @@ export class AppStudioPluginImpl {
     );
   }
 
-  private getSelectedPlugins(
+  // The assumptions of this function are:
+  // 1. this.manifest is not undefined(for azure projects) already contains the latest manifest(loaded via reloadManifestAndCheckRequiredFields)
+  // 2. provision of frontend hosting is done and config values has already been loaded into ctx.config
+  public async createAndConfigTeamsManifest(
     ctx: PluginContext,
-    pluginMap: Map<string, LoadedPlugin>
-  ): Result<LoadedPlugin[], FxError> {
-    const settings = this.getAzureSolutionSettings(ctx);
-    const pluginNames = settings.activeResourcePlugins;
-    const selectedPlugins = [];
-    for (const pluginName of pluginNames as string[]) {
-      const plugin = pluginMap.get(pluginName);
-      if (plugin === undefined) {
-        return err(
-          returnUserError(
-            new Error(`Plugin name ${pluginName} is not valid`),
-            "Solution",
-            SolutionError.PluginNotFound
-          )
-        );
+    maybeSelectedPlugins: Result<LoadedPlugin[], FxError>
+  ): Promise<Result<IAppDefinition, FxError>> {
+    const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx.root);
+    if (maybeManifest.isErr()) {
+      return err(maybeManifest.error);
+    }
+    const manifest = maybeManifest.value;
+
+    let appDefinition: IAppDefinition;
+    let updatedManifest: TeamsAppManifest;
+    if (this.isSPFxProject(ctx)) {
+      appDefinition = this.convertToAppDefinition(manifest, false);
+      updatedManifest = manifest;
+    } else {
+      const result = this.createManifestForRemote(ctx, maybeSelectedPlugins, manifest);
+      if (result.isErr()) {
+        return err(result.error);
       }
-      selectedPlugins.push(plugin);
-    }
-    return ok(selectedPlugins);
-  }
-
-  getAzureSolutionSettings(ctx: PluginContext): AzureSolutionSettings {
-    return ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
-  }
-
-  private getConfigForCreatingManifest(
-    config: SolutionConfig,
-    localDebug: boolean
-  ): Result<
-    {
-      tabEndpoint?: string;
-      tabDomain?: string;
-      aadId: string;
-      botDomain?: string;
-      botId?: string;
-      webApplicationInfoResource: string;
-    },
-    FxError
-  > {
-    const tabEndpoint = localDebug
-      ? config.get(PluginNames.LDEBUG)?.getString(LOCAL_DEBUG_TAB_ENDPOINT)
-      : config.get(PluginNames.FE)?.getString(FRONTEND_ENDPOINT);
-    const tabDomain = localDebug
-      ? config.get(PluginNames.LDEBUG)?.getString(LOCAL_DEBUG_TAB_DOMAIN)
-      : config.get(PluginNames.FE)?.getString(FRONTEND_DOMAIN);
-    const aadId = config
-      .get(PluginNames.AAD)
-      ?.getString(localDebug ? LOCAL_DEBUG_AAD_ID : REMOTE_AAD_ID);
-    const botId = config.get(PluginNames.BOT)?.getString(localDebug ? LOCAL_BOT_ID : BOT_ID);
-    const botDomain = localDebug
-      ? config.get(PluginNames.LDEBUG)?.getString(LOCAL_DEBUG_BOT_DOMAIN)
-      : config.get(PluginNames.BOT)?.getString(BOT_DOMAIN);
-    // This config value is set by aadPlugin.setApplicationInContext. so aadPlugin.setApplicationInContext needs to run first.
-    const webApplicationInfoResource = config
-      .get(PluginNames.AAD)
-      ?.getString(localDebug ? LOCAL_WEB_APPLICATION_INFO_SOURCE : WEB_APPLICATION_INFO_SOURCE);
-    if (!webApplicationInfoResource) {
-      return err(
-        returnSystemError(
-          new Error(
-            "Missing configuration data for manifest. Run 'provision' first. Data required: webApplicationInfoResource."
-          ),
-          "Solution",
-          localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError
-        )
-      );
+      [appDefinition, updatedManifest] = result.value;
     }
 
-    if (!aadId) {
-      return err(
-        returnSystemError(
-          new Error(
-            `Missing configuration data for manifest. Run 'provision' first. Data required: ${LOCAL_DEBUG_AAD_ID}.`
-          ),
-          "Solution",
-          localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError
-        )
+    const teamsAppId = ctx.configOfOtherPlugins.get("solution")?.get(REMOTE_TEAMS_APP_ID) as string;
+    if (!teamsAppId) {
+      ctx.logProvider?.info(`Teams app not created`);
+      const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
+      const result = await this.updateApp(
+        appDefinition,
+        appStudioToken!,
+        "remote",
+        true,
+        undefined,
+        ctx.logProvider,
+        ctx.root
       );
-    }
-    // localTabEndpoint, bots and composeExtensions can't all be undefined
-    if (!tabEndpoint && !botId) {
-      return err(
-        returnSystemError(
-          new Error(
-            `Missing configuration data for manifest. Data required: ${
-              localDebug ? LOCAL_DEBUG_TAB_ENDPOINT : FRONTEND_ENDPOINT
-            }, ${localDebug ? LOCAL_BOT_ID : BOT_ID}.`
-          ),
-          "Solution",
-          localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError
-        )
-      );
-    }
-    if ((tabEndpoint && !tabDomain) || (!tabEndpoint && tabDomain)) {
-      return err(
-        returnSystemError(
-          new Error(
-            `Invalid configuration data for manifest: ${
-              localDebug ? LOCAL_DEBUG_TAB_ENDPOINT : FRONTEND_ENDPOINT
-            }=${tabEndpoint}, ${
-              localDebug ? LOCAL_DEBUG_TAB_DOMAIN : FRONTEND_DOMAIN
-            }=${tabDomain}.`
-          ),
-          "Solution",
-          localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError
-        )
-      );
-    }
-    if (botId) {
-      if (!botDomain) {
-        return err(
-          returnSystemError(
-            new Error(
-              `Missing configuration data for manifest. Data required: ${
-                localDebug ? LOCAL_DEBUG_BOT_DOMAIN : BOT_DOMAIN
-              }.`
-            ),
-            "Solution",
-            localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError
-          )
-        );
+      if (result.isErr()) {
+        return result.map((_) => appDefinition);
       }
-    }
 
-    return ok({ tabEndpoint, tabDomain, aadId, botDomain, botId, webApplicationInfoResource });
+      ctx.logProvider?.info(`Teams app created ${result.value}`);
+      appDefinition.appId = result.value;
+      ctx.configOfOtherPlugins.get("solution")?.set(REMOTE_TEAMS_APP_ID, result.value);
+      return ok(appDefinition);
+    } else {
+      ctx.logProvider?.info(`Teams app already created: ${teamsAppId}`);
+      appDefinition.appId = teamsAppId;
+      const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
+      const result = await this.updateApp(
+        appDefinition,
+        appStudioToken!,
+        "remote",
+        false,
+        teamsAppId,
+        ctx.logProvider,
+        ctx.root
+      );
+      if (result.isErr()) {
+        return result.map((_) => appDefinition);
+      }
+      ctx.logProvider?.info(`Teams app updated ${JSON.stringify(updatedManifest)}`);
+      return ok(appDefinition);
+    }
   }
 
   public async buildTeamsAppPackage(
@@ -759,6 +696,110 @@ export class AppStudioPluginImpl {
     } finally {
       await publishProgress?.end();
     }
+  }
+
+  private getConfigForCreatingManifest(
+    ctx: PluginContext,
+    localDebug: boolean
+  ): Result<
+    {
+      tabEndpoint?: string;
+      tabDomain?: string;
+      aadId: string;
+      botDomain?: string;
+      botId?: string;
+      webApplicationInfoResource: string;
+    },
+    FxError
+  > {
+    const tabEndpoint = localDebug
+      ? (ctx.configOfOtherPlugins.get(PluginNames.LDEBUG)?.get(LOCAL_DEBUG_TAB_ENDPOINT) as string)
+      : (ctx.configOfOtherPlugins.get(PluginNames.FE)?.get(FRONTEND_ENDPOINT) as string);
+    const tabDomain = localDebug
+      ? (ctx.configOfOtherPlugins.get(PluginNames.LDEBUG)?.get(LOCAL_DEBUG_TAB_DOMAIN) as string)
+      : (ctx.configOfOtherPlugins.get(PluginNames.FE)?.get(FRONTEND_DOMAIN) as string);
+    const aadId = ctx.configOfOtherPlugins
+      .get(PluginNames.AAD)
+      ?.get(localDebug ? LOCAL_DEBUG_AAD_ID : REMOTE_AAD_ID) as string;
+    const botId = ctx.configOfOtherPlugins
+      .get(PluginNames.BOT)
+      ?.get(localDebug ? LOCAL_BOT_ID : BOT_ID) as string;
+    const botDomain = localDebug
+      ? (ctx.configOfOtherPlugins.get(PluginNames.LDEBUG)?.get(LOCAL_DEBUG_BOT_DOMAIN) as string)
+      : (ctx.configOfOtherPlugins.get(PluginNames.BOT)?.get(BOT_DOMAIN) as string);
+    // This config value is set by aadPlugin.setApplicationInContext. so aadPlugin.setApplicationInContext needs to run first.
+    const webApplicationInfoResource = ctx.configOfOtherPlugins
+      .get(PluginNames.AAD)
+      ?.get(localDebug ? LOCAL_WEB_APPLICATION_INFO_SOURCE : WEB_APPLICATION_INFO_SOURCE) as string;
+    if (!webApplicationInfoResource) {
+      return err(
+        returnSystemError(
+          new Error(
+            "Missing configuration data for manifest. Run 'provision' first. Data required: webApplicationInfoResource."
+          ),
+          "Solution",
+          localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError
+        )
+      );
+    }
+
+    if (!aadId) {
+      return err(
+        returnSystemError(
+          new Error(
+            `Missing configuration data for manifest. Run 'provision' first. Data required: ${LOCAL_DEBUG_AAD_ID}.`
+          ),
+          "Solution",
+          localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError
+        )
+      );
+    }
+    // localTabEndpoint, bots and composeExtensions can't all be undefined
+    if (!tabEndpoint && !botId) {
+      return err(
+        returnSystemError(
+          new Error(
+            `Missing configuration data for manifest. Data required: ${
+              localDebug ? LOCAL_DEBUG_TAB_ENDPOINT : FRONTEND_ENDPOINT
+            }, ${localDebug ? LOCAL_BOT_ID : BOT_ID}.`
+          ),
+          "Solution",
+          localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError
+        )
+      );
+    }
+    if ((tabEndpoint && !tabDomain) || (!tabEndpoint && tabDomain)) {
+      return err(
+        returnSystemError(
+          new Error(
+            `Invalid configuration data for manifest: ${
+              localDebug ? LOCAL_DEBUG_TAB_ENDPOINT : FRONTEND_ENDPOINT
+            }=${tabEndpoint}, ${
+              localDebug ? LOCAL_DEBUG_TAB_DOMAIN : FRONTEND_DOMAIN
+            }=${tabDomain}.`
+          ),
+          "Solution",
+          localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError
+        )
+      );
+    }
+    if (botId) {
+      if (!botDomain) {
+        return err(
+          returnSystemError(
+            new Error(
+              `Missing configuration data for manifest. Data required: ${
+                localDebug ? LOCAL_DEBUG_BOT_DOMAIN : BOT_DOMAIN
+              }.`
+            ),
+            "Solution",
+            localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError
+          )
+        );
+      }
+    }
+
+    return ok({ tabEndpoint, tabDomain, aadId, botDomain, botId, webApplicationInfoResource });
   }
 
   private isSPFxProject(ctx: PluginContext): boolean {

@@ -318,7 +318,7 @@ export default class Preview extends YargsCommand {
     );
     let result = await botInstallTask.wait(botInstallStartCb, botInstallStopCb);
     if (result.isErr()) {
-      return err(result.error);
+      return err(errors.PreviewCommandFailed([result.error]));
     }
 
     // start ngrok
@@ -344,7 +344,7 @@ export default class Preview extends YargsCommand {
       this.serviceLogWriter
     );
     if (result.isErr()) {
-      return err(result.error);
+      return err(errors.PreviewCommandFailed([result.error]));
     }
     return ok(null);
   }

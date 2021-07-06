@@ -220,10 +220,10 @@ Preview the current application from local or remote.
 
 ## Optional Parameters
 ### `--local`
-Preview the application from local. The options are `true` and `false`. The default value is `false`. `--local` is exclusive with `--remote`.
+Preview the application from local. `--local` is exclusive with `--remote`.
 
 ### `--remote`
-Preview the application from remote. The options are `true` and `false`. The default value is `false`. `--remote` is exclusive with `--local`.
+Preview the application from remote. `--remote` is exclusive with `--local`.
 
 ### `--folder`
 Project root directory. The default value is `./`.
@@ -238,3 +238,7 @@ teamsfx preview --local
 ```bash
 teamsfx preview --remote
 ```
+
+## Notes
+- SPFx preview is not supported currently.
+- The logs of the background services like React will be saved in `~/.fx/cli-log/local-preview/`.

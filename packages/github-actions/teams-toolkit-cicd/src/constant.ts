@@ -39,10 +39,13 @@ export class ErrorNames {
   static readonly InputsError: string = 'InputsError'
   static readonly LanguageError: string = 'LanguageError'
   static readonly EnvironmentVariableError: string = 'EnvironmentVariableError'
+  static readonly SpfxZippedPackageMissingError: string =
+    'SpfxZippedPackageMissingError'
 }
 
 export class Suggestions {
   static readonly CheckInputsAndUpdate: string =
     'Please check and update the input values.'
   static readonly CheckEnvDefaultJson: string = `Please check the content of ${Pathes.EnvDefaultJson}.`
+  static readonly CheckPackageSolutionJson: string = `Please check the content of ${Pathes.PackageSolutionJson}.`
 }

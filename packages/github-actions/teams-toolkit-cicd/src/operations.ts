@@ -5,7 +5,7 @@ import {Commands, Pathes, Miscs, ActionOutputs} from './constant'
 import {ProgrammingLanguage} from './enums/programmingLanguages'
 import * as fs from 'fs-extra'
 import * as core from '@actions/core'
-import {LanguageError} from './errors'
+import {LanguageError, SpfxZippedPackageMissingError} from './errors'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class Operations {
@@ -28,7 +28,8 @@ export class Operations {
       (await fs.pathExists(botPath))
     ) {
       // Get bot's programming language from env.default.json.
-      const config = await fs.readJSON(Pathes.EnvDefaultJson)
+      const envDefaultPath = path.join(projectRoot, Pathes.EnvDefaultJson)
+      const config = await fs.readJSON(envDefaultPath)
       const lang = config?.[Miscs.BotConfigKey]?.[Miscs.LanguageKey]
       if (!lang || !Object.values<string>(ProgrammingLanguage).includes(lang)) {
         throw new LanguageError(`programmingLanguage: ${lang}`)
@@ -79,6 +80,9 @@ export class Operations {
     )
     if (await fs.pathExists(packageSolutionPath)) {
       const solutionConfig = await fs.readJSON(packageSolutionPath)
+      if (!solutionConfig?.paths?.zippedPackage) {
+        throw new SpfxZippedPackageMissingError()
+      }
       core.setOutput(
         ActionOutputs.SharepointPackagePath,
         path.join(

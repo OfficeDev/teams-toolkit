@@ -82,11 +82,13 @@ exports.ErrorNames = ErrorNames;
 ErrorNames.InputsError = 'InputsError';
 ErrorNames.LanguageError = 'LanguageError';
 ErrorNames.EnvironmentVariableError = 'EnvironmentVariableError';
+ErrorNames.SpfxZippedPackageMissingError = 'SpfxZippedPackageMissingError';
 class Suggestions {
 }
 exports.Suggestions = Suggestions;
 Suggestions.CheckInputsAndUpdate = 'Please check and update the input values.';
 Suggestions.CheckEnvDefaultJson = `Please check the content of ${Pathes.EnvDefaultJson}.`;
+Suggestions.CheckPackageSolutionJson = `Please check the content of ${Pathes.PackageSolutionJson}.`;
 
 
 /***/ }),
@@ -153,7 +155,7 @@ var ProgrammingLanguage;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.LanguageError = exports.EnvironmentVariableError = exports.InputsError = void 0;
+exports.SpfxZippedPackageMissingError = exports.LanguageError = exports.EnvironmentVariableError = exports.InputsError = void 0;
 const base_error_1 = __webpack_require__(826);
 const constant_1 = __webpack_require__(2363);
 class InputsError extends base_error_1.BaseError {
@@ -174,6 +176,12 @@ class LanguageError extends base_error_1.BaseError {
     }
 }
 exports.LanguageError = LanguageError;
+class SpfxZippedPackageMissingError extends base_error_1.BaseError {
+    constructor() {
+        super(base_error_1.ErrorType.User, constant_1.ErrorNames.SpfxZippedPackageMissingError, 'Cannot get zippedPackage from package-solution.json.', [constant_1.Suggestions.CheckPackageSolutionJson]);
+    }
+}
+exports.SpfxZippedPackageMissingError = SpfxZippedPackageMissingError;
 
 
 /***/ }),
@@ -338,7 +346,8 @@ class Operations {
             if (capabilities.includes(capabilities_1.Capability.Bot) &&
                 (yield fs.pathExists(botPath))) {
                 // Get bot's programming language from env.default.json.
-                const config = yield fs.readJSON(constant_1.Pathes.EnvDefaultJson);
+                const envDefaultPath = path.join(projectRoot, constant_1.Pathes.EnvDefaultJson);
+                const config = yield fs.readJSON(envDefaultPath);
                 const lang = (_a = config === null || config === void 0 ? void 0 : config[constant_1.Miscs.BotConfigKey]) === null || _a === void 0 ? void 0 : _a[constant_1.Miscs.LanguageKey];
                 if (!lang || !Object.values(programmingLanguages_1.ProgrammingLanguage).includes(lang)) {
                     throw new errors_1.LanguageError(`programmingLanguage: ${lang}`);
@@ -367,13 +376,16 @@ class Operations {
         });
     }
     static DeployToHostingEnvironment(projectRoot) {
-        var _a;
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
             const ret = yield exec_1.Execute(constant_1.Commands.TeamsfxDeploy, projectRoot);
             const packageSolutionPath = path.join(projectRoot, constant_1.Pathes.PackageSolutionJson);
             if (yield fs.pathExists(packageSolutionPath)) {
                 const solutionConfig = yield fs.readJSON(packageSolutionPath);
-                core.setOutput(constant_1.ActionOutputs.SharepointPackagePath, path.join(projectRoot, 'SPFx', 'sharepoint', (_a = solutionConfig === null || solutionConfig === void 0 ? void 0 : solutionConfig.paths) === null || _a === void 0 ? void 0 : _a.zippedPackage));
+                if (!((_a = solutionConfig === null || solutionConfig === void 0 ? void 0 : solutionConfig.paths) === null || _a === void 0 ? void 0 : _a.zippedPackage)) {
+                    throw new errors_1.SpfxZippedPackageMissingError();
+                }
+                core.setOutput(constant_1.ActionOutputs.SharepointPackagePath, path.join(projectRoot, 'SPFx', 'sharepoint', (_b = solutionConfig === null || solutionConfig === void 0 ? void 0 : solutionConfig.paths) === null || _b === void 0 ? void 0 : _b.zippedPackage));
             }
             return ret;
         });

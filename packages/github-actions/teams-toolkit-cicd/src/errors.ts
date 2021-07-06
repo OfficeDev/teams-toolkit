@@ -33,3 +33,14 @@ export class LanguageError extends BaseError {
     )
   }
 }
+
+export class SpfxZippedPackageMissingError extends BaseError {
+  constructor() {
+    super(
+      ErrorType.User,
+      ErrorNames.SpfxZippedPackageMissingError,
+      'Cannot get zippedPackage from package-solution.json.',
+      [Suggestions.CheckPackageSolutionJson]
+    )
+  }
+}

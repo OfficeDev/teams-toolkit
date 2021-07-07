@@ -228,6 +228,7 @@ const words_to_list_1 = __webpack_require__(3168);
 const errors_1 = __webpack_require__(9292);
 const capabilities_1 = __webpack_require__(271);
 const base_error_1 = __webpack_require__(826);
+const fs = __importStar(__webpack_require__(5630));
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -237,6 +238,7 @@ function run() {
             }
             const operationType = core.getInput(constant_1.ActionInputs.OperationType);
             if (!projectRoot ||
+                !(yield fs.pathExists(projectRoot)) ||
                 !operationType ||
                 !Object.values(operationTypes_1.OperationType).includes(operationType)) {
                 throw new errors_1.InputsError(`${constant_1.ActionInputs.ProjectRoot}: ${projectRoot}, ${constant_1.ActionInputs.OperationType}: ${operationType}`);

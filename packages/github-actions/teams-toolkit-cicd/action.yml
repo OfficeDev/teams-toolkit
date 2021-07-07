@@ -4,11 +4,9 @@ inputs:
   project-root:
     description: 'The root of the Teams App Project. When this input is not specified, ${github.workspace} will be used.'
     required: false
-    default: ''
   operation-type:
     description: 'The operation type.'
     required: true
-    default: 'Build Teams App'
   capabilities:
     description: 'Select which capability to build. Possible values are tabs, bot, SPFx.'
     required: false

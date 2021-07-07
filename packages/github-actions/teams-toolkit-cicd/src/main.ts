@@ -6,6 +6,7 @@ import {WordsToList} from './utils/words-to-list'
 import {InputsError} from './errors'
 import {Capability} from './enums/capabilities'
 import {BaseError} from './base-error'
+import * as fs from 'fs-extra'
 
 async function run(): Promise<void> {
   try {
@@ -17,6 +18,7 @@ async function run(): Promise<void> {
 
     if (
       !projectRoot ||
+      !(await fs.pathExists(projectRoot)) ||
       !operationType ||
       !Object.values<string>(OperationType).includes(operationType)
     ) {

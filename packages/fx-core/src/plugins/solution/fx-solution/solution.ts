@@ -1474,7 +1474,21 @@ export class TeamsAppSolution implements Solution {
       return postLocalDebugResult;
     }
 
-    const maybeConfig = this.getLocalDebugConfig(ctx.config);
+    const maybeConfig = appStudioPlugin
+      .getConfigForCreatingManifest(
+        getPluginContext(ctx, this.appStudioPlugin.name, manifest),
+        true
+      )
+      .map((conf) => {
+        return {
+          localTabEndpoint: conf.tabEndpoint,
+          localTabDomain: conf.tabDomain,
+          localAADId: conf.aadId,
+          localBotDomain: conf.botDomain,
+          botId: conf.botId,
+          webApplicationInfoResource: conf.webApplicationInfoResource,
+        };
+      });
 
     if (maybeConfig.isErr()) {
       return maybeConfig;
@@ -1589,130 +1603,107 @@ export class TeamsAppSolution implements Solution {
     });
   }
 
-  private getConfigForCreatingManifest(
-    config: SolutionConfig,
-    localDebug: boolean
-  ): Result<
-    {
-      tabEndpoint?: string;
-      tabDomain?: string;
-      aadId: string;
-      botDomain?: string;
-      botId?: string;
-      webApplicationInfoResource: string;
-    },
-    FxError
-  > {
-    const tabEndpoint = localDebug
-      ? config.get(this.localDebugPlugin.name)?.getString(LOCAL_DEBUG_TAB_ENDPOINT)
-      : config.get(this.fehostPlugin.name)?.getString(FRONTEND_ENDPOINT);
-    const tabDomain = localDebug
-      ? config.get(this.localDebugPlugin.name)?.getString(LOCAL_DEBUG_TAB_DOMAIN)
-      : config.get(this.fehostPlugin.name)?.getString(FRONTEND_DOMAIN);
-    const aadId = config
-      .get(this.aadPlugin.name)
-      ?.getString(localDebug ? LOCAL_DEBUG_AAD_ID : REMOTE_AAD_ID);
-    const botId = config.get(this.botPlugin.name)?.getString(localDebug ? LOCAL_BOT_ID : BOT_ID);
-    const botDomain = localDebug
-      ? config.get(this.localDebugPlugin.name)?.getString(LOCAL_DEBUG_BOT_DOMAIN)
-      : config.get(this.botPlugin.name)?.getString(BOT_DOMAIN);
-    // This config value is set by aadPlugin.setApplicationInContext. so aadPlugin.setApplicationInContext needs to run first.
-    const webApplicationInfoResource = config
-      .get(this.aadPlugin.name)
-      ?.getString(localDebug ? LOCAL_WEB_APPLICATION_INFO_SOURCE : WEB_APPLICATION_INFO_SOURCE);
-    if (!webApplicationInfoResource) {
-      return err(
-        returnSystemError(
-          new Error(
-            "Missing configuration data for manifest. Run 'provision' first. Data required: webApplicationInfoResource."
-          ),
-          "Solution",
-          localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError
-        )
-      );
-    }
+  // private getConfigForCreatingManifest(
+  //   config: SolutionConfig,
+  //   localDebug: boolean
+  // ): Result<
+  //   {
+  //     tabEndpoint?: string;
+  //     tabDomain?: string;
+  //     aadId: string;
+  //     botDomain?: string;
+  //     botId?: string;
+  //     webApplicationInfoResource: string;
+  //   },
+  //   FxError
+  // > {
+  //   const tabEndpoint = localDebug
+  //     ? config.get(this.localDebugPlugin.name)?.getString(LOCAL_DEBUG_TAB_ENDPOINT)
+  //     : config.get(this.fehostPlugin.name)?.getString(FRONTEND_ENDPOINT);
+  //   const tabDomain = localDebug
+  //     ? config.get(this.localDebugPlugin.name)?.getString(LOCAL_DEBUG_TAB_DOMAIN)
+  //     : config.get(this.fehostPlugin.name)?.getString(FRONTEND_DOMAIN);
+  //   const aadId = config
+  //     .get(this.aadPlugin.name)
+  //     ?.getString(localDebug ? LOCAL_DEBUG_AAD_ID : REMOTE_AAD_ID);
+  //   const botId = config.get(this.botPlugin.name)?.getString(localDebug ? LOCAL_BOT_ID : BOT_ID);
+  //   const botDomain = localDebug
+  //     ? config.get(this.localDebugPlugin.name)?.getString(LOCAL_DEBUG_BOT_DOMAIN)
+  //     : config.get(this.botPlugin.name)?.getString(BOT_DOMAIN);
+  //   // This config value is set by aadPlugin.setApplicationInContext. so aadPlugin.setApplicationInContext needs to run first.
+  //   const webApplicationInfoResource = config
+  //     .get(this.aadPlugin.name)
+  //     ?.getString(localDebug ? LOCAL_WEB_APPLICATION_INFO_SOURCE : WEB_APPLICATION_INFO_SOURCE);
+  //   if (!webApplicationInfoResource) {
+  //     return err(
+  //       returnSystemError(
+  //         new Error(
+  //           "Missing configuration data for manifest. Run 'provision' first. Data required: webApplicationInfoResource."
+  //         ),
+  //         "Solution",
+  //         localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError
+  //       )
+  //     );
+  //   }
 
-    if (!aadId) {
-      return err(
-        returnSystemError(
-          new Error(
-            `Missing configuration data for manifest. Run 'provision' first. Data required: ${LOCAL_DEBUG_AAD_ID}.`
-          ),
-          "Solution",
-          localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError
-        )
-      );
-    }
-    // localTabEndpoint, bots and composeExtensions can't all be undefined
-    if (!tabEndpoint && !botId) {
-      return err(
-        returnSystemError(
-          new Error(
-            `Missing configuration data for manifest. Data required: ${
-              localDebug ? LOCAL_DEBUG_TAB_ENDPOINT : FRONTEND_ENDPOINT
-            }, ${localDebug ? LOCAL_BOT_ID : BOT_ID}.`
-          ),
-          "Solution",
-          localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError
-        )
-      );
-    }
-    if ((tabEndpoint && !tabDomain) || (!tabEndpoint && tabDomain)) {
-      return err(
-        returnSystemError(
-          new Error(
-            `Invalid configuration data for manifest: ${
-              localDebug ? LOCAL_DEBUG_TAB_ENDPOINT : FRONTEND_ENDPOINT
-            }=${tabEndpoint}, ${
-              localDebug ? LOCAL_DEBUG_TAB_DOMAIN : FRONTEND_DOMAIN
-            }=${tabDomain}.`
-          ),
-          "Solution",
-          localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError
-        )
-      );
-    }
-    if (botId) {
-      if (!botDomain) {
-        return err(
-          returnSystemError(
-            new Error(
-              `Missing configuration data for manifest. Data required: ${
-                localDebug ? LOCAL_DEBUG_BOT_DOMAIN : BOT_DOMAIN
-              }.`
-            ),
-            "Solution",
-            localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError
-          )
-        );
-      }
-    }
+  //   if (!aadId) {
+  //     return err(
+  //       returnSystemError(
+  //         new Error(
+  //           `Missing configuration data for manifest. Run 'provision' first. Data required: ${LOCAL_DEBUG_AAD_ID}.`
+  //         ),
+  //         "Solution",
+  //         localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError
+  //       )
+  //     );
+  //   }
+  //   // localTabEndpoint, bots and composeExtensions can't all be undefined
+  //   if (!tabEndpoint && !botId) {
+  //     return err(
+  //       returnSystemError(
+  //         new Error(
+  //           `Missing configuration data for manifest. Data required: ${
+  //             localDebug ? LOCAL_DEBUG_TAB_ENDPOINT : FRONTEND_ENDPOINT
+  //           }, ${localDebug ? LOCAL_BOT_ID : BOT_ID}.`
+  //         ),
+  //         "Solution",
+  //         localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError
+  //       )
+  //     );
+  //   }
+  //   if ((tabEndpoint && !tabDomain) || (!tabEndpoint && tabDomain)) {
+  //     return err(
+  //       returnSystemError(
+  //         new Error(
+  //           `Invalid configuration data for manifest: ${
+  //             localDebug ? LOCAL_DEBUG_TAB_ENDPOINT : FRONTEND_ENDPOINT
+  //           }=${tabEndpoint}, ${
+  //             localDebug ? LOCAL_DEBUG_TAB_DOMAIN : FRONTEND_DOMAIN
+  //           }=${tabDomain}.`
+  //         ),
+  //         "Solution",
+  //         localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError
+  //       )
+  //     );
+  //   }
+  //   if (botId) {
+  //     if (!botDomain) {
+  //       return err(
+  //         returnSystemError(
+  //           new Error(
+  //             `Missing configuration data for manifest. Data required: ${
+  //               localDebug ? LOCAL_DEBUG_BOT_DOMAIN : BOT_DOMAIN
+  //             }.`
+  //           ),
+  //           "Solution",
+  //           localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError
+  //         )
+  //       );
+  //     }
+  //   }
 
-    return ok({ tabEndpoint, tabDomain, aadId, botDomain, botId, webApplicationInfoResource });
-  }
-
-  private getLocalDebugConfig(config: SolutionConfig): Result<
-    {
-      localTabEndpoint?: string;
-      localTabDomain?: string;
-      localAADId: string;
-      localBotDomain?: string;
-      botId?: string;
-      webApplicationInfoResource: string;
-    },
-    FxError
-  > {
-    return this.getConfigForCreatingManifest(config, true).map((conf) => {
-      return {
-        localTabEndpoint: conf.tabEndpoint,
-        localTabDomain: conf.tabDomain,
-        localAADId: conf.aadId,
-        localBotDomain: conf.botDomain,
-        botId: conf.botId,
-        webApplicationInfoResource: conf.webApplicationInfoResource,
-      };
-    });
-  }
+  //   return ok({ tabEndpoint, tabDomain, aadId, botDomain, botId, webApplicationInfoResource });
+  // }
 
   getAzureSolutionSettings(ctx: SolutionContext): AzureSolutionSettings {
     return ctx.projectSettings?.solutionSettings as AzureSolutionSettings;

@@ -393,10 +393,9 @@ export class AppStudioPluginImpl {
       const hasMsgExt = capabilities?.includes(MessageExtensionItem.id);
       if (!hasBot && !hasMsgExt) {
         return err(
-          returnSystemError(
-            new Error("Select either Bot or Messaging Extension"),
-            "Solution",
-            SolutionError.InternelError
+          AppStudioResultFactory.SystemError(
+            AppStudioError.InternalError.name,
+            AppStudioError.InternalError.message
           )
         );
       }
@@ -500,6 +499,133 @@ export class AppStudioPluginImpl {
       ctx.logProvider?.info(`Teams app updated ${JSON.stringify(updatedManifest)}`);
       return ok(appDefinition);
     }
+  }
+
+  public getConfigForCreatingManifest(
+    ctx: PluginContext,
+    localDebug: boolean
+  ): Result<
+    {
+      tabEndpoint?: string;
+      tabDomain?: string;
+      aadId: string;
+      botDomain?: string;
+      botId?: string;
+      webApplicationInfoResource: string;
+    },
+    FxError
+  > {
+    const tabEndpoint = localDebug
+      ? (ctx.configOfOtherPlugins.get(PluginNames.LDEBUG)?.get(LOCAL_DEBUG_TAB_ENDPOINT) as string)
+      : (ctx.configOfOtherPlugins.get(PluginNames.FE)?.get(FRONTEND_ENDPOINT) as string);
+    const tabDomain = localDebug
+      ? (ctx.configOfOtherPlugins.get(PluginNames.LDEBUG)?.get(LOCAL_DEBUG_TAB_DOMAIN) as string)
+      : (ctx.configOfOtherPlugins.get(PluginNames.FE)?.get(FRONTEND_DOMAIN) as string);
+    const aadId = ctx.configOfOtherPlugins
+      .get(PluginNames.AAD)
+      ?.get(localDebug ? LOCAL_DEBUG_AAD_ID : REMOTE_AAD_ID) as string;
+    const botId = ctx.configOfOtherPlugins
+      .get(PluginNames.BOT)
+      ?.get(localDebug ? LOCAL_BOT_ID : BOT_ID) as string;
+    const botDomain = localDebug
+      ? (ctx.configOfOtherPlugins.get(PluginNames.LDEBUG)?.get(LOCAL_DEBUG_BOT_DOMAIN) as string)
+      : (ctx.configOfOtherPlugins.get(PluginNames.BOT)?.get(BOT_DOMAIN) as string);
+    // This config value is set by aadPlugin.setApplicationInContext. so aadPlugin.setApplicationInContext needs to run first.
+    const webApplicationInfoResource = ctx.configOfOtherPlugins
+      .get(PluginNames.AAD)
+      ?.get(localDebug ? LOCAL_WEB_APPLICATION_INFO_SOURCE : WEB_APPLICATION_INFO_SOURCE) as string;
+    if (!webApplicationInfoResource) {
+      return err(
+        localDebug
+          ? AppStudioResultFactory.SystemError(
+              AppStudioError.GetLocalDebugConfigFailedError.name,
+              AppStudioError.GetLocalDebugConfigFailedError.message(
+                "webApplicationInfoResource",
+                true
+              )
+            )
+          : AppStudioResultFactory.SystemError(
+              AppStudioError.GetRemoteConfigFailedError.name,
+              AppStudioError.GetRemoteConfigFailedError.message("webApplicationInfoResource", true)
+            )
+      );
+    }
+
+    if (!aadId) {
+      return err(
+        localDebug
+          ? AppStudioResultFactory.SystemError(
+              AppStudioError.GetLocalDebugConfigFailedError.name,
+              AppStudioError.GetLocalDebugConfigFailedError.message(LOCAL_DEBUG_AAD_ID, true)
+            )
+          : AppStudioResultFactory.SystemError(
+              AppStudioError.GetRemoteConfigFailedError.name,
+              AppStudioError.GetRemoteConfigFailedError.message(LOCAL_DEBUG_AAD_ID, true)
+            )
+      );
+    }
+    /* localTabEndpoint, bots and composeExtensions can't all be undefined ${
+              localDebug ? LOCAL_DEBUG_TAB_ENDPOINT : FRONTEND_ENDPOINT
+            }, ${localDebug ? LOCAL_BOT_ID : BOT_ID}.` */
+    if (!tabEndpoint && !botId) {
+      return err(
+        localDebug
+          ? AppStudioResultFactory.SystemError(
+              AppStudioError.GetLocalDebugConfigFailedError.name,
+              AppStudioError.GetLocalDebugConfigFailedError.message(
+                LOCAL_DEBUG_TAB_ENDPOINT + ", " + LOCAL_BOT_ID,
+                false
+              )
+            )
+          : AppStudioResultFactory.SystemError(
+              AppStudioError.GetRemoteConfigFailedError.name,
+              AppStudioError.GetRemoteConfigFailedError.message(
+                FRONTEND_ENDPOINT + ", " + BOT_ID,
+                false
+              )
+            )
+      );
+    }
+    if ((tabEndpoint && !tabDomain) || (!tabEndpoint && tabDomain)) {
+      return err(
+        localDebug
+          ? AppStudioResultFactory.SystemError(
+              AppStudioError.InvalidLocalDebugConfigurationDataError.name,
+              AppStudioError.InvalidLocalDebugConfigurationDataError.message(
+                LOCAL_DEBUG_TAB_ENDPOINT,
+                tabEndpoint,
+                LOCAL_DEBUG_TAB_DOMAIN,
+                tabDomain
+              )
+            )
+          : AppStudioResultFactory.SystemError(
+              AppStudioError.InvalidRemoteConfigurationDataError.name,
+              AppStudioError.InvalidRemoteConfigurationDataError.message(
+                FRONTEND_ENDPOINT,
+                tabEndpoint,
+                FRONTEND_DOMAIN,
+                tabDomain
+              )
+            )
+      );
+    }
+    if (botId) {
+      if (!botDomain) {
+        return err(
+          localDebug
+            ? AppStudioResultFactory.SystemError(
+                AppStudioError.GetLocalDebugConfigFailedError.name,
+                AppStudioError.GetLocalDebugConfigFailedError.message(LOCAL_DEBUG_BOT_DOMAIN, false)
+              )
+            : AppStudioResultFactory.SystemError(
+                AppStudioError.GetRemoteConfigFailedError.name,
+                AppStudioError.GetRemoteConfigFailedError.message(BOT_DOMAIN, false)
+              )
+        );
+      }
+    }
+
+    return ok({ tabEndpoint, tabDomain, aadId, botDomain, botId, webApplicationInfoResource });
   }
 
   public async buildTeamsAppPackage(
@@ -694,110 +820,6 @@ export class AppStudioPluginImpl {
     } finally {
       await publishProgress?.end();
     }
-  }
-
-  private getConfigForCreatingManifest(
-    ctx: PluginContext,
-    localDebug: boolean
-  ): Result<
-    {
-      tabEndpoint?: string;
-      tabDomain?: string;
-      aadId: string;
-      botDomain?: string;
-      botId?: string;
-      webApplicationInfoResource: string;
-    },
-    FxError
-  > {
-    const tabEndpoint = localDebug
-      ? (ctx.configOfOtherPlugins.get(PluginNames.LDEBUG)?.get(LOCAL_DEBUG_TAB_ENDPOINT) as string)
-      : (ctx.configOfOtherPlugins.get(PluginNames.FE)?.get(FRONTEND_ENDPOINT) as string);
-    const tabDomain = localDebug
-      ? (ctx.configOfOtherPlugins.get(PluginNames.LDEBUG)?.get(LOCAL_DEBUG_TAB_DOMAIN) as string)
-      : (ctx.configOfOtherPlugins.get(PluginNames.FE)?.get(FRONTEND_DOMAIN) as string);
-    const aadId = ctx.configOfOtherPlugins
-      .get(PluginNames.AAD)
-      ?.get(localDebug ? LOCAL_DEBUG_AAD_ID : REMOTE_AAD_ID) as string;
-    const botId = ctx.configOfOtherPlugins
-      .get(PluginNames.BOT)
-      ?.get(localDebug ? LOCAL_BOT_ID : BOT_ID) as string;
-    const botDomain = localDebug
-      ? (ctx.configOfOtherPlugins.get(PluginNames.LDEBUG)?.get(LOCAL_DEBUG_BOT_DOMAIN) as string)
-      : (ctx.configOfOtherPlugins.get(PluginNames.BOT)?.get(BOT_DOMAIN) as string);
-    // This config value is set by aadPlugin.setApplicationInContext. so aadPlugin.setApplicationInContext needs to run first.
-    const webApplicationInfoResource = ctx.configOfOtherPlugins
-      .get(PluginNames.AAD)
-      ?.get(localDebug ? LOCAL_WEB_APPLICATION_INFO_SOURCE : WEB_APPLICATION_INFO_SOURCE) as string;
-    if (!webApplicationInfoResource) {
-      return err(
-        returnSystemError(
-          new Error(
-            "Missing configuration data for manifest. Run 'provision' first. Data required: webApplicationInfoResource."
-          ),
-          "Solution",
-          localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError
-        )
-      );
-    }
-
-    if (!aadId) {
-      return err(
-        returnSystemError(
-          new Error(
-            `Missing configuration data for manifest. Run 'provision' first. Data required: ${LOCAL_DEBUG_AAD_ID}.`
-          ),
-          "Solution",
-          localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError
-        )
-      );
-    }
-    // localTabEndpoint, bots and composeExtensions can't all be undefined
-    if (!tabEndpoint && !botId) {
-      return err(
-        returnSystemError(
-          new Error(
-            `Missing configuration data for manifest. Data required: ${
-              localDebug ? LOCAL_DEBUG_TAB_ENDPOINT : FRONTEND_ENDPOINT
-            }, ${localDebug ? LOCAL_BOT_ID : BOT_ID}.`
-          ),
-          "Solution",
-          localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError
-        )
-      );
-    }
-    if ((tabEndpoint && !tabDomain) || (!tabEndpoint && tabDomain)) {
-      return err(
-        returnSystemError(
-          new Error(
-            `Invalid configuration data for manifest: ${
-              localDebug ? LOCAL_DEBUG_TAB_ENDPOINT : FRONTEND_ENDPOINT
-            }=${tabEndpoint}, ${
-              localDebug ? LOCAL_DEBUG_TAB_DOMAIN : FRONTEND_DOMAIN
-            }=${tabDomain}.`
-          ),
-          "Solution",
-          localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError
-        )
-      );
-    }
-    if (botId) {
-      if (!botDomain) {
-        return err(
-          returnSystemError(
-            new Error(
-              `Missing configuration data for manifest. Data required: ${
-                localDebug ? LOCAL_DEBUG_BOT_DOMAIN : BOT_DOMAIN
-              }.`
-            ),
-            "Solution",
-            localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError
-          )
-        );
-      }
-    }
-
-    return ok({ tabEndpoint, tabDomain, aadId, botDomain, botId, webApplicationInfoResource });
   }
 
   private isSPFxProject(ctx: PluginContext): boolean {

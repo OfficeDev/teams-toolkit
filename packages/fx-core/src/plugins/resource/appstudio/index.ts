@@ -180,6 +180,23 @@ export class AppStudioPlugin implements Plugin {
     return this.appStudioPluginImpl.createManifestForRemote(ctx, maybeSelectedPlugins, manifest);
   }
 
+  public getConfigForCreatingManifest(
+    ctx: PluginContext,
+    localDebug: boolean
+  ): Result<
+    {
+      tabEndpoint?: string;
+      tabDomain?: string;
+      aadId: string;
+      botDomain?: string;
+      botId?: string;
+      webApplicationInfoResource: string;
+    },
+    FxError
+  > {
+    return this.appStudioPluginImpl.getConfigForCreatingManifest(ctx, localDebug);
+  }
+
   public createAndConfigTeamsManifest(
     ctx: PluginContext,
     maybeSelectedPlugins: Result<LoadedPlugin[], FxError>

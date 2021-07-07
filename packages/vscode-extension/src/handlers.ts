@@ -688,8 +688,11 @@ export async function showError(e: UserError | SystemError) {
 
     const button = await window.showErrorMessage(`[${errorCode}]: ${e.message}`, help);
     if (button) await button.run();
-  } else if ("issueLink" in e && e.issueLink && typeof e.issueLink != "undefined") {
-    const path = e.issueLink.replace(/\/$/, "") + "?";
+  } else if (e instanceof SystemError) {
+    const path =
+      typeof e.issueLink === "undefined"
+        ? "https://github.com/OfficeDev/TeamsFx/issues/new?"
+        : e.issueLink;
     const param = `title=new+bug+report: ${errorCode}&body=${e.message}\n\n${e.stack}`;
     const issue = {
       title: StringResources.vsc.handlers.reportIssue,

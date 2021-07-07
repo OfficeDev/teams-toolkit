@@ -15,6 +15,7 @@ import {
   SystemError,
   UserError,
   Colors,
+  AzureSolutionSettings,
 } from "@microsoft/teamsfx-api";
 import { AppStudioPluginImpl } from "./plugin";
 import { Constants } from "./constants";
@@ -24,6 +25,11 @@ import { manuallySubmitOption, autoPublishOption } from "./questions";
 import { TelemetryUtils, TelemetryEventName, TelemetryPropertyKey } from "./utils/telemetry";
 
 export class AppStudioPlugin implements Plugin {
+  name = "fx-resource-appstudio";
+  displayName = "App Studio";
+  activate(solutionSettings: AzureSolutionSettings): boolean{
+    return true;
+  }
   private appStudioPluginImpl = new AppStudioPluginImpl();
 
   async getQuestions(

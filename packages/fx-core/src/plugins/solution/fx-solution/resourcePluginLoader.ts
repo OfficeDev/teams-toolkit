@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import {AzureSolutionSettings, FxError, Result, Plugin, ok, err} from "@microsoft/teamsfx-api";
+import {AzureSolutionSettings, FxError, Result, Plugin, ok, err, returnUserError} from "@microsoft/teamsfx-api";
 
 /**
  * 1: add import statement
@@ -16,11 +16,12 @@ import {SimpleAuthPlugin} from "../../resource/simpleauth";
 import {LocalDebugPlugin} from "../../resource/localdebug";
 import {ApimPlugin} from "../../resource/apim";
 import {AppStudioPlugin} from "../../resource/appstudio";
+import { SolutionError } from "./constants";
  
 /**
  * 2: add new plugin statement
  */
-export async function createAllResourcePlugins():Promise<Result<Plugin[],FxError>>{
+export function createAllResourcePlugins():Result<Plugin[],FxError>{
   const plugins: Plugin[] = [
       new SpfxPlugin()
       , new FrontendPlugin()
@@ -38,17 +39,18 @@ export async function createAllResourcePlugins():Promise<Result<Plugin[],FxError
 }
 
 
-export async function getResourcePlugin(name:string):Promise<Result<Plugin|undefined,FxError>>{
-  const res1 = await createAllResourcePlugins();
+export function createAllResourcePluginsMap( ):Result<Map<string, Plugin>,FxError>{
+  const res1 = createAllResourcePlugins();
   if(res1.isErr()) return err(res1.error);
-  const res = res1.value.filter(p=>p.name === name);
-  if(res.length > 0)
-    return ok(res[0]);
-  return ok(undefined);
+  const map = new Map<string, Plugin>();
+  for(const p of res1.value){
+    map.set(p.name, p);
+  }
+  return ok(map);
 }
 
-export async function loadActivatedResourcePlugins(solutionSettings: AzureSolutionSettings):Promise<Result<Plugin[],FxError>> {
-  const res1 = await createAllResourcePlugins();
+export function loadActivatedResourcePlugins(solutionSettings: AzureSolutionSettings):Result<Plugin[],FxError>{
+  const res1 = createAllResourcePlugins();
   if(res1.isErr()) return err(res1.error);
   const allPlugins = res1.value;
   let activatedPlugins:Plugin[] = [];
@@ -56,5 +58,12 @@ export async function loadActivatedResourcePlugins(solutionSettings: AzureSoluti
     activatedPlugins = allPlugins.filter(p=>p.name && solutionSettings.activeResourcePlugins.includes(p.name));
   else // create from zero
     activatedPlugins = allPlugins.filter(p=>p.activate && p.activate(solutionSettings) === true);
+  if(activatedPlugins.length === 0){
+    return err(returnUserError(
+      new Error(`No plugin selected`),
+      "Solution",
+      SolutionError.NoResourcePluginSelected
+    ));
+  }
   return ok(activatedPlugins);
 }

@@ -11,6 +11,7 @@ import {
   Result,
   ok,
   TeamsAppManifest,
+  AzureSolutionSettings,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as path from "path";
@@ -19,6 +20,7 @@ import { TelemetryEvent } from "./utils/constants";
 import { telemetryHelper } from "./utils/telemetry-helper";
 import { ProgressHelper } from "./utils/progress-helper";
 import { getTemplatesFolder } from "../../..";
+import { HostTypeOptionSPFx } from "../../solution/fx-solution/question";
 export class SpfxConfig {
   webpartName = "my-SPFx-app";
   webpartDesc = "This is a SPFx app.";
@@ -33,6 +35,11 @@ export enum SPFXQuestionNames {
 }
 
 export class SpfxPlugin implements Plugin {
+  name = "fx-resource-spfx";
+  displayName = "SharePoint Framework (SPFx)";
+  activate(solutionSettings: AzureSolutionSettings): boolean{
+    return solutionSettings.hostType === HostTypeOptionSPFx.id;
+  }
   config: SpfxConfig = new SpfxConfig();
   spfxPluginImpl: SPFxPluginImpl = new SPFxPluginImpl();
 

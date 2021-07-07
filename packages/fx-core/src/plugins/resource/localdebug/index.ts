@@ -51,6 +51,11 @@ import { getCodespaceName, getCodespaceUrl } from "./util/codespace";
 import { TelemetryUtils, TelemetryEventName } from "./util/telemetry";
 
 export class LocalDebugPlugin implements Plugin {
+  name = "fx-resource-local-debug";
+  displayName = "LocalDebug";
+  activate(solutionSettings: AzureSolutionSettings): boolean{
+    return true;
+  }
   public async scaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
     const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
       ?.activeResourcePlugins;

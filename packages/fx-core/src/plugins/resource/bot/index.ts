@@ -10,6 +10,7 @@ import {
   err,
   UserError,
   SystemError,
+  AzureSolutionSettings,
 } from "@microsoft/teamsfx-api";
 
 import { FxResult, FxBotPluginResultFactory as ResultFactory } from "./result";
@@ -19,8 +20,15 @@ import { LifecycleFuncNames, ProgressBarConstants } from "./constants";
 import { ErrorType, PluginError } from "./errors";
 import { Logger } from "./logger";
 import { telemetryHelper } from "./utils/telemetry-helper";
+import { BotOptionItem, MessageExtensionItem } from "../../solution/fx-solution/question";
 
 export class TeamsBot implements Plugin {
+  name = "fx-resource-bot";
+  displayName = "Bot";
+  activate(solutionSettings: AzureSolutionSettings): boolean{
+    const cap = solutionSettings.capabilities!;
+    return cap.includes(BotOptionItem.id) || cap.includes(MessageExtensionItem.id);
+  }
   public teamsBotImpl: TeamsBotImpl = new TeamsBotImpl();
 
   public async getQuestions(

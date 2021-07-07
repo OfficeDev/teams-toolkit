@@ -12,15 +12,15 @@ import { AzureSolutionSettings } from "./types";
  * Plugin.
  */
 export interface Plugin {
-  name?: string;
+  name: string;
 
-  displayName?: string;
+  displayName: string;
 
   /**
    * resource plugin decide whether it need to be activated
    * @param solutionSettings solution settings
    */
-  activate?(solutionSettings: AzureSolutionSettings): boolean;
+  activate(solutionSettings: AzureSolutionSettings): boolean;
 
   /**
    * prerequisiteCheck will check the whether required software has been installed. e.g. dotnet runtime of a required version.

@@ -8,8 +8,17 @@ import { UnhandledError } from "./errors";
 import { TelemetryUtils } from "./utils/telemetry";
 import { DialogUtils } from "./utils/dialog";
 import { Messages, Telemetry } from "./constants";
+import { AzureSolutionSettings } from "@microsoft/teamsfx-api";
+import { HostTypeOptionAzure } from "../../solution/fx-solution/question";
 
 export class AadAppForTeamsPlugin implements Plugin {
+
+  name = "fx-resource-aad-app-for-teams";
+  displayName = "AAD";
+  activate(solutionSettings: AzureSolutionSettings): boolean{
+    return solutionSettings.hostType === HostTypeOptionAzure.id;
+  }
+  
   public pluginImpl: AadAppForTeamsImpl = new AadAppForTeamsImpl();
 
   public async provision(ctx: PluginContext): Promise<AadResult> {

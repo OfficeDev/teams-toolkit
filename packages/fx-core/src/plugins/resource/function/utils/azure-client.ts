@@ -1,12 +1,18 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ResourceManagementClient, ResourceManagementModels } from "@azure/arm-resources";
+import {
+  Providers,
+  ResourceManagementClient,
+  ResourceManagementClientContext,
+  ResourceManagementModels,
+} from "@azure/arm-resources";
 import { StorageManagementClient, StorageManagementModels } from "@azure/arm-storage";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { WebSiteManagementClient, WebSiteManagementModels } from "@azure/arm-appservice";
 
 import { InfoMessages } from "../resources/message";
 import { Logger } from "./logger";
+import { Provider } from "@azure/arm-resources/esm/models";
 
 export class AzureClientFactory {
   /* TODO: we wrap the constructor to function and further discuss whether we should make it singleton.
@@ -32,6 +38,13 @@ export class AzureClientFactory {
     subscriptionId: string
   ): ResourceManagementClient {
     return new ResourceManagementClient(credentials, subscriptionId);
+  }
+
+  public static getResourceProviderClient(
+    credentials: TokenCredentialsBase,
+    subscriptionId: string
+  ): Providers {
+    return new Providers(new ResourceManagementClientContext(credentials, subscriptionId));
   }
 }
 
@@ -68,6 +81,30 @@ export class AzureLib {
     }
     Logger.info(InfoMessages.resourceExists);
     return _t;
+  }
+
+  public static async findResourceProvider(
+    client: Providers,
+    namespace: string
+  ): Promise<Provider | undefined> {
+    const provider = await client.get(namespace);
+    if (provider.registrationState === "Registered") {
+      return provider;
+    }
+  }
+
+  public static async ensureResourceProviders(
+    client: Providers,
+    providerNamespaces: string[]
+  ): Promise<Provider[]> {
+    return Promise.all(
+      providerNamespaces.map((namespace) =>
+        this.ensureResource<Provider>(
+          () => client.register(namespace),
+          () => this.findResourceProvider(client, namespace)
+        )
+      )
+    );
   }
 
   public static async findAppServicePlans(

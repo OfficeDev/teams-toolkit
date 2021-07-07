@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ProductName } from "@microsoft/teamsfx-api";
+import { ProductName, SystemError } from "@microsoft/teamsfx-api";
 import * as vscode from "vscode";
 
 import { getLocalTeamsAppId } from "./commonUtils";
@@ -12,6 +12,8 @@ import { getTeamsAppId } from "../utils/commonUtils";
 import { isValidProject } from "@microsoft/teamsfx-core";
 import { getNpmInstallLogInfo, NpmInstallLogInfo } from "./npmLogHandler";
 import * as path from "path";
+import { showError } from "../handlers";
+import { errorDetail, issueLink, issueTemplate, npmInstall, npmInstallErrorMessage } from "./constants";
 
 interface IRunningTeamsfxTask {
   source: string;
@@ -110,9 +112,24 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
       try {
         if (cwd !== undefined && event.exitCode !== undefined && event.exitCode !== 0) {
           npmInstallLogInfo = await getNpmInstallLogInfo();
+          showError(new SystemError(
+            npmInstall,
+            npmInstallErrorMessage,
+            task.name,
+            issueTemplate + errorDetail + JSON.stringify(npmInstallLogInfo),
+            issueLink,
+            npmInstallLogInfo
+          ));
         }
       } catch {
         // ignore any error
+        showError(new SystemError(
+          npmInstall,
+          npmInstallErrorMessage,
+          task.name,
+          issueTemplate,
+          issueLink
+        ));
       }
 
       const properties: { [key: string]: string } = {

@@ -86,4 +86,13 @@ export class TelemetryHelper {
       measurements
     );
   }
+
+  static sendGeneralEvent(
+    eventName: string,
+    properties: { [key: string]: string } = {},
+    measurements: { [key: string]: number } = {}
+  ): void {
+    TelemetryHelper.fillCommonProperty(properties);
+    this.ctx?.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
+  }
 }

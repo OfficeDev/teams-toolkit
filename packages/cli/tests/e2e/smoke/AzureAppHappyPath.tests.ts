@@ -5,7 +5,13 @@ import fs from "fs-extra";
 import path from "path";
 import * as chai from "chai";
 
-import { AadValidator, AppStudioValidator, FrontendValidator, FunctionValidator, SimpleAuthValidator } from "../../commonlib";
+import {
+  AadValidator,
+  AppStudioValidator,
+  FrontendValidator,
+  FunctionValidator,
+  SimpleAuthValidator,
+} from "../../commonlib";
 
 import {
   execAsync,
@@ -32,7 +38,7 @@ describe("Azure App Happy Path", function () {
       {
         cwd: testFolder,
         env: process.env,
-        timeout: 0
+        timeout: 0,
       }
     );
     console.log(`[Successfully] scaffold to ${projectPath}`);
@@ -40,36 +46,27 @@ describe("Azure App Happy Path", function () {
     await setSimpleAuthSkuNameToB1(projectPath);
 
     // capability add bot
-    await execAsync(
-      `teamsfx capability add bot`,
-      {
-        cwd: projectPath,
-        env: process.env,
-        timeout: 0
-      }
-    );
+    await execAsync(`teamsfx capability add bot`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
 
     await setBotSkuNameToB1(projectPath);
 
     // set subscription
-    await execAsync(
-      `teamsfx account set --subscription ${subscription}`,
-      {
-        cwd: projectPath,
-        env: process.env,
-        timeout: 0
-      }
-    );
+    await execAsync(`teamsfx account set --subscription ${subscription}`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
 
     // resource add apim
-    await execAsync(
-      `teamsfx resource add azure-apim --function-name testApim`,
-      {
-        cwd: projectPath,
-        env: process.env,
-        timeout: 0
-      }
-    );
+    await execAsync(`teamsfx resource add azure-apim --function-name testApim`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
 
     {
       /// TODO: add check for scaffold
@@ -77,11 +74,11 @@ describe("Azure App Happy Path", function () {
 
     // provision
     await execAsyncWithRetry(
-      `teamsfx provision --sql-admin-name Abc123321 --sql-password Cab232332 --sql-confirm-password Cab232332`,
+      `teamsfx provision --sql-admin-name Abc123321 --sql-password Cab232332`,
       {
         cwd: projectPath,
         env: process.env,
-        timeout: 0
+        timeout: 0,
       }
     );
 
@@ -113,7 +110,7 @@ describe("Azure App Happy Path", function () {
       {
         cwd: projectPath,
         env: process.env,
-        timeout: 0
+        timeout: 0,
       }
     );
 
@@ -122,28 +119,22 @@ describe("Azure App Happy Path", function () {
     }
 
     // validate the manifest
-    const validationResult = await execAsyncWithRetry(
-      `teamsfx validate`,
-      {
-        cwd: projectPath,
-        env: process.env,
-        timeout: 0
-      }
-    );
+    const validationResult = await execAsyncWithRetry(`teamsfx validate`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
 
     {
       chai.assert.isEmpty(validationResult.stderr);
     }
 
     // build
-    await execAsyncWithRetry(
-      `teamsfx build`,
-      {
-        cwd: projectPath,
-        env: process.env,
-        timeout: 0
-      }
-    );
+    await execAsyncWithRetry(`teamsfx build`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
 
     {
       // Validate built package
@@ -152,14 +143,11 @@ describe("Azure App Happy Path", function () {
     }
 
     // publish
-    await execAsyncWithRetry(
-      `teamsfx publish`,
-      {
-        cwd: projectPath,
-        env: process.env,
-        timeout: 0
-      }
-    );
+    await execAsyncWithRetry(`teamsfx publish`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
 
     {
       // Validate publish result

@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import path from "path";
+import { FrontendPathInfo as PathInfo } from "../constants";
+
 export class Messages {
   // Progress bar messages
   static readonly ScaffoldProgressTitle = "Scaffolding Tab";
@@ -10,6 +13,7 @@ export class Messages {
 
   static readonly ProgressStart = "Preparing.";
   static readonly ProgressScaffold = "Scaffolding Tab frontend project.";
+  static readonly ProgressRegisterRP = "Registering required resource provider.";
   static readonly ProgressCreateStorage = "Creating Azure Storage account.";
   static readonly ProgressConfigure = "Configuring.";
   static readonly ProgressNPMInstall = `Running "npm install" for Tab frontend project.`;
@@ -30,10 +34,14 @@ export class Messages {
   static readonly EndPreDeploy = (name: string) => `Pre-deployed '${name}'.`;
   static readonly StartDeploy = (name: string) => `Deploying '${name}'.`;
   static readonly EndDeploy = (name: string) => `Successfully deployed '${name}'.`;
-  static readonly StartPostLocalDebug = (name: string) => `Starting local debug '${name}'.`;
-  static readonly SkipBuild = () => "Nothing to build; no changes detected since last build.";
-  static readonly SkipDeploy = () =>
-    "Nothing to deploy; no changes detected since last deployment.";
+
+  static readonly SkipBuild =
+    "Skip building Tab frontend project because no change was detected since last build.";
+  static readonly SkipDeploy = `Skip deployment of Tab frontend project because no change was detected. To fully redeploy Tab frontend project, please remove '${path.join(
+    PathInfo.WorkingDir,
+    PathInfo.TabDeploymentFolderName
+  )}' folder and rerun the command.`;
+
   static readonly StartCheckResourceGroupExistence = (name: string) =>
     `Checking resource group '${name}'.`;
   static readonly StartCheckStaticWebsiteEnabled = (name: string) =>
@@ -55,13 +63,12 @@ export class Messages {
     `Failed to retrieve manifest from '${url}'. Retrying...`;
   static readonly FailedFetchZip = (url: string) =>
     `Failed to retrieve zip package from '${url}'. Retrying...`;
-  static readonly FailedFetchTemplate = () =>
+  static readonly FailedFetchTemplate =
     "Failed to retrieve latest template from GitHub. Using local template instead.";
 
   static readonly FailedOperationWithErrorCode = (doOperation: string, errorCode?: string) =>
     `Failed to '${doOperation}' with error code '${errorCode}'.`;
-  static readonly GetEmptyStorageEndpoint = () =>
+  static readonly GetEmptyStorageEndpoint =
     "Failed to retrieve endpoint for Azure Storage account.";
-  static readonly GetEmptySasToken = () =>
-    "Failed to retrieve SAS token for Azure Storage account.";
+  static readonly GetEmptySasToken = "Failed to retrieve SAS token for Azure Storage account.";
 }

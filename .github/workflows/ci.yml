@@ -5,12 +5,10 @@ on:
     branches:
       - main
       - dev 
-      - release/**
   pull_request:
     branches:
       - main
       - dev 
-      - release/**
 
 jobs:
   build-and-test:
@@ -40,13 +38,14 @@ jobs:
           dotnet-version: 3.1.x
 
       - name: Download Simple Auth bits
-        run: |
-          $version=Get-Content packages/fx-core/templates/plugins/resource/simpleauth/version.txt
-          $tag = "simpleauth@"+$version
-          $fileName="Microsoft.TeamsFx.SimpleAuth_$version.zip"
-          $url = "https://github.com/OfficeDev/TeamsFx/releases/download/"+$tag+"/"+$fileName
-          Invoke-WebRequest $url -OutFile packages/fx-core/templates/plugins/resource/simpleauth/SimpleAuth.zip
-        shell: pwsh
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 10
+          retry_on: error
+          shell: pwsh
+          command: |
+            ./.github/scripts/downloadSimpleAuth.ps1
 
       - name: Setup project
         run: |

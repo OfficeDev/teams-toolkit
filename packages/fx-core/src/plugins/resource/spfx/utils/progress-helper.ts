@@ -10,7 +10,7 @@ export class ProgressHelper {
   static async startPreDeployProgressHandler(
     ctx: PluginContext
   ): Promise<IProgressHandler | undefined> {
-    this.preDeployProgress = ctx.dialog?.createProgressBar(
+    this.preDeployProgress = ctx.ui?.createProgressBar(
       ProgressTitleMessage.PreDeployProgressTitle,
       Object.entries(PreDeployProgressMessage).length
     );

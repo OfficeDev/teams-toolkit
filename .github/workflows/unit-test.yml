@@ -1,0 +1,125 @@
+name: Unit Test
+
+on:
+  pull_request:
+    branches:
+      - main
+      - dev 
+
+jobs:
+  source-branch-test:
+    runs-on: ubuntu-latest
+    outputs:
+      coverages: ${{ steps.unit-test.outputs.coverages }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Setup node
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: 14
+
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 3.1.x
+
+      - name: Download Simple Auth bits
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 10
+          retry_on: error
+          shell: pwsh
+          command: |
+            ./.github/scripts/downloadSimpleAuth.ps1
+
+      - name: Setup project
+        run: |
+          npm run setup
+
+      - name: Unit Test
+        id: unit-test
+        shell: bash
+        run: |
+          npx lerna run test:unit
+          coverages="{}"
+          for i in $(find . -name coverage-summary.json); do
+            coverages=$(echo $coverages | jq -rc --arg package $(basename $(dirname $(dirname $i))) --argjson total $(jq -cr '.total' $i) '.[$package]= $total')
+          done  
+          echo $coverages
+          echo "::set-output name=coverages::$coverages"
+
+  target-branch-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.base_ref }}
+
+      - name: Setup node
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: 14
+
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 3.1.x
+
+      - name: Download Simple Auth bits
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 10
+          retry_on: error
+          shell: pwsh
+          command: |
+            ./.github/scripts/downloadSimpleAuth.ps1
+
+      - name: Setup project
+        run: |
+          npm run setup
+
+      - name: Unit Test
+        id: unit-test
+        shell: bash
+        run: |
+          npx lerna run test:unit
+          coverages="{}"
+          for i in $(find . -name coverage-summary.json); do
+            coverages=$(echo $coverages | jq -rc --arg package $(basename $(dirname $(dirname $i))) --argjson total $(jq -cr '.total' $i) '.[$package]= $total')
+          done  
+          echo $coverages
+          echo "::set-output name=coverages::$coverages"
+
+  compare-coverage:
+    needs: [source-branch-test, target-branch-test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: compare coverage between source branch and target branch
+        run: |
+          if [ '${{ needs.source-branch-test.outputs.coverages }}' == "{}" ] || [ '${{ needs.source-branch-test.outputs.coverages }}' == "" ]; then
+            exit 0
+          fi
+
+          if [ '${{ needs.target-branch-test.outputs.coverages }}' == "{}" ] || [ '${{ needs.target-branch-test.outputs.coverages }}' == "" ]; then
+            exit 0
+          fi
+
+          mapfile -t source < <(echo '${{ needs.source-branch-test.outputs.coverages }}' | jq -r 'keys[]' )
+
+          for i in ${source[@]}; do
+            if [[ $(echo '${{ needs.target-branch-test.outputs.coverages }}' | jq .\"$i\") != "null" ]]; then
+              targetpct=$(echo '${{ needs.target-branch-test.outputs.coverages }}' | jq .\"$i\".lines.pct) 
+              sourcepct=$(echo '${{ needs.source-branch-test.outputs.coverages }}' | jq .\"$i\".lines.pct) 
+              if (( $(echo "$targetpct > $sourcepct" | bc -l ) )); then
+                printf "test coverage decreased: [target]%s, [source]%s\n"  $targetpct $sourcepct
+                exit 1
+              fi
+            fi
+          done

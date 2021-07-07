@@ -13,82 +13,89 @@ import CLILogProvider from "./log";
 
 dotenv.config();
 
-const user = cfg.user;
-const password = cfg.password;
+const user = cfg.M365_ACCOUNT_NAME || "";
+const password = cfg.M365_ACCOUNT_PASSWORD || "";
 
 const msalConfig = {
-    auth: {
-        clientId: cfg.client_id,
-        authority: `https://login.microsoftonline.com/${cfg.tenant.id}`,
-    },
+  auth: {
+    clientId: cfg.client_id,
+    authority: `https://login.microsoftonline.com/${cfg.M365_TENANT_ID || "organizations"}`,
+  },
 };
 
 const scopes = ["https://graph.microsoft.com/.default"];
 
 export class GraphTokenProviderUserPassword implements GraphTokenProvider {
-    private static instance: GraphTokenProviderUserPassword;
+  private static instance: GraphTokenProviderUserPassword;
 
-    private static accessToken: string | undefined;
+  private static accessToken: string | undefined;
 
-    /**
-     * Gets instance
-     * @returns instance
-     */
-    public static getInstance(): GraphTokenProviderUserPassword {
-        if (!GraphTokenProviderUserPassword.instance) {
-            GraphTokenProviderUserPassword.instance = new GraphTokenProviderUserPassword();
-        }
-
-        return GraphTokenProviderUserPassword.instance;
+  /**
+   * Gets instance
+   * @returns instance
+   */
+  public static getInstance(): GraphTokenProviderUserPassword {
+    if (!GraphTokenProviderUserPassword.instance) {
+      GraphTokenProviderUserPassword.instance = new GraphTokenProviderUserPassword();
     }
 
-    async getAccessToken(): Promise<string | undefined> {
-        const pca = new msal.PublicClientApplication(msalConfig);
+    return GraphTokenProviderUserPassword.instance;
+  }
 
-        const usernamePasswordRequest = {
-            scopes: scopes,
-            username: user,
-            password: password,
-        };
+  async getAccessToken(): Promise<string | undefined> {
+    const pca = new msal.PublicClientApplication(msalConfig);
 
-        await pca
-            .acquireTokenByUsernamePassword(usernamePasswordRequest)
-            .then((response) => {
-                GraphTokenProviderUserPassword.accessToken = response!.accessToken;
-            })
-            .catch((e: any) => {
-                CLILogProvider.necessaryLog(LogLevel.Error, JSON.stringify(e, undefined, 4));
-            });
-        return GraphTokenProviderUserPassword.accessToken;
-    }
+    const usernamePasswordRequest = {
+      scopes: scopes,
+      username: user,
+      password: password,
+    };
 
-    async getJsonObject(showDialog = true): Promise<Record<string, unknown> | undefined> {
-        const token = await this.getAccessToken();
-        if (token) {
-            const array = token.split(".");
-            const buff = Buffer.from(array[1], "base64");
-            return new Promise((resolve) => {
-                resolve(JSON.parse(buff.toString("utf-8")));
-            });
-        } else {
-            return new Promise((resolve) => {
-                resolve(undefined);
-            });
-        }
-    }
+    await pca
+      .acquireTokenByUsernamePassword(usernamePasswordRequest)
+      .then((response) => {
+        GraphTokenProviderUserPassword.accessToken = response!.accessToken;
+      })
+      .catch((e: any) => {
+        CLILogProvider.necessaryLog(LogLevel.Error, JSON.stringify(e, undefined, 4));
+      });
+    return GraphTokenProviderUserPassword.accessToken;
+  }
 
-    public async signout(): Promise<boolean> {
-        return new Promise((resolve) => {
-          resolve(true);
-        });
+  async getJsonObject(showDialog = true): Promise<Record<string, unknown> | undefined> {
+    const token = await this.getAccessToken();
+    if (token) {
+      const array = token.split(".");
+      const buff = Buffer.from(array[1], "base64");
+      return new Promise((resolve) => {
+        resolve(JSON.parse(buff.toString("utf-8")));
+      });
+    } else {
+      return new Promise((resolve) => {
+        resolve(undefined);
+      });
     }
+  }
 
-    setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean> {
-        throw new Error("Method not implemented.");
-    }
-    removeStatusChangeMap(name: string): Promise<boolean> {
-        throw new Error("Method not implemented.");
-    }
+  public async signout(): Promise<boolean> {
+    return new Promise((resolve) => {
+      resolve(true);
+    });
+  }
+
+  setStatusChangeMap(
+    name: string,
+    statusChange: (
+      status: string,
+      token?: string,
+      accountInfo?: Record<string, unknown>
+    ) => Promise<void>
+  ): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  removeStatusChangeMap(name: string): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
 }
 
 export default GraphTokenProviderUserPassword.getInstance();

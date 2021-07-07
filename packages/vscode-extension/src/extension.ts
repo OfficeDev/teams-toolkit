@@ -16,8 +16,9 @@ import * as StringResources from "./resources/Strings.json";
 import { openWelcomePageAfterExtensionInstallation } from "./controls/openWelcomePage";
 import { VsCodeUI } from "./qm/vsc_ui";
 import { exp } from "./exp";
+import { disableRunIcon, registerRunIcon } from "./debug/runIconHandler";
 
-export let VS_CODE_UI:VsCodeUI;
+export let VS_CODE_UI: VsCodeUI;
 
 export async function activate(context: vscode.ExtensionContext) {
   VsCodeLogInstance.info(StringResources.vsc.extension.activate);
@@ -36,7 +37,9 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(createCmd);
 
-  // 1.2 Register the creating command.
+  const debugCmd = vscode.commands.registerCommand("fx-extension.debug", handlers.debugHandler);
+  context.subscriptions.push(debugCmd);
+
   const updateCmd = vscode.commands.registerCommand(
     "fx-extension.update",
     handlers.addResourceHandler
@@ -78,7 +81,7 @@ export async function activate(context: vscode.ExtensionContext) {
     handlers.publishHandler
   );
   context.subscriptions.push(publishCmd);
- 
+
   // 1.7 validate dependencies command (hide from UI)
   const validateDependenciesCmd = vscode.commands.registerCommand(
     "fx-extension.validate-dependencies",
@@ -191,6 +194,15 @@ export async function activate(context: vscode.ExtensionContext) {
   registerTeamsfxTaskAndDebugEvents();
 
   await handlers.cmdHdlLoadTreeView(context);
+
+  // Register local debug run icon
+  const runIconCmd = vscode.commands.registerCommand(
+    "fx-extension.selectAndDebug",
+    handlers.selectAndDebugHandler
+  );
+  context.subscriptions.push(runIconCmd);
+  registerRunIcon();
+
   // 2. Call activate function of toolkit core.
   await handlers.activate();
 
@@ -203,4 +215,5 @@ export async function activate(context: vscode.ExtensionContext) {
 // this method is called when your extension is deactivated
 export function deactivate() {
   handlers.cmdHdlDisposeTreeView();
+  disableRunIcon();
 }

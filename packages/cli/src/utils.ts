@@ -232,6 +232,21 @@ export function getTeamsAppId(rootfolder: string | undefined): any {
   return undefined;
 }
 
+export function getLocalTeamsAppId(rootfolder: string | undefined): any {
+  if (!rootfolder) {
+    return undefined;
+  }
+
+  if (isWorkspaceSupported(rootfolder)) {
+    const env = getActiveEnv();
+    const envJsonPath = path.join(rootfolder, `.${ConfigFolderName}/env.${env}.json`);
+    const envJson = JSON.parse(fs.readFileSync(envJsonPath, "utf8"));
+    return envJson.solution.localDebugTeamsAppId;
+  }
+
+  return undefined;
+}
+
 export function getSystemInputs(projectPath?: string): Inputs {
   const systemInputs: Inputs = {
     platform: Platform.CLI,
@@ -283,5 +298,5 @@ export function getColorizedString(message: Array<{ content: string; color: Colo
       }
     })
     .join("");
-  return colorizedMessage;
+  return colorizedMessage + "\u00A0";
 }

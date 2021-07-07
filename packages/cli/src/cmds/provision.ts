@@ -12,9 +12,14 @@ import activate from "../activate";
 import { getSystemInputs, setSubscriptionId } from "../utils";
 import { YargsCommand } from "../yargsCommand";
 import CliTelemetry from "../telemetry/cliTelemetry";
-import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetrySuccess,
+} from "../telemetry/cliTelemetryEvents";
 import CLIUIInstance from "../userInteraction";
 import { HelpParamGenerator } from "../helpParamGenerator";
+import { sqlPasswordConfirmQuestionName, sqlPasswordQustionName } from "../constants";
 
 export default class Provision extends YargsCommand {
   public readonly commandHead = `provision`;
@@ -31,7 +36,9 @@ export default class Provision extends YargsCommand {
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     const rootFolder = path.resolve(args.folder || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.ProvisionStart);
-
+    if (sqlPasswordQustionName in args) {
+      args[sqlPasswordConfirmQuestionName] = args[sqlPasswordQustionName];
+    }
     CLIUIInstance.updatePresetAnswers(this.params, args);
 
     {
@@ -58,7 +65,7 @@ export default class Provision extends YargsCommand {
     }
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.Provision, {
-      [TelemetryProperty.Success]: TelemetrySuccess.Yes
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
     });
     return ok(null);
   }

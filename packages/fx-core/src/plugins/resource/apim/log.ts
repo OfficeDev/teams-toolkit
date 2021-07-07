@@ -42,8 +42,8 @@ export class LogMessages {
 
   public static readonly resourceNotFound = (resourceType: IName, resourceId?: string): string =>
     !resourceId
-      ? `[${ProjectConstants.pluginDisplayName}] Failed to find resource ${resourceType.displayName} in Azure.`
-      : `[${ProjectConstants.pluginDisplayName}] Failed to find resource ${resourceType.displayName} '${resourceId} in Azure.`;
+      ? `[${ProjectConstants.pluginDisplayName}] Resource ${resourceType.displayName} does not exist in Azure. Try to create a new one.`
+      : `[${ProjectConstants.pluginDisplayName}] Resource ${resourceType.displayName} '${resourceId}' does not exist in Azure. Try to create a new one.`;
 
   public static readonly accessFileFailed = (dir: string, file: string): string =>
     `[${ProjectConstants.pluginDisplayName}] Cannot access '${file}' in directory '${dir}'`;

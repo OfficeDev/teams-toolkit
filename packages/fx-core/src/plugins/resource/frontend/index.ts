@@ -81,7 +81,7 @@ export class FrontendPlugin implements Plugin {
       if (e instanceof FrontendPluginError) {
         const error =
           e.errorType === ErrorType.User
-            ? ErrorFactory.UserError(e.code, e.getMessage())
+            ? ErrorFactory.UserError(e.code, e.getMessage(), undefined, undefined, e.helpLink)
             : ErrorFactory.SystemError(
                 e.code,
                 e.getMessage(),

@@ -13,6 +13,7 @@
     "test:frontend": "nyc --reporter=html --reporter=text mocha --no-timeouts --require ts-node/register tests/plugins/resource/frontend/**/*.test.ts",
     "test:aad": "nyc --reporter=html --reporter=text mocha --no-timeouts --require ts-node/register tests/plugins/resource/aad/**/*.test.ts",
     "test:simpleauth": "nyc --reporter=html --reporter=text mocha --no-timeouts --require ts-node/register tests/plugins/resource/simpleauth/**/*.test.ts",
+    "test:sql": "nyc --reporter=html --reporter=text mocha --no-timeouts --require ts-node/register tests/plugins/resource/sql/**/*.test.ts",
     "test:appstudio": "nyc --reporter=html --reporter=text mocha --no-timeouts --require ts-node/register tests/plugins/resource/appstudio/**/*.test.ts",
     "test:spfx": "nyc --reporter=html --reporter=text mocha --no-timeouts --require ts-node/register tests/plugins/resource/spfx/**/*.test.ts",
     "test:actions": "echo 'to be implemented'",

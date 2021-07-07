@@ -24,7 +24,7 @@ export class Operations {
 
     const promises: Promise<void>[] = capabilities.map(async (cap: string) => {
       const capPath = path.join(projectRoot, cap)
-      const buildMapQuerier = await BuildMapQuerier.getInstance()
+      const buildMapQuerier = BuildMapQuerier.getInstance()
       const commands = buildMapQuerier.query(cap, lang)
       if (await fs.pathExists(capPath)) {
         for (const command of commands) {

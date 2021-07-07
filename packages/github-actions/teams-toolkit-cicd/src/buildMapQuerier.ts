@@ -1,13 +1,12 @@
-import {Commands} from './constant'
 import {InternalError} from './errors'
 import {buildMap} from './buildMap'
 
 export class BuildMapQuerier {
   static instance: BuildMapQuerier
-  static validOutputs: string[] = [Commands.NpmInstall, Commands.NpmRunBuild]
 
   private constructor() {}
-  static async getInstance(): Promise<BuildMapQuerier> {
+
+  static getInstance(): BuildMapQuerier {
     if (!BuildMapQuerier.instance) {
       BuildMapQuerier.instance = new BuildMapQuerier()
     }
@@ -16,20 +15,14 @@ export class BuildMapQuerier {
   }
 
   query(cap: string, lang?: string): string[] {
-    const commands = this._query(cap, lang)
-
-    if (commands.some(value => !BuildMapQuerier.validOutputs.includes(value))) {
-      throw new InternalError('Invalid command/s found in buildMap.json')
-    }
-
-    return commands
-  }
-  private _query(cap: string, lang?: string): string[] {
     const capItems = buildMap[cap]
     if (!capItems) {
-      throw new InternalError(`Cannot find ${cap} in buildMap.json.`)
+      throw new InternalError(`Cannot find ${cap} in buildMap.`)
     }
 
+    // If the cap's build commands are irrelevant to programming language,
+    // then the value should be the command list.
+    // Or it should be indexed by programming language.
     if (Array.isArray(capItems)) {
       return capItems
     }
@@ -39,7 +32,7 @@ export class BuildMapQuerier {
     }
     const capLang = capItems[lang]
     if (!capLang) {
-      throw new InternalError(`Cannot find ${cap}.${lang} in buildMap.json.`)
+      throw new InternalError(`Cannot find ${cap}.${lang} in buildMap.`)
     }
 
     return capLang

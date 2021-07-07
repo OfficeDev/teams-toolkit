@@ -56,46 +56,30 @@ exports.buildMap = {
 /***/ }),
 
 /***/ 2150:
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
 
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.BuildMapQuerier = void 0;
-const constant_1 = __webpack_require__(2363);
 const errors_1 = __webpack_require__(9292);
 const buildMap_1 = __webpack_require__(6847);
 class BuildMapQuerier {
     constructor() { }
     static getInstance() {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!BuildMapQuerier.instance) {
-                BuildMapQuerier.instance = new BuildMapQuerier();
-            }
-            return BuildMapQuerier.instance;
-        });
+        if (!BuildMapQuerier.instance) {
+            BuildMapQuerier.instance = new BuildMapQuerier();
+        }
+        return BuildMapQuerier.instance;
     }
     query(cap, lang) {
-        const commands = this._query(cap, lang);
-        if (commands.some(value => !BuildMapQuerier.validOutputs.includes(value))) {
-            throw new errors_1.InternalError('Invalid command/s found in buildMap.json');
-        }
-        return commands;
-    }
-    _query(cap, lang) {
         const capItems = buildMap_1.buildMap[cap];
         if (!capItems) {
-            throw new errors_1.InternalError(`Cannot find ${cap} in buildMap.json.`);
+            throw new errors_1.InternalError(`Cannot find ${cap} in buildMap.`);
         }
+        // If the cap's build commands are irrelevant to programming language,
+        // then the value should be the command list.
+        // Or it should be indexed by programming language.
         if (Array.isArray(capItems)) {
             return capItems;
         }
@@ -104,13 +88,12 @@ class BuildMapQuerier {
         }
         const capLang = capItems[lang];
         if (!capLang) {
-            throw new errors_1.InternalError(`Cannot find ${cap}.${lang} in buildMap.json.`);
+            throw new errors_1.InternalError(`Cannot find ${cap}.${lang} in buildMap.`);
         }
         return capLang;
     }
 }
 exports.BuildMapQuerier = BuildMapQuerier;
-BuildMapQuerier.validOutputs = [constant_1.Commands.NpmInstall, constant_1.Commands.NpmRunBuild];
 
 
 /***/ }),
@@ -441,7 +424,7 @@ class Operations {
             core.info(`The project is using ${lang}.`);
             const promises = capabilities.map((cap) => __awaiter(this, void 0, void 0, function* () {
                 const capPath = path.join(projectRoot, cap);
-                const buildMapQuerier = yield buildMapQuerier_1.BuildMapQuerier.getInstance();
+                const buildMapQuerier = buildMapQuerier_1.BuildMapQuerier.getInstance();
                 const commands = buildMapQuerier.query(cap, lang);
                 if (yield fs.pathExists(capPath)) {
                     for (const command of commands) {

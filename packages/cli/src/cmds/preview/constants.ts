@@ -19,6 +19,7 @@ export const functionPluginName = "fx-resource-function";
 export const botPluginName = "fx-resource-bot";
 export const localDebugPluginName = "fx-resource-local-debug";
 export const solutionPluginName = "solution";
+export const spfxPluginName = "fx-resource-spfx";
 
 export enum ProgrammingLanguage {
   javascript = "javascript",

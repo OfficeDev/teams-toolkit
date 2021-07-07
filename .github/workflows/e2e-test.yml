@@ -41,11 +41,7 @@ jobs:
           retry_on: error
           shell: pwsh
           command: |
-            $version=Get-Content packages/fx-core/templates/plugins/resource/simpleauth/version.txt
-            $tag = "simpleauth@"+$version
-            $fileName="Microsoft.TeamsFx.SimpleAuth_$version.zip"
-            $url = "https://github.com/OfficeDev/TeamsFx/releases/download/"+$tag+"/"+$fileName
-            Invoke-WebRequest $url -OutFile packages/fx-core/templates/plugins/resource/simpleauth/SimpleAuth.zip
+            ./.github/scripts/downloadSimpleAuth.ps1
 
       - name: Setup project
         uses: nick-invision/retry@v2
@@ -71,3 +67,44 @@ jobs:
       - name: E2E Test in Parallel
         run: |
           npx lerna run test:e2e:parallel
+
+      - name: Reset test tag
+        if: success()
+        run: |
+           git tag -f e2e HEAD
+           git push origin -f e2e
+
+  create-ado-issue:
+    runs-on: ubuntu-latest
+    needs: e2e-tests
+    if: failure()
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Check git log 
+        id: git-log
+        shell: bash
+        run: |
+          git_log=$(git log --pretty="<tr> <td>%h</td> <td>%ad</td> <td>%s</td> <td><a href=\"#\" data-vss-mention=\"version:2.0,fcc6f63a-9b8e-68b0-a9d3-eaf10623d0df\"> %ae &#127867; </a></td> </tr>" e2e..HEAD | grep -v "noreply" | tee | tr -d '\n')
+          echo $git_log
+          echo "::set-output name=log::${git_log[@]}"
+
+      - name: Create azure devops issue if test is failed
+        uses: azure/CLI@v1
+        with:
+          azcliversion: 2.25.0
+          inlineScript: |
+            export AZURE_DEVOPS_EXT_PAT=${{ secrets.ADO_PAT }}
+            az extension add --name azure-devops
+            az boards work-item create --title="E2E tests failed" \
+                             --type=Bug \
+                             --area="Microsoft Teams Extensibility\Teams Extensibility E2E Team" \
+                             --assigned-to="haolong@microsoft.com" \
+                             --iteration="Microsoft Teams Extensibility" \
+                             --organization="https://msazure.visualstudio.com/" \
+                             --project="Microsoft Teams Extensibility" \
+                             --fields="Microsoft.VSTS.TCM.ReproSteps=<a>https://github.com/LongOddCode/lerna-test/actions/runs/${{ github.run_id }}</a>" \
+                             --description="<table class=\"w3-table w3-striped w3-bordered\"><tr><th>Hash</th> <th>Time</th> <th>Message</th> <th>author</th> </tr>${{ steps.git-log.outputs.log }}</table>"

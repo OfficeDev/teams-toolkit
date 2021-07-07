@@ -81,3 +81,12 @@ export function PreviewWithoutProvision(): UserError {
     "PreviewWithoutProvision"
   );
 }
+
+// TODO: remove when SPFx preview is ready
+export function SPFxNotSupported(): UserError {
+  return returnUserError(
+    new Error("SPFx preview is not supported currently."),
+    constants.cliSource,
+    "SPFxNotSupported"
+  );
+}

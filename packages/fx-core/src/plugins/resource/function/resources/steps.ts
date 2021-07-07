@@ -9,6 +9,7 @@ export enum ScaffoldSteps {
 }
 
 export enum ProvisionSteps {
+  registerResourceProviders = "Registering required resource providers.",
   ensureStorageAccount = "Setting up storage account.",
   getConnectionString = "Retrieving connection string.",
   ensureAppServicePlans = "Setting up Azure App Services plan.",

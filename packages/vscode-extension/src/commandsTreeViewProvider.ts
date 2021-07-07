@@ -7,6 +7,7 @@ import { ext } from "./extensionVariables";
 import { TreeItem, TreeCategory, Result, FxError, ok } from "@microsoft/teamsfx-api";
 import * as StringResources from "./resources/Strings.json";
 import { exp } from "./exp/index";
+import { TreatmentVariables } from "./exp/treatmentVariables";
 
 class TreeViewManager {
   private static instance: TreeViewManager;
@@ -148,7 +149,9 @@ class TreeViewManager {
     ];
 
     if (
-      true /*await exp.getExpService().getTreatmentVariableAsync("flight", "treatmentVariable", true)*/
+      await exp
+        .getExpService()
+        .getTreatmentVariableAsync(TreatmentVariables.VSCodeConfig, TreatmentVariables.Debug, true)
     ) {
       const debugCommand = new TreeViewCommand(
         StringResources.vsc.commandsTreeViewProvider.debugTitle,

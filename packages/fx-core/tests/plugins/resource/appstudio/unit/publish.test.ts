@@ -11,7 +11,6 @@ import { ConfigMap, PluginContext, ok, Platform } from "@microsoft/teamsfx-api";
 import { AppStudioPlugin } from "./../../../../../src/plugins/resource/appstudio";
 import { AppStudioClient } from "./../../../../../src/plugins/resource/appstudio/appStudio";
 import { PublishingState } from "./../../../../../src/plugins/resource/appstudio/interfaces/IPublishingAppDefinition";
-import { AppStudio } from "./../../../../../src/plugins/solution/fx-solution/appstudio/appstudio";
 import { mockTokenProvider } from "./../../aad/helper";
 import { MockUserInteraction } from "./../helper";
 
@@ -36,7 +35,7 @@ describe("Publish Teams app", () => {
     sinon.stub(AppStudioClient, "validateManifest").resolves([]);
     sinon.stub(AppStudioClient, "publishTeamsApp").resolves(uuid());
     sinon.stub(AppStudioClient, "publishTeamsAppUpdate").resolves(uuid());
-    sinon.stub(AppStudio, "updateApp").resolves();
+    sinon.stub(AppStudioClient, "updateApp").resolves();
   });
 
   afterEach(async () => {

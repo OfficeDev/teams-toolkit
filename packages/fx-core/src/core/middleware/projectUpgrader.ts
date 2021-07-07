@@ -12,7 +12,7 @@ import {
   PathNotExistError,
   UpgradeContextError,
 } from "..";
-import { clearContextAndUserData, deserializeDict, moveContextToUserData } from "../..";
+import { clearContextAndUserData, deserializeDict, sperateSecretData } from "../..";
 import { serializeDict } from "../../common";
 
 export const ProjectUpgraderMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
@@ -78,7 +78,7 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<void> {
       }
 
       // Move info from env.default.json to userdata
-      moveContextToUserData(userData, env);
+      sperateSecretData(userData, env);
       await saveContextAndUserData(confFolderPath, envName as string, env, userData);
     }
 

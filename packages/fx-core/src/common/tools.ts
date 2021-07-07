@@ -141,8 +141,7 @@ const SecretDataMatchers = [
   "fx-resource-apim.apimClientAADClientSecret",
 ];
 
-export function sperateSecretData(configJson: Json): Record<string, string> {
-  const res: Record<string, string> = {};
+export function sperateSecretData(dict: Record<string, string>, configJson: Json): void {
   for (const matcher of SecretDataMatchers) {
     const splits = matcher.split(".");
     const resourceId = splits[0];
@@ -151,23 +150,28 @@ export function sperateSecretData(configJson: Json): Record<string, string> {
     if (!resourceConfig) continue;
     if ("*" !== item) {
       const configValue = resourceConfig[item];
-      if (configValue) {
+      if (
+        configValue &&
+        !((configValue as string).startsWith("{{") && (configValue as string).endsWith("}}"))
+      ) {
         const keyName = `${resourceId}.${item}`;
-        res[keyName] = configValue;
+        dict[keyName] = configValue;
         resourceConfig[item] = `{{${keyName}}}`;
       }
     } else {
       for (const itemName of Object.keys(resourceConfig)) {
         const configValue = resourceConfig[itemName];
-        if (configValue !== undefined) {
+        if (
+          configValue !== undefined &&
+          !((configValue as string).startsWith("{{") && (configValue as string).endsWith("}}"))
+        ) {
           const keyName = `${resourceId}.${itemName}`;
-          res[keyName] = configValue;
+          dict[keyName] = configValue;
           resourceConfig[itemName] = `{{${keyName}}}`;
         }
       }
     }
   }
-  return res;
 }
 
 export function mergeSerectData(dict: Record<string, string>, configJson: Json): void {
@@ -229,39 +233,6 @@ export function clearContextAndUserData(dict: Record<string, string>, configJson
     // Clear userdata
     if (dict[matcher]) {
       delete dict[matcher];
-    }
-  }
-}
-
-export function moveContextToUserData(dict: Record<string, string>, configJson: Json): void {
-  for (const matcher of SecretDataMatchers) {
-    const splits = matcher.split(".");
-    const resourceId = splits[0];
-    const item = splits[1];
-    const resourceConfig: any = configJson[resourceId];
-    if (!resourceConfig) continue;
-    if ("*" !== item) {
-      const configValue = resourceConfig[item];
-      if (
-        configValue &&
-        !((configValue as string).startsWith("{{") && (configValue as string).endsWith("}}"))
-      ) {
-        const keyName = `${resourceId}.${item}`;
-        dict[keyName] = configValue;
-        resourceConfig[item] = `{{${keyName}}}`;
-      }
-    } else {
-      for (const itemName of Object.keys(resourceConfig)) {
-        const configValue = resourceConfig[itemName];
-        if (
-          configValue !== undefined &&
-          !((configValue as string).startsWith("{{") && (configValue as string).endsWith("}}"))
-        ) {
-          const keyName = `${resourceId}.${itemName}`;
-          dict[keyName] = configValue;
-          resourceConfig[itemName] = `{{${keyName}}}`;
-        }
-      }
     }
   }
 }

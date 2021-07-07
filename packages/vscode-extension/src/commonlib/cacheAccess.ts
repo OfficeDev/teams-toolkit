@@ -5,7 +5,7 @@
 "use strict";
 
 import { TokenCacheContext } from "@azure/msal-node";
-import { ConfigFolderName, ProductName } from "@microsoft/teamsfx-api";
+import { ConfigFolderName } from "@microsoft/teamsfx-api";
 import * as crypto from "crypto";
 import * as fs from "fs-extra";
 import * as keytarType from "keytar";
@@ -18,6 +18,9 @@ const cacheDir = os.homedir + `/.${ConfigFolderName}/account`;
 const cachePath = os.homedir + `/.${ConfigFolderName}/account/token.cache.`;
 const accountPath = os.homedir + `/.${ConfigFolderName}/account/homeId.cache.`;
 const cachePathEnd = ".json";
+
+// the friendly service name to store secret in keytar
+const serviceName = "Microsoft Teams Toolkit";
 
 export const UTF8 = "utf8";
 
@@ -87,13 +90,13 @@ class AccountCrypto {
   private async getKey(): Promise<string | undefined> {
     try {
       if (this.keytar) {
-        let key = await this.keytar.getPassword(ProductName, this.accountName);
+        let key = await this.keytar.getPassword(serviceName, this.accountName);
         if (!key || key.length !== 32) {
           key = crypto.randomBytes(256).toString("hex").slice(0, 32);
-          await this.keytar.setPassword(ProductName, this.accountName, key);
+          await this.keytar.setPassword(serviceName, this.accountName, key);
 
           // validate key again
-          const savedKey = await this.keytar.getPassword(ProductName, this.accountName);
+          const savedKey = await this.keytar.getPassword(serviceName, this.accountName);
           if (savedKey === key) {
             return key;
           }

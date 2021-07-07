@@ -8,7 +8,7 @@ if (!process.env.ONLY_BROWSER) {
 
 if (!process.env.ONLY_NODE) {
   inputs.push(base.browserConfig("unit"));
-  inputs.push(base.browserConfig("integration"));
+  inputs.push(base.browserConfig("e2e"));
 }
 
 export default inputs;

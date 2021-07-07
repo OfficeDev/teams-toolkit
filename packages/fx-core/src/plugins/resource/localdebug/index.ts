@@ -211,7 +211,7 @@ export class LocalDebugPlugin implements Plugin {
 
     // setup configs used by other plugins
     // TODO: dynamicly determine local ports
-    if (ctx.answers?.platform === Platform.VSCode) {
+    if (ctx.answers?.platform === Platform.VSCode || ctx.answers?.platform === Platform.CLI) {
       let localTabEndpoint: string;
       let localTabDomain: string;
       let localAuthEndpoint: string;
@@ -290,9 +290,7 @@ export class LocalDebugPlugin implements Plugin {
       (pluginName) => pluginName === FunctionPlugin.Name
     );
     const includeBot = selectedPlugins?.some((pluginName) => pluginName === BotPlugin.Name);
-    let trustDevCert = ctx.config?.get(
-      LocalDebugConfigKeys.TrustDevelopmentCertificate
-    ) as string;
+    let trustDevCert = ctx.config?.get(LocalDebugConfigKeys.TrustDevelopmentCertificate) as string;
 
     const telemetryProperties = {
       platform: ctx.answers?.platform as string,
@@ -304,7 +302,7 @@ export class LocalDebugPlugin implements Plugin {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.postLocalDebug, telemetryProperties);
 
-    if (ctx.answers?.platform === Platform.VSCode) {
+    if (ctx.answers?.platform === Platform.VSCode || ctx.answers?.platform === Platform.CLI) {
       const localEnvProvider = new LocalEnvProvider(ctx.root);
       const localEnvs = await localEnvProvider.loadLocalEnv(
         includeFrontend,

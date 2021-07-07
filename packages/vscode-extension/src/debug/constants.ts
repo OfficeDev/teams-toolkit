@@ -55,3 +55,7 @@ export const botPorts: [number, string[]][] = [
   [3978, hosts],
   [9239, hosts],
 ];
+
+export const npmInstall = "npmInstall";
+export const npmInstallErrorMessage= "Npm install encounters error.";
+export const issueLink = "https://github.com/OfficeDev/TeamsFx/issues/new";

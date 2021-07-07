@@ -2,7 +2,7 @@
 
 ### Error Message
 
-database <database> create user <user> failed. 
+`database` create `user` failed. 
 
 ### Mitigation
 
@@ -41,3 +41,17 @@ Since the current logged in account hasn't enough permission to add database use
 
       ![image](../images/fx-core/sql/add-database-user.png)
 
+## SQL.SqlAccessError
+
+### Error Message
+
+Failed to access `sql server`.
+
+### Mitigation
+
+#### Manage IP firewall rules
+1. Open `.fx\env.default.json` file. Find values of 'sqlEndpoint' config of 'fx-resource-azure-sql'.
+
+      ![image](../images/fx-core/sql/add-flag.png)
+
+1. Refer to [ Manage IP firewall rules](https://docs.microsoft.com/en-us/azure/azure-sql/database/firewall-configure#from-the-database-overview-page) to add local firewall rule for the 'sqlEndpoint' in step 1

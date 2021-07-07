@@ -20,6 +20,9 @@ export enum TelemetryEvent {
 
   NavigateToDebug = "navigate-to-debug",
 
+  RunIconDebugStart = "run-icon-debug-start",
+  RunIconDebug = "run-icon-debug",
+
   AddResourceStart = "add-resource-start",
   AddResource = "add-resource",
 

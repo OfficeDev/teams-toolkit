@@ -30,3 +30,7 @@ function enableRunIcon(): void {
   const validProject = ext.workspaceUri && isValidProject(ext.workspaceUri.fsPath);
   vscode.commands.executeCommand("setContext", "fx-extension.runIconActive", validProject);
 }
+
+export function disableRunIcon(): void {
+  vscode.commands.executeCommand("setContext", "fx-extension.runIconActive", false);
+}

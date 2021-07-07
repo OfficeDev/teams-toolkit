@@ -5,7 +5,7 @@
         "bootstrap": "lerna bootstrap",
         "lint:staged": "lerna run lint:staged --stream",
         "lint": "lerna run lint --stream",
-        "version": "lerna bootstrap --ignore-scripts -- --package-lock-only --no-audit && git add packages/*/package-lock.json",
+        "manual-version:rc": "lerna version --preid=rc --no-push --no-changelog --no-private",
         "prepare": "husky install"
     },
     "devDependencies": {

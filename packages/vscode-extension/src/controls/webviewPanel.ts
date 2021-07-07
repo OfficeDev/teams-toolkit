@@ -28,6 +28,7 @@ import {
 import { ExtensionErrors, ExtensionSource } from "../error";
 import * as StringResources from "../resources/Strings.json";
 import * as util from "util";
+import { VS_CODE_UI } from "../extension";
 
 export class WebviewPanel {
   private static readonly viewType = "react";
@@ -152,8 +153,7 @@ export class WebviewPanel {
           util.format(StringResources.vsc.webview.folderExistDialogTitle, sampleAppPath)
         );
       } else {
-        const dialogManager = DialogManager.getInstance();
-        const progress = dialogManager.createProgressBar(StringResources.vsc.webview.fetchData, 2);
+        const progress = VS_CODE_UI.createProgressBar(StringResources.vsc.webview.fetchData, 2);
         progress.start();
         try {
           progress.next(util.format(StringResources.vsc.webview.downloadFrom, msg.data.appUrl));

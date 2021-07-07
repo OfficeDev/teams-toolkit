@@ -8,6 +8,7 @@ export const sideloadingUrl =
 export const teamsAppIdPlaceholder = "${teamsAppId}";
 export const accountHintPlaceholder = "${account-hint}";
 
+export const serviceLogHintMessage = "A complete log of this task can be found in:";
 export const waitCtrlPlusC =
   "WARN: Closing browser will not terminate the preview process, please press Ctrl+C to terminate.";
 
@@ -18,6 +19,7 @@ export const functionPluginName = "fx-resource-function";
 export const botPluginName = "fx-resource-bot";
 export const localDebugPluginName = "fx-resource-local-debug";
 export const solutionPluginName = "solution";
+export const spfxPluginName = "fx-resource-spfx";
 
 export enum ProgrammingLanguage {
   javascript = "javascript",

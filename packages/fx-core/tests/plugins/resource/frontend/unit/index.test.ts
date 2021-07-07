@@ -12,12 +12,10 @@ import fs from "fs-extra";
 
 import { AzureStorageClient } from "../../../../../src/plugins/resource/frontend/clients";
 import {
-  BuildError,
   CreateStorageAccountError,
   EnableStaticWebsiteError,
   InvalidStorageNameError,
   NoBuildPathError,
-  NoPreStepError,
   NoResourceGroupError,
   NoStorageError,
   StaticWebsiteDisabledError,
@@ -34,6 +32,7 @@ import { FrontendScaffold } from "../../../../../src/plugins/resource/frontend/o
 import { TestHelper } from "../helper";
 import { Utils } from "../../../../../src/plugins/resource/frontend/utils";
 import { StorageAccounts } from "@azure/arm-storage";
+import { AzureLib } from "../../../../../src/plugins/resource/frontend/utils/azure-client";
 
 chai.use(chaiAsPromised);
 
@@ -116,6 +115,7 @@ describe("frontendPlugin", () => {
         .stub(StorageAccounts.prototype, "create")
         .resolves(TestHelper.storageAccount);
       enableStaticWebsiteStub = sinon.stub(AzureStorageClient.prototype, "enableStaticWebsite");
+      sinon.stub(AzureLib, "ensureResourceProviders");
     });
 
     afterEach(() => {

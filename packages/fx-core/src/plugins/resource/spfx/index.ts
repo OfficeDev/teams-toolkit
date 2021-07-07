@@ -37,7 +37,7 @@ export enum SPFXQuestionNames {
 export class SpfxPlugin implements Plugin {
   name = "fx-resource-spfx";
   displayName = "SharePoint Framework (SPFx)";
-  activate(solutionSettings: AzureSolutionSettings): boolean{
+  activate(solutionSettings: AzureSolutionSettings): boolean {
     return solutionSettings.hostType === HostTypeOptionSPFx.id;
   }
   config: SpfxConfig = new SpfxConfig();
@@ -92,18 +92,8 @@ export class SpfxPlugin implements Plugin {
   }
 
   public async scaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
-    //answers ---> config by huajie
-    if (ctx.answers) {
-      let v = ctx.answers[SPFXQuestionNames.framework_type] as string;
-      this.config.framework = v || this.config.framework;
-      v = ctx.answers[SPFXQuestionNames.webpart_name] as string;
-      this.config.webpartName = v || this.config.webpartName;
-      v = ctx.answers[SPFXQuestionNames.webpart_desp] as string;
-      this.config.webpartDesc = v || this.config.webpartDesc;
-    }
-
     return await this.runWithErrorHandling(ctx, TelemetryEvent.Scaffold, () =>
-      this.spfxPluginImpl.scaffold(ctx, this.config)
+      this.spfxPluginImpl.scaffold(ctx)
     );
   }
 

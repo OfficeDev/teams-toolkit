@@ -11,17 +11,11 @@ import { testWorkspace } from "./globalVaribles";
 async function main() {
   try {
     const extensionDevelopmentPath = path.resolve(__dirname, "../../");
-    const extensionTestsPath1 = path.resolve(__dirname, "./index.noFolder");
+    const extensionTestsPath = path.resolve(__dirname, "./index.unit");
     await runTests({
       extensionDevelopmentPath,
-      extensionTestsPath: extensionTestsPath1,
-    });
-
-    const extensionTestsPath2 = path.resolve(__dirname, "./index.folder");
-    await runTests({
-      extensionDevelopmentPath,
-      extensionTestsPath: extensionTestsPath2,
-      launchArgs: [testWorkspace],
+      extensionTestsPath: extensionTestsPath,
+      launchArgs: ["--disable-extensions"],
     });
   } catch (err) {
     console.error("Failed to run tests");

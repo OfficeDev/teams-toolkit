@@ -18,12 +18,7 @@ export declare enum QuestionType
 
 |  Member | Value | Description |
 |  --- | --- | --- |
-|  Confirm | <code>&quot;Confirm&quot;</code> |  |
 |  ExecuteCmd | <code>&quot;ExecuteCmd&quot;</code> |  |
-|  OpenExternal | <code>&quot;OpenExternal&quot;</code> |  |
 |  OpenFolder | <code>&quot;OpenFolder&quot;</code> |  |
-|  Radio | <code>&quot;radio&quot;</code> |  |
-|  SelectFolder | <code>&quot;SelectFolder&quot;</code> |  |
-|  Text | <code>&quot;Text&quot;</code> |  |
 |  UpdateGlobalState | <code>&quot;UpdateGlobalState&quot;</code> |  |
 

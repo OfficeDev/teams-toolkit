@@ -237,27 +237,36 @@ dialogs.add(
 
 ### Configure log
 
-You can set custome log level and logger when using this library.
-Logging is turned off by default, you can turn it on by setting custom log function or log level.
+You can set custome log level and redirect outputs when using this library.
+Logging is turned off by default, you can turn it on by setting log level.
 
 #### Enable log by setting log level
 
-When log level is set, a default logger will also be set if not exist. It prints log information to console.
+When log level is set, logging is enabled. It prints log information to console by default.
 
 Set log level using the snippet below:
 
 ```ts
 // Only need the warning and error messages.
 setLogLevel(LogLevel.Warn);
-// Can also set another logger if you want to redirect to Application Insights in Azure Function
+```
+
+You can redirect log output by setting custom logger or log function.
+
+##### Redirect by setting custom logger
+
+```ts
+setLogLevel(LogLevel.Info);
+// Set another logger if you want to redirect to Application Insights in Azure Function
 setLogger(context.log);
 ```
 
-#### Enable log by setting log function
+##### Redirect by setting custom log function
 
-Set a custome log function if you want to redirect output:
+Please note that log function will not take effect if you set a custom logger.
 
 ```ts
+setLogLevel(LogLevel.Info);
 // Only log error message to Application Insights in bot application.
 setLogFunction((level: LogLevel, message: string) => {
   if (level === LogLevel.Error) {

@@ -14,10 +14,6 @@ import {
   Result,
   Stage,
   TeamsAppManifest,
-  DialogMsg,
-  DialogType,
-  MsgLevel,
-  QuestionType,
   SystemError,
   UserError,
   ProjectSettings,
@@ -25,7 +21,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { AppStudioPluginImpl } from "./plugin";
 import { Constants } from "./constants";
-import { IAppDefinition } from "../../solution/fx-solution/appstudio/interface";
+import { IAppDefinition } from "./interfaces/IAppDefinition";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
 import { manuallySubmitOption, autoPublishOption } from "./questions";

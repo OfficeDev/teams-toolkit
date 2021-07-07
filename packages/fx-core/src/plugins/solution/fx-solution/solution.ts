@@ -20,17 +20,11 @@ import {
   Solution,
   SolutionConfig,
   SolutionContext,
-  DialogMsg,
-  DialogType,
   TeamsAppManifest,
-  LogProvider,
   OptionItem,
-  MsgLevel,
   ConfigFolderName,
   AzureSolutionSettings,
-  UserError,
   Platform,
-  QuestionType,
   Inputs,
   DynamicPlatforms,
   SubscriptionInfo,
@@ -48,28 +42,17 @@ import {
   GLOBAL_CONFIG,
   PERMISSION_REQUEST,
   SolutionError,
-  LOCAL_DEBUG_TAB_DOMAIN,
-  LOCAL_DEBUG_TAB_ENDPOINT,
   LOCAL_DEBUG_AAD_ID,
   LOCAL_DEBUG_TEAMS_APP_ID,
-  FRONTEND_DOMAIN,
-  FRONTEND_ENDPOINT,
-  REMOTE_TEAMS_APP_ID,
   Void,
   SOLUTION_PROVISION_SUCCEEDED,
-  BOT_DOMAIN,
   LOCAL_APPLICATION_ID_URIS,
   LOCAL_CLIENT_SECRET,
-  LOCAL_DEBUG_BOT_DOMAIN,
   REMOTE_AAD_ID,
   REMOTE_APPLICATION_ID_URIS,
   REMOTE_CLIENT_SECRET,
-  WEB_APPLICATION_INFO_SOURCE,
-  LOCAL_WEB_APPLICATION_INFO_SOURCE,
   PROGRAMMING_LANGUAGE,
   REMOTE_MANIFEST,
-  BOT_ID,
-  LOCAL_BOT_ID,
   CancelError,
   SolutionTelemetryProperty,
   SolutionTelemetryEvent,
@@ -87,7 +70,6 @@ import { FunctionPlugin } from "../../resource/function";
 import { SimpleAuthPlugin } from "../../resource/simpleauth";
 import { LocalDebugPlugin } from "../../resource/localdebug";
 import { ApimPlugin } from "../../resource/apim";
-import { IAppDefinition } from "./appstudio/interface";
 import {
   AzureResourceFunction,
   AzureResourceSQL,
@@ -595,133 +577,6 @@ export class TeamsAppSolution implements Solution {
     const permissionRequest = await fs.readJSON(path);
     return ok(JSON.stringify(permissionRequest));
   }
-
-  // private createManifestForRemote(
-  //   ctx: SolutionContext,
-  //   manifest: TeamsAppManifest
-  // ): Result<[IAppDefinition, TeamsAppManifest], FxError> {
-  //   const maybeSelectedPlugins = this.getSelectedPlugins(ctx);
-  //   if (maybeSelectedPlugins.isErr()) {
-  //     return err(maybeSelectedPlugins.error);
-  //   }
-  //   const selectedPlugins = maybeSelectedPlugins.value;
-  //   if (selectedPlugins.some((plugin) => plugin.name === this.botPlugin.name)) {
-  //     const capabilities = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
-  //       .capabilities;
-  //     const hasBot = capabilities?.includes(BotOptionItem.id);
-  //     const hasMsgExt = capabilities?.includes(MessageExtensionItem.id);
-  //     if (!hasBot && !hasMsgExt) {
-  //       return err(
-  //         returnSystemError(
-  //           new Error("Select either Bot or Messaging Extension"),
-  //           "Solution",
-  //           SolutionError.InternelError
-  //         )
-  //       );
-  //     }
-  //   }
-  //   const maybeConfig = this.getConfigForCreatingManifest(ctx.config, false);
-  //   if (maybeConfig.isErr()) {
-  //     return err(maybeConfig.error);
-  //   }
-
-  //   const { tabEndpoint, tabDomain, aadId, botDomain, botId, webApplicationInfoResource } =
-  //     maybeConfig.value;
-
-  //   const validDomains: string[] = [];
-
-  //   if (tabDomain) {
-  //     validDomains.push(tabDomain);
-  //   }
-
-  //   if (botDomain) {
-  //     validDomains.push(botDomain);
-  //   }
-
-  //   const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
-  //   return ok(
-  //     appStudioPlugin.getDevAppDefinition(
-  //       JSON.stringify(manifest),
-  //       aadId,
-  //       validDomains,
-  //       webApplicationInfoResource,
-  //       false,
-  //       tabEndpoint,
-  //       manifest.name.short,
-  //       manifest.version,
-  //       botId
-  //     )
-  //   );
-  // }
-
-  // The assumptions of this function are:
-  // 1. this.manifest is not undefined(for azure projects) already contains the latest manifest(loaded via reloadManifestAndCheckRequiredFields)
-  // 2. provision of frontend hosting is done and config values has already been loaded into ctx.config
-  // private async createAndConfigTeamsManifest(
-  //   ctx: SolutionContext
-  // ): Promise<Result<IAppDefinition, FxError>> {
-  //   const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
-  //   const maybeManifest = await appStudioPlugin.reloadManifestAndCheckRequiredFields(ctx.root);
-  //   if (maybeManifest.isErr()) {
-  //     return err(maybeManifest.error);
-  //   }
-  //   const manifest = maybeManifest.value;
-
-  //   let appDefinition: IAppDefinition;
-  //   let updatedManifest: TeamsAppManifest;
-  //   if (this.spfxSelected(ctx)) {
-  //     const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
-  //     appDefinition = appStudioPlugin.convertToAppDefinition(manifest, false);
-  //     updatedManifest = manifest;
-  //   } else {
-  //     const result = this.createManifestForRemote(ctx, manifest);
-  //     if (result.isErr()) {
-  //       return err(result.error);
-  //     }
-  //     [appDefinition, updatedManifest] = result.value;
-  //   }
-
-  //   const teamsAppId = ctx.config.get(GLOBAL_CONFIG)?.getString(REMOTE_TEAMS_APP_ID);
-  //   if (!teamsAppId) {
-  //     ctx.logProvider?.info(`Teams app not created`);
-  //     const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
-  //     const result = await appStudioPlugin.updateApp(
-  //       appDefinition,
-  //       "remote",
-  //       true,
-  //       undefined,
-  //       await ctx.appStudioToken?.getAccessToken(),
-  //       ctx.logProvider,
-  //       ctx.root
-  //     );
-  //     if (result.isErr()) {
-  //       return result.map((_) => appDefinition);
-  //     }
-
-  //     ctx.logProvider?.info(`Teams app created ${result.value}`);
-  //     appDefinition.appId = result.value;
-  //     ctx.config.get(GLOBAL_CONFIG)?.set(REMOTE_TEAMS_APP_ID, result.value);
-  //     return ok(appDefinition);
-  //   } else {
-  //     ctx.logProvider?.info(`Teams app already created: ${teamsAppId}`);
-  //     appDefinition.appId = teamsAppId;
-  //     const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
-  //     const result = await appStudioPlugin.updateApp(
-  //       appDefinition,
-  //       "remote",
-  //       false,
-  //       teamsAppId,
-  //       await ctx.appStudioToken?.getAccessToken(),
-  //       ctx.logProvider,
-  //       ctx.root
-  //     );
-  //     if (result.isErr()) {
-  //       return result.map((_) => appDefinition);
-  //     }
-  //     ctx.logProvider?.info(`Teams app updated ${JSON.stringify(updatedManifest)}`);
-  //     return ok(appDefinition);
-  //   }
-  // }
 
   /**
    * Checks whether solution's state is idle
@@ -1602,108 +1457,6 @@ export class TeamsAppSolution implements Solution {
       return ok(config);
     });
   }
-
-  // private getConfigForCreatingManifest(
-  //   config: SolutionConfig,
-  //   localDebug: boolean
-  // ): Result<
-  //   {
-  //     tabEndpoint?: string;
-  //     tabDomain?: string;
-  //     aadId: string;
-  //     botDomain?: string;
-  //     botId?: string;
-  //     webApplicationInfoResource: string;
-  //   },
-  //   FxError
-  // > {
-  //   const tabEndpoint = localDebug
-  //     ? config.get(this.localDebugPlugin.name)?.getString(LOCAL_DEBUG_TAB_ENDPOINT)
-  //     : config.get(this.fehostPlugin.name)?.getString(FRONTEND_ENDPOINT);
-  //   const tabDomain = localDebug
-  //     ? config.get(this.localDebugPlugin.name)?.getString(LOCAL_DEBUG_TAB_DOMAIN)
-  //     : config.get(this.fehostPlugin.name)?.getString(FRONTEND_DOMAIN);
-  //   const aadId = config
-  //     .get(this.aadPlugin.name)
-  //     ?.getString(localDebug ? LOCAL_DEBUG_AAD_ID : REMOTE_AAD_ID);
-  //   const botId = config.get(this.botPlugin.name)?.getString(localDebug ? LOCAL_BOT_ID : BOT_ID);
-  //   const botDomain = localDebug
-  //     ? config.get(this.localDebugPlugin.name)?.getString(LOCAL_DEBUG_BOT_DOMAIN)
-  //     : config.get(this.botPlugin.name)?.getString(BOT_DOMAIN);
-  //   // This config value is set by aadPlugin.setApplicationInContext. so aadPlugin.setApplicationInContext needs to run first.
-  //   const webApplicationInfoResource = config
-  //     .get(this.aadPlugin.name)
-  //     ?.getString(localDebug ? LOCAL_WEB_APPLICATION_INFO_SOURCE : WEB_APPLICATION_INFO_SOURCE);
-  //   if (!webApplicationInfoResource) {
-  //     return err(
-  //       returnSystemError(
-  //         new Error(
-  //           "Missing configuration data for manifest. Run 'provision' first. Data required: webApplicationInfoResource."
-  //         ),
-  //         "Solution",
-  //         localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError
-  //       )
-  //     );
-  //   }
-
-  //   if (!aadId) {
-  //     return err(
-  //       returnSystemError(
-  //         new Error(
-  //           `Missing configuration data for manifest. Run 'provision' first. Data required: ${LOCAL_DEBUG_AAD_ID}.`
-  //         ),
-  //         "Solution",
-  //         localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError
-  //       )
-  //     );
-  //   }
-  //   // localTabEndpoint, bots and composeExtensions can't all be undefined
-  //   if (!tabEndpoint && !botId) {
-  //     return err(
-  //       returnSystemError(
-  //         new Error(
-  //           `Missing configuration data for manifest. Data required: ${
-  //             localDebug ? LOCAL_DEBUG_TAB_ENDPOINT : FRONTEND_ENDPOINT
-  //           }, ${localDebug ? LOCAL_BOT_ID : BOT_ID}.`
-  //         ),
-  //         "Solution",
-  //         localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError
-  //       )
-  //     );
-  //   }
-  //   if ((tabEndpoint && !tabDomain) || (!tabEndpoint && tabDomain)) {
-  //     return err(
-  //       returnSystemError(
-  //         new Error(
-  //           `Invalid configuration data for manifest: ${
-  //             localDebug ? LOCAL_DEBUG_TAB_ENDPOINT : FRONTEND_ENDPOINT
-  //           }=${tabEndpoint}, ${
-  //             localDebug ? LOCAL_DEBUG_TAB_DOMAIN : FRONTEND_DOMAIN
-  //           }=${tabDomain}.`
-  //         ),
-  //         "Solution",
-  //         localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError
-  //       )
-  //     );
-  //   }
-  //   if (botId) {
-  //     if (!botDomain) {
-  //       return err(
-  //         returnSystemError(
-  //           new Error(
-  //             `Missing configuration data for manifest. Data required: ${
-  //               localDebug ? LOCAL_DEBUG_BOT_DOMAIN : BOT_DOMAIN
-  //             }.`
-  //           ),
-  //           "Solution",
-  //           localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError
-  //         )
-  //       );
-  //     }
-  //   }
-
-  //   return ok({ tabEndpoint, tabDomain, aadId, botDomain, botId, webApplicationInfoResource });
-  // }
 
   getAzureSolutionSettings(ctx: SolutionContext): AzureSolutionSettings {
     return ctx.projectSettings?.solutionSettings as AzureSolutionSettings;

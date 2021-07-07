@@ -7,21 +7,15 @@ import {
   AzureSolutionSettings,
   ConfigFolderName,
   FxError,
-  returnSystemError,
-  returnUserError,
   Result,
   PluginContext,
   Plugin,
   TeamsAppManifest,
   Platform,
   LogProvider,
-  DialogMsg,
-  DialogType,
-  QuestionType,
   ProjectSettings,
   IComposeExtension,
   IBot,
-  SolutionConfig,
 } from "@microsoft/teamsfx-api";
 import { AppStudioClient } from "./appStudio";
 import {
@@ -31,9 +25,8 @@ import {
   ITeamCommand,
   IPersonalCommand,
   IGroupChatCommand,
-  ICommand,
-  ICommandList,
-} from "../../solution/fx-solution/appstudio/interface";
+} from "./interfaces/IAppDefinition";
+import { ICommand, ICommandList } from "../../solution/fx-solution/appstudio/interface";
 import {
   BotOptionItem,
   HostTypeOptionAzure,

@@ -61,7 +61,7 @@ import {
   HostTypeOptionSPFx,
 } from "../../../src/plugins/solution/fx-solution/question";
 import { validManifest } from "./util";
-import { IAppDefinition } from "../../../src/plugins/solution/fx-solution/appstudio/interface";
+import { IAppDefinition } from "../../../src/plugins/resource/appstudio/interfaces/IAppDefinition";
 import _ from "lodash";
 import { AadAppForTeamsPlugin } from "../../../src/plugins/resource/aad";
 import { TokenCredential } from "@azure/core-auth";

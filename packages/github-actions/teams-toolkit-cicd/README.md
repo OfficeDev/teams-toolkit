@@ -15,6 +15,7 @@ This action helps Teams App Developers to build their CI/CD workflows.
 ## `capabilities`
 
 **Optional** The capabilities selected for operation-type `Build Teams App`. By default, all capabilities are selected.
+Possible values are `tabs`, `bot` and `SPFx`.
 
 ## Environment Variables
 The following environment variables can be separated into two groups. One is for Azure, the other is for M365.

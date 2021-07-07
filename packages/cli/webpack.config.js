@@ -11,7 +11,7 @@ const terserWebpackPlugin = require("terser-webpack-plugin");
 /**@type {import('webpack').Configuration}*/
 const config = {
   target: "node", // vscode extensions run in a Node.js-context 📖 -> https://webpack.js.org/configuration/node/
-  mode: 'none', // this leaves the source code as close as possible to the original (when packaging we set this to 'production')
+  mode: "none", // this leaves the source code as close as possible to the original (when packaging we set this to 'production')
   node: {
     __dirname: false,
   },
@@ -28,7 +28,7 @@ const config = {
   },
   devtool: "source-map",
   externals: {
-    keytar: "keytar"
+    keytar: "keytar",
   },
   resolve: {
     // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
@@ -67,12 +67,12 @@ const config = {
       patterns: [
         {
           from: "../fx-core/resource/",
-          to: "../resource/"
+          to: "../resource/",
         },
         {
           from: "../fx-core/templates/",
-          to: "../templates/"
-        }
+          to: "../templates/",
+        },
       ],
     }),
     new webpack.ContextReplacementPlugin(/express[\/\\]lib/, false, /$^/),

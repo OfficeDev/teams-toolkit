@@ -35,6 +35,95 @@ exports.BaseError = BaseError;
 
 /***/ }),
 
+/***/ 2150:
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.BuildMapQuerier = void 0;
+const constant_1 = __webpack_require__(2363);
+const errors_1 = __webpack_require__(9292);
+const fs = __importStar(__webpack_require__(5630));
+class BuildMapQuerier {
+    constructor() { }
+    init() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!(yield fs.pathExists(BuildMapQuerier.buildMapPath))) {
+                throw new errors_1.InternalError(`${BuildMapQuerier.buildMapPath} is not existing.`);
+            }
+            this.buildMap = yield fs.readJSON(BuildMapQuerier.buildMapPath);
+        });
+    }
+    static getInstance() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!BuildMapQuerier.instance) {
+                BuildMapQuerier.instance = new BuildMapQuerier();
+                yield BuildMapQuerier.instance.init();
+            }
+            return BuildMapQuerier.instance;
+        });
+    }
+    query(cap, lang) {
+        const commands = this._query(cap, lang);
+        if (commands.some(value => !BuildMapQuerier.validOutputs.includes(value))) {
+            throw new errors_1.InternalError('Invalid command/s found in buildMap.json');
+        }
+        return commands;
+    }
+    _query(cap, lang) {
+        const capItems = this.buildMap[cap];
+        if (!capItems) {
+            throw new errors_1.InternalError(`Cannot find ${cap} in buildMap.json.`);
+        }
+        if (Array.isArray(capItems)) {
+            return capItems;
+        }
+        if (!lang) {
+            throw new errors_1.InternalError('programmingLanguage is required but undefined.');
+        }
+        const capLang = capItems[lang];
+        if (!capLang) {
+            throw new errors_1.InternalError(`Cannot find ${cap}.${lang} in buildMap.json.`);
+        }
+        return capLang;
+    }
+}
+exports.BuildMapQuerier = BuildMapQuerier;
+BuildMapQuerier.validOutputs = [constant_1.Commands.NpmInstall, constant_1.Commands.NpmRunBuild];
+BuildMapQuerier.buildMapPath = './buildMap.json';
+
+
+/***/ }),
+
 /***/ 2363:
 /***/ ((__unused_webpack_module, exports) => {
 
@@ -74,6 +163,7 @@ Pathes.TeamsAppPackageZip = '.fx/appPackage.zip';
 class Miscs {
 }
 exports.Miscs = Miscs;
+Miscs.SolutionConfigKey = 'solution';
 Miscs.BotConfigKey = 'fx-resource-bot';
 Miscs.LanguageKey = 'programmingLanguage';
 class ErrorNames {
@@ -83,12 +173,15 @@ ErrorNames.InputsError = 'InputsError';
 ErrorNames.LanguageError = 'LanguageError';
 ErrorNames.EnvironmentVariableError = 'EnvironmentVariableError';
 ErrorNames.SpfxZippedPackageMissingError = 'SpfxZippedPackageMissingError';
+ErrorNames.InternalError = 'InternalError';
 class Suggestions {
 }
 exports.Suggestions = Suggestions;
 Suggestions.CheckInputsAndUpdate = 'Please check and update the input values.';
 Suggestions.CheckEnvDefaultJson = `Please check the content of ${Pathes.EnvDefaultJson}.`;
 Suggestions.CheckPackageSolutionJson = `Please check the content of ${Pathes.PackageSolutionJson}.`;
+Suggestions.RerunWorkflow = 'Please rerun the workflow or pipeline.';
+Suggestions.CreateAnIssue = 'Please create an issue on GitHub.';
 
 
 /***/ }),
@@ -155,7 +248,7 @@ var ProgrammingLanguage;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.SpfxZippedPackageMissingError = exports.LanguageError = exports.EnvironmentVariableError = exports.InputsError = void 0;
+exports.InternalError = exports.SpfxZippedPackageMissingError = exports.LanguageError = exports.EnvironmentVariableError = exports.InputsError = void 0;
 const base_error_1 = __webpack_require__(826);
 const constant_1 = __webpack_require__(2363);
 class InputsError extends base_error_1.BaseError {
@@ -182,6 +275,15 @@ class SpfxZippedPackageMissingError extends base_error_1.BaseError {
     }
 }
 exports.SpfxZippedPackageMissingError = SpfxZippedPackageMissingError;
+class InternalError extends base_error_1.BaseError {
+    constructor(message) {
+        super(base_error_1.ErrorType.System, constant_1.ErrorNames.InternalError, message, [
+            constant_1.Suggestions.RerunWorkflow,
+            constant_1.Suggestions.CreateAnIssue
+        ]);
+    }
+}
+exports.InternalError = InternalError;
 
 
 /***/ }),
@@ -326,46 +428,37 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Operations = void 0;
 const path = __importStar(__webpack_require__(5622));
-const capabilities_1 = __webpack_require__(271);
 const exec_1 = __webpack_require__(6069);
 const constant_1 = __webpack_require__(2363);
 const programmingLanguages_1 = __webpack_require__(8198);
 const fs = __importStar(__webpack_require__(5630));
 const core = __importStar(__webpack_require__(2186));
 const errors_1 = __webpack_require__(9292);
+const buildMapQuerier_1 = __webpack_require__(2150);
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 class Operations {
     static BuildTeamsApp(projectRoot, capabilities) {
         var _a;
         return __awaiter(this, void 0, void 0, function* () {
-            const tabsPath = path.join(projectRoot, capabilities_1.Capability.Tabs);
-            if (capabilities.includes(capabilities_1.Capability.Tabs) &&
-                (yield fs.pathExists(tabsPath))) {
-                yield exec_1.Execute(constant_1.Commands.NpmInstall, tabsPath);
-                yield exec_1.Execute(constant_1.Commands.NpmRunBuild, tabsPath);
+            // Get the project's programming language from env.default.json.
+            const envDefaultPath = path.join(projectRoot, constant_1.Pathes.EnvDefaultJson);
+            const config = yield fs.readJSON(envDefaultPath);
+            const lang = (_a = config === null || config === void 0 ? void 0 : config[constant_1.Miscs.SolutionConfigKey]) === null || _a === void 0 ? void 0 : _a[constant_1.Miscs.LanguageKey];
+            if (!lang || !Object.values(programmingLanguages_1.ProgrammingLanguage).includes(lang)) {
+                throw new errors_1.LanguageError(`programmingLanguage: ${lang}`);
             }
-            const botPath = path.join(projectRoot, capabilities_1.Capability.Bot);
-            if (capabilities.includes(capabilities_1.Capability.Bot) &&
-                (yield fs.pathExists(botPath))) {
-                // Get bot's programming language from env.default.json.
-                const envDefaultPath = path.join(projectRoot, constant_1.Pathes.EnvDefaultJson);
-                const config = yield fs.readJSON(envDefaultPath);
-                const lang = (_a = config === null || config === void 0 ? void 0 : config[constant_1.Miscs.BotConfigKey]) === null || _a === void 0 ? void 0 : _a[constant_1.Miscs.LanguageKey];
-                if (!lang || !Object.values(programmingLanguages_1.ProgrammingLanguage).includes(lang)) {
-                    throw new errors_1.LanguageError(`programmingLanguage: ${lang}`);
+            core.info(`The project is using ${lang}.`);
+            const promises = capabilities.map((cap) => __awaiter(this, void 0, void 0, function* () {
+                const capPath = path.join(projectRoot, cap);
+                const buildMapQuerier = yield buildMapQuerier_1.BuildMapQuerier.getInstance();
+                const commands = buildMapQuerier.query(cap, lang);
+                if (yield fs.pathExists(capPath)) {
+                    for (const command of commands) {
+                        yield exec_1.Execute(command, capPath);
+                    }
                 }
-                core.info(`The bot project is using ${lang}.`);
-                yield exec_1.Execute(constant_1.Commands.NpmInstall, botPath);
-                if (lang === programmingLanguages_1.ProgrammingLanguage.TypeScript) {
-                    yield exec_1.Execute(constant_1.Commands.NpmRunBuild, botPath);
-                }
-            }
-            const SpfxPath = path.join(projectRoot, capabilities_1.Capability.SPFx);
-            if (capabilities.includes(capabilities_1.Capability.SPFx) &&
-                (yield fs.pathExists(SpfxPath))) {
-                yield exec_1.Execute(constant_1.Commands.NpmInstall, SpfxPath);
-                yield exec_1.Execute(constant_1.Commands.NpmRunBuild, SpfxPath);
-            }
+            }));
+            yield Promise.all(promises);
         });
     }
     static ProvisionHostingEnvironment(projectRoot) {

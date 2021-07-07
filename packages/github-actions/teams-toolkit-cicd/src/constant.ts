@@ -31,6 +31,7 @@ export class Pathes {
 }
 
 export class Miscs {
+  static readonly SolutionConfigKey: string = 'solution'
   static readonly BotConfigKey: string = 'fx-resource-bot'
   static readonly LanguageKey: string = 'programmingLanguage'
 }
@@ -41,6 +42,7 @@ export class ErrorNames {
   static readonly EnvironmentVariableError: string = 'EnvironmentVariableError'
   static readonly SpfxZippedPackageMissingError: string =
     'SpfxZippedPackageMissingError'
+  static readonly InternalError: string = 'InternalError'
 }
 
 export class Suggestions {
@@ -48,4 +50,7 @@ export class Suggestions {
     'Please check and update the input values.'
   static readonly CheckEnvDefaultJson: string = `Please check the content of ${Pathes.EnvDefaultJson}.`
   static readonly CheckPackageSolutionJson: string = `Please check the content of ${Pathes.PackageSolutionJson}.`
+  static readonly RerunWorkflow: string =
+    'Please rerun the workflow or pipeline.'
+  static readonly CreateAnIssue: string = 'Please create an issue on GitHub.'
 }

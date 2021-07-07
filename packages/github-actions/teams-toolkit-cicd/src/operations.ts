@@ -1,11 +1,11 @@
 import * as path from 'path'
-import {Capability} from './enums/capabilities'
 import {Execute} from './utils/exec'
 import {Commands, Pathes, Miscs, ActionOutputs} from './constant'
 import {ProgrammingLanguage} from './enums/programmingLanguages'
 import * as fs from 'fs-extra'
 import * as core from '@actions/core'
 import {LanguageError, SpfxZippedPackageMissingError} from './errors'
+import {BuildMapQuerier} from './buildMapQuerier'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class Operations {
@@ -13,42 +13,27 @@ export class Operations {
     projectRoot: string,
     capabilities: string[]
   ): Promise<void> {
-    const tabsPath = path.join(projectRoot, Capability.Tabs)
-    if (
-      capabilities.includes(Capability.Tabs) &&
-      (await fs.pathExists(tabsPath))
-    ) {
-      await Execute(Commands.NpmInstall, tabsPath)
-      await Execute(Commands.NpmRunBuild, tabsPath)
+    // Get the project's programming language from env.default.json.
+    const envDefaultPath = path.join(projectRoot, Pathes.EnvDefaultJson)
+    const config = await fs.readJSON(envDefaultPath)
+    const lang = config?.[Miscs.SolutionConfigKey]?.[Miscs.LanguageKey]
+    if (!lang || !Object.values<string>(ProgrammingLanguage).includes(lang)) {
+      throw new LanguageError(`programmingLanguage: ${lang}`)
     }
+    core.info(`The project is using ${lang}.`)
 
-    const botPath = path.join(projectRoot, Capability.Bot)
-    if (
-      capabilities.includes(Capability.Bot) &&
-      (await fs.pathExists(botPath))
-    ) {
-      // Get bot's programming language from env.default.json.
-      const envDefaultPath = path.join(projectRoot, Pathes.EnvDefaultJson)
-      const config = await fs.readJSON(envDefaultPath)
-      const lang = config?.[Miscs.BotConfigKey]?.[Miscs.LanguageKey]
-      if (!lang || !Object.values<string>(ProgrammingLanguage).includes(lang)) {
-        throw new LanguageError(`programmingLanguage: ${lang}`)
+    const promises: Promise<void>[] = capabilities.map(async (cap: string) => {
+      const capPath = path.join(projectRoot, cap)
+      const buildMapQuerier = await BuildMapQuerier.getInstance()
+      const commands = buildMapQuerier.query(cap, lang)
+      if (await fs.pathExists(capPath)) {
+        for (const command of commands) {
+          await Execute(command, capPath)
+        }
       }
-      core.info(`The bot project is using ${lang}.`)
-      await Execute(Commands.NpmInstall, botPath)
-      if (lang === ProgrammingLanguage.TypeScript) {
-        await Execute(Commands.NpmRunBuild, botPath)
-      }
-    }
+    })
 
-    const SpfxPath = path.join(projectRoot, Capability.SPFx)
-    if (
-      capabilities.includes(Capability.SPFx) &&
-      (await fs.pathExists(SpfxPath))
-    ) {
-      await Execute(Commands.NpmInstall, SpfxPath)
-      await Execute(Commands.NpmRunBuild, SpfxPath)
-    }
+    await Promise.all(promises)
   }
 
   static async ProvisionHostingEnvironment(

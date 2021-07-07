@@ -44,3 +44,12 @@ export class SpfxZippedPackageMissingError extends BaseError {
     )
   }
 }
+
+export class InternalError extends BaseError {
+  constructor(message: string) {
+    super(ErrorType.System, ErrorNames.InternalError, message, [
+      Suggestions.RerunWorkflow,
+      Suggestions.CreateAnIssue
+    ])
+  }
+}

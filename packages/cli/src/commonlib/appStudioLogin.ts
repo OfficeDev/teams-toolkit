@@ -82,6 +82,7 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
         await AppStudioLogin.statusChange("SignedIn", loginToken, tokenJson);
       }
       await this.notifyStatus();
+      AppStudioLogin.codeFlowInstance.destroySockets();
       return loginToken;
     }
 
@@ -90,6 +91,7 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
 
   async getJsonObject(showDialog = true): Promise<Record<string, unknown> | undefined> {
     const token = await this.getAccessToken(showDialog);
+    AppStudioLogin.codeFlowInstance.destroySockets();
     if (token) {
       const array = token.split(".");
       const buff = Buffer.from(array[1], "base64");

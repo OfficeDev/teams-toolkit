@@ -188,6 +188,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       AzureAccountManager.tenantId = tenantId;
       await this.login(showDialog, tenantId);
       await this.updateLoginStatus();
+      AzureAccountManager.codeFlowInstance.destroySockets();
       return this.doGetAccountCredentialAsync();
     }
   }

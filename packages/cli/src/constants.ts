@@ -75,3 +75,5 @@ export enum CLILogLevel {
 
 export const sqlPasswordQustionName = "sql-password";
 export const sqlPasswordConfirmQuestionName = "sql-confirm-password";
+export const connection = "connection";
+export const close = "close";

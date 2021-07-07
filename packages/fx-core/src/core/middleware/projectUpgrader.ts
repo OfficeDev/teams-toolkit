@@ -6,8 +6,8 @@ import { ConfigFolderName, err, Inputs, Json, ProjectSettings } from "@microsoft
 import * as path from "path";
 import * as fs from "fs-extra";
 import { CoreHookContext, FxCore, NoProjectOpenedError, PathNotExistError } from "..";
-import { clearContextAndUserData, deserializeDict } from "../..";
-import { serializeDict, sperateSecretData } from "../../common";
+import { clearContextAndUserData, deserializeDict, moveContextToUserData } from "../..";
+import { serializeDict } from "../../common";
 
 export const ProjectUpgraderMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
@@ -60,8 +60,8 @@ export async function upgradeContext(inputs: Inputs) {
     await saveContextAndUserData(confFolderPath, envName as string, env, userData);
   } else {
     // Move info from env.default.json to userdata
-    const userDataMoved = sperateSecretData(env);
-    await saveContextAndUserData(confFolderPath, envName as string, env, userDataMoved);
+    moveContextToUserData(userData, env);
+    await saveContextAndUserData(confFolderPath, envName as string, env, userData);
   }
 
   return;

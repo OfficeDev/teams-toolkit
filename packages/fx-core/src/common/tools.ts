@@ -233,6 +233,39 @@ export function clearContextAndUserData(dict: Record<string, string>, configJson
   }
 }
 
+export function moveContextToUserData(dict: Record<string, string>, configJson: Json): void {
+  for (const matcher of SecretDataMatchers) {
+    const splits = matcher.split(".");
+    const resourceId = splits[0];
+    const item = splits[1];
+    const resourceConfig: any = configJson[resourceId];
+    if (!resourceConfig) continue;
+    if ("*" !== item) {
+      const configValue = resourceConfig[item];
+      if (
+        configValue &&
+        !((configValue as string).startsWith("{{") && (configValue as string).endsWith("}}"))
+      ) {
+        const keyName = `${resourceId}.${item}`;
+        dict[keyName] = configValue;
+        resourceConfig[item] = `{{${keyName}}}`;
+      }
+    } else {
+      for (const itemName of Object.keys(resourceConfig)) {
+        const configValue = resourceConfig[itemName];
+        if (
+          configValue !== undefined &&
+          !((configValue as string).startsWith("{{") && (configValue as string).endsWith("}}"))
+        ) {
+          const keyName = `${resourceId}.${itemName}`;
+          dict[keyName] = configValue;
+          resourceConfig[itemName] = `{{${keyName}}}`;
+        }
+      }
+    }
+  }
+}
+
 export function serializeDict(dict: Record<string, string>): string {
   const array: string[] = [];
   for (const key of Object.keys(dict)) {

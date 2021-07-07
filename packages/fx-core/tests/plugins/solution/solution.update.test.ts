@@ -37,15 +37,34 @@ import {
 } from "../../../src/plugins/solution/fx-solution/question";
 
 import _ from "lodash";
-import * as uuid  from "uuid";
-
+import * as uuid from "uuid";
+import {
+  AadAppForTeamsPlugin,
+  ApimPlugin,
+  AppStudioPlugin,
+  FrontendPlugin,
+  FunctionPlugin,
+  LocalDebugPlugin,
+  SpfxPlugin,
+  SqlPlugin,
+  TeamsBot,
+} from "../../../src";
+const aadPlugin = new AadAppForTeamsPlugin();
+const spfxPlugin = new SpfxPlugin();
+const fehostPlugin = new FrontendPlugin();
+const appStudioPlugin = new AppStudioPlugin();
+const botPlugin = new TeamsBot();
+const localDebug = new LocalDebugPlugin();
+const sqlPlugin = new SqlPlugin();
+const functionPlugin = new FunctionPlugin();
+const apimPlugin = new ApimPlugin();
 function mockSolutionContext(): SolutionContext {
   const config: SolutionConfig = new Map();
   return {
     root: ".",
     // app: new TeamsAppManifest(),
     config,
-    answers: {platform: Platform.VSCode},
+    answers: { platform: Platform.VSCode },
     projectSettings: undefined,
   };
 }
@@ -55,9 +74,9 @@ describe("update()", () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
     mockedCtx.answers = undefined;
-    const func:Func = {
+    const func: Func = {
       namespace: "fx-solution-azure",
-      method: "addResource"
+      method: "addResource",
     };
     const result = await solution.executeUserTask(func, mockedCtx);
     expect(result.isErr()).equals(true);
@@ -67,7 +86,7 @@ describe("update()", () => {
   it("should return AddResourceNotSupport for SPFx project", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
-    mockedCtx.answers = {platform: Platform.VSCode};
+    mockedCtx.answers = { platform: Platform.VSCode };
     mockedCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
@@ -86,7 +105,7 @@ describe("update()", () => {
   it("should return AddResourceNotSupport if capabilities is empty", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
-    mockedCtx.answers = {platform: Platform.VSCode};
+    mockedCtx.answers = { platform: Platform.VSCode };
     mockedCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
@@ -105,7 +124,7 @@ describe("update()", () => {
   it("should return AddResourceNotSupport if capabilities doesn't contain Tab", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
-    mockedCtx.answers = {platform: Platform.VSCode};
+    mockedCtx.answers = { platform: Platform.VSCode };
     mockedCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
@@ -125,7 +144,7 @@ describe("update()", () => {
   it("should return AddResourceNotSupport if user tries to add SQL when SQL is already activated", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
-    mockedCtx.answers = {platform: Platform.VSCode};
+    mockedCtx.answers = { platform: Platform.VSCode };
     mockedCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
@@ -135,11 +154,7 @@ describe("update()", () => {
         name: "azure",
         version: "1.0",
         capabilities: [TabOptionItem.id],
-        activeResourcePlugins: [
-          solution.fehostPlugin.name,
-          solution.localDebug.name,
-          solution.sqlPlugin.name,
-        ],
+        activeResourcePlugins: [fehostPlugin.name, localDebug.name, sqlPlugin.name],
       },
     };
     mockedCtx.answers![AzureSolutionQuestionNames.AddResources] = [AzureResourceSQL.id];
@@ -151,7 +166,7 @@ describe("update()", () => {
   it("should return AddResourceNotSupport if user tries to add APIM when APIM is already activated", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
-    mockedCtx.answers = {platform: Platform.VSCode};
+    mockedCtx.answers = { platform: Platform.VSCode };
     mockedCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
@@ -161,11 +176,7 @@ describe("update()", () => {
         name: "azure",
         version: "1.0",
         capabilities: [TabOptionItem.id],
-        activeResourcePlugins: [
-          solution.fehostPlugin.name,
-          solution.localDebug.name,
-          solution.apimPlugin.name,
-        ],
+        activeResourcePlugins: [fehostPlugin.name, localDebug.name, apimPlugin.name],
       },
     };
     mockedCtx.answers![AzureSolutionQuestionNames.AddResources] = [AzureResourceApim.id];
@@ -177,7 +188,7 @@ describe("update()", () => {
   it("should add FunctionPlugin when adding SQL if FunctionPlugin is not already added", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
-    mockedCtx.answers = {platform: Platform.VSCode};
+    mockedCtx.answers = { platform: Platform.VSCode };
     mockedCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
@@ -187,7 +198,7 @@ describe("update()", () => {
         name: "azure",
         version: "1.0",
         capabilities: [TabOptionItem.id],
-        activeResourcePlugins: [solution.fehostPlugin.name, solution.localDebug.name],
+        activeResourcePlugins: [fehostPlugin.name, solution.localDebug.name],
         azureResources: [],
       },
     };
@@ -211,7 +222,7 @@ describe("update()", () => {
   it("should add FunctionPlugin when adding APIM if FunctionPlugin is not already added", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
-    mockedCtx.answers = {platform: Platform.VSCode};
+    mockedCtx.answers = { platform: Platform.VSCode };
     mockedCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
@@ -221,7 +232,7 @@ describe("update()", () => {
         name: "azure",
         version: "1.0",
         capabilities: [TabOptionItem.id],
-        activeResourcePlugins: [solution.fehostPlugin.name, solution.localDebug.name],
+        activeResourcePlugins: [fehostPlugin.name, solution.localDebug.name],
         azureResources: [],
       },
     };
@@ -245,7 +256,7 @@ describe("update()", () => {
   it("should set provisionSucceeded to false", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
-    mockedCtx.answers = {platform: Platform.VSCode};
+    mockedCtx.answers = { platform: Platform.VSCode };
     mockedCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
@@ -255,11 +266,11 @@ describe("update()", () => {
         name: "azure",
         version: "1.0",
         capabilities: [TabOptionItem.id],
-        activeResourcePlugins: [solution.fehostPlugin.name, solution.localDebug.name],
+        activeResourcePlugins: [fehostPlugin.name, solution.localDebug.name],
         azureResources: [],
       },
     };
-    mockedCtx.answers![AzureSolutionQuestionNames.AddResources] =  [AzureResourceApim.id];
+    mockedCtx.answers![AzureSolutionQuestionNames.AddResources] = [AzureResourceApim.id];
     solution.doScaffold = async function (
       _ctx: SolutionContext,
       _selectedPlugins
@@ -283,7 +294,7 @@ describe("update()", () => {
   it("should leave projectSettings unchanged if scaffold fails", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
-    mockedCtx.answers = {platform: Platform.VSCode};
+    mockedCtx.answers = { platform: Platform.VSCode };
     mockedCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
@@ -293,7 +304,7 @@ describe("update()", () => {
         name: "azure",
         version: "1.0",
         capabilities: [TabOptionItem.id],
-        activeResourcePlugins: [solution.fehostPlugin.name, solution.localDebug.name],
+        activeResourcePlugins: [fehostPlugin.name, solution.localDebug.name],
         azureResources: [],
       },
     };
@@ -318,7 +329,7 @@ describe("update()", () => {
   it("shouldn't set provisionSucceeded to false when adding a new Function endpoint", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
-    mockedCtx.answers = {platform: Platform.VSCode};
+    mockedCtx.answers = { platform: Platform.VSCode };
     mockedCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
@@ -328,7 +339,7 @@ describe("update()", () => {
         name: "azure",
         version: "1.0",
         capabilities: [TabOptionItem.id],
-        activeResourcePlugins: [solution.fehostPlugin.name, solution.localDebug.name, solution.functionPlugin.name],
+        activeResourcePlugins: [fehostPlugin.name, localDebug.name, functionPlugin.name],
         azureResources: [AzureResourceFunction.id],
       },
     };
@@ -351,7 +362,7 @@ describe("update()", () => {
   it("should set provisionSucceeded to false when adding SQL to a project with Function", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
-    mockedCtx.answers = {platform: Platform.VSCode};
+    mockedCtx.answers = { platform: Platform.VSCode };
     mockedCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
@@ -361,11 +372,14 @@ describe("update()", () => {
         name: "azure",
         version: "1.0",
         capabilities: [TabOptionItem.id],
-        activeResourcePlugins: [solution.fehostPlugin.name, solution.localDebug.name, solution.functionPlugin.name],
+        activeResourcePlugins: [fehostPlugin.name, localDebug.name, functionPlugin.name],
         azureResources: [AzureResourceFunction.id],
       },
     };
-    mockedCtx.answers![AzureSolutionQuestionNames.AddResources] = [AzureResourceFunction.id, AzureResourceSQL.id];
+    mockedCtx.answers![AzureSolutionQuestionNames.AddResources] = [
+      AzureResourceFunction.id,
+      AzureResourceSQL.id,
+    ];
     solution.doScaffold = async function (
       _ctx: SolutionContext,
       _selectedPlugins

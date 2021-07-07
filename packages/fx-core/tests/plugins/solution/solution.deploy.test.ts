@@ -34,10 +34,13 @@ import {
 import { validManifest } from "./util";
 import _ from "lodash";
 import * as uuid from "uuid";
+import { AadAppForTeamsPlugin, FrontendPlugin, SpfxPlugin } from "../../../src";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
-
+const aadPlugin = new AadAppForTeamsPlugin();
+const spfxPlugin = new SpfxPlugin();
+const fehostPlugin = new FrontendPlugin();
 function mockSolutionContext(): SolutionContext {
   const config: SolutionConfig = new Map();
   config.set(GLOBAL_CONFIG, new ConfigMap());
@@ -73,7 +76,7 @@ describe("deploy() for Azure projects", () => {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
         version: "1.0",
-        activeResourcePlugins: [solution.aadPlugin.name],
+        activeResourcePlugins: [new AadAppForTeamsPlugin().name],
       },
     };
     const result = await solution.deploy(mockedCtx);
@@ -91,7 +94,7 @@ describe("deploy() for Azure projects", () => {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
         version: "1.0",
-        activeResourcePlugins: [solution.aadPlugin.name],
+        activeResourcePlugins: [aadPlugin.name],
       },
     };
     mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
@@ -127,7 +130,7 @@ describe("deploy() for Azure projects", () => {
           hostType: HostTypeOptionAzure.id,
           name: "azure",
           version: "1.0",
-          activeResourcePlugins: [solution.aadPlugin.name],
+          activeResourcePlugins: [aadPlugin.name],
         },
       };
       mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
@@ -146,14 +149,12 @@ describe("deploy() for Azure projects", () => {
           hostType: HostTypeOptionAzure.id,
           name: "azure",
           version: "1.0",
-          activeResourcePlugins: [solution.aadPlugin.name],
+          activeResourcePlugins: [aadPlugin.name],
         },
       };
       mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
-      mockedCtx.answers![AzureSolutionQuestionNames.PluginSelectionDeploy] = [
-        solution.fehostPlugin.name,
-      ];
-      mockDeployThatAlwaysSucceed(solution.fehostPlugin);
+      mockedCtx.answers![AzureSolutionQuestionNames.PluginSelectionDeploy] = [fehostPlugin.name];
+      mockDeployThatAlwaysSucceed(fehostPlugin);
 
       const result = await solution.deploy(mockedCtx);
       expect(result.isOk()).to.be.true;
@@ -189,7 +190,7 @@ describe("deploy() for SPFx projects", () => {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",
         version: "1.0",
-        activeResourcePlugins: [solution.spfxPlugin.name],
+        activeResourcePlugins: [spfxPlugin.name],
       },
     };
     const result = await solution.deploy(mockedCtx);
@@ -207,13 +208,11 @@ describe("deploy() for SPFx projects", () => {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",
         version: "1.0",
-        activeResourcePlugins: [solution.spfxPlugin.name],
+        activeResourcePlugins: [spfxPlugin.name],
       },
     };
-    mockedCtx.answers![AzureSolutionQuestionNames.PluginSelectionDeploy] = [
-      solution.fehostPlugin.name,
-    ];
-    mockDeployThatAlwaysSucceed(solution.fehostPlugin);
+    mockedCtx.answers![AzureSolutionQuestionNames.PluginSelectionDeploy] = [fehostPlugin.name];
+    mockDeployThatAlwaysSucceed(fehostPlugin);
 
     const result = await solution.deploy(mockedCtx);
     expect(result.isOk()).to.be.true;

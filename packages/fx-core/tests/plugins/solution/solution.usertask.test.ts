@@ -43,24 +43,33 @@ import {
 import { mockPublishThatAlwaysSucceed, validManifest } from "./util";
 import _ from "lodash";
 import { platform } from "os";
+import { AadAppForTeamsPlugin } from "../../../src/plugins/resource/aad";
+import { SpfxPlugin } from "../../../src/plugins/resource/spfx";
+import { FrontendPlugin } from "../../../src/plugins/resource/frontend";
+import { AppStudioPlugin } from "../../../src/plugins/resource/appstudio";
+import { TeamsBot } from "../../../src/plugins/resource/bot";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
-
+const aadPlugin = new AadAppForTeamsPlugin();
+const spfxPlugin = new SpfxPlugin();
+const fehostPlugin = new FrontendPlugin();
+const appStudioPlugin = new AppStudioPlugin();
+const botPlugin = new TeamsBot();
 function mockSolutionContextWithPlatform(platform?: Platform): SolutionContext {
   const config: SolutionConfig = new Map();
-  config.set(GLOBAL_CONFIG, new ConfigMap);
+  config.set(GLOBAL_CONFIG, new ConfigMap());
   return {
     root: ".",
     // app: new TeamsAppManifest(),
     config,
-    answers: {platform:platform?platform:Platform.VSCode},
+    answers: { platform: platform ? platform : Platform.VSCode },
     projectSettings: undefined,
   };
 }
 
 describe("executeUserTask VSpublish", async () => {
-	it("should return error for non-vs platform", async () => {
+  it("should return error for non-vs platform", async () => {
     const mockedCtx = mockSolutionContextWithPlatform(Platform.VSCode);
     const solution = new TeamsAppSolution();
     const func: Func = {
@@ -85,8 +94,7 @@ describe("executeUserTask VSpublish", async () => {
   describe("happy path", async () => {
     const mocker = sinon.createSandbox();
 
-    beforeEach(() => {
-    });
+    beforeEach(() => {});
 
     afterEach(() => {
       mocker.restore();
@@ -99,12 +107,11 @@ describe("executeUserTask VSpublish", async () => {
         namespace: "solution",
         method: "VSpublish",
       };
-      mockPublishThatAlwaysSucceed(solution.appStudioPlugin);
-      const spy = mocker.spy(solution.appStudioPlugin, "publish");
-      let result = await solution.executeUserTask(func, mockedCtx);
+      mockPublishThatAlwaysSucceed(appStudioPlugin);
+      const spy = mocker.spy(appStudioPlugin, "publish");
+      const result = await solution.executeUserTask(func, mockedCtx);
       expect(result.isOk()).to.be.true;
       expect(spy.calledOnce).to.be.true;
     });
-    
   });
 });

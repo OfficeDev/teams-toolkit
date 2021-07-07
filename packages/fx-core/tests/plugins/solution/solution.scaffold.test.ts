@@ -27,14 +27,25 @@ import {
 } from "../../../src/plugins/solution/fx-solution/question";
 import _ from "lodash";
 import path from "path";
-import { getTemplatesFolder } from "../../../src";
+import {
+  AadAppForTeamsPlugin,
+  AppStudioPlugin,
+  FrontendPlugin,
+  getTemplatesFolder,
+  SpfxPlugin,
+  TeamsBot,
+} from "../../../src";
 import { SolutionError } from "../../../src/plugins/solution/fx-solution/constants";
 import { validManifest } from "./util";
 import * as uuid from "uuid";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
-
+const aadPlugin = new AadAppForTeamsPlugin();
+const spfxPlugin = new SpfxPlugin();
+const fehostPlugin = new FrontendPlugin();
+const appStudioPlugin = new AppStudioPlugin();
+const botPlugin = new TeamsBot();
 function mockSolutionContext(): SolutionContext {
   const config: SolutionConfig = new Map();
   return {
@@ -95,7 +106,7 @@ describe("Solution scaffold()", () => {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",
         version: "1.0",
-        activeResourcePlugins: [solution.fehostPlugin.name],
+        activeResourcePlugins: [fehostPlugin.name],
       },
     };
     // We leverage the fact that in testing env, this is not file at `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`
@@ -141,7 +152,7 @@ describe("Solution scaffold() reading manifest file with no app name", () => {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",
         version: "1.0",
-        activeResourcePlugins: [solution.fehostPlugin.name],
+        activeResourcePlugins: [fehostPlugin.name],
       },
     };
     const result = await solution.scaffold(mockedCtx);
@@ -189,11 +200,11 @@ describe("Solution scaffold() reading valid manifest file", () => {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",
         version: "1.0",
-        activeResourcePlugins: [solution.fehostPlugin.name],
+        activeResourcePlugins: [fehostPlugin.name],
         capabilities: [TabOptionItem.id],
       },
     };
-    mockScaffoldThatAlwaysSucceed(solution.fehostPlugin);
+    mockScaffoldThatAlwaysSucceed(fehostPlugin);
 
     const result = await solution.scaffold(mockedCtx);
     expect(result.isOk()).to.be.true;
@@ -211,12 +222,12 @@ describe("Solution scaffold() reading valid manifest file", () => {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",
         version: "1.0",
-        activeResourcePlugins: [solution.fehostPlugin.name, solution.botPlugin.name],
+        activeResourcePlugins: [fehostPlugin.name, botPlugin.name],
         capabilities: [TabOptionItem.id, BotOptionItem.id],
       },
     };
-    mockScaffoldThatAlwaysSucceed(solution.fehostPlugin);
-    mockScaffoldThatAlwaysSucceed(solution.botPlugin);
+    mockScaffoldThatAlwaysSucceed(fehostPlugin);
+    mockScaffoldThatAlwaysSucceed(botPlugin);
     const result = await solution.scaffold(mockedCtx);
     expect(result.isOk()).to.be.true;
     expect(fileContent.get(`${mockedCtx.root}/README.md`)).equals(mockedReadMeContent);
@@ -234,12 +245,12 @@ describe("Solution scaffold() reading valid manifest file", () => {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",
         version: "1.0",
-        activeResourcePlugins: [solution.fehostPlugin.name, solution.botPlugin.name],
+        activeResourcePlugins: [fehostPlugin.name, botPlugin.name],
         capabilities: [TabOptionItem.id, MessageExtensionItem.id],
       },
     };
-    mockScaffoldThatAlwaysSucceed(solution.fehostPlugin);
-    mockScaffoldThatAlwaysSucceed(solution.botPlugin);
+    mockScaffoldThatAlwaysSucceed(fehostPlugin);
+    mockScaffoldThatAlwaysSucceed(botPlugin);
     const result = await solution.scaffold(mockedCtx);
     expect(result.isOk()).to.be.true;
     expect(fileContent.get(`${mockedCtx.root}/README.md`)).equals(mockedReadMeContent);

@@ -26,6 +26,7 @@ jobs:
         with:
           token: ${{ secrets.CD_PAT }}
           ref: ${{ github.ref }}
+          clean: false
 
       - name: Setup node
         uses: actions/setup-node@v2.1.2

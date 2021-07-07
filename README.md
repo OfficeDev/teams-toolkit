@@ -5,9 +5,9 @@
 [![SimpleAuth CI workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/simpleauthCI.yml/badge.svg)](https://github.com/OfficeDev/TeamsFx/actions/workflows/simpleauthCI.yml)
 [![Function Extension CI workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/FunctionExtensionCI.yml/badge.svg)](https://github.com/OfficeDev/TeamsFx/actions/workflows/FunctionExtensionCI.yml)
 
-> Please be advised that this project is currently in **Public Preview**, with a lot of active development work taking place. **Please expect breaking changes** as we continue to iterate. We really appreciate your [feedback](https://aka.ms/teamsfx-feedback), and [recordings](https://aka.ms/teamsfx-record), they really make the product better. Thank you!
+> Please be advised that this project is currently in **Public Preview**, with a lot of active development work taking place. **Please expect breaking changes** as we continue to iterate.
 > 
-> If you encounter any issue or error, please report issues to us following the [Supporting Guide](SUPPORT.md).
+>   We really appreciate your feedback! If you encounter any issue or error, please report issues to us following the [Supporting Guide](SUPPORT.md). Meanwhile you can make [recording](https://aka.ms/teamsfx-record) of your journey with our product, they really make the product better. Thank you!
 >  
 > This warning will be removed when we become Generally Available.
 

@@ -257,6 +257,10 @@ export namespace AppStudioClient {
 
   /**
    * Publish Teams app to Teams App Catalog
+   * @param teamsAppId
+   * @param file
+   * @param appStudioToken
+   * @returns
    */
   export async function publishTeamsApp(
     teamsAppId: string,
@@ -308,6 +312,10 @@ export namespace AppStudioClient {
 
   /**
    * Update existed publish request
+   * @param teamsAppId
+   * @param file
+   * @param appStudioToken
+   * @returns
    */
   export async function publishTeamsAppUpdate(
     teamsAppId: string,

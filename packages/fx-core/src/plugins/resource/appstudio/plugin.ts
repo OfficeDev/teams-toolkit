@@ -201,6 +201,8 @@ export class AppStudioPluginImpl {
 
   /**
    * ask app common questions to generate app manifest
+   * @param settings
+   * @returns
    */
   public async createManifest(settings: ProjectSettings): Promise<TeamsAppManifest | undefined> {
     const solutionSettings: AzureSolutionSettings =
@@ -426,9 +428,14 @@ export class AppStudioPluginImpl {
     );
   }
 
-  // The assumptions of this function are:
-  // 1. this.manifest is not undefined(for azure projects) already contains the latest manifest(loaded via reloadManifestAndCheckRequiredFields)
-  // 2. provision of frontend hosting is done and config values has already been loaded into ctx.config
+  /**
+   * The assumptions of this function are:
+   * 1. this.manifest is not undefined(for azure projects) already contains the latest manifest(loaded via reloadManifestAndCheckRequiredFields)
+   * 2. provision of frontend hosting is done and config values has already been loaded into ctx.config
+   * @param ctx
+   * @param maybeSelectedPlugins
+   * @returns
+   */
   public async createAndConfigTeamsManifest(
     ctx: PluginContext,
     maybeSelectedPlugins: Result<LoadedPlugin[], FxError>
@@ -557,9 +564,7 @@ export class AppStudioPluginImpl {
             )
       );
     }
-    /* localTabEndpoint, bots and composeExtensions can't all be undefined ${
-              localDebug ? LOCAL_DEBUG_TAB_ENDPOINT : FRONTEND_ENDPOINT
-            }, ${localDebug ? LOCAL_BOT_ID : BOT_ID}.` */
+
     if (!tabEndpoint && !botId) {
       return err(
         localDebug

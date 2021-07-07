@@ -35,30 +35,31 @@ exports.BaseError = BaseError;
 
 /***/ }),
 
+/***/ 6847:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.buildMap = void 0;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+exports.buildMap = {
+    tabs: ['npm install', 'npm run build'],
+    bot: {
+        typescript: ['npm install', 'npm run build'],
+        javascript: ['npm install']
+    },
+    SPFx: ['npm install', 'npm run build']
+};
+
+
+/***/ }),
+
 /***/ 2150:
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
 
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -72,22 +73,13 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.BuildMapQuerier = void 0;
 const constant_1 = __webpack_require__(2363);
 const errors_1 = __webpack_require__(9292);
-const fs = __importStar(__webpack_require__(5630));
+const buildMap_1 = __webpack_require__(6847);
 class BuildMapQuerier {
     constructor() { }
-    init() {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!(yield fs.pathExists(BuildMapQuerier.buildMapPath))) {
-                throw new errors_1.InternalError(`${BuildMapQuerier.buildMapPath} is not existing.`);
-            }
-            this.buildMap = yield fs.readJSON(BuildMapQuerier.buildMapPath);
-        });
-    }
     static getInstance() {
         return __awaiter(this, void 0, void 0, function* () {
             if (!BuildMapQuerier.instance) {
                 BuildMapQuerier.instance = new BuildMapQuerier();
-                yield BuildMapQuerier.instance.init();
             }
             return BuildMapQuerier.instance;
         });
@@ -100,7 +92,7 @@ class BuildMapQuerier {
         return commands;
     }
     _query(cap, lang) {
-        const capItems = this.buildMap[cap];
+        const capItems = buildMap_1.buildMap[cap];
         if (!capItems) {
             throw new errors_1.InternalError(`Cannot find ${cap} in buildMap.json.`);
         }
@@ -119,7 +111,6 @@ class BuildMapQuerier {
 }
 exports.BuildMapQuerier = BuildMapQuerier;
 BuildMapQuerier.validOutputs = [constant_1.Commands.NpmInstall, constant_1.Commands.NpmRunBuild];
-BuildMapQuerier.buildMapPath = './buildMap.json';
 
 
 /***/ }),

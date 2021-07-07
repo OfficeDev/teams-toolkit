@@ -18,24 +18,26 @@
       "preLaunchTask": "npm: build"
     },
     {
-      "name": "Extension Tests (No Folder)",
+      "name": "Extension Unit Tests",
       "type": "extensionHost",
       "request": "launch",
       "args": [
+        "--disable-extensions",
         "--extensionDevelopmentPath=${workspaceFolder}",
-        "--extensionTestsPath=${workspaceFolder}/out/test/index.noFolder"
+        "--extensionTestsPath=${workspaceFolder}/out/test/index.unit"
       ],
       "outFiles": ["${workspaceFolder}/out/test/**/*.js"],
       "preLaunchTask": "npm: test-watch"
     },
     {
-      "name": "Extension Tests (Specified Folder)",
+      "name": "Extension Integration Tests",
       "type": "extensionHost",
       "request": "launch",
       "args": [
+        "--disable-extensions",
         "${workspaceFolder}/test-folder/myapp",
         "--extensionDevelopmentPath=${workspaceFolder}",
-        "--extensionTestsPath=${workspaceFolder}/out/test/index.folder"
+        "--extensionTestsPath=${workspaceFolder}/out/test/index.integration"
       ],
       "outFiles": ["${workspaceFolder}/out/test/**/*.js"],
       "preLaunchTask": "npm: test-watch"

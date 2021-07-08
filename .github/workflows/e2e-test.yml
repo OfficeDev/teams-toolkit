@@ -45,7 +45,7 @@ jobs:
 
       - name: Setup project
         run:
-          npm install && npm run bootstrap
+          npm run setup
 
       - name: Package CLI and install
         run: |
@@ -59,3 +59,7 @@ jobs:
         run: |
           npm run test:e2e:clean
         working-directory: packages/cli
+      
+      - name: Clean the Repo
+        run: |
+          rsync --delete-before -avH --force -r /tmp/empty/ ./

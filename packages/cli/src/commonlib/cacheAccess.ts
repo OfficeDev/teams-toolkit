@@ -108,9 +108,7 @@ export class CryptoCachePlugin {
             JSON.parse(data);
             cacheContext.tokenCache.deserialize(data);
           } catch (error) {
-            await fs.writeFile(fileCachePath, "", UTF8);
-
-            // still throw error if the plain text is not token cache
+            // throw error if the plain text is not token cache
             let needThrow = true;
             try {
               const oldObj = JSON.parse(text);
@@ -122,7 +120,10 @@ export class CryptoCachePlugin {
             }
 
             if (needThrow) {
+              await fs.writeFile(fileCachePath, "", UTF8);
               throw error;
+            } else {
+              cacheContext.tokenCache.deserialize(text);
             }
           }
         }

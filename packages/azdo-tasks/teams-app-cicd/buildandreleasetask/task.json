@@ -1,0 +1,58 @@
+{
+    "$schema": "https://raw.githubusercontent.com/Microsoft/azure-pipelines-task-lib/master/tasks.schema.json",
+    "id": "55dd6b57-7058-43fd-b76d-3323f4721394",
+    "name": "teams-app-cicd",
+    "friendlyName": "Teams App CI/CD",
+    "description": "Azure DevOps Task to help Teams App Developers build their CI/CD pipelines.",
+    "helpMarkDown": "",
+    "category": "Utility",
+    "author": "Ivan He",
+    "version": {
+        "Major": 0,
+        "Minor": 1,
+        "Patch": 0
+    },
+    "instanceNameFormat": "Teams App CI/CD - $(operationType)",
+    "inputs": [
+        {
+            "name": "operationType",
+            "type": "pickList",
+            "label": "Operation Type",
+            "required": true,
+            "options": {
+                "Build Teams App": "Build Teams App",
+                "Provision Hosting Environment": "Provision Hosting Environment",
+                "Deploy to Hosting Environment": "Deploy to Hosting Environment",
+                "Pack Teams App": "Pack Teams App",
+                "Validate Teams App Manifest": "Validate Teams App Manifest",
+                "Publish Teams App": "Publish Teams App"
+            }
+            "helpMarkDown": "Select an operation type."
+        },
+        {
+            "name": "projectRoot",
+            "type": "filePath",
+            "label": "Project Root",
+            "defaultValue": "$(System.DefaultWorkingDirectory)",
+            "helpMarkDown": "Select the project root folder."
+        },
+        {
+            "name": "capabilities",
+            "type": "pickList",
+            "label": "Capability",
+            "defaultValue": "tabs",
+            "visibleRule": "operationType == Build Teams App",
+            "options": {
+                "tabs": "tabs",
+                "bot": "bot",
+                "SPFx": "SPFx"
+            },
+            "helpMarkDown": "Select the capabilities to build."
+        }
+    ],
+    "execution": {
+        "Node10": {
+            "target": "dist/index.js"
+        }
+    }
+}

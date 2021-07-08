@@ -45,7 +45,7 @@ jobs:
 
       - name: Setup project
         run:
-          npm run setup
+          npm install && npm run bootstrap
 
       - name: Package CLI and install
         run: |

@@ -14,6 +14,7 @@ import {
   returnUserError,
   PluginContext,
   Plugin,
+  LoadedPlugin,
   Func,
   FxError,
   Result,
@@ -53,6 +54,7 @@ import {
   REMOTE_CLIENT_SECRET,
   PROGRAMMING_LANGUAGE,
   REMOTE_MANIFEST,
+  REMOTE_TEAMS_APP_ID,
   CancelError,
   SolutionTelemetryProperty,
   SolutionTelemetryEvent,
@@ -96,7 +98,6 @@ import * as util from "util";
 import { deepCopy, getStrings, isUserCancelError } from "../../../common/tools";
 import { getTemplatesFolder } from "../../..";
 
-type LoadedPlugin = Plugin & { name: string; displayName: string };
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
 
 type ParamForRegisterTeamsAppAndAad = {
@@ -789,7 +790,7 @@ export class TeamsAppSolution implements Solution {
         if (result.isErr()) {
           return err(result.error);
         }
-        ctx.config.get(GLOBAL_CONFIG)?.set("remoteTeamsAppId", result.value.appId);
+        ctx.config.get(GLOBAL_CONFIG)?.set(REMOTE_TEAMS_APP_ID, result.value.appId);
         ctx.logProvider?.info("[Teams Toolkit]: configuration finished!");
         return result;
       }

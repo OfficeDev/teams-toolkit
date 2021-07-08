@@ -10,6 +10,7 @@ import {
   Result,
   PluginContext,
   Plugin,
+  LoadedPlugin,
   TeamsAppManifest,
   Platform,
   LogProvider,
@@ -62,8 +63,6 @@ import { Constants } from "./constants";
 import { REMOTE_TEAMS_APP_ID, REMOTE_MANIFEST } from "../../solution/fx-solution/constants";
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
-
-type LoadedPlugin = Plugin & { name: string; displayName: string };
 
 export enum PluginNames {
   SQL = "fx-resource-azure-sql",
@@ -462,7 +461,6 @@ export class AppStudioPluginImpl {
 
       ctx.logProvider?.info(`Teams app created ${result.value}`);
       appDefinition.appId = result.value;
-      ctx.config.set(REMOTE_TEAMS_APP_ID, result.value);
       return ok(appDefinition);
     } else {
       ctx.logProvider?.info(`Teams app already created: ${teamsAppId}`);

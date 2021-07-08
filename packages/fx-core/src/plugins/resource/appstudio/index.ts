@@ -9,6 +9,7 @@ import {
   LogProvider,
   Platform,
   Plugin,
+  LoadedPlugin,
   PluginContext,
   QTreeNode,
   Result,
@@ -26,8 +27,6 @@ import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
 import { manuallySubmitOption, autoPublishOption } from "./questions";
 import { TelemetryUtils, TelemetryEventName, TelemetryPropertyKey } from "./utils/telemetry";
-
-type LoadedPlugin = Plugin & { name: string; displayName: string };
 export class AppStudioPlugin implements Plugin {
   private appStudioPluginImpl = new AppStudioPluginImpl();
 

@@ -12,6 +12,7 @@ import { detectVsCodeEnv } from "../handlers";
 import { vscodeAdapter } from "./depsChecker/vscodeAdapter";
 import { vscodeLogger } from "./depsChecker/vscodeLogger";
 import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
+import { isWindows } from "../utils/commonUtils";
 
 export class TeamsfxTaskProvider implements vscode.TaskProvider {
   public static readonly type: string = ProductName;
@@ -130,8 +131,8 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     const options: vscode.ShellExecutionOptions = {
       cwd: projectRoot,
       // avoid powershell execution policy issue
-      executable: "cmd.exe",
-      shellArgs: ["/c"],
+      executable: isWindows() ? "cmd.exe" : undefined,
+      shellArgs: isWindows() ? ["/c"] : undefined,
       env,
     };
     problemMatchers = problemMatchers || constants.backendProblemMatcher;

@@ -195,7 +195,7 @@ export class FuncToolChecker implements IDepsChecker {
         undefined,
         this._logger,
         // same as backend start, avoid powershell execution policy issue.
-        { shell: "cmd.exe" },
+        { shell: isWindows() ? "cmd.exe" : true },
         "func",
         "--version"
       );

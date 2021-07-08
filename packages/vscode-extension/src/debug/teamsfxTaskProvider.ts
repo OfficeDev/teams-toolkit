@@ -119,15 +119,19 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     definition = definition || { type: TeamsfxTaskProvider.type, command };
 
     // NOTE: properly handle quoting and escaping to work on windows (both powershell and cmd), linux and osx
-    const funcChecker = new FuncToolChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
-    const funcExecPath: string  = await funcChecker.getFuncExecPath();
-    const commandLine =
+    const args =
       programmingLanguage === constants.ProgrammingLanguage.typescript
-        ? `${funcExecPath} start --typescript --language-worker="--inspect=9229" --port "7071" --cors "*"`
-        : `${funcExecPath} start --javascript --language-worker="--inspect=9229" --port "7071" --cors "*"`;
+        ? `start --typescript --language-worker="--inspect=9229" --port "7071" --cors "*"`
+        : `start --javascript --language-worker="--inspect=9229" --port "7071" --cors "*"`;
+    const funcChecker = new FuncToolChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
+    const commandLine = `${await funcChecker.getFuncCommand()} ${args}`;
+
     const env = await commonUtils.getBackendLocalEnv();
     const options: vscode.ShellExecutionOptions = {
       cwd: projectRoot,
+      // avoid powershell execution policy issue
+      executable: "cmd.exe",
+      shellArgs: ["/c"],
       env,
     };
     problemMatchers = problemMatchers || constants.backendProblemMatcher;

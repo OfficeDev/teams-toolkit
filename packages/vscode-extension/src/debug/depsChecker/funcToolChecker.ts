@@ -63,7 +63,7 @@ export class FuncToolChecker implements IDepsChecker {
 
     if (isGlobalFuncInstalled) {
       this._telemetry.sendEvent(DepsCheckerEvent.funcAlreadyInstalled, {
-        "global-func-version": `${await this.queryFuncVersionSilently("func")}`,
+        "global-func-version": `${await this.queryGlobalFuncVersion()}`,
       });
     }
     if (isPortableFuncInstalled) {
@@ -82,7 +82,7 @@ export class FuncToolChecker implements IDepsChecker {
   }
 
   public async isGlobalFuncInstalled(): Promise<boolean> {
-    const globalFuncVersion = await this.queryFuncVersionSilently("func");
+    const globalFuncVersion = await this.queryGlobalFuncVersion();
     return globalFuncVersion !== null && supportedVersions.includes(globalFuncVersion);
   }
 
@@ -112,9 +112,8 @@ export class FuncToolChecker implements IDepsChecker {
       TelemtryMessages.failedToInstallFunc,
       Messages.failToValidateFuncCoreTool.replace("@NameVersion", displayFuncName)
     );
-
     throw new DepsCheckerError(
-      Messages.failToInstallFuncCoreTool.replace("@NameVersion", displayFuncName),
+      Messages.failToInstallFuncCoreTool.split("@NameVersion").join(displayFuncName),
       defaultHelpLink
     );
   }
@@ -147,16 +146,22 @@ export class FuncToolChecker implements IDepsChecker {
   }
 
   private static getDefaultInstallPath(): string {
-    return path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "func");
+    return path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "func test"); // TODO: fix it after testing
   }
 
   private static getPortableFuncExecPath(): string {
-    return path.join(FuncToolChecker.getDefaultInstallPath(), "func");
+    return path.join(
+      FuncToolChecker.getDefaultInstallPath(),
+      "node_modules",
+      "azure-functions-core-tools",
+      "lib",
+      "main.js"
+    );
   }
 
-  public async getFuncExecPath(): Promise<string> {
+  public async getFuncCommand(): Promise<string> {
     if (await this.isPortableFuncInstalled()) {
-      return FuncToolChecker.getPortableFuncExecPath();
+      return `node "${FuncToolChecker.getPortableFuncExecPath()}"`;
     }
     if (await this.isGlobalFuncInstalled()) {
       return "func";
@@ -176,11 +181,28 @@ export class FuncToolChecker implements IDepsChecker {
     const output = await cpUtils.executeCommand(
       undefined,
       this._logger,
-      { shell: false },
-      this.getExecCommand(path),
+      { shell: true },
+      "node",
+      `"${path}"`,
       "--version"
     );
     return mapToFuncToolsVersion(output);
+  }
+
+  private async queryGlobalFuncVersion(): Promise<FuncVersion | null> {
+    try {
+      const output = await cpUtils.executeCommand(
+        undefined,
+        this._logger,
+        // same as backend start, avoid powershell execution policy issue.
+        { shell: "cmd.exe" },
+        "func",
+        "--version"
+      );
+      return mapToFuncToolsVersion(output);
+    } catch (error) {
+      return null;
+    }
   }
 
   private async hasNPM(): Promise<boolean> {
@@ -188,8 +210,8 @@ export class FuncToolChecker implements IDepsChecker {
       const npmVersion = await cpUtils.executeCommand(
         undefined,
         this._logger,
-        { shell: false },
-        this.getExecCommand("npm"),
+        { shell: true },
+        "npm",
         "--version"
       );
       this._telemetry.sendEvent(DepsCheckerEvent.npmAlreadyInstalled, {

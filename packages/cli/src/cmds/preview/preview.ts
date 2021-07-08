@@ -685,8 +685,8 @@ export default class Preview extends YargsCommand {
       sideloadingUrl = sideloadingUrl.replace(constants.accountHintPlaceholder, "");
     }
 
-    const sideloadingBar = CLIUIInstance.createProgressBar(constants.previewTitle, 1);
-    await sideloadingBar.start(`${constants.previewStartMessage}`);
+    const previewBar = CLIUIInstance.createProgressBar(constants.previewTitle, 1);
+    await previewBar.start(`${constants.previewStartMessage}`);
     const message = [
       {
         content: `preview url: `,
@@ -699,8 +699,8 @@ export default class Preview extends YargsCommand {
     ];
     cliLogger.necessaryLog(LogLevel.Info, utils.getColorizedString(message));
     await open(sideloadingUrl);
-    await sideloadingBar.next(constants.previewSuccessMessage);
-    await sideloadingBar.end();
+    await previewBar.next(constants.previewSuccessMessage);
+    await previewBar.end();
 
     cliTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewSideloading, {
       ...this.telemetryProperties,

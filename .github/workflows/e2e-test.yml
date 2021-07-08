@@ -49,7 +49,7 @@ jobs:
 
       - name: Package CLI and install
         run: |
-          rm *.tgz
+          rm -f *.tgz
           npm pack
           mv *.tgz teamsfx-cli.tgz
           npm install -g teamsfx-cli.tgz

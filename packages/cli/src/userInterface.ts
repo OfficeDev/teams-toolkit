@@ -54,10 +54,6 @@ export class DialogManager implements Dialog {
         const answer: string | undefined = await this.askQuestion(msg.content as IQuestion);
         return new DialogMsg(DialogType.Answer, answer);
       }
-      case DialogType.Show: {
-        const result = await this.showMessage(msg.content as IMessage);
-        return new DialogMsg(DialogType.Answer, result);
-      }
       case DialogType.Output: {
         this.showMessage(msg.content as IMessage);
         return new DialogMsg(DialogType.Show, {
@@ -87,11 +83,6 @@ export class DialogManager implements Dialog {
     }
   }
 
-  public createProgressBar(title: string, totalSteps: number): IProgressHandler {
-    const handler = new ProgressHandler(title, totalSteps);
-    return handler;
-  }
-
   public presetAnswers(answers: ConfigMap) {
     DialogManager.answers = answers;
   }
@@ -109,50 +100,8 @@ export class DialogManager implements Dialog {
 
   private async askQuestion(question: IQuestion): Promise<string | undefined> {
     switch (question.type) {
-      case QuestionType.Radio: {
-        if (!question.options || question.options.length === 0) {
-          break;
-        }
-        const result = await CLIUIInstance.selectOption(
-          {
-            name: question.description.includes("subscription") ? "subscription" : "radio",
-            title: question.description,
-            options: question.options,
-          }
-        );
-        if (result.isOk()) {
-          return result.value.result as string | undefined;
-        } else {
-          return undefined;
-        }
-      }
-      case QuestionType.Confirm: {
-        if (!question.options || question.options.length === 0) {
-          break;
-        }
-        const result = await CLIUIInstance.showMessage(
-          "info",
-          question.description,
-          true,
-          ...question.options
-        );
-        if (result.isOk()) {
-          return result.value;
-        } else {
-          return undefined;
-        }
-      }
-      case QuestionType.OpenExternal: {
-        await CLIUIInstance.openUrl(
-          question.description
-        );
-        return undefined;
-      }
       case QuestionType.OpenFolder:
         return undefined;
-      /// TODO: remove this part of hard code
-      case QuestionType.Text:
-        break;
     }
     throw NotSupportedQuestionType(question);
   }

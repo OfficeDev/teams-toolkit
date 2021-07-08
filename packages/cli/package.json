@@ -20,6 +20,7 @@
     "prepack": "npm run test:unit && npm run test:integration && npm run package",
     "test:e2e": "npm run test:e2e:clean && npm run test:e2e:smoke && npm run test:e2e:others",
     "test:e2e:clean": "ts-node tests/e2e/clean.ts",
+    "test:e2e:parallel": "mocha --no-timeouts --parallel --require ts-node/register tests/e2e/**/*.tests.ts",
     "test:e2e:smoke": "mocha --no-timeouts --require ts-node/register tests/e2e/smoke/*.tests.ts",
     "test:e2e:others": "mocha --no-timeouts --require ts-node/register tests/e2e/{,!(smoke)}/*.tests.ts",
     "test:unit": "nyc --reporter=html --reporter=json-summary --reporter=text mocha --no-timeouts --require ts-node/register tests/unit/**/*.ts",

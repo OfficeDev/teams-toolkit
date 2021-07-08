@@ -12,11 +12,11 @@ Get log level.
 <b>Signature:</b>
 
 ```typescript
-export declare function getLogLevel(): LogLevel;
+export declare function getLogLevel(): LogLevel | undefined;
 ```
 <b>Returns:</b>
 
-[LogLevel](./teamsfx.loglevel.md)
+[LogLevel](./teamsfx.loglevel.md) \| undefined
 
 Log level
 

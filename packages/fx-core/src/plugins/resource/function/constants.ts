@@ -171,6 +171,7 @@ export class AzureInfo {
     `https://${functionAppName}.scm.azurewebsites.net/api/zipdeploy`;
   public static readonly runFromPackageSettingKey = "WEBSITE_RUN_FROM_PACKAGE";
   public static readonly runFromPackageEnabled = "1";
+  public static readonly requiredResourceProviders = ["Microsoft.Web", "Microsoft.Storage"];
 }
 
 export class Commands {

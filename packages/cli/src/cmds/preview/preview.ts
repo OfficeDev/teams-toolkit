@@ -28,7 +28,6 @@ import cliLogger from "../../commonlib/log";
 import * as errors from "./errors";
 import activate from "../../activate";
 import { Task } from "./task";
-import DialogManagerInstance from "../../userInterface";
 import AppStudioTokenInstance from "../../commonlib/appStudioLogin";
 import cliTelemetry from "../../telemetry/cliTelemetry";
 import {
@@ -37,6 +36,7 @@ import {
   TelemetrySuccess,
 } from "../../telemetry/cliTelemetryEvents";
 import { ServiceLogWriter } from "./serviceLogWriter";
+import CLIUIInstance from "../../userInteraction";
 
 export default class Preview extends YargsCommand {
   public readonly commandHead = `preview`;
@@ -145,6 +145,13 @@ export default class Preview extends YargsCommand {
     const includeBot = activeResourcePlugins.some(
       (pluginName) => pluginName === constants.botPluginName
     );
+    const includeSpfx = activeResourcePlugins.some(
+      (pluginName) => pluginName === constants.spfxPluginName
+    );
+    // TODO: remove when SPFx preview is ready
+    if (includeSpfx) {
+      return err(errors.SPFxNotSupported());
+    }
 
     const frontendRoot = path.join(workspaceFolder, constants.frontendFolderName);
     if (includeFrontend && !(await fs.pathExists(frontendRoot))) {
@@ -267,6 +274,16 @@ export default class Preview extends YargsCommand {
     }
     const config = configResult.value;
 
+    const activeResourcePlugins = (config?.settings?.solutionSettings as AzureSolutionSettings)
+      .activeResourcePlugins;
+    const includeSpfx = activeResourcePlugins.some(
+      (pluginName) => pluginName === constants.spfxPluginName
+    );
+    // TODO: remove when SPFx preview is ready
+    if (includeSpfx) {
+      return err(errors.SPFxNotSupported());
+    }
+
     const tenantId = config?.config
       ?.get(constants.solutionPluginName)
       ?.get(constants.teamsAppTenantIdConfigKey) as string;
@@ -288,7 +305,7 @@ export default class Preview extends YargsCommand {
     const botInstallTask = new Task(constants.botInstallTitle, constants.npmInstallCommand, false, {
       cwd: botRoot,
     });
-    const botInstallBar = DialogManagerInstance.createProgressBar(constants.botInstallTitle, 1);
+    const botInstallBar = CLIUIInstance.createProgressBar(constants.botInstallTitle, 1);
     const botInstallStartCb = commonUtils.createTaskStartCb(
       botInstallBar,
       constants.botInstallStartMessage,
@@ -301,7 +318,7 @@ export default class Preview extends YargsCommand {
     );
     let result = await botInstallTask.wait(botInstallStartCb, botInstallStopCb);
     if (result.isErr()) {
-      return err(result.error);
+      return err(errors.PreviewCommandFailed([result.error]));
     }
 
     // start ngrok
@@ -309,7 +326,7 @@ export default class Preview extends YargsCommand {
       cwd: botRoot,
     });
     this.backgroundTasks.push(ngrokStartTask);
-    const ngrokStartBar = DialogManagerInstance.createProgressBar(constants.ngrokStartTitle, 1);
+    const ngrokStartBar = CLIUIInstance.createProgressBar(constants.ngrokStartTitle, 1);
     const ngrokStartStartCb = commonUtils.createTaskStartCb(
       ngrokStartBar,
       constants.ngrokStartStartMessage,
@@ -327,7 +344,7 @@ export default class Preview extends YargsCommand {
       this.serviceLogWriter
     );
     if (result.isErr()) {
-      return err(result.error);
+      return err(errors.PreviewCommandFailed([result.error]));
     }
     return ok(null);
   }
@@ -379,10 +396,7 @@ export default class Preview extends YargsCommand {
       });
     }
 
-    const frontendInstallBar = DialogManagerInstance.createProgressBar(
-      constants.frontendInstallTitle,
-      1
-    );
+    const frontendInstallBar = CLIUIInstance.createProgressBar(constants.frontendInstallTitle, 1);
     const frontendInstallStartCb = commonUtils.createTaskStartCb(
       frontendInstallBar,
       constants.frontendInstallStartMessage,
@@ -394,10 +408,7 @@ export default class Preview extends YargsCommand {
       this.telemetryProperties
     );
 
-    const backendInstallBar = DialogManagerInstance.createProgressBar(
-      constants.backendInstallTitle,
-      1
-    );
+    const backendInstallBar = CLIUIInstance.createProgressBar(constants.backendInstallTitle, 1);
     const backendInstallStartCb = commonUtils.createTaskStartCb(
       backendInstallBar,
       constants.backendInstallStartMessage,
@@ -409,7 +420,7 @@ export default class Preview extends YargsCommand {
       this.telemetryProperties
     );
 
-    const backendExtensionsInstallBar = DialogManagerInstance.createProgressBar(
+    const backendExtensionsInstallBar = CLIUIInstance.createProgressBar(
       constants.backendExtensionsInstallTitle,
       1
     );
@@ -422,7 +433,7 @@ export default class Preview extends YargsCommand {
       constants.backendExtensionsInstallSuccessMessage
     );
 
-    const botInstallBar = DialogManagerInstance.createProgressBar(constants.botInstallTitle, 1);
+    const botInstallBar = CLIUIInstance.createProgressBar(constants.botInstallTitle, 1);
     const botInstallStartCb = commonUtils.createTaskStartCb(
       botInstallBar,
       constants.botInstallStartMessage,
@@ -531,10 +542,7 @@ export default class Preview extends YargsCommand {
       this.backgroundTasks.push(botStartTask);
     }
 
-    const frontendStartBar = DialogManagerInstance.createProgressBar(
-      constants.frontendStartTitle,
-      1
-    );
+    const frontendStartBar = CLIUIInstance.createProgressBar(constants.frontendStartTitle, 1);
     const frontendStartStartCb = commonUtils.createTaskStartCb(
       frontendStartBar,
       constants.frontendStartStartMessage,
@@ -546,7 +554,7 @@ export default class Preview extends YargsCommand {
       this.telemetryProperties
     );
 
-    const authStartBar = DialogManagerInstance.createProgressBar(constants.authStartTitle, 1);
+    const authStartBar = CLIUIInstance.createProgressBar(constants.authStartTitle, 1);
     const authStartStartCb = commonUtils.createTaskStartCb(
       authStartBar,
       constants.authStartStartMessage,
@@ -558,7 +566,7 @@ export default class Preview extends YargsCommand {
       this.telemetryProperties
     );
 
-    const backendStartBar = DialogManagerInstance.createProgressBar(constants.backendStartTitle, 1);
+    const backendStartBar = CLIUIInstance.createProgressBar(constants.backendStartTitle, 1);
     const backendStartStartCb = commonUtils.createTaskStartCb(
       backendStartBar,
       constants.backendStartStartMessage,
@@ -570,7 +578,7 @@ export default class Preview extends YargsCommand {
       this.telemetryProperties
     );
 
-    const backendWatchBar = DialogManagerInstance.createProgressBar(constants.backendWatchTitle, 1);
+    const backendWatchBar = CLIUIInstance.createProgressBar(constants.backendWatchTitle, 1);
     const backendWatchStartCb = commonUtils.createTaskStartCb(
       backendWatchBar,
       constants.backendWatchStartMessage,
@@ -582,7 +590,7 @@ export default class Preview extends YargsCommand {
       this.telemetryProperties
     );
 
-    const botStartBar = DialogManagerInstance.createProgressBar(constants.botStartTitle, 1);
+    const botStartBar = CLIUIInstance.createProgressBar(constants.botStartTitle, 1);
     const botStartStartCb = commonUtils.createTaskStartCb(
       botStartBar,
       constants.botStartStartMessage,
@@ -677,7 +685,7 @@ export default class Preview extends YargsCommand {
       sideloadingUrl = sideloadingUrl.replace(constants.accountHintPlaceholder, "");
     }
 
-    const sideloadingBar = DialogManagerInstance.createProgressBar(constants.sideloadingTitle, 1);
+    const sideloadingBar = CLIUIInstance.createProgressBar(constants.sideloadingTitle, 1);
     await sideloadingBar.start(`${constants.sideloadingStartMessage}`);
     const message = [
       {

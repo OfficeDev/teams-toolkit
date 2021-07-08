@@ -16,7 +16,7 @@ import * as StringResources from "./resources/Strings.json";
 import { openWelcomePageAfterExtensionInstallation } from "./controls/openWelcomePage";
 import { VsCodeUI } from "./qm/vsc_ui";
 import { exp } from "./exp";
-import { registerRunIcon } from "./debug/runIconHandler";
+import { disableRunIcon, registerRunIcon } from "./debug/runIconHandler";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -215,4 +215,5 @@ export async function activate(context: vscode.ExtensionContext) {
 // this method is called when your extension is deactivated
 export function deactivate() {
   handlers.cmdHdlDisposeTreeView();
+  disableRunIcon();
 }

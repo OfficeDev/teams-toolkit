@@ -237,8 +237,12 @@ dialogs.add(
 
 ### Configure log
 
-You can set custome log level and logger when using this library.
-The default log level is `info` and SDK will print log information to console.
+You can set custome log level and redirect outputs when using this library.
+Logging is turned off by default, you can turn it on by setting log level.
+
+#### Enable log by setting log level
+
+When log level is set, logging is enabled. It prints log information to console by default.
 
 Set log level using the snippet below:
 
@@ -247,26 +251,31 @@ Set log level using the snippet below:
 setLogLevel(LogLevel.Warn);
 ```
 
-Set a custome log function if you want to redirect output:
+You can redirect log output by setting custom logger or log function.
+
+##### Redirect by setting custom logger
 
 ```ts
+setLogLevel(LogLevel.Info);
+// Set another logger if you want to redirect to Application Insights in Azure Function
+setLogger(context.log);
+```
+
+##### Redirect by setting custom log function
+
+Please note that log function will not take effect if you set a custom logger.
+
+```ts
+setLogLevel(LogLevel.Info);
 // Only log error message to Application Insights in bot application.
-setLogFunction((level: LogLevel, ...args: any[]) => {
+setLogFunction((level: LogLevel, message: string) => {
   if (level === LogLevel.Error) {
-    const { format, ...rest } = args;
     this.telemetryClient.trackTrace({
-      message: util.format(format, ...rest),
+      message: message,
       severityLevel: Severity.Error,
     });
   }
 });
-```
-
-Set a custome logger instance:
-
-```ts
-// context.log send messages to Application Insights in Azure Function
-setLogger(context.log);
 ```
 
 ## Next steps

@@ -64,7 +64,7 @@ export class ErrorWithCode extends Error {
 export function getAuthenticationConfiguration(): AuthenticationConfiguration | undefined;
 
 // @beta
-export function getLogLevel(): LogLevel;
+export function getLogLevel(): LogLevel | undefined;
 
 // @beta
 export function getResourceConfiguration(resourceType: ResourceType, resourceName?: string): {

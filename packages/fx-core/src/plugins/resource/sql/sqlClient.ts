@@ -29,11 +29,21 @@ export class SqlClient {
       this.ctx.logProvider?.error(
         ErrorMessage.SqlCheckDBUserError.message(this.config.identity, error.message)
       );
-      throw SqlResultFactory.UserError(
-        ErrorMessage.SqlCheckDBUserError.name,
-        ErrorMessage.SqlCheckDBUserError.message(this.config.identity, ErrorMessage.GetDetail),
-        error
-      );
+      if (error?.message?.includes(ErrorMessage.AccessMessage)) {
+        throw SqlResultFactory.UserError(
+          ErrorMessage.SqlAccessError.name,
+          ErrorMessage.SqlAccessError.message(this.config.identity, error.message),
+          error,
+          undefined,
+          HelpLinks.default
+        );
+      } else {
+        throw SqlResultFactory.UserError(
+          ErrorMessage.SqlCheckDBUserError.name,
+          ErrorMessage.SqlCheckDBUserError.message(this.config.identity, error.message),
+          error
+        );
+      }
     }
   }
 
@@ -47,7 +57,7 @@ export class SqlClient {
       query = `sp_addrolemember 'db_datawriter', '${this.config.identity}'`;
       await this.doQuery(this.token!, query);
     } catch (error) {
-      const link = HelpLinks.addDBUser;
+      const link = HelpLinks.default;
       if (error?.message?.includes(ErrorMessage.GuestAdminMessage)) {
         const logMessage = ErrorMessage.DatabaseUserCreateError.message(
           this.config.sqlServer,
@@ -98,7 +108,7 @@ export class SqlClient {
     if (!this.token) {
       const credential = await this.ctx.azureAccountProvider!.getIdentityCredentialAsync();
       if (!credential) {
-        const link = HelpLinks.addDBUser;
+        const link = HelpLinks.default;
         const reason = ErrorMessage.IdentityCredentialUndefine(
           this.config.identity,
           this.config.databaseName
@@ -122,7 +132,7 @@ export class SqlClient {
         const accessToken = await credential!.getToken(Constants.azureSqlScope);
         this.token = accessToken!.token;
       } catch (error) {
-        const link = HelpLinks.addDBUser;
+        const link = HelpLinks.default;
         if (error?.message?.includes(ErrorMessage.DomainCode)) {
           const logMessage = ErrorMessage.DatabaseUserCreateError.message(
             this.config.sqlServer,

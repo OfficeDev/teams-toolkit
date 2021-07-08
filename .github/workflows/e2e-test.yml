@@ -62,5 +62,4 @@ jobs:
       
       - name: Clean the Repo
         run: |
-          rm -rf TeamsFx
-        working-directory: ..
+          rsync --delete-before -d /tmp/empty/ ./

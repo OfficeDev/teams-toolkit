@@ -10,15 +10,16 @@ import { DialogUtils } from "./utils/dialog";
 import { Messages, Telemetry } from "./constants";
 import { AzureSolutionSettings } from "@microsoft/teamsfx-api";
 import { HostTypeOptionAzure } from "../../solution/fx-solution/question";
+import { injectable } from "inversify";
 
+@injectable()
 export class AadAppForTeamsPlugin implements Plugin {
-
   name = "fx-resource-aad-app-for-teams";
   displayName = "AAD";
-  activate(solutionSettings: AzureSolutionSettings): boolean{
+  activate(solutionSettings: AzureSolutionSettings): boolean {
     return solutionSettings.hostType === HostTypeOptionAzure.id;
   }
-  
+
   public pluginImpl: AadAppForTeamsImpl = new AadAppForTeamsImpl();
 
   public async provision(ctx: PluginContext): Promise<AadResult> {

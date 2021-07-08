@@ -27,25 +27,16 @@ import {
 } from "../../../src/plugins/solution/fx-solution/question";
 import _ from "lodash";
 import path from "path";
-import {
-  AadAppForTeamsPlugin,
-  AppStudioPlugin,
-  FrontendPlugin,
-  getTemplatesFolder,
-  SpfxPlugin,
-  TeamsBot,
-} from "../../../src";
+import { getTemplatesFolder } from "../../../src";
 import { SolutionError } from "../../../src/plugins/solution/fx-solution/constants";
 import { validManifest } from "./util";
 import * as uuid from "uuid";
+import { AZ_RC_CONTAINER } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
-const aadPlugin = new AadAppForTeamsPlugin();
-const spfxPlugin = new SpfxPlugin();
-const fehostPlugin = new FrontendPlugin();
-const appStudioPlugin = new AppStudioPlugin();
-const botPlugin = new TeamsBot();
+const fehostPlugin = AZ_RC_CONTAINER.FrontendPlugin;
+const botPlugin = AZ_RC_CONTAINER.BotPlugin;
 function mockSolutionContext(): SolutionContext {
   const config: SolutionConfig = new Map();
   return {

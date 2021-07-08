@@ -14,10 +14,6 @@ import {
   Result,
   Stage,
   TeamsAppManifest,
-  DialogMsg,
-  DialogType,
-  MsgLevel,
-  QuestionType,
   SystemError,
   UserError,
   ProjectSettings,
@@ -31,7 +27,8 @@ import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
 import { manuallySubmitOption, autoPublishOption } from "./questions";
 import { TelemetryUtils, TelemetryEventName, TelemetryPropertyKey } from "./utils/telemetry";
-
+import { injectable } from "inversify";
+@injectable()
 export class AppStudioPlugin implements Plugin {
   name = "fx-resource-appstudio";
   displayName = "App Studio";

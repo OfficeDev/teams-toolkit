@@ -63,21 +63,20 @@ import {
 import { validManifest } from "./util";
 import { IAppDefinition } from "../../../src/plugins/solution/fx-solution/appstudio/interface";
 import _ from "lodash";
-import { AadAppForTeamsPlugin } from "../../../src/plugins/resource/aad";
 import { TokenCredential } from "@azure/core-auth";
 import { TokenCredentialsBase, UserTokenCredentials } from "@azure/ms-rest-nodeauth";
 import { ResourceGroups } from "@azure/arm-resources";
 import { AppStudioClient } from "../../../src/plugins/resource/appstudio/appStudio";
 import * as solutionUtil from "../../../src/plugins/solution/fx-solution/util";
 import * as uuid from "uuid";
-import { SpfxPlugin } from "../../../src/plugins/resource/spfx";
-import { FrontendPlugin } from "../../../src/plugins/resource/frontend";
+import { AZ_RC_CONTAINER } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
+import { AadAppForTeamsPlugin } from "../../../src";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
-const aadPlugin = new AadAppForTeamsPlugin();
-const spfxPlugin = new SpfxPlugin();
-const fehostPlugin = new FrontendPlugin();
+const aadPlugin = AZ_RC_CONTAINER.AadPlugin as AadAppForTeamsPlugin;
+const spfxPlugin = AZ_RC_CONTAINER.SpfxPlugin;
+const fehostPlugin = AZ_RC_CONTAINER.FrontendPlugin;
 function instanceOfIMessage(obj: any): obj is IMessage {
   return "items" in obj;
 }

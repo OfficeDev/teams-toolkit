@@ -27,19 +27,29 @@ import { FxResult, FunctionPluginResultFactory as ResultFactory } from "./result
 import { FunctionEvent } from "./enums";
 import { Logger } from "./utils/logger";
 import { TelemetryHelper } from "./utils/telemetry-helper";
-import { AzureResourceApim, AzureResourceFunction, AzureResourceSQL, HostTypeOptionAzure, TabOptionItem } from "../../solution/fx-solution/question";
+import {
+  AzureResourceApim,
+  AzureResourceFunction,
+  AzureResourceSQL,
+  HostTypeOptionAzure,
+  TabOptionItem,
+} from "../../solution/fx-solution/question";
+import { injectable } from "inversify";
 
 // This layer tries to provide a uniform exception handling for function plugin.
+@injectable()
 export class FunctionPlugin implements Plugin {
   name = "fx-resource-function";
   displayName = "Azure Function";
   activate(solutionSettings: AzureSolutionSettings): boolean {
     const cap = solutionSettings.capabilities!;
-    const azureResources = solutionSettings.azureResources
-      ? solutionSettings.azureResources
-      : [];
-    return solutionSettings.hostType === HostTypeOptionAzure.id && cap.includes(TabOptionItem.id) && (
-      azureResources.includes(AzureResourceSQL.id) || azureResources.includes(AzureResourceApim.id) || azureResources.includes(AzureResourceFunction.id)
+    const azureResources = solutionSettings.azureResources ? solutionSettings.azureResources : [];
+    return (
+      solutionSettings.hostType === HostTypeOptionAzure.id &&
+      cap.includes(TabOptionItem.id) &&
+      (azureResources.includes(AzureResourceSQL.id) ||
+        azureResources.includes(AzureResourceApim.id) ||
+        azureResources.includes(AzureResourceFunction.id))
     );
   }
 

@@ -30,14 +30,13 @@ import { ProgressBar } from "./utils/progressBar";
 import { buildAnswer } from "./answer";
 import { AzureSolutionSettings } from "@microsoft/teamsfx-api";
 import { AzureResourceApim } from "../../solution/fx-solution/question";
-
+import { injectable } from "inversify";
+@injectable()
 export class ApimPlugin implements Plugin {
   name = "fx-resource-apim";
   displayName = "API Management";
-  activate(solutionSettings: AzureSolutionSettings): boolean{
-    const azureResources = solutionSettings.azureResources
-          ? solutionSettings.azureResources
-          : [];
+  activate(solutionSettings: AzureSolutionSettings): boolean {
+    const azureResources = solutionSettings.azureResources ? solutionSettings.azureResources : [];
     return azureResources.includes(AzureResourceApim.id);
   }
   private progressBar: ProgressBar = new ProgressBar();

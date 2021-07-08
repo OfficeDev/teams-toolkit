@@ -21,6 +21,7 @@ import { telemetryHelper } from "./utils/telemetry-helper";
 import { ProgressHelper } from "./utils/progress-helper";
 import { getTemplatesFolder } from "../../..";
 import { HostTypeOptionSPFx } from "../../solution/fx-solution/question";
+import { injectable } from "inversify";
 export class SpfxConfig {
   webpartName = "my-SPFx-app";
   webpartDesc = "This is a SPFx app.";
@@ -33,7 +34,7 @@ export enum SPFXQuestionNames {
   webpart_name = "spfx-webpart-name",
   webpart_desp = "spfx-webpart-desp",
 }
-
+@injectable()
 export class SpfxPlugin implements Plugin {
   name = "fx-resource-spfx";
   displayName = "SharePoint Framework (SPFx)";

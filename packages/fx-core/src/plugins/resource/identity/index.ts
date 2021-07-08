@@ -2,7 +2,14 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import * as manager from "@azure/arm-resources";
 import { ErrorMessage } from "./errors";
-import { PluginContext, Plugin, ok, err, SystemError, AzureSolutionSettings } from "@microsoft/teamsfx-api";
+import {
+  PluginContext,
+  Plugin,
+  ok,
+  err,
+  SystemError,
+  AzureSolutionSettings,
+} from "@microsoft/teamsfx-api";
 
 import { IdentityConfig } from "./config";
 import { Constants, Telemetry } from "./constants";
@@ -13,14 +20,13 @@ import { TelemetryUtils } from "./utils/telemetryUtil";
 import { formatEndpoint } from "./utils/commonUtils";
 import { getTemplatesFolder } from "../../..";
 import { AzureResourceSQL } from "../../solution/fx-solution/question";
-
+import { injectable } from "inversify";
+@injectable()
 export class IdentityPlugin implements Plugin {
   name = "fx-resource-identity";
   displayName = "Microsoft Identity";
-  activate(solutionSettings: AzureSolutionSettings): boolean{
-    const azureResources = solutionSettings.azureResources
-          ? solutionSettings.azureResources
-          : [];
+  activate(solutionSettings: AzureSolutionSettings): boolean {
+    const azureResources = solutionSettings.azureResources ? solutionSettings.azureResources : [];
     return azureResources.includes(AzureResourceSQL.id);
   }
   template: any;

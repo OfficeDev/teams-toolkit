@@ -1,7 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { FrontendPluginImpl } from "./plugin";
-import { Plugin, PluginContext, err, SystemError, UserError, AzureSolutionSettings } from "@microsoft/teamsfx-api";
+import {
+  Plugin,
+  PluginContext,
+  err,
+  SystemError,
+  UserError,
+  AzureSolutionSettings,
+} from "@microsoft/teamsfx-api";
 
 import { ErrorFactory, TeamsFxResult } from "./error-factory";
 import {
@@ -15,12 +22,12 @@ import { ProgressHelper } from "./utils/progress-helper";
 import { TelemetryEvent } from "./constants";
 import { TelemetryHelper } from "./utils/telemetry-helper";
 import { HostTypeOptionAzure, TabOptionItem } from "../../solution/fx-solution/question";
-
+import { injectable } from "inversify";
+@injectable()
 export class FrontendPlugin implements Plugin {
-
   name = "fx-resource-frontend-hosting";
   displayName = "Tab Front-end";
-  activate(solutionSettings: AzureSolutionSettings): boolean{
+  activate(solutionSettings: AzureSolutionSettings): boolean {
     const cap = solutionSettings.capabilities!;
     return solutionSettings.hostType === HostTypeOptionAzure.id && cap.includes(TabOptionItem.id);
   }

@@ -41,18 +41,15 @@ import {
 import { mockPublishThatAlwaysSucceed, validManifest } from "./util";
 import _ from "lodash";
 import * as uuid from "uuid";
-import { AadAppForTeamsPlugin } from "../../../src/plugins/resource/aad";
-import { SpfxPlugin } from "../../../src/plugins/resource/spfx";
-import { FrontendPlugin } from "../../../src/plugins/resource/frontend";
-import { AppStudioPlugin, TeamsBot } from "../../../src";
+import { AZ_RC_CONTAINER } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
-const aadPlugin = new AadAppForTeamsPlugin();
-const spfxPlugin = new SpfxPlugin();
-const fehostPlugin = new FrontendPlugin();
-const appStudioPlugin = new AppStudioPlugin();
-const botPlugin = new TeamsBot();
+const aadPlugin = AZ_RC_CONTAINER.AadPlugin;
+const spfxPlugin = AZ_RC_CONTAINER.SpfxPlugin;
+const fehostPlugin = AZ_RC_CONTAINER.FrontendPlugin;
+const appStudioPlugin = AZ_RC_CONTAINER.AppStudioPlugin;
+const botPlugin = AZ_RC_CONTAINER.BotPlugin;
 function mockSolutionContext(): SolutionContext {
   const config: SolutionConfig = new Map();
   config.set(GLOBAL_CONFIG, new ConfigMap());

@@ -13,7 +13,6 @@ import {
   Result,
   SolutionConfig,
   SolutionContext,
-  TeamsAppManifest,
   Void,
   Plugin,
   Platform,
@@ -34,13 +33,14 @@ import {
 import { validManifest } from "./util";
 import _ from "lodash";
 import * as uuid from "uuid";
-import { AadAppForTeamsPlugin, FrontendPlugin, SpfxPlugin } from "../../../src";
+import { AadAppForTeamsPlugin } from "../../../src";
+import { AZ_RC_CONTAINER } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
-const aadPlugin = new AadAppForTeamsPlugin();
-const spfxPlugin = new SpfxPlugin();
-const fehostPlugin = new FrontendPlugin();
+const aadPlugin = AZ_RC_CONTAINER.AadPlugin;
+const spfxPlugin = AZ_RC_CONTAINER.SpfxPlugin;
+const fehostPlugin = AZ_RC_CONTAINER.FrontendPlugin;
 function mockSolutionContext(): SolutionContext {
   const config: SolutionConfig = new Map();
   config.set(GLOBAL_CONFIG, new ConfigMap());

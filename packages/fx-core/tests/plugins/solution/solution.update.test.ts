@@ -18,7 +18,6 @@ import {
   returnSystemError,
   SolutionConfig,
   SolutionContext,
-  TeamsAppManifest,
   Void,
 } from "@microsoft/teamsfx-api";
 import {
@@ -38,26 +37,12 @@ import {
 
 import _ from "lodash";
 import * as uuid from "uuid";
-import {
-  AadAppForTeamsPlugin,
-  ApimPlugin,
-  AppStudioPlugin,
-  FrontendPlugin,
-  FunctionPlugin,
-  LocalDebugPlugin,
-  SpfxPlugin,
-  SqlPlugin,
-  TeamsBot,
-} from "../../../src";
-const aadPlugin = new AadAppForTeamsPlugin();
-const spfxPlugin = new SpfxPlugin();
-const fehostPlugin = new FrontendPlugin();
-const appStudioPlugin = new AppStudioPlugin();
-const botPlugin = new TeamsBot();
-const localDebug = new LocalDebugPlugin();
-const sqlPlugin = new SqlPlugin();
-const functionPlugin = new FunctionPlugin();
-const apimPlugin = new ApimPlugin();
+import { AZ_RC_CONTAINER } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
+const fehostPlugin = AZ_RC_CONTAINER.FrontendPlugin;
+const localDebug = AZ_RC_CONTAINER.LocalDebugPlugin;
+const sqlPlugin = AZ_RC_CONTAINER.SqlPlugin;
+const functionPlugin = AZ_RC_CONTAINER.FunctionPlugin;
+const apimPlugin = AZ_RC_CONTAINER.ApimPlugin;
 function mockSolutionContext(): SolutionContext {
   const config: SolutionConfig = new Map();
   return {
@@ -198,7 +183,7 @@ describe("update()", () => {
         name: "azure",
         version: "1.0",
         capabilities: [TabOptionItem.id],
-        activeResourcePlugins: [fehostPlugin.name, solution.localDebug.name],
+        activeResourcePlugins: [fehostPlugin.name, localDebug.name],
         azureResources: [],
       },
     };
@@ -232,7 +217,7 @@ describe("update()", () => {
         name: "azure",
         version: "1.0",
         capabilities: [TabOptionItem.id],
-        activeResourcePlugins: [fehostPlugin.name, solution.localDebug.name],
+        activeResourcePlugins: [fehostPlugin.name, localDebug.name],
         azureResources: [],
       },
     };
@@ -266,7 +251,7 @@ describe("update()", () => {
         name: "azure",
         version: "1.0",
         capabilities: [TabOptionItem.id],
-        activeResourcePlugins: [fehostPlugin.name, solution.localDebug.name],
+        activeResourcePlugins: [fehostPlugin.name, localDebug.name],
         azureResources: [],
       },
     };
@@ -304,7 +289,7 @@ describe("update()", () => {
         name: "azure",
         version: "1.0",
         capabilities: [TabOptionItem.id],
-        activeResourcePlugins: [fehostPlugin.name, solution.localDebug.name],
+        activeResourcePlugins: [fehostPlugin.name, localDebug.name],
         azureResources: [],
       },
     };

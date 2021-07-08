@@ -13,6 +13,7 @@ TeamsFx CLI is a text-based command line interface that accelerates Teams applic
 | `teamsfx build`     | Build the current application.         |
 | `teamsfx test`      | Test and validate the current application.             |
 | `teamsfx publish`   | Publish the app to Teams.             |
+| `teamsfx preview`   | Preview the current application. |
 
 ***
 
@@ -211,3 +212,38 @@ Test and validate current application. This command will validate your applicati
 
 # `teamsfx publish`
 Publish the app to Teams.
+
+***
+
+# `teamsfx preview`
+Preview the current application from local or remote.
+
+## Optional Parameters
+### `--local`
+Preview the application from local. `--local` is exclusive with `--remote`.
+
+### `--remote`
+Preview the application from remote. `--remote` is exclusive with `--local`.
+
+### `--folder`
+Project root directory. The default value is `./`.
+
+## Examples
+### Local Preview
+```bash
+teamsfx preview --local
+```
+
+### Remote Preview
+```bash
+teamsfx preview --remote
+```
+
+## Local Preview Dependencies
+- Node.js
+- .NET SDK
+- Azure Functions Core Tools
+
+## Notes
+- SPFx preview is not supported currently.
+- The logs of the background services like React will be saved in `~/.fx/cli-log/local-preview/`.

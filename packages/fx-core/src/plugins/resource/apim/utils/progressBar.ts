@@ -13,10 +13,7 @@ export class ProgressBar {
 
     await this.progressBarMap.get(step)?.end();
 
-    const progressBar = ctx.dialog?.createProgressBar(
-      step,
-      Object.keys(ProgressMessages[step]).length
-    );
+    const progressBar = ctx.ui?.createProgressBar(step, Object.keys(ProgressMessages[step]).length);
 
     if (progressBar) {
       this.progressBarMap.set(step, progressBar);

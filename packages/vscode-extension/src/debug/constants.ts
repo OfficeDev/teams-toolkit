@@ -55,3 +55,35 @@ export const botPorts: [number, string[]][] = [
   [3978, hosts],
   [9239, hosts],
 ];
+
+export const npmInstall = "npmInstall";
+export const npmInstallErrorMessage =
+  "NPM install encountered an error. Please refer to the output window for detailed error information or click 'Report Issue' button to report the issue.";
+export const issueLink = "https://github.com/OfficeDev/TeamsFx/issues/new?";
+export const issueTemplate = `
+**Describe the bug**
+A clear and concise description of what the bug is.
+
+**To Reproduce**
+Steps to reproduce the behavior:
+1. Go to '...'
+2. Click on '....'
+3. Scroll down to '....'
+4. See error
+
+**Expected behavior**
+A clear and concise description of what you expected to happen.
+
+**Screenshots**
+If applicable, add screenshots to help explain your problem.
+
+**VS Code Extension Information (please complete the following information):**
+ - OS: [e.g. iOS]
+ - Version [e.g. 22]
+
+**Additional context**
+Add any other context about the problem here.
+`;
+export const errorDetail = `
+**Error detail**
+`;

@@ -15,7 +15,7 @@ export async function run(): Promise<void> {
     reporterOptions: {
       reporterEnabled: "spec, mocha-junit-reporter",
       mochaJunitReporterReporterOptions: {
-        mochaFile: path.resolve(__dirname, "..", "..", "test-results.folder.xml"),
+        mochaFile: path.resolve(__dirname, "..", "..", "test-results.unit.xml"),
       },
     },
   };
@@ -28,16 +28,20 @@ export async function run(): Promise<void> {
   const testsRoot = path.resolve(__dirname);
 
   const files: string[] = await new Promise((resolve, reject) => {
-    glob("suite/**/**.folder.test.js", { cwd: testsRoot }, (err, result) => {
+    glob("suite/unit/**.test.js", { cwd: testsRoot }, (err, result) => {
       err ? reject(err) : resolve(result);
     });
   });
 
   files.forEach((f) => mocha.addFile(path.resolve(testsRoot, f)));
 
-  const failures = await new Promise<number>((resolve) => mocha.run(resolve));
-  if (failures > 0) {
-    throw new Error(`${failures} tests failed.`);
+  try {
+    const failures = await new Promise<number>((resolve) => mocha.run(resolve));
+    if (failures > 0) {
+      throw new Error(`${failures} tests failed.`);
+    }
+  } catch (err) {
+    console.log(err);
   }
 }
 

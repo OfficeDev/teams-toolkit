@@ -137,3 +137,7 @@ export class RegularExpr {
   static readonly FrontendStorageNamePattern = /^[a-z0-9]{3,24}$/;
   static readonly ReplaceTemplateExt = /\.tpl$/;
 }
+
+export class AzureInfo {
+  static readonly RequiredResourceProviders = ["Microsoft.Storage"];
+}

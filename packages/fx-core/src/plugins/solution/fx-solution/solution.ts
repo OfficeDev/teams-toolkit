@@ -782,10 +782,14 @@ export class TeamsAppSolution implements Solution {
       async () => {
         const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
         const pluginCtx = getPluginContext(ctx, this.appStudioPlugin.name);
-        const result = appStudioPlugin.createAndConfigTeamsManifest(
+        const result = await appStudioPlugin.createAndConfigTeamsManifest(
           pluginCtx,
           maybeSelectedPlugins
         );
+        if (result.isErr()) {
+          return err(result.error);
+        }
+        ctx.config.get(GLOBAL_CONFIG)?.set("remoteTeamsAppId", result.value.appId);
         ctx.logProvider?.info("[Teams Toolkit]: configuration finished!");
         return result;
       }

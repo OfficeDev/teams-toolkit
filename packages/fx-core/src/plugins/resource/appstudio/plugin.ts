@@ -443,7 +443,7 @@ export class AppStudioPluginImpl {
       [appDefinition, updatedManifest] = result.value;
     }
 
-    const teamsAppId = ctx.config.get(REMOTE_TEAMS_APP_ID) as string;
+    const teamsAppId = ctx.configOfOtherPlugins.get("solution")?.get(REMOTE_TEAMS_APP_ID) as string;
     if (!teamsAppId) {
       ctx.logProvider?.info(`Teams app not created`);
       const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
@@ -755,7 +755,9 @@ export class AppStudioPluginImpl {
       if (ctx.answers?.platform === Platform.VS) {
         remoteTeamsAppId = ctx.answers![Constants.REMOTE_TEAMS_APP_ID] as string;
       } else {
-        remoteTeamsAppId = ctx.config.get(REMOTE_TEAMS_APP_ID) as string;
+        remoteTeamsAppId = ctx.configOfOtherPlugins
+          .get("solution")
+          ?.get(REMOTE_TEAMS_APP_ID) as string;
       }
       await publishProgress?.next(
         `Updating app definition for app ${remoteTeamsAppId} in app studio`

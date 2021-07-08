@@ -469,10 +469,14 @@ describe("provision() happy path for SPFx projects", () => {
 
     expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be.undefined;
     expect(mockedCtx.config.get("fx-resource-appstudio")?.get(REMOTE_TEAMS_APP_ID)).to.be.undefined;
+    expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).to.be.undefined;
     const result = await solution.provision(mockedCtx);
     expect(result.isOk()).to.be.true;
     expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be.true;
     expect(mockedCtx.config.get("fx-resource-appstudio")?.get(REMOTE_TEAMS_APP_ID)).equals(
+      mockedAppDef.teamsAppId
+    );
+    expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).equals(
       mockedAppDef.teamsAppId
     );
     expect(solution.runningState).equals(SolutionRunningState.Idle);
@@ -557,6 +561,7 @@ describe("provision() happy path for Azure projects", () => {
 
     expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be.undefined;
     expect(mockedCtx.config.get("fx-resource-appstudio")?.get(REMOTE_TEAMS_APP_ID)).to.be.undefined;
+    expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).to.be.undefined;
     // mockedCtx.config.get(GLOBAL_CONFIG)?.set("resourceGroupName", resourceGroupName);
     mockedCtx.config.get(GLOBAL_CONFIG)?.set("subscriptionId", mockedSubscriptionId);
     mockedCtx.config.get(GLOBAL_CONFIG)?.set("tenantId", mockedTenantId);
@@ -565,6 +570,9 @@ describe("provision() happy path for Azure projects", () => {
     expect(spy.calledOnce).to.be.true;
     expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be.true;
     expect(mockedCtx.config.get("fx-resource-appstudio")?.get(REMOTE_TEAMS_APP_ID)).equals(
+      mockedAppDef.teamsAppId
+    );
+    expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).equals(
       mockedAppDef.teamsAppId
     );
   });

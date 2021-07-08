@@ -525,7 +525,7 @@ export class FxCore implements Core {
             description: "",
             author: "",
             scripts: {
-              test: 'echo "Error: no test specified" && exit 1',
+              test: "echo \"Error: no test specified\" && exit 1",
             },
             license: "MIT",
           },
@@ -541,6 +541,24 @@ export class FxCore implements Core {
       return err(WriteFileError(e));
     }
     return ok(null);
+  }
+
+  @hooks([ErrorHandlerMW, ContextLoaderMW, ContextInjecterMW])
+  async encrypt(
+    plaintext: string,
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<string, FxError>> {
+    return ctx!.solutionContext!.cryptoProvider!.encrypt(plaintext);
+  }
+
+  @hooks([ErrorHandlerMW, ContextLoaderMW, ContextInjecterMW])
+  async decrypt(
+    ciphertext: string,
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<string, FxError>> {
+    return ctx!.solutionContext!.cryptoProvider!.decrypt(ciphertext);
   }
 
   async buildArtifacts(inputs: Inputs): Promise<Result<Void, FxError>> {

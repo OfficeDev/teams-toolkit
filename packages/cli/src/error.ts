@@ -140,3 +140,19 @@ export function EmptySubConfigOptions(): SystemError {
     "EmptySubConfigOptions"
   );
 }
+
+export function NonTeamsFxProjectFolder(): UserError {
+  return returnUserError(
+    new Error(`Current folder is not a TeamsFx project folder.`),
+    constants.cliSource,
+    "NonTeamsFxProjectFolder"
+  );
+}
+
+export function ConfigNameNotFound(name: string): UserError {
+  return returnUserError(
+    new Error(`Config ${name} is not found in project.`),
+    constants.cliSource,
+    "ConfigNameNotFound"
+  );
+}

@@ -17,6 +17,7 @@ import { openWelcomePageAfterExtensionInstallation } from "./controls/openWelcom
 import { VsCodeUI } from "./qm/vsc_ui";
 import { exp } from "./exp";
 import { registerRunIcon } from "./debug/runIconHandler";
+import { CryptoCodeLensProvider } from "./codeLensProvider";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -174,6 +175,23 @@ export async function activate(context: vscode.ExtensionContext) {
     handlers.cmpAccountsHandler
   );
   context.subscriptions.push(cmpAccountsCmd);
+
+  const decryptCmd = vscode.commands.registerCommand(
+    "fx-extension.decryptSecret",
+    handlers.decryptSecret
+  );
+  context.subscriptions.push(decryptCmd);
+
+  // Setup CodeLens provider for userdata file
+  const codelensProvider = new CryptoCodeLensProvider();
+  const userDataSelector = {
+    language: "plaintext",
+    scheme: "file",
+    pattern: "**/.fx/*.userdata",
+  };
+  context.subscriptions.push(
+    vscode.languages.registerCodeLensProvider(userDataSelector, codelensProvider)
+  );
 
   // Register debug configuration provider
   const debugProvider: TeamsfxDebugProvider = new TeamsfxDebugProvider();

@@ -45,6 +45,9 @@ export enum TelemetryEvent {
   PreviewService = "preview-service",
   PreviewSideloadingStart = "preview-sideloading-start",
   PreviewSideloading = "preview-sideloading",
+
+  ConfigGet = "secret-get",
+  ConfigSet = "secret-set",
 }
 
 export enum TelemetryProperty {

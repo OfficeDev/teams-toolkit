@@ -30,10 +30,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Execute = void 0;
 const tl = __importStar(require("azure-pipelines-task-lib/task"));
-function Execute(cmd, workdir) {
+function Execute(cmd, args, workdir) {
     return __awaiter(this, void 0, void 0, function* () {
-        return yield tl.exec(cmd, undefined, {
-            cwd: workdir
+        return yield tl.exec(cmd, args, {
+            cwd: workdir,
+            env: {
+                "CI_ENABLED": "true",
+                "TEST_SUBSCRIPTION_ID": process.env.TEST_SUBSCRIPTION_ID,
+                "TEST_TENANT_ID": process.env.TEST_TENANT_ID,
+                "TEST_USER_NAME": process.env.TEST_USER_NAME,
+                "TEST_USER_PASSWORD": process.env.TEST_USER_PASSWORD
+            }
         });
     });
 }

@@ -55,7 +55,8 @@ class Operations {
                 const commands = buildMapQuerier.query(cap, lang);
                 if (yield fs.pathExists(capPath)) {
                     for (const command of commands) {
-                        yield exec_1.Execute(command, capPath);
+                        const parts = command.split(' ');
+                        yield exec_1.Execute(parts[0], parts.splice(1), capPath);
                     }
                 }
             }));
@@ -64,7 +65,8 @@ class Operations {
     }
     static ProvisionHostingEnvironment(projectRoot) {
         return __awaiter(this, void 0, void 0, function* () {
-            const ret = yield exec_1.Execute(constant_1.Commands.TeamsfxProvision(process.env.TEST_SUBSCRIPTION_ID), projectRoot);
+            const parts = constant_1.Commands.TeamsfxProvision(process.env.TEST_SUBSCRIPTION_ID).split(' ');
+            const ret = yield exec_1.Execute(parts[0], parts.splice(1), projectRoot);
             if (ret === 0) {
                 tl.setVariable(constant_1.ActionOutputs.ConfigFilePath, path.join(projectRoot, constant_1.Pathes.EnvDefaultJson), false, true);
             }
@@ -74,7 +76,8 @@ class Operations {
     static DeployToHostingEnvironment(projectRoot) {
         var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
-            const ret = yield exec_1.Execute(constant_1.Commands.TeamsfxDeploy, projectRoot);
+            const parts = constant_1.Commands.TeamsfxDeploy.split(' ');
+            const ret = yield exec_1.Execute(parts[0], parts.splice(1), projectRoot);
             const packageSolutionPath = path.join(projectRoot, constant_1.Pathes.PackageSolutionJson);
             if (yield fs.pathExists(packageSolutionPath)) {
                 const solutionConfig = yield fs.readJSON(packageSolutionPath);
@@ -88,7 +91,8 @@ class Operations {
     }
     static PackTeamsApp(projectRoot) {
         return __awaiter(this, void 0, void 0, function* () {
-            const ret = yield exec_1.Execute(constant_1.Commands.TeamsfxBuild, projectRoot);
+            const parts = constant_1.Commands.TeamsfxBuild.split(' ');
+            const ret = yield exec_1.Execute(parts[0], parts.splice(1), projectRoot);
             if (ret === 0) {
                 tl.setVariable(constant_1.ActionOutputs.PackageZipPath, path.join(projectRoot, constant_1.Pathes.TeamsAppPackageZip), false, true);
             }
@@ -97,12 +101,14 @@ class Operations {
     }
     static ValidateTeamsAppManifest(projectRoot) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield exec_1.Execute(constant_1.Commands.TeamsfxValidate, projectRoot);
+            const parts = constant_1.Commands.TeamsfxValidate.split(' ');
+            return yield exec_1.Execute(parts[0], parts.splice(1), projectRoot);
         });
     }
     static PublishTeamsApp(projectRoot) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield exec_1.Execute(constant_1.Commands.TeamsfxPublish, projectRoot);
+            const parts = constant_1.Commands.TeamsfxPublish.split(' ');
+            return yield exec_1.Execute(parts[0], parts.splice(1), projectRoot);
         });
     }
 }

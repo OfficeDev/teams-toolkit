@@ -27,7 +27,8 @@ export class Operations {
       const commands = buildMapQuerier.query(cap, lang)
       if (await fs.pathExists(capPath)) {
         for (const command of commands) {
-          await Execute(command, capPath)
+          const parts = command.split(' ')
+          await Execute(parts[0], parts.splice(1), capPath)
         }
       }
     })
@@ -38,8 +39,10 @@ export class Operations {
   static async ProvisionHostingEnvironment(
     projectRoot: string
   ): Promise<number> {
+    const parts = Commands.TeamsfxProvision(process.env.TEST_SUBSCRIPTION_ID!).split(' ')
     const ret = await Execute(
-      Commands.TeamsfxProvision(process.env.TEST_SUBSCRIPTION_ID!),
+      parts[0],
+      parts.splice(1),
       projectRoot
     )
 
@@ -58,7 +61,8 @@ export class Operations {
   static async DeployToHostingEnvironment(
     projectRoot: string
   ): Promise<number> {
-    const ret = await Execute(Commands.TeamsfxDeploy, projectRoot)
+    const parts = Commands.TeamsfxDeploy.split(' ')
+    const ret = await Execute(parts[0], parts.splice(1), projectRoot)
 
     const packageSolutionPath = path.join(
       projectRoot,
@@ -85,7 +89,8 @@ export class Operations {
   }
 
   static async PackTeamsApp(projectRoot: string): Promise<number> {
-    const ret = await Execute(Commands.TeamsfxBuild, projectRoot)
+    const parts = Commands.TeamsfxBuild.split(' ')
+    const ret = await Execute(parts[0], parts.splice(1), projectRoot)
     if (ret === 0) {
       tl.setVariable(
         ActionOutputs.PackageZipPath,
@@ -98,10 +103,12 @@ export class Operations {
   }
 
   static async ValidateTeamsAppManifest(projectRoot: string): Promise<number> {
-    return await Execute(Commands.TeamsfxValidate, projectRoot)
+    const parts = Commands.TeamsfxValidate.split(' ')
+    return await Execute(parts[0], parts.splice(1), projectRoot)
   }
 
   static async PublishTeamsApp(projectRoot: string): Promise<number> {
-    return await Execute(Commands.TeamsfxPublish, projectRoot)
+    const parts = Commands.TeamsfxPublish.split(' ')
+    return await Execute(parts[0], parts.splice(1), projectRoot)
   }
 }

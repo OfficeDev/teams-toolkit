@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-extraneous-class */
 export class ActionInputs {
-  static readonly ProjectRoot: string = 'project-root'
-  static readonly OperationType: string = 'operation-type'
+  static readonly ProjectRoot: string = 'projectRoot'
+  static readonly OperationType: string = 'operationType'
   static readonly Capabilities: string = 'capabilities'
 }
 
 export class ActionOutputs {
-  static readonly ConfigFilePath: string = 'config-file-path'
-  static readonly SharepointPackagePath: string = 'sharepoint-package-path'
-  static readonly PackageZipPath: string = 'package-zip-path'
+  static readonly ConfigFilePath: string = 'configFilePath'
+  static readonly SharepointPackagePath: string = 'sharepointPackagePath'
+  static readonly PackageZipPath: string = 'packageZipPath'
 }
 
 export class Commands {

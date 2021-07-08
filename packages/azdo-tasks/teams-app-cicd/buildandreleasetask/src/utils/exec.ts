@@ -1,7 +1,7 @@
-import * as exec from '@actions/exec'
+import * as tl from 'azure-pipelines-task-lib/task'
 
 export async function Execute(cmd: string, workdir: string): Promise<number> {
-  return await exec.exec(cmd, undefined, {
+  return await tl.exec(cmd, undefined, {
     cwd: workdir
   })
 }

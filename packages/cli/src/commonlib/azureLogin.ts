@@ -188,7 +188,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       AzureAccountManager.tenantId = tenantId;
       await this.login(showDialog, tenantId);
       await this.updateLoginStatus();
-      AzureAccountManager.codeFlowInstance.destroySockets();
       return this.doGetAccountCredentialAsync();
     }
   }
@@ -263,6 +262,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   }
 
   private async doGetAccountCredentialAsync(): Promise<TokenCredentialsBase | undefined> {
+    AzureAccountManager.codeFlowInstance.destroySockets();
     if (AzureAccountManager.codeFlowInstance.account) {
       const dataJson = await this.getJsonObject();
       const checkDefaultTenant =

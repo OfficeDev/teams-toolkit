@@ -10,15 +10,6 @@
   "license": "MIT",
   "main": "build/index.js",
   "types": "build/index.d.ts",
-  "directories": {
-    "lib": "lib"
-  },
-  "files": [
-    "lib"
-  ],
-  "publishConfig": {
-    "access": "public"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/OfficeDev/TeamsFx.git"
@@ -26,7 +17,7 @@
   "scripts": {
     "test": "echo \"Error: run tests from root\" && exit 1",
     "build": "npx tsc -p ./",
-    "prepare": "npm run build"
+    "prepare": "rimraf build && npm run build"
   },
   "bugs": {
     "url": "https://github.com/OfficeDev/TeamsFx/issues"

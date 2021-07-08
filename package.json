@@ -2,6 +2,7 @@
     "name": "teamsfx",
     "scripts": {
         "setup": "npm install && npm run bootstrap --hoist",
+        "setup-failpoint": "npm run setup && npx lerna run build-failpoint",
         "bootstrap": "lerna bootstrap",
         "lint:staged": "lerna run lint:staged --stream",
         "lint": "lerna run lint --stream",

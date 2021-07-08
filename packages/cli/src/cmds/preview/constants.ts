@@ -51,8 +51,7 @@ const backendExtensionsInstallOutputPath = "bin";
 export const backendExtensionsInstallCommand = `dotnet build ${backendExtensionsInstallCsprojPath} -o ${backendExtensionsInstallOutputPath} --ignore-failed-sources`; // TODO: dependency checker
 
 export const frontendStartPattern = /Compiled|Failed/g;
-export const backendStartPattern =
-  /Worker process started and initialized|Host lock lease acquired by instance ID/g;
+export const backendStartPattern = /Worker process started and initialized|Host lock lease acquired by instance ID/g;
 export const backendWatchPattern = /.*/g;
 export const authStartPattern = /.*/g;
 export const ngrokStartPattern = /started tunnel|failed to reconnect session/g;
@@ -93,9 +92,9 @@ export const ngrokStartTitle = "ngrok start";
 export const ngrokStartStartMessage = `execute 'ngrok http' under ${botFolderName} folder.`;
 export const ngrokStartSuccessMessage = "ngrok started successfully.";
 
-export const sideloadingTitle = "sideloading";
-export const sideloadingStartMessage = "open Teams web client.";
-export const sideloadingSuccessMessage = "Teams web client opened successfully.";
+export const previewTitle = "preview";
+export const previewStartMessage = "open Teams web client.";
+export const previewSuccessMessage = "Teams web client opened successfully.";
 
 export const frontendLocalEnvPrefix = "FRONTEND_";
 export const backendLocalEnvPrefix = "BACKEND_";

@@ -44,13 +44,8 @@ jobs:
             ./.github/scripts/downloadSimpleAuth.ps1
 
       - name: Setup project
-        uses: nick-invision/retry@v2
-        with:
-          timeout_minutes: 10
-          max_attempts: 10
-          retry_on: error
-          command: |
-            npm run setup
+        run:
+          npm run setup
 
       - name: Package CLI and install
         run: |
@@ -63,9 +58,4 @@ jobs:
       - name: E2E Test clean
         run: |
           npm run test:e2e:clean
-        working-directory: packages/cli
-
-      - name: E2E Test in Parallel
-        run: |
-          npm run test:e2e:parallel
         working-directory: packages/cli

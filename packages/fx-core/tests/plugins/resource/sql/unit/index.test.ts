@@ -19,7 +19,6 @@ import { UserType } from "../../../../../src/plugins/resource/sql/utils/commonUt
 chai.use(chaiAsPromised);
 
 dotenv.config();
-const testWithAzure: boolean = process.env.UT_TEST_ON_AZURE ? true : false;
 
 describe("sqlPlugin", () => {
   let sqlPlugin: SqlPlugin;
@@ -27,15 +26,11 @@ describe("sqlPlugin", () => {
   let credentials: msRestNodeAuth.TokenCredentialsBase;
 
   before(async () => {
-    if (testWithAzure) {
-      credentials = await msRestNodeAuth.interactiveLogin();
-    } else {
-      credentials = new msRestNodeAuth.ApplicationTokenCredentials(
-        faker.random.uuid(),
-        faker.internet.url(),
-        faker.internet.password()
-      );
-    }
+    credentials = new msRestNodeAuth.ApplicationTokenCredentials(
+      faker.random.uuid(),
+      faker.internet.url(),
+      faker.internet.password()
+    );
   });
 
   beforeEach(async () => {

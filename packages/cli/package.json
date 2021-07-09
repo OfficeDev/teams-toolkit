@@ -39,7 +39,7 @@
   "bin": {
     "teamsfx": "./cli.js"
   },
-  "aiKey": "9b98d367-eb8f-4338-a848-97fa528660a0",
+  "aiKey": "1c56be97-bb74-42cf-b04b-8f1aabf04592",
   "devDependencies": {
     "@azure/arm-subscriptions": "^3.0.0",
     "@shared/eslint-config": "file:../eslint-config",

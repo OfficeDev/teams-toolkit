@@ -888,7 +888,7 @@ export class AppStudioPluginImpl {
         return err(
           AppStudioResultFactory.SystemError(
             AppStudioError.ManifestLoadFailedError.name,
-            AppStudioError.ManifestLoadFailedError.message("Failed to load manifest file")
+            AppStudioError.ManifestLoadFailedError.message(`Failed to load manifest file`)
           )
         );
       }
@@ -898,7 +898,9 @@ export class AppStudioPluginImpl {
       return err(
         AppStudioResultFactory.SystemError(
           AppStudioError.ManifestLoadFailedError.name,
-          AppStudioError.ManifestLoadFailedError.message("Failed to load manifest file")
+          AppStudioError.ManifestLoadFailedError.message(
+            `Failed to load manifest file from ${ctxRoot}/.${ConfigFolderName}/${REMOTE_MANIFEST}`
+          )
         )
       );
     }

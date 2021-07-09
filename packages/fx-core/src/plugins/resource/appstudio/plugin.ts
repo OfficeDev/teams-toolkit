@@ -7,15 +7,13 @@ import {
   AzureSolutionSettings,
   ConfigFolderName,
   FxError,
-  returnSystemError,
   Result,
   PluginContext,
+  Plugin,
+  LoadedPlugin,
   TeamsAppManifest,
   Platform,
   LogProvider,
-  DialogMsg,
-  DialogType,
-  QuestionType,
   ProjectSettings,
   IComposeExtension,
   IBot,
@@ -28,9 +26,8 @@ import {
   ITeamCommand,
   IPersonalCommand,
   IGroupChatCommand,
-  ICommand,
-  ICommandList,
-} from "../../solution/fx-solution/appstudio/interface";
+} from "./interfaces/IAppDefinition";
+import { ICommand, ICommandList } from "../../solution/fx-solution/appstudio/interface";
 import {
   BotOptionItem,
   HostTypeOptionAzure,
@@ -47,6 +44,19 @@ import {
   DEFAULT_DEVELOPER_WEBSITE_URL,
   DEFAULT_DEVELOPER_TERM_OF_USE_URL,
   DEFAULT_DEVELOPER_PRIVACY_URL,
+  LOCAL_DEBUG_TAB_ENDPOINT,
+  LOCAL_DEBUG_TAB_DOMAIN,
+  FRONTEND_ENDPOINT,
+  FRONTEND_DOMAIN,
+  LOCAL_DEBUG_AAD_ID,
+  REMOTE_AAD_ID,
+  LOCAL_BOT_ID,
+  BOT_ID,
+  LOCAL_DEBUG_BOT_DOMAIN,
+  BOT_DOMAIN,
+  LOCAL_WEB_APPLICATION_INFO_SOURCE,
+  WEB_APPLICATION_INFO_SOURCE,
+  PluginNames,
 } from "../../solution/fx-solution/constants";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
@@ -56,22 +66,6 @@ import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
 
 export class AppStudioPluginImpl {
-  public async createApp(
-    appDefinition: IAppDefinition,
-    appStudioToken: string,
-    logProvider?: LogProvider,
-    colorIconContent?: string, // base64 encoded
-    outlineIconContent?: string // base64 encoded
-  ): Promise<IAppDefinition | undefined> {
-    return await AppStudioClient.createApp(
-      appDefinition,
-      appStudioToken,
-      logProvider,
-      colorIconContent,
-      outlineIconContent
-    );
-  }
-
   public async updateApp(
     appDefinition: IAppDefinition,
     appStudioToken: string,
@@ -176,6 +170,8 @@ export class AppStudioPluginImpl {
 
   /**
    * ask app common questions to generate app manifest
+   * @param settings
+   * @returns
    */
   public async createManifest(settings: ProjectSettings): Promise<TeamsAppManifest | undefined> {
     const solutionSettings: AzureSolutionSettings =
@@ -343,6 +339,259 @@ export class AppStudioPluginImpl {
     }
 
     return appDefinition;
+  }
+
+  public createManifestForRemote(
+    ctx: PluginContext,
+    maybeSelectedPlugins: Result<LoadedPlugin[], FxError>,
+    manifest: TeamsAppManifest
+  ): Result<[IAppDefinition, TeamsAppManifest], FxError> {
+    if (maybeSelectedPlugins.isErr()) {
+      return err(maybeSelectedPlugins.error);
+    }
+    const selectedPlugins = maybeSelectedPlugins.value;
+    if (selectedPlugins.some((plugin) => plugin.name === "fx-resource-bot")) {
+      const capabilities = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
+        .capabilities;
+      const hasBot = capabilities?.includes(BotOptionItem.id);
+      const hasMsgExt = capabilities?.includes(MessageExtensionItem.id);
+      if (!hasBot && !hasMsgExt) {
+        return err(
+          AppStudioResultFactory.SystemError(
+            AppStudioError.InternalError.name,
+            AppStudioError.InternalError.message
+          )
+        );
+      }
+    }
+    const maybeConfig = this.getConfigForCreatingManifest(ctx, false);
+    if (maybeConfig.isErr()) {
+      return err(maybeConfig.error);
+    }
+
+    const { tabEndpoint, tabDomain, aadId, botDomain, botId, webApplicationInfoResource } =
+      maybeConfig.value;
+
+    const validDomains: string[] = [];
+
+    if (tabDomain) {
+      validDomains.push(tabDomain);
+    }
+
+    if (botDomain) {
+      validDomains.push(botDomain);
+    }
+
+    return ok(
+      this.getDevAppDefinition(
+        JSON.stringify(manifest),
+        aadId,
+        validDomains,
+        webApplicationInfoResource,
+        false,
+        tabEndpoint,
+        manifest.name.short,
+        manifest.version,
+        botId
+      )
+    );
+  }
+
+  /**
+   * The assumptions of this function are:
+   * 1. this.manifest is not undefined(for azure projects) already contains the latest manifest(loaded via reloadManifestAndCheckRequiredFields)
+   * 2. provision of frontend hosting is done and config values has already been loaded into ctx.config
+   * @param ctx
+   * @param maybeSelectedPlugins
+   * @returns
+   */
+  public async createAndConfigTeamsManifest(
+    ctx: PluginContext,
+    maybeSelectedPlugins: Result<LoadedPlugin[], FxError>
+  ): Promise<Result<IAppDefinition, FxError>> {
+    const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx.root);
+    if (maybeManifest.isErr()) {
+      return err(maybeManifest.error);
+    }
+    const manifest = maybeManifest.value;
+
+    let appDefinition: IAppDefinition;
+    let updatedManifest: TeamsAppManifest;
+    if (this.isSPFxProject(ctx)) {
+      appDefinition = this.convertToAppDefinition(manifest, false);
+      updatedManifest = manifest;
+    } else {
+      const result = this.createManifestForRemote(ctx, maybeSelectedPlugins, manifest);
+      if (result.isErr()) {
+        return err(result.error);
+      }
+      [appDefinition, updatedManifest] = result.value;
+    }
+
+    const teamsAppId = ctx.configOfOtherPlugins.get("solution")?.get(REMOTE_TEAMS_APP_ID) as string;
+    if (!teamsAppId) {
+      ctx.logProvider?.info(`Teams app not created`);
+      const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
+      const result = await this.updateApp(
+        appDefinition,
+        appStudioToken!,
+        "remote",
+        true,
+        undefined,
+        ctx.logProvider,
+        ctx.root
+      );
+      if (result.isErr()) {
+        return result.map((_) => appDefinition);
+      }
+
+      ctx.logProvider?.info(`Teams app created ${result.value}`);
+      appDefinition.appId = result.value;
+      return ok(appDefinition);
+    } else {
+      ctx.logProvider?.info(`Teams app already created: ${teamsAppId}`);
+      appDefinition.appId = teamsAppId;
+      const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
+      const result = await this.updateApp(
+        appDefinition,
+        appStudioToken!,
+        "remote",
+        false,
+        teamsAppId,
+        ctx.logProvider,
+        ctx.root
+      );
+      if (result.isErr()) {
+        return result.map((_) => appDefinition);
+      }
+      ctx.logProvider?.info(`Teams app updated ${JSON.stringify(updatedManifest)}`);
+      return ok(appDefinition);
+    }
+  }
+
+  public getConfigForCreatingManifest(
+    ctx: PluginContext,
+    localDebug: boolean
+  ): Result<
+    {
+      tabEndpoint?: string;
+      tabDomain?: string;
+      aadId: string;
+      botDomain?: string;
+      botId?: string;
+      webApplicationInfoResource: string;
+    },
+    FxError
+  > {
+    const tabEndpoint = localDebug
+      ? (ctx.configOfOtherPlugins.get(PluginNames.LDEBUG)?.get(LOCAL_DEBUG_TAB_ENDPOINT) as string)
+      : (ctx.configOfOtherPlugins.get(PluginNames.FE)?.get(FRONTEND_ENDPOINT) as string);
+    const tabDomain = localDebug
+      ? (ctx.configOfOtherPlugins.get(PluginNames.LDEBUG)?.get(LOCAL_DEBUG_TAB_DOMAIN) as string)
+      : (ctx.configOfOtherPlugins.get(PluginNames.FE)?.get(FRONTEND_DOMAIN) as string);
+    const aadId = ctx.configOfOtherPlugins
+      .get(PluginNames.AAD)
+      ?.get(localDebug ? LOCAL_DEBUG_AAD_ID : REMOTE_AAD_ID) as string;
+    const botId = ctx.configOfOtherPlugins
+      .get(PluginNames.BOT)
+      ?.get(localDebug ? LOCAL_BOT_ID : BOT_ID) as string;
+    const botDomain = localDebug
+      ? (ctx.configOfOtherPlugins.get(PluginNames.LDEBUG)?.get(LOCAL_DEBUG_BOT_DOMAIN) as string)
+      : (ctx.configOfOtherPlugins.get(PluginNames.BOT)?.get(BOT_DOMAIN) as string);
+    // This config value is set by aadPlugin.setApplicationInContext. so aadPlugin.setApplicationInContext needs to run first.
+    const webApplicationInfoResource = ctx.configOfOtherPlugins
+      .get(PluginNames.AAD)
+      ?.get(localDebug ? LOCAL_WEB_APPLICATION_INFO_SOURCE : WEB_APPLICATION_INFO_SOURCE) as string;
+    if (!webApplicationInfoResource) {
+      return err(
+        localDebug
+          ? AppStudioResultFactory.SystemError(
+              AppStudioError.GetLocalDebugConfigFailedError.name,
+              AppStudioError.GetLocalDebugConfigFailedError.message(
+                "webApplicationInfoResource",
+                true
+              )
+            )
+          : AppStudioResultFactory.SystemError(
+              AppStudioError.GetRemoteConfigFailedError.name,
+              AppStudioError.GetRemoteConfigFailedError.message("webApplicationInfoResource", true)
+            )
+      );
+    }
+
+    if (!aadId) {
+      return err(
+        localDebug
+          ? AppStudioResultFactory.SystemError(
+              AppStudioError.GetLocalDebugConfigFailedError.name,
+              AppStudioError.GetLocalDebugConfigFailedError.message(LOCAL_DEBUG_AAD_ID, true)
+            )
+          : AppStudioResultFactory.SystemError(
+              AppStudioError.GetRemoteConfigFailedError.name,
+              AppStudioError.GetRemoteConfigFailedError.message(LOCAL_DEBUG_AAD_ID, true)
+            )
+      );
+    }
+
+    if (!tabEndpoint && !botId) {
+      return err(
+        localDebug
+          ? AppStudioResultFactory.SystemError(
+              AppStudioError.GetLocalDebugConfigFailedError.name,
+              AppStudioError.GetLocalDebugConfigFailedError.message(
+                LOCAL_DEBUG_TAB_ENDPOINT + ", " + LOCAL_BOT_ID,
+                false
+              )
+            )
+          : AppStudioResultFactory.SystemError(
+              AppStudioError.GetRemoteConfigFailedError.name,
+              AppStudioError.GetRemoteConfigFailedError.message(
+                FRONTEND_ENDPOINT + ", " + BOT_ID,
+                false
+              )
+            )
+      );
+    }
+    if ((tabEndpoint && !tabDomain) || (!tabEndpoint && tabDomain)) {
+      return err(
+        localDebug
+          ? AppStudioResultFactory.SystemError(
+              AppStudioError.InvalidLocalDebugConfigurationDataError.name,
+              AppStudioError.InvalidLocalDebugConfigurationDataError.message(
+                LOCAL_DEBUG_TAB_ENDPOINT,
+                tabEndpoint,
+                LOCAL_DEBUG_TAB_DOMAIN,
+                tabDomain
+              )
+            )
+          : AppStudioResultFactory.SystemError(
+              AppStudioError.InvalidRemoteConfigurationDataError.name,
+              AppStudioError.InvalidRemoteConfigurationDataError.message(
+                FRONTEND_ENDPOINT,
+                tabEndpoint,
+                FRONTEND_DOMAIN,
+                tabDomain
+              )
+            )
+      );
+    }
+    if (botId) {
+      if (!botDomain) {
+        return err(
+          localDebug
+            ? AppStudioResultFactory.SystemError(
+                AppStudioError.GetLocalDebugConfigFailedError.name,
+                AppStudioError.GetLocalDebugConfigFailedError.message(LOCAL_DEBUG_BOT_DOMAIN, false)
+              )
+            : AppStudioResultFactory.SystemError(
+                AppStudioError.GetRemoteConfigFailedError.name,
+                AppStudioError.GetRemoteConfigFailedError.message(BOT_DOMAIN, false)
+              )
+        );
+      }
+    }
+
+    return ok({ tabEndpoint, tabDomain, aadId, botDomain, botId, webApplicationInfoResource });
   }
 
   public async buildTeamsAppPackage(

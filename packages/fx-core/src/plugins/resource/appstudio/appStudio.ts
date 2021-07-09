@@ -3,7 +3,7 @@
 
 import axios, { AxiosInstance } from "axios";
 import { SystemError, LogProvider } from "@microsoft/teamsfx-api";
-import { IAppDefinition } from "../../solution/fx-solution/appstudio/interface";
+import { IAppDefinition } from "./interfaces/IAppDefinition";
 import { AppStudioError } from "./errors";
 import { IPublishingAppDenition } from "./interfaces/IPublishingAppDefinition";
 import { AppStudioResultFactory } from "./results";
@@ -257,6 +257,10 @@ export namespace AppStudioClient {
 
   /**
    * Publish Teams app to Teams App Catalog
+   * @param teamsAppId
+   * @param file
+   * @param appStudioToken
+   * @returns
    */
   export async function publishTeamsApp(
     teamsAppId: string,
@@ -308,6 +312,10 @@ export namespace AppStudioClient {
 
   /**
    * Update existed publish request
+   * @param teamsAppId
+   * @param file
+   * @param appStudioToken
+   * @returns
    */
   export async function publishTeamsAppUpdate(
     teamsAppId: string,

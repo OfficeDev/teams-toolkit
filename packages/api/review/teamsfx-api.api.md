@@ -572,6 +572,12 @@ export interface IWebApplicationInfo {
 export type Json = Record<string, unknown>;
 
 // @public (undocumented)
+export type LoadedPlugin = Plugin_2 & {
+    name: string;
+    displayName: string;
+};
+
+// @public (undocumented)
 export function loadOptions(q: Question, inputs: Inputs): Promise<{
     autoSkip: boolean;
     options?: StaticOptions;

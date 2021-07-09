@@ -10,26 +10,23 @@ import {
   getLogLevel,
   LogLevel,
   Logger,
+  setLogFunction,
 } from "../../src/util/logger";
 
 describe("Logger Tests", () => {
-  let errorStub: sinon.SinonStub<any[], void>;
-  let warnStub: sinon.SinonStub<any[], void>;
-  let infoStub: sinon.SinonStub<any[], void>;
-  let verboseStub: sinon.SinonStub<any[], void>;
-  let logger: Logger;
+  const errorStub: sinon.SinonStub<any[], void> = sinon.stub();
+  const warnStub: sinon.SinonStub<any[], void> = sinon.stub();
+  const infoStub: sinon.SinonStub<any[], void> = sinon.stub();
+  const verboseStub: sinon.SinonStub<any[], void> = sinon.stub();
+  const logger: Logger = {
+    error: errorStub,
+    warn: warnStub,
+    info: infoStub,
+    verbose: verboseStub,
+  } as Logger;
 
   beforeEach(() => {
-    errorStub = sinon.stub();
-    warnStub = sinon.stub();
-    infoStub = sinon.stub();
-    verboseStub = sinon.stub();
-    logger = {
-      error: errorStub,
-      warn: warnStub,
-      info: infoStub,
-      verbose: verboseStub,
-    } as Logger;
+    internalLogger.level = undefined;
     setLogger(logger);
   });
 
@@ -38,14 +35,41 @@ describe("Logger Tests", () => {
     warnStub.reset();
     infoStub.reset();
     verboseStub.reset();
-    setLogLevel(LogLevel.Info);
-    setLogger();
   });
 
   it("setLogLevel should success with Error level", () => {
     setLogLevel(LogLevel.Error);
 
     expect(getLogLevel()).to.equal(LogLevel.Error);
+  });
+
+  it("does not print log by default", () => {
+    internalLogger.info("test");
+    assert.isFalse(infoStub.called);
+  });
+
+  it("prints log after setting log level", () => {
+    setLogLevel(LogLevel.Info);
+    internalLogger.info("test");
+    assert.isTrue(infoStub.called);
+    internalLogger.verbose("test");
+    assert.isFalse(verboseStub.called);
+  });
+
+  it("redirects log by log function", () => {
+    setLogLevel(LogLevel.Info);
+    let output = "";
+    setLogFunction((level: LogLevel, message: string) => {
+      if (level === LogLevel.Info) {
+        output = message;
+      }
+    });
+    internalLogger.info("test");
+    assert.isTrue(output === "", "log function is inferior to logger");
+
+    setLogger(undefined);
+    internalLogger.info("test");
+    assert.isTrue(output.endsWith("@microsoft/teamsfx : Info - test"), "log function is activated");
   });
 
   it("all log should be displayed when level is verbose", () => {

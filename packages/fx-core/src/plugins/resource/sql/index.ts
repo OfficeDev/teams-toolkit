@@ -19,13 +19,14 @@ import {
   HostTypeOptionAzure,
   TabOptionItem,
 } from "../../solution/fx-solution/question";
+import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { Telemetry } from "./constants";
 import { ErrorMessage } from "./errors";
 import { SqlPluginImpl } from "./plugin";
 import { SqlResult, SqlResultFactory } from "./results";
 import { DialogUtils } from "./utils/dialogUtils";
 import { TelemetryUtils } from "./utils/telemetryUtils";
-@Service("SqlPlugin")
+@Service(ResourcePlugins.SqlPlugin)
 export class SqlPlugin implements Plugin {
   name = "fx-resource-azure-sql";
   displayName = "Azure SQL Datebase";

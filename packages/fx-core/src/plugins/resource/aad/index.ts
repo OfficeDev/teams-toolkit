@@ -11,8 +11,9 @@ import { Messages, Telemetry } from "./constants";
 import { AzureSolutionSettings } from "@microsoft/teamsfx-api";
 import { HostTypeOptionAzure } from "../../solution/fx-solution/question";
 import { Service } from "typedi";
+import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 
-@Service("AadPlugin")
+@Service(ResourcePlugins.AadPlugin)
 export class AadAppForTeamsPlugin implements Plugin {
   name = "fx-resource-aad-app-for-teams";
   displayName = "AAD";

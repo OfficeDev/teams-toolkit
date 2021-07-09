@@ -35,7 +35,8 @@ import {
   TabOptionItem,
 } from "../../solution/fx-solution/question";
 import { Service } from "typedi";
-@Service("FunctionPlugin")
+import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+@Service(ResourcePlugins.FunctionPlugin)
 export class FunctionPlugin implements Plugin {
   name = "fx-resource-function";
   displayName = "Azure Function";

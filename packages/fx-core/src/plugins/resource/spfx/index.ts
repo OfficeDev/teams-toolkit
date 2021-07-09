@@ -22,6 +22,7 @@ import { ProgressHelper } from "./utils/progress-helper";
 import { getTemplatesFolder } from "../../..";
 import { HostTypeOptionSPFx } from "../../solution/fx-solution/question";
 import { Service } from "typedi";
+import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 export class SpfxConfig {
   webpartName = "my-SPFx-app";
   webpartDesc = "This is a SPFx app.";
@@ -35,7 +36,7 @@ export enum SPFXQuestionNames {
   webpart_desp = "spfx-webpart-desp",
 }
 
-@Service("SpfxPlugin")
+@Service(ResourcePlugins.SpfxPlugin)
 export class SpfxPlugin implements Plugin {
   name = "fx-resource-spfx";
   displayName = "SharePoint Framework (SPFx)";

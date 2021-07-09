@@ -23,7 +23,8 @@ import { TelemetryEvent } from "./constants";
 import { TelemetryHelper } from "./utils/telemetry-helper";
 import { HostTypeOptionAzure, TabOptionItem } from "../../solution/fx-solution/question";
 import { Service } from "typedi";
-@Service("FrontendPlugin")
+import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+@Service(ResourcePlugins.FrontendPlugin)
 export class FrontendPlugin implements Plugin {
   name = "fx-resource-frontend-hosting";
   displayName = "Tab Front-end";

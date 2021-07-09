@@ -50,7 +50,8 @@ import { getNgrokHttpUrl } from "./util/ngrok";
 import { getCodespaceName, getCodespaceUrl } from "./util/codespace";
 import { TelemetryUtils, TelemetryEventName } from "./util/telemetry";
 import { Service } from "typedi";
-@Service("LocalDebugPlugin")
+import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+@Service(ResourcePlugins.LocalDebugPlugin)
 export class LocalDebugPlugin implements Plugin {
   name = "fx-resource-local-debug";
   displayName = "LocalDebug";

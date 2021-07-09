@@ -28,7 +28,8 @@ import { AppStudioResultFactory } from "./results";
 import { manuallySubmitOption, autoPublishOption } from "./questions";
 import { TelemetryUtils, TelemetryEventName, TelemetryPropertyKey } from "./utils/telemetry";
 import { Service } from "typedi";
-@Service("AppStudioPlugin")
+import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+@Service(ResourcePlugins.AppStudioPlugin)
 export class AppStudioPlugin implements Plugin {
   name = "fx-resource-appstudio";
   displayName = "App Studio";

@@ -16,7 +16,8 @@ import { SimpleAuthResult, ResultFactory } from "./result";
 import { DialogUtils } from "./utils/dialog";
 import { TelemetryUtils } from "./utils/telemetry";
 import { Service } from "typedi";
-@Service("SimpleAuthPlugin")
+import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+@Service(ResourcePlugins.SimpleAuthPlugin)
 export class SimpleAuthPlugin implements Plugin {
   name = "fx-resource-simple-auth";
   displayName = "Simple Auth";

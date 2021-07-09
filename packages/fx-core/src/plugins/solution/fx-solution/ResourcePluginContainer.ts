@@ -52,10 +52,9 @@ export function getAllResourcePluginMap(): Map<string, Plugin> {
  * @returns activated resource plugins
  */
 export function getActivatedResourcePlugins(solutionSettings: AzureSolutionSettings): Plugin[] {
-  const allPlugins = getAllResourcePluginMap();
-  const activatedPlugins = Array.from(allPlugins)
-    .filter((p) => p[1].activate && p[1].activate(solutionSettings) === true)
-    .map((p) => p[1]);
+  const activatedPlugins = getAllResourcePlugins().filter(
+    (p) => p.activate && p.activate(solutionSettings) === true
+  );
   if (activatedPlugins.length === 0) {
     throw returnUserError(
       new Error(`No plugin selected`),

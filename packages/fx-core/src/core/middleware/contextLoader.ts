@@ -76,8 +76,12 @@ export async function loadSolutionContext(
     const confFolderPath = path.resolve(inputs.projectPath!, `.${ConfigFolderName}`);
     const settingsFile = path.resolve(confFolderPath, "settings.json");
     const projectSettings: ProjectSettings = await fs.readJson(settingsFile);
+    let projectIdMissing = false;
     if (!projectSettings.currentEnv) projectSettings.currentEnv = "default";
-    if (!projectSettings.projectId) projectSettings.projectId = uuid.v4();
+    if (!projectSettings.projectId) {
+      projectSettings.projectId = uuid.v4();
+      projectIdMissing = true;
+    }
     const envName = projectSettings.currentEnv;
     const jsonFilePath = path.resolve(confFolderPath, `env.${envName}.json`);
     const configJson: Json = await fs.readJson(jsonFilePath);
@@ -90,13 +94,15 @@ export async function loadSolutionContext(
       dict = {};
     }
     const cryptoProvider = new LocalCrypto(projectSettings.projectId);
-    for (const secretKey of Object.keys(dict)) {
-      const secretValue = dict[secretKey];
-      const plaintext = cryptoProvider.decrypt(secretValue);
-      if (plaintext.isErr()) {
-        throw plaintext.error;
+    if (!projectIdMissing) {
+      for (const secretKey of Object.keys(dict)) {
+        const secretValue = dict[secretKey];
+        const plaintext = cryptoProvider.decrypt(secretValue);
+        if (plaintext.isErr()) {
+          throw plaintext.error;
+        }
+        dict[secretKey] = plaintext.value;
       }
-      dict[secretKey] = plaintext.value;
     }
     mergeSerectData(dict, configJson);
     const solutionConfig: SolutionConfig = objectToMap(configJson);

@@ -24,9 +24,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          fetch-depth: 0
           token: ${{ secrets.CD_PAT }}
           ref: ${{ github.ref }}
+          clean: false
 
       - name: Setup node
         uses: actions/setup-node@v2.1.2
@@ -54,7 +54,7 @@ jobs:
 
       - name: Package CLI and install
         run: |
-          npm run package
+          rm -f *.tgz
           npm pack
           mv *.tgz teamsfx-cli.tgz
           npm install -g teamsfx-cli.tgz
@@ -73,6 +73,10 @@ jobs:
         run: |
            git tag -f e2e HEAD
            git push origin -f e2e
+
+      - name: Clean the Repo
+        run: |
+          rsync --delete-before -d /tmp/empty/ ./
 
   create-ado-issue:
     runs-on: ubuntu-latest

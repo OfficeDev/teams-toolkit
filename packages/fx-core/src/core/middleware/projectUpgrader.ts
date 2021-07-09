@@ -1,6 +1,12 @@
 import { Middleware, NextFunction } from "@feathersjs/hooks";
 import { ConfigFolderName, err, Inputs, Json, ProjectSettings } from "@microsoft/teamsfx-api";
-import { CoreHookContext, FxCore, NoProjectOpenedError, PathNotExistError } from "..";
+import {
+  ContextUpgradeError,
+  CoreHookContext,
+  FxCore,
+  NoProjectOpenedError,
+  PathNotExistError,
+} from "..";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { deserializeDict, serializeDict } from "../..";
@@ -34,73 +40,77 @@ export const ProjectUpgraderMW: Middleware = async (ctx: CoreHookContext, next: 
 };
 
 export async function upgradeContext(ctx: CoreHookContext): Promise<void> {
-  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-  if (!inputs.projectPath) {
-    ctx.result = err(NoProjectOpenedError());
-    return;
-  }
-  const projectPathExist = await fs.pathExists(inputs.projectPath);
-  if (!projectPathExist) {
-    ctx.result = err(PathNotExistError(inputs.projectPath));
-    return;
-  }
-  const confFolderPath = path.resolve(inputs.projectPath!, `.${ConfigFolderName}`);
-  const settingsFile = path.resolve(confFolderPath, "settings.json");
-  const projectSettings: ProjectSettings = await fs.readJson(settingsFile);
-  const envName = projectSettings.currentEnv;
-  const userDataPath = path.resolve(confFolderPath, `${envName}.userdata`);
-  const contextPath = path.resolve(confFolderPath, `env.${envName}.json`);
-  const [userData, context] = await getUserDataAndContext(userDataPath, contextPath);
-
-  for (const item of contextUpgrade) {
-    // Secret not in userdata file, means has not run local debug before.
-    // Will delete related keys if exists.
-    if (item.secret && !userData[getUserDataKey(item.plugin, item.secret)]) {
-      deleteKeysFromContext(context, item.plugin, item.relatedKeys);
+  try {
+    const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+    if (!inputs.projectPath) {
+      ctx.result = err(NoProjectOpenedError());
+      return;
     }
+    const projectPathExist = await fs.pathExists(inputs.projectPath);
+    if (!projectPathExist) {
+      ctx.result = err(PathNotExistError(inputs.projectPath));
+      return;
+    }
+    const confFolderPath = path.resolve(inputs.projectPath!, `.${ConfigFolderName}`);
+    const settingsFile = path.resolve(confFolderPath, "settings.json");
+    const projectSettings: ProjectSettings = await fs.readJson(settingsFile);
+    const envName = projectSettings.currentEnv;
+    const userDataPath = path.resolve(confFolderPath, `${envName}.userdata`);
+    const contextPath = path.resolve(confFolderPath, `env.${envName}.json`);
+    const [userData, context] = await getUserDataAndContext(userDataPath, contextPath);
 
-    // Secret in userdata file.
-    // Move keys from context to userdata, and will add key in context.
-    const keyMoved = moveKeysFromContextToUserData(
-      userData,
-      context,
-      item.plugin,
-      item.relatedKeys
-    );
-
-    // Check whether secret is complete
-    let keyCompleted = true;
-    for (const relatedKey of item.relatedKeys) {
-      if (!userData[relatedKey] || isSecretPattern(userData[relatedKey])) {
-        keyCompleted = false;
-        break;
+    for (const item of contextUpgrade) {
+      // Secret not in userdata file, means has not run local debug before.
+      // Will delete related keys if exists.
+      if (item.secret && !userData[getUserDataKey(item.plugin, item.secret)]) {
+        deleteKeysFromContext(context, item.plugin, item.relatedKeys);
       }
-    }
 
-    // If key is complete, which means all configs are set.
-    if (keyCompleted) {
-      // If some key is moved in moveKeysFromContextToUserData, will send log to inform user context is upgraded.
-      if (keyMoved) {
-        const core = ctx.self as FxCore;
-        const logger =
-          core !== undefined && core.tools !== undefined && core.tools.logProvider !== undefined
-            ? core.tools.logProvider
-            : undefined;
-        if (logger) {
-          logger.info(
-            "[core]: context version is too low. Will update context and move some config from env to userdata."
-          );
+      // Secret in userdata file.
+      // Move keys from context to userdata, and will add key in context.
+      const keyMoved = moveKeysFromContextToUserData(
+        userData,
+        context,
+        item.plugin,
+        item.relatedKeys
+      );
+
+      // Check whether secret is complete
+      let keyCompleted = true;
+      for (const relatedKey of item.relatedKeys) {
+        const userDataKey = getUserDataKey(item.plugin, relatedKey);
+        if (!userData[userDataKey] || isSecretPattern(userData[userDataKey])) {
+          keyCompleted = false;
+          break;
         }
       }
-    } else {
-      // Key missing.
-      // Will delete context and key
-      deleteKeysFromContext(context, item.plugin, item.relatedKeys);
-      deleteSecretFromUserData(userData, item.plugin, item.secret);
-    }
-  }
 
-  await saveUserDataAndContext(userDataPath, userData, contextPath, context);
+      // If key is complete, which means all configs are set.
+      if (keyCompleted) {
+        // If some key is moved in moveKeysFromContextToUserData, will send log to inform user context is upgraded.
+        if (keyMoved) {
+          const core = ctx.self as FxCore;
+          const logger =
+            core !== undefined && core.tools !== undefined && core.tools.logProvider !== undefined
+              ? core.tools.logProvider
+              : undefined;
+          if (logger) {
+            logger.info(
+              `[core]: context version of ${item.plugin} is too low. Will update context and move some config from env to userdata.`
+            );
+          }
+        }
+      } else {
+        // Key missing.
+        // Will delete context and key
+        deleteKeysFromContext(context, item.plugin, item.relatedKeys);
+        deleteSecretFromUserData(userData, item.plugin, item.secret);
+      }
+    }
+    await saveUserDataAndContext(userDataPath, userData, contextPath, context);
+  } catch (error) {
+    ctx.result = err(ContextUpgradeError(error));
+  }
 }
 
 async function getUserDataAndContext(
@@ -168,7 +178,7 @@ function moveKeysFromContextToUserData(
     return false;
   }
 
-  for (const key in keys) {
+  for (const key of keys) {
     const value = pluginContext[key];
     if (value && !isSecretPattern(value)) {
       keyMoved = true;

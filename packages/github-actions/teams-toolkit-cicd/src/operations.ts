@@ -1,5 +1,5 @@
 import * as path from 'path'
-import {Execute} from './utils/exec'
+import {CommandUtil} from './utils/exec'
 import {Commands, Pathes, Miscs, ActionOutputs} from './constant'
 import {ProgrammingLanguage} from './enums/programmingLanguages'
 import * as fs from 'fs-extra'
@@ -28,7 +28,7 @@ export class Operations {
       const commands = buildMapQuerier.query(cap, lang)
       if (await fs.pathExists(capPath)) {
         for (const command of commands) {
-          await Execute(command, capPath)
+          await CommandUtil.Execute(command, capPath)
         }
       }
     })
@@ -39,7 +39,7 @@ export class Operations {
   static async ProvisionHostingEnvironment(
     projectRoot: string
   ): Promise<number> {
-    const ret = await Execute(
+    const ret = await CommandUtil.Execute(
       Commands.TeamsfxProvision(process.env.TEST_SUBSCRIPTION_ID!),
       projectRoot
     )
@@ -57,7 +57,7 @@ export class Operations {
   static async DeployToHostingEnvironment(
     projectRoot: string
   ): Promise<number> {
-    const ret = await Execute(Commands.TeamsfxDeploy, projectRoot)
+    const ret = await CommandUtil.Execute(Commands.TeamsfxDeploy, projectRoot)
 
     const packageSolutionPath = path.join(
       projectRoot,
@@ -82,7 +82,7 @@ export class Operations {
   }
 
   static async PackTeamsApp(projectRoot: string): Promise<number> {
-    const ret = await Execute(Commands.TeamsfxBuild, projectRoot)
+    const ret = await CommandUtil.Execute(Commands.TeamsfxBuild, projectRoot)
     if (ret === 0) {
       core.setOutput(
         ActionOutputs.PackageZipPath,
@@ -93,10 +93,10 @@ export class Operations {
   }
 
   static async ValidateTeamsAppManifest(projectRoot: string): Promise<number> {
-    return await Execute(Commands.TeamsfxValidate, projectRoot)
+    return await CommandUtil.Execute(Commands.TeamsfxValidate, projectRoot)
   }
 
   static async PublishTeamsApp(projectRoot: string): Promise<number> {
-    return await Execute(Commands.TeamsfxPublish, projectRoot)
+    return await CommandUtil.Execute(Commands.TeamsfxPublish, projectRoot)
   }
 }

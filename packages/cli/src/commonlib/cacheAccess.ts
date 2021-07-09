@@ -7,7 +7,7 @@ import { TokenCacheContext } from "@azure/msal-node";
 import { ConfigFolderName } from "@microsoft/teamsfx-api";
 import * as crypto from "crypto";
 import * as fs from "fs-extra";
-import * as keytar from "keytar";
+import * as keytarType from "keytar";
 import VsCodeLogInstance from "./log";
 import * as os from "os";
 
@@ -24,9 +24,15 @@ export const UTF8 = "utf8";
 class AccountCrypto {
   private readonly algorithm: crypto.CipherGCMTypes = "aes-256-gcm";
   private readonly accountName: string;
+  private readonly keytar?: typeof keytarType;
 
   constructor(accountName: string) {
     this.accountName = accountName;
+    try {
+      this.keytar = require("keytar");
+    } catch {
+      // keytar not installed, ingore
+    }
   }
 
   public async encrypt(content: string): Promise<string> {
@@ -66,18 +72,20 @@ class AccountCrypto {
 
   private async getKey(): Promise<string | undefined> {
     try {
-      let key = await keytar.getPassword(serviceName, this.accountName);
-      if (!key || key.length !== 32) {
-        key = crypto.randomBytes(256).toString("hex").slice(0, 32);
-        await keytar.setPassword(serviceName, this.accountName, key);
+      if (this.keytar) {
+        let key = await this.keytar.getPassword(serviceName, this.accountName);
+        if (!key || key.length !== 32) {
+          key = crypto.randomBytes(256).toString("hex").slice(0, 32);
+          await this.keytar.setPassword(serviceName, this.accountName, key);
 
-        // validate key again
-        const savedKey = await keytar.getPassword(serviceName, this.accountName);
-        if (savedKey === key) {
+          // validate key again
+          const savedKey = await this.keytar.getPassword(serviceName, this.accountName);
+          if (savedKey === key) {
+            return key;
+          }
+        } else {
           return key;
         }
-      } else {
-        return key;
       }
     } catch {
       // ignore keytar error

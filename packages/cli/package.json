@@ -111,7 +111,6 @@
     "fs-extra": "^9.1.0",
     "glob": "^7.1.6",
     "inquirer": "^8.0.0",
-    "keytar": "^7.7.0",
     "md5": "^2.3.0",
     "ms-rest-azure": "^3.0.0",
     "node-machine-id": "^1.1.12",
@@ -120,6 +119,9 @@
     "tree-kill": "^1.2.2",
     "underscore": "^1.12.1",
     "yargs": "^16.2.0"
+  },
+  "optionalDependencies": {
+    "keytar": "^7.7.0"
   },
   "files": [
     "lib",

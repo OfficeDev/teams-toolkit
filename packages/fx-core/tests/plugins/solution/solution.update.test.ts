@@ -37,12 +37,13 @@ import {
 
 import _ from "lodash";
 import * as uuid from "uuid";
-import { AZ_RC_CONTAINER } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
-const fehostPlugin = AZ_RC_CONTAINER.FrontendPlugin;
-const localDebug = AZ_RC_CONTAINER.LocalDebugPlugin;
-const sqlPlugin = AZ_RC_CONTAINER.SqlPlugin;
-const functionPlugin = AZ_RC_CONTAINER.FunctionPlugin;
-const apimPlugin = AZ_RC_CONTAINER.ApimPlugin;
+import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
+import Container from "typedi";
+const fehostPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin);
+const localDebug = Container.get<Plugin>(ResourcePlugins.LocalDebugPlugin);
+const sqlPlugin = Container.get<Plugin>(ResourcePlugins.SqlPlugin);
+const functionPlugin = Container.get<Plugin>(ResourcePlugins.FunctionPlugin);
+const apimPlugin = Container.get<Plugin>(ResourcePlugins.ApimPlugin);
 function mockSolutionContext(): SolutionContext {
   const config: SolutionConfig = new Map();
   return {

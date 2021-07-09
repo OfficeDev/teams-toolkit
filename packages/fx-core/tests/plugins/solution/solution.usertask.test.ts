@@ -9,11 +9,13 @@ import * as sinon from "sinon";
 import { GLOBAL_CONFIG, SolutionError } from "../../../src/plugins/solution/fx-solution/constants";
 import { mockPublishThatAlwaysSucceed } from "./util";
 import _ from "lodash";
-import { AZ_RC_CONTAINER } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
+import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
+import Container from "typedi";
+import { AppStudioPlugin } from "../../../src";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
-const appStudioPlugin = AZ_RC_CONTAINER.AppStudioPlugin;
+const appStudioPlugin = Container.get<AppStudioPlugin>(ResourcePlugins.AppStudioPlugin);
 function mockSolutionContextWithPlatform(platform?: Platform): SolutionContext {
   const config: SolutionConfig = new Map();
   config.set(GLOBAL_CONFIG, new ConfigMap());

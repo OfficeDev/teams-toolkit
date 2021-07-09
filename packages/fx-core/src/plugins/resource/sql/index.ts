@@ -13,7 +13,7 @@ import {
   SystemError,
   UserError,
 } from "@microsoft/teamsfx-api";
-import { injectable } from "inversify";
+import { Service } from "typedi";
 import {
   AzureResourceSQL,
   HostTypeOptionAzure,
@@ -25,7 +25,7 @@ import { SqlPluginImpl } from "./plugin";
 import { SqlResult, SqlResultFactory } from "./results";
 import { DialogUtils } from "./utils/dialogUtils";
 import { TelemetryUtils } from "./utils/telemetryUtils";
-@injectable()
+@Service("SqlPlugin")
 export class SqlPlugin implements Plugin {
   name = "fx-resource-azure-sql";
   displayName = "Azure SQL Datebase";

@@ -22,13 +22,13 @@ import { ProgressHelper } from "./utils/progress-helper";
 import { TelemetryEvent } from "./constants";
 import { TelemetryHelper } from "./utils/telemetry-helper";
 import { HostTypeOptionAzure, TabOptionItem } from "../../solution/fx-solution/question";
-import { injectable } from "inversify";
-@injectable()
+import { Service } from "typedi";
+@Service("FrontendPlugin")
 export class FrontendPlugin implements Plugin {
   name = "fx-resource-frontend-hosting";
   displayName = "Tab Front-end";
   activate(solutionSettings: AzureSolutionSettings): boolean {
-    const cap = solutionSettings.capabilities!;
+    const cap = solutionSettings.capabilities || [];
     return solutionSettings.hostType === HostTypeOptionAzure.id && cap.includes(TabOptionItem.id);
   }
   frontendPluginImpl = new FrontendPluginImpl();

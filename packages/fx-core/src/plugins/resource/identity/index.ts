@@ -20,8 +20,8 @@ import { TelemetryUtils } from "./utils/telemetryUtil";
 import { formatEndpoint } from "./utils/commonUtils";
 import { getTemplatesFolder } from "../../..";
 import { AzureResourceSQL } from "../../solution/fx-solution/question";
-import { injectable } from "inversify";
-@injectable()
+import { Service } from "typedi";
+@Service("IdentityPlugin")
 export class IdentityPlugin implements Plugin {
   name = "fx-resource-identity";
   displayName = "Microsoft Identity";

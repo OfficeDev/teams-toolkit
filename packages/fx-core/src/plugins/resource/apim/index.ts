@@ -30,8 +30,8 @@ import { ProgressBar } from "./utils/progressBar";
 import { buildAnswer } from "./answer";
 import { AzureSolutionSettings } from "@microsoft/teamsfx-api";
 import { AzureResourceApim } from "../../solution/fx-solution/question";
-import { injectable } from "inversify";
-@injectable()
+import { Service } from "typedi";
+@Service("ApimPlugin")
 export class ApimPlugin implements Plugin {
   name = "fx-resource-apim";
   displayName = "API Management";

@@ -31,12 +31,13 @@ import { getTemplatesFolder } from "../../../src";
 import { SolutionError } from "../../../src/plugins/solution/fx-solution/constants";
 import { validManifest } from "./util";
 import * as uuid from "uuid";
-import { AZ_RC_CONTAINER } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
+import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
+import Container from "typedi";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
-const fehostPlugin = AZ_RC_CONTAINER.FrontendPlugin;
-const botPlugin = AZ_RC_CONTAINER.BotPlugin;
+const fehostPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin);
+const botPlugin = Container.get<Plugin>(ResourcePlugins.BotPlugin);
 function mockSolutionContext(): SolutionContext {
   const config: SolutionConfig = new Map();
   return {

@@ -69,14 +69,15 @@ import { ResourceGroups } from "@azure/arm-resources";
 import { AppStudioClient } from "../../../src/plugins/resource/appstudio/appStudio";
 import * as solutionUtil from "../../../src/plugins/solution/fx-solution/util";
 import * as uuid from "uuid";
-import { AZ_RC_CONTAINER } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
+import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import { AadAppForTeamsPlugin } from "../../../src";
+import Container from "typedi";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
-const aadPlugin = AZ_RC_CONTAINER.AadPlugin as AadAppForTeamsPlugin;
-const spfxPlugin = AZ_RC_CONTAINER.SpfxPlugin;
-const fehostPlugin = AZ_RC_CONTAINER.FrontendPlugin;
+const aadPlugin = Container.get<Plugin>(ResourcePlugins.AadPlugin) as AadAppForTeamsPlugin;
+const spfxPlugin = Container.get<Plugin>(ResourcePlugins.SpfxPlugin);
+const fehostPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin);
 function instanceOfIMessage(obj: any): obj is IMessage {
   return "items" in obj;
 }

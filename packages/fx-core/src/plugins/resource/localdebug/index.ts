@@ -49,8 +49,8 @@ import { prepareLocalAuthService } from "./util/localService";
 import { getNgrokHttpUrl } from "./util/ngrok";
 import { getCodespaceName, getCodespaceUrl } from "./util/codespace";
 import { TelemetryUtils, TelemetryEventName } from "./util/telemetry";
-import { injectable } from "inversify";
-@injectable()
+import { Service } from "typedi";
+@Service("LocalDebugPlugin")
 export class LocalDebugPlugin implements Plugin {
   name = "fx-resource-local-debug";
   displayName = "LocalDebug";

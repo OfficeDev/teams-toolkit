@@ -21,13 +21,13 @@ import { ErrorType, PluginError } from "./errors";
 import { Logger } from "./logger";
 import { telemetryHelper } from "./utils/telemetry-helper";
 import { BotOptionItem, MessageExtensionItem } from "../../solution/fx-solution/question";
-import { injectable } from "inversify";
-@injectable()
+import { Service } from "typedi";
+@Service("BotPlugin")
 export class TeamsBot implements Plugin {
   name = "fx-resource-bot";
   displayName = "Bot";
   activate(solutionSettings: AzureSolutionSettings): boolean {
-    const cap = solutionSettings.capabilities!;
+    const cap = solutionSettings.capabilities || [];
     return cap.includes(BotOptionItem.id) || cap.includes(MessageExtensionItem.id);
   }
   public teamsBotImpl: TeamsBotImpl = new TeamsBotImpl();

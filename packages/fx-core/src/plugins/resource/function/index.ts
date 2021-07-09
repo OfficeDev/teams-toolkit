@@ -34,15 +34,13 @@ import {
   HostTypeOptionAzure,
   TabOptionItem,
 } from "../../solution/fx-solution/question";
-import { injectable } from "inversify";
-
-// This layer tries to provide a uniform exception handling for function plugin.
-@injectable()
+import { Service } from "typedi";
+@Service("FunctionPlugin")
 export class FunctionPlugin implements Plugin {
   name = "fx-resource-function";
   displayName = "Azure Function";
   activate(solutionSettings: AzureSolutionSettings): boolean {
-    const cap = solutionSettings.capabilities!;
+    const cap = solutionSettings.capabilities || [];
     const azureResources = solutionSettings.azureResources ? solutionSettings.azureResources : [];
     return (
       solutionSettings.hostType === HostTypeOptionAzure.id &&

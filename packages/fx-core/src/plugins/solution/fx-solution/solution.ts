@@ -96,10 +96,16 @@ import path from "path";
 import * as util from "util";
 import { deepCopy, getStrings, isUserCancelError } from "../../../common/tools";
 import { getTemplatesFolder } from "../../..";
-import { AZ_RC_CONTAINER } from "./ResourcePluginContainer";
+import {
+  getActivatedResourcePlugins,
+  getAllResourcePluginMap,
+  getAllResourcePlugins,
+  ResourcePlugins,
+} from "./ResourcePluginContainer";
 import { AadAppForTeamsPlugin, AppStudioPlugin, SpfxPlugin } from "../../resource";
 import { ErrorHandlerMW } from "../../../core/middleware/errorHandler";
 import { hooks } from "@feathersjs/hooks/lib";
+import { Inject, Service, Container } from "typedi";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -126,7 +132,6 @@ export enum PluginNames {
   SOLUTION = "solution",
 }
 
-const appStudioPlugin = AZ_RC_CONTAINER.AppStudioPlugin as AppStudioPlugin;
 // Maybe we need a state machine to track state transition.
 export enum SolutionRunningState {
   Idle = "idle",
@@ -135,12 +140,33 @@ export enum SolutionRunningState {
   PublishInProgress = "PublishInProgress",
 }
 
+@Service()
 export class TeamsAppSolution implements Solution {
+  SpfxPlugin: Plugin;
+  AppStudioPlugin: AppStudioPlugin;
+  BotPlugin: Plugin;
+  AadPlugin: Plugin;
+  FrontendPlugin: Plugin;
+  FunctionPlugin: Plugin;
+  SqlPlugin: Plugin;
+  ApimPlugin: Plugin;
+  LocalDebugPlugin: Plugin;
+
   name = "fx-solution-azure";
 
   runningState: SolutionRunningState;
 
   constructor() {
+    this.SpfxPlugin = Container.get<Plugin>(ResourcePlugins.SpfxPlugin);
+    this.AppStudioPlugin = Container.get<AppStudioPlugin>(ResourcePlugins.AppStudioPlugin);
+    this.BotPlugin = Container.get<Plugin>(ResourcePlugins.BotPlugin);
+    this.AadPlugin = Container.get<Plugin>(ResourcePlugins.AadPlugin);
+    this.FrontendPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin);
+    this.FunctionPlugin = Container.get<Plugin>(ResourcePlugins.FunctionPlugin);
+    this.SpfxPlugin = Container.get<Plugin>(ResourcePlugins.SpfxPlugin);
+    this.SqlPlugin = Container.get<Plugin>(ResourcePlugins.SqlPlugin);
+    this.ApimPlugin = Container.get<Plugin>(ResourcePlugins.ApimPlugin);
+    this.LocalDebugPlugin = Container.get<Plugin>(ResourcePlugins.LocalDebugPlugin);
     this.runningState = SolutionRunningState.Idle;
   }
 
@@ -277,7 +303,7 @@ export class TeamsAppSolution implements Solution {
     await fs.copy(defaultColorPath, `${ctx.root}/.${ConfigFolderName}/color.png`);
     await fs.copy(defaultOutlinePath, `${ctx.root}/.${ConfigFolderName}/outline.png`);
     if (this.isAzureProject(ctx)) {
-      const manifest = await appStudioPlugin.createManifest(ctx.projectSettings!);
+      const manifest = await this.AppStudioPlugin.createManifest(ctx.projectSettings!);
       // if (manifest) Object.assign(ctx.app, manifest);
       await fs.writeFile(
         `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`,
@@ -291,7 +317,7 @@ export class TeamsAppSolution implements Solution {
         [SolutionTelemetryProperty.Capabilities]: solutionSettings.capabilities.join(";"),
       });
     } else {
-      const manifest = await (AZ_RC_CONTAINER.SpfxPlugin as SpfxPlugin).getManifest();
+      const manifest = await (this.SpfxPlugin as SpfxPlugin).getManifest();
       await fs.writeFile(
         `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`,
         JSON.stringify(manifest, null, 4)
@@ -301,14 +327,14 @@ export class TeamsAppSolution implements Solution {
   }
 
   reloadPlugins(solutionSettings: AzureSolutionSettings) {
-    const res = AZ_RC_CONTAINER.getActivatedResourcePlugins(solutionSettings);
+    const res = getActivatedResourcePlugins(solutionSettings);
     solutionSettings.activeResourcePlugins = res.map((p) => p.name);
   }
 
   private spfxSelected(ctx: SolutionContext): boolean {
     // Generally, if SPFx is selected, there should be no other plugins. But we don't check this invariant here.
     const spfxExists = this.getAzureSolutionSettings(ctx).activeResourcePlugins.some(
-      (pluginName) => pluginName === AZ_RC_CONTAINER.SpfxPlugin.name
+      (pluginName) => pluginName === this.SpfxPlugin.name
     );
     return spfxExists === undefined ? false : spfxExists;
   }
@@ -325,8 +351,22 @@ export class TeamsAppSolution implements Solution {
 
   private getSelectedPlugins(ctx: SolutionContext): Result<Plugin[], FxError> {
     const settings = this.getAzureSolutionSettings(ctx);
-    const res = AZ_RC_CONTAINER.getActivatedResourcePlugins(settings);
-    return ok(res);
+    const map = getAllResourcePluginMap();
+    const results: Plugin[] = [];
+    for (const name of settings.activeResourcePlugins) {
+      const plugin = map.get(name);
+      if (!plugin) {
+        return err(
+          returnUserError(
+            new Error(`Plugin name ${name} is not valid`),
+            "Solution",
+            SolutionError.PluginNotFound
+          )
+        );
+      }
+      results.push(plugin);
+    }
+    return ok(results);
   }
 
   /**
@@ -350,7 +390,7 @@ export class TeamsAppSolution implements Solution {
     ctx: SolutionContext,
     selectedPlugins: LoadedPlugin[]
   ): Promise<Result<any, FxError>> {
-    const appStudioPlugin = AZ_RC_CONTAINER.AppStudioPlugin as AppStudioPlugin;
+    const appStudioPlugin = this.AppStudioPlugin as AppStudioPlugin;
     const maybeManifest = await appStudioPlugin.reloadManifestAndCheckRequiredFields(ctx.root);
     if (maybeManifest.isErr()) {
       return maybeManifest;
@@ -429,7 +469,7 @@ export class TeamsAppSolution implements Solution {
       return err(maybeSelectedPlugins.error);
     }
     const selectedPlugins = maybeSelectedPlugins.value;
-    if (selectedPlugins.some((plugin) => plugin.name === AZ_RC_CONTAINER.BotPlugin.name)) {
+    if (selectedPlugins.some((plugin) => plugin.name === this.BotPlugin.name)) {
       const capabilities = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
         .capabilities;
       const hasBot = capabilities?.includes(BotOptionItem.id);
@@ -449,8 +489,14 @@ export class TeamsAppSolution implements Solution {
       return err(maybeConfig.error);
     }
 
-    const { tabEndpoint, tabDomain, aadId, botDomain, botId, webApplicationInfoResource } =
-      maybeConfig.value;
+    const {
+      tabEndpoint,
+      tabDomain,
+      aadId,
+      botDomain,
+      botId,
+      webApplicationInfoResource,
+    } = maybeConfig.value;
 
     const validDomains: string[] = [];
 
@@ -463,7 +509,7 @@ export class TeamsAppSolution implements Solution {
     }
 
     return ok(
-      appStudioPlugin.getDevAppDefinition(
+      this.AppStudioPlugin.getDevAppDefinition(
         JSON.stringify(manifest),
         aadId,
         validDomains,
@@ -483,7 +529,8 @@ export class TeamsAppSolution implements Solution {
   private async createAndConfigTeamsManifest(
     ctx: SolutionContext
   ): Promise<Result<IAppDefinition, FxError>> {
-    const maybeManifest = await appStudioPlugin.reloadManifestAndCheckRequiredFields(ctx.root);
+    const maybeManifest = await (this
+      .AppStudioPlugin as AppStudioPlugin).reloadManifestAndCheckRequiredFields(ctx.root);
     if (maybeManifest.isErr()) {
       return err(maybeManifest.error);
     }
@@ -492,7 +539,10 @@ export class TeamsAppSolution implements Solution {
     let appDefinition: IAppDefinition;
     let updatedManifest: TeamsAppManifest;
     if (this.spfxSelected(ctx)) {
-      appDefinition = appStudioPlugin.convertToAppDefinition(manifest, false);
+      appDefinition = (this.AppStudioPlugin as AppStudioPlugin).convertToAppDefinition(
+        manifest,
+        false
+      );
       updatedManifest = manifest;
     } else {
       const result = this.createManifestForRemote(ctx, manifest);
@@ -505,7 +555,7 @@ export class TeamsAppSolution implements Solution {
     const teamsAppId = ctx.config.get(GLOBAL_CONFIG)?.getString(REMOTE_TEAMS_APP_ID);
     if (!teamsAppId) {
       ctx.logProvider?.info(`Teams app not created`);
-      const result = await appStudioPlugin.updateApp(
+      const result = await (this.AppStudioPlugin as AppStudioPlugin).updateApp(
         appDefinition,
         "remote",
         true,
@@ -525,7 +575,7 @@ export class TeamsAppSolution implements Solution {
     } else {
       ctx.logProvider?.info(`Teams app already created: ${teamsAppId}`);
       appDefinition.appId = teamsAppId;
-      const result = await appStudioPlugin.updateApp(
+      const result = await this.AppStudioPlugin.updateApp(
         appDefinition,
         "remote",
         false,
@@ -652,7 +702,7 @@ export class TeamsAppSolution implements Solution {
     }
     const selectedPlugins = maybeSelectedPlugins.value;
 
-    const maybeManifest = await appStudioPlugin.reloadManifestAndCheckRequiredFields(ctx.root);
+    const maybeManifest = await this.AppStudioPlugin.reloadManifestAndCheckRequiredFields(ctx.root);
     if (maybeManifest.isErr()) {
       return maybeManifest;
     }
@@ -735,7 +785,7 @@ export class TeamsAppSolution implements Solution {
       },
       async () => {
         ctx.logProvider?.info("[Teams Toolkit]: provison finished!");
-        const aadPlugin = AZ_RC_CONTAINER.AadPlugin as AadAppForTeamsPlugin;
+        const aadPlugin = this.AadPlugin as AadAppForTeamsPlugin;
         if (selectedPlugins.some((plugin) => plugin.name === aadPlugin.name)) {
           return aadPlugin.setApplicationInContext(getPluginContext(ctx, aadPlugin.name, manifest));
         }
@@ -835,7 +885,9 @@ export class TeamsAppSolution implements Solution {
       return res;
     }
 
-    const loadManifestResult = await appStudioPlugin.reloadManifestAndCheckRequiredFields(ctx.root);
+    const loadManifestResult = await this.AppStudioPlugin.reloadManifestAndCheckRequiredFields(
+      ctx.root
+    );
 
     if (loadManifestResult.isErr()) {
       return loadManifestResult;
@@ -855,7 +907,7 @@ export class TeamsAppSolution implements Solution {
       );
     }
 
-    const pluginMap = AZ_RC_CONTAINER.getAllResourcePluginMap();
+    const pluginMap = getAllResourcePluginMap();
     const pluginsToDeploy: LoadedPlugin[] = [];
     for (const optionId of optionsToDeploy) {
       const filtered = pluginMap.get(optionId);
@@ -901,7 +953,8 @@ export class TeamsAppSolution implements Solution {
       );
     }
 
-    const maybeManifestTpl = await appStudioPlugin.reloadManifestAndCheckRequiredFields(ctx.root);
+    const maybeManifestTpl = await (this
+      .AppStudioPlugin as AppStudioPlugin).reloadManifestAndCheckRequiredFields(ctx.root);
     if (maybeManifestTpl.isErr()) {
       return err(maybeManifestTpl.error);
     }
@@ -917,7 +970,7 @@ export class TeamsAppSolution implements Solution {
 
       const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(
         ctx,
-        [AZ_RC_CONTAINER.AppStudioPlugin],
+        [this.AppStudioPlugin],
         manifest
       );
       const publishWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(([plugin, context]) => {
@@ -949,7 +1002,7 @@ export class TeamsAppSolution implements Solution {
     const tabNode = new QTreeNode({ type: "group" });
 
     //Frontend plugin
-    const fehostPlugin: Plugin = AZ_RC_CONTAINER.FrontendPlugin;
+    const fehostPlugin: Plugin = this.FrontendPlugin;
     if (fehostPlugin.getQuestions) {
       const pluginCtx = getPluginContext(ctx, fehostPlugin.name);
       const res = await fehostPlugin.getQuestions(Stage.create, pluginCtx);
@@ -963,7 +1016,7 @@ export class TeamsAppSolution implements Solution {
     if (addAzureResource) {
       const azureResourceNode = new QTreeNode(AzureResourcesQuestion);
       tabNode.addChild(azureResourceNode);
-      const functionPlugin: Plugin = AZ_RC_CONTAINER.FunctionPlugin;
+      const functionPlugin: Plugin = this.FunctionPlugin;
       //Azure Function
       if (functionPlugin.getQuestions) {
         const pluginCtx = getPluginContext(ctx, functionPlugin.name);
@@ -975,7 +1028,7 @@ export class TeamsAppSolution implements Solution {
           if (azure_function.data) azureResourceNode.addChild(azure_function);
         }
       }
-      const sqlPlugin: Plugin = AZ_RC_CONTAINER.SqlPlugin;
+      const sqlPlugin: Plugin = this.SqlPlugin;
       //Azure SQL
       if (sqlPlugin.getQuestions) {
         const pluginCtx = getPluginContext(ctx, sqlPlugin.name);
@@ -1006,7 +1059,8 @@ export class TeamsAppSolution implements Solution {
       const checkRes = this.checkWhetherSolutionIsIdle();
       if (checkRes.isErr()) return err(checkRes.error);
 
-      const maybeManifest = await appStudioPlugin.reloadManifestAndCheckRequiredFields(ctx.root);
+      const maybeManifest = await (this
+        .AppStudioPlugin as AppStudioPlugin).reloadManifestAndCheckRequiredFields(ctx.root);
       if (maybeManifest.isErr()) {
         return err(maybeManifest.error);
       }
@@ -1047,7 +1101,7 @@ export class TeamsAppSolution implements Solution {
       }
 
       // 1.2 Bot
-      const botPlugin: Plugin = AZ_RC_CONTAINER.BotPlugin;
+      const botPlugin: Plugin = this.BotPlugin;
       if (botPlugin.getQuestions) {
         const pluginCtx = getPluginContext(ctx, botPlugin.name);
         const res = await botPlugin.getQuestions(stage, pluginCtx);
@@ -1076,7 +1130,7 @@ export class TeamsAppSolution implements Solution {
         }
         pluginsToProvision = res.value;
       } else {
-        pluginsToProvision = AZ_RC_CONTAINER.getAllResourcePlugins();
+        pluginsToProvision = getAllResourcePlugins();
       }
       if (!isDynamicQuestion) {
         node.addChild(new QTreeNode(AskSubscriptionQuestion));
@@ -1120,7 +1174,7 @@ export class TeamsAppSolution implements Solution {
         }
         pluginsToDeploy = res.value.filter((plugin) => !!plugin.deploy);
       } else {
-        const allPlugins = AZ_RC_CONTAINER.getAllResourcePlugins();
+        const allPlugins = getAllResourcePlugins();
         pluginsToDeploy = allPlugins.filter((plugin) => !!plugin.deploy);
       }
 
@@ -1193,7 +1247,7 @@ export class TeamsAppSolution implements Solution {
           }
         }
       }
-      const pluginsToPublish = [AZ_RC_CONTAINER.AppStudioPlugin];
+      const pluginsToPublish = [this.AppStudioPlugin];
       for (const plugin of pluginsToPublish) {
         const pluginCtx = getPluginContext(ctx, plugin.name, manifest);
         if (plugin.getQuestions) {
@@ -1232,7 +1286,8 @@ export class TeamsAppSolution implements Solution {
 
     const selectedPlugins = maybeSelectedPlugins.value;
 
-    const maybeManifest = await appStudioPlugin.reloadManifestAndCheckRequiredFields(ctx.root);
+    const maybeManifest = await (this
+      .AppStudioPlugin as AppStudioPlugin).reloadManifestAndCheckRequiredFields(ctx.root);
     if (maybeManifest.isErr()) {
       return err(maybeManifest.error);
     }
@@ -1261,7 +1316,7 @@ export class TeamsAppSolution implements Solution {
     if (localDebugResult.isErr()) {
       return localDebugResult;
     }
-    const aadPlugin = AZ_RC_CONTAINER.AadPlugin as AadAppForTeamsPlugin;
+    const aadPlugin = this.AadPlugin as AadAppForTeamsPlugin;
     if (selectedPlugins.some((plugin) => plugin.name === aadPlugin.name)) {
       const result = aadPlugin.setApplicationInContext(
         getPluginContext(ctx, aadPlugin.name, manifest),
@@ -1311,7 +1366,7 @@ export class TeamsAppSolution implements Solution {
       await fs.readFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`)
     ).toString();
 
-    const [appDefinition, _updatedManifest] = appStudioPlugin.getDevAppDefinition(
+    const [appDefinition, _updatedManifest] = this.AppStudioPlugin.getDevAppDefinition(
       manifestTpl,
       localAADId,
       validDomains,
@@ -1327,7 +1382,7 @@ export class TeamsAppSolution implements Solution {
     const localTeamsAppID = ctx.config.get(GLOBAL_CONFIG)?.getString(LOCAL_DEBUG_TEAMS_APP_ID);
     // If localTeamsAppID is present, we should reuse the teams app id.
     if (localTeamsAppID) {
-      const result = await appStudioPlugin.updateApp(
+      const result = await this.AppStudioPlugin.updateApp(
         appDefinition,
         "localDebug",
         false,
@@ -1340,7 +1395,7 @@ export class TeamsAppSolution implements Solution {
         return result;
       }
     } else {
-      const maybeTeamsAppId = await appStudioPlugin.updateApp(
+      const maybeTeamsAppId = await (this.AppStudioPlugin as AppStudioPlugin).updateApp(
         appDefinition,
         "localDebug",
         true,
@@ -1409,10 +1464,10 @@ export class TeamsAppSolution implements Solution {
     },
     FxError
   > {
-    const localDebugPlugin = AZ_RC_CONTAINER.LocalDebugPlugin;
-    const fehostPlugin = AZ_RC_CONTAINER.FrontendPlugin;
-    const aadPlugin = AZ_RC_CONTAINER.AadPlugin;
-    const botPlugin = AZ_RC_CONTAINER.BotPlugin;
+    const localDebugPlugin = this.LocalDebugPlugin;
+    const fehostPlugin = this.FrontendPlugin;
+    const aadPlugin = this.AadPlugin;
+    const botPlugin = this.BotPlugin;
     const tabEndpoint = localDebug
       ? config.get(localDebugPlugin.name)?.getString(LOCAL_DEBUG_TAB_ENDPOINT)
       : config.get(fehostPlugin.name)?.getString(FRONTEND_ENDPOINT);
@@ -1501,7 +1556,9 @@ export class TeamsAppSolution implements Solution {
     return ok({ tabEndpoint, tabDomain, aadId, botDomain, botId, webApplicationInfoResource });
   }
 
-  private getLocalDebugConfig(config: SolutionConfig): Result<
+  private getLocalDebugConfig(
+    config: SolutionConfig
+  ): Result<
     {
       localTabEndpoint?: string;
       localTabDomain?: string;
@@ -1564,9 +1621,9 @@ export class TeamsAppSolution implements Solution {
         )
       );
     }
-    const functionPlugin: Plugin = AZ_RC_CONTAINER.FunctionPlugin;
-    const sqlPlugin: Plugin = AZ_RC_CONTAINER.SqlPlugin;
-    const apimPlugin: Plugin = AZ_RC_CONTAINER.ApimPlugin;
+    const functionPlugin: Plugin = this.FunctionPlugin;
+    const sqlPlugin: Plugin = this.SqlPlugin;
+    const apimPlugin: Plugin = this.ApimPlugin;
     const alreadyHaveFunction = selectedPlugins.includes(functionPlugin.name);
     const alreadyHaveSQL = selectedPlugins.includes(sqlPlugin.name);
     const alreadyHaveAPIM = selectedPlugins.includes(apimPlugin.name);
@@ -1687,7 +1744,7 @@ export class TeamsAppSolution implements Solution {
     }
 
     //Bot sub tree
-    const botPlugin: Plugin = AZ_RC_CONTAINER.BotPlugin;
+    const botPlugin: Plugin = this.BotPlugin;
     if ((!alreadyHaveBotOrMe || !isDynamicQuestion) && botPlugin.getQuestions) {
       const pluginCtx = getPluginContext(ctx, botPlugin.name, manifest);
       const res = await botPlugin.getQuestions(Stage.create, pluginCtx);
@@ -1714,7 +1771,8 @@ export class TeamsAppSolution implements Solution {
     const array = namespace.split("/");
     let manifest: TeamsAppManifest | undefined = undefined;
     if (isDynamicQuestion) {
-      const maybeManifest = await appStudioPlugin.reloadManifestAndCheckRequiredFields(ctx.root);
+      const maybeManifest = await (this
+        .AppStudioPlugin as AppStudioPlugin).reloadManifestAndCheckRequiredFields(ctx.root);
       if (maybeManifest.isErr()) {
         return err(maybeManifest.error);
       }
@@ -1728,7 +1786,7 @@ export class TeamsAppSolution implements Solution {
     }
     if (array.length == 2) {
       const pluginName = array[1];
-      const pluginMap = AZ_RC_CONTAINER.getAllResourcePluginMap();
+      const pluginMap = getAllResourcePluginMap();
       const plugin = pluginMap.get(pluginName);
       if (plugin) {
         if (plugin.getQuestionsForUserTask) {
@@ -1776,9 +1834,9 @@ export class TeamsAppSolution implements Solution {
       );
     }
     const selectedPlugins = settings.activeResourcePlugins;
-    const functionPlugin: Plugin = AZ_RC_CONTAINER.FunctionPlugin;
-    const sqlPlugin: Plugin = AZ_RC_CONTAINER.SqlPlugin;
-    const apimPlugin: Plugin = AZ_RC_CONTAINER.ApimPlugin;
+    const functionPlugin: Plugin = this.FunctionPlugin;
+    const sqlPlugin: Plugin = this.SqlPlugin;
+    const apimPlugin: Plugin = this.ApimPlugin;
     const alreadyHaveFunction = selectedPlugins?.includes(functionPlugin.name);
     const alreadyHaveSql = selectedPlugins?.includes(sqlPlugin.name);
     const alreadyHaveApim = selectedPlugins?.includes(apimPlugin.name);
@@ -1816,7 +1874,7 @@ export class TeamsAppSolution implements Solution {
 
     let addNewResoruceToProvision = false;
     const notifications: string[] = [];
-    const pluginsToScaffold: LoadedPlugin[] = [AZ_RC_CONTAINER.LocalDebugPlugin];
+    const pluginsToScaffold: LoadedPlugin[] = [this.LocalDebugPlugin];
     const azureResource = settings.azureResources || [];
     if (addFunc || ((addSQL || addApim) && !alreadyHaveFunction)) {
       pluginsToScaffold.push(functionPlugin);
@@ -1934,20 +1992,20 @@ export class TeamsAppSolution implements Solution {
     }
     let change = false;
     const notifications: string[] = [];
-    const pluginsToScaffold: LoadedPlugin[] = [AZ_RC_CONTAINER.LocalDebugPlugin];
+    const pluginsToScaffold: LoadedPlugin[] = [this.LocalDebugPlugin];
     for (const cap of capabilitiesAnswer!) {
       if (!settings.capabilities.includes(cap)) {
         settings.capabilities.push(cap);
         change = true;
         if (cap === TabOptionItem.id) {
           notifications.push("Azure Tab Frontend");
-          pluginsToScaffold.push(AZ_RC_CONTAINER.FrontendPlugin);
+          pluginsToScaffold.push(this.FrontendPlugin);
         } else if (
           (cap === BotOptionItem.id || cap === MessageExtensionItem.id) &&
-          !pluginsToScaffold.includes(AZ_RC_CONTAINER.BotPlugin)
+          !pluginsToScaffold.includes(this.BotPlugin)
         ) {
           notifications.push("Bot/MessageExtension");
-          pluginsToScaffold.push(AZ_RC_CONTAINER.BotPlugin);
+          pluginsToScaffold.push(this.BotPlugin);
         }
       }
     }
@@ -1955,7 +2013,9 @@ export class TeamsAppSolution implements Solution {
     if (change) {
       await this.reloadPlugins(settings);
       if (this.isAzureProject(ctx)) {
-        const manifest = await appStudioPlugin.createManifest(ctx.projectSettings!);
+        const manifest = await (this.AppStudioPlugin as AppStudioPlugin).createManifest(
+          ctx.projectSettings!
+        );
         // if (manifest) Object.assign(ctx.app, manifest);
         await fs.writeFile(
           `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`,
@@ -2048,11 +2108,11 @@ export class TeamsAppSolution implements Solution {
             )
           );
         }
-        const appStudioPlugin = AZ_RC_CONTAINER.AppStudioPlugin as AppStudioPlugin;
+        const appStudioPlugin = this.AppStudioPlugin as AppStudioPlugin;
         const pluginCtx = getPluginContext(ctx, appStudioPlugin.name);
         return appStudioPlugin.publish(pluginCtx);
       } else if (method === "validateManifest") {
-        const appStudioPlugin = AZ_RC_CONTAINER.AppStudioPlugin as AppStudioPlugin;
+        const appStudioPlugin = this.AppStudioPlugin as AppStudioPlugin;
         const pluginCtx = getPluginContext(ctx, appStudioPlugin.name);
 
         let manifestString: string | undefined = undefined;
@@ -2096,7 +2156,7 @@ export class TeamsAppSolution implements Solution {
         }
         return await appStudioPlugin.validateManifest(pluginCtx, manifestString);
       } else if (method === "buildPackage") {
-        const appStudioPlugin = AZ_RC_CONTAINER.AppStudioPlugin as AppStudioPlugin;
+        const appStudioPlugin = this.AppStudioPlugin as AppStudioPlugin;
         const pluginCtx = getPluginContext(ctx, appStudioPlugin.name);
 
         let manifestString: string | undefined = undefined;
@@ -2142,12 +2202,11 @@ export class TeamsAppSolution implements Solution {
         );
       } else if (array.length == 2) {
         const pluginName = array[1];
-        const pluginMap = AZ_RC_CONTAINER.getAllResourcePluginMap();
+        const pluginMap = getAllResourcePluginMap();
         const plugin = pluginMap.get(pluginName);
         if (plugin && plugin.executeUserTask) {
-          const maybeManifest = await appStudioPlugin.reloadManifestAndCheckRequiredFields(
-            ctx.root
-          );
+          const maybeManifest = await (this
+            .AppStudioPlugin as AppStudioPlugin).reloadManifestAndCheckRequiredFields(ctx.root);
           if (maybeManifest.isErr()) {
             return maybeManifest;
           }
@@ -2214,7 +2273,7 @@ export class TeamsAppSolution implements Solution {
       config.set(GLOBAL_CONFIG, new ConfigMap());
     }
     config.get(GLOBAL_CONFIG)!.set(PERMISSION_REQUEST, JSON.stringify(DEFAULT_PERMISSION_REQUEST));
-    const aadPlugin = AZ_RC_CONTAINER.AadPlugin;
+    const aadPlugin = this.AadPlugin;
     if (config.get(aadPlugin.name) == undefined) {
       config.set(aadPlugin.name, new ConfigMap());
     }
@@ -2227,7 +2286,7 @@ export class TeamsAppSolution implements Solution {
     config: SolutionConfig,
     isLocal: boolean
   ): Result<{ aadId: string; applicationIdUri: string; clientSecret: string }, FxError> {
-    const aadPlugin = AZ_RC_CONTAINER.AadPlugin;
+    const aadPlugin = this.AadPlugin;
     const aadId = config.get(aadPlugin.name)?.get(isLocal ? LOCAL_DEBUG_AAD_ID : REMOTE_AAD_ID);
     if (aadId === undefined || typeof aadId !== "string") {
       return err(
@@ -2294,7 +2353,7 @@ export class TeamsAppSolution implements Solution {
     const mockedManifest = new TeamsAppManifest();
     mockedManifest.name.short = params["app-name"];
     const domain = this.prepareConfigForRegisterTeamsAppAndAad(ctx.config, params);
-    const aadPlugin = AZ_RC_CONTAINER.AadPlugin as AadAppForTeamsPlugin;
+    const aadPlugin = this.AadPlugin as AadAppForTeamsPlugin;
     const aadPluginCtx = getPluginContext(ctx, aadPlugin.name, mockedManifest);
 
     const provisionResult = isLocal
@@ -2337,8 +2396,11 @@ export class TeamsAppSolution implements Solution {
     });
     const manifest: TeamsAppManifest = JSON.parse(manifestStr);
     await fs.writeFile(manifestPath, manifestStr);
-    const appDefinition = appStudioPlugin.convertToAppDefinition(manifest, true);
-    const maybeTeamsAppId = await appStudioPlugin.updateApp(
+    const appDefinition = (this.AppStudioPlugin as AppStudioPlugin).convertToAppDefinition(
+      manifest,
+      true
+    );
+    const maybeTeamsAppId = await (this.AppStudioPlugin as AppStudioPlugin).updateApp(
       appDefinition,
       "remote",
       true,

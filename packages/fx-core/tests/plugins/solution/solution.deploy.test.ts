@@ -34,13 +34,14 @@ import { validManifest } from "./util";
 import _ from "lodash";
 import * as uuid from "uuid";
 import { AadAppForTeamsPlugin } from "../../../src";
-import { AZ_RC_CONTAINER } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
+import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
+import Container from "typedi";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
-const aadPlugin = AZ_RC_CONTAINER.AadPlugin;
-const spfxPlugin = AZ_RC_CONTAINER.SpfxPlugin;
-const fehostPlugin = AZ_RC_CONTAINER.FrontendPlugin;
+const aadPlugin = Container.get<Plugin>(ResourcePlugins.AadPlugin);
+const spfxPlugin = Container.get<Plugin>(ResourcePlugins.SpfxPlugin);
+const fehostPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin);
 function mockSolutionContext(): SolutionContext {
   const config: SolutionConfig = new Map();
   config.set(GLOBAL_CONFIG, new ConfigMap());

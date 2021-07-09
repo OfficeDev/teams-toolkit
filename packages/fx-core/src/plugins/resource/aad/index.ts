@@ -10,9 +10,9 @@ import { DialogUtils } from "./utils/dialog";
 import { Messages, Telemetry } from "./constants";
 import { AzureSolutionSettings } from "@microsoft/teamsfx-api";
 import { HostTypeOptionAzure } from "../../solution/fx-solution/question";
-import { injectable } from "inversify";
+import { Service } from "typedi";
 
-@injectable()
+@Service("AadPlugin")
 export class AadAppForTeamsPlugin implements Plugin {
   name = "fx-resource-aad-app-for-teams";
   displayName = "AAD";

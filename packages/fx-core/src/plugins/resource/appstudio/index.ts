@@ -22,7 +22,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { AppStudioPluginImpl } from "./plugin";
 import { Constants } from "./constants";
-import { IAppDefinition } from "../../solution/fx-solution/appstudio/interface";
+import { IAppDefinition } from "./interfaces/IAppDefinition";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
 import { manuallySubmitOption, autoPublishOption } from "./questions";
@@ -75,22 +75,6 @@ export class AppStudioPlugin implements Plugin {
     }
 
     return ok(appStudioQuestions);
-  }
-
-  public async createApp(
-    appDefinition: IAppDefinition,
-    appStudioToken?: string,
-    logProvider?: LogProvider,
-    colorIconContent?: string, // base64 encoded
-    outlineIconContent?: string // base64 encoded
-  ): Promise<IAppDefinition | undefined> {
-    return await this.appStudioPluginImpl.createApp(
-      appDefinition,
-      appStudioToken!,
-      logProvider,
-      colorIconContent,
-      outlineIconContent
-    );
   }
 
   public async updateApp(
@@ -189,6 +173,38 @@ export class AppStudioPlugin implements Plugin {
     ignoreIcon: boolean
   ): IAppDefinition {
     return this.appStudioPluginImpl.convertToAppDefinition(appManifest, ignoreIcon);
+  }
+
+  public createManifestForRemote(
+    ctx: PluginContext,
+    maybeSelectedPlugins: Result<Plugin[], FxError>,
+    manifest: TeamsAppManifest
+  ): Result<[IAppDefinition, TeamsAppManifest], FxError> {
+    return this.appStudioPluginImpl.createManifestForRemote(ctx, maybeSelectedPlugins, manifest);
+  }
+
+  public getConfigForCreatingManifest(
+    ctx: PluginContext,
+    localDebug: boolean
+  ): Result<
+    {
+      tabEndpoint?: string;
+      tabDomain?: string;
+      aadId: string;
+      botDomain?: string;
+      botId?: string;
+      webApplicationInfoResource: string;
+    },
+    FxError
+  > {
+    return this.appStudioPluginImpl.getConfigForCreatingManifest(ctx, localDebug);
+  }
+
+  public createAndConfigTeamsManifest(
+    ctx: PluginContext,
+    maybeSelectedPlugins: Result<Plugin[], FxError>
+  ): Promise<Result<IAppDefinition, FxError>> {
+    return this.appStudioPluginImpl.createAndConfigTeamsManifest(ctx, maybeSelectedPlugins);
   }
 
   /**

@@ -10,14 +10,22 @@ import { CodeFlowLogin } from "./codeFlowLogin";
 import CLILogProvider from "./log";
 import { login, LoginStatus } from "./common/login";
 import { signedIn, signedOut } from "./common/constant";
+import { getBeforeCacheAccess, getAfterCacheAccess } from "./cacheAccess";
 
-const accountName = "graph";
-const scopes = ["Directory.AccessAsUser.All"];
+const accountName = "appStudio";
+const scopes = ["Application.ReadWrite.All"];
+
+const beforeCacheAccess = getBeforeCacheAccess(accountName);
+const afterCacheAccess = getAfterCacheAccess(scopes, accountName);
+
+const cachePlugin = {
+  beforeCacheAccess,
+  afterCacheAccess
+};
 
 const config = {
   auth: {
-    // TODO change this to our own first party aad
-    clientId: "04b07795-8ddb-461a-bbee-02f9e1bf7b46",
+    clientId: "7ea7c24c-b1f6-4a20-9d11-9ae12e9e7ac0",
     authority: "https://login.microsoftonline.com/common"
   },
   system: {
@@ -30,15 +38,13 @@ const config = {
       piiLoggingEnabled: false,
       logLevel: LogLevel.Error
     }
+  },
+  cache: {
+    cachePlugin
   }
-  // TODO: add this back after graph change to 7ea7c24c-b1f6-4a20-9d11-9ae12e9e7ac0 first party app
-  // cache: {
-  //   cachePlugin
-  // }
 };
 
-// TODO change this to our own first party redirect url port
-const SERVER_PORT = 8400;
+const SERVER_PORT = 0;
 
 /**
  * use msal to implement graph login
@@ -72,6 +78,7 @@ export class GraphLogin extends login implements GraphTokenProvider {
   }
 
   async getAccessToken(showDialog = true): Promise<string | undefined> {
+    await GraphLogin.codeFlowInstance.reloadCache();
     if (!GraphLogin.codeFlowInstance.account) {
       const loginToken = await GraphLogin.codeFlowInstance.getToken();
       if (loginToken && GraphLogin.statusChange !== undefined) {

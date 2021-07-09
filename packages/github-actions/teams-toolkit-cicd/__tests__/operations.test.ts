@@ -44,7 +44,6 @@ describe('Test BuildTeamsApp', () => {
     try {
       await Operations.BuildTeamsApp(projectRoot, ['tabs'])
     } catch (error) {
-      console.log(error)
       expect(true).toBeFalsy() // Should not reach here.
     }
   })

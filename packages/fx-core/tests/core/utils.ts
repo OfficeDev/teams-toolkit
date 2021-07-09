@@ -48,7 +48,7 @@ import {
 import { TokenCredential } from "@azure/core-auth";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { SolutionLoader } from "../../src/core/loader";
-import { PluginNames } from "../../src/plugins/solution/fx-solution/solution";
+import { PluginNames } from "../../src/plugins/solution/fx-solution/constants";
 import * as uuid from "uuid";
 
 export class MockSolution implements Solution {

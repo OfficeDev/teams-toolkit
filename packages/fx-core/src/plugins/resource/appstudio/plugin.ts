@@ -56,6 +56,7 @@ import {
   BOT_DOMAIN,
   LOCAL_WEB_APPLICATION_INFO_SOURCE,
   WEB_APPLICATION_INFO_SOURCE,
+  PluginNames,
 } from "../../solution/fx-solution/constants";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
@@ -63,21 +64,6 @@ import { Constants } from "./constants";
 import { REMOTE_TEAMS_APP_ID, REMOTE_MANIFEST } from "../../solution/fx-solution/constants";
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
-
-export enum PluginNames {
-  SQL = "fx-resource-azure-sql",
-  MSID = "fx-resource-identity",
-  FE = "fx-resource-frontend-hosting",
-  SPFX = "fx-resource-spfx",
-  BOT = "fx-resource-bot",
-  AAD = "fx-resource-aad-app-for-teams",
-  FUNC = "fx-resource-function",
-  SA = "fx-resource-simple-auth",
-  LDEBUG = "fx-resource-local-debug",
-  APIM = "fx-resource-apim",
-  APPST = "fx-resource-appstudio",
-  SOLUTION = "solution",
-}
 
 export class AppStudioPluginImpl {
   public async updateApp(

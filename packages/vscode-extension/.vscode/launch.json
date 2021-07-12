@@ -30,19 +30,6 @@
       "preLaunchTask": "npm: test-watch"
     },
     {
-      "name": "Extension Integration Tests",
-      "type": "extensionHost",
-      "request": "launch",
-      "args": [
-        "--disable-extensions",
-        "${workspaceFolder}/test-folder/myapp",
-        "--extensionDevelopmentPath=${workspaceFolder}",
-        "--extensionTestsPath=${workspaceFolder}/out/test/index.integration"
-      ],
-      "outFiles": ["${workspaceFolder}/out/test/**/*.js"],
-      "preLaunchTask": "npm: test-watch"
-    },
-    {
       "name": "Extension Tests (Environment Checker)",
       "type": "extensionHost",
       "request": "launch",

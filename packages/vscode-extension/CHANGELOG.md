@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.1.2 - Jul 12 2021
+
+Incremental version for Teams Toolkit with following updates：
+
+Added:
+- UI Run button for debug and preview
+- Provide 'Report Issue' button in the pop-up error message to log issues when npm install fails
+
+On-going A/B testing:
+Please be noted that in this release we are conducting A/B testing for 'Tree View', the left panel of Teams Toolkit. Thus you may see different layout of Tree View, that is not an issue but totally by designed. 
+
 ## 2.1.1 - June 30 2021
 
 Multiple bug fixings

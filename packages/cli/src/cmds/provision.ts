@@ -18,7 +18,7 @@ import {
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
 import CLIUIInstance from "../userInteraction";
-import { HelpParamGenerator } from "../helpParamGenerator";
+import HelpParamGenerator from "../helpParamGenerator";
 import { sqlPasswordConfirmQuestionName, sqlPasswordQustionName } from "../constants";
 
 export default class Provision extends YargsCommand {

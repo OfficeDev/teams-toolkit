@@ -36,7 +36,7 @@ import {
 } from "../telemetry/cliTelemetryEvents";
 import CLIUIInstance from "../userInteraction";
 import CLILogProvider from "../commonlib/log";
-import { HelpParamGenerator } from "../helpParamGenerator";
+import HelpParamGenerator from "../helpParamGenerator";
 
 export default class New extends YargsCommand {
   public readonly commandHead = `new`;

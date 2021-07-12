@@ -60,14 +60,22 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<void> {
     const [userData, context] = await getUserDataAndContext(userDataPath, contextPath);
 
     for (const item of contextUpgrade) {
+      const pluginContext: any = context[item.plugin];
+
       // Secret not in userdata file, means has not run local debug before.
-      // Will delete related keys if exists.
+      // Will delete related keys and secret if exists.
       if (item.secret && !userData[getUserDataKey(item.plugin, item.secret)]) {
-        deleteKeysFromContext(context, item.plugin, item.relatedKeys);
+        clearUserDataAndContext(userData, context, item.plugin, item.relatedKeys, item.secret);
+        continue;
+      }
+
+      // Add reference for secret.
+      if (item.secret) {
+        pluginContext[item.secret] = getSecretPattern(item.plugin, item.secret);
       }
 
       // Secret in userdata file.
-      // Move keys from context to userdata, and will add key in context.
+      // Will move keys from context to userdata, and will add key in context.
       const keyMoved = moveKeysFromContextToUserData(
         userData,
         context,
@@ -75,7 +83,7 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<void> {
         item.relatedKeys
       );
 
-      // Check whether secret is complete
+      // Check whether all keys is saved in userdata.
       let keyCompleted = true;
       for (const relatedKey of item.relatedKeys) {
         const userDataKey = getUserDataKey(item.plugin, relatedKey);
@@ -83,11 +91,18 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<void> {
           keyCompleted = false;
           break;
         }
+
+        // Certain key is missing in context.
+        // Will add reference in context.
+        if (!pluginContext[relatedKey]) {
+          pluginContext[relatedKey] = getSecretPattern(item.plugin, relatedKey);
+        }
       }
 
-      // If key is complete, which means all configs are set.
+      // Check whether all keys are saved.
       if (keyCompleted) {
-        // If some key is moved in moveKeysFromContextToUserData, will send log to inform user context is upgraded.
+        // Some key is moved in moveKeysFromContextToUserData.
+        // Will send log to inform user context is upgraded.
         if (keyMoved) {
           const core = ctx.self as FxCore;
           const logger =
@@ -103,8 +118,7 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<void> {
       } else {
         // Key missing.
         // Will delete context and key
-        deleteKeysFromContext(context, item.plugin, item.relatedKeys);
-        deleteSecretFromUserData(userData, item.plugin, item.secret);
+        clearUserDataAndContext(userData, context, item.plugin, item.relatedKeys, item.secret);
       }
     }
     await saveUserDataAndContext(userDataPath, userData, contextPath, context);
@@ -139,31 +153,39 @@ async function saveUserDataAndContext(
   await fs.writeFile(userDataPath, serializeDict(userData));
 }
 
-function deleteKeysFromContext(context: Json, plugin: string, keys: string[]): Json {
+function clearUserDataAndContext(
+  userData: Record<string, string>,
+  context: Json,
+  plugin: string,
+  keys: string[],
+  secret?: string
+) {
   const pluginContext: any = context[plugin];
   if (!pluginContext) {
-    return context;
+    return;
   }
 
+  // Clear key
   for (const key of keys) {
     if (pluginContext[key]) {
       delete pluginContext[key];
     }
+
+    if (userData[getUserDataKey(plugin, key)]) {
+      delete userData[getUserDataKey(plugin, key)];
+    }
   }
 
-  return context;
-}
+  // Clear secret
+  if (secret) {
+    if (pluginContext[secret]) {
+      delete pluginContext[secret];
+    }
 
-function deleteSecretFromUserData(
-  userData: Record<string, string>,
-  plugin: string,
-  secret?: string
-): Record<string, string> {
-  if (secret && userData[getUserDataKey(plugin, secret)]) {
-    delete userData[getUserDataKey(plugin, secret)];
+    if (userData[getUserDataKey(plugin, secret)]) {
+      delete userData[getUserDataKey(plugin, secret)];
+    }
   }
-
-  return userData;
 }
 
 function moveKeysFromContextToUserData(
@@ -181,8 +203,12 @@ function moveKeysFromContextToUserData(
   for (const key of keys) {
     const value = pluginContext[key];
     if (value && !isSecretPattern(value)) {
-      keyMoved = true;
-      userData[getUserDataKey(plugin, key)] = value;
+      // Move will only happen when userData does not contain certain key.
+      // Otherwise, value in userData will be regarded as source of truth.
+      if (!userData[getUserDataKey(plugin, key)]) {
+        keyMoved = true;
+        userData[getUserDataKey(plugin, key)] = value;
+      }
       pluginContext[key] = getSecretPattern(plugin, key);
     }
   }

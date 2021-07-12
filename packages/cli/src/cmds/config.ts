@@ -52,7 +52,7 @@ export class ConfigGet extends YargsCommand {
     const inProject = (await readConfigs(rootFolder)).isOk();
     let core: Result<Core, FxError>;
 
-    if (args.option !== "") {
+    if (args.option !== undefined) {
       if (args.option === CliConfigOptions.Telemetry) {
         // global config
         if (!args.global) {
@@ -113,7 +113,7 @@ export class ConfigGet extends YargsCommand {
         const secretValue = secretData[secretKey];
         const decrypted = await core.decrypt(secretValue, getSystemInputs(rootFolder));
         if (decrypted.isOk()) {
-          CLILogProvider.necessaryLog(LogLevel.Info, `${secretKey}: ${decrypted.value}`);
+          CLILogProvider.necessaryLog(LogLevel.Info, `${secretKey}: ${decrypted.value}`, true);
         }
       }
     }

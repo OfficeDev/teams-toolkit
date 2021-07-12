@@ -86,6 +86,7 @@ import { AadAppForTeamsPlugin } from "../../resource/aad";
 import { FunctionPlugin } from "../../resource/function";
 import { SimpleAuthPlugin } from "../../resource/simpleauth";
 import { LocalDebugPlugin } from "../../resource/localdebug";
+import { CICDPlugin } from "../../resource/cicd";
 import { ApimPlugin } from "../../resource/apim";
 import { IAppDefinition } from "./appstudio/interface";
 import {
@@ -211,6 +212,14 @@ function newLocalDebugPlugin(): LoadedPlugin {
   return pluginWithMeta;
 }
 
+function newCICDPlugin(): LoadedPlugin {
+  const plugin: Plugin = new CICDPlugin();
+  const pluginWithMeta: LoadedPlugin = plugin as LoadedPlugin;
+  pluginWithMeta.name = "fx-resource-cicd";
+  pluginWithMeta.displayName = "CICD";
+  return pluginWithMeta;
+}
+
 function newApimPlugin(): LoadedPlugin {
   const plugin: Plugin = new ApimPlugin();
   const pluginWithMeta: LoadedPlugin = plugin as LoadedPlugin;
@@ -246,6 +255,7 @@ export class TeamsAppSolution implements Solution {
   functionPlugin: LoadedPlugin = newFunctionPlugin();
   simpleAuthPlugin: LoadedPlugin = newSimpleAuthPlugin();
   localDebugPlugin: LoadedPlugin = newLocalDebugPlugin();
+  cicdPlugin: LoadedPlugin = newCICDPlugin();
   apimPlugin: LoadedPlugin = newApimPlugin();
   appStudioPlugin: LoadedPlugin = newAppStudioPlugin();
 
@@ -261,6 +271,7 @@ export class TeamsAppSolution implements Solution {
     this.functionPlugin,
     this.simpleAuthPlugin,
     this.localDebugPlugin,
+    this.cicdPlugin,
     this.apimPlugin,
   ];
   pluginMap: Map<string, LoadedPlugin> = new Map<string, LoadedPlugin>();
@@ -432,6 +443,7 @@ export class TeamsAppSolution implements Solution {
   reloadPlugins(solutionSettings: AzureSolutionSettings): void {
     const pluginNameSet = new Set<string>();
     pluginNameSet.add(this.localDebugPlugin.name);
+    pluginNameSet.add(this.cicdPlugin.name);
 
     if (solutionSettings.hostType === HostTypeOptionSPFx.id) {
       pluginNameSet.add(this.spfxPlugin.name);

@@ -9,7 +9,7 @@ import { Logger } from "./logger";
 import { telemetryHelper } from "./utils/telemetry-helper";
 import { LifecycleFuncNames } from "./constants";
 
-export class CICD implements Plugin {
+export class CICDPlugin implements Plugin {
   public cicdImpl: CICDImpl = new CICDImpl();
 
   public async preScaffold(context: PluginContext): Promise<FxResult> {
@@ -76,4 +76,4 @@ export class CICD implements Plugin {
   }
 }
 
-export default new CICD();
+export default new CICDPlugin();

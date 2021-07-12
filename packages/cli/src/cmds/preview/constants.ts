@@ -38,8 +38,8 @@ export const botFolderName = "bot";
 
 export const npmInstallCommand = "npm install";
 export const frontendStartCommand = "npx react-scripts start";
-export const backendStartJsCommand = `npx func start --javascript --port "7071" --cors "*"`;
-export const backendStartTsCommand = `npx func start --typescript --port "7071" --cors "*"`;
+export const backendStartJsCommand = `npx func start --javascript --port "7071" --cors "*"`; // TODO: dependency checker
+export const backendStartTsCommand = `npx func start --typescript --port "7071" --cors "*"`; // TODO: dependency checker
 export const backendWatchCommand = "npx tsc --watch";
 export const authStartCommand = "dotnet Microsoft.TeamsFx.SimpleAuth.dll"; // TODO: dependency checker
 export const ngrokStartCommand = "npx ngrok http 3978 --log=stdout";

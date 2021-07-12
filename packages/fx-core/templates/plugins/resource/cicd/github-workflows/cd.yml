@@ -1,4 +1,4 @@
-name: 'Continuous Deployment'
+name: "Continuous Deployment"
 on:
   # When new commits are pushed onto the main branch.
   push:
@@ -13,26 +13,26 @@ jobs:
       # Build the project.
       - uses: OfficeDev/teams-app-cicd@v1
         with:
-          operation-type: 'Build Teams App'
+          operation-type: "Build Teams App"
       # Run unit test.
       - uses: actions/setup-node@v2
         with:
-          node-version: '14'
+          node-version: "14"
       - name: Run Unit Test
         run: npm run test
       # Provision hosting environment.
       - uses: OfficeDev/teams-app-cicd@v1
         with:
-          operation-type: 'Provision Hosting Environment'
+          operation-type: "Provision Hosting Environment"
       # Deploy to hosting environment.
       - uses: OfficeDev/teams-app-cicd@v1
         with:
-          operation-type: 'Deploy to Hosting Environment'
+          operation-type: "Deploy to Hosting Environment"
       # Validate Teams App Manifest.
       - uses: OfficeDev/teams-app-cicd@v1
         with:
-          operation-type: 'Validate Teams App Manifest'
+          operation-type: "Validate Teams App Manifest"
       # Publish Teams App.
       - uses: OfficeDev/teams-app-cicd@v1
         with:
-          operation-type: 'Publish Teams App
+          operation-type: "Publish Teams App"

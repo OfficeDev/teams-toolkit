@@ -302,9 +302,16 @@ export default class Preview extends YargsCommand {
 
   private async startNgrok(botRoot: string): Promise<Result<null, FxError>> {
     // bot npm install
-    const botInstallTask = new Task(constants.botInstallTitle, constants.npmInstallCommand, false, {
-      cwd: botRoot,
-    });
+    const botInstallTask = new Task(
+      constants.botInstallTitle,
+      false,
+      constants.npmInstallCommand,
+      undefined,
+      {
+        shell: true,
+        cwd: botRoot,
+      }
+    );
     const botInstallBar = CLIUIInstance.createProgressBar(constants.botInstallTitle, 1);
     const botInstallStartCb = commonUtils.createTaskStartCb(
       botInstallBar,
@@ -322,9 +329,16 @@ export default class Preview extends YargsCommand {
     }
 
     // start ngrok
-    const ngrokStartTask = new Task(constants.ngrokStartTitle, constants.ngrokStartCommand, true, {
-      cwd: botRoot,
-    });
+    const ngrokStartTask = new Task(
+      constants.ngrokStartTitle,
+      true,
+      constants.ngrokStartCommand,
+      undefined,
+      {
+        shell: true,
+        cwd: botRoot,
+      }
+    );
     this.backgroundTasks.push(ngrokStartTask);
     const ngrokStartBar = CLIUIInstance.createProgressBar(constants.ngrokStartTitle, 1);
     const ngrokStartStartCb = commonUtils.createTaskStartCb(
@@ -360,30 +374,37 @@ export default class Preview extends YargsCommand {
     if (frontendRoot !== undefined) {
       frontendInstallTask = new Task(
         constants.frontendInstallTitle,
-        constants.npmInstallCommand,
         false,
+        constants.npmInstallCommand,
+        undefined,
         {
+          shell: true,
           cwd: frontendRoot,
         }
       );
     }
 
+    // TODO: dependency checker
     let backendInstallTask: Task | undefined;
     let backendExtensionsInstallTask: Task | undefined;
     if (backendRoot !== undefined) {
       backendInstallTask = new Task(
         constants.backendInstallTitle,
-        constants.npmInstallCommand,
         false,
+        constants.npmInstallCommand,
+        undefined,
         {
+          shell: true,
           cwd: backendRoot,
         }
       );
       backendExtensionsInstallTask = new Task(
         constants.backendExtensionsInstallTitle,
-        constants.backendExtensionsInstallCommand,
         false,
+        constants.backendExtensionsInstallCommand,
+        undefined,
         {
+          shell: true,
           cwd: backendRoot,
         }
       );
@@ -391,9 +412,16 @@ export default class Preview extends YargsCommand {
 
     let botInstallTask: Task | undefined;
     if (botRoot !== undefined) {
-      botInstallTask = new Task(constants.botInstallTitle, constants.npmInstallCommand, false, {
-        cwd: botRoot,
-      });
+      botInstallTask = new Task(
+        constants.botInstallTitle,
+        false,
+        constants.npmInstallCommand,
+        undefined,
+        {
+          shell: true,
+          cwd: botRoot,
+        }
+      );
     }
 
     const frontendInstallBar = CLIUIInstance.createProgressBar(constants.frontendInstallTitle, 1);
@@ -479,9 +507,11 @@ export default class Preview extends YargsCommand {
       const env = await commonUtils.getFrontendLocalEnv(workspaceFolder);
       frontendStartTask = new Task(
         constants.frontendStartTitle,
-        constants.frontendStartCommand,
         true,
+        constants.frontendStartCommand,
+        undefined,
         {
+          shell: true,
           cwd: frontendRoot,
           env: commonUtils.mergeProcessEnv(env),
         }
@@ -489,17 +519,26 @@ export default class Preview extends YargsCommand {
       this.backgroundTasks.push(frontendStartTask);
     }
 
+    // TODO: dependency checker
     let authStartTask: Task | undefined;
     if (frontendRoot !== undefined) {
       const cwd = await commonUtils.getAuthServicePath(workspaceFolder);
       const env = await commonUtils.getAuthLocalEnv(workspaceFolder);
-      authStartTask = new Task(constants.authStartTitle, constants.authStartCommand, true, {
-        cwd,
-        env: commonUtils.mergeProcessEnv(env),
-      });
+      authStartTask = new Task(
+        constants.authStartTitle,
+        true,
+        constants.authStartCommand,
+        undefined,
+        {
+          shell: true,
+          cwd,
+          env: commonUtils.mergeProcessEnv(env),
+        }
+      );
       this.backgroundTasks.push(authStartTask);
     }
 
+    // TODO: dependency checker
     let backendStartTask: Task | undefined;
     let backendWatchTask: Task | undefined;
     if (backendRoot !== undefined) {
@@ -509,7 +548,8 @@ export default class Preview extends YargsCommand {
         programmingLanguage === constants.ProgrammingLanguage.typescript
           ? constants.backendStartTsCommand
           : constants.backendStartJsCommand;
-      backendStartTask = new Task(constants.backendStartTitle, command, true, {
+      backendStartTask = new Task(constants.backendStartTitle, true, command, undefined, {
+        shell: true,
         cwd: backendRoot,
         env: mergedEnv,
       });
@@ -517,9 +557,11 @@ export default class Preview extends YargsCommand {
       if (programmingLanguage === constants.ProgrammingLanguage.typescript) {
         backendWatchTask = new Task(
           constants.backendWatchTitle,
-          constants.backendWatchCommand,
           true,
+          constants.backendWatchCommand,
+          undefined,
           {
+            shell: true,
             cwd: backendRoot,
             env: mergedEnv,
           }
@@ -535,7 +577,8 @@ export default class Preview extends YargsCommand {
           ? constants.botStartTsCommand
           : constants.botStartJsCommand;
       const env = await commonUtils.getBotLocalEnv(workspaceFolder);
-      botStartTask = new Task(constants.botStartTitle, command, true, {
+      botStartTask = new Task(constants.botStartTitle, true, command, undefined, {
+        shell: true,
         cwd: botRoot,
         env: commonUtils.mergeProcessEnv(env),
       });

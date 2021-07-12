@@ -30,7 +30,7 @@ import path from "path";
 import { getTemplatesFolder } from "../../../src";
 import { SolutionError } from "../../../src/plugins/solution/fx-solution/constants";
 import { validManifest } from "./util";
-import * as uuid  from "uuid";
+import * as uuid from "uuid";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -41,29 +41,22 @@ function mockSolutionContext(): SolutionContext {
     root: ".",
     // app: new TeamsAppManifest(),
     config,
-    answers: {platform:Platform.VSCode},
+    answers: { platform: Platform.VSCode },
     projectSettings: undefined,
   };
 }
 
 function mockScaffoldThatAlwaysSucceed(plugin: Plugin) {
-  plugin.preScaffold = async function (
-    _ctx: PluginContext,
-  ): Promise<Result<any, FxError>> {
+  plugin.preScaffold = async function (_ctx: PluginContext): Promise<Result<any, FxError>> {
     return ok(Void);
   };
-  plugin.scaffold = async function (
-    _ctx: PluginContext,
-  ): Promise<Result<any, FxError>> {
+  plugin.scaffold = async function (_ctx: PluginContext): Promise<Result<any, FxError>> {
     return ok(Void);
   };
-  plugin.postScaffold = async function (
-    _ctx: PluginContext,
-  ): Promise<Result<any, FxError>> {
+  plugin.postScaffold = async function (_ctx: PluginContext): Promise<Result<any, FxError>> {
     return ok(Void);
   };
 }
-
 
 describe("Solution scaffold()", () => {
   const mocker = sinon.createSandbox();
@@ -83,7 +76,7 @@ describe("Solution scaffold()", () => {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",
         version: "1.0",
-        activeResourcePlugins: ["SomeInvalidPluginName"]
+        activeResourcePlugins: ["SomeInvalidPluginName"],
       },
     };
     const result = await solution.scaffold(mockedCtx);
@@ -102,14 +95,14 @@ describe("Solution scaffold()", () => {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",
         version: "1.0",
-        activeResourcePlugins: [solution.fehostPlugin.name]
+        activeResourcePlugins: [solution.fehostPlugin.name],
       },
     };
-    // We leverage the fact that in testing env, this is not file at `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}` 
+    // We leverage the fact that in testing env, this is not file at `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`
     // So we even don't need to mock fs.readJson
     const result = await solution.scaffold(mockedCtx);
     expect(result.isErr()).to.be.true;
-    expect(result._unsafeUnwrapErr().name).equals(SolutionError.FailedToLoadManifestFile);
+    expect(result._unsafeUnwrapErr().name).equals("ManifestLoadFailed");
   });
 });
 
@@ -148,15 +141,16 @@ describe("Solution scaffold() reading manifest file with no app name", () => {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",
         version: "1.0",
-        activeResourcePlugins: [solution.fehostPlugin.name]
+        activeResourcePlugins: [solution.fehostPlugin.name],
       },
     };
     const result = await solution.scaffold(mockedCtx);
     expect(result.isErr()).to.be.true;
-    expect(result._unsafeUnwrapErr().name).equals(SolutionError.FailedToLoadManifestFile);
-    expect(result._unsafeUnwrapErr().message).equals("Name is missing");
+    expect(result._unsafeUnwrapErr().name).equals("ManifestLoadFailed");
+    expect(result._unsafeUnwrapErr().message).equals(
+      "Failed to read manifest file. Error: Name is missing."
+    );
   });
-
 });
 
 describe("Solution scaffold() reading valid manifest file", () => {
@@ -174,7 +168,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
     });
     mocker.stub(fs, "readJson").resolves(validManifest);
     mocker.stub<any, any>(fs, "pathExists").withArgs(readmePath).resolves(true);
-    mocker.stub(fs, "copy").callsFake((src:string, dest: string) => {
+    mocker.stub(fs, "copy").callsFake((src: string, dest: string) => {
       fileContent.set(dest, mockedReadMeContent);
     });
   });
@@ -196,11 +190,11 @@ describe("Solution scaffold() reading valid manifest file", () => {
         name: "azure",
         version: "1.0",
         activeResourcePlugins: [solution.fehostPlugin.name],
-        capabilities: [TabOptionItem.id]
+        capabilities: [TabOptionItem.id],
       },
     };
     mockScaffoldThatAlwaysSucceed(solution.fehostPlugin);
-    
+
     const result = await solution.scaffold(mockedCtx);
     expect(result.isOk()).to.be.true;
   });
@@ -218,7 +212,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
         name: "azure",
         version: "1.0",
         activeResourcePlugins: [solution.fehostPlugin.name, solution.botPlugin.name],
-        capabilities: [TabOptionItem.id, BotOptionItem.id]
+        capabilities: [TabOptionItem.id, BotOptionItem.id],
       },
     };
     mockScaffoldThatAlwaysSucceed(solution.fehostPlugin);
@@ -241,7 +235,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
         name: "azure",
         version: "1.0",
         activeResourcePlugins: [solution.fehostPlugin.name, solution.botPlugin.name],
-        capabilities: [TabOptionItem.id, MessageExtensionItem.id]
+        capabilities: [TabOptionItem.id, MessageExtensionItem.id],
       },
     };
     mockScaffoldThatAlwaysSucceed(solution.fehostPlugin);
@@ -250,5 +244,4 @@ describe("Solution scaffold() reading valid manifest file", () => {
     expect(result.isOk()).to.be.true;
     expect(fileContent.get(`${mockedCtx.root}/README.md`)).equals(mockedReadMeContent);
   });
-
 });

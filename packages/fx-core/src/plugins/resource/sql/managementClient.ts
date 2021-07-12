@@ -40,7 +40,7 @@ export class ManagementClient {
       );
       throw SqlResultFactory.UserError(
         ErrorMessage.SqlCreateError.name,
-        ErrorMessage.SqlCreateError.message(this.config.sqlEndpoint, ErrorMessage.GetDetail),
+        ErrorMessage.SqlCreateError.message(this.config.sqlEndpoint, error.message),
         error
       );
     }
@@ -67,7 +67,7 @@ export class ManagementClient {
       );
       throw SqlResultFactory.SystemError(
         ErrorMessage.SqlCheckError.name,
-        ErrorMessage.SqlCheckError.message(this.config.sqlEndpoint, ErrorMessage.GetDetail),
+        ErrorMessage.SqlCheckError.message(this.config.sqlEndpoint, error.message),
         error
       );
     }
@@ -79,7 +79,7 @@ export class ManagementClient {
         this.config.resourceGroup,
         this.config.sqlServer
       );
-      if (result.find((item: { login: string; }) => item.login === this.config.aadAdmin)) {
+      if (result.find((item: { login: string }) => item.login === this.config.aadAdmin)) {
         return true;
       } else {
         return false;
@@ -90,7 +90,7 @@ export class ManagementClient {
       );
       throw SqlResultFactory.UserError(
         ErrorMessage.SqlCheckAdminError.name,
-        ErrorMessage.SqlCheckAdminError.message(this.config.identity, ErrorMessage.GetDetail),
+        ErrorMessage.SqlCheckAdminError.message(this.config.identity, error.message),
         error
       );
     }
@@ -119,7 +119,7 @@ export class ManagementClient {
       );
       throw SqlResultFactory.UserError(
         ErrorMessage.DatabaseCreateError.name,
-        ErrorMessage.DatabaseCreateError.message(this.config.databaseName, ErrorMessage.GetDetail),
+        ErrorMessage.DatabaseCreateError.message(this.config.databaseName, error.message),
         error
       );
     }
@@ -142,7 +142,7 @@ export class ManagementClient {
       );
       throw SqlResultFactory.UserError(
         ErrorMessage.SqlCheckDBError.name,
-        ErrorMessage.SqlCheckDBError.message(this.config.databaseName, ErrorMessage.GetDetail),
+        ErrorMessage.SqlCheckDBError.message(this.config.databaseName, error.message),
         error
       );
     }
@@ -169,7 +169,7 @@ export class ManagementClient {
       );
       throw SqlResultFactory.UserError(
         ErrorMessage.SqlAddAdminError.name,
-        ErrorMessage.SqlAddAdminError.message(this.config.aadAdmin, ErrorMessage.GetDetail),
+        ErrorMessage.SqlAddAdminError.message(this.config.aadAdmin, error.message),
         error
       );
     }
@@ -193,7 +193,7 @@ export class ManagementClient {
       );
       throw SqlResultFactory.UserError(
         ErrorMessage.SqlAzureFirwallError.name,
-        ErrorMessage.SqlAzureFirwallError.message(this.config.sqlEndpoint, ErrorMessage.GetDetail),
+        ErrorMessage.SqlAzureFirwallError.message(this.config.sqlEndpoint, error.message),
         error
       );
     }
@@ -221,7 +221,7 @@ export class ManagementClient {
       );
       throw SqlResultFactory.UserError(
         ErrorMessage.SqlLocalFirwallError.name,
-        ErrorMessage.SqlLocalFirwallError.message(this.config.sqlEndpoint, ErrorMessage.GetDetail),
+        ErrorMessage.SqlLocalFirwallError.message(this.config.sqlEndpoint, error.message),
         error
       );
     }
@@ -240,10 +240,7 @@ export class ManagementClient {
       );
       throw SqlResultFactory.UserError(
         ErrorMessage.SqlDeleteLocalFirwallError.name,
-        ErrorMessage.SqlDeleteLocalFirwallError.message(
-          this.config.sqlEndpoint,
-          ErrorMessage.GetDetail
-        ),
+        ErrorMessage.SqlDeleteLocalFirwallError.message(this.config.sqlEndpoint, error.message),
         error
       );
     }

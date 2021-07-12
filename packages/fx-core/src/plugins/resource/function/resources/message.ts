@@ -38,6 +38,11 @@ export class InfoMessages {
   public static readonly generateFunctionAppName = (name: string) =>
     `Using function app name: ${name}.`;
 
+  public static readonly ensureResourceProviders = (namespaces: string[], subscriptionId: string) =>
+    `Registering required resource providers ${namespaces.join(
+      ","
+    )} for subscription ${subscriptionId}...`;
+
   public static readonly checkResource = (
     resourceType: string,
     resourceName: string,

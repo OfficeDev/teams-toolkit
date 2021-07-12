@@ -7,33 +7,31 @@ on:
 
 jobs:
   e2e-tests:
-    name: run e2e test on (${{ matrix.os }} node ${{ matrix.node-version }}) with source code
+    name: run e2e test on (self-hosted linux 8cpu node14)
     env:
-      TEST_USER_NAME: ${{ secrets.TEST_USER_NAME }}
-      TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
-      TEST_SUBSCRIPTION_ID: ${{ secrets.TEST_SUBSCRIPTION_ID_2 }}
-      TEST_TENANT_ID: ${{ secrets.TEST_TENANT_ID_2 }}
+      AZURE_ACCOUNT_NAME: ${{ secrets.TEST_USER_NAME }}
+      AZURE_ACCOUNT_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.TEST_SUBSCRIPTION_ID }}
+      AZURE_TENANT_ID: ${{ secrets.TEST_TENANT_ID }}
+      M365_ACCOUNT_NAME: ${{ secrets.TEST_USER_NAME }}
+      M365_ACCOUNT_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+      M365_TENANT_ID: ${{ secrets.TEST_TENANT_ID_2 }}
       CI_ENABLED: "true"
 
-    strategy:
-      matrix:
-        os: [windows-latest]
-        node-version: [14]
-
-    runs-on: ${{ matrix.os }}
+    runs-on: [self-hosted, linux, 8cpu]
 
     steps:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          fetch-depth: 0
           token: ${{ secrets.CD_PAT }}
           ref: ${{ github.ref }}
+          clean: false
 
       - name: Setup node
         uses: actions/setup-node@v2.1.2
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 14
 
       - name: Download Simple Auth bits
         uses: nick-invision/retry@v2
@@ -43,11 +41,7 @@ jobs:
           retry_on: error
           shell: pwsh
           command: |
-            $version=Get-Content packages/fx-core/templates/plugins/resource/simpleauth/version.txt
-            $tag = "simpleauth@"+$version
-            $fileName="Microsoft.TeamsFx.SimpleAuth_$version.zip"
-            $url = "https://github.com/OfficeDev/TeamsFx/releases/download/"+$tag+"/"+$fileName
-            Invoke-WebRequest $url -OutFile packages/fx-core/templates/plugins/resource/simpleauth/SimpleAuth.zip
+            ./.github/scripts/downloadSimpleAuth.ps1
 
       - name: Setup project
         uses: nick-invision/retry@v2
@@ -60,7 +54,7 @@ jobs:
 
       - name: Package CLI and install
         run: |
-          npm run package
+          rm -f *.tgz
           npm pack
           mv *.tgz teamsfx-cli.tgz
           npm install -g teamsfx-cli.tgz
@@ -70,14 +64,72 @@ jobs:
         run: |
           npx lerna run test:e2e:clean
 
-      - name: E2E Test Smoke Cases
+      - name: E2E Test in Parallel
         run: |
-          npx lerna run test:e2e:smoke
+          npx lerna run test:e2e:parallel
 
-      - name: E2E Test Other Cases
+      - name: Reset test tag
+        if: success()
         run: |
-          npx lerna run test:e2e:others
+           git tag -f e2e HEAD
+           git push origin -f e2e
 
-      - name: E2E Test Apim Cases
+      - name: Clean the Repo
         run: |
-          npx lerna run test:e2e:apim
+          rsync --delete-before -d /tmp/empty/ ./
+
+  create-ado-issue:
+    runs-on: ubuntu-latest
+    needs: e2e-tests
+    if: failure()
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Check git log 
+        id: git-log
+        shell: bash
+        run: |
+          declare -A email_uid
+          for i in $(git log --pretty="%ae"  e2e..HEAD | sort | uniq);
+          do
+            if [ ${email_uid[$i]+exist} ]; then
+              continue
+            fi
+
+            resp=$(curl -u :${{ secrets.ADO_PAT }} "https://vssps.dev.azure.com/msazure/_apis/identities?searchFilter=General&filterValue=$i&queryMembership=None&api-version=6.0")
+            uid=$(echo $resp | jq '.value | .[] | .id' | xargs echo)
+            email_uid[$i]=$uid
+          done
+          echo ${email_uid[@]}
+
+          gitlog=$(git log --pretty=format:'{"commit":"%h","subject":"%s","email":"%aE","date":"%aD"},' e2e..HEAD | grep -v "noreply")
+          gitlog=[${gitlog::-1}]
+
+          description="<tr> <th>Commit</th> <th>Date</th> <th>Subject</th> <th>Author</th> </tr>"
+          for row in $(echo $gitlog | jq -r '.[] | @base64'); do
+            _jq() {
+              echo ${row} | base64 --decode | jq -r ${1}
+            }
+            description="$description <tr> <td>$(_jq '.commit')</td> <td>$(_jq '.subject')</td> <td>$(_jq '.date')</td> <td><a href=\"#\" data-vss-mention=\"version:2.0,${email_uid[$(_jq '.email')]}\">$(_jq '.email')</a></td> </tr> "
+          done
+          echo "::set-output name=description::$description"
+
+      - name: Create azure devops issue if test is failed
+        uses: azure/CLI@v1
+        with:
+          azcliversion: 2.25.0
+          inlineScript: |
+            export AZURE_DEVOPS_EXT_PAT=${{ secrets.ADO_PAT }}
+            az extension add --name azure-devops
+            az boards work-item create --title="E2E tests failed" \
+                             --type=Bug \
+                             --area="Microsoft Teams Extensibility\Teams Extensibility E2E Team" \
+                             --assigned-to="haolong@microsoft.com" \
+                             --iteration="Microsoft Teams Extensibility" \
+                             --organization="https://msazure.visualstudio.com/" \
+                             --project="Microsoft Teams Extensibility" \
+                             --fields="Microsoft.VSTS.TCM.ReproSteps=<a>https://github.com/LongOddCode/lerna-test/actions/runs/${{ github.run_id }}</a>" \
+                             --description="<table class=\"w3-table w3-striped w3-bordered\">${{ steps.git-log.outputs.description }}</table>"

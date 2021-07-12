@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Constants, FrontendPathInfo, FrontendPluginInfo } from "../constants";
+import { AzureInfo, Constants, FrontendPathInfo, FrontendPluginInfo } from "../constants";
 import { Logger } from "../utils/logger";
 import path from "path";
 
@@ -30,6 +30,9 @@ const tips = {
   checkStoragePermissions: "Check if you have permissions to your Azure Storage Account.",
   checkSystemTime: "You may get expired credentials, check if your system time is correct.",
   restoreEnvironment: "Restore the 'env.default.json' file if you modified it.",
+  registerRequiredRP: `Register required resource provider '${AzureInfo.RequiredResourceProviders.join(
+    `', '`
+  )}' for your subscription manually.`,
 };
 
 export class FrontendPluginError extends Error {
@@ -150,6 +153,18 @@ export class StorageAccountAlreadyTakenError extends FrontendPluginError {
       "StorageAccountAlreadyTakenError",
       "Azure Storage Name is already in use.",
       [tips.deleteSameNameStorage]
+    );
+  }
+}
+
+// TODO: help link for this error
+export class RegisterResourceProviderError extends FrontendPluginError {
+  constructor() {
+    super(
+      ErrorType.User,
+      "RegisterResourceProviderError",
+      "Failed to register required resource provider for Tab frontend app.",
+      [tips.registerRequiredRP, tips.checkLog]
     );
   }
 }

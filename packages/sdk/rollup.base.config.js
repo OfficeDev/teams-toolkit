@@ -98,12 +98,9 @@ export function browserConfig(testType) {
   if (testType === "unit") {
     baseConfig.input = ["dist-esm/test/unit/*.spec.js", "dist-esm/test/unit/browser/*.spec.js"];
     baseConfig.output.file = "dist-test/index.unit.browser.js";
-  } else if (testType === "integration") {
-    baseConfig.input = [
-      "dist-esm/test/integration/*.spec.js",
-      "dist-esm/test/integration/browser/*.spec.js",
-    ];
-    baseConfig.output.file = "dist-test/index.integration.browser.js";
+  } else if (testType === "e2e") {
+    baseConfig.input = ["dist-esm/test/e2e/*.spec.js", "dist-esm/test/e2e/browser/*.spec.js"];
+    baseConfig.output.file = "dist-test/index.e2e.browser.js";
   } else {
     return baseConfig;
   }

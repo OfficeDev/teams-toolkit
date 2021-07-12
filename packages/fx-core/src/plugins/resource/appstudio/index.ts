@@ -6,23 +6,27 @@ import {
   FxError,
   ok,
   err,
+  LogProvider,
   Platform,
   Plugin,
+  LoadedPlugin,
   PluginContext,
   QTreeNode,
   Result,
   Stage,
+  TeamsAppManifest,
   SystemError,
   UserError,
+  ProjectSettings,
   Colors,
 } from "@microsoft/teamsfx-api";
 import { AppStudioPluginImpl } from "./plugin";
 import { Constants } from "./constants";
+import { IAppDefinition } from "./interfaces/IAppDefinition";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
 import { manuallySubmitOption, autoPublishOption } from "./questions";
 import { TelemetryUtils, TelemetryEventName, TelemetryPropertyKey } from "./utils/telemetry";
-
 export class AppStudioPlugin implements Plugin {
   private appStudioPluginImpl = new AppStudioPluginImpl();
 
@@ -65,6 +69,36 @@ export class AppStudioPlugin implements Plugin {
     return ok(appStudioQuestions);
   }
 
+  public async updateApp(
+    appDefinition: IAppDefinition,
+    type: "localDebug" | "remote",
+    createIfNotExist: boolean,
+    teamsAppId?: string,
+    appStudioToken?: string,
+    logProvider?: LogProvider,
+    projectRoot?: string
+  ): Promise<Result<string, FxError>> {
+    return await this.appStudioPluginImpl.updateApp(
+      appDefinition,
+      appStudioToken!,
+      type,
+      createIfNotExist,
+      teamsAppId,
+      logProvider,
+      projectRoot
+    );
+  }
+
+  public async createManifest(settings: ProjectSettings): Promise<TeamsAppManifest | undefined> {
+    return await this.appStudioPluginImpl.createManifest(settings);
+  }
+
+  public async reloadManifestAndCheckRequiredFields(
+    ctxRoot: string
+  ): Promise<Result<TeamsAppManifest, FxError>> {
+    return await this.appStudioPluginImpl.reloadManifestAndCheckRequiredFields(ctxRoot);
+  }
+
   /**
    * Validate manifest string against schema
    * @param {string} manifestString - the string of manifest.json file
@@ -98,6 +132,71 @@ export class AppStudioPlugin implements Plugin {
     ctx.ui?.showMessage("info", validationSuccess, false);
     TelemetryUtils.sendSuccessEvent(TelemetryEventName.validateManifest);
     return ok(validationResult);
+  }
+
+  public getDevAppDefinition(
+    manifest: string,
+    appId: string,
+    domains: string[],
+    webApplicationInfoResource: string,
+    ignoreIcon: boolean,
+    tabEndpoint?: string,
+    appName?: string,
+    version?: string,
+    botId?: string,
+    appNameSuffix?: string
+  ): [IAppDefinition, TeamsAppManifest] {
+    return this.appStudioPluginImpl.getDevAppDefinition(
+      manifest,
+      appId,
+      domains,
+      webApplicationInfoResource,
+      ignoreIcon,
+      tabEndpoint,
+      appName,
+      version,
+      botId,
+      appNameSuffix
+    );
+  }
+
+  public convertToAppDefinition(
+    appManifest: TeamsAppManifest,
+    ignoreIcon: boolean
+  ): IAppDefinition {
+    return this.appStudioPluginImpl.convertToAppDefinition(appManifest, ignoreIcon);
+  }
+
+  public createManifestForRemote(
+    ctx: PluginContext,
+    maybeSelectedPlugins: Result<LoadedPlugin[], FxError>,
+    manifest: TeamsAppManifest
+  ): Result<[IAppDefinition, TeamsAppManifest], FxError> {
+    return this.appStudioPluginImpl.createManifestForRemote(ctx, maybeSelectedPlugins, manifest);
+  }
+
+  public getConfigForCreatingManifest(
+    ctx: PluginContext,
+    localDebug: boolean
+  ): Result<
+    {
+      tabEndpoint?: string;
+      tabDomain?: string;
+      aadId: string;
+      botDomain?: string;
+      botId?: string;
+      webApplicationInfoResource: string;
+    },
+    FxError
+  > {
+    return this.appStudioPluginImpl.getConfigForCreatingManifest(ctx, localDebug);
+  }
+
+  public createAndConfigTeamsManifest(
+    ctx: PluginContext,
+    maybeSelectedPlugins: Result<LoadedPlugin[], FxError>
+  ): Promise<Result<IAppDefinition, FxError>> {
+    return this.appStudioPluginImpl.createAndConfigTeamsManifest(ctx, maybeSelectedPlugins);
   }
 
   /**

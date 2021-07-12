@@ -24,6 +24,7 @@ import {
   UserError,
   SystemError,
   returnSystemError,
+  returnUserError,
   ConfigFolderName,
   Inputs,
   VsCodeEnv,
@@ -31,7 +32,12 @@ import {
   Void,
   Tools,
 } from "@microsoft/teamsfx-api";
-import { isUserCancelError, FxCore, InvalidProjectError } from "@microsoft/teamsfx-core";
+import {
+  isUserCancelError,
+  FxCore,
+  InvalidProjectError,
+  isValidProject,
+} from "@microsoft/teamsfx-core";
 import DialogManagerInstance from "./userInterface";
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -75,6 +81,7 @@ import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
 import { VS_CODE_UI } from "./extension";
 import { registerAccountTreeHandler } from "./accountTree";
 import * as uuid from "uuid";
+import { selectAndDebug } from "./debug/runIconHandler";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -168,6 +175,14 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<null
 export function debugHandler(args?: any[]) {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.NavigateToDebug, getTriggerFromProperty(args));
   vscode.commands.executeCommand("workbench.view.debug");
+  vscode.commands.executeCommand("workbench.action.debug.selectandstart");
+}
+
+export async function selectAndDebugHandler(args?: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.RunIconDebugStart);
+  const result = await selectAndDebug();
+  await processResult(TelemetryEvent.RunIconDebug, result);
+  return result;
 }
 
 export async function addResourceHandler(args?: any[]): Promise<Result<null, FxError>> {
@@ -476,7 +491,7 @@ export async function openDocumentHandler(args: any[]): Promise<boolean> {
 
 export async function openWelcomeHandler(args?: any[]) {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.QuickStart, getTriggerFromProperty(args));
-  WebviewPanel.createOrShow(ext.context.extensionPath, PanelType.QuickStart);
+  WebviewPanel.createOrShow(PanelType.QuickStart);
 }
 
 function getTriggerFromProperty(args?: any[]) {
@@ -536,7 +551,7 @@ async function openSampleReadmeHandler() {
 
 export async function openSamplesHandler(args?: any[]) {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Samples, getTriggerFromProperty(args));
-  WebviewPanel.createOrShow(ext.context.extensionPath, PanelType.SampleGallery);
+  WebviewPanel.createOrShow(PanelType.SampleGallery);
 }
 
 export async function openAppManagement(args?: any[]) {
@@ -675,8 +690,11 @@ export async function showError(e: UserError | SystemError) {
 
     const button = await window.showErrorMessage(`[${errorCode}]: ${e.message}`, help);
     if (button) await button.run();
-  } else if ("issueLink" in e && e.issueLink && typeof e.issueLink != "undefined") {
-    const path = e.issueLink.replace(/\/$/, "") + "?";
+  } else if (e instanceof SystemError) {
+    const path =
+      typeof e.issueLink === "undefined"
+        ? "https://github.com/OfficeDev/TeamsFx/issues/new?"
+        : e.issueLink;
     const param = `title=new+bug+report: ${errorCode}&body=${e.message}\n\n${e.stack}`;
     const issue = {
       title: StringResources.vsc.handlers.reportIssue,

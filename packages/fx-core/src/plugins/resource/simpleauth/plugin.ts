@@ -88,10 +88,7 @@ export class SimpleAuthPluginImpl {
       ctx
     );
 
-    DialogUtils.progressBar = ctx.dialog?.createProgressBar(
-      Constants.ProgressBar.provision.title,
-      3
-    );
+    DialogUtils.progressBar = ctx.ui?.createProgressBar(Constants.ProgressBar.provision.title, 3);
     await DialogUtils.progressBar?.start(Constants.ProgressBar.start);
 
     const webApp = await this.webAppClient.createWebApp();
@@ -105,7 +102,9 @@ export class SimpleAuthPluginImpl {
 
     await DialogUtils.progressBar?.end();
 
-    Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndProvision, { [Telemetry.skuName]: webApp.skuName });
+    Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndProvision, {
+      [Telemetry.skuName]: webApp.skuName,
+    });
     return ResultFactory.Success();
   }
 
@@ -113,7 +112,7 @@ export class SimpleAuthPluginImpl {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartPostProvision);
 
-    DialogUtils.progressBar = ctx.dialog?.createProgressBar(
+    DialogUtils.progressBar = ctx.ui?.createProgressBar(
       Constants.ProgressBar.postProvision.title,
       1
     );

@@ -57,13 +57,24 @@ export const DEFAULT_PERMISSION_REQUEST = [
   },
 ];
 
+export enum PluginNames {
+  SQL = "fx-resource-azure-sql",
+  MSID = "fx-resource-identity",
+  FE = "fx-resource-frontend-hosting",
+  SPFX = "fx-resource-spfx",
+  BOT = "fx-resource-bot",
+  AAD = "fx-resource-aad-app-for-teams",
+  FUNC = "fx-resource-function",
+  SA = "fx-resource-simple-auth",
+  LDEBUG = "fx-resource-local-debug",
+  APIM = "fx-resource-apim",
+  APPST = "fx-resource-appstudio",
+  SOLUTION = "solution",
+}
+
 export enum SolutionError {
   InvalidSelectedPluginNames = "InvalidSelectedPluginNames",
   PluginNotFound = "PluginNotFound",
-  FailedToCreateAppIdInAppStudio = "FailedToCreateAppIdInAppStudio",
-  FailedToUpdateAppIdInAppStudio = "FailedToUpdateAppIdInAppStudio",
-  FailedToCreateLocalAppIdInAppStudio = "FailedToCreateLocalAppIdInAppStudio",
-  FailedToUpdateLocalAppIdInAppStudio = "FailedToUpdateLocalAppIdInAppStudio",
   AADPluginNotEnabled = "AADPluginNotEnabled",
   MissingPermissionsJson = "MissingPermissionsJson",
   DialogIsNotPresent = "DialogIsNotPresent",
@@ -81,8 +92,6 @@ export enum SolutionError {
   CannotUpdatePermissionForSPFx = "CannotUpdatePermissionForSPFx",
   CannotAddResourceForSPFx = "CannotAddResourceForSPFx",
   FailedToParseAzureTenantId = "FailedToParseAzureTenantId",
-  FailedToGetAppStudioToken = "FailedToGetAppStudioToken",
-  FailedToLoadManifestFile = "FailedToLoadManifestFile",
   CannotRunProvisionInSPFxProject = "CannotRunProvisionInSPFxProject",
   CannotRunThisTaskInSPFxProject = "CannotRunThisTaskInSPFxProject",
   FrontendEndpointAndDomainNotFound = "FrontendEndpointAndDomainNotFound",
@@ -102,7 +111,6 @@ export enum SolutionError {
   BotInternalError = "BotInternalError",
   InternelError = "InternelError",
   RegisterTeamsAppAndAadError = "RegisterTeamsAppAndAadError",
-  UpdateManifestError = "UpdateManifestError",
   GetLocalDebugConfigError = "GetLocalDebugConfigError",
   GetRemoteConfigError = "GetRemoteConfigError",
   UnsupportedPlatform = "UnsupportedPlatform",

@@ -10,7 +10,7 @@ import yargs from "yargs";
 import { commands } from "./cmds";
 import * as constants from "./constants";
 import { registerPrompts } from "./prompts";
-import { HelpParamGenerator } from "./helpParamGenerator";
+import HelpParamGenerator from "./helpParamGenerator";
 
 /**
  * Registers cli and partner commands with yargs.

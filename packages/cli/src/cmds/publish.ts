@@ -9,8 +9,12 @@ import activate from "../activate";
 import { YargsCommand } from "../yargsCommand";
 import { argsToInputs } from "../utils";
 import CliTelemetry from "../telemetry/cliTelemetry";
-import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
-import { HelpParamGenerator } from "../helpParamGenerator";
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetrySuccess,
+} from "../telemetry/cliTelemetryEvents";
+import HelpParamGenerator from "../helpParamGenerator";
 
 export default class Publish extends YargsCommand {
   public readonly commandHead = `publish`;
@@ -28,7 +32,7 @@ export default class Publish extends YargsCommand {
     [argName: string]: string | string[];
   }): Promise<Result<null, FxError>> {
     const answers = argsToInputs(this.params, args);
-     
+
     const manifestFolderParamName = "manifest-folder";
     let result;
     // if input manifestFolderParam(actually also teams-app-id param),
@@ -53,7 +57,7 @@ export default class Publish extends YargsCommand {
       answers.platform = Platform.VS;
       const func: Func = {
         namespace: "fx-solution-azure",
-        method: "VSpublish"
+        method: "VSpublish",
       };
       result = await core.executeUserTask!(func, answers);
     } else {
@@ -65,7 +69,7 @@ export default class Publish extends YargsCommand {
     }
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.Publish, {
-      [TelemetryProperty.Success]: TelemetrySuccess.Yes
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
     });
     return ok(null);
   }

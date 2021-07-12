@@ -14,18 +14,12 @@ import * as vscode from "vscode";
 import { signedIn, signedOut } from "./common/constant";
 import { login, LoginStatus } from "./common/login";
 import * as StringResources from "../resources/Strings.json";
-import { getBeforeCacheAccess, getAfterCacheAccess } from "./cacheAccess";
+import { CryptoCachePlugin } from "./cacheAccess";
 
 const accountName = "appStudio";
 const scopes = ["Application.ReadWrite.All"];
 
-const beforeCacheAccess = getBeforeCacheAccess(accountName);
-const afterCacheAccess = getAfterCacheAccess(scopes, accountName);
-
-const cachePlugin = {
-  beforeCacheAccess,
-  afterCacheAccess,
-};
+const cachePlugin = new CryptoCachePlugin(accountName);
 
 const config = {
   auth: {

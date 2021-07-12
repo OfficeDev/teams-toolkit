@@ -26,7 +26,7 @@ import {
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
 import CLIUIInstance from "../userInteraction";
-import { HelpParamGenerator } from "../helpParamGenerator";
+import HelpParamGenerator from "../helpParamGenerator";
 import { CannotDeployPlugin } from "../error";
 
 export default class Deploy extends YargsCommand {

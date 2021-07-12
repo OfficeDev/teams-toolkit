@@ -17,7 +17,6 @@ import {
   isAutoSkipSelect,
   SingleSelectQuestion,
   MultiSelectQuestion,
-  OptionItem,
 } from "@microsoft/teamsfx-api";
 
 import { FxCore } from "@microsoft/teamsfx-core";
@@ -26,23 +25,20 @@ import AppStudioTokenProvider from "./commonlib/appStudioLogin";
 import GraphTokenProvider from "./commonlib/graphLogin";
 import CLILogProvider from "./commonlib/log";
 import DialogManagerInstance from "./userInterface";
-import { CliTelemetry } from "./telemetry/cliTelemetry";
 import CLIUIInstance from "./userInteraction";
 import { flattenNodes, getSingleOptionString, toYargsOptions } from "./utils";
 import { Options } from "yargs";
-import { sqlPasswordConfirmQuestionName } from "./constants";
-
-const rootFolderNode = new QTreeNode({
-  type: "folder",
-  name: "folder",
-  title: "Select root folder of the project",
-  default: "./",
-});
+import { RootFolderNode, sqlPasswordConfirmQuestionName } from "./constants";
+import { NoInitializedHelpGenerator } from "./error";
 
 export class HelpParamGenerator {
-  private static core: FxCore | undefined;
-  private static questionsMap: Map<string, QTreeNode> = new Map<string, QTreeNode>();
-  public static activate(): Result<FxCore, FxError> {
+  private core: FxCore;
+  private questionsMap: Map<string, QTreeNode> = new Map<string, QTreeNode>();
+  private initialized = false;
+
+  private static instance: HelpParamGenerator;
+
+  private constructor() {
     const tools: Tools = {
       logProvider: CLILogProvider,
       tokenProvider: {
@@ -54,15 +50,17 @@ export class HelpParamGenerator {
       dialog: DialogManagerInstance,
       ui: CLIUIInstance,
     };
-    const core: FxCore = new FxCore(tools);
-    return ok(core);
+    this.core = new FxCore(tools);
   }
 
-  public static setCore(core: FxCore) {
-    HelpParamGenerator.core = core;
+  public static getInstance(): HelpParamGenerator {
+    if (!HelpParamGenerator.instance) {
+      HelpParamGenerator.instance = new HelpParamGenerator();
+    }
+    return HelpParamGenerator.instance;
   }
 
-  private static getSystemInputs(projectPath?: string, platform?: Platform): Inputs {
+  private getSystemInputs(projectPath?: string, platform?: Platform): Inputs {
     const systemInputs: Inputs = {
       platform: platform === undefined ? Platform.CLI_HELP : platform,
       projectPath: projectPath,
@@ -70,13 +68,13 @@ export class HelpParamGenerator {
     return systemInputs;
   }
 
-  private static setQuestionNodes(stage: string, questions: QTreeNode | undefined) {
+  private setQuestionNodes(stage: string, questions: QTreeNode | undefined) {
     if (questions) {
-      HelpParamGenerator.questionsMap.set(stage, questions);
+      this.questionsMap.set(stage, questions);
     }
   }
 
-  private static async getQuestionsForUserTask(stage: string, systemInput: Inputs, core: FxCore) {
+  private async getQuestionsForUserTask(stage: string, systemInput: Inputs, core: FxCore) {
     const func = {
       namespace: "fx-solution-azure",
       method: stage,
@@ -85,53 +83,55 @@ export class HelpParamGenerator {
     if (result.isErr()) {
       return err(result.error);
     } else {
-      HelpParamGenerator.setQuestionNodes(stage, result.value);
+      this.setQuestionNodes(stage, result.value);
     }
     return ok(undefined);
   }
 
-  private static getQuestionRootNodeForHelp(stage: string): QTreeNode | undefined {
-    if (HelpParamGenerator.questionsMap.has(stage)) {
-      return HelpParamGenerator.questionsMap.get(stage);
+  private getQuestionRootNodeForHelp(stage: string): QTreeNode | undefined {
+    if (this.questionsMap.has(stage)) {
+      return this.questionsMap.get(stage);
     }
     return undefined;
   }
 
-  public static async initializeQuestionsForHelp(): Promise<Result<undefined, FxError>> {
-    const result = HelpParamGenerator.activate();
-    if (result.isErr()) {
-      return err(result.error);
+  public async initializeQuestionsForHelp(): Promise<Result<boolean, FxError>> {
+    if (this.initialized) {
+      return ok(true);
     }
-    const core = result.value;
-    const systemInput = HelpParamGenerator.getSystemInputs();
+    const systemInput = this.getSystemInputs();
     for (const stage in Stage) {
       let result;
       if (stage === Stage.publish) {
-        result = await core.getQuestions(
+        result = await this.core.getQuestions(
           stage as Stage,
-          HelpParamGenerator.getSystemInputs("", Platform.VS)
+          this.getSystemInputs("", Platform.VS)
         );
       } else {
-        result = await core.getQuestions(stage as Stage, systemInput);
+        result = await this.core.getQuestions(stage as Stage, systemInput);
       }
       if (result.isErr()) {
         return err(result.error);
       } else {
-        HelpParamGenerator.setQuestionNodes(stage, result.value);
+        this.setQuestionNodes(stage, result.value);
       }
     }
     const userTasks = ["addCapability", "addResource"];
     for (const userTask of userTasks) {
-      const result = await HelpParamGenerator.getQuestionsForUserTask(userTask, systemInput, core);
+      const result = await this.getQuestionsForUserTask(userTask, systemInput, this.core);
       if (result.isErr()) {
         return err(result.error);
       }
     }
 
-    return ok(undefined);
+    this.initialized = true;
+    return ok(true);
   }
 
-  public static getYargsParamForHelp(stage: string): { [_: string]: Options } {
+  public getYargsParamForHelp(stage: string): { [_: string]: Options } {
+    if (!this.initialized) {
+      throw NoInitializedHelpGenerator();
+    }
     let resourceName: string | undefined;
     let capabilityName: string | undefined;
     if (stage.startsWith("addResource")) {
@@ -141,29 +141,33 @@ export class HelpParamGenerator {
       capabilityName = stage.split("-")[1];
       stage = "addCapability";
     }
-    const root = HelpParamGenerator.getQuestionRootNodeForHelp(stage);
+    const root = this.getQuestionRootNodeForHelp(stage);
     let nodes: QTreeNode[] = [];
     if (resourceName && root?.children) {
+      const rootCopy: QTreeNode = JSON.parse(JSON.stringify(root));
       // Do CLI map for resource add
-      const mustHaveNodes = root.children.filter((node) => (node.condition as any).minItems === 1);
-      const resourcesNodes = root.children.filter(
+      const mustHaveNodes = rootCopy.children!.filter(
+        (node) => (node.condition as any).minItems === 1
+      );
+      const resourcesNodes = rootCopy.children!.filter(
         (node) => (node.condition as any).contains === resourceName
       )[0];
-      (root.data as any).default = [resourceName];
-      (root.data as any).hide = true;
-      root.children = undefined;
-      nodes = [root]
+      (rootCopy.data as any).default = [resourceName];
+      (rootCopy.data as any).hide = true;
+      rootCopy.children = undefined;
+      nodes = [rootCopy]
         .concat(mustHaveNodes)
         .concat(resourcesNodes ? flattenNodes(resourcesNodes) : []);
     } else if (capabilityName && root?.children) {
+      const rootCopy: QTreeNode = JSON.parse(JSON.stringify(root));
       // Do CLI map for capability add
-      const capabilityNodes = root.children.filter((node) =>
+      const capabilityNodes = rootCopy.children!.filter((node) =>
         ((node.condition as any).containsAny as string[]).includes(capabilityName as string)
       )[0];
-      (root.data as any).default = [capabilityName];
-      (root.data as any).hide = true;
-      root.children = undefined;
-      nodes = [root].concat(capabilityNodes ? flattenNodes(capabilityNodes) : []);
+      (rootCopy.data as any).default = [capabilityName];
+      (rootCopy.data as any).hide = true;
+      rootCopy.children = undefined;
+      nodes = [rootCopy].concat(capabilityNodes ? flattenNodes(capabilityNodes) : []);
     } else if (root) {
       nodes = flattenNodes(root);
     }
@@ -177,10 +181,9 @@ export class HelpParamGenerator {
 
     // Add folder node
     if (stage !== Stage.create) {
-      nodes = nodes.concat([rootFolderNode]);
-    }
-    // Set default folder value for create stage
-    else {
+      nodes = nodes.concat([RootFolderNode]);
+    } else {
+      // Set default folder value for create stage
       for (const node of nodes) {
         if (node.data.name === "folder") {
           (node.data as any).default = "./";
@@ -212,3 +215,5 @@ export class HelpParamGenerator {
     return params;
   }
 }
+
+export default HelpParamGenerator.getInstance();

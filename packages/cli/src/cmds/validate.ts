@@ -10,8 +10,12 @@ import activate from "../activate";
 import { YargsCommand } from "../yargsCommand";
 import { getSystemInputs } from "../utils";
 import CliTelemetry from "../telemetry/cliTelemetry";
-import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
-import { HelpParamGenerator } from "../helpParamGenerator";
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetrySuccess,
+} from "../telemetry/cliTelemetryEvents";
+import HelpParamGenerator from "../helpParamGenerator";
 
 export default class Validate extends YargsCommand {
   public readonly commandHead = `validate`;
@@ -28,9 +32,11 @@ export default class Validate extends YargsCommand {
   public async runCommand(args: {
     [argName: string]: string | string[];
   }): Promise<Result<null, FxError>> {
-    const rootFolder = path.resolve(args.folder as string || "./");
-    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.ValidateManifestStart);
-    
+    const rootFolder = path.resolve((args.folder as string) || "./");
+    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(
+      TelemetryEvent.ValidateManifestStart
+    );
+
     const result = await activate(rootFolder);
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, result.error);
@@ -40,7 +46,7 @@ export default class Validate extends YargsCommand {
     {
       const func: Func = {
         namespace: "fx-solution-azure",
-        method: "validateManifest"
+        method: "validateManifest",
       };
       const result = await core.executeUserTask!(func, getSystemInputs(rootFolder));
       if (result.isErr()) {
@@ -50,7 +56,7 @@ export default class Validate extends YargsCommand {
     }
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.ValidateManifest, {
-      [TelemetryProperty.Success]: TelemetrySuccess.Yes
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
     });
     return ok(null);
   }

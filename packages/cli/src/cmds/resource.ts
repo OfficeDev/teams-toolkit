@@ -12,17 +12,25 @@ import activate from "../activate";
 import { getSystemInputs, readConfigs, setSubscriptionId } from "../utils";
 import { YargsCommand } from "../yargsCommand";
 import CliTelemetry from "../telemetry/cliTelemetry";
-import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetrySuccess,
+} from "../telemetry/cliTelemetryEvents";
 import CLIUIInstance from "../userInteraction";
 import CLILogProvider from "../commonlib/log";
-import { HelpParamGenerator } from "../helpParamGenerator";
+import HelpParamGenerator from "../helpParamGenerator";
 
 export class ResourceAdd extends YargsCommand {
   public readonly commandHead = `add`;
   public readonly command = `${this.commandHead} <resource-type>`;
   public readonly description = "Add a resource to the current application.";
 
-  public readonly subCommands: YargsCommand[] = [new ResourceAddSql(), new ResourceAddApim(), new ResourceAddFunction()];
+  public readonly subCommands: YargsCommand[] = [
+    new ResourceAddSql(),
+    new ResourceAddApim(),
+    new ResourceAddFunction(),
+  ];
 
   public builder(yargs: Argv): Argv<any> {
     this.subCommands.forEach((cmd) => {
@@ -51,7 +59,7 @@ export class ResourceAddSql extends YargsCommand {
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     const rootFolder = path.resolve(args.folder || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.UpdateProjectStart, {
-      [TelemetryProperty.Resources]: this.commandHead
+      [TelemetryProperty.Resources]: this.commandHead,
     });
 
     CLIUIInstance.updatePresetAnswers(this.params, args);
@@ -59,14 +67,14 @@ export class ResourceAddSql extends YargsCommand {
     const result = await activate(rootFolder);
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
-        [TelemetryProperty.Resources]: this.commandHead
+        [TelemetryProperty.Resources]: this.commandHead,
       });
       return err(result.error);
     }
 
     const func = {
       namespace: "fx-solution-azure",
-      method: "addResource"
+      method: "addResource",
     };
 
     const core = result.value;
@@ -75,7 +83,7 @@ export class ResourceAddSql extends YargsCommand {
       const result = await core.executeUserTask(func, getSystemInputs(rootFolder));
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
-          [TelemetryProperty.Resources]: this.commandHead
+          [TelemetryProperty.Resources]: this.commandHead,
         });
         return err(result.error);
       }
@@ -83,7 +91,7 @@ export class ResourceAddSql extends YargsCommand {
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.UpdateProject, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-      [TelemetryProperty.Resources]: this.commandHead
+      [TelemetryProperty.Resources]: this.commandHead,
     });
     return ok(null);
   }
@@ -100,7 +108,9 @@ export class ResourceAddApim extends YargsCommand {
     return yargs.options(this.params);
   }
 
-  public async runCommand(args: { [argName: string]: string | undefined }): Promise<Result<null, FxError>> {
+  public async runCommand(args: {
+    [argName: string]: string | undefined;
+  }): Promise<Result<null, FxError>> {
     if (!("apim-resource-group" in args)) {
       args["apim-resource-group"] = undefined;
     }
@@ -109,7 +119,7 @@ export class ResourceAddApim extends YargsCommand {
     }
     const rootFolder = path.resolve(args.folder || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.UpdateProjectStart, {
-      [TelemetryProperty.Resources]: this.commandHead
+      [TelemetryProperty.Resources]: this.commandHead,
     });
 
     CLIUIInstance.updatePresetAnswers(this.params, args);
@@ -118,7 +128,7 @@ export class ResourceAddApim extends YargsCommand {
       const result = await setSubscriptionId(args.subscription, rootFolder);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
-          [TelemetryProperty.Resources]: this.commandHead
+          [TelemetryProperty.Resources]: this.commandHead,
         });
         return result;
       }
@@ -127,14 +137,14 @@ export class ResourceAddApim extends YargsCommand {
     const result = await activate(rootFolder);
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
-        [TelemetryProperty.Resources]: this.commandHead
+        [TelemetryProperty.Resources]: this.commandHead,
       });
       return err(result.error);
     }
 
     const func = {
       namespace: "fx-solution-azure",
-      method: "addResource"
+      method: "addResource",
     };
 
     const core = result.value;
@@ -142,7 +152,7 @@ export class ResourceAddApim extends YargsCommand {
       const result = await core.executeUserTask(func, getSystemInputs(rootFolder));
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
-          [TelemetryProperty.Resources]: this.commandHead
+          [TelemetryProperty.Resources]: this.commandHead,
         });
         return err(result.error);
       }
@@ -150,7 +160,7 @@ export class ResourceAddApim extends YargsCommand {
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.UpdateProject, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-      [TelemetryProperty.Resources]: this.commandHead
+      [TelemetryProperty.Resources]: this.commandHead,
     });
     return ok(null);
   }
@@ -170,7 +180,7 @@ export class ResourceAddFunction extends YargsCommand {
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     const rootFolder = path.resolve(args.folder || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.UpdateProjectStart, {
-      [TelemetryProperty.Resources]: this.commandHead
+      [TelemetryProperty.Resources]: this.commandHead,
     });
 
     CLIUIInstance.updatePresetAnswers(this.params, args);
@@ -178,14 +188,14 @@ export class ResourceAddFunction extends YargsCommand {
     const result = await activate(rootFolder);
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
-        [TelemetryProperty.Resources]: this.commandHead
+        [TelemetryProperty.Resources]: this.commandHead,
       });
       return err(result.error);
     }
 
     const func = {
       namespace: "fx-solution-azure",
-      method: "addResource"
+      method: "addResource",
     };
 
     const core = result.value;
@@ -193,7 +203,7 @@ export class ResourceAddFunction extends YargsCommand {
       const result = await core.executeUserTask(func, getSystemInputs(rootFolder));
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
-          [TelemetryProperty.Resources]: this.commandHead
+          [TelemetryProperty.Resources]: this.commandHead,
         });
         return err(result.error);
       }
@@ -201,7 +211,7 @@ export class ResourceAddFunction extends YargsCommand {
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.UpdateProject, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-      [TelemetryProperty.Resources]: this.commandHead
+      [TelemetryProperty.Resources]: this.commandHead,
     });
     return ok(null);
   }
@@ -210,9 +220,14 @@ export class ResourceAddFunction extends YargsCommand {
 export class ResourceShow extends YargsCommand {
   public readonly commandHead = `show`;
   public readonly command = `${this.commandHead} <resource-type>`;
-  public readonly description = "Show configuration details of resources in the current application.";
+  public readonly description =
+    "Show configuration details of resources in the current application.";
 
-  public readonly subCommands: YargsCommand[] = [new ResourceShowFunction(), new ResourceShowSQL(), new ResourceShowApim()];
+  public readonly subCommands: YargsCommand[] = [
+    new ResourceShowFunction(),
+    new ResourceShowSQL(),
+    new ResourceShowApim(),
+  ];
 
   public builder(yargs: Argv): Argv<any> {
     this.subCommands.forEach((cmd) => {
@@ -356,7 +371,7 @@ export default class Resource extends YargsCommand {
   public readonly subCommands: YargsCommand[] = [
     new ResourceAdd(),
     new ResourceShow(),
-    new ResourceList()
+    new ResourceList(),
   ];
 
   public builder(yargs: Argv): Argv<any> {

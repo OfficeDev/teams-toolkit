@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import { Plugin, PluginContext, err, UserError, SystemError } from "@microsoft/teamsfx-api";
 
-import { FxResult, FxBotPluginResultFactory as ResultFactory } from "./result";
+import { FxResult, FxCICDPluginResultFactory as ResultFactory } from "./result";
 import { CICDImpl } from "./plugin";
 import { ErrorType, PluginError } from "./errors";
 import { Logger } from "./logger";

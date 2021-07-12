@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { ErrorNames, Suggestions } from "./constants";
+
 export enum ErrorType {
   User,
   System,
@@ -34,5 +36,13 @@ export class PluginError extends Error {
 
   genMessage(): string {
     return `${this.message} Suggestions: ${this.suggestions.join("\n")}`;
+  }
+}
+
+export class InternalError extends PluginError {
+  constructor(details: string) {
+    super(ErrorType.System, ErrorNames.INTERNAL_ERROR, details, [
+      Suggestions.RETRY_THE_CURRENT_STEP,
+    ]);
   }
 }

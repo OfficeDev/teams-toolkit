@@ -6,14 +6,14 @@
 // Licensed under the MIT license.
 import { FxError, Result, SystemError, UserError, err, ok } from "@microsoft/teamsfx-api";
 
-import { Links, Alias } from "./constants";
+import { Alias } from "./constants";
 
 export type FxResult = Result<any, FxError>;
 
-export class FxBotPluginResultFactory {
-  static readonly source: string = Alias.TEAMS_BOT_PLUGIN;
-  static readonly defaultHelpLink: string = Links.HELP_LINK;
-  static readonly defaultIssueLink: string = Links.ISSUE_LINK;
+export class FxCICDPluginResultFactory {
+  static readonly source: string = Alias.TEAMS_CICD_PLUGIN;
+  static readonly defaultHelpLink: string = "";
+  static readonly defaultIssueLink: string = "";
 
   public static UserError(
     errorName: string,
@@ -25,9 +25,9 @@ export class FxBotPluginResultFactory {
       new UserError(
         errorName,
         errorMessage,
-        FxBotPluginResultFactory.source,
+        FxCICDPluginResultFactory.source,
         innerError?.stack,
-        showHelpLink ? FxBotPluginResultFactory.defaultHelpLink : undefined,
+        showHelpLink ? FxCICDPluginResultFactory.defaultHelpLink : undefined,
         innerError
       )
     );
@@ -38,9 +38,9 @@ export class FxBotPluginResultFactory {
       new SystemError(
         errorName,
         errorMessage,
-        FxBotPluginResultFactory.source,
+        FxCICDPluginResultFactory.source,
         innerError?.stack,
-        FxBotPluginResultFactory.defaultIssueLink,
+        FxCICDPluginResultFactory.defaultIssueLink,
         innerError
       )
     );

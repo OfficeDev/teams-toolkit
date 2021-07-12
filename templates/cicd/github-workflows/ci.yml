@@ -1,0 +1,22 @@
+name: 'Continuous Integration'
+on:
+  # When pull requests targeting the dev branch created.
+  pull_request:
+    branches:
+      - dev
+jobs:
+  buildAndTest:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout the code.
+      - uses: actions/checkout@v2
+      # Build the project.
+      - uses: OfficeDev/teams-app-cicd@v1
+        with:
+          operation-type: 'Build Teams App'
+      # Run unit test.
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - name: Run Unit Test
+        run: npm run test

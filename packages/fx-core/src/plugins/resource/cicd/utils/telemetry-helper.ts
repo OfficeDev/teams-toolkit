@@ -3,12 +3,11 @@
 
 import { FxResult } from "../result";
 import { PluginContext, SystemError, UserError } from "@microsoft/teamsfx-api";
-import { TelemetryKeys, TelemetryValues } from "../constants";
-import { PluginBot, PluginSolution } from "../resources/strings";
+import { TelemetryKeys, TelemetryValues, PluginCICD, PluginSolution } from "../constants";
 
 export class telemetryHelper {
   static fillCommonProperty(ctx: PluginContext, properties: { [key: string]: string }): void {
-    properties[TelemetryKeys.Component] = PluginBot.PLUGIN_NAME;
+    properties[TelemetryKeys.Component] = PluginCICD.PLUGIN_NAME;
     properties[TelemetryKeys.AppId] =
       (ctx.configOfOtherPlugins
         .get(PluginSolution.PLUGIN_NAME)

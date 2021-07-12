@@ -6,10 +6,12 @@ export class LifecycleFuncNames {
   public static readonly SCAFFOLD = "scaffold";
 }
 
-export class ErrorNames {}
+export class ErrorNames {
+  public static readonly INTERNAL_ERROR = "InternalError";
+}
 
 export class Alias {
-  public static readonly TEAMS_BOT_PLUGIN = "BT";
+  public static readonly TEAMS_CICD_PLUGIN = "CICD";
   public static readonly TEAMS_FX = "Teamsfx";
 }
 
@@ -34,4 +36,23 @@ export class Messages {
   public static readonly ScaffoldingCICD = "Scaffolding CICD workflows' files.";
   public static readonly SuccessfullyScaffoldedCICD =
     "Successfully scaffolded CICD workflows' files.";
+}
+
+export class PluginSolution {
+  public static readonly PLUGIN_NAME = "solution";
+  public static readonly REMOTE_TEAMS_APPID = "remoteTeamsAppId";
+}
+
+export class PluginCICD {
+  public static readonly PLUGIN_NAME = "fx-resource-cicd";
+  public static readonly AZDO_CI_YML = "azure-pipeline-ci.yml";
+  public static readonly AZDO_CD_YML = "azure-pipeline-cd.yml";
+  public static readonly AZDO_PIPELINE_FOLDER = "azdo-pipelines";
+  public static readonly GITHUB_WORKFLOW_FOLDER = "github-workflows";
+  public static readonly GITHUB_CI_YML = "ci.yml";
+  public static readonly GITHUB_CD_YML = "cd.yml";
+}
+
+export class Suggestions {
+  public static readonly RETRY_THE_CURRENT_STEP = "Please retry the current step.";
 }

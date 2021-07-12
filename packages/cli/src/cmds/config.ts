@@ -22,7 +22,7 @@ import { NonTeamsFxProjectFolder, ConfigNameNotFound } from "../error";
 
 export class ConfigGet extends YargsCommand {
   public readonly commandHead = `get`;
-  public readonly command = `${this.commandHead} [option...]`;
+  public readonly command = `${this.commandHead} [option]`;
   public readonly description = "Get user settings.";
 
   public builder(yargs: Argv): Argv<any> {
@@ -52,8 +52,8 @@ export class ConfigGet extends YargsCommand {
     const inProject = (await readConfigs(rootFolder)).isOk();
     let core: Result<Core, FxError>;
 
-    if (args.option.length > 0) {
-      if (args.option[0] === CliConfigOptions.Telemetry) {
+    if (args.option !== "") {
+      if (args.option === CliConfigOptions.Telemetry) {
         // global config
         if (!args.global) {
           CLILogProvider.necessaryLog(

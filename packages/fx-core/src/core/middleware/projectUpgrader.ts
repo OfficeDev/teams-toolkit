@@ -55,82 +55,49 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<void> {
     const settingsFile = path.resolve(confFolderPath, "settings.json");
     const projectSettings: ProjectSettings = await fs.readJson(settingsFile);
     const envName = projectSettings.currentEnv;
-    const userDataPath = path.resolve(confFolderPath, `${envName}.userdata`);
+
+    // Read context file.
     const contextPath = path.resolve(confFolderPath, `env.${envName}.json`);
-    const [userData, context] = await getUserDataAndContext(userDataPath, contextPath);
+    const context = await readContext(contextPath);
 
-    for (const item of contextUpgrade) {
-      const pluginContext: any = context[item.plugin];
-
-      // Secret not in userdata file, means has not run local debug before.
-      // Will delete related keys and secret if exists.
-      if (item.secret && !userData[getUserDataKey(item.plugin, item.secret)]) {
-        clearUserDataAndContext(userData, context, item.plugin, item.relatedKeys, item.secret);
-        continue;
-      }
-
-      // Add reference for secret.
-      if (item.secret) {
-        pluginContext[item.secret] = getSecretPattern(item.plugin, item.secret);
-      }
-
-      // Secret in userdata file.
-      // Will move keys from context to userdata, and will add key in context.
-      const keyMoved = moveKeysFromContextToUserData(
-        userData,
-        context,
-        item.plugin,
-        item.relatedKeys
-      );
-
-      // Check whether all keys is saved in userdata.
-      let keyCompleted = true;
-      for (const relatedKey of item.relatedKeys) {
-        const userDataKey = getUserDataKey(item.plugin, relatedKey);
-        if (!userData[userDataKey] || isSecretPattern(userData[userDataKey])) {
-          keyCompleted = false;
-          break;
-        }
-
-        // Certain key is missing in context.
-        // Will add reference in context.
-        if (!pluginContext[relatedKey]) {
-          pluginContext[relatedKey] = getSecretPattern(item.plugin, relatedKey);
-        }
-      }
-
-      // Check whether all keys are saved.
-      if (keyCompleted) {
-        // Some key is moved in moveKeysFromContextToUserData.
-        // Will send log to inform user context is upgraded.
-        if (keyMoved) {
-          const core = ctx.self as FxCore;
-          const logger =
-            core !== undefined && core.tools !== undefined && core.tools.logProvider !== undefined
-              ? core.tools.logProvider
-              : undefined;
-          if (logger) {
-            logger.info(
-              `[core]: context version of ${item.plugin} is too low. Will update context and move some config from env to userdata.`
-            );
-          }
-        }
-      } else {
-        // Key missing.
-        // Will delete context and key
-        clearUserDataAndContext(userData, context, item.plugin, item.relatedKeys, item.secret);
-      }
+    // Update value of specific key in context file to secret pattern.
+    // Return: map of updated values.
+    const updatedKeys = updateContextValue(context);
+    if (!updatedKeys || updatedKeys.keys.length == 0) {
+      // No keys need to be updated, which means the file is up-to-date.
+      // Can quit directly.
+      return;
     }
-    await saveUserDataAndContext(userDataPath, userData, contextPath, context);
+
+    // Some keys updated.
+    // Save the updated context and send log.
+    await saveContext(contextPath, context);
+    const core = ctx.self as FxCore;
+    const logger =
+      core !== undefined && core.tools !== undefined && core.tools.logProvider !== undefined
+        ? core.tools.logProvider
+        : undefined;
+    if (logger) {
+      logger.info(
+        "[core]: context version is too low. Will update context and move some config from env to userdata."
+      );
+    }
+
+    // Read UserData file.
+    const userDataPath = path.resolve(confFolderPath, `${envName}.userdata`);
+    const userData = await readUserData(userDataPath);
+
+    // Merge updatedKeys into UserData.
+    mergeKeysToUserDate(userData, updatedKeys);
+
+    // Save UserData
+    await saveUserData(userDataPath, userData);
   } catch (error) {
     ctx.result = err(ContextUpgradeError(error));
   }
 }
 
-async function getUserDataAndContext(
-  userDataPath: string,
-  contextPath: string
-): Promise<[Record<string, string>, Json]> {
+async function readUserData(userDataPath: string): Promise<Record<string, string>> {
   let dict: Record<string, string>;
   if (await fs.pathExists(userDataPath)) {
     const dictContent = await fs.readFile(userDataPath, "UTF-8");
@@ -139,81 +106,58 @@ async function getUserDataAndContext(
     dict = {};
   }
 
-  const configJson: Json = await fs.readJson(contextPath);
-  return [dict, configJson];
+  return dict;
 }
 
-async function saveUserDataAndContext(
-  userDataPath: string,
-  userData: Record<string, string>,
-  contextPath: string,
-  context: Json
-): Promise<void> {
-  await fs.writeFile(contextPath, JSON.stringify(context, null, 4));
+async function saveUserData(userDataPath: string, userData: Record<string, string>): Promise<void> {
   await fs.writeFile(userDataPath, serializeDict(userData));
 }
 
-function clearUserDataAndContext(
-  userData: Record<string, string>,
-  context: Json,
-  plugin: string,
-  keys: string[],
-  secret?: string
-) {
-  const pluginContext: any = context[plugin];
-  if (!pluginContext) {
-    return;
-  }
-
-  // Clear key
-  for (const key of keys) {
-    if (pluginContext[key]) {
-      delete pluginContext[key];
-    }
-
-    if (userData[getUserDataKey(plugin, key)]) {
-      delete userData[getUserDataKey(plugin, key)];
-    }
-  }
-
-  // Clear secret
-  if (secret) {
-    if (pluginContext[secret]) {
-      delete pluginContext[secret];
-    }
-
-    if (userData[getUserDataKey(plugin, secret)]) {
-      delete userData[getUserDataKey(plugin, secret)];
-    }
-  }
+async function readContext(contextPath: string): Promise<Json> {
+  const configJson: Json = await fs.readJson(contextPath);
+  return configJson;
 }
 
-function moveKeysFromContextToUserData(
-  userData: Record<string, string>,
-  context: Json,
-  plugin: string,
-  keys: string[]
-): boolean {
-  let keyMoved = false;
-  const pluginContext: any = context[plugin];
-  if (!pluginContext) {
-    return false;
-  }
+async function saveContext(contextPath: string, context: Json): Promise<void> {
+  await fs.writeFile(contextPath, JSON.stringify(context, null, 4));
+}
 
-  for (const key of keys) {
-    const value = pluginContext[key];
-    if (value && !isSecretPattern(value)) {
-      // Move will only happen when userData does not contain certain key.
-      // Otherwise, value in userData will be regarded as source of truth.
-      if (!userData[getUserDataKey(plugin, key)]) {
-        keyMoved = true;
-        userData[getUserDataKey(plugin, key)] = value;
+function updateContextValue(context: Json): Map<string, any> {
+  const res: Map<string, any> = new Map();
+  for (const item of contextUpgrade) {
+    const pluginContext: any = context[item.plugin];
+    for (const key of item.relatedKeys) {
+      // Save value to res and update value to secret pattern if value is not in secret pattern.
+      if (pluginContext[key] && !isSecretPattern(pluginContext[key])) {
+        res.set(getUserDataKey(item.plugin, key), pluginContext[key]);
+        pluginContext[key] = getSecretPattern(item.plugin, key);
       }
-      pluginContext[key] = getSecretPattern(plugin, key);
     }
   }
 
-  return keyMoved;
+  return res;
+}
+
+function mergeKeysToUserDate(
+  userData: Record<string, string>,
+  updatedKeys: Map<string, any>
+): void {
+  for (const item of contextUpgrade) {
+    // Check whether corresponding secret exists.
+    // For keys in solution, no secret check is needed.
+    if (item.secret && !userData[getUserDataKey(item.plugin, item.secret)]) {
+      continue;
+    }
+
+    for (const key of item.relatedKeys) {
+      const userDataKey = getUserDataKey(item.plugin, key);
+      // Merge will only happen when userData does not contain certain key.
+      // Otherwise, value in userData will be regarded as source of truth.
+      if (!userData[userDataKey] && updatedKeys.has(userDataKey)) {
+        userData[userDataKey] = updatedKeys.get(userDataKey);
+      }
+    }
+  }
 }
 
 function getUserDataKey(plugin: string, key: string) {

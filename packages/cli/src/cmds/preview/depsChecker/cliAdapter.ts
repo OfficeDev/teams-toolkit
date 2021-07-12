@@ -54,10 +54,8 @@ export class CLIAdapter implements IDepsAdapter {
     if (userSelected === Messages.learnMoreButtonText) {
       this._telemetry.sendEvent(DepsCheckerEvent.clickLearnMore);
       CLIAdapter.openUrl(link);
-      return this.displayContinueWithLearnMore(message, link);
-    }
-
-    if (userSelected === Messages.continueButtonText) {
+      return false;
+    } else if (userSelected === Messages.continueButtonText) {
       this._telemetry.sendEvent(DepsCheckerEvent.clickContinue);
       return true;
     } else {

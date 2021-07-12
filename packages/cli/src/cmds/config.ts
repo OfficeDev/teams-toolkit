@@ -10,7 +10,7 @@ import { YargsCommand } from "../yargsCommand";
 import { Core, FxError, Result, ok, err, LogLevel } from "@microsoft/teamsfx-api";
 import { UserSettings, CliConfigOptions, CliConfigTelemetry } from "../userSetttings";
 import CLILogProvider from "../commonlib/log";
-import { HelpParamGenerator } from "../helpParamGenerator";
+import HelpParamGenerator from "../helpParamGenerator";
 import { readProjectSecrets, getSystemInputs, readConfigs } from "../utils";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import {

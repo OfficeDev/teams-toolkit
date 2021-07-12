@@ -4,6 +4,9 @@ import { IDepsAdapter, IDepsTelemetry } from "./checker";
 import { cliEnvCheckerLogger as logger } from "./cliLogger";
 import { cliTelemetry } from "./cliTelemetry";
 import open from "open";
+import DialogManagerInstance from "../../../userInterface";
+// import { CliTelemetry } from "./telemetry/cliTelemetry";
+import CLIUIInstance from "../../../userInteraction";
 
 export class CLIAdapter implements IDepsAdapter {
   private readonly configurationPrefix = "fx-extension";
@@ -12,14 +15,15 @@ export class CLIAdapter implements IDepsAdapter {
   private readonly validateFuncCoreToolsKey = "validateFuncCoreTools";
   private readonly validateNodeVersionKey = "validateNode";
   private readonly _telemetry: IDepsTelemetry;
+  private readonly _hasBackend: boolean;
 
-  constructor(telemetry: IDepsTelemetry) {
+  constructor(hasBackend: boolean, telemetry: IDepsTelemetry) {
+    this._hasBackend = hasBackend;
     this._telemetry = telemetry;
   }
 
   public hasTeamsfxBackend(): Promise<boolean> {
-    // TODO: check teamsfx backend
-    return Promise.resolve(true);
+    return Promise.resolve(this._hasBackend);
   }
 
   public dotnetCheckerEnabled(): boolean {
@@ -40,8 +44,28 @@ export class CLIAdapter implements IDepsAdapter {
   }
 
   public async displayContinueWithLearnMore(message: string, link: string): Promise<boolean> {
-    // TODO: implement me
-    return true;
+    const res = await CLIUIInstance.showMessage(
+      "info",
+      message,
+      true,
+      Messages.learnMoreButtonText,
+      Messages.continueButtonText
+    );
+    const userSelected: string | undefined = res?.isOk() ? res.value : undefined;
+
+    if (userSelected === Messages.learnMoreButtonText) {
+      this._telemetry.sendEvent(DepsCheckerEvent.clickLearnMore);
+      CLIAdapter.openUrl(link);
+      return this.displayContinueWithLearnMore(message, link);
+    }
+
+    if (userSelected === Messages.continueButtonText) {
+      this._telemetry.sendEvent(DepsCheckerEvent.clickContinue);
+      return true;
+    } else {
+      this._telemetry.sendEvent(DepsCheckerEvent.clickCancel);
+      return false;
+    }
   }
 
   public async displayLearnMore(message: string, link: string): Promise<boolean> {
@@ -56,12 +80,24 @@ export class CLIAdapter implements IDepsAdapter {
     buttonText: string,
     action: () => Promise<boolean>
   ): Promise<boolean> {
-    // TODO: implement me
-    return true;
+    const res = await CLIUIInstance.showMessage(
+      "info",
+      message,
+      true,
+      Messages.learnMoreButtonText
+    );
+    const userSelected: string | undefined = res?.isOk() ? res.value : undefined;
+    if (userSelected === Messages.learnMoreButtonText) {
+      this._telemetry.sendEvent(DepsCheckerEvent.clickLearnMore);
+      return await action();
+    } else {
+      this._telemetry.sendEvent(DepsCheckerEvent.clickCancel);
+      return false;
+    }
   }
 
   public showOutputChannel(): void {
-    // not need in CLI
+    // not needed in CLI
   }
 
   public getResourceDir(): string {
@@ -69,12 +105,11 @@ export class CLIAdapter implements IDepsAdapter {
   }
 
   private checkerEnabled(key: string): boolean {
+    // TODO: retrieve from CLI config
     return true;
   }
 
   private static async openUrl(url: string): Promise<void> {
-    await open(url);
+    CLIUIInstance.openUrl(url);
   }
 }
-
-export const cliAdapter = new CLIAdapter(cliTelemetry);

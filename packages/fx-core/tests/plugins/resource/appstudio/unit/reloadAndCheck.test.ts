@@ -3,26 +3,25 @@
 
 import "mocha";
 import * as chai from "chai";
-import { ConfigMap, PluginContext, TeamsAppManifest, ok } from "@microsoft/teamsfx-api";
 import { AppStudioPlugin } from "./../../../../../src/plugins/resource/appstudio";
 import { AppStudioError } from "./../../../../../src/plugins/resource/appstudio/errors";
+import fs from "fs-extra";
+import sinon from "sinon";
 
 describe("Reload Manifest and Check Required Fields", () => {
   let plugin: AppStudioPlugin;
-  let ctx: PluginContext;
+  const sandbox = sinon.createSandbox();
 
   beforeEach(async () => {
     plugin = new AppStudioPlugin();
-    ctx = {
-      root: "./",
-      configOfOtherPlugins: new Map(),
-      config: new ConfigMap(),
-      app: new TeamsAppManifest(),
-    };
+  });
+
+  afterEach(() => {
+    sandbox.restore();
   });
 
   it("No manifest", async () => {
-    const reloadAndCheckResult = await plugin.reloadManifestAndCheckRequiredFields(".");
+    const reloadAndCheckResult = await plugin.reloadManifestAndCheckRequiredFields("notExist");
     chai.assert.isTrue(reloadAndCheckResult.isErr());
     if (reloadAndCheckResult.isErr()) {
       chai
@@ -30,14 +29,35 @@ describe("Reload Manifest and Check Required Fields", () => {
         .equals(AppStudioError.ManifestLoadFailedError.name);
       chai
         .expect(reloadAndCheckResult._unsafeUnwrapErr().message)
-        .equals(AppStudioError.ManifestLoadFailedError.message);
+        .includes("Failed to load manifest file from notExist/.fx/manifest.source.json");
+    }
+  });
+
+  it("Empty manifest", async () => {
+    sandbox.stub<any, any>(fs, "readJson").resolves(undefined);
+    const reloadAndCheckResult = await plugin.reloadManifestAndCheckRequiredFields("empty");
+    chai.assert.isTrue(reloadAndCheckResult.isErr());
+    if (reloadAndCheckResult.isErr()) {
+      chai
+        .expect(reloadAndCheckResult._unsafeUnwrapErr().name)
+        .equals(AppStudioError.ManifestLoadFailedError.name);
+      chai
+        .expect(reloadAndCheckResult._unsafeUnwrapErr().message)
+        .includes("Failed to load manifest file");
     }
   });
 
   it("Invalid manifest", async () => {
-    const reloadAndCheckResult = await plugin.reloadManifestAndCheckRequiredFields(
-      "./invalidCheck"
-    );
+    const invalidInputPath = "invalid/.fx/manifest.source.json";
+    const invalidManifestPath = "tests/plugins/resource/appstudio/resources/invalid.manifest.json";
+    const invalidManifest = fs.readJson(invalidManifestPath);
+
+    sandbox.stub<any, any>(fs, "readJson").callsFake(async (file: string) => {
+      if (invalidInputPath === file) return invalidManifest;
+      return {};
+    });
+
+    const reloadAndCheckResult = await plugin.reloadManifestAndCheckRequiredFields("invalid");
     chai.assert.isTrue(reloadAndCheckResult.isErr());
     if (reloadAndCheckResult.isErr()) {
       chai
@@ -45,12 +65,22 @@ describe("Reload Manifest and Check Required Fields", () => {
         .equals(AppStudioError.ManifestLoadFailedError.name);
       chai
         .expect(reloadAndCheckResult._unsafeUnwrapErr().message)
-        .equals(AppStudioError.ManifestLoadFailedError.message);
+        .includes("Error: Name is missing.");
     }
   });
 
   it("Valid manifest", async () => {
-    const reloadAndCheckResult = await plugin.reloadManifestAndCheckRequiredFields("./validCheck");
+    // sandbox.stub(AppStudioPluginImpl.prototype, "reloadManifest" as any).withArgs("valid").returns(ok(fs.readJson(validManifestPath)));
+    const validInputPath = "valid/.fx/manifest.source.json";
+    const validManifestPath = "tests/plugins/resource/appstudio/resources/valid.manifest.json";
+    const validManifest = fs.readJson(validManifestPath);
+
+    sandbox.stub<any, any>(fs, "readJson").callsFake(async (file: string) => {
+      if (validInputPath === file) return validManifest;
+      return {};
+    });
+
+    const reloadAndCheckResult = await plugin.reloadManifestAndCheckRequiredFields("valid");
     chai.assert.isTrue(reloadAndCheckResult.isOk());
     if (reloadAndCheckResult.isOk()) {
       chai.assert.isNotEmpty(reloadAndCheckResult.value.name);

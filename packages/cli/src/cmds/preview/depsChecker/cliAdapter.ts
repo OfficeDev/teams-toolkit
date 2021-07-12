@@ -3,9 +3,7 @@ import { DepsCheckerEvent, Messages } from "./common";
 import { IDepsAdapter, IDepsTelemetry } from "./checker";
 import { cliEnvCheckerLogger as logger } from "./cliLogger";
 import { cliTelemetry } from "./cliTelemetry";
-import open from "open";
 import DialogManagerInstance from "../../../userInterface";
-// import { CliTelemetry } from "./telemetry/cliTelemetry";
 import CLIUIInstance from "../../../userInteraction";
 
 export class CLIAdapter implements IDepsAdapter {

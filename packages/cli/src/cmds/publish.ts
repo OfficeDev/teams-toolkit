@@ -10,7 +10,7 @@ import { YargsCommand } from "../yargsCommand";
 import { argsToInputs } from "../utils";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
-import { HelpParamGenerator } from "../helpParamGenerator";
+import HelpParamGenerator from "../helpParamGenerator";
 
 export default class Publish extends YargsCommand {
   public readonly commandHead = `publish`;

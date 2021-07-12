@@ -38,8 +38,8 @@ describe("Logger Tests", () => {
     warnStub.reset();
     infoStub.reset();
     verboseStub.reset();
-    setLogger();
     setLogLevel(LogLevel.Info);
+    setLogger();
   });
 
   it("setLogLevel should success with Error level", () => {

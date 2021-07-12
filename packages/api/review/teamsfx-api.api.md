@@ -170,8 +170,6 @@ export interface CryptoProvider {
 // @public @deprecated (undocumented)
 export interface Dialog {
     communicate: (msg: DialogMsg) => Promise<DialogMsg>;
-    // Warning: (ae-forgotten-export) The symbol "IProgressHandler" needs to be exported by the entry point index.d.ts
-    createProgressBar: (title: string, totalSteps: number) => IProgressHandler_2;
 }
 
 // @public @deprecated (undocumented)
@@ -586,6 +584,12 @@ export interface IWebApplicationInfo {
 export type Json = Record<string, unknown>;
 
 // @public (undocumented)
+export type LoadedPlugin = Plugin_2 & {
+    name: string;
+    displayName: string;
+};
+
+// @public (undocumented)
 export function loadOptions(q: Question, inputs: Inputs): Promise<{
     autoSkip: boolean;
     options?: StaticOptions;
@@ -795,19 +799,9 @@ export type Question = SingleSelectQuestion | MultiSelectQuestion | TextInputQue
 // @public @deprecated (undocumented)
 export enum QuestionType {
     // (undocumented)
-    Confirm = "Confirm",
-    // (undocumented)
     ExecuteCmd = "ExecuteCmd",
     // (undocumented)
-    OpenExternal = "OpenExternal",
-    // (undocumented)
     OpenFolder = "OpenFolder",
-    // (undocumented)
-    Radio = "radio",
-    // (undocumented)
-    SelectFolder = "SelectFolder",
-    // (undocumented)
-    Text = "Text",
     // (undocumented)
     UpdateGlobalState = "UpdateGlobalState"
 }

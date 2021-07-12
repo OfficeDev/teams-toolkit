@@ -7,7 +7,7 @@
 > This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
 > 
 
-Set custom logger. Use the output function if it's set. Priority is higher than setLogFunction.
+Set custom logger. Use the output functions if it's set. Priority is higher than setLogFunction.
 
 <b>Signature:</b>
 
@@ -24,4 +24,17 @@ export declare function setLogger(logger?: Logger): void;
 <b>Returns:</b>
 
 void
+
+## Example
+
+
+```typescript
+setLogger({
+  verbose: console.debug,
+  info: console.info,
+  warn: console.warn,
+  error: console.error,
+});
+
+```
 

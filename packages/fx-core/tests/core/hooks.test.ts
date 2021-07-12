@@ -36,7 +36,7 @@ import {
   PathNotExistError,
 } from "../../src/core/error";
 import * as os from "os";
-import { CoreHookContext, InvalidInputError, mapToJson, PluginNames } from "../../src";
+import { CoreHookContext, InvalidInputError, mapToJson } from "../../src";
 import { SolutionLoaderMW } from "../../src/core/middleware/solutionLoader";
 import { ContextInjecterMW } from "../../src/core/middleware/contextInjecter";
 import { ConfigWriterMW } from "../../src/core/middleware/configWriter";
@@ -44,6 +44,7 @@ import sinon from "sinon";
 import { MockProjectSettings, MockSolutionLoader, MockTools, randomAppName } from "./utils";
 import { ContextLoaderMW, newSolutionContext } from "../../src/core/middleware/contextLoader";
 import { AzureResourceSQL } from "../../src/plugins/solution/fx-solution/question";
+import { PluginNames } from "../../src/plugins/solution/fx-solution/constants";
 import { QuestionModelMW } from "../../src/core/middleware/questionModel";
 
 describe("Middleware", () => {

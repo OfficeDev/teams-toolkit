@@ -104,6 +104,7 @@
       "readTokenFail": "read token fail: ",
       "writeTokenFail": "write token fail: ",
       "saveTokenFail": "save token fail: ",
+      "readHomeAccountIdFail": "read home account id fail: ",
       "saveHomeAccountIdFail": "save home account id fail: "
     },
     "codeFlowLogin": {

@@ -75,7 +75,6 @@ import {
 import { TelemetrySenderMW } from "./middleware/telemetrySender";
 import * as uuid from "uuid";
 import { AxiosResponse } from "axios";
-import { sleep } from "../plugins/resource/spfx/utils/utils";
 
 export interface CoreHookContext extends HookContext {
   solutionContext?: SolutionContext;

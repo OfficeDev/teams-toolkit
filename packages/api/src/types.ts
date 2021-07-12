@@ -3,13 +3,16 @@
 "use strict";
 
 import { OptionItem } from "./qm";
-import { Platform, Stage, VsCodeEnv } from "./constants"; 
+import { Platform, Stage, VsCodeEnv } from "./constants";
+import { Plugin } from "./plugin";
 
-export type Json = Record<string,unknown>;
+export type Json = Record<string, unknown>;
 
 export type ConfigValue = any;
 
 export type PluginIdentity = string;
+
+export type LoadedPlugin = Plugin & { name: string; displayName: string };
 
 export type PluginConfig = ConfigMap;
 export type ReadonlyPluginConfig = ReadonlyMap<string, ConfigValue>;
@@ -155,20 +158,18 @@ export interface ProjectStates {
   };
 }
 
-export interface Inputs extends Json{
-  projectPath?:string;
+export interface Inputs extends Json {
+  projectPath?: string;
   platform: Platform;
   stage?: Stage;
-  vscodeEnv?:VsCodeEnv;
-  ignoreLock?:boolean;
-  ignoreTypeCheck?:boolean;
-  ignoreConfigPersist?:boolean;
-  correlationId?:string;
-}   
+  vscodeEnv?: VsCodeEnv;
+  ignoreLock?: boolean;
+  ignoreTypeCheck?: boolean;
+  ignoreConfigPersist?: boolean;
+  correlationId?: string;
+}
 
-
-
-export interface ProjectConfig{
+export interface ProjectConfig {
   settings?: ProjectSettings;
   config?: SolutionConfig;
 }

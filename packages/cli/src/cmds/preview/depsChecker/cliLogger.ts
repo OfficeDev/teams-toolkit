@@ -6,7 +6,7 @@ import cliLogger from "../../../commonlib/log";
 import { LogLevel } from "@microsoft/teamsfx-api";
 import { IDepsLogger } from "./checker";
 
-export class VSCodeLogger implements IDepsLogger {
+export class CLILogger implements IDepsLogger {
   private detailLogLines: string[] = [];
 
   public constructor() {}
@@ -45,4 +45,4 @@ export class VSCodeLogger implements IDepsLogger {
   }
 }
 
-export const vscodeLogger = new VSCodeLogger();
+export const cliEnvCheckerLogger = new CLILogger();

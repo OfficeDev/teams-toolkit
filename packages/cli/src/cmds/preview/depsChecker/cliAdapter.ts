@@ -1,7 +1,7 @@
 import * as path from "path";
 import { DepsCheckerEvent, Messages } from "./common";
 import { IDepsAdapter, IDepsTelemetry } from "./checker";
-import { vscodeLogger as logger } from "./cliLogger";
+import { cliEnvCheckerLogger as logger } from "./cliLogger";
 import { cliTelemetry } from "./cliTelemetry";
 import open from "open";
 

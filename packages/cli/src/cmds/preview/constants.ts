@@ -113,11 +113,5 @@ export const frontendPorts: [number, string[]][] = [
   [3000, hosts],
   [5000, hosts],
 ];
-export const backendPorts: [number, string[]][] = [
-  [7071, hosts],
-  [9229, hosts],
-];
-export const botPorts: [number, string[]][] = [
-  [3978, hosts],
-  [9239, hosts],
-];
+export const backendPorts: [number, string[]][] = [[7071, hosts]];
+export const botPorts: [number, string[]][] = [[3978, hosts]];

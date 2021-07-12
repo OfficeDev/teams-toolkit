@@ -12,5 +12,5 @@
     "cobertura"
   ],
   "check-coverage": true,
-  "lines": 50
+  "lines": 70
 }

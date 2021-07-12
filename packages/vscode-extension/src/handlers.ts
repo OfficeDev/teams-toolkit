@@ -493,13 +493,20 @@ export async function openWelcomeHandler(args?: any[]) {
 }
 
 function getTriggerFromProperty(args?: any[]) {
-  const isFromTreeView = args && args.toString() === "TreeView";
+  if (!args) {
+    return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette };
+  }
 
-  return {
-    [TelemetryProperty.TriggerFrom]: isFromTreeView
-      ? TelemetryTiggerFrom.TreeView
-      : TelemetryTiggerFrom.CommandPalette,
-  };
+  switch (args.toString()) {
+    case TelemetryTiggerFrom.TreeView:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.TreeView };
+    case TelemetryTiggerFrom.Webview:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview };
+    case TelemetryTiggerFrom.AutoOnInstall:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.AutoOnInstall };
+    default:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette };
+  }
 }
 
 async function openMarkdownHandler() {

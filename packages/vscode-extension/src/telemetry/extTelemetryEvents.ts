@@ -119,6 +119,7 @@ export enum TelemetryTiggerFrom {
   CommandPalette = "CommandPalette",
   TreeView = "TreeView",
   Webview = "Webview",
+  AutoOnInstall = "AutoOnInstall",
 }
 
 export enum TelemetryErrorType {

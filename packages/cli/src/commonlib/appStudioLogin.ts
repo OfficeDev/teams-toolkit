@@ -7,7 +7,7 @@ import { AppStudioTokenProvider, UserError } from "@microsoft/teamsfx-api";
 import { LogLevel } from "@azure/msal-node";
 import { CodeFlowLogin } from "./codeFlowLogin";
 import CLILogProvider from "./log";
-import { getBeforeCacheAccess, getAfterCacheAccess } from "./cacheAccess";
+import { CryptoCachePlugin } from "./cacheAccess";
 import { signedIn, signedOut } from "./common/constant";
 import { login, LoginStatus } from "./common/login";
 
@@ -15,13 +15,7 @@ const accountName = "appStudio";
 const scopes = ["https://dev.teams.microsoft.com/AppDefinitions.ReadWrite"];
 const SERVER_PORT = 0;
 
-const beforeCacheAccess = getBeforeCacheAccess(accountName);
-const afterCacheAccess = getAfterCacheAccess(scopes, accountName);
-
-const cachePlugin = {
-  beforeCacheAccess,
-  afterCacheAccess,
-};
+const cachePlugin = new CryptoCachePlugin(accountName);
 
 const config = {
   auth: {
@@ -31,7 +25,7 @@ const config = {
   system: {
     loggerOptions: {
       loggerCallback(loglevel: any, message: any, containsPii: any) {
-        if (this.logLevel<=LogLevel.Error) {
+        if (this.logLevel <= LogLevel.Error) {
           CLILogProvider.log(4 - loglevel, message);
         }
       },
@@ -125,7 +119,7 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
         const tokenJson = await this.getJsonObject();
         return Promise.resolve({ status: signedIn, token: loginToken, accountInfo: tokenJson });
       } else {
-        return Promise.resolve({ status: signedOut, token: undefined, accountInfo: undefined });  
+        return Promise.resolve({ status: signedOut, token: undefined, accountInfo: undefined });
       }
     } else {
       return Promise.resolve({ status: signedOut, token: undefined, accountInfo: undefined });

@@ -76,6 +76,7 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
    * Get team access token
    */
   async getAccessToken(showDialog = true): Promise<string | undefined> {
+    await AppStudioLogin.codeFlowInstance.reloadCache();
     if (!AppStudioLogin.codeFlowInstance.account) {
       if (showDialog) {
         const userConfirmation: boolean = await this.doesUserConfirmLogin();

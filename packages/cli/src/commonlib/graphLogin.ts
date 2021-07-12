@@ -10,18 +10,12 @@ import { CodeFlowLogin } from "./codeFlowLogin";
 import CLILogProvider from "./log";
 import { login, LoginStatus } from "./common/login";
 import { signedIn, signedOut } from "./common/constant";
-import { getBeforeCacheAccess, getAfterCacheAccess } from "./cacheAccess";
+import { CryptoCachePlugin } from "./cacheAccess";
 
 const accountName = "appStudio";
 const scopes = ["Application.ReadWrite.All"];
 
-const beforeCacheAccess = getBeforeCacheAccess(accountName);
-const afterCacheAccess = getAfterCacheAccess(scopes, accountName);
-
-const cachePlugin = {
-  beforeCacheAccess,
-  afterCacheAccess
-};
+const cachePlugin = new CryptoCachePlugin(accountName);
 
 const config = {
   auth: {

@@ -502,10 +502,8 @@ function getTriggerFromProperty(args?: any[]) {
       return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.TreeView };
     case TelemetryTiggerFrom.Webview:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview };
-    case TelemetryTiggerFrom.AutoOnInstall:
-      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.AutoOnInstall };
     default:
-      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette };
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Other };
   }
 }
 

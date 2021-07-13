@@ -29,5 +29,5 @@ export const commands: YargsCommand[] = [
   new Validate(),
   new Publish(),
   new Config(),
-  // new Preview(),
+  new Preview(),
 ];

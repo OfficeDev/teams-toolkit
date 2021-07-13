@@ -11,7 +11,6 @@
 
 import * as cp from "child_process";
 import * as os from "os";
-import * as sudo from "sudo-prompt";
 import { IDepsLogger } from "./checker";
 
 export namespace cpUtils {
@@ -134,35 +133,6 @@ export namespace cpUtils {
    */
   export function wrapArgInQuotes(arg: string): string {
     return quotationMark + arg + quotationMark;
-  }
-
-  /**
-   * Run sudo command and return stdout content.
-   * Note: the return value may contains EOL.
-   */
-  export function execSudo(logger: IDepsLogger, command: string): Promise<string> {
-    return new Promise<string>((resolve, reject) => {
-      try {
-        sudo.exec(command, { name: "TeamsFx Toolkit" }, (error, stdout, stderr) => {
-          logger.debug(
-            `Running execSudo, command: '${command}', error: '${error}', stdout: '${stdout}', stderr: '${stderr}'`
-          );
-
-          if (error) {
-            reject(error);
-          }
-
-          if (stdout) {
-            resolve(stdout.toString());
-          } else {
-            resolve("");
-          }
-        });
-      } catch (error) {
-        logger.debug(`Failed to run execSudo, command: '${command}', error: '${error}'`);
-        reject(error);
-      }
-    });
   }
 
   /**

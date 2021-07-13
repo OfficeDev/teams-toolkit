@@ -38,8 +38,8 @@ export const botFolderName = "bot";
 
 export const npmInstallCommand = "npm install";
 export const frontendStartCommand = "npx react-scripts start";
-export const backendStartJsCommand = `npx func start --javascript --port "7071" --cors "*"`;
-export const backendStartTsCommand = `npx func start --typescript --port "7071" --cors "*"`;
+export const backendStartJsCommand = `npx func start --javascript --port "7071" --cors "*"`; // TODO: dependency checker
+export const backendStartTsCommand = `npx func start --typescript --port "7071" --cors "*"`; // TODO: dependency checker
 export const backendWatchCommand = "npx tsc --watch";
 export const authStartCommand = "dotnet Microsoft.TeamsFx.SimpleAuth.dll"; // TODO: dependency checker
 export const ngrokStartCommand = "npx ngrok http 3978 --log=stdout";
@@ -93,9 +93,9 @@ export const ngrokStartTitle = "ngrok start";
 export const ngrokStartStartMessage = `execute 'ngrok http' under ${botFolderName} folder.`;
 export const ngrokStartSuccessMessage = "ngrok started successfully.";
 
-export const sideloadingTitle = "sideloading";
-export const sideloadingStartMessage = "open Teams web client.";
-export const sideloadingSuccessMessage = "Teams web client opened successfully.";
+export const previewTitle = "preview";
+export const previewStartMessage = "open Teams web client.";
+export const previewSuccessMessage = "Teams web client opened successfully.";
 
 export const frontendLocalEnvPrefix = "FRONTEND_";
 export const backendLocalEnvPrefix = "BACKEND_";
@@ -113,11 +113,5 @@ export const frontendPorts: [number, string[]][] = [
   [3000, hosts],
   [5000, hosts],
 ];
-export const backendPorts: [number, string[]][] = [
-  [7071, hosts],
-  [9229, hosts],
-];
-export const botPorts: [number, string[]][] = [
-  [3978, hosts],
-  [9239, hosts],
-];
+export const backendPorts: [number, string[]][] = [[7071, hosts]];
+export const botPorts: [number, string[]][] = [[3978, hosts]];

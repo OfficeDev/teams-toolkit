@@ -15,7 +15,7 @@ import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
 import CLIUIInstance from "../userInteraction";
 import CLILogProvider from "../commonlib/log";
-import { HelpParamGenerator } from "../helpParamGenerator";
+import HelpParamGenerator from "../helpParamGenerator";
 
 export class ResourceAdd extends YargsCommand {
   public readonly commandHead = `add`;

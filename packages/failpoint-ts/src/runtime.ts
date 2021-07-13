@@ -1,6 +1,6 @@
 import { Value } from "./marker";
 
-const ENV_VAR_NAME: string = "TEAMSFX_FAILPOINTS";
+export const ENV_VAR_NAME: string = "TEAMSFX_FAILPOINTS";
 
 /**
  * Checks whether a failpoint is activated.
@@ -21,7 +21,7 @@ export function evaluate(failpointName: string): Value | undefined {
 
   const vars = env.split(";")
 
-  const found = vars.find((name) => name === failpointName)
+  const found = vars.find((v) => v.startsWith(failpointName));
   if (!found) {
     return undefined;
   }
@@ -33,7 +33,12 @@ export function evaluate(failpointName: string): Value | undefined {
 
 const FAILPOINT_VALUE_CACHE: Map<string, Value | undefined> = new Map();
 
-// The value will be in form FAILPOINT_NAME=1|true|false|"string" or simply FAILPOINT_NAME
+export function clearFailpointCache() {
+  FAILPOINT_VALUE_CACHE.clear();
+}
+
+// The value will be in form FAILPOINT_NAME=1|true|false|"string" or simply FAILPOINT_NAME,
+// which is equivalent to FAILPOINT_NAME=true
 function parseValue(name: string, term: string): Value | undefined {
   if (name === term) {
     return { kind: "boolean", value: true };
@@ -46,7 +51,8 @@ function parseValue(name: string, term: string): Value | undefined {
   }
 
   const value = term.substring(prefix.length);
-  if (value[0] >= '0' && value[1] <= '1') {
+  // We just need look ahead once to determine whether the value is a number, a boolean or a string.
+  if (/^-?\d*$/.test(value)) {
     const result = parseInt(value);
     if (isNaN(result)) {
       throw new Error(`invalid syntax(${term}) for failpoint ${name}. Not a number.`);

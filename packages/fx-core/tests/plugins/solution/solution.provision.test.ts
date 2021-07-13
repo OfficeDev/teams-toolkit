@@ -63,17 +63,21 @@ import {
 import { validManifest } from "./util";
 import { IAppDefinition } from "../../../src/plugins/resource/appstudio/interfaces/IAppDefinition";
 import _ from "lodash";
-import { AadAppForTeamsPlugin } from "../../../src/plugins/resource/aad";
 import { TokenCredential } from "@azure/core-auth";
 import { TokenCredentialsBase, UserTokenCredentials } from "@azure/ms-rest-nodeauth";
 import { ResourceGroups } from "@azure/arm-resources";
 import { AppStudioClient } from "../../../src/plugins/resource/appstudio/appStudio";
 import * as solutionUtil from "../../../src/plugins/solution/fx-solution/util";
 import * as uuid from "uuid";
+import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
+import { AadAppForTeamsPlugin } from "../../../src";
+import Container from "typedi";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
-
+const aadPlugin = Container.get<Plugin>(ResourcePlugins.AadPlugin) as AadAppForTeamsPlugin;
+const spfxPlugin = Container.get<Plugin>(ResourcePlugins.SpfxPlugin);
+const fehostPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin);
 function instanceOfIMessage(obj: any): obj is IMessage {
   return "items" in obj;
 }
@@ -339,7 +343,7 @@ describe("provision() simple cases", () => {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",
         version: "1.0",
-        activeResourcePlugins: [solution.fehostPlugin.name],
+        activeResourcePlugins: [fehostPlugin.name],
       },
     };
     // We leverage the fact that in testing env, this is not file at `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`
@@ -388,7 +392,7 @@ describe("provision() with permission.json file missing", () => {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
         version: "1.0",
-        activeResourcePlugins: [solution.fehostPlugin.name],
+        activeResourcePlugins: [fehostPlugin.name],
       },
     };
     const result = await solution.provision(mockedCtx);
@@ -407,7 +411,7 @@ describe("provision() with permission.json file missing", () => {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",
         version: "1.0",
-        activeResourcePlugins: [solution.spfxPlugin.name],
+        activeResourcePlugins: [spfxPlugin.name],
       },
     };
     solution.doProvision = async function (_ctx: PluginContext): Promise<Result<any, FxError>> {
@@ -463,7 +467,7 @@ describe("provision() happy path for SPFx projects", () => {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",
         version: "1.0",
-        activeResourcePlugins: [solution.spfxPlugin.name],
+        activeResourcePlugins: [spfxPlugin.name],
       },
     };
 
@@ -524,28 +528,23 @@ describe("provision() happy path for Azure projects", () => {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
         version: "1.0",
-        activeResourcePlugins: [solution.fehostPlugin.name, solution.aadPlugin.name],
+        activeResourcePlugins: [fehostPlugin.name, aadPlugin.name],
       },
     };
 
-    mockProvisionThatAlwaysSucceed(solution.fehostPlugin);
-    solution.fehostPlugin.provision = async function (
-      ctx: PluginContext
-    ): Promise<Result<any, FxError>> {
+    mockProvisionThatAlwaysSucceed(fehostPlugin);
+    fehostPlugin.provision = async function (ctx: PluginContext): Promise<Result<any, FxError>> {
       ctx.config.set(FRONTEND_ENDPOINT, "http://example.com");
       ctx.config.set(FRONTEND_DOMAIN, "http://example.com");
       return ok(Void);
     };
 
-    mockProvisionThatAlwaysSucceed(solution.aadPlugin);
-    solution.aadPlugin.postProvision = async function (
-      ctx: PluginContext
-    ): Promise<Result<any, FxError>> {
+    mockProvisionThatAlwaysSucceed(aadPlugin);
+    aadPlugin.postProvision = async function (ctx: PluginContext): Promise<Result<any, FxError>> {
       ctx.config.set(REMOTE_AAD_ID, "mockedRemoteAadId");
       return ok(Void);
     };
 
-    const aadPlugin: AadAppForTeamsPlugin = solution.aadPlugin as any;
     aadPlugin.setApplicationInContext = function (
       ctx: PluginContext,
       _isLocalDebug?: boolean

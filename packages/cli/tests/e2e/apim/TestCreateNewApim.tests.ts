@@ -64,7 +64,9 @@ describe("Create a new API Management Service", function () {
         cwd: projectPath,
         env: process.env,
         timeout: 0,
-      }
+      },
+      3,
+      `teamsfx deploy`
     );
     console.log(`Deploy. Error message: ${result.stderr}`);
 

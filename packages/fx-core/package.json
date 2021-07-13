@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx-core",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "license": "MIT",
@@ -42,7 +42,7 @@
     "@azure/storage-blob": "^12.3.0",
     "@dbpiper/timer": "1.0.0-beta.2",
     "@feathersjs/hooks": "^0.6.5",
-    "@microsoft/teamsfx-api": "^0.2.1",
+    "@microsoft/teamsfx-api": "^0.3.0",
     "@types/jwt-decode": "3.1.0",
     "@types/proper-lockfile": "^4.1.1",
     "adm-zip": "^0.5.5",
@@ -69,10 +69,12 @@
     "node-ts-uuid": "^1.0.8",
     "openapi-types": "^7.2.3",
     "proper-lockfile": "^4.1.2",
+    "reflect-metadata": "^0.1.13",
     "semver": "^7.3.4",
     "sudo-prompt": "^9.2.1",
     "tedious": "^9.2.1",
     "tslib": "^2.1.0",
+    "typedi": "^0.10.0",
     "url-parse": "^1.5.1",
     "uuid": "^8.3.2",
     "validator": "^13.1.1",
@@ -149,11 +151,5 @@
     "*": [
       "npx prettier --config .prettierrc.js --ignore-unknown --write --ignore-path .prettierignore "
     ]
-  },
-  "nyc": {
-    "branches": 5,
-    "lines": 30,
-    "functions": 9,
-    "statements": 30
   }
 }

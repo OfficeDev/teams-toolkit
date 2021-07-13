@@ -316,5 +316,5 @@ export function getColorizedString(message: Array<{ content: string; color: Colo
       }
     })
     .join("");
-  return colorizedMessage + "\u00A0";
+  return colorizedMessage + (process.stdout.isTTY ? "\u00A0\u001B[K" : "");
 }

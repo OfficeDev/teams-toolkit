@@ -121,7 +121,11 @@ class NewTemplete extends YargsCommand {
   }): Promise<Result<null, FxError>> {
     const folder = path.resolve((args.folder as string) || "./");
     if (!fs.pathExistsSync(folder)) {
-      throw NotFoundInputedFolder(folder);
+      CliTelemetry.sendTelemetryErrorEvent(
+        TelemetryEvent.DownloadSample,
+        NotFoundInputedFolder(folder)
+      );
+      return err(NotFoundInputedFolder(folder));
     }
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSampleStart);
     const templateName = args["template-name"] as string;
@@ -129,7 +133,11 @@ class NewTemplete extends YargsCommand {
 
     const sampleAppFolder = path.resolve(folder, template.sampleAppName);
     if ((await fs.pathExists(sampleAppFolder)) && (await fs.readdir(sampleAppFolder)).length > 0) {
-      throw ProjectFolderExist(sampleAppFolder);
+      CliTelemetry.sendTelemetryErrorEvent(
+        TelemetryEvent.DownloadSample,
+        ProjectFolderExist(sampleAppFolder)
+      );
+      return err(ProjectFolderExist(sampleAppFolder));
     }
 
     const result = await this.fetchCodeZip(template.sampleAppUrl);

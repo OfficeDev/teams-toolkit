@@ -131,5 +131,5 @@ jobs:
                              --iteration="Microsoft Teams Extensibility" \
                              --organization="https://msazure.visualstudio.com/" \
                              --project="Microsoft Teams Extensibility" \
-                             --fields="Microsoft.VSTS.TCM.ReproSteps=<a>https://github.com/LongOddCode/lerna-test/actions/runs/${{ github.run_id }}</a>" \
+                             --fields="Microsoft.VSTS.TCM.ReproSteps=<a>https://github.com/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}</a>" \
                              --description="<table class=\"w3-table w3-striped w3-bordered\">${{ steps.git-log.outputs.description }}</table>"

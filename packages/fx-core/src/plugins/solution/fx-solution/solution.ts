@@ -1197,8 +1197,9 @@ export class TeamsAppSolution implements Solution {
 
     const localTeamsAppID = ctx.config.get(GLOBAL_CONFIG)?.getString(LOCAL_DEBUG_TEAMS_APP_ID);
 
+    const appStudioPlugin = this.AppStudioPlugin as AppStudioPlugin;
     const maybeTeamsAppId = await appStudioPlugin.getAppDefinitionAndUpdate(
-      getPluginContext(ctx, this.appStudioPlugin.name, manifest),
+      getPluginContext(ctx, this.AppStudioPlugin.name, manifest),
       "localDebug",
       manifest,
       await ctx.appStudioToken?.getAccessToken()
@@ -2071,9 +2072,9 @@ export class TeamsAppSolution implements Solution {
     });
     const manifest: TeamsAppManifest = JSON.parse(manifestStr);
     await fs.writeFile(manifestPath, manifestStr);
-    const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
+    const appStudioPlugin: AppStudioPlugin = this.AppStudioPlugin as any;
     const maybeTeamsAppId = await appStudioPlugin.getAppDefinitionAndUpdate(
-      getPluginContext(ctx, this.appStudioPlugin.name, manifest),
+      getPluginContext(ctx, this.AppStudioPlugin.name, manifest),
       "remote",
       manifest,
       await ctx.appStudioToken?.getAccessToken()

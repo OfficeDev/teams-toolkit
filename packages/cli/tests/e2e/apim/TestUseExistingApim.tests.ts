@@ -74,7 +74,7 @@ describe("Use an existing API Management Service", function () {
         cwd: projectPath,
         env: process.env,
         timeout: 0,
-      }
+      }, 3, `teamsfx deploy apim`
     );
     console.log(`Deploy. Error message: ${result.stderr}`);
 

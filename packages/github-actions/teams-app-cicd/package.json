@@ -27,7 +27,7 @@
   "dependencies": {
     "@actions/core": "^1.2.6",
     "@actions/exec": "^1.1.0",
-    "@microsoft/teamsfx-cli": "^0.2.1",
+    "@microsoft/teamsfx-cli": "0.2.1",
     "fs-extra": "^10.0.0"
   },
   "devDependencies": {

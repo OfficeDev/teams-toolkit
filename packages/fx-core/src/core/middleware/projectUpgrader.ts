@@ -11,11 +11,7 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import { deserializeDict, serializeDict } from "../..";
 
-const contextUpgrade = [
-  {
-    plugin: "solution",
-    relatedKeys: ["localDebugTeamsAppId", "teamsAppTenantId"],
-  },
+const resourceContext = [
   {
     plugin: "fx-resource-aad-app-for-teams",
     secret: "local_clientSecret",
@@ -33,6 +29,11 @@ const contextUpgrade = [
     relatedKeys: ["localBotId", "localObjectId", "local_redirectUri", "bots", "composeExtensions"],
   },
 ];
+
+const solutionContext = {
+  plugin: "solution",
+  relatedKeys: ["localDebugTeamsAppId", "teamsAppTenantId"],
+};
 
 export const ProjectUpgraderMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
   await upgradeContext(ctx);
@@ -63,7 +64,7 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<void> {
     // Update value of specific key in context file to secret pattern.
     // Return: map of updated values.
     const updatedKeys = updateContextValue(context);
-    if (!updatedKeys || updatedKeys.keys.length == 0) {
+    if (!updatedKeys || updatedKeys.size == 0) {
       // No keys need to be updated, which means the file is up-to-date.
       // Can quit directly.
       return;
@@ -124,7 +125,9 @@ async function saveContext(contextPath: string, context: Json): Promise<void> {
 
 function updateContextValue(context: Json): Map<string, any> {
   const res: Map<string, any> = new Map();
-  for (const item of contextUpgrade) {
+
+  // Update resource context.
+  for (const item of resourceContext) {
     const pluginContext: any = context[item.plugin];
     if (!pluginContext) {
       continue;
@@ -139,6 +142,15 @@ function updateContextValue(context: Json): Map<string, any> {
     }
   }
 
+  // Update solution context.
+  const pluginContext: any = context[solutionContext.plugin];
+  for (const key of solutionContext.relatedKeys) {
+    if (pluginContext[key] && !isSecretPattern(pluginContext[key])) {
+      res.set(getUserDataKey(solutionContext.plugin, key), pluginContext[key]);
+      pluginContext[key] = getSecretPattern(solutionContext.plugin, key);
+    }
+  }
+
   return res;
 }
 
@@ -146,10 +158,11 @@ function mergeKeysToUserDate(
   userData: Record<string, string>,
   updatedKeys: Map<string, any>
 ): void {
-  for (const item of contextUpgrade) {
+  // Move resource context first to userdata
+  let moved = false;
+  for (const item of resourceContext) {
     // Check whether corresponding secret exists.
-    // For keys in solution, no secret check is needed.
-    if (item.secret && !userData[getUserDataKey(item.plugin, item.secret)]) {
+    if (!userData[getUserDataKey(item.plugin, item.secret)]) {
       continue;
     }
 
@@ -157,6 +170,18 @@ function mergeKeysToUserDate(
       const userDataKey = getUserDataKey(item.plugin, key);
       // Merge will only happen when userData does not contain certain key.
       // Otherwise, value in userData will be regarded as source of truth.
+      if (!userData[userDataKey] && updatedKeys.has(userDataKey)) {
+        moved = true;
+        userData[userDataKey] = updatedKeys.get(userDataKey);
+      }
+    }
+  }
+
+  // If any key moved, means at least one secret exists.
+  // Move solution context.
+  if (moved) {
+    for (const key of solutionContext.relatedKeys) {
+      const userDataKey = getUserDataKey(solutionContext.plugin, key);
       if (!userData[userDataKey] && updatedKeys.has(userDataKey)) {
         userData[userDataKey] = updatedKeys.get(userDataKey);
       }

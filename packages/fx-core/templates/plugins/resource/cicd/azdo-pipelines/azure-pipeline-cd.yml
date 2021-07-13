@@ -1,0 +1,34 @@
+trigger:
+  - main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+  # Build the project.
+  - task: teams-app-cicd@1
+    inputs:
+      operationType: "Build Teams App"
+  # Run unit test.
+  - task: NodeTool@0
+    inputs:
+      versionSpec: "10.x"
+    displayName: "Install Node.js"
+  - script: npm run test
+    displayName: "Run Unit Test"
+  # Provision hosting environment.
+  - task: teams-app-cicd@1
+    inputs:
+      operationType: "Provision Hosting Environment"
+  # Deploy to hosting environment.
+  - task: teams-app-cicd@1
+    inputs:
+      operationType: "Deploy to hosting environment"
+  # Validate Teams App Manifest.
+  - task: teams-app-cicd@1
+    inputs:
+      operationType: "Validate Teams App Manifest"
+  # Publish Teams App.
+  - task: teams-app-cicd@1
+    inputs:
+      operationType: "Publish Teams App"

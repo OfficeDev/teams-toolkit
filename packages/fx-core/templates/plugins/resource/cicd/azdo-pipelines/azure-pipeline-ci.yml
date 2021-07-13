@@ -1,0 +1,18 @@
+trigger:
+  - dev
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+  # Build the project.
+  - task: teams-app-cicd@1
+    inputs:
+      operationType: "Build Teams App"
+  # Run unit test.
+  - task: NodeTool@0
+    inputs:
+      versionSpec: "10.x"
+    displayName: "Install Node.js"
+  - script: npm run test
+    displayName: "Run Unit Test"

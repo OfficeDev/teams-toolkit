@@ -107,8 +107,7 @@ class AccountCrypto {
               this.currentKey = key;
             }
           } else {
-            // assign an invalid value
-            this.currentKey = "Unknown";
+            this.currentKey = key;
           }
         }
       } catch {

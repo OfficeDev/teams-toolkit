@@ -9,6 +9,7 @@ import {BaseError} from './base-error'
 import * as fs from 'fs-extra'
 
 async function run(): Promise<void> {
+  process.env.CI_ENABLED = 'true'
   try {
     let projectRoot = core.getInput(ActionInputs.ProjectRoot)
     if (!projectRoot && process.env.GITHUB_WORKSPACE) {

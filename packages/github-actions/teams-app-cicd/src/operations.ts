@@ -57,7 +57,7 @@ export class Operations {
   static async DeployToHostingEnvironment(
     projectRoot: string
   ): Promise<number> {
-    const ret = await Execute(Commands.TeamsfxDeploy, projectRoot)
+    const ret = await Execute(Commands.TeamsfxDeploy(), projectRoot)
 
     const packageSolutionPath = path.join(
       projectRoot,
@@ -82,7 +82,7 @@ export class Operations {
   }
 
   static async PackTeamsApp(projectRoot: string): Promise<number> {
-    const ret = await Execute(Commands.TeamsfxBuild, projectRoot)
+    const ret = await Execute(Commands.TeamsfxBuild(), projectRoot)
     if (ret === 0) {
       core.setOutput(
         ActionOutputs.PackageZipPath,
@@ -93,10 +93,10 @@ export class Operations {
   }
 
   static async ValidateTeamsAppManifest(projectRoot: string): Promise<number> {
-    return await Execute(Commands.TeamsfxValidate, projectRoot)
+    return await Execute(Commands.TeamsfxValidate(), projectRoot)
   }
 
   static async PublishTeamsApp(projectRoot: string): Promise<number> {
-    return await Execute(Commands.TeamsfxPublish, projectRoot)
+    return await Execute(Commands.TeamsfxPublish(), projectRoot)
   }
 }

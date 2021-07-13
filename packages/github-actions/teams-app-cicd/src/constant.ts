@@ -12,15 +12,26 @@ export class ActionOutputs {
 }
 
 export class Commands {
+  static readonly TeamsfxCliVersion: string = '0.2.1'
   static readonly NpmInstall: string = 'npm install'
   static readonly NpmRunBuild: string = 'npm run build'
-  static readonly TeamsfxProvision = (subscriptionId: string): string =>
-    `npx @microsoft/teamsfx-cli provision --subscription ${subscriptionId}`
-  static readonly TeamsfxDeploy: string = 'npx @microsoft/teamsfx-cli deploy'
-  static readonly TeamsfxBuild: string = 'npx @microsoft/teamsfx-cli build'
-  static readonly TeamsfxValidate: string =
-    'npx @microsoft/teamsfx-cli validate'
-  static readonly TeamsfxPublish: string = 'npx @microsoft/teamsfx-cli publish'
+  static readonly TeamsfxProvision = (
+    subscriptionId: string,
+    version = Commands.TeamsfxCliVersion
+  ): string =>
+    `npx @microsoft/teamsfx-cli@${version} provision --subscription ${subscriptionId}`
+  static readonly TeamsfxDeploy = (
+    version = Commands.TeamsfxCliVersion
+  ): string => `npx @microsoft/teamsfx-cli@${version} deploy`
+  static readonly TeamsfxBuild = (
+    version = Commands.TeamsfxCliVersion
+  ): string => `npx @microsoft/teamsfx-cli@${version} build`
+  static readonly TeamsfxValidate = (
+    version = Commands.TeamsfxCliVersion
+  ): string => `npx @microsoft/teamsfx-cli@${version} validate`
+  static readonly TeamsfxPublish = (
+    version = Commands.TeamsfxCliVersion
+  ): string => `npx @microsoft/teamsfx-cli@${version} publish`
 }
 
 export class Pathes {

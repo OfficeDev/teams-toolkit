@@ -121,13 +121,14 @@ ActionOutputs.PackageZipPath = 'package-zip-path';
 class Commands {
 }
 exports.Commands = Commands;
+Commands.TeamsfxCliVersion = '0.2.1';
 Commands.NpmInstall = 'npm install';
 Commands.NpmRunBuild = 'npm run build';
-Commands.TeamsfxProvision = (subscriptionId) => `npx @microsoft/teamsfx-cli provision --subscription ${subscriptionId}`;
-Commands.TeamsfxDeploy = 'npx @microsoft/teamsfx-cli deploy';
-Commands.TeamsfxBuild = 'npx @microsoft/teamsfx-cli build';
-Commands.TeamsfxValidate = 'npx @microsoft/teamsfx-cli validate';
-Commands.TeamsfxPublish = 'npx @microsoft/teamsfx-cli publish';
+Commands.TeamsfxProvision = (subscriptionId, version = Commands.TeamsfxCliVersion) => `npx @microsoft/teamsfx-cli@${version} provision --subscription ${subscriptionId}`;
+Commands.TeamsfxDeploy = (version = Commands.TeamsfxCliVersion) => `npx @microsoft/teamsfx-cli@${version} deploy`;
+Commands.TeamsfxBuild = (version = Commands.TeamsfxCliVersion) => `npx @microsoft/teamsfx-cli@${version} build`;
+Commands.TeamsfxValidate = (version = Commands.TeamsfxCliVersion) => `npx @microsoft/teamsfx-cli@${version} validate`;
+Commands.TeamsfxPublish = (version = Commands.TeamsfxCliVersion) => `npx @microsoft/teamsfx-cli@${version} publish`;
 class Pathes {
 }
 exports.Pathes = Pathes;
@@ -448,7 +449,7 @@ class Operations {
     static DeployToHostingEnvironment(projectRoot) {
         var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
-            const ret = yield exec_1.Execute(constant_1.Commands.TeamsfxDeploy, projectRoot);
+            const ret = yield exec_1.Execute(constant_1.Commands.TeamsfxDeploy(), projectRoot);
             const packageSolutionPath = path.join(projectRoot, constant_1.Pathes.PackageSolutionJson);
             if (yield fs.pathExists(packageSolutionPath)) {
                 const solutionConfig = yield fs.readJSON(packageSolutionPath);
@@ -462,7 +463,7 @@ class Operations {
     }
     static PackTeamsApp(projectRoot) {
         return __awaiter(this, void 0, void 0, function* () {
-            const ret = yield exec_1.Execute(constant_1.Commands.TeamsfxBuild, projectRoot);
+            const ret = yield exec_1.Execute(constant_1.Commands.TeamsfxBuild(), projectRoot);
             if (ret === 0) {
                 core.setOutput(constant_1.ActionOutputs.PackageZipPath, path.join(projectRoot, constant_1.Pathes.TeamsAppPackageZip));
             }
@@ -471,12 +472,12 @@ class Operations {
     }
     static ValidateTeamsAppManifest(projectRoot) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield exec_1.Execute(constant_1.Commands.TeamsfxValidate, projectRoot);
+            return yield exec_1.Execute(constant_1.Commands.TeamsfxValidate(), projectRoot);
         });
     }
     static PublishTeamsApp(projectRoot) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield exec_1.Execute(constant_1.Commands.TeamsfxPublish, projectRoot);
+            return yield exec_1.Execute(constant_1.Commands.TeamsfxPublish(), projectRoot);
         });
     }
 }

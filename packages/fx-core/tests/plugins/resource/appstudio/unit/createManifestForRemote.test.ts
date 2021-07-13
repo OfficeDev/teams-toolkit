@@ -4,6 +4,7 @@
 import "mocha";
 import * as chai from "chai";
 import { AppStudioPlugin } from "./../../../../../src/plugins/resource/appstudio";
+import { AppStudioPluginImpl } from "./../../../../../src/plugins/resource/appstudio/plugin";
 import { TeamsBot } from "./../../../../../src/plugins/resource/bot";
 import { AppStudioError } from "./../../../../../src/plugins/resource/appstudio/errors";
 import {
@@ -22,6 +23,7 @@ import { AppStudioResultFactory } from "../../../../../src/plugins/resource/apps
 
 describe("Reload Manifest and Check Required Fields", () => {
   let plugin: AppStudioPlugin;
+  let internalError_ctx: PluginContext;
   let ctx: PluginContext;
   let manifest: TeamsAppManifest;
   let BotPlugin: LoadedPlugin;
@@ -30,19 +32,36 @@ describe("Reload Manifest and Check Required Fields", () => {
 
   beforeEach(async () => {
     plugin = new AppStudioPlugin();
-    ctx = {
+    internalError_ctx = {
       root: "./",
       configOfOtherPlugins: new Map(),
       config: new ConfigMap(),
       app: new TeamsAppManifest(),
     };
-    ctx.ProjectSettings = {
+    internalError_ctx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
         version: "1.0",
+      },
+    };
+
+    ctx = {
+      root: "./",
+      configOfOtherPlugins: new Map(),
+      config: new ConfigMap(),
+      app: new TeamsAppManifest(),
+    };
+    ctx.projectSettings = {
+      appName: "my app",
+      currentEnv: "default",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        name: "azure",
+        version: "1.0",
+        capabilities: ["Bot"],
       },
     };
     manifest = new TeamsAppManifest();
@@ -78,7 +97,7 @@ describe("Reload Manifest and Check Required Fields", () => {
 
   it("Internal error", async () => {
     const createManifestForRemoteResult = await plugin.createManifestForRemote(
-      ctx,
+      internalError_ctx,
       ok(selectedPlugins),
       manifest
     );
@@ -86,7 +105,52 @@ describe("Reload Manifest and Check Required Fields", () => {
     if (createManifestForRemoteResult.isErr()) {
       chai
         .expect(createManifestForRemoteResult._unsafeUnwrapErr().name)
+        .equals(AppStudioError.InternalError.name);
+    }
+  });
+
+  it("maybeConfig error", async () => {
+    sandbox
+      .stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any)
+      .returns(
+        err(
+          AppStudioResultFactory.SystemError(
+            AppStudioError.UnhandledError.name,
+            AppStudioError.UnhandledError.message
+          )
+        )
+      );
+    const createManifestForRemoteResult = await plugin.createManifestForRemote(
+      ctx,
+      ok(selectedPlugins),
+      manifest
+    );
+
+    chai.assert.isTrue(createManifestForRemoteResult.isErr());
+    if (createManifestForRemoteResult.isErr()) {
+      chai
+        .expect(createManifestForRemoteResult._unsafeUnwrapErr().name)
         .equals(AppStudioError.UnhandledError.name);
     }
+  });
+
+  it("success to return app definition happy path", async () => {
+    sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns(
+      ok({
+        tabEndpoint: "tabEndpoint",
+        tabDomain: "tabDomain",
+        aadId: uuid.v4(),
+        botDomain: "botDomain",
+        botId: uuid.v4(),
+        webApplicationInfoResource: "webApplicationInfoResource",
+      })
+    );
+    const createManifestForRemoteResult = await plugin.createManifestForRemote(
+      ctx,
+      ok(selectedPlugins),
+      manifest
+    );
+
+    chai.assert.isTrue(createManifestForRemoteResult.isOk());
   });
 });

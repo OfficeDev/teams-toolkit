@@ -10,7 +10,6 @@ import {
   Result,
   PluginContext,
   Plugin,
-  LoadedPlugin,
   TeamsAppManifest,
   Platform,
   LogProvider,
@@ -174,8 +173,7 @@ export class AppStudioPluginImpl {
    * @returns
    */
   public async createManifest(settings: ProjectSettings): Promise<TeamsAppManifest | undefined> {
-    const solutionSettings: AzureSolutionSettings =
-      settings.solutionSettings as AzureSolutionSettings;
+    const solutionSettings: AzureSolutionSettings = settings.solutionSettings as AzureSolutionSettings;
     if (
       !solutionSettings.capabilities ||
       (!solutionSettings.capabilities.includes(BotOptionItem.id) &&
@@ -343,7 +341,7 @@ export class AppStudioPluginImpl {
 
   public createManifestForRemote(
     ctx: PluginContext,
-    maybeSelectedPlugins: Result<LoadedPlugin[], FxError>,
+    maybeSelectedPlugins: Result<Plugin[], FxError>,
     manifest: TeamsAppManifest
   ): Result<[IAppDefinition, TeamsAppManifest], FxError> {
     if (maybeSelectedPlugins.isErr()) {
@@ -369,8 +367,14 @@ export class AppStudioPluginImpl {
       return err(maybeConfig.error);
     }
 
-    const { tabEndpoint, tabDomain, aadId, botDomain, botId, webApplicationInfoResource } =
-      maybeConfig.value;
+    const {
+      tabEndpoint,
+      tabDomain,
+      aadId,
+      botDomain,
+      botId,
+      webApplicationInfoResource,
+    } = maybeConfig.value;
 
     const validDomains: string[] = [];
 
@@ -407,7 +411,7 @@ export class AppStudioPluginImpl {
    */
   public async createAndConfigTeamsManifest(
     ctx: PluginContext,
-    maybeSelectedPlugins: Result<LoadedPlugin[], FxError>
+    maybeSelectedPlugins: Result<Plugin[], FxError>
   ): Promise<Result<IAppDefinition, FxError>> {
     const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx.root);
     if (maybeManifest.isErr()) {

@@ -3,6 +3,7 @@
 "use strict";
 
 import * as path from "path";
+import "reflect-metadata";
 
 export * from "./common";
 export * from "./plugins";

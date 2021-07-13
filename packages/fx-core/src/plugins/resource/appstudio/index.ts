@@ -69,23 +69,17 @@ export class AppStudioPlugin implements Plugin {
     return ok(appStudioQuestions);
   }
 
-  public async updateApp(
-    appDefinition: IAppDefinition,
+  public async getAppDefinitionAndUpdate(
+    ctx: PluginContext,
     type: "localDebug" | "remote",
-    createIfNotExist: boolean,
-    teamsAppId?: string,
-    appStudioToken?: string,
-    logProvider?: LogProvider,
-    projectRoot?: string
+    manifest: TeamsAppManifest,
+    appStudioToken?: string
   ): Promise<Result<string, FxError>> {
-    return await this.appStudioPluginImpl.updateApp(
-      appDefinition,
+    return await this.appStudioPluginImpl.getAppDefinitionAndUpdate(
+      ctx,
       appStudioToken!,
       type,
-      createIfNotExist,
-      teamsAppId,
-      logProvider,
-      projectRoot
+      manifest
     );
   }
 
@@ -134,37 +128,12 @@ export class AppStudioPlugin implements Plugin {
     return ok(validationResult);
   }
 
-  public getDevAppDefinition(
-    manifest: string,
-    appId: string,
-    domains: string[],
-    webApplicationInfoResource: string,
-    ignoreIcon: boolean,
-    tabEndpoint?: string,
-    appName?: string,
-    version?: string,
-    botId?: string,
-    appNameSuffix?: string
-  ): [IAppDefinition, TeamsAppManifest] {
-    return this.appStudioPluginImpl.getDevAppDefinition(
-      manifest,
-      appId,
-      domains,
-      webApplicationInfoResource,
-      ignoreIcon,
-      tabEndpoint,
-      appName,
-      version,
-      botId,
-      appNameSuffix
-    );
-  }
-
-  public convertToAppDefinition(
-    appManifest: TeamsAppManifest,
-    ignoreIcon: boolean
-  ): IAppDefinition {
-    return this.appStudioPluginImpl.convertToAppDefinition(appManifest, ignoreIcon);
+  public async getConfigAndAppDefinition(
+    ctx: PluginContext,
+    localDebug: boolean,
+    manifest: TeamsAppManifest
+  ): Promise<Result<[IAppDefinition, TeamsAppManifest], FxError>> {
+    return await this.appStudioPluginImpl.getConfigAndAppDefinition(ctx, localDebug, manifest);
   }
 
   public createManifestForRemote(
@@ -173,23 +142,6 @@ export class AppStudioPlugin implements Plugin {
     manifest: TeamsAppManifest
   ): Result<[IAppDefinition, TeamsAppManifest], FxError> {
     return this.appStudioPluginImpl.createManifestForRemote(ctx, maybeSelectedPlugins, manifest);
-  }
-
-  public getConfigForCreatingManifest(
-    ctx: PluginContext,
-    localDebug: boolean
-  ): Result<
-    {
-      tabEndpoint?: string;
-      tabDomain?: string;
-      aadId: string;
-      botDomain?: string;
-      botId?: string;
-      webApplicationInfoResource: string;
-    },
-    FxError
-  > {
-    return this.appStudioPluginImpl.getConfigForCreatingManifest(ctx, localDebug);
   }
 
   public createAndConfigTeamsManifest(

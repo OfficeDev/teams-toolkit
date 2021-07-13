@@ -6,19 +6,11 @@
 import * as path from "path";
 import { Argv, Options } from "yargs";
 
-import {
-  FxError,
-  err,
-  ok,
-  Result,
-  Stage,
-  MultiSelectQuestion,
-  OptionItem,
-} from "@microsoft/teamsfx-api";
+import { FxError, err, ok, Result, Stage } from "@microsoft/teamsfx-api";
 
 import activate from "../activate";
 import { YargsCommand } from "../yargsCommand";
-import { flattenNodes, getSystemInputs } from "../utils";
+import { getSystemInputs } from "../utils";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
@@ -27,7 +19,7 @@ import {
 } from "../telemetry/cliTelemetryEvents";
 import CLIUIInstance from "../userInteraction";
 import HelpParamGenerator from "../helpParamGenerator";
-import { CannotDeployPlugin } from "../error";
+import * as constants from "../constants";
 
 export default class Deploy extends YargsCommand {
   public readonly commandHead = `deploy`;
@@ -35,7 +27,7 @@ export default class Deploy extends YargsCommand {
   public readonly description = "Deploy the current application.";
 
   public params: { [_: string]: Options } = {};
-  public readonly deployPluginNodeName = "deploy-plugin";
+  public readonly deployPluginNodeName = constants.deployPluginNodeName;
 
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp(Stage.deploy);
@@ -79,37 +71,12 @@ export default class Deploy extends YargsCommand {
 
     const core = result.value;
     {
-      /// TODO: this should be removed!
-      const result = await core.getQuestions(Stage.deploy, getSystemInputs(rootFolder));
-      if (result.isErr()) {
-        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Deploy, result.error);
-        return err(result.error);
-      }
-      const node = result.value;
-      if (node) {
-        const allNodes = flattenNodes(node);
-        const deployPluginNode = allNodes.find(
-          (node) => node.data.name === this.deployPluginNodeName
-        )!;
-        const components = (args.components as string[]) || [];
-        const option = (deployPluginNode.data as MultiSelectQuestion).staticOptions as OptionItem[];
-        // Check if the component/plugin is in the project.
-        for (const component of components) {
-          const result = option.find(
-            (item) => (item.cliName ? item.cliName : item.id) === component
-          );
-          if (!result) {
-            return err(CannotDeployPlugin(component));
-          }
-        }
-        if (components.length === 0) {
-          CLIUIInstance.updatePresetAnswer(
-            this.deployPluginNodeName,
-            option.map((op) => op.id)
-          );
-        } else {
-          CLIUIInstance.updatePresetAnswer(this.deployPluginNodeName, components);
-        }
+      const components = (args.components as string[]) || [];
+      const options = this.params[this.deployPluginNodeName].choices as string[];
+      if (components.length === 0) {
+        CLIUIInstance.updatePresetAnswer(this.deployPluginNodeName, options);
+      } else {
+        CLIUIInstance.updatePresetAnswer(this.deployPluginNodeName, components);
       }
     }
 

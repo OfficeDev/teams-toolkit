@@ -21,7 +21,7 @@ const serviceName = "Microsoft Teams Toolkit";
 
 export const UTF8 = "utf8";
 
-class AccountCrypto {
+export class AccountCrypto {
   private readonly algorithm: crypto.CipherGCMTypes = "aes-256-gcm";
   private readonly accountName: string;
   private readonly keytar?: typeof keytarType;
@@ -90,8 +90,7 @@ class AccountCrypto {
               this.currentKey = key;
             }
           } else {
-            // assign an invalid value
-            this.currentKey = "Unknown";
+            this.currentKey = key;
           }
         }
       } catch {

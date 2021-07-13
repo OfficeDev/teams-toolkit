@@ -55,6 +55,8 @@ jobs:
 
   target-branch-test:
     runs-on: ubuntu-latest
+    outputs:
+      coverages: ${{ steps.unit-test.outputs.coverages }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2

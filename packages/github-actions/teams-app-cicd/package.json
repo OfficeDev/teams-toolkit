@@ -1,5 +1,5 @@
 {
-  "name": "teams-toolkit-cicd",
+  "name": "teams-app-cicd",
   "version": "0.1.0",
   "private": true,
   "description": "GitHub Action to support Teams App Developers to build their workflows.",

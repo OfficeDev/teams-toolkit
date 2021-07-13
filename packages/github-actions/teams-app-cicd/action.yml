@@ -1,4 +1,4 @@
-name: 'Teams Toolkit CI/CD'
+name: 'Teams App CI/CD'
 description: 'GitHub Action to help Teams App Developers build their CI/CD workflows.'
 inputs:
   project-root:

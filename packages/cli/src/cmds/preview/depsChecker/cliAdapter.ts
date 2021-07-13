@@ -5,6 +5,7 @@ import { cliEnvCheckerLogger as logger } from "./cliLogger";
 import { cliTelemetry } from "./cliTelemetry";
 import DialogManagerInstance from "../../../userInterface";
 import CLIUIInstance from "../../../userInteraction";
+import cliLogger from "../../../commonlib/log";
 
 export class CLIAdapter implements IDepsAdapter {
   private readonly configurationPrefix = "fx-extension";
@@ -40,8 +41,13 @@ export class CLIAdapter implements IDepsAdapter {
   }
 
   public async runWithProgressIndicator(callback: () => Promise<void>): Promise<void> {
-    // TODO: show progress info
-    await callback();
+    const timer = setInterval(() => cliLogger.rawLog("."), this.downloadIndicatorInterval);
+    try {
+      await callback();
+    } finally {
+      clearTimeout(timer);
+      cliLogger.rawLog("\n");
+    }
   }
 
   public async displayContinueWithLearnMore(message: string, link: string): Promise<boolean> {

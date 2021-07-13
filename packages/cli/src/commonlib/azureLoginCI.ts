@@ -139,11 +139,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     throw new Error("Method not implemented.");
   }
 
-  getSubscriptionId(): string | undefined {
-    throw new Error("Method not implemented.");
-  }
-
-  getTenantId(): string | undefined {
+  getSelectedSubscription(): Record<string, string> | undefined {
     throw new Error("Method not implemented.");
   }
 

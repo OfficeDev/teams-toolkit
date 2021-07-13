@@ -36,10 +36,7 @@ class TestAzureAccountProvider implements AzureAccountProvider {
     getAccountInfo(): Record<string, string> {
         throw new Error("Method not implemented.");
     }
-    getSubscriptionId(): string {
-        throw new Error("Method not implemented.");
-    }
-    getTenantId(): string {
+    getSelectedSubscription(): Record<string, string> | undefined {
         throw new Error("Method not implemented.");
     }
     selectSubscription(subscriptionId?: string): Promise<string> {

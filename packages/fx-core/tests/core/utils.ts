@@ -156,11 +156,8 @@ export class MockAzureAccountProvider implements AzureAccountProvider {
   getAccountInfo(): Record<string, string> {
     throw new Error("Method not implemented.");
   }
-  getSubscriptionId(): string {
-      throw new Error("Method not implemented.");
-  }
-  getTenantId(): string {
-      throw new Error("Method not implemented.");
+  getSelectedSubscription(): Record<string, string> | undefined {
+    throw new Error("Method not implemented.");
   }
   selectSubscription(subscriptionId?: string): Promise<string> {
       throw new Error("Method not implemented.");

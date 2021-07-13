@@ -271,11 +271,8 @@ export function newPluginContext(): PluginContext {
       getAccountInfo: () => {
         return {};
       },
-      getSubscriptionId: () => {
-        return undefined;
-      },
-      getTenantId: () => {
-        return undefined;
+      getSelectedSubscription: () => {
+        return {};
       },
       selectSubscription: () => {
         return Promise.resolve(undefined);

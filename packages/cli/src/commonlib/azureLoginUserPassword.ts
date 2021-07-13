@@ -18,6 +18,8 @@ dotenv.config();
 
 const user = cfg.AZURE_ACCOUNT_NAME || "";
 const password = cfg.AZURE_ACCOUNT_PASSWORD || "";
+const tenantIdString = "tenantId";
+const subscriptionIdString = "subscriptionId";
 
 type LoginStatus = {
   status: string;
@@ -150,17 +152,20 @@ export class AzureAccountProviderUserPassword implements AzureAccountProvider {
     );
   }
 
-  // For now, cli no need to get account information throw this method
+  // For now, cli no need to get account information through this method
   getAccountInfo(): Record<string, string> | undefined {
     return {};
   }
 
-  getSubscriptionId(): string | undefined {
-    return cfg.AZURE_SUBSCRIPTION_ID;
-  }
-
-  getTenantId(): string | undefined {
-    return cfg.AZURE_TENANT_ID;
+  getSelectedSubscription(): Record<string, string> | undefined {
+    const content: Record<string, string> = {};
+    if (cfg.AZURE_TENANT_ID) {
+      content[tenantIdString] = cfg.AZURE_TENANT_ID;
+    }
+    if (cfg.AZURE_SUBSCRIPTION_ID) {
+      content[subscriptionIdString] = cfg.AZURE_SUBSCRIPTION_ID;
+    }
+    return content;
   }
 
   async selectSubscription(subscriptionId?: string): Promise<string | undefined> {

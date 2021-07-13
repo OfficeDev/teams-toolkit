@@ -12,7 +12,7 @@ import { AzureAccount } from "./azure-account.api";
 import { LoginFailureError } from "./codeFlowLogin";
 import * as vscode from "vscode";
 import * as identity from "@azure/identity";
-import { loggedIn, loggedOut, loggingIn, signedIn, signedOut, signingIn } from "./common/constant";
+import { loggedIn, loggedOut, loggingIn, signedIn, signedOut, signingIn, subscriptionIdString, tenantIdString } from "./common/constant";
 import { login, LoginStatus } from "./common/login";
 import * as StringResources from "../resources/Strings.json";
 import * as util from "util";
@@ -370,12 +370,20 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     }
   }
 
-  getSubscriptionId(): string | undefined {
-    return AzureAccountManager.subscriptionId;
-  }
-
-  getTenantId(): string | undefined {
-    return AzureAccountManager.tenantId;
+  getSelectedSubscription(): Record<string, string> | undefined {
+    const azureAccount = this.getAzureAccount();
+    if (azureAccount.status === loggedIn) {
+      const content: Record<string,string> = {};
+      if (AzureAccountManager.subscriptionId) {
+        content[subscriptionIdString] = AzureAccountManager.subscriptionId;
+      }
+      if (AzureAccountManager.tenantId) {
+        content[tenantIdString] = AzureAccountManager.tenantId;
+      }
+      return content;
+    } else {
+      return undefined;
+    }
   }
 
   // TODO add logic later

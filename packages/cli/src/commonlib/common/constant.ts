@@ -35,3 +35,5 @@ export const m365LoginMessage = "Log in to your M365 account - opening default w
 
 export const changeLoginTenantMessage = "The following tenants require Multi-Factor Authentication (MFA). Use 'teamsfx account login azure --tenant TENANT_ID' to explicitly login to a tenant.";
 export const MFACode = "AADSTS50076";
+export const tenantIdString = "tenantId";
+export const subscripitonIdString = "subscriptionId";

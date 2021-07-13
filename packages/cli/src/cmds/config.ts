@@ -20,6 +20,15 @@ import {
 } from "../telemetry/cliTelemetryEvents";
 import { NonTeamsFxProjectFolder, ConfigNameNotFound } from "../error";
 
+const CryptoDataMatchers = new Set([
+  "fx-resource-aad-app-for-teams.clientSecret",
+  "fx-resource-aad-app-for-teams.local_clientSecret",
+  "fx-resource-simple-auth.environmentVariableParams",
+  "fx-resource-bot.botPassword",
+  "fx-resource-bot.localBotPassword",
+  "fx-resource-apim.apimClientAADClientSecret",
+]);
+
 export class ConfigGet extends YargsCommand {
   public readonly commandHead = `get`;
   public readonly command = `${this.commandHead} [option]`;
@@ -50,7 +59,6 @@ export class ConfigGet extends YargsCommand {
     const rootFolder = path.resolve((args.folder as string) || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.ConfigGet);
     const inProject = (await readConfigs(rootFolder)).isOk();
-    let core: Result<Core, FxError>;
 
     if (args.option !== undefined) {
       if (args.option === CliConfigOptions.Telemetry) {
@@ -69,12 +77,12 @@ export class ConfigGet extends YargsCommand {
       } else {
         // local config
         if (inProject) {
-          core = await activate(rootFolder);
-          if (core.isOk()) {
-            return this.showConfigValue(rootFolder, core.value, args.option);
+          const result = await this.showConfigValue(rootFolder, args.option);
+          if (result.isErr()) {
+            CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ConfigGet, result.error);
+            return err(result.error);
           }
-          CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ConfigGet, core.error);
-          return err(core.error);
+          return result;
         } else {
           CLILogProvider.necessaryLog(
             LogLevel.Warning,
@@ -86,12 +94,12 @@ export class ConfigGet extends YargsCommand {
     } else {
       CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(config, null, 2), true);
       if (!args.global && inProject) {
-        core = await activate(rootFolder);
-        if (core.isOk()) {
-          return this.showConfigValue(rootFolder, core.value);
+        const result = await this.showConfigValue(rootFolder, args.option);
+        if (result.isErr()) {
+          CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ConfigGet, result.error);
+          return err(result.error);
         }
-        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ConfigGet, core.error);
-        return err(core.error);
+        return result;
       }
       CliTelemetry.sendTelemetryEvent(TelemetryEvent.ConfigGet, {
         [TelemetryProperty.Success]: TelemetrySuccess.Yes,
@@ -102,18 +110,38 @@ export class ConfigGet extends YargsCommand {
 
   private async showConfigValue(
     rootFolder: string,
-    core: Core,
     configName?: string
   ): Promise<Result<null, FxError>> {
-    const secretData = await readProjectSecrets(rootFolder);
     let found = false;
+    const secretData = await readProjectSecrets(rootFolder);
+    if (configName && secretData[configName] && !CryptoDataMatchers.has(configName)) {
+      found = true;
+      CLILogProvider.necessaryLog(LogLevel.Info, `${configName}: ${secretData[configName]}`, true);
+      CliTelemetry.sendTelemetryEvent(TelemetryEvent.ConfigGet, {
+        [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+      });
+      return ok(null);
+    }
+
+    const core = await activate(rootFolder);
+    if (core.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ConfigGet, core.error);
+      return err(core.error);
+    }
+
     for (const secretKey of Object.keys(secretData)) {
       if (!configName || configName === secretKey) {
         found = true;
         const secretValue = secretData[secretKey];
-        const decrypted = await core.decrypt(secretValue, getSystemInputs(rootFolder));
-        if (decrypted.isOk()) {
-          CLILogProvider.necessaryLog(LogLevel.Info, `${secretKey}: ${decrypted.value}`, true);
+        if (CryptoDataMatchers.has(secretKey)) {
+          const decrypted = await core.value.decrypt(secretValue, getSystemInputs(rootFolder));
+          if (decrypted.isOk()) {
+            CLILogProvider.necessaryLog(LogLevel.Info, `${secretKey}: ${decrypted.value}`, true);
+          } else {
+            return err(decrypted.error);
+          }
+        } else {
+          CLILogProvider.necessaryLog(LogLevel.Info, `${secretKey}: ${secretValue}`, true);
         }
       }
     }
@@ -158,7 +186,6 @@ export class ConfigSet extends YargsCommand {
     const rootFolder = path.resolve((args.folder as string) || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.ConfigSet);
     const inProject = (await readConfigs(rootFolder)).isOk();
-    let core: Result<Core, FxError>;
 
     if (args.option === CliConfigOptions.Telemetry) {
       // global config
@@ -181,34 +208,36 @@ export class ConfigSet extends YargsCommand {
     } else {
       // local config
       if (inProject) {
-        core = await activate(rootFolder);
-        if (core.isOk()) {
-          const secretData = await readProjectSecrets(rootFolder);
-          if (!secretData[args.option]) {
-            const error = ConfigNameNotFound(args.option);
-            CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ConfigSet, error);
-            return err(error);
+        const secretData = await readProjectSecrets(rootFolder);
+        if (!secretData[args.option]) {
+          const error = ConfigNameNotFound(args.option);
+          CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ConfigSet, error);
+          return err(error);
+        }
+        if (!CryptoDataMatchers.has(args.option)) {
+          secretData[args.option] = args.value;
+        } else {
+          const core = await activate(rootFolder);
+          if (core.isErr()) {
+            CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ConfigSet, core.error);
+            return err(core.error);
           }
           const encrypted = await core.value.encrypt(args.value, getSystemInputs(rootFolder));
-          if (encrypted.isOk()) {
-            secretData[args.option] = encrypted.value;
-            writeSecretToFile(secretData, rootFolder);
-            CLILogProvider.necessaryLog(
-              LogLevel.Info,
-              `Successfully configured project secret ${args.option}.`
-            );
-            CliTelemetry.sendTelemetryEvent(TelemetryEvent.ConfigSet, {
-              [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-            });
-            return ok(null);
-          } else {
+          if (encrypted.isErr()) {
             CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ConfigSet, encrypted.error);
             return err(encrypted.error);
           }
-        } else {
-          CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ConfigSet, core.error);
-          return err(core.error);
+          secretData[args.option] = encrypted.value;
         }
+        writeSecretToFile(secretData, rootFolder);
+        CLILogProvider.necessaryLog(
+          LogLevel.Info,
+          `Successfully configured project secret ${args.option}.`
+        );
+        CliTelemetry.sendTelemetryEvent(TelemetryEvent.ConfigSet, {
+          [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+        });
+        return ok(null);
       } else {
         CLILogProvider.necessaryLog(
           LogLevel.Warning,

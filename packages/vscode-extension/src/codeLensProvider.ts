@@ -10,7 +10,8 @@ export class CryptoCodeLensProvider implements vscode.CodeLensProvider {
   private userDataRegex: RegExp;
 
   constructor() {
-    this.userDataRegex = /fx-resource-[a-zA-Z\-]+\.[a-zA-Z\-_]+=(.*)/g;
+    this.userDataRegex =
+      /fx-resource-[a-zA-Z\-]+\.[a-zA-Z\-_]+(?:Secret|Password|VariableParams)=(.*)/g;
   }
 
   public provideCodeLenses(

@@ -13,7 +13,12 @@ import {
   SolutionContext,
   StaticPlatforms,
 } from "@microsoft/teamsfx-api";
-import { mapToJson, serializeDict, sperateSecretData } from "../../common/tools";
+import {
+  mapToJson,
+  serializeDict,
+  sperateSecretData,
+  dataNeedEncryption,
+} from "../../common/tools";
 import { WriteFileError } from "../error";
 import { CoreHookContext, FxCore } from "..";
 
@@ -50,6 +55,9 @@ export const ConfigWriterMW: Middleware = async (ctx: CoreHookContext, next: Nex
       const localData = sperateSecretData(configJson);
       if (solutionContext.cryptoProvider) {
         for (const secretKey of Object.keys(localData)) {
+          if (!dataNeedEncryption(secretKey)) {
+            continue;
+          }
           const encryptedSecret = solutionContext.cryptoProvider.encrypt(localData[secretKey]);
           // always success
           if (encryptedSecret.isOk()) {

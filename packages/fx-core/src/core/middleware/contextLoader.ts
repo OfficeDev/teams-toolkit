@@ -28,7 +28,7 @@ import {
 import * as path from "path";
 import * as fs from "fs-extra";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
-import { validateProject } from "../../common";
+import { dataNeedEncryption, validateProject } from "../../common";
 import * as uuid from "uuid";
 import { LocalCrypto } from "../crypto";
 
@@ -96,6 +96,9 @@ export async function loadSolutionContext(
     const cryptoProvider = new LocalCrypto(projectSettings.projectId);
     if (!projectIdMissing) {
       for (const secretKey of Object.keys(dict)) {
+        if (!dataNeedEncryption(secretKey)) {
+          continue;
+        }
         const secretValue = dict[secretKey];
         const plaintext = cryptoProvider.decrypt(secretValue);
         if (plaintext.isErr()) {

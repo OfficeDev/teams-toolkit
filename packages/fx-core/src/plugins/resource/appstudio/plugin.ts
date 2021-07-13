@@ -73,7 +73,6 @@ export class AppStudioPluginImpl {
     manifest: TeamsAppManifest
   ): Promise<Result<string, FxError>> {
     let appDefinition: IAppDefinition;
-    let _updatedManifest: TeamsAppManifest;
     let maybeTeamsAppId: Result<string, FxError>;
 
     if (type == "localDebug") {
@@ -83,7 +82,7 @@ export class AppStudioPluginImpl {
         return err(maybeAppDefinition.error);
       }
 
-      [appDefinition, _updatedManifest] = maybeAppDefinition.value;
+      appDefinition = maybeAppDefinition.value[0];
 
       const localTeamsAppID = ctx.configOfOtherPlugins
         .get("solution")

@@ -7,8 +7,5 @@
   "dependencies": {
     "@microsoft/teamsfx": "^0.1.0",
     "isomorphic-fetch": "^3.0.0"
-  },
-  "devDependencies": {
-    "azure-functions-core-tools": "^3.0.0"
   }
 }

@@ -67,6 +67,7 @@ import * as vscode from "vscode";
 import { DepsChecker } from "./debug/depsChecker/checker";
 import { BackendExtensionsInstaller } from "./debug/depsChecker/backendExtensionsInstall";
 import { DotnetChecker } from "./debug/depsChecker/dotnetChecker";
+import { FuncToolChecker } from "./debug/depsChecker/funcToolChecker";
 import * as util from "util";
 import * as StringResources from "./resources/Strings.json";
 import { vscodeAdapter } from "./debug/depsChecker/vscodeAdapter";
@@ -171,10 +172,10 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<null
   return await runCommand(Stage.create);
 }
 
-export function debugHandler(args?: any[]) {
+export async function debugHandler(args?: any[]) {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.NavigateToDebug, getTriggerFromProperty(args));
-  vscode.commands.executeCommand("workbench.view.debug");
-  vscode.commands.executeCommand("workbench.action.debug.selectandstart");
+  await vscode.commands.executeCommand("workbench.view.debug");
+  await vscode.commands.executeCommand("workbench.action.debug.selectandstart");
 }
 
 export async function selectAndDebugHandler(args?: any[]): Promise<Result<null, FxError>> {
@@ -378,7 +379,12 @@ function checkCoreNotEmpty(): Result<null, SystemError> {
 export async function validateDependenciesHandler(): Promise<void> {
   const nodeChecker = new AzureNodeChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
   const dotnetChecker = new DotnetChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
-  const depsChecker = new DepsChecker(vscodeLogger, vscodeAdapter, [nodeChecker, dotnetChecker]);
+  const funcChecker = new FuncToolChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
+  const depsChecker = new DepsChecker(vscodeLogger, vscodeAdapter, [
+    nodeChecker,
+    dotnetChecker,
+    funcChecker,
+  ]);
   await validateDependenciesCore(depsChecker);
 }
 
@@ -493,13 +499,18 @@ export async function openWelcomeHandler(args?: any[]) {
 }
 
 function getTriggerFromProperty(args?: any[]) {
-  const isFromTreeView = args && args.toString() === "TreeView";
+  if (!args) {
+    return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette };
+  }
 
-  return {
-    [TelemetryProperty.TriggerFrom]: isFromTreeView
-      ? TelemetryTiggerFrom.TreeView
-      : TelemetryTiggerFrom.CommandPalette,
-  };
+  switch (args.toString()) {
+    case TelemetryTiggerFrom.TreeView:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.TreeView };
+    case TelemetryTiggerFrom.Webview:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview };
+    default:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Other };
+  }
 }
 
 async function openMarkdownHandler() {

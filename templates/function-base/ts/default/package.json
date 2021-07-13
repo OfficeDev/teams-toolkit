@@ -14,7 +14,6 @@
     "isomorphic-fetch": "^3.0.0"
   },
   "devDependencies": {
-    "typescript": "^3.3.3",
-    "azure-functions-core-tools": "^3.0.0"
+    "typescript": "^3.3.3"
   }
 }

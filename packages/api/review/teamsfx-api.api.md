@@ -672,13 +672,18 @@ export enum Platform {
 
 // @public
 interface Plugin_2 {
+    activate(solutionSettings: AzureSolutionSettings): boolean;
     callFunc?: (func: Func, ctx: PluginContext) => Promise<Result<any, FxError>>;
     // (undocumented)
     deploy?: (ctx: PluginContext) => Promise<Result<any, FxError>>;
+    // (undocumented)
+    displayName: string;
     executeUserTask?: (func: Func, ctx: PluginContext) => Promise<Result<any, FxError>>;
     getQuestions?: (stage: Stage, ctx: PluginContext) => Promise<Result<QTreeNode | undefined, FxError>>;
     getQuestionsForUserTask?: (func: Func, ctx: PluginContext) => Promise<Result<QTreeNode | undefined, FxError>>;
     localDebug?: (ctx: PluginContext) => Promise<Result<any, FxError>>;
+    // (undocumented)
+    name: string;
     // (undocumented)
     postDeploy?: (ctx: PluginContext) => Promise<Result<any, FxError>>;
     // (undocumented)

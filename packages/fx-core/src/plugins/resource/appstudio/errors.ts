@@ -17,9 +17,74 @@ export class AppStudioError {
     message: (param: string) => `${param} is undefined.`,
   };
 
+  public static readonly RemoteAppIdCreateFailedError = {
+    name: "RemoteAppIdCreateFailed",
+    message: "Failed to create teams app id in app studio.",
+  };
+
+  public static readonly RemoteAppIdUpdateFailedError = {
+    name: "RemoteAppIdUpdateFailed",
+    message: (errorName: string, errorMessage: string) =>
+      `Failed to update app id in app studio due to ${errorName}: ${errorMessage}.`,
+  };
+
+  public static readonly LocalAppIdCreateFailedError = {
+    name: "LocalAppIdCreateFailed",
+    message: "Failed to create localDebug teams app id in app studio.",
+  };
+
+  public static readonly LocalAppIdUpdateFailedError = {
+    name: "LocalAppIdUpdateFailed",
+    message: (errorName: string, errorMessage: string) =>
+      `Failed to update local app id in app studio due to ${errorName}: ${errorMessage}.`,
+  };
+
+  public static readonly AppStudioTokenGetFailedError = {
+    name: "AppStudioTokenGetFailed",
+    message: "Failed to get app studio token.",
+  };
+
+  public static readonly ManifestLoadFailedError = {
+    name: "ManifestLoadFailed",
+    message: (error: string) => `Failed to read manifest file. Error: ${error}.`,
+  };
+
   public static readonly ValidationFailedError = {
     name: "ManifestValidationFailed",
     message: (errors: string[]) => `Validation error: \n ${errors.join("\n")}`,
+  };
+
+  public static readonly GetLocalDebugConfigFailedError = {
+    name: "GetLocalDebugConfigFailed",
+    message: (domain: string, doProvision: boolean) =>
+      `Missing configuration data for manifest. ${
+        doProvision ? "Run 'provision' first." : ""
+      } Data required: ${domain}.`,
+  };
+
+  public static readonly GetRemoteConfigFailedError = {
+    name: "GetRemoteConfigFailed",
+    message: (domain: string, doProvision: boolean) =>
+      `Missing configuration data for manifest. ${
+        doProvision ? "Run 'provision' first." : ""
+      } Data required: ${domain}.`,
+  };
+
+  public static readonly InvalidLocalDebugConfigurationDataError = {
+    name: "InvalidLocalDebugConfigurationData",
+    message: (endpoint: string, tabEndpoint: string, domain: string, tabDomain: string) =>
+      `Invalid configuration data for manifest: ${endpoint}=${tabEndpoint}, ${domain}=${tabDomain}.`,
+  };
+
+  public static readonly InvalidRemoteConfigurationDataError = {
+    name: "InvalidRemoteConfigurationData",
+    message: (endpoint: string, tabEndpoint: string, domain: string, tabDomain: string) =>
+      `Invalid configuration data for manifest: ${endpoint}=${tabEndpoint}, ${domain}=${tabDomain}.`,
+  };
+
+  public static readonly InternalError = {
+    name: "InternalError",
+    message: "Select either Bot or Messaging Extension.",
   };
 
   public static readonly TeamsAppUpdateFailedError = {

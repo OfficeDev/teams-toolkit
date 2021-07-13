@@ -17,7 +17,7 @@ import {
 import { CodeFlowLogin, LoginFailureError, ConvertTokenToJson } from "./codeFlowLogin";
 import { MemoryCache } from "./memoryCache";
 import CLILogProvider from "./log";
-import { getBeforeCacheAccess, getAfterCacheAccess } from "./cacheAccess";
+import { CryptoCachePlugin } from "./cacheAccess";
 import { SubscriptionClient } from "@azure/arm-subscriptions";
 import { LogLevel } from "@azure/msal-node";
 import { NotFoundSubscriptionId, NotSupportedProjectType } from "../error";
@@ -46,13 +46,7 @@ const accountName = "azure";
 const scopes = ["https://management.core.windows.net/user_impersonation"];
 const SERVER_PORT = 0;
 
-const beforeCacheAccess = getBeforeCacheAccess(accountName);
-const afterCacheAccess = getAfterCacheAccess(scopes, accountName);
-
-const cachePlugin = {
-  beforeCacheAccess,
-  afterCacheAccess,
-};
+const cachePlugin = new CryptoCachePlugin(accountName);
 
 function getConfig(tenantId?: string) {
   let authority;
@@ -69,7 +63,7 @@ function getConfig(tenantId?: string) {
     system: {
       loggerOptions: {
         loggerCallback(loglevel: any, message: any, containsPii: any) {
-          if (this.logLevel<=LogLevel.Error) {
+          if (this.logLevel <= LogLevel.Error) {
             CLILogProvider.log(4 - loglevel, message);
           }
         },

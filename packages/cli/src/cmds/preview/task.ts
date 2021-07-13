@@ -3,19 +3,21 @@
 
 "use strict";
 
-import { ChildProcess, spawn, SpawnOptions } from "child_process";
+import { ChildProcess, spawn } from "child_process";
 import { err, FxError, ok, Result } from "@microsoft/teamsfx-api";
 import treeKill from "tree-kill";
 import { ServiceLogWriter } from "./serviceLogWriter";
 
 interface TaskOptions {
+  shell: boolean | string;
   cwd?: string;
   env?: NodeJS.ProcessEnv;
 }
 
 export interface TaskResult {
   command: string;
-  options: TaskOptions;
+  args?: string[];
+  options?: TaskOptions;
   success: boolean;
   stdout: string[];
   stderr: string[];
@@ -24,17 +26,25 @@ export interface TaskResult {
 
 export class Task {
   private taskTitle: string;
-  private command: string;
   private background: boolean;
-  private options: TaskOptions;
+  private command: string;
+  private args?: string[];
+  private options?: TaskOptions;
 
   private resolved = false;
   private task: ChildProcess | undefined;
 
-  constructor(taskTitle: string, command: string, background: boolean, options: TaskOptions) {
+  constructor(
+    taskTitle: string,
+    background: boolean,
+    command: string,
+    args?: string[],
+    options?: TaskOptions
+  ) {
     this.taskTitle = taskTitle;
-    this.command = command;
     this.background = background;
+    this.command = command;
+    this.args = args;
     this.options = options;
   }
 
@@ -50,12 +60,7 @@ export class Task {
     ) => Promise<FxError | null>
   ): Promise<Result<TaskResult, FxError>> {
     await startCallback(this.taskTitle, this.background);
-    const spawnOptions: SpawnOptions = {
-      shell: true,
-      cwd: this.options.cwd,
-      env: this.options.env,
-    };
-    this.task = spawn(this.command, spawnOptions);
+    this.task = spawn(this.command, this.args, this.options);
     const stdout: string[] = [];
     const stderr: string[] = [];
     return new Promise((resolve) => {
@@ -101,12 +106,7 @@ export class Task {
     serviceLogWriter?: ServiceLogWriter
   ): Promise<Result<TaskResult, FxError>> {
     await startCallback(this.taskTitle, this.background);
-    const spawnOptions: SpawnOptions = {
-      shell: true,
-      cwd: this.options.cwd,
-      env: this.options.env,
-    };
-    this.task = spawn(this.command, spawnOptions);
+    this.task = spawn(this.command, this.args, this.options);
     const stdout: string[] = [];
     const stderr: string[] = [];
     return new Promise((resolve) => {

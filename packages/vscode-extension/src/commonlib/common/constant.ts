@@ -9,5 +9,3 @@ export const signingIn = "SigningIn";
 export const loggedOut = "LoggedOut";
 export const loggedIn = "LoggedIn";
 export const loggingIn = "LoggingIn";
-export const subscriptionIdString = "subscriptionId";
-export const tenantIdString = "tenantId";

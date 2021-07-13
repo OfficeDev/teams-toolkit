@@ -29,8 +29,6 @@ import {
   MFACode,
   signedIn,
   signedOut,
-  subscripitonIdString,
-  tenantIdString,
   unknownSubscription,
 } from "./common/constant";
 import { login, LoginStatus } from "./common/login";
@@ -467,16 +465,21 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     }
   }
 
-  getSelectedSubscription(): Record<string, string> | undefined {
+  getSelectedSubscription(): SubscriptionInfo | undefined {
     if (AzureAccountManager.codeFlowInstance.account) {
-      const content: Record<string,string> = {};
+      const selectedSub: SubscriptionInfo = {
+        subscriptionId: "",
+        tenantId: "",
+        subscriptionName: "",
+      };
+
       if (AzureAccountManager.subscriptionId) {
-        content[subscripitonIdString] = AzureAccountManager.subscriptionId;
+        selectedSub.subscriptionId = AzureAccountManager.subscriptionId;
       }
       if (AzureAccountManager.tenantId) {
-        content[tenantIdString] = AzureAccountManager.tenantId;
+        selectedSub.tenantId = AzureAccountManager.tenantId;
       }
-      return content;
+      return selectedSub;
     } else {
       return undefined;
     }

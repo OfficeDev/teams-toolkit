@@ -70,7 +70,7 @@ export interface AzureAccountProvider {
      * Get user select subscription, tenant information
      * subscriptionId, tenantId...
      */
-    getSelectedSubscription(): Record<string, string> | undefined;
+    getSelectedSubscription(): SubscriptionInfo | undefined;
 
     /**
      * Select subscription from user login Azure account

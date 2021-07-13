@@ -157,15 +157,19 @@ export class AzureAccountProviderUserPassword implements AzureAccountProvider {
     return {};
   }
 
-  getSelectedSubscription(): Record<string, string> | undefined {
-    const content: Record<string, string> = {};
+  getSelectedSubscription(): SubscriptionInfo | undefined {
+    const selectedSub: SubscriptionInfo = {
+      subscriptionId: "",
+      tenantId: "",
+      subscriptionName: "",
+    };
     if (cfg.AZURE_TENANT_ID) {
-      content[tenantIdString] = cfg.AZURE_TENANT_ID;
+      selectedSub.tenantId = cfg.AZURE_TENANT_ID;
     }
     if (cfg.AZURE_SUBSCRIPTION_ID) {
-      content[subscriptionIdString] = cfg.AZURE_SUBSCRIPTION_ID;
+      selectedSub.subscriptionId = cfg.AZURE_SUBSCRIPTION_ID;
     }
-    return content;
+    return selectedSub;
   }
 
   async selectSubscription(subscriptionId?: string): Promise<string | undefined> {

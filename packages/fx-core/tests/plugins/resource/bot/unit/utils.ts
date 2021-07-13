@@ -272,7 +272,11 @@ export function newPluginContext(): PluginContext {
         return {};
       },
       getSelectedSubscription: () => {
-        return {};
+        return {
+          subscriptionId: "subscriptionId",
+          tenantId: "tenantId",
+          subscriptionName: "subscriptionName",
+        };
       },
       selectSubscription: () => {
         return Promise.resolve(undefined);

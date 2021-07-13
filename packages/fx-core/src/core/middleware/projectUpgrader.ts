@@ -126,6 +126,10 @@ function updateContextValue(context: Json): Map<string, any> {
   const res: Map<string, any> = new Map();
   for (const item of contextUpgrade) {
     const pluginContext: any = context[item.plugin];
+    if (!pluginContext) {
+      continue;
+    }
+
     for (const key of item.relatedKeys) {
       // Save value to res and update value to secret pattern if value is not in secret pattern.
       if (pluginContext[key] && !isSecretPattern(pluginContext[key])) {

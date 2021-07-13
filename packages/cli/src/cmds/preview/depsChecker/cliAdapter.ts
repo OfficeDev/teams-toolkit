@@ -1,3 +1,4 @@
+import * as os from "os";
 import * as path from "path";
 import { DepsCheckerEvent, Messages } from "./common";
 import { IDepsAdapter, IDepsTelemetry } from "./checker";
@@ -46,7 +47,7 @@ export class CLIAdapter implements IDepsAdapter {
       await callback();
     } finally {
       clearTimeout(timer);
-      cliLogger.rawLog("\n");
+      cliLogger.rawLog(os.EOL);
     }
   }
 

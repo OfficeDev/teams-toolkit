@@ -172,10 +172,10 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<null
   return await runCommand(Stage.create);
 }
 
-export function debugHandler(args?: any[]) {
+export async function debugHandler(args?: any[]) {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.NavigateToDebug, getTriggerFromProperty(args));
-  vscode.commands.executeCommand("workbench.view.debug");
-  vscode.commands.executeCommand("workbench.action.debug.selectandstart");
+  await vscode.commands.executeCommand("workbench.view.debug");
+  await vscode.commands.executeCommand("workbench.action.debug.selectandstart");
 }
 
 export async function selectAndDebugHandler(args?: any[]): Promise<Result<null, FxError>> {
@@ -380,7 +380,11 @@ export async function validateDependenciesHandler(): Promise<void> {
   const nodeChecker = new AzureNodeChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
   const dotnetChecker = new DotnetChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
   const funcChecker = new FuncToolChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
-  const depsChecker = new DepsChecker(vscodeLogger, vscodeAdapter, [nodeChecker, dotnetChecker, funcChecker]);
+  const depsChecker = new DepsChecker(vscodeLogger, vscodeAdapter, [
+    nodeChecker,
+    dotnetChecker,
+    funcChecker,
+  ]);
   await validateDependenciesCore(depsChecker);
 }
 

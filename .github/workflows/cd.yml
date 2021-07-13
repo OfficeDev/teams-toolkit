@@ -59,6 +59,9 @@ jobs:
         run: |
           echo "${{ secrets.NPMRC }}" > ~/.npmrc
 
+      - name: Install Mustache
+        run: curl -sSL https://git.io/get-mo -o mo && chmod +x mo && sudo mv mo /usr/local/bin/
+
       - name: generate templates
         run: .github/scripts/template-zip-autogen.sh
 

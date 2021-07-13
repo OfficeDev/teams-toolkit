@@ -111,7 +111,7 @@ describe("Azure App Happy Path", function () {
         cwd: projectPath,
         env: process.env,
         timeout: 0,
-      }
+      }, 3, `teamsfx deploy`
     );
 
     {

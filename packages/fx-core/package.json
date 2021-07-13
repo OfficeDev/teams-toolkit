@@ -68,10 +68,12 @@
     "node-ts-uuid": "^1.0.8",
     "openapi-types": "^7.2.3",
     "proper-lockfile": "^4.1.2",
+    "reflect-metadata": "^0.1.13",
     "semver": "^7.3.4",
     "sudo-prompt": "^9.2.1",
     "tedious": "^9.2.1",
     "tslib": "^2.1.0",
+    "typedi": "^0.10.0",
     "url-parse": "^1.5.1",
     "uuid": "^8.3.2",
     "validator": "^13.1.1",
@@ -147,11 +149,5 @@
     "*": [
       "npx prettier --config .prettierrc.js --ignore-unknown --write --ignore-path .prettierignore "
     ]
-  },
-  "nyc": {
-    "branches": 5,
-    "lines": 30,
-    "functions": 9,
-    "statements": 30
   }
 }

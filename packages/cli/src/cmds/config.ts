@@ -11,7 +11,7 @@ import { Core, FxError, Result, ok, err, LogLevel } from "@microsoft/teamsfx-api
 import { UserSettings, CliConfigOptions, CliConfigTelemetry } from "../userSetttings";
 import CLILogProvider from "../commonlib/log";
 import HelpParamGenerator from "../helpParamGenerator";
-import { readProjectSecrets, getSystemInputs, readConfigs } from "../utils";
+import { readProjectSecrets, writeSecretToFile, getSystemInputs, readConfigs } from "../utils";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
@@ -192,6 +192,7 @@ export class ConfigSet extends YargsCommand {
           const encrypted = await core.value.encrypt(args.value, getSystemInputs(rootFolder));
           if (encrypted.isOk()) {
             secretData[args.option] = encrypted.value;
+            writeSecretToFile(secretData, rootFolder);
             CLILogProvider.necessaryLog(
               LogLevel.Info,
               `Successfully configured project secret ${args.option}.`

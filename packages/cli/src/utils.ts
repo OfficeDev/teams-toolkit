@@ -174,6 +174,16 @@ export async function readProjectSecrets(rootFolder: string): Promise<DotenvPars
   return result;
 }
 
+export function writeSecretToFile(secrets: DotenvParseOutput, rootFolder: string): void {
+  const secretFile = `${rootFolder}/.${ConfigFolderName}/${getActiveEnv()}.userdata`;
+  const array: string[] = [];
+  for (const secretKey of Object.keys(secrets)) {
+    const secretValue = secrets[secretKey];
+    array.push(`${secretKey}=${secretValue}`);
+  }
+  fs.writeFileSync(secretFile, array.join("\n"));
+}
+
 export async function getSubscriptionIdFromEnvFile(
   rootfolder: string
 ): Promise<string | undefined> {

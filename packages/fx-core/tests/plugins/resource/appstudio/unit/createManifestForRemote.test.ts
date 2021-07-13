@@ -13,7 +13,6 @@ import {
   TeamsAppManifest,
   ok,
   err,
-  LoadedPlugin,
   Plugin,
 } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
@@ -26,8 +25,8 @@ describe("Reload Manifest and Check Required Fields", () => {
   let internalError_ctx: PluginContext;
   let ctx: PluginContext;
   let manifest: TeamsAppManifest;
-  let BotPlugin: LoadedPlugin;
-  let selectedPlugins: LoadedPlugin[];
+  let BotPlugin: Plugin;
+  let selectedPlugins: Plugin[];
   const sandbox = sinon.createSandbox();
 
   beforeEach(async () => {
@@ -66,7 +65,7 @@ describe("Reload Manifest and Check Required Fields", () => {
     };
     manifest = new TeamsAppManifest();
     const botplugin: Plugin = new TeamsBot();
-    BotPlugin = botplugin as LoadedPlugin;
+    BotPlugin = botplugin as Plugin;
     BotPlugin.name = "fx-resource-bot";
     BotPlugin.displayName = "Bot";
     selectedPlugins = [BotPlugin];

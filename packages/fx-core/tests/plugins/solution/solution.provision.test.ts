@@ -253,6 +253,19 @@ class MockedAzureTokenProvider implements AzureAccountProvider {
   async setSubscription(subscriptionId: string): Promise<void> {
     return;
   }
+  getAccountInfo(): Record<string, string> | undefined {
+    return {};
+  }
+  getSubscriptionId(): string | undefined {
+    return "12";
+  }
+  getTenantId(): string | undefined {
+    return "12";
+  }
+  selectSubscription(subscriptionId?: string): Promise<string | undefined> {
+    return Promise.resolve("12");
+  }
+
 }
 
 function mockSolutionContext(): SolutionContext {

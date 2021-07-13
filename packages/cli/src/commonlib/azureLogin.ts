@@ -456,6 +456,27 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     }
     throw NotFoundSubscriptionId();
   }
+
+  getAccountInfo(): Record<string, string> | undefined {
+    if (AzureAccountManager.codeFlowInstance.account) {
+      return this.getJsonObject() as unknown as Record<string, string>;
+    } else {
+      return undefined;
+    }
+  }
+
+  getSubscriptionId(): string | undefined {
+    return AzureAccountManager.subscriptionId;
+  }
+
+  getTenantId(): string | undefined {
+    return AzureAccountManager.tenantId;
+  }
+
+  // TODO add logic later
+  selectSubscription(subscriptionId?: string): Promise<string | undefined> {
+    return Promise.resolve(undefined);
+  }
 }
 
 interface PartialList<T> extends Array<T> {

@@ -360,6 +360,28 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       }
     });
   }
+
+  getAccountInfo(): Record<string, string> | undefined {
+    const azureAccount = this.getAzureAccount();
+    if (azureAccount.status === loggedIn) {
+      return this.getJsonObject() as unknown as Record<string, string>;
+    } else {
+      return undefined;
+    }
+  }
+
+  getSubscriptionId(): string | undefined {
+    return AzureAccountManager.subscriptionId;
+  }
+
+  getTenantId(): string | undefined {
+    return AzureAccountManager.tenantId;
+  }
+
+  // TODO add logic later
+  selectSubscription(subscriptionId?: string): Promise<string | undefined> {
+    return Promise.resolve(undefined);
+  }
 }
 
 export default AzureAccountManager.getInstance();

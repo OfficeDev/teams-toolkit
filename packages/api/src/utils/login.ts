@@ -60,6 +60,27 @@ export interface AzureAccountProvider {
      * @param subscriptionId user used subscription id
      */
     setSubscription(subscriptionId: string): Promise<void>;
+
+    /**
+     * Get account information
+     */
+    getAccountInfo(): Record<string, string> | undefined;
+
+    /**
+     * Get subscription id
+     */
+    getSubscriptionId(): string | undefined;
+
+    /**
+     * Get tanant id
+     */
+    getTenantId(): string | undefined;
+
+    /**
+     * Select subscription from user login Azure account
+     * @param subscriptionId 
+     */
+    selectSubscription(subscriptionId?: string): Promise<string | undefined>;
 }
 
 

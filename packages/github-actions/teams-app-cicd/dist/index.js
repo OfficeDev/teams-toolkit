@@ -307,6 +307,7 @@ const base_error_1 = __webpack_require__(826);
 const fs = __importStar(__webpack_require__(5630));
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
+        process.env.CI_ENABLED = 'true';
         try {
             let projectRoot = core.getInput(constant_1.ActionInputs.ProjectRoot);
             if (!projectRoot && process.env.GITHUB_WORKSPACE) {
@@ -523,10 +524,7 @@ const exec = __importStar(__webpack_require__(1514));
 function Execute(cmd, workdir) {
     return __awaiter(this, void 0, void 0, function* () {
         return yield exec.exec(cmd, undefined, {
-            cwd: workdir,
-            env: {
-                "CI_ENABLED": "true"
-            }
+            cwd: workdir
         });
     });
 }

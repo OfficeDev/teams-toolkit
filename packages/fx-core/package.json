@@ -17,6 +17,7 @@
     "test:identity": "nyc mocha --no-timeouts --require ts-node/register \"tests/plugins/resource/identity/**/*.test.ts\"",
     "test:appstudio": "nyc mocha --no-timeouts --require ts-node/register \"tests/plugins/resource/appstudio/**/*.test.ts\"",
     "test:spfx": "nyc mocha --no-timeouts --require ts-node/register \"tests/plugins/resource/spfx/**/*.test.ts\"",
+    "test:apim": "nyc mocha --no-timeouts --require ts-node/register \"tests/plugins/resource/apim/**/*.test.ts\"",
     "test:unit": "nyc mocha --no-timeouts --require ts-node/register \"tests/**/*.test.ts\"",
     "test:solution": "nyc mocha --no-timeouts --require ts-node/register \"tests/plugins/solution/*.test.ts\"",
     "test:core": "nyc mocha --no-timeouts --require ts-node/register \"tests/core/*.test.ts\"",

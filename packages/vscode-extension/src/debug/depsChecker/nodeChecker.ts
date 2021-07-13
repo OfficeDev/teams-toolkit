@@ -31,7 +31,7 @@ export abstract class NodeChecker implements IDepsChecker {
   }
 
   public isEnabled(): Promise<boolean> {
-    return Promise.resolve(this._adapter.nodeCheckerEnabled());
+    return this._adapter.nodeCheckerEnabled();
   }
 
   public async isInstalled(): Promise<boolean> {

@@ -48,7 +48,7 @@ export class FuncToolChecker implements IDepsChecker {
   public async isEnabled(): Promise<boolean> {
     // only for function api
     const hasBackend = await this._adapter.hasTeamsfxBackend();
-    const checkerEnabled = this._adapter.funcToolCheckerEnabled();
+    const checkerEnabled = await this._adapter.funcToolCheckerEnabled();
 
     if (!checkerEnabled) {
       this._telemetry.sendEvent(DepsCheckerEvent.funcCheckSkipped);

@@ -24,16 +24,19 @@ export class CLIAdapter implements IDepsAdapter {
     return Promise.resolve(this._hasBackend);
   }
 
-  public dotnetCheckerEnabled(): boolean {
-    return this.checkerEnabled(this.validateDotnetSdkKey);
+  public dotnetCheckerEnabled(): Promise<boolean> {
+    // TODO: implement me
+    throw new Error("not implemented");
   }
 
-  public funcToolCheckerEnabled(): boolean {
-    return this.checkerEnabled(this.validateFuncCoreToolsKey);
+  public funcToolCheckerEnabled(): Promise<boolean> {
+    // TODO: implement me
+    throw new Error("not implemented");
   }
 
-  public nodeCheckerEnabled(): boolean {
-    return this.checkerEnabled(this.validateNodeVersionKey);
+  public nodeCheckerEnabled(): Promise<boolean> {
+    // TODO: implement me
+    throw new Error("not implemented");
   }
 
   public async runWithProgressIndicator(callback: () => Promise<void>): Promise<void> {
@@ -98,11 +101,6 @@ export class CLIAdapter implements IDepsAdapter {
 
   public getResourceDir(): string {
     return path.resolve(__dirname, "resource");
-  }
-
-  private checkerEnabled(key: string): boolean {
-    // TODO: retrieve from CLI config
-    return true;
   }
 
   private static async openUrl(url: string): Promise<void> {

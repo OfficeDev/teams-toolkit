@@ -78,6 +78,8 @@ export class AadAppForTeamsPlugin implements Plugin {
         errorMessage += ` Detailed error: ${e.innerError.message}.`;
         if (e.innerError.response?.data?.errorMessage) {
           errorMessage += ` Reason: ${e.innerError.response?.data?.errorMessage}`;
+        } else if (e.innerError.response?.data?.error?.message) {
+          errorMessage += ` Reason: ${e.innerError.response?.data?.error?.message}`;
         }
         e.message = errorMessage;
       }

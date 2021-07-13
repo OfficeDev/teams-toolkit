@@ -523,7 +523,10 @@ const exec = __importStar(__webpack_require__(1514));
 function Execute(cmd, workdir) {
     return __awaiter(this, void 0, void 0, function* () {
         return yield exec.exec(cmd, undefined, {
-            cwd: workdir
+            cwd: workdir,
+            env: {
+                "CI_ENABLED": "true"
+            }
         });
     });
 }

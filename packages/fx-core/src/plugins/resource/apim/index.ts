@@ -28,8 +28,18 @@ import {
 import { Factory } from "./factory";
 import { ProgressBar } from "./utils/progressBar";
 import { buildAnswer } from "./answer";
-
+import { AzureSolutionSettings } from "@microsoft/teamsfx-api";
+import { AzureResourceApim } from "../../solution/fx-solution/question";
+import { Service } from "typedi";
+import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+@Service(ResourcePlugins.ApimPlugin)
 export class ApimPlugin implements Plugin {
+  name = "fx-resource-apim";
+  displayName = "API Management";
+  activate(solutionSettings: AzureSolutionSettings): boolean {
+    const azureResources = solutionSettings.azureResources ? solutionSettings.azureResources : [];
+    return azureResources.includes(AzureResourceApim.id);
+  }
   private progressBar: ProgressBar = new ProgressBar();
 
   public async getQuestions(

@@ -48,8 +48,10 @@ describe("Provision Command Tests", function () {
       if (inputs.projectPath?.includes("real")) return ok("");
       else return err(NotSupportedProjectType());
     });
-    sandbox.stub(UI, "updatePresetAnswer").callsFake((key: any, value: any) => {
-      allArguments.set(key, value);
+    sandbox.stub(UI, "updatePresetAnswers").callsFake((a: any, args: { [_: string]: any }) => {
+      for (const key of Object.keys(args)) {
+        allArguments.set(key, args[key]);
+      }
     });
     sandbox.stub(LogProvider, "necessaryLog").returns();
   });

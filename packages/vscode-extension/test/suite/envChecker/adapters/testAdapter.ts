@@ -104,16 +104,16 @@ export class TestAdapter implements IDepsAdapter {
     return Promise.resolve(this._hasTeamsfxBackend);
   }
 
-  dotnetCheckerEnabled(): boolean {
-    return this._dotnetCheckerEnabled;
+  dotnetCheckerEnabled(): Promise<boolean> {
+    return Promise.resolve(this._dotnetCheckerEnabled);
   }
 
-  funcToolCheckerEnabled(): boolean {
-    return this._funcToolCheckerEnabled;
+  funcToolCheckerEnabled(): Promise<boolean> {
+    return Promise.resolve(this._funcToolCheckerEnabled);
   }
 
-  nodeCheckerEnabled(): boolean {
-    return this._nodeCheckerEnabled;
+  nodeCheckerEnabled(): Promise<boolean> {
+    return Promise.resolve(this._nodeCheckerEnabled);
   }
 
   runWithProgressIndicator(callback: () => Promise<void>): Promise<void> {

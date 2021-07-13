@@ -190,65 +190,6 @@ export class AppStudioPluginImpl {
     return await AppStudioClient.validateManifest(manifestString, appStudioToken!);
   }
 
-  public async getConfigAndAppDefinition(
-    ctx: PluginContext,
-    localDebug: boolean,
-    manifest: TeamsAppManifest
-  ): Promise<Result<[IAppDefinition, TeamsAppManifest], FxError>> {
-    const maybeConfig = this.getConfigForCreatingManifest(ctx, localDebug).map((conf) => {
-      return {
-        localTabEndpoint: conf.tabEndpoint,
-        localTabDomain: conf.tabDomain,
-        localAADId: conf.aadId,
-        localBotDomain: conf.botDomain,
-        botId: conf.botId,
-        webApplicationInfoResource: conf.webApplicationInfoResource,
-      };
-    });
-
-    if (maybeConfig.isErr()) {
-      return err(maybeConfig.error);
-    }
-
-    const {
-      localTabEndpoint,
-      localTabDomain,
-      localAADId,
-      localBotDomain,
-      botId,
-      webApplicationInfoResource,
-    } = maybeConfig.value;
-
-    const validDomains: string[] = [];
-
-    if (localTabDomain) {
-      validDomains.push(localTabDomain);
-    }
-
-    if (localBotDomain) {
-      validDomains.push(localBotDomain);
-    }
-
-    const manifestTpl = (
-      await fs.readFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`)
-    ).toString();
-
-    const [appDefinition, _updatedManifest] = this.getDevAppDefinition(
-      manifestTpl,
-      localAADId,
-      validDomains,
-      webApplicationInfoResource,
-      false,
-      localTabEndpoint,
-      manifest.name.short,
-      manifest.version,
-      botId,
-      "-local-debug"
-    );
-
-    return ok([appDefinition, _updatedManifest]);
-  }
-
   public createManifestForRemote(
     ctx: PluginContext,
     maybeSelectedPlugins: Result<LoadedPlugin[], FxError>,
@@ -1020,5 +961,64 @@ export class AppStudioPluginImpl {
       }
       throw e;
     }
+  }
+
+  private async getConfigAndAppDefinition(
+    ctx: PluginContext,
+    localDebug: boolean,
+    manifest: TeamsAppManifest
+  ): Promise<Result<[IAppDefinition, TeamsAppManifest], FxError>> {
+    const maybeConfig = this.getConfigForCreatingManifest(ctx, localDebug).map((conf) => {
+      return {
+        localTabEndpoint: conf.tabEndpoint,
+        localTabDomain: conf.tabDomain,
+        localAADId: conf.aadId,
+        localBotDomain: conf.botDomain,
+        botId: conf.botId,
+        webApplicationInfoResource: conf.webApplicationInfoResource,
+      };
+    });
+
+    if (maybeConfig.isErr()) {
+      return err(maybeConfig.error);
+    }
+
+    const {
+      localTabEndpoint,
+      localTabDomain,
+      localAADId,
+      localBotDomain,
+      botId,
+      webApplicationInfoResource,
+    } = maybeConfig.value;
+
+    const validDomains: string[] = [];
+
+    if (localTabDomain) {
+      validDomains.push(localTabDomain);
+    }
+
+    if (localBotDomain) {
+      validDomains.push(localBotDomain);
+    }
+
+    const manifestTpl = (
+      await fs.readFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`)
+    ).toString();
+
+    const [appDefinition, _updatedManifest] = this.getDevAppDefinition(
+      manifestTpl,
+      localAADId,
+      validDomains,
+      webApplicationInfoResource,
+      false,
+      localTabEndpoint,
+      manifest.name.short,
+      manifest.version,
+      botId,
+      "-local-debug"
+    );
+
+    return ok([appDefinition, _updatedManifest]);
   }
 }

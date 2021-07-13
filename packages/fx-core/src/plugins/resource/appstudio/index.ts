@@ -128,14 +128,6 @@ export class AppStudioPlugin implements Plugin {
     return ok(validationResult);
   }
 
-  public async getConfigAndAppDefinition(
-    ctx: PluginContext,
-    localDebug: boolean,
-    manifest: TeamsAppManifest
-  ): Promise<Result<[IAppDefinition, TeamsAppManifest], FxError>> {
-    return await this.appStudioPluginImpl.getConfigAndAppDefinition(ctx, localDebug, manifest);
-  }
-
   public createManifestForRemote(
     ctx: PluginContext,
     maybeSelectedPlugins: Result<LoadedPlugin[], FxError>,

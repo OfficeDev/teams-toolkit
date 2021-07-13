@@ -52,12 +52,12 @@ export class FuncPluginAdapter implements IDepsAdapter {
     return path.resolve(path.join(getResourceFolder(), "plugins", "resource", "function"));
   }
 
-  public dotnetCheckerEnabled(): boolean {
+  public dotnetCheckerEnabled(): Promise<boolean> {
     let enabled = true;
     if (this._ctx.answers && this._ctx.answers[this.dotnetSettingKey] !== undefined) {
       enabled = (<boolean>this._ctx.answers[this.dotnetSettingKey]) as boolean;
     }
-    return enabled;
+    return Promise.resolve(enabled);
   }
 
   public async runWithProgressIndicator(callback: () => Promise<void>): Promise<void> {
@@ -78,10 +78,10 @@ export class FuncPluginAdapter implements IDepsAdapter {
   public hasTeamsfxBackend(): Promise<boolean> {
     throw new Error("Method not implemented.");
   }
-  public funcToolCheckerEnabled(): boolean {
+  public funcToolCheckerEnabled(): Promise<boolean> {
     throw new Error("Method not implemented.");
   }
-  public nodeCheckerEnabled(): boolean {
+  public nodeCheckerEnabled(): Promise<boolean> {
     throw new Error("Method not implemented.");
   }
 

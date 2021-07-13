@@ -120,7 +120,8 @@ jobs:
               targetpct=$(echo '${{ needs.target-branch-test.outputs.coverages }}' | jq .\"$i\".lines.pct) 
               sourcepct=$(echo '${{ needs.source-branch-test.outputs.coverages }}' | jq .\"$i\".lines.pct) 
               if (( $(echo "$targetpct > $sourcepct" | bc -l ) )); then
-                printf "test coverage decreased: [target]%s, [source]%s\n"  $targetpct $sourcepct
+                printf "test coverage decreased: [package]%s [target]%s, [source]%s.\n" $i $targetpct $sourcepct
+                printf "if you didn't mofify %s, please rebase the target branch and rerun.\n" $i
                 exit 1
               fi
             fi

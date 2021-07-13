@@ -1319,23 +1319,8 @@ export class TeamsAppSolution implements Solution {
       return postLocalDebugResult;
     }
 
-    // const maybeAppDefinition = await appStudioPlugin.getConfigAndAppDefinition(
-    //   getPluginContext(ctx, this.appStudioPlugin.name, manifest),
-    //   true,
-    //   manifest
-    // );
-
-    // if (maybeAppDefinition.isErr()) {
-    //   return maybeAppDefinition;
-    // }
-
-    // const [appDefinition, _updatedManifest] = maybeAppDefinition.value;
-
     const localTeamsAppID = ctx.config.get(GLOBAL_CONFIG)?.getString(LOCAL_DEBUG_TEAMS_APP_ID);
-    // let createIfNotExist = true;
-    // if (localTeamsAppID){
-    //   createIfNotExist = false;
-    // }
+
     const maybeTeamsAppId = await appStudioPlugin.getAppDefinitionAndUpdate(
       getPluginContext(ctx, this.appStudioPlugin.name, manifest),
       "localDebug",
@@ -2205,19 +2190,11 @@ export class TeamsAppSolution implements Solution {
     const manifest: TeamsAppManifest = JSON.parse(manifestStr);
     await fs.writeFile(manifestPath, manifestStr);
     const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
-    // const appDefinition = appStudioPlugin.convertToAppDefinition(manifest, true);
     const maybeTeamsAppId = await appStudioPlugin.getAppDefinitionAndUpdate(
       getPluginContext(ctx, this.appStudioPlugin.name, manifest),
       "remote",
       manifest,
       await ctx.appStudioToken?.getAccessToken()
-      // appDefinition,
-      // "remote",
-      // true,
-      // undefined,
-      // await ctx.appStudioToken?.getAccessToken(),
-      // ctx.logProvider,
-      // ctx.root
     );
     if (maybeTeamsAppId.isErr()) {
       return err(maybeTeamsAppId.error);

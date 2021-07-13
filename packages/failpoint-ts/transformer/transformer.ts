@@ -32,7 +32,7 @@ interface PluginConfig {
     [options: string]: any;
 }
 
-const findParent = (node: ts.Node, predicate: (node: ts.Node) => boolean): ts.Node | undefined => {
+function findParent(node: ts.Node, predicate: (node: ts.Node) => boolean): ts.Node | undefined {
   if (!node.parent) {
     return undefined;
   }
@@ -45,6 +45,7 @@ const findParent = (node: ts.Node, predicate: (node: ts.Node) => boolean): ts.No
 };
 
 export default function transformer(program: ts.Program, config?: PluginConfig) {
+  const typeChecker = program.getTypeChecker();
   const transformerFactory: ts.TransformerFactory<ts.SourceFile> = context => {
     return sourceFile => {
       const visitor = (node: ts.Node): ts.Node => {
@@ -60,12 +61,35 @@ export default function transformer(program: ts.Program, config?: PluginConfig) 
           const failpointNameExpr = node.expression.arguments[0];
           const failpointBodyExpr = node.expression.arguments[1];
           if (!ts.isArrowFunction(failpointBodyExpr)) {
-            throw new Error("The failpoint body should be arrow function");
+            throw new Error("The failpoint body should be an arrow function");
           }
           if (failpointBodyExpr.parameters.length >= 2) {
             throw new Error("Parameter list of the failpoint body should be of size 1 or 0");
           }
-          let thenBlock: ts.Statement = ts.isBlock(failpointBodyExpr.body) ? failpointBodyExpr.body : factory.createExpressionStatement(failpointBodyExpr.body);
+          let thenBlock: ts.Statement;
+          if (failpointBodyExpr.parameters.length === 0) {
+            thenBlock = ts.isBlock(failpointBodyExpr.body) ? failpointBodyExpr.body : factory.createExpressionStatement(failpointBodyExpr.body);
+          } else {
+            const param = failpointBodyExpr.parameters[0];
+            const replaceParam = (node: ts.Node): ts.Node => {
+              const paramName = param.name.getText();
+              const nodeName = node.getText();
+              if (ts.isIdentifier(node) && nodeName === paramName) {
+                return factory.createCallExpression(
+                  factory.createPropertyAccessExpression(
+                    factory.createIdentifier("failpoint"),
+                    factory.createIdentifier("evaluate")
+                  ),
+                  undefined,
+                  [failpointNameExpr]
+                );
+              }
+              return ts.visitEachChild(node, replaceParam, context);
+            }
+            const replacedBody = ts.visitNode(failpointBodyExpr.body, replaceParam);
+            thenBlock = ts.isBlock(replacedBody) ? replacedBody : factory.createExpressionStatement(replacedBody);
+          }
+
           return factory.createIfStatement(
             factory.createBinaryExpression(
               factory.createCallExpression(

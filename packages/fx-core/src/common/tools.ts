@@ -413,7 +413,8 @@ export async function askSubscription(
 ): Promise<Result<SubscriptionInfo, FxError>> {
   const subscriptions: SubscriptionInfo[] = await azureAccountProvider.listSubscriptions();
 
-  failpoint.inject("NoSubsription", (_value) => {
+  failpoint.inject("NoSubsription", (value: failpoint.Value | undefined) => {
+    console.log(value);
     subscriptions.length = 0;
   });
 

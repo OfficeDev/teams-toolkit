@@ -42,7 +42,7 @@ export class FunctionPlugin implements Plugin {
   displayName = "Azure Function";
   activate(solutionSettings: AzureSolutionSettings): boolean {
     const cap = solutionSettings.capabilities || [];
-    const azureResources = solutionSettings.azureResources ? solutionSettings.azureResources : [];
+    const azureResources = solutionSettings.azureResources || [];
     return (
       solutionSettings.hostType === HostTypeOptionAzure.id &&
       cap.includes(TabOptionItem.id) &&

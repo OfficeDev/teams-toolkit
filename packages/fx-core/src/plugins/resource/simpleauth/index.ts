@@ -1,14 +1,30 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { Plugin, PluginContext, SystemError, UserError, err } from "@microsoft/teamsfx-api";
+import {
+  Plugin,
+  PluginContext,
+  SystemError,
+  UserError,
+  err,
+  AzureSolutionSettings,
+} from "@microsoft/teamsfx-api";
+import { HostTypeOptionAzure, TabOptionItem } from "../../solution/fx-solution/question";
 import { Messages, Telemetry } from "./constants";
 import { UnhandledError } from "./errors";
 import { SimpleAuthPluginImpl } from "./plugin";
 import { SimpleAuthResult, ResultFactory } from "./result";
 import { DialogUtils } from "./utils/dialog";
 import { TelemetryUtils } from "./utils/telemetry";
-
+import { Service } from "typedi";
+import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+@Service(ResourcePlugins.SimpleAuthPlugin)
 export class SimpleAuthPlugin implements Plugin {
+  name = "fx-resource-simple-auth";
+  displayName = "Simple Auth";
+  activate(solutionSettings: AzureSolutionSettings): boolean {
+    const cap = solutionSettings.capabilities || [];
+    return solutionSettings.hostType === HostTypeOptionAzure.id && cap.includes(TabOptionItem.id);
+  }
   simpleAuthPluginImpl = new SimpleAuthPluginImpl();
 
   public async localDebug(ctx: PluginContext): Promise<SimpleAuthResult> {

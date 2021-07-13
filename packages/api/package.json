@@ -71,11 +71,5 @@
     "*": [
       "npx prettier --config .prettierrc.js --ignore-unknown --write --ignore-path .prettierignore "
     ]
-  },
-  "nyc": {
-    "branches": 70,
-    "lines": 70,
-    "functions": 70,
-    "statements": 70
   }
 }

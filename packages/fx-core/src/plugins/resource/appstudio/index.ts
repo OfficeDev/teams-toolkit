@@ -9,7 +9,6 @@ import {
   LogProvider,
   Platform,
   Plugin,
-  LoadedPlugin,
   PluginContext,
   QTreeNode,
   Result,
@@ -19,6 +18,7 @@ import {
   UserError,
   ProjectSettings,
   Colors,
+  AzureSolutionSettings,
 } from "@microsoft/teamsfx-api";
 import { AppStudioPluginImpl } from "./plugin";
 import { Constants } from "./constants";
@@ -27,7 +27,15 @@ import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
 import { manuallySubmitOption, autoPublishOption } from "./questions";
 import { TelemetryUtils, TelemetryEventName, TelemetryPropertyKey } from "./utils/telemetry";
+import { Service } from "typedi";
+import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+@Service(ResourcePlugins.AppStudioPlugin)
 export class AppStudioPlugin implements Plugin {
+  name = "fx-resource-appstudio";
+  displayName = "App Studio";
+  activate(solutionSettings: AzureSolutionSettings): boolean {
+    return true;
+  }
   private appStudioPluginImpl = new AppStudioPluginImpl();
 
   async getQuestions(
@@ -130,7 +138,7 @@ export class AppStudioPlugin implements Plugin {
 
   public createManifestForRemote(
     ctx: PluginContext,
-    maybeSelectedPlugins: Result<LoadedPlugin[], FxError>,
+    maybeSelectedPlugins: Result<Plugin[], FxError>,
     manifest: TeamsAppManifest
   ): Result<[IAppDefinition, TeamsAppManifest], FxError> {
     return this.appStudioPluginImpl.createManifestForRemote(ctx, maybeSelectedPlugins, manifest);
@@ -138,7 +146,7 @@ export class AppStudioPlugin implements Plugin {
 
   public createAndConfigTeamsManifest(
     ctx: PluginContext,
-    maybeSelectedPlugins: Result<LoadedPlugin[], FxError>
+    maybeSelectedPlugins: Result<Plugin[], FxError>
   ): Promise<Result<IAppDefinition, FxError>> {
     return this.appStudioPluginImpl.createAndConfigTeamsManifest(ctx, maybeSelectedPlugins);
   }
@@ -259,3 +267,5 @@ export class AppStudioPlugin implements Plugin {
     }
   }
 }
+
+export default new AppStudioPlugin();

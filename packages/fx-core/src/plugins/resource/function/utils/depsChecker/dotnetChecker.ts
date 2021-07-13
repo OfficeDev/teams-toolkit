@@ -72,12 +72,12 @@ export class DotnetChecker implements IDepsChecker {
     };
   }
 
-  public isEnabled(): Promise<boolean> {
-    const enabled = this._adapter.dotnetCheckerEnabled();
+  public async isEnabled(): Promise<boolean> {
+    const enabled = await this._adapter.dotnetCheckerEnabled();
     if (!enabled) {
       this._telemetry.sendEvent(DepsCheckerEvent.dotnetCheckSkipped);
     }
-    return Promise.resolve(enabled);
+    return enabled;
   }
 
   public async isInstalled(): Promise<boolean> {
@@ -368,8 +368,12 @@ export class DotnetChecker implements IDepsChecker {
         }
       });
     } catch (error) {
-      await this._logger.debug(
-        `Failed to search dotnet sdk by dotnetPath = ${dotnetExecPath}, error = '${error}'`
+      const errorMessage = `Failed to search dotnet sdk by dotnetPath = '${dotnetExecPath}', error = '${error}'`;
+      await this._logger.debug(errorMessage);
+      this._telemetry.sendSystemErrorEvent(
+        DepsCheckerEvent.dotnetSearchDotnetSdks,
+        TelemtryMessages.failedToSearchDotnetSdks,
+        errorMessage
       );
     }
     return sdks;

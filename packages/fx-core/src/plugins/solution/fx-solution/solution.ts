@@ -1319,94 +1319,36 @@ export class TeamsAppSolution implements Solution {
       return postLocalDebugResult;
     }
 
-    const maybeConfig = appStudioPlugin
-      .getConfigForCreatingManifest(
-        getPluginContext(ctx, this.appStudioPlugin.name, manifest),
-        true
-      )
-      .map((conf) => {
-        return {
-          localTabEndpoint: conf.tabEndpoint,
-          localTabDomain: conf.tabDomain,
-          localAADId: conf.aadId,
-          localBotDomain: conf.botDomain,
-          botId: conf.botId,
-          webApplicationInfoResource: conf.webApplicationInfoResource,
-        };
-      });
+    // const maybeAppDefinition = await appStudioPlugin.getConfigAndAppDefinition(
+    //   getPluginContext(ctx, this.appStudioPlugin.name, manifest),
+    //   true,
+    //   manifest
+    // );
 
-    if (maybeConfig.isErr()) {
-      return maybeConfig;
-    }
+    // if (maybeAppDefinition.isErr()) {
+    //   return maybeAppDefinition;
+    // }
 
-    const {
-      localTabEndpoint,
-      localTabDomain,
-      localAADId,
-      localBotDomain,
-      botId,
-      webApplicationInfoResource,
-    } = maybeConfig.value;
-
-    const validDomains: string[] = [];
-
-    if (localTabDomain) {
-      validDomains.push(localTabDomain);
-    }
-
-    if (localBotDomain) {
-      validDomains.push(localBotDomain);
-    }
-
-    const manifestTpl = (
-      await fs.readFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`)
-    ).toString();
-
-    const [appDefinition, _updatedManifest] = appStudioPlugin.getDevAppDefinition(
-      manifestTpl,
-      localAADId,
-      validDomains,
-      webApplicationInfoResource,
-      false,
-      localTabEndpoint,
-      manifest.name.short,
-      manifest.version,
-      botId,
-      "-local-debug"
-    );
+    // const [appDefinition, _updatedManifest] = maybeAppDefinition.value;
 
     const localTeamsAppID = ctx.config.get(GLOBAL_CONFIG)?.getString(LOCAL_DEBUG_TEAMS_APP_ID);
-    // If localTeamsAppID is present, we should reuse the teams app id.
-    if (localTeamsAppID) {
-      const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
-      const result = await appStudioPlugin.updateApp(
-        appDefinition,
-        "localDebug",
-        false,
-        localTeamsAppID,
-        await ctx.appStudioToken?.getAccessToken(),
-        ctx.logProvider,
-        ctx.root
-      );
-      if (result.isErr()) {
-        return result;
-      }
-    } else {
-      const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
-      const maybeTeamsAppId = await appStudioPlugin.updateApp(
-        appDefinition,
-        "localDebug",
-        true,
-        undefined,
-        await ctx.appStudioToken?.getAccessToken(),
-        ctx.logProvider,
-        ctx.root
-      );
-      if (maybeTeamsAppId.isErr()) {
-        return maybeTeamsAppId;
-      }
+    // let createIfNotExist = true;
+    // if (localTeamsAppID){
+    //   createIfNotExist = false;
+    // }
+    const maybeTeamsAppId = await appStudioPlugin.getAppDefinitionAndUpdate(
+      getPluginContext(ctx, this.appStudioPlugin.name, manifest),
+      "localDebug",
+      manifest,
+      await ctx.appStudioToken?.getAccessToken()
+    );
+    if (maybeTeamsAppId.isErr()) {
+      return maybeTeamsAppId;
+    }
+    if (!localTeamsAppID) {
       ctx.config.get(GLOBAL_CONFIG)?.set(LOCAL_DEBUG_TEAMS_APP_ID, maybeTeamsAppId.value);
     }
+
     return ok(Void);
   }
 
@@ -2263,15 +2205,19 @@ export class TeamsAppSolution implements Solution {
     const manifest: TeamsAppManifest = JSON.parse(manifestStr);
     await fs.writeFile(manifestPath, manifestStr);
     const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
-    const appDefinition = appStudioPlugin.convertToAppDefinition(manifest, true);
-    const maybeTeamsAppId = await appStudioPlugin.updateApp(
-      appDefinition,
+    // const appDefinition = appStudioPlugin.convertToAppDefinition(manifest, true);
+    const maybeTeamsAppId = await appStudioPlugin.getAppDefinitionAndUpdate(
+      getPluginContext(ctx, this.appStudioPlugin.name, manifest),
       "remote",
-      true,
-      undefined,
-      await ctx.appStudioToken?.getAccessToken(),
-      ctx.logProvider,
-      ctx.root
+      manifest,
+      await ctx.appStudioToken?.getAccessToken()
+      // appDefinition,
+      // "remote",
+      // true,
+      // undefined,
+      // await ctx.appStudioToken?.getAccessToken(),
+      // ctx.logProvider,
+      // ctx.root
     );
     if (maybeTeamsAppId.isErr()) {
       return err(maybeTeamsAppId.error);

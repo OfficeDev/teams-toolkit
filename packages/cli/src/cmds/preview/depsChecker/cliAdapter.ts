@@ -1,14 +1,12 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import * as path from "path";
 import { DepsCheckerEvent, Messages } from "./common";
 import { IDepsAdapter, IDepsTelemetry } from "./checker";
-import { cliEnvCheckerLogger as logger } from "./cliLogger";
-import { cliTelemetry } from "./cliTelemetry";
-import DialogManagerInstance from "../../../userInterface";
 import CLIUIInstance from "../../../userInteraction";
 
 export class CLIAdapter implements IDepsAdapter {
-  private readonly configurationPrefix = "fx-extension";
-  private readonly downloadIndicatorInterval = 1000; // same as vscode-dotnet-runtime
   private readonly validateDotnetSdkKey = "validateDotnetSdk";
   private readonly validateFuncCoreToolsKey = "validateFuncCoreTools";
   private readonly validateNodeVersionKey = "validateNode";

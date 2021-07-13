@@ -35,9 +35,9 @@ export interface IDepsAdapter {
   showOutputChannel: () => void;
 
   hasTeamsfxBackend(): Promise<boolean>;
-  dotnetCheckerEnabled(): boolean;
-  funcToolCheckerEnabled(): boolean;
-  nodeCheckerEnabled(): boolean;
+  dotnetCheckerEnabled(): Promise<boolean>;
+  funcToolCheckerEnabled(): Promise<boolean>;
+  nodeCheckerEnabled(): Promise<boolean>;
   runWithProgressIndicator(callback: () => Promise<void>): Promise<void>;
   getResourceDir(): string;
 }

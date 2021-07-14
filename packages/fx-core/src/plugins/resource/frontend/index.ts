@@ -1,7 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { FrontendPluginImpl } from "./plugin";
-import { Plugin, PluginContext, err, SystemError, UserError } from "@microsoft/teamsfx-api";
+import {
+  Plugin,
+  PluginContext,
+  err,
+  SystemError,
+  UserError,
+  AzureSolutionSettings,
+} from "@microsoft/teamsfx-api";
 
 import { ErrorFactory, TeamsFxResult } from "./error-factory";
 import {
@@ -14,8 +21,17 @@ import { Logger } from "./utils/logger";
 import { ProgressHelper } from "./utils/progress-helper";
 import { TelemetryEvent } from "./constants";
 import { TelemetryHelper } from "./utils/telemetry-helper";
-
+import { HostTypeOptionAzure, TabOptionItem } from "../../solution/fx-solution/question";
+import { Service } from "typedi";
+import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+@Service(ResourcePlugins.FrontendPlugin)
 export class FrontendPlugin implements Plugin {
+  name = "fx-resource-frontend-hosting";
+  displayName = "Tab Front-end";
+  activate(solutionSettings: AzureSolutionSettings): boolean {
+    const cap = solutionSettings.capabilities || [];
+    return solutionSettings.hostType === HostTypeOptionAzure.id && cap.includes(TabOptionItem.id);
+  }
   frontendPluginImpl = new FrontendPluginImpl();
 
   private static setContext(ctx: PluginContext): void {

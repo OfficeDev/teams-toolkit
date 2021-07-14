@@ -3,64 +3,33 @@
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { it } from "mocha";
-import { SolutionRunningState, TeamsAppSolution } from " ../../../src/plugins/solution";
-import {
-  ConfigFolderName,
-  ConfigMap,
-  FxError,
-  ok,
-  PluginContext,
-  Result,
-  SolutionConfig,
-  SolutionContext,
-  TeamsAppManifest,
-  Void,
-  Plugin,
-  Platform,
-  AzureSolutionSettings,
-  Func,
-} from "@microsoft/teamsfx-api";
+import { TeamsAppSolution } from " ../../../src/plugins/solution";
+import { ConfigMap, SolutionConfig, SolutionContext, Platform, Func } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
-import fs from "fs-extra";
-import {
-  BOT_DOMAIN,
-  BOT_ID,
-  FRONTEND_DOMAIN,
-  FRONTEND_ENDPOINT,
-  GLOBAL_CONFIG,
-  REMOTE_AAD_ID,
-  REMOTE_MANIFEST,
-  SolutionError,
-  SOLUTION_PROVISION_SUCCEEDED,
-  WEB_APPLICATION_INFO_SOURCE,
-} from "../../../src/plugins/solution/fx-solution/constants";
-import {
-  BotOptionItem,
-  HostTypeOptionAzure,
-  HostTypeOptionSPFx,
-  TabOptionItem,
-} from "../../../src/plugins/solution/fx-solution/question";
-import { mockPublishThatAlwaysSucceed, validManifest } from "./util";
+import { GLOBAL_CONFIG, SolutionError } from "../../../src/plugins/solution/fx-solution/constants";
+import { mockPublishThatAlwaysSucceed } from "./util";
 import _ from "lodash";
-import { platform } from "os";
+import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
+import Container from "typedi";
+import { AppStudioPlugin } from "../../../src";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
-
+const appStudioPlugin = Container.get<AppStudioPlugin>(ResourcePlugins.AppStudioPlugin);
 function mockSolutionContextWithPlatform(platform?: Platform): SolutionContext {
   const config: SolutionConfig = new Map();
-  config.set(GLOBAL_CONFIG, new ConfigMap);
+  config.set(GLOBAL_CONFIG, new ConfigMap());
   return {
     root: ".",
     // app: new TeamsAppManifest(),
     config,
-    answers: {platform:platform?platform:Platform.VSCode},
+    answers: { platform: platform ? platform : Platform.VSCode },
     projectSettings: undefined,
   };
 }
 
 describe("executeUserTask VSpublish", async () => {
-	it("should return error for non-vs platform", async () => {
+  it("should return error for non-vs platform", async () => {
     const mockedCtx = mockSolutionContextWithPlatform(Platform.VSCode);
     const solution = new TeamsAppSolution();
     const func: Func = {
@@ -85,8 +54,7 @@ describe("executeUserTask VSpublish", async () => {
   describe("happy path", async () => {
     const mocker = sinon.createSandbox();
 
-    beforeEach(() => {
-    });
+    beforeEach(() => {});
 
     afterEach(() => {
       mocker.restore();
@@ -99,12 +67,11 @@ describe("executeUserTask VSpublish", async () => {
         namespace: "solution",
         method: "VSpublish",
       };
-      mockPublishThatAlwaysSucceed(solution.appStudioPlugin);
-      const spy = mocker.spy(solution.appStudioPlugin, "publish");
-      let result = await solution.executeUserTask(func, mockedCtx);
+      mockPublishThatAlwaysSucceed(appStudioPlugin);
+      const spy = mocker.spy(appStudioPlugin, "publish");
+      const result = await solution.executeUserTask(func, mockedCtx);
       expect(result.isOk()).to.be.true;
       expect(spy.calledOnce).to.be.true;
     });
-    
   });
 });

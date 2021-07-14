@@ -11,23 +11,13 @@ import { Argv, Options } from "yargs";
 import * as uuid from "uuid";
 import { glob } from "glob";
 
-import {
-  FxError,
-  err,
-  ok,
-  Result,
-  Question,
-  LogLevel,
-  Stage,
-} from "@microsoft/teamsfx-api";
+import { FxError, err, ok, Result, Question, LogLevel, Stage } from "@microsoft/teamsfx-api";
 
-import activate  from "../activate";
+import activate from "../activate";
 import * as constants from "../constants";
 import { NotFoundInputedFolder, SampleAppDownloadFailed, ProjectFolderExist } from "../error";
 import { YargsCommand } from "../yargsCommand";
-import {
-  getSystemInputs,
-} from "../utils";
+import { getSystemInputs } from "../utils";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
@@ -131,7 +121,11 @@ class NewTemplete extends YargsCommand {
   }): Promise<Result<null, FxError>> {
     const folder = path.resolve((args.folder as string) || "./");
     if (!fs.pathExistsSync(folder)) {
-      throw NotFoundInputedFolder(folder);
+      CliTelemetry.sendTelemetryErrorEvent(
+        TelemetryEvent.DownloadSample,
+        NotFoundInputedFolder(folder)
+      );
+      return err(NotFoundInputedFolder(folder));
     }
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSampleStart);
     const templateName = args["template-name"] as string;
@@ -139,7 +133,11 @@ class NewTemplete extends YargsCommand {
 
     const sampleAppFolder = path.resolve(folder, template.sampleAppName);
     if ((await fs.pathExists(sampleAppFolder)) && (await fs.readdir(sampleAppFolder)).length > 0) {
-      throw ProjectFolderExist(sampleAppFolder);
+      CliTelemetry.sendTelemetryErrorEvent(
+        TelemetryEvent.DownloadSample,
+        ProjectFolderExist(sampleAppFolder)
+      );
+      return err(ProjectFolderExist(sampleAppFolder));
     }
 
     const result = await this.fetchCodeZip(template.sampleAppUrl);
@@ -147,9 +145,9 @@ class NewTemplete extends YargsCommand {
     await this.downloadSampleHook(templateName, sampleAppFolder);
     CLILogProvider.necessaryLog(
       LogLevel.Info,
-      `Downloaded the '${CLILogProvider.white(template.sampleAppName)}' sample to '${CLILogProvider.white(
-        sampleAppFolder
-      )}'.`
+      `Downloaded the '${CLILogProvider.white(
+        template.sampleAppName
+      )}' sample to '${CLILogProvider.white(sampleAppFolder)}'.`
     );
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSample, {
@@ -197,12 +195,14 @@ class NewTemplete extends YargsCommand {
       const originalId = "c314487b-f51c-474d-823e-a2c3ec82b1ff";
       const componentId = uuid.v4();
       glob.glob(`${sampleAppPath}/**/*.json`, { nodir: true, dot: true }, async (err, files) => {
-        await Promise.all(files.map(async (file) => {
-          let content = (await fs.readFile(file)).toString();
-          const reg = new RegExp(originalId, "g");
-          content = content.replace(reg, componentId);
-          await fs.writeFile(file, content);
-        }));
+        await Promise.all(
+          files.map(async (file) => {
+            let content = (await fs.readFile(file)).toString();
+            const reg = new RegExp(originalId, "g");
+            content = content.replace(reg, componentId);
+            await fs.writeFile(file, content);
+          })
+        );
       });
     }
   }
@@ -221,7 +221,11 @@ class NewTempleteList extends YargsCommand {
     [argName: string]: string | string[];
   }): Promise<Result<null, FxError>> {
     CLILogProvider.necessaryLog(LogLevel.Info, `The following are sample apps:`);
-    CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(constants.templates, undefined, 4), true);
+    CLILogProvider.necessaryLog(
+      LogLevel.Info,
+      JSON.stringify(constants.templates, undefined, 4),
+      true
+    );
     CLILogProvider.necessaryLog(
       LogLevel.Info,
       `Use the command ${CLILogProvider.white(

@@ -4,11 +4,13 @@
 import * as os from "os";
 import { performance } from "perf_hooks";
 import { SystemError, UserError } from "@microsoft/teamsfx-api";
+import { TelemetryProperty } from "../../../telemetry/cliTelemetryEvents";
+import cliTelemetryInstance from "../../../telemetry/cliTelemetry";
 import { DepsCheckerEvent, TelemetryMessurement } from "./common";
 import { IDepsTelemetry } from "./checker";
 
 export class CLITelemetry implements IDepsTelemetry {
-  private readonly _telemetryComponentType = "extension:debug:envchecker";
+  private readonly _telemetryComponentType = "cli:debug:envchecker";
 
   public sendEvent(
     eventName: DepsCheckerEvent,
@@ -16,8 +18,13 @@ export class CLITelemetry implements IDepsTelemetry {
     timecost?: number
   ): void {
     this.addCommonProps(properties);
+    const measurements: { [p: string]: number } = {};
 
-    // TODO: send event
+    if (timecost) {
+      measurements[TelemetryMessurement.completionTime] = timecost;
+    }
+
+    cliTelemetryInstance.sendTelemetryEvent(eventName, properties, measurements);
   }
 
   public async sendEventWithDuration(
@@ -32,7 +39,8 @@ export class CLITelemetry implements IDepsTelemetry {
   }
 
   public sendUserErrorEvent(eventName: DepsCheckerEvent, errorMessage: string): void {
-    // TODO: send user error event
+    const error = new UserError(eventName, errorMessage, this._telemetryComponentType);
+    cliTelemetryInstance.sendTelemetryErrorEvent(eventName, error, this.addCommonProps());
   }
 
   public sendSystemErrorEvent(
@@ -40,11 +48,19 @@ export class CLITelemetry implements IDepsTelemetry {
     errorMessage: string,
     errorStack: string
   ): void {
-    // TODO: send system error event
+    const error = new SystemError(
+      eventName,
+      `errorMsg=${errorMessage},errorStack=${errorStack}`,
+      this._telemetryComponentType,
+      errorStack
+    );
+    cliTelemetryInstance.sendTelemetryErrorEvent(eventName, error, this.addCommonProps());
   }
 
   private addCommonProps(properties: { [key: string]: string } = {}): { [key: string]: string } {
-    // TODO: also send os info
+    properties[TelemetryProperty.PreviewOSArch] = os.arch();
+    properties[TelemetryProperty.PreviewOSRelease] = os.release();
+    properties[TelemetryProperty.Component] = this._telemetryComponentType;
     return properties;
   }
 }

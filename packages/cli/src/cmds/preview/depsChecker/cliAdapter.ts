@@ -1,19 +1,16 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import * as os from "os";
 import * as path from "path";
 import { DepsCheckerEvent, Messages } from "./common";
 import { IDepsAdapter, IDepsTelemetry } from "./checker";
-import { cliEnvCheckerLogger as logger } from "./cliLogger";
-import { cliTelemetry } from "./cliTelemetry";
-import DialogManagerInstance from "../../../userInterface";
 import CLIUIInstance from "../../../userInteraction";
 import cliLogger from "../../../commonlib/log";
+import { CliConfigOptions, UserSettings } from "../../../userSetttings";
 
 export class CLIAdapter implements IDepsAdapter {
-  private readonly configurationPrefix = "fx-extension";
   private readonly downloadIndicatorInterval = 1000; // same as vscode-dotnet-runtime
-  private readonly validateDotnetSdkKey = "validateDotnetSdk";
-  private readonly validateFuncCoreToolsKey = "validateFuncCoreTools";
-  private readonly validateNodeVersionKey = "validateNode";
   private readonly _telemetry: IDepsTelemetry;
   private readonly _hasBackend: boolean;
 
@@ -27,18 +24,15 @@ export class CLIAdapter implements IDepsAdapter {
   }
 
   public dotnetCheckerEnabled(): Promise<boolean> {
-    // TODO: implement me
-    throw new Error("not implemented");
+    return this.checkerEnabled(CliConfigOptions.EnvCheckerValidateDotnetSdk);
   }
 
   public funcToolCheckerEnabled(): Promise<boolean> {
-    // TODO: implement me
-    throw new Error("not implemented");
+    return this.checkerEnabled(CliConfigOptions.EnvCheckerValidateFuncCoreTools);
   }
 
   public nodeCheckerEnabled(): Promise<boolean> {
-    // TODO: implement me
-    throw new Error("not implemented");
+    return this.checkerEnabled(CliConfigOptions.EnvCheckerValidateNode);
   }
 
   public async runWithProgressIndicator(callback: () => Promise<void>): Promise<void> {
@@ -108,6 +102,21 @@ export class CLIAdapter implements IDepsAdapter {
 
   public getResourceDir(): string {
     return path.resolve(__dirname, "resource");
+  }
+
+  private async checkerEnabled(key: string): Promise<boolean> {
+    const result = await UserSettings.getConfigSync();
+    if (result.isErr()) {
+      return true;
+    }
+
+    const config = result.value;
+
+    if (key in config) {
+      return config[key];
+    } else {
+      return true;
+    }
   }
 
   private static async openUrl(url: string): Promise<void> {

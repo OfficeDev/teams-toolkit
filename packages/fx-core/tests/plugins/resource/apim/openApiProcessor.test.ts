@@ -6,6 +6,8 @@ import chaiAsPromised from "chai-as-promised";
 import path from "path";
 import { OpenApiProcessor } from "../../../../src/plugins/resource/apim/utils/openApiProcessor";
 import {
+  EmptyTitleInOpenApiDocument,
+  EmptyVersionInOpenApiDocument,
   InvalidFunctionEndpoint,
   InvalidOpenApiDocument,
 } from "../../../../src/plugins/resource/apim/error";
@@ -15,29 +17,32 @@ chai.use(chaiAsPromised);
 const testDataBaseFolder = "./tests/plugins/resource/apim/data/openApiProcessor";
 describe("OpenApiProcessor", () => {
   describe("#loadOpenApiDocument()", () => {
-    const testInput: { message: string; filePath: string; schemaVersion: OpenApiSchemaVersion }[] =
-      [
-        {
-          message: "v3 json file",
-          filePath: `${testDataBaseFolder}/openapi-user.json`,
-          schemaVersion: OpenApiSchemaVersion.V3,
-        },
-        {
-          message: "v3 yaml file",
-          filePath: `${testDataBaseFolder}/openapi-user.yaml`,
-          schemaVersion: OpenApiSchemaVersion.V3,
-        },
-        {
-          message: "v2 json file",
-          filePath: `${testDataBaseFolder}/swagger-user.json`,
-          schemaVersion: OpenApiSchemaVersion.V2,
-        },
-        {
-          message: "v2 yaml file",
-          filePath: `${testDataBaseFolder}/swagger-user.yaml`,
-          schemaVersion: OpenApiSchemaVersion.V2,
-        },
-      ];
+    const testInput: {
+      message: string;
+      filePath: string;
+      schemaVersion: OpenApiSchemaVersion;
+    }[] = [
+      {
+        message: "v3 json file",
+        filePath: `${testDataBaseFolder}/openapi-user.json`,
+        schemaVersion: OpenApiSchemaVersion.V3,
+      },
+      {
+        message: "v3 yaml file",
+        filePath: `${testDataBaseFolder}/openapi-user.yaml`,
+        schemaVersion: OpenApiSchemaVersion.V3,
+      },
+      {
+        message: "v2 json file",
+        filePath: `${testDataBaseFolder}/swagger-user.json`,
+        schemaVersion: OpenApiSchemaVersion.V2,
+      },
+      {
+        message: "v2 yaml file",
+        filePath: `${testDataBaseFolder}/swagger-user.yaml`,
+        schemaVersion: OpenApiSchemaVersion.V2,
+      },
+    ];
 
     testInput.forEach((input) => {
       it(input.message, async () => {
@@ -84,7 +89,9 @@ describe("OpenApiProcessor", () => {
       {
         message: "title empty",
         filePath: `${testDataBaseFolder}/errorSpec/title-empty.json`,
-        error: InvalidOpenApiDocument.message(`${testDataBaseFolder}/errorSpec/title-empty.json`),
+        error: EmptyTitleInOpenApiDocument.message(
+          `${testDataBaseFolder}/errorSpec/title-empty.json`
+        ),
       },
       {
         message: "title undefined",
@@ -96,7 +103,9 @@ describe("OpenApiProcessor", () => {
       {
         message: "version empty",
         filePath: `${testDataBaseFolder}/errorSpec/version-empty.yaml`,
-        error: InvalidOpenApiDocument.message(`${testDataBaseFolder}/errorSpec/version-empty.yaml`),
+        error: EmptyVersionInOpenApiDocument.message(
+          `${testDataBaseFolder}/errorSpec/version-empty.yaml`
+        ),
       },
       {
         message: "version undefined",

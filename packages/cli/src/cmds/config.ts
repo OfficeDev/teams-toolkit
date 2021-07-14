@@ -11,7 +11,7 @@ import CLILogProvider from "../commonlib/log";
 
 export class ConfigGet extends YargsCommand {
   public readonly commandHead = `get`;
-  public readonly command = `${this.commandHead} [option...]`;
+  public readonly command = `${this.commandHead} <option>`;
   public readonly description = "Get user settings.";
 
   public builder(yargs: Argv): Argv<any> {

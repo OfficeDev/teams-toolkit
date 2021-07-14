@@ -69,6 +69,8 @@ export enum TelemetryProperty {
   PreviewNpmInstallNpmVersion = "preview-npm-install-npm-version",
   PreviewNpmInstallErrorMessage = "preview-npm-install-error-message",
   PreviewServiceName = "preview-service-name",
+  PreviewOSArch = "preview-os-arch",
+  PreviewOSRelease = "preview-os-release",
 }
 
 export enum TelemetrySuccess {

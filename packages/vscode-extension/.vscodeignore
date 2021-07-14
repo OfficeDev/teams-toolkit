@@ -17,3 +17,4 @@ webpack.config.js
 node_modules
 !out/templates/**
 coverage
+.coverconfig.json

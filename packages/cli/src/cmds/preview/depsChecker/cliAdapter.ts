@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import * as path from "path";
 import { DepsCheckerEvent, Messages } from "./common";
 import { IDepsAdapter, IDepsTelemetry } from "./checker";
@@ -5,6 +8,9 @@ import CLIUIInstance from "../../../userInteraction";
 import { CliConfigOptions, UserSettings } from "../../../userSetttings";
 
 export class CLIAdapter implements IDepsAdapter {
+  private readonly validateDotnetSdkKey = "validateDotnetSdk";
+  private readonly validateFuncCoreToolsKey = "validateFuncCoreTools";
+  private readonly validateNodeVersionKey = "validateNode";
   private readonly _telemetry: IDepsTelemetry;
   private readonly _hasBackend: boolean;
 

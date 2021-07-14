@@ -10,7 +10,6 @@ import {
   Result,
   PluginContext,
   Plugin,
-  LoadedPlugin,
   TeamsAppManifest,
   Platform,
   LogProvider,
@@ -343,7 +342,7 @@ export class AppStudioPluginImpl {
 
   public createManifestForRemote(
     ctx: PluginContext,
-    maybeSelectedPlugins: Result<LoadedPlugin[], FxError>,
+    maybeSelectedPlugins: Result<Plugin[], FxError>,
     manifest: TeamsAppManifest
   ): Result<[IAppDefinition, TeamsAppManifest], FxError> {
     if (maybeSelectedPlugins.isErr()) {
@@ -407,7 +406,7 @@ export class AppStudioPluginImpl {
    */
   public async createAndConfigTeamsManifest(
     ctx: PluginContext,
-    maybeSelectedPlugins: Result<LoadedPlugin[], FxError>
+    maybeSelectedPlugins: Result<Plugin[], FxError>
   ): Promise<Result<IAppDefinition, FxError>> {
     const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx.root);
     if (maybeManifest.isErr()) {

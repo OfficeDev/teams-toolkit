@@ -118,15 +118,42 @@ jobs:
         run: |
           npx lerna version --no-private --conventional-commits --conventional-prerelease --preid=rc --no-changelog --yes
 
+      - name: version stable npm packages to npmjs.org
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.preid == 'stable' }}
+        run: |
+          npx lerna version --no-private --conventional-commits --conventional-graduate --no-changelog --yes
+
+      - name: update cli ai key
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && (github.event.inputs.preid == 'stable'||github.event.inputs.preid == 'rc') }}
+        uses: jossef/action-set-json-field@v1
+        with:
+          file: ./packages/cli/package.json
+          field: aiKey
+          value: ${{ secrets.CLI_PUBLIC_AIKEY }}
+
+      - name: update extension ai key
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && (github.event.inputs.preid == 'stable'||github.event.inputs.preid == 'rc') }}
+        uses: jossef/action-set-json-field@v1
+        with:
+          file: ./packages/vscode-extension/package.json
+          field: aiKey
+          value: ${{ secrets.EXT_PUBLIC_AIKEY }}
+      
+      - name: commit change on local
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && (github.event.inputs.preid == 'stable'||github.event.inputs.preid == 'rc') }}
+        run: |
+          git add .
+          git commit -m "chore: update ai key"
+
       - name: publish rc npm packages to npmjs.org
         if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.preid == 'rc' }}
         run: |
           npx lerna publish from-package --dist-tag=rc --yes
 
-      - name: release stable npm packages to npmjs.org
-        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.preid == 'stable'}}
+      - name: publish stable npm packages to npmjs.org
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.preid == 'stable' }}
         run: |
-          npx lerna publish --no-private --conventional-commits --conventional-graduate --no-changelog --yes
+          npx lerna publish from-package --yes
 
       - name: pack vsix
         id: pack-vsix

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ConfigKeys, Plugins } from "./constants";
+import { ConfigKeys, Constants, Plugins } from "./constants";
 
 const referHelpLink = "Please refer to the help link for further steps.";
 const aadHelpLink = "https://aka.ms/teamsfx-aad-help";
@@ -149,3 +149,28 @@ export class GraphClientErrorMessage {
   static readonly AppObjectIdIsNull = "Missing Object ID.";
   static readonly EmptyResponse = "Missing response.";
 }
+
+export const GraphErrorCodes = new Map([
+  [
+    "Authorization_RequestDenied",
+    {
+      type: Constants.errorInfo.user,
+      helpLink:
+        "https://docs.microsoft.com/en-us/troubleshoot/azure/active-directory/authorization-request-denied-graph-api",
+    },
+  ],
+  [
+    "Directory_QuotaExceeded",
+    {
+      type: Constants.errorInfo.user,
+      helpLink:
+        "https://docs.microsoft.com/en-us/troubleshoot/azure/active-directory/exceed-number-objects-synced",
+    },
+  ],
+  [
+    "Request_ResourceNotFound",
+    {
+      type: Constants.errorInfo.user,
+    },
+  ],
+]);

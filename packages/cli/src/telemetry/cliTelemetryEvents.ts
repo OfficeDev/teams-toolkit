@@ -63,6 +63,7 @@ export enum TelemetryProperty {
   InternalAlias = "internal-alias",
   PreviewAppId = "preview-appid",
   PreviewType = "preview-type",
+  PreviewBrowser = "preview-browser",
   PreviewNpmInstallName = "preview-npm-install-name",
   PreviewNpmInstallExitCode = "preview-npm-install-exit-code",
   PreviewNpmInstallNodeVersion = "preview-npm-install-node-version",

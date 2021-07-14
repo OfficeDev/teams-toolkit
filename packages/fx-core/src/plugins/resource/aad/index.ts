@@ -24,6 +24,7 @@ export class AadAppForTeamsPlugin implements Plugin {
   public pluginImpl: AadAppForTeamsImpl = new AadAppForTeamsImpl();
 
   public async provision(ctx: PluginContext): Promise<AadResult> {
+    ctx.log?.info("hello");
     return await this.runWithExceptionCatchingAsync(
       () => this.pluginImpl.provision(ctx),
       ctx,

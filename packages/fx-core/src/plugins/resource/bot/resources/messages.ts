@@ -42,6 +42,8 @@ export class Messages {
     `Successfully retrieved zip package from ${zipUrl}.`;
   public static readonly FallingBackToUseLocalTemplateZip =
     "Falling back to use local template zip.";
+  public static readonly ResourceProviderExist = (rp: string): string =>
+    `Resource Provider ${rp} already exist, do not need to create.`;
 
   public static readonly WorkingDirIsMissing = "Working directory is missing.";
   public static readonly FailToGetAzureCreds = "Failed to retrieve Azure credentials.";
@@ -115,4 +117,6 @@ export class Messages {
     "If azure account is switched, don't forget to delete azure bot channel registration under the previous account.";
   public static readonly CheckOutputLogAndTryToFix =
     "Please check log in output channel and try to fix this issue.";
+  public static readonly RegisterRequiredRP = (resourceProviders: string[]): string =>
+    `Register ${resourceProviders.join(",")} resource provider for your subscription manually.`;
 }

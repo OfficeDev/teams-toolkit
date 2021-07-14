@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ErrorNames } from "./constants";
+import { ErrorNames, AzureConstants } from "./constants";
 import { Messages } from "./resources/messages";
 
 export enum ErrorType {
@@ -36,7 +36,9 @@ export class PluginError extends Error {
   }
 
   genMessage(): string {
-    return `${this.message} Suggestions: ${this.suggestions.join("\n")}`;
+    return `${this.message}. ${this.innerError?.message}. Suggestions: ${this.suggestions.join(
+      "\n"
+    )}`;
   }
 }
 
@@ -245,6 +247,21 @@ export class InvalidBotDataError extends PluginError {
       ErrorNames.INVALID_BOT_DATA_ERROR,
       innerError.message,
       [Messages.DeleteExistingBotChannelRegistration, Messages.DeleteBotAfterAzureAccountSwitching],
+      innerError
+    );
+  }
+}
+
+export class RegisterResourceProviderError extends PluginError {
+  constructor(innerError?: Error) {
+    super(
+      ErrorType.User,
+      "RegisterResourceProviderError",
+      "Failed to register required resource provider for your app.",
+      [
+        Messages.RegisterRequiredRP(AzureConstants.requiredResourceProviders),
+        Messages.CheckOutputLogAndTryToFix,
+      ],
       innerError
     );
   }

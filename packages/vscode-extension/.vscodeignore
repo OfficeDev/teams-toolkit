@@ -16,3 +16,4 @@ webpack.config.js
 .github
 node_modules
 !out/templates/**
+coverage

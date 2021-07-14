@@ -63,6 +63,12 @@ export default class Preview extends YargsCommand {
       string: true,
       default: "./",
     });
+    yargs.option("browser", {
+      description: "Select browser to open Teams web client",
+      string: true,
+      choices: [constants.Browser.chrome, constants.Browser.edge, constants.Browser.default],
+      default: constants.Browser.default,
+    });
 
     return yargs.version(false);
   }
@@ -88,6 +94,9 @@ export default class Preview extends YargsCommand {
         .withRootFolder(workspaceFolder)
         .sendTelemetryEvent(TelemetryEvent.PreviewStart, this.telemetryProperties);
 
+      const browser = args.browser as constants.Browser;
+      this.telemetryProperties[TelemetryProperty.PreviewBrowser] = browser;
+
       if (args.local && args.remote) {
         throw errors.ExclusiveLocalRemoteOptions();
       }
@@ -97,8 +106,8 @@ export default class Preview extends YargsCommand {
 
       const result =
         previewType === "local"
-          ? await this.localPreview(workspaceFolder)
-          : await this.remotePreview(workspaceFolder);
+          ? await this.localPreview(workspaceFolder, browser)
+          : await this.remotePreview(workspaceFolder, browser);
       if (result.isErr()) {
         throw result.error;
       }
@@ -114,7 +123,10 @@ export default class Preview extends YargsCommand {
     }
   }
 
-  private async localPreview(workspaceFolder: string): Promise<Result<null, FxError>> {
+  private async localPreview(
+    workspaceFolder: string,
+    browser: constants.Browser
+  ): Promise<Result<null, FxError>> {
     // TODO: check dependencies
 
     let coreResult = await activate();
@@ -248,14 +260,21 @@ export default class Preview extends YargsCommand {
     }
 
     /* === open teams web client === */
-    await this.openTeamsWebClient(tenantId.length === 0 ? undefined : tenantId, localTeamsAppId);
+    await this.openTeamsWebClient(
+      tenantId.length === 0 ? undefined : tenantId,
+      localTeamsAppId,
+      browser
+    );
 
     cliLogger.necessaryLog(LogLevel.Warning, constants.waitCtrlPlusC);
 
     return ok(null);
   }
 
-  private async remotePreview(workspaceFolder: string): Promise<Result<null, FxError>> {
+  private async remotePreview(
+    workspaceFolder: string,
+    browser: constants.Browser
+  ): Promise<Result<null, FxError>> {
     /* === get remote teams app id === */
     const coreResult = await activate();
     if (coreResult.isErr()) {
@@ -295,7 +314,11 @@ export default class Preview extends YargsCommand {
     }
 
     /* === open teams web client === */
-    await this.openTeamsWebClient(tenantId.length === 0 ? undefined : tenantId, remoteTeamsAppId);
+    await this.openTeamsWebClient(
+      tenantId.length === 0 ? undefined : tenantId,
+      remoteTeamsAppId,
+      browser
+    );
 
     return ok(null);
   }
@@ -691,7 +714,8 @@ export default class Preview extends YargsCommand {
 
   private async openTeamsWebClient(
     tenantIdFromConfig: string | undefined,
-    teamsAppId: string
+    teamsAppId: string,
+    browser: constants.Browser
   ): Promise<Result<null, FxError>> {
     cliTelemetry.sendTelemetryEvent(
       TelemetryEvent.PreviewSideloadingStart,
@@ -741,7 +765,25 @@ export default class Preview extends YargsCommand {
       },
     ];
     cliLogger.necessaryLog(LogLevel.Info, utils.getColorizedString(message));
-    await open(sideloadingUrl);
+    switch (browser) {
+      case constants.Browser.chrome:
+        await open(sideloadingUrl, {
+          app: {
+            name: open.apps.chrome,
+          },
+        });
+        break;
+      case constants.Browser.edge:
+        await open(sideloadingUrl, {
+          app: {
+            name: open.apps.edge,
+          },
+        });
+        break;
+      case constants.Browser.default:
+        await open(sideloadingUrl);
+        break;
+    }
     await previewBar.next(constants.previewSuccessMessage);
     await previewBar.end();
 

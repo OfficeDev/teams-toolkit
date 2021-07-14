@@ -1,5 +1,4 @@
 {
-  "exclude": ["node_modules", "**/test/*", "transformer"],
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig.json to read more about this file */
 
@@ -63,5 +62,6 @@
     // "experimentalDecorators": true,        /* Enables experimental support for ES7 decorators. */
     // "emitDecoratorMetadata": true,         /* Enables experimental support for emitting type metadata for decorators. */
 
-  }
+  },
+  "exclude": ["node_modules", "**/test/*", "transformer"]
 }

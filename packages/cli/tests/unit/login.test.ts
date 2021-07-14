@@ -16,8 +16,4 @@ describe("Help Parameter Tests", function () {
     it("Azure login/getSelectedSubscription", () => {
         AzureAccountManager.getSelectedSubscription();
     });
-
-    it("Azure login/selectSubscription", () => {
-        AzureAccountManager.selectSubscription();
-    });
 });

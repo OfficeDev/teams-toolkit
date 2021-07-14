@@ -14,18 +14,26 @@ export class FuncPluginTelemetry implements IDepsTelemetry {
   private readonly _source = "func-envchecker";
 
   private static getCommonProps(): { [key: string]: string } {
-    const properties: { [key: string]: string; } = {};
+    const properties: { [key: string]: string } = {};
     properties[TelemetryKey.OSArch] = os.arch();
     properties[TelemetryKey.OSRelease] = os.release();
     return properties;
   }
 
-  public sendEvent(eventName: DepsCheckerEvent, timecost?: number): void {
+  public sendEvent(
+    eventName: DepsCheckerEvent,
+    properties: { [key: string]: string } = {},
+    timecost?: number
+  ): void {
     const measurements: { [p: string]: number } = {};
     if (timecost) {
       measurements[TelemetryMessurement.completionTime] = timecost;
     }
-    TelemetryHelper.sendSuccessEvent(eventName, FuncPluginTelemetry.getCommonProps(), measurements);
+    TelemetryHelper.sendSuccessEvent(
+      eventName,
+      { ...properties, ...FuncPluginTelemetry.getCommonProps() },
+      measurements
+    );
   }
 
   public async sendEventWithDuration(

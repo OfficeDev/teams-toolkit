@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Microsoft Teams Framework for Node.js and browser.",
   "main": "dist/index.js",
   "module": "dist-esm/src/index.js",
@@ -34,7 +34,7 @@
     "test:node": "npm run build:test && npm run unit-test:node && npm run e2e-test:node",
     "test": "npm run test:unit && npm run test:e2e",
     "unit-test:browser": "karma start --single-run --glob=./dist-test/index.unit.browser.js",
-    "unit-test:node": "nyc --reporter=html --reporter=json-summary --reporter=text mocha --no-timeouts -r test/mocha.env.ts --require ts-node/register test/unit/node/**/*.spec.ts test/unit/*.spec.ts",
+    "unit-test:node": "nyc mocha --no-timeouts -r test/mocha.env.ts --require ts-node/register \"test/unit/node/**/*.spec.ts\" \"test/unit/*.spec.ts\"",
     "test:unit": "npm run build:test && npm run unit-test:node && npm run unit-test:browser",
     "ui-test": "mocha --no-timeouts -r test/mocha.env.ts -r ts-node/register test/ui/**/*.spec.ts --exit",
     "precommit": "lint-staged"
@@ -79,6 +79,7 @@
     "@azure/ms-rest-nodeauth": "^3.0.6",
     "@commitlint/cli": "^12.0.1",
     "@commitlint/config-conventional": "^12.0.1",
+    "@istanbuljs/nyc-config-typescript": "^1.0.1",
     "@microsoft/api-documenter": "^7.12.4",
     "@microsoft/api-extractor": "7.7.11",
     "@rollup/plugin-commonjs": "^13.0.2",
@@ -133,6 +134,7 @@
     "rollup-plugin-sourcemaps": "^0.4.2",
     "rollup-plugin-terser": "^5.1.1",
     "sinon": "^9.2.4",
+    "source-map-support": "^0.5.19",
     "ts-node": "^9.1.1",
     "typescript": "^4.1.2",
     "url-join": "^4.0.1",

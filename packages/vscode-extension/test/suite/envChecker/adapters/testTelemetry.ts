@@ -2,7 +2,11 @@ import { IDepsTelemetry } from "../../../../src/debug/depsChecker/checker";
 import { DepsCheckerEvent } from "../../../../src/debug/depsChecker/common";
 
 export class TestTelemetry implements IDepsTelemetry {
-  sendEvent(eventName: DepsCheckerEvent, timecost?: number): void {
+  sendEvent(
+    eventName: DepsCheckerEvent,
+    properties: { [p: string]: string } = {},
+    timecost?: number
+  ): void {
     // empty method
   }
 

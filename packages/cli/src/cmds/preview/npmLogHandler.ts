@@ -4,7 +4,7 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 
-import { cpUtils } from "./cpUtils";
+import { cpUtils } from "./depsChecker/cpUtils";
 
 export interface NpmInstallLogInfo {
   nodeVersion: string | undefined;

@@ -31,7 +31,7 @@ import * as uuid from "uuid";
 import { glob } from "glob";
 import { getResourceFolder } from "..";
 import { fakeServer } from "sinon";
-import { PluginNames } from "../plugins";
+import { PluginNames } from "../plugins/solution/fx-solution/constants";
 import {
   AzureResourceApim,
   AzureResourceFunction,

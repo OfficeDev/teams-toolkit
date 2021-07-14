@@ -49,8 +49,15 @@ import { prepareLocalAuthService } from "./util/localService";
 import { getNgrokHttpUrl } from "./util/ngrok";
 import { getCodespaceName, getCodespaceUrl } from "./util/codespace";
 import { TelemetryUtils, TelemetryEventName } from "./util/telemetry";
-
+import { Service } from "typedi";
+import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+@Service(ResourcePlugins.LocalDebugPlugin)
 export class LocalDebugPlugin implements Plugin {
+  name = "fx-resource-local-debug";
+  displayName = "LocalDebug";
+  activate(solutionSettings: AzureSolutionSettings): boolean {
+    return true;
+  }
   public async scaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
     const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
       ?.activeResourcePlugins;

@@ -78,7 +78,7 @@ export function InvalidProjectError(msg?: string) {
 export function ConcurrentError() {
   return new UserError(
     "ConcurrentOperation",
-    "Concurrent operation error, please wait until the running task finishs or you can reload the window to cancel it.",
+    "Concurrent operation error, please wait until the running task finish or you can reload the window to cancel it.",
     CoreSource,
     new Error().stack
   );

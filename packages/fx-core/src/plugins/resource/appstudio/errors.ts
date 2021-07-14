@@ -54,6 +54,39 @@ export class AppStudioError {
     message: (errors: string[]) => `Validation error: \n ${errors.join("\n")}`,
   };
 
+  public static readonly GetLocalDebugConfigFailedError = {
+    name: "GetLocalDebugConfigFailed",
+    message: (domain: string, doProvision: boolean) =>
+      `Missing configuration data for manifest. ${
+        doProvision ? "Run 'provision' first." : ""
+      } Data required: ${domain}.`,
+  };
+
+  public static readonly GetRemoteConfigFailedError = {
+    name: "GetRemoteConfigFailed",
+    message: (domain: string, doProvision: boolean) =>
+      `Missing configuration data for manifest. ${
+        doProvision ? "Run 'provision' first." : ""
+      } Data required: ${domain}.`,
+  };
+
+  public static readonly InvalidLocalDebugConfigurationDataError = {
+    name: "InvalidLocalDebugConfigurationData",
+    message: (endpoint: string, tabEndpoint: string, domain: string, tabDomain: string) =>
+      `Invalid configuration data for manifest: ${endpoint}=${tabEndpoint}, ${domain}=${tabDomain}.`,
+  };
+
+  public static readonly InvalidRemoteConfigurationDataError = {
+    name: "InvalidRemoteConfigurationData",
+    message: (endpoint: string, tabEndpoint: string, domain: string, tabDomain: string) =>
+      `Invalid configuration data for manifest: ${endpoint}=${tabEndpoint}, ${domain}=${tabDomain}.`,
+  };
+
+  public static readonly InternalError = {
+    name: "InternalError",
+    message: "Select either Bot or Messaging Extension.",
+  };
+
   public static readonly TeamsAppUpdateFailedError = {
     name: "TeamsAppUpdateFailed",
     message: (teamsAppId: string) => `Failed to update Teams app with ID ${teamsAppId}.`,

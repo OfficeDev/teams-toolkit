@@ -11,14 +11,14 @@ import CLILogProvider from "../commonlib/log";
 
 export class ConfigGet extends YargsCommand {
   public readonly commandHead = `get`;
-  public readonly command = `${this.commandHead} [option...]`;
+  public readonly command = `${this.commandHead} <option>`;
   public readonly description = "Get user settings.";
 
   public builder(yargs: Argv): Argv<any> {
     return yargs.positional("option", {
       description: "User settings option",
       type: "string",
-      choices: [CliConfigOptions.Telemetry]
+      choices: [CliConfigOptions.Telemetry],
     });
   }
 
@@ -46,20 +46,22 @@ export class ConfigSet extends YargsCommand {
   public readonly description = "Set user settings.";
 
   public builder(yargs: Argv): Argv<any> {
-    return yargs.positional("option", {
-      describe: "User settings option",
-      type: "string",
-      choices: [CliConfigOptions.Telemetry]
-    }).positional("value", {
-      describe: "Option value",
-      type: "string",
-      choices: [CliConfigTelemetry.On, CliConfigTelemetry.Off]
-    });
+    return yargs
+      .positional("option", {
+        describe: "User settings option",
+        type: "string",
+        choices: [CliConfigOptions.Telemetry],
+      })
+      .positional("value", {
+        describe: "Option value",
+        type: "string",
+        choices: [CliConfigTelemetry.On, CliConfigTelemetry.Off],
+      });
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     switch (args.option) {
-      case CliConfigOptions.Telemetry: 
+      case CliConfigOptions.Telemetry:
         const opt = { [args.option]: args.value };
         const result = UserSettings.setConfigSync(opt);
         if (result.isErr()) {
@@ -78,10 +80,7 @@ export default class Config extends YargsCommand {
   public readonly command = `${this.commandHead} <action>`;
   public readonly description = "Configure user settings.";
 
-  public readonly subCommands: YargsCommand[] = [
-      new ConfigGet(),
-      new ConfigSet()
-  ];
+  public readonly subCommands: YargsCommand[] = [new ConfigGet(), new ConfigSet()];
 
   public builder(yargs: Argv): Argv<any> {
     this.subCommands.forEach((cmd) => {

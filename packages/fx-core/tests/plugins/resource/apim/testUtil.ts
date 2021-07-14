@@ -112,10 +112,8 @@ export class MockAzureAccountProvider implements AzureAccountProvider {
   getAccountInfo(): Record<string, string> {
     throw BuildError(NotImplemented);
   }
-  getSelectedSubscription(): Record<string, string> | undefined {
-    throw BuildError(NotImplemented);
-  }
-  selectSubscription(subscriptionId?: string): Promise<string> {
+
+  getSelectedSubscription(): Promise<SubscriptionInfo | undefined> {
     throw BuildError(NotImplemented);
   }
 }

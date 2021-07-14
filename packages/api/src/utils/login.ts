@@ -68,7 +68,7 @@ export interface AzureAccountProvider {
 
     /**
      * Get user select subscription, tenant information
-     * @param triggerUI whether trigger login or select subscription workflow
+     * @param triggerUI whether means trigger login or select subscription workflow when user has not logged in or selected subscription
      * @returns SubscriptionInfo.subscriptionId === "", means user does not select subscription
      */
     getSelectedSubscription(triggerUI?: boolean): Promise<SubscriptionInfo | undefined>;

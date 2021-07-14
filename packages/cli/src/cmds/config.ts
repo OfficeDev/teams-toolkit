@@ -18,7 +18,12 @@ export class ConfigGet extends YargsCommand {
     return yargs.positional("option", {
       description: "User settings option",
       type: "string",
-      choices: [CliConfigOptions.Telemetry],
+      choices: [
+        CliConfigOptions.Telemetry,
+        CliConfigOptions.EnvCheckerValidateDotnetSdk,
+        CliConfigOptions.EnvCheckerValidateFuncCoreTools,
+        CliConfigOptions.EnvCheckerValidateNode,
+      ],
     });
   }
 
@@ -32,6 +37,27 @@ export class ConfigGet extends YargsCommand {
     switch (args.option) {
       case CliConfigOptions.Telemetry:
         CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(config.telemetry, null, 2), true);
+        return ok(null);
+      case CliConfigOptions.EnvCheckerValidateDotnetSdk:
+        CLILogProvider.necessaryLog(
+          LogLevel.Info,
+          JSON.stringify(config.envCheckerValidateDotnetSdk, null, 2),
+          true
+        );
+        return ok(null);
+      case CliConfigOptions.EnvCheckerValidateFuncCoreTools:
+        CLILogProvider.necessaryLog(
+          LogLevel.Info,
+          JSON.stringify(config.EnvCheckerValidateFuncCoreTools, null, 2),
+          true
+        );
+        return ok(null);
+      case CliConfigOptions.EnvCheckerValidateNode:
+        CLILogProvider.necessaryLog(
+          LogLevel.Info,
+          JSON.stringify(config.EnvCheckerValidateNode, null, 2),
+          true
+        );
         return ok(null);
     }
 
@@ -50,7 +76,12 @@ export class ConfigSet extends YargsCommand {
       .positional("option", {
         describe: "User settings option",
         type: "string",
-        choices: [CliConfigOptions.Telemetry],
+        choices: [
+          CliConfigOptions.Telemetry,
+          CliConfigOptions.EnvCheckerValidateDotnetSdk,
+          CliConfigOptions.EnvCheckerValidateFuncCoreTools,
+          CliConfigOptions.EnvCheckerValidateNode,
+        ],
       })
       .positional("value", {
         describe: "Option value",
@@ -62,6 +93,9 @@ export class ConfigSet extends YargsCommand {
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     switch (args.option) {
       case CliConfigOptions.Telemetry:
+      case CliConfigOptions.EnvCheckerValidateDotnetSdk:
+      case CliConfigOptions.EnvCheckerValidateFuncCoreTools:
+      case CliConfigOptions.EnvCheckerValidateNode:
         const opt = { [args.option]: args.value };
         const result = UserSettings.setConfigSync(opt);
         if (result.isErr()) {

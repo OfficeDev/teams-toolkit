@@ -18,8 +18,6 @@ dotenv.config();
 
 const user = cfg.AZURE_ACCOUNT_NAME || "";
 const password = cfg.AZURE_ACCOUNT_PASSWORD || "";
-const tenantIdString = "tenantId";
-const subscriptionIdString = "subscriptionId";
 
 type LoginStatus = {
   status: string;

@@ -37,6 +37,13 @@ import {
 } from "../../telemetry/cliTelemetryEvents";
 import { ServiceLogWriter } from "./serviceLogWriter";
 import CLIUIInstance from "../../userInteraction";
+import { AzureNodeChecker } from "./depsChecker/azureNodeChecker";
+import { DotnetChecker } from "./depsChecker/dotnetChecker";
+import { FuncToolChecker } from "./depsChecker/funcToolChecker";
+import { DepsChecker } from "./depsChecker/checker";
+import { cliEnvCheckerLogger } from "./depsChecker/cliLogger";
+import { cliAdapter } from "./depsChecker/cliAdapter";
+import { cliEnvCheckerTelemetry } from "./depsChecker/cliTelemetry";
 
 export default class Preview extends YargsCommand {
   public readonly commandHead = `preview`;
@@ -116,6 +123,7 @@ export default class Preview extends YargsCommand {
 
   private async localPreview(workspaceFolder: string): Promise<Result<null, FxError>> {
     // TODO: check dependencies
+    this.handleDependences();
 
     let coreResult = await activate();
     if (coreResult.isErr()) {
@@ -757,5 +765,33 @@ export default class Preview extends YargsCommand {
       await task.terminate();
     }
     this.backgroundTasks = [];
+  }
+
+  private async handleDependences() {
+    const nodeChecker = new AzureNodeChecker(
+      cliAdapter,
+      cliEnvCheckerLogger,
+      cliEnvCheckerTelemetry
+    );
+    const dotnetChecker = new DotnetChecker(
+      cliAdapter,
+      cliEnvCheckerLogger,
+      cliEnvCheckerTelemetry
+    );
+    const funcChecker = new FuncToolChecker(
+      cliAdapter,
+      cliEnvCheckerLogger,
+      cliEnvCheckerTelemetry
+    );
+    const depsChecker = new DepsChecker(cliEnvCheckerLogger, cliAdapter, [
+      nodeChecker,
+      dotnetChecker,
+      funcChecker,
+    ]);
+
+    const shouldContinue = await depsChecker.resolve();
+    if (!shouldContinue) {
+      // TODO: give a error message to user
+    }
   }
 }

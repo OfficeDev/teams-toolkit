@@ -8,14 +8,14 @@ import { IDepsAdapter, IDepsTelemetry } from "./checker";
 import CLIUIInstance from "../../../userInteraction";
 import cliLogger from "../../../commonlib/log";
 import { CliConfigOptions, UserSettings } from "../../../userSetttings";
+import { cliEnvCheckerTelemetry } from "./cliTelemetry";
 
 export class CLIAdapter implements IDepsAdapter {
   private readonly downloadIndicatorInterval = 1000; // same as vscode-dotnet-runtime
   private readonly _telemetry: IDepsTelemetry;
-  private readonly _hasBackend: boolean;
+  private readonly _hasBackend: boolean = true; // todo
 
-  constructor(hasBackend: boolean, telemetry: IDepsTelemetry) {
-    this._hasBackend = hasBackend;
+  constructor(telemetry: IDepsTelemetry) {
     this._telemetry = telemetry;
   }
 
@@ -123,3 +123,4 @@ export class CLIAdapter implements IDepsAdapter {
     CLIUIInstance.openUrl(url);
   }
 }
+export const cliAdapter = new CLIAdapter(cliEnvCheckerTelemetry);

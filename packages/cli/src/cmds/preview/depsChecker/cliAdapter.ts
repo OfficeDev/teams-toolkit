@@ -1,13 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import * as os from "os";
 import * as path from "path";
 import { DepsCheckerEvent, Messages } from "./common";
 import { IDepsAdapter, IDepsTelemetry } from "./checker";
 import CLIUIInstance from "../../../userInteraction";
+import cliLogger from "../../../commonlib/log";
 import { CliConfigOptions, UserSettings } from "../../../userSetttings";
 
 export class CLIAdapter implements IDepsAdapter {
+  private readonly downloadIndicatorInterval = 1000; // same as vscode-dotnet-runtime
   private readonly _telemetry: IDepsTelemetry;
   private readonly _hasBackend: boolean;
 
@@ -33,8 +36,13 @@ export class CLIAdapter implements IDepsAdapter {
   }
 
   public async runWithProgressIndicator(callback: () => Promise<void>): Promise<void> {
-    // TODO: show progress info
-    await callback();
+    const timer = setInterval(() => cliLogger.rawLog("."), this.downloadIndicatorInterval);
+    try {
+      await callback();
+    } finally {
+      clearTimeout(timer);
+      cliLogger.rawLog(os.EOL);
+    }
   }
 
   public async displayContinueWithLearnMore(message: string, link: string): Promise<boolean> {

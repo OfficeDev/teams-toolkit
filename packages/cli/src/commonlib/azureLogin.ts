@@ -256,7 +256,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   }
 
   private async doGetAccountCredentialAsync(): Promise<TokenCredentialsBase | undefined> {
-    AzureAccountManager.codeFlowInstance.destroySockets();
     if (AzureAccountManager.codeFlowInstance.account) {
       const dataJson = await this.getJsonObject();
       const checkDefaultTenant =

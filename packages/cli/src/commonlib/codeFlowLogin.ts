@@ -98,12 +98,16 @@ export class CodeFlowLogin {
     const server = app.listen(serverPort);
     serverPort = (server.address() as AddressInfo).port;
     let lastSocketKey = 0;
-    server.on(constants.connection, (socket) => {
+    server.on("connection", (socket) => {
       const socketKey = ++lastSocketKey;
       this.socketMap.set(socketKey, socket);
-      socket.on(constants.close, () => {
+      socket.on("close", () => {
         this.socketMap.delete(socketKey);
       });
+    });
+
+    server.on("close", () => {
+      this.destroySockets();
     });
 
     const authCodeUrlParameters = {

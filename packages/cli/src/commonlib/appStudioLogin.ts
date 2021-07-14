@@ -77,7 +77,6 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
         await AppStudioLogin.statusChange("SignedIn", loginToken, tokenJson);
       }
       await this.notifyStatus();
-      AppStudioLogin.codeFlowInstance.destroySockets();
       return loginToken;
     }
 

@@ -260,16 +260,13 @@ class MockedAzureTokenProvider implements AzureAccountProvider {
   getAccountInfo(): Record<string, string> | undefined {
     return {};
   }
-  getSelectedSubscription(): SubscriptionInfo | undefined {
+  getSelectedSubscription(): Promise<SubscriptionInfo | undefined> {
     const selectedSub = {
       subscriptionId: "subscriptionId",
       tenantId: "tenantId",
       subscriptionName: "subscriptionName",
     };
-    return selectedSub;
-  }
-  selectSubscription(subscriptionId?: string): Promise<string | undefined> {
-    return Promise.resolve("subscriptionId");
+    return Promise.resolve(selectedSub);
   }
 
 }

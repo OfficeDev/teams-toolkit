@@ -465,7 +465,8 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     }
   }
 
-  getSelectedSubscription(): SubscriptionInfo | undefined {
+  // TODO add login and select subscription logic later
+  getSelectedSubscription(triggerUI=false): Promise<SubscriptionInfo | undefined> {
     if (AzureAccountManager.codeFlowInstance.account) {
       const selectedSub: SubscriptionInfo = {
         subscriptionId: "",
@@ -479,15 +480,10 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       if (AzureAccountManager.tenantId) {
         selectedSub.tenantId = AzureAccountManager.tenantId;
       }
-      return selectedSub;
+      return Promise.resolve(selectedSub);
     } else {
-      return undefined;
+      return Promise.resolve(undefined);
     }
-  }
-
-  // TODO add logic later
-  selectSubscription(subscriptionId?: string): Promise<string | undefined> {
-    return Promise.resolve(undefined);
   }
 }
 

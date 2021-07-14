@@ -139,7 +139,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     throw new Error("Method not implemented.");
   }
 
-  getSelectedSubscription(): SubscriptionInfo | undefined {
+  getSelectedSubscription(): Promise<SubscriptionInfo | undefined> {
     throw new Error("Method not implemented.");
   }
 

@@ -157,7 +157,7 @@ export class AzureAccountProviderUserPassword implements AzureAccountProvider {
     return {};
   }
 
-  getSelectedSubscription(): SubscriptionInfo | undefined {
+  getSelectedSubscription(): Promise<SubscriptionInfo | undefined> {
     const selectedSub: SubscriptionInfo = {
       subscriptionId: "",
       tenantId: "",
@@ -169,7 +169,7 @@ export class AzureAccountProviderUserPassword implements AzureAccountProvider {
     if (cfg.AZURE_SUBSCRIPTION_ID) {
       selectedSub.subscriptionId = cfg.AZURE_SUBSCRIPTION_ID;
     }
-    return selectedSub;
+    return Promise.resolve(selectedSub);
   }
 
   async selectSubscription(subscriptionId?: string): Promise<string | undefined> {

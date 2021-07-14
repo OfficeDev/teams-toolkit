@@ -59,35 +59,6 @@ jobs:
         run: |
           echo "${{ secrets.NPMRC }}" > ~/.npmrc
 
-      - name: Install Mustache
-        run: curl -sSL https://git.io/get-mo -o mo && chmod +x mo && sudo mv mo /usr/local/bin/
-
-      - name: generate templates
-        run: .github/scripts/template-zip-autogen.sh
-
-      - name: release templates' alpha version to github
-        if: ${{ github.ref == 'refs/heads/dev' }}
-        uses: marvinpinto/action-automatic-releases@latest
-        with:
-          repo_token: ${{ secrets.CD_PAT }}
-          prerelease: true
-          automatic_release_tag: "templates@0.0.0-alpha"
-          files: |
-            ./*.zip
-
-      - name: release templates' rc version to github
-        if: ${{ github.ref == 'refs/heads/main' && github.event.inputs.preid == 'rc' }}
-        uses: marvinpinto/action-automatic-releases@latest
-        with:
-          repo_token: ${{ secrets.CD_PAT }}
-          prerelease: true
-          automatic_release_tag: "templates@0.0.0-rc"
-          files: |
-            ./*.zip
-
-      - name: cleanup templates
-        run: rm -rf ./*.zip && git clean -df
-
       - name: Download Simple Auth bits
         uses: nick-invision/retry@v2
         with:
@@ -110,23 +81,24 @@ jobs:
       - name: release alpha npm packages to npmjs.org
         if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/dev' && github.event.inputs.preid == 'alpha')}}
         run: |
-          npx lerna version --no-private prerelease --preid=alpha.$(git rev-parse --short HEAD) --no-push --allow-branch dev --yes
+          npx lerna version prerelease --preid=alpha.$(git rev-parse --short HEAD) --no-push --allow-branch dev --yes
           npx lerna publish from-package --dist-tag=alpha --yes --allow-branch dev
 
       - name: version rc npm packages to npmjs.org
         if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.preid == 'rc' && github.event.inputs.skip-version-rc == 'no'}}
         run: |
-          npx lerna version --no-private --conventional-commits --conventional-prerelease --preid=rc --no-changelog --yes
+          npx lerna version --conventional-commits --conventional-prerelease --preid=rc --no-changelog --yes
 
       - name: version stable npm packages to npmjs.org
         if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.preid == 'stable' }}
         run: |
-          npx lerna version --no-private --conventional-commits --conventional-graduate --no-changelog --yes
+          npx lerna version --conventional-commits --conventional-graduate --no-changelog --yes
       
       - name: version change
         id: version-change
         run: |
           echo "::set-output name=CHANGED::$(git tag --points-at HEAD | xargs)"
+          echo "::set-output name=TEMPLATE_VERSION::$(git tag --points-at HEAD | grep templates)"
 
       - name: update cli ai key
         if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && (github.event.inputs.preid == 'stable'||github.event.inputs.preid == 'rc') }}
@@ -160,6 +132,52 @@ jobs:
         run: |
           npx lerna publish from-package --yes
 
+      - name: Install Mustache
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') }}
+        run: curl -sSL https://git.io/get-mo -o mo && chmod +x mo && sudo mv mo /usr/local/bin/
+
+      - name: generate templates
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') }}
+        run: .github/scripts/template-zip-autogen.sh
+
+      - name: release templates' prerelease version to github
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event.inputs.preid != 'stable' }}
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: ${{ secrets.CD_PAT }}
+          prerelease: true
+          automatic_release_tag: "templates@0.0.0-${{github.event.inputs.preid}}"
+          files: |
+            ./*.zip
+
+      - name: Create Templates Stable Release
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event.inputs.preid == 'stable' }}
+        uses: ncipollo/release-action@v1.7.3
+        with:
+          artifacts: ./*.zip
+          name: 'Release for ${{ steps.version-change.outputs.TEMPLATE_VERSION }}'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ steps.version-change.outputs.TEMPLATE_VERSION }}
+          allowUpdates: true
+
+      - name: Generate Tag List
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event.inputs.preid == 'stable' }}
+        run: git tag | grep templates@ > ./template-tags.txt
+
+      - name: Update Template Tag list Release
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event.inputs.preid == 'stable' }}
+        uses: ncipollo/release-action@v1.7.3
+        with:
+          artifacts: ./template-tags.txt
+          name: 'Template Tag List'
+          body: 'Release to maintain template tag list.'
+          token: ${{ secrets.github_token }}
+          tag: 'template-tag-list'
+          allowUpdates: true  
+    
+      - name: cleanup templates
+        run: rm -rf ./*.zip && git clean -df
+
       - name: pack vsix
         id: pack-vsix
         uses: nick-invision/retry@v2
@@ -172,8 +190,6 @@ jobs:
             cd ./packages/vscode-extension
             npm install
             npx vsce package
-            VERSION=`ls *.vsix | awk -F '.vsix' '{print $1}'`
-            echo "::set-output name=VERSION::$VERSION"
 
       - name: release VSCode extension to github
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') }}
@@ -181,6 +197,6 @@ jobs:
         with:
           repo_token: ${{ secrets.CD_PAT }}
           prerelease: true
-          automatic_release_tag: ${{ steps.pack-vsix.outputs.VERSION }}
+          automatic_release_tag: $(tr ' ' '\n' <<< '${{ steps.version-change.outputs.CHANGED }}' | grep 'ms-teams-vscode-extension@')
           files: |
             ./packages/**/*.vsix

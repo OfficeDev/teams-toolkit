@@ -8,9 +8,6 @@ import CLIUIInstance from "../../../userInteraction";
 import { CliConfigOptions, UserSettings } from "../../../userSetttings";
 
 export class CLIAdapter implements IDepsAdapter {
-  private readonly validateDotnetSdkKey = "validateDotnetSdk";
-  private readonly validateFuncCoreToolsKey = "validateFuncCoreTools";
-  private readonly validateNodeVersionKey = "validateNode";
   private readonly _telemetry: IDepsTelemetry;
   private readonly _hasBackend: boolean;
 

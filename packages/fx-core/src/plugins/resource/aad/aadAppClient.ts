@@ -5,6 +5,7 @@ import { FxError } from "@microsoft/teamsfx-api";
 import { PluginContext } from "@microsoft/teamsfx-api";
 import { AppStudio } from "./appStudio";
 import { ConfigKeys, Constants, Telemetry } from "./constants";
+import { GraphErrorCodes } from "./errorCodes";
 import {
   AppStudioErrorMessage,
   CreateSecretError,
@@ -15,7 +16,6 @@ import {
   GetAppError,
   GetAppConfigError,
   AadError,
-  GraphErrorCodes,
 } from "./errors";
 import { GraphClient } from "./graph";
 import { IAADPassword } from "./interfaces/IAADApplication";

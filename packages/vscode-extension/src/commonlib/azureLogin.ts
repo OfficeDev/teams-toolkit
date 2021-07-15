@@ -396,10 +396,17 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         await this.login(true);
       }
       if (azureAccount.status === loggedIn && !AzureAccountManager.subscriptionId) {
-        this.selectSubscription();
+        await this.selectSubscription();
       }
     }
-    if (azureAccount.status === loggedIn) {
+    // no need to select sub when user only have one
+    if (azureAccount.status === loggedIn && !AzureAccountManager.subscriptionId) {
+      const subscriptionList = await this.listSubscriptions();
+      if (subscriptionList && subscriptionList.length == 1) {
+        await this.setSubscription(subscriptionList[0].subscriptionId);
+      }
+    }
+    if (azureAccount.status === loggedIn && AzureAccountManager.subscriptionId) {
       const selectedSub: SubscriptionInfo = {
         subscriptionId: "",
         tenantId: "",
@@ -427,7 +434,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       );
     }
     if (subscriptionList && subscriptionList.length == 1) {
-      this.setSubscription(subscriptionList[0].subscriptionId);
+      await this.setSubscription(subscriptionList[0].subscriptionId);
     } else if (subscriptionList.length > 1) {
       const options: OptionItem[] = subscriptionList.map((sub) => {
         return {
@@ -446,7 +453,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         throw result.error;
       } else {
         const subId = result.value.result as string;
-        this.setSubscription(subId);
+        await this.setSubscription(subId);
       }
     }
   }

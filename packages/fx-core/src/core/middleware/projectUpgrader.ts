@@ -9,7 +9,9 @@ import {
 } from "..";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { deserializeDict, serializeDict } from "../..";
+import * as uuid from "uuid";
+import { dataNeedEncryption, deserializeDict, serializeDict } from "../..";
+import { LocalCrypto } from "../crypto";
 
 const resourceContext = [
   {
@@ -55,10 +57,12 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<void> {
     const confFolderPath = path.resolve(inputs.projectPath!, `.${ConfigFolderName}`);
     const settingsFile = path.resolve(confFolderPath, "settings.json");
     const projectSettings: ProjectSettings = await fs.readJson(settingsFile);
-    const envName = projectSettings.currentEnv;
+    if (!projectSettings.currentEnv) {
+      projectSettings.currentEnv = "default";
+    }
 
     // Read context file.
-    const contextPath = path.resolve(confFolderPath, `env.${envName}.json`);
+    const contextPath = path.resolve(confFolderPath, `env.${projectSettings.currentEnv}.json`);
     const context = await readContext(contextPath);
 
     // Update value of specific key in context file to secret pattern.
@@ -79,30 +83,65 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<void> {
     );
 
     // Read UserData file.
-    const userDataPath = path.resolve(confFolderPath, `${envName}.userdata`);
-    const userData = await readUserData(userDataPath);
+    const userDataPath = path.resolve(confFolderPath, `${projectSettings.currentEnv}.userdata`);
+    const userData = await readUserData(userDataPath, projectSettings.projectId);
 
     // Merge updatedKeys into UserData.
     mergeKeysToUserDate(userData, updatedKeys);
 
     // Save UserData
-    await saveUserData(userDataPath, userData);
+    await saveUserData(userDataPath, userData, projectSettings.projectId);
   } catch (error) {
     ctx.result = err(ContextUpgradeError(error));
   }
 }
 
-async function readUserData(userDataPath: string): Promise<Record<string, string>> {
+async function readUserData(
+  userDataPath: string,
+  projectId?: string
+): Promise<Record<string, string>> {
   let dict: Record<string, string> = {};
   if (await fs.pathExists(userDataPath)) {
     const dictContent = await fs.readFile(userDataPath, "UTF-8");
     dict = deserializeDict(dictContent);
   }
 
+  if (projectId) {
+    const cryptoProvider = new LocalCrypto(projectId);
+    for (const secretKey of Object.keys(dict)) {
+      if (!dataNeedEncryption(secretKey)) {
+        continue;
+      }
+      const secretValue = dict[secretKey];
+      const plaintext = cryptoProvider.decrypt(secretValue);
+      if (plaintext.isErr()) {
+        throw plaintext.error;
+      }
+      dict[secretKey] = plaintext.value;
+    }
+  }
+
   return dict;
 }
 
-async function saveUserData(userDataPath: string, userData: Record<string, string>): Promise<void> {
+async function saveUserData(
+  userDataPath: string,
+  userData: Record<string, string>,
+  projectId?: string
+): Promise<void> {
+  if (projectId) {
+    const cryptoProvider = new LocalCrypto(projectId);
+    for (const secretKey of Object.keys(userData)) {
+      if (!dataNeedEncryption(secretKey)) {
+        continue;
+      }
+
+      const encryptedSecret = cryptoProvider.encrypt(userData[secretKey]);
+      if (encryptedSecret.isOk()) {
+        userData[secretKey] = encryptedSecret.value;
+      }
+    }
+  }
   await fs.writeFile(userDataPath, serializeDict(userData));
 }
 

@@ -126,7 +126,7 @@ jobs:
       - name: version change
         id: version-change
         run: |
-          echo "::set-output name=CHANGED::$(git tag --points-at HEAD)"
+          echo "::set-output name=CHANGED::$(git tag --points-at HEAD | xargs)"
 
       - name: update cli ai key
         if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && (github.event.inputs.preid == 'stable'||github.event.inputs.preid == 'rc') }}

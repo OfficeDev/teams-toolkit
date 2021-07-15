@@ -268,6 +268,16 @@ export function newPluginContext(): PluginContext {
       listSubscriptions: () => {
         return Promise.resolve([]);
       },
+      getAccountInfo: () => {
+        return {};
+      },
+      getSelectedSubscription: () => {
+        return Promise.resolve({
+          subscriptionId: "subscriptionId",
+          tenantId: "tenantId",
+          subscriptionName: "subscriptionName",
+        });
+      },
     },
   };
 }

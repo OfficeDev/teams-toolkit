@@ -153,6 +153,15 @@ export class MockAzureAccountProvider implements AzureAccountProvider {
   setSubscription(subscriptionId: string): Promise<void> {
     throw new Error("Method not implemented.");
   }
+  getAccountInfo(): Record<string, string> {
+    throw new Error("Method not implemented.");
+  }
+  getSelectedSubscription(): Promise<SubscriptionInfo | undefined> {
+    throw new Error("Method not implemented.");
+  }
+  selectSubscription(subscriptionId?: string): Promise<string> {
+    throw new Error("Method not implemented.");
+  }
 }
 
 class MockGraphTokenProvider implements GraphTokenProvider {

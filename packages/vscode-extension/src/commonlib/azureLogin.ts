@@ -22,7 +22,7 @@ import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
-  AccountType
+  AccountType,
 } from "../telemetry/extTelemetryEvents";
 
 export class AzureAccountManager extends login implements AzureAccountProvider {
@@ -71,7 +71,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         [TelemetryProperty.AccountType]: AccountType.Azure,
         [TelemetryProperty.Success]: TelemetrySuccess.No,
         [TelemetryProperty.UserId]: "",
-        [TelemetryProperty.Internal]: "false"
+        [TelemetryProperty.Internal]: "false",
       });
       throw e;
     }
@@ -84,7 +84,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       [TelemetryProperty.AccountType]: AccountType.Azure,
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
       [TelemetryProperty.UserId]: userid,
-      [TelemetryProperty.Internal]: internal ? "true" : "false"
+      [TelemetryProperty.Internal]: internal ? "true" : "false",
     });
     return cred;
   }
@@ -129,7 +129,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     }
 
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.LoginStart, {
-      [TelemetryProperty.AccountType]: AccountType.Azure
+      [TelemetryProperty.AccountType]: AccountType.Azure,
     });
     await vscode.commands.executeCommand("azure-account.login");
   }
@@ -250,18 +250,16 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       AzureAccountManager.subscriptionId = undefined;
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SignOut, {
         [TelemetryProperty.AccountType]: AccountType.Azure,
-        [TelemetryProperty.Success]: TelemetrySuccess.Yes
+        [TelemetryProperty.Success]: TelemetrySuccess.Yes,
       });
       return new Promise((resolve) => {
         resolve(true);
       });
     } catch (e) {
-      VsCodeLogInstance.error(
-        "[Logout Azure] " + e.message
-      );
+      VsCodeLogInstance.error("[Logout Azure] " + e.message);
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.SignOut, e, {
         [TelemetryProperty.AccountType]: AccountType.Azure,
-        [TelemetryProperty.Success]: TelemetrySuccess.No
+        [TelemetryProperty.Success]: TelemetrySuccess.No,
       });
       return Promise.resolve(false);
     }
@@ -328,7 +326,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       return Promise.resolve({
         status: signedIn,
         token: token?.accessToken,
-        accountInfo: accountJson
+        accountInfo: accountJson,
       });
     } else if (azureAccount.status === loggingIn) {
       return Promise.resolve({ status: signingIn, token: undefined, accountInfo: undefined });
@@ -342,7 +340,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
     AzureAccountManager.currentStatus = azureAccount.status;
     azureAccount.onStatusChanged(async (event) => {
-      if(AzureAccountManager.currentStatus === "Initializing") {
+      if (AzureAccountManager.currentStatus === "Initializing") {
         AzureAccountManager.currentStatus = event;
         return;
       }
@@ -359,6 +357,36 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         await this.notifyStatus();
       }
     });
+  }
+
+  getAccountInfo(): Record<string, string> | undefined {
+    const azureAccount = this.getAzureAccount();
+    if (azureAccount.status === loggedIn) {
+      return this.getJsonObject() as unknown as Record<string, string>;
+    } else {
+      return undefined;
+    }
+  }
+
+  // TODO add login and select subscription logic later
+  getSelectedSubscription(triggerUI = false): Promise<SubscriptionInfo | undefined> {
+    const azureAccount = this.getAzureAccount();
+    if (azureAccount.status === loggedIn) {
+      const selectedSub: SubscriptionInfo = {
+        subscriptionId: "",
+        tenantId: "",
+        subscriptionName: "",
+      };
+      if (AzureAccountManager.subscriptionId) {
+        selectedSub.subscriptionId = AzureAccountManager.subscriptionId;
+      }
+      if (AzureAccountManager.tenantId) {
+        selectedSub.tenantId = AzureAccountManager.tenantId;
+      }
+      return Promise.resolve(selectedSub);
+    } else {
+      return Promise.resolve(undefined);
+    }
   }
 }
 

@@ -3,51 +3,28 @@
 
 "use strict";
 
-import * as path from "path";
 import { Argv } from "yargs";
-import activate from "../activate";
 import { YargsCommand } from "../yargsCommand";
-import { Core, FxError, Result, ok, err, LogLevel } from "@microsoft/teamsfx-api";
+import { FxError, Result, ok, LogLevel } from "@microsoft/teamsfx-api";
 import { UserSettings, CliConfigOptions, CliConfigTelemetry } from "../userSetttings";
 import CLILogProvider from "../commonlib/log";
-import HelpParamGenerator from "../helpParamGenerator";
-import { readProjectSecrets, writeSecretToFile, getSystemInputs, readConfigs } from "../utils";
-import CliTelemetry from "../telemetry/cliTelemetry";
-import {
-  TelemetryEvent,
-  TelemetryProperty,
-  TelemetrySuccess,
-} from "../telemetry/cliTelemetryEvents";
-import { NonTeamsFxProjectFolder, ConfigNameNotFound } from "../error";
-
-const CryptoDataMatchers = new Set([
-  "fx-resource-aad-app-for-teams.clientSecret",
-  "fx-resource-aad-app-for-teams.local_clientSecret",
-  "fx-resource-simple-auth.environmentVariableParams",
-  "fx-resource-bot.botPassword",
-  "fx-resource-bot.localBotPassword",
-  "fx-resource-apim.apimClientAADClientSecret",
-]);
 
 export class ConfigGet extends YargsCommand {
   public readonly commandHead = `get`;
-  public readonly command = `${this.commandHead} [option]`;
+  public readonly command = `${this.commandHead} <option>`;
   public readonly description = "Get user settings.";
 
   public builder(yargs: Argv): Argv<any> {
-    const params = HelpParamGenerator.getYargsParamForHelp("");
-    return yargs
-      .positional("option", {
-        description: "User settings option",
-        type: "string",
-      })
-      .option("global", {
-        alias: "g",
-        describe: "scope of config",
-        type: "boolean",
-        default: false,
-      })
-      .option(params);
+    return yargs.positional("option", {
+      description: "User settings option",
+      type: "string",
+      choices: [
+        CliConfigOptions.Telemetry,
+        CliConfigOptions.EnvCheckerValidateDotnetSdk,
+        CliConfigOptions.EnvCheckerValidateFuncCoreTools,
+        CliConfigOptions.EnvCheckerValidateNode,
+      ],
+    });
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
@@ -55,104 +32,36 @@ export class ConfigGet extends YargsCommand {
     if (result.isErr()) {
       return result;
     }
+
     const config = result.value;
-    const rootFolder = path.resolve((args.folder as string) || "./");
-    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.ConfigGet);
-    const inProject = (await readConfigs(rootFolder)).isOk();
-
-    if (args.option !== undefined) {
-      if (args.option === CliConfigOptions.Telemetry) {
-        // global config
-        if (!args.global) {
-          CLILogProvider.necessaryLog(
-            LogLevel.Warning,
-            "Showing global config. You can add '-g' to specify global scope."
-          );
-        }
+    switch (args.option) {
+      case CliConfigOptions.Telemetry:
         CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(config.telemetry, null, 2), true);
-        CliTelemetry.sendTelemetryEvent(TelemetryEvent.ConfigGet, {
-          [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-        });
         return ok(null);
-      } else {
-        // local config
-        if (inProject) {
-          const result = await this.showConfigValue(rootFolder, args.option);
-          if (result.isErr()) {
-            CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ConfigGet, result.error);
-            return err(result.error);
-          }
-          return result;
-        } else {
-          CLILogProvider.necessaryLog(
-            LogLevel.Warning,
-            `You can change to teamsfx project folder or use --folder to specify.`
-          );
-          return err(NonTeamsFxProjectFolder());
-        }
-      }
-    } else {
-      CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(config, null, 2), true);
-      if (!args.global && inProject) {
-        const result = await this.showConfigValue(rootFolder, args.option);
-        if (result.isErr()) {
-          CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ConfigGet, result.error);
-          return err(result.error);
-        }
-        return result;
-      }
-      CliTelemetry.sendTelemetryEvent(TelemetryEvent.ConfigGet, {
-        [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-      });
-      return ok(null);
-    }
-  }
-
-  private async showConfigValue(
-    rootFolder: string,
-    configName?: string
-  ): Promise<Result<null, FxError>> {
-    let found = false;
-    const secretData = await readProjectSecrets(rootFolder);
-    if (configName && secretData[configName] && !CryptoDataMatchers.has(configName)) {
-      found = true;
-      CLILogProvider.necessaryLog(LogLevel.Info, `${configName}: ${secretData[configName]}`, true);
-      CliTelemetry.sendTelemetryEvent(TelemetryEvent.ConfigGet, {
-        [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-      });
-      return ok(null);
+      case CliConfigOptions.EnvCheckerValidateDotnetSdk:
+        CLILogProvider.necessaryLog(
+          LogLevel.Info,
+          JSON.stringify(config.envCheckerValidateDotnetSdk, null, 2),
+          true
+        );
+        return ok(null);
+      case CliConfigOptions.EnvCheckerValidateFuncCoreTools:
+        CLILogProvider.necessaryLog(
+          LogLevel.Info,
+          JSON.stringify(config.EnvCheckerValidateFuncCoreTools, null, 2),
+          true
+        );
+        return ok(null);
+      case CliConfigOptions.EnvCheckerValidateNode:
+        CLILogProvider.necessaryLog(
+          LogLevel.Info,
+          JSON.stringify(config.EnvCheckerValidateNode, null, 2),
+          true
+        );
+        return ok(null);
     }
 
-    const core = await activate(rootFolder);
-    if (core.isErr()) {
-      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ConfigGet, core.error);
-      return err(core.error);
-    }
-
-    for (const secretKey of Object.keys(secretData)) {
-      if (!configName || configName === secretKey) {
-        found = true;
-        const secretValue = secretData[secretKey];
-        if (CryptoDataMatchers.has(secretKey)) {
-          const decrypted = await core.value.decrypt(secretValue, getSystemInputs(rootFolder));
-          if (decrypted.isOk()) {
-            CLILogProvider.necessaryLog(LogLevel.Info, `${secretKey}: ${decrypted.value}`, true);
-          } else {
-            return err(decrypted.error);
-          }
-        } else {
-          CLILogProvider.necessaryLog(LogLevel.Info, `${secretKey}: ${secretValue}`, true);
-        }
-      }
-    }
-    if (configName && !found) {
-      const error = ConfigNameNotFound(configName);
-      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ConfigGet, error);
-      return err(error);
-    }
-    CliTelemetry.sendTelemetryEvent(TelemetryEvent.ConfigGet, {
-      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-    });
+    CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(config, null, 2), true);
     return ok(null);
   }
 }
@@ -163,91 +72,40 @@ export class ConfigSet extends YargsCommand {
   public readonly description = "Set user settings.";
 
   public builder(yargs: Argv): Argv<any> {
-    const params = HelpParamGenerator.getYargsParamForHelp("");
     return yargs
       .positional("option", {
         describe: "User settings option",
         type: "string",
+        choices: [
+          CliConfigOptions.Telemetry,
+          CliConfigOptions.EnvCheckerValidateDotnetSdk,
+          CliConfigOptions.EnvCheckerValidateFuncCoreTools,
+          CliConfigOptions.EnvCheckerValidateNode,
+        ],
       })
       .positional("value", {
         describe: "Option value",
         type: "string",
-      })
-      .option("global", {
-        alias: "g",
-        describe: "scope of config",
-        type: "boolean",
-        default: false,
-      })
-      .option(params);
+        choices: [CliConfigTelemetry.On, CliConfigTelemetry.Off],
+      });
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
-    const rootFolder = path.resolve((args.folder as string) || "./");
-    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.ConfigSet);
-    const inProject = (await readConfigs(rootFolder)).isOk();
-
-    if (args.option === CliConfigOptions.Telemetry) {
-      // global config
-      if (!args.global) {
-        CLILogProvider.necessaryLog(
-          LogLevel.Warning,
-          "Setting global config. You can add '-g' to specify global scope."
-        );
-      }
-      const opt = { [args.option]: args.value };
-      const result = UserSettings.setConfigSync(opt);
-      if (result.isErr()) {
-        CLILogProvider.necessaryLog(LogLevel.Error, "Configure user settings failed");
-        return result;
-      }
-      CliTelemetry.sendTelemetryEvent(TelemetryEvent.ConfigSet, {
-        [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-      });
-      return ok(null);
-    } else {
-      // local config
-      if (inProject) {
-        const secretData = await readProjectSecrets(rootFolder);
-        if (!secretData[args.option]) {
-          const error = ConfigNameNotFound(args.option);
-          CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ConfigSet, error);
-          return err(error);
+    switch (args.option) {
+      case CliConfigOptions.Telemetry:
+      case CliConfigOptions.EnvCheckerValidateDotnetSdk:
+      case CliConfigOptions.EnvCheckerValidateFuncCoreTools:
+      case CliConfigOptions.EnvCheckerValidateNode:
+        const opt = { [args.option]: args.value };
+        const result = UserSettings.setConfigSync(opt);
+        if (result.isErr()) {
+          CLILogProvider.necessaryLog(LogLevel.Error, "Configure user settings failed");
+          return result;
         }
-        if (!CryptoDataMatchers.has(args.option)) {
-          secretData[args.option] = args.value;
-        } else {
-          const core = await activate(rootFolder);
-          if (core.isErr()) {
-            CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ConfigSet, core.error);
-            return err(core.error);
-          }
-          const encrypted = await core.value.encrypt(args.value, getSystemInputs(rootFolder));
-          if (encrypted.isErr()) {
-            CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ConfigSet, encrypted.error);
-            return err(encrypted.error);
-          }
-          secretData[args.option] = encrypted.value;
-        }
-        writeSecretToFile(secretData, rootFolder);
-        CLILogProvider.necessaryLog(
-          LogLevel.Info,
-          `Successfully configured project secret ${args.option}.`
-        );
-        CliTelemetry.sendTelemetryEvent(TelemetryEvent.ConfigSet, {
-          [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-        });
-        return ok(null);
-      } else {
-        CLILogProvider.necessaryLog(
-          LogLevel.Warning,
-          `You can change to teamsfx project folder or use --folder to specify.`
-        );
-        const error = NonTeamsFxProjectFolder();
-        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ConfigSet, error);
-        return err(error);
-      }
     }
+
+    CLILogProvider.necessaryLog(LogLevel.Info, "Configure user settings successful.");
+    return ok(null);
   }
 }
 

@@ -26,7 +26,7 @@ describe("Test Errors", () => {
       // Assert
       chai.assert.isTrue(pluginError instanceof PluginError);
       chai.assert.isTrue(
-        pluginError.genMessage() === `${pluginError.message} Suggestions: ${suggestions.join("\n")}`
+        pluginError.genMessage() === `${pluginError.message} Suggestions: ${suggestions.join(" ")}`
       );
     });
   });

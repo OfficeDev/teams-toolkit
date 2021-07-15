@@ -49,13 +49,6 @@ export class Constants {
       },
     ],
   };
-
-  static errorInfo = {
-    type: "type",
-    user: "user",
-    system: "system",
-    helpLink: "helpLink",
-  };
 }
 
 export class Telemetry {

@@ -288,36 +288,25 @@ export class AadAppClient {
   }
 
   private static handleError(error: any, errorDetail: AadError): FxError {
-    const errorCode = error?.response?.data?.error?.code;
-    if (errorCode && GraphErrorCodes.has(errorCode)) {
-      const errorInfo: any = GraphErrorCodes.get(errorCode);
-      if (errorInfo[Constants.errorInfo.type] == Constants.errorInfo.user) {
-        return ResultFactory.UserError(
-          errorDetail.name,
-          errorDetail.message(),
-          error,
-          undefined,
-          errorInfo[Constants.errorInfo.helpLink] ?? errorDetail.helpLink ?? undefined
-        );
-      } else {
-        return ResultFactory.SystemError(errorDetail.name, errorDetail.message(), error);
-      }
-    }
-
     if (
       error?.response?.status >= Constants.statusCodeUserError &&
       error?.response?.status < Constants.statusCodeServerError
     ) {
+      // User Error
+      // If known error code, will update help link.
+      const errorCode = error?.response?.data?.error?.code;
+      const helpLink = GraphErrorCodes.get(errorCode);
       return ResultFactory.UserError(
         errorDetail.name,
         errorDetail.message(),
         error,
         undefined,
-        errorDetail.helpLink ?? undefined
+        helpLink ?? errorDetail.helpLink
       );
+    } else {
+      // System Error
+      return ResultFactory.SystemError(errorDetail.name, errorDetail.message(), error);
     }
-
-    return ResultFactory.SystemError(errorDetail.name, errorDetail.message(), error);
   }
 
   private static getAadUrlObject(redirectUris: string[]): IAADDefinition {

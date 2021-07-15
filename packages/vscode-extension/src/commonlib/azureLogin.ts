@@ -412,9 +412,9 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         tenantId: AzureAccountManager.tenantId!,
         subscriptionName: "",
       };
-      return Promise.resolve(selectedSub);
+      return selectedSub;
     } else {
-      return Promise.resolve(undefined);
+      return undefined;
     }
   }
 

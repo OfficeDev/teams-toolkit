@@ -68,12 +68,12 @@ import * as fs from "fs-extra";
 export class AppStudioPluginImpl {
   public async getAppDefinitionAndUpdate(
     ctx: PluginContext,
-    appStudioToken: string,
     type: "localDebug" | "remote",
     manifest: TeamsAppManifest
   ): Promise<Result<string, FxError>> {
     let appDefinition: IAppDefinition;
     let maybeTeamsAppId: Result<string, FxError>;
+    const appStudioToken = await ctx.appStudioToken?.getAccessToken();
 
     if (type == "localDebug") {
       const maybeAppDefinition = await this.getConfigAndAppDefinition(ctx, true, manifest);
@@ -95,7 +95,7 @@ export class AppStudioPluginImpl {
 
       maybeTeamsAppId = await this.updateApp(
         appDefinition,
-        appStudioToken,
+        appStudioToken!,
         type,
         createIfNotExist,
         localTeamsAppID ? localTeamsAppID : undefined,
@@ -109,7 +109,7 @@ export class AppStudioPluginImpl {
 
       maybeTeamsAppId = await this.updateApp(
         appDefinition,
-        appStudioToken,
+        appStudioToken!,
         type,
         true,
         undefined,

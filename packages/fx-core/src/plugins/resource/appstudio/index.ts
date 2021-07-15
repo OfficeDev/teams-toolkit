@@ -80,15 +80,9 @@ export class AppStudioPlugin implements Plugin {
   public async getAppDefinitionAndUpdate(
     ctx: PluginContext,
     type: "localDebug" | "remote",
-    manifest: TeamsAppManifest,
-    appStudioToken?: string
+    manifest: TeamsAppManifest
   ): Promise<Result<string, FxError>> {
-    return await this.appStudioPluginImpl.getAppDefinitionAndUpdate(
-      ctx,
-      appStudioToken!,
-      type,
-      manifest
-    );
+    return await this.appStudioPluginImpl.getAppDefinitionAndUpdate(ctx, type, manifest);
   }
 
   public async createManifest(settings: ProjectSettings): Promise<TeamsAppManifest | undefined> {

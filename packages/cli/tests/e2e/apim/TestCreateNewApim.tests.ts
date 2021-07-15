@@ -66,7 +66,7 @@ describe("Create a new API Management Service", function () {
         timeout: 0,
       },
       3,
-      `teamsfx deploy`
+      `teamsfx deploy apim --open-api-document openapi/openapi.json --api-version v1`
     );
     console.log(`Deploy. Error message: ${result.stderr}`);
 

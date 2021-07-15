@@ -41,7 +41,6 @@ import {
   MessageExtensionItem,
   TabOptionItem,
 } from "../plugins/solution/fx-solution/question";
-import * as failpoint from "@microsoft/failpoint-ts";
 
 const execAsync = promisify(exec);
 
@@ -412,11 +411,6 @@ export async function askSubscription(
   activeSubscriptionId?: string
 ): Promise<Result<SubscriptionInfo, FxError>> {
   const subscriptions: SubscriptionInfo[] = await azureAccountProvider.listSubscriptions();
-
-  failpoint.inject("NoSubscription", (value: failpoint.Value | undefined) => {
-    console.log(value);
-    subscriptions.length = 0;
-  });
 
   if (subscriptions.length === 0) {
     return err(

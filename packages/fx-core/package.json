@@ -22,7 +22,7 @@
     "build": "rimraf build && npx tsc -p ./",
     "build-failpoint": "rimraf build && npx ttsc -p ./",
     "eslint:fix": "eslint package.json tsconfig.json src test --ext .ts --fix",
-    "prepare": "npm run build && node ./scripts/download-templates-zip.js",
+    "prepare": "npm run build",
     "prepublishOnly": "npm run test:unit && npm run build",
     "package": "rimraf build && webpack --mode production --config ./webpack.config.js",
     "precommit": "lint-staged"

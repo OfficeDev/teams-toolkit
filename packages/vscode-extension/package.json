@@ -479,6 +479,7 @@
     "@commitlint/cli": "^12.0.1",
     "@commitlint/config-conventional": "^12.0.1",
     "@fluentui/react": "^8.5.1",
+    "@microsoft/failpoint-ts": "^0.0.1",
     "@shared/eslint-config": "file:../eslint-config",
     "@shared/prettier-config": "file:../prettier-config",
     "@types/adm-zip": "^0.4.33",

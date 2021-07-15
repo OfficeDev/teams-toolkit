@@ -6,7 +6,7 @@
 
 import { TokenCredential } from "@azure/core-auth";
 import { DeviceTokenCredentials, TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
-import { AzureAccountProvider, UserError, SubscriptionInfo } from "@microsoft/teamsfx-api";
+import { AzureAccountProvider, UserError, SubscriptionInfo, SingleSelectConfig, OptionItem, ok } from "@microsoft/teamsfx-api";
 import { ExtensionErrors } from "../error";
 import { AzureAccount } from "./azure-account.api";
 import { LoginFailureError } from "./codeFlowLogin";
@@ -24,6 +24,8 @@ import {
   TelemetrySuccess,
   AccountType
 } from "../telemetry/extTelemetryEvents";
+import { VS_CODE_UI } from "../extension";
+import TreeViewManagerInstance from "../commandsTreeViewProvider";
 
 export class AzureAccountManager extends login implements AzureAccountProvider {
   private static instance: AzureAccountManager;
@@ -302,6 +304,18 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         if (item.subscription.subscriptionId == subscriptionId) {
           AzureAccountManager.tenantId = item.session.tenantId;
           AzureAccountManager.subscriptionId = subscriptionId;
+          TreeViewManagerInstance.getTreeView("teamsfx-accounts")!.refresh([
+            {
+              commandId: "fx-extension.selectSubscription",
+              label: item.subscription.displayName!,
+              callback: () => {
+                return Promise.resolve(ok(null));
+              },
+              parent: "fx-extension.signinAzure",
+              contextValue: "selectSubscription",
+              icon: "subscriptionSelected",
+            },
+          ]);
           return;
         }
       }
@@ -370,9 +384,46 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     }
   }
 
-  // TODO add login and select subscription logic later
-  getSelectedSubscription(triggerUI=false): Promise<SubscriptionInfo | undefined> {
+  async getSelectedSubscription(triggerUI=false): Promise<SubscriptionInfo | undefined> {
     const azureAccount = this.getAzureAccount();
+    if (triggerUI) {
+      if (azureAccount.status != loggedIn) {
+        await this.login(true);
+      }
+      if (azureAccount.status === loggedIn && !AzureAccountManager.subscriptionId) {
+        const subscriptionList = await this.listSubscriptions();
+        if (!subscriptionList || subscriptionList.length==0) {
+          throw new UserError(
+            StringResources.vsc.azureLogin.noSubscriptionFound,
+            StringResources.vsc.azureLogin.failToFindSubscription,
+            StringResources.vsc.codeFlowLogin.loginComponent
+          );
+        }
+        if (subscriptionList && subscriptionList.length==1) {
+          this.setSubscription(subscriptionList[0].subscriptionId);
+        } else if (subscriptionList.length>1) {
+          const options: OptionItem[] = subscriptionList.map((sub) => {
+            return {
+              id: sub.subscriptionId,
+              label: sub.subscriptionName,
+              data: sub.tenantId,
+            } as OptionItem;
+          });
+          const config: SingleSelectConfig = {
+            name: StringResources.vsc.azureLogin.subscription,
+            title: StringResources.vsc.azureLogin.selectSubscription,
+            options: options,
+          };
+          const result = await VS_CODE_UI.selectOption(config);
+          if (result.isErr()) {
+            throw result.error;
+          } else {
+            const subId = result.value.result as string;
+            this.setSubscription(subId);
+          }
+        }
+      }
+    }
     if (azureAccount.status === loggedIn) {
       const selectedSub: SubscriptionInfo = {
         subscriptionId: "",

@@ -26,8 +26,10 @@ export function assembleError(e: Error, source?: string): FxError;
 // @public
 export interface AzureAccountProvider {
     getAccountCredentialAsync(showDialog?: boolean, tenantId?: string): Promise<TokenCredentialsBase | undefined>;
+    getAccountInfo(): Record<string, string> | undefined;
     getIdentityCredentialAsync(showDialog?: boolean): Promise<TokenCredential | undefined>;
     getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined>;
+    getSelectedSubscription(triggerUI?: boolean): Promise<SubscriptionInfo | undefined>;
     listSubscriptions(): Promise<SubscriptionInfo[]>;
     removeStatusChangeMap(name: string): Promise<boolean>;
     setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>, immediateCall?: boolean): Promise<boolean>;
@@ -111,6 +113,8 @@ export interface Context {
     // (undocumented)
     azureAccountProvider?: AzureAccountProvider;
     // (undocumented)
+    cryptoProvider?: CryptoProvider;
+    // (undocumented)
     dialog?: Dialog;
     // (undocumented)
     graphTokenProvider?: GraphTokenProvider;
@@ -137,7 +141,11 @@ export interface Core {
     // (undocumented)
     createProject: (systemInputs: Inputs) => Promise<Result<string, FxError>>;
     // (undocumented)
+    decrypt: (ciphertext: string, inputs: Inputs) => Promise<Result<string, FxError>>;
+    // (undocumented)
     deployArtifacts: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
+    // (undocumented)
+    encrypt: (plaintext: string, inputs: Inputs) => Promise<Result<string, FxError>>;
     // (undocumented)
     executeUserTask: (func: Func, inputs: Inputs) => Promise<Result<unknown, FxError>>;
     getQuestions: (task: Stage, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
@@ -153,6 +161,12 @@ export interface Core {
     removeEnv: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
     // (undocumented)
     switchEnv: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
+}
+
+// @public
+export interface CryptoProvider {
+    decrypt(ciphertext: string): Result<string, FxError>;
+    encrypt(plaintext: string): Result<string, FxError>;
 }
 
 // @public @deprecated (undocumented)

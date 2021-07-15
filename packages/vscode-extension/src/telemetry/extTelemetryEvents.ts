@@ -71,6 +71,8 @@ export enum TelemetryEvent {
 
   NextStep = "next-step",
 
+  ClickQuickStartCard = "click-quick-start-card",
+
   DebugPreCheck = "debug-precheck",
   DebugStart = "debug-start",
   DebugStop = "debug-stop",
@@ -120,6 +122,12 @@ export enum TelemetryTiggerFrom {
   TreeView = "TreeView",
   Webview = "Webview",
   Other = "Other",
+}
+
+export enum WaterVideoFrom {
+  WatchVideoBtn = "WatchVideoBtn",
+  PlayBtn = "PlayBtn",
+  WatchOnBrowserBtn = "WatchOnBrowserBtn",
 }
 
 export enum TelemetryErrorType {

@@ -21,10 +21,12 @@ const serviceName = "Microsoft Teams Toolkit";
 
 export const UTF8 = "utf8";
 
-class AccountCrypto {
+export class AccountCrypto {
   private readonly algorithm: crypto.CipherGCMTypes = "aes-256-gcm";
   private readonly accountName: string;
   private readonly keytar?: typeof keytarType;
+
+  private currentKey?: string;
 
   constructor(accountName: string) {
     this.accountName = accountName;
@@ -71,27 +73,33 @@ class AccountCrypto {
   }
 
   private async getKey(): Promise<string | undefined> {
-    try {
-      if (this.keytar) {
-        let key = await this.keytar.getPassword(serviceName, this.accountName);
-        if (!key || key.length !== 32) {
-          key = crypto.randomBytes(256).toString("hex").slice(0, 32);
-          await this.keytar.setPassword(serviceName, this.accountName, key);
+    if (this.currentKey) {
+      // only return valid key
+      return this.currentKey.length === 32 ? this.currentKey : undefined;
+    } else {
+      try {
+        if (this.keytar) {
+          let key = await this.keytar.getPassword(serviceName, this.accountName);
+          if (!key || key.length !== 32) {
+            key = crypto.randomBytes(256).toString("hex").slice(0, 32);
+            await this.keytar.setPassword(serviceName, this.accountName, key);
 
-          // validate key again
-          const savedKey = await this.keytar.getPassword(serviceName, this.accountName);
-          if (savedKey === key) {
-            return key;
+            // validate key again
+            const savedKey = await this.keytar.getPassword(serviceName, this.accountName);
+            if (savedKey === key) {
+              this.currentKey = key;
+            }
+          } else {
+            this.currentKey = key;
           }
-        } else {
-          return key;
         }
+      } catch {
+        // ignore keytar error and assign an invalid value
+        this.currentKey = "Unknown";
       }
-    } catch {
-      // ignore keytar error
     }
 
-    return undefined;
+    return this.currentKey?.length === 32 ? this.currentKey : undefined;
   }
 }
 

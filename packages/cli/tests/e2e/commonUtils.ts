@@ -22,7 +22,7 @@ export async function execAsyncWithRetry(
     timeout?: number;
   },
   retries = 3,
-  newCommand?: string,
+  newCommand?: string
 ): Promise<{
   stdout: string;
   stderr: string;

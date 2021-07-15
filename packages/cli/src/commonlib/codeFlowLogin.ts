@@ -58,6 +58,7 @@ export class CodeFlowLogin {
   mutex: Mutex | undefined;
   msalTokenCache: TokenCache | undefined;
   accountName: string;
+  socketMap: Map<number, any>;
 
   constructor(scopes: string[], config: Configuration, port: number, accountName: string) {
     this.scopes = scopes;
@@ -67,6 +68,7 @@ export class CodeFlowLogin {
     this.pca = new PublicClientApplication(this.config!);
     this.msalTokenCache = this.pca.getTokenCache();
     this.accountName = accountName;
+    this.socketMap = new Map();
   }
 
   async reloadCache() {
@@ -95,6 +97,18 @@ export class CodeFlowLogin {
     const app = express();
     const server = app.listen(serverPort);
     serverPort = (server.address() as AddressInfo).port;
+    let lastSocketKey = 0;
+    server.on("connection", (socket) => {
+      const socketKey = ++lastSocketKey;
+      this.socketMap.set(socketKey, socket);
+      socket.on("close", () => {
+        this.socketMap.delete(socketKey);
+      });
+    });
+
+    server.on("close", () => {
+      this.destroySockets();
+    });
 
     const authCodeUrlParameters = {
       scopes: this.scopes!,
@@ -341,6 +355,12 @@ export class CodeFlowLogin {
     });
     portPromise.then(cancelPortTimer, cancelPortTimer);
     return portPromise;
+  }
+
+  destroySockets(): void {
+    for (const key of this.socketMap.keys()) {
+      this.socketMap.get(key).destroy();
+    }
   }
 
   static toBase64UrlEncoding(base64string: string) {

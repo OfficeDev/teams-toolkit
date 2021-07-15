@@ -808,8 +808,9 @@ export class TeamsAppSolution implements Solution {
       );
     }
 
-    const maybeManifestTpl = await (this
-      .AppStudioPlugin as AppStudioPlugin).reloadManifestAndCheckRequiredFields(ctx.root);
+    const maybeManifestTpl = await (
+      this.AppStudioPlugin as AppStudioPlugin
+    ).reloadManifestAndCheckRequiredFields(ctx.root);
     if (maybeManifestTpl.isErr()) {
       return err(maybeManifestTpl.error);
     }
@@ -914,8 +915,9 @@ export class TeamsAppSolution implements Solution {
       const checkRes = this.checkWhetherSolutionIsIdle();
       if (checkRes.isErr()) return err(checkRes.error);
 
-      const maybeManifest = await (this
-        .AppStudioPlugin as AppStudioPlugin).reloadManifestAndCheckRequiredFields(ctx.root);
+      const maybeManifest = await (
+        this.AppStudioPlugin as AppStudioPlugin
+      ).reloadManifestAndCheckRequiredFields(ctx.root);
       if (maybeManifest.isErr()) {
         return err(maybeManifest.error);
       }
@@ -1141,8 +1143,9 @@ export class TeamsAppSolution implements Solution {
 
     const selectedPlugins = maybeSelectedPlugins.value;
 
-    const maybeManifest = await (this
-      .AppStudioPlugin as AppStudioPlugin).reloadManifestAndCheckRequiredFields(ctx.root);
+    const maybeManifest = await (
+      this.AppStudioPlugin as AppStudioPlugin
+    ).reloadManifestAndCheckRequiredFields(ctx.root);
     if (maybeManifest.isErr()) {
       return err(maybeManifest.error);
     }
@@ -1507,8 +1510,9 @@ export class TeamsAppSolution implements Solution {
     const array = namespace.split("/");
     let manifest: TeamsAppManifest | undefined = undefined;
     if (isDynamicQuestion) {
-      const maybeManifest = await (this
-        .AppStudioPlugin as AppStudioPlugin).reloadManifestAndCheckRequiredFields(ctx.root);
+      const maybeManifest = await (
+        this.AppStudioPlugin as AppStudioPlugin
+      ).reloadManifestAndCheckRequiredFields(ctx.root);
       if (maybeManifest.isErr()) {
         return err(maybeManifest.error);
       }
@@ -1944,8 +1948,9 @@ export class TeamsAppSolution implements Solution {
         const pluginMap = getAllResourcePluginMap();
         const plugin = pluginMap.get(pluginName);
         if (plugin && plugin.executeUserTask) {
-          const maybeManifest = await (this
-            .AppStudioPlugin as AppStudioPlugin).reloadManifestAndCheckRequiredFields(ctx.root);
+          const maybeManifest = await (
+            this.AppStudioPlugin as AppStudioPlugin
+          ).reloadManifestAndCheckRequiredFields(ctx.root);
           if (maybeManifest.isErr()) {
             return maybeManifest;
           }

@@ -542,6 +542,24 @@ export class FxCore implements Core {
     return ok(null);
   }
 
+  @hooks([ErrorHandlerMW, ContextLoaderMW, ContextInjecterMW])
+  async encrypt(
+    plaintext: string,
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<string, FxError>> {
+    return ctx!.solutionContext!.cryptoProvider!.encrypt(plaintext);
+  }
+
+  @hooks([ErrorHandlerMW, ContextLoaderMW, ContextInjecterMW])
+  async decrypt(
+    ciphertext: string,
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<string, FxError>> {
+    return ctx!.solutionContext!.cryptoProvider!.decrypt(ciphertext);
+  }
+
   async buildArtifacts(inputs: Inputs): Promise<Result<Void, FxError>> {
     throw TaskNotSupportError(Stage.build);
   }

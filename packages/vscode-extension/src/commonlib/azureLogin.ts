@@ -400,7 +400,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       }
     }
     // no need to select sub when user only have one
-    if (azureAccount.status === loggedIn && !AzureAccountManager.subscriptionId) {
+    if (azureAccount.status === loggedIn && !AzureAccountManager.subscriptionId && !triggerUI) {
       const subscriptionList = await this.listSubscriptions();
       if (subscriptionList && subscriptionList.length == 1) {
         await this.setSubscription(subscriptionList[0].subscriptionId);

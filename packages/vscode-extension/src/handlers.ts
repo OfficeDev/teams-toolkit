@@ -791,6 +791,35 @@ export async function cmpAccountsHandler() {
   quickPick.show();
 }
 
+export async function decryptSecret(cipher: string, selection: vscode.Range): Promise<void> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.EditSecret, {
+    [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Other,
+  });
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) {
+    return;
+  }
+  const inputs = getSystemInputs();
+  const result = await core.decrypt(cipher, inputs);
+  if (result.isOk()) {
+    const editedSecret = await VS_CODE_UI.inputText({
+      name: "Secret Editor",
+      title: StringResources.vsc.handlers.editSecretTitle,
+      default: result.value,
+    });
+    if (editedSecret.isOk() && editedSecret.value.result) {
+      const newCiphertext = await core.encrypt(editedSecret.value.result, inputs);
+      if (newCiphertext.isOk()) {
+        editor.edit((editBuilder) => {
+          editBuilder.replace(selection, newCiphertext.value);
+        });
+      }
+    }
+  } else {
+    window.showErrorMessage(StringResources.vsc.handlers.decryptFailed);
+  }
+}
+
 export async function signOutAzure(isFromTreeView: boolean) {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SignOutStart, {
     [TelemetryProperty.TriggerFrom]: isFromTreeView

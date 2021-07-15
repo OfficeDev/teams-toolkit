@@ -79,6 +79,8 @@ export enum TelemetryEvent {
   DebugNpmInstall = "debug-npm-install",
 
   Survey = "survey",
+
+  EditSecret = "edit-secret",
 }
 
 export enum TelemetryProperty {

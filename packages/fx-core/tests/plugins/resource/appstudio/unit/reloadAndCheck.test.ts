@@ -20,7 +20,7 @@ describe("Reload Manifest and Check Required Fields", () => {
     sandbox.restore();
   });
 
-  it("No manifest", async () => {
+  it("found no manifest and should return error", async () => {
     const reloadAndCheckResult = await plugin.reloadManifestAndCheckRequiredFields("notExist");
     chai.assert.isTrue(reloadAndCheckResult.isErr());
     if (reloadAndCheckResult.isErr()) {
@@ -33,7 +33,7 @@ describe("Reload Manifest and Check Required Fields", () => {
     }
   });
 
-  it("Empty manifest", async () => {
+  it("read an empty manifest and should return error", async () => {
     sandbox.stub<any, any>(fs, "readJson").resolves(undefined);
     const reloadAndCheckResult = await plugin.reloadManifestAndCheckRequiredFields("empty");
     chai.assert.isTrue(reloadAndCheckResult.isErr());
@@ -47,7 +47,7 @@ describe("Reload Manifest and Check Required Fields", () => {
     }
   });
 
-  it("Invalid manifest", async () => {
+  it("read an invalid manifest and should return error", async () => {
     const invalidInputPath = "invalid/.fx/manifest.source.json";
     const invalidManifestPath = "tests/plugins/resource/appstudio/resources/invalid.manifest.json";
     const invalidManifest = fs.readJson(invalidManifestPath);
@@ -69,7 +69,7 @@ describe("Reload Manifest and Check Required Fields", () => {
     }
   });
 
-  it("Valid manifest", async () => {
+  it("read a valid manifest and should return Ok for happy path", async () => {
     // sandbox.stub(AppStudioPluginImpl.prototype, "reloadManifest" as any).withArgs("valid").returns(ok(fs.readJson(validManifestPath)));
     const validInputPath = "valid/.fx/manifest.source.json";
     const validManifestPath = "tests/plugins/resource/appstudio/resources/valid.manifest.json";

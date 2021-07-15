@@ -75,7 +75,7 @@ describe("Reload Manifest and Check Required Fields", () => {
     sandbox.restore();
   });
 
-  it("maybeSelectedPlugins error", async () => {
+  it("should return maybeSelectedPlugins error", async () => {
     const createManifestForRemoteResult = await plugin.createManifestForRemote(
       ctx,
       err(
@@ -94,7 +94,7 @@ describe("Reload Manifest and Check Required Fields", () => {
     }
   });
 
-  it("Internal error", async () => {
+  it("has no bot or messaging extension and should return error", async () => {
     const createManifestForRemoteResult = await plugin.createManifestForRemote(
       internalError_ctx,
       ok(selectedPlugins),
@@ -108,7 +108,7 @@ describe("Reload Manifest and Check Required Fields", () => {
     }
   });
 
-  it("maybeConfig error", async () => {
+  it("failed to get config for creating manifest and should return error", async () => {
     sandbox
       .stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any)
       .returns(
@@ -133,7 +133,7 @@ describe("Reload Manifest and Check Required Fields", () => {
     }
   });
 
-  it("success to return app definition happy path", async () => {
+  it("succeeded to return app definition and should return Ok for happy path", async () => {
     sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns(
       ok({
         tabEndpoint: "tabEndpoint",

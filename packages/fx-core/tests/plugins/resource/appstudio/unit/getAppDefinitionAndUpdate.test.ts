@@ -90,7 +90,7 @@ describe("Reload Manifest and Check Required Fields", () => {
     sandbox.restore();
   });
 
-  it("maybeAppDefinition error", async () => {
+  it("should return maybeAppDefinition error", async () => {
     ctx = {
       root: "./",
       configOfOtherPlugins: new Map(),
@@ -131,7 +131,7 @@ describe("Reload Manifest and Check Required Fields", () => {
     }
   });
 
-  it("webApplicationInfoResource get localDebug config failed error", async () => {
+  it("failed to get webApplicationInfoResource from local config and should return error", async () => {
     ctx = {
       root: "./",
       configOfOtherPlugins: new Map(),
@@ -164,7 +164,7 @@ describe("Reload Manifest and Check Required Fields", () => {
     }
   });
 
-  it("local clientId get localDebug config failed error", async () => {
+  it("failed to get clientId from local config and should return error", async () => {
     AAD_ConfigMap.delete(LOCAL_DEBUG_AAD_ID);
     configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
     ctx = {
@@ -199,7 +199,7 @@ describe("Reload Manifest and Check Required Fields", () => {
     }
   });
 
-  it("local tab endpoint and local botId get localDebug config failed error", async () => {
+  it("failed to get tab endpoint and botId from local config and should return error", async () => {
     LDEBUG_ConfigMap.delete(LOCAL_DEBUG_TAB_ENDPOINT);
     BOT_ConfigMap.delete(LOCAL_BOT_ID);
     configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
@@ -238,7 +238,7 @@ describe("Reload Manifest and Check Required Fields", () => {
     }
   });
 
-  it("invalid localDebug configuration data error", async () => {
+  it("doesn't have both tab endpoint and tab domain in local config and should return error", async () => {
     LDEBUG_ConfigMap.delete(LOCAL_DEBUG_TAB_ENDPOINT);
     configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
     configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
@@ -278,7 +278,7 @@ describe("Reload Manifest and Check Required Fields", () => {
     }
   });
 
-  it("local bot domain get localDebug config failed error", async () => {
+  it("failed to get bot domain from local config and should return error", async () => {
     LDEBUG_ConfigMap.delete(LOCAL_DEBUG_BOT_DOMAIN);
     configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
     configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
@@ -315,7 +315,7 @@ describe("Reload Manifest and Check Required Fields", () => {
     }
   });
 
-  it("get config for creating manifest happy path", async () => {
+  it("should work and get config for creating manifest for happy path", async () => {
     configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
     configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
     configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
@@ -359,7 +359,7 @@ describe("Reload Manifest and Check Required Fields", () => {
     }
   });
 
-  it("app studio token get failed error", async () => {
+  it("failed to get app studio token and should return error", async () => {
     configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
     configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
     configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
@@ -394,7 +394,7 @@ describe("Reload Manifest and Check Required Fields", () => {
     }
   });
 
-  it("local appId create failed error", async () => {
+  it("failed to create local appId and should return error", async () => {
     configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
     configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
     configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
@@ -441,7 +441,7 @@ describe("Reload Manifest and Check Required Fields", () => {
     }
   });
 
-  it("local appId update failed error", async () => {
+  it("failed to update local appId and should return error", async () => {
     configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
     configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
     configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
@@ -506,7 +506,7 @@ describe("Reload Manifest and Check Required Fields", () => {
     }
   });
 
-  it("localDebug happy path", async () => {
+  it("should return Ok for localDebug happy path", async () => {
     configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
     configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
     configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
@@ -568,7 +568,7 @@ describe("Reload Manifest and Check Required Fields", () => {
     chai.assert.isTrue(getAppDefinitionAndResult.isOk());
   });
 
-  it("remote appId create failed error", async () => {
+  it("failed to create remote appId and should return error", async () => {
     configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
     configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
     configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
@@ -604,7 +604,7 @@ describe("Reload Manifest and Check Required Fields", () => {
     }
   });
 
-  it("remote appId update failed error", async () => {
+  it("failed to update remote appId and should return error", async () => {
     configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
     configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
     configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
@@ -669,7 +669,7 @@ describe("Reload Manifest and Check Required Fields", () => {
     }
   });
 
-  it("remote happy path", async () => {
+  it("should return Ok for remote happy path", async () => {
     configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
     configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
     configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);

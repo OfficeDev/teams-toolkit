@@ -7,14 +7,15 @@
   "developer": {
     "name": "Teams App, Inc.",
     "websiteUrl": "https://localhost:3000",
-    "privacyUrl": "https://localhost:3000/privacy"
+    "privacyUrl": "https://localhost:3000/privacy",
+    "termsOfUseUrl": "https://localhost:3000/termsofuse"
   },
   "icons": {
     "color": "color.png",
     "outline": "outline.png"
   },
   "name": {
-    "short": "",
+    "short": "manifest-validation",
     "full": ""
   },
   "description": {

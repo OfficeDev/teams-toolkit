@@ -470,7 +470,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
           throw new UserError(noSubscriptionFound, failToFindSubscription, loginComponent);
         }
         if (subscriptionList && subscriptionList.length == 1) {
-          this.setSubscription(subscriptionList[0].subscriptionId);
+          await this.setSubscription(subscriptionList[0].subscriptionId);
         } else if (subscriptionList.length > 1) {
           const options: OptionItem[] = subscriptionList.map((sub) => {
             return {
@@ -493,23 +493,23 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
           }
         }
       }
+    } else {
+      if (AzureAccountManager.codeFlowInstance.account && !AzureAccountManager.subscriptionId) {
+        const subscriptionList = await this.listSubscriptions();
+        if (subscriptionList && subscriptionList.length == 1) {
+          await this.setSubscription(subscriptionList[0].subscriptionId);
+        }
+      }
     }
     if (AzureAccountManager.codeFlowInstance.account && AzureAccountManager.subscriptionId) {
       const selectedSub: SubscriptionInfo = {
-        subscriptionId: "",
-        tenantId: "",
+        subscriptionId: AzureAccountManager.subscriptionId,
+        tenantId: AzureAccountManager.tenantId!,
         subscriptionName: "",
       };
-
-      if (AzureAccountManager.subscriptionId) {
-        selectedSub.subscriptionId = AzureAccountManager.subscriptionId;
-      }
-      if (AzureAccountManager.tenantId) {
-        selectedSub.tenantId = AzureAccountManager.tenantId;
-      }
-      return Promise.resolve(selectedSub);
+      return selectedSub;
     } else {
-      return Promise.resolve(undefined);
+      return undefined;
     }
   }
 }

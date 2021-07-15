@@ -3,27 +3,17 @@
 
 import "mocha";
 import * as chai from "chai";
-import axios, { AxiosInstance } from "axios";
+import axios from "axios";
 import { AppStudioPlugin } from "./../../../../../src/plugins/resource/appstudio";
 import { AppStudioPluginImpl } from "./../../../../../src/plugins/resource/appstudio/plugin";
 import { AppStudioClient } from "./../../../../../src/plugins/resource/appstudio/appStudio";
 import { IAppDefinition } from "./../../../../../src/plugins/resource/appstudio/interfaces/IAppDefinition";
 import {
-  TEAMS_APP_MANIFEST_TEMPLATE,
-  CONFIGURABLE_TABS_TPL,
-  STATIC_TABS_TPL,
-  BOTS_TPL,
-  COMPOSE_EXTENSIONS_TPL,
-  TEAMS_APP_SHORT_NAME_MAX_LENGTH,
-  DEFAULT_DEVELOPER_WEBSITE_URL,
-  DEFAULT_DEVELOPER_TERM_OF_USE_URL,
-  DEFAULT_DEVELOPER_PRIVACY_URL,
   LOCAL_DEBUG_TAB_ENDPOINT,
   LOCAL_DEBUG_TAB_DOMAIN,
   FRONTEND_ENDPOINT,
   FRONTEND_DOMAIN,
   LOCAL_DEBUG_AAD_ID,
-  LOCAL_DEBUG_TEAMS_APP_ID,
   REMOTE_AAD_ID,
   LOCAL_BOT_ID,
   BOT_ID,
@@ -35,23 +25,57 @@ import {
 } from "./../../../../../src/plugins/solution/fx-solution/constants";
 import { AppStudioError } from "./../../../../../src/plugins/resource/appstudio/errors";
 import {
+  AppStudioTokenProvider,
   ConfigMap,
   PluginContext,
   TeamsAppManifest,
-  ok,
   err,
-  Plugin,
 } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
-import fs from "fs-extra";
 import sinon from "sinon";
 import { AppStudioResultFactory } from "../../../../../src/plugins/resource/appstudio/results";
 
-describe("Reload Manifest and Check Required Fields", () => {
+class MockedAppStudioTokenProvider implements AppStudioTokenProvider {
+  async getAccessToken(showDialog?: boolean): Promise<string> {
+    return "someFakeToken";
+  }
+  async getJsonObject(showDialog?: boolean): Promise<Record<string, unknown>> {
+    return {
+      tid: "222",
+    };
+  }
+  signout(): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  setStatusChangeCallback(
+    statusChange: (
+      status: string,
+      token?: string,
+      accountInfo?: Record<string, unknown>
+    ) => Promise<void>
+  ): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  setStatusChangeMap(
+    name: string,
+    statusChange: (
+      status: string,
+      token?: string,
+      accountInfo?: Record<string, unknown>
+    ) => Promise<void>,
+    immediateCall?: boolean
+  ): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  removeStatusChangeMap(name: string): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+}
+
+describe("Get AppDefinition and Update", () => {
   let plugin: AppStudioPlugin;
   let ctx: PluginContext;
   let manifest: TeamsAppManifest;
-  let appDef: IAppDefinition | undefined;
 
   let AAD_ConfigMap: ConfigMap;
   let BOT_ConfigMap: ConfigMap;
@@ -96,6 +120,7 @@ describe("Reload Manifest and Check Required Fields", () => {
       configOfOtherPlugins: new Map(),
       config: new ConfigMap(),
       app: new TeamsAppManifest(),
+      appStudioToken: new MockedAppStudioTokenProvider(),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -117,11 +142,12 @@ describe("Reload Manifest and Check Required Fields", () => {
           )
         )
       );
+
+    sandbox.stub(ctx.appStudioToken!, "getAccessToken").resolves("anything");
     const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
       ctx,
       "localDebug",
-      manifest,
-      "appStudioToken"
+      manifest
     );
     chai.assert.isTrue(getAppDefinitionAndResult.isErr());
     if (getAppDefinitionAndResult.isErr()) {
@@ -403,6 +429,7 @@ describe("Reload Manifest and Check Required Fields", () => {
       configOfOtherPlugins: configOfOtherPlugins,
       config: new ConfigMap(),
       app: new TeamsAppManifest(),
+      appStudioToken: new MockedAppStudioTokenProvider(),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -429,8 +456,7 @@ describe("Reload Manifest and Check Required Fields", () => {
     const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
       ctx,
       "localDebug",
-      manifest,
-      "app studio token"
+      manifest
     );
 
     chai.assert.isTrue(getAppDefinitionAndResult.isErr());
@@ -450,6 +476,7 @@ describe("Reload Manifest and Check Required Fields", () => {
       configOfOtherPlugins: configOfOtherPlugins,
       config: new ConfigMap(),
       app: new TeamsAppManifest(),
+      appStudioToken: new MockedAppStudioTokenProvider(),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -494,8 +521,7 @@ describe("Reload Manifest and Check Required Fields", () => {
     const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
       ctx,
       "localDebug",
-      manifest,
-      "app studio token"
+      manifest
     );
 
     chai.assert.isTrue(getAppDefinitionAndResult.isErr());
@@ -515,6 +541,7 @@ describe("Reload Manifest and Check Required Fields", () => {
       configOfOtherPlugins: configOfOtherPlugins,
       config: new ConfigMap(),
       app: new TeamsAppManifest(),
+      appStudioToken: new MockedAppStudioTokenProvider(),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -561,8 +588,7 @@ describe("Reload Manifest and Check Required Fields", () => {
     const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
       ctx,
       "localDebug",
-      manifest,
-      "app studio token"
+      manifest
     );
 
     chai.assert.isTrue(getAppDefinitionAndResult.isOk());
@@ -577,6 +603,7 @@ describe("Reload Manifest and Check Required Fields", () => {
       configOfOtherPlugins: configOfOtherPlugins,
       config: new ConfigMap(),
       app: new TeamsAppManifest(),
+      appStudioToken: new MockedAppStudioTokenProvider(),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -592,8 +619,7 @@ describe("Reload Manifest and Check Required Fields", () => {
     const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
       ctx,
       "remote",
-      manifest,
-      "app studio token"
+      manifest
     );
 
     chai.assert.isTrue(getAppDefinitionAndResult.isErr());
@@ -613,6 +639,7 @@ describe("Reload Manifest and Check Required Fields", () => {
       configOfOtherPlugins: configOfOtherPlugins,
       config: new ConfigMap(),
       app: new TeamsAppManifest(),
+      appStudioToken: new MockedAppStudioTokenProvider(),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -657,8 +684,7 @@ describe("Reload Manifest and Check Required Fields", () => {
     const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
       ctx,
       "remote",
-      manifest,
-      "app studio token"
+      manifest
     );
 
     chai.assert.isTrue(getAppDefinitionAndResult.isErr());
@@ -678,6 +704,7 @@ describe("Reload Manifest and Check Required Fields", () => {
       configOfOtherPlugins: configOfOtherPlugins,
       config: new ConfigMap(),
       app: new TeamsAppManifest(),
+      appStudioToken: new MockedAppStudioTokenProvider(),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -724,8 +751,7 @@ describe("Reload Manifest and Check Required Fields", () => {
     const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
       ctx,
       "remote",
-      manifest,
-      "app studio token"
+      manifest
     );
 
     chai.assert.isTrue(getAppDefinitionAndResult.isOk());

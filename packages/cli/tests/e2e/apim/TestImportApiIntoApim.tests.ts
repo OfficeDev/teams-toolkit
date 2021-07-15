@@ -59,7 +59,9 @@ describe("Import API into API Management", function () {
         cwd: projectPath,
         env: process.env,
         timeout: 0,
-      }, 3, `teamsfx deploy apim`
+      },
+      3,
+      `teamsfx deploy apim --open-api-document openapi/openapi.json --api-version v1`
     );
     console.log(`Deploy. Error message: ${result.stderr}`);
   });

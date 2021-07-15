@@ -13,11 +13,11 @@ import { cliEnvCheckerTelemetry } from "./cliTelemetry";
 export class CLIAdapter implements IDepsAdapter {
   private readonly downloadIndicatorInterval = 1000; // same as vscode-dotnet-runtime
   private readonly _telemetry: IDepsTelemetry;
-  private readonly _hasBackend: boolean = true; // todo
+  private readonly _hasBackend: boolean;
 
-  constructor(telemetry: IDepsTelemetry, hasBackend: boolean) {
-    this._telemetry = telemetry;
+  constructor(hasBackend: boolean, telemetry: IDepsTelemetry) {
     this._hasBackend = hasBackend;
+    this._telemetry = telemetry;
   }
 
   public hasTeamsfxBackend(): Promise<boolean> {

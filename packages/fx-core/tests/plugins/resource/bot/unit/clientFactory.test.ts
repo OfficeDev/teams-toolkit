@@ -99,7 +99,11 @@ describe("Client Factory", () => {
       const namespace = ["ut"];
       const client: any = {
         get: (namespace: string) => item,
-        register: (namespace: string) => {item = {}; item[namespace].registrationState = "Registered"; return item; },
+        register: (namespace: string) => {
+          item = {};
+          item[namespace].registrationState = "Registered";
+          return item;
+        },
       };
 
       // Act

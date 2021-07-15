@@ -21,7 +21,7 @@ import {
   MaxLengths,
   Links,
   IdentityConstants,
-  AzureConstants
+  AzureConstants,
 } from "./constants";
 import { WayToRegisterBot } from "./enums/wayToRegisterBot";
 import { getZipDeployEndpoint } from "./utils/zipDeploy";
@@ -72,7 +72,7 @@ export class TeamsBotImpl {
     );
   }
 
-  private async getAzureAccountCredenial() : Promise<TokenCredentialsBase>{
+  private async getAzureAccountCredenial(): Promise<TokenCredentialsBase> {
     const serviceClientCredentials =
       await this.ctx?.azureAccountProvider?.getAccountCredentialAsync();
     if (!serviceClientCredentials) {
@@ -206,9 +206,12 @@ export class TeamsBotImpl {
 
     // 0. Check Resource Provider
     const azureCredential = await this.getAzureAccountCredenial();
-    const rpClient = factory.createResourceProviderClient(azureCredential, this.config.provision.subscriptionId!);
+    const rpClient = factory.createResourceProviderClient(
+      azureCredential,
+      this.config.provision.subscriptionId!
+    );
     await factory.ensureResourceProvider(rpClient, AzureConstants.requiredResourceProviders);
-    
+
     // 1. Do bot registration.
     if (this.config.scaffold.wayToRegisterBot === WayToRegisterBot.CreateNew) {
       await handler?.next(ProgressBarConstants.PROVISION_STEP_BOT_REG);
@@ -729,10 +732,10 @@ export class TeamsBotImpl {
     const botChannelRegistrationName = this.config.provision.botChannelRegName
       ? this.config.provision.botChannelRegName
       : ResourceNameFactory.createCommonName(
-        this.config.resourceNameSuffix,
-        this.ctx?.app.name.short,
-        MaxLengths.BOT_CHANNEL_REG_NAME
-      );
+          this.config.resourceNameSuffix,
+          this.ctx?.app.name.short,
+          MaxLengths.BOT_CHANNEL_REG_NAME
+        );
 
     Logger.info(Messages.ProvisioningAzureBotChannelRegistration);
     await AzureOperations.CreateBotChannelRegistration(

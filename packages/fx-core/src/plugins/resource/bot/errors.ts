@@ -256,7 +256,10 @@ export class RegisterResourceProviderError extends PluginError {
       ErrorType.User,
       "RegisterResourceProviderError",
       "Failed to register required resource provider for your app.",
-      [Messages.RegisterRequiredRP(AzureConstants.requiredResourceProviders), Messages.CheckOutputLogAndTryToFix],
+      [
+        Messages.RegisterRequiredRP(AzureConstants.requiredResourceProviders),
+        Messages.CheckOutputLogAndTryToFix,
+      ],
       innerError
     );
   }

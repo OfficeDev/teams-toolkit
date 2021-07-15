@@ -42,8 +42,9 @@ import { DotnetChecker } from "./depsChecker/dotnetChecker";
 import { FuncToolChecker } from "./depsChecker/funcToolChecker";
 import { DepsChecker } from "./depsChecker/checker";
 import { cliEnvCheckerLogger } from "./depsChecker/cliLogger";
-import { cliAdapter } from "./depsChecker/cliAdapter";
+import { CLIAdapter } from "./depsChecker/cliAdapter";
 import { cliEnvCheckerTelemetry } from "./depsChecker/cliTelemetry";
+import { isWindows } from "./depsChecker/common";
 
 export default class Preview extends YargsCommand {
   public readonly commandHead = `preview`;
@@ -122,9 +123,6 @@ export default class Preview extends YargsCommand {
   }
 
   private async localPreview(workspaceFolder: string): Promise<Result<null, FxError>> {
-    // TODO: check dependencies
-    this.handleDependences();
-
     let coreResult = await activate();
     if (coreResult.isErr()) {
       return err(coreResult.error);
@@ -176,6 +174,8 @@ export default class Preview extends YargsCommand {
       return err(errors.RequiredPathNotExists(botRoot));
     }
 
+    const [funcToolChecker, dotnetChecker] = await this.handleDependences(includeBackend);
+
     // clear background tasks
     this.backgroundTasks = [];
     // init service log writer
@@ -200,7 +200,8 @@ export default class Preview extends YargsCommand {
       inputs,
       includeFrontend ? frontendRoot : undefined,
       includeBackend ? backendRoot : undefined,
-      includeBot && skipNgrok ? botRoot : undefined
+      includeBot && skipNgrok ? botRoot : undefined,
+      dotnetChecker
     );
     if (result.isErr()) {
       return result;
@@ -225,7 +226,9 @@ export default class Preview extends YargsCommand {
       programmingLanguage,
       includeFrontend ? frontendRoot : undefined,
       includeBackend ? backendRoot : undefined,
-      includeBot ? botRoot : undefined
+      includeBot ? botRoot : undefined,
+      dotnetChecker,
+      funcToolChecker
     );
     if (result.isErr()) {
       return result;
@@ -376,7 +379,8 @@ export default class Preview extends YargsCommand {
     inputs: Inputs,
     frontendRoot: string | undefined,
     backendRoot: string | undefined,
-    botRoot: string | undefined
+    botRoot: string | undefined,
+    dotnetChecker: DotnetChecker
   ): Promise<Result<null, FxError>> {
     let frontendInstallTask: Task | undefined;
     if (frontendRoot !== undefined) {
@@ -409,10 +413,14 @@ export default class Preview extends YargsCommand {
       backendExtensionsInstallTask = new Task(
         constants.backendExtensionsInstallTitle,
         false,
-        constants.backendExtensionsInstallCommand,
+        // env checker: use dotnet execPath
+        constants.backendExtensionsInstallCommand.replace(
+          "@execPath",
+          await dotnetChecker.getDotnetExecPath()
+        ),
         undefined,
         {
-          shell: true,
+          shell: true, // TODO: should false
           cwd: backendRoot,
         }
       );
@@ -508,7 +516,9 @@ export default class Preview extends YargsCommand {
     programmingLanguage: string,
     frontendRoot: string | undefined,
     backendRoot: string | undefined,
-    botRoot: string | undefined
+    botRoot: string | undefined,
+    dotnetChecker: DotnetChecker,
+    funcToolChecker: FuncToolChecker
   ): Promise<Result<null, FxError>> {
     let frontendStartTask: Task | undefined;
     if (frontendRoot !== undefined) {
@@ -535,7 +545,8 @@ export default class Preview extends YargsCommand {
       authStartTask = new Task(
         constants.authStartTitle,
         true,
-        constants.authStartCommand,
+        // env checker: use dotnet execPath
+        constants.authStartCommand.replace("@execPath", await dotnetChecker.getDotnetExecPath()),
         undefined,
         {
           shell: true,
@@ -554,10 +565,18 @@ export default class Preview extends YargsCommand {
       const mergedEnv = commonUtils.mergeProcessEnv(env);
       const command =
         programmingLanguage === constants.ProgrammingLanguage.typescript
-          ? constants.backendStartTsCommand
-          : constants.backendStartJsCommand;
+          ? // env checker: use func command
+            constants.backendStartTsCommand.replace(
+              "@command",
+              await funcToolChecker.getFuncCommand()
+            )
+          : constants.backendStartJsCommand.replace(
+              "@command",
+              await funcToolChecker.getFuncCommand()
+            );
+
       backendStartTask = new Task(constants.backendStartTitle, true, command, undefined, {
-        shell: true,
+        shell: isWindows() ? "cmd.exe" : true,
         cwd: backendRoot,
         env: mergedEnv,
       });
@@ -767,7 +786,8 @@ export default class Preview extends YargsCommand {
     this.backgroundTasks = [];
   }
 
-  private async handleDependences() {
+  private async handleDependences(hasBackend: boolean): Promise<[FuncToolChecker, DotnetChecker]> {
+    const cliAdapter = new CLIAdapter(cliEnvCheckerTelemetry, hasBackend);
     const nodeChecker = new AzureNodeChecker(
       cliAdapter,
       cliEnvCheckerLogger,
@@ -791,7 +811,9 @@ export default class Preview extends YargsCommand {
 
     const shouldContinue = await depsChecker.resolve();
     if (!shouldContinue) {
-      // TODO: give a error message to user
+      throw new Error("preview stopped.");
     }
+
+    return [funcChecker, dotnetChecker];
   }
 }

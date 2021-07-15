@@ -15,8 +15,9 @@ export class CLIAdapter implements IDepsAdapter {
   private readonly _telemetry: IDepsTelemetry;
   private readonly _hasBackend: boolean = true; // todo
 
-  constructor(telemetry: IDepsTelemetry) {
+  constructor(telemetry: IDepsTelemetry, hasBackend: boolean) {
     this._telemetry = telemetry;
+    this._hasBackend = hasBackend;
   }
 
   public hasTeamsfxBackend(): Promise<boolean> {
@@ -123,4 +124,3 @@ export class CLIAdapter implements IDepsAdapter {
     CLIUIInstance.openUrl(url);
   }
 }
-export const cliAdapter = new CLIAdapter(cliEnvCheckerTelemetry);

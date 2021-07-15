@@ -6,6 +6,7 @@ import * as chai from "chai";
 import {
   createAzureBotServiceClient,
   createWebSiteMgmtClient,
+  ensureResourceProvider,
 } from "../../../../../src/plugins/resource/bot/clientFactory";
 import { generateFakeServiceClientCredentials } from "./utils";
 import { AzureBotService } from "@azure/arm-botservice";
@@ -71,6 +72,45 @@ describe("Client Factory", () => {
       }
 
       chai.assert.fail(Messages.ShouldNotReachHere);
+    });
+  });
+
+  describe("create", () => {
+    it("Test ensureResourceProvider with existence", async () => {
+      // Arrange
+      const item: any = { registrationState: "Registered" };
+      const namespace = ["ut"];
+      const credentials = generateFakeServiceClientCredentials();
+      const client: any = {
+        get: (namespace: string) => item,
+        register: (namespace: string) => item,
+      };
+
+      // Act
+      const res = await ensureResourceProvider(client, namespace);
+
+      // Assert
+      chai.assert.deepEqual(res, [item]);
+    });
+
+    it("Test ensureResourceProvider", async () => {
+      // Arrange
+      let item: any = { registrationState: "Unregistered" };
+      const namespace = ["ut"];
+      const client: any = {
+        get: (namespace: string) => item,
+        register: (namespace: string) => {
+          item = {};
+          item = { ...item, $namespace: { registrationState: "Registered" } };
+          return item;
+        },
+      };
+
+      // Act
+      const res = await ensureResourceProvider(client, namespace);
+
+      // Assert
+      chai.assert.deepEqual(res, [item]);
     });
   });
 });

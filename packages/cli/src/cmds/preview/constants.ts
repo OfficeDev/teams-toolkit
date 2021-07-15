@@ -3,6 +3,12 @@
 
 "use strict";
 
+export enum Browser {
+  chrome = "chrome",
+  edge = "edge",
+  default = "default",
+}
+
 export const sideloadingUrl =
   "https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}";
 export const teamsAppIdPlaceholder = "${teamsAppId}";

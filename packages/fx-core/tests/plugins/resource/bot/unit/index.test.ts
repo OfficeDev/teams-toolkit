@@ -222,10 +222,23 @@ describe("Teams Bot Resource Plugin", () => {
       botPluginImpl.config.provision.resourceGroup = "anything";
       const pluginContext = testUtils.newPluginContext();
       pluginContext.app.name.short = "anything";
+      const fakeCreds = testUtils.generateFakeTokenCredentialsBase();
+
+      let item: any = { registrationState: "Unregistered" };
+      const namespace = ["ut"];
+      const fakeRPClient: any = {
+        get: (namespace: string) => item,
+        register: (namespace: string) => {
+          item = {};
+          item = { ...item, $namespace: { registrationState: "Registered" } };
+          return item;
+        },
+      };
+      sinon.stub(factory, "createResourceProviderClient").returns(fakeRPClient);
 
       sinon.stub(pluginContext.appStudioToken!, "getAccessToken").resolves("anything");
       sinon.stub(botPluginImpl.config.scaffold, "botRegistrationCreated").returns(true);
-      const fakeCreds = testUtils.generateFakeTokenCredentialsBase();
+
       sinon
         .stub(pluginContext.azureAccountProvider!, "getAccountCredentialAsync")
         .resolves(fakeCreds);

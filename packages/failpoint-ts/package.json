@@ -15,7 +15,7 @@
     "url": "git+https://github.com/OfficeDev/TeamsFx.git"
   },
   "scripts": {
-    "test": "echo \"Error: run tests from root\" && exit 1",
+    "test": "npm run test:unit",
     "test:unit": "npx nyc --check-coverage --reporter=json-summary --reporter=text mocha --no-timeouts --require ts-node/register test/**/*.test.ts",
     "build": "npx tsc -p ./",
     "prepare": "rimraf build && npm run build"

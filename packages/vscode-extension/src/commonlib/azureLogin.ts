@@ -392,18 +392,18 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   async getSelectedSubscription(triggerUI = false): Promise<SubscriptionInfo | undefined> {
     const azureAccount = this.getAzureAccount();
     if (triggerUI) {
-      if (azureAccount.status != loggedIn) {
+      if (azureAccount.status !== loggedIn) {
         await this.login(true);
       }
       if (azureAccount.status === loggedIn && !AzureAccountManager.subscriptionId) {
         await this.selectSubscription();
       }
-    }
-    // no need to select sub when user only have one
-    if (azureAccount.status === loggedIn && !AzureAccountManager.subscriptionId && !triggerUI) {
-      const subscriptionList = await this.listSubscriptions();
-      if (subscriptionList && subscriptionList.length == 1) {
-        await this.setSubscription(subscriptionList[0].subscriptionId);
+    } else {
+      if (azureAccount.status === loggedIn && !AzureAccountManager.subscriptionId) {
+        const subscriptionList = await this.listSubscriptions();
+        if (subscriptionList && subscriptionList.length == 1) {
+          await this.setSubscription(subscriptionList[0].subscriptionId);
+        }
       }
     }
     if (azureAccount.status === loggedIn && AzureAccountManager.subscriptionId) {

@@ -102,7 +102,7 @@ export async function loadSolutionContext(
         const secretValue = dict[secretKey];
         const plaintext = cryptoProvider.decrypt(secretValue);
         if (plaintext.isErr()) {
-          throw plaintext.error;
+          return err(plaintext.error);
         }
         dict[secretKey] = plaintext.value;
       }

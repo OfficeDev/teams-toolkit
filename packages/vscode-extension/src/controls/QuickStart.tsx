@@ -278,6 +278,7 @@ export default class QuickStart extends React.Component<any, any> {
                   controls
                   disablePictureInPicture
                   onPlay={this.onVideoPlay}
+                  onPause={this.onVideoPause}
                 >
                   <source src="https://aka.ms/teamsfx-video"></source>
                 </video>
@@ -426,6 +427,19 @@ export default class QuickStart extends React.Component<any, any> {
       stepsDone: done,
     });
     this.setGlobalStepsDone(done);
+  };
+
+  onVideoPause = () => {
+    const video = document.getElementById("capabilitiesVideo") as HTMLMediaElement;
+    if (video && !video.ended) {
+      vscode.postMessage({
+        command: Commands.SendTelemetryEvent,
+        data: {
+          eventName: TelemetryEvent.PauseVideo,
+          properties: { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview },
+        },
+      });
+    }
   };
 
   onHideWatchOnBrowser = () => {

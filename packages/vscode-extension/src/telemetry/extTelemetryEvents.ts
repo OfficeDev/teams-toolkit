@@ -64,6 +64,7 @@ export enum TelemetryEvent {
   DownloadSample = "download-sample",
 
   WatchVideo = "watch-video",
+  PauseVideo = "pause-video",
 
   DisplayCommands = "display-commands",
 

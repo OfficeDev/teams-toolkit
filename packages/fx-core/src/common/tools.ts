@@ -129,6 +129,19 @@ const SecretDataMatchers = [
   "fx-resource-apim.apimClientAADClientSecret",
 ];
 
+const CryptoDataMatchers = new Set([
+  "fx-resource-aad-app-for-teams.clientSecret",
+  "fx-resource-aad-app-for-teams.local_clientSecret",
+  "fx-resource-simple-auth.environmentVariableParams",
+  "fx-resource-bot.botPassword",
+  "fx-resource-bot.localBotPassword",
+  "fx-resource-apim.apimClientAADClientSecret",
+]);
+
+export function dataNeedEncryption(key: string): boolean {
+  return CryptoDataMatchers.has(key);
+}
+
 export function sperateSecretData(configJson: Json): Record<string, string> {
   const res: Record<string, string> = {};
   for (const matcher of SecretDataMatchers) {

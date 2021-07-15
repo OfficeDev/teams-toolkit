@@ -3,7 +3,7 @@
 import * as appService from "@azure/arm-appservice";
 import * as msRest from "@azure/ms-rest-js";
 import { AzureBotService } from "@azure/arm-botservice";
-import { ClientCreationError } from "./errors";
+import { ClientCreationError, RegisterResourceProviderError } from "./errors";
 import { ClientNames } from "./resources/strings";
 import { Provider } from "@azure/arm-resources/esm/models";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
@@ -63,14 +63,18 @@ export async function ensureResourceProvider(
   client: Providers,
   providerNamespaces: string[]
 ): Promise<Provider[]> {
-  return Promise.all(
-    providerNamespaces.map(async (namespace) => {
-      const findedRP: Provider | undefined = await findResourceProvider(client, namespace);
-      if (!findedRP) {
-        return client.register(namespace);
-      }
-      Logger.info(Messages.ResourceProviderExist(namespace));
-      return findedRP;
-    })
-  );
+  try {
+    return Promise.all(
+      providerNamespaces.map(async (namespace) => {
+        const foundRP: Provider | undefined = await findResourceProvider(client, namespace);
+        if (!foundRP) {
+          return client.register(namespace);
+        }
+        Logger.info(Messages.ResourceProviderExist(namespace));
+        return foundRP;
+      })
+    );
+  } catch (e) {
+    throw new RegisterResourceProviderError(e);
+  }
 }

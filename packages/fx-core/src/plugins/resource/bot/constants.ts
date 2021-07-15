@@ -259,5 +259,5 @@ export class TelemetryValues {
 }
 
 export class AzureConstants {
-  public static readonly requiredResourceProviders = ["Microsoft.Web", "Microsoft.Storage"];
+  public static readonly requiredResourceProviders = ["Microsoft.Web", "Microsoft.BotService"];
 }

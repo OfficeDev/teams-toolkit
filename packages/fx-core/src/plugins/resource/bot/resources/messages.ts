@@ -43,7 +43,7 @@ export class Messages {
   public static readonly FallingBackToUseLocalTemplateZip =
     "Falling back to use local template zip.";
   public static readonly ResourceProviderExist = (rp: string): string =>
-    `Resource Provider ${rp} already exist, do not need to create.`;
+    `Resource Provider ${rp} already exists, do not need to register.`;
 
   public static readonly WorkingDirIsMissing = "Working directory is missing.";
   public static readonly FailToGetAzureCreds = "Failed to retrieve Azure credentials.";

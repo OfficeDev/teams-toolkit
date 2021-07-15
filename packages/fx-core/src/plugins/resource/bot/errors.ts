@@ -36,7 +36,7 @@ export class PluginError extends Error {
   }
 
   genMessage(): string {
-    return `${this.message}. ${this.innerError?.message}. Suggestions: ${this.suggestions.join("\n")}`;
+    return `${this.message} Suggestions: ${this.suggestions.join(" ")}`;
   }
 }
 

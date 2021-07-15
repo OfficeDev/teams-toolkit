@@ -3,6 +3,7 @@
 
 import "mocha";
 import * as chai from "chai";
+import axios, { AxiosInstance } from "axios";
 import { AppStudioPlugin } from "./../../../../../src/plugins/resource/appstudio";
 import { AppStudioPluginImpl } from "./../../../../../src/plugins/resource/appstudio/plugin";
 import { AppStudioClient } from "./../../../../../src/plugins/resource/appstudio/appStudio";
@@ -393,42 +394,340 @@ describe("Reload Manifest and Check Required Fields", () => {
     }
   });
 
-  // it("local appId create failed error", async () => {
-  // 	configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
-  // 	configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
-  // 	configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
-  // 	ctx = {
-  //     root: "./tests/plugins/resource/appstudio/resources/",
-  //     configOfOtherPlugins: configOfOtherPlugins,
-  //     config: new ConfigMap(),
-  //     app: new TeamsAppManifest(),
-  //   };
-  //   ctx.projectSettings = {
-  //   	appName: "my app",
-  //   	currentEnv: "default",
-  //   	projectId: uuid.v4(),
-  //   	solutionSettings: {
-  //       name: "azure",
-  //       version: "1.0",
-  //       capabilities: ["Bot"],
-  //   	},
-  //   };
+  it("local appId create failed error", async () => {
+    configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
+    configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
+    configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
+    ctx = {
+      root: "./tests/plugins/resource/appstudio/resources/",
+      configOfOtherPlugins: configOfOtherPlugins,
+      config: new ConfigMap(),
+      app: new TeamsAppManifest(),
+    };
+    ctx.projectSettings = {
+      appName: "my app",
+      currentEnv: "default",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        name: "azure",
+        version: "1.0",
+        capabilities: ["Bot"],
+      },
+    };
 
-  // 	appDef = undefined;
-  // 	sandbox.stub(AppStudioClient, "createApp").returns(appDef);
+    const fakeAxiosInstance = axios.create();
+    sandbox.stub(fakeAxiosInstance, "post").resolves({
+      status: 200,
+      data: {
+        appId: "appId",
+        id: "id",
+        secretText: "secretText",
+      },
+    });
+    sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
-  //   const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
-  //     ctx,
-  //     "localDebug",
-  //     manifest,
-  // 		"app studio token"
-  //   );
+    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
+      ctx,
+      "localDebug",
+      manifest,
+      "app studio token"
+    );
 
-  //   chai.assert.isTrue(getAppDefinitionAndResult.isErr());
-  //   if (getAppDefinitionAndResult.isErr()) {
-  //     chai
-  //       .expect(getAppDefinitionAndResult._unsafeUnwrapErr().name)
-  //       .equals(AppStudioError.LocalAppIdCreateFailedError.name);
-  //   }
-  // });
+    chai.assert.isTrue(getAppDefinitionAndResult.isErr());
+    if (getAppDefinitionAndResult.isErr()) {
+      chai
+        .expect(getAppDefinitionAndResult._unsafeUnwrapErr().name)
+        .equals(AppStudioError.LocalAppIdCreateFailedError.name);
+    }
+  });
+
+  it("local appId update failed error", async () => {
+    configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
+    configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
+    configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
+    ctx = {
+      root: "./tests/plugins/resource/appstudio/resources/",
+      configOfOtherPlugins: configOfOtherPlugins,
+      config: new ConfigMap(),
+      app: new TeamsAppManifest(),
+    };
+    ctx.projectSettings = {
+      appName: "my app",
+      currentEnv: "default",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        name: "azure",
+        version: "1.0",
+        capabilities: ["Bot"],
+      },
+    };
+
+    const appDef: IAppDefinition = {
+      appName: "my app",
+      teamsAppId: "appId",
+      userList: [
+        {
+          tenantId: uuid.v4(),
+          aadId: uuid.v4(),
+          displayName: "displayName",
+          userPrincipalName: "principalName",
+          isOwner: true,
+        },
+      ],
+    };
+
+    const fakeAxiosInstance = axios.create();
+    sandbox.stub(fakeAxiosInstance, "get").resolves({
+      status: 200,
+      data: appDef,
+    });
+
+    sandbox.stub<any, any>(fakeAxiosInstance, "post").callsFake(async (url: string) => {
+      if (url == "/api/appdefinitions/appId/image") return {};
+      if (url == "/api/appdefinitions/appId/override") return {};
+      return {};
+    });
+
+    sandbox.stub(axios, "create").returns(fakeAxiosInstance);
+    sandbox.stub(AppStudioClient, "createApp").resolves(appDef);
+
+    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
+      ctx,
+      "localDebug",
+      manifest,
+      "app studio token"
+    );
+
+    chai.assert.isTrue(getAppDefinitionAndResult.isErr());
+    if (getAppDefinitionAndResult.isErr()) {
+      chai
+        .expect(getAppDefinitionAndResult._unsafeUnwrapErr().name)
+        .equals(AppStudioError.LocalAppIdUpdateFailedError.name);
+    }
+  });
+
+  it("localDebug happy path", async () => {
+    configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
+    configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
+    configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
+    ctx = {
+      root: "./tests/plugins/resource/appstudio/resources/",
+      configOfOtherPlugins: configOfOtherPlugins,
+      config: new ConfigMap(),
+      app: new TeamsAppManifest(),
+    };
+    ctx.projectSettings = {
+      appName: "my app",
+      currentEnv: "default",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        name: "azure",
+        version: "1.0",
+        capabilities: ["Bot"],
+      },
+    };
+
+    const appDef: IAppDefinition = {
+      appName: "my app",
+      teamsAppId: "appId",
+      userList: [
+        {
+          tenantId: uuid.v4(),
+          aadId: uuid.v4(),
+          displayName: "displayName",
+          userPrincipalName: "principalName",
+          isOwner: true,
+        },
+      ],
+      outlineIcon: "outline.png",
+      colorIcon: "color.png",
+    };
+
+    const fakeAxiosInstance = axios.create();
+    sandbox.stub(fakeAxiosInstance, "get").resolves({
+      status: 200,
+      data: appDef,
+    });
+
+    sandbox.stub<any, any>(fakeAxiosInstance, "post").callsFake(async (url: string) => {
+      if (url == "/api/appdefinitions/appId/image") return {};
+      if (url == "/api/appdefinitions/appId/override") return { status: 200, data: appDef };
+      return {};
+    });
+
+    sandbox.stub(axios, "create").returns(fakeAxiosInstance);
+    sandbox.stub(AppStudioClient, "createApp").resolves(appDef);
+
+    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
+      ctx,
+      "localDebug",
+      manifest,
+      "app studio token"
+    );
+
+    chai.assert.isTrue(getAppDefinitionAndResult.isOk());
+  });
+
+  it("remote appId create failed error", async () => {
+    configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
+    configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
+    configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
+    ctx = {
+      root: "./tests/plugins/resource/appstudio/resources/",
+      configOfOtherPlugins: configOfOtherPlugins,
+      config: new ConfigMap(),
+      app: new TeamsAppManifest(),
+    };
+    ctx.projectSettings = {
+      appName: "my app",
+      currentEnv: "default",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        name: "azure",
+        version: "1.0",
+        capabilities: ["Bot"],
+      },
+    };
+
+    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
+      ctx,
+      "remote",
+      manifest,
+      "app studio token"
+    );
+
+    chai.assert.isTrue(getAppDefinitionAndResult.isErr());
+    if (getAppDefinitionAndResult.isErr()) {
+      chai
+        .expect(getAppDefinitionAndResult._unsafeUnwrapErr().name)
+        .equals(AppStudioError.RemoteAppIdCreateFailedError.name);
+    }
+  });
+
+  it("remote appId update failed error", async () => {
+    configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
+    configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
+    configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
+    ctx = {
+      root: "./tests/plugins/resource/appstudio/resources/",
+      configOfOtherPlugins: configOfOtherPlugins,
+      config: new ConfigMap(),
+      app: new TeamsAppManifest(),
+    };
+    ctx.projectSettings = {
+      appName: "my app",
+      currentEnv: "default",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        name: "azure",
+        version: "1.0",
+        capabilities: ["Bot"],
+      },
+    };
+
+    const appDef: IAppDefinition = {
+      appName: "my app",
+      teamsAppId: "appId",
+      userList: [
+        {
+          tenantId: uuid.v4(),
+          aadId: uuid.v4(),
+          displayName: "displayName",
+          userPrincipalName: "principalName",
+          isOwner: true,
+        },
+      ],
+    };
+
+    const fakeAxiosInstance = axios.create();
+    sandbox.stub(fakeAxiosInstance, "get").resolves({
+      status: 200,
+      data: appDef,
+    });
+
+    sandbox.stub<any, any>(fakeAxiosInstance, "post").callsFake(async (url: string) => {
+      if (url == "/api/appdefinitions/appId/image") return {};
+      if (url == "/api/appdefinitions/appId/override") return {};
+      return {};
+    });
+
+    sandbox.stub(axios, "create").returns(fakeAxiosInstance);
+    sandbox.stub(AppStudioClient, "createApp").resolves(appDef);
+
+    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
+      ctx,
+      "remote",
+      manifest,
+      "app studio token"
+    );
+
+    chai.assert.isTrue(getAppDefinitionAndResult.isErr());
+    if (getAppDefinitionAndResult.isErr()) {
+      chai
+        .expect(getAppDefinitionAndResult._unsafeUnwrapErr().name)
+        .equals(AppStudioError.RemoteAppIdUpdateFailedError.name);
+    }
+  });
+
+  it("remote happy path", async () => {
+    configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
+    configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
+    configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
+    ctx = {
+      root: "./tests/plugins/resource/appstudio/resources/",
+      configOfOtherPlugins: configOfOtherPlugins,
+      config: new ConfigMap(),
+      app: new TeamsAppManifest(),
+    };
+    ctx.projectSettings = {
+      appName: "my app",
+      currentEnv: "default",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        name: "azure",
+        version: "1.0",
+        capabilities: ["Bot"],
+      },
+    };
+
+    const appDef: IAppDefinition = {
+      appName: "my app",
+      teamsAppId: "appId",
+      userList: [
+        {
+          tenantId: uuid.v4(),
+          aadId: uuid.v4(),
+          displayName: "displayName",
+          userPrincipalName: "principalName",
+          isOwner: true,
+        },
+      ],
+      outlineIcon: "outline.png",
+      colorIcon: "color.png",
+    };
+
+    const fakeAxiosInstance = axios.create();
+    sandbox.stub(fakeAxiosInstance, "get").resolves({
+      status: 200,
+      data: appDef,
+    });
+
+    sandbox.stub<any, any>(fakeAxiosInstance, "post").callsFake(async (url: string) => {
+      if (url == "/api/appdefinitions/appId/image") return {};
+      if (url == "/api/appdefinitions/appId/override") return { status: 200, data: appDef };
+      return {};
+    });
+
+    sandbox.stub(axios, "create").returns(fakeAxiosInstance);
+    sandbox.stub(AppStudioClient, "createApp").resolves(appDef);
+
+    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
+      ctx,
+      "remote",
+      manifest,
+      "app studio token"
+    );
+
+    chai.assert.isTrue(getAppDefinitionAndResult.isOk());
+  });
 });

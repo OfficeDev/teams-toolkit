@@ -132,36 +132,39 @@ jobs:
           npx lerna publish from-package --yes
 
       - name: Install Mustache
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') }}
         run: curl -sSL https://git.io/get-mo -o mo && chmod +x mo && sudo mv mo /usr/local/bin/
 
       - name: generate templates
-        id: zip-template
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') }}
         run: .github/scripts/template-zip-autogen.sh
 
       - name: release templates' alpha version to github
-        if: ${{ steps.zip-template.outputs.VERSION != '0' && github.event.inputs.preid != 'stable' }}
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event.inputs.preid != 'stable' }}
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: ${{ secrets.CD_PAT }}
           prerelease: true
-          automatic_release_tag: steps.zip-template.outputs.VERSION
+          automatic_release_tag: $(tr ' ' '\n' <<< '${{ steps.version-change.outputs.CHANGED }}' | grep 'templates@')
           files: |
             ./*.zip
 
       - name: Create Templates Stable Release
-        if: ${{ steps.zip-template.outputs.VERSION != '0' && github.event.inputs.preid == 'stable' }}
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event.inputs.preid == 'stable' }}
         uses: ncipollo/release-action@v1.7.3
         with:
           artifacts: ./*.zip
-          name: 'Release for templates ${{ github.ref }}'
+          name: 'Release for $(tr ' ' '\n' <<< ${{ steps.version-change.outputs.CHANGED }} | grep 'templates@')'
           token: ${{ secrets.github_token }}
+          tag: $(tr ' ' '\n' <<< ${{ steps.version-change.outputs.CHANGED }} | grep 'templates@')
 
       - name: Generate Tag List
-        if: ${{ steps.zip-template.outputs.VERSION != '0' && github.event.inputs.preid == 'stable' }}
-        run: git tag | grep templates@ > ./template-tags.txt
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event.inputs.preid == 'stable' }}
+        run: |
+          tr ' ' '\n' <<< '${{ steps.version-change.outputs.CHANGED }}' | grep 'templates@' > ./template-tags.txt
       
       - name: Update Template Tag list Release
-        if: ${{ steps.zip-template.outputs.VERSION != '0' && github.event.inputs.preid == 'stable' }}
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event.inputs.preid == 'stable' }}
         uses: ncipollo/release-action@v1.7.3
         with:
           artifacts: ./template-tags.txt
@@ -186,8 +189,6 @@ jobs:
             cd ./packages/vscode-extension
             npm install
             npx vsce package
-            VERSION=`ls *.vsix | awk -F '.vsix' '{print $1}'`
-            echo "::set-output name=VERSION::$VERSION"
 
       - name: release VSCode extension to github
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') }}
@@ -195,6 +196,6 @@ jobs:
         with:
           repo_token: ${{ secrets.CD_PAT }}
           prerelease: true
-          automatic_release_tag: ${{ steps.pack-vsix.outputs.VERSION }}
+          automatic_release_tag: $(tr ' ' '\n' <<< ${{ steps.version-change.outputs.CHANGED }} | grep 'ms-teams-vscode-extension@')
           files: |
             ./packages/**/*.vsix

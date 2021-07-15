@@ -1,16 +1,6 @@
 #!/usr/bin/env bash
 set -x
 
-if git diff HEAD^ ./templates/package.json | grep version
-    then 
-        PACKAGE_VERSION=$(node -p -e "require('./templates/package.json').version")
-        echo "::set-output name=VERSION::${PACKAGE_VERSION}"
-else 
-    echo "::set-output name=VERSION::0"
-    exit 1
-fi
-
-
 TEMPLATE_FILE_PREFIX=./templates/mustache-templates/teamsBot
 LANGUAGE_LIST=(js ts)
 

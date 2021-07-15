@@ -12,12 +12,15 @@ import { ReadFileError, ConfigNotFoundError, WriteFileError } from "./error";
 const UserSettingsFileName = "cliProfile.json";
 
 export enum CliConfigOptions {
-  Telemetry = "telemetry"
+  Telemetry = "telemetry",
+  EnvCheckerValidateDotnetSdk = "validate-dotnet-sdk",
+  EnvCheckerValidateFuncCoreTools = "validate-func-core-tools",
+  EnvCheckerValidateNode = "validate-node",
 }
 
 export enum CliConfigTelemetry {
   On = "on",
-  Off = "off"
+  Off = "off",
 }
 
 export class UserSettings {
@@ -49,7 +52,7 @@ export class UserSettings {
     }
   }
 
-  public static setConfigSync(option: {[key: string]: string}): Result<null, FxError> {
+  public static setConfigSync(option: { [key: string]: string }): Result<null, FxError> {
     const result = this.getConfigSync();
     if (result.isErr()) {
       return err(result.error);
@@ -62,7 +65,7 @@ export class UserSettings {
       fs.writeJSONSync(this.getUserSettingsFile(), obj);
       return ok(null);
     } catch (e) {
-        return err(WriteFileError(e));
+      return err(WriteFileError(e));
     }
   }
 
@@ -71,9 +74,12 @@ export class UserSettings {
     if (result.isErr()) {
       return err(result.error);
     }
-    
+
     const config = result.value;
-    if (config[CliConfigOptions.Telemetry] && config[CliConfigOptions.Telemetry] === CliConfigTelemetry.Off) {
+    if (
+      config[CliConfigOptions.Telemetry] &&
+      config[CliConfigOptions.Telemetry] === CliConfigTelemetry.Off
+    ) {
       return ok(false);
     }
 

@@ -15,4 +15,5 @@ export enum ExtensionErrors {
   OpenExternalFailed = "OpenExternalFailed",
   FolderAlreadyExist = "FolderAlreadyExist",
   InvalidProject = "InvalidProject",
+  FetchSampleError = "FetchSampleError",
 }

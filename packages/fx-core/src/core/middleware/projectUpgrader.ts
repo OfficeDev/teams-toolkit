@@ -74,15 +74,9 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<void> {
     // Save the updated context and send log.
     await saveContext(contextPath, context);
     const core = ctx.self as FxCore;
-    const logger =
-      core !== undefined && core.tools !== undefined && core.tools.logProvider !== undefined
-        ? core.tools.logProvider
-        : undefined;
-    if (logger) {
-      logger.info(
-        "[core]: context version is too low. Will update context and move some config from env to userdata."
-      );
-    }
+    core?.tools?.logProvider?.info(
+      "[core]: context version is too low. Will update context and move some config from env to userdata."
+    );
 
     // Read UserData file.
     const userDataPath = path.resolve(confFolderPath, `${envName}.userdata`);
@@ -99,12 +93,10 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<void> {
 }
 
 async function readUserData(userDataPath: string): Promise<Record<string, string>> {
-  let dict: Record<string, string>;
+  let dict: Record<string, string> = {};
   if (await fs.pathExists(userDataPath)) {
     const dictContent = await fs.readFile(userDataPath, "UTF-8");
     dict = deserializeDict(dictContent);
-  } else {
-    dict = {};
   }
 
   return dict;

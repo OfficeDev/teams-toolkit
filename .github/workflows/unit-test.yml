@@ -175,8 +175,8 @@ jobs:
           for i in $(find . -name coverage-summary.json); do
             package=$(basename $(dirname $(dirname $i)))
             az storage entity insert \
-              --connection-string=${{ secrets.AZURE_STORAGE_ACCOUNT_TEAMSFXCLIDOWNLOADS_CS }} \
+              --connection-string "${{ secrets.AZURE_STORAGE_ACCOUNT_TEAMSFXCLIDOWNLOADS_CS }}" \
               --entity PartitionKey=TeamsFx RowKey=${{ github.run_id }}_$package Package=$package GitBranch=${{ github.ref }} Type=unit_test LinesPct=$(jq -cr '.total.lines.pct' $i) BranchesPct=$(jq -cr '.total.branches.pct' $i) StatementsPct=$(jq -cr '.total.statements.pct' $i) FunctionsPct=$(jq -cr '.total.functions.pct' $i) \
-              --if-exists=replace \
-              --table-name=TestCoverage
+              --if-exists replace \
+              --table-name TestCoverage
           done  

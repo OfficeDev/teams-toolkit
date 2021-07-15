@@ -26,8 +26,10 @@ export function assembleError(e: Error, source?: string): FxError;
 // @public
 export interface AzureAccountProvider {
     getAccountCredentialAsync(showDialog?: boolean, tenantId?: string): Promise<TokenCredentialsBase | undefined>;
+    getAccountInfo(): Record<string, string> | undefined;
     getIdentityCredentialAsync(showDialog?: boolean): Promise<TokenCredential | undefined>;
     getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined>;
+    getSelectedSubscription(triggerUI?: boolean): Promise<SubscriptionInfo | undefined>;
     listSubscriptions(): Promise<SubscriptionInfo[]>;
     removeStatusChangeMap(name: string): Promise<boolean>;
     setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>, immediateCall?: boolean): Promise<boolean>;

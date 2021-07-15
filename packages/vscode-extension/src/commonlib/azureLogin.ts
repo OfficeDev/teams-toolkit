@@ -6,7 +6,14 @@
 
 import { TokenCredential } from "@azure/core-auth";
 import { DeviceTokenCredentials, TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
-import { AzureAccountProvider, UserError, SubscriptionInfo, SingleSelectConfig, OptionItem, ok } from "@microsoft/teamsfx-api";
+import {
+  AzureAccountProvider,
+  UserError,
+  SubscriptionInfo,
+  SingleSelectConfig,
+  OptionItem,
+  ok,
+} from "@microsoft/teamsfx-api";
 import { ExtensionErrors } from "../error";
 import { AzureAccount } from "./azure-account.api";
 import { LoginFailureError } from "./codeFlowLogin";
@@ -22,7 +29,7 @@ import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
-  AccountType
+  AccountType,
 } from "../telemetry/extTelemetryEvents";
 import { VS_CODE_UI } from "../extension";
 import TreeViewManagerInstance from "../commandsTreeViewProvider";
@@ -73,7 +80,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         [TelemetryProperty.AccountType]: AccountType.Azure,
         [TelemetryProperty.Success]: TelemetrySuccess.No,
         [TelemetryProperty.UserId]: "",
-        [TelemetryProperty.Internal]: "false"
+        [TelemetryProperty.Internal]: "false",
       });
       throw e;
     }
@@ -86,7 +93,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       [TelemetryProperty.AccountType]: AccountType.Azure,
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
       [TelemetryProperty.UserId]: userid,
-      [TelemetryProperty.Internal]: internal ? "true" : "false"
+      [TelemetryProperty.Internal]: internal ? "true" : "false",
     });
     return cred;
   }
@@ -131,7 +138,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     }
 
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.LoginStart, {
-      [TelemetryProperty.AccountType]: AccountType.Azure
+      [TelemetryProperty.AccountType]: AccountType.Azure,
     });
     await vscode.commands.executeCommand("azure-account.login");
   }
@@ -252,18 +259,16 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       AzureAccountManager.subscriptionId = undefined;
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SignOut, {
         [TelemetryProperty.AccountType]: AccountType.Azure,
-        [TelemetryProperty.Success]: TelemetrySuccess.Yes
+        [TelemetryProperty.Success]: TelemetrySuccess.Yes,
       });
       return new Promise((resolve) => {
         resolve(true);
       });
     } catch (e) {
-      VsCodeLogInstance.error(
-        "[Logout Azure] " + e.message
-      );
+      VsCodeLogInstance.error("[Logout Azure] " + e.message);
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.SignOut, e, {
         [TelemetryProperty.AccountType]: AccountType.Azure,
-        [TelemetryProperty.Success]: TelemetrySuccess.No
+        [TelemetryProperty.Success]: TelemetrySuccess.No,
       });
       return Promise.resolve(false);
     }
@@ -342,7 +347,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       return Promise.resolve({
         status: signedIn,
         token: token?.accessToken,
-        accountInfo: accountJson
+        accountInfo: accountJson,
       });
     } else if (azureAccount.status === loggingIn) {
       return Promise.resolve({ status: signingIn, token: undefined, accountInfo: undefined });
@@ -356,7 +361,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
     AzureAccountManager.currentStatus = azureAccount.status;
     azureAccount.onStatusChanged(async (event) => {
-      if(AzureAccountManager.currentStatus === "Initializing") {
+      if (AzureAccountManager.currentStatus === "Initializing") {
         AzureAccountManager.currentStatus = event;
         return;
       }
@@ -384,44 +389,14 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     }
   }
 
-  async getSelectedSubscription(triggerUI=false): Promise<SubscriptionInfo | undefined> {
+  async getSelectedSubscription(triggerUI = false): Promise<SubscriptionInfo | undefined> {
     const azureAccount = this.getAzureAccount();
     if (triggerUI) {
       if (azureAccount.status != loggedIn) {
         await this.login(true);
       }
       if (azureAccount.status === loggedIn && !AzureAccountManager.subscriptionId) {
-        const subscriptionList = await this.listSubscriptions();
-        if (!subscriptionList || subscriptionList.length==0) {
-          throw new UserError(
-            StringResources.vsc.azureLogin.noSubscriptionFound,
-            StringResources.vsc.azureLogin.failToFindSubscription,
-            StringResources.vsc.codeFlowLogin.loginComponent
-          );
-        }
-        if (subscriptionList && subscriptionList.length==1) {
-          this.setSubscription(subscriptionList[0].subscriptionId);
-        } else if (subscriptionList.length>1) {
-          const options: OptionItem[] = subscriptionList.map((sub) => {
-            return {
-              id: sub.subscriptionId,
-              label: sub.subscriptionName,
-              data: sub.tenantId,
-            } as OptionItem;
-          });
-          const config: SingleSelectConfig = {
-            name: StringResources.vsc.azureLogin.subscription,
-            title: StringResources.vsc.azureLogin.selectSubscription,
-            options: options,
-          };
-          const result = await VS_CODE_UI.selectOption(config);
-          if (result.isErr()) {
-            throw result.error;
-          } else {
-            const subId = result.value.result as string;
-            this.setSubscription(subId);
-          }
-        }
+        this.selectSubscription();
       }
     }
     if (azureAccount.status === loggedIn) {
@@ -439,6 +414,40 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       return Promise.resolve(selectedSub);
     } else {
       return Promise.resolve(undefined);
+    }
+  }
+
+  async selectSubscription(): Promise<void> {
+    const subscriptionList = await this.listSubscriptions();
+    if (!subscriptionList || subscriptionList.length == 0) {
+      throw new UserError(
+        StringResources.vsc.azureLogin.noSubscriptionFound,
+        StringResources.vsc.azureLogin.failToFindSubscription,
+        StringResources.vsc.codeFlowLogin.loginComponent
+      );
+    }
+    if (subscriptionList && subscriptionList.length == 1) {
+      this.setSubscription(subscriptionList[0].subscriptionId);
+    } else if (subscriptionList.length > 1) {
+      const options: OptionItem[] = subscriptionList.map((sub) => {
+        return {
+          id: sub.subscriptionId,
+          label: sub.subscriptionName,
+          data: sub.tenantId,
+        } as OptionItem;
+      });
+      const config: SingleSelectConfig = {
+        name: StringResources.vsc.azureLogin.subscription,
+        title: StringResources.vsc.azureLogin.selectSubscription,
+        options: options,
+      };
+      const result = await VS_CODE_UI.selectOption(config);
+      if (result.isErr()) {
+        throw result.error;
+      } else {
+        const subId = result.value.result as string;
+        this.setSubscription(subId);
+      }
     }
   }
 }

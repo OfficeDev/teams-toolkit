@@ -408,16 +408,10 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     }
     if (azureAccount.status === loggedIn && AzureAccountManager.subscriptionId) {
       const selectedSub: SubscriptionInfo = {
-        subscriptionId: "",
-        tenantId: "",
+        subscriptionId: AzureAccountManager.subscriptionId,
+        tenantId: AzureAccountManager.tenantId!,
         subscriptionName: "",
       };
-      if (AzureAccountManager.subscriptionId) {
-        selectedSub.subscriptionId = AzureAccountManager.subscriptionId;
-      }
-      if (AzureAccountManager.tenantId) {
-        selectedSub.tenantId = AzureAccountManager.tenantId;
-      }
       return Promise.resolve(selectedSub);
     } else {
       return Promise.resolve(undefined);

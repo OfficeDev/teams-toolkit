@@ -2,13 +2,14 @@ import * as chai from "chai";
 import * as vscode from "vscode";
 import * as sinon from "sinon";
 import * as handlers from "../../../src/handlers";
-import { Inputs, Platform, Stage, VsCodeEnv } from "@microsoft/teamsfx-api";
+import { Inputs, Platform, Stage, VsCodeEnv, ok, err, UserError } from "@microsoft/teamsfx-api";
 import AppStudioTokenInstance from "../../../src/commonlib/appStudioLogin";
 import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
 import { WebviewPanel } from "../../../src/controls/webviewPanel";
 import { PanelType } from "../../../src/controls/PanelType";
 import { AzureAccountManager } from "../../../src/commonlib/azureLogin";
 import { MockCore } from "./mocks/mockCore";
+import * as extension from "../../../src/extension";
 
 suite("handlers", () => {
   test("getWorkspacePath()", () => {
@@ -221,5 +222,63 @@ suite("handlers", () => {
     sinon.assert.calledOnce(signOut);
     signOut.restore();
     sendTelemetryEvent.restore();
+  });
+
+  suite("decryptSecret", () => {
+    test("successfully update secret", async () => {
+      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      const decrypt = sinon.spy(handlers.core, "decrypt");
+      const encrypt = sinon.spy(handlers.core, "encrypt");
+      sinon.stub(vscode.commands, "executeCommand");
+      const editBuilder = sinon.spy();
+      sinon.stub(vscode.window, "activeTextEditor").value({
+        edit: function (callback: (eb: any) => void) {
+          callback({
+            replace: editBuilder,
+          });
+        },
+      });
+      sinon.stub(extension, "VS_CODE_UI").value({
+        inputText: () => Promise.resolve(ok({ type: "success", result: "inputValue" })),
+      });
+      const range = new vscode.Range(new vscode.Position(0, 10), new vscode.Position(0, 15));
+
+      await handlers.decryptSecret("test", range);
+
+      sinon.assert.calledOnce(decrypt);
+      sinon.assert.calledOnce(encrypt);
+      sinon.assert.calledOnce(editBuilder);
+      sinon.restore();
+    });
+
+    test("failed to update due to corrupted secret", async () => {
+      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      const decrypt = sinon.stub(handlers.core, "decrypt");
+      decrypt.returns(Promise.resolve(err(new UserError("fake error", "", ""))));
+      const encrypt = sinon.spy(handlers.core, "encrypt");
+      sinon.stub(vscode.commands, "executeCommand");
+      const editBuilder = sinon.spy();
+      sinon.stub(vscode.window, "activeTextEditor").value({
+        edit: function (callback: (eb: any) => void) {
+          callback({
+            replace: editBuilder,
+          });
+        },
+      });
+      const showMessage = sinon.stub(vscode.window, "showErrorMessage");
+      const range = new vscode.Range(new vscode.Position(0, 10), new vscode.Position(0, 15));
+
+      await handlers.decryptSecret("test", range);
+
+      sinon.assert.calledOnce(decrypt);
+      sinon.assert.notCalled(encrypt);
+      sinon.assert.notCalled(editBuilder);
+      sinon.assert.calledOnce(showMessage);
+      sinon.restore();
+    });
   });
 });

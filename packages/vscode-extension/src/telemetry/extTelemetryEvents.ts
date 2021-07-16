@@ -125,7 +125,7 @@ export enum TelemetryTiggerFrom {
   Other = "Other",
 }
 
-export enum WaterVideoFrom {
+export enum WatchVideoFrom {
   WatchVideoBtn = "WatchVideoBtn",
   PlayBtn = "PlayBtn",
   WatchOnBrowserBtn = "WatchOnBrowserBtn",

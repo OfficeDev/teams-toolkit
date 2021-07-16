@@ -25,7 +25,7 @@ import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetryTiggerFrom,
-  WaterVideoFrom,
+  WatchVideoFrom,
 } from "../telemetry/extTelemetryEvents";
 
 export default class QuickStart extends React.Component<any, any> {
@@ -380,7 +380,7 @@ export default class QuickStart extends React.Component<any, any> {
       command: Commands.SendTelemetryEvent,
       data: {
         eventName: TelemetryEvent.WatchVideo,
-        properties: { [TelemetryProperty.TriggerFrom]: WaterVideoFrom.WatchVideoBtn },
+        properties: { [TelemetryProperty.TriggerFrom]: WatchVideoFrom.WatchVideoBtn },
       },
     });
 
@@ -397,7 +397,7 @@ export default class QuickStart extends React.Component<any, any> {
       command: Commands.SendTelemetryEvent,
       data: {
         eventName: TelemetryEvent.WatchVideo,
-        properties: { [TelemetryProperty.TriggerFrom]: WaterVideoFrom.WatchOnBrowserBtn },
+        properties: { [TelemetryProperty.TriggerFrom]: WatchVideoFrom.WatchOnBrowserBtn },
       },
     });
 
@@ -419,7 +419,7 @@ export default class QuickStart extends React.Component<any, any> {
         command: Commands.SendTelemetryEvent,
         data: {
           eventName: TelemetryEvent.WatchVideo,
-          properties: { [TelemetryProperty.TriggerFrom]: WaterVideoFrom.PlayBtn },
+          properties: { [TelemetryProperty.TriggerFrom]: WatchVideoFrom.PlayBtn },
         },
       });
     } else {

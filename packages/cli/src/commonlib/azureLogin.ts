@@ -7,12 +7,10 @@ import { TokenCredential } from "@azure/core-auth";
 import { TokenCredentialsBase, DeviceTokenCredentials } from "@azure/ms-rest-nodeauth";
 import {
   AzureAccountProvider,
-  ConfigFolderName,
-  err,
-  FxError,
-  ok,
-  Result,
+  UserError,
   SubscriptionInfo,
+  OptionItem,
+  SingleSelectConfig,
 } from "@microsoft/teamsfx-api";
 import { CodeFlowLogin, LoginFailureError, ConvertTokenToJson } from "./codeFlowLogin";
 import { MemoryCache } from "./memoryCache";
@@ -21,26 +19,22 @@ import { CryptoCachePlugin } from "./cacheAccess";
 import { SubscriptionClient } from "@azure/arm-subscriptions";
 import { LogLevel } from "@azure/msal-node";
 import { NotFoundSubscriptionId, NotSupportedProjectType } from "../error";
-import * as fs from "fs-extra";
-import * as path from "path";
 import {
   changeLoginTenantMessage,
   env,
+  failToFindSubscription,
+  loginComponent,
   MFACode,
+  noSubscriptionFound,
+  selectSubscription,
   signedIn,
   signedOut,
-  unknownSubscription,
+  subscription,
 } from "./common/constant";
 import { login, LoginStatus } from "./common/login";
 import { LogLevel as LLevel } from "@microsoft/teamsfx-api";
 import { CodeFlowTenantLogin } from "./codeFlowTenantLogin";
-import CliTelemetry from "./../telemetry/cliTelemetry";
-import {
-  TelemetryAccountType,
-  TelemetryEvent,
-  TelemetryProperty,
-  TelemetrySuccess,
-} from "../telemetry/cliTelemetryEvents";
+import CLIUIInstance from "../userInteraction";
 
 const accountName = "azure";
 const scopes = ["https://management.core.windows.net/user_impersonation"];
@@ -128,7 +122,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     showDialog = true,
     tenantId = ""
   ): Promise<TokenCredentialsBase | undefined> {
-    if (tenantId.length == 0) {
+    if (tenantId.length === 0) {
       if (AzureAccountManager.codeFlowInstance.account) {
         const loginToken = await AzureAccountManager.codeFlowInstance.getToken();
         const tokenJson = await this.getJsonObject();
@@ -298,7 +292,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
 
   async getJsonObject(showDialog = true): Promise<Record<string, unknown> | undefined> {
     let token;
-    if (AzureAccountManager.codeFlowTenantInstance == undefined) {
+    if (AzureAccountManager.codeFlowTenantInstance === undefined) {
       token = await AzureAccountManager.codeFlowInstance.getToken();
     } else {
       token = await AzureAccountManager.codeFlowTenantInstance.getToken();
@@ -448,13 +442,75 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     const list = await this.listSubscriptions();
     for (let i = 0; i < list.length; ++i) {
       const item = list[i];
-      if (item.subscriptionId == subscriptionId) {
+      if (item.subscriptionId === subscriptionId) {
         AzureAccountManager.tenantId = item.tenantId;
         AzureAccountManager.subscriptionId = item.subscriptionId;
         return;
       }
     }
     throw NotFoundSubscriptionId();
+  }
+
+  getAccountInfo(): Record<string, string> | undefined {
+    if (AzureAccountManager.codeFlowInstance.account) {
+      return this.getJsonObject() as unknown as Record<string, string>;
+    } else {
+      return undefined;
+    }
+  }
+
+  async getSelectedSubscription(triggerUI = false): Promise<SubscriptionInfo | undefined> {
+    if (triggerUI) {
+      if (!AzureAccountManager.codeFlowInstance.account) {
+        await this.login(false);
+      }
+      if (AzureAccountManager.codeFlowInstance.account && !AzureAccountManager.subscriptionId) {
+        const subscriptionList = await this.listSubscriptions();
+        if (!subscriptionList || subscriptionList.length === 0) {
+          throw new UserError(noSubscriptionFound, failToFindSubscription, loginComponent);
+        }
+        if (subscriptionList && subscriptionList.length === 1) {
+          await this.setSubscription(subscriptionList[0].subscriptionId);
+        } else if (subscriptionList.length > 1) {
+          const options: OptionItem[] = subscriptionList.map((sub) => {
+            return {
+              id: sub.subscriptionId,
+              label: sub.subscriptionName,
+              data: sub.tenantId,
+            } as OptionItem;
+          });
+          const config: SingleSelectConfig = {
+            name: subscription,
+            title: selectSubscription,
+            options: options,
+          };
+          const result = await CLIUIInstance.selectOption(config);
+          if (result.isErr()) {
+            throw result.error;
+          } else {
+            const subId = result.value.result as string;
+            await this.setSubscription(subId);
+          }
+        }
+      }
+    } else {
+      if (AzureAccountManager.codeFlowInstance.account && !AzureAccountManager.subscriptionId) {
+        const subscriptionList = await this.listSubscriptions();
+        if (subscriptionList && subscriptionList.length === 1) {
+          await this.setSubscription(subscriptionList[0].subscriptionId);
+        }
+      }
+    }
+    if (AzureAccountManager.codeFlowInstance.account && AzureAccountManager.subscriptionId) {
+      const selectedSub: SubscriptionInfo = {
+        subscriptionId: AzureAccountManager.subscriptionId,
+        tenantId: AzureAccountManager.tenantId!,
+        subscriptionName: "",
+      };
+      return selectedSub;
+    } else {
+      return undefined;
+    }
   }
 }
 

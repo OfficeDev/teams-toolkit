@@ -3,6 +3,12 @@
 
 "use strict";
 
+export enum Browser {
+  chrome = "chrome",
+  edge = "edge",
+  default = "default",
+}
+
 export const sideloadingUrl =
   "https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}";
 export const teamsAppIdPlaceholder = "${teamsAppId}";
@@ -93,9 +99,9 @@ export const ngrokStartTitle = "ngrok start";
 export const ngrokStartStartMessage = `execute 'ngrok http' under ${botFolderName} folder.`;
 export const ngrokStartSuccessMessage = "ngrok started successfully.";
 
-export const sideloadingTitle = "sideloading";
-export const sideloadingStartMessage = "open Teams web client.";
-export const sideloadingSuccessMessage = "Teams web client opened successfully.";
+export const previewTitle = "preview";
+export const previewStartMessage = "open Teams web client.";
+export const previewSuccessMessage = "Teams web client opened successfully.";
 
 export const frontendLocalEnvPrefix = "FRONTEND_";
 export const backendLocalEnvPrefix = "BACKEND_";

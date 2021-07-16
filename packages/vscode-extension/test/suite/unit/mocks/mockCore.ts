@@ -63,4 +63,12 @@ export class MockCore implements Core {
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     return ok(new QTreeNode({ type: "group" }));
   }
+
+  async encrypt(plaintext: string, inputs: Inputs): Promise<Result<string, FxError>> {
+    return ok(plaintext);
+  }
+
+  async decrypt(ciphertext: string, inputs: Inputs): Promise<Result<string, FxError>> {
+    return ok(ciphertext);
+  }
 }

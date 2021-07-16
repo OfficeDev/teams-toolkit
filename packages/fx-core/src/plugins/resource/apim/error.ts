@@ -30,6 +30,22 @@ export const InvalidOpenApiDocument: IApimPluginError = {
   helpLink: ProjectConstants.helpLink,
 };
 
+export const EmptyTitleInOpenApiDocument: IApimPluginError = {
+  type: ErrorType.User,
+  code: "EmptyTitleInOpenApiDocument",
+  message: (filePath: string) =>
+    `The property 'title' cannot be empty in the OpenApi document '${filePath}'.`,
+  helpLink: ProjectConstants.helpLink,
+};
+
+export const EmptyVersionInOpenApiDocument: IApimPluginError = {
+  type: ErrorType.User,
+  code: "EmptyVersionInOpenApiDocument",
+  message: (filePath: string) =>
+    `The property 'version' cannot be empty in the OpenApi document '${filePath}'.`,
+  helpLink: ProjectConstants.helpLink,
+};
+
 export const InvalidAadObjectId: IApimPluginError = {
   type: ErrorType.User,
   code: "InvalidAadObjectId",

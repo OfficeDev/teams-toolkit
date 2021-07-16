@@ -4,15 +4,12 @@
 
 import { OptionItem } from "./qm";
 import { Platform, Stage, VsCodeEnv } from "./constants";
-import { Plugin } from "./plugin";
 
 export type Json = Record<string, unknown>;
 
 export type ConfigValue = any;
 
 export type PluginIdentity = string;
-
-export type LoadedPlugin = Plugin & { name: string; displayName: string };
 
 export type PluginConfig = ConfigMap;
 export type ReadonlyPluginConfig = ReadonlyMap<string, ConfigValue>;

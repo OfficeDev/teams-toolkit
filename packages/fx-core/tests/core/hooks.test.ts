@@ -4,6 +4,7 @@
 import { hooks, Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { assert } from "chai";
 import "mocha";
+import * as dotenv from "dotenv";
 import { ErrorHandlerMW } from "../../src/core/middleware/errorHandler";
 import {
   UserCancelError,
@@ -510,6 +511,92 @@ describe("Middleware", () => {
       const configExpected = mapToJson(solutionContext.config);
       assert.deepEqual(solutionContext.projectSettings, settingsInFile);
       assert.deepEqual(configExpected, configInFile);
+    });
+  });
+
+  describe("ContextLoaderMW, ConfigWriterMW for user data encryption", () => {
+    const sandbox = sinon.createSandbox();
+
+    afterEach(function () {
+      sandbox.restore();
+    });
+
+    it("successfully encrypt userdata and load it", async () => {
+      const appName = randomAppName();
+      const inputs: Inputs = { platform: Platform.VSCode };
+      inputs.projectPath = path.join(os.tmpdir(), appName);
+      const tools = new MockTools();
+      const solutionContext = await newSolutionContext(tools, inputs);
+      const configMap = new ConfigMap();
+      const pluginName = "fx-resource-aad-app-for-teams";
+      const secretName = "clientSecret";
+      const secretText = "test";
+      configMap.set(secretName, secretText);
+      solutionContext.config.set("solution", new ConfigMap());
+      solutionContext.config.set(pluginName, configMap);
+      const oldProjectId = solutionContext.projectSettings!.projectId;
+      solutionContext.projectSettings = MockProjectSettings(appName);
+      solutionContext.projectSettings!.projectId = oldProjectId;
+      const fileMap = new Map<string, any>();
+      sandbox.stub<any, any>(fs, "writeFile").callsFake(async (file: string, data: any) => {
+        fileMap.set(file, data);
+      });
+
+      const envName = solutionContext.projectSettings.currentEnv;
+      const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
+      const userdataFile = path.resolve(confFolderPath, `${envName}.userdata`);
+      const settingsFile = path.resolve(confFolderPath, "settings.json");
+      const envJsonFile = path.resolve(confFolderPath, `env.${envName}.json`);
+
+      class MyClass {
+        tools = tools;
+        async WriteConfigTrigger(
+          inputs: Inputs,
+          ctx?: CoreHookContext
+        ): Promise<Result<any, FxError>> {
+          ctx!.solutionContext = solutionContext;
+          return ok("");
+        }
+        async ReadConfigTrigger(
+          inputs: Inputs,
+          ctx?: CoreHookContext
+        ): Promise<Result<any, FxError>> {
+          assert.isTrue(ctx !== undefined);
+          assert.isTrue(ctx!.solutionContext !== undefined);
+          const solutionContext = ctx!.solutionContext!;
+          assert.isTrue(solutionContext.projectSettings !== undefined);
+          assert.isTrue(solutionContext.projectSettings!.appName === appName);
+          assert.isTrue(solutionContext.config.get(pluginName) !== undefined);
+          const value = solutionContext.config.get(pluginName)!.get(secretName);
+          assert.isTrue(value === secretText);
+          return ok("");
+        }
+      }
+      hooks(MyClass, {
+        WriteConfigTrigger: [ContextInjecterMW, ConfigWriterMW],
+        ReadConfigTrigger: [ContextLoaderMW, ContextInjecterMW],
+      });
+      const my = new MyClass();
+      await my.WriteConfigTrigger(inputs);
+      const content = fileMap.get(userdataFile);
+      const userdata = dotenv.parse(content);
+      const secretValue = userdata[`${pluginName}.${secretName}`];
+      assert.isTrue(secretValue !== undefined);
+      assert.isTrue(secretValue.startsWith("crypto_"));
+
+      sandbox.stub<any, any>(fs, "readJson").callsFake(async (file: string) => {
+        if (settingsFile === file) return JSON.parse(fileMap.get(settingsFile));
+        if (envJsonFile === file) return JSON.parse(fileMap.get(envJsonFile));
+        return {};
+      });
+      sandbox.stub<any, any>(fs, "readFile").callsFake(async (file: string) => {
+        if (userdataFile === file) return content;
+        return {};
+      });
+      sandbox.stub<any, any>(fs, "pathExists").callsFake(async (file: string) => {
+        return true;
+      });
+      await my.ReadConfigTrigger(inputs);
     });
   });
 

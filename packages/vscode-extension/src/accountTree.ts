@@ -137,10 +137,9 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
 
   const selectSubscriptionCallback = async (args?: any[]): Promise<Result<null, FxError>> => {
     tools.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.SelectSubscription, {
-      [TelemetryProperty.TriggerFrom]:
-        args && args.toString() === "TreeView"
-          ? TelemetryTiggerFrom.TreeView
-          : TelemetryTiggerFrom.CommandPalette,
+      [TelemetryProperty.TriggerFrom]: args
+        ? TelemetryTiggerFrom.TreeView
+        : TelemetryTiggerFrom.Other,
     });
     const askSubRes = await askSubscription(
       tools.tokenProvider.azureAccountProvider,

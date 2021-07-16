@@ -10,12 +10,14 @@ import { ConfigMap, PluginContext, TeamsAppManifest, Plugin, ok } from "@microso
 import { AppStudioPlugin } from "./../../../../../src/plugins/resource/appstudio";
 import { AppStudioPluginImpl } from "./../../../../../src/plugins/resource/appstudio/plugin";
 import { TeamsBot } from "./../../../../../src/plugins/resource/bot";
+import { AppStudioError } from "./../../../../../src/plugins/resource/appstudio/errors";
 
 describe("Build Teams Package", () => {
   let plugin: AppStudioPlugin;
   let ctx: PluginContext;
   let BotPlugin: Plugin;
   let selectedPlugins: Plugin[];
+  const sandbox = sinon.createSandbox();
 
   beforeEach(async () => {
     plugin = new AppStudioPlugin();
@@ -42,10 +44,14 @@ describe("Build Teams Package", () => {
     selectedPlugins = [BotPlugin];
   });
 
+  afterEach(() => {
+    sandbox.restore();
+  });
+
   it("Build Teams Package", async () => {
     const appDirectory = path.resolve(__dirname, "./../resources/.fx");
 
-    sinon.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns(
+    sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns(
       ok({
         tabEndpoint: "tabEndpoint",
         tabDomain: "tabDomain",
@@ -56,13 +62,12 @@ describe("Build Teams Package", () => {
       })
     );
 
-    const builtPackage = await plugin.buildTeamsPackage(ctx, appDirectory, ok(selectedPlugins));
-    chai.assert.isTrue(builtPackage.isOk());
-    if (builtPackage.isOk()) {
-      chai.assert.isNotEmpty(builtPackage.value);
-      await fs.remove(builtPackage.value);
+    const builtPackage = await plugin.buildTeamsPackage(ctx, appDirectory);
+    chai.assert.isTrue(builtPackage.isErr());
+    if (builtPackage.isErr()) {
+      chai
+        .expect(builtPackage._unsafeUnwrapErr().name)
+        .equals(AppStudioError.RemoteAppIdUpdateFailedError.name);
     }
-
-    sinon.restore();
   });
 });

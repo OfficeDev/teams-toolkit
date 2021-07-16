@@ -100,16 +100,10 @@ export class AppStudioPlugin implements Plugin {
    * @param {string} manifestString - the string of manifest.json file
    * @returns {string[]} an array of errors
    */
-  public async validateManifest(
-    ctx: PluginContext,
-    maybeSelectedPlugins: Result<Plugin[], FxError>
-  ): Promise<Result<string[], FxError>> {
+  public async validateManifest(ctx: PluginContext): Promise<Result<string[], FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.validateManifest);
-    const validationpluginResult = await this.appStudioPluginImpl.validateManifest(
-      ctx,
-      maybeSelectedPlugins
-    );
+    const validationpluginResult = await this.appStudioPluginImpl.validateManifest(ctx);
     if (validationpluginResult.isErr()) {
       return err(validationpluginResult.error);
     }
@@ -159,17 +153,12 @@ export class AppStudioPlugin implements Plugin {
    */
   public async buildTeamsPackage(
     ctx: PluginContext,
-    appDirectory: string,
-    maybeSelectedPlugins: Result<Plugin[], FxError>
+    appDirectory: string
   ): Promise<Result<string, FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.buildTeamsPackage);
     try {
-      const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(
-        ctx,
-        appDirectory,
-        maybeSelectedPlugins
-      );
+      const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(ctx, appDirectory);
       const builtSuccess = [
         { content: "(√)Done: ", color: Colors.BRIGHT_GREEN },
         { content: "Teams Package ", color: Colors.BRIGHT_WHITE },
@@ -204,12 +193,10 @@ export class AppStudioPlugin implements Plugin {
       const answer = ctx.answers![Constants.BUILD_OR_PUBLISH_QUESTION] as string;
       if (answer === manuallySubmitOption.id) {
         const appDirectory = `${ctx.root}/.${ConfigFolderName}`;
-        const manifestString = JSON.stringify(ctx.app);
         try {
-          const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackageHelper(
+          const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(
             ctx,
-            appDirectory,
-            manifestString
+            appDirectory
           );
           const msg = `Successfully created ${ctx.app.name.short} app package file at ${appPackagePath}. Send this to your administrator for approval.`;
           ctx.ui?.showMessage("info", msg, false, "OK", Constants.READ_MORE).then((value) => {

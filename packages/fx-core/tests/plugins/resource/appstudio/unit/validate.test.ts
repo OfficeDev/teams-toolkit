@@ -39,7 +39,7 @@ describe("validate manifest", () => {
 
     sinon.stub(plugin, "validateManifest").resolves(ok([]));
 
-    const validationResult = await plugin.validateManifest(ctx, ok(selectedPlugins));
+    const validationResult = await plugin.validateManifest(ctx);
     chai.assert.isTrue(validationResult.isOk());
     if (validationResult.isOk()) {
       chai.expect(validationResult.value).to.have.lengthOf(0);
@@ -57,7 +57,7 @@ describe("validate manifest", () => {
       .stub(plugin, "validateManifest")
       .resolves(ok(["developer | Required properties are missing from object: []."]));
 
-    const validationResult = await plugin.validateManifest(ctx, ok(selectedPlugins));
+    const validationResult = await plugin.validateManifest(ctx);
     chai.assert.isTrue(validationResult.isOk());
     if (validationResult.isOk()) {
       chai.expect(validationResult.value).to.have.lengthOf(1);

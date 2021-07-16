@@ -123,4 +123,9 @@ export class AppStudioError {
     name: "UnhandledError",
     message: "UnhandledError",
   };
+
+  public static readonly PluginNotFound = {
+    name: "PluginNotFound",
+    message: (name: string) => `Plugin name ${name} is not valid`,
+  };
 }

@@ -1786,15 +1786,14 @@ export class TeamsAppSolution implements Solution {
         const appStudioPlugin = this.AppStudioPlugin as AppStudioPlugin;
         const pluginCtx = getPluginContext(ctx, appStudioPlugin.name);
         const maybeSelectedPlugins = this.getSelectedPlugins(ctx);
-        return await appStudioPlugin.validateManifest(pluginCtx, maybeSelectedPlugins);
+        return await appStudioPlugin.validateManifest(pluginCtx);
       } else if (method === "buildPackage") {
         const appStudioPlugin = this.AppStudioPlugin as AppStudioPlugin;
         const pluginCtx = getPluginContext(ctx, appStudioPlugin.name);
         const maybeSelectedPlugins = this.getSelectedPlugins(ctx);
         return await appStudioPlugin.buildTeamsPackage(
           pluginCtx,
-          `${ctx.root}/.${ConfigFolderName}`,
-          maybeSelectedPlugins
+          `${ctx.root}/.${ConfigFolderName}`
         );
       } else if (array.length == 2) {
         const pluginName = array[1];

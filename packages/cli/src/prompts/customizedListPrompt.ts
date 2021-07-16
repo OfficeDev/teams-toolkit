@@ -13,7 +13,7 @@ import { addChoiceDetail, white } from "./utils";
 /**
  * The question-options for the `ListPrompt<T>`.
  */
-type Question = inquirer.ListQuestionOptions<inquirer.Answers>;
+export type Question = inquirer.ListQuestionOptions<inquirer.Answers>;
 
 export default class CustomizedListPrompt extends ListPrompt {
   constructor(questions: Question, rl: ReadlineInterface, answers: inquirer.Answers) {
@@ -29,11 +29,11 @@ export default class CustomizedListPrompt extends ListPrompt {
     let message = this.getQuestion();
 
     if (this.firstRender) {
-      message += white('(Use arrow keys)');
+      message += white("(Use arrow keys)");
     }
 
     // Render choices or answer depending on the state
-    if (this.status === 'answered') {
+    if (this.status === "answered") {
       message += chalk.cyan(this.opt.choices.getChoice(this.selected).short);
     } else {
       const choicesStr = listRender(this.opt.choices, this.selected);
@@ -47,22 +47,21 @@ export default class CustomizedListPrompt extends ListPrompt {
             return acc;
           }
           // Add line if it's a separator
-          if (value.type === 'separator') {
+          if (value.type === "separator") {
             return acc + 1;
           }
 
           let l = value.name;
           // Non-strings take up one line
-          if (typeof l !== 'string') {
+          if (typeof l !== "string") {
             return acc + 1;
           }
 
           // Calculate lines taken up by string
-          l = l.split('\n');
+          l = l.split("\n");
           return acc + l.length;
         }, 0) - 1;
-      message +=
-        '\n' + this.paginator.paginate(choicesStr, realIndexPosition);
+      message += "\n" + this.paginator.paginate(choicesStr, realIndexPosition);
     }
 
     this.firstRender = false;
@@ -70,32 +69,35 @@ export default class CustomizedListPrompt extends ListPrompt {
     this.screen.render(message, "");
   }
 }
-  
+
 /**
  * Function for rendering list choices
  * @param  {Number} pointer Position of the pointer
  * @return {String}         Rendered content
  */
 function listRender(choices: any, pointer: number): string {
-  let output = '';
+  let output = "";
   let separatorOffset = 0;
   let prefixWidth = 1;
   choices.forEach((choice: any) => {
-    prefixWidth = Math.max(prefixWidth, choice.disabled ? 0 : choice.name.length + 1);
+    prefixWidth = Math.max(
+      prefixWidth,
+      choice.disabled || !choice.name ? 0 : choice.name.length + 1
+    );
   });
 
   choices.forEach((choice: any, i: number) => {
-    if (choice.type === 'separator') {
+    if (choice.type === "separator") {
       separatorOffset++;
-      output += '  ' + choice + '\n';
+      output += "  " + choice + "\n";
       return;
     }
 
     if (choice.disabled) {
       separatorOffset++;
-      output += '  - ' + choice.name;
-      output += ' (' + (lodash.isString(choice.disabled) ? choice.disabled : 'Disabled') + ')';
-      output += '\n';
+      output += "  - " + choice.name;
+      output += " (" + (lodash.isString(choice.disabled) ? choice.disabled : "Disabled") + ")";
+      output += "\n";
       return;
     }
 
@@ -110,8 +112,8 @@ function listRender(choices: any, pointer: number): string {
       output = addChoiceDetail(output, choice.extra.detail, choice.name.length, prefixWidth);
     }
 
-    output += '\n';
+    output += "\n";
   });
 
-  return output.replace(/\n$/, '');
+  return output.replace(/\n$/, "");
 }

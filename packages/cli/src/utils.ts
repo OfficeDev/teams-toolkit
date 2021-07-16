@@ -8,6 +8,7 @@ import path from "path";
 import { Options } from "yargs";
 import chalk from "chalk";
 import * as uuid from "uuid";
+import * as dotenv from "dotenv";
 import {
   OptionItem,
   Question,
@@ -164,6 +165,23 @@ export async function readConfigs(rootfolder: string): Promise<Result<any, FxErr
   } catch (e) {
     return err(ReadFileError(e));
   }
+}
+
+export async function readProjectSecrets(rootFolder: string): Promise<dotenv.DotenvParseOutput> {
+  const secretFile = `${rootFolder}/.${ConfigFolderName}/${getActiveEnv()}.userdata`;
+  const secretData = await fs.readFile(secretFile);
+  const result = dotenv.parse(secretData);
+  return result;
+}
+
+export function writeSecretToFile(secrets: dotenv.DotenvParseOutput, rootFolder: string): void {
+  const secretFile = `${rootFolder}/.${ConfigFolderName}/${getActiveEnv()}.userdata`;
+  const array: string[] = [];
+  for (const secretKey of Object.keys(secrets)) {
+    const secretValue = secrets[secretKey];
+    array.push(`${secretKey}=${secretValue}`);
+  }
+  fs.writeFileSync(secretFile, array.join("\n"));
 }
 
 export async function getSubscriptionIdFromEnvFile(

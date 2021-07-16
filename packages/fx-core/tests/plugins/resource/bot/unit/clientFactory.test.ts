@@ -101,7 +101,7 @@ describe("Client Factory", () => {
         get: (namespace: string) => item,
         register: (namespace: string) => {
           item = {};
-          item = { ...item, $namespace: { registrationState: "Registered" } };
+          item = {...item, $namespace: {"registrationState": "Registered"}};
           return item;
         },
       };

@@ -228,17 +228,13 @@ describe("Teams Bot Resource Plugin", () => {
       const namespace = ["ut"];
       const fakeRPClient: any = {
         get: (namespace: string) => item,
-        register: (namespace: string) => {
-          item = {};
-          item = { ...item, $namespace: { registrationState: "Registered" } };
-          return item;
-        },
+        register: (namespace: string) => {item = {}; item = {...item, $namespace: {"registrationState": "Registered"}}; return item; },
       };
       sinon.stub(factory, "createResourceProviderClient").returns(fakeRPClient);
 
       sinon.stub(pluginContext.appStudioToken!, "getAccessToken").resolves("anything");
       sinon.stub(botPluginImpl.config.scaffold, "botRegistrationCreated").returns(true);
-
+      
       sinon
         .stub(pluginContext.azureAccountProvider!, "getAccountCredentialAsync")
         .resolves(fakeCreds);

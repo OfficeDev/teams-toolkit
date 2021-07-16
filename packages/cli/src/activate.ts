@@ -18,6 +18,11 @@ import CLIUIInstance from "./userInteraction";
 
 export default async function activate(rootPath?: string): Promise<Result<FxCore, FxError>> {
   if (rootPath) {
+    AzureAccountManager.setRootPath(rootPath);
+    const subscriptionInfo = await AzureAccountManager.readSubscription();
+    if (subscriptionInfo) {
+      await AzureAccountManager.setSubscription(subscriptionInfo.subscriptionId);
+    }
     const subscription = await getSubscriptionIdFromEnvFile(rootPath);
     if (subscription) {
       try {
@@ -32,11 +37,11 @@ export default async function activate(rootPath?: string): Promise<Result<FxCore
     tokenProvider: {
       azureAccountProvider: AzureAccountManager,
       graphTokenProvider: GraphTokenProvider,
-      appStudioToken: AppStudioTokenProvider
+      appStudioToken: AppStudioTokenProvider,
     },
     telemetryReporter: CliTelemetry.getReporter(),
     dialog: DialogManagerInstance,
-    ui: CLIUIInstance
+    ui: CLIUIInstance,
   };
   const core = new FxCore(tools);
   return ok(core);

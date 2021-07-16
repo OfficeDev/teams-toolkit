@@ -178,6 +178,12 @@ export class AzureAccountProviderUserPassword implements AzureAccountProvider {
       return Promise.resolve(undefined);
     }
   }
+
+  public setRootPath(rootPath: string): void {}
+
+  async readSubscription(): Promise<SubscriptionInfo | undefined> {
+    return undefined;
+  }
 }
 
 interface PartialList<T> extends Array<T> {

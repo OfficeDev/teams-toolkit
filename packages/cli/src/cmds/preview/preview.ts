@@ -449,7 +449,7 @@ export default class Preview extends YargsCommand {
         ),
         undefined,
         {
-          shell: true, // TODO: should false
+          shell: false,
           cwd: backendRoot,
         }
       );
@@ -578,7 +578,7 @@ export default class Preview extends YargsCommand {
         constants.authStartCommand.replace("@execPath", await dotnetChecker.getDotnetExecPath()),
         undefined,
         {
-          shell: true,
+          shell: false,
           cwd,
           env: commonUtils.mergeProcessEnv(env),
         }
@@ -850,7 +850,9 @@ export default class Preview extends YargsCommand {
     this.backgroundTasks = [];
   }
 
-  private async handleDependences(hasBackend: boolean): Promise<[FuncToolChecker, DotnetChecker]> {
+  private async handleDependences(
+    hasBackend: boolean
+  ): Promise<Result<[FuncToolChecker, DotnetChecker], FxError>> {
     const cliAdapter = new CLIAdapter(hasBackend, cliEnvCheckerTelemetry);
     const nodeChecker = new AzureNodeChecker(
       cliAdapter,
@@ -875,9 +877,9 @@ export default class Preview extends YargsCommand {
 
     const shouldContinue = await depsChecker.resolve();
     if (!shouldContinue) {
-      throw new Error("preview stopped.");
+      return err(errors.DependencyCheckerFailed());
     }
 
-    return [funcChecker, dotnetChecker];
+    return ok([funcChecker, dotnetChecker]);
   }
 }

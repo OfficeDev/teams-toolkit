@@ -3,7 +3,7 @@
 
 "use strict";
 
-import { FxError, returnUserError, UserError } from "@microsoft/teamsfx-api";
+import { FxError, returnSystemError, returnUserError, UserError } from "@microsoft/teamsfx-api";
 import * as util from "util";
 
 import * as constants from "../../constants";
@@ -97,5 +97,13 @@ export function SPFxNotSupported(): UserError {
     new Error("SPFx preview is not supported currently."),
     constants.cliSource,
     "SPFxNotSupported"
+  );
+}
+
+export function DependencyCheckerFailed(): UserError {
+  return returnSystemError(
+    new Error("dependency checker failed."),
+    constants.cliSource,
+    "DependencyCheckerFailed"
   );
 }

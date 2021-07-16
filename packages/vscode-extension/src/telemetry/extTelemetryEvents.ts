@@ -111,6 +111,7 @@ export enum TelemetryProperty {
   OSRelease = "os-release",
   SampleAppName = "sample-app-name",
   CurrentAction = "current-action",
+  VideoPlayFrom = "video-play-from",
 }
 
 export enum TelemetrySuccess {

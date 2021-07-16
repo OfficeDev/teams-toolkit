@@ -380,7 +380,7 @@ export default class QuickStart extends React.Component<any, any> {
       command: Commands.SendTelemetryEvent,
       data: {
         eventName: TelemetryEvent.WatchVideo,
-        properties: { [TelemetryProperty.TriggerFrom]: WatchVideoFrom.WatchVideoBtn },
+        properties: { [TelemetryProperty.VideoPlayFrom]: WatchVideoFrom.WatchVideoBtn },
       },
     });
 
@@ -397,7 +397,7 @@ export default class QuickStart extends React.Component<any, any> {
       command: Commands.SendTelemetryEvent,
       data: {
         eventName: TelemetryEvent.WatchVideo,
-        properties: { [TelemetryProperty.TriggerFrom]: WatchVideoFrom.WatchOnBrowserBtn },
+        properties: { [TelemetryProperty.VideoPlayFrom]: WatchVideoFrom.WatchOnBrowserBtn },
       },
     });
 
@@ -419,7 +419,7 @@ export default class QuickStart extends React.Component<any, any> {
         command: Commands.SendTelemetryEvent,
         data: {
           eventName: TelemetryEvent.WatchVideo,
-          properties: { [TelemetryProperty.TriggerFrom]: WatchVideoFrom.PlayBtn },
+          properties: { [TelemetryProperty.VideoPlayFrom]: WatchVideoFrom.PlayBtn },
         },
       });
     } else {

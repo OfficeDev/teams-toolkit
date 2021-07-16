@@ -52,8 +52,8 @@ export const ngrokStartCommand = "npx ngrok http 3978 --log=stdout";
 export const botStartJsCommand = "npx nodemon --signal SIGINT index.js";
 export const botStartTsCommand =
   "npx nodemon --exec node --signal SIGINT -r ts-node/register index.ts";
-const backendExtensionsInstallCsprojPath = "extensions.csproj";
-const backendExtensionsInstallOutputPath = "bin";
+export const backendExtensionsInstallCsprojPath = "extensions.csproj";
+export const backendExtensionsInstallOutputPath = "bin";
 export const backendExtensionsInstallCommand = `@execPath build ${backendExtensionsInstallCsprojPath} -o ${backendExtensionsInstallOutputPath} --ignore-failed-sources`;
 
 export const frontendStartPattern = /Compiled|Failed/g;

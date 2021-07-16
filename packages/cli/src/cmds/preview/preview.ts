@@ -186,7 +186,11 @@ export default class Preview extends YargsCommand {
       return err(errors.RequiredPathNotExists(botRoot));
     }
 
-    const [funcToolChecker, dotnetChecker] = await this.handleDependences(includeBackend);
+    const envCheckerResult = await this.handleDependences(includeBackend);
+    if (envCheckerResult.isErr()) {
+      return err(envCheckerResult.error);
+    }
+    const [funcToolChecker, dotnetChecker] = envCheckerResult.value;
 
     // clear background tasks
     this.backgroundTasks = [];
@@ -443,11 +447,14 @@ export default class Preview extends YargsCommand {
         constants.backendExtensionsInstallTitle,
         false,
         // env checker: use dotnet execPath
-        constants.backendExtensionsInstallCommand.replace(
-          "@execPath",
-          await dotnetChecker.getDotnetExecPath()
-        ),
-        undefined,
+        await dotnetChecker.getDotnetExecPath(),
+        [
+          "build",
+          constants.backendExtensionsInstallCsprojPath,
+          "-o",
+          constants.backendExtensionsInstallOutputPath,
+          "--ignore-failed-sources",
+        ],
         {
           shell: false,
           cwd: backendRoot,

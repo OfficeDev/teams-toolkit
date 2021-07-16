@@ -314,6 +314,7 @@ export default class Config extends YargsCommand {
 
   public builder(yargs: Argv): Argv<any> {
     const folderOption = toYargsOptions(constants.RootFolderNode.data as Question);
+    folderOption.global = true;
     this.subCommands.forEach((cmd) => {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     });

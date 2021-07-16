@@ -21,6 +21,7 @@ import {
   MaxLengths,
   Links,
   IdentityConstants,
+  AzureConstants,
 } from "./constants";
 import { WayToRegisterBot } from "./enums/wayToRegisterBot";
 import { getZipDeployEndpoint } from "./utils/zipDeploy";
@@ -47,6 +48,7 @@ import { Logger } from "./logger";
 import { DeployMgr } from "./deployMgr";
 import { BotAuthCredential } from "./botAuthCredential";
 import { AzureOperations } from "./azureOps";
+import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 
 export class TeamsBotImpl {
   // Made config plubic, because expect the upper layer to fill inputs.
@@ -68,6 +70,15 @@ export class TeamsBotImpl {
         type: "group",
       })
     );
+  }
+
+  private async getAzureAccountCredenial(): Promise<TokenCredentialsBase> {
+    const serviceClientCredentials =
+      await this.ctx?.azureAccountProvider?.getAccountCredentialAsync();
+    if (!serviceClientCredentials) {
+      throw new PreconditionError(Messages.FailToGetAzureCreds, [Messages.TryLoginAzure]);
+    }
+    return serviceClientCredentials;
   }
 
   public async preScaffold(context: PluginContext): Promise<FxResult> {
@@ -193,6 +204,14 @@ export class TeamsBotImpl {
 
     await handler?.start(ProgressBarConstants.PROVISION_STEP_START);
 
+    // 0. Check Resource Provider
+    const azureCredential = await this.getAzureAccountCredenial();
+    const rpClient = factory.createResourceProviderClient(
+      azureCredential,
+      this.config.provision.subscriptionId!
+    );
+    await factory.ensureResourceProvider(rpClient, AzureConstants.requiredResourceProviders);
+
     // 1. Do bot registration.
     if (this.config.scaffold.wayToRegisterBot === WayToRegisterBot.CreateNew) {
       await handler?.next(ProgressBarConstants.PROVISION_STEP_BOT_REG);
@@ -212,11 +231,7 @@ export class TeamsBotImpl {
   private async provisionWebApp() {
     CheckThrowSomethingMissing(CommonStrings.SHORT_APP_NAME, this.ctx?.app.name.short);
 
-    const serviceClientCredentials =
-      await this.ctx?.azureAccountProvider?.getAccountCredentialAsync();
-    if (!serviceClientCredentials) {
-      throw new PreconditionError(Messages.FailToGetAzureCreds, [Messages.TryLoginAzure]);
-    }
+    const serviceClientCredentials = await this.getAzureAccountCredenial();
 
     // Suppose we get creds and subs from context.
     const webSiteMgmtClient = factory.createWebSiteMgmtClient(
@@ -301,11 +316,7 @@ export class TeamsBotImpl {
     CheckThrowSomethingMissing(ConfigNames.AUTH_APPLICATION_ID_URIS, applicationIdUris);
     CheckThrowSomethingMissing(ConfigNames.SITE_ENDPOINT, siteEndpoint);
 
-    const serviceClientCredentials =
-      await this.ctx?.azureAccountProvider?.getAccountCredentialAsync();
-    if (!serviceClientCredentials) {
-      throw new PreconditionError(Messages.FailToGetAzureCreds, [Messages.TryLoginAzure]);
-    }
+    const serviceClientCredentials = await this.getAzureAccountCredenial();
 
     const webSiteMgmtClient = factory.createWebSiteMgmtClient(
       serviceClientCredentials,
@@ -488,12 +499,7 @@ export class TeamsBotImpl {
     let publishingUserName = "";
     let publishingPassword: string | undefined = undefined;
 
-    const serviceClientCredentials =
-      await this.ctx?.azureAccountProvider?.getAccountCredentialAsync();
-    if (!serviceClientCredentials) {
-      throw new PreconditionError(Messages.FailToGetAzureCreds, [Messages.TryLoginAzure]);
-    }
-
+    const serviceClientCredentials = await this.getAzureAccountCredenial();
     const webSiteMgmtClient = new appService.WebSiteManagementClient(
       serviceClientCredentials,
       this.config.provision.subscriptionId!
@@ -582,11 +588,7 @@ export class TeamsBotImpl {
   }
 
   private async updateMessageEndpointOnAzure(endpoint: string) {
-    const serviceClientCredentials =
-      await this.ctx?.azureAccountProvider?.getAccountCredentialAsync();
-    if (!serviceClientCredentials) {
-      throw new PreconditionError(Messages.FailToGetAzureCreds, [Messages.TryLoginAzure]);
-    }
+    const serviceClientCredentials = await this.getAzureAccountCredenial();
 
     const botClient = factory.createAzureBotServiceClient(
       serviceClientCredentials,
@@ -719,11 +721,7 @@ export class TeamsBotImpl {
       botAuthCreds.objectId = this.config.scaffold.objectId;
     }
 
-    const serviceClientCredentials =
-      await this.ctx?.azureAccountProvider?.getAccountCredentialAsync();
-    if (!serviceClientCredentials) {
-      throw new PreconditionError(Messages.FailToGetAzureCreds, [Messages.TryLoginAzure]);
-    }
+    const serviceClientCredentials = await this.getAzureAccountCredenial();
 
     // 2. Provision a bot channel registration resource on azure.
     const botClient = factory.createAzureBotServiceClient(
@@ -734,10 +732,10 @@ export class TeamsBotImpl {
     const botChannelRegistrationName = this.config.provision.botChannelRegName
       ? this.config.provision.botChannelRegName
       : ResourceNameFactory.createCommonName(
-        this.config.resourceNameSuffix,
-        this.ctx?.app.name.short,
-        MaxLengths.BOT_CHANNEL_REG_NAME
-      );
+          this.config.resourceNameSuffix,
+          this.ctx?.app.name.short,
+          MaxLengths.BOT_CHANNEL_REG_NAME
+        );
 
     Logger.info(Messages.ProvisioningAzureBotChannelRegistration);
     await AzureOperations.CreateBotChannelRegistration(

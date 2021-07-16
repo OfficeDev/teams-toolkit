@@ -17,6 +17,7 @@ export interface Context
 |  [answers?](./teamsfx-api.context.answers.md) | [Inputs](./teamsfx-api.inputs.md) | <i>(Optional)</i> |
 |  [appStudioToken?](./teamsfx-api.context.appstudiotoken.md) | [AppStudioTokenProvider](./teamsfx-api.appstudiotokenprovider.md) | <i>(Optional)</i> |
 |  [azureAccountProvider?](./teamsfx-api.context.azureaccountprovider.md) | [AzureAccountProvider](./teamsfx-api.azureaccountprovider.md) | <i>(Optional)</i> |
+|  [cryptoProvider?](./teamsfx-api.context.cryptoprovider.md) | [CryptoProvider](./teamsfx-api.cryptoprovider.md) | <i>(Optional)</i> |
 |  [dialog?](./teamsfx-api.context.dialog.md) | [Dialog](./teamsfx-api.dialog.md) | <i>(Optional)</i> |
 |  [graphTokenProvider?](./teamsfx-api.context.graphtokenprovider.md) | [GraphTokenProvider](./teamsfx-api.graphtokenprovider.md) | <i>(Optional)</i> |
 |  [logProvider?](./teamsfx-api.context.logprovider.md) | [LogProvider](./teamsfx-api.logprovider.md) | <i>(Optional)</i> |

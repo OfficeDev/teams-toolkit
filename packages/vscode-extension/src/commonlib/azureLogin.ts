@@ -13,13 +13,27 @@ import {
   SingleSelectConfig,
   OptionItem,
   ok,
+  ConfigFolderName,
 } from "@microsoft/teamsfx-api";
 import { ExtensionErrors } from "../error";
 import { AzureAccount } from "./azure-account.api";
 import { LoginFailureError } from "./codeFlowLogin";
 import * as vscode from "vscode";
 import * as identity from "@azure/identity";
-import { loggedIn, loggedOut, loggingIn, signedIn, signedOut, signingIn } from "./common/constant";
+import {
+  envDefaultJsonFile,
+  loggedIn,
+  loggedOut,
+  loggingIn,
+  signedIn,
+  signedOut,
+  signingIn,
+  solution,
+  subscriptionIdString,
+  subscriptionInfoFile,
+  subscriptionNameString,
+  tenantIdString,
+} from "./common/constant";
 import { login, LoginStatus } from "./common/login";
 import * as StringResources from "../resources/Strings.json";
 import * as util from "util";
@@ -33,10 +47,14 @@ import {
 } from "../telemetry/extTelemetryEvents";
 import { VS_CODE_UI } from "../extension";
 import TreeViewManagerInstance from "../commandsTreeViewProvider";
+import * as path from "path";
+import * as fs from "fs-extra";
+import * as commonUtils from "../debug/commonUtils";
 
 export class AzureAccountManager extends login implements AzureAccountProvider {
   private static instance: AzureAccountManager;
   private static subscriptionId: string | undefined;
+  private static subscriptionName: string | undefined;
   private static tenantId: string | undefined;
   private static currentStatus: string | undefined;
 
@@ -309,6 +327,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         if (item.subscription.subscriptionId == subscriptionId) {
           AzureAccountManager.tenantId = item.session.tenantId;
           AzureAccountManager.subscriptionId = subscriptionId;
+          AzureAccountManager.subscriptionName = item.subscription.displayName;
           TreeViewManagerInstance.getTreeView("teamsfx-accounts")!.refresh([
             {
               commandId: "fx-extension.selectSubscription",
@@ -360,9 +379,21 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     const azureAccount: AzureAccount =
       vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
     AzureAccountManager.currentStatus = azureAccount.status;
+    if (AzureAccountManager.currentStatus === "LoggedIn") {
+      const subscriptioninfo = await this.readSubscription();
+      if (subscriptioninfo) {
+        this.setSubscription(subscriptioninfo.subscriptionId);
+      }
+    }
     azureAccount.onStatusChanged(async (event) => {
       if (AzureAccountManager.currentStatus === "Initializing") {
         AzureAccountManager.currentStatus = event;
+        if (AzureAccountManager.currentStatus === "LoggedIn") {
+          const subscriptioninfo = await this.readSubscription();
+          if (subscriptioninfo) {
+            this.setSubscription(subscriptioninfo.subscriptionId);
+          }
+        }
         return;
       }
       AzureAccountManager.currentStatus = event;
@@ -410,7 +441,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       const selectedSub: SubscriptionInfo = {
         subscriptionId: AzureAccountManager.subscriptionId,
         tenantId: AzureAccountManager.tenantId!,
-        subscriptionName: "",
+        subscriptionName: AzureAccountManager.subscriptionName ?? "",
       };
       return selectedSub;
     } else {
@@ -428,6 +459,11 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       );
     }
     if (subscriptionList && subscriptionList.length == 1) {
+      await this.saveSubscription({
+        subscriptionId: subscriptionList[0].subscriptionId,
+        subscriptionName: subscriptionList[0].subscriptionName,
+        tenantId: subscriptionList[0].tenantId,
+      });
       await this.setSubscription(subscriptionList[0].subscriptionId);
     } else if (subscriptionList.length > 1) {
       const options: OptionItem[] = subscriptionList.map((sub) => {
@@ -447,8 +483,95 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         throw result.error;
       } else {
         const subId = result.value.result as string;
+        subscriptionList.filter(async (item) => {
+          if (item.subscriptionId === subId) {
+            await this.saveSubscription({
+              subscriptionId: item.subscriptionId,
+              subscriptionName: item.subscriptionName,
+              tenantId: item.tenantId,
+            });
+          }
+        });
         await this.setSubscription(subId);
       }
+    }
+  }
+
+  async saveSubscription(subscriptionInfo: SubscriptionInfo): Promise<void> {
+    const subscriptionFilePath = await this.getSubscriptionInfoPath();
+    if (!subscriptionFilePath) {
+      return;
+    } else {
+      await fs.writeFile(subscriptionFilePath, JSON.stringify(subscriptionInfo, null, 4));
+    }
+  }
+
+  async readSubscription(): Promise<SubscriptionInfo | undefined> {
+    const subscriptionFilePath = await this.getSubscriptionInfoPath();
+    if (!subscriptionFilePath || !fs.existsSync(subscriptionFilePath)) {
+      const solutionSubscriptionInfo = await this.getSubscriptionInfoFromEnv();
+      if (solutionSubscriptionInfo) {
+        await this.saveSubscription(solutionSubscriptionInfo);
+        return solutionSubscriptionInfo;
+      }
+      return undefined;
+    } else {
+      const content = (await fs.readFile(subscriptionFilePath)).toString();
+      const subcriptionJson = JSON.parse(content);
+      return {
+        subscriptionId: subcriptionJson[subscriptionIdString],
+        tenantId: subcriptionJson[tenantIdString],
+        subscriptionName: subcriptionJson[subscriptionNameString],
+      };
+    }
+  }
+
+  async getSubscriptionInfoPath(): Promise<string | undefined> {
+    if (vscode.workspace.workspaceFolders) {
+      const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];
+      const workspacePath: string = workspaceFolder.uri.fsPath;
+      if (!(await commonUtils.isFxProject(workspacePath))) {
+        return undefined;
+      }
+      const configRoot = await commonUtils.getProjectRoot(
+        workspaceFolder.uri.fsPath,
+        `.${ConfigFolderName}`
+      );
+      const subscriptionFile = path.join(configRoot!, subscriptionInfoFile);
+      return subscriptionFile;
+    } else {
+      return undefined;
+    }
+  }
+
+  async getSubscriptionInfoFromEnv(): Promise<SubscriptionInfo | undefined> {
+    if (vscode.workspace.workspaceFolders) {
+      const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];
+      const workspacePath: string = workspaceFolder.uri.fsPath;
+      if (!(await commonUtils.isFxProject(workspacePath))) {
+        return undefined;
+      }
+      const configRoot = await commonUtils.getProjectRoot(
+        workspaceFolder.uri.fsPath,
+        `.${ConfigFolderName}`
+      );
+      const envDefalultFile = path.join(configRoot!, envDefaultJsonFile);
+      if (!fs.existsSync(envDefalultFile)) {
+        return undefined;
+      }
+      const envDefaultJson = (await fs.readFile(envDefalultFile)).toString();
+      const envDefault = JSON.parse(envDefaultJson);
+      if (envDefault[solution] && envDefault[solution][subscriptionIdString]) {
+        return {
+          subscriptionId: envDefault[solution][subscriptionIdString],
+          tenantId: envDefault[solution][tenantIdString],
+          subscriptionName: "",
+        };
+      } else {
+        return undefined;
+      }
+    } else {
+      return undefined;
     }
   }
 }

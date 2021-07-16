@@ -55,6 +55,7 @@
 |  [BaseQuestion](./teamsfx-api.basequestion.md) | Basic question data |
 |  [Context](./teamsfx-api.context.md) |  |
 |  [Core](./teamsfx-api.core.md) |  |
+|  [CryptoProvider](./teamsfx-api.cryptoprovider.md) | Encrypt/decrypt secrets |
 |  [Dialog](./teamsfx-api.dialog.md) |  |
 |  [Dict](./teamsfx-api.dict.md) |  |
 |  [EnvMeta](./teamsfx-api.envmeta.md) | environment meta data |

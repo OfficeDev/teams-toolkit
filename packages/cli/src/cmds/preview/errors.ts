@@ -3,7 +3,13 @@
 
 "use strict";
 
-import { FxError, returnSystemError, returnUserError, UserError } from "@microsoft/teamsfx-api";
+import {
+  FxError,
+  returnSystemError,
+  returnUserError,
+  SystemError,
+  UserError,
+} from "@microsoft/teamsfx-api";
 import * as util from "util";
 
 import * as constants from "../../constants";
@@ -100,7 +106,7 @@ export function SPFxNotSupported(): UserError {
   );
 }
 
-export function DependencyCheckerFailed(): UserError {
+export function DependencyCheckerFailed(): SystemError {
   return returnSystemError(
     new Error("dependency checker failed."),
     constants.cliSource,

@@ -116,21 +116,23 @@ describe("Other test case", () => {
 
   it("tools: isFeatureFlagEnabled should return true when related environment variable is set to 1 or true", () => {
     const featureFlagName = "FEATURE_FLAG_UNIT_TEST";
+
     let restore = mockedEnv({
       [featureFlagName]: "1",
     });
     assert.isTrue(isFeatureFlagEnabled(featureFlagName));
+    restore();
 
     restore = mockedEnv({
       [featureFlagName]: "true",
     });
     assert.isTrue(isFeatureFlagEnabled(featureFlagName));
+    restore();
 
     restore = mockedEnv({
       [featureFlagName]: "TruE", // should allow some characters be upper case
     });
     assert.isTrue(isFeatureFlagEnabled(featureFlagName));
-
     restore();
   });
 
@@ -141,12 +143,12 @@ describe("Other test case", () => {
       [featureFlagName]: undefined, // delete it from process.env
     });
     assert.isFalse(isFeatureFlagEnabled(featureFlagName));
+    restore();
 
     restore = mockedEnv({
       [featureFlagName]: "",
     });
     assert.isFalse(isFeatureFlagEnabled(featureFlagName));
-
     restore();
   });
 
@@ -157,7 +159,6 @@ describe("Other test case", () => {
       [featureFlagName]: "one",
     });
     assert.isFalse(isFeatureFlagEnabled(featureFlagName));
-
     restore();
   });
 });

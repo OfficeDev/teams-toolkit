@@ -47,14 +47,10 @@ export const frontendStartCommand = "npx react-scripts start";
 export const backendStartJsCommand = `@command start --javascript --port "7071" --cors "*"`;
 export const backendStartTsCommand = `@command start --typescript --port "7071" --cors "*"`;
 export const backendWatchCommand = "npx tsc --watch";
-export const authStartCommand = "@execPath Microsoft.TeamsFx.SimpleAuth.dll";
 export const ngrokStartCommand = "npx ngrok http 3978 --log=stdout";
 export const botStartJsCommand = "npx nodemon --signal SIGINT index.js";
 export const botStartTsCommand =
   "npx nodemon --exec node --signal SIGINT -r ts-node/register index.ts";
-export const backendExtensionsInstallCsprojPath = "extensions.csproj";
-export const backendExtensionsInstallOutputPath = "bin";
-export const backendExtensionsInstallCommand = `@execPath build ${backendExtensionsInstallCsprojPath} -o ${backendExtensionsInstallOutputPath} --ignore-failed-sources`;
 
 export const frontendStartPattern = /Compiled|Failed/g;
 export const backendStartPattern =

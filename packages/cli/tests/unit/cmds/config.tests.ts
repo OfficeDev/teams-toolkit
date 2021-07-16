@@ -121,6 +121,9 @@ describe("Config Get Command Check", () => {
       .callsFake((eventName: string, error: FxError) => {
         telemetryEvents.push(eventName);
       });
+    sandbox.stub(yargs, "exit").callsFake((code: number, err: Error) => {
+      throw err;
+    });
     sandbox
       .stub<any, any>(FxCore.prototype, "decrypt")
       .callsFake((ciphertext: string, inputs: Inputs) => {
@@ -245,15 +248,24 @@ describe("Config Get Command Check", () => {
     expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigGet]);
   });
 
-  it("prints warning message when running 'config get xxx' in a non-project folder", async () => {
-    await cmd.subCommands[0].handler({
-      option: "fx-resource-bot.botPassword",
-    });
+  it("fails to print when running 'config get xxx' in a non-project folder", async () => {
+    try {
+      await cmd.subCommands[0].handler({
+        option: "fx-resource-bot.botPassword",
+      });
+    } catch (e) {
+      expect(logs.length).equals(2);
+      expect(logs[0]).equals(
+        "You can change to teamsfx project folder or use --folder to specify."
+      );
+      expect(logs[1]).equals(
+        "[TeamsfxCLI.NonTeamsFxProjectFolder]: Current folder is not a TeamsFx project folder."
+      );
 
-    expect(logs.length).equals(1);
-    expect(logs[0]).equals("You can change to teamsfx project folder or use --folder to specify.");
-
-    expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigGet]);
+      expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigGet]);
+      expect(e).instanceOf(UserError);
+      expect(e.name).equals("NonTeamsFxProjectFolder");
+    }
   });
 });
 

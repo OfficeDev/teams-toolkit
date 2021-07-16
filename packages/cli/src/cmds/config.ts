@@ -97,7 +97,7 @@ export class ConfigGet extends YargsCommand {
           );
           const error = NonTeamsFxProjectFolder();
           CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ConfigGet, error);
-          return ok(null);
+          return err(error);
         }
       }
     }

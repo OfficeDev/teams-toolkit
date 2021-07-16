@@ -38,6 +38,7 @@ export default class QuickStart extends React.Component<any, any> {
       azureAccount: undefined,
       stepsDone: [false, false, false, false, false, false],
       playFromStep: false,
+      videoSeeking: false,
     };
   }
 
@@ -409,6 +410,10 @@ export default class QuickStart extends React.Component<any, any> {
   };
 
   onVideoPlay = () => {
+    if (this.state.videoSeeking) {
+      this.setState({ videoSeeking: false });
+      return;
+    }
     if (!this.state.playFromStep) {
       vscode.postMessage({
         command: Commands.SendTelemetryEvent,
@@ -432,13 +437,17 @@ export default class QuickStart extends React.Component<any, any> {
   onVideoPause = () => {
     const video = document.getElementById("capabilitiesVideo") as HTMLMediaElement;
     if (video && !video.ended) {
-      vscode.postMessage({
-        command: Commands.SendTelemetryEvent,
-        data: {
-          eventName: TelemetryEvent.PauseVideo,
-          properties: { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview },
-        },
-      });
+      if (video.seeking) {
+        this.setState({ videoSeeking: true });
+      } else {
+        vscode.postMessage({
+          command: Commands.SendTelemetryEvent,
+          data: {
+            eventName: TelemetryEvent.PauseVideo,
+            properties: { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview },
+          },
+        });
+      }
     }
   };
 

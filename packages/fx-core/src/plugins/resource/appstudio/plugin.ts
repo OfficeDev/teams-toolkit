@@ -439,6 +439,53 @@ export class AppStudioPluginImpl {
     }
   }
 
+  public async buildTeamsAppPackageHelper(
+    ctx: PluginContext,
+    appDirectory: string,
+    manifestString: string
+  ): Promise<string> {
+    const status = await fs.lstat(appDirectory);
+    if (!status.isDirectory()) {
+      throw AppStudioResultFactory.UserError(
+        AppStudioError.NotADirectoryError.name,
+        AppStudioError.NotADirectoryError.message(appDirectory)
+      );
+    }
+    const manifest: TeamsAppManifest = JSON.parse(manifestString);
+    const colorFile = `${appDirectory}/${manifest.icons.color}`;
+
+    let fileExists = await this.checkFileExist(colorFile);
+    if (!fileExists) {
+      throw AppStudioResultFactory.UserError(
+        AppStudioError.FileNotFoundError.name,
+        AppStudioError.FileNotFoundError.message(colorFile)
+      );
+    }
+
+    const outlineFile = `${appDirectory}/${manifest.icons.outline}`;
+    fileExists = await this.checkFileExist(outlineFile);
+    if (!fileExists) {
+      throw AppStudioResultFactory.UserError(
+        AppStudioError.FileNotFoundError.name,
+        AppStudioError.FileNotFoundError.message(outlineFile)
+      );
+    }
+
+    const zip = new AdmZip();
+    zip.addFile(Constants.MANIFEST_FILE, Buffer.from(manifestString));
+    zip.addLocalFile(colorFile);
+    zip.addLocalFile(outlineFile);
+
+    const zipFileName = `${appDirectory}/appPackage.zip`;
+    zip.writeZip(zipFileName);
+
+    if (this.isSPFxProject(ctx)) {
+      await fs.copyFile(zipFileName, `${ctx.root}/SPFx/teams/TeamsSPFxApp.zip`);
+    }
+
+    return zipFileName;
+  }
+
   private async beforePublish(
     ctx: PluginContext,
     appDirectory: string,
@@ -1062,52 +1109,5 @@ export class AppStudioPluginImpl {
       }
     }
     return manifestString;
-  }
-
-  public async buildTeamsAppPackageHelper(
-    ctx: PluginContext,
-    appDirectory: string,
-    manifestString: string
-  ): Promise<string> {
-    const status = await fs.lstat(appDirectory);
-    if (!status.isDirectory()) {
-      throw AppStudioResultFactory.UserError(
-        AppStudioError.NotADirectoryError.name,
-        AppStudioError.NotADirectoryError.message(appDirectory)
-      );
-    }
-    const manifest: TeamsAppManifest = JSON.parse(manifestString);
-    const colorFile = `${appDirectory}/${manifest.icons.color}`;
-
-    let fileExists = await this.checkFileExist(colorFile);
-    if (!fileExists) {
-      throw AppStudioResultFactory.UserError(
-        AppStudioError.FileNotFoundError.name,
-        AppStudioError.FileNotFoundError.message(colorFile)
-      );
-    }
-
-    const outlineFile = `${appDirectory}/${manifest.icons.outline}`;
-    fileExists = await this.checkFileExist(outlineFile);
-    if (!fileExists) {
-      throw AppStudioResultFactory.UserError(
-        AppStudioError.FileNotFoundError.name,
-        AppStudioError.FileNotFoundError.message(outlineFile)
-      );
-    }
-
-    const zip = new AdmZip();
-    zip.addFile(Constants.MANIFEST_FILE, Buffer.from(manifestString));
-    zip.addLocalFile(colorFile);
-    zip.addLocalFile(outlineFile);
-
-    const zipFileName = `${appDirectory}/appPackage.zip`;
-    zip.writeZip(zipFileName);
-
-    if (this.isSPFxProject(ctx)) {
-      await fs.copyFile(zipFileName, `${ctx.root}/SPFx/teams/TeamsSPFxApp.zip`);
-    }
-
-    return zipFileName;
   }
 }

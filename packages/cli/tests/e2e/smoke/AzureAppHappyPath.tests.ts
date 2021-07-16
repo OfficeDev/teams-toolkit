@@ -113,7 +113,7 @@ describe("Azure App Happy Path", function () {
         timeout: 0,
       },
       3,
-      `teamsfx deploy`
+      `teamsfx deploy --open-api-document openapi/openapi.json --api-version v1`
     );
 
     {

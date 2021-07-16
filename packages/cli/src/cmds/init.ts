@@ -5,12 +5,16 @@
 
 import { Argv, Options } from "yargs";
 
-import { FxError, err, ok, Result, Func, ConfigMap, Platform, LogLevel } from "@microsoft/teamsfx-api";
+import { FxError, err, ok, Result, Func, Platform, LogLevel } from "@microsoft/teamsfx-api";
 
 import { YargsCommand } from "../yargsCommand";
 import activate from "../activate";
 import CliTelemetry from "../telemetry/cliTelemetry";
-import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetrySuccess,
+} from "../telemetry/cliTelemetryEvents";
 import { argsToInputs } from "../utils";
 import CLILogProvider from "../commonlib/log";
 
@@ -19,39 +23,32 @@ export default class Init extends YargsCommand {
   public readonly command = `${this.commandHead}`;
   public readonly description = "Add Teams support to an existing Blazor application.";
 
-  public params: { [_: string]: Options } = {
+  public readonly params: { [_: string]: Options } = {
     "app-name": {
       type: "string",
       description: "Application name.",
-      default: "TeamsBlazorApp"
+      default: "TeamsBlazorApp",
     },
     environment: {
       type: "string",
       description: "Environment: 'local' or 'remote'.",
       choices: ["local", "remote"],
-      default: "local"
+      default: "local",
     },
     endpoint: {
       type: "string",
       description: "Teams app endpoint.",
-      default: "https://localhost:44357"
+      default: "https://localhost:44357",
     },
     "root-path": {
       type: "string",
       description: "Path to the setting files.",
-      default: "./"
-    }
+      default: "./",
+    },
   };
 
   public builder(yargs: Argv): Argv<any> {
-    return yargs
-      .version(false)
-      .options("verbose", {
-        description: "Print additional information.",
-        boolean: true,
-        default: false
-      })
-      .options(this.params);
+    return yargs.version(false).options(this.params);
   }
 
   public async runCommand(args: {
@@ -71,7 +68,7 @@ export default class Init extends YargsCommand {
 
       const func: Func = {
         namespace: "fx-solution-azure",
-        method: "registerTeamsAppAndAad"
+        method: "registerTeamsAppAndAad",
       };
 
       const result = await core.executeUserTask!(func, answers);
@@ -83,7 +80,7 @@ export default class Init extends YargsCommand {
     }
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.Init, {
-      [TelemetryProperty.Success]: TelemetrySuccess.Yes
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
     });
     return ok(null);
   }

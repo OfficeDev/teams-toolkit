@@ -429,7 +429,6 @@ export default class Preview extends YargsCommand {
       );
     }
 
-    // TODO: dependency checker
     let backendInstallTask: Task | undefined;
     let backendExtensionsInstallTask: Task | undefined;
     if (backendRoot !== undefined) {
@@ -448,13 +447,7 @@ export default class Preview extends YargsCommand {
         false,
         // env checker: use dotnet execPath
         await dotnetChecker.getDotnetExecPath(),
-        [
-          "build",
-          constants.backendExtensionsInstallCsprojPath,
-          "-o",
-          constants.backendExtensionsInstallOutputPath,
-          "--ignore-failed-sources",
-        ],
+        ["build", "extensions.csproj", "-o", "bin", "--ignore-failed-sources"],
         {
           shell: false,
           cwd: backendRoot,
@@ -573,7 +566,6 @@ export default class Preview extends YargsCommand {
       this.backgroundTasks.push(frontendStartTask);
     }
 
-    // TODO: dependency checker
     let authStartTask: Task | undefined;
     if (frontendRoot !== undefined) {
       const cwd = await commonUtils.getAuthServicePath(workspaceFolder);
@@ -582,8 +574,8 @@ export default class Preview extends YargsCommand {
         constants.authStartTitle,
         true,
         // env checker: use dotnet execPath
-        constants.authStartCommand.replace("@execPath", await dotnetChecker.getDotnetExecPath()),
-        undefined,
+        await dotnetChecker.getDotnetExecPath(),
+        ["Microsoft.TeamsFx.SimpleAuth.dll"],
         {
           shell: false,
           cwd,
@@ -593,7 +585,6 @@ export default class Preview extends YargsCommand {
       this.backgroundTasks.push(authStartTask);
     }
 
-    // TODO: dependency checker
     let backendStartTask: Task | undefined;
     let backendWatchTask: Task | undefined;
     if (backendRoot !== undefined) {

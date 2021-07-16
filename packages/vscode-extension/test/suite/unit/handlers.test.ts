@@ -227,7 +227,7 @@ suite("handlers", () => {
   suite("decryptSecret", () => {
     test("successfully update secret", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       const decrypt = sinon.spy(handlers.core, "decrypt");
       const encrypt = sinon.spy(handlers.core, "encrypt");
@@ -250,12 +250,13 @@ suite("handlers", () => {
       sinon.assert.calledOnce(decrypt);
       sinon.assert.calledOnce(encrypt);
       sinon.assert.calledOnce(editBuilder);
+      sinon.assert.calledTwice(sendTelemetryEvent);
       sinon.restore();
     });
 
     test("failed to update due to corrupted secret", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       const decrypt = sinon.stub(handlers.core, "decrypt");
       decrypt.returns(Promise.resolve(err(new UserError("fake error", "", ""))));
@@ -278,6 +279,7 @@ suite("handlers", () => {
       sinon.assert.notCalled(encrypt);
       sinon.assert.notCalled(editBuilder);
       sinon.assert.calledOnce(showMessage);
+      sinon.assert.calledTwice(sendTelemetryEvent);
       sinon.restore();
     });
   });

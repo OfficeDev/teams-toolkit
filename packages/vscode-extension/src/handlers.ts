@@ -792,11 +792,14 @@ export async function cmpAccountsHandler() {
 }
 
 export async function decryptSecret(cipher: string, selection: vscode.Range): Promise<void> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.EditSecret, {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.EditSecretStart, {
     [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Other,
   });
   const editor = vscode.window.activeTextEditor;
   if (!editor) {
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.EditSecret, {
+      [TelemetryProperty.Success]: TelemetrySuccess.No,
+    });
     return;
   }
   const inputs = getSystemInputs();
@@ -813,9 +816,15 @@ export async function decryptSecret(cipher: string, selection: vscode.Range): Pr
         editor.edit((editBuilder) => {
           editBuilder.replace(selection, newCiphertext.value);
         });
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.EditSecret, {
+          [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+        });
       }
     }
   } else {
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.EditSecret, {
+      [TelemetryProperty.Success]: TelemetrySuccess.No,
+    });
     window.showErrorMessage(StringResources.vsc.handlers.decryptFailed);
   }
 }

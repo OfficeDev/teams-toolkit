@@ -80,6 +80,7 @@ export enum TelemetryEvent {
 
   Survey = "survey",
 
+  EditSecretStart = "edit-secret-start",
   EditSecret = "edit-secret",
 }
 

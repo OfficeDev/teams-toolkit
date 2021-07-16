@@ -115,8 +115,8 @@ export class AppStudioError {
 
   public static readonly GetRemoteConfigError = {
     name: "GetRemoteConfigError",
-    message:
-      "Manifest validation failed. You must run `Provision in the Cloud` first to fill out certain fields in manifest.",
+    message: (error: string) =>
+      `${error}. You must run 'Provision in the Cloud' first to fill out certain fields in manifest.`,
   };
 
   public static readonly UnhandledError = {

@@ -1832,48 +1832,49 @@ export class TeamsAppSolution implements Solution {
       } else if (method === "buildPackage") {
         const appStudioPlugin = this.AppStudioPlugin as AppStudioPlugin;
         const pluginCtx = getPluginContext(ctx, appStudioPlugin.name);
+        const maybeSelectedPlugins = this.getSelectedPlugins(ctx);
 
-        let manifestString: string | undefined = undefined;
+        // let manifestString: string | undefined = undefined;
 
-        if (this.spfxSelected(ctx)) {
-          manifestString = (
-            await fs.readFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`)
-          ).toString();
-        } else {
-          const manifestTpl: TeamsAppManifest = await fs.readJSON(
-            `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`
-          );
-          const maybeSelectedPlugins = this.getSelectedPlugins(ctx);
-          const manifest = appStudioPlugin
-            .createManifestForRemote(pluginCtx, maybeSelectedPlugins, manifestTpl)
-            .map((result) => result[1]);
-          if (manifest.isOk()) {
-            manifestString = JSON.stringify(manifest.value);
-          } else {
-            ctx.logProvider?.error("[Teams Toolkit] Teams Package build failed!");
-            const isProvisionSucceeded = this.checkWetherProvisionSucceeded(ctx.config);
-            if (
-              manifest.error.name === SolutionError.GetRemoteConfigError &&
-              !isProvisionSucceeded
-            ) {
-              return err(
-                returnUserError(
-                  new Error(
-                    "Teams package build failed. You must run `Provision in the Cloud` first to fill out certain fields in manifest."
-                  ),
-                  "Solution",
-                  SolutionError.GetRemoteConfigError
-                )
-              );
-            } else {
-              return err(manifest.error);
-            }
-          }
-        }
+        // if (this.spfxSelected(ctx)) {
+        //   manifestString = (
+        //     await fs.readFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`)
+        //   ).toString();
+        // } else {
+        //   const manifestTpl: TeamsAppManifest = await fs.readJSON(
+        //     `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`
+        //   );
+        //   const maybeSelectedPlugins = this.getSelectedPlugins(ctx);
+        //   const manifest = appStudioPlugin
+        //     .createManifestForRemote(pluginCtx, maybeSelectedPlugins, manifestTpl)
+        //     .map((result) => result[1]);
+        //   if (manifest.isOk()) {
+        //     manifestString = JSON.stringify(manifest.value);
+        //   } else {
+        //     ctx.logProvider?.error("[Teams Toolkit] Teams Package build failed!");
+        //     const isProvisionSucceeded = this.checkWetherProvisionSucceeded(ctx.config);
+        //     if (
+        //       manifest.error.name === SolutionError.GetRemoteConfigError &&
+        //       !isProvisionSucceeded
+        //     ) {
+        //       return err(
+        //         returnUserError(
+        //           new Error(
+        //             "Teams package build failed. You must run `Provision in the Cloud` first to fill out certain fields in manifest."
+        //           ),
+        //           "Solution",
+        //           SolutionError.GetRemoteConfigError
+        //         )
+        //       );
+        //     } else {
+        //       return err(manifest.error);
+        //     }
+        //   }
+        // }
         return await appStudioPlugin.buildTeamsPackage(
           pluginCtx,
           `${ctx.root}/.${ConfigFolderName}`,
-          manifestString
+          maybeSelectedPlugins
         );
       } else if (array.length == 2) {
         const pluginName = array[1];

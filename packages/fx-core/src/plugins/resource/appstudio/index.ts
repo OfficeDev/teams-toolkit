@@ -160,7 +160,7 @@ export class AppStudioPlugin implements Plugin {
   public async buildTeamsPackage(
     ctx: PluginContext,
     appDirectory: string,
-    manifestString: string
+    maybeSelectedPlugins: Result<Plugin[], FxError>
   ): Promise<Result<string, FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.buildTeamsPackage);
@@ -168,7 +168,7 @@ export class AppStudioPlugin implements Plugin {
       const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(
         ctx,
         appDirectory,
-        manifestString
+        maybeSelectedPlugins
       );
       const builtSuccess = [
         { content: "(√)Done: ", color: Colors.BRIGHT_GREEN },
@@ -206,7 +206,7 @@ export class AppStudioPlugin implements Plugin {
         const appDirectory = `${ctx.root}/.${ConfigFolderName}`;
         const manifestString = JSON.stringify(ctx.app);
         try {
-          const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(
+          const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackageHelper(
             ctx,
             appDirectory,
             manifestString

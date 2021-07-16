@@ -797,9 +797,6 @@ export async function decryptSecret(cipher: string, selection: vscode.Range): Pr
   });
   const editor = vscode.window.activeTextEditor;
   if (!editor) {
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.EditSecret, {
-      [TelemetryProperty.Success]: TelemetrySuccess.No,
-    });
     return;
   }
   const inputs = getSystemInputs();
@@ -819,12 +816,12 @@ export async function decryptSecret(cipher: string, selection: vscode.Range): Pr
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.EditSecret, {
           [TelemetryProperty.Success]: TelemetrySuccess.Yes,
         });
+      } else {
+        ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.EditSecret, newCiphertext.error);
       }
     }
   } else {
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.EditSecret, {
-      [TelemetryProperty.Success]: TelemetrySuccess.No,
-    });
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.EditSecret, result.error);
     window.showErrorMessage(StringResources.vsc.handlers.decryptFailed);
   }
 }

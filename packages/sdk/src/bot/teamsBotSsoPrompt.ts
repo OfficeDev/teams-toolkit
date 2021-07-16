@@ -16,7 +16,9 @@ import {
   TokenExchangeInvokeRequest,
   tokenExchangeOperationName,
   TokenExchangeResource,
-} from "botbuilder-core";
+  TeamsInfo,
+  TeamsChannelAccount,
+} from "botbuilder";
 import {
   Dialog,
   DialogContext,
@@ -284,7 +286,13 @@ export class TeamsBotSsoPrompt extends Dialog {
   private async sendOAuthCardAsync(context: TurnContext): Promise<void> {
     internalLogger.verbose("Send OAuth card to get SSO token");
 
-    const signInResource = this.getSignInResource();
+    const account: TeamsChannelAccount = await TeamsInfo.getMember(
+      context,
+      context.activity.from.id
+    );
+    internalLogger.verbose("Get Teams member account email address: " + account.email);
+
+    const signInResource = this.getSignInResource(account.email);
     const card = CardFactory.oauthCard(
       "",
       "Teams SSO Sign In",
@@ -306,7 +314,7 @@ export class TeamsBotSsoPrompt extends Dialog {
    *
    * @internal
    */
-  private getSignInResource() {
+  private getSignInResource(email?: string) {
     internalLogger.verbose("Get sign in authentication configuration");
     const missingConfigurations: string[] = [];
 
@@ -338,7 +346,9 @@ export class TeamsBotSsoPrompt extends Dialog {
 
     const signInLink = `${config.authentication!.initiateLoginEndpoint}?scope=${encodeURI(
       this.settings.scopes.join(" ")
-    )}&clientId=${config.authentication!.clientId}&tenantId=${config.authentication!.tenantId}`;
+    )}&clientId=${config.authentication!.clientId}&tenantId=${
+      config.authentication!.tenantId
+    }&email=${email}`;
 
     internalLogger.verbose("Sign in link: " + signInLink);
 

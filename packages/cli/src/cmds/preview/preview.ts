@@ -851,7 +851,7 @@ export default class Preview extends YargsCommand {
   }
 
   private async handleDependences(hasBackend: boolean): Promise<[FuncToolChecker, DotnetChecker]> {
-    const cliAdapter = new CLIAdapter(cliEnvCheckerTelemetry, hasBackend);
+    const cliAdapter = new CLIAdapter(hasBackend, cliEnvCheckerTelemetry);
     const nodeChecker = new AzureNodeChecker(
       cliAdapter,
       cliEnvCheckerLogger,

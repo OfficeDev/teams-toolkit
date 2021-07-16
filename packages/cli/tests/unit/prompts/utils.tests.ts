@@ -1,22 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import sinon from "sinon";
-
 import { addChoiceDetail, splitLongStringByWidth } from "../../../src/prompts/utils";
 import { expect } from "../utils";
 
 describe("Prompts Utils Tests", function () {
-  const sandbox = sinon.createSandbox();
   const content = "abcd ".repeat(5);
+  const isTTY = process.stdout.isTTY;
   const columns = process.stdout.columns;
 
-  before(() => {
-    sandbox.stub(process.stdout, "isTTY").value(true);
-  });
-
   after(() => {
-    sandbox.restore();
+    process.stdout.isTTY = isTTY;
     process.stdout.columns = columns;
   });
 
@@ -28,6 +22,7 @@ describe("Prompts Utils Tests", function () {
   });
 
   it("addChoiceDetail - process.stdout.columns=21", () => {
+    process.stdout.isTTY = true;
     process.stdout.columns = 21;
     const output = addChoiceDetail("details", content, 3, 6);
     expect(output.split("\n").length).equals(3);
@@ -36,6 +31,7 @@ describe("Prompts Utils Tests", function () {
   });
 
   it("addChoiceDetail - process.stdout.columns=31", () => {
+    process.stdout.isTTY = true;
     process.stdout.columns = 31;
     const output = addChoiceDetail("details", content, 3, 6);
     expect(output.split("\n").length).equals(2);

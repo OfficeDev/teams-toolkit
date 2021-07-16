@@ -102,11 +102,18 @@ export class AppStudioPlugin implements Plugin {
    */
   public async validateManifest(
     ctx: PluginContext,
-    manifestString: string
+    maybeSelectedPlugins: Result<Plugin[], FxError>
   ): Promise<Result<string[], FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.validateManifest);
-    const validationResult = await this.appStudioPluginImpl.validateManifest(ctx, manifestString);
+    const validationpluginResult = await this.appStudioPluginImpl.validateManifest(
+      ctx,
+      maybeSelectedPlugins
+    );
+    if (validationpluginResult.isErr()) {
+      return err(validationpluginResult.error);
+    }
+    const validationResult = validationpluginResult.value;
     if (validationResult.length > 0) {
       const errMessage = AppStudioError.ValidationFailedError.message(validationResult);
       ctx.logProvider?.error("Manifest Validation failed!");
@@ -127,7 +134,7 @@ export class AppStudioPlugin implements Plugin {
     const validationSuccess = "Manifest Validation succeed!";
     ctx.ui?.showMessage("info", validationSuccess, false);
     TelemetryUtils.sendSuccessEvent(TelemetryEventName.validateManifest);
-    return ok(validationResult);
+    return validationpluginResult;
   }
 
   public createManifestForRemote(

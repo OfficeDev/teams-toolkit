@@ -57,6 +57,7 @@ import {
   LOCAL_WEB_APPLICATION_INFO_SOURCE,
   WEB_APPLICATION_INFO_SOURCE,
   PluginNames,
+  SOLUTION_PROVISION_SUCCEEDED,
 } from "../../solution/fx-solution/constants";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
@@ -183,9 +184,48 @@ export class AppStudioPluginImpl {
     });
   }
 
-  public async validateManifest(ctx: PluginContext, manifestString: string): Promise<string[]> {
+  public async validateManifest(
+    ctx: PluginContext,
+    maybeSelectedPlugins: Result<Plugin[], FxError>
+  ): Promise<Result<string[], FxError>> {
     const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
-    return await AppStudioClient.validateManifest(manifestString, appStudioToken!);
+    let manifestString: string | undefined = undefined;
+    if (this.isSPFxProject(ctx)) {
+      manifestString = (
+        await fs.readFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`)
+      ).toString();
+    } else {
+      const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx.root);
+      if (maybeManifest.isErr()) {
+        return err(maybeManifest.error);
+      }
+      const manifestTpl = maybeManifest.value;
+      const manifest = this.createManifestForRemote(ctx, maybeSelectedPlugins, manifestTpl).map(
+        (result) => result[1]
+      );
+      if (manifest.isOk()) {
+        manifestString = JSON.stringify(manifest.value);
+      } else {
+        ctx.logProvider?.error("[Teams Toolkit] Manifest Validation failed!");
+        const isProvisionSucceeded = !!(ctx.configOfOtherPlugins
+          .get("solution")
+          ?.get(SOLUTION_PROVISION_SUCCEEDED) as boolean);
+        if (
+          manifest.error.name === AppStudioError.GetRemoteConfigError.name &&
+          !isProvisionSucceeded
+        ) {
+          return err(
+            AppStudioResultFactory.UserError(
+              AppStudioError.GetRemoteConfigError.name,
+              AppStudioError.GetRemoteConfigError.message
+            )
+          );
+        } else {
+          return err(manifest.error);
+        }
+      }
+    }
+    return ok(await AppStudioClient.validateManifest(manifestString, appStudioToken!));
   }
 
   public createManifestForRemote(
@@ -448,7 +488,10 @@ export class AppStudioPluginImpl {
     try {
       // Validate manifest
       await publishProgress?.start("Validating manifest file");
-      const validationResult = await this.validateManifest(ctx, manifestString!);
+      const validationResult = await AppStudioClient.validateManifest(
+        manifestString!,
+        (await ctx.appStudioToken?.getAccessToken())!
+      );
       if (validationResult.length > 0) {
         throw AppStudioResultFactory.UserError(
           AppStudioError.ValidationFailedError.name,

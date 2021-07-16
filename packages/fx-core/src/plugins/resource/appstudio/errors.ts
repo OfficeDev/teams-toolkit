@@ -113,6 +113,12 @@ export class AppStudioError {
     message: (error: any) => (error.message ? error.message : "Teams Package built failed!"),
   };
 
+  public static readonly GetRemoteConfigError = {
+    name: "GetRemoteConfigError",
+    message:
+      "Manifest validation failed. You must run `Provision in the Cloud` first to fill out certain fields in manifest.",
+  };
+
   public static readonly UnhandledError = {
     name: "UnhandledError",
     message: "UnhandledError",

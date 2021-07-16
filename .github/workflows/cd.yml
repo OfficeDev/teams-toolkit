@@ -122,6 +122,11 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.preid == 'stable' }}
         run: |
           npx lerna version --no-private --conventional-commits --conventional-graduate --no-changelog --yes
+      
+      - name: version change
+        id: version-change
+        run: |
+          echo "::set-output name=CHANGED::$(git tag --points-at HEAD | xargs)"
 
       - name: update cli ai key
         if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && (github.event.inputs.preid == 'stable'||github.event.inputs.preid == 'rc') }}
@@ -170,19 +175,8 @@ jobs:
             VERSION=`ls *.vsix | awk -F '.vsix' '{print $1}'`
             echo "::set-output name=VERSION::$VERSION"
 
-      - name: check whether vscode extension changed or not
-        id: extension-checker
-        working-directory: ./packages/vscode-extension
-        run: |
-          if git diff HEAD^ package.json | grep version;
-          then
-            echo "::set-output name=CHANGED::true"
-          else
-            echo "::set-output name=CHANGED::false"
-          fi
-
       - name: release VSCode extension to github
-        if: ${{ steps.extension-checker.outputs.CHANGED == 'true' }}
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') }}
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: ${{ secrets.CD_PAT }}

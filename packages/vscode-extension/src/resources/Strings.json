@@ -89,7 +89,11 @@
     },
     "azureLogin": {
       "message": "The Teams Toolkit requires an Azure account and subscription to deploy the Azure resources for your project. You will not be charged without further confirmation.",
-      "unknownSubscription": "Cannot set subscription. Select a subscription that you have access to."
+      "unknownSubscription": "Cannot set subscription. Select a subscription that you have access to.",
+      "noSubscriptionFound": "NoSubscriptionFound",
+      "failToFindSubscription": "Failed to find a subscription.",
+      "subscription": "subscription",
+      "selectSubscription": "Select a subscription"
     },
     "common": {
       "userCancel": "User Cancel",

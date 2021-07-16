@@ -154,9 +154,9 @@ jobs:
         uses: ncipollo/release-action@v1.7.3
         with:
           artifacts: ./*.zip
-          name: 'Release for $(tr ' ' '\n' <<< ${{ steps.version-change.outputs.CHANGED }} | grep 'templates@')'
+          name: 'Release for $(tr ' ' '\n' <<< '${{ steps.version-change.outputs.CHANGED }}' | grep 'templates@')'
           token: ${{ secrets.github_token }}
-          tag: $(tr ' ' '\n' <<< ${{ steps.version-change.outputs.CHANGED }} | grep 'templates@')
+          tag: $(tr ' ' '\n' <<< '${{ steps.version-change.outputs.CHANGED }}' | grep 'templates@')
 
       - name: Generate Tag List
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event.inputs.preid == 'stable' }}
@@ -196,6 +196,6 @@ jobs:
         with:
           repo_token: ${{ secrets.CD_PAT }}
           prerelease: true
-          automatic_release_tag: $(tr ' ' '\n' <<< ${{ steps.version-change.outputs.CHANGED }} | grep 'ms-teams-vscode-extension@')
+          automatic_release_tag: $(tr ' ' '\n' <<< '${{ steps.version-change.outputs.CHANGED }}' | grep 'ms-teams-vscode-extension@')
           files: |
             ./packages/**/*.vsix

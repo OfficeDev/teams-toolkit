@@ -90,6 +90,7 @@ export class DotnetChecker implements IDepsChecker {
 
     await this._logger.debug(`[start] check dotnet version`);
     if (dotnetPath !== null && (await this.isDotnetInstalledCorrectly())) {
+      this._telemetry.sendEvent(DepsCheckerEvent.dotnetInstallCompleted);
       return true;
     }
     await this._logger.debug(`[end] check dotnet version`);
@@ -112,7 +113,7 @@ export class DotnetChecker implements IDepsChecker {
 
     const installDir = DotnetChecker.getDefaultInstallPath();
     await this._logger.debug(`[start] install dotnet ${installVersion}`);
-    await this._logger.info(
+    await this._logger.debug(
       Messages.dotnetNotFound.replace("@NameVersion", installedNameWithVersion)
     );
     await this._logger.info(
@@ -398,7 +399,7 @@ export class DotnetChecker implements IDepsChecker {
   }
 
   private static getDefaultInstallPath(): string {
-    return path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "dotnet");
+    return path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "dotnet test"); // TODO: fix it after testing
   }
 
   private async getInstallCommand(

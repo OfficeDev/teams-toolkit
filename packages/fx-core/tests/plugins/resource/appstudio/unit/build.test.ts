@@ -35,6 +35,7 @@ describe("Build Teams Package", () => {
         name: "azure",
         version: "1.0",
         capabilities: ["Bot"],
+        activeResourcePlugins: ["fx-resource-bot"],
       },
     };
     const botplugin: Plugin = new TeamsBot();
@@ -63,11 +64,10 @@ describe("Build Teams Package", () => {
     );
 
     const builtPackage = await plugin.buildTeamsPackage(ctx, appDirectory);
-    chai.assert.isTrue(builtPackage.isErr());
-    if (builtPackage.isErr()) {
-      chai
-        .expect(builtPackage._unsafeUnwrapErr().name)
-        .equals(AppStudioError.RemoteAppIdUpdateFailedError.name);
+    chai.assert.isTrue(builtPackage.isOk());
+    if (builtPackage.isOk()) {
+      chai.assert.isNotEmpty(builtPackage.value);
+      await fs.remove(builtPackage.value);
     }
   });
 });

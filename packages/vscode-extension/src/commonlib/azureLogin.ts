@@ -28,11 +28,7 @@ import {
   signedIn,
   signedOut,
   signingIn,
-  solution,
-  subscriptionIdString,
   subscriptionInfoFile,
-  subscriptionNameString,
-  tenantIdString,
 } from "./common/constant";
 import { login, LoginStatus } from "./common/login";
 import * as StringResources from "../resources/Strings.json";
@@ -275,6 +271,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       await vscode.commands.executeCommand("azure-account.logout");
       AzureAccountManager.tenantId = undefined;
       AzureAccountManager.subscriptionId = undefined;
+      this.clearSubscription();
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SignOut, {
         [TelemetryProperty.AccountType]: AccountType.Azure,
         [TelemetryProperty.Success]: TelemetrySuccess.Yes,
@@ -506,6 +503,15 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     }
   }
 
+  async clearSubscription(): Promise<void> {
+    const subscriptionFilePath = await this.getSubscriptionInfoPath();
+    if (!subscriptionFilePath) {
+      return;
+    } else {
+      await fs.writeFile(subscriptionFilePath, JSON.stringify("", null, 4));
+    }
+  }
+
   async readSubscription(): Promise<SubscriptionInfo | undefined> {
     const subscriptionFilePath = await this.getSubscriptionInfoPath();
     if (!subscriptionFilePath || !fs.existsSync(subscriptionFilePath)) {
@@ -519,9 +525,9 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       const content = (await fs.readFile(subscriptionFilePath)).toString();
       const subcriptionJson = JSON.parse(content);
       return {
-        subscriptionId: subcriptionJson[subscriptionIdString],
-        tenantId: subcriptionJson[tenantIdString],
-        subscriptionName: subcriptionJson[subscriptionNameString],
+        subscriptionId: subcriptionJson.subscriptionId,
+        tenantId: subcriptionJson.tenantId,
+        subscriptionName: subcriptionJson.subscriptionName,
       };
     }
   }
@@ -561,10 +567,10 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       }
       const envDefaultJson = (await fs.readFile(envDefalultFile)).toString();
       const envDefault = JSON.parse(envDefaultJson);
-      if (envDefault[solution] && envDefault[solution][subscriptionIdString]) {
+      if (envDefault.solution && envDefault.solution.subscriptionId) {
         return {
-          subscriptionId: envDefault[solution][subscriptionIdString],
-          tenantId: envDefault[solution][tenantIdString],
+          subscriptionId: envDefault.solution.subscriptionId,
+          tenantId: envDefault.solution.tenantId,
           subscriptionName: "",
         };
       } else {

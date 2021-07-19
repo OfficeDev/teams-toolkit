@@ -12,7 +12,3 @@ export const loggingIn = "LoggingIn";
 
 export const subscriptionInfoFile = "subscriptionInfo.json";
 export const envDefaultJsonFile = "env.default.json";
-export const solution = "solution";
-export const subscriptionIdString = "subscriptionId";
-export const tenantIdString = "tenantId";
-export const subscriptionNameString = "subscriptionName";

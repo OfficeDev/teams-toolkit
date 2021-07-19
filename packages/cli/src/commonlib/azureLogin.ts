@@ -31,12 +31,8 @@ import {
   selectSubscription,
   signedIn,
   signedOut,
-  solution,
   subscription,
-  subscriptionIdString,
   subscriptionInfoFile,
-  subscriptionNameString,
-  tenantIdString,
 } from "./common/constant";
 import { login, LoginStatus } from "./common/login";
 import { LogLevel as LLevel } from "@microsoft/teamsfx-api";
@@ -323,6 +319,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
    */
   async signout(): Promise<boolean> {
     AzureAccountManager.codeFlowInstance.account = undefined;
+    this.clearSubscription();
     if (AzureAccountManager.statusChange !== undefined) {
       await AzureAccountManager.statusChange("SignedOut", undefined, undefined);
     }
@@ -553,6 +550,15 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     }
   }
 
+  async clearSubscription(): Promise<void> {
+    const subscriptionFilePath = await this.getSubscriptionInfoPath();
+    if (!subscriptionFilePath) {
+      return;
+    } else {
+      await fs.writeFile(subscriptionFilePath, JSON.stringify("", null, 4));
+    }
+  }
+
   async readSubscription(): Promise<SubscriptionInfo | undefined> {
     const subscriptionFilePath = await this.getSubscriptionInfoPath();
     if (!subscriptionFilePath || !fs.existsSync(subscriptionFilePath)) {
@@ -566,9 +572,9 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       const content = (await fs.readFile(subscriptionFilePath)).toString();
       const subcriptionJson = JSON.parse(content);
       return {
-        subscriptionId: subcriptionJson[subscriptionIdString],
-        tenantId: subcriptionJson[tenantIdString],
-        subscriptionName: subcriptionJson[subscriptionNameString],
+        subscriptionId: subcriptionJson.subscriptionId,
+        tenantId: subcriptionJson.tenantId,
+        subscriptionName: subcriptionJson.subscriptionName,
       };
     }
   }
@@ -605,10 +611,10 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       }
       const envDefaultJson = (await fs.readFile(envDefalultFile)).toString();
       const envDefault = JSON.parse(envDefaultJson);
-      if (envDefault[solution] && envDefault[solution][subscriptionIdString]) {
+      if (envDefault.solution && envDefault.solution.subscriptionId) {
         return {
-          subscriptionId: envDefault[solution][subscriptionIdString],
-          tenantId: envDefault[solution][tenantIdString],
+          subscriptionId: envDefault.solution.subscriptionId,
+          tenantId: envDefault.solution.tenantId,
           subscriptionName: "",
         };
       } else {

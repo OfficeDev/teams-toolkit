@@ -319,7 +319,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
    */
   async signout(): Promise<boolean> {
     AzureAccountManager.codeFlowInstance.account = undefined;
-    this.clearSubscription();
     if (AzureAccountManager.statusChange !== undefined) {
       await AzureAccountManager.statusChange("SignedOut", undefined, undefined);
     }
@@ -538,15 +537,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       return;
     } else {
       await fs.writeFile(subscriptionFilePath, JSON.stringify(subscriptionInfo, null, 4));
-    }
-  }
-
-  async clearSubscription(): Promise<void> {
-    const subscriptionFilePath = await this.getSubscriptionInfoPath();
-    if (!subscriptionFilePath) {
-      return;
-    } else {
-      await fs.writeFile(subscriptionFilePath, "");
     }
   }
 

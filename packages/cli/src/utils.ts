@@ -187,6 +187,7 @@ export async function setSubscriptionId(
       return err(result.error);
     }
 
+    AzureAccountManager.setRootPath(rootFolder);
     await AzureAccountManager.setSubscription(subscriptionId);
     const subs = await AzureAccountManager.listSubscriptions();
     const sub = subs.find((sub) => sub.subscriptionId === subscriptionId);

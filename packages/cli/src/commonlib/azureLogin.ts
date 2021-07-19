@@ -452,6 +452,11 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     for (let i = 0; i < list.length; ++i) {
       const item = list[i];
       if (item.subscriptionId === subscriptionId) {
+        await this.saveSubscription({
+          subscriptionId: item.subscriptionId,
+          subscriptionName: item.subscriptionName,
+          tenantId: item.tenantId,
+        });
         AzureAccountManager.tenantId = item.tenantId;
         AzureAccountManager.subscriptionId = item.subscriptionId;
         AzureAccountManager.subscriptionName = item.subscriptionName;
@@ -480,11 +485,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
           throw new UserError(noSubscriptionFound, failToFindSubscription, loginComponent);
         }
         if (subscriptionList && subscriptionList.length === 1) {
-          await this.saveSubscription({
-            subscriptionId: subscriptionList[0].subscriptionId,
-            subscriptionName: subscriptionList[0].subscriptionName,
-            tenantId: subscriptionList[0].tenantId,
-          });
           await this.setSubscription(subscriptionList[0].subscriptionId);
         } else if (subscriptionList.length > 1) {
           const options: OptionItem[] = subscriptionList.map((sub) => {
@@ -504,15 +504,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
             throw result.error;
           } else {
             const subId = result.value.result as string;
-            subscriptionList.filter(async (item) => {
-              if (item.subscriptionId === subId) {
-                await this.saveSubscription({
-                  subscriptionId: item.subscriptionId,
-                  subscriptionName: item.subscriptionName,
-                  tenantId: item.tenantId,
-                });
-              }
-            });
             await this.setSubscription(subId);
           }
         }
@@ -555,7 +546,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     if (!subscriptionFilePath) {
       return;
     } else {
-      await fs.writeFile(subscriptionFilePath, JSON.stringify("", null, 4));
+      await fs.writeFile(subscriptionFilePath, "");
     }
   }
 
@@ -570,6 +561,9 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       return undefined;
     } else {
       const content = (await fs.readFile(subscriptionFilePath)).toString();
+      if (content.length == 0) {
+        return undefined;
+      }
       const subcriptionJson = JSON.parse(content);
       return {
         subscriptionId: subcriptionJson.subscriptionId,

@@ -17,8 +17,8 @@ export class CLILogger implements IDepsLogger {
   }
 
   public async info(message: string): Promise<boolean> {
-    this.appendLine(LogLevel.Info, message);
-    return await cliLogger.info(message);
+    cliLogger.necessaryLog(LogLevel.Info, message);
+    return true;
   }
 
   public async warning(message: string): Promise<boolean> {

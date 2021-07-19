@@ -18,8 +18,8 @@ import {
 
 import { ext } from "../../../src/extensionVariables";
 import DialogManagerInstance from "../../../src/userInterface";
-import { testFolder } from "../../globalVaribles";
-import { EInputType, IUserInputItem, TestUserInput } from "../../testUserInput";
+import { testFolder } from "./utils/globalVaribles";
+import { EInputType, IUserInputItem, TestUserInput } from "./mocks/testUserInput";
 import { sleep } from "../../../src/utils/commonUtils";
 import { VS_CODE_UI } from "../../../src/extension";
 

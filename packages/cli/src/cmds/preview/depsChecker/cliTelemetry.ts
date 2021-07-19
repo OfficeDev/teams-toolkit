@@ -65,4 +65,4 @@ export class CLITelemetry implements IDepsTelemetry {
   }
 }
 
-export const cliTelemetry = new CLITelemetry();
+export const cliEnvCheckerTelemetry = new CLITelemetry();

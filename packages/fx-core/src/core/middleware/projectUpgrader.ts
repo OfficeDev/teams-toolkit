@@ -42,6 +42,7 @@ export const ProjectUpgraderMW: Middleware = async (ctx: CoreHookContext, next: 
   await next();
 };
 
+// This part is for update context and userdata file to support better local debug experience.
 export async function upgradeContext(ctx: CoreHookContext): Promise<void> {
   try {
     const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
@@ -79,7 +80,7 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<void> {
     await saveContext(contextPath, context);
     const core = ctx.self as FxCore;
     core?.tools?.logProvider?.info(
-      "[core]: context version is too low. Will update context and move some config from env to userdata."
+      "[core]: template version is too low. Will update context and move some configs from env to userdata."
     );
 
     // Read UserData file.

@@ -290,9 +290,11 @@ export class TeamsBotSsoPrompt extends Dialog {
       context,
       context.activity.from.id
     );
-    internalLogger.verbose("Get Teams member account email address: " + account.email);
+    internalLogger.verbose(
+      "Get Teams member account user principal name: " + account.userPrincipalName
+    );
 
-    const signInResource = this.getSignInResource(account.email);
+    const signInResource = this.getSignInResource(account.userPrincipalName);
     const card = CardFactory.oauthCard(
       "",
       "Teams SSO Sign In",
@@ -314,7 +316,7 @@ export class TeamsBotSsoPrompt extends Dialog {
    *
    * @internal
    */
-  private getSignInResource(email?: string) {
+  private getSignInResource(loginHint?: string) {
     internalLogger.verbose("Get sign in authentication configuration");
     const missingConfigurations: string[] = [];
 
@@ -348,7 +350,7 @@ export class TeamsBotSsoPrompt extends Dialog {
       this.settings.scopes.join(" ")
     )}&clientId=${config.authentication!.clientId}&tenantId=${
       config.authentication!.tenantId
-    }&email=${email}`;
+    }&loginHint=${loginHint}`;
 
     internalLogger.verbose("Sign in link: " + signInLink);
 

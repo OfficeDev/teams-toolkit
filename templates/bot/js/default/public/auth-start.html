@@ -18,7 +18,7 @@
         var currentURL = new URL(window.location);
         var clientId = currentURL.searchParams.get("clientId");
         var tenantId = currentURL.searchParams.get("tenantId");
-        var email = currentURL.searchParams.get("email");
+        var loginHint = currentURL.searchParams.get("loginHint");
 
         var scope = currentURL.searchParams.get("scope");
 
@@ -33,7 +33,7 @@
           scope: scope,
           redirect_uri: window.location.origin + "/auth-end.html",
           nonce: _guid(),
-          login_hint: email,
+          login_hint: loginHint,
           state: state,
           code_challenge: codeChallenge,
           code_challenge_method: "S256",

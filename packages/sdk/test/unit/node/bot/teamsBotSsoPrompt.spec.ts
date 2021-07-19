@@ -45,7 +45,7 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
   const clientId = "fake_client_id";
   const clientSecret = "fake_client_secret";
   const tenantId = "fake_tenant";
-  const email = "fake_email";
+  const userPrincipalName = "fake_userPrincipalName";
   const authorityHost = "fake_authority_host";
   const initiateLoginEndpoint = "fake_initiate_login_endpoint";
   const applicationIdUri = "fake_application_id_uri";
@@ -121,7 +121,7 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
       const account: TeamsChannelAccount = {
         id: "fake_id",
         name: "fake_name",
-        email: email,
+        userPrincipalName: userPrincipalName,
       };
       return account;
     });
@@ -391,7 +391,7 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
       activity.attachments![0].content.buttons[0].value,
       `${initiateLoginEndpoint}?scope=${encodeURI(
         requiredScopes.join(" ")
-      )}&clientId=${clientId}&tenantId=${tenantId}&email=${email}`
+      )}&clientId=${clientId}&tenantId=${tenantId}&loginHint=${userPrincipalName}`
     );
   }
 

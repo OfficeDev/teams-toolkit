@@ -42,7 +42,7 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
   const clientId: string = process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID;
   const tenantId: string = process.env.SDK_INTEGRATION_TEST_AAD_TENANT_ID;
   const initiateLoginEndpoint = "fake_initiate_login_endpoint";
-  const email = "fake_email";
+  const userPrincipalName = "fake_userPrincipalName";
 
   const TeamsBotSsoPromptId = "TEAMS_BOT_SSO_PROMPT";
   const requiredScopes: string[] = ["User.Read"];
@@ -63,7 +63,7 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
       const account: TeamsChannelAccount = {
         id: "fake_id",
         name: "fake_name",
-        email: email,
+        userPrincipalName: userPrincipalName,
       };
       return account;
     });
@@ -202,7 +202,7 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
       activity.attachments![0].content.buttons[0].value,
       `${initiateLoginEndpoint}?scope=${encodeURI(
         scopes.join(" ")
-      )}&clientId=${clientId}&tenantId=${tenantId}&email=${email}`
+      )}&clientId=${clientId}&tenantId=${tenantId}&loginHint=${userPrincipalName}`
     );
   }
 

@@ -38,7 +38,7 @@ function _mkDirIfExists(dir: string): void {
 }
 
 function _readCoverOptions(testsRoot: string): ITestRunnerOptions | undefined {
-  const coverConfigPath = paths.join(testsRoot, "..", "..", "coverconfig.json");
+  const coverConfigPath = paths.join(testsRoot, "..", "..", "..", "coverconfig.json");
   if (fs.existsSync(coverConfigPath)) {
     const configContent = fs.readFileSync(coverConfigPath, "utf-8");
     return JSON.parse(configContent);
@@ -55,7 +55,7 @@ function run(testsRoot: string, clb: any): any {
   }
 
   // Glob test files
-  glob("suite/**/**.test.js", { cwd: testsRoot }, (error, files): any => {
+  glob("**/**.test.js", { cwd: testsRoot }, (error, files): any => {
     if (error) {
       return clb(error);
     }

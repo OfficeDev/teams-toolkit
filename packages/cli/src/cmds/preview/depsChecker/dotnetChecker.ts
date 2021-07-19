@@ -399,7 +399,7 @@ export class DotnetChecker implements IDepsChecker {
   }
 
   private static getDefaultInstallPath(): string {
-    return path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "dotnet test"); // TODO: fix it after testing
+    return path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "dotnet");
   }
 
   private async getInstallCommand(

@@ -6,19 +6,19 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 import faker from "faker";
 import axios from "axios";
-import { GraphClient } from "../../../../../src/plugins/resource/aad/graph";
-import { GraphClientErrorMessage } from "../../../../../src/plugins/resource/aad/errors";
+import { AppStudio } from "../../../../../src/plugins/resource/aad/appStudio";
+import { AppStudioErrorMessage } from "../../../../../src/plugins/resource/aad/errors";
 
-describe("Graph API Test", () => {
+describe("App Studio API Test", () => {
   afterEach(() => {
     sinon.restore();
   });
 
-  describe("createAADApp", () => {
+  describe("createAADAppV2", () => {
     it("Happy Path", async () => {
-      const graphToken = "graphToken";
+      const appStudioToken = "appStudioToken";
       const objectId = faker.datatype.uuid();
-      const displayName = "createAADApp";
+      const displayName = "createAADAppV2";
 
       const fakeAxiosInstance = axios.create();
       sinon.stub(axios, "create").returns(fakeAxiosInstance);
@@ -29,7 +29,7 @@ describe("Graph API Test", () => {
         },
       });
 
-      const createResult = await GraphClient.createAADApp(graphToken, {
+      const createResult = await AppStudio.createAADAppV2(appStudioToken, {
         displayName: displayName,
       });
 
@@ -38,20 +38,20 @@ describe("Graph API Test", () => {
     });
 
     it("Empty Response", async () => {
-      const graphToken = "graphToken";
+      const appStudioToken = "appStudioToken";
       const displayName = "createAADApp";
       const fakeAxiosInstance = axios.create();
       sinon.stub(axios, "create").returns(fakeAxiosInstance);
       sinon.stub(fakeAxiosInstance, "post").resolves({});
 
       try {
-        const createResult = await GraphClient.createAADApp(graphToken, {
+        const createResult = await AppStudio.createAADAppV2(appStudioToken, {
           displayName: displayName,
         });
       } catch (error) {
         chai.assert.equal(
           error.message,
-          `${GraphClientErrorMessage.CreateFailed}: ${GraphClientErrorMessage.EmptyResponse}.`
+          `${AppStudioErrorMessage.CreateFailed}: ${AppStudioErrorMessage.EmptyResponse}.`
         );
       }
     });
@@ -59,20 +59,20 @@ describe("Graph API Test", () => {
 
   describe("updateAADApp", () => {
     it("Happy Path", async () => {
-      const graphToken = "graphToken";
+      const appStudioToken = "appStudioToken";
       const objectId = faker.datatype.uuid();
       const displayName = "updateAADApp";
 
       const fakeAxiosInstance = axios.create();
       sinon.stub(axios, "create").returns(fakeAxiosInstance);
-      sinon.stub(fakeAxiosInstance, "patch").resolves({
+      sinon.stub(fakeAxiosInstance, "post").resolves({
         data: {
           id: objectId,
           displayName: displayName,
         },
       });
 
-      await GraphClient.updateAADApp(graphToken, objectId, {
+      await AppStudio.updateAADApp(appStudioToken, objectId, {
         displayName: displayName,
       });
     });
@@ -80,27 +80,27 @@ describe("Graph API Test", () => {
     it("Empty Object Id", async () => {
       const graphToken = "graphToken";
       try {
-        const updateResult = await GraphClient.updateAADApp(graphToken, "", {});
+        const updateResult = await AppStudio.updateAADApp(graphToken, "", {});
       } catch (error) {
         chai.assert.equal(
           error.message,
-          `${GraphClientErrorMessage.UpdateFailed}: ${GraphClientErrorMessage.AppObjectIdIsNull}.`
+          `${AppStudioErrorMessage.UpdateFailed}: ${AppStudioErrorMessage.AppObjectIdIsNull}.`
         );
       }
     });
   });
 
-  describe("createAadAppSecret", () => {
+  describe("createAADAppPassword", () => {
     it("Happy Path", async () => {
-      const graphToken = "graphToken";
+      const appStudioToken = "appStudioToken";
       const objectId = faker.datatype.uuid();
       const secret = {
         data: {
           hint: "hint",
-          keyId: faker.datatype.uuid(),
-          endDateTime: "endDate",
-          startDateTime: "startDate",
-          secretText: "secret",
+          id: faker.datatype.uuid(),
+          endDate: "endDate",
+          startDate: "startDate",
+          value: "secret",
         },
       };
 
@@ -108,13 +108,13 @@ describe("Graph API Test", () => {
       sinon.stub(axios, "create").returns(fakeAxiosInstance);
       sinon.stub(fakeAxiosInstance, "post").returns(Promise.resolve(secret));
 
-      const createSecretResult = await GraphClient.createAadAppSecret(graphToken, objectId);
-      chai.assert.equal(createSecretResult.value, secret.data.secretText);
-      chai.assert.equal(createSecretResult.id, secret.data.keyId);
+      const createSecretResult = await AppStudio.createAADAppPassword(appStudioToken, objectId);
+      chai.assert.equal(createSecretResult.value, secret.data.value);
+      chai.assert.equal(createSecretResult.id, secret.data.id);
     });
 
     it("Empty Response", async () => {
-      const graphToken = "graphToken";
+      const appStudioToken = "appStudioToken";
       const objectId = faker.datatype.uuid();
 
       const fakeAxiosInstance = axios.create();
@@ -122,11 +122,11 @@ describe("Graph API Test", () => {
       sinon.stub(fakeAxiosInstance, "post").resolves({});
 
       try {
-        const createSecretResult = await GraphClient.createAadAppSecret(graphToken, objectId);
+        const createSecretResult = await AppStudio.createAADAppPassword(appStudioToken, objectId);
       } catch (error) {
         chai.assert.equal(
           error.message,
-          `${GraphClientErrorMessage.CreateSecretFailed}: ${GraphClientErrorMessage.EmptyResponse}.`
+          `${AppStudioErrorMessage.CreateSecretFailed}: ${AppStudioErrorMessage.EmptyResponse}.`
         );
       }
     });
@@ -134,11 +134,11 @@ describe("Graph API Test", () => {
     it("Empty ObjectId", async () => {
       const graphToken = "graphToken";
       try {
-        const createSecretResult = await GraphClient.createAadAppSecret(graphToken, "");
+        const createSecretResult = await AppStudio.createAADAppPassword(graphToken, "");
       } catch (error) {
         chai.assert.equal(
           error.message,
-          `${GraphClientErrorMessage.CreateSecretFailed}: ${GraphClientErrorMessage.AppObjectIdIsNull}.`
+          `${AppStudioErrorMessage.CreateSecretFailed}: ${AppStudioErrorMessage.AppObjectIdIsNull}.`
         );
       }
     });
@@ -146,7 +146,7 @@ describe("Graph API Test", () => {
 
   describe("getAadApp", () => {
     it("Happy Path", async () => {
-      const graphToken = "graphToken";
+      const appStudioToken = "appStudioToken";
       const objectId = faker.datatype.uuid();
       const displayName = "getAadApp";
 
@@ -159,14 +159,14 @@ describe("Graph API Test", () => {
         },
       });
 
-      const getResult = await GraphClient.getAadApp(graphToken, objectId);
+      const getResult = await AppStudio.getAadApp(appStudioToken, objectId);
 
       chai.assert.equal(getResult.id, objectId);
       chai.assert.equal(getResult.displayName, displayName);
     });
 
     it("Empty Response", async () => {
-      const graphToken = "graphToken";
+      const appStudioToken = "appStudioToken";
       const objectId = faker.datatype.uuid();
 
       const fakeAxiosInstance = axios.create();
@@ -174,23 +174,23 @@ describe("Graph API Test", () => {
       sinon.stub(fakeAxiosInstance, "get").resolves({});
 
       try {
-        const getResult = await GraphClient.getAadApp(graphToken, objectId);
+        const getResult = await AppStudio.getAadApp(appStudioToken, objectId);
       } catch (error) {
         chai.assert.equal(
           error.message,
-          `${GraphClientErrorMessage.GetFailed}: ${GraphClientErrorMessage.EmptyResponse}.`
+          `${AppStudioErrorMessage.GetFailed}: ${AppStudioErrorMessage.EmptyResponse}.`
         );
       }
     });
 
     it("Empty ObjectId", async () => {
-      const graphToken = "graphToken";
+      const appStudioToken = "appStudioToken";
       try {
-        const getResult = await GraphClient.getAadApp(graphToken, "");
+        const getResult = await AppStudio.getAadApp(appStudioToken, "");
       } catch (error) {
         chai.assert.equal(
           error.message,
-          `${GraphClientErrorMessage.GetFailed}: ${GraphClientErrorMessage.AppObjectIdIsNull}.`
+          `${AppStudioErrorMessage.GetFailed}: ${AppStudioErrorMessage.AppObjectIdIsNull}.`
         );
       }
     });

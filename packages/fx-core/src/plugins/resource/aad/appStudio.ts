@@ -48,7 +48,7 @@ export namespace AppStudio {
 
     if (!appId) {
       throw new Error(
-        `${AppStudioErrorMessage.CreateSecretFailed}: ${AppStudioErrorMessage.AppObjectIdIsNull}.`
+        `${AppStudioErrorMessage.UpdateFailed}: ${AppStudioErrorMessage.AppObjectIdIsNull}.`
       );
     }
 

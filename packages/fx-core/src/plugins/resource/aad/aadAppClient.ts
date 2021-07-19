@@ -270,7 +270,7 @@ export class AadAppClient {
     return config;
   }
 
-  private static async retryHanlder(
+  public static async retryHanlder(
     ctx: PluginContext,
     stage: string,
     fn: () => Promise<IAADDefinition | IAADPassword | void>

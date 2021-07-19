@@ -59,45 +59,6 @@ jobs:
         run: |
           echo "${{ secrets.NPMRC }}" > ~/.npmrc
 
-      - name: Install Mustache
-        run: curl -sSL https://git.io/get-mo -o mo && chmod +x mo && sudo mv mo /usr/local/bin/
-
-      - name: generate templates
-        run: .github/scripts/template-zip-autogen.sh
-
-      - name: release templates' alpha version to github
-        if: ${{ github.ref == 'refs/heads/dev' }}
-        uses: marvinpinto/action-automatic-releases@latest
-        with:
-          repo_token: ${{ secrets.CD_PAT }}
-          prerelease: true
-          automatic_release_tag: "templates@0.0.0-alpha"
-          files: |
-            ./*.zip
-
-      - name: release templates' rc version to github
-        if: ${{ github.ref == 'refs/heads/main' && github.event.inputs.preid == 'rc' }}
-        uses: marvinpinto/action-automatic-releases@latest
-        with:
-          repo_token: ${{ secrets.CD_PAT }}
-          prerelease: true
-          automatic_release_tag: "templates@0.0.0-rc"
-          files: |
-            ./*.zip
-
-      - name: cleanup templates
-        run: rm -rf ./*.zip && git clean -df
-
-      - name: Download Simple Auth bits
-        uses: nick-invision/retry@v2
-        with:
-          timeout_minutes: 10
-          max_attempts: 10
-          retry_on: error
-          shell: pwsh
-          command: |
-            ./.github/scripts/downloadSimpleAuth.ps1
-
       - name: Setup project
         run: |
           npm run setup
@@ -159,6 +120,25 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.preid == 'stable' }}
         run: |
           npx lerna publish from-package --yes
+
+      - name: Install Mustache
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') }}
+        run: curl -sSL https://git.io/get-mo -o mo && chmod +x mo && sudo mv mo /usr/local/bin/
+
+      - name: generate templates
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') }}
+        run: .github/scripts/template-zip-autogen.sh
+
+      - name: Create Templates Stable Release
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event.inputs.preid == 'stable' }}
+        uses: ncipollo/release-action@v1.7.3
+        with:
+          artifacts: ./*.zip
+          name: 'Release for $(tr ' ' '\n' <<< '${{ steps.version-change.outputs.CHANGED }}' | grep 'templates@')'
+          body: 'Release template stable release'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: $(tr ' ' '\n' <<< '${{ steps.version-change.outputs.CHANGED }}' | grep 'templates@')
+          allowUpdates: true
 
       - name: pack vsix
         id: pack-vsix

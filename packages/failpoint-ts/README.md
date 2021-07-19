@@ -67,7 +67,7 @@ if (result.status !== "ok") {
 export function inject(failpointName: string, body: () => unknown): void {}
 ```
 The function body of `failpoint.inject()` is deliberately empty, so that it can be shipped to production but imposes zero cost.
-For testing build, this library provides an [TypeScript transformer](https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#a-simple-transform-function) to rewrite `failpoint.inject()` into a if statement:
+For testing build, this library provides an [TypeScript transformer](https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#a-simple-transform-function), which edits TypeScript's AST and rewrites `failpoint.inject()` into a if statement before emitting JavaScript:
 ```typescript
 let result = callRemoteAPI();
 
@@ -88,6 +88,11 @@ TEAMSFX_FAILPOINTS="callRemoteAPIFailed" node ./index.js
 ### Inject Values
 `failpoint.inject()` has another overload that allows you to inject runtime values controlled by `TEAMSFX_FAILPOINTS` environment variable:
 ```typescript
+export type Value = 
+  | { kind: "string", value: string } 
+  | { kind: "number", value:number } 
+  | { kind: "boolean", value: boolean }
+
 export function inject(failpointName: string, body: (val: Value | undefined) => unknown): void {}
 ```
 An example is shown blow:
@@ -113,5 +118,31 @@ One can dynamically set `val` to `"error"` using:
 ```bash
 TEAMSFX_FAILPOINTS="callRemoteAPIFailed=\"error\"" node ./index.js
 ```
+### Syntax of TEAMSFX_FAILPOINTS environment vairable
+Injecting ints:
+`TEAMS_FAILPOINTS="failpointName=1"`
+Injecting strings:
+`TEAMS_FAILPOINTS="failpointName=\"error\""`
+Injecting boolean:
+`TEAMS_FAILPOINTS="failpointName=true"`
+`TEAMS_FAILPOINTS="failpointName=false"`
+As a shorthand, `TEAMS_FAILPOINTS="failpointName"` is equivalent to `TEAMS_FAILPOINTS="failpointName=true"`
+
+Multiple failpoints are sperated using `;`:
+`TEAMS_FAILPOINTS="failpoint1=false;failpiont2=true;failpint3=1"`
+
+## How to build my component with failpoint activated
+Please check fx-core and vscode-extension for examples. General steps are:
+1. Add `ttypescript` (not a typo, typescript prepended by an extra t) to your devDependency using `npx lerna add ttypescript --dev --scope=your-package-name`
+2. Add `@microsoft/failpoint-ts` to your devDependency using `npx lerna add @microsoft/failpoint-ts --dev --scope=your-package-name`
+3. Add `"plugins": [{ "transform": "../failpoint-ts/transformer/transformer.ts" }]` to `compilerOptions` in `tsconfig.json`
+4. Add `"build-failpoint": "npx ttsc -p ./"`
+
+## How to build the whole world with failpoint actived
+In TeamsFx's root folder, run `npm run setup-failpoint`. Every thing is setup and you are good to go.
+
+## Known limitations
+Currently, source map doesn't work for transformed code. So you may run into problems in debugging failpoint body.
+This library does its best to preserve line numbers. So debugging code other than failpoint body still works.
 ## Acknowledgement
 This library is greatly inspired by [pingcap/failpoint](https://github.com/pingcap/failpoint)

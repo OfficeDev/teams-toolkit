@@ -325,6 +325,11 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
           AzureAccountManager.tenantId = item.session.tenantId;
           AzureAccountManager.subscriptionId = subscriptionId;
           AzureAccountManager.subscriptionName = item.subscription.displayName;
+          await this.saveSubscription({
+            subscriptionId: item.subscription.subscriptionId!,
+            subscriptionName: item.subscription.displayName!,
+            tenantId: item.session.tenantId,
+          });
           TreeViewManagerInstance.getTreeView("teamsfx-accounts")!.refresh([
             {
               commandId: "fx-extension.selectSubscription",
@@ -456,11 +461,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       );
     }
     if (subscriptionList && subscriptionList.length == 1) {
-      await this.saveSubscription({
-        subscriptionId: subscriptionList[0].subscriptionId,
-        subscriptionName: subscriptionList[0].subscriptionName,
-        tenantId: subscriptionList[0].tenantId,
-      });
       await this.setSubscription(subscriptionList[0].subscriptionId);
     } else if (subscriptionList.length > 1) {
       const options: OptionItem[] = subscriptionList.map((sub) => {
@@ -480,15 +480,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         throw result.error;
       } else {
         const subId = result.value.result as string;
-        subscriptionList.filter(async (item) => {
-          if (item.subscriptionId === subId) {
-            await this.saveSubscription({
-              subscriptionId: item.subscriptionId,
-              subscriptionName: item.subscriptionName,
-              tenantId: item.tenantId,
-            });
-          }
-        });
         await this.setSubscription(subId);
       }
     }

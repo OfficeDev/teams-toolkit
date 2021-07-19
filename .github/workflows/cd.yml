@@ -99,6 +99,11 @@ jobs:
         run: |
           echo "::set-output name=CHANGED::$(git tag --points-at HEAD | xargs)"
           echo "::set-output name=TEMPLATE_VERSION::$(git tag --points-at HEAD | grep templates)"
+          VAR=$(git tag --points-at HEAD | grep templates | grep rc)
+          if [ ! -z "$VAR" ]
+          then
+              git push -d origin $VAR
+          fi
 
       - name: update cli ai key
         if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && (github.event.inputs.preid == 'stable'||github.event.inputs.preid == 'rc') }}

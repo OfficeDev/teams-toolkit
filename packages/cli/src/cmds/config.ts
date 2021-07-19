@@ -7,6 +7,7 @@ import { Argv } from "yargs";
 import * as path from "path";
 import { YargsCommand } from "../yargsCommand";
 import { FxError, Question, Result, ok, err, LogLevel } from "@microsoft/teamsfx-api";
+import { dataNeedEncryption } from "@microsoft/teamsfx-core";
 import { UserSettings, CliConfigOptions, CliConfigTelemetry } from "../userSetttings";
 import CLILogProvider from "../commonlib/log";
 import {
@@ -25,15 +26,6 @@ import {
 import activate from "../activate";
 import { NonTeamsFxProjectFolder, ConfigNameNotFound } from "../error";
 import * as constants from "../constants";
-
-const CryptoDataMatchers = new Set([
-  "fx-resource-aad-app-for-teams.clientSecret",
-  "fx-resource-aad-app-for-teams.local_clientSecret",
-  "fx-resource-simple-auth.environmentVariableParams",
-  "fx-resource-bot.botPassword",
-  "fx-resource-bot.localBotPassword",
-  "fx-resource-apim.apimClientAADClientSecret",
-]);
 
 const GlobalOptions = new Set([
   CliConfigOptions.Telemetry as string,
@@ -152,7 +144,7 @@ export class ConfigGet extends YargsCommand {
   ): Promise<Result<null, FxError>> {
     let found = false;
     const secretData = await readProjectSecrets(rootFolder);
-    if (option && secretData[option] && !CryptoDataMatchers.has(option)) {
+    if (option && secretData[option] && !dataNeedEncryption(option)) {
       found = true;
       CLILogProvider.necessaryLog(LogLevel.Info, `${option}: ${secretData[option]}`, true);
       return ok(null);
@@ -168,7 +160,7 @@ export class ConfigGet extends YargsCommand {
       if (!option || option === secretKey) {
         found = true;
         const secretValue = secretData[secretKey];
-        if (CryptoDataMatchers.has(secretKey)) {
+        if (dataNeedEncryption(secretKey)) {
           const decrypted = await core.value.decrypt(secretValue, getSystemInputs(rootFolder));
           if (decrypted.isOk()) {
             CLILogProvider.necessaryLog(LogLevel.Info, `${secretKey}: ${decrypted.value}`, true);
@@ -281,7 +273,7 @@ export class ConfigSet extends YargsCommand {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ConfigSet, error);
       return err(error);
     }
-    if (!CryptoDataMatchers.has(option)) {
+    if (!dataNeedEncryption(option)) {
       secretData[option] = value;
     } else {
       const core = await activate(rootFolder);

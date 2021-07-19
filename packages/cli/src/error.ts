@@ -62,8 +62,8 @@ export function NotSupportedQuestionType(msg: IQuestion): SystemError {
   );
 }
 
-export function ConfigNotFoundError(configpath: string): SystemError {
-  return returnSystemError(
+export function ConfigNotFoundError(configpath: string): UserError {
+  return returnUserError(
     new Error(`Config file ${configpath} does not exists`),
     constants.cliSource,
     "ConfigNotFound"

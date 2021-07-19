@@ -121,11 +121,14 @@ TEAMSFX_FAILPOINTS="callRemoteAPIFailed=\"error\"" node ./index.js
 ### Syntax of TEAMSFX_FAILPOINTS environment vairable
 Injecting ints:
 `TEAMS_FAILPOINTS="failpointName=1"`
+
 Injecting strings:
 `TEAMS_FAILPOINTS="failpointName=\"error\""`
+
 Injecting boolean:
 `TEAMS_FAILPOINTS="failpointName=true"`
 `TEAMS_FAILPOINTS="failpointName=false"`
+
 As a shorthand, `TEAMS_FAILPOINTS="failpointName"` is equivalent to `TEAMS_FAILPOINTS="failpointName=true"`
 
 Multiple failpoints are sperated using `;`:

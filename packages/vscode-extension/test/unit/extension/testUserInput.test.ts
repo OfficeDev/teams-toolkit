@@ -4,7 +4,7 @@
 
 import * as chai from "chai";
 
-import { EInputType, IUserInputItem, TestUserInput } from "../../testUserInput";
+import { EInputType, IUserInputItem, TestUserInput } from "./mocks/testUserInput";
 
 suite("Mock Tests", () => {
   suite("User Input", () => {

@@ -139,13 +139,13 @@ jobs:
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') }}
         run: .github/scripts/template-zip-autogen.sh
 
-      - name: release templates' alpha version to github
+      - name: release templates' prerelease version to github
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event.inputs.preid != 'stable' }}
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: ${{ secrets.CD_PAT }}
           prerelease: true
-          automatic_release_tag: $(tr ' ' '\n' <<< '${{ steps.version-change.outputs.CHANGED }}' | grep 'templates@')
+          automatic_release_tag: "templates@0.0.0-${{github.event.inputs.preid}}"
           files: |
             ./*.zip
 
@@ -162,7 +162,7 @@ jobs:
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event.inputs.preid == 'stable' }}
         run: |
           tr ' ' '\n' <<< '${{ steps.version-change.outputs.CHANGED }}' | grep 'templates@' > ./template-tags.txt
-      
+
       - name: Update Template Tag list Release
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event.inputs.preid == 'stable' }}
         uses: ncipollo/release-action@v1.7.3

@@ -84,7 +84,7 @@ export class FuncToolChecker implements IDepsChecker {
       isVersionSupported =
         portableFuncVersion !== null && supportedVersions.includes(portableFuncVersion);
       // to avoid "func -v" and "func new" work well, but "func start" fail.
-      hasSentinel = await fs.pathExists(FuncToolChecker.getFuncTelemetrySentinelPath());
+      hasSentinel = await fs.pathExists(FuncToolChecker.getSentinelPath());
     } catch (error) {
       // do nothing
       return false;
@@ -136,7 +136,7 @@ export class FuncToolChecker implements IDepsChecker {
       const portableFunc = await this.queryFuncVersion(FuncToolChecker.getPortableFuncExecPath());
       isVersionSupported = portableFunc !== null && supportedVersions.includes(portableFunc);
       // to avoid "func -v" and "func new" work well, but "func start" fail.
-      hasSentinel = await fs.pathExists(FuncToolChecker.getFuncTelemetrySentinelPath());
+      hasSentinel = await fs.pathExists(FuncToolChecker.getSentinelPath());
     } catch (err) {
       this._telemetry.sendSystemErrorEvent(
         DepsCheckerEvent.funcValidationError,
@@ -166,6 +166,10 @@ export class FuncToolChecker implements IDepsChecker {
     return path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "func");
   }
 
+  private static getSentinelPath(): string {
+    return path.join(os.homedir(), `.${ConfigFolderName}`, "sentinel");
+  }
+
   private static getPortableFuncExecPath(): string {
     return path.join(
       FuncToolChecker.getDefaultInstallPath(),
@@ -173,16 +177,6 @@ export class FuncToolChecker implements IDepsChecker {
       "azure-functions-core-tools",
       "lib",
       "main.js"
-    );
-  }
-
-  private static getFuncTelemetrySentinelPath(): string {
-    return path.join(
-      FuncToolChecker.getDefaultInstallPath(),
-      "node_modules",
-      "azure-functions-core-tools",
-      "bin",
-      "telemetryDefaultOn.sentinel"
     );
   }
 
@@ -247,6 +241,7 @@ export class FuncToolChecker implements IDepsChecker {
   private async cleanup(): Promise<void> {
     try {
       await fs.emptyDir(FuncToolChecker.getDefaultInstallPath());
+      await fs.remove(FuncToolChecker.getSentinelPath());
     } catch (err) {
       await this._logger.debug(
         `Failed to clean up path: ${FuncToolChecker.getDefaultInstallPath()}, error: ${err}`
@@ -277,11 +272,13 @@ export class FuncToolChecker implements IDepsChecker {
         { timeout: timeout, shell: false },
         this.getExecCommand("npm"),
         "install",
-        "-f",
+        // not use -f, to avoid npm@6 bug: exit code = 0, even if install fail
         `${funcPackageName}@${version}`,
         "--prefix",
         `${FuncToolChecker.getDefaultInstallPath()}`
       );
+
+      await fs.ensureFile(FuncToolChecker.getSentinelPath());
 
       if (isWindows()) {
         // delete func.ps1 if exists to workaround the powershell execution policy issue:

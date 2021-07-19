@@ -18,8 +18,8 @@ import {
 
 import { IProgressStatus, Result, FxError } from "@microsoft/teamsfx-api";
 
-import { IUserInput } from "../src/userInput";
-import { testFolder } from "./globalVaribles";
+import { IUserInput } from "../../../../src/userInput";
+import { testFolder } from "../utils/globalVaribles";
 
 export enum EInputType {
   defaultValue = "defaultValue",

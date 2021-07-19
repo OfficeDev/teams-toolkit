@@ -42,5 +42,6 @@ test-folder
 
 resource
 !resource/*Param.json
+!src/cmds/preview/depsChecker/resource/
 templates
 *.tgz

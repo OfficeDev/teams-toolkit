@@ -56,7 +56,7 @@ export class TokenProvider {
 
   public static async init(
     ctx: PluginContext,
-    audience: TokenAudience = TokenAudience.AppStudio
+    audience: TokenAudience = TokenAudience.Graph
   ): Promise<void> {
     this.audience = audience;
 

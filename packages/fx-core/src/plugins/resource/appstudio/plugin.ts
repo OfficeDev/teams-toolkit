@@ -506,53 +506,6 @@ export class AppStudioPluginImpl {
     }
   }
 
-  // public async buildTeamsAppPackageHelper(
-  //   ctx: PluginContext,
-  //   appDirectory: string,
-  //   manifestString: string
-  // ): Promise<string> {
-  //   const status = await fs.lstat(appDirectory);
-  //   if (!status.isDirectory()) {
-  //     throw AppStudioResultFactory.UserError(
-  //       AppStudioError.NotADirectoryError.name,
-  //       AppStudioError.NotADirectoryError.message(appDirectory)
-  //     );
-  //   }
-  //   const manifest: TeamsAppManifest = JSON.parse(manifestString);
-  //   const colorFile = `${appDirectory}/${manifest.icons.color}`;
-
-  //   let fileExists = await this.checkFileExist(colorFile);
-  //   if (!fileExists) {
-  //     throw AppStudioResultFactory.UserError(
-  //       AppStudioError.FileNotFoundError.name,
-  //       AppStudioError.FileNotFoundError.message(colorFile)
-  //     );
-  //   }
-
-  //   const outlineFile = `${appDirectory}/${manifest.icons.outline}`;
-  //   fileExists = await this.checkFileExist(outlineFile);
-  //   if (!fileExists) {
-  //     throw AppStudioResultFactory.UserError(
-  //       AppStudioError.FileNotFoundError.name,
-  //       AppStudioError.FileNotFoundError.message(outlineFile)
-  //     );
-  //   }
-
-  //   const zip = new AdmZip();
-  //   zip.addFile(Constants.MANIFEST_FILE, Buffer.from(manifestString));
-  //   zip.addLocalFile(colorFile);
-  //   zip.addLocalFile(outlineFile);
-
-  //   const zipFileName = `${appDirectory}/appPackage.zip`;
-  //   zip.writeZip(zipFileName);
-
-  //   if (this.isSPFxProject(ctx)) {
-  //     await fs.copyFile(zipFileName, `${ctx.root}/SPFx/teams/TeamsSPFxApp.zip`);
-  //   }
-
-  //   return zipFileName;
-  // }
-
   private async beforePublish(
     ctx: PluginContext,
     appDirectory: string,
@@ -1138,45 +1091,6 @@ export class AppStudioPluginImpl {
 
     return ok([appDefinition, _updatedManifest]);
   }
-
-  // private async getManifestHelper(
-  //   ctx: PluginContext,
-  //   maybeSelectedPlugins: Result<Plugin[], FxError>
-  // ): Promise<string | undefined> {
-  //   let manifestString: string | undefined = undefined;
-  //   if (this.isSPFxProject(ctx)) {
-  //     manifestString = (
-  //       await fs.readFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`)
-  //     ).toString();
-  //   } else {
-  //     const manifestTpl = await fs.readJSON(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`);
-  //     const manifest = this.createManifestForRemote(ctx, maybeSelectedPlugins, manifestTpl).map(
-  //       (result) => result[1]
-  //     );
-  //     if (manifest.isOk()) {
-  //       manifestString = JSON.stringify(manifest.value);
-  //     } else {
-  //       ctx.logProvider?.error("[Teams Toolkit] Teams Package build failed!");
-  //       const isProvisionSucceeded = !!(ctx.configOfOtherPlugins
-  //         .get("solution")
-  //         ?.get(SOLUTION_PROVISION_SUCCEEDED) as boolean);
-  //       if (
-  //         manifest.error.name === AppStudioError.GetRemoteConfigError.name &&
-  //         !isProvisionSucceeded
-  //       ) {
-  //         throw err(
-  //           AppStudioResultFactory.UserError(
-  //             AppStudioError.GetRemoteConfigError.name,
-  //             AppStudioError.GetRemoteConfigError.message("Teams package build failed")
-  //           )
-  //         );
-  //       } else {
-  //         throw err(manifest.error);
-  //       }
-  //     }
-  //   }
-  //   return manifestString;
-  // }
 
   private getSelectedPlugins(ctx: PluginContext): Result<Plugin[], FxError> {
     const azureSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;

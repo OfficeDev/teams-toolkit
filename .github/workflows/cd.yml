@@ -59,6 +59,9 @@ jobs:
         run: |
           echo "${{ secrets.NPMRC }}" > ~/.npmrc
 
+      - name: Install Mustache
+        run: curl -sSL https://git.io/get-mo -o mo && chmod +x mo && sudo mv mo /usr/local/bin/
+
       - name: generate templates
         run: .github/scripts/template-zip-autogen.sh
 
@@ -115,15 +118,47 @@ jobs:
         run: |
           npx lerna version --no-private --conventional-commits --conventional-prerelease --preid=rc --no-changelog --yes
 
+      - name: version stable npm packages to npmjs.org
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.preid == 'stable' }}
+        run: |
+          npx lerna version --no-private --conventional-commits --conventional-graduate --no-changelog --yes
+      
+      - name: version change
+        id: version-change
+        run: |
+          echo "::set-output name=CHANGED::$(git tag --points-at HEAD | xargs)"
+
+      - name: update cli ai key
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && (github.event.inputs.preid == 'stable'||github.event.inputs.preid == 'rc') }}
+        uses: jossef/action-set-json-field@v1
+        with:
+          file: ./packages/cli/package.json
+          field: aiKey
+          value: ${{ secrets.CLI_PUBLIC_AIKEY }}
+
+      - name: update extension ai key
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && (github.event.inputs.preid == 'stable'||github.event.inputs.preid == 'rc') }}
+        uses: jossef/action-set-json-field@v1
+        with:
+          file: ./packages/vscode-extension/package.json
+          field: aiKey
+          value: ${{ secrets.EXT_PUBLIC_AIKEY }}
+      
+      - name: commit change on local
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && (github.event.inputs.preid == 'stable'||github.event.inputs.preid == 'rc') }}
+        run: |
+          git add .
+          git commit -m "chore: update ai key"
+
       - name: publish rc npm packages to npmjs.org
         if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.preid == 'rc' }}
         run: |
           npx lerna publish from-package --dist-tag=rc --yes
 
-      - name: release stable npm packages to npmjs.org
-        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.preid == 'stable'}}
+      - name: publish stable npm packages to npmjs.org
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.preid == 'stable' }}
         run: |
-          npx lerna publish --no-private --conventional-commits --conventional-graduate --no-changelog --yes
+          npx lerna publish from-package --yes
 
       - name: pack vsix
         id: pack-vsix
@@ -140,19 +175,8 @@ jobs:
             VERSION=`ls *.vsix | awk -F '.vsix' '{print $1}'`
             echo "::set-output name=VERSION::$VERSION"
 
-      - name: check whether vscode extension changed or not
-        id: extension-checker
-        working-directory: ./packages/vscode-extension
-        run: |
-          if git diff HEAD^ package.json | grep version;
-          then
-            echo "::set-output name=CHANGED::true"
-          else
-            echo "::set-output name=CHANGED::false"
-          fi
-
       - name: release VSCode extension to github
-        if: ${{ steps.extension-checker.outputs.CHANGED == 'true' }}
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') }}
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: ${{ secrets.CD_PAT }}

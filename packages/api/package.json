@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx-api",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "teamsfx framework api",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -21,7 +21,7 @@
     "prepare": "npm run build",
     "lint:fix": "eslint \"src/**/*.ts\" \"tests/**/*.ts\" --fix",
     "doc": "typedoc",
-    "test:unit": "nyc mocha --no-timeouts --require ts-node/register tests/**/*.ts",
+    "test:unit": "nyc mocha --no-timeouts --require ts-node/register \"tests/**/*.ts\"",
     "prepublishOnly": "npm run test:unit && npm run build",
     "precommit": "lint-staged"
   },
@@ -71,11 +71,5 @@
     "*": [
       "npx prettier --config .prettierrc.js --ignore-unknown --write --ignore-path .prettierignore "
     ]
-  },
-  "nyc": {
-    "branches": 70,
-    "lines": 70,
-    "functions": 70,
-    "statements": 70
   }
 }

@@ -7,6 +7,7 @@ import os from "os";
 import path from "path";
 import { promisify } from "util";
 import { v4 as uuidv4 } from "uuid";
+import { sleep } from "../../src/utils";
 
 import { cfg, AadManager, ResourceGroupManager } from "../commonlib";
 
@@ -20,7 +21,8 @@ export async function execAsyncWithRetry(
     env?: NodeJS.ProcessEnv;
     timeout?: number;
   },
-  retries = 3
+  retries = 3,
+  newCommand?: string
 ): Promise<{
   stdout: string;
   stderr: string;
@@ -32,6 +34,10 @@ export async function execAsyncWithRetry(
       return result;
     } catch (e) {
       console.log(`Run \`${command}\` failed with error msg: ${JSON.stringify(e)}.`);
+      if (newCommand) {
+        command = newCommand;
+      }
+      await sleep(10000);
     }
   }
   return execAsync(command, options);

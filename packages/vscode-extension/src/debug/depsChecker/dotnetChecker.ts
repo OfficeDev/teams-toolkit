@@ -72,12 +72,12 @@ export class DotnetChecker implements IDepsChecker {
     };
   }
 
-  public isEnabled(): Promise<boolean> {
-    const enabled = this._adapter.dotnetCheckerEnabled();
+  public async isEnabled(): Promise<boolean> {
+    const enabled = await this._adapter.dotnetCheckerEnabled();
     if (!enabled) {
       this._telemetry.sendEvent(DepsCheckerEvent.dotnetCheckSkipped);
     }
-    return Promise.resolve(enabled);
+    return enabled;
   }
 
   public async isInstalled(): Promise<boolean> {
@@ -90,6 +90,7 @@ export class DotnetChecker implements IDepsChecker {
 
     await this._logger.debug(`[start] check dotnet version`);
     if (dotnetPath !== null && (await this.isDotnetInstalledCorrectly())) {
+      this._telemetry.sendEvent(DepsCheckerEvent.dotnetInstallCompleted);
       return true;
     }
     await this._logger.debug(`[end] check dotnet version`);
@@ -112,7 +113,7 @@ export class DotnetChecker implements IDepsChecker {
 
     const installDir = DotnetChecker.getDefaultInstallPath();
     await this._logger.debug(`[start] install dotnet ${installVersion}`);
-    await this._logger.info(
+    await this._logger.debug(
       Messages.dotnetNotFound.replace("@NameVersion", installedNameWithVersion)
     );
     await this._logger.info(

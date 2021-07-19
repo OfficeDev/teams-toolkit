@@ -20,7 +20,7 @@ const funcPackageName = "azure-functions-core-tools";
 const funcToolName = "Azure Function Core Tool";
 
 const installVersion = FuncVersion.v3;
-const supportedVersions = [FuncVersion.v2, FuncVersion.v3];
+const supportedVersions = [FuncVersion.v3];
 const displayFuncName = `${funcToolName} (v${FuncVersion.v3})`;
 
 const timeout = 5 * 60 * 1000;
@@ -48,7 +48,7 @@ export class FuncToolChecker implements IDepsChecker {
   public async isEnabled(): Promise<boolean> {
     // only for function api
     const hasBackend = await this._adapter.hasTeamsfxBackend();
-    const checkerEnabled = this._adapter.funcToolCheckerEnabled();
+    const checkerEnabled = await this._adapter.funcToolCheckerEnabled();
 
     if (!checkerEnabled) {
       this._telemetry.sendEvent(DepsCheckerEvent.funcCheckSkipped);

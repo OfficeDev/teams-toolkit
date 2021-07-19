@@ -9,7 +9,6 @@ import {
   LogProvider,
   Platform,
   Plugin,
-  LoadedPlugin,
   PluginContext,
   QTreeNode,
   Result,
@@ -19,6 +18,7 @@ import {
   UserError,
   ProjectSettings,
   Colors,
+  AzureSolutionSettings,
 } from "@microsoft/teamsfx-api";
 import { AppStudioPluginImpl } from "./plugin";
 import { Constants } from "./constants";
@@ -27,7 +27,15 @@ import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
 import { manuallySubmitOption, autoPublishOption } from "./questions";
 import { TelemetryUtils, TelemetryEventName, TelemetryPropertyKey } from "./utils/telemetry";
+import { Service } from "typedi";
+import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+@Service(ResourcePlugins.AppStudioPlugin)
 export class AppStudioPlugin implements Plugin {
+  name = "fx-resource-appstudio";
+  displayName = "App Studio";
+  activate(solutionSettings: AzureSolutionSettings): boolean {
+    return true;
+  }
   private appStudioPluginImpl = new AppStudioPluginImpl();
 
   async getQuestions(
@@ -69,24 +77,12 @@ export class AppStudioPlugin implements Plugin {
     return ok(appStudioQuestions);
   }
 
-  public async updateApp(
-    appDefinition: IAppDefinition,
+  public async getAppDefinitionAndUpdate(
+    ctx: PluginContext,
     type: "localDebug" | "remote",
-    createIfNotExist: boolean,
-    teamsAppId?: string,
-    appStudioToken?: string,
-    logProvider?: LogProvider,
-    projectRoot?: string
+    manifest: TeamsAppManifest
   ): Promise<Result<string, FxError>> {
-    return await this.appStudioPluginImpl.updateApp(
-      appDefinition,
-      appStudioToken!,
-      type,
-      createIfNotExist,
-      teamsAppId,
-      logProvider,
-      projectRoot
-    );
+    return await this.appStudioPluginImpl.getAppDefinitionAndUpdate(ctx, type, manifest);
   }
 
   public async createManifest(settings: ProjectSettings): Promise<TeamsAppManifest | undefined> {
@@ -134,67 +130,17 @@ export class AppStudioPlugin implements Plugin {
     return ok(validationResult);
   }
 
-  public getDevAppDefinition(
-    manifest: string,
-    appId: string,
-    domains: string[],
-    webApplicationInfoResource: string,
-    ignoreIcon: boolean,
-    tabEndpoint?: string,
-    appName?: string,
-    version?: string,
-    botId?: string,
-    appNameSuffix?: string
-  ): [IAppDefinition, TeamsAppManifest] {
-    return this.appStudioPluginImpl.getDevAppDefinition(
-      manifest,
-      appId,
-      domains,
-      webApplicationInfoResource,
-      ignoreIcon,
-      tabEndpoint,
-      appName,
-      version,
-      botId,
-      appNameSuffix
-    );
-  }
-
-  public convertToAppDefinition(
-    appManifest: TeamsAppManifest,
-    ignoreIcon: boolean
-  ): IAppDefinition {
-    return this.appStudioPluginImpl.convertToAppDefinition(appManifest, ignoreIcon);
-  }
-
   public createManifestForRemote(
     ctx: PluginContext,
-    maybeSelectedPlugins: Result<LoadedPlugin[], FxError>,
+    maybeSelectedPlugins: Result<Plugin[], FxError>,
     manifest: TeamsAppManifest
   ): Result<[IAppDefinition, TeamsAppManifest], FxError> {
     return this.appStudioPluginImpl.createManifestForRemote(ctx, maybeSelectedPlugins, manifest);
   }
 
-  public getConfigForCreatingManifest(
-    ctx: PluginContext,
-    localDebug: boolean
-  ): Result<
-    {
-      tabEndpoint?: string;
-      tabDomain?: string;
-      aadId: string;
-      botDomain?: string;
-      botId?: string;
-      webApplicationInfoResource: string;
-    },
-    FxError
-  > {
-    return this.appStudioPluginImpl.getConfigForCreatingManifest(ctx, localDebug);
-  }
-
   public createAndConfigTeamsManifest(
     ctx: PluginContext,
-    maybeSelectedPlugins: Result<LoadedPlugin[], FxError>
+    maybeSelectedPlugins: Result<Plugin[], FxError>
   ): Promise<Result<IAppDefinition, FxError>> {
     return this.appStudioPluginImpl.createAndConfigTeamsManifest(ctx, maybeSelectedPlugins);
   }
@@ -315,3 +261,5 @@ export class AppStudioPlugin implements Plugin {
     }
   }
 }
+
+export default new AppStudioPlugin();

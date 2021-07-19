@@ -11,14 +11,19 @@ import CLILogProvider from "../commonlib/log";
 
 export class ConfigGet extends YargsCommand {
   public readonly commandHead = `get`;
-  public readonly command = `${this.commandHead} [option...]`;
+  public readonly command = `${this.commandHead} <option>`;
   public readonly description = "Get user settings.";
 
   public builder(yargs: Argv): Argv<any> {
     return yargs.positional("option", {
       description: "User settings option",
       type: "string",
-      choices: [CliConfigOptions.Telemetry]
+      choices: [
+        CliConfigOptions.Telemetry,
+        CliConfigOptions.EnvCheckerValidateDotnetSdk,
+        CliConfigOptions.EnvCheckerValidateFuncCoreTools,
+        CliConfigOptions.EnvCheckerValidateNode,
+      ],
     });
   }
 
@@ -33,6 +38,27 @@ export class ConfigGet extends YargsCommand {
       case CliConfigOptions.Telemetry:
         CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(config.telemetry, null, 2), true);
         return ok(null);
+      case CliConfigOptions.EnvCheckerValidateDotnetSdk:
+        CLILogProvider.necessaryLog(
+          LogLevel.Info,
+          JSON.stringify(config.envCheckerValidateDotnetSdk, null, 2),
+          true
+        );
+        return ok(null);
+      case CliConfigOptions.EnvCheckerValidateFuncCoreTools:
+        CLILogProvider.necessaryLog(
+          LogLevel.Info,
+          JSON.stringify(config.EnvCheckerValidateFuncCoreTools, null, 2),
+          true
+        );
+        return ok(null);
+      case CliConfigOptions.EnvCheckerValidateNode:
+        CLILogProvider.necessaryLog(
+          LogLevel.Info,
+          JSON.stringify(config.EnvCheckerValidateNode, null, 2),
+          true
+        );
+        return ok(null);
     }
 
     CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(config, null, 2), true);
@@ -46,20 +72,30 @@ export class ConfigSet extends YargsCommand {
   public readonly description = "Set user settings.";
 
   public builder(yargs: Argv): Argv<any> {
-    return yargs.positional("option", {
-      describe: "User settings option",
-      type: "string",
-      choices: [CliConfigOptions.Telemetry]
-    }).positional("value", {
-      describe: "Option value",
-      type: "string",
-      choices: [CliConfigTelemetry.On, CliConfigTelemetry.Off]
-    });
+    return yargs
+      .positional("option", {
+        describe: "User settings option",
+        type: "string",
+        choices: [
+          CliConfigOptions.Telemetry,
+          CliConfigOptions.EnvCheckerValidateDotnetSdk,
+          CliConfigOptions.EnvCheckerValidateFuncCoreTools,
+          CliConfigOptions.EnvCheckerValidateNode,
+        ],
+      })
+      .positional("value", {
+        describe: "Option value",
+        type: "string",
+        choices: [CliConfigTelemetry.On, CliConfigTelemetry.Off],
+      });
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     switch (args.option) {
-      case CliConfigOptions.Telemetry: 
+      case CliConfigOptions.Telemetry:
+      case CliConfigOptions.EnvCheckerValidateDotnetSdk:
+      case CliConfigOptions.EnvCheckerValidateFuncCoreTools:
+      case CliConfigOptions.EnvCheckerValidateNode:
         const opt = { [args.option]: args.value };
         const result = UserSettings.setConfigSync(opt);
         if (result.isErr()) {
@@ -78,10 +114,7 @@ export default class Config extends YargsCommand {
   public readonly command = `${this.commandHead} <action>`;
   public readonly description = "Configure user settings.";
 
-  public readonly subCommands: YargsCommand[] = [
-      new ConfigGet(),
-      new ConfigSet()
-  ];
+  public readonly subCommands: YargsCommand[] = [new ConfigGet(), new ConfigSet()];
 
   public builder(yargs: Argv): Argv<any> {
     this.subCommands.forEach((cmd) => {

@@ -298,5 +298,15 @@ export function getColorizedString(message: Array<{ content: string; color: Colo
       }
     })
     .join("");
-  return colorizedMessage + "\u00A0";
+  return colorizedMessage + (process.stdout.isTTY ? "\u00A0\u001B[K" : "");
+}
+
+/**
+ * Shows in `teamsfx -v`.
+ * @returns the version of teamsfx-cli.
+ */
+export function getVersion(): string {
+  const pkgPath = path.resolve(__dirname, "..", "package.json");
+  const pkgContent = fs.readJsonSync(pkgPath);
+  return pkgContent.version;
 }

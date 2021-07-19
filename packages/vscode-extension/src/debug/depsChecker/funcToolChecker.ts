@@ -75,10 +75,21 @@ export class FuncToolChecker implements IDepsChecker {
   }
 
   public async isPortableFuncInstalled(): Promise<boolean> {
-    const portableFuncVersion = await this.queryFuncVersionSilently(
-      FuncToolChecker.getPortableFuncExecPath()
-    );
-    return portableFuncVersion !== null && supportedVersions.includes(portableFuncVersion);
+    let isVersionSupported = false,
+      hasSentinel = false;
+    try {
+      const portableFuncVersion = await this.queryFuncVersion(
+        FuncToolChecker.getPortableFuncExecPath()
+      );
+      isVersionSupported =
+        portableFuncVersion !== null && supportedVersions.includes(portableFuncVersion);
+      // to avoid "func -v" and "func new" work well, but "func start" fail.
+      hasSentinel = await fs.pathExists(FuncToolChecker.getFuncTelemetrySentinelPath());
+    } catch (error) {
+      // do nothing
+      return false;
+    }
+    return isVersionSupported && hasSentinel;
   }
 
   public async isGlobalFuncInstalled(): Promise<boolean> {
@@ -119,10 +130,13 @@ export class FuncToolChecker implements IDepsChecker {
   }
 
   private async validate(): Promise<boolean> {
-    let isInstallationValid = false;
+    let isVersionSupported = false;
+    let hasSentinel = false;
     try {
       const portableFunc = await this.queryFuncVersion(FuncToolChecker.getPortableFuncExecPath());
-      isInstallationValid = portableFunc !== null && supportedVersions.includes(portableFunc);
+      isVersionSupported = portableFunc !== null && supportedVersions.includes(portableFunc);
+      // to avoid "func -v" and "func new" work well, but "func start" fail.
+      hasSentinel = await fs.pathExists(FuncToolChecker.getFuncTelemetrySentinelPath());
     } catch (err) {
       this._telemetry.sendSystemErrorEvent(
         DepsCheckerEvent.funcValidationError,
@@ -131,10 +145,13 @@ export class FuncToolChecker implements IDepsChecker {
       );
     }
 
-    if (!isInstallationValid) {
-      this._telemetry.sendEvent(DepsCheckerEvent.funcValidationError);
+    if (!isVersionSupported || !hasSentinel) {
+      this._telemetry.sendEvent(DepsCheckerEvent.funcValidationError, {
+        "func-v": String(isVersionSupported),
+        sentinel: String(hasSentinel),
+      });
     }
-    return isInstallationValid;
+    return isVersionSupported && hasSentinel;
   }
 
   private handleNpmNotFound() {
@@ -159,6 +176,16 @@ export class FuncToolChecker implements IDepsChecker {
     );
   }
 
+  private static getFuncTelemetrySentinelPath(): string {
+    return path.join(
+      FuncToolChecker.getDefaultInstallPath(),
+      "node_modules",
+      "azure-functions-core-tools",
+      "bin",
+      "telemetryDefaultOn.sentinel"
+    );
+  }
+
   public async getFuncCommand(): Promise<string> {
     if (await this.isPortableFuncInstalled()) {
       return `node "${FuncToolChecker.getPortableFuncExecPath()}"`;
@@ -167,14 +194,6 @@ export class FuncToolChecker implements IDepsChecker {
       return "func";
     }
     return "npx azure-functions-core-tools@3";
-  }
-
-  private async queryFuncVersionSilently(path: string): Promise<FuncVersion | null> {
-    try {
-      return await this.queryFuncVersion(path);
-    } catch (error) {
-      return null;
-    }
   }
 
   private async queryFuncVersion(path: string): Promise<FuncVersion | null> {

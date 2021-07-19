@@ -157,6 +157,7 @@ jobs:
           name: 'Release for $(tr ' ' '\n' <<< '${{ steps.version-change.outputs.CHANGED }}' | grep 'templates@')'
           token: ${{ secrets.github_token }}
           tag: $(tr ' ' '\n' <<< '${{ steps.version-change.outputs.CHANGED }}' | grep 'templates@')
+          allowUpdates: true
 
       - name: Generate Tag List
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event.inputs.preid == 'stable' }}

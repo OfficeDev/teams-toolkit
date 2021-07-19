@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -x
 
+
 TEMPLATE_FILE_PREFIX=./templates/mustache-templates/teamsBot
 LANGUAGE_LIST=(js ts)
 

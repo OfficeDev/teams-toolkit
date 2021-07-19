@@ -94,7 +94,7 @@
         },
         {
           "id": "teamsfx-teams-dev-center",
-          "name": "Teams Developer Portal"
+          "name": "Developer Portal"
         },
         {
           "id": "teamsfx-feedback",
@@ -255,7 +255,7 @@
       },
       {
         "command": "fx-extension.openAppManagement",
-        "title": "Teams: Teams Developer Portal"
+        "title": "Teams: Developer Portal"
       },
       {
         "command": "fx-extension.openReportIssues",

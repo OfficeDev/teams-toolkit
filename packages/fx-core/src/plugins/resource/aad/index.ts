@@ -85,10 +85,15 @@ export class AadAppForTeamsPlugin implements Plugin {
   private returnError(e: any, ctx: PluginContext, stage: string): AadResult {
     if (e instanceof SystemError || e instanceof UserError) {
       let errorMessage = e.message;
+      // For errors contains innerError, e.g. failures when calling Graph API
       if (e.innerError) {
         errorMessage += ` Detailed error: ${e.innerError.message}.`;
         if (e.innerError.response?.data?.errorMessage) {
+          // For errors return from App Studio API
           errorMessage += ` Reason: ${e.innerError.response?.data?.errorMessage}`;
+        } else if (e.innerError.response?.data?.error?.message) {
+          // For errors return from Graph API
+          errorMessage += ` Reason: ${e.innerError.response?.data?.error?.message}`;
         }
         e.message = errorMessage;
       }

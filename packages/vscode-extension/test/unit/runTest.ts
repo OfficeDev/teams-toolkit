@@ -6,12 +6,10 @@
 import * as path from "path";
 import { runTests } from "vscode-test";
 
-import { testWorkspace } from "./globalVaribles";
-
 async function main() {
   try {
     const extensionDevelopmentPath = path.resolve(__dirname, "../../");
-    const extensionTestsPath = path.resolve(__dirname, "./index.unit");
+    const extensionTestsPath = path.resolve(__dirname, "./index");
     await runTests({
       extensionDevelopmentPath,
       extensionTestsPath: extensionTestsPath,

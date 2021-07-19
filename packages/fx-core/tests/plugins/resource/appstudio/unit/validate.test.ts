@@ -7,11 +7,14 @@ import sinon from "sinon";
 import fs from "fs-extra";
 import path from "path";
 import { AppStudioPlugin } from "./../../../../../src/plugins/resource/appstudio";
-import { ConfigMap, PluginContext, TeamsAppManifest, ok } from "@microsoft/teamsfx-api";
+import { TeamsBot } from "./../../../../../src/plugins/resource/bot";
+import { ConfigMap, PluginContext, TeamsAppManifest, ok, Plugin } from "@microsoft/teamsfx-api";
 
 describe("validate manifest", () => {
   let plugin: AppStudioPlugin;
   let ctx: PluginContext;
+  let BotPlugin: Plugin;
+  let selectedPlugins: Plugin[];
 
   beforeEach(async () => {
     plugin = new AppStudioPlugin();
@@ -21,6 +24,12 @@ describe("validate manifest", () => {
       config: new ConfigMap(),
       app: new TeamsAppManifest(),
     };
+
+    const botplugin: Plugin = new TeamsBot();
+    BotPlugin = botplugin as Plugin;
+    BotPlugin.name = "fx-resource-bot";
+    BotPlugin.displayName = "Bot";
+    selectedPlugins = [BotPlugin];
   });
 
   it("valid manifest", async () => {
@@ -30,7 +39,7 @@ describe("validate manifest", () => {
 
     sinon.stub(plugin, "validateManifest").resolves(ok([]));
 
-    const validationResult = await plugin.validateManifest(ctx, manifestString);
+    const validationResult = await plugin.validateManifest(ctx);
     chai.assert.isTrue(validationResult.isOk());
     if (validationResult.isOk()) {
       chai.expect(validationResult.value).to.have.lengthOf(0);
@@ -48,7 +57,7 @@ describe("validate manifest", () => {
       .stub(plugin, "validateManifest")
       .resolves(ok(["developer | Required properties are missing from object: []."]));
 
-    const validationResult = await plugin.validateManifest(ctx, manifestString);
+    const validationResult = await plugin.validateManifest(ctx);
     chai.assert.isTrue(validationResult.isOk());
     if (validationResult.isOk()) {
       chai.expect(validationResult.value).to.have.lengthOf(1);

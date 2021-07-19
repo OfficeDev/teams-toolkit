@@ -8,6 +8,7 @@ import path from "path";
 import { Options } from "yargs";
 import chalk from "chalk";
 import * as uuid from "uuid";
+import * as dotenv from "dotenv";
 import {
   OptionItem,
   Question,
@@ -16,8 +17,6 @@ import {
   Result,
   FxError,
   ConfigFolderName,
-  ConfigMap,
-  isAutoSkipSelect,
   getSingleOption,
   SingleSelectQuestion,
   MultiSelectQuestion,
@@ -30,46 +29,13 @@ import {
 import { ConfigNotFoundError, ReadFileError } from "./error";
 import AzureAccountManager from "./commonlib/azureLogin";
 
-export function getJson<T>(jsonFilePath: string): T | undefined {
-  if (jsonFilePath && fs.existsSync(jsonFilePath)) {
-    return fs.readJSONSync(path.resolve(jsonFilePath));
-  }
-  return undefined;
-}
-
-export function getParamJson(jsonFilePath: string): { [_: string]: Options } {
-  const jsonContent = getJson<QTreeNode[]>(jsonFilePath);
-  if (jsonContent === undefined) {
-    return {};
-  } else {
-    const params: { [_: string]: Options } = {};
-    jsonContent.forEach((node) => {
-      const data = node.data as Question;
-      if (isAutoSkipSelect(data)) {
-        // set the only option to default value so yargs will auto fill it.
-        data.default = getSingleOptionString(data as SingleSelectQuestion | MultiSelectQuestion);
-        (data as any).hide = true;
-      }
-      params[data.name] = toYargsOptions(data);
-    });
-    return params;
-  }
-}
-
-export function getChoicesFromQTNodeQuestion(
-  data: Question,
-  interactive = false
-): string[] | undefined {
+export function getChoicesFromQTNodeQuestion(data: Question): string[] | undefined {
   const option = "staticOptions" in data ? data.staticOptions : undefined;
   if (option && option instanceof Array && option.length > 0) {
     if (typeof option[0] === "string") {
       return option as string[];
     } else {
-      if (interactive) {
-        return (option as OptionItem[]).map((op) => op.label);
-      } else {
-        return (option as OptionItem[]).map((op) => (op.cliName ? op.cliName : op.id));
-      }
+      return (option as OptionItem[]).map((op) => (op.cliName ? op.cliName : op.id));
     }
   } else {
     return undefined;
@@ -82,7 +48,7 @@ export function getSingleOptionString(
   const singleOption = getSingleOption(q);
   if (q.returnObject) {
     if (q.type === "singleSelect") {
-      return singleOption.id;
+      return typeof singleOption === "string" ? singleOption : singleOption.id;
     } else {
       return [singleOption[0].id];
     }
@@ -124,14 +90,6 @@ export function toYargsOptions(data: Question): Options {
   };
 }
 
-export function toConfigMap(anwsers: { [_: string]: any }): ConfigMap {
-  const config = new ConfigMap();
-  for (const name in anwsers) {
-    config.set(name, anwsers[name]);
-  }
-  return config;
-}
-
 export function flattenNodes(node: QTreeNode): QTreeNode[] {
   const nodeCopy = Object.assign({}, node);
   const children = (nodeCopy.children || []).concat([]);
@@ -166,6 +124,23 @@ export async function readConfigs(rootfolder: string): Promise<Result<any, FxErr
   }
 }
 
+export async function readProjectSecrets(rootFolder: string): Promise<dotenv.DotenvParseOutput> {
+  const secretFile = `${rootFolder}/.${ConfigFolderName}/${getActiveEnv()}.userdata`;
+  const secretData = await fs.readFile(secretFile);
+  const result = dotenv.parse(secretData);
+  return result;
+}
+
+export function writeSecretToFile(secrets: dotenv.DotenvParseOutput, rootFolder: string): void {
+  const secretFile = `${rootFolder}/.${ConfigFolderName}/${getActiveEnv()}.userdata`;
+  const array: string[] = [];
+  for (const secretKey of Object.keys(secrets)) {
+    const secretValue = secrets[secretKey];
+    array.push(`${secretKey}=${secretValue}`);
+  }
+  fs.writeFileSync(secretFile, array.join("\n"));
+}
+
 export async function getSubscriptionIdFromEnvFile(
   rootfolder: string
 ): Promise<string | undefined> {
@@ -198,6 +173,7 @@ export async function setSubscriptionId(
   }
   return ok(null);
 }
+
 export function isWorkspaceSupported(workspace: string): boolean {
   const p = workspace;
 

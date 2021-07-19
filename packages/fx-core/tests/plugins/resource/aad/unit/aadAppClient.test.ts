@@ -438,7 +438,7 @@ describe("AAD App Client Test", () => {
       const secret = "secret";
       const displayName = "getAadApp";
 
-      sinon.stub(GraphClient, "getAadApp").resolves({
+      sinon.stub(AppStudio, "getAadApp").resolves({
         id: objectId,
         appId: clientId,
         displayName: displayName,

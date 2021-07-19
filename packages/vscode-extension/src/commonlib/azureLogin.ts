@@ -508,7 +508,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     if (!subscriptionFilePath) {
       return;
     } else {
-      await fs.writeFile(subscriptionFilePath, JSON.stringify("", null, 4));
+      await fs.writeFile(subscriptionFilePath, "");
     }
   }
 
@@ -523,6 +523,9 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       return undefined;
     } else {
       const content = (await fs.readFile(subscriptionFilePath)).toString();
+      if (content.length == 0) {
+        return undefined;
+      }
       const subcriptionJson = JSON.parse(content);
       return {
         subscriptionId: subcriptionJson.subscriptionId,

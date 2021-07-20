@@ -1,6 +1,7 @@
 import * as chai from "chai";
 import * as vscode from "vscode";
 import * as sinon from "sinon";
+import * as path from "path";
 import * as handlers from "../../../src/handlers";
 import { Inputs, Platform, Stage, VsCodeEnv, ok, err, UserError } from "@microsoft/teamsfx-api";
 import AppStudioTokenInstance from "../../../src/commonlib/appStudioLogin";
@@ -13,7 +14,8 @@ import * as extension from "../../../src/extension";
 
 suite("handlers", () => {
   test("getWorkspacePath()", () => {
-    chai.expect(handlers.getWorkspacePath()).equals(undefined);
+    const expectedPath = path.resolve(__dirname, "../../../../");
+    chai.expect(handlers.getWorkspacePath()).equals(expectedPath);
   });
 
   test("getSystemInputs()", () => {

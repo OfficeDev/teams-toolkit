@@ -167,7 +167,7 @@ export class FuncToolChecker implements IDepsChecker {
   }
 
   private static getSentinelPath(): string {
-    return path.join(os.homedir(), `.${ConfigFolderName}`, "sentinel");
+    return path.join(os.homedir(), `.${ConfigFolderName}`, "func-sentinel");
   }
 
   private static getPortableFuncExecPath(): string {

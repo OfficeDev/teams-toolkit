@@ -90,7 +90,10 @@ export class DotnetChecker implements IDepsChecker {
 
     await this._logger.debug(`[start] check dotnet version`);
     if (dotnetPath !== null && (await this.isDotnetInstalledCorrectly())) {
-      this._telemetry.sendEvent(DepsCheckerEvent.dotnetInstallCompleted);
+      // filter out global sdk
+      if (dotnetPath.includes(".fx")) {
+        this._telemetry.sendEvent(DepsCheckerEvent.dotnetInstallCompleted);
+      }
       return true;
     }
     await this._logger.debug(`[end] check dotnet version`);

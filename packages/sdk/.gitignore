@@ -8,3 +8,4 @@ types/
 coverage-browser/
 test-results*.xml
 .env
+node_modules/

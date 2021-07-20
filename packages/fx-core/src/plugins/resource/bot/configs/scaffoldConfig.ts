@@ -5,6 +5,7 @@ import { CommonStrings, PluginBot, PluginSolution } from "../resources/strings";
 import { ConfigValue, PluginContext } from "@microsoft/teamsfx-api";
 import { ProgrammingLanguage } from "../enums/programmingLanguage";
 import { WayToRegisterBot } from "../enums/wayToRegisterBot";
+import path from "path";
 
 export class ScaffoldConfig {
   public botId?: string;
@@ -23,7 +24,7 @@ export class ScaffoldConfig {
   }
 
   public async restoreConfigFromContext(context: PluginContext): Promise<void> {
-    this.workingDir = `${context.root}/${CommonStrings.BOT_WORKING_DIR_NAME}`;
+    this.workingDir = path.join(context.root, CommonStrings.BOT_WORKING_DIR_NAME);
 
     const botIdValue: ConfigValue = context.config.get(PluginBot.BOT_ID);
     if (botIdValue) {

@@ -101,10 +101,7 @@ export class DepsChecker {
     if (isLinux()) {
       const confirmMessage = await this.generateMsg(validCheckers);
       this._logger.cleanup();
-      return await this._adapter.displayContinueWithLearnMore(
-        confirmMessage,
-        dotnetManualInstallHelpLink
-      );
+      return await this._adapter.displayContinueWithLearnMore(confirmMessage, defaultHelpLink);
     }
 
     this._adapter.showOutputChannel();

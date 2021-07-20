@@ -1,0 +1,27 @@
+# This is just an example workflow for continous integration.
+# You should customize it to meet your own requirements.
+name: 'Continuous Integration'
+on:
+  # When pull requests targeting the dev branch created.
+  pull_request:
+    branches:
+      - dev
+jobs:
+  buildAndTest:
+    runs-on: ubuntu-latest
+    steps:
+      # Setup environment.
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      # Checkout the code.
+      - uses: actions/checkout@v2
+
+      # Build the project.
+      - name: Build the project
+        run: cd tabs && npm install && npm run build
+
+      # Run unit test.
+      - name: Run Unit Test
+        run: cd tabs && npm run test

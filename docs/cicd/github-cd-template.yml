@@ -1,0 +1,40 @@
+# This is just an example workflow for continous deployment.
+# You should customize it to meet your own requirements.
+name: 'Continuous Deployment'
+on:
+  # When new commits are pushed onto the main branch.
+  push:
+    branches:
+      - main
+jobs:
+  buildAndPublish:
+    runs-on: ubuntu-latest
+    env:
+      AZURE_ACCOUNT_NAME: ${{secrets.AZURE_ACCOUNT_NAME}}
+      AZURE_ACCOUNT_PASSWORD: ${{secrets.AZURE_ACCOUNT_PASSWORD}}
+      AZURE_SUBSCRIPTION_ID: ${{secrets.AZURE_SUBSCRIPTION_ID}}
+      AZURE_TENANT_ID: ${{secrets.AZURE_TENANT_ID}}
+      M365_ACCOUNT_NAME: ${{secrets.M365_ACCOUNT_NAME}}
+      M365_ACCOUNT_PASSWORD: ${{secrets.M365_ACCOUNT_PASSWORD}}
+      M365_TENANT_ID: ${{secrets.M365_TENANT_ID}}
+
+    steps:
+      # Checkout the code.
+      - uses: actions/checkout@v2
+      # Provision hosting environment.
+      - uses: OfficeDev/teamsfx-cli-action@v0
+        with:
+          commands: provision
+          subscription: ${{env.AZURE_SUBSCRIPTION_ID}}
+      # Deploy to hosting environment.
+      - uses: OfficeDev/teamsfx-cli-action@v0
+        with:
+          commands: deploy
+      # Validate Teams App Manifest.
+      - uses: OfficeDev/teamsfx-cli-action@v0
+        with:
+          commands: validate
+      # Publish Teams App.
+      - uses: OfficeDev/teamsfx-cli-action@v0
+        with:
+          commands: publish

@@ -34,6 +34,7 @@ import {
   TabOptionItem,
 } from "../../solution/fx-solution/question";
 import {
+  DEFAULT_PERMISSION_REQUEST,
   TEAMS_APP_MANIFEST_TEMPLATE,
   CONFIGURABLE_TABS_TPL,
   STATIC_TABS_TPL,
@@ -67,6 +68,8 @@ import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { Container } from "typedi";
+import { getTemplatesFolder } from "../../..";
+import path from "path";
 
 export class AppStudioPluginImpl {
   public async getAppDefinitionAndUpdate(
@@ -354,6 +357,32 @@ export class AppStudioPluginImpl {
       ctx.logProvider?.info(`Teams app updated ${JSON.stringify(updatedManifest)}`);
       return ok(appDefinition);
     }
+  }
+
+  public async scaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
+    let manifest: TeamsAppManifest | undefined;
+    if (this.isSPFxProject(ctx)) {
+      const templateManifestFolder = path.join(getTemplatesFolder(), "plugins", "resource", "spfx");
+      const manifestFile = path.resolve(templateManifestFolder, "./solution/manifest.json");
+      const manifestString = (await fs.readFile(manifestFile)).toString();
+      manifest = JSON.parse(manifestString);
+    } else {
+      manifest = await this.createManifest(ctx.projectSettings!);
+      // if (manifest) Object.assign(ctx.app, manifest);
+
+      await fs.writeJSON(`${ctx.root}/permissions.json`, DEFAULT_PERMISSION_REQUEST, { spaces: 4 });
+      // ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.Create, {
+      //   [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+      //   [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
+      //   [SolutionTelemetryProperty.Resources]: solutionSettings.azureResources.join(";"),
+      //   [SolutionTelemetryProperty.Capabilities]: solutionSettings.capabilities.join(";"),
+      // });
+    }
+    await fs.writeFile(
+      `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`,
+      JSON.stringify(manifest, null, 4)
+    );
+    return ok(undefined);
   }
 
   public async buildTeamsAppPackage(ctx: PluginContext, appDirectory: string): Promise<string> {

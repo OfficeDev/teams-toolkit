@@ -146,6 +146,9 @@ export class AppStudioPlugin implements Plugin {
     return this.appStudioPluginImpl.createAndConfigTeamsManifest(ctx, maybeSelectedPlugins);
   }
 
+  public async scaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
+    return this.appStudioPluginImpl.scaffold(ctx);
+  }
   /**
    * Build Teams Package
    * @param {string} appDirectory - The directory contains manifest.source.json and two images

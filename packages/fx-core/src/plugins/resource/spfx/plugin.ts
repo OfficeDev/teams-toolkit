@@ -24,7 +24,7 @@ import { getStrings } from "../../../common/tools";
 import { getTemplatesFolder } from "../../..";
 
 export class SPFxPluginImpl {
-  public async scaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
+  public async postScaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
     const webpartName = ctx.answers![SPFXQuestionNames.webpart_name] as string;
     const componentName = Utils.normalizeComponentName(webpartName);
     const componentNameCamelCase = lodash.camelCase(componentName);

@@ -87,9 +87,9 @@ export class SpfxPlugin implements Plugin {
     return ok(spfx_frontend_host);
   }
 
-  public async scaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
+  public async postScaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
     return await this.runWithErrorHandling(ctx, TelemetryEvent.Scaffold, () =>
-      this.spfxPluginImpl.scaffold(ctx)
+      this.spfxPluginImpl.postScaffold(ctx)
     );
   }
 

@@ -297,7 +297,8 @@ export class FunctionPluginImpl {
       DefaultValues.functionTriggerType,
       functionName,
       {
-        appName: ctx.app.name.short,
+        // appName: ctx.app.name.short,
+        appName: ctx.projectSettings!.appName,
         functionName: functionName,
       }
     );

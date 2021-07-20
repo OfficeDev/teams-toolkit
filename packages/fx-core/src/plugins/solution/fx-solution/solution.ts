@@ -275,27 +275,27 @@ export class TeamsAppSolution implements Solution {
 
     await fs.copy(defaultColorPath, `${ctx.root}/.${ConfigFolderName}/color.png`);
     await fs.copy(defaultOutlinePath, `${ctx.root}/.${ConfigFolderName}/outline.png`);
-    if (this.isAzureProject(ctx)) {
-      const manifest = await this.AppStudioPlugin.createManifest(ctx.projectSettings!);
-      // if (manifest) Object.assign(ctx.app, manifest);
-      await fs.writeFile(
-        `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`,
-        JSON.stringify(manifest, null, 4)
-      );
-      await fs.writeJSON(`${ctx.root}/permissions.json`, DEFAULT_PERMISSION_REQUEST, { spaces: 4 });
-      ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.Create, {
-        [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
-        [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
-        [SolutionTelemetryProperty.Resources]: solutionSettings.azureResources.join(";"),
-        [SolutionTelemetryProperty.Capabilities]: solutionSettings.capabilities.join(";"),
-      });
-    } else {
-      const manifest = await (this.SpfxPlugin as SpfxPlugin).getManifest();
-      await fs.writeFile(
-        `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`,
-        JSON.stringify(manifest, null, 4)
-      );
-    }
+    // if (this.isAzureProject(ctx)) {
+    //   const manifest = await this.AppStudioPlugin.createManifest(ctx.projectSettings!);
+    //   // if (manifest) Object.assign(ctx.app, manifest);
+    //   await fs.writeFile(
+    //     `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`,
+    //     JSON.stringify(manifest, null, 4)
+    //   );
+    //   await fs.writeJSON(`${ctx.root}/permissions.json`, DEFAULT_PERMISSION_REQUEST, { spaces: 4 });
+    //   ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.Create, {
+    //     [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+    //     [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
+    //     [SolutionTelemetryProperty.Resources]: solutionSettings.azureResources.join(";"),
+    //     [SolutionTelemetryProperty.Capabilities]: solutionSettings.capabilities.join(";"),
+    //   });
+    // } else {
+    //   const manifest = await (this.SpfxPlugin as SpfxPlugin).getManifest();
+    //   await fs.writeFile(
+    //     `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`,
+    //     JSON.stringify(manifest, null, 4)
+    //   );
+    // }
     return ok(Void);
   }
 
@@ -363,17 +363,17 @@ export class TeamsAppSolution implements Solution {
     ctx: SolutionContext,
     selectedPlugins: LoadedPlugin[]
   ): Promise<Result<any, FxError>> {
-    const appStudioPlugin = this.AppStudioPlugin as AppStudioPlugin;
-    const maybeManifest = await appStudioPlugin.reloadManifestAndCheckRequiredFields(ctx.root);
-    if (maybeManifest.isErr()) {
-      return maybeManifest;
-    }
-    const manifest = maybeManifest.value;
+    // const appStudioPlugin = this.AppStudioPlugin as AppStudioPlugin;
+    // const maybeManifest = await appStudioPlugin.reloadManifestAndCheckRequiredFields(ctx.root);
+    // if (maybeManifest.isErr()) {
+    //   return maybeManifest;
+    // }
+    // const manifest = maybeManifest.value;
 
     const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(
       ctx,
       selectedPlugins,
-      manifest
+      new TeamsAppManifest()
     );
     const preScaffoldWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(([plugin, context]) => {
       return [plugin?.preScaffold?.bind(plugin), context, plugin.name];

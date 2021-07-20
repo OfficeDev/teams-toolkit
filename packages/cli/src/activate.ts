@@ -11,7 +11,6 @@ import AzureAccountManager from "./commonlib/azureLogin";
 import AppStudioTokenProvider from "./commonlib/appStudioLogin";
 import GraphTokenProvider from "./commonlib/graphLogin";
 import CLILogProvider from "./commonlib/log";
-import DialogManagerInstance from "./userInterface";
 import { getSubscriptionIdFromEnvFile } from "./utils";
 import { CliTelemetry } from "./telemetry/cliTelemetry";
 import CLIUIInstance from "./userInteraction";
@@ -32,11 +31,10 @@ export default async function activate(rootPath?: string): Promise<Result<FxCore
     tokenProvider: {
       azureAccountProvider: AzureAccountManager,
       graphTokenProvider: GraphTokenProvider,
-      appStudioToken: AppStudioTokenProvider
+      appStudioToken: AppStudioTokenProvider,
     },
     telemetryReporter: CliTelemetry.getReporter(),
-    dialog: DialogManagerInstance,
-    ui: CLIUIInstance
+    ui: CLIUIInstance,
   };
   const core = new FxCore(tools);
   return ok(core);

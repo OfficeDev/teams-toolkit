@@ -22,8 +22,6 @@ import {
   Dialog,
   DialogMsg,
   IProgressHandler,
-  IMessage,
-  DialogType,
   Platform,
   UserInteraction,
   SingleSelectConfig,
@@ -78,9 +76,6 @@ const expect = chai.expect;
 const aadPlugin = Container.get<Plugin>(ResourcePlugins.AadPlugin) as AadAppForTeamsPlugin;
 const spfxPlugin = Container.get<Plugin>(ResourcePlugins.SpfxPlugin);
 const fehostPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin);
-function instanceOfIMessage(obj: any): obj is IMessage {
-  return "items" in obj;
-}
 class MockUserInteraction implements UserInteraction {
   selectOption(config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> {
     throw new Error("Method not implemented.");
@@ -142,13 +137,6 @@ class MockUserInteraction implements UserInteraction {
 }
 class MockedDialog implements Dialog {
   async communicate(msg: DialogMsg): Promise<DialogMsg> {
-    if (
-      msg.dialogType == DialogType.Show &&
-      instanceOfIMessage(msg.content) &&
-      _.isEqual(["Provision", "Pricing calculator"], msg.content.items)
-    ) {
-      return new DialogMsg(DialogType.Answer, "Provision");
-    }
     throw new Error("Method not implemented.");
   }
 
@@ -268,7 +256,6 @@ class MockedAzureTokenProvider implements AzureAccountProvider {
     };
     return Promise.resolve(selectedSub);
   }
-
 }
 
 function mockSolutionContext(): SolutionContext {

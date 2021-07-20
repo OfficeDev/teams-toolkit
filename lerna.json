@@ -6,6 +6,8 @@
         "packages/sdk",
         "packages/cli",
         "packages/vscode-extension",
+        "packages/simpleauth",
+        "packages/function-extension",
         "templates"
     ],
     "command": {

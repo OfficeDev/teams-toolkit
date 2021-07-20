@@ -1,0 +1,7 @@
+{
+  "name": "simpleauth",
+  "version": "0.1.0",
+  "privat": true,
+  "description": "The Simple Auth is a backend service helping Teams tab app access first/third party services from client side.",
+  "license": "MIT"
+}

@@ -59,6 +59,23 @@ jobs:
         run: |
           echo "${{ secrets.NPMRC }}" > ~/.npmrc
 
+      - name: Setup .NET Core SDK 
+        uses: actions/setup-dotnet@v1.7.2
+        with:
+          dotnet-version: 3.1.x
+
+      - name: Build SimpleAuth
+        run: |
+          dotnet restore
+          dotnet build --configuration Release --no-restore
+        working-directory: ./packages/simpleauth
+
+      - name: Build Function Extension
+        run: |
+          dotnet restore
+          dotnet build --configuration Release --no-restore
+        working-directory: function-extension
+
       - name: Download Simple Auth bits
         uses: nick-invision/retry@v2
         with:
@@ -184,7 +201,6 @@ jobs:
         run: rm -rf ./*.zip && git clean -df
 
       - name: pack vsix
-        id: pack-vsix
         uses: nick-invision/retry@v2
         with:
           timeout_minutes: 10

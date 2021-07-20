@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import chalk from "chalk";
+import path from "path";
 import fs from "fs-extra";
 import * as apis from "@microsoft/teamsfx-api";
 import { Colors, Platform, QTreeNode, UserError } from "@microsoft/teamsfx-api";
@@ -20,10 +20,13 @@ import {
   getTeamsAppId,
   getVersion,
   isWorkspaceSupported,
-  readConfigs,
+  readEnvJsonFile,
+  readEnvJsonFileSync,
+  readProjectSecrets,
   setSubscriptionId,
   sleep,
   toYargsOptions,
+  writeSecretToFile,
 } from "../../src/utils";
 import { expect } from "./utils";
 import AzureAccountManager from "../../src/commonlib/azureLogin";
@@ -194,11 +197,11 @@ describe("Utils Tests", function () {
   });
 
   it("getConfigPath", async () => {
-    const answer = getConfigPath("./");
-    expect(answer).equals(`.//.fx/env.default.json`);
+    const answer = getConfigPath("123", "abc");
+    expect(answer).includes(path.resolve("123", ".fx", "abc"));
   });
 
-  describe("readConfigs", async () => {
+  describe("readEnvJsonFile", async () => {
     const sandbox = sinon.createSandbox();
 
     before(() => {
@@ -219,17 +222,89 @@ describe("Utils Tests", function () {
     });
 
     it("Real Path", async () => {
-      const result = await readConfigs("real");
+      const result = await readEnvJsonFile("real");
       expect(result.isOk() ? result.value : result.error).deep.equals({});
     });
 
     it("Real Path but cannot read", async () => {
-      const result = await readConfigs("realbuterror");
+      const result = await readEnvJsonFile("realbuterror");
       expect(result.isOk() ? result.value : result.error.name).equals("ReadFileError");
     });
 
     it("Fake Path", async () => {
-      const result = await readConfigs("fake");
+      const result = await readEnvJsonFile("fake");
+      expect(result.isOk() ? result.value : result.error.name).equals("ConfigNotFound");
+    });
+  });
+
+  describe("readEnvJsonFileSync", async () => {
+    const sandbox = sinon.createSandbox();
+
+    before(() => {
+      sandbox.stub(fs, "existsSync").callsFake((path: fs.PathLike) => {
+        return path.toString().includes("real");
+      });
+      sandbox.stub(fs, "readJsonSync").callsFake((path: string) => {
+        if (path.includes("realbuterror")) {
+          throw Error("realbuterror");
+        } else {
+          return {};
+        }
+      });
+    });
+
+    after(() => {
+      sandbox.restore();
+    });
+
+    it("Real Path", () => {
+      const result = readEnvJsonFileSync("real");
+      expect(result.isOk() ? result.value : result.error).deep.equals({});
+    });
+
+    it("Real Path but cannot read", () => {
+      const result = readEnvJsonFileSync("realbuterror");
+      expect(result.isOk() ? result.value : result.error.name).equals("ReadFileError");
+    });
+
+    it("Fake Path", () => {
+      const result = readEnvJsonFileSync("fake");
+      expect(result.isOk() ? result.value : result.error.name).equals("ConfigNotFound");
+    });
+  });
+
+  describe("readProjectSecrets", async () => {
+    const sandbox = sinon.createSandbox();
+
+    before(() => {
+      sandbox.stub(fs, "existsSync").callsFake((path: fs.PathLike) => {
+        return path.toString().includes("real");
+      });
+      sandbox.stub(fs, "readFile").callsFake(async (file: string | Buffer | number) => {
+        if (typeof file === "string" && file.includes("realbuterror")) {
+          throw Error("realbuterror");
+        } else {
+          return Promise.resolve(Buffer.from(""));
+        }
+      });
+    });
+
+    after(() => {
+      sandbox.restore();
+    });
+
+    it("Real Path", async () => {
+      const result = await readProjectSecrets("real");
+      expect(result.isOk() ? result.value : result.error).deep.equals({});
+    });
+
+    it("Real Path but cannot read", async () => {
+      const result = await readProjectSecrets("realbuterror");
+      expect(result.isOk() ? result.value : result.error.name).equals("ReadFileError");
+    });
+
+    it("Fake Path", async () => {
+      const result = await readProjectSecrets("fake");
       expect(result.isOk() ? result.value : result.error.name).equals("ConfigNotFound");
     });
   });
@@ -242,7 +317,9 @@ describe("Utils Tests", function () {
         return path.toString().includes("real");
       });
       sandbox.stub(fs, "readJson").callsFake(async (path: string) => {
-        if (path.includes("real")) {
+        if (path.includes("realButNoSolution")) {
+          return {};
+        } else if (path.includes("real")) {
           return {
             solution: {
               subscriptionId: "real",
@@ -261,6 +338,16 @@ describe("Utils Tests", function () {
     it("Real Path", async () => {
       const result = await getSubscriptionIdFromEnvFile("real");
       expect(result).equals("real");
+    });
+
+    it("Real Path but no solution property", async () => {
+      try {
+        await getSubscriptionIdFromEnvFile("realButNoSolution");
+        throw Error("need throw an error");
+      } catch (e) {
+        expect(e).instanceOf(UserError);
+        expect(e.name).equals("InvalidEnvFile");
+      }
     });
 
     it("Fake Path", async () => {
@@ -329,7 +416,7 @@ describe("Utils Tests", function () {
     const sandbox = sinon.createSandbox();
 
     before(() => {
-      sandbox.stub(fs, "pathExistsSync").callsFake((path: fs.PathLike) => {
+      sandbox.stub(fs, "existsSync").callsFake((path: fs.PathLike) => {
         return path.toString().includes("real");
       });
     });
@@ -353,16 +440,14 @@ describe("Utils Tests", function () {
     const sandbox = sinon.createSandbox();
 
     before(() => {
-      sandbox.stub(fs, "pathExistsSync").callsFake((path: fs.PathLike) => {
+      sandbox.stub(fs, "existsSync").callsFake((path: fs.PathLike) => {
         return path.toString().includes("real");
       });
-      sandbox.stub(fs, "readFileSync").returns(
-        JSON.stringify({
-          solution: {
-            remoteTeamsAppId: "real",
-          },
-        })
-      );
+      sandbox.stub(fs, "readJsonSync").returns({
+        solution: {
+          remoteTeamsAppId: "real",
+        },
+      });
     });
 
     after(() => {
@@ -389,16 +474,14 @@ describe("Utils Tests", function () {
     const sandbox = sinon.createSandbox();
 
     before(() => {
-      sandbox.stub(fs, "pathExistsSync").callsFake((path: fs.PathLike) => {
+      sandbox.stub(fs, "existsSync").callsFake((path: fs.PathLike) => {
         return path.toString().includes("real");
       });
-      sandbox.stub(fs, "readFileSync").returns(
-        JSON.stringify({
-          solution: {
-            localDebugTeamsAppId: "real",
-          },
-        })
-      );
+      sandbox.stub(fs, "readJsonSync").returns({
+        solution: {
+          localDebugTeamsAppId: "real",
+        },
+      });
     });
 
     after(() => {

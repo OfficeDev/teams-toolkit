@@ -40,6 +40,7 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
   AccountType,
+  TelemetryErrorType,
 } from "../telemetry/extTelemetryEvents";
 import { VS_CODE_UI } from "../extension";
 import TreeViewManagerInstance from "../commandsTreeViewProvider";
@@ -95,6 +96,10 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         [TelemetryProperty.Success]: TelemetrySuccess.No,
         [TelemetryProperty.UserId]: "",
         [TelemetryProperty.Internal]: "false",
+        [TelemetryProperty.ErrorType]:
+          e instanceof UserError ? TelemetryErrorType.UserError : TelemetryErrorType.SystemError,
+        [TelemetryProperty.ErrorCode]: `${e.source}.${e.name}`,
+        [TelemetryProperty.ErrorMessage]: `${e.message}`,
       });
       throw e;
     }
@@ -284,6 +289,10 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.SignOut, e, {
         [TelemetryProperty.AccountType]: AccountType.Azure,
         [TelemetryProperty.Success]: TelemetrySuccess.No,
+        [TelemetryProperty.ErrorType]:
+          e instanceof UserError ? TelemetryErrorType.UserError : TelemetryErrorType.SystemError,
+        [TelemetryProperty.ErrorCode]: `${e.source}.${e.name}`,
+        [TelemetryProperty.ErrorMessage]: `${e.message}`,
       });
       return Promise.resolve(false);
     }

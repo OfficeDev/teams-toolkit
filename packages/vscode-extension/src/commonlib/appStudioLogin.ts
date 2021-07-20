@@ -16,6 +16,14 @@ import { loggedIn, loggingIn, signedIn, signedOut, signingIn } from "./common/co
 import { login, LoginStatus } from "./common/login";
 import * as StringResources from "../resources/Strings.json";
 import * as util from "util";
+import { ExtTelemetry } from "../telemetry/extTelemetry";
+import {
+  AccountType,
+  TelemetryErrorType,
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetrySuccess,
+} from "../telemetry/extTelemetryEvents";
 
 const accountName = "appStudio";
 const scopes = ["https://dev.teams.microsoft.com/AppDefinitions.ReadWrite"];
@@ -82,6 +90,15 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
         const userConfirmation: boolean = await this.doesUserConfirmLogin();
         if (!userConfirmation) {
           // throw user cancel error
+          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Login, {
+            [TelemetryProperty.AccountType]: AccountType.M365,
+            [TelemetryProperty.Success]: TelemetrySuccess.No,
+            [TelemetryProperty.UserId]: "",
+            [TelemetryProperty.Internal]: "false",
+            [TelemetryProperty.ErrorType]: TelemetryErrorType.UserError,
+            [TelemetryProperty.ErrorCode]: `${StringResources.vsc.codeFlowLogin.loginComponent}.${ExtensionErrors.UserCancel}`,
+            [TelemetryProperty.ErrorMessage]: `${StringResources.vsc.common.userCancel}`,
+          });
           throw new UserError(
             ExtensionErrors.UserCancel,
             StringResources.vsc.common.userCancel,
@@ -126,6 +143,15 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
   async signout(): Promise<boolean> {
     const userConfirmation = await this.doesUserConfirmSignout();
     if (!userConfirmation) {
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SignOut, {
+        [TelemetryProperty.AccountType]: AccountType.M365,
+        [TelemetryProperty.Success]: TelemetrySuccess.No,
+        [TelemetryProperty.UserId]: "",
+        [TelemetryProperty.Internal]: "false",
+        [TelemetryProperty.ErrorType]: TelemetryErrorType.UserError,
+        [TelemetryProperty.ErrorCode]: `${StringResources.vsc.codeFlowLogin.loginComponent}.${ExtensionErrors.UserCancel}`,
+        [TelemetryProperty.ErrorMessage]: `${StringResources.vsc.common.userCancel}`,
+      });
       throw new UserError(
         ExtensionErrors.UserCancel,
         StringResources.vsc.common.userCancel,

@@ -113,8 +113,19 @@ export class AppStudioError {
     message: (error: any) => (error.message ? error.message : "Teams Package built failed!"),
   };
 
+  public static readonly GetRemoteConfigError = {
+    name: "GetRemoteConfigError",
+    message: (error: string) =>
+      `${error}. You must run 'Provision in the Cloud' first to fill out certain fields in manifest.`,
+  };
+
   public static readonly UnhandledError = {
     name: "UnhandledError",
     message: "UnhandledError",
+  };
+
+  public static readonly PluginNotFound = {
+    name: "PluginNotFound",
+    message: (name: string) => `Plugin name ${name} is not valid`,
   };
 }

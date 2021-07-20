@@ -88,7 +88,7 @@ describe("Resource Command Tests", function () {
       if (!id) return ok(null);
       else return err(NotFoundSubscriptionId());
     });
-    sandbox.stub(Utils, "readConfigs").callsFake(async (folder: string) => {
+    sandbox.stub(Utils, "readEnvJsonFile").callsFake(async (folder: string) => {
       if (folder.includes("real")) {
         return ok({
           "fx-resource-function": "fx-resource-function",

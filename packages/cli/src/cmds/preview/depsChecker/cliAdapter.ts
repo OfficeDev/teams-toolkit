@@ -13,6 +13,7 @@ export class CLIAdapter implements IDepsAdapter {
   private readonly downloadIndicatorInterval = 1000; // same as vscode-dotnet-runtime
   private readonly _telemetry: IDepsTelemetry;
   private readonly _hasBackend: boolean;
+  private static ConfigEnabledValue = "on";
 
   constructor(hasBackend: boolean, telemetry: IDepsTelemetry) {
     this._hasBackend = hasBackend;
@@ -113,7 +114,7 @@ export class CLIAdapter implements IDepsAdapter {
     const config = result.value;
 
     if (key in config) {
-      return config[key];
+      return config[key] === CLIAdapter.ConfigEnabledValue;
     } else {
       return true;
     }

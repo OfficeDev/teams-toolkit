@@ -81,7 +81,6 @@ export async function executeConcurrently(
 
   const results = await Promise.all(promises);
   if (logger) logger?.info(`${("[Solution] Execute " + step + "Task summary").padEnd(64, "-")}`);
-  const res: Result<any, FxError>[] = [];
   let failed = false;
   for (let i = 0; i < results.length; ++i) {
     const pair = lifecycleAndContext[i];
@@ -89,7 +88,6 @@ export async function executeConcurrently(
     const context = pair[1];
     const pluginName = pair[2];
     const result = results[i];
-    res.push(result);
     if (!result || !lifecycle) continue;
     const taskname = lifecycle?.name.replace("bound ", "");
     context.logProvider?.info(
@@ -105,7 +103,7 @@ export async function executeConcurrently(
         failed ? "[failed]" : "[ok]"
       }`
     );
-  return res;
+  return results;
 }
 
 /**
@@ -119,9 +117,9 @@ export async function executeLifecycles(
   preLifecycles: LifecyclesWithContext[],
   lifecycles: LifecyclesWithContext[],
   postLifecycles: LifecyclesWithContext[],
-  onPreLifecycleFinished?: () => Promise<Result<any, FxError>>,
+  onPreLifecycleFinished?: (result?: any[]) => Promise<Result<any, FxError>>,
   onLifecycleFinished?: (result?: any[]) => Promise<Result<any, FxError>>,
-  onPostLifecycleFinished?: () => Promise<Result<any, FxError>>
+  onPostLifecycleFinished?: (result?: any[]) => Promise<Result<any, FxError>>
 ): Promise<Result<any, FxError>> {
   // Questions are asked sequentially during preLifecycles.
   const preResult = await executeSequentially("pre", preLifecycles);

@@ -80,7 +80,7 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<void> {
     await saveContext(contextPath, context);
     const core = ctx.self as FxCore;
     core?.tools?.logProvider?.info(
-      "[core]: template version is too low. Will update context and move some configs from env to userdata."
+      "[core]: template version is too low. Updated context and moved some configs from env to userdata."
     );
 
     // Read UserData file.

@@ -59,6 +59,7 @@ import {
   SolutionTelemetryEvent,
   SolutionTelemetryComponentName,
   SolutionTelemetrySuccess,
+  PluginNames,
 } from "./constants";
 
 import {
@@ -489,7 +490,12 @@ export class TeamsAppSolution implements Solution {
         ctx.projectSettings?.appName
       );
       ctx.ui?.showMessage("warn", msg, false);
-      return ok(undefined);
+      const pluginCtx = getPluginContext(ctx, this.AppStudioPlugin.name);
+      const remoteTeamsAppId = await this.AppStudioPlugin.provision(pluginCtx);
+      if (remoteTeamsAppId.isOk()) {
+        ctx.config.get(GLOBAL_CONFIG)?.set(REMOTE_TEAMS_APP_ID, remoteTeamsAppId.value);
+      }
+      return remoteTeamsAppId;
     }
     try {
       // Just to trigger M365 login before the concurrent execution of provision.
@@ -624,26 +630,26 @@ export class TeamsAppSolution implements Solution {
         );
         return ok(undefined);
       },
-      async () => {
+      async (provisionResults?: any[]) => {
         ctx.logProvider?.info("[Teams Toolkit]: provison finished!");
         const aadPlugin = this.AadPlugin as AadAppForTeamsPlugin;
         if (selectedPlugins.some((plugin) => plugin.name === aadPlugin.name)) {
           return aadPlugin.setApplicationInContext(getPluginContext(ctx, aadPlugin.name, manifest));
         }
+        if (provisionWithCtx.length === provisionResults?.length) {
+          provisionWithCtx.map(function (plugin, index) {
+            if (plugin[2] === PluginNames.APPST) {
+              ctx.config
+                .get(GLOBAL_CONFIG)
+                ?.set(REMOTE_TEAMS_APP_ID, provisionResults[index].value);
+            }
+          });
+        }
         return ok(undefined);
       },
       async () => {
-        const pluginCtx = getPluginContext(ctx, this.AppStudioPlugin.name);
-        const result = await this.AppStudioPlugin.createAndConfigTeamsManifest(
-          pluginCtx,
-          maybeSelectedPlugins
-        );
-        if (result.isErr()) {
-          return err(result.error);
-        }
-        ctx.config.get(GLOBAL_CONFIG)?.set(REMOTE_TEAMS_APP_ID, result.value.appId);
         ctx.logProvider?.info("[Teams Toolkit]: configuration finished!");
-        return result;
+        return ok(undefined);
       }
     );
   }
@@ -835,17 +841,19 @@ export class TeamsAppSolution implements Solution {
 
       ctx.logProvider?.info(`[Solution] publish start!`);
 
-      const result = await executeConcurrently("", publishWithCtx);
+      const results = await executeConcurrently("", publishWithCtx);
 
-      if (!result.isOk()) {
-        const msg = util.format(
-          getStrings().solution.PublishFailNotice,
-          ctx.projectSettings?.appName
-        );
-        ctx.logProvider?.info(msg);
+      for (const result of results) {
+        if (result.isErr()) {
+          const msg = util.format(
+            getStrings().solution.PublishFailNotice,
+            ctx.projectSettings?.appName
+          );
+          ctx.logProvider?.info(msg);
+          return result;
+        }
       }
-
-      return result;
+      return ok(undefined);
     } finally {
       this.runningState = SolutionRunningState.Idle;
     }
@@ -1170,10 +1178,13 @@ export class TeamsAppSolution implements Solution {
       }
     );
 
-    const localDebugResult = await executeConcurrently("", localDebugWithCtx);
-    if (localDebugResult.isErr()) {
-      return localDebugResult;
+    const localDebugResults = await executeConcurrently("", localDebugWithCtx);
+    for (const localDebugResult of localDebugResults) {
+      if (localDebugResult.isErr()) {
+        return localDebugResult;
+      }
     }
+
     const aadPlugin = this.AadPlugin as AadAppForTeamsPlugin;
     if (selectedPlugins.some((plugin) => plugin.name === aadPlugin.name)) {
       const result = aadPlugin.setApplicationInContext(
@@ -1190,9 +1201,11 @@ export class TeamsAppSolution implements Solution {
       return result;
     }
 
-    const postLocalDebugResult = await executeConcurrently("post", postLocalDebugWithCtx);
-    if (postLocalDebugResult.isErr()) {
-      return postLocalDebugResult;
+    const postLocalDebugResults = await executeConcurrently("post", postLocalDebugWithCtx);
+    for (const postLocalDebugResult of postLocalDebugResults) {
+      if (postLocalDebugResult.isErr()) {
+        return postLocalDebugResult;
+      }
     }
 
     const localTeamsAppID = ctx.config.get(GLOBAL_CONFIG)?.getString(LOCAL_DEBUG_TEAMS_APP_ID);

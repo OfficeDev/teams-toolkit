@@ -186,6 +186,107 @@ export class AppStudioPluginImpl {
     });
   }
 
+  public async provision(ctx: PluginContext): Promise<string> {
+    let remoteTeamsAppId = ctx.configOfOtherPlugins
+      .get("solution")
+      ?.get(REMOTE_TEAMS_APP_ID) as string;
+
+    let create = false;
+    if (!remoteTeamsAppId) {
+      create = true;
+    } else {
+      const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
+      try {
+        await AppStudioClient.getApp(remoteTeamsAppId, appStudioToken!, ctx.logProvider);
+      } catch (error) {
+        ctx.logProvider?.error(error);
+        create = true;
+      }
+    }
+
+    if (create) {
+      let manifest: TeamsAppManifest;
+      const manifestResult = await this.reloadManifestAndCheckRequiredFields(ctx.root);
+      if (manifestResult.isErr()) {
+        throw manifestResult;
+      } else {
+        manifest = manifestResult.value;
+      }
+
+      let appDefinition: IAppDefinition;
+      if (this.isSPFxProject(ctx)) {
+        appDefinition = this.convertToAppDefinition(manifest, false);
+      } else {
+        const selectedPlugins = this.getSelectedPlugins(ctx);
+        const remoteManifest = this.createManifestForRemote(ctx, selectedPlugins, manifest);
+        if (remoteManifest.isErr()) {
+          throw remoteManifest;
+        }
+        [appDefinition] = remoteManifest.value;
+      }
+
+      const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
+      const result = await this.updateApp(
+        appDefinition,
+        appStudioToken!,
+        "remote",
+        true,
+        undefined,
+        ctx.logProvider,
+        ctx.root
+      );
+      if (result.isErr()) {
+        throw result;
+      }
+
+      ctx.logProvider?.info(`Teams app created ${result.value}`);
+      remoteTeamsAppId = result.value;
+    }
+    return remoteTeamsAppId;
+  }
+
+  public async postProvision(ctx: PluginContext): Promise<string> {
+    const remoteTeamsAppId = ctx.configOfOtherPlugins
+      .get("solution")
+      ?.get(REMOTE_TEAMS_APP_ID) as string;
+    let manifest: TeamsAppManifest;
+    const manifestResult = await this.reloadManifestAndCheckRequiredFields(ctx.root);
+    if (manifestResult.isErr()) {
+      throw manifestResult;
+    } else {
+      manifest = manifestResult.value;
+    }
+
+    let appDefinition: IAppDefinition;
+    if (this.isSPFxProject(ctx)) {
+      appDefinition = this.convertToAppDefinition(manifest, false);
+    } else {
+      const selectedPlugins = this.getSelectedPlugins(ctx);
+      const remoteManifest = this.createManifestForRemote(ctx, selectedPlugins, manifest);
+      if (remoteManifest.isErr()) {
+        throw remoteManifest;
+      }
+      [appDefinition] = remoteManifest.value;
+    }
+
+    const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
+    const result = await this.updateApp(
+      appDefinition,
+      appStudioToken!,
+      "remote",
+      false,
+      remoteTeamsAppId,
+      ctx.logProvider,
+      ctx.root
+    );
+    if (result.isErr()) {
+      throw result;
+    }
+
+    ctx.logProvider?.info(`Teams app updated: ${result.value}`);
+    return remoteTeamsAppId;
+  }
+
   public async validateManifest(ctx: PluginContext): Promise<Result<string[], FxError>> {
     const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
     let manifestString: string | undefined = undefined;
@@ -282,78 +383,6 @@ export class AppStudioPluginImpl {
         botId
       )
     );
-  }
-
-  /**
-   * The assumptions of this function are:
-   * 1. this.manifest is not undefined(for azure projects) already contains the latest manifest(loaded via reloadManifestAndCheckRequiredFields)
-   * 2. provision of frontend hosting is done and config values has already been loaded into ctx.config
-   * @param ctx
-   * @param maybeSelectedPlugins
-   * @returns
-   */
-  public async createAndConfigTeamsManifest(
-    ctx: PluginContext,
-    maybeSelectedPlugins: Result<Plugin[], FxError>
-  ): Promise<Result<IAppDefinition, FxError>> {
-    const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx.root);
-    if (maybeManifest.isErr()) {
-      return err(maybeManifest.error);
-    }
-    const manifest = maybeManifest.value;
-
-    let appDefinition: IAppDefinition;
-    let updatedManifest: TeamsAppManifest;
-    if (this.isSPFxProject(ctx)) {
-      appDefinition = this.convertToAppDefinition(manifest, false);
-      updatedManifest = manifest;
-    } else {
-      const result = this.createManifestForRemote(ctx, maybeSelectedPlugins, manifest);
-      if (result.isErr()) {
-        return err(result.error);
-      }
-      [appDefinition, updatedManifest] = result.value;
-    }
-
-    const teamsAppId = ctx.configOfOtherPlugins.get("solution")?.get(REMOTE_TEAMS_APP_ID) as string;
-    if (!teamsAppId) {
-      ctx.logProvider?.info(`Teams app not created`);
-      const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
-      const result = await this.updateApp(
-        appDefinition,
-        appStudioToken!,
-        "remote",
-        true,
-        undefined,
-        ctx.logProvider,
-        ctx.root
-      );
-      if (result.isErr()) {
-        return result.map((_) => appDefinition);
-      }
-
-      ctx.logProvider?.info(`Teams app created ${result.value}`);
-      appDefinition.appId = result.value;
-      return ok(appDefinition);
-    } else {
-      ctx.logProvider?.info(`Teams app already created: ${teamsAppId}`);
-      appDefinition.appId = teamsAppId;
-      const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
-      const result = await this.updateApp(
-        appDefinition,
-        appStudioToken!,
-        "remote",
-        false,
-        teamsAppId,
-        ctx.logProvider,
-        ctx.root
-      );
-      if (result.isErr()) {
-        return result.map((_) => appDefinition);
-      }
-      ctx.logProvider?.info(`Teams app updated ${JSON.stringify(updatedManifest)}`);
-      return ok(appDefinition);
-    }
   }
 
   public async buildTeamsAppPackage(ctx: PluginContext, appDirectory: string): Promise<string> {

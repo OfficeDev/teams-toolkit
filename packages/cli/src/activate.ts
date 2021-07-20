@@ -12,7 +12,6 @@ import AppStudioTokenProvider from "./commonlib/appStudioLogin";
 import GraphTokenProvider from "./commonlib/graphLogin";
 import CLILogProvider from "./commonlib/log";
 import DialogManagerInstance from "./userInterface";
-import { getSubscriptionIdFromEnvFile } from "./utils";
 import { CliTelemetry } from "./telemetry/cliTelemetry";
 import CLIUIInstance from "./userInteraction";
 
@@ -22,12 +21,6 @@ export default async function activate(rootPath?: string): Promise<Result<FxCore
     const subscriptionInfo = await AzureAccountManager.readSubscription();
     if (subscriptionInfo) {
       await AzureAccountManager.setSubscription(subscriptionInfo.subscriptionId);
-    }
-    const subscription = await getSubscriptionIdFromEnvFile(rootPath);
-    if (subscription) {
-      try {
-        await AzureAccountManager.setSubscription(subscription);
-      } catch {}
     }
     CliTelemetry.setReporter(CliTelemetry.getReporter().withRootFolder(rootPath));
   }

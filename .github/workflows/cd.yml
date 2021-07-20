@@ -216,6 +216,7 @@ jobs:
           allowUpdates: true  
 
       - name: pack vsix
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') }}
         uses: nick-invision/retry@v2
         with:
           timeout_minutes: 10

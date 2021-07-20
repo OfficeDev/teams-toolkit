@@ -75,10 +75,21 @@ export class FuncToolChecker implements IDepsChecker {
   }
 
   public async isPortableFuncInstalled(): Promise<boolean> {
-    const portableFuncVersion = await this.queryFuncVersionSilently(
-      FuncToolChecker.getPortableFuncExecPath()
-    );
-    return portableFuncVersion !== null && supportedVersions.includes(portableFuncVersion);
+    let isVersionSupported = false,
+      hasSentinel = false;
+    try {
+      const portableFuncVersion = await this.queryFuncVersion(
+        FuncToolChecker.getPortableFuncExecPath()
+      );
+      isVersionSupported =
+        portableFuncVersion !== null && supportedVersions.includes(portableFuncVersion);
+      // to avoid "func -v" and "func new" work well, but "func start" fail.
+      hasSentinel = await fs.pathExists(FuncToolChecker.getSentinelPath());
+    } catch (error) {
+      // do nothing
+      return false;
+    }
+    return isVersionSupported && hasSentinel;
   }
 
   public async isGlobalFuncInstalled(): Promise<boolean> {
@@ -119,10 +130,13 @@ export class FuncToolChecker implements IDepsChecker {
   }
 
   private async validate(): Promise<boolean> {
-    let isInstallationValid = false;
+    let isVersionSupported = false;
+    let hasSentinel = false;
     try {
       const portableFunc = await this.queryFuncVersion(FuncToolChecker.getPortableFuncExecPath());
-      isInstallationValid = portableFunc !== null && supportedVersions.includes(portableFunc);
+      isVersionSupported = portableFunc !== null && supportedVersions.includes(portableFunc);
+      // to avoid "func -v" and "func new" work well, but "func start" fail.
+      hasSentinel = await fs.pathExists(FuncToolChecker.getSentinelPath());
     } catch (err) {
       this._telemetry.sendSystemErrorEvent(
         DepsCheckerEvent.funcValidationError,
@@ -131,10 +145,13 @@ export class FuncToolChecker implements IDepsChecker {
       );
     }
 
-    if (!isInstallationValid) {
-      this._telemetry.sendEvent(DepsCheckerEvent.funcValidationError);
+    if (!isVersionSupported || !hasSentinel) {
+      this._telemetry.sendEvent(DepsCheckerEvent.funcValidationError, {
+        "func-v": String(isVersionSupported),
+        sentinel: String(hasSentinel),
+      });
     }
-    return isInstallationValid;
+    return isVersionSupported && hasSentinel;
   }
 
   private handleNpmNotFound() {
@@ -147,6 +164,10 @@ export class FuncToolChecker implements IDepsChecker {
 
   private static getDefaultInstallPath(): string {
     return path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "func");
+  }
+
+  private static getSentinelPath(): string {
+    return path.join(os.homedir(), `.${ConfigFolderName}`, "func-sentinel");
   }
 
   private static getPortableFuncExecPath(): string {
@@ -167,14 +188,6 @@ export class FuncToolChecker implements IDepsChecker {
       return "func";
     }
     return "npx azure-functions-core-tools@3";
-  }
-
-  private async queryFuncVersionSilently(path: string): Promise<FuncVersion | null> {
-    try {
-      return await this.queryFuncVersion(path);
-    } catch (error) {
-      return null;
-    }
   }
 
   private async queryFuncVersion(path: string): Promise<FuncVersion | null> {
@@ -228,6 +241,7 @@ export class FuncToolChecker implements IDepsChecker {
   private async cleanup(): Promise<void> {
     try {
       await fs.emptyDir(FuncToolChecker.getDefaultInstallPath());
+      await fs.remove(FuncToolChecker.getSentinelPath());
     } catch (err) {
       await this._logger.debug(
         `Failed to clean up path: ${FuncToolChecker.getDefaultInstallPath()}, error: ${err}`
@@ -258,11 +272,13 @@ export class FuncToolChecker implements IDepsChecker {
         { timeout: timeout, shell: false },
         this.getExecCommand("npm"),
         "install",
-        "-f",
+        // not use -f, to avoid npm@6 bug: exit code = 0, even if install fail
         `${funcPackageName}@${version}`,
         "--prefix",
         `${FuncToolChecker.getDefaultInstallPath()}`
       );
+
+      await fs.ensureFile(FuncToolChecker.getSentinelPath());
 
       if (isWindows()) {
         // delete func.ps1 if exists to workaround the powershell execution policy issue:

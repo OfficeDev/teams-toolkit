@@ -114,21 +114,21 @@ export class ConfigGet extends YargsCommand {
       case CliConfigOptions.EnvCheckerValidateDotnetSdk:
         CLILogProvider.necessaryLog(
           LogLevel.Info,
-          JSON.stringify(config.envCheckerValidateDotnetSdk, null, 2),
+          JSON.stringify(config[CliConfigOptions.EnvCheckerValidateDotnetSdk], null, 2),
           true
         );
         return ok(null);
       case CliConfigOptions.EnvCheckerValidateFuncCoreTools:
         CLILogProvider.necessaryLog(
           LogLevel.Info,
-          JSON.stringify(config.EnvCheckerValidateFuncCoreTools, null, 2),
+          JSON.stringify(config[CliConfigOptions.EnvCheckerValidateFuncCoreTools], null, 2),
           true
         );
         return ok(null);
       case CliConfigOptions.EnvCheckerValidateNode:
         CLILogProvider.necessaryLog(
           LogLevel.Info,
-          JSON.stringify(config.EnvCheckerValidateNode, null, 2),
+          JSON.stringify(config[CliConfigOptions.EnvCheckerValidateNode], null, 2),
           true
         );
         return ok(null);

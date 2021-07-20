@@ -65,18 +65,14 @@ jobs:
           dotnet-version: 3.1.x
 
       - name: Build SimpleAuth
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid != 'alpha'}}
         run: |
           dotnet restore
           dotnet build --configuration Release --no-restore
         working-directory: ./packages/simpleauth
 
-      - name: Build Function Extension
-        run: |
-          dotnet restore
-          dotnet build --configuration Release --no-restore
-        working-directory: function-extension
-
       - name: Download Simple Auth bits
+        if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/dev' && github.event.inputs.preid == 'alpha')}}
         uses: nick-invision/retry@v2
         with:
           timeout_minutes: 10
@@ -116,6 +112,7 @@ jobs:
         run: |
           echo "::set-output name=CHANGED::$(git tag --points-at HEAD | xargs)"
           echo "::set-output name=TEMPLATE_VERSION::$(git tag --points-at HEAD | grep templates)"
+          echo "::set-output name=SIMPLEAUTH_VERSOIN::$(git tag --points-at HEAD | grep simpleauth | awk -F '@' '{print$2}')"
           VAR=$(git tag --points-at HEAD | grep templates | grep rc)
           if [ ! -z "$VAR" ]
           then
@@ -199,6 +196,24 @@ jobs:
     
       - name: cleanup templates
         run: rm -rf ./*.zip && git clean -df
+      
+      - name: Zip dotnet
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid != 'alpha'}}
+        uses: papeloto/action-zip@v1
+        with:
+          files: ./packages/simpleauth/src/TeamsFxSimpleAuth/bin/Release/netcoreapp3.1
+          dest: ./packages/fx-core/templates/plugins/resource/simpleauth/SimpleAuth.zip
+      
+      - name: Release SimpleAuth to GitHub
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid != 'alpha'}}
+        uses: ncipollo/release-action@v1.7.3
+        with:
+          artifacts: ./packages/fx-core/templates/plugins/resource/simpleauth/SimpleAuth.zip
+          name: 'Simple Auth ${{ SIMPLEAUTH_VERSOIN }}'
+          body: 'Release SimpleAuth to GitHub Release page.'
+          token: ${{ secrets.github_token }}
+          tag: ${{ steps.version-change.outputs.SIMPLEAUTH_VERSOIN }}
+          allowUpdates: true  
 
       - name: pack vsix
         uses: nick-invision/retry@v2

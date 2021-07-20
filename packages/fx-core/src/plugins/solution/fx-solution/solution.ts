@@ -632,10 +632,6 @@ export class TeamsAppSolution implements Solution {
       },
       async (provisionResults?: any[]) => {
         ctx.logProvider?.info("[Teams Toolkit]: provison finished!");
-        const aadPlugin = this.AadPlugin as AadAppForTeamsPlugin;
-        if (selectedPlugins.some((plugin) => plugin.name === aadPlugin.name)) {
-          return aadPlugin.setApplicationInContext(getPluginContext(ctx, aadPlugin.name, manifest));
-        }
         if (provisionWithCtx.length === provisionResults?.length) {
           provisionWithCtx.map(function (plugin, index) {
             if (plugin[2] === PluginNames.APPST) {
@@ -644,6 +640,10 @@ export class TeamsAppSolution implements Solution {
                 ?.set(REMOTE_TEAMS_APP_ID, provisionResults[index].value);
             }
           });
+        }
+        const aadPlugin = this.AadPlugin as AadAppForTeamsPlugin;
+        if (selectedPlugins.some((plugin) => plugin.name === aadPlugin.name)) {
+          return aadPlugin.setApplicationInContext(getPluginContext(ctx, aadPlugin.name, manifest));
         }
         return ok(undefined);
       },

@@ -213,17 +213,7 @@ export class AppStudioPluginImpl {
         manifest = manifestResult.value;
       }
 
-      let appDefinition: IAppDefinition;
-      if (this.isSPFxProject(ctx)) {
-        appDefinition = this.convertToAppDefinition(manifest, false);
-      } else {
-        const selectedPlugins = this.getSelectedPlugins(ctx);
-        const remoteManifest = this.createManifestForRemote(ctx, selectedPlugins, manifest);
-        if (remoteManifest.isErr()) {
-          throw remoteManifest;
-        }
-        [appDefinition] = remoteManifest.value;
-      }
+      const appDefinition: IAppDefinition = this.convertToAppDefinition(manifest, false);
 
       const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
       const result = await this.updateApp(

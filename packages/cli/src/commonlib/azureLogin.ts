@@ -11,6 +11,7 @@ import {
   SubscriptionInfo,
   OptionItem,
   SingleSelectConfig,
+  ConfigFolderName,
 } from "@microsoft/teamsfx-api";
 import { CodeFlowLogin, LoginFailureError, ConvertTokenToJson } from "./codeFlowLogin";
 import { MemoryCache } from "./memoryCache";
@@ -22,6 +23,7 @@ import { NotFoundSubscriptionId, NotSupportedProjectType } from "../error";
 import {
   changeLoginTenantMessage,
   env,
+  envDefaultJsonFile,
   failToFindSubscription,
   loginComponent,
   MFACode,
@@ -30,11 +32,15 @@ import {
   signedIn,
   signedOut,
   subscription,
+  subscriptionInfoFile,
 } from "./common/constant";
 import { login, LoginStatus } from "./common/login";
 import { LogLevel as LLevel } from "@microsoft/teamsfx-api";
 import { CodeFlowTenantLogin } from "./codeFlowTenantLogin";
 import CLIUIInstance from "../userInteraction";
+import * as path from "path";
+import * as fs from "fs-extra";
+import { isWorkspaceSupported } from "../utils";
 
 const accountName = "azure";
 const scopes = ["https://management.core.windows.net/user_impersonation"];
@@ -84,6 +90,8 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   private static domain: string | undefined;
   private static username: string | undefined;
   private static subscriptionId: string | undefined;
+  private static subscriptionName: string | undefined;
+  private static rootPath: string | undefined;
   //user set tenantId
   private static tenantId: string | undefined;
 
@@ -443,8 +451,14 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     for (let i = 0; i < list.length; ++i) {
       const item = list[i];
       if (item.subscriptionId === subscriptionId) {
+        await this.saveSubscription({
+          subscriptionId: item.subscriptionId,
+          subscriptionName: item.subscriptionName,
+          tenantId: item.tenantId,
+        });
         AzureAccountManager.tenantId = item.tenantId;
         AzureAccountManager.subscriptionId = item.subscriptionId;
+        AzureAccountManager.subscriptionName = item.subscriptionName;
         return;
       }
     }
@@ -505,9 +519,91 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       const selectedSub: SubscriptionInfo = {
         subscriptionId: AzureAccountManager.subscriptionId,
         tenantId: AzureAccountManager.tenantId!,
-        subscriptionName: "",
+        subscriptionName: AzureAccountManager.subscriptionName ?? "",
       };
       return selectedSub;
+    } else {
+      return undefined;
+    }
+  }
+
+  public setRootPath(rootPath: string): void {
+    AzureAccountManager.rootPath = rootPath;
+  }
+
+  async saveSubscription(subscriptionInfo: SubscriptionInfo): Promise<void> {
+    const subscriptionFilePath = await this.getSubscriptionInfoPath();
+    if (!subscriptionFilePath) {
+      return;
+    } else {
+      await fs.writeFile(subscriptionFilePath, JSON.stringify(subscriptionInfo, null, 4));
+    }
+  }
+
+  async readSubscription(): Promise<SubscriptionInfo | undefined> {
+    const subscriptionFilePath = await this.getSubscriptionInfoPath();
+    if (!subscriptionFilePath || !fs.existsSync(subscriptionFilePath)) {
+      const solutionSubscriptionInfo = await this.getSubscriptionInfoFromEnv();
+      if (solutionSubscriptionInfo) {
+        await this.saveSubscription(solutionSubscriptionInfo);
+        return solutionSubscriptionInfo;
+      }
+      return undefined;
+    } else {
+      const content = (await fs.readFile(subscriptionFilePath)).toString();
+      if (content.length == 0) {
+        return undefined;
+      }
+      const subcriptionJson = JSON.parse(content);
+      return {
+        subscriptionId: subcriptionJson.subscriptionId,
+        tenantId: subcriptionJson.tenantId,
+        subscriptionName: subcriptionJson.subscriptionName,
+      };
+    }
+  }
+
+  async getSubscriptionInfoPath(): Promise<string | undefined> {
+    if (AzureAccountManager.rootPath) {
+      if (isWorkspaceSupported(AzureAccountManager.rootPath)) {
+        const subscriptionFile = path.join(
+          AzureAccountManager.rootPath,
+          `.${ConfigFolderName}`,
+          subscriptionInfoFile
+        );
+        return subscriptionFile;
+      } else {
+        return undefined;
+      }
+    } else {
+      return undefined;
+    }
+  }
+
+  async getSubscriptionInfoFromEnv(): Promise<SubscriptionInfo | undefined> {
+    if (AzureAccountManager.rootPath) {
+      if (!isWorkspaceSupported(AzureAccountManager.rootPath)) {
+        return undefined;
+      }
+      const envDefalultFile = path.join(
+        AzureAccountManager.rootPath,
+        `.${ConfigFolderName}`,
+        envDefaultJsonFile
+      );
+      if (!fs.existsSync(envDefalultFile)) {
+        return undefined;
+      }
+      const envDefaultJson = (await fs.readFile(envDefalultFile)).toString();
+      const envDefault = JSON.parse(envDefaultJson);
+      if (envDefault.solution && envDefault.solution.subscriptionId) {
+        return {
+          subscriptionId: envDefault.solution.subscriptionId,
+          tenantId: envDefault.solution.tenantId,
+          subscriptionName: "",
+        };
+      } else {
+        return undefined;
+      }
     } else {
       return undefined;
     }

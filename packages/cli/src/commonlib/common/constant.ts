@@ -42,3 +42,6 @@ export const failToFindSubscription = "Failed to find a subscription.";
 export const subscription = "subscription";
 export const selectSubscription = "Select a subscription";
 export const loginComponent = "login";
+
+export const subscriptionInfoFile = "subscriptionInfo.json";
+export const envDefaultJsonFile = "env.default.json";

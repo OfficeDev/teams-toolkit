@@ -30,10 +30,14 @@ export async function getSubscriptionId(): Promise<string | undefined> {
   if (projectConfigRes.isOk()) {
     if (projectConfigRes.value) {
       const solutionConfig = projectConfigRes.value.config;
-      if (solutionConfig) {
+      if (solutionConfig && solutionConfig.get("solution")?.get("subscriptionId")) {
         return solutionConfig.get("solution")?.get("subscriptionId");
       }
     }
+  }
+  const subscriptionInfo = await AzureAccountManager.getSelectedSubscription();
+  if (subscriptionInfo) {
+    return subscriptionInfo.subscriptionId;
   }
   // else {
   //   showError(projectConfigRes.error);
@@ -73,9 +77,8 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
 
   getSelectSubItem = async (token: any): Promise<[TreeItem, boolean]> => {
     let selectSubLabel = "";
-    const subscriptions:
-      | SubscriptionInfo[]
-      | undefined = await tools.tokenProvider.azureAccountProvider.listSubscriptions();
+    const subscriptions: SubscriptionInfo[] | undefined =
+      await tools.tokenProvider.azureAccountProvider.listSubscriptions();
     if (subscriptions) {
       const activeSubscriptionId = await getSubscriptionId();
       const activeSubscription = subscriptions.find(

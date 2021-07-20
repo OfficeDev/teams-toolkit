@@ -51,8 +51,8 @@
       "feedbackDescription": "Send feedback",
       "reportIssuesTitle": "Report issues",
       "reportIssuesDescription": "Report issues",
-      "teamsDevPortalTitle": "Go To Teams Developer Portal",
-      "teamsDevPortalDescription": "Go To Teams Developer Portal"
+      "teamsDevPortalTitle": "Go To Developer Portal",
+      "teamsDevPortalDescription": "Go To Developer Portal"
     },
     "handlers": {
       "concurrentTriggerTask": "Task '%s' is still running. Wait for it to complete before starting another task.",

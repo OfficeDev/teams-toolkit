@@ -29,6 +29,9 @@ export interface Core {
     inputs: Inputs
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
 
+  /**
+   * Used for encryption of secrets in user data file
+   */
   encrypt: (plaintext: string, inputs: Inputs) => Promise<Result<string, FxError>>;
   decrypt: (ciphertext: string, inputs: Inputs) => Promise<Result<string, FxError>>;
 }

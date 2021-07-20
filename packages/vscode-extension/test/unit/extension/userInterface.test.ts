@@ -3,7 +3,7 @@
 "use strict";
 
 import * as chai from "chai";
-import { Uri } from "vscode";
+import { ExtensionContext, Uri } from "vscode";
 import {
   DialogMsg,
   DialogType,
@@ -21,7 +21,7 @@ import DialogManagerInstance from "../../../src/userInterface";
 import { testFolder } from "./utils/globalVaribles";
 import { EInputType, IUserInputItem, TestUserInput } from "./mocks/testUserInput";
 import { sleep } from "../../../src/utils/commonUtils";
-import { VS_CODE_UI } from "../../../src/extension";
+import { VsCodeUI } from "../../../src/qm/vsc_ui";
 
 suite("UI Unit Tests", async () => {
   suiteSetup(() => {
@@ -52,7 +52,6 @@ suite("UI Unit Tests", async () => {
           description: "Error",
           level: MsgLevel.Error,
         });
-        for (let i = 0; i < 1e9; ++i) {} // simulate the large calculated work.
       });
     });
 
@@ -87,6 +86,7 @@ suite("UI Unit Tests", async () => {
 
     test("Show Progress 2", async function (this: Mocha.Context) {
       this.timeout(0);
+      const VS_CODE_UI = new VsCodeUI(<ExtensionContext>{});
       const handler = VS_CODE_UI.createProgressBar("Test Progress Bar", 3);
 
       await handler.start("Prepare");
@@ -111,31 +111,6 @@ suite("UI Unit Tests", async () => {
         description: "cd ../../../..",
       });
       // TODO: do some special command and check it.
-    });
-
-    test("Communicate", async () => {
-      chai.assert.deepEqual(
-        await DialogManagerInstance.communicate(
-          new DialogMsg(DialogType.Show, {
-            description: "test",
-            level: MsgLevel.Info,
-          })
-        ),
-        new DialogMsg(DialogType.Answer, "Show Successfully")
-      );
-
-      chai.assert.deepEqual(
-        await DialogManagerInstance.communicate(
-          new DialogMsg(DialogType.Output, {
-            description: "test",
-            level: MsgLevel.Info,
-          })
-        ),
-        new DialogMsg(DialogType.Show, {
-          description: "",
-          level: MsgLevel.Info,
-        })
-      );
     });
   });
 
@@ -220,30 +195,6 @@ suite("UI Unit Tests", async () => {
           })) === Uri.file(testFolder).fsPath
         );
       });
-    });
-
-    test("Communicate", async () => {
-      (ext.ui as TestUserInput).addInputItems([{ type: EInputType.defaultValue }]);
-
-      // chai.assert.deepEqual(
-      //   await DialogManagerInstance.communicate(
-      //     new DialogMsg(DialogType.Ask, {
-      //       type: QuestionType.Radio,
-      //       description: "test",
-      //       defaultAnswer: "a",
-      //       options: ["a", "b", "c"],
-      //     })
-      //   ),
-      //   new DialogMsg(DialogType.Answer, "a")
-      // );
-
-      // chai.assert.deepEqual(
-      //   await DialogManagerInstance.communicate(new DialogMsg(DialogType.Answer, "abc")),
-      //   new DialogMsg(DialogType.Show, {
-      //     description: "",
-      //     level: MsgLevel.Error,
-      //   })
-      // );
     });
   });
 });

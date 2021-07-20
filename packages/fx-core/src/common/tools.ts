@@ -138,6 +138,11 @@ const CryptoDataMatchers = new Set([
   "fx-resource-apim.apimClientAADClientSecret",
 ]);
 
+/**
+ * Only data related to secrets need encryption.
+ * @param key - the key name of data in user data file
+ * @returns whether it needs encryption
+ */
 export function dataNeedEncryption(key: string): boolean {
   return CryptoDataMatchers.has(key);
 }

@@ -136,6 +136,7 @@ jobs:
               fi
             fi
           done
+
   report-coverage:
     if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-latest
@@ -171,7 +172,7 @@ jobs:
         id: unit-test
         shell: bash
         run: |
-          npx lerna run test:unit
+          xvfb-run -a npx lerna run test:unit
           for i in $(find . -name coverage-summary.json); do
             package=$(basename $(dirname $(dirname $i)))
             az storage entity insert \

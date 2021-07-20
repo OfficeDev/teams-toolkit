@@ -57,6 +57,7 @@ import {
   LOCAL_WEB_APPLICATION_INFO_SOURCE,
   WEB_APPLICATION_INFO_SOURCE,
   PluginNames,
+  SOLUTION_PROVISION_SUCCEEDED,
 } from "../../solution/fx-solution/constants";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
@@ -64,6 +65,8 @@ import { Constants } from "./constants";
 import { REMOTE_TEAMS_APP_ID, REMOTE_MANIFEST } from "../../solution/fx-solution/constants";
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
+import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+import { Container } from "typedi";
 
 export class AppStudioPluginImpl {
   public async getAppDefinitionAndUpdate(
@@ -183,9 +186,46 @@ export class AppStudioPluginImpl {
     });
   }
 
-  public async validateManifest(ctx: PluginContext, manifestString: string): Promise<string[]> {
+  public async validateManifest(ctx: PluginContext): Promise<Result<string[], FxError>> {
     const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
-    return await AppStudioClient.validateManifest(manifestString, appStudioToken!);
+    let manifestString: string | undefined = undefined;
+    if (this.isSPFxProject(ctx)) {
+      manifestString = (
+        await fs.readFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`)
+      ).toString();
+    } else {
+      const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx.root);
+      if (maybeManifest.isErr()) {
+        return err(maybeManifest.error);
+      }
+      const manifestTpl = maybeManifest.value;
+      const maybeSelectedPlugins = this.getSelectedPlugins(ctx);
+      const manifest = this.createManifestForRemote(ctx, maybeSelectedPlugins, manifestTpl).map(
+        (result) => result[1]
+      );
+      if (manifest.isOk()) {
+        manifestString = JSON.stringify(manifest.value);
+      } else {
+        ctx.logProvider?.error("[Teams Toolkit] Manifest Validation failed!");
+        const isProvisionSucceeded = !!(ctx.configOfOtherPlugins
+          .get("solution")
+          ?.get(SOLUTION_PROVISION_SUCCEEDED) as boolean);
+        if (
+          manifest.error.name === AppStudioError.GetRemoteConfigError.name &&
+          !isProvisionSucceeded
+        ) {
+          return err(
+            AppStudioResultFactory.UserError(
+              AppStudioError.GetRemoteConfigError.name,
+              AppStudioError.GetRemoteConfigError.message("Manifest validation failed")
+            )
+          );
+        } else {
+          return err(manifest.error);
+        }
+      }
+    }
+    return ok(await AppStudioClient.validateManifest(manifestString, appStudioToken!));
   }
 
   public createManifestForRemote(
@@ -316,11 +356,40 @@ export class AppStudioPluginImpl {
     }
   }
 
-  public async buildTeamsAppPackage(
-    ctx: PluginContext,
-    appDirectory: string,
-    manifestString: string
-  ): Promise<string> {
+  public async buildTeamsAppPackage(ctx: PluginContext, appDirectory: string): Promise<string> {
+    let manifestString: string | undefined = undefined;
+    if (this.isSPFxProject(ctx)) {
+      manifestString = (
+        await fs.readFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`)
+      ).toString();
+    } else {
+      const manifestTpl = await fs.readJSON(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`);
+      const maybeSelectedPlugins = this.getSelectedPlugins(ctx);
+      const manifest = this.createManifestForRemote(ctx, maybeSelectedPlugins, manifestTpl).map(
+        (result) => result[1]
+      );
+      if (manifest.isOk()) {
+        manifestString = JSON.stringify(manifest.value);
+      } else {
+        ctx.logProvider?.error("[Teams Toolkit] Teams Package build failed!");
+        const isProvisionSucceeded = !!(ctx.configOfOtherPlugins
+          .get("solution")
+          ?.get(SOLUTION_PROVISION_SUCCEEDED) as boolean);
+        if (
+          manifest.error.name === AppStudioError.GetRemoteConfigError.name &&
+          !isProvisionSucceeded
+        ) {
+          throw err(
+            AppStudioResultFactory.UserError(
+              AppStudioError.GetRemoteConfigError.name,
+              AppStudioError.GetRemoteConfigError.message("Teams package build failed")
+            )
+          );
+        } else {
+          throw err(manifest.error);
+        }
+      }
+    }
     const status = await fs.lstat(appDirectory);
     if (!status.isDirectory()) {
       throw AppStudioResultFactory.UserError(
@@ -448,7 +517,10 @@ export class AppStudioPluginImpl {
     try {
       // Validate manifest
       await publishProgress?.start("Validating manifest file");
-      const validationResult = await this.validateManifest(ctx, manifestString!);
+      const validationResult = await AppStudioClient.validateManifest(
+        manifestString!,
+        (await ctx.appStudioToken?.getAccessToken())!
+      );
       if (validationResult.length > 0) {
         throw AppStudioResultFactory.UserError(
           AppStudioError.ValidationFailedError.name,
@@ -489,7 +561,7 @@ export class AppStudioPluginImpl {
 
       // Build Teams App package
       await publishProgress?.next(`Building Teams app package in ${appDirectory}.`);
-      const appPackage = await this.buildTeamsAppPackage(ctx, appDirectory, manifestString!);
+      const appPackage = await this.buildTeamsAppPackage(ctx, appDirectory);
 
       const appContent = await fs.readFile(appPackage);
       appStudioToken = await ctx.appStudioToken?.getAccessToken();
@@ -1018,5 +1090,32 @@ export class AppStudioPluginImpl {
     );
 
     return ok([appDefinition, _updatedManifest]);
+  }
+
+  private getSelectedPlugins(ctx: PluginContext): Result<Plugin[], FxError> {
+    const azureSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
+
+    const plugins = new Map<string, Plugin>();
+    for (const k in ResourcePlugins) {
+      const plugin = Container.get<Plugin>(k);
+      if (plugin) {
+        plugins.set(plugin.name, plugin);
+      }
+    }
+
+    const results: Plugin[] = [];
+    for (const name of azureSettings.activeResourcePlugins) {
+      const plugin = plugins.get(name);
+      if (!plugin) {
+        return err(
+          AppStudioResultFactory.UserError(
+            AppStudioError.PluginNotFound.name,
+            AppStudioError.PluginNotFound.message(name)
+          )
+        );
+      }
+      results.push(plugin);
+    }
+    return ok(results);
   }
 }

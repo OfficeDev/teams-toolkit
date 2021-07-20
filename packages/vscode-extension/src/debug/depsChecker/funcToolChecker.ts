@@ -146,7 +146,7 @@ export class FuncToolChecker implements IDepsChecker {
   }
 
   private static getDefaultInstallPath(): string {
-    return path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "func test"); // TODO: fix it after testing
+    return path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "func");
   }
 
   private static getPortableFuncExecPath(): string {

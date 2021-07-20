@@ -62,8 +62,8 @@ export function NotSupportedQuestionType(msg: IQuestion): SystemError {
   );
 }
 
-export function ConfigNotFoundError(configpath: string): SystemError {
-  return returnSystemError(
+export function ConfigNotFoundError(configpath: string): UserError {
+  return returnUserError(
     new Error(`Config file ${configpath} does not exists`),
     constants.cliSource,
     "ConfigNotFound"
@@ -108,5 +108,21 @@ export function NoInitializedHelpGenerator(): SystemError {
     new Error(`Please call the async function -- initializeQuestionsForHelp firstly!`),
     constants.cliSource,
     "NoInitializedHelpGenerator"
+  );
+}
+
+export function NonTeamsFxProjectFolder(): UserError {
+  return returnUserError(
+    new Error(`Current folder is not a TeamsFx project folder.`),
+    constants.cliSource,
+    "NonTeamsFxProjectFolder"
+  );
+}
+
+export function ConfigNameNotFound(name: string): UserError {
+  return returnUserError(
+    new Error(`Config ${name} is not found in project.`),
+    constants.cliSource,
+    "ConfigNameNotFound"
   );
 }

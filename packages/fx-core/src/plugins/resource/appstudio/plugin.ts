@@ -214,6 +214,8 @@ export class AppStudioPluginImpl {
       }
 
       const appDefinition: IAppDefinition = this.convertToAppDefinition(manifest, false);
+      appDefinition.bots = undefined;
+      appDefinition.messagingExtensions = undefined;
 
       const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
       const result = await this.updateApp(

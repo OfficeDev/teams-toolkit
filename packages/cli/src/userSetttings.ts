@@ -23,6 +23,11 @@ export enum CliConfigTelemetry {
   Off = "off",
 }
 
+export enum CliConfigEnvChecker {
+  On = "on",
+  Off = "off",
+}
+
 export class UserSettings {
   public static getUserSettingsFile(): string {
     const homeDir = os.homedir();

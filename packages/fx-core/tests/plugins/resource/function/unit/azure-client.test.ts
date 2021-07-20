@@ -24,6 +24,38 @@ const resourceGroupName = "ut";
 
 describe(FunctionPluginInfo.pluginName, async () => {
   describe("Azure Client Test", async () => {
+    it("Test ensureResourceProvider with existence", async () => {
+      // Arrange
+      const item: any = { registrationState: "Registered" };
+      const namespace = ["ut"];
+      const client: any = {
+        get: (namespace: string) => item,
+        register: (namespace: string) => item,
+      };
+
+      // Act
+      const res = await AzureLib.ensureResourceProviders(client, namespace);
+
+      // Assert
+      chai.assert.deepEqual(res, [item]);
+    });
+
+    it("Test ensureResourceProvider", async () => {
+      // Arrange
+      const item: any = { registrationState: "Unregistered" };
+      const namespace = ["ut"];
+      const client: any = {
+        get: (namespace: string) => item,
+        register: (namespace: string) => item,
+      };
+
+      // Act
+      const res = await AzureLib.ensureResourceProviders(client, namespace);
+
+      // Assert
+      chai.assert.deepEqual(res, [item]);
+    });
+
     it("Test ensureAppServicePlans with existence", async () => {
       // Arrange
       const item: any = { name: "ut" };

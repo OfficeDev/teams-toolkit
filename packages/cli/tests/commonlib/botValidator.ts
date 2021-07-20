@@ -41,7 +41,7 @@ class DependentPluginInfo {
     public static readonly aadClientId: string = "clientId";
     public static readonly aadClientSecret: string = "clientSecret";
     public static readonly oauthHost: string = "oauthHost";
-    public static readonly tenantId: string = "tenantId";
+    public static readonly teamsAppTenantId: string = "teamsAppTenantId";
     public static readonly applicationIdUris: string = "applicationIdUris";
 }
 
@@ -72,7 +72,7 @@ export class BotValidator {
         expectValues.set(BaseConfig.M365_APPLICATION_ID_URI, ctx[DependentPluginInfo.aadPluginName][DependentPluginInfo.applicationIdUris] as string);
         expectValues.set(BaseConfig.M365_AUTHORITY_HOST, "https://login.microsoftonline.com");
         expectValues.set(BaseConfig.M365_CLIENT_ID, ctx[DependentPluginInfo.aadPluginName][DependentPluginInfo.aadClientId] as string);
-        expectValues.set(BaseConfig.M365_TENANT_ID, ctx[DependentPluginInfo.solutionPluginName][DependentPluginInfo.tenantId] as string);
+        expectValues.set(BaseConfig.M365_TENANT_ID, ctx[DependentPluginInfo.solutionPluginName][DependentPluginInfo.teamsAppTenantId] as string);
         botObject.expectValues = expectValues;
 
         console.log("Successfully init validator for Bot.");

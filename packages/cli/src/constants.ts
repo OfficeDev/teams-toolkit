@@ -3,43 +3,11 @@
 
 "use strict";
 
-import * as path from "path";
-
 import { QTreeNode } from "@microsoft/teamsfx-api";
 
 export const cliSource = "TeamsfxCLI";
 export const cliName = "teamsfx";
 export const cliTelemetryPrefix = "teamsfx-cli";
-
-export const paramFolder = path.resolve(__dirname, "../resource");
-export const newParamPath = path.resolve(paramFolder, "newParam.json");
-
-export const resourceAddSqlParamPath = path.resolve(paramFolder, "resourceAddSqlParam.json");
-export const resourceAddFunctionParamPath = path.resolve(
-  paramFolder,
-  "resourceAddFunctionParam.json"
-);
-export const resourceAddApimParamPath = path.resolve(paramFolder, "resourceAddApimParam.json");
-
-export const capabilityAddTabParamPath = path.resolve(paramFolder, "capabilityAddTabParam.json");
-export const capabilityAddBotParamPath = path.resolve(paramFolder, "capabilityAddBotParam.json");
-export const capabilityAddMessageExtensionParamPath = path.resolve(
-  paramFolder,
-  "capabilityAddMessageExtensionParam.json"
-);
-export const resourceListParamPath = path.resolve(paramFolder, "resourceListParam.json");
-export const resourceShowFunctionParamPath = path.resolve(
-  paramFolder,
-  "resourceShowFunctionParam.json"
-);
-export const resourceShowSQLParamPath = path.resolve(paramFolder, "resourceShowSQLParam.json");
-export const resourceShowApimParamPath = path.resolve(paramFolder, "resourceShowApimParam.json");
-
-export const provisionParamPath = path.resolve(paramFolder, "provisionParam.json");
-export const deployParamPath = path.resolve(paramFolder, "deployParam.json");
-export const publishParamPath = path.resolve(paramFolder, "publishParam.json");
-export const buildParamPath = path.resolve(paramFolder, "buildParam.json");
-export const validateParamPath = path.resolve(paramFolder, "validateParam.json");
 
 export const RootFolderNode = new QTreeNode({
   type: "folder",
@@ -92,10 +60,11 @@ export const templates: {
   {
     tags: ["Easy QnA", "Bot", "JS"],
     title: "FAQ Plus",
-    description: "Conversational Bot which answers common questions, looping human when bots unable to help",
+    description:
+      "Conversational Bot which answers common questions, looping human when bots unable to help",
     sampleAppName: "faq-plus",
-    sampleAppUrl: "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip"
-  }
+    sampleAppUrl: "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip",
+  },
 ];
 
 export enum CLILogLevel {
@@ -103,3 +72,6 @@ export enum CLILogLevel {
   verbose,
   debug,
 }
+
+export const sqlPasswordQustionName = "sql-password";
+export const sqlPasswordConfirmQuestionName = "sql-confirm-password";

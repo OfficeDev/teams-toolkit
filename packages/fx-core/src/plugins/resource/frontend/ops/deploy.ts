@@ -11,13 +11,14 @@ import {
   runWithErrorCatchAndThrow,
   NoBuildPathError,
 } from "../resources/errors";
-import { Commands, Constants, FrontendPathInfo } from "../constants";
+import { Commands, Constants, FrontendPathInfo, TelemetryEvent } from "../constants";
 import { DeploySteps, ProgressHelper } from "../utils/progress-helper";
 import { Logger } from "../utils/logger";
 import { Messages } from "../resources/messages";
 import { Utils } from "../utils";
 import fs from "fs-extra";
 import path from "path";
+import { TelemetryHelper } from "../utils/telemetry-helper";
 
 interface DeploymentInfo {
   lastBuildTime?: string;
@@ -64,8 +65,9 @@ export class FrontendDeployment {
   }
 
   public static async skipBuild(): Promise<void> {
+    Logger.info(Messages.SkipBuild);
+
     const progressHandler = ProgressHelper.deployProgress;
-    Logger.info(Messages.SkipBuild());
     await progressHandler?.next(DeploySteps.NPMInstall);
     await progressHandler?.next(DeploySteps.Build);
   }
@@ -112,8 +114,10 @@ export class FrontendDeployment {
   }
 
   public static async skipDeployment(): Promise<void> {
+    TelemetryHelper.sendGeneralEvent(TelemetryEvent.SkipDeploy);
+    Logger.warning(Messages.SkipDeploy);
+
     const progressHandler = ProgressHelper.deployProgress;
-    Logger.info(Messages.SkipDeploy());
     await progressHandler?.next(DeploySteps.getSrcAndDest);
     await progressHandler?.next(DeploySteps.Clear);
     await progressHandler?.next(DeploySteps.Upload);

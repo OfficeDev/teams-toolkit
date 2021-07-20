@@ -13,62 +13,62 @@ import { AppStudioClient } from "./../../../../../src/plugins/resource/appstudio
 import { PublishingState } from "./../../../../../src/plugins/resource/appstudio/interfaces/IPublishingAppDefinition";
 import { AppStudio } from "./../../../../../src/plugins/solution/fx-solution/appstudio/appstudio";
 import { mockTokenProvider } from "./../../aad/helper";
-import { mockDialogProvider } from "./../helper";
+import { MockUserInteraction } from "./../helper";
 
 describe("Publish Teams app", () => {
-    let plugin: AppStudioPlugin;
-    let ctx: PluginContext;
-    const appPackagePath = path.resolve(__dirname, "./../resources/.fx/appPackage.zip");
+  let plugin: AppStudioPlugin;
+  let ctx: PluginContext;
+  const appPackagePath = path.resolve(__dirname, "./../resources/.fx/appPackage.zip");
 
-    beforeEach(async () => {
-        const manifestFile = path.resolve(__dirname, "./../resources/valid.manifest.json");
-        const manifest = await fs.readJson(manifestFile);
+  beforeEach(async () => {
+    const manifestFile = path.resolve(__dirname, "./../resources/valid.manifest.json");
+    const manifest = await fs.readJson(manifestFile);
 
-        plugin = new AppStudioPlugin();
-        ctx = {
-            root: path.resolve(__dirname, "./../resources"),
-            configOfOtherPlugins: new Map(),
-            config: new ConfigMap(),
-            app: manifest,
-            appStudioToken: mockTokenProvider(),
-            answers:{platform: Platform.VSCode}
-        };
-        sinon.stub(AppStudioClient, "validateManifest").resolves([]);
-        sinon.stub(AppStudioClient, "publishTeamsApp").resolves(uuid());
-        sinon.stub(AppStudioClient, "publishTeamsAppUpdate").resolves(uuid());
-        sinon.stub(AppStudio, "updateApp").resolves();
-    })
+    plugin = new AppStudioPlugin();
+    ctx = {
+      root: path.resolve(__dirname, "./../resources"),
+      configOfOtherPlugins: new Map(),
+      config: new ConfigMap(),
+      app: manifest,
+      appStudioToken: mockTokenProvider(),
+      answers: { platform: Platform.VSCode },
+    };
+    sinon.stub(AppStudioClient, "validateManifest").resolves([]);
+    sinon.stub(AppStudioClient, "publishTeamsApp").resolves(uuid());
+    sinon.stub(AppStudioClient, "publishTeamsAppUpdate").resolves(uuid());
+    sinon.stub(AppStudio, "updateApp").resolves();
+  });
 
-    afterEach(async() => {
-        sinon.restore();
-        if (await fs.pathExists(appPackagePath)) {
-            await fs.remove(appPackagePath);
-        }
-    })
+  afterEach(async () => {
+    sinon.restore();
+    if (await fs.pathExists(appPackagePath)) {
+      await fs.remove(appPackagePath);
+    }
+  });
 
-    it("Publish teams app", async () => {
-        sinon.stub(AppStudioClient, "getAppByTeamsAppId").resolves(undefined);
-        const teamsAppId = await plugin.publish(ctx);
-        chai.assert.isTrue(teamsAppId.isOk());
-        if (teamsAppId.isOk()) {
-            chai.assert.isNotEmpty(teamsAppId.value);
-        }
-    });
+  it("Publish teams app", async () => {
+    sinon.stub(AppStudioClient, "getAppByTeamsAppId").resolves(undefined);
+    const teamsAppId = await plugin.publish(ctx);
+    chai.assert.isTrue(teamsAppId.isOk());
+    if (teamsAppId.isOk()) {
+      chai.assert.isNotEmpty(teamsAppId.value);
+    }
+  });
 
-    it("Update a submitted app", async () => {
-        const mockApp = {
-            lastModifiedDateTime: null,
-            publishingState: PublishingState.submitted,
-            teamsAppId: uuid(),
-            displayName: "TestApp"
-        };
-        sinon.stub(AppStudioClient, "getAppByTeamsAppId").resolves(mockApp);
-        ctx.dialog = mockDialogProvider;
+  it("Update a submitted app", async () => {
+    const mockApp = {
+      lastModifiedDateTime: null,
+      publishingState: PublishingState.submitted,
+      teamsAppId: uuid(),
+      displayName: "TestApp",
+    };
+    sinon.stub(AppStudioClient, "getAppByTeamsAppId").resolves(mockApp);
+    ctx.ui = new MockUserInteraction();
 
-        const teamsAppId = await plugin.publish(ctx);
-        chai.assert.isTrue(teamsAppId.isOk());
-        if (teamsAppId.isOk()) {
-            chai.assert.isNotEmpty(teamsAppId.value);
-        }
-    });
+    const teamsAppId = await plugin.publish(ctx);
+    chai.assert.isTrue(teamsAppId.isOk());
+    if (teamsAppId.isOk()) {
+      chai.assert.isNotEmpty(teamsAppId.value);
+    }
+  });
 });

@@ -1,13 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
  
-import { ConfigFolderName, err, Inputs, Json, PluginConfig, ProjectSettings, SolutionConfig, SolutionContext, Stage, StaticPlatforms, Tools} from "@microsoft/teamsfx-api";
+import { ConfigFolderName, err, FxError, Inputs, Json, ok, PluginConfig, ProjectSettings, Result, SolutionConfig, SolutionContext, Stage, StaticPlatforms, Tools, Void} from "@microsoft/teamsfx-api";
 import { CoreHookContext, deserializeDict,  FxCore,  mergeSerectData, objectToMap} from "../..";
 import { InvalidProjectError, NoProjectOpenedError, PathNotExistError, ReadFileError } from "../error";
 import * as path from "path";
 import * as fs from "fs-extra";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { validateProject } from "../../common";  
+import * as uuid  from "uuid";
 
 export const ContextLoaderMW: Middleware = async (
   ctx: CoreHookContext,
@@ -33,24 +34,30 @@ export const ContextLoaderMW: Middleware = async (
       return ;
     }
     const core = ctx.self as FxCore;
-    const sctx = await loadSolutionContext(core.tools, inputs);
-    const validRes = validateProject(sctx);
+    const loadRes = await loadSolutionContext(core.tools, inputs);
+    if(loadRes.isErr()){
+      ctx.result = err(loadRes.error);
+      return ;
+    }
+    const validRes = validateProject(loadRes.value);
     if(validRes){
       ctx.result = err(InvalidProjectError(validRes));
       return ;
     }
-    ctx.solutionContext = sctx;
+    ctx.solutionContext = loadRes.value;
   }  
   await next();
 };
 
-export async function loadSolutionContext(tools: Tools, inputs: Inputs):Promise<SolutionContext>{
+export async function loadSolutionContext(tools: Tools, inputs: Inputs):Promise<Result<SolutionContext, FxError>>{
   try {
     const confFolderPath = path.resolve(inputs.projectPath!, `.${ConfigFolderName}`);
     const settingsFile = path.resolve(confFolderPath, "settings.json");
     const projectSettings: ProjectSettings = await fs.readJson(settingsFile);
     if(!projectSettings.currentEnv)
       projectSettings.currentEnv = "default";
+    if(!projectSettings.projectId)
+      projectSettings.projectId = uuid.v4();
     const envName = projectSettings.currentEnv;
     const jsonFilePath = path.resolve(confFolderPath, `env.${envName}.json`);
     const configJson: Json = await fs.readJson(jsonFilePath);
@@ -72,15 +79,16 @@ export async function loadSolutionContext(tools: Tools, inputs: Inputs):Promise<
       ... tools.tokenProvider,
       answers: inputs
     } ;
-    return solutionContext;
+    return ok(solutionContext);
   } catch (e) {
-    throw ReadFileError(e);
+    return err(ReadFileError(e));
   }
 }
 
 export async function newSolutionContext(tools: Tools, inputs: Inputs):Promise<SolutionContext>{
   const projectSettings:ProjectSettings = {
     appName: "",
+    projectId: uuid.v4(),
     currentEnv: "default",
     solutionSettings:{
       name: "fx-solution-azure",

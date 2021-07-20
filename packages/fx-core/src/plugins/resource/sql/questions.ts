@@ -1,8 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { Inputs, QTreeNode, TextInputQuestion } from "@microsoft/teamsfx-api";
+import { Inputs, TextInputQuestion } from "@microsoft/teamsfx-api";
 import { Constants } from "./constants";
-import { sqlConfirmPasswordValidatorGenerator, sqlPasswordValidatorGenerator, sqlUserNameValidator } from "./utils/checkInput";
+import {
+  sqlConfirmPasswordValidatorGenerator,
+  sqlPasswordValidatorGenerator,
+  sqlUserNameValidator,
+} from "./utils/checkInput";
 
 export const adminNameQuestion: TextInputQuestion = {
   name: Constants.questionKey.adminName,
@@ -12,8 +16,8 @@ export const adminNameQuestion: TextInputQuestion = {
     validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
       const res = sqlUserNameValidator(input as string);
       return res;
-    }
-  }
+    },
+  },
 };
 
 export const adminPasswordQuestion: TextInputQuestion = {
@@ -27,8 +31,8 @@ export const adminPasswordQuestion: TextInputQuestion = {
       const name = previousInputs![Constants.questionKey.adminName] as string;
       const res = sqlPasswordValidatorGenerator(name)(password);
       return res;
-    }
-  }
+    },
+  },
 };
 
 export const confirmPasswordQuestion: TextInputQuestion = {
@@ -42,14 +46,6 @@ export const confirmPasswordQuestion: TextInputQuestion = {
       const password = previousInputs![Constants.questionKey.adminPassword] as string;
       const res = sqlConfirmPasswordValidatorGenerator(password)(confirm);
       return res;
-    }
-  }
+    },
+  },
 };
-
-export const skipAddingUserQuestion = new QTreeNode({
-  name: Constants.questionKey.skipAddingUser,
-  title: Constants.userQuestion.confirmPassword,
-  type: "singleSelect",
-  staticOptions: ["true", "false"],
-  default: "false",
-});

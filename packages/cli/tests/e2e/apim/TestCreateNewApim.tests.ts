@@ -8,6 +8,7 @@ import { ApimValidator } from "../../commonlib";
 
 import {
   execAsync,
+  execAsyncWithRetry,
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
@@ -37,14 +38,17 @@ describe("Create a new API Management Service", function () {
 
     await ApimValidator.init(subscriptionId, AzureLogin, GraphLogin);
 
-    result = await execAsync(`teamsfx resource add azure-apim --subscription ${subscriptionId}`, {
-      cwd: projectPath,
-      env: process.env,
-      timeout: 0,
-    });
+    result = await execAsyncWithRetry(
+      `teamsfx resource add azure-apim --subscription ${subscriptionId}`,
+      {
+        cwd: projectPath,
+        env: process.env,
+        timeout: 0,
+      }
+    );
     console.log(`Add APIM resource. Error message: ${result.stderr}`);
 
-    result = await execAsync(`teamsfx provision`, {
+    result = await execAsyncWithRetry(`teamsfx provision`, {
       cwd: projectPath,
       env: process.env,
       timeout: 0,
@@ -54,7 +58,7 @@ describe("Create a new API Management Service", function () {
     const provisionContext = await fs.readJSON(getConfigFileName(appName));
     await ApimValidator.validateProvision(provisionContext, appName);
 
-    result = await execAsync(
+    result = await execAsyncWithRetry(
       `teamsfx deploy apim --open-api-document openapi/openapi.json --api-prefix ${appName} --api-version v1`,
       {
         cwd: projectPath,

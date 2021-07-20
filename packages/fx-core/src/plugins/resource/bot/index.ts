@@ -145,6 +145,45 @@ export class TeamsBot implements Plugin {
     );
   }
 
+  private wrapError(
+    e: any,
+    context: PluginContext,
+    sendTelemetry: boolean,
+    name: string
+  ): FxResult {
+    if (e.innerError) {
+      e.message += ` Detailed error: ${e.innerError.message}.`;
+      if (e.innerError.response?.data?.errorMessage) {
+        e.message += ` Reason: ${e.innerError.response?.data?.errorMessage}`;
+      }
+    }
+    Logger.error(e.message);
+    if (e instanceof UserError || e instanceof SystemError) {
+      const res = err(e);
+      sendTelemetry && telemetryHelper.sendResultEvent(context, name, res);
+      return res;
+    }
+
+    if (e instanceof PluginError) {
+      const result =
+        e.errorType === ErrorType.System
+          ? ResultFactory.SystemError(e.name, e.genMessage(), e.innerError)
+          : ResultFactory.UserError(e.name, e.genMessage(), e.showHelpLink, e.innerError);
+      sendTelemetry && telemetryHelper.sendResultEvent(context, name, result);
+      return result;
+    } else {
+      // Unrecognized Exception.
+      const UnhandledErrorCode = "UnhandledError";
+      sendTelemetry &&
+        telemetryHelper.sendResultEvent(
+          context,
+          name,
+          ResultFactory.SystemError(UnhandledErrorCode, `Got an unhandled error: ${e.message}`)
+        );
+      return ResultFactory.SystemError(e.name, e.message, e);
+    }
+  }
+
   private async runWithExceptionCatching(
     context: PluginContext,
     fn: () => Promise<FxResult>,
@@ -158,31 +197,7 @@ export class TeamsBot implements Plugin {
       return res;
     } catch (e) {
       await ProgressBarFactory.closeProgressBar(); // Close all progress bars.
-
-      if (e instanceof UserError || e instanceof SystemError) {
-        const res = err(e);
-        sendTelemetry && telemetryHelper.sendResultEvent(context, name, res);
-        return res;
-      }
-
-      if (e instanceof PluginError) {
-        const result =
-          e.errorType === ErrorType.System
-            ? ResultFactory.SystemError(e.name, e.genMessage(), e.innerError)
-            : ResultFactory.UserError(e.name, e.genMessage(), e.showHelpLink, e.innerError);
-        sendTelemetry && telemetryHelper.sendResultEvent(context, name, result);
-        return result;
-      } else {
-        // Unrecognized Exception.
-        const UnhandledErrorCode = "UnhandledError";
-        sendTelemetry &&
-          telemetryHelper.sendResultEvent(
-            context,
-            name,
-            ResultFactory.SystemError("Got an unhandled error", UnhandledErrorCode)
-          );
-        return ResultFactory.SystemError(e.name, e.message, e);
-      }
+      return this.wrapError(e, context, sendTelemetry, name);
     }
   }
 }

@@ -146,14 +146,14 @@ export class ApimValidator {
     chai.assert.isNotEmpty(config?.applicationIdUris);
     chai.assert.equal(oAuthServer?.defaultScope, `${config?.applicationIdUris}/.default`);
 
-    chai.assert.isNotEmpty(config?.tenantId);
+    chai.assert.isNotEmpty(config?.teamsAppTenantId);
     chai.assert.equal(
       oAuthServer?.authorizationEndpoint,
-      `https://login.microsoftonline.com/${config?.tenantId}/oauth2/v2.0/authorize`
+      `https://login.microsoftonline.com/${config?.teamsAppTenantId}/oauth2/v2.0/authorize`
     );
     chai.assert.equal(
       oAuthServer?.tokenEndpoint,
-      `https://login.microsoftonline.com/${config?.tenantId}/oauth2/v2.0/token`
+      `https://login.microsoftonline.com/${config?.teamsAppTenantId}/oauth2/v2.0/token`
     );
   }
 
@@ -355,8 +355,8 @@ class Config {
   get resourceNameSuffix() {
     return this.config[this.solution]["resourceNameSuffix"];
   }
-  get tenantId() {
-    return this.config[this.solution]["tenantId"];
+  get teamsAppTenantId() {
+    return this.config[this.solution]["teamsAppTenantId"];
   }
   get resourceGroupName() {
     return this.config[this.solution]["resourceGroupName"];

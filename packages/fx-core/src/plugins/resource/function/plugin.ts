@@ -29,8 +29,10 @@ import {
   runWithErrorCatchAndThrow,
   FunctionNameConflictError,
   FetchConfigError,
+  RegisterResourceProviderError,
 } from "./resources/errors";
 import {
+  AzureInfo,
   DefaultProvisionConfigs,
   DefaultValues,
   DependentPluginInfo,
@@ -39,10 +41,10 @@ import {
   QuestionValidationFunc,
   RegularExpr,
 } from "./constants";
-import { DialogUtils } from "./utils/dialog";
 import { ErrorMessages, InfoMessages } from "./resources/message";
 import {
   FunctionConfigKey,
+  FunctionEvent,
   FunctionLanguage,
   NodeVersion,
   QuestionKey,
@@ -68,6 +70,7 @@ import { getNodeVersion } from "./utils/node-version";
 import { FuncPluginAdapter } from "./utils/depsChecker/funcPluginAdapter";
 import { funcPluginLogger } from "./utils/depsChecker/funcPluginLogger";
 import { FuncPluginTelemetry } from "./utils/depsChecker/funcPluginTelemetry";
+import { TelemetryHelper } from "./utils/telemetry-helper";
 
 type Site = WebSiteManagementModels.Site;
 type AppServicePlan = WebSiteManagementModels.AppServicePlan;
@@ -212,14 +215,17 @@ export class FunctionPluginImpl {
     return ResultFactory.Success();
   }
 
-  public getQuestionsForUserTask(func: Func, ctx: PluginContext): Result<QTreeNode | undefined, FxError> {
+  public getQuestionsForUserTask(
+    func: Func,
+    ctx: PluginContext
+  ): Result<QTreeNode | undefined, FxError> {
     const res = new QTreeNode({
       type: "group",
     });
 
     if (func.method === "addResource") {
       functionNameQuestion.validation = {
-        validFunc: async(input: string, previousInputs?: Inputs) : Promise<string | undefined> => {
+        validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
           const workingPath: string = this.getFunctionProjectRootPath(ctx);
           const name = input as string;
           if (!name || !RegularExpr.validFunctionNamePattern.test(name)) {
@@ -238,10 +244,13 @@ export class FunctionPluginImpl {
               ?.get(DependentPluginInfo.programmingLanguage) as FunctionLanguage);
 
           // If language is unknown, skip checking and let scaffold handle the error.
-          if (language && (await FunctionScaffold.doesFunctionPathExist(workingPath, language, name))) {
+          if (
+            language &&
+            (await FunctionScaffold.doesFunctionPathExist(workingPath, language, name))
+          ) {
             return ErrorMessages.functionAlreadyExists;
           }
-        }
+        },
       };
       res.addChild(new QTreeNode(functionNameQuestion));
     }
@@ -382,6 +391,26 @@ export class FunctionPluginImpl {
     );
     const nodeVersion = await this.getValidNodeVersion(ctx);
 
+    const providerClient = await runWithErrorCatchAndThrow(new InitAzureSDKError(), () =>
+      AzureClientFactory.getResourceProviderClient(credential, subscriptionId)
+    );
+
+    Logger.info(
+      InfoMessages.ensureResourceProviders(AzureInfo.requiredResourceProviders, subscriptionId)
+    );
+
+    await runWithErrorCatchAndThrow(new RegisterResourceProviderError(), async () =>
+      step(
+        StepGroup.ProvisionStepGroup,
+        ProvisionSteps.registerResourceProviders,
+        async () =>
+          await AzureLib.ensureResourceProviders(
+            providerClient,
+            AzureInfo.requiredResourceProviders
+          )
+      )
+    );
+
     const storageManagementClient: StorageManagementClient = await runWithErrorCatchAndThrow(
       new InitAzureSDKError(),
       () => AzureClientFactory.getStorageManagementClient(credential, subscriptionId)
@@ -391,7 +420,7 @@ export class FunctionPluginImpl {
       InfoMessages.checkResource(ResourceType.storageAccount, storageAccountName, resourceGroupName)
     );
 
-    await runWithErrorCatchAndThrow(new ProvisionError(ResourceType.storageAccount), () =>
+    await runWithErrorCatchAndThrow(new ProvisionError(ResourceType.storageAccount), async () =>
       step(
         StepGroup.ProvisionStepGroup,
         ProvisionSteps.ensureStorageAccount,
@@ -526,13 +555,11 @@ export class FunctionPluginImpl {
     );
 
     if (res.properties) {
-      Object.entries(res.properties).forEach(
-        (kv: [string, string]) => {
-          // The site have some settings added in provision step,
-          // which should not be overwritten by queried settings.
-          FunctionProvision.pushAppSettings(site, kv[0], kv[1], false);
-        }
-      );
+      Object.entries(res.properties).forEach((kv: [string, string]) => {
+        // The site have some settings added in provision step,
+        // which should not be overwritten by queried settings.
+        FunctionProvision.pushAppSettings(site, kv[0], kv[1], false);
+      });
     }
 
     this.collectFunctionAppSettings(ctx, site);
@@ -585,7 +612,6 @@ export class FunctionPluginImpl {
     const updated: boolean = await FunctionDeploy.hasUpdatedContent(workingPath, functionLanguage);
     if (!updated) {
       Logger.info(InfoMessages.noChange);
-      DialogUtils.show(ctx, InfoMessages.noChange);
       this.config.skipDeploy = true;
       return ResultFactory.Success();
     }
@@ -610,7 +636,8 @@ export class FunctionPluginImpl {
 
   public async deploy(ctx: PluginContext): Promise<FxResult> {
     if (this.config.skipDeploy) {
-      Logger.info(InfoMessages.skipDeployment);
+      TelemetryHelper.sendGeneralEvent(FunctionEvent.skipDeploy);
+      Logger.warning(InfoMessages.skipDeployment);
       return ResultFactory.Success();
     }
 
@@ -830,13 +857,9 @@ export class FunctionPluginImpl {
       const telemetry = new FuncPluginTelemetry();
       const funcPluginAdapter = new FuncPluginAdapter(ctx, telemetry);
       await step(StepGroup.PreDeployStepGroup, PreDeploySteps.dotnetInstall, async () => {
-        const dotnetChecker = new DotnetChecker(
-          funcPluginAdapter,
-          funcPluginLogger,
-          telemetry,
-        );
+        const dotnetChecker = new DotnetChecker(funcPluginAdapter, funcPluginLogger, telemetry);
         try {
-          if (!(await dotnetChecker.isEnabled()) || await dotnetChecker.isInstalled()) {
+          if (!(await dotnetChecker.isEnabled()) || (await dotnetChecker.isInstalled())) {
             return;
           }
         } catch (error) {

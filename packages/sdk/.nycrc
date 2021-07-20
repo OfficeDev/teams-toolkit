@@ -1,10 +1,6 @@
 {
     "include": [
-      "dist-esm/src/**/*.js"
-    ],
-    "exclude": [
-      "**/*.d.ts",
-      "dist-esm/src/generated/*"
+      "src/**/*.ts"
     ],
     "reporter": [
       "text-summary",
@@ -16,4 +12,4 @@
     "produce-source-map": true,
     "instrument": true,
     "all": true
-  }
+}

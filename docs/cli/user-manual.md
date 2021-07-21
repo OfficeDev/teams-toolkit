@@ -14,6 +14,7 @@ TeamsFx CLI is a text-based command line interface that accelerates Teams applic
 | `teamsfx test`      | Test and validate the current application.             |
 | `teamsfx publish`   | Publish the app to Teams.             |
 | `teamsfx preview`   | Preview the current application. |
+| `teamsfx config`    | Manage the configuration data. |
 
 ***
 
@@ -247,3 +248,51 @@ teamsfx preview --remote
 ## Notes
 - SPFx preview is not supported currently.
 - The logs of the background services like React will be saved in `~/.fx/cli-log/local-preview/`.
+
+***
+
+# `teamsfx config`
+Manage the configuration data either in user scope or project scope.
+
+## Commands
+| `teamsfx config` Commands  | Descriptions |
+|:----------------  |:-------------|
+| `teamsfx config get [option]` | View the configuration value of option |
+| `teamsfx config set <option> <value>` | Update the configuration value of option |
+
+## Optional Parameters
+> Below options can always take effect. 
+
+### `--folder`                
+Project directory. This is used when get/set project configuration. The default value is: `./`.
+
+### `--global`                
+Scope of configuration. If this is true, the scope is limited to user scope instead of project scope. The default value is: `false`.
+Currently supported global configurations:
+* telemetry
+* validate-dotnet-sdk
+* validate-func-core-tools
+* validate-node
+
+## Examples
+Secrets in .userdata file are encrypted, `teamsfx config` could help you viewing / updating these values.
+### Stop sending telemetry data
+```bash
+teamsfx config set telemetry off
+```
+
+### View all the user scope configuration
+```bash
+teamsfx config get -g
+```
+
+### View all the configuration in project
+The secret will automatically decrypted.
+```bash
+teamsfx config get
+```
+
+### Update the secret configuration in project
+```bash
+teamsfx config set fx-resource-aad-app-for-teams.clientSecret xxx
+```

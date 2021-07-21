@@ -85,6 +85,9 @@ export enum TelemetryEvent {
 
   EditSecretStart = "edit-secret-start",
   EditSecret = "edit-secret",
+
+  OpenTeamsApp = "open-teams-app",
+  UpdateTeamsApp = "update-teams-app",
 }
 
 export enum TelemetryProperty {

@@ -62,7 +62,7 @@ suite("telemetry", () => {
 
     expect(reporterSpy.sendTelemetryEvent).to.have.been.called.with(
       "sampleEvent",
-      { stringProp: "some string" },
+      { stringProp: "some string", "project-id": "", "correlation-id": "" },
       { numericMeasure: 123 }
     );
   });
@@ -83,6 +83,8 @@ suite("telemetry", () => {
       {
         stringProp: "some string",
         stackProp: "some user stack trace",
+        "project-id": "",
+        "correlation-id": "",
       },
       { numericMeasure: 123 },
       ["stackProp"]
@@ -95,7 +97,7 @@ suite("telemetry", () => {
 
     expect(reporterSpy.sendTelemetryException).to.have.been.called.with(
       error,
-      { stringProp: "some string" },
+      { stringProp: "some string", "project-id": "", "correlation-id": "" },
       { numericMeasure: 123 }
     );
   });

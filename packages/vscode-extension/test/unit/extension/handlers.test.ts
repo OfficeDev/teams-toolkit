@@ -20,7 +20,6 @@ suite("handlers", () => {
     const input: Inputs = handlers.getSystemInputs();
 
     chai.expect(input.platform).equals(Platform.VSCode);
-    chai.expect(input.correlationId).to.be.a("string");
   });
 
   suite("command handlers", () => {

@@ -162,7 +162,6 @@ export function getSystemInputs(): Inputs {
     platform: Platform.VSCode,
     vscodeEnv: detectVsCodeEnv(),
     "function-dotnet-checker-enabled": vscodeAdapter.dotnetCheckerEnabled(),
-    correlationId: uuid.v4(),
   };
   return answers;
 }

@@ -49,9 +49,9 @@ export function getActiveEnv() {
   // TODO: need to get active env if multiple env configurations supported
   return "default";
 }
- 
+
 export function getTeamsAppId() {
-  try{
+  try {
     const ws = ext.workspaceUri.fsPath;
     if (isValidProject(ws)) {
       const env = getActiveEnv();
@@ -59,8 +59,20 @@ export function getTeamsAppId() {
       const envJson = JSON.parse(fs.readFileSync(envJsonPath, "utf8"));
       return envJson.solution.remoteTeamsAppId;
     }
+  } catch (e) {
+    return undefined;
   }
-  catch(e){
+}
+
+export function getProjectId(): string | undefined {
+  try {
+    const ws = ext.workspaceUri.fsPath;
+    if (isValidProject(ws)) {
+      const settingsJsonPath = path.join(ws, `.${ConfigFolderName}/settings.json`);
+      const settingsJson = JSON.parse(fs.readFileSync(settingsJsonPath, "utf8"));
+      return settingsJson.projectId;
+    }
+  } catch (e) {
     return undefined;
   }
 }

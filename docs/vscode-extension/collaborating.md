@@ -2,9 +2,9 @@
 
 Multiple developers collaborating on a Teams application should set up their own environments for development including unique [M365 Developer Tenants](https://developer.microsoft.com/en-us/microsoft-365/dev-program) and application registrations in Azure Active Directory. This way each developer runs their code under a different application identity. Our extension provide ability for developers to set up their own local-debug environment. **Every developer can simply press `F5` to start his own application locally.**
 
-If you want to share the local environment, please follow the steps in [Sharing Local Environemnt](#sharing-local-environemnt).
+If you want to share the local environment, please follow the steps in [Sharing Local Environment](#sharing-local-environment).
 
-## Sharing Local Environemnt
+## Sharing Local Environment
 
 If an identity is to be shared between multiple developers (such as in a staging or integration environment) there are three points of registration which need to be configured to allow multiple developers to run the same app. Azure Active Directory, Teams Developer Portal and Bot Framework.
 

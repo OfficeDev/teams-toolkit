@@ -17,7 +17,7 @@ export interface BicepOrchestrationParameterTemplate extends BicepOrchestrationT
 }
 
 export interface BicepOrchestrationModuleTemplate extends BicepOrchestrationTemplate {
-  Outputs: { [OutputName: string]: string };
+  Outputs?: { [OutputName: string]: string };
 }
 
 export interface BicepModule {

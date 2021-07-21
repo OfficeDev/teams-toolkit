@@ -5,7 +5,7 @@ import faker from "faker";
 import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import { Constants } from "../../../../src/plugins/resource/simpleauth/constants";
 import * as TestHandlebars from "handlebars";
-import { ScaffoldArmTemplateResult } from "../../../../src/common/arm";
+import { ScaffoldArmTemplateResult } from "../../../../src/common/armInterface";
 
 TestHandlebars.registerHelper("contains", (value, array, options) => {
   array = array instanceof Array ? array : [array];

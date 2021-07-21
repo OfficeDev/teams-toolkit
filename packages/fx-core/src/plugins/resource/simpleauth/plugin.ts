@@ -11,7 +11,7 @@ import { WebAppClient } from "./webAppClient";
 import * as path from "path";
 import * as fs from "fs";
 import { getTemplatesFolder } from "../../..";
-import { ScaffoldArmTemplateResult } from "../../../common/arm";
+import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
 
 export class SimpleAuthPluginImpl {
   webAppClient!: WebAppClient;

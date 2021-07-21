@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 "use strict";
 
 import { AsyncLocalStorage } from "async_hooks";

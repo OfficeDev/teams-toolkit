@@ -13,10 +13,10 @@ export interface BicepOrchestrationTemplate {
 }
 
 export interface BicepOrchestrationParameterTemplate extends BicepOrchestrationTemplate {
-  ParameterFile: string;
+  ParameterFile?: string;
 }
 
-export interface BicepOrchestrationResourceTemplate extends BicepOrchestrationTemplate {
+export interface BicepOrchestrationModuleTemplate extends BicepOrchestrationTemplate {
   Outputs: { [OutputName: string]: string };
 }
 
@@ -25,10 +25,10 @@ export interface BicepModule {
 }
 
 export interface BicepOrchestration {
-  ParameterTemplate: BicepOrchestrationParameterTemplate;
-  VariableTemplate: BicepOrchestrationTemplate;
-  ResourceTemplate: BicepOrchestrationResourceTemplate;
-  OutputTemplate: BicepOrchestrationTemplate;
+  ParameterTemplate?: BicepOrchestrationParameterTemplate;
+  VariableTemplate?: BicepOrchestrationTemplate;
+  ModuleTemplate: BicepOrchestrationModuleTemplate;
+  OutputTemplate?: BicepOrchestrationTemplate;
 }
 
 export interface ScaffoldArmTemplateResult {

@@ -4,6 +4,18 @@ import { PluginContext } from "@microsoft/teamsfx-api";
 import faker from "faker";
 import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import { Constants } from "../../../../src/plugins/resource/simpleauth/constants";
+import * as TestHandlebars from "handlebars";
+import { ScaffoldArmTemplateResult } from "../../../../src/common/arm";
+
+TestHandlebars.registerHelper("contains", (value, array, options) => {
+  array = array instanceof Array ? array : [array];
+  return array.indexOf(value) > -1 ? options.fn(this) : "";
+});
+
+TestHandlebars.registerHelper("notContains", (value, array, options) => {
+  array = array instanceof Array ? array : [array];
+  return array.indexOf(value) == -1 ? options.fn(this) : "";
+});
 
 export class TestHelper {
   static async pluginContext(
@@ -89,7 +101,7 @@ export class TestHelper {
             ],
             [Constants.SolutionPlugin.configKeys.resourceGroupName, "junhanTest0118"],
             [Constants.SolutionPlugin.configKeys.location, "eastus"],
-            [Constants.SolutionPlugin.configKeys.remoteTeamsAppId, faker.random.uuid()],
+            [Constants.SolutionPlugin.configKeys.remoteTeamsAppId, faker.datatype.uuid()],
           ]),
         ],
         [
@@ -135,8 +147,52 @@ export class TestHelper {
           short: "hello-app",
         },
       },
+      projectSettings: {
+        solutionSettings: {
+          activeResourcePlugins: [
+            Constants.AadAppPlugin.id,
+            Constants.FrontendPlugin.id,
+            Constants.SimpleAuthPlugin.id,
+          ],
+        },
+      },
     } as unknown as PluginContext;
 
     return pluginContext;
+  }
+
+  static mockSolutionUpdateArmTemplates(
+    mockedData: any,
+    template: ScaffoldArmTemplateResult
+  ): ScaffoldArmTemplateResult {
+    return {
+      Modules: template.Modules,
+      Orchestration: {
+        ParameterTemplate: {
+          Content: TestHelper.generateBicepFiles(
+            template.Orchestration.ParameterTemplate!.Content,
+            mockedData
+          ),
+        },
+        ModuleTemplate: {
+          Content: TestHelper.generateBicepFiles(
+            template.Orchestration.ModuleTemplate.Content,
+            mockedData
+          ),
+          Outputs: template.Orchestration.ModuleTemplate.Outputs,
+        },
+        OutputTemplate: {
+          Content: TestHelper.generateBicepFiles(
+            template.Orchestration.OutputTemplate!.Content,
+            mockedData
+          ),
+        },
+      },
+    } as ScaffoldArmTemplateResult;
+  }
+
+  static generateBicepFiles(templateString: string, context: any): string {
+    const template = TestHandlebars.compile(templateString);
+    return template(context);
   }
 }

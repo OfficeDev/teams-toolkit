@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { FxError, PluginContext, Result } from "@microsoft/teamsfx-api";
+import { AzureSolutionSettings, FxError, PluginContext, Result } from "@microsoft/teamsfx-api";
 import { Constants, Messages, Telemetry } from "./constants";
 import { UnauthenticatedError } from "./errors";
 import { ResultFactory } from "./result";
@@ -8,6 +8,10 @@ import { Utils } from "./utils/common";
 import { DialogUtils } from "./utils/dialog";
 import { TelemetryUtils } from "./utils/telemetry";
 import { WebAppClient } from "./webAppClient";
+import * as path from "path";
+import * as fs from "fs";
+import { getTemplatesFolder } from "../../..";
+import { ScaffoldArmTemplateResult } from "../../../common/arm";
 
 export class SimpleAuthPluginImpl {
   webAppClient!: WebAppClient;
@@ -127,5 +131,71 @@ export class SimpleAuthPluginImpl {
 
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndPostProvision);
     return ResultFactory.Success();
+  }
+
+  public async generateArmTemplates(
+    ctx: PluginContext
+  ): Promise<Result<ScaffoldArmTemplateResult, FxError>> {
+    TelemetryUtils.init(ctx);
+    Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartGenerateArmTemplates);
+
+    const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
+      .activeResourcePlugins;
+    const context = {
+      plugins: selectedPlugins,
+    };
+
+    const bicepTemplateDirectory = path.join(
+      getTemplatesFolder(),
+      "plugins",
+      "resource",
+      "simpleauth",
+      "bicep"
+    );
+
+    const moduleTemplateFilePath = path.join(
+      bicepTemplateDirectory,
+      Constants.SimpleAuthBicepModuleTemplateFileName
+    );
+    const moduleContent = Utils.generateBicepFiles(moduleTemplateFilePath, context);
+
+    const parameterTemplateFilePath = path.join(
+      bicepTemplateDirectory,
+      Constants.SimpleAuthBicepOrchestrationParameterFileName
+    );
+    const resourceTemplateFilePath = path.join(
+      bicepTemplateDirectory,
+      Constants.SimpleAuthBicepOrchestrationModuleTemplateFileName
+    );
+    const outputTemplateFilePath = path.join(
+      bicepTemplateDirectory,
+      Constants.SimpleAuthBicepOrchestrationOutputTemplateFileName
+    );
+
+    const result: ScaffoldArmTemplateResult = {
+      Modules: {
+        simpleAuthProvision: {
+          Content: moduleContent,
+        },
+      },
+      Orchestration: {
+        ParameterTemplate: {
+          Content: fs.readFileSync(parameterTemplateFilePath, "utf-8"),
+        },
+        ModuleTemplate: {
+          Content: fs.readFileSync(resourceTemplateFilePath, "utf-8"),
+          Outputs: {
+            skuName: Constants.SimpleAuthBicepOutputSkuName,
+            endpoint: Constants.SimpleAuthBicepOutputEndpoint,
+          },
+        },
+        OutputTemplate: {
+          Content: fs.readFileSync(outputTemplateFilePath, "utf-8"),
+        },
+      },
+    };
+
+    Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndGenerateArmTemplates);
+    return ResultFactory.Success(result);
   }
 }

@@ -5,6 +5,7 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import { Constants, Message } from "../constants";
 import {
+  BicepGenerationError,
   EndpointInvalidError,
   NoConfigError,
   VersionFileNotExist,
@@ -14,6 +15,17 @@ import { ResultFactory } from "../result";
 import { TelemetryUtils } from "./telemetry";
 import { getTemplatesFolder } from "../../../..";
 import got from "got";
+import * as Handlebars from "handlebars";
+
+Handlebars.registerHelper("contains", (value, array, options) => {
+  array = array instanceof Array ? array : [array];
+  return array.indexOf(value) > -1 ? options.fn(this) : "";
+});
+
+Handlebars.registerHelper("notContains", (value, array, options) => {
+  array = array instanceof Array ? array : [array];
+  return array.indexOf(value) == -1 ? options.fn(this) : "";
+});
 
 export class Utils {
   public static generateResourceName(appName: string, resourceNameSuffix: string): string {
@@ -36,6 +48,21 @@ export class Utils {
       "simpleauth",
       Constants.SimpleAuthFileName
     );
+  }
+
+  public static generateBicepFiles(templateFilePath: string, pluginsContext: any): string {
+    try {
+      const templateString = fs.readFileSync(templateFilePath, "utf8");
+      const template = Handlebars.compile(templateString);
+
+      const updatedBicepFile = template(pluginsContext);
+      return updatedBicepFile;
+    } catch (error) {
+      throw ResultFactory.SystemError(
+        BicepGenerationError.name,
+        BicepGenerationError.message(templateFilePath, error.message)
+      );
+    }
   }
 
   public static async downloadZip(filePath: string): Promise<void> {
@@ -144,7 +171,11 @@ export class Utils {
     return isLocalDebug ? Constants.LocalPrefix + key : key;
   }
 
-  public static addLogAndTelemetry(logProvider: LogProvider | undefined, message: Message, properties?: { [key: string]: string }) {
+  public static addLogAndTelemetry(
+    logProvider: LogProvider | undefined,
+    message: Message,
+    properties?: { [key: string]: string }
+  ) {
     logProvider?.info(message.log);
     TelemetryUtils.sendEvent(message.telemetry, properties);
   }

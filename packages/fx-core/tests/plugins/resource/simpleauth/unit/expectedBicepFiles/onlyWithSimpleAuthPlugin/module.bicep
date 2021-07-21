@@ -1,5 +1,5 @@
 
-module simpleAuthProvision './simple_auth_test1.bicep' = {
+module simpleAuthProvision './simple_auth_test.bicep' = {
   name: 'simpleAuthProvision'
   params: {
     simpleAuthServerFarmsName: simpleAuth_serverFarmsName
@@ -8,6 +8,6 @@ module simpleAuthProvision './simple_auth_test1.bicep' = {
     AADClientId: AADClientId
     AADClientSecret: AADClientSecret
     applicationIdUri: applicationIdUri
-    tenantId: tenantId
+    m365TenantId: m365TenantId
   }
 }

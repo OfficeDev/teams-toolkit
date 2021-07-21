@@ -12,6 +12,7 @@ import * as path from "path";
 import * as fs from "fs";
 import { getTemplatesFolder } from "../../..";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
+import { generateBicepFiles } from "../../../common";
 
 export class SimpleAuthPluginImpl {
   webAppClient!: WebAppClient;
@@ -157,7 +158,10 @@ export class SimpleAuthPluginImpl {
       bicepTemplateDirectory,
       Constants.SimpleAuthBicepModuleTemplateFileName
     );
-    const moduleContent = Utils.generateBicepFiles(moduleTemplateFilePath, context);
+    const moduleContentResult = generateBicepFiles(moduleTemplateFilePath, context);
+    if (moduleContentResult.isErr()) {
+      throw moduleContentResult.error;
+    }
 
     const parameterTemplateFilePath = path.join(
       bicepTemplateDirectory,
@@ -175,7 +179,7 @@ export class SimpleAuthPluginImpl {
     const result: ScaffoldArmTemplateResult = {
       Modules: {
         simpleAuthProvision: {
-          Content: moduleContent,
+          Content: moduleContentResult.value,
         },
       },
       Orchestration: {

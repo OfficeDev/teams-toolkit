@@ -89,7 +89,7 @@ describe("simpleAuthPlugin", () => {
       "fx-resource-simple-auth": {
         modules: {
           simpleAuthProvision: {
-            path: "./simple_auth_test1.bicep",
+            path: "./simple_auth_test.bicep",
           },
         },
       },
@@ -109,7 +109,7 @@ describe("simpleAuthPlugin", () => {
       );
       const expectedModuleFilePath = path.join(
         expectedBicepFileDirectory,
-        "simple_auth_test1.bicep"
+        "simple_auth_test.bicep"
       );
       chai.assert.strictEqual(
         expectedResult.Modules.simpleAuthProvision.Content,
@@ -159,7 +159,7 @@ describe("simpleAuthPlugin", () => {
       "fx-resource-simple-auth": {
         modules: {
           simpleAuthProvision: {
-            path: "./simple_auth_test2.bicep",
+            path: "./simple_auth_test.bicep",
           },
         },
       },
@@ -184,7 +184,7 @@ describe("simpleAuthPlugin", () => {
       );
       const expectedModuleFilePath = path.join(
         expectedBicepFileDirectory,
-        "simple_auth_test2.bicep"
+        "simple_auth_test.bicep"
       );
       chai.assert.strictEqual(
         expectedResult.Modules.simpleAuthProvision.Content,

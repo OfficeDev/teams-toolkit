@@ -65,9 +65,3 @@ export const VersionFileNotExist: PluginError = {
   name: "VersionFileNotExist",
   message: (filePath?) => `Failed to load version file from ${filePath ?? "File not exist."}`,
 };
-
-export const BicepGenerationError: PluginError = {
-  name: "BicepGenerationError",
-  message: (templateFileName, message) =>
-    `Failed to generate bicep file from template file ${templateFileName}. Reason: ${message}`,
-};

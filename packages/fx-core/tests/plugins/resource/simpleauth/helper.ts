@@ -12,11 +12,6 @@ TestHandlebars.registerHelper("contains", (value, array, options) => {
   return array.indexOf(value) > -1 ? options.fn(this) : "";
 });
 
-TestHandlebars.registerHelper("notContains", (value, array, options) => {
-  array = array instanceof Array ? array : [array];
-  return array.indexOf(value) == -1 ? options.fn(this) : "";
-});
-
 export class TestHelper {
   static async pluginContext(
     credentials: msRestNodeAuth.TokenCredentialsBase

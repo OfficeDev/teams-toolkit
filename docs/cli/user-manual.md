@@ -229,15 +229,20 @@ Preview the application from remote. `--remote` is exclusive with `--local`.
 ### `--folder`
 Project root directory. The default value is `./`.
 
+### `--browser`
+The browser to open Teams web client. Options are `chrome`, `edge` and `default` (system default browser). The default value is `default`.
+
 ## Examples
 ### Local Preview
 ```bash
 teamsfx preview --local
+teamsfx preview --local --browser chrome
 ```
 
 ### Remote Preview
 ```bash
 teamsfx preview --remote
+teamsfx preview --remote --browser edge
 ```
 
 ## Local Preview Dependencies

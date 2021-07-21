@@ -99,6 +99,7 @@ jobs:
         run: |
           echo "::set-output name=CHANGED::$(git tag --points-at HEAD | xargs)"
           echo "::set-output name=TEMPLATE_VERSION::$(git tag --points-at HEAD | grep templates)"
+          echo "::set-output name=EXTENSION_VERSION::$(git tag --points-at HEAD | grep ms-teams-vscode-extension@)"
           if git tag --points-at HEAD | grep templates | grep rc;
           then
               git push -d origin $(git tag --points-at HEAD | grep templates | grep rc)
@@ -183,7 +184,6 @@ jobs:
         run: rm -rf ./*.zip && git clean -df
 
       - name: pack vsix
-        id: pack-vsix
         uses: nick-invision/retry@v2
         with:
           timeout_minutes: 10
@@ -201,6 +201,6 @@ jobs:
         with:
           repo_token: ${{ secrets.CD_PAT }}
           prerelease: true
-          automatic_release_tag: $(tr ' ' '\n' <<< '${{ steps.version-change.outputs.CHANGED }}' | grep 'ms-teams-vscode-extension@')
+          automatic_release_tag: ${{ steps.version-change.outputs.EXTENSION_VERSION }}
           files: |
             ./packages/**/*.vsix

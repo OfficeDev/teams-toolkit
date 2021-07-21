@@ -294,5 +294,5 @@ teamsfx config get
 
 ### Update the secret configuration in project
 ```bash
-teamsfx config set fx-resource-aad-app-for-teams.clientSecret
+teamsfx config set fx-resource-aad-app-for-teams.clientSecret xxx
 ```

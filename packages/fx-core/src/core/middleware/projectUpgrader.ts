@@ -76,13 +76,6 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<void> {
     }
 
     // Some keys updated.
-    // Save the updated context and send log.
-    await saveContext(contextPath, context);
-    const core = ctx.self as FxCore;
-    core?.tools?.logProvider?.info(
-      "[core]: template version is too low. Updated context and moved some configs from env to userdata."
-    );
-
     // Read UserData file.
     const userDataPath = path.resolve(confFolderPath, `${projectSettings.currentEnv}.userdata`);
     const userData = await readUserData(userDataPath, projectSettings.projectId);
@@ -90,8 +83,15 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<void> {
     // Merge updatedKeys into UserData.
     mergeKeysToUserDate(userData, updatedKeys);
 
-    // Save UserData
+    // Save the updated context and UserData.
+    await saveContext(contextPath, context);
     await saveUserData(userDataPath, userData, projectSettings.projectId);
+
+    // Send log.
+    const core = ctx.self as FxCore;
+    core?.tools?.logProvider?.info(
+      "[core]: template version is too low. Updated context and moved some configs from env to userdata."
+    );
   } catch (error) {
     ctx.result = err(ContextUpgradeError(error));
   }

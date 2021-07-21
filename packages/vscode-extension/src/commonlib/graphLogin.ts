@@ -15,6 +15,14 @@ import { signedIn, signedOut } from "./common/constant";
 import { login, LoginStatus } from "./common/login";
 import * as StringResources from "../resources/Strings.json";
 import { CryptoCachePlugin } from "./cacheAccess";
+import { ExtTelemetry } from "../telemetry/extTelemetry";
+import {
+  AccountType,
+  TelemetryErrorType,
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetrySuccess,
+} from "../telemetry/extTelemetryEvents";
 
 const accountName = "appStudio";
 const scopes = ["Application.ReadWrite.All"];
@@ -30,7 +38,7 @@ const config = {
     loggerOptions: {
       // @ts-ignore
       loggerCallback(loglevel, message, containsPii) {
-        if (loglevel<=LogLevel.Error) {
+        if (loglevel <= LogLevel.Error) {
           VsCodeLogInstance.error(message);
         }
       },
@@ -39,8 +47,8 @@ const config = {
     },
   },
   cache: {
-    cachePlugin
-  }
+    cachePlugin,
+  },
 };
 
 const SERVER_PORT = 0;
@@ -83,6 +91,15 @@ export class GraphLogin extends login implements GraphTokenProvider {
         const userConfirmation: boolean = await this.doesUserConfirmLogin();
         if (!userConfirmation) {
           // throw user cancel error
+          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Login, {
+            [TelemetryProperty.AccountType]: AccountType.M365,
+            [TelemetryProperty.Success]: TelemetrySuccess.No,
+            [TelemetryProperty.UserId]: "",
+            [TelemetryProperty.Internal]: "",
+            [TelemetryProperty.ErrorType]: TelemetryErrorType.UserError,
+            [TelemetryProperty.ErrorCode]: `${StringResources.vsc.codeFlowLogin.loginComponent}.${ExtensionErrors.UserCancel}`,
+            [TelemetryProperty.ErrorMessage]: `${StringResources.vsc.common.userCancel}`,
+          });
           throw new UserError(
             ExtensionErrors.UserCancel,
             StringResources.vsc.common.userCancel,

@@ -352,12 +352,12 @@ describe("provision() simple cases", () => {
     expect(result._unsafeUnwrapErr().name).equals("ManifestLoadFailed");
   });
 
-  it("should return ok if provisionSucceeded is true", async () => {
+  it("should return false even if provisionSucceeded is true", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
     mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
     const result = await solution.provision(mockedCtx);
-    expect(result.isOk()).to.be.true;
+    expect(result.isOk()).to.be.false;
   });
 });
 
@@ -466,7 +466,7 @@ describe("provision() happy path for SPFx projects", () => {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",
         version: "1.0",
-        activeResourcePlugins: [spfxPlugin.name],
+        activeResourcePlugins: [spfxPlugin.name, appStudioPlugin.name],
       },
     };
 
@@ -527,7 +527,7 @@ describe("provision() happy path for Azure projects", () => {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
         version: "1.0",
-        activeResourcePlugins: [fehostPlugin.name, aadPlugin.name],
+        activeResourcePlugins: [fehostPlugin.name, aadPlugin.name, appStudioPlugin.name],
       },
     };
 

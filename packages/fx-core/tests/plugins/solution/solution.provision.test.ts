@@ -76,6 +76,7 @@ const expect = chai.expect;
 const aadPlugin = Container.get<Plugin>(ResourcePlugins.AadPlugin) as AadAppForTeamsPlugin;
 const spfxPlugin = Container.get<Plugin>(ResourcePlugins.SpfxPlugin);
 const fehostPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin);
+const appStudioPlugin = Container.get<Plugin>(ResourcePlugins.AppStudioPlugin);
 class MockUserInteraction implements UserInteraction {
   selectOption(config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> {
     throw new Error("Method not implemented.");

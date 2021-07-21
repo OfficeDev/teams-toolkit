@@ -2,7 +2,16 @@ import * as chai from "chai";
 import * as vscode from "vscode";
 import * as sinon from "sinon";
 import * as handlers from "../../../src/handlers";
-import { Inputs, Platform, Stage, VsCodeEnv, ok, err, UserError } from "@microsoft/teamsfx-api";
+import {
+  Inputs,
+  Platform,
+  Stage,
+  VsCodeEnv,
+  ok,
+  err,
+  UserError,
+  Void,
+} from "@microsoft/teamsfx-api";
 import AppStudioTokenInstance from "../../../src/commonlib/appStudioLogin";
 import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
 import { WebviewPanel } from "../../../src/controls/webviewPanel";
@@ -10,10 +19,34 @@ import { PanelType } from "../../../src/controls/PanelType";
 import { AzureAccountManager } from "../../../src/commonlib/azureLogin";
 import { MockCore } from "./mocks/mockCore";
 import * as extension from "../../../src/extension";
+import * as accountTree from "../../../src/accountTree";
+import TreeViewManagerInstance from "../../../src/commandsTreeViewProvider";
+import { ext } from "../../../src/extensionVariables";
 
 suite("handlers", () => {
   test("getWorkspacePath()", () => {
     chai.expect(handlers.getWorkspacePath()).equals(undefined);
+  });
+
+  suite("activate()", function () {
+    const sandbox = sinon.createSandbox();
+
+    this.beforeAll(() => {
+      sandbox.stub(accountTree, "registerAccountTreeHandler");
+      sandbox.stub(AzureAccountManager.prototype, "setStatusChangeMap");
+      sandbox.stub(AppStudioTokenInstance, "setStatusChangeMap");
+      sandbox.stub(vscode.extensions, "getExtension").returns(undefined);
+      sandbox.stub(TreeViewManagerInstance, "getTreeView").returns(undefined);
+    });
+
+    this.afterAll(() => {
+      sandbox.restore();
+    });
+
+    test("No globalState error", async () => {
+      const result = await handlers.activate();
+      chai.expect(result.isOk() ? result.value : result.error.name).equals("TypeError");
+    });
   });
 
   test("getSystemInputs()", () => {

@@ -281,6 +281,21 @@ Secrets in .userdata file are encrypted, `teamsfx config` could help you viewing
 teamsfx config set telemetry off
 ```
 
+### Disable environment checker
+There are three configs to turn on/off Node.js, .NET SDK and Azure Functions Core Tools validation, and all of them are enabled by default. You are able to set the config to "off" if you do not need the dependencies validation and would like to install the dependencies by yourself. Check the [Node.js installation guide](../vscode-extension/envchecker-help.md#how-to-install-nodejs), [.NET SDK installation guide](../vscode-extension/envchecker-help.md#how-to-install-net-sdk) and [Azure Functions Core Tools installation guide](../vscode-extension/envchecker-help.md#how-to-install-azure-functions-core-tools).
+
+For example, to disable .NET SDK validation, you can use the following command.
+
+```bash
+teamsfx config set validate-dotnet-sdk off
+```
+
+To enable .NET SDK validation, you can use the following command.
+
+```bash
+teamsfx config set validate-dotnet-sdk on
+```
+
 ### View all the user scope configuration
 ```bash
 teamsfx config get -g

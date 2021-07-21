@@ -204,7 +204,7 @@ export class CodeFlowLogin {
         [TelemetryProperty.AccountType]: this.accountName,
         [TelemetryProperty.Success]: TelemetrySuccess.No,
         [TelemetryProperty.UserId]: "",
-        [TelemetryProperty.Internal]: "false",
+        [TelemetryProperty.Internal]: "",
         [TelemetryProperty.ErrorType]:
           e instanceof UserError ? TelemetryErrorType.UserError : TelemetryErrorType.SystemError,
         [TelemetryProperty.ErrorCode]: `${e.source}.${e.name}`,

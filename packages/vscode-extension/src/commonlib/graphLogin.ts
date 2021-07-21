@@ -95,7 +95,7 @@ export class GraphLogin extends login implements GraphTokenProvider {
             [TelemetryProperty.AccountType]: AccountType.M365,
             [TelemetryProperty.Success]: TelemetrySuccess.No,
             [TelemetryProperty.UserId]: "",
-            [TelemetryProperty.Internal]: "false",
+            [TelemetryProperty.Internal]: "",
             [TelemetryProperty.ErrorType]: TelemetryErrorType.UserError,
             [TelemetryProperty.ErrorCode]: `${StringResources.vsc.codeFlowLogin.loginComponent}.${ExtensionErrors.UserCancel}`,
             [TelemetryProperty.ErrorMessage]: `${StringResources.vsc.common.userCancel}`,

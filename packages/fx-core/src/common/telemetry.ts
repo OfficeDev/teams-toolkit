@@ -21,6 +21,7 @@ export enum TelemetryEvent {
   DownloadSampleStart = "download-sample-start",
   DownloadSample = "download-sample",
   ProjectUpgrade = "project-upgrade",
+  ProjectUpgradeStart = "project-upgrade-start",
 }
 
 export enum TelemetrySuccess {

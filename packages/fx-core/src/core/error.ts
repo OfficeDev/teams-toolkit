@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { Func, Inputs, Stage, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { Func, FxError, Inputs, Stage, SystemError, UserError } from "@microsoft/teamsfx-api";
 
 export const CoreSource = "Core";
 
@@ -122,7 +122,7 @@ export function FunctionRouterError(func: Func) {
   );
 }
 
-export function ContextUpgradeError(error: any) {
+export function ContextUpgradeError(error: any): FxError {
   return new SystemError(
     "ContextUpgradeError",
     `Failed to update context: ${error.message}`,

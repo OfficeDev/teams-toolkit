@@ -137,7 +137,7 @@ describe("Config Get Command Check", () => {
     });
     // sandbox.stub(Utils, "readConfigs").returns(Promise.resolve(err(NonTeamsFxProjectFolder())));
     sandbox
-      .stub(Utils, "readConfigs")
+      .stub(Utils, "readEnvJsonFile")
       .callsFake(async (rootFolder: string): Promise<Result<any, FxError>> => {
         if (rootFolder.endsWith("testProjectFolder")) {
           return ok({});
@@ -146,7 +146,7 @@ describe("Config Get Command Check", () => {
       });
     sandbox
       .stub(Utils, "readProjectSecrets")
-      .returns(Promise.resolve(dotenv.parse("fx-resource-bot.botPassword=password\ntest=abc")));
+      .returns(Promise.resolve(ok(dotenv.parse("fx-resource-bot.botPassword=password\ntest=abc"))));
   });
 
   after(() => {
@@ -312,7 +312,7 @@ describe("Config Set Command Check", () => {
       logs.push(message);
     });
     sandbox
-      .stub(Utils, "readConfigs")
+      .stub(Utils, "readEnvJsonFile")
       .callsFake(async (rootFolder: string): Promise<Result<any, FxError>> => {
         if (rootFolder.endsWith("testProjectFolder")) {
           return ok({});
@@ -326,7 +326,7 @@ describe("Config Set Command Check", () => {
       });
     sandbox
       .stub(Utils, "readProjectSecrets")
-      .returns(Promise.resolve(dotenv.parse("fx-resource-bot.botPassword=password\ntest=abc")));
+      .returns(Promise.resolve(ok(dotenv.parse("fx-resource-bot.botPassword=password\ntest=abc"))));
   });
 
   after(() => {

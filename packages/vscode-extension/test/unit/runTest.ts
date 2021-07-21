@@ -4,16 +4,29 @@
 "use strict";
 
 import * as path from "path";
-import { runTests } from "vscode-test";
+import * as cp from "child_process";
+import {
+  runTests,
+  downloadAndUnzipVSCode,
+  resolveCliPathFromVSCodeExecutablePath,
+} from "vscode-test";
 
 async function main() {
   try {
     const extensionDevelopmentPath = path.resolve(__dirname, "../../");
     const extensionTestsPath = path.resolve(__dirname, "./index");
+    const vscodeExecutablePath = await downloadAndUnzipVSCode("stable");
+    const cliPath = resolveCliPathFromVSCodeExecutablePath(vscodeExecutablePath);
+
+    cp.spawnSync(cliPath, ["--install-extension", "ms-vscode.azure-account"], {
+      encoding: "utf-8",
+      stdio: "inherit",
+    });
+
     await runTests({
+      vscodeExecutablePath,
       extensionDevelopmentPath,
       extensionTestsPath: extensionTestsPath,
-      launchArgs: ["--disable-extensions"],
     });
   } catch (err) {
     console.error("Failed to run tests");

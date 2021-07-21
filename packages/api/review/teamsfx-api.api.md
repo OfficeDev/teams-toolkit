@@ -144,7 +144,6 @@ export interface Core {
     decrypt: (ciphertext: string, inputs: Inputs) => Promise<Result<string, FxError>>;
     // (undocumented)
     deployArtifacts: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
-    // (undocumented)
     encrypt: (plaintext: string, inputs: Inputs) => Promise<Result<string, FxError>>;
     // (undocumented)
     executeUserTask: (func: Func, inputs: Inputs) => Promise<Result<unknown, FxError>>;

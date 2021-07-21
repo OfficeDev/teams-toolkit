@@ -12,17 +12,15 @@ import AppStudioTokenProvider from "./commonlib/appStudioLogin";
 import GraphTokenProvider from "./commonlib/graphLogin";
 import CLILogProvider from "./commonlib/log";
 import DialogManagerInstance from "./userInterface";
-import { getSubscriptionIdFromEnvFile } from "./utils";
 import { CliTelemetry } from "./telemetry/cliTelemetry";
 import CLIUIInstance from "./userInteraction";
 
 export default async function activate(rootPath?: string): Promise<Result<FxCore, FxError>> {
   if (rootPath) {
-    const subscription = await getSubscriptionIdFromEnvFile(rootPath);
-    if (subscription) {
-      try {
-        await AzureAccountManager.setSubscription(subscription);
-      } catch {}
+    AzureAccountManager.setRootPath(rootPath);
+    const subscriptionInfo = await AzureAccountManager.readSubscription();
+    if (subscriptionInfo) {
+      await AzureAccountManager.setSubscription(subscriptionInfo.subscriptionId);
     }
     CliTelemetry.setReporter(CliTelemetry.getReporter().withRootFolder(rootPath));
   }
@@ -32,11 +30,11 @@ export default async function activate(rootPath?: string): Promise<Result<FxCore
     tokenProvider: {
       azureAccountProvider: AzureAccountManager,
       graphTokenProvider: GraphTokenProvider,
-      appStudioToken: AppStudioTokenProvider
+      appStudioToken: AppStudioTokenProvider,
     },
     telemetryReporter: CliTelemetry.getReporter(),
     dialog: DialogManagerInstance,
-    ui: CLIUIInstance
+    ui: CLIUIInstance,
   };
   const core = new FxCore(tools);
   return ok(core);

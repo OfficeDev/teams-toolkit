@@ -14,7 +14,7 @@ import {
   readProjectSecrets,
   writeSecretToFile,
   getSystemInputs,
-  readConfigs,
+  readEnvJsonFile,
   toYargsOptions,
 } from "../utils";
 import CliTelemetry from "../telemetry/cliTelemetry";
@@ -48,7 +48,7 @@ export class ConfigGet extends YargsCommand {
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     const rootFolder = path.resolve((args.folder as string) || "./");
-    const inProject = (await readConfigs(rootFolder)).isOk();
+    const inProject = (await readEnvJsonFile(rootFolder)).isOk();
 
     if (args.option === undefined) {
       // print all
@@ -114,21 +114,21 @@ export class ConfigGet extends YargsCommand {
       case CliConfigOptions.EnvCheckerValidateDotnetSdk:
         CLILogProvider.necessaryLog(
           LogLevel.Info,
-          JSON.stringify(config.envCheckerValidateDotnetSdk, null, 2),
+          JSON.stringify(config[CliConfigOptions.EnvCheckerValidateDotnetSdk], null, 2),
           true
         );
         return ok(null);
       case CliConfigOptions.EnvCheckerValidateFuncCoreTools:
         CLILogProvider.necessaryLog(
           LogLevel.Info,
-          JSON.stringify(config.EnvCheckerValidateFuncCoreTools, null, 2),
+          JSON.stringify(config[CliConfigOptions.EnvCheckerValidateFuncCoreTools], null, 2),
           true
         );
         return ok(null);
       case CliConfigOptions.EnvCheckerValidateNode:
         CLILogProvider.necessaryLog(
           LogLevel.Info,
-          JSON.stringify(config.EnvCheckerValidateNode, null, 2),
+          JSON.stringify(config[CliConfigOptions.EnvCheckerValidateNode], null, 2),
           true
         );
         return ok(null);
@@ -143,7 +143,12 @@ export class ConfigGet extends YargsCommand {
     option?: string
   ): Promise<Result<null, FxError>> {
     let found = false;
-    const secretData = await readProjectSecrets(rootFolder);
+    const result = await readProjectSecrets(rootFolder);
+    if (result.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ConfigGet, result.error);
+      return err(result.error);
+    }
+    const secretData = result.value;
     if (option && secretData[option] && !dataNeedEncryption(option)) {
       found = true;
       CLILogProvider.necessaryLog(LogLevel.Info, `${option}: ${secretData[option]}`, true);
@@ -201,7 +206,7 @@ export class ConfigSet extends YargsCommand {
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     const rootFolder = path.resolve((args.folder as string) || "./");
-    const inProject = (await readConfigs(rootFolder)).isOk();
+    const inProject = (await readEnvJsonFile(rootFolder)).isOk();
 
     if (GlobalOptions.has(args.option) || args.global) {
       // global config
@@ -267,7 +272,12 @@ export class ConfigSet extends YargsCommand {
     option: string,
     value: string
   ): Promise<Result<null, FxError>> {
-    const secretData = await readProjectSecrets(rootFolder);
+    const result = await readProjectSecrets(rootFolder);
+    if (result.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ConfigSet, result.error);
+      return err(result.error);
+    }
+    const secretData = result.value;
     if (!secretData[option]) {
       const error = ConfigNameNotFound(option);
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ConfigSet, error);

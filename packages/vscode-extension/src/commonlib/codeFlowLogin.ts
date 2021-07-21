@@ -20,6 +20,7 @@ import * as StringResources from "../resources/Strings.json";
 import { loggedIn, loggedOut, loggingIn } from "./common/constant";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
+  TelemetryErrorType,
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
@@ -164,6 +165,18 @@ export class CodeFlowLogin {
 
       redirectPromise.then(cancelCodeTimer, cancelCodeTimer);
       accessToken = await redirectPromise;
+    } catch (e) {
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Login, {
+        [TelemetryProperty.AccountType]: this.accountName,
+        [TelemetryProperty.Success]: TelemetrySuccess.No,
+        [TelemetryProperty.UserId]: "",
+        [TelemetryProperty.Internal]: "false",
+        [TelemetryProperty.ErrorType]:
+          e instanceof UserError ? TelemetryErrorType.UserError : TelemetryErrorType.SystemError,
+        [TelemetryProperty.ErrorCode]: `${e.source}.${e.name}`,
+        [TelemetryProperty.ErrorMessage]: `${e.message}`,
+      });
+      throw e;
     } finally {
       if (accessToken) {
         const tokenJson = ConvertTokenToJson(accessToken);
@@ -174,13 +187,6 @@ export class CodeFlowLogin {
           [TelemetryProperty.Internal]: (tokenJson as any).upn?.endsWith("@microsoft.com")
             ? "true"
             : "false",
-        });
-      } else {
-        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Login, {
-          [TelemetryProperty.AccountType]: this.accountName,
-          [TelemetryProperty.Success]: TelemetrySuccess.No,
-          [TelemetryProperty.UserId]: "",
-          [TelemetryProperty.Internal]: "false",
         });
       }
       server.close();
@@ -212,6 +218,10 @@ export class CodeFlowLogin {
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.SignOut, e, {
         [TelemetryProperty.AccountType]: this.accountName,
         [TelemetryProperty.Success]: TelemetrySuccess.No,
+        [TelemetryProperty.ErrorType]:
+          e instanceof UserError ? TelemetryErrorType.UserError : TelemetryErrorType.SystemError,
+        [TelemetryProperty.ErrorCode]: `${e.source}.${e.name}`,
+        [TelemetryProperty.ErrorMessage]: `${e.message}`,
       });
       return false;
     }

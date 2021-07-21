@@ -4,6 +4,8 @@
 
 ## Core.encrypt property
 
+Used for encryption of secrets in user data file
+
 <b>Signature:</b>
 
 ```typescript

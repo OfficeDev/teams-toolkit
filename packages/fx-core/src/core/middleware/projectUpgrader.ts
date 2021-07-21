@@ -97,6 +97,7 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<void> {
   }
 }
 
+// TODO: add readUserData as basic API in core since used in multiple places.
 async function readUserData(
   userDataPath: string,
   projectId?: string
@@ -125,6 +126,7 @@ async function readUserData(
   return dict;
 }
 
+// TODO: add saveUserData as basic API in core since used in multiple places.
 async function saveUserData(
   userDataPath: string,
   userData: Record<string, string>,

@@ -12,6 +12,7 @@ import * as path from "path";
 import * as uuid from "uuid";
 import { dataNeedEncryption, deserializeDict, serializeDict } from "../..";
 import { LocalCrypto } from "../crypto";
+import { sendTelemetryEvent, TelemetryEvent } from "../../common/telemetry";
 
 const resourceContext = [
   {
@@ -92,6 +93,7 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<void> {
     core?.tools?.logProvider?.info(
       "[core]: template version is too low. Updated context and moved some configs from env to userdata."
     );
+    sendTelemetryEvent(core?.tools?.telemetryReporter, inputs, TelemetryEvent.ProjectUpgrade);
   } catch (error) {
     ctx.result = err(ContextUpgradeError(error));
   }

@@ -89,6 +89,8 @@ export enum TelemetryEvent {
 
 export enum TelemetryProperty {
   Component = "component",
+  ProjectId = "project-id",
+  CorrelationId = "correlation-id",
   AapId = "appid",
   UserId = "hashed-userid",
   AccountType = "account-type",

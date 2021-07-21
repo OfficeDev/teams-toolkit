@@ -75,6 +75,7 @@ import {
 import { TelemetrySenderMW } from "./middleware/telemetrySender";
 import * as uuid from "uuid";
 import { AxiosResponse } from "axios";
+import { ProjectUpgraderMW } from "./middleware/projectUpgrader";
 
 export interface CoreHookContext extends HookContext {
   solutionContext?: SolutionContext;
@@ -315,6 +316,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    ProjectUpgraderMW,
     ContextLoaderMW,
     SolutionLoaderMW(defaultSolutionLoader),
     QuestionModelMW,

@@ -3,6 +3,12 @@
 
 "use strict";
 
+export enum Browser {
+  chrome = "chrome",
+  edge = "edge",
+  default = "default",
+}
+
 export const sideloadingUrl =
   "https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}";
 export const teamsAppIdPlaceholder = "${teamsAppId}";
@@ -38,20 +44,17 @@ export const botFolderName = "bot";
 
 export const npmInstallCommand = "npm install";
 export const frontendStartCommand = "npx react-scripts start";
-export const backendStartJsCommand = `npx func start --javascript --port "7071" --cors "*"`;
-export const backendStartTsCommand = `npx func start --typescript --port "7071" --cors "*"`;
+export const backendStartJsCommand = `@command start --javascript --port "7071" --cors "*"`;
+export const backendStartTsCommand = `@command start --typescript --port "7071" --cors "*"`;
 export const backendWatchCommand = "npx tsc --watch";
-export const authStartCommand = "dotnet Microsoft.TeamsFx.SimpleAuth.dll"; // TODO: dependency checker
 export const ngrokStartCommand = "npx ngrok http 3978 --log=stdout";
 export const botStartJsCommand = "npx nodemon --signal SIGINT index.js";
 export const botStartTsCommand =
   "npx nodemon --exec node --signal SIGINT -r ts-node/register index.ts";
-const backendExtensionsInstallCsprojPath = "extensions.csproj";
-const backendExtensionsInstallOutputPath = "bin";
-export const backendExtensionsInstallCommand = `dotnet build ${backendExtensionsInstallCsprojPath} -o ${backendExtensionsInstallOutputPath} --ignore-failed-sources`; // TODO: dependency checker
 
 export const frontendStartPattern = /Compiled|Failed/g;
-export const backendStartPattern = /Worker process started and initialized|Host lock lease acquired by instance ID/g;
+export const backendStartPattern =
+  /Worker process started and initialized|Host lock lease acquired by instance ID/g;
 export const backendWatchPattern = /.*/g;
 export const authStartPattern = /.*/g;
 export const ngrokStartPattern = /started tunnel|failed to reconnect session/g;
@@ -112,11 +115,5 @@ export const frontendPorts: [number, string[]][] = [
   [3000, hosts],
   [5000, hosts],
 ];
-export const backendPorts: [number, string[]][] = [
-  [7071, hosts],
-  [9229, hosts],
-];
-export const botPorts: [number, string[]][] = [
-  [3978, hosts],
-  [9239, hosts],
-];
+export const backendPorts: [number, string[]][] = [[7071, hosts]];
+export const botPorts: [number, string[]][] = [[3978, hosts]];

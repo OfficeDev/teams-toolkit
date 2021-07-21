@@ -48,7 +48,7 @@ import {
 import { TokenCredential } from "@azure/core-auth";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { SolutionLoader } from "../../src/core/loader";
-import { PluginNames } from "../../src/plugins/solution/fx-solution/solution";
+import { PluginNames } from "../../src/plugins/solution/fx-solution/constants";
 import * as uuid from "uuid";
 
 export class MockSolution implements Solution {
@@ -152,6 +152,15 @@ export class MockAzureAccountProvider implements AzureAccountProvider {
   }
   setSubscription(subscriptionId: string): Promise<void> {
     throw new Error("Method not implemented.");
+  }
+  getAccountInfo(): Record<string, string> {
+    throw new Error("Method not implemented.");
+  }
+  getSelectedSubscription(): Promise<SubscriptionInfo | undefined> {
+    throw new Error("Method not implemented.");
+  }
+  selectSubscription(subscriptionId?: string): Promise<string> {
+      throw new Error("Method not implemented.");
   }
 }
 

@@ -7,10 +7,12 @@ import * as constants from "./constants";
 import * as commonUtils from "./commonUtils";
 import { ProductName, VsCodeEnv } from "@microsoft/teamsfx-api";
 import { DotnetChecker } from "./depsChecker/dotnetChecker";
+import { FuncToolChecker } from "./depsChecker/funcToolChecker";
 import { detectVsCodeEnv } from "../handlers";
 import { vscodeAdapter } from "./depsChecker/vscodeAdapter";
 import { vscodeLogger } from "./depsChecker/vscodeLogger";
 import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
+import { isWindows } from "../utils/commonUtils";
 
 export class TeamsfxTaskProvider implements vscode.TaskProvider {
   public static readonly type: string = ProductName;
@@ -116,14 +118,21 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
   ): Promise<vscode.Task> {
     const command: string = constants.backendStartCommand;
     definition = definition || { type: TeamsfxTaskProvider.type, command };
+
     // NOTE: properly handle quoting and escaping to work on windows (both powershell and cmd), linux and osx
-    const commandLine =
+    const args =
       programmingLanguage === constants.ProgrammingLanguage.typescript
-        ? 'npx func start --typescript --language-worker="--inspect=9229" --port "7071" --cors "*"'
-        : 'npx func start --javascript --language-worker="--inspect=9229" --port "7071" --cors "*"';
+        ? `start --typescript --language-worker="--inspect=9229" --port "7071" --cors "*"`
+        : `start --javascript --language-worker="--inspect=9229" --port "7071" --cors "*"`;
+    const funcChecker = new FuncToolChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
+    const commandLine = `${await funcChecker.getFuncCommand()} ${args}`;
+
     const env = await commonUtils.getBackendLocalEnv();
     const options: vscode.ShellExecutionOptions = {
       cwd: projectRoot,
+      // avoid powershell execution policy issue
+      executable: isWindows() ? "cmd.exe" : undefined,
+      shellArgs: isWindows() ? ["/c"] : undefined,
       env,
     };
     problemMatchers = problemMatchers || constants.backendProblemMatcher;

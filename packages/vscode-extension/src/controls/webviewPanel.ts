@@ -167,7 +167,7 @@ export class WebviewPanel {
             ext.context.globalState.update("openSampleReadme", true);
           } else {
             error = new SystemError(
-              ExtensionErrors.UnknwonError,
+              ExtensionErrors.FetchSampleError,
               StringResources.vsc.webview.emptyData,
               ExtensionSource
             );

@@ -61,19 +61,24 @@ import {
   HostTypeOptionSPFx,
 } from "../../../src/plugins/solution/fx-solution/question";
 import { validManifest } from "./util";
-import { AppStudio } from "../../../src/plugins/solution/fx-solution/appstudio/appstudio";
-import { IAppDefinition } from "../../../src/plugins/solution/fx-solution/appstudio/interface";
+import { IAppDefinition } from "../../../src/plugins/resource/appstudio/interfaces/IAppDefinition";
 import _ from "lodash";
-import { AadAppForTeamsPlugin } from "../../../src/plugins/resource/aad";
 import { TokenCredential } from "@azure/core-auth";
 import { TokenCredentialsBase, UserTokenCredentials } from "@azure/ms-rest-nodeauth";
 import { ResourceGroups } from "@azure/arm-resources";
+import { AppStudioClient } from "../../../src/plugins/resource/appstudio/appStudio";
 import * as solutionUtil from "../../../src/plugins/solution/fx-solution/util";
 import * as uuid from "uuid";
+import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
+import { AadAppForTeamsPlugin } from "../../../src";
+import Container from "typedi";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
-
+const aadPlugin = Container.get<Plugin>(ResourcePlugins.AadPlugin) as AadAppForTeamsPlugin;
+const spfxPlugin = Container.get<Plugin>(ResourcePlugins.SpfxPlugin);
+const fehostPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin);
+const appStudioPlugin = Container.get<Plugin>(ResourcePlugins.AppStudioPlugin);
 function instanceOfIMessage(obj: any): obj is IMessage {
   return "items" in obj;
 }
@@ -253,6 +258,17 @@ class MockedAzureTokenProvider implements AzureAccountProvider {
   async setSubscription(subscriptionId: string): Promise<void> {
     return;
   }
+  getAccountInfo(): Record<string, string> | undefined {
+    return {};
+  }
+  getSelectedSubscription(): Promise<SubscriptionInfo | undefined> {
+    const selectedSub = {
+      subscriptionId: "subscriptionId",
+      tenantId: "tenantId",
+      subscriptionName: "subscriptionName",
+    };
+    return Promise.resolve(selectedSub);
+  }
 }
 
 function mockSolutionContext(): SolutionContext {
@@ -339,22 +355,22 @@ describe("provision() simple cases", () => {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",
         version: "1.0",
-        activeResourcePlugins: [solution.fehostPlugin.name],
+        activeResourcePlugins: [fehostPlugin.name],
       },
     };
     // We leverage the fact that in testing env, this is not file at `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`
     // So we even don't need to mock fs.readJson
     const result = await solution.provision(mockedCtx);
     expect(result.isErr()).to.be.true;
-    expect(result._unsafeUnwrapErr().name).equals(SolutionError.FailedToLoadManifestFile);
+    expect(result._unsafeUnwrapErr().name).equals("ManifestLoadFailed");
   });
 
-  it("should return ok if provisionSucceeded is true", async () => {
+  it("should return false even if provisionSucceeded is true", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
     mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
     const result = await solution.provision(mockedCtx);
-    expect(result.isOk()).to.be.true;
+    expect(result.isOk()).to.be.false;
   });
 });
 
@@ -388,7 +404,7 @@ describe("provision() with permission.json file missing", () => {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
         version: "1.0",
-        activeResourcePlugins: [solution.fehostPlugin.name],
+        activeResourcePlugins: [fehostPlugin.name],
       },
     };
     const result = await solution.provision(mockedCtx);
@@ -407,7 +423,7 @@ describe("provision() with permission.json file missing", () => {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",
         version: "1.0",
-        activeResourcePlugins: [solution.spfxPlugin.name],
+        activeResourcePlugins: [spfxPlugin.name],
       },
     };
     solution.doProvision = async function (_ctx: PluginContext): Promise<Result<any, FxError>> {
@@ -444,8 +460,8 @@ describe("provision() happy path for SPFx projects", () => {
       .withArgs(`./.${ConfigFolderName}/${REMOTE_MANIFEST}`)
       .resolves(mockedManifest);
     // mocker.stub<any, any>(fs, "pathExists").withArgs(permissionsJsonPath).resolves(true);
-    mocker.stub(AppStudio, "createApp").resolves(mockedAppDef);
-    mocker.stub(AppStudio, "updateApp").resolves(mockedAppDef);
+    mocker.stub(AppStudioClient, "createApp").resolves(mockedAppDef);
+    mocker.stub(AppStudioClient, "updateApp").resolves(mockedAppDef);
   });
 
   afterEach(() => {
@@ -463,7 +479,7 @@ describe("provision() happy path for SPFx projects", () => {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",
         version: "1.0",
-        activeResourcePlugins: [solution.spfxPlugin.name],
+        activeResourcePlugins: [spfxPlugin.name, appStudioPlugin.name],
       },
     };
 
@@ -502,8 +518,8 @@ describe("provision() happy path for Azure projects", () => {
       .stub<any, any>(fs, "readJson")
       .withArgs(`./.${ConfigFolderName}/${REMOTE_MANIFEST}`)
       .resolves(mockedManifest);
-    mocker.stub(AppStudio, "createApp").resolves(mockedAppDef);
-    mocker.stub(AppStudio, "updateApp").resolves(mockedAppDef);
+    mocker.stub(AppStudioClient, "createApp").resolves(mockedAppDef);
+    mocker.stub(AppStudioClient, "updateApp").resolves(mockedAppDef);
     // mocker.stub(ResourceGroups.prototype, "checkExistence").resolves({body: true});
     mocker.stub(ResourceGroups.prototype, "createOrUpdate").resolves({ name: resourceGroupName });
     mocker.stub(solutionUtil, "getSubsriptionDisplayName").resolves(mockedSubscriptionName);
@@ -524,28 +540,23 @@ describe("provision() happy path for Azure projects", () => {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
         version: "1.0",
-        activeResourcePlugins: [solution.fehostPlugin.name, solution.aadPlugin.name],
+        activeResourcePlugins: [fehostPlugin.name, aadPlugin.name, appStudioPlugin.name],
       },
     };
 
-    mockProvisionThatAlwaysSucceed(solution.fehostPlugin);
-    solution.fehostPlugin.provision = async function (
-      ctx: PluginContext
-    ): Promise<Result<any, FxError>> {
+    mockProvisionThatAlwaysSucceed(fehostPlugin);
+    fehostPlugin.provision = async function (ctx: PluginContext): Promise<Result<any, FxError>> {
       ctx.config.set(FRONTEND_ENDPOINT, "http://example.com");
       ctx.config.set(FRONTEND_DOMAIN, "http://example.com");
       return ok(Void);
     };
 
-    mockProvisionThatAlwaysSucceed(solution.aadPlugin);
-    solution.aadPlugin.postProvision = async function (
-      ctx: PluginContext
-    ): Promise<Result<any, FxError>> {
+    mockProvisionThatAlwaysSucceed(aadPlugin);
+    aadPlugin.postProvision = async function (ctx: PluginContext): Promise<Result<any, FxError>> {
       ctx.config.set(REMOTE_AAD_ID, "mockedRemoteAadId");
       return ok(Void);
     };
 
-    const aadPlugin: AadAppForTeamsPlugin = solution.aadPlugin as any;
     aadPlugin.setApplicationInContext = function (
       ctx: PluginContext,
       _isLocalDebug?: boolean

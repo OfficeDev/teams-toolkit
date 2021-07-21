@@ -75,7 +75,14 @@ export function SampleAppDownloadFailed(sampleAppUrl: string, e: Error): SystemE
   return returnSystemError(e, constants.cliSource, "SampleAppDownloadFailed");
 }
 
-export function ReadFileError(e: Error): SystemError {
+export function ReadFileError(e: Error): SystemError | UserError {
+  if (e.message.includes("Unexpected end of JSON input")) {
+    return returnUserError(
+      new Error(`${e.message}. Please check the format of it.`),
+      constants.cliSource,
+      "ReadFileError"
+    );
+  }
   return returnSystemError(e, constants.cliSource, "ReadFileError");
 }
 
@@ -124,5 +131,13 @@ export function ConfigNameNotFound(name: string): UserError {
     new Error(`Config ${name} is not found in project.`),
     constants.cliSource,
     "ConfigNameNotFound"
+  );
+}
+
+export function InvalidEnvFile(msg: string, path: string): UserError {
+  return returnUserError(
+    new Error(msg + ` Please check the file ${path}.`),
+    constants.cliSource,
+    "InvalidEnvFile"
   );
 }

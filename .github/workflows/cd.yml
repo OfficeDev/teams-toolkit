@@ -99,10 +99,9 @@ jobs:
         run: |
           echo "::set-output name=CHANGED::$(git tag --points-at HEAD | xargs)"
           echo "::set-output name=TEMPLATE_VERSION::$(git tag --points-at HEAD | grep templates)"
-          VAR=$(git tag --points-at HEAD | grep templates | grep rc)
-          if [ ! -z "$VAR" ]
+          if git tag --points-at HEAD | grep templates | grep rc;
           then
-              git push -d origin $VAR
+              git push -d origin $(git tag --points-at HEAD | grep templates | grep rc)
           fi
 
       - name: update cli ai key

@@ -57,7 +57,7 @@ export class CLIAdapter implements IDepsAdapter {
 
     if (userSelected === Messages.learnMoreButtonText) {
       this._telemetry.sendEvent(DepsCheckerEvent.clickLearnMore);
-      CLIAdapter.openUrl(link);
+      await CLIAdapter.openUrl(link);
       return false;
     } else if (userSelected === Messages.continueButtonText) {
       this._telemetry.sendEvent(DepsCheckerEvent.clickContinue);
@@ -120,6 +120,6 @@ export class CLIAdapter implements IDepsAdapter {
   }
 
   private static async openUrl(url: string): Promise<void> {
-    CLIUIInstance.openUrl(url);
+    await CLIUIInstance.openUrl(url);
   }
 }

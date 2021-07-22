@@ -26,8 +26,10 @@ export function assembleError(e: Error, source?: string): FxError;
 // @public
 export interface AzureAccountProvider {
     getAccountCredentialAsync(showDialog?: boolean, tenantId?: string): Promise<TokenCredentialsBase | undefined>;
+    getAccountInfo(): Record<string, string> | undefined;
     getIdentityCredentialAsync(showDialog?: boolean): Promise<TokenCredential | undefined>;
     getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined>;
+    getSelectedSubscription(triggerUI?: boolean): Promise<SubscriptionInfo | undefined>;
     listSubscriptions(): Promise<SubscriptionInfo[]>;
     removeStatusChangeMap(name: string): Promise<boolean>;
     setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>, immediateCall?: boolean): Promise<boolean>;
@@ -111,6 +113,8 @@ export interface Context {
     // (undocumented)
     azureAccountProvider?: AzureAccountProvider;
     // (undocumented)
+    cryptoProvider?: CryptoProvider;
+    // (undocumented)
     dialog?: Dialog;
     // (undocumented)
     graphTokenProvider?: GraphTokenProvider;
@@ -137,7 +141,10 @@ export interface Core {
     // (undocumented)
     createProject: (systemInputs: Inputs) => Promise<Result<string, FxError>>;
     // (undocumented)
+    decrypt: (ciphertext: string, inputs: Inputs) => Promise<Result<string, FxError>>;
+    // (undocumented)
     deployArtifacts: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
+    encrypt: (plaintext: string, inputs: Inputs) => Promise<Result<string, FxError>>;
     // (undocumented)
     executeUserTask: (func: Func, inputs: Inputs) => Promise<Result<unknown, FxError>>;
     getQuestions: (task: Stage, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
@@ -155,20 +162,25 @@ export interface Core {
     switchEnv: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
 }
 
+// @public
+export interface CryptoProvider {
+    decrypt(ciphertext: string): Result<string, FxError>;
+    encrypt(plaintext: string): Result<string, FxError>;
+}
+
 // @public @deprecated (undocumented)
 export interface Dialog {
+    // @deprecated (undocumented)
     communicate: (msg: DialogMsg) => Promise<DialogMsg>;
 }
 
 // @public @deprecated (undocumented)
 export class DialogMsg {
-    constructor(dialogType: DialogType, content: IMessage | IQuestion | IProgress | Answer);
+    constructor(dialogType: DialogType, content: IQuestion | Answer);
     // (undocumented)
-    content: IMessage | IQuestion | IProgress | Answer;
+    content: IQuestion | Answer;
     // (undocumented)
     dialogType: DialogType;
-    // (undocumented)
-    getAnswer(): Answer | undefined;
 }
 
 // @public @deprecated (undocumented)
@@ -176,13 +188,7 @@ export enum DialogType {
     // (undocumented)
     Answer = "Answer",
     // (undocumented)
-    Ask = "Ask",
-    // (undocumented)
-    Output = "Output",
-    // (undocumented)
-    Show = "Show",
-    // (undocumented)
-    ShowProgress = "ShowProgress"
+    Ask = "Ask"
 }
 
 // @public (undocumented)
@@ -408,18 +414,6 @@ export interface ILocalizationInfo {
     languages: any[];
 }
 
-// @public @deprecated (undocumented)
-export interface IMessage {
-    // (undocumented)
-    description: string;
-    // (undocumented)
-    items?: string[];
-    // (undocumented)
-    level: MsgLevel;
-    // (undocumented)
-    modal?: boolean;
-}
-
 // @public (undocumented)
 export interface IMessagingExtensionCommand {
     context?: ("compose" | "commandBox" | "message")[];
@@ -489,16 +483,6 @@ export interface IParameter {
     value?: string;
 }
 
-// @public @deprecated
-export interface IProgress {
-    // (undocumented)
-    cancellable?: boolean;
-    // (undocumented)
-    progressIter: AsyncGenerator<IProgressStatus, Result<null, FxError>>;
-    // (undocumented)
-    title?: string;
-}
-
 // @public (undocumented)
 export interface IProgressHandler {
     end: () => Promise<void>;
@@ -517,23 +501,9 @@ export interface IProgressStatus {
 // @public @deprecated (undocumented)
 export interface IQuestion {
     // (undocumented)
-    defaultAnswer?: string;
-    // (undocumented)
     description: string;
     // (undocumented)
-    multiSelect?: boolean;
-    // (undocumented)
-    options?: string[];
-    // (undocumented)
-    password?: boolean;
-    // (undocumented)
-    prompt?: string;
-    // (undocumented)
-    terminalName?: string;
-    // (undocumented)
     type: QuestionType;
-    // (undocumented)
-    validateInput?: (value: string) => string | undefined | null | Promise<string | undefined | null>;
 }
 
 // @public (undocumented)
@@ -672,13 +642,18 @@ export enum Platform {
 
 // @public
 interface Plugin_2 {
+    activate(solutionSettings: AzureSolutionSettings): boolean;
     callFunc?: (func: Func, ctx: PluginContext) => Promise<Result<any, FxError>>;
     // (undocumented)
     deploy?: (ctx: PluginContext) => Promise<Result<any, FxError>>;
+    // (undocumented)
+    displayName: string;
     executeUserTask?: (func: Func, ctx: PluginContext) => Promise<Result<any, FxError>>;
     getQuestions?: (stage: Stage, ctx: PluginContext) => Promise<Result<QTreeNode | undefined, FxError>>;
     getQuestionsForUserTask?: (func: Func, ctx: PluginContext) => Promise<Result<QTreeNode | undefined, FxError>>;
     localDebug?: (ctx: PluginContext) => Promise<Result<any, FxError>>;
+    // (undocumented)
+    name: string;
     // (undocumented)
     postDeploy?: (ctx: PluginContext) => Promise<Result<any, FxError>>;
     // (undocumented)
@@ -780,10 +755,6 @@ export type Question = SingleSelectQuestion | MultiSelectQuestion | TextInputQue
 
 // @public @deprecated (undocumented)
 export enum QuestionType {
-    // (undocumented)
-    ExecuteCmd = "ExecuteCmd",
-    // (undocumented)
-    OpenFolder = "OpenFolder",
     // (undocumented)
     UpdateGlobalState = "UpdateGlobalState"
 }
@@ -1090,7 +1061,7 @@ export type TokenProvider = {
 // @public (undocumented)
 export interface Tools {
     // (undocumented)
-    dialog: Dialog;
+    dialog?: Dialog;
     // (undocumented)
     logProvider: LogProvider;
     // (undocumented)

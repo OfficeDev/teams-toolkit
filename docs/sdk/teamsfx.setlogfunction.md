@@ -25,3 +25,15 @@ export declare function setLogFunction(logFunction?: LogFunction): void;
 
 void
 
+## Example
+
+
+```typescript
+setLogFunction((level: LogLevel, message: string) => {
+  if (level === LogLevel.Error) {
+    console.log(message);
+  }
+});
+
+```
+

@@ -14,7 +14,7 @@ export interface Tools
 
 |  Property | Type | Description |
 |  --- | --- | --- |
-|  [dialog](./teamsfx-api.tools.dialog.md) | [Dialog](./teamsfx-api.dialog.md) |  |
+|  [dialog?](./teamsfx-api.tools.dialog.md) | [Dialog](./teamsfx-api.dialog.md) | <i>(Optional)</i> |
 |  [logProvider](./teamsfx-api.tools.logprovider.md) | [LogProvider](./teamsfx-api.logprovider.md) |  |
 |  [telemetryReporter?](./teamsfx-api.tools.telemetryreporter.md) | [TelemetryReporter](./teamsfx-api.telemetryreporter.md) | <i>(Optional)</i> |
 |  [tokenProvider](./teamsfx-api.tools.tokenprovider.md) | [TokenProvider](./teamsfx-api.tokenprovider.md) |  |

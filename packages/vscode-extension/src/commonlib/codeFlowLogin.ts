@@ -14,15 +14,16 @@ import { UserError, SystemError, returnUserError } from "@microsoft/teamsfx-api"
 import VsCodeLogInstance from "./log";
 import * as crypto from "crypto";
 import { AddressInfo } from "net";
-import { accountPath, UTF8 } from "./cacheAccess";
+import { loadAccountId, saveAccountId, UTF8 } from "./cacheAccess";
 import * as stringUtil from "util";
 import * as StringResources from "../resources/Strings.json";
 import { loggedIn, loggedOut, loggingIn } from "./common/constant";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
+  TelemetryErrorType,
   TelemetryEvent,
   TelemetryProperty,
-  TelemetrySuccess
+  TelemetrySuccess,
 } from "../telemetry/extTelemetryEvents";
 
 interface Deferred<T> {
@@ -53,8 +54,8 @@ export class CodeFlowLogin {
   }
 
   async reloadCache() {
-    if (fs.existsSync(accountPath + this.accountName)) {
-      const accountCache = String(fs.readFileSync(accountPath + this.accountName, UTF8));
+    const accountCache = await loadAccountId(this.accountName);
+    if (accountCache) {
       const dataCache = await this.msalTokenCache!.getAccountByHomeId(accountCache);
       if (dataCache) {
         this.account = dataCache;
@@ -65,7 +66,7 @@ export class CodeFlowLogin {
 
   async login(): Promise<string> {
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.LoginStart, {
-      [TelemetryProperty.AccountType]: this.accountName
+      [TelemetryProperty.AccountType]: this.accountName,
     });
     const codeVerifier = CodeFlowLogin.toBase64UrlEncoding(
       crypto.randomBytes(32).toString("base64")
@@ -109,6 +110,7 @@ export class CodeFlowLogin {
               await this.mutex?.runExclusive(async () => {
                 this.account = response.account!;
                 this.status = loggedIn;
+                await saveAccountId(this.accountName, this.account.homeAccountId);
               });
               deferredRedirect.resolve(response.accessToken);
 
@@ -163,6 +165,18 @@ export class CodeFlowLogin {
 
       redirectPromise.then(cancelCodeTimer, cancelCodeTimer);
       accessToken = await redirectPromise;
+    } catch (e) {
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Login, {
+        [TelemetryProperty.AccountType]: this.accountName,
+        [TelemetryProperty.Success]: TelemetrySuccess.No,
+        [TelemetryProperty.UserId]: "",
+        [TelemetryProperty.Internal]: "false",
+        [TelemetryProperty.ErrorType]:
+          e instanceof UserError ? TelemetryErrorType.UserError : TelemetryErrorType.SystemError,
+        [TelemetryProperty.ErrorCode]: `${e.source}.${e.name}`,
+        [TelemetryProperty.ErrorMessage]: `${e.message}`,
+      });
+      throw e;
     } finally {
       if (accessToken) {
         const tokenJson = ConvertTokenToJson(accessToken);
@@ -172,14 +186,7 @@ export class CodeFlowLogin {
           [TelemetryProperty.UserId]: (tokenJson as any).oid ? (tokenJson as any).oid : "",
           [TelemetryProperty.Internal]: (tokenJson as any).upn?.endsWith("@microsoft.com")
             ? "true"
-            : "false"
-        });
-      } else {
-        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Login, {
-          [TelemetryProperty.AccountType]: this.accountName,
-          [TelemetryProperty.Success]: TelemetrySuccess.No,
-          [TelemetryProperty.UserId]: "",
-          [TelemetryProperty.Internal]: "false"
+            : "false",
         });
       }
       server.close();
@@ -190,28 +197,31 @@ export class CodeFlowLogin {
 
   async logout(): Promise<boolean> {
     try {
-      const accountCache = String(fs.readFileSync(accountPath + this.accountName, UTF8));
-      const dataCache = await this.msalTokenCache!.getAccountByHomeId(accountCache);
-      if (dataCache) {
-        this.msalTokenCache?.removeAccount(dataCache);
+      const accountCache = await loadAccountId(this.accountName);
+      if (accountCache) {
+        const dataCache = await this.msalTokenCache!.getAccountByHomeId(accountCache);
+        if (dataCache) {
+          this.msalTokenCache?.removeAccount(dataCache);
+        }
       }
-      if (fs.existsSync(accountPath + this.accountName)) {
-        fs.writeFileSync(accountPath + this.accountName, "", UTF8);
-      }
+
+      await saveAccountId(this.accountName, undefined);
       this.account = undefined;
       this.status = loggedOut;
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SignOut, {
         [TelemetryProperty.AccountType]: this.accountName,
-        [TelemetryProperty.Success]: TelemetrySuccess.Yes
+        [TelemetryProperty.Success]: TelemetrySuccess.Yes,
       });
       return true;
     } catch (e) {
-      VsCodeLogInstance.error(
-        "[Logout " + this.accountName + "] " + e.message
-      );
+      VsCodeLogInstance.error("[Logout " + this.accountName + "] " + e.message);
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.SignOut, e, {
         [TelemetryProperty.AccountType]: this.accountName,
-        [TelemetryProperty.Success]: TelemetrySuccess.No
+        [TelemetryProperty.Success]: TelemetrySuccess.No,
+        [TelemetryProperty.ErrorType]:
+          e instanceof UserError ? TelemetryErrorType.UserError : TelemetryErrorType.SystemError,
+        [TelemetryProperty.ErrorCode]: `${e.source}.${e.name}`,
+        [TelemetryProperty.ErrorMessage]: `${e.message}`,
       });
       return false;
     }
@@ -253,8 +263,10 @@ export class CodeFlowLogin {
       }
     } catch (error) {
       VsCodeLogInstance.error("[Login] " + error.message);
-      if (error.name!==StringResources.vsc.codeFlowLogin.loginTimeoutTitle &&
-        error.name!==StringResources.vsc.codeFlowLogin.loginPortConflictTitle) {
+      if (
+        error.name !== StringResources.vsc.codeFlowLogin.loginTimeoutTitle &&
+        error.name !== StringResources.vsc.codeFlowLogin.loginPortConflictTitle
+      ) {
         throw LoginCodeFlowError(error);
       } else {
         throw error;

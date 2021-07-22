@@ -357,6 +357,7 @@ coverage
 # vscode
 .vscode-test
 *.vsix
+coverage
 
 # test
 test-results.*

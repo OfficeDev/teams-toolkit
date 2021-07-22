@@ -34,7 +34,7 @@
     "Extension Packs",
     "Snippets"
   ],
-  "aiKey": "AIF-d9b70cd4-b9f9-4d70-929b-a071c400b217",
+  "aiKey": "1c56be97-bb74-42cf-b04b-8f1aabf04592",
   "featureFlag": "true",
   "files": [
     "out/**/*"
@@ -94,7 +94,7 @@
         },
         {
           "id": "teamsfx-teams-dev-center",
-          "name": "Teams Developer Portal"
+          "name": "Developer Portal"
         },
         {
           "id": "teamsfx-feedback",
@@ -219,7 +219,7 @@
       },
       {
         "command": "fx-extension.create",
-        "title": "Teams: Create New Project "
+        "title": "Teams: Create New Project"
       },
       {
         "command": "fx-extension.update",
@@ -255,7 +255,7 @@
       },
       {
         "command": "fx-extension.openAppManagement",
-        "title": "Teams: Teams Developer Portal"
+        "title": "Teams: Developer Portal"
       },
       {
         "command": "fx-extension.openReportIssues",
@@ -441,6 +441,11 @@
             "description": "Ensure .NET SDK is installed.",
             "default": true
           },
+          "fx-extension.validateFuncCoreTools": {
+            "type": "boolean",
+            "description": "Ensure Azure Function Core Tools is installed.",
+            "default": true
+          },
           "fx-extension.stopTeamsToolkitTasksPostDebug": {
             "type": "boolean",
             "description": "Automatically stop all Teams Toolkit tasks when debug session ends.",
@@ -477,10 +482,10 @@
     "test-compile": "tsc -p ./",
     "test-watch": "npm run copy-test-files && tsc -watch -p ./",
     "pretest": "npm run lint && npm run check-format && npm run test-compile",
-    "test:unit": "echo 'to be implementd'",
+    "test:unit": "rimraf coverage && npm run compile && node out/test/unit/runTest.js",
     "test:integration": "echo 'to be implementd'",
     "test:e2e": "echo 'to be implementd'",
-    "test:env-checker": "npm run compile && npm run copy-test-files && node out/test/runEnvCheckerTest.js",
+    "test:env-checker": "npm run compile && npm run copy-test-files && node out/test/integration/envChecker/runEnvCheckerTest.js",
     "check-format": "prettier --list-different --config .prettierrc.json --ignore-path .prettierignore \"src/**/*.ts\" \"test/**/*.ts\" \"*.{js,json}\"",
     "format": "prettier --write --config .prettierrc.json --ignore-path .prettierignore \"src/**/*.ts\" \"test/**/*.ts\" \"*.{js,json}\"",
     "lint:fix": "eslint --config .eslintrc.js package.json src test --ext .ts --fix --fix-type [problem,suggestion]",
@@ -494,6 +499,7 @@
     "@commitlint/cli": "^12.0.1",
     "@commitlint/config-conventional": "^12.0.1",
     "@fluentui/react": "^8.5.1",
+    "@istanbuljs/nyc-config-typescript": "^1.0.1",
     "@shared/eslint-config": "file:../eslint-config",
     "@shared/prettier-config": "file:../prettier-config",
     "@types/adm-zip": "^0.4.33",
@@ -502,9 +508,10 @@
     "@types/chai-spies": "^1.0.3",
     "@types/express": "^4.17.11",
     "@types/fs-extra": "^9.0.5",
-    "@types/glob": "^7.1.3",
+    "@types/glob": "^7.1.4",
+    "@types/keytar": "^4.4.2",
     "@types/mocha": "^8.0.0",
-    "@types/node": "^12.11.7",
+    "@types/node": "^14.14.21",
     "@types/react": "^17.0.3",
     "@types/react-dom": "^17.0.2",
     "@types/react-router-dom": "^5.1.7",
@@ -522,11 +529,13 @@
     "copy-webpack-plugin": "^6.4.1",
     "copyfiles": "^2.4.1",
     "css-loader": "^5.1.3",
+    "decache": "^4.6.0",
     "eslint": "^7.22.0",
     "find-process": "^1.4.4",
     "fs-extra": "^9.0.1",
-    "glob": "^7.1.6",
+    "glob": "^7.1.7",
     "html-webpack-plugin": "^5.3.1",
+    "istanbul": "^0.4.5",
     "lint-staged": "^10.5.4",
     "mocha": "^8.1.3",
     "mocha-junit-reporter": "^2.0.0",
@@ -534,11 +543,13 @@
     "mock-require": "^3.0.3",
     "ms-rest": "^2.5.4",
     "node-loader": "^2.0.0",
-    "node-sass": "^5.0.0",
+    "node-sass": "^6.0.1",
+    "nyc": "^15.1.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-intl": "^5.13.5",
     "react-router-dom": "^5.2.0",
+    "remap-istanbul": "^0.13.0",
     "rimraf": "^3.0.2",
     "sass": "^1.32.8",
     "sass-loader": "^10.0.1",
@@ -548,7 +559,7 @@
     "terser-webpack-plugin": "^4.2.3",
     "tmp": "^0.2.1",
     "ts-loader": "^8.0.3",
-    "ts-node": "^9.0.0",
+    "ts-node": "^9.1.1",
     "typescript": "^4.2.4",
     "url-loader": "^4.1.1",
     "uuid": "^8.3.2",

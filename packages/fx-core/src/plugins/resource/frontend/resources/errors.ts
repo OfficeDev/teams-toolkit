@@ -59,7 +59,7 @@ export class FrontendPluginError extends Error {
   }
 
   getMessage(): string {
-    return `${this.message} Suggestions: ${this.suggestions.join("\n")}`;
+    return `${this.message} Suggestions: ${this.suggestions.join(" ")}`;
   }
 
   setInnerError(error: Error): void {
@@ -94,7 +94,7 @@ export class InvalidConfigError extends FrontendPluginError {
 export class CheckResourceGroupError extends FrontendPluginError {
   constructor() {
     super(ErrorType.User, "CheckResourceGroupError", "Failed to check resource group existence.", [
-      tips.reLogin,
+      tips.checkLog,
     ]);
   }
 }
@@ -113,7 +113,7 @@ export class CheckStorageError extends FrontendPluginError {
       ErrorType.User,
       "CheckStorageError",
       "Failed to check Azure Storage Account availability.",
-      [tips.reLogin, tips.checkSystemTime]
+      [tips.checkSystemTime, tips.checkLog]
     );
   }
 }
@@ -174,9 +174,7 @@ export class CreateStorageAccountError extends FrontendPluginError {
     super(
       ErrorType.User,
       "CreateStorageAccountError",
-      `Failed to create Azure Storage Account${
-        innerErrorCode ? `, Azure error code: ${innerErrorCode}` : ""
-      }.`,
+      `Failed to create Azure Storage Account${innerErrorCode ? `: ${innerErrorCode}` : ""}.`,
       [tips.checkLog]
     );
   }

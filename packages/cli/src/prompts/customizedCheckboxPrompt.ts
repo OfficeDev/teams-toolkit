@@ -13,7 +13,7 @@ import { addChoiceDetail } from "./utils";
 /**
  * The question-options for the `ChoicePrompt<T>`.
  */
-type Question = inquirer.CheckboxQuestionOptions<inquirer.Answers>;
+export type Question = inquirer.CheckboxQuestionOptions<inquirer.Answers>;
 
 export default class CustomizedCheckboxPrompt extends CheckboxPrompt {
   private spaceKeyPressed = false;
@@ -30,22 +30,22 @@ export default class CustomizedCheckboxPrompt extends CheckboxPrompt {
   render(error?: string): void {
     // Render question
     let message = this.getQuestion();
-    let bottomContent = '';
+    let bottomContent = "";
 
     if (!this.spaceKeyPressed) {
       message +=
-        '(Press ' +
-        chalk.magentaBright('<space>') +
-        ' to select, ' +
-        chalk.magentaBright('<a>') +
-        ' to toggle all, ' +
-        chalk.magentaBright('<i>') +
-        ' to invert selection)';
+        "(Press " +
+        chalk.magentaBright("<space>") +
+        " to select, " +
+        chalk.magentaBright("<a>") +
+        " to toggle all, " +
+        chalk.magentaBright("<i>") +
+        " to invert selection)";
     }
 
     // Render choices or answer depending on the state
-    if (this.status === 'answered') {
-      message += chalk.cyan(this.selection.join(', '));
+    if (this.status === "answered") {
+      message += chalk.cyan(this.selection.join(", "));
     } else {
       const choicesStr = renderChoices(this.opt.choices, this.pointer);
       const indexPosition = this.opt.choices.indexOf(
@@ -58,26 +58,25 @@ export default class CustomizedCheckboxPrompt extends CheckboxPrompt {
             return acc;
           }
           // Add line if it's a separator
-          if (value.type === 'separator') {
+          if (value.type === "separator") {
             return acc + 1;
           }
 
           let l = value.name;
           // Non-strings take up one line
-          if (typeof l !== 'string') {
+          if (typeof l !== "string") {
             return acc + 1;
           }
 
           // Calculate lines taken up by string
-          l = l.split('\n');
+          l = l.split("\n");
           return acc + l.length;
         }, 0) - 1;
-      message +=
-        '\n' + this.paginator.paginate(choicesStr, realIndexPosition);
+      message += "\n" + this.paginator.paginate(choicesStr, realIndexPosition);
     }
 
     if (error) {
-      bottomContent = chalk.red('>> ') + error;
+      bottomContent = chalk.red(">> ") + error;
     }
 
     this.screen.render(message, bottomContent);
@@ -90,24 +89,27 @@ export default class CustomizedCheckboxPrompt extends CheckboxPrompt {
  * @return {String}         Rendered content
  */
 function renderChoices(choices: any, pointer: number): string {
-  let output = '';
+  let output = "";
   let separatorOffset = 0;
   let prefixWidth = 1;
   choices.forEach((choice: any) => {
-    prefixWidth = Math.max(prefixWidth, choice.disabled ? 0 : choice.name.length + 1);
+    prefixWidth = Math.max(
+      prefixWidth,
+      choice.disabled || !choice.name ? 0 : choice.name.length + 1
+    );
   });
 
   choices.forEach((choice: any, i: number) => {
-    if (choice.type === 'separator') {
+    if (choice.type === "separator") {
       separatorOffset++;
-      output += ' ' + choice + '\n';
+      output += " " + choice + "\n";
       return;
     }
 
     if (choice.disabled) {
       separatorOffset++;
-      output += ' - ' + choice.name;
-      output += ' (' + (lodash.isString(choice.disabled) ? choice.disabled : 'Disabled') + ')';
+      output += " - " + choice.name;
+      output += " (" + (lodash.isString(choice.disabled) ? choice.disabled : "Disabled") + ")";
     } else {
       if (i - separatorOffset === pointer) {
         output += getCheckbox(choice.checked) + " " + chalk.blueBright(choice.name);
@@ -120,10 +122,10 @@ function renderChoices(choices: any, pointer: number): string {
       }
     }
 
-    output += '\n';
+    output += "\n";
   });
 
-  return output.replace(/\n$/, '');
+  return output.replace(/\n$/, "");
 }
 
 /**
@@ -132,7 +134,6 @@ function renderChoices(choices: any, pointer: number): string {
  * @return {String} Composited checkbox string
  */
 function getCheckbox(checked: boolean): string {
-  if (process.platform === "win32")
-    return chalk.blueBright(checked ? "[X]" : "[ ]");
+  if (process.platform === "win32") return chalk.blueBright(checked ? "[X]" : "[ ]");
   return chalk.blueBright(checked ? figures.checkboxOn : figures.checkboxOff);
 }

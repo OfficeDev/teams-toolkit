@@ -96,7 +96,7 @@ export function createTaskStopCb(
         const npmInstallLogInfo = await getNpmInstallLogInfo();
         if (
           npmInstallLogInfo?.cwd !== undefined &&
-          result.options.cwd !== undefined &&
+          result.options?.cwd !== undefined &&
           path.relative(npmInstallLogInfo.cwd, result.options.cwd).length === 0 &&
           result.exitCode === npmInstallLogInfo.exitCode
         ) {

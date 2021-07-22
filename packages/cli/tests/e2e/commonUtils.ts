@@ -1,12 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { deserializeDict } from "@microsoft/teamsfx-core";
 import { exec } from "child_process";
 import fs from "fs-extra";
 import os from "os";
 import path from "path";
 import { promisify } from "util";
 import { v4 as uuidv4 } from "uuid";
+import { sleep } from "../../src/utils";
 
 import { cfg, AadManager, ResourceGroupManager } from "../commonlib";
 
@@ -20,7 +22,8 @@ export async function execAsyncWithRetry(
     env?: NodeJS.ProcessEnv;
     timeout?: number;
   },
-  retries = 3
+  retries = 3,
+  newCommand?: string
 ): Promise<{
   stdout: string;
   stderr: string;
@@ -32,6 +35,10 @@ export async function execAsyncWithRetry(
       return result;
     } catch (e) {
       console.log(`Run \`${command}\` failed with error msg: ${JSON.stringify(e)}.`);
+      if (newCommand) {
+        command = newCommand;
+      }
+      await sleep(10000);
     }
   }
   return execAsync(command, options);
@@ -222,4 +229,37 @@ export async function cleanUpResourcesCreatedHoursAgo(
     });
     return results;
   }
+}
+
+// TODO: add encrypt
+export async function readContext(projectPath: string): Promise<any> {
+  const contextFilePath = `${projectPath}/.fx/env.default.json`;
+  const userDataFilePath = `${projectPath}/.fx/default.userdata`;
+
+  // Read Context and UserData
+  const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
+
+  let userData: Record<string, string> = {};
+  if (await fs.pathExists(userDataFilePath)) {
+    const dictContent = await fs.readFile(userDataFilePath, "UTF-8");
+    userData = deserializeDict(dictContent);
+  }
+
+  // Read from userdata.
+  for (const plugin in context) {
+    const pluginContext = context[plugin];
+    for (const key in pluginContext) {
+      if (typeof pluginContext[key] === "string" && isSecretPattern(pluginContext[key])) {
+        const secretKey = `${plugin}.${key}`;
+        pluginContext[key] = userData[secretKey] ?? undefined;
+      }
+    }
+  }
+
+  return context;
+}
+
+function isSecretPattern(value: string) {
+  console.log(value);
+  return value.startsWith("{{") && value.endsWith("}}");
 }

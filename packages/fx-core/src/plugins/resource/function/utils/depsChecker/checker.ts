@@ -35,9 +35,9 @@ export interface IDepsAdapter {
   showOutputChannel: () => void;
 
   hasTeamsfxBackend(): Promise<boolean>;
-  dotnetCheckerEnabled(): boolean;
-  funcToolCheckerEnabled(): boolean;
-  nodeCheckerEnabled(): boolean;
+  dotnetCheckerEnabled(): Promise<boolean>;
+  funcToolCheckerEnabled(): Promise<boolean>;
+  nodeCheckerEnabled(): Promise<boolean>;
   runWithProgressIndicator(callback: () => Promise<void>): Promise<void>;
   getResourceDir(): string;
 }
@@ -53,7 +53,11 @@ export interface IDepsLogger {
 }
 
 export interface IDepsTelemetry {
-  sendEvent(eventName: DepsCheckerEvent, timecost?: number): void;
+  sendEvent(
+    eventName: DepsCheckerEvent,
+    properties?: { [p: string]: string },
+    timecost?: number
+  ): void;
   sendEventWithDuration(eventName: DepsCheckerEvent, action: () => Promise<void>): Promise<void>;
   sendUserErrorEvent(eventName: DepsCheckerEvent, errorMessage: string): void;
   sendSystemErrorEvent(eventName: DepsCheckerEvent, errorMessage: string, errorStack: string): void;
@@ -97,10 +101,7 @@ export class DepsChecker {
     if (isLinux()) {
       const confirmMessage = await this.generateMsg(validCheckers);
       this._logger.cleanup();
-      return await this._adapter.displayContinueWithLearnMore(
-        confirmMessage,
-        dotnetManualInstallHelpLink
-      );
+      return await this._adapter.displayContinueWithLearnMore(confirmMessage, defaultHelpLink);
     }
 
     this._adapter.showOutputChannel();
@@ -153,27 +154,28 @@ export class DepsChecker {
       supportedPackages.push(supportedPackage);
     }
     const supportedMessage = supportedPackages.join(" and ");
-    return Messages.linuxDepsNotFound.replace("@SupportedPackages", supportedMessage);
+    return Messages.linuxDepsNotFound.split("@SupportedPackages").join(supportedMessage);
   }
 
   private async handleError(error: Error): Promise<boolean> {
+    return DepsChecker.handleErrorWithDisplay(error, this._adapter);
+  }
+
+  public static async handleErrorWithDisplay(
+    error: Error,
+    adapter: IDepsAdapter
+  ): Promise<boolean> {
     if (error instanceof NodeNotSupportedError) {
-      return await this._adapter.displayContinueWithLearnMore(
+      return await adapter.displayContinueWithLearnMore(
         error.message,
         (error as NodeNotSupportedError).helpLink
       );
     } else if (error instanceof NodeNotFoundError) {
-      return await this._adapter.displayLearnMore(
-        error.message,
-        (error as NodeNotFoundError).helpLink
-      );
+      return await adapter.displayLearnMore(error.message, (error as NodeNotFoundError).helpLink);
     } else if (error instanceof DepsCheckerError) {
-      return await this._adapter.displayLearnMore(
-        error.message,
-        (error as DepsCheckerError).helpLink
-      );
+      return await adapter.displayLearnMore(error.message, (error as DepsCheckerError).helpLink);
     } else {
-      return await this._adapter.displayLearnMore(Messages.defaultErrorMessage, defaultHelpLink);
+      return await adapter.displayLearnMore(Messages.defaultErrorMessage, defaultHelpLink);
     }
   }
 }

@@ -3,39 +3,13 @@
 
 "use strict";
 
-import path from "path";
-import fs from "fs-extra";
 import yargs from "yargs";
 
-import { commands } from "./cmds";
+import { registerCommands } from "./cmds";
 import * as constants from "./constants";
 import { registerPrompts } from "./prompts";
-import { HelpParamGenerator } from "./helpParamGenerator";
-
-/**
- * Registers cli and partner commands with yargs.
- * @param yargs
- */
-function register(yargs: yargs.Argv): void {
-  commands.forEach((command) => {
-    yargs.command(
-      command.command,
-      command.description,
-      command.builder.bind(command),
-      command.handler.bind(command)
-    );
-  });
-}
-
-/**
- * Shows in `teamsfx -v`.
- * @returns the version of teamsfx-cli.
- */
-function getVersion(): string {
-  const pkgPath = path.resolve(__dirname, "..", "package.json");
-  const pkgContent = fs.readJsonSync(pkgPath);
-  return pkgContent.version;
-}
+import HelpParamGenerator from "./helpParamGenerator";
+import { getVersion } from "./utils";
 
 /**
  * Starts the CLI process.
@@ -43,7 +17,7 @@ function getVersion(): string {
 export async function start() {
   registerPrompts();
   await HelpParamGenerator.initializeQuestionsForHelp();
-  register(yargs);
+  registerCommands(yargs);
   yargs
     .options("verbose", {
       description: "Print additional information.",

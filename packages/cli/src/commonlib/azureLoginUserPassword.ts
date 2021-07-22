@@ -149,6 +149,41 @@ export class AzureAccountProviderUserPassword implements AzureAccountProvider {
       "NotFoundSubscriptionId"
     );
   }
+
+  // For now, cli no need to get account information through this method
+  getAccountInfo(): Record<string, string> | undefined {
+    return {};
+  }
+
+  getSelectedSubscription(): Promise<SubscriptionInfo | undefined> {
+    const selectedSub: SubscriptionInfo = {
+      subscriptionId: "",
+      tenantId: "",
+      subscriptionName: "",
+    };
+    if (cfg.AZURE_TENANT_ID) {
+      selectedSub.tenantId = cfg.AZURE_TENANT_ID;
+    }
+    if (cfg.AZURE_SUBSCRIPTION_ID) {
+      selectedSub.subscriptionId = cfg.AZURE_SUBSCRIPTION_ID;
+    }
+    return Promise.resolve(selectedSub);
+  }
+
+  async selectSubscription(subscriptionId?: string): Promise<string | undefined> {
+    if (subscriptionId) {
+      await this.setSubscription(subscriptionId);
+      return Promise.resolve(subscriptionId);
+    } else {
+      return Promise.resolve(undefined);
+    }
+  }
+
+  public setRootPath(rootPath: string): void {}
+
+  async readSubscription(): Promise<SubscriptionInfo | undefined> {
+    return undefined;
+  }
 }
 
 interface PartialList<T> extends Array<T> {

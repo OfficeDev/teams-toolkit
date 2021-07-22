@@ -98,7 +98,7 @@ jobs:
         id: version-change
         run: |
           echo "::set-output name=CHANGED::$(git tag --points-at HEAD | xargs)"
-          echo "::set-output name=TEMPLATE_VERSION::$(git tag --points-at HEAD | grep templates | cut -d '@' -f2)"
+          echo "::set-output name=TEMPLATE_VERSION::$(git tag --points-at HEAD | grep templates)"
           echo "::set-output name=EXTENSION_VERSION::$(git tag --points-at HEAD | grep ms-teams-vscode-extension@ | cut -d '@' -f2)"
           if git tag --points-at HEAD | grep templates | grep rc;
           then
@@ -172,7 +172,7 @@ jobs:
           artifacts: ./*.zip
           name: 'Release for ${{ steps.version-change.outputs.TEMPLATE_VERSION }}'
           token: ${{ secrets.GITHUB_TOKEN }}
-          tag: 'templates@${{ steps.version-change.outputs.TEMPLATE_VERSION }}'
+          tag: '${{ steps.version-change.outputs.TEMPLATE_VERSION }}'
           allowUpdates: true
 
       - name: Generate Tag List

@@ -325,22 +325,9 @@ export class TeamsAppSolution implements Solution {
 
   private getSelectedPlugins(ctx: SolutionContext): Result<Plugin[], FxError> {
     const settings = this.getAzureSolutionSettings(ctx);
-    const map = getAllResourcePluginMap();
-    const results: Plugin[] = [];
-    for (const name of settings.activeResourcePlugins) {
-      const plugin = map.get(name);
-      if (!plugin) {
-        return err(
-          returnUserError(
-            new Error(`Plugin name ${name} is not valid`),
-            "Solution",
-            SolutionError.PluginNotFound
-          )
-        );
-      }
-      results.push(plugin);
-    }
-    return ok(results);
+    const plugins = getActivatedResourcePlugins(settings);
+    settings.activeResourcePlugins = plugins.map((p) => p.name);
+    return ok(plugins);
   }
 
   /**

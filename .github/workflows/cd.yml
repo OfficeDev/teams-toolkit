@@ -172,7 +172,7 @@ jobs:
           artifacts: ./*.zip
           name: 'Release for ${{ steps.version-change.outputs.TEMPLATE_VERSION }}'
           token: ${{ secrets.GITHUB_TOKEN }}
-          tag: 'Templates-${{ steps.version-change.outputs.TEMPLATE_VERSION }}'
+          tag: 'templates@${{ steps.version-change.outputs.TEMPLATE_VERSION }}'
           allowUpdates: true
 
       - name: Generate Tag List

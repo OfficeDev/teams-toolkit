@@ -15,6 +15,7 @@ import {
   setSimpleAuthSkuNameToB1,
   getConfigFileName,
   cleanUp,
+  readContext,
 } from "../commonUtils";
 import AzureLogin from "../../../src/commonlib/azureLogin";
 import GraphLogin from "../../../src/commonlib/graphLogin";
@@ -55,7 +56,7 @@ describe("Create a new API Management Service", function () {
     });
     console.log(`Provision. Error message: ${result.stderr}`);
 
-    const provisionContext = await fs.readJSON(getConfigFileName(appName));
+    const provisionContext = await readContext(projectPath);
     await ApimValidator.validateProvision(provisionContext, appName);
 
     result = await execAsyncWithRetry(

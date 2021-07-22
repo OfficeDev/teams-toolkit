@@ -105,7 +105,6 @@ export class TeamsBotImpl {
       this.config.scaffold.botId = botRegistration.botId;
       this.config.scaffold.botPassword = botRegistration.botPassword;
 
-      this.updateManifest(this.config.scaffold.botId);
     }
 
     this.config.scaffold.wayToRegisterBot = pickedWay;
@@ -683,7 +682,6 @@ export class TeamsBotImpl {
       this.config.localDebug.localObjectId = botAuthCreds.objectId;
     }
 
-    this.updateManifest(this.config.localDebug.localBotId!);
   }
 
   private async createNewBotRegistrationOnAzure() {
@@ -760,19 +758,5 @@ export class TeamsBotImpl {
       this.config.provision.botChannelRegName = botChannelRegistrationName;
     }
 
-    this.updateManifest(this.config.scaffold.botId!);
-  }
-
-  private updateManifest(botId: string) {
-    if (this.config.actRoles.includes(PluginActRoles.Bot)) {
-      this.ctx!.config.set(PluginBot.BOTS_SECTION, utils.genBotSectionInManifest(botId));
-    }
-
-    if (this.config.actRoles.includes(PluginActRoles.MessageExtension)) {
-      this.ctx!.config.set(
-        PluginBot.MESSAGE_EXTENSION_SECTION,
-        utils.genMsgExtSectionInManifest(botId)
-      );
-    }
   }
 }

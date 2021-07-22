@@ -27,6 +27,7 @@ import {
   ProvisionError,
   ValidationError,
   runWithErrorCatchAndThrow,
+  runWithErrorCatchAndWrap,
   FunctionNameConflictError,
   FetchConfigError,
   RegisterResourceProviderError,
@@ -421,18 +422,20 @@ export class FunctionPluginImpl {
       InfoMessages.checkResource(ResourceType.storageAccount, storageAccountName, resourceGroupName)
     );
 
-    await runWithErrorCatchAndThrow(new ProvisionError(ResourceType.storageAccount), async () =>
-      step(
-        StepGroup.ProvisionStepGroup,
-        ProvisionSteps.ensureStorageAccount,
-        async () =>
-          await AzureLib.ensureStorageAccount(
-            storageManagementClient,
-            resourceGroupName,
-            storageAccountName,
-            DefaultProvisionConfigs.storageConfig(location)
-          )
-      )
+    await runWithErrorCatchAndWrap(
+      (error: any) => new ProvisionError(ResourceType.storageAccount, error.code),
+      async () =>
+        step(
+          StepGroup.ProvisionStepGroup,
+          ProvisionSteps.ensureStorageAccount,
+          async () =>
+            await AzureLib.ensureStorageAccount(
+              storageManagementClient,
+              resourceGroupName,
+              storageAccountName,
+              DefaultProvisionConfigs.storageConfig(location)
+            )
+        )
     );
 
     const storageConnectionString: string | undefined = await runWithErrorCatchAndThrow(
@@ -461,8 +464,8 @@ export class FunctionPluginImpl {
       InfoMessages.checkResource(ResourceType.appServicePlan, appServicePlanName, resourceGroupName)
     );
 
-    const appServicePlan: AppServicePlan = await runWithErrorCatchAndThrow(
-      new ProvisionError(ResourceType.appServicePlan),
+    const appServicePlan: AppServicePlan = await runWithErrorCatchAndWrap(
+      (error: any) => new ProvisionError(ResourceType.appServicePlan, error.code),
       async () =>
         await step(StepGroup.ProvisionStepGroup, ProvisionSteps.ensureAppServicePlans, async () =>
           AzureLib.ensureAppServicePlans(
@@ -484,8 +487,8 @@ export class FunctionPluginImpl {
       InfoMessages.checkResource(ResourceType.functionApp, appServicePlanName, resourceGroupName)
     );
 
-    const site: Site = await runWithErrorCatchAndThrow(
-      new ProvisionError(ResourceType.functionApp),
+    const site: Site = await runWithErrorCatchAndWrap(
+      (error: any) => new ProvisionError(ResourceType.functionApp, error.code),
       async () =>
         await step(StepGroup.ProvisionStepGroup, ProvisionSteps.ensureFunctionApp, async () =>
           FunctionProvision.ensureFunctionApp(

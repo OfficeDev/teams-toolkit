@@ -494,8 +494,10 @@ export class TeamsAppSolution implements Solution {
       const remoteTeamsAppId = await this.AppStudioPlugin.provision(pluginCtx);
       if (remoteTeamsAppId.isOk()) {
         ctx.config.get(GLOBAL_CONFIG)?.set(REMOTE_TEAMS_APP_ID, remoteTeamsAppId.value);
+      } else {
+        return remoteTeamsAppId;
       }
-      return remoteTeamsAppId;
+      return await this.AppStudioPlugin.postProvision(pluginCtx);
     }
     try {
       // Just to trigger M365 login before the concurrent execution of provision.

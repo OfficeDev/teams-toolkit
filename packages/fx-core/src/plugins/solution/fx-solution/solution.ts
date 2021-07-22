@@ -52,7 +52,6 @@ import {
   REMOTE_APPLICATION_ID_URIS,
   REMOTE_CLIENT_SECRET,
   PROGRAMMING_LANGUAGE,
-  REMOTE_MANIFEST,
   REMOTE_TEAMS_APP_ID,
   CancelError,
   SolutionTelemetryProperty,
@@ -96,6 +95,7 @@ import { AadAppForTeamsPlugin, AppStudioPlugin, SpfxPlugin } from "../../resourc
 import { ErrorHandlerMW } from "../../../core/middleware/errorHandler";
 import { hooks } from "@feathersjs/hooks/lib";
 import { Service, Container } from "typedi";
+import { REMOTE_MANIFEST } from "../../resource/appstudio/constants";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -276,27 +276,15 @@ export class TeamsAppSolution implements Solution {
 
     await fs.copy(defaultColorPath, `${ctx.root}/.${ConfigFolderName}/color.png`);
     await fs.copy(defaultOutlinePath, `${ctx.root}/.${ConfigFolderName}/outline.png`);
-    // if (this.isAzureProject(ctx)) {
-    //   const manifest = await this.AppStudioPlugin.createManifest(ctx.projectSettings!);
-    //   // if (manifest) Object.assign(ctx.app, manifest);
-    //   await fs.writeFile(
-    //     `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`,
-    //     JSON.stringify(manifest, null, 4)
-    //   );
-    //   await fs.writeJSON(`${ctx.root}/permissions.json`, DEFAULT_PERMISSION_REQUEST, { spaces: 4 });
-    //   ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.Create, {
-    //     [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
-    //     [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
-    //     [SolutionTelemetryProperty.Resources]: solutionSettings.azureResources.join(";"),
-    //     [SolutionTelemetryProperty.Capabilities]: solutionSettings.capabilities.join(";"),
-    //   });
-    // } else {
-    //   const manifest = await (this.SpfxPlugin as SpfxPlugin).getManifest();
-    //   await fs.writeFile(
-    //     `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`,
-    //     JSON.stringify(manifest, null, 4)
-    //   );
-    // }
+    if (this.isAzureProject(ctx)) {
+      await fs.writeJSON(`${ctx.root}/permissions.json`, DEFAULT_PERMISSION_REQUEST, { spaces: 4 });
+      ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.Create, {
+        [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+        [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
+        [SolutionTelemetryProperty.Resources]: solutionSettings.azureResources.join(";"),
+        [SolutionTelemetryProperty.Capabilities]: solutionSettings.capabilities.join(";"),
+      });
+    }
     return ok(Void);
   }
 
@@ -1663,7 +1651,7 @@ export class TeamsAppSolution implements Solution {
     }
     let change = false;
     const notifications: string[] = [];
-    const pluginsToScaffold: LoadedPlugin[] = [this.LocalDebugPlugin];
+    const pluginsToScaffold: LoadedPlugin[] = [this.LocalDebugPlugin, this.AppStudioPlugin];
     for (const cap of capabilitiesAnswer!) {
       if (!settings.capabilities.includes(cap)) {
         settings.capabilities.push(cap);
@@ -1683,25 +1671,6 @@ export class TeamsAppSolution implements Solution {
 
     if (change) {
       await this.reloadPlugins(settings);
-      // if (this.isAzureProject(ctx)) {
-      //   const manifest = await (this.AppStudioPlugin as AppStudioPlugin).createManifest(
-      //     ctx.projectSettings!
-      //   );
-      //   // if (manifest) Object.assign(ctx.app, manifest);
-      //   await fs.writeFile(
-      //     `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`,
-      //     JSON.stringify(manifest, null, 4)
-      //   );
-      //   await fs.writeJSON(`${ctx.root}/permissions.json`, DEFAULT_PERMISSION_REQUEST, {
-      //     spaces: 4,
-      //   });
-      // } else {
-      //   const manifest = await new SpfxPlugin().getManifest();
-      //   await fs.writeFile(
-      //     `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`,
-      //     JSON.stringify(manifest, null, 4)
-      //   );
-      // }
       ctx.logProvider?.info(`start scaffolding ${notifications.join(",")}.....`);
       const scaffoldRes = await this.doScaffold(ctx, pluginsToScaffold);
       if (scaffoldRes.isErr()) {

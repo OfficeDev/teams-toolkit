@@ -105,14 +105,6 @@ export class SpfxPlugin implements Plugin {
     );
   }
 
-  public async getManifest(): Promise<TeamsAppManifest> {
-    const templateFolder = path.join(getTemplatesFolder(), "plugins", "resource", "spfx");
-    const manifestFile = path.resolve(templateFolder, "./solution/manifest.json");
-    const manifestString = (await fs.readFile(manifestFile)).toString();
-    const manifest: TeamsAppManifest = JSON.parse(manifestString);
-    return manifest;
-  }
-
   private async runWithErrorHandling(
     ctx: PluginContext,
     stage: string,

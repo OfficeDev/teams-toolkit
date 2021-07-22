@@ -19,9 +19,9 @@ import { Constants, PlaceHolders, PreDeployProgressMessage } from "./utils/const
 import { BuildSPPackageError, NoSPPackageError } from "./error";
 import * as util from "util";
 import { ProgressHelper } from "./utils/progress-helper";
-import { REMOTE_MANIFEST } from "../../solution/fx-solution/constants";
 import { getStrings } from "../../../common/tools";
 import { getTemplatesFolder } from "../../..";
+import { REMOTE_MANIFEST } from "../appstudio/constants";
 
 export class SPFxPluginImpl {
   public async postScaffold(ctx: PluginContext): Promise<Result<any, FxError>> {

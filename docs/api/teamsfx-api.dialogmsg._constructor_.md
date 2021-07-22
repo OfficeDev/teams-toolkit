@@ -9,7 +9,7 @@ Constructs a new instance of the `DialogMsg` class
 <b>Signature:</b>
 
 ```typescript
-constructor(dialogType: DialogType, content: IMessage | IQuestion | IProgress | Answer);
+constructor(dialogType: DialogType, content: IQuestion | Answer);
 ```
 
 ## Parameters
@@ -17,5 +17,5 @@ constructor(dialogType: DialogType, content: IMessage | IQuestion | IProgress | 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  dialogType | [DialogType](./teamsfx-api.dialogtype.md) |  |
-|  content | [IMessage](./teamsfx-api.imessage.md) \| [IQuestion](./teamsfx-api.iquestion.md) \| [IProgress](./teamsfx-api.iprogress.md) \| [Answer](./teamsfx-api.answer.md) |  |
+|  content | [IQuestion](./teamsfx-api.iquestion.md) \| [Answer](./teamsfx-api.answer.md) |  |
 

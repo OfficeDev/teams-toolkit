@@ -115,6 +115,10 @@ export function getEnvFilePath(projectFolder: string) {
   return getConfigPath(projectFolder, `env.${getActiveEnv()}.json`);
 }
 
+export function getSettingsFilePath(projectFolder: string) {
+  return getConfigPath(projectFolder, "settings.json");
+}
+
 export async function readEnvJsonFile(projectFolder: string): Promise<Result<Json, FxError>> {
   const filePath = getEnvFilePath(projectFolder);
   if (!fs.existsSync(filePath)) {
@@ -136,6 +140,20 @@ export function readEnvJsonFileSync(projectFolder: string): Result<Json, FxError
   try {
     const config = fs.readJsonSync(filePath);
     return ok(config);
+  } catch (e) {
+    return err(ReadFileError(e));
+  }
+}
+
+export function readSettingsFileSync(projectFolder: string): Result<Json, FxError> {
+  const filePath = getSettingsFilePath(projectFolder);
+  if (!fs.existsSync(filePath)) {
+    return err(ConfigNotFoundError(filePath));
+  }
+
+  try {
+    const settings = fs.readJsonSync(filePath);
+    return ok(settings);
   } catch (e) {
     return err(ReadFileError(e));
   }
@@ -266,6 +284,23 @@ export function getLocalTeamsAppId(rootfolder: string | undefined): any {
       throw result.error;
     }
     return result.value.solution.localDebugTeamsAppId;
+  }
+
+  return undefined;
+}
+
+export function getProjectId(rootfolder: string | undefined): any {
+  if (!rootfolder) {
+    return undefined;
+  }
+
+  if (isWorkspaceSupported(rootfolder)) {
+    const result = readSettingsFileSync(rootfolder);
+    if (result.isErr()) {
+      throw result.error;
+    }
+
+    return result.value.projectId;
   }
 
   return undefined;

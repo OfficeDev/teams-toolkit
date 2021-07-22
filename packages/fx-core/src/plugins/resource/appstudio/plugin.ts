@@ -34,25 +34,11 @@ import {
   TabOptionItem,
 } from "../../solution/fx-solution/question";
 import {
-  DEFAULT_PERMISSION_REQUEST,
-  TEAMS_APP_MANIFEST_TEMPLATE,
-  CONFIGURABLE_TABS_TPL,
-  STATIC_TABS_TPL,
-  BOTS_TPL,
-  COMPOSE_EXTENSIONS_TPL,
-  TEAMS_APP_SHORT_NAME_MAX_LENGTH,
-  DEFAULT_DEVELOPER_WEBSITE_URL,
-  DEFAULT_DEVELOPER_TERM_OF_USE_URL,
-  DEFAULT_DEVELOPER_PRIVACY_URL,
   LOCAL_DEBUG_TAB_ENDPOINT,
   LOCAL_DEBUG_TAB_DOMAIN,
-  FRONTEND_ENDPOINT,
-  FRONTEND_DOMAIN,
   LOCAL_DEBUG_AAD_ID,
   LOCAL_DEBUG_TEAMS_APP_ID,
   REMOTE_AAD_ID,
-  LOCAL_BOT_ID,
-  BOT_ID,
   LOCAL_DEBUG_BOT_DOMAIN,
   BOT_DOMAIN,
   LOCAL_WEB_APPLICATION_INFO_SOURCE,
@@ -62,8 +48,24 @@ import {
 } from "../../solution/fx-solution/constants";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
-import { Constants } from "./constants";
-import { REMOTE_TEAMS_APP_ID, REMOTE_MANIFEST } from "../../solution/fx-solution/constants";
+import {
+  Constants,
+  TEAMS_APP_MANIFEST_TEMPLATE,
+  CONFIGURABLE_TABS_TPL,
+  STATIC_TABS_TPL,
+  BOTS_TPL,
+  COMPOSE_EXTENSIONS_TPL,
+  TEAMS_APP_SHORT_NAME_MAX_LENGTH,
+  DEFAULT_DEVELOPER_WEBSITE_URL,
+  DEFAULT_DEVELOPER_TERM_OF_USE_URL,
+  DEFAULT_DEVELOPER_PRIVACY_URL,
+  FRONTEND_ENDPOINT,
+  FRONTEND_DOMAIN,
+  LOCAL_BOT_ID,
+  BOT_ID,
+  REMOTE_MANIFEST,
+} from "./constants";
+import { REMOTE_TEAMS_APP_ID } from "../../solution/fx-solution/constants";
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
@@ -389,15 +391,6 @@ export class AppStudioPluginImpl {
       manifest = JSON.parse(manifestString);
     } else {
       manifest = await this.createManifest(ctx.projectSettings!);
-      // if (manifest) Object.assign(ctx.app, manifest);
-
-      await fs.writeJSON(`${ctx.root}/permissions.json`, DEFAULT_PERMISSION_REQUEST, { spaces: 4 });
-      // ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.Create, {
-      //   [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
-      //   [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
-      //   [SolutionTelemetryProperty.Resources]: solutionSettings.azureResources.join(";"),
-      //   [SolutionTelemetryProperty.Capabilities]: solutionSettings.capabilities.join(";"),
-      // });
     }
     await fs.writeFile(
       `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`,

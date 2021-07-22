@@ -1696,25 +1696,25 @@ export class TeamsAppSolution implements Solution {
 
     if (change) {
       await this.reloadPlugins(settings);
-      if (this.isAzureProject(ctx)) {
-        const manifest = await (this.AppStudioPlugin as AppStudioPlugin).createManifest(
-          ctx.projectSettings!
-        );
-        // if (manifest) Object.assign(ctx.app, manifest);
-        await fs.writeFile(
-          `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`,
-          JSON.stringify(manifest, null, 4)
-        );
-        await fs.writeJSON(`${ctx.root}/permissions.json`, DEFAULT_PERMISSION_REQUEST, {
-          spaces: 4,
-        });
-      } else {
-        const manifest = await new SpfxPlugin().getManifest();
-        await fs.writeFile(
-          `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`,
-          JSON.stringify(manifest, null, 4)
-        );
-      }
+      // if (this.isAzureProject(ctx)) {
+      //   const manifest = await (this.AppStudioPlugin as AppStudioPlugin).createManifest(
+      //     ctx.projectSettings!
+      //   );
+      //   // if (manifest) Object.assign(ctx.app, manifest);
+      //   await fs.writeFile(
+      //     `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`,
+      //     JSON.stringify(manifest, null, 4)
+      //   );
+      //   await fs.writeJSON(`${ctx.root}/permissions.json`, DEFAULT_PERMISSION_REQUEST, {
+      //     spaces: 4,
+      //   });
+      // } else {
+      //   const manifest = await new SpfxPlugin().getManifest();
+      //   await fs.writeFile(
+      //     `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`,
+      //     JSON.stringify(manifest, null, 4)
+      //   );
+      // }
       ctx.logProvider?.info(`start scaffolding ${notifications.join(",")}.....`);
       const scaffoldRes = await this.doScaffold(ctx, pluginsToScaffold);
       if (scaffoldRes.isErr()) {

@@ -158,7 +158,20 @@ export class AppStudioPlugin implements Plugin {
   }
 
   public async scaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
-    return this.appStudioPluginImpl.scaffold(ctx);
+    TelemetryUtils.init(ctx);
+    TelemetryUtils.sendStartEvent(TelemetryEventName.scaffold);
+    try {
+      TelemetryUtils.sendSuccessEvent(TelemetryEventName.scaffold);
+      return this.appStudioPluginImpl.scaffold(ctx);
+    } catch (error) {
+      TelemetryUtils.sendErrorEvent(TelemetryEventName.scaffold, error);
+      return err(
+        AppStudioResultFactory.SystemError(
+          AppStudioError.ScaffoldFailedError.name,
+          AppStudioError.ScaffoldFailedError.message(error)
+        )
+      );
+    }
   }
 
   /**

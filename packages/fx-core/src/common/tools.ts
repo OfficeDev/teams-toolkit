@@ -496,12 +496,12 @@ export function isFeatureFlagEnabled(featureFlagName: string): boolean {
   return false;
 }
 
-export function generateBicepFiles(
+export async function generateBicepFiles(
   templateFilePath: string,
   context: any
-): Result<string, FxError> {
+): Promise<Result<string, FxError>> {
   try {
-    const templateString = fs.readFileSync(templateFilePath, "utf8");
+    const templateString = await fs.readFile(templateFilePath, "utf8");
     const updatedBicepFile = compileHandlebarsTemplateString(templateString, context);
     return ok(updatedBicepFile);
   } catch (error) {

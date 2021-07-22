@@ -9,7 +9,7 @@ import { DialogUtils } from "./utils/dialog";
 import { TelemetryUtils } from "./utils/telemetry";
 import { WebAppClient } from "./webAppClient";
 import * as path from "path";
-import * as fs from "fs";
+import * as fs from "fs-extra";
 import { getTemplatesFolder } from "../../..";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import { generateBicepFiles } from "../../../common";
@@ -158,7 +158,7 @@ export class SimpleAuthPluginImpl {
       bicepTemplateDirectory,
       Constants.SimpleAuthBicepModuleTemplateFileName
     );
-    const moduleContentResult = generateBicepFiles(moduleTemplateFilePath, context);
+    const moduleContentResult = await generateBicepFiles(moduleTemplateFilePath, context);
     if (moduleContentResult.isErr()) {
       throw moduleContentResult.error;
     }
@@ -184,17 +184,17 @@ export class SimpleAuthPluginImpl {
       },
       Orchestration: {
         ParameterTemplate: {
-          Content: fs.readFileSync(parameterTemplateFilePath, "utf-8"),
+          Content: await fs.readFile(parameterTemplateFilePath, "utf-8"),
         },
         ModuleTemplate: {
-          Content: fs.readFileSync(resourceTemplateFilePath, "utf-8"),
+          Content: await fs.readFile(resourceTemplateFilePath, "utf-8"),
           Outputs: {
             skuName: Constants.SimpleAuthBicepOutputSkuName,
             endpoint: Constants.SimpleAuthBicepOutputEndpoint,
           },
         },
         OutputTemplate: {
-          Content: fs.readFileSync(outputTemplateFilePath, "utf-8"),
+          Content: await fs.readFile(outputTemplateFilePath, "utf-8"),
         },
       },
     };

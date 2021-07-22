@@ -31,12 +31,12 @@ import {
 export class SqlPluginImpl {
   config: SqlConfig = new SqlConfig();
 
-  init(ctx: PluginContext) {
+  async init(ctx: PluginContext) {
     ContextUtils.init(ctx);
-    this.config.azureSubscriptionId = ContextUtils.getConfigString(
-      Constants.solution,
-      Constants.solutionConfigKey.subscriptionId
-    );
+    const subscriptionInfo = await ctx.azureAccountProvider?.getSelectedSubscription();
+    if (subscriptionInfo) {
+      this.config.azureSubscriptionId = subscriptionInfo.subscriptionId;
+    }
     this.config.resourceGroup = ContextUtils.getConfigString(
       Constants.solution,
       Constants.solutionConfigKey.resourceGroupName
@@ -78,7 +78,7 @@ export class SqlPluginImpl {
         sqlNode.addChild(new QTreeNode(confirmPasswordQuestion));
         return ok(sqlNode);
       }
-      this.init(ctx);
+      await this.init(ctx);
       if (this.config.azureSubscriptionId) {
         const managementClient: ManagementClient = new ManagementClient(ctx, this.config);
         await managementClient.init();
@@ -98,7 +98,7 @@ export class SqlPluginImpl {
   async preProvision(ctx: PluginContext): Promise<Result<any, FxError>> {
     ctx.logProvider?.info(Message.startPreProvision);
 
-    this.init(ctx);
+    await this.init(ctx);
     DialogUtils.init(ctx);
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendEvent(Telemetry.stage.preProvision + Telemetry.startSuffix);

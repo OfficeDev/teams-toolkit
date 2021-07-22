@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import { FxError, PluginContext, Result } from "@microsoft/teamsfx-api";
 import { Constants, Messages, Telemetry } from "./constants";
-import { UnauthenticatedError } from "./errors";
+import { NoConfigError, UnauthenticatedError } from "./errors";
 import { ResultFactory } from "./result";
 import { Utils } from "./utils/common";
 import { DialogUtils } from "./utils/dialog";
@@ -59,11 +59,17 @@ export class SimpleAuthPluginImpl {
       Constants.SolutionPlugin.id,
       Constants.SolutionPlugin.configKeys.resourceNameSuffix
     ) as string;
-    const subscriptionId = Utils.getConfigValueWithValidation(
-      ctx,
-      Constants.SolutionPlugin.id,
-      Constants.SolutionPlugin.configKeys.subscriptionId
-    ) as string;
+    const subscriptionInfo = await ctx.azureAccountProvider?.getSelectedSubscription();
+    if (!subscriptionInfo) {
+      throw ResultFactory.SystemError(
+        NoConfigError.name,
+        NoConfigError.message(
+          Constants.SolutionPlugin.id,
+          Constants.SolutionPlugin.configKeys.subscriptionId
+        )
+      );
+    }
+    const subscriptionId = subscriptionInfo!.subscriptionId;
     const resourceGroupName = Utils.getConfigValueWithValidation(
       ctx,
       Constants.SolutionPlugin.id,

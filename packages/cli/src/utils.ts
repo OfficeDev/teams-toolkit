@@ -187,16 +187,6 @@ export async function getSolutionPropertyFromEnvFile(
   }
 }
 
-export async function getSubscriptionIdFromEnvFile(
-  rootFolder: string
-): Promise<string | undefined> {
-  const result = await getSolutionPropertyFromEnvFile(rootFolder, "subscriptionId");
-  if (result.isErr()) {
-    throw result.error;
-  }
-  return result.value;
-}
-
 export async function setSubscriptionId(
   subscriptionId?: string,
   rootFolder = "./"
@@ -208,14 +198,9 @@ export async function setSubscriptionId(
     }
 
     AzureAccountManager.setRootPath(rootFolder);
-    await AzureAccountManager.setSubscription(subscriptionId);
-    const subs = await AzureAccountManager.listSubscriptions();
-    const sub = subs.find((sub) => sub.subscriptionId === subscriptionId);
-
-    const configJson = result.value;
-    configJson["solution"].subscriptionId = sub?.subscriptionId;
-    configJson["solution"].tenantId = sub?.tenantId;
-    await fs.writeFile(getEnvFilePath(rootFolder), JSON.stringify(configJson, null, 4));
+    if (subscriptionId) {
+      await AzureAccountManager.setSubscription(subscriptionId);
+    }
   }
   return ok(null);
 }

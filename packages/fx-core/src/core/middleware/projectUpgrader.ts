@@ -63,7 +63,6 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<void> {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
 
   try {
-    sendTelemetryEvent(core?.tools?.telemetryReporter, inputs, TelemetryEvent.ProjectUpgradeStart);
     if (!inputs.projectPath) {
       ctx.result = err(NoProjectOpenedError());
       return;
@@ -93,7 +92,9 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<void> {
       return;
     }
 
-    // Some keys updated.
+    // Some keys updated. Send start telemetry.
+    sendTelemetryEvent(core?.tools?.telemetryReporter, inputs, TelemetryEvent.ProjectUpgradeStart);
+
     // Read UserData file.
     const userDataPath = path.resolve(confFolderPath, `${projectSettings.currentEnv}.userdata`);
     const userData = await readUserData(userDataPath, projectSettings.projectId);

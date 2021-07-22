@@ -24,7 +24,6 @@ import {
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
 } from "../../../../../src/plugins/solution/fx-solution/question";
-import { DEFAULT_PERMISSION_REQUEST } from "../../../../../src/plugins/solution/fx-solution/constants";
 import {
   BOTS_TPL,
   COMPOSE_EXTENSIONS_TPL,
@@ -37,7 +36,6 @@ describe("Scaffold", () => {
   let plugin: AppStudioPlugin;
   let ctx: PluginContext;
   const sandbox = sinon.createSandbox();
-  const permissionsJsonPath = "./permissions.json";
   const fileContent: Map<string, any> = new Map();
 
   beforeEach(async () => {
@@ -60,8 +58,6 @@ describe("Scaffold", () => {
       fileContent.set(file, JSON.stringify(obj));
     });
     // Uses stub<any, any> to circumvent type check. Beacuse sinon fails to mock my target overload of readJson.
-    sandbox.stub<any, any>(fs, "readJson").withArgs(permissionsJsonPath).resolves({});
-    sandbox.stub<any, any>(fs, "pathExists").withArgs(permissionsJsonPath).resolves(true);
     sandbox.stub<any, any>(fs, "copy").resolves();
   });
 
@@ -69,7 +65,7 @@ describe("Scaffold", () => {
     sandbox.restore();
   });
 
-  it("should generate manifest and permissions.json for azure tab", async () => {
+  it("should generate manifest for azure tab", async () => {
     fileContent.clear();
     ctx.projectSettings = {
       appName: "my app",
@@ -99,12 +95,9 @@ describe("Scaffold", () => {
         "ComposeExtensions should be empty, because only tab is chosen"
       )
       .to.deep.equal([]);
-
-    const permissionJson = fileContent.get(`${ctx.root}/permissions.json`);
-    chai.expect(JSON.parse(permissionJson)).to.be.deep.equal(DEFAULT_PERMISSION_REQUEST);
   });
 
-  it("should generate manifest and permissions.json for bot", async () => {
+  it("should generate manifest for bot", async () => {
     fileContent.clear();
     ctx.projectSettings = {
       appName: "my app",
@@ -138,12 +131,9 @@ describe("Scaffold", () => {
         "ComposeExtensions should be empty, because only bot is chosen"
       )
       .to.deep.equal([]);
-
-    const permissionJson = fileContent.get(`${ctx.root}/permissions.json`);
-    chai.expect(JSON.parse(permissionJson)).to.be.deep.equal(DEFAULT_PERMISSION_REQUEST);
   });
 
-  it("should generate manifest and permissions.json for messaging extension", async () => {
+  it("should generate manifest for messaging extension", async () => {
     fileContent.clear();
     ctx.projectSettings = {
       appName: "my app",
@@ -174,12 +164,9 @@ describe("Scaffold", () => {
       .expect(manifest.bots, "Bots should be empty, because only msgext is chosen")
       .to.deep.equal([]);
     chai.expect(manifest.composeExtensions).to.deep.equal(COMPOSE_EXTENSIONS_TPL);
-
-    const permissionJson = fileContent.get(`${ctx.root}/permissions.json`);
-    chai.expect(JSON.parse(permissionJson)).to.be.deep.equal(DEFAULT_PERMISSION_REQUEST);
   });
 
-  it("should generate manifest and permissions.json for tab, bot and messaging extension", async () => {
+  it("should generate manifest for tab, bot and messaging extension", async () => {
     fileContent.clear();
     ctx.projectSettings = {
       appName: "my app",
@@ -202,12 +189,9 @@ describe("Scaffold", () => {
     chai.expect(manifest.configurableTabs).to.deep.equal(CONFIGURABLE_TABS_TPL);
     chai.expect(manifest.bots).to.deep.equal(BOTS_TPL);
     chai.expect(manifest.composeExtensions).to.deep.equal(COMPOSE_EXTENSIONS_TPL);
-
-    const permissionJson = fileContent.get(`${ctx.root}/permissions.json`);
-    chai.expect(JSON.parse(permissionJson)).to.be.deep.equal(DEFAULT_PERMISSION_REQUEST);
   });
 
-  it("shouldn't generate permissions.json for SPFx project", async () => {
+  it("shouldn't generate manifest for SPFx project", async () => {
     fileContent.clear();
     ctx.projectSettings = {
       appName: "my app",
@@ -226,8 +210,5 @@ describe("Scaffold", () => {
     chai.expect(result.isOk()).equals(true);
     const manifest = fileContent.get(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`);
     chai.expect(manifest).to.be.not.undefined;
-
-    const permissionJson = fileContent.get(`${ctx.root}/permissions.json`);
-    chai.expect(permissionJson).to.be.undefined;
   });
 });

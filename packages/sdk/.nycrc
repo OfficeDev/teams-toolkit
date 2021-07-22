@@ -1,19 +1,16 @@
 {
-    "include": [
-      "dist-esm/src/**/*.js"
-    ],
-    "exclude": [
-      "**/*.d.ts",
-      "dist-esm/src/generated/*"
-    ],
-    "reporter": [
-      "text-summary",
-      "html",
-      "cobertura"
-    ],
-    "exclude-after-remap": false,
-    "sourceMap": true,
-    "produce-source-map": true,
-    "instrument": true,
-    "all": true
-  }
+  "extends": "@istanbuljs/nyc-config-typescript",
+  "all": true,
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.js"
+  ],
+  "reporter": [
+    "text",
+    "html",
+    "json-summary",
+    "cobertura"
+  ],
+  "check-coverage": true,
+  "lines": 50
+}

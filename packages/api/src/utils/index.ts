@@ -14,13 +14,13 @@ export * from "./log";
 export * from "./telemetry";
 export * from "./dialog";
 export * from "./tree";
+export * from "./crypto";
 
-export interface Tools
-{
-    logProvider: LogProvider;
-    tokenProvider: TokenProvider;
-    telemetryReporter?: TelemetryReporter;
-    treeProvider?: TreeProvider;
-    dialog: Dialog;
-    ui: UserInteraction;
+export interface Tools {
+  logProvider: LogProvider;
+  tokenProvider: TokenProvider;
+  telemetryReporter?: TelemetryReporter;
+  treeProvider?: TreeProvider;
+  dialog?: Dialog;
+  ui: UserInteraction;
 }

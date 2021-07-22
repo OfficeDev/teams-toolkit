@@ -136,32 +136,6 @@ describe("Common Utils", () => {
     });
   });
 
-  describe("genBotSectionInManifest", () => {
-    it("Happy Path", () => {
-      // Arrange
-      const botId = "123";
-
-      // Act
-      const result = utils.genBotSectionInManifest(botId);
-
-      // Assert
-      chai.assert.isTrue(result.length > 0);
-    });
-  });
-
-  describe("genMsgExtSectionInManifest", () => {
-    it("Happy Path", () => {
-      // Arrange
-      const botId = "123";
-
-      // Act
-      const result = utils.genMsgExtSectionInManifest(botId);
-
-      // Assert
-      chai.assert.isTrue(result.length > 0);
-    });
-  });
-
   describe("convertToTelemetryName", () => {
     it("Happy Path", () => {
       // Arrange

@@ -257,3 +257,7 @@ export class TelemetryValues {
   public static readonly UserError = "user";
   public static readonly SystemError = "system";
 }
+
+export class AzureConstants {
+  public static readonly requiredResourceProviders = ["Microsoft.Web", "Microsoft.BotService"];
+}

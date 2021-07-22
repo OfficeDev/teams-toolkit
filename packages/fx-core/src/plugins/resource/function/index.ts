@@ -10,6 +10,7 @@ import {
   SystemError,
   UserError,
   err,
+  AzureSolutionSettings,
 } from "@microsoft/teamsfx-api";
 
 import {
@@ -26,9 +27,31 @@ import { FxResult, FunctionPluginResultFactory as ResultFactory } from "./result
 import { FunctionEvent } from "./enums";
 import { Logger } from "./utils/logger";
 import { TelemetryHelper } from "./utils/telemetry-helper";
-
-// This layer tries to provide a uniform exception handling for function plugin.
+import {
+  AzureResourceApim,
+  AzureResourceFunction,
+  AzureResourceSQL,
+  HostTypeOptionAzure,
+  TabOptionItem,
+} from "../../solution/fx-solution/question";
+import { Service } from "typedi";
+import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+@Service(ResourcePlugins.FunctionPlugin)
 export class FunctionPlugin implements Plugin {
+  name = "fx-resource-function";
+  displayName = "Azure Function";
+  activate(solutionSettings: AzureSolutionSettings): boolean {
+    const cap = solutionSettings.capabilities || [];
+    const azureResources = solutionSettings.azureResources || [];
+    return (
+      solutionSettings.hostType === HostTypeOptionAzure.id &&
+      cap.includes(TabOptionItem.id) &&
+      (azureResources.includes(AzureResourceSQL.id) ||
+        azureResources.includes(AzureResourceApim.id) ||
+        azureResources.includes(AzureResourceFunction.id))
+    );
+  }
+
   functionPluginImpl: FunctionPluginImpl = new FunctionPluginImpl();
 
   public async callFunc(func: Func, ctx: PluginContext): Promise<FxResult> {
@@ -64,10 +87,7 @@ export class FunctionPlugin implements Plugin {
 
   public async scaffold(ctx: PluginContext): Promise<FxResult> {
     this.setContext(ctx);
-    await StepHelperFactory.scaffoldStepHelper.start(
-      Object.entries(ScaffoldSteps).length,
-      ctx.dialog
-    );
+    await StepHelperFactory.scaffoldStepHelper.start(Object.entries(ScaffoldSteps).length, ctx.ui);
     const res = await this.runWithErrorWrapper(ctx, FunctionEvent.scaffold, () =>
       this.functionPluginImpl.scaffold(ctx)
     );
@@ -87,7 +107,7 @@ export class FunctionPlugin implements Plugin {
     this.setContext(ctx);
     await StepHelperFactory.provisionStepHelper.start(
       Object.entries(ProvisionSteps).length,
-      ctx.dialog
+      ctx.ui
     );
     const res = await this.runWithErrorWrapper(ctx, FunctionEvent.provision, () =>
       this.functionPluginImpl.provision(ctx)
@@ -100,7 +120,7 @@ export class FunctionPlugin implements Plugin {
     this.setContext(ctx);
     await StepHelperFactory.postProvisionStepHelper.start(
       Object.entries(PostProvisionSteps).length,
-      ctx.dialog
+      ctx.ui
     );
     const res = await this.runWithErrorWrapper(ctx, FunctionEvent.postProvision, () =>
       this.functionPluginImpl.postProvision(ctx)
@@ -113,7 +133,7 @@ export class FunctionPlugin implements Plugin {
     this.setContext(ctx);
     await StepHelperFactory.preDeployStepHelper.start(
       Object.entries(PreDeploySteps).length,
-      ctx.dialog
+      ctx.ui
     );
     const res = await this.runWithErrorWrapper(ctx, FunctionEvent.preDeploy, () =>
       this.functionPluginImpl.preDeploy(ctx)
@@ -124,7 +144,7 @@ export class FunctionPlugin implements Plugin {
 
   public async deploy(ctx: PluginContext): Promise<FxResult> {
     this.setContext(ctx);
-    await StepHelperFactory.deployStepHelper.start(Object.entries(DeploySteps).length, ctx.dialog);
+    await StepHelperFactory.deployStepHelper.start(Object.entries(DeploySteps).length, ctx.ui);
     const res = await this.runWithErrorWrapper(ctx, FunctionEvent.deploy, () =>
       this.functionPluginImpl.deploy(ctx)
     );

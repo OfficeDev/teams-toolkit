@@ -134,10 +134,8 @@ export class TestHelper {
       telemetryReporter: mockTelemetryReporter,
       config: config,
       configOfOtherPlugins: configOfOtherPlugins,
-      app: {
-        name: {
-          short: "aad-plugin-unit-test",
-        },
+      projectSettings: {
+        appName: "aad-plugin-unit-test",
       },
     } as unknown as PluginContext;
 

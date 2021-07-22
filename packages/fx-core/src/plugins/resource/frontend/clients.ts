@@ -87,7 +87,7 @@ export class AzureStorageClient {
     const endpoint: string | undefined = response.primaryEndpoints?.web;
 
     if (!endpoint) {
-      throw new Error(Messages.GetEmptyStorageEndpoint());
+      throw new Error(Messages.GetEmptyStorageEndpoint);
     }
 
     return endpoint.endsWith("/") ? endpoint.substring(0, endpoint.length - 1) : endpoint;
@@ -217,7 +217,7 @@ export class AzureStorageClient {
       await client.listAccountSAS(resourceGroupName, storageName, accountSasParameters)
     ).accountSasToken;
     if (!token) {
-      throw new Error(Messages.GetEmptySasToken());
+      throw new Error(Messages.GetEmptySasToken);
     }
     return token;
   }

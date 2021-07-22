@@ -20,6 +20,9 @@ export enum TelemetryEvent {
 
   NavigateToDebug = "navigate-to-debug",
 
+  RunIconDebugStart = "run-icon-debug-start",
+  RunIconDebug = "run-icon-debug",
+
   AddResourceStart = "add-resource-start",
   AddResource = "add-resource",
 
@@ -61,12 +64,15 @@ export enum TelemetryEvent {
   DownloadSample = "download-sample",
 
   WatchVideo = "watch-video",
+  PauseVideo = "pause-video",
 
   DisplayCommands = "display-commands",
 
   OpenDownloadNode = "open-download-node",
 
   NextStep = "next-step",
+
+  ClickQuickStartCard = "click-quick-start-card",
 
   DebugPreCheck = "debug-precheck",
   DebugStart = "debug-start",
@@ -76,10 +82,18 @@ export enum TelemetryEvent {
   DebugNpmInstall = "debug-npm-install",
 
   Survey = "survey",
+
+  EditSecretStart = "edit-secret-start",
+  EditSecret = "edit-secret",
+
+  OpenTeamsApp = "open-teams-app",
+  UpdateTeamsApp = "update-teams-app",
 }
 
 export enum TelemetryProperty {
   Component = "component",
+  ProjectId = "project-id",
+  CorrelationId = "correlation-id",
   AapId = "appid",
   UserId = "hashed-userid",
   AccountType = "account-type",
@@ -105,6 +119,7 @@ export enum TelemetryProperty {
   OSRelease = "os-release",
   SampleAppName = "sample-app-name",
   CurrentAction = "current-action",
+  VideoPlayFrom = "video-play-from",
 }
 
 export enum TelemetrySuccess {
@@ -116,6 +131,13 @@ export enum TelemetryTiggerFrom {
   CommandPalette = "CommandPalette",
   TreeView = "TreeView",
   Webview = "Webview",
+  Other = "Other",
+}
+
+export enum WatchVideoFrom {
+  WatchVideoBtn = "WatchVideoBtn",
+  PlayBtn = "PlayBtn",
+  WatchOnBrowserBtn = "WatchOnBrowserBtn",
 }
 
 export enum TelemetryErrorType {

@@ -4,6 +4,8 @@ import { PluginContext } from "@microsoft/teamsfx-api";
 import faker from "faker";
 import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import { Constants } from "../../../../src/plugins/resource/simpleauth/constants";
+import { ScaffoldArmTemplateResult } from "../../../../src/common/armInterface";
+import { compileHandlebarsTemplateString } from "../../../../src";
 
 export class TestHelper {
   static async pluginContext(
@@ -89,7 +91,7 @@ export class TestHelper {
             ],
             [Constants.SolutionPlugin.configKeys.resourceGroupName, "junhanTest0118"],
             [Constants.SolutionPlugin.configKeys.location, "eastus"],
-            [Constants.SolutionPlugin.configKeys.remoteTeamsAppId, faker.random.uuid()],
+            [Constants.SolutionPlugin.configKeys.remoteTeamsAppId, faker.datatype.uuid()],
           ]),
         ],
         [
@@ -135,8 +137,48 @@ export class TestHelper {
           short: "hello-app",
         },
       },
+      projectSettings: {
+        appName: "hello-app",
+        solutionSettings: {
+          activeResourcePlugins: [
+            Constants.AadAppPlugin.id,
+            Constants.FrontendPlugin.id,
+            Constants.SimpleAuthPlugin.id,
+          ],
+        },
+      },
     } as unknown as PluginContext;
 
     return pluginContext;
+  }
+
+  static mockSolutionUpdateArmTemplates(
+    mockedData: any,
+    template: ScaffoldArmTemplateResult
+  ): ScaffoldArmTemplateResult {
+    return {
+      Modules: template.Modules,
+      Orchestration: {
+        ParameterTemplate: {
+          Content: compileHandlebarsTemplateString(
+            template.Orchestration.ParameterTemplate!.Content,
+            mockedData
+          ),
+        },
+        ModuleTemplate: {
+          Content: compileHandlebarsTemplateString(
+            template.Orchestration.ModuleTemplate.Content,
+            mockedData
+          ),
+          Outputs: template.Orchestration.ModuleTemplate.Outputs,
+        },
+        OutputTemplate: {
+          Content: compileHandlebarsTemplateString(
+            template.Orchestration.OutputTemplate!.Content,
+            mockedData
+          ),
+        },
+      },
+    } as ScaffoldArmTemplateResult;
   }
 }

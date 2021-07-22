@@ -3,7 +3,7 @@
 import * as path from "path";
 import { ConfigFolderName, SystemError, UserError } from "@microsoft/teamsfx-api";
 
-import { FunctionPluginPathInfo as PathInfo } from "../constants";
+import { AzureInfo, FunctionPluginPathInfo as PathInfo } from "../constants";
 import { Logger } from "../utils/logger";
 
 export enum ErrorType {
@@ -30,6 +30,9 @@ const tips = {
   retryRequestForZip:
     "If the template zip file was broken, retry the command to download a new one.",
   checkFunctionExtVersion: `Check function extension version and ${PathInfo.solutionFolderName}${path.sep}${PathInfo.functionExtensionsFileName}.`,
+  registerRequiredRP: `Register ${AzureInfo.requiredResourceProviders.join(
+    ","
+  )} resource provider for your subscription manually.`,
 };
 
 export class FunctionPluginError extends Error {
@@ -47,8 +50,8 @@ export class FunctionPluginError extends Error {
     Object.setPrototypeOf(this, ValidationError.prototype);
   }
 
-  getMessage() {
-    return `${this.message} Suggestions: ${this.suggestions.join("\n")}`;
+  getMessage(): string {
+    return `${this.message} Suggestions: ${this.suggestions.join(" ")}`;
   }
 }
 
@@ -132,12 +135,26 @@ export class UnzipError extends FunctionPluginError {
   }
 }
 
+// TODO: help link for the error
+export class RegisterResourceProviderError extends FunctionPluginError {
+  constructor() {
+    super(
+      ErrorType.User,
+      "RegisterResourceProviderError",
+      "Failed to register required resource provider for function app.",
+      [tips.registerRequiredRP, tips.checkLog]
+    );
+  }
+}
+
 export class ProvisionError extends FunctionPluginError {
-  constructor(resource: string) {
+  constructor(resource: string, innerErrorCode?: string) {
     super(
       ErrorType.User,
       "ProvisionError",
-      `Failed to check/create '${resource}' for function app.`,
+      `Failed to check/create '${resource}' for function app${
+        innerErrorCode ? `: ${innerErrorCode}` : ""
+      }.`,
       [tips.checkSubscriptionId, tips.checkCredit, tips.checkNetwork, tips.retryRequest]
     );
   }
@@ -237,7 +254,12 @@ export class UploadZipError extends FunctionPluginError {
 
 export class UnknownFallbackError extends FunctionPluginError {
   constructor() {
-    super(ErrorType.System, "UnknownFallbackError", "Trigger fallback caused by unknown reason.", []);
+    super(
+      ErrorType.System,
+      "UnknownFallbackError",
+      "Trigger fallback caused by unknown reason.",
+      []
+    );
   }
 }
 
@@ -253,6 +275,23 @@ export async function runWithErrorCatchAndThrow<T>(
       throw e;
     }
     Logger.error(e.toString());
+    throw error;
+  }
+}
+
+export async function runWithErrorCatchAndWrap<T>(
+  wrap: (error: any) => FunctionPluginError,
+  fn: () => T | Promise<T>
+): Promise<T> {
+  try {
+    const res = await Promise.resolve(fn());
+    return res;
+  } catch (e) {
+    if (e instanceof UserError || e instanceof SystemError) {
+      throw e;
+    }
+    Logger.error(e.toString());
+    const error = wrap(e);
     throw error;
   }
 }

@@ -24,6 +24,7 @@ import {
   UserError,
   SystemError,
   returnSystemError,
+  returnUserError,
   ConfigFolderName,
   Inputs,
   VsCodeEnv,
@@ -31,7 +32,12 @@ import {
   Void,
   Tools,
 } from "@microsoft/teamsfx-api";
-import { isUserCancelError, FxCore, InvalidProjectError } from "@microsoft/teamsfx-core";
+import {
+  isUserCancelError,
+  FxCore,
+  InvalidProjectError,
+  isValidProject,
+} from "@microsoft/teamsfx-core";
 import DialogManagerInstance from "./userInterface";
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -61,6 +67,7 @@ import * as vscode from "vscode";
 import { DepsChecker } from "./debug/depsChecker/checker";
 import { BackendExtensionsInstaller } from "./debug/depsChecker/backendExtensionsInstall";
 import { DotnetChecker } from "./debug/depsChecker/dotnetChecker";
+import { FuncToolChecker } from "./debug/depsChecker/funcToolChecker";
 import * as util from "util";
 import * as StringResources from "./resources/Strings.json";
 import { vscodeAdapter } from "./debug/depsChecker/vscodeAdapter";
@@ -74,6 +81,8 @@ import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
 import { VS_CODE_UI } from "./extension";
 import { registerAccountTreeHandler } from "./accountTree";
 import * as uuid from "uuid";
+import { selectAndDebug } from "./debug/runIconHandler";
+import * as path from "path";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -87,6 +96,10 @@ export function getWorkspacePath(): string | undefined {
 export async function activate(): Promise<Result<Void, FxError>> {
   const result: Result<Void, FxError> = ok(Void);
   try {
+    if (isValidProject(getWorkspacePath())) {
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenTeamsApp, {});
+    }
+
     const telemetry = ExtTelemetry.reporter;
     AzureAccountManager.setStatusChangeMap(
       "successfully-sign-in-azure",
@@ -154,7 +167,6 @@ export function getSystemInputs(): Inputs {
     platform: Platform.VSCode,
     vscodeEnv: detectVsCodeEnv(),
     "function-dotnet-checker-enabled": vscodeAdapter.dotnetCheckerEnabled(),
-    correlationId: uuid.v4(),
   };
   return answers;
 }
@@ -164,9 +176,17 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<null
   return await runCommand(Stage.create);
 }
 
-export function debugHandler(args?: any[]) {
+export async function debugHandler(args?: any[]) {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.NavigateToDebug, getTriggerFromProperty(args));
-  vscode.commands.executeCommand("workbench.view.debug");
+  await vscode.commands.executeCommand("workbench.view.debug");
+  await vscode.commands.executeCommand("workbench.action.debug.selectandstart");
+}
+
+export async function selectAndDebugHandler(args?: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.RunIconDebugStart);
+  const result = await selectAndDebug();
+  await processResult(TelemetryEvent.RunIconDebug, result);
+  return result;
 }
 
 export async function addResourceHandler(args?: any[]): Promise<Result<null, FxError>> {
@@ -363,7 +383,12 @@ function checkCoreNotEmpty(): Result<null, SystemError> {
 export async function validateDependenciesHandler(): Promise<void> {
   const nodeChecker = new AzureNodeChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
   const dotnetChecker = new DotnetChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
-  const depsChecker = new DepsChecker(vscodeLogger, vscodeAdapter, [nodeChecker, dotnetChecker]);
+  const funcChecker = new FuncToolChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
+  const depsChecker = new DepsChecker(vscodeLogger, vscodeAdapter, [
+    nodeChecker,
+    dotnetChecker,
+    funcChecker,
+  ]);
   await validateDependenciesCore(depsChecker);
 }
 
@@ -474,17 +499,22 @@ export async function openDocumentHandler(args: any[]): Promise<boolean> {
 
 export async function openWelcomeHandler(args?: any[]) {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.QuickStart, getTriggerFromProperty(args));
-  WebviewPanel.createOrShow(ext.context.extensionPath, PanelType.QuickStart);
+  WebviewPanel.createOrShow(PanelType.QuickStart);
 }
 
 function getTriggerFromProperty(args?: any[]) {
-  const isFromTreeView = args && args.toString() === "TreeView";
+  if (!args) {
+    return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette };
+  }
 
-  return {
-    [TelemetryProperty.TriggerFrom]: isFromTreeView
-      ? TelemetryTiggerFrom.TreeView
-      : TelemetryTiggerFrom.CommandPalette,
-  };
+  switch (args.toString()) {
+    case TelemetryTiggerFrom.TreeView:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.TreeView };
+    case TelemetryTiggerFrom.Webview:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview };
+    default:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Other };
+  }
 }
 
 async function openMarkdownHandler() {
@@ -534,7 +564,7 @@ async function openSampleReadmeHandler() {
 
 export async function openSamplesHandler(args?: any[]) {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Samples, getTriggerFromProperty(args));
-  WebviewPanel.createOrShow(ext.context.extensionPath, PanelType.SampleGallery);
+  WebviewPanel.createOrShow(PanelType.SampleGallery);
 }
 
 export async function openAppManagement(args?: any[]) {
@@ -612,6 +642,25 @@ export async function openAzureAccountHandler() {
   return env.openExternal(Uri.parse("https://portal.azure.com/"));
 }
 
+export function saveTextDocumentHandler(document: vscode.TextDocument) {
+  if (!isValidProject(getWorkspacePath())) {
+    return;
+  }
+
+  let curDirectory = path.dirname(document.fileName);
+  while (curDirectory) {
+    if (isValidProject(curDirectory)) {
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.UpdateTeamsApp, {});
+      return;
+    }
+
+    if (curDirectory === path.join(curDirectory, "..")) {
+      break;
+    }
+    curDirectory = path.join(curDirectory, "..");
+  }
+}
+
 export async function cmdHdlLoadTreeView(context: ExtensionContext) {
   const disposables = await TreeViewManagerInstance.registerTreeViews();
   context.subscriptions.push(...disposables);
@@ -673,8 +722,11 @@ export async function showError(e: UserError | SystemError) {
 
     const button = await window.showErrorMessage(`[${errorCode}]: ${e.message}`, help);
     if (button) await button.run();
-  } else if ("issueLink" in e && e.issueLink && typeof e.issueLink != "undefined") {
-    const path = e.issueLink.replace(/\/$/, "") + "?";
+  } else if (e instanceof SystemError) {
+    const path =
+      typeof e.issueLink === "undefined"
+        ? "https://github.com/OfficeDev/TeamsFx/issues/new?"
+        : e.issueLink;
     const param = `title=new+bug+report: ${errorCode}&body=${e.message}\n\n${e.stack}`;
     const issue = {
       title: StringResources.vsc.handlers.reportIssue,
@@ -760,6 +812,41 @@ export async function cmpAccountsHandler() {
   });
   quickPick.onDidHide(() => quickPick.dispose());
   quickPick.show();
+}
+
+export async function decryptSecret(cipher: string, selection: vscode.Range): Promise<void> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.EditSecretStart, {
+    [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Other,
+  });
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) {
+    return;
+  }
+  const inputs = getSystemInputs();
+  const result = await core.decrypt(cipher, inputs);
+  if (result.isOk()) {
+    const editedSecret = await VS_CODE_UI.inputText({
+      name: "Secret Editor",
+      title: StringResources.vsc.handlers.editSecretTitle,
+      default: result.value,
+    });
+    if (editedSecret.isOk() && editedSecret.value.result) {
+      const newCiphertext = await core.encrypt(editedSecret.value.result, inputs);
+      if (newCiphertext.isOk()) {
+        editor.edit((editBuilder) => {
+          editBuilder.replace(selection, newCiphertext.value);
+        });
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.EditSecret, {
+          [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+        });
+      } else {
+        ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.EditSecret, newCiphertext.error);
+      }
+    }
+  } else {
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.EditSecret, result.error);
+    window.showErrorMessage(StringResources.vsc.handlers.decryptFailed);
+  }
 }
 
 export async function signOutAzure(isFromTreeView: boolean) {

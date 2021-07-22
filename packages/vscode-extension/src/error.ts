@@ -14,4 +14,6 @@ export enum ExtensionErrors {
   PortAlreadyInUse = "PortAlreadyInUse",
   OpenExternalFailed = "OpenExternalFailed",
   FolderAlreadyExist = "FolderAlreadyExist",
+  InvalidProject = "InvalidProject",
+  FetchSampleError = "FetchSampleError",
 }

@@ -18,10 +18,12 @@ export interface Plugin
 |  --- | --- | --- |
 |  [callFunc?](./teamsfx-api.plugin_2.callfunc.md) | (func: [Func](./teamsfx-api.func.md)<!-- -->, ctx: [PluginContext](./teamsfx-api.plugincontext.md)<!-- -->) =&gt; Promise&lt;Result&lt;any, [FxError](./teamsfx-api.fxerror.md)<!-- -->&gt;&gt; | <i>(Optional)</i> func entry for dymanic question |
 |  [deploy?](./teamsfx-api.plugin_2.deploy.md) | (ctx: [PluginContext](./teamsfx-api.plugincontext.md)<!-- -->) =&gt; Promise&lt;Result&lt;any, [FxError](./teamsfx-api.fxerror.md)<!-- -->&gt;&gt; | <i>(Optional)</i> |
+|  [displayName](./teamsfx-api.plugin_2.displayname.md) | string |  |
 |  [executeUserTask?](./teamsfx-api.plugin_2.executeusertask.md) | (func: [Func](./teamsfx-api.func.md)<!-- -->, ctx: [PluginContext](./teamsfx-api.plugincontext.md)<!-- -->) =&gt; Promise&lt;Result&lt;any, [FxError](./teamsfx-api.fxerror.md)<!-- -->&gt;&gt; | <i>(Optional)</i> execute user customized task |
 |  [getQuestions?](./teamsfx-api.plugin_2.getquestions.md) | (stage: [Stage](./teamsfx-api.stage.md)<!-- -->, ctx: [PluginContext](./teamsfx-api.plugincontext.md)<!-- -->) =&gt; Promise&lt;Result&lt;[QTreeNode](./teamsfx-api.qtreenode.md) \| undefined, [FxError](./teamsfx-api.fxerror.md)<!-- -->&gt;&gt; | <i>(Optional)</i> user questions |
 |  [getQuestionsForUserTask?](./teamsfx-api.plugin_2.getquestionsforusertask.md) | (func: [Func](./teamsfx-api.func.md)<!-- -->, ctx: [PluginContext](./teamsfx-api.plugincontext.md)<!-- -->) =&gt; Promise&lt;Result&lt;[QTreeNode](./teamsfx-api.qtreenode.md) \| undefined, [FxError](./teamsfx-api.fxerror.md)<!-- -->&gt;&gt; | <i>(Optional)</i> user questions for user customized task |
 |  [localDebug?](./teamsfx-api.plugin_2.localdebug.md) | (ctx: [PluginContext](./teamsfx-api.plugincontext.md)<!-- -->) =&gt; Promise&lt;Result&lt;any, [FxError](./teamsfx-api.fxerror.md)<!-- -->&gt;&gt; | <i>(Optional)</i> for local debug |
+|  [name](./teamsfx-api.plugin_2.name.md) | string |  |
 |  [postDeploy?](./teamsfx-api.plugin_2.postdeploy.md) | (ctx: [PluginContext](./teamsfx-api.plugincontext.md)<!-- -->) =&gt; Promise&lt;Result&lt;any, [FxError](./teamsfx-api.fxerror.md)<!-- -->&gt;&gt; | <i>(Optional)</i> |
 |  [postLocalDebug?](./teamsfx-api.plugin_2.postlocaldebug.md) | (ctx: [PluginContext](./teamsfx-api.plugincontext.md)<!-- -->) =&gt; Promise&lt;Result&lt;any, [FxError](./teamsfx-api.fxerror.md)<!-- -->&gt;&gt; | <i>(Optional)</i> |
 |  [postProvision?](./teamsfx-api.plugin_2.postprovision.md) | (ctx: [PluginContext](./teamsfx-api.plugincontext.md)<!-- -->) =&gt; Promise&lt;Result&lt;any, [FxError](./teamsfx-api.fxerror.md)<!-- -->&gt;&gt; | <i>(Optional)</i> |
@@ -33,4 +35,10 @@ export interface Plugin
 |  [provision?](./teamsfx-api.plugin_2.provision.md) | (ctx: [PluginContext](./teamsfx-api.plugincontext.md)<!-- -->) =&gt; Promise&lt;Result&lt;any, [FxError](./teamsfx-api.fxerror.md)<!-- -->&gt;&gt; | <i>(Optional)</i> |
 |  [publish?](./teamsfx-api.plugin_2.publish.md) | (ctx: [PluginContext](./teamsfx-api.plugincontext.md)<!-- -->) =&gt; Promise&lt;Result&lt;any, [FxError](./teamsfx-api.fxerror.md)<!-- -->&gt;&gt; | <i>(Optional)</i> publish |
 |  [scaffold?](./teamsfx-api.plugin_2.scaffold.md) | (ctx: [PluginContext](./teamsfx-api.plugincontext.md)<!-- -->) =&gt; Promise&lt;Result&lt;any, [FxError](./teamsfx-api.fxerror.md)<!-- -->&gt;&gt; | <i>(Optional)</i> |
+
+## Methods
+
+|  Method | Description |
+|  --- | --- |
+|  [activate(solutionSettings)](./teamsfx-api.plugin_2.activate.md) | resource plugin decide whether it need to be activated |
 

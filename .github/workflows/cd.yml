@@ -3,21 +3,13 @@ name: CD
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: "which version to bump(major, minor, patch, premajor, preminor, prepatch, prerelease)"
-        required: false
-        default: "prerelease"
       preid:
         description: "preid name(alpha, rc, stable)"
-        required: false
-        default: "alpha"
-      force:
-        description: "force release even if no update(set --force-publish if necessary)"
-        required: false
-        default: ""
-      conventional-commits:
-        description: "bump up release version by lerna conventional commits(yes or no)"
         required: true
+        default: "rc"
+      skip-version-rc:
+        description: "release RC version just with lerna publish, skip run lerna version(yes or no)"
+        required: false
         default: "no"
   schedule:
     - cron: "0 8 * * *"
@@ -27,9 +19,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Validate inputs
-        if: ${{ github.event_name == 'workflow_dispatch' && ((github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/main') || (github.ref == 'refs/heads/dev' && (!startsWith(github.event.inputs.version, 'pre') || github.event.inputs.preid != 'alpha')) || (github.ref == 'refs/heads/main' && startsWith(github.event.inputs.version, 'pre') && github.event.inputs.preid != 'rc') || (github.ref == 'refs/heads/dev' && github.event.inputs.conventional-commits == 'yes') || (github.ref == 'refs/heads/main' && github.event.inputs.conventional-commits == 'yes' && !(github.event.inputs.preid == 'rc' || github.event.inputs.preid == 'stable'))) }}
+      - name: Validate CD branch
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main' && github.ref != 'refs/heads/dev' }}
         run: |
+          echo It's not allowed to run CD on other branch except main and dev.
+          exit 1
+
+      - name: Validate inputs for main
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.preid != 'rc' && github.event.inputs.preid != 'stable' }}
+        run: |
+          echo It's not allowed to release alpha on main branch.
+          exit 1
+
+      - name: Valiadte inputs for dev
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/dev' && github.event.inputs.preid != 'alpha' }}
+        run: |
+          echo It's not allowed to release RC or stable on dev branch.
+          exit 1
+
+      - name: Validate schedule
+        if: ${{ github.event_name == 'schedule' && github.ref != 'refs/heads/dev' }}
+        run: |
+          echo It's not allowed to run schedule release except dev branch.
           exit 1
 
       - name: Checkout branch
@@ -48,32 +59,6 @@ jobs:
         run: |
           echo "${{ secrets.NPMRC }}" > ~/.npmrc
 
-      - name: generate templates
-        run: .github/scripts/template-zip-autogen.sh
-
-      - name: release templates' alpha version to github
-        if: ${{ github.ref == 'refs/heads/dev' }}
-        uses: marvinpinto/action-automatic-releases@latest
-        with:
-          repo_token: ${{ secrets.CD_PAT }}
-          prerelease: true
-          automatic_release_tag: "templates@0.0.0-alpha"
-          files: |
-            ./*.zip
-
-      - name: release templates' rc version to github
-        if: ${{ github.ref == 'refs/heads/main' && startsWith(github.event.inputs.version, 'pre') }}
-        uses: marvinpinto/action-automatic-releases@latest
-        with:
-          repo_token: ${{ secrets.CD_PAT }}
-          prerelease: true
-          automatic_release_tag: "templates@0.0.0-rc"
-          files: |
-            ./*.zip
-
-      - name: cleanup templates
-        run: rm -rf ./*.zip && git clean -df
-
       - name: Download Simple Auth bits
         uses: nick-invision/retry@v2
         with:
@@ -82,11 +67,7 @@ jobs:
           retry_on: error
           shell: pwsh
           command: |
-            $version=Get-Content packages/fx-core/templates/plugins/resource/simpleauth/version.txt
-            $tag = "simpleauth@"+$version
-            $fileName="Microsoft.TeamsFx.SimpleAuth_$version.zip"
-            $url = "https://github.com/OfficeDev/TeamsFx/releases/download/"+$tag+"/"+$fileName
-            Invoke-WebRequest $url -OutFile packages/fx-core/templates/plugins/resource/simpleauth/SimpleAuth.zip
+            ./.github/scripts/downloadSimpleAuth.ps1
 
       - name: Setup project
         run: |
@@ -98,33 +79,122 @@ jobs:
           git config --global user.email 'yiz@microsoft.com'
 
       - name: release alpha npm packages to npmjs.org
-        if: ${{ github.event_name == 'schedule' }}
+        if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/dev' && github.event.inputs.preid == 'alpha')}}
         run: |
-          npx lerna version --no-private prerelease --preid=alpha.$(git rev-parse --short HEAD) --no-push --allow-branch dev --yes
+          npx lerna version prerelease --preid=alpha.$(git rev-parse --short HEAD) --exact --no-push --allow-branch dev --yes
           npx lerna publish from-package --dist-tag=alpha --yes --allow-branch dev
 
-      - name: release rc npm packages to npmjs.org
-        if: ${{ github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.version, 'pre') && github.event.inputs.conventional-commits == 'no'}}
+      - name: version rc npm packages to npmjs.org
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.preid == 'rc' && github.event.inputs.skip-version-rc == 'no'}}
         run: |
-          npx lerna publish --no-private --preid=${{ github.event.inputs.preid }} --dist-tag=${{ github.event.inputs.preid }} ${{ github.event.inputs.version }} --no-changelog --yes ${{ github.event.inputs.force }}
+          npx lerna version --conventional-commits --conventional-prerelease --preid=rc --no-changelog --yes
 
-      - name: release stable npm packages to npmjs.org
-        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && !startsWith(github.event.inputs.version, 'pre') && github.event.inputs.conventional-commits == 'no'}}
+      - name: version stable npm packages to npmjs.org
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.preid == 'stable' }}
         run: |
-          npx lerna publish --no-private --dist-tag=latest ${{ github.event.inputs.version }} --no-changelog --yes ${{ github.event.inputs.force }}
+          npx lerna version --conventional-commits --conventional-graduate --no-changelog --yes
+      
+      - name: version change
+        id: version-change
+        run: |
+          echo "::set-output name=CHANGED::$(git tag --points-at HEAD | xargs)"
+          echo "::set-output name=TEMPLATE_VERSION::$(git tag --points-at HEAD | grep templates)"
+          echo "::set-output name=EXTENSION_VERSION::$(git tag --points-at HEAD | grep ms-teams-vscode-extension@ | cut -d '@' -f2)"
+          if git tag --points-at HEAD | grep templates | grep rc;
+          then
+              git push -d origin $(git tag --points-at HEAD | grep templates | grep rc)
+          fi
 
-      - name: release rc npm packages to npmjs.org by conventional-commits
-        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.conventional-commits == 'yes' && github.event.inputs.preid == 'rc'}}
-        run: |
-          npx lerna publish --conventional-prerelease --preid=rc --no-changelog --yes
+      - name: update cli ai key
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && (github.event.inputs.preid == 'stable'||github.event.inputs.preid == 'rc') }}
+        uses: jossef/action-set-json-field@v1
+        with:
+          file: ./packages/cli/package.json
+          field: aiKey
+          value: ${{ secrets.CLI_PUBLIC_AIKEY }}
 
-      - name: release stable npm packages to npmjs.org by conventional-commits
-        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.conventional-commits == 'yes' && github.event.inputs.preid == 'stable'}}
+      - name: update extension ai key
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && (github.event.inputs.preid == 'stable'||github.event.inputs.preid == 'rc') }}
+        uses: jossef/action-set-json-field@v1
+        with:
+          file: ./packages/vscode-extension/package.json
+          field: aiKey
+          value: ${{ secrets.EXT_PUBLIC_AIKEY }}
+      
+      - name: commit change on local
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && (github.event.inputs.preid == 'stable'||github.event.inputs.preid == 'rc') }}
         run: |
-          npx lerna publish --conventional-graduate --no-changelog --yes
+          git add .
+          git commit -m "chore: update ai key"
+
+      - name: publish rc npm packages to npmjs.org
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.preid == 'rc' }}
+        run: |
+          npx lerna publish from-package --dist-tag=rc --yes
+
+      - name: publish stable npm packages to npmjs.org
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.preid == 'stable' }}
+        run: |
+          npx lerna publish from-package --yes
+
+      - name: Install Mustache
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') }}
+        run: curl -sSL https://git.io/get-mo -o mo && chmod +x mo && sudo mv mo /usr/local/bin/
+
+      - name: generate templates
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') }}
+        run: .github/scripts/template-zip-autogen.sh
+
+      - name: release templates' alpha version to github
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'alpha') }}
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: ${{ secrets.CD_PAT }}
+          prerelease: true
+          automatic_release_tag: "templates@0.0.0-alpha"
+          files: |
+            ./*.zip
+
+      - name: release templates' RC version to github
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' }}
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: ${{ secrets.CD_PAT }}
+          prerelease: true
+          automatic_release_tag: "templates@0.0.0-rc"
+          files: |
+            ./*.zip
+
+      - name: Create Templates Stable Release
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
+        uses: ncipollo/release-action@v1.7.3
+        with:
+          artifacts: ./*.zip
+          name: 'Release for ${{ steps.version-change.outputs.TEMPLATE_VERSION }}'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ steps.version-change.outputs.TEMPLATE_VERSION }}
+          allowUpdates: true
+
+      - name: Generate Tag List
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
+        run: git tag | grep templates@ > ./template-tags.txt
+
+      - name: Update Template Tag list Release
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
+        uses: ncipollo/release-action@v1.7.3
+        with:
+          artifacts: ./template-tags.txt
+          name: 'Template Tag List'
+          body: 'Release to maintain template tag list.'
+          token: ${{ secrets.github_token }}
+          tag: 'template-tag-list'
+          allowUpdates: true  
+    
+      - name: cleanup templates
+        run: rm -rf ./*.zip && git clean -df
 
       - name: pack vsix
-        id: pack-vsix
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') }}
         uses: nick-invision/retry@v2
         with:
           timeout_minutes: 10
@@ -135,26 +205,13 @@ jobs:
             cd ./packages/vscode-extension
             npm install
             npx vsce package
-            VERSION=`ls *.vsix | awk -F '.vsix' '{print $1}'`
-            echo "::set-output name=VERSION::$VERSION"
-
-      - name: check whether vscode extension changed or not
-        id: extension-checker
-        working-directory: ./packages/vscode-extension
-        run: |
-          if git diff HEAD^ package.json | grep version;
-          then
-            echo "::set-output name=CHANGED::true"
-          else
-            echo "::set-output name=CHANGED::false"
-          fi
 
       - name: release VSCode extension to github
-        if: ${{ steps.extension-checker.outputs.CHANGED == 'true' || github.event.inputs.force == '--force-publish' }}
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') }}
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: ${{ secrets.CD_PAT }}
           prerelease: true
-          automatic_release_tag: ${{ steps.pack-vsix.outputs.VERSION }}
+          automatic_release_tag: 'vscode-extension-${{ steps.version-change.outputs.EXTENSION_VERSION }}'
           files: |
             ./packages/**/*.vsix

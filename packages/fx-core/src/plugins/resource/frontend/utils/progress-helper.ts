@@ -9,6 +9,7 @@ export const ScaffoldSteps = {
 };
 
 export const ProvisionSteps = {
+  RegisterResourceProvider: Messages.ProgressRegisterRP,
   CreateStorage: Messages.ProgressCreateStorage,
   Configure: Messages.ProgressConfigure,
 };
@@ -36,7 +37,7 @@ export class ProgressHelper {
   ): Promise<IProgressHandler | undefined> {
     await this.scaffoldProgress?.end();
 
-    this.scaffoldProgress = ctx.dialog?.createProgressBar(
+    this.scaffoldProgress = ctx.ui?.createProgressBar(
       Messages.ScaffoldProgressTitle,
       Object.entries(ScaffoldSteps).length
     );
@@ -49,7 +50,7 @@ export class ProgressHelper {
   ): Promise<IProgressHandler | undefined> {
     await this.provisionProgress?.end();
 
-    this.provisionProgress = ctx.dialog?.createProgressBar(
+    this.provisionProgress = ctx.ui?.createProgressBar(
       Messages.ProvisionProgressTitle,
       Object.entries(ProvisionSteps).length
     );
@@ -62,7 +63,7 @@ export class ProgressHelper {
   ): Promise<IProgressHandler | undefined> {
     await this.preDeployProgress?.end();
 
-    this.preDeployProgress = ctx.dialog?.createProgressBar(
+    this.preDeployProgress = ctx.ui?.createProgressBar(
       Messages.PreDeployProgressTitle,
       Object.entries(PreDeploySteps).length
     );
@@ -75,7 +76,7 @@ export class ProgressHelper {
   ): Promise<IProgressHandler | undefined> {
     await this.deployProgress?.end();
 
-    this.deployProgress = ctx.dialog?.createProgressBar(
+    this.deployProgress = ctx.ui?.createProgressBar(
       Messages.DeployProgressTitle,
       Object.entries(DeploySteps).length
     );

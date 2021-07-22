@@ -1,9 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { FxError } from "@microsoft/teamsfx-api";
 import { PluginContext } from "@microsoft/teamsfx-api";
 import { AppStudio } from "./appStudio";
 import { ConfigKeys, Constants, Telemetry } from "./constants";
+import { GraphErrorCodes } from "./errorCodes";
 import {
   AppStudioErrorMessage,
   CreateSecretError,
@@ -13,6 +15,7 @@ import {
   UpdateRedirectUriError,
   GetAppError,
   GetAppConfigError,
+  AadError,
 } from "./errors";
 import { GraphClient } from "./graph";
 import { IAADPassword } from "./interfaces/IAADApplication";
@@ -52,13 +55,7 @@ export class AadAppClient {
       config.clientId = provisionAadResponse.appId;
       config.objectId = provisionAadResponse.id;
     } catch (error) {
-      if (
-        error?.response?.status >= Constants.statusCodeUserError &&
-        error?.response?.status < Constants.statusCodeServerError
-      ) {
-        throw ResultFactory.UserError(CreateAppError.name, CreateAppError.message(), error);
-      }
-      throw ResultFactory.SystemError(CreateAppError.name, CreateAppError.message(), error);
+      throw AadAppClient.handleError(error, CreateAppError);
     }
   }
 
@@ -80,13 +77,7 @@ export class AadAppClient {
       }
       config.password = createSecretObject.value;
     } catch (error) {
-      if (
-        error?.response?.status >= Constants.statusCodeUserError &&
-        error?.response?.status < Constants.statusCodeServerError
-      ) {
-        throw ResultFactory.UserError(CreateSecretError.name, CreateSecretError.message(), error);
-      }
-      throw ResultFactory.SystemError(CreateSecretError.name, CreateSecretError.message(), error);
+      throw AadAppClient.handleError(error, CreateSecretError);
     }
   }
 
@@ -116,21 +107,7 @@ export class AadAppClient {
         );
       }
     } catch (error) {
-      if (
-        error?.response?.status >= Constants.statusCodeUserError &&
-        error?.response?.status < Constants.statusCodeServerError
-      ) {
-        throw ResultFactory.UserError(
-          UpdateRedirectUriError.name,
-          UpdateRedirectUriError.message(),
-          error
-        );
-      }
-      throw ResultFactory.SystemError(
-        UpdateRedirectUriError.name,
-        UpdateRedirectUriError.message(),
-        error
-      );
+      throw AadAppClient.handleError(error, UpdateRedirectUriError);
     }
   }
 
@@ -160,23 +137,7 @@ export class AadAppClient {
         );
       }
     } catch (error) {
-      if (
-        error?.response?.status >= Constants.statusCodeUserError &&
-        error?.response?.status < Constants.statusCodeServerError
-      ) {
-        throw ResultFactory.UserError(
-          UpdateAppIdUriError.name,
-          UpdateAppIdUriError.message(),
-          error,
-          undefined,
-          UpdateAppIdUriError.helpLink
-        );
-      }
-      throw ResultFactory.SystemError(
-        UpdateAppIdUriError.name,
-        UpdateAppIdUriError.message(),
-        error
-      );
+      throw AadAppClient.handleError(error, UpdateAppIdUriError);
     }
   }
 
@@ -206,21 +167,7 @@ export class AadAppClient {
         );
       }
     } catch (error) {
-      if (
-        error?.response?.status >= Constants.statusCodeUserError &&
-        error?.response?.status < Constants.statusCodeServerError
-      ) {
-        throw ResultFactory.UserError(
-          UpdatePermissionError.name,
-          UpdatePermissionError.message(),
-          error
-        );
-      }
-      throw ResultFactory.SystemError(
-        UpdatePermissionError.name,
-        UpdatePermissionError.message(),
-        error
-      );
+      throw AadAppClient.handleError(error, UpdatePermissionError);
     }
   }
 
@@ -243,13 +190,7 @@ export class AadAppClient {
         )) as IAADDefinition;
       }
     } catch (error) {
-      if (
-        error?.response?.status >= Constants.statusCodeUserError &&
-        error?.response?.status < Constants.statusCodeServerError
-      ) {
-        throw ResultFactory.UserError(GetAppError.name, GetAppError.message(), error);
-      }
-      throw ResultFactory.SystemError(GetAppError.name, GetAppError.message(), error);
+      throw AadAppClient.handleError(error, GetAppError);
     }
 
     const config = new ProvisionConfig(islocalDebug);
@@ -270,7 +211,7 @@ export class AadAppClient {
     return config;
   }
 
-  private static async retryHanlder(
+  public static async retryHanlder(
     ctx: PluginContext,
     stage: string,
     fn: () => Promise<IAADDefinition | IAADPassword | void>
@@ -344,6 +285,28 @@ export class AadAppClient {
         ],
       },
     };
+  }
+
+  private static handleError(error: any, errorDetail: AadError): FxError {
+    if (
+      error?.response?.status >= Constants.statusCodeUserError &&
+      error?.response?.status < Constants.statusCodeServerError
+    ) {
+      // User Error
+      // If known error code, will update help link.
+      const errorCode = error?.response?.data?.error?.code;
+      const helpLink = GraphErrorCodes.get(errorCode);
+      return ResultFactory.UserError(
+        errorDetail.name,
+        errorDetail.message(),
+        error,
+        undefined,
+        helpLink ?? errorDetail.helpLink
+      );
+    } else {
+      // System Error
+      return ResultFactory.SystemError(errorDetail.name, errorDetail.message(), error);
+    }
   }
 
   private static getAadUrlObject(redirectUris: string[]): IAADDefinition {

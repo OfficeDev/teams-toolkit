@@ -55,6 +55,7 @@
 |  [BaseQuestion](./teamsfx-api.basequestion.md) | Basic question data |
 |  [Context](./teamsfx-api.context.md) |  |
 |  [Core](./teamsfx-api.core.md) |  |
+|  [CryptoProvider](./teamsfx-api.cryptoprovider.md) | Encrypt/decrypt secrets |
 |  [Dialog](./teamsfx-api.dialog.md) |  |
 |  [Dict](./teamsfx-api.dict.md) |  |
 |  [EnvMeta](./teamsfx-api.envmeta.md) | environment meta data |
@@ -77,14 +78,12 @@
 |  [IDeveloper](./teamsfx-api.ideveloper.md) |  |
 |  [IIcons](./teamsfx-api.iicons.md) |  |
 |  [ILocalizationInfo](./teamsfx-api.ilocalizationinfo.md) |  |
-|  [IMessage](./teamsfx-api.imessage.md) |  |
 |  [IMessagingExtensionCommand](./teamsfx-api.imessagingextensioncommand.md) |  |
 |  [IName](./teamsfx-api.iname.md) |  |
 |  [InputResult](./teamsfx-api.inputresult.md) | a wrapper of user input result |
 |  [Inputs](./teamsfx-api.inputs.md) |  |
 |  [InputTextConfig](./teamsfx-api.inputtextconfig.md) | text input UI config |
 |  [IParameter](./teamsfx-api.iparameter.md) |  |
-|  [IProgress](./teamsfx-api.iprogress.md) | Iprogress status |
 |  [IProgressHandler](./teamsfx-api.iprogresshandler.md) |  |
 |  [IProgressStatus](./teamsfx-api.iprogressstatus.md) |  |
 |  [IQuestion](./teamsfx-api.iquestion.md) |  |

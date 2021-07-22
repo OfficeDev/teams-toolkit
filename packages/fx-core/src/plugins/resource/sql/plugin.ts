@@ -54,12 +54,12 @@ export class SqlPluginImpl {
       Constants.solutionConfigKey.tenantId
     );
 
-    let defaultEndpoint = `${ctx.app.name.short}-sql-${this.config.resourceNameSuffix}`;
+    let defaultEndpoint = `${ctx.projectSettings!.appName}-sql-${this.config.resourceNameSuffix}`;
     defaultEndpoint = formatEndpoint(defaultEndpoint);
     this.config.sqlServer = defaultEndpoint;
     this.config.sqlEndpoint = `${this.config.sqlServer}.database.windows.net`;
     // database
-    const defaultDatabase = `${ctx.app.name.short}-db-${this.config.resourceNameSuffix}`;
+    const defaultDatabase = `${ctx.projectSettings!.appName}-db-${this.config.resourceNameSuffix}`;
     this.config.databaseName = defaultDatabase;
   }
 
@@ -257,12 +257,12 @@ export class SqlPluginImpl {
           this.config.databaseName
         );
         ctx.logProvider?.warning(
-          `[${Constants.pluginName}] ${message}. You can follow ${HelpLinks.addDBUser} to add database user ${this.config.identity}`
+          `[${Constants.pluginName}] ${message}. You can follow ${HelpLinks.default} to add database user ${this.config.identity}`
         );
       }
     } else {
       ctx.logProvider?.warning(
-        `[${Constants.pluginName}] Skip adding database user. You can follow ${HelpLinks.addDBUser} to add database user ${this.config.identity}`
+        `[${Constants.pluginName}] Skip adding database user. You can follow ${HelpLinks.default} to add database user ${this.config.identity}`
       );
     }
 

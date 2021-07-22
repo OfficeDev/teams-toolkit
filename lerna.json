@@ -6,11 +6,11 @@
         "packages/sdk",
         "packages/cli",
         "packages/vscode-extension",
-        "packages/failpoint-ts"
+        "packages/failpoint-ts",
+        "templates"
     ],
     "command": {
         "version": {
-            "conventionalCommits": true,
             "message": "chore(release): publish detail",
             "allowBranch": ["main"]
         }

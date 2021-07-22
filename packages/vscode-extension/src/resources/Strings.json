@@ -51,8 +51,8 @@
       "feedbackDescription": "Send feedback",
       "reportIssuesTitle": "Report issues",
       "reportIssuesDescription": "Report issues",
-      "teamsDevPortalTitle": "Go To Teams Developer Portal",
-      "teamsDevPortalDescription": "Go To Teams Developer Portal"
+      "teamsDevPortalTitle": "Go To Developer Portal",
+      "teamsDevPortalDescription": "Go To Developer Portal"
     },
     "handlers": {
       "concurrentTriggerTask": "Task '%s' is still running. Wait for it to complete before starting another task.",
@@ -73,7 +73,10 @@
       "m365SignIn": "Successfully signed in to M365 account.",
       "m365SignOut": "Successfully signed out of M365 account.",
       "signOutOfM365": "Sign out of M365: ",
-      "signOutOfAzure": "Sign out of Azure: "
+      "signOutOfAzure": "Sign out of Azure: ",
+      "invalidProject": "Failed to debug Teams App. The project is not a valid Teams project.",
+      "editSecretTitle": "Edit the decrypted secret value",
+      "decryptFailed": "Failed to decrypt secrect."
     },
     "progressHandler": {
       "teamsToolkitComponent": "[Teams Toolkit]",
@@ -86,7 +89,11 @@
     },
     "azureLogin": {
       "message": "The Teams Toolkit requires an Azure account and subscription to deploy the Azure resources for your project. You will not be charged without further confirmation.",
-      "unknownSubscription": "Cannot set subscription. Select a subscription that you have access to."
+      "unknownSubscription": "Cannot set subscription. Select a subscription that you have access to.",
+      "noSubscriptionFound": "NoSubscriptionFound",
+      "failToFindSubscription": "Failed to find a subscription.",
+      "subscription": "subscription",
+      "selectSubscription": "Select a subscription"
     },
     "common": {
       "userCancel": "User Cancel",

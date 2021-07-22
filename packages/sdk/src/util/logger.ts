@@ -73,15 +73,21 @@ export function setLogLevel(level: LogLevel): void {
  *
  * @beta
  */
-export function getLogLevel(): LogLevel {
+export function getLogLevel(): LogLevel | undefined {
   return internalLogger.level;
 }
 
 class InternalLogger {
-  public level: LogLevel = LogLevel.Info;
+  public level?: LogLevel = undefined;
 
   public customLogger: Logger | undefined;
   public customLogFunction: LogFunction | undefined;
+  private defaultLogger: Logger = {
+    verbose: console.debug,
+    info: console.info,
+    warn: console.warn,
+    error: console.error,
+  };
 
   public error(message: string): void {
     this.log(LogLevel.Error, (x: Logger) => x.error, message);
@@ -110,11 +116,13 @@ class InternalLogger {
     const timestamp = new Date().toUTCString();
     const logHeader = `[${timestamp}] : @microsoft/teamsfx : ${LogLevel[logLevel]} - `;
     const logMessage = `${logHeader}${message}`;
-    if (this.level <= logLevel) {
+    if (this.level !== undefined && this.level <= logLevel) {
       if (this.customLogger) {
         logFunction(this.customLogger)(logMessage);
       } else if (this.customLogFunction) {
         this.customLogFunction(logLevel, logMessage);
+      } else {
+        logFunction(this.defaultLogger)(logMessage);
       }
     }
   }
@@ -128,9 +136,19 @@ class InternalLogger {
 export const internalLogger: InternalLogger = new InternalLogger();
 
 /**
- * Set custom logger. Use the output function if it's set. Priority is higher than setLogFunction.
+ * Set custom logger. Use the output functions if it's set. Priority is higher than setLogFunction.
  *
  * @param {Logger} logger - custom logger. If it's undefined, custom logger will be cleared.
+ *
+ * @example
+ * ```typescript
+ * setLogger({
+ *   verbose: console.debug,
+ *   info: console.info,
+ *   warn: console.warn,
+ *   error: console.error,
+ * });
+ * ```
  *
  * @beta
  */
@@ -142,6 +160,15 @@ export function setLogger(logger?: Logger): void {
  * Set custom log function. Use the function if it's set. Priority is lower than setLogger.
  *
  * @param {LogFunction} logFunction - custom log function. If it's undefined, custom log function will be cleared.
+ *
+ * @example
+ * ```typescript
+ * setLogFunction((level: LogLevel, message: string) => {
+ *   if (level === LogLevel.Error) {
+ *     console.log(message);
+ *   }
+ * });
+ * ```
  *
  * @beta
  */

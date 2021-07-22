@@ -27,10 +27,13 @@ import {
   ProvisionError,
   ValidationError,
   runWithErrorCatchAndThrow,
+  runWithErrorCatchAndWrap,
   FunctionNameConflictError,
   FetchConfigError,
+  RegisterResourceProviderError,
 } from "./resources/errors";
 import {
+  AzureInfo,
   DefaultProvisionConfigs,
   DefaultValues,
   DependentPluginInfo,
@@ -39,7 +42,6 @@ import {
   QuestionValidationFunc,
   RegularExpr,
 } from "./constants";
-import { DialogUtils } from "./utils/dialog";
 import { ErrorMessages, InfoMessages } from "./resources/message";
 import {
   FunctionConfigKey,
@@ -296,7 +298,7 @@ export class FunctionPluginImpl {
       DefaultValues.functionTriggerType,
       functionName,
       {
-        appName: ctx.app.name.short,
+        appName: ctx.projectSettings!.appName,
         functionName: functionName,
       }
     );
@@ -318,7 +320,7 @@ export class FunctionPluginImpl {
       !this.config.storageAccountName ||
       !this.config.appServicePlanName
     ) {
-      const teamsAppName: string = ctx.app.name.short;
+      const teamsAppName: string = ctx.projectSettings!.appName;
       const suffix: string = this.config.resourceNameSuffix ?? uuid().substr(0, 6);
 
       if (!this.config.functionAppName) {
@@ -390,6 +392,26 @@ export class FunctionPluginImpl {
     );
     const nodeVersion = await this.getValidNodeVersion(ctx);
 
+    const providerClient = await runWithErrorCatchAndThrow(new InitAzureSDKError(), () =>
+      AzureClientFactory.getResourceProviderClient(credential, subscriptionId)
+    );
+
+    Logger.info(
+      InfoMessages.ensureResourceProviders(AzureInfo.requiredResourceProviders, subscriptionId)
+    );
+
+    await runWithErrorCatchAndThrow(new RegisterResourceProviderError(), async () =>
+      step(
+        StepGroup.ProvisionStepGroup,
+        ProvisionSteps.registerResourceProviders,
+        async () =>
+          await AzureLib.ensureResourceProviders(
+            providerClient,
+            AzureInfo.requiredResourceProviders
+          )
+      )
+    );
+
     const storageManagementClient: StorageManagementClient = await runWithErrorCatchAndThrow(
       new InitAzureSDKError(),
       () => AzureClientFactory.getStorageManagementClient(credential, subscriptionId)
@@ -399,18 +421,20 @@ export class FunctionPluginImpl {
       InfoMessages.checkResource(ResourceType.storageAccount, storageAccountName, resourceGroupName)
     );
 
-    await runWithErrorCatchAndThrow(new ProvisionError(ResourceType.storageAccount), () =>
-      step(
-        StepGroup.ProvisionStepGroup,
-        ProvisionSteps.ensureStorageAccount,
-        async () =>
-          await AzureLib.ensureStorageAccount(
-            storageManagementClient,
-            resourceGroupName,
-            storageAccountName,
-            DefaultProvisionConfigs.storageConfig(location)
-          )
-      )
+    await runWithErrorCatchAndWrap(
+      (error: any) => new ProvisionError(ResourceType.storageAccount, error.code),
+      async () =>
+        step(
+          StepGroup.ProvisionStepGroup,
+          ProvisionSteps.ensureStorageAccount,
+          async () =>
+            await AzureLib.ensureStorageAccount(
+              storageManagementClient,
+              resourceGroupName,
+              storageAccountName,
+              DefaultProvisionConfigs.storageConfig(location)
+            )
+        )
     );
 
     const storageConnectionString: string | undefined = await runWithErrorCatchAndThrow(
@@ -439,8 +463,8 @@ export class FunctionPluginImpl {
       InfoMessages.checkResource(ResourceType.appServicePlan, appServicePlanName, resourceGroupName)
     );
 
-    const appServicePlan: AppServicePlan = await runWithErrorCatchAndThrow(
-      new ProvisionError(ResourceType.appServicePlan),
+    const appServicePlan: AppServicePlan = await runWithErrorCatchAndWrap(
+      (error: any) => new ProvisionError(ResourceType.appServicePlan, error.code),
       async () =>
         await step(StepGroup.ProvisionStepGroup, ProvisionSteps.ensureAppServicePlans, async () =>
           AzureLib.ensureAppServicePlans(
@@ -462,8 +486,8 @@ export class FunctionPluginImpl {
       InfoMessages.checkResource(ResourceType.functionApp, appServicePlanName, resourceGroupName)
     );
 
-    const site: Site = await runWithErrorCatchAndThrow(
-      new ProvisionError(ResourceType.functionApp),
+    const site: Site = await runWithErrorCatchAndWrap(
+      (error: any) => new ProvisionError(ResourceType.functionApp, error.code),
       async () =>
         await step(StepGroup.ProvisionStepGroup, ProvisionSteps.ensureFunctionApp, async () =>
           FunctionProvision.ensureFunctionApp(
@@ -591,7 +615,6 @@ export class FunctionPluginImpl {
     const updated: boolean = await FunctionDeploy.hasUpdatedContent(workingPath, functionLanguage);
     if (!updated) {
       Logger.info(InfoMessages.noChange);
-      DialogUtils.show(ctx, InfoMessages.noChange);
       this.config.skipDeploy = true;
       return ResultFactory.Success();
     }
@@ -617,7 +640,7 @@ export class FunctionPluginImpl {
   public async deploy(ctx: PluginContext): Promise<FxResult> {
     if (this.config.skipDeploy) {
       TelemetryHelper.sendGeneralEvent(FunctionEvent.skipDeploy);
-      Logger.info(InfoMessages.skipDeployment);
+      Logger.warning(InfoMessages.skipDeployment);
       return ResultFactory.Success();
     }
 

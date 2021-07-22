@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Constants, FrontendPathInfo, FrontendPluginInfo } from "../constants";
+import { AzureInfo, Constants, FrontendPathInfo, FrontendPluginInfo } from "../constants";
 import { Logger } from "../utils/logger";
 import path from "path";
 
@@ -30,6 +30,9 @@ const tips = {
   checkStoragePermissions: "Check if you have permissions to your Azure Storage Account.",
   checkSystemTime: "You may get expired credentials, check if your system time is correct.",
   restoreEnvironment: "Restore the 'env.default.json' file if you modified it.",
+  registerRequiredRP: `Register required resource provider '${AzureInfo.RequiredResourceProviders.join(
+    `', '`
+  )}' for your subscription manually.`,
 };
 
 export class FrontendPluginError extends Error {
@@ -56,7 +59,7 @@ export class FrontendPluginError extends Error {
   }
 
   getMessage(): string {
-    return `${this.message} Suggestions: ${this.suggestions.join("\n")}`;
+    return `${this.message} Suggestions: ${this.suggestions.join(" ")}`;
   }
 
   setInnerError(error: Error): void {
@@ -91,7 +94,7 @@ export class InvalidConfigError extends FrontendPluginError {
 export class CheckResourceGroupError extends FrontendPluginError {
   constructor() {
     super(ErrorType.User, "CheckResourceGroupError", "Failed to check resource group existence.", [
-      tips.reLogin,
+      tips.checkLog,
     ]);
   }
 }
@@ -110,7 +113,7 @@ export class CheckStorageError extends FrontendPluginError {
       ErrorType.User,
       "CheckStorageError",
       "Failed to check Azure Storage Account availability.",
-      [tips.reLogin, tips.checkSystemTime]
+      [tips.checkSystemTime, tips.checkLog]
     );
   }
 }
@@ -154,14 +157,24 @@ export class StorageAccountAlreadyTakenError extends FrontendPluginError {
   }
 }
 
+// TODO: help link for this error
+export class RegisterResourceProviderError extends FrontendPluginError {
+  constructor() {
+    super(
+      ErrorType.User,
+      "RegisterResourceProviderError",
+      "Failed to register required resource provider for Tab frontend app.",
+      [tips.registerRequiredRP, tips.checkLog]
+    );
+  }
+}
+
 export class CreateStorageAccountError extends FrontendPluginError {
   constructor(innerErrorCode?: string) {
     super(
       ErrorType.User,
       "CreateStorageAccountError",
-      `Failed to create Azure Storage Account${
-        innerErrorCode ? `, Azure error code: ${innerErrorCode}` : ""
-      }.`,
+      `Failed to create Azure Storage Account${innerErrorCode ? `: ${innerErrorCode}` : ""}.`,
       [tips.checkLog]
     );
   }

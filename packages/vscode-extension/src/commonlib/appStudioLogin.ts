@@ -11,44 +11,46 @@ import { ExtensionErrors } from "../error";
 import { CodeFlowLogin } from "./codeFlowLogin";
 import VsCodeLogInstance from "./log";
 import * as vscode from "vscode";
-import { getBeforeCacheAccess, getAfterCacheAccess } from "./cacheAccess";
+import { CryptoCachePlugin } from "./cacheAccess";
 import { loggedIn, loggingIn, signedIn, signedOut, signingIn } from "./common/constant";
 import { login, LoginStatus } from "./common/login";
 import * as StringResources from "../resources/Strings.json";
 import * as util from "util";
+import { ExtTelemetry } from "../telemetry/extTelemetry";
+import {
+  AccountType,
+  TelemetryErrorType,
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetrySuccess,
+} from "../telemetry/extTelemetryEvents";
 
 const accountName = "appStudio";
 const scopes = ["https://dev.teams.microsoft.com/AppDefinitions.ReadWrite"];
 const SERVER_PORT = 0;
 
-const beforeCacheAccess = getBeforeCacheAccess(accountName);
-const afterCacheAccess = getAfterCacheAccess(scopes, accountName);
-
-const cachePlugin = {
-  beforeCacheAccess,
-  afterCacheAccess
-};
+const cachePlugin = new CryptoCachePlugin(accountName);
 
 const config = {
   auth: {
     clientId: "7ea7c24c-b1f6-4a20-9d11-9ae12e9e7ac0",
-    authority: "https://login.microsoftonline.com/common"
+    authority: "https://login.microsoftonline.com/common",
   },
   system: {
     loggerOptions: {
       // @ts-ignore
       loggerCallback(loglevel, message, containsPii) {
-        if (loglevel<=LogLevel.Error) {
+        if (loglevel <= LogLevel.Error) {
           VsCodeLogInstance.error(message);
         }
       },
       piiLoggingEnabled: false,
-      logLevel: LogLevel.Error
-    }
+      logLevel: LogLevel.Error,
+    },
   },
   cache: {
-    cachePlugin
-  }
+    cachePlugin,
+  },
 };
 
 export class AppStudioLogin extends login implements AppStudioTokenProvider {
@@ -82,11 +84,21 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
    * Get team access token
    */
   async getAccessToken(showDialog = true): Promise<string | undefined> {
+    await AppStudioLogin.codeFlowInstance.reloadCache();
     if (!AppStudioLogin.codeFlowInstance.account) {
       if (showDialog) {
         const userConfirmation: boolean = await this.doesUserConfirmLogin();
         if (!userConfirmation) {
           // throw user cancel error
+          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Login, {
+            [TelemetryProperty.AccountType]: AccountType.M365,
+            [TelemetryProperty.Success]: TelemetrySuccess.No,
+            [TelemetryProperty.UserId]: "",
+            [TelemetryProperty.Internal]: "",
+            [TelemetryProperty.ErrorType]: TelemetryErrorType.UserError,
+            [TelemetryProperty.ErrorCode]: `${StringResources.vsc.codeFlowLogin.loginComponent}.${ExtensionErrors.UserCancel}`,
+            [TelemetryProperty.ErrorMessage]: `${StringResources.vsc.common.userCancel}`,
+          });
           throw new UserError(
             ExtensionErrors.UserCancel,
             StringResources.vsc.common.userCancel,
@@ -131,6 +143,15 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
   async signout(): Promise<boolean> {
     const userConfirmation = await this.doesUserConfirmSignout();
     if (!userConfirmation) {
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SignOut, {
+        [TelemetryProperty.AccountType]: AccountType.M365,
+        [TelemetryProperty.Success]: TelemetrySuccess.No,
+        [TelemetryProperty.UserId]: "",
+        [TelemetryProperty.Internal]: "",
+        [TelemetryProperty.ErrorType]: TelemetryErrorType.UserError,
+        [TelemetryProperty.ErrorCode]: `${StringResources.vsc.codeFlowLogin.loginComponent}.${ExtensionErrors.UserCancel}`,
+        [TelemetryProperty.ErrorMessage]: `${StringResources.vsc.common.userCancel}`,
+      });
       throw new UserError(
         ExtensionErrors.UserCancel,
         StringResources.vsc.common.userCancel,
@@ -188,7 +209,7 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
         const tokenJson = await this.getJsonObject();
         return Promise.resolve({ status: signedIn, token: loginToken, accountInfo: tokenJson });
       } else {
-        return Promise.resolve({ status: signedOut, token: undefined, accountInfo: undefined });  
+        return Promise.resolve({ status: signedOut, token: undefined, accountInfo: undefined });
       }
     } else if (AppStudioLogin.codeFlowInstance.status === loggingIn) {
       return Promise.resolve({ status: signingIn, token: undefined, accountInfo: undefined });

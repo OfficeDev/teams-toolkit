@@ -3,10 +3,17 @@
 
 "use strict";
 
-import { FxError, returnUserError, UserError } from "@microsoft/teamsfx-api";
+import {
+  FxError,
+  returnSystemError,
+  returnUserError,
+  SystemError,
+  UserError,
+} from "@microsoft/teamsfx-api";
 import * as util from "util";
 
 import * as constants from "../../constants";
+import { Browser } from "./constants";
 
 export function WorkspaceNotSupported(workspaceFolder: string): UserError {
   return returnUserError(
@@ -79,5 +86,30 @@ export function PreviewWithoutProvision(): UserError {
     new Error("Provision and deploy commands are required before preview from remote."),
     constants.cliSource,
     "PreviewWithoutProvision"
+  );
+}
+
+export function OpeningBrowserFailed(browser: Browser): UserError {
+  return returnUserError(
+    new Error(`Failed to open ${browser} browser. Check if ${browser} exists on your system.`),
+    constants.cliSource,
+    "OpeningBrowserFailed"
+  );
+}
+
+// TODO: remove when SPFx preview is ready
+export function SPFxNotSupported(): UserError {
+  return returnUserError(
+    new Error("SPFx preview is not supported currently."),
+    constants.cliSource,
+    "SPFxNotSupported"
+  );
+}
+
+export function DependencyCheckerFailed(): SystemError {
+  return returnSystemError(
+    new Error("dependency checker failed."),
+    constants.cliSource,
+    "DependencyCheckerFailed"
   );
 }

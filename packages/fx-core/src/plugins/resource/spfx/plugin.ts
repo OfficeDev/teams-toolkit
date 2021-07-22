@@ -6,30 +6,27 @@ import {
   FxError,
   Result,
   ok,
-  DialogMsg,
-  DialogType,
-  MsgLevel,
   Platform,
-  QuestionType,
   Colors,
 } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
 import lodash from "lodash";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { SpfxConfig } from ".";
-import { configure, execute, normalizeComponentName } from "./utils/utils";
+import { SPFXQuestionNames } from ".";
+import { Utils } from "./utils/utils";
 import { Constants, PlaceHolders, PreDeployProgressMessage } from "./utils/constants";
 import { BuildSPPackageError, NoSPPackageError } from "./error";
 import * as util from "util";
 import { ProgressHelper } from "./utils/progress-helper";
-import { REMOTE_MANIFEST } from "../../solution/fx-solution/constants";
 import { getStrings } from "../../../common/tools";
 import { getTemplatesFolder } from "../../..";
+import { REMOTE_MANIFEST } from "../appstudio/constants";
 
 export class SPFxPluginImpl {
-  public async scaffold(ctx: PluginContext, config: SpfxConfig): Promise<Result<any, FxError>> {
-    const componentName = normalizeComponentName(config.webpartName);
+  public async postScaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
+    const webpartName = ctx.answers![SPFXQuestionNames.webpart_name] as string;
+    const componentName = Utils.normalizeComponentName(webpartName);
     const componentNameCamelCase = lodash.camelCase(componentName);
     const componentId = uuid.v4();
     const componentClassName = `${componentName}WebPart`;
@@ -77,7 +74,7 @@ export class SPFxPluginImpl {
       `${srcDir}/index.ts`
     );
 
-    switch (config.framework) {
+    switch (ctx.answers![SPFXQuestionNames.framework_type] as string) {
       case Constants.FRAMEWORK_NONE:
         fs.mkdirSync(`${srcDir}/webparts/${componentNameCamelCase}`, {
           recursive: true,
@@ -164,12 +161,15 @@ export class SPFxPluginImpl {
     replaceMap.set(PlaceHolders.libraryName, libraryName);
     replaceMap.set(PlaceHolders.componentId, componentId);
     replaceMap.set(PlaceHolders.componentAlias, componentAlias);
-    replaceMap.set(PlaceHolders.componentDescription, config.webpartDesc);
-    replaceMap.set(PlaceHolders.componentNameUnescaped, config.webpartName);
+    replaceMap.set(
+      PlaceHolders.componentDescription,
+      ctx.answers![SPFXQuestionNames.webpart_desp] as string
+    );
+    replaceMap.set(PlaceHolders.componentNameUnescaped, webpartName);
     replaceMap.set(PlaceHolders.componentClassNameKebabCase, componentClassNameKebabCase);
 
-    await configure(outputFolderPath, replaceMap);
-    await configure(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`, replaceMap);
+    await Utils.configure(outputFolderPath, replaceMap);
+    await Utils.configure(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`, replaceMap);
     return ok(undefined);
   }
 
@@ -181,10 +181,10 @@ export class SPFxPluginImpl {
     try {
       const workspacePath = `${ctx.root}/SPFx`;
       await progressHandler?.next(PreDeployProgressMessage.NpmInstall);
-      await execute(`npm install`, "SPFx", workspacePath, ctx.logProvider, true);
+      await Utils.execute(`npm install`, "SPFx", workspacePath, ctx.logProvider, true);
       const gulpCommand = await SPFxPluginImpl.findGulpCommand(workspacePath);
       await progressHandler?.next(PreDeployProgressMessage.GulpBundle);
-      await execute(
+      await Utils.execute(
         `${gulpCommand} bundle --ship --no-color`,
         "SPFx",
         workspacePath,
@@ -192,7 +192,7 @@ export class SPFxPluginImpl {
         true
       );
       await progressHandler?.next(PreDeployProgressMessage.GulpPackage);
-      await execute(
+      await Utils.execute(
         `${gulpCommand} package-solution --ship --no-color`,
         "SPFx",
         workspacePath,

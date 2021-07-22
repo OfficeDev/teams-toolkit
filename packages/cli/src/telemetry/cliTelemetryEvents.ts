@@ -45,10 +45,15 @@ export enum TelemetryEvent {
   PreviewService = "preview-service",
   PreviewSideloadingStart = "preview-sideloading-start",
   PreviewSideloading = "preview-sideloading",
+
+  ConfigGet = "config-get",
+  ConfigSet = "config-set",
 }
 
 export enum TelemetryProperty {
   Component = "component",
+  ProjectId = "project-id",
+  CorrelationId = "correlation-id",
   AppId = "appid",
   UserId = "hashed-userid",
   AccountType = "account-type",
@@ -63,12 +68,15 @@ export enum TelemetryProperty {
   InternalAlias = "internal-alias",
   PreviewAppId = "preview-appid",
   PreviewType = "preview-type",
+  PreviewBrowser = "preview-browser",
   PreviewNpmInstallName = "preview-npm-install-name",
   PreviewNpmInstallExitCode = "preview-npm-install-exit-code",
   PreviewNpmInstallNodeVersion = "preview-npm-install-node-version",
   PreviewNpmInstallNpmVersion = "preview-npm-install-npm-version",
   PreviewNpmInstallErrorMessage = "preview-npm-install-error-message",
   PreviewServiceName = "preview-service-name",
+  PreviewOSArch = "preview-os-arch",
+  PreviewOSRelease = "preview-os-release",
 }
 
 export enum TelemetrySuccess {

@@ -219,7 +219,7 @@
       },
       {
         "command": "fx-extension.create",
-        "title": "Teams: Create New Project "
+        "title": "Teams: Create New Project"
       },
       {
         "command": "fx-extension.update",

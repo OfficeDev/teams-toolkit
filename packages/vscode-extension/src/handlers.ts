@@ -82,6 +82,7 @@ import { VS_CODE_UI } from "./extension";
 import { registerAccountTreeHandler } from "./accountTree";
 import * as uuid from "uuid";
 import { selectAndDebug } from "./debug/runIconHandler";
+import * as path from "path";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -95,6 +96,10 @@ export function getWorkspacePath(): string | undefined {
 export async function activate(): Promise<Result<Void, FxError>> {
   const result: Result<Void, FxError> = ok(Void);
   try {
+    if (isValidProject(getWorkspacePath())) {
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenTeamsApp, {});
+    }
+
     const telemetry = ExtTelemetry.reporter;
     AzureAccountManager.setStatusChangeMap(
       "successfully-sign-in-azure",
@@ -635,6 +640,25 @@ export async function openM365AccountHandler() {
 export async function openAzureAccountHandler() {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenAzurePortal);
   return env.openExternal(Uri.parse("https://portal.azure.com/"));
+}
+
+export function saveTextDocumentHandler(document: vscode.TextDocument) {
+  if (!isValidProject(getWorkspacePath())) {
+    return;
+  }
+
+  let curDirectory = path.dirname(document.fileName);
+  while (curDirectory) {
+    if (isValidProject(curDirectory)) {
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.UpdateTeamsApp, {});
+      return;
+    }
+
+    if (curDirectory === path.join(curDirectory, "..")) {
+      break;
+    }
+    curDirectory = path.join(curDirectory, "..");
+  }
 }
 
 export async function cmdHdlLoadTreeView(context: ExtensionContext) {

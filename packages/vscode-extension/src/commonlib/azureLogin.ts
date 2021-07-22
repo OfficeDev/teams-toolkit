@@ -13,13 +13,23 @@ import {
   SingleSelectConfig,
   OptionItem,
   ok,
+  ConfigFolderName,
 } from "@microsoft/teamsfx-api";
 import { ExtensionErrors } from "../error";
 import { AzureAccount } from "./azure-account.api";
 import { LoginFailureError } from "./codeFlowLogin";
 import * as vscode from "vscode";
 import * as identity from "@azure/identity";
-import { loggedIn, loggedOut, loggingIn, signedIn, signedOut, signingIn } from "./common/constant";
+import {
+  envDefaultJsonFile,
+  loggedIn,
+  loggedOut,
+  loggingIn,
+  signedIn,
+  signedOut,
+  signingIn,
+  subscriptionInfoFile,
+} from "./common/constant";
 import { login, LoginStatus } from "./common/login";
 import * as StringResources from "../resources/Strings.json";
 import * as util from "util";
@@ -30,13 +40,18 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
   AccountType,
+  TelemetryErrorType,
 } from "../telemetry/extTelemetryEvents";
 import { VS_CODE_UI } from "../extension";
 import TreeViewManagerInstance from "../commandsTreeViewProvider";
+import * as path from "path";
+import * as fs from "fs-extra";
+import * as commonUtils from "../debug/commonUtils";
 
 export class AzureAccountManager extends login implements AzureAccountProvider {
   private static instance: AzureAccountManager;
   private static subscriptionId: string | undefined;
+  private static subscriptionName: string | undefined;
   private static tenantId: string | undefined;
   private static currentStatus: string | undefined;
 
@@ -80,7 +95,11 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         [TelemetryProperty.AccountType]: AccountType.Azure,
         [TelemetryProperty.Success]: TelemetrySuccess.No,
         [TelemetryProperty.UserId]: "",
-        [TelemetryProperty.Internal]: "false",
+        [TelemetryProperty.Internal]: "",
+        [TelemetryProperty.ErrorType]:
+          e instanceof UserError ? TelemetryErrorType.UserError : TelemetryErrorType.SystemError,
+        [TelemetryProperty.ErrorCode]: `${e.source}.${e.name}`,
+        [TelemetryProperty.ErrorMessage]: `${e.message}`,
       });
       throw e;
     }
@@ -257,6 +276,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       await vscode.commands.executeCommand("azure-account.logout");
       AzureAccountManager.tenantId = undefined;
       AzureAccountManager.subscriptionId = undefined;
+      this.clearSubscription();
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SignOut, {
         [TelemetryProperty.AccountType]: AccountType.Azure,
         [TelemetryProperty.Success]: TelemetrySuccess.Yes,
@@ -269,6 +289,10 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.SignOut, e, {
         [TelemetryProperty.AccountType]: AccountType.Azure,
         [TelemetryProperty.Success]: TelemetrySuccess.No,
+        [TelemetryProperty.ErrorType]:
+          e instanceof UserError ? TelemetryErrorType.UserError : TelemetryErrorType.SystemError,
+        [TelemetryProperty.ErrorCode]: `${e.source}.${e.name}`,
+        [TelemetryProperty.ErrorMessage]: `${e.message}`,
       });
       return Promise.resolve(false);
     }
@@ -309,6 +333,12 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         if (item.subscription.subscriptionId == subscriptionId) {
           AzureAccountManager.tenantId = item.session.tenantId;
           AzureAccountManager.subscriptionId = subscriptionId;
+          AzureAccountManager.subscriptionName = item.subscription.displayName;
+          await this.saveSubscription({
+            subscriptionId: item.subscription.subscriptionId!,
+            subscriptionName: item.subscription.displayName!,
+            tenantId: item.session.tenantId,
+          });
           TreeViewManagerInstance.getTreeView("teamsfx-accounts")!.refresh([
             {
               commandId: "fx-extension.selectSubscription",
@@ -360,9 +390,21 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     const azureAccount: AzureAccount =
       vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
     AzureAccountManager.currentStatus = azureAccount.status;
+    if (AzureAccountManager.currentStatus === "LoggedIn") {
+      const subscriptioninfo = await this.readSubscription();
+      if (subscriptioninfo) {
+        this.setSubscription(subscriptioninfo.subscriptionId);
+      }
+    }
     azureAccount.onStatusChanged(async (event) => {
       if (AzureAccountManager.currentStatus === "Initializing") {
         AzureAccountManager.currentStatus = event;
+        if (AzureAccountManager.currentStatus === "LoggedIn") {
+          const subscriptioninfo = await this.readSubscription();
+          if (subscriptioninfo) {
+            this.setSubscription(subscriptioninfo.subscriptionId);
+          }
+        }
         return;
       }
       AzureAccountManager.currentStatus = event;
@@ -410,7 +452,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       const selectedSub: SubscriptionInfo = {
         subscriptionId: AzureAccountManager.subscriptionId,
         tenantId: AzureAccountManager.tenantId!,
-        subscriptionName: "",
+        subscriptionName: AzureAccountManager.subscriptionName ?? "",
       };
       return selectedSub;
     } else {
@@ -449,6 +491,96 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         const subId = result.value.result as string;
         await this.setSubscription(subId);
       }
+    }
+  }
+
+  async saveSubscription(subscriptionInfo: SubscriptionInfo): Promise<void> {
+    const subscriptionFilePath = await this.getSubscriptionInfoPath();
+    if (!subscriptionFilePath) {
+      return;
+    } else {
+      await fs.writeFile(subscriptionFilePath, JSON.stringify(subscriptionInfo, null, 4));
+    }
+  }
+
+  async clearSubscription(): Promise<void> {
+    const subscriptionFilePath = await this.getSubscriptionInfoPath();
+    if (!subscriptionFilePath) {
+      return;
+    } else {
+      await fs.writeFile(subscriptionFilePath, "");
+    }
+  }
+
+  async readSubscription(): Promise<SubscriptionInfo | undefined> {
+    const subscriptionFilePath = await this.getSubscriptionInfoPath();
+    if (!subscriptionFilePath || !fs.existsSync(subscriptionFilePath)) {
+      const solutionSubscriptionInfo = await this.getSubscriptionInfoFromEnv();
+      if (solutionSubscriptionInfo) {
+        await this.saveSubscription(solutionSubscriptionInfo);
+        return solutionSubscriptionInfo;
+      }
+      return undefined;
+    } else {
+      const content = (await fs.readFile(subscriptionFilePath)).toString();
+      if (content.length == 0) {
+        return undefined;
+      }
+      const subcriptionJson = JSON.parse(content);
+      return {
+        subscriptionId: subcriptionJson.subscriptionId,
+        tenantId: subcriptionJson.tenantId,
+        subscriptionName: subcriptionJson.subscriptionName,
+      };
+    }
+  }
+
+  async getSubscriptionInfoPath(): Promise<string | undefined> {
+    if (vscode.workspace.workspaceFolders) {
+      const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];
+      const workspacePath: string = workspaceFolder.uri.fsPath;
+      if (!(await commonUtils.isFxProject(workspacePath))) {
+        return undefined;
+      }
+      const configRoot = await commonUtils.getProjectRoot(
+        workspaceFolder.uri.fsPath,
+        `.${ConfigFolderName}`
+      );
+      const subscriptionFile = path.join(configRoot!, subscriptionInfoFile);
+      return subscriptionFile;
+    } else {
+      return undefined;
+    }
+  }
+
+  async getSubscriptionInfoFromEnv(): Promise<SubscriptionInfo | undefined> {
+    if (vscode.workspace.workspaceFolders) {
+      const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];
+      const workspacePath: string = workspaceFolder.uri.fsPath;
+      if (!(await commonUtils.isFxProject(workspacePath))) {
+        return undefined;
+      }
+      const configRoot = await commonUtils.getProjectRoot(
+        workspaceFolder.uri.fsPath,
+        `.${ConfigFolderName}`
+      );
+      const envDefalultFile = path.join(configRoot!, envDefaultJsonFile);
+      if (!fs.existsSync(envDefalultFile)) {
+        return undefined;
+      }
+      const envDefaultJson = (await fs.readFile(envDefalultFile)).toString();
+      const envDefault = JSON.parse(envDefaultJson);
+      if (envDefault.solution && envDefault.solution.subscriptionId) {
+        return {
+          subscriptionId: envDefault.solution.subscriptionId,
+          tenantId: envDefault.solution.tenantId,
+          subscriptionName: "",
+        };
+      } else {
+        return undefined;
+      }
+    } else {
+      return undefined;
     }
   }
 }

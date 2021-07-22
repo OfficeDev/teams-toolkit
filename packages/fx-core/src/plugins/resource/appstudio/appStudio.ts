@@ -123,7 +123,7 @@ export namespace AppStudioClient {
     throw new Error(`teamsAppId or appStudioToken is invalid`);
   }
 
-  async function getApp(
+  export async function getApp(
     teamsAppId: string,
     appStudioToken: string,
     logProvider?: LogProvider

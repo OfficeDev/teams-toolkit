@@ -24,6 +24,7 @@ import { azureLoginMessage, env, m365LoginMessage, MFACode } from "./common/cons
 import * as constants from "../constants";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import {
+  TelemetryErrorType,
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
@@ -198,6 +199,18 @@ export class CodeFlowLogin {
 
       redirectPromise.then(cancelCodeTimer, cancelCodeTimer);
       accessToken = await redirectPromise;
+    } catch (e) {
+      CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountLogin, {
+        [TelemetryProperty.AccountType]: this.accountName,
+        [TelemetryProperty.Success]: TelemetrySuccess.No,
+        [TelemetryProperty.UserId]: "",
+        [TelemetryProperty.Internal]: "",
+        [TelemetryProperty.ErrorType]:
+          e instanceof UserError ? TelemetryErrorType.UserError : TelemetryErrorType.SystemError,
+        [TelemetryProperty.ErrorCode]: `${e.source}.${e.name}`,
+        [TelemetryProperty.ErrorMessage]: `${e.message}`,
+      });
+      throw e;
     } finally {
       if (accessToken) {
         const tokenJson = ConvertTokenToJson(accessToken);
@@ -208,13 +221,6 @@ export class CodeFlowLogin {
           [TelemetryProperty.Internal]: (tokenJson as any).upn?.endsWith("@microsoft.com")
             ? "true"
             : "false",
-        });
-      } else {
-        CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountLogin, {
-          [TelemetryProperty.AccountType]: this.accountName,
-          [TelemetryProperty.Success]: TelemetrySuccess.No,
-          [TelemetryProperty.UserId]: "",
-          [TelemetryProperty.Internal]: "false",
         });
       }
       server.close();

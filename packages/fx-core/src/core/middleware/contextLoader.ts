@@ -31,6 +31,7 @@ import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { dataNeedEncryption, validateProject } from "../../common";
 import * as uuid from "uuid";
 import { LocalCrypto } from "../crypto";
+import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 
 export const ContextLoaderMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
@@ -81,6 +82,13 @@ export async function loadSolutionContext(
     if (!projectSettings.projectId) {
       projectSettings.projectId = uuid.v4();
       projectIdMissing = true;
+    }
+    if (
+      projectSettings.solutionSettings &&
+      projectSettings.solutionSettings.activeResourcePlugins &&
+      !projectSettings.solutionSettings.activeResourcePlugins.includes(PluginNames.APPST)
+    ) {
+      projectSettings.solutionSettings.activeResourcePlugins.push(PluginNames.APPST);
     }
     const envName = projectSettings.currentEnv;
     const jsonFilePath = path.resolve(confFolderPath, `env.${envName}.json`);

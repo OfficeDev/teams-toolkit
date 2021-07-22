@@ -1,8 +1,8 @@
 {
   "enabled": true,
-  "relativeSourcePath": "../src",
-  "relativeCoverageDir": "../../coverage",
-  "ignorePatterns": ["**/node_modules/**"],
+  "relativeSourcePath": "../../src",
+  "relativeCoverageDir": "../../../coverage",
+  "ignorePatterns": ["**/node_modules/**", "debug/depsChecker/**/*"],
   "includePid": false,
   "reports": ["text", "html", "json-summary", "cobertura"],
   "verbose": false

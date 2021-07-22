@@ -22,8 +22,6 @@ import {
   Dialog,
   DialogMsg,
   IProgressHandler,
-  IMessage,
-  DialogType,
   Platform,
   UserInteraction,
   SingleSelectConfig,
@@ -78,9 +76,7 @@ const expect = chai.expect;
 const aadPlugin = Container.get<Plugin>(ResourcePlugins.AadPlugin) as AadAppForTeamsPlugin;
 const spfxPlugin = Container.get<Plugin>(ResourcePlugins.SpfxPlugin);
 const fehostPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin);
-function instanceOfIMessage(obj: any): obj is IMessage {
-  return "items" in obj;
-}
+const appStudioPlugin = Container.get<Plugin>(ResourcePlugins.AppStudioPlugin);
 class MockUserInteraction implements UserInteraction {
   selectOption(config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> {
     throw new Error("Method not implemented.");
@@ -142,13 +138,6 @@ class MockUserInteraction implements UserInteraction {
 }
 class MockedDialog implements Dialog {
   async communicate(msg: DialogMsg): Promise<DialogMsg> {
-    if (
-      msg.dialogType == DialogType.Show &&
-      instanceOfIMessage(msg.content) &&
-      _.isEqual(["Provision", "Pricing calculator"], msg.content.items)
-    ) {
-      return new DialogMsg(DialogType.Answer, "Provision");
-    }
     throw new Error("Method not implemented.");
   }
 
@@ -268,7 +257,6 @@ class MockedAzureTokenProvider implements AzureAccountProvider {
     };
     return Promise.resolve(selectedSub);
   }
-
 }
 
 function mockSolutionContext(): SolutionContext {
@@ -365,12 +353,12 @@ describe("provision() simple cases", () => {
     expect(result._unsafeUnwrapErr().name).equals("ManifestLoadFailed");
   });
 
-  it("should return ok if provisionSucceeded is true", async () => {
+  it("should return false even if provisionSucceeded is true", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
     mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
     const result = await solution.provision(mockedCtx);
-    expect(result.isOk()).to.be.true;
+    expect(result.isOk()).to.be.false;
   });
 });
 
@@ -479,7 +467,7 @@ describe("provision() happy path for SPFx projects", () => {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",
         version: "1.0",
-        activeResourcePlugins: [spfxPlugin.name],
+        activeResourcePlugins: [spfxPlugin.name, appStudioPlugin.name],
       },
     };
 
@@ -540,7 +528,7 @@ describe("provision() happy path for Azure projects", () => {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
         version: "1.0",
-        activeResourcePlugins: [fehostPlugin.name, aadPlugin.name],
+        activeResourcePlugins: [fehostPlugin.name, aadPlugin.name, appStudioPlugin.name],
       },
     };
 

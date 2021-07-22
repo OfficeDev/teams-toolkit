@@ -82,6 +82,7 @@ import { VS_CODE_UI } from "./extension";
 import { registerAccountTreeHandler } from "./accountTree";
 import * as uuid from "uuid";
 import { selectAndDebug } from "./debug/runIconHandler";
+import * as path from "path";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -95,6 +96,10 @@ export function getWorkspacePath(): string | undefined {
 export async function activate(): Promise<Result<Void, FxError>> {
   const result: Result<Void, FxError> = ok(Void);
   try {
+    if (isValidProject(getWorkspacePath())) {
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenTeamsApp, {});
+    }
+
     const telemetry = ExtTelemetry.reporter;
     AzureAccountManager.setStatusChangeMap(
       "successfully-sign-in-azure",
@@ -162,7 +167,6 @@ export function getSystemInputs(): Inputs {
     platform: Platform.VSCode,
     vscodeEnv: detectVsCodeEnv(),
     "function-dotnet-checker-enabled": vscodeAdapter.dotnetCheckerEnabled(),
-    correlationId: uuid.v4(),
   };
   return answers;
 }
@@ -638,6 +642,25 @@ export async function openAzureAccountHandler() {
   return env.openExternal(Uri.parse("https://portal.azure.com/"));
 }
 
+export function saveTextDocumentHandler(document: vscode.TextDocument) {
+  if (!isValidProject(getWorkspacePath())) {
+    return;
+  }
+
+  let curDirectory = path.dirname(document.fileName);
+  while (curDirectory) {
+    if (isValidProject(curDirectory)) {
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.UpdateTeamsApp, {});
+      return;
+    }
+
+    if (curDirectory === path.join(curDirectory, "..")) {
+      break;
+    }
+    curDirectory = path.join(curDirectory, "..");
+  }
+}
+
 export async function cmdHdlLoadTreeView(context: ExtensionContext) {
   const disposables = await TreeViewManagerInstance.registerTreeViews();
   context.subscriptions.push(...disposables);
@@ -789,6 +812,41 @@ export async function cmpAccountsHandler() {
   });
   quickPick.onDidHide(() => quickPick.dispose());
   quickPick.show();
+}
+
+export async function decryptSecret(cipher: string, selection: vscode.Range): Promise<void> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.EditSecretStart, {
+    [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Other,
+  });
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) {
+    return;
+  }
+  const inputs = getSystemInputs();
+  const result = await core.decrypt(cipher, inputs);
+  if (result.isOk()) {
+    const editedSecret = await VS_CODE_UI.inputText({
+      name: "Secret Editor",
+      title: StringResources.vsc.handlers.editSecretTitle,
+      default: result.value,
+    });
+    if (editedSecret.isOk() && editedSecret.value.result) {
+      const newCiphertext = await core.encrypt(editedSecret.value.result, inputs);
+      if (newCiphertext.isOk()) {
+        editor.edit((editBuilder) => {
+          editBuilder.replace(selection, newCiphertext.value);
+        });
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.EditSecret, {
+          [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+        });
+      } else {
+        ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.EditSecret, newCiphertext.error);
+      }
+    }
+  } else {
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.EditSecret, result.error);
+    window.showErrorMessage(StringResources.vsc.handlers.decryptFailed);
+  }
 }
 
 export async function signOutAzure(isFromTreeView: boolean) {

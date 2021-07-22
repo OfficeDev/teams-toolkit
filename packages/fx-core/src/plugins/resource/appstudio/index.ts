@@ -96,17 +96,36 @@ export class AppStudioPlugin implements Plugin {
   }
 
   /**
+   * Create teams app
+   * @returns {string} - Remote teams app id
+   */
+  public async provision(ctx: PluginContext): Promise<Result<string, FxError>> {
+    const remoteTeamsAppId = await this.appStudioPluginImpl.provision(ctx);
+    return ok(remoteTeamsAppId);
+  }
+
+  /**
+   * Update teams app
+   * @returns {string} - Remote teams app id
+   */
+  public async postProvision(ctx: PluginContext): Promise<Result<string, FxError>> {
+    const remoteTeamsAppId = await this.appStudioPluginImpl.postProvision(ctx);
+    return ok(remoteTeamsAppId);
+  }
+
+  /**
    * Validate manifest string against schema
    * @param {string} manifestString - the string of manifest.json file
    * @returns {string[]} an array of errors
    */
-  public async validateManifest(
-    ctx: PluginContext,
-    manifestString: string
-  ): Promise<Result<string[], FxError>> {
+  public async validateManifest(ctx: PluginContext): Promise<Result<string[], FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.validateManifest);
-    const validationResult = await this.appStudioPluginImpl.validateManifest(ctx, manifestString);
+    const validationpluginResult = await this.appStudioPluginImpl.validateManifest(ctx);
+    if (validationpluginResult.isErr()) {
+      return err(validationpluginResult.error);
+    }
+    const validationResult = validationpluginResult.value;
     if (validationResult.length > 0) {
       const errMessage = AppStudioError.ValidationFailedError.message(validationResult);
       ctx.logProvider?.error("Manifest Validation failed!");
@@ -127,7 +146,7 @@ export class AppStudioPlugin implements Plugin {
     const validationSuccess = "Manifest Validation succeed!";
     ctx.ui?.showMessage("info", validationSuccess, false);
     TelemetryUtils.sendSuccessEvent(TelemetryEventName.validateManifest);
-    return ok(validationResult);
+    return validationpluginResult;
   }
 
   public createManifestForRemote(
@@ -138,13 +157,6 @@ export class AppStudioPlugin implements Plugin {
     return this.appStudioPluginImpl.createManifestForRemote(ctx, maybeSelectedPlugins, manifest);
   }
 
-  public createAndConfigTeamsManifest(
-    ctx: PluginContext,
-    maybeSelectedPlugins: Result<Plugin[], FxError>
-  ): Promise<Result<IAppDefinition, FxError>> {
-    return this.appStudioPluginImpl.createAndConfigTeamsManifest(ctx, maybeSelectedPlugins);
-  }
-
   /**
    * Build Teams Package
    * @param {string} appDirectory - The directory contains manifest.source.json and two images
@@ -152,17 +164,12 @@ export class AppStudioPlugin implements Plugin {
    */
   public async buildTeamsPackage(
     ctx: PluginContext,
-    appDirectory: string,
-    manifestString: string
+    appDirectory: string
   ): Promise<Result<string, FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.buildTeamsPackage);
     try {
-      const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(
-        ctx,
-        appDirectory,
-        manifestString
-      );
+      const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(ctx, appDirectory);
       const builtSuccess = [
         { content: "(√)Done: ", color: Colors.BRIGHT_GREEN },
         { content: "Teams Package ", color: Colors.BRIGHT_WHITE },
@@ -197,12 +204,10 @@ export class AppStudioPlugin implements Plugin {
       const answer = ctx.answers![Constants.BUILD_OR_PUBLISH_QUESTION] as string;
       if (answer === manuallySubmitOption.id) {
         const appDirectory = `${ctx.root}/.${ConfigFolderName}`;
-        const manifestString = JSON.stringify(ctx.app);
         try {
           const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(
             ctx,
-            appDirectory,
-            manifestString
+            appDirectory
           );
           const msg = `Successfully created ${ctx.app.name.short} app package file at ${appPackagePath}. Send this to your administrator for approval.`;
           ctx.ui?.showMessage("info", msg, false, "OK", Constants.READ_MORE).then((value) => {

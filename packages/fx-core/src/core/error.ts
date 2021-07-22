@@ -69,7 +69,7 @@ export function PathNotExistError(path: string) {
 export function InvalidProjectError(msg?: string) {
   return new UserError(
     "InvalidProject",
-    `The project config is invalid ${msg ? ": " + msg : ""}`,
+    `The command only works for project created by Teamsfx Toolkit. ${msg ? ": " + msg : ""}`,
     CoreSource,
     new Error().stack
   );
@@ -117,6 +117,15 @@ export function FunctionRouterError(func: Func) {
   return new UserError(
     "FunctionRouterError",
     `Failed to route function call:${JSON.stringify(func)}`,
+    CoreSource,
+    new Error().stack
+  );
+}
+
+export function ContextUpgradeError(error: any) {
+  return new SystemError(
+    "ContextUpgradeError",
+    `Failed to update context: ${error.message}`,
     CoreSource,
     new Error().stack
   );

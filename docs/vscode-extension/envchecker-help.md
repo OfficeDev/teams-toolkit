@@ -30,7 +30,7 @@ Please refer to [the official website](https://dotnet.microsoft.com/download) to
 
 ## How to install Azure Functions Core Tools?
 
-Please refer to [the official website](https://github.com/Azure/azure-functions-core-tools) to install the supported versions: `Azure Functions Core Tools v3 ` or `Azure Functions Core Tools v2`.
+Please refer to [the official website](https://github.com/Azure/azure-functions-core-tools) to install the supported versions: `Azure Functions Core Tools v3 `.
 
 **NOTE**: Please restart all your Visual Studio Code instances after the installation is finished.
 

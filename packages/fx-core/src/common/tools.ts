@@ -502,9 +502,7 @@ export function generateBicepFiles(
 ): Result<string, FxError> {
   try {
     const templateString = fs.readFileSync(templateFilePath, "utf8");
-    const template = Handlebars.compile(templateString);
-
-    const updatedBicepFile = template(context);
+    const updatedBicepFile = compileHandlebarsTemplateString(templateString, context);
     return ok(updatedBicepFile);
   } catch (error) {
     return err(
@@ -515,4 +513,9 @@ export function generateBicepFiles(
       )
     );
   }
+}
+
+export function compileHandlebarsTemplateString(templateString: string, context: any): string {
+  const template = Handlebars.compile(templateString);
+  return template(context);
 }

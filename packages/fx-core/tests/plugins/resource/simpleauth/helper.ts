@@ -4,13 +4,8 @@ import { PluginContext } from "@microsoft/teamsfx-api";
 import faker from "faker";
 import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import { Constants } from "../../../../src/plugins/resource/simpleauth/constants";
-import * as TestHandlebars from "handlebars";
 import { ScaffoldArmTemplateResult } from "../../../../src/common/armInterface";
-
-TestHandlebars.registerHelper("contains", (value, array, options) => {
-  array = array instanceof Array ? array : [array];
-  return array.indexOf(value) > -1 ? options.fn(this) : "";
-});
+import { compileHandlebarsTemplateString } from "../../../../src";
 
 export class TestHelper {
   static async pluginContext(
@@ -164,30 +159,25 @@ export class TestHelper {
       Modules: template.Modules,
       Orchestration: {
         ParameterTemplate: {
-          Content: TestHelper.generateBicepFiles(
+          Content: compileHandlebarsTemplateString(
             template.Orchestration.ParameterTemplate!.Content,
             mockedData
           ),
         },
         ModuleTemplate: {
-          Content: TestHelper.generateBicepFiles(
+          Content: compileHandlebarsTemplateString(
             template.Orchestration.ModuleTemplate.Content,
             mockedData
           ),
           Outputs: template.Orchestration.ModuleTemplate.Outputs,
         },
         OutputTemplate: {
-          Content: TestHelper.generateBicepFiles(
+          Content: compileHandlebarsTemplateString(
             template.Orchestration.OutputTemplate!.Content,
             mockedData
           ),
         },
       },
     } as ScaffoldArmTemplateResult;
-  }
-
-  static generateBicepFiles(templateString: string, context: any): string {
-    const template = TestHandlebars.compile(templateString);
-    return template(context);
   }
 }

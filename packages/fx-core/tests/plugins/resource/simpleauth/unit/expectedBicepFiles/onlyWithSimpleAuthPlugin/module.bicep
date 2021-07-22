@@ -9,5 +9,6 @@ module simpleAuthProvision './simple_auth_test.bicep' = {
     AADClientSecret: AADClientSecret
     applicationIdUri: applicationIdUri
     m365TenantId: m365TenantId
+    oauthAuthorityHost: m365OauthAuthorityHost
   }
 }

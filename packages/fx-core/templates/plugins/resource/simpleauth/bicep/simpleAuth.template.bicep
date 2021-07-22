@@ -6,12 +6,12 @@ param AADClientId string
 @secure()
 param AADClientSecret string
 param applicationIdUri string
+param oauthAuthorityHost string
 {{#contains 'fx-resource-frontend-hosting' plugins}}
 
 param frontendHostingStorageEndpoint string
 {{/contains}}
 
-var oauthAuthorityHost = environment().authentication.loginEndpoint
 var aadMetadataAddress = uri(oauthAuthorityHost, '${m365TenantId}/v2.0/.well-known/openid-configuration')
 var oauthAuthority = uri(oauthAuthorityHost, m365TenantId)
 var teamsMobileOrDesktopAppClientId = '1fec8e78-bce4-4aaf-ab1b-5451cc387264'

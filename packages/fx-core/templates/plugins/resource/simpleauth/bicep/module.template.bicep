@@ -12,5 +12,6 @@ module simpleAuthProvision '{{fx-resource-simple-auth.modules.simpleAuthProvisio
     frontendHostingStorageEndpoint: {{../fx-resource-frontend-hosting.outputs.endpoint}}
     {{/contains}}
     m365TenantId: m365TenantId
+    oauthAuthorityHost: m365OauthAuthorityHost
   }
 }

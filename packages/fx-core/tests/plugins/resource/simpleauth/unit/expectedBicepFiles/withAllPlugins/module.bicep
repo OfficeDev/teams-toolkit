@@ -10,5 +10,6 @@ module simpleAuthProvision './simple_auth_test.bicep' = {
     applicationIdUri: applicationIdUri
     frontendHostingStorageEndpoint: frontend_hosting_test_endpoint
     m365TenantId: m365TenantId
+    oauthAuthorityHost: m365OauthAuthorityHost
   }
 }

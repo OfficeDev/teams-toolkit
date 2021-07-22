@@ -1,0 +1,242 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+import "mocha";
+import * as chai from "chai";
+import { AppStudioPlugin } from "./../../../../../src/plugins/resource/appstudio";
+import { AppStudioPluginImpl } from "./../../../../../src/plugins/resource/appstudio/plugin";
+import { TeamsBot } from "./../../../../../src/plugins/resource/bot";
+import { AppStudioError } from "./../../../../../src/plugins/resource/appstudio/errors";
+import {
+  ConfigMap,
+  PluginContext,
+  TeamsAppManifest,
+  ConfigFolderName,
+  ok,
+  err,
+  Plugin,
+  Platform,
+} from "@microsoft/teamsfx-api";
+import * as uuid from "uuid";
+import fs, { PathLike } from "fs-extra";
+import sinon from "sinon";
+import {
+  AzureSolutionQuestionNames,
+  BotOptionItem,
+  HostTypeOptionAzure,
+  HostTypeOptionSPFx,
+  MessageExtensionItem,
+  TabOptionItem,
+} from "../../../../../src/plugins/solution/fx-solution/question";
+import {
+  BOTS_TPL,
+  COMPOSE_EXTENSIONS_TPL,
+  CONFIGURABLE_TABS_TPL,
+  DEFAULT_PERMISSION_REQUEST,
+  GLOBAL_CONFIG,
+  PROGRAMMING_LANGUAGE,
+  REMOTE_MANIFEST,
+  SolutionError,
+  STATIC_TABS_TPL,
+} from "../../../../../src/plugins/solution/fx-solution/constants";
+import { AppStudioResultFactory } from "../../../../../src/plugins/resource/appstudio/results";
+import { Capabilities } from "@azure/arm-sql";
+
+describe("Scaffold", () => {
+  let plugin: AppStudioPlugin;
+  let ctx: PluginContext;
+  const sandbox = sinon.createSandbox();
+  const permissionsJsonPath = "./permissions.json";
+  const fileContent: Map<string, any> = new Map();
+
+  beforeEach(async () => {
+    plugin = new AppStudioPlugin();
+
+    ctx = {
+      root: "./",
+      configOfOtherPlugins: new Map(),
+      config: new ConfigMap(),
+      answers: { platform: Platform.VSCode },
+      app: new TeamsAppManifest(),
+      projectSettings: undefined,
+    };
+
+    sandbox.stub(fs, "writeFile").callsFake((path: number | PathLike, data: any) => {
+      fileContent.set(path.toString(), data);
+    });
+    // mocker.stub(fs, "writeFile").resolves();
+    sandbox.stub(fs, "writeJSON").callsFake((file: string, obj: any) => {
+      fileContent.set(file, JSON.stringify(obj));
+    });
+    // Uses stub<any, any> to circumvent type check. Beacuse sinon fails to mock my target overload of readJson.
+    sandbox.stub<any, any>(fs, "readJson").withArgs(permissionsJsonPath).resolves({});
+    sandbox.stub<any, any>(fs, "pathExists").withArgs(permissionsJsonPath).resolves(true);
+    sandbox.stub<any, any>(fs, "copy").resolves();
+  });
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  it("should generate manifest and permissions.json for azure tab", async () => {
+    fileContent.clear();
+    ctx.projectSettings = {
+      appName: "my app",
+      currentEnv: "default",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
+        version: "1.0",
+        capabilities: ["Tab"],
+      },
+    };
+
+    const result = await plugin.scaffold(ctx);
+    chai.expect(result.isOk()).equals(true);
+    const manifest: TeamsAppManifest = JSON.parse(
+      fileContent.get(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`)
+    );
+    chai.expect(manifest.staticTabs).to.deep.equal(STATIC_TABS_TPL);
+    chai.expect(manifest.configurableTabs).to.deep.equal(CONFIGURABLE_TABS_TPL);
+    chai
+      .expect(manifest.bots, "Bots should be empty, because only tab is chosen")
+      .to.deep.equal([]);
+    chai
+      .expect(
+        manifest.composeExtensions,
+        "ComposeExtensions should be empty, because only tab is chosen"
+      )
+      .to.deep.equal([]);
+
+    const permissionJson = fileContent.get(`${ctx.root}/permissions.json`);
+    chai.expect(JSON.parse(permissionJson)).to.be.deep.equal(DEFAULT_PERMISSION_REQUEST);
+  });
+
+  it("should generate manifest and permissions.json for bot", async () => {
+    fileContent.clear();
+    ctx.projectSettings = {
+      appName: "my app",
+      currentEnv: "default",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        name: "azure",
+        version: "1.0",
+        capabilities: ["Bot"],
+      },
+    };
+
+    const result = await plugin.scaffold(ctx);
+    chai.expect(result.isOk()).equals(true);
+    const manifest: TeamsAppManifest = JSON.parse(
+      fileContent.get(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`)
+    );
+    chai
+      .expect(manifest.staticTabs, "staticTabs should be empty, because only bot is chosen")
+      .to.deep.equal([]);
+    chai
+      .expect(
+        manifest.configurableTabs,
+        "configurableTabs should be empty, because only bot is chosen"
+      )
+      .to.deep.equal([]);
+    chai.expect(manifest.bots).to.deep.equal(BOTS_TPL);
+    chai
+      .expect(
+        manifest.composeExtensions,
+        "ComposeExtensions should be empty, because only bot is chosen"
+      )
+      .to.deep.equal([]);
+
+    const permissionJson = fileContent.get(`${ctx.root}/permissions.json`);
+    chai.expect(JSON.parse(permissionJson)).to.be.deep.equal(DEFAULT_PERMISSION_REQUEST);
+  });
+
+  it("should generate manifest and permissions.json for messaging extension", async () => {
+    fileContent.clear();
+    ctx.projectSettings = {
+      appName: "my app",
+      currentEnv: "default",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        name: "azure",
+        version: "1.0",
+        capabilities: ["MessagingExtension"],
+      },
+    };
+
+    const result = await plugin.scaffold(ctx);
+    chai.expect(result.isOk()).equals(true);
+    const manifest: TeamsAppManifest = JSON.parse(
+      fileContent.get(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`)
+    );
+    chai
+      .expect(manifest.staticTabs, "staticTabs should be empty, because only msgext is chosen")
+      .to.deep.equal([]);
+    chai
+      .expect(
+        manifest.configurableTabs,
+        "configurableTabs should be empty, because msgext bot is chosen"
+      )
+      .to.deep.equal([]);
+    chai
+      .expect(manifest.bots, "Bots should be empty, because only msgext is chosen")
+      .to.deep.equal([]);
+    chai.expect(manifest.composeExtensions).to.deep.equal(COMPOSE_EXTENSIONS_TPL);
+
+    const permissionJson = fileContent.get(`${ctx.root}/permissions.json`);
+    chai.expect(JSON.parse(permissionJson)).to.be.deep.equal(DEFAULT_PERMISSION_REQUEST);
+  });
+
+  it("should generate manifest and permissions.json for tab, bot and messaging extension", async () => {
+    fileContent.clear();
+    ctx.projectSettings = {
+      appName: "my app",
+      currentEnv: "default",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
+        version: "1.0",
+        capabilities: ["Bot", "Tab", "MessagingExtension"],
+      },
+    };
+
+    const result = await plugin.scaffold(ctx);
+    chai.expect(result.isOk()).equals(true);
+    const manifest: TeamsAppManifest = JSON.parse(
+      fileContent.get(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`)
+    );
+    chai.expect(manifest.staticTabs).to.deep.equal(STATIC_TABS_TPL);
+    chai.expect(manifest.configurableTabs).to.deep.equal(CONFIGURABLE_TABS_TPL);
+    chai.expect(manifest.bots).to.deep.equal(BOTS_TPL);
+    chai.expect(manifest.composeExtensions).to.deep.equal(COMPOSE_EXTENSIONS_TPL);
+
+    const permissionJson = fileContent.get(`${ctx.root}/permissions.json`);
+    chai.expect(JSON.parse(permissionJson)).to.be.deep.equal(DEFAULT_PERMISSION_REQUEST);
+  });
+
+  it("shouldn't generate permissions.json for SPFx project", async () => {
+    fileContent.clear();
+    ctx.projectSettings = {
+      appName: "my app",
+      currentEnv: "default",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionSPFx.id,
+        name: "azure",
+        version: "1.0",
+        capabilities: ["Tab"],
+        activeResourcePlugins: ["fx-resource-spfx"],
+      },
+    };
+
+    const result = await plugin.scaffold(ctx);
+    chai.expect(result.isOk()).equals(true);
+    const manifest = fileContent.get(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`);
+    chai.expect(manifest).to.be.not.undefined;
+
+    const permissionJson = fileContent.get(`${ctx.root}/permissions.json`);
+    chai.expect(permissionJson).to.be.undefined;
+  });
+});

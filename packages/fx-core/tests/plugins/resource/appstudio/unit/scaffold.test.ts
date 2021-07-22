@@ -21,26 +21,17 @@ import * as uuid from "uuid";
 import fs, { PathLike } from "fs-extra";
 import sinon from "sinon";
 import {
-  AzureSolutionQuestionNames,
-  BotOptionItem,
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
-  MessageExtensionItem,
-  TabOptionItem,
 } from "../../../../../src/plugins/solution/fx-solution/question";
+import { DEFAULT_PERMISSION_REQUEST } from "../../../../../src/plugins/solution/fx-solution/constants";
 import {
   BOTS_TPL,
   COMPOSE_EXTENSIONS_TPL,
   CONFIGURABLE_TABS_TPL,
-  DEFAULT_PERMISSION_REQUEST,
-  GLOBAL_CONFIG,
-  PROGRAMMING_LANGUAGE,
   REMOTE_MANIFEST,
-  SolutionError,
   STATIC_TABS_TPL,
-} from "../../../../../src/plugins/solution/fx-solution/constants";
-import { AppStudioResultFactory } from "../../../../../src/plugins/resource/appstudio/results";
-import { Capabilities } from "@azure/arm-sql";
+} from "../../../../../src/plugins/resource/appstudio/constants";
 
 describe("Scaffold", () => {
   let plugin: AppStudioPlugin;

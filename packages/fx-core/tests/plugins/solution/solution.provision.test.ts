@@ -44,16 +44,18 @@ import * as sinon from "sinon";
 import fs, { PathLike } from "fs-extra";
 import {
   DEFAULT_PERMISSION_REQUEST,
-  FRONTEND_DOMAIN,
-  FRONTEND_ENDPOINT,
   GLOBAL_CONFIG,
   REMOTE_AAD_ID,
-  REMOTE_MANIFEST,
   REMOTE_TEAMS_APP_ID,
   SolutionError,
   SOLUTION_PROVISION_SUCCEEDED,
   WEB_APPLICATION_INFO_SOURCE,
 } from "../../../src/plugins/solution/fx-solution/constants";
+import {
+  FRONTEND_DOMAIN,
+  FRONTEND_ENDPOINT,
+  REMOTE_MANIFEST,
+} from "../../../src/plugins/resource/appstudio/constants";
 import {
   HostTypeOptionAzure,
   HostTypeOptionSPFx,

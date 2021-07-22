@@ -14,22 +14,14 @@ import {
 import * as sinon from "sinon";
 import fs, { PathLike } from "fs-extra";
 import {
-  BOTS_TPL,
-  COMPOSE_EXTENSIONS_TPL,
-  CONFIGURABLE_TABS_TPL,
-  DEFAULT_PERMISSION_REQUEST,
   GLOBAL_CONFIG,
   PROGRAMMING_LANGUAGE,
-  REMOTE_MANIFEST,
   SolutionError,
-  STATIC_TABS_TPL,
 } from "../../../src/plugins/solution/fx-solution/constants";
 import {
   AzureSolutionQuestionNames,
   BotOptionItem,
   HostTypeOptionAzure,
-  HostTypeOptionSPFx,
-  MessageExtensionItem,
   TabOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 import * as uuid from "uuid";

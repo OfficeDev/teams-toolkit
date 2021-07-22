@@ -22,16 +22,18 @@ import * as sinon from "sinon";
 import fs from "fs-extra";
 import {
   BOT_DOMAIN,
-  BOT_ID,
-  FRONTEND_DOMAIN,
-  FRONTEND_ENDPOINT,
   GLOBAL_CONFIG,
   REMOTE_AAD_ID,
-  REMOTE_MANIFEST,
   SolutionError,
   SOLUTION_PROVISION_SUCCEEDED,
   WEB_APPLICATION_INFO_SOURCE,
 } from "../../../src/plugins/solution/fx-solution/constants";
+import {
+  BOT_ID,
+  FRONTEND_DOMAIN,
+  FRONTEND_ENDPOINT,
+  REMOTE_MANIFEST,
+} from "../../../src/plugins/resource/appstudio/constants";
 import {
   BotOptionItem,
   HostTypeOptionAzure,

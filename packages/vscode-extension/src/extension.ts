@@ -18,6 +18,7 @@ import { VsCodeUI } from "./qm/vsc_ui";
 import { exp } from "./exp";
 import { disableRunIcon, registerRunIcon } from "./debug/runIconHandler";
 import { CryptoCodeLensProvider } from "./codeLensProvider";
+import { Correlator } from "@microsoft/teamsfx-core";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -32,81 +33,78 @@ export async function activate(context: vscode.ExtensionContext) {
   await exp.initialize(context);
 
   // 1.1 Register the creating command.
-  const createCmd = vscode.commands.registerCommand(
-    "fx-extension.create",
-    handlers.createNewProjectHandler
+  const createCmd = vscode.commands.registerCommand("fx-extension.create", (...args) =>
+    Correlator.run(handlers.createNewProjectHandler, args)
   );
   context.subscriptions.push(createCmd);
 
-  const debugCmd = vscode.commands.registerCommand("fx-extension.debug", handlers.debugHandler);
+  const debugCmd = vscode.commands.registerCommand("fx-extension.debug", (...args) =>
+    Correlator.run(handlers.debugHandler, args)
+  );
   context.subscriptions.push(debugCmd);
 
-  const updateCmd = vscode.commands.registerCommand(
-    "fx-extension.update",
-    handlers.addResourceHandler
+  const updateCmd = vscode.commands.registerCommand("fx-extension.update", (...args) =>
+    Correlator.run(handlers.addResourceHandler, args)
   );
   context.subscriptions.push(updateCmd);
 
   // add capability
-  const addCapCmd = vscode.commands.registerCommand(
-    "fx-extension.addCapability",
-    handlers.addCapabilityHandler
+  const addCapCmd = vscode.commands.registerCommand("fx-extension.addCapability", (...args) =>
+    Correlator.run(handlers.addCapabilityHandler, args)
   );
   context.subscriptions.push(addCapCmd);
 
   // 1.3 Register the provision command.
-  const provisionCmd = vscode.commands.registerCommand(
-    "fx-extension.provision",
-    handlers.provisionHandler
+  const provisionCmd = vscode.commands.registerCommand("fx-extension.provision", (...args) =>
+    Correlator.run(handlers.provisionHandler, args)
   );
   context.subscriptions.push(provisionCmd);
 
   // 1.5 Register the deploy command.
-  const deployCmd = vscode.commands.registerCommand("fx-extension.deploy", handlers.deployHandler);
+  const deployCmd = vscode.commands.registerCommand("fx-extension.deploy", (...args) =>
+    Correlator.run(handlers.deployHandler, args)
+  );
   context.subscriptions.push(deployCmd);
 
   const validateManifestCmd = vscode.commands.registerCommand(
     "fx-extension.validateManifest",
-    handlers.validateManifestHandler
+    (...args) => Correlator.run(handlers.validateManifestHandler, args)
   );
   context.subscriptions.push(validateManifestCmd);
 
-  const buildPackageCmd = vscode.commands.registerCommand(
-    "fx-extension.build",
-    handlers.buildPackageHandler
+  const buildPackageCmd = vscode.commands.registerCommand("fx-extension.build", (...args) =>
+    Correlator.run(handlers.buildPackageHandler, args)
   );
   context.subscriptions.push(buildPackageCmd);
 
-  const publishCmd = vscode.commands.registerCommand(
-    "fx-extension.publish",
-    handlers.publishHandler
+  const publishCmd = vscode.commands.registerCommand("fx-extension.publish", (...args) =>
+    Correlator.run(handlers.publishHandler, args)
   );
   context.subscriptions.push(publishCmd);
 
   // 1.7 validate dependencies command (hide from UI)
   const validateDependenciesCmd = vscode.commands.registerCommand(
     "fx-extension.validate-dependencies",
-    handlers.validateDependenciesHandler
+    () => Correlator.run(handlers.validateDependenciesHandler)
   );
   context.subscriptions.push(validateDependenciesCmd);
 
   const validateSpfxDependenciesCmd = vscode.commands.registerCommand(
     "fx-extension.validate-spfx-dependencies",
-    handlers.validateSpfxDependenciesHandler
+    () => Correlator.run(handlers.validateSpfxDependenciesHandler)
   );
   context.subscriptions.push(validateSpfxDependenciesCmd);
 
   // 1.8 pre debug check command (hide from UI)
-  const preDebugCheckCmd = vscode.commands.registerCommand(
-    "fx-extension.pre-debug-check",
-    handlers.preDebugCheckHandler
+  const preDebugCheckCmd = vscode.commands.registerCommand("fx-extension.pre-debug-check", () =>
+    Correlator.run(handlers.preDebugCheckHandler)
   );
   context.subscriptions.push(preDebugCheckCmd);
 
   // 1.9 Register backend extensions install command (hide from UI)
   const backendExtensionsInstallCmd = vscode.commands.registerCommand(
     "fx-extension.backend-extensions-install",
-    handlers.backendExtensionsInstallHandler
+    () => Correlator.run(handlers.backendExtensionsInstallHandler)
   );
   context.subscriptions.push(backendExtensionsInstallCmd);
 
@@ -116,69 +114,64 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.tasks.registerTaskProvider(TeamsfxTaskProvider.type, taskProvider)
   );
 
-  const openWelcomeCmd = vscode.commands.registerCommand(
-    "fx-extension.openWelcome",
-    handlers.openWelcomeHandler
+  const openWelcomeCmd = vscode.commands.registerCommand("fx-extension.openWelcome", (...args) =>
+    Correlator.run(handlers.openWelcomeHandler, args)
   );
   context.subscriptions.push(openWelcomeCmd);
 
-  const openSamplesCmd = vscode.commands.registerCommand(
-    "fx-extension.openSamples",
-    handlers.openSamplesHandler
+  const openSamplesCmd = vscode.commands.registerCommand("fx-extension.openSamples", (...args) =>
+    Correlator.run(handlers.openSamplesHandler, args)
   );
   context.subscriptions.push(openSamplesCmd);
 
-  const openDocumentCmd = vscode.commands.registerCommand(
-    "fx-extension.openDocument",
-    handlers.openDocumentHandler
+  const openDocumentCmd = vscode.commands.registerCommand("fx-extension.openDocument", (...args) =>
+    Correlator.run(handlers.openDocumentHandler, args)
   );
   context.subscriptions.push(openDocumentCmd);
 
-  const openManifestCmd = vscode.commands.registerCommand(
-    "fx-extension.openManifest",
-    handlers.openManifestHandler
+  const openManifestCmd = vscode.commands.registerCommand("fx-extension.openManifest", (...args) =>
+    Correlator.run(handlers.openManifestHandler, args)
   );
   context.subscriptions.push(openManifestCmd);
 
   const openAppManagementCmd = vscode.commands.registerCommand(
     "fx-extension.openAppManagement",
-    handlers.openAppManagement
+    (...args) => Correlator.run(handlers.openAppManagement, args)
   );
   context.subscriptions.push(openAppManagementCmd);
 
   const openBotManagementCmd = vscode.commands.registerCommand(
     "fx-extension.openBotManagement",
-    handlers.openBotManagement
+    (...args) => Correlator.run(handlers.openBotManagement, args)
   );
   context.subscriptions.push(openBotManagementCmd);
 
   const openReportIssuesCmd = vscode.commands.registerCommand(
     "fx-extension.openReportIssues",
-    handlers.openReportIssues
+    (...args) => Correlator.run(handlers.openReportIssues, args)
   );
   context.subscriptions.push(openReportIssuesCmd);
 
   const m365AccountSettingsCmd = vscode.commands.registerCommand(
     "fx-extension.m365AccountSettings",
-    handlers.openM365AccountHandler
+    () => Correlator.run(handlers.openM365AccountHandler)
   );
   context.subscriptions.push(m365AccountSettingsCmd);
 
   const azureAccountSettingsCmd = vscode.commands.registerCommand(
     "fx-extension.azureAccountSettings",
-    handlers.openAzureAccountHandler
+    () => Correlator.run(handlers.openAzureAccountHandler)
   );
   context.subscriptions.push(azureAccountSettingsCmd);
 
-  const cmpAccountsCmd = vscode.commands.registerCommand(
-    "fx-extension.cmpAccounts",
-    handlers.cmpAccountsHandler
+  const cmpAccountsCmd = vscode.commands.registerCommand("fx-extension.cmpAccounts", () =>
+    Correlator.run(handlers.cmpAccountsHandler)
   );
   context.subscriptions.push(cmpAccountsCmd);
 
   const decryptCmd = vscode.commands.registerCommand(
     "fx-extension.decryptSecret",
-    handlers.decryptSecret
+    (cipher, selection) => Correlator.run(handlers.decryptSecret, cipher, selection)
   );
   context.subscriptions.push(decryptCmd);
 
@@ -214,12 +207,15 @@ export async function activate(context: vscode.ExtensionContext) {
   await handlers.cmdHdlLoadTreeView(context);
 
   // Register local debug run icon
-  const runIconCmd = vscode.commands.registerCommand(
-    "fx-extension.selectAndDebug",
-    handlers.selectAndDebugHandler
+  const runIconCmd = vscode.commands.registerCommand("fx-extension.selectAndDebug", (...args) =>
+    Correlator.run(handlers.selectAndDebugHandler, args)
   );
   context.subscriptions.push(runIconCmd);
   registerRunIcon();
+
+  context.subscriptions.push(
+    vscode.workspace.onDidSaveTextDocument(handlers.saveTextDocumentHandler)
+  );
 
   // 2. Call activate function of toolkit core.
   await handlers.activate();

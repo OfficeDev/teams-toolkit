@@ -14,6 +14,7 @@ import {
   getUniqueAppName,
   setBotSkuNameToB1,
   cleanUp,
+  readContext,
 } from "../commonUtils";
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
 
@@ -54,7 +55,7 @@ describe("Provision", function () {
     {
       // Validate provision
       // Get context
-      const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
+      const context = await readContext(projectPath);
 
       // Validate Aad App
       const aad = AadValidator.init(context, false, AppStudioLogin);

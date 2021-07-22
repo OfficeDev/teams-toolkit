@@ -50,8 +50,8 @@ export class FunctionPluginError extends Error {
     Object.setPrototypeOf(this, ValidationError.prototype);
   }
 
-  getMessage() {
-    return `${this.message} Suggestions: ${this.suggestions.join("\n")}`;
+  getMessage(): string {
+    return `${this.message} Suggestions: ${this.suggestions.join(" ")}`;
   }
 }
 

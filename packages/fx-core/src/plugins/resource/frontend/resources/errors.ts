@@ -59,7 +59,7 @@ export class FrontendPluginError extends Error {
   }
 
   getMessage(): string {
-    return `${this.message} Suggestions: ${this.suggestions.join("\n")}`;
+    return `${this.message} Suggestions: ${this.suggestions.join(" ")}`;
   }
 
   setInnerError(error: Error): void {

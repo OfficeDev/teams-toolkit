@@ -238,7 +238,6 @@ export async function readContext(projectPath: string): Promise<any> {
 
   // Read Context and UserData
   const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
-  console.log(context);
 
   let userData: Record<string, string> = {};
   if (await fs.pathExists(userDataFilePath)) {
@@ -257,7 +256,6 @@ export async function readContext(projectPath: string): Promise<any> {
     }
   }
 
-  console.log(context);
   return context;
 }
 

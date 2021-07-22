@@ -56,7 +56,7 @@ describe("Create a new API Management Service", function () {
     });
     console.log(`Provision. Error message: ${result.stderr}`);
 
-    const provisionContext = await readContext(getConfigFileName(appName));
+    const provisionContext = await readContext(projectPath);
     await ApimValidator.validateProvision(provisionContext, appName);
 
     result = await execAsyncWithRetry(

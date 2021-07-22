@@ -14,6 +14,7 @@ import {
   getConfigFileName,
   cleanUp,
   cleanUpResourceGroup,
+  readContext,
 } from "../commonUtils";
 import AzureLogin from "../../../src/commonlib/azureLogin";
 import GraphLogin from "../../../src/commonlib/graphLogin";
@@ -60,7 +61,7 @@ describe("Use an existing API Management Service", function () {
     });
     console.log(`Provision. Error message: ${result.stderr}`);
 
-    const provisionContext = await fs.readJSON(getConfigFileName(appName));
+    const provisionContext = await readContext(getConfigFileName(appName));
     await ApimValidator.validateProvision(
       provisionContext,
       appName,

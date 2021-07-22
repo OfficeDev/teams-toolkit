@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { deserializeDict } from "@microsoft/teamsfx-core";
 import { exec } from "child_process";
 import fs from "fs-extra";
 import os from "os";
@@ -228,4 +229,39 @@ export async function cleanUpResourcesCreatedHoursAgo(
     });
     return results;
   }
+}
+
+// TODO: add encrypt
+export async function readContext(projectPath: string): Promise<any> {
+  const contextFilePath = `${projectPath}/.fx/env.default.json`;
+  const userDataFilePath = `${projectPath}/.fx/default.userdata`;
+
+  // Read Context and UserData
+  const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
+  console.log(context);
+
+  let userData: Record<string, string> = {};
+  if (await fs.pathExists(userDataFilePath)) {
+    const dictContent = await fs.readFile(userDataFilePath, "UTF-8");
+    userData = deserializeDict(dictContent);
+  }
+
+  // Read from userdata.
+  for (const plugin in context) {
+    const pluginContext = context[plugin];
+    for (const key in pluginContext) {
+      if (typeof pluginContext[key] === "string" && isSecretPattern(pluginContext[key])) {
+        const secretKey = `${plugin}.${key}`;
+        pluginContext[key] = userData[secretKey] ?? undefined;
+      }
+    }
+  }
+
+  console.log(context);
+  return context;
+}
+
+function isSecretPattern(value: string) {
+  console.log(value);
+  return value.startsWith("{{") && value.endsWith("}}");
 }

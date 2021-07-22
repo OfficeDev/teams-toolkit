@@ -15,6 +15,7 @@ export * from "./telemetry";
 export * from "./dialog";
 export * from "./tree";
 export * from "./crypto";
+export * from "./globalState";
 
 export interface Tools {
   logProvider: LogProvider;

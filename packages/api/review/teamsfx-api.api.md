@@ -268,6 +268,12 @@ export function getSingleOption(q: SingleSelectQuestion | MultiSelectQuestion, o
 export function getValidationFunction<T extends string | string[] | undefined>(validation: ValidationSchema, inputs: Inputs): (input: T) => string | undefined | Promise<string | undefined>;
 
 // @public
+export function globalStateGet(key: string): Promise<Result<any, FxError>>;
+
+// @public
+export function globalStateUpdate(key: string, value: any): Promise<Result<null, FxError>>;
+
+// @public
 export interface GraphTokenProvider {
     getAccessToken(showDialog?: boolean): Promise<string | undefined>;
     getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined>;

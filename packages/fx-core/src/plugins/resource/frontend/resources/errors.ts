@@ -94,7 +94,7 @@ export class InvalidConfigError extends FrontendPluginError {
 export class CheckResourceGroupError extends FrontendPluginError {
   constructor() {
     super(ErrorType.User, "CheckResourceGroupError", "Failed to check resource group existence.", [
-      tips.reLogin,
+      tips.checkLog,
     ]);
   }
 }
@@ -113,7 +113,7 @@ export class CheckStorageError extends FrontendPluginError {
       ErrorType.User,
       "CheckStorageError",
       "Failed to check Azure Storage Account availability.",
-      [tips.reLogin, tips.checkSystemTime]
+      [tips.checkSystemTime, tips.checkLog]
     );
   }
 }

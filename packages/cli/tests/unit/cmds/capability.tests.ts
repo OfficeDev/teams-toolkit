@@ -66,7 +66,6 @@ describe("Capability Command Tests", function () {
         telemetryEvents.push(eventName);
         telemetryEventStatus = TelemetrySuccess.No;
       });
-    sandbox.stub(Utils, "getSubscriptionIdFromEnvFile").returns(Promise.resolve(undefined));
     sandbox
       .stub(FxCore.prototype, "executeUserTask")
       .callsFake(async (func: Func, inputs: Inputs) => {

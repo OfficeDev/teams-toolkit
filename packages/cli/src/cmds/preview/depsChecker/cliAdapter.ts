@@ -7,7 +7,7 @@ import { DepsCheckerEvent, Messages } from "./common";
 import { IDepsAdapter, IDepsTelemetry } from "./checker";
 import CLIUIInstance from "../../../userInteraction";
 import cliLogger from "../../../commonlib/log";
-import { CliConfigOptions, UserSettings } from "../../../userSetttings";
+import { CliConfigEnvChecker, CliConfigOptions, UserSettings } from "../../../userSetttings";
 
 export class CLIAdapter implements IDepsAdapter {
   private readonly downloadIndicatorInterval = 1000; // same as vscode-dotnet-runtime
@@ -113,7 +113,7 @@ export class CLIAdapter implements IDepsAdapter {
     const config = result.value;
 
     if (key in config) {
-      return config[key];
+      return config[key] === CliConfigEnvChecker.On;
     } else {
       return true;
     }

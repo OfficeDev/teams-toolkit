@@ -121,3 +121,12 @@ export function FunctionRouterError(func: Func) {
     new Error().stack
   );
 }
+
+export function ContextUpgradeError(error: any) {
+  return new SystemError(
+    "ContextUpgradeError",
+    `Failed to update context: ${error.message}`,
+    CoreSource,
+    new Error().stack
+  );
+}

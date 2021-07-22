@@ -24,12 +24,6 @@ export declare class DialogMsg
 
 |  Property | Modifiers | Type | Description |
 |  --- | --- | --- | --- |
-|  [content](./teamsfx-api.dialogmsg.content.md) |  | [IMessage](./teamsfx-api.imessage.md) \| [IQuestion](./teamsfx-api.iquestion.md) \| [IProgress](./teamsfx-api.iprogress.md) \| [Answer](./teamsfx-api.answer.md) |  |
+|  [content](./teamsfx-api.dialogmsg.content.md) |  | [IQuestion](./teamsfx-api.iquestion.md) \| [Answer](./teamsfx-api.answer.md) |  |
 |  [dialogType](./teamsfx-api.dialogmsg.dialogtype.md) |  | [DialogType](./teamsfx-api.dialogtype.md) |  |
-
-## Methods
-
-|  Method | Modifiers | Description |
-|  --- | --- | --- |
-|  [getAnswer()](./teamsfx-api.dialogmsg.getanswer.md) |  |  |
 

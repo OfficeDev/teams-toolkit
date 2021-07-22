@@ -3,7 +3,7 @@
 
 "use strict";
 
-import { Result, FxError, err, ok, Inputs, Tools } from "@microsoft/teamsfx-api";
+import { Result, FxError, ok, Tools } from "@microsoft/teamsfx-api";
 
 import { FxCore } from "@microsoft/teamsfx-core";
 
@@ -11,7 +11,6 @@ import AzureAccountManager from "./commonlib/azureLogin";
 import AppStudioTokenProvider from "./commonlib/appStudioLogin";
 import GraphTokenProvider from "./commonlib/graphLogin";
 import CLILogProvider from "./commonlib/log";
-import DialogManagerInstance from "./userInterface";
 import { CliTelemetry } from "./telemetry/cliTelemetry";
 import CLIUIInstance from "./userInteraction";
 
@@ -33,7 +32,6 @@ export default async function activate(rootPath?: string): Promise<Result<FxCore
       appStudioToken: AppStudioTokenProvider,
     },
     telemetryReporter: CliTelemetry.getReporter(),
-    dialog: DialogManagerInstance,
     ui: CLIUIInstance,
   };
   const core = new FxCore(tools);

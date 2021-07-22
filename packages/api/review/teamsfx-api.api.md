@@ -170,18 +170,17 @@ export interface CryptoProvider {
 
 // @public @deprecated (undocumented)
 export interface Dialog {
+    // @deprecated (undocumented)
     communicate: (msg: DialogMsg) => Promise<DialogMsg>;
 }
 
 // @public @deprecated (undocumented)
 export class DialogMsg {
-    constructor(dialogType: DialogType, content: IMessage | IQuestion | IProgress | Answer);
+    constructor(dialogType: DialogType, content: IQuestion | Answer);
     // (undocumented)
-    content: IMessage | IQuestion | IProgress | Answer;
+    content: IQuestion | Answer;
     // (undocumented)
     dialogType: DialogType;
-    // (undocumented)
-    getAnswer(): Answer | undefined;
 }
 
 // @public @deprecated (undocumented)
@@ -189,13 +188,7 @@ export enum DialogType {
     // (undocumented)
     Answer = "Answer",
     // (undocumented)
-    Ask = "Ask",
-    // (undocumented)
-    Output = "Output",
-    // (undocumented)
-    Show = "Show",
-    // (undocumented)
-    ShowProgress = "ShowProgress"
+    Ask = "Ask"
 }
 
 // @public (undocumented)
@@ -421,18 +414,6 @@ export interface ILocalizationInfo {
     languages: any[];
 }
 
-// @public @deprecated (undocumented)
-export interface IMessage {
-    // (undocumented)
-    description: string;
-    // (undocumented)
-    items?: string[];
-    // (undocumented)
-    level: MsgLevel;
-    // (undocumented)
-    modal?: boolean;
-}
-
 // @public (undocumented)
 export interface IMessagingExtensionCommand {
     context?: ("compose" | "commandBox" | "message")[];
@@ -502,16 +483,6 @@ export interface IParameter {
     value?: string;
 }
 
-// @public @deprecated
-export interface IProgress {
-    // (undocumented)
-    cancellable?: boolean;
-    // (undocumented)
-    progressIter: AsyncGenerator<IProgressStatus, Result<null, FxError>>;
-    // (undocumented)
-    title?: string;
-}
-
 // @public (undocumented)
 export interface IProgressHandler {
     end: () => Promise<void>;
@@ -530,23 +501,9 @@ export interface IProgressStatus {
 // @public @deprecated (undocumented)
 export interface IQuestion {
     // (undocumented)
-    defaultAnswer?: string;
-    // (undocumented)
     description: string;
     // (undocumented)
-    multiSelect?: boolean;
-    // (undocumented)
-    options?: string[];
-    // (undocumented)
-    password?: boolean;
-    // (undocumented)
-    prompt?: string;
-    // (undocumented)
-    terminalName?: string;
-    // (undocumented)
     type: QuestionType;
-    // (undocumented)
-    validateInput?: (value: string) => string | undefined | null | Promise<string | undefined | null>;
 }
 
 // @public (undocumented)
@@ -798,10 +755,6 @@ export type Question = SingleSelectQuestion | MultiSelectQuestion | TextInputQue
 
 // @public @deprecated (undocumented)
 export enum QuestionType {
-    // (undocumented)
-    ExecuteCmd = "ExecuteCmd",
-    // (undocumented)
-    OpenFolder = "OpenFolder",
     // (undocumented)
     UpdateGlobalState = "UpdateGlobalState"
 }
@@ -1108,7 +1061,7 @@ export type TokenProvider = {
 // @public (undocumented)
 export interface Tools {
     // (undocumented)
-    dialog: Dialog;
+    dialog?: Dialog;
     // (undocumented)
     logProvider: LogProvider;
     // (undocumented)

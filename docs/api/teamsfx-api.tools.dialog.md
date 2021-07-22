@@ -7,5 +7,5 @@
 <b>Signature:</b>
 
 ```typescript
-dialog: Dialog;
+dialog?: Dialog;
 ```

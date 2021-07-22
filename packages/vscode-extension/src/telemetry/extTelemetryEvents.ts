@@ -85,10 +85,15 @@ export enum TelemetryEvent {
 
   EditSecretStart = "edit-secret-start",
   EditSecret = "edit-secret",
+
+  OpenTeamsApp = "open-teams-app",
+  UpdateTeamsApp = "update-teams-app",
 }
 
 export enum TelemetryProperty {
   Component = "component",
+  ProjectId = "project-id",
+  CorrelationId = "correlation-id",
   AapId = "appid",
   UserId = "hashed-userid",
   AccountType = "account-type",

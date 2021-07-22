@@ -18,7 +18,5 @@ export declare enum QuestionType
 
 |  Member | Value | Description |
 |  --- | --- | --- |
-|  ExecuteCmd | <code>&quot;ExecuteCmd&quot;</code> |  |
-|  OpenFolder | <code>&quot;OpenFolder&quot;</code> |  |
 |  UpdateGlobalState | <code>&quot;UpdateGlobalState&quot;</code> |  |
 

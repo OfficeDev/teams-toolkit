@@ -50,8 +50,8 @@ export class FunctionPluginError extends Error {
     Object.setPrototypeOf(this, ValidationError.prototype);
   }
 
-  getMessage() {
-    return `${this.message} Suggestions: ${this.suggestions.join("\n")}`;
+  getMessage(): string {
+    return `${this.message} Suggestions: ${this.suggestions.join(" ")}`;
   }
 }
 
@@ -148,11 +148,13 @@ export class RegisterResourceProviderError extends FunctionPluginError {
 }
 
 export class ProvisionError extends FunctionPluginError {
-  constructor(resource: string) {
+  constructor(resource: string, innerErrorCode?: string) {
     super(
       ErrorType.User,
       "ProvisionError",
-      `Failed to check/create '${resource}' for function app.`,
+      `Failed to check/create '${resource}' for function app${
+        innerErrorCode ? `: ${innerErrorCode}` : ""
+      }.`,
       [tips.checkSubscriptionId, tips.checkCredit, tips.checkNetwork, tips.retryRequest]
     );
   }
@@ -273,6 +275,23 @@ export async function runWithErrorCatchAndThrow<T>(
       throw e;
     }
     Logger.error(e.toString());
+    throw error;
+  }
+}
+
+export async function runWithErrorCatchAndWrap<T>(
+  wrap: (error: any) => FunctionPluginError,
+  fn: () => T | Promise<T>
+): Promise<T> {
+  try {
+    const res = await Promise.resolve(fn());
+    return res;
+  } catch (e) {
+    if (e instanceof UserError || e instanceof SystemError) {
+      throw e;
+    }
+    Logger.error(e.toString());
+    const error = wrap(e);
     throw error;
   }
 }

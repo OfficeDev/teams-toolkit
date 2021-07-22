@@ -174,9 +174,7 @@ export class CreateStorageAccountError extends FrontendPluginError {
     super(
       ErrorType.User,
       "CreateStorageAccountError",
-      `Failed to create Azure Storage Account${
-        innerErrorCode ? `, Azure error code: ${innerErrorCode}` : ""
-      }.`,
+      `Failed to create Azure Storage Account${innerErrorCode ? `: ${innerErrorCode}` : ""}.`,
       [tips.checkLog]
     );
   }

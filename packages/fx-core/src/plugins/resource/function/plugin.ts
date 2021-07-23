@@ -298,7 +298,7 @@ export class FunctionPluginImpl {
       DefaultValues.functionTriggerType,
       functionName,
       {
-        appName: ctx.app.name.short,
+        appName: ctx.projectSettings!.appName,
         functionName: functionName,
       }
     );
@@ -320,7 +320,7 @@ export class FunctionPluginImpl {
       !this.config.storageAccountName ||
       !this.config.appServicePlanName
     ) {
-      const teamsAppName: string = ctx.app.name.short;
+      const teamsAppName: string = ctx.projectSettings!.appName;
       const suffix: string = this.config.resourceNameSuffix ?? uuid().substr(0, 6);
 
       if (!this.config.functionAppName) {

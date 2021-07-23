@@ -487,13 +487,17 @@ export async function askSubscription(
 }
 
 // Determine whether feature flag is enabled based on environment variable setting
-export function isFeatureFlagEnabled(featureFlagName: string): boolean {
+export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = false): boolean {
   const flag = process.env[featureFlagName];
-  // can enable feature flag by set environment variable value to "1" or "true"
-  if (flag && (flag === "1" || flag.toLowerCase() === "true")) {
-    return true;
+  if (flag === undefined) {
+    return defaultValue; // allows consumer to set a default value when environment variable not set
+  } else {
+    return flag === "1" || flag.toLowerCase() === "true"; // can enable feature flag by set environment variable value to "1" or "true"
   }
-  return false;
+}
+
+export function isArmSupportEnabled(): boolean {
+  return isFeatureFlagEnabled("TEAMSFX_ARM_SUPPORT", false);
 }
 
 export async function generateBicepFiles(

@@ -339,13 +339,6 @@ export class TeamsAppSolution implements Solution {
     ctx: SolutionContext,
     selectedPlugins: LoadedPlugin[]
   ): Promise<Result<any, FxError>> {
-    // const appStudioPlugin = this.AppStudioPlugin as AppStudioPlugin;
-    // const maybeManifest = await appStudioPlugin.reloadManifestAndCheckRequiredFields(ctx.root);
-    // if (maybeManifest.isErr()) {
-    //   return maybeManifest;
-    // }
-    // const manifest = maybeManifest.value;
-
     const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(
       ctx,
       selectedPlugins,

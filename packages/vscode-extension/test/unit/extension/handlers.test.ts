@@ -28,27 +28,6 @@ suite("handlers", () => {
     chai.expect(handlers.getWorkspacePath()).equals(undefined);
   });
 
-  suite("activate()", function () {
-    const sandbox = sinon.createSandbox();
-
-    this.beforeAll(() => {
-      sandbox.stub(accountTree, "registerAccountTreeHandler");
-      sandbox.stub(AzureAccountManager.prototype, "setStatusChangeMap");
-      sandbox.stub(AppStudioTokenInstance, "setStatusChangeMap");
-      sandbox.stub(vscode.extensions, "getExtension").returns(undefined);
-      sandbox.stub(TreeViewManagerInstance, "getTreeView").returns(undefined);
-    });
-
-    this.afterAll(() => {
-      sandbox.restore();
-    });
-
-    test("No globalState error", async () => {
-      const result = await handlers.activate();
-      chai.expect(result.isOk() ? result.value : result.error.name).equals("TypeError");
-    });
-  });
-
   test("getSystemInputs()", () => {
     const input: Inputs = handlers.getSystemInputs();
 

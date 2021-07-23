@@ -21,11 +21,31 @@ import { MockCore } from "./mocks/mockCore";
 import * as extension from "../../../src/extension";
 import * as accountTree from "../../../src/accountTree";
 import TreeViewManagerInstance from "../../../src/commandsTreeViewProvider";
-import { ext } from "../../../src/extensionVariables";
 
 suite("handlers", () => {
   test("getWorkspacePath()", () => {
     chai.expect(handlers.getWorkspacePath()).equals(undefined);
+  });
+
+  suite("activate()", function () {
+    const sandbox = sinon.createSandbox();
+
+    this.beforeAll(() => {
+      sandbox.stub(accountTree, "registerAccountTreeHandler");
+      sandbox.stub(AzureAccountManager.prototype, "setStatusChangeMap");
+      sandbox.stub(AppStudioTokenInstance, "setStatusChangeMap");
+      sandbox.stub(vscode.extensions, "getExtension").returns(undefined);
+      sandbox.stub(TreeViewManagerInstance, "getTreeView").returns(undefined);
+    });
+
+    this.afterAll(() => {
+      sandbox.restore();
+    });
+
+    test("No globalState error", async () => {
+      const result = await handlers.activate();
+      chai.expect(result.isOk() ? result.value : result.error.name).equals({});
+    });
   });
 
   test("getSystemInputs()", () => {

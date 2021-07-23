@@ -492,11 +492,7 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
   if (flag === undefined) {
     return defaultValue; // allows consumer to set a default value when environment variable not set
   } else {
-    if (flag === "1" || flag.toLowerCase() === "true") {
-      return true; // can enable feature flag by set environment variable value to "1" or "true"
-    } else {
-      return false;
-    }
+    return flag === "1" || flag.toLowerCase() === "true"; // can enable feature flag by set environment variable value to "1" or "true"
   }
 }
 

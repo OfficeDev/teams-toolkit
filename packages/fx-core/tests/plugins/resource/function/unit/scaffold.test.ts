@@ -36,6 +36,9 @@ const context: any = {
       short: "ut",
     },
   },
+  projectSettings: {
+    appName: "ut",
+  },
   config: new Map(),
   root: path.join(__dirname, "ut"),
 };

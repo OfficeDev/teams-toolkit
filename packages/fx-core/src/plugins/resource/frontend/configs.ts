@@ -41,7 +41,7 @@ export class FrontendConfig {
       throw new UnauthenticatedError();
     }
 
-    const appName = ctx.app.name.short;
+    const appName = ctx.projectSettings!.appName;
     const solutionConfigs = ctx.configOfOtherPlugins.get(DependentPluginInfo.SolutionPluginName);
 
     const subscriptionId = FrontendConfig.getConfig<string>(

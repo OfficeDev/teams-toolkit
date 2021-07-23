@@ -226,7 +226,9 @@ export class AppStudioPlugin implements Plugin {
             ctx,
             appDirectory
           );
-          const msg = `Successfully created ${ctx.app.name.short} app package file at ${appPackagePath}. Send this to your administrator for approval.`;
+          const msg = `Successfully created ${
+            ctx.projectSettings!.appName
+          } app package file at ${appPackagePath}. Send this to your administrator for approval.`;
           ctx.ui?.showMessage("info", msg, false, "OK", Constants.READ_MORE).then((value) => {
             if (value.isOk() && value.value === Constants.READ_MORE) {
               ctx.ui?.openUrl(Constants.PUBLISH_GUIDE);

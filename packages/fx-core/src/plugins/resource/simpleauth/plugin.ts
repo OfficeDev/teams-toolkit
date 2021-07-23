@@ -80,7 +80,7 @@ export class SimpleAuthPluginImpl {
       Constants.SolutionPlugin.configKeys.location
     ) as string;
 
-    const webAppName = Utils.generateResourceName(ctx.app.name.short, resourceNameSuffix);
+    const webAppName = Utils.generateResourceName(ctx.projectSettings!.appName, resourceNameSuffix);
     const appServicePlanName = webAppName;
 
     this.webAppClient = new WebAppClient(

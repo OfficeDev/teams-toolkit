@@ -88,6 +88,7 @@ export class TestHelper {
           short: "hello-app",
         },
       },
+      projectSettings: { appName: "hello-app" },
     } as unknown as PluginContext;
 
     return pluginContext;

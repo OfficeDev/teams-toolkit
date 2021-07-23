@@ -19,7 +19,10 @@ export function globalStateGet(key: string, defaultValue?: any): any {
   ensureGlobalStateFileExists(filePath);
 
   const config = fs.readJSONSync(filePath);
-  const value = config[key] || defaultValue;
+  let value = config[key];
+  if (value === undefined) {
+    value = defaultValue;
+  }
   return value;
 }
 

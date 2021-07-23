@@ -6,6 +6,7 @@ import { SqlConfig } from "./config";
 import { PluginContext } from "@microsoft/teamsfx-api";
 import { ErrorMessage } from "./errors";
 import { SqlResultFactory } from "./results";
+import { extractIp } from "./utils/commonUtils";
 export class SqlClient {
   conn?: tedious.Connection;
   config: SqlConfig;
@@ -26,18 +27,22 @@ export class SqlClient {
         return false;
       }
     } catch (error) {
-      this.ctx.logProvider?.error(
-        ErrorMessage.SqlCheckDBUserError.message(this.config.identity, error.message)
-      );
-      if (error?.message?.includes(ErrorMessage.AccessMessage)) {
+      if (error?.message?.includes(ErrorMessage.AccessMessage) && extractIp(error.message)) {
+        const ip = extractIp(error.message);
+        this.ctx.logProvider?.error(
+          ErrorMessage.SqlAccessError.message(this.config.identity, ip!, error.message)
+        );
         throw SqlResultFactory.UserError(
           ErrorMessage.SqlAccessError.name,
-          ErrorMessage.SqlAccessError.message(this.config.identity, error.message),
+          ErrorMessage.SqlAccessError.message(this.config.identity, ip!, error.message),
           error,
           undefined,
           HelpLinks.default
         );
       } else {
+        this.ctx.logProvider?.error(
+          ErrorMessage.SqlCheckDBUserError.message(this.config.identity, error.message)
+        );
         throw SqlResultFactory.UserError(
           ErrorMessage.SqlCheckDBUserError.name,
           ErrorMessage.SqlCheckDBUserError.message(this.config.identity, error.message),

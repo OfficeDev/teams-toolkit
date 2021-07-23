@@ -46,3 +46,13 @@ export function formatEndpoint(endpoint: string): string {
   }
   return endpoint;
 }
+
+export function extractIp(message: string): string | undefined {
+  const r = /\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/;
+  const res = message.match(r);
+  if (res) {
+    return res[0];
+  } else {
+    return undefined;
+  }
+}

@@ -294,7 +294,8 @@ export class TeamsBotSsoPrompt extends Dialog {
       "Get Teams member account user principal name: " + account.userPrincipalName
     );
 
-    const signInResource = this.getSignInResource(account.userPrincipalName);
+    const loginHint: string = account.userPrincipalName ? account.userPrincipalName : "";
+    const signInResource = this.getSignInResource(loginHint);
     const card = CardFactory.oauthCard(
       "",
       "Teams SSO Sign In",
@@ -316,7 +317,7 @@ export class TeamsBotSsoPrompt extends Dialog {
    *
    * @internal
    */
-  private getSignInResource(loginHint?: string) {
+  private getSignInResource(loginHint: string) {
     internalLogger.verbose("Get sign in authentication configuration");
     const missingConfigurations: string[] = [];
 

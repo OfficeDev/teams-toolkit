@@ -8,7 +8,7 @@ import { Utils } from "../../../../../src/plugins/resource/frontend/utils";
 
 chai.use(chaiAsPromised);
 
-describe("utils", async () => {
+describe("FrontendUtils", async () => {
   describe("execute", async () => {
     it("success", async () => {
       const res = await Utils.execute("echo 1");

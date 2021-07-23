@@ -575,7 +575,7 @@ export class TeamsBotImpl {
 
     const botReg: IBotRegistration = {
       botId: this.config.localDebug.localBotId,
-      name: this.ctx!.app.name.short + PluginLocalDebug.LOCAL_DEBUG_SUFFIX,
+      name: this.ctx!.projectSettings?.appName + PluginLocalDebug.LOCAL_DEBUG_SUFFIX,
       description: "",
       iconUrl: "",
       messagingEndpoint: endpoint,
@@ -658,7 +658,7 @@ export class TeamsBotImpl {
     // 2. Register bot by app studio.
     const botReg: IBotRegistration = {
       botId: botAuthCreds.clientId,
-      name: this.ctx!.app.name.short + PluginLocalDebug.LOCAL_DEBUG_SUFFIX,
+      name: this.ctx!.projectSettings?.appName + PluginLocalDebug.LOCAL_DEBUG_SUFFIX,
       description: "",
       iconUrl: "",
       messagingEndpoint: "",

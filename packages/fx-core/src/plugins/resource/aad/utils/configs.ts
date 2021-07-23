@@ -32,7 +32,7 @@ export class ProvisionConfig {
   }
 
   public async restoreConfigFromContext(ctx: PluginContext): Promise<void> {
-    const displayName: string = ctx.app.name.short;
+    const displayName: string = ctx.projectSettings!.appName;
     if (displayName) {
       this.displayName = displayName.substr(0, Constants.aadAppMaxLength) as string;
     } else {

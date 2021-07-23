@@ -65,7 +65,7 @@ export class IdentityPlugin implements Plugin {
     );
     this.config.location = ContextUtils.getConfigString(Constants.solution, Constants.location);
 
-    let defaultIdentity = `${ctx.app.name.short}-msi-${this.config.resourceNameSuffix}`;
+    let defaultIdentity = `${ctx.projectSettings!.appName}-msi-${this.config.resourceNameSuffix}`;
     defaultIdentity = formatEndpoint(defaultIdentity);
     this.config.identity = defaultIdentity;
     this.config.identityName = `/subscriptions/${this.config.azureSubscriptionId}/resourcegroups/${this.config.resourceGroup}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${this.config.identity}`;

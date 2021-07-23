@@ -36,6 +36,9 @@ const context: any = {
       short: "ut",
     },
   },
+  projectSettings: {
+    appName: "ut",
+  },
   config: new Map(),
   root: path.join(__dirname, "ut"),
 };
@@ -77,7 +80,7 @@ describe(FunctionPluginInfo.pluginName, () => {
 
     it("Test pre-scaffold without function name", async () => {
       // Arrange
-      context.answers = {platform: Platform.VSCode};
+      context.answers = { platform: Platform.VSCode };
       const plugin: FunctionPlugin = new FunctionPlugin();
 
       // Act
@@ -89,8 +92,8 @@ describe(FunctionPluginInfo.pluginName, () => {
 
     it("Test scaffold", async () => {
       // Arrange
-      context.answers = context.answers = {platform: Platform.VSCode};
-      context.answers [QuestionKey.functionName] = "httpTrigger";
+      context.answers = context.answers = { platform: Platform.VSCode };
+      context.answers[QuestionKey.functionName] = "httpTrigger";
       const zip = new AdmZip();
       zip.addFile("test.js.tpl", Buffer.from("{{appName}} {{functionName}}"));
       sinon.stub(fetch, "getTemplateURL").resolves(undefined);
@@ -108,8 +111,8 @@ describe(FunctionPluginInfo.pluginName, () => {
 
     it("Test scaffold with additional function", async () => {
       // Arrange
-      context.answers = context.answers = {platform: Platform.VSCode};
-      context.answers [QuestionKey.functionName] = "httpTrigger";
+      context.answers = context.answers = { platform: Platform.VSCode };
+      context.answers[QuestionKey.functionName] = "httpTrigger";
       const zip = new AdmZip();
       zip.addFile("test.js.tpl", Buffer.from("{{appName}} {{functionName}}"));
       sinon.stub(fetch, "getTemplateURL").resolves(undefined);
@@ -127,8 +130,8 @@ describe(FunctionPluginInfo.pluginName, () => {
 
     it("Test scaffold with fallback in JS", async () => {
       // Arrange
-      context.answers = context.answers = {platform: Platform.VSCode};
-      context.answers [QuestionKey.functionName] = "httpTrigger";
+      context.answers = context.answers = { platform: Platform.VSCode };
+      context.answers[QuestionKey.functionName] = "httpTrigger";
       sinon.stub(fetch, "getTemplateURL").rejects(new Error());
       const plugin: FunctionPlugin = new FunctionPlugin();
 

@@ -75,6 +75,7 @@ const context: any = {
   },
   config: new Map<string, string>([["nodeVersion", NodeVersion.Version14]]),
   projectSettings: {
+    appName: "ut",
     solutionSettings: {
       activeResourcePlugins: [
         DependentPluginInfo.aadPluginName,

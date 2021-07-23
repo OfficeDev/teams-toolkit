@@ -382,7 +382,7 @@ export class AppStudioPluginImpl {
     );
   }
 
-  public async scaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
+  public async scaffold(ctx: PluginContext): Promise<any> {
     let manifest: TeamsAppManifest | undefined;
     if (this.isSPFxProject(ctx)) {
       const templateManifestFolder = path.join(getTemplatesFolder(), "plugins", "resource", "spfx");
@@ -396,7 +396,7 @@ export class AppStudioPluginImpl {
       `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`,
       JSON.stringify(manifest, null, 4)
     );
-    return ok(undefined);
+    return undefined;
   }
 
   public async buildTeamsAppPackage(ctx: PluginContext, appDirectory: string): Promise<string> {

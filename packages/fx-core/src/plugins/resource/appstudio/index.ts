@@ -163,7 +163,7 @@ export class AppStudioPlugin implements Plugin {
     try {
       const scaffoldResult = await this.appStudioPluginImpl.scaffold(ctx);
       TelemetryUtils.sendSuccessEvent(TelemetryEventName.scaffold);
-      return scaffoldResult;
+      return ok(scaffoldResult);
     } catch (error) {
       TelemetryUtils.sendErrorEvent(TelemetryEventName.scaffold, error);
       return err(

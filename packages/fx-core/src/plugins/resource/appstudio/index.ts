@@ -161,8 +161,9 @@ export class AppStudioPlugin implements Plugin {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.scaffold);
     try {
+      const scaffoldResult = await this.appStudioPluginImpl.scaffold(ctx);
       TelemetryUtils.sendSuccessEvent(TelemetryEventName.scaffold);
-      return this.appStudioPluginImpl.scaffold(ctx);
+      return ok(scaffoldResult);
     } catch (error) {
       TelemetryUtils.sendErrorEvent(TelemetryEventName.scaffold, error);
       return err(

@@ -14,7 +14,6 @@ import {
   Result,
   SolutionConfig,
   SolutionContext,
-  TeamsAppManifest,
   Void,
   Plugin,
   AzureAccountProvider,
@@ -289,223 +288,193 @@ function mockProvisionThatAlwaysSucceed(plugin: Plugin) {
   };
 }
 
-// describe("provision() simple cases", () => {
-// const mocker = sinon.createSandbox();
+describe("provision() simple cases", () => {
+  const mocker = sinon.createSandbox();
 
-// const mockedManifest = _.cloneDeep(validManifest);
-// // ignore icons for simplicity
-// mockedManifest.icons.color = "";
-// mockedManifest.icons.outline = "";
+  const mockedManifest = _.cloneDeep(validManifest);
+  // ignore icons for simplicity
+  mockedManifest.icons.color = "";
+  mockedManifest.icons.outline = "";
 
-// const mockedAppDef: IAppDefinition = {
-//   appName: "MyApp",
-//   teamsAppId: "qwertasdf",
-// };
+  const mockedAppDef: IAppDefinition = {
+    appName: "MyApp",
+    teamsAppId: "qwertasdf",
+  };
 
-// afterEach(() => {
-//   mocker.restore();
-// });
-// it("should return error if solution state is not idle", async () => {
-//   const solution = new TeamsAppSolution();
-//   expect(solution.runningState).equal(SolutionRunningState.Idle);
+  afterEach(() => {
+    mocker.restore();
+  });
+  it("should return error if solution state is not idle", async () => {
+    const solution = new TeamsAppSolution();
+    expect(solution.runningState).equal(SolutionRunningState.Idle);
 
-//   const mockedCtx = mockSolutionContext();
-//   solution.runningState = SolutionRunningState.ProvisionInProgress;
-//   let result = await solution.provision(mockedCtx);
-//   expect(result.isErr()).to.be.true;
-//   expect(result._unsafeUnwrapErr().name).equals(SolutionError.ProvisionInProgress);
+    const mockedCtx = mockSolutionContext();
+    solution.runningState = SolutionRunningState.ProvisionInProgress;
+    let result = await solution.provision(mockedCtx);
+    expect(result.isErr()).to.be.true;
+    expect(result._unsafeUnwrapErr().name).equals(SolutionError.ProvisionInProgress);
 
-//   solution.runningState = SolutionRunningState.DeployInProgress;
-//   result = await solution.provision(mockedCtx);
-//   expect(result.isErr()).to.be.true;
-//   expect(result._unsafeUnwrapErr().name).equals(SolutionError.DeploymentInProgress);
+    solution.runningState = SolutionRunningState.DeployInProgress;
+    result = await solution.provision(mockedCtx);
+    expect(result.isErr()).to.be.true;
+    expect(result._unsafeUnwrapErr().name).equals(SolutionError.DeploymentInProgress);
 
-//   solution.runningState = SolutionRunningState.PublishInProgress;
-//   result = await solution.provision(mockedCtx);
-//   expect(result.isErr()).to.be.true;
-//   expect(result._unsafeUnwrapErr().name).equals(SolutionError.PublishInProgress);
-// });
+    solution.runningState = SolutionRunningState.PublishInProgress;
+    result = await solution.provision(mockedCtx);
+    expect(result.isErr()).to.be.true;
+    expect(result._unsafeUnwrapErr().name).equals(SolutionError.PublishInProgress);
+  });
 
-// it("should return error for invalid plugin names", async () => {
-//   mocker
-//     .stub<any, any>(fs, "readJson")
-//     .withArgs(`./.${ConfigFolderName}/${REMOTE_MANIFEST}`)
-//     .resolves(mockedManifest);
-//   mocker.stub(AppStudioClient, "createApp").resolves(mockedAppDef);
-//   mocker.stub(AppStudioClient, "updateApp").resolves(mockedAppDef);
-//   const solution = new TeamsAppSolution();
-//   const mockedCtx = mockSolutionContext();
-//   const someInvalidPluginName = "SomeInvalidPluginName";
-//   mockedCtx.projectSettings = {
-//     appName: "my app",
-//     currentEnv: "default",
-//     projectId: uuid.v4(),
-//     solutionSettings: {
-//       hostType: HostTypeOptionSPFx.id,
-//       name: "azure",
-//       version: "1.0",
-//       activeResourcePlugins: [someInvalidPluginName],
-//     },
-//   };
-//   const result = await solution.provision(mockedCtx);
-//   // expect(result.isErr()).to.be.true;
-//   // expect(result._unsafeUnwrapErr().name).equals("ProvisionFailure");
-//   // expect(result._unsafeUnwrapErr().message).contains(
-//   //   `Plugin name ${someInvalidPluginName} is not valid`
-//   // );
-//   // console.log(result._unsafeUnwrapErr().name, result._unsafeUnwrapErr().message);
-// });
+  it("should return error if manifest file is not found", async () => {
+    const solution = new TeamsAppSolution();
+    const mockedCtx = mockSolutionContext();
+    mockedCtx.projectSettings = {
+      appName: "my app",
+      currentEnv: "default",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionSPFx.id,
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [fehostPlugin.name],
+      },
+    };
+    // We leverage the fact that in testing env, this is not file at `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`
+    // So we even don't need to mock fs.readJson
+    const result = await solution.provision(mockedCtx);
+    expect(result.isErr()).to.be.true;
+    expect(result._unsafeUnwrapErr().name).equals("ManifestLoadFailed");
+  });
 
-//   it("should return error if manifest file is not found", async () => {
-//     const solution = new TeamsAppSolution();
-//     const mockedCtx = mockSolutionContext();
-//     mockedCtx.projectSettings = {
-//       appName: "my app",
-//       currentEnv: "default",
-//       projectId: uuid.v4(),
-//       solutionSettings: {
-//         hostType: HostTypeOptionSPFx.id,
-//         name: "azure",
-//         version: "1.0",
-//         activeResourcePlugins: [fehostPlugin.name],
-//       },
-//     };
-//     // We leverage the fact that in testing env, this is not file at `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`
-//     // So we even don't need to mock fs.readJson
-//     const result = await solution.provision(mockedCtx);
-//     expect(result.isErr()).to.be.true;
-//     expect(result._unsafeUnwrapErr().name).equals("ManifestLoadFailed");
-//   });
+  it("should return false even if provisionSucceeded is true", async () => {
+    const solution = new TeamsAppSolution();
+    const mockedCtx = mockSolutionContext();
+    mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+    const result = await solution.provision(mockedCtx);
+    expect(result.isOk()).to.be.false;
+  });
+});
 
-//   it("should return false even if provisionSucceeded is true", async () => {
-//     const solution = new TeamsAppSolution();
-//     const mockedCtx = mockSolutionContext();
-//     mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
-//     const result = await solution.provision(mockedCtx);
-//     expect(result.isOk()).to.be.false;
-//   });
-// });
+describe("provision() with permission.json file missing", () => {
+  const mocker = sinon.createSandbox();
+  const permissionsJsonPath = "./permissions.json";
 
-// describe("provision() with permission.json file missing", () => {
-//   const mocker = sinon.createSandbox();
-//   const permissionsJsonPath = "./permissions.json";
+  const fileContent: Map<string, any> = new Map();
+  beforeEach(() => {
+    mocker.stub(fs, "writeFile").callsFake((path: number | PathLike, data: any) => {
+      fileContent.set(path.toString(), data);
+    });
+    mocker.stub(fs, "writeJSON").callsFake((file: string, obj: any) => {
+      fileContent.set(file, JSON.stringify(obj));
+    });
+    mocker.stub<any, any>(fs, "pathExists").withArgs(permissionsJsonPath).resolves(false);
+  });
 
-//   const fileContent: Map<string, any> = new Map();
-//   beforeEach(() => {
-//     mocker.stub(fs, "writeFile").callsFake((path: number | PathLike, data: any) => {
-//       fileContent.set(path.toString(), data);
-//     });
-//     mocker.stub(fs, "writeJSON").callsFake((file: string, obj: any) => {
-//       fileContent.set(file, JSON.stringify(obj));
-//     });
-//     mocker.stub<any, any>(fs, "pathExists").withArgs(permissionsJsonPath).resolves(false);
-//   });
+  afterEach(() => {
+    mocker.restore();
+  });
 
-//   afterEach(() => {
-//     mocker.restore();
-//   });
+  it("should return error for Azure projects", async () => {
+    const solution = new TeamsAppSolution();
+    const mockedCtx = mockSolutionContext();
+    mockedCtx.projectSettings = {
+      appName: "my app",
+      currentEnv: "default",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [fehostPlugin.name],
+      },
+    };
+    const result = await solution.provision(mockedCtx);
+    expect(result.isErr()).to.be.true;
+    expect(result._unsafeUnwrapErr().name).equals(SolutionError.MissingPermissionsJson);
+  });
 
-//   it("should return error for Azure projects", async () => {
-//     const solution = new TeamsAppSolution();
-//     const mockedCtx = mockSolutionContext();
-//     mockedCtx.projectSettings = {
-//       appName: "my app",
-//       currentEnv: "default",
-//       projectId: uuid.v4(),
-//       solutionSettings: {
-//         hostType: HostTypeOptionAzure.id,
-//         name: "azure",
-//         version: "1.0",
-//         activeResourcePlugins: [fehostPlugin.name],
-//       },
-//     };
-//     const result = await solution.provision(mockedCtx);
-//     expect(result.isErr()).to.be.true;
-//     expect(result._unsafeUnwrapErr().name).equals(SolutionError.MissingPermissionsJson);
-//   });
+  it("should work for SPFx projects on happy path", async () => {
+    const solution = new TeamsAppSolution();
+    const mockedCtx = mockSolutionContext();
+    mockedCtx.projectSettings = {
+      appName: "my app",
+      currentEnv: "default",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionSPFx.id,
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [spfxPlugin.name],
+      },
+    };
+    solution.doProvision = async function (_ctx: PluginContext): Promise<Result<any, FxError>> {
+      return ok(Void);
+    };
 
-//   it("should work for SPFx projects on happy path", async () => {
-//     const solution = new TeamsAppSolution();
-//     const mockedCtx = mockSolutionContext();
-//     mockedCtx.projectSettings = {
-//       appName: "my app",
-//       currentEnv: "default",
-//       projectId: uuid.v4(),
-//       solutionSettings: {
-//         hostType: HostTypeOptionSPFx.id,
-//         name: "azure",
-//         version: "1.0",
-//         activeResourcePlugins: [spfxPlugin.name],
-//       },
-//     };
-//     solution.doProvision = async function (_ctx: PluginContext): Promise<Result<any, FxError>> {
-//       return ok(Void);
-//     };
+    const result = await solution.provision(mockedCtx);
+    expect(result.isOk()).to.be.true;
+  });
+});
 
-//     const result = await solution.provision(mockedCtx);
-//     expect(result.isOk()).to.be.true;
-//   });
-// });
+describe("provision() happy path for SPFx projects", () => {
+  const mocker = sinon.createSandbox();
+  // const permissionsJsonPath = "./permissions.json";
 
-// describe("provision() happy path for SPFx projects", () => {
-//   const mocker = sinon.createSandbox();
-//   // const permissionsJsonPath = "./permissions.json";
+  const fileContent: Map<string, any> = new Map();
+  const mockedAppDef: IAppDefinition = {
+    appName: "MyApp",
+    teamsAppId: "qwertasdf",
+  };
+  const mockedManifest = _.cloneDeep(validManifest);
+  // ignore icons for simplicity
+  mockedManifest.icons.color = "";
+  mockedManifest.icons.outline = "";
+  beforeEach(() => {
+    mocker.stub(fs, "writeFile").callsFake((path: number | PathLike, data: any) => {
+      fileContent.set(path.toString(), data);
+    });
+    mocker.stub(fs, "writeJSON").callsFake((file: string, obj: any) => {
+      fileContent.set(file, JSON.stringify(obj));
+    });
+    mocker
+      .stub<any, any>(fs, "readJson")
+      .withArgs(`./.${ConfigFolderName}/${REMOTE_MANIFEST}`)
+      .resolves(mockedManifest);
+    // mocker.stub<any, any>(fs, "pathExists").withArgs(permissionsJsonPath).resolves(true);
+    mocker.stub(AppStudioClient, "createApp").resolves(mockedAppDef);
+    mocker.stub(AppStudioClient, "updateApp").resolves(mockedAppDef);
+  });
 
-//   const fileContent: Map<string, any> = new Map();
-//   const mockedAppDef: IAppDefinition = {
-//     appName: "MyApp",
-//     teamsAppId: "qwertasdf",
-//   };
-//   const mockedManifest = _.cloneDeep(validManifest);
-//   // ignore icons for simplicity
-//   mockedManifest.icons.color = "";
-//   mockedManifest.icons.outline = "";
-//   beforeEach(() => {
-//     mocker.stub(fs, "writeFile").callsFake((path: number | PathLike, data: any) => {
-//       fileContent.set(path.toString(), data);
-//     });
-//     mocker.stub(fs, "writeJSON").callsFake((file: string, obj: any) => {
-//       fileContent.set(file, JSON.stringify(obj));
-//     });
-//     mocker
-//       .stub<any, any>(fs, "readJson")
-//       .withArgs(`./.${ConfigFolderName}/${REMOTE_MANIFEST}`)
-//       .resolves(mockedManifest);
-//     // mocker.stub<any, any>(fs, "pathExists").withArgs(permissionsJsonPath).resolves(true);
-//     mocker.stub(AppStudioClient, "createApp").resolves(mockedAppDef);
-//     mocker.stub(AppStudioClient, "updateApp").resolves(mockedAppDef);
-//   });
+  afterEach(() => {
+    mocker.restore();
+  });
 
-//   afterEach(() => {
-//     mocker.restore();
-//   });
+  it("should succeed if app studio returns successfully", async () => {
+    const solution = new TeamsAppSolution();
+    const mockedCtx = mockSolutionContext();
+    mockedCtx.projectSettings = {
+      appName: "my app",
+      currentEnv: "default",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionSPFx.id,
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [spfxPlugin.name, appStudioPlugin.name],
+      },
+    };
 
-//   it("should succeed if app studio returns successfully", async () => {
-//     const solution = new TeamsAppSolution();
-//     const mockedCtx = mockSolutionContext();
-//     mockedCtx.projectSettings = {
-//       appName: "my app",
-//       currentEnv: "default",
-//       projectId: uuid.v4(),
-//       solutionSettings: {
-//         hostType: HostTypeOptionSPFx.id,
-//         name: "azure",
-//         version: "1.0",
-//         activeResourcePlugins: [spfxPlugin.name, appStudioPlugin.name],
-//       },
-//     };
-
-//     expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be.undefined;
-//     expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).to.be.undefined;
-//     const result = await solution.provision(mockedCtx);
-//     expect(result.isOk()).to.be.true;
-//     expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be.true;
-//     expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).equals(
-//       mockedAppDef.teamsAppId
-//     );
-//     expect(solution.runningState).equals(SolutionRunningState.Idle);
-//   });
-// });
+    expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be.undefined;
+    expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).to.be.undefined;
+    const result = await solution.provision(mockedCtx);
+    expect(result.isOk()).to.be.true;
+    expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be.true;
+    expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).equals(
+      mockedAppDef.teamsAppId
+    );
+    expect(solution.runningState).equals(SolutionRunningState.Idle);
+  });
+});
 
 describe("provision() happy path for Azure projects", () => {
   const mocker = sinon.createSandbox();

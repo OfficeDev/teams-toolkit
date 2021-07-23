@@ -21,7 +21,6 @@ import { GLOBAL_CONFIG, SolutionError } from "./constants";
 import { v4 as uuidv4 } from "uuid";
 import { ResourceManagementClient } from "@azure/arm-resources";
 import { askSubscription } from "../../../common/tools";
-import * as failpoint from "@microsoft/failpoint-ts";
 
 export type AzureSubscription = {
   displayName: string;
@@ -138,10 +137,6 @@ async function askCommonQuestions(
   if (needCreateResourceGroup) {
     const response = await rmClient.resourceGroups.createOrUpdate(resourceGroupName, {
       location: commonQuestions.location,
-    });
-
-    failpoint.inject("solution/failedToCreateResourceGroup", () => {
-      throw new Error(`Azure Connection Timeout`);
     });
 
     if (response.name === undefined) {

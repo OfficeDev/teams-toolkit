@@ -502,7 +502,9 @@ export class AppStudioPluginImpl {
       }
     } else {
       appDirectory = `${ctx.root}/.${ConfigFolderName}`;
-      manifestString = JSON.stringify(ctx.app);
+      manifestString = (
+        await fs.readFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`)
+      ).toString();
     }
 
     if (!appDirectory) {

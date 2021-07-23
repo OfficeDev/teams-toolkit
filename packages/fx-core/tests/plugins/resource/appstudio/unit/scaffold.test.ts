@@ -46,7 +46,6 @@ describe("Scaffold", () => {
       configOfOtherPlugins: new Map(),
       config: new ConfigMap(),
       answers: { platform: Platform.VSCode },
-      app: new TeamsAppManifest(),
       projectSettings: undefined,
     };
 

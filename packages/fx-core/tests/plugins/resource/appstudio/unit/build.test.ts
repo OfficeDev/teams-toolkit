@@ -25,7 +25,6 @@ describe("Build Teams Package", () => {
       root: "./tests/plugins/resource/appstudio/resources/",
       configOfOtherPlugins: new Map(),
       config: new ConfigMap(),
-      app: new TeamsAppManifest(),
     };
     ctx.projectSettings = {
       appName: "my app",

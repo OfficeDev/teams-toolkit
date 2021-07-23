@@ -267,7 +267,6 @@ function mockSolutionContext(): SolutionContext {
   config.set(GLOBAL_CONFIG, new ConfigMap());
   return {
     root: ".",
-    // app: new TeamsAppManifest(),
     config,
     dialog: new MockedDialog(),
     ui: new MockUserInteraction(),

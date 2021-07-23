@@ -35,7 +35,6 @@ describe("Reload Manifest and Check Required Fields", () => {
       root: "./",
       configOfOtherPlugins: new Map(),
       config: new ConfigMap(),
-      app: new TeamsAppManifest(),
     };
     internalError_ctx.projectSettings = {
       appName: "my app",
@@ -51,7 +50,6 @@ describe("Reload Manifest and Check Required Fields", () => {
       root: "./",
       configOfOtherPlugins: new Map(),
       config: new ConfigMap(),
-      app: new TeamsAppManifest(),
     };
     ctx.projectSettings = {
       appName: "my app",

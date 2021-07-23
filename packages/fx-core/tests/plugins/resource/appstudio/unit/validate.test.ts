@@ -22,7 +22,6 @@ describe("validate manifest", () => {
       root: "./",
       configOfOtherPlugins: new Map(),
       config: new ConfigMap(),
-      app: new TeamsAppManifest(),
     };
 
     const botplugin: Plugin = new TeamsBot();

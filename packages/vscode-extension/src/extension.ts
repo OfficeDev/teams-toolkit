@@ -213,6 +213,10 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(runIconCmd);
   registerRunIcon();
 
+  context.subscriptions.push(
+    vscode.workspace.onDidSaveTextDocument(handlers.saveTextDocumentHandler)
+  );
+
   // 2. Call activate function of toolkit core.
   await handlers.activate();
 

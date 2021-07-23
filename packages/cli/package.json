@@ -22,7 +22,7 @@
     "test:e2e:parallel": "mocha --no-timeouts --parallel --require ts-node/register \"tests/e2e/**/*.tests.ts\"",
     "test:e2e:smoke": "mocha --no-timeouts --require ts-node/register \"tests/e2e/smoke/*.tests.ts\"",
     "test:e2e:others": "mocha --no-timeouts --require ts-node/register \"tests/e2e/{,!(smoke)}/*.tests.ts\"",
-    "test:unit": "nyc mocha --no-timeouts --require ts-node/register \"tests/unit/**/*.tests.ts\"",
+    "test:unit": "nyc mocha --require ts-node/register \"tests/unit/**/*.tests.ts\"",
     "check-format": "prettier --list-different --config .prettierrc.json --ignore-path .prettierignore \"{src,tests}/**/*.ts\" \"*.{js,json}\"",
     "format": "prettier --write --config .prettierrc.json --ignore-path .prettierignore \"{src,tests}/**/*.ts\" \"*.{js,json}\"",
     "lint:fix": "eslint \"src/**/*.ts\" \"tests/**/*.ts\" --fix",

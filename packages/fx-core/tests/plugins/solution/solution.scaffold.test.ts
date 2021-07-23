@@ -21,6 +21,7 @@ import * as sinon from "sinon";
 import fs, { PathLike } from "fs-extra";
 import {
   BotOptionItem,
+  HostTypeOptionAzure,
   HostTypeOptionSPFx,
   MessageExtensionItem,
   TabOptionItem,
@@ -95,7 +96,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
       currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
-        hostType: HostTypeOptionSPFx.id,
+        hostType: HostTypeOptionAzure.id,
         name: "azure",
         version: "1.0",
         activeResourcePlugins: [fehostPlugin.name],
@@ -117,7 +118,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
       currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
-        hostType: HostTypeOptionSPFx.id,
+        hostType: HostTypeOptionAzure.id,
         name: "azure",
         version: "1.0",
         activeResourcePlugins: [fehostPlugin.name, botPlugin.name],
@@ -140,7 +141,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
       currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
-        hostType: HostTypeOptionSPFx.id,
+        hostType: HostTypeOptionAzure.id,
         name: "azure",
         version: "1.0",
         activeResourcePlugins: [fehostPlugin.name, botPlugin.name],

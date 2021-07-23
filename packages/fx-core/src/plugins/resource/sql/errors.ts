@@ -91,7 +91,8 @@ export class ErrorMessage {
 
   public static readonly SqlAccessError = {
     name: "SqlAccessError",
-    message: (sqlName: string, detail = "") => `Failed to access server '${sqlName}'. ${detail}`,
+    message: (sqlName: string, ip: string, detail = "") =>
+      `Failed to access server '${sqlName}', please refer the help to add '${ip}' into the server firewall rule since your public ip may occasionally change. ${detail}`,
   };
 
   public static readonly UnhandledError = {

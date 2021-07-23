@@ -104,7 +104,6 @@ export class TeamsBotImpl {
 
       this.config.scaffold.botId = botRegistration.botId;
       this.config.scaffold.botPassword = botRegistration.botPassword;
-
     }
 
     this.config.scaffold.wayToRegisterBot = pickedWay;
@@ -173,12 +172,12 @@ export class TeamsBotImpl {
     CheckThrowSomethingMissing(ConfigNames.RESOURCE_GROUP, this.config.provision.resourceGroup);
     CheckThrowSomethingMissing(ConfigNames.LOCATION, this.config.provision.location);
     CheckThrowSomethingMissing(ConfigNames.SKU_NAME, this.config.provision.skuName);
-    CheckThrowSomethingMissing(CommonStrings.SHORT_APP_NAME, this.ctx?.app.name.short);
+    CheckThrowSomethingMissing(CommonStrings.SHORT_APP_NAME, this.ctx.projectSettings?.appName);
 
     if (!this.config.provision.siteName) {
       this.config.provision.siteName = ResourceNameFactory.createCommonName(
         this.config.resourceNameSuffix,
-        this.ctx?.app.name.short,
+        this.ctx.projectSettings?.appName,
         MaxLengths.WEB_APP_SITE_NAME
       );
       Logger.debug(`Site name generated to use is ${this.config.provision.siteName}.`);
@@ -228,7 +227,7 @@ export class TeamsBotImpl {
   }
 
   private async provisionWebApp() {
-    CheckThrowSomethingMissing(CommonStrings.SHORT_APP_NAME, this.ctx?.app.name.short);
+    CheckThrowSomethingMissing(CommonStrings.SHORT_APP_NAME, this.ctx?.projectSettings?.appName);
 
     const serviceClientCredentials = await this.getAzureAccountCredenial();
 
@@ -243,7 +242,7 @@ export class TeamsBotImpl {
       this.config.provision.appServicePlan ??
       ResourceNameFactory.createCommonName(
         this.config.resourceNameSuffix,
-        this.ctx?.app.name.short,
+        this.ctx?.projectSettings?.appName,
         MaxLengths.APP_SERVICE_PLAN_NAME
       );
     Logger.info(Messages.ProvisioningAzureAppServicePlan);
@@ -576,7 +575,7 @@ export class TeamsBotImpl {
 
     const botReg: IBotRegistration = {
       botId: this.config.localDebug.localBotId,
-      name: this.ctx!.app.name.short + PluginLocalDebug.LOCAL_DEBUG_SUFFIX,
+      name: this.ctx!.projectSettings?.appName + PluginLocalDebug.LOCAL_DEBUG_SUFFIX,
       description: "",
       iconUrl: "",
       messagingEndpoint: endpoint,
@@ -605,7 +604,7 @@ export class TeamsBotImpl {
       botChannelRegistrationName,
       this.config.scaffold.botId!,
       endpoint,
-      this.ctx?.app.name.short
+      this.ctx?.projectSettings?.appName
     );
     Logger.info(Messages.SuccessfullyUpdatedBotMessageEndpoint);
   }
@@ -632,7 +631,7 @@ export class TeamsBotImpl {
   private async createNewBotRegistrationOnAppStudio() {
     const appStudioToken = await this.ctx?.appStudioToken?.getAccessToken();
     CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
-    CheckThrowSomethingMissing(CommonStrings.SHORT_APP_NAME, this.ctx?.app.name.short);
+    CheckThrowSomethingMissing(CommonStrings.SHORT_APP_NAME, this.ctx?.projectSettings?.appName);
 
     if (
       this.config.localDebug.botRegistrationCreated() &&
@@ -645,7 +644,7 @@ export class TeamsBotImpl {
     // 1. Create a new AAD App Registraion with client secret.
     const aadDisplayName = ResourceNameFactory.createCommonName(
       this.config.resourceNameSuffix,
-      this.ctx?.app.name.short,
+      this.ctx?.projectSettings?.appName,
       MaxLengths.AAD_DISPLAY_NAME
     );
 
@@ -659,7 +658,7 @@ export class TeamsBotImpl {
     // 2. Register bot by app studio.
     const botReg: IBotRegistration = {
       botId: botAuthCreds.clientId,
-      name: this.ctx!.app.name.short + PluginLocalDebug.LOCAL_DEBUG_SUFFIX,
+      name: this.ctx!.projectSettings?.appName + PluginLocalDebug.LOCAL_DEBUG_SUFFIX,
       description: "",
       iconUrl: "",
       messagingEndpoint: "",
@@ -681,21 +680,20 @@ export class TeamsBotImpl {
     if (!this.config.localDebug.localObjectId) {
       this.config.localDebug.localObjectId = botAuthCreds.objectId;
     }
-
   }
 
   private async createNewBotRegistrationOnAzure() {
     // 1. Create a new AAD App Registraion with client secret.
     const appStudioToken = await this.ctx?.appStudioToken?.getAccessToken();
     CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
-    CheckThrowSomethingMissing(CommonStrings.SHORT_APP_NAME, this.ctx?.app.name.short);
+    CheckThrowSomethingMissing(CommonStrings.SHORT_APP_NAME, this.ctx?.projectSettings?.appName);
 
     let botAuthCreds = new BotAuthCredential();
 
     if (!this.config.scaffold.botRegistrationCreated()) {
       const aadDisplayName = ResourceNameFactory.createCommonName(
         this.config.resourceNameSuffix,
-        this.ctx?.app.name.short,
+        this.ctx?.projectSettings?.appName,
         MaxLengths.AAD_DISPLAY_NAME
       );
       botAuthCreds = await AADRegistration.registerAADAppAndGetSecretByAppStudio(
@@ -731,7 +729,7 @@ export class TeamsBotImpl {
       ? this.config.provision.botChannelRegName
       : ResourceNameFactory.createCommonName(
           this.config.resourceNameSuffix,
-          this.ctx?.app.name.short,
+          this.ctx?.projectSettings?.appName,
           MaxLengths.BOT_CHANNEL_REG_NAME
         );
 
@@ -741,7 +739,7 @@ export class TeamsBotImpl {
       this.config.provision.resourceGroup!,
       botChannelRegistrationName,
       botAuthCreds.clientId!,
-      this.ctx?.app.name.short
+      this.ctx?.projectSettings?.appName
     );
     Logger.info(Messages.SuccessfullyProvisionedAzureBotChannelRegistration);
 
@@ -757,6 +755,5 @@ export class TeamsBotImpl {
     if (!this.config.provision.botChannelRegName) {
       this.config.provision.botChannelRegName = botChannelRegistrationName;
     }
-
   }
 }

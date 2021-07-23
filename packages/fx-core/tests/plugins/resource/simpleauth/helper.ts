@@ -138,6 +138,7 @@ export class TestHelper {
         },
       },
       projectSettings: {
+        appName: "hello-app",
         solutionSettings: {
           activeResourcePlugins: [
             Constants.AadAppPlugin.id,

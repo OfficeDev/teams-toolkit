@@ -21,10 +21,10 @@ import * as sinon from "sinon";
 import fs from "fs-extra";
 import {
   GLOBAL_CONFIG,
-  REMOTE_MANIFEST,
   SolutionError,
   SOLUTION_PROVISION_SUCCEEDED,
 } from "../../../src/plugins/solution/fx-solution/constants";
+import { REMOTE_MANIFEST } from "../../../src/plugins/resource/appstudio/constants";
 import {
   AzureSolutionQuestionNames,
   HostTypeOptionAzure,

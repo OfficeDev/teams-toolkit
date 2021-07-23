@@ -27,7 +27,6 @@ const context: any = {
       DependentPluginInfo.solutionPluginName,
       new Map<string, string>([
         [DependentPluginInfo.resourceGroupName, "ut"],
-        [DependentPluginInfo.subscriptionId, "ut"],
         [DependentPluginInfo.resourceNameSuffix, "ut"],
         [DependentPluginInfo.location, "ut"],
         [DependentPluginInfo.programmingLanguage, "javascript"],
@@ -82,9 +81,16 @@ const context: any = {
         return;
       },
     }),
+    getSelectedSubscription: async () => {
+      return {
+        subscriptionId: "subscriptionId",
+        tenantId: "tenantId",
+        subscriptionName: "subscriptionName",
+      };
+    },
   },
   root: path.join(__dirname, "ut"),
-  answers: {platform: Platform.VSCode}
+  answers: { platform: Platform.VSCode },
 };
 
 describe(FunctionPluginInfo.pluginName, () => {

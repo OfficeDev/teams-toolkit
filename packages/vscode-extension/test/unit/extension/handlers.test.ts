@@ -44,7 +44,7 @@ suite("handlers", () => {
 
     test("No globalState error", async () => {
       const result = await handlers.activate();
-      chai.expect(result.isOk() ? result.value : result.error.name).equals({});
+      chai.assert.deepEqual(result.isOk() ? result.value : result.error.name, {});
     });
   });
 

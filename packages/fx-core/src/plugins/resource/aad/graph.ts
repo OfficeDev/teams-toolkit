@@ -63,7 +63,7 @@ export namespace GraphClient {
   ): Promise<IAADPassword> {
     if (!objectId) {
       throw new Error(
-        `${GraphClientErrorMessage.UpdateFailed}: ${GraphClientErrorMessage.AppObjectIdIsNull}.`
+        `${GraphClientErrorMessage.CreateSecretFailed}: ${GraphClientErrorMessage.AppObjectIdIsNull}.`
       );
     }
 
@@ -88,7 +88,7 @@ export namespace GraphClient {
     }
 
     throw new Error(
-      `${GraphClientErrorMessage.UpdateFailed}: ${GraphClientErrorMessage.EmptyResponse}.`
+      `${GraphClientErrorMessage.CreateSecretFailed}: ${GraphClientErrorMessage.EmptyResponse}.`
     );
   }
 
@@ -111,7 +111,7 @@ export namespace GraphClient {
     );
   }
 
-  function initAxiosInstance(graphToken: string) {
+  export function initAxiosInstance(graphToken: string) {
     const instance = axios.create({
       baseURL: baseUrl,
     });

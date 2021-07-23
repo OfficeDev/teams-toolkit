@@ -65,13 +65,15 @@ export function toYargsOptions(data: Question): Options {
   //   data.default = choices[0];
   // }
 
-  const defaultValue = data.default;
-  if (defaultValue && defaultValue instanceof Array && defaultValue.length > 0) {
-    data.default = defaultValue.map((item) => item.toLocaleLowerCase());
-  } else if (defaultValue && typeof defaultValue === "string") {
-    data.default = defaultValue.toLocaleLowerCase();
+  let defaultValue;
+  if (data.default && data.default instanceof Array && data.default.length > 0) {
+    defaultValue = data.default.map((item) => item.toLocaleLowerCase());
+  } else if (data.default && typeof data.default === "string") {
+    defaultValue = data.default.toLocaleLowerCase();
+  } else {
+    defaultValue = undefined;
   }
-  if (data.default === undefined) {
+  if (defaultValue === undefined) {
     return {
       array: data.type === "multiSelect",
       description: data.title || "",
@@ -84,7 +86,7 @@ export function toYargsOptions(data: Question): Options {
   return {
     array: data.type === "multiSelect",
     description: data.title || "",
-    default: data.default,
+    default: defaultValue,
     choices: choices,
     hidden: !!(data as any).hide,
     global: false,

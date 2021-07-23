@@ -14,7 +14,7 @@ import CliTelemetryInstance, { CliTelemetry } from "./telemetry/cliTelemetry";
 import { CliTelemetryReporter } from "./commonlib/telemetry";
 import { readFileSync } from "fs";
 import path from "path";
-import { Correlator } from "../../fx-core/build";
+import { Correlator } from "@microsoft/teamsfx-core";
 
 export abstract class YargsCommand {
   /**

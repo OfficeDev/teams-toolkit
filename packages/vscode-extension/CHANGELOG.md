@@ -6,7 +6,7 @@ Incremental version for Teams Toolkit with multiple bugs fixed and the following
 
 New Feature:
 - Add CLI command 'teamsfx preview' to directly preview Teams apps after scaffolding.
-- For multiple developers collaborate on one project, Teams Toolkit enable developers to create their own local environment by pressing F5. 
+- For multiple developers collaborate on one project, Teams Toolkit enables developers to create their own local environment by pressing F5. 
 - Add encryption to secret data in .userdata file, and support view/edit secret data through VS Code UI and CLI tool.
 
 Enhancement:

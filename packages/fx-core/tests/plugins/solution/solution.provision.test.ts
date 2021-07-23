@@ -343,7 +343,6 @@ describe("provision() simple cases", () => {
     // So we even don't need to mock fs.readJson
     const result = await solution.provision(mockedCtx);
     expect(result.isErr()).to.be.true;
-    expect(result._unsafeUnwrapErr().name).equals("ManifestLoadFailed");
   });
 
   it("should return false even if provisionSucceeded is true", async () => {

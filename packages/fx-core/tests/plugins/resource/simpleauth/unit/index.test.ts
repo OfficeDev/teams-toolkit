@@ -18,6 +18,7 @@ import * as dotenv from "dotenv";
 import { Utils } from "../../../../../src/plugins/resource/simpleauth/utils/common";
 import { PluginContext } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
+import { mockSolutionUpdateArmTemplates } from "../../util";
 
 chai.use(chaiAsPromised);
 
@@ -84,12 +85,13 @@ describe("simpleAuthPlugin", () => {
     const generateArmTemplatesResult = await simpleAuthPlugin.generateArmTemplates(pluginContext);
 
     // Assert
+    const testModuleFileName = "simple_auth_test.bicep";
     const mockedSolutionDataContext = {
       plugins: activeResourcePlugins,
       "fx-resource-simple-auth": {
         modules: {
           simpleAuthProvision: {
-            path: "./simple_auth_test.bicep",
+            path: `./${testModuleFileName}`,
           },
         },
       },
@@ -97,7 +99,7 @@ describe("simpleAuthPlugin", () => {
 
     chai.assert.isTrue(generateArmTemplatesResult.isOk());
     if (generateArmTemplatesResult.isOk()) {
-      const expectedResult = TestHelper.mockSolutionUpdateArmTemplates(
+      const expectedResult = mockSolutionUpdateArmTemplates(
         mockedSolutionDataContext,
         generateArmTemplatesResult.value
       );
@@ -107,10 +109,7 @@ describe("simpleAuthPlugin", () => {
         "expectedBicepFiles",
         "onlyWithSimpleAuthPlugin"
       );
-      const expectedModuleFilePath = path.join(
-        expectedBicepFileDirectory,
-        "simple_auth_test.bicep"
-      );
+      const expectedModuleFilePath = path.join(expectedBicepFileDirectory, testModuleFileName);
       chai.assert.strictEqual(
         expectedResult.Modules.simpleAuthProvision.Content,
         fs.readFileSync(expectedModuleFilePath, "utf-8")
@@ -154,12 +153,13 @@ describe("simpleAuthPlugin", () => {
     const generateArmTemplatesResult = await simpleAuthPlugin.generateArmTemplates(pluginContext);
 
     // Assert
+    const testModuleFileName = "simple_auth_test.bicep";
     const mockedSolutionDataContext = {
       plugins: activeResourcePlugins,
       "fx-resource-simple-auth": {
         modules: {
           simpleAuthProvision: {
-            path: "./simple_auth_test.bicep",
+            path: `./${testModuleFileName}`,
           },
         },
       },
@@ -172,7 +172,7 @@ describe("simpleAuthPlugin", () => {
 
     chai.assert.isTrue(generateArmTemplatesResult.isOk());
     if (generateArmTemplatesResult.isOk()) {
-      const expectedResult = TestHelper.mockSolutionUpdateArmTemplates(
+      const expectedResult = mockSolutionUpdateArmTemplates(
         mockedSolutionDataContext,
         generateArmTemplatesResult.value
       );
@@ -182,10 +182,7 @@ describe("simpleAuthPlugin", () => {
         "expectedBicepFiles",
         "withAllPlugins"
       );
-      const expectedModuleFilePath = path.join(
-        expectedBicepFileDirectory,
-        "simple_auth_test.bicep"
-      );
+      const expectedModuleFilePath = path.join(expectedBicepFileDirectory, testModuleFileName);
       chai.assert.strictEqual(
         expectedResult.Modules.simpleAuthProvision.Content,
         fs.readFileSync(expectedModuleFilePath, "utf-8")

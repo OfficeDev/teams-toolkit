@@ -50,6 +50,11 @@ export class EnvironmentVariables {
 export class FrontendPathInfo {
   static WorkingDir = "tabs";
   static TemplateDir = path.join("plugins", "resource", "frontend");
+  static bicepTemplateFolderName = "bicep";
+  static moduleOrchestrationFileName = "module.template.bicep";
+  static inputParameterOrchestrationFileName = "input_param.template.bicep";
+  static outputOrchestrationFileName = "output.template.bicep";
+  static moduleFileName = "frontendHosting.bicep";
   static TemplateFileExt = ".tpl";
   static TemplatePackageExt = ".zip";
   static BuildFolderName = "build";
@@ -93,6 +98,12 @@ export class FrontendConfigInfo {
   static readonly StorageName = "storageName";
   static readonly Endpoint = "endpoint";
   static readonly Domain = "domain";
+}
+
+export class FrontendOutputBicepSnippet {
+  static readonly StorageName = "frontendHostingProvision.outputs.storageName";
+  static readonly Endpoint = "frontendHostingProvision.outputs.endpoint";
+  static readonly Domain = "frontendHostingProvision.outputs.domain";
 }
 
 export class TelemetryEvent {

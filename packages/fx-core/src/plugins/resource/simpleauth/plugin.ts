@@ -156,7 +156,7 @@ export class SimpleAuthPluginImpl {
 
     const moduleTemplateFilePath = path.join(
       bicepTemplateDirectory,
-      Constants.SimpleAuthBicepModuleTemplateFileName
+      Constants.moduleTemplateFileName
     );
     const moduleContentResult = await generateBicepFiles(moduleTemplateFilePath, context);
     if (moduleContentResult.isErr()) {
@@ -165,15 +165,15 @@ export class SimpleAuthPluginImpl {
 
     const parameterTemplateFilePath = path.join(
       bicepTemplateDirectory,
-      Constants.SimpleAuthBicepOrchestrationParameterFileName
+      Constants.inputParameterOrchestrationFileName
     );
     const resourceTemplateFilePath = path.join(
       bicepTemplateDirectory,
-      Constants.SimpleAuthBicepOrchestrationModuleTemplateFileName
+      Constants.moduleOrchestrationFileName
     );
     const outputTemplateFilePath = path.join(
       bicepTemplateDirectory,
-      Constants.SimpleAuthBicepOrchestrationOutputTemplateFileName
+      Constants.outputOrchestrationFileName
     );
 
     const result: ScaffoldArmTemplateResult = {

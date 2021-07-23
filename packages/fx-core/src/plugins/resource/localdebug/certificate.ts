@@ -115,7 +115,7 @@ export class LocalCertificateManager {
     const exts = [
       {
         name: "basicConstraints",
-        eE: true,
+        cA: false,
       },
       {
         name: "extKeyUsage",
@@ -207,12 +207,12 @@ export class LocalCertificateManager {
 
       // verify extension
       const basicConstraints = cert.getExtension("basicConstraints") as {
-        eE?: boolean;
+        cA?: boolean;
       };
       if (
         basicConstraints === undefined ||
-        basicConstraints.eE === undefined ||
-        !basicConstraints.eE
+        basicConstraints.cA === undefined ||
+        basicConstraints.cA
       ) {
         return [thumbprint, false];
       }

@@ -20,7 +20,6 @@ import {
 import { GLOBAL_CONFIG, SolutionError } from "./constants";
 import { v4 as uuidv4 } from "uuid";
 import { ResourceManagementClient } from "@azure/arm-resources";
-import { askSubscription } from "../../../common/tools";
 
 export type AzureSubscription = {
   displayName: string;
@@ -54,25 +53,8 @@ export async function checkSubscription(
     );
   }
   const activeSubscriptionId = ctx.config.get(GLOBAL_CONFIG)?.get("subscriptionId");
-  const askSubRes = await askSubscription(ctx.azureAccountProvider!, ctx.ui!, activeSubscriptionId);
-  if (askSubRes.isErr()) return err(askSubRes.error);
-  const sub = askSubRes.value;
-  await ctx.azureAccountProvider?.setSubscription(sub.subscriptionId);
-  ctx.config.get(GLOBAL_CONFIG)?.set("subscriptionId", sub.subscriptionId);
-  ctx.config.get(GLOBAL_CONFIG)?.set("tenantId", sub.tenantId);
-  ctx.treeProvider?.refresh([
-    {
-      commandId: "fx-extension.selectSubscription",
-      label: sub.subscriptionName,
-      callback: () => {
-        return Promise.resolve(ok(null));
-      },
-      parent: "fx-extension.signinAzure",
-      contextValue: "selectSubscription",
-      icon: "subscriptionSelected",
-    },
-  ]);
-  return ok(sub);
+  const askSubRes = await ctx.azureAccountProvider!.getSelectedSubscription(true);
+  return ok(askSubRes!);
 }
 
 /**

@@ -184,10 +184,7 @@ export function newPluginContext(): PluginContext {
       ],
       [
         PluginSolution.PLUGIN_NAME,
-        new Map<string, string>([
-          [PluginSolution.TENANT_ID, utils.genUUID()],
-          [PluginSolution.LOCATION, "Central US"],
-        ]),
+        new Map<string, string>([[PluginSolution.LOCATION, "Central US"]]),
       ],
     ]),
     config: new ConfigMap(),
@@ -277,7 +274,7 @@ export function newPluginContext(): PluginContext {
           tenantId: "tenantId",
           subscriptionName: "subscriptionName",
         });
-      }
+      },
     },
   };
 }

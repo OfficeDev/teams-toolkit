@@ -31,11 +31,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { checkSubscription, fillInCommonQuestions } from "./commonQuestions";
 import { executeLifecycles, executeConcurrently, LifecyclesWithContext } from "./executor";
-import {
-  getPluginContext,
-  getSubsriptionDisplayName,
-  sendErrorTelemetryThenReturnError,
-} from "./util";
+import { getPluginContext, sendErrorTelemetryThenReturnError } from "./util";
 import * as fs from "fs-extra";
 import {
   DEFAULT_PERMISSION_REQUEST,
@@ -541,8 +537,10 @@ export class TeamsAppSolution implements Solution {
 
       // Only Azure project requires this confirm dialog
       const username = (azureToken as any).username ? (azureToken as any).username : "";
-      const subscriptionId = ctx.config.get(GLOBAL_CONFIG)?.getString("subscriptionId");
-      const subscriptionName = await getSubsriptionDisplayName(azureToken!, subscriptionId!);
+      const subscriptionInfo = await ctx.azureAccountProvider?.getSelectedSubscription();
+
+      const subscriptionId = subscriptionInfo?.subscriptionId;
+      const subscriptionName = subscriptionInfo?.subscriptionName;
       const msg = util.format(
         getStrings().solution.ProvisionConfirmNotice,
         username,

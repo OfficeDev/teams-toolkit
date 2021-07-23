@@ -123,7 +123,7 @@ async function buildContext(
     apiDocumentPath: "openapi/openapi.json",
     apiPrefix: "apim-plugin-test",
   };
-  const answer:Inputs = {
+  const answer: Inputs = {
     [QuestionConstants.VSCode.Apim.questionName]: {
       id: QuestionConstants.VSCode.Apim.createNewApimOption,
       label: QuestionConstants.VSCode.Apim.createNewApimOption,
@@ -133,7 +133,7 @@ async function buildContext(
       label: QuestionConstants.VSCode.ApiVersion.createNewApiVersionOption,
     },
     [QuestionConstants.VSCode.NewApiVersion.questionName]: "v1",
-    platform: Platform.VS
+    platform: Platform.VS,
   };
   const ctx = new MockPluginContext(
     resourceName,
@@ -149,7 +149,6 @@ async function buildContext(
 
 function buildSolutionConfig(resourceNameSuffix: string): ISolutionConfig {
   return {
-    subscriptionId: EnvConfig.subscriptionId,
     resourceNameSuffix: resourceNameSuffix,
     resourceGroupName: UT_RESOURCE_GROUP,
     teamsAppTenantId: EnvConfig.tenantId,

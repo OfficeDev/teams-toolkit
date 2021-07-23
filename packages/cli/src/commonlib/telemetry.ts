@@ -4,6 +4,9 @@
 
 import Reporter from "../telemetry/telemetryReporter";
 import { TelemetryReporter } from "@microsoft/teamsfx-api";
+import { Correlator } from "@microsoft/teamsfx-core";
+import { TelemetryProperty } from "../telemetry/cliTelemetryEvents";
+import { getProjectId } from "../utils";
 
 /**
  *  CLI telemetry reporter used by fx-core.
@@ -16,6 +19,7 @@ import { TelemetryReporter } from "@microsoft/teamsfx-api";
  */
 export class CliTelemetryReporter implements TelemetryReporter {
   private readonly reporter: Reporter;
+  private rootFolder: string | undefined;
 
   constructor(key: string, cliName: string, cliVersion: string, appRoot?: string) {
     this.reporter = new Reporter(cliName, cliVersion, key, appRoot);
@@ -23,6 +27,7 @@ export class CliTelemetryReporter implements TelemetryReporter {
 
   withRootFolder(rootPath: string | undefined): CliTelemetryReporter {
     if (rootPath) {
+      this.rootFolder = rootPath;
       this.reporter.setAppRoot(rootPath);
     }
     return this;
@@ -34,6 +39,13 @@ export class CliTelemetryReporter implements TelemetryReporter {
     measurements?: { [p: string]: number },
     errorProps?: string[]
   ): void {
+    if (!properties) {
+      properties = {};
+    }
+
+    const projectId = getProjectId(this.rootFolder);
+    properties[TelemetryProperty.ProjectId] = projectId ? projectId : "";
+    properties[TelemetryProperty.CorrelationId] = Correlator.getId();
     this.reporter.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
   }
 
@@ -42,6 +54,13 @@ export class CliTelemetryReporter implements TelemetryReporter {
     properties?: { [p: string]: string },
     measurements?: { [p: string]: number }
   ): void {
+    if (!properties) {
+      properties = {};
+    }
+
+    const projectId = getProjectId(this.rootFolder);
+    properties[TelemetryProperty.ProjectId] = projectId ? projectId : "";
+    properties[TelemetryProperty.CorrelationId] = Correlator.getId();
     this.reporter.sendTelemetryEvent(eventName, properties, measurements);
   }
 
@@ -50,6 +69,13 @@ export class CliTelemetryReporter implements TelemetryReporter {
     properties?: { [p: string]: string },
     measurements?: { [p: string]: number }
   ): void {
+    if (!properties) {
+      properties = {};
+    }
+
+    const projectId = getProjectId(this.rootFolder);
+    properties[TelemetryProperty.ProjectId] = projectId ? projectId : "";
+    properties[TelemetryProperty.CorrelationId] = Correlator.getId();
     this.reporter.sendTelemetryException(error, properties, measurements);
   }
 

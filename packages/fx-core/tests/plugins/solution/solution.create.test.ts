@@ -14,22 +14,14 @@ import {
 import * as sinon from "sinon";
 import fs, { PathLike } from "fs-extra";
 import {
-  BOTS_TPL,
-  COMPOSE_EXTENSIONS_TPL,
-  CONFIGURABLE_TABS_TPL,
-  DEFAULT_PERMISSION_REQUEST,
   GLOBAL_CONFIG,
   PROGRAMMING_LANGUAGE,
-  REMOTE_MANIFEST,
   SolutionError,
-  STATIC_TABS_TPL,
 } from "../../../src/plugins/solution/fx-solution/constants";
 import {
   AzureSolutionQuestionNames,
   BotOptionItem,
   HostTypeOptionAzure,
-  HostTypeOptionSPFx,
-  MessageExtensionItem,
   TabOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 import * as uuid from "uuid";
@@ -199,180 +191,6 @@ describe("Solution create()", async () => {
     expect(result.isErr()).equals(true);
     expect(result._unsafeUnwrapErr().message).equals("hostType is undefined");
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.InternelError);
-  });
-
-  it("should generate manifest and permissions.json for azure tab", async () => {
-    fileContent.clear();
-    const solution = new TeamsAppSolution();
-    const mockedSolutionCtx = mockSolutionContext();
-    mockedSolutionCtx.projectSettings = {
-      appName: "my app",
-      currentEnv: "default",
-      projectId: uuid.v4(),
-      solutionSettings: {
-        hostType: HostTypeOptionAzure.id,
-        name: "azure",
-        version: "1.0",
-      },
-    };
-    const answers = mockedSolutionCtx.answers!;
-    answers[AzureSolutionQuestionNames.Capabilities as string] = [TabOptionItem.id];
-    answers[AzureSolutionQuestionNames.HostType as string] = HostTypeOptionAzure.id;
-
-    const result = await solution.create(mockedSolutionCtx);
-    expect(result.isOk()).equals(true);
-    const manifest: TeamsAppManifest = JSON.parse(
-      fileContent.get(`${mockedSolutionCtx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`)
-    );
-    expect(manifest.staticTabs).to.deep.equal(STATIC_TABS_TPL);
-    expect(manifest.configurableTabs).to.deep.equal(CONFIGURABLE_TABS_TPL);
-    expect(manifest.bots, "Bots should be empty, because only tab is chosen").to.deep.equal([]);
-    expect(
-      manifest.composeExtensions,
-      "ComposeExtensions should be empty, because only tab is chosen"
-    ).to.deep.equal([]);
-
-    const permissionJson = fileContent.get(`${mockedSolutionCtx.root}/permissions.json`);
-    expect(JSON.parse(permissionJson)).to.be.deep.equal(DEFAULT_PERMISSION_REQUEST);
-  });
-
-  it("should generate manifest and permissions.json for bot", async () => {
-    fileContent.clear();
-    const solution = new TeamsAppSolution();
-    const mockedSolutionCtx = mockSolutionContext();
-    mockedSolutionCtx.projectSettings = {
-      appName: "my app",
-      currentEnv: "default",
-      projectId: uuid.v4(),
-      solutionSettings: {
-        name: "azure",
-        version: "1.0",
-      },
-    };
-    const answers = mockedSolutionCtx.answers!;
-    answers[AzureSolutionQuestionNames.Capabilities as string] = [BotOptionItem.id];
-
-    const result = await solution.create(mockedSolutionCtx);
-    expect(result.isOk()).equals(true);
-    const manifest: TeamsAppManifest = JSON.parse(
-      fileContent.get(`${mockedSolutionCtx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`)
-    );
-    expect(
-      manifest.staticTabs,
-      "staticTabs should be empty, because only bot is chosen"
-    ).to.deep.equal([]);
-    expect(
-      manifest.configurableTabs,
-      "configurableTabs should be empty, because only bot is chosen"
-    ).to.deep.equal([]);
-    expect(manifest.bots).to.deep.equal(BOTS_TPL);
-    expect(
-      manifest.composeExtensions,
-      "ComposeExtensions should be empty, because only bot is chosen"
-    ).to.deep.equal([]);
-
-    const permissionJson = fileContent.get(`${mockedSolutionCtx.root}/permissions.json`);
-    expect(JSON.parse(permissionJson)).to.be.deep.equal(DEFAULT_PERMISSION_REQUEST);
-  });
-
-  it("should generate manifest and permissions.json for messaging extension", async () => {
-    fileContent.clear();
-    const solution = new TeamsAppSolution();
-    const mockedSolutionCtx = mockSolutionContext();
-    mockedSolutionCtx.projectSettings = {
-      appName: "my app",
-      currentEnv: "default",
-      projectId: uuid.v4(),
-      solutionSettings: {
-        name: "azure",
-        version: "1.0",
-      },
-    };
-    const answers = mockedSolutionCtx.answers!;
-    answers[AzureSolutionQuestionNames.Capabilities as string] = [MessageExtensionItem.id];
-
-    const result = await solution.create(mockedSolutionCtx);
-    expect(result.isOk()).equals(true);
-    const manifest: TeamsAppManifest = JSON.parse(
-      fileContent.get(`${mockedSolutionCtx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`)
-    );
-    expect(
-      manifest.staticTabs,
-      "staticTabs should be empty, because only msgext is chosen"
-    ).to.deep.equal([]);
-    expect(
-      manifest.configurableTabs,
-      "configurableTabs should be empty, because msgext bot is chosen"
-    ).to.deep.equal([]);
-    expect(manifest.bots, "Bots should be empty, because only msgext is chosen").to.deep.equal([]);
-    expect(manifest.composeExtensions).to.deep.equal(COMPOSE_EXTENSIONS_TPL);
-
-    const permissionJson = fileContent.get(`${mockedSolutionCtx.root}/permissions.json`);
-    expect(JSON.parse(permissionJson)).to.be.deep.equal(DEFAULT_PERMISSION_REQUEST);
-  });
-
-  it("should generate manifest and permissions.json for tab, bot and messaging extension", async () => {
-    fileContent.clear();
-    const solution = new TeamsAppSolution();
-    const mockedSolutionCtx = mockSolutionContext();
-    mockedSolutionCtx.projectSettings = {
-      appName: "my app",
-      currentEnv: "default",
-      projectId: uuid.v4(),
-      solutionSettings: {
-        name: "azure",
-        version: "1.0",
-      },
-    };
-    const answers = mockedSolutionCtx.answers!;
-    answers[AzureSolutionQuestionNames.Capabilities] = [
-      TabOptionItem.id,
-      BotOptionItem.id,
-      MessageExtensionItem.id,
-    ];
-    answers[AzureSolutionQuestionNames.HostType] = HostTypeOptionAzure.id;
-
-    const result = await solution.create(mockedSolutionCtx);
-    expect(result.isOk()).equals(true);
-    const manifest: TeamsAppManifest = JSON.parse(
-      fileContent.get(`${mockedSolutionCtx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`)
-    );
-    expect(manifest.staticTabs).to.deep.equal(STATIC_TABS_TPL);
-    expect(manifest.configurableTabs).to.deep.equal(CONFIGURABLE_TABS_TPL);
-    expect(manifest.bots).to.deep.equal(BOTS_TPL);
-    expect(manifest.composeExtensions).to.deep.equal(COMPOSE_EXTENSIONS_TPL);
-
-    const permissionJson = fileContent.get(`${mockedSolutionCtx.root}/permissions.json`);
-    expect(JSON.parse(permissionJson)).to.be.deep.equal(DEFAULT_PERMISSION_REQUEST);
-  });
-
-  it("shouldn't generate permissions.json for SPFx project", async () => {
-    fileContent.clear();
-    const solution = new TeamsAppSolution();
-    const mockedSolutionCtx = mockSolutionContext();
-    mockedSolutionCtx.projectSettings = {
-      appName: "my app",
-      currentEnv: "default",
-      projectId: uuid.v4(),
-      solutionSettings: {
-        hostType: HostTypeOptionAzure.id,
-        name: "azure",
-        version: "1.0",
-      },
-    };
-    const answers = mockedSolutionCtx.answers!;
-    answers[AzureSolutionQuestionNames.Capabilities] = [TabOptionItem.id];
-    answers[AzureSolutionQuestionNames.HostType] = HostTypeOptionSPFx.id;
-
-    const result = await solution.create(mockedSolutionCtx);
-    expect(result.isOk()).equals(true);
-    const manifest = fileContent.get(
-      `${mockedSolutionCtx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`
-    );
-    expect(manifest).to.be.not.undefined;
-
-    const permissionJson = fileContent.get(`${mockedSolutionCtx.root}/permissions.json`);
-    expect(permissionJson).to.be.undefined;
   });
 
   afterEach(() => {

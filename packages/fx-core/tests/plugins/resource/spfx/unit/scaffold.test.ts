@@ -23,7 +23,7 @@ describe("SPFxScaffold", function () {
 
   it("scaffold SPFx project without framework", async function () {
     const pluginContext = TestHelper.getFakePluginContext(appName, testFolder, "none");
-    const result = await plugin.scaffold(pluginContext);
+    const result = await plugin.postScaffold(pluginContext);
     expect(result.isOk()).to.eq(true);
     // check specified files
     const files: string[] = [
@@ -53,7 +53,7 @@ describe("SPFxScaffold", function () {
 
   it("scaffold SPFx project with react framework", async function () {
     const pluginContext = TestHelper.getFakePluginContext(appName, testFolder, "react");
-    const result = await plugin.scaffold(pluginContext);
+    const result = await plugin.postScaffold(pluginContext);
 
     expect(result.isOk()).to.eq(true);
     // check specified files
@@ -93,7 +93,7 @@ describe("SPFxScaffold", function () {
       "extremelylongextremelylongextremelylongextremelylongspfxwebpartname"
     );
 
-    const result = await plugin.scaffold(pluginContext);
+    const result = await plugin.postScaffold(pluginContext);
     expect(result.isOk()).to.eq(true);
   });
 

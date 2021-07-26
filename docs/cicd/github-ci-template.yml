@@ -19,9 +19,13 @@ jobs:
       - uses: actions/checkout@v2
 
       # Build the project.
+      # The way to build the current project depends on how you scaffold it.
+      # Different folder structures require different commands set.
       - name: Build the project
         run: cd tabs && npm install && npm run build
 
       # Run unit test.
+      # Currently, no opinioned solution for unit test provided during scaffolding, so,
+      # set up any unit test framework you prefer and update the commands accordingly in below.
       - name: Run Unit Test
         run: cd tabs && npm run test

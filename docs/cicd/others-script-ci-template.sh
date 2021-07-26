@@ -12,10 +12,11 @@ git clone {RepositoryEndpoint}
 cd {FolderName}
 
 # Build the project.
-# The command set below is supposed to run in a Teams App Project with only tab.
-# If there're multiple sub projects pending build, please customize the commands below to build all of them.
+# The way to build the current project depends on how you scaffold it.
+# Different folder structures require different commands set.
 cd tabs && npm install && npm run build
 
 # Run unit test.
-# The command below is supposed to run in a Teams App Project in which `npm run test` will trigger its unit test.
+# Currently, no opinioned solution for unit test provided during scaffolding, so,
+# set up any unit test framework you prefer and update the commands accordingly in below.
 npm run test

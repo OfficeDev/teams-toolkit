@@ -178,7 +178,6 @@ export class AadPluginConfigKeys {
 }
 
 export class SolutionConfigKeys {
-  public static readonly subscriptionId: string = "subscriptionId";
   public static readonly resourceNameSuffix: string = "resourceNameSuffix";
   public static readonly teamsAppTenantId: string = "teamsAppTenantId";
   public static readonly resourceGroupName: string = "resourceGroupName";
@@ -224,7 +223,6 @@ export const ConfigRetryOperations: {
   },
   [TeamsToolkitComponent.Solution]: {
     [SolutionConfigKeys.resourceNameSuffix]: RetryOperation.Create,
-    [SolutionConfigKeys.subscriptionId]: RetryOperation.Login,
     [SolutionConfigKeys.teamsAppTenantId]: RetryOperation.Provision,
     [SolutionConfigKeys.resourceGroupName]: RetryOperation.Provision,
     [SolutionConfigKeys.location]: RetryOperation.Provision,

@@ -21,7 +21,6 @@ import { MockCore } from "./mocks/mockCore";
 import * as extension from "../../../src/extension";
 import * as accountTree from "../../../src/accountTree";
 import TreeViewManagerInstance from "../../../src/commandsTreeViewProvider";
-import { ext } from "../../../src/extensionVariables";
 
 suite("handlers", () => {
   test("getWorkspacePath()", () => {
@@ -45,7 +44,7 @@ suite("handlers", () => {
 
     test("No globalState error", async () => {
       const result = await handlers.activate();
-      chai.expect(result.isOk() ? result.value : result.error.name).equals("TypeError");
+      chai.assert.deepEqual(result.isOk() ? result.value : result.error.name, {});
     });
   });
 

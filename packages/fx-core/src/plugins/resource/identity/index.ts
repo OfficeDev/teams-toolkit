@@ -51,10 +51,10 @@ export class IdentityPlugin implements Plugin {
     TelemetryUtils.sendEvent(Telemetry.stage.provision + Telemetry.startSuffix);
 
     ContextUtils.init(ctx);
-    this.config.azureSubscriptionId = ContextUtils.getConfigString(
-      Constants.solution,
-      Constants.subscriptionId
-    );
+    const subscriptionInfo = await ctx.azureAccountProvider?.getSelectedSubscription();
+    if (subscriptionInfo) {
+      this.config.azureSubscriptionId = subscriptionInfo.subscriptionId;
+    }
     this.config.resourceGroup = ContextUtils.getConfigString(
       Constants.solution,
       Constants.resourceGroupName

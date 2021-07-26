@@ -3,7 +3,6 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { ext } from "./extensionVariables";
 import {
   IQuestion,
   QuestionType,
@@ -12,6 +11,7 @@ import {
   DialogType,
   Dialog,
 } from "@microsoft/teamsfx-api";
+import { globalStateUpdate } from "@microsoft/teamsfx-core";
 import { ProgressHandler } from "./progressHandler";
 
 export class DialogManager implements Dialog {
@@ -59,7 +59,7 @@ export class DialogManager implements Dialog {
   private async askQuestion(question: IQuestion): Promise<Answer> {
     switch (question.type) {
       case QuestionType.UpdateGlobalState:
-        await ext.context.globalState.update(question.description, true);
+        await globalStateUpdate(question.description, true);
         return undefined;
       default:
         return undefined;

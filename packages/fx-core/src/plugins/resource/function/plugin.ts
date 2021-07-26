@@ -103,7 +103,7 @@ export class FunctionPluginImpl {
     skipDeploy: false,
   };
 
-  private syncConfigFromContext(ctx: PluginContext): void {
+  private async syncConfigFromContext(ctx: PluginContext): Promise<void> {
     const solutionConfig: ReadonlyPluginConfig | undefined = ctx.configOfOtherPlugins.get(
       DependentPluginInfo.solutionPluginName
     );
@@ -114,7 +114,10 @@ export class FunctionPluginImpl {
     this.config.resourceGroupName = solutionConfig?.get(
       DependentPluginInfo.resourceGroupName
     ) as string;
-    this.config.subscriptionId = solutionConfig?.get(DependentPluginInfo.subscriptionId) as string;
+    const subscriptionInfo = await ctx.azureAccountProvider?.getSelectedSubscription();
+    if (subscriptionInfo) {
+      this.config.subscriptionId = subscriptionInfo.subscriptionId;
+    }
     this.config.location = solutionConfig?.get(DependentPluginInfo.location) as string;
     this.config.functionLanguage = solutionConfig?.get(
       DependentPluginInfo.programmingLanguage
@@ -260,7 +263,7 @@ export class FunctionPluginImpl {
   }
 
   public async preScaffold(ctx: PluginContext): Promise<FxResult> {
-    this.syncConfigFromContext(ctx);
+    await this.syncConfigFromContext(ctx);
 
     const workingPath: string = this.getFunctionProjectRootPath(ctx);
     const functionLanguage: FunctionLanguage = this.checkAndGet(
@@ -313,7 +316,7 @@ export class FunctionPluginImpl {
   }
 
   public async preProvision(ctx: PluginContext): Promise<FxResult> {
-    this.syncConfigFromContext(ctx);
+    await this.syncConfigFromContext(ctx);
 
     if (
       !this.config.functionAppName ||
@@ -604,7 +607,7 @@ export class FunctionPluginImpl {
   }
 
   public async preDeploy(ctx: PluginContext): Promise<FxResult> {
-    this.syncConfigFromContext(ctx);
+    await this.syncConfigFromContext(ctx);
 
     const workingPath: string = this.getFunctionProjectRootPath(ctx);
     const functionLanguage: FunctionLanguage = this.checkAndGet(

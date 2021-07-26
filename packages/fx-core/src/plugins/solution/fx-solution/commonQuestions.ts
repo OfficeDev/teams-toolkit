@@ -120,6 +120,7 @@ async function askCommonQuestions(
     const response = await rmClient.resourceGroups.createOrUpdate(resourceGroupName, {
       location: commonQuestions.location,
     });
+
     if (response.name === undefined) {
       return err(
         returnSystemError(

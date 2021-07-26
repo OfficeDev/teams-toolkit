@@ -185,7 +185,7 @@ export default class QuickStart extends React.Component<any, any> {
                       </a>,
                       ".",
                     ]}
-                    actionText="Download Node.js (v14.x)"
+                    actionText="Download Node.js"
                     onAction={this.downloadNode}
                     secondaryActionText="Next"
                     onSecondaryAction={() => {
@@ -512,7 +512,7 @@ export default class QuickStart extends React.Component<any, any> {
 
     vscode.postMessage({
       command: Commands.OpenExternalLink,
-      data: "https://nodejs.org/dist/latest-v14.x/",
+      data: "https://nodejs.org/en/download",
     });
 
     const done = this.state.stepsDone;

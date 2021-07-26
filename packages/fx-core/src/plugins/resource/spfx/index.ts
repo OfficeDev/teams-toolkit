@@ -87,9 +87,9 @@ export class SpfxPlugin implements Plugin {
     return ok(spfx_frontend_host);
   }
 
-  public async scaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
+  public async postScaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
     return await this.runWithErrorHandling(ctx, TelemetryEvent.Scaffold, () =>
-      this.spfxPluginImpl.scaffold(ctx)
+      this.spfxPluginImpl.postScaffold(ctx)
     );
   }
 
@@ -103,14 +103,6 @@ export class SpfxPlugin implements Plugin {
     return await this.runWithErrorHandling(ctx, TelemetryEvent.Deploy, () =>
       this.spfxPluginImpl.deploy(ctx)
     );
-  }
-
-  public async getManifest(): Promise<TeamsAppManifest> {
-    const templateFolder = path.join(getTemplatesFolder(), "plugins", "resource", "spfx");
-    const manifestFile = path.resolve(templateFolder, "./solution/manifest.json");
-    const manifestString = (await fs.readFile(manifestFile)).toString();
-    const manifest: TeamsAppManifest = JSON.parse(manifestString);
-    return manifest;
   }
 
   private async runWithErrorHandling(

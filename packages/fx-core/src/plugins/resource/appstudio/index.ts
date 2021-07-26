@@ -157,6 +157,24 @@ export class AppStudioPlugin implements Plugin {
     return this.appStudioPluginImpl.createManifestForRemote(ctx, maybeSelectedPlugins, manifest);
   }
 
+  public async scaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
+    TelemetryUtils.init(ctx);
+    TelemetryUtils.sendStartEvent(TelemetryEventName.scaffold);
+    try {
+      const scaffoldResult = await this.appStudioPluginImpl.scaffold(ctx);
+      TelemetryUtils.sendSuccessEvent(TelemetryEventName.scaffold);
+      return ok(scaffoldResult);
+    } catch (error) {
+      TelemetryUtils.sendErrorEvent(TelemetryEventName.scaffold, error);
+      return err(
+        AppStudioResultFactory.SystemError(
+          AppStudioError.ScaffoldFailedError.name,
+          AppStudioError.ScaffoldFailedError.message(error)
+        )
+      );
+    }
+  }
+
   /**
    * Build Teams Package
    * @param {string} appDirectory - The directory contains manifest.source.json and two images
@@ -209,7 +227,9 @@ export class AppStudioPlugin implements Plugin {
             ctx,
             appDirectory
           );
-          const msg = `Successfully created ${ctx.app.name.short} app package file at ${appPackagePath}. Send this to your administrator for approval.`;
+          const msg = `Successfully created ${
+            ctx.projectSettings!.appName
+          } app package file at ${appPackagePath}. Send this to your administrator for approval.`;
           ctx.ui?.showMessage("info", msg, false, "OK", Constants.READ_MORE).then((value) => {
             if (value.isOk() && value.value === Constants.READ_MORE) {
               ctx.ui?.openUrl(Constants.PUBLISH_GUIDE);

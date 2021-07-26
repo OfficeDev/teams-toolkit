@@ -6,6 +6,7 @@ import * as fs from "fs-extra";
 import {
   ConfigFolderName,
   LogProvider,
+  Platform,
   PluginContext,
   UserInteraction,
 } from "@microsoft/teamsfx-api";
@@ -19,11 +20,14 @@ import * as ps from "./util/process";
 const continueText = "Continue";
 const learnMoreText = "Learn More";
 const learnMoreUrl = "https://aka.ms/teamsfx-ca-certificate";
-const confirmMessage =
+const warningMessage =
   'To debug applications in Teams, your localhost server must be on HTTPS.\
  For Teams to trust the self-signed SSL certificate used by the toolkit, a self-signed certificate must be added to your certificate store.\
  You may skip this step, but you\'ll have to manually trust the secure connection in a new browser window when debugging your apps in Teams.\
- For more information "https://aka.ms/teamsfx-ca-certificate". You may be asked for your account credentials when installing the certificate.';
+ For more information "https://aka.ms/teamsfx-ca-certificate".';
+const confirmMessage =
+  warningMessage +
+  " You may be asked for your account credentials when installing the certificate.";
 
 export interface LocalCertificate {
   certPath: string;
@@ -33,12 +37,14 @@ export interface LocalCertificate {
 
 export class LocalCertificateManager {
   private readonly ui?: UserInteraction;
+  private readonly platform?: Platform;
   private readonly logger?: LogProvider;
   private readonly certFolder: string;
 
   constructor(ctx: PluginContext | undefined) {
     this.ui = ctx?.ui;
     this.logger = ctx?.logProvider;
+    this.platform = ctx?.answers?.platform;
     this.certFolder = `${os.homedir()}/.${ConfigFolderName}/certificate`;
   }
 
@@ -288,6 +294,8 @@ export class LocalCertificateManager {
   ): Promise<boolean> {
     try {
       if (os.type() === "Windows_NT") {
+        this.showWarningMessage();
+
         const installCertCommand = `certutil -user -grouppolicy -addstore TrustedPeople '${certPath}'`;
         await ps.execPowerShell(installCertCommand);
 
@@ -333,6 +341,22 @@ export class LocalCertificateManager {
       // treat any error as uninstall failure, to not block the main progress
       this.logger?.debug(`Failed to uninstall certificate. Details: ${error}`);
       return false;
+    }
+  }
+
+  private showWarningMessage() {
+    if (this.ui) {
+      if (this.platform === Platform.CLI) {
+        // no user interaction for CLI
+        this.ui.showMessage("warn", warningMessage, false);
+      } else {
+        this.ui.showMessage("warn", warningMessage, false, learnMoreText).then((result) => {
+          const userSelected = result.isOk() ? result.value : undefined;
+          if (userSelected === learnMoreText) {
+            this.ui!.openUrl(learnMoreUrl);
+          }
+        });
+      }
     }
   }
 

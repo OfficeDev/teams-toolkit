@@ -1,13 +1,7 @@
 {
     "version": "independent",
     "packages": [
-        "packages/api",
-        "packages/fx-core",
-        "packages/sdk",
-        "packages/cli",
-        "packages/vscode-extension",
-        "packages/failpoint-ts",
-        "templates"
+        "packages/failpoint-ts"
     ],
     "command": {
         "version": {

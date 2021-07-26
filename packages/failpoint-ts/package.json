@@ -1,0 +1,37 @@
+{
+  "name": "@microsoft/failpoint-ts",
+  "version": "0.0.1",
+  "description": "Fault Injection for TypeScript",
+  "keywords": [
+    "Fault Injection"
+  ],
+  "author": "Wang Yefu <yefuwang@microsoft.com>",
+  "homepage": "https://github.com/OfficeDev/TeamsFx#readme",
+  "license": "MIT",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OfficeDev/TeamsFx.git"
+  },
+  "scripts": {
+    "test": "npm run test:unit",
+    "test:unit": "npx nyc --check-coverage --reporter=json-summary --reporter=text mocha --no-timeouts --require ts-node/register test/**/*.test.ts",
+    "build": "npx tsc -p ./",
+    "prepare": "rimraf build && npm run build"
+  },
+  "bugs": {
+    "url": "https://github.com/OfficeDev/TeamsFx/issues"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.2.21",
+    "@types/mocha": "^8.2.3",
+    "@types/node": "^16.0.0",
+    "chai": "^4.3.4",
+    "mocha": "^9.0.2",
+    "nyc": "^15.1.0",
+    "ts-node": "^10.1.0",
+    "ttypescript": "^1.5.12",
+    "typescript": "^4.3.5"
+  }
+}

@@ -20,6 +20,9 @@
     "build": "npx tsc -p ./",
     "prepare": "rimraf build && npm run build"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "bugs": {
     "url": "https://github.com/OfficeDev/TeamsFx/issues"
   },

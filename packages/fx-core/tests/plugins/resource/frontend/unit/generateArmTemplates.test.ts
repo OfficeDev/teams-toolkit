@@ -62,7 +62,7 @@ describe("FrontendGenerateArmTemplates", () => {
       const expectedBicepFileDirectory = path.join(__dirname, "expectedBicepFiles");
       const expectedModuleFilePath = path.join(expectedBicepFileDirectory, testModuleFileName);
       chai.assert.strictEqual(
-        expectedResult.Modules.simpleAuthProvision.Content,
+        expectedResult.Modules.frontendHostingProvision.Content,
         fs.readFileSync(expectedModuleFilePath, "utf-8")
       );
       const expectedModuleSnippetFilePath = path.join(expectedBicepFileDirectory, "module.bicep");

@@ -280,7 +280,7 @@ export class FrontendPluginImpl {
 
     const result: ScaffoldArmTemplateResult = {
       Modules: {
-        simpleAuthProvision: {
+        frontendHostingProvision: {
           Content: await fs.readFile(moduleFilePath, "utf-8"),
         },
       },

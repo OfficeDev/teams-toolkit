@@ -119,6 +119,8 @@ export class TelemetryEvent {
   static readonly PreDeploy = "pre-deploy";
   static readonly Deploy = "deploy";
   static readonly SkipDeploy = "skip-deploy";
+
+  static readonly GenerateArmTemplates = "generate-arm-templates";
 }
 
 export class TelemetryKey {

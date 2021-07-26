@@ -1,6 +1,6 @@
 
 module frontendHostingProvision './frontend_hosting_test.bicep' = {
-  name: 'frontendHostingDeploy'
+  name: 'frontendHostingProvision'
   params: {
     frontend_hosting_storage_name: frontendHosting_storageName
   }

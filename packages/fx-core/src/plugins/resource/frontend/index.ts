@@ -83,7 +83,7 @@ export class FrontendPlugin implements Plugin {
 
   public async generateArmTemplates(ctx: PluginContext): Promise<TeamsFxResult> {
     FrontendPlugin.setContext(ctx);
-    return this.runWithErrorHandling(ctx, TelemetryEvent.Deploy, () =>
+    return this.runWithErrorHandling(ctx, TelemetryEvent.GenerateArmTemplates, () =>
       this.frontendPluginImpl.generateArmTemplates(ctx)
     );
   }

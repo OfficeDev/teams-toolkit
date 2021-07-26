@@ -1,19 +1,14 @@
+import { Json } from "@microsoft/teamsfx-api";
 import { compileHandlebarsTemplateString } from "../../../src";
 import { ScaffoldArmTemplateResult } from "../../../src/common/armInterface";
 
 export function mockSolutionUpdateArmTemplates(
-  mockedData: any,
+  mockedData: Json,
   template: ScaffoldArmTemplateResult
 ): ScaffoldArmTemplateResult {
-  return {
+  const result = {
     Modules: template.Modules,
     Orchestration: {
-      ParameterTemplate: {
-        Content: compileHandlebarsTemplateString(
-          template.Orchestration.ParameterTemplate!.Content,
-          mockedData
-        ),
-      },
       ModuleTemplate: {
         Content: compileHandlebarsTemplateString(
           template.Orchestration.ModuleTemplate.Content,
@@ -21,12 +16,42 @@ export function mockSolutionUpdateArmTemplates(
         ),
         Outputs: template.Orchestration.ModuleTemplate.Outputs,
       },
-      OutputTemplate: {
-        Content: compileHandlebarsTemplateString(
-          template.Orchestration.OutputTemplate!.Content,
-          mockedData
-        ),
-      },
     },
   } as ScaffoldArmTemplateResult;
+
+  if (template.Orchestration.OutputTemplate) {
+    result.Orchestration.OutputTemplate = {
+      Content: compileHandlebarsTemplateString(
+        template.Orchestration.OutputTemplate.Content,
+        mockedData
+      ),
+    };
+  }
+
+  if (template.Orchestration.VariableTemplate) {
+    result.Orchestration.VariableTemplate = {
+      Content: compileHandlebarsTemplateString(
+        template.Orchestration.VariableTemplate.Content,
+        mockedData
+      ),
+    };
+  }
+
+  if (template.Orchestration.ParameterTemplate) {
+    result.Orchestration.ParameterTemplate = {
+      Content: compileHandlebarsTemplateString(
+        template.Orchestration.ParameterTemplate.Content,
+        mockedData
+      ),
+    };
+
+    if (template.Orchestration.ParameterTemplate.ParameterFile) {
+      result.Orchestration.ParameterTemplate.ParameterFile = compileHandlebarsTemplateString(
+        template.Orchestration.ParameterTemplate.ParameterFile,
+        mockedData
+      );
+    }
+  }
+
+  return result;
 }

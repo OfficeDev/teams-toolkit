@@ -7,14 +7,8 @@ import { SolutionRunningState, TeamsAppSolution } from " ../../../src/plugins/so
 import {
   ConfigFolderName,
   ConfigMap,
-  FxError,
-  ok,
-  PluginContext,
-  Result,
   SolutionConfig,
   SolutionContext,
-  TeamsAppManifest,
-  Void,
   Plugin,
   Platform,
 } from "@microsoft/teamsfx-api";

@@ -6,7 +6,6 @@ import {
   PluginContext,
   Context,
   ConfigMap,
-  TeamsAppManifest,
   FxError,
   TelemetryReporter,
   UserError,

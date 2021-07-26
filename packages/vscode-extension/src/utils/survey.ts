@@ -19,10 +19,10 @@ const SAMPLE_PERCENTAGE = 25; // 25 percent for public preview
 export class ExtensionSurvey {
   private context: vscode.ExtensionContext;
   private timeToShowSurvey: number;
-  private samplePercentage: number;
   private timeToDisableSurvey: number;
   private checkSurveyInterval?: NodeJS.Timeout;
   private showSurveyTimeout?: NodeJS.Timeout;
+  private needToShow = false;
 
   constructor(
     context: vscode.ExtensionContext,
@@ -32,12 +32,16 @@ export class ExtensionSurvey {
   ) {
     this.context = context;
     this.timeToShowSurvey = timeToShowSurvey ? timeToShowSurvey : TIME_TO_SHOW_SURVEY;
-    this.samplePercentage = samplePercentage ? samplePercentage : SAMPLE_PERCENTAGE;
+
+    const randomSample: number = Math.floor(Math.random() * 100) + 1;
+    if (randomSample <= (samplePercentage ? samplePercentage : SAMPLE_PERCENTAGE)) {
+      this.needToShow = true;
+    }
     this.timeToDisableSurvey = timeToDisableSurvey ? timeToDisableSurvey : TIME_TO_DISABLE_SURVEY;
   }
 
   public async activate(): Promise<void> {
-    if (!this.checkSurveyInterval) {
+    if (this.needToShow && !this.checkSurveyInterval) {
       this.checkSurveyInterval = setInterval(() => {
         if (!this.shouldShowBanner()) {
           return;
@@ -64,11 +68,6 @@ export class ExtensionSurvey {
 
     const disableSurveyForTime = globalStateGet(ExtensionSurveyStateKeys.DisableSurveyForTime, 0);
     if (disableSurveyForTime > currentTime) {
-      return false;
-    }
-
-    const randomSample: number = Math.floor(Math.random() * 100) + 1;
-    if (randomSample > this.samplePercentage) {
       return false;
     }
 
@@ -110,8 +109,6 @@ export class ExtensionSurvey {
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Survey, {
           message: StringResources.vsc.survey.remindMeLater.message,
         });
-        const remindMeLaterTime = Date.now() + this.timeToShowSurvey;
-        await globalStateUpdate(ExtensionSurveyStateKeys.RemindMeLater, remindMeLaterTime);
       },
     };
 

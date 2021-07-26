@@ -34,6 +34,10 @@ export class Messages {
   static readonly EndPreDeploy = (name: string) => `Pre-deployed '${name}'.`;
   static readonly StartDeploy = (name: string) => `Deploying '${name}'.`;
   static readonly EndDeploy = (name: string) => `Successfully deployed '${name}'.`;
+  static readonly StartGenerateArmTemplates = (name: string) =>
+    `Generating ARM templates '${name}'.`;
+  static readonly EndGenerateArmTemplates = (name: string) =>
+    `Successfully generated ARM templates '${name}'.`;
 
   static readonly SkipBuild =
     "Skip building Tab frontend project because no change was detected since last build.";

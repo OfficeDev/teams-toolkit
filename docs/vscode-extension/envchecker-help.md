@@ -26,6 +26,8 @@ Please refer to [nodejs.org](https://nodejs.org/) to download and install the su
 
 Please refer to [the official website](https://dotnet.microsoft.com/download) to download and install the supported versions: `.NET 5.0 SDK` or `.NET Core 3.1 SDK`.
 
+**NOTE for M1 Mac Users**: Current neither `.NET 5.0 SDK` or `.NET Core 3.1 SDK` supports M1 Mac (see [this GitHub issue](https://github.com/dotnet/core/issues/4879)).
+
 **NOTE**: Please restart all your Visual Studio Code instances after the installation is finished.
 
 ## How to install Azure Functions Core Tools?

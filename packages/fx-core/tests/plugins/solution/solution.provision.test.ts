@@ -537,6 +537,13 @@ describe("provision() happy path for Azure projects", () => {
       return ok(Void);
     };
 
+    mockProvisionThatAlwaysSucceed(appStudioPlugin);
+    appStudioPlugin.postProvision = async function (
+      ctx: PluginContext
+    ): Promise<Result<any, FxError>> {
+      return ok(mockedAppDef.teamsAppId);
+    };
+
     aadPlugin.setApplicationInContext = function (
       ctx: PluginContext,
       _isLocalDebug?: boolean

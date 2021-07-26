@@ -125,3 +125,36 @@ export function browserConfig(testType) {
 
   return baseConfig;
 }
+
+export function blazorConfig() {
+  let baseConfig = {
+    input: input,
+    output: {
+      file: "dist/teamsfx.js",
+      format: "es",
+      sourcemap: true,
+      name: "TeamsFx",
+    },
+    preserveSymlinks: false,
+    plugins: [
+      sourcemaps(),
+      replace({
+        delimiters: ["", ""],
+        // replace dynamic checks with if (false) since this is for
+        // browser only. Rollup's dead code elimination will remove
+        // any code guarded by if (isNode) { ... }
+        "if (isNode)": "if (false)",
+        preventAssignment: true,
+      }),
+      nodeResolve({
+        mainFields: ["module", "browser"],
+        preferBuiltins: false,
+        browser: true,
+      }),
+      cjs(),
+      terser(),
+    ],
+  };
+
+  return baseConfig;
+}

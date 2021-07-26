@@ -36,7 +36,7 @@ describe(FunctionPluginInfo.pluginName, () => {
       chai.assert.equal(err.issueLink, link);
     };
 
-    it("create UserError with link", async () => {
+    it("Test create UserError with link", async () => {
       const result: FxResult = ResultFactory.UserError(errorMsg, "ut", link);
       chai.assert.isTrue(result.isErr());
 
@@ -44,7 +44,7 @@ describe(FunctionPluginInfo.pluginName, () => {
       checkUserError(err, link);
     });
 
-    it("create UserError without link", async () => {
+    it("Test create UserError without link", async () => {
       const result: FxResult = ResultFactory.UserError(errorMsg, "ut");
       chai.assert.isTrue(result.isErr());
 
@@ -52,7 +52,7 @@ describe(FunctionPluginInfo.pluginName, () => {
       checkUserError(err, DefaultValues.helpLink);
     });
 
-    it("create SystemError with link", async () => {
+    it("Test create SystemError with link", async () => {
       const result: FxResult = ResultFactory.SystemError(errorMsg, "ut", link);
       chai.assert.isTrue(result.isErr());
 
@@ -60,7 +60,7 @@ describe(FunctionPluginInfo.pluginName, () => {
       checkSystemError(err, link);
     });
 
-    it("create Success", async () => {
+    it("Test create Success", async () => {
       const result: FxResult = ResultFactory.Success("test");
 
       chai.assert.isTrue(result.isOk());

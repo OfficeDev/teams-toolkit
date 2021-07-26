@@ -8,7 +8,7 @@ on:
       - synchronize
 
 jobs:
-  main:
+  pr-title:
     runs-on: ubuntu-latest
     steps:
       # Please look up the latest version from
@@ -21,7 +21,7 @@ jobs:
     if: ${{ github.event_name == 'pull_request' && github.pull_request.types != 'edited' }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout dev branch
+      - name: Checkout branch
         uses: actions/checkout@v2
         with:
           ref: ${{ github.ref }}

@@ -92,6 +92,13 @@ const context: any = {
         return;
       },
     }),
+    getSelectedSubscription: async () => {
+      return {
+        subscriptionId: "subscriptionId",
+        tenantId: "tenantId",
+        subscriptionName: "subscriptionName",
+      };
+    },
   },
   root: __dirname,
   answers: { platform: Platform.VSCode },

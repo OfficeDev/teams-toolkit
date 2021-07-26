@@ -51,6 +51,13 @@ export class TestHelper {
     getAccountCredentialAsync: async () => {
       return TestHelper.fakeCredential;
     },
+    getSelectedSubscription: async () => {
+      return {
+        subscriptionId: "subscriptionId",
+        tenantId: "tenantId",
+        subscriptionName: "subscriptionName",
+      };
+    },
   } as AzureAccountProvider;
 
   static fakeLogProvider: LogProvider = {
@@ -79,7 +86,6 @@ export class TestHelper {
 
   static getFakePluginContext(): PluginContext {
     const solutionConfig = new Map();
-    solutionConfig.set(DependentPluginInfo.SubscriptionId, TestHelper.fakeSubscriptionId);
     solutionConfig.set(DependentPluginInfo.ResourceNameSuffix, TestHelper.storageSuffix);
     solutionConfig.set(DependentPluginInfo.ResourceGroupName, TestHelper.rgName);
     solutionConfig.set(DependentPluginInfo.Location, TestHelper.location);

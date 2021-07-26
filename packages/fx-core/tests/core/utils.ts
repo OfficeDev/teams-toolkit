@@ -406,7 +406,7 @@ export function MockProjectSettings(appName: string): ProjectSettings {
   };
 }
 
-export function MockPreviousContext(): Json {
+export function MockPreviousVersionBefore2_3_0Context(): Json {
   return {
     solution: {
       teamsAppTenantId: "tenantId",
@@ -423,13 +423,13 @@ export function MockPreviousContext(): Json {
   };
 }
 
-export function MockPreviousUserData(): Record<string, string> {
+export function MockPreviousVersionBefore2_3_0UserData(): Record<string, string> {
   return {
     "fx-resource-aad-app-for-teams.local_clientSecret": "local_clientSecret",
   };
 }
 
-export function MockLatestContext(): Json {
+export function MockLatestVersion2_3_0Context(): Json {
   return {
     solution: {
       teamsAppTenantId: "{{solution.teamsAppTenantId}}",
@@ -447,7 +447,7 @@ export function MockLatestContext(): Json {
   };
 }
 
-export function MockLatestUserData(): Record<string, string> {
+export function MockLatestVersion2_3_0UserData(): Record<string, string> {
   return {
     "fx-resource-aad-app-for-teams.local_clientId": "local_clientId_new",
     "fx-resource-aad-app-for-teams.local_clientSecret": "local_clientSecret_new",

@@ -48,10 +48,10 @@ import { ContextInjecterMW } from "../../src/core/middleware/contextInjecter";
 import { ConfigWriterMW } from "../../src/core/middleware/configWriter";
 import sinon from "sinon";
 import {
-  MockLatestContext,
-  MockLatestUserData,
-  MockPreviousContext,
-  MockPreviousUserData,
+  MockLatestVersion2_3_0UserData,
+  MockLatestVersion2_3_0Context,
+  MockPreviousVersionBefore2_3_0UserData,
+  MockPreviousVersionBefore2_3_0Context,
   MockProjectSettings,
   MockSolutionLoader,
   MockTools,
@@ -940,12 +940,11 @@ describe("Middleware", () => {
     });
 
     it("Previous context and userdata", async () => {
-      envJson = MockPreviousContext();
-      userData = MockPreviousUserData();
+      envJson = MockPreviousVersionBefore2_3_0Context();
+      userData = MockPreviousVersionBefore2_3_0UserData();
       MockFunctions();
 
-      class MyClass {
-        name = "jay";
+      class ProjectUpgradeHook {
         tools = new MockTools();
         async upgrade(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
           assert.equal(userData["fx-resource-aad-app-for-teams.local_clientId"], "local_clientId");
@@ -962,22 +961,21 @@ describe("Middleware", () => {
         }
       }
 
-      hooks(MyClass, {
+      hooks(ProjectUpgradeHook, {
         upgrade: [ProjectUpgraderMW],
       });
 
-      const my = new MyClass();
+      const my = new ProjectUpgradeHook();
       const res = await my.upgrade(inputs);
       assert.isTrue(res.isOk() && res.value === "");
     });
 
     it("Previous context and new userdata", async () => {
-      envJson = MockPreviousContext();
-      userData = MockLatestUserData();
+      envJson = MockPreviousVersionBefore2_3_0Context();
+      userData = MockLatestVersion2_3_0UserData();
       MockFunctions();
 
-      class MyClass {
-        name = "jay";
+      class ProjectUpgradeHook {
         tools = new MockTools();
         async upgrade(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
           assert.equal(
@@ -997,22 +995,21 @@ describe("Middleware", () => {
         }
       }
 
-      hooks(MyClass, {
+      hooks(ProjectUpgradeHook, {
         upgrade: [ProjectUpgraderMW],
       });
 
-      const my = new MyClass();
+      const my = new ProjectUpgradeHook();
       const res = await my.upgrade(inputs);
       assert.isTrue(res.isOk() && res.value === "");
     });
 
     it("New context and previous userdata", async () => {
-      envJson = MockLatestContext();
-      userData = MockPreviousUserData();
+      envJson = MockLatestVersion2_3_0Context();
+      userData = MockPreviousVersionBefore2_3_0UserData();
       MockFunctions();
 
-      class MyClass {
-        name = "jay";
+      class ProjectUpgradeHook {
         tools = new MockTools();
         async upgrade(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
           assert.equal(userData["fx-resource-aad-app-for-teams.local_clientId"], undefined);
@@ -1029,21 +1026,21 @@ describe("Middleware", () => {
         }
       }
 
-      hooks(MyClass, {
+      hooks(ProjectUpgradeHook, {
         upgrade: [ProjectUpgraderMW],
       });
 
-      const my = new MyClass();
+      const my = new ProjectUpgradeHook();
       const res = await my.upgrade(inputs);
       assert.isTrue(res.isOk() && res.value === "");
     });
 
     it("Previous context and userdata without secret", async () => {
-      envJson = MockPreviousContext();
+      envJson = MockPreviousVersionBefore2_3_0Context();
       userData = {};
       MockFunctions();
 
-      class MyClass {
+      class ProjectUpgradeHook {
         name = "jay";
         tools = new MockTools();
         async upgrade(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
@@ -1061,11 +1058,11 @@ describe("Middleware", () => {
         }
       }
 
-      hooks(MyClass, {
+      hooks(ProjectUpgradeHook, {
         upgrade: [ProjectUpgraderMW],
       });
 
-      const my = new MyClass();
+      const my = new ProjectUpgradeHook();
       const res = await my.upgrade(inputs);
       assert.isTrue(res.isOk() && res.value === "");
     });

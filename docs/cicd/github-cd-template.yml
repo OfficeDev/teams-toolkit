@@ -18,8 +18,8 @@ jobs:
       M365_ACCOUNT_NAME: ${{secrets.M365_ACCOUNT_NAME}}
       M365_ACCOUNT_PASSWORD: ${{secrets.M365_ACCOUNT_PASSWORD}}
 
-      # If the hosting environment is not provisioned, set this environment variable to false.
-      # or if it's provisioned and has not updates, set this environment variable to true.
+      # If the hosting environment is not provisioned, set this environment variable to true.
+      # or if it's provisioned and has not updates, set this environment variable to false.
       RUN_PROVISION: true 
 
       # The following two environment variables works together with ${{ secrets.AZURE_STORAGE_CREDENTIALS }}

@@ -27,8 +27,8 @@ export class SqlClient {
         return false;
       }
     } catch (error) {
-      if (error?.message?.includes(ErrorMessage.AccessMessage) && extractIp(error.message)) {
-        const ip = extractIp(error.message);
+      let ip: string | undefined;
+      if (error?.message?.includes(ErrorMessage.AccessMessage) && (ip = extractIp(error.message))) {
         this.ctx.logProvider?.error(
           ErrorMessage.SqlAccessError.message(this.config.identity, ip!, error.message)
         );

@@ -21,6 +21,8 @@ export class ExtensionSurvey {
   private timeToShowSurvey: number;
   private samplePercentage: number;
   private timeToDisableSurvey: number;
+  private checkSurveyInterval?: NodeJS.Timeout;
+  private showSurveyTimeout?: NodeJS.Timeout;
 
   constructor(
     context: vscode.ExtensionContext,
@@ -35,11 +37,17 @@ export class ExtensionSurvey {
   }
 
   public async activate(): Promise<void> {
-    if (!this.shouldShowBanner()) {
-      return;
-    }
+    if (!this.checkSurveyInterval) {
+      this.checkSurveyInterval = setInterval(() => {
+        if (!this.shouldShowBanner()) {
+          return;
+        }
 
-    setTimeout(() => this.showSurvey(), this.timeToShowSurvey);
+        if (!this.showSurveyTimeout && ExtTelemetry.hasSentTelemetry) {
+          this.showSurveyTimeout = setTimeout(() => this.showSurvey(), this.timeToShowSurvey);
+        }
+      }, 2000);
+    }
   }
 
   public shouldShowBanner(): boolean {
@@ -123,6 +131,11 @@ export class ExtensionSurvey {
       remind,
       never
     );
+
+    if (this.showSurveyTimeout) {
+      clearTimeout(this.showSurveyTimeout);
+      this.showSurveyTimeout = undefined;
+    }
 
     if (selection) {
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Survey, {

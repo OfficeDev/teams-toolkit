@@ -17,6 +17,13 @@ export class TestHelper {
         getAccountCredentialAsync() {
           return credentials;
         },
+        getSelectedSubscription: async () => {
+          return {
+            subscriptionId: "subscriptionId",
+            tenantId: "tenantId",
+            subscriptionName: "subscriptionName",
+          };
+        },
       },
       logProvider: {
         async info(message: string): Promise<boolean> {
@@ -138,6 +145,7 @@ export class TestHelper {
         },
       },
       projectSettings: {
+        appName: "hello-app",
         solutionSettings: {
           activeResourcePlugins: [
             Constants.AadAppPlugin.id,

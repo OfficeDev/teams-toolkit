@@ -31,11 +31,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { checkSubscription, fillInCommonQuestions } from "./commonQuestions";
 import { executeLifecycles, executeConcurrently, LifecyclesWithContext } from "./executor";
-import {
-  getPluginContext,
-  getSubsriptionDisplayName,
-  sendErrorTelemetryThenReturnError,
-} from "./util";
+import { getPluginContext, sendErrorTelemetryThenReturnError } from "./util";
 import * as fs from "fs-extra";
 import {
   DEFAULT_PERMISSION_REQUEST,
@@ -52,7 +48,6 @@ import {
   REMOTE_APPLICATION_ID_URIS,
   REMOTE_CLIENT_SECRET,
   PROGRAMMING_LANGUAGE,
-  REMOTE_MANIFEST,
   REMOTE_TEAMS_APP_ID,
   CancelError,
   SolutionTelemetryProperty,
@@ -96,6 +91,7 @@ import { AadAppForTeamsPlugin, AppStudioPlugin, SpfxPlugin } from "../../resourc
 import { ErrorHandlerMW } from "../../../core/middleware/errorHandler";
 import { hooks } from "@feathersjs/hooks/lib";
 import { Service, Container } from "typedi";
+import { REMOTE_MANIFEST } from "../../resource/appstudio/constants";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -277,12 +273,6 @@ export class TeamsAppSolution implements Solution {
     await fs.copy(defaultColorPath, `${ctx.root}/.${ConfigFolderName}/color.png`);
     await fs.copy(defaultOutlinePath, `${ctx.root}/.${ConfigFolderName}/outline.png`);
     if (this.isAzureProject(ctx)) {
-      const manifest = await this.AppStudioPlugin.createManifest(ctx.projectSettings!);
-      // if (manifest) Object.assign(ctx.app, manifest);
-      await fs.writeFile(
-        `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`,
-        JSON.stringify(manifest, null, 4)
-      );
       await fs.writeJSON(`${ctx.root}/permissions.json`, DEFAULT_PERMISSION_REQUEST, { spaces: 4 });
       ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.Create, {
         [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
@@ -290,12 +280,6 @@ export class TeamsAppSolution implements Solution {
         [SolutionTelemetryProperty.Resources]: solutionSettings.azureResources.join(";"),
         [SolutionTelemetryProperty.Capabilities]: solutionSettings.capabilities.join(";"),
       });
-    } else {
-      const manifest = await (this.SpfxPlugin as SpfxPlugin).getManifest();
-      await fs.writeFile(
-        `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`,
-        JSON.stringify(manifest, null, 4)
-      );
     }
     return ok(Void);
   }
@@ -325,22 +309,9 @@ export class TeamsAppSolution implements Solution {
 
   private getSelectedPlugins(ctx: SolutionContext): Result<Plugin[], FxError> {
     const settings = this.getAzureSolutionSettings(ctx);
-    const map = getAllResourcePluginMap();
-    const results: Plugin[] = [];
-    for (const name of settings.activeResourcePlugins) {
-      const plugin = map.get(name);
-      if (!plugin) {
-        return err(
-          returnUserError(
-            new Error(`Plugin name ${name} is not valid`),
-            "Solution",
-            SolutionError.PluginNotFound
-          )
-        );
-      }
-      results.push(plugin);
-    }
-    return ok(results);
+    const plugins = getActivatedResourcePlugins(settings);
+    settings.activeResourcePlugins = plugins.map((p) => p.name);
+    return ok(plugins);
   }
 
   /**
@@ -364,17 +335,10 @@ export class TeamsAppSolution implements Solution {
     ctx: SolutionContext,
     selectedPlugins: LoadedPlugin[]
   ): Promise<Result<any, FxError>> {
-    const appStudioPlugin = this.AppStudioPlugin as AppStudioPlugin;
-    const maybeManifest = await appStudioPlugin.reloadManifestAndCheckRequiredFields(ctx.root);
-    if (maybeManifest.isErr()) {
-      return maybeManifest;
-    }
-    const manifest = maybeManifest.value;
-
     const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(
       ctx,
       selectedPlugins,
-      manifest
+      new TeamsAppManifest()
     );
     const preScaffoldWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(([plugin, context]) => {
       return [plugin?.preScaffold?.bind(plugin), context, plugin.name];
@@ -573,8 +537,10 @@ export class TeamsAppSolution implements Solution {
 
       // Only Azure project requires this confirm dialog
       const username = (azureToken as any).username ? (azureToken as any).username : "";
-      const subscriptionId = ctx.config.get(GLOBAL_CONFIG)?.getString("subscriptionId");
-      const subscriptionName = await getSubsriptionDisplayName(azureToken!, subscriptionId!);
+      const subscriptionInfo = await ctx.azureAccountProvider?.getSelectedSubscription();
+
+      const subscriptionId = subscriptionInfo?.subscriptionId;
+      const subscriptionName = subscriptionInfo?.subscriptionName;
       const msg = util.format(
         getStrings().solution.ProvisionConfirmNotice,
         username,
@@ -1676,7 +1642,7 @@ export class TeamsAppSolution implements Solution {
     }
     let change = false;
     const notifications: string[] = [];
-    const pluginsToScaffold: LoadedPlugin[] = [this.LocalDebugPlugin];
+    const pluginsToScaffold: LoadedPlugin[] = [this.LocalDebugPlugin, this.AppStudioPlugin];
     for (const cap of capabilitiesAnswer!) {
       if (!settings.capabilities.includes(cap)) {
         settings.capabilities.push(cap);
@@ -1696,25 +1662,6 @@ export class TeamsAppSolution implements Solution {
 
     if (change) {
       await this.reloadPlugins(settings);
-      if (this.isAzureProject(ctx)) {
-        const manifest = await (this.AppStudioPlugin as AppStudioPlugin).createManifest(
-          ctx.projectSettings!
-        );
-        // if (manifest) Object.assign(ctx.app, manifest);
-        await fs.writeFile(
-          `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`,
-          JSON.stringify(manifest, null, 4)
-        );
-        await fs.writeJSON(`${ctx.root}/permissions.json`, DEFAULT_PERMISSION_REQUEST, {
-          spaces: 4,
-        });
-      } else {
-        const manifest = await new SpfxPlugin().getManifest();
-        await fs.writeFile(
-          `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`,
-          JSON.stringify(manifest, null, 4)
-        );
-      }
       ctx.logProvider?.info(`start scaffolding ${notifications.join(",")}.....`);
       const scaffoldRes = await this.doScaffold(ctx, pluginsToScaffold);
       if (scaffoldRes.isErr()) {

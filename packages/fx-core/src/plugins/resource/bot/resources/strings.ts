@@ -30,15 +30,13 @@ export class PluginAAD {
 export class PluginLocalDebug {
   public static readonly PLUGIN_NAME = "fx-resource-local-debug";
   public static readonly LOCAL_BOT_ENDPOINT = "localBotEndpoint";
-  public static readonly LOCAL_DEBUG_SUFFIX = "-local-debug"
+  public static readonly LOCAL_DEBUG_SUFFIX = "-local-debug";
 }
 
 export class PluginSolution {
   public static readonly PLUGIN_NAME = "solution";
-  public static readonly SUBSCRIPTION_ID = "subscriptionId";
   public static readonly RESOURCE_GROUP_NAME = "resourceGroupName";
   public static readonly LOCATION = "location";
-  public static readonly TENANT_ID = "tenantId";
   public static readonly M365_TENANT_ID = "teamsAppTenantId";
   public static readonly RESOURCE_NAME_SUFFIX = "resourceNameSuffix";
   public static readonly REMOTE_TEAMS_APPID = "remoteTeamsAppId";

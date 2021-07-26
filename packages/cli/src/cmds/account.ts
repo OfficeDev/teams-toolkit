@@ -13,12 +13,7 @@ import AzureTokenProvider from "../commonlib/azureLogin";
 import { signedIn } from "../commonlib/common/constant";
 import CLILogProvider from "../commonlib/log";
 import * as constants from "../constants";
-import {
-  getColorizedString,
-  getSubscriptionIdFromEnvFile,
-  setSubscriptionId,
-  toYargsOptions,
-} from "../utils";
+import { getColorizedString, setSubscriptionId, toYargsOptions } from "../utils";
 
 async function outputM365Info(commandType: "login" | "show"): Promise<boolean> {
   const result = await AppStudioTokenProvider.getJsonObject();
@@ -72,13 +67,17 @@ async function outputAzureInfo(commandType: "login" | "show", tenantId = ""): Pr
       CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(subscriptions, null, 2), true);
     } else {
       try {
-        const activeSub = await getSubscriptionIdFromEnvFile("./");
-        if (activeSub) {
+        AzureTokenProvider.setRootPath("./");
+        const subscriptionInfo = await AzureTokenProvider.getSubscriptionInfoFromEnv();
+        if (subscriptionInfo) {
           CLILogProvider.necessaryLog(
             LogLevel.Info,
             `[${constants.cliSource}] Your Azure Account is: ${CLILogProvider.white(
               (result as any).username
-            )}` + ` and current active subscription id is: ${CLILogProvider.white(activeSub)}.`
+            )}` +
+              ` and current active subscription id is: ${CLILogProvider.white(
+                subscriptionInfo.subscriptionId
+              )}.`
           );
         } else {
           CLILogProvider.necessaryLog(

@@ -11,6 +11,13 @@ export class TestHelper {
         getAccountCredentialAsync() {
           return credentials;
         },
+        getSelectedSubscription: async () => {
+          return {
+            subscriptionId: "subscriptionId",
+            tenantId: "tenantId",
+            subscriptionName: "subscriptionName",
+          };
+        },
       },
       logProvider: {
         async info(message: string): Promise<boolean> {
@@ -91,6 +98,7 @@ export class TestHelper {
           short: "hello-app",
         },
       },
+      projectSettings: { appName: "hello-app" },
     } as unknown as PluginContext;
 
     return pluginContext;

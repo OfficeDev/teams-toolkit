@@ -61,7 +61,6 @@ describe("Deploy Command Tests", function () {
       .callsFake((eventName: string, error: FxError) => {
         telemetryEvents.push(eventName);
       });
-    sandbox.stub(Utils, "getSubscriptionIdFromEnvFile").returns(Promise.resolve(undefined));
     sandbox.stub(FxCore.prototype, "deployArtifacts").callsFake(async (inputs: Inputs) => {
       if (inputs.projectPath?.includes("real")) return ok("");
       else return err(NotSupportedProjectType());

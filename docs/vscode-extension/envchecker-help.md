@@ -80,6 +80,8 @@ It might be caused by timeout issue (longer than 3 minutes), the process to inst
 * Retry the operation (local debugging or Function app deployment).
 * Please refer to [the guide](#how-to-install-net-sdk) to install `.NET SDK` manually.
 
+**NOTE for M1 Mac Users**: Currently neither `.NET 5.0 SDK` or `.NET Core 3.1 SDK` supports M1 Mac (see [this GitHub issue](https://github.com/dotnet/core/issues/4879)).
+
 ## <a name="functionDepsCheckerdotnetnotfound"></a>DotnetNotFound
 ### Notification Message
 > Cannot find .NET Core SDK (v3.1 or v5.0). Teams Toolkit requires these dependencies.

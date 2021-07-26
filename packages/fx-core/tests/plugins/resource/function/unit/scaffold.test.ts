@@ -43,16 +43,6 @@ const context: any = {
   root: path.join(__dirname, "ut"),
 };
 
-// context.projectSettings = {
-//   appName: "my app",
-//   currentEnv: "default",
-//   projectId: "project id",
-//   solutionSettings: {
-//     name: "azure",
-//     version: "1.0",
-//   },
-// };
-
 describe(FunctionPluginInfo.pluginName, () => {
   describe("Function Scaffold Test", () => {
     afterEach(() => {

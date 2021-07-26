@@ -9,7 +9,6 @@ import {
   FxError,
   Result,
   PluginContext,
-  Plugin,
   TeamsAppManifest,
   Platform,
   LogProvider,
@@ -68,11 +67,6 @@ import {
 import { REMOTE_TEAMS_APP_ID } from "../../solution/fx-solution/constants";
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
-import {
-  getActivatedResourcePlugins,
-  ResourcePlugins,
-} from "../../solution/fx-solution/ResourcePluginContainer";
-import { Container } from "typedi";
 import { getTemplatesFolder } from "../../..";
 import path from "path";
 
@@ -329,27 +323,8 @@ export class AppStudioPluginImpl {
 
   public createManifestForRemote(
     ctx: PluginContext,
-    // maybeSelectedPlugins: Result<Plugin[], FxError>,
     manifest: TeamsAppManifest
   ): Result<[IAppDefinition, TeamsAppManifest], FxError> {
-    // if (maybeSelectedPlugins.isErr()) {
-    //   return err(maybeSelectedPlugins.error);
-    // }
-    // const selectedPlugins = maybeSelectedPlugins.value;
-    // if (selectedPlugins.some((plugin) => plugin.name === "fx-resource-bot")) {
-    const capabilities = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
-      .capabilities;
-    const hasBot = capabilities?.includes(BotOptionItem.id);
-    const hasMsgExt = capabilities?.includes(MessageExtensionItem.id);
-    if (!hasBot && !hasMsgExt) {
-      return err(
-        AppStudioResultFactory.SystemError(
-          AppStudioError.InternalError.name,
-          AppStudioError.InternalError.message
-        )
-      );
-    }
-    // }
     const maybeConfig = this.getConfigForCreatingManifest(ctx, false);
     if (maybeConfig.isErr()) {
       return err(maybeConfig.error);

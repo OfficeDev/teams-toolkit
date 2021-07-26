@@ -5,6 +5,7 @@
   "keywords": [
     "Fault Injection"
   ],
+  "private": true,
   "author": "Wang Yefu <yefuwang@microsoft.com>",
   "homepage": "https://github.com/OfficeDev/TeamsFx#readme",
   "license": "MIT",

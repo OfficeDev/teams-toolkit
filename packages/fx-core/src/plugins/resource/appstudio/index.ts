@@ -285,6 +285,11 @@ export class AppStudioPlugin implements Plugin {
       }
     }
   }
+
+  public async postLocalDebug(ctx: PluginContext): Promise<Result<string, FxError>> {
+    const localTeamsAppId = await this.appStudioPluginImpl.postLocalDebug(ctx);
+    return ok(localTeamsAppId);
+  }
 }
 
 export default new AppStudioPlugin();

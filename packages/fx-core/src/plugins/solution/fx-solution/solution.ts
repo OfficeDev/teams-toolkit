@@ -10,6 +10,7 @@ import {
   QTreeNode,
   ConfigMap,
   Stage,
+  combine,
   returnSystemError,
   returnUserError,
   PluginContext,
@@ -1170,26 +1171,41 @@ export class TeamsAppSolution implements Solution {
     }
 
     const postLocalDebugResults = await executeConcurrently("post", postLocalDebugWithCtx);
-    for (const postLocalDebugResult of postLocalDebugResults) {
-      if (postLocalDebugResult.isErr()) {
-        return postLocalDebugResult;
-      }
+    // for (const postLocalDebugResult of postLocalDebugResults) {
+    //   if (postLocalDebugResult.isErr()) {
+    //     return postLocalDebugResult;
+    //   }
+    // }
+
+    const combined_postLocalDebugResults = combine(postLocalDebugResults);
+    if (combined_postLocalDebugResults.isErr()) {
+      return combined_postLocalDebugResults;
     }
 
     const localTeamsAppID = ctx.config.get(GLOBAL_CONFIG)?.getString(LOCAL_DEBUG_TEAMS_APP_ID);
 
-    const appStudioPlugin = this.AppStudioPlugin as AppStudioPlugin;
-    const maybeTeamsAppId = await appStudioPlugin.getAppDefinitionAndUpdate(
-      getPluginContext(ctx, this.AppStudioPlugin.name, manifest),
-      "localDebug",
-      manifest
-    );
-    if (maybeTeamsAppId.isErr()) {
-      return maybeTeamsAppId;
+    if (postLocalDebugWithCtx.length === postLocalDebugResults.length) {
+      postLocalDebugWithCtx.map(function (plugin, index) {
+        if (plugin[2] === PluginNames.APPST && !localTeamsAppID) {
+          ctx.config
+            .get(GLOBAL_CONFIG)
+            ?.set(LOCAL_DEBUG_TEAMS_APP_ID, combined_postLocalDebugResults.value[index]);
+        }
+      });
     }
-    if (!localTeamsAppID) {
-      ctx.config.get(GLOBAL_CONFIG)?.set(LOCAL_DEBUG_TEAMS_APP_ID, maybeTeamsAppId.value);
-    }
+
+    // const appStudioPlugin = this.AppStudioPlugin as AppStudioPlugin;
+    // const maybeTeamsAppId = await appStudioPlugin.getAppDefinitionAndUpdate(
+    //   getPluginContext(ctx, this.AppStudioPlugin.name, manifest),
+    //   "localDebug",
+    //   manifest
+    // );
+    // if (maybeTeamsAppId.isErr()) {
+    //   return maybeTeamsAppId;
+    // }
+    // if (!localTeamsAppID) {
+    //   ctx.config.get(GLOBAL_CONFIG)?.set(LOCAL_DEBUG_TEAMS_APP_ID, maybeTeamsAppId.value);
+    // }
 
     return ok(Void);
   }

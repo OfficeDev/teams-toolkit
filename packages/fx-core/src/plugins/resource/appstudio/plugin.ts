@@ -549,6 +549,14 @@ export class AppStudioPluginImpl {
     }
   }
 
+  public async postLocalDebug(ctx: PluginContext): Promise<string> {
+    const maybeTeamsAppId = await this.getAppDefinitionAndUpdate(ctx, "localDebug", ctx.app);
+    if (maybeTeamsAppId.isErr()) {
+      throw maybeTeamsAppId;
+    }
+    return maybeTeamsAppId.value;
+  }
+
   private async beforePublish(
     ctx: PluginContext,
     appDirectory: string,

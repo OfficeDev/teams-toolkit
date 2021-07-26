@@ -1148,11 +1148,4 @@ export class AppStudioPluginImpl {
 
     return ok([appDefinition, _updatedManifest]);
   }
-
-  private getSelectedPlugins(ctx: PluginContext): Result<Plugin[], FxError> {
-    const azureSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
-    const plugins = getActivatedResourcePlugins(azureSettings);
-    azureSettings.activeResourcePlugins = plugins.map((p) => p.name);
-    return ok(plugins);
-  }
 }

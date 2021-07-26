@@ -8,6 +8,7 @@ import { AadValidator, FunctionValidator, SimpleAuthValidator } from "../../comm
 
 import {
   execAsync,
+  execAsyncWithRetry,
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
@@ -68,7 +69,7 @@ describe("Test Add Function", function() {
     console.log(`[Successfully] set subscription for ${projectPath}`);
 
     // provision
-    await execAsync(
+    await execAsyncWithRetry(
       `teamsfx provision`,
       {
         cwd: projectPath,
@@ -98,7 +99,7 @@ describe("Test Add Function", function() {
     }
 
     // deploy
-    await execAsync(
+    await execAsyncWithRetry(
       `teamsfx deploy function`,
       {
         cwd: projectPath,
@@ -121,7 +122,7 @@ describe("Test Add Function", function() {
 
 
     // validate
-    await execAsync(
+    await execAsyncWithRetry(
       `teamsfx validate`,
       {
         cwd: projectPath,
@@ -135,7 +136,7 @@ describe("Test Add Function", function() {
     }
 
     // build
-    await execAsync(
+    await execAsyncWithRetry(
       `teamsfx build`,
       {
         cwd: projectPath,
@@ -150,7 +151,7 @@ describe("Test Add Function", function() {
 
     /// TODO: Publish broken: https://msazure.visualstudio.com/Microsoft%20Teams%20Extensibility/_workitems/edit/9856390
     // // publish
-    // await execAsync(
+    // await execAsyncWithRetry(
     //   `teamsfx publish`,
     //   {
     //     cwd: projectPath,

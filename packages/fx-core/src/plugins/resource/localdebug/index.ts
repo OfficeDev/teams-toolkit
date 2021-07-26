@@ -49,8 +49,15 @@ import { prepareLocalAuthService } from "./util/localService";
 import { getNgrokHttpUrl } from "./util/ngrok";
 import { getCodespaceName, getCodespaceUrl } from "./util/codespace";
 import { TelemetryUtils, TelemetryEventName } from "./util/telemetry";
-
+import { Service } from "typedi";
+import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+@Service(ResourcePlugins.LocalDebugPlugin)
 export class LocalDebugPlugin implements Plugin {
+  name = "fx-resource-local-debug";
+  displayName = "LocalDebug";
+  activate(solutionSettings: AzureSolutionSettings): boolean {
+    return true;
+  }
   public async scaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
     const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
       ?.activeResourcePlugins;
@@ -211,7 +218,7 @@ export class LocalDebugPlugin implements Plugin {
 
     // setup configs used by other plugins
     // TODO: dynamicly determine local ports
-    if (ctx.answers?.platform === Platform.VSCode) {
+    if (ctx.answers?.platform === Platform.VSCode || ctx.answers?.platform === Platform.CLI) {
       let localTabEndpoint: string;
       let localTabDomain: string;
       let localAuthEndpoint: string;
@@ -290,9 +297,7 @@ export class LocalDebugPlugin implements Plugin {
       (pluginName) => pluginName === FunctionPlugin.Name
     );
     const includeBot = selectedPlugins?.some((pluginName) => pluginName === BotPlugin.Name);
-    let trustDevCert = ctx.config?.get(
-      LocalDebugConfigKeys.TrustDevelopmentCertificate
-    ) as string;
+    let trustDevCert = ctx.config?.get(LocalDebugConfigKeys.TrustDevelopmentCertificate) as string;
 
     const telemetryProperties = {
       platform: ctx.answers?.platform as string,
@@ -304,7 +309,7 @@ export class LocalDebugPlugin implements Plugin {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.postLocalDebug, telemetryProperties);
 
-    if (ctx.answers?.platform === Platform.VSCode) {
+    if (ctx.answers?.platform === Platform.VSCode || ctx.answers?.platform === Platform.CLI) {
       const localEnvProvider = new LocalEnvProvider(ctx.root);
       const localEnvs = await localEnvProvider.loadLocalEnv(
         includeFrontend,

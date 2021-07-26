@@ -7,18 +7,16 @@ import { Argv, Options } from "yargs";
 import * as path from "path";
 import { FxError, err, ok, Result, Func } from "@microsoft/teamsfx-api";
 import activate from "../activate";
-import * as constants from "../constants";
 import { YargsCommand } from "../yargsCommand";
 import { getSystemInputs } from "../utils";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
-import { HelpParamGenerator } from "../helpParamGenerator";
+import HelpParamGenerator from "../helpParamGenerator";
 
 export default class Validate extends YargsCommand {
   public readonly commandHead = `validate`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "Validate the current application.";
-  public readonly paramPath = constants.validateParamPath;
 
   public params: { [_: string]: Options } = {};
 

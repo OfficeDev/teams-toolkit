@@ -3,7 +3,9 @@
 import * as vscode from "vscode";
 import Reporter from "vscode-extension-telemetry";
 import { TelemetryReporter } from "@microsoft/teamsfx-api";
-import { getPackageVersion } from "../utils/commonUtils";
+import { getPackageVersion, getProjectId } from "../utils/commonUtils";
+import { TelemetryProperty } from "../telemetry/extTelemetryEvents";
+import { Correlator } from "@microsoft/teamsfx-core";
 
 /**
  *  VSCode telemetry reporter used by fx-core.
@@ -18,10 +20,16 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
   private readonly reporter: Reporter;
   private readonly extVersion: string;
 
+  private sharedProperties: { [key: string]: string } = {};
+
   constructor(key: string, extensionVersion: string, extensionId: string) {
     super(async () => await this.reporter.dispose());
     this.reporter = new Reporter(extensionId, extensionVersion, key, true);
     this.extVersion = getPackageVersion(extensionVersion);
+  }
+
+  addSharedProperty(name: string, value: string): void {
+    this.sharedProperties[name] = value;
   }
 
   sendTelemetryErrorEvent(
@@ -30,6 +38,15 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
     measurements?: { [p: string]: number },
     errorProps?: string[]
   ): void {
+    if (!properties) {
+      properties = { ...this.sharedProperties };
+    } else {
+      properties = { ...this.sharedProperties, ...properties };
+    }
+
+    const projectId = getProjectId();
+    properties[TelemetryProperty.ProjectId] = projectId ? projectId : "";
+    properties[TelemetryProperty.CorrelationId] = Correlator.getId();
     this.reporter.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
   }
 
@@ -38,6 +55,15 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
     properties?: { [p: string]: string },
     measurements?: { [p: string]: number }
   ): void {
+    if (!properties) {
+      properties = { ...this.sharedProperties };
+    } else {
+      properties = { ...this.sharedProperties, ...properties };
+    }
+
+    const projectId = getProjectId();
+    properties[TelemetryProperty.ProjectId] = projectId ? projectId : "";
+    properties[TelemetryProperty.CorrelationId] = Correlator.getId();
     this.reporter.sendTelemetryEvent(eventName, properties, measurements);
   }
 
@@ -46,6 +72,15 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
     properties?: { [p: string]: string },
     measurements?: { [p: string]: number }
   ): void {
+    if (!properties) {
+      properties = { ...this.sharedProperties };
+    } else {
+      properties = { ...this.sharedProperties, ...properties };
+    }
+
+    const projectId = getProjectId();
+    properties[TelemetryProperty.ProjectId] = projectId ? projectId : "";
+    properties[TelemetryProperty.CorrelationId] = Correlator.getId();
     this.reporter.sendTelemetryException(error, properties, measurements);
   }
 }

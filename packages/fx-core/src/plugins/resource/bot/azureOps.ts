@@ -17,13 +17,15 @@ import { CommonStrings, ConfigNames } from "./resources/strings";
 import * as utils from "./utils/common";
 import { default as axios } from "axios";
 import { ErrorMessagesForChecking } from "./constants";
+import { Logger } from "../../../core";
 
 export class AzureOperations {
   public static async CreateBotChannelRegistration(
     botClient: AzureBotService,
     resourceGroup: string,
     botChannelRegistrationName: string,
-    msaAppId: string
+    msaAppId: string,
+    displayName?: string
   ): Promise<void> {
     let botResponse = undefined;
     try {
@@ -31,7 +33,7 @@ export class AzureOperations {
         location: "global",
         kind: "bot",
         properties: {
-          displayName: botChannelRegistrationName,
+          displayName: displayName ?? botChannelRegistrationName,
           endpoint: "",
           msaAppId: msaAppId,
         },
@@ -56,13 +58,14 @@ export class AzureOperations {
     resourceGroup: string,
     botChannelRegistrationName: string,
     msaAppId: string,
-    endpoint: string
+    endpoint: string,
+    displayName?: string
   ): Promise<void> {
     let botResponse = undefined;
     try {
       botResponse = await botClient.bots.update(resourceGroup, botChannelRegistrationName, {
         properties: {
-          displayName: botChannelRegistrationName,
+          displayName: displayName ?? botChannelRegistrationName,
           endpoint: endpoint,
           msaAppId: msaAppId,
         },
@@ -200,7 +203,7 @@ export class AzureOperations {
       throw new ZipDeployError(e);
     }
 
-    if (!res || !utils.isHttpCodeOkOrCreated(res.status)) {
+    if (!res || !utils.isHttpCodeOkOrCreated(res?.status)) {
       throw new ZipDeployError();
     }
   }

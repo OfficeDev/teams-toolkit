@@ -20,7 +20,7 @@ export class ProgressBarFactory {
       return handler;
     }
 
-    const handler = context.dialog?.createProgressBar(name, steps_num);
+    const handler = context.ui?.createProgressBar(name, steps_num);
     if (!handler) {
       context.logProvider?.warning(`Fail to create progress bar for ${name}.`);
     }

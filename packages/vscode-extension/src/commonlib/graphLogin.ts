@@ -14,21 +14,31 @@ import * as vscode from "vscode";
 import { signedIn, signedOut } from "./common/constant";
 import { login, LoginStatus } from "./common/login";
 import * as StringResources from "../resources/Strings.json";
+import { CryptoCachePlugin } from "./cacheAccess";
+import { ExtTelemetry } from "../telemetry/extTelemetry";
+import {
+  AccountType,
+  TelemetryErrorType,
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetrySuccess,
+} from "../telemetry/extTelemetryEvents";
 
-const accountName = "graph";
-const scopes = ["Directory.AccessAsUser.All"];
+const accountName = "appStudio";
+const scopes = ["Application.ReadWrite.All"];
+
+const cachePlugin = new CryptoCachePlugin(accountName);
 
 const config = {
   auth: {
-    // TODO change this to our own first party aad
-    clientId: "04b07795-8ddb-461a-bbee-02f9e1bf7b46",
+    clientId: "7ea7c24c-b1f6-4a20-9d11-9ae12e9e7ac0",
     authority: "https://login.microsoftonline.com/common",
   },
   system: {
     loggerOptions: {
       // @ts-ignore
       loggerCallback(loglevel, message, containsPii) {
-        if (loglevel<=LogLevel.Error) {
+        if (loglevel <= LogLevel.Error) {
           VsCodeLogInstance.error(message);
         }
       },
@@ -36,14 +46,12 @@ const config = {
       logLevel: LogLevel.Error,
     },
   },
-  // TODO: add this back after graph change to 7ea7c24c-b1f6-4a20-9d11-9ae12e9e7ac0 first party app
-  // cache: {
-  //   cachePlugin
-  // }
+  cache: {
+    cachePlugin,
+  },
 };
 
-// TODO change this to our own first party redirect url port
-const SERVER_PORT = 8400;
+const SERVER_PORT = 0;
 
 /**
  * use msal to implement graph login
@@ -77,11 +85,21 @@ export class GraphLogin extends login implements GraphTokenProvider {
   }
 
   async getAccessToken(showDialog = true): Promise<string | undefined> {
+    await GraphLogin.codeFlowInstance.reloadCache();
     if (!GraphLogin.codeFlowInstance.account) {
       if (showDialog) {
         const userConfirmation: boolean = await this.doesUserConfirmLogin();
         if (!userConfirmation) {
           // throw user cancel error
+          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Login, {
+            [TelemetryProperty.AccountType]: AccountType.M365,
+            [TelemetryProperty.Success]: TelemetrySuccess.No,
+            [TelemetryProperty.UserId]: "",
+            [TelemetryProperty.Internal]: "",
+            [TelemetryProperty.ErrorType]: TelemetryErrorType.UserError,
+            [TelemetryProperty.ErrorCode]: `${StringResources.vsc.codeFlowLogin.loginComponent}.${ExtensionErrors.UserCancel}`,
+            [TelemetryProperty.ErrorMessage]: `${StringResources.vsc.common.userCancel}`,
+          });
           throw new UserError(
             ExtensionErrors.UserCancel,
             StringResources.vsc.common.userCancel,

@@ -4,17 +4,11 @@
 "use strict";
 
 import {
-  Question,
   IQuestion,
-  QTreeNode,
   returnSystemError,
   returnUserError,
   SystemError,
   UserError,
-  OptionItem,
-  MultiSelectQuestion,
-  SingleSelectQuestion,
-  StaticOptions
 } from "@microsoft/teamsfx-api";
 
 import * as constants from "./constants";
@@ -27,14 +21,12 @@ export function NotSupportedProjectType(): UserError {
   );
 }
 
-export function NotValidOptionValue(
-  question: MultiSelectQuestion | SingleSelectQuestion,
-  options: StaticOptions
-): UserError {
-  if (options instanceof Array && options.length > 0 && typeof options[0] !== "string") {
-    options = (options as OptionItem[]).map((op) => op.id);
-  }
-  throw NotValidInputValue(question.name, `This question only supports [${options}] options`);
+export function CannotDeployPlugin(pluginName: string): UserError {
+  return returnUserError(
+    new Error(`Cannot deploy ${pluginName} since it is not contained in the project`),
+    constants.cliSource,
+    "CannotDeployPlugin"
+  );
 }
 
 export function NotValidInputValue(inputName: string, msg: string): UserError {
@@ -70,8 +62,8 @@ export function NotSupportedQuestionType(msg: IQuestion): SystemError {
   );
 }
 
-export function ConfigNotFoundError(configpath: string): SystemError {
-  return returnSystemError(
+export function ConfigNotFoundError(configpath: string): UserError {
+  return returnUserError(
     new Error(`Config file ${configpath} does not exists`),
     constants.cliSource,
     "ConfigNotFound"
@@ -83,7 +75,14 @@ export function SampleAppDownloadFailed(sampleAppUrl: string, e: Error): SystemE
   return returnSystemError(e, constants.cliSource, "SampleAppDownloadFailed");
 }
 
-export function ReadFileError(e: Error): SystemError {
+export function ReadFileError(e: Error): SystemError | UserError {
+  if (e.message.includes("Unexpected end of JSON input")) {
+    return returnUserError(
+      new Error(`${e.message}. Please check the format of it.`),
+      constants.cliSource,
+      "ReadFileError"
+    );
+  }
   return returnSystemError(e, constants.cliSource, "ReadFileError");
 }
 
@@ -95,32 +94,50 @@ export function UnknownError(e: Error): SystemError {
   return returnSystemError(e, constants.cliSource, "UnknownError");
 }
 
-export function QTNConditionNotSupport(node: QTreeNode): SystemError {
-  return returnSystemError(
-    new Error(
-      `The condition of the question tree node is not supported. (${JSON.stringify(
-        node.condition
-      )})`
-    ),
-    constants.cliSource,
-    "QTNConditionNotSupport"
-  );
-}
-
-export function QTNQuestionTypeNotSupport(data: Question): SystemError {
-  return returnSystemError(
-    new Error(
-      `The condition of the question tree node is not supported. (${JSON.stringify(data)})`
-    ),
-    constants.cliSource,
-    "QTNQuestionTypeNotSupport"
-  );
-}
-
 export function ProjectFolderExist(path: string): UserError {
   return returnUserError(
     new Error(`Path ${path} alreay exists. Select a different folder.`),
     constants.cliSource,
     "ProjectFolderExist"
+  );
+}
+
+export function EmptySubConfigOptions(): SystemError {
+  return returnUserError(
+    new Error(`Your Azure account has no active subscriptions. Please switch an Azure account.`),
+    constants.cliSource,
+    "EmptySubConfigOptions"
+  );
+}
+
+export function NoInitializedHelpGenerator(): SystemError {
+  return returnSystemError(
+    new Error(`Please call the async function -- initializeQuestionsForHelp firstly!`),
+    constants.cliSource,
+    "NoInitializedHelpGenerator"
+  );
+}
+
+export function NonTeamsFxProjectFolder(): UserError {
+  return returnUserError(
+    new Error(`Current folder is not a TeamsFx project folder.`),
+    constants.cliSource,
+    "NonTeamsFxProjectFolder"
+  );
+}
+
+export function ConfigNameNotFound(name: string): UserError {
+  return returnUserError(
+    new Error(`Config ${name} is not found in project.`),
+    constants.cliSource,
+    "ConfigNameNotFound"
+  );
+}
+
+export function InvalidEnvFile(msg: string, path: string): UserError {
+  return returnUserError(
+    new Error(msg + ` Please check the file ${path}.`),
+    constants.cliSource,
+    "InvalidEnvFile"
   );
 }

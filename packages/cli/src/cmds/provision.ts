@@ -9,19 +9,22 @@ import { Argv, Options } from "yargs";
 import { FxError, err, ok, Result, Stage } from "@microsoft/teamsfx-api";
 
 import activate from "../activate";
-import * as constants from "../constants";
 import { getSystemInputs, setSubscriptionId } from "../utils";
 import { YargsCommand } from "../yargsCommand";
 import CliTelemetry from "../telemetry/cliTelemetry";
-import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetrySuccess,
+} from "../telemetry/cliTelemetryEvents";
 import CLIUIInstance from "../userInteraction";
-import { HelpParamGenerator } from "../helpParamGenerator";
+import HelpParamGenerator from "../helpParamGenerator";
+import { sqlPasswordConfirmQuestionName, sqlPasswordQustionName } from "../constants";
 
 export default class Provision extends YargsCommand {
   public readonly commandHead = `provision`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "Provision the cloud resources in the current application.";
-  public readonly paramPath = constants.provisionParamPath;
 
   public params: { [_: string]: Options } = {};
 
@@ -33,7 +36,9 @@ export default class Provision extends YargsCommand {
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     const rootFolder = path.resolve(args.folder || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.ProvisionStart);
-
+    if (sqlPasswordQustionName in args) {
+      args[sqlPasswordConfirmQuestionName] = args[sqlPasswordQustionName];
+    }
     CLIUIInstance.updatePresetAnswers(this.params, args);
 
     {
@@ -60,7 +65,7 @@ export default class Provision extends YargsCommand {
     }
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.Provision, {
-      [TelemetryProperty.Success]: TelemetrySuccess.Yes
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
     });
     return ok(null);
   }

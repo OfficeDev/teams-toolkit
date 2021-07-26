@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import {
+  AzureSolutionSettings,
   err,
   Func,
   FxError,
@@ -12,14 +13,32 @@ import {
   SystemError,
   UserError,
 } from "@microsoft/teamsfx-api";
+import { Service } from "typedi";
+import {
+  AzureResourceSQL,
+  HostTypeOptionAzure,
+  TabOptionItem,
+} from "../../solution/fx-solution/question";
+import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { Telemetry } from "./constants";
 import { ErrorMessage } from "./errors";
 import { SqlPluginImpl } from "./plugin";
 import { SqlResult, SqlResultFactory } from "./results";
 import { DialogUtils } from "./utils/dialogUtils";
 import { TelemetryUtils } from "./utils/telemetryUtils";
-
+@Service(ResourcePlugins.SqlPlugin)
 export class SqlPlugin implements Plugin {
+  name = "fx-resource-azure-sql";
+  displayName = "Azure SQL Datebase";
+  activate(solutionSettings: AzureSolutionSettings): boolean {
+    const azureResources = solutionSettings.azureResources || [];
+    const cap = solutionSettings.capabilities || [];
+    return (
+      solutionSettings.hostType === HostTypeOptionAzure.id &&
+      cap.includes(TabOptionItem.id) &&
+      azureResources.includes(AzureResourceSQL.id)
+    );
+  }
   sqlImpl = new SqlPluginImpl();
 
   public async preProvision(ctx: PluginContext): Promise<SqlResult> {
@@ -40,10 +59,6 @@ export class SqlPlugin implements Plugin {
       () => this.sqlImpl.postProvision(ctx),
       ctx
     );
-  }
-
-  public async callFunc(func: Func, ctx: PluginContext): Promise<SqlResult> {
-    return await this.sqlImpl.callFunc(func, ctx);
   }
 
   public async getQuestions(
@@ -87,7 +102,8 @@ export class SqlPlugin implements Plugin {
         );
       }
       const errorCode = res.error.source + "." + res.error.name;
-      const errorType = res.error instanceof SystemError ? Telemetry.systemError : Telemetry.userError;
+      const errorType =
+        res.error instanceof SystemError ? Telemetry.systemError : Telemetry.userError;
       TelemetryUtils.init(ctx);
       let errorMessage = res.error.message;
       if (res.error.innerError) {

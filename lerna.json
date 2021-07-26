@@ -1,17 +1,17 @@
 {
     "version": "independent",
     "packages": [
-        "packages/eslint-config",
-        "packages/prettier-config",
         "packages/api",
         "packages/fx-core",
         "packages/sdk",
         "packages/cli",
-        "packages/vscode-extension"
+        "packages/vscode-extension",
+        "templates"
     ],
     "command": {
         "version": {
-            "message": "chore(release): publish detail"
+            "message": "chore(release): publish detail",
+            "allowBranch": ["main"]
         }
     },
     "publishConfig": {

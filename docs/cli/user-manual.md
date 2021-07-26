@@ -13,6 +13,8 @@ TeamsFx CLI is a text-based command line interface that accelerates Teams applic
 | `teamsfx build`     | Build the current application.         |
 | `teamsfx test`      | Test and validate the current application.             |
 | `teamsfx publish`   | Publish the app to Teams.             |
+| `teamsfx preview`   | Preview the current application. |
+| `teamsfx config`    | Manage the configuration data. |
 
 ***
 
@@ -204,10 +206,113 @@ The API version.
 
 ***
 
-# `teamsfx test`
-Test and validate current application. This command will validate your application's manifest file.
+# `teamsfx validate`
+Validate current application. This command will validate your application's manifest file.
 
 ***
 
 # `teamsfx publish`
 Publish the app to Teams.
+
+***
+
+# `teamsfx preview`
+Preview the current application from local or remote.
+
+## Optional Parameters
+### `--local`
+Preview the application from local. `--local` is exclusive with `--remote`.
+
+### `--remote`
+Preview the application from remote. `--remote` is exclusive with `--local`.
+
+### `--folder`
+Project root directory. The default value is `./`.
+
+### `--browser`
+The browser to open Teams web client. Options are `chrome`, `edge` and `default` (system default browser). The default value is `default`.
+
+## Examples
+### Local Preview
+```bash
+teamsfx preview --local
+teamsfx preview --local --browser chrome
+```
+
+### Remote Preview
+```bash
+teamsfx preview --remote
+teamsfx preview --remote --browser edge
+```
+
+## Local Preview Dependencies
+- Node.js
+- .NET SDK
+- Azure Functions Core Tools
+
+## Notes
+- SPFx preview is not supported currently.
+- The logs of the background services like React will be saved in `~/.fx/cli-log/local-preview/`.
+
+***
+
+# `teamsfx config`
+Manage the configuration data either in user scope or project scope.
+
+## Commands
+| `teamsfx config` Commands  | Descriptions |
+|:----------------  |:-------------|
+| `teamsfx config get [option]` | View the configuration value of option |
+| `teamsfx config set <option> <value>` | Update the configuration value of option |
+
+## Optional Parameters
+> Below options can always take effect. 
+
+### `--folder`                
+Project directory. This is used when get/set project configuration. The default value is: `./`.
+
+### `--global`                
+Scope of configuration. If this is true, the scope is limited to user scope instead of project scope. The default value is: `false`.
+Currently supported global configurations:
+* telemetry
+* validate-dotnet-sdk
+* validate-func-core-tools
+* validate-node
+
+## Examples
+Secrets in .userdata file are encrypted, `teamsfx config` could help you viewing / updating these values.
+### Stop sending telemetry data
+```bash
+teamsfx config set telemetry off
+```
+
+### Disable environment checker
+There are three configs to turn on/off Node.js, .NET SDK and Azure Functions Core Tools validation, and all of them are enabled by default. You are able to set the config to "off" if you do not need the dependencies validation and would like to install the dependencies by yourself. Check the [Node.js installation guide](../vscode-extension/envchecker-help.md#how-to-install-nodejs), [.NET SDK installation guide](../vscode-extension/envchecker-help.md#how-to-install-net-sdk) and [Azure Functions Core Tools installation guide](../vscode-extension/envchecker-help.md#how-to-install-azure-functions-core-tools).
+
+For example, to disable .NET SDK validation, you can use the following command.
+
+```bash
+teamsfx config set validate-dotnet-sdk off
+```
+
+To enable .NET SDK validation, you can use the following command.
+
+```bash
+teamsfx config set validate-dotnet-sdk on
+```
+
+### View all the user scope configuration
+```bash
+teamsfx config get -g
+```
+
+### View all the configuration in project
+The secret will automatically decrypted.
+```bash
+teamsfx config get
+```
+
+### Update the secret configuration in project
+```bash
+teamsfx config set fx-resource-aad-app-for-teams.clientSecret xxx
+```

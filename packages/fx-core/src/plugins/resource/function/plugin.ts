@@ -27,10 +27,13 @@ import {
   ProvisionError,
   ValidationError,
   runWithErrorCatchAndThrow,
+  runWithErrorCatchAndWrap,
   FunctionNameConflictError,
   FetchConfigError,
+  RegisterResourceProviderError,
 } from "./resources/errors";
 import {
+  AzureInfo,
   DefaultProvisionConfigs,
   DefaultValues,
   DependentPluginInfo,
@@ -39,10 +42,10 @@ import {
   QuestionValidationFunc,
   RegularExpr,
 } from "./constants";
-import { DialogUtils } from "./utils/dialog";
 import { ErrorMessages, InfoMessages } from "./resources/message";
 import {
   FunctionConfigKey,
+  FunctionEvent,
   FunctionLanguage,
   NodeVersion,
   QuestionKey,
@@ -68,6 +71,7 @@ import { getNodeVersion } from "./utils/node-version";
 import { FuncPluginAdapter } from "./utils/depsChecker/funcPluginAdapter";
 import { funcPluginLogger } from "./utils/depsChecker/funcPluginLogger";
 import { FuncPluginTelemetry } from "./utils/depsChecker/funcPluginTelemetry";
+import { TelemetryHelper } from "./utils/telemetry-helper";
 
 type Site = WebSiteManagementModels.Site;
 type AppServicePlan = WebSiteManagementModels.AppServicePlan;
@@ -212,14 +216,17 @@ export class FunctionPluginImpl {
     return ResultFactory.Success();
   }
 
-  public getQuestionsForUserTask(func: Func, ctx: PluginContext): Result<QTreeNode | undefined, FxError> {
+  public getQuestionsForUserTask(
+    func: Func,
+    ctx: PluginContext
+  ): Result<QTreeNode | undefined, FxError> {
     const res = new QTreeNode({
       type: "group",
     });
 
     if (func.method === "addResource") {
       functionNameQuestion.validation = {
-        validFunc: async(input: string, previousInputs?: Inputs) : Promise<string | undefined> => {
+        validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
           const workingPath: string = this.getFunctionProjectRootPath(ctx);
           const name = input as string;
           if (!name || !RegularExpr.validFunctionNamePattern.test(name)) {
@@ -238,10 +245,13 @@ export class FunctionPluginImpl {
               ?.get(DependentPluginInfo.programmingLanguage) as FunctionLanguage);
 
           // If language is unknown, skip checking and let scaffold handle the error.
-          if (language && (await FunctionScaffold.doesFunctionPathExist(workingPath, language, name))) {
+          if (
+            language &&
+            (await FunctionScaffold.doesFunctionPathExist(workingPath, language, name))
+          ) {
             return ErrorMessages.functionAlreadyExists;
           }
-        }
+        },
       };
       res.addChild(new QTreeNode(functionNameQuestion));
     }
@@ -288,7 +298,7 @@ export class FunctionPluginImpl {
       DefaultValues.functionTriggerType,
       functionName,
       {
-        appName: ctx.app.name.short,
+        appName: ctx.projectSettings!.appName,
         functionName: functionName,
       }
     );
@@ -310,7 +320,7 @@ export class FunctionPluginImpl {
       !this.config.storageAccountName ||
       !this.config.appServicePlanName
     ) {
-      const teamsAppName: string = ctx.app.name.short;
+      const teamsAppName: string = ctx.projectSettings!.appName;
       const suffix: string = this.config.resourceNameSuffix ?? uuid().substr(0, 6);
 
       if (!this.config.functionAppName) {
@@ -382,6 +392,26 @@ export class FunctionPluginImpl {
     );
     const nodeVersion = await this.getValidNodeVersion(ctx);
 
+    const providerClient = await runWithErrorCatchAndThrow(new InitAzureSDKError(), () =>
+      AzureClientFactory.getResourceProviderClient(credential, subscriptionId)
+    );
+
+    Logger.info(
+      InfoMessages.ensureResourceProviders(AzureInfo.requiredResourceProviders, subscriptionId)
+    );
+
+    await runWithErrorCatchAndThrow(new RegisterResourceProviderError(), async () =>
+      step(
+        StepGroup.ProvisionStepGroup,
+        ProvisionSteps.registerResourceProviders,
+        async () =>
+          await AzureLib.ensureResourceProviders(
+            providerClient,
+            AzureInfo.requiredResourceProviders
+          )
+      )
+    );
+
     const storageManagementClient: StorageManagementClient = await runWithErrorCatchAndThrow(
       new InitAzureSDKError(),
       () => AzureClientFactory.getStorageManagementClient(credential, subscriptionId)
@@ -391,18 +421,20 @@ export class FunctionPluginImpl {
       InfoMessages.checkResource(ResourceType.storageAccount, storageAccountName, resourceGroupName)
     );
 
-    await runWithErrorCatchAndThrow(new ProvisionError(ResourceType.storageAccount), () =>
-      step(
-        StepGroup.ProvisionStepGroup,
-        ProvisionSteps.ensureStorageAccount,
-        async () =>
-          await AzureLib.ensureStorageAccount(
-            storageManagementClient,
-            resourceGroupName,
-            storageAccountName,
-            DefaultProvisionConfigs.storageConfig(location)
-          )
-      )
+    await runWithErrorCatchAndWrap(
+      (error: any) => new ProvisionError(ResourceType.storageAccount, error.code),
+      async () =>
+        step(
+          StepGroup.ProvisionStepGroup,
+          ProvisionSteps.ensureStorageAccount,
+          async () =>
+            await AzureLib.ensureStorageAccount(
+              storageManagementClient,
+              resourceGroupName,
+              storageAccountName,
+              DefaultProvisionConfigs.storageConfig(location)
+            )
+        )
     );
 
     const storageConnectionString: string | undefined = await runWithErrorCatchAndThrow(
@@ -431,8 +463,8 @@ export class FunctionPluginImpl {
       InfoMessages.checkResource(ResourceType.appServicePlan, appServicePlanName, resourceGroupName)
     );
 
-    const appServicePlan: AppServicePlan = await runWithErrorCatchAndThrow(
-      new ProvisionError(ResourceType.appServicePlan),
+    const appServicePlan: AppServicePlan = await runWithErrorCatchAndWrap(
+      (error: any) => new ProvisionError(ResourceType.appServicePlan, error.code),
       async () =>
         await step(StepGroup.ProvisionStepGroup, ProvisionSteps.ensureAppServicePlans, async () =>
           AzureLib.ensureAppServicePlans(
@@ -454,8 +486,8 @@ export class FunctionPluginImpl {
       InfoMessages.checkResource(ResourceType.functionApp, appServicePlanName, resourceGroupName)
     );
 
-    const site: Site = await runWithErrorCatchAndThrow(
-      new ProvisionError(ResourceType.functionApp),
+    const site: Site = await runWithErrorCatchAndWrap(
+      (error: any) => new ProvisionError(ResourceType.functionApp, error.code),
       async () =>
         await step(StepGroup.ProvisionStepGroup, ProvisionSteps.ensureFunctionApp, async () =>
           FunctionProvision.ensureFunctionApp(
@@ -526,13 +558,11 @@ export class FunctionPluginImpl {
     );
 
     if (res.properties) {
-      Object.entries(res.properties).forEach(
-        (kv: [string, string]) => {
-          // The site have some settings added in provision step,
-          // which should not be overwritten by queried settings.
-          FunctionProvision.pushAppSettings(site, kv[0], kv[1], false);
-        }
-      );
+      Object.entries(res.properties).forEach((kv: [string, string]) => {
+        // The site have some settings added in provision step,
+        // which should not be overwritten by queried settings.
+        FunctionProvision.pushAppSettings(site, kv[0], kv[1], false);
+      });
     }
 
     this.collectFunctionAppSettings(ctx, site);
@@ -584,8 +614,7 @@ export class FunctionPluginImpl {
 
     const updated: boolean = await FunctionDeploy.hasUpdatedContent(workingPath, functionLanguage);
     if (!updated) {
-      Logger.info(InfoMessages.skipDeployment);
-      DialogUtils.show(ctx, InfoMessages.skipDeployment);
+      Logger.info(InfoMessages.noChange);
       this.config.skipDeploy = true;
       return ResultFactory.Success();
     }
@@ -610,6 +639,8 @@ export class FunctionPluginImpl {
 
   public async deploy(ctx: PluginContext): Promise<FxResult> {
     if (this.config.skipDeploy) {
+      TelemetryHelper.sendGeneralEvent(FunctionEvent.skipDeploy);
+      Logger.warning(InfoMessages.skipDeployment);
       return ResultFactory.Success();
     }
 
@@ -826,16 +857,12 @@ export class FunctionPluginImpl {
 
   private async handleDotnetChecker(ctx: PluginContext): Promise<void> {
     try {
-      const telemetry = new FuncPluginTelemetry(ctx);
+      const telemetry = new FuncPluginTelemetry();
       const funcPluginAdapter = new FuncPluginAdapter(ctx, telemetry);
       await step(StepGroup.PreDeployStepGroup, PreDeploySteps.dotnetInstall, async () => {
-        const dotnetChecker = new DotnetChecker(
-          funcPluginAdapter,
-          funcPluginLogger,
-          telemetry,
-        );
+        const dotnetChecker = new DotnetChecker(funcPluginAdapter, funcPluginLogger, telemetry);
         try {
-          if (!(await dotnetChecker.isEnabled()) || await dotnetChecker.isInstalled()) {
+          if (!(await dotnetChecker.isEnabled()) || (await dotnetChecker.isInstalled())) {
             return;
           }
         } catch (error) {
@@ -885,7 +912,7 @@ export class FunctionPluginImpl {
             await FunctionDeploy.installFuncExtensions(ctx, workingPath, functionLanguage);
           } catch (error) {
             // wrap the original error to UserError so the extensibility model will pop-up a dialog correctly
-            const telemetry = new FuncPluginTelemetry(ctx);
+            const telemetry = new FuncPluginTelemetry();
             new FuncPluginAdapter(ctx, telemetry).handleDotnetError(error);
           }
         })

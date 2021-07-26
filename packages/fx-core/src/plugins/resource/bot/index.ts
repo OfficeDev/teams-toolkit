@@ -10,6 +10,7 @@ import {
   err,
   UserError,
   SystemError,
+  AzureSolutionSettings,
 } from "@microsoft/teamsfx-api";
 
 import { FxResult, FxBotPluginResultFactory as ResultFactory } from "./result";
@@ -19,8 +20,17 @@ import { LifecycleFuncNames, ProgressBarConstants } from "./constants";
 import { ErrorType, PluginError } from "./errors";
 import { Logger } from "./logger";
 import { telemetryHelper } from "./utils/telemetry-helper";
-
+import { BotOptionItem, MessageExtensionItem } from "../../solution/fx-solution/question";
+import { Service } from "typedi";
+import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+@Service(ResourcePlugins.BotPlugin)
 export class TeamsBot implements Plugin {
+  name = "fx-resource-bot";
+  displayName = "Bot";
+  activate(solutionSettings: AzureSolutionSettings): boolean {
+    const cap = solutionSettings.capabilities || [];
+    return cap.includes(BotOptionItem.id) || cap.includes(MessageExtensionItem.id);
+  }
   public teamsBotImpl: TeamsBotImpl = new TeamsBotImpl();
 
   public async getQuestions(
@@ -145,6 +155,45 @@ export class TeamsBot implements Plugin {
     );
   }
 
+  private wrapError(
+    e: any,
+    context: PluginContext,
+    sendTelemetry: boolean,
+    name: string
+  ): FxResult {
+    if (e.innerError) {
+      e.message += ` Detailed error: ${e.innerError.message}.`;
+      if (e.innerError.response?.data?.errorMessage) {
+        e.message += ` Reason: ${e.innerError.response?.data?.errorMessage}`;
+      }
+    }
+    Logger.error(e.message);
+    if (e instanceof UserError || e instanceof SystemError) {
+      const res = err(e);
+      sendTelemetry && telemetryHelper.sendResultEvent(context, name, res);
+      return res;
+    }
+
+    if (e instanceof PluginError) {
+      const result =
+        e.errorType === ErrorType.System
+          ? ResultFactory.SystemError(e.name, e.genMessage(), e.innerError)
+          : ResultFactory.UserError(e.name, e.genMessage(), e.showHelpLink, e.innerError);
+      sendTelemetry && telemetryHelper.sendResultEvent(context, name, result);
+      return result;
+    } else {
+      // Unrecognized Exception.
+      const UnhandledErrorCode = "UnhandledError";
+      sendTelemetry &&
+        telemetryHelper.sendResultEvent(
+          context,
+          name,
+          ResultFactory.SystemError(UnhandledErrorCode, `Got an unhandled error: ${e.message}`)
+        );
+      return ResultFactory.SystemError(UnhandledErrorCode, e.message, e);
+    }
+  }
+
   private async runWithExceptionCatching(
     context: PluginContext,
     fn: () => Promise<FxResult>,
@@ -158,31 +207,7 @@ export class TeamsBot implements Plugin {
       return res;
     } catch (e) {
       await ProgressBarFactory.closeProgressBar(); // Close all progress bars.
-
-      if (e instanceof UserError || e instanceof SystemError) {
-        const res = err(e);
-        sendTelemetry && telemetryHelper.sendResultEvent(context, name, res);
-        return res;
-      }
-
-      if (e instanceof PluginError) {
-        const result =
-          e.errorType === ErrorType.System
-            ? ResultFactory.SystemError(e.name, e.genMessage(), e.innerError)
-            : ResultFactory.UserError(e.name, e.genMessage(), e.showHelpLink, e.innerError);
-        sendTelemetry && telemetryHelper.sendResultEvent(context, name, result);
-        return result;
-      } else {
-        // Unrecognized Exception.
-        const UnhandledErrorCode = "UnhandledError";
-        sendTelemetry &&
-          telemetryHelper.sendResultEvent(
-            context,
-            name,
-            ResultFactory.SystemError("Got an unhandled error", UnhandledErrorCode)
-          );
-        return ResultFactory.SystemError(e.name, e.message, e);
-      }
+      return this.wrapError(e, context, sendTelemetry, name);
     }
   }
 }

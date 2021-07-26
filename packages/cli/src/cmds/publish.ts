@@ -6,18 +6,20 @@
 import { Argv, Options } from "yargs";
 import { FxError, err, ok, Result, Platform, Func, Stage } from "@microsoft/teamsfx-api";
 import activate from "../activate";
-import * as constants from "../constants";
 import { YargsCommand } from "../yargsCommand";
 import { argsToInputs } from "../utils";
 import CliTelemetry from "../telemetry/cliTelemetry";
-import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
-import { HelpParamGenerator } from "../helpParamGenerator";
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetrySuccess,
+} from "../telemetry/cliTelemetryEvents";
+import HelpParamGenerator from "../helpParamGenerator";
 
 export default class Publish extends YargsCommand {
   public readonly commandHead = `publish`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "Publish the app to Teams.";
-  public readonly paramPath = constants.publishParamPath;
 
   public params: { [_: string]: Options } = {};
 
@@ -30,12 +32,12 @@ export default class Publish extends YargsCommand {
     [argName: string]: string | string[];
   }): Promise<Result<null, FxError>> {
     const answers = argsToInputs(this.params, args);
-     
+
     const manifestFolderParamName = "manifest-folder";
     let result;
     // if input manifestFolderParam(actually also teams-app-id param),
     // this call is from VS platform, since CLI hide these two param from users.
-    if (answers[manifestFolderParamName]) {
+    if (answers[manifestFolderParamName] && answers["teams-app-id"]) {
       CliTelemetry.sendTelemetryEvent(TelemetryEvent.PublishStart);
       result = await activate();
     } else {
@@ -55,7 +57,7 @@ export default class Publish extends YargsCommand {
       answers.platform = Platform.VS;
       const func: Func = {
         namespace: "fx-solution-azure",
-        method: "VSpublish"
+        method: "VSpublish",
       };
       result = await core.executeUserTask!(func, answers);
     } else {
@@ -67,7 +69,7 @@ export default class Publish extends YargsCommand {
     }
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.Publish, {
-      [TelemetryProperty.Success]: TelemetrySuccess.Yes
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
     });
     return ok(null);
   }

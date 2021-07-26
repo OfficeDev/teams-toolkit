@@ -108,6 +108,14 @@ export class MockAzureAccountProvider implements AzureAccountProvider {
   setSubscription(subscriptionId: string): Promise<void> {
     throw BuildError(NotImplemented);
   }
+
+  getAccountInfo(): Record<string, string> {
+    throw BuildError(NotImplemented);
+  }
+
+  getSelectedSubscription(): Promise<SubscriptionInfo | undefined> {
+    throw BuildError(NotImplemented);
+  }
 }
 
 export class MockGraphTokenProvider implements GraphTokenProvider {

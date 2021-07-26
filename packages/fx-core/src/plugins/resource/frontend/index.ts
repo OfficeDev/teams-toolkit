@@ -1,7 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { FrontendPluginImpl } from "./plugin";
-import { Plugin, PluginContext, err, SystemError, UserError } from "@microsoft/teamsfx-api";
+import {
+  Plugin,
+  PluginContext,
+  err,
+  SystemError,
+  UserError,
+  AzureSolutionSettings,
+} from "@microsoft/teamsfx-api";
 
 import { ErrorFactory, TeamsFxResult } from "./error-factory";
 import {
@@ -13,48 +20,62 @@ import {
 import { Logger } from "./utils/logger";
 import { ProgressHelper } from "./utils/progress-helper";
 import { TelemetryEvent } from "./constants";
-import { telemetryHelper } from "./utils/telemetry-helper";
-
+import { TelemetryHelper } from "./utils/telemetry-helper";
+import { HostTypeOptionAzure, TabOptionItem } from "../../solution/fx-solution/question";
+import { Service } from "typedi";
+import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+@Service(ResourcePlugins.FrontendPlugin)
 export class FrontendPlugin implements Plugin {
+  name = "fx-resource-frontend-hosting";
+  displayName = "Tab Front-end";
+  activate(solutionSettings: AzureSolutionSettings): boolean {
+    const cap = solutionSettings.capabilities || [];
+    return solutionSettings.hostType === HostTypeOptionAzure.id && cap.includes(TabOptionItem.id);
+  }
   frontendPluginImpl = new FrontendPluginImpl();
 
-  public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
+  private static setContext(ctx: PluginContext): void {
     Logger.setLogger(ctx.logProvider);
+    TelemetryHelper.setContext(ctx);
+  }
+
+  public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
+    FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(ctx, TelemetryEvent.scaffold, () =>
       this.frontendPluginImpl.scaffold(ctx)
     );
   }
 
   public async preProvision(ctx: PluginContext): Promise<TeamsFxResult> {
-    Logger.setLogger(ctx.logProvider);
+    FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(ctx, TelemetryEvent.PreProvision, () =>
       this.frontendPluginImpl.preProvision(ctx)
     );
   }
 
   public async provision(ctx: PluginContext): Promise<TeamsFxResult> {
-    Logger.setLogger(ctx.logProvider);
+    FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(ctx, TelemetryEvent.Provision, () =>
       this.frontendPluginImpl.provision(ctx)
     );
   }
 
   public async postProvision(ctx: PluginContext): Promise<TeamsFxResult> {
-    Logger.setLogger(ctx.logProvider);
+    FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(ctx, TelemetryEvent.PostProvision, () =>
       this.frontendPluginImpl.postProvision(ctx)
     );
   }
 
   public async preDeploy(ctx: PluginContext): Promise<TeamsFxResult> {
-    Logger.setLogger(ctx.logProvider);
+    FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(ctx, TelemetryEvent.PreDeploy, () =>
       this.frontendPluginImpl.preDeploy(ctx)
     );
   }
 
   public async deploy(ctx: PluginContext): Promise<TeamsFxResult> {
-    Logger.setLogger(ctx.logProvider);
+    FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(ctx, TelemetryEvent.Deploy, () =>
       this.frontendPluginImpl.deploy(ctx)
     );
@@ -66,9 +87,9 @@ export class FrontendPlugin implements Plugin {
     fn: () => Promise<TeamsFxResult>
   ): Promise<TeamsFxResult> {
     try {
-      telemetryHelper.sendStartEvent(ctx, stage);
+      TelemetryHelper.sendStartEvent(stage);
       const result = await fn();
-      telemetryHelper.sendSuccessEvent(ctx, stage);
+      TelemetryHelper.sendSuccessEvent(stage);
       return result;
     } catch (e) {
       await ProgressHelper.endAllHandlers();
@@ -76,24 +97,24 @@ export class FrontendPlugin implements Plugin {
       if (e instanceof FrontendPluginError) {
         const error =
           e.errorType === ErrorType.User
-            ? ErrorFactory.UserError(e.code, e.getMessage())
+            ? ErrorFactory.UserError(e.code, e.getMessage(), undefined, undefined, e.helpLink)
             : ErrorFactory.SystemError(
                 e.code,
                 e.getMessage(),
                 e.getInnerError(),
                 e.getInnerError()?.stack
               );
-        telemetryHelper.sendErrorEvent(ctx, stage, error);
+        TelemetryHelper.sendErrorEvent(stage, error);
         return err(error);
       }
 
       if (e instanceof UserError || e instanceof SystemError) {
-        telemetryHelper.sendErrorEvent(ctx, stage, e);
+        TelemetryHelper.sendErrorEvent(stage, e);
         return err(e);
       }
 
       const error = ErrorFactory.SystemError(UnhandledErrorCode, UnhandledErrorMessage, e, e.stack);
-      telemetryHelper.sendErrorEvent(ctx, stage, error);
+      TelemetryHelper.sendErrorEvent(stage, error);
       return err(error);
     }
   }

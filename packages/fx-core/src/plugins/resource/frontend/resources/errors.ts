@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Constants, FrontendPathInfo } from "../constants";
+import { AzureInfo, Constants, FrontendPathInfo, FrontendPluginInfo } from "../constants";
 import { Logger } from "../utils/logger";
 import path from "path";
 
@@ -30,6 +30,9 @@ const tips = {
   checkStoragePermissions: "Check if you have permissions to your Azure Storage Account.",
   checkSystemTime: "You may get expired credentials, check if your system time is correct.",
   restoreEnvironment: "Restore the 'env.default.json' file if you modified it.",
+  registerRequiredRP: `Register required resource provider '${AzureInfo.RequiredResourceProviders.join(
+    `', '`
+  )}' for your subscription manually.`,
 };
 
 export class FrontendPluginError extends Error {
@@ -37,18 +40,26 @@ export class FrontendPluginError extends Error {
   public message: string;
   public suggestions: string[];
   public errorType: ErrorType;
+  public helpLink?: string;
   public innerError?: Error;
 
-  constructor(errorType: ErrorType, code: string, message: string, suggestions: string[]) {
+  constructor(
+    errorType: ErrorType,
+    code: string,
+    message: string,
+    suggestions: string[],
+    helpLink?: string
+  ) {
     super(message);
     this.code = code;
     this.message = message;
     this.suggestions = suggestions;
     this.errorType = errorType;
+    this.helpLink = helpLink;
   }
 
   getMessage(): string {
-    return `${this.message} Suggestions: ${this.suggestions.join("\n")}`;
+    return `${this.message} Suggestions: ${this.suggestions.join(" ")}`;
   }
 
   setInnerError(error: Error): void {
@@ -83,7 +94,7 @@ export class InvalidConfigError extends FrontendPluginError {
 export class CheckResourceGroupError extends FrontendPluginError {
   constructor() {
     super(ErrorType.User, "CheckResourceGroupError", "Failed to check resource group existence.", [
-      tips.reLogin,
+      tips.checkLog,
     ]);
   }
 }
@@ -102,7 +113,7 @@ export class CheckStorageError extends FrontendPluginError {
       ErrorType.User,
       "CheckStorageError",
       "Failed to check Azure Storage Account availability.",
-      [tips.reLogin, tips.checkSystemTime]
+      [tips.checkSystemTime, tips.checkLog]
     );
   }
 }
@@ -121,7 +132,8 @@ export class StaticWebsiteDisabledError extends FrontendPluginError {
       ErrorType.User,
       "StaticWebsiteDisableError",
       "Static website hosting feature is disabled for Azure Storage Account.",
-      [tips.reProvision]
+      [tips.reProvision],
+      FrontendPluginInfo.HelpLink
     );
   }
 }
@@ -145,11 +157,26 @@ export class StorageAccountAlreadyTakenError extends FrontendPluginError {
   }
 }
 
-export class CreateStorageAccountError extends FrontendPluginError {
+// TODO: help link for this error
+export class RegisterResourceProviderError extends FrontendPluginError {
   constructor() {
-    super(ErrorType.User, "CreateStorageAccountError", "Failed to create Azure Storage Account.", [
-      tips.checkLog,
-    ]);
+    super(
+      ErrorType.User,
+      "RegisterResourceProviderError",
+      "Failed to register required resource provider for Tab frontend app.",
+      [tips.registerRequiredRP, tips.checkLog]
+    );
+  }
+}
+
+export class CreateStorageAccountError extends FrontendPluginError {
+  constructor(innerErrorCode?: string) {
+    super(
+      ErrorType.User,
+      "CreateStorageAccountError",
+      `Failed to create Azure Storage Account${innerErrorCode ? `: ${innerErrorCode}` : ""}.`,
+      [tips.checkLog]
+    );
   }
 }
 
@@ -159,7 +186,8 @@ export class EnableStaticWebsiteError extends FrontendPluginError {
       ErrorType.User,
       "EnableStaticWebsiteError",
       "Failed to enable static website feature for Azure Storage Account.",
-      [tips.checkSystemTime, tips.checkStoragePermissions]
+      [tips.checkSystemTime, tips.checkStoragePermissions],
+      FrontendPluginInfo.HelpLink
     );
   }
 }
@@ -200,7 +228,7 @@ export class GetContainerError extends FrontendPluginError {
 
 export class FetchTemplateManifestError extends FrontendPluginError {
   constructor() {
-    super(ErrorType.System, "FetchTemplateManifestError", "Failed to fetch template manifest.", [
+    super(ErrorType.User, "FetchTemplateManifestError", "Failed to fetch template manifest.", [
       tips.checkNetwork,
     ]);
   }
@@ -219,7 +247,7 @@ export class InvalidTemplateManifestError extends FrontendPluginError {
 
 export class FetchTemplatePackageError extends FrontendPluginError {
   constructor() {
-    super(ErrorType.System, "FetchTemplatePackageError", "Failed to fetch template package.", [
+    super(ErrorType.User, "FetchTemplatePackageError", "Failed to fetch template package.", [
       tips.checkNetwork,
     ]);
   }
@@ -231,6 +259,17 @@ export class GetTemplateError extends FrontendPluginError {
       tips.checkNetwork,
       tips.checkFsPermissions,
     ]);
+  }
+}
+
+export class UnknownFallbackError extends FrontendPluginError {
+  constructor() {
+    super(
+      ErrorType.System,
+      "UnknownFallbackError",
+      "Trigger fallback caused by unknown reason.",
+      []
+    );
   }
 }
 

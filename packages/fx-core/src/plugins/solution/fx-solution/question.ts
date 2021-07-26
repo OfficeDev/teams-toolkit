@@ -18,7 +18,7 @@ export const TabOptionItem: OptionItem = {
   label: "Tab",
   cliName: "tab",
   description: "UI-based app",
-  detail: "Tabs are Teams-aware webpages embedded in Microsoft Teams.",
+  detail: "Teams-aware webpages embedded in Microsoft Teams",
 };
 
 export const BotOptionItem: OptionItem = {
@@ -26,8 +26,7 @@ export const BotOptionItem: OptionItem = {
   label: "Bot",
   cliName: "bot",
   description: "Conversational Agent",
-  detail:
-    "Bots allow users to interact with your web service through text, interactive cards, and task modules.",
+  detail: "Running simple and repetitive automated tasks through conversations",
 };
 
 export const MessageExtensionItem: OptionItem = {
@@ -35,8 +34,7 @@ export const MessageExtensionItem: OptionItem = {
   label: "Messaging Extension",
   cliName: "messaging-extension",
   description: "Custom UI when users compose messages in Teams",
-  detail:
-    "Messaging Extensions allow users to interact with your web service through buttons and forms in the Microsoft Teams client.",
+  detail: "Inserting app content or acting on a message without leaving the conversation",
 };
 
 export enum AzureSolutionQuestionNames {
@@ -66,7 +64,7 @@ export const HostTypeOptionSPFx: OptionItem = {
 export const AzureResourceSQL: OptionItem = {
   id: "sql",
   label: "Azure SQL Database",
-  description: "Azure Function App will be also selected to access Azure SQL Database"
+  description: "Azure Function App will be also selected to access Azure SQL Database",
 };
 
 export const AzureResourceFunction: OptionItem = {
@@ -77,7 +75,7 @@ export const AzureResourceFunction: OptionItem = {
 export const AzureResourceApim: OptionItem = {
   id: "apim",
   label: "Register APIs in Azure API Management",
-  description: "Azure Function App will be also selected to be published as an API"
+  description: "Azure Function App will be also selected to be published as an API",
 };
 
 export function createCapabilityQuestion(): MultiSelectQuestion {
@@ -96,7 +94,7 @@ export const FrontendHostTypeQuestion: SingleSelectQuestion = {
   name: AzureSolutionQuestionNames.HostType,
   title: "Frontend hosting type",
   type: "singleSelect",
-  staticOptions:[HostTypeOptionAzure, HostTypeOptionSPFx],
+  staticOptions: [HostTypeOptionAzure, HostTypeOptionSPFx],
   dynamicOptions: (previousAnswers: Inputs): StaticOptions => {
     const cap = previousAnswers[AzureSolutionQuestionNames.Capabilities] as string[];
     if (cap) {
@@ -195,14 +193,14 @@ export const AskSubscriptionQuestion: FuncQuestion = {
   type: "func",
   func: async (inputs: Inputs): Promise<Void> => {
     return ok(Void);
-  }
+  },
 };
 
 export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
   name: AzureSolutionQuestionNames.ProgrammingLanguage,
   title: "Programming Language",
   type: "singleSelect",
-  staticOptions:  [
+  staticOptions: [
     { id: "javascript", label: "JavaScript" },
     { id: "typescript", label: "TypeScript" },
   ],
@@ -214,8 +212,13 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
       { id: "typescript", label: "TypeScript" },
     ];
   },
-  default: "javascript",
-  placeholder:(inputs: Inputs): string => {
+  skipSingleOption: true,
+  default: (inputs: Inputs) => {
+    const hostType = inputs[AzureSolutionQuestionNames.HostType] as string;
+    if (HostTypeOptionSPFx.id === hostType) return "typescript";
+    return "javascript";
+  },
+  placeholder: (inputs: Inputs): string => {
     const hostType = inputs[AzureSolutionQuestionNames.HostType] as string;
     if (HostTypeOptionSPFx.id === hostType) return "SPFx is currently supporting TypeScript only.";
     return "Select a programming language.";

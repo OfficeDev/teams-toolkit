@@ -1,7 +1,4 @@
 // Copyright (c) Microsoft Corporation.
-
-import path from "path";
-
 // Licensed under the MIT license.
 export class Constants {
   static readonly SolutionPlugin = {
@@ -53,12 +50,17 @@ export class Constants {
     },
   };
 
-  static readonly ResourcesFolderName: string = path.join(
-    "templates",
-    "plugins",
-    "resource",
-    "simpleauth"
-  );
+  static readonly SimpleAuthBicepModuleTemplateFileName: string = "simpleAuth.template.bicep";
+  static readonly SimpleAuthBicepOrchestrationParameterFileName: string =
+    "input_param.template.bicep";
+  static readonly SimpleAuthBicepOrchestrationModuleTemplateFileName: string =
+    "module.template.bicep";
+  static readonly SimpleAuthBicepOrchestrationOutputTemplateFileName: string =
+    "output.template.bicep";
+
+  static readonly SimpleAuthBicepOutputSkuName: string = "simpleAuthProvision.outputs.skuName";
+  static readonly SimpleAuthBicepOutputEndpoint: string = "simpleAuthProvision.outputs.endpoint";
+
   static readonly SimpleAuthFileName: string = "SimpleAuth.zip";
   static readonly SimpleAuthZipName = (version: string): string =>
     `Microsoft.TeamsFx.SimpleAuth_${version}.zip`;
@@ -101,10 +103,9 @@ export class Constants {
     "The maximum number of Free ServerFarms allowed in a Subscription is 10";
   static readonly FreeServerFarmsQuotaErrorToUser =
     "The maximum number of Free App Service Plan allowed in a Subscription is 10. Delete a free App Service plan and try again.";
-    static readonly MissingSubscriptionRegistrationErrorFromAzure =
+  static readonly MissingSubscriptionRegistrationErrorFromAzure =
     "The subscription is not registered to use namespace 'Microsoft.Web'";
-  static readonly HelpLink =
-    "https://aka.ms/teamsfx-sa-help";
+  static readonly HelpLink = "https://aka.ms/teamsfx-sa-help";
 }
 
 export class Telemetry {
@@ -153,6 +154,14 @@ export class Messages {
   static readonly EndProvision: Message = {
     log: Messages.getLog("Successfully provisioned"),
     telemetry: Messages.getEventName("provision"),
+  };
+  static readonly StartGenerateArmTemplates: Message = {
+    log: Messages.getLog("Starting generating arm templates"),
+    telemetry: Messages.getEventName("generate-arm-templates-start"),
+  };
+  static readonly EndGenerateArmTemplates: Message = {
+    log: Messages.getLog("Successfully generated arm templates"),
+    telemetry: Messages.getEventName("generate-arm-templates"),
   };
   static readonly StartPostProvision: Message = {
     log: Messages.getLog("Post-provisioning"),

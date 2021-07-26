@@ -35,11 +35,25 @@ export enum TelemetryEvent {
   Publish = "publish",
 
   InitStart = "init-start",
-  Init = "init"
+  Init = "init",
+
+  PreviewStart = "preview-start",
+  Preview = "preview",
+  PreviewNpmInstallStart = "preview-npm-install-start",
+  PreviewNpmInstall = "preview-npm-install",
+  PreviewServiceStart = "preview-service-start",
+  PreviewService = "preview-service",
+  PreviewSideloadingStart = "preview-sideloading-start",
+  PreviewSideloading = "preview-sideloading",
+
+  ConfigGet = "config-get",
+  ConfigSet = "config-set",
 }
 
 export enum TelemetryProperty {
   Component = "component",
+  ProjectId = "project-id",
+  CorrelationId = "correlation-id",
   AppId = "appid",
   UserId = "hashed-userid",
   AccountType = "account-type",
@@ -51,22 +65,33 @@ export enum TelemetryProperty {
   Capabilities = "capabilities",
   Resources = "resources",
   Internal = "internal",
-  InternalAlias = "internal-alias"
+  InternalAlias = "internal-alias",
+  PreviewAppId = "preview-appid",
+  PreviewType = "preview-type",
+  PreviewBrowser = "preview-browser",
+  PreviewNpmInstallName = "preview-npm-install-name",
+  PreviewNpmInstallExitCode = "preview-npm-install-exit-code",
+  PreviewNpmInstallNodeVersion = "preview-npm-install-node-version",
+  PreviewNpmInstallNpmVersion = "preview-npm-install-npm-version",
+  PreviewNpmInstallErrorMessage = "preview-npm-install-error-message",
+  PreviewServiceName = "preview-service-name",
+  PreviewOSArch = "preview-os-arch",
+  PreviewOSRelease = "preview-os-release",
 }
 
 export enum TelemetrySuccess {
   Yes = "yes",
-  No = "no"
+  No = "no",
 }
 
 export enum TelemetryErrorType {
   UserError = "user",
-  SystemError = "system"
+  SystemError = "system",
 }
 
 export enum TelemetryAccountType {
   Azure = "azure",
-  M365 = "m365"
+  M365 = "m365",
 }
 
 export const TelemetryComponentType = "cli";

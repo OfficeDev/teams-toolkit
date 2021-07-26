@@ -5,12 +5,9 @@
 import * as fs from "fs-extra";
 import {
   ConfigFolderName,
-  Dialog,
-  DialogMsg,
-  DialogType,
   LogProvider,
   PluginContext,
-  QuestionType,
+  UserInteraction,
 } from "@microsoft/teamsfx-api";
 import { asn1, md, pki } from "node-forge";
 import * as os from "os";
@@ -35,12 +32,12 @@ export interface LocalCertificate {
 }
 
 export class LocalCertificateManager {
-  private readonly dialog?: Dialog;
+  private readonly ui?: UserInteraction;
   private readonly logger?: LogProvider;
   private readonly certFolder: string;
 
   constructor(ctx: PluginContext | undefined) {
-    this.dialog = ctx?.dialog;
+    this.ui = ctx?.ui;
     this.logger = ctx?.logProvider;
     this.certFolder = `${os.homedir()}/.${ConfigFolderName}/certificate`;
   }
@@ -298,25 +295,19 @@ export class LocalCertificateManager {
   }
 
   private async waitForUserConfirm(): Promise<boolean> {
-    if (this.dialog) {
+    if (this.ui) {
       let userSelected: string | undefined;
       do {
-        userSelected = (
-          await this.dialog.communicate(
-            new DialogMsg(DialogType.Ask, {
-              description: confirmMessage,
-              type: QuestionType.Confirm,
-              options: [learnMoreText, continueText], // Cancel is added by default
-            })
-          )
-        ).getAnswer();
+        const res = await this.ui.showMessage(
+          "info",
+          confirmMessage,
+          true,
+          learnMoreText,
+          continueText
+        );
+        userSelected = res.isOk() ? res.value : undefined;
         if (userSelected === learnMoreText) {
-          await this.dialog.communicate(
-            new DialogMsg(DialogType.Ask, {
-              type: QuestionType.OpenExternal,
-              description: learnMoreUrl,
-            })
-          );
+          this.ui.openUrl(learnMoreUrl);
         }
       } while (userSelected === learnMoreText);
       return userSelected === continueText;

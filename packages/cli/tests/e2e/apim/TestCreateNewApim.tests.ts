@@ -8,12 +8,14 @@ import { ApimValidator } from "../../commonlib";
 
 import {
   execAsync,
+  execAsyncWithRetry,
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
   setSimpleAuthSkuNameToB1,
   getConfigFileName,
   cleanUp,
+  readContext,
 } from "../commonUtils";
 import AzureLogin from "../../../src/commonlib/azureLogin";
 import GraphLogin from "../../../src/commonlib/graphLogin";
@@ -37,30 +39,35 @@ describe("Create a new API Management Service", function () {
 
     await ApimValidator.init(subscriptionId, AzureLogin, GraphLogin);
 
-    result = await execAsync(`teamsfx resource add azure-apim --subscription ${subscriptionId}`, {
-      cwd: projectPath,
-      env: process.env,
-      timeout: 0,
-    });
+    result = await execAsyncWithRetry(
+      `teamsfx resource add azure-apim --subscription ${subscriptionId}`,
+      {
+        cwd: projectPath,
+        env: process.env,
+        timeout: 0,
+      }
+    );
     console.log(`Add APIM resource. Error message: ${result.stderr}`);
 
-    result = await execAsync(`teamsfx provision`, {
+    result = await execAsyncWithRetry(`teamsfx provision`, {
       cwd: projectPath,
       env: process.env,
       timeout: 0,
     });
     console.log(`Provision. Error message: ${result.stderr}`);
 
-    const provisionContext = await fs.readJSON(getConfigFileName(appName));
+    const provisionContext = await readContext(projectPath);
     await ApimValidator.validateProvision(provisionContext, appName);
 
-    result = await execAsync(
+    result = await execAsyncWithRetry(
       `teamsfx deploy apim --open-api-document openapi/openapi.json --api-prefix ${appName} --api-version v1`,
       {
         cwd: projectPath,
         env: process.env,
         timeout: 0,
-      }
+      },
+      3,
+      `teamsfx deploy apim --open-api-document openapi/openapi.json --api-version v1`
     );
     console.log(`Deploy. Error message: ${result.stderr}`);
 

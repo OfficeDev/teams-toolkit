@@ -6,30 +6,27 @@ import {
   FxError,
   Result,
   ok,
-  DialogMsg,
-  DialogType,
-  MsgLevel,
   Platform,
-  QuestionType,
   Colors,
 } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
 import lodash from "lodash";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { SpfxConfig } from ".";
-import { configure, execute, normalizeComponentName } from "./utils/utils";
+import { SPFXQuestionNames } from ".";
+import { Utils } from "./utils/utils";
 import { Constants, PlaceHolders, PreDeployProgressMessage } from "./utils/constants";
 import { BuildSPPackageError, NoSPPackageError } from "./error";
 import * as util from "util";
 import { ProgressHelper } from "./utils/progress-helper";
-import { REMOTE_MANIFEST } from "../../solution/fx-solution/constants";
 import { getStrings } from "../../../common/tools";
 import { getTemplatesFolder } from "../../..";
+import { REMOTE_MANIFEST } from "../appstudio/constants";
 
 export class SPFxPluginImpl {
-  public async scaffold(ctx: PluginContext, config: SpfxConfig): Promise<Result<any, FxError>> {
-    const componentName = normalizeComponentName(config.webpartName);
+  public async postScaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
+    const webpartName = ctx.answers![SPFXQuestionNames.webpart_name] as string;
+    const componentName = Utils.normalizeComponentName(webpartName);
     const componentNameCamelCase = lodash.camelCase(componentName);
     const componentId = uuid.v4();
     const componentClassName = `${componentName}WebPart`;
@@ -77,7 +74,7 @@ export class SPFxPluginImpl {
       `${srcDir}/index.ts`
     );
 
-    switch (config.framework) {
+    switch (ctx.answers![SPFXQuestionNames.framework_type] as string) {
       case Constants.FRAMEWORK_NONE:
         fs.mkdirSync(`${srcDir}/webparts/${componentNameCamelCase}`, {
           recursive: true,
@@ -164,12 +161,15 @@ export class SPFxPluginImpl {
     replaceMap.set(PlaceHolders.libraryName, libraryName);
     replaceMap.set(PlaceHolders.componentId, componentId);
     replaceMap.set(PlaceHolders.componentAlias, componentAlias);
-    replaceMap.set(PlaceHolders.componentDescription, config.webpartDesc);
-    replaceMap.set(PlaceHolders.componentNameUnescaped, config.webpartName);
+    replaceMap.set(
+      PlaceHolders.componentDescription,
+      ctx.answers![SPFXQuestionNames.webpart_desp] as string
+    );
+    replaceMap.set(PlaceHolders.componentNameUnescaped, webpartName);
     replaceMap.set(PlaceHolders.componentClassNameKebabCase, componentClassNameKebabCase);
 
-    await configure(outputFolderPath, replaceMap);
-    await configure(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`, replaceMap);
+    await Utils.configure(outputFolderPath, replaceMap);
+    await Utils.configure(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`, replaceMap);
     return ok(undefined);
   }
 
@@ -181,10 +181,10 @@ export class SPFxPluginImpl {
     try {
       const workspacePath = `${ctx.root}/SPFx`;
       await progressHandler?.next(PreDeployProgressMessage.NpmInstall);
-      await execute(`npm install`, "SPFx", workspacePath, ctx.logProvider, true);
+      await Utils.execute(`npm install`, "SPFx", workspacePath, ctx.logProvider, true);
       const gulpCommand = await SPFxPluginImpl.findGulpCommand(workspacePath);
       await progressHandler?.next(PreDeployProgressMessage.GulpBundle);
-      await execute(
+      await Utils.execute(
         `${gulpCommand} bundle --ship --no-color`,
         "SPFx",
         workspacePath,
@@ -192,7 +192,7 @@ export class SPFxPluginImpl {
         true
       );
       await progressHandler?.next(PreDeployProgressMessage.GulpPackage);
-      await execute(
+      await Utils.execute(
         `${gulpCommand} package-solution --ship --no-color`,
         "SPFx",
         workspacePath,
@@ -213,28 +213,30 @@ export class SPFxPluginImpl {
 
       if (ctx.answers?.platform === Platform.CLI) {
         const guidance = [
-          {content: "[Teams Toolkit] SharePoint package successfully built at ", color: Colors.BRIGHT_GREEN},
-          {content: dir, color: Colors.BRIGHT_MAGENTA},
-          {content: " Visit Microsoft Admin Center: ", color: Colors.BRIGHT_GREEN},
-          {content: "https://admin.microsoft.com", color: Colors.BRIGHT_CYAN},
-          {content: " and go to your tenant's SharePoint App Catalog site to upload the ", color: Colors.BRIGHT_GREEN},
-          {content: fileName, color: Colors.BRIGHT_MAGENTA},
-          {content: " Follow instructions to learn more about deploy to SharePoint: ", color: Colors.BRIGHT_GREEN},
-          {content: Constants.DEPLOY_GUIDE, color: Colors.BRIGHT_CYAN}
-        ]
+          {
+            content: "[Teams Toolkit] SharePoint package successfully built at ",
+            color: Colors.BRIGHT_GREEN,
+          },
+          { content: dir, color: Colors.BRIGHT_MAGENTA },
+          { content: " Visit Microsoft Admin Center: ", color: Colors.BRIGHT_GREEN },
+          { content: "https://admin.microsoft.com", color: Colors.BRIGHT_CYAN },
+          {
+            content: " and go to your tenant's SharePoint App Catalog site to upload the ",
+            color: Colors.BRIGHT_GREEN,
+          },
+          { content: fileName, color: Colors.BRIGHT_MAGENTA },
+          {
+            content: " Follow instructions to learn more about deploy to SharePoint: ",
+            color: Colors.BRIGHT_GREEN,
+          },
+          { content: Constants.DEPLOY_GUIDE, color: Colors.BRIGHT_CYAN },
+        ];
         ctx.ui?.showMessage("info", guidance, false);
       } else {
         const guidance = util.format(getStrings().plugins.SPFx.deployNotice, dir, fileName);
-        ctx.ui
-        ?.showMessage("info", guidance, false, "OK", Constants.READ_MORE)
-        .then((answer) => {
+        ctx.ui?.showMessage("info", guidance, false, "OK", Constants.READ_MORE).then((answer) => {
           if (answer.isOk() && answer.value === Constants.READ_MORE) {
-            ctx.dialog?.communicate(
-              new DialogMsg(DialogType.Ask, {
-                description: Constants.DEPLOY_GUIDE,
-                type: QuestionType.OpenExternal,
-              })
-            );
+            ctx.ui?.openUrl(Constants.DEPLOY_GUIDE);
           }
         });
       }
@@ -246,27 +248,19 @@ export class SPFxPluginImpl {
   }
 
   public async preDeploy(ctx: PluginContext): Promise<Result<any, FxError>> {
-    const confirm = (
-      await ctx.dialog?.communicate(
-        new DialogMsg(DialogType.Show, {
-          description: getStrings().plugins.SPFx.buildNotice,
-          level: MsgLevel.Warning,
-          items: [Constants.BUILD_SHAREPOINT_PACKAGE, Constants.READ_MORE],
-          modal: true,
-        })
-      )
-    )?.getAnswer();
-
+    const confirmRes = await ctx.ui?.showMessage(
+      "warn",
+      getStrings().plugins.SPFx.buildNotice,
+      true,
+      Constants.BUILD_SHAREPOINT_PACKAGE,
+      Constants.READ_MORE
+    );
+    const confirm = confirmRes?.isOk() ? confirmRes.value : undefined;
     switch (confirm) {
       case Constants.BUILD_SHAREPOINT_PACKAGE:
         return this.buildSPPackge(ctx);
       case Constants.READ_MORE:
-        await ctx.dialog?.communicate(
-          new DialogMsg(DialogType.Ask, {
-            description: Constants.DEPLOY_GUIDE,
-            type: QuestionType.OpenExternal,
-          })
-        );
+        ctx.ui?.openUrl(Constants.DEPLOY_GUIDE);
       default:
         return ok(undefined);
     }

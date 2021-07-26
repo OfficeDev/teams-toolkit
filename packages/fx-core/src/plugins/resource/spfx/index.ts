@@ -11,6 +11,7 @@ import {
   Result,
   ok,
   TeamsAppManifest,
+  AzureSolutionSettings,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as path from "path";
@@ -19,12 +20,9 @@ import { TelemetryEvent } from "./utils/constants";
 import { telemetryHelper } from "./utils/telemetry-helper";
 import { ProgressHelper } from "./utils/progress-helper";
 import { getTemplatesFolder } from "../../..";
-export class SpfxConfig {
-  webpartName = "my-SPFx-app";
-  webpartDesc = "This is a SPFx app.";
-  framework = "none";
-  isPrivate = true;
-}
+import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+import { Service } from "typedi";
+import { HostTypeOptionSPFx } from "../../solution/fx-solution/question";
 
 export enum SPFXQuestionNames {
   framework_type = "spfx-framework-type",
@@ -32,8 +30,13 @@ export enum SPFXQuestionNames {
   webpart_desp = "spfx-webpart-desp",
 }
 
+@Service(ResourcePlugins.SpfxPlugin)
 export class SpfxPlugin implements Plugin {
-  config: SpfxConfig = new SpfxConfig();
+  name = "fx-resource-spfx";
+  displayName = "SharePoint Framework (SPFx)";
+  activate(solutionSettings: AzureSolutionSettings): boolean {
+    return solutionSettings.hostType === HostTypeOptionSPFx.id;
+  }
   spfxPluginImpl: SPFxPluginImpl = new SPFxPluginImpl();
 
   async getQuestions(
@@ -84,19 +87,9 @@ export class SpfxPlugin implements Plugin {
     return ok(spfx_frontend_host);
   }
 
-  public async scaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
-    //answers ---> config by huajie
-    if (ctx.answers) {
-      let v = ctx.answers[SPFXQuestionNames.framework_type] as string;
-      this.config.framework = v || this.config.framework;
-      v = ctx.answers[SPFXQuestionNames.webpart_name] as string;
-      this.config.webpartName = v || this.config.webpartName;
-      v = ctx.answers[SPFXQuestionNames.webpart_desp] as string;
-      this.config.webpartDesc = v || this.config.webpartDesc;
-    }
-
+  public async postScaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
     return await this.runWithErrorHandling(ctx, TelemetryEvent.Scaffold, () =>
-      this.spfxPluginImpl.scaffold(ctx, this.config)
+      this.spfxPluginImpl.postScaffold(ctx)
     );
   }
 
@@ -110,14 +103,6 @@ export class SpfxPlugin implements Plugin {
     return await this.runWithErrorHandling(ctx, TelemetryEvent.Deploy, () =>
       this.spfxPluginImpl.deploy(ctx)
     );
-  }
-
-  public async getManifest(): Promise<TeamsAppManifest> {
-    const templateFolder = path.join(getTemplatesFolder(), "plugins", "resource", "spfx");
-    const manifestFile = path.resolve(templateFolder, "./solution/manifest.json");
-    const manifestString = (await fs.readFile(manifestFile)).toString();
-    const manifest: TeamsAppManifest = JSON.parse(manifestString);
-    return manifest;
   }
 
   private async runWithErrorHandling(

@@ -18,24 +18,12 @@
       "preLaunchTask": "npm: build"
     },
     {
-      "name": "Extension Tests (No Folder)",
+      "name": "Extension Unit Tests",
       "type": "extensionHost",
       "request": "launch",
       "args": [
         "--extensionDevelopmentPath=${workspaceFolder}",
-        "--extensionTestsPath=${workspaceFolder}/out/test/index.noFolder"
-      ],
-      "outFiles": ["${workspaceFolder}/out/test/**/*.js"],
-      "preLaunchTask": "npm: test-watch"
-    },
-    {
-      "name": "Extension Tests (Specified Folder)",
-      "type": "extensionHost",
-      "request": "launch",
-      "args": [
-        "${workspaceFolder}/test-folder/myapp",
-        "--extensionDevelopmentPath=${workspaceFolder}",
-        "--extensionTestsPath=${workspaceFolder}/out/test/index.folder"
+        "--extensionTestsPath=${workspaceFolder}/out/test/unit/index"
       ],
       "outFiles": ["${workspaceFolder}/out/test/**/*.js"],
       "preLaunchTask": "npm: test-watch"
@@ -46,7 +34,7 @@
       "request": "launch",
       "args": [
         "--extensionDevelopmentPath=${workspaceFolder}",
-        "--extensionTestsPath=${workspaceFolder}/out/test/suite/envChecker/index"
+        "--extensionTestsPath=${workspaceFolder}/out/test/integration/envChecker/index"
       ],
       "outFiles": ["${workspaceFolder}/out/src/**/*.js", "${workspaceFolder}/out/test/**/*.js"],
       "preLaunchTask": "npm: test-watch",

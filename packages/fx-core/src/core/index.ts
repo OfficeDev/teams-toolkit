@@ -27,15 +27,13 @@ import {
   ProjectConfig,
   ProjectSettings,
   PluginConfig,
-	assembleError,
-	LogProvider,
+  assembleError,
+  LogProvider,
+  GroupOfTasks,
+  RunnableTask,
 } from "@microsoft/teamsfx-api";
 import * as path from "path";
-import {
-	downloadSampleHook,
-  fetchCodeZip,
-  saveFilesRecursively,
-} from "../common/tools";
+import { downloadSampleHook, fetchCodeZip, saveFilesRecursively } from "../common/tools";
 import {
   CoreQuestionNames,
   ProjectNamePattern,
@@ -56,47 +54,63 @@ import { QuestionModelMW } from "./middleware/questionModel";
 import { ConfigWriterMW } from "./middleware/configWriter";
 import { ContextLoaderMW, newSolutionContext } from "./middleware/contextLoader";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
-import { FetchSampleError, FunctionRouterError, InvalidInputError, ProjectFolderExistError, TaskNotSupportError, WriteFileError } from "./error";
-import { SolutionLoaderMW} from "./middleware/solutionLoader";
+import {
+  FetchSampleError,
+  FunctionRouterError,
+  InvalidInputError,
+  ProjectFolderExistError,
+  TaskNotSupportError,
+  WriteFileError,
+} from "./error";
+import { SolutionLoaderMW } from "./middleware/solutionLoader";
 import { ContextInjecterMW } from "./middleware/contextInjecter";
 import { defaultSolutionLoader } from "./loader";
-import { sendTelemetryErrorEvent, sendTelemetryEvent, TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../common/telemetry";
+import {
+  sendTelemetryErrorEvent,
+  sendTelemetryEvent,
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetrySuccess,
+} from "../common/telemetry";
 import { TelemetrySenderMW } from "./middleware/telemetrySender";
- 
+import * as uuid from "uuid";
+import { AxiosResponse } from "axios";
+import { ProjectUpgraderMW } from "./middleware/projectUpgrader";
 
-export interface CoreHookContext extends HookContext{
-  solutionContext?:SolutionContext;
-  solution?:Solution;
+export interface CoreHookContext extends HookContext {
+  solutionContext?: SolutionContext;
+  solution?: Solution;
 }
 
-export let Logger:LogProvider;
- 
+export let Logger: LogProvider;
+
 export class FxCore implements Core {
-  
   tools: Tools;
 
-  constructor(tools: Tools) { 
+  constructor(tools: Tools) {
     this.tools = tools;
-		Logger = tools.logProvider;
+    Logger = tools.logProvider;
   }
-  
-  @hooks([TelemetrySenderMW, ErrorHandlerMW, QuestionModelMW, ContextInjecterMW, ConfigWriterMW])
+
+  @hooks([ErrorHandlerMW, QuestionModelMW, ContextInjecterMW, ConfigWriterMW])
   async createProject(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     const folder = inputs[QuestionRootFolder.name] as string;
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
-    let projectPath:string;
-    if (scratch === ScratchOptionNo.id) { // create from sample
+    let projectPath: string;
+    let globalStateDescription = "openReadme";
+
+    if (scratch === ScratchOptionNo.id) {
+      // create from sample
       const downloadRes = await this.downloadSample(inputs);
-      if(downloadRes.isErr()){
+      if (downloadRes.isErr()) {
         return err(downloadRes.error);
       }
       projectPath = downloadRes.value;
-    }
-    else {
-      // create from new 
+      globalStateDescription = "openSampleReadme";
+    } else {
+      // create from new
       const appName = inputs[QuestionAppName.name] as string;
-      if (undefined === appName)
-        return err(InvalidInputError(`App Name is empty`, inputs));
+      if (undefined === appName) return err(InvalidInputError(`App Name is empty`, inputs));
 
       const validateResult = jsonschema.validate(appName, {
         pattern: ProjectNamePattern,
@@ -115,20 +129,21 @@ export class FxCore implements Core {
       const solution = await defaultSolutionLoader.loadSolution(inputs);
       const projectSettings: ProjectSettings = {
         appName: appName,
+        projectId: uuid.v4(),
         currentEnv: "default",
         solutionSettings: {
           name: solution.name,
-          version: "1.0.0"
-        }
+          version: "1.0.0",
+        },
       };
 
       const solutionContext: SolutionContext = {
         projectSettings: projectSettings,
         config: new Map<string, PluginConfig>(),
         root: projectPath,
-        ... this.tools,
-        ... this.tools.tokenProvider,
-        answers: inputs
+        ...this.tools,
+        ...this.tools.tokenProvider,
+        answers: inputs,
       };
 
       await fs.ensureDir(projectPath);
@@ -152,12 +167,12 @@ export class FxCore implements Core {
       ctx!.solution = solution;
       ctx!.solutionContext = solutionContext;
     }
- 
+
     if (inputs.platform === Platform.VSCode) {
       await this.tools.dialog?.communicate(
         new DialogMsg(DialogType.Ask, {
           type: QuestionType.UpdateGlobalState,
-          description: "openReadme",
+          description: globalStateDescription,
         })
       );
     }
@@ -172,60 +187,175 @@ export class FxCore implements Core {
       const url = sample.data as string;
       const sampleId = sample.id;
       const sampleAppPath = path.resolve(folder, sampleId);
-      if (
-        (await fs.pathExists(sampleAppPath)) &&
-        (await fs.readdir(sampleAppPath)).length > 0
-      ) {
+      if ((await fs.pathExists(sampleAppPath)) && (await fs.readdir(sampleAppPath)).length > 0) {
         return err(ProjectFolderExistError(sampleAppPath));
       }
-      const progress = this.tools.dialog.createProgressBar("Fetch sample app", 2);
-      progress.start();
-      try {
-        progress.next(`Downloading from '${url}'`);
-				sendTelemetryEvent(this.tools.telemetryReporter, inputs, TelemetryEvent.DownloadSampleStart, { [TelemetryProperty.SampleAppName]: sample.id, module:"fx-core" });
-        const fetchRes = await fetchCodeZip(url);
-        progress.next("Unzipping the sample package");
-        if (fetchRes !== undefined) {
-          await saveFilesRecursively(new AdmZip(fetchRes.data), sampleId, folder);
-					await downloadSampleHook(sampleId, sampleAppPath);
-					sendTelemetryEvent(this.tools.telemetryReporter, inputs, TelemetryEvent.DownloadSample, { [TelemetryProperty.SampleAppName]: sample.id, [TelemetryProperty.Success]: TelemetrySuccess.Yes, module:"fx-core" });
-          return ok(sampleAppPath);
-        } else { 
-					sendTelemetryErrorEvent(this.tools.telemetryReporter, inputs, TelemetryEvent.DownloadSample, FetchSampleError(), { [TelemetryProperty.SampleAppName]: sample.id, [TelemetryProperty.Success]: TelemetrySuccess.No, module:"fx-core" });
-          return err(FetchSampleError());
-        }
-      } catch(e){
-				sendTelemetryErrorEvent(this.tools.telemetryReporter, inputs, TelemetryEvent.DownloadSample, assembleError(e), { [TelemetryProperty.SampleAppName]: sample.id, [TelemetryProperty.Success]: TelemetrySuccess.No, module:"fx-core" });
-			} finally {
-        progress.end();
-      } 
+
+      let fetchRes: AxiosResponse<any> | undefined;
+      const task1: RunnableTask<Void> = {
+        name: `Download code from '${url}'`,
+        run: async (...args: any): Promise<Result<Void, FxError>> => {
+          try {
+            sendTelemetryEvent(
+              this.tools.telemetryReporter,
+              inputs,
+              TelemetryEvent.DownloadSampleStart,
+              { [TelemetryProperty.SampleAppName]: sample.id, module: "fx-core" }
+            );
+            fetchRes = await fetchCodeZip(url);
+            if (fetchRes !== undefined) {
+              sendTelemetryEvent(
+                this.tools.telemetryReporter,
+                inputs,
+                TelemetryEvent.DownloadSample,
+                {
+                  [TelemetryProperty.SampleAppName]: sample.id,
+                  [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+                  module: "fx-core",
+                }
+              );
+              return ok(Void);
+            } else return err(FetchSampleError());
+          } catch (e) {
+            sendTelemetryErrorEvent(
+              this.tools.telemetryReporter,
+              inputs,
+              TelemetryEvent.DownloadSample,
+              assembleError(e),
+              {
+                [TelemetryProperty.SampleAppName]: sample.id,
+                [TelemetryProperty.Success]: TelemetrySuccess.No,
+                module: "fx-core",
+              }
+            );
+            return err(assembleError(e));
+          }
+        },
+      };
+
+      const task2: RunnableTask<Void> = {
+        name: "Save and unzip package",
+        run: async (...args: any): Promise<Result<Void, FxError>> => {
+          if (fetchRes) {
+            await saveFilesRecursively(new AdmZip(fetchRes.data), sampleId, folder);
+          }
+          return ok(Void);
+        },
+      };
+      const task3: RunnableTask<Void> = {
+        name: "post process",
+        run: async (...args: any): Promise<Result<Void, FxError>> => {
+          await downloadSampleHook(sampleId, sampleAppPath);
+          return ok(Void);
+        },
+      };
+      const group = new GroupOfTasks<Void>([task1, task2, task3], {
+        sequential: true,
+        fastFail: true,
+      });
+      const runRes = await this.tools.ui.runWithProgress(group, {
+        showProgress: true,
+        cancellable: false,
+      });
+      if (runRes.isOk()) {
+        return ok(sampleAppPath);
+      } else {
+        return err(runRes.error);
+      }
+      // const progress = this.tools.dialog.createProgressBar("Fetch sample app", 2);
+      // progress.start();
+      // try {
+      //   progress.next(`Downloading from '${url}'`);
+      //   sendTelemetryEvent(this.tools.telemetryReporter, inputs, TelemetryEvent.DownloadSampleStart, { [TelemetryProperty.SampleAppName]: sample.id, module: "fx-core" });
+      //   const fetchRes = await fetchCodeZip(url);
+      //   progress.next("Unzipping the sample package");
+      //   if (fetchRes !== undefined) {
+      //     await saveFilesRecursively(new AdmZip(fetchRes.data), sampleId, folder);
+      //     await downloadSampleHook(sampleId, sampleAppPath);
+      //     sendTelemetryEvent(this.tools.telemetryReporter, inputs, TelemetryEvent.DownloadSample, { [TelemetryProperty.SampleAppName]: sample.id, [TelemetryProperty.Success]: TelemetrySuccess.Yes, module: "fx-core" });
+      //     return ok(sampleAppPath);
+      //   } else {
+      //     sendTelemetryErrorEvent(this.tools.telemetryReporter, inputs, TelemetryEvent.DownloadSample, FetchSampleError(), { [TelemetryProperty.SampleAppName]: sample.id, [TelemetryProperty.Success]: TelemetrySuccess.No, module: "fx-core" });
+      //     return err(FetchSampleError());
+      //   }
+      // } catch (e) {
+      //   sendTelemetryErrorEvent(this.tools.telemetryReporter, inputs, TelemetryEvent.DownloadSample, assembleError(e), { [TelemetryProperty.SampleAppName]: sample.id, [TelemetryProperty.Success]: TelemetrySuccess.No, module: "fx-core" });
+      // } finally {
+      //   progress.end();
+      // }
     }
     return err(InvalidInputError(`invalid answer for '${CoreQuestionNames.Samples}'`, inputs));
   }
 
-  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextLoaderMW, TelemetrySenderMW, SolutionLoaderMW(defaultSolutionLoader), QuestionModelMW, ContextInjecterMW, ConfigWriterMW])
-  async provisionResources(inputs: Inputs, ctx?: CoreHookContext) : Promise<Result<Void, FxError>>{
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    ContextLoaderMW,
+    SolutionLoaderMW(defaultSolutionLoader),
+    QuestionModelMW,
+    ContextInjecterMW,
+    ConfigWriterMW,
+  ])
+  async provisionResources(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     return await ctx!.solution!.provision(ctx!.solutionContext!);
   }
 
-  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextLoaderMW, TelemetrySenderMW, SolutionLoaderMW(defaultSolutionLoader), QuestionModelMW, ContextInjecterMW, ConfigWriterMW])
-  async deployArtifacts(inputs: Inputs, ctx?: CoreHookContext) : Promise<Result<Void, FxError>>{
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    ContextLoaderMW,
+    SolutionLoaderMW(defaultSolutionLoader),
+    QuestionModelMW,
+    ContextInjecterMW,
+    ConfigWriterMW,
+  ])
+  async deployArtifacts(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     return await ctx!.solution!.deploy(ctx!.solutionContext!);
   }
-  
-  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextLoaderMW, TelemetrySenderMW, SolutionLoaderMW(defaultSolutionLoader), QuestionModelMW, ContextInjecterMW, ConfigWriterMW])
-  async localDebug(inputs: Inputs, ctx?: CoreHookContext) : Promise<Result<Void, FxError>>{
+
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    ProjectUpgraderMW,
+    ContextLoaderMW,
+    SolutionLoaderMW(defaultSolutionLoader),
+    QuestionModelMW,
+    ContextInjecterMW,
+    ConfigWriterMW,
+  ])
+  async localDebug(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     return await ctx!.solution!.localDebug(ctx!.solutionContext!);
   }
 
-  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextLoaderMW, TelemetrySenderMW, SolutionLoaderMW(defaultSolutionLoader), QuestionModelMW, ContextInjecterMW, ConfigWriterMW])
-  async publishApplication(inputs: Inputs, ctx?: CoreHookContext) : Promise<Result<Void, FxError>>{
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    ContextLoaderMW,
+    SolutionLoaderMW(defaultSolutionLoader),
+    QuestionModelMW,
+    ContextInjecterMW,
+    ConfigWriterMW,
+  ])
+  async publishApplication(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     return await ctx!.solution!.publish(ctx!.solutionContext!);
   }
 
-  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextLoaderMW, TelemetrySenderMW, SolutionLoaderMW(defaultSolutionLoader), QuestionModelMW, ContextInjecterMW, ConfigWriterMW])
-  async executeUserTask(func: Func, inputs: Inputs, ctx?: CoreHookContext) :  Promise<Result<unknown, FxError>>{
-    if(ctx!.solutionContext === undefined)ctx!.solutionContext = await newSolutionContext(this.tools, inputs);
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    ContextLoaderMW,
+    SolutionLoaderMW(defaultSolutionLoader),
+    QuestionModelMW,
+    ContextInjecterMW,
+    ConfigWriterMW,
+  ])
+  async executeUserTask(
+    func: Func,
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<unknown, FxError>> {
+    if (ctx!.solutionContext === undefined)
+      ctx!.solutionContext = await newSolutionContext(this.tools, inputs);
     const solution = ctx!.solution!;
     const namespace = func.namespace;
     const array = namespace ? namespace.split("/") : [];
@@ -234,51 +364,84 @@ export class FxCore implements Core {
     }
     return err(FunctionRouterError(func));
   }
- 
-  @hooks([ErrorHandlerMW, ContextLoaderMW, TelemetrySenderMW, SolutionLoaderMW(defaultSolutionLoader), ContextInjecterMW])
-  async getQuestions(task: Stage, inputs: Inputs, ctx?: CoreHookContext) : Promise<Result<QTreeNode | undefined, FxError>> {
-    if(task ===  Stage.create) {
+
+  @hooks([
+    ErrorHandlerMW,
+    ContextLoaderMW,
+    SolutionLoaderMW(defaultSolutionLoader),
+    ContextInjecterMW,
+  ])
+  async getQuestions(
+    task: Stage,
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<QTreeNode | undefined, FxError>> {
+    if (task === Stage.create) {
       delete inputs.projectPath;
       return await this._getQuestionsForCreateProject(inputs);
-    }
-    else{
-      const solutionContext = ctx!.solutionContext === undefined ? await newSolutionContext(this.tools, inputs) : ctx!.solutionContext;
-      const solution = ctx!.solution === undefined ? await defaultSolutionLoader.loadSolution(inputs) : ctx!.solution;
+    } else {
+      const solutionContext =
+        ctx!.solutionContext === undefined
+          ? await newSolutionContext(this.tools, inputs)
+          : ctx!.solutionContext;
+      const solution =
+        ctx!.solution === undefined
+          ? await defaultSolutionLoader.loadSolution(inputs)
+          : ctx!.solution;
       return await this._getQuestions(solutionContext, solution, task, inputs);
-    }  
+    }
   }
- 
-  @hooks([ErrorHandlerMW, ContextLoaderMW, TelemetrySenderMW, SolutionLoaderMW(defaultSolutionLoader), ContextInjecterMW])
-  async getQuestionsForUserTask(func: FunctionRouter, inputs: Inputs, ctx?: CoreHookContext) : Promise<Result<QTreeNode | undefined, FxError>>{
-    const solutionContext = ctx!.solutionContext === undefined ? await newSolutionContext(this.tools, inputs) : ctx!.solutionContext;
-    const solution = ctx!.solution === undefined ? await defaultSolutionLoader.loadSolution(inputs) : ctx!.solution;
+
+  @hooks([
+    ErrorHandlerMW,
+    ContextLoaderMW,
+    SolutionLoaderMW(defaultSolutionLoader),
+    ContextInjecterMW,
+  ])
+  async getQuestionsForUserTask(
+    func: FunctionRouter,
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<QTreeNode | undefined, FxError>> {
+    const solutionContext =
+      ctx!.solutionContext === undefined
+        ? await newSolutionContext(this.tools, inputs)
+        : ctx!.solutionContext;
+    const solution =
+      ctx!.solution === undefined
+        ? await defaultSolutionLoader.loadSolution(inputs)
+        : ctx!.solution;
     return await this._getQuestionsForUserTask(solutionContext, solution, func, inputs);
   }
 
-   
-  @hooks([ErrorHandlerMW, ContextLoaderMW, TelemetrySenderMW, ContextInjecterMW])
-  async getProjectConfig(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<ProjectConfig|undefined, FxError>>{
+  @hooks([ErrorHandlerMW, ContextLoaderMW, ContextInjecterMW])
+  async getProjectConfig(
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<ProjectConfig | undefined, FxError>> {
     return ok({
       settings: ctx!.solutionContext!.projectSettings,
-      config: ctx!.solutionContext!.config
+      config: ctx!.solutionContext!.config,
     });
   }
 
-  @hooks([ErrorHandlerMW, ContextLoaderMW, TelemetrySenderMW, ContextInjecterMW, ConfigWriterMW])
-  async setSubscriptionInfo(inputs: Inputs, ctx?: CoreHookContext) :Promise<Result<Void, FxError>>{
+  @hooks([ErrorHandlerMW, ContextLoaderMW, ContextInjecterMW, ConfigWriterMW])
+  async setSubscriptionInfo(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     const solutionContext = ctx!.solutionContext! as SolutionContext;
-    if(inputs.tenantId)
-      solutionContext.config.get("solution")?.set("tenantId",inputs.tenantId);
-    else 
-      solutionContext.config.get("solution")?.delete("tenantId");
-    if(inputs.subscriptionId)
-      solutionContext.config.get("solution")?.set("subscriptionId",inputs.subscriptionId);
-    else 
-      solutionContext.config.get("solution")?.delete("subscriptionId");
+    if (inputs.tenantId) solutionContext.config.get("solution")?.set("tenantId", inputs.tenantId);
+    else solutionContext.config.get("solution")?.delete("tenantId");
+    if (inputs.subscriptionId)
+      solutionContext.config.get("solution")?.set("subscriptionId", inputs.subscriptionId);
+    else solutionContext.config.get("solution")?.delete("subscriptionId");
     return ok(Void);
   }
-     
-  async _getQuestionsForUserTask(ctx:SolutionContext, solution:Solution, func: FunctionRouter, inputs: Inputs) : Promise<Result<QTreeNode | undefined, FxError>>{
+
+  async _getQuestionsForUserTask(
+    ctx: SolutionContext,
+    solution: Solution,
+    func: FunctionRouter,
+    inputs: Inputs
+  ): Promise<Result<QTreeNode | undefined, FxError>> {
     const namespace = func.namespace;
     const array = namespace ? namespace.split("/") : [];
     if (namespace && "" !== namespace && array.length > 0 && solution.getQuestionsForUserTask) {
@@ -294,15 +457,17 @@ export class FxCore implements Core {
     }
     return err(FunctionRouterError(func));
   }
-  
-  async _getQuestionsForCreateProject(inputs: Inputs): Promise<Result<QTreeNode | undefined, FxError>> { 
+
+  async _getQuestionsForCreateProject(
+    inputs: Inputs
+  ): Promise<Result<QTreeNode | undefined, FxError>> {
     const node = new QTreeNode(getCreateNewOrFromSampleQuestion(inputs.platform));
     // create new
     const createNew = new QTreeNode({ type: "group" });
     node.addChild(createNew);
     createNew.condition = { equals: ScratchOptionYes.id };
-    const globalSolutions:Solution[] = await defaultSolutionLoader.loadGlobalSolutions(inputs);
-    const solutionNames: string[] = globalSolutions.map(s=>s.name);
+    const globalSolutions: Solution[] = await defaultSolutionLoader.loadGlobalSolutions(inputs);
+    const solutionNames: string[] = globalSolutions.map((s) => s.name);
     const selectSolution: SingleSelectQuestion = QuestionSelectSolution;
     selectSolution.staticOptions = solutionNames;
     const solutionSelectNode = new QTreeNode(selectSolution);
@@ -321,17 +486,22 @@ export class FxCore implements Core {
     }
     createNew.addChild(new QTreeNode(QuestionRootFolder));
     createNew.addChild(new QTreeNode(QuestionAppName));
-    
+
     // create from sample
     const sampleNode = new QTreeNode(SampleSelect);
     node.addChild(sampleNode);
     sampleNode.condition = { equals: ScratchOptionNo.id };
     sampleNode.addChild(new QTreeNode(QuestionRootFolder));
-    
+
     return ok(node.trim());
   }
- 
-  async _getQuestions(ctx:SolutionContext, solution:Solution, stage: Stage, inputs: Inputs): Promise<Result<QTreeNode | undefined, FxError>> {
+
+  async _getQuestions(
+    ctx: SolutionContext,
+    solution: Solution,
+    stage: Stage,
+    inputs: Inputs
+  ): Promise<Result<QTreeNode | undefined, FxError>> {
     const node = new QTreeNode({ type: "group" });
     if (stage !== Stage.create) {
       const res = await solution.getQuestions(stage, ctx);
@@ -348,7 +518,7 @@ export class FxCore implements Core {
     try {
       const appName = inputs[QuestionAppName.name] as string;
       await fs.writeFile(
-        path.join(inputs.projectPath!,`package.json`),
+        path.join(inputs.projectPath!, `package.json`),
         JSON.stringify(
           {
             name: appName,
@@ -365,7 +535,7 @@ export class FxCore implements Core {
         )
       );
       await fs.writeFile(
-        path.join(inputs.projectPath!,`.gitignore`),
+        path.join(inputs.projectPath!, `.gitignore`),
         `node_modules\n/.${ConfigFolderName}/*.env\n/.${ConfigFolderName}/*.userdata\n.DS_Store`
       );
     } catch (e) {
@@ -374,20 +544,34 @@ export class FxCore implements Core {
     return ok(null);
   }
 
-  async buildArtifacts(inputs: Inputs) : Promise<Result<Void, FxError>>{
-      throw TaskNotSupportError(Stage.build);
+  @hooks([ErrorHandlerMW, ContextLoaderMW, ContextInjecterMW])
+  async encrypt(
+    plaintext: string,
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<string, FxError>> {
+    return ctx!.solutionContext!.cryptoProvider!.encrypt(plaintext);
   }
-  async createEnv (inputs: Inputs) : Promise<Result<Void, FxError>>{
+
+  @hooks([ErrorHandlerMW, ContextLoaderMW, ContextInjecterMW])
+  async decrypt(
+    ciphertext: string,
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<string, FxError>> {
+    return ctx!.solutionContext!.cryptoProvider!.decrypt(ciphertext);
+  }
+
+  async buildArtifacts(inputs: Inputs): Promise<Result<Void, FxError>> {
+    throw TaskNotSupportError(Stage.build);
+  }
+  async createEnv(inputs: Inputs): Promise<Result<Void, FxError>> {
     throw TaskNotSupportError(Stage.createEnv);
   }
-  async removeEnv (inputs: Inputs) : Promise<Result<Void, FxError>>{
+  async removeEnv(inputs: Inputs): Promise<Result<Void, FxError>> {
     throw TaskNotSupportError(Stage.removeEnv);
   }
-  async switchEnv (inputs: Inputs) : Promise<Result<Void, FxError>>{
+  async switchEnv(inputs: Inputs): Promise<Result<Void, FxError>> {
     throw TaskNotSupportError(Stage.switchEnv);
   }
-} 
-
-
-
-
+}

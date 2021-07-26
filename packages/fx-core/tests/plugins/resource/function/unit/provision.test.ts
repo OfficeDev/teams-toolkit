@@ -75,6 +75,7 @@ const context: any = {
   },
   config: new Map<string, string>([["nodeVersion", NodeVersion.Version14]]),
   projectSettings: {
+    appName: "ut",
     solutionSettings: {
       activeResourcePlugins: [
         DependentPluginInfo.aadPluginName,
@@ -93,7 +94,7 @@ const context: any = {
     }),
   },
   root: __dirname,
-  answers: {platform: Platform.VSCode}
+  answers: { platform: Platform.VSCode },
 };
 
 describe(FunctionPluginInfo.pluginName, () => {
@@ -121,6 +122,7 @@ describe(FunctionPluginInfo.pluginName, () => {
       sinon.stub(AzureLib, "getConnectionString").resolves("ut connection string");
       sinon.stub(AzureLib, "ensureFunctionApp").resolves(functionApp);
       sinon.stub(AzureLib, "findFunctionApp").resolves(functionApp);
+      sinon.stub(AzureLib, "findResourceProvider").resolves({} as any);
       sinon.stub(AzureClientFactory, "getWebSiteManagementClient").returns({
         webApps: {
           updateAuthSettings: () => undefined,

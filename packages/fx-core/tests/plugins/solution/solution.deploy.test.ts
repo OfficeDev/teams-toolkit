@@ -13,7 +13,6 @@ import {
   Result,
   SolutionConfig,
   SolutionContext,
-  TeamsAppManifest,
   Void,
   Plugin,
   Platform,
@@ -22,10 +21,10 @@ import * as sinon from "sinon";
 import fs from "fs-extra";
 import {
   GLOBAL_CONFIG,
-  REMOTE_MANIFEST,
   SolutionError,
   SOLUTION_PROVISION_SUCCEEDED,
 } from "../../../src/plugins/solution/fx-solution/constants";
+import { REMOTE_MANIFEST } from "../../../src/plugins/resource/appstudio/constants";
 import {
   AzureSolutionQuestionNames,
   HostTypeOptionAzure,
@@ -33,36 +32,36 @@ import {
 } from "../../../src/plugins/solution/fx-solution/question";
 import { validManifest } from "./util";
 import _ from "lodash";
+import * as uuid from "uuid";
+import { AadAppForTeamsPlugin } from "../../../src";
+import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
+import Container from "typedi";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
-
+const aadPlugin = Container.get<Plugin>(ResourcePlugins.AadPlugin);
+const spfxPlugin = Container.get<Plugin>(ResourcePlugins.SpfxPlugin);
+const fehostPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin);
 function mockSolutionContext(): SolutionContext {
   const config: SolutionConfig = new Map();
-  config.set(GLOBAL_CONFIG, new ConfigMap);
+  config.set(GLOBAL_CONFIG, new ConfigMap());
   return {
     root: ".",
     // app: new TeamsAppManifest(),
     config,
-    answers: {platform:Platform.VSCode},
+    answers: { platform: Platform.VSCode },
     projectSettings: undefined,
   };
 }
 
 function mockDeployThatAlwaysSucceed(plugin: Plugin) {
-  plugin.preDeploy = async function (
-    _ctx: PluginContext,
-  ): Promise<Result<any, FxError>> {
+  plugin.preDeploy = async function (_ctx: PluginContext): Promise<Result<any, FxError>> {
     return ok(Void);
   };
-  plugin.deploy = async function (
-    _ctx: PluginContext,
-  ): Promise<Result<any, FxError>> {
+  plugin.deploy = async function (_ctx: PluginContext): Promise<Result<any, FxError>> {
     return ok(Void);
   };
-  plugin.postDeploy = async function (
-    _ctx: PluginContext,
-  ): Promise<Result<any, FxError>> {
+  plugin.postDeploy = async function (_ctx: PluginContext): Promise<Result<any, FxError>> {
     return ok(Void);
   };
 }
@@ -73,11 +72,12 @@ describe("deploy() for Azure projects", () => {
     const mockedCtx = mockSolutionContext();
     mockedCtx.projectSettings = {
       appName: "my app",
+      projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
         version: "1.0",
-        activeResourcePlugins: [solution.aadPlugin.name]
+        activeResourcePlugins: [new AadAppForTeamsPlugin().name],
       },
     };
     const result = await solution.deploy(mockedCtx);
@@ -90,17 +90,18 @@ describe("deploy() for Azure projects", () => {
     const mockedCtx = mockSolutionContext();
     mockedCtx.projectSettings = {
       appName: "my app",
+      projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
         version: "1.0",
-        activeResourcePlugins: [solution.aadPlugin.name]
+        activeResourcePlugins: [aadPlugin.name],
       },
     };
     mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
     const result = await solution.deploy(mockedCtx);
     expect(result.isErr()).to.be.true;
-    expect(result._unsafeUnwrapErr().name).equals(SolutionError.FailedToLoadManifestFile);
+    expect(result._unsafeUnwrapErr().name).equals("ManifestLoadFailed");
   });
 
   describe("with valid manifest", () => {
@@ -110,7 +111,10 @@ describe("deploy() for Azure projects", () => {
     mockedManifest.icons.color = "";
     mockedManifest.icons.outline = "";
     beforeEach(() => {
-      mocker.stub<any, any>(fs, "readJson").withArgs(`./.${ConfigFolderName}/${REMOTE_MANIFEST}`).resolves(mockedManifest);
+      mocker
+        .stub<any, any>(fs, "readJson")
+        .withArgs(`./.${ConfigFolderName}/${REMOTE_MANIFEST}`)
+        .resolves(mockedManifest);
     });
 
     afterEach(() => {
@@ -122,11 +126,12 @@ describe("deploy() for Azure projects", () => {
       const mockedCtx = mockSolutionContext();
       mockedCtx.projectSettings = {
         appName: "my app",
+        projectId: uuid.v4(),
         solutionSettings: {
           hostType: HostTypeOptionAzure.id,
           name: "azure",
           version: "1.0",
-          activeResourcePlugins: [solution.aadPlugin.name]
+          activeResourcePlugins: [aadPlugin.name],
         },
       };
       mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
@@ -140,17 +145,18 @@ describe("deploy() for Azure projects", () => {
       const mockedCtx = mockSolutionContext();
       mockedCtx.projectSettings = {
         appName: "my app",
+        projectId: uuid.v4(),
         solutionSettings: {
           hostType: HostTypeOptionAzure.id,
           name: "azure",
           version: "1.0",
-          activeResourcePlugins: [solution.aadPlugin.name]
+          activeResourcePlugins: [aadPlugin.name],
         },
       };
       mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
-      mockedCtx.answers![AzureSolutionQuestionNames.PluginSelectionDeploy] = [solution.fehostPlugin.name];
-      mockDeployThatAlwaysSucceed(solution.fehostPlugin);
-      
+      mockedCtx.answers![AzureSolutionQuestionNames.PluginSelectionDeploy] = [fehostPlugin.name];
+      mockDeployThatAlwaysSucceed(fehostPlugin);
+
       const result = await solution.deploy(mockedCtx);
       expect(result.isOk()).to.be.true;
       expect(solution.runningState).equals(SolutionRunningState.Idle);
@@ -160,52 +166,57 @@ describe("deploy() for Azure projects", () => {
 
 describe("deploy() for SPFx projects", () => {
   const mocker = sinon.createSandbox();
-    const mockedManifest = _.cloneDeep(validManifest);
-    // ignore icons for simplicity
-    mockedManifest.icons.color = "";
-    mockedManifest.icons.outline = "";
-    beforeEach(() => {
-      mocker.stub<any, any>(fs, "readJson").withArgs(`./.${ConfigFolderName}/${REMOTE_MANIFEST}`).resolves(mockedManifest);
-    });
+  const mockedManifest = _.cloneDeep(validManifest);
+  // ignore icons for simplicity
+  mockedManifest.icons.color = "";
+  mockedManifest.icons.outline = "";
+  beforeEach(() => {
+    mocker
+      .stub<any, any>(fs, "readJson")
+      .withArgs(`./.${ConfigFolderName}/${REMOTE_MANIFEST}`)
+      .resolves(mockedManifest);
+  });
 
-    afterEach(() => {
-      mocker.restore();
-    });
+  afterEach(() => {
+    mocker.restore();
+  });
 
-    it("doesn't require provision first and should return error if no resource is selected to deploy", async () => {
-      const solution = new TeamsAppSolution();
-      const mockedCtx = mockSolutionContext();
-      mockedCtx.projectSettings = {
-        appName: "my app",
-        solutionSettings: {
-          hostType: HostTypeOptionSPFx.id,
-          name: "azure",
-          version: "1.0",
-          activeResourcePlugins: [solution.spfxPlugin.name]
-        },
-      };
-      const result = await solution.deploy(mockedCtx);
-      expect(result.isErr()).to.be.true;
-      expect(result._unsafeUnwrapErr().name).equals(SolutionError.NoResourcePluginSelected);
-    });
+  it("doesn't require provision first and should return error if no resource is selected to deploy", async () => {
+    const solution = new TeamsAppSolution();
+    const mockedCtx = mockSolutionContext();
+    mockedCtx.projectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionSPFx.id,
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [spfxPlugin.name],
+      },
+    };
+    const result = await solution.deploy(mockedCtx);
+    expect(result.isErr()).to.be.true;
+    expect(result._unsafeUnwrapErr().name).equals(SolutionError.NoResourcePluginSelected);
+  });
 
-    it("doesn't require provision first and should return ok on happy path and set solution status to idle", async () => {
-      const solution = new TeamsAppSolution();
-      const mockedCtx = mockSolutionContext();
-      mockedCtx.projectSettings = {
-        appName: "my app",
-        solutionSettings: {
-          hostType: HostTypeOptionSPFx.id,
-          name: "azure",
-          version: "1.0",
-          activeResourcePlugins: [solution.spfxPlugin.name]
-        },
-      };
-      mockedCtx.answers![AzureSolutionQuestionNames.PluginSelectionDeploy] = [solution.fehostPlugin.name];
-      mockDeployThatAlwaysSucceed(solution.fehostPlugin);
-      
-      const result = await solution.deploy(mockedCtx);
-      expect(result.isOk()).to.be.true;
-      expect(solution.runningState).equals(SolutionRunningState.Idle);
-    });
+  it("doesn't require provision first and should return ok on happy path and set solution status to idle", async () => {
+    const solution = new TeamsAppSolution();
+    const mockedCtx = mockSolutionContext();
+    mockedCtx.projectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionSPFx.id,
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [spfxPlugin.name],
+      },
+    };
+    mockedCtx.answers![AzureSolutionQuestionNames.PluginSelectionDeploy] = [fehostPlugin.name];
+    mockDeployThatAlwaysSucceed(fehostPlugin);
+
+    const result = await solution.deploy(mockedCtx);
+    expect(result.isOk()).to.be.true;
+    expect(solution.runningState).equals(SolutionRunningState.Idle);
+  });
 });

@@ -13,12 +13,6 @@ export interface IQuestionService {
   // Control whether the question is displayed to the user.
   condition?(parentAnswerPath: string): { target?: string } & ValidationSchema;
 
-  // Define the method name
-  funcName?: string;
-
-  // Generate the options / default value / answer of the question.
-  executeFunc?(ctx: PluginContext): Promise<string | OptionItem | OptionItem[]>;
-
   // Generate the question
   getQuestion(ctx: PluginContext): Question;
 }

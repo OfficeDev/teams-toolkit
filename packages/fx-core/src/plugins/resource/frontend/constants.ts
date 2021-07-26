@@ -31,7 +31,7 @@ export class FrontendPluginInfo {
   static DisplayName = "Tab Frontend";
   static ShortName = "FE";
   static IssueLink = "https://github.com/OfficeDev/TeamsFx/issues/new";
-  static HelpLink = ""; // TODO: default help link
+  static HelpLink = "https://aka.ms/teamsfx-fe-help";
 }
 
 export class Commands {
@@ -99,6 +99,7 @@ export class TelemetryEvent {
   static readonly startSuffix = "-start";
 
   static readonly scaffold = "scaffold";
+  static readonly scaffoldFallback = "scaffold-fallback";
 
   static readonly PreProvision = "pre-provision";
   static readonly Provision = "provision";
@@ -106,6 +107,7 @@ export class TelemetryEvent {
 
   static readonly PreDeploy = "pre-deploy";
   static readonly Deploy = "deploy";
+  static readonly SkipDeploy = "skip-deploy";
 }
 
 export class TelemetryKey {
@@ -134,4 +136,8 @@ export class RegularExpr {
   static readonly allCharToBeSkippedInName = /[^a-zA-Z0-9]/g;
   static readonly FrontendStorageNamePattern = /^[a-z0-9]{3,24}$/;
   static readonly ReplaceTemplateExt = /\.tpl$/;
+}
+
+export class AzureInfo {
+  static readonly RequiredResourceProviders = ["Microsoft.Storage"];
 }

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Dialog, IProgressHandler } from "@microsoft/teamsfx-api";
+import { IProgressHandler, UserInteraction } from "@microsoft/teamsfx-api";
 
 export class StepHelper {
   progressHandler?: IProgressHandler;
@@ -14,8 +14,8 @@ export class StepHelper {
     this.message = "";
   }
 
-  public async start(entireSteps: number, dialog?: Dialog) {
-    this.progressHandler = dialog?.createProgressBar(this.title, entireSteps);
+  public async start(entireSteps: number, ui?: UserInteraction) {
+    this.progressHandler = ui?.createProgressBar(this.title, entireSteps);
     await this.progressHandler?.start();
   }
 

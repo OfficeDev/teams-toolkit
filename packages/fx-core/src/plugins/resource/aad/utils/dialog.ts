@@ -1,25 +1,23 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { DialogMsg, DialogType, MsgLevel, Dialog, IProgressHandler } from "@microsoft/teamsfx-api";
+import { MsgLevel, IProgressHandler, UserInteraction } from "@microsoft/teamsfx-api";
 
 export class DialogUtils {
-  private static dialog: Dialog;
-  public static progress: IProgressHandler;
+  private static ui?: UserInteraction;
+  public static progress?: IProgressHandler;
 
-  public static init(dialog: Dialog, title?: string, steps?: number) {
-    DialogUtils.dialog = dialog;
+  public static init(ui?: UserInteraction, title?: string, steps?: number) {
+    DialogUtils.ui = ui;
     if (title && steps) {
-      DialogUtils.progress = dialog.createProgressBar(title, steps);
+      DialogUtils.progress = ui?.createProgressBar(title, steps);
     }
   }
 
   public static async show(message: string, level = MsgLevel.Info) {
-    await DialogUtils.dialog?.communicate(
-      new DialogMsg(DialogType.Show, {
-        description: message,
-        level,
-      })
-    );
+    let l: "info" | "warn" | "error" = "info";
+    if (level === MsgLevel.Warning) l = "warn";
+    else if (level === MsgLevel.Error) l = "error";
+    DialogUtils.ui?.showMessage(l, message, false);
   }
 }

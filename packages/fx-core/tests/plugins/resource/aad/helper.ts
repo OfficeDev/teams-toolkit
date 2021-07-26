@@ -12,6 +12,7 @@ import {
   LogLevel,
   AppStudioTokenProvider,
   GraphTokenProvider,
+  UserInteraction,
 } from "@microsoft/teamsfx-api";
 import sinon from "sinon";
 import {
@@ -21,10 +22,11 @@ import {
 } from "../../../../src/plugins/resource/aad/constants";
 import jwt_decode from "jwt-decode";
 import { Utils } from "../../../../src/plugins/resource/aad/utils/common";
+import { MockUserInteraction } from "../../../core/utils";
 
-const permissions = "[{\"resource\": \"Microsoft Graph\",\"delegated\": [\"User.Read\"],\"application\":[]}]";
+const permissions = '[{"resource": "Microsoft Graph","delegated": ["User.Read"],"application":[]}]';
 const permissionsWrong =
-  "[{\"resource\": \"Microsoft Graph\",\"delegated\": [\"User.ReadData\"],\"application\":[]}]";
+  '[{"resource": "Microsoft Graph","delegated": ["User.ReadData"],"application":[]}]';
 
 const mockLogProvider: LogProvider = {
   async log(logLevel: LogLevel, message: string): Promise<boolean> {
@@ -64,30 +66,7 @@ const mockLogProvider: LogProvider = {
   },
 };
 
-const mockDialogProvider: Dialog = {
-  async communicate(msg: DialogMsg): Promise<DialogMsg> {
-    console.log("Dialog");
-    console.log(msg.content);
-    return msg;
-  },
-  createProgressBar(title: string, totalSteps: number): IProgressHandler {
-    console.log(title + totalSteps);
-    const progress: IProgressHandler = {
-      async start(detail?: string): Promise<void> {
-        console.log("progress start");
-        console.log(detail);
-      },
-      async next(detail?: string): Promise<void> {
-        console.log("progress");
-        console.log(detail);
-      },
-      async end(): Promise<void> {
-        console.log("progress end");
-      },
-    };
-    return progress;
-  },
-};
+const mockUI: UserInteraction = new MockUserInteraction();
 
 const mockTelemetryReporter: TelemetryReporter = {
   async sendTelemetryEvent(
@@ -151,14 +130,12 @@ export class TestHelper {
 
     const pluginContext = {
       logProvider: mockLogProvider,
-      dialog: mockDialogProvider,
+      ui: mockUI,
       telemetryReporter: mockTelemetryReporter,
       config: config,
       configOfOtherPlugins: configOfOtherPlugins,
-      app: {
-        name: {
-          short: "aad-plugin-unit-test",
-        },
+      projectSettings: {
+        appName: "aad-plugin-unit-test",
       },
     } as unknown as PluginContext;
 
@@ -181,7 +158,7 @@ function mockConfigOfOtherPluginsProvision(
           ConfigKeysOfOtherPlugin.solutionPermissionRequest,
           wrongPermission ? permissionsWrong : permissions,
         ],
-        [ConfigKeysOfOtherPlugin.remoteTeamsAppId, faker.random.uuid()]
+        [ConfigKeysOfOtherPlugin.remoteTeamsAppId, faker.random.uuid()],
       ]),
     ],
     [
@@ -216,7 +193,7 @@ function mockConfigOfOtherPluginsLocalDebug(
           ConfigKeysOfOtherPlugin.solutionPermissionRequest,
           wrongPermission ? permissionsWrong : permissions,
         ],
-        [ConfigKeysOfOtherPlugin.remoteTeamsAppId, faker.random.uuid()]
+        [ConfigKeysOfOtherPlugin.remoteTeamsAppId, faker.random.uuid()],
       ]),
     ],
     [

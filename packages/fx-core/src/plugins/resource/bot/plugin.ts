@@ -83,7 +83,7 @@ export class TeamsBotImpl {
 
   public async preScaffold(context: PluginContext): Promise<FxResult> {
     this.ctx = context;
-    await this.config.restoreConfigFromContext(context);
+    this.config = new TeamsBotConfig();
     Logger.info(Messages.PreScaffoldingBot);
 
     const rawWay = this.ctx.answers![QuestionNames.WAY_TO_REGISTER_BOT];

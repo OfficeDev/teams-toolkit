@@ -34,24 +34,11 @@ import {
   TabOptionItem,
 } from "../../solution/fx-solution/question";
 import {
-  TEAMS_APP_MANIFEST_TEMPLATE,
-  CONFIGURABLE_TABS_TPL,
-  STATIC_TABS_TPL,
-  BOTS_TPL,
-  COMPOSE_EXTENSIONS_TPL,
-  TEAMS_APP_SHORT_NAME_MAX_LENGTH,
-  DEFAULT_DEVELOPER_WEBSITE_URL,
-  DEFAULT_DEVELOPER_TERM_OF_USE_URL,
-  DEFAULT_DEVELOPER_PRIVACY_URL,
   LOCAL_DEBUG_TAB_ENDPOINT,
   LOCAL_DEBUG_TAB_DOMAIN,
-  FRONTEND_ENDPOINT,
-  FRONTEND_DOMAIN,
   LOCAL_DEBUG_AAD_ID,
   LOCAL_DEBUG_TEAMS_APP_ID,
   REMOTE_AAD_ID,
-  LOCAL_BOT_ID,
-  BOT_ID,
   LOCAL_DEBUG_BOT_DOMAIN,
   BOT_DOMAIN,
   LOCAL_WEB_APPLICATION_INFO_SOURCE,
@@ -61,12 +48,30 @@ import {
 } from "../../solution/fx-solution/constants";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
-import { Constants } from "./constants";
-import { REMOTE_TEAMS_APP_ID, REMOTE_MANIFEST } from "../../solution/fx-solution/constants";
+import {
+  Constants,
+  TEAMS_APP_MANIFEST_TEMPLATE,
+  CONFIGURABLE_TABS_TPL,
+  STATIC_TABS_TPL,
+  BOTS_TPL,
+  COMPOSE_EXTENSIONS_TPL,
+  TEAMS_APP_SHORT_NAME_MAX_LENGTH,
+  DEFAULT_DEVELOPER_WEBSITE_URL,
+  DEFAULT_DEVELOPER_TERM_OF_USE_URL,
+  DEFAULT_DEVELOPER_PRIVACY_URL,
+  FRONTEND_ENDPOINT,
+  FRONTEND_DOMAIN,
+  LOCAL_BOT_ID,
+  BOT_ID,
+  REMOTE_MANIFEST,
+} from "./constants";
+import { REMOTE_TEAMS_APP_ID } from "../../solution/fx-solution/constants";
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { Container } from "typedi";
+import { getTemplatesFolder } from "../../..";
+import path from "path";
 
 export class AppStudioPluginImpl {
   public async getAppDefinitionAndUpdate(
@@ -375,6 +380,23 @@ export class AppStudioPluginImpl {
         botId
       )
     );
+  }
+
+  public async scaffold(ctx: PluginContext): Promise<any> {
+    let manifest: TeamsAppManifest | undefined;
+    if (this.isSPFxProject(ctx)) {
+      const templateManifestFolder = path.join(getTemplatesFolder(), "plugins", "resource", "spfx");
+      const manifestFile = path.resolve(templateManifestFolder, "./solution/manifest.json");
+      const manifestString = (await fs.readFile(manifestFile)).toString();
+      manifest = JSON.parse(manifestString);
+    } else {
+      manifest = await this.createManifest(ctx.projectSettings!);
+    }
+    await fs.writeFile(
+      `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`,
+      JSON.stringify(manifest, null, 4)
+    );
+    return undefined;
   }
 
   public async buildTeamsAppPackage(ctx: PluginContext, appDirectory: string): Promise<string> {

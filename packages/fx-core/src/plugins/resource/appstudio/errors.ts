@@ -128,4 +128,9 @@ export class AppStudioError {
     name: "PluginNotFound",
     message: (name: string) => `Plugin name ${name} is not valid`,
   };
+
+  public static readonly ScaffoldFailedError = {
+    name: "ScaffoldFailed",
+    message: (error: any) => (error.message ? error.message : "Teams app scaffold failed!"),
+  };
 }

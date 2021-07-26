@@ -21,7 +21,7 @@ export class AppStudio {
       throw new SomethingMissingError(ConfigNames.APPSTUDIO_TOKEN);
     }
 
-    return axios.create({
+    const instance = axios.create({
       headers: {
         post: {
           Authorization: `Bearer ${accessToken}`,
@@ -31,6 +31,11 @@ export class AppStudio {
         },
       },
     });
+    instance.interceptors.request.use(function (config) {
+      config.params = { teamstoolkit: true, ...config.params };
+      return config;
+    });
+    return instance;
   }
 
   public static async createAADAppV2(

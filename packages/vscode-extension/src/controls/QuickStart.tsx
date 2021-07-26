@@ -264,6 +264,9 @@ export default class QuickStart extends React.Component<any, any> {
                 />
               );
             })()}
+            <div id="dummy" tabIndex={-1} style={{ opacity: 0 }}>
+              <text>Expanding step card</text>
+            </div>
           </div>
           <div className="content-margin" />
           <div className="stage">
@@ -343,6 +346,9 @@ export default class QuickStart extends React.Component<any, any> {
     this.setState({
       currentStep: step + 1,
     });
+
+    const nextCard = document.getElementById((step + 1).toString()) as HTMLElement;
+    nextCard.focus();
   };
 
   createNewProject = () => {
@@ -373,6 +379,13 @@ export default class QuickStart extends React.Component<any, any> {
     this.setState({
       currentStep: step,
     });
+
+    const dummy = document.getElementById("dummy") as HTMLElement;
+    const curCard = document.getElementById(step.toString()) as HTMLElement;
+    dummy.focus();
+    setTimeout(() => {
+      curCard.focus();
+    }, 500);
   };
 
   onWatchVideo = () => {
@@ -567,7 +580,7 @@ class GetStartedAction extends React.Component<any, any> {
   render() {
     if (this.props.expanded) {
       return (
-        <div className="action-card">
+        <div className="action-card" tabIndex={0} role="listitem" id={this.props.step}>
           <div className="flex-section card-line">
             {this.props.done && <Image src={Step_Done} className="action-icon" />}
             {!this.props.done && <Image src={this.getStepIcon()} className="action-icon" />}
@@ -592,7 +605,13 @@ class GetStartedAction extends React.Component<any, any> {
       );
     } else {
       return (
-        <div className="collapse-action-card" onClick={this.onCollapseClicked}>
+        <div
+          className="collapse-action-card"
+          onClick={this.onCollapseClicked}
+          tabIndex={0}
+          role="listitem"
+          id={this.props.step}
+        >
           <div className="flex-section">
             {this.props.done && <Image src={Step_Done} className="action-icon" />}
             {!this.props.done && <Image src={this.getStepIcon()} className="action-icon" />}

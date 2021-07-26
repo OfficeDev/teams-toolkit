@@ -49,9 +49,15 @@ describe("Account Command Tests", function () {
     });
 
     sandbox
-      .stub(Utils, "getSubscriptionIdFromEnvFile")
+      .stub(AzureTokenProvider, "getSubscriptionInfoFromEnv")
       .onFirstCall()
-      .returns(Promise.resolve("real"))
+      .returns(
+        Promise.resolve({
+          subscriptionId: "subscriptionId",
+          subscriptionName: "subscriptionName",
+          tenantId: "tenantId",
+        })
+      )
       .onSecondCall()
       .returns(Promise.resolve(undefined));
     sandbox.stub(Utils, "setSubscriptionId").callsFake(async (id?: string, folder?: string) => {

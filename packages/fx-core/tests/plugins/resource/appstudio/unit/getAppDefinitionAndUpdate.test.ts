@@ -9,14 +9,16 @@ import { AppStudioPluginImpl } from "./../../../../../src/plugins/resource/appst
 import { AppStudioClient } from "./../../../../../src/plugins/resource/appstudio/appStudio";
 import { IAppDefinition } from "./../../../../../src/plugins/resource/appstudio/interfaces/IAppDefinition";
 import {
-  LOCAL_DEBUG_TAB_ENDPOINT,
-  LOCAL_DEBUG_TAB_DOMAIN,
   FRONTEND_ENDPOINT,
   FRONTEND_DOMAIN,
-  LOCAL_DEBUG_AAD_ID,
-  REMOTE_AAD_ID,
   LOCAL_BOT_ID,
   BOT_ID,
+} from "./../../../../../src/plugins/resource/appstudio/constants";
+import {
+  LOCAL_DEBUG_TAB_ENDPOINT,
+  LOCAL_DEBUG_TAB_DOMAIN,
+  LOCAL_DEBUG_AAD_ID,
+  REMOTE_AAD_ID,
   LOCAL_DEBUG_BOT_DOMAIN,
   BOT_DOMAIN,
   LOCAL_WEB_APPLICATION_INFO_SOURCE,

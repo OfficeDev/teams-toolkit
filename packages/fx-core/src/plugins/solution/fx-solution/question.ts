@@ -212,7 +212,12 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
       { id: "typescript", label: "TypeScript" },
     ];
   },
-  default: "javascript",
+  skipSingleOption: true,
+  default: (inputs: Inputs) => {
+    const hostType = inputs[AzureSolutionQuestionNames.HostType] as string;
+    if (HostTypeOptionSPFx.id === hostType) return "typescript";
+    return "javascript";
+  },
   placeholder: (inputs: Inputs): string => {
     const hostType = inputs[AzureSolutionQuestionNames.HostType] as string;
     if (HostTypeOptionSPFx.id === hostType) return "SPFx is currently supporting TypeScript only.";

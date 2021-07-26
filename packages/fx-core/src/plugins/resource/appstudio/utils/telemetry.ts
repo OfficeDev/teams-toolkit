@@ -25,6 +25,7 @@ enum TelemetryPropertyValue {
 }
 
 export enum TelemetryEventName {
+  scaffold = "scaffold",
   validateManifest = "validate-manifest",
   buildTeamsPackage = "build",
   publish = "publish",

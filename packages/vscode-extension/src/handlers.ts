@@ -37,6 +37,8 @@ import {
   FxCore,
   InvalidProjectError,
   isValidProject,
+  globalStateUpdate,
+  globalStateGet,
 } from "@microsoft/teamsfx-core";
 import DialogManagerInstance from "./userInterface";
 import GraphManagerInstance from "./commonlib/graphLogin";
@@ -518,9 +520,9 @@ function getTriggerFromProperty(args?: any[]) {
 }
 
 async function openMarkdownHandler() {
-  const afterScaffold = ext.context.globalState.get("openReadme", false);
+  const afterScaffold = globalStateGet("openReadme", false);
   if (afterScaffold && workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
-    ext.context.globalState.update("openReadme", false);
+    await globalStateUpdate("openReadme", false);
     const workspaceFolder = workspace.workspaceFolders[0];
     const workspacePath: string = workspaceFolder.uri.fsPath;
     let targetFolder: string | undefined;
@@ -549,9 +551,9 @@ async function openMarkdownHandler() {
 }
 
 async function openSampleReadmeHandler() {
-  const afterScaffold = ext.context.globalState.get("openSampleReadme", false);
+  const afterScaffold = globalStateGet("openSampleReadme", false);
   if (afterScaffold && workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
-    ext.context.globalState.update("openSampleReadme", false);
+    globalStateUpdate("openSampleReadme", false);
     const workspaceFolder = workspace.workspaceFolders[0];
     const workspacePath: string = workspaceFolder.uri.fsPath;
     const uri = Uri.file(`${workspacePath}/README.md`);

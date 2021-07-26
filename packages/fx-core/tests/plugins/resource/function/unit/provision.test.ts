@@ -75,6 +75,7 @@ const context: any = {
   },
   config: new Map<string, string>([["nodeVersion", NodeVersion.Version14]]),
   projectSettings: {
+    appName: "ut",
     solutionSettings: {
       activeResourcePlugins: [
         DependentPluginInfo.aadPluginName,
@@ -91,6 +92,13 @@ const context: any = {
         return;
       },
     }),
+    getSelectedSubscription: async () => {
+      return {
+        subscriptionId: "subscriptionId",
+        tenantId: "tenantId",
+        subscriptionName: "subscriptionName",
+      };
+    },
   },
   root: __dirname,
   answers: { platform: Platform.VSCode },

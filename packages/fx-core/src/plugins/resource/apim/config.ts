@@ -44,7 +44,6 @@ export interface IAadPluginConfig {
 }
 
 export interface ISolutionConfig {
-  subscriptionId: string;
   resourceNameSuffix: string;
   teamsAppTenantId: string;
   resourceGroupName: string;
@@ -202,9 +201,6 @@ export class SolutionConfig implements ISolutionConfig {
     this.configOfOtherPlugins = configOfOtherPlugins;
   }
 
-  get subscriptionId(): string {
-    return this.checkAndGet(SolutionConfigKeys.subscriptionId);
-  }
   get resourceNameSuffix(): string {
     return this.checkAndGet(SolutionConfigKeys.resourceNameSuffix);
   }

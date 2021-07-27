@@ -1081,19 +1081,19 @@ export class TeamsAppSolution implements Solution {
 
     const postLocalDebugResults = await executeConcurrently("post", postLocalDebugWithCtx);
 
-    const combined_postLocalDebugResults = combine(postLocalDebugResults);
-    if (combined_postLocalDebugResults.isErr()) {
-      return combined_postLocalDebugResults;
+    const combinedPostLocalDebugResults = combine(postLocalDebugResults);
+    if (combinedPostLocalDebugResults.isErr()) {
+      return combinedPostLocalDebugResults;
     }
 
     const localTeamsAppID = ctx.config.get(GLOBAL_CONFIG)?.getString(LOCAL_DEBUG_TEAMS_APP_ID);
 
-    if (postLocalDebugWithCtx.length === postLocalDebugResults.length) {
+    if (postLocalDebugWithCtx.length === combinedPostLocalDebugResults.value.length) {
       postLocalDebugWithCtx.map(function (plugin, index) {
         if (plugin[2] === PluginNames.APPST && !localTeamsAppID) {
           ctx.config
             .get(GLOBAL_CONFIG)
-            ?.set(LOCAL_DEBUG_TEAMS_APP_ID, combined_postLocalDebugResults.value[index]);
+            ?.set(LOCAL_DEBUG_TEAMS_APP_ID, combinedPostLocalDebugResults.value[index]);
         }
       });
     }

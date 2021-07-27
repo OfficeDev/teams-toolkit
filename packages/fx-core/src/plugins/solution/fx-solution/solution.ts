@@ -10,6 +10,7 @@ import {
   QTreeNode,
   ConfigMap,
   Stage,
+  combine,
   returnSystemError,
   returnUserError,
   PluginContext,
@@ -1079,31 +1080,22 @@ export class TeamsAppSolution implements Solution {
     }
 
     const postLocalDebugResults = await executeConcurrently("post", postLocalDebugWithCtx);
-    for (const postLocalDebugResult of postLocalDebugResults) {
-      if (postLocalDebugResult.isErr()) {
-        return postLocalDebugResult;
-      }
+
+    const combinedPostLocalDebugResults = combine(postLocalDebugResults);
+    if (combinedPostLocalDebugResults.isErr()) {
+      return combinedPostLocalDebugResults;
     }
 
     const localTeamsAppID = ctx.config.get(GLOBAL_CONFIG)?.getString(LOCAL_DEBUG_TEAMS_APP_ID);
-    const maybeManifest = await (
-      this.AppStudioPlugin as AppStudioPlugin
-    ).reloadManifestAndCheckRequiredFields(ctx.root);
-    if (maybeManifest.isErr()) {
-      return err(maybeManifest.error);
-    }
-    const manifest = maybeManifest.value;
-    const appStudioPlugin = this.AppStudioPlugin as AppStudioPlugin;
-    const maybeTeamsAppId = await appStudioPlugin.getAppDefinitionAndUpdate(
-      getPluginContext(ctx, this.AppStudioPlugin.name),
-      "localDebug",
-      manifest
-    );
-    if (maybeTeamsAppId.isErr()) {
-      return maybeTeamsAppId;
-    }
-    if (!localTeamsAppID) {
-      ctx.config.get(GLOBAL_CONFIG)?.set(LOCAL_DEBUG_TEAMS_APP_ID, maybeTeamsAppId.value);
+
+    if (postLocalDebugWithCtx.length === combinedPostLocalDebugResults.value.length) {
+      postLocalDebugWithCtx.map(function (plugin, index) {
+        if (plugin[2] === PluginNames.APPST && !localTeamsAppID) {
+          ctx.config
+            .get(GLOBAL_CONFIG)
+            ?.set(LOCAL_DEBUG_TEAMS_APP_ID, combinedPostLocalDebugResults.value[index]);
+        }
+      });
     }
 
     return ok(Void);

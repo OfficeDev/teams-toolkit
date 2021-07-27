@@ -9,7 +9,6 @@ import {
   FxError,
   Result,
   PluginContext,
-  Plugin,
   TeamsAppManifest,
   Platform,
   LogProvider,
@@ -68,8 +67,6 @@ import {
 import { REMOTE_TEAMS_APP_ID } from "../../solution/fx-solution/constants";
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
-import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
-import { Container } from "typedi";
 import { getTemplatesFolder } from "../../..";
 import path from "path";
 
@@ -258,8 +255,8 @@ export class AppStudioPluginImpl {
     if (this.isSPFxProject(ctx)) {
       appDefinition = this.convertToAppDefinition(manifest, false);
     } else {
-      const selectedPlugins = this.getSelectedPlugins(ctx);
-      const remoteManifest = this.createManifestForRemote(ctx, selectedPlugins, manifest);
+      // const selectedPlugins = this.getSelectedPlugins(ctx);
+      const remoteManifest = this.createManifestForRemote(ctx, manifest);
       if (remoteManifest.isErr()) {
         throw remoteManifest;
       }
@@ -297,10 +294,8 @@ export class AppStudioPluginImpl {
         return err(maybeManifest.error);
       }
       const manifestTpl = maybeManifest.value;
-      const maybeSelectedPlugins = this.getSelectedPlugins(ctx);
-      const manifest = this.createManifestForRemote(ctx, maybeSelectedPlugins, manifestTpl).map(
-        (result) => result[1]
-      );
+      // const maybeSelectedPlugins = this.getSelectedPlugins(ctx);
+      const manifest = this.createManifestForRemote(ctx, manifestTpl).map((result) => result[1]);
       if (manifest.isOk()) {
         manifestString = JSON.stringify(manifest.value);
       } else {
@@ -328,27 +323,8 @@ export class AppStudioPluginImpl {
 
   public createManifestForRemote(
     ctx: PluginContext,
-    maybeSelectedPlugins: Result<Plugin[], FxError>,
     manifest: TeamsAppManifest
   ): Result<[IAppDefinition, TeamsAppManifest], FxError> {
-    if (maybeSelectedPlugins.isErr()) {
-      return err(maybeSelectedPlugins.error);
-    }
-    const selectedPlugins = maybeSelectedPlugins.value;
-    if (selectedPlugins.some((plugin) => plugin.name === "fx-resource-bot")) {
-      const capabilities = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
-        .capabilities;
-      const hasBot = capabilities?.includes(BotOptionItem.id);
-      const hasMsgExt = capabilities?.includes(MessageExtensionItem.id);
-      if (!hasBot && !hasMsgExt) {
-        return err(
-          AppStudioResultFactory.SystemError(
-            AppStudioError.InternalError.name,
-            AppStudioError.InternalError.message
-          )
-        );
-      }
-    }
     const maybeConfig = this.getConfigForCreatingManifest(ctx, false);
     if (maybeConfig.isErr()) {
       return err(maybeConfig.error);
@@ -407,10 +383,8 @@ export class AppStudioPluginImpl {
       ).toString();
     } else {
       const manifestTpl = await fs.readJSON(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`);
-      const maybeSelectedPlugins = this.getSelectedPlugins(ctx);
-      const manifest = this.createManifestForRemote(ctx, maybeSelectedPlugins, manifestTpl).map(
-        (result) => result[1]
-      );
+      // const maybeSelectedPlugins = this.getSelectedPlugins(ctx);
+      const manifest = this.createManifestForRemote(ctx, manifestTpl).map((result) => result[1]);
       if (manifest.isOk()) {
         manifestString = JSON.stringify(manifest.value);
       } else {
@@ -477,7 +451,8 @@ export class AppStudioPluginImpl {
 
   public async publish(ctx: PluginContext): Promise<{ name: string; id: string; update: boolean }> {
     let appDirectory: string | undefined = undefined;
-    let manifestString: string | undefined = undefined;
+    let manifest: TeamsAppManifest | undefined;
+    // let manifestString: string | undefined = undefined;
 
     // For vs platform, read the local manifest.json file
     // For cli/vsc platform, get manifest from ctx
@@ -487,7 +462,8 @@ export class AppStudioPluginImpl {
       try {
         const manifestFileState = await fs.stat(manifestFile);
         if (manifestFileState.isFile()) {
-          manifestString = (await fs.readFile(manifestFile)).toString();
+          const manifestString = (await fs.readFile(manifestFile)).toString();
+          manifest = JSON.parse(manifestString);
         } else {
           throw AppStudioResultFactory.SystemError(
             AppStudioError.FileNotFoundError.name,
@@ -502,7 +478,15 @@ export class AppStudioPluginImpl {
       }
     } else {
       appDirectory = `${ctx.root}/.${ConfigFolderName}`;
-      manifestString = JSON.stringify(ctx.app);
+      const manifestTpl: TeamsAppManifest = await fs.readJSON(
+        `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`
+      );
+      const fillinRes = this.createManifestForRemote(ctx, manifestTpl);
+      if (fillinRes.isOk()) {
+        manifest = fillinRes.value[1];
+      } else {
+        throw fillinRes.error;
+      }
     }
 
     if (!appDirectory) {
@@ -512,7 +496,12 @@ export class AppStudioPluginImpl {
       );
     }
 
-    const manifest = JSON.parse(manifestString);
+    if (!manifest) {
+      throw AppStudioResultFactory.SystemError(
+        AppStudioError.ManifestLoadFailedError.name,
+        AppStudioError.ManifestLoadFailedError.message("")
+      );
+    }
 
     // manifest.id === externalID
     const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
@@ -535,7 +524,7 @@ export class AppStudioPluginImpl {
       }
 
       if (executePublishUpdate) {
-        const appId = await this.beforePublish(ctx, appDirectory, manifestString, true);
+        const appId = await this.beforePublish(ctx, appDirectory, JSON.stringify(manifest), true);
         return { id: appId, name: manifest.name.short, update: true };
       } else {
         throw AppStudioResultFactory.SystemError(
@@ -544,7 +533,7 @@ export class AppStudioPluginImpl {
         );
       }
     } else {
-      const appId = await this.beforePublish(ctx, appDirectory, manifestString, false);
+      const appId = await this.beforePublish(ctx, appDirectory, JSON.stringify(manifest), false);
       return { id: appId, name: manifest.name.short, update: false };
     }
   }
@@ -1133,32 +1122,5 @@ export class AppStudioPluginImpl {
     );
 
     return ok([appDefinition, _updatedManifest]);
-  }
-
-  private getSelectedPlugins(ctx: PluginContext): Result<Plugin[], FxError> {
-    const azureSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
-
-    const plugins = new Map<string, Plugin>();
-    for (const k in ResourcePlugins) {
-      const plugin = Container.get<Plugin>(k);
-      if (plugin) {
-        plugins.set(plugin.name, plugin);
-      }
-    }
-
-    const results: Plugin[] = [];
-    for (const name of azureSettings.activeResourcePlugins) {
-      const plugin = plugins.get(name);
-      if (!plugin) {
-        return err(
-          AppStudioResultFactory.UserError(
-            AppStudioError.PluginNotFound.name,
-            AppStudioError.PluginNotFound.message(name)
-          )
-        );
-      }
-      results.push(plugin);
-    }
-    return ok(results);
   }
 }

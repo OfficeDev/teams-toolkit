@@ -121,7 +121,6 @@ describe("Get AppDefinition and Update", () => {
       root: "./",
       configOfOtherPlugins: new Map(),
       config: new ConfigMap(),
-      app: new TeamsAppManifest(),
       appStudioToken: new MockedAppStudioTokenProvider(),
     };
     ctx.projectSettings = {
@@ -164,7 +163,6 @@ describe("Get AppDefinition and Update", () => {
       root: "./",
       configOfOtherPlugins: new Map(),
       config: new ConfigMap(),
-      app: new TeamsAppManifest(),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -199,7 +197,6 @@ describe("Get AppDefinition and Update", () => {
       root: "./",
       configOfOtherPlugins: configOfOtherPlugins,
       config: new ConfigMap(),
-      app: new TeamsAppManifest(),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -237,7 +234,6 @@ describe("Get AppDefinition and Update", () => {
       root: "./",
       configOfOtherPlugins: configOfOtherPlugins,
       config: new ConfigMap(),
-      app: new TeamsAppManifest(),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -275,7 +271,6 @@ describe("Get AppDefinition and Update", () => {
       root: "./",
       configOfOtherPlugins: configOfOtherPlugins,
       config: new ConfigMap(),
-      app: new TeamsAppManifest(),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -315,7 +310,6 @@ describe("Get AppDefinition and Update", () => {
       root: "./",
       configOfOtherPlugins: configOfOtherPlugins,
       config: new ConfigMap(),
-      app: new TeamsAppManifest(),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -351,7 +345,6 @@ describe("Get AppDefinition and Update", () => {
       root: "./",
       configOfOtherPlugins: configOfOtherPlugins,
       config: new ConfigMap(),
-      app: new TeamsAppManifest(),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -395,7 +388,6 @@ describe("Get AppDefinition and Update", () => {
       root: "./tests/plugins/resource/appstudio/resources/",
       configOfOtherPlugins: configOfOtherPlugins,
       config: new ConfigMap(),
-      app: new TeamsAppManifest(),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -430,7 +422,6 @@ describe("Get AppDefinition and Update", () => {
       root: "./tests/plugins/resource/appstudio/resources/",
       configOfOtherPlugins: configOfOtherPlugins,
       config: new ConfigMap(),
-      app: new TeamsAppManifest(),
       appStudioToken: new MockedAppStudioTokenProvider(),
     };
     ctx.projectSettings = {
@@ -477,7 +468,6 @@ describe("Get AppDefinition and Update", () => {
       root: "./tests/plugins/resource/appstudio/resources/",
       configOfOtherPlugins: configOfOtherPlugins,
       config: new ConfigMap(),
-      app: new TeamsAppManifest(),
       appStudioToken: new MockedAppStudioTokenProvider(),
     };
     ctx.projectSettings = {
@@ -542,7 +532,6 @@ describe("Get AppDefinition and Update", () => {
       root: "./tests/plugins/resource/appstudio/resources/",
       configOfOtherPlugins: configOfOtherPlugins,
       config: new ConfigMap(),
-      app: new TeamsAppManifest(),
       appStudioToken: new MockedAppStudioTokenProvider(),
     };
     ctx.projectSettings = {
@@ -604,7 +593,6 @@ describe("Get AppDefinition and Update", () => {
       root: "./tests/plugins/resource/appstudio/resources/",
       configOfOtherPlugins: configOfOtherPlugins,
       config: new ConfigMap(),
-      app: new TeamsAppManifest(),
       appStudioToken: new MockedAppStudioTokenProvider(),
     };
     ctx.projectSettings = {
@@ -640,7 +628,6 @@ describe("Get AppDefinition and Update", () => {
       root: "./tests/plugins/resource/appstudio/resources/",
       configOfOtherPlugins: configOfOtherPlugins,
       config: new ConfigMap(),
-      app: new TeamsAppManifest(),
       appStudioToken: new MockedAppStudioTokenProvider(),
     };
     ctx.projectSettings = {
@@ -705,7 +692,6 @@ describe("Get AppDefinition and Update", () => {
       root: "./tests/plugins/resource/appstudio/resources/",
       configOfOtherPlugins: configOfOtherPlugins,
       config: new ConfigMap(),
-      app: new TeamsAppManifest(),
       appStudioToken: new MockedAppStudioTokenProvider(),
     };
     ctx.projectSettings = {

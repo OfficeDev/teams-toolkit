@@ -13,7 +13,7 @@ export interface BicepOrchestrationTemplate {
 }
 
 export interface BicepOrchestrationParameterTemplate extends BicepOrchestrationTemplate {
-  ParameterFile?: string;
+  ParameterJson?: Record<string, unknown>;
 }
 
 export interface BicepOrchestrationModuleTemplate extends BicepOrchestrationTemplate {

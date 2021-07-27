@@ -1,2 +1,4 @@
 templates/plugins/resource/spfx/*
 src/plugins/resource/spfx/authCode.ts
+src/plugins/solution/fx-solution/arm.ts
+tests/plugins/solution/solution.arm.test.ts

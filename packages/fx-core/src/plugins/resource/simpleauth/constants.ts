@@ -86,6 +86,7 @@ export class Constants {
     start: "Starting",
     provision: {
       title: "Provisioning Simple Auth",
+      registerResourceProvider: "Registering required resource provider.",
       createAppServicePlan: "Creating Azure App Service plan",
       createWebApp: "Creating Azure Web App",
       zipDeploy: "Deploying Simple Auth",
@@ -103,6 +104,8 @@ export class Constants {
   static readonly MissingSubscriptionRegistrationErrorFromAzure =
     "The subscription is not registered to use namespace 'Microsoft.Web'";
   static readonly HelpLink = "https://aka.ms/teamsfx-sa-help";
+
+  static readonly RequiredResourceProviders = ["Microsoft.Web"];
 }
 
 export class Telemetry {

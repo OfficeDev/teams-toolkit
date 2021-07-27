@@ -13,9 +13,12 @@ import {
   ZipDeployError,
   FreeServerFarmsQuotaError,
   MissingSubscriptionRegistrationError,
+  RegisterResourceProviderError,
 } from "./errors";
 import { ResultFactory } from "./result";
 import { DialogUtils } from "./utils/dialog";
+import { Providers, ResourceManagementClientContext } from "@azure/arm-resources";
+import { ResourceManagementClient } from "./utils/resourceManagementClient";
 
 export class WebAppClient {
   private credentials: TokenCredentialsBase;
@@ -25,6 +28,7 @@ export class WebAppClient {
   private webAppName: string;
   private location: string;
   private webSiteManagementClient: WebSiteManagementClient;
+  private resourceManagementClient: Providers;
   private ctx: PluginContext;
 
   constructor(
@@ -46,13 +50,31 @@ export class WebAppClient {
       this.credentials,
       this.subscriptionId
     );
+    this.resourceManagementClient = new Providers(
+      new ResourceManagementClientContext(this.credentials, this.subscriptionId)
+    );
     this.ctx = ctx;
   }
 
-  public async createWebApp(): Promise<{ endpoint: string, skuName: string }> {
+  public async createWebApp(): Promise<{ endpoint: string; skuName: string }> {
     let skuName: string;
 
     try {
+      // Check and register resource provider
+      try {
+        DialogUtils.progressBar?.next(Constants.ProgressBar.provision.registerResourceProvider);
+        await ResourceManagementClient.ensureResourceProviders(
+          this.resourceManagementClient,
+          Constants.RequiredResourceProviders
+        );
+      } catch (error) {
+        throw ResultFactory.UserError(
+          RegisterResourceProviderError.name,
+          RegisterResourceProviderError.message(error?.message),
+          error
+        );
+      }
+
       DialogUtils.progressBar?.next(Constants.ProgressBar.provision.createAppServicePlan);
       skuName = this.getSkuName();
       const appServicePlan = await this.webSiteManagementClient.appServicePlans.createOrUpdate(
@@ -105,7 +127,7 @@ export class WebAppClient {
 
       return {
         endpoint: `https://${webApp.defaultHostName}`,
-        skuName
+        skuName,
       };
     } catch (error) {
       throw ResultFactory.SystemError(

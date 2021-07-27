@@ -19,6 +19,7 @@ import * as utils from "../../../../../src/plugins/resource/bot/utils/common";
 import {
   PluginAAD,
   PluginSolution,
+  PluginLocalDebug
 } from "../../../../../src/plugins/resource/bot/resources/strings";
 import {
   Colors,
@@ -180,6 +181,9 @@ export function newPluginContext(): PluginContext {
         new Map<string, string>([
           [PluginAAD.CLIENT_ID, utils.genUUID()],
           [PluginAAD.CLIENT_SECRET, utils.genUUID()],
+          [PluginAAD.APPLICATION_ID_URIS, "anything"],
+          [PluginAAD.CLIENT_ID, "anything"],
+          [PluginAAD.CLIENT_SECRET, "anything"]
         ]),
       ],
       [
@@ -187,6 +191,15 @@ export function newPluginContext(): PluginContext {
         new Map<string, string>([
           [PluginSolution.TENANT_ID, utils.genUUID()],
           [PluginSolution.LOCATION, "Central US"],
+          [PluginSolution.SUBSCRIPTION_ID, utils.genUUID()],
+          [PluginSolution.RESOURCE_GROUP_NAME, "anything"],
+          [PluginSolution.M365_TENANT_ID, "anything"]
+        ]),
+      ],
+      [
+        PluginLocalDebug.PLUGIN_NAME,
+        new Map<string, string>([
+          [PluginLocalDebug.LOCAL_BOT_ENDPOINT, "anything"]
         ]),
       ],
     ]),

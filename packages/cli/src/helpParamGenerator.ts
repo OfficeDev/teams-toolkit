@@ -186,6 +186,9 @@ export class HelpParamGenerator {
         if (node.data.name === "folder") {
           (node.data as any).default = "./";
         }
+        if (node.data.name === "scratch" || node.data.name === "samples") {
+          (node.data as any).hide = true;
+        }
       }
     }
 

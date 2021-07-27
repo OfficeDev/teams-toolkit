@@ -186,7 +186,14 @@ Mocked simple auth output content
     expect(
       fileContent.get(path.join("./infra/azure/parameters", "parameter.template.json"))
     ).equals(
-      '{"$schema":"https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#","contentVersion":"1.0.0.0","parameters":{"FrontendParameter":"FrontendParameterValue","SimpleAuthParameter":"SimpleAuthParameterValue"}}'
+      `{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "FrontendParameter": "FrontendParameterValue",
+    "SimpleAuthParameter": "SimpleAuthParameterValue"
+  }
+}`
     );
   });
 });

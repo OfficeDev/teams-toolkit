@@ -33,6 +33,8 @@ import { CryptoProvider } from "./utils";
 export interface Context {
   root: string;
 
+  targetEnvName?: string;
+
   dialog?: Dialog;
 
   logProvider?: LogProvider;

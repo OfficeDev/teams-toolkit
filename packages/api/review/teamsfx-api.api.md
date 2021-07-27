@@ -125,6 +125,8 @@ export interface Context {
     // (undocumented)
     root: string;
     // (undocumented)
+    targetEnvName?: string;
+    // (undocumented)
     telemetryReporter?: TelemetryReporter;
     // (undocumented)
     treeProvider?: TreeProvider;
@@ -458,6 +460,8 @@ export interface Inputs extends Json {
     projectPath?: string;
     // (undocumented)
     stage?: Stage;
+    // (undocumented)
+    targetEnvName?: string;
     // (undocumented)
     vscodeEnv?: VsCodeEnv;
 }

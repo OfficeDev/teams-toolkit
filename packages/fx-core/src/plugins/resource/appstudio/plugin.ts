@@ -539,7 +539,15 @@ export class AppStudioPluginImpl {
   }
 
   public async postLocalDebug(ctx: PluginContext): Promise<string> {
-    const maybeTeamsAppId = await this.getAppDefinitionAndUpdate(ctx, "localDebug", ctx.app);
+    const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx.root);
+    if (maybeManifest.isErr()) {
+      throw maybeManifest;
+    }
+    const maybeTeamsAppId = await this.getAppDefinitionAndUpdate(
+      ctx,
+      "localDebug",
+      maybeManifest.value
+    );
     if (maybeTeamsAppId.isErr()) {
       throw maybeTeamsAppId;
     }

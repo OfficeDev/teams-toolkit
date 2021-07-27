@@ -259,8 +259,7 @@ export class FrontendPluginImpl {
 
     const bicepTemplateDir = path.join(
       getTemplatesFolder(),
-      FrontendPathInfo.TemplateDir,
-      FrontendPathInfo.bicepTemplateFolderName
+      FrontendPathInfo.bicepTemplateRelativeDir
     );
 
     const moduleFilePath = path.join(bicepTemplateDir, FrontendPathInfo.moduleFileName);

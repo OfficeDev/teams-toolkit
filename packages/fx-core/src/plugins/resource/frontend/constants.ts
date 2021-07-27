@@ -49,8 +49,8 @@ export class EnvironmentVariables {
 
 export class FrontendPathInfo {
   static WorkingDir = "tabs";
-  static TemplateDir = path.join("plugins", "resource", "frontend");
-  static bicepTemplateFolderName = "bicep";
+  static TemplateRelativeDir = path.join("plugins", "resource", "frontend");
+  static bicepTemplateRelativeDir = path.join(FrontendPathInfo.TemplateRelativeDir, "bicep");
   static moduleOrchestrationFileName = "module.template.bicep";
   static inputParameterOrchestrationFileName = "input_param.template.bicep";
   static outputOrchestrationFileName = "output.template.bicep";

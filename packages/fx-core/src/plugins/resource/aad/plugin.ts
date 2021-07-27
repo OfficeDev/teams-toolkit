@@ -29,6 +29,7 @@ import {
   ProgressDetail,
   ProgressTitle,
   Telemetry,
+  TemplatePathInfo,
 } from "./constants";
 import { IPermission } from "./interfaces/IPermission";
 import { RequiredResourceAccess, ResourceAccess } from "./interfaces/IAADDefinition";
@@ -36,6 +37,11 @@ import { validate as uuidValidate } from "uuid";
 import { IPermissionList } from "./interfaces/IPermissionList";
 import * as jsonPermissionList from "./permissions/permissions.json";
 import { Utils } from "./utils/common";
+import * as path from "path";
+import * as fs from "fs-extra";
+import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
+import { ConstantString } from "../../../common/constants";
+import { getTemplatesFolder } from "../../..";
 
 export class AadAppForTeamsImpl {
   public async provision(ctx: PluginContext, isLocalDebug = false): Promise<AadResult> {
@@ -256,6 +262,42 @@ export class AadAppForTeamsImpl {
     await DialogUtils.progress?.end();
     DialogUtils.show(Messages.UpdatePermissionSuccessMessage);
     return ResultFactory.Success();
+  }
+
+  public async generateArmTemplates(ctx: PluginContext): Promise<AadResult> {
+    TelemetryUtils.init(ctx);
+    Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartGenerateArmTemplates);
+
+    const bicepTemplateDir = path.join(
+      getTemplatesFolder(),
+      TemplatePathInfo.BicepTemplateRelativeDir
+    );
+    const inputParameterOrchestrationFilePath = path.join(
+      bicepTemplateDir,
+      TemplatePathInfo.InputParameterOrchestrationFileName
+    );
+    const variablesOrchestrationFilePath = path.join(
+      bicepTemplateDir,
+      TemplatePathInfo.VariablesOrchestrationFileName
+    );
+    const parameterFilePath = path.join(bicepTemplateDir, TemplatePathInfo.ParameterFileName);
+
+    const result: ScaffoldArmTemplateResult = {
+      Orchestration: {
+        ParameterTemplate: {
+          Content: await fs.readFile(
+            inputParameterOrchestrationFilePath,
+            ConstantString.UTF8Encoding
+          ),
+          ParameterFile: await fs.readFile(parameterFilePath, ConstantString.UTF8Encoding),
+        },
+        VariableTemplate: {
+          Content: await fs.readFile(variablesOrchestrationFilePath, ConstantString.UTF8Encoding),
+        },
+      },
+    };
+
+    return ResultFactory.Success(result);
   }
 
   private static getRedirectUris(

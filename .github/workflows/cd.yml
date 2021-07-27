@@ -203,7 +203,7 @@ jobs:
           command: |
             sleep 20
             cd ./packages/vscode-extension
-            npm install
+            npm install --only=production
             npx vsce package
 
       - name: release VSCode extension to github

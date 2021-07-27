@@ -17,7 +17,7 @@ import activate from "../activate";
 import * as constants from "../constants";
 import { NotFoundInputedFolder, SampleAppDownloadFailed, ProjectFolderExist } from "../error";
 import { YargsCommand } from "../yargsCommand";
-import { getSystemInputs } from "../utils";
+import { getSystemInputs, toLocaleLowerCase } from "../utils";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
@@ -107,6 +107,7 @@ class NewTemplete extends YargsCommand {
         type: "string",
         choices: templatesNames,
         default: templatesNames[0],
+        coerce: toLocaleLowerCase,
       })
       .options(RootFolderNodeData.name, {
         type: "string",

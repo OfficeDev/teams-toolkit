@@ -26,6 +26,7 @@ import {
   readSettingsFileSync,
   setSubscriptionId,
   sleep,
+  toLocaleLowerCase,
   toYargsOptions,
   writeSecretToFile,
 } from "../../src/utils";
@@ -174,6 +175,12 @@ describe("Utils Tests", function () {
       expect(answer.array).to.be.true;
       expect(answer.default).deep.equals(["aa"]);
     });
+  });
+
+  it("toLocaleLowerCase", () => {
+    expect(toLocaleLowerCase("MiNe")).equals("mine");
+    expect(toLocaleLowerCase(["ItS", "HiS"])).deep.equals(["its", "his"]);
+    expect(toLocaleLowerCase(undefined)).equals(undefined);
   });
 
   it("flattenNodes", () => {

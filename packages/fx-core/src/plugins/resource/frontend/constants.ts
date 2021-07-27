@@ -24,6 +24,8 @@ export class Constants {
   static RequestTryCounts = 3;
   static RequestTimeoutInMS = 20 * 1000;
   static ScaffoldTryCounts = 1;
+
+  static BicepFileEncoding: BufferEncoding = "utf-8";
 }
 
 export class FrontendPluginInfo {
@@ -50,22 +52,24 @@ export class EnvironmentVariables {
 export class FrontendPathInfo {
   static WorkingDir = "tabs";
   static TemplateDir = path.join("plugins", "resource", "frontend");
-  static bicepTemplateFolderName = "bicep";
-  static moduleOrchestrationFileName = "module.template.bicep";
-  static inputParameterOrchestrationFileName = "input_param.template.bicep";
-  static outputOrchestrationFileName = "output.template.bicep";
-  static moduleFileName = "frontendHosting.bicep";
   static TemplateFileExt = ".tpl";
   static TemplatePackageExt = ".zip";
+
+  static BicepTemplateFolderName = "bicep";
+  static ModuleOrchestrationFileName = "module.template.bicep";
+  static InputParameterOrchestrationFileName = "input_param.template.bicep";
+  static OutputOrchestrationFileName = "output.template.bicep";
+  static ModuleFileName = "frontendHosting.bicep";
+
   static BuildFolderName = "build";
   static BuildPath = `${FrontendPathInfo.BuildFolderName}${path.sep}`;
   static TabEnvironmentFilePath = ".env";
-  static npmPackageFolderName = "node_modules";
+  static NodePackageFolderName = "node_modules";
   static TabDeploymentFolderName = ".deployment";
   static TabDeploymentInfoFileName = "deployment.json";
   static TabDeployIgnoreFolder = [
     FrontendPathInfo.BuildFolderName,
-    FrontendPathInfo.npmPackageFolderName,
+    FrontendPathInfo.NodePackageFolderName,
     FrontendPathInfo.TabDeploymentFolderName,
   ];
 }
@@ -107,10 +111,10 @@ export class FrontendOutputBicepSnippet {
 }
 
 export class TelemetryEvent {
-  static readonly startSuffix = "-start";
+  static readonly StartSuffix = "-start";
 
-  static readonly scaffold = "scaffold";
-  static readonly scaffoldFallback = "scaffold-fallback";
+  static readonly Scaffold = "scaffold";
+  static readonly ScaffoldFallback = "scaffold-fallback";
 
   static readonly PreProvision = "pre-provision";
   static readonly Provision = "provision";
@@ -146,7 +150,7 @@ export class AzureErrorCode {
 }
 
 export class RegularExpr {
-  static readonly allCharToBeSkippedInName = /[^a-zA-Z0-9]/g;
+  static readonly AllCharToBeSkippedInName = /[^a-zA-Z0-9]/g;
   static readonly FrontendStorageNamePattern = /^[a-z0-9]{3,24}$/;
   static readonly ReplaceTemplateExt = /\.tpl$/;
 }

@@ -260,36 +260,39 @@ export class FrontendPluginImpl {
     const bicepTemplateDir = path.join(
       getTemplatesFolder(),
       FrontendPathInfo.TemplateDir,
-      FrontendPathInfo.bicepTemplateFolderName
+      FrontendPathInfo.BicepTemplateFolderName
     );
 
-    const moduleFilePath = path.join(bicepTemplateDir, FrontendPathInfo.moduleFileName);
+    const moduleFilePath = path.join(bicepTemplateDir, FrontendPathInfo.ModuleFileName);
 
     const inputParameterOrchestrationFilePath = path.join(
       bicepTemplateDir,
-      FrontendPathInfo.inputParameterOrchestrationFileName
+      FrontendPathInfo.InputParameterOrchestrationFileName
     );
     const moduleOrchestrationFilePath = path.join(
       bicepTemplateDir,
-      FrontendPathInfo.moduleOrchestrationFileName
+      FrontendPathInfo.ModuleOrchestrationFileName
     );
     const outputOrchestrationFilePath = path.join(
       bicepTemplateDir,
-      FrontendPathInfo.outputOrchestrationFileName
+      FrontendPathInfo.OutputOrchestrationFileName
     );
 
     const result: ScaffoldArmTemplateResult = {
       Modules: {
         frontendHostingProvision: {
-          Content: await fs.readFile(moduleFilePath, "utf-8"),
+          Content: await fs.readFile(moduleFilePath, Constants.BicepFileEncoding),
         },
       },
       Orchestration: {
         ParameterTemplate: {
-          Content: await fs.readFile(inputParameterOrchestrationFilePath, "utf-8"),
+          Content: await fs.readFile(
+            inputParameterOrchestrationFilePath,
+            Constants.BicepFileEncoding
+          ),
         },
         ModuleTemplate: {
-          Content: await fs.readFile(moduleOrchestrationFilePath, "utf-8"),
+          Content: await fs.readFile(moduleOrchestrationFilePath, Constants.BicepFileEncoding),
           Outputs: {
             storageName: FrontendOutputBicepSnippet.StorageName,
             endpoint: FrontendOutputBicepSnippet.Endpoint,
@@ -297,7 +300,7 @@ export class FrontendPluginImpl {
           },
         },
         OutputTemplate: {
-          Content: await fs.readFile(outputOrchestrationFilePath, "utf-8"),
+          Content: await fs.readFile(outputOrchestrationFilePath, Constants.BicepFileEncoding),
         },
       },
     };

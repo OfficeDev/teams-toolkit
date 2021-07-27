@@ -1171,11 +1171,6 @@ export class TeamsAppSolution implements Solution {
     }
 
     const postLocalDebugResults = await executeConcurrently("post", postLocalDebugWithCtx);
-    // for (const postLocalDebugResult of postLocalDebugResults) {
-    //   if (postLocalDebugResult.isErr()) {
-    //     return postLocalDebugResult;
-    //   }
-    // }
 
     const combined_postLocalDebugResults = combine(postLocalDebugResults);
     if (combined_postLocalDebugResults.isErr()) {
@@ -1193,19 +1188,6 @@ export class TeamsAppSolution implements Solution {
         }
       });
     }
-
-    // const appStudioPlugin = this.AppStudioPlugin as AppStudioPlugin;
-    // const maybeTeamsAppId = await appStudioPlugin.getAppDefinitionAndUpdate(
-    //   getPluginContext(ctx, this.AppStudioPlugin.name, manifest),
-    //   "localDebug",
-    //   manifest
-    // );
-    // if (maybeTeamsAppId.isErr()) {
-    //   return maybeTeamsAppId;
-    // }
-    // if (!localTeamsAppID) {
-    //   ctx.config.get(GLOBAL_CONFIG)?.set(LOCAL_DEBUG_TEAMS_APP_ID, maybeTeamsAppId.value);
-    // }
 
     return ok(Void);
   }

@@ -23,15 +23,17 @@ import {
 } from "../../../src/plugins/solution/fx-solution/question";
 import { generateArmTemplate } from "../../../src/plugins/solution/fx-solution/arm";
 import { it } from "mocha";
+import path from "path";
+import { ArmResourcePlugin } from "../../../src/common/armInterface";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
-const fehostPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin);
-const simpleAuthPlugin = Container.get<Plugin>(ResourcePlugins.SimpleAuthPlugin);
-const spfxPlugin = Container.get<Plugin>(ResourcePlugins.SpfxPlugin);
-
-const scaffoldArmTemplateInterfaceName: string = "scaffoldArmTemplate"; // Temporary solution before adding it to teamsfx-api
+const fehostPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin) as Plugin &
+  ArmResourcePlugin;
+const simpleAuthPlugin = Container.get<Plugin>(ResourcePlugins.SimpleAuthPlugin) as Plugin &
+  ArmResourcePlugin;
+const spfxPlugin = Container.get<Plugin>(ResourcePlugins.SpfxPlugin) as Plugin & ArmResourcePlugin;
 
 function mockSolutionContext(): SolutionContext {
   const config: SolutionConfig = new Map();
@@ -95,8 +97,7 @@ describe("Generate ARM Template for project", () => {
     };
 
     // mock plugin behavior
-    //@ts-ignore temporary solution before adding related interface to teamsfx-api
-    fehostPlugin[scaffoldArmTemplateInterfaceName] = async function (
+    fehostPlugin.scaffoldArmTemplate = async function (
       _ctx: PluginContext
     ): Promise<Result<any, FxError>> {
       return ok({
@@ -126,8 +127,8 @@ describe("Generate ARM Template for project", () => {
         },
       });
     };
-    //@ts-ignore temporary solution before adding related interface to teamsfx-api
-    simpleAuthPlugin[scaffoldArmTemplateInterfaceName] = async function (
+
+    simpleAuthPlugin.scaffoldArmTemplate = async function (
       _ctx: PluginContext
     ): Promise<Result<any, FxError>> {
       return ok({
@@ -160,7 +161,7 @@ describe("Generate ARM Template for project", () => {
 
     const result = await generateArmTemplate(mockedCtx);
     expect(result.isOk()).to.be.true;
-    expect(fileContent.get("infra\\azure\\templates\\main.bicep")).equals(
+    expect(fileContent.get(path.join("./infra/azure/templates", "main.bicep"))).equals(
       `param resourceBaseName string
 Mocked frontend hosting parameter content
 Mocked simple auth parameter content
@@ -176,13 +177,15 @@ Mocked simple auth output content
 
 `
     );
-    expect(fileContent.get("infra\\azure\\templates\\frontendHostingProvision.bicep")).equals(
-      "Mocked frontend hosting provision module content"
-    );
-    expect(fileContent.get("infra\\azure\\templates\\simpleAuthProvision.bicep")).equals(
-      "Mocked simple auth provision module content"
-    );
-    expect(fileContent.get("infra\\azure\\parameters\\parameter.template.json")).equals(
+    expect(
+      fileContent.get(path.join("./infra/azure/templates", "frontendHostingProvision.bicep"))
+    ).equals("Mocked frontend hosting provision module content");
+    expect(
+      fileContent.get(path.join("./infra/azure/templates", "simpleAuthProvision.bicep"))
+    ).equals("Mocked simple auth provision module content");
+    expect(
+      fileContent.get(path.join("./infra/azure/parameters", "parameter.template.json"))
+    ).equals(
       '{"$schema":"https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#","contentVersion":"1.0.0.0","parameters":{"FrontendParameter":"FrontendParameterValue","SimpleAuthParameter":"SimpleAuthParameterValue"}}'
     );
   });

@@ -9,7 +9,7 @@ import {
   ok,
   FxError,
 } from "@microsoft/teamsfx-api";
-import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
+import { ScaffoldArmTemplateResult, ArmResourcePlugin } from "../../../common/armInterface";
 import { getActivatedResourcePlugins } from "./ResourcePluginContainer";
 import { getPluginContext } from "./util";
 import { format } from "util";
@@ -17,35 +17,37 @@ import { compileHandlebarsTemplateString, getStrings } from "../../../common";
 import path from "path";
 import * as fs from "fs-extra";
 
-const baseFolder: string = "./infra/azure";
-const templateFolder: string = "templates";
-const parameterFolder: string = "parameters";
-const bicepOrchestrationFileName: string = "main.bicep";
-const parameterTemplateFileName: string = "parameter.template.json";
-const scaffoldArmTemplateInterfaceName: string = "scaffoldArmTemplate"; // Temporary solution before adding it to teamsfx-api
-const solutionLevelParameters: string = `param resourceBaseName string\n`;
+const baseFolder = "./infra/azure";
+const templateFolder = "templates";
+const parameterFolder = "parameters";
+const bicepOrchestrationFileName = "main.bicep";
+const parameterTemplateFileName = "parameter.template.json";
+const solutionLevelParameters = `param resourceBaseName string\n`;
+
+function isArm(object: any): object is ArmResourcePlugin {
+  return "scaffoldArmTemplate" in object;
+}
 
 // Get ARM template content from each resource plugin and output to project folder
 export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<any, FxError>> {
   const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
   const plugins = getActivatedResourcePlugins(azureSolutionSettings); // This function ensures return result won't be empty
 
-  let bicepOrchestrationTemplate = new BicepOrchestrationTemplate(plugins.map((p) => p.name));
-  let moduleFiles = new Map<string, string>();
+  const bicepOrchestrationTemplate = new BicepOrchestrationTemplate(plugins.map((p) => p.name));
+  const moduleFiles = new Map<string, string>();
 
   // Get bicep content from each resource plugin
   for (const plugin of plugins) {
-    //@ts-ignore temporary solution before adding related interface to teamsfx-api
-    if (plugin[scaffoldArmTemplateInterfaceName]) {
+    const pluginWithArm = plugin as Plugin & ArmResourcePlugin; // Temporary solution before adding it to teamsfx-api
+    if (pluginWithArm.scaffoldArmTemplate) {
       // find method using method name
-      const pluginContext = getPluginContext(ctx, plugin.name);
-      //@ts-ignore temporary solution before adding related interface to teamsfx-api
-      const result = (await plugin[scaffoldArmTemplateInterfaceName](pluginContext)) as Result<
+      const pluginContext = getPluginContext(ctx, pluginWithArm.name);
+      const result = (await pluginWithArm.scaffoldArmTemplate(pluginContext)) as Result<
         ScaffoldArmTemplateResult,
         FxError
       >;
       if (result.isOk()) {
-        bicepOrchestrationTemplate.addTemplate(plugin.name, result.value);
+        bicepOrchestrationTemplate.addTemplate(pluginWithArm.name, result.value);
         if (result.value.Modules) {
           for (const module of Object.entries(result.value.Modules)) {
             const moduleFileName = module[0];
@@ -100,7 +102,7 @@ export class ArmTemplateRenderContext {
   }
 
   public addPluginOutput(pluginName: string, scaffoldResult: ScaffoldArmTemplateResult) {
-    let pluginOutputContext: PluginOutputContext = {
+    const pluginOutputContext: PluginOutputContext = {
       Modules: {},
       Outputs: {},
     };
@@ -131,12 +133,12 @@ export class ArmTemplateRenderContext {
 // Stores the bicep orchestration information for all resource plugins
 class BicepOrchestrationTemplate {
   private ParameterTemplate: string = solutionLevelParameters;
-  private VariableTemplate: string = "";
-  private ModuleTemplate: string = "";
-  private OutputTemplate: string = "";
+  private VariableTemplate = "";
+  private ModuleTemplate = "";
+  private OutputTemplate = "";
   private ParameterJsonTemplate: Record<string, unknown> = {};
   private RenderContenxt: ArmTemplateRenderContext;
-  private TemplateAdded: boolean = false;
+  private TemplateAdded = false;
 
   constructor(pluginNames: string[]) {
     this.RenderContenxt = new ArmTemplateRenderContext(pluginNames);
@@ -165,7 +167,7 @@ class BicepOrchestrationTemplate {
   }
 
   public renderOrchestrationFileContent(): string {
-    let orchestrationTemplate: string = "";
+    let orchestrationTemplate = "";
     orchestrationTemplate += this.normalizeTemplateSnippt(this.ParameterTemplate, false);
     orchestrationTemplate += this.normalizeTemplateSnippt(this.VariableTemplate, false);
     orchestrationTemplate += this.normalizeTemplateSnippt(this.ModuleTemplate, false);
@@ -189,7 +191,7 @@ class BicepOrchestrationTemplate {
 
   private normalizeTemplateSnippt(
     snippet: string | undefined,
-    updateTemplateChangeFlag: boolean = true
+    updateTemplateChangeFlag = true
   ): string {
     if (snippet) {
       if (updateTemplateChangeFlag) {

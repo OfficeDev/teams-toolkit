@@ -26,15 +26,6 @@ import * as util from "util";
 import * as StringResources from "./resources/Strings.json";
 
 export async function getSubscriptionId(): Promise<string | undefined> {
-  const projectConfigRes = await core.getProjectConfig(getSystemInputs());
-  if (projectConfigRes.isOk()) {
-    if (projectConfigRes.value) {
-      const solutionConfig = projectConfigRes.value.config;
-      if (solutionConfig && solutionConfig.get("solution")?.get("subscriptionId")) {
-        return solutionConfig.get("solution")?.get("subscriptionId");
-      }
-    }
-  }
   const subscriptionInfo = await AzureAccountManager.getSelectedSubscription();
   if (subscriptionInfo) {
     return subscriptionInfo.subscriptionId;
@@ -286,7 +277,6 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
             parent: "fx-extension.signinAzure",
           },
         ]);
-        await core.setSubscriptionInfo(getSystemInputs());
       }
 
       return Promise.resolve();
@@ -336,7 +326,6 @@ async function setSubscription(subscription: SubscriptionInfo | undefined) {
     const inputs = getSystemInputs();
     inputs.tenantId = subscription.tenantId;
     inputs.subscriptionId = subscription.subscriptionId;
-    await core.setSubscriptionInfo(inputs);
     await tools.tokenProvider.azureAccountProvider.setSubscription(subscription.subscriptionId);
     tools.treeProvider?.refresh([
       {

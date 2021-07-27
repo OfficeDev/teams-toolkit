@@ -15,6 +15,13 @@ export class TestHelper {
         getIdentityCredentialAsync() {
           return credentials;
         },
+        getSelectedSubscription: async () => {
+          return {
+            subscriptionId: "subscriptionId",
+            tenantId: "tenantId",
+            subscriptionName: "subscriptionName",
+          };
+        },
       },
       logProvider: {
         async info(message: string): Promise<boolean> {

@@ -444,6 +444,7 @@ export async function askSubscription(
   activeSubscriptionId?: string
 ): Promise<Result<SubscriptionInfo, FxError>> {
   const subscriptions: SubscriptionInfo[] = await azureAccountProvider.listSubscriptions();
+
   if (subscriptions.length === 0) {
     return err(
       returnUserError(new Error("Failed to find a subscription."), "Core", "NoSubscriptionFound")

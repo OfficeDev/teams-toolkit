@@ -6,7 +6,7 @@ Teams Toolkit will help to check if the required dependencies are installed.
 
 Current required dependencies:
 
-* [Node.js](https://nodejs.org/download/).
+* [Node.js](https://nodejs.org/en/download/).
 * [.NET SDK](https://dotnet.microsoft.com/download): To start simpleAuth service for local debugging and install the customized function binding extension.
 
 Please Note:

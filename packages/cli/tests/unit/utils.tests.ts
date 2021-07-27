@@ -16,7 +16,6 @@ import {
   getLocalTeamsAppId,
   getProjectId,
   getSingleOptionString,
-  getSubscriptionIdFromEnvFile,
   getSystemInputs,
   getTeamsAppId,
   getVersion,
@@ -27,6 +26,7 @@ import {
   readSettingsFileSync,
   setSubscriptionId,
   sleep,
+  toLocaleLowerCase,
   toYargsOptions,
   writeSecretToFile,
 } from "../../src/utils";
@@ -175,6 +175,12 @@ describe("Utils Tests", function () {
       expect(answer.array).to.be.true;
       expect(answer.default).deep.equals(["aa"]);
     });
+  });
+
+  it("toLocaleLowerCase", () => {
+    expect(toLocaleLowerCase("MiNe")).equals("mine");
+    expect(toLocaleLowerCase(["ItS", "HiS"])).deep.equals(["its", "his"]);
+    expect(toLocaleLowerCase(undefined)).equals(undefined);
   });
 
   it("flattenNodes", () => {
@@ -344,58 +350,6 @@ describe("Utils Tests", function () {
     it("Fake Path", async () => {
       const result = await readProjectSecrets("fake");
       expect(result.isOk() ? result.value : result.error.name).equals("ConfigNotFound");
-    });
-  });
-
-  describe("getSubscriptionIdFromEnvFile", async () => {
-    const sandbox = sinon.createSandbox();
-
-    before(() => {
-      sandbox.stub(fs, "existsSync").callsFake((path: fs.PathLike) => {
-        return path.toString().includes("real");
-      });
-      sandbox.stub(fs, "readJson").callsFake(async (path: string) => {
-        if (path.includes("realButNoSolution")) {
-          return {};
-        } else if (path.includes("real")) {
-          return {
-            solution: {
-              subscriptionId: "real",
-            },
-          };
-        } else {
-          throw Error("not real");
-        }
-      });
-    });
-
-    after(() => {
-      sandbox.restore();
-    });
-
-    it("Real Path", async () => {
-      const result = await getSubscriptionIdFromEnvFile("real");
-      expect(result).equals("real");
-    });
-
-    it("Real Path but no solution property", async () => {
-      try {
-        await getSubscriptionIdFromEnvFile("realButNoSolution");
-        throw Error("need throw an error");
-      } catch (e) {
-        expect(e).instanceOf(UserError);
-        expect(e.name).equals("InvalidEnvFile");
-      }
-    });
-
-    it("Fake Path", async () => {
-      try {
-        await getSubscriptionIdFromEnvFile("fake");
-        throw Error("need throw an error");
-      } catch (e) {
-        expect(e).instanceOf(UserError);
-        expect(e.name).equals("ConfigNotFound");
-      }
     });
   });
 

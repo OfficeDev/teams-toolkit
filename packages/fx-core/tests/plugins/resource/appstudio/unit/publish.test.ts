@@ -40,7 +40,6 @@ describe("Publish Teams app", () => {
       root: path.resolve(__dirname, "./../resources"),
       configOfOtherPlugins: new Map(),
       config: new ConfigMap(),
-      app: new TeamsAppManifest(),
       appStudioToken: mockTokenProvider(),
       answers: { platform: Platform.VSCode },
     };

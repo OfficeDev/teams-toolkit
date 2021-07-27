@@ -50,13 +50,10 @@ export class Constants {
     },
   };
 
-  static readonly SimpleAuthBicepModuleTemplateFileName: string = "simpleAuth.template.bicep";
-  static readonly SimpleAuthBicepOrchestrationParameterFileName: string =
-    "input_param.template.bicep";
-  static readonly SimpleAuthBicepOrchestrationModuleTemplateFileName: string =
-    "module.template.bicep";
-  static readonly SimpleAuthBicepOrchestrationOutputTemplateFileName: string =
-    "output.template.bicep";
+  static readonly moduleTemplateFileName: string = "simpleAuth.template.bicep";
+  static readonly inputParameterOrchestrationFileName: string = "input_param.template.bicep";
+  static readonly moduleOrchestrationFileName: string = "module.template.bicep";
+  static readonly outputOrchestrationFileName: string = "output.template.bicep";
 
   static readonly SimpleAuthBicepOutputSkuName: string = "simpleAuthProvision.outputs.skuName";
   static readonly SimpleAuthBicepOutputEndpoint: string = "simpleAuthProvision.outputs.endpoint";

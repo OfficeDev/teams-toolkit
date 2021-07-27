@@ -4,6 +4,7 @@
 "use strict";
 
 import yargs from "yargs";
+import { hideBin } from "yargs/helpers";
 
 import { registerCommands } from "./cmds";
 import * as constants from "./constants";
@@ -11,14 +12,22 @@ import { registerPrompts } from "./prompts";
 import HelpParamGenerator from "./helpParamGenerator";
 import { getVersion } from "./utils";
 
+function changeArgv(argv: string[]): string[] {
+  return argv.map((s) => (s.startsWith("--") ? s.toLocaleLowerCase() : s));
+}
+
 /**
  * Starts the CLI process.
  */
 export async function start() {
   registerPrompts();
   await HelpParamGenerator.initializeQuestionsForHelp();
-  registerCommands(yargs);
-  yargs
+  const argv = yargs(changeArgv(hideBin(process.argv))).parserConfiguration({
+    "parse-numbers": false,
+    "camel-case-expansion": false,
+  });
+  registerCommands(argv);
+  argv
     .options("verbose", {
       description: "Print additional information.",
       boolean: true,

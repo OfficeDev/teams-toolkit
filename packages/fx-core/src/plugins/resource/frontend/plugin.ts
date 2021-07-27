@@ -25,6 +25,7 @@ import {
   AzureInfo,
   Constants,
   DependentPluginInfo,
+  FrontendOutputBicepSnippet,
   FrontendPathInfo,
   FrontendPluginInfo as PluginInfo,
   RegularExpr,
@@ -49,6 +50,9 @@ import {
 } from "./utils/progress-helper";
 import { TemplateInfo } from "./resources/templateInfo";
 import { AzureClientFactory, AzureLib } from "./utils/azure-client";
+import { getTemplatesFolder } from "../../..";
+import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
+import * as fs from "fs-extra";
 
 export class FrontendPluginImpl {
   private setConfigIfNotExists(ctx: PluginContext, key: string, value: unknown): void {
@@ -248,5 +252,56 @@ export class FrontendPluginImpl {
     await ProgressHelper.endDeployProgress();
     Logger.info(Messages.EndDeploy(PluginInfo.DisplayName));
     return ok(undefined);
+  }
+
+  public async generateArmTemplates(ctx: PluginContext): Promise<TeamsFxResult> {
+    Logger.info(Messages.StartGenerateArmTemplates(PluginInfo.DisplayName));
+
+    const bicepTemplateDir = path.join(
+      getTemplatesFolder(),
+      FrontendPathInfo.TemplateDir,
+      FrontendPathInfo.bicepTemplateFolderName
+    );
+
+    const moduleFilePath = path.join(bicepTemplateDir, FrontendPathInfo.moduleFileName);
+
+    const inputParameterOrchestrationFilePath = path.join(
+      bicepTemplateDir,
+      FrontendPathInfo.inputParameterOrchestrationFileName
+    );
+    const moduleOrchestrationFilePath = path.join(
+      bicepTemplateDir,
+      FrontendPathInfo.moduleOrchestrationFileName
+    );
+    const outputOrchestrationFilePath = path.join(
+      bicepTemplateDir,
+      FrontendPathInfo.outputOrchestrationFileName
+    );
+
+    const result: ScaffoldArmTemplateResult = {
+      Modules: {
+        frontendHostingProvision: {
+          Content: await fs.readFile(moduleFilePath, "utf-8"),
+        },
+      },
+      Orchestration: {
+        ParameterTemplate: {
+          Content: await fs.readFile(inputParameterOrchestrationFilePath, "utf-8"),
+        },
+        ModuleTemplate: {
+          Content: await fs.readFile(moduleOrchestrationFilePath, "utf-8"),
+          Outputs: {
+            storageName: FrontendOutputBicepSnippet.StorageName,
+            endpoint: FrontendOutputBicepSnippet.Endpoint,
+            domain: FrontendOutputBicepSnippet.Domain,
+          },
+        },
+        OutputTemplate: {
+          Content: await fs.readFile(outputOrchestrationFilePath, "utf-8"),
+        },
+      },
+    };
+
+    return ok(result);
   }
 }

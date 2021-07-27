@@ -36,16 +36,32 @@ import {
   PathNotExistError,
 } from "../../src/core/error";
 import * as os from "os";
-import { CoreHookContext, InvalidInputError, mapToJson } from "../../src";
+import {
+  CoreHookContext,
+  deserializeDict,
+  InvalidInputError,
+  mapToJson,
+  serializeDict,
+} from "../../src";
 import { SolutionLoaderMW } from "../../src/core/middleware/solutionLoader";
 import { ContextInjecterMW } from "../../src/core/middleware/contextInjecter";
 import { ConfigWriterMW } from "../../src/core/middleware/configWriter";
 import sinon from "sinon";
-import { MockProjectSettings, MockSolutionLoader, MockTools, randomAppName } from "./utils";
+import {
+  MockLatestVersion2_3_0UserData,
+  MockLatestVersion2_3_0Context,
+  MockPreviousVersionBefore2_3_0UserData,
+  MockPreviousVersionBefore2_3_0Context,
+  MockProjectSettings,
+  MockSolutionLoader,
+  MockTools,
+  randomAppName,
+} from "./utils";
 import { ContextLoaderMW, newSolutionContext } from "../../src/core/middleware/contextLoader";
 import { AzureResourceSQL } from "../../src/plugins/solution/fx-solution/question";
 import { PluginNames } from "../../src/plugins/solution/fx-solution/constants";
 import { QuestionModelMW } from "../../src/core/middleware/questionModel";
+import { ProjectUpgraderMW } from "../../src/core/middleware/projectUpgrader";
 
 describe("Middleware", () => {
   describe("ErrorHandlerMW", () => {
@@ -873,6 +889,182 @@ describe("Middleware", () => {
       const func: Func = { method: "test", namespace: "" };
       const res2 = await my.executeUserTask(func, inputs);
       assert(res2.isErr() && res2.error.name === "EmptySelectOption");
+    });
+  });
+
+  describe("ProjectUpgraderMW", () => {
+    const sandbox = sinon.createSandbox();
+    const appName = randomAppName();
+    const projectSettings = MockProjectSettings(appName);
+    let envJson: Json = {};
+    let userData: Record<string, string> = {};
+
+    const inputs: Inputs = { platform: Platform.VSCode };
+    inputs.projectPath = path.join(os.tmpdir(), appName);
+    const envName = projectSettings.currentEnv;
+    const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
+    const settingsFile = path.resolve(confFolderPath, "settings.json");
+    const envJsonFile = path.resolve(confFolderPath, `env.${envName}.json`);
+    const userDataFile = path.resolve(confFolderPath, `${envName}.userdata`);
+
+    function MockFunctions() {
+      sandbox.stub<any, any>(fs, "readJson").callsFake(async (file: string) => {
+        if (settingsFile === file) return projectSettings;
+        if (envJsonFile === file) return envJson;
+        return {};
+      });
+      sandbox.stub<any, any>(fs, "writeFile").callsFake(async (file: string, content: any) => {
+        if (userDataFile === file) {
+          userData = deserializeDict(content);
+        }
+        if (envJsonFile === file) {
+          envJson = JSON.parse(content);
+        }
+      });
+      sandbox.stub<any, any>(fs, "readFile").callsFake(async (file: string) => {
+        if (userDataFile === file) return serializeDict(userData);
+        return {};
+      });
+    }
+
+    beforeEach(() => {
+      sandbox.stub<any, any>(fs, "pathExists").callsFake(async (file: string) => {
+        if (userDataFile === file) return true;
+        if (inputs.projectPath === file) return true;
+        return {};
+      });
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("Previous context and userdata", async () => {
+      envJson = MockPreviousVersionBefore2_3_0Context();
+      userData = MockPreviousVersionBefore2_3_0UserData();
+      MockFunctions();
+
+      class ProjectUpgradeHook {
+        tools = new MockTools();
+        async upgrade(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+          assert.equal(userData["fx-resource-aad-app-for-teams.local_clientId"], "local_clientId");
+          assert.equal(userData["solution.localDebugTeamsAppId"], "teamsAppId");
+          assert.equal(
+            (envJson["solution"] as any)["localDebugTeamsAppId"],
+            "{{solution.localDebugTeamsAppId}}"
+          );
+          assert.equal(
+            (envJson["fx-resource-aad-app-for-teams"] as any)["local_clientId"],
+            "{{fx-resource-aad-app-for-teams.local_clientId}}"
+          );
+          return ok("");
+        }
+      }
+
+      hooks(ProjectUpgradeHook, {
+        upgrade: [ProjectUpgraderMW],
+      });
+
+      const my = new ProjectUpgradeHook();
+      const res = await my.upgrade(inputs);
+      assert.isTrue(res.isOk() && res.value === "");
+    });
+
+    it("Previous context and new userdata", async () => {
+      envJson = MockPreviousVersionBefore2_3_0Context();
+      userData = MockLatestVersion2_3_0UserData();
+      MockFunctions();
+
+      class ProjectUpgradeHook {
+        tools = new MockTools();
+        async upgrade(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+          assert.equal(
+            userData["fx-resource-aad-app-for-teams.local_clientId"],
+            "local_clientId_new"
+          );
+          assert.equal(userData["solution.localDebugTeamsAppId"], "teamsAppId_new");
+          assert.equal(
+            (envJson["solution"] as any)["localDebugTeamsAppId"],
+            "{{solution.localDebugTeamsAppId}}"
+          );
+          assert.equal(
+            (envJson["fx-resource-aad-app-for-teams"] as any)["local_clientId"],
+            "{{fx-resource-aad-app-for-teams.local_clientId}}"
+          );
+          return ok("");
+        }
+      }
+
+      hooks(ProjectUpgradeHook, {
+        upgrade: [ProjectUpgraderMW],
+      });
+
+      const my = new ProjectUpgradeHook();
+      const res = await my.upgrade(inputs);
+      assert.isTrue(res.isOk() && res.value === "");
+    });
+
+    it("New context and previous userdata", async () => {
+      envJson = MockLatestVersion2_3_0Context();
+      userData = MockPreviousVersionBefore2_3_0UserData();
+      MockFunctions();
+
+      class ProjectUpgradeHook {
+        tools = new MockTools();
+        async upgrade(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+          assert.equal(userData["fx-resource-aad-app-for-teams.local_clientId"], undefined);
+          assert.equal(userData["solution.localDebugTeamsAppId"], undefined);
+          assert.equal(
+            (envJson["solution"] as any)["localDebugTeamsAppId"],
+            "{{solution.localDebugTeamsAppId}}"
+          );
+          assert.equal(
+            (envJson["fx-resource-aad-app-for-teams"] as any)["local_clientId"],
+            "{{fx-resource-aad-app-for-teams.local_clientId}}"
+          );
+          return ok("");
+        }
+      }
+
+      hooks(ProjectUpgradeHook, {
+        upgrade: [ProjectUpgraderMW],
+      });
+
+      const my = new ProjectUpgradeHook();
+      const res = await my.upgrade(inputs);
+      assert.isTrue(res.isOk() && res.value === "");
+    });
+
+    it("Previous context and userdata without secret", async () => {
+      envJson = MockPreviousVersionBefore2_3_0Context();
+      userData = {};
+      MockFunctions();
+
+      class ProjectUpgradeHook {
+        name = "jay";
+        tools = new MockTools();
+        async upgrade(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+          assert.equal(userData["fx-resource-aad-app-for-teams.local_clientId"], undefined);
+          assert.equal(userData["solution.localDebugTeamsAppId"], undefined);
+          assert.equal(
+            (envJson["solution"] as any)["localDebugTeamsAppId"],
+            "{{solution.localDebugTeamsAppId}}"
+          );
+          assert.equal(
+            (envJson["fx-resource-aad-app-for-teams"] as any)["local_clientId"],
+            "{{fx-resource-aad-app-for-teams.local_clientId}}"
+          );
+          return ok("");
+        }
+      }
+
+      hooks(ProjectUpgradeHook, {
+        upgrade: [ProjectUpgraderMW],
+      });
+
+      const my = new ProjectUpgradeHook();
+      const res = await my.upgrade(inputs);
+      assert.isTrue(res.isOk() && res.value === "");
     });
   });
 });

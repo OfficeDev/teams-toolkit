@@ -6,7 +6,6 @@ import { SqlConfig } from "./config";
 import { PluginContext } from "@microsoft/teamsfx-api";
 import { ErrorMessage } from "./errors";
 import { SqlResultFactory } from "./results";
-import { extractIp } from "./utils/commonUtils";
 export class SqlClient {
   conn?: tedious.Connection;
   config: SqlConfig;
@@ -27,14 +26,13 @@ export class SqlClient {
         return false;
       }
     } catch (error) {
-      let ip: string | undefined;
-      if (error?.message?.includes(ErrorMessage.AccessMessage) && (ip = extractIp(error.message))) {
+      if (error?.message?.includes(ErrorMessage.AccessMessage)) {
         this.ctx.logProvider?.error(
-          ErrorMessage.SqlAccessError.message(this.config.identity, ip!, error.message)
+          ErrorMessage.SqlAccessError.message(this.config.identity, error.message)
         );
         throw SqlResultFactory.UserError(
           ErrorMessage.SqlAccessError.name,
-          ErrorMessage.SqlAccessError.message(this.config.identity, ip!, error.message),
+          ErrorMessage.SqlAccessError.message(this.config.identity, error.message),
           error,
           undefined,
           HelpLinks.default

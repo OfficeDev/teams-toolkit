@@ -1,7 +1,5 @@
 // Copyright (c) Microsoft Corporation.
 
-import { Constants } from "./constants";
-
 // Licensed under the MIT license.
 export interface PluginError {
   name: string;
@@ -67,12 +65,4 @@ export const ZipDownloadError: PluginError = {
 export const VersionFileNotExist: PluginError = {
   name: "VersionFileNotExist",
   message: (filePath?) => `Failed to load version file from ${filePath ?? "File not exist."}`,
-};
-
-export const RegisterResourceProviderError: PluginError = {
-  name: "RegisterResourceProviderError",
-  message: (message) =>
-    `Failed to register required resource provider for Tab frontend app. Reason: ${message}. Register required resource provider ${Constants.RequiredResourceProviders.join(
-      ","
-    )} manually.`,
 };

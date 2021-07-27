@@ -13,12 +13,10 @@ import {
   ZipDeployError,
   FreeServerFarmsQuotaError,
   MissingSubscriptionRegistrationError,
-  RegisterResourceProviderError,
 } from "./errors";
 import { ResultFactory } from "./result";
 import { DialogUtils } from "./utils/dialog";
 import { Providers, ResourceManagementClientContext } from "@azure/arm-resources";
-import { ResourceManagementClient } from "./utils/resourceManagementClient";
 
 export class WebAppClient {
   private credentials: TokenCredentialsBase;
@@ -63,15 +61,14 @@ export class WebAppClient {
       // Check and register resource provider
       try {
         DialogUtils.progressBar?.next(Constants.ProgressBar.provision.registerResourceProvider);
-        await ResourceManagementClient.ensureResourceProviders(
-          this.resourceManagementClient,
-          Constants.RequiredResourceProviders
+        await Promise.all(
+          Constants.RequiredResourceProviders.map(
+            async (namespace) => await this.resourceManagementClient.register(namespace)
+          )
         );
       } catch (error) {
-        throw ResultFactory.UserError(
-          RegisterResourceProviderError.name,
-          RegisterResourceProviderError.message(error?.message),
-          error
+        this.ctx.logProvider?.info(
+          Messages.getLog(Constants.RegisterRersourceProviderFailed(error?.message))
         );
       }
 

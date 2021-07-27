@@ -97,6 +97,10 @@ export class Constants {
     },
   };
 
+  static readonly RegisterRersourceProviderFailed = (message: string) =>
+    `Failed to register required resource provider for Simple Auth. Reason: ${message}. Register required resource provider ${Constants.RequiredResourceProviders.join(
+      ","
+    )} manually.`;
   static readonly FreeServerFarmsQuotaErrorFromAzure =
     "The maximum number of Free ServerFarms allowed in a Subscription is 10";
   static readonly FreeServerFarmsQuotaErrorToUser =

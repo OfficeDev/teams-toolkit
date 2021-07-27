@@ -24,6 +24,8 @@ export class Constants {
   static RequestTryCounts = 3;
   static RequestTimeoutInMS = 20 * 1000;
   static ScaffoldTryCounts = 1;
+
+  static BicepFileEncoding: BufferEncoding = "utf-8";
 }
 
 export class FrontendPluginInfo {
@@ -50,13 +52,15 @@ export class EnvironmentVariables {
 export class FrontendPathInfo {
   static WorkingDir = "tabs";
   static TemplateDir = path.join("plugins", "resource", "frontend");
+  static TemplateFileExt = ".tpl";
+  static TemplatePackageExt = ".zip";
+
   static BicepTemplateFolderName = "bicep";
   static ModuleOrchestrationFileName = "module.template.bicep";
   static InputParameterOrchestrationFileName = "input_param.template.bicep";
   static OutputOrchestrationFileName = "output.template.bicep";
   static ModuleFileName = "frontendHosting.bicep";
-  static TemplateFileExt = ".tpl";
-  static TemplatePackageExt = ".zip";
+
   static BuildFolderName = "build";
   static BuildPath = `${FrontendPathInfo.BuildFolderName}${path.sep}`;
   static TabEnvironmentFilePath = ".env";

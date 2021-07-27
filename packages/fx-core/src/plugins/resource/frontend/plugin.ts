@@ -281,15 +281,18 @@ export class FrontendPluginImpl {
     const result: ScaffoldArmTemplateResult = {
       Modules: {
         frontendHostingProvision: {
-          Content: await fs.readFile(moduleFilePath, "utf-8"),
+          Content: await fs.readFile(moduleFilePath, Constants.BicepFileEncoding),
         },
       },
       Orchestration: {
         ParameterTemplate: {
-          Content: await fs.readFile(inputParameterOrchestrationFilePath, "utf-8"),
+          Content: await fs.readFile(
+            inputParameterOrchestrationFilePath,
+            Constants.BicepFileEncoding
+          ),
         },
         ModuleTemplate: {
-          Content: await fs.readFile(moduleOrchestrationFilePath, "utf-8"),
+          Content: await fs.readFile(moduleOrchestrationFilePath, Constants.BicepFileEncoding),
           Outputs: {
             storageName: FrontendOutputBicepSnippet.StorageName,
             endpoint: FrontendOutputBicepSnippet.Endpoint,
@@ -297,7 +300,7 @@ export class FrontendPluginImpl {
           },
         },
         OutputTemplate: {
-          Content: await fs.readFile(outputOrchestrationFilePath, "utf-8"),
+          Content: await fs.readFile(outputOrchestrationFilePath, Constants.BicepFileEncoding),
         },
       },
     };

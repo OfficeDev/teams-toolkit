@@ -81,7 +81,7 @@ describe("FrontendGenerateArmTemplates", () => {
         fs.readFileSync(expectedOutputFilePath, "utf-8")
       );
       chai.assert.isUndefined(expectedResult.Orchestration.VariableTemplate);
-      chai.assert.isUndefined(expectedResult.Orchestration.ParameterTemplate!.ParameterFile);
+      chai.assert.isUndefined(expectedResult.Orchestration.ParameterTemplate!.ParameterJson);
     }
   });
 });

@@ -260,22 +260,22 @@ export class FrontendPluginImpl {
     const bicepTemplateDir = path.join(
       getTemplatesFolder(),
       FrontendPathInfo.TemplateDir,
-      FrontendPathInfo.bicepTemplateFolderName
+      FrontendPathInfo.BicepTemplateFolderName
     );
 
-    const moduleFilePath = path.join(bicepTemplateDir, FrontendPathInfo.moduleFileName);
+    const moduleFilePath = path.join(bicepTemplateDir, FrontendPathInfo.ModuleFileName);
 
     const inputParameterOrchestrationFilePath = path.join(
       bicepTemplateDir,
-      FrontendPathInfo.inputParameterOrchestrationFileName
+      FrontendPathInfo.InputParameterOrchestrationFileName
     );
     const moduleOrchestrationFilePath = path.join(
       bicepTemplateDir,
-      FrontendPathInfo.moduleOrchestrationFileName
+      FrontendPathInfo.ModuleOrchestrationFileName
     );
     const outputOrchestrationFilePath = path.join(
       bicepTemplateDir,
-      FrontendPathInfo.outputOrchestrationFileName
+      FrontendPathInfo.OutputOrchestrationFileName
     );
 
     const result: ScaffoldArmTemplateResult = {

@@ -199,30 +199,6 @@ export function newPluginContext(): PluginContext {
         capabilities: ["Bot"],
       },
     },
-    app: {
-      manifestVersion: "1.8",
-      version: "1.0.0",
-      id: "{appId}",
-      developer: {
-        name: "Teams App, Inc.",
-        mpnId: "",
-        websiteUrl: "https://localhost:3000",
-        privacyUrl: "https://localhost:3000/privacy",
-        termsOfUseUrl: "https://localhost:3000/termsofuse",
-      },
-      name: {
-        short: "",
-      },
-      description: {
-        short: "Short description for {appName}.",
-        full: "Full description of {appName}.",
-      },
-      icons: {
-        outline: "",
-        color: "",
-      },
-      accentColor: "",
-    },
     appStudioToken: {
       getAccessToken: (showDialog?: boolean) => {
         return Promise.resolve(undefined);

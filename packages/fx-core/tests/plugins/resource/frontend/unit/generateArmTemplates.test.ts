@@ -12,6 +12,7 @@ import { TestHelper } from "../helper";
 import { FrontendPlugin } from "../../../../../src";
 import { mockSolutionUpdateArmTemplates } from "../../util";
 import {
+  Constants,
   DependentPluginInfo,
   FrontendPluginInfo,
 } from "../../../../../src/plugins/resource/frontend/constants";
@@ -63,22 +64,22 @@ describe("FrontendGenerateArmTemplates", () => {
       const expectedModuleFilePath = path.join(expectedBicepFileDirectory, testModuleFileName);
       chai.assert.strictEqual(
         expectedResult.Modules.frontendHostingProvision.Content,
-        fs.readFileSync(expectedModuleFilePath, "utf-8")
+        fs.readFileSync(expectedModuleFilePath, Constants.BicepFileEncoding)
       );
       const expectedModuleSnippetFilePath = path.join(expectedBicepFileDirectory, "module.bicep");
       chai.assert.strictEqual(
         expectedResult.Orchestration.ModuleTemplate.Content,
-        fs.readFileSync(expectedModuleSnippetFilePath, "utf-8")
+        fs.readFileSync(expectedModuleSnippetFilePath, Constants.BicepFileEncoding)
       );
       const expectedParameterFilePath = path.join(expectedBicepFileDirectory, "input_param.bicep");
       chai.assert.strictEqual(
         expectedResult.Orchestration.ParameterTemplate!.Content,
-        fs.readFileSync(expectedParameterFilePath, "utf-8")
+        fs.readFileSync(expectedParameterFilePath, Constants.BicepFileEncoding)
       );
       const expectedOutputFilePath = path.join(expectedBicepFileDirectory, "output.bicep");
       chai.assert.strictEqual(
         expectedResult.Orchestration.OutputTemplate!.Content,
-        fs.readFileSync(expectedOutputFilePath, "utf-8")
+        fs.readFileSync(expectedOutputFilePath, Constants.BicepFileEncoding)
       );
       chai.assert.isUndefined(expectedResult.Orchestration.VariableTemplate);
       chai.assert.isUndefined(expectedResult.Orchestration.ParameterTemplate!.ParameterJson);

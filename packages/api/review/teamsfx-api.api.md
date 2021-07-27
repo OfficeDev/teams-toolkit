@@ -689,8 +689,6 @@ export type PluginConfig = ConfigMap;
 // @public (undocumented)
 export interface PluginContext extends Context {
     // (undocumented)
-    app: Readonly<TeamsAppManifest>;
-    // (undocumented)
     config: PluginConfig;
     // (undocumented)
     configOfOtherPlugins: ReadonlySolutionConfig;

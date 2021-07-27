@@ -151,10 +151,9 @@ export class AppStudioPlugin implements Plugin {
 
   public createManifestForRemote(
     ctx: PluginContext,
-    maybeSelectedPlugins: Result<Plugin[], FxError>,
     manifest: TeamsAppManifest
   ): Result<[IAppDefinition, TeamsAppManifest], FxError> {
-    return this.appStudioPluginImpl.createManifestForRemote(ctx, maybeSelectedPlugins, manifest);
+    return this.appStudioPluginImpl.createManifestForRemote(ctx, manifest);
   }
 
   public async scaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
@@ -284,6 +283,11 @@ export class AppStudioPlugin implements Plugin {
         return err(publishFailed);
       }
     }
+  }
+
+  public async postLocalDebug(ctx: PluginContext): Promise<Result<string, FxError>> {
+    const localTeamsAppId = await this.appStudioPluginImpl.postLocalDebug(ctx);
+    return ok(localTeamsAppId);
   }
 }
 

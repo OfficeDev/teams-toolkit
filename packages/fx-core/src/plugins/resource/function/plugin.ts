@@ -128,6 +128,7 @@ export class FunctionPluginImpl {
     this.config.functionAppName = ctx.config.get(FunctionConfigKey.functionAppName) as string;
     this.config.storageAccountName = ctx.config.get(FunctionConfigKey.storageAccountName) as string;
     this.config.appServicePlanName = ctx.config.get(FunctionConfigKey.appServicePlanName) as string;
+    this.config.functionEndpoint = ctx.config.get(FunctionConfigKey.functionEndpoint) as string;
 
     /* Always validate after sync for safety and security. */
     this.validateConfig();

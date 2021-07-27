@@ -48,7 +48,6 @@ function mockSolutionContext(): SolutionContext {
   const config: SolutionConfig = new Map();
   return {
     root: ".",
-    // app: new TeamsAppManifest(),
     config,
     answers: { platform: Platform.VSCode },
     projectSettings: undefined,

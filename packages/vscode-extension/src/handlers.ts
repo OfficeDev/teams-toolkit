@@ -664,8 +664,13 @@ export function saveTextDocumentHandler(document: vscode.TextDocument) {
 }
 
 export async function cmdHdlLoadTreeView(context: ExtensionContext) {
-  const disposables = await TreeViewManagerInstance.registerTreeViews();
-  context.subscriptions.push(...disposables);
+  if (1 === 1) {
+    const disposables = await TreeViewManagerInstance.registerNewTreeViews();
+    context.subscriptions.push(...disposables);
+  } else {
+    const disposables = await TreeViewManagerInstance.registerTreeViews();
+    context.subscriptions.push(...disposables);
+  }
 
   // Register SignOut tree view command
   commands.registerCommand("fx-extension.signOut", async (node: TreeViewCommand) => {

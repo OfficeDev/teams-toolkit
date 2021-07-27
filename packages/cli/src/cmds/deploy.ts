@@ -10,7 +10,7 @@ import { FxError, err, ok, Result, Stage } from "@microsoft/teamsfx-api";
 
 import activate from "../activate";
 import { YargsCommand } from "../yargsCommand";
-import { getSystemInputs } from "../utils";
+import { getSystemInputs, toLocaleLowerCase } from "../utils";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
@@ -36,6 +36,7 @@ export default class Deploy extends YargsCommand {
       array: true,
       choices: deployPluginOption.choices,
       description: deployPluginOption.description,
+      coerce: toLocaleLowerCase,
     });
     for (const name in this.params) {
       if (name !== this.deployPluginNodeName) {

@@ -15,12 +15,11 @@ import {
   SolutionConfig,
   SolutionContext,
   AzureAccountProvider,
-  SubscriptionInfo
+  SubscriptionInfo,
 } from "@microsoft/teamsfx-api";
 import { GLOBAL_CONFIG, SolutionError } from "./constants";
 import { v4 as uuidv4 } from "uuid";
 import { ResourceManagementClient } from "@azure/arm-resources";
-import { askSubscription } from "../../../common/tools";
 
 export type AzureSubscription = {
   displayName: string;
@@ -41,7 +40,9 @@ class CommonQuestions {
  * make sure subscription is correct
  *
  */
-export async function checkSubscription( ctx: SolutionContext): Promise<Result<SubscriptionInfo, FxError>> {
+export async function checkSubscription(
+  ctx: SolutionContext
+): Promise<Result<SubscriptionInfo, FxError>> {
   if (ctx.azureAccountProvider === undefined) {
     return err(
       returnSystemError(
@@ -52,25 +53,8 @@ export async function checkSubscription( ctx: SolutionContext): Promise<Result<S
     );
   }
   const activeSubscriptionId = ctx.config.get(GLOBAL_CONFIG)?.get("subscriptionId");
-  const askSubRes = await askSubscription(ctx.azureAccountProvider!, ctx.ui!, activeSubscriptionId);
-  if(askSubRes.isErr()) return err(askSubRes.error); 
-  const sub = askSubRes.value;
-  await ctx.azureAccountProvider?.setSubscription(sub.subscriptionId);
-  ctx.config.get(GLOBAL_CONFIG)?.set("subscriptionId", sub.subscriptionId);
-  ctx.config.get(GLOBAL_CONFIG)?.set("tenantId", sub.tenantId);
-  ctx.treeProvider?.refresh([
-    {
-      commandId: "fx-extension.selectSubscription",
-      label: sub.subscriptionName,
-      callback: () => {
-        return Promise.resolve(ok(null));
-      },
-      parent: "fx-extension.signinAzure",
-      contextValue: "selectSubscription",
-      icon: "subscriptionSelected",
-    },
-  ]);
-  return ok(sub);
+  const askSubRes = await ctx.azureAccountProvider!.getSelectedSubscription(true);
+  return ok(askSubRes!);
 }
 
 /**
@@ -136,6 +120,7 @@ async function askCommonQuestions(
     const response = await rmClient.resourceGroups.createOrUpdate(resourceGroupName, {
       location: commonQuestions.location,
     });
+
     if (response.name === undefined) {
       return err(
         returnSystemError(

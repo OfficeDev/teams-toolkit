@@ -184,10 +184,7 @@ export function newPluginContext(): PluginContext {
       ],
       [
         PluginSolution.PLUGIN_NAME,
-        new Map<string, string>([
-          [PluginSolution.TENANT_ID, utils.genUUID()],
-          [PluginSolution.LOCATION, "Central US"],
-        ]),
+        new Map<string, string>([[PluginSolution.LOCATION, "Central US"]]),
       ],
     ]),
     config: new ConfigMap(),
@@ -201,30 +198,6 @@ export function newPluginContext(): PluginContext {
         version: "0.0.1",
         capabilities: ["Bot"],
       },
-    },
-    app: {
-      manifestVersion: "1.8",
-      version: "1.0.0",
-      id: "{appId}",
-      developer: {
-        name: "Teams App, Inc.",
-        mpnId: "",
-        websiteUrl: "https://localhost:3000",
-        privacyUrl: "https://localhost:3000/privacy",
-        termsOfUseUrl: "https://localhost:3000/termsofuse",
-      },
-      name: {
-        short: "",
-      },
-      description: {
-        short: "Short description for {appName}.",
-        full: "Full description of {appName}.",
-      },
-      icons: {
-        outline: "",
-        color: "",
-      },
-      accentColor: "",
     },
     appStudioToken: {
       getAccessToken: (showDialog?: boolean) => {
@@ -277,7 +250,7 @@ export function newPluginContext(): PluginContext {
           tenantId: "tenantId",
           subscriptionName: "subscriptionName",
         });
-      }
+      },
     },
   };
 }

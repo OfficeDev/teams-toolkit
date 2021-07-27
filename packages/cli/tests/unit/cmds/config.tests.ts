@@ -68,7 +68,6 @@ describe("Config Command Tests", function () {
         decrypted.push(ciphertext);
         return ok("decrypted");
       });
-    sandbox.stub(Utils, "getSubscriptionIdFromEnvFile").returns(Promise.resolve(undefined));
     sandbox.stub(UserSettings, "getConfigSync").returns(ok(config));
     sandbox.stub(LogProvider, "necessaryLog").callsFake((level: LogLevel, message: string) => {
       logs.push(message);
@@ -130,7 +129,6 @@ describe("Config Get Command Check", () => {
         decrypted.push(ciphertext);
         return ok("decrypted");
       });
-    sandbox.stub(Utils, "getSubscriptionIdFromEnvFile").returns(Promise.resolve(undefined));
     sandbox.stub(UserSettings, "getConfigSync").returns(ok(config));
     sandbox.stub(LogProvider, "necessaryLog").callsFake((level: LogLevel, message: string) => {
       logs.push(message);
@@ -299,7 +297,6 @@ describe("Config Set Command Check", () => {
         encrypted.push(ciphertext);
         return ok("encrypted");
       });
-    sandbox.stub(Utils, "getSubscriptionIdFromEnvFile").returns(Promise.resolve(undefined));
     sandbox
       .stub(UserSettings, "setConfigSync")
       .callsFake((option: { [key: string]: string }): Result<null, FxError> => {

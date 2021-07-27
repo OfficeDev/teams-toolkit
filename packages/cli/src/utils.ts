@@ -61,9 +61,6 @@ export function getSingleOptionString(
 
 export function toYargsOptions(data: Question): Options {
   const choices = getChoicesFromQTNodeQuestion(data);
-  // if (choices && choices.length > 0 && data.default === undefined) {
-  //   data.default = choices[0];
-  // }
 
   let defaultValue;
   if (data.default && data.default instanceof Array && data.default.length > 0) {
@@ -81,6 +78,7 @@ export function toYargsOptions(data: Question): Options {
       hidden: !!(data as any).hide,
       global: false,
       type: "string",
+      coerce: choices ? toLocaleLowerCase : undefined,
     };
   }
   return {
@@ -91,7 +89,16 @@ export function toYargsOptions(data: Question): Options {
     hidden: !!(data as any).hide,
     global: false,
     type: "string",
+    coerce: choices ? toLocaleLowerCase : undefined,
   };
+}
+
+export function toLocaleLowerCase(arg: any): any {
+  if (typeof arg === "string") {
+    return arg.toLocaleLowerCase();
+  } else if (arg instanceof Array) {
+    return arg.map((s: string) => s.toLocaleLowerCase());
+  } else return arg;
 }
 
 export function flattenNodes(node: QTreeNode): QTreeNode[] {
@@ -207,16 +214,6 @@ export async function getSolutionPropertyFromEnvFile(
   }
 }
 
-export async function getSubscriptionIdFromEnvFile(
-  rootFolder: string
-): Promise<string | undefined> {
-  const result = await getSolutionPropertyFromEnvFile(rootFolder, "subscriptionId");
-  if (result.isErr()) {
-    throw result.error;
-  }
-  return result.value;
-}
-
 export async function setSubscriptionId(
   subscriptionId?: string,
   rootFolder = "./"
@@ -228,14 +225,9 @@ export async function setSubscriptionId(
     }
 
     AzureAccountManager.setRootPath(rootFolder);
-    await AzureAccountManager.setSubscription(subscriptionId);
-    const subs = await AzureAccountManager.listSubscriptions();
-    const sub = subs.find((sub) => sub.subscriptionId === subscriptionId);
-
-    const configJson = result.value;
-    configJson["solution"].subscriptionId = sub?.subscriptionId;
-    configJson["solution"].tenantId = sub?.tenantId;
-    await fs.writeFile(getEnvFilePath(rootFolder), JSON.stringify(configJson, null, 4));
+    if (subscriptionId) {
+      await AzureAccountManager.setSubscription(subscriptionId);
+    }
   }
   return ok(null);
 }

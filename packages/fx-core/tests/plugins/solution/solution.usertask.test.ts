@@ -21,7 +21,6 @@ function mockSolutionContextWithPlatform(platform?: Platform): SolutionContext {
   config.set(GLOBAL_CONFIG, new ConfigMap());
   return {
     root: ".",
-    // app: new TeamsAppManifest(),
     config,
     answers: { platform: platform ? platform : Platform.VSCode },
     projectSettings: undefined,

@@ -9,7 +9,8 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true /* enable all strict type-checking options */,
-    "jsx": "react"
+    "jsx": "react",
+    "plugins": [{ "transform": "../failpoint-ts/transformer/transformer.ts" }]
     /* Additional Checks */
     // "noImplicitReturns": true, /* Report error when not all code paths in function return a value. */
     // "noFallthroughCasesInSwitch": true, /* Report errors for fallthrough cases in switch statement. */

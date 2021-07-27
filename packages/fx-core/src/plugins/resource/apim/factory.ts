@@ -168,11 +168,16 @@ export class Factory {
       "credential",
       await azureAccountProvider?.getAccountCredentialAsync()
     );
-    const apiManagementClient = new ApiManagementClient(credential, solutionConfig.subscriptionId);
+    const subscriptionInfo = await azureAccountProvider?.getSelectedSubscription();
+    AssertNotEmpty("subscriptionInfo", subscriptionInfo);
+    const apiManagementClient = new ApiManagementClient(
+      credential,
+      subscriptionInfo!.subscriptionId
+    );
     return new ApimService(
       apiManagementClient,
       credential,
-      solutionConfig.subscriptionId,
+      subscriptionInfo!.subscriptionId,
       telemetryReporter,
       logger
     );

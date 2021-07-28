@@ -218,7 +218,10 @@ export class ProgressDetail {
 
 export class TemplatePathInfo {
   static readonly TemplateRelativeDir = path.join("plugins", "resource", "aad");
-  static readonly BicepTemplateRelativeDir = path.join(TemplatePathInfo.TemplateRelativeDir, "bicep");
+  static readonly BicepTemplateRelativeDir = path.join(
+    TemplatePathInfo.TemplateRelativeDir,
+    "bicep"
+  );
   static readonly ParameterFileName: string = "parameters.json";
   static readonly InputParameterOrchestrationFileName: string = "input_param.template.bicep";
   static readonly VariablesOrchestrationFileName: string = "variables.template.bicep";

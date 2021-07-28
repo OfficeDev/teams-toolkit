@@ -350,6 +350,7 @@ packages/api/build/
 packages/failpoint-ts/build/
 packages/fx-core/build/
 packages/vscode-extension/out/
+packages/failpoint-ts/build/
 
 ## tmp files
 .nyc_output

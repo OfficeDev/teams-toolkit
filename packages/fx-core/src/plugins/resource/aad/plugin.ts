@@ -309,7 +309,9 @@ export class AadAppForTeamsImpl {
             inputParameterOrchestrationFilePath,
             ConstantString.UTF8Encoding
           ),
-          ParameterFile: await fs.readFile(parameterFilePath, ConstantString.UTF8Encoding),
+          ParameterJson: JSON.parse(
+            await fs.readFile(parameterFilePath, ConstantString.UTF8Encoding)
+          ),
         },
         VariableTemplate: {
           Content: await fs.readFile(variablesOrchestrationFilePath, ConstantString.UTF8Encoding),

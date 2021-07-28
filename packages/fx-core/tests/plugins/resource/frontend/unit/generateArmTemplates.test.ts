@@ -39,11 +39,13 @@ describe("FrontendGenerateArmTemplates", () => {
     // Assert
     const testModuleFileName = "frontend_hosting_test.bicep";
     const mockedSolutionDataContext = {
-      plugins: activeResourcePlugins,
-      "fx-resource-frontend-hosting": {
-        modules: {
-          frontendHostingProvision: {
-            path: `./${testModuleFileName}`,
+      Plugins: activeResourcePlugins,
+      PluginOutput: {
+        "fx-resource-frontend-hosting": {
+          Modules: {
+            frontendHostingProvision: {
+              Path: `./${testModuleFileName}`,
+            },
           },
         },
       },
@@ -77,7 +79,7 @@ describe("FrontendGenerateArmTemplates", () => {
         fs.readFileSync(expectedOutputFilePath, ConstantString.UTF8Encoding)
       );
       chai.assert.isUndefined(expectedResult.Orchestration.VariableTemplate);
-      chai.assert.isUndefined(expectedResult.Orchestration.ParameterTemplate!.ParameterFile);
+      chai.assert.isUndefined(expectedResult.Orchestration.ParameterTemplate!.ParameterJson);
     }
   });
 });

@@ -87,11 +87,13 @@ describe("simpleAuthPlugin", () => {
     // Assert
     const testModuleFileName = "simple_auth_test.bicep";
     const mockedSolutionDataContext = {
-      plugins: activeResourcePlugins,
-      "fx-resource-simple-auth": {
-        modules: {
-          simpleAuthProvision: {
-            path: `./${testModuleFileName}`,
+      Plugins: activeResourcePlugins,
+      PluginOutput: {
+        "fx-resource-simple-auth": {
+          Modules: {
+            simpleAuthProvision: {
+              Path: `./${testModuleFileName}`,
+            },
           },
         },
       },
@@ -130,7 +132,7 @@ describe("simpleAuthPlugin", () => {
         fs.readFileSync(expectedOutputFilePath, ConstantString.UTF8Encoding)
       );
       chai.assert.isUndefined(expectedResult.Orchestration.VariableTemplate);
-      chai.assert.isUndefined(expectedResult.Orchestration.ParameterTemplate!.ParameterFile);
+      chai.assert.isUndefined(expectedResult.Orchestration.ParameterTemplate!.ParameterJson);
     }
   });
 
@@ -155,17 +157,19 @@ describe("simpleAuthPlugin", () => {
     // Assert
     const testModuleFileName = "simple_auth_test.bicep";
     const mockedSolutionDataContext = {
-      plugins: activeResourcePlugins,
-      "fx-resource-simple-auth": {
-        modules: {
-          simpleAuthProvision: {
-            path: `./${testModuleFileName}`,
+      Plugins: activeResourcePlugins,
+      PluginOutput: {
+        "fx-resource-simple-auth": {
+          Modules: {
+            simpleAuthProvision: {
+              Path: `./${testModuleFileName}`,
+            },
           },
         },
-      },
-      "fx-resource-frontend-hosting": {
-        outputs: {
-          endpoint: "frontend_hosting_test_endpoint",
+        "fx-resource-frontend-hosting": {
+          Outputs: {
+            endpoint: "frontend_hosting_test_endpoint",
+          },
         },
       },
     };
@@ -203,7 +207,7 @@ describe("simpleAuthPlugin", () => {
         fs.readFileSync(expectedOutputFilePath, ConstantString.UTF8Encoding)
       );
       chai.assert.isUndefined(expectedResult.Orchestration.VariableTemplate);
-      chai.assert.isUndefined(expectedResult.Orchestration.ParameterTemplate!.ParameterFile);
+      chai.assert.isUndefined(expectedResult.Orchestration.ParameterTemplate!.ParameterJson);
     }
   });
 

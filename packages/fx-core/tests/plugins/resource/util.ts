@@ -44,12 +44,8 @@ export function mockSolutionUpdateArmTemplates(
         template.Orchestration.ParameterTemplate.Content,
         mockedData
       ),
+      ParameterJson: template.Orchestration.ParameterTemplate.ParameterJson,
     };
-
-    if (template.Orchestration.ParameterTemplate.ParameterFile) {
-      result.Orchestration.ParameterTemplate.ParameterFile =
-        template.Orchestration.ParameterTemplate.ParameterFile;
-    }
   }
 
   return result;

@@ -101,7 +101,6 @@ export class AppStudioPluginImpl {
         try {
           await AppStudioClient.getApp(localTeamsAppID, appStudioToken!, ctx.logProvider);
         } catch (error) {
-          //ctx.logProvider?.error(error);
           createIfNotExist = true;
         }
       }

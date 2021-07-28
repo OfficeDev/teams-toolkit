@@ -153,4 +153,24 @@ describe("Solution scaffold() reading valid manifest file", () => {
     expect(result.isOk()).to.be.true;
     expect(fileContent.get(`${mockedCtx.root}/README.md`)).equals(mockedReadMeContent);
   });
+
+  it("should work and generate arm template when project requires Azure services", async () => {
+    fileContent.clear();
+    const solution = new TeamsAppSolution();
+    const mockedCtx = mockSolutionContext();
+    mockedCtx.projectSettings = {
+      appName: "my app",
+      currentEnv: "default",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [fehostPlugin.name],
+        capabilities: [TabOptionItem.id],
+      },
+    };
+    mockScaffoldThatAlwaysSucceed(fehostPlugin);
+    mockScaffoldThatAlwaysSucceed(localdebugPlugin);
+  });
 });

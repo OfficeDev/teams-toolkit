@@ -97,7 +97,7 @@ describe("Generate ARM Template for project", () => {
     };
 
     // mock plugin behavior
-    fehostPlugin.scaffoldArmTemplate = async function (
+    fehostPlugin.generateArmTemplates = async function (
       _ctx: PluginContext
     ): Promise<Result<any, FxError>> {
       return ok({
@@ -128,7 +128,7 @@ describe("Generate ARM Template for project", () => {
       });
     };
 
-    simpleAuthPlugin.scaffoldArmTemplate = async function (
+    simpleAuthPlugin.generateArmTemplates = async function (
       _ctx: PluginContext
     ): Promise<Result<any, FxError>> {
       return ok({

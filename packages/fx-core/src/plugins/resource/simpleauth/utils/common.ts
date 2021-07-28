@@ -14,7 +14,6 @@ import { ResultFactory } from "../result";
 import { TelemetryUtils } from "./telemetry";
 import { getTemplatesFolder } from "../../../..";
 import got from "got";
-
 export class Utils {
   public static generateResourceName(appName: string, resourceNameSuffix: string): string {
     const paddingLength =
@@ -140,11 +139,15 @@ export class Utils {
     };
   }
 
-  public static addLocalDebugPrefix(isLocalDebug: boolean, key: string) {
+  public static addLocalDebugPrefix(isLocalDebug: boolean, key: string): string {
     return isLocalDebug ? Constants.LocalPrefix + key : key;
   }
 
-  public static addLogAndTelemetry(logProvider: LogProvider | undefined, message: Message, properties?: { [key: string]: string }) {
+  public static addLogAndTelemetry(
+    logProvider: LogProvider | undefined,
+    message: Message,
+    properties?: { [key: string]: string }
+  ): void {
     logProvider?.info(message.log);
     TelemetryUtils.sendEvent(message.telemetry, properties);
   }
@@ -154,7 +157,7 @@ export class Utils {
     pluginId: string,
     configKey: string,
     isLocalDebug = false
-  ) {
+  ): string {
     const key = Utils.addLocalDebugPrefix(isLocalDebug, configKey);
     const configValue = ctx.configOfOtherPlugins.get(pluginId)?.get(key);
     if (!configValue) {

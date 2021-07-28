@@ -21,10 +21,10 @@ import * as sinon from "sinon";
 import fs from "fs-extra";
 import {
   GLOBAL_CONFIG,
-  REMOTE_MANIFEST,
   SolutionError,
   SOLUTION_PROVISION_SUCCEEDED,
 } from "../../../src/plugins/solution/fx-solution/constants";
+import { REMOTE_MANIFEST } from "../../../src/plugins/resource/appstudio/constants";
 import {
   AzureSolutionQuestionNames,
   HostTypeOptionAzure,
@@ -47,7 +47,6 @@ function mockSolutionContext(): SolutionContext {
   config.set(GLOBAL_CONFIG, new ConfigMap());
   return {
     root: ".",
-    // app: new TeamsAppManifest(),
     config,
     answers: { platform: Platform.VSCode },
     projectSettings: undefined,
@@ -101,7 +100,7 @@ describe("deploy() for Azure projects", () => {
     mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
     const result = await solution.deploy(mockedCtx);
     expect(result.isErr()).to.be.true;
-    expect(result._unsafeUnwrapErr().name).equals("ManifestLoadFailed");
+    expect(result._unsafeUnwrapErr().name).equals("NoResourcePluginSelected");
   });
 
   describe("with valid manifest", () => {

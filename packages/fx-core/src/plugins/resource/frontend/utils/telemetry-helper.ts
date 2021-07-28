@@ -34,7 +34,7 @@ export class TelemetryHelper {
     TelemetryHelper.fillCommonProperty(properties);
 
     this.ctx?.telemetryReporter?.sendTelemetryEvent(
-      eventName + TelemetryEvent.startSuffix,
+      eventName + TelemetryEvent.StartSuffix,
       properties,
       measurements
     );
@@ -81,7 +81,7 @@ export class TelemetryHelper {
     properties[TelemetryKey.ErrorCode] = e.code;
 
     this.ctx?.telemetryReporter?.sendTelemetryEvent(
-      TelemetryEvent.scaffoldFallback,
+      TelemetryEvent.ScaffoldFallback,
       properties,
       measurements
     );

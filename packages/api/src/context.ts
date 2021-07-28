@@ -66,14 +66,8 @@ export interface SolutionContext extends Context {
 
 export interface PluginContext extends Context {
   // A readonly view of other plugins' config
-  // FolderProvider: FolderProvider;
-
-  // A readonly view of other plugins' config
   configOfOtherPlugins: ReadonlySolutionConfig;
 
   // A mutable config for current plugin
   config: PluginConfig;
-
-  // A readonly of view of teams manifest. Useful for bot plugin.
-  app: Readonly<TeamsAppManifest>;
 }

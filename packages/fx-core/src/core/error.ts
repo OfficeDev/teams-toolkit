@@ -69,7 +69,7 @@ export function PathNotExistError(path: string) {
 export function InvalidProjectError(msg?: string) {
   return new UserError(
     "InvalidProject",
-    `The project config is invalid ${msg ? ": " + msg : ""}`,
+    `The command only works for project created by Teamsfx Toolkit. ${msg ? ": " + msg : ""}`,
     CoreSource,
     new Error().stack
   );

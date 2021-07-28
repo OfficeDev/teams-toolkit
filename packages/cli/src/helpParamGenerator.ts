@@ -24,7 +24,6 @@ import AzureAccountManager from "./commonlib/azureLogin";
 import AppStudioTokenProvider from "./commonlib/appStudioLogin";
 import GraphTokenProvider from "./commonlib/graphLogin";
 import CLILogProvider from "./commonlib/log";
-import DialogManagerInstance from "./userInterface";
 import CLIUIInstance from "./userInteraction";
 import { flattenNodes, getSingleOptionString, toYargsOptions } from "./utils";
 import { Options } from "yargs";
@@ -47,7 +46,6 @@ export class HelpParamGenerator {
         appStudioToken: AppStudioTokenProvider,
       },
       telemetryReporter: undefined,
-      dialog: DialogManagerInstance,
       ui: CLIUIInstance,
     };
     this.core = new FxCore(tools);
@@ -123,7 +121,7 @@ export class HelpParamGenerator {
         return err(result.error);
       }
     }
-    
+
     this.initialized = true;
     return ok(true);
   }
@@ -146,7 +144,9 @@ export class HelpParamGenerator {
     if (resourceName && root?.children) {
       const rootCopy: QTreeNode = JSON.parse(JSON.stringify(root));
       // Do CLI map for resource add
-      const mustHaveNodes = rootCopy.children!.filter((node) => (node.condition as any).minItems === 1);
+      const mustHaveNodes = rootCopy.children!.filter(
+        (node) => (node.condition as any).minItems === 1
+      );
       const resourcesNodes = rootCopy.children!.filter(
         (node) => (node.condition as any).contains === resourceName
       )[0];
@@ -180,12 +180,14 @@ export class HelpParamGenerator {
     // Add folder node
     if (stage !== Stage.create) {
       nodes = nodes.concat([RootFolderNode]);
-    }
-    else {
+    } else {
       // Set default folder value for create stage
       for (const node of nodes) {
         if (node.data.name === "folder") {
           (node.data as any).default = "./";
+        }
+        if (node.data.name === "scratch" || node.data.name === "samples") {
+          (node.data as any).hide = true;
         }
       }
     }

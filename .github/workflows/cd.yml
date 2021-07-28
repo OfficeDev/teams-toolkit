@@ -81,7 +81,7 @@ jobs:
       - name: release alpha npm packages to npmjs.org
         if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/dev' && github.event.inputs.preid == 'alpha')}}
         run: |
-          npx lerna version prerelease --preid=alpha.$(git rev-parse --short HEAD) --no-push --allow-branch dev --yes
+          npx lerna version prerelease --preid=alpha.$(git rev-parse --short HEAD) --exact --no-push --allow-branch dev --yes
           npx lerna publish from-package --dist-tag=alpha --yes --allow-branch dev
 
       - name: version rc npm packages to npmjs.org
@@ -99,7 +99,7 @@ jobs:
         run: |
           echo "::set-output name=CHANGED::$(git tag --points-at HEAD | xargs)"
           echo "::set-output name=TEMPLATE_VERSION::$(git tag --points-at HEAD | grep templates)"
-          echo "::set-output name=EXTENSION_VERSION::$(git tag --points-at HEAD | grep ms-teams-vscode-extension@)"
+          echo "::set-output name=EXTENSION_VERSION::$(git tag --points-at HEAD | grep ms-teams-vscode-extension@ | cut -d '@' -f2)"
           if git tag --points-at HEAD | grep templates | grep rc;
           then
               git push -d origin $(git tag --points-at HEAD | grep templates | grep rc)
@@ -145,18 +145,28 @@ jobs:
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') }}
         run: .github/scripts/template-zip-autogen.sh
 
-      - name: release templates' prerelease version to github
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event.inputs.preid != 'stable' }}
+      - name: release templates' alpha version to github
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'alpha') }}
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: ${{ secrets.CD_PAT }}
           prerelease: true
-          automatic_release_tag: "templates@0.0.0-${{github.event.inputs.preid}}"
+          automatic_release_tag: "templates@0.0.0-alpha"
+          files: |
+            ./*.zip
+
+      - name: release templates' RC version to github
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' }}
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: ${{ secrets.CD_PAT }}
+          prerelease: true
+          automatic_release_tag: "templates@0.0.0-rc"
           files: |
             ./*.zip
 
       - name: Create Templates Stable Release
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event.inputs.preid == 'stable' }}
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
         uses: ncipollo/release-action@v1.7.3
         with:
           artifacts: ./*.zip
@@ -166,11 +176,11 @@ jobs:
           allowUpdates: true
 
       - name: Generate Tag List
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event.inputs.preid == 'stable' }}
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
         run: git tag | grep templates@ > ./template-tags.txt
 
       - name: Update Template Tag list Release
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event.inputs.preid == 'stable' }}
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
         uses: ncipollo/release-action@v1.7.3
         with:
           artifacts: ./template-tags.txt
@@ -184,6 +194,7 @@ jobs:
         run: rm -rf ./*.zip && git clean -df
 
       - name: pack vsix
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') }}
         uses: nick-invision/retry@v2
         with:
           timeout_minutes: 10
@@ -192,7 +203,7 @@ jobs:
           command: |
             sleep 20
             cd ./packages/vscode-extension
-            npm install
+            npm install --only=production
             npx vsce package
 
       - name: release VSCode extension to github
@@ -201,6 +212,6 @@ jobs:
         with:
           repo_token: ${{ secrets.CD_PAT }}
           prerelease: true
-          automatic_release_tag: ${{ steps.version-change.outputs.EXTENSION_VERSION }}
+          automatic_release_tag: 'vscode-extension-${{ steps.version-change.outputs.EXTENSION_VERSION }}'
           files: |
             ./packages/**/*.vsix

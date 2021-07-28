@@ -27,7 +27,7 @@ describe("sqlPlugin", () => {
 
   before(async () => {
     credentials = new msRestNodeAuth.ApplicationTokenCredentials(
-      faker.random.uuid(),
+      faker.datatype.uuid(),
       faker.internet.url(),
       faker.internet.password()
     );

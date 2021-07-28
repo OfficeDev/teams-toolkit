@@ -24,6 +24,7 @@ import { TelemetryHelper } from "./utils/telemetry-helper";
 import { HostTypeOptionAzure, TabOptionItem } from "../../solution/fx-solution/question";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+
 @Service(ResourcePlugins.FrontendPlugin)
 export class FrontendPlugin implements Plugin {
   name = "fx-resource-frontend-hosting";
@@ -41,7 +42,7 @@ export class FrontendPlugin implements Plugin {
 
   public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
     FrontendPlugin.setContext(ctx);
-    return this.runWithErrorHandling(ctx, TelemetryEvent.scaffold, () =>
+    return this.runWithErrorHandling(ctx, TelemetryEvent.Scaffold, () =>
       this.frontendPluginImpl.scaffold(ctx)
     );
   }
@@ -78,6 +79,13 @@ export class FrontendPlugin implements Plugin {
     FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(ctx, TelemetryEvent.Deploy, () =>
       this.frontendPluginImpl.deploy(ctx)
+    );
+  }
+
+  public async generateArmTemplates(ctx: PluginContext): Promise<TeamsFxResult> {
+    FrontendPlugin.setContext(ctx);
+    return this.runWithErrorHandling(ctx, TelemetryEvent.GenerateArmTemplates, () =>
+      this.frontendPluginImpl.generateArmTemplates(ctx)
     );
   }
 

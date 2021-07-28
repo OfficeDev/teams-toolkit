@@ -49,18 +49,26 @@ export class EnvironmentVariables {
 
 export class FrontendPathInfo {
   static WorkingDir = "tabs";
-  static TemplateDir = path.join("plugins", "resource", "frontend");
+  static TemplateRelativeDir = path.join("plugins", "resource", "frontend");
+  static BicepTemplateRelativeDir = path.join(FrontendPathInfo.TemplateRelativeDir, "bicep");
   static TemplateFileExt = ".tpl";
   static TemplatePackageExt = ".zip";
+
+  static BicepTemplateFolderName = "bicep";
+  static ModuleOrchestrationFileName = "module.template.bicep";
+  static InputParameterOrchestrationFileName = "input_param.template.bicep";
+  static OutputOrchestrationFileName = "output.template.bicep";
+  static ModuleFileName = "frontendHosting.bicep";
+
   static BuildFolderName = "build";
   static BuildPath = `${FrontendPathInfo.BuildFolderName}${path.sep}`;
   static TabEnvironmentFilePath = ".env";
-  static npmPackageFolderName = "node_modules";
+  static NodePackageFolderName = "node_modules";
   static TabDeploymentFolderName = ".deployment";
   static TabDeploymentInfoFileName = "deployment.json";
   static TabDeployIgnoreFolder = [
     FrontendPathInfo.BuildFolderName,
-    FrontendPathInfo.npmPackageFolderName,
+    FrontendPathInfo.NodePackageFolderName,
     FrontendPathInfo.TabDeploymentFolderName,
   ];
 }
@@ -95,11 +103,17 @@ export class FrontendConfigInfo {
   static readonly Domain = "domain";
 }
 
-export class TelemetryEvent {
-  static readonly startSuffix = "-start";
+export class FrontendOutputBicepSnippet {
+  static readonly StorageName = "frontendHostingProvision.outputs.storageName";
+  static readonly Endpoint = "frontendHostingProvision.outputs.endpoint";
+  static readonly Domain = "frontendHostingProvision.outputs.domain";
+}
 
-  static readonly scaffold = "scaffold";
-  static readonly scaffoldFallback = "scaffold-fallback";
+export class TelemetryEvent {
+  static readonly StartSuffix = "-start";
+
+  static readonly Scaffold = "scaffold";
+  static readonly ScaffoldFallback = "scaffold-fallback";
 
   static readonly PreProvision = "pre-provision";
   static readonly Provision = "provision";
@@ -108,6 +122,8 @@ export class TelemetryEvent {
   static readonly PreDeploy = "pre-deploy";
   static readonly Deploy = "deploy";
   static readonly SkipDeploy = "skip-deploy";
+
+  static readonly GenerateArmTemplates = "generate-arm-templates";
 }
 
 export class TelemetryKey {
@@ -133,7 +149,7 @@ export class AzureErrorCode {
 }
 
 export class RegularExpr {
-  static readonly allCharToBeSkippedInName = /[^a-zA-Z0-9]/g;
+  static readonly AllCharToBeSkippedInName = /[^a-zA-Z0-9]/g;
   static readonly FrontendStorageNamePattern = /^[a-z0-9]{3,24}$/;
   static readonly ReplaceTemplateExt = /\.tpl$/;
 }

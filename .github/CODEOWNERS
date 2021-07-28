@@ -23,25 +23,26 @@
 /packages/cli/src/commonlib/graphLoginUserPassword.ts @chagong @Alive-Fish @jiayi-ruan
 /packages/cli/src/commonlib/common/userPasswordConfig.ts @chagong @Alive-Fish @jiayi-ruan
 /packages/cli/src/cmds/preview @swatDong @kuojianlu @qinezh @a1exwang @meifans
-/packages/cli/tests/e2e/aad @KennethBWSong @adashen
-/packages/cli/tests/e2e/simpleauth @KennethBWSong @adashen
-/packages/cli/tests/e2e/sql @xzf0587 @adashen
+/packages/cli/tests/e2e/aad @KennethBWSong @adashen @SLdragon
+/packages/cli/tests/e2e/simpleauth @KennethBWSong @adashen @formulahendry
+/packages/cli/tests/e2e/sql @xzf0587 @adashen @blackchoey
 /packages/cli/tests/e2e/apim @XiaofuHuang @dooriya @kimizhu
 /packages/cli/tests/e2e/function @henzhang-ms @eriolchan @hund030
 /packages/cli/tests/e2e/frontend @hund030 @eriolchan @henzhang-ms
 /packages/cli/tests/e2e/bot @IvanJobs @eriolchan @YitongFeng-git
 /packages/cli/tests/unit/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @meifans @dooriya
+/packages/cli/tests/unit/cmds/preview @swatDong @kuojianlu @qinezh @a1exwang @meifans
 
 /packages/api @jayzhang @1yefuwang1 @LongOddCode
 /packages/api/src/qm @jayzhang @1yefuwang1 @LongOddCode @jiayi-ruan
 
-/packages/sdk @tecton @blackchoey @SLdragon @dilin-MS @wenytang-ms
+/packages/sdk @tecton @blackchoey @SLdragon @dilin-MS @wenytang-ms @jiayi-ruan
 
 /packages/fx-core/src/core @jayzhang @LongOddCode @1yefuwang1
 /packages/fx-core/src/plugins/solution/fx-solution @1yefuwang1 @jayzhang @LongOddCode
 
-/packages/fx-core/src/plugins/resource/aad @KennethBWSong @adashen
-/packages/fx-core/tests/plugins/resource/aad @KennethBWSong @adashen
+/packages/fx-core/src/plugins/resource/aad @KennethBWSong @adashen @SLdragon
+/packages/fx-core/tests/plugins/resource/aad @KennethBWSong @adashen @SLdragon
 
 /packages/fx-core/src/plugins/resource/apim @XiaofuHuang @dooriya @kimizhu
 /packages/fx-core/tests/plugins/resource/apim @XiaofuHuang @dooriya @kimizhu
@@ -66,17 +67,17 @@
 /packages/fx-core/tests/plugins/resource/function @henzhang-ms @eriolchan @hund030
 /packages/fx-core/src/plugins/resource/function/utils/depsChecker @a1exwang @kimizhu @meifans @qinezh
 
-/packages/fx-core/src/plugins/resource/identity @xzf0587 @adashen
-/packages/fx-core/tests/plugins/resource/identity @xzf0587 @adashen
+/packages/fx-core/src/plugins/resource/identity @xzf0587 @adashen @blackchoey
+/packages/fx-core/tests/plugins/resource/identity @xzf0587 @adashen @blackchoey
 
-/packages/fx-core/src/plugins/resource/sql @xzf0587 @adashen
-/packages/fx-core/tests/plugins/resource/sql @xzf0587 @adashen
+/packages/fx-core/src/plugins/resource/sql @xzf0587 @adashen @blackchoey
+/packages/fx-core/tests/plugins/resource/sql @xzf0587 @adashen @blackchoey
 
 /packages/fx-core/src/plugins/resource/localdebug @swatDong @kuojianlu
 /packages/fx-core/tests/plugins/resource/localdebug @swatDong @kuojianlu
 
-/packages/fx-core/src/plugins/resource/simpleauth @KennethBWSong @adashen
-/packages/fx-core/tests/plugins/resource/simpleauth @KennethBWSong @adashen
+/packages/fx-core/src/plugins/resource/simpleauth @KennethBWSong @adashen @formulahendry
+/packages/fx-core/tests/plugins/resource/simpleauth @KennethBWSong @adashen @formulahendry
 
 /packages/simpleauth @adashen @blackchoey @wenytang-ms
 

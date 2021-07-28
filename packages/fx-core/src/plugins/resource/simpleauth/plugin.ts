@@ -1,13 +1,18 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { FxError, PluginContext, Result } from "@microsoft/teamsfx-api";
+import { AzureSolutionSettings, FxError, PluginContext, Result } from "@microsoft/teamsfx-api";
 import { Constants, Messages, Telemetry } from "./constants";
-import { UnauthenticatedError } from "./errors";
+import { NoConfigError, UnauthenticatedError } from "./errors";
 import { ResultFactory } from "./result";
 import { Utils } from "./utils/common";
 import { DialogUtils } from "./utils/dialog";
 import { TelemetryUtils } from "./utils/telemetry";
 import { WebAppClient } from "./webAppClient";
+import * as path from "path";
+import * as fs from "fs-extra";
+import { getTemplatesFolder } from "../../..";
+import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
+import { generateBicepFiles } from "../../../common";
 
 export class SimpleAuthPluginImpl {
   webAppClient!: WebAppClient;
@@ -59,11 +64,17 @@ export class SimpleAuthPluginImpl {
       Constants.SolutionPlugin.id,
       Constants.SolutionPlugin.configKeys.resourceNameSuffix
     ) as string;
-    const subscriptionId = Utils.getConfigValueWithValidation(
-      ctx,
-      Constants.SolutionPlugin.id,
-      Constants.SolutionPlugin.configKeys.subscriptionId
-    ) as string;
+    const subscriptionInfo = await ctx.azureAccountProvider?.getSelectedSubscription();
+    if (!subscriptionInfo) {
+      throw ResultFactory.SystemError(
+        NoConfigError.name,
+        NoConfigError.message(
+          Constants.SolutionPlugin.id,
+          Constants.SolutionPlugin.configKeys.subscriptionId
+        )
+      );
+    }
+    const subscriptionId = subscriptionInfo!.subscriptionId;
     const resourceGroupName = Utils.getConfigValueWithValidation(
       ctx,
       Constants.SolutionPlugin.id,
@@ -75,7 +86,7 @@ export class SimpleAuthPluginImpl {
       Constants.SolutionPlugin.configKeys.location
     ) as string;
 
-    const webAppName = Utils.generateResourceName(ctx.app.name.short, resourceNameSuffix);
+    const webAppName = Utils.generateResourceName(ctx.projectSettings!.appName, resourceNameSuffix);
     const appServicePlanName = webAppName;
 
     this.webAppClient = new WebAppClient(
@@ -88,7 +99,10 @@ export class SimpleAuthPluginImpl {
       ctx
     );
 
-    DialogUtils.progressBar = ctx.ui?.createProgressBar(Constants.ProgressBar.provision.title, 3);
+    DialogUtils.progressBar = ctx.ui?.createProgressBar(
+      Constants.ProgressBar.provision.title,
+      Object.keys(Constants.ProgressBar.provision).length - 1
+    );
     await DialogUtils.progressBar?.start(Constants.ProgressBar.start);
 
     const webApp = await this.webAppClient.createWebApp();
@@ -114,7 +128,7 @@ export class SimpleAuthPluginImpl {
 
     DialogUtils.progressBar = ctx.ui?.createProgressBar(
       Constants.ProgressBar.postProvision.title,
-      1
+      Object.keys(Constants.ProgressBar.postProvision).length - 1
     );
     await DialogUtils.progressBar?.start(Constants.ProgressBar.start);
     await DialogUtils.progressBar?.next(Constants.ProgressBar.postProvision.updateWebApp);
@@ -127,5 +141,74 @@ export class SimpleAuthPluginImpl {
 
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndPostProvision);
     return ResultFactory.Success();
+  }
+
+  public async generateArmTemplates(
+    ctx: PluginContext
+  ): Promise<Result<ScaffoldArmTemplateResult, FxError>> {
+    TelemetryUtils.init(ctx);
+    Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartGenerateArmTemplates);
+
+    const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
+      .activeResourcePlugins;
+    const context = {
+      plugins: selectedPlugins,
+    };
+
+    const bicepTemplateDirectory = path.join(
+      getTemplatesFolder(),
+      "plugins",
+      "resource",
+      "simpleauth",
+      "bicep"
+    );
+
+    const moduleTemplateFilePath = path.join(
+      bicepTemplateDirectory,
+      Constants.moduleTemplateFileName
+    );
+    const moduleContentResult = await generateBicepFiles(moduleTemplateFilePath, context);
+    if (moduleContentResult.isErr()) {
+      throw moduleContentResult.error;
+    }
+
+    const parameterTemplateFilePath = path.join(
+      bicepTemplateDirectory,
+      Constants.inputParameterOrchestrationFileName
+    );
+    const resourceTemplateFilePath = path.join(
+      bicepTemplateDirectory,
+      Constants.moduleOrchestrationFileName
+    );
+    const outputTemplateFilePath = path.join(
+      bicepTemplateDirectory,
+      Constants.outputOrchestrationFileName
+    );
+
+    const result: ScaffoldArmTemplateResult = {
+      Modules: {
+        simpleAuthProvision: {
+          Content: moduleContentResult.value,
+        },
+      },
+      Orchestration: {
+        ParameterTemplate: {
+          Content: await fs.readFile(parameterTemplateFilePath, "utf-8"),
+        },
+        ModuleTemplate: {
+          Content: await fs.readFile(resourceTemplateFilePath, "utf-8"),
+          Outputs: {
+            skuName: Constants.SimpleAuthBicepOutputSkuName,
+            endpoint: Constants.SimpleAuthBicepOutputEndpoint,
+          },
+        },
+        OutputTemplate: {
+          Content: await fs.readFile(outputTemplateFilePath, "utf-8"),
+        },
+      },
+    };
+
+    Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndGenerateArmTemplates);
+    return ResultFactory.Success(result);
   }
 }

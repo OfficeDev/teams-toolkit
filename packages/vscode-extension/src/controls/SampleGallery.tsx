@@ -101,15 +101,66 @@ class SampleAppCard extends React.Component<any, any> {
 
   render() {
     return (
-      <div className="sample-app-card">
+      <div className="sample-app-card" tabIndex={0}>
+        <label
+          style={{
+            position: "absolute",
+            top: "auto",
+            left: -9999,
+            width: 1,
+            height: 1,
+            overflow: "hidden",
+          }}
+        >
+          sample app card
+        </label>
         <Image src={this.props.image} width={278} height={160} />
-        <div className="section">
+        <label
+          style={{
+            position: "absolute",
+            top: "auto",
+            left: -9999,
+            width: 1,
+            height: 1,
+            overflow: "hidden",
+          }}
+          id="tagLabel"
+        >
+          sample app tags:
+        </label>
+        <div className="section" aria-labelledby="tagLabel">
           {this.props.tags &&
             this.props.tags.map((value: string) => {
               return <p className="tag">{value}</p>;
             })}
         </div>
+        <label
+          style={{
+            position: "absolute",
+            top: "auto",
+            left: -9999,
+            width: 1,
+            height: 1,
+            overflow: "hidden",
+          }}
+          id="titleLabel"
+        >
+          sample app title:
+        </label>
         <h2>{this.props.title}</h2>
+        <label
+          style={{
+            position: "absolute",
+            top: "auto",
+            left: -9999,
+            width: 1,
+            height: 1,
+            overflow: "hidden",
+          }}
+          id="descriptionLabel"
+        >
+          sample app description:
+        </label>
         <h3>{this.props.description}</h3>
         <div className="section buttons">
           <PrimaryButton
@@ -123,7 +174,6 @@ class SampleAppCard extends React.Component<any, any> {
               );
             }}
           />
-          <PrimaryButton style={{ display: "none" }} text="Preview" />
         </div>
       </div>
     );

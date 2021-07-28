@@ -4,7 +4,7 @@ param simpleAuthWebAppName string
 param m365TenantId string
 param aadClientId string
 @secure()
-param AADClientSecret string
+param aadClientSecret string
 param applicationIdUri string
 param oauthAuthorityHost string
 
@@ -49,7 +49,7 @@ resource simpleAuthWebAppSettings 'Microsoft.Web/sites/config@2018-02-01' = {
     ALLOWED_APP_IDS: authorizedClientApplicationIds
     IDENTIFIER_URI: applicationIdUri
     CLIENT_ID: aadClientId
-    CLIENT_SECRET: AADClientSecret
+    CLIENT_SECRET: aadClientSecret
     OAUTH_AUTHORITY: oauthAuthority
   }
 }

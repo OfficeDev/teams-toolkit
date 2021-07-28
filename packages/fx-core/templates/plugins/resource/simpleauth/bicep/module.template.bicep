@@ -6,7 +6,7 @@ module simpleAuthProvision '{{fx-resource-simple-auth.modules.simpleAuthProvisio
     simpleAuthWebAppName: simpleAuth_webAppName
     sku: simpleAuth_sku
     aadClientId: aadClientId
-    AADClientSecret: AADClientSecret
+    aadClientSecret: aadClientSecret
     applicationIdUri: applicationIdUri
     {{#contains 'fx-resource-frontend-hosting' plugins}}
     frontendHostingStorageEndpoint: {{../fx-resource-frontend-hosting.outputs.endpoint}}

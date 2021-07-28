@@ -1,8 +1,8 @@
 {
-  "AADClientId": {
+  "aadClientId": {
     "value": "{{CLIENT_ID}}"
   },
-  "AADClientSecret": {
+  "aadClientSecret": {
     "value": "{{CLIENT_SECRET}}"
   },
   "m365TenantId": {

@@ -1,5 +1,5 @@
 
 param aadClientId string
 @secure()
-param AADClientSecret string
+param aadClientSecret string
 param m365TenantId string

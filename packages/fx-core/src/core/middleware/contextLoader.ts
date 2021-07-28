@@ -95,7 +95,7 @@ export async function loadSolutionContext(
     }
 
     const cryptoProvider = new LocalCrypto(projectSettings.projectId);
-    // ensure backforwards compatibility:
+    // ensure backwards compatibility:
     // no need to decrypt the secrets in *.userdata for previous TeamsFx project, which has no project id.
     const envDataResult = await environmentManager.loadEnvProfile(
       inputs.projectPath,

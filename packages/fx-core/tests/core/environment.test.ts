@@ -7,7 +7,7 @@ import fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
 import { randomAppName } from "./utils";
-import { CryptoProvider, FxError, Json, ok, Result } from "@microsoft/teamsfx-api";
+import { CryptoProvider, FxError, Json, ok, Result, UserError } from "@microsoft/teamsfx-api";
 import { environmentManager } from "../../src/core/environment";
 import * as tools from "../../src/common/tools";
 import sinon from "sinon";
@@ -55,12 +55,16 @@ describe("APIs of Environment Manager", () => {
     sandbox.stub(tools, "dataNeedEncryption").returns(true);
   });
 
-  after(async () => {
-    sandbox.restore();
+  beforeEach(async () => {
+    await fs.ensureDir(projectPath);
   });
 
   afterEach(async () => {
     await fs.rmdir(projectPath, { recursive: true });
+  });
+
+  after(async () => {
+    sandbox.restore();
   });
 
   it("no userdata: load environment profile without target env", async () => {
@@ -150,6 +154,15 @@ describe("APIs of Environment Manager", () => {
     const expectedSolutionConfig = envDataWithCredential.solution as Record<string, string>;
     assert.equal(actualSolutionConfig.teamsAppTenantId, encreptedSecret);
     assert.equal(actualSolutionConfig.key, expectedSolutionConfig.key);
+  });
+
+  it("expected error: environment profile doesn't exist", async () => {
+    const actualEnvDataResult = await environmentManager.loadEnvProfile(projectPath);
+    assert.isTrue(actualEnvDataResult.isErr());
+    actualEnvDataResult.mapErr((error) => {
+      assert.instanceOf(error, UserError);
+      assert.isTrue(error.name === "PathNotExist");
+    });
   });
 });
 

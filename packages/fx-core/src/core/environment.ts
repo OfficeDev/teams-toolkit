@@ -42,8 +42,12 @@ class EnvironmentManager {
     if (userDataResult.isErr()) {
       return err(userDataResult.error);
     }
-
     const userData = userDataResult.value;
+
+    if (!(await fs.pathExists(envFiles.envProfile))) {
+      // TODO: handle the case that env file profile doesn't exist.
+      return err(PathNotExistError(envFiles.envProfile));
+    }
     const data = await fs.readJson(envFiles.envProfile);
 
     mergeSerectData(userData, data);

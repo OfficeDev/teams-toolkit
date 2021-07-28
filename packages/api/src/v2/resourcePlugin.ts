@@ -15,17 +15,17 @@ import {
 import { AppStudioTokenProvider, AzureAccountProvider } from "../utils";
 import { Context, Inputs, Stage } from "./types";
 
-type ResourceTemplate = BicepTemplate | JsonTemplate;
+export type ResourceTemplate = BicepTemplate | JsonTemplate;
 
-type JsonTemplate = {
+export type JsonTemplate = {
   kind: "json";
   template: Json;
 };
 
-type BicepTemplate = {
+export type BicepTemplate = {
   kind: "bicep";
+  // The format of template can be found at https://microsoftapc.sharepoint.com/:w:/t/DevDivTeamsDevXProductTeam/EZCuSzABypNBr30K-_wvRVEBksF1-ftqVv8l-34art1FFw?e=nEYfZK
   template: Record<string, unknown>;
-  parameters: Json;
 };
 
 export interface ResourceProvisionContext extends Context {
@@ -37,29 +37,14 @@ export interface ResourceProvisionContext extends Context {
 
 export type ResourceDeployContext = ResourceProvisionContext;
 
-export interface ResourceConfigureContext extends ResourceProvisionContext {
-  deploymentConfigs: Json;
-  provisionConfigs: Record<string, Json>;
-}
+export type ProvisionOutput = {
+  output: Record<string, string>;
+  states: Record<string, string>;
+  // Encryption and decryption are transparantly handled by the toolkit.
+  secrets: Record<string, string>;
+};
 
-export interface ResourcePublishContext extends Context {
-  envMeta: EnvMeta;
-  tokenProvider: TokenProvider;
-  manifest: Json;
-}
-
-export interface ResourceProvisionResult {
-  resourceValues: Record<string, string>;
-  stateValues: Record<string, string>;
-  secretValues: Record<string, string>;
-}
-
-export interface ResourceDeploymentResult {
-  stateValues: Record<string, string>;
-  secretValues: Record<string, string>;
-}
-
-type ProvisionConfig = Json;
+export type LocalProvisionOutput = ProvisionOutput;
 
 /**
  * Interface for ResourcePlugins. a ResourcePlugin can hook into Toolkit's
@@ -78,9 +63,10 @@ export interface ResourcePlugin {
   displayName: string;
 
   /**
-   * Scaffold source code on disk, relative to context.projectPath
+   * Called by Toolkit when creating a new project or adding a new resource.
+   * Scaffolds source code on disk, relative to context.projectPath
+   *
    * @example
-   * Here's a simple example
    * ```
    * const fs = require("fs-extra");
    * let content = "let x = 1;"
@@ -103,9 +89,9 @@ export interface ResourcePlugin {
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {Inputs} inputs - User's answers to quesions defined in {@link getQuestionsForLifecycleTask}
-   * for {@link Stage.create} along with some system inputs.
+   * for {@link Stage.createEnv} along with some system inputs.
    *
-   * @return ResourceTemplate for provisioning and deployment.
+   * @return {@link ResourceTemplate} for provisioning and deployment.
    */
   generateResourceTemplate?: (
     ctx: Context,
@@ -113,49 +99,50 @@ export interface ResourcePlugin {
   ) => Promise<Result<ResourceTemplate, FxError>>;
 
   /**
-   * Toolkit will replace the place holders with user-supplied env config values and pass the complete
-   * provisionTemplate as parameter.
-   * Plugins are expected to submit the provisionTemplate to Azure using token provided by {@link TokenProvider}.
-   * Plugins can also do custom operations like accessing AppStudio using {@link TokenProvider},
-   * or use Azure SDK to change cloud settings.
+   * This method is useful for resources that can't be provisioned using Bicep/ARM like AAD, AppStudio.
+   * Plugins are expected to provision using Azure SDK.
+   *
+   * provisionResource is guaranteed to run before Bicep provision.
+   * Implementation of provisionResource is expected to be idempotent.
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
-   * @param {Json} provisionTemplate - a complete provision template with all placeholders replaced by user-supplied env values.
+   * @param {Json} provisionTemplate - provision template
    * @param {TokenProvider} tokenProvider - Tokens for Azure and AppStudio
    *
    * @returns the config, project state, secrect values for the current environment. Toolkit will persist them
-   *          and use them to generate complete deployment template.
+   *          and pass them to {@link configureResource}.
    */
   provisionResource?: (
     ctx: Context,
     provisionTemplate: Json,
     tokenProvider: TokenProvider
-  ) => Promise<Result<ResourceProvisionResult, FxError>>;
+  ) => Promise<Result<ProvisionOutput, FxError>>;
 
   /**
-   * configureResource is previously named postProvision, and is used to resolve cross-plugin config dependencies.
-   * It will run right after {@link provisionResource}.
-   * Plugins are expected to read the provision output values of other plugins, and return a new copy of provisionValues,
+   * configureResource is guaranteed to run after Bicep/ARM provisioning.
+   * Plugins are expected to read the provision output values of other plugins, and return a new copy of its own provisionOutput,
    * possibly with added fields.
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
-   * @param {Json} provisionTemplate - values generated by {@link provisionResource}
-   * @param {Record<string, Json>} provisionValuesOfOtherPlugins - values of other plugins generated by {@link provisionResource}
+   * @param {Json} provisionOutput - values generated by {@link provisionResource}
+   * @param {Record<string, Json>} provisionOutputOfOtherPlugins - values of other plugins generated by {@link provisionResource}
    * @param {TokenProvider} tokenProvider - Tokens for Azure and AppStudio
    *
-   * @returns a new copy of provisionValues possibly with added fields. Toolkit will persist it for you.
+   * @returns a new copy of provisionOutput possibly with added fields. Toolkit will persist it and pass it to {@link deploy}.
    *
    */
   configureResource?: (
     ctx: Context,
-    provisionValues: Json,
-    provisionValuesOfOtherPlugins: Record<string, Json>,
+    provisionOutput: Readonly<ProvisionOutput>,
+    provisionOutputOfOtherPlugins: Readonly<Record<string, ProvisionOutput>>,
     tokenProvider: TokenProvider
-  ) => Promise<Result<ProvisionConfig, FxError>>;
+  ) => Promise<Result<ProvisionOutput, FxError>>;
 
   /**
    * Generates a Teams manifest package for the current project,
-   * and stores on disk
+   * and stores it on disk.
+   *
+   * On failure, plugins are responsible for cleaning up.
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {Inputs} inputs - User answers to quesions defined in {@link getQuestionsForLifecycleTask}
@@ -167,21 +154,19 @@ export interface ResourcePlugin {
 
   /**
    * Depends on the values returned by {@link provisionResource} and {@link configureResource}.
-   * Toolkit will replace the placeholders with provisionValues values and pass the complete
-   * deployTemplate as parameter.
-   * Plugins are expected to submit the deployTemplate to Azure.
+   * Plugins are expected to deploy Code to cloud using credentials provided by {@link TokenProvider}.
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
-   * @param {Json} provisionTemplate - a complete provision template with all placeholders replaced by user-supplied env values.
+   * @param {Json} provisionTemplate - output generated during provision
    * @param {TokenProvider} tokenProvider - Tokens for Azure and AppStudio
    *
-   * @returns ResourceDeployment results. Plugins can't generate new values in this lifecycle, only states and secrets.
+   * @returns Void because side effects are expected.
    */
   deploy?: (
     ctx: Context,
-    deployTemplate: Json,
+    provisionOutput: ProvisionOutput,
     tokenProvider: AzureAccountProvider
-  ) => Promise<Result<ResourceDeployContext, FxError>>;
+  ) => Promise<Result<Void, FxError>>;
 
   /**
    * Depends on the output of {@link package}. Uploads Teams package to AppStudio
@@ -194,10 +179,44 @@ export interface ResourcePlugin {
    */
   publishApplication?: (
     ctx: Context,
-    manifest: Json,
     tokenProvider: AppStudioTokenProvider,
     inputs: Inputs
   ) => Promise<Result<Void, FxError>>;
+
+  /**
+   * provisionLocalResource is a special stage, called when users hit F5 in vscode.
+   * It works like provision, but only creates necessary cloud resources for local debugging like AAD and AppStudio App.
+   *
+   * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
+   * @param {TokenProvider} tokenProvider - Tokens for Azure and AppStudio
+   *
+   * @returns the config, project state, secrect values for the current environment. Toolkit will persist them
+   *          and pass them to {@link configureLocalResource}.
+   */
+  provisionLocalResource?: (
+    ctx: Context,
+    tokenProvider: TokenProvider
+  ) => Promise<Result<LocalProvisionOutput, FxError>>;
+
+  /**
+   * configureLocalResource works like {@link configureResource} but only for local debugging resources.
+   * Plugins are expected to read the local provision output values of other plugins, and return a new copy of its own local provision output,
+   * possibly with added fields.
+   *
+   * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
+   * @param {Json} localProvisionOutput - values generated by {@link provisionLocalResource}
+   * @param {Record<string, LocalProvisionOutput>} provisionOutputOfOtherPlugins - values of other plugins generated by {@link provisionLocalResource}
+   * @param {TokenProvider} tokenProvider - Tokens for Azure and AppStudio
+   *
+   * @returns a new copy of provisionOutput possibly with added fields. Toolkit will persist it and pass it to {@link deploy}.
+   *
+   */
+  configureLocalResource?: (
+    ctx: Context,
+    localProvisionOutput: LocalProvisionOutput,
+    localProvisionOutputOfOtherPlugins: Readonly<Record<string, LocalProvisionOutput>>,
+    tokenProvider: TokenProvider
+  ) => Promise<Result<LocalProvisionOutput, FxError>>;
 
   getQuestionsForLifecycleTask?: (
     ctx: Context,

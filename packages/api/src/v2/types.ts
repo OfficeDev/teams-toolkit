@@ -44,7 +44,6 @@ export interface ProjectState extends Json {
 }
 
 export interface Inputs extends Json {
-  platform: Platform;
   stage?: Stage;
   vscodeEnv?: VsCodeEnv;
   ignoreLock?: boolean;
@@ -61,6 +60,8 @@ export interface Context {
   projectSetting: ProjectSetting;
   projectState: ProjectState;
   projectSecrets: Json;
+  solutionConfig: Json;
+  platform: Platform;
 }
 
 /**

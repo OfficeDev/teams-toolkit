@@ -27,11 +27,11 @@ export interface BicepModule {
 export interface BicepOrchestration {
   ParameterTemplate?: BicepOrchestrationParameterTemplate;
   VariableTemplate?: BicepOrchestrationTemplate;
-  ModuleTemplate: BicepOrchestrationModuleTemplate;
+  ModuleTemplate?: BicepOrchestrationModuleTemplate;
   OutputTemplate?: BicepOrchestrationTemplate;
 }
 
 export interface ScaffoldArmTemplateResult {
-  Modules: { [moduleFileName: string]: BicepModule };
+  Modules?: { [moduleFileName: string]: BicepModule };
   Orchestration: BicepOrchestration;
 }

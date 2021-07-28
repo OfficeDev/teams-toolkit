@@ -53,6 +53,7 @@ import { AzureClientFactory, AzureLib } from "./utils/azure-client";
 import { getTemplatesFolder } from "../../..";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import * as fs from "fs-extra";
+import { ConstantString } from "../../../common/constants";
 
 export class FrontendPluginImpl {
   private setConfigIfNotExists(ctx: PluginContext, key: string, value: unknown): void {
@@ -259,8 +260,7 @@ export class FrontendPluginImpl {
 
     const bicepTemplateDir = path.join(
       getTemplatesFolder(),
-      FrontendPathInfo.TemplateDir,
-      FrontendPathInfo.BicepTemplateFolderName
+      FrontendPathInfo.BicepTemplateRelativeDir
     );
 
     const moduleFilePath = path.join(bicepTemplateDir, FrontendPathInfo.ModuleFileName);
@@ -281,18 +281,18 @@ export class FrontendPluginImpl {
     const result: ScaffoldArmTemplateResult = {
       Modules: {
         frontendHostingProvision: {
-          Content: await fs.readFile(moduleFilePath, Constants.BicepFileEncoding),
+          Content: await fs.readFile(moduleFilePath, ConstantString.UTF8Encoding),
         },
       },
       Orchestration: {
         ParameterTemplate: {
           Content: await fs.readFile(
             inputParameterOrchestrationFilePath,
-            Constants.BicepFileEncoding
+            ConstantString.UTF8Encoding
           ),
         },
         ModuleTemplate: {
-          Content: await fs.readFile(moduleOrchestrationFilePath, Constants.BicepFileEncoding),
+          Content: await fs.readFile(moduleOrchestrationFilePath, ConstantString.UTF8Encoding),
           Outputs: {
             storageName: FrontendOutputBicepSnippet.StorageName,
             endpoint: FrontendOutputBicepSnippet.Endpoint,
@@ -300,7 +300,7 @@ export class FrontendPluginImpl {
           },
         },
         OutputTemplate: {
-          Content: await fs.readFile(outputOrchestrationFilePath, Constants.BicepFileEncoding),
+          Content: await fs.readFile(outputOrchestrationFilePath, ConstantString.UTF8Encoding),
         },
       },
     };

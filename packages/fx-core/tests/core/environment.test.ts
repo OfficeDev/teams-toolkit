@@ -34,126 +34,224 @@ describe("APIs of Environment Manager", () => {
   const sandbox = sinon.createSandbox();
   const appName = randomAppName();
   const projectPath = path.resolve(os.tmpdir(), appName);
+  const fileMap = new Map<string, any>();
   const encreptedSecret = "secretOfLife";
   const decryptedValue = "42";
   const cryptoProvider = new MockCrypto(encreptedSecret, decryptedValue);
   const targetEnvName = "dev";
-  const envDataWithoutCredential: Json = {
+  const envDataObj = new Map([
+    [
+      "solution",
+      {
+        teamsAppTenantId: decryptedValue,
+        key: "value",
+      },
+    ],
+  ]);
+
+  const envDataWithoutCredential = {
     key: "value",
   };
-  const envDataWithCredential: Json = {
+  const envDataWithCredential = {
     solution: {
       teamsAppTenantId: "{{solution.teamsAppTenantId}}",
       key: "value",
     },
   };
-  const userData = {
-    "solution.teamsAppTenantId": encreptedSecret,
-  };
 
-  before(async () => {
-    sandbox.stub(tools, "dataNeedEncryption").returns(true);
+  describe("Load Environment Profile", () => {
+    const userData = {
+      "solution.teamsAppTenantId": encreptedSecret,
+    };
+
+    before(async () => {
+      sandbox.stub(tools, "dataNeedEncryption").returns(true);
+    });
+
+    beforeEach(async () => {
+      await fs.ensureDir(projectPath);
+    });
+
+    afterEach(async () => {
+      await fs.rmdir(projectPath, { recursive: true });
+    });
+
+    after(async () => {
+      sandbox.restore();
+    });
+
+    it("no userdata: load environment profile without target env", async () => {
+      await mockEnvProfiles(projectPath, envDataWithoutCredential);
+
+      const actualEnvDataResult = await environmentManager.loadEnvProfile(
+        projectPath,
+        undefined,
+        cryptoProvider
+      );
+      if (actualEnvDataResult.isErr()) {
+        assert.fail("Error ocurrs while loading environment profile.");
+      }
+
+      const envInfo = actualEnvDataResult.value;
+      assert.equal(envInfo.data.get("key"), envDataWithoutCredential.key);
+    });
+
+    it("no userdata: load environment profile with target env", async () => {
+      await mockEnvProfiles(projectPath, envDataWithoutCredential, targetEnvName);
+
+      const actualEnvDataResult = await environmentManager.loadEnvProfile(
+        projectPath,
+        targetEnvName,
+        cryptoProvider
+      );
+      if (actualEnvDataResult.isErr()) {
+        assert.fail("Error ocurrs while loading environment profile.");
+      }
+
+      const envInfo = actualEnvDataResult.value;
+      assert.equal(envInfo.data.get("key"), envDataWithoutCredential.key);
+    });
+
+    it("with userdata: load environment profile without target env", async () => {
+      await mockEnvProfiles(projectPath, envDataWithCredential, undefined, userData);
+
+      const actualEnvDataResult = await environmentManager.loadEnvProfile(
+        projectPath,
+        undefined,
+        cryptoProvider
+      );
+      if (actualEnvDataResult.isErr()) {
+        assert.fail("Error ocurrs while loading environment profile.");
+      }
+
+      const envInfo = actualEnvDataResult.value;
+      const expectedSolutionConfig = envDataWithCredential.solution as Record<string, string>;
+      assert.equal(envInfo.data.get("solution").get("teamsAppTenantId"), decryptedValue);
+      assert.equal(envInfo.data.get("solution").get("key"), expectedSolutionConfig.key);
+    });
+
+    it("with userdata: load environment profile with target env", async () => {
+      await mockEnvProfiles(projectPath, envDataWithCredential, targetEnvName, userData);
+
+      const actualEnvDataResult = await environmentManager.loadEnvProfile(
+        projectPath,
+        targetEnvName,
+        cryptoProvider
+      );
+      if (actualEnvDataResult.isErr()) {
+        assert.fail("Error ocurrs while loading environment profile.");
+      }
+
+      const envInfo = actualEnvDataResult.value;
+      const expectedSolutionConfig = envDataWithCredential.solution as Record<string, string>;
+      assert.equal(envInfo.data.get("solution").get("teamsAppTenantId"), decryptedValue);
+      assert.equal(envInfo.data.get("solution").get("key"), expectedSolutionConfig.key);
+    });
+
+    it("with userdata (legacy project): load environment profile with target env", async () => {
+      await mockEnvProfiles(projectPath, envDataWithCredential, targetEnvName, userData);
+
+      const actualEnvDataResult = await environmentManager.loadEnvProfile(
+        projectPath,
+        targetEnvName,
+        undefined
+      );
+      if (actualEnvDataResult.isErr()) {
+        assert.fail("Error ocurrs while loading environment profile.");
+      }
+
+      const envInfo = actualEnvDataResult.value;
+      const expectedSolutionConfig = envDataWithCredential.solution as Record<string, string>;
+      assert.equal(envInfo.data.get("solution").get("teamsAppTenantId"), encreptedSecret);
+      assert.equal(envInfo.data.get("solution").get("key"), expectedSolutionConfig.key);
+    });
   });
 
-  beforeEach(async () => {
-    await fs.ensureDir(projectPath);
-  });
+  describe("Write Environment Profile", () => {
+    before(async () => {
+      sandbox.stub(tools, "dataNeedEncryption").returns(true);
+      sandbox.stub(fs, "pathExists").resolves(true);
+      sandbox.stub<any, any>(fs, "writeFile").callsFake(async (file: string, data: any) => {
+        fileMap.set(file, data);
+      });
+    });
 
-  afterEach(async () => {
-    await fs.rmdir(projectPath, { recursive: true });
-  });
+    afterEach(async () => {
+      fileMap.clear();
+      await fs.rmdir(projectPath, { recursive: true });
+    });
 
-  after(async () => {
-    sandbox.restore();
-  });
+    after(async () => {
+      sandbox.restore();
+    });
 
-  it("no userdata: load environment profile without target env", async () => {
-    await mockEnvProfiles(projectPath, envDataWithoutCredential);
+    it("no userdata: write environment profile without target env", async () => {
+      await environmentManager.writeEnvProfile(
+        tools.objectToMap(envDataWithoutCredential),
+        projectPath
+      );
+      const envFiles = environmentManager.getEnvFilesPath("default", projectPath);
 
-    const actualEnvDataResult = await environmentManager.loadEnvProfile(
-      projectPath,
-      undefined,
-      cryptoProvider
-    );
-    if (actualEnvDataResult.isErr()) {
-      assert.fail("Error ocurrs while loading environment profile.");
-    }
+      const expectedEnvProfileContent = JSON.stringify(envDataWithoutCredential, null, 4);
+      assert.equal(
+        formatContent(fileMap.get(envFiles.envProfile)),
+        formatContent(expectedEnvProfileContent)
+      );
+      assert.equal(fileMap.get(envFiles.userDataFile), "");
+    });
 
-    const envInfo = actualEnvDataResult.value;
-    assert.equal(envInfo.data.key, envDataWithoutCredential.key);
-  });
+    it("no userdata: write environment profile with target env", async () => {
+      await environmentManager.writeEnvProfile(
+        tools.objectToMap(envDataWithoutCredential),
+        projectPath,
+        targetEnvName
+      );
+      const envFiles = environmentManager.getEnvFilesPath(targetEnvName, projectPath);
 
-  it("no userdata: load environment profile with target env", async () => {
-    await mockEnvProfiles(projectPath, envDataWithoutCredential, targetEnvName);
+      const expectedEnvProfileContent = JSON.stringify(envDataWithoutCredential, null, 4);
+      assert.equal(
+        formatContent(fileMap.get(envFiles.envProfile)),
+        formatContent(expectedEnvProfileContent)
+      );
+      assert.equal(fileMap.get(envFiles.userDataFile), "");
+    });
 
-    const actualEnvDataResult = await environmentManager.loadEnvProfile(
-      projectPath,
-      targetEnvName,
-      cryptoProvider
-    );
-    if (actualEnvDataResult.isErr()) {
-      assert.fail("Error ocurrs while loading environment profile.");
-    }
+    it("with userdata: write environment profile without target env", async () => {
+      await environmentManager.writeEnvProfile(envDataObj, projectPath, undefined, cryptoProvider);
+      const envFiles = environmentManager.getEnvFilesPath("default", projectPath);
 
-    const envInfo = actualEnvDataResult.value;
-    assert.equal(envInfo.data.key, envDataWithoutCredential.key);
-  });
+      const expectedEnvProfileContent = JSON.stringify(envDataWithCredential, null, 4);
+      const expectedUserDataFileContent = `solution.teamsAppTenantId=${encreptedSecret}`;
+      assert.equal(
+        formatContent(fileMap.get(envFiles.envProfile)),
+        formatContent(expectedEnvProfileContent)
+      );
+      assert.equal(
+        formatContent(fileMap.get(envFiles.userDataFile)),
+        formatContent(expectedUserDataFileContent)
+      );
+    });
 
-  it("with userdata: load environment profile without target env", async () => {
-    await mockEnvProfiles(projectPath, envDataWithCredential, undefined, userData);
+    it("with userdata: write environment profile with target env", async () => {
+      await environmentManager.writeEnvProfile(
+        envDataObj,
+        projectPath,
+        targetEnvName,
+        cryptoProvider
+      );
+      const envFiles = environmentManager.getEnvFilesPath(targetEnvName, projectPath);
 
-    const actualEnvDataResult = await environmentManager.loadEnvProfile(
-      projectPath,
-      undefined,
-      cryptoProvider
-    );
-    if (actualEnvDataResult.isErr()) {
-      assert.fail("Error ocurrs while loading environment profile.");
-    }
-
-    const envInfo = actualEnvDataResult.value;
-    const actualSolutionConfig = envInfo.data.solution as Record<string, string>;
-    const expectedSolutionConfig = envDataWithCredential.solution as Record<string, string>;
-    assert.equal(actualSolutionConfig.teamsAppTenantId, decryptedValue);
-    assert.equal(actualSolutionConfig.key, expectedSolutionConfig.key);
-  });
-
-  it("with userdata: load environment profile with target env", async () => {
-    await mockEnvProfiles(projectPath, envDataWithCredential, targetEnvName, userData);
-
-    const actualEnvDataResult = await environmentManager.loadEnvProfile(
-      projectPath,
-      targetEnvName,
-      cryptoProvider
-    );
-    if (actualEnvDataResult.isErr()) {
-      assert.fail("Error ocurrs while loading environment profile.");
-    }
-
-    const envInfo = actualEnvDataResult.value;
-    const actualSolutionConfig = envInfo.data.solution as Record<string, string>;
-    const expectedSolutionConfig = envDataWithCredential.solution as Record<string, string>;
-    assert.equal(actualSolutionConfig.teamsAppTenantId, decryptedValue);
-    assert.equal(actualSolutionConfig.key, expectedSolutionConfig.key);
-  });
-
-  it("with userdata (legacy project): load environment profile with target env", async () => {
-    await mockEnvProfiles(projectPath, envDataWithCredential, targetEnvName, userData);
-
-    const actualEnvDataResult = await environmentManager.loadEnvProfile(
-      projectPath,
-      targetEnvName,
-      undefined
-    );
-    if (actualEnvDataResult.isErr()) {
-      assert.fail("Error ocurrs while loading environment profile.");
-    }
-
-    const envInfo = actualEnvDataResult.value;
-    const actualSolutionConfig = envInfo.data.solution as Record<string, string>;
-    const expectedSolutionConfig = envDataWithCredential.solution as Record<string, string>;
-    assert.equal(actualSolutionConfig.teamsAppTenantId, encreptedSecret);
-    assert.equal(actualSolutionConfig.key, expectedSolutionConfig.key);
+      const expectedEnvProfileContent = JSON.stringify(envDataWithCredential, null, 4);
+      const expectedUserDataFileContent = `solution.teamsAppTenantId=${encreptedSecret}`;
+      assert.equal(
+        formatContent(fileMap.get(envFiles.envProfile)),
+        formatContent(expectedEnvProfileContent)
+      );
+      assert.equal(
+        formatContent(fileMap.get(envFiles.userDataFile)),
+        formatContent(expectedUserDataFileContent)
+      );
+    });
   });
 
   it("expected error: environment profile doesn't exist", async () => {
@@ -182,4 +280,8 @@ async function mockEnvProfiles(
     await fs.ensureFile(envFiles.userDataFile);
     await fs.writeFile(envFiles.userDataFile, tools.serializeDict(userData));
   }
+}
+
+function formatContent(content: string) {
+  return content.replace(/\r?\n/g, "\n");
 }

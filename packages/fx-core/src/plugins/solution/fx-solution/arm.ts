@@ -23,6 +23,11 @@ const parameterFolder = "parameters";
 const bicepOrchestrationFileName = "main.bicep";
 const parameterTemplateFileName = "parameter.template.json";
 const solutionLevelParameters = `param resourceBaseName string\n`;
+const solutionLevelParameterObject = {
+  resourceBaseName: {
+    value: "{{SOLUTION_RESOURCE_BASE_NAME}}",
+  },
+};
 
 // Get ARM template content from each resource plugin and output to project folder
 export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<any, FxError>> {
@@ -134,7 +139,7 @@ class BicepOrchestrationTemplate {
   private VariableTemplate = "";
   private ModuleTemplate = "";
   private OutputTemplate = "";
-  private ParameterJsonTemplate: Record<string, unknown> = {};
+  private ParameterJsonTemplate: Record<string, unknown> = solutionLevelParameterObject;
   private RenderContenxt: ArmTemplateRenderContext;
   private TemplateAdded = false;
 

@@ -242,7 +242,7 @@ describe("simpleAuthPlugin", () => {
         .get(Constants.SolutionPlugin.id)
         ?.get(Constants.SolutionPlugin.configKeys.resourceNameSuffix) as string;
       const webAppName = Utils.generateResourceName(
-        pluginContext.app.name.short,
+        pluginContext.projectSettings!.appName,
         resourceNameSuffix
       );
       chai.assert.strictEqual(

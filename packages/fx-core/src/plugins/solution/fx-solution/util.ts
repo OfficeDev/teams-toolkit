@@ -6,7 +6,6 @@ import {
   PluginContext,
   Context,
   ConfigMap,
-  TeamsAppManifest,
   FxError,
   TelemetryReporter,
   UserError,
@@ -22,8 +21,7 @@ import { SolutionTelemetryComponentName, SolutionTelemetryProperty } from "./con
  */
 export function getPluginContext(
   solutionCtx: SolutionContext,
-  pluginIdentifier: string,
-  manifest?: TeamsAppManifest
+  pluginIdentifier: string
 ): PluginContext {
   const baseCtx: Context = solutionCtx;
   if (!solutionCtx.config.has(pluginIdentifier)) {
@@ -35,7 +33,6 @@ export function getPluginContext(
     ...baseCtx,
     configOfOtherPlugins: solutionCtx.config,
     config: pluginConfig,
-    app: manifest ? manifest : new TeamsAppManifest(),
   };
   return pluginCtx;
 }
@@ -62,12 +59,12 @@ export async function getSubsriptionDisplayName(
 }
 
 export function sendErrorTelemetryThenReturnError(
-    eventName: string,
-    error: FxError,
-    reporter?: TelemetryReporter,
-    properties?: { [p: string]: string },
-    measurements?: { [p: string]: number },
-    errorProps?: string[],
+  eventName: string,
+  error: FxError,
+  reporter?: TelemetryReporter,
+  properties?: { [p: string]: string },
+  measurements?: { [p: string]: number },
+  errorProps?: string[]
 ): FxError {
   if (!properties) {
     properties = {};

@@ -34,7 +34,7 @@ export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<
   const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
   const plugins = getActivatedResourcePlugins(azureSolutionSettings); // This function ensures return result won't be empty
 
-  const bicepOrchestrationTemplate = new BicepOrchestrationTemplate(plugins.map((p) => p.name));
+  const bicepOrchestrationTemplate = new BicepOrchestrationContent(plugins.map((p) => p.name));
   const moduleFiles = new Map<string, string>();
 
   // Get bicep content from each resource plugin
@@ -48,7 +48,7 @@ export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<
         FxError
       >;
       if (result.isOk()) {
-        bicepOrchestrationTemplate.addTemplate(pluginWithArm.name, result.value);
+        bicepOrchestrationTemplate.applyTemplate(pluginWithArm.name, result.value);
         if (result.value.Modules) {
           for (const module of Object.entries(result.value.Modules)) {
             const moduleFileName = module[0];
@@ -67,8 +67,7 @@ export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<
   // Write bicep content to project folder
   if (bicepOrchestrationTemplate.needsGenerateTemplate()) {
     // Output main.bicep file
-    const bicepOrchestrationFileContent =
-      bicepOrchestrationTemplate.renderOrchestrationFileContent();
+    const bicepOrchestrationFileContent = bicepOrchestrationTemplate.getOrchestrationFileContent();
     const templateFolderPath = path.join(ctx.root, baseFolder, templateFolder);
     await fs.ensureDir(templateFolderPath);
     await fs.writeFile(
@@ -134,7 +133,7 @@ export class ArmTemplateRenderContext {
 }
 
 // Stores the bicep orchestration information for all resource plugins
-class BicepOrchestrationTemplate {
+class BicepOrchestrationContent {
   private ParameterTemplate: string = solutionLevelParameters;
   private VariableTemplate = "";
   private ModuleTemplate = "";
@@ -147,17 +146,17 @@ class BicepOrchestrationTemplate {
     this.RenderContenxt = new ArmTemplateRenderContext(pluginNames);
   }
 
-  public addTemplate(pluginName: string, scaffoldResult: ScaffoldArmTemplateResult): void {
-    this.ParameterTemplate += this.normalizeTemplateSnippt(
+  public applyTemplate(pluginName: string, scaffoldResult: ScaffoldArmTemplateResult): void {
+    this.ParameterTemplate += this.normalizeTemplateSnippet(
       scaffoldResult.Orchestration.ParameterTemplate?.Content
     );
-    this.VariableTemplate += this.normalizeTemplateSnippt(
+    this.VariableTemplate += this.normalizeTemplateSnippet(
       scaffoldResult.Orchestration.VariableTemplate?.Content
     );
-    this.ModuleTemplate += this.normalizeTemplateSnippt(
+    this.ModuleTemplate += this.normalizeTemplateSnippet(
       scaffoldResult.Orchestration.ModuleTemplate?.Content
     );
-    this.OutputTemplate += this.normalizeTemplateSnippt(
+    this.OutputTemplate += this.normalizeTemplateSnippet(
       scaffoldResult.Orchestration.OutputTemplate?.Content
     );
     // update context to render the template
@@ -169,12 +168,12 @@ class BicepOrchestrationTemplate {
     );
   }
 
-  public renderOrchestrationFileContent(): string {
+  public getOrchestrationFileContent(): string {
     let orchestrationTemplate = "";
-    orchestrationTemplate += this.normalizeTemplateSnippt(this.ParameterTemplate, false);
-    orchestrationTemplate += this.normalizeTemplateSnippt(this.VariableTemplate, false);
-    orchestrationTemplate += this.normalizeTemplateSnippt(this.ModuleTemplate, false);
-    orchestrationTemplate += this.normalizeTemplateSnippt(this.OutputTemplate, false);
+    orchestrationTemplate += this.normalizeTemplateSnippet(this.ParameterTemplate, false);
+    orchestrationTemplate += this.normalizeTemplateSnippet(this.VariableTemplate, false);
+    orchestrationTemplate += this.normalizeTemplateSnippet(this.ModuleTemplate, false);
+    orchestrationTemplate += this.normalizeTemplateSnippet(this.OutputTemplate, false);
 
     return compileHandlebarsTemplateString(orchestrationTemplate, this.RenderContenxt);
   }
@@ -192,7 +191,7 @@ class BicepOrchestrationTemplate {
     return this.TemplateAdded;
   }
 
-  private normalizeTemplateSnippt(
+  private normalizeTemplateSnippet(
     snippet: string | undefined,
     updateTemplateChangeFlag = true
   ): string {

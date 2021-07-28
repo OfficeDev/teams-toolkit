@@ -99,7 +99,10 @@ export class SimpleAuthPluginImpl {
       ctx
     );
 
-    DialogUtils.progressBar = ctx.ui?.createProgressBar(Constants.ProgressBar.provision.title, 4);
+    DialogUtils.progressBar = ctx.ui?.createProgressBar(
+      Constants.ProgressBar.provision.title,
+      Object.keys(Constants.ProgressBar.provision).length - 1
+    );
     await DialogUtils.progressBar?.start(Constants.ProgressBar.start);
 
     const webApp = await this.webAppClient.createWebApp();
@@ -125,7 +128,7 @@ export class SimpleAuthPluginImpl {
 
     DialogUtils.progressBar = ctx.ui?.createProgressBar(
       Constants.ProgressBar.postProvision.title,
-      1
+      Object.keys(Constants.ProgressBar.postProvision).length - 1
     );
     await DialogUtils.progressBar?.start(Constants.ProgressBar.start);
     await DialogUtils.progressBar?.next(Constants.ProgressBar.postProvision.updateWebApp);

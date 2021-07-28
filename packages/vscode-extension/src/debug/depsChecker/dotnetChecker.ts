@@ -409,17 +409,14 @@ export class DotnetChecker implements IDepsChecker {
     version: DotnetVersion,
     dotnetInstallDir: string
   ): Promise<string[]> {
-    const command = [
-      isWindows()
-        ? DotnetChecker.escapeFilePath(this.getDotnetInstallScriptPath())
-        : this.getDotnetInstallScriptPath(),
-      "-InstallDir",
-      isWindows() ? DotnetChecker.escapeFilePath(dotnetInstallDir) : dotnetInstallDir,
-      "-Channel",
-      version,
-    ];
-
     if (isWindows()) {
+      const command: string[] = [
+        DotnetChecker.escapeFilePath(this.getDotnetInstallScriptPath()),
+        "-InstallDir",
+        DotnetChecker.escapeFilePath(dotnetInstallDir),
+        "-Channel",
+        version,
+      ];
       return [
         "powershell.exe",
         "-NoProfile",
@@ -431,7 +428,14 @@ export class DotnetChecker implements IDepsChecker {
         )} }`,
       ];
     } else {
-      return command;
+      return [
+        "bash",
+        this.getDotnetInstallScriptPath(),
+        "-InstallDir",
+        dotnetInstallDir,
+        "-Channel",
+        version,
+      ];
     }
   }
 

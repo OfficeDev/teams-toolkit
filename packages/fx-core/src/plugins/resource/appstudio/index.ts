@@ -77,22 +77,17 @@ export class AppStudioPlugin implements Plugin {
     return ok(appStudioQuestions);
   }
 
+  /**
+   * Create or update teams app
+   * For cli: "teamsfx init" only
+   * @returns {string} - Remote teams app id
+   */
   public async getAppDefinitionAndUpdate(
     ctx: PluginContext,
     type: "localDebug" | "remote",
     manifest: TeamsAppManifest
   ): Promise<Result<string, FxError>> {
     return await this.appStudioPluginImpl.getAppDefinitionAndUpdate(ctx, type, manifest);
-  }
-
-  public async createManifest(settings: ProjectSettings): Promise<TeamsAppManifest | undefined> {
-    return await this.appStudioPluginImpl.createManifest(settings);
-  }
-
-  public async reloadManifestAndCheckRequiredFields(
-    ctxRoot: string
-  ): Promise<Result<TeamsAppManifest, FxError>> {
-    return await this.appStudioPluginImpl.reloadManifestAndCheckRequiredFields(ctxRoot);
   }
 
   /**
@@ -147,13 +142,6 @@ export class AppStudioPlugin implements Plugin {
     ctx.ui?.showMessage("info", validationSuccess, false);
     TelemetryUtils.sendSuccessEvent(TelemetryEventName.validateManifest);
     return validationpluginResult;
-  }
-
-  public createManifestForRemote(
-    ctx: PluginContext,
-    manifest: TeamsAppManifest
-  ): Result<[IAppDefinition, TeamsAppManifest], FxError> {
-    return this.appStudioPluginImpl.createManifestForRemote(ctx, manifest);
   }
 
   public async scaffold(ctx: PluginContext): Promise<Result<any, FxError>> {

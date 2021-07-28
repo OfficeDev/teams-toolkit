@@ -61,8 +61,7 @@ describe("AadGenerateArmTemplates", () => {
       );
       const expectedVariablesFilePath = path.join(
         expectedBicepFileDirectory,
-        "tab",
-        "variables.bicep"
+        "tab_variables.bicep"
       );
       chai.assert.strictEqual(
         expectedResult.Orchestration.VariableTemplate!.Content,
@@ -110,32 +109,15 @@ describe("AadGenerateArmTemplates", () => {
         result.value
       );
 
-      const expectedBicepFileDirectory = path.join(__dirname, "expectedBicepFiles");
-      const expectedParameterFilePath = path.join(expectedBicepFileDirectory, "input_param.bicep");
-      chai.assert.strictEqual(
-        expectedResult.Orchestration.ParameterTemplate!.Content,
-        fs.readFileSync(expectedParameterFilePath, ConstantString.UTF8Encoding)
-      );
       const expectedVariablesFilePath = path.join(
-        expectedBicepFileDirectory,
-        "bot",
-        "variables.bicep"
+        __dirname,
+        "expectedBicepFiles",
+        "bot_variables.bicep"
       );
       chai.assert.strictEqual(
         expectedResult.Orchestration.VariableTemplate!.Content,
         fs.readFileSync(expectedVariablesFilePath, ConstantString.UTF8Encoding)
       );
-      const expectedParameterJsonFilePath = path.join(
-        expectedBicepFileDirectory,
-        "parameters.json"
-      );
-      chai.assert.strictEqual(
-        expectedResult.Orchestration.ParameterTemplate!.ParameterFile,
-        fs.readFileSync(expectedParameterJsonFilePath, ConstantString.UTF8Encoding)
-      );
-      chai.assert.isUndefined(expectedResult.Modules);
-      chai.assert.isUndefined(expectedResult.Orchestration.ModuleTemplate);
-      chai.assert.isUndefined(expectedResult.Orchestration.OutputTemplate);
     }
   });
 
@@ -178,32 +160,15 @@ describe("AadGenerateArmTemplates", () => {
         result.value
       );
 
-      const expectedBicepFileDirectory = path.join(__dirname, "expectedBicepFiles");
-      const expectedParameterFilePath = path.join(expectedBicepFileDirectory, "input_param.bicep");
-      chai.assert.strictEqual(
-        expectedResult.Orchestration.ParameterTemplate!.Content,
-        fs.readFileSync(expectedParameterFilePath, ConstantString.UTF8Encoding)
-      );
       const expectedVariablesFilePath = path.join(
-        expectedBicepFileDirectory,
-        "tabAndBot",
-        "variables.bicep"
+        __dirname,
+        "expectedBicepFiles",
+        "tabAndBot_variables.bicep"
       );
       chai.assert.strictEqual(
         expectedResult.Orchestration.VariableTemplate!.Content,
         fs.readFileSync(expectedVariablesFilePath, ConstantString.UTF8Encoding)
       );
-      const expectedParameterJsonFilePath = path.join(
-        expectedBicepFileDirectory,
-        "parameters.json"
-      );
-      chai.assert.strictEqual(
-        expectedResult.Orchestration.ParameterTemplate!.ParameterFile,
-        fs.readFileSync(expectedParameterJsonFilePath, ConstantString.UTF8Encoding)
-      );
-      chai.assert.isUndefined(expectedResult.Modules);
-      chai.assert.isUndefined(expectedResult.Orchestration.ModuleTemplate);
-      chai.assert.isUndefined(expectedResult.Orchestration.OutputTemplate);
     }
   });
 });

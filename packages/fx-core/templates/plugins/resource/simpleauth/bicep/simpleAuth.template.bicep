@@ -2,7 +2,7 @@ param sku string
 param simpleAuthServerFarmsName string
 param simpleAuthWebAppName string
 param m365TenantId string
-param AADClientId string
+param aadClientId string
 @secure()
 param AADClientSecret string
 param applicationIdUri string
@@ -52,7 +52,7 @@ resource simpleAuthWebAppSettings 'Microsoft.Web/sites/config@2018-02-01' = {
     AAD_METADATA_ADDRESS: aadMetadataAddress
     ALLOWED_APP_IDS: authorizedClientApplicationIds
     IDENTIFIER_URI: applicationIdUri
-    CLIENT_ID: AADClientId
+    CLIENT_ID: aadClientId
     CLIENT_SECRET: AADClientSecret
     OAUTH_AUTHORITY: oauthAuthority
     {{#contains 'fx-resource-frontend-hosting' plugins}}

@@ -24,8 +24,6 @@ export class Constants {
   static RequestTryCounts = 3;
   static RequestTimeoutInMS = 20 * 1000;
   static ScaffoldTryCounts = 1;
-
-  static BicepFileEncoding: BufferEncoding = "utf-8";
 }
 
 export class FrontendPluginInfo {

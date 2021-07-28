@@ -5,7 +5,7 @@ module simpleAuthProvision '{{fx-resource-simple-auth.modules.simpleAuthProvisio
     simpleAuthServerFarmsName: simpleAuth_serverFarmsName
     simpleAuthWebAppName: simpleAuth_webAppName
     sku: simpleAuth_sku
-    AADClientId: AADClientId
+    aadClientId: aadClientId
     AADClientSecret: AADClientSecret
     applicationIdUri: applicationIdUri
     {{#contains 'fx-resource-frontend-hosting' plugins}}

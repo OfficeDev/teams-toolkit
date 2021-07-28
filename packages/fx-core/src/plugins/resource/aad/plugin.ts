@@ -1,7 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Dialog, LogProvider, MsgLevel, PluginContext } from "@microsoft/teamsfx-api";
+import {
+  AzureSolutionSettings,
+  Dialog,
+  LogProvider,
+  MsgLevel,
+  PluginContext,
+} from "@microsoft/teamsfx-api";
 import { AadResult, ResultFactory } from "./results";
 import {
   PostProvisionConfig,
@@ -19,6 +25,7 @@ import {
   UnknownPermissionRole,
   UnknownPermissionScope,
   GetSkipAppConfigError,
+  InvalidSelectedPluginsError,
 } from "./errors";
 import { Envs } from "./interfaces/models";
 import { DialogUtils } from "./utils/dialog";
@@ -40,7 +47,7 @@ import { Utils } from "./utils/common";
 import * as path from "path";
 import * as fs from "fs-extra";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
-import { ConstantString } from "../../../common/constants";
+import { ConstantString, ResourcePlugins } from "../../../common/constants";
 import { getTemplatesFolder } from "../../..";
 
 export class AadAppForTeamsImpl {
@@ -268,6 +275,19 @@ export class AadAppForTeamsImpl {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartGenerateArmTemplates);
 
+    const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
+      .activeResourcePlugins;
+    if (
+      !selectedPlugins.includes(ResourcePlugins.FrontendHosting) &&
+      !selectedPlugins.includes(ResourcePlugins.Bot)
+    ) {
+      throw ResultFactory.UserError(
+        InvalidSelectedPluginsError.name,
+        InvalidSelectedPluginsError.message(
+          `${ResourcePlugins.FrontendHosting} plugin and(or) ${ResourcePlugins.Bot} plugin must be selected.`
+        )
+      );
+    }
     const bicepTemplateDir = path.join(
       getTemplatesFolder(),
       TemplatePathInfo.BicepTemplateRelativeDir

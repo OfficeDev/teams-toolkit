@@ -5,7 +5,7 @@ module simpleAuthProvision './simple_auth_test.bicep' = {
     simpleAuthServerFarmsName: simpleAuth_serverFarmsName
     simpleAuthWebAppName: simpleAuth_webAppName
     sku: simpleAuth_sku
-    AADClientId: AADClientId
+    aadClientId: aadClientId
     AADClientSecret: AADClientSecret
     applicationIdUri: applicationIdUri
     m365TenantId: m365TenantId

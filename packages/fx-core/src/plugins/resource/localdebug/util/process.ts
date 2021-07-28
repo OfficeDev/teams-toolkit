@@ -3,7 +3,6 @@
 "use strict";
 
 import * as cp from "child_process";
-import * as sudo from "sudo-prompt";
 
 /**
  * Run PowerShell command and return stdout content.
@@ -48,30 +47,6 @@ export function execShell(command: string): Promise<string> {
           }
         }
       );
-    } catch (error) {
-      reject(error);
-    }
-  });
-}
-
-/**
- * Run sudo command and return stdout content.
- * Note: the return value may contains EOL.
- */
-export function execSudo(command: string): Promise<string> {
-  return new Promise<string>((resolve, reject) => {
-    try {
-      sudo.exec(command, { name: "TeamsFx Toolkit" }, (error, stdout, stderr) => {
-        if (error) {
-          reject(error);
-        }
-
-        if (stdout) {
-          resolve(stdout.toString());
-        } else {
-          resolve("");
-        }
-      });
     } catch (error) {
       reject(error);
     }

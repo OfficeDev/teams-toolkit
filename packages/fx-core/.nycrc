@@ -5,6 +5,9 @@
     "src/**/*.ts",
     "src/**/*.js"
   ],
+  "exclude": [
+      "src/plugins/resource/function/utils/depsChecker/**/*"
+  ],
   "reporter": [
     "text",
     "html",

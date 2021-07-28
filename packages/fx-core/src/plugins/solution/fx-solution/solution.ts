@@ -325,7 +325,7 @@ export class TeamsAppSolution implements Solution {
     const selectedPlugins = maybeSelectedPlugins.value;
     const result = await this.doScaffold(ctx, selectedPlugins);
     if (result.isOk()) {
-      ctx.ui?.showMessage("info", getStrings().solution.ScaffoldSuccessNotice, false);
+      ctx.ui?.showMessage("info", `Success: ${getStrings().solution.ScaffoldSuccessNotice}`, false);
     }
     return result;
   }
@@ -477,7 +477,7 @@ export class TeamsAppSolution implements Solution {
       const provisionResult = await this.doProvision(ctx);
       if (provisionResult.isOk()) {
         const msg = util.format(
-          getStrings().solution.ProvisionSuccessNotice,
+          `Success: ${getStrings().solution.ProvisionSuccessNotice}`,
           ctx.projectSettings?.appName
         );
         ctx.logProvider?.info(msg);
@@ -639,7 +639,7 @@ export class TeamsAppSolution implements Solution {
       if (result.isOk()) {
         if (this.isAzureProject(ctx)) {
           const msg = util.format(
-            getStrings().solution.DeploySuccessNotice,
+            `Success: ${getStrings().solution.DeploySuccessNotice}`,
             ctx.projectSettings?.appName
           );
           ctx.logProvider?.info(msg);

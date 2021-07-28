@@ -55,6 +55,8 @@ export class Constants {
     confirmPassword: "sql-confirm-password",
     skipAddingUser: "sql-skip-adding-user",
   };
+
+  public static readonly resourceProvider: string = "Microsoft.Sql";
 }
 
 export class Telemetry {

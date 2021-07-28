@@ -16,12 +16,13 @@ export class DialogUtils {
 
 export class ProgressTitle {
   static readonly Provision = "Provisioning SQL";
-  static readonly ProvisionSteps = 2;
+  static readonly ProvisionSteps = 3;
   static readonly PostProvision = "Configuring SQL";
   static readonly PostProvisionSteps = 2;
 }
 
 export class ProcessMessage {
+  static readonly checkProvider = "Check SQL resource provider";
   static readonly provisionSQL = "Provision SQL server";
   static readonly provisionDatabase = "Provision database";
   static readonly postProvisionAddAadmin = "Configure aad admin for SQL";

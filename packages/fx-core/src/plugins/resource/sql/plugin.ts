@@ -22,11 +22,7 @@ import { Constants, HelpLinks, Telemetry } from "./constants";
 import { Message } from "./utils/message";
 import { TelemetryUtils } from "./utils/telemetryUtils";
 import { adminNameQuestion, adminPasswordQuestion, confirmPasswordQuestion } from "./questions";
-import {
-  sqlConfirmPasswordValidatorGenerator,
-  sqlPasswordValidatorGenerator,
-  sqlUserNameValidator,
-} from "./utils/checkInput";
+import { Providers, ResourceManagementClientContext } from "@azure/arm-resources";
 
 export class SqlPluginImpl {
   config: SqlConfig = new SqlConfig();
@@ -166,6 +162,22 @@ export class SqlPluginImpl {
     await managementClient.init();
 
     await DialogUtils.progressBar?.start();
+    await DialogUtils.progressBar?.next(ProcessMessage.checkProvider);
+    if (!this.config.existSql) {
+      try {
+        ctx.logProvider?.info(Message.checkProvider);
+        const credentials = await ctx.azureAccountProvider!.getAccountCredentialAsync();
+        const resourceManagementClient = new Providers(
+          new ResourceManagementClientContext(credentials!, this.config.azureSubscriptionId)
+        );
+        await resourceManagementClient.register(Constants.resourceProvider);
+      } catch (error) {
+        ctx.logProvider?.info(Message.registerResourceProviderFailed(error?.message));
+      }
+    } else {
+      ctx.logProvider?.info(Message.skipCheckProvider);
+    }
+
     await DialogUtils.progressBar?.next(ProcessMessage.provisionSQL);
     if (!this.config.existSql) {
       ctx.logProvider?.info(Message.provisionSql);

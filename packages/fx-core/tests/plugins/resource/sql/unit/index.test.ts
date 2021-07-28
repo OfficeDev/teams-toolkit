@@ -11,6 +11,7 @@ import * as sinon from "sinon";
 import { Databases, Servers, FirewallRules, ServerAzureADAdministrators } from "@azure/arm-sql";
 import { ApplicationTokenCredentials } from "@azure/ms-rest-nodeauth";
 import { TokenResponse } from "adal-node/lib/adal";
+import { Providers } from "@azure/arm-resources";
 import { SqlClient } from "../../../../../src/plugins/resource/sql/sqlClient";
 import { Constants } from "../../../../../src/plugins/resource/sql/constants";
 import * as commonUtils from "../../../../../src/plugins/resource/sql/utils/commonUtils";
@@ -82,6 +83,7 @@ describe("sqlPlugin", () => {
     sinon.stub(Servers.prototype, "createOrUpdate").resolves();
     sinon.stub(Databases.prototype, "listByServer").resolves();
     sinon.stub(Databases.prototype, "createOrUpdate").resolves();
+    sinon.stub(Providers.prototype, "register").resolves();
 
     // Act
     const provisionResult = await sqlPlugin.provision(pluginContext);

@@ -1,11 +1,18 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ConfigFolderName, err, FxError, Json, ok, Result } from "@microsoft/teamsfx-api";
+import {
+  ConfigFolderName,
+  CryptoProvider,
+  err,
+  FxError,
+  Json,
+  ok,
+  Result,
+} from "@microsoft/teamsfx-api";
 import path from "path";
 import fs from "fs-extra";
 import { deserializeDict, dataNeedEncryption, mergeSerectData, PathNotExistError } from "..";
-import { LocalCrypto } from "./crypto";
 
 export interface EnvInfo {
   envName: string;
@@ -23,7 +30,7 @@ class EnvironmentManager {
   public async loadEnvProfile(
     projectPath: string,
     envName?: string,
-    cryptoProvider?: LocalCrypto
+    cryptoProvider?: CryptoProvider
   ): Promise<Result<EnvInfo, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
       return err(PathNotExistError(projectPath));
@@ -53,7 +60,7 @@ class EnvironmentManager {
 
   private async loadUserData(
     userDataPath: string,
-    cryptoProvider?: LocalCrypto
+    cryptoProvider?: CryptoProvider
   ): Promise<Result<Record<string, string>, FxError>> {
     if (!(await fs.pathExists(userDataPath))) {
       return ok({});

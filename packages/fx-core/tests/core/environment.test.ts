@@ -3,23 +3,40 @@
 
 import { assert } from "chai";
 import "mocha";
-import sinon from "sinon";
 import fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
 import { randomAppName } from "./utils";
-import { Json, ok } from "@microsoft/teamsfx-api";
+import { CryptoProvider, FxError, Json, ok, Result } from "@microsoft/teamsfx-api";
 import { environmentManager } from "../../src/core/environment";
-import { LocalCrypto } from "../../src/core/crypto";
 import * as tools from "../../src/common/tools";
+import sinon from "sinon";
+
+class MockCrypto implements CryptoProvider {
+  private readonly encryptedValue: string;
+  private readonly decryptedValue: string;
+
+  constructor(encryptedValue: string, decryptedValue: string) {
+    this.encryptedValue = encryptedValue;
+    this.decryptedValue = decryptedValue;
+  }
+
+  public encrypt(plaintext: string): Result<string, FxError> {
+    return ok(this.encryptedValue);
+  }
+
+  public decrypt(ciphertext: string): Result<string, FxError> {
+    return ok(this.decryptedValue);
+  }
+}
 
 describe("APIs of Environment Manager", () => {
   const sandbox = sinon.createSandbox();
   const appName = randomAppName();
   const projectPath = path.resolve(os.tmpdir(), appName);
-  const cryptoProvider = new LocalCrypto("mocked-project-id");
-  const mockedSecretValue = "42";
-  const encreptedSecret = "encreptedSecret";
+  const encreptedSecret = "secretOfLife";
+  const decryptedValue = "42";
+  const cryptoProvider = new MockCrypto(encreptedSecret, decryptedValue);
   const targetEnvName = "dev";
   const envDataWithoutCredential: Json = {
     key: "value",
@@ -35,7 +52,6 @@ describe("APIs of Environment Manager", () => {
   };
 
   before(async () => {
-    sandbox.stub(cryptoProvider, "decrypt").returns(ok(mockedSecretValue));
     sandbox.stub(tools, "dataNeedEncryption").returns(true);
   });
 
@@ -94,7 +110,7 @@ describe("APIs of Environment Manager", () => {
     const envInfo = actualEnvDataResult.value;
     const actualSolutionConfig = envInfo.data.solution as Record<string, string>;
     const expectedSolutionConfig = envDataWithCredential.solution as Record<string, string>;
-    assert.equal(actualSolutionConfig.teamsAppTenantId, mockedSecretValue);
+    assert.equal(actualSolutionConfig.teamsAppTenantId, decryptedValue);
     assert.equal(actualSolutionConfig.key, expectedSolutionConfig.key);
   });
 
@@ -113,7 +129,7 @@ describe("APIs of Environment Manager", () => {
     const envInfo = actualEnvDataResult.value;
     const actualSolutionConfig = envInfo.data.solution as Record<string, string>;
     const expectedSolutionConfig = envDataWithCredential.solution as Record<string, string>;
-    assert.equal(actualSolutionConfig.teamsAppTenantId, mockedSecretValue);
+    assert.equal(actualSolutionConfig.teamsAppTenantId, decryptedValue);
     assert.equal(actualSolutionConfig.key, expectedSolutionConfig.key);
   });
 

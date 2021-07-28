@@ -25,6 +25,11 @@ import { generateArmTemplate } from "../../../src/plugins/solution/fx-solution/a
 import { it } from "mocha";
 import path from "path";
 import { ArmResourcePlugin } from "../../../src/common/armInterface";
+import {
+  mockedAadScaffoldArmResult,
+  mockedFehostScaffoldArmResult,
+  mockedSimpleAuthScaffoldArmResult,
+} from "./util";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -34,6 +39,7 @@ const fehostPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin) as Pl
 const simpleAuthPlugin = Container.get<Plugin>(ResourcePlugins.SimpleAuthPlugin) as Plugin &
   ArmResourcePlugin;
 const spfxPlugin = Container.get<Plugin>(ResourcePlugins.SpfxPlugin) as Plugin & ArmResourcePlugin;
+const aadPlugin = Container.get<Plugin>(ResourcePlugins.AadPlugin) as Plugin & ArmResourcePlugin;
 
 function mockSolutionContext(): SolutionContext {
   const config: SolutionConfig = new Map();
@@ -97,67 +103,17 @@ describe("Generate ARM Template for project", () => {
     };
 
     // mock plugin behavior
-    fehostPlugin.generateArmTemplates = async function (
-      _ctx: PluginContext
-    ): Promise<Result<any, FxError>> {
-      return ok({
-        Modules: {
-          frontendHostingProvision: {
-            Content: "Mocked frontend hosting provision module content",
-          },
-        },
-        Orchestration: {
-          ParameterTemplate: {
-            Content: "Mocked frontend hosting parameter content",
-            ParameterJson: { FrontendParameter: "FrontendParameterValue" },
-          },
-          VariableTemplate: {
-            Content: "Mocked frontend hosting variable content",
-          },
-          ModuleTemplate: {
-            Content:
-              "Mocked frontend hosting module content. Module path: {{PluginOutput.fx-resource-frontend-hosting.Modules.frontendHostingProvision.Path}}. Variable: {{PluginOutput.fx-resource-simple-auth.Outputs.endpoint}}",
-            Outputs: {
-              endpoint: "Mocked frontend hosting endpoint",
-            },
-          },
-          OutputTemplate: {
-            Content: "Mocked frontend hosting output content",
-          },
-        },
-      });
-    };
+    mocker.stub(fehostPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
+      return ok(mockedFehostScaffoldArmResult);
+    });
 
-    simpleAuthPlugin.generateArmTemplates = async function (
-      _ctx: PluginContext
-    ): Promise<Result<any, FxError>> {
-      return ok({
-        Modules: {
-          simpleAuthProvision: {
-            Content: "Mocked simple auth provision module content",
-          },
-        },
-        Orchestration: {
-          ParameterTemplate: {
-            Content: "Mocked simple auth parameter content",
-            ParameterJson: { SimpleAuthParameter: "SimpleAuthParameterValue" },
-          },
-          VariableTemplate: {
-            Content: "Mocked simple auth variable content",
-          },
-          ModuleTemplate: {
-            Content:
-              "Mocked simple auth module content. Module path: {{PluginOutput.fx-resource-simple-auth.Modules.simpleAuthProvision.Path}}. Variable: {{PluginOutput.fx-resource-frontend-hosting.Outputs.endpoint}}",
-            Outputs: {
-              endpoint: "Mocked simple auth endpoint",
-            },
-          },
-          OutputTemplate: {
-            Content: "Mocked simple auth output content",
-          },
-        },
-      });
-    };
+    mocker.stub(simpleAuthPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
+      return ok(mockedSimpleAuthScaffoldArmResult);
+    });
+
+    mocker.stub(aadPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
+      return ok(mockedAadScaffoldArmResult);
+    });
 
     const result = await generateArmTemplate(mockedCtx);
     expect(result.isOk()).to.be.true;
@@ -173,9 +129,7 @@ Mocked frontend hosting module content. Module path: ./frontendHostingProvision.
 Mocked simple auth module content. Module path: ./simpleAuthProvision.bicep. Variable: Mocked frontend hosting endpoint
 
 Mocked frontend hosting output content
-Mocked simple auth output content
-
-`
+Mocked simple auth output content`
     );
     expect(
       fileContent.get(path.join("./infra/azure/templates", "frontendHostingProvision.bicep"))

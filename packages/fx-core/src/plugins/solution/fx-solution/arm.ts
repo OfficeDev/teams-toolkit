@@ -173,9 +173,9 @@ class BicepOrchestrationContent {
 
   public getOrchestrationFileContent(): string {
     let orchestrationTemplate = "";
-    orchestrationTemplate += this.normalizeTemplateSnippet(this.ParameterTemplate, false);
-    orchestrationTemplate += this.normalizeTemplateSnippet(this.VariableTemplate, false);
-    orchestrationTemplate += this.normalizeTemplateSnippet(this.ModuleTemplate, false);
+    orchestrationTemplate += this.normalizeTemplateSnippet(this.ParameterTemplate, false) + "\n";
+    orchestrationTemplate += this.normalizeTemplateSnippet(this.VariableTemplate, false) + "\n";
+    orchestrationTemplate += this.normalizeTemplateSnippet(this.ModuleTemplate, false) + "\n";
     orchestrationTemplate += this.normalizeTemplateSnippet(this.OutputTemplate, false);
 
     return compileHandlebarsTemplateString(orchestrationTemplate, this.RenderContenxt).trim();

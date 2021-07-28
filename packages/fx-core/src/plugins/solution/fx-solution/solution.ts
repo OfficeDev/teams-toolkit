@@ -1090,7 +1090,7 @@ export class TeamsAppSolution implements Solution {
 
     if (postLocalDebugWithCtx.length === combinedPostLocalDebugResults.value.length) {
       postLocalDebugWithCtx.map(function (plugin, index) {
-        if (plugin[2] === PluginNames.APPST && !localTeamsAppID) {
+        if (plugin[2] === PluginNames.APPST) {
           ctx.config
             .get(GLOBAL_CONFIG)
             ?.set(LOCAL_DEBUG_TEAMS_APP_ID, combinedPostLocalDebugResults.value[index]);

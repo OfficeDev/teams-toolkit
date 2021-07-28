@@ -62,6 +62,14 @@ export class AadAppForTeamsPlugin implements Plugin {
     );
   }
 
+  public async generateArmTemplates(ctx: PluginContext): Promise<AadResult> {
+    return await this.runWithExceptionCatchingAsync(
+      () => this.pluginImpl.generateArmTemplates(ctx),
+      ctx,
+      Messages.EndGenerateArmTemplates.telemetry
+    );
+  }
+
   private async runWithExceptionCatchingAsync(
     fn: () => Promise<AadResult>,
     ctx: PluginContext,

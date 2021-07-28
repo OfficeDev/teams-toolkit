@@ -6,25 +6,26 @@ export function mockSolutionUpdateArmTemplates(
   mockedData: Json,
   template: ScaffoldArmTemplateResult
 ): ScaffoldArmTemplateResult {
-  const result = {
-    Modules: template.Modules,
-    Orchestration: {
-      ModuleTemplate: {
-        Content: compileHandlebarsTemplateString(
-          template.Orchestration.ModuleTemplate.Content,
-          mockedData
-        ),
-        Outputs: template.Orchestration.ModuleTemplate.Outputs,
-      },
-    },
-  } as ScaffoldArmTemplateResult;
+  const result: ScaffoldArmTemplateResult = {
+    Orchestration: {},
+  };
+
+  if (template.Modules) {
+    result.Modules = template.Modules;
+  }
+
+  if (template.Orchestration.ModuleTemplate) {
+    result.Orchestration.ModuleTemplate = {
+      Content: compileHandlebarsTemplateString(
+        template.Orchestration.ModuleTemplate.Content,
+        mockedData
+      ),
+    };
+  }
 
   if (template.Orchestration.OutputTemplate) {
     result.Orchestration.OutputTemplate = {
-      Content: compileHandlebarsTemplateString(
-        template.Orchestration.OutputTemplate.Content,
-        mockedData
-      ),
+      Content: template.Orchestration.OutputTemplate.Content,
     };
   }
 
@@ -46,12 +47,25 @@ export function mockSolutionUpdateArmTemplates(
     };
 
     if (template.Orchestration.ParameterTemplate.ParameterFile) {
-      result.Orchestration.ParameterTemplate.ParameterFile = compileHandlebarsTemplateString(
-        template.Orchestration.ParameterTemplate.ParameterFile,
-        mockedData
-      );
+      result.Orchestration.ParameterTemplate.ParameterFile =
+        template.Orchestration.ParameterTemplate.ParameterFile;
     }
   }
 
   return result;
+}
+
+export class ConstantString {
+  static readonly UTF8Encoding = "utf-8";
+}
+
+export class ResourcePlugins {
+  static readonly Aad = "fx-resource-aad-app-for-teams";
+  static readonly FrontendHosting = "fx-resource-frontend-hosting";
+  static readonly SimpleAuth = "fx-resource-simple-auth";
+  static readonly Bot = "fx-resource-bot";
+  static readonly LocalDebug = "fx-resource-local-debug";
+  static readonly AzureSQL = "fx-resource-azure-sql";
+  static readonly Function = "fx-resource-function";
+  static readonly Identity = "fx-resource-identity";
 }

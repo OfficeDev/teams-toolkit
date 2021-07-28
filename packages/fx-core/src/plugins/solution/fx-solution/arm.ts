@@ -57,7 +57,10 @@ export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<
           }
         }
       } else {
-        const msg = format(getStrings().solution.ProvisionFailNotice, ctx.projectSettings?.appName);
+        const msg = format(
+          getStrings().solution.GenerateArmTemplateFailNotice,
+          ctx.projectSettings?.appName
+        );
         ctx.logProvider?.error(msg);
         return result;
       }

@@ -72,7 +72,7 @@ describe("AadGenerateArmTemplates", () => {
         "parameters.json"
       );
       chai.assert.strictEqual(
-        JSON.stringify(expectedResult.Orchestration.ParameterTemplate!.ParameterJson),
+        JSON.stringify(expectedResult.Orchestration.ParameterTemplate!.ParameterJson, undefined, 2),
         fs.readFileSync(expectedParameterJsonFilePath, ConstantString.UTF8Encoding)
       );
       chai.assert.isUndefined(expectedResult.Modules);

@@ -1,5 +1,11 @@
 {
-  "aadClientId": { "value": "{{CLIENT_ID}}" },
-  "aadClientSecret": { "value": "{{CLIENT_SECRET}}" },
-  "m365TenantId": { "value": "{{M365_TENANT_ID}}" }
+  "aadClientId": {
+    "value": "{{CLIENT_ID}}"
+  },
+  "aadClientSecret": {
+    "value": "{{CLIENT_SECRET}}"
+  },
+  "m365TenantId": {
+    "value": "{{M365_TENANT_ID}}"
+  }
 }

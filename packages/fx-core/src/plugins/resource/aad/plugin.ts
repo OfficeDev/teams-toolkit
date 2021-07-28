@@ -317,6 +317,7 @@ export class AadAppForTeamsImpl {
       },
     };
 
+    Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndGenerateArmTemplates);
     return ResultFactory.Success(result);
   }
 

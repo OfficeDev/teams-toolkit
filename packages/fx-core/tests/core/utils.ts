@@ -44,6 +44,7 @@ import {
   ConfigMap,
   DialogType,
   Colors,
+  Json,
 } from "@microsoft/teamsfx-api";
 import { TokenCredential } from "@azure/core-auth";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
@@ -160,7 +161,7 @@ export class MockAzureAccountProvider implements AzureAccountProvider {
     throw new Error("Method not implemented.");
   }
   selectSubscription(subscriptionId?: string): Promise<string> {
-      throw new Error("Method not implemented.");
+    throw new Error("Method not implemented.");
   }
 }
 
@@ -402,5 +403,60 @@ export function MockProjectSettings(appName: string): ProjectSettings {
       azureResources: [],
       activeResourcePlugins: [PluginNames.FE, PluginNames.LDEBUG, PluginNames.AAD, PluginNames.SA],
     } as AzureSolutionSettings,
+  };
+}
+
+export function MockPreviousVersionBefore2_3_0Context(): Json {
+  return {
+    solution: {
+      teamsAppTenantId: "tenantId",
+      localDebugTeamsAppId: "teamsAppId",
+    },
+    "fx-resource-aad-app-for-teams": {
+      local_clientId: "local_clientId",
+      local_clientSecret: "{{fx-resource-aad-app-for-teams.local_clientSecret}}",
+      local_objectId: "local_objectId",
+      local_oauth2PermissionScopeId: "local_oauth2PermissionScopeId",
+      local_tenantId: "local_tenantId",
+      local_applicationIdUris: "local_applicationIdUris",
+    },
+  };
+}
+
+export function MockPreviousVersionBefore2_3_0UserData(): Record<string, string> {
+  return {
+    "fx-resource-aad-app-for-teams.local_clientSecret": "local_clientSecret",
+  };
+}
+
+export function MockLatestVersion2_3_0Context(): Json {
+  return {
+    solution: {
+      teamsAppTenantId: "{{solution.teamsAppTenantId}}",
+      localDebugTeamsAppId: "{{solution.localDebugTeamsAppId}}",
+    },
+    "fx-resource-aad-app-for-teams": {
+      local_clientId: "{{fx-resource-aad-app-for-teams.local_clientId}}",
+      local_clientSecret: "{{fx-resource-aad-app-for-teams.local_clientSecret}}",
+      local_objectId: "{{fx-resource-aad-app-for-teams.local_objectId}}",
+      local_oauth2PermissionScopeId:
+        "{{fx-resource-aad-app-for-teams.local_oauth2PermissionScopeId}}",
+      local_tenantId: "{{fx-resource-aad-app-for-teams.local_tenantId}}",
+      local_applicationIdUris: "{{fx-resource-aad-app-for-teams.local_applicationIdUris}}",
+    },
+  };
+}
+
+export function MockLatestVersion2_3_0UserData(): Record<string, string> {
+  return {
+    "fx-resource-aad-app-for-teams.local_clientId": "local_clientId_new",
+    "fx-resource-aad-app-for-teams.local_clientSecret": "local_clientSecret_new",
+    "fx-resource-aad-app-for-teams.local_objectId": "local_objectId_new",
+    "fx-resource-aad-app-for-teams.local_oauth2PermissionScopeId":
+      "local_oauth2PermissionScopeId_new",
+    "fx-resource-aad-app-for-teams.local_tenantId": "local_tenantId_new",
+    "fx-resource-aad-app-for-teams.local_applicationIdUris": "local_applicationIdUris_new",
+    "solution.teamsAppTenantId": "tenantId_new",
+    "solution.localDebugTeamsAppId": "teamsAppId_new",
   };
 }

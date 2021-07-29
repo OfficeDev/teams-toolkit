@@ -105,6 +105,16 @@ jobs:
               git push -d origin $(git tag --points-at HEAD | grep templates | grep rc)
           fi
 
+      - name: sync up templates dependency on main release
+        if: ${{ !contains(steps.version-change.outputs.CHANGED, 'templates@') && contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx') }}
+        run: |
+          npm run preversion --prefix ./templates
+          if [[ '${{github.event.inputs.preid}}' == 'stable' && ! -z "$(git diff --cached -- templates)" ]]; then
+            git reset -- templates && git checkout -- templates
+            npx lerna version --conventional-commits --no-changelog --force-publish=templates --yes -m "chore(templates): sync up templates dependecise and release"
+            echo "template_ver=$(git tag --points-at HEAD | grep templates)" >> $GITHUB_ENV 
+          fi
+
       - name: update cli ai key
         if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && (github.event.inputs.preid == 'stable'||github.event.inputs.preid == 'rc') }}
         uses: jossef/action-set-json-field@v1
@@ -139,16 +149,6 @@ jobs:
 
       - name: Install Mustache
         run: curl -sSL https://git.io/get-mo -o mo && chmod +x mo && sudo mv mo /usr/local/bin/
-
-      - name: sync up templates dependency on main release
-        if: ${{ !contains(steps.version-change.outputs.CHANGED, 'templates@') && contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx') }}
-        run: |
-          npm run preversion --prefix ./templates
-          if [[ '${{github.event.inputs.preid}}' == 'stable' && ! -z "$(git diff --cached -- templates)" ]]; then
-          git commit -m "chore: update template dependencies"
-          npx lerna version --conventional-commits --no-changelog --ignore-scripts --yes
-          echo "template_ver=$(git tag --points-at HEAD | grep templates)" >> $GITHUB_ENV 
-          fi
 
       - name: generate templates
         run: .github/scripts/template-zip-autogen.sh

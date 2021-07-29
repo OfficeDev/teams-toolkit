@@ -147,7 +147,7 @@ export async function executeLifecycles(
   }
 
   const postResults = await executeConcurrently("post", postLifecycles);
-  for (const result of results) {
+  for (const result of postResults) {
     if (result.isErr()) {
       return result;
     }

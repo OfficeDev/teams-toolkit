@@ -18,7 +18,7 @@ export class Utils {
   }
 
   static normalize(raw: string): string {
-    return raw.replace(RegularExpr.allCharToBeSkippedInName, Constants.EmptyString).toLowerCase();
+    return raw.replace(RegularExpr.AllCharToBeSkippedInName, Constants.EmptyString).toLowerCase();
   }
 
   static generateStorageAccountName(

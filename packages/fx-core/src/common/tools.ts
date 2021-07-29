@@ -39,10 +39,15 @@ import {
   TabOptionItem,
 } from "../plugins/solution/fx-solution/question";
 import * as Handlebars from "handlebars";
+import { ConstantString } from "./constants";
 
 Handlebars.registerHelper("contains", (value, array, options) => {
   array = array instanceof Array ? array : [array];
   return array.indexOf(value) > -1 ? options.fn(this) : "";
+});
+Handlebars.registerHelper("notContains", (value, array, options) => {
+  array = array instanceof Array ? array : [array];
+  return array.indexOf(value) == -1 ? options.fn(this) : "";
 });
 
 const execAsync = promisify(exec);
@@ -506,7 +511,7 @@ export async function generateBicepFiles(
   context: any
 ): Promise<Result<string, FxError>> {
   try {
-    const templateString = await fs.readFile(templateFilePath, "utf8");
+    const templateString = await fs.readFile(templateFilePath, ConstantString.UTF8Encoding);
     const updatedBicepFile = compileHandlebarsTemplateString(templateString, context);
     return ok(updatedBicepFile);
   } catch (error) {

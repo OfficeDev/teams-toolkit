@@ -214,7 +214,7 @@ export class SPFxPluginImpl {
       if (ctx.answers?.platform === Platform.CLI) {
         const guidance = [
           {
-            content: "[Teams Toolkit] SharePoint package successfully built at ",
+            content: "Success: SharePoint package successfully built at ",
             color: Colors.BRIGHT_GREEN,
           },
           { content: dir, color: Colors.BRIGHT_MAGENTA },

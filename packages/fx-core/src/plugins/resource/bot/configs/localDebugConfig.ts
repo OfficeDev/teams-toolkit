@@ -23,30 +23,17 @@ export class LocalDebugConfig {
     const localBotEndpoint: ConfigValue | undefined = context.configOfOtherPlugins
       .get(PluginLocalDebug.PLUGIN_NAME)
       ?.get(PluginLocalDebug.LOCAL_BOT_ENDPOINT);
-    if (localBotEndpoint) {
-      this.localEndpoint = localBotEndpoint as string;
-      this.localRedirectUri = `${localBotEndpoint}${CommonStrings.AUTH_REDIRECT_URI_SUFFIX}`;
-    }
+    this.localEndpoint = localBotEndpoint as string;
+    this.localRedirectUri = localBotEndpoint ? `${localBotEndpoint}${CommonStrings.AUTH_REDIRECT_URI_SUFFIX}` : undefined;
 
-    const localBotIdValue: ConfigValue = context.config.get(PluginBot.LOCAL_BOT_ID);
-    if (localBotIdValue) {
-      this.localBotId = localBotIdValue as string;
-    }
+    this.localBotId = context.config.get(PluginBot.LOCAL_BOT_ID) as string;
 
-    const localBotPasswordValue: ConfigValue = context.config.get(PluginBot.LOCAL_BOT_PASSWORD);
-    if (localBotPasswordValue) {
-      this.localBotPassword = localBotPasswordValue as string;
-    }
+    this.localBotPassword = context.config.get(PluginBot.LOCAL_BOT_PASSWORD) as string;
 
-    const localObjectIdValue: ConfigValue = context.config.get(PluginBot.LOCAL_OBJECT_ID);
-    if (localObjectIdValue) {
-      this.localObjectId = localObjectIdValue as string;
-    }
+    this.localObjectId = context.config.get(PluginBot.LOCAL_OBJECT_ID) as string;
 
-    const localRedirectUriValue: ConfigValue = context.config.get(PluginBot.LOCAL_REDIRECT_URI);
-    if (localRedirectUriValue) {
-      this.localRedirectUri = localRedirectUriValue as string;
-    }
+    this.localRedirectUri = context.config.get(PluginBot.LOCAL_REDIRECT_URI) as string;
+
   }
 
   public saveConfigIntoContext(context: PluginContext): void {

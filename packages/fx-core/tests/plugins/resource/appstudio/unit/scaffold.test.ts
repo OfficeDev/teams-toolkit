@@ -4,17 +4,11 @@
 import "mocha";
 import * as chai from "chai";
 import { AppStudioPlugin } from "./../../../../../src/plugins/resource/appstudio";
-import { AppStudioPluginImpl } from "./../../../../../src/plugins/resource/appstudio/plugin";
-import { TeamsBot } from "./../../../../../src/plugins/resource/bot";
-import { AppStudioError } from "./../../../../../src/plugins/resource/appstudio/errors";
 import {
   ConfigMap,
   PluginContext,
   TeamsAppManifest,
   ConfigFolderName,
-  ok,
-  err,
-  Plugin,
   Platform,
 } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
@@ -46,7 +40,6 @@ describe("Scaffold", () => {
       configOfOtherPlugins: new Map(),
       config: new ConfigMap(),
       answers: { platform: Platform.VSCode },
-      app: new TeamsAppManifest(),
       projectSettings: undefined,
     };
 

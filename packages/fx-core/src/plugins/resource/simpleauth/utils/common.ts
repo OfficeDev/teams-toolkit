@@ -12,7 +12,7 @@ import {
 } from "../errors";
 import { ResultFactory } from "../result";
 import { TelemetryUtils } from "./telemetry";
-import { getArmOutput, getTemplatesFolder } from "../../../..";
+import { getArmOutput, getTemplatesFolder, isArmSupportEnabled } from "../../../..";
 import got from "got";
 export class Utils {
   public static generateResourceName(appName: string, resourceNameSuffix: string): string {
@@ -108,22 +108,25 @@ export class Utils {
       Constants.AadAppPlugin.configKeys.teamsWebAppId
     ) as string;
 
-    // const endpoint = Utils.getConfigValueWithValidation(
-    //   ctx,
-    //   isLocalDebug ? Constants.LocalDebugPlugin.id : Constants.FrontendPlugin.id,
-    //   isLocalDebug
-    //     ? Constants.LocalDebugPlugin.configKeys.endpoint
-    //     : Constants.FrontendPlugin.configKeys.endpoint
-    // ) as string;
     let endpoint: string;
-    if (isLocalDebug) {
+    if (!isArmSupportEnabled()) {
       endpoint = Utils.getConfigValueWithValidation(
         ctx,
-        Constants.LocalDebugPlugin.id,
-        Constants.LocalDebugPlugin.configKeys.endpoint
+        isLocalDebug ? Constants.LocalDebugPlugin.id : Constants.FrontendPlugin.id,
+        isLocalDebug
+          ? Constants.LocalDebugPlugin.configKeys.endpoint
+          : Constants.FrontendPlugin.configKeys.endpoint
       ) as string;
     } else {
-      endpoint = getArmOutput(ctx, "frontendHosting_endpoint") as string;
+      if (isLocalDebug) {
+        endpoint = Utils.getConfigValueWithValidation(
+          ctx,
+          Constants.LocalDebugPlugin.id,
+          Constants.LocalDebugPlugin.configKeys.endpoint
+        ) as string;
+      } else {
+        endpoint = getArmOutput(ctx, Constants.ArmOutput.frontendEndpoint) as string;
+      }
     }
 
     const allowedAppIds = [teamsMobileDesktopAppId, teamsWebAppId].join(";");

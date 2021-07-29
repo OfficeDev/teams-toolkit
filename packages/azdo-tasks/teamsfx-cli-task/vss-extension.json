@@ -1,8 +1,8 @@
 {
     "manifestVersion": 1,
-    "id": "teams-app-cicd",
-    "name": "Teams App CI/CD",
-    "version": "0.1.6",
+    "id": "teamsfx-cli-task",
+    "name": "Teamsfx CLI Task",
+    "version": "0.3.0",
     "publisher": "IvanJobs",
     "targets": [
         {
@@ -23,7 +23,7 @@
     ],
     "contributions": [
         {
-            "id": "teams-app-cicd",
+            "id": "teamsfx-cli-task",
             "type": "ms.vss-distributed-task.task",
             "targets": [
                 "ms.vss-distributed-task.tasks"

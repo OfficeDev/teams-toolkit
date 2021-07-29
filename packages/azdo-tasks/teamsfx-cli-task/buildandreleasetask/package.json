@@ -13,9 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@microsoft/teamsfx-cli": "^0.2.1",
-    "azure-pipelines-task-lib": "^3.1.4",
-    "fs-extra": "^10.0.0"
+    "azure-pipelines-task-lib": "^3.1.4"
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.12",

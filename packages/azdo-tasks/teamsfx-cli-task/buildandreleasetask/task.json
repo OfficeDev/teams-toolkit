@@ -1,8 +1,8 @@
 {
     "$schema": "https://raw.githubusercontent.com/Microsoft/azure-pipelines-task-lib/master/tasks.schema.json",
     "id": "55dd6b57-7058-43fd-b76d-3323f4721395",
-    "name": "teams-app-cicd",
-    "friendlyName": "Teams App CI/CD",
+    "name": "teamsfx-cli-task",
+    "friendlyName": "Teamsfx CLI Task",
     "description": "Azure DevOps Task to help Teams App Developers build their CI/CD pipelines.",
     "helpMarkDown": "",
     "category": "Utility",
@@ -13,8 +13,8 @@
     "author": "Ivan He",
     "version": {
         "Major": 0,
-        "Minor": 1,
-        "Patch": 6
+        "Minor": 3,
+        "Patch": 0
     },
     "instanceNameFormat": "Teams App CI/CD - $(operationType)",
     "inputs": [

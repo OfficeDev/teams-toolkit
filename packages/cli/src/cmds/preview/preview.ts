@@ -99,6 +99,18 @@ export default class Preview extends YargsCommand {
       }
       this.telemetryProperties[TelemetryProperty.PreviewType] = previewType;
 
+      const workspaceFolder = path.resolve(args.folder as string);
+      this.telemetryProperties[TelemetryProperty.PreviewAppId] = utils.getLocalTeamsAppId(
+        workspaceFolder
+      ) as string;
+
+      cliTelemetry
+        .withRootFolder(workspaceFolder)
+        .sendTelemetryEvent(TelemetryEvent.PreviewStart, this.telemetryProperties);
+
+      const browser = args.browser as constants.Browser;
+      this.telemetryProperties[TelemetryProperty.PreviewBrowser] = browser;
+
       // parse sharepoint site url to get workbench url
       if (args["sharepoint-site"]) {
         try {
@@ -112,18 +124,6 @@ export default class Preview extends YargsCommand {
           throw errors.InvalidSharePointSiteURL(error);
         }
       }
-      const workspaceFolder = path.resolve(args.folder as string);
-      this.telemetryProperties[TelemetryProperty.PreviewAppId] = utils.getLocalTeamsAppId(
-        workspaceFolder
-      ) as string;
-
-      cliTelemetry
-        .withRootFolder(workspaceFolder)
-        .sendTelemetryEvent(TelemetryEvent.PreviewStart, this.telemetryProperties);
-
-      const browser = args.browser as constants.Browser;
-      this.telemetryProperties[TelemetryProperty.PreviewBrowser] = browser;
-
       if (args.local && args.remote) {
         throw errors.ExclusiveLocalRemoteOptions();
       }
@@ -383,6 +383,7 @@ export default class Preview extends YargsCommand {
         cwd: spfxRoot,
       }
     );
+    this.backgroundTasks.push(gulpServeTask);
 
     const gulpServeBar = CLIUIInstance.createProgressBar(constants.gulpServeTitle, 1);
     const gulpServeStartCb = commonUtils.createTaskStartCb(
@@ -459,6 +460,9 @@ export default class Preview extends YargsCommand {
     browser: constants.Browser,
     url: string
   ): Promise<Result<null, FxError>> {
+    if (!(await fs.pathExists(spfxRoot))) {
+      return err(errors.RequiredPathNotExists(spfxRoot));
+    }
     {
       const result = await this.spfxPreviewSetup(spfxRoot);
       if (result.isErr()) {

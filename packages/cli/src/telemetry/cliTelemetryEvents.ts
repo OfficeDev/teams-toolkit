@@ -47,8 +47,8 @@ export enum TelemetryEvent {
   PreviewService = "preview-service",
   PreviewSideloadingStart = "preview-sideloading-start",
   PreviewSideloading = "preview-sideloading",
-  PreviewSPFxOpenBrowserStart = "preview-spfx-sideloading-start",
-  PreviewSPFxOpenBrowser = "preview-spfx-sideloading",
+  PreviewSPFxOpenBrowserStart = "preview-spfx-open-browser-start",
+  PreviewSPFxOpenBrowser = "preview-spfx-open-browser",
 
   ConfigGet = "config-get",
   ConfigSet = "config-set",

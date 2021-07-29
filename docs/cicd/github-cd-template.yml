@@ -22,34 +22,9 @@ jobs:
       # or if it's provisioned and has not updates, set this environment variable to false.
       RUN_PROVISION: true 
 
-      # The following two environment variables works together with ${{ secrets.AZURE_STORAGE_CREDENTIALS }}
-      # to specify the place where the provision configs are saved to.
-      STORAGE_ACCOUNT: STORAGE_ACCOUNT_NAME_TO_SAVE_PROIVSION_CONFIGS
-      BLOB_CONTAINER: CONTAINER_NAME_TO_SAVE_PROIVSION_CONFIGS
     steps:
-      # The provision configs shouldn't be commited into the code, 
-      # since multiple environments are existing, for example, test, stage, and product.
-      # These configs should be saved by environment, and in this example yml file,
-      # Azure Storage Blob is used to save the provision configs and also used to upload and download the configs.
-      - name: Login for Azure Storage Blob
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_STORAGE_CREDENTIALS }}
-
       - name: Checkout the code
         uses: actions/checkout@v2
-
-      # If env.RUN_PROVISION is false, then resources must have been provisioned,
-      # so, it's unnecessary to run provision again.
-      # The provision configs still needs to be downloaded for later operations like deploy, and publish.
-      # In this example workflow yml, Azure Storage Blob is used to store the provision configs, but other
-      # solutions are also okay if you prefer to use them.
-      - name: Download Provision Configs from Azure Storage Blob.
-        if: env.RUN_PROVISION == 'false'
-        uses: azure/CLI@v1
-        with:
-          azcliversion: 2.0.81
-          inlineScript: az storage blob download-batch -d ./.fx --account-name ${STORAGE_ACCOUNT} -s ${BLOB_CONTAINER}
 
       - name: Provision hosting environment
         if: env.RUN_PROVISION == 'true'
@@ -58,35 +33,35 @@ jobs:
           commands: provision
           subscription: ${{env.AZURE_SUBSCRIPTION_ID}}
 
-      - name: Upload Provision Configs onto Azure Storage Blob.
+      - name: Commit provision configs if necessary
         if: env.RUN_PROVISION == 'true'
-        uses: azure/CLI@v1
+        uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          azcliversion: 2.0.81
-          inlineScript: az storage blob upload-batch -d ${BLOB_CONTAINER} --account-name ${STORAGE_ACCOUNT} -s ./.fx
+          commit_message: "chore: commit provision configs"
+          file_pattern: .fx/*
 
       - name: Deploy to hosting environment
         uses: OfficeDev/teamsfx-cli-action@v0
         with:
           commands: deploy
 
-      # Validate Teams App Manifest.
-      - uses: OfficeDev/teamsfx-cli-action@v0
+      - name: Validate Teams App's manifest
+        uses: OfficeDev/teamsfx-cli-action@v0
         with:
           commands: validate
 
-      # Build Teams App's Package.
-      - uses: OfficeDev/teamsfx-cli-action@v0
+      - name: Build Teams App's package
+        uses: OfficeDev/teamsfx-cli-action@v0
         with:
           commands: build
 
-      # Upload Teams App's Package as artifacts.
-      - uses: actions/upload-artifact@v2
+      - name: Upload Teams App's package as artifact
+        uses: actions/upload-artifact@v2
         with:
           name: appPackage
           path: ./.fx/appPackage.zip
 
-      # Publish Teams App.
-      - uses: OfficeDev/teamsfx-cli-action@v0
+      - name: Publish Teams App
+        uses: OfficeDev/teamsfx-cli-action@v0
         with:
           commands: publish

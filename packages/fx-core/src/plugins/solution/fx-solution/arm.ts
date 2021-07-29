@@ -376,5 +376,5 @@ function expandParameterPlaceholders(ctx: SolutionContext, parameterContent: str
 }
 
 function normalizeToEnvName(input: string): string {
-  return input.toUpperCase().replace(/-|\./, "_"); // replace "-" or "." to "_"
+  return input.toUpperCase().replace(/-|\./g, "_"); // replace "-" or "." to "_"
 }

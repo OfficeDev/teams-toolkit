@@ -138,6 +138,7 @@ export class FuncToolChecker implements IDepsChecker {
       // to avoid "func -v" and "func new" work well, but "func start" fail.
       hasSentinel = await fs.pathExists(FuncToolChecker.getSentinelPath());
     } catch (err) {
+      await this._logger.debug(`Failed to validate, error = ${err}`);
       this._telemetry.sendSystemErrorEvent(
         DepsCheckerEvent.funcValidationError,
         TelemtryMessages.failedToValidateFunc,
@@ -290,6 +291,8 @@ export class FuncToolChecker implements IDepsChecker {
         }
       }
     } catch (error) {
+      // TODO: delete log
+      await this._logger.debug(`Failed to install function-core-tools, error = ${error}`);
       this._telemetry.sendSystemErrorEvent(
         DepsCheckerEvent.funcInstallScriptError,
         TelemtryMessages.failedToInstallFunc,

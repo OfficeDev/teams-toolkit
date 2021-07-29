@@ -116,8 +116,8 @@ export class TestAdapter implements IDepsAdapter {
     return Promise.resolve(this._nodeCheckerEnabled);
   }
 
-  runWithProgressIndicator(callback: () => Promise<void>): Promise<void> {
-    return callback();
+  async runWithProgressIndicator(callback: () => Promise<void>): Promise<void> {
+    await callback();
   }
 
   getResourceDir(): string {

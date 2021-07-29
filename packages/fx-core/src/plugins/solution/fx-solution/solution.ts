@@ -92,7 +92,6 @@ import { AadAppForTeamsPlugin, AppStudioPlugin, SpfxPlugin } from "../../resourc
 import { ErrorHandlerMW } from "../../../core/middleware/errorHandler";
 import { hooks } from "@feathersjs/hooks/lib";
 import { Service, Container } from "typedi";
-import { REMOTE_MANIFEST } from "../../resource/appstudio/constants";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -326,7 +325,7 @@ export class TeamsAppSolution implements Solution {
     const selectedPlugins = maybeSelectedPlugins.value;
     const result = await this.doScaffold(ctx, selectedPlugins);
     if (result.isOk()) {
-      ctx.ui?.showMessage("info", getStrings().solution.ScaffoldSuccessNotice, false);
+      ctx.ui?.showMessage("info", `Success: ${getStrings().solution.ScaffoldSuccessNotice}`, false);
     }
     return result;
   }
@@ -457,8 +456,10 @@ export class TeamsAppSolution implements Solution {
       const remoteTeamsAppId = await this.AppStudioPlugin.provision(pluginCtx);
       if (remoteTeamsAppId.isOk()) {
         ctx.config.get(GLOBAL_CONFIG)?.set(REMOTE_TEAMS_APP_ID, remoteTeamsAppId.value);
+      } else {
+        return remoteTeamsAppId;
       }
-      return remoteTeamsAppId;
+      return await this.AppStudioPlugin.postProvision(pluginCtx);
     }
     try {
       // Just to trigger M365 login before the concurrent execution of provision.
@@ -478,7 +479,7 @@ export class TeamsAppSolution implements Solution {
       const provisionResult = await this.doProvision(ctx);
       if (provisionResult.isOk()) {
         const msg = util.format(
-          getStrings().solution.ProvisionSuccessNotice,
+          `Success: ${getStrings().solution.ProvisionSuccessNotice}`,
           ctx.projectSettings?.appName
         );
         ctx.logProvider?.info(msg);
@@ -640,7 +641,7 @@ export class TeamsAppSolution implements Solution {
       if (result.isOk()) {
         if (this.isAzureProject(ctx)) {
           const msg = util.format(
-            getStrings().solution.DeploySuccessNotice,
+            `Success: ${getStrings().solution.DeploySuccessNotice}`,
             ctx.projectSettings?.appName
           );
           ctx.logProvider?.info(msg);
@@ -1090,7 +1091,7 @@ export class TeamsAppSolution implements Solution {
 
     if (postLocalDebugWithCtx.length === combinedPostLocalDebugResults.value.length) {
       postLocalDebugWithCtx.map(function (plugin, index) {
-        if (plugin[2] === PluginNames.APPST && !localTeamsAppID) {
+        if (plugin[2] === PluginNames.APPST) {
           ctx.config
             .get(GLOBAL_CONFIG)
             ?.set(LOCAL_DEBUG_TEAMS_APP_ID, combinedPostLocalDebugResults.value[index]);

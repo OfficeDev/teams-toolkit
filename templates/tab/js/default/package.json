@@ -5,7 +5,7 @@
   "dependencies": {
     "@fluentui/react-northstar": "^0.54.0",
     "@microsoft/teams-js": "^1.6.0",
-    "@microsoft/teamsfx": "^0.1.0",
+    "@microsoft/teamsfx": "^0.2.0",
     "axios": "^0.21.1",
     "classnames": "^2.3.1",
     "msteams-react-base-component": "^3.1.0",

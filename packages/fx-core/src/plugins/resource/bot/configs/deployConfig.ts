@@ -10,10 +10,7 @@ export class DeployConfig {
   public unPackFlag = "true";
 
   public async restoreConfigFromContext(context: PluginContext): Promise<void> {
-    const unPackFlagValue: ConfigValue = context.config.get(PluginBot.UNPACK_FLAG);
-    if (unPackFlagValue) {
-      this.unPackFlag = unPackFlagValue as string;
-    }
+    this.unPackFlag= context.config.get(PluginBot.UNPACK_FLAG) as string;
   }
 
   public saveConfigIntoContext(context: PluginContext): void {

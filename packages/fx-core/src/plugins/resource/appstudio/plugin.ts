@@ -93,9 +93,16 @@ export class AppStudioPluginImpl {
         .get("solution")
         ?.get(LOCAL_DEBUG_TEAMS_APP_ID) as string;
 
-      let createIfNotExist = true;
-      if (localTeamsAppID) {
-        createIfNotExist = false;
+      let createIfNotExist = false;
+      if (!localTeamsAppID) {
+        createIfNotExist = true;
+      } else {
+        const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
+        try {
+          await AppStudioClient.getApp(localTeamsAppID, appStudioToken!, ctx.logProvider);
+        } catch (error) {
+          createIfNotExist = true;
+        }
       }
 
       maybeTeamsAppId = await this.updateApp(
@@ -103,11 +110,12 @@ export class AppStudioPluginImpl {
         appStudioToken!,
         type,
         createIfNotExist,
-        localTeamsAppID ? localTeamsAppID : undefined,
+        createIfNotExist ? undefined : localTeamsAppID,
         ctx.logProvider,
         ctx.root
       );
 
+      console.log(maybeTeamsAppId);
       return maybeTeamsAppId;
     } else {
       appDefinition = this.convertToAppDefinition(manifest, true);

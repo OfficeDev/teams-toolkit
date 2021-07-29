@@ -38,6 +38,7 @@ import {
   mockedFehostScaffoldArmResult,
   mockedSimpleAuthScaffoldArmResult,
 } from "./util";
+import child_process from "child_process";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -208,7 +209,6 @@ describe("Deploy ARM Template to Azure", () => {
     });
     mocker.stub(fs, "writeFile").callsFake((path: number | PathLike, data: any) => {
       resultFileContent.set(path.toString(), data);
-      console.log("[debug] writing file to " + path.toString());
     });
     mocker.stub(Deployments.prototype, "createOrUpdate").resolves({
       properties: {
@@ -221,6 +221,10 @@ describe("Deploy ARM Template to Azure", () => {
         bodyAsText: "",
         parsedBody: {} as ResourceManagementModels.DeploymentExtended,
       },
+    });
+    mocker.stub(child_process, "exec").callsFake((command: string) => {
+      const result: child_process.ChildProcess = child_process.spawn("");
+      return result;
     });
   });
 

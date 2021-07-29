@@ -38,11 +38,13 @@ export const teamsAppTenantIdConfigKey = "teamsAppTenantId";
 export const remoteTeamsAppIdConfigKey = "remoteTeamsAppId";
 export const localTeamsAppIdConfigKey = "localDebugTeamsAppId";
 
+export const spfxFolderName = "SPFx";
 export const frontendFolderName = "tabs";
 export const backendFolderName = "api";
 export const botFolderName = "bot";
 
 export const npmInstallCommand = "npm install";
+export const nodeCommand = "node";
 export const frontendStartCommand = "npx react-scripts start";
 export const backendStartJsCommand = `@command start --javascript --port "7071" --cors "*"`;
 export const backendStartTsCommand = `@command start --typescript --port "7071" --cors "*"`;
@@ -59,7 +61,17 @@ export const backendWatchPattern = /.*/g;
 export const authStartPattern = /.*/g;
 export const ngrokStartPattern = /started tunnel|failed to reconnect session/g;
 export const botStartPattern = /listening|[nodemon] app crashed/g;
+export const gulpServePattern = /^.*Finished subtask 'reload'.*/g;
 
+export const spfxInstallTitle = "spfx npm install";
+export const spfxInstallStartMessage = `execute 'npm install' under ${spfxFolderName} folder.`;
+export const spfxInstallSuccessMessage = `${spfxInstallTitle} completed successfully.`;
+export const gulpCertTitle = "gulp trust-dev-cert";
+export const gulpCertStartMessage = `execute 'gulp trust-dev-cert' under ${spfxFolderName} folder.`;
+export const gulpCertSuccessMessage = `${gulpCertTitle} completed successfully.`;
+export const gulpServeTitle = "gulp serve";
+export const gulpServeStartMessage = `execute 'gulp serve' under ${spfxFolderName} folder.`;
+export const gulpServeSuccessMessage = `${gulpServeTitle} completed successfully.`;
 export const frontendInstallTitle = "frontend npm install";
 export const frontendInstallStartMessage = `execute 'npm install' under ${frontendFolderName} folder.`;
 export const frontendInstallSuccessMessage = `${frontendInstallTitle} completed successfully.`;
@@ -98,6 +110,9 @@ export const ngrokStartSuccessMessage = "ngrok started successfully.";
 export const previewTitle = "preview";
 export const previewStartMessage = "open Teams web client.";
 export const previewSuccessMessage = "Teams web client opened successfully.";
+export const previewSPFxTitle = "spfx preview";
+export const previewSPFxStartMessage = "open SharePoint workbench.";
+export const previewSPFxSuccessMessage = "SharePoint workbench opened successfully.";
 
 export const frontendLocalEnvPrefix = "FRONTEND_";
 export const backendLocalEnvPrefix = "BACKEND_";

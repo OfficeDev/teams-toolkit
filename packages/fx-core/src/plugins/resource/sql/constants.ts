@@ -11,6 +11,9 @@ export class Constants {
     localRule: "AllowLocal",
   };
 
+  public static readonly ipBeginToken = "0";
+  public static readonly ipEndToken = "255";
+
   public static readonly jwtToken = {
     ver1: "1.0",
     ver2: "2.0",

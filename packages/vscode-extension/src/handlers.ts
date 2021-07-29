@@ -85,6 +85,8 @@ import { registerAccountTreeHandler } from "./accountTree";
 import * as uuid from "uuid";
 import { selectAndDebug } from "./debug/runIconHandler";
 import * as path from "path";
+import { exp } from "./exp/index";
+import { TreatmentVariables } from "./exp/treatmentVariables";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -664,7 +666,12 @@ export function saveTextDocumentHandler(document: vscode.TextDocument) {
 }
 
 export async function cmdHdlLoadTreeView(context: ExtensionContext) {
-  if (1 === 1) {
+  if (
+    await exp
+      .getExpService()
+      .getTreatmentVariableAsync(TreatmentVariables.VSCodeConfig, TreatmentVariables.TreeView, true)
+  ) {
+    commands.executeCommand("setContext", "isNewTreeView", true);
     const disposables = await TreeViewManagerInstance.registerNewTreeViews();
     context.subscriptions.push(...disposables);
   } else {

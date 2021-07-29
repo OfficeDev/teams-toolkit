@@ -281,7 +281,7 @@ class TreeViewManager {
     ];
     const developmentProvider = new CommandsTreeViewProvider(developmentCommand);
     disposables.push(
-      vscode.window.registerTreeDataProvider("teamsfx-project", developmentProvider)
+      vscode.window.registerTreeDataProvider("teamsfx-development", developmentProvider)
     );
 
     const deployCommand = [
@@ -341,9 +341,7 @@ class TreeViewManager {
       ),
     ];
     const deployProvider = new CommandsTreeViewProvider(deployCommand);
-    disposables.push(
-      vscode.window.registerTreeDataProvider("teamsfx-teams-dev-center", deployProvider)
-    );
+    disposables.push(vscode.window.registerTreeDataProvider("teamsfx-deployment", deployProvider));
 
     const helpCommand = [
       new TreeViewCommand(
@@ -375,12 +373,14 @@ class TreeViewManager {
       ),
     ];
     const helpProvider = new CommandsTreeViewProvider(helpCommand);
-    disposables.push(vscode.window.registerTreeDataProvider("teamsfx-feedback", helpProvider));
+    disposables.push(
+      vscode.window.registerTreeDataProvider("teamsfx-help-and-feedback", helpProvider)
+    );
 
     this.treeviewMap.set("teamsfx-accounts", accountProvider);
-    this.treeviewMap.set("teamsfx-project", developmentProvider);
-    this.treeviewMap.set("teamsfx-teams-dev-center", deployProvider);
-    this.treeviewMap.set("teamsfx-feedback", helpProvider);
+    this.treeviewMap.set("teamsfx-development", developmentProvider);
+    this.treeviewMap.set("teamsfx-deployment", deployProvider);
+    this.treeviewMap.set("teamsfx-help-and-feedback", helpProvider);
 
     return disposables;
   }

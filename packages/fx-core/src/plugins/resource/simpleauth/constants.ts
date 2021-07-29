@@ -54,6 +54,8 @@ export class Constants {
     frontendEndpoint: "frontendHosting_endpoint",
     simpleAuthEndporint: "simpleAuth_endpoint",
     simpleAuthSkuName: "simpleAuth_skuName",
+    simpleAuthWebAppName: "simpleAuth_webAppName",
+    simpleAuthAppServicePlanName: "simpleAuth_appServicePlanName",
   };
 
   static readonly moduleTemplateFileName: string = "simpleAuth.template.bicep";

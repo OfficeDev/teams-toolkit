@@ -53,51 +53,7 @@ export class SimpleAuthPluginImpl {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartProvision);
 
-    const credentials = await ctx.azureAccountProvider!.getAccountCredentialAsync();
-
-    if (!credentials) {
-      throw ResultFactory.SystemError(UnauthenticatedError.name, UnauthenticatedError.message());
-    }
-
-    const resourceNameSuffix = Utils.getConfigValueWithValidation(
-      ctx,
-      Constants.SolutionPlugin.id,
-      Constants.SolutionPlugin.configKeys.resourceNameSuffix
-    ) as string;
-    const subscriptionInfo = await ctx.azureAccountProvider?.getSelectedSubscription();
-    if (!subscriptionInfo) {
-      throw ResultFactory.SystemError(
-        NoConfigError.name,
-        NoConfigError.message(
-          Constants.SolutionPlugin.id,
-          Constants.SolutionPlugin.configKeys.subscriptionId
-        )
-      );
-    }
-    const subscriptionId = subscriptionInfo!.subscriptionId;
-    const resourceGroupName = Utils.getConfigValueWithValidation(
-      ctx,
-      Constants.SolutionPlugin.id,
-      Constants.SolutionPlugin.configKeys.resourceGroupName
-    ) as string;
-    const location = Utils.getConfigValueWithValidation(
-      ctx,
-      Constants.SolutionPlugin.id,
-      Constants.SolutionPlugin.configKeys.location
-    ) as string;
-
-    const webAppName = Utils.generateResourceName(ctx.projectSettings!.appName, resourceNameSuffix);
-    const appServicePlanName = webAppName;
-
-    this.webAppClient = new WebAppClient(
-      credentials,
-      subscriptionId,
-      resourceGroupName,
-      appServicePlanName,
-      webAppName,
-      location,
-      ctx
-    );
+    await this.initWebAppClient(ctx);
 
     DialogUtils.progressBar = ctx.ui?.createProgressBar(
       Constants.ProgressBar.provision.title,
@@ -136,39 +92,7 @@ export class SimpleAuthPluginImpl {
     const configs = Utils.getWebAppConfig(ctx, false);
 
     if (isArmSupportEnabled()) {
-      const credentials = await ctx.azureAccountProvider!.getAccountCredentialAsync();
-      const subscriptionInfo = await ctx.azureAccountProvider?.getSelectedSubscription();
-      const subscriptionId = subscriptionInfo!.subscriptionId;
-      const resourceNameSuffix = Utils.getConfigValueWithValidation(
-        ctx,
-        Constants.SolutionPlugin.id,
-        Constants.SolutionPlugin.configKeys.resourceNameSuffix
-      ) as string;
-      const resourceGroupName = Utils.getConfigValueWithValidation(
-        ctx,
-        Constants.SolutionPlugin.id,
-        Constants.SolutionPlugin.configKeys.resourceGroupName
-      ) as string;
-      const location = Utils.getConfigValueWithValidation(
-        ctx,
-        Constants.SolutionPlugin.id,
-        Constants.SolutionPlugin.configKeys.location
-      ) as string;
-
-      const webAppName = Utils.generateResourceName(
-        ctx.projectSettings!.appName,
-        resourceNameSuffix
-      );
-      const appServicePlanName = webAppName;
-      this.webAppClient = new WebAppClient(
-        credentials!,
-        subscriptionId,
-        resourceGroupName,
-        appServicePlanName,
-        webAppName,
-        location,
-        ctx
-      );
+      await this.initWebAppClient(ctx);
 
       const simpleAuthFilePath = Utils.getSimpleAuthFilePath();
       await Utils.downloadZip(simpleAuthFilePath);
@@ -258,5 +182,63 @@ export class SimpleAuthPluginImpl {
 
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndGenerateArmTemplates);
     return ResultFactory.Success(result);
+  }
+
+  private async initWebAppClient(ctx: PluginContext) {
+    const credentials = await ctx.azureAccountProvider!.getAccountCredentialAsync();
+
+    if (!credentials) {
+      throw ResultFactory.SystemError(UnauthenticatedError.name, UnauthenticatedError.message());
+    }
+
+    const resourceNameSuffix = Utils.getConfigValueWithValidation(
+      ctx,
+      Constants.SolutionPlugin.id,
+      Constants.SolutionPlugin.configKeys.resourceNameSuffix
+    ) as string;
+    const subscriptionInfo = await ctx.azureAccountProvider?.getSelectedSubscription();
+    if (!subscriptionInfo) {
+      throw ResultFactory.SystemError(
+        NoConfigError.name,
+        NoConfigError.message(
+          Constants.SolutionPlugin.id,
+          Constants.SolutionPlugin.configKeys.subscriptionId
+        )
+      );
+    }
+    const subscriptionId = subscriptionInfo!.subscriptionId;
+    const resourceGroupName = Utils.getConfigValueWithValidation(
+      ctx,
+      Constants.SolutionPlugin.id,
+      Constants.SolutionPlugin.configKeys.resourceGroupName
+    ) as string;
+    const location = Utils.getConfigValueWithValidation(
+      ctx,
+      Constants.SolutionPlugin.id,
+      Constants.SolutionPlugin.configKeys.location
+    ) as string;
+
+    let webAppName: string;
+    let appServicePlanName: string;
+    if (isArmSupportEnabled()) {
+      webAppName = getArmOutput(ctx, Constants.ArmOutput.simpleAuthEndporint) as string;
+      appServicePlanName = getArmOutput(
+        ctx,
+        Constants.ArmOutput.simpleAuthAppServicePlanName
+      ) as string;
+    } else {
+      webAppName = Utils.generateResourceName(ctx.projectSettings!.appName, resourceNameSuffix);
+      appServicePlanName = webAppName;
+    }
+
+    this.webAppClient = new WebAppClient(
+      credentials,
+      subscriptionId,
+      resourceGroupName,
+      appServicePlanName,
+      webAppName,
+      location,
+      ctx
+    );
   }
 }

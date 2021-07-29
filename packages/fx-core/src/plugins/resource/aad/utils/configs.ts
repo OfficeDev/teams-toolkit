@@ -185,7 +185,7 @@ export class PostProvisionConfig {
       this.frontendEndpoint = format(frontendEndpoint as string, Formats.Endpoint);
     } else {
       if (isArmSupportEnabled()) {
-        frontendEndpoint = getArmOutput(ctx, ConfigKeysOfOtherPlugin.frontendHostingEndpoint);
+        frontendEndpoint = getArmOutput(ctx, ConfigKeysOfOtherPlugin.frontendHostingEndpointArm);
       } else {
         frontendEndpoint = this.isLocalDebug
           ? ctx.configOfOtherPlugins

@@ -28,6 +28,7 @@ In the example workflow's definition, the workflow will be triggered when there'
 
 1. Create GitHub repository secrets by environment to hold Azure/M365 login credentials.
 The table below lists all the secrets you needs to create on GitHub, and for the detailed usage, please refer to the GitHub Action's [README.md](https://github.com/OfficeDev/teamsfx-cli-action/blob/main/README.md).
+
 |Name|Description|
 |---|---|
 |AZURE_ACCOUNT_NAME|The account name of Azure which is used to provision resources.|

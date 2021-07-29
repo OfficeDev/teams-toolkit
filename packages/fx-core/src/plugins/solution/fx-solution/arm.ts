@@ -6,10 +6,10 @@ import {
   SolutionContext,
   Plugin,
   Result,
+  err,
   ok,
   FxError,
   returnSystemError,
-  Json,
 } from "@microsoft/teamsfx-api";
 import { ScaffoldArmTemplateResult, ArmResourcePlugin } from "../../../common/armInterface";
 import { getActivatedResourcePlugins } from "./ResourcePluginContainer";
@@ -22,6 +22,7 @@ import { ConstantString } from "../../../common/constants";
 import { execAsync } from "../../../common/tools";
 import { PluginNames, SolutionError } from "./constants";
 import { ResourceManagementClient, ResourceManagementModels } from "@azure/arm-resources";
+import { ResultFactory } from "../../resource/aad/results";
 
 const baseFolder = "./infra/azure";
 const templateFolder = "templates";
@@ -104,43 +105,53 @@ export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<
   return ok(undefined); // Nothing to return when success
 }
 
-export async function deployArmTemplates(ctx: SolutionContext) {
+export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<void, FxError>> {
   const azureInfraDir = path.join(ctx.root, baseFolder);
+
+  // update parameters
+  const parameterTemplate = await fs.readFile(
+    path.join(azureInfraDir, parameterFolder, parameterTemplateFileName),
+    ConstantString.UTF8Encoding
+  );
+  const parameterJson = JSON.parse(expandParameterPlaceholders(ctx, parameterTemplate));
+  const parameterDefaultFilePath = path.join(
+    azureInfraDir,
+    parameterFolder,
+    parameterDefaultFileName
+  );
+  await fs.writeFile(parameterDefaultFilePath, parameterJson);
+  const resourceGroupName = parameterJson.parameters.resourceBaseName;
+  if (!resourceGroupName) {
+    throw returnSystemError(
+      new Error("Failed to get resource group from parameters."),
+      PluginNames.SOLUTION,
+      SolutionError.NoResourceGroupFound
+    );
+  }
+
+  // Compile bicep file to json
   const orchestrationFilePath = path.join(
     azureInfraDir,
     templateFolder,
     bicepOrchestrationFileName
   );
   const armTemplateJsonFilePath = path.join(azureInfraDir, templateFolder, armTemplateJsonFileName);
-
-  // TODO: update placeholder in parameter.template.json
-  const parameterTemplateFile = await fs.readFile(
-    path.join(azureInfraDir, parameterFolder, parameterTemplateFileName),
-    ConstantString.UTF8Encoding
-  );
-  const parameterDefaultFilePath = path.join(
-    azureInfraDir,
-    parameterFolder,
-    parameterDefaultFileName
-  );
-  const parametersObject: Json = {}; // TODO: update placeholder in parameter.template.json and get parameter json object
-  const resourceGroupName = "myResourceGroupName"; // TODO: get resource group name leveraging user input resourceBaseName
-
   await compileBicepToJson(orchestrationFilePath, armTemplateJsonFilePath);
   ctx.logProvider?.info("Successfully compile bicep files to JSON.");
 
+  // deploy arm templates to azure
   const client = await getResourceManagementClientForArmDeployment(ctx);
   const deploymentName = `${PluginNames.SOLUTION}-deployment`;
   const deploymentParameters: ResourceManagementModels.Deployment = {
     properties: {
-      parameters: parametersObject,
+      parameters: parameterJson,
       template: await fs.readFile(armTemplateJsonFilePath, ConstantString.UTF8Encoding),
       mode: "Incremental" as ResourceManagementModels.DeploymentMode,
     },
   };
   let deploymentFinished = false;
   try {
-    const result = client.deployments
+    const result = await client.deployments
       .createOrUpdate(resourceGroupName, deploymentName, deploymentParameters)
       .then((result) => {
         ctx.logProvider?.info(
@@ -152,10 +163,27 @@ export async function deployArmTemplates(ctx: SolutionContext) {
         deploymentFinished = true;
       });
     pollDeploymentStatus(client, resourceGroupName, Date.now());
-    return result;
+    if (!ctx.projectSettings?.solutionSettings) {
+      return err(
+        returnSystemError(
+          new Error("solutionSettings is undefined"),
+          PluginNames.SOLUTION,
+          SolutionError.InternelError
+        )
+      );
+    }
+    ctx.projectSettings.solutionSettings["armTemplateOutput"] = result.properties?.outputs;
+    return ResultFactory.Success();
   } catch (error) {
     ctx.logProvider?.info(
       `Failed to deploy arm templates to Azure. Resource group name: ${resourceGroupName}. Deployment name: ${deploymentName}. Error message: ${error.message}`
+    );
+    return err(
+      returnSystemError(
+        new Error("Failed to deploy arm templates to azure"),
+        PluginNames.SOLUTION,
+        SolutionError.FailedToDeployArmTemplatesToAzure
+      )
     );
   }
 
@@ -195,7 +223,7 @@ async function getResourceManagementClientForArmDeployment(
   if (!azureToken) {
     throw returnSystemError(
       new Error("Azure Credential is invalid."),
-      "Solution",
+      PluginNames.SOLUTION,
       SolutionError.FailedToGetAzureCredential
     );
   }
@@ -205,7 +233,7 @@ async function getResourceManagementClientForArmDeployment(
   if (!subscriptionId) {
     throw returnSystemError(
       new Error(`Failed to get subscription id.`),
-      "Solution",
+      PluginNames.SOLUTION,
       SolutionError.NoSubscriptionSelected
     );
   }
@@ -222,7 +250,7 @@ async function compileBicepToJson(
   if (stderr) {
     throw returnSystemError(
       new Error(`Failed to compile bicep files to Json arm templates file: ${stderr}`),
-      "Solution",
+      PluginNames.SOLUTION,
       SolutionError.FailedToCompileBicepFiles
     );
   }
@@ -376,5 +404,5 @@ function expandParameterPlaceholders(ctx: SolutionContext, parameterContent: str
 }
 
 function normalizeToEnvName(input: string): string {
-  return input.toUpperCase().replace(/-|\./, "_"); // replace "-" or "." to "_"
+  return input.toUpperCase().replace(/-|\./g, "_"); // replace "-" or "." to "_"
 }

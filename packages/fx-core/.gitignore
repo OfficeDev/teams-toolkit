@@ -9,3 +9,6 @@ coverage
 templates/plugins/resource/bot/**/*.zip
 templates/plugins/resource/frontend/**/*.zip
 templates/plugins/resource/function/**/*.zip
+
+# test
+tests/plugins/solution/testProject/infra/azure/templates/main.json

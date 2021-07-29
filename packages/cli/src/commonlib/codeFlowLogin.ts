@@ -140,14 +140,13 @@ export class CodeFlowLogin {
                 this.account = response.account!;
                 await saveAccountId(this.accountName, this.account.homeAccountId);
               });
-              deferredRedirect.resolve(response.accessToken);
-
-              sendFile(
+              await sendFile(
                 res,
                 path.join(__dirname, "./codeFlowResult/index.html"),
                 "text/html; charset=utf-8",
                 this.accountName!
               );
+              deferredRedirect.resolve(response.accessToken);
             }
           } else {
             throw new Error("get no response");
@@ -378,12 +377,12 @@ export class CodeFlowLogin {
   }
 }
 
-function sendFile(
+async function sendFile(
   res: http.ServerResponse,
   filepath: string,
   contentType: string,
   accountName: string
-) {
+): Promise<void> {
   fs.readFile(filepath, (err, body) => {
     if (err) {
       CliCodeLogInstance.necessaryLog(LogLevel.Error, err.message);

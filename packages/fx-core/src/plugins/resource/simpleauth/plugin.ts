@@ -169,10 +169,7 @@ export class SimpleAuthPluginImpl {
         location,
         ctx
       );
-    }
-    await this.webAppClient.configWebApp(configs);
 
-    if (isArmSupportEnabled()) {
       const simpleAuthFilePath = Utils.getSimpleAuthFilePath();
       await Utils.downloadZip(simpleAuthFilePath);
       await this.webAppClient.zipDeploy(simpleAuthFilePath);
@@ -184,6 +181,8 @@ export class SimpleAuthPluginImpl {
       if (sku) {
         ctx.config.set(Constants.SimpleAuthPlugin.configKeys.skuName, sku);
       }
+    } else {
+      await this.webAppClient.configWebApp(configs);
     }
 
     await DialogUtils.progressBar?.end();

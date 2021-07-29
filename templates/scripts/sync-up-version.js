@@ -8,11 +8,11 @@ const sdkVersion = require(path.join(__dirname, "../../packages/sdk/package.json
 const sdkNname = require(path.join(__dirname, "../../packages/sdk/package.json")).name;
 
 function listFile(dir, list = []) {
-  var arr = fs.readdirSync(dir);
+  const arr = fs.readdirSync(dir);
   arr.forEach(function (item) {
-    var fullpath = path.join(dir, item);
-    var stats = fs.statSync(fullpath);
     if (item === "node_modules") return list;
+    const fullpath = path.join(dir, item);
+    const stats = fs.statSync(fullpath);
     if (stats.isDirectory()) {
       listFile(fullpath, list);
     } else {
@@ -24,9 +24,9 @@ function listFile(dir, list = []) {
 
 const templateDir = path.join(__dirname, "..");
 const depPkgs = listFile(templateDir);
-for (file of depPkgs) {
-  let pkg_ = loadJsonFile.sync(file);
-  let dep = pkg_.dependencies;
+for (let file of depPkgs) {
+  const pkg_ = loadJsonFile.sync(file);
+  const dep = pkg_.dependencies;
   if (dep) {
     let depMap = new Map(Object.entries(dep));
     if (depMap.get(sdkNname)) {

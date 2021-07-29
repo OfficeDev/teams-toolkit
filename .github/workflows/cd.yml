@@ -154,7 +154,7 @@ jobs:
         run: .github/scripts/template-zip-autogen.sh
 
       - name: release templates' alpha version to github
-        if: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'alpha') && contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx') }}
+        if: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'alpha') }}
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: ${{ secrets.CD_PAT }}
@@ -164,7 +164,7 @@ jobs:
             ./*.zip
 
       - name: release templates' RC version to github
-        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' && contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx') }}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' && (contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx') || contains(steps.version-change.outputs.CHANGED, 'templates')) }}
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: ${{ secrets.CD_PAT }}

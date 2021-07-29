@@ -383,20 +383,20 @@ async function sendFile(
   contentType: string,
   accountName: string
 ): Promise<void> {
-  await fs.readFile(filepath, (err, body) => {
-    if (err) {
-      CliCodeLogInstance.necessaryLog(LogLevel.Error, err.message);
-    } else {
-      let data = body.toString();
-      data = data.replace(/\${accountName}/g, accountName == "azure" ? "Azure" : "M365");
-      body = Buffer.from(data, UTF8);
-      res.writeHead(200, {
-        "Content-Length": body.length,
-        "Content-Type": contentType,
-      });
-      res.end(body);
-    }
-  });
+  try {
+    let body = await fs.readFile(filepath);
+    let data = body.toString();
+    data = data.replace(/\${accountName}/g, accountName == "azure" ? "Azure" : "M365");
+    body = Buffer.from(data, UTF8);
+    res.writeHead(200, {
+      "Content-Length": body.length,
+      "Content-Type": contentType,
+    });
+    res.end(body);
+  } catch (err) {
+    CliCodeLogInstance.necessaryLog(LogLevel.Error, err.message);
+    throw err;
+  }
 }
 
 export function LoginFailureError(innerError?: any): UserError {

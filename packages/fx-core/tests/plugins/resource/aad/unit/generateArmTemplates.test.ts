@@ -37,14 +37,16 @@ describe("AadGenerateArmTemplates", () => {
 
     // Assert
     const mockedSolutionDataContext = {
-      plugins: activeResourcePlugins,
-      "fx-resource-aad-app-for-teams": {},
-      "fx-resource-frontend-hosting": {
-        outputs: {
-          domain: "test_frontend_hosting_domain_url",
+      Plugins: activeResourcePlugins,
+      PluginOutput: {
+        "fx-resource-aad-app-for-teams": {},
+        "fx-resource-frontend-hosting": {
+          Outputs: {
+            domain: "test_frontend_hosting_domain_url",
+          },
         },
+        "fx-resource-simple-auth": {},
       },
-      "fx-resource-simple-auth": {},
     };
     chai.assert.isTrue(result.isOk());
     if (result.isOk()) {
@@ -98,13 +100,15 @@ describe("AadGenerateArmTemplates", () => {
 
     // Assert
     const mockedSolutionDataContext = {
-      plugins: activeResourcePlugins,
-      "fx-resource-bot": {
-        outputs: {
-          domain: "test_bot_domain_url",
+      Plugins: activeResourcePlugins,
+      PluginOutput: {
+        "fx-resource-bot": {
+          outputs: {
+            domain: "test_bot_domain_url",
+          },
         },
+        "fx-resource-aad-app-for-teams": {},
       },
-      "fx-resource-aad-app-for-teams": {},
     };
     chai.assert.isTrue(result.isOk());
     if (result.isOk()) {
@@ -143,19 +147,21 @@ describe("AadGenerateArmTemplates", () => {
 
     // Assert
     const mockedSolutionDataContext = {
-      plugins: activeResourcePlugins,
-      "fx-resource-bot": {
-        outputs: {
-          domain: "test_bot_domain_url",
+      Plugins: activeResourcePlugins,
+      PluginOutput: {
+        "fx-resource-bot": {
+          outputs: {
+            domain: "test_bot_domain_url",
+          },
         },
-      },
-      "fx-resource-aad-app-for-teams": {},
-      "fx-resource-frontend-hosting": {
-        outputs: {
-          domain: "test_frontend_hosting_domain_url",
+        "fx-resource-aad-app-for-teams": {},
+        "fx-resource-frontend-hosting": {
+          Outputs: {
+            domain: "test_frontend_hosting_domain_url",
+          },
         },
+        "fx-resource-simple-auth": {},
       },
-      "fx-resource-simple-auth": {},
     };
     chai.assert.isTrue(result.isOk());
     if (result.isOk()) {

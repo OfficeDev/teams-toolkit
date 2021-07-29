@@ -40,10 +40,10 @@ export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<
   // Get bicep content from each resource plugin
   for (const plugin of plugins) {
     const pluginWithArm = plugin as Plugin & ArmResourcePlugin; // Temporary solution before adding it to teamsfx-api
-    if (pluginWithArm.scaffoldArmTemplate) {
+    if (pluginWithArm.generateArmTemplates) {
       // find method using method name
       const pluginContext = getPluginContext(ctx, pluginWithArm.name);
-      const result = (await pluginWithArm.scaffoldArmTemplate(pluginContext)) as Result<
+      const result = (await pluginWithArm.generateArmTemplates(pluginContext)) as Result<
         ScaffoldArmTemplateResult,
         FxError
       >;
@@ -173,12 +173,12 @@ class BicepOrchestrationContent {
 
   public getOrchestrationFileContent(): string {
     let orchestrationTemplate = "";
-    orchestrationTemplate += this.normalizeTemplateSnippet(this.ParameterTemplate, false);
-    orchestrationTemplate += this.normalizeTemplateSnippet(this.VariableTemplate, false);
-    orchestrationTemplate += this.normalizeTemplateSnippet(this.ModuleTemplate, false);
+    orchestrationTemplate += this.normalizeTemplateSnippet(this.ParameterTemplate, false) + "\n";
+    orchestrationTemplate += this.normalizeTemplateSnippet(this.VariableTemplate, false) + "\n";
+    orchestrationTemplate += this.normalizeTemplateSnippet(this.ModuleTemplate, false) + "\n";
     orchestrationTemplate += this.normalizeTemplateSnippet(this.OutputTemplate, false);
 
-    return compileHandlebarsTemplateString(orchestrationTemplate, this.RenderContenxt);
+    return compileHandlebarsTemplateString(orchestrationTemplate, this.RenderContenxt).trim();
   }
 
   public getParameterFileContent(): string {
@@ -202,7 +202,7 @@ class BicepOrchestrationContent {
       if (updateTemplateChangeFlag) {
         this.TemplateAdded = true;
       }
-      return snippet + "\n";
+      return snippet.trim() + "\n";
     }
     return "";
   }

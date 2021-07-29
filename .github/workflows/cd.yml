@@ -98,7 +98,7 @@ jobs:
         id: version-change
         run: |
           echo "::set-output name=CHANGED::$(git tag --points-at HEAD | xargs)"
-          echo "TEMPLATE_VERSION=$(git tag --points-at HEAD | grep templates)" >> $GITHUB_ENV
+          echo "template_ver=$(git tag --points-at HEAD | grep templates@)" >> $GITHUB_ENV
           echo "::set-output name=EXTENSION_VERSION::$(git tag --points-at HEAD | grep ms-teams-vscode-extension@ | cut -d '@' -f2)"
           if git tag --points-at HEAD | grep templates | grep rc;
           then
@@ -138,25 +138,23 @@ jobs:
           npx lerna publish from-package --yes
 
       - name: Install Mustache
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') }}
         run: curl -sSL https://git.io/get-mo -o mo && chmod +x mo && sudo mv mo /usr/local/bin/
 
       - name: sync up templates dependency on main release
-        if: ${{ !contains(steps.version-change.outputs.CHANGED, 'templates@') }}
-        working-directory: ./templates
+        if: ${{ !contains(steps.version-change.outputs.CHANGED, 'templates@') && contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx') }}
         run: |
-          npm run preversion
-          if [[ '${{github.event.inputs.preid}}' == 'stable' && ! -z "$(git diff --cached)" ]]; then
+          npm run preversion --prefix ./templates
+          if [[ '${{github.event.inputs.preid}}' == 'stable' && ! -z "$(git diff --cached -- templates)" ]]; then
           git commit -m "chore: update template dependencies"
-          npx lerna version conventional-commits --amend --yes
-          echo "TEMPLATE_VERSION=$(git tag --points-at HEAD | grep templates)" >> $GITHUB_ENV 
+          npx lerna version --conventional-commits --no-changelog --ignore-scripts --yes
+          echo "template_ver=$(git tag --points-at HEAD | grep templates)" >> $GITHUB_ENV 
           fi
 
       - name: generate templates
         run: .github/scripts/template-zip-autogen.sh
 
       - name: release templates' alpha version to github
-        if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'alpha' }}
+        if: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'alpha') && contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx') }}
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: ${{ secrets.CD_PAT }}
@@ -166,7 +164,7 @@ jobs:
             ./*.zip
 
       - name: release templates' RC version to github
-        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' && contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx') }}
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: ${{ secrets.CD_PAT }}
@@ -176,21 +174,21 @@ jobs:
             ./*.zip
 
       - name: Create Templates Stable Release
-        if: ${{ contains(${{ $TEMPLATE_VERSION }}, 'templates@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
+        if: ${{ contains( env.template_ver, 'templates@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
         uses: ncipollo/release-action@v1.7.3
         with:
           artifacts: ./*.zip
-          name: 'Release for ${{ $TEMPLATE_VERSION }}'
+          name: 'Release for ${{ env.template_ver }}'
           token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ $TEMPLATE_VERSION }}
+          tag: ${{ env.template_ver }}
           allowUpdates: true
 
       - name: Generate Tag List
-        if: ${{ contains(${{ $TEMPLATE_VERSION }}, 'templates@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
+        if: ${{ contains( env.template_ver, 'templates@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
         run: git tag | grep templates@ > ./template-tags.txt
 
       - name: Update Template Tag list Release
-        if: ${{ contains(${{ $TEMPLATE_VERSION }}, 'templates@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
+        if: ${{ contains( env.template_ver, 'templates@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
         uses: ncipollo/release-action@v1.7.3
         with:
           artifacts: ./template-tags.txt

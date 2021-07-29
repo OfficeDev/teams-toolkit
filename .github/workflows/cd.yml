@@ -106,7 +106,7 @@ jobs:
           fi
 
       - name: sync up templates dependency on main release
-        if: ${{ !contains(steps.version-change.outputs.CHANGED, 'templates@') && contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx') }}
+        if: ${{ !contains(steps.version-change.outputs.CHANGED, 'templates@') && contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx') && !contains(steps.version-change.outputs.CHANGED, 'alpha') }}
         run: |
           npm run preversion --prefix ./templates
           if [[ '${{github.event.inputs.preid}}' == 'stable' && ! -z "$(git diff --cached -- templates)" ]]; then

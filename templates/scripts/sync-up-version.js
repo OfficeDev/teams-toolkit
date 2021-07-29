@@ -34,6 +34,8 @@ for (let file of depPkgs) {
         depMap.set(sdkNname, sdkVersion);
       } else if (!semver.intersects(depMap.get(sdkNname), sdkVersion)) {
         depMap.set(sdkNname, `^${sdkVersion}`);
+      } else {
+        continue;
       }
       pkg_.dependencies = Object.fromEntries(depMap);
       writePkg(file, pkg_);

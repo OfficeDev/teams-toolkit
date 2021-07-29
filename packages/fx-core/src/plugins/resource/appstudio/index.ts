@@ -277,6 +277,14 @@ export class AppStudioPlugin implements Plugin {
     const localTeamsAppId = await this.appStudioPluginImpl.postLocalDebug(ctx);
     return ok(localTeamsAppId);
   }
+
+  public async grantPermission(ctx: PluginContext): Promise<any> {
+    return ok(undefined);
+  }
+
+  public async checkPermission(ctx: PluginContext): Promise<any> {
+    return ok(undefined);
+  }
 }
 
 export default new AppStudioPlugin();

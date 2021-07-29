@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Plugin, PluginContext, SystemError, UserError, err } from "@microsoft/teamsfx-api";
+import { Plugin, PluginContext, SystemError, UserError, err, ok } from "@microsoft/teamsfx-api";
 import { AadAppForTeamsImpl } from "./plugin";
 import { AadResult, ResultFactory } from "./results";
 import { UnhandledError } from "./errors";
@@ -68,6 +68,14 @@ export class AadAppForTeamsPlugin implements Plugin {
       ctx,
       Messages.EndGenerateArmTemplates.telemetry
     );
+  }
+
+  public async grantPermission(ctx: PluginContext): Promise<AadResult> {
+    return ok(undefined);
+  }
+
+  public async checkPermission(ctx: PluginContext): Promise<AadResult> {
+    return ok(undefined);
   }
 
   private async runWithExceptionCatchingAsync(

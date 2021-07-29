@@ -7,6 +7,7 @@ import {
   UserError,
   err,
   AzureSolutionSettings,
+  ok,
 } from "@microsoft/teamsfx-api";
 import { HostTypeOptionAzure, TabOptionItem } from "../../solution/fx-solution/question";
 import { Messages, Telemetry } from "./constants";
@@ -65,6 +66,10 @@ export class SimpleAuthPlugin implements Plugin {
       ctx,
       Messages.EndGenerateArmTemplates.telemetry
     );
+  }
+
+  public async checkPermission(ctx: PluginContext): Promise<any> {
+    return ok(undefined);
   }
 
   private async runWithSimpleAuthError(

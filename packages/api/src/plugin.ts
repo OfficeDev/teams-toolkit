@@ -77,4 +77,8 @@ export interface Plugin {
    * execute user customized task
    */
   executeUserTask?: (func: Func, ctx: PluginContext) => Promise<Result<any, FxError>>;
+
+  grantPermission?: (ctx: PluginContext) => Promise<Result<any, FxError>>;
+
+  checkPermission?: (ctx: PluginContext) => Promise<Result<any, FxError>>;
 }

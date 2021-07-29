@@ -285,6 +285,14 @@
         "command": "fx-extension.selectAndDebug",
         "title": "Select and Start Debuging Teams App",
         "icon": "$(run)"
+      },
+      {
+        "command": "fx-extension.grantPermission",
+        "title": "Teams: Grant Permission"
+      },
+      {
+        "command": "fx-extension.checkPermission",
+        "title": "Teams: Check Permission"
       }
     ],
     "taskDefinitions": [

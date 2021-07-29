@@ -11,6 +11,7 @@ import {
   UserError,
   err,
   AzureSolutionSettings,
+  ok,
 } from "@microsoft/teamsfx-api";
 
 import {
@@ -150,6 +151,10 @@ export class FunctionPlugin implements Plugin {
     );
     await StepHelperFactory.deployStepHelper.end();
     return res;
+  }
+
+  public async checkPermission(ctx: PluginContext): Promise<any> {
+    return ok(undefined);
   }
 
   private async runWithErrorWrapper(

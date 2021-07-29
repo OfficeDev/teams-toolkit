@@ -11,6 +11,7 @@ import {
   UserError,
   SystemError,
   AzureSolutionSettings,
+  ok,
 } from "@microsoft/teamsfx-api";
 
 import { FxResult, FxBotPluginResultFactory as ResultFactory } from "./result";
@@ -153,6 +154,10 @@ export class TeamsBot implements Plugin {
       false,
       LifecycleFuncNames.POST_LOCAL_DEBUG
     );
+  }
+
+  public async checkPermission(ctx: PluginContext): Promise<any> {
+    return ok(undefined);
   }
 
   private wrapError(

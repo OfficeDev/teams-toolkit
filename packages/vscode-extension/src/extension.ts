@@ -175,6 +175,18 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(decryptCmd);
 
+  const grantPermissionCmd = vscode.commands.registerCommand(
+    "fx-extension.grantPermission",
+    () => {}
+  );
+  context.subscriptions.push(grantPermissionCmd);
+
+  const checkPermissionCmd = vscode.commands.registerCommand(
+    "fx-extension.checkPermission",
+    () => {}
+  );
+  context.subscriptions.push(checkPermissionCmd);
+
   // Setup CodeLens provider for userdata file
   const codelensProvider = new CryptoCodeLensProvider();
   const userDataSelector = {

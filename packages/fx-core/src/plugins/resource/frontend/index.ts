@@ -8,6 +8,7 @@ import {
   SystemError,
   UserError,
   AzureSolutionSettings,
+  ok,
 } from "@microsoft/teamsfx-api";
 
 import { ErrorFactory, TeamsFxResult } from "./error-factory";
@@ -87,6 +88,10 @@ export class FrontendPlugin implements Plugin {
     return this.runWithErrorHandling(ctx, TelemetryEvent.GenerateArmTemplates, () =>
       this.frontendPluginImpl.generateArmTemplates(ctx)
     );
+  }
+
+  public async checkPermission(ctx: PluginContext): Promise<any> {
+    return ok(undefined);
   }
 
   private async runWithErrorHandling(

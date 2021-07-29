@@ -106,6 +106,7 @@ export class ConfigKeysOfOtherPlugin {
   static solutionPermissionRequest = "permissionRequest";
   static remoteTeamsAppId = "remoteTeamsAppId";
   static frontendHostingEndpointArm = "frontendHosting_endpoint";
+  static frontendHostingDomainArm = "frontendHosting_domain";
 }
 
 export interface Messages {

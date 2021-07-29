@@ -127,13 +127,17 @@ export class SetApplicationInContextConfig {
     if (frontendDomain) {
       this.frontendDomain = format(frontendDomain as string, Formats.Domain);
     } else {
-      frontendDomain = this.isLocalDebug
-        ? ctx.configOfOtherPlugins
-            .get(Plugins.localDebug)
-            ?.get(ConfigKeysOfOtherPlugin.localDebugTabDomain)
-        : ctx.configOfOtherPlugins
-            .get(Plugins.frontendHosting)
-            ?.get(ConfigKeysOfOtherPlugin.frontendHostingDomain);
+      if (isArmSupportEnabled()) {
+        frontendDomain = getArmOutput(ctx, ConfigKeysOfOtherPlugin.frontendHostingDomainArm);
+      } else {
+        frontendDomain = this.isLocalDebug
+          ? ctx.configOfOtherPlugins
+              .get(Plugins.localDebug)
+              ?.get(ConfigKeysOfOtherPlugin.localDebugTabDomain)
+          : ctx.configOfOtherPlugins
+              .get(Plugins.frontendHosting)
+              ?.get(ConfigKeysOfOtherPlugin.frontendHostingDomain);
+      }
       if (frontendDomain) {
         this.frontendDomain = format(frontendDomain as string, Formats.Domain);
       }

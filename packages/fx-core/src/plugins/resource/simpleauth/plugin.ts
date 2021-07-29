@@ -12,7 +12,7 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import { getTemplatesFolder } from "../../..";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
-import { generateBicepFiles } from "../../../common";
+import { generateBicepFiles, getArmOutput, isArmSupportEnabled } from "../../../common";
 
 export class SimpleAuthPluginImpl {
   webAppClient!: WebAppClient;
@@ -135,7 +135,56 @@ export class SimpleAuthPluginImpl {
 
     const configs = Utils.getWebAppConfig(ctx, false);
 
+    if (isArmSupportEnabled()) {
+      const credentials = await ctx.azureAccountProvider!.getAccountCredentialAsync();
+      const subscriptionInfo = await ctx.azureAccountProvider?.getSelectedSubscription();
+      const subscriptionId = subscriptionInfo!.subscriptionId;
+      const resourceNameSuffix = Utils.getConfigValueWithValidation(
+        ctx,
+        Constants.SolutionPlugin.id,
+        Constants.SolutionPlugin.configKeys.resourceNameSuffix
+      ) as string;
+      const resourceGroupName = Utils.getConfigValueWithValidation(
+        ctx,
+        Constants.SolutionPlugin.id,
+        Constants.SolutionPlugin.configKeys.resourceGroupName
+      ) as string;
+      const location = Utils.getConfigValueWithValidation(
+        ctx,
+        Constants.SolutionPlugin.id,
+        Constants.SolutionPlugin.configKeys.location
+      ) as string;
+
+      const webAppName = Utils.generateResourceName(
+        ctx.projectSettings!.appName,
+        resourceNameSuffix
+      );
+      const appServicePlanName = webAppName;
+      this.webAppClient = new WebAppClient(
+        credentials!,
+        subscriptionId,
+        resourceGroupName,
+        appServicePlanName,
+        webAppName,
+        location,
+        ctx
+      );
+    }
     await this.webAppClient.configWebApp(configs);
+
+    if (isArmSupportEnabled()) {
+      const simpleAuthFilePath = Utils.getSimpleAuthFilePath();
+      await Utils.downloadZip(simpleAuthFilePath);
+      await this.webAppClient.zipDeploy(simpleAuthFilePath);
+
+      const endpoint = getArmOutput(ctx, Constants.ArmOutput.simpleAuthEndporint) as string;
+      ctx.config.set(Constants.SimpleAuthPlugin.configKeys.endpoint, endpoint);
+
+      const sku = getArmOutput(ctx, Constants.ArmOutput.simpleAuthSkuName) as string;
+      if (sku) {
+        ctx.config.set(Constants.SimpleAuthPlugin.configKeys.skuName, sku);
+      }
+    }
 
     await DialogUtils.progressBar?.end();
 

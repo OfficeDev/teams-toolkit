@@ -383,7 +383,7 @@ async function sendFile(
   contentType: string,
   accountName: string
 ): Promise<void> {
-  fs.readFile(filepath, (err, body) => {
+  await fs.readFile(filepath, (err, body) => {
     if (err) {
       CliCodeLogInstance.necessaryLog(LogLevel.Error, err.message);
     } else {

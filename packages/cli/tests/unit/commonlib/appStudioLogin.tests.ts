@@ -25,21 +25,23 @@ describe("App studio login Tests", function () {
 
   it("GetAccessToken", async () => {
     const result = await AppStudioTokenProvider.getAccessToken();
-    expect(result);
+    expect(result).equal(
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+    );
   });
 
   it("GetJsonObject", async () => {
     const result = await AppStudioTokenProvider.getJsonObject();
-    expect(result);
+    expect(result!.sub).equal("1234567890");
   });
 
   it("Signout", async () => {
     const result = await AppStudioTokenProvider.signout();
-    expect(result);
+    expect(result).equal(true);
   });
 
   it("GetStatus", async () => {
     const result = await AppStudioTokenProvider.getStatus();
-    expect(result);
+    expect(result.status).equal("SignedOut");
   });
 });

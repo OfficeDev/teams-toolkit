@@ -8,6 +8,8 @@ import {
   Result,
   ok,
   FxError,
+  returnSystemError,
+  Json,
 } from "@microsoft/teamsfx-api";
 import { ScaffoldArmTemplateResult, ArmResourcePlugin } from "../../../common/armInterface";
 import { getActivatedResourcePlugins } from "./ResourcePluginContainer";
@@ -16,12 +18,18 @@ import { format } from "util";
 import { compileHandlebarsTemplateString, getStrings } from "../../../common";
 import path from "path";
 import * as fs from "fs-extra";
+import { ConstantString } from "../../../common/constants";
+import { execAsync } from "../../../common/tools";
+import { PluginNames, SolutionError } from "./constants";
+import { ResourceManagementClient, ResourceManagementModels } from "@azure/arm-resources";
 
 const baseFolder = "./infra/azure";
 const templateFolder = "templates";
 const parameterFolder = "parameters";
 const bicepOrchestrationFileName = "main.bicep";
+const armTemplateJsonFileName = "main.json";
 const parameterTemplateFileName = "parameter.template.json";
+const parameterDefaultFileName = "parameter.default.json";
 const solutionLevelParameters = `param resourceBaseName string\n`;
 const solutionLevelParameterObject = {
   resourceBaseName: {
@@ -96,6 +104,129 @@ export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<
   return ok(undefined); // Nothing to return when success
 }
 
+export async function deployArmTemplates(ctx: SolutionContext) {
+  const azureInfraDir = path.join(ctx.root, baseFolder);
+  const orchestrationFilePath = path.join(
+    azureInfraDir,
+    templateFolder,
+    bicepOrchestrationFileName
+  );
+  const armTemplateJsonFilePath = path.join(azureInfraDir, templateFolder, armTemplateJsonFileName);
+
+  // TODO: update placeholder in parameter.template.json
+  const parameterTemplateFile = await fs.readFile(
+    path.join(azureInfraDir, parameterFolder, parameterTemplateFileName),
+    ConstantString.UTF8Encoding
+  );
+  const parameterDefaultFilePath = path.join(
+    azureInfraDir,
+    parameterFolder,
+    parameterDefaultFileName
+  );
+  const parametersObject: Json = {}; // TODO: update placeholder in parameter.template.json and get parameter json object
+  const resourceGroupName = "myResourceGroupName"; // TODO: get resource group name leveraging user input resourceBaseName
+
+  await compileBicepToJson(orchestrationFilePath, armTemplateJsonFilePath);
+  ctx.logProvider?.info("Successfully compile bicep files to JSON.");
+
+  const client = await getResourceManagementClientForArmDeployment(ctx);
+  const deploymentName = `${PluginNames.SOLUTION}-deployment`;
+  const deploymentParameters: ResourceManagementModels.Deployment = {
+    properties: {
+      parameters: parametersObject,
+      template: await fs.readFile(armTemplateJsonFilePath, ConstantString.UTF8Encoding),
+      mode: "Incremental" as ResourceManagementModels.DeploymentMode,
+    },
+  };
+  let deploymentFinished = false;
+  try {
+    const result = client.deployments
+      .createOrUpdate(resourceGroupName, deploymentName, deploymentParameters)
+      .then((result) => {
+        ctx.logProvider?.info(
+          `Successfully deploy arm templates to Azure. Resource group name: ${resourceGroupName}. Deployment name: ${deploymentName}`
+        );
+        return result;
+      })
+      .finally(() => {
+        deploymentFinished = true;
+      });
+    pollDeploymentStatus(client, resourceGroupName, Date.now());
+    return result;
+  } catch (error) {
+    ctx.logProvider?.info(
+      `Failed to deploy arm templates to Azure. Resource group name: ${resourceGroupName}. Deployment name: ${deploymentName}. Error message: ${error.message}`
+    );
+  }
+
+  async function pollDeploymentStatus(
+    client: ResourceManagementClient,
+    resourceGroupName: string,
+    deploymentStartTime: number
+  ): Promise<void> {
+    ctx.logProvider?.info("polling deployment status...");
+
+    const waitingTimeSpan = 10000;
+    setTimeout(async () => {
+      if (!deploymentFinished) {
+        const deployments = await client.deployments.listByResourceGroup(resourceGroupName);
+        deployments.forEach((deployment) => {
+          if (
+            deployment.properties?.timestamp &&
+            deployment.properties.timestamp.getTime() > deploymentStartTime
+          ) {
+            console.log(
+              `[${deployment.properties.timestamp}] ${deployment.name} -> ${deployment.properties.provisioningState}`
+            );
+            if (deployment.properties.error) {
+              console.log(`Error message: ${JSON.stringify(deployment.properties.error, null, 2)}`);
+            }
+          }
+        });
+        pollDeploymentStatus(client, resourceGroupName, deploymentStartTime);
+      }
+    }, waitingTimeSpan);
+  }
+}
+async function getResourceManagementClientForArmDeployment(
+  ctx: SolutionContext
+): Promise<ResourceManagementClient> {
+  const azureToken = await ctx.azureAccountProvider?.getAccountCredentialAsync();
+  if (!azureToken) {
+    throw returnSystemError(
+      new Error("Azure Credential is invalid."),
+      "Solution",
+      SolutionError.FailedToGetAzureCredential
+    );
+  }
+
+  const subscriptionId = (await ctx.azureAccountProvider?.getSelectedSubscription())
+    ?.subscriptionId;
+  if (!subscriptionId) {
+    throw returnSystemError(
+      new Error(`Failed to get subscription id.`),
+      "Solution",
+      SolutionError.NoSubscriptionSelected
+    );
+  }
+  return new ResourceManagementClient(azureToken, subscriptionId);
+}
+
+async function compileBicepToJson(
+  bicepOrchestrationFilePath: string,
+  jsonFilePath: string
+): Promise<void> {
+  // TODO: ensure bicep cli is installed
+  const command = `bicep build ${bicepOrchestrationFilePath} --outfile ${jsonFilePath}`;
+  const { stdout, stderr } = await execAsync(command);
+  if (stderr) {
+    throw returnSystemError(
+      new Error(`Failed to compile bicep files to Json arm templates file: ${stderr}`),
+      "Solution",
+      SolutionError.FailedToCompileBicepFiles
+    );
+  }
+}
 // Context used by handlebars to render the main.bicep file
 export class ArmTemplateRenderContext {
   public Plugins: string[];

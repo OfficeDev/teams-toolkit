@@ -100,6 +100,8 @@ export enum SolutionError {
   GetRemoteConfigError = "GetRemoteConfigError",
   UnsupportedPlatform = "UnsupportedPlatform",
   InvalidInput = "InvalidInput",
+  FailedToCompileBicepFiles = "FailedToCompileBicepFiles",
+  FailedToGetAzureCredential = "FailedToGetAzureCredential",
 }
 
 export const LOCAL_DEBUG_TAB_ENDPOINT = "localTabEndpoint";

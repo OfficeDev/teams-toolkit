@@ -113,8 +113,8 @@ jobs:
       - name: sync up templates deps with sdk version for RC
         if: ${{ contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx') && !contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.preid == 'rc' }}
         run: |
-          npm run preversion
-        working-directory: ./templates
+          node ./tools/sync-up-version.js
+        working-directory: ./packages/sdk
 
       - name: update cli ai key
         if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.preid == 'stable'||github.event.inputs.preid == 'rc') }}

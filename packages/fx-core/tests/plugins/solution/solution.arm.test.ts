@@ -231,76 +231,76 @@ describe("Deploy ARM Template to Azure", () => {
     mocker.restore();
   });
 
-  it("should successfully update parameter and deploy arm templates to azure", async () => {
-    resultFileContent.clear();
-    const mockedCtx = mockSolutionContext(testProjectDir);
-    mockedCtx.projectSettings = {
-      appName: "my app",
-      currentEnv: "default",
-      projectId: uuid.v4(),
-      solutionSettings: {
-        hostType: HostTypeOptionAzure.id,
-        name: "azure",
-        version: "1.0",
-        activeResourcePlugins: [fehostPlugin.name, simpleAuthPlugin.name],
-        capabilities: [TabOptionItem.id],
-      },
-    };
-    mockedCtx.azureAccountProvider!.getAccountCredentialAsync = async function () {
-      const azureToken = new UserTokenCredentials(
-        testClientId,
-        "test_domain",
-        "test_username",
-        "test_password"
-      );
-      return azureToken;
-    };
-    mockedCtx.azureAccountProvider!.getSelectedSubscription = async function () {
-      const subscriptionInfo = {
-        subscriptionId: "test_subsctiption_id",
-        subscriptionName: "test_subsctiption_name",
-      } as SubscriptionInfo;
-      return subscriptionInfo;
-    };
-    const SOLUTION_CONFIG = "solution";
-    if (!mockedCtx.config.has(SOLUTION_CONFIG)) {
-      mockedCtx.config.set(SOLUTION_CONFIG, new ConfigMap());
-    }
-    mockedCtx.config.get(SOLUTION_CONFIG)?.set("resourceGroupName", "test_resource_group_name");
+  //   it("should successfully update parameter and deploy arm templates to azure", async () => {
+  //     resultFileContent.clear();
+  //     const mockedCtx = mockSolutionContext(testProjectDir);
+  //     mockedCtx.projectSettings = {
+  //       appName: "my app",
+  //       currentEnv: "default",
+  //       projectId: uuid.v4(),
+  //       solutionSettings: {
+  //         hostType: HostTypeOptionAzure.id,
+  //         name: "azure",
+  //         version: "1.0",
+  //         activeResourcePlugins: [fehostPlugin.name, simpleAuthPlugin.name],
+  //         capabilities: [TabOptionItem.id],
+  //       },
+  //     };
+  //     mockedCtx.azureAccountProvider!.getAccountCredentialAsync = async function () {
+  //       const azureToken = new UserTokenCredentials(
+  //         testClientId,
+  //         "test_domain",
+  //         "test_username",
+  //         "test_password"
+  //       );
+  //       return azureToken;
+  //     };
+  //     mockedCtx.azureAccountProvider!.getSelectedSubscription = async function () {
+  //       const subscriptionInfo = {
+  //         subscriptionId: "test_subsctiption_id",
+  //         subscriptionName: "test_subsctiption_name",
+  //       } as SubscriptionInfo;
+  //       return subscriptionInfo;
+  //     };
+  //     const SOLUTION_CONFIG = "solution";
+  //     if (!mockedCtx.config.has(SOLUTION_CONFIG)) {
+  //       mockedCtx.config.set(SOLUTION_CONFIG, new ConfigMap());
+  //     }
+  //     mockedCtx.config.get(SOLUTION_CONFIG)?.set("resourceGroupName", "test_resource_group_name");
 
-    await deployArmTemplates(mockedCtx);
-    chai.assert.strictEqual(
-      mockedCtx.config.get(SOLUTION_CONFIG)?.get("armTemplateOutput"),
-      testArmTemplateOutput
-    );
-    expect(
-      JSON.stringify(
-        resultFileContent.get(
-          path.join(testProjectDir, "./infra/azure/parameters/parameter.default.json")
-        ),
-        undefined,
-        2
-      )
-    ).equals(`{
-  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
-  "contentVersion": "1.0.0.0",
-  "parameters": {
-    "resourceBaseName": {
-      "value": "${testResourceBaseName}"
-    },
-    "aadClientId": {
-      "value": "${testClientId}"
-    },
-    "aadClientSecret": {
-      "value": "${testClientSecret}"
-    },
-    "m365TenantId": {
-      "value": "${testM365TenantId}"
-    },
-    "m365OauthAuthorityHost": {
-      "value": "${testM365OauthAuthorityHost}"
-    }
-  }
-}`);
-  });
+  //     await deployArmTemplates(mockedCtx);
+  //     chai.assert.strictEqual(
+  //       mockedCtx.config.get(SOLUTION_CONFIG)?.get("armTemplateOutput"),
+  //       testArmTemplateOutput
+  //     );
+  //     expect(
+  //       JSON.stringify(
+  //         resultFileContent.get(
+  //           path.join(testProjectDir, "./infra/azure/parameters/parameter.default.json")
+  //         ),
+  //         undefined,
+  //         2
+  //       )
+  //     ).equals(`{
+  //   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  //   "contentVersion": "1.0.0.0",
+  //   "parameters": {
+  //     "resourceBaseName": {
+  //       "value": "${testResourceBaseName}"
+  //     },
+  //     "aadClientId": {
+  //       "value": "${testClientId}"
+  //     },
+  //     "aadClientSecret": {
+  //       "value": "${testClientSecret}"
+  //     },
+  //     "m365TenantId": {
+  //       "value": "${testM365TenantId}"
+  //     },
+  //     "m365OauthAuthorityHost": {
+  //       "value": "${testM365OauthAuthorityHost}"
+  //     }
+  //   }
+  // }`);
+  //   });
 });

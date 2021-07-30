@@ -21,6 +21,7 @@ import {
   RegisterResourceProviderError,
 } from "./resources/errors";
 import {
+  ArmOutput,
   AzureErrorCode,
   AzureInfo,
   Constants,
@@ -50,7 +51,7 @@ import {
 } from "./utils/progress-helper";
 import { TemplateInfo } from "./resources/templateInfo";
 import { AzureClientFactory, AzureLib } from "./utils/azure-client";
-import { getTemplatesFolder } from "../../..";
+import { getArmOutput, getTemplatesFolder, isArmSupportEnabled } from "../../..";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import * as fs from "fs-extra";
 import { ConstantString } from "../../../common/constants";
@@ -173,12 +174,22 @@ export class FrontendPluginImpl {
       };
     }
 
-    const authPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.RuntimePluginName);
-    if (authPlugin) {
-      runtimeEnv = {
-        endpoint: authPlugin.get(DependentPluginInfo.RuntimeEndpoint) as string,
-        startLoginPageUrl: DependentPluginInfo.StartLoginPageURL,
-      };
+    if (isArmSupportEnabled()) {
+      const endpoint = getArmOutput(ctx, ArmOutput.simpleAuthEndpoint) as string;
+      if (endpoint) {
+        runtimeEnv = {
+          endpoint: endpoint,
+          startLoginPageUrl: DependentPluginInfo.StartLoginPageURL,
+        };
+      }
+    } else {
+      const authPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.RuntimePluginName);
+      if (authPlugin) {
+        runtimeEnv = {
+          endpoint: authPlugin.get(DependentPluginInfo.RuntimeEndpoint) as string,
+          startLoginPageUrl: DependentPluginInfo.StartLoginPageURL,
+        };
+      }
     }
 
     const aadPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.AADPluginName);
@@ -194,6 +205,19 @@ export class FrontendPluginImpl {
         functionEnv,
         runtimeEnv,
         aadEnv
+      );
+    }
+
+    if (isArmSupportEnabled()) {
+      const config = await FrontendConfig.fromPluginContext(ctx);
+      config.endpoint = getArmOutput(ctx, ArmOutput.frontendEndpoint) as string;
+      config.domain = getArmOutput(ctx, ArmOutput.frontendDomain) as string;
+      config.syncToPluginContext(ctx);
+
+      const client = new AzureStorageClient(config);
+      await runWithErrorCatchAndThrow(
+        new EnableStaticWebsiteError(),
+        async () => await client.enableStaticWebsite()
       );
     }
 

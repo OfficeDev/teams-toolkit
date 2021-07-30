@@ -3,13 +3,20 @@
 import { PluginContext, ReadonlyPluginConfig } from "@microsoft/teamsfx-api";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 
-import { Constants, DependentPluginInfo, FrontendConfigInfo, RegularExpr } from "./constants";
+import {
+  ArmOutput,
+  Constants,
+  DependentPluginInfo,
+  FrontendConfigInfo,
+  RegularExpr,
+} from "./constants";
 import {
   InvalidConfigError,
   InvalidStorageNameError,
   UnauthenticatedError,
 } from "./resources/errors";
 import { Utils } from "./utils";
+import { getArmOutput, isArmSupportEnabled } from "../../..";
 
 export class FrontendConfig {
   subscriptionId: string;
@@ -41,7 +48,12 @@ export class FrontendConfig {
       throw new UnauthenticatedError();
     }
 
-    const appName = ctx.projectSettings!.appName;
+    let appName: string;
+    if (isArmSupportEnabled()) {
+      appName = getArmOutput(ctx, ArmOutput.frontendWebAppName) as string;
+    } else {
+      appName = ctx.projectSettings!.appName;
+    }
     const solutionConfigs = ctx.configOfOtherPlugins.get(DependentPluginInfo.SolutionPluginName);
 
     const subscriptionInfo = await ctx.azureAccountProvider?.getSelectedSubscription();
@@ -62,7 +74,12 @@ export class FrontendConfig {
       solutionConfigs
     );
 
-    let storageName = ctx.config.getString(FrontendConfigInfo.StorageName);
+    let storageName: string | undefined;
+    if (isArmSupportEnabled()) {
+      storageName = getArmOutput(ctx, ArmOutput.frontendStorageName) as string;
+    } else {
+      storageName = ctx.config.getString(FrontendConfigInfo.StorageName);
+    }
     if (!storageName) {
       storageName = Utils.generateStorageAccountName(
         appName,
@@ -70,6 +87,7 @@ export class FrontendConfig {
         Constants.FrontendSuffix
       );
     }
+
     if (!RegularExpr.FrontendStorageNamePattern.test(storageName)) {
       throw new InvalidStorageNameError();
     }

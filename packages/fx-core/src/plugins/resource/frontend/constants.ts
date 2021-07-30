@@ -97,6 +97,14 @@ export class DependentPluginInfo {
   static readonly LocalTabEndpoint = "localTabEndpoint";
 }
 
+export class ArmOutput {
+  static readonly simpleAuthEndpoint = "simpleAuth_endpoint";
+  static readonly frontendEndpoint = "frontendHosting_endpoint";
+  static readonly frontendDomain = "frontendHosting_domain";
+  static readonly frontendStorageName = "frontendHosting_storageName";
+  static readonly frontendWebAppName = "frontendHosting_webAppName";
+}
+
 export class FrontendConfigInfo {
   static readonly StorageName = "storageName";
   static readonly Endpoint = "endpoint";

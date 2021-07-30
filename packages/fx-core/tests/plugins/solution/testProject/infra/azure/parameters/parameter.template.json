@@ -1,0 +1,21 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "resourceBaseName": {
+      "value": "{{SOLUTION_RESOURCE_BASE_NAME}}"
+    },
+    "aadClientId": {
+      "value": "{{CLIENT_ID}}"
+    },
+    "aadClientSecret": {
+      "value": "{{CLIENT_SECRET}}"
+    },
+    "m365TenantId": {
+      "value": "{{M365_TENANT_ID}}"
+    },
+    "m365OauthAuthorityHost": {
+      "value": "{{M365_OAUTH_AUTHORITY_HOST}}"
+    }
+  }
+}

@@ -17,7 +17,7 @@ import {
   AzureAccountProvider,
   SubscriptionInfo,
 } from "@microsoft/teamsfx-api";
-import { GLOBAL_CONFIG, SolutionError } from "./constants";
+import { GLOBAL_CONFIG, RESOURCE_GROUP_NAME, SolutionError } from "./constants";
 import { v4 as uuidv4 } from "uuid";
 import { ResourceManagementClient } from "@azure/arm-resources";
 
@@ -105,7 +105,7 @@ async function askCommonQuestions(
 
   //2. check resource group
   const rmClient = new ResourceManagementClient(azureToken, subscriptionId);
-  let resourceGroupName = config.get(GLOBAL_CONFIG)?.getString("resourceGroupName");
+  let resourceGroupName = config.get(GLOBAL_CONFIG)?.getString(RESOURCE_GROUP_NAME);
   let needCreateResourceGroup = false;
   if (resourceGroupName) {
     const checkRes = await rmClient.resourceGroups.checkExistence(resourceGroupName);

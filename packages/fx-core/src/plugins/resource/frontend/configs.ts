@@ -48,12 +48,7 @@ export class FrontendConfig {
       throw new UnauthenticatedError();
     }
 
-    let appName: string;
-    if (isArmSupportEnabled()) {
-      appName = getArmOutput(ctx, ArmOutput.frontendWebAppName) as string;
-    } else {
-      appName = ctx.projectSettings!.appName;
-    }
+    const appName = ctx.projectSettings!.appName;
     const solutionConfigs = ctx.configOfOtherPlugins.get(DependentPluginInfo.SolutionPluginName);
 
     const subscriptionInfo = await ctx.azureAccountProvider?.getSelectedSubscription();

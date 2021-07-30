@@ -102,7 +102,6 @@ export class ArmOutput {
   static readonly frontendEndpoint = "frontendHosting_endpoint";
   static readonly frontendDomain = "frontendHosting_domain";
   static readonly frontendStorageName = "frontendHosting_storageName";
-  static readonly frontendWebAppName = "frontendHosting_webAppName";
 }
 
 export class FrontendConfigInfo {

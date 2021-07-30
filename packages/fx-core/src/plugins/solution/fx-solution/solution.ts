@@ -1104,6 +1104,7 @@ export class TeamsAppSolution implements Solution {
 
   @hooks([ErrorHandlerMW])
   async grantPermission(ctx: SolutionContext): Promise<Result<any, FxError>> {
+    console.log(1);
     return ok(Void);
   }
 

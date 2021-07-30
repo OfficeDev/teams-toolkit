@@ -57,6 +57,14 @@ export class MockCore implements Core {
     return ok(new QTreeNode({ type: "group" }));
   }
 
+  async grantPermission(inputs: Inputs): Promise<Result<any, FxError>> {
+    return ok("");
+  }
+
+  async checkPermission(inputs: Inputs): Promise<Result<any, FxError>> {
+    return ok("");
+  }
+
   async getQuestionsForUserTask(
     router: FunctionRouter,
     inputs: Inputs

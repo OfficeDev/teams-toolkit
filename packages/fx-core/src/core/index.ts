@@ -414,6 +414,32 @@ export class FxCore implements Core {
     return await this._getQuestionsForUserTask(solutionContext, solution, func, inputs);
   }
 
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    ContextLoaderMW,
+    SolutionLoaderMW(defaultSolutionLoader),
+    QuestionModelMW,
+    ContextInjecterMW,
+    ConfigWriterMW,
+  ])
+  async grantPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    return await ctx!.solution!.grantPermission!(ctx!.solutionContext!);
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    ContextLoaderMW,
+    SolutionLoaderMW(defaultSolutionLoader),
+    QuestionModelMW,
+    ContextInjecterMW,
+    ConfigWriterMW,
+  ])
+  async checkPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    return await ctx!.solution!.checkPermission!(ctx!.solutionContext!);
+  }
+
   @hooks([ErrorHandlerMW, ContextLoaderMW, ContextInjecterMW])
   async getProjectConfig(
     inputs: Inputs,
@@ -526,7 +552,7 @@ export class FxCore implements Core {
             description: "",
             author: "",
             scripts: {
-              test: "echo \"Error: no test specified\" && exit 1",
+              test: 'echo "Error: no test specified" && exit 1',
             },
             license: "MIT",
           },

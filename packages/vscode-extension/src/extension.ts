@@ -177,13 +177,13 @@ export async function activate(context: vscode.ExtensionContext) {
 
   const grantPermissionCmd = vscode.commands.registerCommand(
     "fx-extension.grantPermission",
-    () => {}
+    (...args) => Correlator.run(handlers.grantPermissionHandler, args)
   );
   context.subscriptions.push(grantPermissionCmd);
 
   const checkPermissionCmd = vscode.commands.registerCommand(
     "fx-extension.checkPermission",
-    () => {}
+    (...args) => Correlator.run(handlers.checkPermissionHandler, args)
   );
   context.subscriptions.push(checkPermissionCmd);
 

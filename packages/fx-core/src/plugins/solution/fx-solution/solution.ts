@@ -77,6 +77,7 @@ import {
   AskSubscriptionQuestion,
   addCapabilityQuestion,
   ProgrammingLanguageQuestion,
+  GrantPermissionQuestion,
 } from "./question";
 import Mustache from "mustache";
 import path from "path";
@@ -1018,6 +1019,8 @@ export class TeamsAppSolution implements Solution {
           }
         }
       }
+    } else if (stage === Stage.grantPermission) {
+      node.addChild(new QTreeNode(GrantPermissionQuestion));
     }
     return ok(node);
   }
@@ -1120,7 +1123,7 @@ export class TeamsAppSolution implements Solution {
 
     try {
       // TODO: add question to get user input.
-      const email = "creator@kenbwsong.onmicrosoft.com";
+      const email = ctx.answers!["userEmail"] as string;
 
       // Get user info according to email.
       const userInfo = await this.getUserInfo(ctx, email);

@@ -532,7 +532,6 @@ export class TeamsAppSolution implements Solution {
         ctx,
         appName,
         ctx.config,
-        ctx.dialog,
         ctx.azureAccountProvider,
         await ctx.appStudioToken?.getJsonObject()
       );

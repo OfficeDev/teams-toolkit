@@ -76,6 +76,7 @@
       "noOpenWorkspace": "No open workspace",
       "signIn365": "Sign in to M365",
       "signInAzure": "Sign in to Azure",
+      "signInAzureNew": "Sign in to Azure (optional)",
       "logErrorFormat": "code:${e.source}.${e.name}, message: ${e.message}, stack: ${e.stack}",
       "getHelp": "Get Help",
       "reportIssue": "Report Issue",

@@ -87,6 +87,7 @@ import { selectAndDebug } from "./debug/runIconHandler";
 import * as path from "path";
 import { exp } from "./exp/index";
 import { TreatmentVariables } from "./exp/treatmentVariables";
+import { StringContext } from "./utils/stringContext";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -672,6 +673,7 @@ export async function cmdHdlLoadTreeView(context: ExtensionContext) {
       .getTreatmentVariableAsync(TreatmentVariables.VSCodeConfig, TreatmentVariables.TreeView, true)
   ) {
     commands.executeCommand("setContext", "isNewTreeView", true);
+    StringContext.setSignInAzureContext(StringResources.vsc.handlers.signInAzureNew);
     const disposables = await TreeViewManagerInstance.registerNewTreeViews();
     context.subscriptions.push(...disposables);
   } else {
@@ -875,7 +877,7 @@ export async function signOutAzure(isFromTreeView: boolean) {
     await TreeViewManagerInstance.getTreeView("teamsfx-accounts")!.refresh([
       {
         commandId: "fx-extension.signinAzure",
-        label: StringResources.vsc.handlers.signInAzure,
+        label: StringContext.getSignInAzureContext(),
         contextValue: "signinAzure",
       },
     ]);

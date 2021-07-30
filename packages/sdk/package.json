@@ -38,8 +38,8 @@
     "test:unit": "npm run build:test && npm run unit-test:node && npm run unit-test:browser",
     "ui-test": "mocha --no-timeouts -r test/mocha.env.ts -r ts-node/register test/ui/**/*.spec.ts --exit",
     "precommit": "lint-staged",
-    "version": "./tools/version.sh",
-    "postversion": "./tools/postversion.sh"
+    "version": "../../.github/scripts/sdk-version.sh",
+    "postversion": "../../.github/scripts/sdk-postversion.sh"
   },
   "files": [
     "dist/",

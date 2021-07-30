@@ -1,10 +1,11 @@
 const path = require("path");
-const writePkg = require("write-pkg");
 const semver = require("semver");
 const fse = require("fs-extra");
 
-const sdkVersion = require(path.join(__dirname, "../package.json")).version;
-const sdkName = require(path.join(__dirname, "../package.json")).name;
+const sdkPath = path.join(__dirname, "../../packages/sdk");
+
+const sdkVersion = require(path.join(sdkPath, "package.json")).version;
+const sdkName = require(path.join(sdkPath, "package.json")).name;
 console.log(`======== sdk name: ${sdkName}, ========== sdk version: ${sdkVersion}`);
 function recursivelyListPackageJsonFilePath(dir, list = []) {
     const arr = fse.readdirSync(dir);
@@ -21,7 +22,7 @@ function recursivelyListPackageJsonFilePath(dir, list = []) {
     return list;
 }
 
-const templateDir = path.join(__dirname, "../../../templates");
+const templateDir = path.join(__dirname, "../../templates");
 const depPkgs = recursivelyListPackageJsonFilePath(templateDir);
 let change = false;
 for (let file of depPkgs) {
@@ -37,14 +38,14 @@ for (let file of depPkgs) {
         }
         change = true;
         pkg_.dependencies = dep;
-        writePkg(file, pkg_);
+        fse.writeFileSync(file, JSON.stringify(pkg_, null, 4));
     }
 }
 
 // only alpha and stable release bump up version
 let needBumpUp = process.argv[2] === "yes" ? true : false;
 if (change && needBumpUp) {
-    let file = path.join(template_dir, "package.json");
+    let file = path.join(templateDir, "package.json");
     let pkg_ = fse.readJsonSync(file);
     let ver = pkg_.version;
     if(semver.prerelease(sdkVersion)) {
@@ -54,13 +55,13 @@ if (change && needBumpUp) {
     }
 
     pkg_.version = ver;
-    writePkg(file, pkg_);
+    fse.writeFileSync(file, JSON.stringify(pkg_, null, 4));
 
-    file = path.join(template_dir, "package-lock.json");
+    file = path.join(templateDir, "package-lock.json");
     if (file) {
         pkg_ = fse.readJsonSync(file);
         pkg_.version = ver;
-        writePkg(file, pkg_);
+        fse.writeFileSync(file, JSON.stringify(pkg_, null, 4))
     }
 
     console.log("bump up templates version as ", ver);

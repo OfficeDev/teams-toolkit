@@ -50,6 +50,14 @@ export class Constants {
     },
   };
 
+  static readonly ArmOutput = {
+    frontendEndpoint: "frontendHosting_endpoint",
+    simpleAuthEndporint: "simpleAuth_endpoint",
+    simpleAuthSkuName: "simpleAuth_skuName",
+    simpleAuthWebAppName: "simpleAuth_webAppName",
+    simpleAuthAppServicePlanName: "simpleAuth_appServicePlanName",
+  };
+
   static readonly moduleTemplateFileName: string = "simpleAuth.template.bicep";
   static readonly inputParameterOrchestrationFileName: string = "input_param.template.bicep";
   static readonly moduleOrchestrationFileName: string = "module.template.bicep";

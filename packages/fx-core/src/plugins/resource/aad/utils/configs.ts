@@ -8,6 +8,7 @@ import { format, Formats } from "./format";
 import { Utils } from "./common";
 import { ResultFactory } from "../results";
 import { v4 as uuidv4 } from "uuid";
+import { getArmOutput, isArmSupportEnabled } from "../../../../common";
 
 function checkAndSaveConfig(context: PluginContext, key: string, value: ConfigValue) {
   if (!value) {
@@ -126,13 +127,17 @@ export class SetApplicationInContextConfig {
     if (frontendDomain) {
       this.frontendDomain = format(frontendDomain as string, Formats.Domain);
     } else {
-      frontendDomain = this.isLocalDebug
-        ? ctx.configOfOtherPlugins
-            .get(Plugins.localDebug)
-            ?.get(ConfigKeysOfOtherPlugin.localDebugTabDomain)
-        : ctx.configOfOtherPlugins
-            .get(Plugins.frontendHosting)
-            ?.get(ConfigKeysOfOtherPlugin.frontendHostingDomain);
+      if (isArmSupportEnabled()) {
+        frontendDomain = getArmOutput(ctx, ConfigKeysOfOtherPlugin.frontendHostingDomainArm);
+      } else {
+        frontendDomain = this.isLocalDebug
+          ? ctx.configOfOtherPlugins
+              .get(Plugins.localDebug)
+              ?.get(ConfigKeysOfOtherPlugin.localDebugTabDomain)
+          : ctx.configOfOtherPlugins
+              .get(Plugins.frontendHosting)
+              ?.get(ConfigKeysOfOtherPlugin.frontendHostingDomain);
+      }
       if (frontendDomain) {
         this.frontendDomain = format(frontendDomain as string, Formats.Domain);
       }
@@ -183,13 +188,17 @@ export class PostProvisionConfig {
     if (frontendEndpoint) {
       this.frontendEndpoint = format(frontendEndpoint as string, Formats.Endpoint);
     } else {
-      frontendEndpoint = this.isLocalDebug
-        ? ctx.configOfOtherPlugins
-            .get(Plugins.localDebug)
-            ?.get(ConfigKeysOfOtherPlugin.localDebugTabEndpoint)
-        : ctx.configOfOtherPlugins
-            .get(Plugins.frontendHosting)
-            ?.get(ConfigKeysOfOtherPlugin.frontendHostingEndpoint);
+      if (isArmSupportEnabled()) {
+        frontendEndpoint = getArmOutput(ctx, ConfigKeysOfOtherPlugin.frontendHostingEndpointArm);
+      } else {
+        frontendEndpoint = this.isLocalDebug
+          ? ctx.configOfOtherPlugins
+              .get(Plugins.localDebug)
+              ?.get(ConfigKeysOfOtherPlugin.localDebugTabEndpoint)
+          : ctx.configOfOtherPlugins
+              .get(Plugins.frontendHosting)
+              ?.get(ConfigKeysOfOtherPlugin.frontendHostingEndpoint);
+      }
       if (frontendEndpoint) {
         this.frontendEndpoint = format(frontendEndpoint as string, Formats.Endpoint);
       }

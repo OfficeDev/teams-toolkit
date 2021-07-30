@@ -12,6 +12,7 @@ import {
   Json,
   ok,
   OptionItem,
+  PluginContext,
   ProjectSettings,
   Result,
   returnSystemError,
@@ -528,4 +529,10 @@ export async function generateBicepFiles(
 export function compileHandlebarsTemplateString(templateString: string, context: any): string {
   const template = Handlebars.compile(templateString);
   return template(context);
+}
+
+export function getArmOutput(ctx: PluginContext, key: string): string | undefined {
+  const solutionConfig = ctx.configOfOtherPlugins.get("solution");
+  const output = solutionConfig?.get("armTemplate");
+  return output?.[key]?.value;
 }

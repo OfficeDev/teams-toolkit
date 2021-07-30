@@ -80,7 +80,12 @@ import {
 import Mustache from "mustache";
 import path from "path";
 import * as util from "util";
-import { deepCopy, getStrings, isUserCancelError } from "../../../common/tools";
+import {
+  deepCopy,
+  getStrings,
+  isArmSupportEnabled,
+  isUserCancelError,
+} from "../../../common/tools";
 import { getTemplatesFolder } from "../../..";
 import {
   getActivatedResourcePlugins,
@@ -92,6 +97,7 @@ import { AadAppForTeamsPlugin, AppStudioPlugin, SpfxPlugin } from "../../resourc
 import { ErrorHandlerMW } from "../../../core/middleware/errorHandler";
 import { hooks } from "@feathersjs/hooks/lib";
 import { Service, Container } from "typedi";
+import { generateArmTemplate } from "./arm";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -362,9 +368,15 @@ export class TeamsAppSolution implements Solution {
           await fs.copy(readme, `${ctx.root}/README.md`);
         }
       }
+    } else {
+      return res;
     }
 
-    return res;
+    if (isArmSupportEnabled()) {
+      return await generateArmTemplate(ctx);
+    } else {
+      return res;
+    }
   }
 
   /**

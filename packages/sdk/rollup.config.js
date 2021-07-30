@@ -10,4 +10,6 @@ if (!process.env.ONLY_NODE) {
   inputs.push(base.browserConfig());
 }
 
+inputs.push(base.blazorConfig());
+
 export default inputs;

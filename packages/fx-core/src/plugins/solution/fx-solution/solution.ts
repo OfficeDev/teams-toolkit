@@ -497,9 +497,7 @@ export class TeamsAppSolution implements Solution {
         );
         ctx.logProvider?.info(msg);
         ctx.ui?.showMessage("info", msg, false);
-        if (!isArmSupportEnabled()) {
-          ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
-        }
+        ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
       } else {
         if (!isUserCancelError(provisionResult.error)) {
           const msg = util.format(

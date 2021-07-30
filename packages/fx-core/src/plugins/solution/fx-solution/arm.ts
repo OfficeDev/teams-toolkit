@@ -170,7 +170,7 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
   };
   let deploymentFinished = false;
   try {
-    const result = await client.deployments
+    const result = client.deployments
       .createOrUpdate(resourceGroupName, deploymentName, deploymentParameters)
       .then((result) => {
         ctx.logProvider?.info(
@@ -181,6 +181,7 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
             deploymentName
           )
         );
+        ctx.config.get(GLOBAL_CONFIG)?.set(ARM_TEMPLATE_OUTPUT, result.properties?.outputs);
         return result;
       })
       .finally(() => {
@@ -196,7 +197,6 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
         )
       );
     }
-    ctx.config.get(GLOBAL_CONFIG)?.set(ARM_TEMPLATE_OUTPUT, result.properties?.outputs);
 
     await ProgressHelper.endDeployArmTemplatesProgress();
     ctx.logProvider?.info(

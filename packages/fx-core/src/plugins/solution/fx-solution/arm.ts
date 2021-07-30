@@ -42,7 +42,7 @@ const parameterDefaultFileName = "parameter.default.json";
 const solutionLevelParameters = `param resourceBaseName string\n`;
 const solutionLevelParameterObject = {
   resourceBaseName: {
-    value: "{{SOLUTION_RESOURCE_BASE_NAME}}",
+    value: "{{SOLUTION__RESOURCE_BASE_NAME}}",
   },
 };
 
@@ -122,19 +122,42 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
   await progressHandler?.next(DeployArmTemplatesSteps.DeployArmTemplates);
 
   const azureInfraDir = path.join(ctx.root, baseFolder);
+  generateResourceName(ctx);
 
   // update parameters
-  const parameterTemplate = await fs.readFile(
-    path.join(azureInfraDir, parameterFolder, parameterTemplateFileName),
-    ConstantString.UTF8Encoding
-  );
-  const parameterJson = JSON.parse(expandParameterPlaceholders(ctx, parameterTemplate));
   const parameterDefaultFilePath = path.join(
     azureInfraDir,
     parameterFolder,
     parameterDefaultFileName
   );
-  await fs.writeFile(parameterDefaultFilePath, parameterJson);
+  const parameterTemplateFilePath = path.join(
+    azureInfraDir,
+    parameterFolder,
+    parameterTemplateFileName
+  );
+  let parameterTemplate, parameterJsonString;
+  try {
+    await fs.stat(parameterDefaultFilePath);
+    parameterTemplate = await fs.readFile(parameterDefaultFilePath, ConstantString.UTF8Encoding);
+    parameterJsonString = expandParameterPlaceholders(ctx, parameterTemplate);
+  } catch (err) {
+    try {
+      parameterTemplate = await fs.readFile(parameterTemplateFilePath, ConstantString.UTF8Encoding);
+      parameterJsonString = expandParameterPlaceholders(ctx, parameterTemplate);
+      await fs.writeFile(parameterDefaultFilePath, parameterJsonString);
+    } catch (err) {
+      return err(
+        returnSystemError(
+          new Error(`${parameterTemplateFilePath} does not exist.`),
+          PluginNames.SOLUTION,
+          SolutionError.FailedToDeployArmTemplatesToAzure
+        )
+      );
+    }
+  }
+
+  const parameterJson = JSON.parse(parameterJsonString);
+
   const resourceGroupName = ctx.config.get(GLOBAL_CONFIG)?.getString(RESOURCE_GROUP_NAME);
   if (!resourceGroupName) {
     throw returnSystemError(
@@ -161,14 +184,14 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
   const deploymentName = `${PluginNames.SOLUTION}-deployment`;
   const deploymentParameters: ResourceManagementModels.Deployment = {
     properties: {
-      parameters: parameterJson,
-      template: await fs.readFile(armTemplateJsonFilePath, ConstantString.UTF8Encoding),
+      parameters: parameterJson.parameters,
+      template: JSON.parse(await fs.readFile(armTemplateJsonFilePath, ConstantString.UTF8Encoding)),
       mode: "Incremental" as ResourceManagementModels.DeploymentMode,
     },
   };
   let deploymentFinished = false;
   try {
-    const result = await client.deployments
+    const result = client.deployments
       .createOrUpdate(resourceGroupName, deploymentName, deploymentParameters)
       .then((result) => {
         ctx.logProvider?.info(
@@ -179,27 +202,14 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
             deploymentName
           )
         );
+        ctx.config.get(GLOBAL_CONFIG)?.set(ARM_TEMPLATE_OUTPUT, result.properties?.outputs);
         return result;
       })
       .finally(() => {
         deploymentFinished = true;
       });
-    pollDeploymentStatus(client, resourceGroupName, Date.now());
-    if (!ctx.projectSettings?.solutionSettings) {
-      return err(
-        returnSystemError(
-          new Error("solutionSettings is undefined"),
-          PluginNames.SOLUTION,
-          SolutionError.InternelError
-        )
-      );
-    }
-    ctx.config.get(GLOBAL_CONFIG)?.set(ARM_TEMPLATE_OUTPUT, result.properties?.outputs);
-
-    await ProgressHelper.endDeployArmTemplatesProgress();
-    ctx.logProvider?.info(
-      format(getStrings().solution.EndDeployArmTemplateNotice, PluginNames.SOLUTION)
-    );
+    await pollDeploymentStatus(client, resourceGroupName, Date.now());
+    await result;
     return ResultFactory.Success();
   } catch (error) {
     ctx.logProvider?.error(
@@ -216,6 +226,11 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
         PluginNames.SOLUTION,
         SolutionError.FailedToDeployArmTemplatesToAzure
       )
+    );
+  } finally {
+    await ProgressHelper.endDeployArmTemplatesProgress();
+    ctx.logProvider?.info(
+      format(getStrings().solution.EndDeployArmTemplateNotice, PluginNames.SOLUTION)
     );
   }
 
@@ -433,6 +448,17 @@ function expandParameterPlaceholders(ctx: SolutionContext, parameterContent: str
       }
     }
   }
+  // Add solution config to available variables
+  const solutionConfig = ctx.config.get(GLOBAL_CONFIG);
+  if (solutionConfig) {
+    for (const configItem of solutionConfig) {
+      if (typeof configItem[1] === "string") {
+        // Currently we only config with string type
+        const variableName = `SOLUTION__${normalizeToEnvName(configItem[0])}`;
+        availableVariables[variableName] = configItem[1];
+      }
+    }
+  }
   // Add environment variable to available variables
   Object.assign(availableVariables, process.env); // The environment variable has higher priority
 
@@ -441,4 +467,14 @@ function expandParameterPlaceholders(ctx: SolutionContext, parameterContent: str
 
 function normalizeToEnvName(input: string): string {
   return input.toUpperCase().replace(/-|\./g, "_"); // replace "-" or "." to "_"
+}
+
+function generateResourceName(ctx: SolutionContext): void {
+  const maxAppNameLength = 10;
+  const appName = ctx.projectSettings!.appName;
+  const sufix = ctx.config.get(GLOBAL_CONFIG)?.getString("resourceNameSuffix");
+  const normalizedAppName = appName.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+  ctx.config
+    .get(GLOBAL_CONFIG)
+    ?.set("resource_base_name", normalizedAppName.substr(0, maxAppNameLength) + sufix);
 }

@@ -24,6 +24,7 @@ import {
 } from "./telemetry/extTelemetryEvents";
 import * as util from "util";
 import * as StringResources from "./resources/Strings.json";
+import { StringContext } from "./utils/stringContext";
 
 export async function getSubscriptionId(): Promise<string | undefined> {
   const subscriptionInfo = await AzureAccountManager.getSelectedSubscription();
@@ -263,7 +264,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
         tools.treeProvider?.refresh([
           {
             commandId: "fx-extension.signinAzure",
-            label: StringResources.vsc.handlers.signInAzure,
+            label: StringContext.getSignInAzureContext(),
             callback: signinAzureCallback,
             parent: TreeCategory.Account,
             icon: "azure",
@@ -297,7 +298,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
     },
     {
       commandId: "fx-extension.signinAzure",
-      label: StringResources.vsc.handlers.signInAzure,
+      label: StringContext.getSignInAzureContext(),
       callback: async (args?: any[]) => {
         return signinAzureCallback(args);
       },

@@ -85,6 +85,9 @@ import { registerAccountTreeHandler } from "./accountTree";
 import * as uuid from "uuid";
 import { selectAndDebug } from "./debug/runIconHandler";
 import * as path from "path";
+import { exp } from "./exp/index";
+import { TreatmentVariables } from "./exp/treatmentVariables";
+import { StringContext } from "./utils/stringContext";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -664,8 +667,19 @@ export function saveTextDocumentHandler(document: vscode.TextDocument) {
 }
 
 export async function cmdHdlLoadTreeView(context: ExtensionContext) {
-  const disposables = await TreeViewManagerInstance.registerTreeViews();
-  context.subscriptions.push(...disposables);
+  if (
+    await exp
+      .getExpService()
+      .getTreatmentVariableAsync(TreatmentVariables.VSCodeConfig, TreatmentVariables.TreeView, true)
+  ) {
+    commands.executeCommand("setContext", "isNewTreeView", true);
+    StringContext.setSignInAzureContext(StringResources.vsc.handlers.signInAzureNew);
+    const disposables = await TreeViewManagerInstance.registerNewTreeViews();
+    context.subscriptions.push(...disposables);
+  } else {
+    const disposables = await TreeViewManagerInstance.registerTreeViews();
+    context.subscriptions.push(...disposables);
+  }
 
   // Register SignOut tree view command
   commands.registerCommand("fx-extension.signOut", async (node: TreeViewCommand) => {
@@ -863,7 +877,7 @@ export async function signOutAzure(isFromTreeView: boolean) {
     await TreeViewManagerInstance.getTreeView("teamsfx-accounts")!.refresh([
       {
         commandId: "fx-extension.signinAzure",
-        label: StringResources.vsc.handlers.signInAzure,
+        label: StringContext.getSignInAzureContext(),
         contextValue: "signinAzure",
       },
     ]);

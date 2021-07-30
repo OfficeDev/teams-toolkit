@@ -11,6 +11,9 @@ import { TokenCredentialsBase } from '@azure/ms-rest-nodeauth';
 // @public @deprecated (undocumented)
 export type Answer = string | undefined;
 
+// @public (undocumented)
+export const AppPackageFolderName = "appPackage";
+
 // @public
 export interface AppStudioTokenProvider {
     getAccessToken(showDialog?: boolean): Promise<string | undefined>;

@@ -24,6 +24,7 @@ import {
   TeamsAppManifest,
   OptionItem,
   ConfigFolderName,
+  AppPackageFolderName,
   AzureSolutionSettings,
   Platform,
   Inputs,
@@ -275,8 +276,11 @@ export class TeamsAppSolution implements Solution {
       "defaultOutline.png"
     );
 
-    await fs.copy(defaultColorPath, `${ctx.root}/.${ConfigFolderName}/color.png`);
-    await fs.copy(defaultOutlinePath, `${ctx.root}/.${ConfigFolderName}/outline.png`);
+    await fs.copy(defaultColorPath, `${ctx.root}/${AppPackageFolderName}/color.png`);
+    await fs.copy(defaultOutlinePath, `${ctx.root}/${AppPackageFolderName}/outline.png`);
+    // await fs.copy(defaultColorPath, `${ctx.root}/.${ConfigFolderName}/color.png`);
+    // await fs.copy(defaultOutlinePath, `${ctx.root}/.${ConfigFolderName}/outline.png`);
+
     if (this.isAzureProject(ctx)) {
       await fs.writeJSON(`${ctx.root}/permissions.json`, DEFAULT_PERMISSION_REQUEST, { spaces: 4 });
       ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.Create, {
@@ -1659,10 +1663,7 @@ export class TeamsAppSolution implements Solution {
       } else if (method === "buildPackage") {
         const appStudioPlugin = this.AppStudioPlugin as AppStudioPlugin;
         const pluginCtx = getPluginContext(ctx, appStudioPlugin.name);
-        return await appStudioPlugin.buildTeamsPackage(
-          pluginCtx,
-          `${ctx.root}/.${ConfigFolderName}`
-        );
+        return await appStudioPlugin.buildTeamsPackage(pluginCtx);
       } else if (array.length == 2) {
         const pluginName = array[1];
         const pluginMap = getAllResourcePluginMap();

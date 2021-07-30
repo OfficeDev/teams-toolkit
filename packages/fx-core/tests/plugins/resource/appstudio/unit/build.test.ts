@@ -49,8 +49,6 @@ describe("Build Teams Package", () => {
   });
 
   it("Build Teams Package", async () => {
-    const appDirectory = path.resolve(__dirname, "./../resources/.fx");
-
     sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns(
       ok({
         tabEndpoint: "tabEndpoint",
@@ -62,7 +60,7 @@ describe("Build Teams Package", () => {
       })
     );
 
-    const builtPackage = await plugin.buildTeamsPackage(ctx, appDirectory);
+    const builtPackage = await plugin.buildTeamsPackage(ctx);
     chai.assert.isTrue(builtPackage.isOk());
     if (builtPackage.isOk()) {
       chai.assert.isNotEmpty(builtPackage.value);

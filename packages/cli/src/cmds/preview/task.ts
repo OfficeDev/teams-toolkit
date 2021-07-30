@@ -4,9 +4,10 @@
 "use strict";
 
 import { ChildProcess, spawn } from "child_process";
-import { err, FxError, ok, Result } from "@microsoft/teamsfx-api";
+import { err, FxError, LogLevel, ok, Result } from "@microsoft/teamsfx-api";
 import treeKill from "tree-kill";
 import { ServiceLogWriter } from "./serviceLogWriter";
+import { CLILogProvider } from "./../../commonlib/log";
 
 interface TaskOptions {
   shell: boolean | string;
@@ -103,7 +104,8 @@ export class Task {
       result: TaskResult,
       serviceLogWriter?: ServiceLogWriter
     ) => Promise<FxError | null>,
-    serviceLogWriter?: ServiceLogWriter
+    serviceLogWriter?: ServiceLogWriter,
+    logProvider?: CLILogProvider
   ): Promise<Result<TaskResult, FxError>> {
     await startCallback(this.taskTitle, this.background);
     this.task = spawn(this.command, this.args, this.options);
@@ -113,6 +115,9 @@ export class Task {
       this.task?.stdout?.on("data", async (data) => {
         const dataStr = data.toString();
         await serviceLogWriter?.write(this.taskTitle, dataStr);
+        if (logProvider) {
+          logProvider.necessaryLog(LogLevel.Info, dataStr.trim(), true);
+        }
         stdout.push(dataStr);
         if (!this.resolved) {
           const match = pattern.test(dataStr);
@@ -143,6 +148,9 @@ export class Task {
       this.task?.stderr?.on("data", async (data) => {
         const dataStr = data.toString();
         await serviceLogWriter?.write(this.taskTitle, dataStr);
+        if (logProvider) {
+          logProvider.necessaryLog(LogLevel.Info, dataStr.trim(), true);
+        }
         stderr.push(dataStr);
       });
 

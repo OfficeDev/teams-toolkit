@@ -97,15 +97,19 @@ export function OpeningBrowserFailed(browser: Browser): UserError {
   );
 }
 
-// TODO: remove when SPFx preview is ready
-export function SPFxNotSupported(): UserError {
+export function NoUrlForSPFxRemotePreview(): UserError {
   return returnUserError(
-    new Error("SPFx preview is not supported currently."),
+    new Error(
+      "SPFx remote preview need your SharePoint site url, pls input sharepoint-site parameter."
+    ),
     constants.cliSource,
-    "SPFxNotSupported"
+    "NoUrlForSPFxRemotePreview"
   );
 }
 
+export function InvalidSharePointSiteURL(error: Error): UserError {
+  return returnUserError(new Error(error.message), constants.cliSource, "InvalidSharePointSiteURL");
+}
 export function DependencyCheckerFailed(): SystemError {
   return returnSystemError(
     new Error("dependency checker failed."),

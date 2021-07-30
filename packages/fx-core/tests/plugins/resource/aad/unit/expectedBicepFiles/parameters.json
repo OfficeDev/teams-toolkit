@@ -1,0 +1,14 @@
+{
+  "aadClientId": {
+    "value": "{{CLIENT_ID}}"
+  },
+  "aadClientSecret": {
+    "value": "{{CLIENT_SECRET}}"
+  },
+  "m365TenantId": {
+    "value": "{{M365_TENANT_ID}}"
+  },
+  "m365OauthAuthorityHost": {
+    "value": "{{M365_OAUTH_AUTHORITY_HOST}}"
+  }
+}

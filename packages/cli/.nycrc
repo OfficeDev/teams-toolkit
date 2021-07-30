@@ -7,11 +7,12 @@
   ],
   "exclude": [
     "src/cmds/preview/depsChecker/**/*",
-    "src/cmds/preview/preview.ts"
+    "src/cmds/preview/preview.ts",
+    "src/index.ts"
   ],
   "reporter": [
-    "text",
     "html",
+    "text",
     "json-summary",
     "cobertura"
   ],

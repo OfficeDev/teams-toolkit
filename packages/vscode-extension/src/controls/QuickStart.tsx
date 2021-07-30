@@ -185,7 +185,7 @@ export default class QuickStart extends React.Component<any, any> {
                       </a>,
                       ".",
                     ]}
-                    actionText="Download Node.js (v14.x)"
+                    actionText="Download Node.js"
                     onAction={this.downloadNode}
                     secondaryActionText="Next"
                     onSecondaryAction={() => {
@@ -215,7 +215,7 @@ export default class QuickStart extends React.Component<any, any> {
                   expanded={this.state.currentStep === curStep}
                   onCollapsedCardClicked={this.onCollapsedCardClicked}
                   step={curStep}
-                  done={this.state.stepsDone[3] && this.state.m365Account}
+                  done={this.state.stepsDone[3] || this.state.m365Account}
                 />
               );
             })()}
@@ -237,7 +237,7 @@ export default class QuickStart extends React.Component<any, any> {
                   expanded={this.state.currentStep === curStep}
                   onCollapsedCardClicked={this.onCollapsedCardClicked}
                   step={curStep}
-                  done={this.state.stepsDone[4] && this.state.azureAccount}
+                  done={this.state.stepsDone[4] || this.state.azureAccount}
                 />
               );
             })()}
@@ -264,6 +264,9 @@ export default class QuickStart extends React.Component<any, any> {
                 />
               );
             })()}
+            <div id="dummy" tabIndex={-1} style={{ opacity: 0 }}>
+              <text>Expanding step card</text>
+            </div>
           </div>
           <div className="content-margin" />
           <div className="stage">
@@ -343,6 +346,9 @@ export default class QuickStart extends React.Component<any, any> {
     this.setState({
       currentStep: step + 1,
     });
+
+    const nextCard = document.getElementById((step + 1).toString()) as HTMLElement;
+    nextCard.focus();
   };
 
   createNewProject = () => {
@@ -373,6 +379,13 @@ export default class QuickStart extends React.Component<any, any> {
     this.setState({
       currentStep: step,
     });
+
+    const dummy = document.getElementById("dummy") as HTMLElement;
+    const curCard = document.getElementById(step.toString()) as HTMLElement;
+    dummy.focus();
+    setTimeout(() => {
+      curCard.focus();
+    }, 500);
   };
 
   onWatchVideo = () => {
@@ -499,7 +512,7 @@ export default class QuickStart extends React.Component<any, any> {
 
     vscode.postMessage({
       command: Commands.OpenExternalLink,
-      data: "https://nodejs.org/dist/latest-v14.x/",
+      data: "https://nodejs.org/en/download",
     });
 
     const done = this.state.stepsDone;
@@ -567,7 +580,7 @@ class GetStartedAction extends React.Component<any, any> {
   render() {
     if (this.props.expanded) {
       return (
-        <div className="action-card">
+        <div className="action-card" tabIndex={0} role="listitem" id={this.props.step}>
           <div className="flex-section card-line">
             {this.props.done && <Image src={Step_Done} className="action-icon" />}
             {!this.props.done && <Image src={this.getStepIcon()} className="action-icon" />}
@@ -592,7 +605,13 @@ class GetStartedAction extends React.Component<any, any> {
       );
     } else {
       return (
-        <div className="collapse-action-card" onClick={this.onCollapseClicked}>
+        <div
+          className="collapse-action-card"
+          onClick={this.onCollapseClicked}
+          tabIndex={0}
+          role="listitem"
+          id={this.props.step}
+        >
           <div className="flex-section">
             {this.props.done && <Image src={Step_Done} className="action-icon" />}
             {!this.props.done && <Image src={this.getStepIcon()} className="action-icon" />}

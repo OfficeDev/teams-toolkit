@@ -16,7 +16,6 @@ import { AxiosResponse } from "axios";
 import { AzureStorageClient } from "../../../../src/plugins/resource/frontend/clients";
 import { DependentPluginInfo } from "../../../../src/plugins/resource/frontend/constants";
 import { FrontendConfig } from "../../../../src/plugins/resource/frontend/configs";
-import { FrontendPlugin } from "../../../../src/plugins/resource/frontend";
 import * as templates from "../../../../src/common/templates";
 import { StorageAccountsCreateResponse } from "@azure/arm-storage/esm/models";
 
@@ -51,6 +50,13 @@ export class TestHelper {
     getAccountCredentialAsync: async () => {
       return TestHelper.fakeCredential;
     },
+    getSelectedSubscription: async () => {
+      return {
+        subscriptionId: "subscriptionId",
+        tenantId: "tenantId",
+        subscriptionName: "subscriptionName",
+      };
+    },
   } as AzureAccountProvider;
 
   static fakeLogProvider: LogProvider = {
@@ -79,7 +85,6 @@ export class TestHelper {
 
   static getFakePluginContext(): PluginContext {
     const solutionConfig = new Map();
-    solutionConfig.set(DependentPluginInfo.SubscriptionId, TestHelper.fakeSubscriptionId);
     solutionConfig.set(DependentPluginInfo.ResourceNameSuffix, TestHelper.storageSuffix);
     solutionConfig.set(DependentPluginInfo.ResourceGroupName, TestHelper.rgName);
     solutionConfig.set(DependentPluginInfo.Location, TestHelper.location);

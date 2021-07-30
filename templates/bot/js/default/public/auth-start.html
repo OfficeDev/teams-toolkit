@@ -19,6 +19,9 @@
         var clientId = currentURL.searchParams.get("clientId");
         var tenantId = currentURL.searchParams.get("tenantId");
         var loginHint = currentURL.searchParams.get("loginHint");
+        if (!loginHint) {
+          loginHint = "";
+        }
 
         var scope = currentURL.searchParams.get("scope");
 

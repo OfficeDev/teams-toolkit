@@ -15,7 +15,7 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
-import { argsToInputs } from "../utils";
+import { argsToInputs, toLocaleLowerCase } from "../utils";
 import CLILogProvider from "../commonlib/log";
 
 export default class Init extends YargsCommand {
@@ -34,6 +34,7 @@ export default class Init extends YargsCommand {
       description: "Environment: 'local' or 'remote'.",
       choices: ["local", "remote"],
       default: "local",
+      coerce: toLocaleLowerCase,
     },
     endpoint: {
       type: "string",

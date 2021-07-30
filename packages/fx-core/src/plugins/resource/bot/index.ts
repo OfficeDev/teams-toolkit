@@ -190,7 +190,7 @@ export class TeamsBot implements Plugin {
           name,
           ResultFactory.SystemError(UnhandledErrorCode, `Got an unhandled error: ${e.message}`)
         );
-      return ResultFactory.SystemError(e.name, e.message, e);
+      return ResultFactory.SystemError(UnhandledErrorCode, e.message, e);
     }
   }
 

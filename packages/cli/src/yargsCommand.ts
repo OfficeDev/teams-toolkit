@@ -14,6 +14,7 @@ import CliTelemetryInstance, { CliTelemetry } from "./telemetry/cliTelemetry";
 import { CliTelemetryReporter } from "./commonlib/telemetry";
 import { readFileSync } from "fs";
 import path from "path";
+import { Correlator } from "@microsoft/teamsfx-core";
 
 export abstract class YargsCommand {
   /**
@@ -69,20 +70,32 @@ export abstract class YargsCommand {
     CliTelemetry.setReporter(reporter);
 
     try {
-      const result = await this.runCommand(args as { [argName: string]: string | string[] });
+      const result = await Correlator.run(
+        this.runCommand.bind(this),
+        args as { [argName: string]: string | string[] }
+      );
       if (result.isErr()) {
         throw result.error;
       }
     } catch (e) {
       const FxError: UserError | SystemError = "source" in e ? e : UnknownError(e);
-      CLILogProvider.necessaryLog(LogLevel.Error, `[${FxError.source}.${FxError.name}]: ${FxError.message}`);
+      CLILogProvider.necessaryLog(
+        LogLevel.Error,
+        `[${FxError.source}.${FxError.name}]: ${FxError.message}`
+      );
       if ("helpLink" in FxError && FxError.helpLink) {
-        CLILogProvider.necessaryLog(LogLevel.Error, 
-          `Get help from ${CLILogProvider.linkColor(`${FxError.helpLink}#${FxError.source}${FxError.name}`)}`
+        CLILogProvider.necessaryLog(
+          LogLevel.Error,
+          `Get help from ${CLILogProvider.linkColor(
+            `${FxError.helpLink}#${FxError.source}${FxError.name}`
+          )}`
         );
       }
       if ("issueLink" in FxError && FxError.issueLink) {
-        CLILogProvider.necessaryLog(LogLevel.Error, `Report this issue at ${CLILogProvider.linkColor(FxError.issueLink)}`);
+        CLILogProvider.necessaryLog(
+          LogLevel.Error,
+          `Report this issue at ${CLILogProvider.linkColor(FxError.issueLink)}`
+        );
       }
       if (CLILogProvider.getLogLevel() === constants.CLILogLevel.debug) {
         CLILogProvider.necessaryLog(LogLevel.Error, "Call stack:");

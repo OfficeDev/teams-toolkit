@@ -17,7 +17,7 @@ import { TestHelper } from "../helper";
 
 chai.use(chaiAsPromised);
 
-describe("frontendConfig", () => {
+describe("FrontendConfig", () => {
   function assertRejected(fn: () => Promise<FrontendConfig>, errorName: string) {
     return chai
       .expect(fn())

@@ -39,7 +39,6 @@ describe("Provision Command Tests", function () {
       .callsFake((eventName: string, error: FxError) => {
         telemetryEvents.push(eventName);
       });
-    sandbox.stub(Utils, "getSubscriptionIdFromEnvFile").returns(Promise.resolve(undefined));
     sandbox.stub(Utils, "setSubscriptionId").callsFake(async (id?: string, folder?: string) => {
       if (!id) return ok(null);
       else return err(NotFoundSubscriptionId());

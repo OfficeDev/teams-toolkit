@@ -21,14 +21,15 @@ jobs:
       # If the hosting environment is not provisioned, set this environment variable to true.
       # or if it's provisioned and has not updates, set this environment variable to false.
       TEAMSFX_RUN_PROVISION: true 
-
+      # To specify the version of teamsfx-cli, and if not specified, the default version will be used.
+      TEAMSFX_CLI_VERSION: 0.3.1
     steps:
       - name: Checkout the code
         uses: actions/checkout@v2
 
       - name: Provision hosting environment
         if: env.TEAMSFX_RUN_PROVISION == 'true'
-        uses: OfficeDev/teamsfx-cli-action@v0
+        uses: OfficeDev/teamsfx-cli-action@v1
         with:
           commands: provision
           subscription: ${{env.AZURE_SUBSCRIPTION_ID}}
@@ -41,17 +42,17 @@ jobs:
           file_pattern: .fx/env.default.json
 
       - name: Deploy to hosting environment
-        uses: OfficeDev/teamsfx-cli-action@v0
+        uses: OfficeDev/teamsfx-cli-action@v1
         with:
           commands: deploy
 
       - name: Validate Teams App's manifest
-        uses: OfficeDev/teamsfx-cli-action@v0
+        uses: OfficeDev/teamsfx-cli-action@v1
         with:
           commands: validate
 
       - name: Build Teams App's package
-        uses: OfficeDev/teamsfx-cli-action@v0
+        uses: OfficeDev/teamsfx-cli-action@v1
         with:
           commands: build
 
@@ -62,6 +63,6 @@ jobs:
           path: ./.fx/appPackage.zip
 
       - name: Publish Teams App
-        uses: OfficeDev/teamsfx-cli-action@v0
+        uses: OfficeDev/teamsfx-cli-action@v1
         with:
           commands: publish

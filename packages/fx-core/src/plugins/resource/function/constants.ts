@@ -154,7 +154,6 @@ export class DefaultProvisionConfigs {
     kind: "StorageV2" as Kind,
     location: location,
     enableHttpsTrafficOnly: true,
-    isHnsEnabled: true,
   });
 
   public static readonly functionAppConfig = (location: string) => ({

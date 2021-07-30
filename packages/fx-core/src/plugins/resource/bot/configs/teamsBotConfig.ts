@@ -29,33 +29,21 @@ export class TeamsBotConfig {
     await this.localDebug.restoreConfigFromContext(context);
     await this.deploy.restoreConfigFromContext(context);
 
-    const clientIdValue: ConfigValue = context.configOfOtherPlugins
+    this.teamsAppClientId = context.configOfOtherPlugins
       .get(PluginAAD.PLUGIN_NAME)
-      ?.get(PluginAAD.CLIENT_ID);
-    if (clientIdValue) {
-      this.teamsAppClientId = clientIdValue as string;
-    }
+      ?.get(PluginAAD.CLIENT_ID) as string;
 
-    const clientSecretValue: ConfigValue = context.configOfOtherPlugins
+    this.teamsAppClientSecret = context.configOfOtherPlugins
       .get(PluginAAD.PLUGIN_NAME)
-      ?.get(PluginAAD.CLIENT_SECRET);
-    if (clientSecretValue) {
-      this.teamsAppClientSecret = clientSecretValue as string;
-    }
+      ?.get(PluginAAD.CLIENT_SECRET) as string;
 
-    const tenantIdValue: ConfigValue = context.configOfOtherPlugins
+    this.teamsAppTenant = context.configOfOtherPlugins
       .get(PluginSolution.PLUGIN_NAME)
-      ?.get(PluginSolution.M365_TENANT_ID);
-    if (tenantIdValue) {
-      this.teamsAppTenant = tenantIdValue as string;
-    }
+      ?.get(PluginSolution.M365_TENANT_ID) as string;
 
-    const applicationIdUrisValue: ConfigValue = context.configOfOtherPlugins
+    this.applicationIdUris = context.configOfOtherPlugins
       .get(PluginAAD.PLUGIN_NAME)
-      ?.get(PluginAAD.APPLICATION_ID_URIS);
-    if (applicationIdUrisValue) {
-      this.applicationIdUris = applicationIdUrisValue as string;
-    }
+      ?.get(PluginAAD.APPLICATION_ID_URIS) as string;
 
     const capabilities = (context.projectSettings?.solutionSettings as AzureSolutionSettings)
       .capabilities;
@@ -89,4 +77,5 @@ export class TeamsBotConfig {
   public toString(): string {
     return JSON.stringify(this);
   }
+
 }

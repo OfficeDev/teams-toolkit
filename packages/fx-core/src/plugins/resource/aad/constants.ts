@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import path from "path";
 import { RequiredResourceAccess } from "./interfaces/IAADDefinition";
 
 export class Constants {
@@ -104,6 +105,8 @@ export class ConfigKeysOfOtherPlugin {
   static localDebugBotEndpoint = "localBotEndpoint";
   static solutionPermissionRequest = "permissionRequest";
   static remoteTeamsAppId = "remoteTeamsAppId";
+  static frontendHostingEndpointArm = "frontendHosting_endpoint";
+  static frontendHostingDomainArm = "frontendHosting_domain";
 }
 
 export interface Messages {
@@ -143,6 +146,16 @@ export class Messages {
   static readonly EndPostProvision: Messages = {
     log: Messages.getLog("Successfully post-provision"),
     telemetry: Messages.getEventName("post-provision"),
+  };
+
+  static readonly StartGenerateArmTemplates: Messages = {
+    log: Messages.getLog("Start to generate arm templates"),
+    telemetry: Messages.getEventName("generate-arm-templates-start"),
+  };
+
+  static readonly EndGenerateArmTemplates: Messages = {
+    log: Messages.getLog("Successfully generated arm templates"),
+    telemetry: Messages.getEventName("generate-arm-templates"),
   };
 
   static readonly StartPostLocalDebug: Messages = {
@@ -203,4 +216,15 @@ export class ProgressDetail {
   static readonly UpdateAppIdUri = "Update application id uri for Azure AD app";
 
   static readonly UpdatePermission = "Update permission for Azure AD app";
+}
+
+export class TemplatePathInfo {
+  static readonly TemplateRelativeDir = path.join("plugins", "resource", "aad");
+  static readonly BicepTemplateRelativeDir = path.join(
+    TemplatePathInfo.TemplateRelativeDir,
+    "bicep"
+  );
+  static readonly ParameterFileName: string = "parameters.json";
+  static readonly InputParameterOrchestrationFileName: string = "input_param.template.bicep";
+  static readonly VariablesOrchestrationFileName: string = "variables.template.bicep";
 }

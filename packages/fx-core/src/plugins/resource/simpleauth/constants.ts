@@ -50,6 +50,14 @@ export class Constants {
     },
   };
 
+  static readonly ArmOutput = {
+    frontendEndpoint: "frontendHosting_endpoint",
+    simpleAuthEndporint: "simpleAuth_endpoint",
+    simpleAuthSkuName: "simpleAuth_skuName",
+    simpleAuthWebAppName: "simpleAuth_webAppName",
+    simpleAuthAppServicePlanName: "simpleAuth_appServicePlanName",
+  };
+
   static readonly moduleTemplateFileName: string = "simpleAuth.template.bicep";
   static readonly inputParameterOrchestrationFileName: string = "input_param.template.bicep";
   static readonly moduleOrchestrationFileName: string = "module.template.bicep";
@@ -86,6 +94,7 @@ export class Constants {
     start: "Starting",
     provision: {
       title: "Provisioning Simple Auth",
+      registerResourceProvider: "Registering required resource provider.",
       createAppServicePlan: "Creating Azure App Service plan",
       createWebApp: "Creating Azure Web App",
       zipDeploy: "Deploying Simple Auth",
@@ -96,6 +105,10 @@ export class Constants {
     },
   };
 
+  static readonly RegisterRersourceProviderFailed = (message: string) =>
+    `Failed to register required resource provider for Simple Auth. Reason: ${message}. Register required resource provider ${Constants.RequiredResourceProviders.join(
+      ","
+    )} manually.`;
   static readonly FreeServerFarmsQuotaErrorFromAzure =
     "The maximum number of Free ServerFarms allowed in a Subscription is 10";
   static readonly FreeServerFarmsQuotaErrorToUser =
@@ -103,6 +116,8 @@ export class Constants {
   static readonly MissingSubscriptionRegistrationErrorFromAzure =
     "The subscription is not registered to use namespace 'Microsoft.Web'";
   static readonly HelpLink = "https://aka.ms/teamsfx-sa-help";
+
+  static readonly RequiredResourceProviders = ["Microsoft.Web"];
 }
 
 export class Telemetry {

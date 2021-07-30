@@ -26,10 +26,10 @@ export class SqlClient {
         return false;
       }
     } catch (error) {
-      this.ctx.logProvider?.error(
-        ErrorMessage.SqlCheckDBUserError.message(this.config.identity, error.message)
-      );
       if (error?.message?.includes(ErrorMessage.AccessMessage)) {
+        this.ctx.logProvider?.error(
+          ErrorMessage.SqlAccessError.message(this.config.identity, error.message)
+        );
         throw SqlResultFactory.UserError(
           ErrorMessage.SqlAccessError.name,
           ErrorMessage.SqlAccessError.message(this.config.identity, error.message),
@@ -38,6 +38,9 @@ export class SqlClient {
           HelpLinks.default
         );
       } else {
+        this.ctx.logProvider?.error(
+          ErrorMessage.SqlCheckDBUserError.message(this.config.identity, error.message)
+        );
         throw SqlResultFactory.UserError(
           ErrorMessage.SqlCheckDBUserError.name,
           ErrorMessage.SqlCheckDBUserError.message(this.config.identity, error.message),

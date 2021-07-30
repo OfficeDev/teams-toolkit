@@ -12,6 +12,7 @@ import {
   Json,
   ok,
   OptionItem,
+  PluginContext,
   ProjectSettings,
   Result,
   returnSystemError,
@@ -39,13 +40,18 @@ import {
   TabOptionItem,
 } from "../plugins/solution/fx-solution/question";
 import * as Handlebars from "handlebars";
+import { ConstantString } from "./constants";
 
 Handlebars.registerHelper("contains", (value, array, options) => {
   array = array instanceof Array ? array : [array];
   return array.indexOf(value) > -1 ? options.fn(this) : "";
 });
+Handlebars.registerHelper("notContains", (value, array, options) => {
+  array = array instanceof Array ? array : [array];
+  return array.indexOf(value) == -1 ? options.fn(this) : "";
+});
 
-const execAsync = promisify(exec);
+export const execAsync = promisify(exec);
 
 export async function npmInstall(path: string) {
   await execAsync("npm install", {
@@ -506,7 +512,7 @@ export async function generateBicepFiles(
   context: any
 ): Promise<Result<string, FxError>> {
   try {
-    const templateString = await fs.readFile(templateFilePath, "utf8");
+    const templateString = await fs.readFile(templateFilePath, ConstantString.UTF8Encoding);
     const updatedBicepFile = compileHandlebarsTemplateString(templateString, context);
     return ok(updatedBicepFile);
   } catch (error) {
@@ -523,4 +529,10 @@ export async function generateBicepFiles(
 export function compileHandlebarsTemplateString(templateString: string, context: any): string {
   const template = Handlebars.compile(templateString);
   return template(context);
+}
+
+export function getArmOutput(ctx: PluginContext, key: string): string | undefined {
+  const solutionConfig = ctx.configOfOtherPlugins.get("solution");
+  const output = solutionConfig?.get("armTemplate");
+  return output?.[key]?.value;
 }

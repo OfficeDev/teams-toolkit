@@ -24,8 +24,6 @@ export class Constants {
   static RequestTryCounts = 3;
   static RequestTimeoutInMS = 20 * 1000;
   static ScaffoldTryCounts = 1;
-
-  static BicepFileEncoding: BufferEncoding = "utf-8";
 }
 
 export class FrontendPluginInfo {
@@ -51,7 +49,8 @@ export class EnvironmentVariables {
 
 export class FrontendPathInfo {
   static WorkingDir = "tabs";
-  static TemplateDir = path.join("plugins", "resource", "frontend");
+  static TemplateRelativeDir = path.join("plugins", "resource", "frontend");
+  static BicepTemplateRelativeDir = path.join(FrontendPathInfo.TemplateRelativeDir, "bicep");
   static TemplateFileExt = ".tpl";
   static TemplatePackageExt = ".zip";
 

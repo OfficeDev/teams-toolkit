@@ -6,6 +6,7 @@ import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/Resou
 import Container from "typedi";
 import {
   AzureAccountProvider,
+  ConfigMap,
   ok,
   Platform,
   PluginContext,
@@ -31,8 +32,7 @@ import { ArmResourcePlugin } from "../../../src/common/armInterface";
 import mockedEnv from "mocked-env";
 import { UserTokenCredentials } from "@azure/ms-rest-nodeauth";
 import { ResourceManagementModels, Deployments } from "@azure/arm-resources";
-import { HttpHeaders } from "@azure/storage-blob";
-import { WebResourceLike } from "@azure/ms-rest-js";
+import { WebResourceLike, HttpHeaders } from "@azure/ms-rest-js";
 import {
   mockedAadScaffoldArmResult,
   mockedFehostScaffoldArmResult,
@@ -222,10 +222,8 @@ describe("Deploy ARM Template to Azure", () => {
         parsedBody: {} as ResourceManagementModels.DeploymentExtended,
       },
     });
-    mocker.stub(child_process, "exec").callsFake((command: string) => {
-      const result: child_process.ChildProcess = child_process.spawn("");
-      return result;
-    });
+
+    mocker.stub(child_process, "exec");
   });
 
   afterEach(() => {
@@ -233,7 +231,7 @@ describe("Deploy ARM Template to Azure", () => {
     mocker.restore();
   });
 
-  it("should output templates when plugin implements required interface", async () => {
+  it("should successfully update parameter and deploy arm templates to azure", async () => {
     resultFileContent.clear();
     const mockedCtx = mockSolutionContext(testProjectDir);
     mockedCtx.projectSettings = {
@@ -264,10 +262,15 @@ describe("Deploy ARM Template to Azure", () => {
       } as SubscriptionInfo;
       return subscriptionInfo;
     };
+    const SOLUTION_CONFIG = "solution";
+    if (!mockedCtx.config.has(SOLUTION_CONFIG)) {
+      mockedCtx.config.set(SOLUTION_CONFIG, new ConfigMap());
+    }
+    mockedCtx.config.get(SOLUTION_CONFIG)?.set("resourceGroupName", "test_resource_group_name");
 
     await deployArmTemplates(mockedCtx);
     chai.assert.strictEqual(
-      mockedCtx.projectSettings.solutionSettings!.armTemplateOutput,
+      mockedCtx.config.get(SOLUTION_CONFIG)?.get("armTemplateOutput"),
       testArmTemplateOutput
     );
     expect(

@@ -34,6 +34,16 @@ export const PERMISSION_REQUEST = "permissionRequest";
  */
 export const PROGRAMMING_LANGUAGE = "programmingLanguage";
 
+/**
+ * Config key whose value is output of ARM templates deployment.
+ */
+export const ARM_TEMPLATE_OUTPUT = "armTemplateOutput";
+
+/**
+ * Config key whose value is the resource group name of project.
+ */
+export const RESOURCE_GROUP_NAME = "resourceGroupName";
+
 export const DEFAULT_PERMISSION_REQUEST = [
   {
     resource: "Microsoft Graph",

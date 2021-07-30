@@ -20,7 +20,13 @@ import path from "path";
 import * as fs from "fs-extra";
 import { ConstantString } from "../../../common/constants";
 import { execAsync } from "../../../common/tools";
-import { PluginNames, SolutionError } from "./constants";
+import {
+  ARM_TEMPLATE_OUTPUT,
+  GLOBAL_CONFIG,
+  PluginNames,
+  RESOURCE_GROUP_NAME,
+  SolutionError,
+} from "./constants";
 import { ResourceManagementClient, ResourceManagementModels } from "@azure/arm-resources";
 import { ResultFactory } from "../../resource/aad/results";
 
@@ -120,10 +126,10 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
     parameterDefaultFileName
   );
   await fs.writeFile(parameterDefaultFilePath, parameterJson);
-  const resourceGroupName = parameterJson.parameters.resourceBaseName;
+  const resourceGroupName = ctx.config.get(GLOBAL_CONFIG)?.getString(RESOURCE_GROUP_NAME);
   if (!resourceGroupName) {
     throw returnSystemError(
-      new Error("Failed to get resource group from parameters."),
+      new Error("Failed to get resource group from project solution settings."),
       PluginNames.SOLUTION,
       SolutionError.NoResourceGroupFound
     );
@@ -137,7 +143,7 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
   );
   const armTemplateJsonFilePath = path.join(azureInfraDir, templateFolder, armTemplateJsonFileName);
   await compileBicepToJson(orchestrationFilePath, armTemplateJsonFilePath);
-  ctx.logProvider?.info("Successfully compile bicep files to JSON.");
+  ctx.logProvider?.info("[Solution] Successfully compile bicep files to JSON.");
 
   // deploy arm templates to azure
   const client = await getResourceManagementClientForArmDeployment(ctx);
@@ -155,7 +161,7 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
       .createOrUpdate(resourceGroupName, deploymentName, deploymentParameters)
       .then((result) => {
         ctx.logProvider?.info(
-          `Successfully deploy arm templates to Azure. Resource group name: ${resourceGroupName}. Deployment name: ${deploymentName}`
+          `[Solution] Successfully deploy arm templates to Azure. Resource group name: ${resourceGroupName}. Deployment name: ${deploymentName}`
         );
         return result;
       })
@@ -172,11 +178,11 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
         )
       );
     }
-    ctx.projectSettings.solutionSettings["armTemplateOutput"] = result.properties?.outputs;
+    ctx.config.get(GLOBAL_CONFIG)?.set(ARM_TEMPLATE_OUTPUT, result.properties?.outputs);
     return ResultFactory.Success();
   } catch (error) {
-    ctx.logProvider?.info(
-      `Failed to deploy arm templates to Azure. Resource group name: ${resourceGroupName}. Deployment name: ${deploymentName}. Error message: ${error.message}`
+    ctx.logProvider?.error(
+      `[Solution] Failed to deploy arm templates to Azure. Resource group name: ${resourceGroupName}. Deployment name: ${deploymentName}. Error message: ${error.message}`
     );
     return err(
       returnSystemError(
@@ -203,11 +209,13 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
             deployment.properties?.timestamp &&
             deployment.properties.timestamp.getTime() > deploymentStartTime
           ) {
-            console.log(
+            ctx.logProvider?.info(
               `[${deployment.properties.timestamp}] ${deployment.name} -> ${deployment.properties.provisioningState}`
             );
             if (deployment.properties.error) {
-              console.log(`Error message: ${JSON.stringify(deployment.properties.error, null, 2)}`);
+              ctx.logProvider?.info(
+                `Error message: ${JSON.stringify(deployment.properties.error, null, 2)}`
+              );
             }
           }
         });

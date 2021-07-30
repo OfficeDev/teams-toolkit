@@ -14,7 +14,7 @@ cd {FolderName}
 # Build the project.
 # The way to build the current project depends on how you scaffold it.
 # Different folder structures require different commands set.
-cd tabs && npm install && npm run build
+cd tabs && npm ci && npm run build
 
 # Run unit test.
 # Currently, no opinioned solution for unit test provided during scaffolding, so,

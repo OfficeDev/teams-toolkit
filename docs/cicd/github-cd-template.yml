@@ -20,21 +20,21 @@ jobs:
 
       # If the hosting environment is not provisioned, set this environment variable to true.
       # or if it's provisioned and has not updates, set this environment variable to false.
-      RUN_PROVISION: true 
+      TEAMSFX_RUN_PROVISION: true 
 
     steps:
       - name: Checkout the code
         uses: actions/checkout@v2
 
       - name: Provision hosting environment
-        if: env.RUN_PROVISION == 'true'
+        if: env.TEAMSFX_RUN_PROVISION == 'true'
         uses: OfficeDev/teamsfx-cli-action@v0
         with:
           commands: provision
           subscription: ${{env.AZURE_SUBSCRIPTION_ID}}
 
       - name: Commit provision configs if necessary
-        if: env.RUN_PROVISION == 'true'
+        if: env.TEAMSFX_RUN_PROVISION == 'true'
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: "chore: commit provision configs"

@@ -22,7 +22,7 @@ jobs:
       # The way to build the current project depends on how you scaffold it.
       # Different folder structures require different commands set.
       - name: Build the project
-        run: cd tabs && npm install && npm run build
+        run: cd tabs && npm ci && npm run build
 
       # Run unit test.
       # Currently, no opinioned solution for unit test provided during scaffolding, so,

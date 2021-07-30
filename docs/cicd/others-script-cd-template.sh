@@ -10,25 +10,27 @@
 
 # If the hosting environment is not provisioned, set this environment variable to false.
 # or if it's provisioned and has not updates, set this environment variable to true.     
-# RUN_PROVISION
+# TEAMSFX_RUN_PROVISION
 
 
 # Setup environment.
-sudo apt install -y nodejs npm curl git
-sudo npm install -g @microsoft/teamsfx-cli 
+# Sufficient permissions are required to run the commands below.
+apt install -y nodejs npm git
+# If you want to install a specific version, please specify it in the end.
+npm install -g @microsoft/teamsfx-cli
 
 # Checkout the code.
 git clone {RepositoryEndpoint}
 cd {FolderName}
 
 # Provision hosting environment.
-if [[ "${RUN_PROVISION}" = "true" ]]
+if [[ "${TEAMSFX_RUN_PROVISION}" = "true" ]]
 then
     teamsfx provision --subscription ${AZURE_SUBSCRIPTION_ID}
 fi
 
 # Commit provision configs if necessary.
-if [[ "${RUN_PROVISION}" = "true" ]]
+if [[ "${TEAMSFX_RUN_PROVISION}" = "true" ]]
 then
     git add .fx
     git commit -m "chore: commit provision configs"

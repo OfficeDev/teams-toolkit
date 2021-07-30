@@ -1973,7 +1973,7 @@ export class TeamsAppSolution implements Solution {
         baseURL: "https://graph.microsoft.com/v1.0",
       });
       instance.defaults.headers.common["Authorization"] = `Bearer ${graphToken}`;
-      const res = await instance.get(`/users`);
+      const res = await instance.get(`/users?$filter=startsWith(mail,'${email}')`);
       if (!res || !res.data || !res.data.value) {
         return undefined;
       }

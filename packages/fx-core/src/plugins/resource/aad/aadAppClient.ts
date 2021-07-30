@@ -16,6 +16,7 @@ import {
   GetAppError,
   GetAppConfigError,
   AadError,
+  GrantPermissionError,
 } from "./errors";
 import { GraphClient } from "./graph";
 import { IAADPassword } from "./interfaces/IAADApplication";
@@ -209,6 +210,22 @@ export class AadAppClient {
     config.clientId = getAppObject.appId;
     config.password = clientSecret;
     return config;
+  }
+
+  public static async grantPermission(objectId: string, userObjectId: string): Promise<void> {
+    try {
+      await GraphClient.grantPermission(TokenProvider.token as string, objectId, userObjectId);
+    } catch (error) {
+      if (error?.response?.data?.error.message == Constants.createOwnerDuplicatedMessage) {
+        return;
+      }
+
+      throw ResultFactory.UserError(
+        GrantPermissionError.name,
+        GrantPermissionError.message(),
+        error
+      );
+    }
   }
 
   public static async retryHanlder(

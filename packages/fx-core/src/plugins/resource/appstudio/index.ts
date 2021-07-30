@@ -278,8 +278,8 @@ export class AppStudioPlugin implements Plugin {
     return ok(localTeamsAppId);
   }
 
-  public async grantPermission(ctx: PluginContext): Promise<any> {
-    return ok(undefined);
+  public async grantPermission(ctx: PluginContext): Promise<Result<any, FxError>> {
+    return await this.appStudioPluginImpl.grantPermission(ctx);
   }
 
   public async checkPermission(ctx: PluginContext): Promise<any> {

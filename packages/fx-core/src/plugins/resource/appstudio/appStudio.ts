@@ -3,7 +3,7 @@
 
 import axios, { AxiosInstance } from "axios";
 import { SystemError, LogProvider } from "@microsoft/teamsfx-api";
-import { IAppDefinition } from "./interfaces/IAppDefinition";
+import { IAppDefinition, IUserList } from "./interfaces/IAppDefinition";
 import { AppStudioError } from "./errors";
 import { IPublishingAppDenition } from "./interfaces/IPublishingAppDefinition";
 import { AppStudioResultFactory } from "./results";
@@ -398,5 +398,21 @@ export namespace AppStudioClient {
     } else {
       return undefined;
     }
+  }
+
+  export async function grantPermission(
+    teamsAppId: string,
+    appStudioToken: string,
+    newUser: IUserList
+  ): Promise<void> {
+    const app = await getApp(teamsAppId, appStudioToken);
+    const findUser = app.userList?.findIndex((user: any) => user["aadId"] === newUser.aadId);
+    if (findUser && findUser >= 0) {
+      return;
+    }
+
+    app.userList?.push(newUser);
+    const requester = createRequesterWithToken(appStudioToken);
+    const response = await requester.post(`/api/appdefinitions/${teamsAppId}/override`, app);
   }
 }

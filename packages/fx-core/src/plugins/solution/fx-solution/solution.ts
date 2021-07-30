@@ -56,6 +56,7 @@ import {
   SolutionTelemetryComponentName,
   SolutionTelemetrySuccess,
   PluginNames,
+  USER_INFO,
 } from "./constants";
 
 import {
@@ -1113,7 +1114,7 @@ export class TeamsAppSolution implements Solution {
 
     const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
     if (!provisioned) {
-      // TODO: add warning: can not grant permission before provision.
+      // TODO: throw error: can not grant permission before provision.
       return ok(undefined);
     }
 
@@ -1122,7 +1123,13 @@ export class TeamsAppSolution implements Solution {
       const email = "creator@kenbwsong.onmicrosoft.com";
 
       // Get user info according to email.
-      const userInfo = this.getUserInfo(ctx, email);
+      const userInfo = await this.getUserInfo(ctx, email);
+
+      if (!userInfo) {
+        // TODO: throw error: can not find user
+        return ok(undefined);
+      }
+      ctx.config.get(GLOBAL_CONFIG)?.set(USER_INFO, JSON.stringify(userInfo));
 
       const maybeSelectedPlugins = this.getSelectedPlugins(ctx);
       if (maybeSelectedPlugins.isErr()) {
@@ -1968,7 +1975,9 @@ export class TeamsAppSolution implements Solution {
         return undefined;
       }
 
-      const collaborator = res.data.value.find((user: any) => (user[""] as string) === email);
+      const collaborator = res.data.value.find(
+        (user: any) => (user["userPrincipalName"] as string) === email
+      );
       if (!collaborator) {
         return undefined;
       }

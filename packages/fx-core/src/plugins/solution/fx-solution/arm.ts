@@ -125,18 +125,27 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
   generateResourceName(ctx);
 
   // update parameters
-  const parameterTemplate = await fs.readFile(
-    path.join(azureInfraDir, parameterFolder, parameterTemplateFileName),
-    ConstantString.UTF8Encoding
-  );
-  const parameterJsonString = expandParameterPlaceholders(ctx, parameterTemplate);
-  const parameterJson = JSON.parse(parameterJsonString);
   const parameterDefaultFilePath = path.join(
     azureInfraDir,
     parameterFolder,
     parameterDefaultFileName
   );
-  await fs.writeFile(parameterDefaultFilePath, parameterJsonString);
+  let parameterTemplate, parameterJsonString;
+  try {
+    await fs.stat(parameterDefaultFilePath);
+    parameterTemplate = await fs.readFile(parameterDefaultFilePath, ConstantString.UTF8Encoding);
+    parameterJsonString = expandParameterPlaceholders(ctx, parameterTemplate);
+  } catch (err) {
+    parameterTemplate = await fs.readFile(
+      path.join(azureInfraDir, parameterFolder, parameterTemplateFileName),
+      ConstantString.UTF8Encoding
+    );
+    parameterJsonString = expandParameterPlaceholders(ctx, parameterTemplate);
+    await fs.writeFile(parameterDefaultFilePath, parameterJsonString);
+  }
+
+  const parameterJson = JSON.parse(parameterJsonString);
+
   const resourceGroupName = ctx.config.get(GLOBAL_CONFIG)?.getString(RESOURCE_GROUP_NAME);
   if (!resourceGroupName) {
     throw returnSystemError(
@@ -187,7 +196,8 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
       .finally(() => {
         deploymentFinished = true;
       });
-    pollDeploymentStatus(client, resourceGroupName, Date.now());
+    await pollDeploymentStatus(client, resourceGroupName, Date.now());
+    await result;
     if (!ctx.projectSettings?.solutionSettings) {
       return err(
         returnSystemError(

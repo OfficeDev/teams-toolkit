@@ -56,6 +56,7 @@ import {
   SolutionTelemetryComponentName,
   SolutionTelemetrySuccess,
   PluginNames,
+  ARM_TEMPLATE_OUTPUT,
 } from "./constants";
 
 import {
@@ -627,6 +628,7 @@ export class TeamsAppSolution implements Solution {
         return ok(undefined);
       },
       async () => {
+        ctx.config.get(GLOBAL_CONFIG)?.delete(ARM_TEMPLATE_OUTPUT);
         ctx.logProvider?.info("[Teams Toolkit]: configuration finished!");
         return ok(undefined);
       }

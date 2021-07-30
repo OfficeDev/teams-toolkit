@@ -247,6 +247,14 @@ export async function publishHandler(args?: any[]): Promise<Result<null, FxError
   return await runCommand(Stage.publish);
 }
 
+export async function grantPermissionHandler(args?: any[]): Promise<Result<null, FxError>> {
+  return await runCommand(Stage.grantPermission);
+}
+
+export async function checkPermissionHandler(args?: any[]): Promise<Result<null, FxError>> {
+  return await runCommand(Stage.checkPermission);
+}
+
 export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
   const eventName = ExtTelemetry.stageToEvent(stage);
   let result: Result<any, FxError> = ok(null);
@@ -272,6 +280,8 @@ export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
     else if (stage === Stage.deploy) result = await core.deployArtifacts(inputs);
     else if (stage === Stage.debug) result = await core.localDebug(inputs);
     else if (stage === Stage.publish) result = await core.publishApplication(inputs);
+    else if (stage === Stage.grantPermission) result = await core.grantPermission(inputs);
+    else if (stage === Stage.checkPermission) result = await core.checkPermission(inputs);
     else {
       throw new SystemError(
         ExtensionErrors.UnsupportedOperation,

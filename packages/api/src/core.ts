@@ -34,4 +34,10 @@ export interface Core {
    */
   encrypt: (plaintext: string, inputs: Inputs) => Promise<Result<string, FxError>>;
   decrypt: (ciphertext: string, inputs: Inputs) => Promise<Result<string, FxError>>;
+
+  /**
+   * For grant and check permission
+   */
+  grantPermission: (systemInputs: Inputs) => Promise<Result<any, FxError>>;
+  checkPermission: (systemInputs: Inputs) => Promise<Result<any, FxError>>;
 }

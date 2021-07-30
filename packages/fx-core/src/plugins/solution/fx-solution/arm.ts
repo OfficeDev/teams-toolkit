@@ -23,7 +23,6 @@ import { execAsync } from "../../../common/tools";
 import {
   ARM_TEMPLATE_OUTPUT,
   GLOBAL_CONFIG,
-  Messages,
   PluginNames,
   RESOURCE_GROUP_NAME,
   SolutionError,
@@ -113,10 +112,7 @@ export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<
   return ok(undefined); // Nothing to return when success
 }
 
-export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<void, FxError>> {
-  ctx.logProvider?.info(
-    format(getStrings().solution.StartDeployArmTemplateNotice, PluginNames.SOLUTION)
-  );
+export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result<void, FxError>> {
   const pluginCtx = getPluginContext(ctx, PluginNames.SOLUTION);
   const progressHandler = await ProgressHelper.startDeployArmTemplatesProgressHandler(pluginCtx);
   await progressHandler?.next(DeployArmTemplatesSteps.DeployArmTemplates);
@@ -125,45 +121,25 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
   generateResourceName(ctx);
 
   // update parameters
-  const parameterDefaultFilePath = path.join(
-    azureInfraDir,
-    parameterFolder,
-    parameterDefaultFileName
-  );
-  const parameterTemplateFilePath = path.join(
-    azureInfraDir,
-    parameterFolder,
-    parameterTemplateFileName
-  );
-  let parameterTemplate, parameterJsonString;
+  let parameterJson;
   try {
-    await fs.stat(parameterDefaultFilePath);
-    parameterTemplate = await fs.readFile(parameterDefaultFilePath, ConstantString.UTF8Encoding);
-    parameterJsonString = expandParameterPlaceholders(ctx, parameterTemplate);
-  } catch (err) {
-    try {
-      parameterTemplate = await fs.readFile(parameterTemplateFilePath, ConstantString.UTF8Encoding);
-      parameterJsonString = expandParameterPlaceholders(ctx, parameterTemplate);
-      await fs.writeFile(parameterDefaultFilePath, parameterJsonString);
-    } catch (err) {
-      return err(
-        returnSystemError(
-          new Error(`${parameterTemplateFilePath} does not exist.`),
-          PluginNames.SOLUTION,
-          SolutionError.FailedToDeployArmTemplatesToAzure
-        )
-      );
-    }
+    parameterJson = await getParameterJson();
+  } catch {
+    return err(
+      ResultFactory.SystemError(
+        SolutionError.FailedToGetParameterJson,
+        `Failed to get parameters. parameters.json file may be broken.`
+      )
+    );
   }
-
-  const parameterJson = JSON.parse(parameterJsonString);
 
   const resourceGroupName = ctx.config.get(GLOBAL_CONFIG)?.getString(RESOURCE_GROUP_NAME);
   if (!resourceGroupName) {
-    throw returnSystemError(
-      new Error("Failed to get resource group from project solution settings."),
-      PluginNames.SOLUTION,
-      SolutionError.NoResourceGroupFound
+    return err(
+      ResultFactory.SystemError(
+        SolutionError.NoSubscriptionFound,
+        "Failed to get resource group from project solution settings."
+      )
     );
   }
 
@@ -221,17 +197,34 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
       )
     );
     return err(
-      returnSystemError(
-        new Error("Failed to deploy arm templates to azure"),
-        PluginNames.SOLUTION,
-        SolutionError.FailedToDeployArmTemplatesToAzure
+      ResultFactory.SystemError(
+        SolutionError.FailedToDeployArmTemplatesToAzure,
+        "Failed to deploy arm templates to azure"
       )
     );
-  } finally {
-    await ProgressHelper.endDeployArmTemplatesProgress();
-    ctx.logProvider?.info(
-      format(getStrings().solution.EndDeployArmTemplateNotice, PluginNames.SOLUTION)
+  }
+
+  async function getParameterJson() {
+    const parameterDefaultFilePath = path.join(
+      azureInfraDir,
+      parameterFolder,
+      parameterDefaultFileName
     );
+    let parameterTemplate, parameterJsonString;
+    try {
+      await fs.stat(parameterDefaultFilePath);
+      parameterTemplate = await fs.readFile(parameterDefaultFilePath, ConstantString.UTF8Encoding);
+      parameterJsonString = expandParameterPlaceholders(ctx, parameterTemplate);
+    } catch (err) {
+      parameterTemplate = await fs.readFile(
+        path.join(azureInfraDir, parameterFolder, parameterTemplateFileName),
+        ConstantString.UTF8Encoding
+      );
+      parameterJsonString = expandParameterPlaceholders(ctx, parameterTemplate);
+      await fs.writeFile(parameterDefaultFilePath, parameterJsonString);
+    }
+
+    return JSON.parse(parameterJsonString);
   }
 
   async function pollDeploymentStatus(
@@ -267,6 +260,19 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
     }, waitingTimeSpan);
   }
 }
+
+export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<void, FxError>> {
+  ctx.logProvider?.info(
+    format(getStrings().solution.StartDeployArmTemplateNotice, PluginNames.SOLUTION)
+  );
+  const result = await doDeployArmTemplates(ctx);
+  await ProgressHelper.endDeployArmTemplatesProgress();
+  ctx.logProvider?.info(
+    format(getStrings().solution.EndDeployArmTemplateNotice, PluginNames.SOLUTION)
+  );
+  return result;
+}
+
 async function getResourceManagementClientForArmDeployment(
   ctx: SolutionContext
 ): Promise<ResourceManagementClient> {

@@ -115,6 +115,7 @@ export enum SolutionError {
   FailedToGetAzureCredential = "FailedToGetAzureCredential",
   NoResourceGroupFound = "NoResourceGroupFound",
   FailedToDeployArmTemplatesToAzure = "FailedToDeployArmTemplatesToAzure",
+  FailedToGetParameterJson = "FailedToGetParameterJson",
 }
 
 export const LOCAL_DEBUG_TAB_ENDPOINT = "localTabEndpoint";

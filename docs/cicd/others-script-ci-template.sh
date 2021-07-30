@@ -4,7 +4,8 @@
 # Setup environment.
 # The `apt install` command is supposed to run inside the latest ubuntu system.
 # If you're using other platforms, please customize the command to set up your environment.
-sudo apt install -y nodejs npm
+# Sufficient permissions are required to run the command below.
+apt install -y nodejs npm
 
 # Checkout the code.
 # Adapt the placeholders to meet your needs.

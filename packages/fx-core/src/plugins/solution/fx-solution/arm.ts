@@ -130,18 +130,30 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
     parameterFolder,
     parameterDefaultFileName
   );
+  const parameterTemplateFilePath = path.join(
+    azureInfraDir,
+    parameterFolder,
+    parameterTemplateFileName
+  );
   let parameterTemplate, parameterJsonString;
   try {
     await fs.stat(parameterDefaultFilePath);
     parameterTemplate = await fs.readFile(parameterDefaultFilePath, ConstantString.UTF8Encoding);
     parameterJsonString = expandParameterPlaceholders(ctx, parameterTemplate);
   } catch (err) {
-    parameterTemplate = await fs.readFile(
-      path.join(azureInfraDir, parameterFolder, parameterTemplateFileName),
-      ConstantString.UTF8Encoding
-    );
-    parameterJsonString = expandParameterPlaceholders(ctx, parameterTemplate);
-    await fs.writeFile(parameterDefaultFilePath, parameterJsonString);
+    try {
+      parameterTemplate = await fs.readFile(parameterTemplateFilePath, ConstantString.UTF8Encoding);
+      parameterJsonString = expandParameterPlaceholders(ctx, parameterTemplate);
+      await fs.writeFile(parameterDefaultFilePath, parameterJsonString);
+    } catch (err) {
+      return err(
+        returnSystemError(
+          new Error(`${parameterTemplateFilePath} does not exist.`),
+          PluginNames.SOLUTION,
+          SolutionError.FailedToDeployArmTemplatesToAzure
+        )
+      );
+    }
   }
 
   const parameterJson = JSON.parse(parameterJsonString);

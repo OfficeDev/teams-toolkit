@@ -156,7 +156,7 @@ Mocked simple auth output content`
   "contentVersion": "1.0.0.0",
   "parameters": {
     "resourceBaseName": {
-      "value": "{{SOLUTION_RESOURCE_BASE_NAME}}"
+      "value": "{{SOLUTION__RESOURCE_BASE_NAME}}"
     },
     "FrontendParameter": "FrontendParameterValue",
     "SimpleAuthParameter": "SimpleAuthParameterValue"

@@ -42,7 +42,7 @@ const parameterDefaultFileName = "parameter.default.json";
 const solutionLevelParameters = `param resourceBaseName string\n`;
 const solutionLevelParameterObject = {
   resourceBaseName: {
-    value: "{{SOLUTION_RESOURCE_BASE_NAME}}",
+    value: "{{SOLUTION__RESOURCE_BASE_NAME}}",
   },
 };
 
@@ -122,19 +122,21 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
   await progressHandler?.next(DeployArmTemplatesSteps.DeployArmTemplates);
 
   const azureInfraDir = path.join(ctx.root, baseFolder);
+  generateResourceName(ctx);
 
   // update parameters
   const parameterTemplate = await fs.readFile(
     path.join(azureInfraDir, parameterFolder, parameterTemplateFileName),
     ConstantString.UTF8Encoding
   );
-  const parameterJson = JSON.parse(expandParameterPlaceholders(ctx, parameterTemplate));
+  const parameterJsonString = expandParameterPlaceholders(ctx, parameterTemplate);
+  const parameterJson = JSON.parse(parameterJsonString);
   const parameterDefaultFilePath = path.join(
     azureInfraDir,
     parameterFolder,
     parameterDefaultFileName
   );
-  await fs.writeFile(parameterDefaultFilePath, parameterJson);
+  await fs.writeFile(parameterDefaultFilePath, parameterJsonString);
   const resourceGroupName = ctx.config.get(GLOBAL_CONFIG)?.getString(RESOURCE_GROUP_NAME);
   if (!resourceGroupName) {
     throw returnSystemError(
@@ -161,8 +163,8 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
   const deploymentName = `${PluginNames.SOLUTION}-deployment`;
   const deploymentParameters: ResourceManagementModels.Deployment = {
     properties: {
-      parameters: parameterJson,
-      template: await fs.readFile(armTemplateJsonFilePath, ConstantString.UTF8Encoding),
+      parameters: parameterJson.parameters,
+      template: JSON.parse(await fs.readFile(armTemplateJsonFilePath, ConstantString.UTF8Encoding)),
       mode: "Incremental" as ResourceManagementModels.DeploymentMode,
     },
   };
@@ -433,6 +435,17 @@ function expandParameterPlaceholders(ctx: SolutionContext, parameterContent: str
       }
     }
   }
+  // Add solution config to available variables
+  const solutionConfig = ctx.config.get(GLOBAL_CONFIG);
+  if (solutionConfig) {
+    for (const configItem of solutionConfig) {
+      if (typeof configItem[1] === "string") {
+        // Currently we only config with string type
+        const variableName = `SOLUTION__${normalizeToEnvName(configItem[0])}`;
+        availableVariables[variableName] = configItem[1];
+      }
+    }
+  }
   // Add environment variable to available variables
   Object.assign(availableVariables, process.env); // The environment variable has higher priority
 
@@ -441,4 +454,14 @@ function expandParameterPlaceholders(ctx: SolutionContext, parameterContent: str
 
 function normalizeToEnvName(input: string): string {
   return input.toUpperCase().replace(/-|\./g, "_"); // replace "-" or "." to "_"
+}
+
+function generateResourceName(ctx: SolutionContext): void {
+  const maxAppNameLength = 10;
+  const appName = ctx.projectSettings!.appName;
+  const sufix = ctx.config.get(GLOBAL_CONFIG)?.getString("resourceNameSuffix");
+  const normalizedAppName = appName.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+  ctx.config
+    .get(GLOBAL_CONFIG)
+    ?.set("resource_base_name", normalizedAppName.substr(0, maxAppNameLength) + sufix);
 }

@@ -533,6 +533,6 @@ export function compileHandlebarsTemplateString(templateString: string, context:
 
 export function getArmOutput(ctx: PluginContext, key: string): string | undefined {
   const solutionConfig = ctx.configOfOtherPlugins.get("solution");
-  const output = solutionConfig?.get("armTemplate");
+  const output = solutionConfig?.get("armTemplateOutput");
   return output?.[key]?.value;
 }

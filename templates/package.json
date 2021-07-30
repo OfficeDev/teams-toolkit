@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "precommit": "lint-staged",
-    "preversion": "if [ -z \"$(git diff --cached -- ../packages/sdk/package.json)\" ]; then node ./scripts/sync-up-version.js && git add .; fi"
+    "preversion": "node ./scripts/sync-up-version.js && git add ."
   },
   "devDependencies": {
     "@shared/eslint-config": "file:../packages/eslint-config",

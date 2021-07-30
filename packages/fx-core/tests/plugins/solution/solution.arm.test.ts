@@ -201,7 +201,7 @@ describe("Deploy ARM Template to Azure", () => {
 
   beforeEach(() => {
     envRestore = mockedEnv({
-      SOLUTION_RESOURCE_BASE_NAME: testResourceBaseName,
+      SOLUTION__RESOURCE_BASE_NAME: testResourceBaseName,
       CLIENT_ID: testClientId,
       CLIENT_SECRET: testClientSecret,
       M365_TENANT_ID: testM365TenantId,
@@ -229,6 +229,42 @@ describe("Deploy ARM Template to Azure", () => {
   afterEach(() => {
     envRestore();
     mocker.restore();
+  });
+
+  it("should fail when main.bicep do not exist", async () => {
+    const mockedCtx = mockSolutionContext(testProjectDir);
+    mockedCtx.projectSettings = {
+      appName: "my app",
+      currentEnv: "default",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [fehostPlugin.name, simpleAuthPlugin.name],
+        capabilities: [TabOptionItem.id],
+      },
+    };
+    const mockedAadPluginContext = new ConfigMap();
+    mockedAadPluginContext.set("clientId", "mocked client id");
+    const mockedSolutionContext = new ConfigMap();
+    mockedSolutionContext.set("resource-base-name", "mocked resource base name");
+    mockedSolutionContext.set("resourceGroupName", "mocked resource group name");
+    mockedCtx.config.set("fx-resource-aad-app-for-teams", mockedAadPluginContext);
+    mockedCtx.config.set("solution", mockedSolutionContext);
+
+    const restore = mockedEnv({
+      MOCKED_EXPAND_VAR_TEST: "mocked environment variable",
+    });
+
+    try {
+      await deployArmTemplates(mockedCtx);
+      chai.assert.fail("method is expected to fail");
+    } catch (err) {
+      // expected to fail
+    }
+
+    restore();
   });
 
   //   it("should successfully update parameter and deploy arm templates to azure", async () => {

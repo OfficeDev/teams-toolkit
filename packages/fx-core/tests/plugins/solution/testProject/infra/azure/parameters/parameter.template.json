@@ -3,19 +3,13 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "resourceBaseName": {
-      "value": "{{SOLUTION_RESOURCE_BASE_NAME}}"
+      "value": "{{SOLUTION__RESOURCE_BASE_NAME}}"
     },
     "aadClientId": {
-      "value": "{{CLIENT_ID}}"
+      "value": "{{FX_RESOURCE_AAD_APP_FOR_TEAMS__CLIENTID}}"
     },
-    "aadClientSecret": {
-      "value": "{{CLIENT_SECRET}}"
-    },
-    "m365TenantId": {
-      "value": "{{M365_TENANT_ID}}"
-    },
-    "m365OauthAuthorityHost": {
-      "value": "{{M365_OAUTH_AUTHORITY_HOST}}"
+    "envValue": {
+      "value": "{{MOCKED_EXPAND_VAR_TEST}}"
     }
   }
 }

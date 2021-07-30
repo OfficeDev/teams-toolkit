@@ -98,10 +98,10 @@ export class DependentPluginInfo {
 }
 
 export class ArmOutput {
-  static readonly simpleAuthEndpoint = "simpleAuth_endpoint";
-  static readonly frontendEndpoint = "frontendHosting_endpoint";
-  static readonly frontendDomain = "frontendHosting_domain";
-  static readonly frontendStorageName = "frontendHosting_storageName";
+  static readonly SimpleAuthEndpoint = "simpleAuth_endpoint";
+  static readonly FrontendEndpoint = "frontendHosting_endpoint";
+  static readonly FrontendDomain = "frontendHosting_domain";
+  static readonly FrontendStorageName = "frontendHosting_storageName";
 }
 
 export class FrontendConfigInfo {

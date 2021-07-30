@@ -175,7 +175,7 @@ export class FrontendPluginImpl {
     }
 
     if (isArmSupportEnabled()) {
-      const endpoint = getArmOutput(ctx, ArmOutput.simpleAuthEndpoint) as string;
+      const endpoint = getArmOutput(ctx, ArmOutput.SimpleAuthEndpoint) as string;
       if (endpoint) {
         runtimeEnv = {
           endpoint: endpoint,
@@ -210,8 +210,8 @@ export class FrontendPluginImpl {
 
     if (isArmSupportEnabled()) {
       const config = await FrontendConfig.fromPluginContext(ctx);
-      config.endpoint = getArmOutput(ctx, ArmOutput.frontendEndpoint) as string;
-      config.domain = getArmOutput(ctx, ArmOutput.frontendDomain) as string;
+      config.endpoint = getArmOutput(ctx, ArmOutput.FrontendEndpoint) as string;
+      config.domain = getArmOutput(ctx, ArmOutput.FrontendDomain) as string;
       config.syncToPluginContext(ctx);
 
       const client = new AzureStorageClient(config);

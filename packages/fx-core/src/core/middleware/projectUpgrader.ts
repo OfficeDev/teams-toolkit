@@ -115,7 +115,7 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<void> {
     });
   } catch (error) {
     const errorObject = ContextUpgradeError(error);
-    core.tools.logProvider.info(
+    core?.tools?.logProvider?.info(
       `Template upgrade failed. Please clean the env.default.json and default.userdata file and try again. Reason: ${error?.message}`
     );
     sendTelemetryErrorEvent(

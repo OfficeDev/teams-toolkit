@@ -51,7 +51,7 @@ Handlebars.registerHelper("notContains", (value, array, options) => {
   return array.indexOf(value) == -1 ? options.fn(this) : "";
 });
 
-const execAsync = promisify(exec);
+export const execAsync = promisify(exec);
 
 export async function npmInstall(path: string) {
   await execAsync("npm install", {

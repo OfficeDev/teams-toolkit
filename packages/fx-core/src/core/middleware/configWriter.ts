@@ -66,11 +66,13 @@ export const ConfigWriterMW: Middleware = async (ctx: CoreHookContext, next: Nex
         }
       }
       const settingFile = path.resolve(confFolderPath, "settings.json");
-      await fs.writeFile(envJsonFile, JSON.stringify(configJson, null, 4));
-      await fs.writeFile(userDataFile, serializeDict(localData));
-      await fs.writeFile(settingFile, JSON.stringify(solutionContext.projectSettings, null, 4));
       const core = ctx.self as FxCore;
-      core.tools.logProvider.debug(`[core] persist config folder: ${confFolderPath}`);
+      await fs.writeFile(envJsonFile, JSON.stringify(configJson, null, 4));
+      core.tools.logProvider.debug(`[core] persist env.json file: ${envJsonFile}`);
+      await fs.writeFile(userDataFile, serializeDict(localData));
+      core.tools.logProvider.debug(`[core] persist userdata file: ${userDataFile}`);
+      await fs.writeFile(settingFile, JSON.stringify(solutionContext.projectSettings, null, 4));
+      core.tools.logProvider.debug(`[core] persist project setting file: ${settingFile}`);
     } catch (e) {
       ctx.res = err(WriteFileError(e));
     }

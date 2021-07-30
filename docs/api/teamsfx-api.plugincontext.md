@@ -15,7 +15,6 @@ export interface PluginContext extends Context
 
 |  Property | Type | Description |
 |  --- | --- | --- |
-|  [app](./teamsfx-api.plugincontext.app.md) | Readonly&lt;[TeamsAppManifest](./teamsfx-api.teamsappmanifest.md)<!-- -->&gt; |  |
 |  [config](./teamsfx-api.plugincontext.config.md) | [PluginConfig](./teamsfx-api.pluginconfig.md) |  |
 |  [configOfOtherPlugins](./teamsfx-api.plugincontext.configofotherplugins.md) | [ReadonlySolutionConfig](./teamsfx-api.readonlysolutionconfig.md) |  |
 

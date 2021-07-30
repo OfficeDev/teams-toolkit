@@ -21,6 +21,7 @@ import {
   RegisterResourceProviderError,
 } from "./resources/errors";
 import {
+  ArmOutput,
   AzureErrorCode,
   AzureInfo,
   Constants,
@@ -50,9 +51,10 @@ import {
 } from "./utils/progress-helper";
 import { TemplateInfo } from "./resources/templateInfo";
 import { AzureClientFactory, AzureLib } from "./utils/azure-client";
-import { getTemplatesFolder } from "../../..";
+import { getArmOutput, getTemplatesFolder, isArmSupportEnabled } from "../../..";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import * as fs from "fs-extra";
+import { ConstantString } from "../../../common/constants";
 
 export class FrontendPluginImpl {
   private setConfigIfNotExists(ctx: PluginContext, key: string, value: unknown): void {
@@ -172,12 +174,22 @@ export class FrontendPluginImpl {
       };
     }
 
-    const authPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.RuntimePluginName);
-    if (authPlugin) {
-      runtimeEnv = {
-        endpoint: authPlugin.get(DependentPluginInfo.RuntimeEndpoint) as string,
-        startLoginPageUrl: DependentPluginInfo.StartLoginPageURL,
-      };
+    if (isArmSupportEnabled()) {
+      const endpoint = getArmOutput(ctx, ArmOutput.SimpleAuthEndpoint) as string;
+      if (endpoint) {
+        runtimeEnv = {
+          endpoint: endpoint,
+          startLoginPageUrl: DependentPluginInfo.StartLoginPageURL,
+        };
+      }
+    } else {
+      const authPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.RuntimePluginName);
+      if (authPlugin) {
+        runtimeEnv = {
+          endpoint: authPlugin.get(DependentPluginInfo.RuntimeEndpoint) as string,
+          startLoginPageUrl: DependentPluginInfo.StartLoginPageURL,
+        };
+      }
     }
 
     const aadPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.AADPluginName);
@@ -193,6 +205,19 @@ export class FrontendPluginImpl {
         functionEnv,
         runtimeEnv,
         aadEnv
+      );
+    }
+
+    if (isArmSupportEnabled()) {
+      const config = await FrontendConfig.fromPluginContext(ctx);
+      config.endpoint = getArmOutput(ctx, ArmOutput.FrontendEndpoint) as string;
+      config.domain = getArmOutput(ctx, ArmOutput.FrontendDomain) as string;
+      config.syncToPluginContext(ctx);
+
+      const client = new AzureStorageClient(config);
+      await runWithErrorCatchAndThrow(
+        new EnableStaticWebsiteError(),
+        async () => await client.enableStaticWebsite()
       );
     }
 
@@ -259,37 +284,39 @@ export class FrontendPluginImpl {
 
     const bicepTemplateDir = path.join(
       getTemplatesFolder(),
-      FrontendPathInfo.TemplateDir,
-      FrontendPathInfo.bicepTemplateFolderName
+      FrontendPathInfo.BicepTemplateRelativeDir
     );
 
-    const moduleFilePath = path.join(bicepTemplateDir, FrontendPathInfo.moduleFileName);
+    const moduleFilePath = path.join(bicepTemplateDir, FrontendPathInfo.ModuleFileName);
 
     const inputParameterOrchestrationFilePath = path.join(
       bicepTemplateDir,
-      FrontendPathInfo.inputParameterOrchestrationFileName
+      FrontendPathInfo.InputParameterOrchestrationFileName
     );
     const moduleOrchestrationFilePath = path.join(
       bicepTemplateDir,
-      FrontendPathInfo.moduleOrchestrationFileName
+      FrontendPathInfo.ModuleOrchestrationFileName
     );
     const outputOrchestrationFilePath = path.join(
       bicepTemplateDir,
-      FrontendPathInfo.outputOrchestrationFileName
+      FrontendPathInfo.OutputOrchestrationFileName
     );
 
     const result: ScaffoldArmTemplateResult = {
       Modules: {
         frontendHostingProvision: {
-          Content: await fs.readFile(moduleFilePath, "utf-8"),
+          Content: await fs.readFile(moduleFilePath, ConstantString.UTF8Encoding),
         },
       },
       Orchestration: {
         ParameterTemplate: {
-          Content: await fs.readFile(inputParameterOrchestrationFilePath, "utf-8"),
+          Content: await fs.readFile(
+            inputParameterOrchestrationFilePath,
+            ConstantString.UTF8Encoding
+          ),
         },
         ModuleTemplate: {
-          Content: await fs.readFile(moduleOrchestrationFilePath, "utf-8"),
+          Content: await fs.readFile(moduleOrchestrationFilePath, ConstantString.UTF8Encoding),
           Outputs: {
             storageName: FrontendOutputBicepSnippet.StorageName,
             endpoint: FrontendOutputBicepSnippet.Endpoint,
@@ -297,7 +324,7 @@ export class FrontendPluginImpl {
           },
         },
         OutputTemplate: {
-          Content: await fs.readFile(outputOrchestrationFilePath, "utf-8"),
+          Content: await fs.readFile(outputOrchestrationFilePath, ConstantString.UTF8Encoding),
         },
       },
     };

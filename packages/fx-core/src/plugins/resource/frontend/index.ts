@@ -8,6 +8,7 @@ import {
   SystemError,
   UserError,
   AzureSolutionSettings,
+  ok,
 } from "@microsoft/teamsfx-api";
 
 import { ErrorFactory, TeamsFxResult } from "./error-factory";
@@ -24,6 +25,8 @@ import { TelemetryHelper } from "./utils/telemetry-helper";
 import { HostTypeOptionAzure, TabOptionItem } from "../../solution/fx-solution/question";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+import { isArmSupportEnabled } from "../../..";
+
 @Service(ResourcePlugins.FrontendPlugin)
 export class FrontendPlugin implements Plugin {
   name = "fx-resource-frontend-hosting";
@@ -41,7 +44,7 @@ export class FrontendPlugin implements Plugin {
 
   public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
     FrontendPlugin.setContext(ctx);
-    return this.runWithErrorHandling(ctx, TelemetryEvent.scaffold, () =>
+    return this.runWithErrorHandling(ctx, TelemetryEvent.Scaffold, () =>
       this.frontendPluginImpl.scaffold(ctx)
     );
   }
@@ -54,10 +57,14 @@ export class FrontendPlugin implements Plugin {
   }
 
   public async provision(ctx: PluginContext): Promise<TeamsFxResult> {
-    FrontendPlugin.setContext(ctx);
-    return this.runWithErrorHandling(ctx, TelemetryEvent.Provision, () =>
-      this.frontendPluginImpl.provision(ctx)
-    );
+    if (isArmSupportEnabled()) {
+      return ok(undefined);
+    } else {
+      FrontendPlugin.setContext(ctx);
+      return this.runWithErrorHandling(ctx, TelemetryEvent.Provision, () =>
+        this.frontendPluginImpl.provision(ctx)
+      );
+    }
   }
 
   public async postProvision(ctx: PluginContext): Promise<TeamsFxResult> {

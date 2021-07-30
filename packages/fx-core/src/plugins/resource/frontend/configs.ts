@@ -3,13 +3,20 @@
 import { PluginContext, ReadonlyPluginConfig } from "@microsoft/teamsfx-api";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 
-import { Constants, DependentPluginInfo, FrontendConfigInfo, RegularExpr } from "./constants";
+import {
+  ArmOutput,
+  Constants,
+  DependentPluginInfo,
+  FrontendConfigInfo,
+  RegularExpr,
+} from "./constants";
 import {
   InvalidConfigError,
   InvalidStorageNameError,
   UnauthenticatedError,
 } from "./resources/errors";
 import { Utils } from "./utils";
+import { getArmOutput, isArmSupportEnabled } from "../../..";
 
 export class FrontendConfig {
   subscriptionId: string;
@@ -62,7 +69,12 @@ export class FrontendConfig {
       solutionConfigs
     );
 
-    let storageName = ctx.config.getString(FrontendConfigInfo.StorageName);
+    let storageName: string | undefined;
+    if (isArmSupportEnabled()) {
+      storageName = getArmOutput(ctx, ArmOutput.FrontendStorageName) as string;
+    } else {
+      storageName = ctx.config.getString(FrontendConfigInfo.StorageName);
+    }
     if (!storageName) {
       storageName = Utils.generateStorageAccountName(
         appName,
@@ -70,6 +82,7 @@ export class FrontendConfig {
         Constants.FrontendSuffix
       );
     }
+
     if (!RegularExpr.FrontendStorageNamePattern.test(storageName)) {
       throw new InvalidStorageNameError();
     }

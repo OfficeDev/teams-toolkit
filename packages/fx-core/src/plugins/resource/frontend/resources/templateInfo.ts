@@ -55,7 +55,7 @@ export class TemplateInfo {
     this.localTemplateBaseName = [this.group, this.language, this.scenario].join(".");
     this.localTemplatePath = path.join(
       getTemplatesFolder(),
-      FrontendPathInfo.TemplateDir,
+      FrontendPathInfo.TemplateRelativeDir,
       this.localTemplateBaseName + FrontendPathInfo.TemplatePackageExt
     );
   }

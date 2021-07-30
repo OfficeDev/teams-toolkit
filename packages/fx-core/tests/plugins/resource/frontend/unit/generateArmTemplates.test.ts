@@ -10,11 +10,7 @@ import * as path from "path";
 import { AzureSolutionSettings, PluginContext } from "@microsoft/teamsfx-api";
 import { TestHelper } from "../helper";
 import { FrontendPlugin } from "../../../../../src";
-import { mockSolutionUpdateArmTemplates } from "../../util";
-import {
-  DependentPluginInfo,
-  FrontendPluginInfo,
-} from "../../../../../src/plugins/resource/frontend/constants";
+import { ConstantString, mockSolutionUpdateArmTemplates, ResourcePlugins } from "../../util";
 
 chai.use(chaiAsPromised);
 
@@ -28,9 +24,9 @@ describe("FrontendGenerateArmTemplates", () => {
   it("generate bicep arm templates", async () => {
     // Act
     const activeResourcePlugins = [
-      FrontendPluginInfo.PluginName,
-      DependentPluginInfo.AADPluginName,
-      DependentPluginInfo.RuntimePluginName,
+      ResourcePlugins.Aad,
+      ResourcePlugins.SimpleAuth,
+      ResourcePlugins.FrontendHosting,
     ];
     const pluginContext: PluginContext = TestHelper.getFakePluginContext();
     pluginContext.projectSettings!.solutionSettings = {
@@ -43,11 +39,13 @@ describe("FrontendGenerateArmTemplates", () => {
     // Assert
     const testModuleFileName = "frontend_hosting_test.bicep";
     const mockedSolutionDataContext = {
-      plugins: activeResourcePlugins,
-      "fx-resource-frontend-hosting": {
-        modules: {
-          frontendHostingProvision: {
-            path: `./${testModuleFileName}`,
+      Plugins: activeResourcePlugins,
+      PluginOutput: {
+        "fx-resource-frontend-hosting": {
+          Modules: {
+            frontendHostingProvision: {
+              Path: `./${testModuleFileName}`,
+            },
           },
         },
       },
@@ -62,26 +60,26 @@ describe("FrontendGenerateArmTemplates", () => {
       const expectedBicepFileDirectory = path.join(__dirname, "expectedBicepFiles");
       const expectedModuleFilePath = path.join(expectedBicepFileDirectory, testModuleFileName);
       chai.assert.strictEqual(
-        expectedResult.Modules.frontendHostingProvision.Content,
-        fs.readFileSync(expectedModuleFilePath, "utf-8")
+        expectedResult.Modules!.frontendHostingProvision.Content,
+        fs.readFileSync(expectedModuleFilePath, ConstantString.UTF8Encoding)
       );
       const expectedModuleSnippetFilePath = path.join(expectedBicepFileDirectory, "module.bicep");
       chai.assert.strictEqual(
-        expectedResult.Orchestration.ModuleTemplate.Content,
-        fs.readFileSync(expectedModuleSnippetFilePath, "utf-8")
+        expectedResult.Orchestration.ModuleTemplate!.Content,
+        fs.readFileSync(expectedModuleSnippetFilePath, ConstantString.UTF8Encoding)
       );
       const expectedParameterFilePath = path.join(expectedBicepFileDirectory, "input_param.bicep");
       chai.assert.strictEqual(
         expectedResult.Orchestration.ParameterTemplate!.Content,
-        fs.readFileSync(expectedParameterFilePath, "utf-8")
+        fs.readFileSync(expectedParameterFilePath, ConstantString.UTF8Encoding)
       );
       const expectedOutputFilePath = path.join(expectedBicepFileDirectory, "output.bicep");
       chai.assert.strictEqual(
         expectedResult.Orchestration.OutputTemplate!.Content,
-        fs.readFileSync(expectedOutputFilePath, "utf-8")
+        fs.readFileSync(expectedOutputFilePath, ConstantString.UTF8Encoding)
       );
       chai.assert.isUndefined(expectedResult.Orchestration.VariableTemplate);
-      chai.assert.isUndefined(expectedResult.Orchestration.ParameterTemplate!.ParameterFile);
+      chai.assert.isUndefined(expectedResult.Orchestration.ParameterTemplate!.ParameterJson);
     }
   });
 });

@@ -39,6 +39,7 @@ jobs:
         with:
           commit_message: "chore: commit provision configs"
           file_pattern: .fx/*
+          add_options: "-f"
 
       - name: Deploy to hosting environment
         uses: OfficeDev/teamsfx-cli-action@v0

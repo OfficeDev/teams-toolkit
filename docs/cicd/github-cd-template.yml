@@ -38,8 +38,7 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: "chore: commit provision configs"
-          file_pattern: .fx/*
-          add_options: "-f"
+          file_pattern: .fx/env.default.json
 
       - name: Deploy to hosting environment
         uses: OfficeDev/teamsfx-cli-action@v0

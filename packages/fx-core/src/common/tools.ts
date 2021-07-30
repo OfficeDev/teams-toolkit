@@ -444,55 +444,6 @@ export function validateSettings(projectSettings?: ProjectSettings): string | un
   return undefined;
 }
 
-export async function askSubscription(
-  azureAccountProvider: AzureAccountProvider,
-  ui: UserInteraction,
-  activeSubscriptionId?: string
-): Promise<Result<SubscriptionInfo, FxError>> {
-  const subscriptions: SubscriptionInfo[] = await azureAccountProvider.listSubscriptions();
-
-  if (subscriptions.length === 0) {
-    return err(
-      returnUserError(new Error("Failed to find a subscription."), "Core", "NoSubscriptionFound")
-    );
-  }
-  let resultSub = subscriptions.find((sub) => sub.subscriptionId === activeSubscriptionId);
-  if (activeSubscriptionId === undefined || resultSub === undefined) {
-    let selectedSub: SubscriptionInfo | undefined = undefined;
-    if (subscriptions.length === 1) {
-      selectedSub = subscriptions[0];
-    } else {
-      const options: OptionItem[] = subscriptions.map((sub) => {
-        return {
-          id: sub.subscriptionId,
-          label: sub.subscriptionName,
-          data: sub.tenantId,
-        } as OptionItem;
-      });
-      const askRes = await ui.selectOption({
-        name: AzureSolutionQuestionNames.AskSub,
-        title: "Select a subscription",
-        options: options,
-        returnObject: true,
-      });
-      if (askRes.isErr()) return err(askRes.error);
-      const subItem = askRes.value.result as OptionItem;
-      selectedSub = {
-        subscriptionId: subItem.id,
-        subscriptionName: subItem.label,
-        tenantId: subItem.data as string,
-      };
-    }
-    if (selectedSub === undefined) {
-      return err(
-        returnSystemError(new Error("Subscription not found"), "Core", "NoSubscriptionFound")
-      );
-    }
-    resultSub = selectedSub;
-  }
-  return ok(resultSub);
-}
-
 // Determine whether feature flag is enabled based on environment variable setting
 export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = false): boolean {
   const flag = process.env[featureFlagName];

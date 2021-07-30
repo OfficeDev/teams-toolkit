@@ -1,4 +1,4 @@
-import { IProgressHandler, PluginContext } from "../../../../../../api/build";
+import { IProgressHandler, PluginContext } from "@microsoft/teamsfx-api";
 import { Messages } from "../constants";
 
 export const DeployArmTemplatesSteps = {

@@ -176,10 +176,4 @@ export class Messages {
 
   static readonly ProgressStart = "Preparing.";
   static readonly ProgressDeployArmTemplates = "Deploying Solution Arm Templates.";
-
-  // Logging messages
-  static readonly StartDeployArmTemplates = () =>
-    `[${PluginNames.SOLUTION}] Start Deploying Arm templates.`;
-  static readonly EndDeployArmTemplates = () =>
-    `[${PluginNames.SOLUTION}] Successfully deployed Arm templates.`;
 }

@@ -198,20 +198,6 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
       });
     await pollDeploymentStatus(client, resourceGroupName, Date.now());
     await result;
-    if (!ctx.projectSettings?.solutionSettings) {
-      return err(
-        returnSystemError(
-          new Error("solutionSettings is undefined"),
-          PluginNames.SOLUTION,
-          SolutionError.InternelError
-        )
-      );
-    }
-
-    await ProgressHelper.endDeployArmTemplatesProgress();
-    ctx.logProvider?.info(
-      format(getStrings().solution.EndDeployArmTemplateNotice, PluginNames.SOLUTION)
-    );
     return ResultFactory.Success();
   } catch (error) {
     ctx.logProvider?.error(
@@ -228,6 +214,11 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
         PluginNames.SOLUTION,
         SolutionError.FailedToDeployArmTemplatesToAzure
       )
+    );
+  } finally {
+    await ProgressHelper.endDeployArmTemplatesProgress();
+    ctx.logProvider?.info(
+      format(getStrings().solution.EndDeployArmTemplateNotice, PluginNames.SOLUTION)
     );
   }
 

@@ -32,7 +32,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { checkSubscription, fillInCommonQuestions } from "./commonQuestions";
 import { executeLifecycles, executeConcurrently, LifecyclesWithContext } from "./executor";
-import { getPluginContext, sendErrorTelemetryThenReturnError } from "./util";
+import { getPluginContext, sendErrorTelemetryThenReturnError } from "./utils/util";
 import * as fs from "fs-extra";
 import {
   DEFAULT_PERMISSION_REQUEST,

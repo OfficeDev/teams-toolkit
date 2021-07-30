@@ -3,6 +3,7 @@
 // Licensed under the MIT license.
 
 import { UserError } from "@microsoft/teamsfx-api";
+import { TeamsAppSolution } from "./solution";
 
 /**
  * Void is used to construct Result<Void, FxError>.
@@ -168,3 +169,17 @@ export enum SolutionTelemetrySuccess {
 }
 
 export const SolutionTelemetryComponentName = "solution";
+
+export class Messages {
+  // Progress bar messages
+  static readonly DeployArmTemplatesProgressTitle = "Deploying Arm Templates";
+
+  static readonly ProgressStart = "Preparing.";
+  static readonly ProgressDeployArmTemplates = "Deploying Solution Arm Templates.";
+
+  // Logging messages
+  static readonly StartDeployArmTemplates = () =>
+    `[${PluginNames.SOLUTION}] Start Deploying Arm templates.`;
+  static readonly EndDeployArmTemplates = () =>
+    `[${PluginNames.SOLUTION}] Successfully deployed Arm templates.`;
+}

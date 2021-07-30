@@ -13,7 +13,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { ScaffoldArmTemplateResult, ArmResourcePlugin } from "../../../common/armInterface";
 import { getActivatedResourcePlugins } from "./ResourcePluginContainer";
-import { getPluginContext } from "./util";
+import { getPluginContext } from "./utils/util";
 import { format } from "util";
 import { compileHandlebarsTemplateString, getStrings } from "../../../common";
 import path from "path";
@@ -23,12 +23,14 @@ import { execAsync } from "../../../common/tools";
 import {
   ARM_TEMPLATE_OUTPUT,
   GLOBAL_CONFIG,
+  Messages,
   PluginNames,
   RESOURCE_GROUP_NAME,
   SolutionError,
 } from "./constants";
 import { ResourceManagementClient, ResourceManagementModels } from "@azure/arm-resources";
 import { ResultFactory } from "../../resource/aad/results";
+import { DeployArmTemplatesSteps, ProgressHelper } from "./utils/progressHelper";
 
 const baseFolder = "./infra/azure";
 const templateFolder = "templates";
@@ -112,6 +114,11 @@ export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<
 }
 
 export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<void, FxError>> {
+  ctx.logProvider?.info(Messages.StartDeployArmTemplates());
+  const pluginCtx = getPluginContext(ctx, PluginNames.SOLUTION);
+  const progressHandler = await ProgressHelper.startDeployArmTemplatesProgressHandler(pluginCtx);
+  await progressHandler?.next(DeployArmTemplatesSteps.DeployArmTemplates);
+
   const azureInfraDir = path.join(ctx.root, baseFolder);
 
   // update parameters
@@ -143,7 +150,7 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
   );
   const armTemplateJsonFilePath = path.join(azureInfraDir, templateFolder, armTemplateJsonFileName);
   await compileBicepToJson(orchestrationFilePath, armTemplateJsonFilePath);
-  ctx.logProvider?.info("[Solution] Successfully compile bicep files to JSON.");
+  ctx.logProvider?.info("Successfully compile bicep files to JSON.");
 
   // deploy arm templates to azure
   const client = await getResourceManagementClientForArmDeployment(ctx);
@@ -161,7 +168,7 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
       .createOrUpdate(resourceGroupName, deploymentName, deploymentParameters)
       .then((result) => {
         ctx.logProvider?.info(
-          `[Solution] Successfully deploy arm templates to Azure. Resource group name: ${resourceGroupName}. Deployment name: ${deploymentName}`
+          `Successfully deploy arm templates to Azure. Resource group name: ${resourceGroupName}. Deployment name: ${deploymentName}`
         );
         return result;
       })
@@ -179,10 +186,13 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
       );
     }
     ctx.config.get(GLOBAL_CONFIG)?.set(ARM_TEMPLATE_OUTPUT, result.properties?.outputs);
+
+    await ProgressHelper.endDeployArmTemplatesProgress();
+    ctx.logProvider?.info(Messages.EndDeployArmTemplates());
     return ResultFactory.Success();
   } catch (error) {
     ctx.logProvider?.error(
-      `[Solution] Failed to deploy arm templates to Azure. Resource group name: ${resourceGroupName}. Deployment name: ${deploymentName}. Error message: ${error.message}`
+      `[${PluginNames.SOLUTION}] Failed to deploy arm templates to Azure. Resource group name: ${resourceGroupName}. Deployment name: ${deploymentName}. Error message: ${error.message}`
     );
     return err(
       returnSystemError(

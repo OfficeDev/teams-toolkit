@@ -234,7 +234,7 @@ class TreeViewManager {
 
     const developmentCommand = [
       new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.createProjectTitle,
+        StringResources.vsc.commandsTreeViewProvider.createProjectTitleNew,
         StringResources.vsc.commandsTreeViewProvider.createProjectDescription,
         "fx-extension.create",
         vscode.TreeItemCollapsibleState.None,
@@ -243,25 +243,16 @@ class TreeViewManager {
         { name: "new-folder", custom: false }
       ),
       new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.samplesTitle,
+        StringResources.vsc.commandsTreeViewProvider.samplesTitleNew,
         StringResources.vsc.commandsTreeViewProvider.samplesDescription,
         "fx-extension.openSamples",
         vscode.TreeItemCollapsibleState.None,
         TreeCategory.GettingStarted,
         undefined,
-        { name: "heart", custom: false }
+        { name: "library", custom: false }
       ),
       new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.addCapabilitiesTitle,
-        StringResources.vsc.commandsTreeViewProvider.addCapabilitiesDescription,
-        "fx-extension.addCapability",
-        vscode.TreeItemCollapsibleState.None,
-        undefined,
-        undefined,
-        { name: "addCapability", custom: true }
-      ),
-      new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.addResourcesTitle,
+        StringResources.vsc.commandsTreeViewProvider.addResourcesTitleNew,
         StringResources.vsc.commandsTreeViewProvider.addResourcesDescription,
         "fx-extension.update",
         vscode.TreeItemCollapsibleState.None,
@@ -270,7 +261,16 @@ class TreeViewManager {
         { name: "addResources", custom: true }
       ),
       new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.manifestEditorTitle,
+        StringResources.vsc.commandsTreeViewProvider.addCapabilitiesTitleNew,
+        StringResources.vsc.commandsTreeViewProvider.addCapabilitiesDescription,
+        "fx-extension.addCapability",
+        vscode.TreeItemCollapsibleState.None,
+        undefined,
+        undefined,
+        { name: "addCapability", custom: true }
+      ),
+      new TreeViewCommand(
+        StringResources.vsc.commandsTreeViewProvider.manifestEditorTitleNew,
         StringResources.vsc.commandsTreeViewProvider.manifestEditorDescription,
         "fx-extension.openManifest",
         vscode.TreeItemCollapsibleState.None,
@@ -286,7 +286,7 @@ class TreeViewManager {
 
     const deployCommand = [
       new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.provisionTitle,
+        StringResources.vsc.commandsTreeViewProvider.provisionTitleNew,
         StringResources.vsc.commandsTreeViewProvider.provisionDescription,
         "fx-extension.provision",
         vscode.TreeItemCollapsibleState.None,
@@ -295,7 +295,7 @@ class TreeViewManager {
         { name: "type-hierarchy", custom: false }
       ),
       new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.validateManifestTitle,
+        StringResources.vsc.commandsTreeViewProvider.validateManifestTitleNew,
         StringResources.vsc.commandsTreeViewProvider.validateManifestDescription,
         "fx-extension.validateManifest",
         vscode.TreeItemCollapsibleState.None,
@@ -304,7 +304,7 @@ class TreeViewManager {
         { name: "checklist", custom: false }
       ),
       new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.buildPackageTitle,
+        StringResources.vsc.commandsTreeViewProvider.buildPackageTitleNew,
         StringResources.vsc.commandsTreeViewProvider.buildPackageDescription,
         "fx-extension.build",
         vscode.TreeItemCollapsibleState.None,
@@ -331,13 +331,13 @@ class TreeViewManager {
         { name: "publish", custom: true }
       ),
       new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.documentationTitle,
-        StringResources.vsc.commandsTreeViewProvider.documentationDescription,
-        "fx-extension.openDocument",
+        StringResources.vsc.commandsTreeViewProvider.teamsDevPortalTitleNew,
+        StringResources.vsc.commandsTreeViewProvider.teamsDevPortalDescription,
+        "fx-extension.openAppManagement",
         vscode.TreeItemCollapsibleState.None,
-        TreeCategory.GettingStarted,
         undefined,
-        { name: "book", custom: false }
+        undefined,
+        { name: "developerPortal", custom: true }
       ),
     ];
     const deployProvider = new CommandsTreeViewProvider(deployCommand);
@@ -363,13 +363,13 @@ class TreeViewManager {
         { name: "book", custom: false }
       ),
       new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.reportIssuesTitle,
+        StringResources.vsc.commandsTreeViewProvider.reportIssuesTitleNew,
         StringResources.vsc.commandsTreeViewProvider.reportIssuesDescription,
         "fx-extension.openReportIssues",
         vscode.TreeItemCollapsibleState.None,
         TreeCategory.Feedback,
         undefined,
-        { name: "report", custom: false }
+        { name: "github", custom: false }
       ),
     ];
     const helpProvider = new CommandsTreeViewProvider(helpCommand);

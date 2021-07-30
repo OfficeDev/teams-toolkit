@@ -45,3 +45,5 @@ export const loginComponent = "login";
 
 export const subscriptionInfoFile = "subscriptionInfo.json";
 export const envDefaultJsonFile = "env.default.json";
+
+export const sendFileTimeout = "Send success page timeout.";

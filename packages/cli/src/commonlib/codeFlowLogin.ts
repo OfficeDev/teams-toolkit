@@ -20,7 +20,13 @@ import * as crypto from "crypto";
 import { AddressInfo } from "net";
 import { loadAccountId, saveAccountId, UTF8 } from "./cacheAccess";
 import open from "open";
-import { azureLoginMessage, env, m365LoginMessage, MFACode } from "./common/constant";
+import {
+  azureLoginMessage,
+  env,
+  m365LoginMessage,
+  MFACode,
+  sendFileTimeout,
+} from "./common/constant";
 import * as constants from "../constants";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import {
@@ -146,6 +152,7 @@ export class CodeFlowLogin {
                 "text/html; charset=utf-8",
                 this.accountName!
               );
+              this.destroySockets();
               deferredRedirect.resolve(response.accessToken);
             }
           } else {
@@ -383,7 +390,7 @@ async function sendFile(
   contentType: string,
   accountName: string
 ): Promise<void> {
-  try {
+  return new Promise(async (resolve, reject) => {
     let body = await fs.readFile(filepath);
     let data = body.toString();
     data = data.replace(/\${accountName}/g, accountName == "azure" ? "Azure" : "M365");
@@ -392,11 +399,17 @@ async function sendFile(
       "Content-Length": body.length,
       "Content-Type": contentType,
     });
-    res.end(body);
-  } catch (err) {
-    CliCodeLogInstance.necessaryLog(LogLevel.Error, err.message);
-    throw err;
-  }
+
+    const timeout = setTimeout(() => {
+      CliCodeLogInstance.necessaryLog(LogLevel.Error, sendFileTimeout);
+      reject();
+    }, 10000);
+
+    res.end(body, () => {
+      clearTimeout(timeout);
+      resolve();
+    });
+  });
 }
 
 export function LoginFailureError(innerError?: any): UserError {

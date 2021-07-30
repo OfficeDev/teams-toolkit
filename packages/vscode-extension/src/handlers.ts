@@ -250,6 +250,14 @@ export async function publishHandler(args?: any[]): Promise<Result<null, FxError
   return await runCommand(Stage.publish);
 }
 
+export async function cicdGuideHandler(args?: any[]): Promise<boolean> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CICDGuide, getTriggerFromProperty(args));
+  return await env.openExternal(
+    Uri.parse("https://github.com/OfficeDev/TeamsFx/blob/ruhe/cicd_ymls/docs/cicd/README.md")
+  );
+  // return await env.openExternal(Uri.parse("https://aka.ms/teamsfx-cicd-guide"));
+}
+
 export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
   const eventName = ExtTelemetry.stageToEvent(stage);
   let result: Result<any, FxError> = ok(null);

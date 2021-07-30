@@ -50,6 +50,8 @@
       "deployDescription": "Deploy your Teams app to the provisioned resources in Azure",
       "publishTitle": "Publish to Teams",
       "publishDescription": "Publish to Teams",
+      "cicdGuideTitle": "Go To CI/CD Guide",
+      "cicdGuideDescription": "Go To CI/CD Guide",
       "teamsDevCenterTitle": "TEAMS DEV CENTER",
       "teamsDevCenterDescription": "Get started with Teamsfx",
       "appManagementTitle": "Manage Teams App",

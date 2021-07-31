@@ -12,7 +12,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { SubscriptionClient } from "@azure/arm-subscriptions";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
-import { SolutionTelemetryComponentName, SolutionTelemetryProperty } from "./constants";
+import { SolutionTelemetryComponentName, SolutionTelemetryProperty } from "../constants";
 
 /**
  * A helper function to construct a plugin's context.

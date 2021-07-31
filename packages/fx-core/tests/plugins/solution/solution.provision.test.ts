@@ -67,7 +67,7 @@ import { TokenCredentialsBase, UserTokenCredentials } from "@azure/ms-rest-nodea
 import { ResourceGroups } from "@azure/arm-resources";
 import { AppStudioClient } from "../../../src/plugins/resource/appstudio/appStudio";
 import { AppStudioPluginImpl } from "../../../src/plugins/resource/appstudio/plugin";
-import * as solutionUtil from "../../../src/plugins/solution/fx-solution/util";
+import * as solutionUtil from "../../../src/plugins/solution/fx-solution/utils/util";
 import * as uuid from "uuid";
 import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import { AadAppForTeamsPlugin } from "../../../src";

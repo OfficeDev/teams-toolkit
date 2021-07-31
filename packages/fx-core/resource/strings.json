@@ -19,7 +19,13 @@
     "CancelProvision": "CancelProvision",
     "AlreadyProvisionNotice": "'%s' is already provisioned in the cloud, will create the teams app again if it has been removed.",
     "NotProvisionedNotice": "'%s' is not provisioned in the cloud yet. Please provision first.",
-    "GenerateArmTemplateFailNotice": "Failed to create ARM template for required Azure services."
+    "GenerateArmTemplateFailNotice": "'%s' Failed to create ARM template for required Azure services.",
+    "StartDeployArmTemplateNotice": "[%s] Start Deploying Arm templates.",
+    "SucessfullyCompileBicepNotice": "[%s] Successfully compile bicep files to JSON.",
+    "SucessfullyDeployArmTemplateNotice": "[%s] Successfully deploy Arm templates. Resource group name: %s. Deployment name: %s",
+    "FailedToDeployArmTemplateNotice": "[%s] Failed to deploy Arm templates. Resource group name: %s. Deployment name: %s",
+    "PollDeploymentStatusNotice": "[%s] Polling deployment status...",
+    "EndDeployArmTemplateNotice": "[%s] Successfully deployed Arm templates."
   },
   "plugins": {
     "SPFx": {

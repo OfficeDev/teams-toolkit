@@ -28,7 +28,7 @@ import * as path from "path";
 import * as uuid from "uuid";
 import { glob } from "glob";
 import { getResourceFolder } from "..";
-import { PluginNames } from "../plugins/solution/fx-solution/constants";
+import { ARM_TEMPLATE_OUTPUT, PluginNames } from "../plugins/solution/fx-solution/constants";
 import {
   AzureResourceApim,
   AzureResourceFunction,
@@ -51,7 +51,7 @@ Handlebars.registerHelper("notContains", (value, array, options) => {
   return array.indexOf(value) == -1 ? options.fn(this) : "";
 });
 
-const execAsync = promisify(exec);
+export const execAsync = promisify(exec);
 
 export async function npmInstall(path: string) {
   await execAsync("npm install", {
@@ -533,6 +533,6 @@ export function compileHandlebarsTemplateString(templateString: string, context:
 
 export function getArmOutput(ctx: PluginContext, key: string): string | undefined {
   const solutionConfig = ctx.configOfOtherPlugins.get("solution");
-  const output = solutionConfig?.get("armTemplate");
+  const output = solutionConfig?.get(ARM_TEMPLATE_OUTPUT);
   return output?.[key]?.value;
 }

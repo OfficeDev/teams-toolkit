@@ -98,7 +98,7 @@ export class SimpleAuthPluginImpl {
       await Utils.downloadZip(simpleAuthFilePath);
       await this.webAppClient.zipDeploy(simpleAuthFilePath);
 
-      const endpoint = getArmOutput(ctx, Constants.ArmOutput.simpleAuthEndporint) as string;
+      const endpoint = getArmOutput(ctx, Constants.ArmOutput.simpleAuthEndpoint) as string;
       ctx.config.set(Constants.SimpleAuthPlugin.configKeys.endpoint, endpoint);
 
       const sku = getArmOutput(ctx, Constants.ArmOutput.simpleAuthSkuName) as string;
@@ -221,7 +221,7 @@ export class SimpleAuthPluginImpl {
     let webAppName: string;
     let appServicePlanName: string;
     if (isArmSupportEnabled()) {
-      webAppName = getArmOutput(ctx, Constants.ArmOutput.simpleAuthEndporint) as string;
+      webAppName = getArmOutput(ctx, Constants.ArmOutput.simpleAuthWebAppName) as string;
       appServicePlanName = getArmOutput(
         ctx,
         Constants.ArmOutput.simpleAuthAppServicePlanName

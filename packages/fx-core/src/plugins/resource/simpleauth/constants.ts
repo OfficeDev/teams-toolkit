@@ -52,7 +52,7 @@ export class Constants {
 
   static readonly ArmOutput = {
     frontendEndpoint: "frontendHosting_endpoint",
-    simpleAuthEndporint: "simpleAuth_endpoint",
+    simpleAuthEndpoint: "simpleAuth_endpoint",
     simpleAuthSkuName: "simpleAuth_skuName",
     simpleAuthWebAppName: "simpleAuth_webAppName",
     simpleAuthAppServicePlanName: "simpleAuth_appServicePlanName",

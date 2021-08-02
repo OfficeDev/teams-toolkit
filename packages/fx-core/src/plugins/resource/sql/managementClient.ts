@@ -8,18 +8,20 @@ import { Constants } from "./constants";
 import { SqlResultFactory } from "./results";
 import { PluginContext } from "@microsoft/teamsfx-api";
 export class ManagementClient {
-  client?: SqlManagementClient;
+  client: SqlManagementClient;
   config: SqlConfig;
   ctx: PluginContext;
 
-  constructor(ctx: PluginContext, config: SqlConfig) {
+  private constructor(ctx: PluginContext, config: SqlConfig, client: SqlManagementClient) {
     this.ctx = ctx;
     this.config = config;
+    this.client = client;
   }
 
-  async init() {
-    const credential = await this.ctx.azureAccountProvider!.getAccountCredentialAsync();
-    this.client = new SqlManagementClient(credential!, this.config.azureSubscriptionId);
+  public static async create(ctx: PluginContext, config: SqlConfig): Promise<ManagementClient> {
+    const credential = await ctx.azureAccountProvider!.getAccountCredentialAsync();
+    const client = new SqlManagementClient(credential!, config.azureSubscriptionId);
+    return new ManagementClient(ctx, config, client);
   }
 
   async createAzureSQL() {
@@ -29,7 +31,7 @@ export class ManagementClient {
       administratorLoginPassword: this.config.adminPassword,
     };
     try {
-      await this.client!.servers.createOrUpdate(
+      await this.client.servers.createOrUpdate(
         this.config.resourceGroup,
         this.config.sqlServer,
         model
@@ -48,7 +50,7 @@ export class ManagementClient {
 
   async existAzureSQL(): Promise<boolean> {
     try {
-      const result = await this.client!.servers.checkNameAvailability({
+      const result = await this.client.servers.checkNameAvailability({
         name: this.config.sqlServer,
       });
       if (result.available) {
@@ -75,7 +77,7 @@ export class ManagementClient {
 
   async existAadAdmin(): Promise<boolean> {
     try {
-      const result = await this.client!.serverAzureADAdministrators.listByServer(
+      const result = await this.client.serverAzureADAdministrators.listByServer(
         this.config.resourceGroup,
         this.config.sqlServer
       );
@@ -105,7 +107,7 @@ export class ManagementClient {
       sku: sku,
     };
     try {
-      await this.client!.databases.createOrUpdate(
+      await this.client.databases.createOrUpdate(
         this.config.resourceGroup,
         this.config.sqlServer,
         this.config.databaseName,
@@ -127,7 +129,7 @@ export class ManagementClient {
 
   async existDatabase(): Promise<boolean> {
     try {
-      const result = await this.client!.databases.listByServer(
+      const result = await this.client.databases.listByServer(
         this.config.resourceGroup,
         this.config.sqlServer
       );
@@ -158,7 +160,7 @@ export class ManagementClient {
     tmp.administratorType = Constants.sqlAdministratorType;
     model = tmp as unknown as SqlManagementModels.ServerAzureADAdministrator;
     try {
-      await this.client!.serverAzureADAdministrators.createOrUpdate(
+      await this.client.serverAzureADAdministrators.createOrUpdate(
         this.config.resourceGroup,
         this.config.sqlServer,
         model
@@ -181,7 +183,7 @@ export class ManagementClient {
       endIpAddress: Constants.firewall.azureIp,
     };
     try {
-      await this.client!.firewallRules.createOrUpdate(
+      await this.client.firewallRules.createOrUpdate(
         this.config.resourceGroup,
         this.config.sqlServer,
         Constants.firewall.azureRule,
@@ -216,7 +218,7 @@ export class ManagementClient {
       endIpAddress: endIp,
     };
     try {
-      await this.client!.firewallRules.createOrUpdate(
+      await this.client.firewallRules.createOrUpdate(
         this.config.resourceGroup,
         this.config.sqlServer,
         Constants.firewall.localRule,
@@ -236,7 +238,7 @@ export class ManagementClient {
 
   async deleteLocalFirewallRule() {
     try {
-      await this.client!.firewallRules.deleteMethod(
+      await this.client.firewallRules.deleteMethod(
         this.config.resourceGroup,
         this.config.sqlServer,
         Constants.firewall.localRule

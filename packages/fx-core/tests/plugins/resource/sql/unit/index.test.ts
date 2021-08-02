@@ -100,7 +100,9 @@ describe("sqlPlugin", () => {
     sinon.stub(FirewallRules.prototype, "deleteMethod").resolves();
     sinon.stub(ServerAzureADAdministrators.prototype, "listByServer").resolves([]);
     sinon.stub(ServerAzureADAdministrators.prototype, "createOrUpdate").resolves();
-    sinon.stub(SqlClient.prototype, "initToken").resolves();
+    sinon
+      .stub(ApplicationTokenCredentials.prototype, "getToken")
+      .resolves({ accessToken: faker.random.word() } as TokenResponse);
     sinon.stub(SqlClient.prototype, "existUser").resolves(false);
     sinon.stub(SqlClient.prototype, "addDatabaseUser").resolves();
 

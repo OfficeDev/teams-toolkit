@@ -76,8 +76,7 @@ export class SqlPluginImpl {
       }
       await this.init(ctx);
       if (this.config.azureSubscriptionId) {
-        const managementClient: ManagementClient = new ManagementClient(ctx, this.config);
-        await managementClient.init();
+        const managementClient: ManagementClient = await ManagementClient.create(ctx, this.config);
         this.config.existSql = await managementClient.existAzureSQL();
       }
 
@@ -95,6 +94,17 @@ export class SqlPluginImpl {
     ctx.logProvider?.info(Message.startPreProvision);
 
     await this.init(ctx);
+    if (!this.config.azureSubscriptionId) {
+      const error = SqlResultFactory.SystemError(
+        ErrorMessage.SqlGetConfigError.name,
+        ErrorMessage.SqlGetConfigError.message(
+          Constants.solutionConfigKey.subscriptionId,
+          Constants.solution
+        )
+      );
+      ctx.logProvider?.error(error.message);
+    }
+
     DialogUtils.init(ctx);
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendEvent(Telemetry.stage.preProvision + Telemetry.startSuffix);
@@ -158,8 +168,7 @@ export class SqlPluginImpl {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendEvent(Telemetry.stage.provision + Telemetry.startSuffix);
 
-    const managementClient: ManagementClient = new ManagementClient(ctx, this.config);
-    await managementClient.init();
+    const managementClient: ManagementClient = await ManagementClient.create(ctx, this.config);
 
     await DialogUtils.progressBar?.start();
     await DialogUtils.progressBar?.next(ProcessMessage.checkProvider);
@@ -215,9 +224,7 @@ export class SqlPluginImpl {
         : Telemetry.valueNo,
     });
 
-    const sqlClient = new SqlClient(ctx, this.config);
-    const managementClient: ManagementClient = new ManagementClient(ctx, this.config);
-    await managementClient.init();
+    const managementClient: ManagementClient = await ManagementClient.create(ctx, this.config);
 
     ctx.logProvider?.info(Message.addFirewall);
     await managementClient.addLocalFirewallRule();
@@ -251,7 +258,7 @@ export class SqlPluginImpl {
       // azure sql does not support service principal admin to add databse user currently, so just notice developer if so.
       if (this.config.aadAdminType === UserType.User) {
         ctx.logProvider?.info(Message.connectDatabase);
-        await sqlClient.initToken();
+        const sqlClient = await SqlClient.create(ctx, this.config);
 
         let existUser = false;
         ctx.logProvider?.info(Message.checkDatabaseUser);

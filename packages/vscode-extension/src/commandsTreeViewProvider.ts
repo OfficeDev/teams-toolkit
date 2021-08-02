@@ -287,15 +287,6 @@ class TreeViewManager {
         undefined,
         { name: "edit", custom: false }
       ),
-      new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.cicdGuideTitle,
-        StringResources.vsc.commandsTreeViewProvider.cicdGuideDescription,
-        "fx-extension.cicdGuide",
-        vscode.TreeItemCollapsibleState.None,
-        undefined,
-        undefined,
-        { name: "sync", custom: false }
-      ),
     ];
     const developmentProvider = new CommandsTreeViewProvider(developmentCommand);
     disposables.push(
@@ -356,6 +347,15 @@ class TreeViewManager {
         undefined,
         undefined,
         { name: "developerPortal", custom: true }
+      ),
+      new TreeViewCommand(
+        StringResources.vsc.commandsTreeViewProvider.cicdGuideTitle,
+        StringResources.vsc.commandsTreeViewProvider.cicdGuideDescription,
+        "fx-extension.cicdGuide",
+        vscode.TreeItemCollapsibleState.None,
+        undefined,
+        undefined,
+        { name: "sync", custom: false }
       ),
     ];
     const deployProvider = new CommandsTreeViewProvider(deployCommand);

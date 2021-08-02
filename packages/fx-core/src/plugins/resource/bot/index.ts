@@ -162,7 +162,7 @@ export class TeamsBot implements Plugin {
     return await this.runWithExceptionCatching(
       context,
       () => this.teamsBotImpl.grantPermission(context),
-      true,
+      false,
       LifecycleFuncNames.GRANT_PERMISSION
     );
   }
@@ -173,7 +173,7 @@ export class TeamsBot implements Plugin {
     return await this.runWithExceptionCatching(
       context,
       () => this.teamsBotImpl.checkPermission(context),
-      true,
+      false,
       LifecycleFuncNames.CHECK_PERMISSION
     );
   }

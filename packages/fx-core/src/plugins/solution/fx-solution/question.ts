@@ -226,8 +226,15 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
   },
 };
 
-export const GrantPermissionQuestion: TextInputQuestion = {
+export const GetUserEmailQuestion: TextInputQuestion = {
   name: "userEmail",
   type: "text",
   title: "Input the email address of your collaborator",
+};
+
+export const SelectEnvQuestion: SingleSelectQuestion = {
+  name: "env",
+  type: "singleSelect",
+  title: "Select the env you want to grant permission to",
+  staticOptions: [{ id: "default", label: "default env" }],
 };

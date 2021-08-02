@@ -77,7 +77,8 @@ import {
   AskSubscriptionQuestion,
   addCapabilityQuestion,
   ProgrammingLanguageQuestion,
-  GrantPermissionQuestion,
+  GetUserEmailQuestion,
+  SelectEnvQuestion,
 } from "./question";
 import Mustache from "mustache";
 import path from "path";
@@ -1020,7 +1021,8 @@ export class TeamsAppSolution implements Solution {
         }
       }
     } else if (stage === Stage.grantPermission) {
-      node.addChild(new QTreeNode(GrantPermissionQuestion));
+      node.addChild(new QTreeNode(GetUserEmailQuestion));
+      node.addChild(new QTreeNode(SelectEnvQuestion));
     }
     return ok(node);
   }

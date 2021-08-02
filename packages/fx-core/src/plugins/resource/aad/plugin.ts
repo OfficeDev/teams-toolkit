@@ -336,9 +336,7 @@ export class AadAppForTeamsImpl {
     }
     const userInfoObject = JSON.parse(userInfo as string);
     const userObjectId = userInfoObject["aadId"];
-    const objectId: string = ctx.config.get(
-      Utils.addLocalDebugPrefix(false, ConfigKeys.objectId)
-    ) as string;
+    const objectId: string = ctx.config.get(ConfigKeys.objectId) as string;
     await AadAppClient.grantPermission(objectId, userObjectId);
     return ResultFactory.Success();
   }

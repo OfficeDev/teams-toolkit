@@ -98,6 +98,7 @@ export class LifecycleFuncNames {
   public static readonly POST_LOCAL_DEBUG = "post-local-debug";
 
   public static readonly GRANT_PERMISSION = "grant-permission";
+  public static readonly CHECK_PERMISSION = "check-permission";
 
   // extra
   public static readonly PROVISION_WEB_APP = "provisionWebApp";
@@ -262,4 +263,17 @@ export class TelemetryValues {
 
 export class AzureConstants {
   public static readonly requiredResourceProviders = ["Microsoft.Web", "Microsoft.BotService"];
+}
+
+export class BotPermissions {
+  public static readonly webAppPermissions = {
+    name: "Azure Web App for Bot",
+    noPermission: "No Permission",
+  };
+
+  public static readonly aadPermissions = {
+    name: "Azure AD App for Bot",
+    owner: "Owner",
+    noPermission: "No Permission",
+  };
 }

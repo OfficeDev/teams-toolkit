@@ -264,3 +264,15 @@ export class RegisterResourceProviderError extends PluginError {
     );
   }
 }
+
+export class GrantPermissionError extends PluginError {
+  constructor(innerError?: Error) {
+    super(ErrorType.User, "GrantPermissionError", "Failed to grant permission.", [], innerError);
+  }
+}
+
+export class CheckPermissionError extends PluginError {
+  constructor(innerError?: Error) {
+    super(ErrorType.User, "CheckPermissionError", "Failed to check permission.", [], innerError);
+  }
+}

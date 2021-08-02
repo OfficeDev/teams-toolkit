@@ -97,6 +97,8 @@ export class LifecycleFuncNames {
   public static readonly LOCAL_DEBUG = "local-debug";
   public static readonly POST_LOCAL_DEBUG = "post-local-debug";
 
+  public static readonly GRANT_PERMISSION = "grant-permission";
+
   // extra
   public static readonly PROVISION_WEB_APP = "provisionWebApp";
   public static readonly UPDATE_MESSAGE_ENDPOINT_AZURE = "updateMessageEndpointOnAzure";

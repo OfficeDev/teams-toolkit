@@ -23,6 +23,12 @@ export class Constants {
   static createOwnerDuplicatedMessage =
     "One or more added object references already exist for the following modified properties: 'owners'.";
 
+  static permissions = {
+    name: "Azure AD app",
+    owner: "Owner",
+    noPermission: "No Permission",
+  };
+
   static defaultPermissions: RequiredResourceAccess = {
     resourceAppId: "00000003-0000-0000-c000-000000000000",
     resourceAccess: [

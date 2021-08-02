@@ -283,7 +283,7 @@ export class AppStudioPlugin implements Plugin {
   }
 
   public async checkPermission(ctx: PluginContext): Promise<any> {
-    return ok(undefined);
+    return await this.appStudioPluginImpl.checkPermission(ctx);
   }
 }
 

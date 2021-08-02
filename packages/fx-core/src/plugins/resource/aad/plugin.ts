@@ -341,6 +341,29 @@ export class AadAppForTeamsImpl {
     return ResultFactory.Success();
   }
 
+  public async checkPermission(ctx: PluginContext): Promise<AadResult> {
+    await TokenProvider.init(ctx);
+    const userInfo = ctx.configOfOtherPlugins
+      .get(Plugins.solution)
+      ?.get(ConfigKeysOfOtherPlugin.solutionUserInfo);
+    if (!userInfo) {
+      // TODO: throw error: no userinfo in context
+      return ResultFactory.Success();
+    }
+    const userInfoObject = JSON.parse(userInfo as string);
+    const userObjectId = userInfoObject["aadId"];
+    const objectId: string = ctx.config.get(ConfigKeys.objectId) as string;
+    const isOwner = await AadAppClient.checkPermission(objectId, userObjectId);
+    return ResultFactory.Success(
+      new Map([
+        [
+          Constants.permissions.name,
+          isOwner ? [Constants.permissions.owner] : [Constants.permissions.noPermission],
+        ],
+      ])
+    );
+  }
+
   private static getRedirectUris(
     frontendEndpoint: string | undefined,
     botEndpoint: string | undefined

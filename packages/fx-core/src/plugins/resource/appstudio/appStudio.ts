@@ -7,6 +7,7 @@ import { IAppDefinition, IUserList } from "./interfaces/IAppDefinition";
 import { AppStudioError } from "./errors";
 import { IPublishingAppDenition } from "./interfaces/IPublishingAppDefinition";
 import { AppStudioResultFactory } from "./results";
+import { Constants } from "./constants";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AppStudioClient {
@@ -414,5 +415,23 @@ export namespace AppStudioClient {
     app.userList?.push(newUser);
     const requester = createRequesterWithToken(appStudioToken);
     const response = await requester.post(`/api/appdefinitions/${teamsAppId}/override`, app);
+  }
+
+  export async function checkPermission(
+    teamsAppId: string,
+    appStudioToken: string,
+    userObjectId: string
+  ): Promise<string> {
+    const app = await getApp(teamsAppId, appStudioToken);
+    const findUser = app.userList?.find((user: any) => user["aadId"] === userObjectId);
+    if (!findUser) {
+      return Constants.PERMISSIONS.noPermission;
+    }
+
+    if (findUser.isAdministrator) {
+      return Constants.PERMISSIONS.admin;
+    } else {
+      return Constants.PERMISSIONS.operative;
+    }
   }
 }

@@ -10,6 +10,13 @@ export class Constants {
   public static readonly REMOTE_TEAMS_APP_ID = "teams-app-id";
   public static readonly READ_MORE = "Read more";
   public static readonly PUBLISH_GUIDE = "https://aka.ms/teamsfx-publish";
+
+  public static readonly PERMISSIONS = {
+    name: "Teams App",
+    noPermission: "No permission",
+    admin: "Administrator",
+    operative: "Operative",
+  };
 }
 
 /**

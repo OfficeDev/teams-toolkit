@@ -565,6 +565,10 @@ export class AppStudioPluginImpl {
       .get("solution")
       ?.get("remoteTeamsAppId")) as string;
     const userInfo = ctx.configOfOtherPlugins.get("solution")?.get("userInfo");
+    if (!userInfo) {
+      // TODO: throw error: no userinfo in context
+      return ok(undefined);
+    }
     const newUser = JSON.parse(userInfo) as IUserList;
     try {
       await AppStudioClient.grantPermission(teamsAppId, appStudioToken as string, newUser);
@@ -577,6 +581,36 @@ export class AppStudioPluginImpl {
     }
 
     return ok(undefined);
+  }
+
+  public async checkPermission(
+    ctx: PluginContext
+  ): Promise<Result<Map<string, Array<string>>, FxError>> {
+    const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
+    const teamsAppId = (await ctx.configOfOtherPlugins
+      .get("solution")
+      ?.get("remoteTeamsAppId")) as string;
+    const userInfo = ctx.configOfOtherPlugins.get("solution")?.get("userInfo");
+    if (!userInfo) {
+      // TODO: throw error: no userinfo in context
+      return ok(new Map());
+    }
+
+    const userInfoObject = JSON.parse(userInfo) as IUserList;
+    try {
+      const res = await AppStudioClient.checkPermission(
+        teamsAppId,
+        appStudioToken as string,
+        userInfoObject.aadId
+      );
+      return ok(new Map([[Constants.PERMISSIONS.name, [res]]]));
+    } catch (error) {
+      // TODO: Give out detailed help message for different errors.
+      throw AppStudioResultFactory.UserError(
+        AppStudioError.CheckPermissionFailedError.name,
+        AppStudioError.CheckPermissionFailedError.message(error)
+      );
+    }
   }
 
   private async beforePublish(

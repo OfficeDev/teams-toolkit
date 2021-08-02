@@ -17,6 +17,7 @@ import {
   GetAppConfigError,
   AadError,
   GrantPermissionError,
+  CheckPermissionError,
 } from "./errors";
 import { GraphClient } from "./graph";
 import { IAADPassword } from "./interfaces/IAADApplication";
@@ -224,6 +225,23 @@ export class AadAppClient {
       throw ResultFactory.UserError(
         GrantPermissionError.name,
         GrantPermissionError.message(),
+        error
+      );
+    }
+  }
+
+  public static async checkPermission(objectId: string, userObjectId: string): Promise<boolean> {
+    try {
+      return await GraphClient.checkPermission(
+        TokenProvider.token as string,
+        objectId,
+        userObjectId
+      );
+    } catch (error) {
+      // TODO: Give out detailed help message for different errors.
+      throw ResultFactory.UserError(
+        CheckPermissionError.name,
+        CheckPermissionError.message(),
         error
       );
     }

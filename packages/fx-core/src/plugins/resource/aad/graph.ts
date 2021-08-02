@@ -122,6 +122,22 @@ export namespace GraphClient {
     });
   }
 
+  export async function checkPermission(
+    graphToken: string,
+    objectId: string,
+    userObjectId: string
+  ): Promise<boolean> {
+    const instance = initAxiosInstance(graphToken);
+    const response = await instance.get(
+      `${baseUrl}/applications/${objectId}/owners?$filter=id eq '${userObjectId}'`
+    );
+    if (response && response.data && response.data.value) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   export function initAxiosInstance(graphToken: string) {
     const instance = axios.create({
       baseURL: baseUrl,

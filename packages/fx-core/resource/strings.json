@@ -23,16 +23,16 @@
     "GenerateArmTemplateFailNotice": "'%s' Failed to create ARM template for required Azure services.",
 
     "DeployArmTemplates": {
-      "StartNotice": "[%s] Start deploying Arm templates.",
+      "StartNotice": "[%s] Start deploying ARM templates.",
       "CompileBicepSuccessNotice": "[%s] Successfully compile bicep files to JSON.",
-      "SuccessNotice": "[%s] Successfully deploy Arm templates. Resource group name: %s. Deployment name: %s",
-      "FailNotice": "[%s] Failed to deploy Arm templates. Resource group name: %s. Deployment name: %s",
+      "SuccessNotice": "[%s] Successfully deploy ARM templates. Resource group name: %s. Deployment name: %s",
+      "FailNotice": "[%s] Failed to deploy ARM templates. Resource group name: %s. Deployment name: %s",
       "PollDeploymentStatusNotice": "[%s] Polling deployment status...",
-      "EndNotice": "[%s] End Arm templates deployment.",
+      "EndNotice": "[%s] End ARM templates deployment.",
       "Progress": {
-        "Title": "Deploying Arm Templates",
+        "Title": "Deploying ARM Templates",
         "Start": "Preparing.",
-        "ExecuteDeployment": "Deploying solution Arm templates to Azure. This could take several minutes."
+        "ExecuteDeployment": "Deploying solution ARM templates to Azure. This could take several minutes."
       }
     },
 

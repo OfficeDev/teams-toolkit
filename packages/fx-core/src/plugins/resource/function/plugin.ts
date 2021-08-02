@@ -34,6 +34,7 @@ import {
 } from "./resources/errors";
 import {
   AzureInfo,
+  CommonConstants,
   DefaultProvisionConfigs,
   DefaultValues,
   DependentPluginInfo,
@@ -72,6 +73,7 @@ import { FuncPluginAdapter } from "./utils/depsChecker/funcPluginAdapter";
 import { funcPluginLogger } from "./utils/depsChecker/funcPluginLogger";
 import { FuncPluginTelemetry } from "./utils/depsChecker/funcPluginTelemetry";
 import { TelemetryHelper } from "./utils/telemetry-helper";
+import { checkAzureResourcePermission } from "../../../common/checkAzureResourcePermission";
 
 type Site = WebSiteManagementModels.Site;
 type AppServicePlan = WebSiteManagementModels.AppServicePlan;
@@ -684,6 +686,52 @@ export class FunctionPluginImpl {
     );
 
     return ResultFactory.Success();
+  }
+
+  public async checkPermission(
+    ctx: PluginContext
+  ): Promise<Result<Map<string, string[]>, FxError>> {
+    await this.syncConfigFromContext(ctx);
+
+    const credential = this.checkAndGet(
+      await ctx.azureAccountProvider?.getAccountCredentialAsync(),
+      FunctionConfigKey.credential
+    );
+
+    const accessToken = (await credential.getToken()).accessToken;
+
+    const accountInfo = await ctx.azureAccountProvider!.getAccountInfo();
+    const userObjectId = accountInfo!.oid;
+
+    const subscriptionId: string = this.checkAndGet(
+      this.config.subscriptionId,
+      FunctionConfigKey.subscriptionId
+    );
+    const functionAppName: string = this.checkAndGet(
+      this.config.functionAppName,
+      FunctionConfigKey.functionAppName
+    );
+    const resourceGroupName: string = this.checkAndGet(
+      this.config.resourceGroupName,
+      FunctionConfigKey.resourceGroupName
+    );
+
+    const webAppResourceId = `subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.Web/sites/${functionAppName}`;
+
+    const permissionArray = await checkAzureResourcePermission(
+      webAppResourceId,
+      accessToken,
+      userObjectId
+    );
+
+    return ResultFactory.Success(
+      new Map([
+        [
+          CommonConstants.permissions.name,
+          permissionArray.length > 0 ? permissionArray : [CommonConstants.permissions.noPermission],
+        ],
+      ])
+    );
   }
 
   private getFunctionProjectRootPath(ctx: PluginContext): string {

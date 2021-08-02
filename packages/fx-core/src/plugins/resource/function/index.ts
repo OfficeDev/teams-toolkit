@@ -153,8 +153,12 @@ export class FunctionPlugin implements Plugin {
     return res;
   }
 
-  public async checkPermission(ctx: PluginContext): Promise<any> {
-    return ok(undefined);
+  public async checkPermission(ctx: PluginContext): Promise<FxResult> {
+    this.setContext(ctx);
+    const res = await this.runWithErrorWrapper(ctx, FunctionEvent.checkPermission, () =>
+      this.functionPluginImpl.checkPermission(ctx)
+    );
+    return res;
   }
 
   private async runWithErrorWrapper(

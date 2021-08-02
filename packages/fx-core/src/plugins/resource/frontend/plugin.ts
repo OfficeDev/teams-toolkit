@@ -54,6 +54,7 @@ import { getTemplatesFolder } from "../../..";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import * as fs from "fs-extra";
 import { ConstantString } from "../../../common/constants";
+import { checkAzureResourcePermission } from "../../../common/checkAzureResourcePermission";
 
 export class FrontendPluginImpl {
   private setConfigIfNotExists(ctx: PluginContext, key: string, value: unknown): void {
@@ -306,5 +307,33 @@ export class FrontendPluginImpl {
     };
 
     return ok(result);
+  }
+
+  public async checkPermission(ctx: PluginContext): Promise<TeamsFxResult> {
+    const config = await FrontendConfig.fromPluginContext(ctx);
+    const subscriptionId = config.subscriptionId;
+    const resourceGroupName = config.resourceGroupName;
+    const storageAccountName = config.storageName;
+
+    const resourceId = `subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.Storage/storageAccounts/${storageAccountName}`;
+    const accessToken = (await config.credentials.getToken()).accessToken;
+
+    const accountInfo = await ctx.azureAccountProvider!.getAccountInfo();
+    const userObjectId = accountInfo!.oid;
+
+    const permissionArray = await checkAzureResourcePermission(
+      resourceId,
+      accessToken,
+      userObjectId
+    );
+
+    return ok(
+      new Map([
+        [
+          Constants.permissions.name,
+          permissionArray.length > 0 ? permissionArray : [Constants.permissions.noPermission],
+        ],
+      ])
+    );
   }
 }

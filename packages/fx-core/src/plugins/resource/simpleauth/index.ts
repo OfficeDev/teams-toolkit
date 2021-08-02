@@ -68,8 +68,12 @@ export class SimpleAuthPlugin implements Plugin {
     );
   }
 
-  public async checkPermission(ctx: PluginContext): Promise<any> {
-    return ok(undefined);
+  public async checkPermission(ctx: PluginContext): Promise<SimpleAuthResult> {
+    return this.runWithSimpleAuthError(
+      () => this.simpleAuthPluginImpl.checkPermission(ctx),
+      ctx,
+      Messages.CheckPermission.telemetry
+    );
   }
 
   private async runWithSimpleAuthError(

@@ -91,7 +91,10 @@ export class FrontendPlugin implements Plugin {
   }
 
   public async checkPermission(ctx: PluginContext): Promise<any> {
-    return ok(undefined);
+    FrontendPlugin.setContext(ctx);
+    return this.runWithErrorHandling(ctx, TelemetryEvent.CheckPermission, () =>
+      this.frontendPluginImpl.checkPermission(ctx)
+    );
   }
 
   private async runWithErrorHandling(

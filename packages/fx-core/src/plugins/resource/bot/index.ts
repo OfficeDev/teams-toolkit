@@ -156,8 +156,15 @@ export class TeamsBot implements Plugin {
     );
   }
 
-  public async checkPermission(ctx: PluginContext): Promise<any> {
-    return ok(undefined);
+  public async checkPermission(context: PluginContext): Promise<any> {
+    Logger.setLogger(context.logProvider);
+
+    return await this.runWithExceptionCatching(
+      context,
+      () => this.teamsBotImpl.checkPermission(context),
+      false,
+      LifecycleFuncNames.CHECK_PERMISSION
+    );
   }
 
   private wrapError(

@@ -8,6 +8,8 @@ param aadClientSecret string
 param applicationIdUri string
 param oauthAuthorityHost string
 
+param frontendHostingStorageEndpoint string
+
 var aadMetadataAddress = uri(oauthAuthorityHost, '${m365TenantId}/v2.0/.well-known/openid-configuration')
 var oauthAuthority = uri(oauthAuthorityHost, m365TenantId)
 var teamsMobileOrDesktopAppClientId = '1fec8e78-bce4-4aaf-ab1b-5451cc387264'
@@ -51,10 +53,10 @@ resource simpleAuthWebAppSettings 'Microsoft.Web/sites/config@2018-02-01' = {
     CLIENT_ID: aadClientId
     CLIENT_SECRET: aadClientSecret
     OAUTH_AUTHORITY: oauthAuthority
+    TAB_APP_ENDPOINT: frontendHostingStorageEndpoint
   }
 }
 
 output webAppName string = simpleAuthWebAppName
 output skuName string = sku
 output endpoint string = 'https://${simpleAuthWebApp.properties.hostNames[0]}'
-output appServicePlanName string = simpleAuthServerFarmsName

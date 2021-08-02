@@ -4,14 +4,11 @@
 import * as fs from "fs-extra";
 import {
   Core,
-  DialogMsg,
-  DialogType,
   err,
   Func,
   ok,
   Platform,
   QTreeNode,
-  QuestionType,
   Result,
   SolutionContext,
   Stage,
@@ -72,10 +69,10 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../common/telemetry";
-import { TelemetrySenderMW } from "./middleware/telemetrySender";
 import * as uuid from "uuid";
 import { AxiosResponse } from "axios";
 import { ProjectUpgraderMW } from "./middleware/projectUpgrader";
+import { globalStateUpdate } from "../common/globalState";
 
 export interface CoreHookContext extends HookContext {
   solutionContext?: SolutionContext;
@@ -169,12 +166,7 @@ export class FxCore implements Core {
     }
 
     if (inputs.platform === Platform.VSCode) {
-      await this.tools.dialog?.communicate(
-        new DialogMsg(DialogType.Ask, {
-          type: QuestionType.UpdateGlobalState,
-          description: globalStateDescription,
-        })
-      );
+      await globalStateUpdate(globalStateDescription, true);
     }
 
     return ok(projectPath);

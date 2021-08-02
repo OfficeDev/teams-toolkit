@@ -3,6 +3,7 @@
 // Licensed under the MIT license.
 
 import { UserError } from "@microsoft/teamsfx-api";
+import { TeamsAppSolution } from "./solution";
 
 /**
  * Void is used to construct Result<Void, FxError>.
@@ -33,6 +34,16 @@ export const PERMISSION_REQUEST = "permissionRequest";
  * Config key whose value is either javascript, typescript or csharp.
  */
 export const PROGRAMMING_LANGUAGE = "programmingLanguage";
+
+/**
+ * Config key whose value is output of ARM templates deployment.
+ */
+export const ARM_TEMPLATE_OUTPUT = "armTemplateOutput";
+
+/**
+ * Config key whose value is the resource group name of project.
+ */
+export const RESOURCE_GROUP_NAME = "resourceGroupName";
 
 export const DEFAULT_PERMISSION_REQUEST = [
   {
@@ -100,6 +111,10 @@ export enum SolutionError {
   GetRemoteConfigError = "GetRemoteConfigError",
   UnsupportedPlatform = "UnsupportedPlatform",
   InvalidInput = "InvalidInput",
+  FailedToCompileBicepFiles = "FailedToCompileBicepFiles",
+  FailedToGetAzureCredential = "FailedToGetAzureCredential",
+  NoResourceGroupFound = "NoResourceGroupFound",
+  FailedToDeployArmTemplatesToAzure = "FailedToDeployArmTemplatesToAzure",
 }
 
 export const LOCAL_DEBUG_TAB_ENDPOINT = "localTabEndpoint";
@@ -154,3 +169,11 @@ export enum SolutionTelemetrySuccess {
 }
 
 export const SolutionTelemetryComponentName = "solution";
+
+export class Messages {
+  // Progress bar messages
+  static readonly DeployArmTemplatesProgressTitle = "Deploying Arm Templates";
+
+  static readonly ProgressStart = "Preparing.";
+  static readonly ProgressDeployArmTemplates = "Deploying Solution Arm Templates.";
+}

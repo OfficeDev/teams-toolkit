@@ -60,3 +60,4 @@ resource simpleAuthWebAppSettings 'Microsoft.Web/sites/config@2018-02-01' = {
 output webAppName string = simpleAuthWebAppName
 output skuName string = sku
 output endpoint string = 'https://${simpleAuthWebApp.properties.hostNames[0]}'
+output appServicePlanName string = simpleAuthServerFarmsName

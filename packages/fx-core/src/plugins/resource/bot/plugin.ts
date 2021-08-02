@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import { PluginContext, Result, Stage, QTreeNode, FxError } from "@microsoft/teamsfx-api";
 
-import { AADRegistration } from "./aadRegistration";
+import { AADPermissionControl, AADRegistration } from "./aadRegistration";
 import * as factory from "./clientFactory";
 import * as utils from "./utils/common";
 import { createQuestions } from "./questions";
@@ -29,7 +29,13 @@ import { getZipDeployEndpoint } from "./utils/zipDeploy";
 
 import * as appService from "@azure/arm-appservice";
 import * as fs from "fs-extra";
-import { CommonStrings, PluginBot, ConfigNames, PluginLocalDebug } from "./resources/strings";
+import {
+  CommonStrings,
+  PluginBot,
+  ConfigNames,
+  PluginLocalDebug,
+  PluginSolution,
+} from "./resources/strings";
 import { DialogUtils } from "./utils/dialog";
 import {
   CheckThrowSomethingMissing,
@@ -570,6 +576,25 @@ export class TeamsBotImpl {
     return ResultFactory.Success();
   }
 
+  public async grantPermission(context: PluginContext): Promise<FxResult> {
+    this.ctx = context;
+
+    const graphToken = await this.ctx?.graphTokenProvider?.getAccessToken();
+    const userInfo = this.ctx.configOfOtherPlugins
+      .get(PluginSolution.PLUGIN_NAME)
+      ?.get(PluginSolution.USER_INFO);
+    if (!userInfo) {
+      // TODO: throw error: no userinfo in context
+      return ResultFactory.Success();
+    }
+    const userInfoObject = JSON.parse(userInfo as string);
+    const userObjectId = userInfoObject["aadId"];
+    const objectId: string = this.ctx.config.get(PluginBot.OBJECT_ID) as string;
+
+    await AADPermissionControl.grantPermission(graphToken as string, objectId, userObjectId);
+    return ResultFactory.Success();
+  }
+
   public async checkPermission(context: PluginContext): Promise<FxResult> {
     this.ctx = context;
     await this.config.restoreConfigFromContext(context);
@@ -592,7 +617,22 @@ export class TeamsBotImpl {
     );
 
     // TODO aad permission check
-    const isAadOwner = true;
+    const graphToken = await this.ctx?.graphTokenProvider?.getAccessToken();
+    const userInfo = this.ctx.configOfOtherPlugins
+      .get(PluginSolution.PLUGIN_NAME)
+      ?.get(PluginSolution.USER_INFO);
+    if (!userInfo) {
+      // TODO: throw error: no userinfo in context
+      return ResultFactory.Success();
+    }
+    const userInfoObject = JSON.parse(userInfo as string);
+    const userGraphObjectId = userInfoObject["aadId"];
+    const objectId: string = this.ctx.config.get(PluginBot.OBJECT_ID) as string;
+    const isAadOwner = await AADPermissionControl.checkPermission(
+      graphToken as string,
+      objectId,
+      userGraphObjectId
+    );
 
     return ResultFactory.Success(
       new Map([

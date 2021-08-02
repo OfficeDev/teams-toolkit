@@ -97,6 +97,7 @@ export class LifecycleFuncNames {
   public static readonly LOCAL_DEBUG = "local-debug";
   public static readonly POST_LOCAL_DEBUG = "post-local-debug";
 
+  public static readonly GRANT_PERMISSION = "grant-permission";
   public static readonly CHECK_PERMISSION = "check-permission";
 
   // extra

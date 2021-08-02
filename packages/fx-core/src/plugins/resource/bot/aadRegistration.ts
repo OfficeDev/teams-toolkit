@@ -6,7 +6,7 @@ import { AxiosInstance, default as axios } from "axios";
 import { AADRegistrationConstants } from "./constants";
 import { IAADDefinition } from "./appStudio/interfaces/IAADDefinition";
 import { AppStudio } from "./appStudio/appStudio";
-import { ProvisionError } from "./errors";
+import { CheckPermissionError, GrantPermissionError, ProvisionError } from "./errors";
 import { CommonStrings } from "./resources/strings";
 import { BotAuthCredential } from "./botAuthCredential";
 
@@ -93,5 +93,50 @@ export class AADRegistration {
     result.clientSecret = password.value;
 
     return result;
+  }
+}
+
+export class AADPermissionControl {
+  public static async grantPermission(
+    graphToken: string,
+    objectId: string,
+    userObjectId: string
+  ): Promise<void> {
+    try {
+      const instance = this.initAxiosInstance(graphToken);
+      await instance.post(`/applications/${objectId}/owners/$ref`, {
+        "@odata.id": `${AADRegistrationConstants.GRAPH_REST_BASE_URL}/directoryObjects/${userObjectId}`,
+      });
+    } catch (e) {
+      throw new GrantPermissionError(e);
+    }
+  }
+
+  public static async checkPermission(
+    graphToken: string,
+    objectId: string,
+    userObjectId: string
+  ): Promise<boolean> {
+    try {
+      const instance = this.initAxiosInstance(graphToken);
+      const response = await instance.get(
+        `/applications/${objectId}/owners?$filter=id eq '${userObjectId}'`
+      );
+      if (response && response.data && response.data.value) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      throw new CheckPermissionError(e);
+    }
+  }
+
+  private static initAxiosInstance(graphToken: string) {
+    const instance = axios.create({
+      baseURL: AADRegistrationConstants.GRAPH_REST_BASE_URL,
+    });
+    instance.defaults.headers.common["Authorization"] = `Bearer ${graphToken}`;
+    return instance;
   }
 }

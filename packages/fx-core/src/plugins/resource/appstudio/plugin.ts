@@ -416,12 +416,20 @@ export class AppStudioPluginImpl {
   public async buildTeamsAppPackage(ctx: PluginContext): Promise<string> {
     let manifestString: string | undefined = undefined;
     let appDirectory: string;
-    try {
-      appDirectory = await this.getAppDirectory(ctx);
-    } catch (error) {
-      throw error;
+    let zipFileName: string;
+
+    if (ctx.answers?.platform === Platform.VS) {
+      appDirectory = ctx.answers![Constants.PUBLISH_PATH_QUESTION] as string;
+      zipFileName = `${appDirectory}/appPackage.zip`;
+    } else {
+      try {
+        appDirectory = await this.getAppDirectory(ctx);
+      } catch (error) {
+        throw error;
+      }
+      zipFileName = `${ctx.root}/${AppPackageFolderName}/appPackage.zip`;
     }
-    appDirectory = await this.getAppDirectory(ctx);
+
     if (this.isSPFxProject(ctx)) {
       manifestString = (await fs.readFile(`${appDirectory}/${REMOTE_MANIFEST}`)).toString();
     } else {
@@ -480,8 +488,6 @@ export class AppStudioPluginImpl {
     zip.addFile(Constants.MANIFEST_FILE, Buffer.from(manifestString));
     zip.addLocalFile(colorFile);
     zip.addLocalFile(outlineFile);
-
-    const zipFileName = `${ctx.root}/${AppPackageFolderName}/appPackage.zip`;
     zip.writeZip(zipFileName);
 
     if (this.isSPFxProject(ctx)) {
@@ -494,7 +500,6 @@ export class AppStudioPluginImpl {
   public async publish(ctx: PluginContext): Promise<{ name: string; id: string; update: boolean }> {
     let appDirectory: string | undefined = undefined;
     let manifest: TeamsAppManifest | undefined;
-    // let manifestString: string | undefined = undefined;
 
     // For vs platform, read the local manifest.json file
     // For cli/vsc platform, get manifest from ctx
@@ -535,12 +540,6 @@ export class AppStudioPluginImpl {
         throw fillinRes.error;
       }
     }
-    // if (!appDirectory) {
-    //   throw AppStudioResultFactory.SystemError(
-    //     AppStudioError.ParamUndefinedError.name,
-    //     AppStudioError.ParamUndefinedError.message(Constants.PUBLISH_PATH_QUESTION)
-    //   );
-    // }
 
     if (!manifest) {
       throw AppStudioResultFactory.SystemError(
@@ -656,6 +655,7 @@ export class AppStudioPluginImpl {
       );
 
       // Build Teams App package
+      // Platforms will be checked in buildTeamsAppPackage(ctx)
       await publishProgress?.next(`Building Teams app package in ${appDirectory}.`);
       const appPackage = await this.buildTeamsAppPackage(ctx);
 

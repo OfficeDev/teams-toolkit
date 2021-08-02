@@ -28,7 +28,6 @@ describe("Build Teams Package", () => {
     };
     ctx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: "project id",
       solutionSettings: {
         name: "azure",

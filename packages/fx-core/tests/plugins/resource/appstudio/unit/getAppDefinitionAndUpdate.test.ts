@@ -125,7 +125,6 @@ describe("Get AppDefinition and Update", () => {
     };
     ctx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
@@ -166,7 +165,6 @@ describe("Get AppDefinition and Update", () => {
     };
     ctx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
@@ -200,7 +198,6 @@ describe("Get AppDefinition and Update", () => {
     };
     ctx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
@@ -237,7 +234,6 @@ describe("Get AppDefinition and Update", () => {
     };
     ctx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
@@ -274,7 +270,6 @@ describe("Get AppDefinition and Update", () => {
     };
     ctx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
@@ -313,7 +308,6 @@ describe("Get AppDefinition and Update", () => {
     };
     ctx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
@@ -348,7 +342,6 @@ describe("Get AppDefinition and Update", () => {
     };
     ctx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
@@ -391,7 +384,6 @@ describe("Get AppDefinition and Update", () => {
     };
     ctx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
@@ -426,7 +418,6 @@ describe("Get AppDefinition and Update", () => {
     };
     ctx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
@@ -472,7 +463,6 @@ describe("Get AppDefinition and Update", () => {
     };
     ctx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
@@ -536,7 +526,6 @@ describe("Get AppDefinition and Update", () => {
     };
     ctx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
@@ -597,7 +586,6 @@ describe("Get AppDefinition and Update", () => {
     };
     ctx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
@@ -632,7 +620,6 @@ describe("Get AppDefinition and Update", () => {
     };
     ctx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
@@ -696,7 +683,6 @@ describe("Get AppDefinition and Update", () => {
     };
     ctx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",

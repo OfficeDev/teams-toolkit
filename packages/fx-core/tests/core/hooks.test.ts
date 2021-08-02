@@ -62,6 +62,7 @@ import { AzureResourceSQL } from "../../src/plugins/solution/fx-solution/questio
 import { PluginNames } from "../../src/plugins/solution/fx-solution/constants";
 import { QuestionModelMW } from "../../src/core/middleware/questionModel";
 import { ProjectUpgraderMW } from "../../src/core/middleware/projectUpgrader";
+import { environmentManager } from "../../src/core/environment";
 
 describe("Middleware", () => {
   describe("ErrorHandlerMW", () => {
@@ -379,7 +380,7 @@ describe("Middleware", () => {
 
     const inputs: Inputs = { platform: Platform.VSCode };
     inputs.projectPath = path.join(os.tmpdir(), appName);
-    const envName = projectSettings.currentEnv;
+    const envName = environmentManager.defaultEnvName;
     const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
     const settingsFile = path.resolve(confFolderPath, "settings.json");
     const envJsonFile = path.resolve(confFolderPath, `env.${envName}.json`);
@@ -505,7 +506,7 @@ describe("Middleware", () => {
       });
       sandbox.stub(fs, "pathExists").resolves(true);
 
-      const envName = solutionContext.projectSettings.currentEnv;
+      const envName = environmentManager.defaultEnvName;
       const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
       const settingsFile = path.resolve(confFolderPath, "settings.json");
       const envJsonFile = path.resolve(confFolderPath, `env.${envName}.json`);
@@ -561,7 +562,7 @@ describe("Middleware", () => {
       });
       sandbox.stub(fs, "pathExists").resolves(true);
 
-      const envName = solutionContext.projectSettings.currentEnv;
+      const envName = environmentManager.defaultEnvName;
       const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
       const userdataFile = path.resolve(confFolderPath, `${envName}.userdata`);
       const settingsFile = path.resolve(confFolderPath, "settings.json");
@@ -901,7 +902,7 @@ describe("Middleware", () => {
 
     const inputs: Inputs = { platform: Platform.VSCode };
     inputs.projectPath = path.join(os.tmpdir(), appName);
-    const envName = projectSettings.currentEnv;
+    const envName = environmentManager.defaultEnvName;
     const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
     const settingsFile = path.resolve(confFolderPath, "settings.json");
     const envJsonFile = path.resolve(confFolderPath, `env.${envName}.json`);

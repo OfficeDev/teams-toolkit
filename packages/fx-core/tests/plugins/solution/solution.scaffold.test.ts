@@ -98,7 +98,6 @@ describe("Solution scaffold() reading valid manifest file", () => {
     const mockedCtx = mockSolutionContext();
     mockedCtx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
@@ -120,7 +119,6 @@ describe("Solution scaffold() reading valid manifest file", () => {
     const mockedCtx = mockSolutionContext();
     mockedCtx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
@@ -144,7 +142,6 @@ describe("Solution scaffold() reading valid manifest file", () => {
     const mockedCtx = mockSolutionContext();
     mockedCtx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
@@ -173,7 +170,6 @@ describe("Solution scaffold() reading valid manifest file", () => {
     const mockedCtx = mockSolutionContext();
     mockedCtx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
@@ -222,7 +218,6 @@ describe("Solution scaffold() reading valid manifest file", () => {
     const mockedCtx = mockSolutionContext();
     mockedCtx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionSPFx.id,

@@ -7,7 +7,15 @@ import fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
 import { randomAppName } from "./utils";
-import { CryptoProvider, FxError, Json, ok, Result, UserError } from "@microsoft/teamsfx-api";
+import {
+  ConfigFolderName,
+  CryptoProvider,
+  FxError,
+  Json,
+  ok,
+  Result,
+  UserError,
+} from "@microsoft/teamsfx-api";
 import { environmentManager } from "../../src/core/environment";
 import * as tools from "../../src/common/tools";
 import sinon from "sinon";
@@ -260,6 +268,63 @@ describe("APIs of Environment Manager", () => {
         formatContent(fileMap.get(envFiles.userDataFile)),
         formatContent(expectedUserDataFileContent)
       );
+    });
+  });
+
+  describe("List Environment Profile", () => {
+    const configFolder = path.resolve(projectPath, `.${ConfigFolderName}`);
+
+    beforeEach(async () => {
+      await fs.ensureDir(configFolder);
+    });
+
+    afterEach(async () => {
+      await fs.rmdir(projectPath, { recursive: true });
+    });
+
+    it("list all the env profiles with correct naming convention", async () => {
+      const envFileNames = [
+        // correct env file names
+        "env.default.json",
+        "env.42.JSON",
+        "env.dev1.json",
+        "ENV.dev2.JSON",
+        "ENV.dev_1.JSON",
+        "ENV.stage-42.json",
+        // incorrect env file names
+        "env..json",
+        "env. .json",
+        "env.4 2.json",
+        "env.+.json",
+        "env.=.json",
+      ];
+
+      for (const envFileName of envFileNames) {
+        await fs.ensureFile(path.resolve(configFolder, envFileName));
+      }
+
+      const envNamesResult = await environmentManager.listEnvProfiles(projectPath);
+      if (envNamesResult.isErr()) {
+        assert.fail("Fail to get the list of env profiles.");
+      }
+
+      assert.sameMembers(envNamesResult.value, [
+        "default",
+        "dev1",
+        "dev2",
+        "42",
+        "dev_1",
+        "stage-42",
+      ]);
+    });
+
+    it("no env profile found", async () => {
+      const envNamesResult = await environmentManager.listEnvProfiles(projectPath);
+      if (envNamesResult.isErr()) {
+        assert.fail("Fail to get the list of env profiles.");
+      }
+
+      assert.isEmpty(envNamesResult.value);
     });
   });
 });

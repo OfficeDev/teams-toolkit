@@ -27,6 +27,7 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../../common/telemetry";
+import { environmentManager } from "../environment";
 
 const resourceContext = [
   {
@@ -75,12 +76,10 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<void> {
     const confFolderPath = path.resolve(inputs.projectPath!, `.${ConfigFolderName}`);
     const settingsFile = path.resolve(confFolderPath, "settings.json");
     const projectSettings: ProjectSettings = await fs.readJson(settingsFile);
-    if (!projectSettings.currentEnv) {
-      projectSettings.currentEnv = "default";
-    }
 
+    const defaultEnvName = environmentManager.defaultEnvName;
     // Read context file.
-    const contextPath = path.resolve(confFolderPath, `env.${projectSettings.currentEnv}.json`);
+    const contextPath = path.resolve(confFolderPath, `env.${defaultEnvName}.json`);
     const context = await readContext(contextPath);
 
     // Update value of specific key in context file to secret pattern.
@@ -96,7 +95,7 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<void> {
     sendTelemetryEvent(core?.tools?.telemetryReporter, inputs, TelemetryEvent.ProjectUpgradeStart);
 
     // Read UserData file.
-    const userDataPath = path.resolve(confFolderPath, `${projectSettings.currentEnv}.userdata`);
+    const userDataPath = path.resolve(confFolderPath, `${defaultEnvName}.userdata`);
     const userData = await readUserData(userDataPath, projectSettings.projectId);
 
     // Merge updatedKeys into UserData.
@@ -115,12 +114,18 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<void> {
     });
   } catch (error) {
     const errorObject = ContextUpgradeError(error);
+    core?.tools?.logProvider?.info(
+      `Template upgrade failed. Please clean the env.default.json and default.userdata file and try again. Reason: ${error?.message}`
+    );
     sendTelemetryErrorEvent(
       core?.tools?.telemetryReporter,
       inputs,
       TelemetryEvent.ProjectUpgrade,
       errorObject,
-      { [TelemetryProperty.Success]: TelemetrySuccess.No }
+      {
+        [TelemetryProperty.Success]: TelemetrySuccess.No,
+        [TelemetryProperty.ErrorMessage]: error?.message,
+      }
     );
     ctx.result = err(errorObject);
   }

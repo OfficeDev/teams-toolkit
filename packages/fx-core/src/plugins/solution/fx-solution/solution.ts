@@ -24,6 +24,7 @@ import {
   TeamsAppManifest,
   OptionItem,
   ConfigFolderName,
+  AppPackageFolderName,
   AzureSolutionSettings,
   Platform,
   Inputs,
@@ -56,6 +57,7 @@ import {
   SolutionTelemetryComponentName,
   SolutionTelemetrySuccess,
   PluginNames,
+  ARM_TEMPLATE_OUTPUT,
 } from "./constants";
 
 import {
@@ -97,7 +99,7 @@ import { AadAppForTeamsPlugin, AppStudioPlugin, SpfxPlugin } from "../../resourc
 import { ErrorHandlerMW } from "../../../core/middleware/errorHandler";
 import { hooks } from "@feathersjs/hooks/lib";
 import { Service, Container } from "typedi";
-import { generateArmTemplate } from "./arm";
+import { deployArmTemplates, generateArmTemplate } from "./arm";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -275,8 +277,11 @@ export class TeamsAppSolution implements Solution {
       "defaultOutline.png"
     );
 
-    await fs.copy(defaultColorPath, `${ctx.root}/.${ConfigFolderName}/color.png`);
-    await fs.copy(defaultOutlinePath, `${ctx.root}/.${ConfigFolderName}/outline.png`);
+    await fs.copy(defaultColorPath, `${ctx.root}/${AppPackageFolderName}/color.png`);
+    await fs.copy(defaultOutlinePath, `${ctx.root}/${AppPackageFolderName}/outline.png`);
+    // await fs.copy(defaultColorPath, `${ctx.root}/.${ConfigFolderName}/color.png`);
+    // await fs.copy(defaultOutlinePath, `${ctx.root}/.${ConfigFolderName}/outline.png`);
+
     if (this.isAzureProject(ctx)) {
       await fs.writeJSON(`${ctx.root}/permissions.json`, DEFAULT_PERMISSION_REQUEST, { spaces: 4 });
       ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.Create, {
@@ -532,7 +537,6 @@ export class TeamsAppSolution implements Solution {
         ctx,
         appName,
         ctx.config,
-        ctx.dialog,
         ctx.azureAccountProvider,
         await ctx.appStudioToken?.getJsonObject()
       );
@@ -612,6 +616,14 @@ export class TeamsAppSolution implements Solution {
             }
           });
         }
+
+        if (isArmSupportEnabled()) {
+          const armDeploymentResult = await deployArmTemplates(ctx);
+          if (armDeploymentResult.isErr()) {
+            return armDeploymentResult;
+          }
+        }
+
         const aadPlugin = this.AadPlugin as AadAppForTeamsPlugin;
         if (selectedPlugins.some((plugin) => plugin.name === aadPlugin.name)) {
           return aadPlugin.setApplicationInContext(getPluginContext(ctx, aadPlugin.name));
@@ -619,6 +631,7 @@ export class TeamsAppSolution implements Solution {
         return ok(undefined);
       },
       async () => {
+        ctx.config.get(GLOBAL_CONFIG)?.delete(ARM_TEMPLATE_OUTPUT);
         ctx.logProvider?.info("[Teams Toolkit]: configuration finished!");
         return ok(undefined);
       }
@@ -1659,10 +1672,7 @@ export class TeamsAppSolution implements Solution {
       } else if (method === "buildPackage") {
         const appStudioPlugin = this.AppStudioPlugin as AppStudioPlugin;
         const pluginCtx = getPluginContext(ctx, appStudioPlugin.name);
-        return await appStudioPlugin.buildTeamsPackage(
-          pluginCtx,
-          `${ctx.root}/.${ConfigFolderName}`
-        );
+        return await appStudioPlugin.buildTeamsPackage(pluginCtx);
       } else if (array.length == 2) {
         const pluginName = array[1];
         const pluginMap = getAllResourcePluginMap();

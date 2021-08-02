@@ -167,14 +167,11 @@ export class AppStudioPlugin implements Plugin {
    * @param {string} appDirectory - The directory contains manifest.source.json and two images
    * @returns {string} - Path of built appPackage.zip
    */
-  public async buildTeamsPackage(
-    ctx: PluginContext,
-    appDirectory: string
-  ): Promise<Result<string, FxError>> {
+  public async buildTeamsPackage(ctx: PluginContext): Promise<Result<string, FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.buildTeamsPackage);
     try {
-      const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(ctx, appDirectory);
+      const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(ctx);
       const builtSuccess = [
         { content: "(√)Done: ", color: Colors.BRIGHT_GREEN },
         { content: "Teams Package ", color: Colors.BRIGHT_WHITE },
@@ -208,12 +205,9 @@ export class AppStudioPlugin implements Plugin {
     if (ctx.answers?.platform === Platform.VSCode) {
       const answer = ctx.answers![Constants.BUILD_OR_PUBLISH_QUESTION] as string;
       if (answer === manuallySubmitOption.id) {
-        const appDirectory = `${ctx.root}/.${ConfigFolderName}`;
+        //const appDirectory = `${ctx.root}/.${ConfigFolderName}`;
         try {
-          const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(
-            ctx,
-            appDirectory
-          );
+          const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(ctx);
           const msg = `Successfully created ${
             ctx.projectSettings!.appName
           } app package file at ${appPackagePath}. Send this to your administrator for approval.`;

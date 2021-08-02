@@ -18,7 +18,6 @@ import { globalStateGet, globalStateUpdate } from "@microsoft/teamsfx-core";
 import { PanelType } from "./PanelType";
 import { execSync } from "child_process";
 import { isMacOS } from "../utils/commonUtils";
-import { DialogManager } from "../userInterface";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   TelemetryEvent,

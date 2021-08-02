@@ -7,19 +7,25 @@ import { PluginContext } from "@microsoft/teamsfx-api";
 import { ErrorMessage } from "./errors";
 import { SqlResultFactory } from "./results";
 export class SqlClient {
-  conn?: tedious.Connection;
   config: SqlConfig;
-  token?: string;
+  token: string;
   ctx: PluginContext;
-  constructor(ctx: PluginContext, config: SqlConfig) {
+
+  private constructor(ctx: PluginContext, config: SqlConfig, token: string) {
     this.ctx = ctx;
     this.config = config;
+    this.token = token;
+  }
+
+  static async create(ctx: PluginContext, config: SqlConfig): Promise<SqlClient> {
+    const token = await SqlClient.initToken(ctx, config);
+    return new SqlClient(ctx, config, token);
   }
 
   async existUser(): Promise<boolean> {
     try {
       const query = `SELECT count(*) FROM [sys].[database_principals] WHERE [name] = N'${this.config.identity}';`;
-      const res = await this.doQuery(this.token!, query);
+      const res = await this.doQuery(this.token, query);
       if (res.length && res[0][0].value !== 0) {
         return true;
       } else {
@@ -54,11 +60,11 @@ export class SqlClient {
     try {
       let query: string;
       query = `CREATE USER [${this.config.identity}] FROM EXTERNAL PROVIDER;`;
-      await this.doQuery(this.token!, query);
+      await this.doQuery(this.token, query);
       query = `sp_addrolemember 'db_datareader', '${this.config.identity}'`;
-      await this.doQuery(this.token!, query);
+      await this.doQuery(this.token, query);
       query = `sp_addrolemember 'db_datawriter', '${this.config.identity}'`;
-      await this.doQuery(this.token!, query);
+      await this.doQuery(this.token, query);
     } catch (error) {
       const link = HelpLinks.default;
       if (error?.message?.includes(ErrorMessage.GuestAdminMessage)) {
@@ -107,78 +113,73 @@ export class SqlClient {
     }
   }
 
-  async initToken() {
-    if (!this.token) {
-      const credential = await this.ctx.azureAccountProvider!.getIdentityCredentialAsync();
-      if (!credential) {
-        const link = HelpLinks.default;
-        const reason = ErrorMessage.IdentityCredentialUndefine(
-          this.config.identity,
-          this.config.databaseName
+  static async initToken(ctx: PluginContext, config: SqlConfig): Promise<string> {
+    const credential = await ctx.azureAccountProvider!.getIdentityCredentialAsync();
+    if (!credential) {
+      const link = HelpLinks.default;
+      const reason = ErrorMessage.IdentityCredentialUndefine(config.identity, config.databaseName);
+      const message = ErrorMessage.DatabaseUserCreateError.message(
+        config.sqlServer,
+        config.databaseName,
+        config.identity,
+        reason
+      );
+      ctx.logProvider?.error(message + ` You can follow ${link} to handle it`);
+      throw SqlResultFactory.UserError(
+        ErrorMessage.DatabaseUserCreateError.name,
+        message,
+        undefined,
+        undefined,
+        link
+      );
+    }
+    try {
+      const accessToken = await credential!.getToken(Constants.azureSqlScope);
+      return accessToken!.token;
+    } catch (error) {
+      const link = HelpLinks.default;
+      if (error?.message?.includes(ErrorMessage.DomainCode)) {
+        const logMessage = ErrorMessage.DatabaseUserCreateError.message(
+          config.sqlServer,
+          config.databaseName,
+          config.identity,
+          error.message
         );
+        ctx.logProvider?.error(logMessage + ` You can follow ${link} to handle it`);
         const message = ErrorMessage.DatabaseUserCreateError.message(
-          this.config.sqlServer,
-          this.config.databaseName,
-          this.config.identity,
-          reason
+          config.sqlServer,
+          config.databaseName,
+          config.identity,
+          ErrorMessage.DomainError
         );
-        this.ctx.logProvider?.error(message + ` You can follow ${link} to handle it`);
         throw SqlResultFactory.UserError(
           ErrorMessage.DatabaseUserCreateError.name,
           message,
-          undefined,
+          error,
           undefined,
           link
         );
-      }
-      try {
-        const accessToken = await credential!.getToken(Constants.azureSqlScope);
-        this.token = accessToken!.token;
-      } catch (error) {
-        const link = HelpLinks.default;
-        if (error?.message?.includes(ErrorMessage.DomainCode)) {
-          const logMessage = ErrorMessage.DatabaseUserCreateError.message(
-            this.config.sqlServer,
-            this.config.databaseName,
-            this.config.identity,
-            error.message
-          );
-          this.ctx.logProvider?.error(logMessage + ` You can follow ${link} to handle it`);
-          const message = ErrorMessage.DatabaseUserCreateError.message(
-            this.config.sqlServer,
-            this.config.databaseName,
-            this.config.identity,
-            ErrorMessage.DomainError
-          );
-          throw SqlResultFactory.UserError(
-            ErrorMessage.DatabaseUserCreateError.name,
-            message,
-            error,
-            undefined,
-            link
-          );
-        } else {
-          const logMessage = ErrorMessage.DatabaseUserCreateError.message(
-            this.config.sqlServer,
-            this.config.databaseName,
-            this.config.identity,
-            error.message
-          );
-          this.ctx.logProvider?.error(logMessage + ` You can follow ${link} to handle it`);
-          const message = ErrorMessage.DatabaseUserCreateError.message(
-            this.config.sqlServer,
-            this.config.databaseName,
-            this.config.identity,
-            `access database failed. ${ErrorMessage.GetDetail}`
-          );
-          throw SqlResultFactory.UserError(
-            ErrorMessage.DatabaseUserCreateError.name,
-            message,
-            error,
-            undefined,
-            link
-          );
-        }
+      } else {
+        const logMessage = ErrorMessage.DatabaseUserCreateError.message(
+          config.sqlServer,
+          config.databaseName,
+          config.identity,
+          error.message
+        );
+        ctx.logProvider?.error(logMessage + ` You can follow ${link} to handle it`);
+        const message = ErrorMessage.DatabaseUserCreateError.message(
+          config.sqlServer,
+          config.databaseName,
+          config.identity,
+          `access database failed. ${ErrorMessage.GetDetail}`
+        );
+        throw SqlResultFactory.UserError(
+          ErrorMessage.DatabaseUserCreateError.name,
+          message,
+          error,
+          undefined,
+          link
+        );
       }
     }
   }

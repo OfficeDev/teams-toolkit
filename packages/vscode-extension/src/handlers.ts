@@ -24,7 +24,6 @@ import {
   UserError,
   SystemError,
   returnSystemError,
-  returnUserError,
   ConfigFolderName,
   Inputs,
   VsCodeEnv,
@@ -40,17 +39,13 @@ import {
   globalStateUpdate,
   globalStateGet,
 } from "@microsoft/teamsfx-core";
-import DialogManagerInstance from "./userInterface";
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
 import AppStudioTokenInstance from "./commonlib/appStudioLogin";
 import AppStudioCodeSpaceTokenInstance from "./commonlib/appStudioCodeSpaceLogin";
 import VsCodeLogInstance from "./commonlib/log";
-import { VSCodeTelemetryReporter } from "./commonlib/telemetry";
 import { TreeViewCommand } from "./commandsTreeViewProvider";
 import TreeViewManagerInstance from "./commandsTreeViewProvider";
-import * as extensionPackage from "./../package.json";
-import { ext } from "./extensionVariables";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import {
   TelemetryEvent,
@@ -63,7 +58,7 @@ import * as commonUtils from "./debug/commonUtils";
 import { ExtensionErrors, ExtensionSource } from "./error";
 import { WebviewPanel } from "./controls/webviewPanel";
 import * as constants from "./debug/constants";
-import { isSPFxProject, sleep } from "./utils/commonUtils";
+import { isSPFxProject } from "./utils/commonUtils";
 import * as fs from "fs-extra";
 import * as vscode from "vscode";
 import { DepsChecker } from "./debug/depsChecker/checker";
@@ -82,9 +77,11 @@ import { SPFxNodeChecker } from "./debug/depsChecker/spfxNodeChecker";
 import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
 import { VS_CODE_UI } from "./extension";
 import { registerAccountTreeHandler } from "./accountTree";
-import * as uuid from "uuid";
 import { selectAndDebug } from "./debug/runIconHandler";
 import * as path from "path";
+import { exp } from "./exp/index";
+import { TreatmentVariables } from "./exp/treatmentVariables";
+import { StringContext } from "./utils/stringContext";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -142,7 +139,6 @@ export async function activate(): Promise<Result<Void, FxError>> {
       },
       telemetryReporter: telemetry,
       treeProvider: TreeViewManagerInstance.getTreeView("teamsfx-accounts")!,
-      dialog: DialogManagerInstance,
       ui: VS_CODE_UI,
     };
     core = new FxCore(tools);
@@ -664,8 +660,19 @@ export function saveTextDocumentHandler(document: vscode.TextDocument) {
 }
 
 export async function cmdHdlLoadTreeView(context: ExtensionContext) {
-  const disposables = await TreeViewManagerInstance.registerTreeViews();
-  context.subscriptions.push(...disposables);
+  if (
+    await exp
+      .getExpService()
+      .getTreatmentVariableAsync(TreatmentVariables.VSCodeConfig, TreatmentVariables.TreeView, true)
+  ) {
+    commands.executeCommand("setContext", "isNewTreeView", true);
+    StringContext.setSignInAzureContext(StringResources.vsc.handlers.signInAzureNew);
+    const disposables = await TreeViewManagerInstance.registerNewTreeViews();
+    context.subscriptions.push(...disposables);
+  } else {
+    const disposables = await TreeViewManagerInstance.registerTreeViews();
+    context.subscriptions.push(...disposables);
+  }
 
   // Register SignOut tree view command
   commands.registerCommand("fx-extension.signOut", async (node: TreeViewCommand) => {
@@ -863,7 +870,7 @@ export async function signOutAzure(isFromTreeView: boolean) {
     await TreeViewManagerInstance.getTreeView("teamsfx-accounts")!.refresh([
       {
         commandId: "fx-extension.signinAzure",
-        label: StringResources.vsc.handlers.signInAzure,
+        label: StringContext.getSignInAzureContext(),
         contextValue: "signinAzure",
       },
     ]);

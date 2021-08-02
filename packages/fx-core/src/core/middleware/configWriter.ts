@@ -10,17 +10,12 @@ import {
   ConfigFolderName,
   err,
   Inputs,
-  SolutionContext,
   StaticPlatforms,
 } from "@microsoft/teamsfx-api";
-import {
-  mapToJson,
-  serializeDict,
-  sperateSecretData,
-  dataNeedEncryption,
-} from "../../common/tools";
+import { mapToJson } from "../../common/tools";
 import { WriteFileError } from "../error";
 import { CoreHookContext, FxCore } from "..";
+import { environmentManager } from "../environment";
 
 /**
  * This middleware will help to persist configs if necessary.
@@ -41,36 +36,20 @@ export const ConfigWriterMW: Middleware = async (ctx: CoreHookContext, next: Nex
     if (solutionContext === undefined) return;
     try {
       const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
-      if (!solutionContext.projectSettings?.currentEnv)
-        solutionContext.projectSettings!.currentEnv = "default";
       const solutionSettings = solutionContext.projectSettings
         ?.solutionSettings as AzureSolutionSettings;
       if (!solutionSettings.activeResourcePlugins) solutionSettings.activeResourcePlugins = [];
       if (!solutionSettings.azureResources) solutionSettings.azureResources = [];
-      const envName = solutionContext.projectSettings?.currentEnv;
-      const solutionConfig = solutionContext.config;
-      const configJson = mapToJson(solutionConfig);
-      const envJsonFile = path.resolve(confFolderPath, `env.${envName}.json`);
-      const userDataFile = path.resolve(confFolderPath, `${envName}.userdata`);
-      const localData = sperateSecretData(configJson);
-      if (solutionContext.cryptoProvider) {
-        for (const secretKey of Object.keys(localData)) {
-          if (!dataNeedEncryption(secretKey)) {
-            continue;
-          }
-          const encryptedSecret = solutionContext.cryptoProvider.encrypt(localData[secretKey]);
-          // always success
-          if (encryptedSecret.isOk()) {
-            localData[secretKey] = encryptedSecret.value;
-          }
-        }
-      }
+      await environmentManager.writeEnvProfile(
+        solutionContext.config,
+        inputs.projectPath,
+        solutionContext.targetEnvName,
+        solutionContext.cryptoProvider
+      );
       const settingFile = path.resolve(confFolderPath, "settings.json");
-      await fs.writeFile(envJsonFile, JSON.stringify(configJson, null, 4));
-      await fs.writeFile(userDataFile, serializeDict(localData));
-      await fs.writeFile(settingFile, JSON.stringify(solutionContext.projectSettings, null, 4));
       const core = ctx.self as FxCore;
-      core.tools.logProvider.debug(`[core] persist config folder: ${confFolderPath}`);
+      await fs.writeFile(settingFile, JSON.stringify(solutionContext.projectSettings, null, 4));
+      core.tools.logProvider.debug(`[core] persist project setting file: ${settingFile}`);
     } catch (e) {
       ctx.res = err(WriteFileError(e));
     }

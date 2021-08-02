@@ -19,13 +19,31 @@
     "CancelProvision": "CancelProvision",
     "AlreadyProvisionNotice": "'%s' is already provisioned in the cloud, will create the teams app again if it has been removed.",
     "NotProvisionedNotice": "'%s' is not provisioned in the cloud yet. Please provision first.",
+
     "GenerateArmTemplateFailNotice": "'%s' Failed to create ARM template for required Azure services.",
-    "StartDeployArmTemplateNotice": "[%s] Start Deploying Arm templates.",
-    "SucessfullyCompileBicepNotice": "[%s] Successfully compile bicep files to JSON.",
-    "SucessfullyDeployArmTemplateNotice": "[%s] Successfully deploy Arm templates. Resource group name: %s. Deployment name: %s",
-    "FailedToDeployArmTemplateNotice": "[%s] Failed to deploy Arm templates. Resource group name: %s. Deployment name: %s",
-    "PollDeploymentStatusNotice": "[%s] Polling deployment status...",
-    "EndDeployArmTemplateNotice": "[%s] Successfully deployed Arm templates."
+
+    "DeployArmTemplates": {
+      "StartNotice": "[%s] Start deploying Arm templates.",
+      "CompileBicepSuccessNotice": "[%s] Successfully compile bicep files to JSON.",
+      "SuccessNotice": "[%s] Successfully deploy Arm templates. Resource group name: %s. Deployment name: %s",
+      "FailNotice": "[%s] Failed to deploy Arm templates. Resource group name: %s. Deployment name: %s",
+      "PollDeploymentStatusNotice": "[%s] Polling deployment status...",
+      "EndNotice": "[%s] End Arm templates deployment.",
+      "Progress": {
+        "Title": "Deploying Arm Templates",
+        "Start": "Preparing.",
+        "ExecuteDeployment": "Deploying solution Arm templates to Azure. This could take several minutes."
+      }
+    },
+
+    "ProvisionStartNotice": "[%s] Start provisioning. It could take several minutes.",
+    "ConfigurationFinishNotice": "[%s] Configuration finished.",
+    "ProvisionFinishNotice": "[%s] Provison finished!",
+
+    "DeployStartNotice": "[%s] Deployment start.",
+    "SelectedPluginsToDeployNotice": "[%s] Selected plugins to deploy: %s",
+
+    "PublishStartNotice": "[%s] Publish start."
   },
   "plugins": {
     "SPFx": {

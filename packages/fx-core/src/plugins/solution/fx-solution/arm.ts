@@ -18,18 +18,16 @@ import { format } from "util";
 import { compileHandlebarsTemplateString, getStrings } from "../../../common";
 import path from "path";
 import * as fs from "fs-extra";
-import { ConstantString } from "../../../common/constants";
+import { ConstantString, PluginDisplayName } from "../../../common/constants";
 import { execAsync } from "../../../common/tools";
 import {
   ARM_TEMPLATE_OUTPUT,
   GLOBAL_CONFIG,
-  Messages,
   PluginNames,
   RESOURCE_GROUP_NAME,
   SolutionError,
 } from "./constants";
 import { ResourceManagementClient, ResourceManagementModels } from "@azure/arm-resources";
-import { ResultFactory } from "../../resource/aad/results";
 import { DeployArmTemplatesSteps, ProgressHelper } from "./utils/progressHelper";
 
 const baseFolder = "./infra/azure";
@@ -113,75 +111,46 @@ export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<
   return ok(undefined); // Nothing to return when success
 }
 
-export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<void, FxError>> {
-  ctx.logProvider?.info(
-    format(getStrings().solution.StartDeployArmTemplateNotice, PluginNames.SOLUTION)
+export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result<void, FxError>> {
+  const progressHandler = await ProgressHelper.startDeployArmTemplatesProgressHandler(
+    getPluginContext(ctx, PluginNames.SOLUTION)
   );
-  const pluginCtx = getPluginContext(ctx, PluginNames.SOLUTION);
-  const progressHandler = await ProgressHelper.startDeployArmTemplatesProgressHandler(pluginCtx);
-  await progressHandler?.next(DeployArmTemplatesSteps.DeployArmTemplates);
+  await progressHandler?.next(DeployArmTemplatesSteps.ExecuteDeployment);
 
-  const azureInfraDir = path.join(ctx.root, baseFolder);
   generateResourceName(ctx);
 
   // update parameters
-  const parameterDefaultFilePath = path.join(
-    azureInfraDir,
-    parameterFolder,
-    parameterDefaultFileName
-  );
-  const parameterTemplateFilePath = path.join(
-    azureInfraDir,
-    parameterFolder,
-    parameterTemplateFileName
-  );
-  let parameterTemplate, parameterJsonString;
+  let parameterJson;
   try {
-    await fs.stat(parameterDefaultFilePath);
-    parameterTemplate = await fs.readFile(parameterDefaultFilePath, ConstantString.UTF8Encoding);
-    parameterJsonString = expandParameterPlaceholders(ctx, parameterTemplate);
-  } catch (err) {
-    try {
-      parameterTemplate = await fs.readFile(parameterTemplateFilePath, ConstantString.UTF8Encoding);
-      parameterJsonString = expandParameterPlaceholders(ctx, parameterTemplate);
-      await fs.writeFile(parameterDefaultFilePath, parameterJsonString);
-    } catch (err) {
-      return err(
-        returnSystemError(
-          new Error(`${parameterTemplateFilePath} does not exist.`),
-          PluginNames.SOLUTION,
-          SolutionError.FailedToDeployArmTemplatesToAzure
-        )
-      );
-    }
-  }
-
-  const parameterJson = JSON.parse(parameterJsonString);
-
-  const resourceGroupName = ctx.config.get(GLOBAL_CONFIG)?.getString(RESOURCE_GROUP_NAME);
-  if (!resourceGroupName) {
-    throw returnSystemError(
-      new Error("Failed to get resource group from project solution settings."),
-      PluginNames.SOLUTION,
-      SolutionError.NoResourceGroupFound
+    parameterJson = await getParameterJson(ctx);
+  } catch (error) {
+    throw new Error(
+      `Failed to get parameters. parameters json file may be broken. Error: ${error.message}`
     );
   }
 
+  const resourceGroupName = ctx.config.get(GLOBAL_CONFIG)?.getString(RESOURCE_GROUP_NAME);
+  if (!resourceGroupName) {
+    throw new Error("Failed to get resource group from project solution settings.");
+  }
+
   // Compile bicep file to json
-  const orchestrationFilePath = path.join(
-    azureInfraDir,
-    templateFolder,
-    bicepOrchestrationFileName
+  const templateDir = path.join(ctx.root, baseFolder, templateFolder);
+  const armTemplateJsonFilePath = path.join(templateDir, armTemplateJsonFileName);
+  await compileBicepToJson(
+    path.join(templateDir, bicepOrchestrationFileName),
+    armTemplateJsonFilePath
   );
-  const armTemplateJsonFilePath = path.join(azureInfraDir, templateFolder, armTemplateJsonFileName);
-  await compileBicepToJson(orchestrationFilePath, armTemplateJsonFilePath);
   ctx.logProvider?.info(
-    format(getStrings().solution.SucessfullyCompileBicepNotice, PluginNames.SOLUTION)
+    format(
+      getStrings().solution.DeployArmTemplates.CompileBicepSuccessNotice,
+      PluginDisplayName.Solution
+    )
   );
 
   // deploy arm templates to azure
   const client = await getResourceManagementClientForArmDeployment(ctx);
-  const deploymentName = `${PluginNames.SOLUTION}-deployment`;
+  const deploymentName = `${PluginDisplayName.Solution}_deployment`.replace(" ", "_").toLowerCase();
   const deploymentParameters: ResourceManagementModels.Deployment = {
     properties: {
       parameters: parameterJson.parameters,
@@ -196,8 +165,8 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
       .then((result) => {
         ctx.logProvider?.info(
           format(
-            getStrings().solution.SucessfullyDeployArmTemplateNotice,
-            PluginNames.SOLUTION,
+            getStrings().solution.DeployArmTemplates.SuccessNotice,
+            PluginDisplayName.Solution,
             resourceGroupName,
             deploymentName
           )
@@ -210,28 +179,17 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
       });
     await pollDeploymentStatus(client, resourceGroupName, Date.now());
     await result;
-    return ResultFactory.Success();
+    return ok(undefined);
   } catch (error) {
     ctx.logProvider?.error(
       format(
-        getStrings().solution.FailedToDeployArmTemplateNotice,
-        PluginNames.SOLUTION,
+        getStrings().solution.DeployArmTemplates.FailNotice,
+        PluginDisplayName.Solution,
         resourceGroupName,
         deploymentName
       )
     );
-    return err(
-      returnSystemError(
-        new Error("Failed to deploy arm templates to azure"),
-        PluginNames.SOLUTION,
-        SolutionError.FailedToDeployArmTemplatesToAzure
-      )
-    );
-  } finally {
-    await ProgressHelper.endDeployArmTemplatesProgress();
-    ctx.logProvider?.info(
-      format(getStrings().solution.EndDeployArmTemplateNotice, PluginNames.SOLUTION)
-    );
+    throw new Error(`Failed to deploy arm templates to azure. Error: ${error.message}`);
   }
 
   async function pollDeploymentStatus(
@@ -240,7 +198,10 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
     deploymentStartTime: number
   ): Promise<void> {
     ctx.logProvider?.info(
-      format(getStrings().solution.PollDeploymentStatusNotice, PluginNames.SOLUTION)
+      format(
+        getStrings().solution.DeployArmTemplates.PollDeploymentStatusNotice,
+        PluginDisplayName.Solution
+      )
     );
 
     const waitingTimeSpan = 10000;
@@ -253,12 +214,10 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
             deployment.properties.timestamp.getTime() > deploymentStartTime
           ) {
             ctx.logProvider?.info(
-              `[${deployment.properties.timestamp}] ${deployment.name} -> ${deployment.properties.provisioningState}`
+              `[${PluginDisplayName.Solution}] ${deployment.name} -> ${deployment.properties.provisioningState}`
             );
             if (deployment.properties.error) {
-              ctx.logProvider?.error(
-                `Error message: ${JSON.stringify(deployment.properties.error, null, 2)}`
-              );
+              ctx.logProvider?.error(JSON.stringify(deployment.properties.error, null, 2));
             }
           }
         });
@@ -267,6 +226,67 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
     }, waitingTimeSpan);
   }
 }
+
+export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<void, FxError>> {
+  ctx.logProvider?.info(
+    format(getStrings().solution.DeployArmTemplates.StartNotice, PluginDisplayName.Solution)
+  );
+  let result: Result<void, FxError>;
+  try {
+    result = await doDeployArmTemplates(ctx);
+  } catch (error) {
+    result = err(
+      returnSystemError(
+        error,
+        PluginDisplayName.Solution,
+        SolutionError.FailedToDeployArmTemplatesToAzure
+      )
+    );
+  }
+  await ProgressHelper.endDeployArmTemplatesProgress();
+  ctx.logProvider?.info(
+    format(getStrings().solution.DeployArmTemplates.EndNotice, PluginDisplayName.Solution)
+  );
+  return result;
+}
+
+async function getParameterJson(ctx: SolutionContext) {
+  const parameterDir = path.join(ctx.root, baseFolder, parameterFolder);
+  const parameterDefaultFilePath = path.join(parameterDir, parameterDefaultFileName);
+  let parameterJsonString;
+  let parameterFilePath = parameterDefaultFilePath;
+  try {
+    parameterJsonString = await getExpandedParameter(ctx, parameterFilePath);
+  } catch {
+    const parameterTemplateFilePath = path.join(parameterDir, parameterTemplateFileName);
+    ctx.logProvider?.warning(
+      `[${PluginDisplayName.Solution}] Failed to get expanded parameter from ${parameterDefaultFilePath}. Try ${parameterTemplateFilePath}.`
+    );
+    parameterFilePath = parameterTemplateFilePath;
+    parameterJsonString = await getExpandedParameter(ctx, parameterFilePath);
+    await fs.writeFile(parameterDefaultFilePath, parameterJsonString);
+  }
+
+  try {
+    return JSON.parse(parameterJsonString);
+  } catch (error) {
+    throw new Error(
+      `Failed to parse parameters from ${parameterFilePath}. Error: ${error.message}`
+    );
+  }
+}
+
+async function getExpandedParameter(ctx: SolutionContext, filePath: string) {
+  try {
+    const parameterTemplate = await fs.readFile(filePath, ConstantString.UTF8Encoding);
+    return expandParameterPlaceholders(ctx, parameterTemplate);
+  } catch (err) {
+    throw new Error(
+      `[${PluginDisplayName.Solution}] Failed to get expanded parameter from ${filePath}.`
+    );
+  }
+}
+
 async function getResourceManagementClientForArmDeployment(
   ctx: SolutionContext
 ): Promise<ResourceManagementClient> {
@@ -274,7 +294,7 @@ async function getResourceManagementClientForArmDeployment(
   if (!azureToken) {
     throw returnSystemError(
       new Error("Azure Credential is invalid."),
-      PluginNames.SOLUTION,
+      PluginDisplayName.Solution,
       SolutionError.FailedToGetAzureCredential
     );
   }
@@ -284,7 +304,7 @@ async function getResourceManagementClientForArmDeployment(
   if (!subscriptionId) {
     throw returnSystemError(
       new Error(`Failed to get subscription id.`),
-      PluginNames.SOLUTION,
+      PluginDisplayName.Solution,
       SolutionError.NoSubscriptionSelected
     );
   }
@@ -299,13 +319,10 @@ async function compileBicepToJson(
   const command = `bicep build ${bicepOrchestrationFilePath} --outfile ${jsonFilePath}`;
   const { stdout, stderr } = await execAsync(command);
   if (stderr) {
-    throw returnSystemError(
-      new Error(`Failed to compile bicep files to Json arm templates file: ${stderr}`),
-      PluginNames.SOLUTION,
-      SolutionError.FailedToCompileBicepFiles
-    );
+    throw new Error(`Failed to compile bicep files to Json arm templates file: ${stderr}`);
   }
 }
+
 // Context used by handlebars to render the main.bicep file
 export class ArmTemplateRenderContext {
   public Plugins: string[];

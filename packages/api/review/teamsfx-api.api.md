@@ -663,8 +663,6 @@ export interface ProjectSettings {
     // (undocumented)
     appName: string;
     // (undocumented)
-    currentEnv?: string;
-    // (undocumented)
     projectId: string;
     // (undocumented)
     solutionSettings?: SolutionSettings;

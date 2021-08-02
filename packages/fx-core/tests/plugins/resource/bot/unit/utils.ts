@@ -194,7 +194,6 @@ export function newPluginContext(): PluginContext {
     answers: { platform: Platform.VSCode },
     projectSettings: {
       appName: "My App",
-      currentEnv: "default",
       projectId: utils.genUUID(),
       solutionSettings: {
         name: "AnyName",

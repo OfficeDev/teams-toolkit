@@ -45,7 +45,6 @@ describe("Publish Teams app", () => {
     };
     ctx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: "project id",
       solutionSettings: {
         name: "azure",

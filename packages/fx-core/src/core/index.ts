@@ -127,7 +127,6 @@ export class FxCore implements Core {
       const projectSettings: ProjectSettings = {
         appName: appName,
         projectId: uuid.v4(),
-        currentEnv: "default",
         solutionSettings: {
           name: solution.name,
           version: "1.0.0",

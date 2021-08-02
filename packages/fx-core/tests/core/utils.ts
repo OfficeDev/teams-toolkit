@@ -374,7 +374,6 @@ export class MockLogProvider implements LogProvider {
 export function MockProjectSettings(appName: string): ProjectSettings {
   return {
     appName: appName,
-    currentEnv: "default",
     projectId: uuid.v4(),
     solutionSettings: {
       name: PluginNames.SOLUTION,

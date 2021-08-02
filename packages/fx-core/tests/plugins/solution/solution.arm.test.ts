@@ -81,7 +81,6 @@ describe("Generate ARM Template for project", () => {
     const mockedCtx = mockSolutionContext(testProjectDir);
     mockedCtx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionSPFx.id,
@@ -102,7 +101,6 @@ describe("Generate ARM Template for project", () => {
     const mockedCtx = mockSolutionContext(testProjectDir);
     mockedCtx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
@@ -235,7 +233,6 @@ describe("Deploy ARM Template to Azure", () => {
     const mockedCtx = mockSolutionContext(testProjectDir);
     mockedCtx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,

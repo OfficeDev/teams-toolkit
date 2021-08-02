@@ -62,7 +62,6 @@ describe("Scaffold", () => {
     fileContent.clear();
     ctx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
@@ -94,7 +93,6 @@ describe("Scaffold", () => {
     fileContent.clear();
     ctx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
@@ -130,7 +128,6 @@ describe("Scaffold", () => {
     fileContent.clear();
     ctx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
@@ -163,7 +160,6 @@ describe("Scaffold", () => {
     fileContent.clear();
     ctx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
@@ -188,7 +184,6 @@ describe("Scaffold", () => {
     fileContent.clear();
     ctx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionSPFx.id,

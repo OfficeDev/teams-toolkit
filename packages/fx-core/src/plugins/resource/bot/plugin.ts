@@ -617,7 +617,22 @@ export class TeamsBotImpl {
     );
 
     // TODO aad permission check
-    const isAadOwner = true;
+    const graphToken = await this.ctx?.graphTokenProvider?.getAccessToken();
+    const userInfo = this.ctx.configOfOtherPlugins
+      .get(PluginSolution.PLUGIN_NAME)
+      ?.get(PluginSolution.USER_INFO);
+    if (!userInfo) {
+      // TODO: throw error: no userinfo in context
+      return ResultFactory.Success();
+    }
+    const userInfoObject = JSON.parse(userInfo as string);
+    const userGraphObjectId = userInfoObject["aadId"];
+    const objectId: string = this.ctx.config.get(PluginBot.OBJECT_ID) as string;
+    const isAadOwner = await AADPermissionControl.checkPermission(
+      graphToken as string,
+      objectId,
+      userGraphObjectId
+    );
 
     return ResultFactory.Success(
       new Map([

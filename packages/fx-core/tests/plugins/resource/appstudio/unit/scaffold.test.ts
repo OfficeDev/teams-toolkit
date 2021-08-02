@@ -8,8 +8,8 @@ import {
   ConfigMap,
   PluginContext,
   TeamsAppManifest,
-  ConfigFolderName,
   Platform,
+  AppPackageFolderName,
 } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
 import fs, { PathLike } from "fs-extra";
@@ -36,7 +36,7 @@ describe("Scaffold", () => {
     plugin = new AppStudioPlugin();
 
     ctx = {
-      root: "./",
+      root: "./tests/plugins/resource/appstudio/resources",
       configOfOtherPlugins: new Map(),
       config: new ConfigMap(),
       answers: { platform: Platform.VSCode },
@@ -75,7 +75,7 @@ describe("Scaffold", () => {
     const result = await plugin.scaffold(ctx);
     chai.expect(result.isOk()).equals(true);
     const manifest: TeamsAppManifest = JSON.parse(
-      fileContent.get(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`)
+      fileContent.get(`${ctx.root}/${AppPackageFolderName}/${REMOTE_MANIFEST}`)
     );
     chai.expect(manifest.staticTabs).to.deep.equal(STATIC_TABS_TPL);
     chai.expect(manifest.configurableTabs).to.deep.equal(CONFIGURABLE_TABS_TPL);
@@ -106,7 +106,7 @@ describe("Scaffold", () => {
     const result = await plugin.scaffold(ctx);
     chai.expect(result.isOk()).equals(true);
     const manifest: TeamsAppManifest = JSON.parse(
-      fileContent.get(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`)
+      fileContent.get(`${ctx.root}/${AppPackageFolderName}/${REMOTE_MANIFEST}`)
     );
     chai
       .expect(manifest.staticTabs, "staticTabs should be empty, because only bot is chosen")
@@ -142,7 +142,7 @@ describe("Scaffold", () => {
     const result = await plugin.scaffold(ctx);
     chai.expect(result.isOk()).equals(true);
     const manifest: TeamsAppManifest = JSON.parse(
-      fileContent.get(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`)
+      fileContent.get(`${ctx.root}/${AppPackageFolderName}/${REMOTE_MANIFEST}`)
     );
     chai
       .expect(manifest.staticTabs, "staticTabs should be empty, because only msgext is chosen")
@@ -176,7 +176,7 @@ describe("Scaffold", () => {
     const result = await plugin.scaffold(ctx);
     chai.expect(result.isOk()).equals(true);
     const manifest: TeamsAppManifest = JSON.parse(
-      fileContent.get(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`)
+      fileContent.get(`${ctx.root}/${AppPackageFolderName}/${REMOTE_MANIFEST}`)
     );
     chai.expect(manifest.staticTabs).to.deep.equal(STATIC_TABS_TPL);
     chai.expect(manifest.configurableTabs).to.deep.equal(CONFIGURABLE_TABS_TPL);
@@ -201,7 +201,7 @@ describe("Scaffold", () => {
 
     const result = await plugin.scaffold(ctx);
     chai.expect(result.isOk()).equals(true);
-    const manifest = fileContent.get(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`);
+    const manifest = fileContent.get(`${ctx.root}/${AppPackageFolderName}/${REMOTE_MANIFEST}`);
     chai.expect(manifest).to.be.not.undefined;
   });
 });

@@ -41,15 +41,15 @@ jobs:
           commit_message: "chore: commit provision configs"
           file_pattern: .fx/env.default.json
 
-      - name: Deploy to hosting environment
-        uses: OfficeDev/teamsfx-cli-action@v1
-        with:
-          commands: deploy
-
       - name: Validate Teams App's manifest
         uses: OfficeDev/teamsfx-cli-action@v1
         with:
           commands: validate
+          
+      - name: Deploy to hosting environment
+        uses: OfficeDev/teamsfx-cli-action@v1
+        with:
+          commands: deploy
 
       - name: Build Teams App's package
         uses: OfficeDev/teamsfx-cli-action@v1

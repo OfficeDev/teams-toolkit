@@ -37,11 +37,11 @@ then
     git push
 fi
 
-# Deploy to hosting environment.
-teamsfx deploy
-      
 # Validate Teams App Manifest.
 teamsfx validate
+
+# Deploy to hosting environment.
+teamsfx deploy
 
 # Build Teams App's Package.
 teamsfx build

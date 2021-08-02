@@ -21,8 +21,8 @@ There are some potential changes you can make to adapt your project:
 1. Change how the CD flow is triggered. We default it to when new commits made to main branch.
 1. Create GitHub repository secrets by environment to hold Azure/M365 login credentials.
 The table below lists all the secrets you need to create on GitHub, and for the detailed usage, please refer to the GitHub Action's [README.md](https://github.com/OfficeDev/teamsfx-cli-action/blob/main/README.md).
-1. Update the environment variable `RUN_PROVISION` inside the workflow definition accordingly. Usually, the provision step will be performed for only once and subsequent runs of the workflow dosn't need to run provision again. So, there's environment variable `RUN_PROVISION` to control this. One thing needs to mentioned is, after provision, the configs will be commited into the repository, and the following deploy, publish operations will target for this committed configs.
-To be more specific, to run provision, set `RUN_PROVISION` to `true`, else set it to `false`.
+1. Update the environment variable `TEAMSFX_RUN_PROVISION` inside the workflow definition accordingly. Usually, the provision step will be performed for only once and subsequent runs of the workflow dosn't need to run provision again. So, there's environment variable `TEAMSFX_RUN_PROVISION` to control this. One thing needs to mentioned is, after provision, the configs will be commited into the repository, and the following deploy, publish operations will target for this committed configs.
+To be more specific, to run provision, set `TEAMSFX_RUN_PROVISION` to `true`, else set it to `false`.
 
 ### Environment Variables
 

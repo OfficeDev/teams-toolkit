@@ -22,6 +22,7 @@ import {
   Links,
   IdentityConstants,
   AzureConstants,
+  BotPermissions,
 } from "./constants";
 import { WayToRegisterBot } from "./enums/wayToRegisterBot";
 import { getZipDeployEndpoint } from "./utils/zipDeploy";
@@ -49,6 +50,7 @@ import { DeployMgr } from "./deployMgr";
 import { BotAuthCredential } from "./botAuthCredential";
 import { AzureOperations } from "./azureOps";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
+import { checkAzureResourcePermission } from "../../../common/checkAzureResourcePermission";
 
 export class TeamsBotImpl {
   // Made config plubic, because expect the upper layer to fill inputs.
@@ -566,6 +568,48 @@ export class TeamsBotImpl {
     this.config.saveConfigIntoContext(context);
 
     return ResultFactory.Success();
+  }
+
+  public async checkPermission(context: PluginContext): Promise<FxResult> {
+    this.ctx = context;
+    await this.config.restoreConfigFromContext(context);
+    const subscriptionId = this.config.provision.subscriptionId;
+    const resourceGroupName = this.config.provision.resourceGroup;
+    const webAppName = this.config.provision.siteName;
+
+    const resourceId = `subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.Web/sites/${webAppName}`;
+
+    const serviceClientCredentials = await this.getAzureAccountCredenial();
+    const accessToken = (await serviceClientCredentials.getToken()).accessToken;
+
+    const accountInfo = await context.azureAccountProvider!.getAccountInfo();
+    const userObjectId = accountInfo!.oid;
+
+    const permissionArray = await checkAzureResourcePermission(
+      resourceId,
+      accessToken,
+      userObjectId
+    );
+
+    // TODO aad permission check
+    const isAadOwner = true;
+
+    return ResultFactory.Success(
+      new Map([
+        [
+          BotPermissions.webAppPermissions.name,
+          permissionArray.length > 0
+            ? permissionArray
+            : [BotPermissions.webAppPermissions.noPermission],
+        ],
+        [
+          BotPermissions.aadPermissions.name,
+          isAadOwner
+            ? [BotPermissions.aadPermissions.owner]
+            : [BotPermissions.aadPermissions.noPermission],
+        ],
+      ])
+    );
   }
 
   private async updateMessageEndpointOnAppStudio(endpoint: string) {

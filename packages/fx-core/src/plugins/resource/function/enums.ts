@@ -78,4 +78,5 @@ export enum FunctionEvent {
   callFunc = "call-func",
   scaffoldFallback = "scaffold-fallback",
   skipDeploy = "skip-deploy",
+  checkPermission = "check-permission",
 }

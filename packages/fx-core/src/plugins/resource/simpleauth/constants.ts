@@ -110,6 +110,11 @@ export class Constants {
   static readonly HelpLink = "https://aka.ms/teamsfx-sa-help";
 
   static readonly RequiredResourceProviders = ["Microsoft.Web"];
+
+  static readonly Permissions = {
+    name: "Azure Web App for Simple Auth",
+    noPermission: "No Permission",
+  };
 }
 
 export class Telemetry {
@@ -174,5 +179,9 @@ export class Messages {
   static readonly EndPostProvision: Message = {
     log: Messages.getLog("Successfully post-provisioned"),
     telemetry: Messages.getEventName("post-provision"),
+  };
+  static readonly CheckPermission: Message = {
+    log: Messages.getLog("Check permission"),
+    telemetry: Messages.getEventName("check-permission"),
   };
 }

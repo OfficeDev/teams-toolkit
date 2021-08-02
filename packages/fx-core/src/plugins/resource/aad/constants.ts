@@ -24,7 +24,7 @@ export class Constants {
     "One or more added object references already exist for the following modified properties: 'owners'.";
 
   static permissions = {
-    name: "Azure AD app",
+    name: "Azure AD App",
     owner: "Owner",
     noPermission: "No Permission",
   };

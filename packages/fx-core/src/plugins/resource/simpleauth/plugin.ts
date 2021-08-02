@@ -13,6 +13,7 @@ import * as fs from "fs-extra";
 import { getTemplatesFolder } from "../../..";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import { generateBicepFiles } from "../../../common";
+import { checkAzureResourcePermission } from "../../../common/checkAzureResourcePermission";
 
 export class SimpleAuthPluginImpl {
   webAppClient!: WebAppClient;
@@ -210,5 +211,60 @@ export class SimpleAuthPluginImpl {
 
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndGenerateArmTemplates);
     return ResultFactory.Success(result);
+  }
+
+  public async checkPermission(
+    ctx: PluginContext
+  ): Promise<Result<Map<string, string[]>, FxError>> {
+    const credentials = await ctx.azureAccountProvider!.getAccountCredentialAsync();
+    if (!credentials) {
+      throw ResultFactory.SystemError(UnauthenticatedError.name, UnauthenticatedError.message());
+    }
+
+    const accessToken = (await credentials.getToken()).accessToken;
+
+    const accountInfo = await ctx.azureAccountProvider!.getAccountInfo();
+    const userObjectId = accountInfo!.oid;
+    const resourceNameSuffix = Utils.getConfigValueWithValidation(
+      ctx,
+      Constants.SolutionPlugin.id,
+      Constants.SolutionPlugin.configKeys.resourceNameSuffix
+    ) as string;
+
+    const webAppName = Utils.generateResourceName(ctx.projectSettings!.appName, resourceNameSuffix);
+
+    const subscriptionInfo = await ctx.azureAccountProvider?.getSelectedSubscription();
+    if (!subscriptionInfo) {
+      throw ResultFactory.SystemError(
+        NoConfigError.name,
+        NoConfigError.message(
+          Constants.SolutionPlugin.id,
+          Constants.SolutionPlugin.configKeys.subscriptionId
+        )
+      );
+    }
+    const subscriptionId = subscriptionInfo!.subscriptionId;
+    const resourceGroupName = Utils.getConfigValueWithValidation(
+      ctx,
+      Constants.SolutionPlugin.id,
+      Constants.SolutionPlugin.configKeys.resourceGroupName
+    ) as string;
+
+    const resourceId = `subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.Web/sites/${webAppName}`;
+
+    const permissionArray = await checkAzureResourcePermission(
+      resourceId,
+      accessToken,
+      userObjectId
+    );
+
+    return ResultFactory.Success(
+      new Map([
+        [
+          Constants.Permissions.name,
+          permissionArray.length > 0 ? permissionArray : [Constants.Permissions.noPermission],
+        ],
+      ])
+    );
   }
 }

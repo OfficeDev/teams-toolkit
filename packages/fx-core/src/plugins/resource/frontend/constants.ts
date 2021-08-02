@@ -24,6 +24,11 @@ export class Constants {
   static RequestTryCounts = 3;
   static RequestTimeoutInMS = 20 * 1000;
   static ScaffoldTryCounts = 1;
+
+  static permissions = {
+    name: "Azure Storage for Frontend Page",
+    noPermission: "No Permission",
+  };
 }
 
 export class FrontendPluginInfo {
@@ -124,6 +129,7 @@ export class TelemetryEvent {
   static readonly SkipDeploy = "skip-deploy";
 
   static readonly GenerateArmTemplates = "generate-arm-templates";
+  static readonly CheckPermission = "check-permission";
 }
 
 export class TelemetryKey {

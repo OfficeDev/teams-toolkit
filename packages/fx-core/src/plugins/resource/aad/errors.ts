@@ -123,6 +123,11 @@ export const GrantPermissionError: AadError = {
   message: () => "Failed to grant permission.",
 };
 
+export const CheckPermissionError: AadError = {
+  name: "CheckPermissionError",
+  message: () => "Failed to check permission.",
+};
+
 export class ConfigErrorMessages {
   static readonly GetDisplayNameError = "Failed to get display name.";
   static readonly GetConfigError = (configName: string, plugin: string) =>

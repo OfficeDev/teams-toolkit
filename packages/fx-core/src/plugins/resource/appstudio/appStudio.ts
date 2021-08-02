@@ -415,4 +415,22 @@ export namespace AppStudioClient {
     const requester = createRequesterWithToken(appStudioToken);
     const response = await requester.post(`/api/appdefinitions/${teamsAppId}/override`, app);
   }
+
+  export async function checkPermission(
+    teamsAppId: string,
+    appStudioToken: string,
+    userObjectId: string
+  ): Promise<string> {
+    const app = await getApp(teamsAppId, appStudioToken);
+    const findUser = app.userList?.find((user: any) => user["aadId"] === userObjectId);
+    if (!findUser) {
+      return "No permission";
+    }
+
+    if (findUser.isAdministrator) {
+      return "Administrator";
+    } else {
+      return "Operative";
+    }
+  }
 }

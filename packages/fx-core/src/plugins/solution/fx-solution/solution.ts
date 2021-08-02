@@ -1156,10 +1156,7 @@ export class TeamsAppSolution implements Solution {
       const results = await executeConcurrently("", grantPermissionWithCtx);
       for (const result of results) {
         if (result.isErr()) {
-          const msg = util.format(
-            getStrings().solution.PublishFailNotice,
-            ctx.projectSettings?.appName
-          );
+          const msg = getStrings().solution.GrantPermissionFailed;
           ctx.logProvider?.info(msg);
           return result;
         }
@@ -1172,7 +1169,62 @@ export class TeamsAppSolution implements Solution {
 
   @hooks([ErrorHandlerMW])
   async checkPermission(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    return ok(Void);
+    const canGrantPermission = this.checkWhetherSolutionIsIdle();
+    if (canGrantPermission.isErr()) {
+      return canGrantPermission;
+    }
+
+    const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
+    if (!provisioned) {
+      // TODO: throw error: can not grant permission before provision.
+      return ok(undefined);
+    }
+
+    try {
+      // Get user info from token.
+      const userInfo = await this.getUserInfo(ctx);
+
+      if (!userInfo) {
+        // TODO: throw error: can not find user
+        return ok(undefined);
+      }
+      ctx.config.get(GLOBAL_CONFIG)?.set(USER_INFO, JSON.stringify(userInfo));
+
+      const maybeSelectedPlugins = this.getSelectedPlugins(ctx);
+      if (maybeSelectedPlugins.isErr()) {
+        return maybeSelectedPlugins;
+      }
+      const selectedPlugins = maybeSelectedPlugins.value;
+
+      const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(
+        ctx,
+        selectedPlugins
+      );
+
+      const checkPermissionWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(
+        ([plugin, context]) => {
+          return [plugin?.checkPermission?.bind(plugin), context, plugin.name];
+        }
+      );
+
+      const results = await executeConcurrently("", checkPermissionWithCtx);
+      for (const result of results) {
+        if (result.isErr()) {
+          const msg = getStrings().solution.CheckPermissionFailed;
+          ctx.logProvider?.info(msg);
+          return result;
+        }
+
+        if (result && result.value) {
+          for (const [key, value] of result.value) {
+            ctx.logProvider?.info(`Check Permission Result: ${key}: ${value.join(",")}`);
+          }
+        }
+      }
+      return ok(undefined);
+    } finally {
+      this.runningState = SolutionRunningState.Idle;
+    }
   }
 
   private parseTeamsAppTenantId(appStudioToken?: object): Result<string, FxError> {
@@ -1992,7 +2044,7 @@ export class TeamsAppSolution implements Solution {
         userPrincipalName: collaborator["userPrincipalName"] as string,
         displayName: collaborator["displayName"] as string,
         tenantId: tenantId,
-        isOwner: true,
+        isAdministrator: true,
       };
     } else {
       return {
@@ -2000,7 +2052,7 @@ export class TeamsAppSolution implements Solution {
         aadId: currentUser["oid"] as string,
         displayName: currentUser["name"] as string,
         userPrincipalName: currentUser["unique_name"] as string,
-        isOwner: true,
+        isAdministrator: true,
       };
     }
   }

@@ -80,5 +80,5 @@ export interface Plugin {
 
   grantPermission?: (ctx: PluginContext) => Promise<Result<any, FxError>>;
 
-  checkPermission?: (ctx: PluginContext) => Promise<Result<any, FxError>>;
+  checkPermission?: (ctx: PluginContext) => Promise<Result<Map<string, Array<string>>, FxError>>;
 }

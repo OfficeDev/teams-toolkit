@@ -138,4 +138,9 @@ export class AppStudioError {
     name: "GrantPermissionFailed",
     message: (error: any) => `Grant permission failed. Reason: ${error.message}`,
   };
+
+  public static readonly CheckPermissionFailedError = {
+    name: "CheckPermissionFailed",
+    message: (error: any) => `Check permission failed. Reason: ${error.message}`,
+  };
 }

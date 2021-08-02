@@ -20,6 +20,7 @@ export interface EnvMeta {
 }
 
 export type Json = Record<string, unknown>;
+export type PluginName = string;
 
 /**
  * project static setting
@@ -44,7 +45,7 @@ export interface ProjectState extends Json {
 }
 
 export interface Inputs extends Json {
-  stage?: Stage;
+  stage: Stage;
   vscodeEnv?: VsCodeEnv;
   ignoreLock?: boolean;
   ignoreTypeCheck?: boolean;
@@ -90,5 +91,4 @@ export enum Stage {
   removeEnv = "removeEnv",
   switchEnv = "switchEnv",
   userTask = "userTask",
-  update = "update", //never used again except APIM just for reference
 }

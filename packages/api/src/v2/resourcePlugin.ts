@@ -3,7 +3,6 @@
 
 import { Result } from "neverthrow";
 import {
-  EnvMeta,
   FunctionRouter,
   FxError,
   QTreeNode,
@@ -11,9 +10,11 @@ import {
   Void,
   Func,
   Json,
+  UserError,
+  SystemError,
 } from "../index";
 import { AppStudioTokenProvider, AzureAccountProvider } from "../utils";
-import { Context, Inputs, Stage } from "./types";
+import { Context, Inputs, PluginName, Stage } from "./types";
 
 export type ResourceTemplate = BicepTemplate | JsonTemplate;
 
@@ -28,19 +29,10 @@ export type BicepTemplate = {
   template: Record<string, unknown>;
 };
 
-export interface ResourceProvisionContext extends Context {
-  envMeta: EnvMeta;
-
-  solutionConfig: Json;
-  resourceConfig: Json;
-}
-
-export type ResourceDeployContext = ResourceProvisionContext;
-
 export type ProvisionOutput = {
   output: Record<string, string>;
   states: Record<string, string>;
-  // Encryption and decryption are transparantly handled by the toolkit.
+  // Encryption and decryption are handled transparantly by the toolkit.
   secrets: Record<string, string>;
 };
 
@@ -49,14 +41,15 @@ export type LocalProvisionOutput = ProvisionOutput;
 /**
  * Interface for ResourcePlugins. a ResourcePlugin can hook into Toolkit's
  * lifecycles by implementing the corresponding API.
- * All lifecycles follows the same pattern of returning a Promise<Result<T, FxError>>.
+ * Implementation of all lifecycles is expected to be idempotent. The return values
+ * and observable side effects of each lifecycle are expected to be the same with the same input.
+ * All lifecycles follow the same pattern of returning a Promise<Result<T, FxError>>.
  *
- * Please prefer to return {@link UserError} or {@link SystemError} when error happens
+ * Please return {@link UserError} or {@link SystemError} when error happens
  * instead of throwing.
- *
  */
 export interface ResourcePlugin {
-  // Name used by the toolkit to uniquely identify this plugin.
+  // Name used by the Toolkit to uniquely identify this plugin.
   name: string;
 
   // Plugin name that will be shown to end users.
@@ -64,32 +57,41 @@ export interface ResourcePlugin {
 
   /**
    * Called by Toolkit when creating a new project or adding a new resource.
-   * Scaffolds source code on disk, relative to context.projectPath
+   * Scaffolds source code on disk, relative to context.projectPath.
    *
    * @example
    * ```
-   * const fs = require("fs-extra");
-   * let content = "let x = 1;"
-   * let path = path.join(ctx.projectPath, "myFolder");
-   * let sourcePath = "somePathhere";
-   * let result = await fs.copy(sourcePath, content);
+   * scaffoldSourceCode(ctx: Context, inputs: Inputs) {
+   *   const fs = require("fs-extra");
+   *   let content = "let x = 1;"
+   *   let path = path.join(ctx.projectPath, "myFolder");
+   *   let sourcePath = "somePathhere";
+   *   let result = await fs.copy(sourcePath, content);
+   *   // no output values
+   *   return { "output": {} };
+   * }
    * ```
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {Inputs} inputs - User answers to quesions defined in {@link getQuestionsForLifecycleTask}
    * for {@link Stage.create} along with some system inputs.
    *
-   * @returns Void because side effect is expected.
+   * @returns scaffold output values, which will be persisted by the Toolkit and made available to other plugins for other lifecyles.
+   *          For example, Azure Function plugin outputs "defaultFunctionName" in this lifecycle.
+   *          For most plugins, empty output is good enough.
    */
-  scaffoldSourceCode?: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
+  scaffoldSourceCode?: (
+    ctx: Context,
+    inputs: Inputs
+  ) => Promise<Result<{ output: Record<string, string> }, FxError>>;
 
   /**
-   * Called when creating a new project or a new environment.
+   * Called when creating a new project or adding a new resource.
    * Returns resource templates (e.g. Bicep templates/plain JSON) for provisioning.
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {Inputs} inputs - User's answers to quesions defined in {@link getQuestionsForLifecycleTask}
-   * for {@link Stage.createEnv} along with some system inputs.
+   * for {@link Stage.create} along with some system inputs.
    *
    * @return {@link ResourceTemplate} for provisioning and deployment.
    */
@@ -103,7 +105,6 @@ export interface ResourcePlugin {
    * Plugins are expected to provision using Azure SDK.
    *
    * provisionResource is guaranteed to run before Bicep provision.
-   * Implementation of provisionResource is expected to be idempotent.
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {Json} provisionTemplate - provision template
@@ -120,12 +121,12 @@ export interface ResourcePlugin {
 
   /**
    * configureResource is guaranteed to run after Bicep/ARM provisioning.
-   * Plugins are expected to read the provision output values of other plugins, and return a new copy of its own provisionOutput,
+   * Plugins are expected to read the provision output values of other plugins, and return a new copy of its own provision output,
    * possibly with added fields.
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
-   * @param {Json} provisionOutput - values generated by {@link provisionResource}
-   * @param {Record<string, Json>} provisionOutputOfOtherPlugins - values of other plugins generated by {@link provisionResource}
+   * @param {Readonly<ProvisionOutput>} provisionOutput - values generated by {@link provisionResource}
+   * @param {Readonly<Record<PluginName, Json>>} provisionOutputOfOtherPlugins - values of other plugins generated by {@link provisionResource}
    * @param {TokenProvider} tokenProvider - Tokens for Azure and AppStudio
    *
    * @returns a new copy of provisionOutput possibly with added fields. Toolkit will persist it and pass it to {@link deploy}.
@@ -134,7 +135,7 @@ export interface ResourcePlugin {
   configureResource?: (
     ctx: Context,
     provisionOutput: Readonly<ProvisionOutput>,
-    provisionOutputOfOtherPlugins: Readonly<Record<string, ProvisionOutput>>,
+    provisionOutputOfOtherPlugins: Readonly<Record<PluginName, ProvisionOutput>>,
     tokenProvider: TokenProvider
   ) => Promise<Result<ProvisionOutput, FxError>>;
 
@@ -154,19 +155,19 @@ export interface ResourcePlugin {
 
   /**
    * Depends on the values returned by {@link provisionResource} and {@link configureResource}.
-   * Plugins are expected to deploy Code to cloud using credentials provided by {@link TokenProvider}.
+   * Plugins are expected to deploy code to cloud using credentials provided by {@link AzureAccountProvider}.
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
-   * @param {Json} provisionTemplate - output generated during provision
-   * @param {TokenProvider} tokenProvider - Tokens for Azure and AppStudio
+   * @param {Readonly<ProvisionOutput>} provisionTemplate - output generated during provision
+   * @param {AzureAccountProvider} tokenProvider - Tokens for Azure and AppStudio
    *
-   * @returns Void because side effects are expected.
+   * @returns output values generated by deployment, which will be persisted by the Toolkit and will be available to other plugins for other lifecyles.
    */
   deploy?: (
     ctx: Context,
-    provisionOutput: ProvisionOutput,
+    provisionOutput: Readonly<ProvisionOutput>,
     tokenProvider: AzureAccountProvider
-  ) => Promise<Result<Void, FxError>>;
+  ) => Promise<Result<{ output: Record<string, string> }, FxError>>;
 
   /**
    * Depends on the output of {@link package}. Uploads Teams package to AppStudio
@@ -184,14 +185,14 @@ export interface ResourcePlugin {
   ) => Promise<Result<Void, FxError>>;
 
   /**
-   * provisionLocalResource is a special stage, called when users hit F5 in vscode.
+   * provisionLocalResource is a special lifecycle, called when users press F5 in vscode.
    * It works like provision, but only creates necessary cloud resources for local debugging like AAD and AppStudio App.
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {TokenProvider} tokenProvider - Tokens for Azure and AppStudio
    *
-   * @returns the config, project state, secrect values for the current environment. Toolkit will persist them
-   *          and pass them to {@link configureLocalResource}.
+   * @returns the output values, project state, secrect values for the current environment. Toolkit will persist them
+   *          and pass them to {@link configureLocalResource}. The output will be persisted but not in the same file as provison's output.
    */
   provisionLocalResource?: (
     ctx: Context,
@@ -204,17 +205,16 @@ export interface ResourcePlugin {
    * possibly with added fields.
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
-   * @param {Json} localProvisionOutput - values generated by {@link provisionLocalResource}
-   * @param {Record<string, LocalProvisionOutput>} provisionOutputOfOtherPlugins - values of other plugins generated by {@link provisionLocalResource}
+   * @param {Readonly<LocalProvisionOutput>} localProvisionOutput - values generated by {@link provisionLocalResource}
+   * @param {Readonly<Record<PluginName, LocalProvisionOutput>>} provisionOutputOfOtherPlugins - values of other plugins generated by {@link provisionLocalResource}
    * @param {TokenProvider} tokenProvider - Tokens for Azure and AppStudio
    *
-   * @returns a new copy of provisionOutput possibly with added fields. Toolkit will persist it and pass it to {@link deploy}.
-   *
+   * @returns a new copy of provisionOutput possibly with added fields. The output will be persisted but not in the same file as provison's output.
    */
   configureLocalResource?: (
     ctx: Context,
-    localProvisionOutput: LocalProvisionOutput,
-    localProvisionOutputOfOtherPlugins: Readonly<Record<string, LocalProvisionOutput>>,
+    localProvisionOutput: Readonly<LocalProvisionOutput>,
+    localProvisionOutputOfOtherPlugins: Readonly<Record<PluginName, LocalProvisionOutput>>,
     tokenProvider: TokenProvider
   ) => Promise<Result<LocalProvisionOutput, FxError>>;
 

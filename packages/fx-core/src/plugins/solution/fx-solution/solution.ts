@@ -56,6 +56,7 @@ import {
   SolutionTelemetryComponentName,
   SolutionTelemetrySuccess,
   PluginNames,
+  ARM_TEMPLATE_OUTPUT,
 } from "./constants";
 
 import {
@@ -97,7 +98,7 @@ import { AadAppForTeamsPlugin, AppStudioPlugin, SpfxPlugin } from "../../resourc
 import { ErrorHandlerMW } from "../../../core/middleware/errorHandler";
 import { hooks } from "@feathersjs/hooks/lib";
 import { Service, Container } from "typedi";
-import { generateArmTemplate } from "./arm";
+import { deployArmTemplates, generateArmTemplate } from "./arm";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -611,6 +612,14 @@ export class TeamsAppSolution implements Solution {
             }
           });
         }
+
+        if (isArmSupportEnabled()) {
+          const armDeploymentResult = await deployArmTemplates(ctx);
+          if (armDeploymentResult.isErr()) {
+            return armDeploymentResult;
+          }
+        }
+
         const aadPlugin = this.AadPlugin as AadAppForTeamsPlugin;
         if (selectedPlugins.some((plugin) => plugin.name === aadPlugin.name)) {
           return aadPlugin.setApplicationInContext(getPluginContext(ctx, aadPlugin.name));
@@ -618,6 +627,7 @@ export class TeamsAppSolution implements Solution {
         return ok(undefined);
       },
       async () => {
+        ctx.config.get(GLOBAL_CONFIG)?.delete(ARM_TEMPLATE_OUTPUT);
         ctx.logProvider?.info("[Teams Toolkit]: configuration finished!");
         return ok(undefined);
       }

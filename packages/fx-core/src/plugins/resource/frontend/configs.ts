@@ -72,6 +72,9 @@ export class FrontendConfig {
     let storageName: string | undefined;
     if (isArmSupportEnabled()) {
       storageName = getArmOutput(ctx, ArmOutput.FrontendStorageName) as string;
+      if (!storageName) {
+        storageName = ctx.config.getString(FrontendConfigInfo.StorageName);
+      }
     } else {
       storageName = ctx.config.getString(FrontendConfigInfo.StorageName);
     }

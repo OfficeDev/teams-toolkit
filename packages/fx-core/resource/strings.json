@@ -24,8 +24,8 @@
     "SucessfullyCompileBicepNotice": "[%s] Successfully compile bicep files to JSON.",
     "SucessfullyDeployArmTemplateNotice": "[%s] Successfully deploy Arm templates. Resource group name: %s. Deployment name: %s",
     "FailedToDeployArmTemplateNotice": "[%s] Failed to deploy Arm templates. Resource group name: %s. Deployment name: %s",
-    "PollDeploymentStatusNotice": "['%s'] Polling deployment status...",
-    "EndDeployArmTemplateNotice": "['%s'] Successfully deployed Arm templates."
+    "PollDeploymentStatusNotice": "[%s] Polling deployment status...",
+    "EndDeployArmTemplateNotice": "[%s] Successfully deployed Arm templates."
   },
   "plugins": {
     "SPFx": {

@@ -120,14 +120,7 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
   generateResourceName(ctx);
 
   // update parameters
-  let parameterJson;
-  try {
-    parameterJson = await getParameterJson(ctx);
-  } catch (error) {
-    throw new Error(
-      `Failed to get parameters. parameters json file may be broken. Error: ${error.message}`
-    );
-  }
+  const parameterJson = await getParameterJson(ctx);
 
   const resourceGroupName = ctx.config.get(GLOBAL_CONFIG)?.getString(RESOURCE_GROUP_NAME);
   if (!resourceGroupName) {

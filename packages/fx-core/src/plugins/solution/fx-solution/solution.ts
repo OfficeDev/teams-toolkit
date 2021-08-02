@@ -56,6 +56,7 @@ import {
   SolutionTelemetryComponentName,
   SolutionTelemetrySuccess,
   PluginNames,
+  USER_INFO,
 } from "./constants";
 
 import {
@@ -76,6 +77,8 @@ import {
   AskSubscriptionQuestion,
   addCapabilityQuestion,
   ProgrammingLanguageQuestion,
+  GetUserEmailQuestion,
+  SelectEnvQuestion,
 } from "./question";
 import Mustache from "mustache";
 import path from "path";
@@ -92,6 +95,8 @@ import { AadAppForTeamsPlugin, AppStudioPlugin, SpfxPlugin } from "../../resourc
 import { ErrorHandlerMW } from "../../../core/middleware/errorHandler";
 import { hooks } from "@feathersjs/hooks/lib";
 import { Service, Container } from "typedi";
+import { IUserList } from "../../resource/appstudio/interfaces/IAppDefinition";
+import axios from "axios";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -1015,6 +1020,9 @@ export class TeamsAppSolution implements Solution {
           }
         }
       }
+    } else if (stage === Stage.grantPermission) {
+      node.addChild(new QTreeNode(GetUserEmailQuestion));
+      node.addChild(new QTreeNode(SelectEnvQuestion));
     }
     return ok(node);
   }
@@ -1104,7 +1112,62 @@ export class TeamsAppSolution implements Solution {
 
   @hooks([ErrorHandlerMW])
   async grantPermission(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    return ok(Void);
+    const canGrantPermission = this.checkWhetherSolutionIsIdle();
+    if (canGrantPermission.isErr()) {
+      return canGrantPermission;
+    }
+
+    const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
+    if (!provisioned) {
+      // TODO: throw error: can not grant permission before provision.
+      return ok(undefined);
+    }
+
+    try {
+      // TODO: add question to get user input.
+      const email = ctx.answers!["userEmail"] as string;
+
+      // Get user info according to email.
+      const userInfo = await this.getUserInfo(ctx, email);
+
+      if (!userInfo) {
+        // TODO: throw error: can not find user
+        return ok(undefined);
+      }
+      ctx.config.get(GLOBAL_CONFIG)?.set(USER_INFO, JSON.stringify(userInfo));
+
+      const maybeSelectedPlugins = this.getSelectedPlugins(ctx);
+      if (maybeSelectedPlugins.isErr()) {
+        return maybeSelectedPlugins;
+      }
+      const selectedPlugins = maybeSelectedPlugins.value;
+
+      const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(
+        ctx,
+        selectedPlugins
+      );
+
+      const grantPermissionWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(
+        ([plugin, context]) => {
+          return [plugin?.grantPermission?.bind(plugin), context, plugin.name];
+        }
+      );
+
+      const results = await executeConcurrently("", grantPermissionWithCtx);
+      for (const result of results) {
+        if (result.isErr()) {
+          const msg = util.format(
+            getStrings().solution.PublishFailNotice,
+            ctx.projectSettings?.appName
+          );
+          ctx.logProvider?.info(msg);
+          return result;
+        }
+      }
+      return ok(undefined);
+    } finally {
+      this.runningState = SolutionRunningState.Idle;
+    }
   }
 
   @hooks([ErrorHandlerMW])
@@ -1897,5 +1960,48 @@ export class TeamsAppSolution implements Solution {
       tenantId: maybeTenantId.value,
       applicationIdUri: configResult.value.applicationIdUri,
     });
+  }
+
+  private async getUserInfo(ctx: SolutionContext, email?: string): Promise<IUserList | undefined> {
+    const currentUser = await ctx.graphTokenProvider?.getJsonObject();
+    if (!currentUser) {
+      return undefined;
+    }
+    const tenantId = currentUser["tid"] as string;
+
+    if (email) {
+      const graphToken = await ctx.graphTokenProvider?.getAccessToken();
+      const instance = axios.create({
+        baseURL: "https://graph.microsoft.com/v1.0",
+      });
+      instance.defaults.headers.common["Authorization"] = `Bearer ${graphToken}`;
+      const res = await instance.get(`/users?$filter=startsWith(mail,'${email}')`);
+      if (!res || !res.data || !res.data.value) {
+        return undefined;
+      }
+
+      const collaborator = res.data.value.find(
+        (user: any) => (user["userPrincipalName"] as string) === email
+      );
+      if (!collaborator) {
+        return undefined;
+      }
+
+      return {
+        aadId: collaborator["id"] as string,
+        userPrincipalName: collaborator["userPrincipalName"] as string,
+        displayName: collaborator["displayName"] as string,
+        tenantId: tenantId,
+        isOwner: true,
+      };
+    } else {
+      return {
+        tenantId: tenantId,
+        aadId: currentUser["oid"] as string,
+        displayName: currentUser["name"] as string,
+        userPrincipalName: currentUser["unique_name"] as string,
+        isOwner: true,
+      };
+    }
   }
 }

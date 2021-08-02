@@ -8,6 +8,7 @@ import {
   OptionItem,
   returnSystemError,
   SingleSelectQuestion,
+  TextInputQuestion,
   StaticOptions,
   Void,
 } from "@microsoft/teamsfx-api";
@@ -223,4 +224,17 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
     if (HostTypeOptionSPFx.id === hostType) return "SPFx is currently supporting TypeScript only.";
     return "Select a programming language.";
   },
+};
+
+export const GetUserEmailQuestion: TextInputQuestion = {
+  name: "userEmail",
+  type: "text",
+  title: "Input the email address of your collaborator",
+};
+
+export const SelectEnvQuestion: SingleSelectQuestion = {
+  name: "env",
+  type: "singleSelect",
+  title: "Select the env you want to grant permission to",
+  staticOptions: [{ id: "default", label: "default env" }],
 };

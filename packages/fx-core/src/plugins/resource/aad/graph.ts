@@ -111,6 +111,17 @@ export namespace GraphClient {
     );
   }
 
+  export async function grantPermission(
+    graphToken: string,
+    objectId: string,
+    userObjectId: string
+  ): Promise<void> {
+    const instance = initAxiosInstance(graphToken);
+    await instance.post(`${baseUrl}/applications/${objectId}/owners/$ref`, {
+      "@odata.id": `${baseUrl}/directoryObjects/${userObjectId}`,
+    });
+  }
+
   export function initAxiosInstance(graphToken: string) {
     const instance = axios.create({
       baseURL: baseUrl,

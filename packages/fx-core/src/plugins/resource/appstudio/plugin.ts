@@ -24,6 +24,7 @@ import {
   ITeamCommand,
   IPersonalCommand,
   IGroupChatCommand,
+  IUserList,
 } from "./interfaces/IAppDefinition";
 import { ICommand, ICommandList } from "../../solution/fx-solution/appstudio/interface";
 import {
@@ -556,6 +557,26 @@ export class AppStudioPluginImpl {
       throw teamsAppId;
     }
     return teamsAppId.value;
+  }
+
+  public async grantPermission(ctx: PluginContext): Promise<Result<any, FxError>> {
+    const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
+    const teamsAppId = (await ctx.configOfOtherPlugins
+      .get("solution")
+      ?.get("remoteTeamsAppId")) as string;
+    const userInfo = ctx.configOfOtherPlugins.get("solution")?.get("userInfo");
+    const newUser = JSON.parse(userInfo) as IUserList;
+    try {
+      await AppStudioClient.grantPermission(teamsAppId, appStudioToken as string, newUser);
+    } catch (error) {
+      // TODO: Give out detailed help message for different errors.
+      throw AppStudioResultFactory.UserError(
+        AppStudioError.GrantPermissionFailedError.name,
+        AppStudioError.GrantPermissionFailedError.message(error)
+      );
+    }
+
+    return ok(undefined);
   }
 
   private async beforePublish(

@@ -20,6 +20,9 @@ export class Constants {
   static statusCodeUserError = 400;
   static statusCodeServerError = 500;
 
+  static createOwnerDuplicatedMessage =
+    "One or more added object references already exist for the following modified properties: 'owners'.";
+
   static defaultPermissions: RequiredResourceAccess = {
     resourceAppId: "00000003-0000-0000-c000-000000000000",
     resourceAccess: [
@@ -105,6 +108,7 @@ export class ConfigKeysOfOtherPlugin {
   static localDebugBotEndpoint = "localBotEndpoint";
   static solutionPermissionRequest = "permissionRequest";
   static remoteTeamsAppId = "remoteTeamsAppId";
+  static solutionUserInfo = "userInfo";
 }
 
 export interface Messages {

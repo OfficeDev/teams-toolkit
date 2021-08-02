@@ -71,7 +71,11 @@ export class AadAppForTeamsPlugin implements Plugin {
   }
 
   public async grantPermission(ctx: PluginContext): Promise<AadResult> {
-    return ok(undefined);
+    return await this.runWithExceptionCatchingAsync(
+      () => this.pluginImpl.grantPermission(ctx),
+      ctx,
+      ""
+    );
   }
 
   public async checkPermission(ctx: PluginContext): Promise<AadResult> {

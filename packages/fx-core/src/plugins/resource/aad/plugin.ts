@@ -31,8 +31,10 @@ import { Envs } from "./interfaces/models";
 import { DialogUtils } from "./utils/dialog";
 import {
   ConfigKeys,
+  ConfigKeysOfOtherPlugin,
   Constants,
   Messages,
+  Plugins,
   ProgressDetail,
   ProgressTitle,
   Telemetry,
@@ -321,6 +323,22 @@ export class AadAppForTeamsImpl {
 
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndGenerateArmTemplates);
     return ResultFactory.Success(result);
+  }
+
+  public async grantPermission(ctx: PluginContext): Promise<AadResult> {
+    await TokenProvider.init(ctx);
+    const userInfo = ctx.configOfOtherPlugins
+      .get(Plugins.solution)
+      ?.get(ConfigKeysOfOtherPlugin.solutionUserInfo);
+    if (!userInfo) {
+      // TODO: throw error: no userinfo in context
+      return ResultFactory.Success();
+    }
+    const userInfoObject = JSON.parse(userInfo as string);
+    const userObjectId = userInfoObject["aadId"];
+    const objectId: string = ctx.config.get(ConfigKeys.objectId) as string;
+    await AadAppClient.grantPermission(objectId, userObjectId);
+    return ResultFactory.Success();
   }
 
   private static getRedirectUris(

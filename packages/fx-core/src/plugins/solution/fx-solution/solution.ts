@@ -100,6 +100,7 @@ import { ErrorHandlerMW } from "../../../core/middleware/errorHandler";
 import { hooks } from "@feathersjs/hooks/lib";
 import { Service, Container } from "typedi";
 import { deployArmTemplates, generateArmTemplate } from "./arm";
+import { LocalSettingsProvider } from "../../../common/localSettingsProvider";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -373,8 +374,14 @@ export class TeamsAppSolution implements Solution {
           await fs.copy(readme, `${ctx.root}/README.md`);
         }
       }
-    } else {
-      return res;
+
+      const azureResources = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
+        ?.azureResources;
+      const hasBackend = azureResources.includes(AzureResourceFunction.id);
+
+      // Initialize and create a default localSettings.json file at project scaffoling.
+      const localSettingsProvider = new LocalSettingsProvider(ctx.root);
+      await localSettingsProvider.save(localSettingsProvider.init(hasTab, hasBackend, hasBot));
     }
 
     if (isArmSupportEnabled()) {
@@ -1067,6 +1074,17 @@ export class TeamsAppSolution implements Solution {
 
     const selectedPlugins = maybeSelectedPlugins.value;
 
+    const hasFrontend = selectedPlugins?.some((plugin) => plugin.name === PluginNames.FE);
+    const hasBackend = selectedPlugins?.some((plugin) => plugin.name === PluginNames.FUNC);
+    const hasBot = selectedPlugins?.some((plugin) => plugin.name === PluginNames.BOT);
+
+    const localSettingsProvider = new LocalSettingsProvider(ctx.root);
+    if (await fs.pathExists(localSettingsProvider.localSettingsFilePath)) {
+      ctx.localSettings = await localSettingsProvider.load();
+    } else {
+      ctx.localSettings = await localSettingsProvider.init(hasFrontend, hasBackend, hasBot);
+    }
+
     // Just to trigger M365 login before the concurrent execution of localDebug.
     // Because concurrent exectution of localDebug may getAccessToken() concurrently, which
     // causes 2 M365 logins before the token caching in common lib takes effect.
@@ -1123,6 +1141,9 @@ export class TeamsAppSolution implements Solution {
         }
       });
     }
+
+    // persistent localSettings.json after local debug.
+    localSettingsProvider.save(ctx.localSettings!);
 
     return ok(Void);
   }

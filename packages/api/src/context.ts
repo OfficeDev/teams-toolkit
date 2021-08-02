@@ -4,6 +4,7 @@
 
 import {
   Inputs,
+  LocalSettings,
   PluginConfig,
   ProjectSettings,
   ReadonlySolutionConfig,
@@ -45,6 +46,8 @@ export interface Context {
   answers?: Inputs;
 
   projectSettings?: ProjectSettings;
+
+  localSettings?: LocalSettings;
 
   ui?: UserInteraction;
 

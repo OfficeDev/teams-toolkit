@@ -216,6 +216,7 @@ export class AadAppClient {
     try {
       await GraphClient.grantPermission(TokenProvider.token as string, objectId, userObjectId);
     } catch (error) {
+      // TODO: Give out detailed help message for different errors.
       if (error?.response?.data?.error.message == Constants.createOwnerDuplicatedMessage) {
         return;
       }

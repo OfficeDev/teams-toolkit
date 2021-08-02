@@ -569,6 +569,7 @@ export class AppStudioPluginImpl {
     try {
       await AppStudioClient.grantPermission(teamsAppId, appStudioToken as string, newUser);
     } catch (error) {
+      // TODO: Give out detailed help message for different errors.
       throw AppStudioResultFactory.UserError(
         AppStudioError.GrantPermissionFailedError.name,
         AppStudioError.GrantPermissionFailedError.message(error)

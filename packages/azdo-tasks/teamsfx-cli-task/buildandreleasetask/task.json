@@ -13,49 +13,126 @@
     "author": "Ivan He",
     "version": {
         "Major": 0,
-        "Minor": 3,
+        "Minor": 1,
         "Patch": 0
     },
-    "instanceNameFormat": "Teams App CI/CD - $(operationType)",
+    "instanceNameFormat": "Teams App CI/CD - $(commands)",
     "inputs": [
         {
-            "name": "operationType",
-            "type": "pickList",
-            "label": "Operation Type",
-            "required": true,
-            "options": {
-                "Build Teams App": "Build Teams App",
-                "Provision Hosting Environment": "Provision Hosting Environment",
-                "Deploy to Hosting Environment": "Deploy to Hosting Environment",
-                "Pack Teams App": "Pack Teams App",
-                "Validate Teams App Manifest": "Validate Teams App Manifest",
-                "Publish Teams App": "Publish Teams App"
-            },
-            "helpMarkDown": "Select an operation type."
+            "name": "commands",
+            "type": "string",
+            "label": "Commands",
+            "helpMarkDown": "The commands list in order which includes top-commands, sub-commands and positional parameters."
         },
         {
-            "name": "projectRoot",
+            "name": "verbose",
+            "type": "boolean",
+            "label": "Verbose",
+            "defaultValue": "false"
+        },
+        {
+            "name": "version",
+            "type": "boolean",
+            "label": "Version",
+            "defaultValue": "true"
+        },
+        {
+            "name": "debug",
+            "type": "boolean",
+            "label": "Debug",
+            "defaultValue": "false"
+        },
+        {
+            "name": "help",
+            "type": "boolean",
+            "label": "Help",
+            "defaultValue": "false"
+        },
+        {
+            "name": "action",
+            "type": "pickList",
+            "label": "Action",
+            "options": {
+                "show": "show",
+                "login": "login",
+                "logout": "logout",
+                "set": "set"
+            }
+        },
+        {
+            "name": "tenant",
+            "type": "string",
+            "label": "Tenant"
+        },
+        {
+            "name": "folder",
             "type": "filePath",
-            "label": "Project Root",
-            "defaultValue": "$(System.DefaultWorkingDirectory)",
-            "helpMarkDown": "Select the project root folder."
+            "label": "Folder"
+        },
+        {
+            "name": "subscription",
+            "type": "string",
+            "label": "Subscription"
+        },
+        {
+            "name": "interactive",
+            "type": "boolean",
+            "label": "Interactive",
+            "defaultValue": "true"
+        },
+        {
+            "name": "scratch",
+            "type": "pickList",
+            "label": "Scratch",
+            "options": {
+                "yes": "yes",
+                "no": "no"
+            },
+            "defaultValue": "yes"
+        },
+        {
+            "name": "hostType",
+            "type": "pickList",
+            "label": "Host Type",
+            "options": {
+                "azure": "azure",
+                "spfx": "spfx"
+            },
+            "defaultValue": "azure"
+        },
+        {
+            "name": "spfxFrameworkType",
+            "type": "pickList",
+            "label": "Spfx Framework Type",
+            "options": {
+                "none": "none",
+                "react": "react"
+            },
+            "defaultValue": "none"
+        },
+        {
+            "name": "spfxWebpartName",
+            "type": "string",
+            "label": "Spfx Webpart Name"
+        },
+        {
+            "name": "spfxWebpartDesp",
+            "type": "string",
+            "label": "Spfx Webpart Description"
+        },
+        {
+            "name": "azureResources",
+            "type": "multiLine",
+            "label": "AzureResources"
         },
         {
             "name": "capabilities",
-            "type": "pickList",
-            "label": "Capability",
-            "defaultValue": "tabs",
-            "visibleRule": "operationType == Build Teams App",
-            "options": {
-                "tabs": "tabs",
-                "bot": "bot",
-                "SPFx": "SPFx"
-            },
-            "helpMarkDown": "Select the capabilities to build."
+            "type": "multiLine",
+            "label": "Capabilities"  
         }
     ],
     "execution": {
-        "Node10": {
+        "Node": {
             "target": "lib/main.js"
         }
     }

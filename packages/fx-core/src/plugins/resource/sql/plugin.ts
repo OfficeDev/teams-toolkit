@@ -13,7 +13,12 @@ import {
 import { ManagementClient } from "./managementClient";
 import { ErrorMessage } from "./errors";
 import { SqlResultFactory } from "./results";
-import { DialogUtils, ProgressTitle, ProcessMessage } from "./utils/dialogUtils";
+import {
+  DialogUtils,
+  ProgressTitle,
+  ProvisionMessage,
+  ConfigureMessage,
+} from "./utils/dialogUtils";
 import { SqlConfig } from "./config";
 import { SqlClient } from "./sqlClient";
 import { ContextUtils } from "./utils/contextUtils";
@@ -164,14 +169,14 @@ export class SqlPluginImpl {
 
   async provision(ctx: PluginContext): Promise<Result<any, FxError>> {
     ctx.logProvider?.info(Message.startProvision);
-    DialogUtils.init(ctx, ProgressTitle.Provision, ProgressTitle.ProvisionSteps);
+    DialogUtils.init(ctx, ProgressTitle.Provision, Object.keys(ProvisionMessage).length);
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendEvent(Telemetry.stage.provision + Telemetry.startSuffix);
 
     const managementClient: ManagementClient = await ManagementClient.create(ctx, this.config);
 
     await DialogUtils.progressBar?.start();
-    await DialogUtils.progressBar?.next(ProcessMessage.checkProvider);
+    await DialogUtils.progressBar?.next(ProvisionMessage.checkProvider);
     if (!this.config.existSql) {
       try {
         ctx.logProvider?.info(Message.checkProvider);
@@ -187,7 +192,7 @@ export class SqlPluginImpl {
       ctx.logProvider?.info(Message.skipCheckProvider);
     }
 
-    await DialogUtils.progressBar?.next(ProcessMessage.provisionSQL);
+    await DialogUtils.progressBar?.next(ProvisionMessage.provisionSQL);
     if (!this.config.existSql) {
       ctx.logProvider?.info(Message.provisionSql);
       await managementClient.createAzureSQL();
@@ -195,7 +200,7 @@ export class SqlPluginImpl {
       ctx.logProvider?.info(Message.skipProvisionSql);
     }
 
-    await DialogUtils.progressBar?.next(ProcessMessage.provisionDatabase);
+    await DialogUtils.progressBar?.next(ProvisionMessage.provisionDatabase);
     let existDatabase = false;
     if (this.config.existSql) {
       ctx.logProvider?.info(Message.checkDatabase);
@@ -216,7 +221,7 @@ export class SqlPluginImpl {
 
   async postProvision(ctx: PluginContext): Promise<Result<any, FxError>> {
     ctx.logProvider?.info(Message.startPostProvision);
-    DialogUtils.init(ctx, ProgressTitle.PostProvision, ProgressTitle.PostProvisionSteps);
+    DialogUtils.init(ctx, ProgressTitle.PostProvision, Object.keys(ConfigureMessage).length);
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendEvent(Telemetry.stage.postProvision + Telemetry.startSuffix, undefined, {
       [Telemetry.properties.skipAddingUser]: this.config.skipAddingUser
@@ -231,7 +236,7 @@ export class SqlPluginImpl {
     await managementClient.addAzureFirewallRule();
 
     await DialogUtils.progressBar?.start();
-    await DialogUtils.progressBar?.next(ProcessMessage.postProvisionAddAadmin);
+    await DialogUtils.progressBar?.next(ConfigureMessage.postProvisionAddAadmin);
     let existAdmin = false;
     ctx.logProvider?.info(Message.checkAadAdmin);
     existAdmin = await managementClient.existAadAdmin();
@@ -254,7 +259,7 @@ export class SqlPluginImpl {
     }
 
     if (!this.config.skipAddingUser) {
-      await DialogUtils.progressBar?.next(ProcessMessage.postProvisionAddUser);
+      await DialogUtils.progressBar?.next(ConfigureMessage.postProvisionAddUser);
       // azure sql does not support service principal admin to add databse user currently, so just notice developer if so.
       if (this.config.aadAdminType === UserType.User) {
         ctx.logProvider?.info(Message.connectDatabase);

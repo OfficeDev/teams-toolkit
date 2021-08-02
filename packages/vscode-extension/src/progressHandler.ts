@@ -3,7 +3,7 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { IProgressStatus, ok } from "@microsoft/teamsfx-api";
+import { ok } from "@microsoft/teamsfx-api";
 import { ProgressLocation } from "vscode";
 import { ext } from "./extensionVariables";
 import { sleep } from "./utils/commonUtils";
@@ -53,7 +53,7 @@ export class ProgressHandler {
         await sleep(10);
         let resolve = _this.resolve;
         do {
-          const status: IProgressStatus = { message: this.generateWholeMessage() };
+          const status = { message: this.generateWholeMessage() };
           progress.report(status);
           await sleep(10);
           resolve = await new Promise((_resolve) => resolve?.(_resolve));

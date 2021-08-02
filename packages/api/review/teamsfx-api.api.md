@@ -8,9 +8,6 @@ import { Result } from 'neverthrow';
 import { TokenCredential } from '@azure/core-http';
 import { TokenCredentialsBase } from '@azure/ms-rest-nodeauth';
 
-// @public @deprecated (undocumented)
-export type Answer = string | undefined;
-
 // @public
 export interface AppStudioTokenProvider {
     getAccessToken(showDialog?: boolean): Promise<string | undefined>;
@@ -115,8 +112,6 @@ export interface Context {
     // (undocumented)
     cryptoProvider?: CryptoProvider;
     // (undocumented)
-    dialog?: Dialog;
-    // (undocumented)
     graphTokenProvider?: GraphTokenProvider;
     // (undocumented)
     logProvider?: LogProvider;
@@ -168,29 +163,6 @@ export interface Core {
 export interface CryptoProvider {
     decrypt(ciphertext: string): Result<string, FxError>;
     encrypt(plaintext: string): Result<string, FxError>;
-}
-
-// @public @deprecated (undocumented)
-export interface Dialog {
-    // @deprecated (undocumented)
-    communicate: (msg: DialogMsg) => Promise<DialogMsg>;
-}
-
-// @public @deprecated (undocumented)
-export class DialogMsg {
-    constructor(dialogType: DialogType, content: IQuestion | Answer);
-    // (undocumented)
-    content: IQuestion | Answer;
-    // (undocumented)
-    dialogType: DialogType;
-}
-
-// @public @deprecated (undocumented)
-export enum DialogType {
-    // (undocumented)
-    Answer = "Answer",
-    // (undocumented)
-    Ask = "Ask"
 }
 
 // @public (undocumented)
@@ -494,22 +466,6 @@ export interface IProgressHandler {
     start: (detail?: string) => Promise<void>;
 }
 
-// @public @deprecated (undocumented)
-export interface IProgressStatus {
-    // (undocumented)
-    increment?: number;
-    // (undocumented)
-    message: string;
-}
-
-// @public @deprecated (undocumented)
-export interface IQuestion {
-    // (undocumented)
-    description: string;
-    // (undocumented)
-    type: QuestionType;
-}
-
 // @public (undocumented)
 export function isAutoSkipSelect(q: Question): boolean;
 
@@ -577,16 +533,6 @@ export interface LogProvider {
     log(logLevel: LogLevel, message: string): Promise<boolean>;
     trace(message: string): Promise<boolean>;
     warning(message: string): Promise<boolean>;
-}
-
-// @public @deprecated (undocumented)
-export enum MsgLevel {
-    // (undocumented)
-    Error = "Error",
-    // (undocumented)
-    Info = "Info",
-    // (undocumented)
-    Warning = "Warning"
 }
 
 // @public (undocumented)
@@ -754,12 +700,6 @@ export class QTreeNode {
 
 // @public (undocumented)
 export type Question = SingleSelectQuestion | MultiSelectQuestion | TextInputQuestion | SingleFileQuestion | MultiFileQuestion | FolderQuestion | FuncQuestion | SingleFileQuestion;
-
-// @public @deprecated (undocumented)
-export enum QuestionType {
-    // (undocumented)
-    UpdateGlobalState = "UpdateGlobalState"
-}
 
 // @public (undocumented)
 export type ReadonlyPluginConfig = ReadonlyMap<string, ConfigValue>;
@@ -1062,8 +1002,6 @@ export type TokenProvider = {
 
 // @public (undocumented)
 export interface Tools {
-    // (undocumented)
-    dialog?: Dialog;
     // (undocumented)
     logProvider: LogProvider;
     // (undocumented)

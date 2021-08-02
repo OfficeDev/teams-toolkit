@@ -3,7 +3,6 @@
 "use strict";
 
 import {
-  ConfigMap,
   Inputs,
   PluginConfig,
   ProjectSettings,
@@ -11,18 +10,14 @@ import {
   SolutionConfig,
 } from "./types";
 
-import { VsCode } from "./vscode";
-import { TeamsAppManifest } from "./manifest";
 import {
   GraphTokenProvider,
   LogProvider,
   TelemetryReporter,
   AzureAccountProvider,
   AppStudioTokenProvider,
-  Dialog,
   TreeProvider,
 } from "./utils";
-import { Platform } from "./constants";
 import { UserInteraction } from "./qm";
 import { CryptoProvider } from "./utils";
 
@@ -34,9 +29,7 @@ export interface Context {
   root: string;
 
   targetEnvName?: string;
-
-  dialog?: Dialog;
-
+  
   logProvider?: LogProvider;
 
   telemetryReporter?: TelemetryReporter;

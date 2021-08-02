@@ -427,6 +427,9 @@ describe("provision() happy path for SPFx projects", () => {
     // mocker.stub<any, any>(fs, "pathExists").withArgs(permissionsJsonPath).resolves(true);
     mocker.stub(AppStudioClient, "createApp").resolves(mockedAppDef);
     mocker.stub(AppStudioClient, "updateApp").resolves(mockedAppDef);
+    mocker
+      .stub(AppStudioPluginImpl.prototype, "getAppDirectory" as any)
+      .resolves(`./.${ConfigFolderName}`);
   });
 
   afterEach(() => {
@@ -441,7 +444,7 @@ describe("provision() happy path for SPFx projects", () => {
       projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionSPFx.id,
-        name: "azure",
+        name: "SPFx",
         version: "1.0",
         activeResourcePlugins: [spfxPlugin.name, appStudioPlugin.name],
       },

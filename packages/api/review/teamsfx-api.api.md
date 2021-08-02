@@ -8,6 +8,9 @@ import { Result } from 'neverthrow';
 import { TokenCredential } from '@azure/core-http';
 import { TokenCredentialsBase } from '@azure/ms-rest-nodeauth';
 
+// @public (undocumented)
+export const AppPackageFolderName = "appPackage";
+
 // @public
 export interface AppStudioTokenProvider {
     getAccessToken(showDialog?: boolean): Promise<string | undefined>;

@@ -6,7 +6,14 @@ import * as chai from "chai";
 import fs from "fs-extra";
 import path from "path";
 import sinon from "sinon";
-import { ConfigMap, PluginContext, TeamsAppManifest, Plugin, ok } from "@microsoft/teamsfx-api";
+import {
+  ConfigMap,
+  PluginContext,
+  TeamsAppManifest,
+  Plugin,
+  ok,
+  Platform,
+} from "@microsoft/teamsfx-api";
 import { AppStudioPlugin } from "./../../../../../src/plugins/resource/appstudio";
 import { AppStudioPluginImpl } from "./../../../../../src/plugins/resource/appstudio/plugin";
 import { TeamsBot } from "./../../../../../src/plugins/resource/bot";
@@ -25,6 +32,7 @@ describe("Build Teams Package", () => {
       root: "./tests/plugins/resource/appstudio/resources/",
       configOfOtherPlugins: new Map(),
       config: new ConfigMap(),
+      answers: { platform: Platform.VSCode },
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -48,8 +56,6 @@ describe("Build Teams Package", () => {
   });
 
   it("Build Teams Package", async () => {
-    const appDirectory = path.resolve(__dirname, "./../resources/.fx");
-
     sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns(
       ok({
         tabEndpoint: "tabEndpoint",
@@ -61,7 +67,7 @@ describe("Build Teams Package", () => {
       })
     );
 
-    const builtPackage = await plugin.buildTeamsPackage(ctx, appDirectory);
+    const builtPackage = await plugin.buildTeamsPackage(ctx);
     chai.assert.isTrue(builtPackage.isOk());
     if (builtPackage.isOk()) {
       chai.assert.isNotEmpty(builtPackage.value);

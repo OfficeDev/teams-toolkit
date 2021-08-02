@@ -21,9 +21,9 @@ import jwt_decode from "jwt-decode";
 import { Utils } from "../../../../src/plugins/resource/aad/utils/common";
 import { MockUserInteraction } from "../../../core/utils";
 
-const permissions = "[{\"resource\": \"Microsoft Graph\",\"delegated\": [\"User.Read\"],\"application\":[]}]";
+const permissions = '[{"resource": "Microsoft Graph","delegated": ["User.Read"],"application":[]}]';
 const permissionsWrong =
-  "[{\"resource\": \"Microsoft Graph\",\"delegated\": [\"User.ReadData\"],\"application\":[]}]";
+  '[{"resource": "Microsoft Graph","delegated": ["User.ReadData"],"application":[]}]';
 
 const mockLogProvider: LogProvider = {
   async log(logLevel: LogLevel, message: string): Promise<boolean> {
@@ -125,7 +125,7 @@ export class TestHelper {
       ? mockConfigOfOtherPluginsLocalDebug(domain, endpoint, botEndpoint, botId, wrongPermission)
       : mockConfigOfOtherPluginsProvision(domain, endpoint, botEndpoint, botId, wrongPermission);
 
-    const pluginContext = ({
+    const pluginContext = {
       logProvider: mockLogProvider,
       ui: mockUI,
       telemetryReporter: mockTelemetryReporter,
@@ -134,7 +134,7 @@ export class TestHelper {
       projectSettings: {
         appName: "aad-plugin-unit-test",
       },
-    } as unknown) as PluginContext;
+    } as unknown as PluginContext;
 
     return pluginContext;
   }

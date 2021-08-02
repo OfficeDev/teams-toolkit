@@ -29,7 +29,7 @@ export interface Context {
   root: string;
 
   targetEnvName?: string;
-  
+
   logProvider?: LogProvider;
 
   telemetryReporter?: TelemetryReporter;

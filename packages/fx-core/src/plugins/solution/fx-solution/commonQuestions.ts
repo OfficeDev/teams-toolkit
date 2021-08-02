@@ -2,14 +2,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import {
-  DialogMsg,
-  DialogType,
-  QuestionType,
   ok,
   err,
   returnSystemError,
   returnUserError,
-  Dialog,
   FxError,
   Result,
   SolutionConfig,
@@ -189,7 +185,6 @@ export async function fillInCommonQuestions(
   ctx: SolutionContext,
   appName: string,
   config: SolutionConfig,
-  dialog?: Dialog,
   azureAccountProvider?: AzureAccountProvider,
   // eslint-disable-next-line @typescript-eslint/ban-types
   appStudioJson?: object

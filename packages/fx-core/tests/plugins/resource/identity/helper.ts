@@ -6,7 +6,7 @@ export class TestHelper {
   static async pluginContext(
     credentials: msRestNodeAuth.TokenCredentialsBase
   ): Promise<PluginContext> {
-    const pluginContext = {
+    const pluginContext = ({
       azureAccountProvider: {
         getAccountCredentialAsync() {
           return credentials;
@@ -31,22 +31,6 @@ export class TestHelper {
         async debug(message: string): Promise<boolean> {
           console.debug(message);
           return true;
-        },
-      },
-      dialog: {
-        createProgressBar(title: string, totalSteps: number) {
-          console.log(`Create ProgressBar, title: ${title}, totalSteps: ${totalSteps}`);
-          return {
-            start: (detail?: string) => {
-              console.log("start detail: " + detail);
-            },
-            next: (detail?: string) => {
-              console.log("next detail: " + detail);
-            },
-            end: () => {
-              console.log("ProgressBar end");
-            },
-          };
         },
       },
       telemetryReporter: {
@@ -99,7 +83,7 @@ export class TestHelper {
         },
       },
       projectSettings: { appName: "hello-app" },
-    } as unknown as PluginContext;
+    } as unknown) as PluginContext;
 
     return pluginContext;
   }

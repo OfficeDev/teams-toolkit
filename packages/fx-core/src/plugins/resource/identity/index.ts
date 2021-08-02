@@ -22,6 +22,8 @@ import { getTemplatesFolder } from "../../..";
 import { AzureResourceSQL } from "../../solution/fx-solution/question";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+import { Providers, ResourceManagementClientContext } from "@azure/arm-resources";
+
 @Service(ResourcePlugins.IdentityPlugin)
 export class IdentityPlugin implements Plugin {
   name = "fx-resource-identity";
@@ -64,6 +66,17 @@ export class IdentityPlugin implements Plugin {
       Constants.resourceNameSuffix
     );
     this.config.location = ContextUtils.getConfigString(Constants.solution, Constants.location);
+
+    try {
+      ctx.logProvider?.info(Message.checkProvider);
+      const credentials = await ctx.azureAccountProvider!.getAccountCredentialAsync();
+      const resourceManagementClient = new Providers(
+        new ResourceManagementClientContext(credentials!, this.config.azureSubscriptionId)
+      );
+      await resourceManagementClient.register(Constants.resourceProvider);
+    } catch (error) {
+      ctx.logProvider?.info(Message.registerResourceProviderFailed(error?.message));
+    }
 
     let defaultIdentity = `${ctx.projectSettings!.appName}-msi-${this.config.resourceNameSuffix}`;
     defaultIdentity = formatEndpoint(defaultIdentity);

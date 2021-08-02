@@ -18,8 +18,6 @@ import {
   Plugin,
   AzureAccountProvider,
   SubscriptionInfo,
-  Dialog,
-  DialogMsg,
   IProgressHandler,
   Platform,
   UserInteraction,
@@ -135,15 +133,6 @@ class MockUserInteraction implements UserInteraction {
     config: TaskConfig,
     ...args: any
   ): Promise<Result<T, FxError>> {
-    throw new Error("Method not implemented.");
-  }
-}
-class MockedDialog implements Dialog {
-  async communicate(msg: DialogMsg): Promise<DialogMsg> {
-    throw new Error("Method not implemented.");
-  }
-
-  createProgressBar(_title: string, _totalSteps: number): IProgressHandler {
     throw new Error("Method not implemented.");
   }
 }
@@ -267,7 +256,6 @@ function mockSolutionContext(): SolutionContext {
   return {
     root: ".",
     config,
-    dialog: new MockedDialog(),
     ui: new MockUserInteraction(),
     answers: { platform: Platform.VSCode },
     projectSettings: undefined,

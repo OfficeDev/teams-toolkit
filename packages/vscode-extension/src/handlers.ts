@@ -24,7 +24,6 @@ import {
   UserError,
   SystemError,
   returnSystemError,
-  returnUserError,
   ConfigFolderName,
   Inputs,
   VsCodeEnv,
@@ -40,17 +39,13 @@ import {
   globalStateUpdate,
   globalStateGet,
 } from "@microsoft/teamsfx-core";
-import DialogManagerInstance from "./userInterface";
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
 import AppStudioTokenInstance from "./commonlib/appStudioLogin";
 import AppStudioCodeSpaceTokenInstance from "./commonlib/appStudioCodeSpaceLogin";
 import VsCodeLogInstance from "./commonlib/log";
-import { VSCodeTelemetryReporter } from "./commonlib/telemetry";
 import { TreeViewCommand } from "./commandsTreeViewProvider";
 import TreeViewManagerInstance from "./commandsTreeViewProvider";
-import * as extensionPackage from "./../package.json";
-import { ext } from "./extensionVariables";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import {
   TelemetryEvent,
@@ -63,7 +58,7 @@ import * as commonUtils from "./debug/commonUtils";
 import { ExtensionErrors, ExtensionSource } from "./error";
 import { WebviewPanel } from "./controls/webviewPanel";
 import * as constants from "./debug/constants";
-import { isSPFxProject, sleep } from "./utils/commonUtils";
+import { isSPFxProject } from "./utils/commonUtils";
 import * as fs from "fs-extra";
 import * as vscode from "vscode";
 import { DepsChecker } from "./debug/depsChecker/checker";
@@ -82,7 +77,6 @@ import { SPFxNodeChecker } from "./debug/depsChecker/spfxNodeChecker";
 import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
 import { VS_CODE_UI } from "./extension";
 import { registerAccountTreeHandler } from "./accountTree";
-import * as uuid from "uuid";
 import { selectAndDebug } from "./debug/runIconHandler";
 import * as path from "path";
 import { exp } from "./exp/index";
@@ -145,7 +139,6 @@ export async function activate(): Promise<Result<Void, FxError>> {
       },
       telemetryReporter: telemetry,
       treeProvider: TreeViewManagerInstance.getTreeView("teamsfx-accounts")!,
-      dialog: DialogManagerInstance,
       ui: VS_CODE_UI,
     };
     core = new FxCore(tools);

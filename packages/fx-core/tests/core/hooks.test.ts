@@ -499,9 +499,11 @@ describe("Middleware", () => {
       solutionContext.config.set("solution", new ConfigMap());
       solutionContext.projectSettings = MockProjectSettings(appName);
       const fileMap = new Map<string, any>();
+
       sandbox.stub<any, any>(fs, "writeFile").callsFake(async (file: string, data: any) => {
         fileMap.set(file, data);
       });
+      sandbox.stub(fs, "pathExists").resolves(true);
 
       const envName = solutionContext.projectSettings.currentEnv;
       const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
@@ -557,6 +559,7 @@ describe("Middleware", () => {
       sandbox.stub<any, any>(fs, "writeFile").callsFake(async (file: string, data: any) => {
         fileMap.set(file, data);
       });
+      sandbox.stub(fs, "pathExists").resolves(true);
 
       const envName = solutionContext.projectSettings.currentEnv;
       const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
@@ -608,9 +611,6 @@ describe("Middleware", () => {
       sandbox.stub<any, any>(fs, "readFile").callsFake(async (file: string) => {
         if (userdataFile === file) return content;
         return {};
-      });
-      sandbox.stub<any, any>(fs, "pathExists").callsFake(async (file: string) => {
-        return true;
       });
       await my.ReadConfigTrigger(inputs);
     });

@@ -107,11 +107,10 @@ export async function loadSolutionContext(
     }
     const envInfo = envDataResult.value;
 
-    const solutionConfig: SolutionConfig = objectToMap(envInfo.data);
     const solutionContext: SolutionContext = {
       projectSettings: projectSettings,
       targetEnvName: envInfo.envName,
-      config: solutionConfig,
+      config: envInfo.data,
       root: inputs.projectPath || "",
       ...tools,
       ...tools.tokenProvider,

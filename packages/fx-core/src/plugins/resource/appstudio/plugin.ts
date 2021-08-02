@@ -603,7 +603,7 @@ export class AppStudioPluginImpl {
         appStudioToken as string,
         userInfoObject.aadId
       );
-      return ok(new Map([["Teams App", [res]]]));
+      return ok(new Map([[Constants.PERMISSIONS.name, [res]]]));
     } catch (error) {
       // TODO: Give out detailed help message for different errors.
       throw AppStudioResultFactory.UserError(

@@ -7,6 +7,7 @@ import { IAppDefinition, IUserList } from "./interfaces/IAppDefinition";
 import { AppStudioError } from "./errors";
 import { IPublishingAppDenition } from "./interfaces/IPublishingAppDefinition";
 import { AppStudioResultFactory } from "./results";
+import { Constants } from "./constants";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AppStudioClient {
@@ -424,13 +425,13 @@ export namespace AppStudioClient {
     const app = await getApp(teamsAppId, appStudioToken);
     const findUser = app.userList?.find((user: any) => user["aadId"] === userObjectId);
     if (!findUser) {
-      return "No permission";
+      return Constants.PERMISSIONS.noPermission;
     }
 
     if (findUser.isAdministrator) {
-      return "Administrator";
+      return Constants.PERMISSIONS.admin;
     } else {
-      return "Operative";
+      return Constants.PERMISSIONS.operative;
     }
   }
 }

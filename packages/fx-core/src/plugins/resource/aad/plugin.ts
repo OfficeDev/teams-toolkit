@@ -355,7 +355,12 @@ export class AadAppForTeamsImpl {
     const objectId: string = ctx.config.get(ConfigKeys.objectId) as string;
     const isOwner = await AadAppClient.checkPermission(objectId, userObjectId);
     return ResultFactory.Success(
-      new Map([["Azure AD app", isOwner ? ["Owner"] : ["No permission"]]])
+      new Map([
+        [
+          Constants.permissions.name,
+          isOwner ? [Constants.permissions.owner] : [Constants.permissions.noPermission],
+        ],
+      ])
     );
   }
 

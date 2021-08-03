@@ -6,7 +6,7 @@ export class TestHelper {
   static async pluginContext(
     credentials: msRestNodeAuth.TokenCredentialsBase
   ): Promise<PluginContext> {
-    const pluginContext = ({
+    const pluginContext = {
       azureAccountProvider: {
         getAccountCredentialAsync() {
           return credentials;
@@ -83,7 +83,7 @@ export class TestHelper {
         },
       },
       projectSettings: { appName: "hello-app" },
-    } as unknown) as PluginContext;
+    } as unknown as PluginContext;
 
     return pluginContext;
   }

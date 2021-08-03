@@ -81,7 +81,6 @@ export async function loadSolutionContext(
     const settingsFile = path.resolve(confFolderPath, "settings.json");
     const projectSettings: ProjectSettings = await fs.readJson(settingsFile);
     let projectIdMissing = false;
-    if (!projectSettings.currentEnv) projectSettings.currentEnv = "default";
     if (!projectSettings.projectId) {
       projectSettings.projectId = uuid.v4();
       projectIdMissing = true;
@@ -127,7 +126,6 @@ export async function newSolutionContext(tools: Tools, inputs: Inputs): Promise<
   const projectSettings: ProjectSettings = {
     appName: "",
     projectId: uuid.v4(),
-    currentEnv: "default",
     solutionSettings: {
       name: "fx-solution-azure",
       version: "1.0.0",

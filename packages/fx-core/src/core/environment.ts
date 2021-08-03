@@ -35,7 +35,7 @@ export interface EnvFiles {
 }
 
 class EnvironmentManager {
-  private readonly defaultEnvName = "default";
+  public readonly defaultEnvName = "default";
 
   public async loadEnvProfile(
     projectPath: string,

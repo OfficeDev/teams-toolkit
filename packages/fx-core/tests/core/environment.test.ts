@@ -165,6 +165,15 @@ describe("APIs of Environment Manager", () => {
       assert.equal(envInfo.data.get("solution").get("teamsAppTenantId"), encreptedSecret);
       assert.equal(envInfo.data.get("solution").get("key"), expectedSolutionConfig.key);
     });
+
+    it("expected error: environment profile doesn't exist", async () => {
+      const actualEnvDataResult = await environmentManager.loadEnvProfile(projectPath);
+      assert.isTrue(actualEnvDataResult.isErr());
+      actualEnvDataResult.mapErr((error) => {
+        assert.instanceOf(error, UserError);
+        assert.isTrue(error.name === "PathNotExist");
+      });
+    });
   });
 
   describe("Write Environment Profile", () => {
@@ -253,15 +262,6 @@ describe("APIs of Environment Manager", () => {
       );
     });
   });
-
-  it("expected error: environment profile doesn't exist", async () => {
-    const actualEnvDataResult = await environmentManager.loadEnvProfile(projectPath);
-    assert.isTrue(actualEnvDataResult.isErr());
-    actualEnvDataResult.mapErr((error) => {
-      assert.instanceOf(error, UserError);
-      assert.isTrue(error.name === "PathNotExist");
-    });
-  });
 });
 
 async function mockEnvProfiles(
@@ -270,7 +270,7 @@ async function mockEnvProfiles(
   envName?: string,
   userData?: Record<string, string>
 ) {
-  envName = envName ?? "default";
+  envName = envName ?? environmentManager.defaultEnvName;
   const envFiles = environmentManager.getEnvFilesPath(envName, projectPath);
 
   await fs.ensureFile(envFiles.envProfile);

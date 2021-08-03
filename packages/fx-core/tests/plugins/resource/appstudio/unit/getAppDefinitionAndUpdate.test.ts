@@ -118,14 +118,13 @@ describe("Get AppDefinition and Update", () => {
 
   it("should return maybeAppDefinition error", async () => {
     ctx = {
-      root: "./",
+      root: "./tests/plugins/resource/appstudio/resources/",
       configOfOtherPlugins: new Map(),
       config: new ConfigMap(),
       appStudioToken: new MockedAppStudioTokenProvider(),
     };
     ctx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
@@ -160,13 +159,12 @@ describe("Get AppDefinition and Update", () => {
 
   it("failed to get webApplicationInfoResource from local config and should return error", async () => {
     ctx = {
-      root: "./",
+      root: "./tests/plugins/resource/appstudio/resources/",
       configOfOtherPlugins: new Map(),
       config: new ConfigMap(),
     };
     ctx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
@@ -194,13 +192,12 @@ describe("Get AppDefinition and Update", () => {
     AAD_ConfigMap.delete(LOCAL_DEBUG_AAD_ID);
     configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
     ctx = {
-      root: "./",
+      root: "./tests/plugins/resource/appstudio/resources/",
       configOfOtherPlugins: configOfOtherPlugins,
       config: new ConfigMap(),
     };
     ctx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
@@ -231,13 +228,12 @@ describe("Get AppDefinition and Update", () => {
     configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
     configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
     ctx = {
-      root: "./",
+      root: "./tests/plugins/resource/appstudio/resources/",
       configOfOtherPlugins: configOfOtherPlugins,
       config: new ConfigMap(),
     };
     ctx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
@@ -268,13 +264,12 @@ describe("Get AppDefinition and Update", () => {
     configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
     configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
     ctx = {
-      root: "./",
+      root: "./tests/plugins/resource/appstudio/resources/",
       configOfOtherPlugins: configOfOtherPlugins,
       config: new ConfigMap(),
     };
     ctx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
@@ -307,13 +302,12 @@ describe("Get AppDefinition and Update", () => {
     configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
     configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
     ctx = {
-      root: "./",
+      root: "./tests/plugins/resource/appstudio/resources/",
       configOfOtherPlugins: configOfOtherPlugins,
       config: new ConfigMap(),
     };
     ctx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
@@ -342,13 +336,12 @@ describe("Get AppDefinition and Update", () => {
     configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
     configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
     ctx = {
-      root: "./",
+      root: "./tests/plugins/resource/appstudio/resources/",
       configOfOtherPlugins: configOfOtherPlugins,
       config: new ConfigMap(),
     };
     ctx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
@@ -391,7 +384,6 @@ describe("Get AppDefinition and Update", () => {
     };
     ctx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
@@ -426,7 +418,6 @@ describe("Get AppDefinition and Update", () => {
     };
     ctx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
@@ -472,7 +463,6 @@ describe("Get AppDefinition and Update", () => {
     };
     ctx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
@@ -536,7 +526,6 @@ describe("Get AppDefinition and Update", () => {
     };
     ctx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
@@ -597,7 +586,6 @@ describe("Get AppDefinition and Update", () => {
     };
     ctx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
@@ -632,7 +620,6 @@ describe("Get AppDefinition and Update", () => {
     };
     ctx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
@@ -696,7 +683,6 @@ describe("Get AppDefinition and Update", () => {
     };
     ctx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",

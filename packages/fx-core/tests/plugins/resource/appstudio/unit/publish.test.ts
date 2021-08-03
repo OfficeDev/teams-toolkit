@@ -32,7 +32,7 @@ describe("Publish Teams app", () => {
   let BotPlugin: Plugin;
   let selectedPlugins: Plugin[];
   const sandbox = sinon.createSandbox();
-  const appPackagePath = path.resolve(__dirname, "./../resources/.fx/appPackage.zip");
+  const appPackagePath = path.resolve(__dirname, "./../resources/appPackage/appPackage.zip");
 
   beforeEach(async () => {
     plugin = new AppStudioPlugin();
@@ -45,7 +45,6 @@ describe("Publish Teams app", () => {
     };
     ctx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: "project id",
       solutionSettings: {
         name: "azure",

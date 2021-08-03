@@ -2,7 +2,7 @@ import { IProgressHandler, PluginContext } from "@microsoft/teamsfx-api";
 import { getStrings } from "../../../../common";
 
 export enum DeployArmTemplatesSteps {
-  ExecuteDeployment = "Deploying solution Arm templates to Azure. This could take several minutes.",
+  ExecuteDeployment = "Deploying solution ARM templates to Azure. This could take several minutes.",
 }
 export class ProgressHelper {
   static deployArmTemplatesProgress: IProgressHandler | undefined;

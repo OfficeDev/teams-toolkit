@@ -237,9 +237,6 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
     );
   }
   await ProgressHelper.endDeployArmTemplatesProgress();
-  ctx.logProvider?.info(
-    format(getStrings().solution.DeployArmTemplates.EndNotice, PluginDisplayName.Solution)
-  );
   return result;
 }
 

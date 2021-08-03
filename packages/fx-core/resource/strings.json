@@ -28,7 +28,6 @@
       "SuccessNotice": "[%s] Successfully deploy ARM templates. Resource group name: %s. Deployment name: %s",
       "FailNotice": "[%s] Failed to deploy ARM templates. Resource group name: %s. Deployment name: %s",
       "PollDeploymentStatusNotice": "[%s] Polling deployment status...",
-      "EndNotice": "[%s] End ARM templates deployment.",
       "Progress": {
         "Title": "Deploying ARM Templates",
         "Start": "Preparing.",

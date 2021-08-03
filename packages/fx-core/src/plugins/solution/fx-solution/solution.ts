@@ -1095,7 +1095,7 @@ export class TeamsAppSolution implements Solution {
     if (await fs.pathExists(localSettingsProvider.localSettingsFilePath)) {
       ctx.localSettings = await localSettingsProvider.load();
     } else {
-      ctx.localSettings = await localSettingsProvider.init(hasFrontend, hasBackend, hasBot);
+      ctx.localSettings = localSettingsProvider.init(hasFrontend, hasBackend, hasBot);
     }
 
     try {

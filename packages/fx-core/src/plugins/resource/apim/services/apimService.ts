@@ -60,7 +60,7 @@ export class ApimService {
     const provider = await this.execute(
       Operation.Get,
       AzureResource.ResourceProvider,
-      undefined,
+      ProjectConstants.apimResourceProvider,
       fn
     );
     if (provider?.registrationState === "Registered") {
@@ -73,7 +73,12 @@ export class ApimService {
     const provider = await this.getRegisteredResourceProvider();
     if (!provider) {
       const fn = () => this.resourceProviderClient.register(ProjectConstants.apimResourceProvider);
-      await this.execute(Operation.Register, AzureResource.ResourceProvider, undefined, fn);
+      await this.execute(
+        Operation.Register,
+        AzureResource.ResourceProvider,
+        ProjectConstants.apimResourceProvider,
+        fn
+      );
     }
   }
 

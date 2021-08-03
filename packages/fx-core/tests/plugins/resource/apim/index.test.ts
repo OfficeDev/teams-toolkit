@@ -33,6 +33,7 @@ import {
   IFunctionPluginConfig,
   ISolutionConfig,
 } from "../../../../src/plugins/resource/apim/config";
+import { Providers, ResourceManagementClientContext } from "@azure/arm-resources";
 dotenv.config();
 chai.use(chaiAsPromised);
 
@@ -191,7 +192,15 @@ async function buildService(): Promise<{
   );
 
   const apiManagementClient = new ApiManagementClient(credential, EnvConfig.subscriptionId);
-  const apimService = new ApimService(apiManagementClient, credential, EnvConfig.subscriptionId);
+  const resourceProviderClient = new Providers(
+    new ResourceManagementClientContext(credential, EnvConfig.subscriptionId)
+  );
+  const apimService = new ApimService(
+    apiManagementClient,
+    resourceProviderClient,
+    credential,
+    EnvConfig.subscriptionId
+  );
   const resourceGroupHelper = new ResourceGroupHelper(credential, EnvConfig.subscriptionId);
 
   return {

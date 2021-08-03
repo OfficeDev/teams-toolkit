@@ -458,7 +458,7 @@ export class AppStudioPluginImpl {
       }
     }
     const status = await fs.lstat(appDirectory);
-    await fs.ensureDir(path.join(ctx.root, `.${AppPackageFolderName}`));
+    await fs.ensureDir(path.join(ctx.root, `${AppPackageFolderName}`));
 
     if (!status.isDirectory()) {
       throw AppStudioResultFactory.UserError(
@@ -496,7 +496,10 @@ export class AppStudioPluginImpl {
       await fs.copyFile(zipFileName, `${ctx.root}/SPFx/teams/TeamsSPFxApp.zip`);
     }
 
-    if (appDirectory.includes(`${ConfigFolderName}`) && ctx.answers?.platform !== Platform.VS) {
+    if (
+      appDirectory === `${ctx.root}/.${ConfigFolderName}` &&
+      ctx.answers?.platform !== Platform.VS
+    ) {
       await fs.move(
         `${appDirectory}/${manifest.icons.color}`,
         `${ctx.root}/${AppPackageFolderName}/${manifest.icons.color}`

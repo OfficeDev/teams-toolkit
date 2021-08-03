@@ -585,7 +585,7 @@ export class AppStudioPluginImpl {
 
   public async checkPermission(
     ctx: PluginContext
-  ): Promise<Result<{ name: string; roles: string | undefined; error: any }[], FxError>> {
+  ): Promise<Result<{ name: string; roles: string[] | undefined; error: any }[], FxError>> {
     const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
     const teamsAppId = (await ctx.configOfOtherPlugins
       .get("solution")
@@ -620,7 +620,7 @@ export class AppStudioPluginImpl {
     return ok([
       {
         name: Constants.PERMISSIONS.name,
-        roles: teamsAppRoles,
+        roles: [teamsAppRoles as string],
         error: checkTeamsAppPermissionError,
       },
     ]);

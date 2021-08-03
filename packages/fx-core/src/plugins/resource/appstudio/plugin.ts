@@ -486,6 +486,11 @@ export class AppStudioPluginImpl {
       );
     }
 
+    const formerZipFileName = `${ctx.root}/.${ConfigFolderName}/appPackage.zip`;
+    if ((await this.checkFileExist(formerZipFileName)) && ctx.answers?.platform !== Platform.VS) {
+      await fs.remove(formerZipFileName);
+    }
+
     const zip = new AdmZip();
     zip.addFile(Constants.MANIFEST_FILE, Buffer.from(manifestString));
     zip.addLocalFile(colorFile);

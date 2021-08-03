@@ -40,10 +40,6 @@ export interface SolutionSetting extends Json {
   resourcePlugins: string[];
 }
 
-export interface ProjectState extends Json {
-  solutionState: Json;
-}
-
 export interface Inputs extends Json {
   stage: Stage;
   vscodeEnv?: VsCodeEnv;
@@ -59,24 +55,7 @@ export interface Context {
   logProvider: LogProvider;
   telemetryReporter: TelemetryReporter;
   projectSetting: ProjectSetting;
-  projectState: ProjectState;
-  projectSecrets: Json;
-  solutionConfig: Json;
   platform: Platform;
-}
-
-/**
- * project config model
- */
-export interface ProjectConfigs {
-  projectSetting: ProjectSetting;
-  projectState: ProjectState;
-  provisionTemplates?: Record<string, Json>;
-  deployTemplates?: Record<string, Json>;
-  provisionConfigs?: Record<string, Json>;
-  deployConfigs?: Record<string, Json>;
-  resourceInstanceValues?: Record<string, string>;
-  stateValues?: Record<string, string>;
 }
 
 export enum Stage {

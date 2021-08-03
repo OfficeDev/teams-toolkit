@@ -76,7 +76,7 @@ export interface ResourcePlugin {
    * @param {Inputs} inputs - User answers to quesions defined in {@link getQuestionsForLifecycleTask}
    * for {@link Stage.create} along with some system inputs.
    *
-   * @returns scaffold output values, which will be persisted by the Toolkit and made available to other plugins for other lifecyles.
+   * @returns output values generated during scaffolding, which will be persisted by the Toolkit and made available to other plugins for other lifecyles.
    *          For example, Azure Function plugin outputs "defaultFunctionName" in this lifecycle.
    *          For most plugins, empty output is good enough.
    */

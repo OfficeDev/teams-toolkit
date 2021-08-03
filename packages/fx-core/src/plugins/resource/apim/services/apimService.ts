@@ -18,6 +18,7 @@ import {
   Operation,
   ErrorHandlerResult,
   OpenApiSchemaVersion,
+  ProjectConstants,
 } from "../constants";
 import { ApimOperationError, AssertNotEmpty, BuildError, InvalidAzureResourceId } from "../error";
 import { IApimServiceResource } from "../interfaces/IApimResource";
@@ -27,6 +28,8 @@ import { LogProvider, TelemetryReporter } from "@microsoft/teamsfx-api";
 import { LogMessages } from "../log";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { OpenAPI } from "openapi-types";
+import { Providers } from "@azure/arm-resources";
+import { Provider } from "@azure/arm-resources/esm/models";
 
 export class ApimService {
   private readonly subscriptionId: string;
@@ -34,9 +37,11 @@ export class ApimService {
   private readonly telemetryReporter: TelemetryReporter | undefined;
   private readonly logger: LogProvider | undefined;
   private readonly credential: TokenCredentialsBase;
+  private readonly resourceProviderClient: Providers;
 
   constructor(
     apimClient: ApiManagementClient,
+    resourceProviderClient: Providers,
     credential: TokenCredentialsBase,
     subscriptionId: string,
     telemetryReporter?: TelemetryReporter,
@@ -45,8 +50,31 @@ export class ApimService {
     this.credential = credential;
     this.subscriptionId = subscriptionId;
     this.apimClient = apimClient;
+    this.resourceProviderClient = resourceProviderClient;
     this.telemetryReporter = telemetryReporter;
     this.logger = logger;
+  }
+
+  public async getRegisteredResourceProvider(): Promise<Provider | undefined> {
+    const fn = () => this.resourceProviderClient.get(ProjectConstants.apimResourceProvider);
+    const provider = await this.execute(
+      Operation.Get,
+      AzureResource.ResourceProvider,
+      undefined,
+      fn
+    );
+    if (provider?.registrationState === "Registered") {
+      return provider;
+    }
+    return undefined;
+  }
+
+  public async ensureResourceProvider(): Promise<void> {
+    const provider = await this.getRegisteredResourceProvider();
+    if (!provider) {
+      const fn = () => this.resourceProviderClient.register(ProjectConstants.apimResourceProvider);
+      await this.execute(Operation.Register, AzureResource.ResourceProvider, undefined, fn);
+    }
   }
 
   public async createService(

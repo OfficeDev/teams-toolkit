@@ -3,11 +3,12 @@
 
 "use strict";
 
+import chalk from "chalk";
 import { LogLevel, LogProvider, Colors } from "@microsoft/teamsfx-api";
 
 import { CLILogLevel } from "../constants";
-import { getColorizedString } from "./../utils";
-import chalk from "chalk";
+import { getColorizedString } from "../utils";
+import ProgressController from "../progress/controller";
 
 export class CLILogProvider implements LogProvider {
   private static instance: CLILogProvider;
@@ -76,6 +77,7 @@ export class CLILogProvider implements LogProvider {
   }
 
   async log(logLevel: LogLevel, message: string): Promise<boolean> {
+    ProgressController.instance?.clean();
     switch (logLevel) {
       case LogLevel.Trace:
         if (CLILogProvider.logLevel === CLILogLevel.debug) {
@@ -105,10 +107,12 @@ export class CLILogProvider implements LogProvider {
         console.error(chalk.redBright(`Error: ${message}`));
         break;
     }
+    ProgressController.instance?.update();
     return true;
   }
 
   necessaryLog(logLevel: LogLevel, message: string, white = false) {
+    ProgressController.instance?.clean();
     switch (logLevel) {
       case LogLevel.Trace:
       case LogLevel.Debug:
@@ -127,6 +131,7 @@ export class CLILogProvider implements LogProvider {
         console.error(chalk.redBright(`Error: ${message}`));
         break;
     }
+    ProgressController.instance?.update();
   }
 
   rawLog(message: string) {

@@ -1,12 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import figures from "figures";
 import { SingleBar } from "cli-progress";
 
-import { LogLevel } from "@microsoft/teamsfx-api";
+import { Colors } from "@microsoft/teamsfx-api";
 
-import LogProvider from "../commonlib/log";
 import Controller from "./controller";
+import { getColorizedString } from "../utils";
 
 export default class Instance {
   private readonly controller: Controller;
@@ -15,7 +16,7 @@ export default class Instance {
   private readonly title: string;
   private currentPercentage = 0;
   private detail?: string;
-  private bar?: SingleBar;
+  public bar?: SingleBar;
 
   constructor(title: string, totalSteps: number) {
     this.totalSteps = totalSteps;
@@ -24,13 +25,30 @@ export default class Instance {
     this.controller.register(this);
   }
 
-  get message() {
-    return `[${this.currentStep}/${this.totalSteps}] ${this.title}: ${this.detail || "starting."}`;
+  get doneMessage(): string {
+    return getColorizedString([
+      {
+        content: `[${this.totalSteps}/${this.totalSteps}] ${this.title}: `,
+        color: Colors.BRIGHT_WHITE,
+      },
+      { content: `(${figures.tick}) Done`, color: Colors.BRIGHT_GREEN },
+    ]);
+  }
+
+  get message(): string {
+    return getColorizedString([
+      {
+        content: `[${this.currentStep}/${this.totalSteps}] ${this.title}: ${
+          this.detail || "starting."
+        }`,
+        color: Colors.BRIGHT_WHITE,
+      },
+    ]);
   }
 
   get percentage(): number {
-    const needArrivedPercentage = (this.currentStep / this.totalSteps) * 100;
-    const nextArrivedPercentage = ((this.currentStep + 1) / this.totalSteps) * 100;
+    const needArrivedPercentage = ((this.currentStep - 1) / this.totalSteps) * 100;
+    const nextArrivedPercentage = (this.currentStep / this.totalSteps) * 100;
     if (this.currentPercentage < needArrivedPercentage) {
       const diff = needArrivedPercentage - this.currentPercentage;
       this.currentPercentage += diff / this.controller.fps >= 5 ? diff / this.controller.fps : 5;
@@ -38,23 +56,24 @@ export default class Instance {
       const diff = nextArrivedPercentage - this.currentPercentage;
       this.currentPercentage += diff / this.controller.fps / 10;
     }
-    return this.currentPercentage;
+    return Math.min(this.currentPercentage, 100);
   }
 
   public async start(detail?: string) {
+    if (!this.bar) await this.end();
+    this.currentStep = 0;
+    this.currentPercentage = 0;
     this.detail = detail;
-    this.end();
-    this.show();
     this.bar = this.controller.create(100, this.percentage, this.message);
   }
 
   public async end() {
-    this.currentStep = 0;
-    this.currentPercentage = 0;
+    this.currentPercentage = 100;
     if (this.bar) {
-      this.bar.stop();
-      this.controller.remove(this.bar);
+      const tmp = this.bar;
       this.bar = undefined;
+      tmp.stop();
+      this.controller.remove(tmp, this.percentage, this.doneMessage);
     }
   }
 
@@ -62,15 +81,5 @@ export default class Instance {
     this.detail = detail;
     this.currentStep++;
     this.totalSteps = Math.max(this.currentStep, this.totalSteps);
-    this.show();
-  }
-
-  public update(payload: any) {
-    if (this.bar) this.bar.update(this.percentage, payload);
-  }
-
-  public show() {
-    this.controller.clear();
-    LogProvider.necessaryLog(LogLevel.Info, this.message, true);
   }
 }

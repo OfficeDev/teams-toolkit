@@ -103,12 +103,16 @@ export abstract class YargsCommand {
         CLILogProvider.necessaryLog(LogLevel.Error, FxError.stack || "undefined");
       }
 
-      ProgressController.getInstance().end();
+      if (ProgressController.instance && ProgressController.instance.activeNum > 0) {
+        ProgressController.instance.end();
+      }
       await CliTelemetryInstance.flush();
       exit(-1, FxError);
     }
 
-    ProgressController.getInstance().end();
+    if (ProgressController.instance && ProgressController.instance.activeNum > 0) {
+      ProgressController.instance.end();
+    }
     await CliTelemetryInstance.flush();
   }
 }

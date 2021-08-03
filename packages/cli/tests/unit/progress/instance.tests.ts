@@ -1,31 +1,53 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { SingleBar } from "cli-progress";
+import figures from "figures";
 import sinon from "sinon";
 
-import { LogLevel } from "@microsoft/teamsfx-api";
+import { Colors } from "@microsoft/teamsfx-api";
 
 import ProgressController from "../../../src/progress/controller";
 import ProgressInstance from "../../../src/progress/instance";
-import Logger from "../../../src/commonlib/log";
+import * as Utils from "../../../src/utils";
 import { expect } from "../utils";
-import { MultiBar, SingleBar } from "cli-progress";
 
 describe("Progress Instance", function () {
   const sandbox = sinon.createSandbox();
 
   beforeEach(() => {
     sandbox.stub(ProgressController.prototype, "register");
-    sandbox.stub(ProgressController.prototype, "start");
+    sandbox
+      .stub(Utils, "getColorizedString")
+      .callsFake((msg: { content: string; color: Colors }[]) => {
+        return msg.map((ob) => ob.content).join("");
+      });
   });
 
   afterEach(() => {
     sandbox.restore();
   });
 
+  it("doneMessage", () => {
+    const instance = new ProgressInstance("Test", 1);
+    expect(instance.doneMessage).equal(`[1/1] Test: (${figures.tick}) Done`);
+  });
+
+  it("message", () => {
+    const instance = new ProgressInstance("Test", 1);
+    expect(instance.message).equal(`[0/1] Test: starting.`);
+  });
+
+  it("percentage", () => {
+    const instance = new ProgressInstance("Test", 2);
+    expect(instance.percentage).equal(0);
+    instance["currentStep"] = 2;
+    expect(instance.percentage).equals(5);
+    instance["currentPercentage"] = 75;
+    expect(instance.percentage).equal(75.1);
+  });
+
   it("start", async () => {
-    sandbox.stub(ProgressInstance.prototype, "end");
-    sandbox.stub(ProgressInstance.prototype, "show");
     sandbox
       .stub(ProgressController.prototype, "create")
       .callsFake((total: number, startValue: number, message: string) => {
@@ -39,44 +61,20 @@ describe("Progress Instance", function () {
   });
 
   it("end", async () => {
-    sandbox.stub(ProgressInstance.prototype, "show");
-    sandbox.stub(MultiBar.prototype, "remove");
+    sandbox.stub(ProgressController.prototype, "remove");
     const stopStub = sandbox.stub(SingleBar.prototype, "stop");
 
     const instance = new ProgressInstance("Test", 1);
     instance["bar"] = new SingleBar({});
-    instance["currentStep"] = 10;
-    instance["currentPercentage"] = 100;
     await instance.end();
-    expect(instance["currentStep"]).equals(0);
-    expect(instance["currentPercentage"]).equals(0);
+    expect(instance["bar"]).equals(undefined);
+    expect(instance.percentage).equals(100);
     sinon.assert.calledOnce(stopStub);
   });
 
   it("next", async () => {
-    sandbox.stub(ProgressInstance.prototype, "show");
     const instance = new ProgressInstance("Test", 1);
     await instance.next("step 1");
     expect(instance["detail"]).equals("step 1");
-  });
-
-  it("update", () => {
-    sandbox.stub(SingleBar.prototype, "update");
-    const instance = new ProgressInstance("Test", 1);
-    instance["bar"] = new SingleBar({});
-    instance.update({});
-  });
-
-  it("show", () => {
-    sandbox.stub(ProgressController.prototype, "clear");
-    sandbox
-      .stub(Logger, "necessaryLog")
-      .callsFake((level: LogLevel, message: string, white?: boolean) => {
-        expect(level).equals(LogLevel.Info);
-        expect(message).equals("[0/1] Test: starting.");
-        expect(white).to.be.true;
-      });
-    const instance = new ProgressInstance("Test", 1);
-    instance.show();
   });
 });

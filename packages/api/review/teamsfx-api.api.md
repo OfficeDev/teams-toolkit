@@ -117,6 +117,8 @@ export interface Context {
     // (undocumented)
     graphTokenProvider?: GraphTokenProvider;
     // (undocumented)
+    localSettings?: LocalSettings;
+    // (undocumented)
     logProvider?: LogProvider;
     // (undocumented)
     projectSettings?: ProjectSettings;
@@ -512,6 +514,20 @@ export function loadOptions(q: Question, inputs: Inputs): Promise<{
 
 // @public
 export type LocalFunc<T> = (inputs: Inputs) => T | Promise<T>;
+
+// @public
+export interface LocalSettings {
+    // (undocumented)
+    auth?: ConfigMap;
+    // (undocumented)
+    backend?: ConfigMap;
+    // (undocumented)
+    bot?: ConfigMap;
+    // (undocumented)
+    frontend?: ConfigMap;
+    // (undocumented)
+    teamsApp: ConfigMap;
+}
 
 // @public (undocumented)
 export enum LogLevel {

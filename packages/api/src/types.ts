@@ -145,6 +145,17 @@ export interface AzureSolutionSettings extends SolutionSettings {
 }
 
 /**
+ * local debug settings
+ */
+export interface LocalSettings {
+  teamsApp: ConfigMap;
+  auth?: ConfigMap;
+  frontend?: ConfigMap;
+  backend?: ConfigMap;
+  bot?: ConfigMap;
+}
+
+/**
  * project dynamic states
  */
 export interface ProjectStates {

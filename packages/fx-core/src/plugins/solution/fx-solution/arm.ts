@@ -210,7 +210,7 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
               `[${PluginDisplayName.Solution}] ${deployment.name} -> ${deployment.properties.provisioningState}`
             );
             if (deployment.properties.error) {
-              ctx.logProvider?.error(JSON.stringify(deployment.properties.error, null, 2));
+              ctx.logProvider?.error(JSON.stringify(deployment.properties.error, undefined, 2));
             }
           }
         });
@@ -246,37 +246,36 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
 async function getParameterJson(ctx: SolutionContext) {
   const parameterDir = path.join(ctx.root, baseFolder, parameterFolder);
   const parameterDefaultFilePath = path.join(parameterDir, parameterDefaultFileName);
-  let parameterJsonString;
+  const parameterTemplateFilePath = path.join(parameterDir, parameterTemplateFileName);
   let parameterFilePath = parameterDefaultFilePath;
   try {
-    parameterJsonString = await getExpandedParameter(ctx, parameterFilePath);
-  } catch {
-    const parameterTemplateFilePath = path.join(parameterDir, parameterTemplateFileName);
-    ctx.logProvider?.warning(
-      `[${PluginDisplayName.Solution}] Failed to get expanded parameter from ${parameterDefaultFilePath}. Try ${parameterTemplateFilePath}.`
+    await fs.stat(parameterDefaultFilePath);
+  } catch (err) {
+    ctx.logProvider?.info(
+      `[${PluginDisplayName.Solution}] ${parameterDefaultFilePath} does not exist. Try ${parameterTemplateFilePath}.`
     );
     parameterFilePath = parameterTemplateFilePath;
-    parameterJsonString = await getExpandedParameter(ctx, parameterFilePath);
-    await fs.writeFile(parameterDefaultFilePath, parameterJsonString);
   }
 
-  try {
-    return JSON.parse(parameterJsonString);
-  } catch (error) {
-    throw new Error(
-      `Failed to parse parameters from ${parameterFilePath}. Error: ${error.message}`
-    );
+  const parameterJson = await getExpandedParameter(ctx, parameterFilePath);
+
+  if (parameterFilePath === parameterTemplateFilePath) {
+    await fs.writeFile(parameterDefaultFilePath, JSON.stringify(parameterJson, undefined, 2));
   }
+
+  return parameterJson;
 }
 
 async function getExpandedParameter(ctx: SolutionContext, filePath: string) {
   try {
     const parameterTemplate = await fs.readFile(filePath, ConstantString.UTF8Encoding);
-    return expandParameterPlaceholders(ctx, parameterTemplate);
+    const parameterJsonString = expandParameterPlaceholders(ctx, parameterTemplate);
+    return JSON.parse(parameterJsonString);
   } catch (err) {
-    throw new Error(
+    ctx.logProvider?.error(
       `[${PluginDisplayName.Solution}] Failed to get expanded parameter from ${filePath}.`
     );
+    throw err;
   }
 }
 

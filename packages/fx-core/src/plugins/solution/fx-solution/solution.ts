@@ -57,6 +57,7 @@ import {
   SolutionTelemetrySuccess,
   PluginNames,
   USER_INFO,
+  REMOTE_TENANT_ID,
 } from "./constants";
 
 import {
@@ -1163,15 +1164,16 @@ export class TeamsAppSolution implements Solution {
       }
       return ok(undefined);
     } finally {
+      ctx.config.get(GLOBAL_CONFIG)?.delete(USER_INFO);
       this.runningState = SolutionRunningState.Idle;
     }
   }
 
   @hooks([ErrorHandlerMW])
   async checkPermission(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    const canGrantPermission = this.checkWhetherSolutionIsIdle();
-    if (canGrantPermission.isErr()) {
-      return canGrantPermission;
+    const canCheckPermission = this.checkWhetherSolutionIsIdle();
+    if (canCheckPermission.isErr()) {
+      return canCheckPermission;
     }
 
     const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
@@ -1188,6 +1190,17 @@ export class TeamsAppSolution implements Solution {
         // TODO: throw error: can not find user
         return ok(undefined);
       }
+
+      // Compare tenant id.
+      const aadAppTenantId = ctx.config?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
+      if (!aadAppTenantId || userInfo.tenantId != (aadAppTenantId as string)) {
+        // TODO: throw error.
+        ctx.logProvider?.info(
+          "Tenant id of your account and the provisioned Azure AD app does not match. Please check whether you logined with wrong account."
+        );
+        return ok(undefined);
+      }
+
       ctx.config.get(GLOBAL_CONFIG)?.set(USER_INFO, JSON.stringify(userInfo));
 
       const maybeSelectedPlugins = this.getSelectedPlugins(ctx);
@@ -1230,6 +1243,7 @@ export class TeamsAppSolution implements Solution {
       }
       return ok(undefined);
     } finally {
+      ctx.config.get(GLOBAL_CONFIG)?.delete(USER_INFO);
       this.runningState = SolutionRunningState.Idle;
     }
   }

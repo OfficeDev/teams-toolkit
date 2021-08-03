@@ -219,7 +219,6 @@ export class AppStudioPluginImpl {
       try {
         await AppStudioClient.getApp(remoteTeamsAppId, appStudioToken!, ctx.logProvider);
       } catch (error) {
-        ctx.logProvider?.error(error);
         create = true;
       }
     }
@@ -443,17 +442,15 @@ export class AppStudioPluginImpl {
           .get("solution")
           ?.get(SOLUTION_PROVISION_SUCCEEDED) as boolean);
         if (
-          manifest.error.name === AppStudioError.GetRemoteConfigError.name &&
+          manifest.error.name === AppStudioError.GetRemoteConfigFailedError.name &&
           !isProvisionSucceeded
         ) {
-          throw err(
-            AppStudioResultFactory.UserError(
-              AppStudioError.GetRemoteConfigError.name,
-              AppStudioError.GetRemoteConfigError.message("Teams package build failed")
-            )
+          throw AppStudioResultFactory.UserError(
+            AppStudioError.GetRemoteConfigError.name,
+            AppStudioError.GetRemoteConfigError.message("Teams package build failed")
           );
         } else {
-          throw err(manifest.error);
+          throw manifest.error;
         }
       }
     }

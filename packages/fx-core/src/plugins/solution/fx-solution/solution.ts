@@ -102,6 +102,7 @@ import { hooks } from "@feathersjs/hooks/lib";
 import { Service, Container } from "typedi";
 import { deployArmTemplates, generateArmTemplate } from "./arm";
 import { LocalSettingsProvider } from "../../../common/localSettingsProvider";
+import { PluginDisplayName } from "../../../common/constants";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -617,12 +618,14 @@ export class TeamsAppSolution implements Solution {
       postProvisionWithCtx,
       async () => {
         ctx.logProvider?.info(
-          "[Teams Toolkit]: Start provisioning. It could take several minutes."
+          util.format(getStrings().solution.ProvisionStartNotice, PluginDisplayName.Solution)
         );
         return ok(undefined);
       },
       async (provisionResults?: any[]) => {
-        ctx.logProvider?.info("[Teams Toolkit]: provison finished!");
+        ctx.logProvider?.info(
+          util.format(getStrings().solution.ProvisionFinishNotice, PluginDisplayName.Solution)
+        );
         if (provisionWithCtx.length === provisionResults?.length) {
           provisionWithCtx.map(function (plugin, index) {
             if (plugin[2] === PluginNames.APPST) {
@@ -648,7 +651,9 @@ export class TeamsAppSolution implements Solution {
       },
       async () => {
         ctx.config.get(GLOBAL_CONFIG)?.delete(ARM_TEMPLATE_OUTPUT);
-        ctx.logProvider?.info("[Teams Toolkit]: configuration finished!");
+        ctx.logProvider?.info(
+          util.format(getStrings().solution.ConfigurationFinishNotice, PluginDisplayName.Solution)
+        );
         return ok(undefined);
       }
     );
@@ -732,7 +737,11 @@ export class TeamsAppSolution implements Solution {
       }
     }
     ctx.logProvider?.info(
-      `[Solution] Selected plugins to deploy:${JSON.stringify(pluginsToDeploy.map((p) => p.name))}`
+      util.format(
+        getStrings().solution.SelectedPluginsToDeployNotice,
+        PluginDisplayName.Solution,
+        JSON.stringify(pluginsToDeploy.map((p) => p.name))
+      )
     );
     const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(
       ctx,
@@ -748,7 +757,9 @@ export class TeamsAppSolution implements Solution {
       return [plugin?.postDeploy?.bind(plugin), context, plugin.name];
     });
 
-    ctx.logProvider?.info(`[Solution] deploy start!`);
+    ctx.logProvider?.info(
+      util.format(getStrings().solution.DeployStartNotice, PluginDisplayName.Solution)
+    );
 
     return executeLifecycles(preDeployWithCtx, deployWithCtx, postDeployWithCtx);
   }
@@ -780,7 +791,9 @@ export class TeamsAppSolution implements Solution {
         return [plugin?.publish?.bind(plugin), context, plugin.name];
       });
 
-      ctx.logProvider?.info(`[Solution] publish start!`);
+      ctx.logProvider?.info(
+        util.format(getStrings().solution.PublishStartNotice, PluginDisplayName.Solution)
+      );
 
       const results = await executeConcurrently("", publishWithCtx);
 

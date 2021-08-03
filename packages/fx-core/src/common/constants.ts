@@ -12,3 +12,7 @@ export class ResourcePlugins {
   static readonly Function = "fx-resource-function";
   static readonly Identity = "fx-resource-identity";
 }
+
+export class PluginDisplayName {
+  static readonly Solution = "Teams Toolkit";
+}

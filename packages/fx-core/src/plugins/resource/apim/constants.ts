@@ -348,8 +348,8 @@ export class AzureResource {
   };
 
   static ResourceProvider: IName = {
-    shortName: "resource-provider",
-    displayName: "Resource Provider",
+    shortName: "apim-resource-provider",
+    displayName: "API Management Resource Provider",
   };
 }
 

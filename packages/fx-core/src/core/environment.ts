@@ -36,6 +36,7 @@ export interface EnvFiles {
 
 class EnvironmentManager {
   public readonly defaultEnvName = "default";
+  private readonly envNameRegex = /env\.(?<envName>[\w\d-_]+)\.json/i;
 
   public async loadEnvProfile(
     projectPath: string,
@@ -100,12 +101,39 @@ class EnvironmentManager {
     return ok(Void);
   }
 
+  public async listEnvProfiles(projectPath: string): Promise<Result<Array<string>, FxError>> {
+    if (!(await fs.pathExists(projectPath))) {
+      return err(PathNotExistError(projectPath));
+    }
+
+    const configFolder = this.getConfigFolder(projectPath);
+    if (!(await fs.pathExists(configFolder))) {
+      return ok([]);
+    }
+
+    const configFiles = await fs.readdir(configFolder);
+    const envNames = configFiles
+      .map((file) => this.getEnvNameFromPath(file))
+      .filter((name): name is string => name !== null);
+
+    return ok(envNames);
+  }
+
   public getEnvFilesPath(envName: string, projectPath: string): EnvFiles {
     const basePath = this.getConfigFolder(projectPath);
     const envProfile = path.resolve(basePath, `env.${envName}.json`);
     const userDataFile = path.resolve(basePath, `${envName}.userdata`);
 
     return { envProfile, userDataFile };
+  }
+
+  private getEnvNameFromPath(filePath: string): string | null {
+    const match = this.envNameRegex.exec(filePath);
+    if (match != null && match.groups != null) {
+      return match.groups.envName;
+    }
+
+    return null;
   }
 
   private getConfigFolder(projectPath: string): string {

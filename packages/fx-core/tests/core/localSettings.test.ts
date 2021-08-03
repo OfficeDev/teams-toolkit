@@ -1,9 +1,9 @@
 import "mocha";
 import * as chai from "chai";
 import * as fs from "fs-extra";
-import * as os from "os";
 import * as path from "path";
-import { ConfigFolderName, LocalSettings, LocalSettingsProvider } from "@microsoft/teamsfx-api";
+import { ConfigFolderName, LocalSettings } from "@microsoft/teamsfx-api";
+import { LocalSettingsProvider } from "../../src/common/localSettingsProvider";
 import {
   LocalSettingsAuthKeys,
   LocalSettingsBackendKeys,
@@ -11,10 +11,6 @@ import {
   LocalSettingsFrontendKeys,
   LocalSettingsTeamsAppKeys,
 } from "../../src/common/localSettingsConstants";
-import {
-  LocalEnvBackendKeys,
-  LocalEnvFrontendKeys,
-} from "../../src/plugins/resource/localdebug/constants";
 
 describe("LocalSettings provider APIs", () => {
   const workspaceFolder = path.resolve(__dirname, "./data/");

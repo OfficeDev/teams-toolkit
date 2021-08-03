@@ -379,10 +379,10 @@ export class TeamsAppSolution implements Solution {
 
       const azureResources = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
         ?.azureResources;
-      const hasBackend = azureResources.includes(AzureResourceFunction.id);
+      const hasBackend = azureResources?.includes(AzureResourceFunction.id);
 
       const localSettingsProvider = new LocalSettingsProvider(ctx.root);
-      let localSettings = await localSettingsProvider.load();
+      const localSettings = await localSettingsProvider.load();
       if (localSettings !== undefined) {
         // Add local settings for the new added capability/resource
         await localSettingsProvider.save(

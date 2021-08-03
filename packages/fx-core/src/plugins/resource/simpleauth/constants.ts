@@ -113,7 +113,6 @@ export class Constants {
 
   static readonly Permissions = {
     name: "Azure Web App for Simple Auth",
-    noPermission: "No Permission",
   };
 }
 

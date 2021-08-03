@@ -15,7 +15,6 @@ export class CommonConstants {
   public static readonly latestTrustMtime: number = new Date(2000, 1, 1).getTime();
   public static readonly permissions = {
     name: "Azure Function",
-    noPermission: "No Permission",
   };
 }
 

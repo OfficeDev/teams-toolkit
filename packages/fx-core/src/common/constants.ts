@@ -1,5 +1,6 @@
 export class ConstantString {
   static readonly UTF8Encoding = "utf-8";
+  static readonly noPermission: "No Permission";
 }
 
 export class ResourcePlugins {

@@ -1212,12 +1212,19 @@ export class TeamsAppSolution implements Solution {
         if (result.isErr()) {
           const msg = getStrings().solution.CheckPermissionFailed;
           ctx.logProvider?.info(msg);
-          return result;
-        }
-
-        if (result && result.value) {
-          for (const [key, value] of result.value) {
-            ctx.logProvider?.info(`Check Permission Result: ${key}: ${value.join(",")}`);
+        } else {
+          if (result && result.value) {
+            for (const res of result.value) {
+              if (!res.error) {
+                ctx.logProvider?.info(
+                  `Check Permission Result: ${res.name}: ${res.roles.join(",")}`
+                );
+              } else {
+                ctx.logProvider?.info(
+                  `Check Permission Failed with error: ${res.name}: ${res.error.message}`
+                );
+              }
+            }
           }
         }
       }

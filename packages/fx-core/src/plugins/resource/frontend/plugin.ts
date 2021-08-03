@@ -321,19 +321,24 @@ export class FrontendPluginImpl {
     const accountInfo = await ctx.azureAccountProvider!.getAccountInfo();
     const userObjectId = accountInfo!.oid;
 
-    const permissionArray = await checkAzureResourcePermission(
-      resourceId,
-      accessToken,
-      userObjectId
-    );
+    let checkAzureResourcePermissionError;
+    let azureResourceRoles;
+    try {
+      azureResourceRoles = await checkAzureResourcePermission(
+        resourceId,
+        accessToken,
+        userObjectId
+      );
+    } catch (e) {
+      checkAzureResourcePermissionError = e;
+    }
 
-    return ok(
-      new Map([
-        [
-          Constants.permissions.name,
-          permissionArray.length > 0 ? permissionArray : [Constants.permissions.noPermission],
-        ],
-      ])
-    );
+    return ok([
+      {
+        name: Constants.permissions.name,
+        roles: azureResourceRoles,
+        error: checkAzureResourcePermissionError,
+      },
+    ]);
   }
 }

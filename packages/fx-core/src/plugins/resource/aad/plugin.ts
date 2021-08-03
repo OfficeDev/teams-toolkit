@@ -353,15 +353,22 @@ export class AadAppForTeamsImpl {
     const userInfoObject = JSON.parse(userInfo as string);
     const userObjectId = userInfoObject["aadId"];
     const objectId: string = ctx.config.get(ConfigKeys.objectId) as string;
-    const isOwner = await AadAppClient.checkPermission(objectId, userObjectId);
-    return ResultFactory.Success(
-      new Map([
-        [
-          Constants.permissions.name,
-          isOwner ? [Constants.permissions.owner] : [Constants.permissions.noPermission],
-        ],
-      ])
-    );
+
+    let isAadOwner;
+    let checkAadPermissionError;
+    try {
+      isAadOwner = await await AadAppClient.checkPermission(objectId, userObjectId);
+    } catch (e) {
+      checkAadPermissionError = e;
+    }
+
+    return ResultFactory.Success([
+      {
+        name: Constants.permissions.name,
+        roles: isAadOwner ? [Constants.permissions.owner] : [Constants.permissions.noPermission],
+        error: checkAadPermissionError,
+      },
+    ]);
   }
 
   private static getRedirectUris(

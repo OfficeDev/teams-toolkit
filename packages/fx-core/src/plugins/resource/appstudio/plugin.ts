@@ -585,7 +585,7 @@ export class AppStudioPluginImpl {
 
   public async checkPermission(
     ctx: PluginContext
-  ): Promise<Result<Map<string, Array<string>>, FxError>> {
+  ): Promise<Result<{ name: string; roles: string | undefined; error: any }[], FxError>> {
     const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
     const teamsAppId = (await ctx.configOfOtherPlugins
       .get("solution")
@@ -593,24 +593,37 @@ export class AppStudioPluginImpl {
     const userInfo = ctx.configOfOtherPlugins.get("solution")?.get("userInfo");
     if (!userInfo) {
       // TODO: throw error: no userinfo in context
-      return ok(new Map());
+      return ok([
+        {
+          name: Constants.PERMISSIONS.name,
+          roles: undefined,
+          error: new Error("no userinfo in context"),
+        },
+      ]);
     }
 
     const userInfoObject = JSON.parse(userInfo) as IUserList;
+
+    let teamsAppRoles;
+    let checkTeamsAppPermissionError;
     try {
-      const res = await AppStudioClient.checkPermission(
+      teamsAppRoles = await AppStudioClient.checkPermission(
         teamsAppId,
         appStudioToken as string,
         userInfoObject.aadId
       );
-      return ok(new Map([[Constants.PERMISSIONS.name, [res]]]));
     } catch (error) {
       // TODO: Give out detailed help message for different errors.
-      throw AppStudioResultFactory.UserError(
-        AppStudioError.CheckPermissionFailedError.name,
-        AppStudioError.CheckPermissionFailedError.message(error)
-      );
+      checkTeamsAppPermissionError = error;
     }
+
+    return ok([
+      {
+        name: Constants.PERMISSIONS.name,
+        roles: teamsAppRoles,
+        error: checkTeamsAppPermissionError,
+      },
+    ]);
   }
 
   private async beforePublish(

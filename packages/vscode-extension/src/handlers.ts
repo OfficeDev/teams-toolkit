@@ -39,6 +39,7 @@ import {
   isValidProject,
   globalStateUpdate,
   globalStateGet,
+  Correlator,
 } from "@microsoft/teamsfx-core";
 import DialogManagerInstance from "./userInterface";
 import GraphManagerInstance from "./commonlib/graphLogin";
@@ -672,11 +673,15 @@ export async function cmdHdlLoadTreeView(context: ExtensionContext) {
     try {
       switch (node.contextValue) {
         case "signedinM365": {
-          signOutM365(true);
+          Correlator.run(() => {
+            signOutM365(true);
+          });
           break;
         }
         case "signedinAzure": {
-          signOutAzure(true);
+          Correlator.run(() => {
+            signOutAzure(true);
+          });
           break;
         }
       }
@@ -754,7 +759,10 @@ export async function cmpAccountsHandler() {
   const signOutAzureOption: VscQuickPickItem = {
     id: "signOutAzure",
     label: StringResources.vsc.handlers.signOutOfAzure,
-    function: () => signOutAzure(false),
+    function: async () =>
+      Correlator.run(() => {
+        signOutAzure(false);
+      }),
   };
 
   const signInM365Option: VscQuickPickItem = {
@@ -766,7 +774,10 @@ export async function cmpAccountsHandler() {
   const signOutM365Option: VscQuickPickItem = {
     id: "signOutM365",
     label: StringResources.vsc.handlers.signOutOfM365,
-    function: () => signOutM365(false),
+    function: async () =>
+      Correlator.run(() => {
+        signOutM365(false);
+      }),
   };
 
   //TODO: hide subscription list until core or api expose the get subscription list API

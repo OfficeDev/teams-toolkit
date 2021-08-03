@@ -39,7 +39,8 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: "chore: commit provision configs"
-          file_pattern: .fx/env.default.json
+          file_pattern: .fx/*
+          add_options: "-f"
 
       - name: Validate Teams App's manifest
         uses: OfficeDev/teamsfx-cli-action@v1

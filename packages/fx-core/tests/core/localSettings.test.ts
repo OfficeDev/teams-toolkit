@@ -53,6 +53,30 @@ describe("LocalSettings provider APIs", () => {
       const localSettings = localSettingsProvider.init(hasFrontend, hasBackend, hasBot);
       assertLocalSettings(localSettings, hasFrontend, hasBackend, hasBot);
     });
+
+    it("should incremental init if localSettings exists", async () => {
+      let localSettings: LocalSettings | undefined;
+      localSettings = localSettingsProvider.init(true, false, false);
+      const updateValue = "http://localhost:5000";
+      localSettings.auth?.set(LocalSettingsAuthKeys.SimpleAuthServiceEndpoint, updateValue);
+
+      await localSettingsProvider.save(localSettings);
+      localSettings = await localSettingsProvider.load();
+
+      const addBackaned = true;
+      const addBot = true;
+      const updatedLocalSettings = localSettingsProvider.incrementalInit(
+        localSettings!,
+        addBackaned,
+        addBot
+      );
+
+      assertLocalSettings(updatedLocalSettings, true, true, true);
+      chai.assert.equal(
+        updatedLocalSettings!.auth?.get(LocalSettingsAuthKeys.SimpleAuthServiceEndpoint),
+        updateValue
+      );
+    });
   });
 
   describe("save localSettings", () => {

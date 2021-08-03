@@ -30,6 +30,7 @@ import {
   Inputs,
   DynamicPlatforms,
   SubscriptionInfo,
+  LocalSettings,
 } from "@microsoft/teamsfx-api";
 import { checkSubscription, fillInCommonQuestions } from "./commonQuestions";
 import { executeLifecycles, executeConcurrently, LifecyclesWithContext } from "./executor";
@@ -379,9 +380,17 @@ export class TeamsAppSolution implements Solution {
         ?.azureResources;
       const hasBackend = azureResources.includes(AzureResourceFunction.id);
 
-      // Initialize and create a default localSettings.json file at project scaffoling.
       const localSettingsProvider = new LocalSettingsProvider(ctx.root);
-      await localSettingsProvider.save(localSettingsProvider.init(hasTab, hasBackend, hasBot));
+      let localSettings = await localSettingsProvider.load();
+      if (localSettings !== undefined) {
+        // Add local settings for the new added capability/resource
+        await localSettingsProvider.save(
+          localSettingsProvider.incrementalInit(localSettings!, hasBackend, hasBot)
+        );
+      } else {
+        // Initialize a local settings on scaffolding
+        await localSettingsProvider.save(localSettingsProvider.init(hasTab, hasBackend, hasBot));
+      }
     }
 
     if (isArmSupportEnabled()) {
@@ -1056,12 +1065,35 @@ export class TeamsAppSolution implements Solution {
     if (maybePermission.isErr()) {
       return maybePermission;
     }
+
+    const maybeSelectedPlugins = this.getSelectedPlugins(ctx);
+
+    if (maybeSelectedPlugins.isErr()) {
+      return maybeSelectedPlugins;
+    }
+
+    const selectedPlugins = maybeSelectedPlugins.value;
+    const hasFrontend = selectedPlugins?.some((plugin) => plugin.name === PluginNames.FE);
+    const hasBackend = selectedPlugins?.some((plugin) => plugin.name === PluginNames.FUNC);
+    const hasBot = selectedPlugins?.some((plugin) => plugin.name === PluginNames.BOT);
+
+    // load localSettings into context before local debug.
+    const localSettingsProvider = new LocalSettingsProvider(ctx.root);
+    if (await fs.pathExists(localSettingsProvider.localSettingsFilePath)) {
+      ctx.localSettings = await localSettingsProvider.load();
+    } else {
+      ctx.localSettings = await localSettingsProvider.init(hasFrontend, hasBackend, hasBot);
+    }
+
     try {
       ctx.config.get(GLOBAL_CONFIG)?.set(PERMISSION_REQUEST, maybePermission.value);
       const result = await this.doLocalDebug(ctx);
       return result;
     } finally {
       ctx.config.get(GLOBAL_CONFIG)?.delete(PERMISSION_REQUEST);
+
+      // persistent localSettings.json.
+      localSettingsProvider.save(ctx.localSettings!);
     }
   }
 
@@ -1073,17 +1105,6 @@ export class TeamsAppSolution implements Solution {
     }
 
     const selectedPlugins = maybeSelectedPlugins.value;
-
-    const hasFrontend = selectedPlugins?.some((plugin) => plugin.name === PluginNames.FE);
-    const hasBackend = selectedPlugins?.some((plugin) => plugin.name === PluginNames.FUNC);
-    const hasBot = selectedPlugins?.some((plugin) => plugin.name === PluginNames.BOT);
-
-    const localSettingsProvider = new LocalSettingsProvider(ctx.root);
-    if (await fs.pathExists(localSettingsProvider.localSettingsFilePath)) {
-      ctx.localSettings = await localSettingsProvider.load();
-    } else {
-      ctx.localSettings = await localSettingsProvider.init(hasFrontend, hasBackend, hasBot);
-    }
 
     // Just to trigger M365 login before the concurrent execution of localDebug.
     // Because concurrent exectution of localDebug may getAccessToken() concurrently, which
@@ -1141,9 +1162,6 @@ export class TeamsAppSolution implements Solution {
         }
       });
     }
-
-    // persistent localSettings.json after local debug.
-    localSettingsProvider.save(ctx.localSettings!);
 
     return ok(Void);
   }

@@ -133,9 +133,8 @@ async function _getQuestions(
   progressBar: ProgressBar,
   stage: Stage
 ): Promise<QTreeNode | undefined> {
-  const solutionConfig = new SolutionConfig(ctx.configOfOtherPlugins);
   const apimConfig = new ApimPluginConfig(ctx.config);
-  const questionManager = await Factory.buildQuestionManager(ctx, solutionConfig);
+  const questionManager = await Factory.buildQuestionManager(ctx);
   switch (stage) {
     case Stage.deploy:
       return await questionManager.deploy(ctx, apimConfig);
@@ -149,9 +148,8 @@ async function _getQuestionsForUserTask(
   progressBar: ProgressBar,
   func: Func
 ): Promise<QTreeNode | undefined> {
-  const solutionConfig = new SolutionConfig(ctx.configOfOtherPlugins);
   const apimConfig = new ApimPluginConfig(ctx.config);
-  const questionManager = await Factory.buildQuestionManager(ctx, solutionConfig);
+  const questionManager = await Factory.buildQuestionManager(ctx);
   if (func.method === "addResource") {
     return await questionManager.addResource(ctx, apimConfig);
   }
@@ -159,16 +157,14 @@ async function _getQuestionsForUserTask(
 }
 
 async function _callFunc(ctx: PluginContext, progressBar: ProgressBar, func: Func): Promise<any> {
-  const solutionConfig = new SolutionConfig(ctx.configOfOtherPlugins);
-  const questionManager = await Factory.buildQuestionManager(ctx, solutionConfig);
+  const questionManager = await Factory.buildQuestionManager(ctx);
   return await questionManager.callFunc(func, ctx);
 }
 
 async function _scaffold(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {
-  const solutionConfig = new SolutionConfig(ctx.configOfOtherPlugins);
   const apimConfig = new ApimPluginConfig(ctx.config);
   const answer = buildAnswer(ctx.answers);
-  const scaffoldManager = await Factory.buildScaffoldManager(ctx, solutionConfig);
+  const scaffoldManager = await Factory.buildScaffoldManager(ctx);
 
   const appName = AssertNotEmpty("projectSettings.appName", ctx?.projectSettings?.appName);
 
@@ -186,7 +182,7 @@ async function _provision(ctx: PluginContext, progressBar: ProgressBar): Promise
   const solutionConfig = new SolutionConfig(ctx.configOfOtherPlugins);
   const apimConfig = new ApimPluginConfig(ctx.config);
 
-  const apimManager = await Factory.buildApimManager(ctx, solutionConfig);
+  const apimManager = await Factory.buildApimManager(ctx);
   const aadManager = await Factory.buildAadManager(ctx);
 
   const appName = AssertNotEmpty("projectSettings.appName", ctx?.projectSettings?.appName);
@@ -209,7 +205,7 @@ async function _postProvision(ctx: PluginContext, progressBar: ProgressBar): Pro
   const apimConfig = new ApimPluginConfig(ctx.config);
   const aadConfig = new AadPluginConfig(ctx.configOfOtherPlugins);
 
-  const apimManager = await Factory.buildApimManager(ctx, solutionConfig);
+  const apimManager = await Factory.buildApimManager(ctx);
   const aadManager = await Factory.buildAadManager(ctx);
   const teamsAppAadManager = await Factory.buildTeamsAppAadManager(ctx);
 
@@ -246,7 +242,7 @@ async function _deploy(ctx: PluginContext, progressBar: ProgressBar): Promise<vo
 
   answer.save(PluginLifeCycle.Deploy, apimConfig);
 
-  const apimManager = await Factory.buildApimManager(ctx, solutionConfig);
+  const apimManager = await Factory.buildApimManager(ctx);
 
   await progressBar.next(ProgressStep.Deploy, ProgressMessages[ProgressStep.Deploy].ImportApi);
   await apimManager.deploy(apimConfig, solutionConfig, functionConfig, answer, ctx.root);

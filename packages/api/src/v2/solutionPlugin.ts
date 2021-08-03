@@ -31,22 +31,8 @@ export interface SolutionPlugin {
    * Called by Toolkit when creating a new project or adding a new resource.
    * Scaffolds source code on disk, relative to context.projectPath.
    *
-   * @example
-   * ```
-   * scaffoldSourceCode(ctx: Context, inputs: Inputs) {
-   *   const fs = require("fs-extra");
-   *   let content = "let x = 1;"
-   *   let path = path.join(ctx.projectPath, "myFolder");
-   *   let sourcePath = "somePathhere";
-   *   let result = await fs.copy(sourcePath, content);
-   *   // no output values
-   *   return { "output": {} };
-   * }
-   * ```
-   *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
-   * @param {Inputs} inputs - User answers to quesions defined in {@link getQuestionsForLifecycleTask}
-   * for {@link Stage.create} along with some system inputs.
+   * @param {Inputs} inputs - User answers to quesions defined in {@link getQuestionsForScaffolding} along with some system inputs.
    *
    * @returns scaffold output values for each plugin, which will be persisted by the Toolkit and available to other plugins for other lifecyles.
    */
@@ -79,7 +65,7 @@ export interface SolutionPlugin {
    * 3) Call resource plugins' configureResource.
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
-   * @param {Json} provisionTemplate - provision template
+   * @param {Record<PluginName, Json>} provisionTemplate - provision template for each plugin
    * @param {TokenProvider} tokenProvider - Tokens for Azure and AppStudio
    *
    * @returns the config, project state, secrect values for the current environment. Toolkit will persist them
@@ -87,7 +73,7 @@ export interface SolutionPlugin {
    */
   provisionResources: (
     ctx: Context,
-    inputs: Inputs,
+    provisionTemplates: Record<PluginName, Json>,
     tokenProvider: TokenProvider
   ) => Promise<Result<Record<PluginName, ProvisionOutput>, FxError>>;
 
@@ -127,8 +113,7 @@ export interface SolutionPlugin {
    * and stores it on disk.
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
-   * @param {Inputs} inputs - User answers to quesions defined in {@link getQuestionsForLifecycleTask}
-   * for {@link Stage.package} along with some system inputs.
+   * @param {Inputs} inputs - system inputs.
    *
    * @returns Void because side effect is expected.
    */
@@ -151,22 +136,13 @@ export interface SolutionPlugin {
   ) => Promise<Result<Record<PluginName, LocalProvisionOutput>, FxError>>;
 
   /**
-   * get question model for lifecycle {@link Stage} (create, provision, deploy, publish), Questions are organized as a tree. Please check {@link QTreeNode}.
+   * get question model for lifecycle {@link Stage} (create), Questions are organized as a tree. Please check {@link QTreeNode}.
    */
-  getQuestionsForLifecycleTask: (
-    task: Stage,
+  getQuestionsForScaffolding: (
     inputs: Inputs,
     ctx?: Context
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
 
-  /**
-   * get question model for plugin customized {@link Task}, Questions are organized as a tree. Please check {@link QTreeNode}.
-   */
-  getQuestionsForUserTask?: (
-    router: FunctionRouter,
-    inputs: Inputs,
-    ctx?: Context
-  ) => Promise<Result<QTreeNode | undefined, FxError>>;
   /**
    * execute user customized task, for example `Add Resource`, `Add Capabilities`, etc
    */

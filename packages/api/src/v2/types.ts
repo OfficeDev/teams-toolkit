@@ -41,6 +41,9 @@ export interface SolutionSetting extends Json {
 }
 
 export interface Inputs extends Json {
+  projectPath?: string;
+  targetEnvName?: string;
+  platform: Platform;
   stage: Stage;
   vscodeEnv?: VsCodeEnv;
   ignoreLock?: boolean;
@@ -50,12 +53,10 @@ export interface Inputs extends Json {
 
 export interface Context {
   envMeta: EnvMeta;
-  projectPath: string;
   userInteraction: UserInteraction;
   logProvider: LogProvider;
   telemetryReporter: TelemetryReporter;
   projectSetting: ProjectSetting;
-  platform: Platform;
 }
 
 export enum Stage {

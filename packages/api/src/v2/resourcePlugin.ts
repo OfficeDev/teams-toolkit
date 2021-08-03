@@ -73,8 +73,7 @@ export interface ResourcePlugin {
    * ```
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
-   * @param {Inputs} inputs - User answers to quesions defined in {@link getQuestionsForLifecycleTask}
-   * for {@link Stage.create} along with some system inputs.
+   * @param {Inputs} inputs - User answers to quesions defined in {@link getQuestionsForScaffolding} along with some system inputs.
    *
    * @returns output values generated during scaffolding, which will be persisted by the Toolkit and made available to other plugins for other lifecyles.
    *          For example, Azure Function plugin outputs "defaultFunctionName" in this lifecycle.
@@ -90,8 +89,7 @@ export interface ResourcePlugin {
    * Returns resource templates (e.g. Bicep templates/plain JSON) for provisioning.
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
-   * @param {Inputs} inputs - User's answers to quesions defined in {@link getQuestionsForLifecycleTask}
-   * for {@link Stage.create} along with some system inputs.
+   * @param {Inputs} inputs - User's answers to quesions defined in {@link getQuestionsForScaffolding} along with some system inputs.
    *
    * @return {@link ResourceTemplate} for provisioning and deployment.
    */
@@ -146,8 +144,7 @@ export interface ResourcePlugin {
    * On failure, plugins are responsible for cleaning up.
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
-   * @param {Inputs} inputs - User answers to quesions defined in {@link getQuestionsForLifecycleTask}
-   * for {@link Stage.package} along with some system inputs.
+   * @param {Inputs} inputs - system inputs.
    *
    * @returns Void because side effect is expected.
    */
@@ -173,8 +170,7 @@ export interface ResourcePlugin {
    * Depends on the output of {@link package}. Uploads Teams package to AppStudio
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {AppStudioTokenProvider} tokenProvider - Token for AppStudio
-   * @param {Inputs} inputs - User answers to quesions defined in {@link getQuestionsForLifecycleTask}
-   * for {@link Stage.publish} along with some system inputs.
+   * @param {Inputs} inputs - system inputs.
    *
    * @returns Void because side effect is expected.
    */
@@ -218,15 +214,8 @@ export interface ResourcePlugin {
     tokenProvider: TokenProvider
   ) => Promise<Result<LocalProvisionOutput, FxError>>;
 
-  getQuestionsForLifecycleTask?: (
+  getQuestionsForScaffolding?: (
     ctx: Context,
-    stage: Stage,
-    inputs: Inputs
-  ) => Promise<Result<QTreeNode | undefined, FxError>>;
-
-  getQuestionsForUserTask?: (
-    ctx: Context,
-    router: FunctionRouter,
     inputs: Inputs
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
 

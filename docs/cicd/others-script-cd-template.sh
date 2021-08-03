@@ -17,7 +17,8 @@
 # Sufficient permissions are required to run the commands below.
 apt install -y nodejs npm git
 # If you want to install a specific version, please specify it in the end.
-npm install -g @microsoft/teamsfx-cli
+# To support npx, install npm with version > 5.2.0.
+npm install @microsoft/teamsfx-cli
 
 # Checkout the code.
 git clone {RepositoryEndpoint}
@@ -26,7 +27,7 @@ cd {FolderName}
 # Provision hosting environment.
 if [[ "${TEAMSFX_RUN_PROVISION}" = "true" ]]
 then
-    teamsfx provision --subscription ${AZURE_SUBSCRIPTION_ID}
+    npx teamsfx provision --subscription ${AZURE_SUBSCRIPTION_ID}
 fi
 
 # Commit provision configs if necessary.
@@ -38,17 +39,17 @@ then
 fi
 
 # Validate Teams App Manifest.
-teamsfx validate
+npx teamsfx validate
 
 # Deploy to hosting environment.
-teamsfx deploy
+npx teamsfx deploy
 
 # Build Teams App's Package.
-teamsfx build
+npx teamsfx build
 
 # Upload Teams App's Package as artifacts.
 # Choose what your workflow/pipeline platform provided to
 # upload .fx/appPackage.zip as artifacts.
 
 # Publish Teams App.
-teamsfx publish
+npx teamsfx publish

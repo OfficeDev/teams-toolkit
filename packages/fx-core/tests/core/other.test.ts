@@ -20,7 +20,12 @@ import {
   WriteFileError,
 } from "../../src/core/error";
 import mockedEnv from "mocked-env";
-import { isArmSupportEnabled, isFeatureFlagEnabled } from "../../src/common/tools";
+import {
+  isArmSupportEnabled,
+  isFeatureFlagEnabled,
+  isMultiEnvEnabled,
+} from "../../src/common/tools";
+import { FeatureFlagName } from "../../src/common/constants";
 
 describe("Other test case", () => {
   const sandbox = sinon.createSandbox();
@@ -185,6 +190,26 @@ describe("Other test case", () => {
       [armSupportFeatureFlagName]: "true",
     });
     assert.isTrue(isArmSupportEnabled());
+    restore();
+  });
+
+  it("isMultiEnvEnabled: return correct result based on environment variable value", () => {
+    let restore = mockedEnv({
+      [FeatureFlagName.MultiEnv]: undefined,
+    });
+    assert.isFalse(isMultiEnvEnabled());
+    restore();
+
+    restore = mockedEnv({
+      [FeatureFlagName.MultiEnv]: "",
+    });
+    assert.isFalse(isMultiEnvEnabled());
+    restore();
+
+    restore = mockedEnv({
+      [FeatureFlagName.MultiEnv]: "true",
+    });
+    assert.isTrue(isMultiEnvEnabled());
     restore();
   });
 });

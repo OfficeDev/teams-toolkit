@@ -87,6 +87,7 @@ import {
   deepCopy,
   getStrings,
   isArmSupportEnabled,
+  isMultiEnvEnabled,
   isUserCancelError,
 } from "../../../common/tools";
 import { getTemplatesFolder } from "../../..";
@@ -381,16 +382,19 @@ export class TeamsAppSolution implements Solution {
         ?.azureResources;
       const hasBackend = azureResources?.includes(AzureResourceFunction.id);
 
-      const localSettingsProvider = new LocalSettingsProvider(ctx.root);
-      const localSettings = await localSettingsProvider.load();
-      if (localSettings !== undefined) {
-        // Add local settings for the new added capability/resource
-        await localSettingsProvider.save(
-          localSettingsProvider.incrementalInit(localSettings!, hasBackend, hasBot)
-        );
-      } else {
-        // Initialize a local settings on scaffolding
-        await localSettingsProvider.save(localSettingsProvider.init(hasTab, hasBackend, hasBot));
+      if (isMultiEnvEnabled()) {
+        const localSettingsProvider = new LocalSettingsProvider(ctx.root);
+        const localSettings = await localSettingsProvider.load();
+
+        if (localSettings !== undefined) {
+          // Add local settings for the new added capability/resource
+          await localSettingsProvider.save(
+            localSettingsProvider.incrementalInit(localSettings!, hasBackend, hasBot)
+          );
+        } else {
+          // Initialize a local settings on scaffolding
+          await localSettingsProvider.save(localSettingsProvider.init(hasTab, hasBackend, hasBot));
+        }
       }
     }
 
@@ -1105,8 +1109,10 @@ export class TeamsAppSolution implements Solution {
     } finally {
       ctx.config.get(GLOBAL_CONFIG)?.delete(PERMISSION_REQUEST);
 
-      // persistent localSettings.json.
-      localSettingsProvider.save(ctx.localSettings!);
+      if (isMultiEnvEnabled()) {
+        // persistent localSettings.json.
+        localSettingsProvider.save(ctx.localSettings!);
+      }
     }
   }
 

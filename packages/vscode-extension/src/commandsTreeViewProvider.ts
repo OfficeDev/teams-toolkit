@@ -252,15 +252,6 @@ class TreeViewManager {
         { name: "library", custom: false }
       ),
       new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.addResourcesTitleNew,
-        StringResources.vsc.commandsTreeViewProvider.addResourcesDescription,
-        "fx-extension.update",
-        vscode.TreeItemCollapsibleState.None,
-        undefined,
-        undefined,
-        { name: "addResources", custom: true }
-      ),
-      new TreeViewCommand(
         StringResources.vsc.commandsTreeViewProvider.addCapabilitiesTitleNew,
         StringResources.vsc.commandsTreeViewProvider.addCapabilitiesDescription,
         "fx-extension.addCapability",
@@ -268,6 +259,15 @@ class TreeViewManager {
         undefined,
         undefined,
         { name: "addCapability", custom: true }
+      ),
+      new TreeViewCommand(
+        StringResources.vsc.commandsTreeViewProvider.addResourcesTitleNew,
+        StringResources.vsc.commandsTreeViewProvider.addResourcesDescription,
+        "fx-extension.update",
+        vscode.TreeItemCollapsibleState.None,
+        undefined,
+        undefined,
+        { name: "addResources", custom: true }
       ),
       new TreeViewCommand(
         StringResources.vsc.commandsTreeViewProvider.manifestEditorTitleNew,

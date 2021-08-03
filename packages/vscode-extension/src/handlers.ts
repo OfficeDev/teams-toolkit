@@ -665,7 +665,7 @@ export async function cmdHdlLoadTreeView(context: ExtensionContext) {
       .getExpService()
       .getTreatmentVariableAsync(TreatmentVariables.VSCodeConfig, TreatmentVariables.TreeView, true)
   ) {
-    commands.executeCommand("setContext", "isNewTreeView", true);
+    await commands.executeCommand("setContext", "isNewTreeView", true);
     StringContext.setSignInAzureContext(StringResources.vsc.handlers.signInAzureNew);
     const disposables = await TreeViewManagerInstance.registerNewTreeViews();
     context.subscriptions.push(...disposables);

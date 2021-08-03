@@ -27,7 +27,6 @@ export class Constants {
 
   static permissions = {
     name: "Azure Storage for Frontend Page",
-    noPermission: "No Permission",
   };
 }
 

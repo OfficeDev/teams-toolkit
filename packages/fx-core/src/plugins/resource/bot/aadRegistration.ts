@@ -117,18 +117,14 @@ export class AADPermissionControl {
     objectId: string,
     userObjectId: string
   ): Promise<boolean> {
-    try {
-      const instance = this.initAxiosInstance(graphToken);
-      const response = await instance.get(
-        `/applications/${objectId}/owners?$filter=id eq '${userObjectId}'`
-      );
-      if (response && response.data && response.data.value) {
-        return true;
-      } else {
-        return false;
-      }
-    } catch (e) {
-      throw new CheckPermissionError(e);
+    const instance = this.initAxiosInstance(graphToken);
+    const response = await instance.get(
+      `/applications/${objectId}/owners?$filter=id eq '${userObjectId}'`
+    );
+    if (response && response.data && response.data.value) {
+      return true;
+    } else {
+      return false;
     }
   }
 

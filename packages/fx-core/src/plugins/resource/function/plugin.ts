@@ -718,20 +718,25 @@ export class FunctionPluginImpl {
 
     const webAppResourceId = `subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.Web/sites/${functionAppName}`;
 
-    const permissionArray = await checkAzureResourcePermission(
-      webAppResourceId,
-      accessToken,
-      userObjectId
-    );
+    let checkAzureResourcePermissionError;
+    let azureResourceRoles;
+    try {
+      azureResourceRoles = await checkAzureResourcePermission(
+        webAppResourceId,
+        accessToken,
+        userObjectId
+      );
+    } catch (e) {
+      checkAzureResourcePermissionError = e;
+    }
 
-    return ResultFactory.Success(
-      new Map([
-        [
-          CommonConstants.permissions.name,
-          permissionArray.length > 0 ? permissionArray : [CommonConstants.permissions.noPermission],
-        ],
-      ])
-    );
+    return ResultFactory.Success([
+      {
+        name: CommonConstants.permissions.name,
+        roles: azureResourceRoles,
+        error: checkAzureResourcePermissionError,
+      },
+    ]);
   }
 
   private getFunctionProjectRootPath(ctx: PluginContext): string {

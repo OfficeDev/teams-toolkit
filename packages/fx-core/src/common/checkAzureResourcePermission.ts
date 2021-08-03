@@ -1,4 +1,5 @@
 import axios from "axios";
+import { ConstantString } from "./constants";
 
 export async function checkAzureResourcePermission(
   resourceId: string,
@@ -29,6 +30,10 @@ export async function checkAzureResourcePermission(
     });
 
     userRolesArray.push(roleDefinition.data.properties.roleName);
+  }
+
+  if (userRolesArray.length == 0) {
+    userRolesArray.push(ConstantString.noPermission);
   }
 
   return userRolesArray;

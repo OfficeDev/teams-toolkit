@@ -610,13 +610,18 @@ export class TeamsBotImpl {
     const accountInfo = await context.azureAccountProvider!.getAccountInfo();
     const userObjectId = accountInfo!.oid;
 
-    const permissionArray = await checkAzureResourcePermission(
-      resourceId,
-      accessToken,
-      userObjectId
-    );
+    let checkAzureResourcePermissionError;
+    let azureResourceRoles;
+    try {
+      azureResourceRoles = await checkAzureResourcePermission(
+        resourceId,
+        accessToken,
+        userObjectId
+      );
+    } catch (e) {
+      checkAzureResourcePermissionError = e;
+    }
 
-    // TODO aad permission check
     const graphToken = await this.ctx?.graphTokenProvider?.getAccessToken();
     const userInfo = this.ctx.configOfOtherPlugins
       .get(PluginSolution.PLUGIN_NAME)
@@ -628,28 +633,33 @@ export class TeamsBotImpl {
     const userInfoObject = JSON.parse(userInfo as string);
     const userGraphObjectId = userInfoObject["aadId"];
     const objectId: string = this.ctx.config.get(PluginBot.OBJECT_ID) as string;
-    const isAadOwner = await AADPermissionControl.checkPermission(
-      graphToken as string,
-      objectId,
-      userGraphObjectId
-    );
 
-    return ResultFactory.Success(
-      new Map([
-        [
-          BotPermissions.webAppPermissions.name,
-          permissionArray.length > 0
-            ? permissionArray
-            : [BotPermissions.webAppPermissions.noPermission],
-        ],
-        [
-          BotPermissions.aadPermissions.name,
-          isAadOwner
-            ? [BotPermissions.aadPermissions.owner]
-            : [BotPermissions.aadPermissions.noPermission],
-        ],
-      ])
-    );
+    let isAadOwner;
+    let checkAadPermissionError;
+    try {
+      isAadOwner = await AADPermissionControl.checkPermission(
+        graphToken as string,
+        objectId,
+        userGraphObjectId
+      );
+    } catch (e) {
+      checkAadPermissionError = e;
+    }
+
+    return ResultFactory.Success([
+      {
+        name: BotPermissions.webAppPermissions.name,
+        roles: azureResourceRoles,
+        error: checkAzureResourcePermissionError,
+      },
+      {
+        name: BotPermissions.aadPermissions.name,
+        roles: isAadOwner
+          ? [BotPermissions.aadPermissions.owner]
+          : [BotPermissions.aadPermissions.noPermission],
+        error: checkAadPermissionError,
+      },
+    ]);
   }
 
   private async updateMessageEndpointOnAppStudio(endpoint: string) {

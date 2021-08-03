@@ -252,19 +252,24 @@ export class SimpleAuthPluginImpl {
 
     const resourceId = `subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.Web/sites/${webAppName}`;
 
-    const permissionArray = await checkAzureResourcePermission(
-      resourceId,
-      accessToken,
-      userObjectId
-    );
+    let checkAzureResourcePermissionError;
+    let azureResourceRoles;
+    try {
+      azureResourceRoles = await checkAzureResourcePermission(
+        resourceId,
+        accessToken,
+        userObjectId
+      );
+    } catch (e) {
+      checkAzureResourcePermissionError = e;
+    }
 
-    return ResultFactory.Success(
-      new Map([
-        [
-          Constants.Permissions.name,
-          permissionArray.length > 0 ? permissionArray : [Constants.Permissions.noPermission],
-        ],
-      ])
-    );
+    return ResultFactory.Success([
+      {
+        name: Constants.Permissions.name,
+        roles: azureResourceRoles,
+        error: checkAzureResourcePermissionError,
+      },
+    ]);
   }
 }

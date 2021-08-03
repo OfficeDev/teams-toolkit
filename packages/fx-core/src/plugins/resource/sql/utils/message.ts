@@ -13,6 +13,7 @@ export class Message {
   public static readonly endPostProvision = `[${Constants.pluginName}] end postProvision`;
   public static readonly endGetQuestions = `[${Constants.pluginName}] end getQuestions`;
 
+  public static readonly checkProvider = `[${Constants.pluginName}] check SQL resource provider`;
   public static readonly provisionSql = `[${Constants.pluginName}] provision SQL`;
   public static readonly provisionDatabase = `[${Constants.pluginName}] provision database`;
 
@@ -22,6 +23,7 @@ export class Message {
   public static readonly checkDatabaseUser = `[${Constants.pluginName}] check database user`;
   public static readonly connectDatabase = `[${Constants.pluginName}] connect database`;
 
+  public static readonly skipCheckProvider = `[${Constants.pluginName}] skip checking SQL resource provider`;
   public static readonly skipProvisionSql = `[${Constants.pluginName}] skip provisioning existing SQL`;
   public static readonly skipProvisionDatabase = `[${Constants.pluginName}] skip provisioning existing database`;
   public static readonly skipAddAadAdmin = `[${Constants.pluginName}] skip adding existing aad admin`;
@@ -30,6 +32,9 @@ export class Message {
   public static readonly addFirewall = `[${Constants.pluginName}] add firewall`;
   public static readonly addSqlAadAdmin = `[${Constants.pluginName}] add SQL aad admin`;
   public static readonly addTable = `[${Constants.pluginName}] add table`;
+
+  public static readonly registerResourceProviderFailed = (message: string) =>
+    `[${Constants.pluginName}] Failed to register SQL resource provider. Reason: ${message}.`;
 
   public static readonly existUser = (name: string) =>
     `[${Constants.pluginName}] database user ${name} already exists in database`;

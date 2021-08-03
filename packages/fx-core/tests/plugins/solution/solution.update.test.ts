@@ -74,7 +74,6 @@ describe("update()", () => {
     mockedCtx.answers = { platform: Platform.VSCode };
     mockedCtx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionSPFx.id,
@@ -93,7 +92,6 @@ describe("update()", () => {
     mockedCtx.answers = { platform: Platform.VSCode };
     mockedCtx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
@@ -112,7 +110,6 @@ describe("update()", () => {
     mockedCtx.answers = { platform: Platform.VSCode };
     mockedCtx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
@@ -132,7 +129,6 @@ describe("update()", () => {
     mockedCtx.answers = { platform: Platform.VSCode };
     mockedCtx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
@@ -154,7 +150,6 @@ describe("update()", () => {
     mockedCtx.answers = { platform: Platform.VSCode };
     mockedCtx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
@@ -176,7 +171,6 @@ describe("update()", () => {
     mockedCtx.answers = { platform: Platform.VSCode };
     mockedCtx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
@@ -210,7 +204,6 @@ describe("update()", () => {
     mockedCtx.answers = { platform: Platform.VSCode };
     mockedCtx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
@@ -244,7 +237,6 @@ describe("update()", () => {
     mockedCtx.answers = { platform: Platform.VSCode };
     mockedCtx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
@@ -282,7 +274,6 @@ describe("update()", () => {
     mockedCtx.answers = { platform: Platform.VSCode };
     mockedCtx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
@@ -317,7 +308,6 @@ describe("update()", () => {
     mockedCtx.answers = { platform: Platform.VSCode };
     mockedCtx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
@@ -350,7 +340,6 @@ describe("update()", () => {
     mockedCtx.answers = { platform: Platform.VSCode };
     mockedCtx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,

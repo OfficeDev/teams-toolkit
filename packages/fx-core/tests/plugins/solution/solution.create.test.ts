@@ -74,7 +74,6 @@ describe("Solution create()", async () => {
     const mockedSolutionCtx = mockSolutionContext();
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: undefined,
     };
@@ -89,7 +88,6 @@ describe("Solution create()", async () => {
     const mockedSolutionCtx = mockSolutionContext();
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
@@ -107,7 +105,6 @@ describe("Solution create()", async () => {
     const mockedSolutionCtx = mockSolutionContext();
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
@@ -127,7 +124,6 @@ describe("Solution create()", async () => {
     const mockedSolutionCtx = mockSolutionContext();
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
@@ -150,7 +146,6 @@ describe("Solution create()", async () => {
     const mockedSolutionCtx = mockSolutionContext();
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
@@ -171,7 +166,6 @@ describe("Solution create()", async () => {
     const mockedSolutionCtx = mockSolutionContext();
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,

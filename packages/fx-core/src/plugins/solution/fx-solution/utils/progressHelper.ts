@@ -1,10 +1,9 @@
 import { IProgressHandler, PluginContext } from "@microsoft/teamsfx-api";
-import { Messages } from "../constants";
+import { getStrings } from "../../../../common";
 
-export const DeployArmTemplatesSteps = {
-  DeployArmTemplates: Messages.ProgressDeployArmTemplates,
-};
-
+export enum DeployArmTemplatesSteps {
+  ExecuteDeployment = "Deploying solution ARM templates to Azure. This could take several minutes.",
+}
 export class ProgressHelper {
   static deployArmTemplatesProgress: IProgressHandler | undefined;
 
@@ -14,10 +13,12 @@ export class ProgressHelper {
     await this.deployArmTemplatesProgress?.end();
 
     this.deployArmTemplatesProgress = ctx.ui?.createProgressBar(
-      Messages.DeployArmTemplatesProgressTitle,
+      getStrings().solution.DeployArmTemplates.Progress.Title,
       Object.entries(DeployArmTemplatesSteps).length
     );
-    await this.deployArmTemplatesProgress?.start(Messages.ProgressStart);
+    await this.deployArmTemplatesProgress?.start(
+      getStrings().solution.DeployArmTemplates.Progress.Start
+    );
     return this.deployArmTemplatesProgress;
   }
 

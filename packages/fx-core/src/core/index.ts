@@ -28,6 +28,7 @@ import {
   LogProvider,
   GroupOfTasks,
   RunnableTask,
+  AppPackageFolderName,
 } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import { downloadSampleHook, fetchCodeZip, saveFilesRecursively } from "../common/tools";
@@ -127,7 +128,6 @@ export class FxCore implements Core {
       const projectSettings: ProjectSettings = {
         appName: appName,
         projectId: uuid.v4(),
-        currentEnv: "default",
         solutionSettings: {
           name: solution.name,
           version: "1.0.0",
@@ -145,6 +145,7 @@ export class FxCore implements Core {
 
       await fs.ensureDir(projectPath);
       await fs.ensureDir(path.join(projectPath, `.${ConfigFolderName}`));
+      await fs.ensureDir(path.join(projectPath, `.${AppPackageFolderName}`));
 
       const createResult = await this.createBasicFolderStructure(inputs);
       if (createResult.isErr()) {
@@ -518,7 +519,7 @@ export class FxCore implements Core {
             description: "",
             author: "",
             scripts: {
-              test: "echo \"Error: no test specified\" && exit 1",
+              test: 'echo "Error: no test specified" && exit 1',
             },
             license: "MIT",
           },

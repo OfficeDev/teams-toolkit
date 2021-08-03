@@ -152,7 +152,11 @@ export function blazorConfig() {
         browser: true,
       }),
       cjs(),
-      terser(),
+      terser({
+        mangle: {
+          reserved: ["ErrorWithCode"],
+        },
+      }),
     ],
   };
 

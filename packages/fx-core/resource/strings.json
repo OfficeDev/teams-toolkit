@@ -20,8 +20,8 @@
     "AlreadyProvisionNotice": "'%s' is already provisioned in the cloud, will create the teams app again if it has been removed.",
     "NotProvisionedNotice": "'%s' is not provisioned in the cloud yet. Please provision first.",
     "GenerateArmTemplateFailNotice": "Failed to create ARM template for required Azure services.",
-    "GrantPermissionFailed": "fail to grant permission.",
-    "CheckPermissionFailed": "fail to check permission."
+    "GrantPermissionFailed": "Grant Permission Failed with error:",
+    "CheckPermissionFailed": "Check Permission Failed with error:"
   },
   "plugins": {
     "SPFx": {

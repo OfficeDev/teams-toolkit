@@ -1124,6 +1124,23 @@ export class TeamsAppSolution implements Solution {
       return ok(undefined);
     }
 
+    const currentUser = await this.getUserInfo(ctx);
+
+    if (!currentUser) {
+      // TODO: throw error: can not find user
+      return ok(undefined);
+    }
+
+    // Compare tenant id.
+    const aadAppTenantId = ctx.config?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
+    if (!aadAppTenantId || currentUser.tenantId != (aadAppTenantId as string)) {
+      // TODO: throw error.
+      ctx.logProvider?.error(
+        "Tenant id of your account and the provisioned Azure AD app does not match. Please check whether you logined with wrong account."
+      );
+      return ok(undefined);
+    }
+
     try {
       // TODO: add question to get user input.
       const email = ctx.answers!["userEmail"] as string;
@@ -1133,8 +1150,12 @@ export class TeamsAppSolution implements Solution {
 
       if (!userInfo) {
         // TODO: throw error: can not find user
+        ctx.logProvider?.error(
+          "Cannot find user in current tenant, please check whether your email address is correct"
+        );
         return ok(undefined);
       }
+
       ctx.config.get(GLOBAL_CONFIG)?.set(USER_INFO, JSON.stringify(userInfo));
 
       const maybeSelectedPlugins = this.getSelectedPlugins(ctx);
@@ -1157,8 +1178,8 @@ export class TeamsAppSolution implements Solution {
       const results = await executeConcurrently("", grantPermissionWithCtx);
       for (const result of results) {
         if (result.isErr()) {
-          const msg = getStrings().solution.GrantPermissionFailed;
-          ctx.logProvider?.info(msg);
+          const errorMsg = getStrings().solution.GrantPermissionFailed;
+          ctx.logProvider?.error(errorMsg + ` ${result.error.source}: ${result.error.message}`);
           return result;
         }
       }
@@ -1195,7 +1216,7 @@ export class TeamsAppSolution implements Solution {
       const aadAppTenantId = ctx.config?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
       if (!aadAppTenantId || userInfo.tenantId != (aadAppTenantId as string)) {
         // TODO: throw error.
-        ctx.logProvider?.info(
+        ctx.logProvider?.error(
           "Tenant id of your account and the provisioned Azure AD app does not match. Please check whether you logined with wrong account."
         );
         return ok(undefined);
@@ -1229,10 +1250,11 @@ export class TeamsAppSolution implements Solution {
       );
 
       const results = await executeConcurrently("", checkPermissionWithCtx);
+      const errorMsg = getStrings().solution.CheckPermissionFailed;
+
       for (const result of results) {
         if (result.isErr()) {
-          const msg = getStrings().solution.CheckPermissionFailed;
-          ctx.logProvider?.info(msg);
+          ctx.logProvider?.error(errorMsg + ` ${result.error.source}: ${result.error.message}`);
         } else {
           if (result && result.value) {
             for (const res of result.value) {
@@ -1241,9 +1263,7 @@ export class TeamsAppSolution implements Solution {
                   `Check Permission Result: ${res.name}: ${res.roles.join(",")}`
                 );
               } else {
-                ctx.logProvider?.info(
-                  `Check Permission Failed with error: ${res.name}: ${res.error.message}`
-                );
+                ctx.logProvider?.error(`${errorMsg} ${res.name}: ${res.error.message}`);
               }
             }
           }

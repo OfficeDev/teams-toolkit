@@ -254,9 +254,8 @@ export default class Preview extends YargsCommand {
     }
 
     /* === start services === */
-    const programmingLanguage = config?.config
-      ?.get(constants.solutionPluginName)
-      ?.get(constants.programmingLanguageConfigKey) as string;
+    const programmingLanguage = config?.settings?.programmingLanguage;
+
     result = await this.startServices(
       workspaceFolder,
       programmingLanguage,

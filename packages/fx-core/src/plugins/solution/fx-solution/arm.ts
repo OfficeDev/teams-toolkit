@@ -201,7 +201,7 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
     setTimeout(async () => {
       if (!deploymentFinished) {
         const deployments = await client.deployments.listByResourceGroup(resourceGroupName);
-        deployments.forEach((deployment) => {
+        deployments.forEach(async (deployment) => {
           if (
             deployment.properties?.timestamp &&
             deployment.properties.timestamp.getTime() > deploymentStartTime
@@ -210,7 +210,26 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
               `[${PluginDisplayName.Solution}] ${deployment.name} -> ${deployment.properties.provisioningState}`
             );
             if (deployment.properties.error) {
-              ctx.logProvider?.error(JSON.stringify(deployment.properties.error, undefined, 2));
+              ctx.logProvider?.error(
+                `[${PluginDisplayName.Solution}] ${deployment.name} -> ${JSON.stringify(
+                  deployment.properties.error,
+                  undefined,
+                  2
+                )}`
+              );
+              const operations = await client.deploymentOperations.list(
+                resourceGroupName,
+                deploymentName
+              );
+              operations.forEach((op) => {
+                if (op.properties?.statusCode != "OK") {
+                  ctx.logProvider?.error(
+                    `[${PluginDisplayName.Solution}] ${
+                      op.properties?.targetResource?.resourceName
+                    } -> ${JSON.stringify(op.properties?.statusMessage, undefined, 2)}`
+                  );
+                }
+              });
             }
           }
         });

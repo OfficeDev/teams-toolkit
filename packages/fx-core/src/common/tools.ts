@@ -40,7 +40,7 @@ import {
   TabOptionItem,
 } from "../plugins/solution/fx-solution/question";
 import * as Handlebars from "handlebars";
-import { ConstantString } from "./constants";
+import { ConstantString, FeatureFlagName } from "./constants";
 
 Handlebars.registerHelper("contains", (value, array, options) => {
   array = array instanceof Array ? array : [array];
@@ -500,6 +500,10 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
   } else {
     return flag === "1" || flag.toLowerCase() === "true"; // can enable feature flag by set environment variable value to "1" or "true"
   }
+}
+
+export function isMultiEnvEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.MultiEnv, false);
 }
 
 export function isArmSupportEnabled(): boolean {

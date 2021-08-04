@@ -6,6 +6,7 @@ import * as path from "path";
 import { ext } from "./extensionVariables";
 import { TreeItem, TreeCategory, Result, FxError, ok } from "@microsoft/teamsfx-api";
 import * as StringResources from "./resources/Strings.json";
+import { Correlator } from "@microsoft/teamsfx-core";
 
 class TreeViewManager {
   private static instance: TreeViewManager;
@@ -452,7 +453,9 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
         continue;
       }
 
-      const disposable = vscode.commands.registerCommand(treeItem.commandId, treeItem.callback!);
+      const disposable = vscode.commands.registerCommand(treeItem.commandId, (...args) =>
+        Correlator.run(treeItem.callback!, args)
+      );
       this.disposableMap.set(treeItem.commandId, disposable);
 
       let tooltip: string | vscode.MarkdownString = treeItem.label;

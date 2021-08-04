@@ -7,6 +7,7 @@ export enum TelemetryEvent {
 
   Documentation = "documentation",
 
+  LoginClick = "login-click",
   LoginStart = "login-start",
   Login = "login",
 

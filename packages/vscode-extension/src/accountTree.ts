@@ -18,6 +18,7 @@ import { core, getSystemInputs, tools } from "./handlers";
 import { askSubscription } from "@microsoft/teamsfx-core";
 import { VS_CODE_UI } from "./extension";
 import {
+  AccountType,
   TelemetryEvent,
   TelemetryProperty,
   TelemetryTiggerFrom,
@@ -69,8 +70,9 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
 
   getSelectSubItem = async (token: any): Promise<[TreeItem, boolean]> => {
     let selectSubLabel = "";
-    const subscriptions: SubscriptionInfo[] | undefined =
-      await tools.tokenProvider.azureAccountProvider.listSubscriptions();
+    const subscriptions:
+      | SubscriptionInfo[]
+      | undefined = await tools.tokenProvider.azureAccountProvider.listSubscriptions();
     if (subscriptions) {
       const activeSubscriptionId = await getSubscriptionId();
       const activeSubscription = subscriptions.find(
@@ -147,6 +149,12 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
   };
 
   const signinM365Callback = async (args?: any[]): Promise<Result<null, FxError>> => {
+    tools.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.LoginClick, {
+      [TelemetryProperty.TriggerFrom]:
+        args && args.length > 0 ? TelemetryTiggerFrom.TreeView : TelemetryTiggerFrom.CommandPalette,
+      [TelemetryProperty.AccountType]: AccountType.M365,
+    });
+
     const token = await tools.tokenProvider.appStudioToken.getJsonObject(true);
     if (token !== undefined) {
       tools.treeProvider?.refresh([
@@ -165,6 +173,15 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
   };
 
   const signinAzureCallback = async (args?: any[]): Promise<Result<null, FxError>> => {
+    if (AzureAccountManager.getAccountInfo() === undefined) {
+      tools.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.LoginClick, {
+        [TelemetryProperty.TriggerFrom]:
+          args && args.length > 0
+            ? TelemetryTiggerFrom.TreeView
+            : TelemetryTiggerFrom.CommandPalette,
+        [TelemetryProperty.AccountType]: AccountType.Azure,
+      });
+    }
     const showDialog = args && args[1] !== undefined ? args[1] : true;
     const token = await AzureAccountManager.getAccountCredentialAsync(showDialog);
     if (token !== undefined) {
@@ -195,13 +212,25 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
 
   tools.tokenProvider.appStudioToken?.setStatusChangeMap(
     "tree-view",
-    (
+    async (
       status: string,
       token?: string | undefined,
       accountInfo?: Record<string, unknown> | undefined
     ) => {
       if (status === "SignedIn") {
-        signinM365Callback();
+        const token = await tools.tokenProvider.appStudioToken.getJsonObject(true);
+        if (token !== undefined) {
+          tools.treeProvider?.refresh([
+            {
+              commandId: "fx-extension.signinM365",
+              label: (token as any).upn ? (token as any).upn : "",
+              callback: signinM365Callback,
+              parent: TreeCategory.Account,
+              contextValue: "signedinM365",
+              icon: "M365",
+            },
+          ]);
+        }
       } else if (status === "SigningIn") {
         tools.treeProvider?.refresh([
           {

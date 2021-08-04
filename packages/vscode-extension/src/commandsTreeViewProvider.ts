@@ -6,8 +6,6 @@ import * as path from "path";
 import { ext } from "./extensionVariables";
 import { TreeItem, TreeCategory, Result, FxError, ok } from "@microsoft/teamsfx-api";
 import * as StringResources from "./resources/Strings.json";
-import { exp } from "./exp/index";
-import { TreatmentVariables } from "./exp/treatmentVariables";
 
 class TreeViewManager {
   private static instance: TreeViewManager;

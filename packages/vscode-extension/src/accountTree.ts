@@ -39,10 +39,10 @@ export async function getSubscriptionId(): Promise<string | undefined> {
 }
 
 export async function getAzureSolutionSettings(): Promise<AzureSolutionSettings | undefined> {
-  const projectConfigRes = await core.getProjectConfig(getSystemInputs());
-  if (projectConfigRes.isOk()) {
-    if (projectConfigRes.value) {
-      return projectConfigRes.value.settings?.solutionSettings as AzureSolutionSettings;
+  const projectSettingsRes = await core.getProjectSettings(getSystemInputs());
+  if (projectSettingsRes.isOk()) {
+    if (projectSettingsRes.value) {
+      return projectSettingsRes.value?.solutionSettings as AzureSolutionSettings;
     }
   }
   // else {
@@ -52,10 +52,10 @@ export async function getAzureSolutionSettings(): Promise<AzureSolutionSettings 
 }
 
 export async function isValid(): Promise<boolean> {
-  const projectConfigRes = await core.getProjectConfig(getSystemInputs());
+  const projectSettingsRes = await core.getProjectSettings(getSystemInputs());
   let supported = false;
-  if (projectConfigRes.isOk()) {
-    if (projectConfigRes.value) {
+  if (projectSettingsRes.isOk()) {
+    if (projectSettingsRes.value) {
       supported = true;
     }
   }

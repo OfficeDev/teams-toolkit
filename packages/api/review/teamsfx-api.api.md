@@ -669,14 +669,6 @@ export type PluginIdentity = string;
 // @public (undocumented)
 export const ProductName = "teamsfx";
 
-// @public (undocumented)
-export interface ProjectConfig {
-    // (undocumented)
-    config?: SolutionConfig;
-    // (undocumented)
-    settings?: ProjectSettings;
-}
-
 // @public
 export interface ProjectSettings {
     // (undocumented)

@@ -176,8 +176,3 @@ export interface Inputs extends Json {
   ignoreConfigPersist?: boolean;
   correlationId?: string;
 }
-
-export interface ProjectConfig {
-  settings?: ProjectSettings;
-  config?: SolutionConfig;
-}

@@ -21,7 +21,6 @@ import {
   FunctionRouter,
   OptionItem,
   Solution,
-  ProjectConfig,
   ProjectSettings,
   PluginConfig,
   assembleError,
@@ -408,14 +407,11 @@ export class FxCore implements Core {
   }
 
   @hooks([ErrorHandlerMW, ContextLoaderMW, ContextInjecterMW])
-  async getProjectConfig(
+  async getProjectSettings(
     inputs: Inputs,
     ctx?: CoreHookContext
-  ): Promise<Result<ProjectConfig | undefined, FxError>> {
-    return ok({
-      settings: ctx!.solutionContext!.projectSettings,
-      config: ctx!.solutionContext!.config,
-    });
+  ): Promise<Result<ProjectSettings | undefined, FxError>> {
+    return ok(ctx!.solutionContext!.projectSettings);
   }
 
   @hooks([ErrorHandlerMW, ContextLoaderMW, ContextInjecterMW, ConfigWriterMW])

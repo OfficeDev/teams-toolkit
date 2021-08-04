@@ -56,7 +56,7 @@ describe("Core basic APIs", () => {
     await fs.rmdir(projectPath, { recursive: true });
   });
 
-  it("happy path: create from new, provision, deploy, localDebug, publish, getQuestion, getQuestionsForUserTask, getProjectConfig, setSubscriptionInfo", async () => {
+  it("happy path: create from new, provision, deploy, localDebug, publish, getQuestion, getQuestionsForUserTask, getProjectSettings, setSubscriptionInfo", async () => {
     const expectedInputs: Inputs = {
       platform: Platform.CLI,
       [CoreQuestionNames.AppName]: appName,
@@ -167,67 +167,16 @@ describe("Core basic APIs", () => {
       const res = await core.getQuestionsForUserTask(func, inputs);
       assert.isTrue(res.isOk() && res.value === undefined);
     }
-    //getProjectConfig
+    //getProjectSettings
     {
       const inputs: Inputs = { platform: Platform.VSCode, projectPath: projectPath };
-      const res = await core.getProjectConfig(inputs);
+      const res = await core.getProjectSettings(inputs);
       assert.isTrue(res.isOk());
       if (res.isOk()) {
-        const projectConfig = res.value;
-        assert.isTrue(projectConfig !== undefined);
-        if (projectConfig !== undefined) {
-          assert.isTrue(projectConfig.settings !== undefined);
-          assert.isTrue(projectConfig.config !== undefined);
-        }
-      }
-    }
-    //setSubscriptionInfo
-    {
-      const inputs: Inputs = { platform: Platform.VSCode, projectPath: projectPath };
-      inputs["subscriptionId"] = "000000-11111";
-      inputs["tenantId"] = "222222-33333";
-      const res = await core.setSubscriptionInfo(inputs);
-      assert.isTrue(res.isOk());
-
-      const inputs2: Inputs = { platform: Platform.VSCode, projectPath: projectPath };
-      const res2 = await core.getProjectConfig(inputs2);
-      assert.isTrue(res2.isOk());
-      if (res2.isOk()) {
-        const projectConfig = res2.value;
-        assert.isTrue(projectConfig !== undefined);
-        if (projectConfig !== undefined) {
-          assert.isTrue(projectConfig.settings !== undefined);
-          assert.isTrue(projectConfig.config !== undefined);
-          const sconfig = projectConfig.config!.get("solution");
-          assert.isTrue(
-            sconfig !== undefined &&
-              sconfig.get("subscriptionId") === "000000-11111" &&
-              sconfig.get("tenantId") === "222222-33333"
-          );
-        }
-      }
-    }
-
-    {
-      const inputs: Inputs = { platform: Platform.VSCode, projectPath: projectPath };
-      const res = await core.setSubscriptionInfo(inputs);
-      assert.isTrue(res.isOk());
-
-      const inputs2: Inputs = { platform: Platform.VSCode, projectPath: projectPath };
-      const res2 = await core.getProjectConfig(inputs2);
-      assert.isTrue(res2.isOk());
-      if (res2.isOk()) {
-        const projectConfig = res2.value;
-        assert.isTrue(projectConfig !== undefined);
-        if (projectConfig !== undefined) {
-          assert.isTrue(projectConfig.settings !== undefined);
-          assert.isTrue(projectConfig.config !== undefined);
-          const sconfig = projectConfig.config!.get("solution");
-          assert.isTrue(
-            sconfig !== undefined &&
-              sconfig.get("subscriptionId") === undefined &&
-              sconfig.get("tenantId") === undefined
-          );
+        const projectSettings = res.value;
+        assert.isTrue(projectSettings !== undefined);
+        if (projectSettings !== undefined) {
+          assert.isTrue(projectSettings !== undefined);
         }
       }
     }

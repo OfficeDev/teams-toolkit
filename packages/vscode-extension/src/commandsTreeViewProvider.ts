@@ -6,8 +6,7 @@ import * as path from "path";
 import { ext } from "./extensionVariables";
 import { TreeItem, TreeCategory, Result, FxError, ok } from "@microsoft/teamsfx-api";
 import * as StringResources from "./resources/Strings.json";
-import { exp } from "./exp/index";
-import { TreatmentVariables } from "./exp/treatmentVariables";
+import { Correlator } from "@microsoft/teamsfx-core";
 
 class TreeViewManager {
   private static instance: TreeViewManager;
@@ -148,23 +147,6 @@ class TreeViewManager {
       ),
     ];
 
-    if (
-      await exp
-        .getExpService()
-        .getTreatmentVariableAsync(TreatmentVariables.VSCodeConfig, TreatmentVariables.Debug, true)
-    ) {
-      const debugCommand = new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.debugTitle,
-        StringResources.vsc.commandsTreeViewProvider.debugDescription,
-        "fx-extension.debug",
-        vscode.TreeItemCollapsibleState.None,
-        undefined,
-        undefined,
-        { name: "debug-alt", custom: false }
-      );
-      projectTreeViewCommand.splice(1, 0, debugCommand);
-    }
-
     const projectProvider = new CommandsTreeViewProvider(projectTreeViewCommand);
     disposables.push(vscode.window.registerTreeDataProvider("teamsfx-project", projectProvider));
 
@@ -252,15 +234,6 @@ class TreeViewManager {
         { name: "library", custom: false }
       ),
       new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.addResourcesTitleNew,
-        StringResources.vsc.commandsTreeViewProvider.addResourcesDescription,
-        "fx-extension.update",
-        vscode.TreeItemCollapsibleState.None,
-        undefined,
-        undefined,
-        { name: "addResources", custom: true }
-      ),
-      new TreeViewCommand(
         StringResources.vsc.commandsTreeViewProvider.addCapabilitiesTitleNew,
         StringResources.vsc.commandsTreeViewProvider.addCapabilitiesDescription,
         "fx-extension.addCapability",
@@ -268,6 +241,15 @@ class TreeViewManager {
         undefined,
         undefined,
         { name: "addCapability", custom: true }
+      ),
+      new TreeViewCommand(
+        StringResources.vsc.commandsTreeViewProvider.addResourcesTitleNew,
+        StringResources.vsc.commandsTreeViewProvider.addResourcesDescription,
+        "fx-extension.update",
+        vscode.TreeItemCollapsibleState.None,
+        undefined,
+        undefined,
+        { name: "addResources", custom: true }
       ),
       new TreeViewCommand(
         StringResources.vsc.commandsTreeViewProvider.manifestEditorTitleNew,
@@ -471,7 +453,9 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
         continue;
       }
 
-      const disposable = vscode.commands.registerCommand(treeItem.commandId, treeItem.callback!);
+      const disposable = vscode.commands.registerCommand(treeItem.commandId, (...args) =>
+        Correlator.run(treeItem.callback!, args)
+      );
       this.disposableMap.set(treeItem.commandId, disposable);
 
       let tooltip: string | vscode.MarkdownString = treeItem.label;

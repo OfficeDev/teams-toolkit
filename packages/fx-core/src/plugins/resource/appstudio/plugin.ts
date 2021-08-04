@@ -455,6 +455,7 @@ export class AppStudioPluginImpl {
       }
     }
     const status = await fs.lstat(appDirectory);
+
     if (!status.isDirectory()) {
       throw AppStudioResultFactory.UserError(
         AppStudioError.NotADirectoryError.name,
@@ -489,6 +490,31 @@ export class AppStudioPluginImpl {
 
     if (this.isSPFxProject(ctx)) {
       await fs.copyFile(zipFileName, `${ctx.root}/SPFx/teams/TeamsSPFxApp.zip`);
+    }
+
+    if (
+      appDirectory === `${ctx.root}/.${ConfigFolderName}` &&
+      ctx.answers?.platform !== Platform.VS
+    ) {
+      await fs.ensureDir(path.join(ctx.root, `${AppPackageFolderName}`));
+
+      const formerZipFileName = `${appDirectory}/appPackage.zip`;
+      if (await this.checkFileExist(formerZipFileName)) {
+        await fs.remove(formerZipFileName);
+      }
+
+      await fs.move(
+        `${appDirectory}/${manifest.icons.color}`,
+        `${ctx.root}/${AppPackageFolderName}/${manifest.icons.color}`
+      );
+      await fs.move(
+        `${appDirectory}/${manifest.icons.outline}`,
+        `${ctx.root}/${AppPackageFolderName}/${manifest.icons.outline}`
+      );
+      await fs.move(
+        `${appDirectory}/${REMOTE_MANIFEST}`,
+        `${ctx.root}/${AppPackageFolderName}/${REMOTE_MANIFEST}`
+      );
     }
 
     return zipFileName;

@@ -38,6 +38,7 @@ import {
   isValidProject,
   globalStateUpdate,
   globalStateGet,
+  Correlator,
 } from "@microsoft/teamsfx-core";
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -172,12 +173,6 @@ export function getSystemInputs(): Inputs {
 export async function createNewProjectHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
   return await runCommand(Stage.create);
-}
-
-export async function debugHandler(args?: any[]) {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.NavigateToDebug, getTriggerFromProperty(args));
-  await vscode.commands.executeCommand("workbench.view.debug");
-  await vscode.commands.executeCommand("workbench.action.debug.selectandstart");
 }
 
 export async function selectAndDebugHandler(args?: any[]): Promise<Result<null, FxError>> {
@@ -665,7 +660,7 @@ export async function cmdHdlLoadTreeView(context: ExtensionContext) {
       .getExpService()
       .getTreatmentVariableAsync(TreatmentVariables.VSCodeConfig, TreatmentVariables.TreeView, true)
   ) {
-    commands.executeCommand("setContext", "isNewTreeView", true);
+    await commands.executeCommand("setContext", "isNewTreeView", true);
     StringContext.setSignInAzureContext(StringResources.vsc.handlers.signInAzureNew);
     const disposables = await TreeViewManagerInstance.registerNewTreeViews();
     context.subscriptions.push(...disposables);
@@ -679,11 +674,15 @@ export async function cmdHdlLoadTreeView(context: ExtensionContext) {
     try {
       switch (node.contextValue) {
         case "signedinM365": {
-          signOutM365(true);
+          Correlator.run(() => {
+            signOutM365(true);
+          });
           break;
         }
         case "signedinAzure": {
-          signOutAzure(true);
+          Correlator.run(() => {
+            signOutAzure(true);
+          });
           break;
         }
       }
@@ -761,7 +760,10 @@ export async function cmpAccountsHandler() {
   const signOutAzureOption: VscQuickPickItem = {
     id: "signOutAzure",
     label: StringResources.vsc.handlers.signOutOfAzure,
-    function: () => signOutAzure(false),
+    function: async () =>
+      Correlator.run(() => {
+        signOutAzure(false);
+      }),
   };
 
   const signInM365Option: VscQuickPickItem = {
@@ -773,7 +775,10 @@ export async function cmpAccountsHandler() {
   const signOutM365Option: VscQuickPickItem = {
     id: "signOutM365",
     label: StringResources.vsc.handlers.signOutOfM365,
-    function: () => signOutM365(false),
+    function: async () =>
+      Correlator.run(() => {
+        signOutM365(false);
+      }),
   };
 
   //TODO: hide subscription list until core or api expose the get subscription list API

@@ -145,7 +145,7 @@ export class FxCore implements Core {
 
       await fs.ensureDir(projectPath);
       await fs.ensureDir(path.join(projectPath, `.${ConfigFolderName}`));
-      await fs.ensureDir(path.join(projectPath, `.${AppPackageFolderName}`));
+      await fs.ensureDir(path.join(projectPath, `${AppPackageFolderName}`));
 
       const createResult = await this.createBasicFolderStructure(inputs);
       if (createResult.isErr()) {
@@ -520,6 +520,9 @@ export class FxCore implements Core {
             author: "",
             scripts: {
               test: 'echo "Error: no test specified" && exit 1',
+            },
+            devDependencies: {
+              "@microsoft/teamsfx-cli": "^0.3.1",
             },
             license: "MIT",
           },

@@ -20,6 +20,7 @@ import { ApimService } from "../../../../src/plugins/resource/apim/services/apim
 import { ApiManagementClient } from "@azure/arm-apimanagement";
 import { AssertNotEmpty } from "../../../../src/plugins/resource/apim/error";
 import { OpenApiSchemaVersion } from "../../../../src/plugins/resource/apim/constants";
+import { Providers, ResourceManagementClientContext } from "@azure/arm-resources";
 dotenv.config();
 chai.use(chaiAsPromised);
 
@@ -623,7 +624,15 @@ async function buildService(): Promise<{
     await mockAzureAccountProvider.getAccountCredentialAsync()
   );
   const apiManagementClient = new ApiManagementClient(credential, EnvConfig.subscriptionId);
-  const apimService = new ApimService(apiManagementClient, credential, EnvConfig.subscriptionId);
+  const resourceProviderClient = new Providers(
+    new ResourceManagementClientContext(credential, EnvConfig.subscriptionId)
+  );
+  const apimService = new ApimService(
+    apiManagementClient,
+    resourceProviderClient,
+    credential,
+    EnvConfig.subscriptionId
+  );
   const apimHelper = new ApimHelper(apiManagementClient);
   return { apiManagementClient, apimService, apimHelper };
 }

@@ -7,6 +7,7 @@ export enum TelemetryEvent {
 
   Documentation = "documentation",
 
+  LoginClick = "login-click",
   LoginStart = "login-start",
   Login = "login",
 
@@ -17,8 +18,6 @@ export enum TelemetryEvent {
 
   CreateProjectStart = "create-project-start",
   CreateProject = "create-project",
-
-  NavigateToDebug = "navigate-to-debug",
 
   RunIconDebugStart = "run-icon-debug-start",
   RunIconDebug = "run-icon-debug",

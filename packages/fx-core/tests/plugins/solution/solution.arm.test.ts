@@ -147,7 +147,7 @@ Mocked simple auth output content`
       fileContent.get(path.join("./infra/azure/templates", "simpleAuthProvision.bicep"))
     ).equals("Mocked simple auth provision module content");
     expect(
-      fileContent.get(path.join("./infra/azure/parameters", "parameter.template.json"))
+      fileContent.get(path.join("./infra/azure/parameters", "parameters.template.json"))
     ).equals(
       `{
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",

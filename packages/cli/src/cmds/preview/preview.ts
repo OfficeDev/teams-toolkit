@@ -441,8 +441,10 @@ export default class Preview extends YargsCommand {
         error,
         this.telemetryProperties
       );
+      cliLogger.necessaryLog(LogLevel.Warning, constants.openBrowserHintMessage);
+      cliLogger.necessaryLog(LogLevel.Warning, constants.waitCtrlPlusC);
       await previewBar.end(false);
-      return err(error);
+      return ok(null);
     }
     await previewBar.next(constants.previewSPFxSuccessMessage);
     await previewBar.end(true);
@@ -998,8 +1000,9 @@ export default class Preview extends YargsCommand {
         error,
         this.telemetryProperties
       );
+      cliLogger.necessaryLog(LogLevel.Warning, constants.openBrowserHintMessage);
       await previewBar.end(false);
-      return err(error);
+      return ok(null);
     }
     await previewBar.next(constants.previewSuccessMessage);
     await previewBar.end(true);

@@ -4,7 +4,7 @@
 
 import { Platform, VsCodeEnv } from "../constants";
 import { UserInteraction } from "../qm/ui";
-import { LogProvider, TelemetryReporter } from "../utils";
+import { CryptoProvider, LogProvider, TelemetryReporter } from "../utils";
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type Void = {};
@@ -56,6 +56,7 @@ export interface Context {
   userInteraction: UserInteraction;
   logProvider: LogProvider;
   telemetryReporter: TelemetryReporter;
+  cryptoProvider: CryptoProvider;
   projectSetting: ProjectSetting;
 }
 

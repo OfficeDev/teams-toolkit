@@ -1224,8 +1224,11 @@ export class TeamsAppSolution implements Solution {
 
       ctx.config.get(GLOBAL_CONFIG)?.set(USER_INFO, JSON.stringify(userInfo));
 
-      const credentials = await ctx.azureAccountProvider!.getAccountCredentialAsync();
-      if (!credentials) {
+      // Get Azure credential in solution to avoid multiple login in different plugins.
+      const subInfo = await ctx.azureAccountProvider?.getSelectedSubscription(true);
+      if (!subInfo || subInfo.subscriptionId === "") {
+        // User does not login or select sub
+        // TODO: throw error
         return ok(undefined);
       }
 

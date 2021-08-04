@@ -206,8 +206,8 @@ The API version.
 
 ***
 
-# `teamsfx test`
-Test and validate current application. This command will validate your application's manifest file.
+# `teamsfx validate`
+Validate current application. This command will validate your application's manifest file.
 
 ***
 

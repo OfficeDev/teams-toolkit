@@ -7,6 +7,7 @@ export enum TelemetryEvent {
 
   Documentation = "documentation",
 
+  LoginClick = "login-click",
   LoginStart = "login-start",
   Login = "login",
 
@@ -17,8 +18,6 @@ export enum TelemetryEvent {
 
   CreateProjectStart = "create-project-start",
   CreateProject = "create-project",
-
-  NavigateToDebug = "navigate-to-debug",
 
   RunIconDebugStart = "run-icon-debug-start",
   RunIconDebug = "run-icon-debug",
@@ -85,10 +84,15 @@ export enum TelemetryEvent {
 
   EditSecretStart = "edit-secret-start",
   EditSecret = "edit-secret",
+
+  OpenTeamsApp = "open-teams-app",
+  UpdateTeamsApp = "update-teams-app",
 }
 
 export enum TelemetryProperty {
   Component = "component",
+  ProjectId = "project-id",
+  CorrelationId = "correlation-id",
   AapId = "appid",
   UserId = "hashed-userid",
   AccountType = "account-type",

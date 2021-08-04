@@ -17,6 +17,12 @@ import { getTeamsAppId } from "../utils/commonUtils";
 
 export namespace ExtTelemetry {
   export let reporter: VSCodeTelemetryReporter;
+  export let hasSentTelemetry = false;
+
+  export function setHasSentTelemetry(eventName: string) {
+    if (eventName === "query-expfeature") return;
+    hasSentTelemetry = true;
+  }
 
   export function addSharedProperty(name: string, value: string): void {
     reporter.addSharedProperty(name, value);
@@ -56,6 +62,7 @@ export namespace ExtTelemetry {
     properties?: { [p: string]: string },
     measurements?: { [p: string]: number }
   ): void {
+    setHasSentTelemetry(eventName);
     if (!properties) {
       properties = {};
     }

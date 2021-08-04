@@ -7,20 +7,18 @@ import {
   AzureSolutionSettings,
   ConfigFolderName,
   ConfigMap,
-  Dict,
   err,
   FxError,
   Json,
   ok,
   OptionItem,
+  PluginContext,
   ProjectSettings,
   Result,
   returnSystemError,
   returnUserError,
   SolutionContext,
   SubscriptionInfo,
-  Tools,
-  UserError,
   UserInteraction,
 } from "@microsoft/teamsfx-api";
 import { promisify } from "util";
@@ -30,8 +28,7 @@ import * as path from "path";
 import * as uuid from "uuid";
 import { glob } from "glob";
 import { getResourceFolder } from "..";
-import { fakeServer } from "sinon";
-import { PluginNames } from "../plugins/solution/fx-solution/constants";
+import { ARM_TEMPLATE_OUTPUT, PluginNames } from "../plugins/solution/fx-solution/constants";
 import {
   AzureResourceApim,
   AzureResourceFunction,
@@ -42,8 +39,19 @@ import {
   MessageExtensionItem,
   TabOptionItem,
 } from "../plugins/solution/fx-solution/question";
+import * as Handlebars from "handlebars";
+import { ConstantString, FeatureFlagName } from "./constants";
 
-const execAsync = promisify(exec);
+Handlebars.registerHelper("contains", (value, array, options) => {
+  array = array instanceof Array ? array : [array];
+  return array.indexOf(value) > -1 ? options.fn(this) : "";
+});
+Handlebars.registerHelper("notContains", (value, array, options) => {
+  array = array instanceof Array ? array : [array];
+  return array.indexOf(value) == -1 ? options.fn(this) : "";
+});
+
+export const execAsync = promisify(exec);
 
 export async function npmInstall(path: string) {
   await execAsync("npm install", {
@@ -348,7 +356,6 @@ export function isValidProject(workspacePath?: string): boolean {
     const projectSettings: ProjectSettings = fs.readJsonSync(settingsFile);
     const manifest = fs.readJSONSync(manifestFile);
     if (!manifest) return false;
-    if (!projectSettings.currentEnv) projectSettings.currentEnv = "default";
     if (validateSettings(projectSettings)) return false;
     // const envName = projectSettings.currentEnv;
     // const jsonFilePath = path.resolve(confFolderPath, `env.${envName}.json`);
@@ -442,6 +449,7 @@ export async function askSubscription(
   activeSubscriptionId?: string
 ): Promise<Result<SubscriptionInfo, FxError>> {
   const subscriptions: SubscriptionInfo[] = await azureAccountProvider.listSubscriptions();
+
   if (subscriptions.length === 0) {
     return err(
       returnUserError(new Error("Failed to find a subscription."), "Core", "NoSubscriptionFound")
@@ -485,11 +493,49 @@ export async function askSubscription(
 }
 
 // Determine whether feature flag is enabled based on environment variable setting
-export function isFeatureFlagEnabled(featureFlagName: string): boolean {
+export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = false): boolean {
   const flag = process.env[featureFlagName];
-  // can enable feature flag by set environment variable value to "1" or "true"
-  if (flag && (flag === "1" || flag.toLowerCase() === "true")) {
-    return true;
+  if (flag === undefined) {
+    return defaultValue; // allows consumer to set a default value when environment variable not set
+  } else {
+    return flag === "1" || flag.toLowerCase() === "true"; // can enable feature flag by set environment variable value to "1" or "true"
   }
-  return false;
+}
+
+export function isMultiEnvEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.MultiEnv, false);
+}
+
+export function isArmSupportEnabled(): boolean {
+  return isFeatureFlagEnabled("TEAMSFX_ARM_SUPPORT", false);
+}
+
+export async function generateBicepFiles(
+  templateFilePath: string,
+  context: any
+): Promise<Result<string, FxError>> {
+  try {
+    const templateString = await fs.readFile(templateFilePath, ConstantString.UTF8Encoding);
+    const updatedBicepFile = compileHandlebarsTemplateString(templateString, context);
+    return ok(updatedBicepFile);
+  } catch (error) {
+    return err(
+      returnSystemError(
+        new Error(`Failed to generate bicep file ${templateFilePath}. Reason: ${error.message}`),
+        "Core",
+        "BicepGenerationError"
+      )
+    );
+  }
+}
+
+export function compileHandlebarsTemplateString(templateString: string, context: any): string {
+  const template = Handlebars.compile(templateString);
+  return template(context);
+}
+
+export function getArmOutput(ctx: PluginContext, key: string): string | undefined {
+  const solutionConfig = ctx.configOfOtherPlugins.get("solution");
+  const output = solutionConfig?.get(ARM_TEMPLATE_OUTPUT);
+  return output?.[key]?.value;
 }

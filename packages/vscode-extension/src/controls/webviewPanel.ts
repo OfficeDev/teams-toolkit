@@ -14,16 +14,17 @@ import AzureAccountManager from "../commonlib/azureLogin";
 import AppStudioTokenInstance from "../commonlib/appStudioLogin";
 import { runCommand } from "../handlers";
 import { returnSystemError, Stage, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { globalStateGet, globalStateUpdate, Correlator } from "@microsoft/teamsfx-core";
 import { PanelType } from "./PanelType";
 import { execSync } from "child_process";
 import { isMacOS } from "../utils/commonUtils";
-import { DialogManager } from "../userInterface";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetryTiggerFrom,
   TelemetrySuccess,
+  AccountType,
 } from "../telemetry/extTelemetryEvents";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import * as StringResources from "../resources/Strings.json";
@@ -88,10 +89,22 @@ export class WebviewPanel {
             vscode.commands.executeCommand("workbench.action.quickOpen", `>${msg.data}`);
             break;
           case Commands.SigninM365:
-            await AppStudioTokenInstance.getJsonObject(false);
+            Correlator.run(async () => {
+              ExtTelemetry.sendTelemetryEvent(TelemetryEvent.LoginClick, {
+                [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview,
+                [TelemetryProperty.AccountType]: AccountType.M365,
+              });
+              await AppStudioTokenInstance.getJsonObject(false);
+            });
             break;
           case Commands.SigninAzure:
-            vscode.commands.executeCommand("fx-extension.signinAzure", ["webview", false]);
+            Correlator.run(async () => {
+              ExtTelemetry.sendTelemetryEvent(TelemetryEvent.LoginClick, {
+                [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview,
+                [TelemetryProperty.AccountType]: AccountType.Azure,
+              });
+              await AzureAccountManager.getAccountCredentialAsync(false);
+            });
             break;
           case Commands.CreateNewProject:
             await runCommand(Stage.create);
@@ -103,7 +116,7 @@ export class WebviewPanel {
             this.setStatusChangeMap();
             break;
           case Commands.UpdateGlobalStepsDone:
-            this.updateGlobalStepsDone(msg.data);
+            await this.updateGlobalStepsDone(msg.data);
             break;
           case Commands.GetGlobalStepsDone:
             this.getGlobalStepsDone();
@@ -164,7 +177,7 @@ export class WebviewPanel {
             await this.downloadSampleHook(msg.data.appFolder, sampleAppPath);
             downloadSuccess = true;
             vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(sampleAppPath));
-            ext.context.globalState.update("openSampleReadme", true);
+            await globalStateUpdate("openSampleReadme", true);
           } else {
             error = new SystemError(
               ExtensionErrors.FetchSampleError,
@@ -196,12 +209,12 @@ export class WebviewPanel {
     }
   }
 
-  private updateGlobalStepsDone(data: any) {
-    ext.context.globalState.update("globalStepsDone", data);
+  private async updateGlobalStepsDone(data: any) {
+    await globalStateUpdate("globalStepsDone", data);
   }
 
   private getGlobalStepsDone() {
-    const globalStepsDone = ext.context.globalState.get("globalStepsDone", []);
+    const globalStepsDone = globalStateGet("globalStepsDone", []);
     if (this.panel && this.panel.webview) {
       this.panel.webview.postMessage({
         message: "updateStepsDone",

@@ -20,7 +20,12 @@ import {
   WriteFileError,
 } from "../../src/core/error";
 import mockedEnv from "mocked-env";
-import { isFeatureFlagEnabled } from "../../src/common/tools";
+import {
+  isArmSupportEnabled,
+  isFeatureFlagEnabled,
+  isMultiEnvEnabled,
+} from "../../src/common/tools";
+import { FeatureFlagName } from "../../src/common/constants";
 
 describe("Other test case", () => {
   const sandbox = sinon.createSandbox();
@@ -114,13 +119,14 @@ describe("Other test case", () => {
     assert.isTrue(error.message === "Failed to download sample app");
   });
 
-  it("tools: isFeatureFlagEnabled should return true when related environment variable is set to 1 or true", () => {
+  it("isFeatureFlagEnabled: return true when related environment variable is set to 1 or true", () => {
     const featureFlagName = "FEATURE_FLAG_UNIT_TEST";
 
     let restore = mockedEnv({
       [featureFlagName]: "1",
     });
     assert.isTrue(isFeatureFlagEnabled(featureFlagName));
+    assert.isTrue(isFeatureFlagEnabled(featureFlagName, false)); // default value should be override
     restore();
 
     restore = mockedEnv({
@@ -136,13 +142,26 @@ describe("Other test case", () => {
     restore();
   });
 
-  it("tools: isFeatureFlagEnabled should return false when related environment variable is not set", () => {
+  it("isFeatureFlagEnabled: return default value when related environment variable is not set", () => {
     const featureFlagName = "FEATURE_FLAG_UNIT_TEST";
 
-    let restore = mockedEnv({
+    const restore = mockedEnv({
       [featureFlagName]: undefined, // delete it from process.env
     });
     assert.isFalse(isFeatureFlagEnabled(featureFlagName));
+    assert.isFalse(isFeatureFlagEnabled(featureFlagName, false));
+    assert.isTrue(isFeatureFlagEnabled(featureFlagName, true));
+    restore();
+  });
+
+  it("isFeatureFlagEnabled: return false when related environment variable is set to non 1 or true value", () => {
+    const featureFlagName = "FEATURE_FLAG_UNIT_TEST";
+
+    let restore = mockedEnv({
+      [featureFlagName]: "one",
+    });
+    assert.isFalse(isFeatureFlagEnabled(featureFlagName));
+    assert.isFalse(isFeatureFlagEnabled(featureFlagName, true)); // default value should be override
     restore();
 
     restore = mockedEnv({
@@ -152,13 +171,45 @@ describe("Other test case", () => {
     restore();
   });
 
-  it("tools: isFeatureFlagEnabled should return false when related environment variable is set to non 1 or true value", () => {
-    const featureFlagName = "FEATURE_FLAG_UNIT_TEST";
+  it("isArmSupportEnabled: return correct result based on environment variable value", () => {
+    const armSupportFeatureFlagName = "TEAMSFX_ARM_SUPPORT";
 
-    const restore = mockedEnv({
-      [featureFlagName]: "one",
+    let restore = mockedEnv({
+      [armSupportFeatureFlagName]: undefined,
     });
-    assert.isFalse(isFeatureFlagEnabled(featureFlagName));
+    assert.isFalse(isArmSupportEnabled());
+    restore();
+
+    restore = mockedEnv({
+      [armSupportFeatureFlagName]: "",
+    });
+    assert.isFalse(isArmSupportEnabled());
+    restore();
+
+    restore = mockedEnv({
+      [armSupportFeatureFlagName]: "true",
+    });
+    assert.isTrue(isArmSupportEnabled());
+    restore();
+  });
+
+  it("isMultiEnvEnabled: return correct result based on environment variable value", () => {
+    let restore = mockedEnv({
+      [FeatureFlagName.MultiEnv]: undefined,
+    });
+    assert.isFalse(isMultiEnvEnabled());
+    restore();
+
+    restore = mockedEnv({
+      [FeatureFlagName.MultiEnv]: "",
+    });
+    assert.isFalse(isMultiEnvEnabled());
+    restore();
+
+    restore = mockedEnv({
+      [FeatureFlagName.MultiEnv]: "true",
+    });
+    assert.isTrue(isMultiEnvEnabled());
     restore();
   });
 });

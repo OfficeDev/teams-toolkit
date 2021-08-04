@@ -6,7 +6,6 @@ import {
   err,
   FxError,
   Inputs,
-  Json,
   ok,
   PluginConfig,
   ProjectSettings,
@@ -16,9 +15,8 @@ import {
   Stage,
   StaticPlatforms,
   Tools,
-  Void,
 } from "@microsoft/teamsfx-api";
-import { CoreHookContext, deserializeDict, FxCore, mergeSerectData, objectToMap } from "../..";
+import { CoreHookContext, FxCore, objectToMap } from "../..";
 import {
   InvalidProjectError,
   NoProjectOpenedError,
@@ -28,10 +26,11 @@ import {
 import * as path from "path";
 import * as fs from "fs-extra";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
-import { dataNeedEncryption, validateProject } from "../../common";
+import { validateProject } from "../../common";
 import * as uuid from "uuid";
 import { LocalCrypto } from "../crypto";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
+import { environmentManager } from "../environment";
 
 export const ContextLoaderMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
@@ -74,11 +73,14 @@ export async function loadSolutionContext(
   inputs: Inputs
 ): Promise<Result<SolutionContext, FxError>> {
   try {
-    const confFolderPath = path.resolve(inputs.projectPath!, `.${ConfigFolderName}`);
+    if (!inputs.projectPath) {
+      return err(NoProjectOpenedError());
+    }
+
+    const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
     const settingsFile = path.resolve(confFolderPath, "settings.json");
     const projectSettings: ProjectSettings = await fs.readJson(settingsFile);
     let projectIdMissing = false;
-    if (!projectSettings.currentEnv) projectSettings.currentEnv = "default";
     if (!projectSettings.projectId) {
       projectSettings.projectId = uuid.v4();
       projectIdMissing = true;
@@ -90,36 +92,24 @@ export async function loadSolutionContext(
     ) {
       projectSettings.solutionSettings.activeResourcePlugins.push(PluginNames.APPST);
     }
-    const envName = projectSettings.currentEnv;
-    const jsonFilePath = path.resolve(confFolderPath, `env.${envName}.json`);
-    const configJson: Json = await fs.readJson(jsonFilePath);
-    const localDataPath = path.resolve(confFolderPath, `${envName}.userdata`);
-    let dict: Record<string, string>;
-    if (await fs.pathExists(localDataPath)) {
-      const dictContent = await fs.readFile(localDataPath, "UTF-8");
-      dict = deserializeDict(dictContent);
-    } else {
-      dict = {};
-    }
+
     const cryptoProvider = new LocalCrypto(projectSettings.projectId);
-    if (!projectIdMissing) {
-      for (const secretKey of Object.keys(dict)) {
-        if (!dataNeedEncryption(secretKey)) {
-          continue;
-        }
-        const secretValue = dict[secretKey];
-        const plaintext = cryptoProvider.decrypt(secretValue);
-        if (plaintext.isErr()) {
-          return err(plaintext.error);
-        }
-        dict[secretKey] = plaintext.value;
-      }
+    // ensure backwards compatibility:
+    // no need to decrypt the secrets in *.userdata for previous TeamsFx project, which has no project id.
+    const envDataResult = await environmentManager.loadEnvProfile(
+      inputs.projectPath,
+      inputs.targetEnvName,
+      projectIdMissing ? undefined : cryptoProvider
+    );
+    if (envDataResult.isErr()) {
+      return err(envDataResult.error);
     }
-    mergeSerectData(dict, configJson);
-    const solutionConfig: SolutionConfig = objectToMap(configJson);
+    const envInfo = envDataResult.value;
+
     const solutionContext: SolutionContext = {
       projectSettings: projectSettings,
-      config: solutionConfig,
+      targetEnvName: envInfo.envName,
+      config: envInfo.data,
       root: inputs.projectPath || "",
       ...tools,
       ...tools.tokenProvider,
@@ -136,7 +126,6 @@ export async function newSolutionContext(tools: Tools, inputs: Inputs): Promise<
   const projectSettings: ProjectSettings = {
     appName: "",
     projectId: uuid.v4(),
-    currentEnv: "default",
     solutionSettings: {
       name: "fx-solution-azure",
       version: "1.0.0",

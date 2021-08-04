@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-
-import * as fs from "fs-extra";
+import "mocha";
+import fs from "fs-extra";
 import * as path from "path";
 import { expect } from "chai";
 import { SpfxPlugin } from "../../../../../src/plugins/resource/spfx";
@@ -19,11 +19,12 @@ describe("SPFxScaffold", function () {
     plugin = new SpfxPlugin();
     await fs.ensureDir(testFolder);
     sinon.stub(Utils, "configure");
+    sinon.stub(fs, "stat").resolves();
   });
 
   it("scaffold SPFx project without framework", async function () {
     const pluginContext = TestHelper.getFakePluginContext(appName, testFolder, "none");
-    const result = await plugin.scaffold(pluginContext);
+    const result = await plugin.postScaffold(pluginContext);
     expect(result.isOk()).to.eq(true);
     // check specified files
     const files: string[] = [
@@ -53,7 +54,7 @@ describe("SPFxScaffold", function () {
 
   it("scaffold SPFx project with react framework", async function () {
     const pluginContext = TestHelper.getFakePluginContext(appName, testFolder, "react");
-    const result = await plugin.scaffold(pluginContext);
+    const result = await plugin.postScaffold(pluginContext);
 
     expect(result.isOk()).to.eq(true);
     // check specified files
@@ -93,7 +94,7 @@ describe("SPFxScaffold", function () {
       "extremelylongextremelylongextremelylongextremelylongspfxwebpartname"
     );
 
-    const result = await plugin.scaffold(pluginContext);
+    const result = await plugin.postScaffold(pluginContext);
     expect(result.isOk()).to.eq(true);
   });
 

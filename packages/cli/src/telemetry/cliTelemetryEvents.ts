@@ -41,10 +41,14 @@ export enum TelemetryEvent {
   Preview = "preview",
   PreviewNpmInstallStart = "preview-npm-install-start",
   PreviewNpmInstall = "preview-npm-install",
+  PreviewGulpCert = "preview-gulp-cert",
+  PreviewGulpCertStart = "preview-gulp-cert-start",
   PreviewServiceStart = "preview-service-start",
   PreviewService = "preview-service",
   PreviewSideloadingStart = "preview-sideloading-start",
   PreviewSideloading = "preview-sideloading",
+  PreviewSPFxOpenBrowserStart = "preview-spfx-open-browser-start",
+  PreviewSPFxOpenBrowser = "preview-spfx-open-browser",
 
   ConfigGet = "config-get",
   ConfigSet = "config-set",
@@ -52,6 +56,8 @@ export enum TelemetryEvent {
 
 export enum TelemetryProperty {
   Component = "component",
+  ProjectId = "project-id",
+  CorrelationId = "correlation-id",
   AppId = "appid",
   UserId = "hashed-userid",
   AccountType = "account-type",
@@ -68,6 +74,7 @@ export enum TelemetryProperty {
   PreviewType = "preview-type",
   PreviewBrowser = "preview-browser",
   PreviewNpmInstallName = "preview-npm-install-name",
+  PreviewGulpCertName = "preview-gulp-cert-name",
   PreviewNpmInstallExitCode = "preview-npm-install-exit-code",
   PreviewNpmInstallNodeVersion = "preview-npm-install-node-version",
   PreviewNpmInstallNpmVersion = "preview-npm-install-npm-version",

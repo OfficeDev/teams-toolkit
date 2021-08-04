@@ -15,6 +15,13 @@ export class TestHelper {
         getAccountCredentialAsync() {
           return credentials;
         },
+        getSelectedSubscription: async () => {
+          return {
+            subscriptionId: "subscriptionId",
+            tenantId: "tenantId",
+            subscriptionName: "subscriptionName",
+          };
+        },
       },
       logProvider: {
         async info(message: string): Promise<boolean> {
@@ -24,22 +31,6 @@ export class TestHelper {
         async error(message: string): Promise<boolean> {
           console.error(message);
           return true;
-        },
-      },
-      dialog: {
-        createProgressBar(title: string, totalSteps: number) {
-          console.log(`Create ProgressBar, title: ${title}, totalSteps: ${totalSteps}`);
-          return {
-            start: (detail?: string) => {
-              console.log("start detail: " + detail);
-            },
-            next: (detail?: string) => {
-              console.log("next detail: " + detail);
-            },
-            end: () => {
-              console.log("ProgressBar end");
-            },
-          };
         },
       },
       telemetryReporter: {
@@ -89,7 +80,7 @@ export class TestHelper {
             ],
             [Constants.SolutionPlugin.configKeys.resourceGroupName, "junhanTest0118"],
             [Constants.SolutionPlugin.configKeys.location, "eastus"],
-            [Constants.SolutionPlugin.configKeys.remoteTeamsAppId, faker.random.uuid()],
+            [Constants.SolutionPlugin.configKeys.remoteTeamsAppId, faker.datatype.uuid()],
           ]),
         ],
         [
@@ -133,6 +124,16 @@ export class TestHelper {
       app: {
         name: {
           short: "hello-app",
+        },
+      },
+      projectSettings: {
+        appName: "hello-app",
+        solutionSettings: {
+          activeResourcePlugins: [
+            Constants.AadAppPlugin.id,
+            Constants.FrontendPlugin.id,
+            Constants.SimpleAuthPlugin.id,
+          ],
         },
       },
     } as unknown as PluginContext;

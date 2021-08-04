@@ -7,5 +7,5 @@
 <b>Signature:</b>
 
 ```typescript
-content: IMessage | IQuestion | IProgress | Answer;
+content: IQuestion | Answer;
 ```

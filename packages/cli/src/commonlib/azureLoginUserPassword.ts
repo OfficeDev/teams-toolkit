@@ -184,6 +184,10 @@ export class AzureAccountProviderUserPassword implements AzureAccountProvider {
   async readSubscription(): Promise<SubscriptionInfo | undefined> {
     return undefined;
   }
+
+  async getSubscriptionInfoFromEnv(): Promise<SubscriptionInfo | undefined> {
+    return undefined;
+  }
 }
 
 interface PartialList<T> extends Array<T> {

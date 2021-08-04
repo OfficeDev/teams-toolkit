@@ -20,10 +20,7 @@ describe("config", () => {
     const configContent = new Map<PluginIdentity, ReadonlyPluginConfig>([
       [
         TeamsToolkitComponent.Solution,
-        new Map<string, ConfigValue>([
-          [SolutionConfigKeys.subscriptionId, "test-subscription-id"],
-          [SolutionConfigKeys.resourceNameSuffix, 1],
-        ]),
+        new Map<string, ConfigValue>([[SolutionConfigKeys.resourceNameSuffix, 1]]),
       ],
     ]);
 
@@ -40,9 +37,6 @@ describe("config", () => {
       chai
         .expect(() => solutionConfig.resourceNameSuffix)
         .to.throw("Property 'resourceNameSuffix' is not type 'string'");
-    });
-    it("Property with value", () => {
-      chai.expect(solutionConfig.subscriptionId).to.equal("test-subscription-id");
     });
   });
 

@@ -8,8 +8,8 @@ import { Result } from 'neverthrow';
 import { TokenCredential } from '@azure/core-http';
 import { TokenCredentialsBase } from '@azure/ms-rest-nodeauth';
 
-// @public @deprecated (undocumented)
-export type Answer = string | undefined;
+// @public (undocumented)
+export const AppPackageFolderName = "appPackage";
 
 // @public
 export interface AppStudioTokenProvider {
@@ -115,15 +115,17 @@ export interface Context {
     // (undocumented)
     cryptoProvider?: CryptoProvider;
     // (undocumented)
-    dialog?: Dialog;
-    // (undocumented)
     graphTokenProvider?: GraphTokenProvider;
+    // (undocumented)
+    localSettings?: LocalSettings;
     // (undocumented)
     logProvider?: LogProvider;
     // (undocumented)
     projectSettings?: ProjectSettings;
     // (undocumented)
     root: string;
+    // (undocumented)
+    targetEnvName?: string;
     // (undocumented)
     telemetryReporter?: TelemetryReporter;
     // (undocumented)
@@ -166,36 +168,6 @@ export interface Core {
 export interface CryptoProvider {
     decrypt(ciphertext: string): Result<string, FxError>;
     encrypt(plaintext: string): Result<string, FxError>;
-}
-
-// @public @deprecated (undocumented)
-export interface Dialog {
-    communicate: (msg: DialogMsg) => Promise<DialogMsg>;
-}
-
-// @public @deprecated (undocumented)
-export class DialogMsg {
-    constructor(dialogType: DialogType, content: IMessage | IQuestion | IProgress | Answer);
-    // (undocumented)
-    content: IMessage | IQuestion | IProgress | Answer;
-    // (undocumented)
-    dialogType: DialogType;
-    // (undocumented)
-    getAnswer(): Answer | undefined;
-}
-
-// @public @deprecated (undocumented)
-export enum DialogType {
-    // (undocumented)
-    Answer = "Answer",
-    // (undocumented)
-    Ask = "Ask",
-    // (undocumented)
-    Output = "Output",
-    // (undocumented)
-    Show = "Show",
-    // (undocumented)
-    ShowProgress = "ShowProgress"
 }
 
 // @public (undocumented)
@@ -421,18 +393,6 @@ export interface ILocalizationInfo {
     languages: any[];
 }
 
-// @public @deprecated (undocumented)
-export interface IMessage {
-    // (undocumented)
-    description: string;
-    // (undocumented)
-    items?: string[];
-    // (undocumented)
-    level: MsgLevel;
-    // (undocumented)
-    modal?: boolean;
-}
-
 // @public (undocumented)
 export interface IMessagingExtensionCommand {
     context?: ("compose" | "commandBox" | "message")[];
@@ -478,6 +438,8 @@ export interface Inputs extends Json {
     // (undocumented)
     stage?: Stage;
     // (undocumented)
+    targetEnvName?: string;
+    // (undocumented)
     vscodeEnv?: VsCodeEnv;
 }
 
@@ -502,51 +464,11 @@ export interface IParameter {
     value?: string;
 }
 
-// @public @deprecated
-export interface IProgress {
-    // (undocumented)
-    cancellable?: boolean;
-    // (undocumented)
-    progressIter: AsyncGenerator<IProgressStatus, Result<null, FxError>>;
-    // (undocumented)
-    title?: string;
-}
-
 // @public (undocumented)
 export interface IProgressHandler {
     end: () => Promise<void>;
     next: (detail?: string) => Promise<void>;
     start: (detail?: string) => Promise<void>;
-}
-
-// @public @deprecated (undocumented)
-export interface IProgressStatus {
-    // (undocumented)
-    increment?: number;
-    // (undocumented)
-    message: string;
-}
-
-// @public @deprecated (undocumented)
-export interface IQuestion {
-    // (undocumented)
-    defaultAnswer?: string;
-    // (undocumented)
-    description: string;
-    // (undocumented)
-    multiSelect?: boolean;
-    // (undocumented)
-    options?: string[];
-    // (undocumented)
-    password?: boolean;
-    // (undocumented)
-    prompt?: string;
-    // (undocumented)
-    terminalName?: string;
-    // (undocumented)
-    type: QuestionType;
-    // (undocumented)
-    validateInput?: (value: string) => string | undefined | null | Promise<string | undefined | null>;
 }
 
 // @public (undocumented)
@@ -593,6 +515,20 @@ export function loadOptions(q: Question, inputs: Inputs): Promise<{
 // @public
 export type LocalFunc<T> = (inputs: Inputs) => T | Promise<T>;
 
+// @public
+export interface LocalSettings {
+    // (undocumented)
+    auth?: ConfigMap;
+    // (undocumented)
+    backend?: ConfigMap;
+    // (undocumented)
+    bot?: ConfigMap;
+    // (undocumented)
+    frontend?: ConfigMap;
+    // (undocumented)
+    teamsApp: ConfigMap;
+}
+
 // @public (undocumented)
 export enum LogLevel {
     Debug = 1,
@@ -616,16 +552,6 @@ export interface LogProvider {
     log(logLevel: LogLevel, message: string): Promise<boolean>;
     trace(message: string): Promise<boolean>;
     warning(message: string): Promise<boolean>;
-}
-
-// @public @deprecated (undocumented)
-export enum MsgLevel {
-    // (undocumented)
-    Error = "Error",
-    // (undocumented)
-    Info = "Info",
-    // (undocumented)
-    Warning = "Warning"
 }
 
 // @public (undocumented)
@@ -732,8 +658,6 @@ export type PluginConfig = ConfigMap;
 // @public (undocumented)
 export interface PluginContext extends Context {
     // (undocumented)
-    app: Readonly<TeamsAppManifest>;
-    // (undocumented)
     config: PluginConfig;
     // (undocumented)
     configOfOtherPlugins: ReadonlySolutionConfig;
@@ -757,8 +681,6 @@ export interface ProjectConfig {
 export interface ProjectSettings {
     // (undocumented)
     appName: string;
-    // (undocumented)
-    currentEnv?: string;
     // (undocumented)
     projectId: string;
     // (undocumented)
@@ -795,16 +717,6 @@ export class QTreeNode {
 
 // @public (undocumented)
 export type Question = SingleSelectQuestion | MultiSelectQuestion | TextInputQuestion | SingleFileQuestion | MultiFileQuestion | FolderQuestion | FuncQuestion | SingleFileQuestion;
-
-// @public @deprecated (undocumented)
-export enum QuestionType {
-    // (undocumented)
-    ExecuteCmd = "ExecuteCmd",
-    // (undocumented)
-    OpenFolder = "OpenFolder",
-    // (undocumented)
-    UpdateGlobalState = "UpdateGlobalState"
-}
 
 // @public (undocumented)
 export type ReadonlyPluginConfig = ReadonlyMap<string, ConfigValue>;
@@ -1107,8 +1019,6 @@ export type TokenProvider = {
 
 // @public (undocumented)
 export interface Tools {
-    // (undocumented)
-    dialog: Dialog;
     // (undocumented)
     logProvider: LogProvider;
     // (undocumented)

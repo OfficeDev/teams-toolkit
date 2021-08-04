@@ -35,9 +35,9 @@ export class ProvisionConfig {
   public functionEndpoint?: string;
 
   public async restoreConfigFromContext(context: PluginContext): Promise<void> {
-    this.subscriptionId = context.configOfOtherPlugins
-      .get(PluginSolution.PLUGIN_NAME)
-      ?.get(PluginSolution.SUBSCRIPTION_ID) as string;
+    this.subscriptionId = (
+      await context.azureAccountProvider?.getSelectedSubscription()
+    )?.subscriptionId;
 
     this.resourceGroup = context.configOfOtherPlugins
       .get(PluginSolution.PLUGIN_NAME)
@@ -87,7 +87,9 @@ export class ProvisionConfig {
 
     const siteEndpointValue: ConfigValue = context.config.get(PluginBot.SITE_ENDPOINT);
     this.siteEndpoint = siteEndpointValue as string;
-    this.redirectUri = siteEndpointValue ? `${siteEndpointValue}${CommonStrings.AUTH_REDIRECT_URI_SUFFIX}` : undefined;
+    this.redirectUri = siteEndpointValue
+      ? `${siteEndpointValue}${CommonStrings.AUTH_REDIRECT_URI_SUFFIX}`
+      : undefined;
 
     this.botChannelRegName = context.config.get(PluginBot.BOT_CHANNEL_REGISTRATION) as string;
 

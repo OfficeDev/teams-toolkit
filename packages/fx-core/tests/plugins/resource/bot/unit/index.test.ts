@@ -183,13 +183,12 @@ describe("Teams Bot Resource Plugin", () => {
 
     it("Happy Path", async () => {
       // Arrange
-      let pluginContext = testUtils.newPluginContext();
-      pluginContext.app.name.short = "anything";
+      const pluginContext = testUtils.newPluginContext();
+      pluginContext.projectSettings!.appName = "anything";
       botPluginImpl.config.scaffold.botId = utils.genUUID();
       botPluginImpl.config.scaffold.botPassword = utils.genUUID();
       botPluginImpl.config.scaffold.programmingLanguage = ProgrammingLanguage.JavaScript;
       botPluginImpl.config.saveConfigIntoContext(pluginContext);
-      
       // Act
       const result = await botPlugin.preProvision(pluginContext);
 
@@ -215,7 +214,7 @@ describe("Teams Bot Resource Plugin", () => {
     it("Happy Path", async () => {
       // Arrange
       const pluginContext = testUtils.newPluginContext();
-      pluginContext.app.name.short = "anything";
+      pluginContext.projectSettings!.appName = "anything";
       botPluginImpl.config.scaffold.wayToRegisterBot = WayToRegisterBot.CreateNew;
       botPluginImpl.config.saveConfigIntoContext(pluginContext);
       const fakeCreds = testUtils.generateFakeTokenCredentialsBase();
@@ -224,13 +223,17 @@ describe("Teams Bot Resource Plugin", () => {
       const namespace = ["ut"];
       const fakeRPClient: any = {
         get: (namespace: string) => item,
-        register: (namespace: string) => {item = {}; item = {...item, $namespace: {"registrationState": "Registered"}}; return item; },
+        register: (namespace: string) => {
+          item = {};
+          item = { ...item, $namespace: { registrationState: "Registered" } };
+          return item;
+        },
       };
       sinon.stub(factory, "createResourceProviderClient").returns(fakeRPClient);
 
       sinon.stub(pluginContext.appStudioToken!, "getAccessToken").resolves("anything");
       sinon.stub(botPluginImpl.config.scaffold, "botRegistrationCreated").returns(true);
-      
+
       sinon
         .stub(pluginContext.azureAccountProvider!, "getAccountCredentialAsync")
         .resolves(fakeCreds);
@@ -283,7 +286,7 @@ describe("Teams Bot Resource Plugin", () => {
       botPluginImpl.config.scaffold.botPassword = "anything";
       botPluginImpl.config.provision.siteEndpoint = "https://anything.azurewebsites.net";
       botPluginImpl.config.saveConfigIntoContext(pluginContext);
-      
+
       sinon.stub(pluginContext.appStudioToken!, "getAccessToken").resolves("anything");
       sinon.stub(botPluginImpl.config.scaffold, "botRegistrationCreated").returns(true);
       const fakeCreds = testUtils.generateFakeTokenCredentialsBase();
@@ -402,7 +405,7 @@ describe("Teams Bot Resource Plugin", () => {
     it("Happy Path", async () => {
       // Arrange
       const pluginContext = testUtils.newPluginContext();
-      pluginContext.app.name.short = "anything";
+      pluginContext.projectSettings!.appName = "anything";
       botPluginImpl.config.scaffold.wayToRegisterBot = WayToRegisterBot.CreateNew;
       sinon.stub(pluginContext.appStudioToken!, "getAccessToken").resolves("anything");
       sinon.stub(botPluginImpl.config.localDebug, "botRegistrationCreated").returns(false);
@@ -438,7 +441,7 @@ describe("Teams Bot Resource Plugin", () => {
     it("Happy Path", async () => {
       // Arrange
       const pluginContext = testUtils.newPluginContext();
-      pluginContext.app.name.short = "anything";
+      pluginContext.projectSettings!.appName = "anything";
       botPluginImpl.config.localDebug.localBotId = "anything";
       botPluginImpl.config.scaffold.wayToRegisterBot = WayToRegisterBot.CreateNew;
       botPluginImpl.config.saveConfigIntoContext(pluginContext);

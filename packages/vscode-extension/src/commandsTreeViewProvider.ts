@@ -148,23 +148,6 @@ class TreeViewManager {
       ),
     ];
 
-    if (
-      await exp
-        .getExpService()
-        .getTreatmentVariableAsync(TreatmentVariables.VSCodeConfig, TreatmentVariables.Debug, true)
-    ) {
-      const debugCommand = new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.debugTitle,
-        StringResources.vsc.commandsTreeViewProvider.debugDescription,
-        "fx-extension.debug",
-        vscode.TreeItemCollapsibleState.None,
-        undefined,
-        undefined,
-        { name: "debug-alt", custom: false }
-      );
-      projectTreeViewCommand.splice(1, 0, debugCommand);
-    }
-
     const projectProvider = new CommandsTreeViewProvider(projectTreeViewCommand);
     disposables.push(vscode.window.registerTreeDataProvider("teamsfx-project", projectProvider));
 

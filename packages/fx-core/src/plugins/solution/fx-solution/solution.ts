@@ -1203,6 +1203,9 @@ export class TeamsAppSolution implements Solution {
 
       ctx.config.get(GLOBAL_CONFIG)?.set(USER_INFO, JSON.stringify(userInfo));
 
+      // Get Azure credential in solution to avoid multiple login in different plugins.
+      const credential = await ctx.azureAccountProvider?.getAccountCredentialAsync();
+
       const maybeSelectedPlugins = this.getSelectedPlugins(ctx);
       if (maybeSelectedPlugins.isErr()) {
         return maybeSelectedPlugins;

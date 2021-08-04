@@ -66,6 +66,7 @@ describe("Build Teams Package", () => {
         webApplicationInfoResource: "webApplicationInfoResource",
       })
     );
+    sandbox.stub(fs, "move").resolves();
 
     const builtPackage = await plugin.buildTeamsPackage(ctx);
     chai.assert.isTrue(builtPackage.isOk());

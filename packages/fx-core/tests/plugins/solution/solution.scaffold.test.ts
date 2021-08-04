@@ -201,7 +201,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
       .to.be.true;
     expect(fileContent.has(path.join("./infra/azure/templates", "simpleAuthProvision.bicep"))).to.be
       .true;
-    expect(fileContent.has(path.join("./infra/azure/parameters", "parameter.template.json"))).to.be
+    expect(fileContent.has(path.join("./infra/azure/parameters", "parameters.template.json"))).to.be
       .true;
 
     restore();

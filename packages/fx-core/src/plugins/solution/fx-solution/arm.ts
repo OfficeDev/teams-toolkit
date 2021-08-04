@@ -35,8 +35,8 @@ const templateFolder = "templates";
 const parameterFolder = "parameters";
 const bicepOrchestrationFileName = "main.bicep";
 const armTemplateJsonFileName = "main.json";
-const parameterTemplateFileName = "parameter.template.json";
-const parameterDefaultFileName = "parameter.default.json";
+const parameterTemplateFileName = "parameters.template.json";
+const parameterDefaultFileName = "parameters.default.json";
 const solutionLevelParameters = `param resourceBaseName string\n`;
 const solutionLevelParameterObject = {
   resourceBaseName: {

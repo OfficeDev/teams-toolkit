@@ -65,7 +65,7 @@ export default class Controller {
       this.timer = undefined;
     }
     this.progresses.forEach((progress) => {
-      progress.end();
+      progress.end(true);
     });
     this.controller.stop();
     (this.controller as any).bars = [];

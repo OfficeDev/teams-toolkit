@@ -236,7 +236,7 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
       )
     );
   }
-  await ProgressHelper.endDeployArmTemplatesProgress();
+  await ProgressHelper.endDeployArmTemplatesProgress(result.isOk());
   return result;
 }
 

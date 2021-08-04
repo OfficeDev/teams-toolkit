@@ -35,6 +35,18 @@ export default class Instance {
     ]);
   }
 
+  get errorMessage(): string {
+    return getColorizedString([
+      {
+        content: `[${this.currentStep}/${this.totalSteps}] ${this.title}: ${
+          this.detail || "starting."
+        }`,
+        color: Colors.BRIGHT_WHITE,
+      },
+      { content: ` (${figures.cross}) Failed`, color: Colors.BRIGHT_RED },
+    ]);
+  }
+
   get message(): string {
     return getColorizedString([
       {
@@ -60,20 +72,20 @@ export default class Instance {
   }
 
   public async start(detail?: string) {
-    if (!this.bar) await this.end();
+    if (!this.bar) await this.end(true);
     this.currentStep = 0;
     this.currentPercentage = 0;
     this.detail = detail;
     this.bar = this.controller.create(100, this.percentage, this.message);
   }
 
-  public async end() {
-    this.currentPercentage = 100;
+  public async end(success: boolean) {
+    if (success) this.currentPercentage = 100;
     if (this.bar) {
       const tmp = this.bar;
       this.bar = undefined;
       tmp.stop();
-      this.controller.remove(tmp, this.percentage, this.doneMessage);
+      this.controller.remove(tmp, this.percentage, success ? this.doneMessage : this.errorMessage);
     }
   }
 

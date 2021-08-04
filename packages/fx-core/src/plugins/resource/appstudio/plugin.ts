@@ -671,7 +671,7 @@ export class AppStudioPluginImpl {
         return await AppStudioClient.publishTeamsApp(manifest.id, appContent, appStudioToken!);
       }
     } finally {
-      await publishProgress?.end();
+      await publishProgress?.end(true);
     }
   }
 

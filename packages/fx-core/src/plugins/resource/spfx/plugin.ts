@@ -207,7 +207,7 @@ export class SPFxPluginImpl {
         ctx.logProvider,
         true
       );
-      await ProgressHelper.endPreDeployProgress();
+      await ProgressHelper.endPreDeployProgress(true);
 
       const solutionConfig = await fs.readJson(`${ctx.root}/SPFx/config/package-solution.json`);
       const sharepointPackage = `${ctx.root}/SPFx/sharepoint/${solutionConfig.paths.zippedPackage}`;
@@ -250,7 +250,7 @@ export class SPFxPluginImpl {
       }
       return ok(undefined);
     } catch (error) {
-      await ProgressHelper.endPreDeployProgress();
+      await ProgressHelper.endPreDeployProgress(false);
       throw BuildSPPackageError(error);
     }
   }

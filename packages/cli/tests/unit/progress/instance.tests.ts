@@ -66,7 +66,7 @@ describe("Progress Instance", function () {
 
     const instance = new ProgressInstance("Test", 1);
     instance["bar"] = new SingleBar({});
-    await instance.end();
+    await instance.end(true);
     expect(instance["bar"]).equals(undefined);
     expect(instance.percentage).equals(100);
     sinon.assert.calledOnce(stopStub);

@@ -103,17 +103,17 @@ export interface InputTextConfig extends UIConfig<string> {
 /**
  * single file selector config
  */
-export type SelectFileConfig = UIConfig<string>
+export type SelectFileConfig = UIConfig<string>;
 
 /**
  * multiple files selector config
  */
-export type SelectFilesConfig = UIConfig<string[]>
+export type SelectFilesConfig = UIConfig<string[]>;
 
 /**
  * folder selector config
  */
-export type SelectFolderConfig = UIConfig<string>
+export type SelectFolderConfig = UIConfig<string>;
 
 /**
  * a wrapper of user input result
@@ -329,10 +329,10 @@ export interface IProgressHandler {
   next: (detail?: string) => Promise<void>;
 
   /**
-   * End the progress bar. After calling it, the progress bar will disappear. This handler
+   * End the progress bar and tell if success. After calling it, the progress bar will disappear. This handler
    * can be reused after calling end().
    */
-  end: () => Promise<void>;
+  end: (success: boolean) => Promise<void>;
 }
 
 /**

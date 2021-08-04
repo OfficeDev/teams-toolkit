@@ -104,7 +104,7 @@ export class CLILogProvider implements LogProvider {
         break;
       case LogLevel.Error:
       case LogLevel.Fatal:
-        console.error(chalk.redBright(`Error: ${message}`));
+        console.error(chalk.redBright(`${chalk.bgRedBright.black("Error")}: ${message}`));
         break;
     }
     ProgressController.instance?.update();
@@ -128,7 +128,7 @@ export class CLILogProvider implements LogProvider {
         break;
       case LogLevel.Error:
       case LogLevel.Fatal:
-        console.error(chalk.redBright(`Error: ${message}`));
+        console.error(chalk.redBright(`${chalk.bgRedBright.black("Error")}: ${message}`));
         break;
     }
     ProgressController.instance?.update();

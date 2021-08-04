@@ -102,6 +102,7 @@ export class ApimPlugin implements Plugin {
         lifeCycle,
         OperationStatus.Succeeded
       );
+      await this.progressBar.close(PluginLifeCycleToProgressStep[lifeCycle], true);
       return ok(result);
     } catch (error: any) {
       let packagedError: SystemError | UserError;
@@ -121,9 +122,8 @@ export class ApimPlugin implements Plugin {
         OperationStatus.Failed,
         packagedError
       );
+      await this.progressBar.close(PluginLifeCycleToProgressStep[lifeCycle], false);
       return err(packagedError);
-    } finally {
-      await this.progressBar.close(PluginLifeCycleToProgressStep[lifeCycle]);
     }
   }
 }

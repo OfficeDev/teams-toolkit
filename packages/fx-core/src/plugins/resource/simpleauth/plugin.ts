@@ -70,7 +70,7 @@ export class SimpleAuthPluginImpl {
 
     ctx.config.set(Constants.SimpleAuthPlugin.configKeys.endpoint, webApp.endpoint);
 
-    await DialogUtils.progressBar?.end();
+    await DialogUtils.progressBar?.end(true);
 
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndProvision, {
       [Telemetry.skuName]: webApp.skuName,
@@ -109,7 +109,7 @@ export class SimpleAuthPluginImpl {
       await this.webAppClient.configWebApp(configs);
     }
 
-    await DialogUtils.progressBar?.end();
+    await DialogUtils.progressBar?.end(true);
 
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndPostProvision);
     return ResultFactory.Success();

@@ -441,10 +441,11 @@ export default class Preview extends YargsCommand {
         error,
         this.telemetryProperties
       );
+      await previewBar.end(false);
       return err(error);
     }
     await previewBar.next(constants.previewSPFxSuccessMessage);
-    await previewBar.end();
+    await previewBar.end(true);
 
     cliTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewSPFxOpenBrowser, {
       ...this.telemetryProperties,
@@ -997,10 +998,11 @@ export default class Preview extends YargsCommand {
         error,
         this.telemetryProperties
       );
+      await previewBar.end(false);
       return err(error);
     }
     await previewBar.next(constants.previewSuccessMessage);
-    await previewBar.end();
+    await previewBar.end(true);
 
     cliTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewSideloading, {
       ...this.telemetryProperties,

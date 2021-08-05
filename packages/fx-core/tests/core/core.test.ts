@@ -35,7 +35,7 @@ import {
 } from "../../src";
 import sinon from "sinon";
 import { MockSolution, MockTools, randomAppName } from "./utils";
-import { loadProjectSettings } from "../../src/core/middleware/contextLoader";
+import { loadProjectSettings } from "../../src/core/middleware/projectSettingsLoader";
 import { defaultSolutionLoader } from "../../src/core/loader";
 import {
   CoreQuestionNames,

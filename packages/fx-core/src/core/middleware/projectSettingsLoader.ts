@@ -34,7 +34,10 @@ import {
   PROGRAMMING_LANGUAGE,
 } from "../../plugins/solution/fx-solution/constants";
 
-export const ContextLoaderMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
+export const ProjectSettingsLoaderMW: Middleware = async (
+  ctx: CoreHookContext,
+  next: NextFunction
+) => {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   const method = ctx.method;
   let isCreate = false;

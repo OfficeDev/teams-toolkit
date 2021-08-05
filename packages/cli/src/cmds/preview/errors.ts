@@ -89,6 +89,14 @@ export function PreviewWithoutProvision(): UserError {
   );
 }
 
+export function MissingProgrammingLanguageSetting(): UserError {
+  return returnUserError(
+    new Error("The programmingLanguage config is missing in project settings."),
+    constants.cliSource,
+    "MissingProgrammingLanguage"
+  );
+}
+
 export function OpeningBrowserFailed(browser: Browser): UserError {
   return returnUserError(
     new Error(`Failed to open ${browser} browser. Check if ${browser} exists on your system.`),

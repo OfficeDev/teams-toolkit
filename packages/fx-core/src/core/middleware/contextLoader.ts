@@ -29,7 +29,11 @@ import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { validateProject } from "../../common";
 import * as uuid from "uuid";
 import { LocalCrypto } from "../crypto";
-import { PluginNames } from "../../plugins/solution/fx-solution/constants";
+import {
+  GLOBAL_CONFIG,
+  PluginNames,
+  PROGRAMMING_LANGUAGE,
+} from "../../plugins/solution/fx-solution/constants";
 import { environmentManager } from "../environment";
 
 export const ContextLoaderMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
@@ -106,6 +110,17 @@ export async function loadSolutionContext(
     }
     const envInfo = envDataResult.value;
 
+    // upgrade programmingLanguange if exists.
+    const solutionConfig = envInfo.data as SolutionConfig;
+    const programmingLanguage = solutionConfig.get(GLOBAL_CONFIG)?.get(PROGRAMMING_LANGUAGE);
+    if (programmingLanguage) {
+      // add programmingLanguage in project settings
+      projectSettings.programmingLanguage = programmingLanguage;
+
+      // remove programmingLanguage in solution config
+      solutionConfig.get(GLOBAL_CONFIG)?.delete(PROGRAMMING_LANGUAGE);
+    }
+
     const solutionContext: SolutionContext = {
       projectSettings: projectSettings,
       targetEnvName: envInfo.envName,
@@ -125,6 +140,7 @@ export async function loadSolutionContext(
 export async function newSolutionContext(tools: Tools, inputs: Inputs): Promise<SolutionContext> {
   const projectSettings: ProjectSettings = {
     appName: "",
+    programmingLanguage: "",
     projectId: uuid.v4(),
     solutionSettings: {
       name: "fx-solution-azure",

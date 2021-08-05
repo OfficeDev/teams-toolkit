@@ -765,6 +765,8 @@ export interface ProjectSettings {
     // (undocumented)
     appName: string;
     // (undocumented)
+    programmingLanguage?: string;
+    // (undocumented)
     projectId: string;
     // (undocumented)
     solutionSettings?: SolutionSettings;

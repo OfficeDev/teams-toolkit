@@ -253,7 +253,7 @@ export class TeamsAppSolution implements Solution {
     // Only non-SPFx project will ask this question.
     const lang = ctx.answers![AzureSolutionQuestionNames.ProgrammingLanguage] as string;
     if (lang) {
-      ctx.config.get(GLOBAL_CONFIG)?.set(PROGRAMMING_LANGUAGE, lang);
+      ctx.projectSettings!.programmingLanguage = lang;
     }
 
     const settingsRes = this.fillInSolutionSettings(ctx);

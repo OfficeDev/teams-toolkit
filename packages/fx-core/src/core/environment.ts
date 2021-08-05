@@ -72,7 +72,7 @@ class EnvironmentManager {
     projectPath: string,
     envName?: string,
     cryptoProvider?: CryptoProvider
-  ): Promise<Result<Void, FxError>> {
+  ): Promise<Result<string, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
       return err(PathNotExistError(projectPath));
     }
@@ -98,7 +98,7 @@ class EnvironmentManager {
       return err(WriteFileError(error));
     }
 
-    return ok(Void);
+    return ok(envFiles.envProfile);
   }
 
   public async listEnvProfiles(projectPath: string): Promise<Result<Array<string>, FxError>> {

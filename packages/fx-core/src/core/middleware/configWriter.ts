@@ -12,13 +12,11 @@ import {
   Inputs,
   StaticPlatforms,
 } from "@microsoft/teamsfx-api";
-import { mapToJson } from "../../common/tools";
 import { WriteFileError } from "../error";
 import { CoreHookContext, FxCore } from "..";
-import { environmentManager } from "../environment";
 
 /**
- * This middleware will help to persist configs if necessary.
+ * This middleware will help to persist project settings if necessary.
  */
 export const ConfigWriterMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
   try {
@@ -40,12 +38,6 @@ export const ConfigWriterMW: Middleware = async (ctx: CoreHookContext, next: Nex
         ?.solutionSettings as AzureSolutionSettings;
       if (!solutionSettings.activeResourcePlugins) solutionSettings.activeResourcePlugins = [];
       if (!solutionSettings.azureResources) solutionSettings.azureResources = [];
-      await environmentManager.writeEnvProfile(
-        solutionContext.config,
-        inputs.projectPath,
-        solutionContext.targetEnvName,
-        solutionContext.cryptoProvider
-      );
       const settingFile = path.resolve(confFolderPath, "settings.json");
       const core = ctx.self as FxCore;
       await fs.writeFile(settingFile, JSON.stringify(solutionContext.projectSettings, null, 4));

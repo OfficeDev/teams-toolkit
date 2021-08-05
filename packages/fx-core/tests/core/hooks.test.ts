@@ -63,6 +63,8 @@ import { PluginNames } from "../../src/plugins/solution/fx-solution/constants";
 import { QuestionModelMW } from "../../src/core/middleware/questionModel";
 import { ProjectUpgraderMW } from "../../src/core/middleware/projectUpgrader";
 import { environmentManager } from "../../src/core/environment";
+import { EnvInfoLoaderMW } from "../../src/core/middleware/envInfoLoader";
+import { EnvInfoWriterMW } from "../../src/core/middleware/envInfoWriter";
 
 describe("Middleware", () => {
   describe("ErrorHandlerMW", () => {
@@ -417,7 +419,7 @@ describe("Middleware", () => {
         }
       }
       hooks(MyClass, {
-        other: [ContextLoaderMW, ContextInjecterMW],
+        other: [ContextLoaderMW, EnvInfoLoaderMW, ContextInjecterMW],
       });
       const my = new MyClass();
       const res = await my.other(inputs);
@@ -519,7 +521,7 @@ describe("Middleware", () => {
         }
       }
       hooks(MyClass, {
-        myMethod: [ContextInjecterMW, ConfigWriterMW],
+        myMethod: [ContextInjecterMW, ConfigWriterMW, EnvInfoWriterMW],
       });
       const my = new MyClass();
       await my.myMethod(inputs);
@@ -593,8 +595,8 @@ describe("Middleware", () => {
         }
       }
       hooks(MyClass, {
-        WriteConfigTrigger: [ContextInjecterMW, ConfigWriterMW],
-        ReadConfigTrigger: [ContextLoaderMW, ContextInjecterMW],
+        WriteConfigTrigger: [ContextInjecterMW, ConfigWriterMW, EnvInfoWriterMW],
+        ReadConfigTrigger: [ContextLoaderMW, EnvInfoLoaderMW, ContextInjecterMW],
       });
       const my = new MyClass();
       await my.WriteConfigTrigger(inputs);

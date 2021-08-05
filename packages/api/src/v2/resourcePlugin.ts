@@ -2,18 +2,9 @@
 // Licensed under the MIT license.
 
 import { Result } from "neverthrow";
-import {
-  FxError,
-  QTreeNode,
-  TokenProvider,
-  Void,
-  Func,
-  Json,
-  UserError,
-  SystemError,
-} from "../index";
+import { FxError, QTreeNode, TokenProvider, Void, Func, Json, Inputs } from "../index";
 import { AppStudioTokenProvider, AzureAccountProvider } from "../utils";
-import { Context, Inputs, LocalSetting, LocalSettings, PluginName } from "./types";
+import { Context, LocalSetting, LocalSettings, PluginName } from "./types";
 
 export type ResourceTemplate = BicepTemplate | JsonTemplate;
 

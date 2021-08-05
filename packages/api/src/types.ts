@@ -5,7 +5,7 @@
 import { OptionItem } from "./qm";
 import { Platform, Stage, VsCodeEnv } from "./constants";
 
-export type Json = Record<string, unknown>;
+export type Json = Record<string, any>;
 
 export type ConfigValue = any;
 
@@ -115,7 +115,7 @@ export type EnvConfig = Json;
 /**
  * project static settings
  */
-export interface ProjectSettings extends Json {
+export interface ProjectSettings {
   appName: string;
   version?: string;
   projectId: string;
@@ -162,7 +162,7 @@ export interface Inputs extends Json {
   projectPath?: string;
   targetEnvName?: string;
   platform: Platform;
-  stage: Stage;
+  stage?: Stage;
   vscodeEnv?: VsCodeEnv;
   ignoreLock?: boolean;
   ignoreTypeCheck?: boolean;

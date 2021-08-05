@@ -450,7 +450,7 @@ export interface Inputs extends Json {
     // (undocumented)
     projectPath?: string;
     // (undocumented)
-    stage: Stage;
+    stage?: Stage;
     // (undocumented)
     targetEnvName?: string;
     // (undocumented)
@@ -518,7 +518,7 @@ export interface IWebApplicationInfo {
 }
 
 // @public (undocumented)
-export type Json = Record<string, unknown>;
+export type Json = Record<string, any>;
 
 // @public (undocumented)
 type JsonTemplate = {
@@ -720,7 +720,7 @@ export interface ProjectConfig {
 }
 
 // @public
-export interface ProjectSettings extends Json {
+export interface ProjectSettings {
     // (undocumented)
     appName: string;
     // (undocumented)
@@ -793,6 +793,7 @@ export type ResourceConfigs = ResourceTemplates;
 
 // @public
 interface ResourcePlugin {
+    activate(solutionSettings: AzureSolutionSettings): boolean;
     configureLocalResource?: (ctx: Context_2, localProvisionOutput: Readonly<LocalSetting>, localProvisionOutputOfOtherPlugins: Readonly<LocalSettings_2>, tokenProvider: TokenProvider) => Promise<Result<LocalSettings_2, FxError>>;
     configureResource?: (ctx: Context_2, provisionOutput: Readonly<ProvisionOutput>, provisionOutputOfOtherPlugins: Readonly<Record<PluginName, ProvisionOutput>>, tokenProvider: TokenProvider) => Promise<Result<ProvisionOutput, FxError>>;
     deploy?: (ctx: Context_2, provisionOutput: Readonly<ProvisionOutput>, tokenProvider: AzureAccountProvider) => Promise<Result<{

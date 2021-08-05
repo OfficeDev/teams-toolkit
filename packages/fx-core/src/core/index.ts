@@ -49,8 +49,8 @@ export * from "./error";
 import { HookContext, hooks } from "@feathersjs/hooks";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { QuestionModelMW } from "./middleware/questionModel";
-import { ConfigWriterMW } from "./middleware/configWriter";
-import { ContextLoaderMW, newSolutionContext } from "./middleware/contextLoader";
+import { ProjectSettingsWriterMW } from "./middleware/projectSettingsWriter";
+import { ProjectSettingsLoaderMW, newSolutionContext } from "./middleware/projectSettingsLoader";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import {
   FetchSampleError,
@@ -94,7 +94,13 @@ export class FxCore implements Core {
     Logger = tools.logProvider;
   }
 
-  @hooks([ErrorHandlerMW, QuestionModelMW, ContextInjecterMW, ConfigWriterMW, EnvInfoWriterMW])
+  @hooks([
+    ErrorHandlerMW,
+    QuestionModelMW,
+    ContextInjecterMW,
+    ProjectSettingsWriterMW,
+    EnvInfoWriterMW,
+  ])
   async createProject(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     const folder = inputs[QuestionRootFolder.name] as string;
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
@@ -287,12 +293,12 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    ContextLoaderMW,
+    ProjectSettingsLoaderMW,
     EnvInfoLoaderMW,
     SolutionLoaderMW(defaultSolutionLoader),
     QuestionModelMW,
     ContextInjecterMW,
-    ConfigWriterMW,
+    ProjectSettingsWriterMW,
     EnvInfoWriterMW,
   ])
   async provisionResources(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
@@ -302,12 +308,12 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    ContextLoaderMW,
+    ProjectSettingsLoaderMW,
     EnvInfoLoaderMW,
     SolutionLoaderMW(defaultSolutionLoader),
     QuestionModelMW,
     ContextInjecterMW,
-    ConfigWriterMW,
+    ProjectSettingsWriterMW,
     EnvInfoWriterMW,
   ])
   async deployArtifacts(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
@@ -318,12 +324,12 @@ export class FxCore implements Core {
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectUpgraderMW,
-    ContextLoaderMW,
+    ProjectSettingsLoaderMW,
     EnvInfoLoaderMW,
     SolutionLoaderMW(defaultSolutionLoader),
     QuestionModelMW,
     ContextInjecterMW,
-    ConfigWriterMW,
+    ProjectSettingsWriterMW,
     EnvInfoWriterMW,
   ])
   async localDebug(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
@@ -333,12 +339,12 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    ContextLoaderMW,
+    ProjectSettingsLoaderMW,
     EnvInfoLoaderMW,
     SolutionLoaderMW(defaultSolutionLoader),
     QuestionModelMW,
     ContextInjecterMW,
-    ConfigWriterMW,
+    ProjectSettingsWriterMW,
     EnvInfoWriterMW,
   ])
   async publishApplication(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
@@ -348,12 +354,12 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    ContextLoaderMW,
+    ProjectSettingsLoaderMW,
     EnvInfoLoaderMW,
     SolutionLoaderMW(defaultSolutionLoader),
     QuestionModelMW,
     ContextInjecterMW,
-    ConfigWriterMW,
+    ProjectSettingsWriterMW,
     EnvInfoWriterMW,
   ])
   async executeUserTask(
@@ -374,7 +380,7 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
-    ContextLoaderMW,
+    ProjectSettingsLoaderMW,
     EnvInfoLoaderMW,
     SolutionLoaderMW(defaultSolutionLoader),
     ContextInjecterMW,
@@ -403,7 +409,7 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
-    ContextLoaderMW,
+    ProjectSettingsLoaderMW,
     EnvInfoLoaderMW,
     SolutionLoaderMW(defaultSolutionLoader),
     ContextInjecterMW,
@@ -425,7 +431,7 @@ export class FxCore implements Core {
     return await this._getQuestionsForUserTask(solutionContext, solution, func, inputs);
   }
 
-  @hooks([ErrorHandlerMW, ContextLoaderMW, EnvInfoLoaderMW, ContextInjecterMW])
+  @hooks([ErrorHandlerMW, ProjectSettingsLoaderMW, EnvInfoLoaderMW, ContextInjecterMW])
   async getProjectConfig(
     inputs: Inputs,
     ctx?: CoreHookContext
@@ -438,10 +444,10 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
-    ContextLoaderMW,
+    ProjectSettingsLoaderMW,
     EnvInfoLoaderMW,
     ContextInjecterMW,
-    ConfigWriterMW,
+    ProjectSettingsWriterMW,
     EnvInfoWriterMW,
   ])
   async setSubscriptionInfo(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
@@ -544,7 +550,7 @@ export class FxCore implements Core {
             description: "",
             author: "",
             scripts: {
-              test: 'echo "Error: no test specified" && exit 1',
+              test: "echo \"Error: no test specified\" && exit 1",
             },
             devDependencies: {
               "@microsoft/teamsfx-cli": "^0.3.1",
@@ -565,7 +571,13 @@ export class FxCore implements Core {
     return ok(null);
   }
 
-  @hooks([ErrorHandlerMW, ContextLoaderMW, EnvInfoLoaderMW, ContextInjecterMW, EnvInfoWriterMW])
+  @hooks([
+    ErrorHandlerMW,
+    ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW,
+    ContextInjecterMW,
+    EnvInfoWriterMW,
+  ])
   async encrypt(
     plaintext: string,
     inputs: Inputs,
@@ -574,7 +586,13 @@ export class FxCore implements Core {
     return ctx!.solutionContext!.cryptoProvider!.encrypt(plaintext);
   }
 
-  @hooks([ErrorHandlerMW, ContextLoaderMW, EnvInfoLoaderMW, ContextInjecterMW, EnvInfoWriterMW])
+  @hooks([
+    ErrorHandlerMW,
+    ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW,
+    ContextInjecterMW,
+    EnvInfoWriterMW,
+  ])
   async decrypt(
     ciphertext: string,
     inputs: Inputs,

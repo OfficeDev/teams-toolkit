@@ -18,7 +18,10 @@ import { CoreHookContext, FxCore } from "..";
 /**
  * This middleware will help to persist project settings if necessary.
  */
-export const ConfigWriterMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
+export const ProjectSettingsWriterMW: Middleware = async (
+  ctx: CoreHookContext,
+  next: NextFunction
+) => {
   try {
     await next();
   } finally {

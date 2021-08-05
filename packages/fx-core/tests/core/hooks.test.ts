@@ -45,7 +45,7 @@ import {
 } from "../../src";
 import { SolutionLoaderMW } from "../../src/core/middleware/solutionLoader";
 import { ContextInjecterMW } from "../../src/core/middleware/contextInjecter";
-import { ConfigWriterMW } from "../../src/core/middleware/configWriter";
+import { ProjectSettingsWriterMW } from "../../src/core/middleware/projectSettingsWriter";
 import sinon from "sinon";
 import {
   MockLatestVersion2_3_0UserData,
@@ -57,7 +57,10 @@ import {
   MockTools,
   randomAppName,
 } from "./utils";
-import { ContextLoaderMW, newSolutionContext } from "../../src/core/middleware/contextLoader";
+import {
+  ProjectSettingsLoaderMW,
+  newSolutionContext,
+} from "../../src/core/middleware/projectSettingsLoader";
 import { AzureResourceSQL } from "../../src/plugins/solution/fx-solution/question";
 import { PluginNames } from "../../src/plugins/solution/fx-solution/constants";
 import { QuestionModelMW } from "../../src/core/middleware/questionModel";
@@ -317,7 +320,7 @@ describe("Middleware", () => {
     });
   });
 
-  describe("ContextLoaderMW, ContextInjecterMW part 1", () => {
+  describe("ProjectSettingsLoaderMW, ContextInjecterMW part 1", () => {
     it("fail to load: ignore", async () => {
       class MyClass {
         tools = new MockTools();
@@ -335,8 +338,8 @@ describe("Middleware", () => {
         }
       }
       hooks(MyClass, {
-        getQuestions: [ContextLoaderMW, ContextInjecterMW],
-        other: [ContextLoaderMW, ContextInjecterMW],
+        getQuestions: [ProjectSettingsLoaderMW, ContextInjecterMW],
+        other: [ProjectSettingsLoaderMW, ContextInjecterMW],
       });
       const my = new MyClass();
       const inputs: Inputs = { platform: Platform.VSCode };
@@ -357,7 +360,7 @@ describe("Middleware", () => {
         }
       }
       hooks(MyClass, {
-        other: [ContextLoaderMW, ContextInjecterMW],
+        other: [ProjectSettingsLoaderMW, ContextInjecterMW],
       });
       const my = new MyClass();
       const inputs: Inputs = { platform: Platform.VSCode };
@@ -369,7 +372,7 @@ describe("Middleware", () => {
     });
   });
 
-  describe("ContextLoaderMW, ContextInjecterMW part 2", () => {
+  describe("ProjectSettingsLoaderMW, ContextInjecterMW part 2", () => {
     const sandbox = sinon.createSandbox();
 
     const appName = randomAppName();
@@ -419,7 +422,7 @@ describe("Middleware", () => {
         }
       }
       hooks(MyClass, {
-        other: [ContextLoaderMW, EnvInfoLoaderMW, ContextInjecterMW],
+        other: [ProjectSettingsLoaderMW, EnvInfoLoaderMW, ContextInjecterMW],
       });
       const my = new MyClass();
       const res = await my.other(inputs);
@@ -441,7 +444,7 @@ describe("Middleware", () => {
         }
       }
       hooks(MyClass, {
-        other: [ContextLoaderMW, ContextInjecterMW],
+        other: [ProjectSettingsLoaderMW, ContextInjecterMW],
       });
       const my = new MyClass();
       (projectSettings.solutionSettings as AzureSolutionSettings).azureResources.push(
@@ -455,7 +458,7 @@ describe("Middleware", () => {
     });
   });
 
-  describe("ConfigWriterMW", () => {
+  describe("ProjectSettingsWriterMW", () => {
     const sandbox = sinon.createSandbox();
     afterEach(function () {
       sandbox.restore();
@@ -469,7 +472,7 @@ describe("Middleware", () => {
         }
       }
       hooks(MyClass, {
-        myMethod: [ConfigWriterMW],
+        myMethod: [ProjectSettingsWriterMW],
       });
       const my = new MyClass();
       const inputs1: Inputs = { platform: Platform.VSCode };
@@ -521,7 +524,7 @@ describe("Middleware", () => {
         }
       }
       hooks(MyClass, {
-        myMethod: [ContextInjecterMW, ConfigWriterMW, EnvInfoWriterMW],
+        myMethod: [ContextInjecterMW, ProjectSettingsWriterMW, EnvInfoWriterMW],
       });
       const my = new MyClass();
       await my.myMethod(inputs);
@@ -535,7 +538,7 @@ describe("Middleware", () => {
     });
   });
 
-  describe("ContextLoaderMW, ConfigWriterMW for user data encryption", () => {
+  describe("ProjectSettingsLoaderMW, ProjectSettingsWriterMW for user data encryption", () => {
     const sandbox = sinon.createSandbox();
 
     afterEach(function () {
@@ -595,8 +598,8 @@ describe("Middleware", () => {
         }
       }
       hooks(MyClass, {
-        WriteConfigTrigger: [ContextInjecterMW, ConfigWriterMW, EnvInfoWriterMW],
-        ReadConfigTrigger: [ContextLoaderMW, EnvInfoLoaderMW, ContextInjecterMW],
+        WriteConfigTrigger: [ContextInjecterMW, ProjectSettingsWriterMW, EnvInfoWriterMW],
+        ReadConfigTrigger: [ProjectSettingsLoaderMW, EnvInfoLoaderMW, ContextInjecterMW],
       });
       const my = new MyClass();
       await my.WriteConfigTrigger(inputs);

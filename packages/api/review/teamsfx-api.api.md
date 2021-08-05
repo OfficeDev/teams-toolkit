@@ -576,6 +576,9 @@ export function loadOptions(q: Question, inputs: Inputs): Promise<{
 // @public
 export type LocalFunc<T> = (inputs: Inputs) => T | Promise<T>;
 
+// @public (undocumented)
+type LocalProvisionOutput = ProvisionOutput;
+
 // @public
 export interface LocalSettings {
     // (undocumented)
@@ -589,9 +592,6 @@ export interface LocalSettings {
     // (undocumented)
     teamsApp: ConfigMap;
 }
-
-// @public (undocumented)
-type LocalProvisionOutput = ProvisionOutput;
 
 // @public (undocumented)
 export enum LogLevel {

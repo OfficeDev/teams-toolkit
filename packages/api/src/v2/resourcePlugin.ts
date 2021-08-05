@@ -3,6 +3,7 @@
 
 import { Result } from "neverthrow";
 import { FxError, QTreeNode, TokenProvider, Void, Func, Json, Inputs } from "../index";
+import { AzureSolutionSettings } from "../types";
 import { AppStudioTokenProvider, AzureAccountProvider } from "../utils";
 import { Context, LocalSetting, LocalSettings, PluginName } from "./types";
 
@@ -42,6 +43,12 @@ export interface ResourcePlugin {
 
   // Plugin name that will be shown to end users.
   displayName: string;
+
+  /**
+   * resource plugin decide whether it need to be activated
+   * @param solutionSettings solution settings
+   */
+  activate(solutionSettings: AzureSolutionSettings): boolean;
 
   /**
    * Called by Toolkit when creating a new project or adding a new resource.

@@ -25,19 +25,24 @@ export type PluginName = string;
 /**
  * project static setting
  */
-export interface ProjectSetting extends Json {
-  name: string;
-  environments: Record<string, EnvMeta>;
-  currentEnv: string;
-  solution: {
-    name: string;
-    version?: string;
-  };
-  solutionSetting: SolutionSetting;
+export interface ProjectSettings extends Json {
+  appName: string;
+  version?: string;
+  projectId: string;
+  programmingLanguage?: string;
+  solutionSettings?: SolutionSettings;
 }
 
-export interface SolutionSetting extends Json {
-  resourcePlugins: string[];
+export interface SolutionSettings extends Json {
+  name: string;
+  version?: string;
+}
+
+export interface AzureSolutionSettings extends SolutionSettings {
+  hostType: string;
+  capabilities: string[];
+  azureResources: string[];
+  activeResourcePlugins: string[];
 }
 
 export interface Inputs extends Json {
@@ -57,7 +62,7 @@ export interface Context {
   logProvider: LogProvider;
   telemetryReporter: TelemetryReporter;
   cryptoProvider: CryptoProvider;
-  projectSetting: ProjectSetting;
+  projectSetting: ProjectSettings;
 }
 
 export enum Stage {
@@ -73,3 +78,13 @@ export enum Stage {
   switchEnv = "switchEnv",
   userTask = "userTask",
 }
+
+export interface LocalSettings {
+  teamsApp: Record<string, string>;
+  auth?: Record<string, string>;
+  frontend?: Record<string, string>;
+  backend?: Record<string, string>;
+  bot?: Record<string, string>;
+}
+
+export type LocalSetting = { key: keyof LocalSettings; value: Record<string, string> };

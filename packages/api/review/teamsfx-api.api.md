@@ -49,6 +49,18 @@ export interface AzureSolutionSettings extends SolutionSettings {
     hostType: string;
 }
 
+// @public (undocumented)
+interface AzureSolutionSettings_2 extends SolutionSettings_2 {
+    // (undocumented)
+    activeResourcePlugins: string[];
+    // (undocumented)
+    azureResources: string[];
+    // (undocumented)
+    capabilities: string[];
+    // (undocumented)
+    hostType: string;
+}
+
 // @public
 export interface BaseQuestion {
     default?: unknown;
@@ -149,7 +161,7 @@ interface Context_2 {
     // (undocumented)
     logProvider: LogProvider;
     // (undocumented)
-    projectSetting: ProjectSetting;
+    projectSetting: ProjectSettings_2;
     // (undocumented)
     telemetryReporter: TelemetryReporter;
     // (undocumented)
@@ -577,7 +589,10 @@ export function loadOptions(q: Question, inputs: Inputs): Promise<{
 export type LocalFunc<T> = (inputs: Inputs) => T | Promise<T>;
 
 // @public (undocumented)
-type LocalProvisionOutput = ProvisionOutput;
+type LocalSetting = {
+    key: keyof LocalSettings_2;
+    value: Record<string, string>;
+};
 
 // @public
 export interface LocalSettings {
@@ -591,6 +606,20 @@ export interface LocalSettings {
     frontend?: ConfigMap;
     // (undocumented)
     teamsApp: ConfigMap;
+}
+
+// @public (undocumented)
+interface LocalSettings_2 {
+    // (undocumented)
+    auth?: Record<string, string>;
+    // (undocumented)
+    backend?: Record<string, string>;
+    // (undocumented)
+    bot?: Record<string, string>;
+    // (undocumented)
+    frontend?: Record<string, string>;
+    // (undocumented)
+    teamsApp: Record<string, string>;
 }
 
 // @public (undocumented)
@@ -744,23 +773,6 @@ export interface ProjectConfig {
 }
 
 // @public
-interface ProjectSetting extends Json_2 {
-    // (undocumented)
-    currentEnv: string;
-    // (undocumented)
-    environments: Record<string, EnvMeta_2>;
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    solution: {
-        name: string;
-        version?: string;
-    };
-    // (undocumented)
-    solutionSetting: SolutionSetting;
-}
-
-// @public
 export interface ProjectSettings {
     // (undocumented)
     appName: string;
@@ -770,6 +782,20 @@ export interface ProjectSettings {
     projectId: string;
     // (undocumented)
     solutionSettings?: SolutionSettings;
+}
+
+// @public
+interface ProjectSettings_2 extends Json_2 {
+    // (undocumented)
+    appName: string;
+    // (undocumented)
+    programmingLanguage?: string;
+    // (undocumented)
+    projectId: string;
+    // (undocumented)
+    solutionSettings?: SolutionSettings_2;
+    // (undocumented)
+    version?: string;
 }
 
 // @public
@@ -832,7 +858,7 @@ export type ResourceConfigs = ResourceTemplates;
 
 // @public
 interface ResourcePlugin {
-    configureLocalResource?: (ctx: Context_2, localProvisionOutput: Readonly<LocalProvisionOutput>, localProvisionOutputOfOtherPlugins: Readonly<Record<PluginName, LocalProvisionOutput>>, tokenProvider: TokenProvider) => Promise<Result<LocalProvisionOutput, FxError>>;
+    configureLocalResource?: (ctx: Context_2, localProvisionOutput: Readonly<LocalSetting>, localProvisionOutputOfOtherPlugins: Readonly<LocalSettings_2>, tokenProvider: TokenProvider) => Promise<Result<LocalSettings_2, FxError>>;
     configureResource?: (ctx: Context_2, provisionOutput: Readonly<ProvisionOutput>, provisionOutputOfOtherPlugins: Readonly<Record<PluginName, ProvisionOutput>>, tokenProvider: TokenProvider) => Promise<Result<ProvisionOutput, FxError>>;
     deploy?: (ctx: Context_2, provisionOutput: Readonly<ProvisionOutput>, tokenProvider: AzureAccountProvider) => Promise<Result<{
         output: Record<string, string>;
@@ -847,7 +873,7 @@ interface ResourcePlugin {
     // (undocumented)
     name: string;
     package?: (ctx: Context_2, inputs: Inputs_2) => Promise<Result<Void, FxError>>;
-    provisionLocalResource?: (ctx: Context_2, tokenProvider: TokenProvider) => Promise<Result<LocalProvisionOutput, FxError>>;
+    provisionLocalResource?: (ctx: Context_2, tokenProvider: TokenProvider) => Promise<Result<LocalSetting, FxError>>;
     provisionResource?: (ctx: Context_2, provisionTemplate: Json, tokenProvider: TokenProvider) => Promise<Result<ProvisionOutput, FxError>>;
     publishApplication?: (ctx: Context_2, tokenProvider: AppStudioTokenProvider, inputs: Inputs_2) => Promise<Result<Void, FxError>>;
     scaffoldSourceCode?: (ctx: Context_2, inputs: Inputs_2) => Promise<Result<{
@@ -980,18 +1006,12 @@ interface SolutionPlugin {
     // (undocumented)
     name: string;
     package?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
-    provisionLocalResource?: (ctx: Context_2, tokenProvider: TokenProvider) => Promise<Result<Record<PluginName, LocalProvisionOutput>, FxError>>;
+    provisionLocalResource?: (ctx: Context_2, tokenProvider: TokenProvider) => Promise<Result<LocalSettings_2, FxError>>;
     provisionResources: (ctx: Context_2, provisionTemplates: Record<PluginName, Json>, tokenProvider: TokenProvider) => Promise<Result<Record<PluginName, ProvisionOutput>, FxError>>;
     publishApplication?: (ctx: Context_2, tokenProvider: AppStudioTokenProvider, inputs: Inputs) => Promise<Result<Void, FxError>>;
     scaffoldSourceCode?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Record<PluginName, {
         output: Record<string, string>;
     }>, FxError>>;
-}
-
-// @public (undocumented)
-interface SolutionSetting extends Json_2 {
-    // (undocumented)
-    resourcePlugins: string[];
 }
 
 // @public
@@ -1000,6 +1020,14 @@ export interface SolutionSettings extends Dict<ConfigValue> {
     name: string;
     // (undocumented)
     version: string;
+}
+
+// @public (undocumented)
+interface SolutionSettings_2 extends Json_2 {
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    version?: string;
 }
 
 // @public (undocumented)
@@ -1319,7 +1347,6 @@ declare namespace v2 {
         JsonTemplate,
         BicepTemplate,
         ProvisionOutput,
-        LocalProvisionOutput,
         ResourcePlugin,
         ResourceTempalte,
         SolutionPlugin,
@@ -1327,11 +1354,14 @@ declare namespace v2 {
         EnvMeta_2 as EnvMeta,
         Json_2 as Json,
         PluginName,
-        ProjectSetting,
-        SolutionSetting,
+        ProjectSettings_2 as ProjectSettings,
+        SolutionSettings_2 as SolutionSettings,
+        AzureSolutionSettings_2 as AzureSolutionSettings,
         Inputs_2 as Inputs,
         Context_2 as Context,
-        Stage_2 as Stage
+        Stage_2 as Stage,
+        LocalSettings_2 as LocalSettings,
+        LocalSetting
     }
 }
 export { v2 }

@@ -16,8 +16,8 @@ import {
   AzureAccountProvider,
   AppStudioTokenProvider,
 } from "../index";
-import { LocalProvisionOutput, ProvisionOutput } from "./resourcePlugin";
-import { Context, PluginName } from "./types";
+import { ProvisionOutput } from "./resourcePlugin";
+import { Context, LocalSettings, PluginName } from "./types";
 
 // Will check this with chaoyi.
 export type ResourceTempalte = unknown;
@@ -133,7 +133,7 @@ export interface SolutionPlugin {
   provisionLocalResource?: (
     ctx: Context,
     tokenProvider: TokenProvider
-  ) => Promise<Result<Record<PluginName, LocalProvisionOutput>, FxError>>;
+  ) => Promise<Result<LocalSettings, FxError>>;
 
   /**
    * get question model for lifecycle {@link Stage} (create), Questions are organized as a tree. Please check {@link QTreeNode}.

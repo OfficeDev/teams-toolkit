@@ -60,6 +60,12 @@ export interface BaseQuestion {
 }
 
 // @public (undocumented)
+type BicepTemplate = {
+    kind: "bicep";
+    template: Record<string, unknown>;
+};
+
+// @public (undocumented)
 export const CLIPlatforms: Platform[];
 
 // @public
@@ -135,6 +141,22 @@ export interface Context {
 }
 
 // @public (undocumented)
+interface Context_2 {
+    // (undocumented)
+    cryptoProvider: CryptoProvider;
+    // (undocumented)
+    envMeta: EnvMeta_2;
+    // (undocumented)
+    logProvider: LogProvider;
+    // (undocumented)
+    projectSetting: ProjectSetting;
+    // (undocumented)
+    telemetryReporter: TelemetryReporter;
+    // (undocumented)
+    userInteraction: UserInteraction;
+}
+
+// @public (undocumented)
 export interface Core {
     // (undocumented)
     buildArtifacts: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
@@ -187,6 +209,16 @@ export type EnvConfig = Dict<string>;
 
 // @public
 export interface EnvMeta {
+    // (undocumented)
+    local: boolean;
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    sideloading: boolean;
+}
+
+// @public
+interface EnvMeta_2 {
     // (undocumented)
     local: boolean;
     // (undocumented)
@@ -443,6 +475,26 @@ export interface Inputs extends Json {
     vscodeEnv?: VsCodeEnv;
 }
 
+// @public (undocumented)
+interface Inputs_2 extends Json_2 {
+    // (undocumented)
+    ignoreConfigPersist?: boolean;
+    // (undocumented)
+    ignoreLock?: boolean;
+    // (undocumented)
+    ignoreTypeCheck?: boolean;
+    // (undocumented)
+    platform: Platform;
+    // (undocumented)
+    projectPath?: string;
+    // (undocumented)
+    stage: Stage_2;
+    // (undocumented)
+    targetEnvName?: string;
+    // (undocumented)
+    vscodeEnv?: VsCodeEnv;
+}
+
 // @public
 export interface InputTextConfig extends UIConfig<string> {
     password?: boolean;
@@ -507,6 +559,15 @@ export interface IWebApplicationInfo {
 export type Json = Record<string, unknown>;
 
 // @public (undocumented)
+type Json_2 = Record<string, unknown>;
+
+// @public (undocumented)
+type JsonTemplate = {
+    kind: "json";
+    template: Json;
+};
+
+// @public (undocumented)
 export function loadOptions(q: Question, inputs: Inputs): Promise<{
     autoSkip: boolean;
     options?: StaticOptions;
@@ -528,6 +589,9 @@ export interface LocalSettings {
     // (undocumented)
     teamsApp: ConfigMap;
 }
+
+// @public (undocumented)
+type LocalProvisionOutput = ProvisionOutput;
 
 // @public (undocumented)
 export enum LogLevel {
@@ -649,7 +713,6 @@ interface Plugin_2 {
     // (undocumented)
     scaffold?: (ctx: PluginContext) => Promise<Result<any, FxError>>;
 }
-
 export { Plugin_2 as Plugin }
 
 // @public (undocumented)
@@ -667,6 +730,9 @@ export interface PluginContext extends Context {
 export type PluginIdentity = string;
 
 // @public (undocumented)
+type PluginName = string;
+
+// @public (undocumented)
 export const ProductName = "teamsfx";
 
 // @public (undocumented)
@@ -675,6 +741,23 @@ export interface ProjectConfig {
     config?: SolutionConfig;
     // (undocumented)
     settings?: ProjectSettings;
+}
+
+// @public
+interface ProjectSetting extends Json_2 {
+    // (undocumented)
+    currentEnv: string;
+    // (undocumented)
+    environments: Record<string, EnvMeta_2>;
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    solution: {
+        name: string;
+        version?: string;
+    };
+    // (undocumented)
+    solutionSetting: SolutionSetting;
 }
 
 // @public
@@ -696,6 +779,13 @@ export interface ProjectStates {
     // (undocumented)
     solution: Dict<ConfigValue>;
 }
+
+// @public (undocumented)
+type ProvisionOutput = {
+    output: Record<string, string>;
+    states: Record<string, string>;
+    secrets: Record<string, string>;
+};
 
 // @public
 export class QTreeNode {
@@ -738,8 +828,39 @@ export type ResourceConfig = ResourceTemplate;
 // @public (undocumented)
 export type ResourceConfigs = ResourceTemplates;
 
+// @public
+interface ResourcePlugin {
+    configureLocalResource?: (ctx: Context_2, localProvisionOutput: Readonly<LocalProvisionOutput>, localProvisionOutputOfOtherPlugins: Readonly<Record<PluginName, LocalProvisionOutput>>, tokenProvider: TokenProvider) => Promise<Result<LocalProvisionOutput, FxError>>;
+    configureResource?: (ctx: Context_2, provisionOutput: Readonly<ProvisionOutput>, provisionOutputOfOtherPlugins: Readonly<Record<PluginName, ProvisionOutput>>, tokenProvider: TokenProvider) => Promise<Result<ProvisionOutput, FxError>>;
+    deploy?: (ctx: Context_2, provisionOutput: Readonly<ProvisionOutput>, tokenProvider: AzureAccountProvider) => Promise<Result<{
+        output: Record<string, string>;
+    }, FxError>>;
+    // (undocumented)
+    displayName: string;
+    // (undocumented)
+    executeUserTask?: (ctx: Context_2, func: Func, inputs: Inputs_2) => Promise<Result<unknown, FxError>>;
+    generateResourceTemplate?: (ctx: Context_2, inputs: Inputs_2) => Promise<Result<ResourceTemplate_2, FxError>>;
+    // (undocumented)
+    getQuestionsForScaffolding?: (ctx: Context_2, inputs: Inputs_2) => Promise<Result<QTreeNode | undefined, FxError>>;
+    // (undocumented)
+    name: string;
+    package?: (ctx: Context_2, inputs: Inputs_2) => Promise<Result<Void, FxError>>;
+    provisionLocalResource?: (ctx: Context_2, tokenProvider: TokenProvider) => Promise<Result<LocalProvisionOutput, FxError>>;
+    provisionResource?: (ctx: Context_2, provisionTemplate: Json, tokenProvider: TokenProvider) => Promise<Result<ProvisionOutput, FxError>>;
+    publishApplication?: (ctx: Context_2, tokenProvider: AppStudioTokenProvider, inputs: Inputs_2) => Promise<Result<Void, FxError>>;
+    scaffoldSourceCode?: (ctx: Context_2, inputs: Inputs_2) => Promise<Result<{
+        output: Record<string, string>;
+    }, FxError>>;
+}
+
+// @public (undocumented)
+type ResourceTempalte = unknown;
+
 // @public (undocumented)
 export type ResourceTemplate = Dict<ConfigValue>;
+
+// @public (undocumented)
+type ResourceTemplate_2 = BicepTemplate | JsonTemplate;
 
 // @public (undocumented)
 export type ResourceTemplates = {
@@ -844,6 +965,33 @@ export interface SolutionContext extends Context {
     config: SolutionConfig;
 }
 
+// @public (undocumented)
+interface SolutionPlugin {
+    deploy?: (ctx: Context_2, provisionOutput: Readonly<Record<PluginName, ProvisionOutput>>, tokenProvider: AzureAccountProvider) => Promise<Result<Record<PluginName, {
+        output: Record<string, string>;
+    }>, FxError>>;
+    // (undocumented)
+    displayName: string;
+    executeUserTask?: (func: Func, inputs: Inputs, ctx?: Context_2) => Promise<Result<unknown, FxError>>;
+    generateResourceTemplate: (ctx: Context_2, inputs: Inputs) => Promise<Result<ResourceTempalte, FxError>>;
+    getQuestionsForScaffolding: (inputs: Inputs, ctx?: Context_2) => Promise<Result<QTreeNode | undefined, FxError>>;
+    // (undocumented)
+    name: string;
+    package?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
+    provisionLocalResource?: (ctx: Context_2, tokenProvider: TokenProvider) => Promise<Result<Record<PluginName, LocalProvisionOutput>, FxError>>;
+    provisionResources: (ctx: Context_2, provisionTemplates: Record<PluginName, Json>, tokenProvider: TokenProvider) => Promise<Result<Record<PluginName, ProvisionOutput>, FxError>>;
+    publishApplication?: (ctx: Context_2, tokenProvider: AppStudioTokenProvider, inputs: Inputs) => Promise<Result<Void, FxError>>;
+    scaffoldSourceCode?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Record<PluginName, {
+        output: Record<string, string>;
+    }>, FxError>>;
+}
+
+// @public (undocumented)
+interface SolutionSetting extends Json_2 {
+    // (undocumented)
+    resourcePlugins: string[];
+}
+
 // @public
 export interface SolutionSettings extends Dict<ConfigValue> {
     // (undocumented)
@@ -874,6 +1022,32 @@ export enum Stage {
     switchEnv = "switchEnv",
     // (undocumented)
     update = "update",
+    // (undocumented)
+    userTask = "userTask"
+}
+
+// @public (undocumented)
+enum Stage_2 {
+    // (undocumented)
+    build = "build",
+    // (undocumented)
+    create = "create",
+    // (undocumented)
+    createEnv = "createEnv",
+    // (undocumented)
+    debug = "debug",
+    // (undocumented)
+    deploy = "deploy",
+    // (undocumented)
+    package = "package",
+    // (undocumented)
+    provision = "provision",
+    // (undocumented)
+    publish = "publish",
+    // (undocumented)
+    removeEnv = "removeEnv",
+    // (undocumented)
+    switchEnv = "switchEnv",
     // (undocumented)
     userTask = "userTask"
 }
@@ -1137,6 +1311,29 @@ export interface UserInteraction {
     }>, modal: boolean, ...items: string[]): Promise<Result<string | undefined, FxError>>;
 }
 
+declare namespace v2 {
+    export {
+        ResourceTemplate_2 as ResourceTemplate,
+        JsonTemplate,
+        BicepTemplate,
+        ProvisionOutput,
+        LocalProvisionOutput,
+        ResourcePlugin,
+        ResourceTempalte,
+        SolutionPlugin,
+        Void_2 as Void,
+        EnvMeta_2 as EnvMeta,
+        Json_2 as Json,
+        PluginName,
+        ProjectSetting,
+        SolutionSetting,
+        Inputs_2 as Inputs,
+        Context_2 as Context,
+        Stage_2 as Stage
+    }
+}
+export { v2 }
+
 // @public
 export function validate<T extends string | string[] | undefined>(validSchema: ValidationSchema, value: T, inputs?: Inputs): Promise<string | undefined>;
 
@@ -1148,6 +1345,12 @@ export type Void = {};
 
 // @public (undocumented)
 export const Void: {};
+
+// @public (undocumented)
+type Void_2 = {};
+
+// @public (undocumented)
+const Void_2: {};
 
 // @public (undocumented)
 export interface VsCode {

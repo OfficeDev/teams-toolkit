@@ -18,5 +18,6 @@ cd {FolderName}
 cd tabs && npm ci && npm run build
 
 # Run unit test.
-# Set up your unit test framework, for example, mocha or jest, and add scripts for `npm run test`.
+# Currently, no opinioned solution for unit test provided during scaffolding, so,
+# set up any unit test framework you prefer (for example, mocha or jest) and update the commands accordingly in below.
 npm run test

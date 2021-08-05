@@ -15,9 +15,6 @@ jobs:
         with:
           node-version: '14'
 
-      # Checkout the code.
-      - uses: actions/checkout@v2
-
       # Build the project.
       # The way to build the current project depends on how you scaffold it.
       # Different folder structures require different commands set.
@@ -26,6 +23,7 @@ jobs:
 
       # Run unit test.
       # Currently, no opinioned solution for unit test provided during scaffolding, so,
-      # set up any unit test framework you prefer and update the commands accordingly in below.
+      # set up any unit test framework you prefer (for example, mocha or jest) and update the commands accordingly in below.
       - name: Run Unit Test
         run: cd tabs && npm run test
+ 

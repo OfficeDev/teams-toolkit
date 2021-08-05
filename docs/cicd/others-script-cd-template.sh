@@ -16,34 +16,46 @@
 # Setup environment.
 # Sufficient permissions are required to run the commands below.
 apt install -y nodejs npm git
-# If you want to install a specific version, please specify it in the end.
-# To support npx, install npm with version > 5.2.0.
-npm install @microsoft/teamsfx-cli
 
 # Checkout the code.
 git clone {RepositoryEndpoint}
 cd {FolderName}
 
+# Install the local dev dependency of @microsoft/teamsfx-cli. 
+npm ci
+
+# Build the project.
+# The way to build the current project depends on how you scaffold it.
+# Different folder structures require different commands set.
+cd tabs && npm ci && npm run build
+
+# Run unit test.
+# Currently, no opinioned solution for unit test provided during scaffolding, so,
+# set up any unit test framework you prefer (for example, mocha or jest) and update the commands accordingly in below.
+npm run test
+
+# We suggest to do the provision steps by case manually or in a separated workflow, so just comment the following steps for references.
+# After provision, you should commit .fx/env.default.json into the repository for later use.
+# You should pick required secrets from .fx/default.userdata, and export them in your environment which can be refered by the step with name 'Generate default.userdata'. 
+
 # Provision hosting environment.
-if [[ "${TEAMSFX_RUN_PROVISION}" = "true" ]]
-then
-    npx teamsfx provision --subscription ${AZURE_SUBSCRIPTION_ID}
-fi
+# npx teamsfx provision --subscription ${AZURE_SUBSCRIPTION_ID}
 
 # Commit provision configs if necessary.
-if [[ "${TEAMSFX_RUN_PROVISION}" = "true" ]]
-then
-    git add .fx
-    git commit -m "chore: commit provision configs"
-    git push
-fi
+# git add .fx/env.default.json
+# git commit -m "chore: commit provision configs"
+# git push
 
-# Validate Teams App Manifest.
-npx teamsfx validate
+# Generate default.userdata
+[ ! -z "${USERDATA_TENANT_ID}" ] && echo "solution.teamsAppTenantId=${USERDATA_TENANT_ID}" >> .fx/default.userdata
+[ ! -z "${USERDATA_CLIENT_SECRET}" ] && echo "fx-resource-aad-app-for-teams.clientSecret=${USERDATA_CLIENT_SECRET}" >> .fx/default.userdata
+[ ! -z "${USERDATA_BOT_PASSWORD}" ] && echo "fx-resource-bot.botPassword=${USERDATA_BOT_PASSWORD}" >> .fx/default.userdata
 
 # Deploy to hosting environment.
-npx teamsfx deploy
+cd .. && npx teamsfx deploy
 
+# This step is to pack the Teams App as zip file,
+# which can be used to be uploaded onto Teams Client for installation.
 # Build Teams App's Package.
 npx teamsfx build
 

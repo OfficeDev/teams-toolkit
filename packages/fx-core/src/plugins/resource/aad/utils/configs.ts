@@ -14,14 +14,6 @@ import {
   LocalSettingsFrontendKeys,
 } from "../../../../common/localSettingsConstants";
 
-// function checkAndSaveConfig(context: PluginContext, key: string, value: ConfigValue) {
-//   if (!value) {
-//     return;
-//   }
-
-//   context.config.set(key, value);
-// }
-
 export class ConfigUtils {
   public static getAadConfig(
     ctx: PluginContext,

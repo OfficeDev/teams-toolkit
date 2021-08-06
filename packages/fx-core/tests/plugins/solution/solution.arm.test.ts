@@ -73,6 +73,7 @@ describe("Generate ARM Template for project", () => {
   const fileContent: Map<string, any> = new Map();
 
   beforeEach(() => {
+    fileContent.clear();
     mocker.stub(fs, "writeFile").callsFake((path: number | PathLike, data: any) => {
       fileContent.set(path.toString(), data);
     });
@@ -83,7 +84,6 @@ describe("Generate ARM Template for project", () => {
   });
 
   it("should do nothing when no plugin implements required interface", async () => {
-    fileContent.clear();
     const mockedCtx = mockSolutionContext();
     mockedCtx.projectSettings = {
       appName: testAppName,
@@ -103,7 +103,6 @@ describe("Generate ARM Template for project", () => {
   });
 
   it("should output templates when plugin implements required interface", async () => {
-    fileContent.clear();
     const mockedCtx = mockSolutionContext();
     mockedCtx.projectSettings = {
       appName: testAppName,
@@ -152,7 +151,7 @@ Mocked simple auth output content`
     expect(fileContent.get(path.join(templateFolder, "simpleAuthProvision.bicep"))).equals(
       "Mocked simple auth provision module content"
     );
-    expect(fileContent.get(path.join(parameterFolder, "parameter.template.json"))).equals(
+    expect(fileContent.get(path.join(parameterFolder, "parameters.template.json"))).equals(
       `{
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
   "contentVersion": "1.0.0.0",
@@ -201,7 +200,7 @@ describe("Deploy ARM Template to Azure", () => {
   const SOLUTION_CONFIG = "solution";
   const inputFileContent: Map<string, any> = new Map([
     [
-      path.join(parameterFolder, "parameter.template.json"),
+      path.join(parameterFolder, "parameters.template.json"),
       `{
 "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
 "contentVersion": "1.0.0.0",
@@ -232,7 +231,7 @@ describe("Deploy ARM Template to Azure", () => {
       return inputFileContent.get(file.toString());
     });
     mocker.stub(fs, "stat").callsFake((filePath: PathLike): Promise<fs.Stats> => {
-      if (filePath === path.join(parameterFolder, "parameter.default.json")) {
+      if (filePath === path.join(parameterFolder, "parameters.default.json")) {
         throw new Error(`${filePath} does not exist.`);
       }
       return new Promise<fs.Stats>((resolve) => {
@@ -363,7 +362,7 @@ describe("Deploy ARM Template to Azure", () => {
 
     // Assert
     expect(
-      JSON.parse(resultFileContent.get(path.join(parameterFolder, "parameter.default.json")))
+      JSON.parse(resultFileContent.get(path.join(parameterFolder, "parameters.default.json")))
     ).to.deep.equals(
       JSON.parse(`{
       "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",

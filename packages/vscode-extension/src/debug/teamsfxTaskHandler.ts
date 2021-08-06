@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ProductName, SystemError } from "@microsoft/teamsfx-api";
+import { ProductName } from "@microsoft/teamsfx-api";
 import * as vscode from "vscode";
 
 import { getLocalTeamsAppId } from "./commonUtils";
@@ -10,16 +10,12 @@ import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
 import { getTeamsAppId } from "../utils/commonUtils";
 import { isValidProject } from "@microsoft/teamsfx-core";
-import { getNpmInstallLogInfo, NpmInstallLogInfo } from "./npmLogHandler";
+import { getNpmInstallLogInfo } from "./npmLogHandler";
 import * as path from "path";
-import { showError } from "../handlers";
-import {
-  errorDetail,
-  issueLink,
-  issueTemplate,
-  npmInstall,
-  npmInstallErrorMessage,
-} from "./constants";
+import { errorDetail, issueLink, issueTemplate, npmInstallFailedHintMessage } from "./constants";
+import * as StringResources from "../resources/Strings.json";
+import * as util from "util";
+import VsCodeLogInstance from "../commonlib/log";
 
 interface IRunningTeamsfxTask {
   source: string;
@@ -101,6 +97,7 @@ function onDidStartTaskProcessHandler(event: vscode.TaskProcessStartEvent): void
 }
 
 async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Promise<void> {
+  const timestamp = new Date();
   const task = event.execution.task;
   const activeTerminal = vscode.window.activeTerminal;
 
@@ -128,10 +125,7 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
         cwd = path.join(ext.workspaceUri.fsPath, cwdOption?.replace("${workspaceFolder}/", ""));
       }
       const npmInstallLogInfo = await getNpmInstallLogInfo();
-      const properties: { [key: string]: string } = {
-        [TelemetryProperty.DebugNpmInstallName]: task.name,
-        [TelemetryProperty.DebugNpmInstallExitCode]: event.exitCode + "", // "undefined" or number value
-      };
+      let validNpmInstallLogInfo = false;
       if (
         cwd !== undefined &&
         npmInstallLogInfo?.cwd !== undefined &&
@@ -139,33 +133,45 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
         event.exitCode !== undefined &&
         npmInstallLogInfo.exitCode === event.exitCode
       ) {
+        const timeDiff = timestamp.getTime() - npmInstallLogInfo.timestamp.getTime();
+        if (timeDiff >= 0 && timeDiff <= 20000) {
+          validNpmInstallLogInfo = true;
+        }
+      }
+      const properties: { [key: string]: string } = {
+        [TelemetryProperty.DebugNpmInstallName]: task.name,
+        [TelemetryProperty.DebugNpmInstallExitCode]: event.exitCode + "", // "undefined" or number value
+      };
+      if (validNpmInstallLogInfo) {
         properties[TelemetryProperty.DebugNpmInstallNodeVersion] =
           npmInstallLogInfo?.nodeVersion + ""; // "undefined" or string value
         properties[TelemetryProperty.DebugNpmInstallNpmVersion] =
           npmInstallLogInfo?.npmVersion + ""; // "undefined" or string value
         properties[TelemetryProperty.DebugNpmInstallErrorMessage] =
-          npmInstallLogInfo.errorMessage?.join("\n") + ""; // "undefined" or string value
+          npmInstallLogInfo?.errorMessage?.join("\n") + ""; // "undefined" or string value
       }
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugNpmInstall, properties);
 
       if (cwd !== undefined && event.exitCode !== undefined && event.exitCode !== 0) {
-        terminateAllRunningTeamsfxTasks();
-        if (npmInstallLogInfo !== undefined) {
-          await showError(
-            new SystemError(
-              npmInstall,
-              npmInstallErrorMessage,
-              task.name,
-              issueTemplate + errorDetail + JSON.stringify(npmInstallLogInfo),
-              issueLink,
-              npmInstallLogInfo
-            )
-          );
-        } else {
-          await showError(
-            new SystemError(npmInstall, npmInstallErrorMessage, task.name, issueTemplate, issueLink)
-          );
+        let url = `${issueLink}title=new+bug+report: Task '${task.name}' failed&body=${issueTemplate}`;
+        if (validNpmInstallLogInfo) {
+          url = `${url}${errorDetail}${JSON.stringify(npmInstallLogInfo, undefined, 4)}`;
         }
+        const issue = {
+          title: StringResources.vsc.handlers.reportIssue,
+          run: async (): Promise<void> => {
+            vscode.commands.executeCommand("vscode.open", vscode.Uri.parse(url));
+          },
+        };
+        vscode.window
+          .showErrorMessage(util.format(npmInstallFailedHintMessage, task.name, task.name), issue)
+          .then(async (button) => {
+            await button?.run();
+          });
+        await VsCodeLogInstance.error(
+          util.format(npmInstallFailedHintMessage, task.name, task.name)
+        );
+        terminateAllRunningTeamsfxTasks();
       }
     } catch {
       // ignore any error

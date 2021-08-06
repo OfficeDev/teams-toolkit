@@ -92,6 +92,7 @@ export function createTaskStopCb(
     result: TaskResult,
     serviceLogWriter?: ServiceLogWriter
   ) => {
+    const timestamp = new Date();
     const ifNpmInstall: boolean = taskTitle.includes("npm install");
     let event = background ? TelemetryEvent.PreviewService : TelemetryEvent.PreviewNpmInstall;
     let key = background
@@ -131,18 +132,25 @@ export function createTaskStopCb(
       const error = TaskFailed(taskTitle);
       if (!background && ifNpmInstall && telemetryProperties !== undefined) {
         const npmInstallLogInfo = await getNpmInstallLogInfo();
+        let validNpmInstallLogInfo = false;
         if (
           npmInstallLogInfo?.cwd !== undefined &&
           result.options?.cwd !== undefined &&
           path.relative(npmInstallLogInfo.cwd, result.options.cwd).length === 0 &&
           result.exitCode === npmInstallLogInfo.exitCode
         ) {
+          const timeDiff = timestamp.getTime() - npmInstallLogInfo.timestamp.getTime();
+          if (timeDiff >= 0 && timeDiff <= 20000) {
+            validNpmInstallLogInfo = true;
+          }
+        }
+        if (validNpmInstallLogInfo) {
           properties[TelemetryProperty.PreviewNpmInstallNodeVersion] =
-            npmInstallLogInfo.nodeVersion + "";
+            npmInstallLogInfo?.nodeVersion + "";
           properties[TelemetryProperty.PreviewNpmInstallNpmVersion] =
-            npmInstallLogInfo.npmVersion + "";
+            npmInstallLogInfo?.npmVersion + "";
           properties[TelemetryProperty.PreviewNpmInstallErrorMessage] =
-            npmInstallLogInfo.errorMessage + "";
+            npmInstallLogInfo?.errorMessage + "";
         }
       }
       if (telemetryProperties !== undefined) {

@@ -90,9 +90,6 @@ export function generateTasks(
           options: {
             cwd: "${workspaceFolder}/api",
           },
-          presentation: {
-            reveal: "silent",
-          },
           dependsOn: "backend extensions install",
         },
         {
@@ -228,9 +225,6 @@ export function generateTasks(
           command: "npm install",
           options: {
             cwd: "${workspaceFolder}/api",
-          },
-          presentation: {
-            reveal: "silent",
           },
           dependsOn: "backend extensions install",
         },

@@ -3,7 +3,7 @@
 
 export class Messages {
   public static readonly SomethingIsInvalidWithValue = (something: string, value: string): string =>
-    `'${something}' is invalid with value '${value}'.`;
+    `'${something}' is invalid with value: '${value}'.`;
   public static readonly InputValidValueForSomething = (something: string): string =>
     `Please select valid values for '${something}'.`;
   public static readonly SomethingIsMissing = (something: string): string =>

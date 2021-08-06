@@ -41,7 +41,7 @@ export const LocalSettingsBotKeys = Object.freeze({
   SkipNgrok: "skipNgrok",
   BotId: "botId",
   BotPassword: "botPassword",
-  BotAadObject: "botAadObject",
+  BotAadObjectId: "botAadObjectId",
   BotRedirectUri: "botRedirectUri",
   BotDomain: "botDomain",
   BotEndpoint: "botEndpoint",

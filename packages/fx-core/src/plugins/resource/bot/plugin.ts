@@ -602,6 +602,7 @@ export class TeamsBotImpl {
     const resourceGroupName = this.config.provision.resourceGroup;
     const webAppName = this.config.provision.siteName;
 
+    const res = [];
     const resourceId = `subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.Web/sites/${webAppName}`;
 
     const serviceClientCredentials = await this.getAzureAccountCredenial();
@@ -622,44 +623,48 @@ export class TeamsBotImpl {
       checkAzureResourcePermissionError = e;
     }
 
-    const graphToken = await this.ctx?.graphTokenProvider?.getAccessToken();
-    const userInfo = this.ctx.configOfOtherPlugins
-      .get(PluginSolution.PLUGIN_NAME)
-      ?.get(PluginSolution.USER_INFO);
-    if (!userInfo) {
-      // TODO: throw error: no userinfo in context
-      return ResultFactory.Success();
-    }
-    const userInfoObject = JSON.parse(userInfo as string);
-    const userGraphObjectId = userInfoObject["aadId"];
-    const objectId: string = this.ctx.config.get(PluginBot.OBJECT_ID) as string;
+    res.push({
+      name: BotPermissions.webAppPermissions.name,
+      roles: azureResourceRoles,
+      error: checkAzureResourcePermissionError,
+    });
 
-    let isAadOwner;
-    let checkAadPermissionError;
-    try {
-      isAadOwner = await AADPermissionControl.checkPermission(
-        graphToken as string,
-        objectId,
-        userGraphObjectId
-      );
-    } catch (e) {
-      checkAadPermissionError = e;
-    }
+    const checkBotAad = false;
+    if (checkBotAad) {
+      const graphToken = await this.ctx?.graphTokenProvider?.getAccessToken();
+      const userInfo = this.ctx.configOfOtherPlugins
+        .get(PluginSolution.PLUGIN_NAME)
+        ?.get(PluginSolution.USER_INFO);
+      if (!userInfo) {
+        // TODO: throw error: no userinfo in context
+        return ResultFactory.Success();
+      }
+      const userInfoObject = JSON.parse(userInfo as string);
+      const userGraphObjectId = userInfoObject["aadId"];
+      const objectId: string = this.ctx.config.get(PluginBot.OBJECT_ID) as string;
 
-    return ResultFactory.Success([
-      {
-        name: BotPermissions.webAppPermissions.name,
-        roles: azureResourceRoles,
-        error: checkAzureResourcePermissionError,
-      },
-      {
+      let isAadOwner;
+      let checkAadPermissionError;
+      try {
+        isAadOwner = await AADPermissionControl.checkPermission(
+          graphToken as string,
+          objectId,
+          userGraphObjectId
+        );
+      } catch (e) {
+        checkAadPermissionError = e;
+      }
+
+      res.push({
         name: BotPermissions.aadPermissions.name,
         roles: isAadOwner
           ? [BotPermissions.aadPermissions.owner]
           : [BotPermissions.aadPermissions.noPermission],
         error: checkAadPermissionError,
-      },
-    ]);
+      });
+    }
+
+    return ResultFactory.Success(res);
   }
 
   private async updateMessageEndpointOnAppStudio(endpoint: string) {

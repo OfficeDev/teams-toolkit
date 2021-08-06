@@ -3,12 +3,20 @@
 
 "use strict";
 
+export enum Browser {
+  chrome = "chrome",
+  edge = "edge",
+  default = "default",
+}
+
 export const sideloadingUrl =
   "https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}";
 export const teamsAppIdPlaceholder = "${teamsAppId}";
 export const accountHintPlaceholder = "${account-hint}";
 
 export const serviceLogHintMessage = "A complete log of this task can be found in:";
+export const openBrowserHintMessage =
+  "WARN: Failed to open the browser, please copy the preview url and paste it into your browser.";
 export const waitCtrlPlusC =
   "WARN: Closing browser will not terminate the preview process, please press Ctrl+C to terminate.";
 
@@ -32,23 +40,21 @@ export const teamsAppTenantIdConfigKey = "teamsAppTenantId";
 export const remoteTeamsAppIdConfigKey = "remoteTeamsAppId";
 export const localTeamsAppIdConfigKey = "localDebugTeamsAppId";
 
+export const spfxFolderName = "SPFx";
 export const frontendFolderName = "tabs";
 export const backendFolderName = "api";
 export const botFolderName = "bot";
 
 export const npmInstallCommand = "npm install";
+export const nodeCommand = "node";
 export const frontendStartCommand = "npx react-scripts start";
-export const backendStartJsCommand = `npx func start --javascript --port "7071" --cors "*"`;
-export const backendStartTsCommand = `npx func start --typescript --port "7071" --cors "*"`;
+export const backendStartJsCommand = `@command start --javascript --port "7071" --cors "*"`;
+export const backendStartTsCommand = `@command start --typescript --port "7071" --cors "*"`;
 export const backendWatchCommand = "npx tsc --watch";
-export const authStartCommand = "dotnet Microsoft.TeamsFx.SimpleAuth.dll"; // TODO: dependency checker
 export const ngrokStartCommand = "npx ngrok http 3978 --log=stdout";
 export const botStartJsCommand = "npx nodemon --signal SIGINT index.js";
 export const botStartTsCommand =
   "npx nodemon --exec node --signal SIGINT -r ts-node/register index.ts";
-const backendExtensionsInstallCsprojPath = "extensions.csproj";
-const backendExtensionsInstallOutputPath = "bin";
-export const backendExtensionsInstallCommand = `dotnet build ${backendExtensionsInstallCsprojPath} -o ${backendExtensionsInstallOutputPath} --ignore-failed-sources`; // TODO: dependency checker
 
 export const frontendStartPattern = /Compiled|Failed/g;
 export const backendStartPattern =
@@ -57,7 +63,17 @@ export const backendWatchPattern = /.*/g;
 export const authStartPattern = /.*/g;
 export const ngrokStartPattern = /started tunnel|failed to reconnect session/g;
 export const botStartPattern = /listening|[nodemon] app crashed/g;
+export const gulpServePattern = /^.*Finished subtask 'reload'.*/g;
 
+export const spfxInstallTitle = "spfx npm install";
+export const spfxInstallStartMessage = `execute 'npm install' under ${spfxFolderName} folder.`;
+export const spfxInstallSuccessMessage = `${spfxInstallTitle} completed successfully.`;
+export const gulpCertTitle = "gulp trust-dev-cert";
+export const gulpCertStartMessage = `execute 'gulp trust-dev-cert' under ${spfxFolderName} folder.`;
+export const gulpCertSuccessMessage = `${gulpCertTitle} completed successfully.`;
+export const gulpServeTitle = "gulp serve";
+export const gulpServeStartMessage = `execute 'gulp serve' under ${spfxFolderName} folder.`;
+export const gulpServeSuccessMessage = `${gulpServeTitle} completed successfully.`;
 export const frontendInstallTitle = "frontend npm install";
 export const frontendInstallStartMessage = `execute 'npm install' under ${frontendFolderName} folder.`;
 export const frontendInstallSuccessMessage = `${frontendInstallTitle} completed successfully.`;
@@ -93,9 +109,12 @@ export const ngrokStartTitle = "ngrok start";
 export const ngrokStartStartMessage = `execute 'ngrok http' under ${botFolderName} folder.`;
 export const ngrokStartSuccessMessage = "ngrok started successfully.";
 
-export const sideloadingTitle = "sideloading";
-export const sideloadingStartMessage = "open Teams web client.";
-export const sideloadingSuccessMessage = "Teams web client opened successfully.";
+export const previewTitle = "preview";
+export const previewStartMessage = "open Teams web client.";
+export const previewSuccessMessage = "Teams web client opened successfully.";
+export const previewSPFxTitle = "spfx preview";
+export const previewSPFxStartMessage = "open SharePoint workbench.";
+export const previewSPFxSuccessMessage = "SharePoint workbench opened successfully.";
 
 export const frontendLocalEnvPrefix = "FRONTEND_";
 export const backendLocalEnvPrefix = "BACKEND_";
@@ -113,11 +132,5 @@ export const frontendPorts: [number, string[]][] = [
   [3000, hosts],
   [5000, hosts],
 ];
-export const backendPorts: [number, string[]][] = [
-  [7071, hosts],
-  [9229, hosts],
-];
-export const botPorts: [number, string[]][] = [
-  [3978, hosts],
-  [9239, hosts],
-];
+export const backendPorts: [number, string[]][] = [[7071, hosts]];
+export const botPorts: [number, string[]][] = [[3978, hosts]];

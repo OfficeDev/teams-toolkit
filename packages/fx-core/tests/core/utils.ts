@@ -17,9 +17,7 @@ import {
   TokenProvider,
   AppStudioTokenProvider,
   TelemetryReporter,
-  Dialog,
   UserInteraction,
-  DialogMsg,
   IProgressHandler,
   SingleSelectConfig,
   MultiSelectConfig,
@@ -42,13 +40,13 @@ import {
   ok,
   Void,
   ConfigMap,
-  DialogType,
   Colors,
+  Json,
 } from "@microsoft/teamsfx-api";
 import { TokenCredential } from "@azure/core-auth";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { SolutionLoader } from "../../src/core/loader";
-import { PluginNames } from "../../src/plugins/solution/fx-solution/solution";
+import { PluginNames } from "../../src/plugins/solution/fx-solution/constants";
 import * as uuid from "uuid";
 
 export class MockSolution implements Solution {
@@ -151,6 +149,15 @@ export class MockAzureAccountProvider implements AzureAccountProvider {
     throw new Error("Method not implemented.");
   }
   setSubscription(subscriptionId: string): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
+  getAccountInfo(): Record<string, string> {
+    throw new Error("Method not implemented.");
+  }
+  getSelectedSubscription(): Promise<SubscriptionInfo | undefined> {
+    throw new Error("Method not implemented.");
+  }
+  selectSubscription(subscriptionId?: string): Promise<string> {
     throw new Error("Method not implemented.");
   }
 }
@@ -267,21 +274,6 @@ class MockTelemetryReporter implements TelemetryReporter {
   }
 }
 
-class MockDialog implements Dialog {
-  async communicate(msg: DialogMsg): Promise<DialogMsg> {
-    return new DialogMsg(DialogType.Answer, "");
-  }
-
-  createProgressBar(title: string, totalSteps: number): IProgressHandler {
-    const handler: IProgressHandler = {
-      start: async (detail?: string): Promise<void> => {},
-      next: async (detail?: string): Promise<void> => {},
-      end: async (): Promise<void> => {},
-    };
-    return handler;
-  }
-}
-
 export class MockUserInteraction implements UserInteraction {
   selectOption(config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> {
     throw new Error("Method not implemented.");
@@ -352,7 +344,6 @@ export class MockTools implements Tools {
     appStudioToken: new MockAppStudioTokenProvider(),
   };
   telemetryReporter = new MockTelemetryReporter();
-  dialog = new MockDialog();
   ui = new MockUserInteraction();
 }
 
@@ -383,7 +374,6 @@ export class MockLogProvider implements LogProvider {
 export function MockProjectSettings(appName: string): ProjectSettings {
   return {
     appName: appName,
-    currentEnv: "default",
     projectId: uuid.v4(),
     solutionSettings: {
       name: PluginNames.SOLUTION,
@@ -393,5 +383,60 @@ export function MockProjectSettings(appName: string): ProjectSettings {
       azureResources: [],
       activeResourcePlugins: [PluginNames.FE, PluginNames.LDEBUG, PluginNames.AAD, PluginNames.SA],
     } as AzureSolutionSettings,
+  };
+}
+
+export function MockPreviousVersionBefore2_3_0Context(): Json {
+  return {
+    solution: {
+      teamsAppTenantId: "tenantId",
+      localDebugTeamsAppId: "teamsAppId",
+    },
+    "fx-resource-aad-app-for-teams": {
+      local_clientId: "local_clientId",
+      local_clientSecret: "{{fx-resource-aad-app-for-teams.local_clientSecret}}",
+      local_objectId: "local_objectId",
+      local_oauth2PermissionScopeId: "local_oauth2PermissionScopeId",
+      local_tenantId: "local_tenantId",
+      local_applicationIdUris: "local_applicationIdUris",
+    },
+  };
+}
+
+export function MockPreviousVersionBefore2_3_0UserData(): Record<string, string> {
+  return {
+    "fx-resource-aad-app-for-teams.local_clientSecret": "local_clientSecret",
+  };
+}
+
+export function MockLatestVersion2_3_0Context(): Json {
+  return {
+    solution: {
+      teamsAppTenantId: "{{solution.teamsAppTenantId}}",
+      localDebugTeamsAppId: "{{solution.localDebugTeamsAppId}}",
+    },
+    "fx-resource-aad-app-for-teams": {
+      local_clientId: "{{fx-resource-aad-app-for-teams.local_clientId}}",
+      local_clientSecret: "{{fx-resource-aad-app-for-teams.local_clientSecret}}",
+      local_objectId: "{{fx-resource-aad-app-for-teams.local_objectId}}",
+      local_oauth2PermissionScopeId:
+        "{{fx-resource-aad-app-for-teams.local_oauth2PermissionScopeId}}",
+      local_tenantId: "{{fx-resource-aad-app-for-teams.local_tenantId}}",
+      local_applicationIdUris: "{{fx-resource-aad-app-for-teams.local_applicationIdUris}}",
+    },
+  };
+}
+
+export function MockLatestVersion2_3_0UserData(): Record<string, string> {
+  return {
+    "fx-resource-aad-app-for-teams.local_clientId": "local_clientId_new",
+    "fx-resource-aad-app-for-teams.local_clientSecret": "local_clientSecret_new",
+    "fx-resource-aad-app-for-teams.local_objectId": "local_objectId_new",
+    "fx-resource-aad-app-for-teams.local_oauth2PermissionScopeId":
+      "local_oauth2PermissionScopeId_new",
+    "fx-resource-aad-app-for-teams.local_tenantId": "local_tenantId_new",
+    "fx-resource-aad-app-for-teams.local_applicationIdUris": "local_applicationIdUris_new",
+    "solution.teamsAppTenantId": "tenantId_new",
+    "solution.localDebugTeamsAppId": "teamsAppId_new",
   };
 }

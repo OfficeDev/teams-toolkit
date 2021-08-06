@@ -1,15 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import {
-  ConfigMap,
-  LogProvider,
-  PluginContext,
-  LogLevel,
-  Dialog,
-  DialogMsg,
-  DialogType,
-  Platform,
-} from "@microsoft/teamsfx-api";
+import { ConfigMap, LogProvider, PluginContext, LogLevel, Platform } from "@microsoft/teamsfx-api";
 import { ResourceGroups, ResourceManagementClientContext } from "@azure/arm-resources";
 import { ServiceClientCredentials } from "@azure/ms-rest-js";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
@@ -19,6 +10,7 @@ import * as utils from "../../../../../src/plugins/resource/bot/utils/common";
 import {
   PluginAAD,
   PluginSolution,
+  PluginLocalDebug,
 } from "../../../../../src/plugins/resource/bot/resources/strings";
 import {
   Colors,
@@ -180,51 +172,34 @@ export function newPluginContext(): PluginContext {
         new Map<string, string>([
           [PluginAAD.CLIENT_ID, utils.genUUID()],
           [PluginAAD.CLIENT_SECRET, utils.genUUID()],
+          [PluginAAD.APPLICATION_ID_URIS, "anything"],
+          [PluginAAD.CLIENT_ID, "anything"],
+          [PluginAAD.CLIENT_SECRET, "anything"],
         ]),
       ],
       [
         PluginSolution.PLUGIN_NAME,
         new Map<string, string>([
-          [PluginSolution.TENANT_ID, utils.genUUID()],
           [PluginSolution.LOCATION, "Central US"],
+          [PluginSolution.RESOURCE_GROUP_NAME, "anything"],
+          [PluginSolution.M365_TENANT_ID, "anything"],
         ]),
+      ],
+      [
+        PluginLocalDebug.PLUGIN_NAME,
+        new Map<string, string>([[PluginLocalDebug.LOCAL_BOT_ENDPOINT, "anything"]]),
       ],
     ]),
     config: new ConfigMap(),
     answers: { platform: Platform.VSCode },
     projectSettings: {
       appName: "My App",
-      currentEnv: "default",
       projectId: utils.genUUID(),
       solutionSettings: {
         name: "AnyName",
         version: "0.0.1",
         capabilities: ["Bot"],
       },
-    },
-    app: {
-      manifestVersion: "1.8",
-      version: "1.0.0",
-      id: "{appId}",
-      developer: {
-        name: "Teams App, Inc.",
-        mpnId: "",
-        websiteUrl: "https://localhost:3000",
-        privacyUrl: "https://localhost:3000/privacy",
-        termsOfUseUrl: "https://localhost:3000/termsofuse",
-      },
-      name: {
-        short: "",
-      },
-      description: {
-        short: "Short description for {appName}.",
-        full: "Full description of {appName}.",
-      },
-      icons: {
-        outline: "",
-        color: "",
-      },
-      accentColor: "",
     },
     appStudioToken: {
       getAccessToken: (showDialog?: boolean) => {
@@ -267,6 +242,16 @@ export function newPluginContext(): PluginContext {
       },
       listSubscriptions: () => {
         return Promise.resolve([]);
+      },
+      getAccountInfo: () => {
+        return {};
+      },
+      getSelectedSubscription: () => {
+        return Promise.resolve({
+          subscriptionId: "subscriptionId",
+          tenantId: "tenantId",
+          subscriptionName: "subscriptionName",
+        });
       },
     },
   };

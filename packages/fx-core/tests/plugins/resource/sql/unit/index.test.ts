@@ -11,6 +11,7 @@ import * as sinon from "sinon";
 import { Databases, Servers, FirewallRules, ServerAzureADAdministrators } from "@azure/arm-sql";
 import { ApplicationTokenCredentials } from "@azure/ms-rest-nodeauth";
 import { TokenResponse } from "adal-node/lib/adal";
+import { Providers } from "@azure/arm-resources";
 import { SqlClient } from "../../../../../src/plugins/resource/sql/sqlClient";
 import { Constants } from "../../../../../src/plugins/resource/sql/constants";
 import * as commonUtils from "../../../../../src/plugins/resource/sql/utils/commonUtils";
@@ -19,7 +20,6 @@ import { UserType } from "../../../../../src/plugins/resource/sql/utils/commonUt
 chai.use(chaiAsPromised);
 
 dotenv.config();
-const testWithAzure: boolean = process.env.UT_TEST_ON_AZURE ? true : false;
 
 describe("sqlPlugin", () => {
   let sqlPlugin: SqlPlugin;
@@ -27,15 +27,11 @@ describe("sqlPlugin", () => {
   let credentials: msRestNodeAuth.TokenCredentialsBase;
 
   before(async () => {
-    if (testWithAzure) {
-      credentials = await msRestNodeAuth.interactiveLogin();
-    } else {
-      credentials = new msRestNodeAuth.ApplicationTokenCredentials(
-        faker.random.uuid(),
-        faker.internet.url(),
-        faker.internet.password()
-      );
-    }
+    credentials = new msRestNodeAuth.ApplicationTokenCredentials(
+      faker.datatype.uuid(),
+      faker.internet.url(),
+      faker.internet.password()
+    );
   });
 
   beforeEach(async () => {
@@ -87,6 +83,7 @@ describe("sqlPlugin", () => {
     sinon.stub(Servers.prototype, "createOrUpdate").resolves();
     sinon.stub(Databases.prototype, "listByServer").resolves();
     sinon.stub(Databases.prototype, "createOrUpdate").resolves();
+    sinon.stub(Providers.prototype, "register").resolves();
 
     // Act
     const provisionResult = await sqlPlugin.provision(pluginContext);
@@ -103,7 +100,9 @@ describe("sqlPlugin", () => {
     sinon.stub(FirewallRules.prototype, "deleteMethod").resolves();
     sinon.stub(ServerAzureADAdministrators.prototype, "listByServer").resolves([]);
     sinon.stub(ServerAzureADAdministrators.prototype, "createOrUpdate").resolves();
-    sinon.stub(SqlClient.prototype, "initToken").resolves();
+    sinon
+      .stub(ApplicationTokenCredentials.prototype, "getToken")
+      .resolves({ accessToken: faker.random.word() } as TokenResponse);
     sinon.stub(SqlClient.prototype, "existUser").resolves(false);
     sinon.stub(SqlClient.prototype, "addDatabaseUser").resolves();
 

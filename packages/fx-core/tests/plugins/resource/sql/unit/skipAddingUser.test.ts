@@ -17,7 +17,6 @@ import { FirewallRules, ServerAzureADAdministrators } from "@azure/arm-sql";
 chai.use(chaiAsPromised);
 
 dotenv.config();
-const testWithAzure: boolean = process.env.UT_TEST_ON_AZURE ? true : false;
 
 describe("skipAddingUser", () => {
   let sqlPlugin: SqlPlugin;
@@ -25,15 +24,11 @@ describe("skipAddingUser", () => {
   let credentials: msRestNodeAuth.TokenCredentialsBase;
 
   before(async () => {
-    if (testWithAzure) {
-      credentials = await msRestNodeAuth.interactiveLogin();
-    } else {
-      credentials = new msRestNodeAuth.ApplicationTokenCredentials(
-        faker.random.uuid(),
-        faker.internet.url(),
-        faker.internet.password()
-      );
-    }
+    credentials = new msRestNodeAuth.ApplicationTokenCredentials(
+      faker.datatype.uuid(),
+      faker.internet.url(),
+      faker.internet.password()
+    );
   });
 
   beforeEach(async () => {

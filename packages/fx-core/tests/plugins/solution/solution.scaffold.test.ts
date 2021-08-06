@@ -21,6 +21,7 @@ import * as sinon from "sinon";
 import fs, { PathLike } from "fs-extra";
 import {
   BotOptionItem,
+  HostTypeOptionAzure,
   HostTypeOptionSPFx,
   MessageExtensionItem,
   TabOptionItem,
@@ -28,136 +29,44 @@ import {
 import _ from "lodash";
 import path from "path";
 import { getTemplatesFolder } from "../../../src";
-import { SolutionError } from "../../../src/plugins/solution/fx-solution/constants";
 import { validManifest } from "./util";
-import * as uuid  from "uuid";
+import * as uuid from "uuid";
+import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
+import Container from "typedi";
+import mockedEnv from "mocked-env";
+import { ArmResourcePlugin } from "../../../src/common/armInterface";
+import { mockedFehostScaffoldArmResult, mockedSimpleAuthScaffoldArmResult } from "./util";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
-
+const fehostPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin) as Plugin &
+  ArmResourcePlugin;
+const simpleAuthPlugin = Container.get<Plugin>(ResourcePlugins.SimpleAuthPlugin) as Plugin &
+  ArmResourcePlugin;
+const localdebugPlugin = Container.get<Plugin>(ResourcePlugins.LocalDebugPlugin);
+const botPlugin = Container.get<Plugin>(ResourcePlugins.BotPlugin);
+const spfxPlugin = Container.get<Plugin>(ResourcePlugins.SpfxPlugin);
 function mockSolutionContext(): SolutionContext {
   const config: SolutionConfig = new Map();
   return {
     root: ".",
-    // app: new TeamsAppManifest(),
     config,
-    answers: {platform:Platform.VSCode},
+    answers: { platform: Platform.VSCode },
     projectSettings: undefined,
   };
 }
 
 function mockScaffoldThatAlwaysSucceed(plugin: Plugin) {
-  plugin.preScaffold = async function (
-    _ctx: PluginContext,
-  ): Promise<Result<any, FxError>> {
+  plugin.preScaffold = async function (_ctx: PluginContext): Promise<Result<any, FxError>> {
     return ok(Void);
   };
-  plugin.scaffold = async function (
-    _ctx: PluginContext,
-  ): Promise<Result<any, FxError>> {
+  plugin.scaffold = async function (_ctx: PluginContext): Promise<Result<any, FxError>> {
     return ok(Void);
   };
-  plugin.postScaffold = async function (
-    _ctx: PluginContext,
-  ): Promise<Result<any, FxError>> {
+  plugin.postScaffold = async function (_ctx: PluginContext): Promise<Result<any, FxError>> {
     return ok(Void);
   };
 }
-
-
-describe("Solution scaffold()", () => {
-  const mocker = sinon.createSandbox();
-
-  afterEach(() => {
-    mocker.restore();
-  });
-
-  it("should return error for invalid plugin names", async () => {
-    const solution = new TeamsAppSolution();
-    const mockedCtx = mockSolutionContext();
-    mockedCtx.projectSettings = {
-      appName: "my app",
-      currentEnv: "default",
-      projectId: uuid.v4(),
-      solutionSettings: {
-        hostType: HostTypeOptionSPFx.id,
-        name: "azure",
-        version: "1.0",
-        activeResourcePlugins: ["SomeInvalidPluginName"]
-      },
-    };
-    const result = await solution.scaffold(mockedCtx);
-    expect(result.isErr()).to.be.true;
-    expect(result._unsafeUnwrapErr().name).equals(SolutionError.PluginNotFound);
-  });
-
-  it("should return error if manifest file is not found", async () => {
-    const solution = new TeamsAppSolution();
-    const mockedCtx = mockSolutionContext();
-    mockedCtx.projectSettings = {
-      appName: "my app",
-      currentEnv: "default",
-      projectId: uuid.v4(),
-      solutionSettings: {
-        hostType: HostTypeOptionSPFx.id,
-        name: "azure",
-        version: "1.0",
-        activeResourcePlugins: [solution.fehostPlugin.name]
-      },
-    };
-    // We leverage the fact that in testing env, this is not file at `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}` 
-    // So we even don't need to mock fs.readJson
-    const result = await solution.scaffold(mockedCtx);
-    expect(result.isErr()).to.be.true;
-    expect(result._unsafeUnwrapErr().name).equals(SolutionError.FailedToLoadManifestFile);
-  });
-});
-
-describe("Solution scaffold() reading manifest file with no app name", () => {
-  const mocker = sinon.createSandbox();
-  const fileContent: Map<string, any> = new Map();
-
-  const manifestWithNoAppName = _.cloneDeep(validManifest);
-  manifestWithNoAppName.name.short = "";
-
-  beforeEach(() => {
-    mocker.stub(fs, "writeFile").callsFake((path: number | PathLike, data: any) => {
-      fileContent.set(path.toString(), data);
-    });
-    // mocker.stub(fs, "writeFile").resolves();
-    mocker.stub(fs, "writeJSON").callsFake((file: string, obj: any) => {
-      fileContent.set(file, JSON.stringify(obj));
-    });
-    mocker.stub(fs, "readJson").resolves(manifestWithNoAppName);
-    // Uses stub<any, any> to circumvent type check. Beacuse sinon fails to mock my target overload.
-    mocker.stub<any, any>(fs, "copy").resolves();
-  });
-
-  afterEach(() => {
-    mocker.restore();
-  });
-
-  it("should return error", async () => {
-    const solution = new TeamsAppSolution();
-    const mockedCtx = mockSolutionContext();
-    mockedCtx.projectSettings = {
-      appName: "my app",
-      currentEnv: "default",
-      projectId: uuid.v4(),
-      solutionSettings: {
-        hostType: HostTypeOptionSPFx.id,
-        name: "azure",
-        version: "1.0",
-        activeResourcePlugins: [solution.fehostPlugin.name]
-      },
-    };
-    const result = await solution.scaffold(mockedCtx);
-    expect(result.isErr()).to.be.true;
-    expect(result._unsafeUnwrapErr().name).equals(SolutionError.FailedToLoadManifestFile);
-    expect(result._unsafeUnwrapErr().message).equals("Name is missing");
-  });
-
-});
 
 describe("Solution scaffold() reading valid manifest file", () => {
   const mocker = sinon.createSandbox();
@@ -174,7 +83,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
     });
     mocker.stub(fs, "readJson").resolves(validManifest);
     mocker.stub<any, any>(fs, "pathExists").withArgs(readmePath).resolves(true);
-    mocker.stub(fs, "copy").callsFake((src:string, dest: string) => {
+    mocker.stub(fs, "copy").callsFake((src: string, dest: string) => {
       fileContent.set(dest, mockedReadMeContent);
     });
   });
@@ -189,18 +98,17 @@ describe("Solution scaffold() reading valid manifest file", () => {
     const mockedCtx = mockSolutionContext();
     mockedCtx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
-        hostType: HostTypeOptionSPFx.id,
+        hostType: HostTypeOptionAzure.id,
         name: "azure",
         version: "1.0",
-        activeResourcePlugins: [solution.fehostPlugin.name],
-        capabilities: [TabOptionItem.id]
+        activeResourcePlugins: [fehostPlugin.name],
+        capabilities: [TabOptionItem.id],
       },
     };
-    mockScaffoldThatAlwaysSucceed(solution.fehostPlugin);
-    
+    mockScaffoldThatAlwaysSucceed(fehostPlugin);
+    mockScaffoldThatAlwaysSucceed(localdebugPlugin);
     const result = await solution.scaffold(mockedCtx);
     expect(result.isOk()).to.be.true;
   });
@@ -211,18 +119,18 @@ describe("Solution scaffold() reading valid manifest file", () => {
     const mockedCtx = mockSolutionContext();
     mockedCtx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
-        hostType: HostTypeOptionSPFx.id,
+        hostType: HostTypeOptionAzure.id,
         name: "azure",
         version: "1.0",
-        activeResourcePlugins: [solution.fehostPlugin.name, solution.botPlugin.name],
-        capabilities: [TabOptionItem.id, BotOptionItem.id]
+        activeResourcePlugins: [fehostPlugin.name, botPlugin.name],
+        capabilities: [TabOptionItem.id, BotOptionItem.id],
       },
     };
-    mockScaffoldThatAlwaysSucceed(solution.fehostPlugin);
-    mockScaffoldThatAlwaysSucceed(solution.botPlugin);
+    mockScaffoldThatAlwaysSucceed(fehostPlugin);
+    mockScaffoldThatAlwaysSucceed(botPlugin);
+    mockScaffoldThatAlwaysSucceed(localdebugPlugin);
     const result = await solution.scaffold(mockedCtx);
     expect(result.isOk()).to.be.true;
     expect(fileContent.get(`${mockedCtx.root}/README.md`)).equals(mockedReadMeContent);
@@ -234,21 +142,99 @@ describe("Solution scaffold() reading valid manifest file", () => {
     const mockedCtx = mockSolutionContext();
     mockedCtx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
-        hostType: HostTypeOptionSPFx.id,
+        hostType: HostTypeOptionAzure.id,
         name: "azure",
         version: "1.0",
-        activeResourcePlugins: [solution.fehostPlugin.name, solution.botPlugin.name],
-        capabilities: [TabOptionItem.id, MessageExtensionItem.id]
+        activeResourcePlugins: [fehostPlugin.name, botPlugin.name],
+        capabilities: [TabOptionItem.id, MessageExtensionItem.id],
       },
     };
-    mockScaffoldThatAlwaysSucceed(solution.fehostPlugin);
-    mockScaffoldThatAlwaysSucceed(solution.botPlugin);
+    mockScaffoldThatAlwaysSucceed(fehostPlugin);
+    mockScaffoldThatAlwaysSucceed(botPlugin);
+    mockScaffoldThatAlwaysSucceed(localdebugPlugin);
     const result = await solution.scaffold(mockedCtx);
     expect(result.isOk()).to.be.true;
     expect(fileContent.get(`${mockedCtx.root}/README.md`)).equals(mockedReadMeContent);
   });
 
+  it("should work and generate arm template when project requires Azure services", async () => {
+    // add dedicated test case to test ARM feature enabled behavior
+    const restore = mockedEnv({
+      TEAMSFX_ARM_SUPPORT: "1",
+    });
+
+    fileContent.clear();
+    const solution = new TeamsAppSolution();
+    const mockedCtx = mockSolutionContext();
+    mockedCtx.projectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [simpleAuthPlugin.name],
+        capabilities: [TabOptionItem.id],
+      },
+    };
+    mockScaffoldThatAlwaysSucceed(fehostPlugin);
+    mockScaffoldThatAlwaysSucceed(simpleAuthPlugin);
+    mockScaffoldThatAlwaysSucceed(localdebugPlugin);
+
+    // mock plugin behavior
+    mocker.stub(fehostPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
+      return ok(mockedFehostScaffoldArmResult);
+    });
+
+    mocker.stub(simpleAuthPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
+      return ok(mockedSimpleAuthScaffoldArmResult);
+    });
+
+    const result = await solution.scaffold(mockedCtx);
+    expect(result.isOk()).to.be.true;
+    // only need to check whether related files exist, tests to the content is covered by other test cases
+    expect(fileContent.size).equals(5); // there's a readme file
+    expect(fileContent.has(path.join("./infra/azure/templates", "main.bicep"))).to.be.true;
+    expect(fileContent.has(path.join("./infra/azure/templates", "frontendHostingProvision.bicep")))
+      .to.be.true;
+    expect(fileContent.has(path.join("./infra/azure/templates", "simpleAuthProvision.bicep"))).to.be
+      .true;
+    expect(fileContent.has(path.join("./infra/azure/parameters", "parameters.template.json"))).to.be
+      .true;
+
+    restore();
+  });
+
+  it("should work and not generate arm template when project does not require Azure services", async () => {
+    // add dedicated test case to test ARM feature enabled behavior
+    const restore = mockedEnv({
+      TEAMSFX_ARM_SUPPORT: "1",
+    });
+
+    fileContent.clear();
+    const solution = new TeamsAppSolution();
+    const mockedCtx = mockSolutionContext();
+    mockedCtx.projectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionSPFx.id,
+        name: "spfx",
+        version: "1.0",
+        activeResourcePlugins: [spfxPlugin.name],
+        capabilities: [TabOptionItem.id],
+      },
+    };
+    mockScaffoldThatAlwaysSucceed(spfxPlugin);
+    mockScaffoldThatAlwaysSucceed(localdebugPlugin);
+
+    const result = await solution.scaffold(mockedCtx);
+    expect(result.isOk()).to.be.true;
+    // only need to check whether related files exist, tests to the content is covered by other test cases
+    expect(fileContent.size).equals(1); // only a readme file is generated
+
+    restore();
+  });
 });

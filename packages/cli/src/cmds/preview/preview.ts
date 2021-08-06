@@ -18,7 +18,6 @@ import {
   Result,
 } from "@microsoft/teamsfx-api";
 import { FxCore } from "@microsoft/teamsfx-core";
-import open from "open";
 
 import { YargsCommand } from "../../yargsCommand";
 import * as utils from "../../utils";
@@ -37,6 +36,15 @@ import {
 } from "../../telemetry/cliTelemetryEvents";
 import { ServiceLogWriter } from "./serviceLogWriter";
 import CLIUIInstance from "../../userInteraction";
+import { AzureNodeChecker } from "./depsChecker/azureNodeChecker";
+import { DotnetChecker } from "./depsChecker/dotnetChecker";
+import { FuncToolChecker } from "./depsChecker/funcToolChecker";
+import { DepsChecker } from "./depsChecker/checker";
+import { cliEnvCheckerLogger } from "./depsChecker/cliLogger";
+import { CLIAdapter } from "./depsChecker/cliAdapter";
+import { cliEnvCheckerTelemetry } from "./depsChecker/cliTelemetry";
+import { isWindows } from "./depsChecker/common";
+import { URL } from "url";
 
 export default class Preview extends YargsCommand {
   public readonly commandHead = `preview`;
@@ -46,7 +54,7 @@ export default class Preview extends YargsCommand {
   private backgroundTasks: Task[] = [];
   private readonly telemetryProperties: { [key: string]: string } = {};
   private serviceLogWriter: ServiceLogWriter | undefined;
-
+  private sharepointSiteUrl: string | undefined;
   public builder(yargs: Argv): Argv<any> {
     yargs.option("local", {
       description: "Preview the application from local, exclusive with --remote",
@@ -62,6 +70,18 @@ export default class Preview extends YargsCommand {
       description: "Select root folder of the project",
       string: true,
       default: "./",
+    });
+    yargs.option("browser", {
+      description: "Select browser to open Teams web client",
+      string: true,
+      choices: [constants.Browser.chrome, constants.Browser.edge, constants.Browser.default],
+      default: constants.Browser.default,
+    });
+    yargs.option("sharepoint-site", {
+      description:
+        "SharePoint site URL, like {your-tenant-name}.sharepoint.com [only for SPFx project remote preview]",
+      array: false,
+      string: true,
     });
 
     return yargs.version(false);
@@ -88,6 +108,22 @@ export default class Preview extends YargsCommand {
         .withRootFolder(workspaceFolder)
         .sendTelemetryEvent(TelemetryEvent.PreviewStart, this.telemetryProperties);
 
+      const browser = args.browser as constants.Browser;
+      this.telemetryProperties[TelemetryProperty.PreviewBrowser] = browser;
+
+      // parse sharepoint site url to get workbench url
+      if (args["sharepoint-site"]) {
+        try {
+          let spSite = args["sharepoint-site"] as string;
+          if (!spSite.startsWith("https")) {
+            spSite = `https://${spSite}`;
+          }
+          const spWorkbenchHttpsUrl = new URL("_layouts/workbench.aspx", spSite);
+          this.sharepointSiteUrl = spWorkbenchHttpsUrl.toString();
+        } catch (error) {
+          throw errors.InvalidSharePointSiteURL(error);
+        }
+      }
       if (args.local && args.remote) {
         throw errors.ExclusiveLocalRemoteOptions();
       }
@@ -97,8 +133,8 @@ export default class Preview extends YargsCommand {
 
       const result =
         previewType === "local"
-          ? await this.localPreview(workspaceFolder)
-          : await this.remotePreview(workspaceFolder);
+          ? await this.localPreview(workspaceFolder, browser)
+          : await this.remotePreview(workspaceFolder, browser);
       if (result.isErr()) {
         throw result.error;
       }
@@ -114,9 +150,10 @@ export default class Preview extends YargsCommand {
     }
   }
 
-  private async localPreview(workspaceFolder: string): Promise<Result<null, FxError>> {
-    // TODO: check dependencies
-
+  private async localPreview(
+    workspaceFolder: string,
+    browser: constants.Browser
+  ): Promise<Result<null, FxError>> {
     let coreResult = await activate();
     if (coreResult.isErr()) {
       return err(coreResult.error);
@@ -148,9 +185,10 @@ export default class Preview extends YargsCommand {
     const includeSpfx = activeResourcePlugins.some(
       (pluginName) => pluginName === constants.spfxPluginName
     );
-    // TODO: remove when SPFx preview is ready
+
     if (includeSpfx) {
-      return err(errors.SPFxNotSupported());
+      const spfxRoot = path.join(workspaceFolder, constants.spfxFolderName);
+      return this.spfxPreview(spfxRoot, browser, "https://localhost:5432/workbench");
     }
 
     const frontendRoot = path.join(workspaceFolder, constants.frontendFolderName);
@@ -167,6 +205,12 @@ export default class Preview extends YargsCommand {
     if (includeBot && !(await fs.pathExists(botRoot))) {
       return err(errors.RequiredPathNotExists(botRoot));
     }
+
+    const envCheckerResult = await this.handleDependences(includeBackend);
+    if (envCheckerResult.isErr()) {
+      return err(envCheckerResult.error);
+    }
+    const [funcToolChecker, dotnetChecker] = envCheckerResult.value;
 
     // clear background tasks
     this.backgroundTasks = [];
@@ -192,7 +236,8 @@ export default class Preview extends YargsCommand {
       inputs,
       includeFrontend ? frontendRoot : undefined,
       includeBackend ? backendRoot : undefined,
-      includeBot && skipNgrok ? botRoot : undefined
+      includeBot && skipNgrok ? botRoot : undefined,
+      dotnetChecker
     );
     if (result.isErr()) {
       return result;
@@ -209,15 +254,19 @@ export default class Preview extends YargsCommand {
     }
 
     /* === start services === */
-    const programmingLanguage = config?.config
-      ?.get(constants.solutionPluginName)
-      ?.get(constants.programmingLanguageConfigKey) as string;
+    const programmingLanguage = config?.settings?.programmingLanguage as string;
+    if (programmingLanguage === undefined || programmingLanguage.length === 0) {
+      return err(errors.MissingProgrammingLanguageSetting());
+    }
+
     result = await this.startServices(
       workspaceFolder,
       programmingLanguage,
       includeFrontend ? frontendRoot : undefined,
       includeBackend ? backendRoot : undefined,
-      includeBot ? botRoot : undefined
+      includeBot ? botRoot : undefined,
+      dotnetChecker,
+      funcToolChecker
     );
     if (result.isErr()) {
       return result;
@@ -248,14 +297,195 @@ export default class Preview extends YargsCommand {
     }
 
     /* === open teams web client === */
-    await this.openTeamsWebClient(tenantId.length === 0 ? undefined : tenantId, localTeamsAppId);
+    result = await this.openTeamsWebClient(
+      tenantId.length === 0 ? undefined : tenantId,
+      localTeamsAppId,
+      browser
+    );
+    if (result.isErr()) {
+      return result;
+    }
 
     cliLogger.necessaryLog(LogLevel.Warning, constants.waitCtrlPlusC);
 
     return ok(null);
   }
 
-  private async remotePreview(workspaceFolder: string): Promise<Result<null, FxError>> {
+  private async spfxPreviewSetup(spfxRoot: string): Promise<Result<null, FxError>> {
+    // init service log writer
+    this.serviceLogWriter = new ServiceLogWriter();
+    await this.serviceLogWriter.init();
+
+    // run npm install for spfx
+    const spfxInstallTask = new Task(
+      constants.spfxInstallTitle,
+      false,
+      constants.npmInstallCommand,
+      undefined,
+      {
+        shell: true,
+        cwd: spfxRoot,
+      }
+    );
+
+    const spfxInstallBar = CLIUIInstance.createProgressBar(constants.spfxInstallTitle, 1);
+    const spfxInstallStartCb = commonUtils.createTaskStartCb(
+      spfxInstallBar,
+      constants.spfxInstallStartMessage,
+      this.telemetryProperties
+    );
+    const spfxInstallStopCb = commonUtils.createTaskStopCb(
+      spfxInstallBar,
+      constants.spfxInstallSuccessMessage,
+      this.telemetryProperties
+    );
+
+    let result = await spfxInstallTask?.wait(spfxInstallStartCb, spfxInstallStopCb);
+    if (result.isErr()) {
+      return err(result.error);
+    }
+
+    // run gulp trust-dev-cert
+    const gulpCertTask = new Task(
+      constants.gulpCertTitle,
+      false,
+      constants.nodeCommand,
+      [`${spfxRoot}/node_modules/gulp/bin/gulp.js`, "trust-dev-cert", "--no-color"],
+      {
+        shell: false,
+        cwd: spfxRoot,
+      }
+    );
+
+    const gulpCertBar = CLIUIInstance.createProgressBar(constants.gulpCertTitle, 1);
+    const gulpCertStartCb = commonUtils.createTaskStartCb(
+      gulpCertBar,
+      constants.gulpCertStartMessage,
+      this.telemetryProperties
+    );
+    const gulpCertStopCb = commonUtils.createTaskStopCb(
+      gulpCertBar,
+      constants.gulpCertSuccessMessage,
+      this.telemetryProperties
+    );
+
+    result = await gulpCertTask?.wait(gulpCertStartCb, gulpCertStopCb);
+    if (result.isErr()) {
+      return err(result.error);
+    }
+
+    // run gulp serve
+    const gulpServeTask = new Task(
+      constants.gulpServeTitle,
+      true,
+      constants.nodeCommand,
+      [`${spfxRoot}/node_modules/gulp/bin/gulp.js`, "serve", "--nobrowser", "--no-color"],
+      {
+        shell: false,
+        cwd: spfxRoot,
+      }
+    );
+    this.backgroundTasks.push(gulpServeTask);
+
+    const gulpServeBar = CLIUIInstance.createProgressBar(constants.gulpServeTitle, 1);
+    const gulpServeStartCb = commonUtils.createTaskStartCb(
+      gulpServeBar,
+      constants.gulpServeStartMessage,
+      this.telemetryProperties
+    );
+    const gulpServeStopCb = commonUtils.createTaskStopCb(
+      gulpServeBar,
+      constants.gulpServeSuccessMessage,
+      this.telemetryProperties
+    );
+
+    result = await gulpServeTask?.waitFor(
+      constants.gulpServePattern,
+      gulpServeStartCb,
+      gulpServeStopCb,
+      this.serviceLogWriter,
+      cliLogger
+    );
+    if (result.isErr()) {
+      return err(result.error);
+    }
+    return ok(null);
+  }
+
+  private async openSPFxWebClient(
+    browser: constants.Browser,
+    url: string
+  ): Promise<Result<null, FxError>> {
+    cliTelemetry.sendTelemetryEvent(
+      TelemetryEvent.PreviewSPFxOpenBrowserStart,
+      this.telemetryProperties
+    );
+
+    const previewBar = CLIUIInstance.createProgressBar(constants.previewSPFxTitle, 1);
+    await previewBar.start(`${constants.previewSPFxStartMessage}`);
+    const message = [
+      {
+        content: `preview url: `,
+        color: Colors.WHITE,
+      },
+      {
+        content: url,
+        color: Colors.BRIGHT_CYAN,
+      },
+    ];
+    cliLogger.necessaryLog(LogLevel.Info, utils.getColorizedString(message));
+    try {
+      await commonUtils.openBrowser(browser, url);
+    } catch {
+      const error = errors.OpeningBrowserFailed(browser);
+      cliTelemetry.sendTelemetryErrorEvent(
+        TelemetryEvent.PreviewSPFxOpenBrowser,
+        error,
+        this.telemetryProperties
+      );
+      cliLogger.necessaryLog(LogLevel.Warning, constants.openBrowserHintMessage);
+      cliLogger.necessaryLog(LogLevel.Warning, constants.waitCtrlPlusC);
+      return ok(null);
+    }
+    await previewBar.next(constants.previewSPFxSuccessMessage);
+    await previewBar.end();
+
+    cliTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewSPFxOpenBrowser, {
+      ...this.telemetryProperties,
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+    });
+
+    cliLogger.necessaryLog(LogLevel.Warning, constants.waitCtrlPlusC);
+    return ok(null);
+  }
+
+  private async spfxPreview(
+    spfxRoot: string,
+    browser: constants.Browser,
+    url: string
+  ): Promise<Result<null, FxError>> {
+    if (!(await fs.pathExists(spfxRoot))) {
+      return err(errors.RequiredPathNotExists(spfxRoot));
+    }
+    {
+      const result = await this.spfxPreviewSetup(spfxRoot);
+      if (result.isErr()) {
+        return err(result.error);
+      }
+    }
+    {
+      const result = await this.openSPFxWebClient(browser, url);
+      if (result.isErr()) {
+        return err(result.error);
+      }
+    }
+    return ok(null);
+  }
+
+  private async remotePreview(
+    workspaceFolder: string,
+    browser: constants.Browser
+  ): Promise<Result<null, FxError>> {
     /* === get remote teams app id === */
     const coreResult = await activate();
     if (coreResult.isErr()) {
@@ -279,9 +509,12 @@ export default class Preview extends YargsCommand {
     const includeSpfx = activeResourcePlugins.some(
       (pluginName) => pluginName === constants.spfxPluginName
     );
-    // TODO: remove when SPFx preview is ready
     if (includeSpfx) {
-      return err(errors.SPFxNotSupported());
+      if (!this.sharepointSiteUrl) {
+        return err(errors.NoUrlForSPFxRemotePreview());
+      }
+      const spfxRoot = path.join(workspaceFolder, constants.spfxFolderName);
+      return this.spfxPreview(spfxRoot, browser, this.sharepointSiteUrl);
     }
 
     const tenantId = config?.config
@@ -295,16 +528,30 @@ export default class Preview extends YargsCommand {
     }
 
     /* === open teams web client === */
-    await this.openTeamsWebClient(tenantId.length === 0 ? undefined : tenantId, remoteTeamsAppId);
+    const result = await this.openTeamsWebClient(
+      tenantId.length === 0 ? undefined : tenantId,
+      remoteTeamsAppId,
+      browser
+    );
+    if (result.isErr()) {
+      return result;
+    }
 
     return ok(null);
   }
 
   private async startNgrok(botRoot: string): Promise<Result<null, FxError>> {
     // bot npm install
-    const botInstallTask = new Task(constants.botInstallTitle, constants.npmInstallCommand, false, {
-      cwd: botRoot,
-    });
+    const botInstallTask = new Task(
+      constants.botInstallTitle,
+      false,
+      constants.npmInstallCommand,
+      undefined,
+      {
+        shell: true,
+        cwd: botRoot,
+      }
+    );
     const botInstallBar = CLIUIInstance.createProgressBar(constants.botInstallTitle, 1);
     const botInstallStartCb = commonUtils.createTaskStartCb(
       botInstallBar,
@@ -322,9 +569,16 @@ export default class Preview extends YargsCommand {
     }
 
     // start ngrok
-    const ngrokStartTask = new Task(constants.ngrokStartTitle, constants.ngrokStartCommand, true, {
-      cwd: botRoot,
-    });
+    const ngrokStartTask = new Task(
+      constants.ngrokStartTitle,
+      true,
+      constants.ngrokStartCommand,
+      undefined,
+      {
+        shell: true,
+        cwd: botRoot,
+      }
+    );
     this.backgroundTasks.push(ngrokStartTask);
     const ngrokStartBar = CLIUIInstance.createProgressBar(constants.ngrokStartTitle, 1);
     const ngrokStartStartCb = commonUtils.createTaskStartCb(
@@ -354,15 +608,18 @@ export default class Preview extends YargsCommand {
     inputs: Inputs,
     frontendRoot: string | undefined,
     backendRoot: string | undefined,
-    botRoot: string | undefined
+    botRoot: string | undefined,
+    dotnetChecker: DotnetChecker
   ): Promise<Result<null, FxError>> {
     let frontendInstallTask: Task | undefined;
     if (frontendRoot !== undefined) {
       frontendInstallTask = new Task(
         constants.frontendInstallTitle,
-        constants.npmInstallCommand,
         false,
+        constants.npmInstallCommand,
+        undefined,
         {
+          shell: true,
           cwd: frontendRoot,
         }
       );
@@ -373,17 +630,22 @@ export default class Preview extends YargsCommand {
     if (backendRoot !== undefined) {
       backendInstallTask = new Task(
         constants.backendInstallTitle,
-        constants.npmInstallCommand,
         false,
+        constants.npmInstallCommand,
+        undefined,
         {
+          shell: true,
           cwd: backendRoot,
         }
       );
       backendExtensionsInstallTask = new Task(
         constants.backendExtensionsInstallTitle,
-        constants.backendExtensionsInstallCommand,
         false,
+        // env checker: use dotnet execPath
+        await dotnetChecker.getDotnetExecPath(),
+        ["build", "extensions.csproj", "-o", "bin", "--ignore-failed-sources"],
         {
+          shell: false,
           cwd: backendRoot,
         }
       );
@@ -391,9 +653,16 @@ export default class Preview extends YargsCommand {
 
     let botInstallTask: Task | undefined;
     if (botRoot !== undefined) {
-      botInstallTask = new Task(constants.botInstallTitle, constants.npmInstallCommand, false, {
-        cwd: botRoot,
-      });
+      botInstallTask = new Task(
+        constants.botInstallTitle,
+        false,
+        constants.npmInstallCommand,
+        undefined,
+        {
+          shell: true,
+          cwd: botRoot,
+        }
+      );
     }
 
     const frontendInstallBar = CLIUIInstance.createProgressBar(constants.frontendInstallTitle, 1);
@@ -472,16 +741,20 @@ export default class Preview extends YargsCommand {
     programmingLanguage: string,
     frontendRoot: string | undefined,
     backendRoot: string | undefined,
-    botRoot: string | undefined
+    botRoot: string | undefined,
+    dotnetChecker: DotnetChecker,
+    funcToolChecker: FuncToolChecker
   ): Promise<Result<null, FxError>> {
     let frontendStartTask: Task | undefined;
     if (frontendRoot !== undefined) {
       const env = await commonUtils.getFrontendLocalEnv(workspaceFolder);
       frontendStartTask = new Task(
         constants.frontendStartTitle,
-        constants.frontendStartCommand,
         true,
+        constants.frontendStartCommand,
+        undefined,
         {
+          shell: true,
           cwd: frontendRoot,
           env: commonUtils.mergeProcessEnv(env),
         }
@@ -493,10 +766,18 @@ export default class Preview extends YargsCommand {
     if (frontendRoot !== undefined) {
       const cwd = await commonUtils.getAuthServicePath(workspaceFolder);
       const env = await commonUtils.getAuthLocalEnv(workspaceFolder);
-      authStartTask = new Task(constants.authStartTitle, constants.authStartCommand, true, {
-        cwd,
-        env: commonUtils.mergeProcessEnv(env),
-      });
+      authStartTask = new Task(
+        constants.authStartTitle,
+        true,
+        // env checker: use dotnet execPath
+        await dotnetChecker.getDotnetExecPath(),
+        ["Microsoft.TeamsFx.SimpleAuth.dll"],
+        {
+          shell: false,
+          cwd,
+          env: commonUtils.mergeProcessEnv(env),
+        }
+      );
       this.backgroundTasks.push(authStartTask);
     }
 
@@ -507,9 +788,18 @@ export default class Preview extends YargsCommand {
       const mergedEnv = commonUtils.mergeProcessEnv(env);
       const command =
         programmingLanguage === constants.ProgrammingLanguage.typescript
-          ? constants.backendStartTsCommand
-          : constants.backendStartJsCommand;
-      backendStartTask = new Task(constants.backendStartTitle, command, true, {
+          ? // env checker: use func command
+            constants.backendStartTsCommand.replace(
+              "@command",
+              await funcToolChecker.getFuncCommand()
+            )
+          : constants.backendStartJsCommand.replace(
+              "@command",
+              await funcToolChecker.getFuncCommand()
+            );
+
+      backendStartTask = new Task(constants.backendStartTitle, true, command, undefined, {
+        shell: isWindows() ? "cmd.exe" : true,
         cwd: backendRoot,
         env: mergedEnv,
       });
@@ -517,9 +807,11 @@ export default class Preview extends YargsCommand {
       if (programmingLanguage === constants.ProgrammingLanguage.typescript) {
         backendWatchTask = new Task(
           constants.backendWatchTitle,
-          constants.backendWatchCommand,
           true,
+          constants.backendWatchCommand,
+          undefined,
           {
+            shell: true,
             cwd: backendRoot,
             env: mergedEnv,
           }
@@ -535,7 +827,8 @@ export default class Preview extends YargsCommand {
           ? constants.botStartTsCommand
           : constants.botStartJsCommand;
       const env = await commonUtils.getBotLocalEnv(workspaceFolder);
-      botStartTask = new Task(constants.botStartTitle, command, true, {
+      botStartTask = new Task(constants.botStartTitle, true, command, undefined, {
+        shell: true,
         cwd: botRoot,
         env: commonUtils.mergeProcessEnv(env),
       });
@@ -648,7 +941,8 @@ export default class Preview extends YargsCommand {
 
   private async openTeamsWebClient(
     tenantIdFromConfig: string | undefined,
-    teamsAppId: string
+    teamsAppId: string,
+    browser: constants.Browser
   ): Promise<Result<null, FxError>> {
     cliTelemetry.sendTelemetryEvent(
       TelemetryEvent.PreviewSideloadingStart,
@@ -685,11 +979,11 @@ export default class Preview extends YargsCommand {
       sideloadingUrl = sideloadingUrl.replace(constants.accountHintPlaceholder, "");
     }
 
-    const sideloadingBar = CLIUIInstance.createProgressBar(constants.sideloadingTitle, 1);
-    await sideloadingBar.start(`${constants.sideloadingStartMessage}`);
+    const previewBar = CLIUIInstance.createProgressBar(constants.previewTitle, 1);
+    await previewBar.start(`${constants.previewStartMessage}`);
     const message = [
       {
-        content: `sideloading url: `,
+        content: `preview url: `,
         color: Colors.WHITE,
       },
       {
@@ -698,9 +992,20 @@ export default class Preview extends YargsCommand {
       },
     ];
     cliLogger.necessaryLog(LogLevel.Info, utils.getColorizedString(message));
-    await open(sideloadingUrl);
-    await sideloadingBar.next(constants.sideloadingSuccessMessage);
-    await sideloadingBar.end();
+    try {
+      await commonUtils.openBrowser(browser, sideloadingUrl);
+    } catch {
+      const error = errors.OpeningBrowserFailed(browser);
+      cliTelemetry.sendTelemetryErrorEvent(
+        TelemetryEvent.PreviewSideloading,
+        error,
+        this.telemetryProperties
+      );
+      cliLogger.necessaryLog(LogLevel.Warning, constants.openBrowserHintMessage);
+      return ok(null);
+    }
+    await previewBar.next(constants.previewSuccessMessage);
+    await previewBar.end();
 
     cliTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewSideloading, {
       ...this.telemetryProperties,
@@ -714,5 +1019,38 @@ export default class Preview extends YargsCommand {
       await task.terminate();
     }
     this.backgroundTasks = [];
+  }
+
+  private async handleDependences(
+    hasBackend: boolean
+  ): Promise<Result<[FuncToolChecker, DotnetChecker], FxError>> {
+    const cliAdapter = new CLIAdapter(hasBackend, cliEnvCheckerTelemetry);
+    const nodeChecker = new AzureNodeChecker(
+      cliAdapter,
+      cliEnvCheckerLogger,
+      cliEnvCheckerTelemetry
+    );
+    const dotnetChecker = new DotnetChecker(
+      cliAdapter,
+      cliEnvCheckerLogger,
+      cliEnvCheckerTelemetry
+    );
+    const funcChecker = new FuncToolChecker(
+      cliAdapter,
+      cliEnvCheckerLogger,
+      cliEnvCheckerTelemetry
+    );
+    const depsChecker = new DepsChecker(cliEnvCheckerLogger, cliAdapter, [
+      nodeChecker,
+      dotnetChecker,
+      funcChecker,
+    ]);
+
+    const shouldContinue = await depsChecker.resolve();
+    if (!shouldContinue) {
+      return err(errors.DependencyCheckerFailed());
+    }
+
+    return ok([funcChecker, dotnetChecker]);
   }
 }

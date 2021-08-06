@@ -3,11 +3,13 @@
 import {
   PluginContext,
   ConfigFolderName,
+  AppPackageFolderName,
   FxError,
   Result,
   ok,
   Platform,
   Colors,
+  err,
 } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
 import lodash from "lodash";
@@ -16,15 +18,15 @@ import * as path from "path";
 import { SPFXQuestionNames } from ".";
 import { Utils } from "./utils/utils";
 import { Constants, PlaceHolders, PreDeployProgressMessage } from "./utils/constants";
-import { BuildSPPackageError, NoSPPackageError } from "./error";
+import { BuildSPPackageError, NoManifestFileError, NoSPPackageError } from "./error";
 import * as util from "util";
 import { ProgressHelper } from "./utils/progress-helper";
-import { REMOTE_MANIFEST } from "../../solution/fx-solution/constants";
 import { getStrings } from "../../../common/tools";
 import { getTemplatesFolder } from "../../..";
+import { REMOTE_MANIFEST } from "../appstudio/constants";
 
 export class SPFxPluginImpl {
-  public async scaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
+  public async postScaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
     const webpartName = ctx.answers![SPFXQuestionNames.webpart_name] as string;
     const componentName = Utils.normalizeComponentName(webpartName);
     const componentNameCamelCase = lodash.camelCase(componentName);
@@ -168,8 +170,14 @@ export class SPFxPluginImpl {
     replaceMap.set(PlaceHolders.componentNameUnescaped, webpartName);
     replaceMap.set(PlaceHolders.componentClassNameKebabCase, componentClassNameKebabCase);
 
+    let appDirectory: string;
+    try {
+      appDirectory = await this.getAppDirectory(ctx);
+    } catch (error) {
+      return err(error);
+    }
     await Utils.configure(outputFolderPath, replaceMap);
-    await Utils.configure(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`, replaceMap);
+    await Utils.configure(`${appDirectory}/${REMOTE_MANIFEST}`, replaceMap);
     return ok(undefined);
   }
 
@@ -214,7 +222,7 @@ export class SPFxPluginImpl {
       if (ctx.answers?.platform === Platform.CLI) {
         const guidance = [
           {
-            content: "[Teams Toolkit] SharePoint package successfully built at ",
+            content: "Success: SharePoint package successfully built at ",
             color: Colors.BRIGHT_GREEN,
           },
           { content: dir, color: Colors.BRIGHT_MAGENTA },
@@ -296,5 +304,20 @@ export class SPFxPluginImpl {
       gulpCommand = "gulp";
     }
     return gulpCommand;
+  }
+
+  private async getAppDirectory(ctx: PluginContext): Promise<string> {
+    const appDirNewLoc = `${ctx.root}/${AppPackageFolderName}`;
+    const appDirOldLoc = `${ctx.root}/.${ConfigFolderName}`;
+
+    const manifestNewLocExist = await this.checkFileExist(`${appDirNewLoc}/${REMOTE_MANIFEST}`);
+    const manifestOldLocExist = await this.checkFileExist(`${appDirOldLoc}/${REMOTE_MANIFEST}`);
+    const manifestExist = manifestNewLocExist || manifestOldLocExist;
+    if (!manifestExist) {
+      throw NoManifestFileError(`${appDirNewLoc}/${REMOTE_MANIFEST}`);
+    }
+    const appDirectory = manifestNewLocExist ? appDirNewLoc : appDirOldLoc;
+
+    return appDirectory;
   }
 }

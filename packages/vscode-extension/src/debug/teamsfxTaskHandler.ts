@@ -13,7 +13,13 @@ import { isValidProject } from "@microsoft/teamsfx-core";
 import { getNpmInstallLogInfo, NpmInstallLogInfo } from "./npmLogHandler";
 import * as path from "path";
 import { showError } from "../handlers";
-import { issueLink, npmInstall, npmInstallErrorMessage } from "./constants";
+import {
+  errorDetail,
+  issueLink,
+  issueTemplate,
+  npmInstall,
+  npmInstallErrorMessage,
+} from "./constants";
 
 interface IRunningTeamsfxTask {
   source: string;
@@ -102,29 +108,26 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
     allRunningTeamsfxTasks.delete({ source: task.source, name: task.name, scope: task.scope });
   } else if (isNpmInstallTask(task)) {
     try {
+      activeNpmInstallTasks.delete(task.name);
+      if (activeTerminal?.name === task.name && event.exitCode === 0) {
+        // when the task in active terminal is ended successfully.
+        for (const hiddenTaskName of activeNpmInstallTasks) {
+          // display the first hidden terminal.
+          if (displayTerminal(hiddenTaskName)) {
+            return;
+          }
+        }
+      } else if (activeTerminal?.name !== task.name && event.exitCode !== 0) {
+        // when the task in hidden terminal failed to execute.
+        displayTerminal(task.name);
+      }
+
       const cwdOption = (task.execution as vscode.ShellExecution).options?.cwd;
       let cwd: string | undefined;
       if (cwdOption !== undefined) {
         cwd = path.join(ext.workspaceUri.fsPath, cwdOption?.replace("${workspaceFolder}/", ""));
       }
-
-      let npmInstallLogInfo: NpmInstallLogInfo | undefined;
-      try {
-        if (cwd !== undefined && event.exitCode !== undefined && event.exitCode !== 0) {
-          npmInstallLogInfo = await getNpmInstallLogInfo();
-          showError(new SystemError(
-            npmInstall,
-            npmInstallErrorMessage,
-            task.name,
-            JSON.stringify(npmInstallLogInfo),
-            issueLink,
-            npmInstallLogInfo
-          ));
-        }
-      } catch {
-        // ignore any error
-      }
-
+      const npmInstallLogInfo = await getNpmInstallLogInfo();
       const properties: { [key: string]: string } = {
         [TelemetryProperty.DebugNpmInstallName]: task.name,
         [TelemetryProperty.DebugNpmInstallExitCode]: event.exitCode + "", // "undefined" or number value
@@ -144,23 +147,28 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
           npmInstallLogInfo.errorMessage?.join("\n") + ""; // "undefined" or string value
       }
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugNpmInstall, properties);
-    } catch {
-      // ignore telemetry error
-    }
 
-    activeNpmInstallTasks.delete(task.name);
-
-    if (activeTerminal?.name === task.name && event.exitCode === 0) {
-      // when the task in active terminal is ended successfully.
-      for (const hiddenTaskName of activeNpmInstallTasks) {
-        // display the first hidden terminal.
-        if (displayTerminal(hiddenTaskName)) {
-          return;
+      if (cwd !== undefined && event.exitCode !== undefined && event.exitCode !== 0) {
+        terminateAllRunningTeamsfxTasks();
+        if (npmInstallLogInfo !== undefined) {
+          await showError(
+            new SystemError(
+              npmInstall,
+              npmInstallErrorMessage,
+              task.name,
+              issueTemplate + errorDetail + JSON.stringify(npmInstallLogInfo),
+              issueLink,
+              npmInstallLogInfo
+            )
+          );
+        } else {
+          await showError(
+            new SystemError(npmInstall, npmInstallErrorMessage, task.name, issueTemplate, issueLink)
+          );
         }
       }
-    } else if (activeTerminal?.name !== task.name && event.exitCode !== 0) {
-      // when the task in hidden terminal failed to execute.
-      displayTerminal(task.name);
+    } catch {
+      // ignore any error
     }
   }
 }

@@ -4,6 +4,7 @@
 import { AzureInfo, Constants, FrontendPathInfo, FrontendPluginInfo } from "../constants";
 import { Logger } from "../utils/logger";
 import path from "path";
+import { ConfigFolderName } from "@microsoft/teamsfx-api";
 
 export enum ErrorType {
   User,
@@ -29,7 +30,7 @@ const tips = {
   checkFsPermissions: "Check if you have Read/Write permissions to your file system.",
   checkStoragePermissions: "Check if you have permissions to your Azure Storage Account.",
   checkSystemTime: "You may get expired credentials, check if your system time is correct.",
-  restoreEnvironment: "Restore the 'env.default.json' file if you modified it.",
+  restoreEnvironment: `If you manually updated configuration files (under directory .${ConfigFolderName}), recover them.`,
   registerRequiredRP: `Register required resource provider '${AzureInfo.RequiredResourceProviders.join(
     `', '`
   )}' for your subscription manually.`,
@@ -59,7 +60,7 @@ export class FrontendPluginError extends Error {
   }
 
   getMessage(): string {
-    return `${this.message} Suggestions: ${this.suggestions.join("\n")}`;
+    return `${this.message} Suggestions: ${this.suggestions.join(" ")}`;
   }
 
   setInnerError(error: Error): void {
@@ -94,7 +95,7 @@ export class InvalidConfigError extends FrontendPluginError {
 export class CheckResourceGroupError extends FrontendPluginError {
   constructor() {
     super(ErrorType.User, "CheckResourceGroupError", "Failed to check resource group existence.", [
-      tips.reLogin,
+      tips.checkLog,
     ]);
   }
 }
@@ -113,7 +114,7 @@ export class CheckStorageError extends FrontendPluginError {
       ErrorType.User,
       "CheckStorageError",
       "Failed to check Azure Storage Account availability.",
-      [tips.reLogin, tips.checkSystemTime]
+      [tips.checkSystemTime, tips.checkLog]
     );
   }
 }
@@ -174,9 +175,7 @@ export class CreateStorageAccountError extends FrontendPluginError {
     super(
       ErrorType.User,
       "CreateStorageAccountError",
-      `Failed to create Azure Storage Account${
-        innerErrorCode ? `, Azure error code: ${innerErrorCode}` : ""
-      }.`,
+      `Failed to create Azure Storage Account${innerErrorCode ? `: ${innerErrorCode}` : ""}.`,
       [tips.checkLog]
     );
   }

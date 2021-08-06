@@ -7,51 +7,61 @@ import sinon from "sinon";
 import fs from "fs-extra";
 import path from "path";
 import { AppStudioPlugin } from "./../../../../../src/plugins/resource/appstudio";
-import { ConfigMap, PluginContext, TeamsAppManifest, ok } from "@microsoft/teamsfx-api";
+import { TeamsBot } from "./../../../../../src/plugins/resource/bot";
+import { ConfigMap, PluginContext, TeamsAppManifest, ok, Plugin } from "@microsoft/teamsfx-api";
 
 describe("validate manifest", () => {
-    let plugin: AppStudioPlugin;
-    let ctx: PluginContext;
+  let plugin: AppStudioPlugin;
+  let ctx: PluginContext;
+  let BotPlugin: Plugin;
+  let selectedPlugins: Plugin[];
 
-    beforeEach(async () => {
-        plugin = new AppStudioPlugin();
-        ctx = {
-            root: "./",
-            configOfOtherPlugins: new Map(),
-            config: new ConfigMap(),
-            app: new TeamsAppManifest()
-        }
-    })
+  beforeEach(async () => {
+    plugin = new AppStudioPlugin();
+    ctx = {
+      root: "./",
+      configOfOtherPlugins: new Map(),
+      config: new ConfigMap(),
+    };
 
-    it("valid manifest", async () => {
-        const manifestFile = path.resolve(__dirname, "./../resources/valid.manifest.json");
-        const manifest = await fs.readJson(manifestFile);
-        const manifestString = JSON.stringify(manifest);
+    const botplugin: Plugin = new TeamsBot();
+    BotPlugin = botplugin as Plugin;
+    BotPlugin.name = "fx-resource-bot";
+    BotPlugin.displayName = "Bot";
+    selectedPlugins = [BotPlugin];
+  });
 
-        sinon.stub(plugin, "validateManifest").resolves(ok([]));
-        
-        const validationResult = await plugin.validateManifest(ctx, manifestString);
-        chai.assert.isTrue(validationResult.isOk());
-        if (validationResult.isOk()) {
-            chai.expect(validationResult.value).to.have.lengthOf(0);
-        }
+  it("valid manifest", async () => {
+    const manifestFile = path.resolve(__dirname, "./../resources/valid.manifest.json");
+    const manifest = await fs.readJson(manifestFile);
+    const manifestString = JSON.stringify(manifest);
 
-        sinon.restore();
-    });
+    sinon.stub(plugin, "validateManifest").resolves(ok([]));
 
-    it("invalid manifest", async () => {
-        const manifestFile = path.resolve(__dirname, "./../resources/invalid.manifest.json");
-        const manifest = await fs.readJson(manifestFile);
-        const manifestString = JSON.stringify(manifest);
+    const validationResult = await plugin.validateManifest(ctx);
+    chai.assert.isTrue(validationResult.isOk());
+    if (validationResult.isOk()) {
+      chai.expect(validationResult.value).to.have.lengthOf(0);
+    }
 
-        sinon.stub(plugin, "validateManifest").resolves(ok(["developer | Required properties are missing from object: []."]));
+    sinon.restore();
+  });
 
-        const validationResult = await plugin.validateManifest(ctx, manifestString);
-        chai.assert.isTrue(validationResult.isOk());
-        if (validationResult.isOk()) {
-            chai.expect(validationResult.value).to.have.lengthOf(1);
-        }
+  it("invalid manifest", async () => {
+    const manifestFile = path.resolve(__dirname, "./../resources/invalid.manifest.json");
+    const manifest = await fs.readJson(manifestFile);
+    const manifestString = JSON.stringify(manifest);
 
-        sinon.restore();
-    });
+    sinon
+      .stub(plugin, "validateManifest")
+      .resolves(ok(["developer | Required properties are missing from object: []."]));
+
+    const validationResult = await plugin.validateManifest(ctx);
+    chai.assert.isTrue(validationResult.isOk());
+    if (validationResult.isOk()) {
+      chai.expect(validationResult.value).to.have.lengthOf(1);
+    }
+
+    sinon.restore();
+  });
 });

@@ -5,13 +5,7 @@
 import * as path from "path";
 import { funcPluginLogger as logger } from "./funcPluginLogger";
 import { DepsCheckerError } from "./errors";
-import {
-  DialogMsg,
-  DialogType,
-  PluginContext,
-  QuestionType,
-  returnUserError,
-} from "@microsoft/teamsfx-api";
+import { PluginContext, returnUserError } from "@microsoft/teamsfx-api";
 import { Messages, dotnetManualInstallHelpLink, defaultHelpLink, DepsCheckerEvent } from "./common";
 import { IDepsAdapter, IDepsChecker, IDepsTelemetry } from "./checker";
 import { getResourceFolder } from "../../../../..";
@@ -52,12 +46,12 @@ export class FuncPluginAdapter implements IDepsAdapter {
     return path.resolve(path.join(getResourceFolder(), "plugins", "resource", "function"));
   }
 
-  public dotnetCheckerEnabled(): boolean {
+  public dotnetCheckerEnabled(): Promise<boolean> {
     let enabled = true;
     if (this._ctx.answers && this._ctx.answers[this.dotnetSettingKey] !== undefined) {
       enabled = (<boolean>this._ctx.answers[this.dotnetSettingKey]) as boolean;
     }
-    return enabled;
+    return Promise.resolve(enabled);
   }
 
   public async runWithProgressIndicator(callback: () => Promise<void>): Promise<void> {
@@ -78,10 +72,10 @@ export class FuncPluginAdapter implements IDepsAdapter {
   public hasTeamsfxBackend(): Promise<boolean> {
     throw new Error("Method not implemented.");
   }
-  public funcToolCheckerEnabled(): boolean {
+  public funcToolCheckerEnabled(): Promise<boolean> {
     throw new Error("Method not implemented.");
   }
-  public nodeCheckerEnabled(): boolean {
+  public nodeCheckerEnabled(): Promise<boolean> {
     throw new Error("Method not implemented.");
   }
 
@@ -108,7 +102,7 @@ export class FuncPluginAdapter implements IDepsAdapter {
   }
 
   public async displayContinueWithLearnMoreLink(message: string, link: string): Promise<boolean> {
-    if (!this._ctx.dialog) {
+    if (!this._ctx.ui) {
       // no dialog, always continue
       return true;
     }

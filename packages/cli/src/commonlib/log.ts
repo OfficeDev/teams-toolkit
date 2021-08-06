@@ -9,7 +9,6 @@ import { CLILogLevel } from "../constants";
 import { getColorizedString } from "./../utils";
 import chalk from "chalk";
 
-
 export class CLILogProvider implements LogProvider {
   private static instance: CLILogProvider;
 
@@ -43,11 +42,11 @@ export class CLILogProvider implements LogProvider {
     return this.log(LogLevel.Debug, message);
   }
 
-  info(message: Array<{content: string, color: Colors}>): Promise<boolean>;
-  
+  info(message: Array<{ content: string; color: Colors }>): Promise<boolean>;
+
   info(message: string): Promise<boolean>;
 
-  info(message: string | Array<{content: string, color: Colors}>): Promise<boolean> {
+  info(message: string | Array<{ content: string; color: Colors }>): Promise<boolean> {
     if (message instanceof Array) {
       message = getColorizedString(message);
     } else {
@@ -103,7 +102,7 @@ export class CLILogProvider implements LogProvider {
         break;
       case LogLevel.Error:
       case LogLevel.Fatal:
-        console.error(chalk.redBright(message));
+        console.error(chalk.redBright(`Error: ${message}`));
         break;
     }
     return true;
@@ -125,9 +124,13 @@ export class CLILogProvider implements LogProvider {
         break;
       case LogLevel.Error:
       case LogLevel.Fatal:
-        console.error(chalk.redBright(message));
+        console.error(chalk.redBright(`Error: ${message}`));
         break;
     }
+  }
+
+  rawLog(message: string) {
+    process.stdout.write(message);
   }
 }
 

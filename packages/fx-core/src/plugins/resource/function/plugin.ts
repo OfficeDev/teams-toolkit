@@ -27,6 +27,7 @@ import {
   ProvisionError,
   ValidationError,
   runWithErrorCatchAndThrow,
+  runWithErrorCatchAndWrap,
   FunctionNameConflictError,
   FetchConfigError,
   RegisterResourceProviderError,
@@ -102,7 +103,7 @@ export class FunctionPluginImpl {
     skipDeploy: false,
   };
 
-  private syncConfigFromContext(ctx: PluginContext): void {
+  private async syncConfigFromContext(ctx: PluginContext): Promise<void> {
     const solutionConfig: ReadonlyPluginConfig | undefined = ctx.configOfOtherPlugins.get(
       DependentPluginInfo.solutionPluginName
     );
@@ -113,17 +114,20 @@ export class FunctionPluginImpl {
     this.config.resourceGroupName = solutionConfig?.get(
       DependentPluginInfo.resourceGroupName
     ) as string;
-    this.config.subscriptionId = solutionConfig?.get(DependentPluginInfo.subscriptionId) as string;
+    const subscriptionInfo = await ctx.azureAccountProvider?.getSelectedSubscription();
+    if (subscriptionInfo) {
+      this.config.subscriptionId = subscriptionInfo.subscriptionId;
+    }
     this.config.location = solutionConfig?.get(DependentPluginInfo.location) as string;
-    this.config.functionLanguage = solutionConfig?.get(
-      DependentPluginInfo.programmingLanguage
-    ) as FunctionLanguage;
+    this.config.functionLanguage = ctx.projectSettings?.programmingLanguage as FunctionLanguage;
+
     this.config.defaultFunctionName = ctx.config.get(
       FunctionConfigKey.defaultFunctionName
     ) as string;
     this.config.functionAppName = ctx.config.get(FunctionConfigKey.functionAppName) as string;
     this.config.storageAccountName = ctx.config.get(FunctionConfigKey.storageAccountName) as string;
     this.config.appServicePlanName = ctx.config.get(FunctionConfigKey.appServicePlanName) as string;
+    this.config.functionEndpoint = ctx.config.get(FunctionConfigKey.functionEndpoint) as string;
 
     /* Always validate after sync for safety and security. */
     this.validateConfig();
@@ -202,9 +206,7 @@ export class FunctionPluginImpl {
 
       const language: FunctionLanguage =
         (ctx.answers![QuestionKey.programmingLanguage] as FunctionLanguage) ??
-        (ctx.configOfOtherPlugins
-          .get(DependentPluginInfo.solutionPluginName)
-          ?.get(DependentPluginInfo.programmingLanguage) as FunctionLanguage);
+        (ctx.projectSettings?.programmingLanguage as FunctionLanguage);
 
       // If language is unknown, skip checking and let scaffold handle the error.
       if (language && (await FunctionScaffold.doesFunctionPathExist(workingPath, language, name))) {
@@ -239,9 +241,7 @@ export class FunctionPluginImpl {
 
           const language: FunctionLanguage =
             (ctx.answers![QuestionKey.programmingLanguage] as FunctionLanguage) ??
-            (ctx.configOfOtherPlugins
-              .get(DependentPluginInfo.solutionPluginName)
-              ?.get(DependentPluginInfo.programmingLanguage) as FunctionLanguage);
+            (ctx.projectSettings?.programmingLanguage as FunctionLanguage);
 
           // If language is unknown, skip checking and let scaffold handle the error.
           if (
@@ -259,7 +259,7 @@ export class FunctionPluginImpl {
   }
 
   public async preScaffold(ctx: PluginContext): Promise<FxResult> {
-    this.syncConfigFromContext(ctx);
+    await this.syncConfigFromContext(ctx);
 
     const workingPath: string = this.getFunctionProjectRootPath(ctx);
     const functionLanguage: FunctionLanguage = this.checkAndGet(
@@ -297,7 +297,7 @@ export class FunctionPluginImpl {
       DefaultValues.functionTriggerType,
       functionName,
       {
-        appName: ctx.app.name.short,
+        appName: ctx.projectSettings!.appName,
         functionName: functionName,
       }
     );
@@ -312,14 +312,14 @@ export class FunctionPluginImpl {
   }
 
   public async preProvision(ctx: PluginContext): Promise<FxResult> {
-    this.syncConfigFromContext(ctx);
+    await this.syncConfigFromContext(ctx);
 
     if (
       !this.config.functionAppName ||
       !this.config.storageAccountName ||
       !this.config.appServicePlanName
     ) {
-      const teamsAppName: string = ctx.app.name.short;
+      const teamsAppName: string = ctx.projectSettings!.appName;
       const suffix: string = this.config.resourceNameSuffix ?? uuid().substr(0, 6);
 
       if (!this.config.functionAppName) {
@@ -420,18 +420,20 @@ export class FunctionPluginImpl {
       InfoMessages.checkResource(ResourceType.storageAccount, storageAccountName, resourceGroupName)
     );
 
-    await runWithErrorCatchAndThrow(new ProvisionError(ResourceType.storageAccount), async () =>
-      step(
-        StepGroup.ProvisionStepGroup,
-        ProvisionSteps.ensureStorageAccount,
-        async () =>
-          await AzureLib.ensureStorageAccount(
-            storageManagementClient,
-            resourceGroupName,
-            storageAccountName,
-            DefaultProvisionConfigs.storageConfig(location)
-          )
-      )
+    await runWithErrorCatchAndWrap(
+      (error: any) => new ProvisionError(ResourceType.storageAccount, error.code),
+      async () =>
+        step(
+          StepGroup.ProvisionStepGroup,
+          ProvisionSteps.ensureStorageAccount,
+          async () =>
+            await AzureLib.ensureStorageAccount(
+              storageManagementClient,
+              resourceGroupName,
+              storageAccountName,
+              DefaultProvisionConfigs.storageConfig(location)
+            )
+        )
     );
 
     const storageConnectionString: string | undefined = await runWithErrorCatchAndThrow(
@@ -460,8 +462,8 @@ export class FunctionPluginImpl {
       InfoMessages.checkResource(ResourceType.appServicePlan, appServicePlanName, resourceGroupName)
     );
 
-    const appServicePlan: AppServicePlan = await runWithErrorCatchAndThrow(
-      new ProvisionError(ResourceType.appServicePlan),
+    const appServicePlan: AppServicePlan = await runWithErrorCatchAndWrap(
+      (error: any) => new ProvisionError(ResourceType.appServicePlan, error.code),
       async () =>
         await step(StepGroup.ProvisionStepGroup, ProvisionSteps.ensureAppServicePlans, async () =>
           AzureLib.ensureAppServicePlans(
@@ -483,8 +485,8 @@ export class FunctionPluginImpl {
       InfoMessages.checkResource(ResourceType.functionApp, appServicePlanName, resourceGroupName)
     );
 
-    const site: Site = await runWithErrorCatchAndThrow(
-      new ProvisionError(ResourceType.functionApp),
+    const site: Site = await runWithErrorCatchAndWrap(
+      (error: any) => new ProvisionError(ResourceType.functionApp, error.code),
       async () =>
         await step(StepGroup.ProvisionStepGroup, ProvisionSteps.ensureFunctionApp, async () =>
           FunctionProvision.ensureFunctionApp(
@@ -601,7 +603,7 @@ export class FunctionPluginImpl {
   }
 
   public async preDeploy(ctx: PluginContext): Promise<FxResult> {
-    this.syncConfigFromContext(ctx);
+    await this.syncConfigFromContext(ctx);
 
     const workingPath: string = this.getFunctionProjectRootPath(ctx);
     const functionLanguage: FunctionLanguage = this.checkAndGet(

@@ -280,7 +280,7 @@ export class VsCodeUI implements UserInteraction {
           );
 
           if (option.onDidChangeSelection) {
-            const changeHandler = async function (items: FxQuickPickItem[]): Promise<any> {
+            const changeHandler = async function (items: readonly FxQuickPickItem[]): Promise<any> {
               let currentIds = new Set<string>();
               for (const item of items) {
                 currentIds.add(item.id);
@@ -496,7 +496,9 @@ export class VsCodeUI implements UserInteraction {
             }
           }
         };
-        const onDidChangeSelection = async function (items: QuickPickItem[]): Promise<any> {
+        const onDidChangeSelection = async function (
+          items: readonly QuickPickItem[]
+        ): Promise<any> {
           const defaultUrl = items[0].detail;
           await showFileSelectDialog(defaultUrl);
         };

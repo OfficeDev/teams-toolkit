@@ -4,27 +4,73 @@
 import { hooks, Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { assert } from "chai";
 import "mocha";
+import * as dotenv from "dotenv";
 import { ErrorHandlerMW } from "../../src/core/middleware/errorHandler";
-import { UserCancelError, err, FxError, Result, ok, Inputs, Platform, ConfigFolderName, Solution, Stage, SolutionContext, Json, AzureSolutionSettings, ConfigMap, QTreeNode, FunctionRouter, Func, InputTextConfig } from "@microsoft/teamsfx-api";
+import {
+  UserCancelError,
+  err,
+  FxError,
+  Result,
+  ok,
+  Inputs,
+  Platform,
+  ConfigFolderName,
+  Solution,
+  Stage,
+  SolutionContext,
+  Json,
+  AzureSolutionSettings,
+  ConfigMap,
+  QTreeNode,
+  FunctionRouter,
+  Func,
+  InputTextConfig,
+} from "@microsoft/teamsfx-api";
 import { ConcurrentLockerMW } from "../../src/core/middleware/concurrentLocker";
 import fs from "fs-extra";
 import * as path from "path";
-import { ConcurrentError, InvalidProjectError, NoProjectOpenedError, PathNotExistError } from "../../src/core/error";
+import {
+  ConcurrentError,
+  InvalidProjectError,
+  NoProjectOpenedError,
+  PathNotExistError,
+} from "../../src/core/error";
 import * as os from "os";
-import { CoreHookContext, InvalidInputError, mapToJson, PluginNames } from "../../src";
+import {
+  CoreHookContext,
+  deserializeDict,
+  InvalidInputError,
+  mapToJson,
+  serializeDict,
+} from "../../src";
 import { SolutionLoaderMW } from "../../src/core/middleware/solutionLoader";
 import { ContextInjecterMW } from "../../src/core/middleware/contextInjecter";
-import { ConfigWriterMW } from "../../src/core/middleware/configWriter";
+import { ProjectSettingsWriterMW } from "../../src/core/middleware/projectSettingsWriter";
 import sinon from "sinon";
-import { MockProjectSettings, MockSolutionLoader, MockTools, randomAppName } from "./utils";
-import { ContextLoaderMW, newSolutionContext } from "../../src/core/middleware/contextLoader";
+import {
+  MockLatestVersion2_3_0UserData,
+  MockLatestVersion2_3_0Context,
+  MockPreviousVersionBefore2_3_0UserData,
+  MockPreviousVersionBefore2_3_0Context,
+  MockProjectSettings,
+  MockSolutionLoader,
+  MockTools,
+  randomAppName,
+} from "./utils";
+import {
+  ProjectSettingsLoaderMW,
+  newSolutionContext,
+} from "../../src/core/middleware/projectSettingsLoader";
 import { AzureResourceSQL } from "../../src/plugins/solution/fx-solution/question";
+import { PluginNames } from "../../src/plugins/solution/fx-solution/constants";
 import { QuestionModelMW } from "../../src/core/middleware/questionModel";
+import { ProjectUpgraderMW } from "../../src/core/middleware/projectUpgrader";
+import { environmentManager } from "../../src/core/environment";
+import { EnvInfoLoaderMW } from "../../src/core/middleware/envInfoLoader";
+import { EnvInfoWriterMW } from "../../src/core/middleware/envInfoWriter";
 
 describe("Middleware", () => {
-  
   describe("ErrorHandlerMW", () => {
-
     const inputs: Inputs = { platform: Platform.VSCode };
 
     it("return error", async () => {
@@ -35,7 +81,7 @@ describe("Middleware", () => {
         }
       }
       hooks(MyClass, {
-        myMethod: [ErrorHandlerMW]
+        myMethod: [ErrorHandlerMW],
       });
       const my = new MyClass();
       const res = await my.myMethod(inputs);
@@ -50,7 +96,7 @@ describe("Middleware", () => {
         }
       }
       hooks(MyClass, {
-        myMethod: [ErrorHandlerMW]
+        myMethod: [ErrorHandlerMW],
       });
       const my = new MyClass();
       const res = await my.myMethod(inputs);
@@ -68,7 +114,7 @@ describe("Middleware", () => {
         }
       }
       hooks(MyClass, {
-        myMethod: [ErrorHandlerMW]
+        myMethod: [ErrorHandlerMW],
       });
       const my = new MyClass();
       const res = await my.myMethod(inputs);
@@ -83,18 +129,15 @@ describe("Middleware", () => {
         }
       }
       hooks(MyClass, {
-        myMethod: [ErrorHandlerMW]
+        myMethod: [ErrorHandlerMW],
       });
       const my = new MyClass();
       const res = await my.myMethod(inputs);
       assert.isTrue(res.isErr() && res.error.name === "unkown" && res.error.message === "hello");
     });
-
   });
 
-
   describe("ConcurrentLockerMW", () => {
-
     it("sequence: ok", async () => {
       class MyClass {
         tools?: any = new MockTools();
@@ -103,7 +146,7 @@ describe("Middleware", () => {
         }
       }
       hooks(MyClass, {
-        myMethod: [ConcurrentLockerMW]
+        myMethod: [ConcurrentLockerMW],
       });
       const my = new MyClass();
       const inputs: Inputs = { platform: Platform.VSCode };
@@ -116,9 +159,8 @@ describe("Middleware", () => {
         my.tools = undefined;
         const res2 = await my.myMethod(inputs);
         assert.isTrue(res2.isOk() && res2.value === "");
-      }
-      finally {
-        await fs.rmdir(inputs.projectPath!,{recursive:true});
+      } finally {
+        await fs.rmdir(inputs.projectPath!, { recursive: true });
       }
     });
 
@@ -130,7 +172,7 @@ describe("Middleware", () => {
         }
       }
       hooks(MyClass, {
-        myMethod: [ConcurrentLockerMW]
+        myMethod: [ConcurrentLockerMW],
       });
       const my = new MyClass();
       const inputs: Inputs = { platform: Platform.VSCode };
@@ -139,12 +181,10 @@ describe("Middleware", () => {
         await fs.ensureDir(inputs.projectPath);
         await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`));
         await my.myMethod(inputs);
-      }
-      catch (e) {
+      } catch (e) {
         assert.isTrue(e === UserCancelError);
-      }
-      finally {
-        await fs.rmdir(inputs.projectPath!,{recursive:true});
+      } finally {
+        await fs.rmdir(inputs.projectPath!, { recursive: true });
       }
     });
 
@@ -156,7 +196,7 @@ describe("Middleware", () => {
         }
       }
       hooks(MyClass, {
-        myMethod: [ConcurrentLockerMW]
+        myMethod: [ConcurrentLockerMW],
       });
       const my = new MyClass();
       const inputs: Inputs = { platform: Platform.VSCode };
@@ -173,7 +213,7 @@ describe("Middleware", () => {
         }
       }
       hooks(MyClass, {
-        myMethod: [ConcurrentLockerMW]
+        myMethod: [ConcurrentLockerMW],
       });
       const my = new MyClass();
       const inputs: Inputs = { platform: Platform.VSCode };
@@ -190,7 +230,7 @@ describe("Middleware", () => {
         }
       }
       hooks(MyClass, {
-        myMethod: [ConcurrentLockerMW]
+        myMethod: [ConcurrentLockerMW],
       });
       const my = new MyClass();
       const inputs: Inputs = { platform: Platform.VSCode };
@@ -199,9 +239,8 @@ describe("Middleware", () => {
         await fs.ensureDir(inputs.projectPath);
         const res = await my.myMethod(inputs);
         assert.isTrue(res.isErr() && res.error.name === InvalidProjectError().name);
-      }
-      finally{
-        await fs.rmdir(inputs.projectPath!,{recursive:true});
+      } finally {
+        await fs.rmdir(inputs.projectPath!, { recursive: true });
       }
     });
 
@@ -218,7 +257,7 @@ describe("Middleware", () => {
         }
       }
       hooks(MyClass, {
-        myMethod: [ConcurrentLockerMW]
+        myMethod: [ConcurrentLockerMW],
       });
       const inputs: Inputs = { platform: Platform.VSCode };
       const my = new MyClass();
@@ -227,9 +266,8 @@ describe("Middleware", () => {
         await fs.ensureDir(inputs.projectPath);
         await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`));
         await my.myMethod(inputs);
-      }
-      finally {
-        await fs.rmdir(inputs.projectPath!,{recursive:true});
+      } finally {
+        await fs.rmdir(inputs.projectPath!, { recursive: true });
       }
     });
 
@@ -246,9 +284,9 @@ describe("Middleware", () => {
           return ok("");
         }
       }
-      hooks(MyClass, { 
+      hooks(MyClass, {
         myMethod: [ConcurrentLockerMW],
-        myMethod2: [ConcurrentLockerMW]
+        myMethod2: [ConcurrentLockerMW],
       });
       const inputs: Inputs = { platform: Platform.VSCode };
       const my = new MyClass();
@@ -257,9 +295,8 @@ describe("Middleware", () => {
         await fs.ensureDir(inputs.projectPath);
         await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`));
         await my.myMethod(inputs);
-      }
-      finally {
-        await fs.rmdir(inputs.projectPath!,{recursive:true});
+      } finally {
+        await fs.rmdir(inputs.projectPath!, { recursive: true });
       }
     });
   });
@@ -274,7 +311,7 @@ describe("Middleware", () => {
         }
       }
       hooks(MyClass, {
-        myMethod: [SolutionLoaderMW(new MockSolutionLoader()), ContextInjecterMW]
+        myMethod: [SolutionLoaderMW(new MockSolutionLoader()), ContextInjecterMW],
       });
       const my = new MyClass();
       const inputs: Inputs = { platform: Platform.VSCode };
@@ -283,11 +320,15 @@ describe("Middleware", () => {
     });
   });
 
-  describe("ContextLoaderMW, ContextInjecterMW part 1", () => {
+  describe("ProjectSettingsLoaderMW, ContextInjecterMW part 1", () => {
     it("fail to load: ignore", async () => {
       class MyClass {
         tools = new MockTools();
-        async getQuestions(stage: Stage, inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+        async getQuestions(
+          stage: Stage,
+          inputs: Inputs,
+          ctx?: CoreHookContext
+        ): Promise<Result<any, FxError>> {
           assert.isTrue(ctx !== undefined && ctx.solutionContext === undefined);
           return ok("");
         }
@@ -297,8 +338,8 @@ describe("Middleware", () => {
         }
       }
       hooks(MyClass, {
-        getQuestions: [ContextLoaderMW, ContextInjecterMW],
-        other: [ContextLoaderMW, ContextInjecterMW]
+        getQuestions: [ProjectSettingsLoaderMW, ContextInjecterMW],
+        other: [ProjectSettingsLoaderMW, ContextInjecterMW],
       });
       const my = new MyClass();
       const inputs: Inputs = { platform: Platform.VSCode };
@@ -319,7 +360,7 @@ describe("Middleware", () => {
         }
       }
       hooks(MyClass, {
-        other: [ContextLoaderMW, ContextInjecterMW]
+        other: [ProjectSettingsLoaderMW, ContextInjecterMW],
       });
       const my = new MyClass();
       const inputs: Inputs = { platform: Platform.VSCode };
@@ -331,7 +372,7 @@ describe("Middleware", () => {
     });
   });
 
-  describe("ContextLoaderMW, ContextInjecterMW part 2", () => {
+  describe("ProjectSettingsLoaderMW, ContextInjecterMW part 2", () => {
     const sandbox = sinon.createSandbox();
 
     const appName = randomAppName();
@@ -339,12 +380,12 @@ describe("Middleware", () => {
     const projectSettings = MockProjectSettings(appName);
 
     const envJson: Json = {
-      solution: {}
+      solution: {},
     };
 
     const inputs: Inputs = { platform: Platform.VSCode };
     inputs.projectPath = path.join(os.tmpdir(), appName);
-    const envName = projectSettings.currentEnv;
+    const envName = environmentManager.defaultEnvName;
     const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
     const settingsFile = path.resolve(confFolderPath, "settings.json");
     const envJsonFile = path.resolve(confFolderPath, `env.${envName}.json`);
@@ -381,7 +422,7 @@ describe("Middleware", () => {
         }
       }
       hooks(MyClass, {
-        other: [ContextLoaderMW, ContextInjecterMW]
+        other: [ProjectSettingsLoaderMW, EnvInfoLoaderMW, ContextInjecterMW],
       });
       const my = new MyClass();
       const res = await my.other(inputs);
@@ -403,17 +444,21 @@ describe("Middleware", () => {
         }
       }
       hooks(MyClass, {
-        other: [ContextLoaderMW, ContextInjecterMW]
+        other: [ProjectSettingsLoaderMW, ContextInjecterMW],
       });
       const my = new MyClass();
-      (projectSettings.solutionSettings as AzureSolutionSettings).azureResources.push(AzureResourceSQL.id);
+      (projectSettings.solutionSettings as AzureSolutionSettings).azureResources.push(
+        AzureResourceSQL.id
+      );
       const res = await my.other(inputs);
-      assert.isTrue(res.isErr() && res.error.message.includes(`${PluginNames.SQL} setting is missing in settings.json`));
+      assert.isTrue(
+        res.isErr() &&
+          res.error.message.includes(`${PluginNames.SQL} setting is missing in settings.json`)
+      );
     });
   });
 
-
-  describe("ConfigWriterMW", () => {
+  describe("ProjectSettingsWriterMW", () => {
     const sandbox = sinon.createSandbox();
     afterEach(function () {
       sandbox.restore();
@@ -427,16 +472,26 @@ describe("Middleware", () => {
         }
       }
       hooks(MyClass, {
-        myMethod: [ConfigWriterMW]
+        myMethod: [ProjectSettingsWriterMW],
       });
       const my = new MyClass();
       const inputs1: Inputs = { platform: Platform.VSCode };
       await my.myMethod(inputs1);
-      const inputs2: Inputs = { platform: Platform.CLI_HELP, projectPath: path.join(os.tmpdir(), randomAppName()) };
+      const inputs2: Inputs = {
+        platform: Platform.CLI_HELP,
+        projectPath: path.join(os.tmpdir(), randomAppName()),
+      };
       await my.myMethod(inputs2);
-      const inputs3: Inputs = { platform: Platform.VSCode, projectPath: path.join(os.tmpdir(), randomAppName()), ignoreConfigPersist: true };
+      const inputs3: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: path.join(os.tmpdir(), randomAppName()),
+        ignoreConfigPersist: true,
+      };
       await my.myMethod(inputs3);
-      const inputs4: Inputs = { platform: Platform.VSCode, projectPath: path.join(os.tmpdir(), randomAppName()) };
+      const inputs4: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: path.join(os.tmpdir(), randomAppName()),
+      };
       await my.myMethod(inputs4);
       assert(spy.callCount === 0);
     });
@@ -450,11 +505,13 @@ describe("Middleware", () => {
       solutionContext.config.set("solution", new ConfigMap());
       solutionContext.projectSettings = MockProjectSettings(appName);
       const fileMap = new Map<string, any>();
+
       sandbox.stub<any, any>(fs, "writeFile").callsFake(async (file: string, data: any) => {
         fileMap.set(file, data);
       });
+      sandbox.stub(fs, "pathExists").resolves(true);
 
-      const envName = solutionContext.projectSettings.currentEnv;
+      const envName = environmentManager.defaultEnvName;
       const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
       const settingsFile = path.resolve(confFolderPath, "settings.json");
       const envJsonFile = path.resolve(confFolderPath, `env.${envName}.json`);
@@ -467,7 +524,7 @@ describe("Middleware", () => {
         }
       }
       hooks(MyClass, {
-        myMethod: [ContextInjecterMW, ConfigWriterMW]
+        myMethod: [ContextInjecterMW, ProjectSettingsWriterMW, EnvInfoWriterMW],
       });
       const my = new MyClass();
       await my.myMethod(inputs);
@@ -481,6 +538,90 @@ describe("Middleware", () => {
     });
   });
 
+  describe("ProjectSettingsLoaderMW, ProjectSettingsWriterMW for user data encryption", () => {
+    const sandbox = sinon.createSandbox();
+
+    afterEach(function () {
+      sandbox.restore();
+    });
+
+    it("successfully encrypt userdata and load it", async () => {
+      const appName = randomAppName();
+      const inputs: Inputs = { platform: Platform.VSCode };
+      inputs.projectPath = path.join(os.tmpdir(), appName);
+      const tools = new MockTools();
+      const solutionContext = await newSolutionContext(tools, inputs);
+      const configMap = new ConfigMap();
+      const pluginName = "fx-resource-aad-app-for-teams";
+      const secretName = "clientSecret";
+      const secretText = "test";
+      configMap.set(secretName, secretText);
+      solutionContext.config.set("solution", new ConfigMap());
+      solutionContext.config.set(pluginName, configMap);
+      const oldProjectId = solutionContext.projectSettings!.projectId;
+      solutionContext.projectSettings = MockProjectSettings(appName);
+      solutionContext.projectSettings!.projectId = oldProjectId;
+      const fileMap = new Map<string, any>();
+      sandbox.stub<any, any>(fs, "writeFile").callsFake(async (file: string, data: any) => {
+        fileMap.set(file, data);
+      });
+      sandbox.stub(fs, "pathExists").resolves(true);
+
+      const envName = environmentManager.defaultEnvName;
+      const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
+      const userdataFile = path.resolve(confFolderPath, `${envName}.userdata`);
+      const settingsFile = path.resolve(confFolderPath, "settings.json");
+      const envJsonFile = path.resolve(confFolderPath, `env.${envName}.json`);
+
+      class MyClass {
+        tools = tools;
+        async WriteConfigTrigger(
+          inputs: Inputs,
+          ctx?: CoreHookContext
+        ): Promise<Result<any, FxError>> {
+          ctx!.solutionContext = solutionContext;
+          return ok("");
+        }
+        async ReadConfigTrigger(
+          inputs: Inputs,
+          ctx?: CoreHookContext
+        ): Promise<Result<any, FxError>> {
+          assert.isTrue(ctx !== undefined);
+          assert.isTrue(ctx!.solutionContext !== undefined);
+          const solutionContext = ctx!.solutionContext!;
+          assert.isTrue(solutionContext.projectSettings !== undefined);
+          assert.isTrue(solutionContext.projectSettings!.appName === appName);
+          assert.isTrue(solutionContext.config.get(pluginName) !== undefined);
+          const value = solutionContext.config.get(pluginName)!.get(secretName);
+          assert.isTrue(value === secretText);
+          return ok("");
+        }
+      }
+      hooks(MyClass, {
+        WriteConfigTrigger: [ContextInjecterMW, ProjectSettingsWriterMW, EnvInfoWriterMW],
+        ReadConfigTrigger: [ProjectSettingsLoaderMW, EnvInfoLoaderMW, ContextInjecterMW],
+      });
+      const my = new MyClass();
+      await my.WriteConfigTrigger(inputs);
+      const content = fileMap.get(userdataFile);
+      const userdata = dotenv.parse(content);
+      const secretValue = userdata[`${pluginName}.${secretName}`];
+      assert.isTrue(secretValue !== undefined);
+      assert.isTrue(secretValue.startsWith("crypto_"));
+
+      sandbox.stub<any, any>(fs, "readJson").callsFake(async (file: string) => {
+        if (settingsFile === file) return JSON.parse(fileMap.get(settingsFile));
+        if (envJsonFile === file) return JSON.parse(fileMap.get(envJsonFile));
+        return {};
+      });
+      sandbox.stub<any, any>(fs, "readFile").callsFake(async (file: string) => {
+        if (userdataFile === file) return content;
+        return {};
+      });
+      await my.ReadConfigTrigger(inputs);
+    });
+  });
+
   describe("QuestionModelMW", () => {
     const sandbox = sinon.createSandbox();
     afterEach(function () {
@@ -490,10 +631,7 @@ describe("Middleware", () => {
     it("successful happy path", async () => {
       const inputs: Inputs = { platform: Platform.VSCode };
       const tools = new MockTools();
-      const MockContextLoaderMW: Middleware = async (
-        ctx: CoreHookContext,
-        next: NextFunction
-      ) => {
+      const MockContextLoaderMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
         ctx.solutionContext = await newSolutionContext(tools, inputs);
         await next();
       };
@@ -530,39 +668,75 @@ describe("Middleware", () => {
           assert.isTrue(inputs[questionName] === questionValue);
           return ok("");
         }
-        async _getQuestionsForCreateProject(inputs: Inputs): Promise<Result<QTreeNode | undefined, FxError>> {
+        async _getQuestionsForCreateProject(
+          inputs: Inputs
+        ): Promise<Result<QTreeNode | undefined, FxError>> {
           const node = new QTreeNode({
             type: "text",
             name: questionName,
-            title: ""
+            title: "",
           });
           return ok(node);
         }
-        async _getQuestions(ctx: SolutionContext, solution: Solution, stage: Stage, inputs: Inputs): Promise<Result<QTreeNode | undefined, FxError>> {
+        async _getQuestions(
+          ctx: SolutionContext,
+          solution: Solution,
+          stage: Stage,
+          inputs: Inputs
+        ): Promise<Result<QTreeNode | undefined, FxError>> {
           const node = new QTreeNode({
             type: "text",
             password: true,
             name: questionName,
-            title: ""
+            title: "",
           });
           return ok(node);
         }
-        async _getQuestionsForUserTask(ctx: SolutionContext, solution: Solution, func: FunctionRouter, inputs: Inputs): Promise<Result<QTreeNode | undefined, FxError>> {
+        async _getQuestionsForUserTask(
+          ctx: SolutionContext,
+          solution: Solution,
+          func: FunctionRouter,
+          inputs: Inputs
+        ): Promise<Result<QTreeNode | undefined, FxError>> {
           const node = new QTreeNode({
             type: "text",
             name: questionName,
-            title: ""
+            title: "",
           });
           return ok(node);
         }
       }
       hooks(MockCore, {
-        createProject: [SolutionLoaderMW(new MockSolutionLoader()), MockContextLoaderMW, QuestionModelMW],
-        provisionResources: [SolutionLoaderMW(new MockSolutionLoader()), MockContextLoaderMW, QuestionModelMW],
-        deployArtifacts: [SolutionLoaderMW(new MockSolutionLoader()), MockContextLoaderMW, QuestionModelMW],
-        localDebug: [SolutionLoaderMW(new MockSolutionLoader()), MockContextLoaderMW, QuestionModelMW],
-        publishApplication: [SolutionLoaderMW(new MockSolutionLoader()), MockContextLoaderMW, QuestionModelMW],
-        executeUserTask: [SolutionLoaderMW(new MockSolutionLoader()), MockContextLoaderMW, QuestionModelMW],
+        createProject: [
+          SolutionLoaderMW(new MockSolutionLoader()),
+          MockContextLoaderMW,
+          QuestionModelMW,
+        ],
+        provisionResources: [
+          SolutionLoaderMW(new MockSolutionLoader()),
+          MockContextLoaderMW,
+          QuestionModelMW,
+        ],
+        deployArtifacts: [
+          SolutionLoaderMW(new MockSolutionLoader()),
+          MockContextLoaderMW,
+          QuestionModelMW,
+        ],
+        localDebug: [
+          SolutionLoaderMW(new MockSolutionLoader()),
+          MockContextLoaderMW,
+          QuestionModelMW,
+        ],
+        publishApplication: [
+          SolutionLoaderMW(new MockSolutionLoader()),
+          MockContextLoaderMW,
+          QuestionModelMW,
+        ],
+        executeUserTask: [
+          SolutionLoaderMW(new MockSolutionLoader()),
+          MockContextLoaderMW,
+          QuestionModelMW,
+        ],
       });
       const my = new MockCore();
 
@@ -594,10 +768,7 @@ describe("Middleware", () => {
     it("get question or traverse question tree error", async () => {
       const inputs: Inputs = { platform: Platform.VSCode };
       const tools = new MockTools();
-      const MockContextLoaderMW: Middleware = async (
-        ctx: CoreHookContext,
-        next: NextFunction
-      ) => {
+      const MockContextLoaderMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
         ctx.solutionContext = await newSolutionContext(tools, inputs);
         await next();
       };
@@ -628,29 +799,71 @@ describe("Middleware", () => {
         async executeUserTask(func: Func, inputs: Inputs): Promise<Result<unknown, FxError>> {
           return ok("");
         }
-        async _getQuestionsForCreateProject(inputs: Inputs): Promise<Result<QTreeNode | undefined, FxError>> {
+        async _getQuestionsForCreateProject(
+          inputs: Inputs
+        ): Promise<Result<QTreeNode | undefined, FxError>> {
           return err(InvalidInputError("mock"));
         }
-        async _getQuestions(ctx: SolutionContext, solution: Solution, stage: Stage, inputs: Inputs): Promise<Result<QTreeNode | undefined, FxError>> {
+        async _getQuestions(
+          ctx: SolutionContext,
+          solution: Solution,
+          stage: Stage,
+          inputs: Inputs
+        ): Promise<Result<QTreeNode | undefined, FxError>> {
           return err(InvalidInputError("mock"));
         }
-        async _getQuestionsForUserTask(ctx: SolutionContext, solution: Solution, func: FunctionRouter, inputs: Inputs): Promise<Result<QTreeNode | undefined, FxError>> {
+        async _getQuestionsForUserTask(
+          ctx: SolutionContext,
+          solution: Solution,
+          func: FunctionRouter,
+          inputs: Inputs
+        ): Promise<Result<QTreeNode | undefined, FxError>> {
           const node = new QTreeNode({
             type: "singleSelect",
             name: questionName,
             title: "",
-            staticOptions: []
+            staticOptions: [],
           });
           return ok(node);
         }
       }
       hooks(MockCore, {
-        createProject: [ErrorHandlerMW, SolutionLoaderMW(new MockSolutionLoader()), MockContextLoaderMW, QuestionModelMW],
-        provisionResources: [ErrorHandlerMW, SolutionLoaderMW(new MockSolutionLoader()), MockContextLoaderMW, QuestionModelMW],
-        deployArtifacts: [ErrorHandlerMW, SolutionLoaderMW(new MockSolutionLoader()), MockContextLoaderMW, QuestionModelMW],
-        localDebug: [ErrorHandlerMW, SolutionLoaderMW(new MockSolutionLoader()), MockContextLoaderMW, QuestionModelMW],
-        publishApplication: [ErrorHandlerMW, SolutionLoaderMW(new MockSolutionLoader()), MockContextLoaderMW, QuestionModelMW],
-        executeUserTask: [ErrorHandlerMW, SolutionLoaderMW(new MockSolutionLoader()), MockContextLoaderMW, QuestionModelMW],
+        createProject: [
+          ErrorHandlerMW,
+          SolutionLoaderMW(new MockSolutionLoader()),
+          MockContextLoaderMW,
+          QuestionModelMW,
+        ],
+        provisionResources: [
+          ErrorHandlerMW,
+          SolutionLoaderMW(new MockSolutionLoader()),
+          MockContextLoaderMW,
+          QuestionModelMW,
+        ],
+        deployArtifacts: [
+          ErrorHandlerMW,
+          SolutionLoaderMW(new MockSolutionLoader()),
+          MockContextLoaderMW,
+          QuestionModelMW,
+        ],
+        localDebug: [
+          ErrorHandlerMW,
+          SolutionLoaderMW(new MockSolutionLoader()),
+          MockContextLoaderMW,
+          QuestionModelMW,
+        ],
+        publishApplication: [
+          ErrorHandlerMW,
+          SolutionLoaderMW(new MockSolutionLoader()),
+          MockContextLoaderMW,
+          QuestionModelMW,
+        ],
+        executeUserTask: [
+          ErrorHandlerMW,
+          SolutionLoaderMW(new MockSolutionLoader()),
+          MockContextLoaderMW,
+          QuestionModelMW,
+        ],
       });
       const my = new MockCore();
 
@@ -682,6 +895,182 @@ describe("Middleware", () => {
       const func: Func = { method: "test", namespace: "" };
       const res2 = await my.executeUserTask(func, inputs);
       assert(res2.isErr() && res2.error.name === "EmptySelectOption");
+    });
+  });
+
+  describe("ProjectUpgraderMW", () => {
+    const sandbox = sinon.createSandbox();
+    const appName = randomAppName();
+    const projectSettings = MockProjectSettings(appName);
+    let envJson: Json = {};
+    let userData: Record<string, string> = {};
+
+    const inputs: Inputs = { platform: Platform.VSCode };
+    inputs.projectPath = path.join(os.tmpdir(), appName);
+    const envName = environmentManager.defaultEnvName;
+    const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
+    const settingsFile = path.resolve(confFolderPath, "settings.json");
+    const envJsonFile = path.resolve(confFolderPath, `env.${envName}.json`);
+    const userDataFile = path.resolve(confFolderPath, `${envName}.userdata`);
+
+    function MockFunctions() {
+      sandbox.stub<any, any>(fs, "readJson").callsFake(async (file: string) => {
+        if (settingsFile === file) return projectSettings;
+        if (envJsonFile === file) return envJson;
+        return {};
+      });
+      sandbox.stub<any, any>(fs, "writeFile").callsFake(async (file: string, content: any) => {
+        if (userDataFile === file) {
+          userData = deserializeDict(content);
+        }
+        if (envJsonFile === file) {
+          envJson = JSON.parse(content);
+        }
+      });
+      sandbox.stub<any, any>(fs, "readFile").callsFake(async (file: string) => {
+        if (userDataFile === file) return serializeDict(userData);
+        return {};
+      });
+    }
+
+    beforeEach(() => {
+      sandbox.stub<any, any>(fs, "pathExists").callsFake(async (file: string) => {
+        if (userDataFile === file) return true;
+        if (inputs.projectPath === file) return true;
+        return {};
+      });
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("Previous context and userdata", async () => {
+      envJson = MockPreviousVersionBefore2_3_0Context();
+      userData = MockPreviousVersionBefore2_3_0UserData();
+      MockFunctions();
+
+      class ProjectUpgradeHook {
+        tools = new MockTools();
+        async upgrade(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+          assert.equal(userData["fx-resource-aad-app-for-teams.local_clientId"], "local_clientId");
+          assert.equal(userData["solution.localDebugTeamsAppId"], "teamsAppId");
+          assert.equal(
+            (envJson["solution"] as any)["localDebugTeamsAppId"],
+            "{{solution.localDebugTeamsAppId}}"
+          );
+          assert.equal(
+            (envJson["fx-resource-aad-app-for-teams"] as any)["local_clientId"],
+            "{{fx-resource-aad-app-for-teams.local_clientId}}"
+          );
+          return ok("");
+        }
+      }
+
+      hooks(ProjectUpgradeHook, {
+        upgrade: [ProjectUpgraderMW],
+      });
+
+      const my = new ProjectUpgradeHook();
+      const res = await my.upgrade(inputs);
+      assert.isTrue(res.isOk() && res.value === "");
+    });
+
+    it("Previous context and new userdata", async () => {
+      envJson = MockPreviousVersionBefore2_3_0Context();
+      userData = MockLatestVersion2_3_0UserData();
+      MockFunctions();
+
+      class ProjectUpgradeHook {
+        tools = new MockTools();
+        async upgrade(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+          assert.equal(
+            userData["fx-resource-aad-app-for-teams.local_clientId"],
+            "local_clientId_new"
+          );
+          assert.equal(userData["solution.localDebugTeamsAppId"], "teamsAppId_new");
+          assert.equal(
+            (envJson["solution"] as any)["localDebugTeamsAppId"],
+            "{{solution.localDebugTeamsAppId}}"
+          );
+          assert.equal(
+            (envJson["fx-resource-aad-app-for-teams"] as any)["local_clientId"],
+            "{{fx-resource-aad-app-for-teams.local_clientId}}"
+          );
+          return ok("");
+        }
+      }
+
+      hooks(ProjectUpgradeHook, {
+        upgrade: [ProjectUpgraderMW],
+      });
+
+      const my = new ProjectUpgradeHook();
+      const res = await my.upgrade(inputs);
+      assert.isTrue(res.isOk() && res.value === "");
+    });
+
+    it("New context and previous userdata", async () => {
+      envJson = MockLatestVersion2_3_0Context();
+      userData = MockPreviousVersionBefore2_3_0UserData();
+      MockFunctions();
+
+      class ProjectUpgradeHook {
+        tools = new MockTools();
+        async upgrade(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+          assert.equal(userData["fx-resource-aad-app-for-teams.local_clientId"], undefined);
+          assert.equal(userData["solution.localDebugTeamsAppId"], undefined);
+          assert.equal(
+            (envJson["solution"] as any)["localDebugTeamsAppId"],
+            "{{solution.localDebugTeamsAppId}}"
+          );
+          assert.equal(
+            (envJson["fx-resource-aad-app-for-teams"] as any)["local_clientId"],
+            "{{fx-resource-aad-app-for-teams.local_clientId}}"
+          );
+          return ok("");
+        }
+      }
+
+      hooks(ProjectUpgradeHook, {
+        upgrade: [ProjectUpgraderMW],
+      });
+
+      const my = new ProjectUpgradeHook();
+      const res = await my.upgrade(inputs);
+      assert.isTrue(res.isOk() && res.value === "");
+    });
+
+    it("Previous context and userdata without secret", async () => {
+      envJson = MockPreviousVersionBefore2_3_0Context();
+      userData = {};
+      MockFunctions();
+
+      class ProjectUpgradeHook {
+        name = "jay";
+        tools = new MockTools();
+        async upgrade(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+          assert.equal(userData["fx-resource-aad-app-for-teams.local_clientId"], undefined);
+          assert.equal(userData["solution.localDebugTeamsAppId"], undefined);
+          assert.equal(
+            (envJson["solution"] as any)["localDebugTeamsAppId"],
+            "{{solution.localDebugTeamsAppId}}"
+          );
+          assert.equal(
+            (envJson["fx-resource-aad-app-for-teams"] as any)["local_clientId"],
+            "{{fx-resource-aad-app-for-teams.local_clientId}}"
+          );
+          return ok("");
+        }
+      }
+
+      hooks(ProjectUpgradeHook, {
+        upgrade: [ProjectUpgraderMW],
+      });
+
+      const my = new ProjectUpgradeHook();
+      const res = await my.upgrade(inputs);
+      assert.isTrue(res.isOk() && res.value === "");
     });
   });
 });

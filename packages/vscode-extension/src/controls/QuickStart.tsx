@@ -25,6 +25,7 @@ import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetryTiggerFrom,
+  WatchVideoFrom,
 } from "../telemetry/extTelemetryEvents";
 
 export default class QuickStart extends React.Component<any, any> {
@@ -36,6 +37,8 @@ export default class QuickStart extends React.Component<any, any> {
       m365Account: undefined,
       azureAccount: undefined,
       stepsDone: [false, false, false, false, false, false],
+      playFromStep: false,
+      videoSeeking: false,
     };
   }
 
@@ -182,7 +185,7 @@ export default class QuickStart extends React.Component<any, any> {
                       </a>,
                       ".",
                     ]}
-                    actionText="Download Node.js (v14.x)"
+                    actionText="Download Node.js"
                     onAction={this.downloadNode}
                     secondaryActionText="Next"
                     onSecondaryAction={() => {
@@ -212,7 +215,7 @@ export default class QuickStart extends React.Component<any, any> {
                   expanded={this.state.currentStep === curStep}
                   onCollapsedCardClicked={this.onCollapsedCardClicked}
                   step={curStep}
-                  done={this.state.stepsDone[3] && this.state.m365Account}
+                  done={this.state.stepsDone[3] || this.state.m365Account}
                 />
               );
             })()}
@@ -234,7 +237,7 @@ export default class QuickStart extends React.Component<any, any> {
                   expanded={this.state.currentStep === curStep}
                   onCollapsedCardClicked={this.onCollapsedCardClicked}
                   step={curStep}
-                  done={this.state.stepsDone[4] && this.state.azureAccount}
+                  done={this.state.stepsDone[4] || this.state.azureAccount}
                 />
               );
             })()}
@@ -261,6 +264,9 @@ export default class QuickStart extends React.Component<any, any> {
                 />
               );
             })()}
+            <div id="dummy" tabIndex={-1} style={{ opacity: 0 }}>
+              <text>Expanding step card</text>
+            </div>
           </div>
           <div className="content-margin" />
           <div className="stage">
@@ -276,6 +282,7 @@ export default class QuickStart extends React.Component<any, any> {
                   controls
                   disablePictureInPicture
                   onPlay={this.onVideoPlay}
+                  onPause={this.onVideoPause}
                 >
                   <source src="https://aka.ms/teamsfx-video"></source>
                 </video>
@@ -285,7 +292,7 @@ export default class QuickStart extends React.Component<any, any> {
                     className="watchOnBrowser"
                     href="https://aka.ms/teamsfx-video"
                     target="_blank"
-                    onClick={this.onVideoPlay}
+                    onClick={this.onWatchOnBrowser}
                   >
                     Watch on browser
                   </a>
@@ -317,7 +324,7 @@ export default class QuickStart extends React.Component<any, any> {
         this.setState({ azureAccount: event.data.data });
         break;
       case "updateStepsDone":
-        this.setState({stepsDone: event.data.data });
+        this.setState({ stepsDone: event.data.data });
         break;
       default:
         break;
@@ -327,41 +334,84 @@ export default class QuickStart extends React.Component<any, any> {
   onNextStep = (step: number, title: string) => {
     vscode.postMessage({
       command: Commands.SendTelemetryEvent,
-      data: { eventName: TelemetryEvent.NextStep, properties: { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview, [TelemetryProperty.CurrentAction]: step + title } }
+      data: {
+        eventName: TelemetryEvent.NextStep,
+        properties: {
+          [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview,
+          [TelemetryProperty.CurrentAction]: step + title,
+        },
+      },
     });
 
     this.setState({
       currentStep: step + 1,
     });
+
+    const nextCard = document.getElementById((step + 1).toString()) as HTMLElement;
+    nextCard.focus();
   };
 
   createNewProject = () => {
     vscode.postMessage({
       command: Commands.SendTelemetryEvent,
-      data: { eventName: TelemetryEvent.CreateProjectStart, properties: { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview } }
+      data: {
+        eventName: TelemetryEvent.CreateProjectStart,
+        properties: { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview },
+      },
     });
     vscode.postMessage({
       command: Commands.CreateNewProject,
     });
   };
 
-  onCollapsedCardClicked = (step: number) => {
+  onCollapsedCardClicked = (step: number, title: string) => {
+    vscode.postMessage({
+      command: Commands.SendTelemetryEvent,
+      data: {
+        eventName: TelemetryEvent.ClickQuickStartCard,
+        properties: {
+          [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview,
+          [TelemetryProperty.CurrentAction]: step + title,
+        },
+      },
+    });
+
     this.setState({
       currentStep: step,
     });
+
+    const dummy = document.getElementById("dummy") as HTMLElement;
+    const curCard = document.getElementById(step.toString()) as HTMLElement;
+    dummy.focus();
+    setTimeout(() => {
+      curCard.focus();
+    }, 500);
   };
 
   onWatchVideo = () => {
+    vscode.postMessage({
+      command: Commands.SendTelemetryEvent,
+      data: {
+        eventName: TelemetryEvent.WatchVideo,
+        properties: { [TelemetryProperty.VideoPlayFrom]: WatchVideoFrom.WatchVideoBtn },
+      },
+    });
+
+    this.setState({ playFromStep: true });
+
     const video = document.getElementById("capabilitiesVideo") as HTMLMediaElement;
     if (video && video.paused) {
       video!.play();
     }
   };
 
-  onVideoPlay = () => {
+  onWatchOnBrowser = () => {
     vscode.postMessage({
       command: Commands.SendTelemetryEvent,
-      data: { eventName: TelemetryEvent.WatchVideo, properties: { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview } }
+      data: {
+        eventName: TelemetryEvent.WatchVideo,
+        properties: { [TelemetryProperty.VideoPlayFrom]: WatchVideoFrom.WatchOnBrowserBtn },
+      },
     });
 
     const done = this.state.stepsDone;
@@ -370,6 +420,48 @@ export default class QuickStart extends React.Component<any, any> {
       stepsDone: done,
     });
     this.setGlobalStepsDone(done);
+  };
+
+  onVideoPlay = () => {
+    if (this.state.videoSeeking) {
+      this.setState({ videoSeeking: false });
+      return;
+    }
+    if (!this.state.playFromStep) {
+      vscode.postMessage({
+        command: Commands.SendTelemetryEvent,
+        data: {
+          eventName: TelemetryEvent.WatchVideo,
+          properties: { [TelemetryProperty.VideoPlayFrom]: WatchVideoFrom.PlayBtn },
+        },
+      });
+    } else {
+      this.setState({ playFromStep: false });
+    }
+
+    const done = this.state.stepsDone;
+    done[0] = true;
+    this.setState({
+      stepsDone: done,
+    });
+    this.setGlobalStepsDone(done);
+  };
+
+  onVideoPause = () => {
+    const video = document.getElementById("capabilitiesVideo") as HTMLMediaElement;
+    if (video && !video.ended) {
+      if (video.seeking) {
+        this.setState({ videoSeeking: true });
+      } else {
+        vscode.postMessage({
+          command: Commands.SendTelemetryEvent,
+          data: {
+            eventName: TelemetryEvent.PauseVideo,
+            properties: { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview },
+          },
+        });
+      }
+    }
   };
 
   onHideWatchOnBrowser = () => {
@@ -390,7 +482,10 @@ export default class QuickStart extends React.Component<any, any> {
   displayCommands = () => {
     vscode.postMessage({
       command: Commands.SendTelemetryEvent,
-      data: { eventName: TelemetryEvent.DisplayCommands, properties: { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview } }
+      data: {
+        eventName: TelemetryEvent.DisplayCommands,
+        properties: { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview },
+      },
     });
 
     vscode.postMessage({
@@ -409,12 +504,15 @@ export default class QuickStart extends React.Component<any, any> {
   downloadNode = () => {
     vscode.postMessage({
       command: Commands.SendTelemetryEvent,
-      data: { eventName: TelemetryEvent.OpenDownloadNode, properties: { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview } }
+      data: {
+        eventName: TelemetryEvent.OpenDownloadNode,
+        properties: { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview },
+      },
     });
 
     vscode.postMessage({
       command: Commands.OpenExternalLink,
-      data: "https://nodejs.org/dist/latest-v14.x/",
+      data: "https://nodejs.org/en/download",
     });
 
     const done = this.state.stepsDone;
@@ -454,7 +552,10 @@ export default class QuickStart extends React.Component<any, any> {
   viewAllSamples = () => {
     vscode.postMessage({
       command: Commands.SendTelemetryEvent,
-      data: { eventName: TelemetryEvent.Samples, properties: { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview } }
+      data: {
+        eventName: TelemetryEvent.Samples,
+        properties: { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview },
+      },
     });
 
     const done = this.state.stepsDone;
@@ -479,7 +580,7 @@ class GetStartedAction extends React.Component<any, any> {
   render() {
     if (this.props.expanded) {
       return (
-        <div className="action-card">
+        <div className="action-card" tabIndex={0} role="listitem" id={this.props.step}>
           <div className="flex-section card-line">
             {this.props.done && <Image src={Step_Done} className="action-icon" />}
             {!this.props.done && <Image src={this.getStepIcon()} className="action-icon" />}
@@ -504,7 +605,13 @@ class GetStartedAction extends React.Component<any, any> {
       );
     } else {
       return (
-        <div className="collapse-action-card" onClick={this.onCollapseClicked}>
+        <div
+          className="collapse-action-card"
+          onClick={this.onCollapseClicked}
+          tabIndex={0}
+          role="listitem"
+          id={this.props.step}
+        >
           <div className="flex-section">
             {this.props.done && <Image src={Step_Done} className="action-icon" />}
             {!this.props.done && <Image src={this.getStepIcon()} className="action-icon" />}
@@ -516,7 +623,7 @@ class GetStartedAction extends React.Component<any, any> {
   }
 
   onCollapseClicked = () => {
-    this.props.onCollapsedCardClicked(this.props.step);
+    this.props.onCollapsedCardClicked(this.props.step, this.props.title);
   };
 
   getStepIcon = () => {

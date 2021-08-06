@@ -13,7 +13,12 @@ import {
 import { ManagementClient } from "./managementClient";
 import { ErrorMessage } from "./errors";
 import { SqlResultFactory } from "./results";
-import { DialogUtils, ProgressTitle, ProcessMessage } from "./utils/dialogUtils";
+import {
+  DialogUtils,
+  ProgressTitle,
+  ProvisionMessage,
+  ConfigureMessage,
+} from "./utils/dialogUtils";
 import { SqlConfig } from "./config";
 import { SqlClient } from "./sqlClient";
 import { ContextUtils } from "./utils/contextUtils";
@@ -22,21 +27,17 @@ import { Constants, HelpLinks, Telemetry } from "./constants";
 import { Message } from "./utils/message";
 import { TelemetryUtils } from "./utils/telemetryUtils";
 import { adminNameQuestion, adminPasswordQuestion, confirmPasswordQuestion } from "./questions";
-import {
-  sqlConfirmPasswordValidatorGenerator,
-  sqlPasswordValidatorGenerator,
-  sqlUserNameValidator,
-} from "./utils/checkInput";
+import { Providers, ResourceManagementClientContext } from "@azure/arm-resources";
 
 export class SqlPluginImpl {
   config: SqlConfig = new SqlConfig();
 
-  init(ctx: PluginContext) {
+  async init(ctx: PluginContext) {
     ContextUtils.init(ctx);
-    this.config.azureSubscriptionId = ContextUtils.getConfigString(
-      Constants.solution,
-      Constants.solutionConfigKey.subscriptionId
-    );
+    const subscriptionInfo = await ctx.azureAccountProvider?.getSelectedSubscription();
+    if (subscriptionInfo) {
+      this.config.azureSubscriptionId = subscriptionInfo.subscriptionId;
+    }
     this.config.resourceGroup = ContextUtils.getConfigString(
       Constants.solution,
       Constants.solutionConfigKey.resourceGroupName
@@ -54,12 +55,12 @@ export class SqlPluginImpl {
       Constants.solutionConfigKey.tenantId
     );
 
-    let defaultEndpoint = `${ctx.app.name.short}-sql-${this.config.resourceNameSuffix}`;
+    let defaultEndpoint = `${ctx.projectSettings!.appName}-sql-${this.config.resourceNameSuffix}`;
     defaultEndpoint = formatEndpoint(defaultEndpoint);
     this.config.sqlServer = defaultEndpoint;
     this.config.sqlEndpoint = `${this.config.sqlServer}.database.windows.net`;
     // database
-    const defaultDatabase = `${ctx.app.name.short}-db-${this.config.resourceNameSuffix}`;
+    const defaultDatabase = `${ctx.projectSettings!.appName}-db-${this.config.resourceNameSuffix}`;
     this.config.databaseName = defaultDatabase;
   }
 
@@ -78,10 +79,9 @@ export class SqlPluginImpl {
         sqlNode.addChild(new QTreeNode(confirmPasswordQuestion));
         return ok(sqlNode);
       }
-      this.init(ctx);
+      await this.init(ctx);
       if (this.config.azureSubscriptionId) {
-        const managementClient: ManagementClient = new ManagementClient(ctx, this.config);
-        await managementClient.init();
+        const managementClient: ManagementClient = await ManagementClient.create(ctx, this.config);
         this.config.existSql = await managementClient.existAzureSQL();
       }
 
@@ -98,7 +98,18 @@ export class SqlPluginImpl {
   async preProvision(ctx: PluginContext): Promise<Result<any, FxError>> {
     ctx.logProvider?.info(Message.startPreProvision);
 
-    this.init(ctx);
+    await this.init(ctx);
+    if (!this.config.azureSubscriptionId) {
+      const error = SqlResultFactory.SystemError(
+        ErrorMessage.SqlGetConfigError.name,
+        ErrorMessage.SqlGetConfigError.message(
+          Constants.solutionConfigKey.subscriptionId,
+          Constants.solution
+        )
+      );
+      ctx.logProvider?.error(error.message);
+    }
+
     DialogUtils.init(ctx);
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendEvent(Telemetry.stage.preProvision + Telemetry.startSuffix);
@@ -158,15 +169,30 @@ export class SqlPluginImpl {
 
   async provision(ctx: PluginContext): Promise<Result<any, FxError>> {
     ctx.logProvider?.info(Message.startProvision);
-    DialogUtils.init(ctx, ProgressTitle.Provision, ProgressTitle.ProvisionSteps);
+    DialogUtils.init(ctx, ProgressTitle.Provision, Object.keys(ProvisionMessage).length);
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendEvent(Telemetry.stage.provision + Telemetry.startSuffix);
 
-    const managementClient: ManagementClient = new ManagementClient(ctx, this.config);
-    await managementClient.init();
+    const managementClient: ManagementClient = await ManagementClient.create(ctx, this.config);
 
     await DialogUtils.progressBar?.start();
-    await DialogUtils.progressBar?.next(ProcessMessage.provisionSQL);
+    await DialogUtils.progressBar?.next(ProvisionMessage.checkProvider);
+    if (!this.config.existSql) {
+      try {
+        ctx.logProvider?.info(Message.checkProvider);
+        const credentials = await ctx.azureAccountProvider!.getAccountCredentialAsync();
+        const resourceManagementClient = new Providers(
+          new ResourceManagementClientContext(credentials!, this.config.azureSubscriptionId)
+        );
+        await resourceManagementClient.register(Constants.resourceProvider);
+      } catch (error) {
+        ctx.logProvider?.info(Message.registerResourceProviderFailed(error?.message));
+      }
+    } else {
+      ctx.logProvider?.info(Message.skipCheckProvider);
+    }
+
+    await DialogUtils.progressBar?.next(ProvisionMessage.provisionSQL);
     if (!this.config.existSql) {
       ctx.logProvider?.info(Message.provisionSql);
       await managementClient.createAzureSQL();
@@ -174,7 +200,7 @@ export class SqlPluginImpl {
       ctx.logProvider?.info(Message.skipProvisionSql);
     }
 
-    await DialogUtils.progressBar?.next(ProcessMessage.provisionDatabase);
+    await DialogUtils.progressBar?.next(ProvisionMessage.provisionDatabase);
     let existDatabase = false;
     if (this.config.existSql) {
       ctx.logProvider?.info(Message.checkDatabase);
@@ -195,7 +221,7 @@ export class SqlPluginImpl {
 
   async postProvision(ctx: PluginContext): Promise<Result<any, FxError>> {
     ctx.logProvider?.info(Message.startPostProvision);
-    DialogUtils.init(ctx, ProgressTitle.PostProvision, ProgressTitle.PostProvisionSteps);
+    DialogUtils.init(ctx, ProgressTitle.PostProvision, Object.keys(ConfigureMessage).length);
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendEvent(Telemetry.stage.postProvision + Telemetry.startSuffix, undefined, {
       [Telemetry.properties.skipAddingUser]: this.config.skipAddingUser
@@ -203,16 +229,14 @@ export class SqlPluginImpl {
         : Telemetry.valueNo,
     });
 
-    const sqlClient = new SqlClient(ctx, this.config);
-    const managementClient: ManagementClient = new ManagementClient(ctx, this.config);
-    await managementClient.init();
+    const managementClient: ManagementClient = await ManagementClient.create(ctx, this.config);
 
     ctx.logProvider?.info(Message.addFirewall);
     await managementClient.addLocalFirewallRule();
     await managementClient.addAzureFirewallRule();
 
     await DialogUtils.progressBar?.start();
-    await DialogUtils.progressBar?.next(ProcessMessage.postProvisionAddAadmin);
+    await DialogUtils.progressBar?.next(ConfigureMessage.postProvisionAddAadmin);
     let existAdmin = false;
     ctx.logProvider?.info(Message.checkAadAdmin);
     existAdmin = await managementClient.existAadAdmin();
@@ -235,11 +259,11 @@ export class SqlPluginImpl {
     }
 
     if (!this.config.skipAddingUser) {
-      await DialogUtils.progressBar?.next(ProcessMessage.postProvisionAddUser);
+      await DialogUtils.progressBar?.next(ConfigureMessage.postProvisionAddUser);
       // azure sql does not support service principal admin to add databse user currently, so just notice developer if so.
       if (this.config.aadAdminType === UserType.User) {
         ctx.logProvider?.info(Message.connectDatabase);
-        await sqlClient.initToken();
+        const sqlClient = await SqlClient.create(ctx, this.config);
 
         let existUser = false;
         ctx.logProvider?.info(Message.checkDatabaseUser);

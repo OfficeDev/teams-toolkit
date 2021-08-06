@@ -1,7 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { FrontendPluginImpl } from "./plugin";
-import { Plugin, PluginContext, err, SystemError, UserError } from "@microsoft/teamsfx-api";
+import {
+  Plugin,
+  PluginContext,
+  err,
+  SystemError,
+  UserError,
+  AzureSolutionSettings,
+  ok,
+} from "@microsoft/teamsfx-api";
 
 import { ErrorFactory, TeamsFxResult } from "./error-factory";
 import {
@@ -14,8 +22,19 @@ import { Logger } from "./utils/logger";
 import { ProgressHelper } from "./utils/progress-helper";
 import { TelemetryEvent } from "./constants";
 import { TelemetryHelper } from "./utils/telemetry-helper";
+import { HostTypeOptionAzure, TabOptionItem } from "../../solution/fx-solution/question";
+import { Service } from "typedi";
+import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+import { isArmSupportEnabled } from "../../..";
 
+@Service(ResourcePlugins.FrontendPlugin)
 export class FrontendPlugin implements Plugin {
+  name = "fx-resource-frontend-hosting";
+  displayName = "Tab Front-end";
+  activate(solutionSettings: AzureSolutionSettings): boolean {
+    const cap = solutionSettings.capabilities || [];
+    return solutionSettings.hostType === HostTypeOptionAzure.id && cap.includes(TabOptionItem.id);
+  }
   frontendPluginImpl = new FrontendPluginImpl();
 
   private static setContext(ctx: PluginContext): void {
@@ -25,7 +44,7 @@ export class FrontendPlugin implements Plugin {
 
   public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
     FrontendPlugin.setContext(ctx);
-    return this.runWithErrorHandling(ctx, TelemetryEvent.scaffold, () =>
+    return this.runWithErrorHandling(ctx, TelemetryEvent.Scaffold, () =>
       this.frontendPluginImpl.scaffold(ctx)
     );
   }
@@ -38,10 +57,14 @@ export class FrontendPlugin implements Plugin {
   }
 
   public async provision(ctx: PluginContext): Promise<TeamsFxResult> {
-    FrontendPlugin.setContext(ctx);
-    return this.runWithErrorHandling(ctx, TelemetryEvent.Provision, () =>
-      this.frontendPluginImpl.provision(ctx)
-    );
+    if (isArmSupportEnabled()) {
+      return ok(undefined);
+    } else {
+      FrontendPlugin.setContext(ctx);
+      return this.runWithErrorHandling(ctx, TelemetryEvent.Provision, () =>
+        this.frontendPluginImpl.provision(ctx)
+      );
+    }
   }
 
   public async postProvision(ctx: PluginContext): Promise<TeamsFxResult> {
@@ -62,6 +85,13 @@ export class FrontendPlugin implements Plugin {
     FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(ctx, TelemetryEvent.Deploy, () =>
       this.frontendPluginImpl.deploy(ctx)
+    );
+  }
+
+  public async generateArmTemplates(ctx: PluginContext): Promise<TeamsFxResult> {
+    FrontendPlugin.setContext(ctx);
+    return this.runWithErrorHandling(ctx, TelemetryEvent.GenerateArmTemplates, () =>
+      this.frontendPluginImpl.generateArmTemplates(ctx)
     );
   }
 

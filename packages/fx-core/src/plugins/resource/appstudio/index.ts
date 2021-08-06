@@ -6,24 +6,36 @@ import {
   FxError,
   ok,
   err,
+  LogProvider,
   Platform,
   Plugin,
   PluginContext,
   QTreeNode,
   Result,
   Stage,
+  TeamsAppManifest,
   SystemError,
   UserError,
+  ProjectSettings,
   Colors,
+  AzureSolutionSettings,
 } from "@microsoft/teamsfx-api";
 import { AppStudioPluginImpl } from "./plugin";
 import { Constants } from "./constants";
+import { IAppDefinition } from "./interfaces/IAppDefinition";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
 import { manuallySubmitOption, autoPublishOption } from "./questions";
 import { TelemetryUtils, TelemetryEventName, TelemetryPropertyKey } from "./utils/telemetry";
-
+import { Service } from "typedi";
+import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+@Service(ResourcePlugins.AppStudioPlugin)
 export class AppStudioPlugin implements Plugin {
+  name = "fx-resource-appstudio";
+  displayName = "App Studio";
+  activate(solutionSettings: AzureSolutionSettings): boolean {
+    return true;
+  }
   private appStudioPluginImpl = new AppStudioPluginImpl();
 
   async getQuestions(
@@ -66,17 +78,49 @@ export class AppStudioPlugin implements Plugin {
   }
 
   /**
+   * Create or update teams app
+   * For cli: "teamsfx init" only
+   * @returns {string} - Remote teams app id
+   */
+  public async getAppDefinitionAndUpdate(
+    ctx: PluginContext,
+    type: "localDebug" | "remote",
+    manifest: TeamsAppManifest
+  ): Promise<Result<string, FxError>> {
+    return await this.appStudioPluginImpl.getAppDefinitionAndUpdate(ctx, type, manifest);
+  }
+
+  /**
+   * Create teams app
+   * @returns {string} - Remote teams app id
+   */
+  public async provision(ctx: PluginContext): Promise<Result<string, FxError>> {
+    const remoteTeamsAppId = await this.appStudioPluginImpl.provision(ctx);
+    return ok(remoteTeamsAppId);
+  }
+
+  /**
+   * Update teams app
+   * @returns {string} - Remote teams app id
+   */
+  public async postProvision(ctx: PluginContext): Promise<Result<string, FxError>> {
+    const remoteTeamsAppId = await this.appStudioPluginImpl.postProvision(ctx);
+    return ok(remoteTeamsAppId);
+  }
+
+  /**
    * Validate manifest string against schema
    * @param {string} manifestString - the string of manifest.json file
    * @returns {string[]} an array of errors
    */
-  public async validateManifest(
-    ctx: PluginContext,
-    manifestString: string
-  ): Promise<Result<string[], FxError>> {
+  public async validateManifest(ctx: PluginContext): Promise<Result<string[], FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.validateManifest);
-    const validationResult = await this.appStudioPluginImpl.validateManifest(ctx, manifestString);
+    const validationpluginResult = await this.appStudioPluginImpl.validateManifest(ctx);
+    if (validationpluginResult.isErr()) {
+      return err(validationpluginResult.error);
+    }
+    const validationResult = validationpluginResult.value;
     if (validationResult.length > 0) {
       const errMessage = AppStudioError.ValidationFailedError.message(validationResult);
       ctx.logProvider?.error("Manifest Validation failed!");
@@ -97,7 +141,25 @@ export class AppStudioPlugin implements Plugin {
     const validationSuccess = "Manifest Validation succeed!";
     ctx.ui?.showMessage("info", validationSuccess, false);
     TelemetryUtils.sendSuccessEvent(TelemetryEventName.validateManifest);
-    return ok(validationResult);
+    return validationpluginResult;
+  }
+
+  public async scaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
+    TelemetryUtils.init(ctx);
+    TelemetryUtils.sendStartEvent(TelemetryEventName.scaffold);
+    try {
+      const scaffoldResult = await this.appStudioPluginImpl.scaffold(ctx);
+      TelemetryUtils.sendSuccessEvent(TelemetryEventName.scaffold);
+      return ok(scaffoldResult);
+    } catch (error) {
+      TelemetryUtils.sendErrorEvent(TelemetryEventName.scaffold, error);
+      return err(
+        AppStudioResultFactory.SystemError(
+          AppStudioError.ScaffoldFailedError.name,
+          AppStudioError.ScaffoldFailedError.message(error)
+        )
+      );
+    }
   }
 
   /**
@@ -105,19 +167,11 @@ export class AppStudioPlugin implements Plugin {
    * @param {string} appDirectory - The directory contains manifest.source.json and two images
    * @returns {string} - Path of built appPackage.zip
    */
-  public async buildTeamsPackage(
-    ctx: PluginContext,
-    appDirectory: string,
-    manifestString: string
-  ): Promise<Result<string, FxError>> {
+  public async buildTeamsPackage(ctx: PluginContext): Promise<Result<string, FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.buildTeamsPackage);
     try {
-      const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(
-        ctx,
-        appDirectory,
-        manifestString
-      );
+      const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(ctx);
       const builtSuccess = [
         { content: "(√)Done: ", color: Colors.BRIGHT_GREEN },
         { content: "Teams Package ", color: Colors.BRIGHT_WHITE },
@@ -151,15 +205,12 @@ export class AppStudioPlugin implements Plugin {
     if (ctx.answers?.platform === Platform.VSCode) {
       const answer = ctx.answers![Constants.BUILD_OR_PUBLISH_QUESTION] as string;
       if (answer === manuallySubmitOption.id) {
-        const appDirectory = `${ctx.root}/.${ConfigFolderName}`;
-        const manifestString = JSON.stringify(ctx.app);
+        //const appDirectory = `${ctx.root}/.${ConfigFolderName}`;
         try {
-          const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(
-            ctx,
-            appDirectory,
-            manifestString
-          );
-          const msg = `Successfully created ${ctx.app.name.short} app package file at ${appPackagePath}. Send this to your administrator for approval.`;
+          const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(ctx);
+          const msg = `Successfully created ${
+            ctx.projectSettings!.appName
+          } app package file at ${appPackagePath}. Send this to your administrator for approval.`;
           ctx.ui?.showMessage("info", msg, false, "OK", Constants.READ_MORE).then((value) => {
             if (value.isOk() && value.value === Constants.READ_MORE) {
               ctx.ui?.openUrl(Constants.PUBLISH_GUIDE);
@@ -184,7 +235,7 @@ export class AppStudioPlugin implements Plugin {
       ctx.logProvider?.info(`Publish success!`);
       ctx.ui?.showMessage(
         "info",
-        `${result.name} successfully published to the admin portal. Once approved, your app will be available for your organization.`,
+        `Success: ${result.name} successfully published to the admin portal. Once approved, your app will be available for your organization.`,
         false
       );
       const properties: { [key: string]: string } = {};
@@ -215,4 +266,11 @@ export class AppStudioPlugin implements Plugin {
       }
     }
   }
+
+  public async postLocalDebug(ctx: PluginContext): Promise<Result<string, FxError>> {
+    const localTeamsAppId = await this.appStudioPluginImpl.postLocalDebug(ctx);
+    return ok(localTeamsAppId);
+  }
 }
+
+export default new AppStudioPlugin();

@@ -12,10 +12,14 @@ import { IDepsTelemetry } from "./checker";
 export class VSCodeTelemetry implements IDepsTelemetry {
   private readonly _telemetryComponentType = "extension:debug:envchecker";
 
-  public sendEvent(eventName: DepsCheckerEvent, timecost?: number): void {
-    const properties = this.getBaseProperties();
-
+  public sendEvent(
+    eventName: DepsCheckerEvent,
+    properties: { [key: string]: string } = {},
+    timecost?: number
+  ): void {
+    this.addCommonProps(properties);
     const measurements: { [p: string]: number } = {};
+
     if (timecost) {
       measurements[TelemetryMessurement.completionTime] = timecost;
     }
@@ -31,12 +35,12 @@ export class VSCodeTelemetry implements IDepsTelemetry {
     await action();
     // use seconds instead of milliseconds
     const timecost = Number(((performance.now() - start) / 1000).toFixed(2));
-    this.sendEvent(eventName, timecost);
+    this.sendEvent(eventName, {}, timecost);
   }
 
   public sendUserErrorEvent(eventName: DepsCheckerEvent, errorMessage: string): void {
     const error = new UserError(eventName, errorMessage, this._telemetryComponentType);
-    ExtTelemetry.sendTelemetryErrorEvent(eventName, error, this.getBaseProperties());
+    ExtTelemetry.sendTelemetryErrorEvent(eventName, error, this.addCommonProps());
   }
 
   public sendSystemErrorEvent(
@@ -50,15 +54,14 @@ export class VSCodeTelemetry implements IDepsTelemetry {
       this._telemetryComponentType,
       errorStack
     );
-    ExtTelemetry.sendTelemetryErrorEvent(eventName, error, this.getBaseProperties());
+    ExtTelemetry.sendTelemetryErrorEvent(eventName, error, this.addCommonProps());
   }
 
-  private getBaseProperties(): { [p: string]: string } {
-    return {
-      [TelemetryProperty.Component]: this._telemetryComponentType,
-      [TelemetryProperty.OSArch]: os.arch(),
-      [TelemetryProperty.OSRelease]: os.release(),
-    };
+  private addCommonProps(properties: { [key: string]: string } = {}): { [key: string]: string } {
+    properties[TelemetryProperty.OSArch] = os.arch();
+    properties[TelemetryProperty.OSRelease] = os.release();
+    properties[TelemetryProperty.Component] = this._telemetryComponentType;
+    return properties;
   }
 }
 

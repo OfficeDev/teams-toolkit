@@ -1,15 +1,19 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import SwaggerParser from "@apidevtools/swagger-parser";
-import { BuildError, InvalidFunctionEndpoint, InvalidOpenApiDocument } from "../error";
+import {
+  BuildError,
+  InvalidFunctionEndpoint,
+  InvalidOpenApiDocument,
+  EmptyTitleInOpenApiDocument,
+  EmptyVersionInOpenApiDocument,
+} from "../error";
 import { IOpenApiDocument } from "../interfaces/IOpenApiDocument";
 import urlParse from "url-parse";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { ApimDefaultValues, OpenApiSchemaVersion } from "../constants";
-import { Telemetry } from "./telemetry";
 import { LogProvider, TelemetryReporter } from "@microsoft/teamsfx-api";
-import { getFileExtension } from "./commonUtils";
 import { LogMessages } from "../log";
 import { OpenAPI, OpenAPIV2, OpenAPIV3 } from "openapi-types";
 
@@ -71,13 +75,21 @@ export class OpenApiProcessor {
     let srcSpec: OpenAPI.Document;
     const filepath = path.isAbsolute(fileName) || !dir ? fileName : path.join(dir, fileName);
     try {
-      srcSpec = await this.swaggerParser.parse(filepath, {
-        parse: { json: { allowEmpty: false }, yaml: { allowEmpty: false } },
+      srcSpec = await this.swaggerParser.validate(filepath, {
+        parse: {
+          json: { allowEmpty: false },
+          yaml: { allowEmpty: false },
+        },
+        validate: {
+          spec: false,
+          schema: true,
+        },
       });
-    } catch (error) {
+    } catch (error: any) {
       throw BuildError(InvalidOpenApiDocument, filepath);
     }
 
+    this.validateOpenApiInfo(srcSpec, filepath);
     const schemaVersion = this.getSchemaVersion(srcSpec, filepath);
     return {
       schemaVersion: schemaVersion,
@@ -154,6 +166,15 @@ export class OpenApiProcessor {
       return OpenApiSchemaVersion.V3;
     } else {
       throw BuildError(InvalidOpenApiDocument, filePath);
+    }
+  }
+
+  private validateOpenApiInfo(spec: OpenAPI.Document, filePath: string): void {
+    if (!spec.info.title) {
+      throw BuildError(EmptyTitleInOpenApiDocument, filePath);
+    }
+    if (!spec.info.version) {
+      throw BuildError(EmptyVersionInOpenApiDocument, filePath);
     }
   }
 

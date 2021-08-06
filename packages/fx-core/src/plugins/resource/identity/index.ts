@@ -2,7 +2,14 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import * as manager from "@azure/arm-resources";
 import { ErrorMessage } from "./errors";
-import { PluginContext, Plugin, ok, err, SystemError } from "@microsoft/teamsfx-api";
+import {
+  PluginContext,
+  Plugin,
+  ok,
+  err,
+  SystemError,
+  AzureSolutionSettings,
+} from "@microsoft/teamsfx-api";
 
 import { IdentityConfig } from "./config";
 import { Constants, Telemetry } from "./constants";
@@ -12,8 +19,19 @@ import { Message } from "./utils/messages";
 import { TelemetryUtils } from "./utils/telemetryUtil";
 import { formatEndpoint } from "./utils/commonUtils";
 import { getTemplatesFolder } from "../../..";
+import { AzureResourceSQL } from "../../solution/fx-solution/question";
+import { Service } from "typedi";
+import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+import { Providers, ResourceManagementClientContext } from "@azure/arm-resources";
 
+@Service(ResourcePlugins.IdentityPlugin)
 export class IdentityPlugin implements Plugin {
+  name = "fx-resource-identity";
+  displayName = "Microsoft Identity";
+  activate(solutionSettings: AzureSolutionSettings): boolean {
+    const azureResources = solutionSettings.azureResources ? solutionSettings.azureResources : [];
+    return azureResources.includes(AzureResourceSQL.id);
+  }
   template: any;
   parameters: any;
   armTemplateDir: string = path.resolve(
@@ -35,10 +53,10 @@ export class IdentityPlugin implements Plugin {
     TelemetryUtils.sendEvent(Telemetry.stage.provision + Telemetry.startSuffix);
 
     ContextUtils.init(ctx);
-    this.config.azureSubscriptionId = ContextUtils.getConfigString(
-      Constants.solution,
-      Constants.subscriptionId
-    );
+    const subscriptionInfo = await ctx.azureAccountProvider?.getSelectedSubscription();
+    if (subscriptionInfo) {
+      this.config.azureSubscriptionId = subscriptionInfo.subscriptionId;
+    }
     this.config.resourceGroup = ContextUtils.getConfigString(
       Constants.solution,
       Constants.resourceGroupName
@@ -49,7 +67,18 @@ export class IdentityPlugin implements Plugin {
     );
     this.config.location = ContextUtils.getConfigString(Constants.solution, Constants.location);
 
-    let defaultIdentity = `${ctx.app.name.short}-msi-${this.config.resourceNameSuffix}`;
+    try {
+      ctx.logProvider?.info(Message.checkProvider);
+      const credentials = await ctx.azureAccountProvider!.getAccountCredentialAsync();
+      const resourceManagementClient = new Providers(
+        new ResourceManagementClientContext(credentials!, this.config.azureSubscriptionId)
+      );
+      await resourceManagementClient.register(Constants.resourceProvider);
+    } catch (error) {
+      ctx.logProvider?.info(Message.registerResourceProviderFailed(error?.message));
+    }
+
+    let defaultIdentity = `${ctx.projectSettings!.appName}-msi-${this.config.resourceNameSuffix}`;
     defaultIdentity = formatEndpoint(defaultIdentity);
     this.config.identity = defaultIdentity;
     this.config.identityName = `/subscriptions/${this.config.azureSubscriptionId}/resourcegroups/${this.config.resourceGroup}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${this.config.identity}`;

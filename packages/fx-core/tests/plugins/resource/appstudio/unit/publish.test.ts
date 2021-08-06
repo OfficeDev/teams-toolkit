@@ -7,47 +7,85 @@ import sinon from "sinon";
 import fs from "fs-extra";
 import path from "path";
 import { v4 as uuid } from "uuid";
-import { ConfigMap, PluginContext, ok, Platform } from "@microsoft/teamsfx-api";
+import {
+  ConfigMap,
+  PluginContext,
+  ok,
+  Platform,
+  TeamsAppManifest,
+  Plugin,
+} from "@microsoft/teamsfx-api";
 import { AppStudioPlugin } from "./../../../../../src/plugins/resource/appstudio";
+import { AppStudioPluginImpl } from "./../../../../../src/plugins/resource/appstudio/plugin";
+import { AppStudioError } from "./../../../../../src/plugins/resource/appstudio/errors";
 import { AppStudioClient } from "./../../../../../src/plugins/resource/appstudio/appStudio";
 import { PublishingState } from "./../../../../../src/plugins/resource/appstudio/interfaces/IPublishingAppDefinition";
-import { AppStudio } from "./../../../../../src/plugins/solution/fx-solution/appstudio/appstudio";
 import { mockTokenProvider } from "./../../aad/helper";
 import { MockUserInteraction } from "./../helper";
+import { TeamsBot } from "./../../../../../src/plugins/resource/bot";
+import { ResourcePlugins } from "../../../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
+import Container from "typedi";
 
 describe("Publish Teams app", () => {
   let plugin: AppStudioPlugin;
   let ctx: PluginContext;
-  const appPackagePath = path.resolve(__dirname, "./../resources/.fx/appPackage.zip");
+  let BotPlugin: Plugin;
+  let selectedPlugins: Plugin[];
+  const sandbox = sinon.createSandbox();
+  const appPackagePath = path.resolve(__dirname, "./../resources/appPackage/appPackage.zip");
 
   beforeEach(async () => {
-    const manifestFile = path.resolve(__dirname, "./../resources/valid.manifest.json");
-    const manifest = await fs.readJson(manifestFile);
-
     plugin = new AppStudioPlugin();
     ctx = {
       root: path.resolve(__dirname, "./../resources"),
       configOfOtherPlugins: new Map(),
       config: new ConfigMap(),
-      app: manifest,
       appStudioToken: mockTokenProvider(),
       answers: { platform: Platform.VSCode },
     };
-    sinon.stub(AppStudioClient, "validateManifest").resolves([]);
-    sinon.stub(AppStudioClient, "publishTeamsApp").resolves(uuid());
-    sinon.stub(AppStudioClient, "publishTeamsAppUpdate").resolves(uuid());
-    sinon.stub(AppStudio, "updateApp").resolves();
+    ctx.projectSettings = {
+      appName: "my app",
+      projectId: "project id",
+      solutionSettings: {
+        name: "azure",
+        version: "1.0",
+        capabilities: ["Bot"],
+        activeResourcePlugins: ["fx-resource-bot"],
+      },
+    };
+    const botplugin: Plugin = new TeamsBot();
+    BotPlugin = botplugin as Plugin;
+    BotPlugin.name = "fx-resource-bot";
+    BotPlugin.displayName = "Bot";
+    selectedPlugins = [BotPlugin];
+    sandbox.stub(AppStudioClient, "validateManifest").resolves([]);
+    sandbox.stub(AppStudioClient, "publishTeamsApp").resolves(uuid());
+    sandbox.stub(AppStudioClient, "publishTeamsAppUpdate").resolves(uuid());
+    sandbox.stub(AppStudioClient, "updateApp").resolves();
+    sandbox.stub(fs, "move").resolves();
   });
 
   afterEach(async () => {
-    sinon.restore();
+    sandbox.restore();
     if (await fs.pathExists(appPackagePath)) {
       await fs.remove(appPackagePath);
     }
   });
 
   it("Publish teams app", async () => {
-    sinon.stub(AppStudioClient, "getAppByTeamsAppId").resolves(undefined);
+    sandbox.stub(AppStudioClient, "getAppByTeamsAppId").resolves(undefined);
+
+    sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns(
+      ok({
+        tabEndpoint: "tabEndpoint",
+        tabDomain: "tabDomain",
+        aadId: "aadId",
+        botDomain: "botDomain",
+        botId: "botId",
+        webApplicationInfoResource: "webApplicationInfoResource",
+      })
+    );
+
     const teamsAppId = await plugin.publish(ctx);
     chai.assert.isTrue(teamsAppId.isOk());
     if (teamsAppId.isOk()) {
@@ -62,8 +100,19 @@ describe("Publish Teams app", () => {
       teamsAppId: uuid(),
       displayName: "TestApp",
     };
-    sinon.stub(AppStudioClient, "getAppByTeamsAppId").resolves(mockApp);
+    sandbox.stub(AppStudioClient, "getAppByTeamsAppId").resolves(mockApp);
     ctx.ui = new MockUserInteraction();
+
+    sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns(
+      ok({
+        tabEndpoint: "tabEndpoint",
+        tabDomain: "tabDomain",
+        aadId: "aadId",
+        botDomain: "botDomain",
+        botId: "botId",
+        webApplicationInfoResource: "webApplicationInfoResource",
+      })
+    );
 
     const teamsAppId = await plugin.publish(ctx);
     chai.assert.isTrue(teamsAppId.isOk());

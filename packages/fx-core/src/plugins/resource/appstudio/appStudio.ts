@@ -2,23 +2,230 @@
 // Licensed under the MIT license.
 
 import axios, { AxiosInstance } from "axios";
-import { SystemError } from "@microsoft/teamsfx-api";
-import { IAppDefinition } from "../../solution/fx-solution/appstudio/interface";
+import { SystemError, LogProvider } from "@microsoft/teamsfx-api";
+import { IAppDefinition } from "./interfaces/IAppDefinition";
 import { AppStudioError } from "./errors";
 import { IPublishingAppDenition } from "./interfaces/IPublishingAppDefinition";
 import { AppStudioResultFactory } from "./results";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AppStudioClient {
+  type Icon = {
+    type: "color" | "outline" | "sharePointPreviewImage";
+    name: "color" | "outline" | "sharePointPreviewImage";
+    base64String: string;
+  };
+
   const baseUrl = "https://dev.teams.microsoft.com";
 
-  // Creates a new axios instance to call app studio to prevent setting the accessToken on global instance.
+  /**
+   * Creates a new axios instance to call app studio to prevent setting the accessToken on global instance.
+   * @param {string}  appStudioToken
+   * @returns {AxiosInstance}
+   */
   function createRequesterWithToken(appStudioToken: string): AxiosInstance {
     const instance = axios.create({
       baseURL: baseUrl,
     });
     instance.defaults.headers.common["Authorization"] = `Bearer ${appStudioToken}`;
+    instance.interceptors.request.use(function (config) {
+      config.params = { teamstoolkit: true, ...config.params };
+      return config;
+    });
     return instance;
+  }
+
+  /**
+   * Creates an app registration in app studio with the given configuration and returns the Teams app id.
+   * @param {IAppDefinition}  appDefinition
+   * @param {string}  appStudioToken
+   * @param {LogProvider} logProvider
+   * @param {string} colorIconContent - base64 encoded
+   * @param {string} outlineIconContent - base64 encoded
+   * @returns {Promise<IAppDefinition | undefined>}
+   */
+  export async function createApp(
+    appDefinition: IAppDefinition,
+    appStudioToken: string,
+    logProvider?: LogProvider,
+    colorIconContent?: string,
+    outlineIconContent?: string
+  ): Promise<IAppDefinition | undefined> {
+    if (appDefinition && appStudioToken) {
+      try {
+        const requester = createRequesterWithToken(appStudioToken);
+        const appDef = {
+          ...appDefinition,
+        };
+        // /api/appdefinitions/import accepts icons as Base64-encoded strings.
+        if (colorIconContent) {
+          appDef.colorIcon = colorIconContent;
+        }
+        if (outlineIconContent) {
+          appDef.outlineIcon = outlineIconContent;
+        }
+        const response = await requester.post(`/api/appdefinitions/import`, appDef);
+        if (response && response.data) {
+          const app = <IAppDefinition>response.data;
+          await logProvider?.debug(`recieved data from app studio ${JSON.stringify(app)}`);
+
+          if (app) {
+            return app;
+          }
+        }
+      } catch (e) {
+        if (e instanceof Error) {
+          await logProvider?.warning(`failed to create app due to ${e.name}: ${e.message}`);
+        }
+        return undefined;
+      }
+    }
+
+    await logProvider?.warning(`invalid appDefinition or appStudioToken`);
+    return undefined;
+  }
+
+  async function uploadIcon(
+    teamsAppId: string,
+    appStudioToken: string,
+    colorIconContent: string,
+    outlineIconContent: string,
+    requester: AxiosInstance,
+    logProvider?: LogProvider
+  ): Promise<{ colorIconUrl: string; outlineIconUrl: string }> {
+    await logProvider?.info(`uploading icon for teams ${teamsAppId}`);
+    if (teamsAppId && appStudioToken) {
+      try {
+        const colorIcon: Icon = {
+          name: "color",
+          type: "color",
+          base64String: colorIconContent,
+        };
+        const outlineIcon: Icon = {
+          name: "outline",
+          type: "outline",
+          base64String: outlineIconContent,
+        };
+        const colorIconResult = requester.post(
+          `/api/appdefinitions/${teamsAppId}/image`,
+          colorIcon
+        );
+        const outlineIconResult = requester.post(
+          `/api/appdefinitions/${teamsAppId}/image`,
+          outlineIcon
+        );
+        const results = await Promise.all([colorIconResult, outlineIconResult]);
+        await logProvider?.info(`successfully uploaded two icons`);
+        return { colorIconUrl: results[0].data, outlineIconUrl: results[1].data };
+      } catch (e) {
+        if (e instanceof Error) {
+          await logProvider?.warning(`failed to upload icon due to ${e.name}: ${e.message}`);
+        }
+        throw e;
+      }
+    }
+    throw new Error(`teamsAppId or appStudioToken is invalid`);
+  }
+
+  export async function getApp(
+    teamsAppId: string,
+    appStudioToken: string,
+    logProvider?: LogProvider
+  ): Promise<IAppDefinition> {
+    const requester = createRequesterWithToken(appStudioToken);
+    try {
+      const response = await requester.get(`/api/appdefinitions/${teamsAppId}`);
+      if (response && response.data) {
+        const app = <IAppDefinition>response.data;
+        if (app && app.teamsAppId && app.teamsAppId === teamsAppId) {
+          return app;
+        } else {
+          await logProvider?.error(
+            `teamsAppId mismatch. Input: ${teamsAppId}. Got: ${app.teamsAppId}`
+          );
+        }
+      }
+    } catch (e) {
+      if (e instanceof Error) {
+        await logProvider?.warning(
+          `Cannot get the app definition with app ID ${teamsAppId}, due to ${e.name}: ${e.message}`
+        );
+      }
+      throw new Error(
+        `Cannot get the app definition with app ID ${teamsAppId}, due to ${e.name}: ${e.message}`
+      );
+    }
+    throw new Error(`Cannot get the app definition with app ID ${teamsAppId}`);
+  }
+
+  /**
+   * Updates an existing app if it exists with the configuration given.  Returns whether or not it was successful.
+   * @param {string}  teamsAppId
+   * @param {IAppDefinition} appDefinition
+   * @param {string}  appStudioToken
+   * @param {LogProvider} logProvider
+   * @param {string} colorIconContent - base64 encoded
+   * @param {string} outlineIconContent - base64 encoded
+   * @returns {Promise<IAppDefinition>}
+   */
+  export async function updateApp(
+    teamsAppId: string,
+    appDefinition: IAppDefinition,
+    appStudioToken: string,
+    logProvider?: LogProvider,
+    colorIconContent?: string,
+    outlineIconContent?: string
+  ): Promise<IAppDefinition> {
+    if (appDefinition && appStudioToken) {
+      try {
+        const requester = createRequesterWithToken(appStudioToken);
+
+        // Get userlist from existing app
+        const existingAppDefinition = await getApp(teamsAppId, appStudioToken, logProvider);
+        const userlist = existingAppDefinition.userList;
+        appDefinition.userList = userlist;
+
+        let result: { colorIconUrl: string; outlineIconUrl: string } | undefined;
+        if (colorIconContent && outlineIconContent) {
+          result = await uploadIcon(
+            teamsAppId,
+            appStudioToken,
+            colorIconContent,
+            outlineIconContent,
+            requester,
+            logProvider
+          );
+          if (!result) {
+            await logProvider?.error(`failed to upload color icon for: ${teamsAppId}`);
+            throw new Error(`failed to upload icons for ${teamsAppId}`);
+          }
+          appDefinition.colorIcon = result.colorIconUrl;
+          appDefinition.outlineIcon = result.outlineIconUrl;
+        }
+        const response = await requester.post(
+          `/api/appdefinitions/${teamsAppId}/override`,
+          appDefinition
+        );
+        if (response && response.data) {
+          const app = <IAppDefinition>response.data;
+
+          if (app && app.teamsAppId && app.teamsAppId === teamsAppId) {
+            return app;
+          } else {
+            await logProvider?.error(
+              `teamsAppId mismatch. Input: ${teamsAppId}. Got: ${app.teamsAppId}`
+            );
+          }
+        }
+      } catch (e) {
+        if (e instanceof Error) {
+          await logProvider?.warning(`failed to update app due to ${e.name}: ${e.message}`);
+        }
+        throw new Error(`failed to update app due to ${e.name}: ${e.message}`);
+      }
+    }
+
+    throw new Error(`invalid appDefinition[${appDefinition}] or appStudioToken[${appStudioToken}]`);
   }
 
   export async function validateManifest(
@@ -54,6 +261,10 @@ export namespace AppStudioClient {
 
   /**
    * Publish Teams app to Teams App Catalog
+   * @param teamsAppId
+   * @param file
+   * @param appStudioToken
+   * @returns
    */
   export async function publishTeamsApp(
     teamsAppId: string,
@@ -105,6 +316,10 @@ export namespace AppStudioClient {
 
   /**
    * Update existed publish request
+   * @param teamsAppId
+   * @param file
+   * @param appStudioToken
+   * @returns
    */
   export async function publishTeamsAppUpdate(
     teamsAppId: string,

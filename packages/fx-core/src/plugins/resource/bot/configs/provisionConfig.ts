@@ -35,85 +35,48 @@ export class ProvisionConfig {
   public functionEndpoint?: string;
 
   public async restoreConfigFromContext(context: PluginContext): Promise<void> {
-    const subscriptionIdValue: ConfigValue = context.configOfOtherPlugins
+    this.subscriptionId = (
+      await context.azureAccountProvider?.getSelectedSubscription()
+    )?.subscriptionId;
+
+    this.resourceGroup = context.configOfOtherPlugins
       .get(PluginSolution.PLUGIN_NAME)
-      ?.get(PluginSolution.SUBSCRIPTION_ID);
-    if (subscriptionIdValue) {
-      this.subscriptionId = subscriptionIdValue as string;
-    }
+      ?.get(PluginSolution.RESOURCE_GROUP_NAME) as string;
 
-    const resourceGroupValue: ConfigValue = context.configOfOtherPlugins
+    this.location = context.configOfOtherPlugins
       .get(PluginSolution.PLUGIN_NAME)
-      ?.get(PluginSolution.RESOURCE_GROUP_NAME);
-    if (resourceGroupValue) {
-      this.resourceGroup = resourceGroupValue as string;
-    }
+      ?.get(PluginSolution.LOCATION) as string;
 
-    const locationValue: ConfigValue = context.configOfOtherPlugins
-      .get(PluginSolution.PLUGIN_NAME)
-      ?.get(PluginSolution.LOCATION);
-    if (locationValue) {
-      this.location = locationValue as string;
-    }
-
-    const sqlEndpointValue: ConfigValue = context.configOfOtherPlugins
+    this.sqlEndpoint = context.configOfOtherPlugins
       .get(PluginSql.PLUGIN_NAME)
-      ?.get(PluginSql.SQL_ENDPOINT);
-    if (sqlEndpointValue) {
-      this.sqlEndpoint = sqlEndpointValue as string;
-    }
+      ?.get(PluginSql.SQL_ENDPOINT) as string;
 
-    const sqlDatabaseNameValue: ConfigValue = context.configOfOtherPlugins
+    this.sqlDatabaseName = context.configOfOtherPlugins
       .get(PluginSql.PLUGIN_NAME)
-      ?.get(PluginSql.SQL_DATABASE_NAME);
-    if (sqlDatabaseNameValue) {
-      this.sqlDatabaseName = sqlDatabaseNameValue as string;
-    }
+      ?.get(PluginSql.SQL_DATABASE_NAME) as string;
 
-    const sqlUsernameValue: ConfigValue = context.configOfOtherPlugins
+    this.sqlUserName = context.configOfOtherPlugins
       .get(PluginSql.PLUGIN_NAME)
-      ?.get(PluginSql.SQL_USERNAME);
-    if (sqlUsernameValue) {
-      this.sqlUserName = sqlUsernameValue as string;
-    }
+      ?.get(PluginSql.SQL_USERNAME) as string;
 
-    const sqlPasswordValue: ConfigValue = context.configOfOtherPlugins
+    this.sqlPassword = context.configOfOtherPlugins
       .get(PluginSql.PLUGIN_NAME)
-      ?.get(PluginSql.SQL_PASSWORD);
-    if (sqlPasswordValue) {
-      this.sqlPassword = sqlPasswordValue as string;
-    }
+      ?.get(PluginSql.SQL_PASSWORD) as string;
 
-    const identityValue: ConfigValue = context.configOfOtherPlugins
+    this.identityId = context.configOfOtherPlugins
       .get(PluginIdentity.PLUGIN_NAME)
-      ?.get(PluginIdentity.IDENTITY_ID);
-    if (identityValue) {
-      this.identityId = identityValue as string;
-    }
+      ?.get(PluginIdentity.IDENTITY_ID) as string;
 
-    const identityNameValue: ConfigValue = context.configOfOtherPlugins
+    this.identityName = context.configOfOtherPlugins
       .get(PluginIdentity.PLUGIN_NAME)
-      ?.get(PluginIdentity.IDENTITY_NAME);
-    if (identityNameValue) {
-      this.identityName = identityNameValue as string;
-    }
+      ?.get(PluginIdentity.IDENTITY_NAME) as string;
 
-    const functionEndpointValue: ConfigValue = context.configOfOtherPlugins
+    this.functionEndpoint = context.configOfOtherPlugins
       .get(PluginFunction.PLUGIN_NAME)
-      ?.get(PluginFunction.ENDPOINT);
-    if (functionEndpointValue) {
-      this.functionEndpoint = functionEndpointValue as string;
-    }
+      ?.get(PluginFunction.ENDPOINT) as string;
 
-    const appServicePlanValue: ConfigValue = context.config.get(PluginBot.APP_SERVICE_PLAN);
-    if (appServicePlanValue) {
-      this.appServicePlan = appServicePlanValue as string;
-    }
-
-    const siteNameValue: ConfigValue = context.config.get(PluginBot.SITE_NAME);
-    if (siteNameValue) {
-      this.siteName = siteNameValue as string;
-    }
+    this.appServicePlan = context.config.get(PluginBot.APP_SERVICE_PLAN) as string;
+    this.siteName = context.config.get(PluginBot.SITE_NAME) as string;
 
     const skuNameValue: ConfigValue = context.config.get(PluginBot.SKU_NAME);
     if (skuNameValue) {
@@ -123,17 +86,12 @@ export class ProvisionConfig {
     }
 
     const siteEndpointValue: ConfigValue = context.config.get(PluginBot.SITE_ENDPOINT);
-    if (siteEndpointValue) {
-      this.siteEndpoint = siteEndpointValue as string;
-      this.redirectUri = `${siteEndpointValue}${CommonStrings.AUTH_REDIRECT_URI_SUFFIX}`;
-    }
+    this.siteEndpoint = siteEndpointValue as string;
+    this.redirectUri = siteEndpointValue
+      ? `${siteEndpointValue}${CommonStrings.AUTH_REDIRECT_URI_SUFFIX}`
+      : undefined;
 
-    const botChannelRegNameValue: ConfigValue = context.config.get(
-      PluginBot.BOT_CHANNEL_REGISTRATION
-    );
-    if (botChannelRegNameValue) {
-      this.botChannelRegName = botChannelRegNameValue as string;
-    }
+    this.botChannelRegName = context.config.get(PluginBot.BOT_CHANNEL_REGISTRATION) as string;
 
     this.validateRestoredConfig();
   }

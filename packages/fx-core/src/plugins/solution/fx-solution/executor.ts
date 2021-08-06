@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { ok, Result, FxError, PluginContext, LogProvider } from "@microsoft/teamsfx-api";
+import { PluginDisplayName } from "../../../common/constants";
 
 export type LifecyclesWithContext = [
   OmitThisParameter<(ctx: PluginContext) => Promise<Result<any, FxError>>> | undefined,
@@ -32,7 +33,10 @@ export async function executeSequentially(
       results.push(undefined);
     }
   }
-  if (logger) logger?.info(`${("[Solution] Execute " + step + "Task summary").padEnd(64, "-")}`);
+  if (logger)
+    logger?.info(
+      `${`[${PluginDisplayName.Solution}] Execute ${step}Task summary`.padEnd(64, "-")}`
+    );
   for (let i = 0; i < results.length; ++i) {
     const pair = lifecycleAndContext[i];
     const lifecycle = pair[0];
@@ -46,11 +50,16 @@ export async function executeSequentially(
     );
     if (result.isErr()) {
       if (logger)
-        logger?.info(`${("[Solution] " + step + "Task overall result").padEnd(60, ".")}[failed]`);
+        logger?.info(
+          `${`[${PluginDisplayName.Solution}] ${step}Task overall result`.padEnd(60, ".")}[failed]`
+        );
       return result;
     }
   }
-  if (logger) logger?.info(`${("[Solution] " + step + "Task overall result").padEnd(60, ".")}[ok]`);
+  if (logger)
+    logger?.info(
+      `${`[${PluginDisplayName.Solution}] ${step}Task overall result`.padEnd(60, ".")}[ok]`
+    );
   return ok(undefined);
 }
 
@@ -63,7 +72,7 @@ export async function executeSequentially(
 export async function executeConcurrently(
   step: string,
   lifecycleAndContext: LifecyclesWithContext[]
-): Promise<Result<any, FxError>> {
+): Promise<Result<any, FxError>[]> {
   let logger: LogProvider | undefined;
   const promises: Promise<Result<any, FxError>>[] = lifecycleAndContext.map(
     async (pair: LifecyclesWithContext): Promise<Result<any, FxError>> => {
@@ -80,8 +89,11 @@ export async function executeConcurrently(
   );
 
   const results = await Promise.all(promises);
-  if (logger) logger?.info(`${("[Solution] Execute " + step + "Task summary").padEnd(64, "-")}`);
-  let res: Result<any, FxError> = ok(undefined);
+  if (logger)
+    logger?.info(
+      `${`[${PluginDisplayName.Solution}] Execute ${step}Task summary`.padEnd(64, "-")}`
+    );
+  let failed = false;
   for (let i = 0; i < results.length; ++i) {
     const pair = lifecycleAndContext[i];
     const lifecycle = pair[0];
@@ -94,16 +106,16 @@ export async function executeConcurrently(
       `${(pluginName + "." + taskname).padEnd(60, ".")} ${result.isOk() ? "[ok]" : "[failed]"}`
     );
     if (result.isErr()) {
-      res = result;
+      failed = true;
     }
   }
   if (logger)
     logger?.info(
-      `${("[Solution] " + step + "Task overall result").padEnd(60, ".")}${
-        res.isOk() ? "[ok]" : "[failed]"
+      `${`[${PluginDisplayName.Solution}] ${step}Task overall result`.padEnd(60, ".")}${
+        failed ? "[failed]" : "[ok]"
       }`
     );
-  return res;
+  return results;
 }
 
 /**
@@ -117,9 +129,9 @@ export async function executeLifecycles(
   preLifecycles: LifecyclesWithContext[],
   lifecycles: LifecyclesWithContext[],
   postLifecycles: LifecyclesWithContext[],
-  onPreLifecycleFinished?: () => Promise<Result<any, FxError>>,
-  onLifecycleFinished?: () => Promise<Result<any, FxError>>,
-  onPostLifecycleFinished?: () => Promise<Result<any, FxError>>
+  onPreLifecycleFinished?: (result?: any[]) => Promise<Result<any, FxError>>,
+  onLifecycleFinished?: (result?: any[]) => Promise<Result<any, FxError>>,
+  onPostLifecycleFinished?: (result?: any[]) => Promise<Result<any, FxError>>
 ): Promise<Result<any, FxError>> {
   // Questions are asked sequentially during preLifecycles.
   const preResult = await executeSequentially("pre", preLifecycles);
@@ -133,20 +145,24 @@ export async function executeLifecycles(
     }
   }
 
-  const result = await executeConcurrently("", lifecycles);
-  if (result.isErr()) {
-    return result;
-  }
-  if (onLifecycleFinished) {
-    const result = await onLifecycleFinished();
+  const results = await executeConcurrently("", lifecycles);
+  for (const result of results) {
     if (result.isErr()) {
       return result;
     }
   }
+  if (onLifecycleFinished) {
+    const onLifecycleFinishedResult = await onLifecycleFinished(results);
+    if (onLifecycleFinishedResult.isErr()) {
+      return onLifecycleFinishedResult;
+    }
+  }
 
-  const postResult = await executeConcurrently("post", postLifecycles);
-  if (postResult.isErr()) {
-    return postResult;
+  const postResults = await executeConcurrently("post", postLifecycles);
+  for (const result of postResults) {
+    if (result.isErr()) {
+      return result;
+    }
   }
   if (onPostLifecycleFinished) {
     const result = await onPostLifecycleFinished();
@@ -154,5 +170,5 @@ export async function executeLifecycles(
       return result;
     }
   }
-  return postResult;
+  return ok(undefined);
 }

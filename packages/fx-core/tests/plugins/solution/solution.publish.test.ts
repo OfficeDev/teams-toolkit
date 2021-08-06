@@ -7,14 +7,8 @@ import { SolutionRunningState, TeamsAppSolution } from " ../../../src/plugins/so
 import {
   ConfigFolderName,
   ConfigMap,
-  FxError,
-  ok,
-  PluginContext,
-  Result,
   SolutionConfig,
   SolutionContext,
-  TeamsAppManifest,
-  Void,
   Plugin,
   Platform,
 } from "@microsoft/teamsfx-api";
@@ -22,16 +16,18 @@ import * as sinon from "sinon";
 import fs from "fs-extra";
 import {
   BOT_DOMAIN,
-  BOT_ID,
-  FRONTEND_DOMAIN,
-  FRONTEND_ENDPOINT,
   GLOBAL_CONFIG,
   REMOTE_AAD_ID,
-  REMOTE_MANIFEST,
   SolutionError,
   SOLUTION_PROVISION_SUCCEEDED,
   WEB_APPLICATION_INFO_SOURCE,
 } from "../../../src/plugins/solution/fx-solution/constants";
+import {
+  BOT_ID,
+  FRONTEND_DOMAIN,
+  FRONTEND_ENDPOINT,
+  REMOTE_MANIFEST,
+} from "../../../src/plugins/resource/appstudio/constants";
 import {
   BotOptionItem,
   HostTypeOptionAzure,
@@ -40,27 +36,29 @@ import {
 } from "../../../src/plugins/solution/fx-solution/question";
 import { mockPublishThatAlwaysSucceed, validManifest } from "./util";
 import _ from "lodash";
-import * as uuid  from "uuid";
+import * as uuid from "uuid";
+import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
+import Container from "typedi";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
-
+const aadPlugin = Container.get<Plugin>(ResourcePlugins.AadPlugin);
+const spfxPlugin = Container.get<Plugin>(ResourcePlugins.SpfxPlugin);
+const fehostPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin);
+const appStudioPlugin = Container.get<Plugin>(ResourcePlugins.AppStudioPlugin);
+const botPlugin = Container.get<Plugin>(ResourcePlugins.BotPlugin);
 function mockSolutionContext(): SolutionContext {
   const config: SolutionConfig = new Map();
-  config.set(GLOBAL_CONFIG, new ConfigMap);
+  config.set(GLOBAL_CONFIG, new ConfigMap());
   return {
     root: ".",
-    // app: new TeamsAppManifest(),
     config,
-    answers: {platform:Platform.VSCode},
+    answers: { platform: Platform.VSCode },
     projectSettings: undefined,
   };
 }
 
-
-
 describe("publish()", () => {
-
   it("should return error if an Azure project hasn't been provisioned", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
@@ -71,7 +69,7 @@ describe("publish()", () => {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
         version: "1.0",
-        activeResourcePlugins: [solution.aadPlugin.name]
+        activeResourcePlugins: [aadPlugin.name],
       },
     };
     const result = await solution.publish(mockedCtx);
@@ -89,7 +87,7 @@ describe("publish()", () => {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",
         version: "1.0",
-        activeResourcePlugins: [solution.spfxPlugin.name]
+        activeResourcePlugins: [spfxPlugin.name],
       },
     };
     const result = await solution.publish(mockedCtx);
@@ -107,13 +105,13 @@ describe("publish()", () => {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
         version: "1.0",
-        activeResourcePlugins: [solution.aadPlugin.name]
+        activeResourcePlugins: [aadPlugin.name],
       },
     };
     mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
     const result = await solution.publish(mockedCtx);
     expect(result.isErr()).to.be.true;
-    expect(result._unsafeUnwrapErr().name).equals(SolutionError.FailedToLoadManifestFile);
+    // expect(result._unsafeUnwrapErr().name).equals("ManifestLoadFailed");
   });
 
   describe("with valid manifest", async () => {
@@ -123,8 +121,14 @@ describe("publish()", () => {
     mockedManifest.icons.color = "";
     mockedManifest.icons.outline = "";
     beforeEach(() => {
-      mocker.stub<any, any>(fs, "readJson").withArgs(`./.${ConfigFolderName}/${REMOTE_MANIFEST}`).resolves(mockedManifest);
-      mocker.stub<any, any>(fs, "readFile").withArgs(`./.${ConfigFolderName}/${REMOTE_MANIFEST}`).resolves(JSON.stringify(mockedManifest));
+      mocker
+        .stub<any, any>(fs, "readJson")
+        .withArgs(`./.${ConfigFolderName}/${REMOTE_MANIFEST}`)
+        .resolves(mockedManifest);
+      mocker
+        .stub<any, any>(fs, "readFile")
+        .withArgs(`./.${ConfigFolderName}/${REMOTE_MANIFEST}`)
+        .resolves(JSON.stringify(mockedManifest));
     });
 
     afterEach(() => {
@@ -141,7 +145,7 @@ describe("publish()", () => {
           hostType: HostTypeOptionAzure.id,
           name: "azure",
           version: "1.0",
-          activeResourcePlugins: [solution.aadPlugin.name]
+          activeResourcePlugins: [aadPlugin.name],
         },
       };
       solution.runningState = SolutionRunningState.ProvisionInProgress;
@@ -154,7 +158,7 @@ describe("publish()", () => {
       result = await solution.publish(mockedCtx);
       expect(result.isErr()).to.be.true;
       expect(result._unsafeUnwrapErr().name).equals(SolutionError.DeploymentInProgress);
-      
+
       solution.runningState = SolutionRunningState.PublishInProgress;
       result = await solution.publish(mockedCtx);
       expect(result.isErr()).to.be.true;
@@ -171,12 +175,12 @@ describe("publish()", () => {
           hostType: HostTypeOptionSPFx.id,
           name: "azure",
           version: "1.0",
-          activeResourcePlugins: [solution.appStudioPlugin.name, solution.spfxPlugin.name]
+          activeResourcePlugins: [appStudioPlugin.name, spfxPlugin.name],
         },
       };
       mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
-      mockPublishThatAlwaysSucceed(solution.appStudioPlugin);
-      mockPublishThatAlwaysSucceed(solution.spfxPlugin);
+      mockPublishThatAlwaysSucceed(appStudioPlugin);
+      mockPublishThatAlwaysSucceed(spfxPlugin);
       const result = await solution.publish(mockedCtx);
       expect(result.isOk()).to.be.true;
     });
@@ -184,9 +188,9 @@ describe("publish()", () => {
     it("should return ok for Azure Tab projects on happy path", async () => {
       const solution = new TeamsAppSolution();
       const mockedCtx = mockSolutionContext();
-      mockedCtx.config.set(solution.aadPlugin.name, new ConfigMap);
-      mockedCtx.config.set(solution.fehostPlugin.name, new ConfigMap);
-      mockedCtx.config.set(solution.appStudioPlugin.name, new ConfigMap);
+      mockedCtx.config.set(aadPlugin.name, new ConfigMap());
+      mockedCtx.config.set(fehostPlugin.name, new ConfigMap());
+      mockedCtx.config.set(appStudioPlugin.name, new ConfigMap());
       mockedCtx.projectSettings = {
         appName: "my app",
         projectId: uuid.v4(),
@@ -194,16 +198,18 @@ describe("publish()", () => {
           hostType: HostTypeOptionAzure.id,
           name: "azure",
           version: "1.0",
-          activeResourcePlugins: [solution.aadPlugin.name, solution.fehostPlugin.name],
-          capabilities: [TabOptionItem.id]
+          activeResourcePlugins: [aadPlugin.name, fehostPlugin.name],
+          capabilities: [TabOptionItem.id],
         },
       };
       mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
-      mockedCtx.config.get(solution.fehostPlugin.name)?.set(FRONTEND_ENDPOINT, "http://example.com");
-      mockedCtx.config.get(solution.fehostPlugin.name)?.set(FRONTEND_DOMAIN, "http://example.com");
-      mockedCtx.config.get(solution.aadPlugin.name)?.set(WEB_APPLICATION_INFO_SOURCE, "mockedWebApplicationInfoResouce");
-      mockedCtx.config.get(solution.aadPlugin.name)?.set(REMOTE_AAD_ID, "mockedRemoteAadId");
-      mockPublishThatAlwaysSucceed(solution.appStudioPlugin);
+      mockedCtx.config.get(fehostPlugin.name)?.set(FRONTEND_ENDPOINT, "http://example.com");
+      mockedCtx.config.get(fehostPlugin.name)?.set(FRONTEND_DOMAIN, "http://example.com");
+      mockedCtx.config
+        .get(aadPlugin.name)
+        ?.set(WEB_APPLICATION_INFO_SOURCE, "mockedWebApplicationInfoResouce");
+      mockedCtx.config.get(aadPlugin.name)?.set(REMOTE_AAD_ID, "mockedRemoteAadId");
+      mockPublishThatAlwaysSucceed(appStudioPlugin);
       const result = await solution.publish(mockedCtx);
       expect(result.isOk()).to.be.true;
     });
@@ -211,9 +217,9 @@ describe("publish()", () => {
     it("should return ok for Azure Bot projects on happy path", async () => {
       const solution = new TeamsAppSolution();
       const mockedCtx = mockSolutionContext();
-      mockedCtx.config.set(solution.aadPlugin.name, new ConfigMap);
-      mockedCtx.config.set(solution.botPlugin.name, new ConfigMap);
-      mockedCtx.config.set(solution.appStudioPlugin.name, new ConfigMap);
+      mockedCtx.config.set(aadPlugin.name, new ConfigMap());
+      mockedCtx.config.set(botPlugin.name, new ConfigMap());
+      mockedCtx.config.set(appStudioPlugin.name, new ConfigMap());
       mockedCtx.projectSettings = {
         appName: "my app",
         projectId: uuid.v4(),
@@ -221,16 +227,18 @@ describe("publish()", () => {
           hostType: HostTypeOptionAzure.id,
           name: "azure",
           version: "1.0",
-          activeResourcePlugins: [solution.aadPlugin.name, solution.botPlugin.name],
-          capabilities: [BotOptionItem.id]
+          activeResourcePlugins: [aadPlugin.name, botPlugin.name],
+          capabilities: [BotOptionItem.id],
         },
       };
       mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
-      mockedCtx.config.get(solution.botPlugin.name)?.set(BOT_ID, "someFakeId");
-      mockedCtx.config.get(solution.botPlugin.name)?.set(BOT_DOMAIN, "http://example.com");
-      mockedCtx.config.get(solution.aadPlugin.name)?.set(WEB_APPLICATION_INFO_SOURCE, "mockedWebApplicationInfoResouce");
-      mockedCtx.config.get(solution.aadPlugin.name)?.set(REMOTE_AAD_ID, "mockedRemoteAadId");
-      mockPublishThatAlwaysSucceed(solution.appStudioPlugin);
+      mockedCtx.config.get(botPlugin.name)?.set(BOT_ID, "someFakeId");
+      mockedCtx.config.get(botPlugin.name)?.set(BOT_DOMAIN, "http://example.com");
+      mockedCtx.config
+        .get(aadPlugin.name)
+        ?.set(WEB_APPLICATION_INFO_SOURCE, "mockedWebApplicationInfoResouce");
+      mockedCtx.config.get(aadPlugin.name)?.set(REMOTE_AAD_ID, "mockedRemoteAadId");
+      mockPublishThatAlwaysSucceed(appStudioPlugin);
       const result = await solution.publish(mockedCtx);
       expect(result.isOk()).to.be.true;
     });

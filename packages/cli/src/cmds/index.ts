@@ -3,6 +3,8 @@
 
 "use strict";
 
+import { Argv } from "yargs";
+
 import { YargsCommand } from "../yargsCommand";
 import Account from "./account";
 import New from "./new";
@@ -31,3 +33,18 @@ export const commands: YargsCommand[] = [
   new Config(),
   new Preview(),
 ];
+
+/**
+ * Registers cli and partner commands with yargs.
+ * @param yargs
+ */
+export function registerCommands(yargs: Argv): void {
+  commands.forEach((command) => {
+    yargs.command(
+      command.command,
+      command.description,
+      command.builder.bind(command),
+      command.handler.bind(command)
+    );
+  });
+}

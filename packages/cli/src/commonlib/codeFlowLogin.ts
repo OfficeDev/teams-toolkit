@@ -7,16 +7,30 @@ import * as http from "http";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { Mutex } from "async-mutex";
-import { returnSystemError, returnUserError, SystemError, UserError, LogLevel, Colors } from "@microsoft/teamsfx-api";
+import {
+  returnSystemError,
+  returnUserError,
+  SystemError,
+  UserError,
+  LogLevel,
+  Colors,
+} from "@microsoft/teamsfx-api";
 import CliCodeLogInstance from "./log";
 import * as crypto from "crypto";
 import { AddressInfo } from "net";
-import { accountPath, UTF8 } from "./cacheAccess";
+import { loadAccountId, saveAccountId, UTF8 } from "./cacheAccess";
 import open from "open";
-import { azureLoginMessage, env, m365LoginMessage, MFACode } from "./common/constant";
+import {
+  azureLoginMessage,
+  env,
+  m365LoginMessage,
+  MFACode,
+  sendFileTimeout,
+} from "./common/constant";
 import * as constants from "../constants";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import {
+  TelemetryErrorType,
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
@@ -25,14 +39,16 @@ import { getColorizedString } from "../utils";
 
 class ErrorMessage {
   static readonly loginFailureTitle = "LoginFail";
-  static readonly loginFailureDescription = "Cannot retrieve user login information. Login with another account.";
+  static readonly loginFailureDescription =
+    "Cannot retrieve user login information. Login with another account.";
   static readonly loginCodeFlowFailureTitle = "LoginCodeFail";
-  static readonly loginCodeFlowFailureDescription = "Cannot get login code for token exchange. Login with another account.";
+  static readonly loginCodeFlowFailureDescription =
+    "Cannot get login code for token exchange. Login with another account.";
   static readonly loginTimeoutTitle = "LoginTimeout";
   static readonly loginTimeoutDescription = "Timeout waiting for login. Try again.";
   static readonly loginPortConflictTitle = "LoginPortConflict";
   static readonly loginPortConflictDescription = "Timeout waiting for port. Try again.";
-  static readonly loginComponent = "login"
+  static readonly loginComponent = "login";
 }
 
 interface Deferred<T> {
@@ -49,6 +65,7 @@ export class CodeFlowLogin {
   mutex: Mutex | undefined;
   msalTokenCache: TokenCache | undefined;
   accountName: string;
+  socketMap: Map<number, any>;
 
   constructor(scopes: string[], config: Configuration, port: number, accountName: string) {
     this.scopes = scopes;
@@ -58,11 +75,12 @@ export class CodeFlowLogin {
     this.pca = new PublicClientApplication(this.config!);
     this.msalTokenCache = this.pca.getTokenCache();
     this.accountName = accountName;
+    this.socketMap = new Map();
   }
 
   async reloadCache() {
-    if (fs.existsSync(accountPath + this.accountName)) {
-      const accountCache = String(fs.readFileSync(accountPath + this.accountName, UTF8));
+    const accountCache = await loadAccountId(this.accountName);
+    if (accountCache) {
       const dataCache = await this.msalTokenCache!.getAccountByHomeId(accountCache);
       if (dataCache) {
         this.account = dataCache;
@@ -86,6 +104,18 @@ export class CodeFlowLogin {
     const app = express();
     const server = app.listen(serverPort);
     serverPort = (server.address() as AddressInfo).port;
+    let lastSocketKey = 0;
+    server.on("connection", (socket) => {
+      const socketKey = ++lastSocketKey;
+      this.socketMap.set(socketKey, socket);
+      socket.on("close", () => {
+        this.socketMap.delete(socketKey);
+      });
+    });
+
+    server.on("close", () => {
+      this.destroySockets();
+    });
 
     const authCodeUrlParameters = {
       scopes: this.scopes!,
@@ -114,15 +144,16 @@ export class CodeFlowLogin {
             if (response.account) {
               await this.mutex?.runExclusive(async () => {
                 this.account = response.account!;
+                await saveAccountId(this.accountName, this.account.homeAccountId);
               });
-              deferredRedirect.resolve(response.accessToken);
-
-              sendFile(
+              await sendFile(
                 res,
                 path.join(__dirname, "./codeFlowResult/index.html"),
                 "text/html; charset=utf-8",
                 this.accountName!
               );
+              this.destroySockets();
+              deferredRedirect.resolve(response.accessToken);
             }
           } else {
             throw new Error("get no response");
@@ -155,14 +186,17 @@ export class CodeFlowLogin {
       this.pca!.getAuthCodeUrl(authCodeUrlParameters).then(async (url: string) => {
         if (this.accountName == "azure") {
           const message = [
-            {content: `[${constants.cliSource}] ${azureLoginMessage}`, color: Colors.BRIGHT_WHITE },
-            {content: url, color: Colors.BRIGHT_CYAN}
+            {
+              content: `[${constants.cliSource}] ${azureLoginMessage}`,
+              color: Colors.BRIGHT_WHITE,
+            },
+            { content: url, color: Colors.BRIGHT_CYAN },
           ];
           CliCodeLogInstance.necessaryLog(LogLevel.Info, getColorizedString(message));
         } else {
           const message = [
-            {content: `[${constants.cliSource}] ${m365LoginMessage}`, color: Colors.BRIGHT_WHITE },
-            {content: url, color: Colors.BRIGHT_CYAN}
+            { content: `[${constants.cliSource}] ${m365LoginMessage}`, color: Colors.BRIGHT_WHITE },
+            { content: url, color: Colors.BRIGHT_CYAN },
           ];
           CliCodeLogInstance.necessaryLog(LogLevel.Info, getColorizedString(message));
         }
@@ -171,6 +205,18 @@ export class CodeFlowLogin {
 
       redirectPromise.then(cancelCodeTimer, cancelCodeTimer);
       accessToken = await redirectPromise;
+    } catch (e) {
+      CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountLogin, {
+        [TelemetryProperty.AccountType]: this.accountName,
+        [TelemetryProperty.Success]: TelemetrySuccess.No,
+        [TelemetryProperty.UserId]: "",
+        [TelemetryProperty.Internal]: "",
+        [TelemetryProperty.ErrorType]:
+          e instanceof UserError ? TelemetryErrorType.UserError : TelemetryErrorType.SystemError,
+        [TelemetryProperty.ErrorCode]: `${e.source}.${e.name}`,
+        [TelemetryProperty.ErrorMessage]: `${e.message}`,
+      });
+      throw e;
     } finally {
       if (accessToken) {
         const tokenJson = ConvertTokenToJson(accessToken);
@@ -182,13 +228,6 @@ export class CodeFlowLogin {
             ? "true"
             : "false",
         });
-      } else {
-        CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountLogin, {
-          [TelemetryProperty.AccountType]: this.accountName,
-          [TelemetryProperty.Success]: TelemetrySuccess.No,
-          [TelemetryProperty.UserId]: "",
-          [TelemetryProperty.Internal]: "false",
-        });
       }
       server.close();
     }
@@ -197,16 +236,15 @@ export class CodeFlowLogin {
   }
 
   async logout(): Promise<boolean> {
-    if (fs.existsSync(accountPath + this.accountName)) {
-      const accountCache = String(fs.readFileSync(accountPath + this.accountName, UTF8));
+    const accountCache = await loadAccountId(this.accountName);
+    if (accountCache) {
       const dataCache = await this.msalTokenCache!.getAccountByHomeId(accountCache);
       if (dataCache) {
         this.msalTokenCache?.removeAccount(dataCache);
       }
     }
-    if (fs.existsSync(accountPath + this.accountName)) {
-      fs.writeFileSync(accountPath + this.accountName, "", UTF8);
-    }
+
+    await saveAccountId(this.accountName, undefined);
     return true;
   }
 
@@ -232,7 +270,10 @@ export class CodeFlowLogin {
             }
           })
           .catch(async (error) => {
-            CliCodeLogInstance.necessaryLog(LogLevel.Error, "[Login] silent acquire token : " + error.message);
+            CliCodeLogInstance.necessaryLog(
+              LogLevel.Error,
+              "[Login] silent acquire token : " + error.message
+            );
             await this.logout();
             if (refresh) {
               const accessToken = await this.login();
@@ -244,8 +285,10 @@ export class CodeFlowLogin {
       }
     } catch (error) {
       CliCodeLogInstance.necessaryLog(LogLevel.Error, "[Login] " + error.message);
-      if (error.name!==ErrorMessage.loginTimeoutTitle &&
-        error.name!==ErrorMessage.loginPortConflictTitle) {
+      if (
+        error.name !== ErrorMessage.loginTimeoutTitle &&
+        error.name !== ErrorMessage.loginPortConflictTitle
+      ) {
         throw LoginCodeFlowError(error);
       } else {
         throw error;
@@ -276,7 +319,8 @@ export class CodeFlowLogin {
             if (error.message.indexOf(MFACode) >= 0) {
               throw error;
             } else {
-              CliCodeLogInstance.necessaryLog(LogLevel.Error, 
+              CliCodeLogInstance.necessaryLog(
+                LogLevel.Error,
                 "[Login] getTenantToken acquireTokenSilent : " + error.message
               );
               const accountList = await this.msalTokenCache?.getAllAccounts();
@@ -325,6 +369,12 @@ export class CodeFlowLogin {
     return portPromise;
   }
 
+  destroySockets(): void {
+    for (const key of this.socketMap.keys()) {
+      this.socketMap.get(key).destroy();
+    }
+  }
+
   static toBase64UrlEncoding(base64string: string) {
     return base64string.replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
   }
@@ -334,25 +384,31 @@ export class CodeFlowLogin {
   }
 }
 
-function sendFile(
+async function sendFile(
   res: http.ServerResponse,
   filepath: string,
   contentType: string,
   accountName: string
-) {
-  fs.readFile(filepath, (err, body) => {
-    if (err) {
-      CliCodeLogInstance.necessaryLog(LogLevel.Error, err.message);
-    } else {
-      let data = body.toString();
-      data = data.replace(/\${accountName}/g, accountName == "azure" ? "Azure" : "M365");
-      body = Buffer.from(data, UTF8);
-      res.writeHead(200, {
-        "Content-Length": body.length,
-        "Content-Type": contentType,
-      });
-      res.end(body);
-    }
+): Promise<void> {
+  return new Promise(async (resolve, reject) => {
+    let body = await fs.readFile(filepath);
+    let data = body.toString();
+    data = data.replace(/\${accountName}/g, accountName == "azure" ? "Azure" : "M365");
+    body = Buffer.from(data, UTF8);
+    res.writeHead(200, {
+      "Content-Length": body.length,
+      "Content-Type": contentType,
+    });
+
+    const timeout = setTimeout(() => {
+      CliCodeLogInstance.necessaryLog(LogLevel.Error, sendFileTimeout);
+      reject();
+    }, 10000);
+
+    res.end(body, () => {
+      clearTimeout(timeout);
+      resolve();
+    });
   });
 }
 

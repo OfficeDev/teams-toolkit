@@ -11,6 +11,13 @@ export class TestHelper {
         getAccountCredentialAsync() {
           return credentials;
         },
+        getSelectedSubscription: async () => {
+          return {
+            subscriptionId: "subscriptionId",
+            tenantId: "tenantId",
+            subscriptionName: "subscriptionName",
+          };
+        },
       },
       logProvider: {
         async info(message: string): Promise<boolean> {
@@ -24,22 +31,6 @@ export class TestHelper {
         async debug(message: string): Promise<boolean> {
           console.debug(message);
           return true;
-        },
-      },
-      dialog: {
-        createProgressBar(title: string, totalSteps: number) {
-          console.log(`Create ProgressBar, title: ${title}, totalSteps: ${totalSteps}`);
-          return {
-            start: (detail?: string) => {
-              console.log("start detail: " + detail);
-            },
-            next: (detail?: string) => {
-              console.log("next detail: " + detail);
-            },
-            end: () => {
-              console.log("ProgressBar end");
-            },
-          };
         },
       },
       telemetryReporter: {
@@ -91,6 +82,7 @@ export class TestHelper {
           short: "hello-app",
         },
       },
+      projectSettings: { appName: "hello-app" },
     } as unknown as PluginContext;
 
     return pluginContext;

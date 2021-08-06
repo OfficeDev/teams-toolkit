@@ -14,6 +14,7 @@ export class ProjectConstants {
   public static readonly maxRetries: number = 15;
   public static readonly retryTimeInterval: number = 1000;
   public static readonly helpLink: string = "https://aka.ms/teamsfx-apim-help";
+  public static readonly apimResourceProvider: string = "Microsoft.ApiManagement";
 }
 
 export class ApimDefaultValues {
@@ -178,7 +179,6 @@ export class AadPluginConfigKeys {
 }
 
 export class SolutionConfigKeys {
-  public static readonly subscriptionId: string = "subscriptionId";
   public static readonly resourceNameSuffix: string = "resourceNameSuffix";
   public static readonly teamsAppTenantId: string = "teamsAppTenantId";
   public static readonly resourceGroupName: string = "resourceGroupName";
@@ -224,7 +224,6 @@ export const ConfigRetryOperations: {
   },
   [TeamsToolkitComponent.Solution]: {
     [SolutionConfigKeys.resourceNameSuffix]: RetryOperation.Create,
-    [SolutionConfigKeys.subscriptionId]: RetryOperation.Login,
     [SolutionConfigKeys.teamsAppTenantId]: RetryOperation.Provision,
     [SolutionConfigKeys.resourceGroupName]: RetryOperation.Provision,
     [SolutionConfigKeys.location]: RetryOperation.Provision,
@@ -347,6 +346,11 @@ export class AzureResource {
     shortName: "service-principal",
     displayName: "Service Principal",
   };
+
+  static ResourceProvider: IName = {
+    shortName: "resource-provider",
+    displayName: "Resource Provider",
+  };
 }
 
 export class Operation {
@@ -378,6 +382,11 @@ export class Operation {
   static Import: IName = {
     shortName: "import",
     displayName: "import",
+  };
+
+  static Register: IName = {
+    shortName: "register",
+    displayName: "register",
   };
 }
 

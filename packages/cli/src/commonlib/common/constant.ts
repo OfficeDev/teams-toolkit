@@ -24,7 +24,7 @@ export const env = {
   keyVaultDnsSuffix: ".vault.azure.net",
   azureDataLakeStoreFileSystemEndpointSuffix: "azuredatalakestore.net",
   azureDataLakeAnalyticsCatalogAndJobEndpointSuffix: "azuredatalakeanalytics.net",
-  validateAuthority: true
+  validateAuthority: true,
 };
 
 export const unknownSubscription = "UnknownSubscription";
@@ -33,5 +33,17 @@ export const unknownSubscriptionDesc = "Cannot set subscription. Choose a correc
 export const azureLoginMessage = "Log in to your Azure account - opening default web browser at ";
 export const m365LoginMessage = "Log in to your M365 account - opening default web browser at ";
 
-export const changeLoginTenantMessage = "The following tenants require Multi-Factor Authentication (MFA). Use 'teamsfx account login azure --tenant TENANT_ID' to explicitly login to a tenant.";
+export const changeLoginTenantMessage =
+  "The following tenants require Multi-Factor Authentication (MFA). Use 'teamsfx account login azure --tenant TENANT_ID' to explicitly login to a tenant.";
 export const MFACode = "AADSTS50076";
+
+export const noSubscriptionFound = "NoSubscriptionFound";
+export const failToFindSubscription = "Failed to find a subscription.";
+export const subscription = "subscription";
+export const selectSubscription = "Select a subscription";
+export const loginComponent = "login";
+
+export const subscriptionInfoFile = "subscriptionInfo.json";
+export const envDefaultJsonFile = "env.default.json";
+
+export const sendFileTimeout = "Send success page timeout.";

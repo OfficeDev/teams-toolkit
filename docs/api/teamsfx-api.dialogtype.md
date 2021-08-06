@@ -20,7 +20,4 @@ export declare enum DialogType
 |  --- | --- | --- |
 |  Answer | <code>&quot;Answer&quot;</code> |  |
 |  Ask | <code>&quot;Ask&quot;</code> |  |
-|  Output | <code>&quot;Output&quot;</code> |  |
-|  Show | <code>&quot;Show&quot;</code> |  |
-|  ShowProgress | <code>&quot;ShowProgress&quot;</code> |  |
 

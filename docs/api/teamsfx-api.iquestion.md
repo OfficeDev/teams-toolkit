@@ -18,13 +18,6 @@ export interface IQuestion
 
 |  Property | Type | Description |
 |  --- | --- | --- |
-|  [defaultAnswer?](./teamsfx-api.iquestion.defaultanswer.md) | string | <i>(Optional)</i> |
 |  [description](./teamsfx-api.iquestion.description.md) | string |  |
-|  [multiSelect?](./teamsfx-api.iquestion.multiselect.md) | boolean | <i>(Optional)</i> |
-|  [options?](./teamsfx-api.iquestion.options.md) | string\[\] | <i>(Optional)</i> |
-|  [password?](./teamsfx-api.iquestion.password.md) | boolean | <i>(Optional)</i> |
-|  [prompt?](./teamsfx-api.iquestion.prompt.md) | string | <i>(Optional)</i> |
-|  [terminalName?](./teamsfx-api.iquestion.terminalname.md) | string | <i>(Optional)</i> |
 |  [type](./teamsfx-api.iquestion.type.md) | [QuestionType](./teamsfx-api.questiontype.md) |  |
-|  [validateInput?](./teamsfx-api.iquestion.validateinput.md) | (value: string) =&gt; string \| undefined \| null \| Promise&lt;string \| undefined \| null&gt; | <i>(Optional)</i> |
 

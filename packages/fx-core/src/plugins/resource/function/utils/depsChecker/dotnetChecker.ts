@@ -72,12 +72,12 @@ export class DotnetChecker implements IDepsChecker {
     };
   }
 
-  public isEnabled(): Promise<boolean> {
-    const enabled = this._adapter.dotnetCheckerEnabled();
+  public async isEnabled(): Promise<boolean> {
+    const enabled = await this._adapter.dotnetCheckerEnabled();
     if (!enabled) {
       this._telemetry.sendEvent(DepsCheckerEvent.dotnetCheckSkipped);
     }
-    return Promise.resolve(enabled);
+    return enabled;
   }
 
   public async isInstalled(): Promise<boolean> {
@@ -90,6 +90,10 @@ export class DotnetChecker implements IDepsChecker {
 
     await this._logger.debug(`[start] check dotnet version`);
     if (dotnetPath !== null && (await this.isDotnetInstalledCorrectly())) {
+      // filter out global sdk
+      if (dotnetPath.includes(`.${ConfigFolderName}`)) {
+        this._telemetry.sendEvent(DepsCheckerEvent.dotnetInstallCompleted);
+      }
       return true;
     }
     await this._logger.debug(`[end] check dotnet version`);
@@ -112,7 +116,7 @@ export class DotnetChecker implements IDepsChecker {
 
     const installDir = DotnetChecker.getDefaultInstallPath();
     await this._logger.debug(`[start] install dotnet ${installVersion}`);
-    await this._logger.info(
+    await this._logger.debug(
       Messages.dotnetNotFound.replace("@NameVersion", installedNameWithVersion)
     );
     await this._logger.info(
@@ -262,7 +266,7 @@ export class DotnetChecker implements IDepsChecker {
         );
         await this._logger.error(errorMessage);
       } else {
-        this._telemetry.sendEvent(DepsCheckerEvent.dotnetInstallScriptCompleted, timecost);
+        this._telemetry.sendEvent(DepsCheckerEvent.dotnetInstallScriptCompleted, {}, timecost);
       }
     } catch (error) {
       const timecost = Number(((performance.now() - start) / 1000).toFixed(2));
@@ -368,8 +372,12 @@ export class DotnetChecker implements IDepsChecker {
         }
       });
     } catch (error) {
-      await this._logger.debug(
-        `Failed to search dotnet sdk by dotnetPath = ${dotnetExecPath}, error = '${error}'`
+      const errorMessage = `Failed to search dotnet sdk by dotnetPath = '${dotnetExecPath}', error = '${error}'`;
+      await this._logger.debug(errorMessage);
+      this._telemetry.sendSystemErrorEvent(
+        DepsCheckerEvent.dotnetSearchDotnetSdks,
+        TelemtryMessages.failedToSearchDotnetSdks,
+        errorMessage
       );
     }
     return sdks;
@@ -401,17 +409,14 @@ export class DotnetChecker implements IDepsChecker {
     version: DotnetVersion,
     dotnetInstallDir: string
   ): Promise<string[]> {
-    const command = [
-      isWindows()
-        ? DotnetChecker.escapeFilePath(this.getDotnetInstallScriptPath())
-        : this.getDotnetInstallScriptPath(),
-      "-InstallDir",
-      isWindows() ? DotnetChecker.escapeFilePath(dotnetInstallDir) : dotnetInstallDir,
-      "-Channel",
-      version,
-    ];
-
     if (isWindows()) {
+      const command: string[] = [
+        DotnetChecker.escapeFilePath(this.getDotnetInstallScriptPath()),
+        "-InstallDir",
+        DotnetChecker.escapeFilePath(dotnetInstallDir),
+        "-Channel",
+        version,
+      ];
       return [
         "powershell.exe",
         "-NoProfile",
@@ -423,7 +428,14 @@ export class DotnetChecker implements IDepsChecker {
         )} }`,
       ];
     } else {
-      return command;
+      return [
+        "bash",
+        this.getDotnetInstallScriptPath(),
+        "-InstallDir",
+        dotnetInstallDir,
+        "-Channel",
+        version,
+      ];
     }
   }
 

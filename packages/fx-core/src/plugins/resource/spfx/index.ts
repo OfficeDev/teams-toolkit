@@ -11,6 +11,7 @@ import {
   Result,
   ok,
   TeamsAppManifest,
+  AzureSolutionSettings,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as path from "path";
@@ -19,6 +20,9 @@ import { TelemetryEvent } from "./utils/constants";
 import { telemetryHelper } from "./utils/telemetry-helper";
 import { ProgressHelper } from "./utils/progress-helper";
 import { getTemplatesFolder } from "../../..";
+import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+import { Service } from "typedi";
+import { HostTypeOptionSPFx } from "../../solution/fx-solution/question";
 
 export enum SPFXQuestionNames {
   framework_type = "spfx-framework-type",
@@ -26,7 +30,13 @@ export enum SPFXQuestionNames {
   webpart_desp = "spfx-webpart-desp",
 }
 
+@Service(ResourcePlugins.SpfxPlugin)
 export class SpfxPlugin implements Plugin {
+  name = "fx-resource-spfx";
+  displayName = "SharePoint Framework (SPFx)";
+  activate(solutionSettings: AzureSolutionSettings): boolean {
+    return solutionSettings.hostType === HostTypeOptionSPFx.id;
+  }
   spfxPluginImpl: SPFxPluginImpl = new SPFxPluginImpl();
 
   async getQuestions(
@@ -77,9 +87,9 @@ export class SpfxPlugin implements Plugin {
     return ok(spfx_frontend_host);
   }
 
-  public async scaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
+  public async postScaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
     return await this.runWithErrorHandling(ctx, TelemetryEvent.Scaffold, () =>
-      this.spfxPluginImpl.scaffold(ctx)
+      this.spfxPluginImpl.postScaffold(ctx)
     );
   }
 
@@ -93,14 +103,6 @@ export class SpfxPlugin implements Plugin {
     return await this.runWithErrorHandling(ctx, TelemetryEvent.Deploy, () =>
       this.spfxPluginImpl.deploy(ctx)
     );
-  }
-
-  public async getManifest(): Promise<TeamsAppManifest> {
-    const templateFolder = path.join(getTemplatesFolder(), "plugins", "resource", "spfx");
-    const manifestFile = path.resolve(templateFolder, "./solution/manifest.json");
-    const manifestString = (await fs.readFile(manifestFile)).toString();
-    const manifest: TeamsAppManifest = JSON.parse(manifestString);
-    return manifest;
   }
 
   private async runWithErrorHandling(

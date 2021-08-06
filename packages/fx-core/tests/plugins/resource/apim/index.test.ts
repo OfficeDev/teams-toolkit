@@ -33,6 +33,7 @@ import {
   IFunctionPluginConfig,
   ISolutionConfig,
 } from "../../../../src/plugins/resource/apim/config";
+import { Providers, ResourceManagementClientContext } from "@azure/arm-resources";
 dotenv.config();
 chai.use(chaiAsPromised);
 
@@ -123,7 +124,7 @@ async function buildContext(
     apiDocumentPath: "openapi/openapi.json",
     apiPrefix: "apim-plugin-test",
   };
-  const answer:Inputs = {
+  const answer: Inputs = {
     [QuestionConstants.VSCode.Apim.questionName]: {
       id: QuestionConstants.VSCode.Apim.createNewApimOption,
       label: QuestionConstants.VSCode.Apim.createNewApimOption,
@@ -133,7 +134,7 @@ async function buildContext(
       label: QuestionConstants.VSCode.ApiVersion.createNewApiVersionOption,
     },
     [QuestionConstants.VSCode.NewApiVersion.questionName]: "v1",
-    platform: Platform.VS
+    platform: Platform.VS,
   };
   const ctx = new MockPluginContext(
     resourceName,
@@ -149,7 +150,6 @@ async function buildContext(
 
 function buildSolutionConfig(resourceNameSuffix: string): ISolutionConfig {
   return {
-    subscriptionId: EnvConfig.subscriptionId,
     resourceNameSuffix: resourceNameSuffix,
     resourceGroupName: UT_RESOURCE_GROUP,
     teamsAppTenantId: EnvConfig.tenantId,
@@ -192,7 +192,15 @@ async function buildService(): Promise<{
   );
 
   const apiManagementClient = new ApiManagementClient(credential, EnvConfig.subscriptionId);
-  const apimService = new ApimService(apiManagementClient, credential, EnvConfig.subscriptionId);
+  const resourceProviderClient = new Providers(
+    new ResourceManagementClientContext(credential, EnvConfig.subscriptionId)
+  );
+  const apimService = new ApimService(
+    apiManagementClient,
+    resourceProviderClient,
+    credential,
+    EnvConfig.subscriptionId
+  );
   const resourceGroupHelper = new ResourceGroupHelper(credential, EnvConfig.subscriptionId);
 
   return {

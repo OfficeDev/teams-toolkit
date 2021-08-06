@@ -11,7 +11,7 @@ import { FrontendDeployment } from "../../../../../src/plugins/resource/frontend
 
 chai.use(chaiAsPromised);
 
-describe("deploy", async () => {
+describe("FrontendDeploy", async () => {
   const today = new Date();
   const yesterday = new Date();
   const tomorrow = new Date();

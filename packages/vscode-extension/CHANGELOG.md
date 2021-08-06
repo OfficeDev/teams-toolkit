@@ -1,5 +1,30 @@
 # Changelog
 
+## 2.3.1 - July 26 2021
+
+Incremental version for Teams Toolkit with multiple bugs fixed and the following updates：
+
+New Feature:
+
+- Add CLI command 'teamsfx preview' to directly preview Teams apps after scaffolding.
+- For multiple developers collaborate on one project, Teams Toolkit enables developers to create their own local environment by pressing F5.
+- Add encryption to secret data in .userdata file, and support view/edit secret data through VS Code UI and CLI tool.
+
+Enhancement:
+
+- Speed up the installation of npm dependency for debugging experience.
+
+## 2.2.0 - July 12 2021
+
+Incremental version for Teams Toolkit with following updates：
+
+Added:
+
+- UI Run button for debug and preview
+- Provide 'Report Issue' button in the pop-up error message to log issues when npm install fails or system error occurs
+- A/B testing:  
+  Please be noted that in this release we are conducting A/B testing for 'Tree View', the left panel of Teams Toolkit. Thus you may see different layout of Tree View, that is not an issue but totally by design.
+
 ## 2.1.1 - June 30 2021
 
 Multiple bug fixings

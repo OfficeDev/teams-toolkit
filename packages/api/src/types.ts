@@ -3,9 +3,9 @@
 "use strict";
 
 import { OptionItem } from "./qm";
-import { Platform, Stage, VsCodeEnv } from "./constants"; 
+import { Platform, Stage, VsCodeEnv } from "./constants";
 
-export type Json = Record<string,unknown>;
+export type Json = Record<string, any>;
 
 export type ConfigValue = any;
 
@@ -59,15 +59,15 @@ export class ConfigMap extends Map<string, ConfigValue> {
     return v as OptionItem[];
   }
 
-  toJSON(): Dict<unknown> {
-    const out: Dict<unknown> = {};
+  toJSON(): Json {
+    const out: Json = {};
     for (const entry of super.entries()) {
       out[entry[0]] = entry[1];
     }
     return out;
   }
 
-  public static fromJSON(obj?: Dict<unknown>): ConfigMap | undefined {
+  public static fromJSON(obj?: Json): ConfigMap | undefined {
     if (!obj) return undefined;
     const map = new ConfigMap();
     for (const entry of Object.entries(obj)) {
@@ -75,10 +75,6 @@ export class ConfigMap extends Map<string, ConfigValue> {
     }
     return map;
   }
-  // constructor(){
-  //     super();
-  //     Object.setPrototypeOf(this, ConfigMap.prototype);
-  // }
   constructor(entries?: readonly (readonly [string, ConfigValue])[] | null) {
     super(entries);
     Object.setPrototypeOf(this, ConfigMap.prototype);
@@ -89,11 +85,7 @@ export class ConfigMap extends Map<string, ConfigValue> {
 export type Void = {};
 export const Void = {};
 
-export interface Dict<T> {
-  [key: string]: T | undefined;
-}
-
-export type ResourceTemplate = Dict<ConfigValue>;
+export type ResourceTemplate = Record<string, ConfigValue>;
 
 export type ResourceTemplates = {
   [k: string]: ResourceTemplate | undefined;
@@ -118,24 +110,25 @@ export interface EnvMeta {
   sideloading: boolean;
 }
 
-export type EnvConfig = Dict<string>;
+export type EnvConfig = Json;
 
 /**
  * project static settings
  */
 export interface ProjectSettings {
   appName: string;
+  version?: string;
   projectId: string;
-  currentEnv?: string;
+  programmingLanguage?: string;
   solutionSettings?: SolutionSettings;
 }
 
 /**
  * solution settings
  */
-export interface SolutionSettings extends Dict<ConfigValue> {
+export interface SolutionSettings extends Json {
   name: string;
-  version: string;
+  version?: string;
 }
 
 export interface AzureSolutionSettings extends SolutionSettings {
@@ -146,29 +139,37 @@ export interface AzureSolutionSettings extends SolutionSettings {
 }
 
 /**
+ * local debug settings
+ */
+export interface LocalSettings {
+  teamsApp: ConfigMap;
+  auth?: ConfigMap;
+  frontend?: ConfigMap;
+  backend?: ConfigMap;
+  bot?: ConfigMap;
+}
+
+/**
  * project dynamic states
  */
 export interface ProjectStates {
-  solution: Dict<ConfigValue>;
+  solution: Record<string, ConfigValue>;
   resources: {
-    [k: string]: Dict<ConfigValue>;
+    [k: string]: Record<string, ConfigValue>;
   };
 }
-
-export interface Inputs extends Json{
-  projectPath?:string;
+export interface Inputs extends Json {
+  projectPath?: string;
+  targetEnvName?: string;
   platform: Platform;
   stage?: Stage;
-  vscodeEnv?:VsCodeEnv;
-  ignoreLock?:boolean;
-  ignoreTypeCheck?:boolean;
-  ignoreConfigPersist?:boolean;
-  correlationId?:string;
-}   
+  vscodeEnv?: VsCodeEnv;
+  ignoreLock?: boolean;
+  ignoreTypeCheck?: boolean;
+  ignoreConfigPersist?: boolean;
+}
 
-
-
-export interface ProjectConfig{
+export interface ProjectConfig {
   settings?: ProjectSettings;
   config?: SolutionConfig;
 }

@@ -15,6 +15,7 @@ import {
   setSimpleAuthSkuNameToB1,
   getConfigFileName,
   cleanUp,
+  readContext,
 } from "../commonUtils";
 import AzureLogin from "../../../src/commonlib/azureLogin";
 import GraphLogin from "../../../src/commonlib/graphLogin";
@@ -55,7 +56,7 @@ describe("Create a new API Management Service", function () {
     });
     console.log(`Provision. Error message: ${result.stderr}`);
 
-    const provisionContext = await fs.readJSON(getConfigFileName(appName));
+    const provisionContext = await readContext(projectPath);
     await ApimValidator.validateProvision(provisionContext, appName);
 
     result = await execAsyncWithRetry(
@@ -64,7 +65,9 @@ describe("Create a new API Management Service", function () {
         cwd: projectPath,
         env: process.env,
         timeout: 0,
-      }
+      },
+      3,
+      `teamsfx deploy apim --open-api-document openapi/openapi.json --api-version v1`
     );
     console.log(`Deploy. Error message: ${result.stderr}`);
 

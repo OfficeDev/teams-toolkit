@@ -12,7 +12,7 @@ export class VSCodeAdapter implements IDepsAdapter {
   private readonly validateDotnetSdkKey = "validateDotnetSdk";
   private readonly validateFuncCoreToolsKey = "validateFuncCoreTools";
   private readonly validateNodeVersionKey = "validateNode";
-  private readonly _telemetry: IDepsTelemetry
+  private readonly _telemetry: IDepsTelemetry;
 
   constructor(telemetry: IDepsTelemetry) {
     this._telemetry = telemetry;
@@ -22,16 +22,16 @@ export class VSCodeAdapter implements IDepsAdapter {
     return hasTeamsfxBackend();
   }
 
-  public dotnetCheckerEnabled(): boolean {
-    return this.checkerEnabled(this.validateDotnetSdkKey);
+  public dotnetCheckerEnabled(): Promise<boolean> {
+    return Promise.resolve(this.checkerEnabled(this.validateDotnetSdkKey));
   }
 
-  public funcToolCheckerEnabled(): boolean {
-    return this.checkerEnabled(this.validateFuncCoreToolsKey);
+  public funcToolCheckerEnabled(): Promise<boolean> {
+    return Promise.resolve(this.checkerEnabled(this.validateFuncCoreToolsKey));
   }
 
-  public nodeCheckerEnabled(): boolean {
-    return this.checkerEnabled(this.validateNodeVersionKey);
+  public nodeCheckerEnabled(): Promise<boolean> {
+    return Promise.resolve(this.checkerEnabled(this.validateNodeVersionKey));
   }
 
   public async runWithProgressIndicator(callback: () => Promise<void>): Promise<void> {

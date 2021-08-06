@@ -12,6 +12,7 @@ import {
   MemoryStorage,
   StatePropertyAccessor,
   StatusCodes,
+  TeamsChannelAccount,
   TestAdapter,
   tokenExchangeOperationName,
   verifyStateOperationName,
@@ -33,6 +34,7 @@ import sinon from "sinon";
 import mockedEnv from "mocked-env";
 import { AccessToken } from "@azure/identity";
 import { promisify } from "util";
+import { TeamsInfo } from "botbuilder";
 
 chaiUse(chaiPromises);
 let mockedEnvRestore: () => void;
@@ -43,6 +45,7 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
   const clientId = "fake_client_id";
   const clientSecret = "fake_client_secret";
   const tenantId = "fake_tenant";
+  const userPrincipalName = "fake_userPrincipalName";
   const authorityHost = "fake_authority_host";
   const initiateLoginEndpoint = "fake_initiate_login_endpoint";
   const applicationIdUri = "fake_application_id_uri";
@@ -112,6 +115,15 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
           expiresOnTimestamp: expiresOnTimestamp,
         });
       });
+    });
+
+    sandbox.stub(TeamsInfo, "getMember").callsFake(async () => {
+      const account: TeamsChannelAccount = {
+        id: "fake_id",
+        name: "fake_name",
+        userPrincipalName: userPrincipalName,
+      };
+      return account;
     });
   });
 
@@ -379,7 +391,7 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
       activity.attachments![0].content.buttons[0].value,
       `${initiateLoginEndpoint}?scope=${encodeURI(
         requiredScopes.join(" ")
-      )}&clientId=${clientId}&tenantId=${tenantId}`
+      )}&clientId=${clientId}&tenantId=${tenantId}&loginHint=${userPrincipalName}`
     );
   }
 

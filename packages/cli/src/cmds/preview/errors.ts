@@ -3,10 +3,17 @@
 
 "use strict";
 
-import { FxError, returnUserError, UserError } from "@microsoft/teamsfx-api";
+import {
+  FxError,
+  returnSystemError,
+  returnUserError,
+  SystemError,
+  UserError,
+} from "@microsoft/teamsfx-api";
 import * as util from "util";
 
 import * as constants from "../../constants";
+import { Browser } from "./constants";
 
 export function WorkspaceNotSupported(workspaceFolder: string): UserError {
   return returnUserError(
@@ -82,11 +89,39 @@ export function PreviewWithoutProvision(): UserError {
   );
 }
 
-// TODO: remove when SPFx preview is ready
-export function SPFxNotSupported(): UserError {
+export function MissingProgrammingLanguageSetting(): UserError {
   return returnUserError(
-    new Error("SPFx preview is not supported currently."),
+    new Error("The programmingLanguage config is missing in project settings."),
     constants.cliSource,
-    "SPFxNotSupported"
+    "MissingProgrammingLanguage"
+  );
+}
+
+export function OpeningBrowserFailed(browser: Browser): UserError {
+  return returnUserError(
+    new Error(`Failed to open ${browser} browser. Check if ${browser} exists on your system.`),
+    constants.cliSource,
+    "OpeningBrowserFailed"
+  );
+}
+
+export function NoUrlForSPFxRemotePreview(): UserError {
+  return returnUserError(
+    new Error(
+      "SPFx remote preview need your SharePoint site url, pls input sharepoint-site parameter."
+    ),
+    constants.cliSource,
+    "NoUrlForSPFxRemotePreview"
+  );
+}
+
+export function InvalidSharePointSiteURL(error: Error): UserError {
+  return returnUserError(new Error(error.message), constants.cliSource, "InvalidSharePointSiteURL");
+}
+export function DependencyCheckerFailed(): SystemError {
+  return returnSystemError(
+    new Error("dependency checker failed."),
+    constants.cliSource,
+    "DependencyCheckerFailed"
   );
 }

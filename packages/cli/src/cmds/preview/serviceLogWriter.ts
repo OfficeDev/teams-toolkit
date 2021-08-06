@@ -37,7 +37,6 @@ export class ServiceLogWriter {
       await fs.ensureDir(this.logFolder);
     } catch (error) {
       // ignore any error
-      throw error;
     }
   }
 
@@ -48,7 +47,6 @@ export class ServiceLogWriter {
       await fs.appendFile(logFile, data);
     } catch (error) {
       // ignore any error
-      throw error;
     }
   }
 

@@ -21,7 +21,35 @@ import {
 } from "../../telemetry/cliTelemetryEvents";
 import { getNpmInstallLogInfo } from "./npmLogHandler";
 import { ServiceLogWriter } from "./serviceLogWriter";
+import open from "open";
 
+export async function openBrowser(browser: constants.Browser, url: string): Promise<void> {
+  switch (browser) {
+    case constants.Browser.chrome:
+      await open(url, {
+        app: {
+          name: open.apps.chrome,
+        },
+        wait: true,
+        allowNonzeroExitCode: true,
+      });
+      break;
+    case constants.Browser.edge:
+      await open(url, {
+        app: {
+          name: open.apps.edge,
+        },
+        wait: true,
+        allowNonzeroExitCode: true,
+      });
+      break;
+    case constants.Browser.default:
+      await open(url, {
+        wait: true,
+      });
+      break;
+  }
+}
 export function createTaskStartCb(
   progressBar: IProgressHandler,
   startMessage: string,
@@ -29,12 +57,16 @@ export function createTaskStartCb(
 ): (taskTitle: string, background: boolean) => Promise<void> {
   return async (taskTitle: string, background: boolean) => {
     if (telemetryProperties !== undefined) {
-      const event = background
+      let event = background
         ? TelemetryEvent.PreviewServiceStart
         : TelemetryEvent.PreviewNpmInstallStart;
-      const key = background
+      let key = background
         ? TelemetryProperty.PreviewServiceName
         : TelemetryProperty.PreviewNpmInstallName;
+      if (taskTitle === constants.gulpCertTitle) {
+        event = TelemetryEvent.PreviewGulpCertStart;
+        key = TelemetryProperty.PreviewGulpCertName;
+      }
       cliTelemetry.sendTelemetryEvent(event, {
         ...telemetryProperties,
         [key]: taskTitle as string,
@@ -60,16 +92,21 @@ export function createTaskStopCb(
     result: TaskResult,
     serviceLogWriter?: ServiceLogWriter
   ) => {
-    const event = background ? TelemetryEvent.PreviewService : TelemetryEvent.PreviewNpmInstall;
-    const key = background
+    const ifNpmInstall: boolean = taskTitle.includes("npm install");
+    let event = background ? TelemetryEvent.PreviewService : TelemetryEvent.PreviewNpmInstall;
+    let key = background
       ? TelemetryProperty.PreviewServiceName
       : TelemetryProperty.PreviewNpmInstallName;
+    if (taskTitle === constants.gulpCertTitle) {
+      event = TelemetryEvent.PreviewGulpCert;
+      key = TelemetryProperty.PreviewGulpCertName;
+    }
     const success = background ? result.success : result.exitCode === 0;
     const properties = {
       ...telemetryProperties,
       [key]: taskTitle,
     };
-    if (!background) {
+    if (!background && ifNpmInstall) {
       properties[TelemetryProperty.PreviewNpmInstallExitCode] =
         (result.exitCode === null ? undefined : result.exitCode) + "";
     }
@@ -92,11 +129,11 @@ export function createTaskStopCb(
       return null;
     } else {
       const error = TaskFailed(taskTitle);
-      if (!background && telemetryProperties !== undefined) {
+      if (!background && ifNpmInstall && telemetryProperties !== undefined) {
         const npmInstallLogInfo = await getNpmInstallLogInfo();
         if (
           npmInstallLogInfo?.cwd !== undefined &&
-          result.options.cwd !== undefined &&
+          result.options?.cwd !== undefined &&
           path.relative(npmInstallLogInfo.cwd, result.options.cwd).length === 0 &&
           result.exitCode === npmInstallLogInfo.exitCode
         ) {

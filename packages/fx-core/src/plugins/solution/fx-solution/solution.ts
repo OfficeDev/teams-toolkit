@@ -104,6 +104,7 @@ import { Service, Container } from "typedi";
 import { deployArmTemplates, generateArmTemplate } from "./arm";
 import { LocalSettingsProvider } from "../../../common/localSettingsProvider";
 import { PluginDisplayName } from "../../../common/constants";
+import { LocalSettingsTeamsAppKeys } from "../../../common/localSettingsConstants";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -1157,8 +1158,9 @@ export class TeamsAppSolution implements Solution {
         return result;
       }
     }
-    const result = this.loadTeamsAppTenantId(ctx.config, await ctx.appStudioToken?.getJsonObject());
 
+    // set local debug Teams app tenant id in context.
+    const result = this.loadTeamsAppTenantId(ctx, true, await ctx.appStudioToken?.getJsonObject());
     if (result.isErr()) {
       return result;
     }
@@ -1170,14 +1172,20 @@ export class TeamsAppSolution implements Solution {
       return combinedPostLocalDebugResults;
     }
 
-    const localTeamsAppID = ctx.config.get(GLOBAL_CONFIG)?.getString(LOCAL_DEBUG_TEAMS_APP_ID);
-
+    // set local debug Teams app id in context.
     if (postLocalDebugWithCtx.length === combinedPostLocalDebugResults.value.length) {
       postLocalDebugWithCtx.map(function (plugin, index) {
         if (plugin[2] === PluginNames.APPST) {
-          ctx.config
-            .get(GLOBAL_CONFIG)
-            ?.set(LOCAL_DEBUG_TEAMS_APP_ID, combinedPostLocalDebugResults.value[index]);
+          if (isMultiEnvEnabled()) {
+            ctx.localSettings?.teamsApp.set(
+              LocalSettingsTeamsAppKeys.TeamsAppId,
+              combinedPostLocalDebugResults.value[index]
+            );
+          } else {
+            ctx.config
+              .get(GLOBAL_CONFIG)
+              ?.set(LOCAL_DEBUG_TEAMS_APP_ID, combinedPostLocalDebugResults.value[index]);
+          }
         }
       });
     }
@@ -1214,12 +1222,18 @@ export class TeamsAppSolution implements Solution {
   }
 
   private loadTeamsAppTenantId(
-    config: SolutionConfig,
+    ctx: SolutionContext,
+    isLocalDebug: boolean,
     appStudioToken?: object
-  ): Result<SolutionConfig, FxError> {
+  ): Result<SolutionContext, FxError> {
     return this.parseTeamsAppTenantId(appStudioToken).andThen((teamsAppTenantId) => {
-      config.get(GLOBAL_CONFIG)?.set("teamsAppTenantId", teamsAppTenantId);
-      return ok(config);
+      if (isLocalDebug && isMultiEnvEnabled()) {
+        ctx.localSettings?.teamsApp.set(LocalSettingsTeamsAppKeys.TenantId, teamsAppTenantId);
+      } else {
+        ctx.config.get(GLOBAL_CONFIG)?.set("teamsAppTenantId", teamsAppTenantId);
+      }
+
+      return ok(ctx);
     });
   }
 

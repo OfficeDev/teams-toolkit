@@ -254,9 +254,11 @@ export default class Preview extends YargsCommand {
     }
 
     /* === start services === */
-    const programmingLanguage = config?.config
-      ?.get(constants.solutionPluginName)
-      ?.get(constants.programmingLanguageConfigKey) as string;
+    const programmingLanguage = config?.settings?.programmingLanguage as string;
+    if (programmingLanguage === undefined || programmingLanguage.length === 0) {
+      return err(errors.MissingProgrammingLanguageSetting());
+    }
+
     result = await this.startServices(
       workspaceFolder,
       programmingLanguage,
@@ -441,7 +443,9 @@ export default class Preview extends YargsCommand {
         error,
         this.telemetryProperties
       );
-      return err(error);
+      cliLogger.necessaryLog(LogLevel.Warning, constants.openBrowserHintMessage);
+      cliLogger.necessaryLog(LogLevel.Warning, constants.waitCtrlPlusC);
+      return ok(null);
     }
     await previewBar.next(constants.previewSPFxSuccessMessage);
     await previewBar.end();
@@ -997,7 +1001,8 @@ export default class Preview extends YargsCommand {
         error,
         this.telemetryProperties
       );
-      return err(error);
+      cliLogger.necessaryLog(LogLevel.Warning, constants.openBrowserHintMessage);
+      return ok(null);
     }
     await previewBar.next(constants.previewSuccessMessage);
     await previewBar.end();

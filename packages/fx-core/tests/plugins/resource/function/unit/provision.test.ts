@@ -28,7 +28,6 @@ const context: any = {
         [DependentPluginInfo.subscriptionId, "ut"],
         [DependentPluginInfo.resourceNameSuffix, "ut"],
         [DependentPluginInfo.location, "ut"],
-        [DependentPluginInfo.programmingLanguage, "javascript"],
       ]),
     ],
     [
@@ -76,6 +75,7 @@ const context: any = {
   config: new Map<string, string>([["nodeVersion", NodeVersion.Version14]]),
   projectSettings: {
     appName: "ut",
+    programmingLanguage: "javascript",
     solutionSettings: {
       activeResourcePlugins: [
         DependentPluginInfo.aadPluginName,

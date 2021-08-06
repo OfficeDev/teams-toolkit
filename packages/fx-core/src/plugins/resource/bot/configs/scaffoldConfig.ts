@@ -32,9 +32,7 @@ export class ScaffoldConfig {
 
     this.objectId = context.config.get(PluginBot.OBJECT_ID) as string;
 
-    const rawProgrammingLanguage = context.configOfOtherPlugins
-      .get(PluginSolution.PLUGIN_NAME)
-      ?.get(PluginBot.PROGRAMMING_LANGUAGE) as string;
+    const rawProgrammingLanguage = context.projectSettings?.programmingLanguage;
 
     if (
       rawProgrammingLanguage &&

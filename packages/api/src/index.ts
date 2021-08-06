@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 "use strict";
+import * as v2 from "./v2";
 
 export * from "./constants";
 export * from "./context";
@@ -13,5 +14,7 @@ export * from "./manifest";
 export * from "./utils";
 export * from "./error";
 export * from "./qm";
+// api-extractor doesn't support export * as v2 from "./v2"; So we try to export a variable instead.
+export { v2 };
 
 export * from "neverthrow";

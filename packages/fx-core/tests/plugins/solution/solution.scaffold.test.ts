@@ -195,13 +195,13 @@ describe("Solution scaffold() reading valid manifest file", () => {
     const result = await solution.scaffold(mockedCtx);
     expect(result.isOk()).to.be.true;
     // only need to check whether related files exist, tests to the content is covered by other test cases
-    expect(fileContent.size).equals(6); // there's a readme file
+    expect(fileContent.size).equals(5); // there's a readme file
     expect(fileContent.has(path.join("./infra/azure/templates", "main.bicep"))).to.be.true;
     expect(fileContent.has(path.join("./infra/azure/templates", "frontendHostingProvision.bicep")))
       .to.be.true;
     expect(fileContent.has(path.join("./infra/azure/templates", "simpleAuthProvision.bicep"))).to.be
       .true;
-    expect(fileContent.has(path.join("./infra/azure/parameters", "parameter.template.json"))).to.be
+    expect(fileContent.has(path.join("./infra/azure/parameters", "parameters.template.json"))).to.be
       .true;
 
     restore();
@@ -233,7 +233,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
     const result = await solution.scaffold(mockedCtx);
     expect(result.isOk()).to.be.true;
     // only need to check whether related files exist, tests to the content is covered by other test cases
-    expect(fileContent.size).equals(2); // only a readme file is generated
+    expect(fileContent.size).equals(1); // only a readme file is generated
 
     restore();
   });

@@ -26,10 +26,16 @@ import {
 import fs from "fs-extra";
 import * as path from "path";
 import * as os from "os";
-import { FunctionRouterError, FxCore, InvalidInputError, validateProject } from "../../src";
+import {
+  FunctionRouterError,
+  FxCore,
+  InvalidInputError,
+  validateProject,
+  validateSettings,
+} from "../../src";
 import sinon from "sinon";
 import { MockSolution, MockTools, randomAppName } from "./utils";
-import { loadSolutionContext } from "../../src/core/middleware/contextLoader";
+import { loadProjectSettings } from "../../src/core/middleware/projectSettingsLoader";
 import { defaultSolutionLoader } from "../../src/core/loader";
 import {
   CoreQuestionNames,
@@ -37,6 +43,7 @@ import {
   ScratchOptionNoVSC,
   ScratchOptionYesVSC,
 } from "../../src/core/question";
+import { loadSolutionContext } from "../../src/core/middleware/envInfoLoader";
 
 describe("Core basic APIs", () => {
   const sandbox = sinon.createSandbox();
@@ -108,17 +115,34 @@ describe("Core basic APIs", () => {
       const res = await core.createProject(inputs);
       assert.isTrue(res.isOk() && res.value === projectPath);
       assert.deepEqual(expectedInputs, inputs);
-      const loadRes = await loadSolutionContext(tools, inputs);
-      assert.isTrue(loadRes.isOk());
-      if (loadRes.isOk()) {
-        const solutionContext = loadRes.value;
-        const validRes = validateProject(solutionContext);
-        assert.isTrue(validRes === undefined);
-        const solutioConfig = solutionContext.config.get("solution");
-        assert.isTrue(solutioConfig !== undefined);
-        assert.isTrue(solutioConfig!.get("create") === true);
-        assert.isTrue(solutioConfig!.get("scaffold") === true);
+
+      const projectSettingsResult = await loadProjectSettings(inputs);
+      if (projectSettingsResult.isErr()) {
+        assert.fail("failed to load project settings");
       }
+
+      const [projectSettings, projectIdMissing] = projectSettingsResult.value;
+      const validSettingsResult = validateSettings(projectSettings);
+      assert.isTrue(validSettingsResult === undefined);
+
+      const envInfoResult = await loadSolutionContext(
+        tools,
+        inputs,
+        projectSettings,
+        projectIdMissing
+      );
+      if (envInfoResult.isErr()) {
+        assert.fail("failed to load env info");
+      }
+
+      const solutionContext = envInfoResult.value;
+      const validRes = validateProject(solutionContext);
+      assert.isTrue(validRes === undefined);
+
+      const solutioConfig = solutionContext.config.get("solution");
+      assert.isTrue(solutioConfig !== undefined);
+      assert.isTrue(solutioConfig!.get("create") === true);
+      assert.isTrue(solutioConfig!.get("scaffold") === true);
     }
     {
       const inputs: Inputs = { platform: Platform.CLI, projectPath: projectPath };
@@ -138,20 +162,36 @@ describe("Core basic APIs", () => {
       const res2 = await core.executeUserTask(func, inputs);
       assert.isTrue(res2.isOk());
 
-      const loadRes = await loadSolutionContext(tools, inputs);
-      assert.isTrue(loadRes.isOk());
-      if (loadRes.isOk()) {
-        const solutionContext = loadRes.value;
-        const validRes = validateProject(solutionContext);
-        assert.isTrue(validRes === undefined);
-        const solutioConfig = solutionContext.config.get("solution");
-        assert.isTrue(solutioConfig !== undefined);
-        assert.isTrue(solutioConfig!.get("provision") === true);
-        assert.isTrue(solutioConfig!.get("deploy") === true);
-        assert.isTrue(solutioConfig!.get("localDebug") === true);
-        assert.isTrue(solutioConfig!.get("publish") === true);
-        assert.isTrue(solutioConfig!.get("executeUserTask") === true);
+      const projectSettingsResult = await loadProjectSettings(inputs);
+      if (projectSettingsResult.isErr()) {
+        assert.fail("failed to load project settings");
       }
+
+      const [projectSettings, projectIdMissing] = projectSettingsResult.value;
+      const validSettingsResult = validateSettings(projectSettings);
+      assert.isTrue(validSettingsResult === undefined);
+
+      const envInfoResult = await loadSolutionContext(
+        tools,
+        inputs,
+        projectSettings,
+        projectIdMissing
+      );
+      if (envInfoResult.isErr()) {
+        assert.fail("failed to load env info");
+      }
+
+      const solutionContext = envInfoResult.value;
+      const validRes = validateProject(solutionContext);
+      assert.isTrue(validRes === undefined);
+
+      const solutioConfig = solutionContext.config.get("solution");
+      assert.isTrue(solutioConfig !== undefined);
+      assert.isTrue(solutioConfig!.get("provision") === true);
+      assert.isTrue(solutioConfig!.get("deploy") === true);
+      assert.isTrue(solutioConfig!.get("localDebug") === true);
+      assert.isTrue(solutioConfig!.get("publish") === true);
+      assert.isTrue(solutioConfig!.get("executeUserTask") === true);
     }
 
     //getQuestion
@@ -279,15 +319,32 @@ describe("Core basic APIs", () => {
       assert.isTrue(res.isOk() && res.value === projectPath);
       assert.deepEqual(expectedInputs, inputs);
       inputs.projectPath = projectPath;
-      const loadRes = await loadSolutionContext(tools, inputs);
-      assert.isTrue(loadRes.isOk());
-      if (loadRes.isOk()) {
-        const solutionContext = loadRes.value;
-        const validRes = validateProject(solutionContext);
-        assert.isTrue(validRes === undefined);
-        const solutioConfig = solutionContext.config.get("solution");
-        assert.isTrue(solutioConfig !== undefined);
+
+      const projectSettingsResult = await loadProjectSettings(inputs);
+      if (projectSettingsResult.isErr()) {
+        assert.fail("failed to load project settings");
       }
+
+      const [projectSettings, projectIdMissing] = projectSettingsResult.value;
+      const validSettingsResult = validateSettings(projectSettings);
+      assert.isTrue(validSettingsResult === undefined);
+
+      const envInfoResult = await loadSolutionContext(
+        tools,
+        inputs,
+        projectSettings,
+        projectIdMissing
+      );
+      if (envInfoResult.isErr()) {
+        assert.fail("failed to load env info");
+      }
+
+      const solutionContext = envInfoResult.value;
+      const validRes = validateProject(solutionContext);
+      assert.isTrue(validRes === undefined);
+
+      const solutioConfig = solutionContext.config.get("solution");
+      assert.isTrue(solutioConfig !== undefined);
     }
     {
       const inputs: Inputs = { platform: Platform.CLI, projectPath: projectPath };
@@ -306,20 +363,37 @@ describe("Core basic APIs", () => {
       const func: Func = { method: "test", namespace: "fx-solution-mock" };
       const res2 = await core.executeUserTask(func, inputs);
       assert.isTrue(res2.isOk());
-      const loadRes = await loadSolutionContext(tools, inputs);
-      assert.isTrue(loadRes.isOk());
-      if (loadRes.isOk()) {
-        const solutionContext = loadRes.value;
-        const validRes = validateProject(solutionContext);
-        assert.isTrue(validRes === undefined);
-        const solutioConfig = solutionContext.config.get("solution");
-        assert.isTrue(solutioConfig !== undefined);
-        assert.isTrue(solutioConfig!.get("provision") === true);
-        assert.isTrue(solutioConfig!.get("deploy") === true);
-        assert.isTrue(solutioConfig!.get("localDebug") === true);
-        assert.isTrue(solutioConfig!.get("publish") === true);
-        assert.isTrue(solutioConfig!.get("executeUserTask") === true);
+
+      const projectSettingsResult = await loadProjectSettings(inputs);
+      if (projectSettingsResult.isErr()) {
+        assert.fail("failed to load project settings");
       }
+
+      const [projectSettings, projectIdMissing] = projectSettingsResult.value;
+      const validSettingsResult = validateSettings(projectSettings);
+      assert.isTrue(validSettingsResult === undefined);
+
+      const envInfoResult = await loadSolutionContext(
+        tools,
+        inputs,
+        projectSettings,
+        projectIdMissing
+      );
+      if (envInfoResult.isErr()) {
+        assert.fail("failed to load env info");
+      }
+
+      const solutionContext = envInfoResult.value;
+      const validRes = validateProject(solutionContext);
+      assert.isTrue(validRes === undefined);
+
+      const solutioConfig = solutionContext.config.get("solution");
+      assert.isTrue(solutioConfig !== undefined);
+      assert.isTrue(solutioConfig!.get("provision") === true);
+      assert.isTrue(solutioConfig!.get("deploy") === true);
+      assert.isTrue(solutioConfig!.get("localDebug") === true);
+      assert.isTrue(solutioConfig!.get("publish") === true);
+      assert.isTrue(solutioConfig!.get("executeUserTask") === true);
     }
   });
 

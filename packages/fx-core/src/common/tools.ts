@@ -40,7 +40,7 @@ import {
   TabOptionItem,
 } from "../plugins/solution/fx-solution/question";
 import * as Handlebars from "handlebars";
-import { ConstantString } from "./constants";
+import { ConstantString, FeatureFlagName } from "./constants";
 
 Handlebars.registerHelper("contains", (value, array, options) => {
   array = array instanceof Array ? array : [array];
@@ -357,16 +357,8 @@ export function isValidProject(workspacePath?: string): boolean {
   try {
     const confFolderPath = path.resolve(workspacePath, `.${ConfigFolderName}`);
     const settingsFile = path.resolve(confFolderPath, "settings.json");
-    const manifestFile = path.resolve(confFolderPath, "manifest.source.json");
     const projectSettings: ProjectSettings = fs.readJsonSync(settingsFile);
-    const manifest = fs.readJSONSync(manifestFile);
-    if (!manifest) return false;
     if (validateSettings(projectSettings)) return false;
-    // const envName = projectSettings.currentEnv;
-    // const jsonFilePath = path.resolve(confFolderPath, `env.${envName}.json`);
-    // const configJson: Json = fs.readJsonSync(jsonFilePath);
-    // if(validateConfig(projectSettings.solutionSettings as AzureSolutionSettings, configJson))
-    //   return false;
     return true;
   } catch (e) {
     return false;
@@ -376,10 +368,6 @@ export function isValidProject(workspacePath?: string): boolean {
 export function validateProject(solutionContext: SolutionContext): string | undefined {
   const res = validateSettings(solutionContext.projectSettings);
   return res;
-  // const configJson = mapToJson(solutionContext.config);
-  // res = validateConfig(solutionContext.projectSettings!.solutionSettings as AzureSolutionSettings, configJson);
-  // if(res) return res;
-  // return undefined;
 }
 
 export function validateSettings(projectSettings?: ProjectSettings): string | undefined {
@@ -505,6 +493,10 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
   } else {
     return flag === "1" || flag.toLowerCase() === "true"; // can enable feature flag by set environment variable value to "1" or "true"
   }
+}
+
+export function isMultiEnvEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.MultiEnv, false);
 }
 
 export function isArmSupportEnabled(): boolean {

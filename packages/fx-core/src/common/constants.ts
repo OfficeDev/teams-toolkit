@@ -16,3 +16,7 @@ export class ResourcePlugins {
 export class PluginDisplayName {
   static readonly Solution = "Teams Toolkit";
 }
+
+export class FeatureFlagName {
+  static readonly MultiEnv = "TEAMSFX_MULTI_ENV";
+}

@@ -20,6 +20,7 @@ import {
   SolutionContext,
   SubscriptionInfo,
   UserInteraction,
+  AppPackageFolderName,
 } from "@microsoft/teamsfx-api";
 import { promisify } from "util";
 import axios from "axios";
@@ -526,4 +527,16 @@ export function getArmOutput(ctx: PluginContext, key: string): string | undefine
   const solutionConfig = ctx.configOfOtherPlugins.get("solution");
   const output = solutionConfig?.get(ARM_TEMPLATE_OUTPUT);
   return output?.[key]?.value;
+}
+
+export async function getAppDirectory(projectRoot: string): Promise<string> {
+  const REMOTE_MANIFEST = "manifest.source.json";
+  const appDirNewLoc = `${projectRoot}/${AppPackageFolderName}`;
+  const appDirOldLoc = `${projectRoot}/.${ConfigFolderName}`;
+
+  if (await fs.pathExists(`${appDirNewLoc}/${REMOTE_MANIFEST}`)) {
+    return appDirNewLoc;
+  } else {
+    return appDirOldLoc;
+  }
 }

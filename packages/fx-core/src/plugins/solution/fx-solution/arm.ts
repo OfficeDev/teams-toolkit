@@ -19,7 +19,7 @@ import { compileHandlebarsTemplateString, getStrings } from "../../../common";
 import path from "path";
 import * as fs from "fs-extra";
 import { ConstantString, PluginDisplayName } from "../../../common/constants";
-import { execAsync } from "../../../common/tools";
+import { Executor } from "../../../common/tools";
 import {
   ARM_TEMPLATE_OUTPUT,
   GLOBAL_CONFIG,
@@ -272,7 +272,6 @@ async function getParameterJson(ctx: SolutionContext) {
     );
     parameterFilePath = parameterTemplateFilePath;
   }
-
   const parameterJson = await getExpandedParameter(ctx, parameterFilePath);
 
   if (parameterFilePath === parameterTemplateFilePath) {
@@ -325,9 +324,10 @@ async function compileBicepToJson(
 ): Promise<void> {
   // TODO: ensure bicep cli is installed
   const command = `bicep build ${bicepOrchestrationFilePath} --outfile ${jsonFilePath}`;
-  const { stdout, stderr } = await execAsync(command);
-  if (stderr) {
-    throw new Error(`Failed to compile bicep files to Json arm templates file: ${stderr}`);
+  try {
+    await Executor.execCommandAsync(command);
+  } catch (err) {
+    throw new Error(`Failed to compile bicep files to Json arm templates file: ${err.message}`);
   }
 }
 

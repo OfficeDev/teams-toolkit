@@ -125,7 +125,6 @@ export class AppStudioPluginImpl {
         appDirectory
       );
 
-      console.log(maybeTeamsAppId);
       return maybeTeamsAppId;
     } else {
       appDefinition = this.convertToAppDefinition(manifest, true);

@@ -4,8 +4,8 @@ export const ENV_VAR_NAME: string = "TEAMSFX_FAILPOINTS";
 
 /**
  * Checks whether a failpoint is activated.
- * 
- * @param failpointName 
+ *
+ * @param failpointName
  * @returns failpoint value if the failpoint identifed by failpointName is activated.
  *          Returns undefined otherwise.
  */
@@ -19,7 +19,7 @@ export function evaluate(failpointName: string): Value | undefined {
     return FAILPOINT_VALUE_CACHE.get(failpointName);
   }
 
-  const vars = env.split(";")
+  const vars = env.split(";");
 
   const found = vars.find((v) => v.startsWith(failpointName));
   if (!found) {
@@ -58,12 +58,12 @@ function parseValue(name: string, term: string): Value | undefined {
       throw new Error(`invalid syntax(${term}) for failpoint ${name}. Not a number.`);
     }
     return { kind: "number", value: result };
-  } else if (value[0] == "\"" && value.length >= 2 && value[value.length - 1] == "\"") {
-    return { kind: "string", value: value.substring(1, value.length - 1) }
+  } else if (value[0] == '"' && value.length >= 2 && value[value.length - 1] == '"') {
+    return { kind: "string", value: value.substring(1, value.length - 1) };
   } else if (value === "true" || value === "false") {
     const result: boolean = value === "true";
     return { kind: "boolean", value: result };
   } else {
-      throw new Error(`invalid syntax(${term}) for failpoint ${name}`);
+    throw new Error(`invalid syntax(${term}) for failpoint ${name}`);
   }
 }

@@ -9,15 +9,13 @@ import {
   InputBoxOptions,
   OpenDialogOptions,
   Uri,
-  OutputChannel,
   commands,
   env,
   ProgressOptions,
   Progress,
-  CancellationToken,
 } from "vscode";
 
-import { IProgressStatus, Result, FxError } from "@microsoft/teamsfx-api";
+import { Result, FxError } from "@microsoft/teamsfx-api";
 
 /**
  * Wrapper interface of several `vscode.window` methods that handle user input. The main reason for this interface
@@ -126,7 +124,9 @@ export interface IUserInput {
    */
   withProgress(
     options: ProgressOptions,
-    task: (progress: Progress<IProgressStatus>) => Promise<Result<null, FxError>>
+    task: (
+      progress: Progress<{ message?: string; increment?: number }>
+    ) => Promise<Result<null, FxError>>
   ): Promise<Result<null, FxError>>;
 }
 
@@ -183,7 +183,9 @@ export class UserInput implements IUserInput {
 
   public async withProgress(
     options: ProgressOptions,
-    task: (progress: Progress<IProgressStatus>) => Promise<Result<null, FxError>>
+    task: (
+      progress: Progress<{ message?: string; increment?: number }>
+    ) => Promise<Result<null, FxError>>
   ): Promise<Result<null, FxError>> {
     return await window.withProgress(options, task);
   }

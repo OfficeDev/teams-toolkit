@@ -16,7 +16,6 @@ import { AxiosResponse } from "axios";
 import { AzureStorageClient } from "../../../../src/plugins/resource/frontend/clients";
 import { DependentPluginInfo } from "../../../../src/plugins/resource/frontend/constants";
 import { FrontendConfig } from "../../../../src/plugins/resource/frontend/configs";
-import { FrontendPlugin } from "../../../../src/plugins/resource/frontend";
 import * as templates from "../../../../src/common/templates";
 import { StorageAccountsCreateResponse } from "@azure/arm-storage/esm/models";
 
@@ -117,7 +116,6 @@ export class TestHelper {
       ]),
       projectSettings: {
         appName: TestHelper.appName,
-        currentEnv: "default",
         projectId: uuid(),
         solutionSettings: {
           name: "",

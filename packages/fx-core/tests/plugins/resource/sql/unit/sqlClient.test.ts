@@ -10,6 +10,7 @@ import * as faker from "faker";
 import * as sinon from "sinon";
 import { SqlClient } from "../../../../../src/plugins/resource/sql/sqlClient";
 import { ErrorMessage } from "../../../../../src/plugins/resource/sql/errors";
+import { TokenResponse } from "adal-node/lib/adal";
 
 chai.use(chaiAsPromised);
 
@@ -23,7 +24,7 @@ describe("sqlClient", () => {
 
   before(async () => {
     credentials = new msRestNodeAuth.ApplicationTokenCredentials(
-      faker.random.uuid(),
+      faker.datatype.uuid(),
       faker.internet.url(),
       faker.internet.password()
     );
@@ -32,7 +33,10 @@ describe("sqlClient", () => {
   beforeEach(async () => {
     sqlPlugin = new SqlPlugin();
     pluginContext = await TestHelper.pluginContext(credentials);
-    client = new SqlClient(pluginContext, sqlPlugin.sqlImpl.config);
+    sinon
+      .stub(msRestNodeAuth.ApplicationTokenCredentials.prototype, "getToken")
+      .resolves({ accessToken: faker.random.word() } as TokenResponse);
+    client = await SqlClient.create(pluginContext, sqlPlugin.sqlImpl.config);
   });
 
   afterEach(() => {
@@ -105,6 +109,29 @@ describe("sqlClient", () => {
       chai.assert.include(error.message, ErrorMessage.GuestAdminError);
     }
   });
+});
+
+describe("sqlClient", () => {
+  let sqlPlugin: SqlPlugin;
+  let pluginContext: PluginContext;
+  let credentials: msRestNodeAuth.TokenCredentialsBase;
+
+  before(async () => {
+    credentials = new msRestNodeAuth.ApplicationTokenCredentials(
+      faker.datatype.uuid(),
+      faker.internet.url(),
+      faker.internet.password()
+    );
+  });
+
+  beforeEach(async () => {
+    sqlPlugin = new SqlPlugin();
+    pluginContext = await TestHelper.pluginContext(credentials);
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
 
   it("initToken no provider error", async function () {
     // Arrange
@@ -112,7 +139,7 @@ describe("sqlClient", () => {
 
     // Act
     try {
-      await client.initToken();
+      await SqlClient.initToken(pluginContext, sqlPlugin.sqlImpl.config);
     } catch (error) {
       // Assert
       const reason = ErrorMessage.IdentityCredentialUndefine(
@@ -129,7 +156,7 @@ describe("sqlClient", () => {
 
     // Act
     try {
-      await client.initToken();
+      await SqlClient.initToken(pluginContext, sqlPlugin.sqlImpl.config);
     } catch (error) {
       // Assert
       chai.assert.include(error.message, ErrorMessage.GetDetail);
@@ -144,7 +171,7 @@ describe("sqlClient", () => {
 
     // Act
     try {
-      await client.initToken();
+      await SqlClient.initToken(pluginContext, sqlPlugin.sqlImpl.config);
     } catch (error) {
       // Assert
       chai.assert.include(error.message, ErrorMessage.DomainError);

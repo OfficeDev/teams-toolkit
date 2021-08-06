@@ -11,8 +11,8 @@
     "src/index.ts"
   ],
   "reporter": [
-    "text",
     "html",
+    "text",
     "json-summary",
     "cobertura"
   ],

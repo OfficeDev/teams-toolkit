@@ -61,9 +61,6 @@ export function getSingleOptionString(
 
 export function toYargsOptions(data: Question): Options {
   const choices = getChoicesFromQTNodeQuestion(data);
-  // if (choices && choices.length > 0 && data.default === undefined) {
-  //   data.default = choices[0];
-  // }
 
   let defaultValue;
   if (data.default && data.default instanceof Array && data.default.length > 0) {
@@ -81,6 +78,7 @@ export function toYargsOptions(data: Question): Options {
       hidden: !!(data as any).hide,
       global: false,
       type: "string",
+      coerce: choices ? toLocaleLowerCase : undefined,
     };
   }
   return {
@@ -91,7 +89,16 @@ export function toYargsOptions(data: Question): Options {
     hidden: !!(data as any).hide,
     global: false,
     type: "string",
+    coerce: choices ? toLocaleLowerCase : undefined,
   };
+}
+
+export function toLocaleLowerCase(arg: any): any {
+  if (typeof arg === "string") {
+    return arg.toLocaleLowerCase();
+  } else if (arg instanceof Array) {
+    return arg.map((s: string) => s.toLocaleLowerCase());
+  } else return arg;
 }
 
 export function flattenNodes(node: QTreeNode): QTreeNode[] {

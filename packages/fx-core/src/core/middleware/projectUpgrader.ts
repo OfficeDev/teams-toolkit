@@ -1,5 +1,13 @@
 import { Middleware, NextFunction } from "@feathersjs/hooks";
-import { ConfigFolderName, err, Inputs, Json, ProjectSettings } from "@microsoft/teamsfx-api";
+import {
+  ConfigFolderName,
+  err,
+  Inputs,
+  Json,
+  ProjectSettings,
+  SystemError,
+  UserError,
+} from "@microsoft/teamsfx-api";
 import {
   ContextUpgradeError,
   CoreHookContext,
@@ -12,6 +20,14 @@ import * as path from "path";
 import * as uuid from "uuid";
 import { dataNeedEncryption, deserializeDict, serializeDict } from "../..";
 import { LocalCrypto } from "../crypto";
+import {
+  sendTelemetryErrorEvent,
+  sendTelemetryEvent,
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetrySuccess,
+} from "../../common/telemetry";
+import { environmentManager } from "../environment";
 
 const resourceContext = [
   {
@@ -44,8 +60,10 @@ export const ProjectUpgraderMW: Middleware = async (ctx: CoreHookContext, next: 
 
 // This part is for update context and userdata file to support better local debug experience.
 export async function upgradeContext(ctx: CoreHookContext): Promise<void> {
+  const core = ctx.self as FxCore;
+  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+
   try {
-    const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
     if (!inputs.projectPath) {
       ctx.result = err(NoProjectOpenedError());
       return;
@@ -58,12 +76,10 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<void> {
     const confFolderPath = path.resolve(inputs.projectPath!, `.${ConfigFolderName}`);
     const settingsFile = path.resolve(confFolderPath, "settings.json");
     const projectSettings: ProjectSettings = await fs.readJson(settingsFile);
-    if (!projectSettings.currentEnv) {
-      projectSettings.currentEnv = "default";
-    }
 
+    const defaultEnvName = environmentManager.defaultEnvName;
     // Read context file.
-    const contextPath = path.resolve(confFolderPath, `env.${projectSettings.currentEnv}.json`);
+    const contextPath = path.resolve(confFolderPath, `env.${defaultEnvName}.json`);
     const context = await readContext(contextPath);
 
     // Update value of specific key in context file to secret pattern.
@@ -75,9 +91,11 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<void> {
       return;
     }
 
-    // Some keys updated.
+    // Some keys updated. Send start telemetry.
+    sendTelemetryEvent(core?.tools?.telemetryReporter, inputs, TelemetryEvent.ProjectUpgradeStart);
+
     // Read UserData file.
-    const userDataPath = path.resolve(confFolderPath, `${projectSettings.currentEnv}.userdata`);
+    const userDataPath = path.resolve(confFolderPath, `${defaultEnvName}.userdata`);
     const userData = await readUserData(userDataPath, projectSettings.projectId);
 
     // Merge updatedKeys into UserData.
@@ -88,12 +106,28 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<void> {
     await saveUserData(userDataPath, userData, projectSettings.projectId);
 
     // Send log.
-    const core = ctx.self as FxCore;
     core?.tools?.logProvider?.info(
       "[core]: template version is too low. Updated context and moved some configs from env to userdata."
     );
+    sendTelemetryEvent(core?.tools?.telemetryReporter, inputs, TelemetryEvent.ProjectUpgrade, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+    });
   } catch (error) {
-    ctx.result = err(ContextUpgradeError(error));
+    const errorObject = ContextUpgradeError(error);
+    core?.tools?.logProvider?.info(
+      `Template upgrade failed. Please clean the env.default.json and default.userdata file and try again. Reason: ${error?.message}`
+    );
+    sendTelemetryErrorEvent(
+      core?.tools?.telemetryReporter,
+      inputs,
+      TelemetryEvent.ProjectUpgrade,
+      errorObject,
+      {
+        [TelemetryProperty.Success]: TelemetrySuccess.No,
+        [TelemetryProperty.ErrorMessage]: error?.message,
+      }
+    );
+    ctx.result = err(errorObject);
   }
 }
 

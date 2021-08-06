@@ -4,8 +4,6 @@ import { PluginContext } from "@microsoft/teamsfx-api";
 import faker from "faker";
 import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import { Constants } from "../../../../src/plugins/resource/simpleauth/constants";
-import { ScaffoldArmTemplateResult } from "../../../../src/common/armInterface";
-import { compileHandlebarsTemplateString } from "../../../../src";
 
 export class TestHelper {
   static async pluginContext(
@@ -33,22 +31,6 @@ export class TestHelper {
         async error(message: string): Promise<boolean> {
           console.error(message);
           return true;
-        },
-      },
-      dialog: {
-        createProgressBar(title: string, totalSteps: number) {
-          console.log(`Create ProgressBar, title: ${title}, totalSteps: ${totalSteps}`);
-          return {
-            start: (detail?: string) => {
-              console.log("start detail: " + detail);
-            },
-            next: (detail?: string) => {
-              console.log("next detail: " + detail);
-            },
-            end: () => {
-              console.log("ProgressBar end");
-            },
-          };
         },
       },
       telemetryReporter: {
@@ -157,35 +139,5 @@ export class TestHelper {
     } as unknown as PluginContext;
 
     return pluginContext;
-  }
-
-  static mockSolutionUpdateArmTemplates(
-    mockedData: any,
-    template: ScaffoldArmTemplateResult
-  ): ScaffoldArmTemplateResult {
-    return {
-      Modules: template.Modules,
-      Orchestration: {
-        ParameterTemplate: {
-          Content: compileHandlebarsTemplateString(
-            template.Orchestration.ParameterTemplate!.Content,
-            mockedData
-          ),
-        },
-        ModuleTemplate: {
-          Content: compileHandlebarsTemplateString(
-            template.Orchestration.ModuleTemplate.Content,
-            mockedData
-          ),
-          Outputs: template.Orchestration.ModuleTemplate.Outputs,
-        },
-        OutputTemplate: {
-          Content: compileHandlebarsTemplateString(
-            template.Orchestration.OutputTemplate!.Content,
-            mockedData
-          ),
-        },
-      },
-    } as ScaffoldArmTemplateResult;
   }
 }

@@ -18,6 +18,8 @@ export class Constants {
 export const REMOTE_MANIFEST = "manifest.source.json";
 export const FRONTEND_ENDPOINT = "endpoint";
 export const FRONTEND_DOMAIN = "domain";
+export const FRONTEND_ENDPOINT_ARM = "frontendHosting_endpoint";
+export const FRONTEND_DOMAIN_ARM = "frontendHosting_domain";
 export const BOT_ID = "botId";
 export const LOCAL_BOT_ID = "localBotId";
 

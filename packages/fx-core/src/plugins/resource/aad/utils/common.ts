@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { LogProvider } from "@microsoft/teamsfx-api";
+import { LogProvider, PluginContext } from "@microsoft/teamsfx-api";
 import { Constants, Messages } from "../constants";
 import { TelemetryUtils } from "./telemetry";
 
@@ -11,8 +11,8 @@ export class Utils {
     message: Messages,
     messageLocal: Messages,
     isLocalDebug = false,
-    properties?: { [key: string]: string },
-  ) {
+    properties?: { [key: string]: string }
+  ): void {
     if (!isLocalDebug) {
       logProvider?.info(message.log);
       TelemetryUtils.sendSuccessEvent(message.telemetry, properties);
@@ -22,12 +22,12 @@ export class Utils {
     }
   }
 
-  public static addLogAndTelemetry(logProvider: LogProvider | undefined, message: Messages) {
+  public static addLogAndTelemetry(logProvider: LogProvider | undefined, message: Messages): void {
     logProvider?.info(message.log);
     TelemetryUtils.sendSuccessEvent(message.telemetry);
   }
 
-  public static addLocalDebugPrefix(isLocalDebug: boolean, key: string) {
+  public static addLocalDebugPrefix(isLocalDebug: boolean, key: string): string {
     return isLocalDebug ? Constants.localDebugPrefix + key : key;
   }
 }

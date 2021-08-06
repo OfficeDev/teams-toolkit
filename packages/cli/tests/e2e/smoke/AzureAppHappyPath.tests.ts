@@ -24,6 +24,7 @@ import {
   cleanUp,
 } from "../commonUtils";
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
+import { AppPackageFolderName } from "@microsoft/teamsfx-api";
 
 describe("Azure App Happy Path", function () {
   const testFolder = getTestFolder();
@@ -34,7 +35,7 @@ describe("Azure App Happy Path", function () {
   it(`Tab + Bot (Create New) + Function + SQL + Apim`, async function () {
     // new a project ( tab + function + sql )
     await execAsync(
-      `teamsfx new --interactive false --app-name ${appName} --capabilities tab --azure-resources function sql`,
+      `teamsfx new --inTERactive false --app-name ${appName} --capabiLIties Tab --azure-resourcES fuNCtion sql`,
       {
         cwd: testFolder,
         env: process.env,
@@ -55,14 +56,14 @@ describe("Azure App Happy Path", function () {
     await setBotSkuNameToB1(projectPath);
 
     // set subscription
-    await execAsync(`teamsfx account set --subscription ${subscription}`, {
+    await execAsync(`teamsfx account set --SUBscription ${subscription}`, {
       cwd: projectPath,
       env: process.env,
       timeout: 0,
     });
 
     // resource add apim
-    await execAsync(`teamsfx resource add azure-apim --function-name testApim`, {
+    await execAsync(`teamsfx resource add azure-apim --function-NAme testApim`, {
       cwd: projectPath,
       env: process.env,
       timeout: 0,
@@ -106,7 +107,7 @@ describe("Azure App Happy Path", function () {
 
     // deploy
     await execAsyncWithRetry(
-      `teamsfx deploy --open-api-document openapi/openapi.json --api-prefix qwed --api-version v1`,
+      `teamsfx deploy --OPen-api-document openapi/openapi.json --api-prefix qwed --api-version v1`,
       {
         cwd: projectPath,
         env: process.env,
@@ -140,7 +141,7 @@ describe("Azure App Happy Path", function () {
 
     {
       // Validate built package
-      const file = `${projectPath}/.fx/appPackage.zip`;
+      const file = `${projectPath}/${AppPackageFolderName}/appPackage.zip`;
       chai.assert.isTrue(await fs.pathExists(file));
     }
 

@@ -4,13 +4,7 @@ import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { it } from "mocha";
 import { SolutionRunningState, TeamsAppSolution } from " ../../../src/plugins/solution";
-import {
-  ConfigFolderName,
-  Platform,
-  SolutionConfig,
-  SolutionContext,
-  TeamsAppManifest,
-} from "@microsoft/teamsfx-api";
+import { Platform, SolutionConfig, SolutionContext } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs, { PathLike } from "fs-extra";
 import {
@@ -80,7 +74,6 @@ describe("Solution create()", async () => {
     const mockedSolutionCtx = mockSolutionContext();
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: undefined,
     };
@@ -95,7 +88,6 @@ describe("Solution create()", async () => {
     const mockedSolutionCtx = mockSolutionContext();
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
@@ -113,7 +105,6 @@ describe("Solution create()", async () => {
     const mockedSolutionCtx = mockSolutionContext();
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
@@ -133,7 +124,7 @@ describe("Solution create()", async () => {
     const mockedSolutionCtx = mockSolutionContext();
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
+      programmingLanguage: "",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
@@ -146,7 +137,8 @@ describe("Solution create()", async () => {
     answers[AzureSolutionQuestionNames.ProgrammingLanguage as string] = programmingLanguage;
     const result = await solution.create(mockedSolutionCtx);
     expect(result.isOk()).equals(true);
-    const lang = mockedSolutionCtx.config.get(GLOBAL_CONFIG)?.getString(PROGRAMMING_LANGUAGE);
+
+    const lang = mockedSolutionCtx.projectSettings.programmingLanguage;
     expect(lang).equals(programmingLanguage);
   });
 
@@ -156,7 +148,6 @@ describe("Solution create()", async () => {
     const mockedSolutionCtx = mockSolutionContext();
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
@@ -177,7 +168,6 @@ describe("Solution create()", async () => {
     const mockedSolutionCtx = mockSolutionContext();
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,

@@ -20,7 +20,13 @@ import * as crypto from "crypto";
 import { AddressInfo } from "net";
 import { loadAccountId, saveAccountId, UTF8 } from "./cacheAccess";
 import open from "open";
-import { azureLoginMessage, env, m365LoginMessage, MFACode } from "./common/constant";
+import {
+  azureLoginMessage,
+  env,
+  m365LoginMessage,
+  MFACode,
+  sendFileTimeout,
+} from "./common/constant";
 import * as constants from "../constants";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import {
@@ -140,14 +146,14 @@ export class CodeFlowLogin {
                 this.account = response.account!;
                 await saveAccountId(this.accountName, this.account.homeAccountId);
               });
-              deferredRedirect.resolve(response.accessToken);
-
-              sendFile(
+              await sendFile(
                 res,
                 path.join(__dirname, "./codeFlowResult/index.html"),
                 "text/html; charset=utf-8",
                 this.accountName!
               );
+              this.destroySockets();
+              deferredRedirect.resolve(response.accessToken);
             }
           } else {
             throw new Error("get no response");
@@ -378,25 +384,31 @@ export class CodeFlowLogin {
   }
 }
 
-function sendFile(
+async function sendFile(
   res: http.ServerResponse,
   filepath: string,
   contentType: string,
   accountName: string
-) {
-  fs.readFile(filepath, (err, body) => {
-    if (err) {
-      CliCodeLogInstance.necessaryLog(LogLevel.Error, err.message);
-    } else {
-      let data = body.toString();
-      data = data.replace(/\${accountName}/g, accountName == "azure" ? "Azure" : "M365");
-      body = Buffer.from(data, UTF8);
-      res.writeHead(200, {
-        "Content-Length": body.length,
-        "Content-Type": contentType,
-      });
-      res.end(body);
-    }
+): Promise<void> {
+  return new Promise(async (resolve, reject) => {
+    let body = await fs.readFile(filepath);
+    let data = body.toString();
+    data = data.replace(/\${accountName}/g, accountName == "azure" ? "Azure" : "M365");
+    body = Buffer.from(data, UTF8);
+    res.writeHead(200, {
+      "Content-Length": body.length,
+      "Content-Type": contentType,
+    });
+
+    const timeout = setTimeout(() => {
+      CliCodeLogInstance.necessaryLog(LogLevel.Error, sendFileTimeout);
+      reject();
+    }, 10000);
+
+    res.end(body, () => {
+      clearTimeout(timeout);
+      resolve();
+    });
   });
 }
 

@@ -6,7 +6,7 @@ Teams Toolkit will help to check if the required dependencies are installed.
 
 Current required dependencies:
 
-* [Node.js](https://nodejs.org/download/).
+* [Node.js](https://nodejs.org/en/download/).
 * [.NET SDK](https://dotnet.microsoft.com/download): To start simpleAuth service for local debugging and install the customized function binding extension.
 
 Please Note:
@@ -27,6 +27,8 @@ Please refer to [nodejs.org](https://nodejs.org/) to download and install the su
 Please refer to [the official website](https://dotnet.microsoft.com/download) to download and install the supported versions: `.NET 5.0 SDK` or `.NET Core 3.1 SDK`.
 
 **NOTE**: Please restart all your Visual Studio Code instances after the installation is finished.
+
+**NOTE for M1 Mac Users**: Currently neither `.NET 5.0 SDK` or `.NET Core 3.1 SDK` supports M1 Mac (see [this GitHub issue](https://github.com/dotnet/core/issues/4879)).
 
 ## How to install Azure Functions Core Tools?
 
@@ -77,6 +79,8 @@ It might be caused by timeout issue (longer than 3 minutes), the process to inst
 ### Mitigation
 * Retry the operation (local debugging or Function app deployment).
 * Please refer to [the guide](#how-to-install-net-sdk) to install `.NET SDK` manually.
+
+**NOTE for M1 Mac Users**: Currently neither `.NET 5.0 SDK` or `.NET Core 3.1 SDK` supports M1 Mac (see [this GitHub issue](https://github.com/dotnet/core/issues/4879)).
 
 ## <a name="functionDepsCheckerdotnetnotfound"></a>DotnetNotFound
 ### Notification Message

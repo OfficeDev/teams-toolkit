@@ -67,6 +67,11 @@ export const AppIdUriInvalidError: AadError = {
   message: () => "Invalid Application ID URI. Provision your application before continuing.",
 };
 
+export const InvalidSelectedPluginsError: AadError = {
+  name: "InvalidSelectedPlugins",
+  message: (message) => `Invalid selected plugins. ${message}`,
+};
+
 export const ParsePermissionError: AadError = {
   name: "ParsePermissionError",
   message: () => "Failed to parse permission request.",

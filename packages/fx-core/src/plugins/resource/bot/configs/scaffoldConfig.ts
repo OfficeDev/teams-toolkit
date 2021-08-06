@@ -26,28 +26,13 @@ export class ScaffoldConfig {
   public async restoreConfigFromContext(context: PluginContext): Promise<void> {
     this.workingDir = path.join(context.root, CommonStrings.BOT_WORKING_DIR_NAME);
 
-    const botIdValue: ConfigValue = context.config.get(PluginBot.BOT_ID);
-    if (botIdValue) {
-      this.botId = botIdValue as string;
-    }
+    this.botId = context.config.get(PluginBot.BOT_ID) as string;
 
-    const botPasswordValue: ConfigValue = context.config.get(PluginBot.BOT_PASSWORD);
-    if (botPasswordValue) {
-      this.botPassword = botPasswordValue as string;
-    }
+    this.botPassword = context.config.get(PluginBot.BOT_PASSWORD) as string;
 
-    const objectIdValue: ConfigValue = context.config.get(PluginBot.OBJECT_ID);
-    if (objectIdValue) {
-      this.objectId = objectIdValue as string;
-    }
+    this.objectId = context.config.get(PluginBot.OBJECT_ID) as string;
 
-    let rawProgrammingLanguage = "";
-    const programmingLanguageValue: ConfigValue = context.configOfOtherPlugins
-      .get(PluginSolution.PLUGIN_NAME)
-      ?.get(PluginBot.PROGRAMMING_LANGUAGE);
-    if (programmingLanguageValue) {
-      rawProgrammingLanguage = programmingLanguageValue as string;
-    }
+    const rawProgrammingLanguage = context.projectSettings?.programmingLanguage;
 
     if (
       rawProgrammingLanguage &&
@@ -56,12 +41,7 @@ export class ScaffoldConfig {
       this.programmingLanguage = rawProgrammingLanguage as ProgrammingLanguage;
     }
 
-    let rawWay = "";
-    const wayValue: ConfigValue = context.config.get(PluginBot.WAY_TO_REGISTER_BOT);
-    if (wayValue) {
-      rawWay = wayValue as string;
-    }
-
+    const rawWay = context.config.get(PluginBot.WAY_TO_REGISTER_BOT) as string;
     if (rawWay && utils.existsInEnumValues(rawWay, WayToRegisterBot)) {
       this.wayToRegisterBot = rawWay as WayToRegisterBot;
     }

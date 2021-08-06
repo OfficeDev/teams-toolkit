@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { MsgLevel, IProgressHandler, UserInteraction } from "@microsoft/teamsfx-api";
+import { IProgressHandler, UserInteraction } from "@microsoft/teamsfx-api";
 
 export class DialogUtils {
   private static ui?: UserInteraction;
@@ -14,10 +14,7 @@ export class DialogUtils {
     }
   }
 
-  public static async show(message: string, level = MsgLevel.Info) {
-    let l: "info" | "warn" | "error" = "info";
-    if (level === MsgLevel.Warning) l = "warn";
-    else if (level === MsgLevel.Error) l = "error";
-    DialogUtils.ui?.showMessage(l, message, false);
+  public static async show(message: string, level: "info" | "warn" | "error" = "info") {
+    DialogUtils.ui?.showMessage(level, message, false);
   }
 }

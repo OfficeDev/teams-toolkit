@@ -7,7 +7,7 @@ import { Telemetry, Plugins, ConfigKeysOfOtherPlugin } from "../constants";
 export class TelemetryUtils {
   static ctx: PluginContext;
 
-  public static init(ctx: PluginContext) {
+  public static init(ctx: PluginContext): void {
     TelemetryUtils.ctx = ctx;
   }
 

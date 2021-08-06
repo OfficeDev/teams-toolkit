@@ -185,7 +185,7 @@ export default class QuickStart extends React.Component<any, any> {
                       </a>,
                       ".",
                     ]}
-                    actionText="Download Node.js (v14.x)"
+                    actionText="Download Node.js"
                     onAction={this.downloadNode}
                     secondaryActionText="Next"
                     onSecondaryAction={() => {
@@ -215,7 +215,7 @@ export default class QuickStart extends React.Component<any, any> {
                   expanded={this.state.currentStep === curStep}
                   onCollapsedCardClicked={this.onCollapsedCardClicked}
                   step={curStep}
-                  done={this.state.stepsDone[3] && this.state.m365Account}
+                  done={this.state.stepsDone[3] || this.state.m365Account}
                 />
               );
             })()}
@@ -237,7 +237,7 @@ export default class QuickStart extends React.Component<any, any> {
                   expanded={this.state.currentStep === curStep}
                   onCollapsedCardClicked={this.onCollapsedCardClicked}
                   step={curStep}
-                  done={this.state.stepsDone[4] && this.state.azureAccount}
+                  done={this.state.stepsDone[4] || this.state.azureAccount}
                 />
               );
             })()}
@@ -512,7 +512,7 @@ export default class QuickStart extends React.Component<any, any> {
 
     vscode.postMessage({
       command: Commands.OpenExternalLink,
-      data: "https://nodejs.org/dist/latest-v14.x/",
+      data: "https://nodejs.org/en/download",
     });
 
     const done = this.state.stepsDone;

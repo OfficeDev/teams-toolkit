@@ -3,26 +3,22 @@
 "use strict";
 
 import {
-  ConfigMap,
   Inputs,
+  LocalSettings,
   PluginConfig,
   ProjectSettings,
   ReadonlySolutionConfig,
   SolutionConfig,
 } from "./types";
 
-import { VsCode } from "./vscode";
-import { TeamsAppManifest } from "./manifest";
 import {
   GraphTokenProvider,
   LogProvider,
   TelemetryReporter,
   AzureAccountProvider,
   AppStudioTokenProvider,
-  Dialog,
   TreeProvider,
 } from "./utils";
-import { Platform } from "./constants";
 import { UserInteraction } from "./qm";
 import { CryptoProvider } from "./utils";
 
@@ -33,7 +29,7 @@ import { CryptoProvider } from "./utils";
 export interface Context {
   root: string;
 
-  dialog?: Dialog;
+  targetEnvName?: string;
 
   logProvider?: LogProvider;
 
@@ -51,6 +47,8 @@ export interface Context {
 
   projectSettings?: ProjectSettings;
 
+  localSettings?: LocalSettings;
+
   ui?: UserInteraction;
 
   cryptoProvider?: CryptoProvider;
@@ -66,14 +64,8 @@ export interface SolutionContext extends Context {
 
 export interface PluginContext extends Context {
   // A readonly view of other plugins' config
-  // FolderProvider: FolderProvider;
-
-  // A readonly view of other plugins' config
   configOfOtherPlugins: ReadonlySolutionConfig;
 
   // A mutable config for current plugin
   config: PluginConfig;
-
-  // A readonly of view of teams manifest. Useful for bot plugin.
-  app: Readonly<TeamsAppManifest>;
 }

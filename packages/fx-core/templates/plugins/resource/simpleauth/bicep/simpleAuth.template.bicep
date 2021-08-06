@@ -2,9 +2,9 @@ param sku string
 param simpleAuthServerFarmsName string
 param simpleAuthWebAppName string
 param m365TenantId string
-param AADClientId string
+param aadClientId string
 @secure()
-param AADClientSecret string
+param aadClientSecret string
 param applicationIdUri string
 param oauthAuthorityHost string
 {{#contains 'fx-resource-frontend-hosting' plugins}}
@@ -52,8 +52,8 @@ resource simpleAuthWebAppSettings 'Microsoft.Web/sites/config@2018-02-01' = {
     AAD_METADATA_ADDRESS: aadMetadataAddress
     ALLOWED_APP_IDS: authorizedClientApplicationIds
     IDENTIFIER_URI: applicationIdUri
-    CLIENT_ID: AADClientId
-    CLIENT_SECRET: AADClientSecret
+    CLIENT_ID: aadClientId
+    CLIENT_SECRET: aadClientSecret
     OAUTH_AUTHORITY: oauthAuthority
     {{#contains 'fx-resource-frontend-hosting' plugins}}
     TAB_APP_ENDPOINT: frontendHostingStorageEndpoint
@@ -64,3 +64,4 @@ resource simpleAuthWebAppSettings 'Microsoft.Web/sites/config@2018-02-01' = {
 output webAppName string = simpleAuthWebAppName
 output skuName string = sku
 output endpoint string = 'https://${simpleAuthWebApp.properties.hostNames[0]}'
+output appServicePlanName string = simpleAuthServerFarmsName

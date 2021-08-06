@@ -3,13 +3,7 @@
 
 "use strict";
 
-import {
-  IQuestion,
-  returnSystemError,
-  returnUserError,
-  SystemError,
-  UserError,
-} from "@microsoft/teamsfx-api";
+import { returnSystemError, returnUserError, SystemError, UserError } from "@microsoft/teamsfx-api";
 
 import * as constants from "./constants";
 
@@ -49,16 +43,6 @@ export function NotFoundSubscriptionId(): UserError {
     ),
     constants.cliSource,
     "NotFoundSubscriptionId"
-  );
-}
-
-export function NotSupportedQuestionType(msg: IQuestion): SystemError {
-  return returnSystemError(
-    new Error(
-      `Question.${msg.type} is not supported. The whole question is ${JSON.stringify(msg, null, 4)}`
-    ),
-    constants.cliSource,
-    "NotSupportedQuestionType"
   );
 }
 

@@ -4,15 +4,12 @@
 import faker from "faker";
 import {
   PluginContext,
-  DialogMsg,
-  IProgressHandler,
   TelemetryReporter,
-  Dialog,
   LogProvider,
-  LogLevel,
   AppStudioTokenProvider,
   GraphTokenProvider,
   UserInteraction,
+  LogLevel,
 } from "@microsoft/teamsfx-api";
 import sinon from "sinon";
 import {
@@ -120,7 +117,7 @@ export class TestHelper {
     let botId: string | undefined = undefined;
     let botEndpoint: string | undefined = undefined;
     if (bot) {
-      botId = faker.random.uuid();
+      botId = faker.datatype.uuid();
       botEndpoint = "https://botendpoint" + botId + ".test";
     }
 
@@ -158,7 +155,7 @@ function mockConfigOfOtherPluginsProvision(
           ConfigKeysOfOtherPlugin.solutionPermissionRequest,
           wrongPermission ? permissionsWrong : permissions,
         ],
-        [ConfigKeysOfOtherPlugin.remoteTeamsAppId, faker.random.uuid()],
+        [ConfigKeysOfOtherPlugin.remoteTeamsAppId, faker.datatype.uuid()],
       ]),
     ],
     [
@@ -193,7 +190,7 @@ function mockConfigOfOtherPluginsLocalDebug(
           ConfigKeysOfOtherPlugin.solutionPermissionRequest,
           wrongPermission ? permissionsWrong : permissions,
         ],
-        [ConfigKeysOfOtherPlugin.remoteTeamsAppId, faker.random.uuid()],
+        [ConfigKeysOfOtherPlugin.remoteTeamsAppId, faker.datatype.uuid()],
       ]),
     ],
     [
@@ -211,22 +208,22 @@ function mockConfigOfOtherPluginsLocalDebug(
 export function mockProvisionResult(context: PluginContext, isLocalDebug = false) {
   context.config.set(
     Utils.addLocalDebugPrefix(isLocalDebug, ConfigKeys.clientId),
-    faker.random.uuid()
+    faker.datatype.uuid()
   );
   context.config.set(
     Utils.addLocalDebugPrefix(isLocalDebug, ConfigKeys.objectId),
-    faker.random.uuid()
+    faker.datatype.uuid()
   );
   context.config.set(
     Utils.addLocalDebugPrefix(isLocalDebug, ConfigKeys.clientSecret),
-    faker.random.uuid()
+    faker.datatype.uuid()
   );
 }
 
 export function mockTokenProvider(): AppStudioTokenProvider {
   const provider = <AppStudioTokenProvider>{};
   const mockTokenObject = {
-    tid: faker.random.uuid(),
+    tid: faker.datatype.uuid(),
   };
 
   provider.getAccessToken = sinon.stub().returns("token");
@@ -237,7 +234,7 @@ export function mockTokenProvider(): AppStudioTokenProvider {
 export function mockTokenProviderGraph(): GraphTokenProvider {
   const provider = <GraphTokenProvider>{};
   const mockTokenObject = {
-    tid: faker.random.uuid(),
+    tid: faker.datatype.uuid(),
   };
 
   provider.getAccessToken = sinon.stub().returns("token");

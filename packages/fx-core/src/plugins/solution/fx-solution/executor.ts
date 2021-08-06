@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { ok, Result, FxError, PluginContext, LogProvider } from "@microsoft/teamsfx-api";
+import { PluginDisplayName } from "../../../common/constants";
 
 export type LifecyclesWithContext = [
   OmitThisParameter<(ctx: PluginContext) => Promise<Result<any, FxError>>> | undefined,
@@ -32,7 +33,10 @@ export async function executeSequentially(
       results.push(undefined);
     }
   }
-  if (logger) logger?.info(`${("[Solution] Execute " + step + "Task summary").padEnd(64, "-")}`);
+  if (logger)
+    logger?.info(
+      `${`[${PluginDisplayName.Solution}] Execute ${step}Task summary`.padEnd(64, "-")}`
+    );
   for (let i = 0; i < results.length; ++i) {
     const pair = lifecycleAndContext[i];
     const lifecycle = pair[0];
@@ -46,11 +50,16 @@ export async function executeSequentially(
     );
     if (result.isErr()) {
       if (logger)
-        logger?.info(`${("[Solution] " + step + "Task overall result").padEnd(60, ".")}[failed]`);
+        logger?.info(
+          `${`[${PluginDisplayName.Solution}] ${step}Task overall result`.padEnd(60, ".")}[failed]`
+        );
       return result;
     }
   }
-  if (logger) logger?.info(`${("[Solution] " + step + "Task overall result").padEnd(60, ".")}[ok]`);
+  if (logger)
+    logger?.info(
+      `${`[${PluginDisplayName.Solution}] ${step}Task overall result`.padEnd(60, ".")}[ok]`
+    );
   return ok(undefined);
 }
 
@@ -80,7 +89,10 @@ export async function executeConcurrently(
   );
 
   const results = await Promise.all(promises);
-  if (logger) logger?.info(`${("[Solution] Execute " + step + "Task summary").padEnd(64, "-")}`);
+  if (logger)
+    logger?.info(
+      `${`[${PluginDisplayName.Solution}] Execute ${step}Task summary`.padEnd(64, "-")}`
+    );
   let failed = false;
   for (let i = 0; i < results.length; ++i) {
     const pair = lifecycleAndContext[i];
@@ -99,7 +111,7 @@ export async function executeConcurrently(
   }
   if (logger)
     logger?.info(
-      `${("[Solution] " + step + "Task overall result").padEnd(60, ".")}${
+      `${`[${PluginDisplayName.Solution}] ${step}Task overall result`.padEnd(60, ".")}${
         failed ? "[failed]" : "[ok]"
       }`
     );
@@ -147,7 +159,7 @@ export async function executeLifecycles(
   }
 
   const postResults = await executeConcurrently("post", postLifecycles);
-  for (const result of results) {
+  for (const result of postResults) {
     if (result.isErr()) {
       return result;
     }

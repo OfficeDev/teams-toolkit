@@ -13,7 +13,7 @@ import AzureTokenProvider from "../commonlib/azureLogin";
 import { signedIn } from "../commonlib/common/constant";
 import CLILogProvider from "../commonlib/log";
 import * as constants from "../constants";
-import { getColorizedString, setSubscriptionId, toYargsOptions } from "../utils";
+import { getColorizedString, setSubscriptionId, toLocaleLowerCase, toYargsOptions } from "../utils";
 
 async function outputM365Info(commandType: "login" | "show"): Promise<boolean> {
   const result = await AppStudioTokenProvider.getJsonObject();
@@ -163,6 +163,7 @@ class AccountLogin extends YargsCommand {
         description: "Azure or M365",
         type: "string",
         choices: ["azure", "m365"],
+        coerce: toLocaleLowerCase,
       })
       .options("tenant", {
         description: "Authenticate with a specific Azure Active Directory tenant.",
@@ -198,6 +199,7 @@ class AccountLogout extends YargsCommand {
       description: "Azure or M365",
       type: "string",
       choices: ["azure", "m365"],
+      coerce: toLocaleLowerCase,
     });
   }
 

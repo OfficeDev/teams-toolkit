@@ -18,7 +18,31 @@
     "AddCapabilityNoticeForCli": "[Teams Toolkit] Capability \"%s\" have been successfully configured for your project, run 'teamsfx provision' will create the resource(s) in your Azure subscription.",
     "CancelProvision": "CancelProvision",
     "AlreadyProvisionNotice": "'%s' is already provisioned in the cloud, will create the teams app again if it has been removed.",
-    "NotProvisionedNotice": "'%s' is not provisioned in the cloud yet. Please provision first."
+    "NotProvisionedNotice": "'%s' is not provisioned in the cloud yet. Please provision first.",
+
+    "GenerateArmTemplateFailNotice": "'%s' Failed to create ARM template for required Azure services.",
+
+    "DeployArmTemplates": {
+      "StartNotice": "[%s] Start deploying ARM templates.",
+      "CompileBicepSuccessNotice": "[%s] Successfully compile bicep files to JSON.",
+      "SuccessNotice": "[%s] Successfully deploy ARM templates. Resource group name: %s. Deployment name: %s",
+      "FailNotice": "[%s] Failed to deploy ARM templates. Resource group name: %s. Deployment name: %s",
+      "PollDeploymentStatusNotice": "[%s] Polling deployment status...",
+      "Progress": {
+        "Title": "Deploying ARM Templates",
+        "Start": "Preparing.",
+        "ExecuteDeployment": "Deploying solution ARM templates to Azure. This could take several minutes."
+      }
+    },
+
+    "ProvisionStartNotice": "[%s] Start provisioning. It could take several minutes.",
+    "ConfigurationFinishNotice": "[%s] Configuration finished.",
+    "ProvisionFinishNotice": "[%s] Provison finished!",
+
+    "DeployStartNotice": "[%s] Deployment start.",
+    "SelectedPluginsToDeployNotice": "[%s] Selected plugins to deploy: %s",
+
+    "PublishStartNotice": "[%s] Publish start."
   },
   "plugins": {
     "SPFx": {

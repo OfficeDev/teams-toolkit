@@ -15,7 +15,7 @@ import VsCodeLogInstance from "./commonlib/log";
 import * as StringResources from "./resources/Strings.json";
 import { openWelcomePageAfterExtensionInstallation } from "./controls/openWelcomePage";
 import { VsCodeUI } from "./qm/vsc_ui";
-import { exp } from "./exp";
+import * as exp from "./exp";
 import { disableRunIcon, registerRunIcon } from "./debug/runIconHandler";
 import { CryptoCodeLensProvider } from "./codeLensProvider";
 import { Correlator } from "@microsoft/teamsfx-core";

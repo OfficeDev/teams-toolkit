@@ -80,7 +80,7 @@ import { VS_CODE_UI } from "./extension";
 import { registerAccountTreeHandler } from "./accountTree";
 import { selectAndDebug } from "./debug/runIconHandler";
 import * as path from "path";
-import { exp } from "./exp/index";
+import * as exp from "./exp/index";
 import { TreatmentVariables } from "./exp/treatmentVariables";
 import { StringContext } from "./utils/stringContext";
 

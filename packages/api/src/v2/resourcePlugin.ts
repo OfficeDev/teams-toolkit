@@ -157,6 +157,7 @@ export interface ResourcePlugin {
    */
   deploy?: (
     ctx: Context,
+    inputs: Inputs,
     provisionOutput: Readonly<ProvisionOutput>,
     tokenProvider: AzureAccountProvider
   ) => Promise<Result<{ output: Record<string, string> }, FxError>>;

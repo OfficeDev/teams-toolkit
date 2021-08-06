@@ -13,14 +13,17 @@ import {
   ReadonlyPluginConfig,
   err,
   ok,
+  AzureAccountProvider,
 } from "@microsoft/teamsfx-api";
-import { Context, ResourcePlugin } from "@microsoft/teamsfx-api/build/v2";
+import { Context, ProvisionOutput, ResourcePlugin } from "@microsoft/teamsfx-api/build/v2";
 import {
   ResourcePlugins,
   ResourcePluginsV2,
 } from "../../../solution/fx-solution/ResourcePluginContainer";
 import { InvalidInputError } from "../../../../core";
 import { Container } from "typedi";
+import { V2Context2PluginContext } from "../../..";
+import { SolutionConfig } from "../../apim/config";
 
 @Service(ResourcePluginsV2.FrontendPlugin)
 export class FrontendPluginV2 implements ResourcePlugin {
@@ -41,14 +44,27 @@ export class FrontendPluginV2 implements ResourcePlugin {
     if (!inputs.projectPath) {
       return err(InvalidInputError("projectPath is empty", inputs));
     }
-    const pluginContext: PluginContext = {
-      root: inputs.projectPath,
-      config: new ConfigMap(),
-      configOfOtherPlugins: new Map<string, ReadonlyPluginConfig>(),
-    };
+    const pluginContext: PluginContext = V2Context2PluginContext(ctx, inputs);
     await this.plugin.scaffold(pluginContext);
     const output = pluginContext.config.toJSON();
     return ok({ output: output });
+  }
+
+  async deploy(
+    ctx: Context,
+    inputs: Inputs,
+    provisionOutput: Readonly<ProvisionOutput>,
+    tokenProvider: AzureAccountProvider
+  ): Promise<Result<{ output: Record<string, string> }, FxError>> {
+    const pluginContext: PluginContext = V2Context2PluginContext(ctx, inputs);
+    const soutionConfig = new ConfigMap();
+    const configsOfOtherPlugins = new Map<string, ConfigMap>();
+    configsOfOtherPlugins.set("solution", soutionConfig);
+    pluginContext.configOfOtherPlugins = configsOfOtherPlugins;
+    soutionConfig.set();
+    await this.plugin.preDeploy();
+    await this.plugin.deploy();
+    return ok({ output: {} });
   }
 }
 

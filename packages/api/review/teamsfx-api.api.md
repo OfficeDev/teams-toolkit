@@ -796,7 +796,7 @@ interface ResourcePlugin {
     activate(solutionSettings: AzureSolutionSettings): boolean;
     configureLocalResource?: (ctx: Context_2, localProvisionOutput: Readonly<LocalSetting>, localProvisionOutputOfOtherPlugins: Readonly<LocalSettings_2>, tokenProvider: TokenProvider) => Promise<Result<LocalSettings_2, FxError>>;
     configureResource?: (ctx: Context_2, provisionOutput: Readonly<ProvisionOutput>, provisionOutputOfOtherPlugins: Readonly<Record<PluginName, ProvisionOutput>>, tokenProvider: TokenProvider) => Promise<Result<ProvisionOutput, FxError>>;
-    deploy?: (ctx: Context_2, provisionOutput: Readonly<ProvisionOutput>, tokenProvider: AzureAccountProvider) => Promise<Result<{
+    deploy?: (ctx: Context_2, inputs: Inputs, provisionOutput: Readonly<ProvisionOutput>, tokenProvider: AzureAccountProvider) => Promise<Result<{
         output: Record<string, string>;
     }, FxError>>;
     // (undocumented)

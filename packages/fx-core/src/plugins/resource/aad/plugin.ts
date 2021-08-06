@@ -16,7 +16,7 @@ import {
   UpdatePermissionConfig,
 } from "./utils/configs";
 import { TelemetryUtils } from "./utils/telemetry";
-import { TokenProvider } from "./utils/tokenProvider";
+import { TokenAudience, TokenProvider } from "./utils/tokenProvider";
 import { AadAppClient } from "./aadAppClient";
 import {
   AppIdUriInvalidError,
@@ -326,7 +326,7 @@ export class AadAppForTeamsImpl {
   }
 
   public async grantPermission(ctx: PluginContext): Promise<AadResult> {
-    await TokenProvider.init(ctx);
+    await TokenProvider.init(ctx, TokenAudience.Graph);
     const userInfo = ctx.configOfOtherPlugins
       .get(Plugins.solution)
       ?.get(ConfigKeysOfOtherPlugin.solutionUserInfo);
@@ -342,7 +342,7 @@ export class AadAppForTeamsImpl {
   }
 
   public async checkPermission(ctx: PluginContext): Promise<AadResult> {
-    await TokenProvider.init(ctx);
+    await TokenProvider.init(ctx, TokenAudience.Graph);
     const userInfo = ctx.configOfOtherPlugins
       .get(Plugins.solution)
       ?.get(ConfigKeysOfOtherPlugin.solutionUserInfo);

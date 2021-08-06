@@ -157,14 +157,7 @@ export class TeamsBot implements Plugin {
   }
 
   public async grantPermission(context: PluginContext): Promise<FxResult> {
-    Logger.setLogger(context.logProvider);
-
-    return await this.runWithExceptionCatching(
-      context,
-      () => this.teamsBotImpl.grantPermission(context),
-      false,
-      LifecycleFuncNames.GRANT_PERMISSION
-    );
+    return ok(undefined);
   }
 
   public async checkPermission(context: PluginContext): Promise<any> {

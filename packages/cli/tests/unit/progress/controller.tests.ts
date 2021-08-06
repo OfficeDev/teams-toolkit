@@ -61,7 +61,7 @@ describe("Progress Controller", function () {
     const stopStub = sandbox.stub(MultiBar.prototype, "stop");
     controller["timer"] = setTimeout(() => {}, 0);
     controller["progresses"] = [instance];
-    controller.end();
+    controller.end(true);
     sinon.assert.calledOnce(endStub);
     sinon.assert.calledOnce(stopStub);
     expect(controller["timer"]).equals(undefined);

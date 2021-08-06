@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { exec } from "child_process";
+import { exec, ExecOptions } from "child_process";
 import * as fs from "fs-extra";
 import {
   AzureAccountProvider,
@@ -51,10 +51,15 @@ Handlebars.registerHelper("notContains", (value, array, options) => {
   return array.indexOf(value) == -1 ? options.fn(this) : "";
 });
 
-export const execAsync = promisify(exec);
+export const Executor = {
+  async execCommandAsync(command: string, options?: ExecOptions) {
+    const execAsync = promisify(exec);
+    await execAsync(command, options);
+  },
+};
 
 export async function npmInstall(path: string) {
-  await execAsync("npm install", {
+  await Executor.execCommandAsync("npm install", {
     cwd: path,
   });
 }

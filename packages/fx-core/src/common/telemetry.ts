@@ -61,9 +61,6 @@ export function sendTelemetryEvent(
     }
   }
 
-  const correlationId = inputs.correlationId;
-  if (correlationId) properties[TelemetryProperty.CorrelationId] = correlationId;
-
   telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
   Logger.debug(`sendTelemetryEvent, event:${eventName}, properties:${JSON.stringify(properties)}`);
 }
@@ -97,9 +94,6 @@ export function sendTelemetryErrorEvent(
   } else {
     properties[TelemetryProperty.ErrorType] = TelemetryErrorType.SystemError;
   }
-
-  const correlationId = inputs.correlationId === undefined ? "" : inputs.correlationId;
-  properties[TelemetryProperty.CorrelationId] = correlationId;
 
   properties[TelemetryProperty.ErrorCode] = `${error.source}.${error.name}`;
   properties[TelemetryProperty.ErrorMessage] = error.message;

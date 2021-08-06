@@ -34,6 +34,7 @@ export enum Stage {
   debug = "debug",
   provision = "provision",
   deploy = "deploy",
+  package = "package",
   publish = "publish",
   createEnv = "createEnv",
   removeEnv = "removeEnv",

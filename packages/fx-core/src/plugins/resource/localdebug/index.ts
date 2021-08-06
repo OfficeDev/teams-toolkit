@@ -69,9 +69,7 @@ export class LocalDebugPlugin implements Plugin {
       (pluginName) => pluginName === FunctionPlugin.Name
     );
     const includeBot = selectedPlugins?.some((pluginName) => pluginName === BotPlugin.Name);
-    const programmingLanguage: string = ctx.configOfOtherPlugins
-      ?.get(SolutionPlugin.Name)
-      ?.get(SolutionPlugin.ProgrammingLanguage) as string;
+    const programmingLanguage = ctx.projectSettings?.programmingLanguage ?? "";
 
     const telemetryProperties = {
       platform: ctx.answers?.platform as string,
@@ -455,8 +453,8 @@ export class LocalDebugPlugin implements Plugin {
         return ok(solutionConfigs?.get(SolutionPlugin.LocalTeamsAppId) as string);
       }
     } else if (func.method === "getProgrammingLanguage") {
-      const solutionConfigs = ctx.configOfOtherPlugins.get(SolutionPlugin.Name);
-      return ok(solutionConfigs?.get(SolutionPlugin.ProgrammingLanguage) as string);
+      const programmingLanguage = ctx.projectSettings?.programmingLanguage;
+      return ok(programmingLanguage);
     }
 
     return ok(undefined);

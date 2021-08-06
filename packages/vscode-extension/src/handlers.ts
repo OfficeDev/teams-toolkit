@@ -39,6 +39,7 @@ import {
   globalStateUpdate,
   globalStateGet,
   Correlator,
+  getAppDirectory,
 } from "@microsoft/teamsfx-core";
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -582,17 +583,15 @@ export async function openManifestHandler(args?: any[]): Promise<Result<null, Fx
   );
   if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
     const workspaceFolder = workspace.workspaceFolders[0];
-    const configRoot = await commonUtils.getProjectRoot(
-      workspaceFolder.uri.fsPath,
-      `.${ConfigFolderName}`
-    );
-    if (!(await fs.pathExists(configRoot!))) {
+    const projectRoot = await commonUtils.getProjectRoot(workspaceFolder.uri.fsPath, "");
+    const appDirectory = await getAppDirectory(projectRoot!);
+    if (!(await fs.pathExists(appDirectory))) {
       const invalidProjectError: FxError = InvalidProjectError();
       showError(invalidProjectError);
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, invalidProjectError);
       return err(invalidProjectError);
     }
-    const manifestFile = `${configRoot}/${constants.manifestFileName}`;
+    const manifestFile = `${appDirectory}/${constants.manifestFileName}`;
     if (fs.existsSync(manifestFile)) {
       workspace.openTextDocument(manifestFile).then((document) => {
         window.showTextDocument(document);

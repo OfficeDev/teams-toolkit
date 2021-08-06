@@ -79,6 +79,9 @@ export abstract class YargsCommand {
         throw result.error;
       }
     } catch (e) {
+      if (ProgressController.instance && ProgressController.instance.activeNum > 0) {
+        ProgressController.instance.end(false);
+      }
       const FxError: UserError | SystemError = "source" in e ? e : UnknownError(e);
       CLILogProvider.necessaryLog(
         LogLevel.Error,
@@ -103,15 +106,12 @@ export abstract class YargsCommand {
         CLILogProvider.necessaryLog(LogLevel.Error, FxError.stack || "undefined");
       }
 
-      if (ProgressController.instance && ProgressController.instance.activeNum > 0) {
-        ProgressController.instance.end();
-      }
       await CliTelemetryInstance.flush();
       exit(-1, FxError);
     }
 
     if (ProgressController.instance && ProgressController.instance.activeNum > 0) {
-      ProgressController.instance.end();
+      ProgressController.instance.end(true);
     }
     await CliTelemetryInstance.flush();
   }

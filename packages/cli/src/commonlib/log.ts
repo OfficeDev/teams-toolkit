@@ -4,6 +4,7 @@
 "use strict";
 
 import chalk from "chalk";
+import figures from "figures";
 import { LogLevel, LogProvider, Colors } from "@microsoft/teamsfx-api";
 
 import { CLILogLevel } from "../constants";
@@ -104,7 +105,7 @@ export class CLILogProvider implements LogProvider {
         break;
       case LogLevel.Error:
       case LogLevel.Fatal:
-        console.error(chalk.redBright(`${chalk.bgRedBright.black("Error")}: ${message}`));
+        console.error(chalk.redBright(`(${figures.cross}) ${message}`));
         break;
     }
     ProgressController.instance?.update();
@@ -128,7 +129,7 @@ export class CLILogProvider implements LogProvider {
         break;
       case LogLevel.Error:
       case LogLevel.Fatal:
-        console.error(chalk.redBright(`${chalk.bgRedBright.black("Error")}: ${message}`));
+        console.error(chalk.redBright(`(${figures.cross}) ${message}`));
         break;
     }
     ProgressController.instance?.update();

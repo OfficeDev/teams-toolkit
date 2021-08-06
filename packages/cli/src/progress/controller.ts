@@ -59,13 +59,13 @@ export default class Controller {
     this.update();
   }
 
-  public end() {
+  public end(success: boolean) {
     if (this.timer) {
       clearTimeout(this.timer);
       this.timer = undefined;
     }
     this.progresses.forEach((progress) => {
-      progress.end(true);
+      progress.end(success);
     });
     this.controller.stop();
     (this.controller as any).bars = [];
@@ -106,7 +106,7 @@ export default class Controller {
     this.needToRemove.push([bar, percentage, message]);
     this._activeNum--;
     if (this._activeNum === 0) {
-      this.end();
+      this.end(true);
     }
     return;
   }

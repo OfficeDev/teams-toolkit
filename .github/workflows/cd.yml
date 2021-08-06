@@ -97,7 +97,7 @@ jobs:
       - name: version stable npm packages to npmjs.org
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
         run: |
-          npx lerna version --conventional-commits --conventional-graduate --no-changelog --yes
+          npx lerna version --conventional-commits --conventional-graduate --no-changelog --allow-branch ${GITHUB_REF#refs/*/} --yes
       
       - name: version change
         id: version-change

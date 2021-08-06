@@ -56,8 +56,8 @@ export const botPorts: [number, string[]][] = [
   [9239, hosts],
 ];
 
-export const npmInstall = "npmInstall";
-export const npmInstallErrorMessage= "NPM install encountered an error. Please refer to the output window for detailed error information or click 'Report Issue' button to report the issue.";
+export const npmInstallFailedHintMessage =
+  "Task '%s' failed. Please refer to the '%s' terminal window for detailed error information or click 'Report Issue' button to report the issue.";
 export const issueLink = "https://github.com/OfficeDev/TeamsFx/issues/new?";
 export const issueTemplate = `
 **Describe the bug**

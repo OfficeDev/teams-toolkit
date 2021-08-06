@@ -2,9 +2,9 @@
 
 ## 2.3.2 - Aug 6 2021
 
-Hotfix version.
+Bug Fixed:
 
-Fixed issues of local debug which are arised from underlying service upgrade. 
+- Fixed issues of local debug which are arised from underlying service upgrade. 
 
 ## 2.3.1 - July 26 2021
 

@@ -7,6 +7,8 @@ import * as path from "path";
 import { cpUtils } from "./depsChecker/cpUtils";
 
 export interface NpmInstallLogInfo {
+  logFile: string;
+  timestamp: Date;
   nodeVersion: string | undefined;
   npmVersion: string | undefined;
   cwd: string | undefined;
@@ -53,6 +55,9 @@ export async function getNpmInstallLogInfo(): Promise<NpmInstallLogInfo | undefi
     if (latestNpmLogFile === undefined) {
       return undefined;
     }
+    const latestNpmLogFileName = path.basename(latestNpmLogFile);
+    const str = latestNpmLogFileName.replace(/_/g, ":");
+    const timestamp = new Date(`${str.slice(0, 19)}.${str.slice(20, 24)}`);
     const log = (await fs.readFile(latestNpmLogFile)).toString();
 
     const nodePattern = /\d+\s+verbose\s+node\s+(v.*)/;
@@ -80,6 +85,8 @@ export async function getNpmInstallLogInfo(): Promise<NpmInstallLogInfo | undefi
       : undefined;
 
     const npmInstallLogInfo: NpmInstallLogInfo = {
+      logFile: latestNpmLogFile,
+      timestamp,
       nodeVersion,
       npmVersion,
       cwd,

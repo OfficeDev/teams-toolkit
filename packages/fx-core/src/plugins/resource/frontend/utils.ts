@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import * as path from "path";
+import os from "os";
 import { AxiosResponse } from "axios";
 import { exec } from "child_process";
 import glob from "glob";
@@ -19,6 +20,10 @@ export class Utils {
 
   static normalize(raw: string): string {
     return raw.replace(RegularExpr.AllCharToBeSkippedInName, Constants.EmptyString).toLowerCase();
+  }
+
+  static capitalizeFirstLetter([first, ...rest]: Iterable<string>): string {
+    return [first?.toUpperCase(), ...rest].join("");
   }
 
   static generateStorageAccountName(
@@ -65,6 +70,10 @@ export class Utils {
   static async execute(command: string, workingDir?: string, ignoreError = false): Promise<string> {
     return new Promise((resolve, reject) => {
       Logger.info(`Start to run command: "${command}".`);
+
+      if (os.platform() === "win32") {
+        workingDir = this.capitalizeFirstLetter(workingDir ?? Constants.EmptyString);
+      }
 
       exec(command, { cwd: workingDir }, (error, standardOutput) => {
         Logger.debug(standardOutput);

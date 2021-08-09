@@ -10,20 +10,26 @@ import {
   Result,
   PluginContext,
   ConfigMap,
-  ReadonlyPluginConfig,
   err,
   ok,
   AzureAccountProvider,
+  TokenProvider,
 } from "@microsoft/teamsfx-api";
-import { Context, ProvisionOutput, ResourcePlugin } from "@microsoft/teamsfx-api/build/v2";
+import {
+  BicepTemplate,
+  Context,
+  ProvisionOutput,
+  ResourcePlugin,
+  ResourceTemplate,
+} from "@microsoft/teamsfx-api/build/v2";
 import {
   ResourcePlugins,
   ResourcePluginsV2,
 } from "../../../solution/fx-solution/ResourcePluginContainer";
 import { InvalidInputError } from "../../../../core";
-import { Container } from "typedi";
 import { V2Context2PluginContext } from "../../..";
-import { SolutionConfig } from "../../apim/config";
+import { PluginName } from "../../../../../../api/build/v2";
+import { ScaffoldArmTemplateResult } from "../../../../common/armInterface";
 
 @Service(ResourcePluginsV2.FrontendPlugin)
 export class FrontendPluginV2 implements ResourcePlugin {
@@ -45,28 +51,86 @@ export class FrontendPluginV2 implements ResourcePlugin {
       return err(InvalidInputError("projectPath is empty", inputs));
     }
     const pluginContext: PluginContext = V2Context2PluginContext(ctx, inputs);
-    await this.plugin.scaffold(pluginContext);
+    const scaffoldRes = await this.plugin.scaffold(pluginContext);
+    if (scaffoldRes.isErr()) {
+      return err(scaffoldRes.error);
+    }
     const output = pluginContext.config.toJSON();
     return ok({ output: output });
+  }
+
+  async generateResourceTemplate(
+    ctx: Context,
+    inputs: Inputs
+  ): Promise<Result<ResourceTemplate, FxError>> {
+    const pluginContext: PluginContext = V2Context2PluginContext(ctx, inputs);
+    const armRes = await this.plugin.generateArmTemplates(pluginContext);
+    if (armRes.isErr()) {
+      return err(armRes.error);
+    }
+    const output: ScaffoldArmTemplateResult = armRes.value as ScaffoldArmTemplateResult;
+    //TODO
+    const bicepTemplate: BicepTemplate = { kind: "bicep", template: output };
+    return ok(bicepTemplate);
+  }
+
+  async configureResource(
+    ctx: Context,
+    inputs: Inputs,
+    provisionOutput: Readonly<ProvisionOutput>,
+    provisionOutputOfOtherPlugins: Readonly<Record<PluginName, ProvisionOutput>>,
+    tokenProvider: TokenProvider
+  ): Promise<Result<ProvisionOutput, FxError>> {
+    const pluginContext: PluginContext = V2Context2PluginContext(ctx, inputs);
+    pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
+    const configsOfOtherPlugins = new Map<string, ConfigMap>();
+    for (const key in provisionOutputOfOtherPlugins) {
+      const output = provisionOutputOfOtherPlugins[key].output;
+      const configMap = ConfigMap.fromJSON(output);
+      if (configMap) configsOfOtherPlugins.set(key, configMap);
+    }
+    const selfConfigMap = ConfigMap.fromJSON(provisionOutput.output) || new ConfigMap();
+    pluginContext.config = selfConfigMap;
+    pluginContext.configOfOtherPlugins = configsOfOtherPlugins;
+    const postRes = await this.plugin.postProvision(pluginContext);
+    if (postRes.isErr()) {
+      return err(postRes.error);
+    }
+    const output: ProvisionOutput = {
+      output: selfConfigMap.toJSON(),
+      states: {},
+      secrets: {},
+    };
+    return ok(output);
   }
 
   async deploy(
     ctx: Context,
     inputs: Inputs,
-    deployInput: Readonly<ProvisionOutput>,
+    provisionOutput: Readonly<ProvisionOutput>,
+    provisionOutputOfOtherPlugins: Readonly<Record<PluginName, ProvisionOutput>>,
     tokenProvider: AzureAccountProvider
   ): Promise<Result<{ output: Record<string, string> }, FxError>> {
     const pluginContext: PluginContext = V2Context2PluginContext(ctx, inputs);
-    const soutionConfig = new ConfigMap();
+    pluginContext.azureAccountProvider = tokenProvider;
     const configsOfOtherPlugins = new Map<string, ConfigMap>();
-    configsOfOtherPlugins.set("solution", soutionConfig);
+    for (const key in provisionOutputOfOtherPlugins) {
+      const output = provisionOutputOfOtherPlugins[key].output;
+      const configMap = ConfigMap.fromJSON(output);
+      if (configMap) configsOfOtherPlugins.set(key, configMap);
+    }
+    const selfConfigMap = ConfigMap.fromJSON(provisionOutput.output) || new ConfigMap();
+    pluginContext.config = selfConfigMap;
     pluginContext.configOfOtherPlugins = configsOfOtherPlugins;
-    soutionConfig.set();
-    await this.plugin.preDeploy();
-    await this.plugin.deploy();
-    return ok({ output: {} });
+    const preRes = await this.plugin.preDeploy(pluginContext);
+    if (preRes.isErr()) {
+      return err(preRes.error);
+    }
+    const deployRes = await this.plugin.deploy(pluginContext);
+    if (deployRes.isErr()) {
+      return err(deployRes.error);
+    }
+    const deployOutput = selfConfigMap.toJSON();
+    return ok({ output: deployOutput });
   }
 }
-
-const pluginv2 = Container.get<FrontendPluginV2>(ResourcePluginsV2.FrontendPlugin);
-console.log(pluginv2.plugin.name);

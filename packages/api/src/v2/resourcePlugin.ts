@@ -127,6 +127,7 @@ export interface ResourcePlugin {
    */
   configureResource?: (
     ctx: Context,
+    inputs: Inputs,
     provisionOutput: Readonly<ProvisionOutput>,
     provisionOutputOfOtherPlugins: Readonly<Record<PluginName, ProvisionOutput>>,
     tokenProvider: TokenProvider
@@ -159,6 +160,7 @@ export interface ResourcePlugin {
     ctx: Context,
     inputs: Inputs,
     provisionOutput: Readonly<ProvisionOutput>,
+    provisionOutputOfOtherPlugins: Readonly<Record<PluginName, ProvisionOutput>>,
     tokenProvider: AzureAccountProvider
   ) => Promise<Result<{ output: Record<string, string> }, FxError>>;
 

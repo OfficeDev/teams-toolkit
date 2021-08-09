@@ -38,8 +38,8 @@
     "test:unit": "npm run build:test && npm run unit-test:node && npm run unit-test:browser",
     "ui-test": "mocha --no-timeouts -r test/mocha.env.ts -r ts-node/register test/ui/**/*.spec.ts --exit",
     "precommit": "lint-staged",
-    "version": "./tools/version.sh",
-    "postversion": "./tools/postversion.sh"
+    "version": "../../.github/scripts/sdk-version.sh",
+    "postversion": "../../.github/scripts/sdk-postversion.sh"
   },
   "files": [
     "dist/",
@@ -142,8 +142,7 @@
     "ts-node": "^9.1.1",
     "typescript": "^4.1.2",
     "url-join": "^4.0.1",
-    "util": "^0.12.1",
-    "write-pkg": "^4.0.0"
+    "util": "^0.12.1"
   },
   "gitHead": "7d60c0765c0ea8c023a26c10d1c93001c597afbb",
   "publishConfig": {

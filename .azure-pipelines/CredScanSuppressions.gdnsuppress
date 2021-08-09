@@ -1,0 +1,138 @@
+{
+    "version": "latest",
+    "suppressionSets": {
+      "default": {
+        "name": "default",
+        "createdDate": "2021-08-04 09:04:38Z",
+        "lastUpdatedDate": "2021-08-04 09:04:38Z"
+      }
+    },
+    "results": {
+      "5f56d35b850a088f067942602e9686cffdb64d597fa7040132ff131327b9c3a2": {
+        "signature": "5f56d35b850a088f067942602e9686cffdb64d597fa7040132ff131327b9c3a2",
+        "alternativeSignatures": [],
+        "target": "packages/function-extension/src/Constants.cs",
+        "memberOf": [
+          "default"
+        ],
+        "tool": "credscan",
+        "ruleId": "CSCAN-GENERAL0130",
+        "justification": null,
+        "createdDate": "2021-08-04 09:04:38Z",
+        "expirationDate": null,
+        "type": null
+      },
+      "20106489dc93b9e9211d7e9ac0d0e15c4d5f7aa7edda75442d365937b4910e86": {
+        "signature": "20106489dc93b9e9211d7e9ac0d0e15c4d5f7aa7edda75442d365937b4910e86",
+        "alternativeSignatures": [],
+        "target": "packages/cli/tests/commonlib/botValidator.ts",
+        "memberOf": [
+          "default"
+        ],
+        "tool": "credscan",
+        "ruleId": "CSCAN-GENERAL0130",
+        "justification": null,
+        "createdDate": "2021-08-04 09:04:38Z",
+        "expirationDate": null,
+        "type": null
+      },
+      "b9287024726c701e0b2d5f8068e81b5045186af4fea037e2ace510623444abcd": {
+        "signature": "b9287024726c701e0b2d5f8068e81b5045186af4fea037e2ace510623444abcd",
+        "alternativeSignatures": [],
+        "target": "packages/cli/tests/commonlib/functionValidator.ts",
+        "memberOf": [
+          "default"
+        ],
+        "tool": "credscan",
+        "ruleId": "CSCAN-GENERAL0130",
+        "justification": null,
+        "createdDate": "2021-08-04 09:04:38Z",
+        "expirationDate": null,
+        "type": null
+      },
+      "60fa809aca7f19e0e6235be9517fa7a2687d6a39e426dd7f93680768575cd4aa": {
+        "signature": "60fa809aca7f19e0e6235be9517fa7a2687d6a39e426dd7f93680768575cd4aa",
+        "alternativeSignatures": [],
+        "target": "packages/cli/tests/commonlib/functionValidator.ts",
+        "memberOf": [
+          "default"
+        ],
+        "tool": "credscan",
+        "ruleId": "CSCAN-GENERAL0130",
+        "justification": null,
+        "createdDate": "2021-08-04 09:04:38Z",
+        "expirationDate": null,
+        "type": null
+      },
+      "b6cfa04c09666067cde8089f06e6bcb705afa107076befd0c541123a2c0359b7": {
+        "signature": "b6cfa04c09666067cde8089f06e6bcb705afa107076befd0c541123a2c0359b7",
+        "alternativeSignatures": [],
+        "target": "packages/function-extension/tests/TestAssets/FunctionAppJS/localSettingsJson/emptyClientId_local.settings.json",
+        "memberOf": [
+          "default"
+        ],
+        "tool": "credscan",
+        "ruleId": "CSCAN-GENERAL0130",
+        "justification": null,
+        "createdDate": "2021-08-04 09:04:38Z",
+        "expirationDate": null,
+        "type": null
+      },
+      "68ccbd641f79505977c7972521a1efbd2243fd89ec2a96d47aabb4cc88262e2e": {
+        "signature": "68ccbd641f79505977c7972521a1efbd2243fd89ec2a96d47aabb4cc88262e2e",
+        "alternativeSignatures": [],
+        "target": "packages/function-extension/tests/TestAssets/FunctionAppJS/localSettingsJson/main_local.settings.json",
+        "memberOf": [
+          "default"
+        ],
+        "tool": "credscan",
+        "ruleId": "CSCAN-GENERAL0130",
+        "justification": null,
+        "createdDate": "2021-08-04 09:04:38Z",
+        "expirationDate": null,
+        "type": null
+      },
+      "d737b11eda287dbde1010f8c105a0439903d16c93e7a823e8c2b17c5d80008ad": {
+        "signature": "d737b11eda287dbde1010f8c105a0439903d16c93e7a823e8c2b17c5d80008ad",
+        "alternativeSignatures": [],
+        "target": "packages/fx-core/src/plugins/resource/bot/resources/strings.ts",
+        "memberOf": [
+          "default"
+        ],
+        "tool": "credscan",
+        "ruleId": "CSCAN-GENERAL0030",
+        "justification": null,
+        "createdDate": "2021-08-04 09:04:38Z",
+        "expirationDate": null,
+        "type": null
+      },
+      "6ac41a9f8765d80f56924caf5db6f193ac6085e1684c99da498115a4342750db": {
+        "signature": "6ac41a9f8765d80f56924caf5db6f193ac6085e1684c99da498115a4342750db",
+        "alternativeSignatures": [],
+        "target": "packages/fx-core/tests/plugins/resource/bot/unit/index.test.ts",
+        "memberOf": [
+          "default"
+        ],
+        "tool": "credscan",
+        "ruleId": "CSCAN-GENERAL0060",
+        "justification": null,
+        "createdDate": "2021-08-04 09:04:38Z",
+        "expirationDate": null,
+        "type": null
+      },
+      "b0a4da0269c88a2166374e09dba8560da82e90672277428d1b7645d60ce18a22": {
+        "signature": "b0a4da0269c88a2166374e09dba8560da82e90672277428d1b7645d60ce18a22",
+        "alternativeSignatures": [],
+        "target": "packages/fx-core/tests/plugins/resource/bot/unit/index.test.ts",
+        "memberOf": [
+          "default"
+        ],
+        "tool": "credscan",
+        "ruleId": "CSCAN-GENERAL0060",
+        "justification": null,
+        "createdDate": "2021-08-04 09:04:38Z",
+        "expirationDate": null,
+        "type": null
+      }
+    }
+  }

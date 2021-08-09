@@ -22,6 +22,8 @@ git clone {RepositoryEndpoint}
 cd {FolderName}
 
 # Install the local dev dependency of @microsoft/teamsfx-cli. 
+# 'npm ci' is used here to install dependencies and it depends on package-lock.json.
+# If you prefer to use 'npm ci', please make sure to commit package-lock.json first, or just change it to 'npm install'.
 npm ci
 
 # Build the project.

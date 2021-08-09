@@ -15,6 +15,8 @@ cd {FolderName}
 # Build the project.
 # The way to build the current project depends on how you scaffold it.
 # Different folder structures require different commands set.
+# 'npm ci' is used here to install dependencies and it depends on package-lock.json.
+# If you prefer to use 'npm ci', please make sure to commit package-lock.json first, or just change it to 'npm install'.
 cd tabs && npm ci && npm run build
 
 # Run unit test.

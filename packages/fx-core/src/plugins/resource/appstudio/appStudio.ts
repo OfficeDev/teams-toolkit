@@ -64,7 +64,7 @@ export namespace AppStudioClient {
         if (outlineIconContent) {
           appDef.outlineIcon = outlineIconContent;
         }
-        const response = await requester.post(`/api/appdefinitions/import`, appDef);
+        const response = await requester.post(`/api/appdefinitions/duplicate`, appDef);
         if (response && response.data) {
           const app = <IAppDefinition>response.data;
           await logProvider?.debug(`recieved data from app studio ${JSON.stringify(app)}`);

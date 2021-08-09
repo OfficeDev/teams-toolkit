@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.3.2 - Aug 6 2021
+
+Bug Fixed:
+
+- Fixed issues of local debug which are arised from underlying service upgrade.
+
 ## 2.3.1 - July 26 2021
 
 Incremental version for Teams Toolkit with multiple bugs fixed and the following updates：

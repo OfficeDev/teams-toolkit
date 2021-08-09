@@ -3,7 +3,7 @@
 "use strict";
 
 import { UserInteraction } from "../qm/ui";
-import { EnvMeta, ProjectSettings } from "../types";
+import { EnvMeta, Inputs, ProjectSettings } from "../types";
 import { CryptoProvider, LogProvider, TelemetryReporter } from "../utils";
 
 export type PluginName = string;
@@ -26,3 +26,14 @@ export interface LocalSettings {
 }
 
 export type LocalSetting = { key: keyof LocalSettings; value: Record<string, string> };
+
+export type SolutionInputs = {
+  resourceNameSuffix: string;
+  resourceGroupName: string;
+  // default to East US for now
+  location: string;
+  teamsAppTenantId: string;
+};
+
+export type ProvisionInputs = Inputs & SolutionInputs;
+export type DeploymentInputs = Inputs & SolutionInputs & { remoteTeamsAppId: string };

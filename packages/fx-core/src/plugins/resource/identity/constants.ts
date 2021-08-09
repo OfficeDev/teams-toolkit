@@ -16,6 +16,8 @@ export class Constants {
   public static readonly resourceNameSuffix: string = "resourceNameSuffix";
   public static readonly location: string = "location";
   public static readonly remoteTeamsAppId: string = "remoteTeamsAppId";
+
+  public static readonly resourceProvider: string = "Microsoft.ManagedIdentity";
 }
 
 export class Telemetry {

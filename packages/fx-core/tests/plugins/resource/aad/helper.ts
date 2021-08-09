@@ -4,15 +4,12 @@
 import faker from "faker";
 import {
   PluginContext,
-  DialogMsg,
-  IProgressHandler,
   TelemetryReporter,
-  Dialog,
   LogProvider,
-  LogLevel,
   AppStudioTokenProvider,
   GraphTokenProvider,
   UserInteraction,
+  LogLevel,
 } from "@microsoft/teamsfx-api";
 import sinon from "sinon";
 import {

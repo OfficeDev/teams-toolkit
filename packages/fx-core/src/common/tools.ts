@@ -12,6 +12,7 @@ import {
   Json,
   ok,
   OptionItem,
+  PluginContext,
   ProjectSettings,
   Result,
   returnSystemError,
@@ -19,6 +20,7 @@ import {
   SolutionContext,
   SubscriptionInfo,
   UserInteraction,
+  AppPackageFolderName,
 } from "@microsoft/teamsfx-api";
 import { promisify } from "util";
 import axios from "axios";
@@ -27,7 +29,7 @@ import * as path from "path";
 import * as uuid from "uuid";
 import { glob } from "glob";
 import { getResourceFolder } from "..";
-import { PluginNames } from "../plugins/solution/fx-solution/constants";
+import { ARM_TEMPLATE_OUTPUT, PluginNames } from "../plugins/solution/fx-solution/constants";
 import {
   AzureResourceApim,
   AzureResourceFunction,
@@ -39,7 +41,7 @@ import {
   TabOptionItem,
 } from "../plugins/solution/fx-solution/question";
 import * as Handlebars from "handlebars";
-import { ConstantString } from "./constants";
+import { ConstantString, FeatureFlagName } from "./constants";
 
 Handlebars.registerHelper("contains", (value, array, options) => {
   array = array instanceof Array ? array : [array];
@@ -50,7 +52,7 @@ Handlebars.registerHelper("notContains", (value, array, options) => {
   return array.indexOf(value) == -1 ? options.fn(this) : "";
 });
 
-const execAsync = promisify(exec);
+export const execAsync = promisify(exec);
 
 export async function npmInstall(path: string) {
   await execAsync("npm install", {
@@ -351,17 +353,8 @@ export function isValidProject(workspacePath?: string): boolean {
   try {
     const confFolderPath = path.resolve(workspacePath, `.${ConfigFolderName}`);
     const settingsFile = path.resolve(confFolderPath, "settings.json");
-    const manifestFile = path.resolve(confFolderPath, "manifest.source.json");
     const projectSettings: ProjectSettings = fs.readJsonSync(settingsFile);
-    const manifest = fs.readJSONSync(manifestFile);
-    if (!manifest) return false;
-    if (!projectSettings.currentEnv) projectSettings.currentEnv = "default";
     if (validateSettings(projectSettings)) return false;
-    // const envName = projectSettings.currentEnv;
-    // const jsonFilePath = path.resolve(confFolderPath, `env.${envName}.json`);
-    // const configJson: Json = fs.readJsonSync(jsonFilePath);
-    // if(validateConfig(projectSettings.solutionSettings as AzureSolutionSettings, configJson))
-    //   return false;
     return true;
   } catch (e) {
     return false;
@@ -371,10 +364,6 @@ export function isValidProject(workspacePath?: string): boolean {
 export function validateProject(solutionContext: SolutionContext): string | undefined {
   const res = validateSettings(solutionContext.projectSettings);
   return res;
-  // const configJson = mapToJson(solutionContext.config);
-  // res = validateConfig(solutionContext.projectSettings!.solutionSettings as AzureSolutionSettings, configJson);
-  // if(res) return res;
-  // return undefined;
 }
 
 export function validateSettings(projectSettings?: ProjectSettings): string | undefined {
@@ -502,6 +491,10 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
   }
 }
 
+export function isMultiEnvEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.MultiEnv, false);
+}
+
 export function isArmSupportEnabled(): boolean {
   return isFeatureFlagEnabled("TEAMSFX_ARM_SUPPORT", false);
 }
@@ -528,4 +521,22 @@ export async function generateBicepFiles(
 export function compileHandlebarsTemplateString(templateString: string, context: any): string {
   const template = Handlebars.compile(templateString);
   return template(context);
+}
+
+export function getArmOutput(ctx: PluginContext, key: string): string | undefined {
+  const solutionConfig = ctx.configOfOtherPlugins.get("solution");
+  const output = solutionConfig?.get(ARM_TEMPLATE_OUTPUT);
+  return output?.[key]?.value;
+}
+
+export async function getAppDirectory(projectRoot: string): Promise<string> {
+  const REMOTE_MANIFEST = "manifest.source.json";
+  const appDirNewLoc = `${projectRoot}/${AppPackageFolderName}`;
+  const appDirOldLoc = `${projectRoot}/.${ConfigFolderName}`;
+
+  if (await fs.pathExists(`${appDirNewLoc}/${REMOTE_MANIFEST}`)) {
+    return appDirNewLoc;
+  } else {
+    return appDirOldLoc;
+  }
 }

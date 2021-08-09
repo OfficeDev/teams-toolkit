@@ -17,9 +17,7 @@ import {
   TokenProvider,
   AppStudioTokenProvider,
   TelemetryReporter,
-  Dialog,
   UserInteraction,
-  DialogMsg,
   IProgressHandler,
   SingleSelectConfig,
   MultiSelectConfig,
@@ -42,7 +40,6 @@ import {
   ok,
   Void,
   ConfigMap,
-  DialogType,
   Colors,
   Json,
 } from "@microsoft/teamsfx-api";
@@ -277,21 +274,6 @@ class MockTelemetryReporter implements TelemetryReporter {
   }
 }
 
-class MockDialog implements Dialog {
-  async communicate(msg: DialogMsg): Promise<DialogMsg> {
-    return new DialogMsg(DialogType.Answer, "");
-  }
-
-  createProgressBar(title: string, totalSteps: number): IProgressHandler {
-    const handler: IProgressHandler = {
-      start: async (detail?: string): Promise<void> => {},
-      next: async (detail?: string): Promise<void> => {},
-      end: async (): Promise<void> => {},
-    };
-    return handler;
-  }
-}
-
 export class MockUserInteraction implements UserInteraction {
   selectOption(config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> {
     throw new Error("Method not implemented.");
@@ -362,7 +344,6 @@ export class MockTools implements Tools {
     appStudioToken: new MockAppStudioTokenProvider(),
   };
   telemetryReporter = new MockTelemetryReporter();
-  dialog = new MockDialog();
   ui = new MockUserInteraction();
 }
 
@@ -393,7 +374,6 @@ export class MockLogProvider implements LogProvider {
 export function MockProjectSettings(appName: string): ProjectSettings {
   return {
     appName: appName,
-    currentEnv: "default",
     projectId: uuid.v4(),
     solutionSettings: {
       name: PluginNames.SOLUTION,

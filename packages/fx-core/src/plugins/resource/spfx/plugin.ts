@@ -1,14 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import {
-  PluginContext,
-  ConfigFolderName,
-  FxError,
-  Result,
-  ok,
-  Platform,
-  Colors,
-} from "@microsoft/teamsfx-api";
+import { PluginContext, FxError, Result, ok, Platform, Colors, err } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
 import lodash from "lodash";
 import * as fs from "fs-extra";
@@ -16,10 +8,10 @@ import * as path from "path";
 import { SPFXQuestionNames } from ".";
 import { Utils } from "./utils/utils";
 import { Constants, PlaceHolders, PreDeployProgressMessage } from "./utils/constants";
-import { BuildSPPackageError, NoSPPackageError } from "./error";
+import { BuildSPPackageError, NoManifestFileError, NoSPPackageError } from "./error";
 import * as util from "util";
 import { ProgressHelper } from "./utils/progress-helper";
-import { getStrings } from "../../../common/tools";
+import { getStrings, getAppDirectory } from "../../../common/tools";
 import { getTemplatesFolder } from "../../..";
 import { REMOTE_MANIFEST } from "../appstudio/constants";
 
@@ -168,8 +160,9 @@ export class SPFxPluginImpl {
     replaceMap.set(PlaceHolders.componentNameUnescaped, webpartName);
     replaceMap.set(PlaceHolders.componentClassNameKebabCase, componentClassNameKebabCase);
 
+    const appDirectory = await getAppDirectory(ctx.root);
     await Utils.configure(outputFolderPath, replaceMap);
-    await Utils.configure(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`, replaceMap);
+    await Utils.configure(`${appDirectory}/${REMOTE_MANIFEST}`, replaceMap);
     return ok(undefined);
   }
 

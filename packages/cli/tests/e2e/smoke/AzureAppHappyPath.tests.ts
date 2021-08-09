@@ -24,6 +24,7 @@ import {
   cleanUp,
 } from "../commonUtils";
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
+import { AppPackageFolderName } from "@microsoft/teamsfx-api";
 
 describe("Azure App Happy Path", function () {
   const testFolder = getTestFolder();
@@ -140,7 +141,7 @@ describe("Azure App Happy Path", function () {
 
     {
       // Validate built package
-      const file = `${projectPath}/.fx/appPackage.zip`;
+      const file = `${projectPath}/${AppPackageFolderName}/appPackage.zip`;
       chai.assert.isTrue(await fs.pathExists(file));
     }
 

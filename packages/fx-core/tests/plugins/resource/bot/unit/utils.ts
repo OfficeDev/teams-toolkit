@@ -1,15 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import {
-  ConfigMap,
-  LogProvider,
-  PluginContext,
-  LogLevel,
-  Dialog,
-  DialogMsg,
-  DialogType,
-  Platform,
-} from "@microsoft/teamsfx-api";
+import { ConfigMap, LogProvider, PluginContext, LogLevel, Platform } from "@microsoft/teamsfx-api";
 import { ResourceGroups, ResourceManagementClientContext } from "@azure/arm-resources";
 import { ServiceClientCredentials } from "@azure/ms-rest-js";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
@@ -203,7 +194,6 @@ export function newPluginContext(): PluginContext {
     answers: { platform: Platform.VSCode },
     projectSettings: {
       appName: "My App",
-      currentEnv: "default",
       projectId: utils.genUUID(),
       solutionSettings: {
         name: "AnyName",

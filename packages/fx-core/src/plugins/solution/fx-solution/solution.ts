@@ -24,15 +24,17 @@ import {
   TeamsAppManifest,
   OptionItem,
   ConfigFolderName,
+  AppPackageFolderName,
   AzureSolutionSettings,
   Platform,
   Inputs,
   DynamicPlatforms,
   SubscriptionInfo,
+  LocalSettings,
 } from "@microsoft/teamsfx-api";
 import { checkSubscription, fillInCommonQuestions } from "./commonQuestions";
 import { executeLifecycles, executeConcurrently, LifecyclesWithContext } from "./executor";
-import { getPluginContext, sendErrorTelemetryThenReturnError } from "./util";
+import { getPluginContext, sendErrorTelemetryThenReturnError } from "./utils/util";
 import * as fs from "fs-extra";
 import {
   DEFAULT_PERMISSION_REQUEST,
@@ -58,6 +60,7 @@ import {
   PluginNames,
   USER_INFO,
   REMOTE_TENANT_ID,
+  ARM_TEMPLATE_OUTPUT,
 } from "./constants";
 
 import {
@@ -84,7 +87,13 @@ import {
 import Mustache from "mustache";
 import path from "path";
 import * as util from "util";
-import { deepCopy, getStrings, isUserCancelError } from "../../../common/tools";
+import {
+  deepCopy,
+  getStrings,
+  isArmSupportEnabled,
+  isMultiEnvEnabled,
+  isUserCancelError,
+} from "../../../common/tools";
 import { getTemplatesFolder } from "../../..";
 import {
   getActivatedResourcePlugins,
@@ -98,6 +107,9 @@ import { hooks } from "@feathersjs/hooks/lib";
 import { Service, Container } from "typedi";
 import { IUserList } from "../../resource/appstudio/interfaces/IAppDefinition";
 import axios from "axios";
+import { deployArmTemplates, generateArmTemplate } from "./arm";
+import { LocalSettingsProvider } from "../../../common/localSettingsProvider";
+import { PluginDisplayName } from "../../../common/constants";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -275,8 +287,11 @@ export class TeamsAppSolution implements Solution {
       "defaultOutline.png"
     );
 
-    await fs.copy(defaultColorPath, `${ctx.root}/.${ConfigFolderName}/color.png`);
-    await fs.copy(defaultOutlinePath, `${ctx.root}/.${ConfigFolderName}/outline.png`);
+    await fs.copy(defaultColorPath, `${ctx.root}/${AppPackageFolderName}/color.png`);
+    await fs.copy(defaultOutlinePath, `${ctx.root}/${AppPackageFolderName}/outline.png`);
+    // await fs.copy(defaultColorPath, `${ctx.root}/.${ConfigFolderName}/color.png`);
+    // await fs.copy(defaultOutlinePath, `${ctx.root}/.${ConfigFolderName}/outline.png`);
+
     if (this.isAzureProject(ctx)) {
       await fs.writeJSON(`${ctx.root}/permissions.json`, DEFAULT_PERMISSION_REQUEST, { spaces: 4 });
       ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.Create, {
@@ -368,9 +383,32 @@ export class TeamsAppSolution implements Solution {
           await fs.copy(readme, `${ctx.root}/README.md`);
         }
       }
+
+      const azureResources = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
+        ?.azureResources;
+      const hasBackend = azureResources?.includes(AzureResourceFunction.id);
+
+      if (isMultiEnvEnabled()) {
+        const localSettingsProvider = new LocalSettingsProvider(ctx.root);
+        const localSettings = await localSettingsProvider.load();
+
+        if (localSettings !== undefined) {
+          // Add local settings for the new added capability/resource
+          await localSettingsProvider.save(
+            localSettingsProvider.incrementalInit(localSettings!, hasBackend, hasBot)
+          );
+        } else {
+          // Initialize a local settings on scaffolding
+          await localSettingsProvider.save(localSettingsProvider.init(hasTab, hasBackend, hasBot));
+        }
+      }
     }
 
-    return res;
+    if (isArmSupportEnabled()) {
+      return await generateArmTemplate(ctx);
+    } else {
+      return res;
+    }
   }
 
   /**
@@ -526,7 +564,6 @@ export class TeamsAppSolution implements Solution {
         ctx,
         appName,
         ctx.config,
-        ctx.dialog,
         ctx.azureAccountProvider,
         await ctx.appStudioToken?.getJsonObject()
       );
@@ -591,12 +628,14 @@ export class TeamsAppSolution implements Solution {
       postProvisionWithCtx,
       async () => {
         ctx.logProvider?.info(
-          "[Teams Toolkit]: Start provisioning. It could take several minutes."
+          util.format(getStrings().solution.ProvisionStartNotice, PluginDisplayName.Solution)
         );
         return ok(undefined);
       },
       async (provisionResults?: any[]) => {
-        ctx.logProvider?.info("[Teams Toolkit]: provison finished!");
+        ctx.logProvider?.info(
+          util.format(getStrings().solution.ProvisionFinishNotice, PluginDisplayName.Solution)
+        );
         if (provisionWithCtx.length === provisionResults?.length) {
           provisionWithCtx.map(function (plugin, index) {
             if (plugin[2] === PluginNames.APPST) {
@@ -606,6 +645,14 @@ export class TeamsAppSolution implements Solution {
             }
           });
         }
+
+        if (isArmSupportEnabled()) {
+          const armDeploymentResult = await deployArmTemplates(ctx);
+          if (armDeploymentResult.isErr()) {
+            return armDeploymentResult;
+          }
+        }
+
         const aadPlugin = this.AadPlugin as AadAppForTeamsPlugin;
         if (selectedPlugins.some((plugin) => plugin.name === aadPlugin.name)) {
           return aadPlugin.setApplicationInContext(getPluginContext(ctx, aadPlugin.name));
@@ -613,7 +660,10 @@ export class TeamsAppSolution implements Solution {
         return ok(undefined);
       },
       async () => {
-        ctx.logProvider?.info("[Teams Toolkit]: configuration finished!");
+        ctx.config.get(GLOBAL_CONFIG)?.delete(ARM_TEMPLATE_OUTPUT);
+        ctx.logProvider?.info(
+          util.format(getStrings().solution.ConfigurationFinishNotice, PluginDisplayName.Solution)
+        );
         return ok(undefined);
       }
     );
@@ -697,7 +747,11 @@ export class TeamsAppSolution implements Solution {
       }
     }
     ctx.logProvider?.info(
-      `[Solution] Selected plugins to deploy:${JSON.stringify(pluginsToDeploy.map((p) => p.name))}`
+      util.format(
+        getStrings().solution.SelectedPluginsToDeployNotice,
+        PluginDisplayName.Solution,
+        JSON.stringify(pluginsToDeploy.map((p) => p.name))
+      )
     );
     const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(
       ctx,
@@ -713,7 +767,9 @@ export class TeamsAppSolution implements Solution {
       return [plugin?.postDeploy?.bind(plugin), context, plugin.name];
     });
 
-    ctx.logProvider?.info(`[Solution] deploy start!`);
+    ctx.logProvider?.info(
+      util.format(getStrings().solution.DeployStartNotice, PluginDisplayName.Solution)
+    );
 
     return executeLifecycles(preDeployWithCtx, deployWithCtx, postDeployWithCtx);
   }
@@ -745,7 +801,9 @@ export class TeamsAppSolution implements Solution {
         return [plugin?.publish?.bind(plugin), context, plugin.name];
       });
 
-      ctx.logProvider?.info(`[Solution] publish start!`);
+      ctx.logProvider?.info(
+        util.format(getStrings().solution.PublishStartNotice, PluginDisplayName.Solution)
+      );
 
       const results = await executeConcurrently("", publishWithCtx);
 
@@ -1033,12 +1091,37 @@ export class TeamsAppSolution implements Solution {
     if (maybePermission.isErr()) {
       return maybePermission;
     }
+
+    const maybeSelectedPlugins = this.getSelectedPlugins(ctx);
+
+    if (maybeSelectedPlugins.isErr()) {
+      return maybeSelectedPlugins;
+    }
+
+    const selectedPlugins = maybeSelectedPlugins.value;
+    const hasFrontend = selectedPlugins?.some((plugin) => plugin.name === PluginNames.FE);
+    const hasBackend = selectedPlugins?.some((plugin) => plugin.name === PluginNames.FUNC);
+    const hasBot = selectedPlugins?.some((plugin) => plugin.name === PluginNames.BOT);
+
+    // load localSettings into context before local debug.
+    const localSettingsProvider = new LocalSettingsProvider(ctx.root);
+    if (await fs.pathExists(localSettingsProvider.localSettingsFilePath)) {
+      ctx.localSettings = await localSettingsProvider.load();
+    } else {
+      ctx.localSettings = localSettingsProvider.init(hasFrontend, hasBackend, hasBot);
+    }
+
     try {
       ctx.config.get(GLOBAL_CONFIG)?.set(PERMISSION_REQUEST, maybePermission.value);
       const result = await this.doLocalDebug(ctx);
       return result;
     } finally {
       ctx.config.get(GLOBAL_CONFIG)?.delete(PERMISSION_REQUEST);
+
+      if (isMultiEnvEnabled()) {
+        // persistent localSettings.json.
+        localSettingsProvider.save(ctx.localSettings!);
+      }
     }
   }
 
@@ -1821,10 +1904,7 @@ export class TeamsAppSolution implements Solution {
       } else if (method === "buildPackage") {
         const appStudioPlugin = this.AppStudioPlugin as AppStudioPlugin;
         const pluginCtx = getPluginContext(ctx, appStudioPlugin.name);
-        return await appStudioPlugin.buildTeamsPackage(
-          pluginCtx,
-          `${ctx.root}/.${ConfigFolderName}`
-        );
+        return await appStudioPlugin.buildTeamsPackage(pluginCtx);
       } else if (array.length == 2) {
         const pluginName = array[1];
         const pluginMap = getAllResourcePluginMap();

@@ -15,6 +15,7 @@ import {
   ProjectSettings,
   IComposeExtension,
   IBot,
+  AppPackageFolderName,
 } from "@microsoft/teamsfx-api";
 import { AppStudioClient } from "./appStudio";
 import {
@@ -64,12 +65,15 @@ import {
   LOCAL_BOT_ID,
   BOT_ID,
   REMOTE_MANIFEST,
+  FRONTEND_ENDPOINT_ARM,
+  FRONTEND_DOMAIN_ARM,
 } from "./constants";
 import { REMOTE_TEAMS_APP_ID } from "../../solution/fx-solution/constants";
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
 import { getTemplatesFolder } from "../../..";
 import path from "path";
+import { getArmOutput, isArmSupportEnabled, getAppDirectory } from "../../../common";
 
 export class AppStudioPluginImpl {
   public async getAppDefinitionAndUpdate(
@@ -79,6 +83,7 @@ export class AppStudioPluginImpl {
   ): Promise<Result<string, FxError>> {
     let appDefinition: IAppDefinition;
     let maybeTeamsAppId: Result<string, FxError>;
+    const appDirectory = await getAppDirectory(ctx.root);
     const appStudioToken = await ctx.appStudioToken?.getAccessToken();
 
     if (type == "localDebug") {
@@ -113,7 +118,7 @@ export class AppStudioPluginImpl {
         createIfNotExist,
         createIfNotExist ? undefined : localTeamsAppID,
         ctx.logProvider,
-        ctx.root
+        appDirectory
       );
 
       console.log(maybeTeamsAppId);
@@ -128,7 +133,7 @@ export class AppStudioPluginImpl {
         true,
         undefined,
         ctx.logProvider,
-        ctx.root
+        appDirectory
       );
 
       return maybeTeamsAppId;
@@ -177,9 +182,9 @@ export class AppStudioPluginImpl {
   }
 
   public async reloadManifestAndCheckRequiredFields(
-    ctxRoot: string
+    appDirectory: string
   ): Promise<Result<TeamsAppManifest, FxError>> {
-    const result = await this.reloadManifest(ctxRoot);
+    const result = await this.reloadManifest(appDirectory);
     return result.andThen((manifest) => {
       if (
         manifest === undefined ||
@@ -210,14 +215,14 @@ export class AppStudioPluginImpl {
       try {
         await AppStudioClient.getApp(remoteTeamsAppId, appStudioToken!, ctx.logProvider);
       } catch (error) {
-        ctx.logProvider?.error(error);
         create = true;
       }
     }
 
     if (create) {
       let manifest: TeamsAppManifest;
-      const manifestResult = await this.reloadManifestAndCheckRequiredFields(ctx.root);
+      const appDirectory = await getAppDirectory(ctx.root);
+      const manifestResult = await this.reloadManifestAndCheckRequiredFields(appDirectory);
       if (manifestResult.isErr()) {
         throw manifestResult;
       } else {
@@ -236,7 +241,7 @@ export class AppStudioPluginImpl {
         true,
         undefined,
         ctx.logProvider,
-        ctx.root
+        appDirectory
       );
       if (result.isErr()) {
         throw result;
@@ -253,7 +258,8 @@ export class AppStudioPluginImpl {
       .get("solution")
       ?.get(REMOTE_TEAMS_APP_ID) as string;
     let manifest: TeamsAppManifest;
-    const manifestResult = await this.reloadManifestAndCheckRequiredFields(ctx.root);
+    const appDirectory = await getAppDirectory(ctx.root);
+    const manifestResult = await this.reloadManifestAndCheckRequiredFields(appDirectory);
     if (manifestResult.isErr()) {
       throw manifestResult;
     } else {
@@ -280,7 +286,7 @@ export class AppStudioPluginImpl {
       false,
       remoteTeamsAppId,
       ctx.logProvider,
-      ctx.root
+      appDirectory
     );
     if (result.isErr()) {
       throw result;
@@ -293,12 +299,11 @@ export class AppStudioPluginImpl {
   public async validateManifest(ctx: PluginContext): Promise<Result<string[], FxError>> {
     const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
     let manifestString: string | undefined = undefined;
+    const appDirectory = await getAppDirectory(ctx.root);
     if (this.isSPFxProject(ctx)) {
-      manifestString = (
-        await fs.readFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`)
-      ).toString();
+      manifestString = (await fs.readFile(`${appDirectory}/${REMOTE_MANIFEST}`)).toString();
     } else {
-      const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx.root);
+      const maybeManifest = await this.reloadManifestAndCheckRequiredFields(appDirectory);
       if (maybeManifest.isErr()) {
         return err(maybeManifest.error);
       }
@@ -377,22 +382,34 @@ export class AppStudioPluginImpl {
     } else {
       manifest = await this.createManifest(ctx.projectSettings!);
     }
+    // await fs.writeFile(
+    //   `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`,
+    //   JSON.stringify(manifest, null, 4)
+    // );
     await fs.writeFile(
-      `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`,
+      `${ctx.root}/${AppPackageFolderName}/${REMOTE_MANIFEST}`,
       JSON.stringify(manifest, null, 4)
     );
     return undefined;
   }
 
-  public async buildTeamsAppPackage(ctx: PluginContext, appDirectory: string): Promise<string> {
+  public async buildTeamsAppPackage(ctx: PluginContext): Promise<string> {
     let manifestString: string | undefined = undefined;
-    if (this.isSPFxProject(ctx)) {
-      manifestString = (
-        await fs.readFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`)
-      ).toString();
+    let appDirectory: string;
+    let zipFileName: string;
+
+    if (ctx.answers?.platform === Platform.VS) {
+      appDirectory = ctx.answers![Constants.PUBLISH_PATH_QUESTION] as string;
+      zipFileName = `${appDirectory}/appPackage.zip`;
     } else {
-      const manifestTpl = await fs.readJSON(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`);
-      // const maybeSelectedPlugins = this.getSelectedPlugins(ctx);
+      appDirectory = await getAppDirectory(ctx.root);
+      zipFileName = `${ctx.root}/${AppPackageFolderName}/appPackage.zip`;
+    }
+
+    if (this.isSPFxProject(ctx)) {
+      manifestString = (await fs.readFile(`${appDirectory}/${REMOTE_MANIFEST}`)).toString();
+    } else {
+      const manifestTpl = await fs.readJSON(`${appDirectory}/${REMOTE_MANIFEST}`);
       const manifest = this.createManifestForRemote(ctx, manifestTpl).map((result) => result[1]);
       if (manifest.isOk()) {
         manifestString = JSON.stringify(manifest.value);
@@ -402,21 +419,20 @@ export class AppStudioPluginImpl {
           .get("solution")
           ?.get(SOLUTION_PROVISION_SUCCEEDED) as boolean);
         if (
-          manifest.error.name === AppStudioError.GetRemoteConfigError.name &&
+          manifest.error.name === AppStudioError.GetRemoteConfigFailedError.name &&
           !isProvisionSucceeded
         ) {
-          throw err(
-            AppStudioResultFactory.UserError(
-              AppStudioError.GetRemoteConfigError.name,
-              AppStudioError.GetRemoteConfigError.message("Teams package build failed")
-            )
+          throw AppStudioResultFactory.UserError(
+            AppStudioError.GetRemoteConfigError.name,
+            AppStudioError.GetRemoteConfigError.message("Teams package build failed")
           );
         } else {
-          throw err(manifest.error);
+          throw manifest.error;
         }
       }
     }
     const status = await fs.lstat(appDirectory);
+
     if (!status.isDirectory()) {
       throw AppStudioResultFactory.UserError(
         AppStudioError.NotADirectoryError.name,
@@ -447,12 +463,35 @@ export class AppStudioPluginImpl {
     zip.addFile(Constants.MANIFEST_FILE, Buffer.from(manifestString));
     zip.addLocalFile(colorFile);
     zip.addLocalFile(outlineFile);
-
-    const zipFileName = `${appDirectory}/appPackage.zip`;
     zip.writeZip(zipFileName);
 
     if (this.isSPFxProject(ctx)) {
       await fs.copyFile(zipFileName, `${ctx.root}/SPFx/teams/TeamsSPFxApp.zip`);
+    }
+
+    if (
+      appDirectory === `${ctx.root}/.${ConfigFolderName}` &&
+      ctx.answers?.platform !== Platform.VS
+    ) {
+      await fs.ensureDir(path.join(ctx.root, `${AppPackageFolderName}`));
+
+      const formerZipFileName = `${appDirectory}/appPackage.zip`;
+      if (await this.checkFileExist(formerZipFileName)) {
+        await fs.remove(formerZipFileName);
+      }
+
+      await fs.move(
+        `${appDirectory}/${manifest.icons.color}`,
+        `${ctx.root}/${AppPackageFolderName}/${manifest.icons.color}`
+      );
+      await fs.move(
+        `${appDirectory}/${manifest.icons.outline}`,
+        `${ctx.root}/${AppPackageFolderName}/${manifest.icons.outline}`
+      );
+      await fs.move(
+        `${appDirectory}/${REMOTE_MANIFEST}`,
+        `${ctx.root}/${AppPackageFolderName}/${REMOTE_MANIFEST}`
+      );
     }
 
     return zipFileName;
@@ -461,7 +500,6 @@ export class AppStudioPluginImpl {
   public async publish(ctx: PluginContext): Promise<{ name: string; id: string; update: boolean }> {
     let appDirectory: string | undefined = undefined;
     let manifest: TeamsAppManifest | undefined;
-    // let manifestString: string | undefined = undefined;
 
     // For vs platform, read the local manifest.json file
     // For cli/vsc platform, get manifest from ctx
@@ -486,23 +524,14 @@ export class AppStudioPluginImpl {
         );
       }
     } else {
-      appDirectory = `${ctx.root}/.${ConfigFolderName}`;
-      const manifestTpl: TeamsAppManifest = await fs.readJSON(
-        `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`
-      );
+      appDirectory = await getAppDirectory(ctx.root);
+      const manifestTpl: TeamsAppManifest = await fs.readJSON(`${appDirectory}/${REMOTE_MANIFEST}`);
       const fillinRes = this.createManifestForRemote(ctx, manifestTpl);
       if (fillinRes.isOk()) {
         manifest = fillinRes.value[1];
       } else {
         throw fillinRes.error;
       }
-    }
-
-    if (!appDirectory) {
-      throw AppStudioResultFactory.SystemError(
-        AppStudioError.ParamUndefinedError.name,
-        AppStudioError.ParamUndefinedError.message(Constants.PUBLISH_PATH_QUESTION)
-      );
     }
 
     if (!manifest) {
@@ -548,7 +577,8 @@ export class AppStudioPluginImpl {
   }
 
   public async postLocalDebug(ctx: PluginContext): Promise<string> {
-    const manifest = await this.reloadManifestAndCheckRequiredFields(ctx.root);
+    const appDirectory = await getAppDirectory(ctx.root);
+    const manifest = await this.reloadManifestAndCheckRequiredFields(appDirectory);
     if (manifest.isErr()) {
       throw manifest;
     }
@@ -680,8 +710,9 @@ export class AppStudioPluginImpl {
       );
 
       // Build Teams App package
+      // Platforms will be checked in buildTeamsAppPackage(ctx)
       await publishProgress?.next(`Building Teams app package in ${appDirectory}.`);
-      const appPackage = await this.buildTeamsAppPackage(ctx, appDirectory);
+      const appPackage = await this.buildTeamsAppPackage(ctx);
 
       const appContent = await fs.readFile(appPackage);
       appStudioToken = await ctx.appStudioToken?.getAccessToken();
@@ -795,9 +826,9 @@ export class AppStudioPluginImpl {
     return bots;
   }
 
-  private async reloadManifest(ctxRoot: string): Promise<Result<TeamsAppManifest, FxError>> {
+  private async reloadManifest(appDirectory: string): Promise<Result<TeamsAppManifest, FxError>> {
     try {
-      const manifest = await fs.readJson(`${ctxRoot}/.${ConfigFolderName}/${REMOTE_MANIFEST}`);
+      const manifest = await fs.readJson(`${appDirectory}/${REMOTE_MANIFEST}`);
       if (!manifest) {
         return err(
           AppStudioResultFactory.SystemError(
@@ -813,7 +844,7 @@ export class AppStudioPluginImpl {
         AppStudioResultFactory.SystemError(
           AppStudioError.ManifestLoadFailedError.name,
           AppStudioError.ManifestLoadFailedError.message(
-            `Failed to load manifest file from ${ctxRoot}/.${ConfigFolderName}/${REMOTE_MANIFEST}`
+            `Failed to load manifest file from ${appDirectory}/${REMOTE_MANIFEST}`
           )
         )
       );
@@ -834,12 +865,29 @@ export class AppStudioPluginImpl {
     },
     FxError
   > {
-    const tabEndpoint = localDebug
-      ? (ctx.configOfOtherPlugins.get(PluginNames.LDEBUG)?.get(LOCAL_DEBUG_TAB_ENDPOINT) as string)
-      : (ctx.configOfOtherPlugins.get(PluginNames.FE)?.get(FRONTEND_ENDPOINT) as string);
-    const tabDomain = localDebug
-      ? (ctx.configOfOtherPlugins.get(PluginNames.LDEBUG)?.get(LOCAL_DEBUG_TAB_DOMAIN) as string)
-      : (ctx.configOfOtherPlugins.get(PluginNames.FE)?.get(FRONTEND_DOMAIN) as string);
+    let tabEndpoint, tabDomain;
+    if (isArmSupportEnabled()) {
+      if (localDebug) {
+        tabEndpoint = ctx.configOfOtherPlugins
+          .get(PluginNames.LDEBUG)
+          ?.get(LOCAL_DEBUG_TAB_ENDPOINT) as string;
+        tabDomain = ctx.configOfOtherPlugins
+          .get(PluginNames.LDEBUG)
+          ?.get(LOCAL_DEBUG_TAB_DOMAIN) as string;
+      } else {
+        tabEndpoint = getArmOutput(ctx, FRONTEND_ENDPOINT_ARM) as string;
+        tabDomain = getArmOutput(ctx, FRONTEND_DOMAIN_ARM) as string;
+      }
+    } else {
+      tabEndpoint = localDebug
+        ? (ctx.configOfOtherPlugins
+            .get(PluginNames.LDEBUG)
+            ?.get(LOCAL_DEBUG_TAB_ENDPOINT) as string)
+        : (ctx.configOfOtherPlugins.get(PluginNames.FE)?.get(FRONTEND_ENDPOINT) as string);
+      tabDomain = localDebug
+        ? (ctx.configOfOtherPlugins.get(PluginNames.LDEBUG)?.get(LOCAL_DEBUG_TAB_DOMAIN) as string)
+        : (ctx.configOfOtherPlugins.get(PluginNames.FE)?.get(FRONTEND_DOMAIN) as string);
+    }
     const aadId = ctx.configOfOtherPlugins
       .get(PluginNames.AAD)
       ?.get(localDebug ? LOCAL_DEBUG_AAD_ID : REMOTE_AAD_ID) as string;
@@ -885,46 +933,90 @@ export class AppStudioPluginImpl {
     }
 
     if (!tabEndpoint && !botId) {
-      return err(
-        localDebug
-          ? AppStudioResultFactory.SystemError(
-              AppStudioError.GetLocalDebugConfigFailedError.name,
-              AppStudioError.GetLocalDebugConfigFailedError.message(
-                LOCAL_DEBUG_TAB_ENDPOINT + ", " + LOCAL_BOT_ID,
-                false
+      if (isArmSupportEnabled()) {
+        return err(
+          localDebug
+            ? AppStudioResultFactory.SystemError(
+                AppStudioError.GetLocalDebugConfigFailedError.name,
+                AppStudioError.GetLocalDebugConfigFailedError.message(
+                  LOCAL_DEBUG_TAB_ENDPOINT + ", " + LOCAL_BOT_ID,
+                  false
+                )
               )
-            )
-          : AppStudioResultFactory.SystemError(
-              AppStudioError.GetRemoteConfigFailedError.name,
-              AppStudioError.GetRemoteConfigFailedError.message(
-                FRONTEND_ENDPOINT + ", " + BOT_ID,
-                false
+            : AppStudioResultFactory.SystemError(
+                AppStudioError.GetRemoteConfigFailedError.name,
+                AppStudioError.GetRemoteConfigFailedError.message(
+                  FRONTEND_ENDPOINT_ARM + ", " + BOT_ID,
+                  false
+                )
               )
-            )
-      );
+        );
+      } else {
+        return err(
+          localDebug
+            ? AppStudioResultFactory.SystemError(
+                AppStudioError.GetLocalDebugConfigFailedError.name,
+                AppStudioError.GetLocalDebugConfigFailedError.message(
+                  LOCAL_DEBUG_TAB_ENDPOINT + ", " + LOCAL_BOT_ID,
+                  false
+                )
+              )
+            : AppStudioResultFactory.SystemError(
+                AppStudioError.GetRemoteConfigFailedError.name,
+                AppStudioError.GetRemoteConfigFailedError.message(
+                  FRONTEND_ENDPOINT + ", " + BOT_ID,
+                  false
+                )
+              )
+        );
+      }
     }
     if ((tabEndpoint && !tabDomain) || (!tabEndpoint && tabDomain)) {
-      return err(
-        localDebug
-          ? AppStudioResultFactory.SystemError(
-              AppStudioError.InvalidLocalDebugConfigurationDataError.name,
-              AppStudioError.InvalidLocalDebugConfigurationDataError.message(
-                LOCAL_DEBUG_TAB_ENDPOINT,
-                tabEndpoint,
-                LOCAL_DEBUG_TAB_DOMAIN,
-                tabDomain
+      if (isArmSupportEnabled()) {
+        return err(
+          localDebug
+            ? AppStudioResultFactory.SystemError(
+                AppStudioError.InvalidLocalDebugConfigurationDataError.name,
+                AppStudioError.InvalidLocalDebugConfigurationDataError.message(
+                  LOCAL_DEBUG_TAB_ENDPOINT,
+                  tabEndpoint,
+                  LOCAL_DEBUG_TAB_DOMAIN,
+                  tabDomain
+                )
               )
-            )
-          : AppStudioResultFactory.SystemError(
-              AppStudioError.InvalidRemoteConfigurationDataError.name,
-              AppStudioError.InvalidRemoteConfigurationDataError.message(
-                FRONTEND_ENDPOINT,
-                tabEndpoint,
-                FRONTEND_DOMAIN,
-                tabDomain
+            : AppStudioResultFactory.SystemError(
+                AppStudioError.InvalidRemoteConfigurationDataError.name,
+                AppStudioError.InvalidRemoteConfigurationDataError.message(
+                  FRONTEND_ENDPOINT_ARM,
+                  tabEndpoint,
+                  FRONTEND_DOMAIN_ARM,
+                  tabDomain
+                )
               )
-            )
-      );
+        );
+      } else {
+        return err(
+          localDebug
+            ? AppStudioResultFactory.SystemError(
+                AppStudioError.InvalidLocalDebugConfigurationDataError.name,
+                AppStudioError.InvalidLocalDebugConfigurationDataError.message(
+                  LOCAL_DEBUG_TAB_ENDPOINT,
+                  tabEndpoint,
+                  LOCAL_DEBUG_TAB_DOMAIN,
+                  tabDomain
+                )
+              )
+            : AppStudioResultFactory.SystemError(
+                AppStudioError.InvalidRemoteConfigurationDataError.name,
+                AppStudioError.InvalidRemoteConfigurationDataError.message(
+                  FRONTEND_ENDPOINT,
+                  tabEndpoint,
+                  FRONTEND_DOMAIN,
+                  tabDomain
+                )
+              )
+        );
+      }
     }
     if (botId) {
       if (!botDomain) {
@@ -1058,7 +1150,7 @@ export class AppStudioPluginImpl {
     createIfNotExist: boolean,
     teamsAppId?: string,
     logProvider?: LogProvider,
-    projectRoot?: string
+    appDirectory?: string
   ): Promise<Result<string, FxError>> {
     if (appStudioToken === undefined || appStudioToken.length === 0) {
       return err(
@@ -1071,18 +1163,14 @@ export class AppStudioPluginImpl {
 
     if (createIfNotExist) {
       const colorIconContent =
-        projectRoot && appDefinition.colorIcon && !appDefinition.colorIcon.startsWith("https://")
-          ? (
-              await fs.readFile(`${projectRoot}/.${ConfigFolderName}/${appDefinition.colorIcon}`)
-            ).toString("base64")
+        appDirectory && appDefinition.colorIcon && !appDefinition.colorIcon.startsWith("https://")
+          ? (await fs.readFile(`${appDirectory}/${appDefinition.colorIcon}`)).toString("base64")
           : undefined;
       const outlineIconContent =
-        projectRoot &&
+        appDirectory &&
         appDefinition.outlineIcon &&
         !appDefinition.outlineIcon.startsWith("https://")
-          ? (
-              await fs.readFile(`${projectRoot}/.${ConfigFolderName}/${appDefinition.outlineIcon}`)
-            ).toString("base64")
+          ? (await fs.readFile(`${appDirectory}/${appDefinition.outlineIcon}`)).toString("base64")
           : undefined;
 
       await logProvider?.debug(`${type} appDefinition: ${JSON.stringify(appDefinition)}`);
@@ -1112,16 +1200,12 @@ export class AppStudioPluginImpl {
     }
 
     const colorIconContent =
-      projectRoot && appDefinition.colorIcon && !appDefinition.colorIcon.startsWith("https://")
-        ? (
-            await fs.readFile(`${projectRoot}/.${ConfigFolderName}/${appDefinition.colorIcon}`)
-          ).toString("base64")
+      appDirectory && appDefinition.colorIcon && !appDefinition.colorIcon.startsWith("https://")
+        ? (await fs.readFile(`${appDirectory}/${appDefinition.colorIcon}`)).toString("base64")
         : undefined;
     const outlineIconContent =
-      projectRoot && appDefinition.outlineIcon && !appDefinition.outlineIcon.startsWith("https://")
-        ? (
-            await fs.readFile(`${projectRoot}/.${ConfigFolderName}/${appDefinition.outlineIcon}`)
-          ).toString("base64")
+      appDirectory && appDefinition.outlineIcon && !appDefinition.outlineIcon.startsWith("https://")
+        ? (await fs.readFile(`${appDirectory}/${appDefinition.outlineIcon}`)).toString("base64")
         : undefined;
     appDefinition.appId = teamsAppId;
 
@@ -1192,9 +1276,8 @@ export class AppStudioPluginImpl {
       validDomains.push(localBotDomain);
     }
 
-    const manifestTpl = (
-      await fs.readFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`)
-    ).toString();
+    const appDirectory: string = await getAppDirectory(ctx.root);
+    const manifestTpl = (await fs.readFile(`${appDirectory}/${REMOTE_MANIFEST}`)).toString();
 
     const [appDefinition, _updatedManifest] = this.getDevAppDefinition(
       manifestTpl,

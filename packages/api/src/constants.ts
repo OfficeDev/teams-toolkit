@@ -3,6 +3,7 @@
 "use strict";
 
 export const ConfigFolderName = "fx";
+export const AppPackageFolderName = "appPackage";
 export const ProductName = "teamsfx";
 
 /**

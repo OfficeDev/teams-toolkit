@@ -18,6 +18,7 @@ import { DialogUtils } from "./utils/dialog";
 import { TelemetryUtils } from "./utils/telemetry";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+import { isArmSupportEnabled } from "../../..";
 @Service(ResourcePlugins.SimpleAuthPlugin)
 export class SimpleAuthPlugin implements Plugin {
   name = "fx-resource-simple-auth";
@@ -45,11 +46,15 @@ export class SimpleAuthPlugin implements Plugin {
   }
 
   public async provision(ctx: PluginContext): Promise<SimpleAuthResult> {
-    return this.runWithSimpleAuthError(
-      () => this.simpleAuthPluginImpl.provision(ctx),
-      ctx,
-      Messages.EndProvision.telemetry
-    );
+    if (isArmSupportEnabled()) {
+      return ResultFactory.Success();
+    } else {
+      return this.runWithSimpleAuthError(
+        () => this.simpleAuthPluginImpl.provision(ctx),
+        ctx,
+        Messages.EndProvision.telemetry
+      );
+    }
   }
 
   public async postProvision(ctx: PluginContext): Promise<SimpleAuthResult> {

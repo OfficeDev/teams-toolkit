@@ -18,7 +18,6 @@ import {
   Result,
 } from "@microsoft/teamsfx-api";
 import { FxCore } from "@microsoft/teamsfx-core";
-import open from "open";
 
 import { YargsCommand } from "../../yargsCommand";
 import * as utils from "../../utils";
@@ -45,6 +44,7 @@ import { cliEnvCheckerLogger } from "./depsChecker/cliLogger";
 import { CLIAdapter } from "./depsChecker/cliAdapter";
 import { cliEnvCheckerTelemetry } from "./depsChecker/cliTelemetry";
 import { isWindows } from "./depsChecker/common";
+import { URL } from "url";
 
 export default class Preview extends YargsCommand {
   public readonly commandHead = `preview`;
@@ -54,7 +54,7 @@ export default class Preview extends YargsCommand {
   private backgroundTasks: Task[] = [];
   private readonly telemetryProperties: { [key: string]: string } = {};
   private serviceLogWriter: ServiceLogWriter | undefined;
-
+  private sharepointSiteUrl: string | undefined;
   public builder(yargs: Argv): Argv<any> {
     yargs.option("local", {
       description: "Preview the application from local, exclusive with --remote",
@@ -76,6 +76,12 @@ export default class Preview extends YargsCommand {
       string: true,
       choices: [constants.Browser.chrome, constants.Browser.edge, constants.Browser.default],
       default: constants.Browser.default,
+    });
+    yargs.option("sharepoint-site", {
+      description:
+        "SharePoint site URL, like {your-tenant-name}.sharepoint.com [only for SPFx project remote preview]",
+      array: false,
+      string: true,
     });
 
     return yargs.version(false);
@@ -105,6 +111,19 @@ export default class Preview extends YargsCommand {
       const browser = args.browser as constants.Browser;
       this.telemetryProperties[TelemetryProperty.PreviewBrowser] = browser;
 
+      // parse sharepoint site url to get workbench url
+      if (args["sharepoint-site"]) {
+        try {
+          let spSite = args["sharepoint-site"] as string;
+          if (!spSite.startsWith("https")) {
+            spSite = `https://${spSite}`;
+          }
+          const spWorkbenchHttpsUrl = new URL("_layouts/workbench.aspx", spSite);
+          this.sharepointSiteUrl = spWorkbenchHttpsUrl.toString();
+        } catch (error) {
+          throw errors.InvalidSharePointSiteURL(error);
+        }
+      }
       if (args.local && args.remote) {
         throw errors.ExclusiveLocalRemoteOptions();
       }
@@ -166,9 +185,10 @@ export default class Preview extends YargsCommand {
     const includeSpfx = activeResourcePlugins.some(
       (pluginName) => pluginName === constants.spfxPluginName
     );
-    // TODO: remove when SPFx preview is ready
+
     if (includeSpfx) {
-      return err(errors.SPFxNotSupported());
+      const spfxRoot = path.join(workspaceFolder, constants.spfxFolderName);
+      return this.spfxPreview(spfxRoot, browser, "https://localhost:5432/workbench");
     }
 
     const frontendRoot = path.join(workspaceFolder, constants.frontendFolderName);
@@ -289,6 +309,177 @@ export default class Preview extends YargsCommand {
     return ok(null);
   }
 
+  private async spfxPreviewSetup(spfxRoot: string): Promise<Result<null, FxError>> {
+    // init service log writer
+    this.serviceLogWriter = new ServiceLogWriter();
+    await this.serviceLogWriter.init();
+
+    // run npm install for spfx
+    const spfxInstallTask = new Task(
+      constants.spfxInstallTitle,
+      false,
+      constants.npmInstallCommand,
+      undefined,
+      {
+        shell: true,
+        cwd: spfxRoot,
+      }
+    );
+
+    const spfxInstallBar = CLIUIInstance.createProgressBar(constants.spfxInstallTitle, 1);
+    const spfxInstallStartCb = commonUtils.createTaskStartCb(
+      spfxInstallBar,
+      constants.spfxInstallStartMessage,
+      this.telemetryProperties
+    );
+    const spfxInstallStopCb = commonUtils.createTaskStopCb(
+      spfxInstallBar,
+      constants.spfxInstallSuccessMessage,
+      this.telemetryProperties
+    );
+
+    let result = await spfxInstallTask?.wait(spfxInstallStartCb, spfxInstallStopCb);
+    if (result.isErr()) {
+      return err(result.error);
+    }
+
+    // run gulp trust-dev-cert
+    const gulpCertTask = new Task(
+      constants.gulpCertTitle,
+      false,
+      constants.nodeCommand,
+      [`${spfxRoot}/node_modules/gulp/bin/gulp.js`, "trust-dev-cert", "--no-color"],
+      {
+        shell: false,
+        cwd: spfxRoot,
+      }
+    );
+
+    const gulpCertBar = CLIUIInstance.createProgressBar(constants.gulpCertTitle, 1);
+    const gulpCertStartCb = commonUtils.createTaskStartCb(
+      gulpCertBar,
+      constants.gulpCertStartMessage,
+      this.telemetryProperties
+    );
+    const gulpCertStopCb = commonUtils.createTaskStopCb(
+      gulpCertBar,
+      constants.gulpCertSuccessMessage,
+      this.telemetryProperties
+    );
+
+    result = await gulpCertTask?.wait(gulpCertStartCb, gulpCertStopCb);
+    if (result.isErr()) {
+      return err(result.error);
+    }
+
+    // run gulp serve
+    const gulpServeTask = new Task(
+      constants.gulpServeTitle,
+      true,
+      constants.nodeCommand,
+      [`${spfxRoot}/node_modules/gulp/bin/gulp.js`, "serve", "--nobrowser", "--no-color"],
+      {
+        shell: false,
+        cwd: spfxRoot,
+      }
+    );
+    this.backgroundTasks.push(gulpServeTask);
+
+    const gulpServeBar = CLIUIInstance.createProgressBar(constants.gulpServeTitle, 1);
+    const gulpServeStartCb = commonUtils.createTaskStartCb(
+      gulpServeBar,
+      constants.gulpServeStartMessage,
+      this.telemetryProperties
+    );
+    const gulpServeStopCb = commonUtils.createTaskStopCb(
+      gulpServeBar,
+      constants.gulpServeSuccessMessage,
+      this.telemetryProperties
+    );
+
+    result = await gulpServeTask?.waitFor(
+      constants.gulpServePattern,
+      gulpServeStartCb,
+      gulpServeStopCb,
+      this.serviceLogWriter,
+      cliLogger
+    );
+    if (result.isErr()) {
+      return err(result.error);
+    }
+    return ok(null);
+  }
+
+  private async openSPFxWebClient(
+    browser: constants.Browser,
+    url: string
+  ): Promise<Result<null, FxError>> {
+    cliTelemetry.sendTelemetryEvent(
+      TelemetryEvent.PreviewSPFxOpenBrowserStart,
+      this.telemetryProperties
+    );
+
+    const previewBar = CLIUIInstance.createProgressBar(constants.previewSPFxTitle, 1);
+    await previewBar.start(`${constants.previewSPFxStartMessage}`);
+    const message = [
+      {
+        content: `preview url: `,
+        color: Colors.WHITE,
+      },
+      {
+        content: url,
+        color: Colors.BRIGHT_CYAN,
+      },
+    ];
+    cliLogger.necessaryLog(LogLevel.Info, utils.getColorizedString(message));
+    try {
+      await commonUtils.openBrowser(browser, url);
+    } catch {
+      const error = errors.OpeningBrowserFailed(browser);
+      cliTelemetry.sendTelemetryErrorEvent(
+        TelemetryEvent.PreviewSPFxOpenBrowser,
+        error,
+        this.telemetryProperties
+      );
+      cliLogger.necessaryLog(LogLevel.Warning, constants.openBrowserHintMessage);
+      cliLogger.necessaryLog(LogLevel.Warning, constants.waitCtrlPlusC);
+      return ok(null);
+    }
+    await previewBar.next(constants.previewSPFxSuccessMessage);
+    await previewBar.end();
+
+    cliTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewSPFxOpenBrowser, {
+      ...this.telemetryProperties,
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+    });
+
+    cliLogger.necessaryLog(LogLevel.Warning, constants.waitCtrlPlusC);
+    return ok(null);
+  }
+
+  private async spfxPreview(
+    spfxRoot: string,
+    browser: constants.Browser,
+    url: string
+  ): Promise<Result<null, FxError>> {
+    if (!(await fs.pathExists(spfxRoot))) {
+      return err(errors.RequiredPathNotExists(spfxRoot));
+    }
+    {
+      const result = await this.spfxPreviewSetup(spfxRoot);
+      if (result.isErr()) {
+        return err(result.error);
+      }
+    }
+    {
+      const result = await this.openSPFxWebClient(browser, url);
+      if (result.isErr()) {
+        return err(result.error);
+      }
+    }
+    return ok(null);
+  }
+
   private async remotePreview(
     workspaceFolder: string,
     browser: constants.Browser
@@ -316,9 +507,12 @@ export default class Preview extends YargsCommand {
     const includeSpfx = activeResourcePlugins.some(
       (pluginName) => pluginName === constants.spfxPluginName
     );
-    // TODO: remove when SPFx preview is ready
     if (includeSpfx) {
-      return err(errors.SPFxNotSupported());
+      if (!this.sharepointSiteUrl) {
+        return err(errors.NoUrlForSPFxRemotePreview());
+      }
+      const spfxRoot = path.join(workspaceFolder, constants.spfxFolderName);
+      return this.spfxPreview(spfxRoot, browser, this.sharepointSiteUrl);
     }
 
     const tenantId = config?.config
@@ -797,31 +991,7 @@ export default class Preview extends YargsCommand {
     ];
     cliLogger.necessaryLog(LogLevel.Info, utils.getColorizedString(message));
     try {
-      switch (browser) {
-        case constants.Browser.chrome:
-          await open(sideloadingUrl, {
-            app: {
-              name: open.apps.chrome,
-            },
-            wait: true,
-            allowNonzeroExitCode: true,
-          });
-          break;
-        case constants.Browser.edge:
-          await open(sideloadingUrl, {
-            app: {
-              name: open.apps.edge,
-            },
-            wait: true,
-            allowNonzeroExitCode: true,
-          });
-          break;
-        case constants.Browser.default:
-          await open(sideloadingUrl, {
-            wait: true,
-          });
-          break;
-      }
+      await commonUtils.openBrowser(browser, sideloadingUrl);
     } catch {
       const error = errors.OpeningBrowserFailed(browser);
       cliTelemetry.sendTelemetryErrorEvent(
@@ -829,7 +999,8 @@ export default class Preview extends YargsCommand {
         error,
         this.telemetryProperties
       );
-      return err(error);
+      cliLogger.necessaryLog(LogLevel.Warning, constants.openBrowserHintMessage);
+      return ok(null);
     }
     await previewBar.next(constants.previewSuccessMessage);
     await previewBar.end();

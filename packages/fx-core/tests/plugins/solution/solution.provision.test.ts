@@ -18,8 +18,6 @@ import {
   Plugin,
   AzureAccountProvider,
   SubscriptionInfo,
-  Dialog,
-  DialogMsg,
   IProgressHandler,
   Platform,
   UserInteraction,
@@ -67,7 +65,7 @@ import { TokenCredentialsBase, UserTokenCredentials } from "@azure/ms-rest-nodea
 import { ResourceGroups } from "@azure/arm-resources";
 import { AppStudioClient } from "../../../src/plugins/resource/appstudio/appStudio";
 import { AppStudioPluginImpl } from "../../../src/plugins/resource/appstudio/plugin";
-import * as solutionUtil from "../../../src/plugins/solution/fx-solution/util";
+import * as solutionUtil from "../../../src/plugins/solution/fx-solution/utils/util";
 import * as uuid from "uuid";
 import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import { AadAppForTeamsPlugin } from "../../../src";
@@ -135,15 +133,6 @@ class MockUserInteraction implements UserInteraction {
     config: TaskConfig,
     ...args: any
   ): Promise<Result<T, FxError>> {
-    throw new Error("Method not implemented.");
-  }
-}
-class MockedDialog implements Dialog {
-  async communicate(msg: DialogMsg): Promise<DialogMsg> {
-    throw new Error("Method not implemented.");
-  }
-
-  createProgressBar(_title: string, _totalSteps: number): IProgressHandler {
     throw new Error("Method not implemented.");
   }
 }
@@ -267,7 +256,6 @@ function mockSolutionContext(): SolutionContext {
   return {
     root: ".",
     config,
-    dialog: new MockedDialog(),
     ui: new MockUserInteraction(),
     answers: { platform: Platform.VSCode },
     projectSettings: undefined,
@@ -330,7 +318,6 @@ describe("provision() simple cases", () => {
     const mockedCtx = mockSolutionContext();
     mockedCtx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionSPFx.id,
@@ -378,7 +365,6 @@ describe("provision() with permission.json file missing", () => {
     const mockedCtx = mockSolutionContext();
     mockedCtx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
@@ -397,7 +383,6 @@ describe("provision() with permission.json file missing", () => {
     const mockedCtx = mockSolutionContext();
     mockedCtx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionSPFx.id,
@@ -453,11 +438,10 @@ describe("provision() happy path for SPFx projects", () => {
     const mockedCtx = mockSolutionContext();
     mockedCtx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionSPFx.id,
-        name: "azure",
+        name: "SPFx",
         version: "1.0",
         activeResourcePlugins: [spfxPlugin.name, appStudioPlugin.name],
       },
@@ -514,7 +498,6 @@ describe("provision() happy path for Azure projects", () => {
     const mockedCtx = mockSolutionContext();
     mockedCtx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,

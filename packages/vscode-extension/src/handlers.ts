@@ -24,7 +24,6 @@ import {
   UserError,
   SystemError,
   returnSystemError,
-  returnUserError,
   ConfigFolderName,
   Inputs,
   VsCodeEnv,
@@ -39,18 +38,16 @@ import {
   isValidProject,
   globalStateUpdate,
   globalStateGet,
+  Correlator,
+  getAppDirectory,
 } from "@microsoft/teamsfx-core";
-import DialogManagerInstance from "./userInterface";
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
 import AppStudioTokenInstance from "./commonlib/appStudioLogin";
 import AppStudioCodeSpaceTokenInstance from "./commonlib/appStudioCodeSpaceLogin";
 import VsCodeLogInstance from "./commonlib/log";
-import { VSCodeTelemetryReporter } from "./commonlib/telemetry";
 import { TreeViewCommand } from "./commandsTreeViewProvider";
 import TreeViewManagerInstance from "./commandsTreeViewProvider";
-import * as extensionPackage from "./../package.json";
-import { ext } from "./extensionVariables";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import {
   TelemetryEvent,
@@ -63,7 +60,7 @@ import * as commonUtils from "./debug/commonUtils";
 import { ExtensionErrors, ExtensionSource } from "./error";
 import { WebviewPanel } from "./controls/webviewPanel";
 import * as constants from "./debug/constants";
-import { isSPFxProject, sleep } from "./utils/commonUtils";
+import { isSPFxProject } from "./utils/commonUtils";
 import * as fs from "fs-extra";
 import * as vscode from "vscode";
 import { DepsChecker } from "./debug/depsChecker/checker";
@@ -82,9 +79,11 @@ import { SPFxNodeChecker } from "./debug/depsChecker/spfxNodeChecker";
 import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
 import { VS_CODE_UI } from "./extension";
 import { registerAccountTreeHandler } from "./accountTree";
-import * as uuid from "uuid";
 import { selectAndDebug } from "./debug/runIconHandler";
 import * as path from "path";
+import { exp } from "./exp/index";
+import { TreatmentVariables } from "./exp/treatmentVariables";
+import { StringContext } from "./utils/stringContext";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -142,7 +141,6 @@ export async function activate(): Promise<Result<Void, FxError>> {
       },
       telemetryReporter: telemetry,
       treeProvider: TreeViewManagerInstance.getTreeView("teamsfx-accounts")!,
-      dialog: DialogManagerInstance,
       ui: VS_CODE_UI,
     };
     core = new FxCore(tools);
@@ -176,12 +174,6 @@ export function getSystemInputs(): Inputs {
 export async function createNewProjectHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
   return await runCommand(Stage.create);
-}
-
-export async function debugHandler(args?: any[]) {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.NavigateToDebug, getTriggerFromProperty(args));
-  await vscode.commands.executeCommand("workbench.view.debug");
-  await vscode.commands.executeCommand("workbench.action.debug.selectandstart");
 }
 
 export async function selectAndDebugHandler(args?: any[]): Promise<Result<null, FxError>> {
@@ -601,17 +593,15 @@ export async function openManifestHandler(args?: any[]): Promise<Result<null, Fx
   );
   if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
     const workspaceFolder = workspace.workspaceFolders[0];
-    const configRoot = await commonUtils.getProjectRoot(
-      workspaceFolder.uri.fsPath,
-      `.${ConfigFolderName}`
-    );
-    if (!(await fs.pathExists(configRoot!))) {
+    const projectRoot = await commonUtils.getProjectRoot(workspaceFolder.uri.fsPath, "");
+    const appDirectory = await getAppDirectory(projectRoot!);
+    if (!(await fs.pathExists(appDirectory))) {
       const invalidProjectError: FxError = InvalidProjectError();
       showError(invalidProjectError);
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, invalidProjectError);
       return err(invalidProjectError);
     }
-    const manifestFile = `${configRoot}/${constants.manifestFileName}`;
+    const manifestFile = `${appDirectory}/${constants.manifestFileName}`;
     if (fs.existsSync(manifestFile)) {
       workspace.openTextDocument(manifestFile).then((document) => {
         window.showTextDocument(document);
@@ -674,19 +664,34 @@ export function saveTextDocumentHandler(document: vscode.TextDocument) {
 }
 
 export async function cmdHdlLoadTreeView(context: ExtensionContext) {
-  const disposables = await TreeViewManagerInstance.registerTreeViews();
-  context.subscriptions.push(...disposables);
+  if (
+    await exp
+      .getExpService()
+      .getTreatmentVariableAsync(TreatmentVariables.VSCodeConfig, TreatmentVariables.TreeView, true)
+  ) {
+    await commands.executeCommand("setContext", "isNewTreeView", true);
+    StringContext.setSignInAzureContext(StringResources.vsc.handlers.signInAzureNew);
+    const disposables = await TreeViewManagerInstance.registerNewTreeViews();
+    context.subscriptions.push(...disposables);
+  } else {
+    const disposables = await TreeViewManagerInstance.registerTreeViews();
+    context.subscriptions.push(...disposables);
+  }
 
   // Register SignOut tree view command
   commands.registerCommand("fx-extension.signOut", async (node: TreeViewCommand) => {
     try {
       switch (node.contextValue) {
         case "signedinM365": {
-          signOutM365(true);
+          Correlator.run(() => {
+            signOutM365(true);
+          });
           break;
         }
         case "signedinAzure": {
-          signOutAzure(true);
+          Correlator.run(() => {
+            signOutAzure(true);
+          });
           break;
         }
       }
@@ -764,7 +769,10 @@ export async function cmpAccountsHandler() {
   const signOutAzureOption: VscQuickPickItem = {
     id: "signOutAzure",
     label: StringResources.vsc.handlers.signOutOfAzure,
-    function: () => signOutAzure(false),
+    function: async () =>
+      Correlator.run(() => {
+        signOutAzure(false);
+      }),
   };
 
   const signInM365Option: VscQuickPickItem = {
@@ -776,7 +784,10 @@ export async function cmpAccountsHandler() {
   const signOutM365Option: VscQuickPickItem = {
     id: "signOutM365",
     label: StringResources.vsc.handlers.signOutOfM365,
-    function: () => signOutM365(false),
+    function: async () =>
+      Correlator.run(() => {
+        signOutM365(false);
+      }),
   };
 
   //TODO: hide subscription list until core or api expose the get subscription list API
@@ -873,7 +884,7 @@ export async function signOutAzure(isFromTreeView: boolean) {
     await TreeViewManagerInstance.getTreeView("teamsfx-accounts")!.refresh([
       {
         commandId: "fx-extension.signinAzure",
-        label: StringResources.vsc.handlers.signInAzure,
+        label: StringContext.getSignInAzureContext(),
         contextValue: "signinAzure",
       },
     ]);

@@ -1,2 +1,2 @@
 
-var applicationIdUri = `api://botid-${BotClientId}`
+var applicationIdUri = 'api://botid-${BotClientId}'

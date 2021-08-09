@@ -525,11 +525,15 @@ export class AppStudioPluginImpl {
     } else {
       appDirectory = await getAppDirectory(ctx.root);
       const manifestTpl: TeamsAppManifest = await fs.readJSON(`${appDirectory}/${REMOTE_MANIFEST}`);
-      const fillinRes = this.createManifestForRemote(ctx, manifestTpl);
-      if (fillinRes.isOk()) {
-        manifest = fillinRes.value[1];
+      if (this.isSPFxProject(ctx)) {
+        manifest = manifestTpl;
       } else {
-        throw fillinRes.error;
+        const fillinRes = this.createManifestForRemote(ctx, manifestTpl);
+        if (fillinRes.isOk()) {
+          manifest = fillinRes.value[1];
+        } else {
+          throw fillinRes.error;
+        }
       }
     }
 

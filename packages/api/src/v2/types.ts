@@ -30,10 +30,6 @@ export type LocalSetting = { key: keyof LocalSettings; value: Record<string, str
 export type SolutionInputs = {
   resourceNameSuffix: string;
   resourceGroupName: string;
-  // Azure tenantId
-  tenantId: string;
-  // Azure subscriptionId
-  subscriptionId: string;
   // default to East US for now
   location: string;
   teamsAppTenantId: string;

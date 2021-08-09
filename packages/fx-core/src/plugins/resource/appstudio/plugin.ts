@@ -72,7 +72,8 @@ import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
 import { getTemplatesFolder } from "../../..";
 import path from "path";
-import { getArmOutput, isArmSupportEnabled } from "../../../common";
+import { getArmOutput, isArmSupportEnabled, isMultiEnvEnabled } from "../../../common";
+import { LocalSettingsTeamsAppKeys } from "../../../common/localSettingsConstants";
 
 export class AppStudioPluginImpl {
   public async getAppDefinitionAndUpdate(
@@ -99,9 +100,9 @@ export class AppStudioPluginImpl {
 
       appDefinition = maybeAppDefinition.value[0];
 
-      const localTeamsAppID = ctx.configOfOtherPlugins
-        .get("solution")
-        ?.get(LOCAL_DEBUG_TEAMS_APP_ID) as string;
+      const localTeamsAppID = isMultiEnvEnabled()
+        ? ctx.localSettings?.teamsApp.get(LocalSettingsTeamsAppKeys.TeamsAppId)
+        : (ctx.configOfOtherPlugins.get("solution")?.get(LOCAL_DEBUG_TEAMS_APP_ID) as string);
 
       let createIfNotExist = false;
       if (!localTeamsAppID) {
@@ -150,8 +151,7 @@ export class AppStudioPluginImpl {
    * @returns
    */
   public async createManifest(settings: ProjectSettings): Promise<TeamsAppManifest | undefined> {
-    const solutionSettings: AzureSolutionSettings =
-      settings.solutionSettings as AzureSolutionSettings;
+    const solutionSettings: AzureSolutionSettings = settings.solutionSettings as AzureSolutionSettings;
     if (
       !solutionSettings.capabilities ||
       (!solutionSettings.capabilities.includes(BotOptionItem.id) &&
@@ -363,8 +363,14 @@ export class AppStudioPluginImpl {
       return err(maybeConfig.error);
     }
 
-    const { tabEndpoint, tabDomain, aadId, botDomain, botId, webApplicationInfoResource } =
-      maybeConfig.value;
+    const {
+      tabEndpoint,
+      tabDomain,
+      aadId,
+      botDomain,
+      botId,
+      webApplicationInfoResource,
+    } = maybeConfig.value;
 
     const validDomains: string[] = [];
 

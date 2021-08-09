@@ -85,14 +85,19 @@ jobs:
           npx lerna publish from-package --dist-tag=alpha --yes --allow-branch dev
 
       - name: version rc npm packages to npmjs.org
-        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' && github.event.inputs.skip-version-rc == 'no'}}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' && github.ref == 'refs/heads/main' && github.event.inputs.skip-version-rc == 'no'}}
         run: |
-          npx lerna version --conventional-commits --conventional-prerelease --preid=rc --no-changelog --yes
+          npx lerna version --conventional-commits --conventional-prerelease --preid=rc --no-changelog --ignore-scripts --yes
+      
+      - name: version rc npm packages to npmjs.org on hotfix
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' && startsWith(github.ref, 'refs/heads/hotfix/') && github.event.inputs.skip-version-rc == 'no'}}
+        run: |
+          npx lerna version --conventional-commits --conventional-prerelease --preid=rc-hotfix --no-changelog --allow-branch ${GITHUB_REF#refs/*/} --ignore-scripts --yes
 
       - name: version stable npm packages to npmjs.org
-        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/hotfix/')) && github.event.inputs.preid == 'stable' }}
         run: |
-          npx lerna version --conventional-commits --conventional-graduate --no-changelog --yes
+          npx lerna version --conventional-commits --conventional-graduate --no-changelog --allow-branch ${GITHUB_REF#refs/*/} --yes
       
       - name: version change
         id: version-change
@@ -104,6 +109,12 @@ jobs:
           then
               git push -d origin $(git tag --points-at HEAD | grep templates | grep rc)
           fi
+            
+      - name: sync up templates deps with sdk version for RC
+        if: ${{ contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx') && !contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.preid == 'rc' }}
+        run: |
+          node sdk-sync-up-version.js
+        working-directory: ./.github/scripts
 
       - name: update cli ai key
         if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.preid == 'stable'||github.event.inputs.preid == 'rc') }}
@@ -138,11 +149,9 @@ jobs:
           npx lerna publish from-package --yes
 
       - name: Install Mustache
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') }}
         run: curl -sSL https://git.io/get-mo -o mo && chmod +x mo && sudo mv mo /usr/local/bin/
 
       - name: generate templates
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') }}
         run: .github/scripts/template-zip-autogen.sh
 
       - name: release templates' alpha version to github
@@ -156,7 +165,7 @@ jobs:
             ./*.zip
 
       - name: release templates' RC version to github
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' }}
+        if: ${{ (contains(steps.version-change.outputs.CHANGED, 'templates@') || contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx')) && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' }}
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: ${{ secrets.CD_PAT }}

@@ -192,6 +192,11 @@ export interface CryptoProvider {
     encrypt(plaintext: string): Result<string, FxError>;
 }
 
+// @public (undocumented)
+type DeploymentInputs = Inputs & SolutionInputs & {
+    remoteTeamsAppId: string;
+};
+
 // @public
 export type DymanicOptions = LocalFunc<StaticOptions>;
 
@@ -744,6 +749,9 @@ export interface ProjectStates {
 }
 
 // @public (undocumented)
+type ProvisionInputs = Inputs & SolutionInputs;
+
+// @public (undocumented)
 type ProvisionOutput = {
     output: Record<string, string>;
     states: Record<string, string>;
@@ -795,8 +803,8 @@ export type ResourceConfigs = ResourceTemplates;
 interface ResourcePlugin {
     activate(solutionSettings: AzureSolutionSettings): boolean;
     configureLocalResource?: (ctx: Context_2, localProvisionOutput: Readonly<LocalSetting>, localProvisionOutputOfOtherPlugins: Readonly<LocalSettings_2>, tokenProvider: TokenProvider) => Promise<Result<LocalSettings_2, FxError>>;
-    configureResource?: (ctx: Context_2, inputs: Inputs, provisionOutput: Readonly<ProvisionOutput>, provisionOutputOfOtherPlugins: Readonly<Record<PluginName, ProvisionOutput>>, tokenProvider: TokenProvider) => Promise<Result<ProvisionOutput, FxError>>;
-    deploy?: (ctx: Context_2, inputs: Inputs, provisionOutput: Readonly<ProvisionOutput>, provisionOutputOfOtherPlugins: Readonly<Record<PluginName, ProvisionOutput>>, tokenProvider: AzureAccountProvider) => Promise<Result<{
+    configureResource?: (ctx: Context_2, inputs: Readonly<ProvisionInputs>, provisionOutput: Readonly<ProvisionOutput>, provisionOutputOfOtherPlugins: Readonly<Record<PluginName, ProvisionOutput>>, tokenProvider: TokenProvider) => Promise<Result<ProvisionOutput, FxError>>;
+    deploy?: (ctx: Context_2, inputs: Readonly<DeploymentInputs>, provisionOutput: Readonly<ProvisionOutput>, tokenProvider: AzureAccountProvider) => Promise<Result<{
         output: Record<string, string>;
     }, FxError>>;
     // (undocumented)
@@ -810,7 +818,7 @@ interface ResourcePlugin {
     name: string;
     package?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
     provisionLocalResource?: (ctx: Context_2, tokenProvider: TokenProvider) => Promise<Result<LocalSetting, FxError>>;
-    provisionResource?: (ctx: Context_2, provisionTemplate: Json, tokenProvider: TokenProvider) => Promise<Result<ProvisionOutput, FxError>>;
+    provisionResource?: (ctx: Context_2, inputs: Readonly<ProvisionInputs>, provisionTemplate: Json, tokenProvider: TokenProvider) => Promise<Result<ProvisionOutput, FxError>>;
     publishApplication?: (ctx: Context_2, tokenProvider: AppStudioTokenProvider, inputs: Inputs) => Promise<Result<Void, FxError>>;
     scaffoldSourceCode?: (ctx: Context_2, inputs: Inputs) => Promise<Result<{
         output: Record<string, string>;
@@ -930,8 +938,16 @@ export interface SolutionContext extends Context {
 }
 
 // @public (undocumented)
+type SolutionInputs = {
+    resourceNameSuffix: string;
+    resourceGroupName: string;
+    location: string;
+    teamsAppTenantId: string;
+};
+
+// @public (undocumented)
 interface SolutionPlugin {
-    deploy?: (ctx: Context_2, provisionOutput: Readonly<Record<PluginName, ProvisionOutput>>, tokenProvider: AzureAccountProvider) => Promise<Result<Record<PluginName, {
+    deploy?: (ctx: Context_2, inputs: Inputs, provisionOutput: Readonly<Record<PluginName, ProvisionOutput>>, tokenProvider: AzureAccountProvider) => Promise<Result<Record<PluginName, {
         output: Record<string, string>;
     }>, FxError>>;
     // (undocumented)
@@ -943,7 +959,7 @@ interface SolutionPlugin {
     name: string;
     package?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
     provisionLocalResource?: (ctx: Context_2, tokenProvider: TokenProvider) => Promise<Result<LocalSettings_2, FxError>>;
-    provisionResources: (ctx: Context_2, provisionTemplates: Record<PluginName, Json>, tokenProvider: TokenProvider) => Promise<Result<Record<PluginName, ProvisionOutput>, FxError>>;
+    provisionResources: (ctx: Context_2, inputs: Inputs, provisionTemplates: Record<PluginName, Json>, tokenProvider: TokenProvider) => Promise<Result<Record<PluginName, ProvisionOutput>, FxError>>;
     publishApplication?: (ctx: Context_2, tokenProvider: AppStudioTokenProvider, inputs: Inputs) => Promise<Result<Void, FxError>>;
     scaffoldSourceCode?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Record<PluginName, {
         output: Record<string, string>;
@@ -1257,7 +1273,10 @@ declare namespace v2 {
         PluginName,
         Context_2 as Context,
         LocalSettings_2 as LocalSettings,
-        LocalSetting
+        LocalSetting,
+        SolutionInputs,
+        ProvisionInputs,
+        DeploymentInputs
     }
 }
 export { v2 }

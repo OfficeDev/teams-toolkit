@@ -18,9 +18,11 @@ import {
 import {
   BicepTemplate,
   Context,
+  DeploymentInputs,
   ProvisionOutput,
   ResourcePlugin,
   ResourceTemplate,
+  SolutionInputs,
 } from "@microsoft/teamsfx-api/build/v2";
 import {
   ResourcePlugins,
@@ -30,6 +32,7 @@ import { InvalidInputError } from "../../../../core";
 import { V2Context2PluginContext } from "../../..";
 import { PluginName } from "../../../../../../api/build/v2";
 import { ScaffoldArmTemplateResult } from "../../../../common/armInterface";
+import { GLOBAL_CONFIG } from "../../../solution/fx-solution/constants";
 
 @Service(ResourcePluginsV2.FrontendPlugin)
 export class FrontendPluginV2 implements ResourcePlugin {
@@ -106,19 +109,24 @@ export class FrontendPluginV2 implements ResourcePlugin {
 
   async deploy(
     ctx: Context,
-    inputs: Inputs,
+    inputs: Readonly<DeploymentInputs>,
     provisionOutput: Readonly<ProvisionOutput>,
-    provisionOutputOfOtherPlugins: Readonly<Record<PluginName, ProvisionOutput>>,
     tokenProvider: AzureAccountProvider
   ): Promise<Result<{ output: Record<string, string> }, FxError>> {
     const pluginContext: PluginContext = V2Context2PluginContext(ctx, inputs);
     pluginContext.azureAccountProvider = tokenProvider;
     const configsOfOtherPlugins = new Map<string, ConfigMap>();
-    for (const key in provisionOutputOfOtherPlugins) {
-      const output = provisionOutputOfOtherPlugins[key].output;
-      const configMap = ConfigMap.fromJSON(output);
-      if (configMap) configsOfOtherPlugins.set(key, configMap);
-    }
+    // for (const key in provisionOutputOfOtherPlugins) {
+    //   const output = provisionOutputOfOtherPlugins[key].output;
+    //   const configMap = ConfigMap.fromJSON(output);
+    //   if (configMap) configsOfOtherPlugins.set(key, configMap);
+    // }
+    const solutionConfig = new ConfigMap();
+    solutionConfig.set("resourceNameSuffix", inputs.resourceNameSuffix);
+    solutionConfig.set("resourceGroupName", inputs.resourceGroupName);
+    solutionConfig.set("location", inputs.location);
+    solutionConfig.set("remoteTeamsAppId", inputs.remoteTeamsAppId);
+    configsOfOtherPlugins.set(GLOBAL_CONFIG, solutionConfig);
     const selfConfigMap = ConfigMap.fromJSON(provisionOutput.output) || new ConfigMap();
     pluginContext.config = selfConfigMap;
     pluginContext.configOfOtherPlugins = configsOfOtherPlugins;

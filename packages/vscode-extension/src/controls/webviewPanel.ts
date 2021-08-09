@@ -14,17 +14,17 @@ import AzureAccountManager from "../commonlib/azureLogin";
 import AppStudioTokenInstance from "../commonlib/appStudioLogin";
 import { runCommand } from "../handlers";
 import { returnSystemError, Stage, SystemError, UserError } from "@microsoft/teamsfx-api";
-import { globalStateGet, globalStateUpdate } from "@microsoft/teamsfx-core";
+import { globalStateGet, globalStateUpdate, Correlator } from "@microsoft/teamsfx-core";
 import { PanelType } from "./PanelType";
 import { execSync } from "child_process";
 import { isMacOS } from "../utils/commonUtils";
-import { DialogManager } from "../userInterface";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetryTiggerFrom,
   TelemetrySuccess,
+  AccountType,
 } from "../telemetry/extTelemetryEvents";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import * as StringResources from "../resources/Strings.json";
@@ -89,10 +89,22 @@ export class WebviewPanel {
             vscode.commands.executeCommand("workbench.action.quickOpen", `>${msg.data}`);
             break;
           case Commands.SigninM365:
-            await AppStudioTokenInstance.getJsonObject(false);
+            Correlator.run(async () => {
+              ExtTelemetry.sendTelemetryEvent(TelemetryEvent.LoginClick, {
+                [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview,
+                [TelemetryProperty.AccountType]: AccountType.M365,
+              });
+              await AppStudioTokenInstance.getJsonObject(false);
+            });
             break;
           case Commands.SigninAzure:
-            vscode.commands.executeCommand("fx-extension.signinAzure", ["webview", false]);
+            Correlator.run(async () => {
+              ExtTelemetry.sendTelemetryEvent(TelemetryEvent.LoginClick, {
+                [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview,
+                [TelemetryProperty.AccountType]: AccountType.Azure,
+              });
+              await AzureAccountManager.getAccountCredentialAsync(false);
+            });
             break;
           case Commands.CreateNewProject:
             await runCommand(Stage.create);

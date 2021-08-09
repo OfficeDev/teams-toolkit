@@ -38,11 +38,6 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(createCmd);
 
-  const debugCmd = vscode.commands.registerCommand("fx-extension.debug", (...args) =>
-    Correlator.run(handlers.debugHandler, args)
-  );
-  context.subscriptions.push(debugCmd);
-
   const updateCmd = vscode.commands.registerCommand("fx-extension.update", (...args) =>
     Correlator.run(handlers.addResourceHandler, args)
   );

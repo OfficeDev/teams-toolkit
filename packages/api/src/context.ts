@@ -3,26 +3,22 @@
 "use strict";
 
 import {
-  ConfigMap,
   Inputs,
+  LocalSettings,
   PluginConfig,
   ProjectSettings,
   ReadonlySolutionConfig,
   SolutionConfig,
 } from "./types";
 
-import { VsCode } from "./vscode";
-import { TeamsAppManifest } from "./manifest";
 import {
   GraphTokenProvider,
   LogProvider,
   TelemetryReporter,
   AzureAccountProvider,
   AppStudioTokenProvider,
-  Dialog,
   TreeProvider,
 } from "./utils";
-import { Platform } from "./constants";
 import { UserInteraction } from "./qm";
 import { CryptoProvider } from "./utils";
 
@@ -33,7 +29,7 @@ import { CryptoProvider } from "./utils";
 export interface Context {
   root: string;
 
-  dialog?: Dialog;
+  targetEnvName?: string;
 
   logProvider?: LogProvider;
 
@@ -50,6 +46,8 @@ export interface Context {
   answers?: Inputs;
 
   projectSettings?: ProjectSettings;
+
+  localSettings?: LocalSettings;
 
   ui?: UserInteraction;
 

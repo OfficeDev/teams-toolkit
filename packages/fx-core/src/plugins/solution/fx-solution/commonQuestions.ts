@@ -2,14 +2,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import {
-  DialogMsg,
-  DialogType,
-  QuestionType,
   ok,
   err,
   returnSystemError,
   returnUserError,
-  Dialog,
   FxError,
   Result,
   SolutionConfig,
@@ -17,9 +13,10 @@ import {
   AzureAccountProvider,
   SubscriptionInfo,
 } from "@microsoft/teamsfx-api";
-import { GLOBAL_CONFIG, SolutionError } from "./constants";
+import { GLOBAL_CONFIG, RESOURCE_GROUP_NAME, SolutionError } from "./constants";
 import { v4 as uuidv4 } from "uuid";
 import { ResourceManagementClient } from "@azure/arm-resources";
+import { PluginDisplayName } from "../../../common/constants";
 
 export type AzureSubscription = {
   displayName: string;
@@ -88,7 +85,9 @@ async function askCommonQuestions(
   const subscriptionId = subscriptionResult.value.subscriptionId;
   commonQuestions.subscriptionId = subscriptionId;
   commonQuestions.tenantId = subscriptionResult.value.tenantId;
-  ctx.logProvider?.info(`[Solution] askCommonQuestions, step 1 - check subscriptionId pass!`);
+  ctx.logProvider?.info(
+    `[${PluginDisplayName.Solution}] askCommonQuestions, step 1 - check subscriptionId pass!`
+  );
 
   // Note setSubscription here will change the token returned by getAccountCredentialAsync according to the subscription selected.
   // So getting azureToken needs to precede setSubscription.
@@ -105,7 +104,7 @@ async function askCommonQuestions(
 
   //2. check resource group
   const rmClient = new ResourceManagementClient(azureToken, subscriptionId);
-  let resourceGroupName = config.get(GLOBAL_CONFIG)?.getString("resourceGroupName");
+  let resourceGroupName = config.get(GLOBAL_CONFIG)?.getString(RESOURCE_GROUP_NAME);
   let needCreateResourceGroup = false;
   if (resourceGroupName) {
     const checkRes = await rmClient.resourceGroups.checkExistence(resourceGroupName);
@@ -132,11 +131,13 @@ async function askCommonQuestions(
     }
     resourceGroupName = response.name;
     ctx.logProvider?.info(
-      `[Solution] askCommonQuestions - resource group:'${resourceGroupName}' created!`
+      `[${PluginDisplayName.Solution}] askCommonQuestions - resource group:'${resourceGroupName}' created!`
     );
   }
   commonQuestions.resourceGroupName = resourceGroupName;
-  ctx.logProvider?.info(`[Solution] askCommonQuestions, step 2 - check resource group pass!`);
+  ctx.logProvider?.info(
+    `[${PluginDisplayName.Solution}] askCommonQuestions, step 2 - check resource group pass!`
+  );
 
   // teamsAppTenantId
   const teamsAppTenantId = (appstudioTokenJson as any).tid;
@@ -155,15 +156,21 @@ async function askCommonQuestions(
   } else {
     commonQuestions.teamsAppTenantId = teamsAppTenantId;
   }
-  ctx.logProvider?.info(`[Solution] askCommonQuestions, step 3 - check teamsAppTenantId pass!`);
+  ctx.logProvider?.info(
+    `[${PluginDisplayName.Solution}] askCommonQuestions, step 3 - check teamsAppTenantId pass!`
+  );
 
   //resourceNameSuffix
   const resourceNameSuffix = config.get(GLOBAL_CONFIG)?.getString("resourceNameSuffix");
   if (!resourceNameSuffix) commonQuestions.resourceNameSuffix = uuidv4().substr(0, 6);
   else commonQuestions.resourceNameSuffix = resourceNameSuffix;
-  ctx.logProvider?.info(`[Solution] askCommonQuestions, step 4 - check resourceNameSuffix pass!`);
+  ctx.logProvider?.info(
+    `[${PluginDisplayName.Solution}] askCommonQuestions, step 4 - check resourceNameSuffix pass!`
+  );
 
-  ctx.logProvider?.info(`[Solution] askCommonQuestions, step 5 - check tenantId pass!`);
+  ctx.logProvider?.info(
+    `[${PluginDisplayName.Solution}] askCommonQuestions, step 5 - check tenantId pass!`
+  );
 
   return ok(commonQuestions);
 }
@@ -178,7 +185,6 @@ export async function fillInCommonQuestions(
   ctx: SolutionContext,
   appName: string,
   config: SolutionConfig,
-  dialog?: Dialog,
   azureAccountProvider?: AzureAccountProvider,
   // eslint-disable-next-line @typescript-eslint/ban-types
   appStudioJson?: object

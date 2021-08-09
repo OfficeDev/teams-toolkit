@@ -39,6 +39,9 @@ export class ApimManager {
     appName: string
   ): Promise<void> {
     const apimService: ApimService = await this.lazyApimService.getValue();
+
+    await apimService.ensureResourceProvider();
+
     const resourceGroupName = apimConfig.resourceGroupName ?? solutionConfig.resourceGroupName;
     const apimServiceName =
       apimConfig.serviceName ??

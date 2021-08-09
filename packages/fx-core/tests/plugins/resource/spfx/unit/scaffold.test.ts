@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import "mocha";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as path from "path";
 import { expect } from "chai";
 import { SpfxPlugin } from "../../../../../src/plugins/resource/spfx";
@@ -19,6 +19,7 @@ describe("SPFxScaffold", function () {
     plugin = new SpfxPlugin();
     await fs.ensureDir(testFolder);
     sinon.stub(Utils, "configure");
+    sinon.stub(fs, "stat").resolves();
   });
 
   it("scaffold SPFx project without framework", async function () {

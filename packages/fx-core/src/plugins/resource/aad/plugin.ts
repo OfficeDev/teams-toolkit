@@ -1,13 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  AzureSolutionSettings,
-  Dialog,
-  LogProvider,
-  MsgLevel,
-  PluginContext,
-} from "@microsoft/teamsfx-api";
+import { AzureSolutionSettings, LogProvider, PluginContext } from "@microsoft/teamsfx-api";
 import { AadResult, ResultFactory } from "./results";
 import {
   PostProvisionConfig,
@@ -413,7 +407,7 @@ export class AadAppForTeamsImpl {
     }
 
     if (!azureAad && !localAad) {
-      await DialogUtils.show(Messages.NoSelection, MsgLevel.Info);
+      await DialogUtils.show(Messages.NoSelection, "info");
       return undefined;
     }
 

@@ -126,7 +126,6 @@ export type EnvConfig = Dict<string>;
 export interface ProjectSettings {
   appName: string;
   projectId: string;
-  currentEnv?: string;
   solutionSettings?: SolutionSettings;
 }
 
@@ -146,6 +145,17 @@ export interface AzureSolutionSettings extends SolutionSettings {
 }
 
 /**
+ * local debug settings
+ */
+export interface LocalSettings {
+  teamsApp: ConfigMap;
+  auth?: ConfigMap;
+  frontend?: ConfigMap;
+  backend?: ConfigMap;
+  bot?: ConfigMap;
+}
+
+/**
  * project dynamic states
  */
 export interface ProjectStates {
@@ -157,6 +167,7 @@ export interface ProjectStates {
 
 export interface Inputs extends Json {
   projectPath?: string;
+  targetEnvName?: string;
   platform: Platform;
   stage?: Stage;
   vscodeEnv?: VsCodeEnv;

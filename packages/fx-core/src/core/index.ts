@@ -4,14 +4,11 @@
 import * as fs from "fs-extra";
 import {
   Core,
-  DialogMsg,
-  DialogType,
   err,
   Func,
   ok,
   Platform,
   QTreeNode,
-  QuestionType,
   Result,
   SolutionContext,
   Stage,
@@ -31,6 +28,7 @@ import {
   LogProvider,
   GroupOfTasks,
   RunnableTask,
+  AppPackageFolderName,
 } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import { downloadSampleHook, fetchCodeZip, saveFilesRecursively } from "../common/tools";
@@ -72,10 +70,10 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../common/telemetry";
-import { TelemetrySenderMW } from "./middleware/telemetrySender";
 import * as uuid from "uuid";
 import { AxiosResponse } from "axios";
 import { ProjectUpgraderMW } from "./middleware/projectUpgrader";
+import { globalStateUpdate } from "../common/globalState";
 
 export interface CoreHookContext extends HookContext {
   solutionContext?: SolutionContext;
@@ -130,7 +128,6 @@ export class FxCore implements Core {
       const projectSettings: ProjectSettings = {
         appName: appName,
         projectId: uuid.v4(),
-        currentEnv: "default",
         solutionSettings: {
           name: solution.name,
           version: "1.0.0",
@@ -148,6 +145,7 @@ export class FxCore implements Core {
 
       await fs.ensureDir(projectPath);
       await fs.ensureDir(path.join(projectPath, `.${ConfigFolderName}`));
+      await fs.ensureDir(path.join(projectPath, `${AppPackageFolderName}`));
 
       const createResult = await this.createBasicFolderStructure(inputs);
       if (createResult.isErr()) {
@@ -169,12 +167,7 @@ export class FxCore implements Core {
     }
 
     if (inputs.platform === Platform.VSCode) {
-      await this.tools.dialog?.communicate(
-        new DialogMsg(DialogType.Ask, {
-          type: QuestionType.UpdateGlobalState,
-          description: globalStateDescription,
-        })
-      );
+      await globalStateUpdate(globalStateDescription, true);
     }
 
     return ok(projectPath);
@@ -553,6 +546,9 @@ export class FxCore implements Core {
             author: "",
             scripts: {
               test: 'echo "Error: no test specified" && exit 1',
+            },
+            devDependencies: {
+              "@microsoft/teamsfx-cli": "^0.3.1",
             },
             license: "MIT",
           },

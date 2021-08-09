@@ -43,3 +43,61 @@ export function mockPublishThatAlwaysSucceed(plugin: Plugin) {
     return ok(Void);
   };
 }
+
+export const mockedFehostScaffoldArmResult = {
+  Modules: {
+    frontendHostingProvision: {
+      Content: "Mocked frontend hosting provision module content",
+    },
+  },
+  Orchestration: {
+    ParameterTemplate: {
+      Content: "Mocked frontend hosting parameter content",
+      ParameterJson: { FrontendParameter: "FrontendParameterValue" },
+    },
+    VariableTemplate: {
+      Content: "Mocked frontend hosting variable content",
+    },
+    ModuleTemplate: {
+      Content:
+        "Mocked frontend hosting module content. Module path: {{PluginOutput.fx-resource-frontend-hosting.Modules.frontendHostingProvision.Path}}. Variable: {{PluginOutput.fx-resource-simple-auth.Outputs.endpoint}}",
+      Outputs: {
+        endpoint: "Mocked frontend hosting endpoint",
+      },
+    },
+    OutputTemplate: {
+      Content: "Mocked frontend hosting output content",
+    },
+  },
+};
+
+export const mockedSimpleAuthScaffoldArmResult = {
+  Modules: {
+    simpleAuthProvision: {
+      Content: "Mocked simple auth provision module content",
+    },
+  },
+  Orchestration: {
+    ParameterTemplate: {
+      Content: "Mocked simple auth parameter content",
+      ParameterJson: { SimpleAuthParameter: "SimpleAuthParameterValue" },
+    },
+    VariableTemplate: {
+      Content: "Mocked simple auth variable content",
+    },
+    ModuleTemplate: {
+      Content:
+        "Mocked simple auth module content. Module path: {{PluginOutput.fx-resource-simple-auth.Modules.simpleAuthProvision.Path}}. Variable: {{PluginOutput.fx-resource-frontend-hosting.Outputs.endpoint}}",
+      Outputs: {
+        endpoint: "Mocked simple auth endpoint",
+      },
+    },
+    OutputTemplate: {
+      Content: "Mocked simple auth output content",
+    },
+  },
+};
+
+export const mockedAadScaffoldArmResult = {
+  Orchestration: {},
+};

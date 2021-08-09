@@ -21,3 +21,11 @@ export function BuildSPPackageError(error: Error): UserError | SystemError {
     return returnUserError(error, Constants.PLUGIN_NAME, "BuildSPFxPackageFail");
   }
 }
+
+export function NoManifestFileError(distFolder: string): UserError {
+  return returnUserError(
+    new Error(util.format("Cannot find manifest file %s", distFolder)),
+    Constants.PLUGIN_NAME,
+    "NoManifestFile"
+  );
+}

@@ -129,7 +129,6 @@ describe("Post Local Debug", () => {
     };
     ctx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
@@ -160,7 +159,6 @@ describe("Post Local Debug", () => {
     };
     ctx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
@@ -200,7 +198,6 @@ describe("Post Local Debug", () => {
     };
     ctx.projectSettings = {
       appName: "my app",
-      currentEnv: "default",
       projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",

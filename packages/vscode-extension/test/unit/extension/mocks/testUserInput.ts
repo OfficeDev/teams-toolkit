@@ -9,14 +9,12 @@ import {
   InputBoxOptions,
   OpenDialogOptions,
   Uri,
-  OutputChannel,
   env,
   ProgressOptions,
   Progress,
-  CancellationToken,
 } from "vscode";
 
-import { IProgressStatus, Result, FxError } from "@microsoft/teamsfx-api";
+import { Result, FxError } from "@microsoft/teamsfx-api";
 
 import { IUserInput } from "../../../../src/userInput";
 import { testFolder } from "../utils/globalVaribles";
@@ -148,7 +146,9 @@ export class TestUserInput implements IUserInput {
 
   public async withProgress(
     options: ProgressOptions,
-    task: (progress: Progress<IProgressStatus>) => Promise<Result<null, FxError>>
+    task: (
+      progress: Progress<{ message?: string; increment?: number }>
+    ) => Promise<Result<null, FxError>>
   ): Promise<Result<null, FxError>> {
     return await window.withProgress(options, task);
   }

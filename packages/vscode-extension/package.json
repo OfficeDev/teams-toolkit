@@ -496,6 +496,7 @@
     "copy-test-files": "copyfiles -u 1 test/**/*.ps1 test/**/*.sh out/test/",
     "compile": "tsc -p ./ && npm run copy-files",
     "build": "rimraf out && npm run compile",
+    "build-failpoint": "rimraf out && npx ttsc -p ./",
     "watch": "webpack --watch --devtool nosources-source-map --info-verbosity verbose --config ./webpack.config.js",
     "package": "rimraf out && webpack --mode production --config ./webpack.config.js",
     "test-compile": "tsc -p ./",

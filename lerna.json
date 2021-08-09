@@ -6,6 +6,7 @@
         "packages/sdk",
         "packages/cli",
         "packages/vscode-extension",
+        "packages/failpoint-ts",
         "templates"
     ],
     "command": {

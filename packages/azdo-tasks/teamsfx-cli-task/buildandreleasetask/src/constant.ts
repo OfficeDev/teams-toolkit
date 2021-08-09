@@ -8,7 +8,8 @@ export class ActionInputs {
 
 export class Commands {
   static readonly CommandSpace: string = ' '
-  static readonly TeamsfxCliName: string = `npx teamsfx`
+  static readonly NpxCliName: string = 'npx'
+  static readonly TeamsfxCliName: string = 'teamsfx'
   static readonly AddOptionPrefix = (optionName: string): string =>
     `--${optionName}`
 }

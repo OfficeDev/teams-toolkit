@@ -85,14 +85,19 @@ jobs:
           npx lerna publish from-package --dist-tag=alpha --yes --allow-branch dev
 
       - name: version rc npm packages to npmjs.org
-        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' && github.event.inputs.skip-version-rc == 'no'}}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' && github.ref == 'refs/heads/main' && github.event.inputs.skip-version-rc == 'no'}}
         run: |
           npx lerna version --conventional-commits --conventional-prerelease --preid=rc --no-changelog --yes
+      
+      - name: version rc npm packages to npmjs.org on hotfix
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' && startsWith(github.ref, 'refs/heads/hotfix/') && github.event.inputs.skip-version-rc == 'no'}}
+        run: |
+          npx lerna version --conventional-commits --conventional-prerelease --preid=rc-hotfix --no-changelog --allow-branch ${GITHUB_REF#refs/*/} --yes
 
       - name: version stable npm packages to npmjs.org
-        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/hotfix/')) && github.event.inputs.preid == 'stable' }}
         run: |
-          npx lerna version --conventional-commits --conventional-graduate --no-changelog --yes
+          npx lerna version --conventional-commits --conventional-graduate --no-changelog --allow-branch ${GITHUB_REF#refs/*/} --yes
       
       - name: version change
         id: version-change

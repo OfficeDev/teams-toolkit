@@ -71,6 +71,7 @@ export class Utils {
     return new Promise((resolve, reject) => {
       Logger.info(`Start to run command: "${command}".`);
 
+      // Drive letter should be uppercase, otherwise when we run webpack in exec, it fails to resolve nested dependencies.
       if (os.platform() === "win32") {
         workingDir = this.capitalizeFirstLetter(workingDir ?? Constants.EmptyString);
       }

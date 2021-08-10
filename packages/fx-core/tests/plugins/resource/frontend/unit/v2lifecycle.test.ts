@@ -1,48 +1,29 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { assert } from "chai";
-import "mocha";
 import {
-  err,
-  FxError,
-  Result,
-  ok,
   Inputs,
-  Platform,
-  Stage,
-  SolutionContext,
-  QTreeNode,
-  Func,
-  InputTextConfig,
-  InputTextResult,
-  SelectFolderConfig,
-  SelectFolderResult,
-  SingleSelectConfig,
-  SingleSelectResult,
-  OptionItem,
-  traverse,
-  Plugin,
-  ProjectSettings,
+  Platform, Plugin,
+  ProjectSettings
 } from "@microsoft/teamsfx-api";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
+import { assert } from "chai";
 import fs from "fs-extra";
-import * as path from "path";
+import "mocha";
 import * as os from "os";
+import * as path from "path";
+import "reflect-metadata";
 import sinon from "sinon";
 import { Container } from "typedi";
+import * as uuid from "uuid";
+import "../../../../../src/index";
+import { TabLanguage } from "../../../../../src/plugins/resource/frontend/resources/templateInfo";
+import { FrontendPluginV2 } from "../../../../../src/plugins/resource/frontend/v2/index";
 import {
   ResourcePlugins,
-  ResourcePluginsV2,
+  ResourcePluginsV2
 } from "../../../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
-import { ResourcePlugin } from "@microsoft/teamsfx-api/build/v2";
-import { ResourcePluginAdapter } from "../../../../../src/plugins/resource/utils4v2";
-import { FrontendPluginV2 } from "../../../../../src/plugins/resource/frontend/v2/index";
-import "reflect-metadata";
-import "../../../../../src/index";
 import { MockTools, randomAppName } from "../../../../core/utils";
-import * as uuid from "uuid";
-import { TabLanguage } from "../../../../../src/plugins/resource/frontend/resources/templateInfo";
 
 describe("Frontend hosting V2", () => {
   const sandbox = sinon.createSandbox();

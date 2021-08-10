@@ -1,14 +1,17 @@
 // Copyright (c) Microsoft Corporation.
-// Licensed under the MIT license. 
-
+// Licensed under the MIT license.
 
 import { Inputs } from "../types";
-import { FuncValidation, StringArrayValidation, StringValidation, ValidationSchema } from "./validation";
-
+import {
+  FuncValidation,
+  StringArrayValidation,
+  StringValidation,
+  ValidationSchema,
+} from "./validation";
 
 export interface FunctionRouter {
-  namespace: string,
-  method: string
+  namespace: string;
+  method: string;
 }
 
 export interface Func extends FunctionRouter {
@@ -52,7 +55,7 @@ export interface OptionItem {
 
 /**
  * static option is `string` array or `OptionItem` array.
- * If the option is a string array, each element of which will be converted to an `OptionItem` object with `id` and `label` field equal to the string element. 
+ * If the option is a string array, each element of which will be converted to an `OptionItem` object with `id` and `label` field equal to the string element.
  * For example, option=['id1','id2'] => [{'id':'id1', label:'id1'},{'id':'id2', label:'id2'}].
  */
 export type StaticOptions = string[] | OptionItem[];
@@ -60,14 +63,12 @@ export type StaticOptions = string[] | OptionItem[];
 /**
  * dynamic option is defined by a function
  */
-export type DymanicOptions = LocalFunc<StaticOptions>;
-
+export type DynamicOptions = LocalFunc<StaticOptions>;
 
 /**
  * Basic question data
  */
 export interface BaseQuestion {
-
   /**
    * name is the identifier of the question
    */
@@ -89,7 +90,7 @@ export interface BaseQuestion {
   default?: unknown;
 
   /**
-   * `step` and `totalSteps` are used to discribe the progress in question flow
+   * `step` and `totalSteps` are used to describe the progress in question flow
    * `step` is the sequence number of current question
    */
   step?: number;
@@ -98,6 +99,11 @@ export interface BaseQuestion {
    * `totalStep` is the number of questions totally
    */
   totalSteps?: number;
+
+  /**
+   * if true, the toolkit will not remember the value as default value
+   */
+  forgetLastValue?: boolean;
 }
 
 /**
@@ -140,7 +146,6 @@ export interface UserInputQuestion extends BaseQuestion {
  * Definition of single selection question
  */
 export interface SingleSelectQuestion extends UserInputQuestion {
-
   type: "singleSelect";
 
   /**
@@ -150,9 +155,9 @@ export interface SingleSelectQuestion extends UserInputQuestion {
   staticOptions: StaticOptions;
 
   /**
-   * dynamic option, which has higer priority than static options
+   * dynamic option, which has higher priority than static options
    */
-  dynamicOptions?: DymanicOptions;
+  dynamicOptions?: DynamicOptions;
 
   /**
    * answer value, which is the `id` string or `OptionItem` object
@@ -172,7 +177,7 @@ export interface SingleSelectQuestion extends UserInputQuestion {
 
   /**
    * whether to skip the single option select question
-   * if true: single select question will be automtically answered with the single option;
+   * if true: single select question will be automatically answered with the single option;
    * if false: use still need to do the selection manually even there is no other choice.
    */
   skipSingleOption?: boolean;
@@ -190,9 +195,9 @@ export interface MultiSelectQuestion extends UserInputQuestion {
   staticOptions: StaticOptions;
 
   /**
-   * dynamic option, which has higer priority than static options
+   * dynamic option, which has higher priority than static options
    */
-  dynamicOptions?: DymanicOptions;
+  dynamicOptions?: DynamicOptions;
 
   /**
    * answer value, which is `id` string array or `OptionItem` object array
@@ -212,7 +217,7 @@ export interface MultiSelectQuestion extends UserInputQuestion {
 
   /**
    * whether to skip the single option select question
-   * if true: single select question will be automtically answered with the single option;
+   * if true: single select question will be automatically answered with the single option;
    * if false: use still need to do the selection manually even there is no second choice
    */
   skipSingleOption?: boolean;
@@ -222,7 +227,10 @@ export interface MultiSelectQuestion extends UserInputQuestion {
    * @param previousSelectedIds previous selected option ids
    * @returns the final selected option ids
    */
-  onDidChangeSelection?: (currentSelectedIds: Set<string>, previousSelectedIds: Set<string>) => Promise<Set<string>>;
+  onDidChangeSelection?: (
+    currentSelectedIds: Set<string>,
+    previousSelectedIds: Set<string>
+  ) => Promise<Set<string>>;
 
   /**
    * validation schema for the answer values
@@ -245,7 +253,7 @@ export interface TextInputQuestion extends UserInputQuestion {
   value?: string;
   /**
    * default value
-   * 
+   *
    */
   default?: string | LocalFunc<string | undefined>;
   /**
@@ -286,7 +294,7 @@ export interface MultiFileQuestion extends UserInputQuestion {
   /**
    * validation function
    */
-  validation?: FuncValidation<string[]>
+  validation?: FuncValidation<string[]>;
 }
 
 export interface FolderQuestion extends UserInputQuestion {
@@ -307,7 +315,7 @@ export interface FolderQuestion extends UserInputQuestion {
 
 /**
  * `FuncQuestion` will not show any UI, but load some dynamic data in the question flow;
- * The dynamic data can be refered by the following question.
+ * The dynamic data can be referred by the following question.
  */
 export interface FuncQuestion extends BaseQuestion {
   type: "func";
@@ -316,7 +324,6 @@ export interface FuncQuestion extends BaseQuestion {
    */
   func: LocalFunc<any>;
 }
-
 
 /**
  * `Group` is a virtual node in the question tree that wraps a group of questions, which share the same activation condition in this group.
@@ -336,7 +343,6 @@ export type Question =
   | FuncQuestion
   | SingleFileQuestion;
 
-
 /**
  * QTreeNode is the tree node data structure, which have three main properties:
  * - data: data is either a group or question. Questions can be organized into a group, which has the same trigger condition.
@@ -355,7 +361,7 @@ export class QTreeNode {
     return this;
   }
   validate(): boolean {
-    //1. validate the cycle depedency
+    //1. validate the cycle dependency
     //2. validate the name uniqueness
     //3. validate the params of RPC
     // if (this.data.type === NodeType.group && (!this.children || this.children.length === 0)) return false;
@@ -369,15 +375,13 @@ export class QTreeNode {
     if (this.children) {
       const newChildren: QTreeNode[] = [];
       for (const node of this.children) {
-        const trimed = node.trim();
-        if (trimed)
-          newChildren.push(trimed);
+        const trimmed = node.trim();
+        if (trimmed) newChildren.push(trimmed);
       }
       this.children = newChildren;
     }
     if (this.data.type === "group") {
-      if (!this.children || this.children.length === 0)
-        return undefined;
+      if (!this.children || this.children.length === 0) return undefined;
       if (this.children.length === 1) {
         this.children[0].condition = this.condition;
         return this.children[0];

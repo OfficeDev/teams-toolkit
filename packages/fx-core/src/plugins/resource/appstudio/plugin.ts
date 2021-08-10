@@ -73,7 +73,12 @@ import * as fs from "fs-extra";
 import { getTemplatesFolder } from "../../..";
 import path from "path";
 import { getArmOutput, isArmSupportEnabled, isMultiEnvEnabled } from "../../../common";
-import { LocalSettingsTeamsAppKeys } from "../../../common/localSettingsConstants";
+import {
+  LocalSettingsAuthKeys,
+  LocalSettingsBotKeys,
+  LocalSettingsFrontendKeys,
+  LocalSettingsTeamsAppKeys,
+} from "../../../common/localSettingsConstants";
 
 export class AppStudioPluginImpl {
   public async getAppDefinitionAndUpdate(
@@ -842,39 +847,22 @@ export class AppStudioPluginImpl {
     let tabEndpoint, tabDomain;
     if (isArmSupportEnabled()) {
       if (localDebug) {
-        tabEndpoint = ctx.configOfOtherPlugins
-          .get(PluginNames.LDEBUG)
-          ?.get(LOCAL_DEBUG_TAB_ENDPOINT) as string;
-        tabDomain = ctx.configOfOtherPlugins
-          .get(PluginNames.LDEBUG)
-          ?.get(LOCAL_DEBUG_TAB_DOMAIN) as string;
+        tabEndpoint = this.getTabEndpoint(ctx, localDebug);
+        tabDomain = this.getTabDomain(ctx, localDebug);
       } else {
         tabEndpoint = getArmOutput(ctx, FRONTEND_ENDPOINT_ARM) as string;
         tabDomain = getArmOutput(ctx, FRONTEND_DOMAIN_ARM) as string;
       }
     } else {
-      tabEndpoint = localDebug
-        ? (ctx.configOfOtherPlugins
-            .get(PluginNames.LDEBUG)
-            ?.get(LOCAL_DEBUG_TAB_ENDPOINT) as string)
-        : (ctx.configOfOtherPlugins.get(PluginNames.FE)?.get(FRONTEND_ENDPOINT) as string);
-      tabDomain = localDebug
-        ? (ctx.configOfOtherPlugins.get(PluginNames.LDEBUG)?.get(LOCAL_DEBUG_TAB_DOMAIN) as string)
-        : (ctx.configOfOtherPlugins.get(PluginNames.FE)?.get(FRONTEND_DOMAIN) as string);
+      tabEndpoint = this.getTabEndpoint(ctx, localDebug);
+      tabDomain = this.getTabDomain(ctx, localDebug);
     }
-    const aadId = ctx.configOfOtherPlugins
-      .get(PluginNames.AAD)
-      ?.get(localDebug ? LOCAL_DEBUG_AAD_ID : REMOTE_AAD_ID) as string;
-    const botId = ctx.configOfOtherPlugins
-      .get(PluginNames.BOT)
-      ?.get(localDebug ? LOCAL_BOT_ID : BOT_ID) as string;
-    const botDomain = localDebug
-      ? (ctx.configOfOtherPlugins.get(PluginNames.LDEBUG)?.get(LOCAL_DEBUG_BOT_DOMAIN) as string)
-      : (ctx.configOfOtherPlugins.get(PluginNames.BOT)?.get(BOT_DOMAIN) as string);
+    const aadId = this.getAadClientId(ctx, localDebug);
+    const botId = this.getBotId(ctx, localDebug);
+    const botDomain = this.getBotDomain(ctx, localDebug);
+
     // This config value is set by aadPlugin.setApplicationInContext. so aadPlugin.setApplicationInContext needs to run first.
-    const webApplicationInfoResource = ctx.configOfOtherPlugins
-      .get(PluginNames.AAD)
-      ?.get(localDebug ? LOCAL_WEB_APPLICATION_INFO_SOURCE : WEB_APPLICATION_INFO_SOURCE) as string;
+    const webApplicationInfoResource = this.getApplicationIdUris(ctx, localDebug);
     if (!webApplicationInfoResource) {
       return err(
         localDebug
@@ -1009,6 +997,107 @@ export class AppStudioPluginImpl {
     }
 
     return ok({ tabEndpoint, tabDomain, aadId, botDomain, botId, webApplicationInfoResource });
+  }
+
+  private getTabEndpoint(ctx: PluginContext, isLocalDebug: boolean): string {
+    let tabEndpoint: string;
+
+    if (isMultiEnvEnabled()) {
+      tabEndpoint = isLocalDebug
+        ? (ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabEndpoint) as string)
+        : (ctx.configOfOtherPlugins.get(PluginNames.FE)?.get(FRONTEND_ENDPOINT) as string);
+    } else {
+      tabEndpoint = isLocalDebug
+        ? (ctx.configOfOtherPlugins
+            .get(PluginNames.LDEBUG)
+            ?.get(LOCAL_DEBUG_TAB_ENDPOINT) as string)
+        : (ctx.configOfOtherPlugins.get(PluginNames.FE)?.get(FRONTEND_ENDPOINT) as string);
+    }
+
+    return tabEndpoint;
+  }
+
+  private getTabDomain(ctx: PluginContext, isLocalDebug: boolean): string {
+    let tabDomain: string;
+
+    if (isMultiEnvEnabled()) {
+      tabDomain = isLocalDebug
+        ? (ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabDomain) as string)
+        : (ctx.configOfOtherPlugins.get(PluginNames.FE)?.get(FRONTEND_DOMAIN) as string);
+    } else {
+      tabDomain = isLocalDebug
+        ? (ctx.configOfOtherPlugins.get(PluginNames.LDEBUG)?.get(LOCAL_DEBUG_TAB_DOMAIN) as string)
+        : (ctx.configOfOtherPlugins.get(PluginNames.FE)?.get(FRONTEND_DOMAIN) as string);
+    }
+    return tabDomain;
+  }
+
+  private getAadClientId(ctx: PluginContext, isLocalDebug: boolean): string {
+    let clientId: string;
+
+    if (isMultiEnvEnabled()) {
+      clientId = isLocalDebug
+        ? (ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId) as string)
+        : (ctx.configOfOtherPlugins.get(PluginNames.AAD)?.get(REMOTE_AAD_ID) as string);
+    } else {
+      clientId = ctx.configOfOtherPlugins
+        .get(PluginNames.AAD)
+        ?.get(isLocalDebug ? LOCAL_DEBUG_AAD_ID : REMOTE_AAD_ID) as string;
+    }
+
+    return clientId;
+  }
+
+  private getBotId(ctx: PluginContext, isLocalDebug: boolean): string {
+    let botId: string;
+
+    if (isMultiEnvEnabled()) {
+      botId = isLocalDebug
+        ? (ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotId) as string)
+        : (ctx.configOfOtherPlugins.get(PluginNames.BOT)?.get(BOT_ID) as string);
+    } else {
+      botId = ctx.configOfOtherPlugins
+        .get(PluginNames.BOT)
+        ?.get(isLocalDebug ? LOCAL_BOT_ID : BOT_ID) as string;
+    }
+
+    return botId;
+  }
+
+  private getBotDomain(ctx: PluginContext, isLocalDebug: boolean): string {
+    let botDomain: string;
+
+    if (isMultiEnvEnabled()) {
+      botDomain = isLocalDebug
+        ? (ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotDomain) as string)
+        : (ctx.configOfOtherPlugins.get(PluginNames.BOT)?.get(BOT_DOMAIN) as string);
+    } else {
+      botDomain = isLocalDebug
+        ? (ctx.configOfOtherPlugins.get(PluginNames.LDEBUG)?.get(LOCAL_DEBUG_BOT_DOMAIN) as string)
+        : (ctx.configOfOtherPlugins.get(PluginNames.BOT)?.get(BOT_DOMAIN) as string);
+    }
+
+    return botDomain;
+  }
+
+  private getApplicationIdUris(ctx: PluginContext, isLocalDebug: boolean): string {
+    let applicationIdUris: string;
+
+    if (isMultiEnvEnabled()) {
+      applicationIdUris = isLocalDebug
+        ? (ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ApplicationIdUris) as string)
+        : (ctx.configOfOtherPlugins
+            .get(PluginNames.AAD)
+            ?.get(WEB_APPLICATION_INFO_SOURCE) as string);
+    } else {
+      applicationIdUris = ctx.configOfOtherPlugins
+        .get(PluginNames.AAD)
+        ?.get(
+          isLocalDebug ? LOCAL_WEB_APPLICATION_INFO_SOURCE : WEB_APPLICATION_INFO_SOURCE
+        ) as string;
+    }
+
+    return applicationIdUris;
   }
 
   private getDevAppDefinition(

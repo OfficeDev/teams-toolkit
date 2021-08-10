@@ -52,6 +52,7 @@ export interface AzureSolutionSettings extends SolutionSettings {
 // @public
 export interface BaseQuestion {
     default?: unknown;
+    forgetLastValue?: boolean;
     name: string;
     step?: number;
     title?: string;
@@ -196,7 +197,7 @@ type DeploymentInputs = Inputs & SolutionInputs & {
 };
 
 // @public
-export type DymanicOptions = LocalFunc<StaticOptions>;
+export type DynamicOptions = LocalFunc<StaticOptions>;
 
 // @public (undocumented)
 export const DynamicPlatforms: Platform[];
@@ -616,7 +617,7 @@ export interface MultiSelectConfig extends UIConfig<string[]> {
 // @public
 export interface MultiSelectQuestion extends UserInputQuestion {
     default?: string[] | LocalFunc<string[] | undefined>;
-    dynamicOptions?: DymanicOptions;
+    dynamicOptions?: DynamicOptions;
     onDidChangeSelection?: (currentSelectedIds: Set<string>, previousSelectedIds: Set<string>) => Promise<Set<string>>;
     returnObject?: boolean;
     skipSingleOption?: boolean;
@@ -890,7 +891,7 @@ export interface SingleSelectConfig extends UIConfig<string> {
 // @public
 export interface SingleSelectQuestion extends UserInputQuestion {
     default?: string | LocalFunc<string | undefined>;
-    dynamicOptions?: DymanicOptions;
+    dynamicOptions?: DynamicOptions;
     returnObject?: boolean;
     skipSingleOption?: boolean;
     staticOptions: StaticOptions;

@@ -79,9 +79,10 @@ describe("Frontend hosting V2", () => {
 
     const pluginV2 = Container.get<FrontendPluginV2>(ResourcePluginsV2.FrontendPlugin);
     const appName = randomAppName();
+    const projectPath = path.resolve(os.tmpdir(), appName);
     const inputs: Inputs = {
       platform: Platform.VSCode,
-      projectPath: path.resolve(os.tmpdir(), appName),
+      projectPath: projectPath,
     };
     const projectSettings: ProjectSettings = {
       appName: appName,
@@ -106,10 +107,10 @@ describe("Frontend hosting V2", () => {
 
     assert.isTrue(res.isOk());
 
-    assert.isTrue(fs.pathExistsSync(path.join(inputs.projectPath, "tabs")));
-    assert.isTrue(fs.pathExistsSync(path.join(inputs.projectPath, "tabs", "src")));
-    assert.isTrue(fs.pathExistsSync(path.join(inputs.projectPath, "tabs", "package.json")));
+    assert.isTrue(fs.pathExistsSync(path.join(projectPath, "tabs")));
+    assert.isTrue(fs.pathExistsSync(path.join(projectPath, "tabs", "src")));
+    assert.isTrue(fs.pathExistsSync(path.join(projectPath, "tabs", "package.json")));
 
-    await fs.rmdir(inputs.projectPath, { recursive: true });
+    await fs.rmdir(projectPath, { recursive: true });
   });
 });

@@ -27,6 +27,7 @@ export class Constants {
     name: "Azure AD App",
     owner: "Owner",
     noPermission: "No Permission",
+    type: "M365",
   };
 
   static defaultPermissions: RequiredResourceAccess = {

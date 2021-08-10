@@ -268,11 +268,13 @@ export class AzureConstants {
 export class BotPermissions {
   public static readonly webAppPermissions = {
     name: "Azure Web App for Bot",
+    type: "Azure",
   };
 
   public static readonly aadPermissions = {
     name: "Azure AD App for Bot",
     owner: "Owner",
     noPermission: "No Permission",
+    type: "M365",
   };
 }

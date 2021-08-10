@@ -25,6 +25,11 @@ export const GLOBAL_CONFIG = "solution";
 export const SOLUTION_PROVISION_SUCCEEDED = "provisionSucceeded";
 
 /**
+ * Config key whose value is the Azure subscription id where this project has been provisioned
+ */
+export const SUBSCRIPTION_ID = "subscriptionId";
+
+/**
  * Config key whose value is the content of permissions.json file
  */
 export const PERMISSION_REQUEST = "permissionRequest";

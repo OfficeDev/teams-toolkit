@@ -334,20 +334,21 @@ export class FrontendPluginImpl {
   }
 
   public async checkPermission(ctx: PluginContext): Promise<TeamsFxResult> {
-    const config = await FrontendConfig.fromPluginContext(ctx);
-    const subscriptionId = config.subscriptionId;
-    const resourceGroupName = config.resourceGroupName;
-    const storageAccountName = config.storageName;
-
-    const resourceId = `subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.Storage/storageAccounts/${storageAccountName}`;
-    const accessToken = (await config.credentials.getToken()).accessToken;
-
-    const accountInfo = await ctx.azureAccountProvider!.getAccountInfo();
-    const userObjectId = accountInfo!.oid;
-
     let checkAzureResourcePermissionError;
     let azureResourceRoles;
+
     try {
+      const config = await FrontendConfig.fromPluginContext(ctx);
+      const subscriptionId = config.subscriptionId;
+      const resourceGroupName = config.resourceGroupName;
+      const storageAccountName = config.storageName;
+
+      const resourceId = `subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.Storage/storageAccounts/${storageAccountName}`;
+      const accessToken = (await config.credentials.getToken()).accessToken;
+
+      const accountInfo = await ctx.azureAccountProvider!.getAccountInfo();
+      const userObjectId = accountInfo!.oid;
+
       azureResourceRoles = await checkAzureResourcePermission(
         resourceId,
         accessToken,
@@ -361,6 +362,7 @@ export class FrontendPluginImpl {
       {
         name: Constants.permissions.name,
         roles: azureResourceRoles,
+        type: Constants.permissions.type,
         error: checkAzureResourcePermissionError,
       },
     ]);

@@ -16,6 +16,7 @@ export class Constants {
     noPermission: "No permission",
     admin: "Administrator",
     operative: "Operative",
+    type: "M365",
   };
 }
 

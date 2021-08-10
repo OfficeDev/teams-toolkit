@@ -1356,7 +1356,7 @@ export class TeamsAppSolution implements Solution {
         ctx.logProvider?.error(`${errorMsg}: ${m365PermissionCheckError}`);
       } else {
         ctx.logProvider?.info(`Your current signed M365 account is: ${userInfo.userPrincipalName}`);
-        this.printPermissionLogs("Azure", results, ctx);
+        this.printPermissionLogs("M365", results, ctx);
       }
 
       ctx.logProvider?.info("=== Azure Resource Permissions ===");
@@ -1365,7 +1365,7 @@ export class TeamsAppSolution implements Solution {
       } else {
         const accountInfo = await ctx.azureAccountProvider?.getAccountInfo();
         ctx.logProvider?.info(`Your current signed Azure account is: ${accountInfo!.unique_name}`);
-        this.printPermissionLogs("M365", results, ctx);
+        this.printPermissionLogs("Azure", results, ctx);
       }
 
       return ok(undefined);

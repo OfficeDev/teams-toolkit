@@ -28,213 +28,23 @@ export function generateTasks(
    *   - backend extensions install
    *   - bot npm install
    */
-  const tasks: Record<string, unknown>[] = [];
-
-  // Tab only
-  if (includeFrontend && !includeBot) {
-    tasks.push(
-      {
-        label: "Pre Debug Check",
-        dependsOn: ["dependency check", "prepare dev env"],
-        dependsOrder: "sequence",
-      },
-      {
-        label: "Start Frontend",
-        dependsOn: [`${ProductName}: frontend start`, `${ProductName}: auth start`],
-        dependsOrder: "parallel",
-      },
-      {
-        label: "dependency check",
-        type: "shell",
-        command: "echo ${command:fx-extension.validate-dependencies}",
-      },
-      {
-        label: "prepare dev env",
-        dependsOn: includeBackend
-          ? ["prepare local environment", "backend npm install", "frontend npm install"]
-          : ["prepare local environment", "frontend npm install"],
-        dependsOrder: "parallel",
-      },
-      {
-        label: "prepare local environment",
-        type: "shell",
-        command: "echo ${command:fx-extension.pre-debug-check}",
-      },
-      {
-        label: "frontend npm install",
-        type: "shell",
-        command: "npm install",
-        options: {
-          cwd: "${workspaceFolder}/tabs",
-        },
-      }
-    );
+  const tasks: Record<string, unknown>[] = [preDebugCheck(includeBot), dependencyCheck()];
+  if (includeBot) {
+    tasks.push(startNgrok());
+  }
+  tasks.push(prepareDevEnv(includeFrontend, includeBackend), prepareLocalEnvironment());
+  if (includeFrontend) {
+    tasks.push(startFrontend(), frontendNpmInstall());
     if (includeBackend) {
-      if (programmingLanguage === ProgrammingLanguage.typescript) {
-        tasks.push({
-          label: "Start Backend",
-          dependsOn: [`${ProductName}: backend watch`, `${ProductName}: backend start`],
-          dependsOrder: "sequence",
-        });
-      } else {
-        tasks.push({
-          label: "Start Backend",
-          dependsOn: `${ProductName}: backend start`,
-        });
-      }
       tasks.push(
-        {
-          label: "backend npm install",
-          type: "shell",
-          command: "npm install",
-          options: {
-            cwd: "${workspaceFolder}/api",
-          },
-          dependsOn: "backend extensions install",
-        },
-        {
-          label: "backend extensions install",
-          type: "shell",
-          command: "echo ${command:fx-extension.backend-extensions-install}",
-        }
+        startBackend(programmingLanguage),
+        backendExtensionsInstall(),
+        backendNpmInstall()
       );
     }
   }
-
-  // Bot only
-  if (!includeFrontend && includeBot) {
-    tasks.push(
-      {
-        label: "Pre Debug Check",
-        dependsOn: ["dependency check", "start ngrok", "prepare dev env"],
-        dependsOrder: "sequence",
-      },
-      {
-        label: "Start Bot",
-        dependsOn: `${ProductName}: bot start`,
-      },
-      {
-        label: "dependency check",
-        type: "shell",
-        command: "echo ${command:fx-extension.validate-dependencies}",
-      },
-      {
-        label: "start ngrok",
-        type: ProductName,
-        command: "ngrok start",
-        isBackground: true,
-        dependsOn: ["bot npm install"],
-      },
-      {
-        label: "prepare dev env",
-        dependsOn: ["prepare local environment"],
-        dependsOrder: "parallel",
-      },
-      {
-        label: "bot npm install",
-        type: "shell",
-        command: "npm install",
-        options: {
-          cwd: "${workspaceFolder}/bot",
-        },
-      },
-      {
-        label: "prepare local environment",
-        type: "shell",
-        command: "echo ${command:fx-extension.pre-debug-check}",
-      }
-    );
-  }
-
-  // Tab and bot
-  if (includeFrontend && includeBot) {
-    tasks.push(
-      {
-        label: "Pre Debug Check",
-        dependsOn: ["dependency check", "start ngrok", "prepare dev env"],
-        dependsOrder: "sequence",
-      },
-      {
-        label: "Start Frontend",
-        dependsOn: [`${ProductName}: frontend start`, `${ProductName}: auth start`],
-        dependsOrder: "parallel",
-      },
-      {
-        label: "Start Bot",
-        dependsOn: `${ProductName}: bot start`,
-      },
-      {
-        label: "dependency check",
-        type: "shell",
-        command: "echo ${command:fx-extension.validate-dependencies}",
-      },
-      {
-        label: "start ngrok",
-        type: ProductName,
-        command: "ngrok start",
-        isBackground: true,
-        dependsOn: ["bot npm install"],
-      },
-      {
-        label: "prepare dev env",
-        dependsOn: includeBackend
-          ? ["prepare local environment", "backend npm install", "frontend npm install"]
-          : ["prepare local environment", "frontend npm install"],
-        dependsOrder: "parallel",
-      },
-      {
-        label: "bot npm install",
-        type: "shell",
-        command: "npm install",
-        options: {
-          cwd: "${workspaceFolder}/bot",
-        },
-      },
-      {
-        label: "prepare local environment",
-        type: "shell",
-        command: "echo ${command:fx-extension.pre-debug-check}",
-      },
-      {
-        label: "frontend npm install",
-        type: "shell",
-        command: "npm install",
-        options: {
-          cwd: "${workspaceFolder}/tabs",
-        },
-      }
-    );
-
-    if (includeBackend) {
-      if (programmingLanguage === ProgrammingLanguage.typescript) {
-        tasks.push({
-          label: "Start Backend",
-          dependsOn: [`${ProductName}: backend watch`, `${ProductName}: backend start`],
-          dependsOrder: "sequence",
-        });
-      } else {
-        tasks.push({
-          label: "Start Backend",
-          dependsOn: `${ProductName}: backend start`,
-        });
-      }
-      tasks.push(
-        {
-          label: "backend npm install",
-          type: "shell",
-          command: "npm install",
-          options: {
-            cwd: "${workspaceFolder}/api",
-          },
-          dependsOn: "backend extensions install",
-        },
-        {
-          label: "backend extensions install",
-          type: "shell",
-          command: "echo ${command:fx-extension.backend-extensions-install}",
-        }
-      );
-    }
+  if (includeBot) {
+    tasks.push(startBot(), botNpmInstall());
   }
 
   return tasks;
@@ -313,4 +123,127 @@ export function generateSpfxTasks(): Record<string, unknown>[] {
       problemMatcher: [],
     },
   ];
+}
+
+function preDebugCheck(includeBot: boolean): Record<string, unknown> {
+  return {
+    label: "Pre Debug Check",
+    dependsOn: includeBot
+      ? ["dependency check", "start ngrok", "prepare dev env"]
+      : ["dependency check", "prepare dev env"],
+    dependsOrder: "sequence",
+  };
+}
+
+function dependencyCheck(): Record<string, unknown> {
+  return {
+    label: "dependency check",
+    type: "shell",
+    command: "echo ${command:fx-extension.validate-dependencies}",
+  };
+}
+
+function prepareDevEnv(includeFrontend: boolean, includeBackend: boolean): Record<string, unknown> {
+  const result = {
+    label: "prepare dev env",
+    dependsOn: ["prepare local environment"],
+    dependsOrder: "parallel",
+  };
+  if (includeFrontend) {
+    result.dependsOn.push("frontend npm install");
+    if (includeBackend) {
+      result.dependsOn.push("backend npm install");
+    }
+  }
+  return result;
+}
+
+function prepareLocalEnvironment(): Record<string, unknown> {
+  return {
+    label: "prepare local environment",
+    type: "shell",
+    command: "${command:fx-extension.pre-debug-check}",
+  };
+}
+
+function startFrontend(): Record<string, unknown> {
+  return {
+    label: "Start Frontend",
+    dependsOn: [`${ProductName}: frontend start`, `${ProductName}: auth start`],
+    dependsOrder: "parallel",
+  };
+}
+
+function startBackend(programmingLanguage: string): Record<string, unknown> {
+  if (programmingLanguage === ProgrammingLanguage.typescript) {
+    return {
+      label: "Start Backend",
+      dependsOn: [`${ProductName}: backend watch`, `${ProductName}: backend start`],
+      dependsOrder: "sequence",
+    };
+  } else {
+    return {
+      label: "Start Backend",
+      dependsOn: `${ProductName}: backend start`,
+    };
+  }
+}
+
+function startBot(): Record<string, unknown> {
+  return {
+    label: "Start Bot",
+    dependsOn: `${ProductName}: bot start`,
+  };
+}
+
+function startNgrok(): Record<string, unknown> {
+  return {
+    label: "start ngrok",
+    type: ProductName,
+    command: "ngrok start",
+    isBackground: true,
+    dependsOn: ["bot npm install"],
+  };
+}
+
+function frontendNpmInstall(): Record<string, unknown> {
+  return {
+    label: "frontend npm install",
+    type: "shell",
+    command: "npm install",
+    options: {
+      cwd: "${workspaceFolder}/tabs",
+    },
+  };
+}
+
+function backendNpmInstall(): Record<string, unknown> {
+  return {
+    label: "backend npm install",
+    type: "shell",
+    command: "npm install",
+    options: {
+      cwd: "${workspaceFolder}/api",
+    },
+    dependsOn: "backend extensions install",
+  };
+}
+
+function backendExtensionsInstall(): Record<string, unknown> {
+  return {
+    label: "backend extensions install",
+    type: "shell",
+    command: "echo ${command:fx-extension.backend-extensions-install}",
+  };
+}
+
+function botNpmInstall(): Record<string, unknown> {
+  return {
+    label: "bot npm install",
+    type: "shell",
+    command: "npm install",
+    options: {
+      cwd: "${workspaceFolder}/bot",
+    },
+  };
 }

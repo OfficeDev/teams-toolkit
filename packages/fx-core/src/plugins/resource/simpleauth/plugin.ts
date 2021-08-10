@@ -246,45 +246,49 @@ export class SimpleAuthPluginImpl {
   public async checkPermission(
     ctx: PluginContext
   ): Promise<Result<Map<string, string[]>, FxError>> {
-    const credentials = await ctx.azureAccountProvider!.getAccountCredentialAsync();
-    if (!credentials) {
-      throw ResultFactory.SystemError(UnauthenticatedError.name, UnauthenticatedError.message());
-    }
-
-    const accessToken = (await credentials.getToken()).accessToken;
-
-    const accountInfo = await ctx.azureAccountProvider!.getAccountInfo();
-    const userObjectId = accountInfo!.oid;
-    const resourceNameSuffix = Utils.getConfigValueWithValidation(
-      ctx,
-      Constants.SolutionPlugin.id,
-      Constants.SolutionPlugin.configKeys.resourceNameSuffix
-    ) as string;
-
-    const webAppName = Utils.generateResourceName(ctx.projectSettings!.appName, resourceNameSuffix);
-
-    const subscriptionInfo = await ctx.azureAccountProvider?.getSelectedSubscription();
-    if (!subscriptionInfo) {
-      throw ResultFactory.SystemError(
-        NoConfigError.name,
-        NoConfigError.message(
-          Constants.SolutionPlugin.id,
-          Constants.SolutionPlugin.configKeys.subscriptionId
-        )
-      );
-    }
-    const subscriptionId = subscriptionInfo!.subscriptionId;
-    const resourceGroupName = Utils.getConfigValueWithValidation(
-      ctx,
-      Constants.SolutionPlugin.id,
-      Constants.SolutionPlugin.configKeys.resourceGroupName
-    ) as string;
-
-    const resourceId = `subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.Web/sites/${webAppName}`;
-
     let checkAzureResourcePermissionError;
     let azureResourceRoles;
+
     try {
+      const credentials = await ctx.azureAccountProvider!.getAccountCredentialAsync();
+      if (!credentials) {
+        throw ResultFactory.SystemError(UnauthenticatedError.name, UnauthenticatedError.message());
+      }
+
+      const accessToken = (await credentials.getToken()).accessToken;
+
+      const accountInfo = await ctx.azureAccountProvider!.getAccountInfo();
+      const userObjectId = accountInfo!.oid;
+      const resourceNameSuffix = Utils.getConfigValueWithValidation(
+        ctx,
+        Constants.SolutionPlugin.id,
+        Constants.SolutionPlugin.configKeys.resourceNameSuffix
+      ) as string;
+
+      const webAppName = Utils.generateResourceName(
+        ctx.projectSettings!.appName,
+        resourceNameSuffix
+      );
+
+      const subscriptionInfo = await ctx.azureAccountProvider?.getSelectedSubscription();
+      if (!subscriptionInfo) {
+        throw ResultFactory.SystemError(
+          NoConfigError.name,
+          NoConfigError.message(
+            Constants.SolutionPlugin.id,
+            Constants.SolutionPlugin.configKeys.subscriptionId
+          )
+        );
+      }
+      const subscriptionId = subscriptionInfo!.subscriptionId;
+      const resourceGroupName = Utils.getConfigValueWithValidation(
+        ctx,
+        Constants.SolutionPlugin.id,
+        Constants.SolutionPlugin.configKeys.resourceGroupName
+      ) as string;
+
+      const resourceId = `subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.Web/sites/${webAppName}`;
+
       azureResourceRoles = await checkAzureResourcePermission(
         resourceId,
         accessToken,
@@ -297,6 +301,7 @@ export class SimpleAuthPluginImpl {
     return ResultFactory.Success([
       {
         name: Constants.Permissions.name,
+        type: Constants.Permissions.type,
         roles: azureResourceRoles,
         error: checkAzureResourcePermissionError,
       },

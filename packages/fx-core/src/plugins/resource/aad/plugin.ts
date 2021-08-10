@@ -336,21 +336,19 @@ export class AadAppForTeamsImpl {
   }
 
   public async checkPermission(ctx: PluginContext): Promise<AadResult> {
-    await TokenProvider.init(ctx, TokenAudience.Graph);
-    const userInfo = ctx.configOfOtherPlugins
-      .get(Plugins.solution)
-      ?.get(ConfigKeysOfOtherPlugin.solutionUserInfo);
-    if (!userInfo) {
-      // TODO: throw error: no userinfo in context
-      return ResultFactory.Success();
-    }
-    const userInfoObject = JSON.parse(userInfo as string);
-    const userObjectId = userInfoObject["aadId"];
-    const objectId: string = ctx.config.get(ConfigKeys.objectId) as string;
-
     let isAadOwner;
     let checkAadPermissionError;
     try {
+      await TokenProvider.init(ctx, TokenAudience.Graph);
+      const userInfo = ctx.configOfOtherPlugins
+        .get(Plugins.solution)
+        ?.get(ConfigKeysOfOtherPlugin.solutionUserInfo);
+      if (!userInfo) {
+        throw new Error("no userinfo in context");
+      }
+      const userInfoObject = JSON.parse(userInfo as string);
+      const userObjectId = userInfoObject["aadId"];
+      const objectId: string = ctx.config.get(ConfigKeys.objectId) as string;
       isAadOwner = await await AadAppClient.checkPermission(objectId, userObjectId);
     } catch (e) {
       checkAadPermissionError = e;
@@ -359,6 +357,7 @@ export class AadAppForTeamsImpl {
     return ResultFactory.Success([
       {
         name: Constants.permissions.name,
+        type: Constants.permissions.type,
         roles: isAadOwner ? [Constants.permissions.owner] : [Constants.permissions.noPermission],
         error: checkAadPermissionError,
       },

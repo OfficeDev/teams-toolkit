@@ -616,27 +616,18 @@ export class AppStudioPluginImpl {
   public async checkPermission(
     ctx: PluginContext
   ): Promise<Result<{ name: string; roles: string[] | undefined; error: any }[], FxError>> {
-    const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
-    const teamsAppId = (await ctx.configOfOtherPlugins
-      .get("solution")
-      ?.get("remoteTeamsAppId")) as string;
-    const userInfo = ctx.configOfOtherPlugins.get("solution")?.get("userInfo");
-    if (!userInfo) {
-      // TODO: throw error: no userinfo in context
-      return ok([
-        {
-          name: Constants.PERMISSIONS.name,
-          roles: undefined,
-          error: new Error("no userinfo in context"),
-        },
-      ]);
-    }
-
-    const userInfoObject = JSON.parse(userInfo) as IUserList;
-
     let teamsAppRoles;
     let checkTeamsAppPermissionError;
     try {
+      const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
+      const teamsAppId = (await ctx.configOfOtherPlugins
+        .get("solution")
+        ?.get("remoteTeamsAppId")) as string;
+      const userInfo = ctx.configOfOtherPlugins.get("solution")?.get("userInfo");
+      if (!userInfo) {
+        throw new Error("no userinfo in context");
+      }
+      const userInfoObject = JSON.parse(userInfo) as IUserList;
       teamsAppRoles = await AppStudioClient.checkPermission(
         teamsAppId,
         appStudioToken as string,
@@ -651,6 +642,7 @@ export class AppStudioPluginImpl {
       {
         name: Constants.PERMISSIONS.name,
         roles: [teamsAppRoles as string],
+        type: Constants.PERMISSIONS.type,
         error: checkTeamsAppPermissionError,
       },
     ]);

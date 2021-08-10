@@ -691,36 +691,35 @@ export class FunctionPluginImpl {
   public async checkPermission(
     ctx: PluginContext
   ): Promise<Result<Map<string, string[]>, FxError>> {
-    await this.syncConfigFromContext(ctx);
-
-    const credential = this.checkAndGet(
-      await ctx.azureAccountProvider?.getAccountCredentialAsync(),
-      FunctionConfigKey.credential
-    );
-
-    const accessToken = (await credential.getToken()).accessToken;
-
-    const accountInfo = await ctx.azureAccountProvider!.getAccountInfo();
-    const userObjectId = accountInfo!.oid;
-
-    const subscriptionId: string = this.checkAndGet(
-      this.config.subscriptionId,
-      FunctionConfigKey.subscriptionId
-    );
-    const functionAppName: string = this.checkAndGet(
-      this.config.functionAppName,
-      FunctionConfigKey.functionAppName
-    );
-    const resourceGroupName: string = this.checkAndGet(
-      this.config.resourceGroupName,
-      FunctionConfigKey.resourceGroupName
-    );
-
-    const webAppResourceId = `subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.Web/sites/${functionAppName}`;
-
     let checkAzureResourcePermissionError;
     let azureResourceRoles;
     try {
+      await this.syncConfigFromContext(ctx);
+
+      const credential = this.checkAndGet(
+        await ctx.azureAccountProvider?.getAccountCredentialAsync(),
+        FunctionConfigKey.credential
+      );
+
+      const accessToken = (await credential.getToken()).accessToken;
+
+      const accountInfo = await ctx.azureAccountProvider!.getAccountInfo();
+      const userObjectId = accountInfo!.oid;
+
+      const subscriptionId: string = this.checkAndGet(
+        this.config.subscriptionId,
+        FunctionConfigKey.subscriptionId
+      );
+      const functionAppName: string = this.checkAndGet(
+        this.config.functionAppName,
+        FunctionConfigKey.functionAppName
+      );
+      const resourceGroupName: string = this.checkAndGet(
+        this.config.resourceGroupName,
+        FunctionConfigKey.resourceGroupName
+      );
+
+      const webAppResourceId = `subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.Web/sites/${functionAppName}`;
       azureResourceRoles = await checkAzureResourcePermission(
         webAppResourceId,
         accessToken,
@@ -734,6 +733,7 @@ export class FunctionPluginImpl {
       {
         name: CommonConstants.permissions.name,
         roles: azureResourceRoles,
+        type: CommonConstants.permissions.type,
         error: checkAzureResourcePermissionError,
       },
     ]);

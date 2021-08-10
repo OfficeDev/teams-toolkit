@@ -39,6 +39,7 @@ import * as fs from "fs-extra";
 import {
   DEFAULT_PERMISSION_REQUEST,
   GLOBAL_CONFIG,
+  SUBSCRIPTION_ID,
   PERMISSION_REQUEST,
   SolutionError,
   LOCAL_DEBUG_AAD_ID,
@@ -1295,24 +1296,39 @@ export class TeamsAppSolution implements Solution {
         return ok(undefined);
       }
 
-      // Compare tenant id.
+      let m365PermissionCheckError;
       const aadAppTenantId = ctx.config?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
       if (!aadAppTenantId || userInfo.tenantId != (aadAppTenantId as string)) {
         // TODO: throw error.
-        ctx.logProvider?.error(
-          "Tenant id of your account and the provisioned Azure AD app does not match. Please check whether you logined with wrong account."
-        );
-        return ok(undefined);
+        m365PermissionCheckError =
+          "Tenant id of your account and the provisioned Azure AD app does not match. Please check whether you logined with wrong account.";
       }
 
       ctx.config.get(GLOBAL_CONFIG)?.set(USER_INFO, JSON.stringify(userInfo));
+
+      let azurePermissionCheckError;
 
       // Get Azure credential in solution to avoid multiple login in different plugins.
       const subInfo = await ctx.azureAccountProvider?.getSelectedSubscription(true);
       if (!subInfo || subInfo.subscriptionId === "") {
         // User does not login or select sub
         // TODO: throw error
-        return ok(undefined);
+        azurePermissionCheckError = "Cannot read selected Azure account";
+      }
+
+      // TODO: the subscription id in config is not source of truth, Yuan Tian will help to find a way to get the project subscription id
+      const projectSubscriptionId = await ctx.config?.get(GLOBAL_CONFIG)?.get(SUBSCRIPTION_ID);
+      const allSubs = await ctx.azureAccountProvider?.listSubscriptions();
+
+      if (!azurePermissionCheckError && subInfo?.subscriptionId !== projectSubscriptionId) {
+        const projectSubscriptionInfo = allSubs?.find(
+          (sub: SubscriptionInfo) => sub.subscriptionId === projectSubscriptionId
+        );
+        if (projectSubscriptionInfo) {
+          azurePermissionCheckError = `Project subscription and Azure account selected subscription does not match. Please select corrected subscription: ${projectSubscriptionInfo.subscriptionName}`;
+        } else {
+          azurePermissionCheckError = `Azure account you logined doesn't contain subscription: ${projectSubscriptionId}. Please login correct Azure account.`;
+        }
       }
 
       const maybeSelectedPlugins = this.getSelectedPlugins(ctx);
@@ -1335,27 +1351,48 @@ export class TeamsAppSolution implements Solution {
       const results = await executeConcurrently("", checkPermissionWithCtx);
       const errorMsg = getStrings().solution.CheckPermissionFailed;
 
-      for (const result of results) {
-        if (result.isErr()) {
-          ctx.logProvider?.error(errorMsg + ` ${result.error.source}: ${result.error.message}`);
-        } else {
-          if (result && result.value) {
-            for (const res of result.value) {
-              if (!res.error) {
-                ctx.logProvider?.info(
-                  `Check Permission Result: ${res.name}: ${res.roles.join(",")}`
-                );
-              } else {
-                ctx.logProvider?.error(`${errorMsg} ${res.name}: ${res.error.message}`);
-              }
-            }
-          }
-        }
+      ctx.logProvider?.info("=== M365 account Permissions ===");
+      if (m365PermissionCheckError) {
+        ctx.logProvider?.error(`${errorMsg}: ${m365PermissionCheckError}`);
+      } else {
+        ctx.logProvider?.info(`Your current signed M365 account is: ${userInfo.userPrincipalName}`);
+        this.printPermissionLogs("M365", results, ctx);
       }
+
+      ctx.logProvider?.info("=== Azure Resource Permissions ===");
+      if (azurePermissionCheckError) {
+        ctx.logProvider?.error(`${errorMsg}: ${azurePermissionCheckError}`);
+      } else {
+        const accountInfo = await ctx.azureAccountProvider?.getAccountInfo();
+        ctx.logProvider?.info(`Your current signed Azure account is: ${accountInfo!.unique_name}`);
+        this.printPermissionLogs("Azure", results, ctx);
+      }
+
       return ok(undefined);
     } finally {
       ctx.config.get(GLOBAL_CONFIG)?.delete(USER_INFO);
       this.runningState = SolutionRunningState.Idle;
+    }
+  }
+
+  private printPermissionLogs(type: string, results: any, ctx: SolutionContext) {
+    const errorMsg = getStrings().solution.CheckPermissionFailed;
+
+    for (const result of results) {
+      if (result.isErr()) {
+        continue;
+      }
+      if (result && result.value) {
+        for (const res of result.value) {
+          if (res.type === type) {
+            if (!res.error) {
+              ctx.logProvider?.info(`${res.name}: ${res.roles.join(",")}`);
+            } else {
+              ctx.logProvider?.error(`${errorMsg} ${res.name}: ${res.error.message}`);
+            }
+          }
+        }
+      }
     }
   }
 

@@ -994,7 +994,7 @@ export class AppStudioPluginImpl {
     return ok({ tabEndpoint, tabDomain, aadId, botDomain, botId, webApplicationInfoResource });
   }
 
-  private getTabEndpoint(ctx: PluginContext, isLocalDebug: boolean) {
+  private getTabEndpoint(ctx: PluginContext, isLocalDebug: boolean): string {
     let tabEndpoint: string;
 
     if (isMultiEnvEnabled()) {
@@ -1012,7 +1012,7 @@ export class AppStudioPluginImpl {
     return tabEndpoint;
   }
 
-  private getTabDomain(ctx: PluginContext, isLocalDebug: boolean) {
+  private getTabDomain(ctx: PluginContext, isLocalDebug: boolean): string {
     let tabDomain: string;
 
     if (isMultiEnvEnabled()) {
@@ -1027,7 +1027,7 @@ export class AppStudioPluginImpl {
     return tabDomain;
   }
 
-  private getAadClientId(ctx: PluginContext, isLocalDebug: boolean) {
+  private getAadClientId(ctx: PluginContext, isLocalDebug: boolean): string {
     let clientId: string;
 
     if (isMultiEnvEnabled()) {
@@ -1043,7 +1043,7 @@ export class AppStudioPluginImpl {
     return clientId;
   }
 
-  private getBotId(ctx: PluginContext, isLocalDebug: boolean) {
+  private getBotId(ctx: PluginContext, isLocalDebug: boolean): string {
     let botId: string;
 
     if (isMultiEnvEnabled()) {
@@ -1059,7 +1059,7 @@ export class AppStudioPluginImpl {
     return botId;
   }
 
-  private getBotDomain(ctx: PluginContext, isLocalDebug: boolean) {
+  private getBotDomain(ctx: PluginContext, isLocalDebug: boolean): string {
     let botDomain: string;
 
     if (isMultiEnvEnabled()) {
@@ -1075,7 +1075,7 @@ export class AppStudioPluginImpl {
     return botDomain;
   }
 
-  private getApplicationIdUris(ctx: PluginContext, isLocalDebug: boolean) {
+  private getApplicationIdUris(ctx: PluginContext, isLocalDebug: boolean): string {
     let applicationIdUris: string;
 
     if (isMultiEnvEnabled()) {

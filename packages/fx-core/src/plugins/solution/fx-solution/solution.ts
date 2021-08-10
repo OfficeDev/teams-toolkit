@@ -1084,36 +1084,12 @@ export class TeamsAppSolution implements Solution {
       return maybePermission;
     }
 
-    const maybeSelectedPlugins = this.getSelectedPlugins(ctx);
-
-    if (maybeSelectedPlugins.isErr()) {
-      return maybeSelectedPlugins;
-    }
-
-    const selectedPlugins = maybeSelectedPlugins.value;
-    const hasFrontend = selectedPlugins?.some((plugin) => plugin.name === PluginNames.FE);
-    const hasBackend = selectedPlugins?.some((plugin) => plugin.name === PluginNames.FUNC);
-    const hasBot = selectedPlugins?.some((plugin) => plugin.name === PluginNames.BOT);
-
-    // load localSettings into context before local debug.
-    const localSettingsProvider = new LocalSettingsProvider(ctx.root);
-    if (await fs.pathExists(localSettingsProvider.localSettingsFilePath)) {
-      ctx.localSettings = await localSettingsProvider.load();
-    } else {
-      ctx.localSettings = localSettingsProvider.init(hasFrontend, hasBackend, hasBot);
-    }
-
     try {
       ctx.config.get(GLOBAL_CONFIG)?.set(PERMISSION_REQUEST, maybePermission.value);
       const result = await this.doLocalDebug(ctx);
       return result;
     } finally {
       ctx.config.get(GLOBAL_CONFIG)?.delete(PERMISSION_REQUEST);
-
-      if (isMultiEnvEnabled()) {
-        // persistent localSettings.json.
-        localSettingsProvider.save(ctx.localSettings!);
-      }
     }
   }
 

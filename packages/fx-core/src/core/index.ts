@@ -76,6 +76,8 @@ import { ProjectUpgraderMW } from "./middleware/projectUpgrader";
 import { globalStateUpdate } from "../common/globalState";
 import { EnvInfoLoaderMW } from "./middleware/envInfoLoader";
 import { EnvInfoWriterMW } from "./middleware/envInfoWriter";
+import { localSettingsLoaderMW } from "./middleware/localSettingsLoader";
+import { LocalSettingsWriterMW } from "./middleware/localSettingsWriter";
 
 export interface CoreHookContext extends HookContext {
   projectSettings?: ProjectSettings;
@@ -326,11 +328,13 @@ export class FxCore implements Core {
     ProjectUpgraderMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW,
+    localSettingsLoaderMW,
     SolutionLoaderMW(defaultSolutionLoader),
     QuestionModelMW,
     ContextInjecterMW,
     ProjectSettingsWriterMW,
     EnvInfoWriterMW,
+    LocalSettingsWriterMW,
   ])
   async localDebug(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     return await ctx!.solution!.localDebug(ctx!.solutionContext!);
@@ -356,11 +360,13 @@ export class FxCore implements Core {
     ConcurrentLockerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW,
+    localSettingsLoaderMW,
     SolutionLoaderMW(defaultSolutionLoader),
     QuestionModelMW,
     ContextInjecterMW,
     ProjectSettingsWriterMW,
     EnvInfoWriterMW,
+    LocalSettingsWriterMW,
   ])
   async executeUserTask(
     func: Func,
@@ -439,6 +445,7 @@ export class FxCore implements Core {
     return ok({
       settings: ctx!.solutionContext!.projectSettings,
       config: ctx!.solutionContext!.config,
+      localSettings: ctx!.solutionContext!.localSettings,
     });
   }
 
@@ -550,7 +557,7 @@ export class FxCore implements Core {
             description: "",
             author: "",
             scripts: {
-              test: 'echo "Error: no test specified" && exit 1',
+              test: "echo \"Error: no test specified\" && exit 1",
             },
             devDependencies: {
               "@microsoft/teamsfx-cli": "^0.3.1",

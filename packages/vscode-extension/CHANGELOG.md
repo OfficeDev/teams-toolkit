@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.4.0 - Aug 9 2021
+## 2.4.1 - Aug 10 2021
 
 Incremental version for Teams Toolkit with multiple bugs fixed and the following updates：
 

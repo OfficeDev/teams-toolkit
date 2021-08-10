@@ -146,12 +146,8 @@ export const BOTS_TPL: IBot[] = [
         scopes: ["personal", "team", "groupchat"],
         commands: [
           {
-            title: "intro",
-            description: "Send introduction card of this Bot",
-          },
-          {
-            title: "show",
-            description: "Show user profile by calling Microsoft Graph API with SSO",
+            title: "welcome",
+            description: "Resend welcome card of this Bot",
           },
         ],
       },

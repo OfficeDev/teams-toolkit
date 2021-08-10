@@ -414,7 +414,7 @@ export namespace AppStudioClient {
 
     app.userList?.push(newUser);
     const requester = createRequesterWithToken(appStudioToken);
-    const response = await requester.post(`/api/appdefinitions/${teamsAppId}/override`, app);
+    const response = await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app);
   }
 
   export async function checkPermission(

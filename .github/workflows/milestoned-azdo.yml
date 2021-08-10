@@ -23,7 +23,7 @@ jobs:
         with:
           token: ${{secrets.TEAMSFX_BOT}}
           milestone-pattern: "CY"
-          devops-token: ${{secrets.AZDO_PAT}}
+          devops-token: ${{secrets.ADO_PAT}}
           devops-org: "msazure"
           devops-projectId: "Microsoft Teams Extensibility"
           title-prefix: "[Github]"

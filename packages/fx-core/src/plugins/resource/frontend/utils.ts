@@ -73,7 +73,7 @@ export class Utils {
 
       // Drive letter should be uppercase, otherwise when we run webpack in exec, it fails to resolve nested dependencies.
       if (os.platform() === "win32") {
-        workingDir = this.capitalizeFirstLetter(workingDir ?? Constants.EmptyString);
+        workingDir = this.capitalizeFirstLetter(path.resolve(workingDir ?? Constants.EmptyString));
       }
 
       exec(command, { cwd: workingDir }, (error, standardOutput) => {

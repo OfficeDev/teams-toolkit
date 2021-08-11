@@ -146,8 +146,6 @@ interface Context_2 {
     // (undocumented)
     cryptoProvider: CryptoProvider;
     // (undocumented)
-    envMeta: EnvMeta;
-    // (undocumented)
     logProvider: LogProvider;
     // (undocumented)
     projectSetting: ProjectSettings;
@@ -1144,6 +1142,8 @@ export type TokenProvider = {
 
 // @public (undocumented)
 export interface Tools {
+    // (undocumented)
+    cryptoProvider?: CryptoProvider;
     // (undocumented)
     logProvider: LogProvider;
     // (undocumented)

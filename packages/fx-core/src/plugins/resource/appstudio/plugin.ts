@@ -155,8 +155,7 @@ export class AppStudioPluginImpl {
    * @returns
    */
   public async createManifest(settings: ProjectSettings): Promise<TeamsAppManifest | undefined> {
-    const solutionSettings: AzureSolutionSettings =
-      settings.solutionSettings as AzureSolutionSettings;
+    const solutionSettings: AzureSolutionSettings = settings.solutionSettings as AzureSolutionSettings;
     if (
       !solutionSettings.capabilities ||
       (!solutionSettings.capabilities.includes(BotOptionItem.id) &&
@@ -353,8 +352,14 @@ export class AppStudioPluginImpl {
       return err(maybeConfig.error);
     }
 
-    const { tabEndpoint, tabDomain, aadId, botDomain, botId, webApplicationInfoResource } =
-      maybeConfig.value;
+    const {
+      tabEndpoint,
+      tabDomain,
+      aadId,
+      botDomain,
+      botId,
+      webApplicationInfoResource,
+    } = maybeConfig.value;
 
     const validDomains: string[] = [];
 

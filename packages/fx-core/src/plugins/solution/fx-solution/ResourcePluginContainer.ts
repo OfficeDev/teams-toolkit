@@ -19,6 +19,20 @@ export const ResourcePlugins = {
   SimpleAuthPlugin: "SimpleAuthPlugin",
 };
 
+export const ResourcePluginsV2 = {
+  SpfxPlugin: "SpfxPluginV2",
+  FrontendPlugin: "FrontendPluginV2",
+  IdentityPlugin: "IdentityPluginV2",
+  SqlPlugin: "SqlPluginV2",
+  BotPlugin: "BotPluginV2",
+  AadPlugin: "AadPluginV2",
+  FunctionPlugin: "FunctionPluginV2",
+  LocalDebugPlugin: "LocalDebugPluginV2",
+  ApimPlugin: "ApimPlugin",
+  AppStudioPlugin: "AppStudioPluginV2",
+  SimpleAuthPlugin: "SimpleAuthPluginV2",
+};
+
 /**
  * @returns all registered resource plugins
  */

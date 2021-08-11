@@ -67,7 +67,7 @@ describe("Core basic APIs", () => {
     const expectedInputs: Inputs = {
       platform: Platform.CLI,
       [CoreQuestionNames.AppName]: appName,
-      [CoreQuestionNames.Foler]: os.tmpdir(),
+      [CoreQuestionNames.Folder]: os.tmpdir(),
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
       projectPath: projectPath,
       solution: mockSolution.name,
@@ -87,10 +87,10 @@ describe("Core basic APIs", () => {
       .stub<any, any>(ui, "selectFolder")
       .callsFake(
         async (config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> => {
-          if (config.name === CoreQuestionNames.Foler) {
+          if (config.name === CoreQuestionNames.Folder) {
             return ok({
               type: "success",
-              result: expectedInputs[CoreQuestionNames.Foler] as string,
+              result: expectedInputs[CoreQuestionNames.Folder] as string,
             });
           }
           throw err(InvalidInputError("invalid question"));
@@ -279,7 +279,7 @@ describe("Core basic APIs", () => {
     projectPath = path.resolve(os.tmpdir(), appName);
     const expectedInputs: Inputs = {
       platform: Platform.CLI,
-      [CoreQuestionNames.Foler]: os.tmpdir(),
+      [CoreQuestionNames.Folder]: os.tmpdir(),
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionNoVSC.id,
       [CoreQuestionNames.Samples]: sampleOption,
     };
@@ -287,10 +287,10 @@ describe("Core basic APIs", () => {
       .stub<any, any>(ui, "selectFolder")
       .callsFake(
         async (config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> => {
-          if (config.name === CoreQuestionNames.Foler) {
+          if (config.name === CoreQuestionNames.Folder) {
             return ok({
               type: "success",
-              result: expectedInputs[CoreQuestionNames.Foler] as string,
+              result: expectedInputs[CoreQuestionNames.Folder] as string,
             });
           }
           throw err(InvalidInputError("invalid question"));
@@ -401,7 +401,7 @@ describe("Core basic APIs", () => {
     const expectedInputs: Inputs = {
       platform: Platform.CLI,
       [CoreQuestionNames.AppName]: appName,
-      [CoreQuestionNames.Foler]: os.tmpdir(),
+      [CoreQuestionNames.Folder]: os.tmpdir(),
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
       solution: mockSolution.name,
     };
@@ -420,10 +420,10 @@ describe("Core basic APIs", () => {
       .stub<any, any>(ui, "selectFolder")
       .callsFake(
         async (config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> => {
-          if (config.name === CoreQuestionNames.Foler) {
+          if (config.name === CoreQuestionNames.Folder) {
             return ok({
               type: "success",
-              result: expectedInputs[CoreQuestionNames.Foler] as string,
+              result: expectedInputs[CoreQuestionNames.Folder] as string,
             });
           }
           throw err(InvalidInputError("invalid question"));
@@ -552,7 +552,7 @@ describe("Core basic APIs", () => {
     const expectedInputs: Inputs = {
       platform: Platform.CLI,
       [CoreQuestionNames.AppName]: appName,
-      [CoreQuestionNames.Foler]: os.tmpdir(),
+      [CoreQuestionNames.Folder]: os.tmpdir(),
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
       projectPath: projectPath,
       solution: mockSolution.name,
@@ -572,10 +572,10 @@ describe("Core basic APIs", () => {
       .stub<any, any>(ui, "selectFolder")
       .callsFake(
         async (config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> => {
-          if (config.name === CoreQuestionNames.Foler) {
+          if (config.name === CoreQuestionNames.Folder) {
             return ok({
               type: "success",
-              result: expectedInputs[CoreQuestionNames.Foler] as string,
+              result: expectedInputs[CoreQuestionNames.Folder] as string,
             });
           }
           throw err(InvalidInputError("invalid question"));

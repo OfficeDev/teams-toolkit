@@ -26,9 +26,10 @@ import { HostTypeOptionAzure, TabOptionItem } from "../../solution/fx-solution/q
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { isArmSupportEnabled } from "../../..";
-
+import { ArmResourcePlugin } from "../../../common/armInterface";
+export * from "./v2";
 @Service(ResourcePlugins.FrontendPlugin)
-export class FrontendPlugin implements Plugin {
+export class FrontendPlugin implements Plugin, ArmResourcePlugin {
   name = "fx-resource-frontend-hosting";
   displayName = "Tab Front-end";
   activate(solutionSettings: AzureSolutionSettings): boolean {

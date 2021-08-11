@@ -122,13 +122,22 @@ export function FunctionRouterError(func: Func) {
   );
 }
 
-export function ContextUpgradeError(error: any): FxError {
-  return new SystemError(
-    "ContextUpgradeError",
-    `Failed to update context: ${error.message}`,
-    CoreSource,
-    new Error().stack
-  );
+export function ContextUpgradeError(error: any, isUserError = false): FxError {
+  if (isUserError) {
+    return new UserError(
+      "ContextUpgradeError",
+      `Failed to update context: ${error.message}`,
+      CoreSource,
+      error.stack ?? new Error().stack
+    );
+  } else {
+    return new SystemError(
+      "ContextUpgradeError",
+      `Failed to update context: ${error.message}`,
+      CoreSource,
+      error.stack ?? new Error().stack
+    );
+  }
 }
 
 

@@ -422,7 +422,7 @@ describe("Middleware", () => {
         }
       }
       hooks(MyClass, {
-        other: [ProjectSettingsLoaderMW, EnvInfoLoaderMW, ContextInjecterMW],
+        other: [ProjectSettingsLoaderMW, EnvInfoLoaderMW(false, false), ContextInjecterMW],
       });
       const my = new MyClass();
       const res = await my.other(inputs);
@@ -599,7 +599,11 @@ describe("Middleware", () => {
       }
       hooks(MyClass, {
         WriteConfigTrigger: [ContextInjecterMW, ProjectSettingsWriterMW, EnvInfoWriterMW],
-        ReadConfigTrigger: [ProjectSettingsLoaderMW, EnvInfoLoaderMW, ContextInjecterMW],
+        ReadConfigTrigger: [
+          ProjectSettingsLoaderMW,
+          EnvInfoLoaderMW(false, false),
+          ContextInjecterMW,
+        ],
       });
       const my = new MyClass();
       await my.WriteConfigTrigger(inputs);

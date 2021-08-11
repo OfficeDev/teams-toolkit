@@ -7,8 +7,9 @@ import { AppStudioTokenProvider } from "@microsoft/teamsfx-api";
 import * as vscode from "vscode";
 import { login, LoginStatus } from "./common/login";
 import { signedIn, signedOut } from "./common/constant";
+import { getAppStudioEndpoint } from "@microsoft/teamsfx-core";
 
-const scopes = ["https://dev.teams.microsoft.com/AppDefinitions.ReadWrite"];
+const scopes = [`${getAppStudioEndpoint()}/AppDefinitions.ReadWrite`];
 
 // this login to work for code space only
 export class AppStudioCodeSpaceLogin extends login implements AppStudioTokenProvider {

@@ -646,7 +646,7 @@ export class TeamsBotImpl {
     if (checkBotAad) {
       let isAadOwner;
       let checkAadPermissionError;
-      let userGraphObjectId;
+      let objectId;
       try {
         const graphToken = await this.ctx?.graphTokenProvider?.getAccessToken();
         const userInfo = this.ctx!.configOfOtherPlugins.get(PluginSolution.PLUGIN_NAME)?.get(
@@ -657,8 +657,8 @@ export class TeamsBotImpl {
           throw new Error("no userinfo in context");
         }
         const userInfoObject = JSON.parse(userInfo as string);
-        userGraphObjectId = userInfoObject["aadId"];
-        const objectId: string = this.ctx!.config.get(PluginBot.OBJECT_ID) as string;
+        const userGraphObjectId = userInfoObject["aadId"];
+        objectId = this.ctx!.config.get(PluginBot.OBJECT_ID) as string;
         isAadOwner = await AADPermissionControl.checkPermission(
           graphToken as string,
           objectId,
@@ -675,7 +675,7 @@ export class TeamsBotImpl {
           ? [BotPermissions.aadPermissions.owner]
           : [BotPermissions.aadPermissions.noPermission],
         error: checkAadPermissionError,
-        resourceId: userGraphObjectId,
+        resourceId: objectId,
       };
       res.push(botAppPermission);
     }

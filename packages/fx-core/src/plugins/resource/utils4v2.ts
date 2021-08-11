@@ -1,34 +1,29 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import {
+  AzureAccountProvider,
+  ConfigMap,
+  err,
+  FxError,
+  Inputs,
+  ok,
+  Plugin,
+  PluginContext,
+  Result,
+  TokenProvider,
+} from "@microsoft/teamsfx-api";
+import {
   BicepTemplate,
   Context,
   DeploymentInputs,
-  LocalSetting,
   LocalSettings,
   PluginName,
   ProvisionOutput,
-  ResourcePlugin,
   ResourceTemplate,
 } from "@microsoft/teamsfx-api/build/v2";
-import {
-  Inputs,
-  PluginContext,
-  ConfigMap,
-  Result,
-  FxError,
-  Plugin,
-  err,
-  ok,
-  TokenProvider,
-  AzureAccountProvider,
-  AzureSolutionSettings,
-  Stage,
-} from "@microsoft/teamsfx-api";
-import { NoProjectOpenedError, PluginHasNoTaskImpl, TaskNotSupportError } from "../../core";
 import { ArmResourcePlugin, ScaffoldArmTemplateResult } from "../../common/armInterface";
+import { NoProjectOpenedError, PluginHasNoTaskImpl } from "../../core";
 import { GLOBAL_CONFIG } from "../solution/fx-solution/constants";
-import { NodeNotSupportedError } from "./function/utils/depsChecker/errors";
 
 export function convert2PluginContext(ctx: Context, inputs: Inputs): PluginContext {
   if (!inputs.projectPath) throw NoProjectOpenedError();
@@ -45,13 +40,12 @@ export function convert2PluginContext(ctx: Context, inputs: Inputs): PluginConte
   };
   return pluginContext;
 }
- 
 
 export async function scaffoldSourceCodeAdapter(
-    ctx: Context,
-    inputs: Inputs,
-    plugin: Plugin & ArmResourcePlugin
-  ): Promise<Result<{ output: Record<string, string> }, FxError>> {
+  ctx: Context,
+  inputs: Inputs,
+  plugin: Plugin & ArmResourcePlugin
+): Promise<Result<{ output: Record<string, string> }, FxError>> {
   if (!plugin.scaffold) return err(PluginHasNoTaskImpl(plugin.displayName, "scaffold"));
   if (!inputs.projectPath) {
     return err(NoProjectOpenedError());
@@ -66,11 +60,12 @@ export async function scaffoldSourceCodeAdapter(
 }
 
 export async function generateResourceTemplateAdapter(
-    ctx: Context,
-    inputs: Inputs,
-    plugin: Plugin & ArmResourcePlugin
-  ): Promise<Result<ResourceTemplate, FxError>> {
-  if (!plugin.generateArmTemplates) return err(PluginHasNoTaskImpl(plugin.displayName, "generateArmTemplates"));
+  ctx: Context,
+  inputs: Inputs,
+  plugin: Plugin & ArmResourcePlugin
+): Promise<Result<ResourceTemplate, FxError>> {
+  if (!plugin.generateArmTemplates)
+    return err(PluginHasNoTaskImpl(plugin.displayName, "generateArmTemplates"));
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
   const armRes = await plugin.generateArmTemplates(pluginContext);
   if (armRes.isErr()) {
@@ -82,13 +77,13 @@ export async function generateResourceTemplateAdapter(
 }
 
 export async function configureResourceAdapter(
-    ctx: Context,
-    inputs: Inputs,
-    provisionOutput: Readonly<ProvisionOutput>,
-    provisionOutputOfOtherPlugins: Readonly<Record<PluginName, ProvisionOutput>>,
-    tokenProvider: TokenProvider,
-    plugin: Plugin & ArmResourcePlugin
-  ): Promise<Result<ProvisionOutput, FxError>> {
+  ctx: Context,
+  inputs: Inputs,
+  provisionOutput: Readonly<ProvisionOutput>,
+  provisionOutputOfOtherPlugins: Readonly<Record<PluginName, ProvisionOutput>>,
+  tokenProvider: TokenProvider,
+  plugin: Plugin & ArmResourcePlugin
+): Promise<Result<ProvisionOutput, FxError>> {
   if (!plugin.postProvision) return err(PluginHasNoTaskImpl(plugin.displayName, "postProvision"));
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
@@ -114,12 +109,12 @@ export async function configureResourceAdapter(
 }
 
 export async function deployAdapter(
-    ctx: Context,
-    inputs: Readonly<DeploymentInputs>,
-    provisionOutput: Readonly<ProvisionOutput>,
-    tokenProvider: AzureAccountProvider,
-    plugin: Plugin & ArmResourcePlugin
-  ): Promise<Result<{ output: Record<string, string> }, FxError>> {
+  ctx: Context,
+  inputs: Readonly<DeploymentInputs>,
+  provisionOutput: Readonly<ProvisionOutput>,
+  tokenProvider: AzureAccountProvider,
+  plugin: Plugin & ArmResourcePlugin
+): Promise<Result<{ output: Record<string, string> }, FxError>> {
   if (!plugin.deploy) return err(PluginHasNoTaskImpl(plugin.displayName, "deploy"));
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
   pluginContext.azureAccountProvider = tokenProvider;
@@ -147,20 +142,80 @@ export async function deployAdapter(
   return ok({ output: deployOutput });
 }
 
-export async function provisionLocalResourceAdapter( ctx: Context, tokenProvider: TokenProvider, plugin: Plugin & ArmResourcePlugin) : Promise<Result<LocalSetting, FxError>>{
+export async function provisionLocalResourceAdapter(
+  ctx: Context,
+  inputs: Inputs,
+  localSettings: LocalSettings,
+  tokenProvider: TokenProvider,
+  plugin: Plugin & ArmResourcePlugin
+): Promise<Result<LocalSettings, FxError>> {
   if (!plugin.localDebug) return err(PluginHasNoTaskImpl(plugin.displayName, "localDebug"));
-  //TODO
-  throw new Error();
+  const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
+  pluginContext.localSettings = {
+    teamsApp: ConfigMap.fromJSON(localSettings.teamsApp)!,
+    auth: ConfigMap.fromJSON(localSettings.auth),
+    backend: ConfigMap.fromJSON(localSettings.backend),
+    bot: ConfigMap.fromJSON(localSettings.bot),
+    frontend: ConfigMap.fromJSON(localSettings.frontend),
+  };
+  pluginContext.appStudioToken = tokenProvider.appStudioToken;
+  pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
+  pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
+  const res = await plugin.localDebug(pluginContext);
+  if (res.isErr()) {
+    return err(res.error);
+  }
+  localSettings.teamsApp = pluginContext.localSettings.teamsApp.toJSON();
+  if (pluginContext.localSettings.auth) {
+    localSettings.auth = pluginContext.localSettings.auth.toJSON();
+  }
+  if (pluginContext.localSettings.backend) {
+    localSettings.backend = pluginContext.localSettings.backend.toJSON();
+  }
+  if (pluginContext.localSettings.bot) {
+    localSettings.bot = pluginContext.localSettings.bot.toJSON();
+  }
+  if (pluginContext.localSettings.frontend) {
+    localSettings.frontend = pluginContext.localSettings.frontend.toJSON();
+  }
+  return ok(localSettings);
 }
 
 export async function configureLocalResourceAdapter(
-    ctx: Context,
-    localProvisionOutput: Readonly<LocalSetting>,
-    localProvisionOutputOfOtherPlugins: Readonly<LocalSettings>,
-    tokenProvider: TokenProvider,
-    plugin: Plugin & ArmResourcePlugin
-  ) : Promise<Result<LocalSettings, FxError>>{
-    if (!plugin.postLocalDebug) return err(PluginHasNoTaskImpl(plugin.displayName, "postLocalDebug"));
-   //TODO
-  throw new Error();
+  ctx: Context,
+  inputs: Inputs,
+  localSettings: LocalSettings,
+  tokenProvider: TokenProvider,
+  plugin: Plugin & ArmResourcePlugin
+): Promise<Result<LocalSettings, FxError>> {
+  if (!plugin.postLocalDebug) return err(PluginHasNoTaskImpl(plugin.displayName, "postLocalDebug"));
+  const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
+  pluginContext.localSettings = {
+    teamsApp: ConfigMap.fromJSON(localSettings.teamsApp)!,
+    auth: ConfigMap.fromJSON(localSettings.auth),
+    backend: ConfigMap.fromJSON(localSettings.backend),
+    bot: ConfigMap.fromJSON(localSettings.bot),
+    frontend: ConfigMap.fromJSON(localSettings.frontend),
+  };
+  pluginContext.appStudioToken = tokenProvider.appStudioToken;
+  pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
+  pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
+  const res = await plugin.postLocalDebug(pluginContext);
+  if (res.isErr()) {
+    return err(res.error);
+  }
+  localSettings.teamsApp = pluginContext.localSettings.teamsApp.toJSON();
+  if (pluginContext.localSettings.auth) {
+    localSettings.auth = pluginContext.localSettings.auth.toJSON();
+  }
+  if (pluginContext.localSettings.backend) {
+    localSettings.backend = pluginContext.localSettings.backend.toJSON();
+  }
+  if (pluginContext.localSettings.bot) {
+    localSettings.bot = pluginContext.localSettings.bot.toJSON();
+  }
+  if (pluginContext.localSettings.frontend) {
+    localSettings.frontend = pluginContext.localSettings.frontend.toJSON();
+  }
+  return ok(localSettings);
 }

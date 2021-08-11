@@ -21,7 +21,7 @@ export interface AppStudioTokenProvider {
 }
 
 // @public (undocumented)
-export function assembleError(e: Error, source?: string): FxError;
+export function assembleError(e: any, source?: string): FxError;
 
 // @public
 export interface AzureAccountProvider {
@@ -145,8 +145,6 @@ export interface Context {
 interface Context_2 {
     // (undocumented)
     cryptoProvider: CryptoProvider;
-    // (undocumented)
-    envMeta: EnvMeta;
     // (undocumented)
     logProvider: LogProvider;
     // (undocumented)
@@ -803,7 +801,7 @@ export type ResourceConfigs = ResourceTemplates;
 // @public
 interface ResourcePlugin {
     activate(solutionSettings: AzureSolutionSettings): boolean;
-    configureLocalResource?: (ctx: Context_2, localProvisionOutput: Readonly<LocalSetting>, localProvisionOutputOfOtherPlugins: Readonly<LocalSettings_2>, tokenProvider: TokenProvider) => Promise<Result<LocalSettings_2, FxError>>;
+    configureLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: LocalSettings_2, tokenProvider: TokenProvider) => Promise<Result<LocalSettings_2, FxError>>;
     configureResource?: (ctx: Context_2, inputs: Readonly<ProvisionInputs>, provisionOutput: Readonly<ProvisionOutput>, provisionOutputOfOtherPlugins: Readonly<Record<PluginName, ProvisionOutput>>, tokenProvider: TokenProvider) => Promise<Result<ProvisionOutput, FxError>>;
     deploy?: (ctx: Context_2, inputs: Readonly<DeploymentInputs>, provisionOutput: Readonly<ProvisionOutput>, tokenProvider: AzureAccountProvider) => Promise<Result<{
         output: Record<string, string>;
@@ -818,9 +816,9 @@ interface ResourcePlugin {
     // (undocumented)
     name: string;
     package?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
-    provisionLocalResource?: (ctx: Context_2, tokenProvider: TokenProvider) => Promise<Result<LocalSetting, FxError>>;
+    provisionLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: LocalSettings_2, tokenProvider: TokenProvider) => Promise<Result<LocalSettings_2, FxError>>;
     provisionResource?: (ctx: Context_2, inputs: Readonly<ProvisionInputs>, provisionTemplate: Json, tokenProvider: TokenProvider) => Promise<Result<ProvisionOutput, FxError>>;
-    publishApplication?: (ctx: Context_2, tokenProvider: AppStudioTokenProvider, inputs: Inputs) => Promise<Result<Void, FxError>>;
+    publishApplication?: (ctx: Context_2, inputs: Inputs, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
     scaffoldSourceCode?: (ctx: Context_2, inputs: Inputs) => Promise<Result<{
         output: Record<string, string>;
     }, FxError>>;
@@ -1144,6 +1142,8 @@ export type TokenProvider = {
 
 // @public (undocumented)
 export interface Tools {
+    // (undocumented)
+    cryptoProvider?: CryptoProvider;
     // (undocumented)
     logProvider: LogProvider;
     // (undocumented)

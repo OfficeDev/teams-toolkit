@@ -42,6 +42,7 @@ import {
   ConfigMap,
   Colors,
   Json,
+  CryptoProvider,
 } from "@microsoft/teamsfx-api";
 import { TokenCredential } from "@azure/core-auth";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
@@ -345,6 +346,16 @@ export class MockTools implements Tools {
   };
   telemetryReporter = new MockTelemetryReporter();
   ui = new MockUserInteraction();
+  cryptoProvider = new MockCryptoProvider();
+}
+
+export class MockCryptoProvider implements CryptoProvider {
+  encrypt(plaintext: string): Result<string, FxError> {
+    return ok(plaintext);
+  }
+  decrypt(ciphertext: string): Result<string, FxError> {
+    return ok(ciphertext);
+  }
 }
 
 export class MockLogProvider implements LogProvider {

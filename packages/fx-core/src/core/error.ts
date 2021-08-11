@@ -84,7 +84,7 @@ export function ConcurrentError() {
   );
 }
 
-export function TaskNotSupportError(task: Stage) {
+export function TaskNotSupportError(task: Stage | string) {
   return new SystemError(
     "TaskNotSupport",
     `Task is not supported yet: ${task}`,
@@ -122,10 +122,28 @@ export function FunctionRouterError(func: Func) {
   );
 }
 
-export function ContextUpgradeError(error: any): FxError {
+export function ContextUpgradeError(error: any, isUserError = false): FxError {
+  if (isUserError) {
+    return new UserError(
+      "ContextUpgradeError",
+      `Failed to update context: ${error.message}`,
+      CoreSource,
+      error.stack ?? new Error().stack
+    );
+  } else {
+    return new SystemError(
+      "ContextUpgradeError",
+      `Failed to update context: ${error.message}`,
+      CoreSource,
+      error.stack ?? new Error().stack
+    );
+  }
+}
+
+export function PluginHasNoTaskImpl(pluginName: string, task: string) {
   return new SystemError(
-    "ContextUpgradeError",
-    `Failed to update context: ${error.message}`,
+    "PluginHasNoTaskImplError",
+    `Plugin ${pluginName} has not implemented method: ${task}`,
     CoreSource,
     new Error().stack
   );

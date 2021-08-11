@@ -24,7 +24,7 @@ export default class Controller {
 
   private timer?: NodeJS.Timeout;
   public readonly fps = 25;
-  private isCleaning = false;
+  private pausedTimes = 0;
 
   get activeNum() {
     return this._activeNum;
@@ -59,6 +59,37 @@ export default class Controller {
     this.update();
   }
 
+  public pause() {
+    this.pausedTimes++;
+    if (this.pausedTimes === 1) {
+      (this.controller as any).isActive = true;
+      if ((this.controller as any).timer) {
+        clearTimeout((this.controller as any).timer);
+        (this.controller as any).timer = null;
+        this.clean();
+      }
+      (this.terminal as any).cursor(true);
+    }
+  }
+
+  public continue() {
+    if (this.pausedTimes === 0) {
+      return;
+    }
+    this.pausedTimes--;
+    if (this.pausedTimes === 0) {
+      if (this._activeNum === 0) {
+        (this.controller as any).isActive = false;
+      }
+      if (this._activeNum === 0 && this.needToRemove.length > 0) {
+        this.end(true);
+      } else if (this._activeNum > 0) {
+        (this.terminal as any).cursor(false);
+        (this.controller as any).update();
+      }
+    }
+  }
+
   public end(success: boolean) {
     if (this.timer) {
       clearTimeout(this.timer);
@@ -81,14 +112,13 @@ export default class Controller {
     }
 
     if (this._activeNum > 0) {
-      if (!this.isCleaning) {
-        this.progresses.forEach((progress) => {
-          const payload = { message: progress.message, runningChar: this.runningChar };
-          progress.bar?.update(progress.percentage, payload);
-        });
-      }
-      this.timer = setTimeout(this.update.bind(this), 1000 / this.fps);
+      this.progresses.forEach((progress) => {
+        const payload = { message: progress.message, runningChar: this.runningChar };
+        progress.bar?.update(progress.percentage, payload);
+      });
     }
+
+    this.timer = setTimeout(this.update.bind(this), 1000 / this.fps);
   }
 
   public create(total: number, startValue: number, message: string): SingleBar {
@@ -105,16 +135,14 @@ export default class Controller {
     bar.update(percentage, payload);
     this.needToRemove.push([bar, percentage, message]);
     this._activeNum--;
-    if (this._activeNum === 0) {
+    if (this._activeNum === 0 && this.pausedTimes === 0) {
       this.end(true);
     }
     return;
   }
 
   public clean() {
-    this.isCleaning = true;
     this.terminal.cursorRelativeReset();
     this.terminal.clearBottom();
-    this.isCleaning = false;
   }
 }

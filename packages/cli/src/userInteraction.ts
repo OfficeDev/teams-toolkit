@@ -44,6 +44,7 @@ import { EmptySubConfigOptions, NotValidInputValue, UnknownError } from "./error
 import { sleep, getColorizedString } from "./utils";
 import { ChoiceOptions } from "./prompts";
 import ProgressInstance from "./progress/instance";
+import ProgressController from "./progress/controller";
 
 /// TODO: input can be undefined
 type ValidationType<T> = (input: T) => string | boolean | Promise<string | boolean>;
@@ -154,7 +155,9 @@ export class CLIUserInteraction implements UserInteraction {
 
     return new Promise(async (resolve) => {
       try {
+        ProgressController.instance?.pause();
         const anwsers = await inquirer.prompt([question]);
+        ProgressController.instance?.continue();
         resolve(ok(anwsers[question.name!]));
       } catch (e) {
         resolve(err(UnknownError(e)));

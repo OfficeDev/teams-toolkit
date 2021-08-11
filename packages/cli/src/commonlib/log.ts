@@ -78,7 +78,7 @@ export class CLILogProvider implements LogProvider {
   }
 
   async log(logLevel: LogLevel, message: string): Promise<boolean> {
-    ProgressController.instance?.clean();
+    ProgressController.instance?.pause();
     switch (logLevel) {
       case LogLevel.Trace:
         if (CLILogProvider.logLevel === CLILogLevel.debug) {
@@ -108,12 +108,12 @@ export class CLILogProvider implements LogProvider {
         console.error(chalk.redBright(`(${figures.cross}) ${message}`));
         break;
     }
-    ProgressController.instance?.update();
+    ProgressController.instance?.continue();
     return true;
   }
 
   necessaryLog(logLevel: LogLevel, message: string, white = false) {
-    ProgressController.instance?.clean();
+    ProgressController.instance?.pause();
     switch (logLevel) {
       case LogLevel.Trace:
       case LogLevel.Debug:
@@ -132,7 +132,7 @@ export class CLILogProvider implements LogProvider {
         console.error(chalk.redBright(`(${figures.cross}) ${message}`));
         break;
     }
-    ProgressController.instance?.update();
+    ProgressController.instance?.continue();
   }
 
   rawLog(message: string) {

@@ -722,8 +722,6 @@ export interface ProjectConfig {
     // (undocumented)
     config?: SolutionConfig;
     // (undocumented)
-    localSettings?: LocalSettings;
-    // (undocumented)
     settings?: ProjectSettings;
 }
 

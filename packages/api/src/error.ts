@@ -19,7 +19,7 @@ export interface FxError extends Error {
 /**
  * Users can recover by themselves, e.g., users input invalid app names.
  */
-export class UserError implements FxError {
+export class UserError extends Error implements FxError {
   /**
    * Custom error details .
    */
@@ -36,18 +36,6 @@ export class UserError implements FxError {
    * A wiki website that shows mapping relationship between error names, descriptions, and fix solutions.
    */
   helpLink?: string;
-  /**
-   * Name of error. (error name, eg: Dependency not found)
-   */
-  name: string;
-  /**
-   * Message to explain what happened and what to do next.
-   */
-  message: string;
-  /**
-   * A string that describes the immediate frames of the call stack.
-   */
-  stack?: string;
 
   constructor(
     name: string,
@@ -57,11 +45,10 @@ export class UserError implements FxError {
     helpLink?: string,
     innerError?: any
   ) {
-    this.name = name;
-    this.message = message;
+    super(message);
+    super.name = name;
     this.source = source;
     this.timestamp = new Date();
-    this.stack = stack;
     this.helpLink = helpLink;
     this.innerError = innerError;
     Object.setPrototypeOf(this, UserError.prototype);
@@ -71,7 +58,7 @@ export class UserError implements FxError {
 /**
  * Users cannot handle it by themselves.
  */
-export class SystemError implements FxError {
+export class SystemError extends Error implements FxError {
   /**
    * Custom error details.
    */
@@ -88,18 +75,6 @@ export class SystemError implements FxError {
    * A github issue page where users can submit a new issue.
    */
   issueLink?: string;
-  /**
-   * Name of error. (error name, eg: Dependency not found)
-   */
-  name: string;
-  /**
-   * Message to explain what happened and what to do next.
-   */
-  message: string;
-  /**
-   * A string that describes the immediate frames of the call stack.
-   */
-  stack?: string;
 
   constructor(
     name: string,
@@ -109,11 +84,10 @@ export class SystemError implements FxError {
     issueLink?: string,
     innerError?: any
   ) {
-    this.name = name;
-    this.message = message;
+    super(message);
+    super.name = name;
     this.source = source;
     this.timestamp = new Date();
-    this.stack = stack;
     this.issueLink = issueLink;
     this.innerError = innerError;
     Object.setPrototypeOf(this, SystemError.prototype);
@@ -168,6 +142,24 @@ export function returnSystemError(
   }
 }
 
+export function newUserError(
+  source: string,
+  name: string,
+  message: string,
+  helpLink?: string
+): UserError {
+  return new UserError(name, message, source, undefined, helpLink);
+}
+
+export function newSystemError(
+  source: string,
+  name: string,
+  message: string,
+  issueLink?: string
+): SystemError {
+  return new SystemError(name, message, source, undefined, issueLink);
+}
+
 export const UserCancelError: UserError = new UserError("UserCancel", "UserCancel", "UI");
 
 export function assembleError(e: any, source?: string): FxError {
@@ -175,15 +167,27 @@ export function assembleError(e: any, source?: string): FxError {
   if (!source) source = "unknown";
   const type = typeof e;
   if (type === "string") {
-    const error = new Error(e);
-    return new SystemError(error.name, e, source, error.stack);
+    return new SystemError("Error", e, source, undefined, undefined, e);
   } else if (type === "object") {
     if (e.code || e.name || e.message) {
-      const fxError = new SystemError(e.code || e.name, e.message, source, e.stack);
+      const fxError = new SystemError(
+        e.code || e.name || "Error",
+        e.message || JSON.stringify(e, Object.getOwnPropertyNames(e)),
+        source,
+        undefined,
+        undefined,
+        e
+      );
       Object.assign(fxError, e);
       return fxError;
     }
   }
-  const error = new Error(JSON.stringify(e));
-  return new SystemError(error.name, e, source, error.stack);
+  return new SystemError(
+    "Error",
+    JSON.stringify(e, Object.getOwnPropertyNames(e)),
+    source,
+    undefined,
+    undefined,
+    e
+  );
 }

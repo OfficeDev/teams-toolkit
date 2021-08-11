@@ -10,7 +10,7 @@ import { isMultiEnvEnabled } from "../../common";
 import { getActivatedResourcePlugins } from "../../plugins/solution/fx-solution/ResourcePluginContainer";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 
-export const localSettingsLoaderMW: Middleware = async (
+export const LocalSettingsLoaderMW: Middleware = async (
   ctx: CoreHookContext,
   next: NextFunction
 ) => {

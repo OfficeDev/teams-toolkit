@@ -553,7 +553,7 @@ export class FxCore implements Core {
               test: 'echo "Error: no test specified" && exit 1',
             },
             devDependencies: {
-              "@microsoft/teamsfx-cli": "^0.3.1",
+              "@microsoft/teamsfx-cli": "0.*",
             },
             license: "MIT",
           },

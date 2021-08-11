@@ -55,7 +55,13 @@ jobs:
       #  with:
       #    commit_message: "chore: commit provision configs"
       #    file_pattern: .fx/env.default.json
-
+      
+      #- name: Upload default.userdata as artifact
+      #  uses: actions/upload-artifact@v2
+      #  with:
+      #    name: defaultUserData
+      #    path: .fx/default.userdata
+      
       - name: Generate default.userdata
         env:
           USERDATA_TENANT_ID: ${{ secrets.USERDATA_TENANT_ID }}

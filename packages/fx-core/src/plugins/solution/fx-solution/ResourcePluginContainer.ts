@@ -28,7 +28,7 @@ export const ResourcePluginsV2 = {
   AadPlugin: "AadPluginV2",
   FunctionPlugin: "FunctionPluginV2",
   LocalDebugPlugin: "LocalDebugPluginV2",
-  ApimPlugin: "ApimPlugin",
+  ApimPlugin: "ApimPluginV2",
   AppStudioPlugin: "AppStudioPluginV2",
   SimpleAuthPlugin: "SimpleAuthPluginV2",
 };

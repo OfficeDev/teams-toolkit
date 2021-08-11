@@ -10,7 +10,6 @@ import {
 } from "@microsoft/teamsfx-api";
 import {
   Context,
-  LocalSetting,
   LocalSettings,
   ResourcePlugin,
   ResourceTemplate,
@@ -27,11 +26,11 @@ import {
   provisionLocalResourceAdapter,
 } from "../../utils4v2";
 
-@Service(ResourcePluginsV2.AadPlugin)
+@Service(ResourcePluginsV2.SimpleAuthPlugin)
 export class AadPluginV2 implements ResourcePlugin {
   name = "fx-resource-simple-auth";
   displayName = "Simple Auth";
-  @Inject(ResourcePlugins.AadPlugin)
+  @Inject(ResourcePlugins.SimpleAuthPlugin)
   plugin!: SimpleAuthPlugin;
   activate(solutionSettings: AzureSolutionSettings): boolean {
     return this.plugin.activate(solutionSettings);

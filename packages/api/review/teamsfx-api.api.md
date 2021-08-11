@@ -21,7 +21,7 @@ export interface AppStudioTokenProvider {
 }
 
 // @public (undocumented)
-export function assembleError(e: Error, source?: string): FxError;
+export function assembleError(e: any, source?: string): FxError;
 
 // @public
 export interface AzureAccountProvider {

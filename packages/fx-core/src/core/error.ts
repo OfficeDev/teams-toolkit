@@ -128,14 +128,14 @@ export function ContextUpgradeError(error: any, isUserError = false): FxError {
       "ContextUpgradeError",
       `Failed to update context: ${error.message}`,
       CoreSource,
-      new Error().stack
+      error.stack ?? new Error().stack
     );
   } else {
     return new SystemError(
       "ContextUpgradeError",
       `Failed to update context: ${error.message}`,
       CoreSource,
-      new Error().stack
+      error.stack ?? new Error().stack
     );
   }
 }

@@ -47,7 +47,6 @@ export class UserError extends Error implements FxError {
   ) {
     super(message);
     this.name = name;
-    if (stack) this.stack = stack;
     this.source = source;
     this.timestamp = new Date();
     this.helpLink = helpLink;
@@ -87,7 +86,6 @@ export class SystemError extends Error implements FxError {
   ) {
     super(message);
     this.name = name;
-    if (stack) this.stack = stack;
     this.source = source;
     this.timestamp = new Date();
     this.issueLink = issueLink;

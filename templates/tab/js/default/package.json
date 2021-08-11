@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@azure/core-tracing": "1.0.0-preview.13",
     "@fluentui/react-northstar": "^0.54.0",
     "@microsoft/teams-js": "^1.6.0",
     "@microsoft/teamsfx": "^0.2.0",

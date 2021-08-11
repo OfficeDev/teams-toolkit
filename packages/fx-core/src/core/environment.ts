@@ -1,7 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ConfigFolderName, CryptoProvider, err, FxError, ok, Result } from "@microsoft/teamsfx-api";
+import {
+  ConfigFolderName,
+  ConfigMap,
+  CryptoProvider,
+  err,
+  FxError,
+  ok,
+  Result,
+} from "@microsoft/teamsfx-api";
 import path from "path";
 import fs from "fs-extra";
 import {
@@ -15,6 +23,7 @@ import {
   mapToJson,
   objectToMap,
 } from "..";
+import { GLOBAL_CONFIG } from "../plugins/solution/fx-solution/constants";
 
 export interface EnvInfo {
   envName: string;
@@ -49,7 +58,9 @@ class EnvironmentManager {
     const userData = userDataResult.value;
 
     if (!(await fs.pathExists(envFiles.envProfile))) {
-      return ok({ envName, data: new Map<string, any>() });
+      const data = new Map<string, any>([[GLOBAL_CONFIG, new ConfigMap()]]);
+
+      return ok({ envName, data });
     }
 
     const envData = await fs.readJson(envFiles.envProfile);

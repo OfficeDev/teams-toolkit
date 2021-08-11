@@ -485,10 +485,6 @@ export class TeamsAppSolution implements Solution {
       return canProvision;
     }
 
-    if (!ctx.config.get(GLOBAL_CONFIG)) {
-      ctx.config.set(GLOBAL_CONFIG, new ConfigMap());
-    }
-
     const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
     if (provisioned) {
       const msg = util.format(

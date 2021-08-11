@@ -1,0 +1,35 @@
+name: milestoned-azdo
+
+on: 
+  issues:
+    types: [milestoned]
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Actions
+        uses: actions/checkout@v2
+        with:
+          repository: "OfficeDev/teamsfx-issue-triage-bot"
+          ref: main
+          path: ./actions
+          token: ${{secrets.TEAMSFX_BOT}}
+      - name: Install Actions
+        run: npm install --production --prefix ./actions
+
+      - name: Run Greeting 
+        uses: ./actions/milestoned
+        with:
+          token: ${{secrets.TEAMSFX_BOT}}
+          milestone-prefix: "CY"
+          devops-token: ${{secrets.ADO_PAT}}
+          devops-org: "msazure"
+          devops-projectId: "Microsoft Teams Extensibility"
+          title-prefix: "[Github]"
+          bug-label: "bug"
+          bug-area-path: "Microsoft Teams Extensibility"
+          bug-iteration-path: "Microsoft Teams Extensibility"
+          feature-label: "feature-request"
+          feature-area-path: "Microsoft Teams Extensibility"
+          feature-iteration-path: "Microsoft Teams Extensibility"

@@ -14,7 +14,7 @@ import * as fs from "fs-extra";
 
 export enum CoreQuestionNames {
   AppName = "app-name",
-  Foler = "folder",
+  Folder = "folder",
   Solution = "solution",
   CreateFromScratch = "scratch",
   Samples = "samples",
@@ -30,7 +30,7 @@ export const QuestionAppName: TextInputQuestion = {
   title: "Application name",
   validation: {
     validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
-      const folder = previousInputs![CoreQuestionNames.Foler] as string;
+      const folder = previousInputs![CoreQuestionNames.Folder] as string;
       if (!folder) return undefined;
       const schema = {
         pattern: ProjectNamePattern,
@@ -51,8 +51,8 @@ export const QuestionAppName: TextInputQuestion = {
 
 export const QuestionRootFolder: FolderQuestion = {
   type: "folder",
-  name: CoreQuestionNames.Foler,
-  title: "Workspace folder"
+  name: CoreQuestionNames.Folder,
+  title: "Workspace folder",
 };
 
 export const QuestionSelectSolution: SingleSelectQuestion = {
@@ -92,7 +92,10 @@ export function getCreateNewOrFromSampleQuestion(platform: Platform): SingleSele
     type: "singleSelect",
     name: CoreQuestionNames.CreateFromScratch,
     title: "Teams Toolkit: Create a new Teams app",
-    staticOptions: (platform === Platform.VSCode)? [ScratchOptionYesVSC, ScratchOptionNoVSC]:[ScratchOptionYes, ScratchOptionNo],
+    staticOptions:
+      platform === Platform.VSCode
+        ? [ScratchOptionYesVSC, ScratchOptionNoVSC]
+        : [ScratchOptionYes, ScratchOptionNo],
     default: ScratchOptionYes.id,
     placeholder: "Select an option",
     skipSingleOption: true,

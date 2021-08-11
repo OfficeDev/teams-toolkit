@@ -33,7 +33,7 @@ suite("UI Unit Tests", async () => {
       await handler.next("Third step");
       await sleep(2 * 1000);
 
-      await handler.end();
+      await handler.end(true);
     });
   });
 });

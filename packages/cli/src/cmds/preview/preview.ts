@@ -445,10 +445,11 @@ export default class Preview extends YargsCommand {
       );
       cliLogger.necessaryLog(LogLevel.Warning, constants.openBrowserHintMessage);
       cliLogger.necessaryLog(LogLevel.Warning, constants.waitCtrlPlusC);
+      await previewBar.end(false);
       return ok(null);
     }
     await previewBar.next(constants.previewSPFxSuccessMessage);
-    await previewBar.end();
+    await previewBar.end(true);
 
     cliTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewSPFxOpenBrowser, {
       ...this.telemetryProperties,
@@ -1002,10 +1003,11 @@ export default class Preview extends YargsCommand {
         this.telemetryProperties
       );
       cliLogger.necessaryLog(LogLevel.Warning, constants.openBrowserHintMessage);
+      await previewBar.end(false);
       return ok(null);
     }
     await previewBar.next(constants.previewSuccessMessage);
-    await previewBar.end();
+    await previewBar.end(true);
 
     cliTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewSideloading, {
       ...this.telemetryProperties,

@@ -126,7 +126,7 @@ export function createTaskStopCb(
         }
       }
       await progressBar.next(message);
-      await progressBar.end();
+      await progressBar.end(true);
       return null;
     } else {
       const error = TaskFailed(taskTitle);
@@ -170,6 +170,7 @@ export function createTaskStopCb(
           cliLogger.necessaryLog(LogLevel.Info, result.stderr[result.stderr.length - 1], true);
         }
       }
+      await progressBar.end(false);
       return error;
     }
   };

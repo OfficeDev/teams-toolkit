@@ -195,7 +195,7 @@ export interface ResourcePlugin {
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {TokenProvider} tokenProvider - Tokens for Azure and AppStudio
    *
-   * @returns the output values, project state, secrect values for the current environment. Toolkit will persist them
+   * @returns the output values, project state, secret values for the current environment. Toolkit will persist them
    *          and pass them to {@link configureLocalResource}. The output will be persisted but not in the same file as provison's output.
    */
   provisionLocalResource?: (

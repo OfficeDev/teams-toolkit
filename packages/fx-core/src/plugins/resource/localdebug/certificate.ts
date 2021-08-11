@@ -21,10 +21,10 @@ const continueText = "Continue";
 const learnMoreText = "Learn More";
 const learnMoreUrl = "https://aka.ms/teamsfx-ca-certificate";
 const warningMessage =
-  'To debug applications in Teams, your localhost server must be on HTTPS.\
+  "To debug applications in Teams, your localhost server must be on HTTPS.\
  For Teams to trust the self-signed SSL certificate used by the toolkit, a self-signed certificate must be added to your certificate store.\
- You may skip this step, but you\'ll have to manually trust the secure connection in a new browser window when debugging your apps in Teams.\
- For more information "https://aka.ms/teamsfx-ca-certificate".';
+ You may skip this step, but you'll have to manually trust the secure connection in a new browser window when debugging your apps in Teams.\
+ For more information \"https://aka.ms/teamsfx-ca-certificate\".";
 const confirmMessage =
   warningMessage +
   " You may be asked for your account credentials when installing the certificate.";
@@ -75,8 +75,6 @@ export class LocalCertificateManager {
       const verifyRes = this.verifyCertificateContent(certContent, keyContent);
       if (verifyRes[1]) {
         certThumbprint = verifyRes[0];
-      } else if (verifyRes[0]) {
-        await this.untrustCertificate(verifyRes[0]);
       }
     }
 
@@ -105,11 +103,7 @@ export class LocalCertificateManager {
     // prepare attributes and extensions
     const now = new Date();
     const expiry = new Date();
-    if (os.type() === "Windows_NT") {
-      expiry.setDate(expiry.getDate() + 7);
-    } else {
-      expiry.setFullYear(expiry.getFullYear() + 1);
-    }
+    expiry.setFullYear(expiry.getFullYear() + 1);
 
     const serialNumber = uuidv4().replace(/-/g, "");
     const attrs = [
@@ -258,9 +252,9 @@ export class LocalCertificateManager {
   private async verifyCertificateInStore(thumbprint: string): Promise<boolean> {
     try {
       if (os.type() === "Windows_NT") {
-        const verifyCommand = `certutil -user -grouppolicy -verifystore TrustedPeople ${thumbprint}`;
-        await ps.execPowerShell(verifyCommand);
-        return true;
+        const getCertCommand = `(Get-ChildItem -Path Cert:\\CurrentUser\\Root | Where-Object { $_.Thumbprint -match '${thumbprint}' }).Thumbprint`;
+        const existingThumbprint = (await ps.execPowerShell(getCertCommand)).trim();
+        return existingThumbprint.toUpperCase() === thumbprint.toUpperCase();
       } else if (os.type() === "Darwin") {
         const listCertCommand = `security find-certificate -c localhost -a -Z -p "${os.homedir()}/Library/Keychains/login.keychain-db"`;
         const existingCertificates = await ps.execShell(listCertCommand);
@@ -294,12 +288,14 @@ export class LocalCertificateManager {
   ): Promise<boolean> {
     try {
       if (os.type() === "Windows_NT") {
-        this.showWarningMessage();
+        if (!(await this.waitForUserConfirm())) {
+          return false;
+        }
 
-        const installCertCommand = `certutil -user -grouppolicy -addstore TrustedPeople '${certPath}'`;
-        await ps.execPowerShell(installCertCommand);
+        const installCertCommand = `(Import-Certificate -FilePath '${certPath}' -CertStoreLocation Cert:\\CurrentUser\\Root)[0].Thumbprint`;
+        const thumbprint = (await ps.execPowerShell(installCertCommand)).trim();
 
-        const friendlyNameCommand = `(Get-ChildItem -Path Cert:\\CurrentUser\\TrustedPeople\\${thumbprint}).FriendlyName='${friendlyName}'`;
+        const friendlyNameCommand = `(Get-ChildItem -Path Cert:\\CurrentUser\\Root\\${thumbprint}).FriendlyName='${friendlyName}'`;
         await ps.execPowerShell(friendlyNameCommand);
 
         return true;
@@ -320,26 +316,6 @@ export class LocalCertificateManager {
     } catch (error) {
       // treat any error as install failure, to not block the main progress
       this.logger?.warning(`Failed to install certificate. Error: ${error}`);
-      return false;
-    }
-  }
-
-  private async untrustCertificate(thumbprint: string): Promise<boolean> {
-    try {
-      if (os.type() === "Windows_NT") {
-        const installCertCommand = `certutil -user -grouppolicy -delstore TrustedPeople ${thumbprint}`;
-        await ps.execPowerShell(installCertCommand);
-        return true;
-      } else if (os.type() === "Darwin") {
-        // TODO: MacOS
-        return false;
-      } else {
-        // TODO: Linux
-        return false;
-      }
-    } catch (error) {
-      // treat any error as uninstall failure, to not block the main progress
-      this.logger?.debug(`Failed to uninstall certificate. Details: ${error}`);
       return false;
     }
   }

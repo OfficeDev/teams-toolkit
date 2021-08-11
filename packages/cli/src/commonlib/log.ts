@@ -3,11 +3,13 @@
 
 "use strict";
 
+import chalk from "chalk";
+import figures from "figures";
 import { LogLevel, LogProvider, Colors } from "@microsoft/teamsfx-api";
 
 import { CLILogLevel } from "../constants";
-import { getColorizedString } from "./../utils";
-import chalk from "chalk";
+import { getColorizedString } from "../utils";
+import ProgressController from "../progress/controller";
 
 export class CLILogProvider implements LogProvider {
   private static instance: CLILogProvider;
@@ -76,6 +78,7 @@ export class CLILogProvider implements LogProvider {
   }
 
   async log(logLevel: LogLevel, message: string): Promise<boolean> {
+    ProgressController.instance?.pause();
     switch (logLevel) {
       case LogLevel.Trace:
         if (CLILogProvider.logLevel === CLILogLevel.debug) {
@@ -102,13 +105,15 @@ export class CLILogProvider implements LogProvider {
         break;
       case LogLevel.Error:
       case LogLevel.Fatal:
-        console.error(chalk.redBright(`Error: ${message}`));
+        console.error(chalk.redBright(`(${figures.cross}) ${message}`));
         break;
     }
+    ProgressController.instance?.continue();
     return true;
   }
 
   necessaryLog(logLevel: LogLevel, message: string, white = false) {
+    ProgressController.instance?.pause();
     switch (logLevel) {
       case LogLevel.Trace:
       case LogLevel.Debug:
@@ -124,9 +129,10 @@ export class CLILogProvider implements LogProvider {
         break;
       case LogLevel.Error:
       case LogLevel.Fatal:
-        console.error(chalk.redBright(`Error: ${message}`));
+        console.error(chalk.redBright(`(${figures.cross}) ${message}`));
         break;
     }
+    ProgressController.instance?.continue();
   }
 
   rawLog(message: string) {

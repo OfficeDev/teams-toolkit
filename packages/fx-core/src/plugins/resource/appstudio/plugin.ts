@@ -131,7 +131,6 @@ export class AppStudioPluginImpl {
         appDirectory
       );
 
-      console.log(maybeTeamsAppId);
       return maybeTeamsAppId;
     } else {
       appDefinition = this.convertToAppDefinition(manifest, true);
@@ -676,7 +675,7 @@ export class AppStudioPluginImpl {
         return await AppStudioClient.publishTeamsApp(manifest.id, appContent, appStudioToken!);
       }
     } finally {
-      await publishProgress?.end();
+      await publishProgress?.end(true);
     }
   }
 

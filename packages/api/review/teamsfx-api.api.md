@@ -486,7 +486,7 @@ export interface IParameter {
 
 // @public (undocumented)
 export interface IProgressHandler {
-    end: () => Promise<void>;
+    end: (success: boolean) => Promise<void>;
     next: (detail?: string) => Promise<void>;
     start: (detail?: string) => Promise<void>;
 }

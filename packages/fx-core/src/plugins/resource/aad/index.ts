@@ -113,7 +113,7 @@ export class AadAppForTeamsPlugin implements Plugin {
         e instanceof UserError ? Telemetry.userError : Telemetry.systemError,
         errorMessage
       );
-      DialogUtils.progress?.end();
+      DialogUtils.progress?.end(false);
       return err(e);
     } else {
       if (!(e instanceof Error)) {

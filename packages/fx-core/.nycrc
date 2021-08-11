@@ -7,7 +7,7 @@
   ],
   "exclude": [
       "src/plugins/resource/function/utils/depsChecker/**/*"
-      "src/plugins/resourcelocaldebug/legacyPlugin.ts"
+      "src/plugins/resource/localdebug/legacyPlugin.ts"
   ],
   "reporter": [
     "text",

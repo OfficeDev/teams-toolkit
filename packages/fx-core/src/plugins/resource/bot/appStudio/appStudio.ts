@@ -12,9 +12,10 @@ import {
 import { CommonStrings, ConfigNames } from "../resources/strings";
 import { LifecycleFuncNames } from "../constants";
 import { RetryHandler } from "../utils/retryHandler";
+import { getAppStudioEndpoint } from "../../../..";
 
 export class AppStudio {
-  private static baseUrl = "https://dev.teams.microsoft.com";
+  private static baseUrl = getAppStudioEndpoint();
 
   private static newAxiosInstance(accessToken: string): AxiosInstance {
     if (!accessToken) {

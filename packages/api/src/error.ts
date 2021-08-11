@@ -178,8 +178,10 @@ export function assembleError(e: any, source?: string): FxError {
     const error = new Error(e);
     return new SystemError(error.name, e, source, error.stack);
   } else if (type === "object") {
-    if (e.name && e.message) {
-      return new SystemError(e.name, e.message, source, e.stack);
+    if (e.code || e.name || e.message) {
+      const fxError = new SystemError(e.code || e.name, e.message, source, e.stack);
+      Object.assign(fxError, e);
+      return fxError;
     }
   }
   const error = new Error(JSON.stringify(e));

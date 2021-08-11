@@ -51,13 +51,25 @@ import { getCodespaceName, getCodespaceUrl } from "./util/codespace";
 import { TelemetryUtils, TelemetryEventName } from "./util/telemetry";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+import { isMultiEnvEnabled } from "../../../common";
+import { legacyLocalDebugPlugin } from "./legacyPlugin";
+import {
+  LocalSettingsAuthKeys,
+  LocalSettingsBackendKeys,
+  LocalSettingsBotKeys,
+  LocalSettingsFrontendKeys,
+  LocalSettingsTeamsAppKeys,
+} from "../../../common/localSettingsConstants";
 @Service(ResourcePlugins.LocalDebugPlugin)
 export class LocalDebugPlugin implements Plugin {
   name = "fx-resource-local-debug";
   displayName = "LocalDebug";
+  localEnvs: { [key: string]: string } = {};
+
   activate(solutionSettings: AzureSolutionSettings): boolean {
     return true;
   }
+
   public async scaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
     const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
       ?.activeResourcePlugins;
@@ -191,6 +203,11 @@ export class LocalDebugPlugin implements Plugin {
   }
 
   public async localDebug(ctx: PluginContext): Promise<Result<any, FxError>> {
+    // fallback to original local debug logic if multi-env is not enabled
+    if (!isMultiEnvEnabled()) {
+      return await legacyLocalDebugPlugin.localDebug(ctx);
+    }
+
     const vscEnv = ctx.answers?.vscodeEnv;
     const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
       ?.activeResourcePlugins;
@@ -201,7 +218,7 @@ export class LocalDebugPlugin implements Plugin {
       (pluginName) => pluginName === FunctionPlugin.Name
     );
     const includeBot = selectedPlugins?.some((pluginName) => pluginName === BotPlugin.Name);
-    let skipNgrok = ctx.config?.get(LocalDebugConfigKeys.SkipNgrok) as string;
+    let skipNgrok = ctx.localSettings?.bot?.get(LocalSettingsBotKeys.SkipNgrok) as boolean;
 
     const telemetryProperties = {
       platform: ctx.answers?.platform as string,
@@ -209,7 +226,7 @@ export class LocalDebugPlugin implements Plugin {
       frontend: includeFrontend ? "true" : "false",
       function: includeBackend ? "true" : "false",
       bot: includeBot ? "true" : "false",
-      "skip-ngrok": skipNgrok,
+      "skip-ngrok": skipNgrok ? "true" : "false",
     };
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.localDebug, telemetryProperties);
@@ -236,37 +253,48 @@ export class LocalDebugPlugin implements Plugin {
         localFuncEndpoint = "http://localhost:7071";
       }
 
-      ctx.config.set(LocalDebugConfigKeys.LocalAuthEndpoint, localAuthEndpoint);
+      ctx.localSettings?.auth?.set(
+        LocalSettingsAuthKeys.SimpleAuthServiceEndpoint,
+        localAuthEndpoint
+      );
 
       if (includeFrontend) {
-        ctx.config.set(LocalDebugConfigKeys.LocalTabEndpoint, localTabEndpoint);
-        ctx.config.set(LocalDebugConfigKeys.LocalTabDomain, localTabDomain);
+        ctx.localSettings?.frontend?.set(LocalSettingsFrontendKeys.TabEndpoint, localTabEndpoint);
+        ctx.localSettings?.frontend?.set(LocalSettingsFrontendKeys.TabDomain, localTabDomain);
       }
 
       if (includeBackend) {
-        ctx.config.set(LocalDebugConfigKeys.LocalFunctionEndpoint, localFuncEndpoint);
+        ctx.localSettings?.backend?.set(
+          LocalSettingsBackendKeys.FunctionEndpoint,
+          localFuncEndpoint
+        );
       }
 
       if (includeBot) {
         if (skipNgrok === undefined) {
-          skipNgrok = "false";
-          ctx.config.set(LocalDebugConfigKeys.SkipNgrok, skipNgrok);
+          skipNgrok = false;
+          ctx.localSettings?.bot?.set(LocalSettingsBotKeys.SkipNgrok, skipNgrok);
         }
-        if (skipNgrok?.trim().toLowerCase() === "true") {
-          const localBotEndpoint = ctx.config.get(LocalDebugConfigKeys.LocalBotEndpoint) as string;
+
+        if (skipNgrok) {
+          const localBotEndpoint = ctx.localSettings?.bot?.get(
+            LocalSettingsBotKeys.BotEndpoint
+          ) as string;
           if (localBotEndpoint === undefined) {
             const error = LocalBotEndpointNotConfigured();
             TelemetryUtils.sendErrorEvent(TelemetryEventName.localDebug, error);
             return err(error);
           }
+
           const botEndpointRegex = /https:\/\/.*(:\d+)?/g;
           if (!botEndpointRegex.test(localBotEndpoint)) {
             const error = InvalidLocalBotEndpointFormat(localBotEndpoint);
             TelemetryUtils.sendErrorEvent(TelemetryEventName.localDebug, error);
             return err(error);
           }
-          ctx.config.set(LocalDebugConfigKeys.LocalBotEndpoint, localBotEndpoint);
-          ctx.config.set(LocalDebugConfigKeys.LocalBotDomain, localBotEndpoint.slice(8));
+
+          ctx.localSettings?.bot?.set(LocalSettingsBotKeys.BotEndpoint, localBotEndpoint);
+          ctx.localSettings?.bot?.set(LocalSettingsBotKeys.BotDomain, localBotEndpoint.slice(8));
         } else {
           const ngrokHttpUrl = await getNgrokHttpUrl(3978);
           if (!ngrokHttpUrl) {
@@ -274,8 +302,8 @@ export class LocalDebugPlugin implements Plugin {
             TelemetryUtils.sendErrorEvent(TelemetryEventName.localDebug, error);
             return err(error);
           } else {
-            ctx.config.set(LocalDebugConfigKeys.LocalBotEndpoint, ngrokHttpUrl);
-            ctx.config.set(LocalDebugConfigKeys.LocalBotDomain, ngrokHttpUrl.slice(8));
+            ctx.localSettings?.bot?.set(LocalSettingsBotKeys.BotEndpoint, ngrokHttpUrl);
+            ctx.localSettings?.bot?.set(LocalSettingsBotKeys.BotDomain, ngrokHttpUrl.slice(8));
           }
         }
       }
@@ -286,6 +314,40 @@ export class LocalDebugPlugin implements Plugin {
   }
 
   public async postLocalDebug(ctx: PluginContext): Promise<Result<any, FxError>> {
+    // fallback to original post-localdebug logic if multi-env is not enabled
+    // And the post-localdebug lifecycle can be removed if we use localSettings.json
+    // and remove the local.env file for local debug,
+    if (!isMultiEnvEnabled()) {
+      return await legacyLocalDebugPlugin.postLocalDebug(ctx);
+    }
+
+    let trustDevCert = ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TrustDevCert);
+
+    // setup local certificate
+    try {
+      if (trustDevCert === undefined) {
+        trustDevCert = true;
+        ctx.localSettings?.frontend?.set(LocalSettingsFrontendKeys.TrustDevCert, trustDevCert);
+      }
+
+      const certManager = new LocalCertificateManager(ctx);
+      const localCert = await certManager.setupCertificate(trustDevCert);
+      if (localCert) {
+        ctx.localSettings?.frontend?.set(LocalSettingsFrontendKeys.SslCertFile, localCert.certPath);
+
+        ctx.localSettings?.frontend?.set(LocalSettingsFrontendKeys.SslKeyFile, localCert.keyPath);
+        ctx.localSettings?.frontend?.set(LocalSettingsFrontendKeys.SslCertFile, localCert.certPath);
+      }
+    } catch (error) {
+      // do not break if cert error
+    }
+
+    this.localEnvs = await this.getLocalDebugEnvs(ctx);
+
+    return ok(undefined);
+  }
+
+  public async getLocalDebugEnvs(ctx: PluginContext): Promise<Record<string, string>> {
     const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
       ?.activeResourcePlugins;
     const includeFrontend = selectedPlugins?.some(
@@ -295,145 +357,119 @@ export class LocalDebugPlugin implements Plugin {
       (pluginName) => pluginName === FunctionPlugin.Name
     );
     const includeBot = selectedPlugins?.some((pluginName) => pluginName === BotPlugin.Name);
-    let trustDevCert = ctx.config?.get(LocalDebugConfigKeys.TrustDevelopmentCertificate) as string;
 
-    const telemetryProperties = {
-      platform: ctx.answers?.platform as string,
-      frontend: includeFrontend ? "true" : "false",
-      function: includeBackend ? "true" : "false",
-      bot: includeBot ? "true" : "false",
-      "trust-development-certificate": trustDevCert,
-    };
-    TelemetryUtils.init(ctx);
-    TelemetryUtils.sendStartEvent(TelemetryEventName.postLocalDebug, telemetryProperties);
+    // get config for local debug
+    const aadConfigs = ctx.configOfOtherPlugins.get(AadPlugin.Name);
+    const clientId = ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId) as string;
+    const clientSecret = ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientSecret) as string;
+    const applicationIdUri = ctx.localSettings?.auth?.get(
+      LocalSettingsAuthKeys.ApplicationIdUris
+    ) as string;
+    const teamsAppTenantId = ctx.localSettings?.teamsApp.get(
+      LocalSettingsTeamsAppKeys.TenantId
+    ) as string;
 
-    if (ctx.answers?.platform === Platform.VSCode || ctx.answers?.platform === Platform.CLI) {
-      const localEnvProvider = new LocalEnvProvider(ctx.root);
-      const localEnvs = await localEnvProvider.loadLocalEnv(
-        includeFrontend,
-        includeBackend,
-        includeBot
-      );
+    // TODO: since this app ids of the Teams client app (mobile/desktop/web) are fixed
+    // We can read it from constants intead of the env config file.
+    const teamsMobileDesktopAppId = aadConfigs?.get(AadPlugin.TeamsMobileDesktopAppId) as string;
+    const teamsWebAppId = aadConfigs?.get(AadPlugin.TeamsWebAppId) as string;
 
-      // configs
-      const localDebugConfigs = ctx.config;
-      const aadConfigs = ctx.configOfOtherPlugins.get(AadPlugin.Name);
-      const runtimeConnectorConfigs = ctx.configOfOtherPlugins.get(RuntimeConnectorPlugin.Name);
-      const solutionConfigs = ctx.configOfOtherPlugins.get(SolutionPlugin.Name);
-      const clientId = aadConfigs?.get(AadPlugin.LocalClientId) as string;
-      const clientSecret = aadConfigs?.get(AadPlugin.LocalClientSecret) as string;
-      const teamsAppTenantId = solutionConfigs?.get(SolutionPlugin.TeamsAppTenantId) as string;
-      const teamsMobileDesktopAppId = aadConfigs?.get(AadPlugin.TeamsMobileDesktopAppId) as string;
-      const teamsWebAppId = aadConfigs?.get(AadPlugin.TeamsWebAppId) as string;
-      const localAuthPackagePath = runtimeConnectorConfigs?.get(
-        RuntimeConnectorPlugin.FilePath
+    const localAuthPackagePath = ctx.localSettings?.auth?.get(
+      LocalSettingsAuthKeys.SimpleAuthFilePath
+    ) as string;
+    const localAuthEndpoint = ctx.localSettings?.auth?.get(
+      LocalSettingsAuthKeys.SimpleAuthServiceEndpoint
+    ) as string;
+    const localTabEndpoint = ctx.localSettings?.frontend?.get(
+      LocalSettingsFrontendKeys.TabEndpoint
+    ) as string;
+    const localFuncEndpoint = ctx.localSettings?.backend?.get(
+      LocalSettingsBackendKeys.FunctionEndpoint
+    ) as string;
+
+    //const this.localEnvs: Record<string, string> = {};
+    if (includeFrontend) {
+      // frontend local envs
+      this.localEnvs[LocalEnvFrontendKeys.TeamsFxEndpoint] = localAuthEndpoint;
+      this.localEnvs[LocalEnvFrontendKeys.LoginUrl] = `${localTabEndpoint}/auth-start.html`;
+      this.localEnvs[LocalEnvFrontendKeys.ClientId] = clientId;
+
+      // auth local envs (auth is only required by frontend)
+      this.localEnvs[LocalEnvAuthKeys.Urls] = localAuthEndpoint;
+      this.localEnvs[LocalEnvAuthKeys.ClientId] = clientId;
+      this.localEnvs[LocalEnvAuthKeys.ClientSecret] = clientSecret;
+      this.localEnvs[LocalEnvAuthKeys.IdentifierUri] = aadConfigs?.get(
+        AadPlugin.LocalAppIdUri
       ) as string;
+      this.localEnvs[
+        LocalEnvAuthKeys.AadMetadataAddress
+      ] = `https://login.microsoftonline.com/${teamsAppTenantId}/v2.0/.well-known/openid-configuration`;
+      this.localEnvs[
+        LocalEnvAuthKeys.OauthAuthority
+      ] = `https://login.microsoftonline.com/${teamsAppTenantId}`;
+      this.localEnvs[LocalEnvAuthKeys.TabEndpoint] = localTabEndpoint;
+      this.localEnvs[LocalEnvAuthKeys.AllowedAppIds] = [
+        teamsMobileDesktopAppId,
+        teamsWebAppId,
+      ].join(";");
 
-      if (includeFrontend) {
-        // frontend local envs
-        localEnvs[LocalEnvFrontendKeys.TeamsFxEndpoint] = localDebugConfigs.get(
-          LocalDebugConfigKeys.LocalAuthEndpoint
-        ) as string;
-        localEnvs[LocalEnvFrontendKeys.LoginUrl] = `${
-          localDebugConfigs.get(LocalDebugConfigKeys.LocalTabEndpoint) as string
-        }/auth-start.html`;
-        localEnvs[LocalEnvFrontendKeys.ClientId] = clientId;
-
-        // auth local envs (auth is only required by frontend)
-        localEnvs[LocalEnvAuthKeys.ClientId] = clientId;
-        localEnvs[LocalEnvAuthKeys.ClientSecret] = clientSecret;
-        localEnvs[LocalEnvAuthKeys.IdentifierUri] = aadConfigs?.get(
-          AadPlugin.LocalAppIdUri
-        ) as string;
-        localEnvs[
-          LocalEnvAuthKeys.AadMetadataAddress
-        ] = `https://login.microsoftonline.com/${teamsAppTenantId}/v2.0/.well-known/openid-configuration`;
-        localEnvs[
-          LocalEnvAuthKeys.OauthAuthority
-        ] = `https://login.microsoftonline.com/${teamsAppTenantId}`;
-        localEnvs[LocalEnvAuthKeys.TabEndpoint] = localDebugConfigs.get(
-          LocalDebugConfigKeys.LocalTabEndpoint
-        ) as string;
-        localEnvs[LocalEnvAuthKeys.AllowedAppIds] = [teamsMobileDesktopAppId, teamsWebAppId].join(
-          ";"
-        );
-        localEnvs[LocalEnvAuthKeys.ServicePath] = await prepareLocalAuthService(
+      if (localAuthPackagePath) {
+        this.localEnvs[LocalEnvAuthKeys.ServicePath] = await prepareLocalAuthService(
           localAuthPackagePath
         );
-
-        if (includeBackend) {
-          localEnvs[LocalEnvFrontendKeys.FuncEndpoint] = localDebugConfigs.get(
-            LocalDebugConfigKeys.LocalFunctionEndpoint
-          ) as string;
-          localEnvs[LocalEnvFrontendKeys.FuncName] = ctx.configOfOtherPlugins
-            .get(FunctionPlugin.Name)
-            ?.get(FunctionPlugin.DefaultFunctionName) as string;
-
-          // function local envs
-          localEnvs[LocalEnvBackendKeys.ClientId] = clientId;
-          localEnvs[LocalEnvBackendKeys.ClientSecret] = clientSecret;
-          localEnvs[LocalEnvBackendKeys.AuthorityHost] = "https://login.microsoftonline.com";
-          localEnvs[LocalEnvBackendKeys.TenantId] = teamsAppTenantId;
-          localEnvs[LocalEnvBackendKeys.ApiEndpoint] = localDebugConfigs.get(
-            LocalDebugConfigKeys.LocalFunctionEndpoint
-          ) as string;
-          localEnvs[LocalEnvBackendKeys.ApplicationIdUri] = aadConfigs?.get(
-            AadPlugin.LocalAppIdUri
-          ) as string;
-          localEnvs[LocalEnvBackendKeys.AllowedAppIds] = [
-            teamsMobileDesktopAppId,
-            teamsWebAppId,
-          ].join(";");
-        }
-
-        // local certificate
-        try {
-          if (trustDevCert === undefined) {
-            trustDevCert = "true";
-            ctx.config.set(LocalDebugConfigKeys.TrustDevelopmentCertificate, trustDevCert);
-          }
-          const needTrust = trustDevCert.trim().toLowerCase() === "true";
-          const certManager = new LocalCertificateManager(ctx);
-          const localCert = await certManager.setupCertificate(needTrust);
-          if (localCert) {
-            localEnvs[LocalEnvCertKeys.SslCrtFile] = localCert.certPath;
-            localEnvs[LocalEnvCertKeys.SslKeyFile] = localCert.keyPath;
-          }
-        } catch (error) {
-          // do not break if cert error
-        }
       }
 
-      if (includeBot) {
-        // bot local env
-        const botConfigs = ctx.configOfOtherPlugins.get(BotPlugin.Name);
-        localEnvs[LocalEnvBotKeys.BotId] = botConfigs?.get(BotPlugin.LocalBotId) as string;
-        localEnvs[LocalEnvBotKeys.BotPassword] = botConfigs?.get(
-          BotPlugin.LocalBotPassword
-        ) as string;
-        localEnvs[LocalEnvBotKeys.ClientId] = clientId;
-        localEnvs[LocalEnvBotKeys.ClientSecret] = clientSecret;
-        localEnvs[LocalEnvBotKeys.TenantID] = teamsAppTenantId;
-        localEnvs[LocalEnvBotKeys.OauthAuthority] = "https://login.microsoftonline.com";
-        localEnvs[LocalEnvBotKeys.LoginEndpoint] = `${
-          localDebugConfigs.get(LocalDebugConfigKeys.LocalBotEndpoint) as string
-        }/auth-start.html`;
-        localEnvs[LocalEnvBotKeys.ApplicationIdUri] = aadConfigs?.get(
-          AadPlugin.LocalAppIdUri
-        ) as string;
+      if (includeBackend) {
+        this.localEnvs[LocalEnvFrontendKeys.FuncEndpoint] = localFuncEndpoint;
+        this.localEnvs[LocalEnvFrontendKeys.FuncName] = ctx.configOfOtherPlugins
+          .get(FunctionPlugin.Name)
+          ?.get(FunctionPlugin.DefaultFunctionName) as string;
+        this.localEnvs[LocalEnvBackendKeys.FuncWorkerRuntime] = "node";
 
-        if (includeBackend) {
-          localEnvs[LocalEnvBackendKeys.ApiEndpoint] = localDebugConfigs.get(
-            LocalDebugConfigKeys.LocalFunctionEndpoint
-          ) as string;
-        }
+        // function local envs
+        this.localEnvs[LocalEnvBackendKeys.ClientId] = clientId;
+        this.localEnvs[LocalEnvBackendKeys.ClientSecret] = clientSecret;
+        this.localEnvs[LocalEnvBackendKeys.AuthorityHost] = "https://login.microsoftonline.com";
+        this.localEnvs[LocalEnvBackendKeys.TenantId] = teamsAppTenantId;
+        this.localEnvs[LocalEnvBackendKeys.ApiEndpoint] = localFuncEndpoint;
+        this.localEnvs[LocalEnvBackendKeys.ApplicationIdUri] = applicationIdUri;
+        this.localEnvs[LocalEnvBackendKeys.AllowedAppIds] = [
+          teamsMobileDesktopAppId,
+          teamsWebAppId,
+        ].join(";");
       }
 
-      await localEnvProvider.saveLocalEnv(localEnvs);
+      this.localEnvs[LocalEnvCertKeys.SslCrtFile] = ctx.localSettings?.frontend?.get(
+        LocalSettingsFrontendKeys.SslCertFile
+      );
+      this.localEnvs[LocalEnvCertKeys.SslKeyFile] = ctx.localSettings?.frontend?.get(
+        LocalSettingsFrontendKeys.SslKeyFile
+      );
     }
 
-    TelemetryUtils.sendSuccessEvent(TelemetryEventName.postLocalDebug, telemetryProperties);
-    return ok(undefined);
+    if (includeBot) {
+      // bot local env
+      this.localEnvs[LocalEnvBotKeys.BotId] = ctx.localSettings?.bot?.get(
+        LocalSettingsBotKeys.BotId
+      ) as string;
+      this.localEnvs[LocalEnvBotKeys.BotPassword] = ctx.localSettings?.bot?.get(
+        LocalSettingsBotKeys.BotPassword
+      ) as string;
+      this.localEnvs[LocalEnvBotKeys.ClientId] = clientId;
+      this.localEnvs[LocalEnvBotKeys.ClientSecret] = clientSecret;
+      this.localEnvs[LocalEnvBotKeys.TenantID] = teamsAppTenantId;
+      this.localEnvs[LocalEnvBotKeys.OauthAuthority] = "https://login.microsoftonline.com";
+      this.localEnvs[LocalEnvBotKeys.LoginEndpoint] = ctx.localSettings?.bot?.get(
+        LocalSettingsBotKeys.BotEndpoint
+      ) as string;
+      this.localEnvs[LocalEnvBotKeys.ApplicationIdUri] = applicationIdUri;
+
+      if (includeBackend) {
+        this.localEnvs[LocalEnvBackendKeys.ApiEndpoint] = localFuncEndpoint;
+      }
+    }
+
+    return this.localEnvs;
   }
 
   public async executeUserTask(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {
@@ -450,11 +486,19 @@ export class LocalDebugPlugin implements Plugin {
         }
       } else {
         // return local teams app id
-        return ok(solutionConfigs?.get(SolutionPlugin.LocalTeamsAppId) as string);
+        const localTeamsAppId = isMultiEnvEnabled()
+          ? (ctx.localSettings?.teamsApp.get(LocalSettingsTeamsAppKeys.TeamsAppId) as string)
+          : (solutionConfigs?.get(SolutionPlugin.LocalTeamsAppId) as string);
+        return ok(localTeamsAppId);
       }
     } else if (func.method === "getProgrammingLanguage") {
       const programmingLanguage = ctx.projectSettings?.programmingLanguage;
       return ok(programmingLanguage);
+    } else if (func.method === "getSkipNgrokConfig") {
+      const skipNgrok = ctx.localSettings?.bot?.get(LocalSettingsBotKeys.SkipNgrok);
+      return ok(skipNgrok);
+    } else if (func.method === "getLocalDebugEnvs") {
+      return ok(this.localEnvs);
     }
 
     return ok(undefined);

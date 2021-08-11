@@ -15,6 +15,7 @@ import {
   LogLevel,
   ok,
   Platform,
+  ProjectConfig,
   Result,
 } from "@microsoft/teamsfx-api";
 import { FxCore } from "@microsoft/teamsfx-core";
@@ -45,6 +46,7 @@ import { CLIAdapter } from "./depsChecker/cliAdapter";
 import { cliEnvCheckerTelemetry } from "./depsChecker/cliTelemetry";
 import { isWindows } from "./depsChecker/common";
 import { URL } from "url";
+import { isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 
 export default class Preview extends YargsCommand {
   public readonly commandHead = `preview`;
@@ -219,10 +221,16 @@ export default class Preview extends YargsCommand {
     await this.serviceLogWriter.init();
 
     /* === start ngrok === */
-    const skipNgrokConfig = config?.config
-      ?.get(constants.localDebugPluginName)
-      ?.get(constants.skipNgrokConfigKey) as string;
-    const skipNgrok = skipNgrokConfig !== undefined && skipNgrokConfig.trim() === "true";
+    let skipNgrok: boolean;
+    if (isMultiEnvEnabled()) {
+      skipNgrok = config?.localSettings?.bot?.get(constants.skipNgrokConfigKey) as boolean;
+    } else {
+      const skipNgrokConfig = config?.config
+        ?.get(constants.localDebugPluginName)
+        ?.get(constants.skipNgrokConfigKey) as string;
+      skipNgrok = skipNgrokConfig !== undefined && skipNgrokConfig.trim() === "true";
+    }
+
     if (includeBot && !skipNgrok) {
       const result = await this.startNgrok(botRoot);
       if (result.isErr()) {
@@ -260,6 +268,7 @@ export default class Preview extends YargsCommand {
     }
 
     result = await this.startServices(
+      core,
       workspaceFolder,
       programmingLanguage,
       includeFrontend ? frontendRoot : undefined,
@@ -286,12 +295,9 @@ export default class Preview extends YargsCommand {
     }
     config = configResult.value;
 
-    const tenantId = config?.config
-      ?.get(constants.solutionPluginName)
-      ?.get(constants.teamsAppTenantIdConfigKey) as string;
-    const localTeamsAppId = config?.config
-      ?.get(constants.solutionPluginName)
-      ?.get(constants.localTeamsAppIdConfigKey) as string;
+    const tenantId = this.getLocalDebugTenantId(config);
+    const localTeamsAppId = this.getLocalTeamsAppId(config);
+
     if (localTeamsAppId === undefined || localTeamsAppId.length === 0) {
       return err(errors.TeamsAppIdNotExists());
     }
@@ -737,7 +743,28 @@ export default class Preview extends YargsCommand {
     return ok(null);
   }
 
+  private getLocalDebugTenantId(config: ProjectConfig | undefined): string {
+    const tenantId = isMultiEnvEnabled()
+      ? (config?.localSettings?.teamsApp.get(constants.localSettingsTenantIdConfigKey) as string)
+      : (config?.config
+          ?.get(constants.solutionPluginName)
+          ?.get(constants.teamsAppTenantIdConfigKey) as string);
+
+    return tenantId;
+  }
+
+  private getLocalTeamsAppId(config: ProjectConfig | undefined): string {
+    const localTeamsAppId = isMultiEnvEnabled()
+      ? (config?.localSettings?.teamsApp.get(constants.localSettingsTeamsAppIdConfigKey) as string)
+      : (config?.config
+          ?.get(constants.solutionPluginName)
+          ?.get(constants.localTeamsAppIdConfigKey) as string);
+
+    return localTeamsAppId;
+  }
+
   private async startServices(
+    core: FxCore,
     workspaceFolder: string,
     programmingLanguage: string,
     frontendRoot: string | undefined,
@@ -748,7 +775,7 @@ export default class Preview extends YargsCommand {
   ): Promise<Result<null, FxError>> {
     let frontendStartTask: Task | undefined;
     if (frontendRoot !== undefined) {
-      const env = await commonUtils.getFrontendLocalEnv(workspaceFolder);
+      const env = await commonUtils.getFrontendLocalEnv(core, workspaceFolder);
       frontendStartTask = new Task(
         constants.frontendStartTitle,
         true,
@@ -765,8 +792,8 @@ export default class Preview extends YargsCommand {
 
     let authStartTask: Task | undefined;
     if (frontendRoot !== undefined) {
-      const cwd = await commonUtils.getAuthServicePath(workspaceFolder);
-      const env = await commonUtils.getAuthLocalEnv(workspaceFolder);
+      const cwd = await commonUtils.getAuthServicePath(core, workspaceFolder);
+      const env = await commonUtils.getAuthLocalEnv(core, workspaceFolder);
       authStartTask = new Task(
         constants.authStartTitle,
         true,
@@ -785,7 +812,7 @@ export default class Preview extends YargsCommand {
     let backendStartTask: Task | undefined;
     let backendWatchTask: Task | undefined;
     if (backendRoot !== undefined) {
-      const env = await commonUtils.getBackendLocalEnv(workspaceFolder);
+      const env = await commonUtils.getBackendLocalEnv(core, workspaceFolder);
       const mergedEnv = commonUtils.mergeProcessEnv(env);
       const command =
         programmingLanguage === constants.ProgrammingLanguage.typescript
@@ -827,7 +854,7 @@ export default class Preview extends YargsCommand {
         programmingLanguage === constants.ProgrammingLanguage.typescript
           ? constants.botStartTsCommand
           : constants.botStartJsCommand;
-      const env = await commonUtils.getBotLocalEnv(workspaceFolder);
+      const env = await commonUtils.getBotLocalEnv(core, workspaceFolder);
       botStartTask = new Task(constants.botStartTitle, true, command, undefined, {
         shell: true,
         cwd: botRoot,

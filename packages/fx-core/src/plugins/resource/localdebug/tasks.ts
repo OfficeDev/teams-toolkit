@@ -162,7 +162,7 @@ function prepareLocalEnvironment(): Record<string, unknown> {
   return {
     label: "prepare local environment",
     type: "shell",
-    command: "${command:fx-extension.pre-debug-check}",
+    command: "echo ${command:fx-extension.pre-debug-check}",
   };
 }
 

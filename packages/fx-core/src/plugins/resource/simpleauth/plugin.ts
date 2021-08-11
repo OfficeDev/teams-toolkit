@@ -14,6 +14,7 @@ import { getTemplatesFolder } from "../../..";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import { checkAzureResourcePermission } from "../../../common/checkAzureResourcePermission";
 import { generateBicepFiles, getArmOutput, isArmSupportEnabled } from "../../../common";
+import { ResourcePermission } from "../../../common/permissionInterface";
 
 export class SimpleAuthPluginImpl {
   webAppClient!: WebAppClient;
@@ -248,7 +249,10 @@ export class SimpleAuthPluginImpl {
   ): Promise<Result<Map<string, string[]>, FxError>> {
     let checkAzureResourcePermissionError;
     let azureResourceRoles;
-
+    let subscriptionId;
+    let resourceGroupName;
+    let webAppName;
+    let resourceId;
     try {
       const credentials = await ctx.azureAccountProvider!.getAccountCredentialAsync();
       if (!credentials) {
@@ -265,10 +269,7 @@ export class SimpleAuthPluginImpl {
         Constants.SolutionPlugin.configKeys.resourceNameSuffix
       ) as string;
 
-      const webAppName = Utils.generateResourceName(
-        ctx.projectSettings!.appName,
-        resourceNameSuffix
-      );
+      webAppName = Utils.generateResourceName(ctx.projectSettings!.appName, resourceNameSuffix);
 
       const subscriptionInfo = await ctx.azureAccountProvider?.getSelectedSubscription();
       if (!subscriptionInfo) {
@@ -280,14 +281,14 @@ export class SimpleAuthPluginImpl {
           )
         );
       }
-      const subscriptionId = subscriptionInfo!.subscriptionId;
-      const resourceGroupName = Utils.getConfigValueWithValidation(
+      subscriptionId = subscriptionInfo!.subscriptionId;
+      resourceGroupName = Utils.getConfigValueWithValidation(
         ctx,
         Constants.SolutionPlugin.id,
         Constants.SolutionPlugin.configKeys.resourceGroupName
       ) as string;
 
-      const resourceId = `subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.Web/sites/${webAppName}`;
+      resourceId = `subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.Web/sites/${webAppName}`;
 
       azureResourceRoles = await checkAzureResourcePermission(
         resourceId,
@@ -298,13 +299,19 @@ export class SimpleAuthPluginImpl {
       checkAzureResourcePermissionError = e;
     }
 
-    return ResultFactory.Success([
+    const resourcePermission: ResourcePermission[] = [
       {
         name: Constants.Permissions.name,
         type: Constants.Permissions.type,
         roles: azureResourceRoles,
         error: checkAzureResourcePermissionError,
+        subscriptionId: subscriptionId,
+        resourceGroupName: resourceGroupName,
+        resourceName: webAppName,
+        resourceId: resourceId,
       },
-    ]);
+    ];
+
+    return ResultFactory.Success(resourcePermission);
   }
 }

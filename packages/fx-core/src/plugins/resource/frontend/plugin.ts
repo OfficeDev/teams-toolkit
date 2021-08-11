@@ -56,6 +56,7 @@ import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import * as fs from "fs-extra";
 import { ConstantString } from "../../../common/constants";
 import { checkAzureResourcePermission } from "../../../common/checkAzureResourcePermission";
+import { ResourcePermission } from "../../../common/permissionInterface";
 
 export class FrontendPluginImpl {
   private setConfigIfNotExists(ctx: PluginContext, key: string, value: unknown): void {
@@ -336,14 +337,18 @@ export class FrontendPluginImpl {
   public async checkPermission(ctx: PluginContext): Promise<TeamsFxResult> {
     let checkAzureResourcePermissionError;
     let azureResourceRoles;
+    let subscriptionId;
+    let resourceGroupName;
+    let storageAccountName;
+    let resourceId;
 
     try {
       const config = await FrontendConfig.fromPluginContext(ctx);
-      const subscriptionId = config.subscriptionId;
-      const resourceGroupName = config.resourceGroupName;
-      const storageAccountName = config.storageName;
+      subscriptionId = config.subscriptionId;
+      resourceGroupName = config.resourceGroupName;
+      storageAccountName = config.storageName;
 
-      const resourceId = `subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.Storage/storageAccounts/${storageAccountName}`;
+      resourceId = `subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.Storage/storageAccounts/${storageAccountName}`;
       const accessToken = (await config.credentials.getToken()).accessToken;
 
       const accountInfo = await ctx.azureAccountProvider!.getAccountInfo();
@@ -358,13 +363,18 @@ export class FrontendPluginImpl {
       checkAzureResourcePermissionError = e;
     }
 
-    return ok([
+    const resourcePermission: ResourcePermission[] = [
       {
         name: Constants.permissions.name,
         roles: azureResourceRoles,
         type: Constants.permissions.type,
         error: checkAzureResourcePermissionError,
+        subscriptionId: subscriptionId,
+        resourceGroupName: resourceGroupName,
+        resourceName: storageAccountName,
+        resourceId: resourceId,
       },
-    ]);
+    ];
+    return ok(resourcePermission);
   }
 }

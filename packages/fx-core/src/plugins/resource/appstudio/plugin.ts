@@ -74,6 +74,7 @@ import * as fs from "fs-extra";
 import { getTemplatesFolder } from "../../..";
 import path from "path";
 import { getArmOutput, isArmSupportEnabled, getAppDirectory } from "../../../common";
+import { ResourcePermission } from "../../../common/permissionInterface";
 
 export class AppStudioPluginImpl {
   public async getAppDefinitionAndUpdate(
@@ -613,14 +614,13 @@ export class AppStudioPluginImpl {
     return ok(undefined);
   }
 
-  public async checkPermission(
-    ctx: PluginContext
-  ): Promise<Result<{ name: string; roles: string[] | undefined; error: any }[], FxError>> {
+  public async checkPermission(ctx: PluginContext): Promise<Result<ResourcePermission[], FxError>> {
     let teamsAppRoles;
     let checkTeamsAppPermissionError;
+    let teamsAppId;
     try {
       const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
-      const teamsAppId = (await ctx.configOfOtherPlugins
+      teamsAppId = (await ctx.configOfOtherPlugins
         .get("solution")
         ?.get("remoteTeamsAppId")) as string;
       const userInfo = ctx.configOfOtherPlugins.get("solution")?.get("userInfo");
@@ -638,14 +638,16 @@ export class AppStudioPluginImpl {
       checkTeamsAppPermissionError = error;
     }
 
-    return ok([
+    const result: ResourcePermission[] = [
       {
         name: Constants.PERMISSIONS.name,
         roles: [teamsAppRoles as string],
         type: Constants.PERMISSIONS.type,
         error: checkTeamsAppPermissionError,
+        resourceId: teamsAppId,
       },
-    ]);
+    ];
+    return ok(result);
   }
 
   private async beforePublish(

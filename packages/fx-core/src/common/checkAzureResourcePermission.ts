@@ -32,7 +32,7 @@ export async function checkAzureResourcePermission(
     userRolesArray.push(roleDefinition.data.properties.roleName);
   }
 
-  if (userRolesArray.length == 0) {
+  if (userRolesArray.length === 0) {
     userRolesArray.push(ConstantString.noPermission);
   }
 

@@ -57,6 +57,7 @@ import { BotAuthCredential } from "./botAuthCredential";
 import { AzureOperations } from "./azureOps";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { checkAzureResourcePermission } from "../../../common/checkAzureResourcePermission";
+import { ResourcePermission } from "../../../common/permissionInterface";
 
 export class TeamsBotImpl {
   // Made config plubic, because expect the upper layer to fill inputs.
@@ -598,16 +599,20 @@ export class TeamsBotImpl {
   public async checkPermission(context: PluginContext): Promise<FxResult> {
     let checkAzureResourcePermissionError;
     let azureResourceRoles;
-    const res = [];
+    let subscriptionId;
+    let resourceGroupName;
+    let webAppName;
+    let resourceId;
+    const res: ResourcePermission[] = [];
 
     try {
       this.ctx = context;
       await this.config.restoreConfigFromContext(context);
-      const subscriptionId = this.config.provision.subscriptionId;
-      const resourceGroupName = this.config.provision.resourceGroup;
-      const webAppName = this.config.provision.siteName;
+      subscriptionId = this.config.provision.subscriptionId;
+      resourceGroupName = this.config.provision.resourceGroup;
+      webAppName = this.config.provision.siteName;
 
-      const resourceId = `subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.Web/sites/${webAppName}`;
+      resourceId = `subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.Web/sites/${webAppName}`;
 
       const serviceClientCredentials = await this.getAzureAccountCredenial();
       const accessToken = (await serviceClientCredentials.getToken()).accessToken;
@@ -624,17 +629,24 @@ export class TeamsBotImpl {
       checkAzureResourcePermissionError = e;
     }
 
-    res.push({
+    const webAppPermission: ResourcePermission = {
       name: BotPermissions.webAppPermissions.name,
       roles: azureResourceRoles,
       error: checkAzureResourcePermissionError,
       type: BotPermissions.webAppPermissions.type,
-    });
+      subscriptionId: subscriptionId,
+      resourceGroupName: resourceGroupName,
+      resourceName: webAppName,
+      resourceId: resourceId,
+    };
+
+    res.push(webAppPermission);
 
     const checkBotAad = false;
     if (checkBotAad) {
       let isAadOwner;
       let checkAadPermissionError;
+      let userGraphObjectId;
       try {
         const graphToken = await this.ctx?.graphTokenProvider?.getAccessToken();
         const userInfo = this.ctx!.configOfOtherPlugins.get(PluginSolution.PLUGIN_NAME)?.get(
@@ -645,7 +657,7 @@ export class TeamsBotImpl {
           throw new Error("no userinfo in context");
         }
         const userInfoObject = JSON.parse(userInfo as string);
-        const userGraphObjectId = userInfoObject["aadId"];
+        userGraphObjectId = userInfoObject["aadId"];
         const objectId: string = this.ctx!.config.get(PluginBot.OBJECT_ID) as string;
         isAadOwner = await AADPermissionControl.checkPermission(
           graphToken as string,
@@ -656,14 +668,16 @@ export class TeamsBotImpl {
         checkAadPermissionError = e;
       }
 
-      res.push({
+      const botAppPermission: ResourcePermission = {
         name: BotPermissions.aadPermissions.name,
         type: BotPermissions.aadPermissions.type,
         roles: isAadOwner
           ? [BotPermissions.aadPermissions.owner]
           : [BotPermissions.aadPermissions.noPermission],
         error: checkAadPermissionError,
-      });
+        resourceId: userGraphObjectId,
+      };
+      res.push(botAppPermission);
     }
 
     return ResultFactory.Success(res);

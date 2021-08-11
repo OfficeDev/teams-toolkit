@@ -111,6 +111,7 @@ import axios from "axios";
 import { deployArmTemplates, generateArmTemplate } from "./arm";
 import { LocalSettingsProvider } from "../../../common/localSettingsProvider";
 import { PluginDisplayName } from "../../../common/constants";
+import { ResourcePermission } from "../../../common/permissionInterface";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -1384,11 +1385,19 @@ export class TeamsAppSolution implements Solution {
       }
       if (result && result.value) {
         for (const res of result.value) {
-          if (res.type === type) {
-            if (!res.error) {
-              ctx.logProvider?.info(`${res.name}: ${res.roles.join(",")}`);
+          const permission = res as ResourcePermission;
+          if (permission.type === type) {
+            if (!permission.error) {
+              ctx.logProvider?.info(`${permission.name}: ${permission.roles!.join(",")}`);
+              if (type === "Azure") {
+                ctx.logProvider?.debug(`Subscription Id: ${permission.subscriptionId}`);
+                ctx.logProvider?.debug(`Resource Group: ${permission.resourceGroupName}`);
+                ctx.logProvider?.debug(`Resource Name: ${permission.resourceName}`);
+              } else {
+                ctx.logProvider?.debug(`Resource Id: ${permission.resourceId}`);
+              }
             } else {
-              ctx.logProvider?.error(`${errorMsg} ${res.name}: ${res.error.message}`);
+              ctx.logProvider?.error(`${errorMsg} ${permission.name}: ${permission.error.message}`);
             }
           }
         }

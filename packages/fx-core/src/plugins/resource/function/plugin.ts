@@ -74,6 +74,7 @@ import { funcPluginLogger } from "./utils/depsChecker/funcPluginLogger";
 import { FuncPluginTelemetry } from "./utils/depsChecker/funcPluginTelemetry";
 import { TelemetryHelper } from "./utils/telemetry-helper";
 import { checkAzureResourcePermission } from "../../../common/checkAzureResourcePermission";
+import { ResourcePermission } from "../../../common/permissionInterface";
 
 type Site = WebSiteManagementModels.Site;
 type AppServicePlan = WebSiteManagementModels.AppServicePlan;
@@ -693,6 +694,10 @@ export class FunctionPluginImpl {
   ): Promise<Result<Map<string, string[]>, FxError>> {
     let checkAzureResourcePermissionError;
     let azureResourceRoles;
+    let subscriptionId;
+    let resourceGroupName;
+    let functionAppName;
+    let webAppResourceId;
     try {
       await this.syncConfigFromContext(ctx);
 
@@ -706,20 +711,20 @@ export class FunctionPluginImpl {
       const accountInfo = await ctx.azureAccountProvider!.getAccountInfo();
       const userObjectId = accountInfo!.oid;
 
-      const subscriptionId: string = this.checkAndGet(
+      subscriptionId = this.checkAndGet(
         this.config.subscriptionId,
         FunctionConfigKey.subscriptionId
       );
-      const functionAppName: string = this.checkAndGet(
+      functionAppName = this.checkAndGet(
         this.config.functionAppName,
         FunctionConfigKey.functionAppName
       );
-      const resourceGroupName: string = this.checkAndGet(
+      resourceGroupName = this.checkAndGet(
         this.config.resourceGroupName,
         FunctionConfigKey.resourceGroupName
       );
 
-      const webAppResourceId = `subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.Web/sites/${functionAppName}`;
+      webAppResourceId = `subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.Web/sites/${functionAppName}`;
       azureResourceRoles = await checkAzureResourcePermission(
         webAppResourceId,
         accessToken,
@@ -729,14 +734,19 @@ export class FunctionPluginImpl {
       checkAzureResourcePermissionError = e;
     }
 
-    return ResultFactory.Success([
+    const resourcePermission: ResourcePermission[] = [
       {
         name: CommonConstants.permissions.name,
         roles: azureResourceRoles,
         type: CommonConstants.permissions.type,
         error: checkAzureResourcePermissionError,
+        subscriptionId: subscriptionId,
+        resourceGroupName: resourceGroupName,
+        resourceName: functionAppName,
+        resourceId: webAppResourceId,
       },
-    ]);
+    ];
+    return ResultFactory.Success(resourcePermission);
   }
 
   private getFunctionProjectRootPath(ctx: PluginContext): string {

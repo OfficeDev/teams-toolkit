@@ -4,9 +4,10 @@
 import { AppStudioErrorMessage } from "./errors";
 import { IAADPassword } from "./interfaces/IAADApplication";
 import { IAADDefinition } from "./interfaces/IAADDefinition";
+import { getAppStudioEndpoint } from "../../..";
 
 import axios from "axios";
-const baseUrl = `https://dev.teams.microsoft.com`;
+const baseUrl = getAppStudioEndpoint();
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AppStudio {

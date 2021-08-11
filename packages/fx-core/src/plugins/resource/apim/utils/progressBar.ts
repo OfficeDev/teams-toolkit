@@ -11,7 +11,7 @@ export class ProgressBar {
       return;
     }
 
-    await this.progressBarMap.get(step)?.end();
+    await this.progressBarMap.get(step)?.end(true);
 
     const progressBar = ctx.ui?.createProgressBar(step, Object.keys(ProgressMessages[step]).length);
 
@@ -29,17 +29,17 @@ export class ProgressBar {
     await this.progressBarMap.get(step)?.next(detail);
   }
 
-  public async close(step: ProgressStep): Promise<void> {
+  public async close(step: ProgressStep, success: boolean): Promise<void> {
     if (step === ProgressStep.None) {
       return;
     }
 
-    await this.progressBarMap.get(step)?.end();
+    await this.progressBarMap.get(step)?.end(success);
   }
 
-  public async closeAll(): Promise<void> {
+  public async closeAll(success: boolean): Promise<void> {
     for (const [type, bar] of this.progressBarMap) {
-      await bar.end();
+      await bar.end(success);
     }
   }
 }

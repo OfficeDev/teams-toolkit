@@ -12,7 +12,7 @@ import * as net from "net";
 import { ext } from "../extensionVariables";
 import { getActiveEnv } from "../utils/commonUtils";
 import { initializeFocusRects } from "@fluentui/utilities";
-import { isValidProject } from "@microsoft/teamsfx-core";
+import { isMultiEnvEnabled, isValidProject } from "@microsoft/teamsfx-core";
 
 export async function getProjectRoot(
   folderPath: string,
@@ -34,12 +34,20 @@ async function getLocalEnv(prefix = ""): Promise<{ [key: string]: string } | und
     `.${ConfigFolderName}`,
     constants.localEnvFileName
   );
-  if (!(await fs.pathExists(localEnvFilePath))) {
-    return undefined;
-  }
 
-  const contents = await fs.readFile(localEnvFilePath);
-  const env: dotenv.DotenvParseOutput = dotenv.parse(contents);
+  let env: { [name: string]: string };
+  if (isMultiEnvEnabled()) {
+    // use localSettings.json as input to generate the local debug envs
+    env = await getLocalDebugEnvs();
+  } else {
+    // use local.env file as input to generate the local debug envs
+    if (!(await fs.pathExists(localEnvFilePath))) {
+      return undefined;
+    }
+
+    const contents = await fs.readFile(localEnvFilePath);
+    env = dotenv.parse(contents);
+  }
 
   const result: { [key: string]: string } = {};
   for (const key of Object.keys(env)) {
@@ -92,32 +100,29 @@ export async function hasTeamsfxBackend(): Promise<boolean> {
   return backendRoot !== undefined;
 }
 
+export async function getLocalDebugEnvs(): Promise<Record<string, string>> {
+  const localDebugEnvs = await executeLocalDebugUserTask("getLocalDebugEnvs");
+  return localDebugEnvs as Record<string, string>;
+}
+
 export async function getLocalDebugTeamsAppId(
   isLocalSideloadingConfiguration: boolean
 ): Promise<string | undefined> {
-  const func: Func = {
-    namespace: "fx-solution-azure/fx-resource-local-debug",
-    method: "getLaunchInput",
-    params: isLocalSideloadingConfiguration ? "local" : "remote"
-  };
-  try {
-    const inputs = getSystemInputs();
-    inputs.ignoreLock = true;
-    inputs.ignoreConfigPersist = true;
-    const result = await core.executeUserTask(func, inputs);
-    if (result.isErr()) {
-      throw result.error;
-    }
-    return result.value as string;
-  } catch (err) {
-    await showError(err);
-  }
+  const params = isLocalSideloadingConfiguration ? "local" : "remote";
+  const localDebugTeamsAppId = await executeLocalDebugUserTask("getLaunchInput", params);
+  return localDebugTeamsAppId as string;
 }
 
 export async function getProgrammingLanguage(): Promise<string | undefined> {
+  const programmingLanguage = await executeLocalDebugUserTask("getProgrammingLanguage");
+  return programmingLanguage as string;
+}
+
+async function executeLocalDebugUserTask(funcName: string, params?: unknown): Promise<any> {
   const func: Func = {
     namespace: "fx-solution-azure/fx-resource-local-debug",
-    method: "getProgrammingLanguage",
+    method: funcName,
+    params,
   };
   try {
     const inputs = getSystemInputs();
@@ -127,7 +132,7 @@ export async function getProgrammingLanguage(): Promise<string | undefined> {
     if (result.isErr()) {
       throw result.error;
     }
-    return result.value as string;
+    return result.value;
   } catch (err) {
     await showError(err);
   }
@@ -154,8 +159,18 @@ async function getLocalDebugConfig(key: string): Promise<string | undefined> {
   return configs[key];
 }
 
-export async function getSkipNgrokConfig(): Promise<string | undefined> {
-  return getLocalDebugConfig(constants.skipNgrokConfigKey);
+export async function getSkipNgrokConfig(): Promise<boolean> {
+  if (isMultiEnvEnabled()) {
+    const skipNgrok = (await executeLocalDebugUserTask("getSkipNgrokConfig")) as boolean;
+    return skipNgrok;
+  } else {
+    const skipNgrokConfig = await getLocalDebugConfig(constants.skipNgrokConfigKey);
+    if (skipNgrokConfig === undefined || skipNgrokConfig.length === 0) {
+      return false;
+    } else {
+      return skipNgrokConfig.trim().toLocaleLowerCase() === "true";
+    }
+  }
 }
 
 async function detectPortListeningImpl(port: number, host: string): Promise<boolean> {

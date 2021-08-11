@@ -40,6 +40,9 @@ export const teamsAppTenantIdConfigKey = "teamsAppTenantId";
 export const remoteTeamsAppIdConfigKey = "remoteTeamsAppId";
 export const localTeamsAppIdConfigKey = "localDebugTeamsAppId";
 
+export const localSettingsTenantIdConfigKey = "tenantId";
+export const localSettingsTeamsAppIdConfigKey = "teamsAppId";
+
 export const spfxFolderName = "SPFx";
 export const frontendFolderName = "tabs";
 export const backendFolderName = "api";

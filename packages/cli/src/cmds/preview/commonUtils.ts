@@ -5,7 +5,13 @@
 
 import * as path from "path";
 import * as fs from "fs-extra";
-import { ConfigFolderName, FxError, IProgressHandler, LogLevel } from "@microsoft/teamsfx-api";
+import {
+  ConfigFolderName,
+  Func,
+  FxError,
+  IProgressHandler,
+  LogLevel,
+} from "@microsoft/teamsfx-api";
 import * as dotenv from "dotenv";
 import * as net from "net";
 
@@ -22,6 +28,8 @@ import {
 import { getNpmInstallLogInfo } from "./npmLogHandler";
 import { ServiceLogWriter } from "./serviceLogWriter";
 import open from "open";
+import { FxCore, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
+import { getSystemInputs } from "../../utils";
 
 export async function openBrowser(browser: constants.Browser, url: string): Promise<void> {
   switch (browser) {
@@ -126,7 +134,7 @@ export function createTaskStopCb(
         }
       }
       await progressBar.next(message);
-      await progressBar.end();
+      await progressBar.end(true);
       return null;
     } else {
       const error = TaskFailed(taskTitle);
@@ -170,12 +178,14 @@ export function createTaskStopCb(
           cliLogger.necessaryLog(LogLevel.Info, result.stderr[result.stderr.length - 1], true);
         }
       }
+      await progressBar.end(false);
       return error;
     }
   };
 }
 
 async function getLocalEnv(
+  core: FxCore,
   workspaceFolder: string,
   prefix = ""
 ): Promise<{ [key: string]: string } | undefined> {
@@ -184,12 +194,32 @@ async function getLocalEnv(
     `.${ConfigFolderName}`,
     constants.localEnvFileName
   );
-  if (!(await fs.pathExists(localEnvFilePath))) {
-    return undefined;
-  }
+  let env: { [name: string]: string };
 
-  const contents = await fs.readFile(localEnvFilePath);
-  const env: dotenv.DotenvParseOutput = dotenv.parse(contents);
+  if (isMultiEnvEnabled()) {
+    // use localSettings.json as input to generate the local debug envs
+    const func: Func = {
+      namespace: "fx-solution-azure/fx-resource-local-debug",
+      method: "getLocalDebugEnvs",
+    };
+    const inputs = getSystemInputs();
+    inputs.ignoreLock = true;
+    inputs.ignoreConfigPersist = true;
+    const result = await core.executeUserTask(func, inputs);
+    if (result.isErr()) {
+      throw result.error;
+    }
+
+    env = result.value as Record<string, string>;
+  } else {
+    // use local.env file as input to generate the local debug envs
+    if (!(await fs.pathExists(localEnvFilePath))) {
+      return undefined;
+    }
+
+    const contents = await fs.readFile(localEnvFilePath);
+    env = dotenv.parse(contents);
+  }
 
   const result: { [key: string]: string } = {};
   for (const key of Object.keys(env)) {
@@ -201,33 +231,40 @@ async function getLocalEnv(
 }
 
 export async function getFrontendLocalEnv(
+  core: FxCore,
   workspaceFolder: string
 ): Promise<{ [key: string]: string } | undefined> {
-  return getLocalEnv(workspaceFolder, constants.frontendLocalEnvPrefix);
+  return getLocalEnv(core, workspaceFolder, constants.frontendLocalEnvPrefix);
 }
 
 export async function getBackendLocalEnv(
+  core: FxCore,
   workspaceFolder: string
 ): Promise<{ [key: string]: string } | undefined> {
-  return getLocalEnv(workspaceFolder, constants.backendLocalEnvPrefix);
+  return getLocalEnv(core, workspaceFolder, constants.backendLocalEnvPrefix);
 }
 
 export async function getAuthLocalEnv(
+  core: FxCore,
   workspaceFolder: string
 ): Promise<{ [key: string]: string } | undefined> {
   // SERVICE_PATH will also be included, but it has no side effect
-  return getLocalEnv(workspaceFolder, constants.authLocalEnvPrefix);
+  return getLocalEnv(core, workspaceFolder, constants.authLocalEnvPrefix);
 }
 
-export async function getAuthServicePath(workspaceFolder: string): Promise<string | undefined> {
-  const result = await getLocalEnv(workspaceFolder);
+export async function getAuthServicePath(
+  core: FxCore,
+  workspaceFolder: string
+): Promise<string | undefined> {
+  const result = await getLocalEnv(core, workspaceFolder);
   return result ? result[constants.authServicePathEnvKey] : undefined;
 }
 
 export async function getBotLocalEnv(
+  core: FxCore,
   workspaceFolder: string
 ): Promise<{ [key: string]: string } | undefined> {
-  return getLocalEnv(workspaceFolder, constants.botLocalEnvPrefix);
+  return getLocalEnv(core, workspaceFolder, constants.botLocalEnvPrefix);
 }
 
 async function detectPortListeningImpl(port: number, host: string): Promise<boolean> {

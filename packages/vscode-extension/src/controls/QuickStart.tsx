@@ -33,7 +33,7 @@ export default class QuickStart extends React.Component<any, any> {
     super(props);
 
     this.state = {
-      currentStep: 1,
+      currentStep: isSupportedNode ? 5 : 6,
       m365Account: undefined,
       azureAccount: undefined,
       stepsDone: [false, false, false, false, false, false],
@@ -253,10 +253,10 @@ export default class QuickStart extends React.Component<any, any> {
                     <br />,
                     "You can also create a new project from scratch.",
                   ]}
-                  actionText="View all Samples"
-                  onAction={this.viewAllSamples}
-                  secondaryActionText="Create New Project"
-                  onSecondaryAction={this.createNewProject}
+                  actionText="Create New Project"
+                  onAction={this.createNewProject}
+                  secondaryActionText="View all Samples"
+                  onSecondaryAction={this.viewAllSamples}
                   expanded={this.state.currentStep === curStep}
                   onCollapsedCardClicked={this.onCollapsedCardClicked}
                   step={curStep}

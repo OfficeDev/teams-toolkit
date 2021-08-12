@@ -174,13 +174,12 @@ describe("APIs of Environment Manager", () => {
       assert.equal(envInfo.data.get("solution").get("key"), expectedSolutionConfig.key);
     });
 
-    it("expected error: environment profile doesn't exist", async () => {
+    it("environment profile doesn't exist", async () => {
       const actualEnvDataResult = await environmentManager.loadEnvProfile(projectPath);
-      assert.isTrue(actualEnvDataResult.isErr());
-      actualEnvDataResult.mapErr((error) => {
-        assert.instanceOf(error, UserError);
-        assert.isTrue(error.name === "PathNotExist");
-      });
+      if (actualEnvDataResult.isErr()) {
+        assert.fail("Error ocurrs while loading environment profile.");
+      }
+      assert.equal(actualEnvDataResult.value.envName, "default");
     });
   });
 

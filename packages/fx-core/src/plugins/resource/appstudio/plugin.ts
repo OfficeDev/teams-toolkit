@@ -368,7 +368,6 @@ export class AppStudioPluginImpl {
     if (this.isSPFxProject(ctx)) {
       manifestString = (await fs.readFile(`${appDirectory}/${REMOTE_MANIFEST}`)).toString();
     } else {
-      const manifestTpl = await fs.readJSON(`${appDirectory}/${REMOTE_MANIFEST}`);
       const manifest = await this.getAppDefinitionAndManifest(ctx, false);
       if (manifest.isOk()) {
         manifestString = JSON.stringify(manifest.value[1]);
@@ -1207,25 +1206,16 @@ export class AppStudioPluginImpl {
     const appDirectory: string = await getAppDirectory(ctx.root);
     let manifest = (await fs.readFile(`${appDirectory}/${REMOTE_MANIFEST}`)).toString();
 
-    let appName = ctx.projectSettings?.appName;
-    // For local debug teams app, the app name will have a suffix to differentiate from remote teams app
-    // if the resulting short name length doesn't exceeds limit.
-    if (isLocalDebug) {
-      const suffix = "-local-debug";
-      if (suffix.length + (appName ? appName.length : 0) <= TEAMS_APP_SHORT_NAME_MAX_LENGTH) {
-        appName = appName + suffix;
-      }
-    }
-
+    const appName = ctx.projectSettings?.appName;
     if (appName) {
       manifest = this.replaceConfigValue(manifest, "appName", appName);
     }
 
     const version = ctx.projectSettings?.solutionSettings?.version;
-
     if (version) {
       manifest = this.replaceConfigValue(manifest, "version", version);
     }
+
     if (botId) {
       manifest = this.replaceConfigValue(manifest, "botId", botId);
     }
@@ -1255,6 +1245,18 @@ export class AppStudioPluginImpl {
     }
 
     const appDefinition = this.convertToAppDefinition(updatedManifest, false);
+    // For local debug teams app, the app name will have a suffix to differentiate from remote teams app
+    // if the resulting short name length doesn't exceeds limit.
+    if (isLocalDebug) {
+      const suffix = "-local-debug";
+      if (
+        suffix.length + (appDefinition.shortName ? appDefinition.shortName.length : 0) <=
+        TEAMS_APP_SHORT_NAME_MAX_LENGTH
+      ) {
+        appDefinition.shortName = appDefinition.shortName + suffix;
+        appDefinition.appName = appDefinition.shortName;
+      }
+    }
 
     return ok([appDefinition, updatedManifest]);
   }

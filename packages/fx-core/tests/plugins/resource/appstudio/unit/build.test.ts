@@ -56,15 +56,19 @@ describe("Build Teams Package", () => {
   });
 
   it("Build Teams Package", async () => {
-    sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns(
-      ok({
-        tabEndpoint: "tabEndpoint",
-        tabDomain: "tabDomain",
-        aadId: "aadId",
-        botDomain: "botDomain",
-        botId: "botId",
-        webApplicationInfoResource: "webApplicationInfoResource",
-      })
+    sandbox.stub(AppStudioPluginImpl.prototype, "getAppDefinitionAndManifest" as any).resolves(
+      ok([
+        {
+          tabEndpoint: "tabEndpoint",
+          tabDomain: "tabDomain",
+          aadId: "aadId",
+          botDomain: "botDomain",
+          botId: "botId",
+          webApplicationInfoResource: "webApplicationInfoResource",
+          teamsAppId: "teamsAppId",
+        },
+        new TeamsAppManifest(),
+      ])
     );
     sandbox.stub(fs, "move").resolves();
 

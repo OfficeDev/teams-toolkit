@@ -82,7 +82,6 @@ jobs:
         if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/dev' && github.event.inputs.preid == 'alpha')}}
         run: |
           npx lerna version prerelease --preid=alpha.$(git rev-parse --short HEAD) --exact --no-push --allow-branch dev --yes
-          npx lerna publish from-package --dist-tag=alpha --yes --allow-branch dev
 
       - name: version rc npm packages to npmjs.org
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' && github.ref == 'refs/heads/main' && github.event.inputs.skip-version-rc == 'no'}}
@@ -109,45 +108,7 @@ jobs:
           then
               git push -d origin $(git tag --points-at HEAD | grep templates | grep rc)
           fi
-            
-      - name: sync up templates deps with sdk version for RC
-        if: ${{ contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx') && !contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.preid == 'rc' }}
-        run: |
-          node sdk-sync-up-version.js
-        working-directory: ./.github/scripts
-
-      - name: update cli ai key
-        if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.preid == 'stable'||github.event.inputs.preid == 'rc') }}
-        uses: jossef/action-set-json-field@v1
-        with:
-          file: ./packages/cli/package.json
-          field: aiKey
-          value: ${{ secrets.CLI_PUBLIC_AIKEY }}
-
-      - name: update extension ai key
-        if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.preid == 'stable' || github.event.inputs.preid == 'rc') }}
-        uses: jossef/action-set-json-field@v1
-        with:
-          file: ./packages/vscode-extension/package.json
-          field: aiKey
-          value: ${{ secrets.EXT_PUBLIC_AIKEY }}
       
-      - name: commit change on local
-        if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.preid == 'stable' || github.event.inputs.preid == 'rc') }}
-        run: |
-          git add .
-          git commit -m "chore: update ai key"
-
-      - name: publish rc npm packages to npmjs.org
-        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' }}
-        run: |
-          npx lerna publish from-package --dist-tag=rc --yes
-
-      - name: publish stable npm packages to npmjs.org
-        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
-        run: |
-          npx lerna publish from-package --yes
-
       - name: Install Mustache
         run: curl -sSL https://git.io/get-mo -o mo && chmod +x mo && sudo mv mo /usr/local/bin/
 
@@ -201,6 +162,49 @@ jobs:
     
       - name: cleanup templates
         run: rm -rf ./*.zip && git clean -df
+
+      - name: publish alpha release to npm org
+        if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/dev' && github.event.inputs.preid == 'alpha')}}
+        run: |
+          npx lerna publish from-package --dist-tag=alpha --yes --allow-branch dev
+
+      - name: sync up templates deps with sdk version for RC
+        if: ${{ contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx') && !contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.preid == 'rc' }}
+        run: |
+          node sdk-sync-up-version.js
+        working-directory: ./.github/scripts
+
+      - name: update cli ai key
+        if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.preid == 'stable'||github.event.inputs.preid == 'rc') }}
+        uses: jossef/action-set-json-field@v1
+        with:
+          file: ./packages/cli/package.json
+          field: aiKey
+          value: ${{ secrets.CLI_PUBLIC_AIKEY }}
+
+      - name: update extension ai key
+        if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.preid == 'stable' || github.event.inputs.preid == 'rc') }}
+        uses: jossef/action-set-json-field@v1
+        with:
+          file: ./packages/vscode-extension/package.json
+          field: aiKey
+          value: ${{ secrets.EXT_PUBLIC_AIKEY }}
+      
+      - name: commit change on local
+        if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.preid == 'stable' || github.event.inputs.preid == 'rc') }}
+        run: |
+          git add .
+          git commit -m "chore: update ai key"
+
+      - name: publish rc npm packages to npmjs.org
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' }}
+        run: |
+          npx lerna publish from-package --dist-tag=rc --yes
+
+      - name: publish stable npm packages to npmjs.org
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
+        run: |
+          npx lerna publish from-package --yes
 
       - name: pack vsix
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') }}

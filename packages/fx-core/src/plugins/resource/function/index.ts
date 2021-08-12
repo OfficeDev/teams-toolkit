@@ -129,6 +129,14 @@ export class FunctionPlugin implements Plugin {
     return res;
   }
 
+  public async generateArmTemplates(ctx: PluginContext): Promise<FxResult> {
+    this.setContext(ctx);
+    const res = await this.runWithErrorWrapper(ctx, FunctionEvent.generateArmTemplates, () =>
+      this.functionPluginImpl.generateArmTemplates(ctx)
+    );
+    return res;
+  }
+
   public async preDeploy(ctx: PluginContext): Promise<FxResult> {
     this.setContext(ctx);
     await StepHelperFactory.preDeployStepHelper.start(

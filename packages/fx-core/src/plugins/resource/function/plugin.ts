@@ -16,6 +16,7 @@ import { StorageManagementClient } from "@azure/arm-storage";
 import { StringDictionary } from "@azure/arm-appservice/esm/models";
 import { WebSiteManagementClient, WebSiteManagementModels } from "@azure/arm-appservice";
 import { v4 as uuid } from "uuid";
+import * as fs from "fs-extra";
 
 import { AzureClientFactory, AzureLib } from "./utils/azure-client";
 import {
@@ -34,6 +35,8 @@ import {
 } from "./resources/errors";
 import {
   AzureInfo,
+  Bicep,
+  BicepSnippet,
   DefaultProvisionConfigs,
   DefaultValues,
   DependentPluginInfo,
@@ -72,6 +75,8 @@ import { FuncPluginAdapter } from "./utils/depsChecker/funcPluginAdapter";
 import { funcPluginLogger } from "./utils/depsChecker/funcPluginLogger";
 import { FuncPluginTelemetry } from "./utils/depsChecker/funcPluginTelemetry";
 import { TelemetryHelper } from "./utils/telemetry-helper";
+import { generateBicepFiles, getTemplatesFolder } from "../../..";
+import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
 
 type Site = WebSiteManagementModels.Site;
 type AppServicePlan = WebSiteManagementModels.AppServicePlan;
@@ -634,6 +639,64 @@ export class FunctionPluginImpl {
     this.config.skipDeploy = false;
 
     return ResultFactory.Success();
+  }
+
+  public async generateArmTemplates(ctx: PluginContext): Promise<FxResult> {
+    const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
+      .activeResourcePlugins;
+    const context = {
+      plugins: selectedPlugins,
+    };
+
+    const bicepTemplateDirectory = path.join(
+      getTemplatesFolder(),
+      "plugins",
+      "resource",
+      "function",
+      "bicep"
+    );
+
+    const moduleTemplateFilePath = path.join(bicepTemplateDirectory, Bicep.moduleTemplateFileName);
+
+    const parameterTemplateFilePath = path.join(
+      bicepTemplateDirectory,
+      Bicep.inputParameterOrchestrationFileName
+    );
+    const resourceTemplateFilePath = path.join(
+      bicepTemplateDirectory,
+      Bicep.moduleOrchestrationFileName
+    );
+    const outputTemplateFilePath = path.join(
+      bicepTemplateDirectory,
+      Bicep.outputOrchestrationFileName
+    );
+    const parameterFilePath = path.join(bicepTemplateDirectory, Bicep.parameterFileName);
+
+    const result: ScaffoldArmTemplateResult = {
+      Modules: {
+        functionProvision: {
+          Content: await fs.readFile(moduleTemplateFilePath, Bicep.uft8Encoding),
+        },
+      },
+      Orchestration: {
+        ParameterTemplate: {
+          Content: await fs.readFile(parameterTemplateFilePath, Bicep.uft8Encoding),
+          ParameterJson: JSON.parse(await fs.readFile(parameterFilePath, Bicep.uft8Encoding)),
+        },
+        ModuleTemplate: {
+          Content: await fs.readFile(resourceTemplateFilePath, Bicep.uft8Encoding),
+          Outputs: {
+            storageAccountName: BicepSnippet.storageAccountName,
+            appServicePlanName: BicepSnippet.appServicePlanName,
+            functionEndpoint: BicepSnippet.functionEndpoint,
+          },
+        },
+        OutputTemplate: {
+          Content: await fs.readFile(outputTemplateFilePath, Bicep.uft8Encoding),
+        },
+      },
+    };
+    return ResultFactory.Success(result);
   }
 
   public async deploy(ctx: PluginContext): Promise<FxResult> {

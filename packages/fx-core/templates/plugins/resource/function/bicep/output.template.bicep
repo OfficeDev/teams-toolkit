@@ -1,0 +1,4 @@
+
+output function_storageAccountName string = functionProvision.outputs.storageAccountName
+output function_appServicePlanName string = functionProvision.outputs.appServicePlanName
+output function_functionEndpoint string = functionProvision.outputs.functionEndpoint

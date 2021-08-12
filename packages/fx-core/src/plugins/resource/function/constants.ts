@@ -182,3 +182,18 @@ export class Commands {
 export class QuestionValidationFunc {
   public static readonly validateFunctionName: string = "validateFunctionName";
 }
+
+export class Bicep {
+  public static readonly moduleTemplateFileName: string = "function.template.bicep";
+  public static readonly inputParameterOrchestrationFileName: string = "input_param.template.bicep";
+  public static readonly moduleOrchestrationFileName: string = "module.template.bicep";
+  public static readonly outputOrchestrationFileName: string = "output.template.bicep";
+  public static readonly parameterFileName: string = "parameters.json";
+  public static readonly uft8Encoding = "utf-8";
+}
+
+export class BicepSnippet {
+  static readonly storageAccountName = "functionProvision.outputs.storageAccountName";
+  static readonly appServicePlanName = "functionProvision.outputs.appServicePlanName";
+  static readonly functionEndpoint = "functionProvision.outputs.functionEndpoint";
+}

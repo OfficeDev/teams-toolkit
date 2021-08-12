@@ -61,7 +61,7 @@ export const QuestionRootFolder: FolderQuestion = {
 export const QuestionSelectTargetEnvironment: SingleSelectQuestion = {
   type: "singleSelect",
   name: CoreQuestionNames.TargetEnvName,
-  title: "Select the target environment",
+  title: "Select an environment",
   staticOptions: [],
   skipSingleOption: true,
   forgetLastValue: true,
@@ -70,7 +70,7 @@ export const QuestionSelectTargetEnvironment: SingleSelectQuestion = {
 export const QuestionNewTargetEnvironmentName: TextInputQuestion = {
   type: "text",
   name: CoreQuestionNames.NewTargetEnvName,
-  title: "New target environment name",
+  title: "New environment name",
   validation: {
     validFunc: async (input: string): Promise<string | undefined> => {
       const targetEnvName = input as string;
@@ -82,7 +82,7 @@ export const QuestionNewTargetEnvironmentName: TextInputQuestion = {
       return undefined;
     },
   },
-  placeholder: "New target environment name",
+  placeholder: "New environment name",
 };
 
 export const QuestionSelectSolution: SingleSelectQuestion = {

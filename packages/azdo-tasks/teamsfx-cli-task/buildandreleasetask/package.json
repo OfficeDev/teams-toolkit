@@ -13,7 +13,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "azure-pipelines-task-lib": "^3.1.4"
+    "azure-pipelines-task-lib": "^3.1.4",
+    "fs-extra": "^10.0.0"
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.12",

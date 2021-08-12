@@ -13,8 +13,8 @@
     "author": "Ivan He",
     "version": {
         "Major": 0,
-        "Minor": 1,
-        "Patch": 0
+        "Minor": 3,
+        "Patch": 3
     },
     "instanceNameFormat": "Teams App CI/CD - $(commands)",
     "inputs": [
@@ -133,7 +133,7 @@
     ],
     "execution": {
         "Node": {
-            "target": "lib/main.js"
+            "target": "dist/index.js"
         }
     }
 }

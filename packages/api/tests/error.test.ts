@@ -6,6 +6,8 @@ import "mocha";
 import {
   assembleError,
   FxError,
+  newSystemError,
+  newUserError,
   returnSystemError,
   returnUserError,
   SystemError,
@@ -29,13 +31,15 @@ describe("error", function () {
       chai.assert.equal(temp.name, myName);
       chai.assert.equal(temp.message, myMessage);
       chai.assert.equal(temp.source, mySource);
+      chai.assert.isTrue(temp.stack !== undefined && temp.stack.includes("error.test.ts"));
+      chai.assert.isDefined(temp.timestamp);
     }),
       it("happy path with more info", () => {
         const temp = new UserError(myName, myMessage, mySource, myStack, myHelpLink, myInnerError);
         chai.assert.equal(temp.name, myName);
         chai.assert.equal(temp.message, myMessage);
         chai.assert.equal(temp.source, mySource);
-        chai.assert.equal(temp.stack, myStack);
+        chai.assert.isTrue(temp.stack !== undefined && temp.stack.includes("error.test.ts"));
         chai.assert.equal(temp.helpLink, myHelpLink);
         chai.assert.equal(temp.innerError, myInnerError);
       });
@@ -70,6 +74,8 @@ describe("error", function () {
       chai.assert.equal(temp.name, myName);
       chai.assert.equal(temp.message, myMessage);
       chai.assert.equal(temp.source, mySource);
+      chai.assert.isTrue(temp.stack !== undefined && temp.stack.includes("error.test.ts"));
+      chai.assert.isDefined(temp.timestamp);
     }),
       it("happy path with more info", () => {
         const temp = new SystemError(
@@ -83,7 +89,7 @@ describe("error", function () {
         chai.assert.equal(temp.name, myName);
         chai.assert.equal(temp.message, myMessage);
         chai.assert.equal(temp.source, mySource);
-        chai.assert.equal(temp.stack, myStack);
+        chai.assert.isTrue(temp.stack !== undefined && temp.stack.includes("error.test.ts"));
         chai.assert.equal(temp.issueLink, myIssueLink);
         chai.assert.equal(temp.innerError, myInnerError);
       });
@@ -132,27 +138,34 @@ describe("error", function () {
 
   describe("assembleError", function () {
     it("error is string", () => {
-      const fxError = assembleError("error string");
+      const fxError = assembleError(myMessage);
       chai.assert.isTrue(fxError instanceof SystemError);
-      chai.assert.isTrue(fxError.message === "error string");
+      chai.assert.isTrue(fxError.message === myMessage);
       chai.assert.isTrue(fxError.name === "Error");
       chai.assert.isTrue(fxError.source === "unknown");
+      chai.assert.isTrue(fxError.stack !== undefined && fxError.stack.includes("error.test.ts"));
     });
 
     it("error is Error", () => {
-      const fxError = assembleError(new Error("hello error"));
+      const raw = new Error(myMessage);
+      const fxError = assembleError(raw);
       chai.assert.isTrue(fxError instanceof SystemError);
-      chai.assert.isTrue(fxError.message === "hello error");
+      chai.assert.isTrue(fxError.message === myMessage);
       chai.assert.isTrue(fxError.name === "Error");
       chai.assert.isTrue(fxError.source === "unknown");
+      chai.assert.isTrue(fxError.stack !== undefined && fxError.stack.includes("error.test.ts"));
+      chai.assert.isTrue(raw === fxError.innerError);
     });
 
     it("error has source", () => {
-      const fxError = assembleError(new Error("hello error"), "API");
+      const raw = new Error(myMessage);
+      const fxError = assembleError(raw, mySource);
       chai.assert.isTrue(fxError instanceof SystemError);
-      chai.assert.isTrue(fxError.message === "hello error");
+      chai.assert.isTrue(fxError.message === myMessage);
       chai.assert.isTrue(fxError.name === "Error");
-      chai.assert.isTrue(fxError.source === "API");
+      chai.assert.isTrue(fxError.source === mySource);
+      chai.assert.isTrue(fxError.stack !== undefined && fxError.stack.includes("error.test.ts"));
+      chai.assert.isTrue(raw === fxError.innerError);
     });
 
     it("error has source", () => {
@@ -160,16 +173,49 @@ describe("error", function () {
         fs.readFileSync("12345" + new Date().getTime());
         chai.assert.fail("Should not reach here");
       } catch (e) {
-        const fxError = assembleError(e, "API");
+        const fxError = assembleError(e, mySource);
+        chai.assert.isTrue(e === fxError.innerError);
         chai.assert.isTrue(fxError instanceof SystemError);
         chai.assert.isTrue(
           fxError.message !== undefined &&
             fxError.message.includes("ENOENT: no such file or directory")
         );
         chai.assert.isTrue(fxError.name === "ENOENT");
-        chai.assert.isTrue(fxError.stack !== undefined);
-        chai.assert.isTrue(fxError.source === "API");
+        chai.assert.isTrue(fxError.source === mySource);
+        chai.assert.isTrue(fxError.stack === e.stack);
       }
+    });
+
+    it("error has other type", () => {
+      const raw = [1, 2, 3];
+      const fxError = assembleError(raw);
+      chai.assert.isTrue(raw === fxError.innerError);
+      chai.assert.isTrue(fxError instanceof SystemError);
+      chai.assert.isTrue(fxError.message === JSON.stringify(raw));
+      chai.assert.isTrue(fxError.stack !== undefined && fxError.stack.includes("error.test.ts"));
+    });
+  });
+  describe("newUserError", function () {
+    it("happy path", () => {
+      const error = newUserError(mySource, myName, myMessage, myHelpLink);
+      chai.assert.isTrue(error instanceof UserError);
+      chai.assert.isFalse(error instanceof SystemError);
+      chai.assert.equal(error.message, myMessage);
+      chai.assert.equal(error.name, myName);
+      chai.assert.equal(error.source, mySource);
+      chai.assert.equal(error.helpLink, myHelpLink);
+    });
+  });
+
+  describe("newSystemError", function () {
+    it("happy path", () => {
+      const error = newSystemError(mySource, myName, myMessage, myIssueLink);
+      chai.assert.isTrue(error instanceof SystemError);
+      chai.assert.isFalse(error instanceof UserError);
+      chai.assert.equal(error.message, myMessage);
+      chai.assert.equal(error.name, myName);
+      chai.assert.equal(error.source, mySource);
+      chai.assert.equal(error.issueLink, myIssueLink);
     });
   });
 });

@@ -6,6 +6,7 @@ import {
   err,
   FxError,
   Inputs,
+  Json,
   ok,
   Plugin,
   PluginContext,
@@ -18,6 +19,7 @@ import {
   DeploymentInputs,
   LocalSettings,
   PluginName,
+  ProvisionInputs,
   ProvisionOutput,
   ResourceTemplate,
 } from "@microsoft/teamsfx-api/build/v2";
@@ -75,7 +77,18 @@ export async function generateResourceTemplateAdapter(
   const bicepTemplate: BicepTemplate = { kind: "bicep", template: output };
   return ok(bicepTemplate);
 }
-
+export async function provisionResourceAdapter(
+  ctx: Context,
+  inputs: Readonly<ProvisionInputs>,
+  provisionTemplate: Json,
+  tokenProvider: TokenProvider,
+  plugin: Plugin
+): Promise<Result<ProvisionOutput, FxError>> {
+  if (!plugin.provision) return err(PluginHasNoTaskImpl(plugin.displayName, "provision"));
+  const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
+  //TODO
+  throw new Error();
+}
 export async function configureResourceAdapter(
   ctx: Context,
   inputs: Inputs,

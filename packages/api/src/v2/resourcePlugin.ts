@@ -5,7 +5,14 @@ import { Result } from "neverthrow";
 import { FxError, QTreeNode, TokenProvider, Void, Func, Json, Inputs } from "../index";
 import { AzureSolutionSettings } from "../types";
 import { AppStudioTokenProvider, AzureAccountProvider } from "../utils";
-import { Context, DeploymentInputs, LocalSettings, PluginName, ProvisionInputs } from "./types";
+import {
+  Context,
+  DeploymentInputs,
+  LocalSettings,
+  PluginName,
+  ProvisionInputs,
+  SolutionInputs,
+} from "./types";
 
 export type ResourceTemplate = BicepTemplate | JsonTemplate;
 
@@ -109,13 +116,13 @@ export interface ResourcePlugin {
    */
   provisionResource?: (
     ctx: Context,
-    inputs: Readonly<ProvisionInputs>,
+    inputs: Readonly<SolutionInputs>,
     provisionTemplate: Json,
     tokenProvider: TokenProvider
   ) => Promise<Result<ProvisionOutput, FxError>>;
 
   /**
-   * configureResource is guaranteed to run after Bicep/ARM provisioning.
+   * configureResource is guarantee to run after Bicep/ARM provisioning.
    * Plugins are expected to read the provision output values of other plugins, and return a new copy of its own provision output,
    * possibly with added fields.
    *
@@ -130,7 +137,7 @@ export interface ResourcePlugin {
    */
   configureResource?: (
     ctx: Context,
-    inputs: Readonly<ProvisionInputs>,
+    inputs: Readonly<SolutionInputs>,
     provisionOutput: Readonly<ProvisionOutput>,
     provisionOutputOfOtherPlugins: Readonly<Record<PluginName, ProvisionOutput>>,
     tokenProvider: TokenProvider
@@ -162,7 +169,7 @@ export interface ResourcePlugin {
    */
   deploy?: (
     ctx: Context,
-    inputs: Readonly<DeploymentInputs>,
+    inputs: Readonly<SolutionInputs>,
     provisionOutput: Readonly<ProvisionOutput>,
     tokenProvider: AzureAccountProvider
   ) => Promise<Result<{ output: Record<string, string> }, FxError>>;
@@ -178,6 +185,7 @@ export interface ResourcePlugin {
   publishApplication?: (
     ctx: Context,
     inputs: Inputs,
+    provisionOutputs: Readonly<Record<PluginName, ProvisionOutput>>,
     tokenProvider: AppStudioTokenProvider
   ) => Promise<Result<Void, FxError>>;
 

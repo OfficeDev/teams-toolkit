@@ -36,7 +36,7 @@ const parameterFolder = "parameters";
 const bicepOrchestrationFileName = "main.bicep";
 const armTemplateJsonFileName = "main.json";
 const parameterTemplateFileName = "parameters.template.json";
-const parameterDefaultFileName = "parameters.default.json";
+const parameterFileNameTemplate = "parameters.@envName.json";
 const solutionLevelParameters = `param resourceBaseName string\n`;
 const solutionLevelParameterObject = {
   resourceBaseName: {
@@ -260,8 +260,13 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
 }
 
 async function getParameterJson(ctx: SolutionContext) {
+  if (!ctx.targetEnvName) {
+    throw new Error("Failed to get target environment name from solution context.");
+  }
+
+  const parameterFileName = parameterFileNameTemplate.replace("@envName", ctx.targetEnvName);
   const parameterDir = path.join(ctx.root, baseFolder, parameterFolder);
-  const parameterDefaultFilePath = path.join(parameterDir, parameterDefaultFileName);
+  const parameterDefaultFilePath = path.join(parameterDir, parameterFileName);
   const parameterTemplateFilePath = path.join(parameterDir, parameterTemplateFileName);
   let parameterFilePath = parameterDefaultFilePath;
   try {

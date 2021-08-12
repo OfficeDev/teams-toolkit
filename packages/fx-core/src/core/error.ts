@@ -140,7 +140,7 @@ export function ContextUpgradeError(error: any, isUserError = false): FxError {
   }
 }
 
-export function PluginHasNoTaskImpl(pluginName: string, task: string){
+export function PluginHasNoTaskImpl(pluginName: string, task: string) {
   return new SystemError(
     "PluginHasNoTaskImplError",
     `Plugin ${pluginName} has not implemented method: ${task}`,

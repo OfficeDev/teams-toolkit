@@ -33,7 +33,6 @@ resource functionServerfarms 'Microsoft.Web/serverfarms@2020-06-01' = {
   }
   kind: 'functionapp'
   properties: {
-    reserved: false
   }
 }
 
@@ -50,8 +49,6 @@ resource functionApp 'Microsoft.Web/sites@2020-06-01' = {
           frontendHostingStorageEndpoint
         ]
       }
-      alwaysOn: false
-      http20Enabled: false
       numberOfWorkers: 1
     }
   }
@@ -64,7 +61,6 @@ resource functionStorage 'Microsoft.Storage/storageAccounts@2021-04-01' = {
   properties: {
     accessTier: 'Hot'
     supportsHttpsTrafficOnly: true
-    isHnsEnabled: true
   }
   sku: {
     name: 'Standard_LRS'

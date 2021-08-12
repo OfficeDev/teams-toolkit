@@ -182,7 +182,7 @@ describe("error", function () {
         );
         chai.assert.isTrue(fxError.name === "ENOENT");
         chai.assert.isTrue(fxError.source === mySource);
-        chai.assert.isTrue(fxError.stack !== undefined && fxError.stack.includes("error.test.ts"));
+        chai.assert.isTrue(fxError.stack === e.stack);
       }
     });
 

@@ -179,6 +179,9 @@ export function assembleError(e: any, source?: string): FxError {
         e
       );
       Object.assign(fxError, e);
+      if (e.stack) {
+        fxError.stack = e.stack;
+      }
       return fxError;
     }
   }

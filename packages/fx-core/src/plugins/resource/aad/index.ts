@@ -1,7 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Plugin, PluginContext, SystemError, UserError, err } from "@microsoft/teamsfx-api";
+import {
+  Plugin,
+  PluginContext,
+  SystemError,
+  UserError,
+  err,
+  Func,
+  ok,
+} from "@microsoft/teamsfx-api";
 import { AadAppForTeamsImpl } from "./plugin";
 import { AadResult, ResultFactory } from "./results";
 import { UnhandledError } from "./errors";
@@ -68,6 +76,16 @@ export class AadAppForTeamsPlugin implements Plugin {
       ctx,
       Messages.EndGenerateArmTemplates.telemetry
     );
+  }
+
+  public async executeUserTask(func: Func, ctx: PluginContext): Promise<AadResult> {
+    if (func.method == "setLocalApplicationInContext") {
+      return Promise.resolve(this.setApplicationInContext(ctx, true));
+    } else if (func.method == "setRemoteApplicationInContext") {
+      return Promise.resolve(this.setApplicationInContext(ctx, false));
+    }
+
+    return ok(undefined);
   }
 
   private async runWithExceptionCatchingAsync(

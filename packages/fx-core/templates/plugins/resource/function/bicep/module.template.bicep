@@ -10,14 +10,14 @@ module functionProvision '{{PluginOutput.fx-resource-function.Modules.functionPr
     AADClientSecret: AADClientSecret
     tenantId: tenantId
     applicationIdUri: applicationIdUri
-    {{#contains 'frontend_hosting' pluginTypes}}
+    {{#contains 'fx-resource-frontend-hosting' Plugins}}
     frontendHostingStorageEndpoint: {{../PluginOutput.fx-resource-frontend-hosting.Outputs.endpoint}}
     {{/contains}}
-    {{#contains 'azure_sql' pluginTypes}}
+    {{#contains 'fx-resource-azure-sql' Plugins}}
     sqlDatabaseName: {{../PluginOutput.fx-resource-azure-sql.Outputs.databaseName}}
     sqlEndpoint: {{../PluginOutput.fx-resource-azure-sql.Outputs.sqlEndpoint}}
     {{/contains}}
-    {{#contains 'identity' pluginTypes}}
+    {{#contains 'fx-resource-identity' Plugins}}
     identityId: {{../PluginOutput.fx-resource-identity.Outputs.identityId}}
     {{/contains}}
   }

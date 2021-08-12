@@ -35,7 +35,6 @@ import {
 } from "./resources/errors";
 import {
   AzureInfo,
-  Bicep,
   BicepSnippet,
   DefaultProvisionConfigs,
   DefaultValues,
@@ -76,7 +75,8 @@ import { funcPluginLogger } from "./utils/depsChecker/funcPluginLogger";
 import { FuncPluginTelemetry } from "./utils/depsChecker/funcPluginTelemetry";
 import { TelemetryHelper } from "./utils/telemetry-helper";
 import { generateBicepFiles, getTemplatesFolder } from "../../..";
-import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
+import { BicepPluginsContext, ScaffoldArmTemplateResult } from "../../../common/armInterface";
+import { Bicep, ConstantString } from "../../../common/constants";
 
 type Site = WebSiteManagementModels.Site;
 type AppServicePlan = WebSiteManagementModels.AppServicePlan;
@@ -645,8 +645,8 @@ export class FunctionPluginImpl {
     const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
       .activeResourcePlugins;
     const context = {
-      plugins: selectedPlugins,
-    };
+      Plugins: selectedPlugins,
+    } as BicepPluginsContext;
 
     const bicepTemplateDirectory = path.join(
       getTemplatesFolder(),
@@ -656,35 +656,44 @@ export class FunctionPluginImpl {
       "bicep"
     );
 
-    const moduleTemplateFilePath = path.join(bicepTemplateDirectory, Bicep.moduleTemplateFileName);
+    const moduleTemplateFilePath = path.join(
+      bicepTemplateDirectory,
+      BicepSnippet.moduleTemplateFileName
+    );
+    const moduleContentResult = await generateBicepFiles(moduleTemplateFilePath, context);
+    if (moduleContentResult.isErr()) {
+      throw moduleContentResult.error;
+    }
 
     const parameterTemplateFilePath = path.join(
       bicepTemplateDirectory,
-      Bicep.inputParameterOrchestrationFileName
+      Bicep.InputParameterOrchestrationFileName
     );
-    const resourceTemplateFilePath = path.join(
+    const moduleOrchestrationFilePath = path.join(
       bicepTemplateDirectory,
-      Bicep.moduleOrchestrationFileName
+      Bicep.ModuleOrchestrationFileName
     );
     const outputTemplateFilePath = path.join(
       bicepTemplateDirectory,
-      Bicep.outputOrchestrationFileName
+      Bicep.OutputOrchestrationFileName
     );
-    const parameterFilePath = path.join(bicepTemplateDirectory, Bicep.parameterFileName);
+    const parameterFilePath = path.join(bicepTemplateDirectory, Bicep.ParameterFileName);
 
     const result: ScaffoldArmTemplateResult = {
       Modules: {
         functionProvision: {
-          Content: await fs.readFile(moduleTemplateFilePath, Bicep.uft8Encoding),
+          Content: moduleContentResult.value,
         },
       },
       Orchestration: {
         ParameterTemplate: {
-          Content: await fs.readFile(parameterTemplateFilePath, Bicep.uft8Encoding),
-          ParameterJson: JSON.parse(await fs.readFile(parameterFilePath, Bicep.uft8Encoding)),
+          Content: await fs.readFile(parameterTemplateFilePath, ConstantString.UTF8Encoding),
+          ParameterJson: JSON.parse(
+            await fs.readFile(parameterFilePath, ConstantString.UTF8Encoding)
+          ),
         },
         ModuleTemplate: {
-          Content: await fs.readFile(resourceTemplateFilePath, Bicep.uft8Encoding),
+          Content: await fs.readFile(moduleOrchestrationFilePath, ConstantString.UTF8Encoding),
           Outputs: {
             storageAccountName: BicepSnippet.storageAccountName,
             appServicePlanName: BicepSnippet.appServicePlanName,
@@ -692,7 +701,7 @@ export class FunctionPluginImpl {
           },
         },
         OutputTemplate: {
-          Content: await fs.readFile(outputTemplateFilePath, Bicep.uft8Encoding),
+          Content: await fs.readFile(outputTemplateFilePath, ConstantString.UTF8Encoding),
         },
       },
     };

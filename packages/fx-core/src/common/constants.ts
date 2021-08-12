@@ -2,6 +2,13 @@ export class ConstantString {
   static readonly UTF8Encoding = "utf-8";
 }
 
+export class Bicep {
+  static readonly InputParameterOrchestrationFileName: string = "input_param.template.bicep";
+  static readonly ModuleOrchestrationFileName: string = "module.template.bicep";
+  static readonly OutputOrchestrationFileName: string = "output.template.bicep";
+  static readonly ParameterFileName: string = "parameters.json";
+}
+
 export class ResourcePlugins {
   static readonly Aad = "fx-resource-aad-app-for-teams";
   static readonly FrontendHosting = "fx-resource-frontend-hosting";

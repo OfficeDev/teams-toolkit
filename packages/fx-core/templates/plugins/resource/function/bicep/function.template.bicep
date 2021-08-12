@@ -11,14 +11,14 @@ param AADClientSecret string
 param tenantId string
 param applicationIdUri string
 
-{{#contains 'frontend_hosting' pluginTypes}}
+{{#contains 'fx-resource-frontend-hosting' Plugins}}
 param frontendHostingStorageEndpoint string
 {{/contains}}
-{{#contains 'azure_sql' pluginTypes}}
+{{#contains 'fx-resource-azure-sql' Plugins}}
 param sqlDatabaseName string
 param sqlEndpoint string
 {{/contains}}
-{{#contains 'identity' pluginTypes}}
+{{#contains 'fx-resource-identity' Plugins}}
 param identityId string
 {{/contains}}
 
@@ -83,7 +83,7 @@ resource functionAppAppSettings 'Microsoft.Web/sites/config@2018-02-01' = {
     AzureWebJobsStorage: 'DefaultEndpointsProtocol=https;AccountName=${functionStorage.name};AccountKey=${listKeys(resourceId(resourceGroup().name, 'Microsoft.Storage/storageAccounts', functionStorage.name), '2019-04-01').keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
     FUNCTIONS_EXTENSION_VERSION: '~3'
     FUNCTIONS_WORKER_RUNTIME: 'node'
-    {{#contains 'identity' pluginTypes}}
+    {{#contains 'fx-resource-azure-sql' Plugins}}
     IDENTITY_ID: identityId
     {{/contains}}
     M365_APPLICATION_ID_URI: applicationIdUri
@@ -91,7 +91,7 @@ resource functionAppAppSettings 'Microsoft.Web/sites/config@2018-02-01' = {
     M365_CLIENT_SECRET: AADClientSecret
     M365_TENANT_ID: tenantId
     M365_AUTHORITY_HOST: oauthAuthorityHost
-    {{#contains 'azure_sql' pluginTypes}}
+    {{#contains 'fx-resource-azure-sql' Plugins}}
     SQL_DATABASE_NAME: sqlDatabaseName
     SQL_ENDPOINT: sqlEndpoint
     {{/contains}}

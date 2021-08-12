@@ -11,7 +11,7 @@ import { WebAppClient } from "./webAppClient";
 import * as path from "path";
 import * as fs from "fs-extra";
 import { getTemplatesFolder } from "../../..";
-import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
+import { BicepPluginsContext, ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import {
   generateBicepFiles,
   getArmOutput,
@@ -142,8 +142,8 @@ export class SimpleAuthPluginImpl {
     const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
       .activeResourcePlugins;
     const context = {
-      plugins: selectedPlugins,
-    };
+      Plugins: selectedPlugins,
+    } as BicepPluginsContext;
 
     const bicepTemplateDirectory = path.join(
       getTemplatesFolder(),

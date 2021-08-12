@@ -32,7 +32,9 @@ export const EnvInfoWriterMW: Middleware = async (ctx: CoreHookContext, next: Ne
       solutionContext.cryptoProvider
     );
 
-    const core = ctx.self as FxCore;
-    core.tools.logProvider.debug(`[core] persist env profile: ${envProfilePath}`);
+    if (envProfilePath.isOk()) {
+      const core = ctx.self as FxCore;
+      core.tools.logProvider.debug(`[core] persist env profile: ${envProfilePath.value}`);
+    }
   }
 };

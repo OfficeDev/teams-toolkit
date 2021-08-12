@@ -148,3 +148,12 @@ export function PluginHasNoTaskImpl(pluginName: string, task: string) {
     new Error().stack
   );
 }
+
+export function ProjectSettingsUndefinedError(): FxError {
+  return new SystemError(
+    "ProjectSettingsUndefinedError",
+    "Project settings is undefined",
+    CoreSource,
+    new Error().stack
+  );
+}

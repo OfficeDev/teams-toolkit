@@ -484,6 +484,7 @@ export class TeamsAppSolution implements Solution {
     if (canProvision.isErr()) {
       return canProvision;
     }
+
     const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
     if (provisioned) {
       const msg = util.format(

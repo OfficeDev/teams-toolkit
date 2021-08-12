@@ -88,7 +88,7 @@ export class FrontendPluginImpl {
         )
     );
 
-    await ProgressHelper.endScaffoldProgress();
+    await ProgressHelper.endScaffoldProgress(true);
     Logger.info(Messages.EndScaffold(PluginInfo.DisplayName));
     return ok(undefined);
   }
@@ -156,7 +156,7 @@ export class FrontendPluginImpl {
     config.domain = new URL(config.endpoint).hostname;
     config.syncToPluginContext(ctx);
 
-    await ProgressHelper.endProvisionProgress();
+    await ProgressHelper.endProvisionProgress(true);
     Logger.info(Messages.EndProvision(PluginInfo.DisplayName));
     return ok(undefined);
   }
@@ -257,7 +257,7 @@ export class FrontendPluginImpl {
       throw new StaticWebsiteDisabledError();
     }
 
-    ProgressHelper.endPreDeployProgress();
+    ProgressHelper.endPreDeployProgress(true);
     Logger.info(Messages.EndPreDeploy(PluginInfo.DisplayName));
     return ok(undefined);
   }
@@ -274,7 +274,7 @@ export class FrontendPluginImpl {
     await FrontendDeployment.doFrontendBuild(componentPath);
     await FrontendDeployment.doFrontendDeployment(client, componentPath);
 
-    await ProgressHelper.endDeployProgress();
+    await ProgressHelper.endDeployProgress(true);
     Logger.info(Messages.EndDeploy(PluginInfo.DisplayName));
     return ok(undefined);
   }

@@ -21,7 +21,7 @@ export interface AppStudioTokenProvider {
 }
 
 // @public (undocumented)
-export function assembleError(e: Error, source?: string): FxError;
+export function assembleError(e: any, source?: string): FxError;
 
 // @public
 export interface AzureAccountProvider {
@@ -52,6 +52,7 @@ export interface AzureSolutionSettings extends SolutionSettings {
 // @public
 export interface BaseQuestion {
     default?: unknown;
+    forgetLastValue?: boolean;
     name: string;
     step?: number;
     title?: string;
@@ -145,8 +146,6 @@ interface Context_2 {
     // (undocumented)
     cryptoProvider: CryptoProvider;
     // (undocumented)
-    envMeta: EnvMeta;
-    // (undocumented)
     logProvider: LogProvider;
     // (undocumented)
     projectSetting: ProjectSettings;
@@ -198,7 +197,7 @@ type DeploymentInputs = Inputs & SolutionInputs & {
 };
 
 // @public
-export type DymanicOptions = LocalFunc<StaticOptions>;
+export type DynamicOptions = LocalFunc<StaticOptions>;
 
 // @public (undocumented)
 export const DynamicPlatforms: Platform[];
@@ -485,7 +484,7 @@ export interface IParameter {
 
 // @public (undocumented)
 export interface IProgressHandler {
-    end: () => Promise<void>;
+    end: (success: boolean) => Promise<void>;
     next: (detail?: string) => Promise<void>;
     start: (detail?: string) => Promise<void>;
 }
@@ -618,7 +617,7 @@ export interface MultiSelectConfig extends UIConfig<string[]> {
 // @public
 export interface MultiSelectQuestion extends UserInputQuestion {
     default?: string[] | LocalFunc<string[] | undefined>;
-    dynamicOptions?: DymanicOptions;
+    dynamicOptions?: DynamicOptions;
     onDidChangeSelection?: (currentSelectedIds: Set<string>, previousSelectedIds: Set<string>) => Promise<Set<string>>;
     returnObject?: boolean;
     skipSingleOption?: boolean;
@@ -631,6 +630,12 @@ export interface MultiSelectQuestion extends UserInputQuestion {
 
 // @public (undocumented)
 export type MultiSelectResult = InputResult<StaticOptions>;
+
+// @public (undocumented)
+export function newSystemError(source: string, name: string, message: string, issueLink?: string): SystemError;
+
+// @public (undocumented)
+export function newUserError(source: string, name: string, message: string, helpLink?: string): UserError;
 
 // @public
 export interface OptionItem {
@@ -721,6 +726,8 @@ export interface ProjectConfig {
     // (undocumented)
     config?: SolutionConfig;
     // (undocumented)
+    localSettings?: LocalSettings;
+    // (undocumented)
     settings?: ProjectSettings;
 }
 
@@ -802,7 +809,7 @@ export type ResourceConfigs = ResourceTemplates;
 // @public
 interface ResourcePlugin {
     activate(solutionSettings: AzureSolutionSettings): boolean;
-    configureLocalResource?: (ctx: Context_2, localProvisionOutput: Readonly<LocalSetting>, localProvisionOutputOfOtherPlugins: Readonly<LocalSettings_2>, tokenProvider: TokenProvider) => Promise<Result<LocalSettings_2, FxError>>;
+    configureLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: LocalSettings_2, tokenProvider: TokenProvider) => Promise<Result<LocalSettings_2, FxError>>;
     configureResource?: (ctx: Context_2, inputs: Readonly<ProvisionInputs>, provisionOutput: Readonly<ProvisionOutput>, provisionOutputOfOtherPlugins: Readonly<Record<PluginName, ProvisionOutput>>, tokenProvider: TokenProvider) => Promise<Result<ProvisionOutput, FxError>>;
     deploy?: (ctx: Context_2, inputs: Readonly<DeploymentInputs>, provisionOutput: Readonly<ProvisionOutput>, tokenProvider: AzureAccountProvider) => Promise<Result<{
         output: Record<string, string>;
@@ -817,9 +824,9 @@ interface ResourcePlugin {
     // (undocumented)
     name: string;
     package?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
-    provisionLocalResource?: (ctx: Context_2, tokenProvider: TokenProvider) => Promise<Result<LocalSetting, FxError>>;
+    provisionLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: LocalSettings_2, tokenProvider: TokenProvider) => Promise<Result<LocalSettings_2, FxError>>;
     provisionResource?: (ctx: Context_2, inputs: Readonly<ProvisionInputs>, provisionTemplate: Json, tokenProvider: TokenProvider) => Promise<Result<ProvisionOutput, FxError>>;
-    publishApplication?: (ctx: Context_2, tokenProvider: AppStudioTokenProvider, inputs: Inputs) => Promise<Result<Void, FxError>>;
+    publishApplication?: (ctx: Context_2, inputs: Inputs, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
     scaffoldSourceCode?: (ctx: Context_2, inputs: Inputs) => Promise<Result<{
         output: Record<string, string>;
     }, FxError>>;
@@ -892,7 +899,7 @@ export interface SingleSelectConfig extends UIConfig<string> {
 // @public
 export interface SingleSelectQuestion extends UserInputQuestion {
     default?: string | LocalFunc<string | undefined>;
-    dynamicOptions?: DymanicOptions;
+    dynamicOptions?: DynamicOptions;
     returnObject?: boolean;
     skipSingleOption?: boolean;
     staticOptions: StaticOptions;
@@ -1046,14 +1053,11 @@ export type SubscriptionInfo = {
 };
 
 // @public
-export class SystemError implements FxError {
+export class SystemError extends Error implements FxError {
     constructor(name: string, message: string, source: string, stack?: string, issueLink?: string, innerError?: any);
     innerError?: any;
     issueLink?: string;
-    message: string;
-    name: string;
     source: string;
-    stack?: string;
     timestamp: Date;
 }
 
@@ -1144,6 +1148,8 @@ export type TokenProvider = {
 // @public (undocumented)
 export interface Tools {
     // (undocumented)
+    cryptoProvider?: CryptoProvider;
+    // (undocumented)
     logProvider: LogProvider;
     // (undocumented)
     telemetryReporter?: TelemetryReporter;
@@ -1221,14 +1227,11 @@ export interface UIConfig<T> {
 export const UserCancelError: UserError;
 
 // @public
-export class UserError implements FxError {
+export class UserError extends Error implements FxError {
     constructor(name: string, message: string, source: string, stack?: string, helpLink?: string, innerError?: any);
     helpLink?: string;
     innerError?: any;
-    message: string;
-    name: string;
     source: string;
-    stack?: string;
     timestamp: Date;
 }
 

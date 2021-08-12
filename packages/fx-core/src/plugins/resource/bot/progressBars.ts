@@ -15,7 +15,7 @@ export class ProgressBarFactory {
     if (ProgressBarFactory.progressBars.has(name)) {
       const handler = ProgressBarFactory.progressBars.get(name);
 
-      await handler?.end();
+      await handler?.end(true);
 
       return handler;
     }
@@ -30,12 +30,12 @@ export class ProgressBarFactory {
     return handler;
   }
 
-  public static async closeProgressBar(name?: string): Promise<void> {
+  public static async closeProgressBar(success: boolean, name?: string): Promise<void> {
     if (name) {
-      await ProgressBarFactory.progressBars.get(name)?.end();
+      await ProgressBarFactory.progressBars.get(name)?.end(success);
     } else {
       for (const key of ProgressBarFactory.progressBars.keys()) {
-        await ProgressBarFactory.progressBars.get(key)?.end();
+        await ProgressBarFactory.progressBars.get(key)?.end(success);
       }
     }
   }

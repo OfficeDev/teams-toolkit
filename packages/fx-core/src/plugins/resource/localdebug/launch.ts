@@ -27,6 +27,7 @@ export function generateConfigurations(
         group: "remote",
         order: edgeOrder,
       },
+      timeout: 20000,
     },
     {
       name: "Launch Remote (Chrome)",
@@ -37,6 +38,7 @@ export function generateConfigurations(
         group: "remote",
         order: chromeOrder,
       },
+      timeout: 20000,
     },
   ];
 
@@ -56,6 +58,7 @@ export function generateConfigurations(
             group: "all",
             hidden: true,
           },
+          timeout: 20000,
         },
         {
           name: "Start and Attach to Frontend (Chrome)",
@@ -68,6 +71,7 @@ export function generateConfigurations(
             group: "all",
             hidden: true,
           },
+          timeout: 20000,
         },
         {
           name: "Start and Attach to Backend",
@@ -95,6 +99,7 @@ export function generateConfigurations(
             group: "all",
             hidden: true,
           },
+          timeout: 20000,
         },
         {
           name: "Start and Attach to Frontend (Chrome)",
@@ -106,6 +111,7 @@ export function generateConfigurations(
             group: "all",
             hidden: true,
           },
+          timeout: 20000,
         }
       );
     }
@@ -124,6 +130,7 @@ export function generateConfigurations(
           group: "all",
           hidden: true,
         },
+        timeout: 20000,
       },
       {
         name: "Launch Bot (Chrome)",
@@ -135,6 +142,7 @@ export function generateConfigurations(
           group: "all",
           hidden: true,
         },
+        timeout: 20000,
       },
       {
         name: "Start and Attach to Bot",
@@ -167,6 +175,7 @@ export function generateConfigurations(
           group: "all",
           hidden: true,
         },
+        timeout: 20000,
       },
       {
         name: "Start and Attach to Frontend (Chrome)",
@@ -181,6 +190,7 @@ export function generateConfigurations(
           group: "all",
           hidden: true,
         },
+        timeout: 20000,
       },
       {
         name: "Start and Attach to Bot",

@@ -5,10 +5,14 @@ import {
   AppStudioTokenProvider,
   AzureAccountProvider,
   AzureSolutionSettings,
+  ConfigMap,
+  err,
   Func,
   FxError,
   Inputs,
   Json,
+  ok,
+  PluginContext,
   Result,
   TokenProvider,
   Void,
@@ -32,6 +36,7 @@ import {
 import {
   configureLocalResourceAdapter,
   configureResourceAdapter,
+  convert2PluginContext,
   deployAdapter,
   executeUserTaskAdapter,
   generateResourceTemplateAdapter,
@@ -40,7 +45,7 @@ import {
 } from "../../utils4v2";
 
 @Service(ResourcePluginsV2.AppStudioPlugin)
-export class FrontendPluginV2 implements ResourcePlugin {
+export class AppStudioPluginV2 implements ResourcePlugin {
   name = "fx-resource-appstudio";
   displayName = "App Studio";
   @Inject(ResourcePlugins.AppStudioPlugin)
@@ -132,6 +137,19 @@ export class FrontendPluginV2 implements ResourcePlugin {
     provisionOutputs: Readonly<Record<PluginName, ProvisionOutput>>,
     tokenProvider: AppStudioTokenProvider
   ): Promise<Result<Void, FxError>> {
-    throw new Error();
+    const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
+    pluginContext.appStudioToken = tokenProvider;
+    const configsOfOtherPlugins = new Map<string, ConfigMap>();
+    for (const key in provisionOutputs) {
+      const output = provisionOutputs[key].output;
+      const configMap = ConfigMap.fromJSON(output);
+      if (configMap) configsOfOtherPlugins.set(key, configMap);
+    }
+    pluginContext.configOfOtherPlugins = configsOfOtherPlugins;
+    const postRes = await this.plugin.publish(pluginContext);
+    if (postRes.isErr()) {
+      return err(postRes.error);
+    }
+    return ok(Void);
   }
 }

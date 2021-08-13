@@ -116,7 +116,7 @@ export interface ResourcePlugin {
    */
   provisionResource?: (
     ctx: Context,
-    inputs: Readonly<SolutionInputs>,
+    inputs: Readonly<ProvisionInputs>,
     provisionTemplate: Json,
     tokenProvider: TokenProvider
   ) => Promise<Result<ProvisionOutput, FxError>>;
@@ -137,7 +137,7 @@ export interface ResourcePlugin {
    */
   configureResource?: (
     ctx: Context,
-    inputs: Readonly<SolutionInputs>,
+    inputs: Readonly<ProvisionInputs>,
     provisionOutput: Readonly<ProvisionOutput>,
     provisionOutputOfOtherPlugins: Readonly<Record<PluginName, ProvisionOutput>>,
     tokenProvider: TokenProvider
@@ -169,7 +169,7 @@ export interface ResourcePlugin {
    */
   deploy?: (
     ctx: Context,
-    inputs: Readonly<SolutionInputs>,
+    inputs: Readonly<DeploymentInputs>,
     provisionOutput: Readonly<ProvisionOutput>,
     tokenProvider: AzureAccountProvider
   ) => Promise<Result<{ output: Record<string, string> }, FxError>>;

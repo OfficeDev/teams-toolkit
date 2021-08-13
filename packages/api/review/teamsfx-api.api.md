@@ -192,9 +192,7 @@ export interface CryptoProvider {
 }
 
 // @public (undocumented)
-type DeploymentInputs = Inputs & SolutionInputs & {
-    remoteTeamsAppId: string;
-};
+type DeploymentInputs = Inputs & SolutionInputs;
 
 // @public
 export type DynamicOptions = LocalFunc<StaticOptions>;
@@ -227,7 +225,7 @@ export interface FolderQuestion extends UserInputQuestion {
 // @public (undocumented)
 export interface Func extends FunctionRouter {
     // (undocumented)
-    params?: unknown;
+    params?: any;
 }
 
 // @public
@@ -826,7 +824,7 @@ interface ResourcePlugin {
     package?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
     provisionLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: LocalSettings_2, tokenProvider: TokenProvider) => Promise<Result<LocalSettings_2, FxError>>;
     provisionResource?: (ctx: Context_2, inputs: Readonly<ProvisionInputs>, provisionTemplate: Json, tokenProvider: TokenProvider) => Promise<Result<ProvisionOutput, FxError>>;
-    publishApplication?: (ctx: Context_2, inputs: Inputs, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
+    publishApplication?: (ctx: Context_2, inputs: Inputs, provisionOutputs: Readonly<Record<PluginName, ProvisionOutput>>, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
     scaffoldSourceCode?: (ctx: Context_2, inputs: Inputs) => Promise<Result<{
         output: Record<string, string>;
     }, FxError>>;
@@ -950,6 +948,7 @@ type SolutionInputs = {
     resourceGroupName: string;
     location: string;
     teamsAppTenantId: string;
+    remoteTeamsAppId?: string;
 };
 
 // @public (undocumented)

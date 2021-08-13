@@ -18,6 +18,7 @@ import {
   ProvisionOutput,
   ResourcePlugin,
   ResourceTemplate,
+  SolutionInputs,
 } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
 import { AppStudioPlugin } from "..";
@@ -75,7 +76,7 @@ export class FrontendPluginV2 implements ResourcePlugin {
 
   async configureResource(
     ctx: Context,
-    inputs: Inputs,
+    inputs: Readonly<ProvisionInputs>,
     provisionOutput: Readonly<ProvisionOutput>,
     provisionOutputOfOtherPlugins: Readonly<Record<PluginName, ProvisionOutput>>,
     tokenProvider: TokenProvider

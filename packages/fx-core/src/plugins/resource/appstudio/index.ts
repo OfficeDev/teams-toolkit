@@ -19,6 +19,9 @@ import {
   ProjectSettings,
   Colors,
   AzureSolutionSettings,
+  Func,
+  newUserError,
+  newSystemError,
 } from "@microsoft/teamsfx-api";
 import { AppStudioPluginImpl } from "./plugin";
 import { Constants } from "./constants";
@@ -29,6 +32,8 @@ import { manuallySubmitOption, autoPublishOption } from "./questions";
 import { TelemetryUtils, TelemetryEventName, TelemetryPropertyKey } from "./utils/telemetry";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+import { FunctionRouterError } from "../../../core";
+import { Links } from "../bot/constants";
 @Service(ResourcePlugins.AppStudioPlugin)
 export class AppStudioPlugin implements Plugin {
   name = "fx-resource-appstudio";
@@ -82,7 +87,7 @@ export class AppStudioPlugin implements Plugin {
    * For cli: "teamsfx init" only
    * @returns {string} - Remote teams app id
    */
-  public async getAppDefinitionAndUpdate(
+  private async getAppDefinitionAndUpdate(
     ctx: PluginContext,
     type: "localDebug" | "remote",
     manifest: TeamsAppManifest
@@ -113,7 +118,7 @@ export class AppStudioPlugin implements Plugin {
    * @param {string} manifestString - the string of manifest.json file
    * @returns {string[]} an array of errors
    */
-  public async validateManifest(ctx: PluginContext): Promise<Result<string[], FxError>> {
+  private async validateManifest(ctx: PluginContext): Promise<Result<string[], FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.validateManifest);
     const validationpluginResult = await this.appStudioPluginImpl.validateManifest(ctx);
@@ -167,7 +172,7 @@ export class AppStudioPlugin implements Plugin {
    * @param {string} appDirectory - The directory contains manifest.source.json and two images
    * @returns {string} - Path of built appPackage.zip
    */
-  public async buildTeamsPackage(ctx: PluginContext): Promise<Result<string, FxError>> {
+  private async buildTeamsPackage(ctx: PluginContext): Promise<Result<string, FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.buildTeamsPackage);
     try {
@@ -270,6 +275,38 @@ export class AppStudioPlugin implements Plugin {
   public async postLocalDebug(ctx: PluginContext): Promise<Result<string, FxError>> {
     const localTeamsAppId = await this.appStudioPluginImpl.postLocalDebug(ctx);
     return ok(localTeamsAppId);
+  }
+
+  async executeUserTask(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {
+    if (func.method === "validateManifest") {
+      return await this.validateManifest(ctx);
+    } else if (func.method === "buildTeamsPackage") {
+      return await this.buildTeamsPackage(ctx);
+    } else if (func.method === "getAppDefinitionAndUpdate") {
+      if (func.params && func.params.type && func.params.manifest) {
+        return await this.getAppDefinitionAndUpdate(
+          ctx,
+          func.params.type as "localDebug" | "remote",
+          func.params.manifest as TeamsAppManifest
+        );
+      }
+      return err(
+        newSystemError(
+          Constants.PLUGIN_NAME,
+          "InvalidParam",
+          `Invalid param:${JSON.stringify(func)}`,
+          Links.ISSUE_LINK
+        )
+      );
+    }
+    return err(
+      newSystemError(
+        Constants.PLUGIN_NAME,
+        "FunctionRouterError",
+        `Failed to route function call:${JSON.stringify(func)}`,
+        Links.ISSUE_LINK
+      )
+    );
   }
 }
 

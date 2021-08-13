@@ -22,6 +22,7 @@ import {
   ProvisionInputs,
   ProvisionOutput,
   ResourceTemplate,
+  SolutionInputs,
 } from "@microsoft/teamsfx-api/build/v2";
 import { ArmResourcePlugin, ScaffoldArmTemplateResult } from "../../common/armInterface";
 import { NoProjectOpenedError, PluginHasNoTaskImpl } from "../../core";
@@ -91,7 +92,7 @@ export async function provisionResourceAdapter(
 }
 export async function configureResourceAdapter(
   ctx: Context,
-  inputs: Inputs,
+  inputs: Readonly<ProvisionInputs>,
   provisionOutput: Readonly<ProvisionOutput>,
   provisionOutputOfOtherPlugins: Readonly<Record<PluginName, ProvisionOutput>>,
   tokenProvider: TokenProvider,

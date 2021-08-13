@@ -140,11 +140,19 @@ export function ContextUpgradeError(error: any, isUserError = false): FxError {
   }
 }
 
-
-export function PluginHasNoTaskImpl(pluginName: string, task: string){
+export function PluginHasNoTaskImpl(pluginName: string, task: string) {
   return new SystemError(
     "PluginHasNoTaskImplError",
     `Plugin ${pluginName} has not implemented method: ${task}`,
+    CoreSource,
+    new Error().stack
+  );
+}
+
+export function ProjectSettingsUndefinedError(): FxError {
+  return new SystemError(
+    "ProjectSettingsUndefinedError",
+    "Project settings is undefined",
     CoreSource,
     new Error().stack
   );

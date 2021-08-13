@@ -133,7 +133,7 @@ describe("Get AppDefinition and Update", () => {
       },
     };
     sandbox
-      .stub(AppStudioPluginImpl.prototype, "getConfigAndAppDefinition" as any)
+      .stub(AppStudioPluginImpl.prototype, "getAppDefinitionAndManifest" as any)
       .returns(
         err(
           AppStudioResultFactory.SystemError(
@@ -351,7 +351,7 @@ describe("Get AppDefinition and Update", () => {
     };
 
     sandbox
-      .stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any)
+      .stub(AppStudioPluginImpl.prototype, "getAppDefinitionAndManifest" as any)
       .returns(
         err(
           AppStudioResultFactory.SystemError(

@@ -184,9 +184,7 @@ export class AppStudioPlugin implements Plugin {
         { content: " built successfully!", color: Colors.BRIGHT_WHITE },
       ];
       ctx.ui?.showMessage("info", builtSuccess, false);
-      const properties: { [key: string]: string } = {};
-      properties[TelemetryPropertyKey.buildOnly] = "true";
-      TelemetryUtils.sendSuccessEvent(TelemetryEventName.buildTeamsPackage, properties);
+      TelemetryUtils.sendSuccessEvent(TelemetryEventName.buildTeamsPackage);
       return ok(appPackagePath);
     } catch (error) {
       TelemetryUtils.sendErrorEvent(TelemetryEventName.buildTeamsPackage, error);

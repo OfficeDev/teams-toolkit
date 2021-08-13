@@ -1,4 +1,4 @@
-# This is just an example workflow for continous deployment.
+# This is just an example workflow for continuous deployment.
 # You should customize it to meet your own requirements.
 name: 'Continuous Deployment'
 on:
@@ -9,7 +9,8 @@ on:
 jobs:
   buildAndPublish:
     runs-on: ubuntu-latest
-    environment: test_environment
+    # You can uncomment the line below to use environments (refer to https://docs.github.com/en/actions/reference/environments). 
+    #environment: test_environment
     env:
       AZURE_ACCOUNT_NAME: ${{secrets.AZURE_ACCOUNT_NAME}}
       AZURE_ACCOUNT_PASSWORD: ${{secrets.AZURE_ACCOUNT_PASSWORD}}

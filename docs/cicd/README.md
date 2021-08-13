@@ -5,24 +5,25 @@ TeamsFx tooling provides support for you to automate, customize and execute your
 |Tools and Templates|Description|
 |---|---|
 |[teamsfx-cli-action](https://github.com/OfficeDev/teamsfx-cli-action)|A ready-to-use GitHub Action and you can combineit in a completely customized workflow.|
-|[github-ci-template.yml](https://github.com/OfficeDev/TeamsFx/blob/ruhe/cicd_ymls/docs/cicd/github-ci-template.yml) and [github-cd-template.yml](https://github.com/OfficeDev/TeamsFx/blob/ruhe/cicd_ymls/docs/cicd/github-cd-template.yml)|GitHub workflow templates. It shows what a typical CI/CD workflow looks like for a Teams application.|
-|[script-ci-template.sh](https://github.com/OfficeDev/TeamsFx/blob/ruhe/cicd_ymls/docs/cicd/others-script-ci-template.sh) and [script-cd-template.sh](https://github.com/OfficeDev/TeamsFx/blob/ruhe/cicd_ymls/docs/cicd/others-script-cd-template.sh)|Script templates you can follow to build workflows outside GitHub. It shows what a typical CI/CD workflow looks like for a Teams application.|
+|[github-ci-template.yml](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/github-ci-template.yml) and [github-cd-template.yml](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/github-cd-template.yml)|GitHub workflow templates. It shows what a typical CI/CD workflow looks like for a Teams application.|
+|[script-ci-template.sh](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/others-script-ci-template.sh) and [script-cd-template.sh](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/others-script-cd-template.sh)|Script templates you can follow to build workflows outside GitHub. It shows what a typical CI/CD workflow looks like for a Teams application.|
 
 ## CI/CD Workflow Teamplates in GitHub
 
-Follow these example [github-ci-template.yml](https://github.com/OfficeDev/TeamsFx/blob/ruhe/cicd_ymls/docs/cicd/github-ci-template.yml) and  [github-cd-template.yml](https://github.com/OfficeDev/TeamsFx/blob/ruhe/cicd_ymls/docs/cicd/github-cd-template.yml) if you want to create your own by copying-n-pasting the file into your repository under the folder `.github/workflows`. 
+Follow these example [github-ci-template.yml](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/github-ci-template.yml) and  [github-cd-template.yml](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/github-cd-template.yml) if you want to create your own by copying-n-pasting the file into your repository under the folder `.github/workflows`. 
 
 ### Customize CI Workflow
 There are some potential changes you can make to adapt your project:
+1. Change how the CI flow is triggerd. We default it to when pull request is created targeting dev branch.
 1. Change the build scripts.
 1. Remove the test scripts if you don't want to set up the unit test framework for your project.
 
 ### Customize CD Workflow
 1. Change how the CD flow is triggered. We default it to when new commits made to main branch.
-1. Create GitHub repository secrets by environment to hold Azure/M365 login credentials.
-The table below lists all the secrets you need to create on GitHub, and for the detailed usage, please refer to the GitHub Action's [README.md](https://github.com/OfficeDev/teamsfx-cli-action/blob/main/README.md).
-1. Update the environment variable `TEAMSFX_RUN_PROVISION` inside the workflow definition accordingly. Usually, the provision step will be performed for only once and subsequent runs of the workflow dosn't need to run provision again. So, there's environment variable `TEAMSFX_RUN_PROVISION` to control this. One thing needs to mentioned is, after provision, the configs will be commited into the repository, and the following deploy, publish operations will target for this committed configs.
-To be more specific, to run provision, set `TEAMSFX_RUN_PROVISION` to `true`, else set it to `false`.
+1. Create GitHub repository secrets by environment to hold Azure/M365 login credentials. The table below lists all the secrets you need to create on GitHub, and for the detailed usage, please refer to the GitHub Action's [README.md](https://github.com/OfficeDev/teamsfx-cli-action/blob/main/README.md).
+1. Change the build scripts.
+1. Remove the test scripts if you don't want to set up the unit test framework for your project.
+1. The provision step is expected to run separately by hand or by workflow, and remember to commit provision configs into the code and save required secrets into GitHub secrets to generate file `default.userdata` as you can infer from the yml file.
 
 ### Environment Variables
 
@@ -39,8 +40,8 @@ To be more specific, to run provision, set `TEAMSFX_RUN_PROVISION` to `true`, el
 
 ## Getting started guide for other platforms
 You can follow the pre-defined example scripts to build and customize CI/CD pipelines on other platforms like Jenkins:
-* [CI Scripts](https://github.com/OfficeDev/TeamsFx/blob/ruhe/cicd_ymls/docs/cicd/others-script-ci-template.sh)
-* [CD Scripts](https://github.com/OfficeDev/TeamsFx/blob/ruhe/cicd_ymls/docs/cicd/others-script-cd-template.sh)
+* [CI Scripts](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/others-script-ci-template.sh)
+* [CD Scripts](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/others-script-cd-template.sh)
 
 The scripts are based on a cross-platform TeamsFx command line tool [TeamsFx-CLI](https://www.npmjs.com/package/@microsoft/teamsfx-cli). You can install it with `npm install -g @microsoft/teamsfx-cli` and follow the [documentation](https://github.com/OfficeDev/TeamsFx/blob/dev/docs/cli/user-manual.md) to customize the scripts.
 

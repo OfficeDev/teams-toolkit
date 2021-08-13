@@ -137,7 +137,7 @@ jobs:
         uses: richardsimko/update-tag@v1
         if: ${{ (contains(steps.version-change.outputs.CHANGED, 'templates@') || contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx')) && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' }}
         with:
-          tag_name: "templates@0.0.0-alpha"
+          tag_name: "templates@0.0.0-rc"
         env:
           GITHUB_TOKEN: ${{ secrets.CD_PAT }}
 

@@ -87,7 +87,7 @@ export class AppStudioPlugin implements Plugin {
    * For cli: "teamsfx init" only
    * @returns {string} - Remote teams app id
    */
-  private async getAppDefinitionAndUpdate(
+  public async getAppDefinitionAndUpdate(
     ctx: PluginContext,
     type: "localDebug" | "remote",
     manifest: TeamsAppManifest
@@ -118,7 +118,7 @@ export class AppStudioPlugin implements Plugin {
    * @param {string} manifestString - the string of manifest.json file
    * @returns {string[]} an array of errors
    */
-  private async validateManifest(ctx: PluginContext): Promise<Result<string[], FxError>> {
+  public async validateManifest(ctx: PluginContext): Promise<Result<string[], FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.validateManifest);
     const validationpluginResult = await this.appStudioPluginImpl.validateManifest(ctx);
@@ -172,7 +172,7 @@ export class AppStudioPlugin implements Plugin {
    * @param {string} appDirectory - The directory contains manifest.source.json and two images
    * @returns {string} - Path of built appPackage.zip
    */
-  private async buildTeamsPackage(ctx: PluginContext): Promise<Result<string, FxError>> {
+  public async buildTeamsPackage(ctx: PluginContext): Promise<Result<string, FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.buildTeamsPackage);
     try {

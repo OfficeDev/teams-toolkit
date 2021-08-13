@@ -103,37 +103,52 @@ jobs:
         run: |
           echo "::set-output name=CHANGED::$(git tag --points-at HEAD | xargs)"
           echo "::set-output name=TEMPLATE_VERSION::$(git tag --points-at HEAD | grep templates)"
-          echo "::set-output name=EXTENSION_VERSION::$(git tag --points-at HEAD | grep ms-teams-vscode-extension@ | cut -d '@' -f2)"
+          echo "::set-output name=EXTENSION_VERSION::$(git tag --points-at HEAD | grep ms-teams-vscode-extension@)"
           if git tag --points-at HEAD | grep templates | grep rc;
           then
               git push -d origin $(git tag --points-at HEAD | grep templates | grep rc)
           fi
       
-      - name: Install Mustache
-        run: curl -sSL https://git.io/get-mo -o mo && chmod +x mo && sudo mv mo /usr/local/bin/
-
       - name: generate templates
-        run: .github/scripts/template-zip-autogen.sh
+        run: |
+          curl -sSL https://git.io/get-mo -o mo && chmod +x mo && sudo mv mo /usr/local/bin/
+          .github/scripts/template-zip-autogen.sh
+
+      - name: update tag
+        uses: richardsimko/update-tag@v1
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'alpha') }}
+        with:
+          tag_name: "templates@0.0.0-alpha"
+        env:
+          GITHUB_TOKEN: ${{ secrets.CD_PAT }}
 
       - name: release templates' alpha version to github
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'alpha') }}
-        uses: marvinpinto/action-automatic-releases@latest
+        uses: ncipollo/release-action@v1.7.3
         with:
-          repo_token: ${{ secrets.CD_PAT }}
+          token: ${{ secrets.CD_PAT }}
           prerelease: true
-          automatic_release_tag: "templates@0.0.0-alpha"
-          files: |
-            ./*.zip
+          tag: "templates@0.0.0-alpha"
+          artifacts: ./*.zip
+          allowUpdates: true
+      
+      - name: update tag
+        uses: richardsimko/update-tag@v1
+        if: ${{ (contains(steps.version-change.outputs.CHANGED, 'templates@') || contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx')) && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' }}
+        with:
+          tag_name: "templates@0.0.0-rc"
+        env:
+          GITHUB_TOKEN: ${{ secrets.CD_PAT }}
 
       - name: release templates' RC version to github
         if: ${{ (contains(steps.version-change.outputs.CHANGED, 'templates@') || contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx')) && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' }}
-        uses: marvinpinto/action-automatic-releases@latest
+        uses: ncipollo/release-action@v1.7.3
         with:
-          repo_token: ${{ secrets.CD_PAT }}
+          token: ${{ secrets.CD_PAT }}
           prerelease: true
-          automatic_release_tag: "templates@0.0.0-rc"
-          files: |
-            ./*.zip
+          tag: "templates@0.0.0-rc"
+          artifacts: ./*.zip
+          allowUpdates: true
 
       - name: Create Templates Stable Release
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
@@ -221,10 +236,8 @@ jobs:
 
       - name: release VSCode extension to github
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') }}
-        uses: marvinpinto/action-automatic-releases@latest
+        uses: ncipollo/release-action@v1.7.3
         with:
-          repo_token: ${{ secrets.CD_PAT }}
-          prerelease: true
-          automatic_release_tag: 'vscode-extension-${{ steps.version-change.outputs.EXTENSION_VERSION }}'
-          files: |
-            ./packages/**/*.vsix
+          token: ${{ secrets.CD_PAT }}
+          tag: ${{ steps.version-change.outputs.EXTENSION_VERSION }}
+          artifacts: ./packages/**/*.vsix

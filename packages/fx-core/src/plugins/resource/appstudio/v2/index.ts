@@ -14,7 +14,9 @@ import {
   ok,
   PluginContext,
   Result,
+  Stage,
   TokenProvider,
+  traverse,
   Void,
 } from "@microsoft/teamsfx-api";
 import {
@@ -139,6 +141,18 @@ export class AppStudioPluginV2 implements ResourcePlugin {
   ): Promise<Result<Void, FxError>> {
     const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
     pluginContext.appStudioToken = tokenProvider;
+
+    // run question model for publish
+    const getQuestionRes = await this.plugin.getQuestions(Stage.publish, pluginContext);
+    if (getQuestionRes.isOk()) {
+      const node = getQuestionRes.value;
+      if (node) {
+        const res = await traverse(node, inputs, ctx.userInteraction);
+        if (res.isErr()) {
+          return err(res.error);
+        }
+      }
+    }
     const configsOfOtherPlugins = new Map<string, ConfigMap>();
     for (const key in provisionOutputs) {
       const output = provisionOutputs[key].output;

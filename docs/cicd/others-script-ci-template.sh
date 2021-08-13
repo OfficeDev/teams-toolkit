@@ -1,4 +1,4 @@
-# This is just an example workflow for continous integration.
+# This is just an example workflow for continuous integration.
 # You should customize it to meet your own requirements.
 
 # Setup environment.

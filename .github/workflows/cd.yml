@@ -103,7 +103,7 @@ jobs:
         run: |
           echo "::set-output name=CHANGED::$(git tag --points-at HEAD | xargs)"
           echo "::set-output name=TEMPLATE_VERSION::$(git tag --points-at HEAD | grep templates)"
-          echo "::set-output name=EXTENSION_VERSION::$(git tag --points-at HEAD | grep ms-teams-vscode-extension@ | cut -d '@' -f2)"
+          echo "::set-output name=EXTENSION_VERSION::$(git tag --points-at HEAD | grep ms-teams-vscode-extension@)"
           if git tag --points-at HEAD | grep templates | grep rc;
           then
               git push -d origin $(git tag --points-at HEAD | grep templates | grep rc)
@@ -117,23 +117,21 @@ jobs:
 
       - name: release templates' alpha version to github
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'alpha') }}
-        uses: marvinpinto/action-automatic-releases@latest
+        uses: softprops/action-gh-release@v1
         with:
-          repo_token: ${{ secrets.CD_PAT }}
+          token: ${{ secrets.CD_PAT }}
           prerelease: true
-          automatic_release_tag: "templates@0.0.0-alpha"
-          files: |
-            ./*.zip
+          tag_name: "templates@0.0.0-alpha"
+          files: ./*.zip
 
       - name: release templates' RC version to github
         if: ${{ (contains(steps.version-change.outputs.CHANGED, 'templates@') || contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx')) && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' }}
-        uses: marvinpinto/action-automatic-releases@latest
+        uses: softprops/action-gh-release@v1
         with:
-          repo_token: ${{ secrets.CD_PAT }}
+          token: ${{ secrets.CD_PAT }}
           prerelease: true
-          automatic_release_tag: "templates@0.0.0-rc"
-          files: |
-            ./*.zip
+          tag_name: "templates@0.0.0-rc"
+          files: ./*.zip
 
       - name: Create Templates Stable Release
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
@@ -221,10 +219,8 @@ jobs:
 
       - name: release VSCode extension to github
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') }}
-        uses: marvinpinto/action-automatic-releases@latest
+        uses: softprops/action-gh-release@v1
         with:
-          repo_token: ${{ secrets.CD_PAT }}
-          prerelease: true
-          automatic_release_tag: 'vscode-extension-${{ steps.version-change.outputs.EXTENSION_VERSION }}'
-          files: |
-            ./packages/**/*.vsix
+          token: ${{ secrets.CD_PAT }}
+          tag_name: ${{ steps.version-change.outputs.EXTENSION_VERSION }}
+          files: ./packages/**/*.vsix

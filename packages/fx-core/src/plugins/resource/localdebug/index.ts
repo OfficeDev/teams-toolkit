@@ -146,8 +146,6 @@ export class LocalDebugPlugin implements Plugin {
           programmingLanguage
         );
 
-        const localEnvProvider = new LocalEnvProvider(ctx.root);
-
         //TODO: save files via context api
         await fs.ensureDir(`${ctx.root}/.vscode/`);
         await fs.writeJSON(
@@ -175,12 +173,20 @@ export class LocalDebugPlugin implements Plugin {
           }
         );
 
-        await localEnvProvider.saveLocalEnv(
-          localEnvProvider.initialLocalEnvs(includeFrontend, includeBackend, includeBot)
-        );
+        if (!isMultiEnvEnabled()) {
+          const localEnvProvider = new LocalEnvProvider(ctx.root);
+          await localEnvProvider.saveLocalEnv(
+            localEnvProvider.initialLocalEnvs(includeFrontend, includeBackend, includeBot)
+          );
 
-        if (includeFrontend) {
-          ctx.config.set(LocalDebugConfigKeys.TrustDevelopmentCertificate, "true");
+          if (includeFrontend) {
+            ctx.config.set(LocalDebugConfigKeys.TrustDevelopmentCertificate, "true");
+          }
+
+          if (includeBot) {
+            ctx.config.set(LocalDebugConfigKeys.SkipNgrok, "false");
+            ctx.config.set(LocalDebugConfigKeys.LocalBotEndpoint, "");
+          }
         }
 
         if (includeBackend) {
@@ -188,11 +194,6 @@ export class LocalDebugPlugin implements Plugin {
             spaces: 4,
             EOL: os.EOL,
           });
-        }
-
-        if (includeBot) {
-          ctx.config.set(LocalDebugConfigKeys.SkipNgrok, "false");
-          ctx.config.set(LocalDebugConfigKeys.LocalBotEndpoint, "");
         }
       }
     }

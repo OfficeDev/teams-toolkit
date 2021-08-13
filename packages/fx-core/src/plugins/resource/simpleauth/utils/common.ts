@@ -23,6 +23,7 @@ import {
   LocalSettingsAuthKeys,
   LocalSettingsFrontendKeys,
 } from "../../../../common/localSettingsConstants";
+import { TeamsClientId } from "../../../../common/constants";
 export class Utils {
   public static generateResourceName(appName: string, resourceNameSuffix: string): string {
     const paddingLength =
@@ -85,22 +86,10 @@ export class Utils {
   ): { [propertyName: string]: string } {
     const clientId = this.getClientId(ctx, isLocalDebug);
     const clientSecret = this.getClientSecret(ctx, isLocalDebug);
-    const oauthAuthority = Utils.getConfigValueWithValidation(
-      ctx,
-      Constants.AadAppPlugin.id,
-      Constants.AadAppPlugin.configKeys.oauthAuthority
-    ) as string;
+    const oauthAuthority = this.getOauthAuthority(ctx, isLocalDebug);
     const applicationIdUris = this.getApplicationIdUris(ctx, isLocalDebug);
-    const teamsMobileDesktopAppId = Utils.getConfigValueWithValidation(
-      ctx,
-      Constants.AadAppPlugin.id,
-      Constants.AadAppPlugin.configKeys.teamsMobileDesktopAppId
-    ) as string;
-    const teamsWebAppId = Utils.getConfigValueWithValidation(
-      ctx,
-      Constants.AadAppPlugin.id,
-      Constants.AadAppPlugin.configKeys.teamsWebAppId
-    ) as string;
+    const teamsMobileDesktopAppId = TeamsClientId.MobileDesktop;
+    const teamsWebAppId = TeamsClientId.Web;
 
     let endpoint: string;
     if (!isArmSupportEnabled() || isLocalDebug) {
@@ -227,6 +216,27 @@ export class Utils {
     }
 
     return tabEndpoint;
+  }
+
+  private static getOauthAuthority(ctx: PluginContext, isLocalDebug: boolean): string {
+    let oauthAuthority: string;
+    if (isMultiEnvEnabled()) {
+      oauthAuthority = isLocalDebug
+        ? (ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.OauthAuthority) as string)
+        : (Utils.getConfigValueWithValidation(
+            ctx,
+            Constants.AadAppPlugin.id,
+            Constants.AadAppPlugin.configKeys.oauthAuthority
+          ) as string);
+    } else {
+      oauthAuthority = Utils.getConfigValueWithValidation(
+        ctx,
+        Constants.AadAppPlugin.id,
+        Constants.AadAppPlugin.configKeys.oauthAuthority
+      ) as string;
+    }
+
+    return oauthAuthority;
   }
 
   private static getApplicationIdUris(ctx: PluginContext, isLocalDebug: boolean): string {

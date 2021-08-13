@@ -12,6 +12,7 @@ import {
   Result,
   VsCodeEnv,
 } from "@microsoft/teamsfx-api";
+import { TeamsClientId } from "../../../common/constants";
 import { LocalCertificateManager } from "./certificate";
 import {
   AadPlugin,
@@ -172,8 +173,8 @@ export class legacyLocalDebugPlugin {
       const clientId = aadConfigs?.get(AadPlugin.LocalClientId) as string;
       const clientSecret = aadConfigs?.get(AadPlugin.LocalClientSecret) as string;
       const teamsAppTenantId = solutionConfigs?.get(SolutionPlugin.TeamsAppTenantId) as string;
-      const teamsMobileDesktopAppId = aadConfigs?.get(AadPlugin.TeamsMobileDesktopAppId) as string;
-      const teamsWebAppId = aadConfigs?.get(AadPlugin.TeamsWebAppId) as string;
+      const teamsMobileDesktopAppId = TeamsClientId.MobileDesktop;
+      const teamsWebAppId = TeamsClientId.Web;
       const localAuthPackagePath = runtimeConnectorConfigs?.get(
         RuntimeConnectorPlugin.FilePath
       ) as string;

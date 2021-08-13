@@ -654,7 +654,14 @@ export class TeamsAppSolution implements Solution {
 
         const aadPlugin = this.AadPlugin as AadAppForTeamsPlugin;
         if (selectedPlugins.some((plugin) => plugin.name === aadPlugin.name)) {
-          return aadPlugin.setApplicationInContext(getPluginContext(ctx, aadPlugin.name));
+          return await aadPlugin.executeUserTask(
+            {
+              namespace: `${PluginNames.SOLUTION}/${PluginNames.AAD}`,
+              method: "setApplicationInContext",
+              params: { isLocal: false },
+            },
+            getPluginContext(ctx, aadPlugin.name)
+          );
         }
         return ok(undefined);
       },
@@ -1133,7 +1140,14 @@ export class TeamsAppSolution implements Solution {
 
     const aadPlugin = this.AadPlugin as AadAppForTeamsPlugin;
     if (selectedPlugins.some((plugin) => plugin.name === aadPlugin.name)) {
-      const result = aadPlugin.setApplicationInContext(getPluginContext(ctx, aadPlugin.name), true);
+      const result = await aadPlugin.executeUserTask(
+        {
+          namespace: `${PluginNames.SOLUTION}/${PluginNames.AAD}`,
+          method: "setApplicationInContext",
+          params: { isLocal: true },
+        },
+        getPluginContext(ctx, aadPlugin.name)
+      );
       if (result.isErr()) {
         return result;
       }
@@ -1881,7 +1895,14 @@ export class TeamsAppSolution implements Solution {
     if (provisionResult.isErr()) {
       return provisionResult;
     }
-    aadPlugin.setApplicationInContext(aadPluginCtx, isLocal);
+    await aadPlugin.executeUserTask(
+      {
+        namespace: `${PluginNames.SOLUTION}/${PluginNames.AAD}`,
+        method: "setApplicationInContext",
+        params: { isLocal: isLocal },
+      },
+      aadPluginCtx
+    );
     const postProvisionResult = isLocal
       ? await aadPlugin.postLocalDebug(aadPluginCtx)
       : await aadPlugin.postProvision(aadPluginCtx);

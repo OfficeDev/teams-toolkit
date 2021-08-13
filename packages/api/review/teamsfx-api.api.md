@@ -227,7 +227,7 @@ export interface FolderQuestion extends UserInputQuestion {
 // @public (undocumented)
 export interface Func extends FunctionRouter {
     // (undocumented)
-    params?: unknown;
+    params?: any;
 }
 
 // @public

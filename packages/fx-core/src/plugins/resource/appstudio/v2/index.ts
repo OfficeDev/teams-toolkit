@@ -2,13 +2,16 @@
 // Licensed under the MIT license.
 
 import {
+  AppStudioTokenProvider,
   AzureAccountProvider,
   AzureSolutionSettings,
+  Func,
   FxError,
   Inputs,
   Json,
   Result,
   TokenProvider,
+  Void,
 } from "@microsoft/teamsfx-api";
 import {
   Context,
@@ -18,7 +21,7 @@ import {
   ProvisionOutput,
   ResourcePlugin,
   ResourceTemplate,
-  SolutionInputs,
+  LocalSettings,
 } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
 import { AppStudioPlugin } from "..";
@@ -27,8 +30,10 @@ import {
   ResourcePluginsV2,
 } from "../../../solution/fx-solution/ResourcePluginContainer";
 import {
+  configureLocalResourceAdapter,
   configureResourceAdapter,
   deployAdapter,
+  executeUserTaskAdapter,
   generateResourceTemplateAdapter,
   provisionResourceAdapter,
   scaffoldSourceCodeAdapter,
@@ -90,7 +95,20 @@ export class FrontendPluginV2 implements ResourcePlugin {
       this.plugin
     );
   }
-
+  async configureLocalResource(
+    ctx: Context,
+    inputs: Inputs,
+    localSettings: LocalSettings,
+    tokenProvider: TokenProvider
+  ): Promise<Result<LocalSettings, FxError>> {
+    return await configureLocalResourceAdapter(
+      ctx,
+      inputs,
+      localSettings,
+      tokenProvider,
+      this.plugin
+    );
+  }
   async deploy(
     ctx: Context,
     inputs: Readonly<DeploymentInputs>,
@@ -98,5 +116,22 @@ export class FrontendPluginV2 implements ResourcePlugin {
     tokenProvider: AzureAccountProvider
   ): Promise<Result<{ output: Record<string, string> }, FxError>> {
     return await deployAdapter(ctx, inputs, provisionOutput, tokenProvider, this.plugin);
+  }
+
+  async executeUserTask(
+    ctx: Context,
+    func: Func,
+    inputs: Inputs
+  ): Promise<Result<unknown, FxError>> {
+    return await executeUserTaskAdapter(ctx, func, inputs, this.plugin);
+  }
+
+  async publishApplication(
+    ctx: Context,
+    inputs: Inputs,
+    provisionOutputs: Readonly<Record<PluginName, ProvisionOutput>>,
+    tokenProvider: AppStudioTokenProvider
+  ): Promise<Result<Void, FxError>> {
+    throw new Error();
   }
 }

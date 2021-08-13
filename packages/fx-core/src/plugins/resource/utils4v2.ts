@@ -23,7 +23,6 @@ import {
   ProvisionInputs,
   ProvisionOutput,
   ResourceTemplate,
-  SolutionInputs,
 } from "@microsoft/teamsfx-api/build/v2";
 import { ArmResourcePlugin, ScaffoldArmTemplateResult } from "../../common/armInterface";
 import { NoProjectOpenedError, PluginHasNoTaskImpl } from "../../core";

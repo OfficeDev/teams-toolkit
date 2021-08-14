@@ -128,6 +128,8 @@ export interface Context {
     // (undocumented)
     logProvider?: LogProvider;
     // (undocumented)
+    permissionRequestProvider?: PermissionRequestProvider;
+    // (undocumented)
     projectSettings?: ProjectSettings;
     // (undocumented)
     root: string;
@@ -648,6 +650,11 @@ export interface OptionItem {
 }
 
 // @public
+export interface PermissionRequestProvider {
+    getPermissionRequest(): Promise<Result<string, FxError>>;
+}
+
+// @public
 export enum Platform {
     // (undocumented)
     CLI = "cli",
@@ -1151,6 +1158,8 @@ export interface Tools {
     cryptoProvider?: CryptoProvider;
     // (undocumented)
     logProvider: LogProvider;
+    // (undocumented)
+    permissionRequest?: PermissionRequestProvider;
     // (undocumented)
     telemetryReporter?: TelemetryReporter;
     // (undocumented)

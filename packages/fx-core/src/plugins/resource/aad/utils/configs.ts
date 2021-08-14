@@ -1,9 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { PluginContext, ConfigValue } from "@microsoft/teamsfx-api";
+import { PluginContext, ConfigValue, Platform, Stage } from "@microsoft/teamsfx-api";
 import { Constants, Plugins, ConfigKeysOfOtherPlugin, ConfigKeys } from "../constants";
-import { ConfigErrorMessages as Errors, GetConfigError } from "../errors";
+import {
+  ConfigErrorMessages as Errors,
+  GetConfigError,
+  MissingPermissionsRequestProvider,
+} from "../errors";
 import { format, Formats } from "./format";
 import { Utils } from "./common";
 import { ResultFactory } from "../results";
@@ -78,6 +82,22 @@ export class ConfigUtils {
       ctx.config.set(key, value);
     }
   }
+
+  public static async getPermissionRequest(ctx: PluginContext): Promise<string> {
+    if (ctx.permissionRequestProvider === undefined) {
+      throw ResultFactory.SystemError(
+        MissingPermissionsRequestProvider.name,
+        MissingPermissionsRequestProvider.message()
+      );
+    }
+
+    const permissionRequestResult = await ctx.permissionRequestProvider?.getPermissionRequest();
+    if (permissionRequestResult.isOk()) {
+      return permissionRequestResult.value;
+    } else {
+      throw permissionRequestResult.error;
+    }
+  }
 }
 
 export class ProvisionConfig {
@@ -105,19 +125,7 @@ export class ProvisionConfig {
       );
     }
 
-    const permissionRequest: ConfigValue = ctx.configOfOtherPlugins
-      .get(Plugins.solution)
-      ?.get(ConfigKeysOfOtherPlugin.solutionPermissionRequest);
-    if (permissionRequest) {
-      this.permissionRequest = permissionRequest as string;
-    } else {
-      throw ResultFactory.SystemError(
-        GetConfigError.name,
-        GetConfigError.message(
-          Errors.GetConfigError(ConfigKeysOfOtherPlugin.solutionPermissionRequest, Plugins.solution)
-        )
-      );
-    }
+    this.permissionRequest = await ConfigUtils.getPermissionRequest(ctx);
 
     const objectId: ConfigValue = ConfigUtils.getAadConfig(
       ctx,
@@ -156,13 +164,13 @@ export class ProvisionConfig {
       ctx,
       ConfigKeys.oauthHost,
       Constants.oauthAuthorityPrefix,
-      this.isLocalDebug
+      isMultiEnvEnabled() && this.isLocalDebug
     );
     ConfigUtils.checkAndSaveConfig(
       ctx,
       ConfigKeys.oauthAuthority,
       oauthAuthority,
-      this.isLocalDebug
+      isMultiEnvEnabled() && this.isLocalDebug
     );
   }
 
@@ -337,18 +345,6 @@ export class UpdatePermissionConfig {
       );
     }
 
-    const permissionRequest: ConfigValue = ctx.configOfOtherPlugins
-      .get(Plugins.solution)
-      ?.get(ConfigKeysOfOtherPlugin.solutionPermissionRequest);
-    if (permissionRequest) {
-      this.permissionRequest = permissionRequest as string;
-    } else {
-      throw ResultFactory.SystemError(
-        GetConfigError.name,
-        GetConfigError.message(
-          Errors.GetConfigError(ConfigKeysOfOtherPlugin.solutionPermissionRequest, Plugins.solution)
-        )
-      );
-    }
+    this.permissionRequest = await ConfigUtils.getPermissionRequest(ctx);
   }
 }

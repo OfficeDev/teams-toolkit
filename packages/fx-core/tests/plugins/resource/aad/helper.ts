@@ -10,6 +10,10 @@ import {
   GraphTokenProvider,
   UserInteraction,
   LogLevel,
+  PermissionRequestProvider,
+  Result,
+  FxError,
+  ok,
 } from "@microsoft/teamsfx-api";
 import sinon from "sinon";
 import {
@@ -20,10 +24,17 @@ import {
 import jwt_decode from "jwt-decode";
 import { Utils } from "../../../../src/plugins/resource/aad/utils/common";
 import { MockUserInteraction } from "../../../core/utils";
+import { DEFAULT_PERMISSION_REQUEST } from "../../../../src/plugins/solution/fx-solution/constants";
 
 const permissions = '[{"resource": "Microsoft Graph","delegated": ["User.Read"],"application":[]}]';
 const permissionsWrong =
   '[{"resource": "Microsoft Graph","delegated": ["User.ReadData"],"application":[]}]';
+
+const mockPermissionRequestProvider: PermissionRequestProvider = {
+  async getPermissionRequest(): Promise<Result<string, FxError>> {
+    return ok(JSON.stringify(DEFAULT_PERMISSION_REQUEST));
+  },
+};
 
 const mockLogProvider: LogProvider = {
   async log(logLevel: LogLevel, message: string): Promise<boolean> {
@@ -104,8 +115,7 @@ export class TestHelper {
     config?: object,
     frontend = true,
     bot = true,
-    isLocalDebug = false,
-    wrongPermission = false
+    isLocalDebug = false
   ) {
     let domain: string | undefined = undefined;
     let endpoint: string | undefined = undefined;
@@ -122,8 +132,8 @@ export class TestHelper {
     }
 
     const configOfOtherPlugins = isLocalDebug
-      ? mockConfigOfOtherPluginsLocalDebug(domain, endpoint, botEndpoint, botId, wrongPermission)
-      : mockConfigOfOtherPluginsProvision(domain, endpoint, botEndpoint, botId, wrongPermission);
+      ? mockConfigOfOtherPluginsLocalDebug(domain, endpoint, botEndpoint, botId)
+      : mockConfigOfOtherPluginsProvision(domain, endpoint, botEndpoint, botId);
 
     const pluginContext = {
       logProvider: mockLogProvider,
@@ -134,6 +144,7 @@ export class TestHelper {
       projectSettings: {
         appName: "aad-plugin-unit-test",
       },
+      permissionRequestProvider: mockPermissionRequestProvider,
     } as unknown as PluginContext;
 
     return pluginContext;
@@ -144,19 +155,12 @@ function mockConfigOfOtherPluginsProvision(
   domain: string | undefined,
   endpoint: string | undefined,
   botEndpoint: string | undefined,
-  botId: string | undefined,
-  wrongPermission = false
+  botId: string | undefined
 ) {
   return new Map([
     [
       Plugins.solution,
-      new Map([
-        [
-          ConfigKeysOfOtherPlugin.solutionPermissionRequest,
-          wrongPermission ? permissionsWrong : permissions,
-        ],
-        [ConfigKeysOfOtherPlugin.remoteTeamsAppId, faker.datatype.uuid()],
-      ]),
+      new Map([[ConfigKeysOfOtherPlugin.remoteTeamsAppId, faker.datatype.uuid()]]),
     ],
     [
       Plugins.frontendHosting,
@@ -179,19 +183,12 @@ function mockConfigOfOtherPluginsLocalDebug(
   domain: string | undefined,
   endpoint: string | undefined,
   botEndpoint: string | undefined,
-  botId: string | undefined,
-  wrongPermission = false
+  botId: string | undefined
 ) {
   return new Map([
     [
       Plugins.solution,
-      new Map([
-        [
-          ConfigKeysOfOtherPlugin.solutionPermissionRequest,
-          wrongPermission ? permissionsWrong : permissions,
-        ],
-        [ConfigKeysOfOtherPlugin.remoteTeamsAppId, faker.datatype.uuid()],
-      ]),
+      new Map([[ConfigKeysOfOtherPlugin.remoteTeamsAppId, faker.datatype.uuid()]]),
     ],
     [
       Plugins.localDebug,

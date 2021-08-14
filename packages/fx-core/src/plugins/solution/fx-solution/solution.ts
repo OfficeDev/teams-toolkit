@@ -23,14 +23,12 @@ import {
   SolutionContext,
   TeamsAppManifest,
   OptionItem,
-  ConfigFolderName,
   AppPackageFolderName,
   AzureSolutionSettings,
   Platform,
   Inputs,
   DynamicPlatforms,
   SubscriptionInfo,
-  LocalSettings,
 } from "@microsoft/teamsfx-api";
 import { checkSubscription, fillInCommonQuestions } from "./commonQuestions";
 import { executeLifecycles, executeConcurrently, LifecyclesWithContext } from "./executor";
@@ -39,7 +37,6 @@ import * as fs from "fs-extra";
 import {
   DEFAULT_PERMISSION_REQUEST,
   GLOBAL_CONFIG,
-  PERMISSION_REQUEST,
   SolutionError,
   LOCAL_DEBUG_AAD_ID,
   LOCAL_DEBUG_TEAMS_APP_ID,
@@ -410,11 +407,10 @@ export class TeamsAppSolution implements Solution {
   }
 
   /**
-   * Load the content of the latest permissions.json file to config
-   * @param rootPath root path of this project
-   * @param config solution config
+   * Check if the permissions.json file exist.
+   * @param ctx solution context
    */
-  private async getPermissionRequest(ctx: SolutionContext): Promise<Result<string, FxError>> {
+  private async checkPermissionRequest(ctx: SolutionContext): Promise<Result<undefined, FxError>> {
     if (!this.isAzureProject(ctx)) {
       return err(
         returnUserError(
@@ -424,6 +420,7 @@ export class TeamsAppSolution implements Solution {
         )
       );
     }
+
     const path = `${ctx.root}/permissions.json`;
     if (!(await fs.pathExists(path))) {
       return err(
@@ -434,8 +431,8 @@ export class TeamsAppSolution implements Solution {
         )
       );
     }
-    const permissionRequest = await fs.readJSON(path);
-    return ok(JSON.stringify(permissionRequest));
+
+    return ok(undefined);
   }
 
   /**
@@ -512,11 +509,10 @@ export class TeamsAppSolution implements Solution {
 
       this.runningState = SolutionRunningState.ProvisionInProgress;
       if (this.isAzureProject(ctx)) {
-        const maybePermission = await this.getPermissionRequest(ctx);
-        if (maybePermission.isErr()) {
-          return maybePermission;
+        const result = await this.checkPermissionRequest(ctx);
+        if (result.isErr()) {
+          return result;
         }
-        ctx.config.get(GLOBAL_CONFIG)?.set(PERMISSION_REQUEST, maybePermission.value);
       }
 
       const provisionResult = await this.doProvision(ctx);
@@ -541,8 +537,6 @@ export class TeamsAppSolution implements Solution {
       return provisionResult;
     } finally {
       this.runningState = SolutionRunningState.Idle;
-      // Remove permissionRequest to prevent its persistence in config.
-      ctx.config.get(GLOBAL_CONFIG)?.delete(PERMISSION_REQUEST);
     }
   }
 
@@ -1090,18 +1084,12 @@ export class TeamsAppSolution implements Solution {
   }
 
   async localDebug(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    const maybePermission = await this.getPermissionRequest(ctx);
-    if (maybePermission.isErr()) {
-      return maybePermission;
+    const result = await this.checkPermissionRequest(ctx);
+    if (result.isErr()) {
+      return result;
     }
 
-    try {
-      ctx.config.get(GLOBAL_CONFIG)?.set(PERMISSION_REQUEST, maybePermission.value);
-      const result = await this.doLocalDebug(ctx);
-      return result;
-    } finally {
-      ctx.config.get(GLOBAL_CONFIG)?.delete(PERMISSION_REQUEST);
-    }
+    return await this.doLocalDebug(ctx);
   }
 
   async doLocalDebug(ctx: SolutionContext): Promise<Result<any, FxError>> {
@@ -1805,7 +1793,7 @@ export class TeamsAppSolution implements Solution {
     if (config.get(GLOBAL_CONFIG) == undefined) {
       config.set(GLOBAL_CONFIG, new ConfigMap());
     }
-    config.get(GLOBAL_CONFIG)!.set(PERMISSION_REQUEST, JSON.stringify(DEFAULT_PERMISSION_REQUEST));
+
     const aadPlugin = this.AadPlugin;
     if (config.get(aadPlugin.name) == undefined) {
       config.set(aadPlugin.name, new ConfigMap());
@@ -1888,6 +1876,14 @@ export class TeamsAppSolution implements Solution {
     const domain = this.prepareConfigForRegisterTeamsAppAndAad(ctx.config, params);
     const aadPlugin = this.AadPlugin as AadAppForTeamsPlugin;
     const aadPluginCtx = getPluginContext(ctx, aadPlugin.name);
+
+    if (ctx.permissionRequestProvider === undefined) {
+      ctx.permissionRequestProvider = {
+        async getPermissionRequest(): Promise<Result<string, FxError>> {
+          return ok(JSON.stringify(DEFAULT_PERMISSION_REQUEST));
+        },
+      };
+    }
 
     const provisionResult = isLocal
       ? await aadPlugin.localDebug(aadPluginCtx)
@@ -1973,8 +1969,7 @@ export class TeamsAppSolution implements Solution {
       });
       await fs.writeFile(launchSettingsJSONPath, launchSettingsJSON);
     }
-    // Remove permissionRequest to prevent its persistence in config.
-    ctx.config.get(GLOBAL_CONFIG)?.delete(PERMISSION_REQUEST);
+
     return ok({
       teamsAppId: teamsAppId,
       clientId: configResult.value.aadId,

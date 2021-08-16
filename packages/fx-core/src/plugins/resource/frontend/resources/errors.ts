@@ -339,15 +339,6 @@ export class InvalidAadPluginConfigError extends FrontendPluginError {
   }
 }
 
-export class InvalidArmOutputError extends FrontendPluginError {
-  constructor() {
-    super(ErrorType.User, "InvalidArmOutputError", "The arm output is invalid.", [
-      tips.restoreEnvironment,
-      tips.reProvision,
-    ]);
-  }
-}
-
 export const UnhandledErrorCode = "UnhandledError";
 export const UnhandledErrorMessage = "Unhandled error.";
 

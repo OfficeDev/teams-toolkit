@@ -21,7 +21,6 @@ import {
   RegisterResourceProviderError,
   InvalidAuthPluginConfigError,
   InvalidAadPluginConfigError,
-  InvalidArmOutputError,
 } from "./resources/errors";
 import {
   ArmOutput,
@@ -246,26 +245,14 @@ export class FrontendPluginImpl {
       };
     }
 
-    if (isArmSupportEnabled()) {
-      const endpoint = getArmOutput(ctx, ArmOutput.SimpleAuthEndpoint) as string;
-      if (endpoint) {
-        runtimeEnv = {
-          endpoint: endpoint,
-          startLoginPageUrl: DependentPluginInfo.StartLoginPageURL,
-        };
-      } else {
-        throw new InvalidArmOutputError();
-      }
+    const authPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.RuntimePluginName);
+    if (authPlugin) {
+      runtimeEnv = {
+        endpoint: authPlugin.get(DependentPluginInfo.RuntimeEndpoint) as string,
+        startLoginPageUrl: DependentPluginInfo.StartLoginPageURL,
+      };
     } else {
-      const authPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.RuntimePluginName);
-      if (authPlugin) {
-        runtimeEnv = {
-          endpoint: authPlugin.get(DependentPluginInfo.RuntimeEndpoint) as string,
-          startLoginPageUrl: DependentPluginInfo.StartLoginPageURL,
-        };
-      } else {
-        throw new InvalidAuthPluginConfigError();
-      }
+      throw new InvalidAuthPluginConfigError();
     }
 
     const aadPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.AADPluginName);

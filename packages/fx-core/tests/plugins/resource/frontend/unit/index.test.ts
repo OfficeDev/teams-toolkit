@@ -203,6 +203,10 @@ describe("FrontendPlugin", () => {
     beforeEach(async () => {
       frontendPlugin = new FrontendPlugin();
       pluginContext = TestHelper.getFakePluginContext();
+      sinon.stub(fs, "pathExists").resolves(true);
+      sinon.stub(fs, "readFile").resolves(Buffer.from(""));
+      sinon.stub(fs, "writeFile").resolves();
+      sinon.stub(fs, "ensureFile").resolves(Buffer.from(""));
 
       staticWebsiteEnabledStub = sinon
         .stub(AzureStorageClient.prototype, "isStorageStaticWebsiteEnabled")

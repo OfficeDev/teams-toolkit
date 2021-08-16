@@ -105,6 +105,7 @@ import { deployArmTemplates, generateArmTemplate } from "./arm";
 import { LocalSettingsProvider } from "../../../common/localSettingsProvider";
 import { PluginDisplayName } from "../../../common/constants";
 import { LocalSettingsTeamsAppKeys } from "../../../common/localSettingsConstants";
+import { scaffoldReadmeAndLocalSettings } from "./v2/scaffolding";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -369,34 +370,9 @@ export class TeamsAppSolution implements Solution {
     if (res.isOk()) {
       const capabilities = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
         .capabilities;
-      const hasBot = capabilities?.includes(BotOptionItem.id);
-      const hasMsgExt = capabilities?.includes(MessageExtensionItem.id);
-      const hasTab = capabilities?.includes(TabOptionItem.id);
-      if (hasTab && (hasBot || hasMsgExt)) {
-        const readme = path.join(getTemplatesFolder(), "plugins", "solution", "README.md");
-        if (await fs.pathExists(readme)) {
-          await fs.copy(readme, `${ctx.root}/README.md`);
-        }
-      }
-
       const azureResources = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
-        ?.azureResources;
-      const hasBackend = azureResources?.includes(AzureResourceFunction.id);
-
-      if (isMultiEnvEnabled()) {
-        const localSettingsProvider = new LocalSettingsProvider(ctx.root);
-        const localSettings = await localSettingsProvider.load();
-
-        if (localSettings !== undefined) {
-          // Add local settings for the new added capability/resource
-          await localSettingsProvider.save(
-            localSettingsProvider.incrementalInit(localSettings!, hasBackend, hasBot)
-          );
-        } else {
-          // Initialize a local settings on scaffolding
-          await localSettingsProvider.save(localSettingsProvider.init(hasTab, hasBackend, hasBot));
-        }
-      }
+        .azureResources;
+      await scaffoldReadmeAndLocalSettings(capabilities, azureResources, ctx.root);
     }
 
     if (isArmSupportEnabled()) {

@@ -1,5 +1,6 @@
-import { FxError, LogProvider, Result, ok, err } from "@microsoft/teamsfx-api";
+import { FxError, LogProvider, Result, ok, err, returnSystemError } from "@microsoft/teamsfx-api";
 import { PluginDisplayName } from "../../../../common/constants";
+import { SolutionError } from "../constants";
 
 export type Thunk<R> = () => Promise<Result<R, FxError>>;
 
@@ -8,7 +9,7 @@ export type NamedThunk<R> = { name: string; thunk: Thunk<R> };
 export async function executeConcurrently<R>(
   namedThunks: NamedThunk<R>[],
   logger: LogProvider
-): Promise<Result<R, FxError>[]> {
+): Promise<Result<{ name: string; result: R }[], FxError>> {
   const results = await Promise.all(
     namedThunks.map(async (namedThunk) => {
       logger.info(`Running ${namedThunk.name} concurrently`);
@@ -21,12 +22,15 @@ export async function executeConcurrently<R>(
   }
 
   let failed = false;
+  const ret = [];
   for (let i = 0; i < results.length; ++i) {
     const name = namedThunks[i].name;
     const result = results[i];
     logger.info(`${name.padEnd(60, ".")} ${result.isOk() ? "[ok]" : "[failed]"}`);
     if (result.isErr()) {
       failed = true;
+    } else {
+      ret.push({ name, result: result.value });
     }
   }
   if (logger)
@@ -36,5 +40,14 @@ export async function executeConcurrently<R>(
       }`
     );
 
-  return results;
+  if (failed) {
+    return err(
+      returnSystemError(
+        new Error(`Failed to run tasks concurrently`),
+        "Solution",
+        SolutionError.InternelError
+      )
+    );
+  }
+  return ok(ret);
 }

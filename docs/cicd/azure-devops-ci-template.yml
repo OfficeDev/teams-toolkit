@@ -1,0 +1,47 @@
+# This is just an example workflow for continuous integration.
+# You should customize it to meet your own requirements.
+name: 'Continuous Integration'
+
+pr:
+# When pull requests targeting the dev branch created.
+- dev
+
+jobs:
+- job: buildAndTest
+  container:
+    image: ubuntu:latest
+    env:
+      AZURE_ACCOUNT_NAME: $(AZURE_ACCOUNT_NAME)
+      AZURE_ACCOUNT_PASSWORD: $(AZURE_ACCOUNT_PASSWORD)
+      AZURE_SUBSCRIPTION_ID: $(AZURE_SUBSCRIPTION_ID)
+      AZURE_TENANT_ID: $(AZURE_TENANT_ID)
+      M365_ACCOUNT_NAME: $(M365_ACCOUNT_NAME)
+      M365_ACCOUNT_PASSWORD: $(M365_ACCOUNT_PASSWORD)
+
+  steps:
+    
+  # Setup environment.
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '14.x'
+      checkLatest: true
+
+  # Build the project.
+  # The way to build the current project depends on how you scaffold it.
+  # Different folder structures require different commands set.
+  # 'npm ci' is used here to install dependencies and it depends on package-lock.json.
+  # If you prefer to use 'npm ci', please make sure to commit package-lock.json first, or just change it to 'npm install'.
+  - task: Bash@3
+    inputs:
+      targetType: 'inline'
+      script: |
+        cd tabs && npm ci && npm run build
+
+  # Run unit test.
+  # Currently, no opinioned solution for unit test provided during scaffolding, so,
+  # set up any unit test framework you prefer (for example, mocha or jest) and update the commands accordingly in below.
+  - task: Bash@3
+    inputs:
+      targetType: 'inline'
+      script: |
+        cd tabs && npm run test

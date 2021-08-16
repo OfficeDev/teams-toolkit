@@ -1,0 +1,107 @@
+# This is just an example workflow for continuous deployment.
+# You should customize it to meet your own requirements.
+name: 'Continuous Deployment'
+trigger:
+# When new commits are pushed onto the main branch.
+- main
+
+jobs:
+- job: buildAndPublish:
+  container:
+    image: ubuntu:latest
+    env:
+      AZURE_ACCOUNT_NAME: $(AZURE_ACCOUNT_NAME)
+      AZURE_ACCOUNT_PASSWORD: $(AZURE_ACCOUNT_PASSWORD)
+      AZURE_SUBSCRIPTION_ID: $(AZURE_SUBSCRIPTION_ID)
+      AZURE_TENANT_ID: $(AZURE_TENANT_ID)
+      M365_ACCOUNT_NAME: $(M365_ACCOUNT_NAME)
+      M365_ACCOUNT_PASSWORD: $(M365_ACCOUNT_PASSWORD)
+
+    steps:
+    # Setup environment.
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '14.x'
+        checkLatest: true
+
+    # Checkout the code
+    - checkout: self
+      persistCredentials: true
+        
+    # Build the project.
+    # The way to build the current project depends on how you scaffold it.
+    # Different folder structures require different commands set.
+    # 'npm ci' is used here to install dependencies and it depends on package-lock.json.
+    # If you prefer to use 'npm ci', please make sure to commit package-lock.json first, or just change it to 'npm install'.
+    - task: Bash@3
+      inputs:
+        targetType: 'inline'
+        script: |
+          cd tabs && npm ci && npm run build
+
+    # Run unit test.
+    # Currently, no opinioned solution for unit test provided during scaffolding, so,
+    # set up any unit test framework you prefer (for example, mocha or jest) and update the commands accordingly in below.
+    - task: Bash@3
+      inputs:
+        targetType: 'inline'
+        script: |
+          cd tabs && npm run test
+
+    # We suggest to do the provision steps by case manually or in a separated workflow, so just comment the following steps for references.
+    # After provision, you should commit .fx/env.default.json into the repository for later use.
+    # You should pick required secrets from .fx/default.userdata, and save them in the repository secrets (https://docs.github.com/en/actions/reference/encrypted-secrets) which can be refered by the step with name 'Generate default.userdata'. 
+    # - task: teamsfx-cli-task@0
+    #   name: Provision hosting environment
+    #   inputs:
+    #     commands: 'provision'
+    #     subscription: '$(AZURE_SUBSCRIPTION_ID)'
+
+    # - task: Bash@3
+    #   name: Commit provision configs if necessary
+    #   inputs:
+    #     targetType: 'inline'
+    #     script: |
+    #       git add .fx/env.default.json
+    #       git commit -m 'chore: commit provision configs'
+    #       git push
+    
+    # - task: PublishBuildArtifacts@1
+    #   name: Upload default.userdata as artifact
+    #   inputs:
+    #     PathtoPublish: '$(Build.ArtifactStagingDirectory)/.fx/default.userdata'
+    #     ArtifactName: 'drop'
+    #     publishLocation: 'Container'
+        
+    - name: Generate default.userdata
+      env:
+        USERDATA_TENANT_ID: ${{ secrets.USERDATA_TENANT_ID }}
+        USERDATA_CLIENT_SECRET: ${{ secrets.USERDATA_CLIENT_SECRET }}
+        USERDATA_BOT_PASSWORD: ${{ secrets.USERDATA_BOT_PASSWORD }}
+      run: |
+        [ ! -z "${USERDATA_TENANT_ID}" ] && echo "solution.teamsAppTenantId=${USERDATA_TENANT_ID}" >> .fx/default.userdata
+        [ ! -z "${USERDATA_CLIENT_SECRET}" ] && echo "fx-resource-aad-app-for-teams.clientSecret=${USERDATA_CLIENT_SECRET}" >> .fx/default.userdata
+        [ ! -z "${USERDATA_BOT_PASSWORD}" ] && echo "fx-resource-bot.botPassword=${USERDATA_BOT_PASSWORD}" >> .fx/default.userdata
+
+    - name: Deploy to hosting environment
+      uses: OfficeDev/teamsfx-cli-action@v1
+      with:
+        commands: deploy
+
+    # This step is to pack the Teams App as zip file,
+    # which can be used to be uploaded onto Teams Client for installation.
+    - name: Build Teams App's package
+      uses: OfficeDev/teamsfx-cli-action@v1
+      with:
+        commands: build
+
+    - name: Upload Teams App's package as artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: appPackage
+        path: ./.fx/appPackage.zip
+
+    - name: Publish Teams App
+      uses: OfficeDev/teamsfx-cli-action@v1
+      with:
+        commands: publish

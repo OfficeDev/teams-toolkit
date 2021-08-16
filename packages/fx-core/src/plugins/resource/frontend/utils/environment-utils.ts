@@ -31,16 +31,14 @@ export class EnvironmentUtils {
   ): Promise<void> {
     const envs = (await EnvironmentUtils.readEnvironments(envFilePath)) ?? {};
 
-    const addEnv = (key: string, v: string) => {
+    const addEnv = (key: string, v: string | undefined) => {
       if (v !== undefined && envs[key] === undefined) {
         envs[key] = v;
       }
     };
 
-    if (functionEnv) {
-      addEnv(EnvironmentVariables.FuncName, functionEnv.defaultName);
-      addEnv(EnvironmentVariables.FuncEndpoint, functionEnv.endpoint);
-    }
+    addEnv(EnvironmentVariables.FuncName, functionEnv?.defaultName);
+    addEnv(EnvironmentVariables.FuncEndpoint, functionEnv?.endpoint);
 
     addEnv(EnvironmentVariables.RuntimeEndpoint, runtimeEnv.endpoint);
     addEnv(EnvironmentVariables.StartLoginPage, runtimeEnv.startLoginPageUrl);

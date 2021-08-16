@@ -31,7 +31,12 @@ import {
   AppPackageFolderName,
 } from "@microsoft/teamsfx-api";
 import * as path from "path";
-import { downloadSampleHook, fetchCodeZip, saveFilesRecursively } from "../common/tools";
+import {
+  downloadSampleHook,
+  fetchCodeZip,
+  isMultiEnvEnabled,
+  saveFilesRecursively,
+} from "../common/tools";
 import {
   CoreQuestionNames,
   ProjectNamePattern,
@@ -296,7 +301,7 @@ export class FxCore implements Core {
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW,
+    EnvInfoLoaderMW(isMultiEnvEnabled(), true),
     SolutionLoaderMW(defaultSolutionLoader),
     QuestionModelMW,
     ContextInjecterMW,
@@ -311,7 +316,7 @@ export class FxCore implements Core {
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW,
+    EnvInfoLoaderMW(isMultiEnvEnabled(), false),
     SolutionLoaderMW(defaultSolutionLoader),
     QuestionModelMW,
     ContextInjecterMW,
@@ -327,7 +332,7 @@ export class FxCore implements Core {
     ConcurrentLockerMW,
     ProjectUpgraderMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW,
+    EnvInfoLoaderMW(false, false),
     LocalSettingsLoaderMW,
     SolutionLoaderMW(defaultSolutionLoader),
     QuestionModelMW,
@@ -344,7 +349,7 @@ export class FxCore implements Core {
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW,
+    EnvInfoLoaderMW(isMultiEnvEnabled(), false),
     SolutionLoaderMW(defaultSolutionLoader),
     QuestionModelMW,
     ContextInjecterMW,
@@ -359,7 +364,7 @@ export class FxCore implements Core {
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW,
+    EnvInfoLoaderMW(isMultiEnvEnabled(), false),
     LocalSettingsLoaderMW,
     SolutionLoaderMW(defaultSolutionLoader),
     QuestionModelMW,
@@ -387,7 +392,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW,
+    EnvInfoLoaderMW(false, false),
     SolutionLoaderMW(defaultSolutionLoader),
     ContextInjecterMW,
     EnvInfoWriterMW,
@@ -416,7 +421,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW,
+    EnvInfoLoaderMW(false, false),
     SolutionLoaderMW(defaultSolutionLoader),
     ContextInjecterMW,
     EnvInfoWriterMW,
@@ -437,7 +442,12 @@ export class FxCore implements Core {
     return await this._getQuestionsForUserTask(solutionContext, solution, func, inputs);
   }
 
-  @hooks([ErrorHandlerMW, ProjectSettingsLoaderMW, EnvInfoLoaderMW, ContextInjecterMW])
+  @hooks([
+    ErrorHandlerMW,
+    ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW(false, false),
+    ContextInjecterMW,
+  ])
   async getProjectConfig(
     inputs: Inputs,
     ctx?: CoreHookContext
@@ -452,7 +462,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW,
+    EnvInfoLoaderMW(false, false),
     ContextInjecterMW,
     ProjectSettingsWriterMW,
     EnvInfoWriterMW,
@@ -581,7 +591,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW,
+    EnvInfoLoaderMW(false, false),
     ContextInjecterMW,
     EnvInfoWriterMW,
   ])
@@ -596,7 +606,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW,
+    EnvInfoLoaderMW(false, false),
     ContextInjecterMW,
     EnvInfoWriterMW,
   ])

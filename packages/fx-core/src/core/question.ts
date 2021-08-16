@@ -11,6 +11,7 @@ import {
 import * as jsonschema from "jsonschema";
 import * as path from "path";
 import * as fs from "fs-extra";
+import { environmentManager } from "./environment";
 
 export enum CoreQuestionNames {
   AppName = "app-name",
@@ -20,6 +21,8 @@ export enum CoreQuestionNames {
   Samples = "samples",
   Stage = "stage",
   SubStage = "substage",
+  TargetEnvName = "targetEnvName",
+  NewTargetEnvName = "newTargetEnvName",
 }
 
 export const ProjectNamePattern = "^[a-zA-Z][\\da-zA-Z]+$";
@@ -53,6 +56,33 @@ export const QuestionRootFolder: FolderQuestion = {
   type: "folder",
   name: CoreQuestionNames.Folder,
   title: "Workspace folder",
+};
+
+export const QuestionSelectTargetEnvironment: SingleSelectQuestion = {
+  type: "singleSelect",
+  name: CoreQuestionNames.TargetEnvName,
+  title: "Select an environment",
+  staticOptions: [],
+  skipSingleOption: true,
+  forgetLastValue: true,
+};
+
+export const QuestionNewTargetEnvironmentName: TextInputQuestion = {
+  type: "text",
+  name: CoreQuestionNames.NewTargetEnvName,
+  title: "New environment name",
+  validation: {
+    validFunc: async (input: string): Promise<string | undefined> => {
+      const targetEnvName = input as string;
+      const match = targetEnvName.match(environmentManager.envNameRegex);
+      if (!match) {
+        return "Environment name can only contain letters, digits, _ and -.";
+      }
+
+      return undefined;
+    },
+  },
+  placeholder: "New environment name",
 };
 
 export const QuestionSelectSolution: SingleSelectQuestion = {

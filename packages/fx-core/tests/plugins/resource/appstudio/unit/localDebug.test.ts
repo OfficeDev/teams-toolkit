@@ -167,7 +167,7 @@ describe("Post Local Debug", () => {
       },
     };
     sandbox
-      .stub(AppStudioPluginImpl.prototype, "getConfigAndAppDefinition" as any)
+      .stub(AppStudioPluginImpl.prototype, "getAppDefinitionAndManifest" as any)
       .returns(
         err(
           AppStudioResultFactory.SystemError(

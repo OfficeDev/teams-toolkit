@@ -227,7 +227,7 @@ export interface FolderQuestion extends UserInputQuestion {
 // @public (undocumented)
 export interface Func extends FunctionRouter {
     // (undocumented)
-    params?: unknown;
+    params?: any;
 }
 
 // @public
@@ -630,6 +630,12 @@ export interface MultiSelectQuestion extends UserInputQuestion {
 
 // @public (undocumented)
 export type MultiSelectResult = InputResult<StaticOptions>;
+
+// @public (undocumented)
+export function newSystemError(source: string, name: string, message: string, issueLink?: string): SystemError;
+
+// @public (undocumented)
+export function newUserError(source: string, name: string, message: string, helpLink?: string): UserError;
 
 // @public
 export interface OptionItem {
@@ -1047,14 +1053,11 @@ export type SubscriptionInfo = {
 };
 
 // @public
-export class SystemError implements FxError {
+export class SystemError extends Error implements FxError {
     constructor(name: string, message: string, source: string, stack?: string, issueLink?: string, innerError?: any);
     innerError?: any;
     issueLink?: string;
-    message: string;
-    name: string;
     source: string;
-    stack?: string;
     timestamp: Date;
 }
 
@@ -1224,14 +1227,11 @@ export interface UIConfig<T> {
 export const UserCancelError: UserError;
 
 // @public
-export class UserError implements FxError {
+export class UserError extends Error implements FxError {
     constructor(name: string, message: string, source: string, stack?: string, helpLink?: string, innerError?: any);
     helpLink?: string;
     innerError?: any;
-    message: string;
-    name: string;
     source: string;
-    stack?: string;
     timestamp: Date;
 }
 

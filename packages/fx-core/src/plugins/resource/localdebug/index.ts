@@ -59,6 +59,7 @@ import {
   LocalSettingsFrontendKeys,
   LocalSettingsTeamsAppKeys,
 } from "../../../common/localSettingsConstants";
+import { TeamsClientId } from "../../../common/constants";
 
 @Service(ResourcePlugins.LocalDebugPlugin)
 export class LocalDebugPlugin implements Plugin {
@@ -146,8 +147,6 @@ export class LocalDebugPlugin implements Plugin {
           programmingLanguage
         );
 
-        const localEnvProvider = new LocalEnvProvider(ctx.root);
-
         //TODO: save files via context api
         await fs.ensureDir(`${ctx.root}/.vscode/`);
         await fs.writeJSON(
@@ -175,12 +174,20 @@ export class LocalDebugPlugin implements Plugin {
           }
         );
 
-        await localEnvProvider.saveLocalEnv(
-          localEnvProvider.initialLocalEnvs(includeFrontend, includeBackend, includeBot)
-        );
+        if (!isMultiEnvEnabled()) {
+          const localEnvProvider = new LocalEnvProvider(ctx.root);
+          await localEnvProvider.saveLocalEnv(
+            localEnvProvider.initialLocalEnvs(includeFrontend, includeBackend, includeBot)
+          );
 
-        if (includeFrontend) {
-          ctx.config.set(LocalDebugConfigKeys.TrustDevelopmentCertificate, "true");
+          if (includeFrontend) {
+            ctx.config.set(LocalDebugConfigKeys.TrustDevelopmentCertificate, "true");
+          }
+
+          if (includeBot) {
+            ctx.config.set(LocalDebugConfigKeys.SkipNgrok, "false");
+            ctx.config.set(LocalDebugConfigKeys.LocalBotEndpoint, "");
+          }
         }
 
         if (includeBackend) {
@@ -188,11 +195,6 @@ export class LocalDebugPlugin implements Plugin {
             spaces: 4,
             EOL: os.EOL,
           });
-        }
-
-        if (includeBot) {
-          ctx.config.set(LocalDebugConfigKeys.SkipNgrok, "false");
-          ctx.config.set(LocalDebugConfigKeys.LocalBotEndpoint, "");
         }
       }
     }
@@ -356,7 +358,6 @@ export class LocalDebugPlugin implements Plugin {
     const includeBot = selectedPlugins?.some((pluginName) => pluginName === BotPlugin.Name);
 
     // get config for local debug
-    const aadConfigs = ctx.configOfOtherPlugins.get(AadPlugin.Name);
     const clientId = ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId) as string;
     const clientSecret = ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientSecret) as string;
     const applicationIdUri = ctx.localSettings?.auth?.get(
@@ -366,10 +367,8 @@ export class LocalDebugPlugin implements Plugin {
       LocalSettingsTeamsAppKeys.TenantId
     ) as string;
 
-    // TODO: since this app ids of the Teams client app (mobile/desktop/web) are fixed
-    // We can read it from constants intead of the env config file.
-    const teamsMobileDesktopAppId = aadConfigs?.get(AadPlugin.TeamsMobileDesktopAppId) as string;
-    const teamsWebAppId = aadConfigs?.get(AadPlugin.TeamsWebAppId) as string;
+    const teamsMobileDesktopAppId = TeamsClientId.MobileDesktop;
+    const teamsWebAppId = TeamsClientId.Web;
 
     const localAuthPackagePath = ctx.localSettings?.auth?.get(
       LocalSettingsAuthKeys.SimpleAuthFilePath
@@ -395,9 +394,7 @@ export class LocalDebugPlugin implements Plugin {
       localEnvs[LocalEnvAuthKeys.Urls] = localAuthEndpoint;
       localEnvs[LocalEnvAuthKeys.ClientId] = clientId;
       localEnvs[LocalEnvAuthKeys.ClientSecret] = clientSecret;
-      localEnvs[LocalEnvAuthKeys.IdentifierUri] = aadConfigs?.get(
-        AadPlugin.LocalAppIdUri
-      ) as string;
+      localEnvs[LocalEnvAuthKeys.IdentifierUri] = applicationIdUri;
       localEnvs[
         LocalEnvAuthKeys.AadMetadataAddress
       ] = `https://login.microsoftonline.com/${teamsAppTenantId}/v2.0/.well-known/openid-configuration`;

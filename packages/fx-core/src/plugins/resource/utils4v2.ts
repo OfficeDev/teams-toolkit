@@ -4,6 +4,7 @@ import {
   AzureAccountProvider,
   ConfigMap,
   err,
+  Func,
   FxError,
   Inputs,
   ok,
@@ -218,4 +219,18 @@ export async function configureLocalResourceAdapter(
     localSettings.frontend = pluginContext.localSettings.frontend.toJSON();
   }
   return ok(localSettings);
+}
+
+export async function executeUserTaskAdapter(
+  ctx: Context,
+  func: Func,
+  inputs: Inputs,
+  plugin: Plugin
+): Promise<Result<unknown, FxError>> {
+  if (!plugin.executeUserTask)
+    return err(PluginHasNoTaskImpl(plugin.displayName, "executeUserTask"));
+  const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
+  const res = await plugin.executeUserTask(func, pluginContext);
+  if (res.isErr()) return err(res.error);
+  return ok(res.value);
 }

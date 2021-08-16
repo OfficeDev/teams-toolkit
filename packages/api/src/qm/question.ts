@@ -15,7 +15,7 @@ export interface FunctionRouter {
 }
 
 export interface Func extends FunctionRouter {
-  params?: unknown;
+  params?: any;
 }
 
 /**

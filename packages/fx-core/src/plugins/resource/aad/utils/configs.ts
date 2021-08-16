@@ -154,13 +154,16 @@ export class ProvisionConfig {
 
     ConfigUtils.checkAndSaveConfig(
       ctx,
-      ConfigKeys.teamsMobileDesktopAppId,
-      Constants.teamsMobileDesktopAppId
+      ConfigKeys.oauthHost,
+      Constants.oauthAuthorityPrefix,
+      this.isLocalDebug
     );
-
-    ConfigUtils.checkAndSaveConfig(ctx, ConfigKeys.oauthHost, Constants.oauthAuthorityPrefix);
-    ConfigUtils.checkAndSaveConfig(ctx, ConfigKeys.teamsWebAppId, Constants.teamsWebAppId);
-    ConfigUtils.checkAndSaveConfig(ctx, ConfigKeys.oauthAuthority, oauthAuthority);
+    ConfigUtils.checkAndSaveConfig(
+      ctx,
+      ConfigKeys.oauthAuthority,
+      oauthAuthority,
+      this.isLocalDebug
+    );
   }
 
   private static getOauthAuthority(tenantId: string): string {

@@ -477,6 +477,51 @@ export class FxCore implements Core {
     return ok(Void);
   }
 
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW(isMultiEnvEnabled(), false),
+    SolutionLoaderMW(defaultSolutionLoader),
+    QuestionModelMW,
+    ContextInjecterMW,
+    ProjectSettingsWriterMW,
+    EnvInfoWriterMW,
+  ])
+  async grantPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    return await ctx!.solution!.grantPermission!(ctx!.solutionContext!);
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW(isMultiEnvEnabled(), false),
+    SolutionLoaderMW(defaultSolutionLoader),
+    QuestionModelMW,
+    ContextInjecterMW,
+    ProjectSettingsWriterMW,
+    EnvInfoWriterMW,
+  ])
+  async checkPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    return await ctx!.solution!.checkPermission!(ctx!.solutionContext!);
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW(isMultiEnvEnabled(), false),
+    SolutionLoaderMW(defaultSolutionLoader),
+    QuestionModelMW,
+    ContextInjecterMW,
+    ProjectSettingsWriterMW,
+    EnvInfoWriterMW,
+  ])
+  async listCollaborator(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    return await ctx!.solution!.listCollaborator!(ctx!.solutionContext!);
+  }
+
   async _getQuestionsForUserTask(
     ctx: SolutionContext,
     solution: Solution,
@@ -567,7 +612,7 @@ export class FxCore implements Core {
             description: "",
             author: "",
             scripts: {
-              test: 'echo "Error: no test specified" && exit 1',
+              test: "echo \"Error: no test specified\" && exit 1",
             },
             devDependencies: {
               "@microsoft/teamsfx-cli": "0.*",

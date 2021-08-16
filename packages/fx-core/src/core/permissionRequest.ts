@@ -7,8 +7,8 @@ import {
   Result,
   FxError,
   ok,
-  returnSystemError,
   err,
+  returnUserError,
 } from "@microsoft/teamsfx-api";
 import { SolutionError } from "../plugins/solution/fx-solution/constants";
 
@@ -24,7 +24,7 @@ export class PermissionRequestFileProvider implements PermissionRequestProvider 
     const path = `${this.rootPath}/${this.permissionFileName}`;
     if (!(await fs.pathExists(path))) {
       return err(
-        returnSystemError(
+        returnUserError(
           new Error(`${this.permissionFileName} is missing`),
           "Solution",
           SolutionError.MissingPermissionsJson

@@ -4,7 +4,7 @@ import { SolutionError } from "../constants";
 
 export type Thunk<R> = () => Promise<Result<R, FxError>>;
 
-export type NamedThunk<R> = { name: string; thunk: Thunk<R> };
+export type NamedThunk<R> = { pluginName: string; taskName: string; thunk: Thunk<R> };
 
 export async function executeConcurrently<R>(
   namedThunks: NamedThunk<R>[],
@@ -12,7 +12,7 @@ export async function executeConcurrently<R>(
 ): Promise<Result<{ name: string; result: R }[], FxError>> {
   const results = await Promise.all(
     namedThunks.map(async (namedThunk) => {
-      logger.info(`Running ${namedThunk.name} concurrently`);
+      logger.info(`Running ${namedThunk.pluginName} concurrently`);
       return namedThunk.thunk();
     })
   );
@@ -24,7 +24,7 @@ export async function executeConcurrently<R>(
   let failed = false;
   const ret = [];
   for (let i = 0; i < results.length; ++i) {
-    const name = namedThunks[i].name;
+    const name = `${namedThunks[i].pluginName}-${namedThunks[i].taskName}`;
     const result = results[i];
     logger.info(`${name.padEnd(60, ".")} ${result.isOk() ? "[ok]" : "[failed]"}`);
     if (result.isErr()) {

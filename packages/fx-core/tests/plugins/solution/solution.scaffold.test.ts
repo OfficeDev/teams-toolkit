@@ -16,6 +16,7 @@ import {
   Void,
   Plugin,
   Platform,
+  v2,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs, { PathLike } from "fs-extra";

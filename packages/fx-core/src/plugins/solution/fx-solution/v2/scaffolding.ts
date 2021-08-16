@@ -24,9 +24,10 @@ export async function scaffoldSourceCode(
   const thunks: NamedThunk<{ output: Record<string, string> }>[] = plugins
     .filter((plugin) => !!plugin.scaffoldSourceCode)
     .map((plugin) => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return {
-        name: `${plugin.name}-scaffoldSourceCode`,
+        pluginName: `${plugin.name}`,
+        taskName: "scaffoldSourceCode",
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         thunk: () => plugin.scaffoldSourceCode!(ctx, inputs),
       };
     });

@@ -94,11 +94,6 @@ export class TestHelper {
               "https://login.microsoftonline.com/mock-teamsAppTenantId",
             ],
             [
-              Constants.AadAppPlugin.configKeys.teamsMobileDesktopAppId,
-              "mock-teamsMobileDesktopAppId",
-            ],
-            [Constants.AadAppPlugin.configKeys.teamsWebAppId, "mock-teamsWebAppId"],
-            [
               Constants.LocalPrefix + Constants.AadAppPlugin.configKeys.clientId,
               "mock-local-clientId",
             ],

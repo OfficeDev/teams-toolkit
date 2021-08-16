@@ -23,8 +23,11 @@ import { GLOBAL_CONFIG, PROGRAMMING_LANGUAGE } from "../../plugins/solution/fx-s
 import { QuestionSelectTargetEnvironment, QuestionNewTargetEnvironmentName } from "../question";
 import { desensitize } from "./questionModel";
 import { shouldIgnored } from "./projectSettingsLoader";
+import { PermissionRequestFileProvider } from "../permissionRequest";
 
 const newTargetEnvNameOption = "+ new environment";
+const lastUsedMark = " (current)";
+let lastUsedEnvName: string | undefined;
 
 export function EnvInfoLoaderMW(
   isMultiEnvEnabled: boolean,
@@ -43,9 +46,14 @@ export function EnvInfoLoaderMW(
     }
 
     const core = ctx.self as FxCore;
-    const targetEnvName = isMultiEnvEnabled
-      ? await askTargetEnvironment(ctx, inputs, allowCreateNewEnv)
-      : environmentManager.defaultEnvName;
+    let targetEnvName: string | undefined;
+    if (isMultiEnvEnabled) {
+      targetEnvName = await askTargetEnvironment(ctx, inputs, allowCreateNewEnv, lastUsedEnvName);
+      lastUsedEnvName = targetEnvName ?? lastUsedEnvName;
+    } else {
+      targetEnvName = environmentManager.defaultEnvName;
+    }
+
     if (targetEnvName) {
       const result = await loadSolutionContext(
         core.tools,
@@ -111,6 +119,7 @@ export async function loadSolutionContext(
     ...tools.tokenProvider,
     answers: inputs,
     cryptoProvider: cryptoProvider,
+    permissionRequestProvider: new PermissionRequestFileProvider(inputs.projectPath),
   };
 
   return ok(solutionContext);
@@ -119,9 +128,10 @@ export async function loadSolutionContext(
 async function askTargetEnvironment(
   ctx: CoreHookContext,
   inputs: Inputs,
-  allowCreateNewEnv: boolean
+  allowCreateNewEnv: boolean,
+  lastUsed?: string
 ): Promise<string | undefined> {
-  const getQuestionRes = await getQuestionsForTargetEnv(inputs, allowCreateNewEnv);
+  const getQuestionRes = await getQuestionsForTargetEnv(inputs, allowCreateNewEnv, lastUsed);
   const core = ctx.self as FxCore;
   if (getQuestionRes.isErr()) {
     core.tools.logProvider.error(
@@ -152,16 +162,20 @@ async function askTargetEnvironment(
     );
   }
 
-  if (inputs.targetEnvName === newTargetEnvNameOption) {
+  const targetEnvName = inputs.targetEnvName;
+  if (targetEnvName === newTargetEnvNameOption) {
     return inputs.newTargetEnvName;
+  } else if (targetEnvName?.endsWith(lastUsedMark)) {
+    return targetEnvName.slice(0, targetEnvName.indexOf(lastUsedMark));
   } else {
-    return inputs.targetEnvName;
+    return targetEnvName;
   }
 }
 
 async function getQuestionsForTargetEnv(
   inputs: Inputs,
-  allowCreateNewEnv: boolean
+  allowCreateNewEnv: boolean,
+  lastUsed?: string
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (!inputs.projectPath) {
     return err(NoProjectOpenedError());
@@ -172,11 +186,12 @@ async function getQuestionsForTargetEnv(
     return err(envProfilesResult.error);
   }
 
+  const envList = reOrderEnvironments(envProfilesResult.value, lastUsed);
   const selectEnv = QuestionSelectTargetEnvironment;
   if (allowCreateNewEnv) {
-    selectEnv.staticOptions = [newTargetEnvNameOption].concat(envProfilesResult.value);
+    selectEnv.staticOptions = [newTargetEnvNameOption].concat(envList);
   } else {
-    selectEnv.staticOptions = envProfilesResult.value;
+    selectEnv.staticOptions = envList;
   }
 
   const node = new QTreeNode(selectEnv);
@@ -187,4 +202,19 @@ async function getQuestionsForTargetEnv(
   node.addChild(childNode);
 
   return ok(node.trim());
+}
+
+function reOrderEnvironments(environments: Array<string>, lastUsed?: string): Array<string> {
+  if (!lastUsed) {
+    return environments;
+  }
+
+  const index = environments.indexOf(lastUsed);
+  if (index === -1) {
+    return environments;
+  }
+
+  return [lastUsed + lastUsedMark]
+    .concat(environments.slice(0, index))
+    .concat(environments.slice(index + 1));
 }

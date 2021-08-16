@@ -128,6 +128,8 @@ export interface Context {
     // (undocumented)
     logProvider?: LogProvider;
     // (undocumented)
+    permissionRequestProvider?: PermissionRequestProvider;
+    // (undocumented)
     projectSettings?: ProjectSettings;
     // (undocumented)
     root: string;
@@ -227,7 +229,7 @@ export interface FolderQuestion extends UserInputQuestion {
 // @public (undocumented)
 export interface Func extends FunctionRouter {
     // (undocumented)
-    params?: unknown;
+    params?: any;
 }
 
 // @public
@@ -645,6 +647,12 @@ export interface OptionItem {
     detail?: string;
     id: string;
     label: string;
+}
+
+// @public
+export interface PermissionRequestProvider {
+    checkPermissionRequest(): Promise<Result<undefined, FxError>>;
+    getPermissionRequest(): Promise<Result<string, FxError>>;
 }
 
 // @public
@@ -1151,6 +1159,8 @@ export interface Tools {
     cryptoProvider?: CryptoProvider;
     // (undocumented)
     logProvider: LogProvider;
+    // (undocumented)
+    permissionRequest?: PermissionRequestProvider;
     // (undocumented)
     telemetryReporter?: TelemetryReporter;
     // (undocumented)

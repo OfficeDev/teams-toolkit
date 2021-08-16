@@ -177,7 +177,7 @@
       "downloadSampleTitle": "Select folder to download the sample app",
       "invalidFolder": "Invalid folder",
       "folderExist": "Folder already exists",
-      "folderExistDialogTitle": "Path %s alreay exists. Select a different folder.",
+      "folderExistDialogTitle": "Path %s already exists. Select a different folder.",
       "fetchData": "Fetch sample app",
       "downloadFrom": "Downloading from %s",
       "unzipPackage": "Unzipping the sample package",

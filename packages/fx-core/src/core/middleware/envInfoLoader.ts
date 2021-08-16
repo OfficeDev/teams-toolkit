@@ -47,8 +47,12 @@ export function EnvInfoLoaderMW(
     const core = ctx.self as FxCore;
     let targetEnvName: string | undefined;
     if (isMultiEnvEnabled) {
-      targetEnvName = await askTargetEnvironment(ctx, inputs, allowCreateNewEnv, lastUsedEnvName);
-      lastUsedEnvName = targetEnvName ?? lastUsedEnvName;
+      if (inputs.env) {
+        targetEnvName = inputs.env;
+      } else {
+        targetEnvName = await askTargetEnvironment(ctx, inputs, allowCreateNewEnv, lastUsedEnvName);
+        lastUsedEnvName = targetEnvName ?? lastUsedEnvName;
+      }
     } else {
       targetEnvName = environmentManager.defaultEnvName;
     }

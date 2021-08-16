@@ -27,7 +27,7 @@ import CLILogProvider from "./commonlib/log";
 import CLIUIInstance from "./userInteraction";
 import { flattenNodes, getSingleOptionString, toYargsOptions } from "./utils";
 import { Options } from "yargs";
-import { RootFolderNode, sqlPasswordConfirmQuestionName } from "./constants";
+import { EnvNode, RootFolderNode, sqlPasswordConfirmQuestionName } from "./constants";
 import { NoInitializedHelpGenerator } from "./error";
 
 export class HelpParamGenerator {
@@ -190,6 +190,11 @@ export class HelpParamGenerator {
           (node.data as any).hide = true;
         }
       }
+    }
+
+    // Add env node
+    if (stage !== Stage.create) {
+      nodes = nodes.concat([EnvNode]);
     }
 
     // hide sql-confirm-password in provision stage.

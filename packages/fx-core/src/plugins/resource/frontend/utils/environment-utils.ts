@@ -35,27 +35,20 @@ export class EnvironmentUtils {
       envs = {};
     }
 
+    const addEnv = (key: string, v: string) => {
+      if (v !== undefined && envs![key] === undefined) {
+        envs![key] = v;
+      }
+    };
+
     if (functionEnv) {
-      if (!envs[EnvironmentVariables.FuncName]) {
-        envs[EnvironmentVariables.FuncName] = functionEnv.defaultName;
-      }
-
-      if (!envs[EnvironmentVariables.FuncEndpoint]) {
-        envs[EnvironmentVariables.FuncEndpoint] = functionEnv.endpoint;
-      }
+      addEnv(EnvironmentVariables.FuncName, functionEnv.defaultName);
+      addEnv(EnvironmentVariables.FuncEndpoint, functionEnv.endpoint);
     }
 
-    if (!envs[EnvironmentVariables.RuntimeEndpoint]) {
-      envs[EnvironmentVariables.RuntimeEndpoint] = runtimeEnv.endpoint;
-    }
-
-    if (!envs[EnvironmentVariables.StartLoginPage]) {
-      envs[EnvironmentVariables.StartLoginPage] = runtimeEnv.startLoginPageUrl;
-    }
-
-    if (!envs[EnvironmentVariables.ClientID]) {
-      envs[EnvironmentVariables.ClientID] = aadEnv.clientId;
-    }
+    addEnv(EnvironmentVariables.RuntimeEndpoint, runtimeEnv.endpoint);
+    addEnv(EnvironmentVariables.StartLoginPage, runtimeEnv.startLoginPageUrl);
+    addEnv(EnvironmentVariables.ClientID, aadEnv.clientId);
 
     await EnvironmentUtils.writeEnvironments(envFilePath, envs);
   }

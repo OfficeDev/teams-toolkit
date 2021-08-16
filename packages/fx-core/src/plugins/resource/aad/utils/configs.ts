@@ -191,25 +191,24 @@ export class SetApplicationInContextConfig {
   }
 
   public restoreConfigFromContext(ctx: PluginContext): void {
-    let frontendDomain: ConfigValue = ctx.config.get(ConfigKeys.domain);
-    if (frontendDomain) {
-      this.frontendDomain = format(frontendDomain as string, Formats.Domain);
+    let frontendDomain: ConfigValue;
+    if (this.isLocalDebug) {
+      frontendDomain = ConfigUtils.getLocalDebugConfigOfOtherPlugins(
+        ctx,
+        ConfigKeysOfOtherPlugin.localDebugTabDomain
+      );
     } else {
       if (isArmSupportEnabled()) {
         frontendDomain = getArmOutput(ctx, ConfigKeysOfOtherPlugin.frontendHostingDomainArm);
       } else {
-        frontendDomain = this.isLocalDebug
-          ? ConfigUtils.getLocalDebugConfigOfOtherPlugins(
-              ctx,
-              ConfigKeysOfOtherPlugin.localDebugTabDomain
-            )
-          : ctx.configOfOtherPlugins
-              .get(Plugins.frontendHosting)
-              ?.get(ConfigKeysOfOtherPlugin.frontendHostingDomain);
+        frontendDomain = ctx.configOfOtherPlugins
+          .get(Plugins.frontendHosting)
+          ?.get(ConfigKeysOfOtherPlugin.frontendHostingDomain);
       }
-      if (frontendDomain) {
-        this.frontendDomain = format(frontendDomain as string, Formats.Domain);
-      }
+    }
+
+    if (frontendDomain) {
+      this.frontendDomain = format(frontendDomain as string, Formats.Domain);
     }
 
     const botId: ConfigValue = this.isLocalDebug
@@ -256,25 +255,24 @@ export class PostProvisionConfig {
   }
 
   public async restoreConfigFromContext(ctx: PluginContext): Promise<void> {
-    let frontendEndpoint: ConfigValue = ctx.config.get(ConfigKeys.endpoint);
-    if (frontendEndpoint) {
-      this.frontendEndpoint = format(frontendEndpoint as string, Formats.Endpoint);
+    let frontendEndpoint: ConfigValue;
+    if (this.isLocalDebug) {
+      frontendEndpoint = ConfigUtils.getLocalDebugConfigOfOtherPlugins(
+        ctx,
+        ConfigKeysOfOtherPlugin.localDebugTabEndpoint
+      );
     } else {
       if (isArmSupportEnabled()) {
         frontendEndpoint = getArmOutput(ctx, ConfigKeysOfOtherPlugin.frontendHostingEndpointArm);
       } else {
-        frontendEndpoint = this.isLocalDebug
-          ? ConfigUtils.getLocalDebugConfigOfOtherPlugins(
-              ctx,
-              ConfigKeysOfOtherPlugin.localDebugTabEndpoint
-            )
-          : ctx.configOfOtherPlugins
-              .get(Plugins.frontendHosting)
-              ?.get(ConfigKeysOfOtherPlugin.frontendHostingEndpoint);
+        frontendEndpoint = ctx.configOfOtherPlugins
+          .get(Plugins.frontendHosting)
+          ?.get(ConfigKeysOfOtherPlugin.frontendHostingEndpoint);
       }
-      if (frontendEndpoint) {
-        this.frontendEndpoint = format(frontendEndpoint as string, Formats.Endpoint);
-      }
+    }
+
+    if (frontendEndpoint) {
+      this.frontendEndpoint = format(frontendEndpoint as string, Formats.Endpoint);
     }
 
     const botEndpoint: ConfigValue = this.isLocalDebug

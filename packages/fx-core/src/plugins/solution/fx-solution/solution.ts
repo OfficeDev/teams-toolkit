@@ -394,9 +394,6 @@ export class TeamsAppSolution implements Solution {
           // Initialize a local settings on scaffolding
           await localSettingsProvider.save(localSettingsProvider.init(hasTab, hasBackend, hasBot));
         }
-
-        // remove local debug config from env info
-        ctx.config.delete(PluginNames.LDEBUG);
       }
     }
 

@@ -5,6 +5,7 @@
 import { NextFunction, Middleware } from "@feathersjs/hooks";
 import { Inputs, StaticPlatforms } from "@microsoft/teamsfx-api";
 import { CoreHookContext, FxCore } from "..";
+import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { environmentManager } from "../environment";
 
 /**
@@ -25,6 +26,12 @@ export const EnvInfoWriterMW: Middleware = async (ctx: CoreHookContext, next: Ne
 
     const solutionContext = ctx.solutionContext;
     if (solutionContext === undefined) return;
+
+    // DO NOT persist local debug plugin config.
+    if (solutionContext.config.has(PluginNames.LDEBUG)) {
+      solutionContext.config.delete(PluginNames.LDEBUG);
+    }
+
     const envProfilePath = await environmentManager.writeEnvProfile(
       solutionContext.config,
       inputs.projectPath,

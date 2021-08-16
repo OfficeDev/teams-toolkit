@@ -189,3 +189,10 @@ export class BicepSnippet {
   static readonly appServicePlanName = "functionProvision.outputs.appServicePlanName";
   static readonly functionEndpoint = "functionProvision.outputs.functionEndpoint";
 }
+
+export class FunctionArmOutput {
+  static readonly StorageName = "function_storageAccountName";
+  static readonly AppServicePlanName = "function_appServicePlanName";
+  static readonly Endpoint = "function_functionEndpoint";
+  static readonly AppName = "function_appName";
+}

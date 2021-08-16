@@ -32,8 +32,10 @@ import {
   FunctionNameConflictError,
   FetchConfigError,
   RegisterResourceProviderError,
+  FindAppError,
 } from "./resources/errors";
 import {
+  FunctionArmOutput,
   AzureInfo,
   BicepSnippet,
   DefaultProvisionConfigs,
@@ -77,6 +79,7 @@ import { TelemetryHelper } from "./utils/telemetry-helper";
 import { generateBicepFiles, getTemplatesFolder } from "../../..";
 import { BicepPluginsContext, ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import { Bicep, ConstantString } from "../../../common/constants";
+import { getArmOutput, isArmSupportEnabled } from "../../../common";
 
 type Site = WebSiteManagementModels.Site;
 type AppServicePlan = WebSiteManagementModels.AppServicePlan;
@@ -527,7 +530,7 @@ export class FunctionPluginImpl {
       this.config.subscriptionId,
       FunctionConfigKey.subscriptionId
     );
-    const functionAppName = this.checkAndGet(
+    let functionAppName = this.checkAndGet(
       this.config.functionAppName,
       FunctionConfigKey.functionAppName
     );
@@ -540,14 +543,36 @@ export class FunctionPluginImpl {
       FunctionConfigKey.credential
     );
 
-    // Retrieve and do cleanup
-    const site = this.checkAndGet(this.config.site, FunctionConfigKey.site);
-    this.config.site = undefined;
-
     const webSiteManagementClient: WebSiteManagementClient = await runWithErrorCatchAndThrow(
       new InitAzureSDKError(),
       () => AzureClientFactory.getWebSiteManagementClient(credential, subscriptionId)
     );
+
+    let site: Site;
+    if (isArmSupportEnabled()) {
+      const hostName = getArmOutput(ctx, FunctionArmOutput.Endpoint);
+      this.config.functionEndpoint = `https://${hostName}`;
+      this.config.storageAccountName = getArmOutput(ctx, FunctionArmOutput.StorageName);
+      this.config.appServicePlanName = getArmOutput(ctx, FunctionArmOutput.AppServicePlanName);
+      functionAppName = getArmOutput(ctx, FunctionArmOutput.AppName)!;
+      this.config.functionAppName = functionAppName;
+      const findSite = await AzureLib.findFunctionApp(
+        webSiteManagementClient,
+        resourceGroupName,
+        functionAppName
+      );
+      if (!findSite) {
+        throw new FindAppError();
+      } else {
+        site = findSite;
+      }
+      const nodeVersion = await this.getValidNodeVersion(ctx);
+      FunctionProvision.pushAppSettings(site, "WEBSITE_NODE_DEFAULT_VERSION", "~" + nodeVersion);
+    } else {
+      // Retrieve and do cleanup
+      site = this.checkAndGet(this.config.site, FunctionConfigKey.site);
+      this.config.site = undefined;
+    }
 
     // We must query app settings from azure here, for two reasons:
     // 1. The site object returned by SDK may not contain app settings.
@@ -583,24 +608,26 @@ export class FunctionPluginImpl {
     );
     Logger.info(InfoMessages.functionAppSettingsUpdated);
 
-    const authSettings: SiteAuthSettings | undefined = this.collectFunctionAppAuthSettings(ctx);
-    if (authSettings) {
-      await runWithErrorCatchAndThrow(
-        new ConfigFunctionAppError(),
-        async () =>
-          await step(
-            StepGroup.PostProvisionStepGroup,
-            PostProvisionSteps.updateFunctionSettings,
-            async () =>
-              await webSiteManagementClient.webApps.updateAuthSettings(
-                resourceGroupName,
-                functionAppName,
-                authSettings
-              )
-          )
-      );
+    if (!isArmSupportEnabled()) {
+      const authSettings: SiteAuthSettings | undefined = this.collectFunctionAppAuthSettings(ctx);
+      if (authSettings) {
+        await runWithErrorCatchAndThrow(
+          new ConfigFunctionAppError(),
+          async () =>
+            await step(
+              StepGroup.PostProvisionStepGroup,
+              PostProvisionSteps.updateFunctionSettings,
+              async () =>
+                await webSiteManagementClient.webApps.updateAuthSettings(
+                  resourceGroupName,
+                  functionAppName,
+                  authSettings
+                )
+            )
+        );
+      }
+      Logger.info(InfoMessages.functionAppAuthSettingsUpdated);
     }
-    Logger.info(InfoMessages.functionAppAuthSettingsUpdated);
 
     this.syncConfigToContext(ctx);
 
@@ -677,7 +704,6 @@ export class FunctionPluginImpl {
       bicepTemplateDirectory,
       Bicep.OutputOrchestrationFileName
     );
-    const parameterFilePath = path.join(bicepTemplateDirectory, Bicep.ParameterFileName);
 
     const result: ScaffoldArmTemplateResult = {
       Modules: {
@@ -688,9 +714,6 @@ export class FunctionPluginImpl {
       Orchestration: {
         ParameterTemplate: {
           Content: await fs.readFile(parameterTemplateFilePath, ConstantString.UTF8Encoding),
-          ParameterJson: JSON.parse(
-            await fs.readFile(parameterFilePath, ConstantString.UTF8Encoding)
-          ),
         },
         ModuleTemplate: {
           Content: await fs.readFile(moduleOrchestrationFilePath, ConstantString.UTF8Encoding),
@@ -775,57 +798,59 @@ export class FunctionPluginImpl {
       this.config.functionEndpoint,
       FunctionConfigKey.functionEndpoint
     );
-    FunctionProvision.updateFunctionSettingsSelf(site, functionEndpoint);
+    if (!isArmSupportEnabled()) {
+      FunctionProvision.updateFunctionSettingsSelf(site, functionEndpoint);
 
-    const aadConfig: ReadonlyPluginConfig | undefined = ctx.configOfOtherPlugins.get(
-      DependentPluginInfo.aadPluginName
-    );
-    if (this.isPluginEnabled(ctx, DependentPluginInfo.aadPluginName) && aadConfig) {
-      Logger.info(InfoMessages.dependPluginDetected(DependentPluginInfo.aadPluginName));
+      const aadConfig: ReadonlyPluginConfig | undefined = ctx.configOfOtherPlugins.get(
+        DependentPluginInfo.aadPluginName
+      );
+      if (this.isPluginEnabled(ctx, DependentPluginInfo.aadPluginName) && aadConfig) {
+        Logger.info(InfoMessages.dependPluginDetected(DependentPluginInfo.aadPluginName));
 
-      const clientId: string = this.checkAndGet(
-        aadConfig.get(DependentPluginInfo.aadClientId) as string,
-        "AAD client Id"
-      );
-      const clientSecret: string = this.checkAndGet(
-        aadConfig.get(DependentPluginInfo.aadClientSecret) as string,
-        "AAD secret"
-      );
-      const oauthHost: string = this.checkAndGet(
-        aadConfig.get(DependentPluginInfo.oauthHost) as string,
-        "OAuth Host"
-      );
-      const tenantId: string = this.checkAndGet(
-        aadConfig.get(DependentPluginInfo.tenantId) as string,
-        "Tenant Id"
-      );
-      const applicationIdUris: string = this.checkAndGet(
-        aadConfig.get(DependentPluginInfo.applicationIdUris) as string,
-        "Application Id URI"
-      );
+        const clientId: string = this.checkAndGet(
+          aadConfig.get(DependentPluginInfo.aadClientId) as string,
+          "AAD client Id"
+        );
+        const clientSecret: string = this.checkAndGet(
+          aadConfig.get(DependentPluginInfo.aadClientSecret) as string,
+          "AAD secret"
+        );
+        const oauthHost: string = this.checkAndGet(
+          aadConfig.get(DependentPluginInfo.oauthHost) as string,
+          "OAuth Host"
+        );
+        const tenantId: string = this.checkAndGet(
+          aadConfig.get(DependentPluginInfo.tenantId) as string,
+          "Tenant Id"
+        );
+        const applicationIdUris: string = this.checkAndGet(
+          aadConfig.get(DependentPluginInfo.applicationIdUris) as string,
+          "Application Id URI"
+        );
 
-      FunctionProvision.updateFunctionSettingsForAAD(
-        site,
-        clientId,
-        clientSecret,
-        oauthHost,
-        tenantId,
-        applicationIdUris
+        FunctionProvision.updateFunctionSettingsForAAD(
+          site,
+          clientId,
+          clientSecret,
+          oauthHost,
+          tenantId,
+          applicationIdUris
+        );
+      }
+
+      const frontendConfig: ReadonlyPluginConfig | undefined = ctx.configOfOtherPlugins.get(
+        DependentPluginInfo.frontendPluginName
       );
-    }
+      if (this.isPluginEnabled(ctx, DependentPluginInfo.frontendPluginName) && frontendConfig) {
+        Logger.info(InfoMessages.dependPluginDetected(DependentPluginInfo.frontendPluginName));
 
-    const frontendConfig: ReadonlyPluginConfig | undefined = ctx.configOfOtherPlugins.get(
-      DependentPluginInfo.frontendPluginName
-    );
-    if (this.isPluginEnabled(ctx, DependentPluginInfo.frontendPluginName) && frontendConfig) {
-      Logger.info(InfoMessages.dependPluginDetected(DependentPluginInfo.frontendPluginName));
+        const frontendEndpoint: string = this.checkAndGet(
+          frontendConfig.get(DependentPluginInfo.frontendEndpoint) as string,
+          "frontend endpoint"
+        );
 
-      const frontendEndpoint: string = this.checkAndGet(
-        frontendConfig.get(DependentPluginInfo.frontendEndpoint) as string,
-        "frontend endpoint"
-      );
-
-      FunctionProvision.updateFunctionSettingsForFrontend(site, frontendEndpoint);
+        FunctionProvision.updateFunctionSettingsForFrontend(site, frontendEndpoint);
+      }
     }
 
     const sqlConfig: ReadonlyPluginConfig | undefined = ctx.configOfOtherPlugins.get(

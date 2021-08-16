@@ -5,10 +5,9 @@ module functionProvision '{{PluginOutput.fx-resource-function.Modules.functionPr
     functionAppName: function_webappName
     functionServerfarmsName: function_serverfarmsName
     functionStorageName: function_storageName
-    functionNodeVersion: function_nodeVersion
-    AADClientId: AADClientId
-    AADClientSecret: AADClientSecret
-    tenantId: tenantId
+    aadClientId: aadClientId
+    aadClientSecret: aadClientSecret
+    m365TenantId: m365TenantId
     applicationIdUri: applicationIdUri
     {{#contains 'fx-resource-frontend-hosting' Plugins}}
     frontendHostingStorageEndpoint: {{../PluginOutput.fx-resource-frontend-hosting.Outputs.endpoint}}

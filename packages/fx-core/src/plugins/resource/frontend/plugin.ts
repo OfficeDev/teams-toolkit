@@ -55,6 +55,7 @@ import { getArmOutput, getTemplatesFolder, isArmSupportEnabled } from "../../.."
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import * as fs from "fs-extra";
 import { ConstantString } from "../../../common/constants";
+import { FunctionArmOutput } from "../function/constants";
 
 export class FrontendPluginImpl {
   private setConfigIfNotExists(ctx: PluginContext, key: string, value: unknown): void {
@@ -166,23 +167,33 @@ export class FrontendPluginImpl {
     let runtimeEnv: RuntimeEnvironment | undefined;
     let aadEnv: AADEnvironment | undefined;
 
-    const functionPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.FunctionPluginName);
-    if (functionPlugin) {
-      functionEnv = {
-        defaultName: functionPlugin.get(DependentPluginInfo.FunctionDefaultName) as string,
-        endpoint: functionPlugin.get(DependentPluginInfo.FunctionEndpoint) as string,
-      };
-    }
-
     if (isArmSupportEnabled()) {
-      const endpoint = getArmOutput(ctx, ArmOutput.SimpleAuthEndpoint) as string;
-      if (endpoint) {
+      const functionPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.FunctionPluginName);
+      if (functionPlugin) {
+        const functionEndpoint = getArmOutput(ctx, FunctionArmOutput.Endpoint) as string;
+        functionEnv = {
+          defaultName: functionPlugin.get(DependentPluginInfo.FunctionDefaultName) as string,
+          endpoint: `https://${functionEndpoint}`,
+        };
+      }
+
+      const authPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.RuntimePluginName);
+      if (authPlugin) {
+        const simpleAuthEndpoint = getArmOutput(ctx, ArmOutput.SimpleAuthEndpoint) as string;
         runtimeEnv = {
-          endpoint: endpoint,
+          endpoint: simpleAuthEndpoint,
           startLoginPageUrl: DependentPluginInfo.StartLoginPageURL,
         };
       }
     } else {
+      const functionPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.FunctionPluginName);
+      if (functionPlugin) {
+        functionEnv = {
+          defaultName: functionPlugin.get(DependentPluginInfo.FunctionDefaultName) as string,
+          endpoint: functionPlugin.get(DependentPluginInfo.FunctionEndpoint) as string,
+        };
+      }
+
       const authPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.RuntimePluginName);
       if (authPlugin) {
         runtimeEnv = {

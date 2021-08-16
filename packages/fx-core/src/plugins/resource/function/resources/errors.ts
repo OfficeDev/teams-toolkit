@@ -243,6 +243,12 @@ export class PublishCredentialError extends FunctionPluginError {
   }
 }
 
+export class FindAppError extends FunctionPluginError {
+  constructor() {
+    super(ErrorType.User, "FindAppError", "Failed to find the function app.", [tips.doProvision]);
+  }
+}
+
 export class UploadZipError extends FunctionPluginError {
   constructor() {
     super(ErrorType.User, "UploadZipError", "Failed to upload zip package.", [

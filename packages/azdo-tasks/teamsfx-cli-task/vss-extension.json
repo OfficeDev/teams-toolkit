@@ -2,7 +2,7 @@
     "manifestVersion": 1,
     "id": "teamsfx-cli-task",
     "name": "Teamsfx CLI Task",
-    "version": "0.3.3",
+    "version": "0.3.8",
     "publisher": "IvanJobs",
     "targets": [
         {

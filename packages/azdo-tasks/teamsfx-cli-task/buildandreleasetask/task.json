@@ -14,7 +14,7 @@
     "version": {
         "Major": 0,
         "Minor": 3,
-        "Patch": 3
+        "Patch": 8
     },
     "instanceNameFormat": "Teams App CI/CD - $(commands)",
     "inputs": [
@@ -52,6 +52,7 @@
             "name": "action",
             "type": "pickList",
             "label": "Action",
+            "visibleRule": "commands StartsWith account",
             "options": {
                 "show": "show",
                 "login": "login",
@@ -91,7 +92,7 @@
             "defaultValue": "yes"
         },
         {
-            "name": "hostType",
+            "name": "host-type",
             "type": "pickList",
             "label": "Host Type",
             "options": {
@@ -101,7 +102,7 @@
             "defaultValue": "azure"
         },
         {
-            "name": "spfxFrameworkType",
+            "name": "spfx-framework-type",
             "type": "pickList",
             "label": "Spfx Framework Type",
             "options": {
@@ -111,17 +112,105 @@
             "defaultValue": "none"
         },
         {
-            "name": "spfxWebpartName",
+            "name": "spfx-webpart-name",
             "type": "string",
             "label": "Spfx Webpart Name"
         },
         {
-            "name": "spfxWebpartDesp",
+            "name": "spfx-webpart-desp",
             "type": "string",
             "label": "Spfx Webpart Description"
         },
         {
-            "name": "azureResources",
+            "name": "way-to-register-bot",
+            "type": "pickList",
+            "label": "Way To Register Bot",
+            "options": {
+                "create-new": "create-new",
+                "reuse-existing": "reuse-existing"
+            },
+            "defaultValue": "create-new"
+        },
+        {
+            "name": "bot-id",
+            "type": "string",
+            "label": "Bot Id"
+        },
+        {
+            "name": "bot-password",
+            "type": "string",
+            "label": "Bot Password"
+        },
+        {
+            "name": "programming-language",
+            "type": "string",
+            "label": "Progamming Language"
+        },
+        {
+            "name": "app-name",
+            "type": "string",
+            "label": "App Name"
+        },
+        {
+            "name": "samples",
+            "type": "pickList",
+            "label": "Samples",
+            "options": {
+                "todo-list-with-Azure-backend": "todo-list-with-Azure-backend",
+                "todo-list-SPFx": "todo-list-SPFx",
+                "share-now": "share-now",
+                "in-meeting-app": "in-meeting-app",
+                "faq-plus": "faq-plus" 
+            }
+        },
+        {
+            "name": "sql-admin-name",
+            "type": "string",
+            "label": "SQL Admin Name"
+        },
+        {
+            "name": "sql-password",
+            "type": "string",
+            "label": "SQL Password"
+        },
+        {
+            "name": "open-api-document",
+            "type": "filePath",
+            "label": "Open API Document"
+        },
+        {
+            "name": "api-prefix",
+            "type": "string",
+            "label": "The API name prefix"
+        },
+        {
+            "name": "api-version",
+            "type": "string",
+            "label": "The API version"
+        },
+        {
+            "name": "environment",
+            "type": "pickList",
+            "label": "Environment",
+            "options": {
+                "local": "local",
+                "remote": "remote"
+            },
+            "defaultValue": "local"
+        },
+        {
+            "name": "endpoint",
+            "type": "string",
+            "label": "Teams app endpoint"
+        },
+        {
+            "name": "root-path",
+            "type": "filePath",
+            "label": "Path to the setting files",
+            "defaultValue": "./"
+        },
+        {
+            "name": "azure-resources",
             "type": "multiLine",
             "label": "AzureResources"
         },
@@ -132,8 +221,8 @@
         }
     ],
     "execution": {
-        "Node": {
-            "target": "dist/index.js"
+        "Node10": {
+            "target": "lib/main.js"
         }
     }
 }

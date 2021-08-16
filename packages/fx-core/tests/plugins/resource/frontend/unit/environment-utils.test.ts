@@ -13,8 +13,6 @@ import { EnvironmentVariables } from "../../../../../src/plugins/resource/fronte
 chai.use(chaiAsPromised);
 
 describe("EnvironmentUtils", async () => {
-  beforeEach(() => {});
-
   afterEach(() => {
     sinon.restore();
   });
@@ -31,7 +29,6 @@ describe("EnvironmentUtils", async () => {
       chai.assert.equal(fakeEnv, data);
     });
     EnvironmentUtils.writeEnvironments(fakePath, fakeVariables);
-    sinon.restore();
   });
 
   it("read environments", async () => {
@@ -42,7 +39,6 @@ describe("EnvironmentUtils", async () => {
       chai.assert.fail("Read environments failed with undefined value");
     }
     chai.assert.equal(envs[fakePropertyKey], fakePropertyValue);
-    sinon.restore();
   });
 
   it("update environment", async () => {

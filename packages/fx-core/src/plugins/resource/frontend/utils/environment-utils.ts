@@ -29,15 +29,11 @@ export class EnvironmentUtils {
     aadEnv: AADEnvironment,
     functionEnv?: FunctionEnvironment
   ): Promise<void> {
-    let envs = await EnvironmentUtils.readEnvironments(envFilePath);
-
-    if (!envs) {
-      envs = {};
-    }
+    const envs = (await EnvironmentUtils.readEnvironments(envFilePath)) ?? {};
 
     const addEnv = (key: string, v: string) => {
-      if (v !== undefined && envs![key] === undefined) {
-        envs![key] = v;
+      if (v !== undefined && envs[key] === undefined) {
+        envs[key] = v;
       }
     };
 

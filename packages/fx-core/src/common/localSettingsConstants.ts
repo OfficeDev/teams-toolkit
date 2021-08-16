@@ -12,6 +12,8 @@ export const LocalSettingsAuthKeys = Object.freeze({
   ClientSecret: "clientSecret",
   ObjectId: "objectId",
   Oauth2PermissionScopeId: "oauth2PermissionScopeId",
+  OauthAuthority: "oauthAuthority",
+  OauthHost: "oauthHost",
   ApplicationIdUris: "applicationIdUris",
   SimpleAuthFilePath: "simpleAuthFilePath",
   SimpleAuthEnvironmentVariableParams: "SimpleAuthEnvironmentVariableParams",

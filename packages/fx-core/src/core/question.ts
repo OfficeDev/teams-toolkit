@@ -11,15 +11,18 @@ import {
 import * as jsonschema from "jsonschema";
 import * as path from "path";
 import * as fs from "fs-extra";
+import { environmentManager } from "./environment";
 
 export enum CoreQuestionNames {
   AppName = "app-name",
-  Foler = "folder",
+  Folder = "folder",
   Solution = "solution",
   CreateFromScratch = "scratch",
   Samples = "samples",
   Stage = "stage",
   SubStage = "substage",
+  TargetEnvName = "targetEnvName",
+  NewTargetEnvName = "newTargetEnvName",
 }
 
 export const ProjectNamePattern = "^[a-zA-Z][\\da-zA-Z]+$";
@@ -30,7 +33,7 @@ export const QuestionAppName: TextInputQuestion = {
   title: "Application name",
   validation: {
     validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
-      const folder = previousInputs![CoreQuestionNames.Foler] as string;
+      const folder = previousInputs![CoreQuestionNames.Folder] as string;
       if (!folder) return undefined;
       const schema = {
         pattern: ProjectNamePattern,
@@ -51,8 +54,35 @@ export const QuestionAppName: TextInputQuestion = {
 
 export const QuestionRootFolder: FolderQuestion = {
   type: "folder",
-  name: CoreQuestionNames.Foler,
-  title: "Workspace folder"
+  name: CoreQuestionNames.Folder,
+  title: "Workspace folder",
+};
+
+export const QuestionSelectTargetEnvironment: SingleSelectQuestion = {
+  type: "singleSelect",
+  name: CoreQuestionNames.TargetEnvName,
+  title: "Select an environment",
+  staticOptions: [],
+  skipSingleOption: true,
+  forgetLastValue: true,
+};
+
+export const QuestionNewTargetEnvironmentName: TextInputQuestion = {
+  type: "text",
+  name: CoreQuestionNames.NewTargetEnvName,
+  title: "New environment name",
+  validation: {
+    validFunc: async (input: string): Promise<string | undefined> => {
+      const targetEnvName = input as string;
+      const match = targetEnvName.match(environmentManager.envNameRegex);
+      if (!match) {
+        return "Environment name can only contain letters, digits, _ and -.";
+      }
+
+      return undefined;
+    },
+  },
+  placeholder: "New environment name",
 };
 
 export const QuestionSelectSolution: SingleSelectQuestion = {
@@ -92,7 +122,10 @@ export function getCreateNewOrFromSampleQuestion(platform: Platform): SingleSele
     type: "singleSelect",
     name: CoreQuestionNames.CreateFromScratch,
     title: "Teams Toolkit: Create a new Teams app",
-    staticOptions: (platform === Platform.VSCode)? [ScratchOptionYesVSC, ScratchOptionNoVSC]:[ScratchOptionYes, ScratchOptionNo],
+    staticOptions:
+      platform === Platform.VSCode
+        ? [ScratchOptionYesVSC, ScratchOptionNoVSC]
+        : [ScratchOptionYes, ScratchOptionNo],
     default: ScratchOptionYes.id,
     placeholder: "Select an option",
     skipSingleOption: true,

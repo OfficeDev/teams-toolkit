@@ -5,8 +5,6 @@ import * as vscode from "vscode";
 
 import AppStudioTokenInstance from "../commonlib/appStudioLogin";
 import * as commonUtils from "./commonUtils";
-import { core, showError } from "../handlers";
-import { Func } from "@microsoft/teamsfx-api";
 
 export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
   public async resolveDebugConfiguration?(
@@ -35,6 +33,10 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
 
         if (!isLocalSideloadingConfiguration && !isSideloadingConfiguration) {
           return debugConfiguration;
+        }
+
+        if (debugConfiguration.timeout === undefined) {
+          debugConfiguration.timeout = 20000;
         }
 
         const teamsAppId = await commonUtils.getLocalDebugTeamsAppId(

@@ -17,7 +17,7 @@ import {
 import { AppStudioPlugin } from "./../../../../../src/plugins/resource/appstudio";
 import { AppStudioPluginImpl } from "./../../../../../src/plugins/resource/appstudio/plugin";
 import { TeamsBot } from "./../../../../../src/plugins/resource/bot";
-import { AppStudioError } from "./../../../../../src/plugins/resource/appstudio/errors";
+import AdmZip from "adm-zip";
 
 describe("Build Teams Package", () => {
   let plugin: AppStudioPlugin;
@@ -55,7 +55,7 @@ describe("Build Teams Package", () => {
     sandbox.restore();
   });
 
-  it("Build Teams Package", async () => {
+  it("Check teams app id", async () => {
     sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns(
       ok({
         tabEndpoint: "tabEndpoint",
@@ -64,6 +64,7 @@ describe("Build Teams Package", () => {
         botDomain: "botDomain",
         botId: "botId",
         webApplicationInfoResource: "webApplicationInfoResource",
+        teamsAppId: "teamsAppId",
       })
     );
     sandbox.stub(fs, "move").resolves();
@@ -72,7 +73,15 @@ describe("Build Teams Package", () => {
     chai.assert.isTrue(builtPackage.isOk());
     if (builtPackage.isOk()) {
       chai.assert.isNotEmpty(builtPackage.value);
+      const zip = new AdmZip(builtPackage.value);
+      const appPackage = `${ctx.root}/appPackage`;
+      zip.extractEntryTo("manifest.json", appPackage);
+      const manifestFile = `${appPackage}/manifest.json`;
+      chai.assert.isTrue(await fs.pathExists(manifestFile));
+      const manifest: TeamsAppManifest = await fs.readJSON(manifestFile);
+      chai.assert.equal(manifest.id, "teamsAppId");
       await fs.remove(builtPackage.value);
+      await fs.remove(manifestFile);
     }
   });
 });

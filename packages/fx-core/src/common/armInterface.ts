@@ -33,7 +33,7 @@ export interface BicepOrchestration {
   OutputTemplate?: BicepOrchestrationTemplate;
 }
 
-export interface ScaffoldArmTemplateResult {
+export interface ScaffoldArmTemplateResult extends Record<string, unknown> {
   Modules?: { [moduleFileName: string]: BicepModule };
   Orchestration: BicepOrchestration;
 }

@@ -23,6 +23,7 @@ import {
   LocalSettingsAuthKeys,
   LocalSettingsFrontendKeys,
 } from "../../../../common/localSettingsConstants";
+import { TeamsClientId } from "../../../../common/constants";
 export class Utils {
   public static generateResourceName(appName: string, resourceNameSuffix: string): string {
     const paddingLength =
@@ -85,22 +86,10 @@ export class Utils {
   ): { [propertyName: string]: string } {
     const clientId = this.getClientId(ctx, isLocalDebug);
     const clientSecret = this.getClientSecret(ctx, isLocalDebug);
-    const oauthAuthority = Utils.getConfigValueWithValidation(
-      ctx,
-      Constants.AadAppPlugin.id,
-      Constants.AadAppPlugin.configKeys.oauthAuthority
-    ) as string;
+    const oauthAuthority = this.getOauthAuthority(ctx, isLocalDebug);
     const applicationIdUris = this.getApplicationIdUris(ctx, isLocalDebug);
-    const teamsMobileDesktopAppId = Utils.getConfigValueWithValidation(
-      ctx,
-      Constants.AadAppPlugin.id,
-      Constants.AadAppPlugin.configKeys.teamsMobileDesktopAppId
-    ) as string;
-    const teamsWebAppId = Utils.getConfigValueWithValidation(
-      ctx,
-      Constants.AadAppPlugin.id,
-      Constants.AadAppPlugin.configKeys.teamsWebAppId
-    ) as string;
+    const teamsMobileDesktopAppId = TeamsClientId.MobileDesktop;
+    const teamsWebAppId = TeamsClientId.Web;
 
     let endpoint: string;
     if (!isArmSupportEnabled() || isLocalDebug) {
@@ -161,54 +150,114 @@ export class Utils {
   }
 
   private static getClientId(ctx: PluginContext, isLocalDebug: boolean): string {
-    const clientId = isMultiEnvEnabled()
-      ? (ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId) as string)
-      : (Utils.getConfigValueWithValidation(
-          ctx,
-          Constants.AadAppPlugin.id,
-          Constants.AadAppPlugin.configKeys.clientId,
-          isLocalDebug
-        ) as string);
+    let clientId: string;
+    if (isMultiEnvEnabled()) {
+      clientId = isLocalDebug
+        ? (ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId) as string)
+        : (Utils.getConfigValueWithValidation(
+            ctx,
+            Constants.AadAppPlugin.id,
+            Constants.AadAppPlugin.configKeys.clientId,
+            isLocalDebug
+          ) as string);
+    } else {
+      clientId = Utils.getConfigValueWithValidation(
+        ctx,
+        Constants.AadAppPlugin.id,
+        Constants.AadAppPlugin.configKeys.clientId,
+        isLocalDebug
+      ) as string;
+    }
 
     return clientId;
   }
 
   private static getClientSecret(ctx: PluginContext, isLocalDebug: boolean): string {
-    const clientSecret = isMultiEnvEnabled()
-      ? (ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientSecret) as string)
-      : (Utils.getConfigValueWithValidation(
-          ctx,
-          Constants.AadAppPlugin.id,
-          Constants.AadAppPlugin.configKeys.clientSecret,
-          isLocalDebug
-        ) as string);
+    let clientSecret: string;
+    if (isMultiEnvEnabled()) {
+      clientSecret = isLocalDebug
+        ? (ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientSecret) as string)
+        : (Utils.getConfigValueWithValidation(
+            ctx,
+            Constants.AadAppPlugin.id,
+            Constants.AadAppPlugin.configKeys.clientSecret,
+            isLocalDebug
+          ) as string);
+    } else {
+      clientSecret = Utils.getConfigValueWithValidation(
+        ctx,
+        Constants.AadAppPlugin.id,
+        Constants.AadAppPlugin.configKeys.clientSecret,
+        isLocalDebug
+      ) as string;
+    }
 
     return clientSecret;
   }
 
   private static getFrontendEndpoint(ctx: PluginContext, isLocalDebug: boolean): string {
-    const applicationIdUris = isMultiEnvEnabled()
-      ? (ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabEndpoint) as string)
-      : (Utils.getConfigValueWithValidation(
-          ctx,
-          isLocalDebug ? Constants.LocalDebugPlugin.id : Constants.FrontendPlugin.id,
-          isLocalDebug
-            ? Constants.LocalDebugPlugin.configKeys.endpoint
-            : Constants.FrontendPlugin.configKeys.endpoint
-        ) as string);
+    let tabEndpoint: string;
+    if (isMultiEnvEnabled()) {
+      tabEndpoint = isLocalDebug
+        ? (ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabEndpoint) as string)
+        : (Utils.getConfigValueWithValidation(
+            ctx,
+            Constants.FrontendPlugin.id,
+            Constants.FrontendPlugin.configKeys.endpoint
+          ) as string);
+    } else {
+      tabEndpoint = Utils.getConfigValueWithValidation(
+        ctx,
+        isLocalDebug ? Constants.LocalDebugPlugin.id : Constants.FrontendPlugin.id,
+        isLocalDebug
+          ? Constants.LocalDebugPlugin.configKeys.endpoint
+          : Constants.FrontendPlugin.configKeys.endpoint
+      ) as string;
+    }
 
-    return applicationIdUris;
+    return tabEndpoint;
+  }
+
+  private static getOauthAuthority(ctx: PluginContext, isLocalDebug: boolean): string {
+    let oauthAuthority: string;
+    if (isMultiEnvEnabled()) {
+      oauthAuthority = isLocalDebug
+        ? (ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.OauthAuthority) as string)
+        : (Utils.getConfigValueWithValidation(
+            ctx,
+            Constants.AadAppPlugin.id,
+            Constants.AadAppPlugin.configKeys.oauthAuthority
+          ) as string);
+    } else {
+      oauthAuthority = Utils.getConfigValueWithValidation(
+        ctx,
+        Constants.AadAppPlugin.id,
+        Constants.AadAppPlugin.configKeys.oauthAuthority
+      ) as string;
+    }
+
+    return oauthAuthority;
   }
 
   private static getApplicationIdUris(ctx: PluginContext, isLocalDebug: boolean): string {
-    const applicationIdUris = isMultiEnvEnabled()
-      ? (ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ApplicationIdUris) as string)
-      : (Utils.getConfigValueWithValidation(
-          ctx,
-          Constants.AadAppPlugin.id,
-          Constants.AadAppPlugin.configKeys.applicationIdUris,
-          isLocalDebug
-        ) as string);
+    let applicationIdUris: string;
+    if (isMultiEnvEnabled()) {
+      applicationIdUris = isLocalDebug
+        ? (ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ApplicationIdUris) as string)
+        : (Utils.getConfigValueWithValidation(
+            ctx,
+            Constants.AadAppPlugin.id,
+            Constants.AadAppPlugin.configKeys.applicationIdUris,
+            isLocalDebug
+          ) as string);
+    } else {
+      applicationIdUris = Utils.getConfigValueWithValidation(
+        ctx,
+        Constants.AadAppPlugin.id,
+        Constants.AadAppPlugin.configKeys.applicationIdUris,
+        isLocalDebug
+      ) as string;
+    }
 
     return applicationIdUris;
   }

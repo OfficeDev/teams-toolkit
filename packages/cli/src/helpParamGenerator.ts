@@ -19,7 +19,7 @@ import {
   MultiSelectQuestion,
 } from "@microsoft/teamsfx-api";
 
-import { FxCore } from "@microsoft/teamsfx-core";
+import { FxCore, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 import AzureAccountManager from "./commonlib/azureLogin";
 import AppStudioTokenProvider from "./commonlib/appStudioLogin";
 import GraphTokenProvider from "./commonlib/graphLogin";
@@ -193,7 +193,7 @@ export class HelpParamGenerator {
     }
 
     // Add env node
-    if (stage !== Stage.create) {
+    if (isMultiEnvEnabled() && stage !== Stage.create) {
       nodes = nodes.concat([EnvNode]);
     }
 

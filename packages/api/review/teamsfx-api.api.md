@@ -744,6 +744,8 @@ export interface ProjectSettings {
     // (undocumented)
     appName: string;
     // (undocumented)
+    defaultFunctionName?: string;
+    // (undocumented)
     programmingLanguage?: string;
     // (undocumented)
     projectId: string;

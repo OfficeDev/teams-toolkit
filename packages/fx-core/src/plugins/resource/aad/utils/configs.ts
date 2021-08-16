@@ -91,7 +91,7 @@ export class ConfigUtils {
       );
     }
 
-    const permissionRequestResult = await ctx.permissionRequestProvider?.getPermissionRequest();
+    const permissionRequestResult = await ctx.permissionRequestProvider.getPermissionRequest();
     if (permissionRequestResult.isOk()) {
       return permissionRequestResult.value;
     } else {

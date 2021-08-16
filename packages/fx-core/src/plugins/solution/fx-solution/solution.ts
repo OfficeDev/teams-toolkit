@@ -102,6 +102,7 @@ import { deployArmTemplates, generateArmTemplate } from "./arm";
 import { LocalSettingsProvider } from "../../../common/localSettingsProvider";
 import { PluginDisplayName } from "../../../common/constants";
 import { LocalSettingsTeamsAppKeys } from "../../../common/localSettingsConstants";
+import { PermissionRequestFileProvider } from "../../../core/permissionRequest";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -406,11 +407,7 @@ export class TeamsAppSolution implements Solution {
     }
   }
 
-  /**
-   * Check if the permissions.json file exist.
-   * @param ctx solution context
-   */
-  private async checkPermissionRequest(ctx: SolutionContext): Promise<Result<undefined, FxError>> {
+  private async ensurePermissionRequest(ctx: SolutionContext): Promise<Result<undefined, FxError>> {
     if (!this.isAzureProject(ctx)) {
       return err(
         returnUserError(
@@ -421,15 +418,13 @@ export class TeamsAppSolution implements Solution {
       );
     }
 
-    const path = `${ctx.root}/permissions.json`;
-    if (!(await fs.pathExists(path))) {
-      return err(
-        returnSystemError(
-          new Error("permissions.json is missing"),
-          "Solution",
-          SolutionError.MissingPermissionsJson
-        )
-      );
+    if (ctx.permissionRequestProvider === undefined) {
+      ctx.permissionRequestProvider = new PermissionRequestFileProvider(ctx.root);
+    }
+
+    const result = await ctx.permissionRequestProvider.checkPermissionRequest();
+    if (result.isErr()) {
+      return result;
     }
 
     return ok(undefined);
@@ -509,7 +504,7 @@ export class TeamsAppSolution implements Solution {
 
       this.runningState = SolutionRunningState.ProvisionInProgress;
       if (this.isAzureProject(ctx)) {
-        const result = await this.checkPermissionRequest(ctx);
+        const result = await this.ensurePermissionRequest(ctx);
         if (result.isErr()) {
           return result;
         }
@@ -1084,7 +1079,7 @@ export class TeamsAppSolution implements Solution {
   }
 
   async localDebug(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    const result = await this.checkPermissionRequest(ctx);
+    const result = await this.ensurePermissionRequest(ctx);
     if (result.isErr()) {
       return result;
     }
@@ -1879,6 +1874,9 @@ export class TeamsAppSolution implements Solution {
 
     if (ctx.permissionRequestProvider === undefined) {
       ctx.permissionRequestProvider = {
+        async checkPermissionRequest(): Promise<Result<undefined, FxError>> {
+          return ok(undefined);
+        },
         async getPermissionRequest(): Promise<Result<string, FxError>> {
           return ok(JSON.stringify(DEFAULT_PERMISSION_REQUEST));
         },

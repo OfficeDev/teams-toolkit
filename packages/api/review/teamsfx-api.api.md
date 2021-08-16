@@ -651,6 +651,7 @@ export interface OptionItem {
 
 // @public
 export interface PermissionRequestProvider {
+    checkPermissionRequest(): Promise<Result<undefined, FxError>>;
     getPermissionRequest(): Promise<Result<string, FxError>>;
 }
 

@@ -9,6 +9,11 @@ import { FxError } from "../error";
  */
 export interface PermissionRequestProvider {
   /**
+   * check if perrmission request source content exists
+   */
+  checkPermissionRequest(): Promise<Result<undefined, FxError>>;
+
+  /**
    * Load the content of the latest permission request
    */
   getPermissionRequest(): Promise<Result<string, FxError>>;

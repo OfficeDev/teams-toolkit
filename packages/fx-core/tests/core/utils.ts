@@ -364,6 +364,10 @@ export class MockCryptoProvider implements CryptoProvider {
 }
 
 export class MockPermissionRequestProvider implements PermissionRequestProvider {
+  async checkPermissionRequest(): Promise<Result<undefined, FxError>> {
+    return ok(undefined);
+  }
+
   async getPermissionRequest(): Promise<Result<string, FxError>> {
     return ok(JSON.stringify(DEFAULT_PERMISSION_REQUEST));
   }

@@ -31,6 +31,9 @@ const permissionsWrong =
   '[{"resource": "Microsoft Graph","delegated": ["User.ReadData"],"application":[]}]';
 
 const mockPermissionRequestProvider: PermissionRequestProvider = {
+  async checkPermissionRequest(): Promise<Result<undefined, FxError>> {
+    return ok(undefined);
+  },
   async getPermissionRequest(): Promise<Result<string, FxError>> {
     return ok(JSON.stringify(DEFAULT_PERMISSION_REQUEST));
   },

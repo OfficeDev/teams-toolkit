@@ -5,9 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
-    "package": "ncc build --source-map --license licenses.txt",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "all": "npm run build && npm run package"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",

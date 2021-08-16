@@ -13,8 +13,8 @@
     "author": "Ivan He",
     "version": {
         "Major": 0,
-        "Minor": 3,
-        "Patch": 8
+        "Minor": 4,
+        "Patch": 1
     },
     "instanceNameFormat": "Teams App CI/CD - $(commands)",
     "inputs": [
@@ -33,8 +33,7 @@
         {
             "name": "version",
             "type": "boolean",
-            "label": "Version",
-            "defaultValue": "true"
+            "label": "Version"
         },
         {
             "name": "debug",
@@ -63,28 +62,33 @@
         {
             "name": "tenant",
             "type": "string",
-            "label": "Tenant"
+            "label": "Tenant",
+            "visibleRule": "commands StartsWith provision"
         },
         {
             "name": "folder",
             "type": "filePath",
-            "label": "Folder"
+            "label": "Folder",
+            "visibleRule": "commands NotStartsWith account"
         },
         {
             "name": "subscription",
             "type": "string",
-            "label": "Subscription"
+            "label": "Subscription",
+            "visibleRule": "commands StartsWith provision"
         },
         {
             "name": "interactive",
             "type": "boolean",
             "label": "Interactive",
+            "visibleRule": "commands StartsWith new",
             "defaultValue": "true"
         },
         {
             "name": "scratch",
             "type": "pickList",
             "label": "Scratch",
+            "visibleRule": "commands StartsWith new",
             "options": {
                 "yes": "yes",
                 "no": "no"
@@ -95,6 +99,7 @@
             "name": "host-type",
             "type": "pickList",
             "label": "Host Type",
+            "visibleRule": "commands StartsWith new",
             "options": {
                 "azure": "azure",
                 "spfx": "spfx"
@@ -105,6 +110,7 @@
             "name": "spfx-framework-type",
             "type": "pickList",
             "label": "Spfx Framework Type",
+            "visibleRule": "commands StartsWith new",
             "options": {
                 "none": "none",
                 "react": "react"
@@ -114,17 +120,20 @@
         {
             "name": "spfx-webpart-name",
             "type": "string",
-            "label": "Spfx Webpart Name"
+            "label": "Spfx Webpart Name",
+            "visibleRule": "commands StartsWith new"
         },
         {
             "name": "spfx-webpart-desp",
             "type": "string",
-            "label": "Spfx Webpart Description"
+            "label": "Spfx Webpart Description",
+            "visibleRule": "commands StartsWith new"
         },
         {
             "name": "way-to-register-bot",
             "type": "pickList",
             "label": "Way To Register Bot",
+            "visibleRule": "commands StartsWith new",
             "options": {
                 "create-new": "create-new",
                 "reuse-existing": "reuse-existing"
@@ -134,27 +143,32 @@
         {
             "name": "bot-id",
             "type": "string",
-            "label": "Bot Id"
+            "label": "Bot Id",
+            "visibleRule": "commands StartsWith new"
         },
         {
             "name": "bot-password",
             "type": "string",
-            "label": "Bot Password"
+            "label": "Bot Password",
+            "visibleRule": "commands StartsWith new"
         },
         {
             "name": "programming-language",
             "type": "string",
-            "label": "Progamming Language"
+            "label": "Progamming Language",
+            "visibleRule": "commands StartsWith new"
         },
         {
             "name": "app-name",
             "type": "string",
-            "label": "App Name"
+            "label": "App Name",
+            "vsisibleRule": "commands StartsWith new"
         },
         {
             "name": "samples",
             "type": "pickList",
             "label": "Samples",
+            "visibleRule": "commands StartsWith new",
             "options": {
                 "todo-list-with-Azure-backend": "todo-list-with-Azure-backend",
                 "todo-list-SPFx": "todo-list-SPFx",
@@ -166,32 +180,38 @@
         {
             "name": "sql-admin-name",
             "type": "string",
-            "label": "SQL Admin Name"
+            "label": "SQL Admin Name",
+            "visibleRule": "commands StartsWith provision"
         },
         {
             "name": "sql-password",
             "type": "string",
-            "label": "SQL Password"
+            "label": "SQL Password",
+            "visibleRule": "commands StartsWith provision"
         },
         {
             "name": "open-api-document",
             "type": "filePath",
-            "label": "Open API Document"
+            "label": "Open API Document",
+            "visibleRule": "commands StartsWith deploy"
         },
         {
             "name": "api-prefix",
             "type": "string",
-            "label": "The API name prefix"
+            "label": "The API name prefix",
+            "visibleRule": "commands StartsWith deploy"
         },
         {
             "name": "api-version",
             "type": "string",
-            "label": "The API version"
+            "label": "The API version",
+            "visibleRule": "commands StartsWith deploy"
         },
         {
             "name": "environment",
             "type": "pickList",
             "label": "Environment",
+            "visibleRule": "commands StartsWith init",
             "options": {
                 "local": "local",
                 "remote": "remote"
@@ -201,23 +221,27 @@
         {
             "name": "endpoint",
             "type": "string",
-            "label": "Teams app endpoint"
+            "label": "Teams app endpoint",
+            "visibleRule": "commands StartsWith init"
         },
         {
             "name": "root-path",
             "type": "filePath",
             "label": "Path to the setting files",
+            "visibleRule": "commands StartsWith init",
             "defaultValue": "./"
         },
         {
             "name": "azure-resources",
             "type": "multiLine",
-            "label": "AzureResources"
+            "label": "AzureResources",
+            "visibleRule": "commands StartsWith new"
         },
         {
             "name": "capabilities",
             "type": "multiLine",
-            "label": "Capabilities"  
+            "label": "Capabilities",
+            "visibleRule": "commands StartsWith new"
         }
     ],
     "execution": {

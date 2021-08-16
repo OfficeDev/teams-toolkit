@@ -43,11 +43,15 @@ import {
   Colors,
   Json,
   CryptoProvider,
+  PermissionRequestProvider,
 } from "@microsoft/teamsfx-api";
 import { TokenCredential } from "@azure/core-auth";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { SolutionLoader } from "../../src/core/loader";
-import { PluginNames } from "../../src/plugins/solution/fx-solution/constants";
+import {
+  DEFAULT_PERMISSION_REQUEST,
+  PluginNames,
+} from "../../src/plugins/solution/fx-solution/constants";
 import * as uuid from "uuid";
 
 export class MockSolution implements Solution {
@@ -347,6 +351,7 @@ export class MockTools implements Tools {
   telemetryReporter = new MockTelemetryReporter();
   ui = new MockUserInteraction();
   cryptoProvider = new MockCryptoProvider();
+  permissionRequestProvider = new MockPermissionRequestProvider();
 }
 
 export class MockCryptoProvider implements CryptoProvider {
@@ -355,6 +360,16 @@ export class MockCryptoProvider implements CryptoProvider {
   }
   decrypt(ciphertext: string): Result<string, FxError> {
     return ok(ciphertext);
+  }
+}
+
+export class MockPermissionRequestProvider implements PermissionRequestProvider {
+  async checkPermissionRequest(): Promise<Result<undefined, FxError>> {
+    return ok(undefined);
+  }
+
+  async getPermissionRequest(): Promise<Result<string, FxError>> {
+    return ok(JSON.stringify(DEFAULT_PERMISSION_REQUEST));
   }
 }
 

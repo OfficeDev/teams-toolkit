@@ -25,11 +25,6 @@ export const GLOBAL_CONFIG = "solution";
 export const SOLUTION_PROVISION_SUCCEEDED = "provisionSucceeded";
 
 /**
- * Config key whose value is the content of permissions.json file
- */
-export const PERMISSION_REQUEST = "permissionRequest";
-
-/**
  * Config key whose value is either javascript, typescript or csharp.
  */
 export const PROGRAMMING_LANGUAGE = "programmingLanguage";

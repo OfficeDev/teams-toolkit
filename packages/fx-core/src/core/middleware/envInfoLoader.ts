@@ -23,6 +23,7 @@ import { GLOBAL_CONFIG, PROGRAMMING_LANGUAGE } from "../../plugins/solution/fx-s
 import { QuestionSelectTargetEnvironment, QuestionNewTargetEnvironmentName } from "../question";
 import { desensitize } from "./questionModel";
 import { shouldIgnored } from "./projectSettingsLoader";
+import { PermissionRequestFileProvider } from "../permissionRequest";
 
 const newTargetEnvNameOption = "+ new environment";
 const lastUsedMark = " (current)";
@@ -118,6 +119,7 @@ export async function loadSolutionContext(
     ...tools.tokenProvider,
     answers: inputs,
     cryptoProvider: cryptoProvider,
+    permissionRequestProvider: new PermissionRequestFileProvider(inputs.projectPath),
   };
 
   return ok(solutionContext);

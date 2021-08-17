@@ -10,7 +10,11 @@ import activate from "../activate";
 import { YargsCommand } from "../yargsCommand";
 import { getSystemInputs } from "../utils";
 import CliTelemetry from "../telemetry/cliTelemetry";
-import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetrySuccess,
+} from "../telemetry/cliTelemetryEvents";
 import HelpParamGenerator from "../helpParamGenerator";
 
 export default class Build extends YargsCommand {
@@ -27,9 +31,9 @@ export default class Build extends YargsCommand {
   public async runCommand(args: {
     [argName: string]: string | string[];
   }): Promise<Result<null, FxError>> {
-    const rootFolder = path.resolve(args.folder as string || "./");
+    const rootFolder = path.resolve((args.folder as string) || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.BuildStart);
-    
+
     const result = await activate(rootFolder);
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Build, result.error);
@@ -39,9 +43,12 @@ export default class Build extends YargsCommand {
     {
       const func: Func = {
         namespace: "fx-solution-azure",
-        method: "buildPackage"
+        method: "buildPackage",
       };
-      const result = await core.executeUserTask!(func, getSystemInputs(rootFolder));
+      const result = await core.executeUserTask!(
+        func,
+        getSystemInputs(rootFolder, args.env as any)
+      );
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Build, result.error);
         return err(result.error);
@@ -49,7 +56,7 @@ export default class Build extends YargsCommand {
     }
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.Build, {
-      [TelemetryProperty.Success]: TelemetrySuccess.Yes
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
     });
     return ok(null);
   }

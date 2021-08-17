@@ -323,11 +323,13 @@ export function getProjectId(rootfolder: string | undefined): any {
   return undefined;
 }
 
-export function getSystemInputs(projectPath?: string): Inputs {
+export function getSystemInputs(projectPath?: string, env?: string, previewType?: string): Inputs {
   const systemInputs: Inputs = {
     platform: Platform.CLI,
     projectPath: projectPath,
     correlationId: uuid.v4(),
+    env: env,
+    previewType: previewType,
   };
   return systemInputs;
 }

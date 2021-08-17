@@ -459,7 +459,8 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(false, false),
+    EnvInfoLoaderMW(isMultiEnvEnabled(), false),
+    LocalSettingsLoaderMW,
     ContextInjecterMW,
   ])
   async getProjectConfig(

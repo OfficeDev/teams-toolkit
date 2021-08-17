@@ -78,7 +78,7 @@ describe("Help Parameter Tests", function () {
     expect(result.folder.default).equals("./");
 
     for (const key of Object.keys(result)) {
-      if (key === "folder") {
+      if (key === "folder" || key === "env") {
         expect(result[key].hidden).to.be.false;
       } else {
         expect(result[key].hidden).to.be.true;

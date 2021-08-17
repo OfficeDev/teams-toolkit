@@ -161,7 +161,7 @@ export function ProjectSettingsUndefinedError(): FxError {
 export function ProjectEnvNotExistError(env: string) {
   return new UserError(
     "ProjectEnvNotExistError",
-    `Env ${env} does not exist. Select an exited env.`,
+    `The specified env ${env} does not exist. Select an exited env.`,
     CoreSource,
     new Error().stack
   );

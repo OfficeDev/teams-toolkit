@@ -37,7 +37,7 @@ export function getChoicesFromQTNodeQuestion(data: Question): string[] | undefin
     if (typeof option[0] === "string") {
       return option as string[];
     } else {
-      return (option as OptionItem[]).map((op) => (op.cliName ? op.cliName : op.id));
+      return (option as OptionItem[]).map((op) => op.cliName || toLocaleLowerCase(op.id));
     }
   } else {
     return undefined;

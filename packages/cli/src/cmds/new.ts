@@ -100,7 +100,7 @@ class NewTemplete extends YargsCommand {
     this.subCommands.forEach((cmd) => {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     });
-    const templatesNames = constants.templates.map((t) => t.sampleAppName);
+    const templatesNames = constants.templates.map((t) => toLocaleLowerCase(t.sampleAppName));
     yargs
       .positional("template-name", {
         description: "Enter the template name",
@@ -130,7 +130,9 @@ class NewTemplete extends YargsCommand {
     }
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSampleStart);
     const templateName = args["template-name"] as string;
-    const template = constants.templates.find((t) => t.sampleAppName === templateName)!;
+    const template = constants.templates.find(
+      (t) => toLocaleLowerCase(t.sampleAppName) === templateName
+    )!;
 
     const sampleAppFolder = path.resolve(folder, template.sampleAppName);
     if ((await fs.pathExists(sampleAppFolder)) && (await fs.readdir(sampleAppFolder)).length > 0) {

@@ -5,14 +5,12 @@ import chaiAsPromised from "chai-as-promised";
 import { it } from "mocha";
 import { TeamsAppSolution } from " ../../../src/plugins/solution";
 import {
-  ConfigMap,
   FxError,
   ok,
   PluginContext,
   Result,
   SolutionConfig,
   SolutionContext,
-  TeamsAppManifest,
   Void,
   Plugin,
   Platform,
@@ -28,7 +26,7 @@ import {
 } from "../../../src/plugins/solution/fx-solution/question";
 import _ from "lodash";
 import path from "path";
-import { AppStudioPlugin, getTemplatesFolder } from "../../../src";
+import { getTemplatesFolder } from "../../../src";
 import { validManifest } from "./util";
 import * as uuid from "uuid";
 import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";

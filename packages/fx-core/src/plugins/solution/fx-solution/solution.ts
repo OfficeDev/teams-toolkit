@@ -271,20 +271,6 @@ export class TeamsAppSolution implements Solution {
     //Reload plugins according to user answers
     await this.reloadPlugins(solutionSettings);
 
-    // const templatesFolder = getTemplatesFolder();
-    // const defaultColorPath = path.join(templatesFolder, "plugins", "solution", "defaultIcon.png");
-    // const defaultOutlinePath = path.join(
-    //   templatesFolder,
-    //   "plugins",
-    //   "solution",
-    //   "defaultOutline.png"
-    // );
-
-    // await fs.copy(defaultColorPath, `${ctx.root}/${AppPackageFolderName}/color.png`);
-    // await fs.copy(defaultOutlinePath, `${ctx.root}/${AppPackageFolderName}/outline.png`);
-    // await fs.copy(defaultColorPath, `${ctx.root}/.${ConfigFolderName}/color.png`);
-    // await fs.copy(defaultOutlinePath, `${ctx.root}/.${ConfigFolderName}/outline.png`);
-
     if (this.isAzureProject(ctx)) {
       await fs.writeJSON(`${ctx.root}/permissions.json`, DEFAULT_PERMISSION_REQUEST, { spaces: 4 });
       ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.Create, {

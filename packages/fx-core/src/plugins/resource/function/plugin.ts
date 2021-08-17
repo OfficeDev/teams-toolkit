@@ -530,7 +530,7 @@ export class FunctionPluginImpl {
       this.config.subscriptionId,
       FunctionConfigKey.subscriptionId
     );
-    let functionAppName = this.checkAndGet(
+    const functionAppName = this.checkAndGet(
       this.config.functionAppName,
       FunctionConfigKey.functionAppName
     );
@@ -548,31 +548,9 @@ export class FunctionPluginImpl {
       () => AzureClientFactory.getWebSiteManagementClient(credential, subscriptionId)
     );
 
-    let site: Site;
-    if (isArmSupportEnabled()) {
-      const hostName = getArmOutput(ctx, FunctionArmOutput.Endpoint);
-      this.config.functionEndpoint = `https://${hostName}`;
-      this.config.storageAccountName = getArmOutput(ctx, FunctionArmOutput.StorageName);
-      this.config.appServicePlanName = getArmOutput(ctx, FunctionArmOutput.AppServicePlanName);
-      functionAppName = getArmOutput(ctx, FunctionArmOutput.AppName)!;
-      this.config.functionAppName = functionAppName;
-      const findSite = await AzureLib.findFunctionApp(
-        webSiteManagementClient,
-        resourceGroupName,
-        functionAppName
-      );
-      if (!findSite) {
-        throw new FindAppError();
-      } else {
-        site = findSite;
-      }
-      const nodeVersion = await this.getValidNodeVersion(ctx);
-      FunctionProvision.pushAppSettings(site, "WEBSITE_NODE_DEFAULT_VERSION", "~" + nodeVersion);
-    } else {
-      // Retrieve and do cleanup
-      site = this.checkAndGet(this.config.site, FunctionConfigKey.site);
-      this.config.site = undefined;
-    }
+    // Retrieve and do cleanup
+    const site = this.checkAndGet(this.config.site, FunctionConfigKey.site);
+    this.config.site = undefined;
 
     // We must query app settings from azure here, for two reasons:
     // 1. The site object returned by SDK may not contain app settings.
@@ -608,26 +586,103 @@ export class FunctionPluginImpl {
     );
     Logger.info(InfoMessages.functionAppSettingsUpdated);
 
-    if (!isArmSupportEnabled()) {
-      const authSettings: SiteAuthSettings | undefined = this.collectFunctionAppAuthSettings(ctx);
-      if (authSettings) {
-        await runWithErrorCatchAndThrow(
-          new ConfigFunctionAppError(),
-          async () =>
-            await step(
-              StepGroup.PostProvisionStepGroup,
-              PostProvisionSteps.updateFunctionSettings,
-              async () =>
-                await webSiteManagementClient.webApps.updateAuthSettings(
-                  resourceGroupName,
-                  functionAppName,
-                  authSettings
-                )
-            )
-        );
-      }
-      Logger.info(InfoMessages.functionAppAuthSettingsUpdated);
+    const authSettings: SiteAuthSettings | undefined = this.collectFunctionAppAuthSettings(ctx);
+    if (authSettings) {
+      await runWithErrorCatchAndThrow(
+        new ConfigFunctionAppError(),
+        async () =>
+          await step(
+            StepGroup.PostProvisionStepGroup,
+            PostProvisionSteps.updateFunctionSettings,
+            async () =>
+              await webSiteManagementClient.webApps.updateAuthSettings(
+                resourceGroupName,
+                functionAppName,
+                authSettings
+              )
+          )
+      );
     }
+    Logger.info(InfoMessages.functionAppAuthSettingsUpdated);
+
+    this.syncConfigToContext(ctx);
+
+    return ResultFactory.Success();
+  }
+
+  public async postProvisionWithArm(ctx: PluginContext): Promise<FxResult> {
+    const subscriptionId = this.checkAndGet(
+      this.config.subscriptionId,
+      FunctionConfigKey.subscriptionId
+    );
+
+    const resourceGroupName = this.checkAndGet(
+      this.config.resourceGroupName,
+      FunctionConfigKey.resourceGroupName
+    );
+    const credential = this.checkAndGet(
+      await ctx.azureAccountProvider?.getAccountCredentialAsync(),
+      FunctionConfigKey.credential
+    );
+
+    const webSiteManagementClient: WebSiteManagementClient = await runWithErrorCatchAndThrow(
+      new InitAzureSDKError(),
+      () => AzureClientFactory.getWebSiteManagementClient(credential, subscriptionId)
+    );
+
+    let site: Site;
+    const hostName = getArmOutput(ctx, FunctionArmOutput.Endpoint);
+    this.config.functionEndpoint = `https://${hostName}`;
+    this.config.storageAccountName = getArmOutput(ctx, FunctionArmOutput.StorageName);
+    this.config.appServicePlanName = getArmOutput(ctx, FunctionArmOutput.AppServicePlanName);
+    const functionAppName = getArmOutput(ctx, FunctionArmOutput.AppName)!;
+    this.config.functionAppName = functionAppName;
+    const findSite = await AzureLib.findFunctionApp(
+      webSiteManagementClient,
+      resourceGroupName,
+      functionAppName
+    );
+    if (!findSite) {
+      throw new FindAppError();
+    } else {
+      site = findSite;
+    }
+    const nodeVersion = await this.getValidNodeVersion(ctx);
+    FunctionProvision.pushAppSettings(site, "WEBSITE_NODE_DEFAULT_VERSION", "~" + nodeVersion);
+
+    // We must query app settings from azure here, for two reasons:
+    // 1. The site object returned by SDK may not contain app settings.
+    // 2. Azure automatically added some app settings during creation.
+    const res: StringDictionary = await runWithErrorCatchAndThrow(
+      new ConfigFunctionAppError(),
+      async () =>
+        await webSiteManagementClient.webApps.listApplicationSettings(
+          resourceGroupName,
+          functionAppName
+        )
+    );
+
+    if (res.properties) {
+      Object.entries(res.properties).forEach((kv: [string, string]) => {
+        // The site have some settings added in provision step,
+        // which should not be overwritten by queried settings.
+        FunctionProvision.pushAppSettings(site, kv[0], kv[1], false);
+      });
+    }
+
+    this.collectFunctionAppSettings(ctx, site);
+
+    await runWithErrorCatchAndThrow(
+      new ConfigFunctionAppError(),
+      async () =>
+        await step(
+          StepGroup.PostProvisionStepGroup,
+          PostProvisionSteps.updateFunctionSettings,
+          async () =>
+            await webSiteManagementClient.webApps.update(resourceGroupName, functionAppName, site)
+        )
+    );
+    Logger.info(InfoMessages.functionAppSettingsUpdated);
 
     this.syncConfigToContext(ctx);
 

@@ -170,40 +170,20 @@ export class FrontendPluginImpl {
     let runtimeEnv: RuntimeEnvironment | undefined;
     let aadEnv: AADEnvironment | undefined;
 
-    if (isArmSupportEnabled()) {
-      const functionPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.FunctionPluginName);
-      if (functionPlugin) {
-        const functionEndpoint = getArmOutput(ctx, FunctionArmOutput.Endpoint) as string;
-        functionEnv = {
-          defaultName: functionPlugin.get(DependentPluginInfo.FunctionDefaultName) as string,
-          endpoint: `https://${functionEndpoint}`,
-        };
-      }
+    const functionPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.FunctionPluginName);
+    if (functionPlugin) {
+      functionEnv = {
+        defaultName: functionPlugin.get(DependentPluginInfo.FunctionDefaultName) as string,
+        endpoint: functionPlugin.get(DependentPluginInfo.FunctionEndpoint) as string,
+      };
+    }
 
-      const authPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.RuntimePluginName);
-      if (authPlugin) {
-        const simpleAuthEndpoint = getArmOutput(ctx, ArmOutput.SimpleAuthEndpoint) as string;
-        runtimeEnv = {
-          endpoint: simpleAuthEndpoint,
-          startLoginPageUrl: DependentPluginInfo.StartLoginPageURL,
-        };
-      }
-    } else {
-      const functionPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.FunctionPluginName);
-      if (functionPlugin) {
-        functionEnv = {
-          defaultName: functionPlugin.get(DependentPluginInfo.FunctionDefaultName) as string,
-          endpoint: functionPlugin.get(DependentPluginInfo.FunctionEndpoint) as string,
-        };
-      }
-
-      const authPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.RuntimePluginName);
-      if (authPlugin) {
-        runtimeEnv = {
-          endpoint: authPlugin.get(DependentPluginInfo.RuntimeEndpoint) as string,
-          startLoginPageUrl: DependentPluginInfo.StartLoginPageURL,
-        };
-      }
+    const authPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.RuntimePluginName);
+    if (authPlugin) {
+      runtimeEnv = {
+        endpoint: authPlugin.get(DependentPluginInfo.RuntimeEndpoint) as string,
+        startLoginPageUrl: DependentPluginInfo.StartLoginPageURL,
+      };
     }
 
     const aadPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.AADPluginName);
@@ -222,18 +202,58 @@ export class FrontendPluginImpl {
       );
     }
 
-    if (isArmSupportEnabled()) {
-      const config = await FrontendConfig.fromPluginContext(ctx);
-      config.endpoint = getArmOutput(ctx, ArmOutput.FrontendEndpoint) as string;
-      config.domain = getArmOutput(ctx, ArmOutput.FrontendDomain) as string;
-      config.syncToPluginContext(ctx);
+    return ok(undefined);
+  }
 
-      const client = new AzureStorageClient(config);
-      await runWithErrorCatchAndThrow(
-        new EnableStaticWebsiteError(),
-        async () => await client.enableStaticWebsite()
+  public async postProvisionWithArm(ctx: PluginContext): Promise<TeamsFxResult> {
+    let functionEnv: FunctionEnvironment | undefined;
+    let runtimeEnv: RuntimeEnvironment | undefined;
+    let aadEnv: AADEnvironment | undefined;
+
+    const functionPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.FunctionPluginName);
+    if (functionPlugin) {
+      const functionEndpoint = getArmOutput(ctx, FunctionArmOutput.Endpoint) as string;
+      functionEnv = {
+        defaultName: functionPlugin.get(DependentPluginInfo.FunctionDefaultName) as string,
+        endpoint: `https://${functionEndpoint}`,
+      };
+    }
+
+    const authPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.RuntimePluginName);
+    if (authPlugin) {
+      const simpleAuthEndpoint = getArmOutput(ctx, ArmOutput.SimpleAuthEndpoint) as string;
+      runtimeEnv = {
+        endpoint: simpleAuthEndpoint,
+        startLoginPageUrl: DependentPluginInfo.StartLoginPageURL,
+      };
+    }
+
+    const aadPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.AADPluginName);
+    if (aadPlugin) {
+      aadEnv = {
+        clientId: aadPlugin.get(DependentPluginInfo.ClientID) as string,
+      };
+    }
+
+    if (functionEnv || runtimeEnv || aadEnv) {
+      await FrontendProvision.setEnvironments(
+        path.join(ctx.root, FrontendPathInfo.WorkingDir, FrontendPathInfo.TabEnvironmentFilePath),
+        functionEnv,
+        runtimeEnv,
+        aadEnv
       );
     }
+
+    const config = await FrontendConfig.fromPluginContext(ctx);
+    config.endpoint = getArmOutput(ctx, ArmOutput.FrontendEndpoint) as string;
+    config.domain = getArmOutput(ctx, ArmOutput.FrontendDomain) as string;
+    config.syncToPluginContext(ctx);
+
+    const client = new AzureStorageClient(config);
+    await runWithErrorCatchAndThrow(
+      new EnableStaticWebsiteError(),
+      async () => await client.enableStaticWebsite()
+    );
 
     return ok(undefined);
   }

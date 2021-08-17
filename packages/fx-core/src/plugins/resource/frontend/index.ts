@@ -70,9 +70,15 @@ export class FrontendPlugin implements Plugin, ArmResourcePlugin {
 
   public async postProvision(ctx: PluginContext): Promise<TeamsFxResult> {
     FrontendPlugin.setContext(ctx);
-    return this.runWithErrorHandling(ctx, TelemetryEvent.PostProvision, () =>
-      this.frontendPluginImpl.postProvision(ctx)
-    );
+    if (isArmSupportEnabled()) {
+      return this.runWithErrorHandling(ctx, TelemetryEvent.PostProvision, () =>
+        this.frontendPluginImpl.postProvisionWithArm(ctx)
+      );
+    } else {
+      return this.runWithErrorHandling(ctx, TelemetryEvent.PostProvision, () =>
+        this.frontendPluginImpl.postProvision(ctx)
+      );
+    }
   }
 
   public async preDeploy(ctx: PluginContext): Promise<TeamsFxResult> {

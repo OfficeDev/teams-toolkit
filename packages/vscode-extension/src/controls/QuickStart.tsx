@@ -33,7 +33,7 @@ export default class QuickStart extends React.Component<any, any> {
     super(props);
 
     this.state = {
-      currentStep: 1,
+      currentStep: isSupportedNode ? 5 : 6,
       m365Account: undefined,
       azureAccount: undefined,
       stepsDone: [false, false, false, false, false, false],
@@ -246,17 +246,17 @@ export default class QuickStart extends React.Component<any, any> {
               stepCount++;
               return (
                 <GetStartedAction
-                  title={`Build your first Teams app from a sample`}
+                  title={`Build your first Teams app`}
                   content={[
-                    "Explore our sample apps to quickly get started with concepts and code examples.",
+                    "Build a Teams app from the scratch or explore our samples to help you quickly get started with the basic Teams app concepts and code structures.",
                     <br />,
                     <br />,
-                    "You can also create a new project from scratch.",
+                    "You can also create a new project from samples.",
                   ]}
-                  actionText="View all Samples"
-                  onAction={this.viewAllSamples}
-                  secondaryActionText="Create New Project"
-                  onSecondaryAction={this.createNewProject}
+                  actionText="Create New Project"
+                  onAction={this.createNewProject}
+                  secondaryActionText="View all Samples"
+                  onSecondaryAction={this.viewAllSamples}
                   expanded={this.state.currentStep === curStep}
                   onCollapsedCardClicked={this.onCollapsedCardClicked}
                   step={curStep}

@@ -26,6 +26,10 @@ jobs:
       versionSpec: '14.x'
       checkLatest: true
 
+  # Checkout the code
+  - checkout: self
+    persistCredentials: true
+ 
   # Build the project.
   # The way to build the current project depends on how you scaffold it.
   # Different folder structures require different commands set.

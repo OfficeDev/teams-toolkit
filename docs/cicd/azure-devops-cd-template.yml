@@ -70,38 +70,41 @@ jobs:
     #   name: Upload default.userdata as artifact
     #   inputs:
     #     PathtoPublish: '$(Build.ArtifactStagingDirectory)/.fx/default.userdata'
-    #     ArtifactName: 'drop'
+    #     ArtifactName: 'defaultUserData'
     #     publishLocation: 'Container'
-        
-    - name: Generate default.userdata
-      env:
-        USERDATA_TENANT_ID: ${{ secrets.USERDATA_TENANT_ID }}
-        USERDATA_CLIENT_SECRET: ${{ secrets.USERDATA_CLIENT_SECRET }}
-        USERDATA_BOT_PASSWORD: ${{ secrets.USERDATA_BOT_PASSWORD }}
-      run: |
-        [ ! -z "${USERDATA_TENANT_ID}" ] && echo "solution.teamsAppTenantId=${USERDATA_TENANT_ID}" >> .fx/default.userdata
-        [ ! -z "${USERDATA_CLIENT_SECRET}" ] && echo "fx-resource-aad-app-for-teams.clientSecret=${USERDATA_CLIENT_SECRET}" >> .fx/default.userdata
-        [ ! -z "${USERDATA_BOT_PASSWORD}" ] && echo "fx-resource-bot.botPassword=${USERDATA_BOT_PASSWORD}" >> .fx/default.userdata
 
-    - name: Deploy to hosting environment
-      uses: OfficeDev/teamsfx-cli-action@v1
-      with:
+    - task: Bash@3
+      env:
+        USERDATA_TENANT_ID: $(USERDATA_TENANT_ID)
+        USERDATA_CLIENT_SECRET: $(USERDATA_CLIENT_SECRET)
+        USERDATA_BOT_PASSWORD: $(USERDATA_BOT_PASSWORD)
+      inputs:
+        targetType: 'inline'
+        script: |
+          [ ! -z "${USERDATA_TENANT_ID}" ] && echo "solution.teamsAppTenantId=${USERDATA_TENANT_ID}" >> .fx/default.userdata
+          [ ! -z "${USERDATA_CLIENT_SECRET}" ] && echo "fx-resource-aad-app-for-teams.clientSecret=${USERDATA_CLIENT_SECRET}" >> .fx/default.userdata
+          [ ! -z "${USERDATA_BOT_PASSWORD}" ] && echo "fx-resource-bot.botPassword=${USERDATA_BOT_PASSWORD}" >> .fx/default.userdata
+
+    - task: teamsfx-cli-task@0
+      name: Deploy to hosting environment
+      inputs:
         commands: deploy
 
     # This step is to pack the Teams App as zip file,
     # which can be used to be uploaded onto Teams Client for installation.
-    - name: Build Teams App's package
-      uses: OfficeDev/teamsfx-cli-action@v1
-      with:
+    - task: teamsfx-cli-task@0
+      name: Build Teams App's package
+      inputs:
         commands: build
 
-    - name: Upload Teams App's package as artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: appPackage
-        path: ./.fx/appPackage.zip
+    - task: PublishBuildArtifacts@1
+      name: Upload Teams App's package as artifact
+      inputs:
+        PathtoPublish: $(Build.ArtifactStagingDirectory)/.fx/appPackage.zip
+        ArtifactName: 'appPackage'
+        publishLocation: 'Container'
 
-    - name: Publish Teams App
-      uses: OfficeDev/teamsfx-cli-action@v1
-      with:
+    - task: teamsfx-cli-task@0
+      name: Publish Teams App
+      inputs:
         commands: publish

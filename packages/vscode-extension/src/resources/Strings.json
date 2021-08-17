@@ -141,7 +141,11 @@
     },
     "localDebug": {
       "portAlreadyInUse": "Port: %s is already in use. Close this port and try again.",
-      "portsAlreadyInUse": "Ports: %s are already in use. Close these ports and try again."
+      "portsAlreadyInUse": "Ports: %s are already in use. Close these ports and try again.",
+      "sideloadingHintDoNotShowAgain": "Don't Show Again",
+      "openFAQ": "Open FAQ",
+      "sideloadingHintMessage": "If any error occurs during local debug, you can refer to the FAQ page by clicking 'Open FAQ' button.",
+      "npmInstallFailedHintMessage": "Task '%s' failed. Please refer to the '%s' terminal window for detailed error information or click 'Report Issue' button to report the issue."
     },
     "survey": {
       "takeSurvey": {

@@ -31,6 +31,7 @@ import {
   executeUserTaskAdapter,
   generateResourceTemplateAdapter,
   provisionLocalResourceAdapter,
+  provisionResourceAdapter,
 } from "../../utils4v2";
 
 @Service(ResourcePluginsV2.AadPlugin)
@@ -56,14 +57,13 @@ export class AadPluginV2 implements ResourcePlugin {
     provisionTemplate: Json,
     tokenProvider: TokenProvider
   ): Promise<Result<ProvisionOutput, FxError>> {
-    throw new Error("wait another pr to merge");
-    // return await provisionResourceAdapter(
-    //   ctx,
-    //   inputs,
-    //   provisionTemplate,
-    //   tokenProvider,
-    //   this.plugin
-    // );
+    return await provisionResourceAdapter(
+      ctx,
+      inputs,
+      provisionTemplate,
+      tokenProvider,
+      this.plugin
+    );
   }
 
   async configureResource(

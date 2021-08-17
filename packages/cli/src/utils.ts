@@ -28,6 +28,7 @@ import {
 
 import { ConfigNotFoundError, InvalidEnvFile, ReadFileError } from "./error";
 import AzureAccountManager from "./commonlib/azureLogin";
+import { FeatureFlags } from "./constants";
 
 type Json = { [_: string]: any };
 
@@ -385,4 +386,18 @@ export function getVersion(): string {
   const pkgPath = path.resolve(__dirname, "..", "package.json");
   const pkgContent = fs.readJsonSync(pkgPath);
   return pkgContent.version;
+}
+
+// Determine whether feature flag is enabled based on environment variable setting
+export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = false): boolean {
+  const flag = process.env[featureFlagName];
+  if (flag === undefined) {
+    return defaultValue; // allows consumer to set a default value when environment variable not set
+  } else {
+    return flag === "1" || flag.toLowerCase() === "true"; // can enable feature flag by set environment variable value to "1" or "true"
+  }
+}
+
+export function isRemoteCollaborationEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlags.RemoteCollaboration, false);
 }

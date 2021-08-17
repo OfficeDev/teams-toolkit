@@ -78,3 +78,7 @@ export const sqlPasswordQustionName = "sql-password";
 export const sqlPasswordConfirmQuestionName = "sql-confirm-password";
 
 export const deployPluginNodeName = "deploy-plugin";
+
+export class FeatureFlags {
+  static readonly RemoteCollaboration = "TEAMSFX_REMOTE_COL";
+}

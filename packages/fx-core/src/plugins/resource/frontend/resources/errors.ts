@@ -317,6 +317,28 @@ export class InvalidTabLanguageError extends FrontendPluginError {
   }
 }
 
+export class InvalidAuthPluginConfigError extends FrontendPluginError {
+  constructor() {
+    super(
+      ErrorType.User,
+      "InvalidAuthPluginConfigError",
+      "The auth plugin configuration is invalid.",
+      [tips.restoreEnvironment, tips.reProvision]
+    );
+  }
+}
+
+export class InvalidAadPluginConfigError extends FrontendPluginError {
+  constructor() {
+    super(
+      ErrorType.User,
+      "InvalidAadPluginConfigError",
+      "The aad plugin configuration is invalid.",
+      [tips.restoreEnvironment, tips.reProvision]
+    );
+  }
+}
+
 export const UnhandledErrorCode = "UnhandledError";
 export const UnhandledErrorMessage = "Unhandled error.";
 

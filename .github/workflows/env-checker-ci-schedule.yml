@@ -21,8 +21,9 @@ jobs:
       matrix: # TODO: add more versions and cases where Node.js do not exist
         os: [windows-latest, macos-latest, macos-11, ubuntu-latest]
         node-version: [10, 12, 14]
-        func-version: [none]
+        func-version: [none, 2, 3]
         dotnet-version: [none, 3.1.x, 5.0.x]
+      max-parallel: 30
 
     runs-on: ${{ matrix.os }}
 
@@ -67,13 +68,14 @@ jobs:
       - name: Setup project with Retry
         uses: nick-invision/retry@v2
         with:
-          timeout_minutes: 5
+          timeout_minutes: 15
           max_attempts: 3
-          retry_wait_seconds: 3
+          retry_wait_seconds: 10
           on_retry_command: git clean -fXd .
           command: |
-            npm install
-            npx lerna bootstrap --concurrency 1
+            npx lerna exec -- rm -rf node_modules
+            npm run setup --legacy-peer-deps
+
 
       ## In headless Linux CI machines xvfb is required to run VS Code
       ## https://code.visualstudio.com/api/working-with-extensions/continuous-integration#github-actions

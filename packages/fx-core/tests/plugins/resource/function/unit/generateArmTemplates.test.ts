@@ -14,6 +14,7 @@ import {
   DependentPluginInfo,
   FunctionPluginInfo,
 } from "../../../../../src/plugins/resource/function/constants";
+import { MockContext } from "../helper";
 
 chai.use(chaiAsPromised);
 
@@ -23,29 +24,7 @@ describe("FrontendGenerateArmTemplates", () => {
 
   beforeEach(() => {
     functionPlugin = new FunctionPlugin();
-    pluginContext = {
-      configOfOtherPlugins: new Map<string, Map<string, string>>([
-        [
-          DependentPluginInfo.solutionPluginName,
-          new Map<string, string>([
-            [DependentPluginInfo.resourceGroupName, "ut"],
-            [DependentPluginInfo.subscriptionId, "ut"],
-            [DependentPluginInfo.resourceNameSuffix, "ut"],
-          ]),
-        ],
-      ]),
-      app: {
-        name: {
-          short: "ut",
-        },
-      },
-      projectSettings: {
-        appName: "ut",
-        programmingLanguage: "javascript",
-      },
-      config: new Map(),
-      root: path.join(__dirname, "ut"),
-    };
+    pluginContext = MockContext();
   });
 
   it("generate bicep arm templates", async () => {

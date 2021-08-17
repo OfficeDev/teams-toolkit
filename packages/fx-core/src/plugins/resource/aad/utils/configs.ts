@@ -198,12 +198,15 @@ export class SetApplicationInContextConfig {
         ConfigKeysOfOtherPlugin.localDebugTabDomain
       );
     } else {
-      if (isArmSupportEnabled()) {
-        frontendDomain = getArmOutput(ctx, ConfigKeysOfOtherPlugin.frontendHostingDomainArm);
-      } else {
-        frontendDomain = ctx.configOfOtherPlugins
-          .get(Plugins.frontendHosting)
-          ?.get(ConfigKeysOfOtherPlugin.frontendHostingDomain);
+      frontendDomain = ctx.config.get(ConfigKeys.domain);
+      if (!frontendDomain) {
+        if (isArmSupportEnabled()) {
+          frontendDomain = getArmOutput(ctx, ConfigKeysOfOtherPlugin.frontendHostingDomainArm);
+        } else {
+          frontendDomain = ctx.configOfOtherPlugins
+            .get(Plugins.frontendHosting)
+            ?.get(ConfigKeysOfOtherPlugin.frontendHostingDomain);
+        }
       }
     }
 
@@ -262,12 +265,15 @@ export class PostProvisionConfig {
         ConfigKeysOfOtherPlugin.localDebugTabEndpoint
       );
     } else {
-      if (isArmSupportEnabled()) {
-        frontendEndpoint = getArmOutput(ctx, ConfigKeysOfOtherPlugin.frontendHostingEndpointArm);
-      } else {
-        frontendEndpoint = ctx.configOfOtherPlugins
-          .get(Plugins.frontendHosting)
-          ?.get(ConfigKeysOfOtherPlugin.frontendHostingEndpoint);
+      frontendEndpoint = ctx.config.get(ConfigKeys.endpoint);
+      if (!frontendEndpoint) {
+        if (isArmSupportEnabled()) {
+          frontendEndpoint = getArmOutput(ctx, ConfigKeysOfOtherPlugin.frontendHostingEndpointArm);
+        } else {
+          frontendEndpoint = ctx.configOfOtherPlugins
+            .get(Plugins.frontendHosting)
+            ?.get(ConfigKeysOfOtherPlugin.frontendHostingEndpoint);
+        }
       }
     }
 

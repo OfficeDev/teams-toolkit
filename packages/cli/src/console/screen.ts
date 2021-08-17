@@ -186,6 +186,13 @@ export class ScreenManager {
     this.paused = false;
   }
 
+  private wrap(message: string) {
+    if (this.isTTY("out") && message.length > this.streams.out.columns + 10) {
+      return message.substring(0, this.streams.out.columns + 10 - 3) + "...";
+    }
+    return message;
+  }
+
   private setTimer() {
     if (!this.timer && this.rows.length > 0) {
       this.timer = setTimeout(this.refresh.bind(this), 1000 / this.fps);
@@ -237,7 +244,7 @@ export class ScreenManager {
     }
     this.moveCursorDown(-this.cursorY);
     this.rows.forEach((row) => {
-      this.streams.out.write(row.update() + "\n");
+      this.streams.out.write(this.wrap(row.update()) + "\n");
       this.cursorY++;
     });
     readline.clearScreenDown(this.streams.out);

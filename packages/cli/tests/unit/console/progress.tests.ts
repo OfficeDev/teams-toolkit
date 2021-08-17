@@ -86,10 +86,10 @@ describe("Progress", () => {
     instance["currentPercentage"] = 0;
     instance["currentStep"] = 1;
     instance["updatePercentage"]();
-    expect(instance["currentPercentage"]).gt(0).lte(20);
+    expect(instance["currentPercentage"]).gt(0).lte(100);
     instance["currentStep"] = 2;
     instance["updatePercentage"]();
-    expect(instance["currentPercentage"]).gt(5).lte(20);
+    expect(instance["currentPercentage"]).gt(5).lte(100);
   });
 
   it("wholeMessage", () => {

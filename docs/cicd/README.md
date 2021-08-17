@@ -1,6 +1,6 @@
 # CI/CD Support for Teams Application Developers
 
-TeamsFx helps automate your development workflow when buidling a Teams application. These documents provide some templates for you to quickly get started with CI/CD.
+TeamsFx helps automate your development workflow when building a Teams application. These documents provide some templates for you to quickly get started with CI/CD.
 
 |Tools and Templates|Description|
 |---|---|

@@ -25,7 +25,7 @@ export const EnvNode = new QTreeNode({
 export const EnvNodeNoCreate = new QTreeNode({
   type: "text",
   name: "env",
-  title: "select an existing env for the project",
+  title: "Select an existing env for the project",
 });
 
 export const SubscriptionNode = new QTreeNode({

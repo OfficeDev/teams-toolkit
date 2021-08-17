@@ -86,7 +86,7 @@ export default class Preview extends YargsCommand {
       string: true,
     });
     yargs.option("env", {
-      description: "select an existing env for the project",
+      description: "Select an existing env for the project",
       string: true,
     });
 
@@ -169,6 +169,7 @@ export default class Preview extends YargsCommand {
     const inputs: Inputs = {
       projectPath: workspaceFolder,
       platform: Platform.CLI,
+      previewType: "local",
     };
 
     let configResult = await core.getProjectConfig(inputs);

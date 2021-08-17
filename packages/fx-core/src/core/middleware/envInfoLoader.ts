@@ -42,6 +42,9 @@ export function EnvInfoLoaderMW(
       await next();
       return;
     }
+    if (inputs.previewType && inputs.previewType === "local") {
+      isMultiEnvEnabled = false;
+    }
 
     if (!ctx.projectSettings) {
       ctx.result = err(ProjectSettingsUndefinedError());

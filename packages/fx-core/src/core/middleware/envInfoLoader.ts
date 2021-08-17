@@ -136,8 +136,6 @@ export function upgradeProgrammingLanguage(
     // remove programmingLanguage in solution config
     solutionConfig.get(GLOBAL_CONFIG)?.delete(PROGRAMMING_LANGUAGE);
   }
-
-  return [solutionConfig, projectSettings];
 }
 
 export function upgradeDefaultFunctionName(

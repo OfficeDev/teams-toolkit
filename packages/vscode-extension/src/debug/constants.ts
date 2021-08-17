@@ -86,3 +86,11 @@ Add any other context about the problem here.
 export const errorDetail = `
 **Error detail**
 `;
+
+export enum SideloadingHintStateKeys {
+  DoNotShowAgain = "sideloadingHint/doNotShowAgain",
+}
+export const sideloadingHintMessage =
+  "If any error occurs during local debug, you can refer to the FAQ page by clicking 'Open FAQ' button.";
+export const localDebugFAQUrl =
+  "https://github.com/OfficeDev/TeamsFx/blob/dev/docs/fx-core/localdebug-help.md#what-to-do-if-teams-shows-app-not-found-when-the-teams-web-client-is-opened";

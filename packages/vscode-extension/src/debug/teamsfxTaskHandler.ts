@@ -16,6 +16,8 @@ import { errorDetail, issueLink, issueTemplate, npmInstallFailedHintMessage } fr
 import * as StringResources from "../resources/Strings.json";
 import * as util from "util";
 import VsCodeLogInstance from "../commonlib/log";
+import { globalStateGet, globalStateUpdate } from "@microsoft/teamsfx-core";
+import * as constants from "../debug/constants";
 
 interface IRunningTeamsfxTask {
   source: string;
@@ -205,6 +207,29 @@ function onDidStartDebugSessionHandler(event: vscode.DebugSession): void {
           [TelemetryProperty.DebugRemote]: isRemote ? "true" : "false",
           [TelemetryProperty.DebugAppId]: isRemote ? remoteAppId : localAppId,
         });
+
+        if (
+          debugConfig.request === "launch" &&
+          !isRemote &&
+          !globalStateGet(constants.SideloadingHintStateKeys.DoNotShowAgain, false)
+        ) {
+          vscode.window
+            .showInformationMessage(
+              constants.sideloadingHintMessage,
+              StringResources.vsc.localDebug.sideloadingHintDoNotShowAgain,
+              StringResources.vsc.localDebug.openFAQ
+            )
+            .then(async (selected) => {
+              if (selected === StringResources.vsc.localDebug.sideloadingHintDoNotShowAgain) {
+                await globalStateUpdate(constants.SideloadingHintStateKeys.DoNotShowAgain, true);
+              } else if (selected === StringResources.vsc.localDebug.openFAQ) {
+                vscode.commands.executeCommand(
+                  "vscode.open",
+                  vscode.Uri.parse(constants.localDebugFAQUrl)
+                );
+              }
+            });
+        }
       } catch {
         // ignore telemetry error
       }

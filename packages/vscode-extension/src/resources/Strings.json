@@ -141,7 +141,9 @@
     },
     "localDebug": {
       "portAlreadyInUse": "Port: %s is already in use. Close this port and try again.",
-      "portsAlreadyInUse": "Ports: %s are already in use. Close these ports and try again."
+      "portsAlreadyInUse": "Ports: %s are already in use. Close these ports and try again.",
+      "sideloadingHintDoNotShowAgain": "Don't Show Again",
+      "openFAQ": "Open FAQ"
     },
     "survey": {
       "takeSurvey": {

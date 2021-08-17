@@ -45,6 +45,18 @@ $ lsof -i:<port>
 $ kill <process id>
 ```
 
+## What to do if I want to use my own tunneling service instead of the built-in one for Bot or Messaging Extension?
+### Reason
+Since Bot and Messaging Extension requires a public address as the messaging endpoint, ngrok will be used by default to automatically create a tunnel connection forwarding localhost address to public address.
+
+### Mitigation
+To use your own tunneling service, set the following configurations in *.fx/default.userdata* under the project root, then start debugging, like:
+```
+fx-resource-local-debug.skipNgrok=true
+fx-resource-local-debug.localBotEndpoint=https://767787237c6b.ngrok.io
+```
+Please note that the `localBotEndpoint` should use https protocol.
+
 ## What to do if Teams shows "App not found" when the Teams web client is opened?
 ### Error
 
@@ -59,6 +71,17 @@ Please make sure you use the same M365 account. After logging in the correct acc
 
 ![Teams Toolkit M365 Account](../images/fx-core/localdebug/m365-account.png)
 
+## What to do if Teams shows "Something went wrong" when the Teams web client is opened?
+### Error
+
+![Something Went Wrong](../images/fx-core/localdebug/something-went-wrong.png)
+
+### Reason
+This is mainly because there is some error in manifest.
+
+### Mitigationn
+Please [open an issue](https://github.com/OfficeDev/TeamsFx/issues/new/choose) with enough context and information.
+
 ## What to do if Teams shows "Permission needed" when the Teams web client is opened?
 ### Error
 
@@ -70,18 +93,6 @@ This is mainly because the custom app uploading is not turned on for your Teams 
 
 ### Mitigation
 You can follow [this document](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading) to turn it on.
-
-## What to do if I want to use my own tunneling service instead of the built-in one for Bot or Messaging Extension?
-### Reason
-Since Bot and Messaging Extension requires a public address as the messaging endpoint, ngrok will be used by default to automatically create a tunnel connection forwarding localhost address to public address.
-
-### Mitigation
-To use your own tunneling service, set the following configurations in *.fx/default.userdata* under the project root, then start debugging, like:
-```
-fx-resource-local-debug.skipNgrok=true
-fx-resource-local-debug.localBotEndpoint=https://767787237c6b.ngrok.io
-```
-Please note that the `localBotEndpoint` should use https protocol.
 
 ## What to do if I do not want to install the development certificate?
 ### Reason

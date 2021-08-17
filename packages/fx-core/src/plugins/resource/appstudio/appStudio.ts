@@ -37,53 +37,36 @@ export namespace AppStudioClient {
   }
 
   /**
-   * Creates an app registration in app studio with the given configuration and returns the Teams app id.
+   * Creates an app registration in app studio with the given archived file and returns the app definition.
    * @param {IAppDefinition}  appDefinition
    * @param {string}  appStudioToken
    * @param {LogProvider} logProvider
-   * @param {string} colorIconContent - base64 encoded
-   * @param {string} outlineIconContent - base64 encoded
-   * @returns {Promise<IAppDefinition | undefined>}
+   * @returns {Promise<IAppDefinition>}
    */
   export async function createApp(
-    appDefinition: IAppDefinition,
-    appStudioToken: string,
-    logProvider?: LogProvider,
-    colorIconContent?: string,
-    outlineIconContent?: string
-  ): Promise<IAppDefinition | undefined> {
-    if (appDefinition && appStudioToken) {
+    file: Buffer,
+    appStudioToken?: string,
+    logProvider?: LogProvider
+  ): Promise<IAppDefinition> {
+    if (appStudioToken) {
       try {
         const requester = createRequesterWithToken(appStudioToken);
-        const appDef = {
-          ...appDefinition,
-        };
-        // /api/appdefinitions/import accepts icons as Base64-encoded strings.
-        if (colorIconContent) {
-          appDef.colorIcon = colorIconContent;
-        }
-        if (outlineIconContent) {
-          appDef.outlineIcon = outlineIconContent;
-        }
-        const response = await requester.post(`/api/appdefinitions/import`, appDef);
+        const response = await requester.post(`/api/appdefinitions/v2/import`, file, {
+          headers: { "Content-Type": "application/zip" },
+        });
         if (response && response.data) {
           const app = <IAppDefinition>response.data;
           await logProvider?.debug(`recieved data from app studio ${JSON.stringify(app)}`);
-
-          if (app) {
-            return app;
-          }
+          return app;
+        } else {
+          throw new Error(`Cannot create teams app`);
         }
       } catch (e) {
-        if (e instanceof Error) {
-          await logProvider?.warning(`failed to create app due to ${e.name}: ${e.message}`);
-        }
-        return undefined;
+        throw new Error(`Cannot create teams app due to ${e.name}: ${e.message}`);
       }
+    } else {
+      throw new Error("Teams app create failed, invalid app studio token");
     }
-
-    await logProvider?.warning(`invalid appDefinition or appStudioToken`);
-    return undefined;
   }
 
   async function uploadIcon(

@@ -16,7 +16,9 @@ set -euxo pipefail
 apt install -y nodejs npm git
 
 # Checkout the code.
+# Update the placeholder of {RepositoryEndpoint} to your repository's endpoint.
 git clone {RepositoryEndpoint}
+# Update the placeholder of {FolderName} to your repository's folder name after git clone.
 cd {FolderName}
 
 # Install the local dev dependency of @microsoft/teamsfx-cli. 

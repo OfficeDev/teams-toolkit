@@ -11,8 +11,9 @@ set -euxo pipefail
 apt install -y nodejs npm
 
 # Checkout the code.
-# Adapt the placeholders to meet your needs.
+# Update the placeholder of {RepositoryEndpoint} to your repository's endpoint.
 git clone {RepositoryEndpoint}
+# Update the placeholder of {FolderName} to your repository's folder name after git clone.
 cd {FolderName}
 
 # Build the project.

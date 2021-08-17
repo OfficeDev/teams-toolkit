@@ -28,6 +28,9 @@ export class AadAppForTeamsPlugin implements Plugin {
   name = "fx-resource-aad-app-for-teams";
   displayName = "AAD";
   activate(solutionSettings: AzureSolutionSettings): boolean {
+    if (solutionSettings?.migrateFromV1) {
+      return false;
+    }
     return solutionSettings.hostType === HostTypeOptionAzure.id;
   }
 

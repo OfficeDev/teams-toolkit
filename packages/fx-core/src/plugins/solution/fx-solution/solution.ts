@@ -29,6 +29,8 @@ import {
   Inputs,
   DynamicPlatforms,
   SubscriptionInfo,
+  ProjectSettings,
+  SolutionSettings,
 } from "@microsoft/teamsfx-api";
 import { checkSubscription, fillInCommonQuestions } from "./commonQuestions";
 import { executeLifecycles, executeConcurrently, LifecyclesWithContext } from "./executor";
@@ -163,32 +165,34 @@ export class TeamsAppSolution implements Solution {
     return ok({});
   }
 
+  assertSettingsNotEmpty<T>(settings: T | undefined, key: string): Result<T, FxError> {
+    if (!settings) {
+      return err(
+        returnSystemError(new Error(`${key} is undefined`), "Solution", SolutionError.InternelError)
+      );
+    }
+    return ok(settings);
+  }
+
   fillInSolutionSettings(ctx: SolutionContext): Result<AzureSolutionSettings, FxError> {
-    const answers = ctx.answers;
-    if (!answers) {
-      return err(
-        returnSystemError(new Error("answer is undefined"), "Solution", SolutionError.InternelError)
-      );
+    const assertList: [
+      Result<Inputs, FxError>,
+      Result<ProjectSettings, FxError>,
+      Result<SolutionSettings, FxError>
+    ] = [
+      this.assertSettingsNotEmpty<Inputs>(ctx.answers, "answers"),
+      this.assertSettingsNotEmpty<ProjectSettings>(ctx.projectSettings, "projectSettings"),
+      this.assertSettingsNotEmpty<SolutionSettings>(
+        ctx?.projectSettings?.solutionSettings,
+        "solutionSettings"
+      ),
+    ];
+    const assertRes = combine(assertList);
+    if (assertRes.isErr()) {
+      return err(assertRes.error);
     }
-    const projectSettings = ctx.projectSettings;
-    if (!projectSettings) {
-      return err(
-        returnSystemError(
-          new Error("projectSettings is undefined"),
-          "Solution",
-          SolutionError.InternelError
-        )
-      );
-    }
-    if (!projectSettings.solutionSettings) {
-      return err(
-        returnSystemError(
-          new Error("solutionSettings is undefined"),
-          "Solution",
-          SolutionError.InternelError
-        )
-      );
-    }
+    const [answers, projectSettings, solutionSettingsSource] = assertRes.value;
+
     const capabilities = (answers[AzureSolutionQuestionNames.Capabilities] as string[]) || [];
     if (!capabilities || capabilities.length === 0) {
       return err(
@@ -225,12 +229,39 @@ export class TeamsAppSolution implements Solution {
       } else azureResources = [];
     }
     const solutionSettings: AzureSolutionSettings = {
-      name: projectSettings.solutionSettings.name,
-      version: projectSettings.solutionSettings.version,
+      name: solutionSettingsSource.name,
+      version: solutionSettingsSource.version,
       hostType: hostType,
       capabilities: capabilities,
       azureResources: azureResources || [],
       activeResourcePlugins: [],
+    };
+    projectSettings.solutionSettings = solutionSettings;
+    return ok(solutionSettings);
+  }
+
+  fillInV1SolutionSettings(ctx: SolutionContext): Result<AzureSolutionSettings, FxError> {
+    const assertList: [Result<ProjectSettings, FxError>, Result<SolutionSettings, FxError>] = [
+      this.assertSettingsNotEmpty<ProjectSettings>(ctx.projectSettings, "projectSettings"),
+      this.assertSettingsNotEmpty<SolutionSettings>(
+        ctx?.projectSettings?.solutionSettings,
+        "solutionSettings"
+      ),
+    ];
+    const assertRes = combine(assertList);
+    if (assertRes.isErr()) {
+      return err(assertRes.error);
+    }
+    const [projectSettings, solutionSettingsSource] = assertRes.value;
+
+    const solutionSettings: AzureSolutionSettings = {
+      name: solutionSettingsSource.name,
+      version: solutionSettingsSource.version,
+      hostType: HostTypeOptionAzure.id,
+      capabilities: [TabOptionItem.id],
+      azureResources: [],
+      activeResourcePlugins: [],
+      migrateFromV1: solutionSettingsSource?.migrateFromV1,
     };
     projectSettings.solutionSettings = solutionSettings;
     return ok(solutionSettings);
@@ -297,6 +328,45 @@ export class TeamsAppSolution implements Solution {
     return ok(Void);
   }
 
+  // Migrate
+  async migrate(ctx: SolutionContext): Promise<Result<any, FxError>> {
+    ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.MigrateStart, {
+      [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+    });
+
+    // ensure that global namespace is present
+    if (!ctx.config.has(GLOBAL_CONFIG)) {
+      ctx.config.set(GLOBAL_CONFIG, new ConfigMap());
+    }
+
+    // Only non-SPFx project will ask this question.
+    const lang = ctx.answers![AzureSolutionQuestionNames.ProgrammingLanguage] as string;
+    if (lang) {
+      ctx.projectSettings!.programmingLanguage = lang;
+    }
+
+    const settingsRes = this.fillInV1SolutionSettings(ctx);
+    if (settingsRes.isErr()) {
+      return err(
+        sendErrorTelemetryThenReturnError(
+          SolutionTelemetryEvent.Migrate,
+          settingsRes.error,
+          ctx.telemetryReporter
+        )
+      );
+    }
+
+    const solutionSettings = settingsRes.value;
+    //Reload plugins according to user answers
+    await this.reloadPlugins(solutionSettings);
+
+    ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.Migrate, {
+      [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+      [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
+    });
+    return ok(Void);
+  }
+
   reloadPlugins(solutionSettings: AzureSolutionSettings) {
     const res = getActivatedResourcePlugins(solutionSettings);
     solutionSettings.activeResourcePlugins = res.map((p) => p.name);
@@ -317,6 +387,10 @@ export class TeamsAppSolution implements Solution {
   }
 
   async update(ctx: SolutionContext): Promise<Result<any, FxError>> {
+    const v1Blocked = this.blockV1Project(ctx.projectSettings?.solutionSettings);
+    if (v1Blocked.isErr()) {
+      return v1Blocked;
+    }
     return await this.executeAddResource(ctx);
   }
 
@@ -468,6 +542,19 @@ export class TeamsAppSolution implements Solution {
     return !!solutionConfig.get(GLOBAL_CONFIG)?.getBoolean(SOLUTION_PROVISION_SUCCEEDED);
   }
 
+  private blockV1Project(solutionSettings: SolutionSettings | undefined): Result<any, FxError> {
+    if (solutionSettings?.migrateFromV1) {
+      return err(
+        returnUserError(
+          new Error("Command is not supported in Teams Toolkit V1 Project"),
+          "Solution",
+          SolutionError.V1ProjectNotSupported
+        )
+      );
+    }
+    return ok(null);
+  }
+
   /**
    * Provision resources. It can only run in a non-SPFx project when solution's running state is Idle.
    * Solution's provisionSucceeded config value will be set to true if provision succeeds, to false otherwise.
@@ -475,6 +562,11 @@ export class TeamsAppSolution implements Solution {
    */
   @hooks([ErrorHandlerMW])
   async provision(ctx: SolutionContext): Promise<Result<any, FxError>> {
+    const v1Blocked = this.blockV1Project(ctx.projectSettings?.solutionSettings);
+    if (v1Blocked.isErr()) {
+      return v1Blocked;
+    }
+
     const canProvision = this.checkWhetherSolutionIsIdle();
     if (canProvision.isErr()) {
       return canProvision;
@@ -666,6 +758,11 @@ export class TeamsAppSolution implements Solution {
 
   @hooks([ErrorHandlerMW])
   async deploy(ctx: SolutionContext): Promise<Result<any, FxError>> {
+    const v1Blocked = this.blockV1Project(ctx.projectSettings?.solutionSettings);
+    if (v1Blocked.isErr()) {
+      return v1Blocked;
+    }
+
     const isAzureProject = this.isAzureProject(ctx);
     const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
     if (isAzureProject && !provisioned) {
@@ -770,6 +867,11 @@ export class TeamsAppSolution implements Solution {
   }
   @hooks([ErrorHandlerMW])
   async publish(ctx: SolutionContext): Promise<Result<any, FxError>> {
+    const v1Blocked = this.blockV1Project(ctx.projectSettings?.solutionSettings);
+    if (v1Blocked.isErr()) {
+      return v1Blocked;
+    }
+
     const checkRes = this.checkWhetherSolutionIsIdle();
     if (checkRes.isErr()) return err(checkRes.error);
     const isAzureProject = this.isAzureProject(ctx);
@@ -932,8 +1034,16 @@ export class TeamsAppSolution implements Solution {
       const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
       programmingLanguage.condition = { minItems: 1 };
       capNode.addChild(programmingLanguage);
+    } else if (stage == Stage.migrateV1) {
+      const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
+      programmingLanguage.condition = { minItems: 1 };
+      node.addChild(programmingLanguage);
     } else if (stage === Stage.provision) {
       if (isDynamicQuestion) {
+        const v1Blocked = this.blockV1Project(ctx.projectSettings?.solutionSettings);
+        if (v1Blocked.isErr()) {
+          return v1Blocked;
+        }
         const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
         if (provisioned) return ok(undefined);
       }
@@ -963,6 +1073,11 @@ export class TeamsAppSolution implements Solution {
       }
     } else if (stage === Stage.deploy) {
       if (isDynamicQuestion) {
+        const v1Blocked = this.blockV1Project(ctx.projectSettings?.solutionSettings);
+        if (v1Blocked.isErr()) {
+          return v1Blocked;
+        }
+
         const isAzureProject = this.isAzureProject(ctx);
         const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
         if (isAzureProject && !provisioned) {
@@ -1032,6 +1147,10 @@ export class TeamsAppSolution implements Solution {
       }
     } else if (stage === Stage.publish) {
       if (isDynamicQuestion) {
+        const v1Blocked = this.blockV1Project(ctx.projectSettings?.solutionSettings);
+        if (v1Blocked.isErr()) {
+          return v1Blocked;
+        }
         const isAzureProject = this.isAzureProject(ctx);
         const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
         if (isAzureProject && !provisioned) {
@@ -1237,6 +1356,11 @@ export class TeamsAppSolution implements Solution {
     func: Func,
     ctx: SolutionContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
+    const v1Blocked = this.blockV1Project(ctx.projectSettings?.solutionSettings);
+    if (v1Blocked.isErr()) {
+      return v1Blocked;
+    }
+
     const isDynamicQuestion = DynamicPlatforms.includes(ctx.answers!.platform!);
     const settings = this.getAzureSolutionSettings(ctx);
 
@@ -1347,6 +1471,11 @@ export class TeamsAppSolution implements Solution {
   async getQuestionsForAddCapability(
     ctx: SolutionContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
+    const v1Blocked = this.blockV1Project(ctx.projectSettings?.solutionSettings);
+    if (v1Blocked.isErr()) {
+      return v1Blocked;
+    }
+
     const isDynamicQuestion = DynamicPlatforms.includes(ctx.answers!.platform!);
     const settings = this.getAzureSolutionSettings(ctx);
 

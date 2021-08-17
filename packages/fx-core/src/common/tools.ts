@@ -384,6 +384,7 @@ export function validateSettings(projectSettings?: ProjectSettings): string | un
   const capabilities = solutionSettings.capabilities || [];
   const azureResources = solutionSettings.azureResources || [];
   const plugins = solutionSettings.activeResourcePlugins || [];
+  const v1 = solutionSettings?.migrateFromV1;
   // if(!configJson[PluginNames.LDEBUG]) return "local debug config is missing";
   if (!plugins.includes(PluginNames.LDEBUG))
     return `${PluginNames.LDEBUG} setting is missing in settings.json`;
@@ -394,15 +395,15 @@ export function validateSettings(projectSettings?: ProjectSettings): string | un
   } else {
     if (capabilities.includes(TabOptionItem.id)) {
       // if(!configJson[PluginNames.FE]) return "Frontend hosting config is missing";
-      if (!plugins.includes(PluginNames.FE))
+      if (!plugins.includes(PluginNames.FE) && !v1)
         return `${PluginNames.FE} setting is missing in settings.json`;
 
       // if(!configJson[PluginNames.AAD]) return "AAD config is missing";
-      if (!plugins.includes(PluginNames.AAD))
+      if (!plugins.includes(PluginNames.AAD) && !v1)
         return `${PluginNames.AAD} setting is missing in settings.json`;
 
       // if(!configJson[PluginNames.SA]) return "Simple auth config is missing";
-      if (!plugins.includes(PluginNames.SA))
+      if (!plugins.includes(PluginNames.SA) && !v1)
         return `${PluginNames.SA} setting is missing in settings.json`;
     }
     if (capabilities.includes(BotOptionItem.id)) {

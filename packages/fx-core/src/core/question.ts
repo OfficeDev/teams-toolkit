@@ -16,6 +16,7 @@ import { environmentManager } from "./environment";
 export enum CoreQuestionNames {
   AppName = "app-name",
   Folder = "folder",
+  V1ProjectFolder = "v1-project-folder",
   Solution = "solution",
   CreateFromScratch = "scratch",
   Samples = "samples",
@@ -56,6 +57,12 @@ export const QuestionRootFolder: FolderQuestion = {
   type: "folder",
   name: CoreQuestionNames.Folder,
   title: "Workspace folder",
+};
+
+export const QuestionV1ProjectFolder: FolderQuestion = {
+  type: "folder",
+  name: CoreQuestionNames.V1ProjectFolder,
+  title: "Teams Toolkit V1 Project Folder",
 };
 
 export const QuestionSelectTargetEnvironment: SingleSelectQuestion = {

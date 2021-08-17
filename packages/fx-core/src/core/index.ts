@@ -48,6 +48,7 @@ import {
   ScratchOptionNo,
   ScratchOptionYes,
   getCreateNewOrFromSampleQuestion,
+  QuestionV1ProjectFolder,
 } from "./question";
 import * as jsonschema from "jsonschema";
 import AdmZip from "adm-zip";
@@ -62,7 +63,9 @@ import {
   FetchSampleError,
   FunctionRouterError,
   InvalidInputError,
+  MigrateNotImplementError,
   ProjectFolderExistError,
+  ProjectFolderNotExistError,
   TaskNotSupportError,
   WriteFileError,
 } from "./error";
@@ -187,6 +190,80 @@ export class FxCore implements Core {
       ctx!.solution = solution;
       ctx!.solutionContext = solutionContext;
     }
+
+    if (inputs.platform === Platform.VSCode) {
+      await globalStateUpdate(globalStateDescription, true);
+    }
+
+    return ok(projectPath);
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    QuestionModelMW,
+    ContextInjecterMW,
+    ProjectSettingsWriterMW,
+    EnvInfoWriterMW,
+  ])
+  async migrateV1Project(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
+    const globalStateDescription = "openReadme";
+
+    const appName = inputs[QuestionAppName.name] as string;
+    if (undefined === appName) return err(InvalidInputError(`App Name is empty`, inputs));
+
+    const validateResult = jsonschema.validate(appName, {
+      pattern: ProjectNamePattern,
+    });
+    if (validateResult.errors && validateResult.errors.length > 0) {
+      return err(InvalidInputError(`${validateResult.errors[0].message}`, inputs));
+    }
+
+    const projectPath = inputs[QuestionV1ProjectFolder.name] as string;
+    const folderExist = await fs.pathExists(projectPath);
+    if (!folderExist) {
+      return err(ProjectFolderNotExistError(projectPath));
+    }
+
+    inputs.projectPath = projectPath;
+    const solution = await defaultSolutionLoader.loadSolution(inputs);
+    const projectSettings: ProjectSettings = {
+      appName: appName,
+      projectId: uuid.v4(),
+      solutionSettings: {
+        name: solution.name,
+        version: "1.0.0",
+        migrateFromV1: true,
+      },
+    };
+
+    const solutionContext: SolutionContext = {
+      projectSettings: projectSettings,
+      config: new Map<string, PluginConfig>(),
+      root: projectPath,
+      ...this.tools,
+      ...this.tools.tokenProvider,
+      answers: inputs,
+    };
+
+    await fs.ensureDir(projectPath);
+    await fs.ensureDir(path.join(projectPath, `.${ConfigFolderName}`));
+    await fs.ensureDir(path.join(projectPath, `${AppPackageFolderName}`));
+
+    if (!solution.migrate) {
+      return err(MigrateNotImplementError(projectPath));
+    }
+    const migrateV1Res = await solution.migrate(solutionContext);
+    if (migrateV1Res.isErr()) {
+      return migrateV1Res;
+    }
+
+    const scaffoldRes = await solution.scaffold(solutionContext);
+    if (scaffoldRes.isErr()) {
+      return scaffoldRes;
+    }
+
+    ctx!.solution = solution;
+    ctx!.solutionContext = solutionContext;
 
     if (inputs.platform === Platform.VSCode) {
       await globalStateUpdate(globalStateDescription, true);
@@ -593,6 +670,29 @@ export class FxCore implements Core {
     sampleNode.condition = { equals: ScratchOptionNo.id };
     sampleNode.addChild(new QTreeNode(QuestionRootFolder));
 
+    return ok(node.trim());
+  }
+
+  async _getQuestionsForMigrateV1Project(
+    inputs: Inputs
+  ): Promise<Result<QTreeNode | undefined, FxError>> {
+    const node = new QTreeNode({ type: "group" });
+    node.addChild(new QTreeNode(QuestionV1ProjectFolder));
+    node.addChild(new QTreeNode(QuestionAppName));
+    const globalSolutions: Solution[] = await defaultSolutionLoader.loadGlobalSolutions(inputs);
+    const solutionContext = await newSolutionContext(this.tools, inputs);
+
+    for (const v of globalSolutions) {
+      if (v.getQuestions) {
+        const res = await v.getQuestions(Stage.migrateV1, solutionContext);
+        if (res.isErr()) return res;
+        if (res.value) {
+          const solutionNode = res.value as QTreeNode;
+          solutionNode.condition = { equals: v.name };
+          if (solutionNode.data) node.addChild(solutionNode);
+        }
+      }
+    }
     return ok(node.trim());
   }
 

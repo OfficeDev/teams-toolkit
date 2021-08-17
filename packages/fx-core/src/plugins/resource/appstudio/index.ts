@@ -39,6 +39,9 @@ export class AppStudioPlugin implements Plugin {
   name = "fx-resource-appstudio";
   displayName = "App Studio";
   activate(solutionSettings: AzureSolutionSettings): boolean {
+    if (solutionSettings?.migrateFromV1) {
+      return false;
+    }
     return true;
   }
   private appStudioPluginImpl = new AppStudioPluginImpl();

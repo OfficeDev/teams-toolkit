@@ -4,14 +4,12 @@
 "use strict";
 
 import AdmZip from "adm-zip";
-import axios from "axios";
 import fs from "fs-extra";
 import path from "path";
 import { Argv, Options } from "yargs";
-import * as uuid from "uuid";
-import { glob } from "glob";
 
 import { FxError, err, ok, Result, Question, LogLevel, Stage } from "@microsoft/teamsfx-api";
+import { downloadSampleHook, fetchCodeZip, saveFilesRecursively } from "@microsoft/teamsfx-core";
 
 import activate from "../activate";
 import * as constants from "../constants";
@@ -143,9 +141,12 @@ class NewTemplete extends YargsCommand {
       return err(ProjectFolderExist(sampleAppFolder));
     }
 
-    const result = await this.fetchCodeZip(template.sampleAppUrl);
-    await this.saveFilesRecursively(new AdmZip(result.data), template.sampleAppName, folder);
-    await this.downloadSampleHook(templateName, sampleAppFolder);
+    const result = await fetchCodeZip(template.sampleAppUrl);
+    if (!result) {
+      throw SampleAppDownloadFailed(template.sampleAppUrl, new Error());
+    }
+    await saveFilesRecursively(new AdmZip(result.data), template.sampleAppName, folder);
+    await downloadSampleHook(templateName, sampleAppFolder);
     CLILogProvider.necessaryLog(
       LogLevel.Info,
       `Downloaded the '${CLILogProvider.white(
@@ -158,56 +159,6 @@ class NewTemplete extends YargsCommand {
       [TelemetryProperty.SampleName]: templateName,
     });
     return ok(null);
-  }
-
-  private async fetchCodeZip(url: string) {
-    try {
-      const result = await axios.get(url, {
-        responseType: "arraybuffer",
-      });
-      if (result.status === 200 || result.status === 201) {
-        return result;
-      }
-      throw SampleAppDownloadFailed(url, new Error(result.statusText));
-    } catch (e) {
-      throw SampleAppDownloadFailed(url, e);
-    }
-  }
-
-  private async saveFilesRecursively(
-    zip: AdmZip,
-    appFolder: string,
-    dstPath: string
-  ): Promise<void> {
-    await Promise.all(
-      zip
-        .getEntries()
-        .filter((entry) => !entry.isDirectory && entry.entryName.includes(appFolder))
-        .map(async (entry) => {
-          const entryPath = entry.entryName.substring(entry.entryName.indexOf("/") + 1);
-          const filePath = path.join(dstPath, entryPath);
-          await fs.ensureDir(path.dirname(filePath));
-          await fs.writeFile(filePath, entry.getData());
-        })
-    );
-  }
-
-  private async downloadSampleHook(sampleId: string, sampleAppPath: string) {
-    // A temporary solution to avoid duplicate componentId
-    if (sampleId === "todo-list-SPFx") {
-      const originalId = "c314487b-f51c-474d-823e-a2c3ec82b1ff";
-      const componentId = uuid.v4();
-      glob.glob(`${sampleAppPath}/**/*.json`, { nodir: true, dot: true }, async (err, files) => {
-        await Promise.all(
-          files.map(async (file) => {
-            let content = (await fs.readFile(file)).toString();
-            const reg = new RegExp(originalId, "g");
-            content = content.replace(reg, componentId);
-            await fs.writeFile(file, content);
-          })
-        );
-      });
-    }
   }
 }
 

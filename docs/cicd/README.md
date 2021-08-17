@@ -15,7 +15,7 @@ To add these templates to your repository, you will need your versions of [githu
 ### Customize CI Workflow
 There are some potential changes you can make to adapt your project:
 
-1. Change how the CI flow is triggered. We default it to when pull request is created targeting dev branch.
+1. Change how the CI flow is triggered. We default to when a pull request is created targeting the `dev` branch.
 1. Ensure you have an npm build script, or customize the way you build in the automation code.
 1. Ensure you have an npm test script which returns zero for success, and/or change the test commands.
 
@@ -29,10 +29,10 @@ You may want to change:
 > Note: The provision step is expected to run separately by hand or by workflow. Please remember to commit after provisioning (results of provisioning will be deposited inside the `.fx` folder) and save required secrets into GitHub secrets to generate file `default.userdata`.
 
 ### Environment Variables
-Steps to create environment variables:
-1. In the project `Setting` page, navigate to `Environments` section and click `New environment`.
+Steps to create environment variables in GitHub:
+1. In the project `Settings` page, navigate to `Environments` section and click `New environment`.
 1. Enter a name for your environment. The default environment name provided in the template is `test_environment`. Click `Configure environment` to proceed.
-1. In the next page, click `Add Secret` to add secrets for each of the item listed in the below table.
+1. In the next page, click `Add Secret` to add secrets for each of the items listed in the table below.
 
 |Name|Description|
 |---|---|

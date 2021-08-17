@@ -86,7 +86,7 @@ export default class Preview extends YargsCommand {
       string: true,
     });
     yargs.option("env", {
-      description: "select an existed env for the project",
+      description: "select an existing env for the project",
       string: true,
     });
 

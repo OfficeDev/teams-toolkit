@@ -72,6 +72,7 @@ import { FuncPluginAdapter } from "./utils/depsChecker/funcPluginAdapter";
 import { funcPluginLogger } from "./utils/depsChecker/funcPluginLogger";
 import { FuncPluginTelemetry } from "./utils/depsChecker/funcPluginTelemetry";
 import { TelemetryHelper } from "./utils/telemetry-helper";
+import { functionNameQuestion } from "./question";
 
 type Site = WebSiteManagementModels.Site;
 type AppServicePlan = WebSiteManagementModels.AppServicePlan;
@@ -230,13 +231,6 @@ export class FunctionPluginImpl {
     });
 
     if (func.method === "addResource") {
-      const functionNameQuestion: TextInputQuestion = {
-        name: QuestionKey.functionName,
-        title: InfoMessages.askFunctionName,
-        type: "text",
-        default: ctx.projectSettings?.defaultFunctionName ?? DefaultValues.functionName,
-      };
-
       functionNameQuestion.validation = {
         validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
           const workingPath: string = this.getFunctionProjectRootPath(ctx);

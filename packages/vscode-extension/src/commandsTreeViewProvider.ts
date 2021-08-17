@@ -145,6 +145,15 @@ class TreeViewManager {
         undefined,
         { name: "publish", custom: true }
       ),
+      new TreeViewCommand(
+        StringResources.vsc.commandsTreeViewProvider.cicdGuideTitle,
+        StringResources.vsc.commandsTreeViewProvider.cicdGuideDescription,
+        "fx-extension.cicdGuide",
+        vscode.TreeItemCollapsibleState.None,
+        undefined,
+        undefined,
+        { name: "sync", custom: false }
+      ),
     ];
 
     const projectProvider = new CommandsTreeViewProvider(projectTreeViewCommand);
@@ -320,6 +329,15 @@ class TreeViewManager {
         undefined,
         undefined,
         { name: "developerPortal", custom: true }
+      ),
+      new TreeViewCommand(
+        StringResources.vsc.commandsTreeViewProvider.cicdGuideTitle,
+        StringResources.vsc.commandsTreeViewProvider.cicdGuideDescription,
+        "fx-extension.cicdGuide",
+        vscode.TreeItemCollapsibleState.None,
+        undefined,
+        undefined,
+        { name: "sync", custom: false }
       ),
     ];
     const deployProvider = new CommandsTreeViewProvider(deployCommand);

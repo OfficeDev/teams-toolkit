@@ -41,4 +41,7 @@ export enum Stage {
   switchEnv = "switchEnv",
   userTask = "userTask",
   update = "update", //never used again except APIM just for reference
+  grantPermission = "grantPermission",
+  checkPermission = "checkPermission",
+  listCollaborator = "listCollaborator",
 }

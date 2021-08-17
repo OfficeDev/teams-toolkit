@@ -414,9 +414,8 @@ export class LocalDebugPlugin implements Plugin {
 
       if (includeBackend) {
         localEnvs[LocalEnvFrontendKeys.FuncEndpoint] = localFuncEndpoint;
-        localEnvs[LocalEnvFrontendKeys.FuncName] = ctx.configOfOtherPlugins
-          .get(FunctionPlugin.Name)
-          ?.get(FunctionPlugin.DefaultFunctionName) as string;
+        localEnvs[LocalEnvFrontendKeys.FuncName] = ctx.projectSettings
+          ?.defaultFunctionName as string;
         localEnvs[LocalEnvBackendKeys.FuncWorkerRuntime] = "node";
 
         // function local envs

@@ -277,7 +277,30 @@ export function getLocalTeamsAppId(rootfolder: string | undefined): any {
     if (result.isErr()) {
       throw result.error;
     }
-    return result.value.solution.localDebugTeamsAppId;
+
+    // get final setting value from env.xxx.json and xxx.userdata
+    // Note: this is a workaround and need to be updated after multi-env
+    try {
+      const settingValue = result.value.solution.localDebugTeamsAppId as string;
+      if (settingValue && settingValue.startsWith("{{") && settingValue.endsWith("}}")) {
+        // setting in env.xxx.json is place holder and need to get actual value from xxx.userdata
+        const placeHolder = settingValue.replace("{{", "").replace("}}", "");
+        const userdataPath = getConfigPath(rootfolder, `${getActiveEnv()}.userdata`);
+        if (fs.existsSync(userdataPath)) {
+          const userdata = fs.readFileSync(userdataPath, "utf8");
+          const userEnv = dotenv.parse(userdata);
+          return userEnv[placeHolder];
+        } else {
+          // in collaboration scenario, userdata may not exist
+          return undefined;
+        }
+      }
+
+      return settingValue;
+    } catch {
+      // in case structure changes
+      return undefined;
+    }
   }
 
   return undefined;
@@ -300,11 +323,13 @@ export function getProjectId(rootfolder: string | undefined): any {
   return undefined;
 }
 
-export function getSystemInputs(projectPath?: string): Inputs {
+export function getSystemInputs(projectPath?: string, env?: string, previewType?: string): Inputs {
   const systemInputs: Inputs = {
     platform: Platform.CLI,
     projectPath: projectPath,
     correlationId: uuid.v4(),
+    env: env,
+    previewType: previewType,
   };
   return systemInputs;
 }

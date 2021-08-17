@@ -123,6 +123,18 @@ class EnvironmentManager {
     return ok(envNames);
   }
 
+  public async checkEnvExist(projectPath: string, env: string): Promise<Result<boolean, FxError>> {
+    const envList = await environmentManager.listEnvProfiles(projectPath);
+    if (envList.isErr()) {
+      return err(envList.error);
+    }
+    if (envList.value?.indexOf(env) >= 0) {
+      return ok(true);
+    } else {
+      return ok(false);
+    }
+  }
+
   public getEnvFilesPath(envName: string, projectPath: string): EnvFiles {
     const basePath = this.getConfigFolder(projectPath);
     const envProfile = path.resolve(basePath, `env.${envName}.json`);

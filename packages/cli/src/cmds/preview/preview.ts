@@ -85,6 +85,10 @@ export default class Preview extends YargsCommand {
       array: false,
       string: true,
     });
+    yargs.option("env", {
+      description: "Select an existing env for the project",
+      string: true,
+    });
 
     return yargs.version(false);
   }
@@ -136,7 +140,7 @@ export default class Preview extends YargsCommand {
       const result =
         previewType === "local"
           ? await this.localPreview(workspaceFolder, browser)
-          : await this.remotePreview(workspaceFolder, browser);
+          : await this.remotePreview(workspaceFolder, browser, args.env as any);
       if (result.isErr()) {
         throw result.error;
       }
@@ -165,6 +169,7 @@ export default class Preview extends YargsCommand {
     const inputs: Inputs = {
       projectPath: workspaceFolder,
       platform: Platform.CLI,
+      previewType: "local",
     };
 
     let configResult = await core.getProjectConfig(inputs);
@@ -491,7 +496,8 @@ export default class Preview extends YargsCommand {
 
   private async remotePreview(
     workspaceFolder: string,
-    browser: constants.Browser
+    browser: constants.Browser,
+    env: string | undefined
   ): Promise<Result<null, FxError>> {
     /* === get remote teams app id === */
     const coreResult = await activate();
@@ -503,6 +509,7 @@ export default class Preview extends YargsCommand {
     const inputs: Inputs = {
       projectPath: workspaceFolder,
       platform: Platform.CLI,
+      env: env,
     };
 
     const configResult = await core.getProjectConfig(inputs);

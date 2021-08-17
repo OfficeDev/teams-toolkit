@@ -13,6 +13,7 @@ import {
   Context,
   DeploymentInputs,
   PluginName,
+  ProvisionInputs,
   ProvisionOutput,
   ResourcePlugin,
   ResourceTemplate,
@@ -57,7 +58,7 @@ export class FrontendPluginV2 implements ResourcePlugin {
 
   async configureResource(
     ctx: Context,
-    inputs: Inputs,
+    inputs: Readonly<ProvisionInputs>,
     provisionOutput: Readonly<ProvisionOutput>,
     provisionOutputOfOtherPlugins: Readonly<Record<PluginName, ProvisionOutput>>,
     tokenProvider: TokenProvider

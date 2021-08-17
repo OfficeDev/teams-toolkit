@@ -272,20 +272,6 @@ export class TeamsAppSolution implements Solution {
     //Reload plugins according to user answers
     await this.reloadPlugins(solutionSettings);
 
-    const templatesFolder = getTemplatesFolder();
-    const defaultColorPath = path.join(templatesFolder, "plugins", "solution", "defaultIcon.png");
-    const defaultOutlinePath = path.join(
-      templatesFolder,
-      "plugins",
-      "solution",
-      "defaultOutline.png"
-    );
-
-    await fs.copy(defaultColorPath, `${ctx.root}/${AppPackageFolderName}/color.png`);
-    await fs.copy(defaultOutlinePath, `${ctx.root}/${AppPackageFolderName}/outline.png`);
-    // await fs.copy(defaultColorPath, `${ctx.root}/.${ConfigFolderName}/color.png`);
-    // await fs.copy(defaultOutlinePath, `${ctx.root}/.${ConfigFolderName}/outline.png`);
-
     if (this.isAzureProject(ctx)) {
       await fs.writeJSON(`${ctx.root}/permissions.json`, DEFAULT_PERMISSION_REQUEST, { spaces: 4 });
       ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.Create, {
@@ -371,9 +357,6 @@ export class TeamsAppSolution implements Solution {
       const azureResources = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
         .azureResources;
       await scaffoldReadmeAndLocalSettings(capabilities, azureResources, ctx.root);
-
-      // remove local debug config from env info
-      ctx.config.delete(PluginNames.LDEBUG);
     }
 
     if (isArmSupportEnabled()) {
@@ -1146,6 +1129,21 @@ export class TeamsAppSolution implements Solution {
     return ok(Void);
   }
 
+  @hooks([ErrorHandlerMW])
+  async grantPermission(ctx: SolutionContext): Promise<Result<any, FxError>> {
+    return ok(Void);
+  }
+
+  @hooks([ErrorHandlerMW])
+  async checkPermission(ctx: SolutionContext): Promise<Result<any, FxError>> {
+    return ok(Void);
+  }
+
+  @hooks([ErrorHandlerMW])
+  async listCollaborator(ctx: SolutionContext): Promise<Result<any, FxError>> {
+    return ok(Void);
+  }
+
   private parseTeamsAppTenantId(appStudioToken?: object): Result<string, FxError> {
     if (appStudioToken === undefined) {
       return err(
@@ -1693,11 +1691,11 @@ export class TeamsAppSolution implements Solution {
       } else if (method === "validateManifest") {
         const appStudioPlugin = this.AppStudioPlugin as AppStudioPlugin;
         const pluginCtx = getPluginContext(ctx, appStudioPlugin.name);
-        return await appStudioPlugin.validateManifest(pluginCtx);
+        return await appStudioPlugin.executeUserTask(func, pluginCtx);
       } else if (method === "buildPackage") {
         const appStudioPlugin = this.AppStudioPlugin as AppStudioPlugin;
         const pluginCtx = getPluginContext(ctx, appStudioPlugin.name);
-        return await appStudioPlugin.buildTeamsPackage(pluginCtx);
+        return await appStudioPlugin.executeUserTask(func, pluginCtx);
       } else if (array.length == 2) {
         const pluginName = array[1];
         const pluginMap = getAllResourcePluginMap();
@@ -1907,10 +1905,17 @@ export class TeamsAppSolution implements Solution {
     const manifest: TeamsAppManifest = JSON.parse(manifestStr);
     await fs.writeFile(manifestPath, manifestStr);
     const appStudioPlugin: AppStudioPlugin = this.AppStudioPlugin as any;
-    const maybeTeamsAppId = await appStudioPlugin.getAppDefinitionAndUpdate(
-      getPluginContext(ctx, this.AppStudioPlugin.name),
-      "remote",
-      manifest
+    const func: Func = {
+      namespace: `${PluginNames.SOLUTION}/${PluginNames.APPST}`,
+      method: "getAppDefinitionAndUpdate",
+      params: {
+        type: "remote",
+        manifest: manifest,
+      },
+    };
+    const maybeTeamsAppId = await appStudioPlugin.executeUserTask(
+      func,
+      getPluginContext(ctx, this.AppStudioPlugin.name)
     );
     if (maybeTeamsAppId.isErr()) {
       return err(maybeTeamsAppId.error);

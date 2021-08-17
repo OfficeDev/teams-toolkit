@@ -333,22 +333,40 @@ export class AppStudioPluginImpl {
 
   public async scaffold(ctx: PluginContext): Promise<any> {
     let manifest: TeamsAppManifest | undefined;
+    const templatesFolder = getTemplatesFolder();
+
     if (this.isSPFxProject(ctx)) {
-      const templateManifestFolder = path.join(getTemplatesFolder(), "plugins", "resource", "spfx");
+      const templateManifestFolder = path.join(templatesFolder, "plugins", "resource", "spfx");
       const manifestFile = path.resolve(templateManifestFolder, "./solution/manifest.json");
       const manifestString = (await fs.readFile(manifestFile)).toString();
       manifest = JSON.parse(manifestString);
     } else {
       manifest = await this.createManifest(ctx.projectSettings!);
     }
-    // await fs.writeFile(
-    //   `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`,
-    //   JSON.stringify(manifest, null, 4)
-    // );
+
     await fs.writeFile(
       `${ctx.root}/${AppPackageFolderName}/${REMOTE_MANIFEST}`,
       JSON.stringify(manifest, null, 4)
     );
+
+    const defaultColorPath = path.join(
+      templatesFolder,
+      "plugins",
+      "resource",
+      "appstudio",
+      "defaultIcon.png"
+    );
+    const defaultOutlinePath = path.join(
+      templatesFolder,
+      "plugins",
+      "resource",
+      "appstudio",
+      "defaultOutline.png"
+    );
+
+    await fs.copy(defaultColorPath, `${ctx.root}/${AppPackageFolderName}/color.png`);
+    await fs.copy(defaultOutlinePath, `${ctx.root}/${AppPackageFolderName}/outline.png`);
+
     return undefined;
   }
 
@@ -761,12 +779,15 @@ export class AppStudioPluginImpl {
   > {
     let tabEndpoint, tabDomain;
     if (isArmSupportEnabled()) {
-      if (localDebug) {
+      // getConfigForCreatingManifest is called in post-provision and validate manifest
+      // only in post stage, we find the value from arm output.
+      // Here is a walk-around way, try to get from arm output first and then get from ctx config.
+      // todo: use the specific function to read config in post stage.
+      tabEndpoint = getArmOutput(ctx, FRONTEND_ENDPOINT_ARM) as string;
+      tabDomain = getArmOutput(ctx, FRONTEND_DOMAIN_ARM) as string;
+      if (!tabEndpoint) {
         tabEndpoint = this.getTabEndpoint(ctx, localDebug);
         tabDomain = this.getTabDomain(ctx, localDebug);
-      } else {
-        tabEndpoint = getArmOutput(ctx, FRONTEND_ENDPOINT_ARM) as string;
-        tabDomain = getArmOutput(ctx, FRONTEND_DOMAIN_ARM) as string;
       }
     } else {
       tabEndpoint = this.getTabEndpoint(ctx, localDebug);

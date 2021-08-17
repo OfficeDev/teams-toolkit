@@ -106,6 +106,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
         version: "1.0",
         activeResourcePlugins: [fehostPlugin.name],
         capabilities: [TabOptionItem.id],
+        azureResources: [],
       },
     };
     mockScaffoldThatAlwaysSucceed(fehostPlugin);
@@ -127,6 +128,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
         version: "1.0",
         activeResourcePlugins: [fehostPlugin.name, botPlugin.name],
         capabilities: [TabOptionItem.id, BotOptionItem.id],
+        azureResources: [],
       },
     };
     mockScaffoldThatAlwaysSucceed(fehostPlugin);
@@ -150,6 +152,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
         version: "1.0",
         activeResourcePlugins: [fehostPlugin.name, botPlugin.name],
         capabilities: [TabOptionItem.id, MessageExtensionItem.id],
+        azureResources: [],
       },
     };
     mockScaffoldThatAlwaysSucceed(fehostPlugin);
@@ -178,6 +181,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
         version: "1.0",
         activeResourcePlugins: [simpleAuthPlugin.name],
         capabilities: [TabOptionItem.id],
+        azureResources: [],
       },
     };
     mockScaffoldThatAlwaysSucceed(fehostPlugin);
@@ -226,6 +230,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
         version: "1.0",
         activeResourcePlugins: [spfxPlugin.name],
         capabilities: [TabOptionItem.id],
+        azureResources: [],
       },
     };
     mockScaffoldThatAlwaysSucceed(spfxPlugin);

@@ -349,11 +349,18 @@ export class AppStudioPluginImpl {
       JSON.stringify(manifest, null, 4)
     );
 
-    const defaultColorPath = path.join(templatesFolder, "plugins", "solution", "defaultIcon.png");
+    const defaultColorPath = path.join(
+      templatesFolder,
+      "plugins",
+      "resource",
+      "appstudio",
+      "defaultIcon.png"
+    );
     const defaultOutlinePath = path.join(
       templatesFolder,
       "plugins",
-      "solution",
+      "resource",
+      "appstudio",
       "defaultOutline.png"
     );
 

@@ -1170,6 +1170,21 @@ export class TeamsAppSolution implements Solution {
     return ok(Void);
   }
 
+  @hooks([ErrorHandlerMW])
+  async grantPermission(ctx: SolutionContext): Promise<Result<any, FxError>> {
+    return ok(Void);
+  }
+
+  @hooks([ErrorHandlerMW])
+  async checkPermission(ctx: SolutionContext): Promise<Result<any, FxError>> {
+    return ok(Void);
+  }
+
+  @hooks([ErrorHandlerMW])
+  async listCollaborator(ctx: SolutionContext): Promise<Result<any, FxError>> {
+    return ok(Void);
+  }
+
   private parseTeamsAppTenantId(appStudioToken?: object): Result<string, FxError> {
     if (appStudioToken === undefined) {
       return err(

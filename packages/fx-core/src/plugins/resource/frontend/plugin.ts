@@ -214,7 +214,7 @@ export class FrontendPluginImpl {
     if (functionPlugin) {
       const functionEndpoint = getArmOutput(ctx, FunctionArmOutput.Endpoint) as string;
       functionEnv = {
-        defaultName: functionPlugin.get(DependentPluginInfo.FunctionDefaultName) as string,
+        defaultName: ctx.projectSettings?.defaultFunctionName as string,
         endpoint: `https://${functionEndpoint}`,
       };
     }

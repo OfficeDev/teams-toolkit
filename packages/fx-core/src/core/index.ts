@@ -460,6 +460,7 @@ export class FxCore implements Core {
     ErrorHandlerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(isMultiEnvEnabled(), false),
+    LocalSettingsLoaderMW,
     ContextInjecterMW,
   ])
   async getProjectConfig(

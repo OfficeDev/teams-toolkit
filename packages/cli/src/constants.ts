@@ -19,13 +19,13 @@ export const RootFolderNode = new QTreeNode({
 export const EnvNode = new QTreeNode({
   type: "text",
   name: "env",
-  title: "Select or create an env for the project",
+  title: "Select or create an environment for the project",
 });
 
 export const EnvNodeNoCreate = new QTreeNode({
   type: "text",
   name: "env",
-  title: "Select an existing env for the project",
+  title: "Select an existing environment for the project",
 });
 
 export const SubscriptionNode = new QTreeNode({

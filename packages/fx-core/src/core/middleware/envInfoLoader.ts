@@ -61,21 +61,11 @@ export function EnvInfoLoaderMW(
     let targetEnvName: string | undefined;
     if (isMultiEnvEnabled) {
       if (inputs.env) {
-        const checkEnv = await environmentManager.checkEnvExist(inputs.projectPath!, inputs.env);
-        if (checkEnv.isErr()) {
-          ctx.result = checkEnv.error;
-          return;
-        }
-        if (checkEnv.value || allowCreateNewEnv) {
-          targetEnvName = inputs.env;
-        } else {
-          ctx.result = err(ProjectEnvNotExistError(inputs.env));
-          return;
-        }
+        targetEnvName = await useUserSetEnv(ctx, inputs, allowCreateNewEnv);
       } else {
         targetEnvName = await askTargetEnvironment(ctx, inputs, allowCreateNewEnv, lastUsedEnvName);
-        lastUsedEnvName = targetEnvName ?? lastUsedEnvName;
       }
+      lastUsedEnvName = targetEnvName ?? lastUsedEnvName;
     } else {
       targetEnvName = environmentManager.defaultEnvName;
     }
@@ -218,6 +208,24 @@ async function askTargetEnvironment(
     return targetEnvName.slice(0, targetEnvName.indexOf(lastUsedMark));
   } else {
     return targetEnvName;
+  }
+}
+
+async function useUserSetEnv(
+  ctx: CoreHookContext,
+  inputs: Inputs,
+  allowCreateNewEnv: boolean
+): Promise<string | undefined> {
+  const checkEnv = await environmentManager.checkEnvExist(inputs.projectPath!, inputs.env);
+  if (checkEnv.isErr()) {
+    ctx.result = checkEnv.error;
+    return undefined;
+  }
+  if (checkEnv.value || allowCreateNewEnv) {
+    return inputs.env;
+  } else {
+    ctx.result = err(ProjectEnvNotExistError(inputs.env));
+    return undefined;
   }
 }
 

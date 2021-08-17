@@ -28,7 +28,7 @@ import {
 } from "../../../src/plugins/solution/fx-solution/question";
 import _ from "lodash";
 import path from "path";
-import { getTemplatesFolder } from "../../../src";
+import { AppStudioPlugin, getTemplatesFolder } from "../../../src";
 import { validManifest } from "./util";
 import * as uuid from "uuid";
 import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
@@ -46,6 +46,7 @@ const simpleAuthPlugin = Container.get<Plugin>(ResourcePlugins.SimpleAuthPlugin)
 const localdebugPlugin = Container.get<Plugin>(ResourcePlugins.LocalDebugPlugin);
 const botPlugin = Container.get<Plugin>(ResourcePlugins.BotPlugin);
 const spfxPlugin = Container.get<Plugin>(ResourcePlugins.SpfxPlugin);
+const appStudioPlugin = Container.get<Plugin>(ResourcePlugins.AppStudioPlugin);
 function mockSolutionContext(): SolutionContext {
   const config: SolutionConfig = new Map();
   return {
@@ -182,6 +183,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
     mockScaffoldThatAlwaysSucceed(fehostPlugin);
     mockScaffoldThatAlwaysSucceed(simpleAuthPlugin);
     mockScaffoldThatAlwaysSucceed(localdebugPlugin);
+    mockScaffoldThatAlwaysSucceed(appStudioPlugin);
 
     // mock plugin behavior
     mocker.stub(fehostPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
@@ -195,7 +197,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
     const result = await solution.scaffold(mockedCtx);
     expect(result.isOk()).to.be.true;
     // only need to check whether related files exist, tests to the content is covered by other test cases
-    expect(fileContent.size).equals(5); // there's a readme file
+    expect(fileContent.size).equals(4);
     expect(fileContent.has(path.join("./infra/azure/templates", "main.bicep"))).to.be.true;
     expect(fileContent.has(path.join("./infra/azure/templates", "frontendHostingProvision.bicep")))
       .to.be.true;
@@ -229,11 +231,12 @@ describe("Solution scaffold() reading valid manifest file", () => {
     };
     mockScaffoldThatAlwaysSucceed(spfxPlugin);
     mockScaffoldThatAlwaysSucceed(localdebugPlugin);
+    mockScaffoldThatAlwaysSucceed(appStudioPlugin);
 
     const result = await solution.scaffold(mockedCtx);
     expect(result.isOk()).to.be.true;
     // only need to check whether related files exist, tests to the content is covered by other test cases
-    expect(fileContent.size).equals(1); // only a readme file is generated
+    expect(fileContent.size).equals(0);
 
     restore();
   });

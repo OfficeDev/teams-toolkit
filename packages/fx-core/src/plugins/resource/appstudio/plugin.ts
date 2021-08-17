@@ -333,22 +333,33 @@ export class AppStudioPluginImpl {
 
   public async scaffold(ctx: PluginContext): Promise<any> {
     let manifest: TeamsAppManifest | undefined;
+    const templatesFolder = getTemplatesFolder();
+
     if (this.isSPFxProject(ctx)) {
-      const templateManifestFolder = path.join(getTemplatesFolder(), "plugins", "resource", "spfx");
+      const templateManifestFolder = path.join(templatesFolder, "plugins", "resource", "spfx");
       const manifestFile = path.resolve(templateManifestFolder, "./solution/manifest.json");
       const manifestString = (await fs.readFile(manifestFile)).toString();
       manifest = JSON.parse(manifestString);
     } else {
       manifest = await this.createManifest(ctx.projectSettings!);
     }
-    // await fs.writeFile(
-    //   `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`,
-    //   JSON.stringify(manifest, null, 4)
-    // );
+
     await fs.writeFile(
       `${ctx.root}/${AppPackageFolderName}/${REMOTE_MANIFEST}`,
       JSON.stringify(manifest, null, 4)
     );
+
+    const defaultColorPath = path.join(templatesFolder, "plugins", "solution", "defaultIcon.png");
+    const defaultOutlinePath = path.join(
+      templatesFolder,
+      "plugins",
+      "solution",
+      "defaultOutline.png"
+    );
+
+    await fs.copy(defaultColorPath, `${ctx.root}/${AppPackageFolderName}/color.png`);
+    await fs.copy(defaultOutlinePath, `${ctx.root}/${AppPackageFolderName}/outline.png`);
+
     return undefined;
   }
 

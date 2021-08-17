@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+set -euxo pipefail
+
 # This is just an example workflow for continuous deployment.
 # You should customize it to meet your own requirements.
 # Also you should export the following environment variables for Azure/M365 login:

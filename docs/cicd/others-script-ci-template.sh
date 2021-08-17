@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+set -euxo pipefail
+
 # This is just an example workflow for continuous integration.
 # You should customize it to meet your own requirements.
 

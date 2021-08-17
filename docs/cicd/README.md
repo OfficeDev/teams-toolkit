@@ -1,6 +1,6 @@
 # CI/CD Support for Teams Application Developers
 
-TeamsFx helps automate your development workflow when buidling a Teams applictaion. These documents provides some templates for you to quickly get started with CI/CD.
+TeamsFx helps automate your development workflow when buidling a Teams application. These documents provide some templates for you to quickly get started with CI/CD.
 
 |Tools and Templates|Description|
 |---|---|
@@ -14,16 +14,19 @@ To add this to your repository, you will need your versions of [github-ci-templa
 
 ### Customize CI Workflow
 There are some potential changes you can make to adapt your project:
-1. Change how the CI flow is triggerd. We default it to when pull request is created targeting dev branch.
-1. Change the build scripts.
-1. Remove the test scripts if you don't want to set up the unit test framework for your project.
+
+1. Change how the CI flow is triggered. We default it to when pull request is created targeting dev branch.
+1. Ensure you have an npm build script, or customize the way you build in the automation code.
+1. Ensure you have an npm test script which returns zero for success, and/or change the test commands.
 
 ### Customize CD Workflow
-1. Change how the CD flow is triggered. We default it to when new commits made to main branch.
-1. Create GitHub repository secrets by environment to hold Azure/M365 login credentials. The table below lists all the secrets you need to create on GitHub, and for the detailed usage, please refer to the GitHub Action's [README.md](https://github.com/OfficeDev/teamsfx-cli-action/blob/main/README.md).
+You may want to change:
+1. How the CD flow is triggered. By default it happens when new commits are made to the `main` branch.
+1. Create GitHub repository secrets by environment to hold Azure/M365 login credentials. The table below lists all the secrets you need to create on GitHub, and for detailed usage, please refer to the GitHub Actions [README.md](https://github.com/OfficeDev/teamsfx-cli-action/blob/main/README.md).
 1. Change the build scripts.
-1. Remove the test scripts if you don't want to set up the unit test framework for your project.
-1. The provision step is expected to run separately by hand or by workflow, and remember to commit provision configs into the code and save required secrets into GitHub secrets to generate file `default.userdata` as you can infer from the yml file.
+1. Remove the test scripts if you don't have tests.
+
+> Note: The provision step is expected to run separately by hand or by workflow. Please remember to commit after provisioning (results of provisioning will be deposited inside the `.fx` folder) and save required secrets into GitHub secrets to generate file `default.userdata`.
 
 ### Environment Variables
 
@@ -33,9 +36,9 @@ There are some potential changes you can make to adapt your project:
 |AZURE_ACCOUNT_PASSWORD|The password of Azure account.|
 |AZURE_SUBSCRIPTION_ID|To identify the subscription in which the resources will be provisined.|
 |AZURE_TENANT_ID|To identify the tenant in which the subscription resides.|
-|M365_ACCOUNT_NAME|The M365 account for creating and publishing Teams App.|
-|M365_ACCOUNT_PASSWORD|The password of M365 account.|
-|M365_TENANT_ID|To identify the tenant in which the Teams App will be created/published. PS: if not provided, the default tenant id will be used.|
+|M365_ACCOUNT_NAME|The M365 account for creating and publishing the Teams App.|
+|M365_ACCOUNT_PASSWORD|The password of the M365 account.|
+|M365_TENANT_ID|To identify the tenant in which the Teams App will be created/published. PS: if not provided, the default tenant ID will be used.|
 
 
 ## Getting started guide for other platforms

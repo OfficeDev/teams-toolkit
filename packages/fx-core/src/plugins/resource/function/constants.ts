@@ -181,7 +181,7 @@ export class QuestionValidationFunc {
   public static readonly validateFunctionName: string = "validateFunctionName";
 }
 
-export class BicepSnippet {
+export class FunctionBicep {
   static readonly moduleTemplateFileName: string = "function.template.bicep";
   static readonly storageAccountName = "functionProvision.outputs.storageAccountName";
   static readonly appServicePlanName = "functionProvision.outputs.appServicePlanName";

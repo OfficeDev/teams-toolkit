@@ -38,7 +38,7 @@ import {
 import {
   FunctionArmOutput,
   AzureInfo,
-  BicepSnippet,
+  FunctionBicep,
   DefaultProvisionConfigs,
   DefaultValues,
   DependentPluginInfo,
@@ -745,7 +745,7 @@ export class FunctionPluginImpl {
 
     const moduleTemplateFilePath = path.join(
       bicepTemplateDirectory,
-      BicepSnippet.moduleTemplateFileName
+      FunctionBicep.moduleTemplateFileName
     );
     const moduleContentResult = await generateBicepFiles(moduleTemplateFilePath, context);
     if (moduleContentResult.isErr()) {
@@ -778,9 +778,9 @@ export class FunctionPluginImpl {
         ModuleTemplate: {
           Content: await fs.readFile(moduleOrchestrationFilePath, ConstantString.UTF8Encoding),
           Outputs: {
-            storageAccountName: BicepSnippet.storageAccountName,
-            appServicePlanName: BicepSnippet.appServicePlanName,
-            functionEndpoint: BicepSnippet.functionEndpoint,
+            storageAccountName: FunctionBicep.storageAccountName,
+            appServicePlanName: FunctionBicep.appServicePlanName,
+            functionEndpoint: FunctionBicep.functionEndpoint,
           },
         },
         OutputTemplate: {

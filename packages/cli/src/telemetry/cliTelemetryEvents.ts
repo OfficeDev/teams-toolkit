@@ -52,6 +52,9 @@ export enum TelemetryEvent {
 
   ConfigGet = "config-get",
   ConfigSet = "config-set",
+
+  CheckPermissionStart = "check-permission-start",
+  CheckPermission = "check-permission",
 }
 
 export enum TelemetryProperty {

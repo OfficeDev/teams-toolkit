@@ -239,6 +239,10 @@ function onDidStartDebugSessionHandler(event: vscode.DebugSession): void {
                   vscode.Uri.parse(constants.localDebugFAQUrl)
                 );
               }
+              ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugFAQ, {
+                [TelemetryProperty.DebugFAQSelection]: selected + "",
+                [TelemetryProperty.DebugAppId]: localAppId,
+              });
             });
         }
       } catch {

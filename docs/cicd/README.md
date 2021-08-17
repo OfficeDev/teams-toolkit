@@ -22,7 +22,7 @@ There are some potential changes you can make to adapt your project:
 ### Customize CD Workflow
 You may want to change:
 1. How the CD flow is triggered. By default it happens when new commits are made to the `main` branch.
-1. Create GitHub repository secrets by environment to hold Azure/M365 login credentials. The table below lists all the secrets you need to create on GitHub, and for detailed usage, please refer to the GitHub Actions [README.md](https://github.com/OfficeDev/teamsfx-cli-action/blob/main/README.md).
+1. Create GitHub [repository secrets](https://docs.github.com/en/actions/reference/encrypted-secrets) by environment to hold Azure/M365 login credentials. The table below lists all the secrets you need to create on GitHub, and for detailed usage, please refer to the GitHub Actions [README.md](https://github.com/OfficeDev/teamsfx-cli-action/blob/main/README.md).
 1. Change the build scripts.
 1. Remove the test scripts if you don't have tests.
 

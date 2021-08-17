@@ -29,6 +29,7 @@ import { validateSettings } from "../../common";
 import * as uuid from "uuid";
 import { LocalCrypto } from "../crypto";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
+import { PermissionRequestFileProvider } from "../permissionRequest";
 
 export const ProjectSettingsLoaderMW: Middleware = async (
   ctx: CoreHookContext,
@@ -114,6 +115,9 @@ export async function newSolutionContext(tools: Tools, inputs: Inputs): Promise<
     ...tools.tokenProvider,
     answers: inputs,
     cryptoProvider: new LocalCrypto(projectSettings.projectId),
+    permissionRequestProvider: inputs.projectPath
+      ? new PermissionRequestFileProvider(inputs.projectPath)
+      : undefined,
   };
   return solutionContext;
 }

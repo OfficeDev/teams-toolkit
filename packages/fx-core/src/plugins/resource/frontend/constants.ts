@@ -84,7 +84,6 @@ export class DependentPluginInfo {
 
   static readonly FunctionPluginName = "fx-resource-function";
   static readonly FunctionEndpoint = "functionEndpoint";
-  static readonly FunctionDefaultName = "defaultFunctionName";
 
   static readonly RuntimePluginName = "fx-resource-simple-auth";
   static readonly RuntimeEndpoint = "endpoint";

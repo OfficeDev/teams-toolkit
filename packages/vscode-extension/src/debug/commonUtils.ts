@@ -236,30 +236,51 @@ export async function getPortsInUse(): Promise<number[]> {
   return portsInUse;
 }
 
-export function getTeamsAppTenantId(): string | undefined {
+function getSettingWithUserData(jsonSelector: (jsonObject: any) => any): string | undefined {
+  // get final setting value from env.xxx.json and xxx.userdata
+  // Note: this is a workaround and need to be updated after multi-env
   if (ext.workspaceUri) {
     const ws = ext.workspaceUri.fsPath;
     if (isValidProject(ws)) {
       const env = getActiveEnv();
       const envJsonPath = path.join(ws, `.${ConfigFolderName}/env.${env}.json`);
       const envJson = JSON.parse(fs.readFileSync(envJsonPath, "utf8"));
-      return envJson.solution.teamsAppTenantId;
+      const settingValue = jsonSelector(envJson) as string;
+      if (settingValue && settingValue.startsWith("{{") && settingValue.endsWith("}}")) {
+        // setting in env.xxx.json is place holder and need to get actual value from xxx.userdata
+        const placeHolder = settingValue.replace("{{", "").replace("}}", "");
+        const userdataPath = path.join(ws, `.${ConfigFolderName}/${env}.userdata`);
+        if (fs.existsSync(userdataPath)) {
+          const userdata = fs.readFileSync(userdataPath, "utf8");
+          const userEnv = dotenv.parse(userdata);
+          return userEnv[placeHolder];
+        } else {
+          // in collaboration scenario, userdata may not exist
+          return undefined;
+        }
+      }
+
+      return settingValue;
     }
   }
 
   return undefined;
 }
 
-export function getLocalTeamsAppId(): string | undefined {
-  if (ext.workspaceUri) {
-    const ws = ext.workspaceUri.fsPath;
-    if (isValidProject(ws)) {
-      const env = getActiveEnv();
-      const envJsonPath = path.join(ws, `.${ConfigFolderName}/env.${env}.json`);
-      const envJson = JSON.parse(fs.readFileSync(envJsonPath, "utf8"));
-      return envJson.solution.localDebugTeamsAppId;
-    }
+export function getTeamsAppTenantId(): string | undefined {
+  try {
+    return getSettingWithUserData((envJson) => envJson.solution.teamsAppTenantId);
+  } catch {
+    // in case structure changes
+    return undefined;
   }
+}
 
-  return undefined;
+export function getLocalTeamsAppId(): string | undefined {
+  try {
+    return getSettingWithUserData((envJson) => envJson.solution.localDebugTeamsAppId);
+  } catch {
+    // in case structure changes
+    return undefined;
+  }
 }

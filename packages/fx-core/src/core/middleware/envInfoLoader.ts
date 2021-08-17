@@ -23,10 +23,16 @@ import {
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { LocalCrypto } from "../crypto";
 import { environmentManager } from "../environment";
-import { GLOBAL_CONFIG, PROGRAMMING_LANGUAGE } from "../../plugins/solution/fx-solution/constants";
+import {
+  DEFAULT_FUNC_NAME,
+  GLOBAL_CONFIG,
+  PluginNames,
+  PROGRAMMING_LANGUAGE,
+} from "../../plugins/solution/fx-solution/constants";
 import { QuestionSelectTargetEnvironment, QuestionNewTargetEnvironmentName } from "../question";
 import { desensitize } from "./questionModel";
 import { shouldIgnored } from "./projectSettingsLoader";
+import { PermissionRequestFileProvider } from "../permissionRequest";
 
 const newTargetEnvNameOption = "+ new environment";
 const lastUsedMark = " (current)";
@@ -119,16 +125,10 @@ export async function loadSolutionContext(
   }
   const envInfo = envDataResult.value;
 
-  // upgrade programmingLanguange if exists.
+  // migrate programmingLanguage and defaultFunctionName to project settings if exists in previous env config
   const solutionConfig = envInfo.data as SolutionConfig;
-  const programmingLanguage = solutionConfig.get(GLOBAL_CONFIG)?.get(PROGRAMMING_LANGUAGE);
-  if (programmingLanguage) {
-    // add programmingLanguage in project settings
-    projectSettings.programmingLanguage = programmingLanguage;
-
-    // remove programmingLanguage in solution config
-    solutionConfig.get(GLOBAL_CONFIG)?.delete(PROGRAMMING_LANGUAGE);
-  }
+  upgradeProgrammingLanguage(solutionConfig, projectSettings);
+  upgradeDefaultFunctionName(solutionConfig, projectSettings);
 
   const solutionContext: SolutionContext = {
     projectSettings: projectSettings,
@@ -139,9 +139,39 @@ export async function loadSolutionContext(
     ...tools.tokenProvider,
     answers: inputs,
     cryptoProvider: cryptoProvider,
+    permissionRequestProvider: new PermissionRequestFileProvider(inputs.projectPath),
   };
 
   return ok(solutionContext);
+}
+
+export function upgradeProgrammingLanguage(
+  solutionConfig: SolutionConfig,
+  projectSettings: ProjectSettings
+) {
+  const programmingLanguage = solutionConfig.get(GLOBAL_CONFIG)?.get(PROGRAMMING_LANGUAGE);
+  if (programmingLanguage) {
+    // add programmingLanguage in project settings
+    projectSettings.programmingLanguage = programmingLanguage;
+
+    // remove programmingLanguage in solution config
+    solutionConfig.get(GLOBAL_CONFIG)?.delete(PROGRAMMING_LANGUAGE);
+  }
+}
+
+export function upgradeDefaultFunctionName(
+  solutionConfig: SolutionConfig,
+  projectSettings: ProjectSettings
+) {
+  // upgrade defaultFunctionName if exists.
+  const defaultFunctionName = solutionConfig.get(PluginNames.FUNC)?.get(DEFAULT_FUNC_NAME);
+  if (defaultFunctionName) {
+    // add defaultFunctionName in project settings
+    projectSettings.defaultFunctionName = defaultFunctionName;
+
+    // remove defaultFunctionName in function plugin's config
+    solutionConfig.get(PluginNames.FUNC)?.delete(DEFAULT_FUNC_NAME);
+  }
 }
 
 async function askTargetEnvironment(

@@ -32,7 +32,8 @@ export type SolutionInputs = {
   // default to East US for now
   location: string;
   teamsAppTenantId: string;
+  remoteTeamsAppId?: string;
 };
 
 export type ProvisionInputs = Inputs & SolutionInputs;
-export type DeploymentInputs = Inputs & SolutionInputs & { remoteTeamsAppId: string };
+export type DeploymentInputs = Inputs & SolutionInputs;

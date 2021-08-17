@@ -66,7 +66,7 @@
       "name": "Launch permission status command (non-interactive)",
       "skipFiles": ["<node_internals>/**"],
       "program": "${workspaceFolder}/cli.js",
-      "args": ["permission", "status", "--folder", "../../../../Tests/bowsong0813"],
+      "args": ["permission", "status", "--folder", "../../../teams/app001"],
       "outFiles": [
         "${workspaceFolder}/lib/**/*.js",
         "${workspaceFolder}/../fx-core/build/**/*.js",

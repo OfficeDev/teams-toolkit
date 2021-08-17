@@ -77,6 +77,11 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(publishCmd);
 
+  const cicdGuideCmd = vscode.commands.registerCommand("fx-extension.cicdGuide", (...args) =>
+    Correlator.run(handlers.cicdGuideHandler, args)
+  );
+  context.subscriptions.push(cicdGuideCmd);
+
   // 1.7 validate dependencies command (hide from UI)
   const validateDependenciesCmd = vscode.commands.registerCommand(
     "fx-extension.validate-dependencies",

@@ -19,6 +19,9 @@ import {
   ProjectSettings,
   Colors,
   AzureSolutionSettings,
+  Func,
+  newUserError,
+  newSystemError,
 } from "@microsoft/teamsfx-api";
 import { AppStudioPluginImpl } from "./plugin";
 import { Constants } from "./constants";
@@ -29,6 +32,8 @@ import { manuallySubmitOption, autoPublishOption } from "./questions";
 import { TelemetryUtils, TelemetryEventName, TelemetryPropertyKey } from "./utils/telemetry";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+import { FunctionRouterError } from "../../../core";
+import { Links } from "../bot/constants";
 @Service(ResourcePlugins.AppStudioPlugin)
 export class AppStudioPlugin implements Plugin {
   name = "fx-resource-appstudio";
@@ -268,6 +273,38 @@ export class AppStudioPlugin implements Plugin {
   public async postLocalDebug(ctx: PluginContext): Promise<Result<string, FxError>> {
     const localTeamsAppId = await this.appStudioPluginImpl.postLocalDebug(ctx);
     return ok(localTeamsAppId);
+  }
+
+  async executeUserTask(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {
+    if (func.method === "validateManifest") {
+      return await this.validateManifest(ctx);
+    } else if (func.method === "buildTeamsPackage") {
+      return await this.buildTeamsPackage(ctx);
+    } else if (func.method === "getAppDefinitionAndUpdate") {
+      if (func.params && func.params.type && func.params.manifest) {
+        return await this.getAppDefinitionAndUpdate(
+          ctx,
+          func.params.type as "localDebug" | "remote",
+          func.params.manifest as TeamsAppManifest
+        );
+      }
+      return err(
+        newSystemError(
+          Constants.PLUGIN_NAME,
+          "InvalidParam",
+          `Invalid param:${JSON.stringify(func)}`,
+          Links.ISSUE_LINK
+        )
+      );
+    }
+    return err(
+      newSystemError(
+        Constants.PLUGIN_NAME,
+        "FunctionRouterError",
+        `Failed to route function call:${JSON.stringify(func)}`,
+        Links.ISSUE_LINK
+      )
+    );
   }
 }
 

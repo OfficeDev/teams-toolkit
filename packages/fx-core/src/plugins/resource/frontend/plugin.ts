@@ -173,7 +173,7 @@ export class FrontendPluginImpl {
     const functionPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.FunctionPluginName);
     if (functionPlugin) {
       functionEnv = {
-        defaultName: functionPlugin.get(DependentPluginInfo.FunctionDefaultName) as string,
+        defaultName: ctx.projectSettings?.defaultFunctionName as string,
         endpoint: functionPlugin.get(DependentPluginInfo.FunctionEndpoint) as string,
       };
     }
@@ -271,7 +271,7 @@ export class FrontendPluginImpl {
     const functionPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.FunctionPluginName);
     if (functionPlugin) {
       functionEnv = {
-        defaultName: functionPlugin.get(DependentPluginInfo.FunctionDefaultName) as string,
+        defaultName: ctx.projectSettings?.defaultFunctionName as string,
         endpoint: functionPlugin.get(DependentPluginInfo.FunctionEndpoint) as string,
       };
     }

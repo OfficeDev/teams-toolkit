@@ -191,6 +191,10 @@
         {
           "command": "fx-extension.selectAndDebug",
           "when": "false"
+        },
+        {
+          "command": "fx-extension.cicdGuide",
+          "when": "false"
         }
       ]
     },
@@ -304,6 +308,11 @@
         "command": "fx-extension.selectAndDebug",
         "title": "Select and Start Debuging Teams App",
         "icon": "$(run)"
+      },
+      {
+        "command": "fx-extension.cicdGuide",
+        "title": "CI/CD guide",
+        "icon": "$(sync)"
       }
     ],
     "taskDefinitions": [

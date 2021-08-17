@@ -21,7 +21,6 @@ export class FunctionPluginInfo {
   public static readonly expectDotnetSDKs: string[] = ["3.1", "5.0"];
 
   public static readonly FunctionPluginPersistentConfig: FunctionConfigKey[] = [
-    FunctionConfigKey.defaultFunctionName,
     FunctionConfigKey.functionAppName,
     FunctionConfigKey.storageAccountName,
     FunctionConfigKey.appServicePlanName,

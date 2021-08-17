@@ -9,6 +9,7 @@ module functionProvision './function_test.bicep' = {
     aadClientSecret: aadClientSecret
     m365TenantId: m365TenantId
     applicationIdUri: applicationIdUri
+    oauthAuthorityHost: m365OauthAuthorityHost
     frontendHostingStorageEndpoint: frontend_hosting_test_endpoint
   }
 }

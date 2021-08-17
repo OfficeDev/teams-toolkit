@@ -12,8 +12,18 @@ import {
 } from "../errors";
 import { ResultFactory } from "../result";
 import { TelemetryUtils } from "./telemetry";
-import { getArmOutput, getTemplatesFolder, isArmSupportEnabled } from "../../../..";
+import {
+  getArmOutput,
+  getTemplatesFolder,
+  isArmSupportEnabled,
+  isMultiEnvEnabled,
+} from "../../../..";
 import got from "got";
+import {
+  LocalSettingsAuthKeys,
+  LocalSettingsFrontendKeys,
+} from "../../../../common/localSettingsConstants";
+import { TeamsClientId } from "../../../../common/constants";
 export class Utils {
   public static generateResourceName(appName: string, resourceNameSuffix: string): string {
     const paddingLength =
@@ -74,59 +84,18 @@ export class Utils {
     ctx: PluginContext,
     isLocalDebug: boolean
   ): { [propertyName: string]: string } {
-    const clientId = Utils.getConfigValueWithValidation(
-      ctx,
-      Constants.AadAppPlugin.id,
-      Constants.AadAppPlugin.configKeys.clientId,
-      isLocalDebug
-    ) as string;
-    const clientSecret = Utils.getConfigValueWithValidation(
-      ctx,
-      Constants.AadAppPlugin.id,
-      Constants.AadAppPlugin.configKeys.clientSecret,
-      isLocalDebug
-    ) as string;
-    const oauthAuthority = Utils.getConfigValueWithValidation(
-      ctx,
-      Constants.AadAppPlugin.id,
-      Constants.AadAppPlugin.configKeys.oauthAuthority
-    ) as string;
-    const applicationIdUris = Utils.getConfigValueWithValidation(
-      ctx,
-      Constants.AadAppPlugin.id,
-      Constants.AadAppPlugin.configKeys.applicationIdUris,
-      isLocalDebug
-    ) as string;
-    const teamsMobileDesktopAppId = Utils.getConfigValueWithValidation(
-      ctx,
-      Constants.AadAppPlugin.id,
-      Constants.AadAppPlugin.configKeys.teamsMobileDesktopAppId
-    ) as string;
-    const teamsWebAppId = Utils.getConfigValueWithValidation(
-      ctx,
-      Constants.AadAppPlugin.id,
-      Constants.AadAppPlugin.configKeys.teamsWebAppId
-    ) as string;
+    const clientId = this.getClientId(ctx, isLocalDebug);
+    const clientSecret = this.getClientSecret(ctx, isLocalDebug);
+    const oauthAuthority = this.getOauthAuthority(ctx, isLocalDebug);
+    const applicationIdUris = this.getApplicationIdUris(ctx, isLocalDebug);
+    const teamsMobileDesktopAppId = TeamsClientId.MobileDesktop;
+    const teamsWebAppId = TeamsClientId.Web;
 
     let endpoint: string;
-    if (!isArmSupportEnabled()) {
-      endpoint = Utils.getConfigValueWithValidation(
-        ctx,
-        isLocalDebug ? Constants.LocalDebugPlugin.id : Constants.FrontendPlugin.id,
-        isLocalDebug
-          ? Constants.LocalDebugPlugin.configKeys.endpoint
-          : Constants.FrontendPlugin.configKeys.endpoint
-      ) as string;
+    if (!isArmSupportEnabled() || isLocalDebug) {
+      endpoint = this.getFrontendEndpoint(ctx, isLocalDebug);
     } else {
-      if (isLocalDebug) {
-        endpoint = Utils.getConfigValueWithValidation(
-          ctx,
-          Constants.LocalDebugPlugin.id,
-          Constants.LocalDebugPlugin.configKeys.endpoint
-        ) as string;
-      } else {
-        endpoint = getArmOutput(ctx, Constants.ArmOutput.frontendEndpoint) as string;
-      }
+      endpoint = getArmOutput(ctx, Constants.ArmOutput.frontendEndpoint) as string;
     }
 
     const allowedAppIds = [teamsMobileDesktopAppId, teamsWebAppId].join(";");
@@ -178,6 +147,119 @@ export class Utils {
       throw ResultFactory.SystemError(NoConfigError.name, NoConfigError.message(pluginId, key));
     }
     return configValue;
+  }
+
+  private static getClientId(ctx: PluginContext, isLocalDebug: boolean): string {
+    let clientId: string;
+    if (isMultiEnvEnabled()) {
+      clientId = isLocalDebug
+        ? (ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId) as string)
+        : (Utils.getConfigValueWithValidation(
+            ctx,
+            Constants.AadAppPlugin.id,
+            Constants.AadAppPlugin.configKeys.clientId,
+            isLocalDebug
+          ) as string);
+    } else {
+      clientId = Utils.getConfigValueWithValidation(
+        ctx,
+        Constants.AadAppPlugin.id,
+        Constants.AadAppPlugin.configKeys.clientId,
+        isLocalDebug
+      ) as string;
+    }
+
+    return clientId;
+  }
+
+  private static getClientSecret(ctx: PluginContext, isLocalDebug: boolean): string {
+    let clientSecret: string;
+    if (isMultiEnvEnabled()) {
+      clientSecret = isLocalDebug
+        ? (ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientSecret) as string)
+        : (Utils.getConfigValueWithValidation(
+            ctx,
+            Constants.AadAppPlugin.id,
+            Constants.AadAppPlugin.configKeys.clientSecret,
+            isLocalDebug
+          ) as string);
+    } else {
+      clientSecret = Utils.getConfigValueWithValidation(
+        ctx,
+        Constants.AadAppPlugin.id,
+        Constants.AadAppPlugin.configKeys.clientSecret,
+        isLocalDebug
+      ) as string;
+    }
+
+    return clientSecret;
+  }
+
+  private static getFrontendEndpoint(ctx: PluginContext, isLocalDebug: boolean): string {
+    let tabEndpoint: string;
+    if (isMultiEnvEnabled()) {
+      tabEndpoint = isLocalDebug
+        ? (ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabEndpoint) as string)
+        : (Utils.getConfigValueWithValidation(
+            ctx,
+            Constants.FrontendPlugin.id,
+            Constants.FrontendPlugin.configKeys.endpoint
+          ) as string);
+    } else {
+      tabEndpoint = Utils.getConfigValueWithValidation(
+        ctx,
+        isLocalDebug ? Constants.LocalDebugPlugin.id : Constants.FrontendPlugin.id,
+        isLocalDebug
+          ? Constants.LocalDebugPlugin.configKeys.endpoint
+          : Constants.FrontendPlugin.configKeys.endpoint
+      ) as string;
+    }
+
+    return tabEndpoint;
+  }
+
+  private static getOauthAuthority(ctx: PluginContext, isLocalDebug: boolean): string {
+    let oauthAuthority: string;
+    if (isMultiEnvEnabled()) {
+      oauthAuthority = isLocalDebug
+        ? (ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.OauthAuthority) as string)
+        : (Utils.getConfigValueWithValidation(
+            ctx,
+            Constants.AadAppPlugin.id,
+            Constants.AadAppPlugin.configKeys.oauthAuthority
+          ) as string);
+    } else {
+      oauthAuthority = Utils.getConfigValueWithValidation(
+        ctx,
+        Constants.AadAppPlugin.id,
+        Constants.AadAppPlugin.configKeys.oauthAuthority
+      ) as string;
+    }
+
+    return oauthAuthority;
+  }
+
+  private static getApplicationIdUris(ctx: PluginContext, isLocalDebug: boolean): string {
+    let applicationIdUris: string;
+    if (isMultiEnvEnabled()) {
+      applicationIdUris = isLocalDebug
+        ? (ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ApplicationIdUris) as string)
+        : (Utils.getConfigValueWithValidation(
+            ctx,
+            Constants.AadAppPlugin.id,
+            Constants.AadAppPlugin.configKeys.applicationIdUris,
+            isLocalDebug
+          ) as string);
+    } else {
+      applicationIdUris = Utils.getConfigValueWithValidation(
+        ctx,
+        Constants.AadAppPlugin.id,
+        Constants.AadAppPlugin.configKeys.applicationIdUris,
+        isLocalDebug
+      ) as string;
+    }
+
+    return applicationIdUris;
   }
 
   private static async checkFileExist(filePath: string): Promise<boolean> {

@@ -61,7 +61,7 @@ export class TeamsBot implements Plugin {
       LifecycleFuncNames.SCAFFOLD
     );
 
-    await ProgressBarFactory.closeProgressBar(ProgressBarConstants.SCAFFOLD_TITLE);
+    await ProgressBarFactory.closeProgressBar(result.isOk(), ProgressBarConstants.SCAFFOLD_TITLE);
 
     return result;
   }
@@ -87,7 +87,7 @@ export class TeamsBot implements Plugin {
       LifecycleFuncNames.PROVISION
     );
 
-    await ProgressBarFactory.closeProgressBar(ProgressBarConstants.PROVISION_TITLE);
+    await ProgressBarFactory.closeProgressBar(result.isOk(), ProgressBarConstants.PROVISION_TITLE);
 
     return result;
   }
@@ -124,7 +124,7 @@ export class TeamsBot implements Plugin {
       LifecycleFuncNames.DEPLOY
     );
 
-    await ProgressBarFactory.closeProgressBar(ProgressBarConstants.DEPLOY_TITLE);
+    await ProgressBarFactory.closeProgressBar(result.isOk(), ProgressBarConstants.DEPLOY_TITLE);
 
     return result;
   }
@@ -139,7 +139,10 @@ export class TeamsBot implements Plugin {
       LifecycleFuncNames.LOCAL_DEBUG
     );
 
-    await ProgressBarFactory.closeProgressBar(ProgressBarConstants.LOCAL_DEBUG_TITLE);
+    await ProgressBarFactory.closeProgressBar(
+      result.isOk(),
+      ProgressBarConstants.LOCAL_DEBUG_TITLE
+    );
 
     return result;
   }
@@ -206,7 +209,7 @@ export class TeamsBot implements Plugin {
       sendTelemetry && telemetryHelper.sendResultEvent(context, name, res);
       return res;
     } catch (e) {
-      await ProgressBarFactory.closeProgressBar(); // Close all progress bars.
+      await ProgressBarFactory.closeProgressBar(false); // Close all progress bars.
       return this.wrapError(e, context, sendTelemetry, name);
     }
   }

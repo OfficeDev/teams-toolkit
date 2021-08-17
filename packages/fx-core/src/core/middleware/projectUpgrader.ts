@@ -14,6 +14,8 @@ import {
   FxCore,
   NoProjectOpenedError,
   PathNotExistError,
+  ReadFileError,
+  WriteFileError,
 } from "..";
 import * as fs from "fs-extra";
 import * as path from "path";
@@ -53,6 +55,8 @@ const solutionContext = {
   relatedKeys: ["localDebugTeamsAppId", "teamsAppTenantId"],
 };
 
+const SolutionContextNotFoundError = "Failed to find solution context in env file.";
+
 export const ProjectUpgraderMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
   await upgradeContext(ctx);
   await next();
@@ -63,25 +67,44 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<void> {
   const core = ctx.self as FxCore;
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
 
+  if (!inputs.projectPath) {
+    ctx.result = err(NoProjectOpenedError());
+    return;
+  }
+  const projectPathExist = await fs.pathExists(inputs.projectPath);
+  if (!projectPathExist) {
+    ctx.result = err(PathNotExistError(inputs.projectPath));
+    return;
+  }
+  const confFolderPath = path.resolve(inputs.projectPath!, `.${ConfigFolderName}`);
+  const settingsFile = path.resolve(confFolderPath, "settings.json");
+  const projectSettings: ProjectSettings = await fs.readJson(settingsFile);
+  const defaultEnvName = environmentManager.defaultEnvName;
+
+  const contextPath = path.resolve(confFolderPath, `env.${defaultEnvName}.json`);
+  const userDataPath = path.resolve(confFolderPath, `${defaultEnvName}.userdata`);
+
+  let context: Json = {};
+  let userData: Record<string, string> = {};
+
   try {
-    if (!inputs.projectPath) {
-      ctx.result = err(NoProjectOpenedError());
-      return;
-    }
-    const projectPathExist = await fs.pathExists(inputs.projectPath);
-    if (!projectPathExist) {
-      ctx.result = err(PathNotExistError(inputs.projectPath));
-      return;
-    }
-    const confFolderPath = path.resolve(inputs.projectPath!, `.${ConfigFolderName}`);
-    const settingsFile = path.resolve(confFolderPath, "settings.json");
-    const projectSettings: ProjectSettings = await fs.readJson(settingsFile);
+    // Read context and userdata file.
+    context = await readContext(contextPath);
+    userData = await readUserData(userDataPath, projectSettings.projectId);
+  } catch (error) {
+    const errorObject = ReadFileError(error);
+    core?.tools?.logProvider?.info(errorObject.message);
+    sendTelemetryErrorEvent(
+      core?.tools?.telemetryReporter,
+      inputs,
+      TelemetryEvent.ProjectUpgrade,
+      errorObject
+    );
+    ctx.result = err(errorObject);
+    return;
+  }
 
-    const defaultEnvName = environmentManager.defaultEnvName;
-    // Read context file.
-    const contextPath = path.resolve(confFolderPath, `env.${defaultEnvName}.json`);
-    const context = await readContext(contextPath);
-
+  try {
     // Update value of specific key in context file to secret pattern.
     // Return: map of updated values.
     const updatedKeys = updateContextValue(context);
@@ -94,26 +117,10 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<void> {
     // Some keys updated. Send start telemetry.
     sendTelemetryEvent(core?.tools?.telemetryReporter, inputs, TelemetryEvent.ProjectUpgradeStart);
 
-    // Read UserData file.
-    const userDataPath = path.resolve(confFolderPath, `${defaultEnvName}.userdata`);
-    const userData = await readUserData(userDataPath, projectSettings.projectId);
-
     // Merge updatedKeys into UserData.
     mergeKeysToUserDate(userData, updatedKeys);
-
-    // Save the updated context and UserData.
-    await saveContext(contextPath, context);
-    await saveUserData(userDataPath, userData, projectSettings.projectId);
-
-    // Send log.
-    core?.tools?.logProvider?.info(
-      "[core]: template version is too low. Updated context and moved some configs from env to userdata."
-    );
-    sendTelemetryEvent(core?.tools?.telemetryReporter, inputs, TelemetryEvent.ProjectUpgrade, {
-      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-    });
   } catch (error) {
-    const errorObject = ContextUpgradeError(error);
+    const errorObject = ContextUpgradeError(error, error.message == SolutionContextNotFoundError);
     core?.tools?.logProvider?.info(
       `Template upgrade failed. Please clean the env.default.json and default.userdata file and try again. Reason: ${error?.message}`
     );
@@ -121,14 +128,36 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<void> {
       core?.tools?.telemetryReporter,
       inputs,
       TelemetryEvent.ProjectUpgrade,
-      errorObject,
-      {
-        [TelemetryProperty.Success]: TelemetrySuccess.No,
-        [TelemetryProperty.ErrorMessage]: error?.message,
-      }
+      errorObject
     );
     ctx.result = err(errorObject);
+    return;
   }
+
+  try {
+    // Save the updated context and UserData.
+    await saveContext(contextPath, context);
+    await saveUserData(userDataPath, userData, projectSettings.projectId);
+  } catch (error) {
+    const errorObject = WriteFileError(error);
+    core?.tools?.logProvider?.info(errorObject.message);
+    sendTelemetryErrorEvent(
+      core?.tools?.telemetryReporter,
+      inputs,
+      TelemetryEvent.ProjectUpgrade,
+      errorObject
+    );
+    ctx.result = err(errorObject);
+    return;
+  }
+
+  // Send log.
+  core?.tools?.logProvider?.info(
+    "[core]: template version is too low. Updated context and moved some configs from env to userdata."
+  );
+  sendTelemetryEvent(core?.tools?.telemetryReporter, inputs, TelemetryEvent.ProjectUpgrade, {
+    [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+  });
 }
 
 // TODO: add readUserData as basic API in core since used in multiple places.
@@ -194,6 +223,18 @@ async function saveContext(contextPath: string, context: Json): Promise<void> {
 function updateContextValue(context: Json): Map<string, any> {
   const res: Map<string, any> = new Map();
 
+  // Update solution context.
+  const pluginContext: any = context[solutionContext.plugin];
+  if (!pluginContext) {
+    throw new Error(SolutionContextNotFoundError);
+  }
+  for (const key of solutionContext.relatedKeys) {
+    if (pluginContext[key] && !isSecretPattern(pluginContext[key])) {
+      res.set(getUserDataKey(solutionContext.plugin, key), pluginContext[key]);
+      pluginContext[key] = getSecretPattern(solutionContext.plugin, key);
+    }
+  }
+
   // Update resource context.
   for (const item of resourceContext) {
     const pluginContext: any = context[item.plugin];
@@ -210,15 +251,6 @@ function updateContextValue(context: Json): Map<string, any> {
     }
   }
 
-  // Update solution context.
-  const pluginContext: any = context[solutionContext.plugin];
-  for (const key of solutionContext.relatedKeys) {
-    if (pluginContext[key] && !isSecretPattern(pluginContext[key])) {
-      res.set(getUserDataKey(solutionContext.plugin, key), pluginContext[key]);
-      pluginContext[key] = getSecretPattern(solutionContext.plugin, key);
-    }
-  }
-
   return res;
 }
 
@@ -226,6 +258,10 @@ function mergeKeysToUserDate(
   userData: Record<string, string>,
   updatedKeys: Map<string, any>
 ): void {
+  if (!userData) {
+    return;
+  }
+
   // Move resource context first to userdata
   let moved = false;
   for (const item of resourceContext) {

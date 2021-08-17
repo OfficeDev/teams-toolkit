@@ -189,7 +189,7 @@ export class WebviewPanel {
         } catch (e) {
           error = returnSystemError(e, ExtensionSource, ExtensionErrors.UnknwonError);
         } finally {
-          progress.end();
+          progress.end(downloadSuccess);
         }
       }
     }

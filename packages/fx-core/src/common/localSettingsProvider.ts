@@ -53,12 +53,16 @@ export class LocalSettingsProvider {
     return localSettings;
   }
 
-  public incrementalInit(localSettings: LocalSettings, addBackaned: boolean, addBot: boolean): LocalSettings {
-    if (!(localSettings.backend) && addBackaned) {
+  public incrementalInit(
+    localSettings: LocalSettings,
+    addBackaned: boolean,
+    addBot: boolean
+  ): LocalSettings {
+    if (!localSettings.backend && addBackaned) {
       localSettings.backend = this.initBackend();
     }
 
-    if (!(localSettings.bot) && addBot) {
+    if (!localSettings.bot && addBot) {
       localSettings.bot = this.initBot();
     }
 

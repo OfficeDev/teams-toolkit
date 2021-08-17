@@ -3,8 +3,10 @@
 "use strict";
 
 import { UserInteraction } from "../qm/ui";
+import { CryptoProvider } from "./crypto";
 import { LogProvider } from "./log";
 import { TokenProvider } from "./login";
+import { PermissionRequestProvider } from "./permissionRequest";
 import { TelemetryReporter } from "./telemetry";
 import { TreeProvider } from "./tree";
 
@@ -13,6 +15,7 @@ export * from "./log";
 export * from "./telemetry";
 export * from "./tree";
 export * from "./crypto";
+export * from "./permissionRequest";
 
 export interface Tools {
   logProvider: LogProvider;
@@ -20,4 +23,6 @@ export interface Tools {
   telemetryReporter?: TelemetryReporter;
   treeProvider?: TreeProvider;
   ui: UserInteraction;
+  cryptoProvider?: CryptoProvider;
+  permissionRequest?: PermissionRequestProvider;
 }

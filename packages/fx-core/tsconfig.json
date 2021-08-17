@@ -19,7 +19,8 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "jsx": "react",
-    "declaration": true
+    "declaration": true,
+    "plugins": [{ "transform": "../failpoint-ts/transformer/transformer.ts" }]
   },
   "include": ["src"],
   "exclude": ["node_modules", "**/tests/*"]

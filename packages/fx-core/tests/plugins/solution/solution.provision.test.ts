@@ -427,9 +427,6 @@ describe("provision() happy path for SPFx projects", () => {
     // mocker.stub<any, any>(fs, "pathExists").withArgs(permissionsJsonPath).resolves(true);
     mocker.stub(AppStudioClient, "createApp").resolves(mockedAppDef);
     mocker.stub(AppStudioClient, "updateApp").resolves(mockedAppDef);
-    mocker
-      .stub(AppStudioPluginImpl.prototype, "getAppDirectory" as any)
-      .resolves(`./.${ConfigFolderName}`);
   });
 
   afterEach(() => {

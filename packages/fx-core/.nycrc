@@ -6,7 +6,8 @@
     "src/**/*.js"
   ],
   "exclude": [
-      "src/plugins/resource/function/utils/depsChecker/**/*"
+      "src/plugins/resource/function/utils/depsChecker/**/*",
+      "src/plugins/resource/localdebug/legacyPlugin.ts"
   ],
   "reporter": [
     "text",

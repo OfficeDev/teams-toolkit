@@ -655,6 +655,7 @@ export class TeamsAppSolution implements Solution {
         return ok(undefined);
       },
       async () => {
+        ctx.config.get(GLOBAL_CONFIG)?.delete(ARM_TEMPLATE_OUTPUT);
         ctx.logProvider?.info(
           util.format(getStrings().solution.ConfigurationFinishNotice, PluginDisplayName.Solution)
         );

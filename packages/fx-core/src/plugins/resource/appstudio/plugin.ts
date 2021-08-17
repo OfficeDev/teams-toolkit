@@ -1100,8 +1100,6 @@ export class AppStudioPluginImpl {
     zip.addLocalFile(outlineFile);
 
     const archivedFile = zip.toBuffer();
-    // zip.writeZip(`${appDirectory}/appPackage.zip`);
-    // const appContent = await fs.readFile(`${appDirectory}/appPackage.zip`);
     const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
 
     const appDefinition = await AppStudioClient.createApp(

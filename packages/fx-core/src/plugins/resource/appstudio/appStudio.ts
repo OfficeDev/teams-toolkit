@@ -38,7 +38,7 @@ export namespace AppStudioClient {
 
   /**
    * Creates an app registration in app studio with the given archived file and returns the app definition.
-   * @param {IAppDefinition}  appDefinition
+   * @param {Buffer}  file - Zip file with manifest.json and two icons
    * @param {string}  appStudioToken
    * @param {LogProvider} logProvider
    * @returns {Promise<IAppDefinition>}

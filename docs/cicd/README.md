@@ -1,16 +1,16 @@
 # CI/CD Support for Teams Application Developers
 
-TeamsFx tooling provides support for you to automate, customize and execute your sfotware development workflows right in your repository when buidling a Teams applictaion. These documents describes the essential tools and predefined templates for you to quickly get started with CI/CD.
+TeamsFx helps automate your development workflow when buidling a Teams applictaion. These documents provides some templates for you to quickly get started with CI/CD.
 
 |Tools and Templates|Description|
 |---|---|
-|[teamsfx-cli-action](https://github.com/OfficeDev/teamsfx-cli-action)|A ready-to-use GitHub Action and you can combineit in a completely customized workflow.|
-|[github-ci-template.yml](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/github-ci-template.yml) and [github-cd-template.yml](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/github-cd-template.yml)|GitHub workflow templates. It shows what a typical CI/CD workflow looks like for a Teams application.|
-|[script-ci-template.sh](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/others-script-ci-template.sh) and [script-cd-template.sh](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/others-script-cd-template.sh)|Script templates you can follow to build workflows outside GitHub. It shows what a typical CI/CD workflow looks like for a Teams application.|
+|[teamsfx-cli-action](https://github.com/OfficeDev/teamsfx-cli-action)|A ready-to-use GitHub Action.|
+|[github-ci-template.yml](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/github-ci-template.yml) and [github-cd-template.yml](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/github-cd-template.yml)| GitHub CI templates for a Teams app. |
+|[script-ci-template.sh](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/others-script-ci-template.sh) and [script-cd-template.sh](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/others-script-cd-template.sh)| Script templates for automation everywhere else outside of GitHub. |
 
 ## CI/CD Workflow Teamplates in GitHub
 
-Follow these example [github-ci-template.yml](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/github-ci-template.yml) and  [github-cd-template.yml](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/github-cd-template.yml) if you want to create your own by copying-n-pasting the file into your repository under the folder `.github/workflows`. 
+To add this to your repository, you will need your versions of [github-ci-template.yml](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/github-ci-template.yml) and  [github-cd-template.yml](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/github-cd-template.yml) to be located in your repository under the folder `.github/workflows`. 
 
 ### Customize CI Workflow
 There are some potential changes you can make to adapt your project:

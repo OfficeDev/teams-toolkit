@@ -215,9 +215,8 @@ export class legacyLocalDebugPlugin {
           localEnvs[LocalEnvFrontendKeys.FuncEndpoint] = localDebugConfigs.get(
             LocalDebugConfigKeys.LocalFunctionEndpoint
           ) as string;
-          localEnvs[LocalEnvFrontendKeys.FuncName] = ctx.configOfOtherPlugins
-            .get(FunctionPlugin.Name)
-            ?.get(FunctionPlugin.DefaultFunctionName) as string;
+          localEnvs[LocalEnvFrontendKeys.FuncName] = ctx.projectSettings
+            ?.defaultFunctionName as string;
 
           // function local envs
           localEnvs[LocalEnvBackendKeys.ClientId] = clientId;

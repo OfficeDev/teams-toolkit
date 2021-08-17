@@ -29,6 +29,7 @@ import {
   GroupOfTasks,
   RunnableTask,
   AppPackageFolderName,
+  SolutionConfig,
 } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import {
@@ -79,7 +80,11 @@ import * as uuid from "uuid";
 import { AxiosResponse } from "axios";
 import { ProjectUpgraderMW } from "./middleware/projectUpgrader";
 import { globalStateUpdate } from "../common/globalState";
-import { EnvInfoLoaderMW } from "./middleware/envInfoLoader";
+import {
+  EnvInfoLoaderMW,
+  upgradeDefaultFunctionName,
+  upgradeProgrammingLanguage,
+} from "./middleware/envInfoLoader";
 import { EnvInfoWriterMW } from "./middleware/envInfoWriter";
 import { LocalSettingsLoaderMW } from "./middleware/localSettingsLoader";
 import { LocalSettingsWriterMW } from "./middleware/localSettingsWriter";
@@ -342,6 +347,15 @@ export class FxCore implements Core {
     LocalSettingsWriterMW,
   ])
   async localDebug(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+    upgradeProgrammingLanguage(
+      ctx!.solutionContext!.config as SolutionConfig,
+      ctx!.projectSettings!
+    );
+    upgradeDefaultFunctionName(
+      ctx!.solutionContext!.config as SolutionConfig,
+      ctx!.projectSettings!
+    );
+
     return await ctx!.solution!.localDebug(ctx!.solutionContext!);
   }
 
@@ -477,6 +491,51 @@ export class FxCore implements Core {
     return ok(Void);
   }
 
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW(isMultiEnvEnabled(), false),
+    SolutionLoaderMW(defaultSolutionLoader),
+    QuestionModelMW,
+    ContextInjecterMW,
+    ProjectSettingsWriterMW,
+    EnvInfoWriterMW,
+  ])
+  async grantPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    return await ctx!.solution!.grantPermission!(ctx!.solutionContext!);
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW(isMultiEnvEnabled(), false),
+    SolutionLoaderMW(defaultSolutionLoader),
+    QuestionModelMW,
+    ContextInjecterMW,
+    ProjectSettingsWriterMW,
+    EnvInfoWriterMW,
+  ])
+  async checkPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    return await ctx!.solution!.checkPermission!(ctx!.solutionContext!);
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW(isMultiEnvEnabled(), false),
+    SolutionLoaderMW(defaultSolutionLoader),
+    QuestionModelMW,
+    ContextInjecterMW,
+    ProjectSettingsWriterMW,
+    EnvInfoWriterMW,
+  ])
+  async listCollaborator(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    return await ctx!.solution!.listCollaborator!(ctx!.solutionContext!);
+  }
+
   async _getQuestionsForUserTask(
     ctx: SolutionContext,
     solution: Solution,
@@ -567,7 +626,7 @@ export class FxCore implements Core {
             description: "",
             author: "",
             scripts: {
-              test: 'echo "Error: no test specified" && exit 1',
+              test: "echo \"Error: no test specified\" && exit 1",
             },
             devDependencies: {
               "@microsoft/teamsfx-cli": "0.*",

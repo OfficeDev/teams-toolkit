@@ -761,12 +761,15 @@ export class AppStudioPluginImpl {
   > {
     let tabEndpoint, tabDomain;
     if (isArmSupportEnabled()) {
-      if (localDebug) {
+      // getConfigForCreatingManifest is called in post-provision and validate manifest
+      // only in post stage, we find the value from arm output.
+      // Here is a walk-around way, try to get from arm output first and then get from ctx config.
+      // todo: use the specific function to read config in post stage.
+      tabEndpoint = getArmOutput(ctx, FRONTEND_ENDPOINT_ARM) as string;
+      tabDomain = getArmOutput(ctx, FRONTEND_DOMAIN_ARM) as string;
+      if (!tabEndpoint) {
         tabEndpoint = this.getTabEndpoint(ctx, localDebug);
         tabDomain = this.getTabDomain(ctx, localDebug);
-      } else {
-        tabEndpoint = getArmOutput(ctx, FRONTEND_ENDPOINT_ARM) as string;
-        tabDomain = getArmOutput(ctx, FRONTEND_DOMAIN_ARM) as string;
       }
     } else {
       tabEndpoint = this.getTabEndpoint(ctx, localDebug);

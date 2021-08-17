@@ -15,7 +15,11 @@ import {
   traverse,
 } from "@microsoft/teamsfx-api";
 import { CoreHookContext, FxCore } from "../..";
-import { NoProjectOpenedError, ProjectSettingsUndefinedError } from "../error";
+import {
+  NoProjectOpenedError,
+  ProjectEnvNotExistError,
+  ProjectSettingsUndefinedError,
+} from "../error";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { LocalCrypto } from "../crypto";
 import { environmentManager } from "../environment";
@@ -48,7 +52,17 @@ export function EnvInfoLoaderMW(
     let targetEnvName: string | undefined;
     if (isMultiEnvEnabled) {
       if (inputs.env) {
-        targetEnvName = inputs.env;
+        const checkEnv = await environmentManager.checkEnvExist(inputs.projectPath!, inputs.env);
+        if (checkEnv.isErr()) {
+          ctx.result = checkEnv.error;
+          return;
+        }
+        if (checkEnv.value || allowCreateNewEnv) {
+          targetEnvName = inputs.env;
+        } else {
+          ctx.result = err(ProjectEnvNotExistError(inputs.env));
+          return;
+        }
       } else {
         targetEnvName = await askTargetEnvironment(ctx, inputs, allowCreateNewEnv, lastUsedEnvName);
         lastUsedEnvName = targetEnvName ?? lastUsedEnvName;

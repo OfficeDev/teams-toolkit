@@ -27,13 +27,19 @@ import CLILogProvider from "./commonlib/log";
 import CLIUIInstance from "./userInteraction";
 import { flattenNodes, getSingleOptionString, toYargsOptions } from "./utils";
 import { Options } from "yargs";
-import { EnvNode, RootFolderNode, sqlPasswordConfirmQuestionName } from "./constants";
+import {
+  EnvNode,
+  EnvNodeNoCreate,
+  RootFolderNode,
+  sqlPasswordConfirmQuestionName,
+} from "./constants";
 import { NoInitializedHelpGenerator } from "./error";
 
 export class HelpParamGenerator {
   private core: FxCore;
   private questionsMap: Map<string, QTreeNode> = new Map<string, QTreeNode>();
   private initialized = false;
+  private static showEnvStage: string[] = [Stage.build, Stage.publish, Stage.deploy];
 
   private static instance: HelpParamGenerator;
 
@@ -193,8 +199,12 @@ export class HelpParamGenerator {
     }
 
     // Add env node
-    if (isMultiEnvEnabled() && stage !== Stage.create) {
-      nodes = nodes.concat([EnvNode]);
+    if (isMultiEnvEnabled()) {
+      if (stage === Stage.provision) {
+        nodes = nodes.concat([EnvNode]);
+      } else if (HelpParamGenerator.showEnvStage.indexOf(stage) >= 0) {
+        nodes = nodes.concat([EnvNodeNoCreate]);
+      }
     }
 
     // hide sql-confirm-password in provision stage.

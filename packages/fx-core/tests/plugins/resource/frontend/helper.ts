@@ -91,7 +91,6 @@ export class TestHelper {
     solutionConfig.set(DependentPluginInfo.ProgrammingLanguage, TestHelper.tabLanguage);
 
     const functionConfig = new Map();
-    functionConfig.set(DependentPluginInfo.FunctionDefaultName, TestHelper.functionDefaultEntry);
     functionConfig.set(DependentPluginInfo.FunctionEndpoint, TestHelper.functionEndpoint);
 
     const runtimeConfig = new Map();
@@ -116,6 +115,7 @@ export class TestHelper {
       ]),
       projectSettings: {
         appName: TestHelper.appName,
+        defaultFunctionName: TestHelper.functionDefaultEntry,
         projectId: uuid(),
         solutionSettings: {
           name: "",

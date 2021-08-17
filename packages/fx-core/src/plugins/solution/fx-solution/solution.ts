@@ -56,6 +56,9 @@ import {
   SolutionTelemetrySuccess,
   PluginNames,
   ARM_TEMPLATE_OUTPUT,
+  USER_INFO,
+  REMOTE_TENANT_ID,
+  SUBSCRIPTION_ID,
 } from "./constants";
 
 import {
@@ -103,6 +106,9 @@ import { LocalSettingsProvider } from "../../../common/localSettingsProvider";
 import { PluginDisplayName } from "../../../common/constants";
 import { LocalSettingsTeamsAppKeys } from "../../../common/localSettingsConstants";
 import { PermissionRequestFileProvider } from "../../../core/permissionRequest";
+import { IUserList } from "../../resource/appstudio/interfaces/IAppDefinition";
+import axios from "axios";
+import { ResourcePermission } from "../../../common/permissionInterface";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -1177,7 +1183,124 @@ export class TeamsAppSolution implements Solution {
 
   @hooks([ErrorHandlerMW])
   async checkPermission(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    return ok(Void);
+    const canCheckPermission = this.checkWhetherSolutionIsIdle();
+    if (canCheckPermission.isErr()) {
+      return canCheckPermission;
+    }
+
+    const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
+    if (!provisioned) {
+      return err(
+        returnUserError(
+          new Error(
+            "Failed to check permission because the resources have not been provisioned yet. Make sure you do the provision first."
+          ),
+          "Solution",
+          SolutionError.CannotCheckPermissionBeforeProvision
+        )
+      );
+    }
+
+    try {
+      const userInfo = await this.getUserInfo(ctx);
+
+      if (!userInfo) {
+        return err(
+          returnSystemError(
+            new Error("Failed to retrieve current user info from graph token"),
+            "Solution",
+            SolutionError.FailedToRetrieveUserInfo
+          )
+        );
+      }
+
+      const aadAppTenantId = ctx.config?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
+      if (!aadAppTenantId || userInfo.tenantId != (aadAppTenantId as string)) {
+        return err(
+          returnUserError(
+            new Error(
+              "Tenant id of your account and the provisioned Azure AD app does not match. Please check whether you logined with wrong account."
+            ),
+            "Solution",
+            SolutionError.M365AccountNotMatch
+          )
+        );
+      }
+
+      ctx.config.get(GLOBAL_CONFIG)?.set(USER_INFO, JSON.stringify(userInfo));
+
+      // Get Azure credential in solution to avoid multiple login in different plugins.
+      const subInfo = await ctx.azureAccountProvider?.getSelectedSubscription(true);
+      if (!subInfo || subInfo.subscriptionId === "") {
+        throw returnSystemError(
+          new Error("Failed to get selected subscription."),
+          PluginDisplayName.Solution,
+          SolutionError.NoSubscriptionSelected
+        );
+      }
+
+      const projectSubscriptionId = await ctx.config?.get(GLOBAL_CONFIG)?.get(SUBSCRIPTION_ID);
+      const allSubs = await ctx.azureAccountProvider?.listSubscriptions();
+
+      if (projectSubscriptionId && subInfo?.subscriptionId !== projectSubscriptionId) {
+        const projectSubscriptionInfo = allSubs?.find(
+          (sub: SubscriptionInfo) => sub.subscriptionId === projectSubscriptionId
+        );
+        if (projectSubscriptionInfo) {
+          throw returnUserError(
+            new Error(
+              `Project subscription and Azure account selected subscription does not match. Please select corrected subscription: ${projectSubscriptionInfo.subscriptionName}`
+            ),
+            PluginDisplayName.Solution,
+            SolutionError.AzureSubscriptionNotMatch
+          );
+        } else {
+          returnUserError(
+            new Error(
+              `Azure account you logined doesn't contain subscription: ${projectSubscriptionId}. Please login correct Azure account.`
+            ),
+            PluginDisplayName.Solution,
+            SolutionError.AzureAccountNotCorrect
+          );
+        }
+      }
+
+      const maybeSelectedPlugins = this.getSelectedPlugins(ctx);
+      if (maybeSelectedPlugins.isErr()) {
+        return maybeSelectedPlugins;
+      }
+      const selectedPlugins = maybeSelectedPlugins.value;
+
+      const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(
+        ctx,
+        selectedPlugins
+      );
+
+      const checkPermissionWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(
+        ([plugin, context]) => {
+          return [plugin?.checkPermission?.bind(plugin), context, plugin.name];
+        }
+      );
+
+      const results = await executeConcurrently("", checkPermissionWithCtx);
+
+      const permissions: ResourcePermission[] = [];
+      for (const result of results) {
+        if (result.isErr()) {
+          continue;
+        }
+        if (result && result.value) {
+          for (const res of result.value) {
+            permissions.push(res as ResourcePermission);
+          }
+        }
+      }
+
+      return ok(permissions);
+    } finally {
+      ctx.config.get(GLOBAL_CONFIG)?.delete(USER_INFO);
+      this.runningState = SolutionRunningState.Idle;
+    }
   }
 
   @hooks([ErrorHandlerMW])
@@ -1997,5 +2120,51 @@ export class TeamsAppSolution implements Solution {
       tenantId: maybeTenantId.value,
       applicationIdUri: configResult.value.applicationIdUri,
     });
+  }
+
+  private async getUserInfo(ctx: SolutionContext, email?: string): Promise<IUserList | undefined> {
+    const currentUser = await ctx.graphTokenProvider?.getJsonObject();
+
+    if (!currentUser) {
+      return undefined;
+    }
+
+    const tenantId = currentUser["tid"] as string;
+    let aadId = currentUser["oid"] as string;
+    let userPrincipalName = currentUser["unique_name"] as string;
+    let displayName = currentUser["name"] as string;
+    const isAdministrator = true;
+
+    if (email) {
+      const graphToken = await ctx.graphTokenProvider?.getAccessToken();
+      const instance = axios.create({
+        baseURL: "https://graph.microsoft.com/v1.0",
+      });
+      instance.defaults.headers.common["Authorization"] = `Bearer ${graphToken}`;
+      const res = await instance.get(`/users?$filter=startsWith(mail,'${email}')`);
+      if (!res || !res.data || !res.data.value) {
+        return undefined;
+      }
+
+      const collaborator = res.data.value.find(
+        (user: any) => (user["userPrincipalName"] as string) === email
+      );
+
+      if (!collaborator) {
+        return undefined;
+      }
+
+      aadId = collaborator["id"] as string;
+      userPrincipalName = collaborator["userPrincipalName"] as string;
+      displayName = collaborator["displayName"] as string;
+    }
+
+    return {
+      tenantId,
+      aadId,
+      userPrincipalName,
+      displayName,
+      isAdministrator,
+    };
   }
 }

@@ -228,7 +228,7 @@ export class AppStudioPluginImpl {
     }
 
     if (create) {
-      const result = await this.createApp(ctx);
+      const result = await this.createApp(ctx, false);
       if (result.isErr()) {
         throw result;
       }
@@ -1063,7 +1063,10 @@ export class AppStudioPluginImpl {
     return appDefinition;
   }
 
-  private async createApp(ctx: PluginContext): Promise<Result<IAppDefinition, FxError>> {
+  private async createApp(
+    ctx: PluginContext,
+    isLocalDebug: boolean
+  ): Promise<Result<IAppDefinition, FxError>> {
     const appDirectory = await getAppDirectory(ctx.root);
     const status = await fs.lstat(appDirectory);
 
@@ -1102,12 +1105,26 @@ export class AppStudioPluginImpl {
     const archivedFile = zip.toBuffer();
     const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
 
-    const appDefinition = await AppStudioClient.createApp(
-      archivedFile,
-      appStudioToken,
-      ctx.logProvider
-    );
-    return ok(appDefinition);
+    try {
+      const appDefinition = await AppStudioClient.createApp(
+        archivedFile,
+        appStudioToken,
+        ctx.logProvider
+      );
+      return ok(appDefinition);
+    } catch (e) {
+      return err(
+        isLocalDebug
+          ? AppStudioResultFactory.SystemError(
+              AppStudioError.LocalAppIdCreateFailedError.name,
+              AppStudioError.LocalAppIdCreateFailedError.message
+            )
+          : AppStudioResultFactory.SystemError(
+              AppStudioError.RemoteAppIdCreateFailedError.name,
+              AppStudioError.RemoteAppIdCreateFailedError.message
+            )
+      );
+    }
   }
 
   private async updateApp(
@@ -1130,8 +1147,11 @@ export class AppStudioPluginImpl {
     }
 
     if (createIfNotExist) {
-      const appDef = await this.createApp(ctx);
-      if (appDef.isErr() || !appDef.value.teamsAppId) {
+      const appDef = await this.createApp(ctx, type === "localDebug");
+      if (appDef.isErr()) {
+        return err(appDef.error);
+      }
+      if (!appDef.value.teamsAppId) {
         return err(
           type === "remote"
             ? AppStudioResultFactory.SystemError(

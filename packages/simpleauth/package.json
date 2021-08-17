@@ -1,0 +1,13 @@
+{
+  "name": "simpleauth",
+  "version": "0.1.0",
+  "description": "The Simple Auth is a backend service helping Teams tab app access first/third party services from client side.",
+  "scripts": {
+    "version": "node ../../.github/scripts/update-simpleauth-ver.js && git add ."
+  },
+  "private": "true",
+  "license": "MIT",
+  "devDependencies": {
+    "xml2js": "^0.4.23"
+  }
+}

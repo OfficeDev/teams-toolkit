@@ -12,7 +12,7 @@ import { getTeamsAppId } from "../utils/commonUtils";
 import { isValidProject } from "@microsoft/teamsfx-core";
 import { getNpmInstallLogInfo } from "./npmLogHandler";
 import * as path from "path";
-import { errorDetail, issueLink, issueTemplate, npmInstallFailedHintMessage } from "./constants";
+import { errorDetail, issueLink, issueTemplate } from "./constants";
 import * as StringResources from "../resources/Strings.json";
 import * as util from "util";
 import VsCodeLogInstance from "../commonlib/log";
@@ -166,12 +166,23 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
           },
         };
         vscode.window
-          .showErrorMessage(util.format(npmInstallFailedHintMessage, task.name, task.name), issue)
+          .showErrorMessage(
+            util.format(
+              StringResources.vsc.localDebug.npmInstallFailedHintMessage,
+              task.name,
+              task.name
+            ),
+            issue
+          )
           .then(async (button) => {
             await button?.run();
           });
         await VsCodeLogInstance.error(
-          util.format(npmInstallFailedHintMessage, task.name, task.name)
+          util.format(
+            StringResources.vsc.localDebug.npmInstallFailedHintMessage,
+            task.name,
+            task.name
+          )
         );
         terminateAllRunningTeamsfxTasks();
       }
@@ -215,7 +226,7 @@ function onDidStartDebugSessionHandler(event: vscode.DebugSession): void {
         ) {
           vscode.window
             .showInformationMessage(
-              constants.sideloadingHintMessage,
+              StringResources.vsc.localDebug.sideloadingHintMessage,
               StringResources.vsc.localDebug.sideloadingHintDoNotShowAgain,
               StringResources.vsc.localDebug.openFAQ
             )

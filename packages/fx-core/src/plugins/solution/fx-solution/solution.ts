@@ -241,7 +241,12 @@ export class TeamsAppSolution implements Solution {
   }
 
   fillInV1SolutionSettings(ctx: SolutionContext): Result<AzureSolutionSettings, FxError> {
-    const assertList: [Result<ProjectSettings, FxError>, Result<SolutionSettings, FxError>] = [
+    const assertList: [
+      Result<Inputs, FxError>,
+      Result<ProjectSettings, FxError>,
+      Result<SolutionSettings, FxError>
+    ] = [
+      this.assertSettingsNotEmpty<Inputs>(ctx.answers, "answers"),
       this.assertSettingsNotEmpty<ProjectSettings>(ctx.projectSettings, "projectSettings"),
       this.assertSettingsNotEmpty<SolutionSettings>(
         ctx?.projectSettings?.solutionSettings,
@@ -252,7 +257,17 @@ export class TeamsAppSolution implements Solution {
     if (assertRes.isErr()) {
       return err(assertRes.error);
     }
-    const [projectSettings, solutionSettingsSource] = assertRes.value;
+    const [answers, projectSettings, solutionSettingsSource] = assertRes.value;
+
+    const langRes = this.assertSettingsNotEmpty<string>(
+      answers[AzureSolutionQuestionNames.ProgrammingLanguage] as string,
+      AzureSolutionQuestionNames.ProgrammingLanguage
+    );
+    if (langRes.isErr()) {
+      return err(langRes.error);
+    }
+
+    projectSettings.programmingLanguage = langRes.value;
 
     const solutionSettings: AzureSolutionSettings = {
       name: solutionSettingsSource.name,
@@ -337,12 +352,6 @@ export class TeamsAppSolution implements Solution {
     // ensure that global namespace is present
     if (!ctx.config.has(GLOBAL_CONFIG)) {
       ctx.config.set(GLOBAL_CONFIG, new ConfigMap());
-    }
-
-    // Only non-SPFx project will ask this question.
-    const lang = ctx.answers![AzureSolutionQuestionNames.ProgrammingLanguage] as string;
-    if (lang) {
-      ctx.projectSettings!.programmingLanguage = lang;
     }
 
     const settingsRes = this.fillInV1SolutionSettings(ctx);

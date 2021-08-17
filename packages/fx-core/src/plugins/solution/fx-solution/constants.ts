@@ -108,6 +108,7 @@ export enum SolutionError {
   FailedToCompileBicepFiles = "FailedToCompileBicepFiles",
   FailedToGetAzureCredential = "FailedToGetAzureCredential",
   FailedToDeployArmTemplatesToAzure = "FailedToDeployArmTemplatesToAzure",
+  FeatureNotSupported = "FeatureNotSupported",
 }
 
 export const LOCAL_DEBUG_TAB_ENDPOINT = "localTabEndpoint";

@@ -41,15 +41,6 @@ export async function scaffoldSourceCode(
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     await scaffoldReadmeAndLocalSettings(capabilities, azureResources, inputs.projectPath!);
 
-    if (isArmSupportEnabled()) {
-      const legacyContext = new ScaffoldingContextAdapter([ctx, inputs]);
-      // todo(yefuwang): replace generateArmTemplate when v2 implementation is ready.
-      const armResult = await generateArmTemplate(legacyContext);
-      if (armResult.isErr()) {
-        return armResult;
-      }
-    }
-
     ctx.userInteraction.showMessage(
       "info",
       `Success: ${getStrings().solution.ScaffoldSuccessNotice}`,

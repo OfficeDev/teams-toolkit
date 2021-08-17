@@ -144,7 +144,7 @@ export function upgradeDefaultFunctionName(
   solutionConfig: SolutionConfig,
   projectSettings: ProjectSettings
 ) {
-  // upgrade defaultFuncttionName if exists.
+  // upgrade defaultFunctionName if exists.
   const defaultFunctionName = solutionConfig.get(PluginNames.FUNC)?.get(DEFAULT_FUNC_NAME);
   if (defaultFunctionName) {
     // add defaultFunctionName in project settings

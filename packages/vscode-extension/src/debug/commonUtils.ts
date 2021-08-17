@@ -254,6 +254,9 @@ function getSettingWithUserData(jsonSelector: (jsonObject: any) => any): string 
           const userdata = fs.readFileSync(userdataPath, "utf8");
           const userEnv = dotenv.parse(userdata);
           return userEnv[placeHolder];
+        } else {
+          // in collaboration scenario, userdata may not exist
+          return undefined;
         }
       }
 

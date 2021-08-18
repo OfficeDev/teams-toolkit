@@ -2,7 +2,7 @@
 const axios = require("axios");
 const querystring = require("querystring");
 {{/IS_ME}}
-const { TeamsActivityHandler, CardFactory} = require("botbuilder");
+const { TeamsActivityHandler, CardFactory{{#IS_BOT}}, TurnContext{{/IS_BOT}}} = require("botbuilder");
 {{#IS_BOT}}
 const rawWelcomeCard = require("./adaptiveCards/welcome.json");
 const ACData = require("adaptivecards-templating");

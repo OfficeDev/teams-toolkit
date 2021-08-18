@@ -15,7 +15,11 @@ import {
   traverse,
 } from "@microsoft/teamsfx-api";
 import { CoreHookContext, FxCore } from "../..";
-import { NoProjectOpenedError, ProjectSettingsUndefinedError } from "../error";
+import {
+  NoProjectOpenedError,
+  ProjectEnvNotExistError,
+  ProjectSettingsUndefinedError,
+} from "../error";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { LocalCrypto } from "../crypto";
 import { environmentManager } from "../environment";
@@ -44,6 +48,9 @@ export function EnvInfoLoaderMW(
       await next();
       return;
     }
+    if (inputs.previewType && inputs.previewType === "local") {
+      isMultiEnvEnabled = false;
+    }
 
     if (!ctx.projectSettings) {
       ctx.result = err(ProjectSettingsUndefinedError());
@@ -53,7 +60,11 @@ export function EnvInfoLoaderMW(
     const core = ctx.self as FxCore;
     let targetEnvName: string | undefined;
     if (isMultiEnvEnabled) {
-      targetEnvName = await askTargetEnvironment(ctx, inputs, allowCreateNewEnv, lastUsedEnvName);
+      if (inputs.env) {
+        targetEnvName = await useUserSetEnv(ctx, inputs, allowCreateNewEnv);
+      } else {
+        targetEnvName = await askTargetEnvironment(ctx, inputs, allowCreateNewEnv, lastUsedEnvName);
+      }
       lastUsedEnvName = targetEnvName ?? lastUsedEnvName;
     } else {
       targetEnvName = environmentManager.defaultEnvName;
@@ -197,6 +208,24 @@ async function askTargetEnvironment(
     return targetEnvName.slice(0, targetEnvName.indexOf(lastUsedMark));
   } else {
     return targetEnvName;
+  }
+}
+
+async function useUserSetEnv(
+  ctx: CoreHookContext,
+  inputs: Inputs,
+  allowCreateNewEnv: boolean
+): Promise<string | undefined> {
+  const checkEnv = await environmentManager.checkEnvExist(inputs.projectPath!, inputs.env);
+  if (checkEnv.isErr()) {
+    ctx.result = checkEnv.error;
+    return undefined;
+  }
+  if (checkEnv.value || allowCreateNewEnv) {
+    return inputs.env;
+  } else {
+    ctx.result = err(ProjectEnvNotExistError(inputs.env));
+    return undefined;
   }
 }
 

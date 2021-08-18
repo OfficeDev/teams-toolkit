@@ -102,6 +102,7 @@ import { deployArmTemplates, generateArmTemplate } from "./arm";
 import { LocalSettingsProvider } from "../../../common/localSettingsProvider";
 import { PluginDisplayName } from "../../../common/constants";
 import { LocalSettingsTeamsAppKeys } from "../../../common/localSettingsConstants";
+import { scaffoldReadmeAndLocalSettings } from "./v2/scaffolding";
 import { PermissionRequestFileProvider } from "../../../core/permissionRequest";
 
 export type LoadedPlugin = Plugin;
@@ -271,20 +272,6 @@ export class TeamsAppSolution implements Solution {
     //Reload plugins according to user answers
     await this.reloadPlugins(solutionSettings);
 
-    const templatesFolder = getTemplatesFolder();
-    const defaultColorPath = path.join(templatesFolder, "plugins", "solution", "defaultIcon.png");
-    const defaultOutlinePath = path.join(
-      templatesFolder,
-      "plugins",
-      "solution",
-      "defaultOutline.png"
-    );
-
-    await fs.copy(defaultColorPath, `${ctx.root}/${AppPackageFolderName}/color.png`);
-    await fs.copy(defaultOutlinePath, `${ctx.root}/${AppPackageFolderName}/outline.png`);
-    // await fs.copy(defaultColorPath, `${ctx.root}/.${ConfigFolderName}/color.png`);
-    // await fs.copy(defaultOutlinePath, `${ctx.root}/.${ConfigFolderName}/outline.png`);
-
     if (this.isAzureProject(ctx)) {
       await fs.writeJSON(`${ctx.root}/permissions.json`, DEFAULT_PERMISSION_REQUEST, { spaces: 4 });
       ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.Create, {
@@ -367,37 +354,9 @@ export class TeamsAppSolution implements Solution {
     if (res.isOk()) {
       const capabilities = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
         .capabilities;
-      const hasBot = capabilities?.includes(BotOptionItem.id);
-      const hasMsgExt = capabilities?.includes(MessageExtensionItem.id);
-      const hasTab = capabilities?.includes(TabOptionItem.id);
-      if (hasTab && (hasBot || hasMsgExt)) {
-        const readme = path.join(getTemplatesFolder(), "plugins", "solution", "README.md");
-        if (await fs.pathExists(readme)) {
-          await fs.copy(readme, `${ctx.root}/README.md`);
-        }
-      }
-
       const azureResources = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
-        ?.azureResources;
-      const hasBackend = azureResources?.includes(AzureResourceFunction.id);
-
-      if (isMultiEnvEnabled()) {
-        const localSettingsProvider = new LocalSettingsProvider(ctx.root);
-        const localSettings = await localSettingsProvider.load();
-
-        if (localSettings !== undefined) {
-          // Add local settings for the new added capability/resource
-          await localSettingsProvider.save(
-            localSettingsProvider.incrementalInit(localSettings!, hasBackend, hasBot)
-          );
-        } else {
-          // Initialize a local settings on scaffolding
-          await localSettingsProvider.save(localSettingsProvider.init(hasTab, hasBackend, hasBot));
-        }
-
-        // remove local debug config from env info
-        ctx.config.delete(PluginNames.LDEBUG);
-      }
+        .azureResources;
+      await scaffoldReadmeAndLocalSettings(capabilities, azureResources, ctx.root);
     }
 
     if (isArmSupportEnabled()) {

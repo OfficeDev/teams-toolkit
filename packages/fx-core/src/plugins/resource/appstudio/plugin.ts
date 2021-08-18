@@ -25,6 +25,7 @@ import {
   ITeamCommand,
   IPersonalCommand,
   IGroupChatCommand,
+  IUserList,
 } from "./interfaces/IAppDefinition";
 import { ICommand, ICommandList } from "../../solution/fx-solution/appstudio/interface";
 import {
@@ -45,6 +46,7 @@ import {
   WEB_APPLICATION_INFO_SOURCE,
   PluginNames,
   SOLUTION_PROVISION_SUCCEEDED,
+  USER_INFO,
 } from "../../solution/fx-solution/constants";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
@@ -66,6 +68,8 @@ import {
   REMOTE_MANIFEST,
   FRONTEND_ENDPOINT_ARM,
   FRONTEND_DOMAIN_ARM,
+  ErrorMessages,
+  SOLTUION,
 } from "./constants";
 import { REMOTE_TEAMS_APP_ID } from "../../solution/fx-solution/constants";
 import AdmZip from "adm-zip";
@@ -82,6 +86,7 @@ import {
 } from "../../../common/localSettingsConstants";
 import { v4 } from "uuid";
 import isUUID from "validator/lib/isUUID";
+import { ResourcePermission } from "../../../common/permissionInterface";
 
 export class AppStudioPluginImpl {
   public async getAppDefinitionAndUpdate(
@@ -545,6 +550,47 @@ export class AppStudioPluginImpl {
       throw teamsAppId;
     }
     return teamsAppId.value;
+  }
+
+  public async checkPermission(ctx: PluginContext): Promise<ResourcePermission[]> {
+    let userInfoObject: IUserList;
+    const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
+
+    const teamsAppId = (await ctx.configOfOtherPlugins
+      .get(SOLTUION)
+      ?.get(REMOTE_TEAMS_APP_ID)) as string;
+    if (!teamsAppId) {
+      throw new Error(ErrorMessages.GetConfigError(REMOTE_TEAMS_APP_ID, SOLTUION));
+    }
+
+    const userInfo = ctx.configOfOtherPlugins.get(SOLTUION)?.get(USER_INFO);
+    if (!userInfo) {
+      throw new Error(ErrorMessages.GetConfigError(USER_INFO, SOLTUION));
+    }
+
+    try {
+      userInfoObject = JSON.parse(userInfo) as IUserList;
+    } catch (error) {
+      throw new Error(ErrorMessages.ParseUserInfoError);
+    }
+
+    const teamsAppRoles = await AppStudioClient.checkPermission(
+      teamsAppId,
+      appStudioToken as string,
+      userInfoObject.aadId
+    );
+
+    const result: ResourcePermission[] = [
+      {
+        name: Constants.PERMISSIONS.name,
+        roles: [teamsAppRoles as string],
+        type: Constants.PERMISSIONS.type,
+        resourceId: teamsAppId,
+        error: undefined,
+      },
+    ];
+
+    return result;
   }
 
   private async beforePublish(

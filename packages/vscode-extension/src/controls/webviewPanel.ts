@@ -30,6 +30,8 @@ import { ExtensionErrors, ExtensionSource } from "../error";
 import * as StringResources from "../resources/Strings.json";
 import * as util from "util";
 import { VS_CODE_UI } from "../extension";
+import { exp } from "../exp/index";
+import { TreatmentVariables } from "../exp/treatmentVariables";
 
 export class WebviewPanel {
   private static readonly viewType = "react";
@@ -341,7 +343,11 @@ export class WebviewPanel {
 
     // Use a nonce to to only allow specific scripts to be run
     const nonce = this.getNonce();
-
+    const isExpandProject = exp
+      .getExpService()
+      .getTreatmentVariable(TreatmentVariables.VSCodeConfig, TreatmentVariables.TreeView)
+      ? true
+      : false;
     return `<!DOCTYPE html>
         <html lang="en">
           <head>
@@ -357,6 +363,7 @@ export class WebviewPanel {
               const panelType = '${panelType}';
               const isSupportedNode = ${this.isValidNode()};
               const isMacPlatform = ${isMacOS()};
+              const isExpandProject = ${isExpandProject};
             </script>
             <script nonce="${nonce}"  type="module" src="${scriptUri}"></script>
           </body>

@@ -28,6 +28,7 @@ import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContai
 import { isArmSupportEnabled } from "../../..";
 import { ArmResourcePlugin } from "../../../common/armInterface";
 export * from "./v2";
+
 @Service(ResourcePlugins.FrontendPlugin)
 export class FrontendPlugin implements Plugin, ArmResourcePlugin {
   name = "fx-resource-frontend-hosting";

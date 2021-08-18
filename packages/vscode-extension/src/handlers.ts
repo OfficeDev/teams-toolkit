@@ -239,6 +239,11 @@ export async function publishHandler(args?: any[]): Promise<Result<null, FxError
   return await runCommand(Stage.publish);
 }
 
+export async function cicdGuideHandler(args?: any[]): Promise<boolean> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CICDGuide, getTriggerFromProperty(args));
+  return await env.openExternal(Uri.parse("https://aka.ms/teamsfx-cicd-guide"));
+}
+
 export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
   const eventName = ExtTelemetry.stageToEvent(stage);
   let result: Result<any, FxError> = ok(null);
@@ -655,13 +660,16 @@ export function saveTextDocumentHandler(document: vscode.TextDocument) {
 
 export async function cmdHdlLoadTreeView(context: ExtensionContext) {
   if (
-    await exp
+    (await exp
       .getExpService()
-      .getTreatmentVariableAsync(TreatmentVariables.VSCodeConfig, TreatmentVariables.TreeView, true)
+      .getTreatmentVariableAsync(
+        TreatmentVariables.VSCodeConfig,
+        TreatmentVariables.DynamicTreeView,
+        true
+      )) &&
+    !isValidProject(getWorkspacePath())
   ) {
-    await commands.executeCommand("setContext", "isNewTreeView", true);
-    StringContext.setSignInAzureContext(StringResources.vsc.handlers.signInAzureNew);
-    const disposables = await TreeViewManagerInstance.registerNewTreeViews();
+    const disposables = await TreeViewManagerInstance.registerEmptyProjectTreeViews();
     context.subscriptions.push(...disposables);
   } else {
     const disposables = await TreeViewManagerInstance.registerTreeViews();

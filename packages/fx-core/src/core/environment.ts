@@ -3,12 +3,12 @@
 
 import {
   ConfigFolderName,
+  ConfigMap,
   CryptoProvider,
   err,
   FxError,
   ok,
   Result,
-  Void,
 } from "@microsoft/teamsfx-api";
 import path from "path";
 import fs from "fs-extra";
@@ -23,6 +23,7 @@ import {
   mapToJson,
   objectToMap,
 } from "..";
+import { GLOBAL_CONFIG } from "../plugins/solution/fx-solution/constants";
 
 export interface EnvInfo {
   envName: string;
@@ -36,7 +37,8 @@ export interface EnvFiles {
 
 class EnvironmentManager {
   public readonly defaultEnvName = "default";
-  private readonly envNameRegex = /env\.(?<envName>[\w\d-_]+)\.json/i;
+  public readonly envNameRegex = /^[\w\d-_]+$/;
+  public readonly envProfileNameRegex = /env\.(?<envName>[\w\d-_]+)\.json/i;
 
   public async loadEnvProfile(
     projectPath: string,
@@ -56,9 +58,11 @@ class EnvironmentManager {
     const userData = userDataResult.value;
 
     if (!(await fs.pathExists(envFiles.envProfile))) {
-      // TODO: handle the case that env file profile doesn't exist.
-      return err(PathNotExistError(envFiles.envProfile));
+      const data = new Map<string, any>([[GLOBAL_CONFIG, new ConfigMap()]]);
+
+      return ok({ envName, data });
     }
+
     const envData = await fs.readJson(envFiles.envProfile);
 
     mergeSerectData(userData, envData);
@@ -72,7 +76,7 @@ class EnvironmentManager {
     projectPath: string,
     envName?: string,
     cryptoProvider?: CryptoProvider
-  ): Promise<Result<Void, FxError>> {
+  ): Promise<Result<string, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
       return err(PathNotExistError(projectPath));
     }
@@ -98,7 +102,7 @@ class EnvironmentManager {
       return err(WriteFileError(error));
     }
 
-    return ok(Void);
+    return ok(envFiles.envProfile);
   }
 
   public async listEnvProfiles(projectPath: string): Promise<Result<Array<string>, FxError>> {
@@ -119,6 +123,18 @@ class EnvironmentManager {
     return ok(envNames);
   }
 
+  public async checkEnvExist(projectPath: string, env: string): Promise<Result<boolean, FxError>> {
+    const envList = await environmentManager.listEnvProfiles(projectPath);
+    if (envList.isErr()) {
+      return err(envList.error);
+    }
+    if (envList.value?.indexOf(env) >= 0) {
+      return ok(true);
+    } else {
+      return ok(false);
+    }
+  }
+
   public getEnvFilesPath(envName: string, projectPath: string): EnvFiles {
     const basePath = this.getConfigFolder(projectPath);
     const envProfile = path.resolve(basePath, `env.${envName}.json`);
@@ -128,7 +144,7 @@ class EnvironmentManager {
   }
 
   private getEnvNameFromPath(filePath: string): string | null {
-    const match = this.envNameRegex.exec(filePath);
+    const match = this.envProfileNameRegex.exec(filePath);
     if (match != null && match.groups != null) {
       return match.groups.envName;
     }

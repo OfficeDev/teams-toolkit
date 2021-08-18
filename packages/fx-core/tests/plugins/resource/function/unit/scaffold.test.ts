@@ -27,7 +27,6 @@ const context: any = {
         [DependentPluginInfo.resourceGroupName, "ut"],
         [DependentPluginInfo.subscriptionId, "ut"],
         [DependentPluginInfo.resourceNameSuffix, "ut"],
-        [DependentPluginInfo.programmingLanguage, "javascript"],
       ]),
     ],
   ]),
@@ -38,6 +37,7 @@ const context: any = {
   },
   projectSettings: {
     appName: "ut",
+    programmingLanguage: "javascript",
   },
   config: new Map(),
   root: path.join(__dirname, "ut"),

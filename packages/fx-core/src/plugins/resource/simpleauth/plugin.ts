@@ -12,7 +12,9 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import { getTemplatesFolder } from "../../..";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
-import { generateBicepFiles, getArmOutput, isArmSupportEnabled } from "../../../common";
+import { getArmOutput } from "../utils4v2";
+import { generateBicepFiles, isArmSupportEnabled, isMultiEnvEnabled } from "../../../common";
+import { LocalSettingsAuthKeys } from "../../../common/localSettingsConstants";
 
 export class SimpleAuthPluginImpl {
   webAppClient!: WebAppClient;
@@ -22,7 +24,12 @@ export class SimpleAuthPluginImpl {
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartLocalDebug);
 
     const simpleAuthFilePath = Utils.getSimpleAuthFilePath();
-    ctx.config.set(Constants.SimpleAuthPlugin.configKeys.filePath, simpleAuthFilePath);
+    if (isMultiEnvEnabled()) {
+      ctx.localSettings?.auth?.set(LocalSettingsAuthKeys.SimpleAuthFilePath, simpleAuthFilePath);
+    } else {
+      ctx.config.set(Constants.SimpleAuthPlugin.configKeys.filePath, simpleAuthFilePath);
+    }
+
     await Utils.downloadZip(simpleAuthFilePath);
 
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndLocalDebug);
@@ -40,10 +47,17 @@ export class SimpleAuthPluginImpl {
       configArray.push(`${key}="${value}"`);
     }
 
-    ctx.config.set(
-      Constants.SimpleAuthPlugin.configKeys.environmentVariableParams,
-      configArray.join(" ")
-    );
+    if (isMultiEnvEnabled()) {
+      ctx.localSettings?.auth?.set(
+        LocalSettingsAuthKeys.SimpleAuthEnvironmentVariableParams,
+        configArray.join(" ")
+      );
+    } else {
+      ctx.config.set(
+        Constants.SimpleAuthPlugin.configKeys.environmentVariableParams,
+        configArray.join(" ")
+      );
+    }
 
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndPostLocalDebug);
     return ResultFactory.Success();
@@ -70,7 +84,7 @@ export class SimpleAuthPluginImpl {
 
     ctx.config.set(Constants.SimpleAuthPlugin.configKeys.endpoint, webApp.endpoint);
 
-    await DialogUtils.progressBar?.end();
+    await DialogUtils.progressBar?.end(true);
 
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndProvision, {
       [Telemetry.skuName]: webApp.skuName,
@@ -109,7 +123,7 @@ export class SimpleAuthPluginImpl {
       await this.webAppClient.configWebApp(configs);
     }
 
-    await DialogUtils.progressBar?.end();
+    await DialogUtils.progressBar?.end(true);
 
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndPostProvision);
     return ResultFactory.Success();

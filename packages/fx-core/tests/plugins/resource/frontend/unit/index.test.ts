@@ -33,6 +33,7 @@ import { TestHelper } from "../helper";
 import { Utils } from "../../../../../src/plugins/resource/frontend/utils";
 import { StorageAccounts } from "@azure/arm-storage";
 import { AzureLib } from "../../../../../src/plugins/resource/frontend/utils/azure-client";
+import * as core from "../../../../../src";
 
 chai.use(chaiAsPromised);
 
@@ -111,6 +112,7 @@ describe("FrontendPlugin", () => {
       pluginContext = TestHelper.getFakePluginContext();
       frontendPlugin = new FrontendPlugin();
 
+      sinon.stub(core, "isArmSupportEnabled").returns(false);
       createStorageAccountStub = sinon
         .stub(StorageAccounts.prototype, "create")
         .resolves(TestHelper.storageAccount);
@@ -201,6 +203,10 @@ describe("FrontendPlugin", () => {
     beforeEach(async () => {
       frontendPlugin = new FrontendPlugin();
       pluginContext = TestHelper.getFakePluginContext();
+      sinon.stub(fs, "pathExists").resolves(true);
+      sinon.stub(fs, "readFile").resolves(Buffer.from(""));
+      sinon.stub(fs, "writeFile").resolves();
+      sinon.stub(fs, "ensureFile").resolves(Buffer.from(""));
 
       staticWebsiteEnabledStub = sinon
         .stub(AzureStorageClient.prototype, "isStorageStaticWebsiteEnabled")

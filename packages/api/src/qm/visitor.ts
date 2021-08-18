@@ -8,17 +8,24 @@ import {
   SingleSelectQuestion,
   StaticOptions,
   OptionItem,
-  MultiSelectQuestion
+  MultiSelectQuestion,
 } from "./question";
 import { getValidationFunction, validate } from "./validation";
-import { assembleError, FxError, returnSystemError, returnUserError, SystemError, UserCancelError } from "../error";
+import {
+  assembleError,
+  FxError,
+  returnSystemError,
+  returnUserError,
+  SystemError,
+  UserCancelError,
+} from "../error";
 import { Inputs, Void } from "../types";
 import { InputResult, UserInteraction } from "./ui";
 import { err, ok, Result } from "neverthrow";
 
 export function isAutoSkipSelect(q: Question): boolean {
   if (q.type === "singleSelect" || q.type === "multiSelect") {
-    const select = q as (SingleSelectQuestion | MultiSelectQuestion); 
+    const select = q as SingleSelectQuestion | MultiSelectQuestion;
     if (select.skipSingleOption && select.staticOptions.length === 1) {
       return true;
     }
@@ -26,46 +33,39 @@ export function isAutoSkipSelect(q: Question): boolean {
   return false;
 }
 
-export async function loadOptions(q: Question, inputs: Inputs): Promise<{autoSkip:boolean, options?: StaticOptions}> {
+export async function loadOptions(
+  q: Question,
+  inputs: Inputs
+): Promise<{ autoSkip: boolean; options?: StaticOptions }> {
   if (q.type === "singleSelect" || q.type === "multiSelect") {
-    const selectQuestion = q as (SingleSelectQuestion | MultiSelectQuestion);
-    let option:StaticOptions; 
-    if(selectQuestion.dynamicOptions)
-      option = await getCallFuncValue(inputs, selectQuestion.dynamicOptions) as StaticOptions;
-    else 
-      option = selectQuestion.staticOptions;
-    if(!option || option.length === 0){
-      throw (returnSystemError(
-        new Error("Select option is empty!"),
-        "API",
-        "EmptySelectOption"
-      ));
+    const selectQuestion = q as SingleSelectQuestion | MultiSelectQuestion;
+    let option: StaticOptions;
+    if (selectQuestion.dynamicOptions)
+      option = (await getCallFuncValue(inputs, selectQuestion.dynamicOptions)) as StaticOptions;
+    else option = selectQuestion.staticOptions;
+    if (!option || option.length === 0) {
+      throw returnSystemError(new Error("Select option is empty!"), "API", "EmptySelectOption");
     }
     if (selectQuestion.skipSingleOption && option.length === 1)
-      return {autoSkip:true, options: option};
-    else
-      return {autoSkip:false, options: option};
-  }
-  else 
-    return {autoSkip:false};
+      return { autoSkip: true, options: option };
+    else return { autoSkip: false, options: option };
+  } else return { autoSkip: false };
 }
 
-export function getSingleOption(q: SingleSelectQuestion | MultiSelectQuestion, option?: StaticOptions) : any{
-  if(!option) option = q.staticOptions;
+export function getSingleOption(
+  q: SingleSelectQuestion | MultiSelectQuestion,
+  option?: StaticOptions
+): any {
+  if (!option) option = q.staticOptions;
   const optionIsString = typeof option[0] === "string";
   let returnResult;
-  if(optionIsString)
-    returnResult = option[0];
+  if (optionIsString) returnResult = option[0];
   else {
-    if(q.returnObject === true)
-      returnResult = option[0];
-    else 
-      returnResult = (option[0] as OptionItem).id;
+    if (q.returnObject === true) returnResult = option[0];
+    else returnResult = (option[0] as OptionItem).id;
   }
-  if (q.type === "singleSelect")
-    return returnResult;
-  else
-    return [returnResult];
+  if (q.type === "singleSelect") return returnResult;
+  else return [returnResult];
 }
 
 // type QuestionVistor = (
@@ -75,10 +75,9 @@ export function getSingleOption(q: SingleSelectQuestion | MultiSelectQuestion, o
 //   step?: number,
 //   totalSteps?: number,
 // ) => Promise<InputResult<any>>;
- 
 
-export async function getCallFuncValue(inputs: Inputs , raw?: unknown ):Promise<unknown>{
-  if(raw && typeof raw === "function") {
+export async function getCallFuncValue(inputs: Inputs, raw?: unknown): Promise<unknown> {
+  if (raw && typeof raw === "function") {
     return await raw(inputs);
   }
   return raw;
@@ -93,36 +92,39 @@ export async function getCallFuncValue(inputs: Inputs , raw?: unknown ):Promise<
 const questionVisitor = async function (
   question: Question,
   ui: UserInteraction,
-  inputs: Inputs ,
+  inputs: Inputs,
   step?: number,
-  totalSteps?: number,
-): Promise<Result<InputResult<any>, FxError>> {  
-  if(inputs[question.name] !== undefined) {
-    return ok({ type: "success", result: inputs[question.name]} );
+  totalSteps?: number
+): Promise<Result<InputResult<any>, FxError>> {
+  if (inputs[question.name] !== undefined) {
+    return ok({ type: "success", result: inputs[question.name] });
   }
   if (question.type === "func") {
-    try{
+    try {
       const res = await question.func(inputs);
-      if(typeof res === "object" && "isOk" in res){
+      if (typeof res === "object" && "isOk" in res) {
         const fxresult = res as Result<any, FxError>;
-        if(fxresult.isOk()){
-          return ok({ type: "success", result: fxresult.value} );
-        }
-        else {
+        if (fxresult.isOk()) {
+          return ok({ type: "success", result: fxresult.value });
+        } else {
           return err(fxresult.error);
         }
       }
-      return ok({ type: "success", result: res} );
-    }
-    catch(e){
+      return ok({ type: "success", result: res });
+    } catch (e) {
       return err(assembleError(e));
     }
   } else {
-    const defaultValue = question.value? question.value : await getCallFuncValue(inputs, question.default);
-    const placeholder = await getCallFuncValue(inputs, question.placeholder) as string;
-    const prompt = await getCallFuncValue(inputs, question.prompt) as string;
+    const defaultValue =
+      question.forgetLastValue !== true && question.value
+        ? question.value
+        : await getCallFuncValue(inputs, question.default);
+    const placeholder = (await getCallFuncValue(inputs, question.placeholder)) as string;
+    const prompt = (await getCallFuncValue(inputs, question.prompt)) as string;
     if (question.type === "text") {
-      const validationFunc = question.validation ? getValidationFunction<string>(question.validation, inputs) : undefined;
+      const validationFunc = question.validation
+        ? getValidationFunction<string>(question.validation, inputs)
+        : undefined;
       const inputQuestion = question as TextInputQuestion;
       return await ui.inputText({
         name: question.name,
@@ -133,24 +135,22 @@ const questionVisitor = async function (
         prompt: prompt,
         validation: validationFunc,
         step: step,
-        totalSteps: totalSteps
+        totalSteps: totalSteps,
       });
     } else if (question.type === "singleSelect" || question.type === "multiSelect") {
-      const selectQuestion = question as (SingleSelectQuestion | MultiSelectQuestion);
+      const selectQuestion = question as SingleSelectQuestion | MultiSelectQuestion;
       const res = await loadOptions(selectQuestion, inputs);
       if (!res.options || res.options.length === 0) {
-        return err(returnSystemError(
-            new Error("Select option is empty!"),
-            "API",
-            "EmptySelectOption"
-          ));
+        return err(
+          returnSystemError(new Error("Select option is empty!"), "API", "EmptySelectOption")
+        );
       }
       // Skip single/mulitple option select
       if (res.autoSkip === true) {
         const returnResult = getSingleOption(selectQuestion, res.options);
-        return ok({ type: "skip",  result: returnResult});
+        return ok({ type: "skip", result: returnResult });
       }
-      if(question.type === "singleSelect"){
+      if (question.type === "singleSelect") {
         return await ui.selectOption({
           name: question.name,
           title: question.title,
@@ -160,12 +160,13 @@ const questionVisitor = async function (
           placeholder: placeholder,
           prompt: prompt,
           step: step,
-          totalSteps: totalSteps
+          totalSteps: totalSteps,
         });
-      }
-      else {
+      } else {
         const mq = selectQuestion as MultiSelectQuestion;
-        const validationFunc = question.validation ? getValidationFunction<string[]>(question.validation, inputs) : undefined;
+        const validationFunc = question.validation
+          ? getValidationFunction<string[]>(question.validation, inputs)
+          : undefined;
         return await ui.selectOptions({
           name: question.name,
           title: question.title,
@@ -177,11 +178,13 @@ const questionVisitor = async function (
           onDidChangeSelection: mq.onDidChangeSelection,
           step: step,
           totalSteps: totalSteps,
-          validation: validationFunc
+          validation: validationFunc,
         });
       }
     } else if (question.type === "multiFile") {
-      const validationFunc = question.validation ? getValidationFunction<string[]>(question.validation, inputs) : undefined;
+      const validationFunc = question.validation
+        ? getValidationFunction<string[]>(question.validation, inputs)
+        : undefined;
       return await ui.selectFiles({
         name: question.name,
         title: question.title,
@@ -189,10 +192,12 @@ const questionVisitor = async function (
         prompt: prompt,
         step: step,
         totalSteps: totalSteps,
-        validation: validationFunc
+        validation: validationFunc,
       });
-    } else if(question.type === "singleFile" ){
-      const validationFunc = question.validation ? getValidationFunction<string>(question.validation, inputs) : undefined;
+    } else if (question.type === "singleFile") {
+      const validationFunc = question.validation
+        ? getValidationFunction<string>(question.validation, inputs)
+        : undefined;
       return await ui.selectFile({
         name: question.name,
         title: question.title,
@@ -201,10 +206,12 @@ const questionVisitor = async function (
         default: defaultValue as string,
         step: step,
         totalSteps: totalSteps,
-        validation: validationFunc
+        validation: validationFunc,
       });
-    } else if(question.type === "folder"){
-      const validationFunc = question.validation ? getValidationFunction<string>(question.validation, inputs) : undefined;
+    } else if (question.type === "folder") {
+      const validationFunc = question.validation
+        ? getValidationFunction<string>(question.validation, inputs)
+        : undefined;
       return await ui.selectFolder({
         name: question.name,
         title: question.title,
@@ -213,20 +220,22 @@ const questionVisitor = async function (
         default: defaultValue as string,
         step: step,
         totalSteps: totalSteps,
-        validation: validationFunc
+        validation: validationFunc,
       });
     }
   }
-  return err(returnUserError(
+  return err(
+    returnUserError(
       new Error(`Unsupported question node type:${JSON.stringify(question)}`),
       "API",
       "UnsupportedNodeType"
-  ));
+    )
+  );
 };
 
 export async function traverse(
   root: QTreeNode,
-  inputs: Inputs ,
+  inputs: Inputs,
   ui: UserInteraction
 ): Promise<Result<Void, FxError>> {
   const stack: QTreeNode[] = [];
@@ -244,14 +253,9 @@ export async function traverse(
     if (curr.data.type !== "group") {
       const question = curr.data as Question;
       totalStep = step + stack.length;
-      const qvres = await questionVisitor(
-        question,
-        ui,
-        inputs,
-        step,
-        totalStep
-      );
-      if(qvres.isErr()){ // Cancel or Error
+      const qvres = await questionVisitor(question, ui, inputs, step, totalStep);
+      if (qvres.isErr()) {
+        // Cancel or Error
         return err(qvres.error);
       }
       const inputResult = qvres.value;
@@ -285,11 +289,10 @@ export async function traverse(
             }
           }
           stack.push(last);
-          if (last.data.type !== "group") 
-            delete inputs[last.data.name];
+          if (last.data.type !== "group") delete inputs[last.data.name];
 
           const lastIsAutoSkip = autoSkipSet.has(last);
-          if ( last.data.type !== "group" && last.data.type !== "func" && !lastIsAutoSkip) {
+          if (last.data.type !== "group" && last.data.type !== "func" && !lastIsAutoSkip) {
             found = true;
             break;
           }
@@ -299,8 +302,7 @@ export async function traverse(
         }
         --step;
         continue; //ignore the following steps
-      }  
-      else {
+      } else {
         //success or skip
         question.value = inputResult.result;
         inputs[question.name] = question.value;
@@ -350,4 +352,3 @@ export async function traverse(
   }
   return ok(Void);
 }
-

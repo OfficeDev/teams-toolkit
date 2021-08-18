@@ -103,17 +103,17 @@ export interface InputTextConfig extends UIConfig<string> {
 /**
  * single file selector config
  */
-export type SelectFileConfig = UIConfig<string>
+export type SelectFileConfig = UIConfig<string>;
 
 /**
  * multiple files selector config
  */
-export type SelectFilesConfig = UIConfig<string[]>
+export type SelectFilesConfig = UIConfig<string[]>;
 
 /**
  * folder selector config
  */
-export type SelectFolderConfig = UIConfig<string>
+export type SelectFolderConfig = UIConfig<string>;
 
 /**
  * a wrapper of user input result
@@ -169,7 +169,7 @@ export interface RunnableTask<T> {
    */
   run(...args: any): Promise<Result<T, FxError>>;
   /**
-   * a function that implements the cancalling of the task
+   * a function that implements the cancelling of the task
    */
   cancel?(): void;
   /**
@@ -196,7 +196,7 @@ export interface TaskConfig {
  */
 export interface TaskGroupConfig {
   /**
-   * if true, the tasks in the group are running in paralel
+   * if true, the tasks in the group are running in parallel
    * if false, the tasks are running in sequence.
    */
   sequential?: boolean;
@@ -260,7 +260,7 @@ export interface UserInteraction {
    */
   openUrl(link: string): Promise<Result<boolean, FxError>>;
   /**
-   * Show an information/warnning/error message to users. Optionally provide an array of items which will be presented as clickable buttons.
+   * Show an information/warning/error message to users. Optionally provide an array of items which will be presented as clickable buttons.
    * @param level message level
    * @param message The message to show.
    * @param items A set of items that will be rendered as actions in the message.
@@ -274,7 +274,7 @@ export interface UserInteraction {
   ): Promise<Result<string | undefined, FxError>>;
 
   /**
-   * Show an information/warnning/error message with different colors to users, which only works for CLI.
+   * Show an information/warning/error message with different colors to users, which only works for CLI.
    * @param level message level
    * @param message The message with color to show. The color only works for CLI.
    * @param items A set of items that will be rendered as actions in the message.
@@ -301,7 +301,7 @@ export interface UserInteraction {
   /**
    * A function to run a task with progress bar. (CLI and VS Code has different UI experience for progress bar)
    * @param task a runnable task with progress definition
-   * @param config task running confiuration
+   * @param config task running configuration
    * @param args args for task run() API
    * @returns A promise that resolves the wrapper of task running result or FxError
    */
@@ -329,10 +329,10 @@ export interface IProgressHandler {
   next: (detail?: string) => Promise<void>;
 
   /**
-   * End the progress bar. After calling it, the progress bar will disappear. This handler
+   * End the progress bar and tell if success. After calling it, the progress bar will disappear. This handler
    * can be reused after calling end().
    */
-  end: () => Promise<void>;
+  end: (success: boolean) => Promise<void>;
 }
 
 /**

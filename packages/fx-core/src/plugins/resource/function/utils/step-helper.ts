@@ -23,7 +23,7 @@ export class StepHelper {
     await this.progressHandler?.next(message);
   }
 
-  public async end(): Promise<void> {
-    await this.progressHandler?.end();
+  public async end(success: boolean): Promise<void> {
+    await this.progressHandler?.end(success);
   }
 }

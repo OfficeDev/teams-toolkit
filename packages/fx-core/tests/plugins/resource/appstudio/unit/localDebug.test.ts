@@ -167,7 +167,7 @@ describe("Post Local Debug", () => {
       },
     };
     sandbox
-      .stub(AppStudioPluginImpl.prototype, "getConfigAndAppDefinition" as any)
+      .stub(AppStudioPluginImpl.prototype, "getAppDefinitionAndManifest" as any)
       .returns(
         err(
           AppStudioResultFactory.SystemError(
@@ -215,7 +215,7 @@ describe("Post Local Debug", () => {
           aadId: uuid.v4(),
           displayName: "displayName",
           userPrincipalName: "principalName",
-          isOwner: true,
+          isAdministrator: true,
         },
       ],
       outlineIcon: "outline.png",

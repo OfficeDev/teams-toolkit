@@ -2,13 +2,12 @@
 // Licensed under the MIT license.
 
 import { Kind, SkuName, SkuTier } from "@azure/arm-storage/esm/models";
+import { TeamsClientId } from "../../../common/constants";
 
 import { FunctionConfigKey, FunctionLanguage, NodeVersion } from "./enums";
 
 export class CommonConstants {
   public static readonly emptyString: string = "";
-  public static readonly teamsClientAppId: string = "1fec8e78-bce4-4aaf-ab1b-5451cc387264";
-  public static readonly teamsWebAppId: string = "5e3ce6c0-2b1f-4285-8d4b-75ee78787346";
   public static readonly versionSep: string = ".";
   public static readonly msInOneSecond: number = 1000;
   public static readonly zipTimeMSGranularity: number = 2 * CommonConstants.msInOneSecond;
@@ -22,7 +21,6 @@ export class FunctionPluginInfo {
   public static readonly expectDotnetSDKs: string[] = ["3.1", "5.0"];
 
   public static readonly FunctionPluginPersistentConfig: FunctionConfigKey[] = [
-    FunctionConfigKey.defaultFunctionName,
     FunctionConfigKey.functionAppName,
     FunctionConfigKey.storageAccountName,
     FunctionConfigKey.appServicePlanName,
@@ -141,7 +139,7 @@ export class DefaultProvisionConfigs {
   });
 
   public static readonly functionAppStaticSettings: { [key: string]: string } = {
-    ALLOWED_APP_IDS: [CommonConstants.teamsClientAppId, CommonConstants.teamsWebAppId].join(";"),
+    ALLOWED_APP_IDS: [TeamsClientId.MobileDesktop, TeamsClientId.Web].join(";"),
     FUNCTIONS_EXTENSION_VERSION: "~3",
     WEBSITE_RUN_FROM_PACKAGE: "1",
   };

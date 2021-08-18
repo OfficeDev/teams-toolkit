@@ -1,20 +1,31 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Plugin, PluginContext, SystemError, UserError, err } from "@microsoft/teamsfx-api";
+import {
+  Plugin,
+  PluginContext,
+  SystemError,
+  UserError,
+  err,
+  Func,
+  ok,
+  newSystemError,
+} from "@microsoft/teamsfx-api";
 import { AadAppForTeamsImpl } from "./plugin";
 import { AadResult, ResultFactory } from "./results";
 import { UnhandledError } from "./errors";
 import { TelemetryUtils } from "./utils/telemetry";
 import { DialogUtils } from "./utils/dialog";
-import { Messages, Telemetry } from "./constants";
+import { Messages, Plugins, Telemetry } from "./constants";
 import { AzureSolutionSettings } from "@microsoft/teamsfx-api";
 import { HostTypeOptionAzure } from "../../solution/fx-solution/question";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+import { Links } from "../bot/constants";
+import { ArmResourcePlugin } from "../../../common/armInterface";
 
 @Service(ResourcePlugins.AadPlugin)
-export class AadAppForTeamsPlugin implements Plugin {
+export class AadAppForTeamsPlugin implements Plugin, ArmResourcePlugin {
   name = "fx-resource-aad-app-for-teams";
   displayName = "AAD";
   activate(solutionSettings: AzureSolutionSettings): boolean {
@@ -70,6 +81,22 @@ export class AadAppForTeamsPlugin implements Plugin {
     );
   }
 
+  public async executeUserTask(func: Func, ctx: PluginContext): Promise<AadResult> {
+    if (func.method == "setApplicationInContext") {
+      const isLocal: boolean =
+        func.params && func.params.isLocal !== undefined ? (func.params.isLocal as boolean) : false;
+      return Promise.resolve(this.setApplicationInContext(ctx, isLocal));
+    }
+    return err(
+      newSystemError(
+        Plugins.pluginNameShort,
+        "FunctionRouterError",
+        `Failed to route function call:${JSON.stringify(func)}`,
+        Links.ISSUE_LINK
+      )
+    );
+  }
+
   private async runWithExceptionCatchingAsync(
     fn: () => Promise<AadResult>,
     ctx: PluginContext,
@@ -113,7 +140,7 @@ export class AadAppForTeamsPlugin implements Plugin {
         e instanceof UserError ? Telemetry.userError : Telemetry.systemError,
         errorMessage
       );
-      DialogUtils.progress?.end();
+      DialogUtils.progress?.end(false);
       return err(e);
     } else {
       if (!(e instanceof Error)) {

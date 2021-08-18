@@ -1,10 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { exec } from "child_process";
+import { exec, ExecOptions } from "child_process";
 import * as fs from "fs-extra";
 import {
   AzureAccountProvider,
-  AzureSolutionSettings,
   ConfigFolderName,
   ConfigMap,
   err,
@@ -12,12 +11,9 @@ import {
   Json,
   ok,
   OptionItem,
-  PluginContext,
-  ProjectSettings,
   Result,
   returnSystemError,
   returnUserError,
-  SolutionContext,
   SubscriptionInfo,
   UserInteraction,
   AppPackageFolderName,
@@ -28,18 +24,7 @@ import AdmZip from "adm-zip";
 import * as path from "path";
 import * as uuid from "uuid";
 import { glob } from "glob";
-import { getResourceFolder } from "..";
-import { ARM_TEMPLATE_OUTPUT, PluginNames } from "../plugins/solution/fx-solution/constants";
-import {
-  AzureResourceApim,
-  AzureResourceFunction,
-  AzureResourceSQL,
-  AzureSolutionQuestionNames,
-  BotOptionItem,
-  HostTypeOptionSPFx,
-  MessageExtensionItem,
-  TabOptionItem,
-} from "../plugins/solution/fx-solution/question";
+import { getResourceFolder } from "../folder";
 import * as Handlebars from "handlebars";
 import { ConstantString, FeatureFlagName } from "./constants";
 
@@ -52,10 +37,15 @@ Handlebars.registerHelper("notContains", (value, array, options) => {
   return array.indexOf(value) == -1 ? options.fn(this) : "";
 });
 
-export const execAsync = promisify(exec);
+export const Executor = {
+  async execCommandAsync(command: string, options?: ExecOptions) {
+    const execAsync = promisify(exec);
+    await execAsync(command, options);
+  },
+};
 
 export async function npmInstall(path: string) {
-  await execAsync("npm install", {
+  await Executor.execCommandAsync("npm install", {
     cwd: path,
   });
 }
@@ -348,90 +338,6 @@ export function isUserCancelError(error: Error): boolean {
   );
 }
 
-export function isValidProject(workspacePath?: string): boolean {
-  if (!workspacePath) return false;
-  try {
-    const confFolderPath = path.resolve(workspacePath, `.${ConfigFolderName}`);
-    const settingsFile = path.resolve(confFolderPath, "settings.json");
-    const projectSettings: ProjectSettings = fs.readJsonSync(settingsFile);
-    if (validateSettings(projectSettings)) return false;
-    return true;
-  } catch (e) {
-    return false;
-  }
-}
-
-export function validateProject(solutionContext: SolutionContext): string | undefined {
-  const res = validateSettings(solutionContext.projectSettings);
-  return res;
-}
-
-export function validateSettings(projectSettings?: ProjectSettings): string | undefined {
-  if (!projectSettings) return "empty projectSettings";
-  if (!projectSettings.solutionSettings) return "empty solutionSettings";
-  const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
-  if (solutionSettings.hostType === undefined) return "empty solutionSettings.hostType";
-  if (
-    solutionSettings.activeResourcePlugins === undefined ||
-    solutionSettings.activeResourcePlugins.length === 0
-  )
-    return "empty solutionSettings.activeResourcePlugins";
-  const capabilities = solutionSettings.capabilities || [];
-  const azureResources = solutionSettings.azureResources || [];
-  const plugins = solutionSettings.activeResourcePlugins || [];
-  // if(!configJson[PluginNames.LDEBUG]) return "local debug config is missing";
-  if (!plugins.includes(PluginNames.LDEBUG))
-    return `${PluginNames.LDEBUG} setting is missing in settings.json`;
-  if (solutionSettings.hostType === HostTypeOptionSPFx.id) {
-    // if(!configJson[PluginNames.SPFX]) return "SPFx config is missing";
-    if (!plugins.includes(PluginNames.SPFX))
-      return "SPFx setting is missing in activeResourcePlugins";
-  } else {
-    if (capabilities.includes(TabOptionItem.id)) {
-      // if(!configJson[PluginNames.FE]) return "Frontend hosting config is missing";
-      if (!plugins.includes(PluginNames.FE))
-        return `${PluginNames.FE} setting is missing in settings.json`;
-
-      // if(!configJson[PluginNames.AAD]) return "AAD config is missing";
-      if (!plugins.includes(PluginNames.AAD))
-        return `${PluginNames.AAD} setting is missing in settings.json`;
-
-      // if(!configJson[PluginNames.SA]) return "Simple auth config is missing";
-      if (!plugins.includes(PluginNames.SA))
-        return `${PluginNames.SA} setting is missing in settings.json`;
-    }
-    if (capabilities.includes(BotOptionItem.id)) {
-      // if(!configJson[PluginNames.BOT]) return "Bot config is missing";
-      if (!plugins.includes(PluginNames.BOT))
-        return `${PluginNames.BOT} setting is missing in settings.json`;
-    }
-    if (capabilities.includes(MessageExtensionItem.id)) {
-      // if(!configJson[PluginNames.BOT]) return "MessagingExtension config is missing";
-      if (!plugins.includes(PluginNames.BOT))
-        return `${PluginNames.BOT} setting is missing in settings.json`;
-    }
-    if (azureResources.includes(AzureResourceSQL.id)) {
-      // if(!configJson[PluginNames.SQL]) return "Azure SQL config is missing";
-      if (!plugins.includes(PluginNames.SQL))
-        return `${PluginNames.SQL} setting is missing in settings.json`;
-      // if(!configJson[PluginNames.MSID]) return "SQL identity config is missing";
-      if (!plugins.includes(PluginNames.MSID))
-        return `${PluginNames.MSID} setting is missing in settings.json`;
-    }
-    if (azureResources.includes(AzureResourceFunction.id)) {
-      // if(!configJson[PluginNames.FUNC]) return "Azure functions config is missing";
-      if (!plugins.includes(PluginNames.FUNC))
-        return `${PluginNames.FUNC} setting is missing in settings.json`;
-    }
-    if (azureResources.includes(AzureResourceApim.id)) {
-      // if(!configJson[PluginNames.APIM]) return "API Management config is missing";
-      if (!plugins.includes(PluginNames.APIM))
-        return `${PluginNames.APIM} setting is missing in settings.json`;
-    }
-  }
-  return undefined;
-}
-
 export async function askSubscription(
   azureAccountProvider: AzureAccountProvider,
   ui: UserInteraction,
@@ -458,7 +364,7 @@ export async function askSubscription(
         } as OptionItem;
       });
       const askRes = await ui.selectOption({
-        name: AzureSolutionQuestionNames.AskSub,
+        name: "subscription",
         title: "Select a subscription",
         options: options,
         returnObject: true,
@@ -523,12 +429,6 @@ export function compileHandlebarsTemplateString(templateString: string, context:
   return template(context);
 }
 
-export function getArmOutput(ctx: PluginContext, key: string): string | undefined {
-  const solutionConfig = ctx.configOfOtherPlugins.get("solution");
-  const output = solutionConfig?.get(ARM_TEMPLATE_OUTPUT);
-  return output?.[key]?.value;
-}
-
 export async function getAppDirectory(projectRoot: string): Promise<string> {
   const REMOTE_MANIFEST = "manifest.source.json";
   const appDirNewLoc = `${projectRoot}/${AppPackageFolderName}`;
@@ -538,5 +438,16 @@ export async function getAppDirectory(projectRoot: string): Promise<string> {
     return appDirNewLoc;
   } else {
     return appDirOldLoc;
+  }
+}
+
+/**
+ * Get app studio endpoint for prod/int environment, mainly for ux e2e test
+ */
+export function getAppStudioEndpoint(): string {
+  if (process.env.APP_STUDIO_ENV && process.env.APP_STUDIO_ENV === "int") {
+    return "https://dev-int.teams.microsoft.com";
+  } else {
+    return "https://dev.teams.microsoft.com";
   }
 }

@@ -19,8 +19,6 @@ export class Constants {
       clientSecret: "clientSecret",
       applicationIdUris: "applicationIdUris",
       oauthAuthority: "oauthAuthority",
-      teamsMobileDesktopAppId: "teamsMobileDesktopAppId",
-      teamsWebAppId: "teamsWebAppId",
     },
   };
 

@@ -18,12 +18,12 @@ export class ProgressHelper {
     return this.preDeployProgress;
   }
 
-  static async endAllHandlers(): Promise<void> {
-    await this.endPreDeployProgress();
+  static async endAllHandlers(success: boolean): Promise<void> {
+    await this.endPreDeployProgress(success);
   }
 
-  static async endPreDeployProgress(): Promise<void> {
-    await this.preDeployProgress?.end();
+  static async endPreDeployProgress(success: boolean): Promise<void> {
+    await this.preDeployProgress?.end(success);
     this.preDeployProgress = undefined;
   }
 }

@@ -77,4 +77,13 @@ export interface Plugin {
    * execute user customized task
    */
   executeUserTask?: (func: Func, ctx: PluginContext) => Promise<Result<any, FxError>>;
+
+  /**
+   * For grant and check permission in remote collaboration
+   */
+  grantPermission?: (ctx: PluginContext) => Promise<Result<any, FxError>>;
+
+  checkPermission?: (ctx: PluginContext) => Promise<Result<any, FxError>>;
+
+  listCollaborator?: (ctx: PluginContext) => Promise<Result<any, FxError>>;
 }

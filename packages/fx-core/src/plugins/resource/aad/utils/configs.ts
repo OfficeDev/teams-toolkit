@@ -353,3 +353,38 @@ export class UpdatePermissionConfig {
     this.permissionRequest = await ConfigUtils.getPermissionRequest(ctx);
   }
 }
+
+export class CheckPermissionConfig {
+  public userInfo?: any;
+  public objectId?: string;
+
+  public async restoreConfigFromContext(ctx: PluginContext): Promise<void> {
+    const objectId: ConfigValue = ctx.config?.get(ConfigKeys.objectId);
+    if (objectId) {
+      this.objectId = objectId as string;
+    } else {
+      throw ResultFactory.SystemError(
+        GetConfigError.name,
+        GetConfigError.message(Errors.GetConfigError(ConfigKeys.objectId, Plugins.pluginName))
+      );
+    }
+
+    const userInfo: ConfigValue = ctx.configOfOtherPlugins
+      ?.get(Plugins.solution)
+      ?.get(ConfigKeysOfOtherPlugin.solutionUserInfo);
+    if (!userInfo) {
+      throw ResultFactory.SystemError(
+        GetConfigError.name,
+        GetConfigError.message(
+          Errors.GetConfigError(ConfigKeysOfOtherPlugin.solutionUserInfo, Plugins.solution)
+        )
+      );
+    }
+
+    try {
+      this.userInfo = JSON.parse(userInfo);
+    } catch (error) {
+      throw ResultFactory.SystemError(GetConfigError.name, GetConfigError.message(error.message));
+    }
+  }
+}

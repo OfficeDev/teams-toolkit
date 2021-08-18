@@ -20,6 +20,16 @@ export class Constants {
   static statusCodeUserError = 400;
   static statusCodeServerError = 500;
 
+  static createOwnerDuplicatedMessage =
+    "One or more added object references already exist for the following modified properties: 'owners'.";
+
+  static permissions = {
+    name: "Azure AD App",
+    owner: "Owner",
+    noPermission: "No Permission",
+    type: "M365",
+  };
+
   static defaultPermissions: RequiredResourceAccess = {
     resourceAppId: "00000003-0000-0000-c000-000000000000",
     resourceAccess: [
@@ -107,6 +117,7 @@ export class ConfigKeysOfOtherPlugin {
   static remoteTeamsAppId = "remoteTeamsAppId";
   static frontendHostingEndpointArm = "frontendHosting_endpoint";
   static frontendHostingDomainArm = "frontendHosting_domain";
+  static solutionUserInfo = "userInfo";
 }
 
 export interface Messages {
@@ -176,6 +187,16 @@ export class Messages {
   static readonly EndUpdatePermission: Messages = {
     log: Messages.getLog("Successfully update permission"),
     telemetry: Messages.getEventName("update-permission"),
+  };
+
+  static readonly StartCheckPermission: Messages = {
+    log: Messages.getLog("Start to check permission"),
+    telemetry: Messages.getEventName("check-permission-start"),
+  };
+
+  static readonly EndCheckPermission: Messages = {
+    log: Messages.getLog("Successfully check permission"),
+    telemetry: Messages.getEventName("check-permission"),
   };
 
   static readonly GetAadAppSuccess = "Successfully get Azure AD app.";

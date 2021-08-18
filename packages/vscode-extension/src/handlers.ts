@@ -660,10 +660,13 @@ export function saveTextDocumentHandler(document: vscode.TextDocument) {
 
 export async function cmdHdlLoadTreeView(context: ExtensionContext) {
   if (
-    // await exp
-    //   .getExpService()
-    //   .getTreatmentVariableAsync(TreatmentVariables.VSCodeConfig, TreatmentVariables.TreeView, true)
-    false &&
+    (await exp
+      .getExpService()
+      .getTreatmentVariableAsync(
+        TreatmentVariables.VSCodeConfig,
+        TreatmentVariables.DynamicTreeView,
+        true
+      )) &&
     !isValidProject(getWorkspacePath())
   ) {
     const disposables = await TreeViewManagerInstance.registerEmptyProjectTreeViews();

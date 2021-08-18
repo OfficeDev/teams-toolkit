@@ -51,7 +51,8 @@ export async function scaffoldSourceCodeAdapter(
   inputs: Inputs,
   plugin: Plugin & ArmResourcePlugin
 ): Promise<Result<{ output: Record<string, string> }, FxError>> {
-  if (!plugin.scaffold) return err(PluginHasNoTaskImpl(plugin.displayName, "scaffold"));
+  if (!plugin.scaffold && !plugin.postScaffold)
+    return err(PluginHasNoTaskImpl(plugin.displayName, "scaffold"));
   if (!inputs.projectPath) {
     return err(NoProjectOpenedError());
   }
@@ -64,9 +65,11 @@ export async function scaffoldSourceCodeAdapter(
     }
   }
 
-  const res = await plugin.scaffold(pluginContext);
-  if (res.isErr()) {
-    return err(res.error);
+  if (plugin.scaffold) {
+    const res = await plugin.scaffold(pluginContext);
+    if (res.isErr()) {
+      return err(res.error);
+    }
   }
 
   if (plugin.postDeploy) {
@@ -271,7 +274,6 @@ export async function executeUserTaskAdapter(
   if (res.isErr()) return err(res.error);
   return ok(res.value);
 }
-
 
 export async function getQuestionsForScaffoldingAdapter(
   ctx: Context,

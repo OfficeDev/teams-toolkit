@@ -359,6 +359,14 @@ export default class QuickStart extends React.Component<any, any> {
         properties: { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview },
       },
     });
+
+    const done = this.state.stepsDone;
+    done[5] = true;
+    this.setState({
+      stepsDone: done,
+    });
+    this.setGlobalStepsDone(done);
+
     vscode.postMessage({
       command: Commands.CreateNewProject,
     });
@@ -557,13 +565,6 @@ export default class QuickStart extends React.Component<any, any> {
         properties: { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview },
       },
     });
-
-    const done = this.state.stepsDone;
-    done[5] = true;
-    this.setState({
-      stepsDone: done,
-    });
-    this.setGlobalStepsDone(done);
 
     vscode.postMessage({
       command: Commands.SwitchPanel,

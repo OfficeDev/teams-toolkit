@@ -29,7 +29,6 @@ const context: any = {
         [DependentPluginInfo.resourceGroupName, "ut"],
         [DependentPluginInfo.resourceNameSuffix, "ut"],
         [DependentPluginInfo.location, "ut"],
-        [DependentPluginInfo.programmingLanguage, "javascript"],
       ]),
     ],
     [
@@ -73,6 +72,10 @@ const context: any = {
     name: {
       short: "ut",
     },
+  },
+  projectSettings: {
+    appName: "ut",
+    programmingLanguage: "javascript",
   },
   config: new Map<string, string>([["functionAppName", "ut"]]),
   azureAccountProvider: {

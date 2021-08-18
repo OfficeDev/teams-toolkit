@@ -118,6 +118,11 @@ export const GetConfigError: AadError = {
   message: (message: string) => message,
 };
 
+export const MissingPermissionsRequestProvider: AadError = {
+  name: "MissingPermissionsRequestProvider",
+  message: () => "permissionRequestProvider is missing in plugin context",
+};
+
 export class ConfigErrorMessages {
   static readonly GetDisplayNameError = "Failed to get display name.";
   static readonly GetConfigError = (configName: string, plugin: string) =>

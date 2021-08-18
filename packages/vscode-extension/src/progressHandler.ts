@@ -3,14 +3,14 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { ok } from "@microsoft/teamsfx-api";
+import { IProgressHandler, ok } from "@microsoft/teamsfx-api";
 import { ProgressLocation } from "vscode";
 import { ext } from "./extensionVariables";
 import { sleep } from "./utils/commonUtils";
 import * as StringResources from "./resources/Strings.json";
 import * as util from "util";
 
-export class ProgressHandler {
+export class ProgressHandler implements IProgressHandler {
   private totalSteps: number;
   private currentStep: number;
   private title: string;
@@ -65,7 +65,7 @@ export class ProgressHandler {
     this.resolve = await promise;
   }
 
-  public async end() {
+  public async end(success: boolean) {
     this.ended = true;
     this.resolve?.(undefined);
     await sleep(10);

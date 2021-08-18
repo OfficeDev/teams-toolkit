@@ -10,7 +10,7 @@ export class ProgressHelper {
   static async startDeployArmTemplatesProgressHandler(
     ctx: PluginContext
   ): Promise<IProgressHandler | undefined> {
-    await this.deployArmTemplatesProgress?.end();
+    await this.deployArmTemplatesProgress?.end(true);
 
     this.deployArmTemplatesProgress = ctx.ui?.createProgressBar(
       getStrings().solution.DeployArmTemplates.Progress.Title,
@@ -22,8 +22,8 @@ export class ProgressHelper {
     return this.deployArmTemplatesProgress;
   }
 
-  static async endDeployArmTemplatesProgress(): Promise<void> {
-    await this.deployArmTemplatesProgress?.end();
+  static async endDeployArmTemplatesProgress(success: boolean): Promise<void> {
+    await this.deployArmTemplatesProgress?.end(success);
     this.deployArmTemplatesProgress = undefined;
   }
 }

@@ -91,7 +91,7 @@ export class FunctionPlugin implements Plugin {
     const res = await this.runWithErrorWrapper(ctx, FunctionEvent.scaffold, () =>
       this.functionPluginImpl.scaffold(ctx)
     );
-    await StepHelperFactory.scaffoldStepHelper.end();
+    await StepHelperFactory.scaffoldStepHelper.end(res.isOk());
     return res;
   }
 
@@ -112,7 +112,7 @@ export class FunctionPlugin implements Plugin {
     const res = await this.runWithErrorWrapper(ctx, FunctionEvent.provision, () =>
       this.functionPluginImpl.provision(ctx)
     );
-    await StepHelperFactory.provisionStepHelper.end();
+    await StepHelperFactory.provisionStepHelper.end(res.isOk());
     return res;
   }
 
@@ -125,7 +125,7 @@ export class FunctionPlugin implements Plugin {
     const res = await this.runWithErrorWrapper(ctx, FunctionEvent.postProvision, () =>
       this.functionPluginImpl.postProvision(ctx)
     );
-    await StepHelperFactory.postProvisionStepHelper.end();
+    await StepHelperFactory.postProvisionStepHelper.end(res.isOk());
     return res;
   }
 
@@ -138,7 +138,7 @@ export class FunctionPlugin implements Plugin {
     const res = await this.runWithErrorWrapper(ctx, FunctionEvent.preDeploy, () =>
       this.functionPluginImpl.preDeploy(ctx)
     );
-    await StepHelperFactory.preDeployStepHelper.end();
+    await StepHelperFactory.preDeployStepHelper.end(res.isOk());
     return res;
   }
 
@@ -148,7 +148,7 @@ export class FunctionPlugin implements Plugin {
     const res = await this.runWithErrorWrapper(ctx, FunctionEvent.deploy, () =>
       this.functionPluginImpl.deploy(ctx)
     );
-    await StepHelperFactory.deployStepHelper.end();
+    await StepHelperFactory.deployStepHelper.end(res.isOk());
     return res;
   }
 

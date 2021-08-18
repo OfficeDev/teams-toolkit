@@ -19,7 +19,7 @@ import { compileHandlebarsTemplateString, getStrings } from "../../../common";
 import path from "path";
 import * as fs from "fs-extra";
 import { ConstantString, PluginDisplayName } from "../../../common/constants";
-import { execAsync } from "../../../common/tools";
+import { Executor } from "../../../common/tools";
 import {
   ARM_TEMPLATE_OUTPUT,
   GLOBAL_CONFIG,
@@ -36,7 +36,7 @@ const parameterFolder = "parameters";
 const bicepOrchestrationFileName = "main.bicep";
 const armTemplateJsonFileName = "main.json";
 const parameterTemplateFileName = "parameters.template.json";
-const parameterDefaultFileName = "parameters.default.json";
+const parameterFileNameTemplate = "parameters.@envName.json";
 const solutionLevelParameters = `param resourceBaseName string\n`;
 const solutionLevelParameterObject = {
   resourceBaseName: {
@@ -255,13 +255,18 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
       )
     );
   }
-  await ProgressHelper.endDeployArmTemplatesProgress();
+  await ProgressHelper.endDeployArmTemplatesProgress(result.isOk());
   return result;
 }
 
 async function getParameterJson(ctx: SolutionContext) {
+  if (!ctx.targetEnvName) {
+    throw new Error("Failed to get target environment name from solution context.");
+  }
+
+  const parameterFileName = parameterFileNameTemplate.replace("@envName", ctx.targetEnvName);
   const parameterDir = path.join(ctx.root, baseFolder, parameterFolder);
-  const parameterDefaultFilePath = path.join(parameterDir, parameterDefaultFileName);
+  const parameterDefaultFilePath = path.join(parameterDir, parameterFileName);
   const parameterTemplateFilePath = path.join(parameterDir, parameterTemplateFileName);
   let parameterFilePath = parameterDefaultFilePath;
   try {
@@ -272,7 +277,6 @@ async function getParameterJson(ctx: SolutionContext) {
     );
     parameterFilePath = parameterTemplateFilePath;
   }
-
   const parameterJson = await getExpandedParameter(ctx, parameterFilePath);
 
   if (parameterFilePath === parameterTemplateFilePath) {
@@ -325,9 +329,10 @@ async function compileBicepToJson(
 ): Promise<void> {
   // TODO: ensure bicep cli is installed
   const command = `bicep build ${bicepOrchestrationFilePath} --outfile ${jsonFilePath}`;
-  const { stdout, stderr } = await execAsync(command);
-  if (stderr) {
-    throw new Error(`Failed to compile bicep files to Json arm templates file: ${stderr}`);
+  try {
+    await Executor.execCommandAsync(command);
+  } catch (err) {
+    throw new Error(`Failed to compile bicep files to Json arm templates file: ${err.message}`);
   }
 }
 

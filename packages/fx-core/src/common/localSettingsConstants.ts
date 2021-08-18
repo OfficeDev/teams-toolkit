@@ -8,11 +8,13 @@ export const LocalSettingsTeamsAppKeys = Object.freeze({
 });
 
 export const LocalSettingsAuthKeys = Object.freeze({
-  AadClientId: "aadClientId",
-  AadClientSecret: "aadClientSecret",
-  AadObjectId: "aadObjectId",
-  AadOauth2PermissionScopeId: "aadOauth2PermissionScopeId",
-  AadApplicationIdUris: "aadApplicationIdUris",
+  ClientId: "clientId",
+  ClientSecret: "clientSecret",
+  ObjectId: "objectId",
+  Oauth2PermissionScopeId: "oauth2PermissionScopeId",
+  OauthAuthority: "oauthAuthority",
+  OauthHost: "oauthHost",
+  ApplicationIdUris: "applicationIdUris",
   SimpleAuthFilePath: "simpleAuthFilePath",
   SimpleAuthEnvironmentVariableParams: "SimpleAuthEnvironmentVariableParams",
   SimpleAuthServiceEndpoint: "AuthServiceEndpoint",
@@ -41,7 +43,7 @@ export const LocalSettingsBotKeys = Object.freeze({
   SkipNgrok: "skipNgrok",
   BotId: "botId",
   BotPassword: "botPassword",
-  BotAadObject: "botAadObject",
+  BotAadObjectId: "botAadObjectId",
   BotRedirectUri: "botRedirectUri",
   BotDomain: "botDomain",
   BotEndpoint: "botEndpoint",

@@ -6,6 +6,7 @@ Incremental version for Teams Toolkit with multiple bugs fixed and the following
 
 New Feature:
 
+- Add extension accessiblity for the disabled.
 - Add CLI command 'teamsfx preview' to preview SPFx apps.
 
 Enhancement:

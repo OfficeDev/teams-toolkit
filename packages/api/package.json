@@ -28,7 +28,7 @@
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
     "@microsoft/api-documenter": "^7.13.24",
-    "@microsoft/api-extractor": "^7.16.1",
+    "@microsoft/api-extractor": "^7.18.4",
     "@shared/eslint-config": "file:../eslint-config",
     "@shared/prettier-config": "file:../prettier-config",
     "@types/chai": "^4.2.14",

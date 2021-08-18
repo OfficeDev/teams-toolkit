@@ -5,7 +5,14 @@
 
 import * as path from "path";
 import * as fs from "fs-extra";
-import { ConfigFolderName, FxError, IProgressHandler, LogLevel } from "@microsoft/teamsfx-api";
+import {
+  Colors,
+  ConfigFolderName,
+  Func,
+  FxError,
+  IProgressHandler,
+  LogLevel,
+} from "@microsoft/teamsfx-api";
 import * as dotenv from "dotenv";
 import * as net from "net";
 
@@ -22,6 +29,8 @@ import {
 import { getNpmInstallLogInfo } from "./npmLogHandler";
 import { ServiceLogWriter } from "./serviceLogWriter";
 import open from "open";
+import { FxCore, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
+import { getSystemInputs, getColorizedString } from "../../utils";
 
 export async function openBrowser(browser: constants.Browser, url: string): Promise<void> {
   switch (browser) {
@@ -50,12 +59,13 @@ export async function openBrowser(browser: constants.Browser, url: string): Prom
       break;
   }
 }
+
 export function createTaskStartCb(
   progressBar: IProgressHandler,
   startMessage: string,
   telemetryProperties?: { [key: string]: string }
 ): (taskTitle: string, background: boolean) => Promise<void> {
-  return async (taskTitle: string, background: boolean) => {
+  return async (taskTitle: string, background: boolean, serviceLogWriter?: ServiceLogWriter) => {
     if (telemetryProperties !== undefined) {
       let event = background
         ? TelemetryEvent.PreviewServiceStart
@@ -73,12 +83,28 @@ export function createTaskStartCb(
       });
     }
     await progressBar.start(startMessage);
+    if (background) {
+      const serviceLogFile = await serviceLogWriter?.getLogFile(taskTitle);
+      if (serviceLogFile !== undefined) {
+        const message = [
+          {
+            content: `${taskTitle}: ${constants.serviceLogHintMessage} `,
+            color: Colors.WHITE,
+          },
+          {
+            content: serviceLogFile,
+            color: Colors.BRIGHT_GREEN,
+          },
+        ];
+        cliLogger.necessaryLog(LogLevel.Info, getColorizedString(message));
+      }
+    }
+    await progressBar.next(startMessage);
   };
 }
 
 export function createTaskStopCb(
   progressBar: IProgressHandler,
-  successMessage: string,
   telemetryProperties?: { [key: string]: string }
 ): (
   taskTitle: string,
@@ -86,12 +112,8 @@ export function createTaskStopCb(
   result: TaskResult,
   serviceLogWriter?: ServiceLogWriter
 ) => Promise<FxError | null> {
-  return async (
-    taskTitle: string,
-    background: boolean,
-    result: TaskResult,
-    serviceLogWriter?: ServiceLogWriter
-  ) => {
+  return async (taskTitle: string, background: boolean, result: TaskResult) => {
+    const timestamp = new Date();
     const ifNpmInstall: boolean = taskTitle.includes("npm install");
     let event = background ? TelemetryEvent.PreviewService : TelemetryEvent.PreviewNpmInstall;
     let key = background
@@ -117,57 +139,50 @@ export function createTaskStopCb(
           [TelemetryProperty.Success]: TelemetrySuccess.Yes,
         });
       }
-      let message = successMessage;
-      if (background) {
-        const serviceLogFile = await serviceLogWriter?.getLogFile(taskTitle);
-        if (serviceLogFile !== undefined) {
-          message = `${successMessage} ${constants.serviceLogHintMessage} ${serviceLogFile}`;
-        }
-      }
-      await progressBar.next(message);
-      await progressBar.end();
+      await progressBar.end(true);
       return null;
     } else {
       const error = TaskFailed(taskTitle);
       if (!background && ifNpmInstall && telemetryProperties !== undefined) {
         const npmInstallLogInfo = await getNpmInstallLogInfo();
+        let validNpmInstallLogInfo = false;
         if (
           npmInstallLogInfo?.cwd !== undefined &&
           result.options?.cwd !== undefined &&
           path.relative(npmInstallLogInfo.cwd, result.options.cwd).length === 0 &&
           result.exitCode === npmInstallLogInfo.exitCode
         ) {
+          const timeDiff = timestamp.getTime() - npmInstallLogInfo.timestamp.getTime();
+          if (timeDiff >= 0 && timeDiff <= 20000) {
+            validNpmInstallLogInfo = true;
+          }
+        }
+        if (validNpmInstallLogInfo) {
           properties[TelemetryProperty.PreviewNpmInstallNodeVersion] =
-            npmInstallLogInfo.nodeVersion + "";
+            npmInstallLogInfo?.nodeVersion + "";
           properties[TelemetryProperty.PreviewNpmInstallNpmVersion] =
-            npmInstallLogInfo.npmVersion + "";
+            npmInstallLogInfo?.npmVersion + "";
           properties[TelemetryProperty.PreviewNpmInstallErrorMessage] =
-            npmInstallLogInfo.errorMessage + "";
+            npmInstallLogInfo?.errorMessage + "";
         }
       }
       if (telemetryProperties !== undefined) {
         cliTelemetry.sendTelemetryErrorEvent(event, error, properties);
       }
       cliLogger.necessaryLog(LogLevel.Error, `${error.source}.${error.name}: ${error.message}`);
-      if (background) {
-        const serviceLogFile = await serviceLogWriter?.getLogFile(taskTitle);
-        if (serviceLogFile !== undefined) {
-          cliLogger.necessaryLog(
-            LogLevel.Info,
-            `${constants.serviceLogHintMessage} ${serviceLogFile}`
-          );
-        }
-      } else {
+      if (!background) {
         if (result.stderr.length > 0) {
           cliLogger.necessaryLog(LogLevel.Info, result.stderr[result.stderr.length - 1], true);
         }
       }
+      await progressBar.end(false);
       return error;
     }
   };
 }
 
 async function getLocalEnv(
+  core: FxCore,
   workspaceFolder: string,
   prefix = ""
 ): Promise<{ [key: string]: string } | undefined> {
@@ -176,12 +191,32 @@ async function getLocalEnv(
     `.${ConfigFolderName}`,
     constants.localEnvFileName
   );
-  if (!(await fs.pathExists(localEnvFilePath))) {
-    return undefined;
-  }
+  let env: { [name: string]: string };
 
-  const contents = await fs.readFile(localEnvFilePath);
-  const env: dotenv.DotenvParseOutput = dotenv.parse(contents);
+  if (isMultiEnvEnabled()) {
+    // use localSettings.json as input to generate the local debug envs
+    const func: Func = {
+      namespace: "fx-solution-azure/fx-resource-local-debug",
+      method: "getLocalDebugEnvs",
+    };
+    const inputs = getSystemInputs(workspaceFolder, undefined, "local");
+    inputs.ignoreLock = true;
+    inputs.ignoreConfigPersist = true;
+    const result = await core.executeUserTask(func, inputs);
+    if (result.isErr()) {
+      throw result.error;
+    }
+
+    env = result.value as Record<string, string>;
+  } else {
+    // use local.env file as input to generate the local debug envs
+    if (!(await fs.pathExists(localEnvFilePath))) {
+      return undefined;
+    }
+
+    const contents = await fs.readFile(localEnvFilePath);
+    env = dotenv.parse(contents);
+  }
 
   const result: { [key: string]: string } = {};
   for (const key of Object.keys(env)) {
@@ -193,33 +228,40 @@ async function getLocalEnv(
 }
 
 export async function getFrontendLocalEnv(
+  core: FxCore,
   workspaceFolder: string
 ): Promise<{ [key: string]: string } | undefined> {
-  return getLocalEnv(workspaceFolder, constants.frontendLocalEnvPrefix);
+  return getLocalEnv(core, workspaceFolder, constants.frontendLocalEnvPrefix);
 }
 
 export async function getBackendLocalEnv(
+  core: FxCore,
   workspaceFolder: string
 ): Promise<{ [key: string]: string } | undefined> {
-  return getLocalEnv(workspaceFolder, constants.backendLocalEnvPrefix);
+  return getLocalEnv(core, workspaceFolder, constants.backendLocalEnvPrefix);
 }
 
 export async function getAuthLocalEnv(
+  core: FxCore,
   workspaceFolder: string
 ): Promise<{ [key: string]: string } | undefined> {
   // SERVICE_PATH will also be included, but it has no side effect
-  return getLocalEnv(workspaceFolder, constants.authLocalEnvPrefix);
+  return getLocalEnv(core, workspaceFolder, constants.authLocalEnvPrefix);
 }
 
-export async function getAuthServicePath(workspaceFolder: string): Promise<string | undefined> {
-  const result = await getLocalEnv(workspaceFolder);
+export async function getAuthServicePath(
+  core: FxCore,
+  workspaceFolder: string
+): Promise<string | undefined> {
+  const result = await getLocalEnv(core, workspaceFolder);
   return result ? result[constants.authServicePathEnvKey] : undefined;
 }
 
 export async function getBotLocalEnv(
+  core: FxCore,
   workspaceFolder: string
 ): Promise<{ [key: string]: string } | undefined> {
-  return getLocalEnv(workspaceFolder, constants.botLocalEnvPrefix);
+  return getLocalEnv(core, workspaceFolder, constants.botLocalEnvPrefix);
 }
 
 async function detectPortListeningImpl(port: number, host: string): Promise<boolean> {

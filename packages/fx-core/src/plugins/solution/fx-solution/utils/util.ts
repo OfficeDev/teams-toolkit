@@ -9,6 +9,7 @@ import {
   FxError,
   TelemetryReporter,
   UserError,
+  AzureSolutionSettings,
 } from "@microsoft/teamsfx-api";
 import { SubscriptionClient } from "@azure/arm-subscriptions";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";

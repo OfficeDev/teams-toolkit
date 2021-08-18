@@ -19,7 +19,7 @@ import {
   MultiSelectQuestion,
 } from "@microsoft/teamsfx-api";
 
-import { FxCore } from "@microsoft/teamsfx-core";
+import { FxCore, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 import AzureAccountManager from "./commonlib/azureLogin";
 import AppStudioTokenProvider from "./commonlib/appStudioLogin";
 import GraphTokenProvider from "./commonlib/graphLogin";
@@ -27,13 +27,19 @@ import CLILogProvider from "./commonlib/log";
 import CLIUIInstance from "./userInteraction";
 import { flattenNodes, getSingleOptionString, toYargsOptions } from "./utils";
 import { Options } from "yargs";
-import { RootFolderNode, sqlPasswordConfirmQuestionName } from "./constants";
+import {
+  EnvNode,
+  EnvNodeNoCreate,
+  RootFolderNode,
+  sqlPasswordConfirmQuestionName,
+} from "./constants";
 import { NoInitializedHelpGenerator } from "./error";
 
 export class HelpParamGenerator {
   private core: FxCore;
   private questionsMap: Map<string, QTreeNode> = new Map<string, QTreeNode>();
   private initialized = false;
+  private static showEnvStage: string[] = [Stage.build, Stage.publish, Stage.deploy];
 
   private static instance: HelpParamGenerator;
 
@@ -189,6 +195,15 @@ export class HelpParamGenerator {
         if (node.data.name === "scratch" || node.data.name === "samples") {
           (node.data as any).hide = true;
         }
+      }
+    }
+
+    // Add env node
+    if (isMultiEnvEnabled()) {
+      if (stage === Stage.provision) {
+        nodes = nodes.concat([EnvNode]);
+      } else if (HelpParamGenerator.showEnvStage.indexOf(stage) >= 0) {
+        nodes = nodes.concat([EnvNodeNoCreate]);
       }
     }
 

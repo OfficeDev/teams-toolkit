@@ -27,11 +27,7 @@ export class TestLogger implements IDepsLogger {
 
   private writeLog(level: LogLevel, message: string) {
     const line = `${LogLevel[level]} ${new Date().toISOString()}: ${message}`;
-    if (level >= LogLevel.Error) {
-      console.error(line);
-    } else {
-      console.log(line);
-    }
+    console.error(line);
   }
 }
 

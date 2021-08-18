@@ -19,6 +19,7 @@ import { Utils } from "../../../../../src/plugins/resource/simpleauth/utils/comm
 import { PluginContext } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
 import { ConstantString, mockSolutionUpdateArmTemplates } from "../../util";
+import { TeamsClientId } from "../../../../../src/common/constants";
 
 chai.use(chaiAsPromised);
 
@@ -62,8 +63,7 @@ describe("simpleAuthPlugin", () => {
     ) as string;
     chai.assert.isOk(filePath);
     chai.assert.isTrue(await fs.pathExists(filePath));
-    const expectedEnvironmentVariableParams =
-      'CLIENT_ID="mock-local-clientId" CLIENT_SECRET="mock-local-clientSecret" OAUTH_AUTHORITY="https://login.microsoftonline.com/mock-teamsAppTenantId" IDENTIFIER_URI="mock-local-applicationIdUris" ALLOWED_APP_IDS="mock-teamsMobileDesktopAppId;mock-teamsWebAppId" TAB_APP_ENDPOINT="https://endpoint.mock" AAD_METADATA_ADDRESS="https://login.microsoftonline.com/mock-teamsAppTenantId/v2.0/.well-known/openid-configuration"';
+    const expectedEnvironmentVariableParams = `CLIENT_ID="mock-local-clientId" CLIENT_SECRET="mock-local-clientSecret" OAUTH_AUTHORITY="https://login.microsoftonline.com/mock-teamsAppTenantId" IDENTIFIER_URI="mock-local-applicationIdUris" ALLOWED_APP_IDS="${TeamsClientId.MobileDesktop};${TeamsClientId.Web}" TAB_APP_ENDPOINT="https://endpoint.mock" AAD_METADATA_ADDRESS="https://login.microsoftonline.com/mock-teamsAppTenantId/v2.0/.well-known/openid-configuration"`;
     chai.assert.strictEqual(
       pluginContext.config.get(Constants.SimpleAuthPlugin.configKeys.environmentVariableParams),
       expectedEnvironmentVariableParams

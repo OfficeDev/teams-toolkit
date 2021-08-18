@@ -92,7 +92,7 @@ describe("Frontend hosting V2", () => {
     await fs.rmdir(projectPath, { recursive: true });
   });
 
-  it("generateResourceTemplate - happy path", async () => {
+  it("Scaffold - happy path", async () => {
     const result = await pluginV2.generateResourceTemplate(context, inputs);
     // Assert
     const testModuleFileName = "frontend_hosting_test.bicep";

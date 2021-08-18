@@ -24,7 +24,7 @@ import AdmZip from "adm-zip";
 import * as path from "path";
 import * as uuid from "uuid";
 import { glob } from "glob";
-import { getResourceFolder } from "./folder";
+import { getResourceFolder } from "../folder";
 import * as Handlebars from "handlebars";
 import { ConstantString, FeatureFlagName } from "./constants";
 

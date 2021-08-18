@@ -82,7 +82,7 @@ export default class Deploy extends YargsCommand {
     }
 
     {
-      const result = await core.deployArtifacts(getSystemInputs(rootFolder));
+      const result = await core.deployArtifacts(getSystemInputs(rootFolder, args.env as any));
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Deploy, result.error);
         return err(result.error);

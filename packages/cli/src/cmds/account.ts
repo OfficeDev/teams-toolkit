@@ -68,7 +68,7 @@ async function outputAzureInfo(commandType: "login" | "show", tenantId = ""): Pr
     } else {
       try {
         AzureTokenProvider.setRootPath("./");
-        const subscriptionInfo = await AzureTokenProvider.getSubscriptionInfoFromEnv();
+        const subscriptionInfo = await AzureTokenProvider.getSelectedSubscription();
         if (subscriptionInfo) {
           CLILogProvider.necessaryLog(
             LogLevel.Info,

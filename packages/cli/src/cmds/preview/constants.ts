@@ -14,7 +14,7 @@ export const sideloadingUrl =
 export const teamsAppIdPlaceholder = "${teamsAppId}";
 export const accountHintPlaceholder = "${account-hint}";
 
-export const serviceLogHintMessage = "A complete log of this task can be found in:";
+export const serviceLogHintMessage = "The log of this task can be found in:";
 export const openBrowserHintMessage =
   "WARN: Failed to open the browser, please copy the preview url and paste it into your browser.";
 export const waitCtrlPlusC =
@@ -69,55 +69,41 @@ export const botStartPattern = /listening|[nodemon] app crashed/g;
 export const gulpServePattern = /^.*Finished subtask 'reload'.*/g;
 
 export const spfxInstallTitle = "spfx npm install";
-export const spfxInstallStartMessage = `execute 'npm install' under ${spfxFolderName} folder.`;
-export const spfxInstallSuccessMessage = `${spfxInstallTitle} completed successfully.`;
+export const spfxInstallStartMessage = `executing 'npm install' under ${spfxFolderName} folder.`;
 export const gulpCertTitle = "gulp trust-dev-cert";
-export const gulpCertStartMessage = `execute 'gulp trust-dev-cert' under ${spfxFolderName} folder.`;
-export const gulpCertSuccessMessage = `${gulpCertTitle} completed successfully.`;
+export const gulpCertStartMessage = `executing 'gulp trust-dev-cert' under ${spfxFolderName} folder.`;
 export const gulpServeTitle = "gulp serve";
-export const gulpServeStartMessage = `execute 'gulp serve' under ${spfxFolderName} folder.`;
-export const gulpServeSuccessMessage = `${gulpServeTitle} completed successfully.`;
+export const gulpServeStartMessage = `executing 'gulp serve' under ${spfxFolderName} folder.`;
 export const frontendInstallTitle = "frontend npm install";
-export const frontendInstallStartMessage = `execute 'npm install' under ${frontendFolderName} folder.`;
-export const frontendInstallSuccessMessage = `${frontendInstallTitle} completed successfully.`;
+export const frontendInstallStartMessage = `executing 'npm install' under ${frontendFolderName} folder.`;
 export const frontendStartTitle = "frontend start";
-export const frontendStartStartMessage = `execute 'react-scripts start' under ${frontendFolderName} folder.`;
-export const frontendStartSuccessMessage = "frontend started successfully.";
+export const frontendStartStartMessage = `executing 'react-scripts start' under ${frontendFolderName} folder.`;
 
 export const authStartTitle = "auth start";
-export const authStartStartMessage = "start auth service.";
-export const authStartSuccessMessage = `auth service started successfully.`;
+export const authStartStartMessage = "starting auth service.";
 
 export const backendInstallTitle = "backend npm install";
-export const backendInstallStartMessage = `execute 'npm install' under ${backendFolderName} folder.`;
-export const backendInstallSuccessMessage = `${backendInstallTitle} completed successfully.`;
+export const backendInstallStartMessage = `executing 'npm install' under ${backendFolderName} folder.`;
 export const backendExtensionsInstallTitle = "backend extensions install";
-export const backendExtensionsInstallStartMessage = "install Azure Functions binding extensions.";
-export const backendExtensionsInstallSuccessMessage = `${backendExtensionsInstallTitle} completed successfully.`;
+export const backendExtensionsInstallStartMessage =
+  "installing Azure Functions binding extensions.";
 export const backendStartTitle = "backend start";
-export const backendStartStartMessage = `execute 'func start' under ${backendFolderName} folder.`;
-export const backendStartSuccessMessage = `backend started successfully.`;
+export const backendStartStartMessage = `executing 'func start' under ${backendFolderName} folder.`;
 export const backendWatchTitle = "backend watch";
-export const backendWatchStartMessage = `execute 'tsc --watch' under ${backendFolderName} folder.`;
-export const backendWatchSuccessMessage = "backend watcher started successfully";
+export const backendWatchStartMessage = `executing 'tsc --watch' under ${backendFolderName} folder.`;
 
 export const botInstallTitle = "bot npm install";
-export const botInstallStartMessage = `execute 'npm install' under ${botFolderName} folder.`;
-export const botInstallSuccessMessage = `${botInstallTitle} completed successfully.`;
+export const botInstallStartMessage = `executing 'npm install' under ${botFolderName} folder.`;
 export const botStartTitle = "bot start";
-export const botStartStartMessage = "start bot.";
-export const botStartSuccessMessage = `bot started successfully.`;
+export const botStartStartMessage = "starting bot.";
 
 export const ngrokStartTitle = "ngrok start";
-export const ngrokStartStartMessage = `execute 'ngrok http' under ${botFolderName} folder.`;
-export const ngrokStartSuccessMessage = "ngrok started successfully.";
+export const ngrokStartStartMessage = `executing 'ngrok http' under ${botFolderName} folder.`;
 
 export const previewTitle = "preview";
-export const previewStartMessage = "open Teams web client.";
-export const previewSuccessMessage = "Teams web client opened successfully.";
+export const previewStartMessage = "opening Teams web client.";
 export const previewSPFxTitle = "spfx preview";
-export const previewSPFxStartMessage = "open SharePoint workbench.";
-export const previewSPFxSuccessMessage = "SharePoint workbench opened successfully.";
+export const previewSPFxStartMessage = "opening SharePoint workbench.";
 
 export const frontendLocalEnvPrefix = "FRONTEND_";
 export const backendLocalEnvPrefix = "BACKEND_";

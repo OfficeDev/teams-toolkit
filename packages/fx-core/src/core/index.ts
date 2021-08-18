@@ -48,7 +48,8 @@ import {
   ScratchOptionNo,
   ScratchOptionYes,
   getCreateNewOrFromSampleQuestion,
-  QuestionV1ProjectFolder,
+  QuestionV1AppName,
+  DefaultAppNameFunc,
 } from "./question";
 import * as jsonschema from "jsonschema";
 import AdmZip from "adm-zip";
@@ -208,7 +209,7 @@ export class FxCore implements Core {
   async migrateV1Project(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     const globalStateDescription = "openReadme";
 
-    const appName = inputs[QuestionAppName.name] as string;
+    const appName = (inputs[DefaultAppNameFunc.name] ?? inputs[QuestionV1AppName.name]) as string;
     if (undefined === appName) return err(InvalidInputError(`App Name is empty`, inputs));
 
     const validateResult = jsonschema.validate(appName, {
@@ -218,13 +219,12 @@ export class FxCore implements Core {
       return err(InvalidInputError(`${validateResult.errors[0].message}`, inputs));
     }
 
-    const projectPath = inputs[QuestionV1ProjectFolder.name] as string;
-    const folderExist = await fs.pathExists(projectPath);
-    if (!folderExist) {
-      return err(ProjectFolderNotExistError(projectPath));
+    const projectPath = inputs.projectPath;
+
+    if (!projectPath || !(await fs.pathExists(projectPath))) {
+      return err(ProjectFolderNotExistError(projectPath ?? ""));
     }
 
-    inputs.projectPath = projectPath;
     const solution = await defaultSolutionLoader.loadSolution(inputs);
     const projectSettings: ProjectSettings = {
       appName: appName,
@@ -678,8 +678,15 @@ export class FxCore implements Core {
     inputs: Inputs
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     const node = new QTreeNode({ type: "group" });
-    node.addChild(new QTreeNode(QuestionV1ProjectFolder));
-    node.addChild(new QTreeNode(QuestionAppName));
+    const defaultAppNameFunc = new QTreeNode(DefaultAppNameFunc);
+    node.addChild(defaultAppNameFunc);
+
+    const appNameQuestion = new QTreeNode(QuestionV1AppName);
+    appNameQuestion.condition = {
+      validFunc: (input: any) => (!input ? undefined : "App name is auto generated."),
+    };
+    defaultAppNameFunc.addChild(appNameQuestion);
+
     const globalSolutions: Solution[] = await defaultSolutionLoader.loadGlobalSolutions(inputs);
     const solutionContext = await newSolutionContext(this.tools, inputs);
 
@@ -727,7 +734,7 @@ export class FxCore implements Core {
             description: "",
             author: "",
             scripts: {
-              test: 'echo "Error: no test specified" && exit 1',
+              test: "echo \"Error: no test specified\" && exit 1",
             },
             devDependencies: {
               "@microsoft/teamsfx-cli": "0.*",

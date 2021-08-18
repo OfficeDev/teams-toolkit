@@ -24,6 +24,15 @@ export function ProjectFolderNotExistError(path: string) {
   );
 }
 
+export function EmptyProjectFolderError() {
+  return new SystemError(
+    "EmptyProjectFolderError",
+    "Project path is empty",
+    CoreSource,
+    new Error().stack
+  );
+}
+
 export function MigrateNotImplementError(path: string) {
   return new SystemError(
     "MigrateNotImplemented",

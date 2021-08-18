@@ -15,6 +15,7 @@ import {
 import {
   AzureSolutionQuestionNames,
   BotOptionItem,
+  TabOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 import * as uuid from "uuid";
 
@@ -32,9 +33,7 @@ describe("Solution migrate()", async () => {
     };
   }
 
-  const mocker = sinon.createSandbox();
   const fileContent: Map<string, any> = new Map();
-  beforeEach(() => {});
 
   it("should fail if projectSettings is undefined", async () => {
     fileContent.clear();
@@ -43,6 +42,7 @@ describe("Solution migrate()", async () => {
     const result = await solution.migrate(mockedSolutionCtx);
     expect(result.isErr()).equals(true);
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.InternelError);
+    expect(result._unsafeUnwrapErr().message).equals("projectSettings is undefined");
     expect(mockedSolutionCtx.config.get(GLOBAL_CONFIG)).to.be.not.undefined;
   });
 
@@ -58,32 +58,11 @@ describe("Solution migrate()", async () => {
     const result = await solution.migrate(mockedSolutionCtx);
     expect(result.isErr()).equals(true);
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.InternelError);
+    expect(result._unsafeUnwrapErr().message).equals("solutionSettings is undefined");
+    expect(mockedSolutionCtx.config.get(GLOBAL_CONFIG)).to.be.not.undefined;
   });
 
-  it("should succeed if projectSettings, solution settings and programming language are provided", async () => {
-    fileContent.clear();
-    const solution = new TeamsAppSolution();
-    const mockedSolutionCtx = mockSolutionContext();
-    mockedSolutionCtx.projectSettings = {
-      appName: "my app",
-      projectId: uuid.v4(),
-      solutionSettings: {
-        name: "azure",
-        version: "1.0",
-      },
-    };
-    // TODO: Enable after bot capacity supported
-    // const answers = mockedSolutionCtx.answers!;
-    // answers[AzureSolutionQuestionNames.Capabilities] = [BotOptionItem.id];
-    const answers = mockedSolutionCtx.answers!;
-    const programmingLanguage = "TypeScript";
-    answers[AzureSolutionQuestionNames.ProgrammingLanguage as string] = programmingLanguage;
-    const result = await solution.migrate(mockedSolutionCtx);
-    expect(result.isOk()).equals(true);
-    expect(mockedSolutionCtx.config.get(GLOBAL_CONFIG)).is.not.undefined;
-  });
-
-  it("should set programmingLanguage in config if programmingLanguage is in answers", async () => {
+  it("should fail if capability is undefined", async () => {
     fileContent.clear();
     const solution = new TeamsAppSolution();
     const mockedSolutionCtx = mockSolutionContext();
@@ -96,18 +75,18 @@ describe("Solution migrate()", async () => {
         version: "1.0",
       },
     };
-    const answers = mockedSolutionCtx.answers!;
-    answers[AzureSolutionQuestionNames.Capabilities as string] = [BotOptionItem.id];
-    const programmingLanguage = "TypeScript";
-    answers[AzureSolutionQuestionNames.ProgrammingLanguage as string] = programmingLanguage;
     const result = await solution.migrate(mockedSolutionCtx);
-    expect(result.isOk()).equals(true);
-
-    const lang = mockedSolutionCtx.projectSettings.programmingLanguage;
-    expect(lang).equals(programmingLanguage);
+    expect(result.isErr()).equals(true);
+    expect(result._unsafeUnwrapErr().name).equals(SolutionError.InternelError);
+    expect(result._unsafeUnwrapErr().message).equals("capabilities is empty");
+    expect(mockedSolutionCtx.config.get(GLOBAL_CONFIG)).to.be.not.undefined;
   });
 
-  it("shouldn't throw error if programmingLanguage is not in answers", async () => {
+  it("should succeed if projectSettings, solution settings and v1 capability are provided, language is javascript", async () => {
+    const mocker = sinon.createSandbox();
+    mocker.stub(fs, "access").callsFake((path: PathLike, mode?: number) => {
+      throw new Error("");
+    });
     fileContent.clear();
     const solution = new TeamsAppSolution();
     const mockedSolutionCtx = mockSolutionContext();
@@ -119,12 +98,41 @@ describe("Solution migrate()", async () => {
         version: "1.0",
       },
     };
+
+    const answers = mockedSolutionCtx.answers!;
+    answers[AzureSolutionQuestionNames.V1Capability] = TabOptionItem.id;
+
     const result = await solution.migrate(mockedSolutionCtx);
-    expect(result.isErr()).equals(true);
-    expect(result._unsafeUnwrapErr().name).equals(SolutionError.InternelError);
+    expect(result.isOk()).equals(true);
+    expect(mockedSolutionCtx.config.get(GLOBAL_CONFIG)).is.not.undefined;
+    const lang = mockedSolutionCtx.projectSettings.programmingLanguage;
+    expect(lang).equals("javascript");
+    mocker.restore();
   });
 
-  afterEach(() => {
+  it("should succeed if projectSettings, solution settings and v1 capability are provided, language is typescript", async () => {
+    const mocker = sinon.createSandbox();
+    mocker.stub(fs, "access").callsFake((path: PathLike, mode?: number) => {});
+    fileContent.clear();
+    const solution = new TeamsAppSolution();
+    const mockedSolutionCtx = mockSolutionContext();
+    mockedSolutionCtx.projectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        name: "azure",
+        version: "1.0",
+      },
+    };
+
+    const answers = mockedSolutionCtx.answers!;
+    answers[AzureSolutionQuestionNames.V1Capability] = TabOptionItem.id;
+
+    const result = await solution.migrate(mockedSolutionCtx);
+    expect(result.isOk()).equals(true);
+    expect(mockedSolutionCtx.config.get(GLOBAL_CONFIG)).is.not.undefined;
+    const lang = mockedSolutionCtx.projectSettings.programmingLanguage;
+    expect(lang).equals("typescript");
     mocker.restore();
   });
 });

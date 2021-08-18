@@ -34,7 +34,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { checkSubscription, fillInCommonQuestions } from "./commonQuestions";
 import { executeLifecycles, executeConcurrently, LifecyclesWithContext } from "./executor";
-import { getPluginContext, sendErrorTelemetryThenReturnError } from "./utils/util";
+import { checkFileExist, getPluginContext, sendErrorTelemetryThenReturnError } from "./utils/util";
 import * as fs from "fs-extra";
 import {
   DEFAULT_PERMISSION_REQUEST,
@@ -78,6 +78,7 @@ import {
   AskSubscriptionQuestion,
   addCapabilityQuestion,
   ProgrammingLanguageQuestion,
+  createV1CapabilityQuestion,
 } from "./question";
 import Mustache from "mustache";
 import path from "path";
@@ -241,7 +242,9 @@ export class TeamsAppSolution implements Solution {
     return ok(solutionSettings);
   }
 
-  fillInV1SolutionSettings(ctx: SolutionContext): Result<AzureSolutionSettings, FxError> {
+  async fillInV1SolutionSettings(
+    ctx: SolutionContext
+  ): Promise<Result<AzureSolutionSettings, FxError>> {
     const assertList: [
       Result<Inputs, FxError>,
       Result<ProjectSettings, FxError>,
@@ -260,21 +263,25 @@ export class TeamsAppSolution implements Solution {
     }
     const [answers, projectSettings, solutionSettingsSource] = assertRes.value;
 
-    const langRes = this.assertSettingsNotEmpty<string>(
-      answers[AzureSolutionQuestionNames.ProgrammingLanguage] as string,
-      AzureSolutionQuestionNames.ProgrammingLanguage
-    );
-    if (langRes.isErr()) {
-      return err(langRes.error);
-    }
+    const isTypescriptProject = await checkFileExist(path.join(ctx.root, "tsconfig.json"));
+    projectSettings.programmingLanguage = isTypescriptProject ? "typescript" : "javascript";
 
-    projectSettings.programmingLanguage = langRes.value;
+    const capability = answers[AzureSolutionQuestionNames.V1Capability] as string;
+    if (!capability) {
+      return err(
+        returnSystemError(
+          new Error("capabilities is empty"),
+          "Solution",
+          SolutionError.InternelError
+        )
+      );
+    }
 
     const solutionSettings: AzureSolutionSettings = {
       name: solutionSettingsSource.name,
       version: solutionSettingsSource.version,
       hostType: HostTypeOptionAzure.id,
-      capabilities: [TabOptionItem.id],
+      capabilities: [capability],
       azureResources: [],
       activeResourcePlugins: [],
       migrateFromV1: solutionSettingsSource?.migrateFromV1,
@@ -341,7 +348,7 @@ export class TeamsAppSolution implements Solution {
       ctx.config.set(GLOBAL_CONFIG, new ConfigMap());
     }
 
-    const settingsRes = this.fillInV1SolutionSettings(ctx);
+    const settingsRes = await this.fillInV1SolutionSettings(ctx);
     if (settingsRes.isErr()) {
       return err(
         sendErrorTelemetryThenReturnError(
@@ -450,6 +457,10 @@ export class TeamsAppSolution implements Solution {
   }
 
   private async ensurePermissionRequest(ctx: SolutionContext): Promise<Result<undefined, FxError>> {
+    if (ctx?.projectSettings?.solutionSettings?.migrateFromV1) {
+      return ok(undefined);
+    }
+
     if (!this.isAzureProject(ctx)) {
       return err(
         returnUserError(
@@ -1003,9 +1014,9 @@ export class TeamsAppSolution implements Solution {
       programmingLanguage.condition = { minItems: 1 };
       capNode.addChild(programmingLanguage);
     } else if (stage == Stage.migrateV1) {
-      const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
-      programmingLanguage.condition = { minItems: 1 };
-      node.addChild(programmingLanguage);
+      const capQuestion = createV1CapabilityQuestion();
+      const capNode = new QTreeNode(capQuestion);
+      node.addChild(capNode);
     } else if (stage === Stage.provision) {
       if (isDynamicQuestion) {
         const v1Blocked = this.blockV1Project(ctx.projectSettings?.solutionSettings);

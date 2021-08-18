@@ -72,12 +72,8 @@ import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
 import { getTemplatesFolder } from "../../..";
 import path from "path";
-import {
-  getArmOutput,
-  isArmSupportEnabled,
-  isMultiEnvEnabled,
-  getAppDirectory,
-} from "../../../common";
+import { getArmOutput } from "../utils4v2";
+import { isArmSupportEnabled, isMultiEnvEnabled, getAppDirectory } from "../../../common";
 import {
   LocalSettingsAuthKeys,
   LocalSettingsBotKeys,

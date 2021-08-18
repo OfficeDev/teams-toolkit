@@ -7,3 +7,4 @@ import "reflect-metadata";
 export * from "./common";
 export * from "./plugins";
 export * from "./core";
+export * from "./folder";

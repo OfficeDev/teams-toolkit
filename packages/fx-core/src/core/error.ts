@@ -158,10 +158,19 @@ export function ProjectSettingsUndefinedError(): FxError {
   );
 }
 
-export function ProjectEnvNotExistError(env: string) {
+export function ProjectEnvNotExistError(env: string): FxError {
   return new UserError(
     "ProjectEnvNotExistError",
     `The specified env ${env} does not exist. Select an existing env.`,
+    CoreSource,
+    new Error().stack
+  );
+}
+
+export function ProjectEnvIllegalError(): FxError {
+  return new UserError(
+    "ProjectEnvIllegalError",
+    `Environment name can only contain letters, digits, _ and -.`,
     CoreSource,
     new Error().stack
   );

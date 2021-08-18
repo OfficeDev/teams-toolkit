@@ -204,6 +204,8 @@ export class HelpParamGenerator {
         nodes = nodes.concat([EnvNode]);
       } else if (HelpParamGenerator.showEnvStage.indexOf(stage) >= 0) {
         nodes = nodes.concat([EnvNodeNoCreate]);
+      } else if (stage == "validate") {
+        nodes = nodes.concat([EnvNodeNoCreate]);
       }
     }
 

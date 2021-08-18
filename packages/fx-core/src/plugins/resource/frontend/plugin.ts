@@ -213,35 +213,7 @@ export class FrontendPluginImpl {
     Logger.info(Messages.StartPreDeploy(PluginInfo.DisplayName));
     const progressHandler = await ProgressHelper.createPreDeployProgressHandler(ctx);
 
-    const envs: { [key: string]: string } = {};
-
-    const functionPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.FunctionPluginName);
-    if (functionPlugin) {
-      envs[EnvironmentVariables.FuncName] = ctx.projectSettings?.defaultFunctionName as string;
-      envs[EnvironmentVariables.FuncEndpoint] = functionPlugin.get(
-        DependentPluginInfo.FunctionEndpoint
-      ) as string;
-    }
-
-    const authPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.RuntimePluginName);
-    if (authPlugin) {
-      envs[EnvironmentVariables.RuntimeEndpoint] = authPlugin.get(
-        DependentPluginInfo.RuntimeEndpoint
-      ) as string;
-      envs[EnvironmentVariables.StartLoginPage] = DependentPluginInfo.StartLoginPageURL;
-    }
-
-    const aadPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.AADPluginName);
-    if (aadPlugin) {
-      envs[EnvironmentVariables.ClientID] = aadPlugin.get(DependentPluginInfo.ClientID) as string;
-    }
-
-    const envFilePath = path.join(
-      ctx.root,
-      FrontendPathInfo.WorkingDir,
-      FrontendPathInfo.TabEnvironmentFilePath
-    );
-    await EnvironmentUtils.writeEnvironments(envFilePath, envs);
+    await this.updateDotenv(ctx);
 
     const config = await FrontendConfig.fromPluginContext(ctx);
     const client = new AzureStorageClient(config);
@@ -376,5 +348,35 @@ export class FrontendPluginImpl {
       new EnableStaticWebsiteError(),
       async () => await client.enableStaticWebsite()
     );
+  private async updateDotenv(ctx: PluginContext): Promise<void> {
+    const envs: { [key: string]: string } = {};
+
+    const functionPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.FunctionPluginName);
+    if (functionPlugin) {
+      envs[EnvironmentVariables.FuncName] = ctx.projectSettings?.defaultFunctionName as string;
+      envs[EnvironmentVariables.FuncEndpoint] = functionPlugin.get(
+        DependentPluginInfo.FunctionEndpoint
+      ) as string;
+    }
+
+    const authPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.RuntimePluginName);
+    if (authPlugin) {
+      envs[EnvironmentVariables.RuntimeEndpoint] = authPlugin.get(
+        DependentPluginInfo.RuntimeEndpoint
+      ) as string;
+      envs[EnvironmentVariables.StartLoginPage] = DependentPluginInfo.StartLoginPageURL;
+    }
+
+    const aadPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.AADPluginName);
+    if (aadPlugin) {
+      envs[EnvironmentVariables.ClientID] = aadPlugin.get(DependentPluginInfo.ClientID) as string;
+    }
+
+    const envFilePath = path.join(
+      ctx.root,
+      FrontendPathInfo.WorkingDir,
+      FrontendPathInfo.TabEnvironmentFilePath
+    );
+    await EnvironmentUtils.writeEnvironments(envFilePath, envs);
   }
 }

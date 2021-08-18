@@ -19,8 +19,6 @@ import {
   StorageAccountAlreadyTakenError,
   runWithErrorCatchAndWrap,
   RegisterResourceProviderError,
-  InvalidAuthPluginConfigError,
-  InvalidAadPluginConfigError,
 } from "./resources/errors";
 import {
   ArmOutput,
@@ -28,6 +26,7 @@ import {
   AzureInfo,
   Constants,
   DependentPluginInfo,
+  EnvironmentVariables,
   FrontendOutputBicepSnippet,
   FrontendPathInfo,
   FrontendPluginInfo as PluginInfo,
@@ -214,37 +213,27 @@ export class FrontendPluginImpl {
     Logger.info(Messages.StartPreDeploy(PluginInfo.DisplayName));
     const progressHandler = await ProgressHelper.createPreDeployProgressHandler(ctx);
 
-    const config = await FrontendConfig.fromPluginContext(ctx);
-
-    let functionEnv: FunctionEnvironment | undefined;
-    let aadEnv: AADEnvironment | undefined;
-    let runtimeEnv: RuntimeEnvironment | undefined;
+    const envs: { [key: string]: string } = {};
 
     const functionPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.FunctionPluginName);
     if (functionPlugin) {
-      functionEnv = {
-        defaultName: ctx.projectSettings?.defaultFunctionName as string,
-        endpoint: functionPlugin.get(DependentPluginInfo.FunctionEndpoint) as string,
-      };
+      envs[EnvironmentVariables.FuncName] = ctx.projectSettings?.defaultFunctionName as string;
+      envs[EnvironmentVariables.FuncEndpoint] = functionPlugin.get(
+        DependentPluginInfo.FunctionEndpoint
+      ) as string;
     }
 
     const authPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.RuntimePluginName);
     if (authPlugin) {
-      runtimeEnv = {
-        endpoint: authPlugin.get(DependentPluginInfo.RuntimeEndpoint) as string,
-        startLoginPageUrl: DependentPluginInfo.StartLoginPageURL,
-      };
-    } else {
-      throw new InvalidAuthPluginConfigError();
+      envs[EnvironmentVariables.RuntimeEndpoint] = authPlugin.get(
+        DependentPluginInfo.RuntimeEndpoint
+      ) as string;
+      envs[EnvironmentVariables.StartLoginPage] = DependentPluginInfo.StartLoginPageURL;
     }
 
     const aadPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.AADPluginName);
     if (aadPlugin) {
-      aadEnv = {
-        clientId: aadPlugin.get(DependentPluginInfo.ClientID) as string,
-      };
-    } else {
-      throw new InvalidAadPluginConfigError();
+      envs[EnvironmentVariables.ClientID] = aadPlugin.get(DependentPluginInfo.ClientID) as string;
     }
 
     const envFilePath = path.join(
@@ -252,8 +241,9 @@ export class FrontendPluginImpl {
       FrontendPathInfo.WorkingDir,
       FrontendPathInfo.TabEnvironmentFilePath
     );
-    await EnvironmentUtils.updateEnvironment(envFilePath, runtimeEnv, aadEnv, functionEnv);
+    await EnvironmentUtils.writeEnvironments(envFilePath, envs);
 
+    const config = await FrontendConfig.fromPluginContext(ctx);
     const client = new AzureStorageClient(config);
 
     await progressHandler?.next(PreDeploySteps.CheckStorage);

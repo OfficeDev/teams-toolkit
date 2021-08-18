@@ -31,9 +31,8 @@ import {
 export default class QuickStart extends React.Component<any, any> {
   constructor(props: any) {
     super(props);
-
     this.state = {
-      currentStep: 1,
+      currentStep: isExpandProject ? (isSupportedNode ? 5 : 6) : 1,
       m365Account: undefined,
       azureAccount: undefined,
       stepsDone: [false, false, false, false, false, false],
@@ -244,6 +243,28 @@ export default class QuickStart extends React.Component<any, any> {
             {(() => {
               const curStep = stepCount;
               stepCount++;
+              if (isExpandProject) {
+                return (
+                  <GetStartedAction
+                    title={`Build your first Teams app`}
+                    content={[
+                      "Build a Teams app from the scratch or explore our samples to help you quickly get started with the basic Teams app concepts and code structures.",
+                      <br />,
+                      <br />,
+                      "You can also create a new project from samples.",
+                    ]}
+                    actionText="Create New Project"
+                    onAction={this.createNewProjectWithMarkDone}
+                    secondaryActionText="View all Samples"
+                    onSecondaryAction={this.viewAllSamples}
+                    expanded={this.state.currentStep === curStep}
+                    onCollapsedCardClicked={this.onCollapsedCardClicked}
+                    step={curStep}
+                    done={this.state.stepsDone[5]}
+                  />
+                );
+              }
+
               return (
                 <GetStartedAction
                   title={`Build your first Teams app from a sample`}
@@ -254,7 +275,7 @@ export default class QuickStart extends React.Component<any, any> {
                     "You can also create a new project from scratch.",
                   ]}
                   actionText="View all Samples"
-                  onAction={this.viewAllSamples}
+                  onAction={this.viewAllSamplesWithMarkDone}
                   secondaryActionText="Create New Project"
                   onSecondaryAction={this.createNewProject}
                   expanded={this.state.currentStep === curStep}
@@ -359,6 +380,28 @@ export default class QuickStart extends React.Component<any, any> {
         properties: { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview },
       },
     });
+
+    vscode.postMessage({
+      command: Commands.CreateNewProject,
+    });
+  };
+
+  createNewProjectWithMarkDone = () => {
+    vscode.postMessage({
+      command: Commands.SendTelemetryEvent,
+      data: {
+        eventName: TelemetryEvent.CreateProjectStart,
+        properties: { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview },
+      },
+    });
+
+    const done = this.state.stepsDone;
+    done[5] = true;
+    this.setState({
+      stepsDone: done,
+    });
+    this.setGlobalStepsDone(done);
+
     vscode.postMessage({
       command: Commands.CreateNewProject,
     });
@@ -550,6 +593,21 @@ export default class QuickStart extends React.Component<any, any> {
   };
 
   viewAllSamples = () => {
+    vscode.postMessage({
+      command: Commands.SendTelemetryEvent,
+      data: {
+        eventName: TelemetryEvent.Samples,
+        properties: { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview },
+      },
+    });
+
+    vscode.postMessage({
+      command: Commands.SwitchPanel,
+      data: PanelType.SampleGallery,
+    });
+  };
+
+  viewAllSamplesWithMarkDone = () => {
     vscode.postMessage({
       command: Commands.SendTelemetryEvent,
       data: {

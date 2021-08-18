@@ -130,7 +130,7 @@ describe("New Command Tests", function () {
       deleteFolderIfExists(folder);
       await cmd.subCommands[0].handler({
         folder: TestFolder,
-        "template-name": sampleAppName,
+        "template-name": sampleAppName.toLocaleLowerCase(),
       });
       expect(telemetryEvents).deep.equals([
         TelemetryEvent.DownloadSampleStart,
@@ -148,7 +148,7 @@ describe("New Command Tests", function () {
       try {
         await cmd.subCommands[0].handler({
           folder: TestFolder,
-          "template-name": sampleAppName,
+          "template-name": sampleAppName.toLocaleLowerCase(),
         });
       } catch (e) {
         expect(e).instanceOf(UserError);

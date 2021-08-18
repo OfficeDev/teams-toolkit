@@ -28,7 +28,7 @@ import {
 } from "@microsoft/teamsfx-api/build/v2";
 import { ArmResourcePlugin, ScaffoldArmTemplateResult } from "../../common/armInterface";
 import { NoProjectOpenedError, PluginHasNoTaskImpl } from "../../core";
-import { GLOBAL_CONFIG } from "../solution/fx-solution/constants";
+import { GLOBAL_CONFIG, ARM_TEMPLATE_OUTPUT } from "../solution/fx-solution/constants";
 
 export function convert2PluginContext(ctx: Context, inputs: Inputs): PluginContext {
   if (!inputs.projectPath) throw NoProjectOpenedError();
@@ -272,6 +272,7 @@ export async function executeUserTaskAdapter(
   return ok(res.value);
 }
 
+
 export async function getQuestionsForScaffoldingAdapter(
   ctx: Context,
   inputs: Inputs,
@@ -280,4 +281,9 @@ export async function getQuestionsForScaffoldingAdapter(
   if (!plugin.getQuestions) return err(PluginHasNoTaskImpl(plugin.displayName, "getQuestions"));
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
   return await plugin.getQuestions(Stage.create, pluginContext);
+}
+export function getArmOutput(ctx: PluginContext, key: string): string | undefined {
+  const solutionConfig = ctx.configOfOtherPlugins.get("solution");
+  const output = solutionConfig?.get(ARM_TEMPLATE_OUTPUT);
+  return output?.[key]?.value;
 }

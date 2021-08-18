@@ -12,10 +12,12 @@ import { getTeamsAppId } from "../utils/commonUtils";
 import { isValidProject } from "@microsoft/teamsfx-core";
 import { getNpmInstallLogInfo } from "./npmLogHandler";
 import * as path from "path";
-import { errorDetail, issueLink, issueTemplate, npmInstallFailedHintMessage } from "./constants";
+import { errorDetail, issueLink, issueTemplate } from "./constants";
 import * as StringResources from "../resources/Strings.json";
 import * as util from "util";
 import VsCodeLogInstance from "../commonlib/log";
+import { globalStateGet, globalStateUpdate } from "@microsoft/teamsfx-core";
+import * as constants from "../debug/constants";
 
 interface IRunningTeamsfxTask {
   source: string;
@@ -164,12 +166,23 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
           },
         };
         vscode.window
-          .showErrorMessage(util.format(npmInstallFailedHintMessage, task.name, task.name), issue)
+          .showErrorMessage(
+            util.format(
+              StringResources.vsc.localDebug.npmInstallFailedHintMessage,
+              task.name,
+              task.name
+            ),
+            issue
+          )
           .then(async (button) => {
             await button?.run();
           });
         await VsCodeLogInstance.error(
-          util.format(npmInstallFailedHintMessage, task.name, task.name)
+          util.format(
+            StringResources.vsc.localDebug.npmInstallFailedHintMessage,
+            task.name,
+            task.name
+          )
         );
         terminateAllRunningTeamsfxTasks();
       }
@@ -205,6 +218,33 @@ function onDidStartDebugSessionHandler(event: vscode.DebugSession): void {
           [TelemetryProperty.DebugRemote]: isRemote ? "true" : "false",
           [TelemetryProperty.DebugAppId]: isRemote ? remoteAppId : localAppId,
         });
+
+        if (
+          debugConfig.request === "launch" &&
+          !isRemote &&
+          !globalStateGet(constants.SideloadingHintStateKeys.DoNotShowAgain, false)
+        ) {
+          vscode.window
+            .showInformationMessage(
+              StringResources.vsc.localDebug.sideloadingHintMessage,
+              StringResources.vsc.localDebug.sideloadingHintDoNotShowAgain,
+              StringResources.vsc.localDebug.openFAQ
+            )
+            .then(async (selected) => {
+              if (selected === StringResources.vsc.localDebug.sideloadingHintDoNotShowAgain) {
+                await globalStateUpdate(constants.SideloadingHintStateKeys.DoNotShowAgain, true);
+              } else if (selected === StringResources.vsc.localDebug.openFAQ) {
+                vscode.commands.executeCommand(
+                  "vscode.open",
+                  vscode.Uri.parse(constants.localDebugFAQUrl)
+                );
+              }
+              ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugFAQ, {
+                [TelemetryProperty.DebugFAQSelection]: selected + "",
+                [TelemetryProperty.DebugAppId]: localAppId,
+              });
+            });
+        }
       } catch {
         // ignore telemetry error
       }

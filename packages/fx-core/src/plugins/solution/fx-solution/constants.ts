@@ -30,6 +30,11 @@ export const SOLUTION_PROVISION_SUCCEEDED = "provisionSucceeded";
 export const PROGRAMMING_LANGUAGE = "programmingLanguage";
 
 /**
+ * Config key whose value is the default function name for adding a new function.
+ */
+export const DEFAULT_FUNC_NAME = "defaultFunctionName";
+
+/**
  * Config key whose value is output of ARM templates deployment.
  */
 export const ARM_TEMPLATE_OUTPUT = "armTemplateOutput";
@@ -116,6 +121,7 @@ export enum SolutionError {
   CannotCheckPermissionBeforeProvision = "CannotCheckPermissionBeforeProvision",
   FailedToRetrieveUserInfo = "FailedToRetrieveUserInfo",
   M365AccountNotMatch = "M365AccountNotMatch",
+  FeatureNotSupported = "FeatureNotSupported",
 }
 
 export const LOCAL_DEBUG_TAB_ENDPOINT = "localTabEndpoint";

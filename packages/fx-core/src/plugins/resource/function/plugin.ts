@@ -11,6 +11,7 @@ import {
   ReadonlyPluginConfig,
   Result,
   Stage,
+  TextInputQuestion,
 } from "@microsoft/teamsfx-api";
 import { StorageManagementClient } from "@azure/arm-storage";
 import { StringDictionary } from "@azure/arm-appservice/esm/models";
@@ -63,7 +64,6 @@ import {
   StepGroup,
   step,
 } from "./resources/steps";
-import { functionNameQuestion } from "./questions";
 import { DotnetChecker } from "./utils/depsChecker/dotnetChecker";
 import { Messages, isLinux, dotnetManualInstallHelpLink } from "./utils/depsChecker/common";
 import { DepsCheckerError } from "./utils/depsChecker/errors";
@@ -72,6 +72,7 @@ import { FuncPluginAdapter } from "./utils/depsChecker/funcPluginAdapter";
 import { funcPluginLogger } from "./utils/depsChecker/funcPluginLogger";
 import { FuncPluginTelemetry } from "./utils/depsChecker/funcPluginTelemetry";
 import { TelemetryHelper } from "./utils/telemetry-helper";
+import { functionNameQuestion } from "./question";
 
 type Site = WebSiteManagementModels.Site;
 type AppServicePlan = WebSiteManagementModels.AppServicePlan;
@@ -118,12 +119,10 @@ export class FunctionPluginImpl {
     if (subscriptionInfo) {
       this.config.subscriptionId = subscriptionInfo.subscriptionId;
     }
+
     this.config.location = solutionConfig?.get(DependentPluginInfo.location) as string;
     this.config.functionLanguage = ctx.projectSettings?.programmingLanguage as FunctionLanguage;
-
-    this.config.defaultFunctionName = ctx.config.get(
-      FunctionConfigKey.defaultFunctionName
-    ) as string;
+    this.config.defaultFunctionName = ctx.projectSettings?.defaultFunctionName as string;
     this.config.functionAppName = ctx.config.get(FunctionConfigKey.functionAppName) as string;
     this.config.storageAccountName = ctx.config.get(FunctionConfigKey.storageAccountName) as string;
     this.config.appServicePlanName = ctx.config.get(FunctionConfigKey.appServicePlanName) as string;
@@ -134,6 +133,7 @@ export class FunctionPluginImpl {
   }
 
   private syncConfigToContext(ctx: PluginContext): void {
+    // sync plugin config to context
     Object.entries(this.config)
       .filter((kv) =>
         FunctionPluginInfo.FunctionPluginPersistentConfig.find(
@@ -145,6 +145,11 @@ export class FunctionPluginImpl {
           ctx.config.set(kv[0], kv[1].toString());
         }
       });
+
+    // sync project settings to context
+    if (this.config.defaultFunctionName) {
+      ctx.projectSettings!.defaultFunctionName = this.config.defaultFunctionName;
+    }
   }
 
   private validateConfig(): void {

@@ -20,9 +20,6 @@ export class Constants {
   static statusCodeUserError = 400;
   static statusCodeServerError = 500;
 
-  static createOwnerDuplicatedMessage =
-    "One or more added object references already exist for the following modified properties: 'owners'.";
-
   static permissions = {
     name: "Azure AD App",
     owner: "Owner",

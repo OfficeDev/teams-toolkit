@@ -5,17 +5,16 @@ import chaiAsPromised from "chai-as-promised";
 import { it } from "mocha";
 import { TeamsAppSolution } from " ../../../src/plugins/solution";
 import {
-  ConfigMap,
   FxError,
   ok,
   PluginContext,
   Result,
   SolutionConfig,
   SolutionContext,
-  TeamsAppManifest,
   Void,
   Plugin,
   Platform,
+  v2,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs, { PathLike } from "fs-extra";
@@ -46,6 +45,7 @@ const simpleAuthPlugin = Container.get<Plugin>(ResourcePlugins.SimpleAuthPlugin)
 const localdebugPlugin = Container.get<Plugin>(ResourcePlugins.LocalDebugPlugin);
 const botPlugin = Container.get<Plugin>(ResourcePlugins.BotPlugin);
 const spfxPlugin = Container.get<Plugin>(ResourcePlugins.SpfxPlugin);
+const appStudioPlugin = Container.get<Plugin>(ResourcePlugins.AppStudioPlugin);
 function mockSolutionContext(): SolutionContext {
   const config: SolutionConfig = new Map();
   return {
@@ -105,6 +105,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
         version: "1.0",
         activeResourcePlugins: [fehostPlugin.name],
         capabilities: [TabOptionItem.id],
+        azureResources: [],
       },
     };
     mockScaffoldThatAlwaysSucceed(fehostPlugin);
@@ -126,6 +127,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
         version: "1.0",
         activeResourcePlugins: [fehostPlugin.name, botPlugin.name],
         capabilities: [TabOptionItem.id, BotOptionItem.id],
+        azureResources: [],
       },
     };
     mockScaffoldThatAlwaysSucceed(fehostPlugin);
@@ -149,6 +151,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
         version: "1.0",
         activeResourcePlugins: [fehostPlugin.name, botPlugin.name],
         capabilities: [TabOptionItem.id, MessageExtensionItem.id],
+        azureResources: [],
       },
     };
     mockScaffoldThatAlwaysSucceed(fehostPlugin);
@@ -177,11 +180,13 @@ describe("Solution scaffold() reading valid manifest file", () => {
         version: "1.0",
         activeResourcePlugins: [simpleAuthPlugin.name],
         capabilities: [TabOptionItem.id],
+        azureResources: [],
       },
     };
     mockScaffoldThatAlwaysSucceed(fehostPlugin);
     mockScaffoldThatAlwaysSucceed(simpleAuthPlugin);
     mockScaffoldThatAlwaysSucceed(localdebugPlugin);
+    mockScaffoldThatAlwaysSucceed(appStudioPlugin);
 
     // mock plugin behavior
     mocker.stub(fehostPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
@@ -195,13 +200,13 @@ describe("Solution scaffold() reading valid manifest file", () => {
     const result = await solution.scaffold(mockedCtx);
     expect(result.isOk()).to.be.true;
     // only need to check whether related files exist, tests to the content is covered by other test cases
-    expect(fileContent.size).equals(5); // there's a readme file
+    expect(fileContent.size).equals(4);
     expect(fileContent.has(path.join("./infra/azure/templates", "main.bicep"))).to.be.true;
     expect(fileContent.has(path.join("./infra/azure/templates", "frontendHostingProvision.bicep")))
       .to.be.true;
     expect(fileContent.has(path.join("./infra/azure/templates", "simpleAuthProvision.bicep"))).to.be
       .true;
-    expect(fileContent.has(path.join("./infra/azure/parameters", "parameter.template.json"))).to.be
+    expect(fileContent.has(path.join("./infra/azure/parameters", "parameters.template.json"))).to.be
       .true;
 
     restore();
@@ -225,15 +230,17 @@ describe("Solution scaffold() reading valid manifest file", () => {
         version: "1.0",
         activeResourcePlugins: [spfxPlugin.name],
         capabilities: [TabOptionItem.id],
+        azureResources: [],
       },
     };
     mockScaffoldThatAlwaysSucceed(spfxPlugin);
     mockScaffoldThatAlwaysSucceed(localdebugPlugin);
+    mockScaffoldThatAlwaysSucceed(appStudioPlugin);
 
     const result = await solution.scaffold(mockedCtx);
     expect(result.isOk()).to.be.true;
     // only need to check whether related files exist, tests to the content is covered by other test cases
-    expect(fileContent.size).equals(1); // only a readme file is generated
+    expect(fileContent.size).equals(0);
 
     restore();
   });

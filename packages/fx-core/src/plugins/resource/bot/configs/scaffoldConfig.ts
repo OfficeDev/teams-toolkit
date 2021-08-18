@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import * as utils from "../utils/common";
-import { CommonStrings, PluginBot, PluginSolution } from "../resources/strings";
-import { ConfigValue, PluginContext } from "@microsoft/teamsfx-api";
+import { CommonStrings, PluginBot } from "../resources/strings";
+import { PluginContext } from "@microsoft/teamsfx-api";
 import { ProgrammingLanguage } from "../enums/programmingLanguage";
 import { WayToRegisterBot } from "../enums/wayToRegisterBot";
 import path from "path";
@@ -32,9 +32,7 @@ export class ScaffoldConfig {
 
     this.objectId = context.config.get(PluginBot.OBJECT_ID) as string;
 
-    const rawProgrammingLanguage = context.configOfOtherPlugins
-      .get(PluginSolution.PLUGIN_NAME)
-      ?.get(PluginBot.PROGRAMMING_LANGUAGE) as string;
+    const rawProgrammingLanguage = context.projectSettings?.programmingLanguage;
 
     if (
       rawProgrammingLanguage &&
@@ -53,7 +51,6 @@ export class ScaffoldConfig {
     utils.checkAndSaveConfig(context, PluginBot.BOT_ID, this.botId);
     utils.checkAndSaveConfig(context, PluginBot.BOT_PASSWORD, this.botPassword);
     utils.checkAndSaveConfig(context, PluginBot.OBJECT_ID, this.objectId);
-    utils.checkAndSaveConfig(context, PluginBot.PROGRAMMING_LANGUAGE, this.programmingLanguage);
     utils.checkAndSaveConfig(context, PluginBot.WAY_TO_REGISTER_BOT, this.wayToRegisterBot);
   }
 }

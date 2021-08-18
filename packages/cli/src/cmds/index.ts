@@ -18,6 +18,8 @@ import Build from "./build";
 import Validate from "./validate";
 import Config from "./config";
 import Preview from "./preview/preview";
+import { isRemoteCollaborationEnabled } from "../utils";
+import Permission from "./permission";
 
 export const commands: YargsCommand[] = [
   new Account(),
@@ -39,6 +41,10 @@ export const commands: YargsCommand[] = [
  * @param yargs
  */
 export function registerCommands(yargs: Argv): void {
+  if (isRemoteCollaborationEnabled()) {
+    commands.push(new Permission());
+  }
+
   commands.forEach((command) => {
     yargs.command(
       command.command,

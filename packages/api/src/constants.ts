@@ -34,10 +34,14 @@ export enum Stage {
   debug = "debug",
   provision = "provision",
   deploy = "deploy",
+  package = "package",
   publish = "publish",
   createEnv = "createEnv",
   removeEnv = "removeEnv",
   switchEnv = "switchEnv",
   userTask = "userTask",
   update = "update", //never used again except APIM just for reference
+  grantPermission = "grantPermission",
+  checkPermission = "checkPermission",
+  listCollaborator = "listCollaborator",
 }

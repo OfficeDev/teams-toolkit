@@ -38,6 +38,8 @@ import {
   isValidProject,
   globalStateUpdate,
   globalStateGet,
+  Correlator,
+  getAppDirectory,
 } from "@microsoft/teamsfx-core";
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -174,12 +176,6 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<null
   return await runCommand(Stage.create);
 }
 
-export async function debugHandler(args?: any[]) {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.NavigateToDebug, getTriggerFromProperty(args));
-  await vscode.commands.executeCommand("workbench.view.debug");
-  await vscode.commands.executeCommand("workbench.action.debug.selectandstart");
-}
-
 export async function selectAndDebugHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.RunIconDebugStart);
   const result = await selectAndDebug();
@@ -241,6 +237,11 @@ export async function deployHandler(args?: any[]): Promise<Result<null, FxError>
 export async function publishHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.PublishStart, getTriggerFromProperty(args));
   return await runCommand(Stage.publish);
+}
+
+export async function cicdGuideHandler(args?: any[]): Promise<boolean> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CICDGuide, getTriggerFromProperty(args));
+  return await env.openExternal(Uri.parse("https://aka.ms/teamsfx-cicd-guide"));
 }
 
 export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
@@ -587,17 +588,15 @@ export async function openManifestHandler(args?: any[]): Promise<Result<null, Fx
   );
   if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
     const workspaceFolder = workspace.workspaceFolders[0];
-    const configRoot = await commonUtils.getProjectRoot(
-      workspaceFolder.uri.fsPath,
-      `.${ConfigFolderName}`
-    );
-    if (!(await fs.pathExists(configRoot!))) {
+    const projectRoot = await commonUtils.getProjectRoot(workspaceFolder.uri.fsPath, "");
+    const appDirectory = await getAppDirectory(projectRoot!);
+    if (!(await fs.pathExists(appDirectory))) {
       const invalidProjectError: FxError = InvalidProjectError();
       showError(invalidProjectError);
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, invalidProjectError);
       return err(invalidProjectError);
     }
-    const manifestFile = `${configRoot}/${constants.manifestFileName}`;
+    const manifestFile = `${appDirectory}/${constants.manifestFileName}`;
     if (fs.existsSync(manifestFile)) {
       workspace.openTextDocument(manifestFile).then((document) => {
         window.showTextDocument(document);
@@ -661,13 +660,16 @@ export function saveTextDocumentHandler(document: vscode.TextDocument) {
 
 export async function cmdHdlLoadTreeView(context: ExtensionContext) {
   if (
-    await exp
+    (await exp
       .getExpService()
-      .getTreatmentVariableAsync(TreatmentVariables.VSCodeConfig, TreatmentVariables.TreeView, true)
+      .getTreatmentVariableAsync(
+        TreatmentVariables.VSCodeConfig,
+        TreatmentVariables.DynamicTreeView,
+        true
+      )) &&
+    !isValidProject(getWorkspacePath())
   ) {
-    commands.executeCommand("setContext", "isNewTreeView", true);
-    StringContext.setSignInAzureContext(StringResources.vsc.handlers.signInAzureNew);
-    const disposables = await TreeViewManagerInstance.registerNewTreeViews();
+    const disposables = await TreeViewManagerInstance.registerEmptyProjectTreeViews();
     context.subscriptions.push(...disposables);
   } else {
     const disposables = await TreeViewManagerInstance.registerTreeViews();
@@ -679,11 +681,15 @@ export async function cmdHdlLoadTreeView(context: ExtensionContext) {
     try {
       switch (node.contextValue) {
         case "signedinM365": {
-          signOutM365(true);
+          Correlator.run(() => {
+            signOutM365(true);
+          });
           break;
         }
         case "signedinAzure": {
-          signOutAzure(true);
+          Correlator.run(() => {
+            signOutAzure(true);
+          });
           break;
         }
       }
@@ -761,7 +767,10 @@ export async function cmpAccountsHandler() {
   const signOutAzureOption: VscQuickPickItem = {
     id: "signOutAzure",
     label: StringResources.vsc.handlers.signOutOfAzure,
-    function: () => signOutAzure(false),
+    function: async () =>
+      Correlator.run(() => {
+        signOutAzure(false);
+      }),
   };
 
   const signInM365Option: VscQuickPickItem = {
@@ -773,7 +782,10 @@ export async function cmpAccountsHandler() {
   const signOutM365Option: VscQuickPickItem = {
     id: "signOutM365",
     label: StringResources.vsc.handlers.signOutOfM365,
-    function: () => signOutM365(false),
+    function: async () =>
+      Correlator.run(() => {
+        signOutM365(false);
+      }),
   };
 
   //TODO: hide subscription list until core or api expose the get subscription list API

@@ -6,8 +6,7 @@ import * as path from "path";
 import { ext } from "./extensionVariables";
 import { TreeItem, TreeCategory, Result, FxError, ok } from "@microsoft/teamsfx-api";
 import * as StringResources from "./resources/Strings.json";
-import { exp } from "./exp/index";
-import { TreatmentVariables } from "./exp/treatmentVariables";
+import { Correlator } from "@microsoft/teamsfx-core";
 
 class TreeViewManager {
   private static instance: TreeViewManager;
@@ -25,208 +24,6 @@ class TreeViewManager {
   }
 
   public async registerTreeViews() {
-    const disposables = [];
-
-    const getStartTreeViewCommand = [
-      new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.quickStartTitle,
-        StringResources.vsc.commandsTreeViewProvider.quickStartDescription,
-        "fx-extension.openWelcome",
-        vscode.TreeItemCollapsibleState.None,
-        TreeCategory.GettingStarted,
-        undefined,
-        { name: "lightningBolt_16", custom: true }
-      ),
-      new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.samplesTitle,
-        StringResources.vsc.commandsTreeViewProvider.samplesDescription,
-        "fx-extension.openSamples",
-        vscode.TreeItemCollapsibleState.None,
-        TreeCategory.GettingStarted,
-        undefined,
-        { name: "heart", custom: false }
-      ),
-      new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.documentationTitle,
-        StringResources.vsc.commandsTreeViewProvider.documentationDescription,
-        "fx-extension.openDocument",
-        vscode.TreeItemCollapsibleState.None,
-        TreeCategory.GettingStarted,
-        undefined,
-        { name: "book", custom: false }
-      ),
-    ];
-    const getStartedProvider = new CommandsTreeViewProvider(getStartTreeViewCommand);
-    disposables.push(
-      vscode.window.registerTreeDataProvider("teamsfx-getting-started", getStartedProvider)
-    );
-
-    const accountProvider = new CommandsTreeViewProvider([]);
-    disposables.push(vscode.window.registerTreeDataProvider("teamsfx-accounts", accountProvider));
-
-    const projectTreeViewCommand = [
-      new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.createProjectTitle,
-        StringResources.vsc.commandsTreeViewProvider.createProjectDescription,
-        "fx-extension.create",
-        vscode.TreeItemCollapsibleState.None,
-        undefined,
-        undefined,
-        { name: "new-folder", custom: false }
-      ),
-      new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.addCapabilitiesTitle,
-        StringResources.vsc.commandsTreeViewProvider.addCapabilitiesDescription,
-        "fx-extension.addCapability",
-        vscode.TreeItemCollapsibleState.None,
-        undefined,
-        undefined,
-        { name: "addCapability", custom: true }
-      ),
-      new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.addResourcesTitle,
-        StringResources.vsc.commandsTreeViewProvider.addResourcesDescription,
-        "fx-extension.update",
-        vscode.TreeItemCollapsibleState.None,
-        undefined,
-        undefined,
-        { name: "addResources", custom: true }
-      ),
-      new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.manifestEditorTitle,
-        StringResources.vsc.commandsTreeViewProvider.manifestEditorDescription,
-        "fx-extension.openManifest",
-        vscode.TreeItemCollapsibleState.None,
-        undefined,
-        undefined,
-        { name: "edit", custom: false }
-      ),
-      new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.validateManifestTitle,
-        StringResources.vsc.commandsTreeViewProvider.validateManifestDescription,
-        "fx-extension.validateManifest",
-        vscode.TreeItemCollapsibleState.None,
-        undefined,
-        undefined,
-        { name: "checklist", custom: false }
-      ),
-      new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.buildPackageTitle,
-        StringResources.vsc.commandsTreeViewProvider.buildPackageDescription,
-        "fx-extension.build",
-        vscode.TreeItemCollapsibleState.None,
-        undefined,
-        undefined,
-        { name: "package", custom: false }
-      ),
-      new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.provisionTitle,
-        StringResources.vsc.commandsTreeViewProvider.provisionDescription,
-        "fx-extension.provision",
-        vscode.TreeItemCollapsibleState.None,
-        undefined,
-        undefined,
-        { name: "type-hierarchy", custom: false }
-      ),
-      new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.deployTitle,
-        StringResources.vsc.commandsTreeViewProvider.deployDescription,
-        "fx-extension.deploy",
-        vscode.TreeItemCollapsibleState.None,
-        undefined,
-        undefined,
-        { name: "cloud-upload", custom: false }
-      ),
-      new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.publishTitle,
-        StringResources.vsc.commandsTreeViewProvider.publishDescription,
-        "fx-extension.publish",
-        vscode.TreeItemCollapsibleState.None,
-        undefined,
-        undefined,
-        { name: "publish", custom: true }
-      ),
-    ];
-
-    if (
-      await exp
-        .getExpService()
-        .getTreatmentVariableAsync(TreatmentVariables.VSCodeConfig, TreatmentVariables.Debug, true)
-    ) {
-      const debugCommand = new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.debugTitle,
-        StringResources.vsc.commandsTreeViewProvider.debugDescription,
-        "fx-extension.debug",
-        vscode.TreeItemCollapsibleState.None,
-        undefined,
-        undefined,
-        { name: "debug-alt", custom: false }
-      );
-      projectTreeViewCommand.splice(1, 0, debugCommand);
-    }
-
-    const projectProvider = new CommandsTreeViewProvider(projectTreeViewCommand);
-    disposables.push(vscode.window.registerTreeDataProvider("teamsfx-project", projectProvider));
-
-    const teamDevCenterTreeViewCommand = [
-      //TODO temp solution
-      new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.teamsDevPortalTitle,
-        StringResources.vsc.commandsTreeViewProvider.teamsDevPortalDescription,
-        "fx-extension.openAppManagement",
-        vscode.TreeItemCollapsibleState.None,
-        undefined,
-        undefined,
-        { name: "appManagement", custom: true }
-      ),
-      // new TreeViewCommand(
-      //   StringResources.vsc.commandsTreeViewProvider.appManagementTitle,
-      //   StringResources.vsc.commandsTreeViewProvider.appManagementDescription,
-      //   "fx-extension.openAppManagement",
-      //   vscode.TreeItemCollapsibleState.None,
-      //   undefined,
-      //   undefined,
-      //   "appManagement"
-      // ),
-      // new TreeViewCommand(
-      //   StringResources.vsc.commandsTreeViewProvider.botManagementTitle,
-      //   StringResources.vsc.commandsTreeViewProvider.botManagementDescription,
-      //   "fx-extension.openBotManagement",
-      //   vscode.TreeItemCollapsibleState.None,
-      //   undefined,
-      //   undefined,
-      //   "bot"
-      // )
-    ];
-    const teamDevCenterProvider = new CommandsTreeViewProvider(teamDevCenterTreeViewCommand);
-    disposables.push(
-      vscode.window.registerTreeDataProvider("teamsfx-teams-dev-center", teamDevCenterProvider)
-    );
-
-    const feedbackTreeViewCommand = [
-      new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.reportIssuesTitle,
-        StringResources.vsc.commandsTreeViewProvider.reportIssuesDescription,
-        "fx-extension.openReportIssues",
-        vscode.TreeItemCollapsibleState.None,
-        TreeCategory.Feedback,
-        undefined,
-        { name: "report", custom: false }
-      ),
-    ];
-    const feedbackProvider = new CommandsTreeViewProvider(feedbackTreeViewCommand);
-    disposables.push(vscode.window.registerTreeDataProvider("teamsfx-feedback", feedbackProvider));
-
-    this.treeviewMap.set("teamsfx-getting-started", getStartedProvider);
-    this.treeviewMap.set("teamsfx-accounts", accountProvider);
-    this.treeviewMap.set("teamsfx-project", projectProvider);
-    this.treeviewMap.set("teamsfx-teams-dev-center", teamDevCenterProvider);
-    this.treeviewMap.set("teamsfx-feedback", feedbackProvider);
-
-    return disposables;
-  }
-
-  public async registerNewTreeViews() {
     const disposables = [];
 
     const accountProvider = new CommandsTreeViewProvider([]);
@@ -252,15 +49,6 @@ class TreeViewManager {
         { name: "library", custom: false }
       ),
       new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.addResourcesTitleNew,
-        StringResources.vsc.commandsTreeViewProvider.addResourcesDescription,
-        "fx-extension.update",
-        vscode.TreeItemCollapsibleState.None,
-        undefined,
-        undefined,
-        { name: "addResources", custom: true }
-      ),
-      new TreeViewCommand(
         StringResources.vsc.commandsTreeViewProvider.addCapabilitiesTitleNew,
         StringResources.vsc.commandsTreeViewProvider.addCapabilitiesDescription,
         "fx-extension.addCapability",
@@ -268,6 +56,15 @@ class TreeViewManager {
         undefined,
         undefined,
         { name: "addCapability", custom: true }
+      ),
+      new TreeViewCommand(
+        StringResources.vsc.commandsTreeViewProvider.addResourcesTitleNew,
+        StringResources.vsc.commandsTreeViewProvider.addResourcesDescription,
+        "fx-extension.update",
+        vscode.TreeItemCollapsibleState.None,
+        undefined,
+        undefined,
+        { name: "addResources", custom: true }
       ),
       new TreeViewCommand(
         StringResources.vsc.commandsTreeViewProvider.manifestEditorTitleNew,
@@ -339,6 +136,111 @@ class TreeViewManager {
         undefined,
         { name: "developerPortal", custom: true }
       ),
+      new TreeViewCommand(
+        StringResources.vsc.commandsTreeViewProvider.cicdGuideTitle,
+        StringResources.vsc.commandsTreeViewProvider.cicdGuideDescription,
+        "fx-extension.cicdGuide",
+        vscode.TreeItemCollapsibleState.None,
+        undefined,
+        undefined,
+        { name: "sync", custom: false }
+      ),
+    ];
+    const deployProvider = new CommandsTreeViewProvider(deployCommand);
+    disposables.push(vscode.window.registerTreeDataProvider("teamsfx-deployment", deployProvider));
+
+    const helpCommand = [
+      new TreeViewCommand(
+        StringResources.vsc.commandsTreeViewProvider.quickStartTitle,
+        StringResources.vsc.commandsTreeViewProvider.quickStartDescription,
+        "fx-extension.openWelcome",
+        vscode.TreeItemCollapsibleState.None,
+        TreeCategory.GettingStarted,
+        undefined,
+        { name: "lightningBolt_16", custom: true }
+      ),
+      new TreeViewCommand(
+        StringResources.vsc.commandsTreeViewProvider.documentationTitle,
+        StringResources.vsc.commandsTreeViewProvider.documentationDescription,
+        "fx-extension.openDocument",
+        vscode.TreeItemCollapsibleState.None,
+        TreeCategory.GettingStarted,
+        undefined,
+        { name: "book", custom: false }
+      ),
+      new TreeViewCommand(
+        StringResources.vsc.commandsTreeViewProvider.reportIssuesTitleNew,
+        StringResources.vsc.commandsTreeViewProvider.reportIssuesDescription,
+        "fx-extension.openReportIssues",
+        vscode.TreeItemCollapsibleState.None,
+        TreeCategory.Feedback,
+        undefined,
+        { name: "github", custom: false }
+      ),
+    ];
+    const helpProvider = new CommandsTreeViewProvider(helpCommand);
+    disposables.push(
+      vscode.window.registerTreeDataProvider("teamsfx-help-and-feedback", helpProvider)
+    );
+
+    this.treeviewMap.set("teamsfx-accounts", accountProvider);
+    this.treeviewMap.set("teamsfx-development", developmentProvider);
+    this.treeviewMap.set("teamsfx-deployment", deployProvider);
+    this.treeviewMap.set("teamsfx-help-and-feedback", helpProvider);
+
+    return disposables;
+  }
+
+  public async registerEmptyProjectTreeViews() {
+    const disposables = [];
+
+    const accountProvider = new CommandsTreeViewProvider([]);
+    disposables.push(vscode.window.registerTreeDataProvider("teamsfx-accounts", accountProvider));
+
+    const developmentCommand = [
+      new TreeViewCommand(
+        StringResources.vsc.commandsTreeViewProvider.createProjectTitleNew,
+        StringResources.vsc.commandsTreeViewProvider.createProjectDescription,
+        "fx-extension.create",
+        vscode.TreeItemCollapsibleState.None,
+        undefined,
+        undefined,
+        { name: "new-folder", custom: false }
+      ),
+      new TreeViewCommand(
+        StringResources.vsc.commandsTreeViewProvider.samplesTitleNew,
+        StringResources.vsc.commandsTreeViewProvider.samplesDescription,
+        "fx-extension.openSamples",
+        vscode.TreeItemCollapsibleState.None,
+        TreeCategory.GettingStarted,
+        undefined,
+        { name: "library", custom: false }
+      ),
+    ];
+    const developmentProvider = new CommandsTreeViewProvider(developmentCommand);
+    disposables.push(
+      vscode.window.registerTreeDataProvider("teamsfx-development", developmentProvider)
+    );
+
+    const deployCommand = [
+      new TreeViewCommand(
+        StringResources.vsc.commandsTreeViewProvider.teamsDevPortalTitleNew,
+        StringResources.vsc.commandsTreeViewProvider.teamsDevPortalDescription,
+        "fx-extension.openAppManagement",
+        vscode.TreeItemCollapsibleState.None,
+        undefined,
+        undefined,
+        { name: "developerPortal", custom: true }
+      ),
+      new TreeViewCommand(
+        StringResources.vsc.commandsTreeViewProvider.cicdGuideTitle,
+        StringResources.vsc.commandsTreeViewProvider.cicdGuideDescription,
+        "fx-extension.cicdGuide",
+        vscode.TreeItemCollapsibleState.None,
+        undefined,
+        undefined,
+        { name: "sync", custom: false }
+      ),
     ];
     const deployProvider = new CommandsTreeViewProvider(deployCommand);
     disposables.push(vscode.window.registerTreeDataProvider("teamsfx-deployment", deployProvider));
@@ -400,10 +302,11 @@ export default TreeViewManager.getInstance();
 
 export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeViewCommand> {
   public static readonly TreeViewFlag = "TreeView";
-  private _onDidChangeTreeData: vscode.EventEmitter<TreeViewCommand | undefined | void> =
-    new vscode.EventEmitter<TreeViewCommand | undefined | void>();
-  readonly onDidChangeTreeData: vscode.Event<TreeViewCommand | undefined | void> =
-    this._onDidChangeTreeData.event;
+  private _onDidChangeTreeData: vscode.EventEmitter<
+    TreeViewCommand | undefined | void
+  > = new vscode.EventEmitter<TreeViewCommand | undefined | void>();
+  readonly onDidChangeTreeData: vscode.Event<TreeViewCommand | undefined | void> = this
+    ._onDidChangeTreeData.event;
 
   private commands: TreeViewCommand[] = [];
   private disposableMap: Map<string, vscode.Disposable> = new Map();
@@ -471,7 +374,9 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
         continue;
       }
 
-      const disposable = vscode.commands.registerCommand(treeItem.commandId, treeItem.callback!);
+      const disposable = vscode.commands.registerCommand(treeItem.commandId, (...args) =>
+        Correlator.run(treeItem.callback!, args)
+      );
       this.disposableMap.set(treeItem.commandId, disposable);
 
       let tooltip: string | vscode.MarkdownString = treeItem.label;

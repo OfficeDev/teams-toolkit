@@ -36,6 +36,7 @@ import {
   Colors,
   RunnableTask,
   TaskConfig,
+  TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs, { PathLike } from "fs-extra";
@@ -428,8 +429,8 @@ describe("provision() happy path for SPFx projects", () => {
     mocker.stub(AppStudioClient, "createApp").resolves(mockedAppDef);
     mocker.stub(AppStudioClient, "updateApp").resolves(mockedAppDef);
     mocker
-      .stub(AppStudioPluginImpl.prototype, "getAppDirectory" as any)
-      .resolves(`./.${ConfigFolderName}`);
+      .stub(AppStudioPluginImpl.prototype, "reloadManifestAndCheckRequiredFields" as any)
+      .returns(ok(new TeamsAppManifest()));
   });
 
   afterEach(() => {
@@ -439,6 +440,7 @@ describe("provision() happy path for SPFx projects", () => {
   it("should succeed if app studio returns successfully", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
+    mockedCtx.root = "./tests/plugins/resource/appstudio/resources/";
     mockedCtx.projectSettings = {
       appName: "my app",
       projectId: uuid.v4(),

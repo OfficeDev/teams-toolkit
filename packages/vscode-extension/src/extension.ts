@@ -38,11 +38,6 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(createCmd);
 
-  const debugCmd = vscode.commands.registerCommand("fx-extension.debug", (...args) =>
-    Correlator.run(handlers.debugHandler, args)
-  );
-  context.subscriptions.push(debugCmd);
-
   const updateCmd = vscode.commands.registerCommand("fx-extension.update", (...args) =>
     Correlator.run(handlers.addResourceHandler, args)
   );
@@ -81,6 +76,11 @@ export async function activate(context: vscode.ExtensionContext) {
     Correlator.run(handlers.publishHandler, args)
   );
   context.subscriptions.push(publishCmd);
+
+  const cicdGuideCmd = vscode.commands.registerCommand("fx-extension.cicdGuide", (...args) =>
+    Correlator.run(handlers.cicdGuideHandler, args)
+  );
+  context.subscriptions.push(cicdGuideCmd);
 
   // 1.7 validate dependencies command (hide from UI)
   const validateDependenciesCmd = vscode.commands.registerCommand(

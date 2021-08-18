@@ -1,5 +1,18 @@
 # Changelog
 
+## 2.4.1 - Aug 10 2021
+
+Incremental version for Teams Toolkit with multiple bugs fixed and the following updates：
+
+New Feature:
+
+- Add extension accessiblity for the disabled.
+- Add CLI command 'teamsfx preview' to preview SPFx apps.
+
+Enhancement:
+
+- A/B testing for Tree View design. You may randomly see either one of two different Tree View layouts in the side bar.
+
 ## 2.3.1 - July 26 2021
 
 Incremental version for Teams Toolkit with multiple bugs fixed and the following updates：

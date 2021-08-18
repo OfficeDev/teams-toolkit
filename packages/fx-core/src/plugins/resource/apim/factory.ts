@@ -10,7 +10,6 @@ import {
 } from "@microsoft/teamsfx-api";
 import { AssertNotEmpty, BuildError, NotImplemented } from "./error";
 import { ApimService } from "./services/apimService";
-import { ISolutionConfig, SolutionConfig } from "./config";
 import { AadService } from "./services/aadService";
 import { OpenApiProcessor } from "./utils/openApiProcessor";
 import { ApimManager } from "./managers/apimManager";
@@ -28,18 +27,15 @@ import axios from "axios";
 import { AadDefaultValues } from "./constants";
 import { Lazy } from "./utils/commonUtils";
 import { ScaffoldManager } from "./managers/scaffoldManager";
+import { Providers, ResourceManagementClientContext } from "@azure/arm-resources";
 
 export class Factory {
-  public static async buildApimManager(
-    ctx: PluginContext,
-    solutionConfig: SolutionConfig
-  ): Promise<ApimManager> {
+  public static async buildApimManager(ctx: PluginContext): Promise<ApimManager> {
     const openApiProcessor = new OpenApiProcessor(ctx.telemetryReporter, ctx.logProvider);
     const lazyApimService = new Lazy<ApimService>(
       async () =>
         await Factory.buildApimService(
           ctx.azureAccountProvider,
-          solutionConfig,
           ctx.telemetryReporter,
           ctx.logProvider
         )
@@ -76,18 +72,12 @@ export class Factory {
     return new TeamsAppAadManager(lazyAadService, ctx.telemetryReporter, ctx.logProvider);
   }
 
-  public static async buildScaffoldManager(
-    ctx: PluginContext,
-    solutionConfig: SolutionConfig
-  ): Promise<ScaffoldManager> {
+  public static async buildScaffoldManager(ctx: PluginContext): Promise<ScaffoldManager> {
     const openApiProcessor = new OpenApiProcessor(ctx.telemetryReporter, ctx.logProvider);
     return new ScaffoldManager(openApiProcessor, ctx.telemetryReporter, ctx.logProvider);
   }
 
-  public static async buildQuestionManager(
-    ctx: PluginContext,
-    solutionConfig: SolutionConfig
-  ): Promise<IQuestionManager> {
+  public static async buildQuestionManager(ctx: PluginContext): Promise<IQuestionManager> {
     switch (ctx.answers?.platform) {
       case Platform.VSCode:
         // Lazy init apim service to get the latest subscription id in configuration
@@ -95,7 +85,6 @@ export class Factory {
           async () =>
             await Factory.buildApimService(
               ctx.azureAccountProvider,
-              solutionConfig,
               ctx.telemetryReporter,
               ctx.logProvider
             )
@@ -160,7 +149,6 @@ export class Factory {
 
   public static async buildApimService(
     azureAccountProvider: AzureAccountProvider | undefined,
-    solutionConfig: ISolutionConfig,
     telemetryReporter?: TelemetryReporter,
     logger?: LogProvider
   ): Promise<ApimService> {
@@ -168,16 +156,21 @@ export class Factory {
       "credential",
       await azureAccountProvider?.getAccountCredentialAsync()
     );
-    const subscriptionInfo = await azureAccountProvider?.getSelectedSubscription();
-    AssertNotEmpty("subscriptionInfo", subscriptionInfo);
+    let subscriptionInfo = await azureAccountProvider?.getSelectedSubscription();
+    subscriptionInfo = AssertNotEmpty("subscriptionInfo", subscriptionInfo);
     const apiManagementClient = new ApiManagementClient(
       credential,
-      subscriptionInfo!.subscriptionId
+      subscriptionInfo.subscriptionId
     );
+    const resourceProviderClient = new Providers(
+      new ResourceManagementClientContext(credential, subscriptionInfo.subscriptionId)
+    );
+
     return new ApimService(
       apiManagementClient,
+      resourceProviderClient,
       credential,
-      subscriptionInfo!.subscriptionId,
+      subscriptionInfo.subscriptionId,
       telemetryReporter,
       logger
     );

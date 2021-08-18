@@ -4,6 +4,7 @@
 import { AzureSolutionSettings, LogProvider, PluginContext } from "@microsoft/teamsfx-api";
 import { AadResult, ResultFactory } from "./results";
 import {
+  ConfigUtils,
   PostProvisionConfig,
   ProvisionConfig,
   SetApplicationInContextConfig,
@@ -62,15 +63,18 @@ export class AadAppForTeamsImpl {
     const skip: boolean = ctx.config.get(ConfigKeys.skip) as boolean;
     if (skip) {
       ctx.logProvider?.info(Messages.getLog(Messages.SkipProvision));
+
       if (
-        ctx.config.get(Utils.addLocalDebugPrefix(isLocalDebug, ConfigKeys.objectId)) &&
-        ctx.config.get(Utils.addLocalDebugPrefix(isLocalDebug, ConfigKeys.clientId)) &&
-        ctx.config.get(Utils.addLocalDebugPrefix(isLocalDebug, ConfigKeys.clientSecret)) &&
-        ctx.config.get(Utils.addLocalDebugPrefix(isLocalDebug, ConfigKeys.oauth2PermissionScopeId))
+        ConfigUtils.getAadConfig(ctx, ConfigKeys.objectId, isLocalDebug) &&
+        ConfigUtils.getAadConfig(ctx, ConfigKeys.clientId, isLocalDebug) &&
+        ConfigUtils.getAadConfig(ctx, ConfigKeys.clientSecret, isLocalDebug) &&
+        ConfigUtils.getAadConfig(ctx, ConfigKeys.oauth2PermissionScopeId, isLocalDebug)
       ) {
         const config: ProvisionConfig = new ProvisionConfig(isLocalDebug);
-        config.oauth2PermissionScopeId = ctx.config.get(
-          Utils.addLocalDebugPrefix(isLocalDebug, ConfigKeys.oauth2PermissionScopeId)
+        config.oauth2PermissionScopeId = ConfigUtils.getAadConfig(
+          ctx,
+          ConfigKeys.oauth2PermissionScopeId,
+          isLocalDebug
         ) as string;
         config.saveConfigIntoContext(ctx, TokenProvider.tenantId as string);
         Utils.addLogAndTelemetryWithLocalDebug(
@@ -134,7 +138,7 @@ export class AadAppForTeamsImpl {
     );
     ctx.logProvider?.info(Messages.getLog(Messages.UpdatePermissionSuccess));
 
-    await DialogUtils.progress?.end();
+    await DialogUtils.progress?.end(true);
     config.saveConfigIntoContext(ctx, TokenProvider.tenantId as string);
     Utils.addLogAndTelemetryWithLocalDebug(
       ctx.logProvider,
@@ -214,7 +218,7 @@ export class AadAppForTeamsImpl {
     );
     ctx.logProvider?.info(Messages.getLog(Messages.UpdateAppIdUriSuccess));
 
-    await DialogUtils.progress?.end();
+    await DialogUtils.progress?.end(true);
     Utils.addLogAndTelemetryWithLocalDebug(
       ctx.logProvider,
       Messages.EndPostProvision,
@@ -260,7 +264,7 @@ export class AadAppForTeamsImpl {
     }
     ctx.logProvider?.info(Messages.getLog(Messages.UpdatePermissionSuccess));
 
-    await DialogUtils.progress?.end();
+    await DialogUtils.progress?.end(true);
     DialogUtils.show(Messages.UpdatePermissionSuccessMessage);
     return ResultFactory.Success();
   }

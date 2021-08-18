@@ -25,8 +25,6 @@
       "createProjectTitle": "Create New Project",
       "createProjectTitleNew": "Create a new Teams app",
       "createProjectDescription": "Create a new Teams app from scratch or start from a sample app",
-      "debugTitle": "Run and Debug",
-      "debugDescription": "Run and Debug",
       "addCapabilitiesTitle": "Add Capabilities",
       "addCapabilitiesTitleNew": "Add capabilities",
       "addCapabilitiesDescription": "Add additional capabilities to your Teams app",
@@ -50,6 +48,8 @@
       "deployDescription": "Deploy your Teams app to the provisioned resources in Azure",
       "publishTitle": "Publish to Teams",
       "publishDescription": "Publish to Teams",
+      "cicdGuideTitle": "CI/CD guide",
+      "cicdGuideDescription": "CI/CD guide",
       "teamsDevCenterTitle": "TEAMS DEV CENTER",
       "teamsDevCenterDescription": "Get started with Teamsfx",
       "appManagementTitle": "Manage Teams App",
@@ -141,7 +141,11 @@
     },
     "localDebug": {
       "portAlreadyInUse": "Port: %s is already in use. Close this port and try again.",
-      "portsAlreadyInUse": "Ports: %s are already in use. Close these ports and try again."
+      "portsAlreadyInUse": "Ports: %s are already in use. Close these ports and try again.",
+      "sideloadingHintDoNotShowAgain": "Don't Show Again",
+      "openFAQ": "Open FAQ",
+      "sideloadingHintMessage": "If any error occurs during local debug, you can refer to the FAQ page by clicking 'Open FAQ' button.",
+      "npmInstallFailedHintMessage": "Task '%s' failed. Please refer to the '%s' terminal window for detailed error information or click 'Report Issue' button to report the issue."
     },
     "survey": {
       "takeSurvey": {
@@ -179,7 +183,7 @@
       "downloadSampleTitle": "Select folder to download the sample app",
       "invalidFolder": "Invalid folder",
       "folderExist": "Folder already exists",
-      "folderExistDialogTitle": "Path %s alreay exists. Select a different folder.",
+      "folderExistDialogTitle": "Path %s already exists. Select a different folder.",
       "fetchData": "Fetch sample app",
       "downloadFrom": "Downloading from %s",
       "unzipPackage": "Unzipping the sample package",

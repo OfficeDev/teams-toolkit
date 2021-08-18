@@ -3,11 +3,13 @@
 
 "use strict";
 
+import chalk from "chalk";
+import figures from "figures";
 import { LogLevel, LogProvider, Colors } from "@microsoft/teamsfx-api";
 
 import { CLILogLevel } from "../constants";
-import { getColorizedString } from "./../utils";
-import chalk from "chalk";
+import { getColorizedString } from "../utils";
+import ScreenManager from "../console/screen";
 
 export class CLILogProvider implements LogProvider {
   private static instance: CLILogProvider;
@@ -79,12 +81,12 @@ export class CLILogProvider implements LogProvider {
     switch (logLevel) {
       case LogLevel.Trace:
         if (CLILogProvider.logLevel === CLILogLevel.debug) {
-          console.trace(chalk.whiteBright(message));
+          ScreenManager.writeLine(chalk.whiteBright(message), true);
         }
         break;
       case LogLevel.Debug:
         if (CLILogProvider.logLevel === CLILogLevel.debug) {
-          console.debug(chalk.whiteBright(message));
+          ScreenManager.writeLine(chalk.whiteBright(message));
         }
         break;
       case LogLevel.Info:
@@ -92,17 +94,17 @@ export class CLILogProvider implements LogProvider {
           CLILogProvider.logLevel === CLILogLevel.debug ||
           CLILogProvider.logLevel === CLILogLevel.verbose
         ) {
-          console.info(message);
+          ScreenManager.writeLine(message);
         }
         break;
       case LogLevel.Warning:
         if (CLILogProvider.logLevel !== CLILogLevel.error) {
-          console.warn(chalk.yellowBright(message));
+          ScreenManager.writeLine(chalk.yellowBright(message), true);
         }
         break;
       case LogLevel.Error:
       case LogLevel.Fatal:
-        console.error(chalk.redBright(`Error: ${message}`));
+        ScreenManager.writeLine(chalk.redBright(`(${figures.cross}) ${message}`), true);
         break;
     }
     return true;
@@ -114,17 +116,17 @@ export class CLILogProvider implements LogProvider {
       case LogLevel.Debug:
       case LogLevel.Info:
         if (white) {
-          console.info(chalk.whiteBright(message));
+          ScreenManager.writeLine(chalk.whiteBright(message));
         } else {
-          console.info(chalk.greenBright(message));
+          ScreenManager.writeLine(chalk.greenBright(message));
         }
         break;
       case LogLevel.Warning:
-        console.warn(chalk.yellowBright(message));
+        ScreenManager.writeLine(chalk.yellowBright(message), true);
         break;
       case LogLevel.Error:
       case LogLevel.Fatal:
-        console.error(chalk.redBright(`Error: ${message}`));
+        ScreenManager.writeLine(chalk.redBright(`(${figures.cross}) ${message}`), true);
         break;
     }
   }

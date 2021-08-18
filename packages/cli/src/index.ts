@@ -47,5 +47,5 @@ export async function start() {
     .alias("v", "version")
     .version(getVersion())
     .wrap(Math.min(100, yargs.terminalWidth()))
-    .epilogue("For more information about the Teams Toolkit - https://aka.ms/teamsfx-learn.").argv;
+    .epilogue("For more information about the Teams Toolkit - https://aka.ms/teamsfx-cli.").argv;
 }

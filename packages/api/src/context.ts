@@ -4,6 +4,7 @@
 
 import {
   Inputs,
+  LocalSettings,
   PluginConfig,
   ProjectSettings,
   ReadonlySolutionConfig,
@@ -17,6 +18,7 @@ import {
   AzureAccountProvider,
   AppStudioTokenProvider,
   TreeProvider,
+  PermissionRequestProvider,
 } from "./utils";
 import { UserInteraction } from "./qm";
 import { CryptoProvider } from "./utils";
@@ -46,9 +48,13 @@ export interface Context {
 
   projectSettings?: ProjectSettings;
 
+  localSettings?: LocalSettings;
+
   ui?: UserInteraction;
 
   cryptoProvider?: CryptoProvider;
+
+  permissionRequestProvider?: PermissionRequestProvider;
 }
 
 export interface SolutionContext extends Context {

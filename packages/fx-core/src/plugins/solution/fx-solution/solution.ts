@@ -58,7 +58,6 @@ import {
   ARM_TEMPLATE_OUTPUT,
   USER_INFO,
   REMOTE_TENANT_ID,
-  SUBSCRIPTION_ID,
 } from "./constants";
 
 import {
@@ -1229,52 +1228,10 @@ export class TeamsAppSolution implements Solution {
 
       ctx.config.get(GLOBAL_CONFIG)?.set(USER_INFO, JSON.stringify(userInfo));
 
-      // Get Azure credential in solution to avoid multiple login in different plugins.
-      const subInfo = await ctx.azureAccountProvider?.getSelectedSubscription(true);
-      if (!subInfo || subInfo.subscriptionId === "") {
-        throw returnSystemError(
-          new Error("Failed to get selected subscription."),
-          PluginDisplayName.Solution,
-          SolutionError.NoSubscriptionSelected
-        );
-      }
-
-      const projectSubscriptionId = await ctx.config?.get(GLOBAL_CONFIG)?.get(SUBSCRIPTION_ID);
-      const allSubs = await ctx.azureAccountProvider?.listSubscriptions();
-
-      if (projectSubscriptionId && subInfo?.subscriptionId !== projectSubscriptionId) {
-        const projectSubscriptionInfo = allSubs?.find(
-          (sub: SubscriptionInfo) => sub.subscriptionId === projectSubscriptionId
-        );
-        if (projectSubscriptionInfo) {
-          throw returnUserError(
-            new Error(
-              `Project subscription and Azure account selected subscription does not match. Please select corrected subscription: ${projectSubscriptionInfo.subscriptionName}`
-            ),
-            PluginDisplayName.Solution,
-            SolutionError.AzureSubscriptionNotMatch
-          );
-        } else {
-          returnUserError(
-            new Error(
-              `Azure account you logined doesn't contain subscription: ${projectSubscriptionId}. Please login correct Azure account.`
-            ),
-            PluginDisplayName.Solution,
-            SolutionError.AzureAccountNotCorrect
-          );
-        }
-      }
-
-      const maybeSelectedPlugins = this.getSelectedPlugins(ctx);
-      if (maybeSelectedPlugins.isErr()) {
-        return maybeSelectedPlugins;
-      }
-      const selectedPlugins = maybeSelectedPlugins.value;
-
-      const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(
-        ctx,
-        selectedPlugins
-      );
+      const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, [
+        this.AadPlugin,
+        this.AppStudioPlugin,
+      ]);
 
       const checkPermissionWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(
         ([plugin, context]) => {
@@ -1296,6 +1253,7 @@ export class TeamsAppSolution implements Solution {
         }
       }
 
+      // TODO: show cli messages
       return ok(permissions);
     } finally {
       ctx.config.get(GLOBAL_CONFIG)?.delete(USER_INFO);

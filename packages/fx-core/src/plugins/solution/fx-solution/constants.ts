@@ -40,11 +40,6 @@ export const ARM_TEMPLATE_OUTPUT = "armTemplateOutput";
 export const RESOURCE_GROUP_NAME = "resourceGroupName";
 
 /**
- * Config key whose value is the Azure subscription id where this project has been provisioned
- */
-export const SUBSCRIPTION_ID = "subscriptionId";
-
-/**
  * Config key whose value is the user info of collaborator
  */
 export const USER_INFO = "userInfo";
@@ -121,8 +116,6 @@ export enum SolutionError {
   CannotCheckPermissionBeforeProvision = "CannotCheckPermissionBeforeProvision",
   FailedToRetrieveUserInfo = "FailedToRetrieveUserInfo",
   M365AccountNotMatch = "M365AccountNotMatch",
-  AzureSubscriptionNotMatch = "AzureSubscriptionNotMatch",
-  AzureAccountNotCorrect = "AzureAccountNotCorrect",
 }
 
 export const LOCAL_DEBUG_TAB_ENDPOINT = "localTabEndpoint";

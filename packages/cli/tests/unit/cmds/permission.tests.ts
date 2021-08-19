@@ -12,7 +12,7 @@ import { err, FxError, Inputs, ok } from "@microsoft/teamsfx-api";
 import { FxCore } from "@microsoft/teamsfx-core";
 import { NotSupportedProjectType } from "../../../src/error";
 import LogProvider from "../../../src/commonlib/log";
-import Permission, { PermissionStatus } from "../../../src/cmds/permission";
+import Permission, { PermissionGrant, PermissionStatus } from "../../../src/cmds/permission";
 import { expect } from "chai";
 
 describe("Permission Command Tests", function () {
@@ -45,6 +45,9 @@ describe("Permission Command Tests", function () {
       if (inputs.projectPath?.includes("real")) return ok("");
       else return err(NotSupportedProjectType());
     });
+    sandbox.stub(FxCore.prototype, "grantPermission").callsFake(async (inputs: Inputs) => {
+      return ok("");
+    });
     sandbox.stub(LogProvider, "necessaryLog").returns();
     sandbox.stub(Utils, "isRemoteCollaborationEnabled").returns(true);
   });
@@ -61,7 +64,7 @@ describe("Permission Command Tests", function () {
   it("Permission - Configs", () => {
     const cmd = new Permission();
     cmd.builder(yargs);
-    expect(registeredCommands).deep.equals(["status"], JSON.stringify(registeredCommands));
+    expect(registeredCommands).deep.equals(["status", "grant"], JSON.stringify(registeredCommands));
   });
 
   it("Permission Status - Happy Path", async () => {
@@ -73,6 +76,19 @@ describe("Permission Command Tests", function () {
     expect(telemetryEvents).deep.equals([
       TelemetryEvent.CheckPermissionStart,
       TelemetryEvent.CheckPermission,
+    ]);
+  });
+
+  it("Permission Grant - Happy Path", async () => {
+    const cmd = new PermissionGrant();
+    const args = {
+      [constants.RootFolderNode.data.name as string]: "real",
+      [constants.CollaboratorEmailNode.data.name as string]: "email",
+    };
+    await cmd.handler(args);
+    expect(telemetryEvents).deep.equals([
+      TelemetryEvent.GrantPermissionStart,
+      TelemetryEvent.GrantPermission,
     ]);
   });
 });

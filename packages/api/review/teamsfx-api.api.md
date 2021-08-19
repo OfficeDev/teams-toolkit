@@ -455,6 +455,8 @@ export interface Inputs extends Json {
     // (undocumented)
     ignoreConfigPersist?: boolean;
     // (undocumented)
+    ignoreEnvInfo?: boolean;
+    // (undocumented)
     ignoreLock?: boolean;
     // (undocumented)
     ignoreTypeCheck?: boolean;

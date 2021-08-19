@@ -167,9 +167,9 @@ export function ProjectEnvNotExistError(env: string): FxError {
   );
 }
 
-export function ProjectEnvIllegalError(): FxError {
+export function InvalidEnvNameError(): FxError {
   return new UserError(
-    "ProjectEnvIllegalError",
+    "InvalidEnvNameError",
     `Environment name can only contain letters, digits, _ and -.`,
     CoreSource,
     new Error().stack

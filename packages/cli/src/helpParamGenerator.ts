@@ -39,7 +39,12 @@ export class HelpParamGenerator {
   private core: FxCore;
   private questionsMap: Map<string, QTreeNode> = new Map<string, QTreeNode>();
   private initialized = false;
-  private static showEnvStage: string[] = [Stage.build, Stage.publish, Stage.deploy];
+  private static needChooseEnvStage: string[] = [
+    Stage.build,
+    Stage.publish,
+    Stage.deploy,
+    "validate",
+  ];
 
   private static instance: HelpParamGenerator;
 
@@ -202,9 +207,7 @@ export class HelpParamGenerator {
     if (isMultiEnvEnabled()) {
       if (stage === Stage.provision) {
         nodes = nodes.concat([EnvNode]);
-      } else if (HelpParamGenerator.showEnvStage.indexOf(stage) >= 0) {
-        nodes = nodes.concat([EnvNodeNoCreate]);
-      } else if (stage == "validate") {
+      } else if (HelpParamGenerator.needChooseEnvStage.indexOf(stage) >= 0) {
         nodes = nodes.concat([EnvNodeNoCreate]);
       }
     }

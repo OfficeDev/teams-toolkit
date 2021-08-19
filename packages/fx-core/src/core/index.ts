@@ -30,6 +30,7 @@ import {
   RunnableTask,
   AppPackageFolderName,
   SolutionConfig,
+  TelemetryReporter,
 } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import {
@@ -73,6 +74,7 @@ import { SolutionLoaderMW } from "./middleware/solutionLoader";
 import { ContextInjecterMW } from "./middleware/contextInjecter";
 import { defaultSolutionLoader } from "./loader";
 import {
+  Component,
   sendTelemetryErrorEvent,
   sendTelemetryEvent,
   TelemetryEvent,
@@ -100,6 +102,7 @@ export interface CoreHookContext extends HookContext {
 }
 
 export let Logger: LogProvider;
+export let telemetryReporter: TelemetryReporter | undefined;
 
 export class FxCore implements Core {
   tools: Tools;
@@ -107,6 +110,7 @@ export class FxCore implements Core {
   constructor(tools: Tools) {
     this.tools = tools;
     Logger = tools.logProvider;
+    telemetryReporter = tools.telemetryReporter;
   }
 
   @hooks([
@@ -287,35 +291,26 @@ export class FxCore implements Core {
         name: `Download code from '${url}'`,
         run: async (...args: any): Promise<Result<Void, FxError>> => {
           try {
-            sendTelemetryEvent(
-              this.tools.telemetryReporter,
-              inputs,
-              TelemetryEvent.DownloadSampleStart,
-              { [TelemetryProperty.SampleAppName]: sample.id, module: "fx-core" }
-            );
+            sendTelemetryEvent(Component.core, TelemetryEvent.DownloadSampleStart, {
+              [TelemetryProperty.SampleAppName]: sample.id,
+              module: "fx-core",
+            });
             fetchRes = await fetchCodeZip(url);
             if (fetchRes !== undefined) {
-              sendTelemetryEvent(
-                this.tools.telemetryReporter,
-                inputs,
-                TelemetryEvent.DownloadSample,
-                {
-                  [TelemetryProperty.SampleAppName]: sample.id,
-                  [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-                  module: "fx-core",
-                }
-              );
+              sendTelemetryEvent(Component.core, TelemetryEvent.DownloadSample, {
+                [TelemetryProperty.SampleAppName]: sample.id,
+                [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+                module: "fx-core",
+              });
               return ok(Void);
             } else return err(FetchSampleError());
           } catch (e) {
             sendTelemetryErrorEvent(
-              this.tools.telemetryReporter,
-              inputs,
+              Component.core,
               TelemetryEvent.DownloadSample,
               assembleError(e),
               {
                 [TelemetryProperty.SampleAppName]: sample.id,
-                [TelemetryProperty.Success]: TelemetrySuccess.No,
                 module: "fx-core",
               }
             );
@@ -353,27 +348,6 @@ export class FxCore implements Core {
       } else {
         return err(runRes.error);
       }
-      // const progress = this.tools.dialog.createProgressBar("Fetch sample app", 2);
-      // progress.start();
-      // try {
-      //   progress.next(`Downloading from '${url}'`);
-      //   sendTelemetryEvent(this.tools.telemetryReporter, inputs, TelemetryEvent.DownloadSampleStart, { [TelemetryProperty.SampleAppName]: sample.id, module: "fx-core" });
-      //   const fetchRes = await fetchCodeZip(url);
-      //   progress.next("Unzipping the sample package");
-      //   if (fetchRes !== undefined) {
-      //     await saveFilesRecursively(new AdmZip(fetchRes.data), sampleId, folder);
-      //     await downloadSampleHook(sampleId, sampleAppPath);
-      //     sendTelemetryEvent(this.tools.telemetryReporter, inputs, TelemetryEvent.DownloadSample, { [TelemetryProperty.SampleAppName]: sample.id, [TelemetryProperty.Success]: TelemetrySuccess.Yes, module: "fx-core" });
-      //     return ok(sampleAppPath);
-      //   } else {
-      //     sendTelemetryErrorEvent(this.tools.telemetryReporter, inputs, TelemetryEvent.DownloadSample, FetchSampleError(), { [TelemetryProperty.SampleAppName]: sample.id, [TelemetryProperty.Success]: TelemetrySuccess.No, module: "fx-core" });
-      //     return err(FetchSampleError());
-      //   }
-      // } catch (e) {
-      //   sendTelemetryErrorEvent(this.tools.telemetryReporter, inputs, TelemetryEvent.DownloadSample, assembleError(e), { [TelemetryProperty.SampleAppName]: sample.id, [TelemetryProperty.Success]: TelemetrySuccess.No, module: "fx-core" });
-      // } finally {
-      //   progress.end();
-      // }
     }
     return err(InvalidInputError(`invalid answer for '${CoreQuestionNames.Samples}'`, inputs));
   }

@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { CryptoProvider, Result, FxError, ok, err } from "@microsoft/teamsfx-api";
+import { CryptoProvider, err, FxError, ok, Result, SystemError } from "@microsoft/teamsfx-api";
 import Cryptr from "cryptr";
-import { InvalidProjectError } from "./error";
+import { CoreSource } from "./error";
 
 export class LocalCrypto implements CryptoProvider {
   private cryptr: Cryptr;
@@ -26,7 +26,16 @@ export class LocalCrypto implements CryptoProvider {
       return ok(this.cryptr.decrypt(ciphertext.substr(this.prefix.length)));
     } catch (e) {
       // ciphertext is broken
-      return err(InvalidProjectError("cipher text is broken"));
+      return err(
+        new SystemError(
+          CoreSource,
+          "DecryptionError",
+          "Cipher text is broken",
+          undefined,
+          undefined,
+          e
+        )
+      );
     }
   }
 }

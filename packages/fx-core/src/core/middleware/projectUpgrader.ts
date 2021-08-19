@@ -2,12 +2,17 @@ import { Middleware, NextFunction } from "@feathersjs/hooks";
 import {
   ConfigFolderName,
   err,
+  FxError,
   Inputs,
   Json,
+  ok,
   ProjectSettings,
+  Result,
   SystemError,
-  UserError,
 } from "@microsoft/teamsfx-api";
+import * as fs from "fs-extra";
+import * as path from "path";
+import { basename } from "path";
 import {
   ContextUpgradeError,
   CoreHookContext,
@@ -17,18 +22,17 @@ import {
   ReadFileError,
   WriteFileError,
 } from "..";
-import * as fs from "fs-extra";
-import * as path from "path";
-import * as uuid from "uuid";
 import { dataNeedEncryption, deserializeDict, serializeDict } from "../..";
-import { LocalCrypto } from "../crypto";
+import { readJson } from "../../common/fileUtils";
 import {
+  Component,
   sendTelemetryErrorEvent,
   sendTelemetryEvent,
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
 } from "../../common/telemetry";
+import { LocalCrypto } from "../crypto";
 import { environmentManager } from "../environment";
 
 const resourceContext = [
@@ -58,27 +62,29 @@ const solutionContext = {
 const SolutionContextNotFoundError = "Failed to find solution context in env file.";
 
 export const ProjectUpgraderMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
-  await upgradeContext(ctx);
+  const res = await upgradeContext(ctx);
+  if (res.isErr()) {
+    ctx.result = res;
+    return;
+  }
   await next();
 };
 
 // This part is for update context and userdata file to support better local debug experience.
-export async function upgradeContext(ctx: CoreHookContext): Promise<void> {
+export async function upgradeContext(ctx: CoreHookContext): Promise<Result<undefined, FxError>> {
   const core = ctx.self as FxCore;
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
 
   if (!inputs.projectPath) {
-    ctx.result = err(NoProjectOpenedError());
-    return;
+    return err(NoProjectOpenedError());
   }
   const projectPathExist = await fs.pathExists(inputs.projectPath);
   if (!projectPathExist) {
-    ctx.result = err(PathNotExistError(inputs.projectPath));
-    return;
+    return err(PathNotExistError(inputs.projectPath));
   }
   const confFolderPath = path.resolve(inputs.projectPath!, `.${ConfigFolderName}`);
   const settingsFile = path.resolve(confFolderPath, "settings.json");
-  const projectSettings: ProjectSettings = await fs.readJson(settingsFile);
+  const projectSettings: ProjectSettings = await readJson(settingsFile);
   const defaultEnvName = environmentManager.defaultEnvName;
 
   const contextPath = path.resolve(confFolderPath, `env.${defaultEnvName}.json`);
@@ -94,14 +100,8 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<void> {
   } catch (error) {
     const errorObject = ReadFileError(error);
     core?.tools?.logProvider?.info(errorObject.message);
-    sendTelemetryErrorEvent(
-      core?.tools?.telemetryReporter,
-      inputs,
-      TelemetryEvent.ProjectUpgrade,
-      errorObject
-    );
-    ctx.result = err(errorObject);
-    return;
+    sendTelemetryErrorEvent(Component.core, TelemetryEvent.ProjectUpgrade, errorObject);
+    return err(errorObject);
   }
 
   try {
@@ -111,11 +111,11 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<void> {
     if (!updatedKeys || updatedKeys.size == 0) {
       // No keys need to be updated, which means the file is up-to-date.
       // Can quit directly.
-      return;
+      return ok(undefined);
     }
 
     // Some keys updated. Send start telemetry.
-    sendTelemetryEvent(core?.tools?.telemetryReporter, inputs, TelemetryEvent.ProjectUpgradeStart);
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectUpgradeStart);
 
     // Merge updatedKeys into UserData.
     mergeKeysToUserDate(userData, updatedKeys);
@@ -124,14 +124,8 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<void> {
     core?.tools?.logProvider?.info(
       `Template upgrade failed. Please clean the env.default.json and default.userdata file and try again. Reason: ${error?.message}`
     );
-    sendTelemetryErrorEvent(
-      core?.tools?.telemetryReporter,
-      inputs,
-      TelemetryEvent.ProjectUpgrade,
-      errorObject
-    );
-    ctx.result = err(errorObject);
-    return;
+    sendTelemetryErrorEvent(Component.core, TelemetryEvent.ProjectUpgrade, errorObject);
+    return err(errorObject);
   }
 
   try {
@@ -141,23 +135,18 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<void> {
   } catch (error) {
     const errorObject = WriteFileError(error);
     core?.tools?.logProvider?.info(errorObject.message);
-    sendTelemetryErrorEvent(
-      core?.tools?.telemetryReporter,
-      inputs,
-      TelemetryEvent.ProjectUpgrade,
-      errorObject
-    );
-    ctx.result = err(errorObject);
-    return;
+    sendTelemetryErrorEvent(Component.core, TelemetryEvent.ProjectUpgrade, errorObject);
+    return err(errorObject);
   }
 
   // Send log.
   core?.tools?.logProvider?.info(
     "[core]: template version is too low. Updated context and moved some configs from env to userdata."
   );
-  sendTelemetryEvent(core?.tools?.telemetryReporter, inputs, TelemetryEvent.ProjectUpgrade, {
+  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectUpgrade, {
     [TelemetryProperty.Success]: TelemetrySuccess.Yes,
   });
+  return ok(undefined);
 }
 
 // TODO: add readUserData as basic API in core since used in multiple places.
@@ -165,28 +154,33 @@ async function readUserData(
   userDataPath: string,
   projectId?: string
 ): Promise<Record<string, string>> {
-  let dict: Record<string, string> = {};
   if (await fs.pathExists(userDataPath)) {
     const dictContent = await fs.readFile(userDataPath, "UTF-8");
-    dict = deserializeDict(dictContent);
-  }
-
-  if (projectId) {
-    const cryptoProvider = new LocalCrypto(projectId);
-    for (const secretKey of Object.keys(dict)) {
-      if (!dataNeedEncryption(secretKey)) {
-        continue;
+    if (dictContent) {
+      const dict = deserializeDict(dictContent);
+      if (dict && projectId) {
+        const cryptoProvider = new LocalCrypto(projectId);
+        for (const secretKey of Object.keys(dict)) {
+          if (!dataNeedEncryption(secretKey)) {
+            continue;
+          }
+          const secretValue = dict[secretKey];
+          const plaintext = cryptoProvider.decrypt(secretValue);
+          if (plaintext.isErr()) {
+            const fxError: SystemError = plaintext.error;
+            const fileName = basename(userDataPath);
+            fxError.message = `${fxError.name}(file:${fileName}):${fxError.message}`;
+            fxError.userData = `file: ${fileName}\n------------FILE START--------\ncontent:\n${dictContent}\n------------FILE END----------`;
+            sendTelemetryErrorEvent(Component.core, TelemetryEvent.DecryptUserdata, fxError);
+            throw plaintext.error;
+          }
+          dict[secretKey] = plaintext.value;
+        }
+        return dict;
       }
-      const secretValue = dict[secretKey];
-      const plaintext = cryptoProvider.decrypt(secretValue);
-      if (plaintext.isErr()) {
-        throw plaintext.error;
-      }
-      dict[secretKey] = plaintext.value;
     }
   }
-
-  return dict;
+  return {};
 }
 
 // TODO: add saveUserData as basic API in core since used in multiple places.
@@ -212,7 +206,7 @@ async function saveUserData(
 }
 
 async function readContext(contextPath: string): Promise<Json> {
-  const configJson: Json = await fs.readJson(contextPath);
+  const configJson: Json = await readJson(contextPath);
   return configJson;
 }
 

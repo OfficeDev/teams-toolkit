@@ -47,7 +47,6 @@ jobs:
 
     # Checkout the code
     - checkout: self
-      persistCredentials: true
         
     - task: teamsfx-cli-task@1
       displayName: Provision hosting environment

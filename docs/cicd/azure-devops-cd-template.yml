@@ -26,7 +26,6 @@ jobs:
 
     # Checkout the code
     - checkout: self
-      persistCredentials: true
         
     # The way to build the current project depends on how you scaffold it.
     # Different folder structures require different commands set.

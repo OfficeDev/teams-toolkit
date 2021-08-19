@@ -46,6 +46,7 @@ describe("Screen Manager", function () {
     ScreenManager["rows"] = [];
     ScreenManager["cursorY"] = 0;
     ScreenManager["paused"] = false;
+    ScreenManager["cacheLogs"] = [];
     ScreenManager["clearTimer"]();
   });
 
@@ -58,6 +59,12 @@ describe("Screen Manager", function () {
     const row = ScreenManager.addProgress(() => "Test add progress");
     expect(ScreenManager["rows"]).deep.equals([row]);
     sinon.assert.calledOnce(refreshStub);
+  });
+
+  it("write when paused", () => {
+    ScreenManager["paused"] = true;
+    ScreenManager.write("Test write when paused");
+    expect(ScreenManager["cacheLogs"]).deep.equals([["Test write when paused", false]]);
   });
 
   it("write and write line (out stream)", () => {

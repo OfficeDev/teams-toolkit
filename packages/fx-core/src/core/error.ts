@@ -15,6 +15,33 @@ export function ProjectFolderExistError(path: string) {
   );
 }
 
+export function ProjectFolderNotExistError(path: string) {
+  return new UserError(
+    "ProjectFolderNotExistError",
+    `Path ${path} does not exist. Select a different folder.`,
+    CoreSource,
+    new Error().stack
+  );
+}
+
+export function EmptyProjectFolderError() {
+  return new SystemError(
+    "EmptyProjectFolderError",
+    "Project path is empty",
+    CoreSource,
+    new Error().stack
+  );
+}
+
+export function MigrateNotImplementError(path: string) {
+  return new SystemError(
+    "MigrateNotImplemented",
+    `Migrate V1 Project is not implemented.`,
+    CoreSource,
+    new Error().stack
+  );
+}
+
 export function WriteFileError(e: Error): SystemError {
   return new SystemError(
     "WriteFileError",

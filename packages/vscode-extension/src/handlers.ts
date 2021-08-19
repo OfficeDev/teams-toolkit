@@ -660,13 +660,16 @@ export function saveTextDocumentHandler(document: vscode.TextDocument) {
 
 export async function cmdHdlLoadTreeView(context: ExtensionContext) {
   if (
-    await exp
+    (await exp
       .getExpService()
-      .getTreatmentVariableAsync(TreatmentVariables.VSCodeConfig, TreatmentVariables.TreeView, true)
+      .getTreatmentVariableAsync(
+        TreatmentVariables.VSCodeConfig,
+        TreatmentVariables.DynamicTreeView,
+        true
+      )) &&
+    !isValidProject(getWorkspacePath())
   ) {
-    await commands.executeCommand("setContext", "isNewTreeView", true);
-    StringContext.setSignInAzureContext(StringResources.vsc.handlers.signInAzureNew);
-    const disposables = await TreeViewManagerInstance.registerNewTreeViews();
+    const disposables = await TreeViewManagerInstance.registerEmptyProjectTreeViews();
     context.subscriptions.push(...disposables);
   } else {
     const disposables = await TreeViewManagerInstance.registerTreeViews();

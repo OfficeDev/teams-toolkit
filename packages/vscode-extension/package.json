@@ -62,11 +62,10 @@
     "onCommand:fx-extension.pre-debug-check",
     "workspaceContains:**/.fx/*",
     "onView:teamsfx",
-    "onView:teamsfx-getting-started",
     "onView:teamsfx-accounts",
-    "onView:teamsfx-project",
-    "onView:teamsfx-teams-dev-center",
-    "onView:teamsfx-feedback"
+    "onView:teamsfx-development",
+    "onView:teamsfx-deployment",
+    "onView:teamsfx-help-and-feedback"
   ],
   "contributes": {
     "viewsContainers": {
@@ -81,44 +80,20 @@
     "views": {
       "teamsfx": [
         {
-          "id": "teamsfx-getting-started",
-          "name": "Getting Started",
-          "when": "!isNewTreeView"
-        },
-        {
           "id": "teamsfx-accounts",
           "name": "Accounts"
         },
         {
-          "id": "teamsfx-project",
-          "name": "Project",
-          "when": "!isNewTreeView"
-        },
-        {
-          "id": "teamsfx-teams-dev-center",
-          "name": "Developer Portal",
-          "when": "!isNewTreeView"
-        },
-        {
-          "id": "teamsfx-feedback",
-          "name": "Feedback",
-          "visibility": "collapsed",
-          "when": "!isNewTreeView"
-        },
-        {
           "id": "teamsfx-development",
-          "name": "Development",
-          "when": "isNewTreeView"
+          "name": "Development"
         },
         {
           "id": "teamsfx-deployment",
-          "name": "Deployment",
-          "when": "isNewTreeView"
+          "name": "Deployment"
         },
         {
           "id": "teamsfx-help-and-feedback",
-          "name": "Help and feedback",
-          "when": "isNewTreeView"
+          "name": "Help and feedback"
         }
       ]
     },

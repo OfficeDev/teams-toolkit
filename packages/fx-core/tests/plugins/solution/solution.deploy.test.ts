@@ -53,7 +53,7 @@ function mockSolutionContext(): SolutionContext {
   };
 }
 
-function mockDeployThatAlwaysSucceed(plugin: Plugin) {
+export function mockDeployThatAlwaysSucceed(plugin: Plugin) {
   plugin.preDeploy = async function (_ctx: PluginContext): Promise<Result<any, FxError>> {
     return ok(Void);
   };

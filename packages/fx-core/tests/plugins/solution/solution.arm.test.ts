@@ -43,6 +43,11 @@ import {
 import { ExecOptions } from "child_process";
 import { Executor } from "../../../src/common/tools";
 
+import "../../../src/plugins/resource/frontend";
+import "../../../src/plugins/resource/simpleauth";
+import "../../../src/plugins/resource/spfx";
+import "../../../src/plugins/resource/aad";
+
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 

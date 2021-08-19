@@ -47,6 +47,8 @@ export interface AzureSolutionSettings extends SolutionSettings {
     capabilities: string[];
     // (undocumented)
     hostType: string;
+    // (undocumented)
+    migrateFromV1?: boolean;
 }
 
 // @public
@@ -182,6 +184,8 @@ export interface Core {
     listCollaborator: (systemInputs: Inputs) => Promise<Result<any, FxError>>;
     // (undocumented)
     localDebug: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
+    // (undocumented)
+    migrateV1Project: (systemInputs: Inputs) => Promise<Result<string, FxError>>;
     // (undocumented)
     provisionResources: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
     // (undocumented)
@@ -949,6 +953,8 @@ export interface Solution {
     // (undocumented)
     localDebug: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
     // (undocumented)
+    migrate?: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
+    // (undocumented)
     name: string;
     // (undocumented)
     provision: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
@@ -1023,6 +1029,8 @@ export enum Stage {
     grantPermission = "grantPermission",
     // (undocumented)
     listCollaborator = "listCollaborator",
+    // (undocumented)
+    migrateV1 = "migrateV1",
     // (undocumented)
     package = "package",
     // (undocumented)

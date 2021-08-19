@@ -6,6 +6,7 @@
 import * as path from "path";
 import * as fs from "fs-extra";
 import {
+  Colors,
   ConfigFolderName,
   Func,
   FxError,
@@ -29,7 +30,7 @@ import { getNpmInstallLogInfo } from "./npmLogHandler";
 import { ServiceLogWriter } from "./serviceLogWriter";
 import open from "open";
 import { FxCore, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
-import { getSystemInputs } from "../../utils";
+import { getSystemInputs, getColorizedString } from "../../utils";
 
 export async function openBrowser(browser: constants.Browser, url: string): Promise<void> {
   switch (browser) {
@@ -58,12 +59,13 @@ export async function openBrowser(browser: constants.Browser, url: string): Prom
       break;
   }
 }
+
 export function createTaskStartCb(
   progressBar: IProgressHandler,
   startMessage: string,
   telemetryProperties?: { [key: string]: string }
 ): (taskTitle: string, background: boolean) => Promise<void> {
-  return async (taskTitle: string, background: boolean) => {
+  return async (taskTitle: string, background: boolean, serviceLogWriter?: ServiceLogWriter) => {
     if (telemetryProperties !== undefined) {
       let event = background
         ? TelemetryEvent.PreviewServiceStart
@@ -81,12 +83,28 @@ export function createTaskStartCb(
       });
     }
     await progressBar.start(startMessage);
+    if (background) {
+      const serviceLogFile = await serviceLogWriter?.getLogFile(taskTitle);
+      if (serviceLogFile !== undefined) {
+        const message = [
+          {
+            content: `${taskTitle}: ${constants.serviceLogHintMessage} `,
+            color: Colors.WHITE,
+          },
+          {
+            content: serviceLogFile,
+            color: Colors.BRIGHT_GREEN,
+          },
+        ];
+        cliLogger.necessaryLog(LogLevel.Info, getColorizedString(message));
+      }
+    }
+    await progressBar.next(startMessage);
   };
 }
 
 export function createTaskStopCb(
   progressBar: IProgressHandler,
-  successMessage: string,
   telemetryProperties?: { [key: string]: string }
 ): (
   taskTitle: string,
@@ -94,12 +112,7 @@ export function createTaskStopCb(
   result: TaskResult,
   serviceLogWriter?: ServiceLogWriter
 ) => Promise<FxError | null> {
-  return async (
-    taskTitle: string,
-    background: boolean,
-    result: TaskResult,
-    serviceLogWriter?: ServiceLogWriter
-  ) => {
+  return async (taskTitle: string, background: boolean, result: TaskResult) => {
     const timestamp = new Date();
     const ifNpmInstall: boolean = taskTitle.includes("npm install");
     let event = background ? TelemetryEvent.PreviewService : TelemetryEvent.PreviewNpmInstall;
@@ -126,14 +139,6 @@ export function createTaskStopCb(
           [TelemetryProperty.Success]: TelemetrySuccess.Yes,
         });
       }
-      let message = successMessage;
-      if (background) {
-        const serviceLogFile = await serviceLogWriter?.getLogFile(taskTitle);
-        if (serviceLogFile !== undefined) {
-          message = `${successMessage} ${constants.serviceLogHintMessage} ${serviceLogFile}`;
-        }
-      }
-      await progressBar.next(message);
       await progressBar.end(true);
       return null;
     } else {
@@ -165,15 +170,7 @@ export function createTaskStopCb(
         cliTelemetry.sendTelemetryErrorEvent(event, error, properties);
       }
       cliLogger.necessaryLog(LogLevel.Error, `${error.source}.${error.name}: ${error.message}`);
-      if (background) {
-        const serviceLogFile = await serviceLogWriter?.getLogFile(taskTitle);
-        if (serviceLogFile !== undefined) {
-          cliLogger.necessaryLog(
-            LogLevel.Info,
-            `${constants.serviceLogHintMessage} ${serviceLogFile}`
-          );
-        }
-      } else {
+      if (!background) {
         if (result.stderr.length > 0) {
           cliLogger.necessaryLog(LogLevel.Info, result.stderr[result.stderr.length - 1], true);
         }

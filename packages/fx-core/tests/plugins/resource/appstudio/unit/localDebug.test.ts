@@ -215,7 +215,7 @@ describe("Post Local Debug", () => {
           aadId: uuid.v4(),
           displayName: "displayName",
           userPrincipalName: "principalName",
-          isOwner: true,
+          isAdministrator: true,
         },
       ],
       outlineIcon: "outline.png",

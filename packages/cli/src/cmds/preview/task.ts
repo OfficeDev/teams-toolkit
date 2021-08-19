@@ -97,17 +97,24 @@ export class Task {
    */
   public async waitFor(
     pattern: RegExp,
-    startCallback: (taskTitle: string, background: boolean) => Promise<void>,
+    startCallback: (
+      taskTitle: string,
+      background: boolean,
+      serviceLogWriter?: ServiceLogWriter
+    ) => Promise<void>,
     stopCallback: (
       taskTitle: string,
       background: boolean,
-      result: TaskResult,
-      serviceLogWriter?: ServiceLogWriter
+      result: TaskResult
     ) => Promise<FxError | null>,
     serviceLogWriter?: ServiceLogWriter,
     logProvider?: CLILogProvider
   ): Promise<Result<TaskResult, FxError>> {
-    await startCallback(this.taskTitle, this.background);
+    await serviceLogWriter?.write(
+      this.taskTitle,
+      `${this.command} ${this.args ? this.args?.join(" ") : ""}\n`
+    );
+    await startCallback(this.taskTitle, this.background, serviceLogWriter);
     this.task = spawn(this.command, this.args, this.options);
     const stdout: string[] = [];
     const stderr: string[] = [];
@@ -131,12 +138,7 @@ export class Task {
               stderr: stderr,
               exitCode: null,
             };
-            const error = await stopCallback(
-              this.taskTitle,
-              this.background,
-              result,
-              serviceLogWriter
-            );
+            const error = await stopCallback(this.taskTitle, this.background, result);
             if (error) {
               resolve(err(error));
             } else {
@@ -165,12 +167,7 @@ export class Task {
             stderr: stderr,
             exitCode: this.task?.exitCode === undefined ? null : this.task?.exitCode,
           };
-          const error = await stopCallback(
-            this.taskTitle,
-            this.background,
-            result,
-            serviceLogWriter
-          );
+          const error = await stopCallback(this.taskTitle, this.background, result);
           if (error) {
             resolve(err(error));
           } else {

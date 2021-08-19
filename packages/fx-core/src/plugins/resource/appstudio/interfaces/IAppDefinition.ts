@@ -49,7 +49,7 @@ export interface IUserList {
   aadId: string;
   displayName: string;
   userPrincipalName: string;
-  isOwner: boolean;
+  isAdministrator: boolean;
 }
 
 export interface IAppDefinitionBot {

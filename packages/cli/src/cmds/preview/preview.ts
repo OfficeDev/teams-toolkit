@@ -347,7 +347,6 @@ export default class Preview extends YargsCommand {
     );
     const spfxInstallStopCb = commonUtils.createTaskStopCb(
       spfxInstallBar,
-      constants.spfxInstallSuccessMessage,
       this.telemetryProperties
     );
 
@@ -374,11 +373,7 @@ export default class Preview extends YargsCommand {
       constants.gulpCertStartMessage,
       this.telemetryProperties
     );
-    const gulpCertStopCb = commonUtils.createTaskStopCb(
-      gulpCertBar,
-      constants.gulpCertSuccessMessage,
-      this.telemetryProperties
-    );
+    const gulpCertStopCb = commonUtils.createTaskStopCb(gulpCertBar, this.telemetryProperties);
 
     result = await gulpCertTask?.wait(gulpCertStartCb, gulpCertStopCb);
     if (result.isErr()) {
@@ -404,11 +399,7 @@ export default class Preview extends YargsCommand {
       constants.gulpServeStartMessage,
       this.telemetryProperties
     );
-    const gulpServeStopCb = commonUtils.createTaskStopCb(
-      gulpServeBar,
-      constants.gulpServeSuccessMessage,
-      this.telemetryProperties
-    );
+    const gulpServeStopCb = commonUtils.createTaskStopCb(gulpServeBar, this.telemetryProperties);
 
     result = await gulpServeTask?.waitFor(
       constants.gulpServePattern,
@@ -433,7 +424,8 @@ export default class Preview extends YargsCommand {
     );
 
     const previewBar = CLIUIInstance.createProgressBar(constants.previewSPFxTitle, 1);
-    await previewBar.start(`${constants.previewSPFxStartMessage}`);
+    await previewBar.start(constants.previewSPFxStartMessage);
+    await previewBar.next(constants.previewSPFxStartMessage);
     const message = [
       {
         content: `preview url: `,
@@ -459,7 +451,6 @@ export default class Preview extends YargsCommand {
       await previewBar.end(false);
       return ok(null);
     }
-    await previewBar.next(constants.previewSPFxSuccessMessage);
     await previewBar.end(true);
 
     cliTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewSPFxOpenBrowser, {
@@ -572,11 +563,7 @@ export default class Preview extends YargsCommand {
       constants.botInstallStartMessage,
       this.telemetryProperties
     );
-    const botInstallStopCb = commonUtils.createTaskStopCb(
-      botInstallBar,
-      constants.botInstallSuccessMessage,
-      this.telemetryProperties
-    );
+    const botInstallStopCb = commonUtils.createTaskStopCb(botInstallBar, this.telemetryProperties);
     let result = await botInstallTask.wait(botInstallStartCb, botInstallStopCb);
     if (result.isErr()) {
       return err(errors.PreviewCommandFailed([result.error]));
@@ -600,11 +587,7 @@ export default class Preview extends YargsCommand {
       constants.ngrokStartStartMessage,
       this.telemetryProperties
     );
-    const ngrokStartStopCb = commonUtils.createTaskStopCb(
-      ngrokStartBar,
-      constants.ngrokStartSuccessMessage,
-      this.telemetryProperties
-    );
+    const ngrokStartStopCb = commonUtils.createTaskStopCb(ngrokStartBar, this.telemetryProperties);
     result = await ngrokStartTask.waitFor(
       constants.ngrokStartPattern,
       ngrokStartStartCb,
@@ -687,7 +670,6 @@ export default class Preview extends YargsCommand {
     );
     const frontendInstallStopCb = commonUtils.createTaskStopCb(
       frontendInstallBar,
-      constants.frontendInstallSuccessMessage,
       this.telemetryProperties
     );
 
@@ -699,7 +681,6 @@ export default class Preview extends YargsCommand {
     );
     const backendInstallStopCb = commonUtils.createTaskStopCb(
       backendInstallBar,
-      constants.backendInstallSuccessMessage,
       this.telemetryProperties
     );
 
@@ -712,8 +693,7 @@ export default class Preview extends YargsCommand {
       constants.backendExtensionsInstallStartMessage
     );
     const backendExtensionsInstallStopCb = commonUtils.createTaskStopCb(
-      backendExtensionsInstallBar,
-      constants.backendExtensionsInstallSuccessMessage
+      backendExtensionsInstallBar
     );
 
     const botInstallBar = CLIUIInstance.createProgressBar(constants.botInstallTitle, 1);
@@ -722,11 +702,7 @@ export default class Preview extends YargsCommand {
       constants.botInstallStartMessage,
       this.telemetryProperties
     );
-    const botInstallStopCb = commonUtils.createTaskStopCb(
-      botInstallBar,
-      constants.botInstallSuccessMessage,
-      this.telemetryProperties
-    );
+    const botInstallStopCb = commonUtils.createTaskStopCb(botInstallBar, this.telemetryProperties);
 
     const results = await Promise.all([
       core.localDebug(inputs),
@@ -878,7 +854,6 @@ export default class Preview extends YargsCommand {
     );
     const frontendStartStopCb = commonUtils.createTaskStopCb(
       frontendStartBar,
-      constants.frontendStartSuccessMessage,
       this.telemetryProperties
     );
 
@@ -888,11 +863,7 @@ export default class Preview extends YargsCommand {
       constants.authStartStartMessage,
       this.telemetryProperties
     );
-    const authStartStopCb = commonUtils.createTaskStopCb(
-      authStartBar,
-      constants.authStartSuccessMessage,
-      this.telemetryProperties
-    );
+    const authStartStopCb = commonUtils.createTaskStopCb(authStartBar, this.telemetryProperties);
 
     const backendStartBar = CLIUIInstance.createProgressBar(constants.backendStartTitle, 1);
     const backendStartStartCb = commonUtils.createTaskStartCb(
@@ -902,7 +873,6 @@ export default class Preview extends YargsCommand {
     );
     const backendStartStopCb = commonUtils.createTaskStopCb(
       backendStartBar,
-      constants.backendStartSuccessMessage,
       this.telemetryProperties
     );
 
@@ -914,7 +884,6 @@ export default class Preview extends YargsCommand {
     );
     const backendWatchStopCb = commonUtils.createTaskStopCb(
       backendWatchBar,
-      constants.backendWatchSuccessMessage,
       this.telemetryProperties
     );
 
@@ -924,11 +893,7 @@ export default class Preview extends YargsCommand {
       constants.botStartStartMessage,
       this.telemetryProperties
     );
-    const botStartStopCb = commonUtils.createTaskStopCb(
-      botStartBar,
-      constants.botStartSuccessMessage,
-      this.telemetryProperties
-    );
+    const botStartStopCb = commonUtils.createTaskStopCb(botStartBar, this.telemetryProperties);
 
     const results = await Promise.all([
       frontendStartTask?.waitFor(
@@ -1015,7 +980,8 @@ export default class Preview extends YargsCommand {
     }
 
     const previewBar = CLIUIInstance.createProgressBar(constants.previewTitle, 1);
-    await previewBar.start(`${constants.previewStartMessage}`);
+    await previewBar.start(constants.previewStartMessage);
+    await previewBar.next(constants.previewStartMessage);
     const message = [
       {
         content: `preview url: `,
@@ -1040,7 +1006,6 @@ export default class Preview extends YargsCommand {
       await previewBar.end(false);
       return ok(null);
     }
-    await previewBar.next(constants.previewSuccessMessage);
     await previewBar.end(true);
 
     cliTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewSideloading, {

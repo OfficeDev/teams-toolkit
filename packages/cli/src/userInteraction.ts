@@ -36,12 +36,11 @@ import {
   UserInteraction,
   Colors,
   IProgressHandler,
-  returnSystemError,
 } from "@microsoft/teamsfx-api";
 
 import CLILogProvider from "./commonlib/log";
 import { EmptySubConfigOptions, NotValidInputValue, UnknownError } from "./error";
-import { sleep, getColorizedString } from "./utils";
+import { sleep, getColorizedString, toLocaleLowerCase } from "./utils";
 import { ChoiceOptions } from "./prompts";
 import Progress from "./console/progress";
 import ScreenManager from "./console/screen";
@@ -83,7 +82,7 @@ export class CLIUserInteraction implements UserInteraction {
     const options = config.options as OptionItem[];
     const labels = options.map((op) => op.label);
     const ids = options.map((op) => op.id);
-    const cliNames = options.map((op) => op.cliName);
+    const cliNames = options.map((op) => op.cliName || toLocaleLowerCase(op.id));
 
     const presetAnwser = this.presetAnswers.get(config.name);
     if (presetAnwser instanceof Array) {

@@ -32,6 +32,7 @@ const GlobalOptions = new Set([
   CliConfigOptions.EnvCheckerValidateDotnetSdk as string,
   CliConfigOptions.EnvCheckerValidateFuncCoreTools as string,
   CliConfigOptions.EnvCheckerValidateNode as string,
+  CliConfigOptions.RunFrom as string,
 ]);
 
 export class ConfigGet extends YargsCommand {
@@ -251,6 +252,7 @@ export class ConfigSet extends YargsCommand {
       case CliConfigOptions.EnvCheckerValidateDotnetSdk:
       case CliConfigOptions.EnvCheckerValidateFuncCoreTools:
       case CliConfigOptions.EnvCheckerValidateNode:
+      case CliConfigOptions.RunFrom:
         const opt = { [option]: value };
         const result = UserSettings.setConfigSync(opt);
         if (result.isErr()) {

@@ -25,7 +25,7 @@ import {
 import * as path from "path";
 import * as fs from "fs-extra";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
-import { validateSettings } from "../../common";
+import { validateSettings } from "../tools";
 import * as uuid from "uuid";
 import { LocalCrypto } from "../crypto";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";

@@ -29,7 +29,7 @@ import { TelemetryUtils } from "./utils/telemetryUtils";
 @Service(ResourcePlugins.SqlPlugin)
 export class SqlPlugin implements Plugin {
   name = "fx-resource-azure-sql";
-  displayName = "Azure SQL Datebase";
+  displayName = "Azure SQL Database";
   activate(solutionSettings: AzureSolutionSettings): boolean {
     const azureResources = solutionSettings.azureResources || [];
     const cap = solutionSettings.capabilities || [];

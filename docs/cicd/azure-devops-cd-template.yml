@@ -18,8 +18,8 @@ jobs:
       M365_ACCOUNT_PASSWORD: $(M365_ACCOUNT_PASSWORD)
 
   steps:
-    # Setup environment.
     - task: NodeTool@0
+      displayName: Setup environment
       inputs:
         versionSpec: '14.x'
         checkLatest: true
@@ -28,21 +28,21 @@ jobs:
     - checkout: self
       persistCredentials: true
         
-    # Build the project.
     # The way to build the current project depends on how you scaffold it.
     # Different folder structures require different commands set.
     # 'npm ci' is used here to install dependencies and it depends on package-lock.json.
     # If you prefer to use 'npm ci', please make sure to commit package-lock.json first, or just change it to 'npm install'.
     - task: Bash@3
+      displayName: Build the project
       inputs:
         targetType: 'inline'
         script: |
           cd tabs && npm ci && npm run build
 
-    # Run unit test.
     # Currently, no opinioned solution for unit test provided during scaffolding, so,
     # set up any unit test framework you prefer (for example, mocha or jest) and update the commands accordingly in below.
     - task: Bash@3
+      displayName: Run unit test
       inputs:
         targetType: 'inline'
         script: |
@@ -51,20 +51,21 @@ jobs:
     # We suggest to do the provision steps by case manually or in a separated workflow, so just comment the following steps for references.
     # After provision, you should commit .fx/env.default.json into the repository for later use.
     # You should pick required secrets from .fx/default.userdata, and save them in the repository secrets (https://docs.github.com/en/actions/reference/encrypted-secrets) which can be refered by the step with name 'Generate default.userdata'. 
-    # - task: teamsfx-cli-task@0
-    #   name: Provision hosting environment
+    # - task: teamsfx-cli-task@1
+    #   displayName: Provision hosting environment
     #   inputs:
     #     commands: 'provision'
     #     subscription: '$(AZURE_SUBSCRIPTION_ID)'
     
     # - task: PublishBuildArtifacts@1
-    #   name: Upload default.userdata as artifact
+    #   displayName: Upload default.userdata as artifact
     #   inputs:
     #     PathtoPublish: '.fx/default.userdata'
     #     ArtifactName: 'defaultUserData'
     #     publishLocation: 'Container'
 
     - task: Bash@3
+      displayName: Generate default.userdata
       env:
         USERDATA_TENANT_ID: $(USERDATA_TENANT_ID)
         USERDATA_CLIENT_SECRET: $(USERDATA_CLIENT_SECRET)
@@ -76,26 +77,26 @@ jobs:
           [ ! -z "${USERDATA_CLIENT_SECRET}" ] && echo "fx-resource-aad-app-for-teams.clientSecret=${USERDATA_CLIENT_SECRET}" >> .fx/default.userdata
           [ ! -z "${USERDATA_BOT_PASSWORD}" ] && echo "fx-resource-bot.botPassword=${USERDATA_BOT_PASSWORD}" >> .fx/default.userdata
 
-    - task: teamsfx-cli-task@0
-      name: Deploy to hosting environment
+    - task: teamsfx-cli-task@1
+      displayName: Deploy to hosting environment
       inputs:
         commands: deploy
 
     # This step is to pack the Teams App as zip file,
     # which can be used to be uploaded onto Teams Client for installation.
-    - task: teamsfx-cli-task@0
-      name: Build Teams App's package
+    - task: teamsfx-cli-task@1
+      displayName: Build Teams App's package
       inputs:
         commands: build
 
     - task: PublishBuildArtifacts@1
-      name: Upload Teams App's package as artifact
+      displayName: Upload Teams App's package as artifact
       inputs:
         PathtoPublish: appPackage/appPackage.zip
         ArtifactName: 'appPackage'
         publishLocation: 'Container'
 
-    - task: teamsfx-cli-task@0
-      name: Publish Teams App
+    - task: teamsfx-cli-task@1
+      displayName: Publish Teams App
       inputs:
         commands: publish

@@ -44,6 +44,8 @@ export namespace ExtTelemetry {
     switch (stage) {
       case Stage.create:
         return TelemetryEvent.CreateProject;
+      case Stage.migrateV1:
+        return TelemetryEvent.MigrateV1Project;
       case Stage.update:
         return TelemetryEvent.AddResource;
       case Stage.provision:

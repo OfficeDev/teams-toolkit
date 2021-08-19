@@ -224,6 +224,12 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.workspace.onDidSaveTextDocument(handlers.saveTextDocumentHandler)
   );
 
+  const migrateV1Cmd = vscode.commands.registerCommand(
+    "fx-extension.migrateV1Project",
+    handlers.migrateV1ProjectHandler
+  );
+  context.subscriptions.push(migrateV1Cmd);
+
   // 2. Call activate function of toolkit core.
   await handlers.activate();
 

@@ -69,7 +69,7 @@ import {
   FRONTEND_ENDPOINT_ARM,
   FRONTEND_DOMAIN_ARM,
   ErrorMessages,
-  SOLTUION,
+  SOLUTION,
 } from "./constants";
 import { REMOTE_TEAMS_APP_ID } from "../../solution/fx-solution/constants";
 import AdmZip from "adm-zip";
@@ -557,15 +557,15 @@ export class AppStudioPluginImpl {
     const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
 
     const teamsAppId = (await ctx.configOfOtherPlugins
-      .get(SOLTUION)
+      .get(SOLUTION)
       ?.get(REMOTE_TEAMS_APP_ID)) as string;
     if (!teamsAppId) {
-      throw new Error(ErrorMessages.GetConfigError(REMOTE_TEAMS_APP_ID, SOLTUION));
+      throw new Error(ErrorMessages.GetConfigError(REMOTE_TEAMS_APP_ID, SOLUTION));
     }
 
-    const userInfo = ctx.configOfOtherPlugins.get(SOLTUION)?.get(USER_INFO);
+    const userInfo = ctx.configOfOtherPlugins.get(SOLUTION)?.get(USER_INFO);
     if (!userInfo) {
-      throw new Error(ErrorMessages.GetConfigError(USER_INFO, SOLTUION));
+      throw new Error(ErrorMessages.GetConfigError(USER_INFO, SOLUTION));
     }
 
     try {

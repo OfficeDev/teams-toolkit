@@ -40,7 +40,7 @@ export const LOCAL_BOT_ID = "localBotId";
 /**
  * Config Keys that are useful for remote collaboration
  */
-export const SOLTUION = "solution";
+export const SOLUTION = "solution";
 export const SOLUTION_USERINFO = "userinfo";
 
 export const TEAMS_APP_MANIFEST_TEMPLATE = `{

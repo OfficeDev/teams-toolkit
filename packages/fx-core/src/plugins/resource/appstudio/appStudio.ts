@@ -136,9 +136,13 @@ export namespace AppStudioClient {
           `Cannot get the app definition with app ID ${teamsAppId}, due to ${e.name}: ${e.message}`
         );
       }
-      throw new Error(
+      const err = new Error(
         `Cannot get the app definition with app ID ${teamsAppId}, due to ${e.name}: ${e.message}`
       );
+      if (e.response?.data?.status) {
+        err.name = e.response?.data?.status;
+      }
+      throw err;
     }
     throw new Error(`Cannot get the app definition with app ID ${teamsAppId}`);
   }
@@ -390,7 +394,17 @@ export namespace AppStudioClient {
     appStudioToken: string,
     userObjectId: string
   ): Promise<string> {
-    const app = await getApp(teamsAppId, appStudioToken);
+    let app;
+    try {
+      app = await getApp(teamsAppId, appStudioToken);
+    } catch (error) {
+      if (error.name == 404) {
+        return Constants.PERMISSIONS.noPermission;
+      } else {
+        throw error;
+      }
+    }
+
     const findUser = app.userList?.find((user: any) => user["aadId"] === userObjectId);
     if (!findUser) {
       return Constants.PERMISSIONS.noPermission;

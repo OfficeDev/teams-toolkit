@@ -289,10 +289,15 @@ export class AppStudioPlugin implements Plugin {
     } catch (error) {
       TelemetryUtils.sendErrorEvent(TelemetryEventName.checkPermission, error);
       return err(
-        AppStudioResultFactory.SystemError(
-          AppStudioError.CheckPermissionFailedError.name,
-          AppStudioError.CheckPermissionFailedError.message(error)
-        )
+        error.name && error.name >= 400 && error.name < 500
+          ? AppStudioResultFactory.UserError(
+              AppStudioError.CheckPermissionFailedError.name,
+              AppStudioError.CheckPermissionFailedError.message(error)
+            )
+          : AppStudioResultFactory.SystemError(
+              AppStudioError.CheckPermissionFailedError.name,
+              AppStudioError.CheckPermissionFailedError.message(error)
+            )
       );
     }
   }

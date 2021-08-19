@@ -16,7 +16,8 @@ import {
   UnauthenticatedError,
 } from "./resources/errors";
 import { Utils } from "./utils";
-import { getArmOutput, isArmSupportEnabled } from "../../..";
+import { isArmSupportEnabled } from "../../..";
+import { getArmOutput } from "../utils4v2";
 
 export class FrontendConfig {
   subscriptionId: string;

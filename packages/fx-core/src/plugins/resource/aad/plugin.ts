@@ -138,7 +138,7 @@ export class AadAppForTeamsImpl {
     );
     ctx.logProvider?.info(Messages.getLog(Messages.UpdatePermissionSuccess));
 
-    await DialogUtils.progress?.end();
+    await DialogUtils.progress?.end(true);
     config.saveConfigIntoContext(ctx, TokenProvider.tenantId as string);
     Utils.addLogAndTelemetryWithLocalDebug(
       ctx.logProvider,
@@ -218,7 +218,7 @@ export class AadAppForTeamsImpl {
     );
     ctx.logProvider?.info(Messages.getLog(Messages.UpdateAppIdUriSuccess));
 
-    await DialogUtils.progress?.end();
+    await DialogUtils.progress?.end(true);
     Utils.addLogAndTelemetryWithLocalDebug(
       ctx.logProvider,
       Messages.EndPostProvision,
@@ -264,7 +264,7 @@ export class AadAppForTeamsImpl {
     }
     ctx.logProvider?.info(Messages.getLog(Messages.UpdatePermissionSuccess));
 
-    await DialogUtils.progress?.end();
+    await DialogUtils.progress?.end(true);
     DialogUtils.show(Messages.UpdatePermissionSuccessMessage);
     return ResultFactory.Success();
   }

@@ -71,4 +71,20 @@ export class MockCore implements Core {
   async decrypt(ciphertext: string, inputs: Inputs): Promise<Result<string, FxError>> {
     return ok(ciphertext);
   }
+
+  async migrateV1Project(systemInputs: Inputs): Promise<Result<string, FxError>> {
+    return ok("");
+  }
+
+  async grantPermission(inputs: Inputs): Promise<Result<any, FxError>> {
+    return ok("");
+  }
+
+  async checkPermission(inputs: Inputs): Promise<Result<any, FxError>> {
+    return ok("");
+  }
+
+  async listCollaborator(inputs: Inputs): Promise<Result<any, FxError>> {
+    return ok("");
+  }
 }

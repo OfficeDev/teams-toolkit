@@ -34,4 +34,12 @@ export interface Core {
    */
   encrypt: (plaintext: string, inputs: Inputs) => Promise<Result<string, FxError>>;
   decrypt: (ciphertext: string, inputs: Inputs) => Promise<Result<string, FxError>>;
+
+  migrateV1Project: (systemInputs: Inputs) => Promise<Result<string, FxError>>;
+  /**
+   * For grant and check permission in remote collaboration
+   */
+  grantPermission: (systemInputs: Inputs) => Promise<Result<any, FxError>>;
+  checkPermission: (systemInputs: Inputs) => Promise<Result<any, FxError>>;
+  listCollaborator: (systemInputs: Inputs) => Promise<Result<any, FxError>>;
 }

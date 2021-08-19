@@ -35,7 +35,7 @@ export class ProgressHelper {
   static async startScaffoldProgressHandler(
     ctx: PluginContext
   ): Promise<IProgressHandler | undefined> {
-    await this.scaffoldProgress?.end();
+    await this.scaffoldProgress?.end(true);
 
     this.scaffoldProgress = ctx.ui?.createProgressBar(
       Messages.ScaffoldProgressTitle,
@@ -48,7 +48,7 @@ export class ProgressHelper {
   static async startProvisionProgressHandler(
     ctx: PluginContext
   ): Promise<IProgressHandler | undefined> {
-    await this.provisionProgress?.end();
+    await this.provisionProgress?.end(true);
 
     this.provisionProgress = ctx.ui?.createProgressBar(
       Messages.ProvisionProgressTitle,
@@ -61,7 +61,7 @@ export class ProgressHelper {
   static async createPreDeployProgressHandler(
     ctx: PluginContext
   ): Promise<IProgressHandler | undefined> {
-    await this.preDeployProgress?.end();
+    await this.preDeployProgress?.end(true);
 
     this.preDeployProgress = ctx.ui?.createProgressBar(
       Messages.PreDeployProgressTitle,
@@ -74,7 +74,7 @@ export class ProgressHelper {
   static async startDeployProgressHandler(
     ctx: PluginContext
   ): Promise<IProgressHandler | undefined> {
-    await this.deployProgress?.end();
+    await this.deployProgress?.end(true);
 
     this.deployProgress = ctx.ui?.createProgressBar(
       Messages.DeployProgressTitle,
@@ -84,30 +84,30 @@ export class ProgressHelper {
     return this.deployProgress;
   }
 
-  static async endAllHandlers(): Promise<void> {
-    await this.endScaffoldProgress();
-    await this.endProvisionProgress();
-    await this.endPreDeployProgress();
-    await this.endDeployProgress();
+  static async endAllHandlers(success: boolean): Promise<void> {
+    await this.endScaffoldProgress(success);
+    await this.endProvisionProgress(success);
+    await this.endPreDeployProgress(success);
+    await this.endDeployProgress(success);
   }
 
-  static async endScaffoldProgress(): Promise<void> {
-    await this.scaffoldProgress?.end();
+  static async endScaffoldProgress(success: boolean): Promise<void> {
+    await this.scaffoldProgress?.end(success);
     this.scaffoldProgress = undefined;
   }
 
-  static async endProvisionProgress(): Promise<void> {
-    await this.provisionProgress?.end();
+  static async endProvisionProgress(success: boolean): Promise<void> {
+    await this.provisionProgress?.end(success);
     this.provisionProgress = undefined;
   }
 
-  static async endPreDeployProgress(): Promise<void> {
-    await this.preDeployProgress?.end();
+  static async endPreDeployProgress(success: boolean): Promise<void> {
+    await this.preDeployProgress?.end(success);
     this.preDeployProgress = undefined;
   }
 
-  static async endDeployProgress(): Promise<void> {
-    await this.deployProgress?.end();
+  static async endDeployProgress(success: boolean): Promise<void> {
+    await this.deployProgress?.end(success);
     this.deployProgress = undefined;
   }
 }

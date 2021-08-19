@@ -15,6 +15,33 @@ export function ProjectFolderExistError(path: string) {
   );
 }
 
+export function ProjectFolderNotExistError(path: string) {
+  return new UserError(
+    "ProjectFolderNotExistError",
+    `Path ${path} does not exist. Select a different folder.`,
+    CoreSource,
+    new Error().stack
+  );
+}
+
+export function EmptyProjectFolderError() {
+  return new SystemError(
+    "EmptyProjectFolderError",
+    "Project path is empty",
+    CoreSource,
+    new Error().stack
+  );
+}
+
+export function MigrateNotImplementError(path: string) {
+  return new SystemError(
+    "MigrateNotImplemented",
+    `Migrate V1 Project is not implemented.`,
+    CoreSource,
+    new Error().stack
+  );
+}
+
 export function WriteFileError(e: Error): SystemError {
   return new SystemError(
     "WriteFileError",
@@ -84,7 +111,7 @@ export function ConcurrentError() {
   );
 }
 
-export function TaskNotSupportError(task: Stage) {
+export function TaskNotSupportError(task: Stage | string) {
   return new SystemError(
     "TaskNotSupport",
     `Task is not supported yet: ${task}`,
@@ -122,10 +149,46 @@ export function FunctionRouterError(func: Func) {
   );
 }
 
-export function ContextUpgradeError(error: any): FxError {
+export function ContextUpgradeError(error: any, isUserError = false): FxError {
+  if (isUserError) {
+    return new UserError(
+      "ContextUpgradeError",
+      `Failed to update context: ${error.message}`,
+      CoreSource,
+      error.stack ?? new Error().stack
+    );
+  } else {
+    return new SystemError(
+      "ContextUpgradeError",
+      `Failed to update context: ${error.message}`,
+      CoreSource,
+      error.stack ?? new Error().stack
+    );
+  }
+}
+
+export function PluginHasNoTaskImpl(pluginName: string, task: string) {
   return new SystemError(
-    "ContextUpgradeError",
-    `Failed to update context: ${error.message}`,
+    "PluginHasNoTaskImplError",
+    `Plugin ${pluginName} has not implemented method: ${task}`,
+    CoreSource,
+    new Error().stack
+  );
+}
+
+export function ProjectSettingsUndefinedError(): FxError {
+  return new SystemError(
+    "ProjectSettingsUndefinedError",
+    "Project settings is undefined",
+    CoreSource,
+    new Error().stack
+  );
+}
+
+export function ProjectEnvNotExistError(env: string) {
+  return new UserError(
+    "ProjectEnvNotExistError",
+    `The specified env ${env} does not exist. Select an existing env.`,
     CoreSource,
     new Error().stack
   );

@@ -186,8 +186,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     const command: string = constants.ngrokStartCommand;
     definition = definition || { type: TeamsfxTaskProvider.type, command };
     let commandLine = "npx ngrok http 3978 --log=stdout";
-    const skipNgrokConfig = await commonUtils.getSkipNgrokConfig();
-    const skipNgrok = skipNgrokConfig && skipNgrokConfig.trim().toLocaleLowerCase() === "true";
+    const skipNgrok = await commonUtils.getSkipNgrokConfig();
     if (skipNgrok) {
       commandLine = "echo 'Do not start ngrok, but use predefined bot endpoint.'";
     }

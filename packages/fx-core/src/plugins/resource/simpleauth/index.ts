@@ -23,6 +23,9 @@ export class SimpleAuthPlugin implements Plugin {
   name = "fx-resource-simple-auth";
   displayName = "Simple Auth";
   activate(solutionSettings: AzureSolutionSettings): boolean {
+    if (solutionSettings?.migrateFromV1) {
+      return false;
+    }
     const cap = solutionSettings.capabilities || [];
     return solutionSettings.hostType === HostTypeOptionAzure.id && cap.includes(TabOptionItem.id);
   }
@@ -80,7 +83,7 @@ export class SimpleAuthPlugin implements Plugin {
     try {
       return await fn();
     } catch (e) {
-      await DialogUtils.progressBar?.end();
+      await DialogUtils.progressBar?.end(false);
 
       if (!(e instanceof Error || e instanceof SystemError || e instanceof UserError)) {
         e = new Error(e.toString());

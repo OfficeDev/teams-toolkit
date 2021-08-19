@@ -2,24 +2,29 @@
 // Licensed under the MIT license.
 import {
   FolderQuestion,
-  Inputs,
   OptionItem,
   Platform,
   SingleSelectQuestion,
   TextInputQuestion,
+  FuncQuestion,
+  Inputs,
 } from "@microsoft/teamsfx-api";
 import * as jsonschema from "jsonschema";
 import * as path from "path";
 import * as fs from "fs-extra";
+import { environmentManager } from "./environment";
 
 export enum CoreQuestionNames {
   AppName = "app-name",
-  Foler = "folder",
+  DefaultAppNameFunc = "default-app-name-func",
+  Folder = "folder",
   Solution = "solution",
   CreateFromScratch = "scratch",
   Samples = "samples",
   Stage = "stage",
   SubStage = "substage",
+  TargetEnvName = "targetEnvName",
+  NewTargetEnvName = "newTargetEnvName",
 }
 
 export const ProjectNamePattern = "^[a-zA-Z][\\da-zA-Z]+$";
@@ -30,7 +35,7 @@ export const QuestionAppName: TextInputQuestion = {
   title: "Application name",
   validation: {
     validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
-      const folder = previousInputs![CoreQuestionNames.Foler] as string;
+      const folder = previousInputs![CoreQuestionNames.Folder] as string;
       if (!folder) return undefined;
       const schema = {
         pattern: ProjectNamePattern,
@@ -49,10 +54,74 @@ export const QuestionAppName: TextInputQuestion = {
   placeholder: "Application name",
 };
 
+export const QuestionV1AppName: TextInputQuestion = {
+  type: "text",
+  name: CoreQuestionNames.AppName,
+  title: "Application name",
+  validation: {
+    validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
+      const schema = {
+        pattern: ProjectNamePattern,
+      };
+      const appName = input as string;
+      const validateResult = jsonschema.validate(appName, schema);
+      if (validateResult.errors && validateResult.errors.length > 0) {
+        return "Application name must start with a letter and can only contain letters and digits.";
+      }
+      return undefined;
+    },
+  },
+  placeholder: "Application name",
+};
+
+export const DefaultAppNameFunc: FuncQuestion = {
+  type: "func",
+  name: CoreQuestionNames.DefaultAppNameFunc,
+  func: (inputs: Inputs) => {
+    const appName = path.basename(inputs.projectPath ?? "");
+    const schema = {
+      pattern: ProjectNamePattern,
+    };
+    const validateResult = jsonschema.validate(appName, schema);
+    if (validateResult.errors && validateResult.errors.length > 0) {
+      return undefined;
+    }
+
+    return appName;
+  },
+};
+
 export const QuestionRootFolder: FolderQuestion = {
   type: "folder",
-  name: CoreQuestionNames.Foler,
-  title: "Workspace folder"
+  name: CoreQuestionNames.Folder,
+  title: "Workspace folder",
+};
+
+export const QuestionSelectTargetEnvironment: SingleSelectQuestion = {
+  type: "singleSelect",
+  name: CoreQuestionNames.TargetEnvName,
+  title: "Select an environment",
+  staticOptions: [],
+  skipSingleOption: true,
+  forgetLastValue: true,
+};
+
+export const QuestionNewTargetEnvironmentName: TextInputQuestion = {
+  type: "text",
+  name: CoreQuestionNames.NewTargetEnvName,
+  title: "New environment name",
+  validation: {
+    validFunc: async (input: string): Promise<string | undefined> => {
+      const targetEnvName = input as string;
+      const match = targetEnvName.match(environmentManager.envNameRegex);
+      if (!match) {
+        return "Environment name can only contain letters, digits, _ and -.";
+      }
+
+      return undefined;
+    },
+  },
+  placeholder: "New environment name",
 };
 
 export const QuestionSelectSolution: SingleSelectQuestion = {
@@ -92,7 +161,10 @@ export function getCreateNewOrFromSampleQuestion(platform: Platform): SingleSele
     type: "singleSelect",
     name: CoreQuestionNames.CreateFromScratch,
     title: "Teams Toolkit: Create a new Teams app",
-    staticOptions: (platform === Platform.VSCode)? [ScratchOptionYesVSC, ScratchOptionNoVSC]:[ScratchOptionYes, ScratchOptionNo],
+    staticOptions:
+      platform === Platform.VSCode
+        ? [ScratchOptionYesVSC, ScratchOptionNoVSC]
+        : [ScratchOptionYes, ScratchOptionNo],
     default: ScratchOptionYes.id,
     placeholder: "Select an option",
     skipSingleOption: true,

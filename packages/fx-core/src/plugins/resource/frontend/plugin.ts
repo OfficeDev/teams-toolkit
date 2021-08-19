@@ -19,6 +19,8 @@ import {
   StorageAccountAlreadyTakenError,
   runWithErrorCatchAndWrap,
   RegisterResourceProviderError,
+  InvalidAuthPluginConfigError,
+  InvalidAadPluginConfigError,
 } from "./resources/errors";
 import {
   ArmOutput,
@@ -51,10 +53,12 @@ import {
 } from "./utils/progress-helper";
 import { TemplateInfo } from "./resources/templateInfo";
 import { AzureClientFactory, AzureLib } from "./utils/azure-client";
-import { getArmOutput, getTemplatesFolder, isArmSupportEnabled } from "../../..";
+import { getArmOutput } from "../utils4v2";
+import { getTemplatesFolder, isArmSupportEnabled } from "../../..";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import * as fs from "fs-extra";
 import { ConstantString } from "../../../common/constants";
+import { EnvironmentUtils } from "./utils/environment-utils";
 
 export class FrontendPluginImpl {
   private setConfigIfNotExists(ctx: PluginContext, key: string, value: unknown): void {
@@ -88,7 +92,7 @@ export class FrontendPluginImpl {
         )
     );
 
-    await ProgressHelper.endScaffoldProgress();
+    await ProgressHelper.endScaffoldProgress(true);
     Logger.info(Messages.EndScaffold(PluginInfo.DisplayName));
     return ok(undefined);
   }
@@ -156,7 +160,7 @@ export class FrontendPluginImpl {
     config.domain = new URL(config.endpoint).hostname;
     config.syncToPluginContext(ctx);
 
-    await ProgressHelper.endProvisionProgress();
+    await ProgressHelper.endProvisionProgress(true);
     Logger.info(Messages.EndProvision(PluginInfo.DisplayName));
     return ok(undefined);
   }
@@ -169,7 +173,7 @@ export class FrontendPluginImpl {
     const functionPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.FunctionPluginName);
     if (functionPlugin) {
       functionEnv = {
-        defaultName: functionPlugin.get(DependentPluginInfo.FunctionDefaultName) as string,
+        defaultName: ctx.projectSettings?.defaultFunctionName as string,
         endpoint: functionPlugin.get(DependentPluginInfo.FunctionEndpoint) as string,
       };
     }
@@ -229,6 +233,45 @@ export class FrontendPluginImpl {
     const progressHandler = await ProgressHelper.createPreDeployProgressHandler(ctx);
 
     const config = await FrontendConfig.fromPluginContext(ctx);
+
+    let functionEnv: FunctionEnvironment | undefined;
+    let aadEnv: AADEnvironment | undefined;
+    let runtimeEnv: RuntimeEnvironment | undefined;
+
+    const functionPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.FunctionPluginName);
+    if (functionPlugin) {
+      functionEnv = {
+        defaultName: ctx.projectSettings?.defaultFunctionName as string,
+        endpoint: functionPlugin.get(DependentPluginInfo.FunctionEndpoint) as string,
+      };
+    }
+
+    const authPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.RuntimePluginName);
+    if (authPlugin) {
+      runtimeEnv = {
+        endpoint: authPlugin.get(DependentPluginInfo.RuntimeEndpoint) as string,
+        startLoginPageUrl: DependentPluginInfo.StartLoginPageURL,
+      };
+    } else {
+      throw new InvalidAuthPluginConfigError();
+    }
+
+    const aadPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.AADPluginName);
+    if (aadPlugin) {
+      aadEnv = {
+        clientId: aadPlugin.get(DependentPluginInfo.ClientID) as string,
+      };
+    } else {
+      throw new InvalidAadPluginConfigError();
+    }
+
+    const envFilePath = path.join(
+      ctx.root,
+      FrontendPathInfo.WorkingDir,
+      FrontendPathInfo.TabEnvironmentFilePath
+    );
+    await EnvironmentUtils.updateEnvironment(envFilePath, runtimeEnv, aadEnv, functionEnv);
+
     const client = new AzureStorageClient(config);
 
     await progressHandler?.next(PreDeploySteps.CheckStorage);
@@ -257,7 +300,7 @@ export class FrontendPluginImpl {
       throw new StaticWebsiteDisabledError();
     }
 
-    ProgressHelper.endPreDeployProgress();
+    ProgressHelper.endPreDeployProgress(true);
     Logger.info(Messages.EndPreDeploy(PluginInfo.DisplayName));
     return ok(undefined);
   }
@@ -274,7 +317,7 @@ export class FrontendPluginImpl {
     await FrontendDeployment.doFrontendBuild(componentPath);
     await FrontendDeployment.doFrontendDeployment(client, componentPath);
 
-    await ProgressHelper.endDeployProgress();
+    await ProgressHelper.endDeployProgress(true);
     Logger.info(Messages.EndDeploy(PluginInfo.DisplayName));
     return ok(undefined);
   }

@@ -2,7 +2,7 @@
   "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit (Preview)",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "2.3.1",
+  "version": "2.4.1",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -62,11 +62,10 @@
     "onCommand:fx-extension.pre-debug-check",
     "workspaceContains:**/.fx/*",
     "onView:teamsfx",
-    "onView:teamsfx-getting-started",
     "onView:teamsfx-accounts",
-    "onView:teamsfx-project",
-    "onView:teamsfx-teams-dev-center",
-    "onView:teamsfx-feedback"
+    "onView:teamsfx-development",
+    "onView:teamsfx-deployment",
+    "onView:teamsfx-help-and-feedback"
   ],
   "contributes": {
     "viewsContainers": {
@@ -81,44 +80,20 @@
     "views": {
       "teamsfx": [
         {
-          "id": "teamsfx-getting-started",
-          "name": "Getting Started",
-          "when": "!isNewTreeView"
-        },
-        {
           "id": "teamsfx-accounts",
           "name": "Accounts"
         },
         {
-          "id": "teamsfx-project",
-          "name": "Project",
-          "when": "!isNewTreeView"
-        },
-        {
-          "id": "teamsfx-teams-dev-center",
-          "name": "Developer Portal",
-          "when": "!isNewTreeView"
-        },
-        {
-          "id": "teamsfx-feedback",
-          "name": "Feedback",
-          "visibility": "collapsed",
-          "when": "!isNewTreeView"
-        },
-        {
           "id": "teamsfx-development",
-          "name": "Development",
-          "when": "isNewTreeView"
+          "name": "Development"
         },
         {
           "id": "teamsfx-deployment",
-          "name": "Deployment",
-          "when": "isNewTreeView"
+          "name": "Deployment"
         },
         {
           "id": "teamsfx-help-and-feedback",
-          "name": "Help and feedback",
-          "when": "isNewTreeView"
+          "name": "Help and feedback"
         }
       ]
     },
@@ -190,6 +165,10 @@
         },
         {
           "command": "fx-extension.selectAndDebug",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.cicdGuide",
           "when": "false"
         }
       ]
@@ -304,6 +283,11 @@
         "command": "fx-extension.selectAndDebug",
         "title": "Select and Start Debuging Teams App",
         "icon": "$(run)"
+      },
+      {
+        "command": "fx-extension.cicdGuide",
+        "title": "CI/CD guide",
+        "icon": "$(sync)"
       }
     ],
     "taskDefinitions": [
@@ -496,6 +480,7 @@
     "copy-test-files": "copyfiles -u 1 test/**/*.ps1 test/**/*.sh out/test/",
     "compile": "tsc -p ./ && npm run copy-files",
     "build": "rimraf out && npm run compile",
+    "build-failpoint": "rimraf out && npx ttsc -p ./",
     "watch": "webpack --watch --devtool nosources-source-map --info-verbosity verbose --config ./webpack.config.js",
     "package": "rimraf out && webpack --mode production --config ./webpack.config.js",
     "test-compile": "tsc -p ./",
@@ -578,8 +563,8 @@
     "terser-webpack-plugin": "^4.2.3",
     "tmp": "^0.2.1",
     "ts-loader": "^8.0.3",
-    "ttypescript": "^1.5.12",
     "ts-node": "^9.1.1",
+    "ttypescript": "^1.5.12",
     "typescript": "^4.2.4",
     "url-loader": "^4.1.1",
     "uuid": "^8.3.2",
@@ -592,8 +577,8 @@
     "@azure/identity": "^1.2.1",
     "@azure/ms-rest-nodeauth": "^3.0.7",
     "@azure/msal-node": "^1.0.0-beta.5",
-    "@microsoft/teamsfx-api": "^0.4.0",
-    "@microsoft/teamsfx-core": "^0.4.1",
+    "@microsoft/teamsfx-api": "^0.5.0",
+    "@microsoft/teamsfx-core": "^0.5.0",
     "async-mutex": "^0.3.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",

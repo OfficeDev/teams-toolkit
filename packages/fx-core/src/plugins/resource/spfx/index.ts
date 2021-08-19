@@ -2,27 +2,23 @@
 // Licensed under the MIT license.
 
 import {
+  AzureSolutionSettings,
+  err,
+  FxError,
+  ok,
+  Plugin,
   PluginContext,
   QTreeNode,
-  Plugin,
-  FxError,
-  Stage,
-  err,
   Result,
-  ok,
-  TeamsAppManifest,
-  AzureSolutionSettings,
+  Stage,
 } from "@microsoft/teamsfx-api";
-import * as fs from "fs-extra";
-import * as path from "path";
-import { SPFxPluginImpl } from "./plugin";
-import { TelemetryEvent } from "./utils/constants";
-import { telemetryHelper } from "./utils/telemetry-helper";
-import { ProgressHelper } from "./utils/progress-helper";
-import { getTemplatesFolder } from "../../..";
-import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { Service } from "typedi";
 import { HostTypeOptionSPFx } from "../../solution/fx-solution/question";
+import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+import { SPFxPluginImpl } from "./plugin";
+import { TelemetryEvent } from "./utils/constants";
+import { ProgressHelper } from "./utils/progress-helper";
+import { telemetryHelper } from "./utils/telemetry-helper";
 
 export enum SPFXQuestionNames {
   framework_type = "spfx-framework-type",
@@ -116,7 +112,7 @@ export class SpfxPlugin implements Plugin {
       telemetryHelper.sendSuccessEvent(ctx, stage);
       return result;
     } catch (error) {
-      await ProgressHelper.endAllHandlers();
+      await ProgressHelper.endAllHandlers(false);
       telemetryHelper.sendErrorEvent(ctx, stage, error);
       return err(error);
     }

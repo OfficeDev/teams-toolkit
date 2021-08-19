@@ -29,7 +29,7 @@ import { TelemetryUtils } from "./utils/telemetryUtils";
 @Service(ResourcePlugins.SqlPlugin)
 export class SqlPlugin implements Plugin {
   name = "fx-resource-azure-sql";
-  displayName = "Azure SQL Datebase";
+  displayName = "Azure SQL Database";
   activate(solutionSettings: AzureSolutionSettings): boolean {
     const azureResources = solutionSettings.azureResources || [];
     const cap = solutionSettings.capabilities || [];
@@ -80,7 +80,7 @@ export class SqlPlugin implements Plugin {
     try {
       return await fn();
     } catch (e) {
-      await DialogUtils.progressBar?.end();
+      await DialogUtils.progressBar?.end(false);
 
       if (!(e instanceof Error || e instanceof SystemError || e instanceof UserError)) {
         e = new Error(e.toString());

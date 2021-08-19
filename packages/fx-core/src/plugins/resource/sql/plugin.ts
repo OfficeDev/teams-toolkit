@@ -215,7 +215,7 @@ export class SqlPluginImpl {
 
     TelemetryUtils.sendEvent(Telemetry.stage.provision, true);
     ctx.logProvider?.info(Message.endProvision);
-    await DialogUtils.progressBar?.end();
+    await DialogUtils.progressBar?.end(true);
     return ok(undefined);
   }
 
@@ -298,7 +298,7 @@ export class SqlPluginImpl {
         : Telemetry.valueNo,
     });
     ctx.logProvider?.info(Message.endPostProvision);
-    await DialogUtils.progressBar?.end();
+    await DialogUtils.progressBar?.end(true);
     return ok(undefined);
   }
 }

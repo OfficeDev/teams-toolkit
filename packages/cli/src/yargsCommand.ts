@@ -15,6 +15,7 @@ import { CliTelemetryReporter } from "./commonlib/telemetry";
 import { readFileSync } from "fs";
 import path from "path";
 import { Correlator } from "@microsoft/teamsfx-core";
+import Progress from "./console/progress";
 
 export abstract class YargsCommand {
   /**
@@ -78,6 +79,7 @@ export abstract class YargsCommand {
         throw result.error;
       }
     } catch (e) {
+      Progress.end(false);
       const FxError: UserError | SystemError = "source" in e ? e : UnknownError(e);
       CLILogProvider.necessaryLog(
         LogLevel.Error,
@@ -105,7 +107,7 @@ export abstract class YargsCommand {
       await CliTelemetryInstance.flush();
       exit(-1, FxError);
     }
-
+    Progress.end(true);
     await CliTelemetryInstance.flush();
   }
 }

@@ -16,6 +16,18 @@ export const RootFolderNode = new QTreeNode({
   default: "./",
 });
 
+export const EnvNode = new QTreeNode({
+  type: "text",
+  name: "env",
+  title: "Select or create an environment for the project",
+});
+
+export const EnvNodeNoCreate = new QTreeNode({
+  type: "text",
+  name: "env",
+  title: "Select an existing environment for the project",
+});
+
 export const SubscriptionNode = new QTreeNode({
   type: "text",
   name: "subscription",
@@ -78,3 +90,7 @@ export const sqlPasswordQustionName = "sql-password";
 export const sqlPasswordConfirmQuestionName = "sql-confirm-password";
 
 export const deployPluginNodeName = "deploy-plugin";
+
+export class FeatureFlags {
+  static readonly RemoteCollaboration = "TEAMSFX_REMOTE_COL";
+}

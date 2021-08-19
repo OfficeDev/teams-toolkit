@@ -12,12 +12,8 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import { getTemplatesFolder } from "../../..";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
-import {
-  generateBicepFiles,
-  getArmOutput,
-  isArmSupportEnabled,
-  isMultiEnvEnabled,
-} from "../../../common";
+import { getArmOutput } from "../utils4v2";
+import { generateBicepFiles, isArmSupportEnabled, isMultiEnvEnabled } from "../../../common";
 import { LocalSettingsAuthKeys } from "../../../common/localSettingsConstants";
 
 export class SimpleAuthPluginImpl {
@@ -88,7 +84,7 @@ export class SimpleAuthPluginImpl {
 
     ctx.config.set(Constants.SimpleAuthPlugin.configKeys.endpoint, webApp.endpoint);
 
-    await DialogUtils.progressBar?.end();
+    await DialogUtils.progressBar?.end(true);
 
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndProvision, {
       [Telemetry.skuName]: webApp.skuName,
@@ -127,7 +123,7 @@ export class SimpleAuthPluginImpl {
       await this.webAppClient.configWebApp(configs);
     }
 
-    await DialogUtils.progressBar?.end();
+    await DialogUtils.progressBar?.end(true);
 
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndPostProvision);
     return ResultFactory.Success();

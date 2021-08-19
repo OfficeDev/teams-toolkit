@@ -133,7 +133,7 @@ describe("Get AppDefinition and Update", () => {
       },
     };
     sandbox
-      .stub(AppStudioPluginImpl.prototype, "getConfigAndAppDefinition" as any)
+      .stub(AppStudioPluginImpl.prototype, "getAppDefinitionAndManifest" as any)
       .returns(
         err(
           AppStudioResultFactory.SystemError(
@@ -351,7 +351,7 @@ describe("Get AppDefinition and Update", () => {
     };
 
     sandbox
-      .stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any)
+      .stub(AppStudioPluginImpl.prototype, "getAppDefinitionAndManifest" as any)
       .returns(
         err(
           AppStudioResultFactory.SystemError(
@@ -480,7 +480,7 @@ describe("Get AppDefinition and Update", () => {
           aadId: uuid.v4(),
           displayName: "displayName",
           userPrincipalName: "principalName",
-          isOwner: true,
+          isAdministrator: true,
         },
       ],
     };
@@ -543,7 +543,7 @@ describe("Get AppDefinition and Update", () => {
           aadId: uuid.v4(),
           displayName: "displayName",
           userPrincipalName: "principalName",
-          isOwner: true,
+          isAdministrator: true,
         },
       ],
       outlineIcon: "outline.png",
@@ -637,7 +637,7 @@ describe("Get AppDefinition and Update", () => {
           aadId: uuid.v4(),
           displayName: "displayName",
           userPrincipalName: "principalName",
-          isOwner: true,
+          isAdministrator: true,
         },
       ],
     };
@@ -700,7 +700,7 @@ describe("Get AppDefinition and Update", () => {
           aadId: uuid.v4(),
           displayName: "displayName",
           userPrincipalName: "principalName",
-          isOwner: true,
+          isAdministrator: true,
         },
       ],
       outlineIcon: "outline.png",

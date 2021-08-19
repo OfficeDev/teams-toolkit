@@ -24,9 +24,10 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/extTelemetryEvents";
+import { getAppStudioEndpoint } from "@microsoft/teamsfx-core";
 
 const accountName = "appStudio";
-const scopes = ["https://dev.teams.microsoft.com/AppDefinitions.ReadWrite"];
+const scopes = [`${getAppStudioEndpoint()}/AppDefinitions.ReadWrite`];
 const SERVER_PORT = 0;
 
 const cachePlugin = new CryptoCachePlugin(accountName);

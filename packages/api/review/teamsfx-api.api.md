@@ -21,7 +21,7 @@ export interface AppStudioTokenProvider {
 }
 
 // @public (undocumented)
-export function assembleError(e: Error, source?: string): FxError;
+export function assembleError(e: any, source?: string): FxError;
 
 // @public
 export interface AzureAccountProvider {
@@ -47,11 +47,14 @@ export interface AzureSolutionSettings extends SolutionSettings {
     capabilities: string[];
     // (undocumented)
     hostType: string;
+    // (undocumented)
+    migrateFromV1?: boolean;
 }
 
 // @public
 export interface BaseQuestion {
     default?: unknown;
+    forgetLastValue?: boolean;
     name: string;
     step?: number;
     title?: string;
@@ -127,6 +130,8 @@ export interface Context {
     // (undocumented)
     logProvider?: LogProvider;
     // (undocumented)
+    permissionRequestProvider?: PermissionRequestProvider;
+    // (undocumented)
     projectSettings?: ProjectSettings;
     // (undocumented)
     root: string;
@@ -145,8 +150,6 @@ interface Context_2 {
     // (undocumented)
     cryptoProvider: CryptoProvider;
     // (undocumented)
-    envMeta: EnvMeta;
-    // (undocumented)
     logProvider: LogProvider;
     // (undocumented)
     projectSetting: ProjectSettings;
@@ -161,6 +164,8 @@ export interface Core {
     // (undocumented)
     buildArtifacts: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
     // (undocumented)
+    checkPermission: (systemInputs: Inputs) => Promise<Result<any, FxError>>;
+    // (undocumented)
     createEnv: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
     // (undocumented)
     createProject: (systemInputs: Inputs) => Promise<Result<string, FxError>>;
@@ -174,8 +179,13 @@ export interface Core {
     getQuestions: (task: Stage, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
     getQuestionsForUserTask?: (router: FunctionRouter, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
+    grantPermission: (systemInputs: Inputs) => Promise<Result<any, FxError>>;
+    // (undocumented)
+    listCollaborator: (systemInputs: Inputs) => Promise<Result<any, FxError>>;
     // (undocumented)
     localDebug: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
+    // (undocumented)
+    migrateV1Project: (systemInputs: Inputs) => Promise<Result<string, FxError>>;
     // (undocumented)
     provisionResources: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
     // (undocumented)
@@ -192,8 +202,11 @@ export interface CryptoProvider {
     encrypt(plaintext: string): Result<string, FxError>;
 }
 
+// @public (undocumented)
+type DeploymentInputs = Inputs & SolutionInputs;
+
 // @public
-export type DymanicOptions = LocalFunc<StaticOptions>;
+export type DynamicOptions = LocalFunc<StaticOptions>;
 
 // @public (undocumented)
 export const DynamicPlatforms: Platform[];
@@ -223,7 +236,7 @@ export interface FolderQuestion extends UserInputQuestion {
 // @public (undocumented)
 export interface Func extends FunctionRouter {
     // (undocumented)
-    params?: unknown;
+    params?: any;
 }
 
 // @public
@@ -480,7 +493,7 @@ export interface IParameter {
 
 // @public (undocumented)
 export interface IProgressHandler {
-    end: () => Promise<void>;
+    end: (success: boolean) => Promise<void>;
     next: (detail?: string) => Promise<void>;
     start: (detail?: string) => Promise<void>;
 }
@@ -613,7 +626,7 @@ export interface MultiSelectConfig extends UIConfig<string[]> {
 // @public
 export interface MultiSelectQuestion extends UserInputQuestion {
     default?: string[] | LocalFunc<string[] | undefined>;
-    dynamicOptions?: DymanicOptions;
+    dynamicOptions?: DynamicOptions;
     onDidChangeSelection?: (currentSelectedIds: Set<string>, previousSelectedIds: Set<string>) => Promise<Set<string>>;
     returnObject?: boolean;
     skipSingleOption?: boolean;
@@ -627,6 +640,12 @@ export interface MultiSelectQuestion extends UserInputQuestion {
 // @public (undocumented)
 export type MultiSelectResult = InputResult<StaticOptions>;
 
+// @public (undocumented)
+export function newSystemError(source: string, name: string, message: string, issueLink?: string): SystemError;
+
+// @public (undocumented)
+export function newUserError(source: string, name: string, message: string, helpLink?: string): UserError;
+
 // @public
 export interface OptionItem {
     cliName?: string;
@@ -635,6 +654,12 @@ export interface OptionItem {
     detail?: string;
     id: string;
     label: string;
+}
+
+// @public
+export interface PermissionRequestProvider {
+    checkPermissionRequest(): Promise<Result<undefined, FxError>>;
+    getPermissionRequest(): Promise<Result<string, FxError>>;
 }
 
 // @public
@@ -654,12 +679,17 @@ interface Plugin_2 {
     activate(solutionSettings: AzureSolutionSettings): boolean;
     callFunc?: (func: Func, ctx: PluginContext) => Promise<Result<any, FxError>>;
     // (undocumented)
+    checkPermission?: (ctx: PluginContext) => Promise<Result<any, FxError>>;
+    // (undocumented)
     deploy?: (ctx: PluginContext) => Promise<Result<any, FxError>>;
     // (undocumented)
     displayName: string;
     executeUserTask?: (func: Func, ctx: PluginContext) => Promise<Result<any, FxError>>;
     getQuestions?: (stage: Stage, ctx: PluginContext) => Promise<Result<QTreeNode | undefined, FxError>>;
     getQuestionsForUserTask?: (func: Func, ctx: PluginContext) => Promise<Result<QTreeNode | undefined, FxError>>;
+    grantPermission?: (ctx: PluginContext) => Promise<Result<any, FxError>>;
+    // (undocumented)
+    listCollaborator?: (ctx: PluginContext) => Promise<Result<any, FxError>>;
     localDebug?: (ctx: PluginContext) => Promise<Result<any, FxError>>;
     // (undocumented)
     name: string;
@@ -716,6 +746,8 @@ export interface ProjectConfig {
     // (undocumented)
     config?: SolutionConfig;
     // (undocumented)
+    localSettings?: LocalSettings;
+    // (undocumented)
     settings?: ProjectSettings;
 }
 
@@ -723,6 +755,8 @@ export interface ProjectConfig {
 export interface ProjectSettings {
     // (undocumented)
     appName: string;
+    // (undocumented)
+    defaultFunctionName?: string;
     // (undocumented)
     programmingLanguage?: string;
     // (undocumented)
@@ -742,6 +776,9 @@ export interface ProjectStates {
     // (undocumented)
     solution: Record<string, ConfigValue>;
 }
+
+// @public (undocumented)
+type ProvisionInputs = Inputs & SolutionInputs;
 
 // @public (undocumented)
 type ProvisionOutput = {
@@ -794,9 +831,9 @@ export type ResourceConfigs = ResourceTemplates;
 // @public
 interface ResourcePlugin {
     activate(solutionSettings: AzureSolutionSettings): boolean;
-    configureLocalResource?: (ctx: Context_2, localProvisionOutput: Readonly<LocalSetting>, localProvisionOutputOfOtherPlugins: Readonly<LocalSettings_2>, tokenProvider: TokenProvider) => Promise<Result<LocalSettings_2, FxError>>;
-    configureResource?: (ctx: Context_2, provisionOutput: Readonly<ProvisionOutput>, provisionOutputOfOtherPlugins: Readonly<Record<PluginName, ProvisionOutput>>, tokenProvider: TokenProvider) => Promise<Result<ProvisionOutput, FxError>>;
-    deploy?: (ctx: Context_2, provisionOutput: Readonly<ProvisionOutput>, tokenProvider: AzureAccountProvider) => Promise<Result<{
+    configureLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: LocalSettings_2, tokenProvider: TokenProvider) => Promise<Result<LocalSettings_2, FxError>>;
+    configureResource?: (ctx: Context_2, inputs: Readonly<ProvisionInputs>, provisionOutput: Readonly<ProvisionOutput>, provisionOutputOfOtherPlugins: Readonly<Record<PluginName, ProvisionOutput>>, tokenProvider: TokenProvider) => Promise<Result<ProvisionOutput, FxError>>;
+    deploy?: (ctx: Context_2, inputs: Readonly<DeploymentInputs>, provisionOutput: Readonly<ProvisionOutput>, tokenProvider: AzureAccountProvider) => Promise<Result<{
         output: Record<string, string>;
     }, FxError>>;
     // (undocumented)
@@ -809,9 +846,9 @@ interface ResourcePlugin {
     // (undocumented)
     name: string;
     package?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
-    provisionLocalResource?: (ctx: Context_2, tokenProvider: TokenProvider) => Promise<Result<LocalSetting, FxError>>;
-    provisionResource?: (ctx: Context_2, provisionTemplate: Json, tokenProvider: TokenProvider) => Promise<Result<ProvisionOutput, FxError>>;
-    publishApplication?: (ctx: Context_2, tokenProvider: AppStudioTokenProvider, inputs: Inputs) => Promise<Result<Void, FxError>>;
+    provisionLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: LocalSettings_2, tokenProvider: TokenProvider) => Promise<Result<LocalSettings_2, FxError>>;
+    provisionResource?: (ctx: Context_2, inputs: Readonly<ProvisionInputs>, provisionTemplate: Json, tokenProvider: TokenProvider) => Promise<Result<ProvisionOutput, FxError>>;
+    publishApplication?: (ctx: Context_2, inputs: Inputs, provisionOutputs: Readonly<Record<PluginName, ProvisionOutput>>, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
     scaffoldSourceCode?: (ctx: Context_2, inputs: Inputs) => Promise<Result<{
         output: Record<string, string>;
     }, FxError>>;
@@ -884,7 +921,7 @@ export interface SingleSelectConfig extends UIConfig<string> {
 // @public
 export interface SingleSelectQuestion extends UserInputQuestion {
     default?: string | LocalFunc<string | undefined>;
-    dynamicOptions?: DymanicOptions;
+    dynamicOptions?: DynamicOptions;
     returnObject?: boolean;
     skipSingleOption?: boolean;
     staticOptions: StaticOptions;
@@ -899,6 +936,8 @@ export type SingleSelectResult = InputResult<string | OptionItem>;
 // @public (undocumented)
 export interface Solution {
     // (undocumented)
+    checkPermission?: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
+    // (undocumented)
     create: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
     // (undocumented)
     deploy: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
@@ -908,8 +947,13 @@ export interface Solution {
     getQuestions: (task: Stage, ctx: SolutionContext) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
     getQuestionsForUserTask?: (func: Func, ctx: SolutionContext) => Promise<Result<QTreeNode | undefined, FxError>>;
+    grantPermission?: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
+    // (undocumented)
+    listCollaborator?: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
     // (undocumented)
     localDebug: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
+    // (undocumented)
+    migrate?: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
     // (undocumented)
     name: string;
     // (undocumented)
@@ -930,8 +974,17 @@ export interface SolutionContext extends Context {
 }
 
 // @public (undocumented)
+type SolutionInputs = {
+    resourceNameSuffix: string;
+    resourceGroupName: string;
+    location: string;
+    teamsAppTenantId: string;
+    remoteTeamsAppId?: string;
+};
+
+// @public (undocumented)
 interface SolutionPlugin {
-    deploy?: (ctx: Context_2, provisionOutput: Readonly<Record<PluginName, ProvisionOutput>>, tokenProvider: AzureAccountProvider) => Promise<Result<Record<PluginName, {
+    deploy?: (ctx: Context_2, inputs: Inputs, provisionOutput: Readonly<Record<PluginName, ProvisionOutput>>, tokenProvider: AzureAccountProvider) => Promise<Result<Record<PluginName, {
         output: Record<string, string>;
     }>, FxError>>;
     // (undocumented)
@@ -943,7 +996,7 @@ interface SolutionPlugin {
     name: string;
     package?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
     provisionLocalResource?: (ctx: Context_2, tokenProvider: TokenProvider) => Promise<Result<LocalSettings_2, FxError>>;
-    provisionResources: (ctx: Context_2, provisionTemplates: Record<PluginName, Json>, tokenProvider: TokenProvider) => Promise<Result<Record<PluginName, ProvisionOutput>, FxError>>;
+    provisionResources: (ctx: Context_2, inputs: Inputs, provisionTemplates: Record<PluginName, Json>, tokenProvider: TokenProvider) => Promise<Result<Record<PluginName, ProvisionOutput>, FxError>>;
     publishApplication?: (ctx: Context_2, tokenProvider: AppStudioTokenProvider, inputs: Inputs) => Promise<Result<Void, FxError>>;
     scaffoldSourceCode?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Record<PluginName, {
         output: Record<string, string>;
@@ -963,6 +1016,8 @@ export enum Stage {
     // (undocumented)
     build = "build",
     // (undocumented)
+    checkPermission = "checkPermission",
+    // (undocumented)
     create = "create",
     // (undocumented)
     createEnv = "createEnv",
@@ -970,6 +1025,12 @@ export enum Stage {
     debug = "debug",
     // (undocumented)
     deploy = "deploy",
+    // (undocumented)
+    grantPermission = "grantPermission",
+    // (undocumented)
+    listCollaborator = "listCollaborator",
+    // (undocumented)
+    migrateV1 = "migrateV1",
     // (undocumented)
     package = "package",
     // (undocumented)
@@ -1030,14 +1091,11 @@ export type SubscriptionInfo = {
 };
 
 // @public
-export class SystemError implements FxError {
+export class SystemError extends Error implements FxError {
     constructor(name: string, message: string, source: string, stack?: string, issueLink?: string, innerError?: any);
     innerError?: any;
     issueLink?: string;
-    message: string;
-    name: string;
     source: string;
-    stack?: string;
     timestamp: Date;
 }
 
@@ -1128,7 +1186,11 @@ export type TokenProvider = {
 // @public (undocumented)
 export interface Tools {
     // (undocumented)
+    cryptoProvider?: CryptoProvider;
+    // (undocumented)
     logProvider: LogProvider;
+    // (undocumented)
+    permissionRequest?: PermissionRequestProvider;
     // (undocumented)
     telemetryReporter?: TelemetryReporter;
     // (undocumented)
@@ -1205,14 +1267,11 @@ export interface UIConfig<T> {
 export const UserCancelError: UserError;
 
 // @public
-export class UserError implements FxError {
+export class UserError extends Error implements FxError {
     constructor(name: string, message: string, source: string, stack?: string, helpLink?: string, innerError?: any);
     helpLink?: string;
     innerError?: any;
-    message: string;
-    name: string;
     source: string;
-    stack?: string;
     timestamp: Date;
 }
 
@@ -1257,7 +1316,10 @@ declare namespace v2 {
         PluginName,
         Context_2 as Context,
         LocalSettings_2 as LocalSettings,
-        LocalSetting
+        LocalSetting,
+        SolutionInputs,
+        ProvisionInputs,
+        DeploymentInputs
     }
 }
 export { v2 }

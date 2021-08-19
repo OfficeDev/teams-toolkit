@@ -46,12 +46,14 @@ describe("Scaffold", () => {
     sandbox.stub(fs, "writeFile").callsFake((path: number | PathLike, data: any) => {
       fileContent.set(path.toString(), data);
     });
-    // mocker.stub(fs, "writeFile").resolves();
+
     sandbox.stub(fs, "writeJSON").callsFake((file: string, obj: any) => {
       fileContent.set(file, JSON.stringify(obj));
     });
     // Uses stub<any, any> to circumvent type check. Beacuse sinon fails to mock my target overload of readJson.
-    sandbox.stub<any, any>(fs, "copy").resolves();
+    sandbox.stub<any, any>(fs, "copy").callsFake((originPath: string, filePath: string) => {
+      fileContent.set(filePath, JSON.stringify(filePath));
+    });
   });
 
   afterEach(() => {
@@ -73,6 +75,7 @@ describe("Scaffold", () => {
 
     const result = await plugin.scaffold(ctx);
     chai.expect(result.isOk()).equals(true);
+
     const manifest: TeamsAppManifest = JSON.parse(
       fileContent.get(`${ctx.root}/${AppPackageFolderName}/${REMOTE_MANIFEST}`)
     );
@@ -87,6 +90,9 @@ describe("Scaffold", () => {
         "ComposeExtensions should be empty, because only tab is chosen"
       )
       .to.deep.equal([]);
+
+    chai.expect(fileContent.has(`${ctx.root}/${AppPackageFolderName}/color.png`)).to.be.true;
+    chai.expect(fileContent.has(`${ctx.root}/${AppPackageFolderName}/outline.png`)).to.be.true;
   });
 
   it("should generate manifest for bot", async () => {
@@ -122,6 +128,9 @@ describe("Scaffold", () => {
         "ComposeExtensions should be empty, because only bot is chosen"
       )
       .to.deep.equal([]);
+
+    chai.expect(fileContent.has(`${ctx.root}/${AppPackageFolderName}/color.png`)).to.be.true;
+    chai.expect(fileContent.has(`${ctx.root}/${AppPackageFolderName}/outline.png`)).to.be.true;
   });
 
   it("should generate manifest for messaging extension", async () => {
@@ -154,6 +163,9 @@ describe("Scaffold", () => {
       .expect(manifest.bots, "Bots should be empty, because only msgext is chosen")
       .to.deep.equal([]);
     chai.expect(manifest.composeExtensions).to.deep.equal(COMPOSE_EXTENSIONS_TPL);
+
+    chai.expect(fileContent.has(`${ctx.root}/${AppPackageFolderName}/color.png`)).to.be.true;
+    chai.expect(fileContent.has(`${ctx.root}/${AppPackageFolderName}/outline.png`)).to.be.true;
   });
 
   it("should generate manifest for tab, bot and messaging extension", async () => {
@@ -178,6 +190,9 @@ describe("Scaffold", () => {
     chai.expect(manifest.configurableTabs).to.deep.equal(CONFIGURABLE_TABS_TPL);
     chai.expect(manifest.bots).to.deep.equal(BOTS_TPL);
     chai.expect(manifest.composeExtensions).to.deep.equal(COMPOSE_EXTENSIONS_TPL);
+
+    chai.expect(fileContent.has(`${ctx.root}/${AppPackageFolderName}/color.png`)).to.be.true;
+    chai.expect(fileContent.has(`${ctx.root}/${AppPackageFolderName}/outline.png`)).to.be.true;
   });
 
   it("shouldn't generate manifest for SPFx project", async () => {
@@ -198,5 +213,8 @@ describe("Scaffold", () => {
     chai.expect(result.isOk()).equals(true);
     const manifest = fileContent.get(`${ctx.root}/${AppPackageFolderName}/${REMOTE_MANIFEST}`);
     chai.expect(manifest).to.be.not.undefined;
+
+    chai.expect(fileContent.has(`${ctx.root}/${AppPackageFolderName}/color.png`)).to.be.true;
+    chai.expect(fileContent.has(`${ctx.root}/${AppPackageFolderName}/outline.png`)).to.be.true;
   });
 });

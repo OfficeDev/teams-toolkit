@@ -25,29 +25,18 @@ import {
 import * as path from "path";
 import * as fs from "fs-extra";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
-import { validateSettings } from "../../common";
+import { validateSettings } from "../tools";
 import * as uuid from "uuid";
 import { LocalCrypto } from "../crypto";
-import {
-  GLOBAL_CONFIG,
-  PluginNames,
-  PROGRAMMING_LANGUAGE,
-} from "../../plugins/solution/fx-solution/constants";
+import { PluginNames } from "../../plugins/solution/fx-solution/constants";
+import { PermissionRequestFileProvider } from "../permissionRequest";
 
 export const ProjectSettingsLoaderMW: Middleware = async (
   ctx: CoreHookContext,
   next: NextFunction
 ) => {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-  const method = ctx.method;
-  let isCreate = false;
-  if (method === "getQuestions") {
-    const task = ctx.arguments[0] as Stage;
-    isCreate = task === Stage.create;
-  }
-  const ignoreLoad =
-    inputs.ignoreTypeCheck === true || StaticPlatforms.includes(inputs.platform) || isCreate;
-  if (!ignoreLoad) {
+  if (!shouldIgnored(ctx)) {
     if (!inputs.projectPath) {
       ctx.result = err(NoProjectOpenedError());
       return;
@@ -126,6 +115,22 @@ export async function newSolutionContext(tools: Tools, inputs: Inputs): Promise<
     ...tools.tokenProvider,
     answers: inputs,
     cryptoProvider: new LocalCrypto(projectSettings.projectId),
+    permissionRequestProvider: inputs.projectPath
+      ? new PermissionRequestFileProvider(inputs.projectPath)
+      : undefined,
   };
   return solutionContext;
+}
+
+export function shouldIgnored(ctx: CoreHookContext): boolean {
+  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+  const method = ctx.method;
+
+  let isCreate = false;
+  if (method === "getQuestions") {
+    const task = ctx.arguments[0] as Stage;
+    isCreate = task === Stage.create;
+  }
+
+  return inputs.ignoreTypeCheck === true || StaticPlatforms.includes(inputs.platform) || isCreate;
 }

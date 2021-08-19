@@ -14,7 +14,6 @@ export enum TelemetryPropertyKey {
   updateExistingApp = "update",
   success = "success",
   appId = "appid",
-  buildOnly = "build",
 }
 
 enum TelemetryPropertyValue {

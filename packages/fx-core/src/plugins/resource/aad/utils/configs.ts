@@ -1,14 +1,19 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { PluginContext, ConfigValue } from "@microsoft/teamsfx-api";
+import { PluginContext, ConfigValue, Platform, Stage } from "@microsoft/teamsfx-api";
 import { Constants, Plugins, ConfigKeysOfOtherPlugin, ConfigKeys } from "../constants";
-import { ConfigErrorMessages as Errors, GetConfigError } from "../errors";
+import {
+  ConfigErrorMessages as Errors,
+  GetConfigError,
+  MissingPermissionsRequestProvider,
+} from "../errors";
 import { format, Formats } from "./format";
 import { Utils } from "./common";
 import { ResultFactory } from "../results";
 import { v4 as uuidv4 } from "uuid";
-import { getArmOutput, isArmSupportEnabled, isMultiEnvEnabled } from "../../../../common";
+import { isArmSupportEnabled, isMultiEnvEnabled } from "../../../../common";
+import { getArmOutput } from "../../utils4v2";
 import {
   LocalSettingsBotKeys,
   LocalSettingsFrontendKeys,
@@ -78,6 +83,22 @@ export class ConfigUtils {
       ctx.config.set(key, value);
     }
   }
+
+  public static async getPermissionRequest(ctx: PluginContext): Promise<string> {
+    if (ctx.permissionRequestProvider === undefined) {
+      throw ResultFactory.SystemError(
+        MissingPermissionsRequestProvider.name,
+        MissingPermissionsRequestProvider.message()
+      );
+    }
+
+    const permissionRequestResult = await ctx.permissionRequestProvider.getPermissionRequest();
+    if (permissionRequestResult.isOk()) {
+      return permissionRequestResult.value;
+    } else {
+      throw permissionRequestResult.error;
+    }
+  }
 }
 
 export class ProvisionConfig {
@@ -105,19 +126,7 @@ export class ProvisionConfig {
       );
     }
 
-    const permissionRequest: ConfigValue = ctx.configOfOtherPlugins
-      .get(Plugins.solution)
-      ?.get(ConfigKeysOfOtherPlugin.solutionPermissionRequest);
-    if (permissionRequest) {
-      this.permissionRequest = permissionRequest as string;
-    } else {
-      throw ResultFactory.SystemError(
-        GetConfigError.name,
-        GetConfigError.message(
-          Errors.GetConfigError(ConfigKeysOfOtherPlugin.solutionPermissionRequest, Plugins.solution)
-        )
-      );
-    }
+    this.permissionRequest = await ConfigUtils.getPermissionRequest(ctx);
 
     const objectId: ConfigValue = ConfigUtils.getAadConfig(
       ctx,
@@ -154,13 +163,16 @@ export class ProvisionConfig {
 
     ConfigUtils.checkAndSaveConfig(
       ctx,
-      ConfigKeys.teamsMobileDesktopAppId,
-      Constants.teamsMobileDesktopAppId
+      ConfigKeys.oauthHost,
+      Constants.oauthAuthorityPrefix,
+      isMultiEnvEnabled() && this.isLocalDebug
     );
-
-    ConfigUtils.checkAndSaveConfig(ctx, ConfigKeys.oauthHost, Constants.oauthAuthorityPrefix);
-    ConfigUtils.checkAndSaveConfig(ctx, ConfigKeys.teamsWebAppId, Constants.teamsWebAppId);
-    ConfigUtils.checkAndSaveConfig(ctx, ConfigKeys.oauthAuthority, oauthAuthority);
+    ConfigUtils.checkAndSaveConfig(
+      ctx,
+      ConfigKeys.oauthAuthority,
+      oauthAuthority,
+      isMultiEnvEnabled() && this.isLocalDebug
+    );
   }
 
   private static getOauthAuthority(tenantId: string): string {
@@ -180,25 +192,27 @@ export class SetApplicationInContextConfig {
   }
 
   public restoreConfigFromContext(ctx: PluginContext): void {
-    let frontendDomain: ConfigValue = ctx.config.get(ConfigKeys.domain);
+    let frontendDomain: ConfigValue;
+    if (this.isLocalDebug) {
+      frontendDomain = ConfigUtils.getLocalDebugConfigOfOtherPlugins(
+        ctx,
+        ConfigKeysOfOtherPlugin.localDebugTabDomain
+      );
+    } else {
+      frontendDomain = ctx.config.get(ConfigKeys.domain);
+      if (!frontendDomain) {
+        if (isArmSupportEnabled()) {
+          frontendDomain = getArmOutput(ctx, ConfigKeysOfOtherPlugin.frontendHostingDomainArm);
+        } else {
+          frontendDomain = ctx.configOfOtherPlugins
+            .get(Plugins.frontendHosting)
+            ?.get(ConfigKeysOfOtherPlugin.frontendHostingDomain);
+        }
+      }
+    }
+
     if (frontendDomain) {
       this.frontendDomain = format(frontendDomain as string, Formats.Domain);
-    } else {
-      if (isArmSupportEnabled()) {
-        frontendDomain = getArmOutput(ctx, ConfigKeysOfOtherPlugin.frontendHostingDomainArm);
-      } else {
-        frontendDomain = this.isLocalDebug
-          ? ConfigUtils.getLocalDebugConfigOfOtherPlugins(
-              ctx,
-              ConfigKeysOfOtherPlugin.localDebugTabDomain
-            )
-          : ctx.configOfOtherPlugins
-              .get(Plugins.frontendHosting)
-              ?.get(ConfigKeysOfOtherPlugin.frontendHostingDomain);
-      }
-      if (frontendDomain) {
-        this.frontendDomain = format(frontendDomain as string, Formats.Domain);
-      }
     }
 
     const botId: ConfigValue = this.isLocalDebug
@@ -245,25 +259,27 @@ export class PostProvisionConfig {
   }
 
   public async restoreConfigFromContext(ctx: PluginContext): Promise<void> {
-    let frontendEndpoint: ConfigValue = ctx.config.get(ConfigKeys.endpoint);
+    let frontendEndpoint: ConfigValue;
+    if (this.isLocalDebug) {
+      frontendEndpoint = ConfigUtils.getLocalDebugConfigOfOtherPlugins(
+        ctx,
+        ConfigKeysOfOtherPlugin.localDebugTabEndpoint
+      );
+    } else {
+      frontendEndpoint = ctx.config.get(ConfigKeys.endpoint);
+      if (!frontendEndpoint) {
+        if (isArmSupportEnabled()) {
+          frontendEndpoint = getArmOutput(ctx, ConfigKeysOfOtherPlugin.frontendHostingEndpointArm);
+        } else {
+          frontendEndpoint = ctx.configOfOtherPlugins
+            .get(Plugins.frontendHosting)
+            ?.get(ConfigKeysOfOtherPlugin.frontendHostingEndpoint);
+        }
+      }
+    }
+
     if (frontendEndpoint) {
       this.frontendEndpoint = format(frontendEndpoint as string, Formats.Endpoint);
-    } else {
-      if (isArmSupportEnabled()) {
-        frontendEndpoint = getArmOutput(ctx, ConfigKeysOfOtherPlugin.frontendHostingEndpointArm);
-      } else {
-        frontendEndpoint = this.isLocalDebug
-          ? ConfigUtils.getLocalDebugConfigOfOtherPlugins(
-              ctx,
-              ConfigKeysOfOtherPlugin.localDebugTabEndpoint
-            )
-          : ctx.configOfOtherPlugins
-              .get(Plugins.frontendHosting)
-              ?.get(ConfigKeysOfOtherPlugin.frontendHostingEndpoint);
-      }
-      if (frontendEndpoint) {
-        this.frontendEndpoint = format(frontendEndpoint as string, Formats.Endpoint);
-      }
     }
 
     const botEndpoint: ConfigValue = this.isLocalDebug
@@ -334,18 +350,6 @@ export class UpdatePermissionConfig {
       );
     }
 
-    const permissionRequest: ConfigValue = ctx.configOfOtherPlugins
-      .get(Plugins.solution)
-      ?.get(ConfigKeysOfOtherPlugin.solutionPermissionRequest);
-    if (permissionRequest) {
-      this.permissionRequest = permissionRequest as string;
-    } else {
-      throw ResultFactory.SystemError(
-        GetConfigError.name,
-        GetConfigError.message(
-          Errors.GetConfigError(ConfigKeysOfOtherPlugin.solutionPermissionRequest, Plugins.solution)
-        )
-      );
-    }
+    this.permissionRequest = await ConfigUtils.getPermissionRequest(ctx);
   }
 }

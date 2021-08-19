@@ -28,6 +28,7 @@ import {
 
 import { ConfigNotFoundError, InvalidEnvFile, ReadFileError } from "./error";
 import AzureAccountManager from "./commonlib/azureLogin";
+import { FeatureFlags } from "./constants";
 
 type Json = { [_: string]: any };
 
@@ -37,7 +38,7 @@ export function getChoicesFromQTNodeQuestion(data: Question): string[] | undefin
     if (typeof option[0] === "string") {
       return option as string[];
     } else {
-      return (option as OptionItem[]).map((op) => (op.cliName ? op.cliName : op.id));
+      return (option as OptionItem[]).map((op) => op.cliName || toLocaleLowerCase(op.id));
     }
   } else {
     return undefined;
@@ -323,11 +324,13 @@ export function getProjectId(rootfolder: string | undefined): any {
   return undefined;
 }
 
-export function getSystemInputs(projectPath?: string): Inputs {
+export function getSystemInputs(projectPath?: string, env?: string, previewType?: string): Inputs {
   const systemInputs: Inputs = {
     platform: Platform.CLI,
     projectPath: projectPath,
     correlationId: uuid.v4(),
+    env: env,
+    previewType: previewType,
   };
   return systemInputs;
 }
@@ -385,4 +388,18 @@ export function getVersion(): string {
   const pkgPath = path.resolve(__dirname, "..", "package.json");
   const pkgContent = fs.readJsonSync(pkgPath);
   return pkgContent.version;
+}
+
+// Determine whether feature flag is enabled based on environment variable setting
+export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = false): boolean {
+  const flag = process.env[featureFlagName];
+  if (flag === undefined) {
+    return defaultValue; // allows consumer to set a default value when environment variable not set
+  } else {
+    return flag === "1" || flag.toLowerCase() === "true"; // can enable feature flag by set environment variable value to "1" or "true"
+  }
+}
+
+export function isRemoteCollaborationEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlags.RemoteCollaboration, false);
 }

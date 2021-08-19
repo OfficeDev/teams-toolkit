@@ -7,6 +7,7 @@ import { TelemetryReporter } from "@microsoft/teamsfx-api";
 import { Correlator } from "@microsoft/teamsfx-core";
 import { TelemetryProperty } from "../telemetry/cliTelemetryEvents";
 import { getProjectId } from "../utils";
+import { CliConfigOptions, CliConfigRunFrom, UserSettings } from "../userSetttings";
 
 /**
  *  CLI telemetry reporter used by fx-core.
@@ -46,6 +47,11 @@ export class CliTelemetryReporter implements TelemetryReporter {
     const projectId = getProjectId(this.rootFolder);
     properties[TelemetryProperty.ProjectId] = projectId ? projectId : "";
     properties[TelemetryProperty.CorrelationId] = Correlator.getId();
+
+    const result = UserSettings.getRunFromSetting();
+    const runFrom = result.isOk() ? result.value : CliConfigRunFrom.Other;
+    properties[CliConfigOptions.RunFrom] = runFrom;
+
     this.reporter.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
   }
 
@@ -61,6 +67,11 @@ export class CliTelemetryReporter implements TelemetryReporter {
     const projectId = getProjectId(this.rootFolder);
     properties[TelemetryProperty.ProjectId] = projectId ? projectId : "";
     properties[TelemetryProperty.CorrelationId] = Correlator.getId();
+
+    const result = UserSettings.getRunFromSetting();
+    const runFrom = result.isOk() ? result.value : CliConfigRunFrom.Other;
+    properties[CliConfigOptions.RunFrom] = runFrom;
+
     this.reporter.sendTelemetryEvent(eventName, properties, measurements);
   }
 
@@ -76,6 +87,11 @@ export class CliTelemetryReporter implements TelemetryReporter {
     const projectId = getProjectId(this.rootFolder);
     properties[TelemetryProperty.ProjectId] = projectId ? projectId : "";
     properties[TelemetryProperty.CorrelationId] = Correlator.getId();
+
+    const result = UserSettings.getRunFromSetting();
+    const runFrom = result.isOk() ? result.value : CliConfigRunFrom.Other;
+    properties[CliConfigOptions.RunFrom] = runFrom;
+
     this.reporter.sendTelemetryException(error, properties, measurements);
   }
 

@@ -278,7 +278,7 @@ export class AppStudioPlugin implements Plugin {
   async executeUserTask(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {
     if (func.method === "validateManifest") {
       return await this.validateManifest(ctx);
-    } else if (func.method === "buildTeamsPackage") {
+    } else if (func.method === "buildPackage") {
       return await this.buildTeamsPackage(ctx);
     } else if (func.method === "getAppDefinitionAndUpdate") {
       if (func.params && func.params.type && func.params.manifest) {

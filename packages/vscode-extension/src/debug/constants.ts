@@ -56,8 +56,6 @@ export const botPorts: [number, string[]][] = [
   [9239, hosts],
 ];
 
-export const npmInstallFailedHintMessage =
-  "Task '%s' failed. Please refer to the '%s' terminal window for detailed error information or click 'Report Issue' button to report the issue.";
 export const issueLink = "https://github.com/OfficeDev/TeamsFx/issues/new?";
 export const issueTemplate = `
 **Describe the bug**
@@ -86,3 +84,9 @@ Add any other context about the problem here.
 export const errorDetail = `
 **Error detail**
 `;
+
+export enum SideloadingHintStateKeys {
+  DoNotShowAgain = "sideloadingHint/doNotShowAgain",
+}
+export const localDebugFAQUrl =
+  "https://github.com/OfficeDev/TeamsFx/blob/dev/docs/fx-core/localdebug-help.md#what-to-do-if-teams-shows-app-not-found-when-the-teams-web-client-is-opened";

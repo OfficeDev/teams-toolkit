@@ -53,7 +53,8 @@ import {
 } from "./utils/progress-helper";
 import { TemplateInfo } from "./resources/templateInfo";
 import { AzureClientFactory, AzureLib } from "./utils/azure-client";
-import { getArmOutput, getTemplatesFolder, isArmSupportEnabled } from "../../..";
+import { getArmOutput } from "../utils4v2";
+import { getTemplatesFolder, isArmSupportEnabled } from "../../..";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import * as fs from "fs-extra";
 import { ConstantString } from "../../../common/constants";

@@ -22,9 +22,10 @@ import { HostTypeOptionAzure } from "../../solution/fx-solution/question";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { Links } from "../bot/constants";
+import { ArmResourcePlugin } from "../../../common/armInterface";
 
 @Service(ResourcePlugins.AadPlugin)
-export class AadAppForTeamsPlugin implements Plugin {
+export class AadAppForTeamsPlugin implements Plugin, ArmResourcePlugin {
   name = "fx-resource-aad-app-for-teams";
   displayName = "AAD";
   activate(solutionSettings: AzureSolutionSettings): boolean {

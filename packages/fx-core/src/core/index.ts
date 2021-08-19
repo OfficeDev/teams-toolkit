@@ -51,7 +51,6 @@ import {
 } from "./question";
 import * as jsonschema from "jsonschema";
 import AdmZip from "adm-zip";
-export * from "./error";
 import { HookContext, hooks } from "@feathersjs/hooks";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { QuestionModelMW } from "./middleware/questionModel";
@@ -459,7 +458,8 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(false, false),
+    EnvInfoLoaderMW(isMultiEnvEnabled(), false),
+    LocalSettingsLoaderMW,
     ContextInjecterMW,
   ])
   async getProjectConfig(
@@ -690,3 +690,6 @@ export class FxCore implements Core {
     throw TaskNotSupportError(Stage.switchEnv);
   }
 }
+
+export * from "./error";
+export * from "./tools";

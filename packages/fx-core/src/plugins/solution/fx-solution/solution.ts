@@ -56,6 +56,8 @@ import {
   SolutionTelemetrySuccess,
   PluginNames,
   ARM_TEMPLATE_OUTPUT,
+  USER_INFO,
+  REMOTE_TENANT_ID,
 } from "./constants";
 
 import {
@@ -102,7 +104,11 @@ import { deployArmTemplates, generateArmTemplate } from "./arm";
 import { LocalSettingsProvider } from "../../../common/localSettingsProvider";
 import { PluginDisplayName } from "../../../common/constants";
 import { LocalSettingsTeamsAppKeys } from "../../../common/localSettingsConstants";
+import { scaffoldReadmeAndLocalSettings } from "./v2/scaffolding";
 import { PermissionRequestFileProvider } from "../../../core/permissionRequest";
+import { IUserList } from "../../resource/appstudio/interfaces/IAppDefinition";
+import axios from "axios";
+import { ResourcePermission } from "../../../common/permissionInterface";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -271,20 +277,6 @@ export class TeamsAppSolution implements Solution {
     //Reload plugins according to user answers
     await this.reloadPlugins(solutionSettings);
 
-    const templatesFolder = getTemplatesFolder();
-    const defaultColorPath = path.join(templatesFolder, "plugins", "solution", "defaultIcon.png");
-    const defaultOutlinePath = path.join(
-      templatesFolder,
-      "plugins",
-      "solution",
-      "defaultOutline.png"
-    );
-
-    await fs.copy(defaultColorPath, `${ctx.root}/${AppPackageFolderName}/color.png`);
-    await fs.copy(defaultOutlinePath, `${ctx.root}/${AppPackageFolderName}/outline.png`);
-    // await fs.copy(defaultColorPath, `${ctx.root}/.${ConfigFolderName}/color.png`);
-    // await fs.copy(defaultOutlinePath, `${ctx.root}/.${ConfigFolderName}/outline.png`);
-
     if (this.isAzureProject(ctx)) {
       await fs.writeJSON(`${ctx.root}/permissions.json`, DEFAULT_PERMISSION_REQUEST, { spaces: 4 });
       ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.Create, {
@@ -367,37 +359,9 @@ export class TeamsAppSolution implements Solution {
     if (res.isOk()) {
       const capabilities = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
         .capabilities;
-      const hasBot = capabilities?.includes(BotOptionItem.id);
-      const hasMsgExt = capabilities?.includes(MessageExtensionItem.id);
-      const hasTab = capabilities?.includes(TabOptionItem.id);
-      if (hasTab && (hasBot || hasMsgExt)) {
-        const readme = path.join(getTemplatesFolder(), "plugins", "solution", "README.md");
-        if (await fs.pathExists(readme)) {
-          await fs.copy(readme, `${ctx.root}/README.md`);
-        }
-      }
-
       const azureResources = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
-        ?.azureResources;
-      const hasBackend = azureResources?.includes(AzureResourceFunction.id);
-
-      if (isMultiEnvEnabled()) {
-        const localSettingsProvider = new LocalSettingsProvider(ctx.root);
-        const localSettings = await localSettingsProvider.load();
-
-        if (localSettings !== undefined) {
-          // Add local settings for the new added capability/resource
-          await localSettingsProvider.save(
-            localSettingsProvider.incrementalInit(localSettings!, hasBackend, hasBot)
-          );
-        } else {
-          // Initialize a local settings on scaffolding
-          await localSettingsProvider.save(localSettingsProvider.init(hasTab, hasBackend, hasBot));
-        }
-
-        // remove local debug config from env info
-        ctx.config.delete(PluginNames.LDEBUG);
-      }
+        .azureResources;
+      await scaffoldReadmeAndLocalSettings(capabilities, azureResources, ctx.root);
     }
 
     if (isArmSupportEnabled()) {
@@ -1177,7 +1141,83 @@ export class TeamsAppSolution implements Solution {
 
   @hooks([ErrorHandlerMW])
   async checkPermission(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    return ok(Void);
+    const canCheckPermission = this.checkWhetherSolutionIsIdle();
+    if (canCheckPermission.isErr()) {
+      return canCheckPermission;
+    }
+
+    const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
+    if (!provisioned) {
+      return err(
+        returnUserError(
+          new Error(
+            "Failed to check permission because the resources have not been provisioned yet. Make sure you do the provision first."
+          ),
+          "Solution",
+          SolutionError.CannotCheckPermissionBeforeProvision
+        )
+      );
+    }
+
+    try {
+      const userInfo = await this.getUserInfo(ctx);
+
+      if (!userInfo) {
+        return err(
+          returnSystemError(
+            new Error("Failed to retrieve current user info from graph token"),
+            "Solution",
+            SolutionError.FailedToRetrieveUserInfo
+          )
+        );
+      }
+
+      const aadAppTenantId = ctx.config?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
+      if (!aadAppTenantId || userInfo.tenantId != (aadAppTenantId as string)) {
+        return err(
+          returnUserError(
+            new Error(
+              "Tenant id of your account and the provisioned Azure AD app does not match. Please check whether you logined with wrong account."
+            ),
+            "Solution",
+            SolutionError.M365AccountNotMatch
+          )
+        );
+      }
+
+      ctx.config.get(GLOBAL_CONFIG)?.set(USER_INFO, JSON.stringify(userInfo));
+
+      const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, [
+        this.AadPlugin,
+        this.AppStudioPlugin,
+      ]);
+
+      const checkPermissionWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(
+        ([plugin, context]) => {
+          return [plugin?.checkPermission?.bind(plugin), context, plugin.name];
+        }
+      );
+
+      const results = await executeConcurrently("", checkPermissionWithCtx);
+
+      const permissions: ResourcePermission[] = [];
+      for (const result of results) {
+        if (result.isErr()) {
+          continue;
+        }
+        if (result && result.value) {
+          for (const res of result.value) {
+            permissions.push(res as ResourcePermission);
+          }
+        }
+      }
+
+      // TODO: show cli messages
+      return ok(permissions);
+    } finally {
+      ctx.config.get(GLOBAL_CONFIG)?.delete(USER_INFO);
+      this.runningState = SolutionRunningState.Idle;
+    }
   }
 
   @hooks([ErrorHandlerMW])
@@ -1997,5 +2037,51 @@ export class TeamsAppSolution implements Solution {
       tenantId: maybeTenantId.value,
       applicationIdUri: configResult.value.applicationIdUri,
     });
+  }
+
+  private async getUserInfo(ctx: SolutionContext, email?: string): Promise<IUserList | undefined> {
+    const currentUser = await ctx.graphTokenProvider?.getJsonObject();
+
+    if (!currentUser) {
+      return undefined;
+    }
+
+    const tenantId = currentUser["tid"] as string;
+    let aadId = currentUser["oid"] as string;
+    let userPrincipalName = currentUser["unique_name"] as string;
+    let displayName = currentUser["name"] as string;
+    const isAdministrator = true;
+
+    if (email) {
+      const graphToken = await ctx.graphTokenProvider?.getAccessToken();
+      const instance = axios.create({
+        baseURL: "https://graph.microsoft.com/v1.0",
+      });
+      instance.defaults.headers.common["Authorization"] = `Bearer ${graphToken}`;
+      const res = await instance.get(`/users?$filter=startsWith(mail,'${email}')`);
+      if (!res || !res.data || !res.data.value) {
+        return undefined;
+      }
+
+      const collaborator = res.data.value.find(
+        (user: any) => (user["userPrincipalName"] as string) === email
+      );
+
+      if (!collaborator) {
+        return undefined;
+      }
+
+      aadId = collaborator["id"] as string;
+      userPrincipalName = collaborator["userPrincipalName"] as string;
+      displayName = collaborator["displayName"] as string;
+    }
+
+    return {
+      tenantId,
+      aadId,
+      userPrincipalName,
+      displayName,
+      isAdministrator,
+    };
   }
 }

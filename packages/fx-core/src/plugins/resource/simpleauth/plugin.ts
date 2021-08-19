@@ -18,6 +18,7 @@ import {
   isArmSupportEnabled,
   isMultiEnvEnabled,
 } from "../../../common";
+import { getArmOutput } from "../utils4v2";
 import { LocalSettingsAuthKeys } from "../../../common/localSettingsConstants";
 
 export class SimpleAuthPluginImpl {

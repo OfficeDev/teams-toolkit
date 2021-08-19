@@ -44,6 +44,11 @@ export const ARM_TEMPLATE_OUTPUT = "armTemplateOutput";
  */
 export const RESOURCE_GROUP_NAME = "resourceGroupName";
 
+/**
+ * Config key whose value is the user info of collaborator
+ */
+export const USER_INFO = "userInfo";
+
 export const DEFAULT_PERMISSION_REQUEST = [
   {
     resource: "Microsoft Graph",
@@ -113,6 +118,10 @@ export enum SolutionError {
   FailedToCompileBicepFiles = "FailedToCompileBicepFiles",
   FailedToGetAzureCredential = "FailedToGetAzureCredential",
   FailedToDeployArmTemplatesToAzure = "FailedToDeployArmTemplatesToAzure",
+  CannotCheckPermissionBeforeProvision = "CannotCheckPermissionBeforeProvision",
+  FailedToRetrieveUserInfo = "FailedToRetrieveUserInfo",
+  M365AccountNotMatch = "M365AccountNotMatch",
+  FeatureNotSupported = "FeatureNotSupported",
 }
 
 export const LOCAL_DEBUG_TAB_ENDPOINT = "localTabEndpoint";
@@ -129,6 +138,7 @@ export const LOCAL_APPLICATION_ID_URIS = "local_applicationIdUris";
 export const REMOTE_APPLICATION_ID_URIS = "applicationIdUris";
 export const LOCAL_CLIENT_SECRET = "local_clientSecret";
 export const REMOTE_CLIENT_SECRET = "clientSecret";
+export const REMOTE_TENANT_ID = "tenantId";
 // Teams App Id for local debug
 export const LOCAL_DEBUG_TEAMS_APP_ID = "localDebugTeamsAppId";
 // Teams App Id for remote

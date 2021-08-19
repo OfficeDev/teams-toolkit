@@ -103,6 +103,24 @@ export class TeamsBot implements Plugin {
     );
   }
 
+  public async generateArmTemplates(context: PluginContext): Promise<FxResult> {
+    Logger.setLogger(context.logProvider);
+
+    const result = await this.runWithExceptionCatching(
+      context,
+      () => this.teamsBotImpl.generateArmTemplates(context),
+      true,
+      LifecycleFuncNames.GENERATE_ARM_TEMPLATES
+    );
+
+    await ProgressBarFactory.closeProgressBar(
+      result.isOk(),
+      ProgressBarConstants.GENERATE_ARM_TEMPLATES_TITLE
+    );
+
+    return result;
+  }
+
   public async preDeploy(context: PluginContext): Promise<FxResult> {
     Logger.setLogger(context.logProvider);
 

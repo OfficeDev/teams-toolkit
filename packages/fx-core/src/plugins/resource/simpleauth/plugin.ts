@@ -15,6 +15,7 @@ import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import { getArmOutput } from "../utils4v2";
 import { generateBicepFiles, isArmSupportEnabled, isMultiEnvEnabled } from "../../../common";
 import { LocalSettingsAuthKeys } from "../../../common/localSettingsConstants";
+import { ConstantString } from "../../../common/constants";
 
 export class SimpleAuthPluginImpl {
   webAppClient!: WebAppClient;
@@ -179,17 +180,17 @@ export class SimpleAuthPluginImpl {
       },
       Orchestration: {
         ParameterTemplate: {
-          Content: await fs.readFile(parameterTemplateFilePath, "utf-8"),
+          Content: await fs.readFile(parameterTemplateFilePath, ConstantString.UTF8Encoding),
         },
         ModuleTemplate: {
-          Content: await fs.readFile(resourceTemplateFilePath, "utf-8"),
+          Content: await fs.readFile(resourceTemplateFilePath, ConstantString.UTF8Encoding),
           Outputs: {
             skuName: Constants.SimpleAuthBicepOutputSkuName,
             endpoint: Constants.SimpleAuthBicepOutputEndpoint,
           },
         },
         OutputTemplate: {
-          Content: await fs.readFile(outputTemplateFilePath, "utf-8"),
+          Content: await fs.readFile(outputTemplateFilePath, ConstantString.UTF8Encoding),
         },
       },
     };

@@ -62,6 +62,10 @@ export class Messages {
   public static readonly DeployingBot = "Deploying bot.";
   public static readonly SuccessfullyDeployedBot = "Successfully deployed bot.";
 
+  public static readonly GeneratingArmTemplatesBot = "Generating ARM templates of bot.";
+  public static readonly SuccessfullyGenerateArmTemplatesBot =
+    "Successfully generating ARM templates of bot.";
+
   public static readonly ProvisioningAzureBotChannelRegistration =
     "Provisioning azure bot channel registration.";
   public static readonly SuccessfullyProvisionedAzureBotChannelRegistration =

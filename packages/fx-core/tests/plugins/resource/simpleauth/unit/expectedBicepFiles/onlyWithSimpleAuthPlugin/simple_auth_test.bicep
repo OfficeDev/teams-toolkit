@@ -2,10 +2,10 @@ param sku string
 param simpleAuthServerFarmsName string
 param simpleAuthWebAppName string
 param m365TenantId string
-param aadClientId string
+param m365ClientId string
 @secure()
-param aadClientSecret string
-param applicationIdUri string
+param m365ClientSecret string
+param m365ApplicationIdUri string
 param oauthAuthorityHost string
 
 var aadMetadataAddress = uri(oauthAuthorityHost, '${m365TenantId}/v2.0/.well-known/openid-configuration')
@@ -47,9 +47,9 @@ resource simpleAuthWebAppSettings 'Microsoft.Web/sites/config@2018-02-01' = {
   properties: {
     AAD_METADATA_ADDRESS: aadMetadataAddress
     ALLOWED_APP_IDS: authorizedClientApplicationIds
-    IDENTIFIER_URI: applicationIdUri
-    CLIENT_ID: aadClientId
-    CLIENT_SECRET: aadClientSecret
+    IDENTIFIER_URI: m365ApplicationIdUri
+    CLIENT_ID: m365ClientId
+    CLIENT_SECRET: m365ClientSecret
     OAUTH_AUTHORITY: oauthAuthority
   }
 }

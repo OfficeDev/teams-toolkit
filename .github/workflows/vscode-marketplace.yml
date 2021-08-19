@@ -11,6 +11,7 @@ on:
 jobs:
   publish-to-vscode-marketplace:
     runs-on: ubuntu-latest
+    environment: product
 
     steps:
       - name: Setup node
@@ -27,5 +28,6 @@ jobs:
           wget --tries=5 --waitretry=5 ${{ github.event.inputs.URL }} 
 
       - name: release to VSCode marketplace
-        run: |
-          vsce publish --pat ${{ secrets.VSCE_PAT }} --packagePath *.vsix
+        run: vsce publish --pat $PAT --packagePath *.vsix
+        env:
+          PAT: ${{ secrets.VSCE_PAT }}

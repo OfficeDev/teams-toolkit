@@ -37,7 +37,3 @@ export interface ScaffoldArmTemplateResult extends Record<string, unknown> {
   Modules?: { [moduleFileName: string]: BicepModule };
   Orchestration: BicepOrchestration;
 }
-
-export interface BicepPluginsContext {
-  Plugins: string[];
-}

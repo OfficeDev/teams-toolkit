@@ -7,18 +7,14 @@ import chaiAsPromised from "chai-as-promised";
 import fs from "fs-extra";
 import * as path from "path";
 
-import { AzureSolutionSettings, PluginContext } from "@microsoft/teamsfx-api";
+import { AzureSolutionSettings } from "@microsoft/teamsfx-api";
 import { FunctionPlugin } from "../../../../../src";
 import { ConstantString, mockSolutionUpdateArmTemplates, ResourcePlugins } from "../../util";
-import {
-  DependentPluginInfo,
-  FunctionPluginInfo,
-} from "../../../../../src/plugins/resource/function/constants";
 import { MockContext } from "../helper";
 
 chai.use(chaiAsPromised);
 
-describe("FrontendGenerateArmTemplates", () => {
+describe("FunctionGenerateArmTemplates", () => {
   let functionPlugin: FunctionPlugin;
   let pluginContext: any;
 

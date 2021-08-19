@@ -182,15 +182,18 @@ export class QuestionValidationFunc {
 }
 
 export class FunctionBicep {
-  static readonly moduleTemplateFileName: string = "function.template.bicep";
-  static readonly storageAccountName = "functionProvision.outputs.storageAccountName";
-  static readonly appServicePlanName = "functionProvision.outputs.appServicePlanName";
-  static readonly functionEndpoint = "functionProvision.outputs.functionEndpoint";
+  static readonly storageAccountName: string = "functionProvision.outputs.storageAccountName";
+  static readonly appServicePlanName: string = "functionProvision.outputs.appServicePlanName";
+  static readonly functionEndpoint: string = "functionProvision.outputs.functionEndpoint";
 }
 
 export class FunctionArmOutput {
-  static readonly StorageName = "function_storageAccountName";
-  static readonly AppServicePlanName = "function_appServicePlanName";
-  static readonly Endpoint = "function_functionEndpoint";
-  static readonly AppName = "function_appName";
+  static readonly StorageName: string = "function_storageAccountName";
+  static readonly AppServicePlanName: string = "function_appServicePlanName";
+  static readonly Endpoint: string = "function_functionEndpoint";
+  static readonly AppName: string = "function_appName";
+}
+
+export class FunctionBicepFile {
+  static readonly moduleTemplateFileName: string = "function.template.bicep";
 }

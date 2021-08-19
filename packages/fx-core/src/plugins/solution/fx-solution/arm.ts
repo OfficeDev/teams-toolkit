@@ -11,11 +11,7 @@ import {
   FxError,
   returnSystemError,
 } from "@microsoft/teamsfx-api";
-import {
-  ScaffoldArmTemplateResult,
-  ArmResourcePlugin,
-  BicepPluginsContext,
-} from "../../../common/armInterface";
+import { ScaffoldArmTemplateResult, ArmResourcePlugin } from "../../../common/armInterface";
 import { getActivatedResourcePlugins } from "./ResourcePluginContainer";
 import { getPluginContext } from "./utils/util";
 import { format } from "util";
@@ -341,7 +337,7 @@ async function compileBicepToJson(
 }
 
 // Context used by handlebars to render the main.bicep file
-export class ArmTemplateRenderContext implements BicepPluginsContext {
+export class ArmTemplateRenderContext {
   public Plugins: string[];
   public PluginOutput: { [PluginName: string]: PluginOutputContext };
 

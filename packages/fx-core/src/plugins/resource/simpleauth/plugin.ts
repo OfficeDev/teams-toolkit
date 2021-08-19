@@ -11,13 +11,8 @@ import { WebAppClient } from "./webAppClient";
 import * as path from "path";
 import * as fs from "fs-extra";
 import { getTemplatesFolder } from "../../..";
-import { BicepPluginsContext, ScaffoldArmTemplateResult } from "../../../common/armInterface";
-import {
-  generateBicepFiles,
-  getArmOutput,
-  isArmSupportEnabled,
-  isMultiEnvEnabled,
-} from "../../../common";
+import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
+import { generateBicepFiles, isArmSupportEnabled, isMultiEnvEnabled } from "../../../common";
 import { getArmOutput } from "../utils4v2";
 import { LocalSettingsAuthKeys } from "../../../common/localSettingsConstants";
 
@@ -144,7 +139,7 @@ export class SimpleAuthPluginImpl {
       .activeResourcePlugins;
     const context = {
       Plugins: selectedPlugins,
-    } as BicepPluginsContext;
+    };
 
     const bicepTemplateDirectory = path.join(
       getTemplatesFolder(),

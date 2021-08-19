@@ -46,6 +46,7 @@ import {
   FunctionPluginPathInfo,
   QuestionValidationFunc,
   RegularExpr,
+  FunctionBicepFile,
 } from "./constants";
 import { ErrorMessages, InfoMessages } from "./resources/message";
 import {
@@ -77,10 +78,11 @@ import { funcPluginLogger } from "./utils/depsChecker/funcPluginLogger";
 import { FuncPluginTelemetry } from "./utils/depsChecker/funcPluginTelemetry";
 import { TelemetryHelper } from "./utils/telemetry-helper";
 import { generateBicepFiles, getTemplatesFolder } from "../../..";
-import { BicepPluginsContext, ScaffoldArmTemplateResult } from "../../../common/armInterface";
+import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import { Bicep, ConstantString } from "../../../common/constants";
-import { getArmOutput, isArmSupportEnabled } from "../../../common";
+import { isArmSupportEnabled } from "../../../common";
 import { functionNameQuestion } from "./question";
+import { getArmOutput } from "../utils4v2";
 
 type Site = WebSiteManagementModels.Site;
 type AppServicePlan = WebSiteManagementModels.AppServicePlan;
@@ -649,7 +651,7 @@ export class FunctionPluginImpl {
       .activeResourcePlugins;
     const context = {
       Plugins: selectedPlugins,
-    } as BicepPluginsContext;
+    };
 
     const bicepTemplateDirectory = path.join(
       getTemplatesFolder(),
@@ -661,7 +663,7 @@ export class FunctionPluginImpl {
 
     const moduleTemplateFilePath = path.join(
       bicepTemplateDirectory,
-      FunctionBicep.moduleTemplateFileName
+      FunctionBicepFile.moduleTemplateFileName
     );
     const moduleContentResult = await generateBicepFiles(moduleTemplateFilePath, context);
     if (moduleContentResult.isErr()) {

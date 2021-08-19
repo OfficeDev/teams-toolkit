@@ -30,7 +30,7 @@ export async function readJson(filePath: string): Promise<any> {
   const fileName = basename(filePath);
   fxError.message = `task '${currentStage}' failed because of ${fxError.name}(file:${fileName}):${fxError.message}, if your local file 'env.*.json' is not modified, please report to us by click 'Report Issue' button.`;
   const content = fs.readFileSync(filePath, { encoding: "utf-8" });
-  fxError.userData = `file: ${fileName}\n------------FILE START--------\ncontent:\n${content}\n------------FILE END----------`;
+  fxError.userData = `file: ${fileName}\n------------FILE START--------\n${content}\n------------FILE END----------`;
   sendTelemetryErrorEvent(Component.core, TelemetryEvent.ReadJson, fxError);
   throw fxError;
 }

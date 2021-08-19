@@ -178,7 +178,7 @@ class EnvironmentManager {
       const fxError: SystemError = res.error;
       const fileName = basename(userDataPath);
       fxError.message = `Project update failed because of ${fxError.name}(file:${fileName}):${fxError.message}, if your local file '*.userdata' is not modified, please report to us by click 'Report Issue' button.`;
-      fxError.userData = `file: ${fileName}\n------------FILE START--------\ncontent:\n${content}\n------------FILE END----------`;
+      fxError.userData = `file: ${fileName}\n------------FILE START--------\n${content}\n------------FILE END----------`;
       sendTelemetryErrorEvent(Component.core, TelemetryEvent.DecryptUserdata, fxError);
     }
     return res;

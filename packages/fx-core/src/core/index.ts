@@ -103,7 +103,7 @@ export interface CoreHookContext extends HookContext {
 
 export let Logger: LogProvider;
 export let telemetryReporter: TelemetryReporter | undefined;
-
+export let currentStage: Stage;
 export class FxCore implements Core {
   tools: Tools;
 
@@ -121,6 +121,7 @@ export class FxCore implements Core {
     EnvInfoWriterMW,
   ])
   async createProject(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
+    currentStage = Stage.create;
     const folder = inputs[QuestionRootFolder.name] as string;
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
     let projectPath: string;
@@ -210,6 +211,7 @@ export class FxCore implements Core {
     EnvInfoWriterMW,
   ])
   async migrateV1Project(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
+    currentStage = Stage.migrateV1;
     const globalStateDescription = "openReadme";
 
     const appName = (inputs[DefaultAppNameFunc.name] ?? inputs[QuestionV1AppName.name]) as string;
@@ -364,6 +366,7 @@ export class FxCore implements Core {
     EnvInfoWriterMW,
   ])
   async provisionResources(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+    currentStage = Stage.provision;
     return await ctx!.solution!.provision(ctx!.solutionContext!);
   }
 
@@ -379,6 +382,7 @@ export class FxCore implements Core {
     EnvInfoWriterMW,
   ])
   async deployArtifacts(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+    currentStage = Stage.deploy;
     return await ctx!.solution!.deploy(ctx!.solutionContext!);
   }
 
@@ -397,6 +401,7 @@ export class FxCore implements Core {
     LocalSettingsWriterMW,
   ])
   async localDebug(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+    currentStage = Stage.debug;
     upgradeProgrammingLanguage(
       ctx!.solutionContext!.config as SolutionConfig,
       ctx!.projectSettings!
@@ -421,6 +426,7 @@ export class FxCore implements Core {
     EnvInfoWriterMW,
   ])
   async publishApplication(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+    currentStage = Stage.publish;
     return await ctx!.solution!.publish(ctx!.solutionContext!);
   }
 
@@ -442,6 +448,7 @@ export class FxCore implements Core {
     inputs: Inputs,
     ctx?: CoreHookContext
   ): Promise<Result<unknown, FxError>> {
+    currentStage = Stage.userTask;
     if (ctx!.solutionContext === undefined)
       ctx!.solutionContext = await newSolutionContext(this.tools, inputs);
     const solution = ctx!.solution!;
@@ -554,6 +561,7 @@ export class FxCore implements Core {
     EnvInfoWriterMW,
   ])
   async grantPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    currentStage = Stage.grantPermission;
     return await ctx!.solution!.grantPermission!(ctx!.solutionContext!);
   }
 
@@ -569,6 +577,7 @@ export class FxCore implements Core {
     EnvInfoWriterMW,
   ])
   async checkPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    currentStage = Stage.checkPermission;
     return await ctx!.solution!.checkPermission!(ctx!.solutionContext!);
   }
 
@@ -584,6 +593,7 @@ export class FxCore implements Core {
     EnvInfoWriterMW,
   ])
   async listCollaborator(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    currentStage = Stage.listCollaborator;
     return await ctx!.solution!.listCollaborator!(ctx!.solutionContext!);
   }
 

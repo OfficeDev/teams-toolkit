@@ -5,7 +5,7 @@ import fs from "fs-extra";
 import { basename } from "path";
 import { promisify } from "util";
 import { assembleError, SystemError } from "../../../api/build";
-import { CoreSource } from "../core";
+import { CoreSource, currentStage } from "../core";
 import { Component, sendTelemetryErrorEvent, TelemetryEvent } from "./telemetry";
 
 const sleep = promisify(setTimeout);
@@ -28,7 +28,7 @@ export async function readJson(filePath: string): Promise<any> {
   fxError.source = CoreSource;
   fxError.name = "ReadJsonError";
   const fileName = basename(filePath);
-  fxError.message = `${fxError.name}(file:${fileName}):${fxError.message}`;
+  fxError.message = `task '${currentStage}' failed because of ${fxError.name}(file:${fileName}):${fxError.message}, if your local file 'env.*.json' is not modified, please report to us by click 'Report Issue' button.`;
   const content = fs.readFileSync(filePath, { encoding: "utf-8" });
   fxError.userData = `file: ${fileName}\n------------FILE START--------\ncontent:\n${content}\n------------FILE END----------`;
   sendTelemetryErrorEvent(Component.core, TelemetryEvent.ReadJson, fxError);

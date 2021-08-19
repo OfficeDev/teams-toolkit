@@ -11,18 +11,17 @@ export class EnvironmentUtils {
     await fs.ensureFile(envFile);
     const envBuffer = await fs.readFile(envFile);
 
-    // TODO: ut for the case
     const configs = dotenv.parse(envBuffer);
     const newConfigs = { ...configs, ...variables };
     if (JSON.stringify(newConfigs) === JSON.stringify(configs)) {
-      // Avoid updating dotenv file's modified time.
+      // Avoid updating dotenv file's modified time if nothing changes.
       // We decide whether to skip deployment by comparing the mtime of all project files and last deployment time.
       return;
     }
 
     let envs = "";
-    for (const key in configs) {
-      envs += `${key}=${configs[key]}\r\n`;
+    for (const key in newConfigs) {
+      envs += `${key}=${newConfigs[key]}\r\n`;
     }
     await fs.writeFile(envFile, envs);
   }

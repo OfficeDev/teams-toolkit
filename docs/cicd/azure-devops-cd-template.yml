@@ -56,15 +56,6 @@ jobs:
     #   inputs:
     #     commands: 'provision'
     #     subscription: '$(AZURE_SUBSCRIPTION_ID)'
-
-    # - task: Bash@3
-    #   name: Commit provision configs if necessary
-    #   inputs:
-    #     targetType: 'inline'
-    #     script: |
-    #       git add .fx/env.default.json
-    #       git commit -m 'chore: commit provision configs'
-    #       git push
     
     # - task: PublishBuildArtifacts@1
     #   name: Upload default.userdata as artifact

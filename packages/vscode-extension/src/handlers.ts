@@ -745,7 +745,9 @@ export async function showError(e: UserError | SystemError) {
         : e.issueLink;
     const param = `title=bug+report: ${errorCode}&body=${anonymizeFilePaths(
       e.message
-    )}\n\nstack:\n${anonymizeFilePaths(e.stack)}\n\n${sysError.userData ? sysError.userData : ""}`;
+    )}\n\nstack:\n${anonymizeFilePaths(e.stack)}\n\n${
+      sysError.userData ? anonymizeFilePaths(sysError.userData) : ""
+    }`;
     const issue = {
       title: StringResources.vsc.handlers.reportIssue,
       run: async (): Promise<void> => {

@@ -63,7 +63,7 @@ npx teamsfx build
 
 # Upload Teams App's Package as artifacts.
 # Choose what your workflow/pipeline platform provided to
-# upload .fx/appPackage.zip as artifacts.
+# upload appPackage/appPackage.zip as artifacts.
 
 # Publish Teams App.
 npx teamsfx publish

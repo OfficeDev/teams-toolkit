@@ -131,16 +131,11 @@ export namespace AppStudioClient {
         }
       }
     } catch (e) {
-      if (e instanceof Error) {
-        await logProvider?.warning(
-          `Cannot get the app definition with app ID ${teamsAppId}, due to ${e.name}: ${e.message}`
-        );
-      }
-      const err = new Error(
-        `Cannot get the app definition with app ID ${teamsAppId}, due to ${e.name}: ${e.message}`
-      );
-      if (e.response?.data?.status) {
-        err.name = e.response?.data?.status;
+      const errorMessage = `Cannot get the app definition with app ID ${teamsAppId}, due to ${e.name}: ${e.message}`;
+      await logProvider?.warning(errorMessage);
+      const err = new Error(errorMessage);
+      if (e.response?.status) {
+        err.name = e.response?.status;
       }
       throw err;
     }

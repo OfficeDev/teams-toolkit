@@ -34,12 +34,6 @@ import {
 } from "./constants";
 import { FrontendConfig } from "./configs";
 import { FrontendDeployment } from "./ops/deploy";
-import {
-  AADEnvironment,
-  FrontendProvision,
-  FunctionEnvironment,
-  RuntimeEnvironment,
-} from "./ops/provision";
 import { Logger } from "./utils/logger";
 import { Messages } from "./resources/messages";
 import { FrontendScaffold as Scaffold } from "./ops/scaffold";
@@ -57,7 +51,6 @@ import { getTemplatesFolder, isArmSupportEnabled } from "../../..";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import * as fs from "fs-extra";
 import { ConstantString } from "../../../common/constants";
-import { FunctionArmOutput } from "../function/constants";
 import { EnvironmentUtils } from "./utils/environment-utils";
 
 export class FrontendPluginImpl {
@@ -166,42 +159,6 @@ export class FrontendPluginImpl {
   }
 
   public async postProvision(ctx: PluginContext): Promise<TeamsFxResult> {
-    let functionEnv: FunctionEnvironment | undefined;
-    let runtimeEnv: RuntimeEnvironment | undefined;
-    let aadEnv: AADEnvironment | undefined;
-
-    const functionPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.FunctionPluginName);
-    if (functionPlugin) {
-      functionEnv = {
-        defaultName: ctx.projectSettings?.defaultFunctionName as string,
-        endpoint: this.getFunctionEndpoint(ctx),
-      };
-    }
-
-    const authPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.RuntimePluginName);
-    if (authPlugin) {
-      runtimeEnv = {
-        endpoint: this.getSimpleAuthEndpoint(ctx),
-        startLoginPageUrl: DependentPluginInfo.StartLoginPageURL,
-      };
-    }
-
-    const aadPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.AADPluginName);
-    if (aadPlugin) {
-      aadEnv = {
-        clientId: aadPlugin.get(DependentPluginInfo.ClientID) as string,
-      };
-    }
-
-    if (functionEnv || runtimeEnv || aadEnv) {
-      await FrontendProvision.setEnvironments(
-        path.join(ctx.root, FrontendPathInfo.WorkingDir, FrontendPathInfo.TabEnvironmentFilePath),
-        functionEnv,
-        runtimeEnv,
-        aadEnv
-      );
-    }
-
     if (isArmSupportEnabled()) {
       await this.syncArmOutput(ctx);
     }
@@ -319,24 +276,6 @@ export class FrontendPluginImpl {
     return ok(result);
   }
 
-  private getFunctionEndpoint(ctx: PluginContext): string {
-    if (isArmSupportEnabled()) {
-      return `https://${getArmOutput(ctx, FunctionArmOutput.Endpoint)}`;
-    } else {
-      const functionPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.FunctionPluginName);
-      return functionPlugin!.get(DependentPluginInfo.FunctionEndpoint) as string;
-    }
-  }
-
-  private getSimpleAuthEndpoint(ctx: PluginContext): string {
-    if (isArmSupportEnabled()) {
-      return getArmOutput(ctx, ArmOutput.SimpleAuthEndpoint)!;
-    } else {
-      const authPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.RuntimePluginName);
-      return authPlugin!.get(DependentPluginInfo.RuntimeEndpoint) as string;
-    }
-  }
-
   private async syncArmOutput(ctx: PluginContext) {
     const config = await FrontendConfig.fromPluginContext(ctx);
     config.endpoint = getArmOutput(ctx, ArmOutput.FrontendEndpoint) as string;
@@ -348,6 +287,8 @@ export class FrontendPluginImpl {
       new EnableStaticWebsiteError(),
       async () => await client.enableStaticWebsite()
     );
+  }
+
   private async updateDotenv(ctx: PluginContext): Promise<void> {
     const envs: { [key: string]: string } = {};
 

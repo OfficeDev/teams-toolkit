@@ -245,7 +245,7 @@ export class PublishCredentialError extends FunctionPluginError {
 
 export class FindAppError extends FunctionPluginError {
   constructor() {
-    super(ErrorType.User, "FindAppError", "Failed to find the function app.", [tips.doProvision]);
+    super(ErrorType.System, "FindAppError", "Failed to find the function app.", [tips.doProvision]);
   }
 }
 

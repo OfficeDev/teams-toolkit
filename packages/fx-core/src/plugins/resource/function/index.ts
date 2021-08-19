@@ -127,16 +127,9 @@ export class FunctionPlugin implements Plugin {
       Object.entries(PostProvisionSteps).length,
       ctx.ui
     );
-    let res: FxResult;
-    if (isArmSupportEnabled()) {
-      res = await this.runWithErrorWrapper(ctx, FunctionEvent.postProvision, () =>
-        this.functionPluginImpl.postProvisionWithArm(ctx)
-      );
-    } else {
-      res = await this.runWithErrorWrapper(ctx, FunctionEvent.postProvision, () =>
-        this.functionPluginImpl.postProvision(ctx)
-      );
-    }
+    const res = await this.runWithErrorWrapper(ctx, FunctionEvent.postProvision, () =>
+      this.functionPluginImpl.postProvision(ctx)
+    );
     await StepHelperFactory.postProvisionStepHelper.end(res.isOk());
     return res;
   }

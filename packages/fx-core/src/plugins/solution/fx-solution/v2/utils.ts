@@ -46,7 +46,3 @@ export function extractSolutionInputs(record: Record<string, string>): v2.Soluti
     remoteTeamsAppId: undefined,
   };
 }
-
-function isDefined<T>(val: T | undefined | null): val is T {
-  return val !== undefined && val !== null;
-}

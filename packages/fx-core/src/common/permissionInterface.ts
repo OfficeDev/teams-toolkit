@@ -3,5 +3,4 @@ export interface ResourcePermission {
   type: string;
   resourceId: string | undefined;
   roles: string[] | undefined;
-  error: any;
 }

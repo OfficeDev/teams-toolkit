@@ -1203,7 +1203,7 @@ export class TeamsAppSolution implements Solution {
       const permissions: ResourcePermission[] = [];
       for (const result of results) {
         if (result.isErr()) {
-          continue;
+          return result;
         }
         if (result && result.value) {
           for (const res of result.value) {
@@ -1212,7 +1212,20 @@ export class TeamsAppSolution implements Solution {
         }
       }
 
-      // TODO: show cli messages
+      if (ctx.answers?.platform === Platform.CLI) {
+        // Todo, when multi-environment is ready, we will update to current environment
+        ctx.ui?.showMessage("info", `Environment name: default`, false);
+
+        ctx.ui?.showMessage("info", `Tenant ID: ${aadAppTenantId}`, false);
+        for (const permission of permissions) {
+          ctx.ui?.showMessage(
+            "info",
+            `Resource ID: ${permission.resourceId}, Resource Name: ${permission.name}, Permission: ${permission.roles}`,
+            false
+          );
+        }
+      }
+
       return ok(permissions);
     } finally {
       ctx.config.get(GLOBAL_CONFIG)?.delete(USER_INFO);

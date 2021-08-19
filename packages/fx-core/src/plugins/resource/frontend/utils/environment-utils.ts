@@ -11,8 +11,14 @@ export class EnvironmentUtils {
     await fs.ensureFile(envFile);
     const envBuffer = await fs.readFile(envFile);
 
+    // TODO: ut for the case
     const configs = dotenv.parse(envBuffer);
-    Object.assign(configs, variables);
+    const newConfigs = { ...configs, ...variables };
+    if (JSON.stringify(newConfigs) === JSON.stringify(configs)) {
+      // Avoid updating dotenv file's modified time.
+      // We decide whether to skip deployment by comparing the mtime of all project files and last deployment time.
+      return;
+    }
 
     let envs = "";
     for (const key in configs) {

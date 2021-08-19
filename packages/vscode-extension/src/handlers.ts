@@ -739,10 +739,7 @@ export async function showError(e: UserError | SystemError) {
     if (button) await button.run();
   } else if (e instanceof SystemError) {
     const sysError = e as SystemError;
-    const path =
-      typeof e.issueLink === "undefined"
-        ? "https://github.com/OfficeDev/TeamsFx/issues/new?"
-        : e.issueLink;
+    const path = "https://github.com/OfficeDev/TeamsFx/issues/new?";
     const param = `title=bug+report: ${errorCode}&body=${anonymizeFilePaths(
       e.message
     )}\n\nstack:\n${anonymizeFilePaths(e.stack)}\n\n${

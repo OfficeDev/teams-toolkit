@@ -93,6 +93,7 @@ export class SystemError extends Error implements FxError {
     this.name = name;
     this.source = source;
     this.timestamp = new Date();
+    this.issueLink = issueLink;
     this.innerError = innerError;
     Object.setPrototypeOf(this, SystemError.prototype);
   }

@@ -30,6 +30,7 @@ export enum VsCodeEnv {
 
 export enum Stage {
   create = "create",
+  migrateV1 = "migrateV1",
   build = "build",
   debug = "debug",
   provision = "provision",

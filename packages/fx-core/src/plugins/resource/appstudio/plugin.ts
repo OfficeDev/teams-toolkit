@@ -81,6 +81,7 @@ import {
   LocalSettingsTeamsAppKeys,
 } from "../../../common/localSettingsConstants";
 import { v4 } from "uuid";
+import isUUID from "validator/lib/isUUID";
 
 export class AppStudioPluginImpl {
   public async getAppDefinitionAndUpdate(
@@ -1096,7 +1097,10 @@ export class AppStudioPluginImpl {
     const manifest: TeamsAppManifest = await fs.readJSON(`${appDirectory}/${REMOTE_MANIFEST}`);
     manifest.bots = undefined;
     manifest.composeExtensions = undefined;
-    manifest.id = v4();
+    // For SPFX remote teams app, manifest.id == componentId
+    if (isLocalDebug || !isUUID(manifest.id)) {
+      manifest.id = v4();
+    }
 
     const colorFile = `${appDirectory}/${manifest.icons.color}`;
     if (!(await fs.pathExists(colorFile))) {

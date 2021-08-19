@@ -19,6 +19,7 @@ import { exp } from "./exp";
 import { disableRunIcon, registerRunIcon } from "./debug/runIconHandler";
 import { CryptoCodeLensProvider } from "./codeLensProvider";
 import { Correlator } from "@microsoft/teamsfx-core";
+import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -31,6 +32,12 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(new ExtTelemetry.Reporter(context));
 
   await exp.initialize(context);
+  TreatmentVariableValue.isExpandCard = (await exp
+    .getExpService()
+    .getTreatmentVariableAsync(
+      TreatmentVariables.VSCodeConfig,
+      TreatmentVariables.ExpandCreateCard
+    )) as boolean | undefined;
 
   // 1.1 Register the creating command.
   const createCmd = vscode.commands.registerCommand("fx-extension.create", (...args) =>

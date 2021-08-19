@@ -109,6 +109,12 @@ export class MockSolution implements Solution {
     ctx.config.get("solution")!.set("executeUserTask", true);
     return ok(Void);
   }
+  async migrate(ctx: SolutionContext): Promise<Result<any, FxError>> {
+    ctx.projectSettings!.solutionSettings = this.solutionSettings();
+    const config = new ConfigMap();
+    ctx.config.set("solution", config);
+    return ok(Void);
+  }
 }
 
 export class MockSolutionLoader implements SolutionLoader {

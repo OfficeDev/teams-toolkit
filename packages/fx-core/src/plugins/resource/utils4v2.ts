@@ -11,7 +11,9 @@ import {
   ok,
   Plugin,
   PluginContext,
+  QTreeNode,
   Result,
+  Stage,
   TokenProvider,
 } from "@microsoft/teamsfx-api";
 import {
@@ -49,15 +51,34 @@ export async function scaffoldSourceCodeAdapter(
   inputs: Inputs,
   plugin: Plugin & ArmResourcePlugin
 ): Promise<Result<{ output: Record<string, string> }, FxError>> {
-  if (!plugin.scaffold) return err(PluginHasNoTaskImpl(plugin.displayName, "scaffold"));
+  if (!plugin.scaffold && !plugin.postScaffold)
+    return err(PluginHasNoTaskImpl(plugin.displayName, "scaffold"));
   if (!inputs.projectPath) {
     return err(NoProjectOpenedError());
   }
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
-  const scaffoldRes = await plugin.scaffold(pluginContext);
-  if (scaffoldRes.isErr()) {
-    return err(scaffoldRes.error);
+
+  if (plugin.preScaffold) {
+    const preRes = await plugin.preScaffold(pluginContext);
+    if (preRes.isErr()) {
+      return err(preRes.error);
+    }
   }
+
+  if (plugin.scaffold) {
+    const res = await plugin.scaffold(pluginContext);
+    if (res.isErr()) {
+      return err(res.error);
+    }
+  }
+
+  if (plugin.postDeploy) {
+    const postRes = await plugin.postDeploy(pluginContext);
+    if (postRes.isErr()) {
+      return err(postRes.error);
+    }
+  }
+
   const output = pluginContext.config.toJSON();
   return ok({ output: output });
 }
@@ -151,6 +172,12 @@ export async function deployAdapter(
   const deployRes = await plugin.deploy(pluginContext);
   if (deployRes.isErr()) {
     return err(deployRes.error);
+  }
+  if (plugin.postDeploy) {
+    const postRes = await plugin.postDeploy(pluginContext);
+    if (postRes.isErr()) {
+      return err(postRes.error);
+    }
   }
   const deployOutput = selfConfigMap.toJSON();
   return ok({ output: deployOutput });
@@ -248,6 +275,15 @@ export async function executeUserTaskAdapter(
   return ok(res.value);
 }
 
+export async function getQuestionsForScaffoldingAdapter(
+  ctx: Context,
+  inputs: Inputs,
+  plugin: Plugin
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  if (!plugin.getQuestions) return err(PluginHasNoTaskImpl(plugin.displayName, "getQuestions"));
+  const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
+  return await plugin.getQuestions(Stage.create, pluginContext);
+}
 export function getArmOutput(ctx: PluginContext, key: string): string | undefined {
   const solutionConfig = ctx.configOfOtherPlugins.get("solution");
   const output = solutionConfig?.get(ARM_TEMPLATE_OUTPUT);

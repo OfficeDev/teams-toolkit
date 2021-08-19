@@ -612,4 +612,82 @@ describe("Core basic APIs", () => {
       }
     }
   });
+
+  const testParameters = [
+    {
+      description: "skip ask app name",
+      appName: "v1projectpath",
+      projectPath: path.resolve(os.tmpdir(), "v1projectpath"),
+      skipAppNameQuestion: true,
+    },
+    {
+      description: "ask app name",
+      appName: "v1projectname",
+      projectPath: path.resolve(os.tmpdir(), "v1-project-path"),
+      skipAppNameQuestion: false,
+    },
+  ];
+
+  testParameters.forEach((testParam) => {
+    it(`happy path: migrate v1 project ${testParam.description}`, async () => {
+      await fs.ensureDir(testParam.projectPath);
+      const expectedInputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: testParam.projectPath,
+      };
+
+      if (testParam.skipAppNameQuestion) {
+        expectedInputs[CoreQuestionNames.DefaultAppNameFunc] = testParam.appName;
+      } else {
+        expectedInputs[CoreQuestionNames.DefaultAppNameFunc] = undefined;
+        expectedInputs[CoreQuestionNames.AppName] = testParam.appName;
+      }
+
+      sandbox
+        .stub<any, any>(ui, "inputText")
+        .callsFake(async (config: InputTextConfig): Promise<Result<InputTextResult, FxError>> => {
+          if (config.name === CoreQuestionNames.AppName) {
+            return ok({
+              type: "success",
+              result: expectedInputs[CoreQuestionNames.AppName] as string,
+            });
+          }
+          throw err(InvalidInputError("invalid question"));
+        });
+      const core = new FxCore(tools);
+      {
+        const inputs: Inputs = { platform: Platform.VSCode, projectPath: testParam.projectPath };
+        const res = await core.migrateV1Project(inputs);
+        assert.isTrue(res.isOk() && res.value === testParam.projectPath);
+        assert.deepEqual(expectedInputs, inputs);
+        inputs.projectPath = testParam.projectPath;
+
+        const projectSettingsResult = await loadProjectSettings(inputs);
+        if (projectSettingsResult.isErr()) {
+          assert.fail("failed to load project settings");
+        }
+
+        const [projectSettings, projectIdMissing] = projectSettingsResult.value;
+        const validSettingsResult = validateSettings(projectSettings);
+        assert.isTrue(validSettingsResult === undefined);
+
+        const envInfoResult = await loadSolutionContext(
+          tools,
+          inputs,
+          projectSettings,
+          projectIdMissing
+        );
+        if (envInfoResult.isErr()) {
+          assert.fail("failed to load env info");
+        }
+
+        const solutionContext = envInfoResult.value;
+        const validRes = validateProject(solutionContext);
+        assert.isTrue(validRes === undefined);
+
+        const solutioConfig = solutionContext.config.get("solution");
+        assert.isTrue(solutioConfig !== undefined);
+      }
+    });
+  });
 });

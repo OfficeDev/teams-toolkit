@@ -34,6 +34,9 @@ export class FrontendPlugin implements Plugin, ArmResourcePlugin {
   name = "fx-resource-frontend-hosting";
   displayName = "Tab Front-end";
   activate(solutionSettings: AzureSolutionSettings): boolean {
+    if (solutionSettings?.migrateFromV1) {
+      return false;
+    }
     const cap = solutionSettings.capabilities || [];
     return solutionSettings.hostType === HostTypeOptionAzure.id && cap.includes(TabOptionItem.id);
   }

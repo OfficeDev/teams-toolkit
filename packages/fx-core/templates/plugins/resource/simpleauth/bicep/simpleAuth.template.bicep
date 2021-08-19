@@ -7,7 +7,7 @@ param m365ClientId string
 param m365ClientSecret string
 param m365ApplicationIdUri string
 param oauthAuthorityHost string
-{{#contains 'fx-resource-frontend-hosting' plugins}}
+{{#contains 'fx-resource-frontend-hosting' Plugins}}
 
 param frontendHostingStorageEndpoint string
 {{/contains}}
@@ -55,7 +55,7 @@ resource simpleAuthWebAppSettings 'Microsoft.Web/sites/config@2018-02-01' = {
     CLIENT_ID: m365ClientId
     CLIENT_SECRET: m365ClientSecret
     OAUTH_AUTHORITY: oauthAuthority
-    {{#contains 'fx-resource-frontend-hosting' plugins}}
+    {{#contains 'fx-resource-frontend-hosting' Plugins}}
     TAB_APP_ENDPOINT: frontendHostingStorageEndpoint
     {{/contains}}
   }

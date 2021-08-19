@@ -2,11 +2,12 @@
 // Licensed under the MIT license.
 import {
   FolderQuestion,
-  Inputs,
   OptionItem,
   Platform,
   SingleSelectQuestion,
   TextInputQuestion,
+  FuncQuestion,
+  Inputs,
 } from "@microsoft/teamsfx-api";
 import * as jsonschema from "jsonschema";
 import * as path from "path";
@@ -15,6 +16,7 @@ import { environmentManager } from "./environment";
 
 export enum CoreQuestionNames {
   AppName = "app-name",
+  DefaultAppNameFunc = "default-app-name-func",
   Folder = "folder",
   Solution = "solution",
   CreateFromScratch = "scratch",
@@ -50,6 +52,43 @@ export const QuestionAppName: TextInputQuestion = {
     },
   },
   placeholder: "Application name",
+};
+
+export const QuestionV1AppName: TextInputQuestion = {
+  type: "text",
+  name: CoreQuestionNames.AppName,
+  title: "Application name",
+  validation: {
+    validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
+      const schema = {
+        pattern: ProjectNamePattern,
+      };
+      const appName = input as string;
+      const validateResult = jsonschema.validate(appName, schema);
+      if (validateResult.errors && validateResult.errors.length > 0) {
+        return "Application name must start with a letter and can only contain letters and digits.";
+      }
+      return undefined;
+    },
+  },
+  placeholder: "Application name",
+};
+
+export const DefaultAppNameFunc: FuncQuestion = {
+  type: "func",
+  name: CoreQuestionNames.DefaultAppNameFunc,
+  func: (inputs: Inputs) => {
+    const appName = path.basename(inputs.projectPath ?? "");
+    const schema = {
+      pattern: ProjectNamePattern,
+    };
+    const validateResult = jsonschema.validate(appName, schema);
+    if (validateResult.errors && validateResult.errors.length > 0) {
+      return undefined;
+    }
+
+    return appName;
+  },
 };
 
 export const QuestionRootFolder: FolderQuestion = {

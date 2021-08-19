@@ -12,8 +12,8 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import { getTemplatesFolder } from "../../..";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
-import { getArmOutput } from "../utils4v2";
 import { generateBicepFiles, isArmSupportEnabled, isMultiEnvEnabled } from "../../../common";
+import { getArmOutput } from "../utils4v2";
 import { LocalSettingsAuthKeys } from "../../../common/localSettingsConstants";
 import { ConstantString } from "../../../common/constants";
 
@@ -139,7 +139,7 @@ export class SimpleAuthPluginImpl {
     const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
       .activeResourcePlugins;
     const context = {
-      plugins: selectedPlugins,
+      Plugins: selectedPlugins,
     };
 
     const bicepTemplateDirectory = path.join(

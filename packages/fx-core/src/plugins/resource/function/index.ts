@@ -36,6 +36,7 @@ import {
 } from "../../solution/fx-solution/question";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+import { isArmSupportEnabled } from "../../..";
 @Service(ResourcePlugins.FunctionPlugin)
 export class FunctionPlugin implements Plugin {
   name = "fx-resource-function";
@@ -105,15 +106,19 @@ export class FunctionPlugin implements Plugin {
 
   public async provision(ctx: PluginContext): Promise<FxResult> {
     this.setContext(ctx);
-    await StepHelperFactory.provisionStepHelper.start(
-      Object.entries(ProvisionSteps).length,
-      ctx.ui
-    );
-    const res = await this.runWithErrorWrapper(ctx, FunctionEvent.provision, () =>
-      this.functionPluginImpl.provision(ctx)
-    );
-    await StepHelperFactory.provisionStepHelper.end(res.isOk());
-    return res;
+    if (isArmSupportEnabled()) {
+      return ResultFactory.Success();
+    } else {
+      await StepHelperFactory.provisionStepHelper.start(
+        Object.entries(ProvisionSteps).length,
+        ctx.ui
+      );
+      const res = await this.runWithErrorWrapper(ctx, FunctionEvent.provision, () =>
+        this.functionPluginImpl.provision(ctx)
+      );
+      await StepHelperFactory.provisionStepHelper.end(res.isOk());
+      return res;
+    }
   }
 
   public async postProvision(ctx: PluginContext): Promise<FxResult> {
@@ -126,6 +131,14 @@ export class FunctionPlugin implements Plugin {
       this.functionPluginImpl.postProvision(ctx)
     );
     await StepHelperFactory.postProvisionStepHelper.end(res.isOk());
+    return res;
+  }
+
+  public async generateArmTemplates(ctx: PluginContext): Promise<FxResult> {
+    this.setContext(ctx);
+    const res = await this.runWithErrorWrapper(ctx, FunctionEvent.generateArmTemplates, () =>
+      this.functionPluginImpl.generateArmTemplates(ctx)
+    );
     return res;
   }
 

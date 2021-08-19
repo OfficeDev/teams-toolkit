@@ -59,7 +59,9 @@ export function ReadFileError(e: Error): SystemError {
 }
 
 export function NoneFxError(e: any): FxError {
-  return assembleError(e);
+  const err = assembleError(e);
+  err.name = "NoneFxError";
+  return err;
 }
 
 export function NoProjectOpenedError(): UserError {

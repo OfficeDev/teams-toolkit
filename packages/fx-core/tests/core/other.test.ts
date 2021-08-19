@@ -82,7 +82,7 @@ describe("Other test case", () => {
     const error = ProjectFolderExistError(os.tmpdir());
     assert.isTrue(error.name === "ProjectFolderExistError");
     assert.isTrue(
-      error.message === `Path ${os.tmpdir()} alreay exists. Select a different folder.`
+      error.message === `Path ${os.tmpdir()} already exists. Select a different folder.`
     );
   });
 
@@ -90,21 +90,21 @@ describe("Other test case", () => {
     const msg = "file not exist";
     const error = WriteFileError(new Error(msg));
     assert.isTrue(error.name === "WriteFileError");
-    assert.isTrue(error.message === `write file error ${msg}`);
+    assert.isTrue(error.message === msg);
   });
 
   it("error: ReadFileError", async () => {
     const msg = "file not exist";
     const error = ReadFileError(new Error(msg));
     assert.isTrue(error.name === "ReadFileError");
-    assert.isTrue(error.message === `read file error ${msg}`);
+    assert.isTrue(error.message === msg);
   });
 
   it("error: NoneFxError", async () => {
     const msg = "hahahaha";
     const error = NoneFxError(new Error(msg));
     assert.isTrue(error.name === "NoneFxError");
-    assert.isTrue(error.message === `NoneFxError ${msg}`);
+    assert.isTrue(error.message === msg);
   });
 
   it("error: TaskNotSupportError", async () => {

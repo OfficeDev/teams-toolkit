@@ -69,7 +69,7 @@ jobs:
     # - task: PublishBuildArtifacts@1
     #   name: Upload default.userdata as artifact
     #   inputs:
-    #     PathtoPublish: '$(Build.ArtifactStagingDirectory)/.fx/default.userdata'
+    #     PathtoPublish: '.fx/default.userdata'
     #     ArtifactName: 'defaultUserData'
     #     publishLocation: 'Container'
 
@@ -100,7 +100,7 @@ jobs:
     - task: PublishBuildArtifacts@1
       name: Upload Teams App's package as artifact
       inputs:
-        PathtoPublish: $(Build.ArtifactStagingDirectory)/.fx/appPackage.zip
+        PathtoPublish: appPackage/appPackage.zip
         ArtifactName: 'appPackage'
         publishLocation: 'Container'
 

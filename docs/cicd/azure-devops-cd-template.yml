@@ -6,7 +6,7 @@ trigger:
 - main
 
 jobs:
-- job: buildAndPublish:
+- job: buildAndPublish
   container:
     image: ubuntu:latest
     env:
@@ -17,7 +17,7 @@ jobs:
       M365_ACCOUNT_NAME: $(M365_ACCOUNT_NAME)
       M365_ACCOUNT_PASSWORD: $(M365_ACCOUNT_PASSWORD)
 
-    steps:
+  steps:
     # Setup environment.
     - task: NodeTool@0
       inputs:

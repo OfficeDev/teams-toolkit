@@ -584,19 +584,29 @@ export class TeamsAppSolution implements Solution {
         );
         return ok(undefined);
       },
-      async (provisionResults?: any[]) => {
-        ctx.logProvider?.info(
-          util.format(getStrings().solution.ProvisionFinishNotice, PluginDisplayName.Solution)
-        );
+      async (provisionResults?: Result<any, FxError>[]) => {
         if (provisionWithCtx.length === provisionResults?.length) {
           provisionWithCtx.map(function (plugin, index) {
             if (plugin[2] === PluginNames.APPST) {
-              ctx.config
-                .get(GLOBAL_CONFIG)
-                ?.set(REMOTE_TEAMS_APP_ID, provisionResults[index].value);
+              const teamsAppResult = provisionResults[index];
+              if (teamsAppResult.isOk()) {
+                ctx.config.get(GLOBAL_CONFIG)?.set(REMOTE_TEAMS_APP_ID, teamsAppResult.value);
+              }
             }
           });
         }
+
+        if (provisionResults) {
+          for (const result of provisionResults) {
+            if (result.isErr()) {
+              return result;
+            }
+          }
+        }
+
+        ctx.logProvider?.info(
+          util.format(getStrings().solution.ProvisionFinishNotice, PluginDisplayName.Solution)
+        );
 
         if (isArmSupportEnabled()) {
           const armDeploymentResult = await deployArmTemplates(ctx);

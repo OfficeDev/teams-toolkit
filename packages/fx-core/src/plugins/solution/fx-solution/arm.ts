@@ -19,7 +19,7 @@ import { compileHandlebarsTemplateString, getStrings } from "../../../common";
 import path from "path";
 import * as fs from "fs-extra";
 import { ConstantString, PluginDisplayName } from "../../../common/constants";
-import { Executor } from "../../../common/tools";
+import { Executor, CryptoDataMatchers } from "../../../common/tools";
 import {
   ARM_TEMPLATE_OUTPUT,
   GLOBAL_CONFIG,
@@ -266,30 +266,37 @@ async function getParameterJson(ctx: SolutionContext) {
 
   const parameterFileName = parameterFileNameTemplate.replace("@envName", ctx.targetEnvName);
   const parameterDir = path.join(ctx.root, baseFolder, parameterFolder);
-  const parameterDefaultFilePath = path.join(parameterDir, parameterFileName);
   const parameterTemplateFilePath = path.join(parameterDir, parameterTemplateFileName);
-  let parameterFilePath = parameterDefaultFilePath;
+  const parameterFilePath = path.join(parameterDir, parameterFileName);
+  let createNewParameterFile = false;
   try {
-    await fs.stat(parameterDefaultFilePath);
+    await fs.stat(parameterFilePath);
   } catch (err) {
     ctx.logProvider?.info(
-      `[${PluginDisplayName.Solution}] ${parameterDefaultFilePath} does not exist. Try ${parameterTemplateFilePath}.`
+      `[${PluginDisplayName.Solution}] ${parameterFilePath} does not exist. Try ${parameterTemplateFilePath}.`
     );
-    parameterFilePath = parameterTemplateFilePath;
+    createNewParameterFile = true;
   }
-  const parameterJson = await getExpandedParameter(ctx, parameterFilePath);
 
-  if (parameterFilePath === parameterTemplateFilePath) {
-    await fs.writeFile(parameterDefaultFilePath, JSON.stringify(parameterJson, undefined, 2));
+  let parameterJson;
+  if (createNewParameterFile) {
+    parameterJson = await getExpandedParameter(ctx, parameterTemplateFilePath, false); // do not expand secrets to avoid saving secrets to parameter file
+    await fs.writeFile(parameterFilePath, JSON.stringify(parameterJson, undefined, 2));
   }
+
+  parameterJson = JSON.parse(expandParameterPlaceholders(ctx, JSON.stringify(parameterJson), true)); // only expand secrets in memory
 
   return parameterJson;
 }
 
-async function getExpandedParameter(ctx: SolutionContext, filePath: string) {
+async function getExpandedParameter(
+  ctx: SolutionContext,
+  filePath: string,
+  expandSecrets: boolean
+) {
   try {
     const parameterTemplate = await fs.readFile(filePath, ConstantString.UTF8Encoding);
-    const parameterJsonString = expandParameterPlaceholders(ctx, parameterTemplate);
+    const parameterJsonString = expandParameterPlaceholders(ctx, parameterTemplate, expandSecrets);
     return JSON.parse(parameterJsonString);
   } catch (err) {
     ctx.logProvider?.error(
@@ -461,7 +468,11 @@ function generateBicepModuleFilePath(moduleFileName: string) {
   return `./${moduleFileName}.bicep`;
 }
 
-function expandParameterPlaceholders(ctx: SolutionContext, parameterContent: string): string {
+function expandParameterPlaceholders(
+  ctx: SolutionContext,
+  parameterContent: string,
+  expandSecrets: boolean
+): string {
   const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
   const plugins = getActivatedResourcePlugins(azureSolutionSettings); // This function ensures return result won't be empty
   const availableVariables: Record<string, string> = {};
@@ -492,19 +503,30 @@ function expandParameterPlaceholders(ctx: SolutionContext, parameterContent: str
   // Add environment variable to available variables
   Object.assign(availableVariables, process.env); // The environment variable has higher priority
 
+  if (expandSecrets === false) {
+    escapeSecretPlaceholders(availableVariables);
+  }
+
   return compileHandlebarsTemplateString(parameterContent, availableVariables);
 }
 
 function normalizeToEnvName(input: string): string {
-  return input.toUpperCase().replace(/-|\./g, "_"); // replace "-" or "." to "_"
+  return input.toUpperCase().replace(/-/g, "_").replace(/\./g, "__"); // replace "-" to "_" and "." to "__"
 }
 
 function generateResourceName(ctx: SolutionContext): void {
   const maxAppNameLength = 10;
   const appName = ctx.projectSettings!.appName;
-  const sufix = ctx.config.get(GLOBAL_CONFIG)?.getString("resourceNameSuffix");
+  const suffix = ctx.config.get(GLOBAL_CONFIG)?.getString("resourceNameSuffix");
   const normalizedAppName = appName.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
   ctx.config
     .get(GLOBAL_CONFIG)
-    ?.set("resource_base_name", normalizedAppName.substr(0, maxAppNameLength) + sufix);
+    ?.set("resource_base_name", normalizedAppName.substr(0, maxAppNameLength) + suffix);
+}
+
+function escapeSecretPlaceholders(variables: Record<string, string>) {
+  for (const key of CryptoDataMatchers) {
+    const normalizedKey = `${normalizeToEnvName(key)}`;
+    variables[normalizedKey] = `{{${normalizedKey}}}`; // replace value of 'SECRET_PLACEHOLDER' with '{{SECRET_PLACEHOLDER}}' so the placeholder remains unchanged
+  }
 }

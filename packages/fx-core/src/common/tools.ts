@@ -155,7 +155,7 @@ const SecretDataMatchers = [
   "fx-resource-apim.apimClientAADClientSecret",
 ];
 
-const CryptoDataMatchers = new Set([
+export const CryptoDataMatchers = new Set([
   "fx-resource-aad-app-for-teams.clientSecret",
   "fx-resource-aad-app-for-teams.local_clientSecret",
   "fx-resource-simple-auth.environmentVariableParams",

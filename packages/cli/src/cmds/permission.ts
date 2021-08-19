@@ -41,7 +41,7 @@ export class PermissionStatus extends YargsCommand {
 
     const core = result.value;
     {
-      const result = await core.checkPermission(getSystemInputs(rootFolder));
+      const result = await core.checkPermission(getSystemInputs(rootFolder, args.env));
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CheckPermission, result.error);
         return err(result.error);

@@ -4,7 +4,7 @@
 "use strict";
 
 import path from "path";
-import { FxError, err, ok, Result, Stage } from "@microsoft/teamsfx-api";
+import { FxError, err, ok, Result, Stage, LogLevel } from "@microsoft/teamsfx-api";
 import { Argv, Options } from "yargs";
 import { YargsCommand } from "../yargsCommand";
 import CliTelemetry from "../telemetry/cliTelemetry";
@@ -16,6 +16,7 @@ import {
 import activate from "../activate";
 import { getSystemInputs } from "../utils";
 import HelpParamGenerator from "../helpParamGenerator";
+import CLILogProvider from "../commonlib/log";
 
 export class PermissionStatus extends YargsCommand {
   public readonly commandHead = `status`;
@@ -38,6 +39,14 @@ export class PermissionStatus extends YargsCommand {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CheckPermission, result.error);
       return err(result.error);
     }
+
+    CLILogProvider.necessaryLog(
+      LogLevel.Info,
+      "Notice: Azure resources permission needs to be handled by subscription owner since privileged account is " +
+        "required to grant permission to Azure resources.\n" +
+        "[Assign Azure roles using the Azure portal] " +
+        "https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal?tabs=current"
+    );
 
     const core = result.value;
     {

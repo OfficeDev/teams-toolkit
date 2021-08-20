@@ -27,6 +27,7 @@ import {
 import { GLOBAL_CONFIG } from "../plugins/solution/fx-solution/constants";
 import { readJson } from "../common/fileUtils";
 import { Component, sendTelemetryErrorEvent, TelemetryEvent } from "../common/telemetry";
+import { isMultiEnvEnabled } from "../common";
 
 export interface EnvInfo {
   envName: string;
@@ -84,9 +85,9 @@ class EnvironmentManager {
       return err(PathNotExistError(projectPath));
     }
 
-    const configFolder = this.getConfigFolder(projectPath);
-    if (!(await fs.pathExists(configFolder))) {
-      await fs.ensureDir(configFolder);
+    const envProfilesFolder = this.getEnvProfilesFolder(projectPath);
+    if (!(await fs.pathExists(envProfilesFolder))) {
+      await fs.ensureDir(envProfilesFolder);
     }
 
     envName = envName ?? this.defaultEnvName;
@@ -113,12 +114,12 @@ class EnvironmentManager {
       return err(PathNotExistError(projectPath));
     }
 
-    const configFolder = this.getConfigFolder(projectPath);
-    if (!(await fs.pathExists(configFolder))) {
+    const envProfilesFolder = this.getEnvProfilesFolder(projectPath);
+    if (!(await fs.pathExists(envProfilesFolder))) {
       return ok([]);
     }
 
-    const configFiles = await fs.readdir(configFolder);
+    const configFiles = await fs.readdir(envProfilesFolder);
     const envNames = configFiles
       .map((file) => this.getEnvNameFromPath(file))
       .filter((name): name is string => name !== null);
@@ -139,8 +140,11 @@ class EnvironmentManager {
   }
 
   public getEnvFilesPath(envName: string, projectPath: string): EnvFiles {
-    const basePath = this.getConfigFolder(projectPath);
-    const envProfile = path.resolve(basePath, `env.${envName}.json`);
+    const basePath = this.getEnvProfilesFolder(projectPath);
+    const envProfile = path.resolve(
+      basePath,
+      isMultiEnvEnabled() ? `profile.${envName}.json` : `env.${envName}.json`
+    );
     const userDataFile = path.resolve(basePath, `${envName}.userdata`);
 
     return { envProfile, userDataFile };
@@ -157,6 +161,16 @@ class EnvironmentManager {
 
   private getConfigFolder(projectPath: string): string {
     return path.resolve(projectPath, `.${ConfigFolderName}`);
+  }
+
+  private getPublishProfilesFolder(projectPath: string): string {
+    return path.resolve(this.getConfigFolder(projectPath), "publishProfiles");
+  }
+
+  private getEnvProfilesFolder(projectPath: string): string {
+    return isMultiEnvEnabled()
+      ? this.getPublishProfilesFolder(projectPath)
+      : this.getConfigFolder(projectPath);
   }
 
   private async loadUserData(

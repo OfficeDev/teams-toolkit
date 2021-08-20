@@ -10,6 +10,7 @@ import {
   ok,
   FxError,
   returnSystemError,
+  ConfigFolderName,
 } from "@microsoft/teamsfx-api";
 import { ScaffoldArmTemplateResult, ArmResourcePlugin } from "../../../common/armInterface";
 import { getActivatedResourcePlugins } from "./ResourcePluginContainer";
@@ -30,13 +31,13 @@ import {
 import { ResourceManagementClient, ResourceManagementModels } from "@azure/arm-resources";
 import { DeployArmTemplatesSteps, ProgressHelper } from "./utils/progressHelper";
 
-const baseFolder = "./infra/azure";
-const templateFolder = "templates";
-const parameterFolder = "parameters";
+const templatesFolder = "./templates/azure";
+const configsFolder = `.${ConfigFolderName}/configs`;
+const modulesFolder = "modules";
 const bicepOrchestrationFileName = "main.bicep";
 const armTemplateJsonFileName = "main.json";
 const parameterTemplateFileName = "parameters.template.json";
-const parameterFileNameTemplate = "parameters.@envName.json";
+const parameterFileNameTemplate = "azure.parameters.@envName.json";
 const solutionLevelParameters = `param resourceBaseName string\n`;
 const solutionLevelParameterObject = {
   resourceBaseName: {
@@ -86,7 +87,7 @@ export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<
   if (bicepOrchestrationTemplate.needsGenerateTemplate()) {
     // Output main.bicep file
     const bicepOrchestrationFileContent = bicepOrchestrationTemplate.getOrchestrationFileContent();
-    const templateFolderPath = path.join(ctx.root, baseFolder, templateFolder);
+    const templateFolderPath = path.join(ctx.root, templatesFolder);
     await fs.ensureDir(templateFolderPath);
     await fs.writeFile(
       path.join(templateFolderPath, bicepOrchestrationFileName),
@@ -94,16 +95,18 @@ export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<
     );
 
     // Output bicep module files from each resource plugin
+    const modulesFolderPath = path.join(ctx.root, templatesFolder, modulesFolder);
+    await fs.ensureDir(modulesFolderPath);
     for (const module of moduleFiles) {
       await fs.writeFile(path.join(templateFolderPath, module[0]), module[1]);
     }
 
     // Output parameter file
     const parameterFileContent = bicepOrchestrationTemplate.getParameterFileContent();
-    const parameterFolderPath = path.join(ctx.root, baseFolder, parameterFolder);
-    await fs.ensureDir(parameterFolderPath);
+    const templatesFolderPath = path.join(ctx.root, templatesFolder);
+    await fs.ensureDir(templatesFolderPath);
     await fs.writeFile(
-      path.join(parameterFolderPath, parameterTemplateFileName),
+      path.join(templatesFolderPath, parameterTemplateFileName),
       parameterFileContent
     );
   }
@@ -128,7 +131,7 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
   }
 
   // Compile bicep file to json
-  const templateDir = path.join(ctx.root, baseFolder, templateFolder);
+  const templateDir = path.join(ctx.root, templatesFolder);
   const armTemplateJsonFilePath = path.join(templateDir, armTemplateJsonFileName);
   await compileBicepToJson(
     path.join(templateDir, bicepOrchestrationFileName),
@@ -265,9 +268,10 @@ async function getParameterJson(ctx: SolutionContext) {
   }
 
   const parameterFileName = parameterFileNameTemplate.replace("@envName", ctx.targetEnvName);
-  const parameterDir = path.join(ctx.root, baseFolder, parameterFolder);
-  const parameterTemplateFilePath = path.join(parameterDir, parameterTemplateFileName);
-  const parameterFilePath = path.join(parameterDir, parameterFileName);
+  const templatesDir = path.join(ctx.root, templatesFolder);
+  const configsDir = path.join(ctx.root, configsFolder);
+  const parameterTemplateFilePath = path.join(templatesDir, parameterTemplateFileName);
+  const parameterFilePath = path.join(configsDir, parameterFileName);
   let createNewParameterFile = false;
   try {
     await fs.stat(parameterFilePath);
@@ -281,6 +285,7 @@ async function getParameterJson(ctx: SolutionContext) {
   let parameterJson;
   if (createNewParameterFile) {
     parameterJson = await getExpandedParameter(ctx, parameterTemplateFilePath, false); // do not expand secrets to avoid saving secrets to parameter file
+    await fs.ensureDir(configsDir);
     await fs.writeFile(parameterFilePath, JSON.stringify(parameterJson, undefined, 2));
   }
 
@@ -465,7 +470,7 @@ interface PluginModuleProperties {
 }
 
 function generateBicepModuleFilePath(moduleFileName: string) {
-  return `./${moduleFileName}.bicep`;
+  return `./modules/${moduleFileName}.bicep`;
 }
 
 function expandParameterPlaceholders(

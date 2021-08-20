@@ -119,11 +119,12 @@ export enum SolutionError {
   FailedToGetAzureCredential = "FailedToGetAzureCredential",
   FailedToDeployArmTemplatesToAzure = "FailedToDeployArmTemplatesToAzure",
   V1ProjectNotSupported = "V1ProjectNotSupported",
-  CannotCheckPermissionBeforeProvision = "CannotCheckPermissionBeforeProvision",
   FailedToRetrieveUserInfo = "FailedToRetrieveUserInfo",
   M365AccountNotMatch = "M365AccountNotMatch",
   FeatureNotSupported = "FeatureNotSupported",
   FailedToCheckPermission = "FailedToCheckPermission",
+  CannotProcessBeforeProvision = "CannotProcessBeforeProvision",
+  CannotFindUserInCurrentTenant = "CannotFindUserInCurrentTenant",
 }
 
 export const LOCAL_DEBUG_TAB_ENDPOINT = "localTabEndpoint";

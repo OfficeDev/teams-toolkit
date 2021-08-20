@@ -1275,54 +1275,88 @@ export class TeamsAppSolution implements Solution {
 
   @hooks([ErrorHandlerMW])
   async grantPermission(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    return ok(Void);
+    try {
+      const result = await this.checkAndGetCurrentUserInfo(ctx);
+      if (result.isErr()) {
+        return result;
+      }
+
+      const email = ctx.answers!["email"] as string;
+      const userInfo = await this.getUserInfo(ctx, email);
+
+      if (!userInfo) {
+        return err(
+          returnUserError(
+            new Error(
+              "Cannot find user in current tenant, please check whether your email address is correct"
+            ),
+            "Solution",
+            SolutionError.CannotFindUserInCurrentTenant
+          )
+        );
+      }
+
+      ctx.config.get(GLOBAL_CONFIG)?.set(USER_INFO, JSON.stringify(userInfo));
+
+      const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, [
+        this.AadPlugin,
+        this.AppStudioPlugin,
+      ]);
+
+      const grantPermissionWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(
+        ([plugin, context]) => {
+          return [plugin?.grantPermission?.bind(plugin), context, plugin.name];
+        }
+      );
+
+      const results = await executeConcurrently("", grantPermissionWithCtx);
+      const permissions: ResourcePermission[] = [];
+      for (const result of results) {
+        if (result.isErr()) {
+          return result;
+        }
+
+        if (result && result.value) {
+          for (const res of result.value) {
+            permissions.push(res as ResourcePermission);
+          }
+        }
+      }
+
+      if (ctx.answers?.platform === Platform.CLI) {
+        const aadAppTenantId = ctx.config?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
+
+        // Todo, when multi-environment is ready, we will update to current environment
+        ctx.ui?.showMessage("info", `Environment name: default`, false);
+
+        ctx.ui?.showMessage("info", `Tenant ID: ${aadAppTenantId}`, false);
+        for (const permission of permissions) {
+          ctx.ui?.showMessage(
+            "info",
+            `Resource ID: ${permission.resourceId}, Resource Name: ${permission.name}, Permission: ${permission.roles}`,
+            false
+          );
+        }
+      }
+
+      return ok(permissions);
+    } finally {
+      ctx.config.get(GLOBAL_CONFIG)?.delete(USER_INFO);
+      this.runningState = SolutionRunningState.Idle;
+    }
   }
 
   @hooks([ErrorHandlerMW])
   async checkPermission(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    const canCheckPermission = this.checkWhetherSolutionIsIdle();
-    if (canCheckPermission.isErr()) {
-      return canCheckPermission;
-    }
-
-    const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
-    if (!provisioned) {
-      return err(
-        returnUserError(
-          new Error(
-            "Failed to check permission because the resources have not been provisioned yet. Make sure you do the provision first."
-          ),
-          "Solution",
-          SolutionError.CannotCheckPermissionBeforeProvision
-        )
-      );
-    }
-
     try {
-      const userInfo = await this.getUserInfo(ctx);
-
-      if (!userInfo) {
-        return err(
-          returnSystemError(
-            new Error("Failed to retrieve current user info from graph token"),
-            "Solution",
-            SolutionError.FailedToRetrieveUserInfo
-          )
-        );
+      const result = await this.checkAndGetCurrentUserInfo(ctx);
+      if (result.isErr()) {
+        return result;
       }
+
+      const userInfo = result.value as IUserList;
 
       const aadAppTenantId = ctx.config?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
-      if (!aadAppTenantId || userInfo.tenantId != (aadAppTenantId as string)) {
-        return err(
-          returnUserError(
-            new Error(
-              "Tenant id of your account and the provisioned Azure AD app does not match. Please check whether you logined with wrong account."
-            ),
-            "Solution",
-            SolutionError.M365AccountNotMatch
-          )
-        );
-      }
 
       ctx.config.get(GLOBAL_CONFIG)?.set(USER_INFO, JSON.stringify(userInfo));
 
@@ -1375,6 +1409,53 @@ export class TeamsAppSolution implements Solution {
   @hooks([ErrorHandlerMW])
   async listCollaborator(ctx: SolutionContext): Promise<Result<any, FxError>> {
     return ok(Void);
+  }
+
+  private async checkAndGetCurrentUserInfo(ctx: SolutionContext): Promise<Result<any, FxError>> {
+    const canGrantPermission = this.checkWhetherSolutionIsIdle();
+    if (canGrantPermission.isErr()) {
+      return canGrantPermission;
+    }
+
+    const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
+    if (!provisioned) {
+      return err(
+        returnUserError(
+          new Error(
+            "Failed to process because the resources have not been provisioned yet. Make sure you do the provision first."
+          ),
+          "Solution",
+          SolutionError.CannotProcessBeforeProvision
+        )
+      );
+    }
+
+    const user = await this.getUserInfo(ctx);
+
+    if (!user) {
+      return err(
+        returnSystemError(
+          new Error("Failed to retrieve current user info from graph token"),
+          "Solution",
+          SolutionError.FailedToRetrieveUserInfo
+        )
+      );
+    }
+
+    const aadAppTenantId = ctx.config?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
+    if (!aadAppTenantId || user.tenantId != (aadAppTenantId as string)) {
+      return err(
+        returnUserError(
+          new Error(
+            "Tenant id of your account and the provisioned Azure AD app does not match. Please check whether you logined with wrong account."
+          ),
+          "Solution",
+          SolutionError.M365AccountNotMatch
+        )
+      );
+    }
+
+    return ok(user);
   }
 
   private parseTeamsAppTenantId(appStudioToken?: object): Result<string, FxError> {

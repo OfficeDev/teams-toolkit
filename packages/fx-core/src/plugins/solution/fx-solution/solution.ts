@@ -1309,11 +1309,21 @@ export class TeamsAppSolution implements Solution {
         }
       );
 
+      if (ctx.answers?.platform === Platform.CLI) {
+        const aadAppTenantId = ctx.config?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
+
+        // Todo, when multi-environment is ready, we will update to current environment
+        ctx.ui?.showMessage("info", `Starting permission grant for environment: default`, false);
+        ctx.ui?.showMessage("info", `Tenant ID: ${aadAppTenantId}`, false);
+      }
+
       const results = await executeConcurrently("", grantPermissionWithCtx);
       const permissions: ResourcePermission[] = [];
+      const errors: any = [];
       for (const result of results) {
         if (result.isErr()) {
-          return result;
+          errors.push(result);
+          continue;
         }
 
         if (result && result.value) {
@@ -1323,20 +1333,42 @@ export class TeamsAppSolution implements Solution {
         }
       }
 
+      let errorMsg = "";
+      if (errors.length > 0) {
+        errorMsg += `Failed to grant permission for the below resources to user: ${email}.\n Resource details: \n`;
+        for (const fxError of errors) {
+          errorMsg += fxError.error.message + "\n";
+        }
+      }
+
       if (ctx.answers?.platform === Platform.CLI) {
-        const aadAppTenantId = ctx.config?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
-
-        // Todo, when multi-environment is ready, we will update to current environment
-        ctx.ui?.showMessage("info", `Environment name: default`, false);
-
-        ctx.ui?.showMessage("info", `Tenant ID: ${aadAppTenantId}`, false);
         for (const permission of permissions) {
           ctx.ui?.showMessage(
             "info",
-            `Resource ID: ${permission.resourceId}, Resource Name: ${permission.name}, Permission: ${permission.roles}`,
+            `${permission.roles?.join(" ")} permission has been granted to ${
+              permission.name
+            }, ID: ${permission.resourceId}`,
             false
           );
         }
+
+        ctx.ui?.showMessage(
+          "info",
+          `Skip grant permission for Azure resources. You may want to handle that via Azure portal. `,
+          false
+        );
+
+        if (errorMsg) {
+          for (const fxError of errors) {
+            ctx.ui?.showMessage("error", errorMsg, false);
+          }
+        }
+      }
+
+      if (errorMsg) {
+        return err(
+          returnUserError(new Error(errorMsg), "Solution", SolutionError.FailedToGrantPermission)
+        );
       }
 
       return ok(permissions);
@@ -1356,8 +1388,6 @@ export class TeamsAppSolution implements Solution {
 
       const userInfo = result.value as IUserList;
 
-      const aadAppTenantId = ctx.config?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
-
       ctx.config.get(GLOBAL_CONFIG)?.set(USER_INFO, JSON.stringify(userInfo));
 
       const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, [
@@ -1371,12 +1401,23 @@ export class TeamsAppSolution implements Solution {
         }
       );
 
+      if (ctx.answers?.platform === Platform.CLI) {
+        const aadAppTenantId = ctx.config?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
+
+        // Todo, when multi-environment is ready, we will update to current environment
+        ctx.ui?.showMessage("info", `Starting permission check for environment: default`, false);
+        ctx.ui?.showMessage("info", `Tenant ID: ${aadAppTenantId}`, false);
+      }
+
       const results = await executeConcurrently("", checkPermissionWithCtx);
 
       const permissions: ResourcePermission[] = [];
+      const errors: any = [];
+
       for (const result of results) {
         if (result.isErr()) {
-          return result;
+          errors.push(result);
+          continue;
         }
         if (result && result.value) {
           for (const res of result.value) {
@@ -1385,11 +1426,15 @@ export class TeamsAppSolution implements Solution {
         }
       }
 
-      if (ctx.answers?.platform === Platform.CLI) {
-        // Todo, when multi-environment is ready, we will update to current environment
-        ctx.ui?.showMessage("info", `Environment name: default`, false);
+      let errorMsg = "";
+      if (errors.length > 0) {
+        errorMsg += `Failed to check permission for the below resources.\n Resource details: \n`;
+        for (const fxError of errors) {
+          errorMsg += fxError.error.message + "\n";
+        }
+      }
 
-        ctx.ui?.showMessage("info", `Tenant ID: ${aadAppTenantId}`, false);
+      if (ctx.answers?.platform === Platform.CLI) {
         for (const permission of permissions) {
           ctx.ui?.showMessage(
             "info",
@@ -1397,6 +1442,12 @@ export class TeamsAppSolution implements Solution {
             false
           );
         }
+      }
+
+      if (errorMsg) {
+        return err(
+          returnUserError(new Error(errorMsg), "Solution", SolutionError.FailedToCheckPermission)
+        );
       }
 
       return ok(permissions);
@@ -1412,9 +1463,9 @@ export class TeamsAppSolution implements Solution {
   }
 
   private async checkAndGetCurrentUserInfo(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    const canGrantPermission = this.checkWhetherSolutionIsIdle();
-    if (canGrantPermission.isErr()) {
-      return canGrantPermission;
+    const canProcess = this.checkWhetherSolutionIsIdle();
+    if (canProcess.isErr()) {
+      return canProcess;
     }
 
     const provisioned = this.checkWetherProvisionSucceeded(ctx.config);

@@ -222,22 +222,29 @@ describe("grantPermission() for Teamsfx projects", () => {
         name: "fake_name_2",
       });
 
-    aadPlugin.grantPermission = async function (
+    appStudioPlugin.grantPermission = async function (
       _ctx: PluginContext
     ): Promise<Result<any, FxError>> {
       return err(
         returnUserError(
           new Error(`Grant permission failed.`),
           "AppStudioPlugin",
-          "FailedToGrantPermission"
+          SolutionError.FailedToGrantPermission
         )
       );
     };
 
-    appStudioPlugin.grantPermission = async function (
+    aadPlugin.grantPermission = async function (
       _ctx: PluginContext
     ): Promise<Result<any, FxError>> {
-      return ok(Void);
+      return ok([
+        {
+          name: "aad_app",
+          resourceId: "fake_aad_app_resource_id",
+          roles: "Owner",
+          type: "M365",
+        },
+      ]);
     };
 
     mockedCtx.config.set(PluginNames.AAD, new ConfigMap());
@@ -245,7 +252,7 @@ describe("grantPermission() for Teamsfx projects", () => {
 
     const result = await solution.grantPermission(mockedCtx);
     expect(result.isErr()).to.be.true;
-    expect(result._unsafeUnwrapErr().name).equals("FailedToGrantPermission");
+    expect(result._unsafeUnwrapErr().name).equals(SolutionError.FailedToGrantPermission);
 
     sandbox.restore();
   });
@@ -282,7 +289,7 @@ describe("grantPermission() for Teamsfx projects", () => {
         name: "fake_name_2",
       });
 
-    aadPlugin.grantPermission = async function (
+    appStudioPlugin.grantPermission = async function (
       _ctx: PluginContext
     ): Promise<Result<any, FxError>> {
       return ok([
@@ -295,7 +302,7 @@ describe("grantPermission() for Teamsfx projects", () => {
       ]);
     };
 
-    appStudioPlugin.grantPermission = async function (
+    aadPlugin.grantPermission = async function (
       _ctx: PluginContext
     ): Promise<Result<any, FxError>> {
       return ok([

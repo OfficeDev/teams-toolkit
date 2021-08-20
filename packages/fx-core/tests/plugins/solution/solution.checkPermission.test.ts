@@ -176,7 +176,7 @@ describe("checkPermission() for Teamsfx projects", () => {
       name: "fake_name",
     });
 
-    aadPlugin.checkPermission = async function (
+    appStudioPlugin.checkPermission = async function (
       _ctx: PluginContext
     ): Promise<Result<any, FxError>> {
       return err(
@@ -188,10 +188,17 @@ describe("checkPermission() for Teamsfx projects", () => {
       );
     };
 
-    appStudioPlugin.checkPermission = async function (
+    aadPlugin.checkPermission = async function (
       _ctx: PluginContext
     ): Promise<Result<any, FxError>> {
-      return ok(Void);
+      return ok([
+        {
+          name: "aad_app",
+          resourceId: "fake_aad_app_resource_id",
+          roles: "Owner",
+          type: "M365",
+        },
+      ]);
     };
 
     mockedCtx.config.set(PluginNames.AAD, new ConfigMap());

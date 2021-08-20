@@ -122,9 +122,10 @@ export enum SolutionError {
   FailedToRetrieveUserInfo = "FailedToRetrieveUserInfo",
   M365AccountNotMatch = "M365AccountNotMatch",
   FeatureNotSupported = "FeatureNotSupported",
-  FailedToCheckPermission = "FailedToCheckPermission",
   CannotProcessBeforeProvision = "CannotProcessBeforeProvision",
   CannotFindUserInCurrentTenant = "CannotFindUserInCurrentTenant",
+  FailedToGrantPermission = "FailedToGrantPermission",
+  FailedToCheckPermission = "FailedToCheckPermission",
 }
 
 export const LOCAL_DEBUG_TAB_ENDPOINT = "localTabEndpoint";

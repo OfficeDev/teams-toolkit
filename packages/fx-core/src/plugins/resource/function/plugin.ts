@@ -50,6 +50,7 @@ import {
 } from "./constants";
 import { ErrorMessages, InfoMessages } from "./resources/message";
 import {
+  CustomizedTask,
   FunctionConfigKey,
   FunctionEvent,
   FunctionLanguage,
@@ -240,7 +241,7 @@ export class FunctionPluginImpl {
       type: "group",
     });
 
-    if (func.method === "addResource") {
+    if (func.method === CustomizedTask.addResource) {
       functionNameQuestion.validation = {
         validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
           const workingPath: string = this.getFunctionProjectRootPath(ctx);
@@ -271,6 +272,14 @@ export class FunctionPluginImpl {
     }
 
     return ResultFactory.Success(res);
+  }
+
+  public async executeUserTask(func: Func, ctx: PluginContext): Promise<FxResult> {
+    if (func.method === CustomizedTask.addResource) {
+      TelemetryHelper.sendGeneralEvent(FunctionEvent.addResource);
+      await this.preScaffold(ctx);
+      return await this.scaffold(ctx);
+    }
   }
 
   public async preScaffold(ctx: PluginContext): Promise<FxResult> {

@@ -7,8 +7,7 @@ Incremental version for Teams Toolkit with multiple bugs fixed and the following
 New Feature:
 
 - Enable create project from quick start page.
-- Enable report issue from local debug error pop-up message.
-- Add CLI command 'teamsfx preview' to preview SPFx apps.
+- Enable report issue from local debug pop-up error message.
 - Enable CI/CD workflow with Github Actions. Check [CI/CD instructions](https://github.com/OfficeDev/TeamsFx/tree/dev/docs/cicd) to learn how to use.
 
 Enhancement:

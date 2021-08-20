@@ -30,6 +30,7 @@ import * as uuid from "uuid";
 import { LocalCrypto } from "../crypto";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { PermissionRequestFileProvider } from "../permissionRequest";
+import { readJson } from "../../common/fileUtils";
 
 export const ProjectSettingsLoaderMW: Middleware = async (
   ctx: CoreHookContext,
@@ -77,7 +78,7 @@ export async function loadProjectSettings(
 
     const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
     const settingsFile = path.resolve(confFolderPath, "settings.json");
-    const projectSettings: ProjectSettings = await fs.readJson(settingsFile);
+    const projectSettings: ProjectSettings = await readJson(settingsFile);
     let projectIdMissing = false;
     if (!projectSettings.projectId) {
       projectSettings.projectId = uuid.v4();

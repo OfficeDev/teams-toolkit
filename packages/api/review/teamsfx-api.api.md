@@ -455,6 +455,8 @@ export interface Inputs extends Json {
     // (undocumented)
     ignoreConfigPersist?: boolean;
     // (undocumented)
+    ignoreEnvInfo?: boolean;
+    // (undocumented)
     ignoreLock?: boolean;
     // (undocumented)
     ignoreTypeCheck?: boolean;
@@ -641,10 +643,10 @@ export interface MultiSelectQuestion extends UserInputQuestion {
 export type MultiSelectResult = InputResult<StaticOptions>;
 
 // @public (undocumented)
-export function newSystemError(source: string, name: string, message: string, issueLink?: string): SystemError;
+export function newSystemError(source: string, name: string, message: string, issueLink?: string, innerError?: any): SystemError;
 
 // @public (undocumented)
-export function newUserError(source: string, name: string, message: string, helpLink?: string): UserError;
+export function newUserError(source: string, name: string, message: string, helpLink?: string, innerError?: any): UserError;
 
 // @public
 export interface OptionItem {
@@ -1097,6 +1099,7 @@ export class SystemError extends Error implements FxError {
     issueLink?: string;
     source: string;
     timestamp: Date;
+    userData?: string;
 }
 
 // @public

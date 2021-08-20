@@ -76,6 +76,11 @@ export class SystemError extends Error implements FxError {
    */
   issueLink?: string;
 
+  /**
+   * data that only be reported to github issue  manually by user and will not be reported as telemetry data
+   */
+  userData?: string;
+
   constructor(
     name: string,
     message: string,
@@ -146,18 +151,20 @@ export function newUserError(
   source: string,
   name: string,
   message: string,
-  helpLink?: string
+  helpLink?: string,
+  innerError?: any
 ): UserError {
-  return new UserError(name, message, source, undefined, helpLink);
+  return new UserError(name, message, source, undefined, helpLink, innerError);
 }
 
 export function newSystemError(
   source: string,
   name: string,
   message: string,
-  issueLink?: string
+  issueLink?: string,
+  innerError?: any
 ): SystemError {
-  return new SystemError(name, message, source, undefined, issueLink);
+  return new SystemError(name, message, source, undefined, issueLink, innerError);
 }
 
 export const UserCancelError: UserError = new UserError("UserCancel", "UserCancel", "UI");
@@ -187,7 +194,7 @@ export function assembleError(e: any, source?: string): FxError {
   }
   return new SystemError(
     "Error",
-    JSON.stringify(e, Object.getOwnPropertyNames(e)),
+    e ? JSON.stringify(e, Object.getOwnPropertyNames(e)) : "undefined",
     source,
     undefined,
     undefined,

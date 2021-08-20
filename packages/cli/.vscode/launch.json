@@ -67,6 +67,9 @@
       "skipFiles": ["<node_internals>/**"],
       "program": "${workspaceFolder}/cli.js",
       "args": ["permission", "status", "--folder", "../../../teams/app001"],
+      "env": {
+        "TEAMSFX_REMOTE_COL": "true"
+      },
       "outFiles": [
         "${workspaceFolder}/lib/**/*.js",
         "${workspaceFolder}/../fx-core/build/**/*.js",

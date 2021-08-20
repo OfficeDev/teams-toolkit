@@ -40,9 +40,17 @@ export class PermissionStatus extends YargsCommand {
       return err(result.error);
     }
 
+    CLILogProvider.necessaryLog(
+      LogLevel.Info,
+      "Notice: Azure resources permission needs to be handled by subscription owner since privileged account is " +
+        "required to grant permission to Azure resources.\n" +
+        "[Assign Azure roles using the Azure portal] " +
+        "https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal?tabs=current"
+    );
+
     const core = result.value;
     {
-      const result = await core.checkPermission(getSystemInputs(rootFolder));
+      const result = await core.checkPermission(getSystemInputs(rootFolder, args.env));
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CheckPermission, result.error);
         return err(result.error);

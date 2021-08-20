@@ -45,6 +45,7 @@ export class HelpParamGenerator {
     Stage.publish,
     Stage.deploy,
     Stage.grantPermission,
+    Stage.checkPermission,
   ];
 
   private static instance: HelpParamGenerator;

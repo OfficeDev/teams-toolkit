@@ -180,3 +180,20 @@ export class Commands {
 export class QuestionValidationFunc {
   public static readonly validateFunctionName: string = "validateFunctionName";
 }
+
+export class FunctionBicep {
+  static readonly storageAccountName: string = "functionProvision.outputs.storageAccountName";
+  static readonly appServicePlanName: string = "functionProvision.outputs.appServicePlanName";
+  static readonly functionEndpoint: string = "functionProvision.outputs.functionEndpoint";
+}
+
+export class FunctionArmOutput {
+  static readonly StorageName: string = "function_storageAccountName";
+  static readonly AppServicePlanName: string = "function_appServicePlanName";
+  static readonly Endpoint: string = "function_functionEndpoint";
+  static readonly AppName: string = "function_appName";
+}
+
+export class FunctionBicepFile {
+  static readonly moduleTemplateFileName: string = "function.template.bicep";
+}

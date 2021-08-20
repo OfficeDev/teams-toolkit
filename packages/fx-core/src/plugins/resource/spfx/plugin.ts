@@ -8,7 +8,7 @@ import * as path from "path";
 import { SPFXQuestionNames } from ".";
 import { Utils } from "./utils/utils";
 import { Constants, PlaceHolders, PreDeployProgressMessage } from "./utils/constants";
-import { BuildSPPackageError, NoManifestFileError, NoSPPackageError } from "./error";
+import { BuildSPPackageError, NoSPPackageError, ScaffoldError } from "./error";
 import * as util from "util";
 import { ProgressHelper } from "./utils/progress-helper";
 import { getStrings, getAppDirectory } from "../../../common/tools";
@@ -17,153 +17,163 @@ import { REMOTE_MANIFEST } from "../appstudio/constants";
 
 export class SPFxPluginImpl {
   public async postScaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
-    const webpartName = ctx.answers![SPFXQuestionNames.webpart_name] as string;
-    const componentName = Utils.normalizeComponentName(webpartName);
-    const componentNameCamelCase = lodash.camelCase(componentName);
-    const componentId = uuid.v4();
-    const componentClassName = `${componentName}WebPart`;
-    const componentStrings = componentClassName + "Strings";
-    const libraryName = lodash.kebabCase(ctx.projectSettings?.appName);
-    let componentAlias = componentClassName;
-    if (componentClassName.length > Constants.MAX_ALIAS_LENGTH) {
-      componentAlias = componentClassName.substring(0, Constants.MAX_ALIAS_LENGTH);
-    }
-    let componentClassNameKebabCase = lodash.kebabCase(componentClassName);
-    if (componentClassNameKebabCase.length > Constants.MAX_BUNDLE_NAME_LENGTH) {
-      componentClassNameKebabCase = componentClassNameKebabCase.substring(
-        0,
-        Constants.MAX_BUNDLE_NAME_LENGTH
-      );
-      const lastCharacterIndex = componentClassNameKebabCase.length - 1;
-      if (componentClassNameKebabCase[lastCharacterIndex] === "-") {
-        componentClassNameKebabCase = componentClassNameKebabCase.substring(0, lastCharacterIndex);
+    try {
+      const webpartName = ctx.answers![SPFXQuestionNames.webpart_name] as string;
+      const componentName = Utils.normalizeComponentName(webpartName);
+      const componentNameCamelCase = lodash.camelCase(componentName);
+      const componentId = uuid.v4();
+      const componentClassName = `${componentName}WebPart`;
+      const componentStrings = componentClassName + "Strings";
+      const libraryName = lodash.kebabCase(ctx.projectSettings?.appName);
+      let componentAlias = componentClassName;
+      if (componentClassName.length > Constants.MAX_ALIAS_LENGTH) {
+        componentAlias = componentClassName.substring(0, Constants.MAX_ALIAS_LENGTH);
       }
+      let componentClassNameKebabCase = lodash.kebabCase(componentClassName);
+      if (componentClassNameKebabCase.length > Constants.MAX_BUNDLE_NAME_LENGTH) {
+        componentClassNameKebabCase = componentClassNameKebabCase.substring(
+          0,
+          Constants.MAX_BUNDLE_NAME_LENGTH
+        );
+        const lastCharacterIndex = componentClassNameKebabCase.length - 1;
+        if (componentClassNameKebabCase[lastCharacterIndex] === "-") {
+          componentClassNameKebabCase = componentClassNameKebabCase.substring(
+            0,
+            lastCharacterIndex
+          );
+        }
+      }
+
+      const outputFolderPath = `${ctx.root}/SPFx`;
+      await fs.mkdir(outputFolderPath);
+
+      // teams folder
+      const teamsDir = `${outputFolderPath}/teams`;
+
+      const templateFolder = path.join(getTemplatesFolder(), "plugins", "resource", "spfx");
+
+      await fs.mkdir(teamsDir);
+      await fs.copyFile(
+        path.resolve(templateFolder, "./webpart/base/images/color.png"),
+        `${teamsDir}/${componentId}_color.png`
+      );
+      await fs.copyFile(
+        path.resolve(templateFolder, "./webpart/base/images/outline.png"),
+        `${teamsDir}/${componentId}_outline.png`
+      );
+
+      // src folder
+      const srcDir = `${outputFolderPath}/src`;
+      await fs.mkdir(srcDir);
+      await fs.copyFile(
+        path.resolve(templateFolder, "./solution/src/index.ts"),
+        `${srcDir}/index.ts`
+      );
+
+      switch (ctx.answers![SPFXQuestionNames.framework_type] as string) {
+        case Constants.FRAMEWORK_NONE:
+          fs.mkdirSync(`${srcDir}/webparts/${componentNameCamelCase}`, {
+            recursive: true,
+          });
+          await fs.copyFile(
+            path.resolve(templateFolder, "./webpart/none/{componentClassName}.module.scss"),
+            `${srcDir}/webparts/${componentNameCamelCase}/${componentClassName}.module.scss`
+          );
+          await fs.copyFile(
+            path.resolve(templateFolder, "./webpart/none/{componentClassName}.ts"),
+            `${srcDir}/webparts/${componentNameCamelCase}/${componentClassName}.ts`
+          );
+          await fs.copyFile(
+            path.resolve(templateFolder, "./webpart/none/package.json"),
+            `${outputFolderPath}/package.json`
+          );
+          break;
+        case Constants.FRAMEWORK_REACT:
+          const componentDir = `${srcDir}/webparts/${componentNameCamelCase}/components`;
+          fs.mkdirSync(componentDir, { recursive: true });
+          await fs.copyFile(
+            path.resolve(templateFolder, "./webpart/react/{componentClassName}.ts"),
+            `${srcDir}/webparts/${componentNameCamelCase}/${componentClassName}.ts`
+          );
+          await fs.copyFile(
+            path.resolve(templateFolder, "./webpart/react/components/{componentName}.module.scss"),
+            `${componentDir}/${componentName}.module.scss`
+          );
+          await fs.copyFile(
+            path.resolve(templateFolder, "./webpart/react/components/{componentName}.tsx"),
+            `${componentDir}/${componentName}.tsx`
+          );
+          await fs.copyFile(
+            path.resolve(templateFolder, "./webpart/react/components/I{componentName}Props.ts"),
+            `${componentDir}/I${componentName}Props.ts`
+          );
+          await fs.copyFile(
+            path.resolve(templateFolder, "./webpart/react/package.json"),
+            `${outputFolderPath}/package.json`
+          );
+          break;
+      }
+
+      await fs.copy(
+        path.resolve(templateFolder, "./webpart/base/loc"),
+        `${srcDir}/webparts/${componentNameCamelCase}/loc`
+      );
+      await fs.copy(
+        path.resolve(templateFolder, "./webpart/base/{componentClassName}.manifest.json"),
+        `${srcDir}/webparts/${componentNameCamelCase}/${componentClassName}.manifest.json`
+      );
+
+      // config folder
+      await fs.copy(
+        path.resolve(templateFolder, "./solution/config"),
+        `${outputFolderPath}/config`
+      );
+
+      // Other files
+      await fs.copyFile(
+        path.resolve(templateFolder, "./solution/README.md"),
+        `${outputFolderPath}/README.md`
+      );
+      await fs.copyFile(
+        path.resolve(templateFolder, "./solution/_gitignore"),
+        `${outputFolderPath}/.gitignore`
+      );
+      await fs.copyFile(
+        path.resolve(templateFolder, "./solution/gulpfile.js"),
+        `${outputFolderPath}/gulpfile.js`
+      );
+      await fs.copyFile(
+        path.resolve(templateFolder, "./solution/tsconfig.json"),
+        `${outputFolderPath}/tsconfig.json`
+      );
+      await fs.copyFile(
+        path.resolve(templateFolder, "./solution/tslint.json"),
+        `${outputFolderPath}/tslint.json`
+      );
+
+      // Configure placeholders
+      const replaceMap: Map<string, string> = new Map();
+      replaceMap.set(PlaceHolders.componentName, componentName);
+      replaceMap.set(PlaceHolders.componentNameCamelCase, componentNameCamelCase);
+      replaceMap.set(PlaceHolders.componentClassName, componentClassName);
+      replaceMap.set(PlaceHolders.componentStrings, componentStrings);
+      replaceMap.set(PlaceHolders.libraryName, libraryName);
+      replaceMap.set(PlaceHolders.componentId, componentId);
+      replaceMap.set(PlaceHolders.componentAlias, componentAlias);
+      replaceMap.set(
+        PlaceHolders.componentDescription,
+        ctx.answers![SPFXQuestionNames.webpart_desp] as string
+      );
+      replaceMap.set(PlaceHolders.componentNameUnescaped, webpartName);
+      replaceMap.set(PlaceHolders.componentClassNameKebabCase, componentClassNameKebabCase);
+
+      const appDirectory = await getAppDirectory(ctx.root);
+      await Utils.configure(outputFolderPath, replaceMap);
+      await Utils.configure(`${appDirectory}/${REMOTE_MANIFEST}`, replaceMap);
+      return ok(undefined);
+    } catch (error) {
+      return err(ScaffoldError(error));
     }
-
-    const outputFolderPath = `${ctx.root}/SPFx`;
-    await fs.mkdir(outputFolderPath);
-
-    // teams folder
-    const teamsDir = `${outputFolderPath}/teams`;
-
-    const templateFolder = path.join(getTemplatesFolder(), "plugins", "resource", "spfx");
-
-    await fs.mkdir(teamsDir);
-    await fs.copyFile(
-      path.resolve(templateFolder, "./webpart/base/images/color.png"),
-      `${teamsDir}/${componentId}_color.png`
-    );
-    await fs.copyFile(
-      path.resolve(templateFolder, "./webpart/base/images/outline.png"),
-      `${teamsDir}/${componentId}_outline.png`
-    );
-
-    // src folder
-    const srcDir = `${outputFolderPath}/src`;
-    await fs.mkdir(srcDir);
-    await fs.copyFile(
-      path.resolve(templateFolder, "./solution/src/index.ts"),
-      `${srcDir}/index.ts`
-    );
-
-    switch (ctx.answers![SPFXQuestionNames.framework_type] as string) {
-      case Constants.FRAMEWORK_NONE:
-        fs.mkdirSync(`${srcDir}/webparts/${componentNameCamelCase}`, {
-          recursive: true,
-        });
-        await fs.copyFile(
-          path.resolve(templateFolder, "./webpart/none/{componentClassName}.module.scss"),
-          `${srcDir}/webparts/${componentNameCamelCase}/${componentClassName}.module.scss`
-        );
-        await fs.copyFile(
-          path.resolve(templateFolder, "./webpart/none/{componentClassName}.ts"),
-          `${srcDir}/webparts/${componentNameCamelCase}/${componentClassName}.ts`
-        );
-        await fs.copyFile(
-          path.resolve(templateFolder, "./webpart/none/package.json"),
-          `${outputFolderPath}/package.json`
-        );
-        break;
-      case Constants.FRAMEWORK_REACT:
-        const componentDir = `${srcDir}/webparts/${componentNameCamelCase}/components`;
-        fs.mkdirSync(componentDir, { recursive: true });
-        await fs.copyFile(
-          path.resolve(templateFolder, "./webpart/react/{componentClassName}.ts"),
-          `${srcDir}/webparts/${componentNameCamelCase}/${componentClassName}.ts`
-        );
-        await fs.copyFile(
-          path.resolve(templateFolder, "./webpart/react/components/{componentName}.module.scss"),
-          `${componentDir}/${componentName}.module.scss`
-        );
-        await fs.copyFile(
-          path.resolve(templateFolder, "./webpart/react/components/{componentName}.tsx"),
-          `${componentDir}/${componentName}.tsx`
-        );
-        await fs.copyFile(
-          path.resolve(templateFolder, "./webpart/react/components/I{componentName}Props.ts"),
-          `${componentDir}/I${componentName}Props.ts`
-        );
-        await fs.copyFile(
-          path.resolve(templateFolder, "./webpart/react/package.json"),
-          `${outputFolderPath}/package.json`
-        );
-        break;
-    }
-
-    await fs.copy(
-      path.resolve(templateFolder, "./webpart/base/loc"),
-      `${srcDir}/webparts/${componentNameCamelCase}/loc`
-    );
-    await fs.copy(
-      path.resolve(templateFolder, "./webpart/base/{componentClassName}.manifest.json"),
-      `${srcDir}/webparts/${componentNameCamelCase}/${componentClassName}.manifest.json`
-    );
-
-    // config folder
-    await fs.copy(path.resolve(templateFolder, "./solution/config"), `${outputFolderPath}/config`);
-
-    // Other files
-    await fs.copyFile(
-      path.resolve(templateFolder, "./solution/README.md"),
-      `${outputFolderPath}/README.md`
-    );
-    await fs.copyFile(
-      path.resolve(templateFolder, "./solution/_gitignore"),
-      `${outputFolderPath}/.gitignore`
-    );
-    await fs.copyFile(
-      path.resolve(templateFolder, "./solution/gulpfile.js"),
-      `${outputFolderPath}/gulpfile.js`
-    );
-    await fs.copyFile(
-      path.resolve(templateFolder, "./solution/tsconfig.json"),
-      `${outputFolderPath}/tsconfig.json`
-    );
-    await fs.copyFile(
-      path.resolve(templateFolder, "./solution/tslint.json"),
-      `${outputFolderPath}/tslint.json`
-    );
-
-    // Configure placeholders
-    const replaceMap: Map<string, string> = new Map();
-    replaceMap.set(PlaceHolders.componentName, componentName);
-    replaceMap.set(PlaceHolders.componentNameCamelCase, componentNameCamelCase);
-    replaceMap.set(PlaceHolders.componentClassName, componentClassName);
-    replaceMap.set(PlaceHolders.componentStrings, componentStrings);
-    replaceMap.set(PlaceHolders.libraryName, libraryName);
-    replaceMap.set(PlaceHolders.componentId, componentId);
-    replaceMap.set(PlaceHolders.componentAlias, componentAlias);
-    replaceMap.set(
-      PlaceHolders.componentDescription,
-      ctx.answers![SPFXQuestionNames.webpart_desp] as string
-    );
-    replaceMap.set(PlaceHolders.componentNameUnescaped, webpartName);
-    replaceMap.set(PlaceHolders.componentClassNameKebabCase, componentClassNameKebabCase);
-
-    const appDirectory = await getAppDirectory(ctx.root);
-    await Utils.configure(outputFolderPath, replaceMap);
-    await Utils.configure(`${appDirectory}/${REMOTE_MANIFEST}`, replaceMap);
-    return ok(undefined);
   }
 
   private async buildSPPackge(ctx: PluginContext): Promise<Result<any, FxError>> {
@@ -236,7 +246,7 @@ export class SPFxPluginImpl {
       return ok(undefined);
     } catch (error) {
       await ProgressHelper.endPreDeployProgress(false);
-      throw BuildSPPackageError(error);
+      return err(BuildSPPackageError(error));
     }
   }
 

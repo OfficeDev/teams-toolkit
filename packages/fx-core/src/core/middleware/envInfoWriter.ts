@@ -20,6 +20,7 @@ export const EnvInfoWriterMW: Middleware = async (ctx: CoreHookContext, next: Ne
     if (
       !inputs.projectPath ||
       inputs.ignoreConfigPersist === true ||
+      inputs.ignoreEnvInfo === true ||
       StaticPlatforms.includes(inputs.platform)
     )
       return;

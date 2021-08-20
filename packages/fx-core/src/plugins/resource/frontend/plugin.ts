@@ -53,10 +53,12 @@ import {
 } from "./utils/progress-helper";
 import { TemplateInfo } from "./resources/templateInfo";
 import { AzureClientFactory, AzureLib } from "./utils/azure-client";
-import { getArmOutput, getTemplatesFolder, isArmSupportEnabled } from "../../..";
+import { getArmOutput } from "../utils4v2";
+import { getTemplatesFolder, isArmSupportEnabled } from "../../..";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import * as fs from "fs-extra";
 import { ConstantString } from "../../../common/constants";
+import { FunctionArmOutput } from "../function/constants";
 import { EnvironmentUtils } from "./utils/environment-utils";
 
 export class FrontendPluginImpl {
@@ -173,26 +175,16 @@ export class FrontendPluginImpl {
     if (functionPlugin) {
       functionEnv = {
         defaultName: ctx.projectSettings?.defaultFunctionName as string,
-        endpoint: functionPlugin.get(DependentPluginInfo.FunctionEndpoint) as string,
+        endpoint: this.getFunctionEndpoint(ctx),
       };
     }
 
-    if (isArmSupportEnabled()) {
-      const endpoint = getArmOutput(ctx, ArmOutput.SimpleAuthEndpoint) as string;
-      if (endpoint) {
-        runtimeEnv = {
-          endpoint: endpoint,
-          startLoginPageUrl: DependentPluginInfo.StartLoginPageURL,
-        };
-      }
-    } else {
-      const authPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.RuntimePluginName);
-      if (authPlugin) {
-        runtimeEnv = {
-          endpoint: authPlugin.get(DependentPluginInfo.RuntimeEndpoint) as string,
-          startLoginPageUrl: DependentPluginInfo.StartLoginPageURL,
-        };
-      }
+    const authPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.RuntimePluginName);
+    if (authPlugin) {
+      runtimeEnv = {
+        endpoint: this.getSimpleAuthEndpoint(ctx),
+        startLoginPageUrl: DependentPluginInfo.StartLoginPageURL,
+      };
     }
 
     const aadPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.AADPluginName);
@@ -212,16 +204,7 @@ export class FrontendPluginImpl {
     }
 
     if (isArmSupportEnabled()) {
-      const config = await FrontendConfig.fromPluginContext(ctx);
-      config.endpoint = getArmOutput(ctx, ArmOutput.FrontendEndpoint) as string;
-      config.domain = getArmOutput(ctx, ArmOutput.FrontendDomain) as string;
-      config.syncToPluginContext(ctx);
-
-      const client = new AzureStorageClient(config);
-      await runWithErrorCatchAndThrow(
-        new EnableStaticWebsiteError(),
-        async () => await client.enableStaticWebsite()
-      );
+      await this.syncArmOutput(ctx);
     }
 
     return ok(undefined);
@@ -372,5 +355,36 @@ export class FrontendPluginImpl {
     };
 
     return ok(result);
+  }
+
+  private getFunctionEndpoint(ctx: PluginContext): string {
+    if (isArmSupportEnabled()) {
+      return `https://${getArmOutput(ctx, FunctionArmOutput.Endpoint)}`;
+    } else {
+      const functionPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.FunctionPluginName);
+      return functionPlugin!.get(DependentPluginInfo.FunctionEndpoint) as string;
+    }
+  }
+
+  private getSimpleAuthEndpoint(ctx: PluginContext): string {
+    if (isArmSupportEnabled()) {
+      return getArmOutput(ctx, ArmOutput.SimpleAuthEndpoint)!;
+    } else {
+      const authPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.RuntimePluginName);
+      return authPlugin!.get(DependentPluginInfo.RuntimeEndpoint) as string;
+    }
+  }
+
+  private async syncArmOutput(ctx: PluginContext) {
+    const config = await FrontendConfig.fromPluginContext(ctx);
+    config.endpoint = getArmOutput(ctx, ArmOutput.FrontendEndpoint) as string;
+    config.domain = getArmOutput(ctx, ArmOutput.FrontendDomain) as string;
+    config.syncToPluginContext(ctx);
+
+    const client = new AzureStorageClient(config);
+    await runWithErrorCatchAndThrow(
+      new EnableStaticWebsiteError(),
+      async () => await client.enableStaticWebsite()
+    );
   }
 }

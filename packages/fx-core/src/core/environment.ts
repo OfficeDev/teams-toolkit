@@ -9,8 +9,9 @@ import {
   FxError,
   ok,
   Result,
+  SystemError,
 } from "@microsoft/teamsfx-api";
-import path from "path";
+import path, { basename } from "path";
 import fs from "fs-extra";
 import {
   deserializeDict,
@@ -24,6 +25,8 @@ import {
   objectToMap,
 } from "..";
 import { GLOBAL_CONFIG } from "../plugins/solution/fx-solution/constants";
+import { readJson } from "../common/fileUtils";
+import { Component, sendTelemetryErrorEvent, TelemetryEvent } from "../common/telemetry";
 
 export interface EnvInfo {
   envName: string;
@@ -63,7 +66,7 @@ class EnvironmentManager {
       return ok({ envName, data });
     }
 
-    const envData = await fs.readJson(envFiles.envProfile);
+    const envData = await readJson(envFiles.envProfile);
 
     mergeSerectData(userData, envData);
     const data = objectToMap(envData);
@@ -170,7 +173,15 @@ class EnvironmentManager {
       return ok(secrets);
     }
 
-    return this.decrypt(secrets, cryptoProvider);
+    const res = this.decrypt(secrets, cryptoProvider);
+    if (res.isErr()) {
+      const fxError: SystemError = res.error;
+      const fileName = basename(userDataPath);
+      fxError.message = `Project update failed because of ${fxError.name}(file:${fileName}):${fxError.message}, if your local file '*.userdata' is not modified, please report to us by click 'Report Issue' button.`;
+      fxError.userData = `file: ${fileName}\n------------FILE START--------\n${content}\n------------FILE END----------`;
+      sendTelemetryErrorEvent(Component.core, TelemetryEvent.DecryptUserdata, fxError);
+    }
+    return res;
   }
 
   private encrypt(

@@ -47,6 +47,8 @@ export interface AzureSolutionSettings extends SolutionSettings {
     capabilities: string[];
     // (undocumented)
     hostType: string;
+    // (undocumented)
+    migrateFromV1?: boolean;
 }
 
 // @public
@@ -182,6 +184,8 @@ export interface Core {
     listCollaborator: (systemInputs: Inputs) => Promise<Result<any, FxError>>;
     // (undocumented)
     localDebug: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
+    // (undocumented)
+    migrateV1Project: (systemInputs: Inputs) => Promise<Result<string, FxError>>;
     // (undocumented)
     provisionResources: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
     // (undocumented)
@@ -451,6 +455,8 @@ export interface Inputs extends Json {
     // (undocumented)
     ignoreConfigPersist?: boolean;
     // (undocumented)
+    ignoreEnvInfo?: boolean;
+    // (undocumented)
     ignoreLock?: boolean;
     // (undocumented)
     ignoreTypeCheck?: boolean;
@@ -637,10 +643,10 @@ export interface MultiSelectQuestion extends UserInputQuestion {
 export type MultiSelectResult = InputResult<StaticOptions>;
 
 // @public (undocumented)
-export function newSystemError(source: string, name: string, message: string, issueLink?: string): SystemError;
+export function newSystemError(source: string, name: string, message: string, issueLink?: string, innerError?: any): SystemError;
 
 // @public (undocumented)
-export function newUserError(source: string, name: string, message: string, helpLink?: string): UserError;
+export function newUserError(source: string, name: string, message: string, helpLink?: string, innerError?: any): UserError;
 
 // @public
 export interface OptionItem {
@@ -949,6 +955,8 @@ export interface Solution {
     // (undocumented)
     localDebug: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
     // (undocumented)
+    migrate?: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
+    // (undocumented)
     name: string;
     // (undocumented)
     provision: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
@@ -1024,6 +1032,8 @@ export enum Stage {
     // (undocumented)
     listCollaborator = "listCollaborator",
     // (undocumented)
+    migrateV1 = "migrateV1",
+    // (undocumented)
     package = "package",
     // (undocumented)
     provision = "provision",
@@ -1089,6 +1099,7 @@ export class SystemError extends Error implements FxError {
     issueLink?: string;
     source: string;
     timestamp: Date;
+    userData?: string;
 }
 
 // @public

@@ -16,6 +16,7 @@ export enum CliConfigOptions {
   EnvCheckerValidateDotnetSdk = "validate-dotnet-sdk",
   EnvCheckerValidateFuncCoreTools = "validate-func-core-tools",
   EnvCheckerValidateNode = "validate-node",
+  RunFrom = "run-from",
 }
 
 export enum CliConfigTelemetry {
@@ -26,6 +27,12 @@ export enum CliConfigTelemetry {
 export enum CliConfigEnvChecker {
   On = "on",
   Off = "off",
+}
+
+export enum CliConfigRunFrom {
+  GitHubAction = "GitHubAction",
+  AzDoTask = "AzDoTask",
+  Other = "Other",
 }
 
 export class UserSettings {
@@ -89,5 +96,19 @@ export class UserSettings {
     }
 
     return ok(true);
+  }
+
+  public static getRunFromSetting(): Result<CliConfigRunFrom, FxError> {
+    const result = this.getConfigSync();
+    if (result.isErr()) {
+      return err(result.error);
+    }
+
+    const config = result.value[CliConfigOptions.RunFrom];
+    if (!config || !Object.values(CliConfigRunFrom).includes(config)) {
+      return ok(CliConfigRunFrom.Other);
+    }
+
+    return ok(config);
   }
 }

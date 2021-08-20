@@ -22,6 +22,7 @@ export const FRONTEND_ENDPOINT_ARM = "frontendHosting_endpoint";
 export const FRONTEND_DOMAIN_ARM = "frontendHosting_domain";
 export const BOT_ID = "botId";
 export const LOCAL_BOT_ID = "localBotId";
+export const V1_MANIFEST = "manifest.json";
 
 export const TEAMS_APP_MANIFEST_TEMPLATE = `{
   "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.9/MicrosoftTeams.schema.json",

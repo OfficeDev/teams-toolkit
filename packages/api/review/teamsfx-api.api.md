@@ -21,6 +21,12 @@ export interface AppStudioTokenProvider {
 }
 
 // @public (undocumented)
+export const ArchiveFolderName = ".archive";
+
+// @public (undocumented)
+export const ArchiveLogFileName = ".archive.log";
+
+// @public (undocumented)
 export function assembleError(e: any, source?: string): FxError;
 
 // @public

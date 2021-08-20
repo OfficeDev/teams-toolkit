@@ -229,8 +229,8 @@ export class AppStudioPluginImpl {
       if (result.isErr()) {
         throw result;
       }
-      ctx.logProvider?.info(`Teams app created ${result.value}`);
       remoteTeamsAppId = result.value.teamsAppId!;
+      ctx.logProvider?.info(`Teams app created ${remoteTeamsAppId}`);
     }
     return remoteTeamsAppId;
   }

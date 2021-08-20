@@ -62,7 +62,11 @@ export namespace AppStudioClient {
           throw new Error(`Cannot create teams app`);
         }
       } catch (e) {
-        throw new Error(`Cannot create teams app due to ${e.name}: ${e.message}`);
+        const error = new Error(`Cannot create teams app due to ${e.name}: ${e.message}`);
+        if (e.response?.status) {
+          error.name = e.response?.status;
+        }
+        throw error;
       }
     } else {
       throw new Error("Teams app create failed, invalid app studio token");

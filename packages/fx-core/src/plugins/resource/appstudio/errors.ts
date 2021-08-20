@@ -19,7 +19,8 @@ export class AppStudioError {
 
   public static readonly RemoteAppIdCreateFailedError = {
     name: "RemoteAppIdCreateFailed",
-    message: "Failed to create teams app id in app studio.",
+    message: (error?: any) =>
+      `Failed to create teams app id in app studio, due to ${error.name}, ${error.message}`,
   };
 
   public static readonly RemoteAppIdUpdateFailedError = {
@@ -30,7 +31,8 @@ export class AppStudioError {
 
   public static readonly LocalAppIdCreateFailedError = {
     name: "LocalAppIdCreateFailed",
-    message: "Failed to create localDebug teams app id in app studio.",
+    message: (error?: any) =>
+      `Failed to create localDebug teams app id in app studio, due to ${error.name}, ${error.message}`,
   };
 
   public static readonly LocalAppIdUpdateFailedError = {

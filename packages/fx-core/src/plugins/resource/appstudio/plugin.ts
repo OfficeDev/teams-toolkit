@@ -209,7 +209,7 @@ export class AppStudioPluginImpl {
     });
   }
 
-  public async provision(ctx: PluginContext): Promise<string> {
+  public async provision(ctx: PluginContext): Promise<Result<string, FxError>> {
     let remoteTeamsAppId = this.getTeamsAppId(ctx, false);
 
     let create = false;
@@ -227,12 +227,12 @@ export class AppStudioPluginImpl {
     if (create) {
       const result = await this.createApp(ctx, false);
       if (result.isErr()) {
-        throw result;
+        return err(result.error);
       }
       remoteTeamsAppId = result.value.teamsAppId!;
       ctx.logProvider?.info(`Teams app created ${remoteTeamsAppId}`);
     }
-    return remoteTeamsAppId;
+    return ok(remoteTeamsAppId);
   }
 
   public async postProvision(ctx: PluginContext): Promise<string> {
@@ -1138,11 +1138,11 @@ export class AppStudioPluginImpl {
         isLocalDebug
           ? AppStudioResultFactory.SystemError(
               AppStudioError.LocalAppIdCreateFailedError.name,
-              AppStudioError.LocalAppIdCreateFailedError.message
+              AppStudioError.LocalAppIdCreateFailedError.message(e)
             )
           : AppStudioResultFactory.SystemError(
               AppStudioError.RemoteAppIdCreateFailedError.name,
-              AppStudioError.RemoteAppIdCreateFailedError.message
+              AppStudioError.RemoteAppIdCreateFailedError.message(e)
             )
       );
     }
@@ -1177,11 +1177,11 @@ export class AppStudioPluginImpl {
           type === "remote"
             ? AppStudioResultFactory.SystemError(
                 AppStudioError.RemoteAppIdCreateFailedError.name,
-                AppStudioError.RemoteAppIdCreateFailedError.message
+                AppStudioError.RemoteAppIdCreateFailedError.message()
               )
             : AppStudioResultFactory.SystemError(
                 AppStudioError.LocalAppIdCreateFailedError.name,
-                AppStudioError.LocalAppIdCreateFailedError.message
+                AppStudioError.LocalAppIdCreateFailedError.message()
               )
         );
       }

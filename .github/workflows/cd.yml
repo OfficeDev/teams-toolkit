@@ -103,7 +103,7 @@ jobs:
         run: |
           echo "::set-output name=CHANGED::$(git tag --points-at HEAD | xargs)"
           echo "::set-output name=TEMPLATE_VERSION::$(git tag --points-at HEAD | grep templates)"
-          echo "::set-output name=EXTENSION_VERSION::$(git tag --points-at HEAD | grep ms-teams-vscode-extension@)"
+          echo "::set-output name=EXTENSION_VERSION::$(git tag --points-at HEAD | grep ms-teams-vscode-extension@ | cut -d '@' -f2)"
           if git tag --points-at HEAD | grep templates | grep rc;
           then
               git push -d origin $(git tag --points-at HEAD | grep templates | grep rc)
@@ -239,5 +239,5 @@ jobs:
         uses: ncipollo/release-action@v1.7.3
         with:
           token: ${{ secrets.CD_PAT }}
-          tag: ${{ steps.version-change.outputs.EXTENSION_VERSION }}
+          tag: 'vscode-extension-${{ steps.version-change.outputs.EXTENSION_VERSION }}'
           artifacts: ./packages/**/*.vsix

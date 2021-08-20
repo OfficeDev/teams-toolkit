@@ -280,6 +280,8 @@ export class FunctionPluginImpl {
       await this.preScaffold(ctx);
       return await this.scaffold(ctx);
     }
+
+    return ResultFactory.Success(undefined);
   }
 
   public async preScaffold(ctx: PluginContext): Promise<FxResult> {

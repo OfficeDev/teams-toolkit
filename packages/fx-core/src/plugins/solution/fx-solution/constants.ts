@@ -118,10 +118,12 @@ export enum SolutionError {
   FailedToCompileBicepFiles = "FailedToCompileBicepFiles",
   FailedToGetAzureCredential = "FailedToGetAzureCredential",
   FailedToDeployArmTemplatesToAzure = "FailedToDeployArmTemplatesToAzure",
+  V1ProjectNotSupported = "V1ProjectNotSupported",
   CannotCheckPermissionBeforeProvision = "CannotCheckPermissionBeforeProvision",
   FailedToRetrieveUserInfo = "FailedToRetrieveUserInfo",
   M365AccountNotMatch = "M365AccountNotMatch",
   FeatureNotSupported = "FeatureNotSupported",
+  FailedToCheckPermission = "FailedToCheckPermission",
 }
 
 export const LOCAL_DEBUG_TAB_ENDPOINT = "localTabEndpoint";
@@ -156,6 +158,9 @@ export const CancelError = new UserError("UserCancel", "UserCancel", "Solution")
 export enum SolutionTelemetryEvent {
   CreateStart = "create-start",
   Create = "create",
+
+  MigrateStart = "migrate-start",
+  Migrate = "migrate",
 
   AddResourceStart = "add-resource-start",
   AddResource = "add-resource",

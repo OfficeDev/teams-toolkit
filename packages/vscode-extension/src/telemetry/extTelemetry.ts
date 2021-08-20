@@ -101,7 +101,9 @@ export namespace ExtTelemetry {
     }
 
     properties[TelemetryProperty.ErrorCode] = `${error.source}.${error.name}`;
-    properties[TelemetryProperty.ErrorMessage] = error.message;
+    properties[TelemetryProperty.ErrorMessage] = `${error.message}${
+      error.stack ? "\nstack:\n" + error.stack : ""
+    }`;
 
     reporter.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
   }

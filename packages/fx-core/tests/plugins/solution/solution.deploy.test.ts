@@ -16,6 +16,8 @@ import {
   Void,
   Plugin,
   Platform,
+  ProjectSettings,
+  Inputs,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs from "fs-extra";
@@ -30,12 +32,14 @@ import {
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
 } from "../../../src/plugins/solution/fx-solution/question";
-import { validManifest } from "./util";
+import { MockedAzureAccountProvider, MockedV2Context, validManifest } from "./util";
 import _ from "lodash";
 import * as uuid from "uuid";
 import { AadAppForTeamsPlugin } from "../../../src";
 import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import Container from "typedi";
+import { deploy } from "../../../src/plugins/solution/fx-solution/v2/deploy";
+import { ProvisionOutput } from "@microsoft/teamsfx-api/build/v2";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -217,5 +221,63 @@ describe("deploy() for SPFx projects", () => {
     const result = await solution.deploy(mockedCtx);
     expect(result.isOk()).to.be.true;
     expect(solution.runningState).equals(SolutionRunningState.Idle);
+  });
+});
+
+describe("API v2 cases: deploy() for Azure projects", () => {
+  const mocker = sinon.createSandbox();
+
+  beforeEach(() => {});
+
+  afterEach(() => {
+    mocker.restore();
+  });
+
+  it("should return error if an Azure project hasn't been provisioned", async () => {
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [new AadAppForTeamsPlugin().name],
+      },
+    };
+    const mockedCtx = new MockedV2Context(projectSettings);
+    const mockedProvider = new MockedAzureAccountProvider();
+    const mockedInputs: Inputs = {
+      platform: Platform.VSCode,
+    };
+    const provisionOutput: Record<string, ProvisionOutput> = {
+      solution: { output: {}, secrets: {}, states: {} },
+    };
+    const result = await deploy(mockedCtx, mockedInputs, provisionOutput, mockedProvider);
+    expect(result.isErr()).to.be.true;
+    expect(result._unsafeUnwrapErr().name).equals(SolutionError.CannotDeployBeforeProvision);
+  });
+
+  it("should return error if no resource is selected to deploy", async () => {
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [new AadAppForTeamsPlugin().name],
+      },
+    };
+    const mockedCtx = new MockedV2Context(projectSettings);
+    const mockedProvider = new MockedAzureAccountProvider();
+    const mockedInputs: Inputs = {
+      platform: Platform.VSCode,
+    };
+    const provisionOutput: Record<string, ProvisionOutput> = {
+      solution: { output: {}, secrets: {}, states: { provisionSucceeded: true } },
+    };
+    const result = await deploy(mockedCtx, mockedInputs, provisionOutput, mockedProvider);
+    expect(result.isErr()).to.be.true;
+    expect(result._unsafeUnwrapErr().name).equals(SolutionError.NoResourcePluginSelected);
   });
 });

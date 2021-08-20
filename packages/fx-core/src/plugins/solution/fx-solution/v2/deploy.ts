@@ -30,7 +30,9 @@ export async function deploy(
   tokenProvider: AzureAccountProvider
 ): Promise<Result<Record<v2.PluginName, { output: Record<string, string> }>, FxError>> {
   const inAzureProject = isAzureProject(getAzureSolutionSettings(ctx));
-  const provisioned = provisionOutput[GLOBAL_CONFIG].states[SOLUTION_PROVISION_SUCCEEDED];
+  const provisioned = provisionOutput[GLOBAL_CONFIG].states[
+    SOLUTION_PROVISION_SUCCEEDED
+  ] as boolean;
 
   if (inAzureProject && !provisioned) {
     return err(

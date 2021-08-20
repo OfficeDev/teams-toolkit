@@ -782,9 +782,9 @@ type ProvisionInputs = Inputs & SolutionInputs;
 
 // @public (undocumented)
 type ProvisionOutput = {
-    output: Record<string, string>;
-    states: Record<string, string>;
-    secrets: Record<string, string>;
+    output: Json;
+    states: Json;
+    secrets: Json;
 };
 
 // @public

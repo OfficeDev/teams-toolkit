@@ -280,4 +280,30 @@ describe("API v2 cases: deploy() for Azure projects", () => {
     expect(result.isErr()).to.be.true;
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.NoResourcePluginSelected);
   });
+
+  it("should return ok on happy path", async () => {
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [new AadAppForTeamsPlugin().name, fehostPlugin.name],
+      },
+    };
+    const mockedCtx = new MockedV2Context(projectSettings);
+    const mockedProvider = new MockedAzureAccountProvider();
+    const mockedInputs: Inputs = {
+      platform: Platform.VSCode,
+    };
+    mockedInputs[AzureSolutionQuestionNames.PluginSelectionDeploy] = [fehostPlugin.name];
+    const provisionOutput: Record<string, ProvisionOutput> = {
+      solution: { output: {}, secrets: {}, states: { provisionSucceeded: true } },
+    };
+    mockDeployThatAlwaysSucceed(fehostPlugin);
+    const result = await deploy(mockedCtx, mockedInputs, provisionOutput, mockedProvider);
+
+    expect(result.isOk()).to.be.true;
+  });
 });

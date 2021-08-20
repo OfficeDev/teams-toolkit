@@ -234,10 +234,19 @@ jobs:
             npm install --only=production
             npx vsce package
 
-      - name: release VSCode extension to github
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') }}
+      - name: release daily VSCode extension to github
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.ref == 'refs/heads/dev'  }}
         uses: ncipollo/release-action@v1.7.3
         with:
           token: ${{ secrets.CD_PAT }}
           tag: 'vscode-extension-${{ steps.version-change.outputs.EXTENSION_VERSION }}'
+          artifacts: ./packages/**/*.vsix
+          prerelease: true
+
+      - name: release VSCode extension on main to github
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.ref == 'refs/heads/main' }}
+        uses: ncipollo/release-action@v1.7.3
+        with:
+          token: ${{ secrets.CD_PAT }}
+          tag: 'vscode-extension@${{ steps.version-change.outputs.EXTENSION_VERSION }}'
           artifacts: ./packages/**/*.vsix

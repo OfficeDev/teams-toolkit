@@ -100,16 +100,17 @@ export interface SolutionPlugin {
   /**
    * Depends on the output of {@link package}. Uploads Teams package to AppStudio
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
-   * @param {AppStudioTokenProvider} tokenProvider - Token for AppStudio
    * @param {Inputs} inputs - User answers to quesions defined in {@link getQuestionsForLifecycleTask}
+   * @param {AppStudioTokenProvider} tokenProvider - Token for AppStudio
    * for {@link Stage.publish} along with some system inputs.
    *
    * @returns Void because side effect is expected.
    */
   publishApplication?: (
     ctx: Context,
-    tokenProvider: AppStudioTokenProvider,
-    inputs: Inputs
+    inputs: Inputs,
+    provisionOutput: Readonly<Record<PluginName, ProvisionOutput>>,
+    tokenProvider: AppStudioTokenProvider
   ) => Promise<Result<Void, FxError>>;
 
   /**

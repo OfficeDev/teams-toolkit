@@ -40,6 +40,7 @@ import {
   globalStateGet,
   Correlator,
   getAppDirectory,
+  isV1Project,
 } from "@microsoft/teamsfx-core";
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -84,6 +85,7 @@ import * as path from "path";
 import { exp } from "./exp/index";
 import { TreatmentVariables } from "./exp/treatmentVariables";
 import { StringContext } from "./utils/stringContext";
+import { ext } from "./extensionVariables";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -956,4 +958,9 @@ export interface VscQuickPickItem extends QuickPickItem {
   id: string;
 
   function: () => Promise<void>;
+}
+
+export function enableMigrateV1(): void {
+  const validProject = ext.workspaceUri && isV1Project(ext.workspaceUri.fsPath);
+  vscode.commands.executeCommand("setContext", "fx-extension.v1Project", validProject);
 }

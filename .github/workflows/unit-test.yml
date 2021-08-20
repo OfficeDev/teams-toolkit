@@ -4,7 +4,7 @@ on:
   pull_request:
     branches:
       - main
-      - dev 
+      - dev
   push:
     branches:
       - main
@@ -34,14 +34,14 @@ jobs:
           dotnet-version: 3.1.x
 
       - name: Download Simple Auth bits
-              uses: nick-invision/retry@v2
-              with:
-                timeout_minutes: 10
-                max_attempts: 10
-                retry_on: error
-                shell: pwsh
-                command: |
-                  ./.github/scripts/downloadSimpleAuth.ps1
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 10
+          retry_on: error
+          shell: pwsh
+          command: |
+            ./.github/scripts/downloadSimpleAuth.ps1
 
       - name: Setup project
         run: |
@@ -180,4 +180,4 @@ jobs:
               --entity PartitionKey=TeamsFx RowKey=${{ github.run_id }}_$package Package=$package GitBranch=${{ github.ref }} Type=unit_test LinesPct=$(jq -cr '.total.lines.pct' $i) BranchesPct=$(jq -cr '.total.branches.pct' $i) StatementsPct=$(jq -cr '.total.statements.pct' $i) FunctionsPct=$(jq -cr '.total.functions.pct' $i) \
               --if-exists replace \
               --table-name TestCoverage
-          done  
+          done

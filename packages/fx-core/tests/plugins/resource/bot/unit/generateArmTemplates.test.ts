@@ -1,0 +1,94 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+import "mocha";
+import * as chai from "chai";
+import { AzureSolutionSettings, PluginContext } from "@microsoft/teamsfx-api";
+
+import { ConstantString, mockSolutionUpdateArmTemplates, ResourcePlugins } from "../../util";
+import { TeamsBot } from "../../../../../src";
+import * as testUtils from "./utils";
+import path from "path";
+import fs from "fs-extra";
+
+describe("Bot Generates Arm Templates", () => {
+  let botPlugin: TeamsBot;
+
+  beforeEach(() => {
+    botPlugin = new TeamsBot();
+  });
+
+  it("generate bicep arm templates: tab and bot", async () => {
+    // Arrange
+    const activeResourcePlugins = [
+      ResourcePlugins.Aad,
+      ResourcePlugins.SimpleAuth,
+      ResourcePlugins.FrontendHosting,
+      ResourcePlugins.Bot,
+    ];
+    const pluginContext: PluginContext = testUtils.newPluginContext();
+    const azureSolutionSettings = pluginContext.projectSettings!
+      .solutionSettings! as AzureSolutionSettings;
+    azureSolutionSettings.activeResourcePlugins = activeResourcePlugins;
+    pluginContext.projectSettings!.solutionSettings = azureSolutionSettings;
+
+    // Act
+    const result = await botPlugin.generateArmTemplates(pluginContext);
+
+    // Assert
+    const testModuleFileName = "bot_test.bicep";
+    const mockedSolutionDataContext = {
+      Plugins: activeResourcePlugins,
+      PluginOutput: {
+        "fx-resource-bot": {
+          Modules: {
+            botProvision: {
+              Path: `./${testModuleFileName}`,
+            },
+          },
+        },
+      },
+    };
+    chai.assert.isTrue(result.isOk());
+    if (result.isOk()) {
+      const compiledResult = mockSolutionUpdateArmTemplates(
+        mockedSolutionDataContext,
+        result.value
+      );
+
+      const expectedBicepFileDirectory = path.join(__dirname, "expectedBicepFiles");
+      const expectedModuleFilePath = path.join(expectedBicepFileDirectory, testModuleFileName);
+      chai.assert.strictEqual(
+        compiledResult.Modules!.botProvision.Content,
+        fs.readFileSync(expectedModuleFilePath, ConstantString.UTF8Encoding)
+      );
+      const expectedModuleSnippetFilePath = path.join(expectedBicepFileDirectory, "module.bicep");
+      chai.assert.strictEqual(
+        compiledResult.Orchestration.ModuleTemplate!.Content,
+        fs.readFileSync(expectedModuleSnippetFilePath, ConstantString.UTF8Encoding)
+      );
+      const expectedParameterFilePath = path.join(expectedBicepFileDirectory, "input_param.bicep");
+      chai.assert.strictEqual(
+        compiledResult.Orchestration.ParameterTemplate!.Content,
+        fs.readFileSync(expectedParameterFilePath, ConstantString.UTF8Encoding)
+      );
+      const expectedOutputFilePath = path.join(expectedBicepFileDirectory, "output.bicep");
+      chai.assert.strictEqual(
+        compiledResult.Orchestration.OutputTemplate!.Content,
+        fs.readFileSync(expectedOutputFilePath, ConstantString.UTF8Encoding)
+      );
+      const expectedParameterJsonFilePath = path.join(
+        expectedBicepFileDirectory,
+        "parameters.json"
+      );
+      chai.assert.strictEqual(
+        JSON.stringify(
+          compiledResult.Orchestration.ParameterTemplate!.ParameterJson,
+          undefined,
+          2
+        ) + "\n",
+        fs.readFileSync(expectedParameterJsonFilePath, ConstantString.UTF8Encoding)
+      );
+      chai.assert.isUndefined(compiledResult.Orchestration.VariableTemplate);
+    }
+  });
+});

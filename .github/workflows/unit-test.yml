@@ -33,16 +33,6 @@ jobs:
         with:
           dotnet-version: 3.1.x
 
-      - name: Download Simple Auth bits
-        uses: nick-invision/retry@v2
-        with:
-          timeout_minutes: 10
-          max_attempts: 10
-          retry_on: error
-          shell: pwsh
-          command: |
-            ./.github/scripts/downloadSimpleAuth.ps1
-
       - name: Setup project
         run: |
           npm run setup
@@ -80,16 +70,6 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 3.1.x
-
-      - name: Download Simple Auth bits
-        uses: nick-invision/retry@v2
-        with:
-          timeout_minutes: 10
-          max_attempts: 10
-          retry_on: error
-          shell: pwsh
-          command: |
-            ./.github/scripts/downloadSimpleAuth.ps1
 
       - name: Setup project
         run: |
@@ -153,16 +133,6 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 3.1.x
-
-      - name: Download Simple Auth bits
-        uses: nick-invision/retry@v2
-        with:
-          timeout_minutes: 10
-          max_attempts: 10
-          retry_on: error
-          shell: pwsh
-          command: |
-            ./.github/scripts/downloadSimpleAuth.ps1
 
       - name: Setup project
         run: |

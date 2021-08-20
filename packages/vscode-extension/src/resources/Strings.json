@@ -41,7 +41,7 @@
       "buildPackageTitleNew": "Zip Teams metadata package",
       "buildPackageDescription": "Build your Teams app into a package for publishing",
       "provisionTitle": "Provision in the Cloud",
-      "provisionTitleNew": "Provision in the cloud",
+      "provisionTitleNew": "Provision in the Cloud",
       "provisionDescription": "Provision the Teams app resources in Azure",
       "deployTitle": "Deploy to the Cloud",
       "deployTitleNew": "Deploy to the cloud",

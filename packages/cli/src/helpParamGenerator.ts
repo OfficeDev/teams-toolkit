@@ -28,6 +28,7 @@ import CLIUIInstance from "./userInteraction";
 import { flattenNodes, getSingleOptionString, toYargsOptions } from "./utils";
 import { Options } from "yargs";
 import {
+  CollaboratorEmailNode,
   EnvNode,
   EnvNodeNoCreate,
   RootFolderNode,
@@ -43,6 +44,7 @@ export class HelpParamGenerator {
     Stage.build,
     Stage.publish,
     Stage.deploy,
+    Stage.grantPermission,
     Stage.checkPermission,
   ];
 
@@ -219,6 +221,11 @@ export class HelpParamGenerator {
           (node.data as any).hide = true;
         }
       }
+    }
+
+    // Add user email node for grant permission
+    if (stage === Stage.grantPermission) {
+      nodes = nodes.concat([CollaboratorEmailNode]);
     }
 
     const nodesWithoutGroup = nodes.filter((node) => node.data.type !== "group");

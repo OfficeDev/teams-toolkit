@@ -80,6 +80,36 @@
         "${workspaceFolder}/../fx-core/build/**/*.js",
         "${workspaceFolder}/../api/build/**/*.js"
       ]
+    },
+    {
+      "type": "pwa-node",
+      "request": "launch",
+      "name": "Launch permission grant command (non-interactive)",
+      "skipFiles": ["<node_internals>/**"],
+      "program": "${workspaceFolder}/cli.js",
+      "args": [
+        "permission",
+        "grant",
+        "--folder",
+        "../../../../Test/collaborate",
+        "--env",
+        "default",
+        "--email",
+        "email.address"
+      ],
+      "env": {
+        "TEAMSFX_MULTI_ENV": "true"
+      },
+      "outFiles": [
+        "${workspaceFolder}/lib/**/*.js",
+        "${workspaceFolder}/../fx-core/build/**/*.js",
+        "${workspaceFolder}/../api/build/**/*.js"
+      ],
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/lib/**/*.js",
+        "${workspaceFolder}/../fx-core/build/**/*.js",
+        "${workspaceFolder}/../api/build/**/*.js"
+      ]
     }
   ]
 }

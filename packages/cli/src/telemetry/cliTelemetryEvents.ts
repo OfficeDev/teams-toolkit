@@ -55,6 +55,9 @@ export enum TelemetryEvent {
 
   CheckPermissionStart = "check-permission-start",
   CheckPermission = "check-permission",
+
+  GrantPermissionStart = "grant-permission-start",
+  GrantPermission = "grant-permission",
 }
 
 export enum TelemetryProperty {

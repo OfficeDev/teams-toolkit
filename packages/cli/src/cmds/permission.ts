@@ -14,7 +14,7 @@ import {
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
 import activate from "../activate";
-import { getSystemInputs } from "../utils";
+import { argsToInputs, getSystemInputs } from "../utils";
 import HelpParamGenerator from "../helpParamGenerator";
 import CLILogProvider from "../commonlib/log";
 
@@ -64,12 +64,59 @@ export class PermissionStatus extends YargsCommand {
   }
 }
 
+export class PermissionGrant extends YargsCommand {
+  public readonly commandHead = `grant`;
+  public readonly command = `${this.commandHead}`;
+  public readonly description = "Grant permission for another account.";
+
+  public params: { [_: string]: Options } = {};
+
+  public builder(yargs: Argv): Argv<any> {
+    this.params = HelpParamGenerator.getYargsParamForHelp(Stage.grantPermission);
+    return yargs.option(this.params);
+  }
+
+  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+    const rootFolder = path.resolve(args.folder || "./");
+    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.GrantPermissionStart);
+
+    const result = await activate(rootFolder);
+    if (result.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.GrantPermission, result.error);
+      return err(result.error);
+    }
+
+    CLILogProvider.necessaryLog(
+      LogLevel.Info,
+      "Notice: Azure resources permission needs to be handled by subscription owner since privileged account is " +
+        "required to grant permission to Azure resources.\n" +
+        "[Assign Azure roles using the Azure portal] " +
+        "https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal?tabs=current"
+    );
+
+    const answers = argsToInputs(this.params, args);
+    const core = result.value;
+    {
+      const result = await core.grantPermission(answers);
+      if (result.isErr()) {
+        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.GrantPermission, result.error);
+        return err(result.error);
+      }
+    }
+
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.GrantPermission, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+    });
+    return ok(null);
+  }
+}
+
 export default class Permission extends YargsCommand {
   public readonly commandHead = `permission`;
   public readonly command = `${this.commandHead} <action>`;
   public readonly description = "Check, grant and list user permission.";
 
-  public readonly subCommands: YargsCommand[] = [new PermissionStatus()];
+  public readonly subCommands: YargsCommand[] = [new PermissionStatus(), new PermissionGrant()];
 
   public builder(yargs: Argv): Argv<any> {
     this.subCommands.forEach((cmd) => {

@@ -4,7 +4,7 @@ on:
   pull_request:
     branches:
       - main
-      - dev 
+      - dev
   push:
     branches:
       - main
@@ -150,4 +150,4 @@ jobs:
               --entity PartitionKey=TeamsFx RowKey=${{ github.run_id }}_$package Package=$package GitBranch=${{ github.ref }} Type=unit_test LinesPct=$(jq -cr '.total.lines.pct' $i) BranchesPct=$(jq -cr '.total.branches.pct' $i) StatementsPct=$(jq -cr '.total.statements.pct' $i) FunctionsPct=$(jq -cr '.total.functions.pct' $i) \
               --if-exists replace \
               --table-name TestCoverage
-          done  
+          done

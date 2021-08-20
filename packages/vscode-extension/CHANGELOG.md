@@ -1,5 +1,22 @@
 # Changelog
 
+## 2.4.2 - Aug 23 2021
+
+Incremental version for Teams Toolkit with multiple bugs fixed and the following updates：
+
+New Feature:
+
+- Enable create project from quick start page.
+- Enable report issue from local debug error pop-up message.
+- Add CLI command 'teamsfx preview' to preview SPFx apps.
+- Enable CI/CD workflow with Github Actions. Check [CI/CD instructions](https://github.com/OfficeDev/TeamsFx/tree/dev/docs/cicd) to learn how to use.
+
+Enhancement:
+
+- Update new CLI progress bar.
+- Improve some UI experience.
+- Add more information in the output error message of debug.
+
 ## 2.4.1 - Aug 10 2021
 
 Incremental version for Teams Toolkit with multiple bugs fixed and the following updates：

@@ -133,4 +133,9 @@ export class AppStudioError {
     name: "ScaffoldFailed",
     message: (error: any) => (error.message ? error.message : "Teams app scaffold failed!"),
   };
+
+  public static readonly CheckPermissionFailedError = {
+    name: "CheckPermissionFailed",
+    message: (error: any) => `Check permission failed. Reason: ${error.message}`,
+  };
 }

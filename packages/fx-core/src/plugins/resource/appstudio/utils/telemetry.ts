@@ -28,6 +28,7 @@ export enum TelemetryEventName {
   validateManifest = "validate-manifest",
   buildTeamsPackage = "build",
   publish = "publish",
+  checkPermission = "check-permission",
 }
 
 export class TelemetryUtils {

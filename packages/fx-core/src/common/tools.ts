@@ -472,13 +472,8 @@ export async function copyFiles(
     await fs.copy(path.join(srcPath, fileName), path.join(distPath, fileName), {
       overwrite: false,
       errorOnExist: true,
-      filter: (src: string, dest: string): boolean => {
-        const name = path.basename(src);
-        if (recursiveExcludeFileNames.includes(name)) {
-          return false;
-        }
-        return true;
-      },
+      filter: (src: string, dest: string): boolean =>
+        !recursiveExcludeFileNames.includes(path.basename(src)),
     });
   }
 }

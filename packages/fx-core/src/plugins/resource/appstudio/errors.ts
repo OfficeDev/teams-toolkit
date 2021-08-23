@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { Constants } from "./constants";
+
 export class AppStudioError {
   public static readonly FileNotFoundError = {
     name: "FileNotFoundError",
@@ -139,14 +141,9 @@ export class AppStudioError {
     message: (error: any) => `Check permission failed. Reason: ${error.message}`,
   };
 
-  public static readonly GrantPermissionFailedWithInfoError = {
-    name: "GrantPermissionFailed",
-    message: (resource: string, id: string, error: any) =>
-      `${resource}: ${id}. Check permission failed. Reason: ${error.message}`,
-  };
-
   public static readonly GrantPermissionFailedError = {
     name: "GrantPermissionFailed",
-    message: (error: any) => `Check permission failed. Reason: ${error.message}`,
+    message: (errorMessage: string, id?: string) =>
+      `${Constants.PERMISSIONS.name}: ${id}. Check permission failed. Reason: ${errorMessage}`,
   };
 }

@@ -304,22 +304,20 @@ export class AppStudioPlugin implements Plugin {
 
   public async grantPermission(ctx: PluginContext): Promise<Result<any, FxError>> {
     TelemetryUtils.init(ctx);
-    TelemetryUtils.sendStartEvent(TelemetryEventName.checkPermission);
+    TelemetryUtils.sendStartEvent(TelemetryEventName.grantPermission);
 
     try {
-      const checkPermissionResult = await this.appStudioPluginImpl.checkPermission(ctx);
-      TelemetryUtils.sendSuccessEvent(TelemetryEventName.checkPermission);
-      return ok(checkPermissionResult);
+      const grantPermissionResult = await this.appStudioPluginImpl.grantPermission(ctx);
+      TelemetryUtils.sendSuccessEvent(TelemetryEventName.grantPermission);
+      return ok(grantPermissionResult);
     } catch (error) {
-      TelemetryUtils.sendErrorEvent(TelemetryEventName.checkPermission, error);
-      if (error instanceof SystemError || error instanceof UserError) {
-        return err(error);
-      } else {
-        return AppStudioResultFactory.SystemError(
+      TelemetryUtils.sendErrorEvent(TelemetryEventName.grantPermission, error);
+      return err(
+        AppStudioResultFactory.SystemError(
           AppStudioError.GrantPermissionFailedError.name,
-          AppStudioError.GrantPermissionFailedError.message(error)
-        );
-      }
+          error.message
+        )
+      );
     }
   }
 

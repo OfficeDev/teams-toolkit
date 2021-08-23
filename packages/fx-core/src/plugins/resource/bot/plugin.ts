@@ -252,7 +252,7 @@ export class TeamsBotImpl {
       bicepTemplateDir,
       Bicep.OutputOrchestrationFileName
     );
-    const parameterFilePath = path.join(bicepTemplateDir, PathInfo.ParameterFileName);
+    const parameterFilePath = path.join(bicepTemplateDir, Bicep.ParameterFileName);
 
     const result: ScaffoldArmTemplateResult = {
       Modules: {

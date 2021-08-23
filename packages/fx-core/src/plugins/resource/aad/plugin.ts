@@ -303,7 +303,7 @@ export class AadAppForTeamsImpl {
       bicepTemplateDir,
       Bicep.VariablesOrchestrationFileName
     );
-    const parameterFilePath = path.join(bicepTemplateDir, TemplatePathInfo.ParameterFileName);
+    const parameterFilePath = path.join(bicepTemplateDir, Bicep.ParameterFileName);
 
     const result: ScaffoldArmTemplateResult = {
       Orchestration: {

@@ -273,5 +273,4 @@ export class PathInfo {
     "bicep"
   );
   public static readonly moduleFileName = "bot.bicep";
-  public static readonly ParameterFileName = "parameters.json";
 }

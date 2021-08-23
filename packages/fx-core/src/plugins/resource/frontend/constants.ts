@@ -54,7 +54,6 @@ export class FrontendPathInfo {
   static TemplateFileExt = ".tpl";
   static TemplatePackageExt = ".zip";
 
-  static BicepTemplateFolderName = "bicep";
   static ModuleFileName = "frontendHosting.bicep";
 
   static BuildFolderName = "build";

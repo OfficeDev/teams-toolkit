@@ -242,5 +242,4 @@ export class TemplatePathInfo {
     TemplatePathInfo.TemplateRelativeDir,
     "bicep"
   );
-  static readonly ParameterFileName: string = "parameters.json";
 }

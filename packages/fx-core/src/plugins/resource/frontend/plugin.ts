@@ -26,8 +26,6 @@ import {
   StorageAccountAlreadyTakenError,
   runWithErrorCatchAndWrap,
   RegisterResourceProviderError,
-  InvalidAuthPluginConfigError,
-  InvalidAadPluginConfigError,
   UserTaskNotImplementedError,
   MigrateV1ProjectError,
 } from "./resources/errors";

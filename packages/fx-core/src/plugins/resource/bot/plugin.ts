@@ -53,7 +53,7 @@ import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import path from "path";
 import { getTemplatesFolder } from "../../..";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
-import { ConstantString } from "../../../common/constants";
+import { Bicep, ConstantString } from "../../../common/constants";
 
 export class TeamsBotImpl {
   // Made config plubic, because expect the upper layer to fill inputs.
@@ -250,15 +250,15 @@ export class TeamsBotImpl {
 
     const inputParameterOrchestrationFilePath = path.join(
       bicepTemplateDir,
-      PathInfo.inputParameterOrchestrationFileName
+      Bicep.ParameterOrchestrationFileName
     );
     const moduleOrchestrationFilePath = path.join(
       bicepTemplateDir,
-      PathInfo.moduleOrchestrationFileName
+      Bicep.ModuleOrchestrationFileName
     );
     const outputOrchestrationFilePath = path.join(
       bicepTemplateDir,
-      PathInfo.outputOrchestrationFileName
+      Bicep.OutputOrchestrationFileName
     );
     const parameterFilePath = path.join(bicepTemplateDir, PathInfo.ParameterFileName);
 

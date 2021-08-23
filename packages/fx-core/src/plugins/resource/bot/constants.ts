@@ -278,9 +278,6 @@ export class PathInfo {
     "bot",
     "bicep"
   );
-  public static readonly moduleOrchestrationFileName = "module.template.bicep";
-  public static readonly inputParameterOrchestrationFileName = "input_param.template.bicep";
-  public static readonly outputOrchestrationFileName = "output.template.bicep";
   public static readonly moduleFileName = "bot.bicep";
   public static readonly ParameterFileName = "parameters.json";
 }

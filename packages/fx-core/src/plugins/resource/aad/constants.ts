@@ -243,6 +243,4 @@ export class TemplatePathInfo {
     "bicep"
   );
   static readonly ParameterFileName: string = "parameters.json";
-  static readonly InputParameterOrchestrationFileName: string = "input_param.template.bicep";
-  static readonly VariablesOrchestrationFileName: string = "variables.template.bicep";
 }

@@ -15,7 +15,7 @@ import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import { generateBicepFiles, isArmSupportEnabled, isMultiEnvEnabled } from "../../../common";
 import { getArmOutput } from "../utils4v2";
 import { LocalSettingsAuthKeys } from "../../../common/localSettingsConstants";
-import { ConstantString } from "../../../common/constants";
+import { Bicep, ConstantString } from "../../../common/constants";
 
 export class SimpleAuthPluginImpl {
   webAppClient!: WebAppClient;
@@ -161,15 +161,15 @@ export class SimpleAuthPluginImpl {
 
     const parameterTemplateFilePath = path.join(
       bicepTemplateDirectory,
-      Constants.inputParameterOrchestrationFileName
+      Bicep.ParameterOrchestrationFileName
     );
     const resourceTemplateFilePath = path.join(
       bicepTemplateDirectory,
-      Constants.moduleOrchestrationFileName
+      Bicep.ModuleOrchestrationFileName
     );
     const outputTemplateFilePath = path.join(
       bicepTemplateDirectory,
-      Constants.outputOrchestrationFileName
+      Bicep.OutputOrchestrationFileName
     );
 
     const result: ScaffoldArmTemplateResult = {

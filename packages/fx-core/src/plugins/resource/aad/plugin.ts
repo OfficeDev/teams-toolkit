@@ -47,7 +47,7 @@ import { Utils } from "./utils/common";
 import * as path from "path";
 import * as fs from "fs-extra";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
-import { ConstantString, ResourcePlugins } from "../../../common/constants";
+import { Bicep, ConstantString, ResourcePlugins } from "../../../common/constants";
 import { getTemplatesFolder } from "../../..";
 
 export class AadAppForTeamsImpl {
@@ -297,11 +297,11 @@ export class AadAppForTeamsImpl {
     );
     const inputParameterOrchestrationFilePath = path.join(
       bicepTemplateDir,
-      TemplatePathInfo.InputParameterOrchestrationFileName
+      Bicep.ParameterOrchestrationFileName
     );
     const variablesOrchestrationFilePath = path.join(
       bicepTemplateDir,
-      TemplatePathInfo.VariablesOrchestrationFileName
+      Bicep.VariablesOrchestrationFileName
     );
     const parameterFilePath = path.join(bicepTemplateDir, TemplatePathInfo.ParameterFileName);
 

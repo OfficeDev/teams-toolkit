@@ -354,6 +354,10 @@ export class AadAppForTeamsImpl {
     return ResultFactory.Success(result);
   }
 
+  public async listCollaborator(ctx: PluginContext): Promise<AadResult> {
+    return ResultFactory.Success();
+  }
+
   private static getRedirectUris(
     frontendEndpoint: string | undefined,
     botEndpoint: string | undefined

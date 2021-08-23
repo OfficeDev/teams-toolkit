@@ -592,6 +592,10 @@ export class AppStudioPluginImpl {
     return result;
   }
 
+  public async listCollaborator(ctx: PluginContext): Promise<Result<any, FxError>> {
+    return ok(undefined);
+  }
+
   private async beforePublish(
     ctx: PluginContext,
     appDirectory: string,

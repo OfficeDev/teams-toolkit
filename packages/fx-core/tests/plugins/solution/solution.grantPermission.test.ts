@@ -38,7 +38,7 @@ const expect = chai.expect;
 const appStudioPlugin = Container.get<Plugin>(ResourcePlugins.AppStudioPlugin);
 const aadPlugin = Container.get<Plugin>(ResourcePlugins.AadPlugin);
 
-describe("checkPermission() for Teamsfx projects", () => {
+describe("grantPermission() for Teamsfx projects", () => {
   const sandbox = sinon.createSandbox();
   const mockProjectTenantId = "mock_project_tenant_id";
 
@@ -65,17 +65,17 @@ describe("checkPermission() for Teamsfx projects", () => {
 
     const mockedCtx = mockSolutionContext();
     solution.runningState = SolutionRunningState.ProvisionInProgress;
-    let result = await solution.checkPermission(mockedCtx);
+    let result = await solution.grantPermission(mockedCtx);
     expect(result.isErr()).to.be.true;
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.ProvisionInProgress);
 
     solution.runningState = SolutionRunningState.DeployInProgress;
-    result = await solution.checkPermission(mockedCtx);
+    result = await solution.grantPermission(mockedCtx);
     expect(result.isErr()).to.be.true;
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.DeploymentInProgress);
 
     solution.runningState = SolutionRunningState.PublishInProgress;
-    result = await solution.checkPermission(mockedCtx);
+    result = await solution.grantPermission(mockedCtx);
     expect(result.isErr()).to.be.true;
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.PublishInProgress);
   });
@@ -93,12 +93,12 @@ describe("checkPermission() for Teamsfx projects", () => {
         version: "1.0",
       },
     };
-    const result = await solution.checkPermission(mockedCtx);
+    const result = await solution.grantPermission(mockedCtx);
     expect(result.isErr()).to.be.true;
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.CannotProcessBeforeProvision);
   });
 
-  it("should return error if cannot get user info", async () => {
+  it("should return error if cannot get current user info", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
 
@@ -117,7 +117,7 @@ describe("checkPermission() for Teamsfx projects", () => {
       .stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject")
       .resolves(undefined);
 
-    const result = await solution.checkPermission(mockedCtx);
+    const result = await solution.grantPermission(mockedCtx);
     expect(result.isErr()).to.be.true;
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.FailedToRetrieveUserInfo);
     sandbox.restore();
@@ -148,9 +148,45 @@ describe("checkPermission() for Teamsfx projects", () => {
     mockedCtx.config.set(PluginNames.AAD, new ConfigMap());
     mockedCtx.config.get(PluginNames.AAD)?.set(REMOTE_TENANT_ID, mockProjectTenantId);
 
-    const result = await solution.checkPermission(mockedCtx);
+    const result = await solution.grantPermission(mockedCtx);
     expect(result.isErr()).to.be.true;
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.M365AccountNotMatch);
+    sandbox.restore();
+  });
+
+  it("should return error if cannot find user from email", async () => {
+    const solution = new TeamsAppSolution();
+    const mockedCtx = mockSolutionContext();
+
+    mockedCtx.projectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
+        version: "1.0",
+      },
+    };
+    mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+
+    sandbox
+      .stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject")
+      .onCall(0)
+      .resolves({
+        tid: mockProjectTenantId,
+        oid: "fake_oid",
+        unique_name: "fake_unique_name",
+        name: "fake_name",
+      })
+      .onCall(1)
+      .resolves(undefined);
+
+    mockedCtx.config.set(PluginNames.AAD, new ConfigMap());
+    mockedCtx.config.get(PluginNames.AAD)?.set(REMOTE_TENANT_ID, mockProjectTenantId);
+
+    const result = await solution.grantPermission(mockedCtx);
+    expect(result.isErr()).to.be.true;
+    expect(result._unsafeUnwrapErr().name).equals(SolutionError.CannotFindUserInCurrentTenant);
     sandbox.restore();
   });
 
@@ -169,26 +205,36 @@ describe("checkPermission() for Teamsfx projects", () => {
     };
     mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
 
-    sandbox.stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject").resolves({
-      tid: mockProjectTenantId,
-      oid: "fake_oid",
-      unique_name: "fake_unique_name",
-      name: "fake_name",
-    });
+    sandbox
+      .stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject")
+      .onCall(0)
+      .resolves({
+        tid: mockProjectTenantId,
+        oid: "fake_oid",
+        unique_name: "fake_unique_name",
+        name: "fake_name",
+      })
+      .onCall(1)
+      .resolves({
+        tid: mockProjectTenantId,
+        oid: "fake_oid_2",
+        unique_name: "fake_unique_name_2",
+        name: "fake_name_2",
+      });
 
-    appStudioPlugin.checkPermission = async function (
+    appStudioPlugin.grantPermission = async function (
       _ctx: PluginContext
     ): Promise<Result<any, FxError>> {
       return err(
         returnUserError(
-          new Error(`Check permission failed.`),
+          new Error(`Grant permission failed.`),
           "AppStudioPlugin",
-          "FailedToCheckPermission"
+          SolutionError.FailedToGrantPermission
         )
       );
     };
 
-    aadPlugin.checkPermission = async function (
+    aadPlugin.grantPermission = async function (
       _ctx: PluginContext
     ): Promise<Result<any, FxError>> {
       return ok([
@@ -204,10 +250,11 @@ describe("checkPermission() for Teamsfx projects", () => {
     mockedCtx.config.set(PluginNames.AAD, new ConfigMap());
     mockedCtx.config.get(PluginNames.AAD)?.set(REMOTE_TENANT_ID, mockProjectTenantId);
 
-    const result = await solution.checkPermission(mockedCtx);
+    const result = await solution.grantPermission(mockedCtx);
     expect(result.isErr()).to.be.true;
-    expect(result._unsafeUnwrapErr().name).equals("FailedToCheckPermission");
-    sinon.restore();
+    expect(result._unsafeUnwrapErr().name).equals(SolutionError.FailedToGrantPermission);
+
+    sandbox.restore();
   });
 
   it("happy path", async () => {
@@ -225,14 +272,24 @@ describe("checkPermission() for Teamsfx projects", () => {
     };
     mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
 
-    sandbox.stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject").resolves({
-      tid: mockProjectTenantId,
-      oid: "fake_oid",
-      unique_name: "fake_unique_name",
-      name: "fake_name",
-    });
+    sandbox
+      .stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject")
+      .onCall(0)
+      .resolves({
+        tid: mockProjectTenantId,
+        oid: "fake_oid",
+        unique_name: "fake_unique_name",
+        name: "fake_name",
+      })
+      .onCall(1)
+      .resolves({
+        tid: mockProjectTenantId,
+        oid: "fake_oid_2",
+        unique_name: "fake_unique_name_2",
+        name: "fake_name_2",
+      });
 
-    aadPlugin.checkPermission = async function (
+    appStudioPlugin.grantPermission = async function (
       _ctx: PluginContext
     ): Promise<Result<any, FxError>> {
       return ok([
@@ -245,7 +302,7 @@ describe("checkPermission() for Teamsfx projects", () => {
       ]);
     };
 
-    appStudioPlugin.checkPermission = async function (
+    aadPlugin.grantPermission = async function (
       _ctx: PluginContext
     ): Promise<Result<any, FxError>> {
       return ok([
@@ -260,11 +317,12 @@ describe("checkPermission() for Teamsfx projects", () => {
     mockedCtx.config.set(PluginNames.AAD, new ConfigMap());
     mockedCtx.config.get(PluginNames.AAD)?.set(REMOTE_TENANT_ID, mockProjectTenantId);
 
-    const result = await solution.checkPermission(mockedCtx);
+    const result = await solution.grantPermission(mockedCtx);
     if (result.isErr()) {
       chai.assert.fail("result is error");
     }
     expect(result.value.length).equal(2);
+
     sinon.restore();
   });
 });

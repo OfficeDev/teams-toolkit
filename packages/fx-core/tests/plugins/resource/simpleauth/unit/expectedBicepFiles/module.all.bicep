@@ -1,5 +1,5 @@
 
-module simpleAuthProvision './simple_auth_test.bicep' = {
+module simpleAuthProvision './simple_auth.all.bicep' = {
   name: 'simpleAuthProvision'
   params: {
     simpleAuthServerFarmsName: simpleAuth_serverFarmsName

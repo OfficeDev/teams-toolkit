@@ -1,5 +1,5 @@
 
-module functionProvision './function_test.bicep' = {
+module functionProvision './function.bicep' = {
   name: 'functionProvision'
   params: {
     functionAppName: function_webappName

@@ -275,13 +275,15 @@ export class FunctionPluginImpl {
   }
 
   public async executeUserTask(func: Func, ctx: PluginContext): Promise<FxResult> {
+    let result = ResultFactory.Success();
+
     if (func.method === CustomizedTask.addResource) {
       TelemetryHelper.sendGeneralEvent(FunctionEvent.addResource);
-      await this.preScaffold(ctx);
-      return await this.scaffold(ctx);
+      const _res = await this.preScaffold(ctx);
+      result = _res.isOk() ? await this.scaffold(ctx) : _res;
     }
 
-    return ResultFactory.Success(undefined);
+    return result;
   }
 
   public async preScaffold(ctx: PluginContext): Promise<FxResult> {

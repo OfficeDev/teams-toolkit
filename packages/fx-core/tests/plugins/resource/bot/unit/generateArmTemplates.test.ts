@@ -39,6 +39,9 @@ describe("Bot Generates Arm Templates", () => {
     const mockedSolutionDataContext = {
       Plugins: activeResourcePlugins,
       PluginOutput: {
+        "fx-resource-aad-app-for-teams": {},
+        "fx-resource-frontend-hosting": {},
+        "fx-resource-simple-auth": {},
         "fx-resource-bot": {
           Modules: {
             botProvision: {
@@ -66,7 +69,108 @@ describe("Bot Generates Arm Templates", () => {
         compiledResult.Orchestration.ModuleTemplate!.Content,
         fs.readFileSync(expectedModuleSnippetFilePath, ConstantString.UTF8Encoding)
       );
-      const expectedParameterFilePath = path.join(expectedBicepFileDirectory, "input_param.bicep");
+      const expectedParameterFilePath = path.join(expectedBicepFileDirectory, "param.bicep");
+      chai.assert.strictEqual(
+        compiledResult.Orchestration.ParameterTemplate!.Content,
+        fs.readFileSync(expectedParameterFilePath, ConstantString.UTF8Encoding)
+      );
+      const expectedOutputFilePath = path.join(expectedBicepFileDirectory, "output.bicep");
+      chai.assert.strictEqual(
+        compiledResult.Orchestration.OutputTemplate!.Content,
+        fs.readFileSync(expectedOutputFilePath, ConstantString.UTF8Encoding)
+      );
+      const expectedParameterJsonFilePath = path.join(
+        expectedBicepFileDirectory,
+        "parameters.json"
+      );
+      chai.assert.strictEqual(
+        JSON.stringify(
+          compiledResult.Orchestration.ParameterTemplate!.ParameterJson,
+          undefined,
+          2
+        ) + "\n",
+        fs.readFileSync(expectedParameterJsonFilePath, ConstantString.UTF8Encoding)
+      );
+      chai.assert.isUndefined(compiledResult.Orchestration.VariableTemplate);
+    }
+  });
+
+  it("generate bicep arm templates: tab, function, sql and bot", async () => {
+    // Arrange
+    const activeResourcePlugins = [
+      ResourcePlugins.Aad,
+      ResourcePlugins.SimpleAuth,
+      ResourcePlugins.FrontendHosting,
+      ResourcePlugins.Bot,
+      ResourcePlugins.Function,
+      ResourcePlugins.AzureSQL,
+      ResourcePlugins.Identity,
+    ];
+    const pluginContext: PluginContext = testUtils.newPluginContext();
+    const azureSolutionSettings = pluginContext.projectSettings!
+      .solutionSettings! as AzureSolutionSettings;
+    azureSolutionSettings.activeResourcePlugins = activeResourcePlugins;
+    pluginContext.projectSettings!.solutionSettings = azureSolutionSettings;
+
+    // Act
+    const result = await botPlugin.generateArmTemplates(pluginContext);
+
+    // Assert
+    const testModuleFileName = "botWithTabFuncSql.bicep";
+    const mockedSolutionDataContext = {
+      Plugins: activeResourcePlugins,
+      PluginOutput: {
+        "fx-resource-aad-app-for-teams": {},
+        "fx-resource-frontend-hosting": {},
+        "fx-resource-simple-auth": {},
+        "fx-resource-bot": {
+          Modules: {
+            botProvision: {
+              Path: `./${testModuleFileName}`,
+            },
+          },
+        },
+        "fx-resource-function": {
+          Outputs: {
+            functionEndpoint: "test_function_endpoint",
+          },
+        },
+        "fx-resource-azure-sql": {
+          Outputs: {
+            databaseName: "test_sql_database_name",
+            sqlEndpoint: "test_sql_endpoint",
+          },
+        },
+        "fx-resource-identity": {
+          Outputs: {
+            identityId: "test_identity_id",
+            identityName: "test_identity_name",
+          },
+        },
+      },
+    };
+    chai.assert.isTrue(result.isOk());
+    if (result.isOk()) {
+      const compiledResult = mockSolutionUpdateArmTemplates(
+        mockedSolutionDataContext,
+        result.value
+      );
+
+      const expectedBicepFileDirectory = path.join(__dirname, "expectedBicepFiles");
+      const expectedModuleFilePath = path.join(expectedBicepFileDirectory, testModuleFileName);
+      chai.assert.strictEqual(
+        compiledResult.Modules!.botProvision.Content,
+        fs.readFileSync(expectedModuleFilePath, ConstantString.UTF8Encoding)
+      );
+      const expectedModuleSnippetFilePath = path.join(
+        expectedBicepFileDirectory,
+        "module.botWithTabFuncSql.bicep"
+      );
+      chai.assert.strictEqual(
+        compiledResult.Orchestration.ModuleTemplate!.Content,
+        fs.readFileSync(expectedModuleSnippetFilePath, ConstantString.UTF8Encoding)
+      );
+      const expectedParameterFilePath = path.join(expectedBicepFileDirectory, "param.bicep");
       chai.assert.strictEqual(
         compiledResult.Orchestration.ParameterTemplate!.Content,
         fs.readFileSync(expectedParameterFilePath, ConstantString.UTF8Encoding)

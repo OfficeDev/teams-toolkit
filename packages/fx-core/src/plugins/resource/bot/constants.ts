@@ -272,5 +272,5 @@ export class PathInfo {
     "bot",
     "bicep"
   );
-  public static readonly moduleFileName = "bot.bicep";
+  public static readonly moduleTemplateFileName = "bot.template.bicep";
 }

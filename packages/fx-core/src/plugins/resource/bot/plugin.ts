@@ -54,6 +54,8 @@ import path from "path";
 import { getTemplatesFolder } from "../../..";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import { Bicep, ConstantString } from "../../../common/constants";
+import { generateBicepFiles } from "../../../common";
+import { AzureSolutionSettings } from "@microsoft/teamsfx-api";
 
 export class TeamsBotImpl {
   // Made config plubic, because expect the upper layer to fill inputs.
@@ -238,7 +240,16 @@ export class TeamsBotImpl {
 
     const bicepTemplateDir = path.join(getTemplatesFolder(), PathInfo.BicepTemplateRelativeDir);
 
-    const moduleFilePath = path.join(bicepTemplateDir, PathInfo.moduleFileName);
+    const moduleTemplateFilePath = path.join(bicepTemplateDir, PathInfo.moduleTemplateFileName);
+    const selectedPlugins = (this.ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
+      .activeResourcePlugins;
+    const handleBarsContext = {
+      Plugins: selectedPlugins,
+    };
+    const moduleContentResult = await generateBicepFiles(moduleTemplateFilePath, handleBarsContext);
+    if (moduleContentResult.isErr()) {
+      throw moduleContentResult.error;
+    }
 
     const inputParameterOrchestrationFilePath = path.join(
       bicepTemplateDir,
@@ -257,7 +268,7 @@ export class TeamsBotImpl {
     const result: ScaffoldArmTemplateResult = {
       Modules: {
         botProvision: {
-          Content: await fs.readFile(moduleFilePath, ConstantString.UTF8Encoding),
+          Content: moduleContentResult.value,
         },
       },
       Orchestration: {

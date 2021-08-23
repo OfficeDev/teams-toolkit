@@ -14,6 +14,11 @@ param m365ClientSecret string
 param m365TenantId string
 param m365OauthAuthorityHost string
 param m365ApplicationIdUri string
+param functionEndpoint string
+param sqlDatabaseName string
+param sqlEndpoint string
+param identityId string
+param identityName string
 
 var botWebAppHostname = botWebApp.properties.hostNames[0]
 var botEndpoint = 'https://${botWebAppHostname}'
@@ -67,6 +72,12 @@ resource botWebApp 'Microsoft.Web/sites@2021-01-01' = {
       numberOfWorkers: 1
     }
   }
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      identityName: {}
+    }
+  }
 }
 
 resource botWebAppSettings 'Microsoft.Web/sites/config@2021-01-01' = {
@@ -83,6 +94,10 @@ resource botWebAppSettings 'Microsoft.Web/sites/config@2021-01-01' = {
       M365_TENANT_ID: m365TenantId
       SCM_DO_BUILD_DURING_DEPLOYMENT: 'true'
       WEBSITE_NODE_DEFAULT_VERSION: '12.13.0'
+      API_ENDPOINT: functionEndpoint
+      SQL_DATABASE_NAME: sqlDatabaseName
+      SQL_ENDPOINT: sqlEndpoint
+      IDENTITY_ID: identityId
      }
 }
 

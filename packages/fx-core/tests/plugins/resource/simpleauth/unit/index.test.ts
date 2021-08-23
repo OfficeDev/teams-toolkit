@@ -121,7 +121,7 @@ describe("simpleAuthPlugin", () => {
         expectedResult.Orchestration.ModuleTemplate!.Content,
         fs.readFileSync(expectedModuleSnippetFilePath, ConstantString.UTF8Encoding)
       );
-      const expectedParameterFilePath = path.join(expectedBicepFileDirectory, "input_param.bicep");
+      const expectedParameterFilePath = path.join(expectedBicepFileDirectory, "param.bicep");
       chai.assert.strictEqual(
         expectedResult.Orchestration.ParameterTemplate!.Content,
         fs.readFileSync(expectedParameterFilePath, ConstantString.UTF8Encoding)
@@ -196,7 +196,7 @@ describe("simpleAuthPlugin", () => {
         expectedResult.Orchestration.ModuleTemplate!.Content,
         fs.readFileSync(expectedModuleSnippetFilePath, ConstantString.UTF8Encoding)
       );
-      const expectedParameterFilePath = path.join(expectedBicepFileDirectory, "input_param.bicep");
+      const expectedParameterFilePath = path.join(expectedBicepFileDirectory, "param.bicep");
       chai.assert.strictEqual(
         expectedResult.Orchestration.ParameterTemplate!.Content,
         fs.readFileSync(expectedParameterFilePath, ConstantString.UTF8Encoding)

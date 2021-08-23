@@ -130,7 +130,7 @@ export async function executeLifecycles(
   lifecycles: LifecyclesWithContext[],
   postLifecycles: LifecyclesWithContext[],
   onPreLifecycleFinished?: (result?: any[]) => Promise<Result<any, FxError>>,
-  onLifecycleFinished?: (result?: any[]) => Promise<Result<any, FxError>>,
+  onLifecycleFinished?: (result?: Result<any, FxError>[]) => Promise<Result<any, FxError>>,
   onPostLifecycleFinished?: (result?: any[]) => Promise<Result<any, FxError>>
 ): Promise<Result<any, FxError>> {
   // Questions are asked sequentially during preLifecycles.
@@ -146,11 +146,6 @@ export async function executeLifecycles(
   }
 
   const results = await executeConcurrently("", lifecycles);
-  for (const result of results) {
-    if (result.isErr()) {
-      return result;
-    }
-  }
   if (onLifecycleFinished) {
     const onLifecycleFinishedResult = await onLifecycleFinished(results);
     if (onLifecycleFinishedResult.isErr()) {

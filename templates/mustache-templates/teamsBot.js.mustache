@@ -5,14 +5,15 @@ const querystring = require("querystring");
 const { TeamsActivityHandler, CardFactory{{#IS_BOT}}, TurnContext{{/IS_BOT}}} = require("botbuilder");
 {{#IS_BOT}}
 const rawWelcomeCard = require("./adaptiveCards/welcome.json");
+const rawLearnCard = require("./adaptiveCards/learn.json");
 const ACData = require("adaptivecards-templating");
 {{/IS_BOT}}
 
 class {{#IS_BOT}}TeamsBot{{/IS_BOT}}{{^IS_BOT}}MessageExtensionBot{{/IS_BOT}} extends TeamsActivityHandler {
   {{#IS_BOT}}
- 
   constructor() {
     super();
+
     // record the likeCount
     this.likeCountObj = { likeCount: 0 };
 
@@ -24,26 +25,28 @@ class {{#IS_BOT}}TeamsBot{{/IS_BOT}}{{^IS_BOT}}MessageExtensionBot{{/IS_BOT}} ex
       );
       if (removedMentionText) {
         // Remove the line break
-        txt = removedMentionText.toLowerCase().replace(/\n|\r/g, "").trim(); 
+        txt = removedMentionText.toLowerCase().replace(/\n|\r/g, "").trim();
       }
 
       // Trigger command by IM text
       switch (txt) {
         case "welcome": {
+          const card = this.renderAdaptiveCard(rawWelcomeCard);
+          await context.sendActivity({ attachments: [card] });
+          break;
+        }
+        case "learn": {
           this.likeCountObj.likeCount = 0;
-          const card = this.renderAdaptiveCard(
-            rawWelcomeCard,
-            this.likeCountObj
-          );
+          const card = this.renderAdaptiveCard(rawLearnCard, this.likeCountObj);
           await context.sendActivity({ attachments: [card] });
           break;
         }
         /**
-        * case "yourCommand": {
-        *   await context.sendActivity(`Add your response here!`);
-        *   break;
-        * }
-        */
+         * case "yourCommand": {
+         *   await context.sendActivity(`Add your response here!`);
+         *   break;
+         * }
+         */
       }
 
       // By calling next() you ensure that the next BotHandler is run.
@@ -55,10 +58,7 @@ class {{#IS_BOT}}TeamsBot{{/IS_BOT}}{{^IS_BOT}}MessageExtensionBot{{/IS_BOT}} ex
       const membersAdded = context.activity.membersAdded;
       for (let cnt = 0; cnt < membersAdded.length; cnt++) {
         if (membersAdded[cnt].id) {
-          const card = this.renderAdaptiveCard(
-            rawWelcomeCard,
-            this.likeCountObj
-          );
+          const card = this.renderAdaptiveCard(rawWelcomeCard);
           await context.sendActivity({ attachments: [card] });
           break;
         }
@@ -70,10 +70,10 @@ class {{#IS_BOT}}TeamsBot{{/IS_BOT}}{{^IS_BOT}}MessageExtensionBot{{/IS_BOT}} ex
   // Invoked when an action is taken on an Adaptive Card. The Adaptive Card sends an event to the Bot and this
   // method handles that event.
   async onAdaptiveCardInvoke(context, invokeValue) {
-    // The verb "userlike" is sent from the Adaptive Card defined in adaptiveCards/welcome.json
+    // The verb "userlike" is sent from the Adaptive Card defined in adaptiveCards/learn.json
     if (invokeValue.action.verb === "userlike") {
       this.likeCountObj.likeCount++;
-      const card = this.renderAdaptiveCard(rawWelcomeCard, this.likeCountObj);
+      const card = this.renderAdaptiveCard(rawLearnCard, this.likeCountObj);
       await context.updateActivity({
         type: "message",
         id: context.activity.replyToId,

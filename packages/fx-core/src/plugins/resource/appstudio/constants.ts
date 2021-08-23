@@ -149,6 +149,10 @@ export const BOTS_TPL: IBot[] = [
             title: "welcome",
             description: "Resend welcome card of this Bot",
           },
+          {
+            title: "learn",
+            description: "Learn about Adaptive Card and Bot Command",
+          },
         ],
       },
     ],

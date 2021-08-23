@@ -40,6 +40,7 @@ import {
   globalStateGet,
   Correlator,
   getAppDirectory,
+  isV1Project,
 } from "@microsoft/teamsfx-core";
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -60,7 +61,7 @@ import * as commonUtils from "./debug/commonUtils";
 import { ExtensionErrors, ExtensionSource } from "./error";
 import { WebviewPanel } from "./controls/webviewPanel";
 import * as constants from "./debug/constants";
-import { isSPFxProject } from "./utils/commonUtils";
+import { anonymizeFilePaths, isSPFxProject } from "./utils/commonUtils";
 import * as fs from "fs-extra";
 import * as vscode from "vscode";
 import { DepsChecker } from "./debug/depsChecker/checker";
@@ -84,6 +85,7 @@ import * as path from "path";
 import { exp } from "./exp/index";
 import { TreatmentVariables } from "./exp/treatmentVariables";
 import { StringContext } from "./utils/stringContext";
+import { ext } from "./extensionVariables";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -176,6 +178,14 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<null
   return await runCommand(Stage.create);
 }
 
+export async function migrateV1ProjectHandler(args?: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.MigrateV1ProjectStart,
+    getTriggerFromProperty(args)
+  );
+  return await runCommand(Stage.migrateV1);
+}
+
 export async function selectAndDebugHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.RunIconDebugStart);
   const result = await selectAndDebug();
@@ -258,6 +268,15 @@ export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
 
     if (stage === Stage.create) {
       const tmpResult = await core.createProject(inputs);
+      if (tmpResult.isErr()) {
+        result = err(tmpResult.error);
+      } else {
+        const uri = Uri.file(tmpResult.value);
+        await commands.executeCommand("vscode.openFolder", uri);
+        result = ok(null);
+      }
+    } else if (stage === Stage.migrateV1) {
+      const tmpResult = await core.migrateV1Project(inputs);
       if (tmpResult.isErr()) {
         result = err(tmpResult.error);
       } else {
@@ -738,11 +757,13 @@ export async function showError(e: UserError | SystemError) {
     const button = await window.showErrorMessage(`[${errorCode}]: ${e.message}`, help);
     if (button) await button.run();
   } else if (e instanceof SystemError) {
-    const path =
-      typeof e.issueLink === "undefined"
-        ? "https://github.com/OfficeDev/TeamsFx/issues/new?"
-        : e.issueLink;
-    const param = `title=new+bug+report: ${errorCode}&body=${e.message}\n\n${e.stack}`;
+    const sysError = e as SystemError;
+    const path = "https://github.com/OfficeDev/TeamsFx/issues/new?";
+    const param = `title=bug+report: ${errorCode}&body=${anonymizeFilePaths(
+      e.message
+    )}\n\nstack:\n${anonymizeFilePaths(e.stack)}\n\n${
+      sysError.userData ? anonymizeFilePaths(sysError.userData) : ""
+    }`;
     const issue = {
       title: StringResources.vsc.handlers.reportIssue,
       run: async (): Promise<void> => {
@@ -939,4 +960,9 @@ export interface VscQuickPickItem extends QuickPickItem {
   id: string;
 
   function: () => Promise<void>;
+}
+
+export function enableMigrateV1(): void {
+  const validProject = ext.workspaceUri && isV1Project(ext.workspaceUri.fsPath);
+  vscode.commands.executeCommand("setContext", "fx-extension.v1Project", validProject);
 }

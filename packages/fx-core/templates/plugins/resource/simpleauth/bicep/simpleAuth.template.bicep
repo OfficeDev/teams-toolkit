@@ -7,7 +7,7 @@ param aadClientId string
 param aadClientSecret string
 param applicationIdUri string
 param oauthAuthorityHost string
-{{#contains 'fx-resource-frontend-hosting' plugins}}
+{{#contains 'fx-resource-frontend-hosting' Plugins}}
 
 param frontendHostingStorageEndpoint string
 {{/contains}}
@@ -55,7 +55,7 @@ resource simpleAuthWebAppSettings 'Microsoft.Web/sites/config@2018-02-01' = {
     CLIENT_ID: aadClientId
     CLIENT_SECRET: aadClientSecret
     OAUTH_AUTHORITY: oauthAuthority
-    {{#contains 'fx-resource-frontend-hosting' plugins}}
+    {{#contains 'fx-resource-frontend-hosting' Plugins}}
     TAB_APP_ENDPOINT: frontendHostingStorageEndpoint
     {{/contains}}
   }

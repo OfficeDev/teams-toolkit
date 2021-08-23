@@ -12,14 +12,16 @@ enum ExtensionSurveyStateKeys {
   DisableSurveyForTime = "survey/disableSurveyForTime",
 }
 
-const TIME_TO_DISABLE_SURVEY = 1000 * 60 * 60 * 24 * 7 * 12; // 4 weeks
-const TIME_TO_SHOW_SURVEY = 1000 * 60 * 7; // 7 minutes
+const TIME_TO_DISABLE_SURVEY = 1000 * 60 * 60 * 24 * 7 * 12; // 12 weeks
+const TIME_TO_REMIND_ME_LATER = 1000 * 60 * 60 * 24 * 7 * 2; // 2 weeks
+const TIME_TO_SHOW_SURVEY = 1000 * 60 * 15; // 15 minutes
 const SAMPLE_PERCENTAGE = 25; // 25 percent for public preview
 
 export class ExtensionSurvey {
   private context: vscode.ExtensionContext;
   private timeToShowSurvey: number;
   private timeToDisableSurvey: number;
+  private timeToRemindMeLater: number;
   private checkSurveyInterval?: NodeJS.Timeout;
   private showSurveyTimeout?: NodeJS.Timeout;
   private needToShow = false;
@@ -28,7 +30,8 @@ export class ExtensionSurvey {
     context: vscode.ExtensionContext,
     timeToShowSurvey?: number,
     samplePercentage?: number,
-    timeToDisableSurvey?: number
+    timeToDisableSurvey?: number,
+    timeToRemindMeLater?: number
   ) {
     this.context = context;
     this.timeToShowSurvey = timeToShowSurvey ? timeToShowSurvey : TIME_TO_SHOW_SURVEY;
@@ -38,6 +41,7 @@ export class ExtensionSurvey {
       this.needToShow = true;
     }
     this.timeToDisableSurvey = timeToDisableSurvey ? timeToDisableSurvey : TIME_TO_DISABLE_SURVEY;
+    this.timeToRemindMeLater = timeToRemindMeLater ? timeToRemindMeLater : TIME_TO_REMIND_ME_LATER;
   }
 
   public async activate(): Promise<void> {
@@ -109,6 +113,8 @@ export class ExtensionSurvey {
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Survey, {
           message: StringResources.vsc.survey.remindMeLater.message,
         });
+        const disableSurveyForTime = Date.now() + this.timeToRemindMeLater;
+        await globalStateUpdate(ExtensionSurveyStateKeys.RemindMeLater, disableSurveyForTime);
       },
     };
 
@@ -143,6 +149,8 @@ export class ExtensionSurvey {
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Survey, {
         message: StringResources.vsc.survey.cancelMessage,
       });
+      const disableSurveyForTime = Date.now() + this.timeToRemindMeLater;
+      await globalStateUpdate(ExtensionSurveyStateKeys.RemindMeLater, disableSurveyForTime);
     }
   }
 }

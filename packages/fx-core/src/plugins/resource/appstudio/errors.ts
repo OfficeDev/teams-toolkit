@@ -139,4 +139,9 @@ export class AppStudioError {
     message: (error: any) =>
       error.message ? error.message : "Migrate Teams Toolkit V1 project failed!",
   };
+  
+  public static readonly CheckPermissionFailedError = {
+    name: "CheckPermissionFailed",
+    message: (error: any) => `Check permission failed. Reason: ${error.message}`,
+  };
 }

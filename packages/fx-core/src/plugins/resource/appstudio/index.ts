@@ -298,6 +298,30 @@ export class AppStudioPlugin implements Plugin {
     return ok(localTeamsAppId);
   }
 
+  public async checkPermission(ctx: PluginContext): Promise<Result<any, FxError>> {
+    TelemetryUtils.init(ctx);
+    TelemetryUtils.sendStartEvent(TelemetryEventName.checkPermission);
+
+    try {
+      const checkPermissionResult = await this.appStudioPluginImpl.checkPermission(ctx);
+      TelemetryUtils.sendSuccessEvent(TelemetryEventName.checkPermission);
+      return ok(checkPermissionResult);
+    } catch (error) {
+      TelemetryUtils.sendErrorEvent(TelemetryEventName.checkPermission, error);
+      return err(
+        error.name && error.name >= 400 && error.name < 500
+          ? AppStudioResultFactory.UserError(
+              AppStudioError.CheckPermissionFailedError.name,
+              AppStudioError.CheckPermissionFailedError.message(error)
+            )
+          : AppStudioResultFactory.SystemError(
+              AppStudioError.CheckPermissionFailedError.name,
+              AppStudioError.CheckPermissionFailedError.message(error)
+            )
+      );
+    }
+  }
+
   async executeUserTask(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {
     if (func.method === "validateManifest") {
       return await this.validateManifest(ctx);

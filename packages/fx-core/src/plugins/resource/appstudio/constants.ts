@@ -10,6 +10,20 @@ export class Constants {
   public static readonly REMOTE_TEAMS_APP_ID = "teams-app-id";
   public static readonly READ_MORE = "Read more";
   public static readonly PUBLISH_GUIDE = "https://aka.ms/teamsfx-publish";
+
+  public static readonly PERMISSIONS = {
+    name: "Teams App",
+    noPermission: "No permission",
+    admin: "Administrator",
+    operative: "Operative",
+    type: "M365",
+  };
+}
+
+export class ErrorMessages {
+  static readonly GetConfigError = (configName: string, plugin: string) =>
+    `Failed to get configuration value "${configName}" for ${plugin}.`;
+  static readonly ParseUserInfoError = "Failed to parse userInfo.";
 }
 
 /**
@@ -23,6 +37,12 @@ export const FRONTEND_DOMAIN_ARM = "frontendHosting_domain";
 export const BOT_ID = "botId";
 export const LOCAL_BOT_ID = "localBotId";
 export const V1_MANIFEST = "manifest.json";
+
+/**
+ * Config Keys that are useful for remote collaboration
+ */
+export const SOLUTION = "solution";
+export const SOLUTION_USERINFO = "userinfo";
 
 export const TEAMS_APP_MANIFEST_TEMPLATE = `{
   "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.9/MicrosoftTeams.schema.json",

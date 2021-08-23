@@ -195,4 +195,70 @@ describe("Graph API Test", () => {
       }
     });
   });
+
+  describe("checkPermission", () => {
+    it("Happy Path", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sinon.stub(fakeAxiosInstance, "get").resolves({
+        data: {
+          value: {
+            id: faker.datatype.uuid(),
+          },
+        },
+      });
+
+      const checkPermissionResult = await GraphClient.checkPermission(
+        "graphToken",
+        faker.datatype.uuid(),
+        faker.datatype.uuid()
+      );
+      chai.assert.equal(checkPermissionResult, true);
+    });
+
+    it("Empty Object Id", async () => {
+      try {
+        const checkPermissionResult = await GraphClient.checkPermission(
+          "graphToken",
+          "",
+          faker.datatype.uuid()
+        );
+      } catch (error) {
+        chai.assert.equal(
+          error.message,
+          `${GraphClientErrorMessage.CheckPermissionFailed}: ${GraphClientErrorMessage.AppObjectIdIsNull}.`
+        );
+      }
+    });
+
+    it("Empty User Object Id", async () => {
+      try {
+        const checkPermissionResult = await GraphClient.checkPermission(
+          "graphToken",
+          faker.datatype.uuid(),
+          ""
+        );
+      } catch (error) {
+        chai.assert.equal(
+          error.message,
+          `${GraphClientErrorMessage.CheckPermissionFailed}: ${GraphClientErrorMessage.UserObjectIdIsNull}.`
+        );
+      }
+    });
+
+    it("Empty Response", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sinon.stub(fakeAxiosInstance, "get").resolves({
+        data: {},
+      });
+
+      const checkPermissionResult = await GraphClient.checkPermission(
+        "graphToken",
+        faker.datatype.uuid(),
+        faker.datatype.uuid()
+      );
+      chai.assert.equal(checkPermissionResult, false);
+    });
+  });
 });

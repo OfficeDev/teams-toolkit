@@ -279,8 +279,8 @@ export class FunctionPluginImpl {
 
     if (func.method === CustomizedTask.addResource) {
       TelemetryHelper.sendGeneralEvent(FunctionEvent.addResource);
-      const _res = await this.preScaffold(ctx);
-      result = _res.isOk() ? await this.scaffold(ctx) : _res;
+      result = result.isErr() ? result : await this.preScaffold(ctx);
+      result = result.isErr() ? result : await this.scaffold(ctx);
     }
 
     return result;

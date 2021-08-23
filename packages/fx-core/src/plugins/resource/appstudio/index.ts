@@ -6,7 +6,6 @@ import {
   FxError,
   ok,
   err,
-  LogProvider,
   Platform,
   Plugin,
   PluginContext,
@@ -16,11 +15,9 @@ import {
   TeamsAppManifest,
   SystemError,
   UserError,
-  ProjectSettings,
   Colors,
   AzureSolutionSettings,
   Func,
-  newUserError,
   newSystemError,
   Void,
 } from "@microsoft/teamsfx-api";
@@ -101,8 +98,16 @@ export class AppStudioPlugin implements Plugin {
    * @returns {string} - Remote teams app id
    */
   public async provision(ctx: PluginContext): Promise<Result<string, FxError>> {
+    TelemetryUtils.init(ctx);
+    TelemetryUtils.sendStartEvent(TelemetryEventName.provision);
     const remoteTeamsAppId = await this.appStudioPluginImpl.provision(ctx);
-    return ok(remoteTeamsAppId);
+    if (remoteTeamsAppId.isErr()) {
+      TelemetryUtils.sendErrorEvent(TelemetryEventName.provision, remoteTeamsAppId.error);
+      return remoteTeamsAppId;
+    } else {
+      TelemetryUtils.sendSuccessEvent(TelemetryEventName.provision);
+      return ok(remoteTeamsAppId.value);
+    }
   }
 
   /**

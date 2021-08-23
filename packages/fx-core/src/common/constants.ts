@@ -3,9 +3,10 @@ export class ConstantString {
 }
 
 export class Bicep {
-  static readonly InputParameterOrchestrationFileName: string = "input_param.template.bicep";
+  static readonly ParameterOrchestrationFileName: string = "param.template.bicep";
   static readonly ModuleOrchestrationFileName: string = "module.template.bicep";
   static readonly OutputOrchestrationFileName: string = "output.template.bicep";
+  static readonly VariablesOrchestrationFileName: string = "variables.template.bicep";
   static readonly ParameterFileName: string = "parameters.json";
 }
 

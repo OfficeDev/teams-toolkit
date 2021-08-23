@@ -9,7 +9,9 @@ import {
   FxError,
   Inputs,
   Json,
+  QTreeNode,
   Result,
+  Stage,
   TokenProvider,
   traverse,
 } from "@microsoft/teamsfx-api";
@@ -20,10 +22,9 @@ import {
   ProvisionInputs,
   ProvisionOutput,
   ResourcePlugin,
-  ResourceTemplate,
 } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
-import { FunctionPlugin } from "../..";
+import { ApimPlugin } from "..";
 import {
   ResourcePlugins,
   ResourcePluginsV2,
@@ -33,34 +34,32 @@ import {
   convert2PluginContext,
   deployAdapter,
   executeUserTaskAdapter,
-  generateResourceTemplateAdapter,
+  getQuestionsForScaffoldingAdapter,
   provisionResourceAdapter,
   scaffoldSourceCodeAdapter,
 } from "../../utils4v2";
 
-@Service(ResourcePluginsV2.FunctionPlugin)
-export class FunctionPluginV2 implements ResourcePlugin {
-  name = "fx-resource-function";
-  displayName = "Azure Function";
-  @Inject(ResourcePlugins.FunctionPlugin)
-  plugin!: FunctionPlugin;
+@Service(ResourcePluginsV2.ApimPlugin)
+export class ApimPluginV2 implements ResourcePlugin {
+  name = "fx-resource-apim";
+  displayName = "API Management";
+  @Inject(ResourcePlugins.ApimPlugin)
+  plugin!: ApimPlugin;
 
   activate(solutionSettings: AzureSolutionSettings): boolean {
     return this.plugin.activate(solutionSettings);
   }
-
+  async getQuestionsForScaffolding(
+    ctx: Context,
+    inputs: Inputs
+  ): Promise<Result<QTreeNode | undefined, FxError>> {
+    return await getQuestionsForScaffoldingAdapter(ctx, inputs, this.plugin);
+  }
   async scaffoldSourceCode(
     ctx: Context,
     inputs: Inputs
   ): Promise<Result<{ output: Record<string, string> }, FxError>> {
     return await scaffoldSourceCodeAdapter(ctx, inputs, this.plugin);
-  }
-
-  async generateResourceTemplate(
-    ctx: Context,
-    inputs: Inputs
-  ): Promise<Result<ResourceTemplate, FxError>> {
-    return await generateResourceTemplateAdapter(ctx, inputs, this.plugin);
   }
 
   async provisionResource(
@@ -101,9 +100,24 @@ export class FunctionPluginV2 implements ResourcePlugin {
     provisionOutput: Readonly<ProvisionOutput>,
     tokenProvider: AzureAccountProvider
   ): Promise<Result<{ output: Record<string, string> }, FxError>> {
+    const questionRes = await this.plugin.getQuestions(
+      Stage.deploy,
+      convert2PluginContext(ctx, inputs)
+    );
+    if (questionRes.isOk()) {
+      const node = questionRes.value;
+      if (node) {
+        const res = await traverse(node, inputs, ctx.userInteraction);
+        if (res.isErr()) {
+          return err(res.error);
+        }
+      }
+    }
     return await deployAdapter(ctx, inputs, provisionOutput, tokenProvider, this.plugin);
   }
 
+  //addResource
+  //TODO apim plugin implement executeUserTask() for addResource (preScaffold + scaffold)
   async executeUserTask(
     ctx: Context,
     func: Func,

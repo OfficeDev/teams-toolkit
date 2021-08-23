@@ -112,11 +112,9 @@ describe("Solution migrate()", async () => {
 
   it("should succeed if projectSettings, solution settings and v1 capability are provided, language is typescript", async () => {
     const mocker = sinon.createSandbox();
-    mocker.stub(fs, "access").callsFake(
-      async (path: PathLike, mode?: number): Promise<void> => {
-        return;
-      }
-    );
+    mocker.stub(fs, "access").callsFake(async (path: PathLike, mode?: number): Promise<void> => {
+      return;
+    });
     fileContent.clear();
     const solution = new TeamsAppSolution();
     const mockedSolutionCtx = mockSolutionContext();

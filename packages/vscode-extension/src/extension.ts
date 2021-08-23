@@ -4,7 +4,7 @@
 "use strict";
 
 import * as vscode from "vscode";
-import { initializeExtensionVariables } from "./extensionVariables";
+import { ext, initializeExtensionVariables } from "./extensionVariables";
 import * as handlers from "./handlers";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import { registerTeamsfxTaskAndDebugEvents } from "./debug/teamsfxTaskHandler";
@@ -20,6 +20,7 @@ import { disableRunIcon, registerRunIcon } from "./debug/runIconHandler";
 import { CryptoCodeLensProvider } from "./codeLensProvider";
 import { Correlator } from "@microsoft/teamsfx-core";
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
+import { enableMigrateV1 } from "./handlers";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -223,6 +224,14 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.workspace.onDidSaveTextDocument(handlers.saveTextDocumentHandler)
   );
+
+  ext.context.subscriptions.push(vscode.workspace.onDidChangeWorkspaceFolders(enableMigrateV1));
+  enableMigrateV1();
+  const migrateV1Cmd = vscode.commands.registerCommand(
+    "fx-extension.migrateV1Project",
+    handlers.migrateV1ProjectHandler
+  );
+  context.subscriptions.push(migrateV1Cmd);
 
   // 2. Call activate function of toolkit core.
   await handlers.activate();

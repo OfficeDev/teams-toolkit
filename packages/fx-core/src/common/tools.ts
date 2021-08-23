@@ -459,9 +459,9 @@ export async function copyFiles(
 ): Promise<void> {
   await fs.ensureDir(distPath);
 
-  const excludeFileNames = excludeFileList?.map((file) => file.fileName);
+  const excludeFileNames = excludeFileList.map((file) => file.fileName);
   const recursiveExcludeFileNames = excludeFileList
-    ?.filter((file) => file.recursive)
+    .filter((file) => file.recursive)
     .map((file) => file.fileName);
 
   const fileNames = await fs.readdir(srcPath);

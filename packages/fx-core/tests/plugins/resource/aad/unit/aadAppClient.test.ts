@@ -597,7 +597,7 @@ describe("AAD App Client Test", () => {
           message: "errorMessage",
         },
       };
-      sinon.stub(AadAppClient, "retryHanlder").throws(error);
+      sinon.stub(GraphClient, "grantPermission").throws(error);
       try {
         const grantPermissionResult = await AadAppClient.grantPermission(
           ctx,

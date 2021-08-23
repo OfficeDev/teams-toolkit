@@ -111,7 +111,6 @@ describe("AadAppForTeamsPlugin: CI", () => {
     chai.assert.isTrue(provision.isOk());
 
     mockProvisionResult(context, true);
-    console.log(context);
     const setAppId = plugin.setApplicationInContext(context, true);
     chai.assert.isTrue(setAppId.isOk());
 

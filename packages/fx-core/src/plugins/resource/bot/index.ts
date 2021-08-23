@@ -113,11 +113,6 @@ export class TeamsBot implements Plugin {
       LifecycleFuncNames.GENERATE_ARM_TEMPLATES
     );
 
-    await ProgressBarFactory.closeProgressBar(
-      result.isOk(),
-      ProgressBarConstants.GENERATE_ARM_TEMPLATES_TITLE
-    );
-
     return result;
   }
 

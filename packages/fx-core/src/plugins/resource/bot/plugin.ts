@@ -236,14 +236,6 @@ export class TeamsBotImpl {
     await this.config.restoreConfigFromContext(context);
     Logger.info(Messages.GeneratingArmTemplatesBot);
 
-    // Create and register progress bar for cleanup.
-    const handler = await ProgressBarFactory.newProgressBar(
-      ProgressBarConstants.GENERATE_ARM_TEMPLATES_TITLE,
-      ProgressBarConstants.GENERATE_ARM_TEMPLATES_STEPS_NUM,
-      this.ctx
-    );
-    await handler?.start(ProgressBarConstants.GENERATE_ARM_TEMPLATES_STEP_START);
-
     const bicepTemplateDir = path.join(getTemplatesFolder(), PathInfo.BicepTemplateRelativeDir);
 
     const moduleFilePath = path.join(bicepTemplateDir, PathInfo.moduleFileName);

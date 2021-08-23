@@ -72,12 +72,6 @@ export class ProgressBarConstants {
   public static readonly DEPLOY_STEP_ZIP_DEPLOY = "Uploading application package.";
 
   public static readonly DEPLOY_STEPS_NUM: number = 3;
-
-  public static readonly GENERATE_ARM_TEMPLATES_TITLE: string = "Generating ARM templates of bot.";
-  public static readonly GENERATE_ARM_TEMPLATES_STEP_START =
-    "Start Generating ARM templates of bot.";
-
-  public static readonly GENERATE_ARM_TEMPLATES_STEPS_NUM: number = 1;
 }
 
 export class QuestionNames {

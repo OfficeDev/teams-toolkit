@@ -592,6 +592,53 @@ export class AppStudioPluginImpl {
     return result;
   }
 
+  public async grantPermission(ctx: PluginContext): Promise<ResourcePermission[]> {
+    let userInfoObject: IUserList;
+    const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
+
+    const teamsAppId = (await ctx.configOfOtherPlugins
+      .get(SOLUTION)
+      ?.get(REMOTE_TEAMS_APP_ID)) as string;
+    if (!teamsAppId) {
+      throw new Error(ErrorMessages.GetConfigError(REMOTE_TEAMS_APP_ID, SOLUTION));
+    }
+
+    const userInfo = ctx.configOfOtherPlugins.get(SOLUTION)?.get(USER_INFO);
+    if (!userInfo) {
+      throw new Error(ErrorMessages.GetConfigError(USER_INFO, SOLUTION));
+    }
+
+    try {
+      userInfoObject = JSON.parse(userInfo) as IUserList;
+    } catch (error) {
+      throw new Error(ErrorMessages.ParseUserInfoError);
+    }
+
+    try {
+      await AppStudioClient.grantPermission(teamsAppId, appStudioToken as string, userInfoObject);
+    } catch (error) {
+      throw AppStudioResultFactory.SystemError(
+        AppStudioError.GrantPermissionFailedWithInfoError.name,
+        AppStudioError.GrantPermissionFailedWithInfoError.message(
+          Constants.PERMISSIONS.name,
+          teamsAppId,
+          error
+        )
+      );
+    }
+
+    const result: ResourcePermission[] = [
+      {
+        name: Constants.PERMISSIONS.name,
+        roles: [Constants.PERMISSIONS.admin],
+        type: Constants.PERMISSIONS.type,
+        resourceId: teamsAppId,
+      },
+    ];
+
+    return result;
+  }
+
   private async beforePublish(
     ctx: PluginContext,
     appDirectory: string,

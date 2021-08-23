@@ -138,4 +138,15 @@ export class AppStudioError {
     name: "CheckPermissionFailed",
     message: (error: any) => `Check permission failed. Reason: ${error.message}`,
   };
+
+  public static readonly GrantPermissionFailedWithInfoError = {
+    name: "GrantPermissionFailed",
+    message: (resource: string, id: string, error: any) =>
+      `${resource}: ${id}. Check permission failed. Reason: ${error.message}`,
+  };
+
+  public static readonly GrantPermissionFailedError = {
+    name: "GrantPermissionFailed",
+    message: (error: any) => `Check permission failed. Reason: ${error.message}`,
+  };
 }

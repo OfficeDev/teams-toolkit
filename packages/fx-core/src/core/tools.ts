@@ -110,11 +110,15 @@ export function isV1Project(workspacePath?: string): boolean {
     }
     const packageJsonPath = path.resolve(workspacePath, "package.json");
     const packageSettings = fs.readJsonSync(packageJsonPath);
-    if (packageSettings?.msteams) {
-      return true;
-    }
-    return false;
+    return validateV1PackageSettings(packageSettings);
   } catch (e) {
     return false;
   }
+}
+
+export function validateV1PackageSettings(settings: any): boolean {
+  if (settings?.msteams) {
+    return true;
+  }
+  return false;
 }

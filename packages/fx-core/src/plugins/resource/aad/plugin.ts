@@ -359,7 +359,7 @@ export class AadAppForTeamsImpl {
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartGrantPermission);
 
     await TokenProvider.init(ctx, TokenAudience.Graph);
-    const config = new CheckGrantPermissionConfig();
+    const config = new CheckGrantPermissionConfig(true);
     await config.restoreConfigFromContext(ctx);
 
     const userObjectId = config?.userInfo["aadId"];

@@ -75,12 +75,7 @@ import * as fs from "fs-extra";
 import { getTemplatesFolder } from "../../..";
 import path from "path";
 import { getArmOutput } from "../utils4v2";
-import {
-  isArmSupportEnabled,
-  isMultiEnvEnabled,
-  getAppDirectory,
-  copyFiles,
-} from "../../../common";
+import { isArmSupportEnabled, isMultiEnvEnabled, getAppDirectory } from "../../../common";
 import {
   LocalSettingsAuthKeys,
   LocalSettingsBotKeys,
@@ -204,7 +199,7 @@ export class AppStudioPluginImpl {
    * @param settings
    * @returns
    */
-  public async createV1Manifest(ctx: PluginContext): Promise<TeamsAppManifest | undefined> {
+  public async createV1Manifest(ctx: PluginContext): Promise<TeamsAppManifest> {
     const archiveManifestPath = path.join(
       ctx.root,
       ArchiveFolderName,
@@ -358,10 +353,21 @@ export class AppStudioPluginImpl {
     const newAppPackageFolder = path.join(ctx.root, AppPackageFolderName);
     await fs.ensureDir(newAppPackageFolder);
     if (await this.checkFileExist(archiveManifestPath)) {
-      await copyFiles(archiveAppPackageFolder, newAppPackageFolder, [V1_MANIFEST]);
       manifest = await this.createV1Manifest(ctx);
       const newManifestPath = path.join(newAppPackageFolder, REMOTE_MANIFEST);
       await fs.writeFile(newManifestPath, JSON.stringify(manifest, null, 4));
+
+      const archiveColorFile = path.join(archiveAppPackageFolder, manifest.icons.color);
+      const newColorFile = path.join(newAppPackageFolder, manifest.icons.color);
+      if (await this.checkFileExist(archiveColorFile)) {
+        await fs.copyFile(archiveColorFile, newColorFile);
+      }
+
+      const archiveOutlineFile = path.join(archiveAppPackageFolder, manifest.icons.outline);
+      const newOutlineFile = path.join(newAppPackageFolder, manifest.icons.outline);
+      if (await this.checkFileExist(archiveOutlineFile)) {
+        await fs.copyFile(archiveOutlineFile, newOutlineFile);
+      }
     } else {
       await this.scaffold(ctx);
     }

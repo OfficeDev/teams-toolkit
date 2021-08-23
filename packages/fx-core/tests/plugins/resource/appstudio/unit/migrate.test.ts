@@ -16,22 +16,13 @@ import fs, { PathLike } from "fs-extra";
 import sinon from "sinon";
 import { HostTypeOptionAzure } from "../../../../../src/plugins/solution/fx-solution/question";
 import {
-  BOTS_TPL,
-  COMPOSE_EXTENSIONS_TPL,
   CONFIGURABLE_TABS_TPL,
   REMOTE_MANIFEST,
   STATIC_TABS_TPL,
   V1_MANIFEST,
 } from "../../../../../src/plugins/resource/appstudio/constants";
 import path from "path";
-import {
-  isArmSupportEnabled,
-  isMultiEnvEnabled,
-  getAppDirectory,
-  copyFiles,
-} from "../../../../../src/common";
 import { ArchiveFolderName } from "@microsoft/teamsfx-api";
-import { getTemplatesFolder } from "../../../../../src";
 
 describe("Migrate", () => {
   let plugin: AppStudioPlugin;
@@ -70,6 +61,13 @@ describe("Migrate", () => {
     // Uses stub<any, any> to circumvent type check. Beacuse sinon fails to mock my target overload of readJson.
     sandbox
       .stub<any, any>(fs, "copy")
+      .callsFake(async (originPath: PathLike, filePath: PathLike) => {
+        const content = fileContent.get(originPath.toString());
+        fileContent.set(path.normalize(filePath.toString()), content ?? filePath.toString());
+      });
+
+    sandbox
+      .stub<any, any>(fs, "copyFile")
       .callsFake(async (originPath: PathLike, filePath: PathLike) => {
         const content = fileContent.get(originPath.toString());
         fileContent.set(path.normalize(filePath.toString()), content ?? filePath.toString());

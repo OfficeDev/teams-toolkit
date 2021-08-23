@@ -26,11 +26,16 @@ export const DeploySteps = {
   Upload: Messages.ProgressUpload,
 };
 
+export const MigrateSteps = {
+  Migrate: Messages.ProgressMigrate,
+};
+
 export class ProgressHelper {
   static scaffoldProgress: IProgressHandler | undefined;
   static provisionProgress: IProgressHandler | undefined;
   static preDeployProgress: IProgressHandler | undefined;
   static deployProgress: IProgressHandler | undefined;
+  static migrateProgress: IProgressHandler | undefined;
 
   static async startScaffoldProgressHandler(
     ctx: PluginContext
@@ -84,6 +89,19 @@ export class ProgressHelper {
     return this.deployProgress;
   }
 
+  static async startMigrateProgressHandler(
+    ctx: PluginContext
+  ): Promise<IProgressHandler | undefined> {
+    await this.migrateProgress?.end(true);
+
+    this.migrateProgress = ctx.ui?.createProgressBar(
+      Messages.MigrateProgressTitle,
+      Object.entries(MigrateSteps).length
+    );
+    await this.migrateProgress?.start(Messages.ProgressStart);
+    return this.migrateProgress;
+  }
+
   static async endAllHandlers(success: boolean): Promise<void> {
     await this.endScaffoldProgress(success);
     await this.endProvisionProgress(success);
@@ -109,5 +127,10 @@ export class ProgressHelper {
   static async endDeployProgress(success: boolean): Promise<void> {
     await this.deployProgress?.end(success);
     this.deployProgress = undefined;
+  }
+
+  static async endMigrateProgress(success: boolean): Promise<void> {
+    await this.migrateProgress?.end(success);
+    this.migrateProgress = undefined;
   }
 }

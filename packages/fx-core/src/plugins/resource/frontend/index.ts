@@ -9,6 +9,7 @@ import {
   UserError,
   AzureSolutionSettings,
   ok,
+  Func,
 } from "@microsoft/teamsfx-api";
 
 import { ErrorFactory, TeamsFxResult } from "./error-factory";
@@ -34,9 +35,6 @@ export class FrontendPlugin implements Plugin, ArmResourcePlugin {
   name = "fx-resource-frontend-hosting";
   displayName = "Tab Front-end";
   activate(solutionSettings: AzureSolutionSettings): boolean {
-    if (solutionSettings?.migrateFromV1) {
-      return false;
-    }
     const cap = solutionSettings.capabilities || [];
     return solutionSettings.hostType === HostTypeOptionAzure.id && cap.includes(TabOptionItem.id);
   }
@@ -97,6 +95,13 @@ export class FrontendPlugin implements Plugin, ArmResourcePlugin {
     FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(ctx, TelemetryEvent.GenerateArmTemplates, () =>
       this.frontendPluginImpl.generateArmTemplates(ctx)
+    );
+  }
+
+  public async executeUserTask(func: Func, ctx: PluginContext): Promise<TeamsFxResult> {
+    FrontendPlugin.setContext(ctx);
+    return this.runWithErrorHandling(ctx, TelemetryEvent.GenerateArmTemplates, () =>
+      this.frontendPluginImpl.executeUserTask(func, ctx)
     );
   }
 

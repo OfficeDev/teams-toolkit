@@ -593,14 +593,14 @@ describe("Core basic APIs", () => {
   const testParameters = [
     {
       description: "skip ask app name",
-      appName: "v1projectpath",
-      projectPath: path.resolve(os.tmpdir(), "v1projectpath"),
+      appName: appName,
+      projectPath: path.resolve(os.tmpdir(), "v1projectpath", appName),
       skipAppNameQuestion: true,
     },
     {
       description: "ask app name",
       appName: "v1projectname",
-      projectPath: path.resolve(os.tmpdir(), "v1-project-path"),
+      projectPath: path.resolve(os.tmpdir(), "v1-project-path", `${appName}-errorname`),
       skipAppNameQuestion: false,
     },
   ];
@@ -608,6 +608,9 @@ describe("Core basic APIs", () => {
   testParameters.forEach((testParam) => {
     it(`happy path: migrate v1 project ${testParam.description}`, async () => {
       await fs.ensureDir(testParam.projectPath);
+      await fs.writeJSON(path.join(testParam.projectPath, "package.json"), {
+        msteams: { teamsAppId: "testappid" },
+      });
       const expectedInputs: Inputs = {
         platform: Platform.VSCode,
         projectPath: testParam.projectPath,

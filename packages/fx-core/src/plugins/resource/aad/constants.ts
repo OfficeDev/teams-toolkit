@@ -225,6 +225,8 @@ export class Messages {
     "Successfully updated permission for Azure AD app. You can go to Azure Portal to check the permission or grant admin consent.";
   static readonly SkipProvision =
     "Azure AD app provision skipped. You need to mannual provision and config Azure AD app.";
+  static readonly OwnerAlreadyAdded = (userObjectId: string, objectId: string) =>
+    `User ${userObjectId} is already added as owner of Azure AD app ${objectId}.`;
 }
 
 export class ProgressTitle {

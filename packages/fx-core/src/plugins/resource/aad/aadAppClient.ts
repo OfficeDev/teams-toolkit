@@ -4,7 +4,7 @@
 import { FxError } from "@microsoft/teamsfx-api";
 import { PluginContext } from "@microsoft/teamsfx-api";
 import { AppStudio } from "./appStudio";
-import { ConfigKeys, Constants, Telemetry } from "./constants";
+import { ConfigKeys, Constants, Messages, Telemetry } from "./constants";
 import { GraphErrorCodes } from "./errorCodes";
 import {
   AppStudioErrorMessage,
@@ -239,6 +239,7 @@ export class AadAppClient {
       await GraphClient.grantPermission(TokenProvider.token as string, objectId, userObjectId);
     } catch (error) {
       if (error?.response?.data?.error.message == Constants.createOwnerDuplicatedMessage) {
+        ctx.logProvider?.info(Messages.OwnerAlreadyAdded(userObjectId, objectId));
         return;
       }
 

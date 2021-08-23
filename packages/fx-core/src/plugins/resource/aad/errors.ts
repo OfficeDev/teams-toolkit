@@ -165,7 +165,7 @@ export class GraphClientErrorMessage {
     "Failed to create an application secret in Azure Active Directory.";
   static readonly GetFailed = "Failed to retrieve Azure Active Directory application registration.";
   static readonly CheckPermissionFailed = "Failed to check permission in Azure Active Directory.";
-  static readonly GrantPermissionFailed = "Failed to check permission in Azure Active Directory.";
+  static readonly GrantPermissionFailed = "Failed to grant permission in Azure Active Directory.";
 
   static readonly AppDefinitionIsNull = "Missing application definition.";
   static readonly AppObjectIdIsNull = "Missing Object ID.";

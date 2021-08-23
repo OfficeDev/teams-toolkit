@@ -464,6 +464,6 @@ export async function copyFiles(
     if (excludeFileNames && excludeFileNames.length > 0 && excludeFileNames.includes(fileName)) {
       continue;
     }
-    await fs.move(path.join(srcPath, fileName), path.join(distPath, fileName), { overwrite: true });
+    await fs.copy(path.join(srcPath, fileName), path.join(distPath, fileName), { overwrite: true });
   }
 }

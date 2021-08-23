@@ -29,6 +29,7 @@ import {
 } from "./constants";
 import { ResourceManagementClient, ResourceManagementModels } from "@azure/arm-resources";
 import { DeployArmTemplatesSteps, ProgressHelper } from "./utils/progressHelper";
+import dateFormat from "dateformat";
 
 const baseFolder = "./infra/azure";
 const templateFolder = "templates";
@@ -84,6 +85,7 @@ export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<
 
   // Write bicep content to project folder
   if (bicepOrchestrationTemplate.needsGenerateTemplate()) {
+    await backupExistingFilesIfNecessary(ctx);
     // Output main.bicep file
     const bicepOrchestrationFileContent = bicepOrchestrationTemplate.getOrchestrationFileContent();
     const templateFolderPath = path.join(ctx.root, baseFolder, templateFolder);
@@ -529,4 +531,39 @@ function escapeSecretPlaceholders(variables: Record<string, string>) {
     const normalizedKey = `${normalizeToEnvName(key)}`;
     variables[normalizedKey] = `{{${normalizedKey}}}`; // replace value of 'SECRET_PLACEHOLDER' with '{{SECRET_PLACEHOLDER}}' so the placeholder remains unchanged
   }
+}
+
+// backup existing ARM template and parameter files to backup folder named with current timestamp
+async function backupExistingFilesIfNecessary(ctx: SolutionContext): Promise<void> {
+  const armBaseFolder = path.join(ctx.root, baseFolder);
+  const armTemplateFolder = path.join(armBaseFolder, templateFolder);
+  const armParameterFolder = path.join(armBaseFolder, parameterFolder);
+
+  const needsBackup = !(await areFoldersEmpty([armTemplateFolder, armParameterFolder]));
+  if (needsBackup) {
+    const backupFolder = path.join(
+      armBaseFolder,
+      "backup",
+      dateFormat(new Date(), "yyyymmddHHMMssl")
+    ); // example: ./infra/azure/backup/20210823080000000
+    const templateBackupFolder = path.join(backupFolder, templateFolder);
+    const parameterBackupFolder = path.join(backupFolder, parameterFolder);
+
+    await fs.move(armTemplateFolder, templateBackupFolder);
+    await fs.move(armParameterFolder, parameterBackupFolder);
+  }
+}
+
+async function areFoldersEmpty(folderPaths: string[]): Promise<boolean> {
+  let isEmpty = true;
+  for (const folderPath of folderPaths) {
+    if (await fs.pathExists(folderPath)) {
+      const files = await fs.readdir(folderPath);
+      if (files.length > 0) {
+        isEmpty = false;
+        break;
+      }
+    }
+  }
+  return isEmpty;
 }

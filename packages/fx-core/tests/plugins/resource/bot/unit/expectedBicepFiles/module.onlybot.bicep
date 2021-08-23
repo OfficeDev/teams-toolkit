@@ -1,5 +1,5 @@
 
-module botProvision './bot_test.bicep' = {
+module botProvision './bot.onlybot.bicep' = {
   name: 'botProvision'
   params: {
     botAadClientId: bot_aadClientId

@@ -1,5 +1,5 @@
 
-module botProvision './botWithTabFuncSql.bicep' = {
+module botProvision './bot.all.bicep' = {
   name: 'botProvision'
   params: {
     botAadClientId: bot_aadClientId

@@ -17,14 +17,9 @@ describe("Bot Generates Arm Templates", () => {
     botPlugin = new TeamsBot();
   });
 
-  it("generate bicep arm templates: tab and bot", async () => {
+  it("generate bicep arm templates: only bot", async () => {
     // Arrange
-    const activeResourcePlugins = [
-      ResourcePlugins.Aad,
-      ResourcePlugins.SimpleAuth,
-      ResourcePlugins.FrontendHosting,
-      ResourcePlugins.Bot,
-    ];
+    const activeResourcePlugins = [ResourcePlugins.Aad, ResourcePlugins.Bot];
     const pluginContext: PluginContext = testUtils.newPluginContext();
     const azureSolutionSettings = pluginContext.projectSettings!
       .solutionSettings! as AzureSolutionSettings;
@@ -35,13 +30,10 @@ describe("Bot Generates Arm Templates", () => {
     const result = await botPlugin.generateArmTemplates(pluginContext);
 
     // Assert
-    const testModuleFileName = "bot_test.bicep";
+    const testModuleFileName = "bot.onlybot.bicep";
     const mockedSolutionDataContext = {
       Plugins: activeResourcePlugins,
       PluginOutput: {
-        "fx-resource-aad-app-for-teams": {},
-        "fx-resource-frontend-hosting": {},
-        "fx-resource-simple-auth": {},
         "fx-resource-bot": {
           Modules: {
             botProvision: {
@@ -64,7 +56,10 @@ describe("Bot Generates Arm Templates", () => {
         compiledResult.Modules!.botProvision.Content,
         fs.readFileSync(expectedModuleFilePath, ConstantString.UTF8Encoding)
       );
-      const expectedModuleSnippetFilePath = path.join(expectedBicepFileDirectory, "module.bicep");
+      const expectedModuleSnippetFilePath = path.join(
+        expectedBicepFileDirectory,
+        "module.onlybot.bicep"
+      );
       chai.assert.strictEqual(
         compiledResult.Orchestration.ModuleTemplate!.Content,
         fs.readFileSync(expectedModuleSnippetFilePath, ConstantString.UTF8Encoding)
@@ -95,7 +90,7 @@ describe("Bot Generates Arm Templates", () => {
     }
   });
 
-  it("generate bicep arm templates: tab, function, sql and bot", async () => {
+  it("generate bicep arm templates: bot with all resource plugins enabled", async () => {
     // Arrange
     const activeResourcePlugins = [
       ResourcePlugins.Aad,
@@ -116,7 +111,7 @@ describe("Bot Generates Arm Templates", () => {
     const result = await botPlugin.generateArmTemplates(pluginContext);
 
     // Assert
-    const testModuleFileName = "botWithTabFuncSql.bicep";
+    const testModuleFileName = "bot.all.bicep";
     const mockedSolutionDataContext = {
       Plugins: activeResourcePlugins,
       PluginOutput: {
@@ -164,7 +159,7 @@ describe("Bot Generates Arm Templates", () => {
       );
       const expectedModuleSnippetFilePath = path.join(
         expectedBicepFileDirectory,
-        "module.botWithTabFuncSql.bicep"
+        "module.all.bicep"
       );
       chai.assert.strictEqual(
         compiledResult.Orchestration.ModuleTemplate!.Content,

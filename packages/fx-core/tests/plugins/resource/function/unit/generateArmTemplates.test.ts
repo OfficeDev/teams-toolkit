@@ -39,7 +39,7 @@ describe("FunctionGenerateArmTemplates", () => {
     const result = await functionPlugin.generateArmTemplates(pluginContext);
 
     // Assert
-    const testModuleFileName = "function_test.bicep";
+    const testModuleFileName = "function.bicep";
     const mockedSolutionDataContext = {
       Plugins: activeResourcePlugins,
       PluginOutput: {

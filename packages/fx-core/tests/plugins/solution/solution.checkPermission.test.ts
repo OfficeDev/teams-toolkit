@@ -32,8 +32,6 @@ import sinon from "sinon";
 import { EnvConfig, MockGraphTokenProvider } from "../resource/apim/testUtil";
 import Container from "typedi";
 import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
-import { AppStudioResultFactory } from "../../../src/plugins/resource/appstudio/results";
-import { AppStudioError } from "../../../src/plugins/resource/appstudio/errors";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -97,9 +95,7 @@ describe("checkPermission() for Teamsfx projects", () => {
     };
     const result = await solution.checkPermission(mockedCtx);
     expect(result.isErr()).to.be.true;
-    expect(result._unsafeUnwrapErr().name).equals(
-      SolutionError.CannotCheckPermissionBeforeProvision
-    );
+    expect(result._unsafeUnwrapErr().name).equals(SolutionError.CannotProcessBeforeProvision);
   });
 
   it("should return error if cannot get user info", async () => {
@@ -180,7 +176,7 @@ describe("checkPermission() for Teamsfx projects", () => {
       name: "fake_name",
     });
 
-    aadPlugin.checkPermission = async function (
+    appStudioPlugin.checkPermission = async function (
       _ctx: PluginContext
     ): Promise<Result<any, FxError>> {
       return err(
@@ -192,10 +188,17 @@ describe("checkPermission() for Teamsfx projects", () => {
       );
     };
 
-    appStudioPlugin.checkPermission = async function (
+    aadPlugin.checkPermission = async function (
       _ctx: PluginContext
     ): Promise<Result<any, FxError>> {
-      return ok(Void);
+      return ok([
+        {
+          name: "aad_app",
+          resourceId: "fake_aad_app_resource_id",
+          roles: "Owner",
+          type: "M365",
+        },
+      ]);
     };
 
     mockedCtx.config.set(PluginNames.AAD, new ConfigMap());
@@ -204,6 +207,7 @@ describe("checkPermission() for Teamsfx projects", () => {
     const result = await solution.checkPermission(mockedCtx);
     expect(result.isErr()).to.be.true;
     expect(result._unsafeUnwrapErr().name).equals("FailedToCheckPermission");
+    sinon.restore();
   });
 
   it("happy path", async () => {
@@ -261,5 +265,6 @@ describe("checkPermission() for Teamsfx projects", () => {
       chai.assert.fail("result is error");
     }
     expect(result.value.length).equal(2);
+    sinon.restore();
   });
 });

@@ -60,7 +60,7 @@ import { getArmOutput } from "../utils4v2";
 import { getTemplatesFolder, isArmSupportEnabled } from "../../..";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import * as fs from "fs-extra";
-import { ConstantString } from "../../../common/constants";
+import { Bicep, ConstantString } from "../../../common/constants";
 import { EnvironmentUtils } from "./utils/environment-utils";
 import { copyFiles } from "../../../common";
 
@@ -246,15 +246,15 @@ export class FrontendPluginImpl {
 
     const inputParameterOrchestrationFilePath = path.join(
       bicepTemplateDir,
-      FrontendPathInfo.InputParameterOrchestrationFileName
+      Bicep.ParameterOrchestrationFileName
     );
     const moduleOrchestrationFilePath = path.join(
       bicepTemplateDir,
-      FrontendPathInfo.ModuleOrchestrationFileName
+      Bicep.ModuleOrchestrationFileName
     );
     const outputOrchestrationFilePath = path.join(
       bicepTemplateDir,
-      FrontendPathInfo.OutputOrchestrationFileName
+      Bicep.OutputOrchestrationFileName
     );
 
     const result: ScaffoldArmTemplateResult = {

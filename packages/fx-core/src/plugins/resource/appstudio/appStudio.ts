@@ -8,6 +8,7 @@ import { AppStudioError } from "./errors";
 import { IPublishingAppDenition } from "./interfaces/IPublishingAppDefinition";
 import { AppStudioResultFactory } from "./results";
 import { getAppStudioEndpoint } from "../../..";
+import { Constants } from "./constants";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AppStudioClient {
@@ -134,14 +135,13 @@ export namespace AppStudioClient {
         }
       }
     } catch (e) {
-      if (e instanceof Error) {
-        await logProvider?.warning(
-          `Cannot get the app definition with app ID ${teamsAppId}, due to ${e.name}: ${e.message}`
-        );
+      const errorMessage = `Cannot get the app definition with app ID ${teamsAppId}, due to ${e.name}: ${e.message}`;
+      await logProvider?.warning(errorMessage);
+      const err = new Error(errorMessage);
+      if (e.response?.status) {
+        err.name = e.response?.status;
       }
-      throw new Error(
-        `Cannot get the app definition with app ID ${teamsAppId}, due to ${e.name}: ${e.message}`
-      );
+      throw err;
     }
     throw new Error(`Cannot get the app definition with app ID ${teamsAppId}`);
   }
@@ -385,6 +385,34 @@ export namespace AppStudioClient {
       return appdefinitions[appdefinitions.length - 1];
     } else {
       return undefined;
+    }
+  }
+
+  export async function checkPermission(
+    teamsAppId: string,
+    appStudioToken: string,
+    userObjectId: string
+  ): Promise<string> {
+    let app;
+    try {
+      app = await getApp(teamsAppId, appStudioToken);
+    } catch (error) {
+      if (error.name == 404) {
+        return Constants.PERMISSIONS.noPermission;
+      } else {
+        throw error;
+      }
+    }
+
+    const findUser = app.userList?.find((user: any) => user["aadId"] === userObjectId);
+    if (!findUser) {
+      return Constants.PERMISSIONS.noPermission;
+    }
+
+    if (findUser.isAdministrator) {
+      return Constants.PERMISSIONS.admin;
+    } else {
+      return Constants.PERMISSIONS.operative;
     }
   }
 }

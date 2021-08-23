@@ -75,7 +75,7 @@ resource botWebApp 'Microsoft.Web/sites@2021-01-01' = {
   identity: {
     type: 'UserAssigned'
     userAssignedIdentities: {
-      identityName: {}
+      '${identityName}': {}
     }
   }
 }

@@ -37,7 +37,7 @@ describe("FrontendGenerateArmTemplates", () => {
     const result = await frontendPlugin.generateArmTemplates(pluginContext);
 
     // Assert
-    const testModuleFileName = "frontend_hosting_test.bicep";
+    const testModuleFileName = "frontend_hosting.bicep";
     const mockedSolutionDataContext = {
       Plugins: activeResourcePlugins,
       PluginOutput: {

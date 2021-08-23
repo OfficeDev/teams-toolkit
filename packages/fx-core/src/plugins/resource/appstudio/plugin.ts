@@ -600,32 +600,40 @@ export class AppStudioPluginImpl {
       .get(SOLUTION)
       ?.get(REMOTE_TEAMS_APP_ID)) as string;
     if (!teamsAppId) {
-      throw AppStudioError.GrantPermissionFailedError.message(
-        ErrorMessages.GetConfigError(REMOTE_TEAMS_APP_ID, SOLUTION)
+      throw new Error(
+        AppStudioError.GrantPermissionFailedError.message(
+          ErrorMessages.GetConfigError(REMOTE_TEAMS_APP_ID, SOLUTION)
+        )
       );
     }
 
     const userInfo = ctx.configOfOtherPlugins.get(SOLUTION)?.get(USER_INFO);
     if (!userInfo) {
-      throw AppStudioError.GrantPermissionFailedError.message(
-        ErrorMessages.GetConfigError(USER_INFO, SOLUTION),
-        teamsAppId
+      throw new Error(
+        AppStudioError.GrantPermissionFailedError.message(
+          ErrorMessages.GetConfigError(USER_INFO, SOLUTION),
+          teamsAppId
+        )
       );
     }
 
     try {
       userInfoObject = JSON.parse(userInfo) as IUserList;
     } catch (error) {
-      throw AppStudioError.GrantPermissionFailedError.message(
-        ErrorMessages.ParseUserInfoError,
-        teamsAppId
+      throw new Error(
+        AppStudioError.GrantPermissionFailedError.message(
+          ErrorMessages.ParseUserInfoError,
+          teamsAppId
+        )
       );
     }
 
     try {
       await AppStudioClient.grantPermission(teamsAppId, appStudioToken as string, userInfoObject);
     } catch (error) {
-      throw AppStudioError.GrantPermissionFailedError.message(error?.message, teamsAppId);
+      throw new Error(
+        AppStudioError.GrantPermissionFailedError.message(error?.message, teamsAppId)
+      );
     }
 
     const result: ResourcePermission[] = [

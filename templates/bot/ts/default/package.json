@@ -1,7 +1,7 @@
 {
   "name": "echobot",
   "version": "1.0.0",
-  "description": "TeamsFX hello world Bot sample",
+  "description": "Microsoft Teams Toolkit hello world Bot sample",
   "author": "Microsoft",
   "license": "MIT",
   "main": "./lib/index.js",

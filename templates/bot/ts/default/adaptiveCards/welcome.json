@@ -9,26 +9,11 @@
     },
     {
       "type": "TextBlock",
-      "text": "Congratulations! Your hello world bot template is running! Click on \"I Like This\" below if you think this template is helpful.",
+      "text": "Congratulations! Your hello world bot is running. Click the documentation below to learn more about Bots and the Teams Toolkit.",
       "wrap": true
-    },
-    {
-      "type": "FactSet",
-      "facts": [
-        {
-          "title": "Like Count:",
-          "value": "${likeCount}"
-        }
-      ]
     }
   ],
   "actions": [
-    {
-      "type": "Action.Execute",
-      "title": "I Like This!",
-      "verb": "userlike",
-      "fallback": "Action.Submit"
-    },
     {
       "type": "Action.OpenUrl",
       "title": "Bot Framework Docs",

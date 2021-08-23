@@ -82,7 +82,7 @@ export class FunctionPlugin implements Plugin {
   public async executeUserTask(func: Func, ctx: PluginContext): Promise<FxResult> {
     this.setContext(ctx);
     const res = await this.runWithErrorWrapper(ctx, FunctionEvent.executeUserTask, () =>
-      Promise.resolve(this.functionPluginImpl.executeUserTask(func, ctx))
+      this.functionPluginImpl.executeUserTask(func, ctx)
     );
     return res;
   }

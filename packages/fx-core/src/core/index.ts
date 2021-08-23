@@ -768,7 +768,7 @@ export class FxCore implements Core {
       );
       await fs.writeFile(
         path.join(inputs.projectPath!, `.gitignore`),
-        `node_modules\n/.${ConfigFolderName}/*.env\n/.${ConfigFolderName}/*.userdata\n.DS_Store\n${ArchiveFolderName}`
+        `node_modules\n/.${ConfigFolderName}/*.env\n/.${ConfigFolderName}/*.userdata\n.DS_Store\n${ArchiveFolderName}\n${ArchiveLogFileName}`
       );
     } catch (e) {
       return err(WriteFileError(e));

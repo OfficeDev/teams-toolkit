@@ -1,7 +1,7 @@
 param botServiceName string
 param botServerfarmsName string
 param botWebAppSKU string = 'F1'
-param botServiceSKU string = 'S1'
+param botServiceSKU string = 'F1'
 param botWebAppName string
 param botAadClientId string
 @secure()
@@ -25,7 +25,7 @@ resource botServices 'Microsoft.BotService/botServices@2021-03-01' = {
   name: botServiceName
   properties: {
     displayName: botDisplayName
-    endpoint: 'https://${botServiceName}.azurewebsites.net/api/messages'
+    endpoint: uri(botEndpoint, '/api/messages')
     msaAppId: botAadClientId
   }
   sku: {
@@ -33,7 +33,7 @@ resource botServices 'Microsoft.BotService/botServices@2021-03-01' = {
   }
 }
 
-resource botServices_MsTeamsChannel 'Microsoft.BotService/botServices/channels@2021-03-01' = {
+resource botServicesMsTeamsChannel 'Microsoft.BotService/botServices/channels@2021-03-01' = {
   parent: botServices
   location: 'global'
   name: 'MsTeamsChannel'

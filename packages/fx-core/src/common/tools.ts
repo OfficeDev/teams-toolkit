@@ -455,29 +455,26 @@ export function getAppStudioEndpoint(): string {
 export async function copyFiles(
   srcPath: string,
   distPath: string,
-  excludeFileList?: { fileName: string; recursive: boolean }[]
+  excludeFileList: { fileName: string; recursive: boolean }[] = []
 ): Promise<void> {
   await fs.ensureDir(distPath);
 
+  const excludeFileNames = excludeFileList?.map((file) => file.fileName);
+  const recursiveExcludeFileNames = excludeFileList
+    ?.filter((file) => file.recursive)
+    .map((file) => file.fileName);
+
   const fileNames = await fs.readdir(srcPath);
   for (const fileName of fileNames) {
-    const excludeFileNames = excludeFileList?.map((file) => file.fileName);
-    if (excludeFileNames && excludeFileNames.length > 0 && excludeFileNames.includes(fileName)) {
+    if (excludeFileNames.includes(fileName)) {
       continue;
     }
-    const recursiveExcludeFileNames = excludeFileList
-      ?.filter((file) => file.recursive)
-      .map((file) => file.fileName);
     await fs.copy(path.join(srcPath, fileName), path.join(distPath, fileName), {
       overwrite: true,
       errorOnExist: true,
       filter: (src: string, dest: string): boolean => {
         const name = path.basename(src);
-        if (
-          recursiveExcludeFileNames &&
-          recursiveExcludeFileNames.length > 0 &&
-          recursiveExcludeFileNames.includes(name)
-        ) {
+        if (recursiveExcludeFileNames.includes(name)) {
           return false;
         }
         return true;

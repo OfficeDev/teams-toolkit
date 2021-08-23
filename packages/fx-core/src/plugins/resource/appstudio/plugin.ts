@@ -1261,11 +1261,11 @@ export class AppStudioPluginImpl {
           type === "remote"
             ? AppStudioResultFactory.SystemError(
                 AppStudioError.RemoteAppIdUpdateFailedError.name,
-                AppStudioError.RemoteAppIdUpdateFailedError.message(e.name, e.message)
+                AppStudioError.RemoteAppIdUpdateFailedError.message(e)
               )
             : AppStudioResultFactory.SystemError(
                 AppStudioError.LocalAppIdUpdateFailedError.name,
-                AppStudioError.LocalAppIdUpdateFailedError.message(e.name, e.message)
+                AppStudioError.LocalAppIdUpdateFailedError.message(e)
               )
         );
       }

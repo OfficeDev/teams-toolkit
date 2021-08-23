@@ -6,7 +6,6 @@ import {
   FxError,
   ok,
   err,
-  LogProvider,
   Platform,
   Plugin,
   PluginContext,
@@ -16,11 +15,9 @@ import {
   TeamsAppManifest,
   SystemError,
   UserError,
-  ProjectSettings,
   Colors,
   AzureSolutionSettings,
   Func,
-  newUserError,
   newSystemError,
 } from "@microsoft/teamsfx-api";
 import { AppStudioPluginImpl } from "./plugin";

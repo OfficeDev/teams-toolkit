@@ -196,6 +196,16 @@ export class Messages {
     telemetry: Messages.getEventName("check-permission"),
   };
 
+  static readonly StartGrantPermission: Messages = {
+    log: Messages.getLog("Start to grant permission"),
+    telemetry: Messages.getEventName("grant-permission-start"),
+  };
+
+  static readonly EndGrantPermission: Messages = {
+    log: Messages.getLog("Successfully grant permission"),
+    telemetry: Messages.getEventName("grant-permission"),
+  };
+
   static readonly GetAadAppSuccess = "Successfully get Azure AD app.";
   static readonly CreateAadAppSuccess = "Successfully created Azure AD app.";
   static readonly CreateAadAppPasswordSuccess = "Successfully created password for Azure AD app.";

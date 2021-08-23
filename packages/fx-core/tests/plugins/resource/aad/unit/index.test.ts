@@ -37,6 +37,7 @@ describe("AadAppForTeamsPlugin: CI", () => {
     sinon.stub(AadAppClient, "updateAadAppPermission").resolves();
     sinon.stub(AadAppClient, "getAadApp").resolves(new ProvisionConfig());
     sinon.stub(AadAppClient, "checkPermission").resolves(true);
+    sinon.stub(AadAppClient, "grantPermission").resolves();
   });
 
   afterEach(() => {
@@ -110,6 +111,7 @@ describe("AadAppForTeamsPlugin: CI", () => {
     chai.assert.isTrue(provision.isOk());
 
     mockProvisionResult(context, true);
+    console.log(context);
     const setAppId = plugin.setApplicationInContext(context, true);
     chai.assert.isTrue(setAppId.isOk());
 
@@ -125,6 +127,16 @@ describe("AadAppForTeamsPlugin: CI", () => {
 
     const checkPermission = await plugin.checkPermission(context);
     chai.assert.isTrue(checkPermission.isOk());
+  });
+
+  it("grant permission", async function () {
+    const config = new Map();
+    config.set(ConfigKeys.objectId, faker.datatype.uuid());
+    context = await TestHelper.pluginContext(config, true, false, false);
+    context.graphTokenProvider = mockTokenProviderGraph();
+
+    const grantPermission = await plugin.grantPermission(context);
+    chai.assert.isTrue(grantPermission.isOk());
   });
 });
 

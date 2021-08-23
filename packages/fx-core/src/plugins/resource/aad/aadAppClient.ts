@@ -17,6 +17,7 @@ import {
   GetAppConfigError,
   AadError,
   CheckPermissionError,
+  GrantPermissionError,
 } from "./errors";
 import { GraphClient } from "./graph";
 import { IAADPassword } from "./interfaces/IAADApplication";
@@ -228,6 +229,27 @@ export class AadAppClient {
     }
   }
 
+  public static async grantPermission(
+    ctx: PluginContext,
+    stage: string,
+    objectId: string,
+    userObjectId: string
+  ): Promise<void> {
+    try {
+      await this.retryHanlder(ctx, stage, () =>
+        GraphClient.grantPermission(TokenProvider.token as string, objectId, userObjectId)
+      );
+    } catch (error) {
+      // TODO: Give out detailed help message for different errors.
+      throw AadAppClient.handleError(
+        error,
+        GrantPermissionError,
+        Constants.permissions.name,
+        objectId
+      );
+    }
+  }
+
   public static async retryHanlder(
     ctx: PluginContext,
     stage: string,
@@ -304,7 +326,7 @@ export class AadAppClient {
     };
   }
 
-  private static handleError(error: any, errorDetail: AadError): FxError {
+  private static handleError(error: any, errorDetail: AadError, ...args: string[]): FxError {
     if (
       error?.response?.status >= Constants.statusCodeUserError &&
       error?.response?.status < Constants.statusCodeServerError
@@ -315,14 +337,14 @@ export class AadAppClient {
       const helpLink = GraphErrorCodes.get(errorCode);
       return ResultFactory.UserError(
         errorDetail.name,
-        errorDetail.message(),
+        errorDetail.message(...args),
         error,
         undefined,
         helpLink ?? errorDetail.helpLink
       );
     } else {
       // System Error
-      return ResultFactory.SystemError(errorDetail.name, errorDetail.message(), error);
+      return ResultFactory.SystemError(errorDetail.name, errorDetail.message(...args), error);
     }
   }
 

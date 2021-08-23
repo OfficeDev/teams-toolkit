@@ -4,7 +4,7 @@
 import { AzureSolutionSettings, LogProvider, PluginContext } from "@microsoft/teamsfx-api";
 import { AadResult, ResultFactory } from "./results";
 import {
-  CheckPermissionConfig,
+  CheckGrantPermissionConfig,
   ConfigUtils,
   PostProvisionConfig,
   ProvisionConfig,
@@ -331,7 +331,7 @@ export class AadAppForTeamsImpl {
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartCheckPermission);
 
     await TokenProvider.init(ctx, TokenAudience.Graph);
-    const config = new CheckPermissionConfig();
+    const config = new CheckGrantPermissionConfig();
     await config.restoreConfigFromContext(ctx);
 
     const userObjectId = config?.userInfo["aadId"];
@@ -351,6 +351,34 @@ export class AadAppForTeamsImpl {
       },
     ];
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndCheckPermission);
+    return ResultFactory.Success(result);
+  }
+
+  public async grantPermission(ctx: PluginContext): Promise<AadResult> {
+    TelemetryUtils.init(ctx);
+    Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartGrantPermission);
+
+    await TokenProvider.init(ctx, TokenAudience.Graph);
+    const config = new CheckGrantPermissionConfig();
+    await config.restoreConfigFromContext(ctx);
+
+    const userObjectId = config?.userInfo["aadId"];
+    await AadAppClient.grantPermission(
+      ctx,
+      Messages.EndCheckPermission.telemetry,
+      config.objectId!,
+      userObjectId
+    );
+
+    const result = [
+      {
+        name: Constants.permissions.name,
+        type: Constants.permissions.type,
+        roles: Constants.permissions.owner,
+        resourceId: config.objectId!,
+      },
+    ];
+    Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndGrantPermission);
     return ResultFactory.Success(result);
   }
 

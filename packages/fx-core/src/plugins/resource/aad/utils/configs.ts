@@ -354,7 +354,7 @@ export class UpdatePermissionConfig {
   }
 }
 
-export class CheckPermissionConfig {
+export class CheckGrantPermissionConfig {
   public userInfo?: any;
   public objectId?: string;
 

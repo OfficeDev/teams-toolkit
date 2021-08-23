@@ -470,7 +470,7 @@ export async function copyFiles(
       continue;
     }
     await fs.copy(path.join(srcPath, fileName), path.join(distPath, fileName), {
-      overwrite: true,
+      overwrite: false,
       errorOnExist: true,
       filter: (src: string, dest: string): boolean => {
         const name = path.basename(src);

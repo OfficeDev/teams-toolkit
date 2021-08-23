@@ -89,6 +89,7 @@ export class LocalDebugPlugin implements Plugin {
       if (isSpfx) {
         // Only generate launch.json and tasks.json for SPFX
         const launchConfigurations = Launch.generateSpfxConfigurations();
+        const launchCompounds = Launch.generateSpfxCompounds();
         const tasks = Tasks.generateSpfxTasks();
         const tasksInputs = Tasks.generateInputs();
 
@@ -99,6 +100,7 @@ export class LocalDebugPlugin implements Plugin {
           {
             version: "0.2.0",
             configurations: launchConfigurations,
+            compounds: launchCompounds,
           },
           {
             spaces: 4,

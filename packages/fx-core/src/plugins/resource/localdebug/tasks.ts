@@ -76,7 +76,7 @@ export function generateSpfxTasks(): Record<string, unknown>[] {
       command: "echo ${command:fx-extension.validate-spfx-dependencies}",
     },
     {
-      label: "npm install",
+      label: "spfx npm install",
       type: "shell",
       command: "npm install",
       options: {
@@ -92,7 +92,7 @@ export function generateSpfxTasks(): Record<string, unknown>[] {
       options: {
         cwd: "${workspaceFolder}/SPFx",
       },
-      dependsOn: "npm install",
+      dependsOn: "spfx npm install",
     },
     {
       label: "gulp serve",
@@ -121,6 +121,16 @@ export function generateSpfxTasks(): Record<string, unknown>[] {
         cwd: "${workspaceFolder}/SPFx",
       },
       dependsOn: "gulp trust-dev-cert",
+    },
+    {
+      label: "prepare local environment",
+      type: "shell",
+      command: "echo ${command:fx-extension.pre-debug-check}",
+    },
+    {
+      label: "prepare dev env",
+      dependsOn: ["prepare local environment", "gulp serve"],
+      dependsOrder: "parallel",
     },
     {
       label: "Terminate All Tasks",

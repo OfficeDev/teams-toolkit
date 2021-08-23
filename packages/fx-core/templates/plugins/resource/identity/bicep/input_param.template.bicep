@@ -1,3 +1,3 @@
 
-param identity_managedIdentityName string = '${resourceBaseName}-managedIdentity'
+param identityManagedIdentityName string = '${resourceBaseName}-managedIdentity'
 

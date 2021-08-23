@@ -19,6 +19,7 @@ module functionProvision '{{PluginOutput.fx-resource-function.Modules.functionPr
     {{/contains}}
     {{#contains 'fx-resource-identity' Plugins}}
     identityId: {{../PluginOutput.fx-resource-identity.Outputs.identityId}}
+    identityName: {{../PluginOutput.fx-resource-identity.Outputs.identityName}}
     {{/contains}}
   }
 }

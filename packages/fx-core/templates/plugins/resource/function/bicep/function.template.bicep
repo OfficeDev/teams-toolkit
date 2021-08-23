@@ -17,6 +17,7 @@ param sqlEndpoint string
 {{/contains}}
 {{#contains 'fx-resource-identity' Plugins}}
 param identityId string
+param identityName string
 {{/contains}}
 
 var teamsMobileOrDesktopAppClientId = '1fec8e78-bce4-4aaf-ab1b-5451cc387264'
@@ -48,6 +49,14 @@ resource functionApp 'Microsoft.Web/sites@2020-06-01' = {
       numberOfWorkers: 1
     }
   }
+  {{#contains 'fx-resource-identity' Plugins}}
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${identityName}':{}
+    }
+  }
+  {{/contains}}
 }
 
 resource functionStorage 'Microsoft.Storage/storageAccounts@2021-04-01' = {
@@ -83,7 +92,7 @@ resource functionAppAppSettings 'Microsoft.Web/sites/config@2018-02-01' = {
     WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: 'DefaultEndpointsProtocol=https;AccountName=${functionStorage.name};AccountKey=${listKeys(functionStorage.id, functionStorage.apiVersion).keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
     WEBSITE_RUN_FROM_PACKAGE: '1'
     WEBSITE_CONTENTSHARE: toLower(functionAppName)
-    {{#contains 'fx-resource-azure-sql' Plugins}}
+    {{#contains 'fx-resource-identity' Plugins}}
     IDENTITY_ID: identityId
     {{/contains}}
     {{#contains 'fx-resource-azure-sql' Plugins}}

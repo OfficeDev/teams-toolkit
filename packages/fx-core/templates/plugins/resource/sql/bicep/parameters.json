@@ -1,0 +1,17 @@
+{
+  "azureSql_aadAdmin": {
+    "value": "{{FX_RESOURCE_AZURE_SQL__AADADMIN}}"
+  },
+  "azureSql_aadAdminObjectId": {
+    "value": "{{FX_RESOURCE_AZURE_SQL__AADADMINOBJECTID}}"
+  },
+  "azureSql_tenantId": {
+    "value": "{{SOLUTION__TENANTID}}"
+  },
+  "azureSql_admin": {
+    "value": "{{FX_RESOURCE_AZURE_SQL__ADMIN}}"
+  },
+  "azureSql_adminPassword": {
+    "value": "{{FX_RESOURCE_AZURE_SQL__ADMINPASSWORD}}"
+  }
+}

@@ -1,4 +1,3 @@
 
-output identity_identityName string = identityProvision.outputs.identityName
-output identity_identityId string = identityProvision.outputs.identityId
-output identity_identity string = identityProvision.outputs.identity
+output azureSql_sqlEndpoint string = azureSqlProvision.outputs.sqlEndpoint
+output azureSql_databaseName string = azureSqlProvision.outputs.databaseName

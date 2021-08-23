@@ -893,47 +893,47 @@ export class FunctionPluginImpl {
 
         FunctionProvision.updateFunctionSettingsForFrontend(site, frontendEndpoint);
       }
-    }
 
-    const sqlConfig: ReadonlyPluginConfig | undefined = ctx.configOfOtherPlugins.get(
-      DependentPluginInfo.sqlPluginName
-    );
-    const identityConfig: ReadonlyPluginConfig | undefined = ctx.configOfOtherPlugins.get(
-      DependentPluginInfo.identityPluginName
-    );
-    if (
-      this.isPluginEnabled(ctx, DependentPluginInfo.sqlPluginName) &&
-      this.isPluginEnabled(ctx, DependentPluginInfo.identityPluginName) &&
-      sqlConfig &&
-      identityConfig
-    ) {
-      Logger.info(InfoMessages.dependPluginDetected(DependentPluginInfo.sqlPluginName));
-      Logger.info(InfoMessages.dependPluginDetected(DependentPluginInfo.identityPluginName));
+      const sqlConfig: ReadonlyPluginConfig | undefined = ctx.configOfOtherPlugins.get(
+        DependentPluginInfo.sqlPluginName
+      );
+      const identityConfig: ReadonlyPluginConfig | undefined = ctx.configOfOtherPlugins.get(
+        DependentPluginInfo.identityPluginName
+      );
+      if (
+        this.isPluginEnabled(ctx, DependentPluginInfo.sqlPluginName) &&
+        this.isPluginEnabled(ctx, DependentPluginInfo.identityPluginName) &&
+        sqlConfig &&
+        identityConfig
+      ) {
+        Logger.info(InfoMessages.dependPluginDetected(DependentPluginInfo.sqlPluginName));
+        Logger.info(InfoMessages.dependPluginDetected(DependentPluginInfo.identityPluginName));
 
-      const identityId: string = this.checkAndGet(
-        identityConfig.get(DependentPluginInfo.identityId) as string,
-        "identity Id"
-      );
-      const databaseName: string = this.checkAndGet(
-        sqlConfig.get(DependentPluginInfo.databaseName) as string,
-        "database name"
-      );
-      const sqlEndpoint: string = this.checkAndGet(
-        sqlConfig.get(DependentPluginInfo.sqlEndpoint) as string,
-        "sql endpoint"
-      );
-      const identityName: string = this.checkAndGet(
-        identityConfig.get(DependentPluginInfo.identityName) as string,
-        "identity name"
-      );
+        const identityId: string = this.checkAndGet(
+          identityConfig.get(DependentPluginInfo.identityId) as string,
+          "identity Id"
+        );
+        const databaseName: string = this.checkAndGet(
+          sqlConfig.get(DependentPluginInfo.databaseName) as string,
+          "database name"
+        );
+        const sqlEndpoint: string = this.checkAndGet(
+          sqlConfig.get(DependentPluginInfo.sqlEndpoint) as string,
+          "sql endpoint"
+        );
+        const identityName: string = this.checkAndGet(
+          identityConfig.get(DependentPluginInfo.identityName) as string,
+          "identity name"
+        );
 
-      FunctionProvision.updateFunctionSettingsForSQL(
-        site,
-        identityId,
-        databaseName,
-        sqlEndpoint,
-        identityName
-      );
+        FunctionProvision.updateFunctionSettingsForSQL(
+          site,
+          identityId,
+          databaseName,
+          sqlEndpoint,
+          identityName
+        );
+      }
     }
 
     const apimConfig: ReadonlyPluginConfig | undefined = ctx.configOfOtherPlugins.get(

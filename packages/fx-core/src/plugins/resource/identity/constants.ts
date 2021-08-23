@@ -41,3 +41,18 @@ export class Telemetry {
     appid: "appid",
   };
 }
+export class IdentityBicep {
+  static readonly identityName: string = "identityProvision.outputs.identityName";
+  static readonly identityId: string = "identityProvision.outputs.identityId";
+  static readonly identity: string = "identityProvision.outputs.identity";
+}
+
+export class IdentityArmOutput {
+  static readonly identityName: string = "identity_identityName";
+  static readonly identityId: string = "identity_identityId";
+  static readonly identity: string = "identity_identity";
+}
+
+export class IdentityBicepFile {
+  static readonly moduleTemplateFileName: string = "identity.template.bicep";
+}

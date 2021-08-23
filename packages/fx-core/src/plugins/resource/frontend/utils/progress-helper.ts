@@ -107,6 +107,7 @@ export class ProgressHelper {
     await this.endProvisionProgress(success);
     await this.endPreDeployProgress(success);
     await this.endDeployProgress(success);
+    await this.endMigrateProgress(success);
   }
 
   static async endScaffoldProgress(success: boolean): Promise<void> {

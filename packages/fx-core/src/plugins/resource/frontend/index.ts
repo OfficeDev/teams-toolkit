@@ -100,7 +100,7 @@ export class FrontendPlugin implements Plugin, ArmResourcePlugin {
 
   public async executeUserTask(func: Func, ctx: PluginContext): Promise<TeamsFxResult> {
     FrontendPlugin.setContext(ctx);
-    return this.runWithErrorHandling(ctx, TelemetryEvent.GenerateArmTemplates, () =>
+    return this.runWithErrorHandling(ctx, TelemetryEvent.MigrateV1Project, () =>
       this.frontendPluginImpl.executeUserTask(func, ctx)
     );
   }

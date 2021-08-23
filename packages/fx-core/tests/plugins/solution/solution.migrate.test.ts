@@ -4,7 +4,14 @@ import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { it } from "mocha";
 import { SolutionRunningState, TeamsAppSolution } from " ../../../src/plugins/solution";
-import { Platform, SolutionConfig, SolutionContext } from "@microsoft/teamsfx-api";
+import {
+  Platform,
+  SolutionConfig,
+  SolutionContext,
+  ok,
+  Result,
+  FxError,
+} from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs, { PathLike } from "fs-extra";
 import {
@@ -33,11 +40,17 @@ describe("Solution migrate()", async () => {
     };
   }
 
+  const mocker = sinon.createSandbox();
+  afterEach(() => {
+    mocker.restore();
+  });
+
   const fileContent: Map<string, any> = new Map();
 
   it("should fail if projectSettings is undefined", async () => {
     fileContent.clear();
     const solution = new TeamsAppSolution();
+    cleanPlugins(solution, mocker);
     const mockedSolutionCtx = mockSolutionContext();
     const result = await solution.migrate(mockedSolutionCtx);
     expect(result.isErr()).equals(true);
@@ -49,6 +62,7 @@ describe("Solution migrate()", async () => {
   it("should fail if projectSettings.solutionSettings is undefined", async () => {
     fileContent.clear();
     const solution = new TeamsAppSolution();
+    cleanPlugins(solution, mocker);
     const mockedSolutionCtx = mockSolutionContext();
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
@@ -65,6 +79,7 @@ describe("Solution migrate()", async () => {
   it("should fail if capability is undefined", async () => {
     fileContent.clear();
     const solution = new TeamsAppSolution();
+    cleanPlugins(solution, mocker);
     const mockedSolutionCtx = mockSolutionContext();
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
@@ -73,6 +88,7 @@ describe("Solution migrate()", async () => {
       solutionSettings: {
         name: "azure",
         version: "1.0",
+        migrateFromV1: true,
       },
     };
     const result = await solution.migrate(mockedSolutionCtx);
@@ -83,12 +99,12 @@ describe("Solution migrate()", async () => {
   });
 
   it("should succeed if projectSettings, solution settings and v1 capability are provided, language is javascript", async () => {
-    const mocker = sinon.createSandbox();
     mocker.stub(fs, "access").callsFake((path: PathLike, mode?: number) => {
       throw new Error("");
     });
     fileContent.clear();
     const solution = new TeamsAppSolution();
+    cleanPlugins(solution, mocker);
     const mockedSolutionCtx = mockSolutionContext();
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
@@ -96,6 +112,7 @@ describe("Solution migrate()", async () => {
       solutionSettings: {
         name: "azure",
         version: "1.0",
+        migrateFromV1: true,
       },
     };
 
@@ -107,16 +124,17 @@ describe("Solution migrate()", async () => {
     expect(mockedSolutionCtx.config.get(GLOBAL_CONFIG)).is.not.undefined;
     const lang = mockedSolutionCtx.projectSettings.programmingLanguage;
     expect(lang).equals("javascript");
-    mocker.restore();
   });
 
   it("should succeed if projectSettings, solution settings and v1 capability are provided, language is typescript", async () => {
-    const mocker = sinon.createSandbox();
-    mocker.stub(fs, "access").callsFake(async (path: PathLike, mode?: number): Promise<void> => {
-      return;
-    });
+    mocker.stub(fs, "access").callsFake(
+      async (path: PathLike, mode?: number): Promise<void> => {
+        return;
+      }
+    );
     fileContent.clear();
     const solution = new TeamsAppSolution();
+    cleanPlugins(solution, mocker);
     const mockedSolutionCtx = mockSolutionContext();
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
@@ -124,6 +142,7 @@ describe("Solution migrate()", async () => {
       solutionSettings: {
         name: "azure",
         version: "1.0",
+        migrateFromV1: true,
       },
     };
 
@@ -135,6 +154,40 @@ describe("Solution migrate()", async () => {
     expect(mockedSolutionCtx.config.get(GLOBAL_CONFIG)).is.not.undefined;
     const lang = mockedSolutionCtx.projectSettings.programmingLanguage;
     expect(lang).equals("typescript");
-    mocker.restore();
   });
 });
+
+function cleanPlugins(solution: TeamsAppSolution, mocker: sinon.SinonSandbox) {
+  mocker.stub(solution.LocalDebugPlugin, "executeUserTask").callsFake(
+    async (): Promise<Result<any, FxError>> => {
+      return ok(undefined);
+    }
+  );
+  mocker.stub(solution.AadPlugin, "activate").callsFake((): boolean => {
+    return false;
+  });
+  mocker.stub(solution.ApimPlugin, "activate").callsFake((): boolean => {
+    return false;
+  });
+  mocker.stub(solution.AppStudioPlugin, "activate").callsFake((): boolean => {
+    return false;
+  });
+  mocker.stub(solution.BotPlugin, "activate").callsFake((): boolean => {
+    return false;
+  });
+  mocker.stub(solution.SpfxPlugin, "activate").callsFake((): boolean => {
+    return false;
+  });
+  mocker.stub(solution.FrontendPlugin, "activate").callsFake((): boolean => {
+    return false;
+  });
+  mocker.stub(solution.FunctionPlugin, "activate").callsFake((): boolean => {
+    return false;
+  });
+  mocker.stub(solution.SqlPlugin, "activate").callsFake((): boolean => {
+    return false;
+  });
+  mocker.stub(solution.LocalDebugPlugin, "activate").callsFake((): boolean => {
+    return true;
+  });
+}

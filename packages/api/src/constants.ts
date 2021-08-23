@@ -7,6 +7,8 @@ export const AppPackageFolderName = "appPackage";
 export const ArchiveFolderName = ".archive";
 export const ArchiveLogFileName = ".archive.log";
 export const ProductName = "teamsfx";
+export const ArchiveFolderName = ".archive";
+export const ArchiveLogFileName = ".archive.log";
 
 /**
  * questions for VS and CLI_HELP platforms are static question which don't depend on project context

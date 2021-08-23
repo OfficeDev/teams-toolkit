@@ -365,8 +365,34 @@ export class TeamsAppSolution implements Solution {
     }
 
     const solutionSettings = settingsRes.value;
-    //Reload plugins according to user answers
-    await this.reloadPlugins(solutionSettings);
+    const selectedPlugins = await this.reloadPlugins(solutionSettings);
+
+    const results: Result<any, FxError>[] = await Promise.all<Result<any, FxError>>(
+      selectedPlugins.map<Promise<Result<any, FxError>>>((migratePlugin) => {
+        return this.executeUserTask(
+          {
+            namespace: `${PluginNames.SOLUTION}/${migratePlugin.name}`,
+            method: "migrateV1Project",
+            params: {},
+          },
+          ctx
+        );
+      })
+    );
+
+    const errorResult = results.find((result) => {
+      return result.isErr();
+    });
+
+    if (errorResult) {
+      return errorResult;
+    }
+
+    const capabilities = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
+      .capabilities;
+    const azureResources = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
+      .azureResources;
+    await scaffoldReadmeAndLocalSettings(capabilities, azureResources, ctx.root);
 
     ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.Migrate, {
       [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
@@ -375,9 +401,10 @@ export class TeamsAppSolution implements Solution {
     return ok(Void);
   }
 
-  reloadPlugins(solutionSettings: AzureSolutionSettings) {
+  reloadPlugins(solutionSettings: AzureSolutionSettings): Plugin[] {
     const res = getActivatedResourcePlugins(solutionSettings);
     solutionSettings.activeResourcePlugins = res.map((p) => p.name);
+    return res;
   }
 
   private spfxSelected(ctx: SolutionContext): boolean {

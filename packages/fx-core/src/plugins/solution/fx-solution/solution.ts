@@ -829,6 +829,10 @@ export class TeamsAppSolution implements Solution {
         JSON.stringify(pluginsToDeploy.map((p) => p.name))
       )
     );
+    if (this.isAzureProject(ctx)) {
+      //make sure sub is selected
+      await ctx.azureAccountProvider?.getSelectedSubscription(true);
+    }
     const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(
       ctx,
       pluginsToDeploy

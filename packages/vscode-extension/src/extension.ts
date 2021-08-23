@@ -37,7 +37,8 @@ export async function activate(context: vscode.ExtensionContext) {
     .getExpService()
     .getTreatmentVariableAsync(
       TreatmentVariables.VSCodeConfig,
-      TreatmentVariables.ExpandCreateCard
+      TreatmentVariables.ExpandCreateCard,
+      true
     )) as boolean | undefined;
 
   // 1.1 Register the creating command.

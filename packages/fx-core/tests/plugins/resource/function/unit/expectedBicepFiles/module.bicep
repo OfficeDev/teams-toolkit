@@ -1,12 +1,12 @@
 
-module functionProvision './function_test.bicep' = {
+module functionProvision './function.bicep' = {
   name: 'functionProvision'
   params: {
     functionAppName: function_webappName
     functionServerfarmsName: function_serverfarmsName
     functionStorageName: function_storageName
-    aadClientId: aadClientId
-    aadClientSecret: aadClientSecret
+    m365ClientId: m365ClientId
+    m365ClientSecret: m365ClientSecret
     m365TenantId: m365TenantId
     applicationIdUri: applicationIdUri
     m365OauthAuthorityHost: m365OauthAuthorityHost

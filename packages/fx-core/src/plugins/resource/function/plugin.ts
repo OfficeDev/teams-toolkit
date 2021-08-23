@@ -685,7 +685,7 @@ export class FunctionPluginImpl {
 
     const parameterTemplateFilePath = path.join(
       bicepTemplateDirectory,
-      Bicep.InputParameterOrchestrationFileName
+      Bicep.ParameterOrchestrationFileName
     );
     const moduleOrchestrationFilePath = path.join(
       bicepTemplateDirectory,

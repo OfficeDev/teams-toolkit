@@ -236,10 +236,12 @@ export class AadAppClient {
     userObjectId: string
   ): Promise<void> {
     try {
-      await this.retryHanlder(ctx, stage, () =>
-        GraphClient.grantPermission(TokenProvider.token as string, objectId, userObjectId)
-      );
+      await GraphClient.grantPermission(TokenProvider.token as string, objectId, userObjectId);
     } catch (error) {
+      if (error?.response?.data?.error.message == Constants.createOwnerDuplicatedMessage) {
+        return;
+      }
+
       // TODO: Give out detailed help message for different errors.
       throw AadAppClient.handleError(
         error,

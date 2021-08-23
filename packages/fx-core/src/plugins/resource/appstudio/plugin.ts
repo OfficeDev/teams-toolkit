@@ -586,7 +586,6 @@ export class AppStudioPluginImpl {
         roles: [teamsAppRoles as string],
         type: Constants.PERMISSIONS.type,
         resourceId: teamsAppId,
-        error: undefined,
       },
     ];
 

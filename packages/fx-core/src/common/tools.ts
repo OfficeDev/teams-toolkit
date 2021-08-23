@@ -148,6 +148,7 @@ const CryptoDataMatchers = new Set([
   "fx-resource-bot.botPassword",
   "fx-resource-bot.localBotPassword",
   "fx-resource-apim.apimClientAADClientSecret",
+  "fx-resource-azure-sql.adminPassword",
 ]);
 
 /**

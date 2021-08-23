@@ -12,7 +12,13 @@ import {
 } from "@microsoft/teamsfx-api";
 
 import { IdentityConfig } from "./config";
-import { Constants, IdentityBicep, IdentityBicepFile, Telemetry } from "./constants";
+import {
+  Constants,
+  IdentityArmOutput,
+  IdentityBicep,
+  IdentityBicepFile,
+  Telemetry,
+} from "./constants";
 import { ContextUtils } from "./utils/contextUtils";
 import { ResultFactory, Result } from "./results";
 import { Message } from "./utils/messages";
@@ -26,6 +32,7 @@ import { Providers, ResourceManagementClientContext } from "@azure/arm-resources
 import { Bicep, ConstantString } from "../../../common/constants";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import { isArmSupportEnabled } from "../../../common";
+import { getArmOutput } from "../utils4v2";
 
 @Service(ResourcePlugins.IdentityPlugin)
 export class IdentityPlugin implements Plugin {
@@ -56,6 +63,13 @@ export class IdentityPlugin implements Plugin {
     } else {
       return ok(undefined);
     }
+  }
+
+  async postProvision(ctx: PluginContext): Promise<Result> {
+    if (isArmSupportEnabled()) {
+      this.syncArmOutput(ctx);
+    }
+    return ok(undefined);
   }
 
   async provisionImplement(ctx: PluginContext): Promise<Result> {
@@ -236,6 +250,12 @@ export class IdentityPlugin implements Plugin {
       );
       throw error;
     }
+  }
+
+  private syncArmOutput(ctx: PluginContext) {
+    ctx.config.set(Constants.identityName, getArmOutput(ctx, IdentityArmOutput.identityName));
+    ctx.config.set(Constants.identityId, getArmOutput(ctx, IdentityArmOutput.identityId));
+    ctx.config.set(Constants.identity, getArmOutput(ctx, IdentityArmOutput.identity));
   }
 }
 

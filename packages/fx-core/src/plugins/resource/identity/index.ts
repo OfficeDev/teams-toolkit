@@ -159,7 +159,7 @@ export class IdentityPlugin implements Plugin {
 
     const parameterTemplateFilePath = path.join(
       bicepTemplateDirectory,
-      Bicep.InputParameterOrchestrationFileName
+      Bicep.ParameterOrchestrationFileName
     );
     const moduleOrchestrationFilePath = path.join(
       bicepTemplateDirectory,

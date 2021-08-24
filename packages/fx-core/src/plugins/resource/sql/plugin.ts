@@ -335,9 +335,9 @@ export class SqlPluginImpl {
       throw moduleContentResult.error;
     }
 
-    const inputParameterOrchestrationFilePath = path.join(
+    const parameterTemplateFilePath = path.join(
       bicepTemplateDirectory,
-      Bicep.InputParameterOrchestrationFileName
+      Bicep.ParameterOrchestrationFileName
     );
     const moduleOrchestrationFilePath = path.join(
       bicepTemplateDirectory,
@@ -357,10 +357,7 @@ export class SqlPluginImpl {
       },
       Orchestration: {
         ParameterTemplate: {
-          Content: await fs.readFile(
-            inputParameterOrchestrationFilePath,
-            ConstantString.UTF8Encoding
-          ),
+          Content: await fs.readFile(parameterTemplateFilePath, ConstantString.UTF8Encoding),
           ParameterJson: JSON.parse(
             await fs.readFile(parameterFilePath, ConstantString.UTF8Encoding)
           ),

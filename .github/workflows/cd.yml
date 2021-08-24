@@ -11,6 +11,10 @@ on:
         description: "release RC version just with lerna publish, skip run lerna version(yes or no)"
         required: false
         default: "no"
+      skip-sync-version-pkg:
+        description: "skip sync up target pkg version. input templates to skip sync up version with sdk; fx-core to skip sync up with simpleauth"
+        required: false
+        default: ""
   schedule:
     - cron: "0 8 * * *"
 
@@ -82,17 +86,23 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' && github.ref == 'refs/heads/main' && github.event.inputs.skip-version-rc == 'no'}}
         run: |
           npx lerna version --conventional-commits --conventional-prerelease --preid=rc --no-changelog --ignore-scripts --yes
-      
+        env:
+          SkipSyncup: ${{ github.event.inputs.skip-sync-version-pkg }}
+
       - name: version rc npm packages to npmjs.org on hotfix
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' && startsWith(github.ref, 'refs/heads/hotfix/') && github.event.inputs.skip-version-rc == 'no'}}
         run: |
           npx lerna version --conventional-commits --conventional-prerelease --preid=rc-hotfix --no-changelog --allow-branch ${GITHUB_REF#refs/*/} --ignore-scripts --yes
+        env:
+          SkipSyncup: ${{ github.event.inputs.skip-sync-version-pkg }}
 
       - name: version stable npm packages to npmjs.org
         if: ${{ github.event_name == 'workflow_dispatch' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/hotfix/')) && github.event.inputs.preid == 'stable' }}
         run: |
           npx lerna version --conventional-commits --conventional-graduate --no-changelog --allow-branch ${GITHUB_REF#refs/*/} --yes
-      
+        env:
+          SkipSyncup: ${{ github.event.inputs.skip-sync-version-pkg }}
+
       - name: version change
         id: version-change
         run: |
@@ -101,6 +111,7 @@ jobs:
           echo "::set-output name=EXTENSION_VERSION_NUM::$(git tag --points-at HEAD | grep ms-teams-vscode-extension@ | cut -d '@' -f2)"
           echo "::set-output name=EXTENSION_VERSION::$(git tag --points-at HEAD | grep ms-teams-vscode-extension@)"
           echo "::set-output name=SIMPLEAUTH_VERSION::$(git tag --points-at HEAD | grep simpleauth)"
+          echo "::set-output name=SIMPLEAUTH_VERSION_NUM::$(git tag --points-at HEAD| grep simpleauth| cut -d '@' -f2)"
           if git tag --points-at HEAD | grep templates | grep rc;
           then
               git push -d origin $(git tag --points-at HEAD | grep templates | grep rc)
@@ -189,16 +200,14 @@ jobs:
           output=$(./.github/scripts/simpleauth-azdo-pipelines.sh ${{ secrets.ADO_PAT }} 11303 >&1)
           echo $output
           asset_id=$(echo $output | rev |cut -d ' ' -f 1 | rev)
-          simpleAuthVer=$(echo ${{ steps.version-change.outputs.CHANGED }} | grep simpleauth | cut -d '@' -f2)
-          curl "https://dev.azure.com/mseng/_apis/resources/Containers/$asset_id/drop?itemPath=drop/Microsoft.TeamsFx.SimpleAuth_$simpleAuthVer.zip" -L -O -u :${{ secrets.ADO_PAT }}
+          curl "https://dev.azure.com/mseng/_apis/resources/Containers/$asset_id/drop?itemPath=drop/Microsoft.TeamsFx.SimpleAuth_${{ steps.version-change.outputs.SIMPLEAUTH_VERSION_NUM }}.zip" -L -O -u :${{ secrets.ADO_PAT }}
           if [ ! -f Microsoft.TeamsFx.*.zip ]; then exit 1; fi
       
       - name: build SimpleAuth on prerelease
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'simpleauth') && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' && github.event.inputs.preid != 'stable') }}
         run: |
           dotnet build --configuration Release
-          simpleAuthVer=$(echo ${{ steps.version-change.outputs.CHANGED }} | grep simpleauth | cut -d '@' -f2)
-          zip -r -j ../../Microsoft.TeamsFx.SimpleAuth_$simpleAuthVer.zip src/TeamsFxSimpleAuth/bin/Debug/*
+          zip -r -j ../../Microsoft.TeamsFx.SimpleAuth_${{ steps.version-change.outputs.SIMPLEAUTH_VERSION_NUM }}.zip src/TeamsFxSimpleAuth/bin/Debug/*
         working-directory: ./packages/simpleauth  
 
       - name: download simpleauth to fx-core
@@ -213,9 +222,16 @@ jobs:
             else
               ./.github/scripts/downloadSimpleAuth.ps1
             fi
+      - name: publish alpha simpleauth to github release page
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'simpleauth') && github.ref == 'refs/heads/dev' }}
+        uses: ncipollo/release-action@v1.7.3
+        with:
+          token: ${{ secrets.CD_PAT }}
+          tag: 'simpleauth-${{steps.version-change.outputs.SIMPLEAUTH_VERSION_NUM}}'
+          artifacts: Microsoft.TeamsFx.SimpleAuth_*.zip
 
       - name: publish simpleauth to github release page
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'simpleauth') }}
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'simpleauth') && github.ref == 'refs/heads/main'}}
         uses: ncipollo/release-action@v1.7.3
         with:
           token: ${{ secrets.CD_PAT }}

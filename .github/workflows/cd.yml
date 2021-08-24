@@ -187,7 +187,6 @@ jobs:
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'simpleauth') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
         run: |
           output=$(./.github/scripts/simpleauth-azdo-pipelines.sh ${{ secrets.ADO_PAT }} 11303 >&1)
-          if [ -z $output ]; then exit 1; fi
           echo $output
           asset_id=$(echo $output | rev |cut -d ' ' -f 1 | rev)
           simpleAuthVer=$(echo ${{ steps.version-change.outputs.CHANGED }} | grep simpleauth | cut -d '@' -f2)
@@ -199,8 +198,7 @@ jobs:
         run: |
           dotnet build --configuration Release
           simpleAuthVer=$(echo ${{ steps.version-change.outputs.CHANGED }} | grep simpleauth | cut -d '@' -f2)
-          cd src/TeamsFxSimpleAuth/bin/Release/*
-          zip -r ../../../../../../../Microsoft.TeamsFx.SimpleAuth_$simpleAuthVer.zip .
+          zip -r -j ../../Microsoft.TeamsFx.SimpleAuth_$simpleAuthVer.zip src/TeamsFxSimpleAuth/bin/Debug/*
         working-directory: ./packages/simpleauth  
 
       - name: download simpleauth to fx-core

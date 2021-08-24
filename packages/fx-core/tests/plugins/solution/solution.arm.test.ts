@@ -58,10 +58,8 @@ const simpleAuthPlugin = Container.get<Plugin>(ResourcePlugins.SimpleAuthPlugin)
 const spfxPlugin = Container.get<Plugin>(ResourcePlugins.SpfxPlugin) as Plugin & ArmResourcePlugin;
 const aadPlugin = Container.get<Plugin>(ResourcePlugins.AadPlugin) as Plugin & ArmResourcePlugin;
 
-const publishProfilesFolder = "./.fx/publishProfiles";
-const configsFolder = "./.fx/configs";
-const templateFolder = "./templates/azure";
-const modulesFolder = path.join(templateFolder, "modules");
+const parameterFolder = "./infra/azure/parameters";
+const templateFolder = "./infra/azure/templates";
 
 function mockSolutionContext(): SolutionContext {
   const config: SolutionConfig = new Map();
@@ -147,19 +145,19 @@ Mocked simple auth parameter content
 Mocked frontend hosting variable content
 Mocked simple auth variable content
 
-Mocked frontend hosting module content. Module path: ./modules/frontendHostingProvision.bicep. Variable: Mocked simple auth endpoint
-Mocked simple auth module content. Module path: ./modules/simpleAuthProvision.bicep. Variable: Mocked frontend hosting endpoint
+Mocked frontend hosting module content. Module path: ./frontendHostingProvision.bicep. Variable: Mocked simple auth endpoint
+Mocked simple auth module content. Module path: ./simpleAuthProvision.bicep. Variable: Mocked frontend hosting endpoint
 
 Mocked frontend hosting output content
 Mocked simple auth output content`
     );
-    expect(fileContent.get(path.join(modulesFolder, "frontendHostingProvision.bicep"))).equals(
+    expect(fileContent.get(path.join(templateFolder, "frontendHostingProvision.bicep"))).equals(
       "Mocked frontend hosting provision module content"
     );
-    expect(fileContent.get(path.join(modulesFolder, "simpleAuthProvision.bicep"))).equals(
+    expect(fileContent.get(path.join(templateFolder, "simpleAuthProvision.bicep"))).equals(
       "Mocked simple auth provision module content"
     );
-    expect(fileContent.get(path.join(templateFolder, "parameters.template.json"))).equals(
+    expect(fileContent.get(path.join(parameterFolder, "parameters.template.json"))).equals(
       `{
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
   "contentVersion": "1.0.0.0",
@@ -209,7 +207,7 @@ describe("Deploy ARM Template to Azure", () => {
   const SOLUTION_CONFIG = "solution";
   const inputFileContent: Map<string, any> = new Map([
     [
-      path.join(templateFolder, "parameters.template.json"),
+      path.join(parameterFolder, "parameters.template.json"),
       `{
 "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
 "contentVersion": "1.0.0.0",
@@ -243,7 +241,7 @@ describe("Deploy ARM Template to Azure", () => {
       return inputFileContent.get(file.toString());
     });
     mocker.stub(fs, "stat").callsFake((filePath: PathLike): Promise<fs.Stats> => {
-      if (filePath === path.join(configsFolder, "azure.parameters.default.json")) {
+      if (filePath === path.join(parameterFolder, "parameters.default.json")) {
         throw new Error(`${filePath} does not exist.`);
       }
       return new Promise<fs.Stats>((resolve) => {
@@ -396,7 +394,7 @@ describe("Deploy ARM Template to Azure", () => {
 
     // Assert
     expect(
-      JSON.parse(resultFileContent.get(path.join(configsFolder, "azure.parameters.default.json")))
+      JSON.parse(resultFileContent.get(path.join(parameterFolder, "parameters.default.json")))
     ).to.deep.equals(
       JSON.parse(`{
       "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",

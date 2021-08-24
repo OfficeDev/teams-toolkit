@@ -1,8 +1,8 @@
 {
-  "aadClientId": {
+  "m365ClientId": {
     "value": "{{FX_RESOURCE_AAD_APP_FOR_TEAMS__CLIENTID}}"
   },
-  "aadClientSecret": {
+  "m365ClientSecret": {
     "value": "{{FX_RESOURCE_AAD_APP_FOR_TEAMS__CLIENTSECRET}}"
   },
   "m365TenantId": {

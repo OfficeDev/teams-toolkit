@@ -26,9 +26,9 @@ import { Utils } from "../../../../src/plugins/resource/aad/utils/common";
 import { MockUserInteraction } from "../../../core/utils";
 import { DEFAULT_PERMISSION_REQUEST } from "../../../../src/plugins/solution/fx-solution/constants";
 
-const permissions = '[{"resource": "Microsoft Graph","delegated": ["User.Read"],"application":[]}]';
+const permissions = "[{\"resource\": \"Microsoft Graph\",\"delegated\": [\"User.Read\"],\"application\":[]}]";
 const permissionsWrong =
-  '[{"resource": "Microsoft Graph","delegated": ["User.ReadData"],"application":[]}]';
+  "[{\"resource\": \"Microsoft Graph\",\"delegated\": [\"User.ReadData\"],\"application\":[]}]";
 
 const mockPermissionRequestProvider: PermissionRequestProvider = {
   async checkPermissionRequest(): Promise<Result<undefined, FxError>> {
@@ -111,6 +111,14 @@ const mockTelemetryReporter: TelemetryReporter = {
   },
 };
 
+const userList = {
+  tenantId: faker.datatype.uuid(),
+  aadId: faker.datatype.uuid(),
+  displayName: "displayName",
+  userPrincipalName: "userPrincipalName",
+  isOwner: true,
+};
+
 export class TestHelper {
   // TODO: update type
   static async pluginContext(
@@ -163,7 +171,10 @@ function mockConfigOfOtherPluginsProvision(
   return new Map([
     [
       Plugins.solution,
-      new Map([[ConfigKeysOfOtherPlugin.remoteTeamsAppId, faker.datatype.uuid()]]),
+      new Map([
+        [ConfigKeysOfOtherPlugin.remoteTeamsAppId, faker.datatype.uuid()],
+        [ConfigKeysOfOtherPlugin.solutionUserInfo, JSON.stringify(userList)],
+      ]),
     ],
     [
       Plugins.frontendHosting,

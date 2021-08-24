@@ -2,8 +2,6 @@
 // Licensed under the MIT license.
 import * as dotenv from "dotenv";
 import fs from "fs-extra";
-import { EnvironmentVariables } from "../constants";
-import { AADEnvironment, FunctionEnvironment, RuntimeEnvironment } from "../ops/provision";
 
 export class EnvironmentUtils {
   static async writeEnvironments(
@@ -14,37 +12,18 @@ export class EnvironmentUtils {
     const envBuffer = await fs.readFile(envFile);
 
     const configs = dotenv.parse(envBuffer);
-    Object.assign(configs, variables);
+    const newConfigs = { ...configs, ...variables };
+    if (JSON.stringify(newConfigs) === JSON.stringify(configs)) {
+      // Avoid updating dotenv file's modified time if nothing changes.
+      // We decide whether to skip deployment by comparing the mtime of all project files and last deployment time.
+      return;
+    }
 
     let envs = "";
-    for (const key in configs) {
-      envs += `${key}=${configs[key]}\r\n`;
+    for (const key in newConfigs) {
+      envs += `${key}=${newConfigs[key]}\r\n`;
     }
     await fs.writeFile(envFile, envs);
-  }
-
-  static async updateEnvironment(
-    envFilePath: string,
-    runtimeEnv: RuntimeEnvironment,
-    aadEnv: AADEnvironment,
-    functionEnv?: FunctionEnvironment
-  ): Promise<void> {
-    const envs = (await EnvironmentUtils.readEnvironments(envFilePath)) ?? {};
-
-    const addEnv = (key: string, v: string | undefined) => {
-      if (v !== undefined && envs[key] === undefined) {
-        envs[key] = v;
-      }
-    };
-
-    addEnv(EnvironmentVariables.FuncName, functionEnv?.defaultName);
-    addEnv(EnvironmentVariables.FuncEndpoint, functionEnv?.endpoint);
-
-    addEnv(EnvironmentVariables.RuntimeEndpoint, runtimeEnv.endpoint);
-    addEnv(EnvironmentVariables.StartLoginPage, runtimeEnv.startLoginPageUrl);
-    addEnv(EnvironmentVariables.ClientID, aadEnv.clientId);
-
-    await EnvironmentUtils.writeEnvironments(envFilePath, envs);
   }
 
   static async readEnvironments(envFile: string): Promise<{ [key: string]: string } | undefined> {

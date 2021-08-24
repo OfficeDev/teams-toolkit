@@ -119,10 +119,12 @@ export enum SolutionError {
   FailedToGetAzureCredential = "FailedToGetAzureCredential",
   FailedToDeployArmTemplatesToAzure = "FailedToDeployArmTemplatesToAzure",
   V1ProjectNotSupported = "V1ProjectNotSupported",
-  CannotCheckPermissionBeforeProvision = "CannotCheckPermissionBeforeProvision",
   FailedToRetrieveUserInfo = "FailedToRetrieveUserInfo",
   M365AccountNotMatch = "M365AccountNotMatch",
   FeatureNotSupported = "FeatureNotSupported",
+  CannotProcessBeforeProvision = "CannotProcessBeforeProvision",
+  CannotFindUserInCurrentTenant = "CannotFindUserInCurrentTenant",
+  FailedToGrantPermission = "FailedToGrantPermission",
   FailedToCheckPermission = "FailedToCheckPermission",
 }
 

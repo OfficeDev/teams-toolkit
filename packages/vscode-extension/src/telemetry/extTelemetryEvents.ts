@@ -89,6 +89,9 @@ export enum TelemetryEvent {
 
   OpenTeamsApp = "open-teams-app",
   UpdateTeamsApp = "update-teams-app",
+
+  MigrateV1ProjectStart = "migrate-v1-project-start",
+  MigrateV1Project = "migrate-v1-project",
 }
 
 export enum TelemetryProperty {

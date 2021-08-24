@@ -16,6 +16,7 @@ import {
   GetAppError,
   GetAppConfigError,
   AadError,
+  CheckPermissionError,
 } from "./errors";
 import { GraphClient } from "./graph";
 import { IAADPassword } from "./interfaces/IAADApplication";
@@ -211,11 +212,27 @@ export class AadAppClient {
     return config;
   }
 
+  public static async checkPermission(
+    ctx: PluginContext,
+    stage: string,
+    objectId: string,
+    userObjectId: string
+  ): Promise<boolean> {
+    try {
+      return (await this.retryHanlder(ctx, stage, () =>
+        GraphClient.checkPermission(TokenProvider.token as string, objectId, userObjectId)
+      )) as boolean;
+    } catch (error) {
+      // TODO: Give out detailed help message for different errors.
+      throw AadAppClient.handleError(error, CheckPermissionError);
+    }
+  }
+
   public static async retryHanlder(
     ctx: PluginContext,
     stage: string,
-    fn: () => Promise<IAADDefinition | IAADPassword | void>
-  ): Promise<IAADDefinition | IAADPassword | undefined | void> {
+    fn: () => Promise<IAADDefinition | IAADPassword | void | boolean>
+  ): Promise<IAADDefinition | IAADPassword | undefined | void | boolean> {
     let retries = Constants.maxRetryTimes;
     let response;
     TelemetryUtils.init(ctx);

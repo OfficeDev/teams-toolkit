@@ -39,7 +39,7 @@ describe("FunctionGenerateArmTemplates", () => {
     const result = await functionPlugin.generateArmTemplates(pluginContext);
 
     // Assert
-    const testModuleFileName = "function_test.bicep";
+    const testModuleFileName = "function.bicep";
     const mockedSolutionDataContext = {
       Plugins: activeResourcePlugins,
       PluginOutput: {
@@ -75,7 +75,7 @@ describe("FunctionGenerateArmTemplates", () => {
         expectedResult.Orchestration.ModuleTemplate!.Content,
         fs.readFileSync(expectedModuleSnippetFilePath, ConstantString.UTF8Encoding)
       );
-      const expectedParameterFilePath = path.join(expectedBicepFileDirectory, "input_param.bicep");
+      const expectedParameterFilePath = path.join(expectedBicepFileDirectory, "param.bicep");
       chai.assert.strictEqual(
         expectedResult.Orchestration.ParameterTemplate!.Content,
         fs.readFileSync(expectedParameterFilePath, ConstantString.UTF8Encoding)

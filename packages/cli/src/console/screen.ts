@@ -110,6 +110,9 @@ export class ScreenManager {
 
     // set fps, 20 if stdout is TTY, otherwise 0.2.
     this.fps = this.isTTY("out") ? 20 : 0.2;
+
+    // show cursor at first
+    this.showCursor();
   }
 
   /**
@@ -214,12 +217,12 @@ export class ScreenManager {
     if (!this.isTTY("out")) {
       return;
     }
+    // move cursor to the first char of the row.
+    readline.cursorTo(this.streams.out, 0, undefined);
     // move cursor to the index row.
     if (readline.moveCursor(this.streams.out, 0, dy)) {
       this.cursorY = this.cursorY + dy;
     }
-    // move cursor to the first char of the row.
-    readline.cursorTo(this.streams.out, 0, undefined);
   }
 
   /**
@@ -241,13 +244,15 @@ export class ScreenManager {
     }
     if (this.rows.length > 0) {
       this.hideCursor();
+      this.moveCursorDown(-this.cursorY);
+      this.rows.forEach((row) => {
+        this.streams.out.write(this.wrap(row.update()) + "\n");
+        this.cursorY++;
+      });
+      readline.clearScreenDown(this.streams.out);
+    } else {
+      this.showCursor();
     }
-    this.moveCursorDown(-this.cursorY);
-    this.rows.forEach((row) => {
-      this.streams.out.write(this.wrap(row.update()) + "\n");
-      this.cursorY++;
-    });
-    readline.clearScreenDown(this.streams.out);
   }
 
   /**

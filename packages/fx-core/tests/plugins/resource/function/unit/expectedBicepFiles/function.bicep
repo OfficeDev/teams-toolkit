@@ -1,9 +1,9 @@
 param functionServerfarmsName string
 param functionAppName string
 param functionStorageName string
-param aadClientId string
+param m365ClientId string
 @secure()
-param aadClientSecret string
+param m365ClientSecret string
 param m365TenantId string
 param applicationIdUri string
 param m365OauthAuthorityHost string
@@ -67,8 +67,8 @@ resource functionAppAppSettings 'Microsoft.Web/sites/config@2018-02-01' = {
     FUNCTIONS_EXTENSION_VERSION: '~3'
     FUNCTIONS_WORKER_RUNTIME: 'node'
     M365_APPLICATION_ID_URI: applicationIdUri
-    M365_CLIENT_ID: aadClientId
-    M365_CLIENT_SECRET: aadClientSecret
+    M365_CLIENT_ID: m365ClientId
+    M365_CLIENT_SECRET: m365ClientSecret
     M365_TENANT_ID: m365TenantId
     M365_AUTHORITY_HOST: m365OauthAuthorityHost
     WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: 'DefaultEndpointsProtocol=https;AccountName=${functionStorage.name};AccountKey=${listKeys(functionStorage.id, functionStorage.apiVersion).keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
@@ -83,10 +83,10 @@ resource functionAppAuthSettings 'Microsoft.Web/sites/config@2018-02-01' = {
   properties: {
     enabled: true
     defaultProvider: 'AzureActiveDirectory'
-    clientId: aadClientId
+    clientId: m365ClientId
     issuer: '${oauthAuthority}/v2.0'
     allowedAudiences: [
-      aadClientId
+      m365ClientId
       applicationIdUri
     ]
   }

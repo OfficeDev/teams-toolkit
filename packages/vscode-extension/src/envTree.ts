@@ -1,6 +1,8 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { FxError, Result, err, ok, Void, TreeCategory } from "@microsoft/teamsfx-api";
-import { isMultiEnvEnabled } from "@microsoft/teamsfx-core";
-import { environmentManager } from "@microsoft/teamsfx-core";
+import { isMultiEnvEnabled, environmentManager } from "@microsoft/teamsfx-core";
 import * as vscode from "vscode";
 import TreeViewManagerInstance, { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
 

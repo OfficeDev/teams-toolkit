@@ -13,22 +13,22 @@ import {
 
 export class ProjectSettingLoader {
   public static isSpfx = (ctx: PluginContext): boolean =>
-    (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)?.activeResourcePlugins?.some(
+    !!(ctx.projectSettings?.solutionSettings as AzureSolutionSettings)?.activeResourcePlugins?.some(
       (pluginName) => pluginName === SpfxPlugin.Name
     );
 
   public static includeFrontend = (ctx: PluginContext): boolean =>
-    (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)?.activeResourcePlugins?.some(
+    !!(ctx.projectSettings?.solutionSettings as AzureSolutionSettings)?.activeResourcePlugins?.some(
       (pluginName) => pluginName === FrontendHostingPlugin.Name
     );
 
   public static includeBackend = (ctx: PluginContext): boolean =>
-    (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)?.activeResourcePlugins?.some(
+    !!(ctx.projectSettings?.solutionSettings as AzureSolutionSettings)?.activeResourcePlugins?.some(
       (pluginName) => pluginName === FunctionPlugin.Name
     );
 
   public static includeBot = (ctx: PluginContext): boolean =>
-    (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)?.activeResourcePlugins?.some(
+    !!(ctx.projectSettings?.solutionSettings as AzureSolutionSettings)?.activeResourcePlugins?.some(
       (pluginName) => pluginName === BotPlugin.Name
     );
 

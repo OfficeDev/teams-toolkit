@@ -58,8 +58,12 @@ const simpleAuthPlugin = Container.get<Plugin>(ResourcePlugins.SimpleAuthPlugin)
 const spfxPlugin = Container.get<Plugin>(ResourcePlugins.SpfxPlugin) as Plugin & ArmResourcePlugin;
 const aadPlugin = Container.get<Plugin>(ResourcePlugins.AadPlugin) as Plugin & ArmResourcePlugin;
 
-const parameterFolder = "./infra/azure/parameters";
-const templateFolder = "./infra/azure/templates";
+const baseFolder = "./infra/azure";
+const parameterFolderName = "parameters";
+const templateFolderName = "templates";
+const fileEncoding = "UTF8";
+const parameterFolder = path.join(baseFolder, parameterFolderName);
+const templateFolder = path.join(baseFolder, templateFolderName);
 
 function mockSolutionContext(): SolutionContext {
   const config: SolutionConfig = new Map();
@@ -76,21 +80,20 @@ function mockSolutionContext(): SolutionContext {
 describe("Generate ARM Template for project", () => {
   const mocker = sinon.createSandbox();
   const testAppName = "my test app";
-  const fileContent: Map<string, any> = new Map();
+  const testFolder = "./tests/plugins/solution/testproject";
 
-  beforeEach(() => {
-    fileContent.clear();
-    mocker.stub(fs, "writeFile").callsFake((path: number | PathLike, data: any) => {
-      fileContent.set(path.toString(), data);
-    });
+  beforeEach(async () => {
+    await fs.ensureDir(testFolder);
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    await fs.remove(testFolder);
     mocker.restore();
   });
 
   it("should do nothing when no plugin implements required interface", async () => {
     const mockedCtx = mockSolutionContext();
+    mockedCtx.root = testFolder;
     mockedCtx.projectSettings = {
       appName: testAppName,
       projectId: uuid.v4(),
@@ -105,11 +108,12 @@ describe("Generate ARM Template for project", () => {
 
     const result = await generateArmTemplate(mockedCtx);
     expect(result.isOk()).to.be.true;
-    expect(fileContent.size).equals(0);
+    expect(await fs.pathExists(path.join(testFolder, baseFolder))).to.be.false;
   });
 
   it("should output templates when plugin implements required interface", async () => {
     const mockedCtx = mockSolutionContext();
+    mockedCtx.root = testFolder;
     mockedCtx.projectSettings = {
       appName: testAppName,
       projectId: uuid.v4(),
@@ -135,9 +139,13 @@ describe("Generate ARM Template for project", () => {
       return ok(mockedAadScaffoldArmResult);
     });
 
+    const projectArmTemplateFolder = path.join(testFolder, templateFolder);
+    const projectArmParameterFolder = path.join(testFolder, parameterFolder);
     const result = await generateArmTemplate(mockedCtx);
     expect(result.isOk()).to.be.true;
-    expect(fileContent.get(path.join(templateFolder, "main.bicep"))).equals(
+    expect(
+      await fs.readFile(path.join(projectArmTemplateFolder, "main.bicep"), fileEncoding)
+    ).equals(
       `param resourceBaseName string
 Mocked frontend hosting parameter content
 Mocked simple auth parameter content
@@ -151,13 +159,24 @@ Mocked simple auth module content. Module path: ./simpleAuthProvision.bicep. Var
 Mocked frontend hosting output content
 Mocked simple auth output content`
     );
-    expect(fileContent.get(path.join(templateFolder, "frontendHostingProvision.bicep"))).equals(
-      "Mocked frontend hosting provision module content"
-    );
-    expect(fileContent.get(path.join(templateFolder, "simpleAuthProvision.bicep"))).equals(
-      "Mocked simple auth provision module content"
-    );
-    expect(fileContent.get(path.join(parameterFolder, "parameters.template.json"))).equals(
+    expect(
+      await fs.readFile(
+        path.join(projectArmTemplateFolder, "frontendHostingProvision.bicep"),
+        fileEncoding
+      )
+    ).equals("Mocked frontend hosting provision module content");
+    expect(
+      await fs.readFile(
+        path.join(projectArmTemplateFolder, "simpleAuthProvision.bicep"),
+        fileEncoding
+      )
+    ).equals("Mocked simple auth provision module content");
+    expect(
+      await fs.readFile(
+        path.join(projectArmParameterFolder, "parameters.template.json"),
+        fileEncoding
+      )
+    ).equals(
       `{
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
   "contentVersion": "1.0.0.0",
@@ -170,6 +189,63 @@ Mocked simple auth output content`
   }
 }`
     );
+  });
+
+  it("should create backup folder when ARM template already exists", async () => {
+    const mockedCtx = mockSolutionContext();
+    mockedCtx.root = testFolder;
+    mockedCtx.projectSettings = {
+      appName: testAppName,
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [fehostPlugin.name, simpleAuthPlugin.name],
+        capabilities: [TabOptionItem.id],
+      },
+    };
+
+    const projectArmBaseFolder = path.join(mockedCtx.root, baseFolder);
+    const projectArmTemplateFolder = path.join(mockedCtx.root, templateFolder);
+    const projectArmParameterFolder = path.join(mockedCtx.root, parameterFolder);
+    const mockedParameterDefaultJsonContent = "mocked parameter.default.json file";
+    const mockedMainBicepContent = "mocked main.bicep file";
+    await fs.ensureDir(projectArmTemplateFolder);
+    await fs.ensureDir(projectArmParameterFolder);
+    await fs.writeFile(
+      path.join(projectArmParameterFolder, "parameter.default.json"),
+      mockedParameterDefaultJsonContent
+    );
+    await fs.writeFile(path.join(projectArmTemplateFolder, "main.bicep"), mockedMainBicepContent);
+
+    const result = await generateArmTemplate(mockedCtx);
+
+    expect(result.isOk()).to.be.true;
+    const backupBaseFolder = path.join(projectArmBaseFolder, "backup");
+    expect(await fs.pathExists(backupBaseFolder)).to.be.true;
+    const backupFolderItems = await fs.readdir(backupBaseFolder);
+    expect(backupFolderItems.length).equals(1);
+    const parameterBackupFolder = path.join(
+      backupBaseFolder,
+      backupFolderItems[0],
+      parameterFolderName
+    );
+    const parameterBackupFiles = await fs.readdir(parameterBackupFolder);
+    expect(parameterBackupFiles.length).equals(1);
+    expect(
+      await fs.readFile(path.join(parameterBackupFolder, parameterBackupFiles[0]), fileEncoding)
+    ).equals(mockedParameterDefaultJsonContent);
+    const templateBackupFolder = path.join(
+      backupBaseFolder,
+      backupFolderItems[0],
+      templateFolderName
+    );
+    const templateBackupFiles = await fs.readdir(templateBackupFolder);
+    expect(templateBackupFiles.length).equals(1);
+    expect(
+      await fs.readFile(path.join(templateBackupFolder, templateBackupFiles[0]), fileEncoding)
+    ).equals(mockedMainBicepContent);
   });
 });
 

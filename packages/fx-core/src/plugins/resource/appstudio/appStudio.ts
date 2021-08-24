@@ -63,7 +63,11 @@ export namespace AppStudioClient {
           throw new Error(`Cannot create teams app`);
         }
       } catch (e) {
-        throw new Error(`Cannot create teams app due to ${e.name}: ${e.message}`);
+        const error = new Error(`Cannot create teams app due to ${e.name}: ${e.message}`);
+        if (e.response?.status) {
+          error.name = e.response?.status;
+        }
+        throw error;
       }
     } else {
       throw new Error("Teams app create failed, invalid app studio token");
@@ -418,5 +422,27 @@ export namespace AppStudioClient {
     } else {
       return Constants.PERMISSIONS.operative;
     }
+  }
+
+  export async function grantPermission(
+    teamsAppId: string,
+    appStudioToken: string,
+    newUser: IUserList
+  ): Promise<void> {
+    let app;
+    try {
+      app = await getApp(teamsAppId, appStudioToken);
+    } catch (error) {
+      throw error;
+    }
+
+    const findUser = app.userList?.findIndex((user: IUserList) => user["aadId"] === newUser.aadId);
+    if (findUser && findUser >= 0) {
+      return;
+    }
+
+    app.userList?.push(newUser);
+    const requester = createRequesterWithToken(appStudioToken);
+    const response = await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app);
   }
 }

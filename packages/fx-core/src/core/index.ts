@@ -30,6 +30,8 @@ import {
   RunnableTask,
   AppPackageFolderName,
   SolutionConfig,
+  ArchiveFolderName,
+  ArchiveLogFileName,
   TelemetryReporter,
 } from "@microsoft/teamsfx-api";
 import * as path from "path";
@@ -93,6 +95,7 @@ import {
 import { EnvInfoWriterMW } from "./middleware/envInfoWriter";
 import { LocalSettingsLoaderMW } from "./middleware/localSettingsLoader";
 import { LocalSettingsWriterMW } from "./middleware/localSettingsWriter";
+import { MigrateConditionHandlerMW } from "./middleware/migrateConditionHandler";
 
 export interface CoreHookContext extends HookContext {
   projectSettings?: ProjectSettings;
@@ -205,6 +208,7 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
+    MigrateConditionHandlerMW,
     QuestionModelMW,
     ContextInjecterMW,
     ProjectSettingsWriterMW,
@@ -250,9 +254,14 @@ export class FxCore implements Core {
       answers: inputs,
     };
 
+    await this.archive(projectPath);
     await fs.ensureDir(projectPath);
     await fs.ensureDir(path.join(projectPath, `.${ConfigFolderName}`));
-    await fs.ensureDir(path.join(projectPath, `${AppPackageFolderName}`));
+
+    const createResult = await this.createBasicFolderStructure(inputs);
+    if (createResult.isErr()) {
+      return err(createResult.error);
+    }
 
     if (!solution.migrate) {
       return err(MigrateNotImplementError(projectPath));
@@ -260,11 +269,6 @@ export class FxCore implements Core {
     const migrateV1Res = await solution.migrate(solutionContext);
     if (migrateV1Res.isErr()) {
       return migrateV1Res;
-    }
-
-    const scaffoldRes = await solution.scaffold(solutionContext);
-    if (scaffoldRes.isErr()) {
-      return scaffoldRes;
     }
 
     ctx!.solution = solution;
@@ -275,6 +279,40 @@ export class FxCore implements Core {
     }
 
     return ok(projectPath);
+  }
+
+  async archive(projectPath: string): Promise<void> {
+    const archiveFolderPath = path.join(projectPath, ArchiveFolderName);
+    await fs.ensureDir(archiveFolderPath);
+
+    const fileNames = await fs.readdir(projectPath);
+    const archiveLog = async (projectPath: string, message: string): Promise<void> => {
+      await fs.appendFile(
+        path.join(projectPath, ArchiveLogFileName),
+        `[${new Date().toISOString()}] ${message}\n`
+      );
+    };
+
+    await archiveLog(projectPath, `Start to move files into '${ArchiveFolderName}' folder.`);
+    for (const fileName of fileNames) {
+      if (fileName === ArchiveFolderName || fileName === ArchiveLogFileName) {
+        continue;
+      }
+
+      try {
+        await fs.move(path.join(projectPath, fileName), path.join(archiveFolderPath, fileName), {
+          overwrite: true,
+        });
+      } catch (e: any) {
+        await archiveLog(projectPath, `Failed to move '${fileName}'. ${e.message}`);
+        throw e;
+      }
+
+      await archiveLog(
+        projectPath,
+        `'${fileName}' has been moved to '${ArchiveFolderName}' folder.`
+      );
+    }
   }
 
   async downloadSample(inputs: Inputs): Promise<Result<string, FxError>> {
@@ -525,9 +563,9 @@ export class FxCore implements Core {
     ctx?: CoreHookContext
   ): Promise<Result<ProjectConfig | undefined, FxError>> {
     return ok({
-      settings: ctx!.solutionContext!.projectSettings,
-      config: ctx!.solutionContext!.config,
-      localSettings: ctx!.solutionContext!.localSettings,
+      settings: ctx!.projectSettings,
+      config: ctx!.solutionContext?.config,
+      localSettings: ctx!.solutionContext?.localSettings,
     });
   }
 
@@ -661,15 +699,6 @@ export class FxCore implements Core {
     inputs: Inputs
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     const node = new QTreeNode({ type: "group" });
-    const defaultAppNameFunc = new QTreeNode(DefaultAppNameFunc);
-    node.addChild(defaultAppNameFunc);
-
-    const appNameQuestion = new QTreeNode(QuestionV1AppName);
-    appNameQuestion.condition = {
-      validFunc: (input: any) => (!input ? undefined : "App name is auto generated."),
-    };
-    defaultAppNameFunc.addChild(appNameQuestion);
-
     const globalSolutions: Solution[] = await defaultSolutionLoader.loadGlobalSolutions(inputs);
     const solutionContext = await newSolutionContext(this.tools, inputs);
 
@@ -684,6 +713,15 @@ export class FxCore implements Core {
         }
       }
     }
+
+    const defaultAppNameFunc = new QTreeNode(DefaultAppNameFunc);
+    node.addChild(defaultAppNameFunc);
+
+    const appNameQuestion = new QTreeNode(QuestionV1AppName);
+    appNameQuestion.condition = {
+      validFunc: (input: any) => (!input ? undefined : "App name is auto generated."),
+    };
+    defaultAppNameFunc.addChild(appNameQuestion);
     return ok(node.trim());
   }
 
@@ -730,7 +768,7 @@ export class FxCore implements Core {
       );
       await fs.writeFile(
         path.join(inputs.projectPath!, `.gitignore`),
-        `node_modules\n/.${ConfigFolderName}/*.env\n/.${ConfigFolderName}/*.userdata\n.DS_Store`
+        `node_modules\n/.${ConfigFolderName}/*.env\n/.${ConfigFolderName}/*.userdata\n.DS_Store\n${ArchiveFolderName}\n${ArchiveLogFileName}`
       );
     } catch (e) {
       return err(WriteFileError(e));

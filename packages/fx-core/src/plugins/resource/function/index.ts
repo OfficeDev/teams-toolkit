@@ -37,6 +37,7 @@ import {
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { isArmSupportEnabled } from "../../..";
+
 @Service(ResourcePlugins.FunctionPlugin)
 export class FunctionPlugin implements Plugin {
   name = "fx-resource-function";
@@ -74,6 +75,14 @@ export class FunctionPlugin implements Plugin {
       FunctionEvent.getQuestions,
       () => Promise.resolve(this.functionPluginImpl.getQuestionsForUserTask(func, ctx)),
       false
+    );
+    return res;
+  }
+
+  public async executeUserTask(func: Func, ctx: PluginContext): Promise<FxResult> {
+    this.setContext(ctx);
+    const res = await this.runWithErrorWrapper(ctx, FunctionEvent.executeUserTask, () =>
+      this.functionPluginImpl.executeUserTask(func, ctx)
     );
     return res;
   }

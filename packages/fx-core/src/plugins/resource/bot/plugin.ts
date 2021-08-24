@@ -22,6 +22,7 @@ import {
   Links,
   IdentityConstants,
   AzureConstants,
+  PathInfo,
 } from "./constants";
 import { WayToRegisterBot } from "./enums/wayToRegisterBot";
 import { getZipDeployEndpoint } from "./utils/zipDeploy";
@@ -49,6 +50,12 @@ import { DeployMgr } from "./deployMgr";
 import { BotAuthCredential } from "./botAuthCredential";
 import { AzureOperations } from "./azureOps";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
+import path from "path";
+import { getTemplatesFolder } from "../../..";
+import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
+import { Bicep, ConstantString } from "../../../common/constants";
+import { generateBicepFiles } from "../../../common";
+import { AzureSolutionSettings } from "@microsoft/teamsfx-api";
 
 export class TeamsBotImpl {
   // Made config plubic, because expect the upper layer to fill inputs.
@@ -224,6 +231,67 @@ export class TeamsBotImpl {
     Logger.info(Messages.SuccessfullyProvisionedBot);
 
     return ResultFactory.Success();
+  }
+
+  public async generateArmTemplates(context: PluginContext): Promise<FxResult> {
+    this.ctx = context;
+    await this.config.restoreConfigFromContext(context);
+    Logger.info(Messages.GeneratingArmTemplatesBot);
+
+    const bicepTemplateDir = path.join(getTemplatesFolder(), PathInfo.BicepTemplateRelativeDir);
+
+    const moduleTemplateFilePath = path.join(bicepTemplateDir, PathInfo.moduleTemplateFileName);
+    const selectedPlugins = (this.ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
+      .activeResourcePlugins;
+    const handleBarsContext = {
+      Plugins: selectedPlugins,
+    };
+    const moduleContentResult = await generateBicepFiles(moduleTemplateFilePath, handleBarsContext);
+    if (moduleContentResult.isErr()) {
+      throw moduleContentResult.error;
+    }
+
+    const inputParameterOrchestrationFilePath = path.join(
+      bicepTemplateDir,
+      Bicep.ParameterOrchestrationFileName
+    );
+    const moduleOrchestrationFilePath = path.join(
+      bicepTemplateDir,
+      Bicep.ModuleOrchestrationFileName
+    );
+    const outputOrchestrationFilePath = path.join(
+      bicepTemplateDir,
+      Bicep.OutputOrchestrationFileName
+    );
+    const parameterFilePath = path.join(bicepTemplateDir, Bicep.ParameterFileName);
+
+    const result: ScaffoldArmTemplateResult = {
+      Modules: {
+        botProvision: {
+          Content: moduleContentResult.value,
+        },
+      },
+      Orchestration: {
+        ParameterTemplate: {
+          Content: await fs.readFile(
+            inputParameterOrchestrationFilePath,
+            ConstantString.UTF8Encoding
+          ),
+          ParameterJson: JSON.parse(
+            await fs.readFile(parameterFilePath, ConstantString.UTF8Encoding)
+          ),
+        },
+        ModuleTemplate: {
+          Content: await fs.readFile(moduleOrchestrationFilePath, ConstantString.UTF8Encoding),
+        },
+        OutputTemplate: {
+          Content: await fs.readFile(outputOrchestrationFilePath, ConstantString.UTF8Encoding),
+        },
+      },
+    };
+
+    Logger.info(Messages.SuccessfullyGenerateArmTemplatesBot);
+    return ResultFactory.Success(result);
   }
 
   private async provisionWebApp() {

@@ -65,6 +65,8 @@ export async function scaffoldReadmeAndLocalSettings(
     }
   }
 
+  // TODO: add migrate V1 project README file
+
   const hasBackend = azureResources.includes(AzureResourceFunction.id);
 
   if (isMultiEnvEnabled()) {

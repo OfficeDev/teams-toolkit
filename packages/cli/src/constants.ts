@@ -34,6 +34,12 @@ export const SubscriptionNode = new QTreeNode({
   title: "Select a subscription",
 });
 
+export const CollaboratorEmailNode = new QTreeNode({
+  type: "text",
+  name: "email",
+  title: "Input email address of collaborator",
+});
+
 export const templates: {
   tags: string[];
   title: string;

@@ -4,7 +4,7 @@
 import fs from "fs-extra";
 import { basename } from "path";
 import { promisify } from "util";
-import { assembleError, SystemError } from "../../../api/build";
+import { assembleError, SystemError } from "@microsoft/teamsfx-api";
 import { CoreSource, currentStage } from "../core";
 import { Component, sendTelemetryErrorEvent, TelemetryEvent } from "./telemetry";
 

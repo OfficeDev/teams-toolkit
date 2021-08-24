@@ -4,6 +4,7 @@
 import { AzureSolutionSettings, LogProvider, PluginContext } from "@microsoft/teamsfx-api";
 import { AadResult, ResultFactory } from "./results";
 import {
+  CheckPermissionConfig,
   ConfigUtils,
   PostProvisionConfig,
   ProvisionConfig,
@@ -11,7 +12,7 @@ import {
   UpdatePermissionConfig,
 } from "./utils/configs";
 import { TelemetryUtils } from "./utils/telemetry";
-import { TokenProvider } from "./utils/tokenProvider";
+import { TokenAudience, TokenProvider } from "./utils/tokenProvider";
 import { AadAppClient } from "./aadAppClient";
 import {
   AppIdUriInvalidError,
@@ -21,13 +22,17 @@ import {
   UnknownPermissionScope,
   GetSkipAppConfigError,
   InvalidSelectedPluginsError,
+  GetConfigError,
+  ConfigErrorMessages,
 } from "./errors";
 import { Envs } from "./interfaces/models";
 import { DialogUtils } from "./utils/dialog";
 import {
   ConfigKeys,
+  ConfigKeysOfOtherPlugin,
   Constants,
   Messages,
+  Plugins,
   ProgressDetail,
   ProgressTitle,
   Telemetry,
@@ -42,7 +47,7 @@ import { Utils } from "./utils/common";
 import * as path from "path";
 import * as fs from "fs-extra";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
-import { ConstantString, ResourcePlugins } from "../../../common/constants";
+import { Bicep, ConstantString, ResourcePlugins } from "../../../common/constants";
 import { getTemplatesFolder } from "../../..";
 
 export class AadAppForTeamsImpl {
@@ -292,13 +297,13 @@ export class AadAppForTeamsImpl {
     );
     const inputParameterOrchestrationFilePath = path.join(
       bicepTemplateDir,
-      TemplatePathInfo.InputParameterOrchestrationFileName
+      Bicep.ParameterOrchestrationFileName
     );
     const variablesOrchestrationFilePath = path.join(
       bicepTemplateDir,
-      TemplatePathInfo.VariablesOrchestrationFileName
+      Bicep.VariablesOrchestrationFileName
     );
-    const parameterFilePath = path.join(bicepTemplateDir, TemplatePathInfo.ParameterFileName);
+    const parameterFilePath = path.join(bicepTemplateDir, Bicep.ParameterFileName);
 
     const result: ScaffoldArmTemplateResult = {
       Orchestration: {
@@ -318,6 +323,34 @@ export class AadAppForTeamsImpl {
     };
 
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndGenerateArmTemplates);
+    return ResultFactory.Success(result);
+  }
+
+  public async checkPermission(ctx: PluginContext): Promise<AadResult> {
+    TelemetryUtils.init(ctx);
+    Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartCheckPermission);
+
+    await TokenProvider.init(ctx, TokenAudience.Graph);
+    const config = new CheckPermissionConfig();
+    await config.restoreConfigFromContext(ctx);
+
+    const userObjectId = config?.userInfo["aadId"];
+    const isAadOwner = await AadAppClient.checkPermission(
+      ctx,
+      Messages.EndCheckPermission.telemetry,
+      config.objectId!,
+      userObjectId
+    );
+
+    const result = [
+      {
+        name: Constants.permissions.name,
+        type: Constants.permissions.type,
+        roles: isAadOwner ? [Constants.permissions.owner] : [Constants.permissions.noPermission],
+        resourceId: config.objectId!,
+      },
+    ];
+    Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndCheckPermission);
     return ResultFactory.Success(result);
   }
 

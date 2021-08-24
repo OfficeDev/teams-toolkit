@@ -45,7 +45,7 @@ export function EnvInfoLoaderMW(
 ): Middleware {
   return async (ctx: CoreHookContext, next: NextFunction) => {
     const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-    if (shouldIgnored(ctx)) {
+    if (shouldIgnored(ctx) || inputs.ignoreEnvInfo === true) {
       await next();
       return;
     }

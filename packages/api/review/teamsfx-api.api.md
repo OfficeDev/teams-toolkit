@@ -21,6 +21,12 @@ export interface AppStudioTokenProvider {
 }
 
 // @public (undocumented)
+export const ArchiveFolderName = ".archive";
+
+// @public (undocumented)
+export const ArchiveLogFileName = ".archive.log";
+
+// @public (undocumented)
 export function assembleError(e: any, source?: string): FxError;
 
 // @public
@@ -455,6 +461,8 @@ export interface Inputs extends Json {
     // (undocumented)
     ignoreConfigPersist?: boolean;
     // (undocumented)
+    ignoreEnvInfo?: boolean;
+    // (undocumented)
     ignoreLock?: boolean;
     // (undocumented)
     ignoreTypeCheck?: boolean;
@@ -782,9 +790,9 @@ type ProvisionInputs = Inputs & SolutionInputs;
 
 // @public (undocumented)
 type ProvisionOutput = {
-    output: Record<string, string>;
-    states: Record<string, string>;
-    secrets: Record<string, string>;
+    output: Json;
+    states: Json;
+    secrets: Json;
 };
 
 // @public
@@ -997,7 +1005,7 @@ interface SolutionPlugin {
     package?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
     provisionLocalResource?: (ctx: Context_2, tokenProvider: TokenProvider) => Promise<Result<LocalSettings_2, FxError>>;
     provisionResources: (ctx: Context_2, inputs: Inputs, provisionTemplates: Record<PluginName, Json>, tokenProvider: TokenProvider) => Promise<Result<Record<PluginName, ProvisionOutput>, FxError>>;
-    publishApplication?: (ctx: Context_2, tokenProvider: AppStudioTokenProvider, inputs: Inputs) => Promise<Result<Void, FxError>>;
+    publishApplication?: (ctx: Context_2, inputs: Inputs, provisionOutput: Readonly<Record<PluginName, ProvisionOutput>>, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
     scaffoldSourceCode?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Record<PluginName, {
         output: Record<string, string>;
     }>, FxError>>;

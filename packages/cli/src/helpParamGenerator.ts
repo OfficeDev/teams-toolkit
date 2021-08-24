@@ -28,6 +28,7 @@ import CLIUIInstance from "./userInteraction";
 import { flattenNodes, getSingleOptionString, toYargsOptions } from "./utils";
 import { Options } from "yargs";
 import {
+  CollaboratorEmailNode,
   EnvNode,
   EnvNodeNoCreate,
   RootFolderNode,
@@ -39,10 +40,13 @@ export class HelpParamGenerator {
   private core: FxCore;
   private questionsMap: Map<string, QTreeNode> = new Map<string, QTreeNode>();
   private initialized = false;
-  private static needChooseEnvStage: string[] = [
+
+  private static showEnvStage: string[] = [
     Stage.build,
     Stage.publish,
     Stage.deploy,
+    Stage.grantPermission,
+    Stage.checkPermission,
     "validate",
   ];
 
@@ -219,6 +223,11 @@ export class HelpParamGenerator {
           (node.data as any).hide = true;
         }
       }
+    }
+
+    // Add user email node for grant permission
+    if (stage === Stage.grantPermission) {
+      nodes = nodes.concat([CollaboratorEmailNode]);
     }
 
     const nodesWithoutGroup = nodes.filter((node) => node.data.type !== "group");

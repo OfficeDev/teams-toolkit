@@ -25,6 +25,7 @@ import {
   ITeamCommand,
   IPersonalCommand,
   IGroupChatCommand,
+  IUserList,
 } from "./interfaces/IAppDefinition";
 import { ICommand, ICommandList } from "../../solution/fx-solution/appstudio/interface";
 import {
@@ -45,6 +46,7 @@ import {
   WEB_APPLICATION_INFO_SOURCE,
   PluginNames,
   SOLUTION_PROVISION_SUCCEEDED,
+  USER_INFO,
 } from "../../solution/fx-solution/constants";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
@@ -66,6 +68,8 @@ import {
   REMOTE_MANIFEST,
   FRONTEND_ENDPOINT_ARM,
   FRONTEND_DOMAIN_ARM,
+  ErrorMessages,
+  SOLUTION,
 } from "./constants";
 import { REMOTE_TEAMS_APP_ID } from "../../solution/fx-solution/constants";
 import AdmZip from "adm-zip";
@@ -82,6 +86,7 @@ import {
 } from "../../../common/localSettingsConstants";
 import { v4 } from "uuid";
 import isUUID from "validator/lib/isUUID";
+import { ResourcePermission } from "../../../common/permissionInterface";
 
 export class AppStudioPluginImpl {
   public async getAppDefinitionAndUpdate(
@@ -209,7 +214,7 @@ export class AppStudioPluginImpl {
     });
   }
 
-  public async provision(ctx: PluginContext): Promise<string> {
+  public async provision(ctx: PluginContext): Promise<Result<string, FxError>> {
     let remoteTeamsAppId = this.getTeamsAppId(ctx, false);
 
     let create = false;
@@ -227,12 +232,12 @@ export class AppStudioPluginImpl {
     if (create) {
       const result = await this.createApp(ctx, false);
       if (result.isErr()) {
-        throw result;
+        return err(result.error);
       }
-      ctx.logProvider?.info(`Teams app created ${result.value}`);
       remoteTeamsAppId = result.value.teamsAppId!;
+      ctx.logProvider?.info(`Teams app created ${remoteTeamsAppId}`);
     }
-    return remoteTeamsAppId;
+    return ok(remoteTeamsAppId);
   }
 
   public async postProvision(ctx: PluginContext): Promise<string> {
@@ -545,6 +550,46 @@ export class AppStudioPluginImpl {
       throw teamsAppId;
     }
     return teamsAppId.value;
+  }
+
+  public async checkPermission(ctx: PluginContext): Promise<ResourcePermission[]> {
+    let userInfoObject: IUserList;
+    const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
+
+    const teamsAppId = (await ctx.configOfOtherPlugins
+      .get(SOLUTION)
+      ?.get(REMOTE_TEAMS_APP_ID)) as string;
+    if (!teamsAppId) {
+      throw new Error(ErrorMessages.GetConfigError(REMOTE_TEAMS_APP_ID, SOLUTION));
+    }
+
+    const userInfo = ctx.configOfOtherPlugins.get(SOLUTION)?.get(USER_INFO);
+    if (!userInfo) {
+      throw new Error(ErrorMessages.GetConfigError(USER_INFO, SOLUTION));
+    }
+
+    try {
+      userInfoObject = JSON.parse(userInfo) as IUserList;
+    } catch (error) {
+      throw new Error(ErrorMessages.ParseUserInfoError);
+    }
+
+    const teamsAppRoles = await AppStudioClient.checkPermission(
+      teamsAppId,
+      appStudioToken as string,
+      userInfoObject.aadId
+    );
+
+    const result: ResourcePermission[] = [
+      {
+        name: Constants.PERMISSIONS.name,
+        roles: [teamsAppRoles as string],
+        type: Constants.PERMISSIONS.type,
+        resourceId: teamsAppId,
+      },
+    ];
+
+    return result;
   }
 
   private async beforePublish(
@@ -1138,11 +1183,11 @@ export class AppStudioPluginImpl {
         isLocalDebug
           ? AppStudioResultFactory.SystemError(
               AppStudioError.LocalAppIdCreateFailedError.name,
-              AppStudioError.LocalAppIdCreateFailedError.message
+              AppStudioError.LocalAppIdCreateFailedError.message(e)
             )
           : AppStudioResultFactory.SystemError(
               AppStudioError.RemoteAppIdCreateFailedError.name,
-              AppStudioError.RemoteAppIdCreateFailedError.message
+              AppStudioError.RemoteAppIdCreateFailedError.message(e)
             )
       );
     }
@@ -1177,11 +1222,11 @@ export class AppStudioPluginImpl {
           type === "remote"
             ? AppStudioResultFactory.SystemError(
                 AppStudioError.RemoteAppIdCreateFailedError.name,
-                AppStudioError.RemoteAppIdCreateFailedError.message
+                AppStudioError.RemoteAppIdCreateFailedError.message()
               )
             : AppStudioResultFactory.SystemError(
                 AppStudioError.LocalAppIdCreateFailedError.name,
-                AppStudioError.LocalAppIdCreateFailedError.message
+                AppStudioError.LocalAppIdCreateFailedError.message()
               )
         );
       }
@@ -1216,11 +1261,11 @@ export class AppStudioPluginImpl {
           type === "remote"
             ? AppStudioResultFactory.SystemError(
                 AppStudioError.RemoteAppIdUpdateFailedError.name,
-                AppStudioError.RemoteAppIdUpdateFailedError.message(e.name, e.message)
+                AppStudioError.RemoteAppIdUpdateFailedError.message(e)
               )
             : AppStudioResultFactory.SystemError(
                 AppStudioError.LocalAppIdUpdateFailedError.name,
-                AppStudioError.LocalAppIdUpdateFailedError.message(e.name, e.message)
+                AppStudioError.LocalAppIdUpdateFailedError.message(e)
               )
         );
       }

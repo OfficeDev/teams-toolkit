@@ -107,7 +107,7 @@ export default class QuickStart extends React.Component<any, any> {
                 <Icon iconName="LightningBolt" className="logo" />
               </div>
               <div className="title">
-                <h2>Quick Start</h2>
+                <h2>Quick start</h2>
                 <h3 className="text">Jumpstart your Teams app development experience</h3>
               </div>
             </div>

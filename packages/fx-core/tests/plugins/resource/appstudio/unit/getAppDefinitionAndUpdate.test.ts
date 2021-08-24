@@ -36,43 +36,7 @@ import {
 import * as uuid from "uuid";
 import sinon from "sinon";
 import { AppStudioResultFactory } from "../../../../../src/plugins/resource/appstudio/results";
-
-class MockedAppStudioTokenProvider implements AppStudioTokenProvider {
-  async getAccessToken(showDialog?: boolean): Promise<string> {
-    return "someFakeToken";
-  }
-  async getJsonObject(showDialog?: boolean): Promise<Record<string, unknown>> {
-    return {
-      tid: "222",
-    };
-  }
-  signout(): Promise<boolean> {
-    throw new Error("Method not implemented.");
-  }
-  setStatusChangeCallback(
-    statusChange: (
-      status: string,
-      token?: string,
-      accountInfo?: Record<string, unknown>
-    ) => Promise<void>
-  ): Promise<boolean> {
-    throw new Error("Method not implemented.");
-  }
-  setStatusChangeMap(
-    name: string,
-    statusChange: (
-      status: string,
-      token?: string,
-      accountInfo?: Record<string, unknown>
-    ) => Promise<void>,
-    immediateCall?: boolean
-  ): Promise<boolean> {
-    throw new Error("Method not implemented.");
-  }
-  removeStatusChangeMap(name: string): Promise<boolean> {
-    throw new Error("Method not implemented.");
-  }
-}
+import { MockedAppStudioTokenProvider } from "../helper";
 
 describe("Get AppDefinition and Update", () => {
   let plugin: AppStudioPlugin;
@@ -428,11 +392,11 @@ describe("Get AppDefinition and Update", () => {
 
     const fakeAxiosInstance = axios.create();
     sandbox.stub(fakeAxiosInstance, "post").resolves({
-      status: 200,
+      status: 502,
       data: {
-        appId: "appId",
-        id: "id",
-        secretText: "secretText",
+        error: {
+          code: "BadGateway",
+        },
       },
     });
     sandbox.stub(axios, "create").returns(fakeAxiosInstance);

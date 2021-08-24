@@ -307,6 +307,25 @@ export class AppStudioPlugin implements Plugin {
     }
   }
 
+  public async grantPermission(ctx: PluginContext): Promise<Result<any, FxError>> {
+    TelemetryUtils.init(ctx);
+    TelemetryUtils.sendStartEvent(TelemetryEventName.grantPermission);
+
+    try {
+      const grantPermissionResult = await this.appStudioPluginImpl.grantPermission(ctx);
+      TelemetryUtils.sendSuccessEvent(TelemetryEventName.grantPermission);
+      return ok(grantPermissionResult);
+    } catch (error) {
+      TelemetryUtils.sendErrorEvent(TelemetryEventName.grantPermission, error);
+      return err(
+        AppStudioResultFactory.SystemError(
+          AppStudioError.GrantPermissionFailedError.name,
+          error.message
+        )
+      );
+    }
+  }
+
   async executeUserTask(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {
     if (func.method === "validateManifest") {
       return await this.validateManifest(ctx);

@@ -30,6 +30,7 @@ export enum TelemetryEventName {
   publish = "publish",
   provision = "provision",
   checkPermission = "check-permission",
+  grantPermission = "grant-permission",
 }
 
 export class TelemetryUtils {

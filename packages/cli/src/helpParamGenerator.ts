@@ -211,7 +211,7 @@ export class HelpParamGenerator {
     if (isMultiEnvEnabled()) {
       if (stage === Stage.provision) {
         nodes = nodes.concat([EnvNode]);
-      } else if (HelpParamGenerator.needChooseEnvStage.indexOf(stage) >= 0) {
+      } else if (HelpParamGenerator.showEnvStage.indexOf(stage) >= 0) {
         nodes = nodes.concat([EnvNodeNoCreate]);
       }
     }

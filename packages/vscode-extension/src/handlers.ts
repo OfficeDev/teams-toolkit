@@ -79,6 +79,7 @@ import { SPFxNodeChecker } from "./debug/depsChecker/spfxNodeChecker";
 import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
 import { VS_CODE_UI } from "./extension";
 import { registerAccountTreeHandler } from "./accountTree";
+import { registerEnvTreeHandler } from "./envTree";
 import { selectAndDebug } from "./debug/runIconHandler";
 import * as path from "path";
 import { exp } from "./exp/index";
@@ -145,6 +146,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
     };
     core = new FxCore(tools);
     await registerAccountTreeHandler();
+    await registerEnvTreeHandler();
     await openMarkdownHandler();
     await openSampleReadmeHandler();
   } catch (e) {
@@ -625,6 +627,27 @@ export async function openManifestHandler(args?: any[]): Promise<Result<null, Fx
     };
     showError(FxError);
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, FxError);
+    return err(FxError);
+  }
+}
+
+export async function createNewEnvironment(args?: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.CreateNewEnvironment,
+    getTriggerFromProperty(args)
+  );
+  if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
+    //todo add create new environment logic
+    return ok(null);
+  } else {
+    const FxError: FxError = {
+      name: "NoWorkspace",
+      source: ExtensionSource,
+      message: StringResources.vsc.handlers.noOpenWorkspace,
+      timestamp: new Date(),
+    };
+    showError(FxError);
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CreateNewEnvironment, FxError);
     return err(FxError);
   }
 }

@@ -8,3 +8,4 @@ export * from "./common";
 export * from "./plugins";
 export * from "./core";
 export * from "./folder";
+export * from "./core/environment";

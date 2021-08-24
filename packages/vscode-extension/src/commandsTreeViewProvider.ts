@@ -29,6 +29,11 @@ class TreeViewManager {
     const accountProvider = new CommandsTreeViewProvider([]);
     disposables.push(vscode.window.registerTreeDataProvider("teamsfx-accounts", accountProvider));
 
+    const environmentProvider = new CommandsTreeViewProvider([]);
+    disposables.push(
+      vscode.window.registerTreeDataProvider("teamsfx-environment", environmentProvider)
+    );
+
     const developmentCommand = [
       new TreeViewCommand(
         StringResources.vsc.commandsTreeViewProvider.createProjectTitleNew,
@@ -184,6 +189,7 @@ class TreeViewManager {
     );
 
     this.treeviewMap.set("teamsfx-accounts", accountProvider);
+    this.treeviewMap.set("teamsfx-environment", environmentProvider);
     this.treeviewMap.set("teamsfx-development", developmentProvider);
     this.treeviewMap.set("teamsfx-deployment", deployProvider);
     this.treeviewMap.set("teamsfx-help-and-feedback", helpProvider);
@@ -196,6 +202,11 @@ class TreeViewManager {
 
     const accountProvider = new CommandsTreeViewProvider([]);
     disposables.push(vscode.window.registerTreeDataProvider("teamsfx-accounts", accountProvider));
+
+    const environmentProvider = new CommandsTreeViewProvider([]);
+    disposables.push(
+      vscode.window.registerTreeDataProvider("teamsfx-environment", environmentProvider)
+    );
 
     const developmentCommand = [
       new TreeViewCommand(
@@ -280,6 +291,7 @@ class TreeViewManager {
     );
 
     this.treeviewMap.set("teamsfx-accounts", accountProvider);
+    this.treeviewMap.set("teamsfx-environment", environmentProvider);
     this.treeviewMap.set("teamsfx-development", developmentProvider);
     this.treeviewMap.set("teamsfx-deployment", deployProvider);
     this.treeviewMap.set("teamsfx-help-and-feedback", helpProvider);
@@ -302,11 +314,10 @@ export default TreeViewManager.getInstance();
 
 export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeViewCommand> {
   public static readonly TreeViewFlag = "TreeView";
-  private _onDidChangeTreeData: vscode.EventEmitter<
-    TreeViewCommand | undefined | void
-  > = new vscode.EventEmitter<TreeViewCommand | undefined | void>();
-  readonly onDidChangeTreeData: vscode.Event<TreeViewCommand | undefined | void> = this
-    ._onDidChangeTreeData.event;
+  private _onDidChangeTreeData: vscode.EventEmitter<TreeViewCommand | undefined | void> =
+    new vscode.EventEmitter<TreeViewCommand | undefined | void>();
+  readonly onDidChangeTreeData: vscode.Event<TreeViewCommand | undefined | void> =
+    this._onDidChangeTreeData.event;
 
   private commands: TreeViewCommand[] = [];
   private disposableMap: Map<string, vscode.Disposable> = new Map();
@@ -398,8 +409,14 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
           : undefined,
         typeof treeItem.parent === "number" ? (treeItem.parent as TreeCategory) : undefined,
         [],
-        treeItem.icon ? { name: treeItem.icon, custom: true } : undefined,
-        treeItem.contextValue
+        treeItem.icon
+          ? {
+              name: treeItem.icon,
+              custom: treeItem.isCustom === undefined ? true : treeItem.isCustom,
+            }
+          : undefined,
+        treeItem.contextValue,
+        treeItem.description
       );
 
       let parentCmd = undefined;
@@ -509,10 +526,11 @@ export class TreeViewCommand extends vscode.TreeItem {
     public category?: TreeCategory,
     public children?: TreeViewCommand[],
     public image?: { name: string; custom: boolean },
-    public contextValue?: string
+    public contextValue?: string,
+    public description?: string
   ) {
     super(label, collapsibleState ? collapsibleState : vscode.TreeItemCollapsibleState.None);
-    this.description = "";
+    this.description = description === undefined ? "" : description;
     this.contextValue = contextValue;
 
     if (image !== undefined) {

@@ -10,11 +10,20 @@ import { SubscriptionClient } from "@azure/arm-subscriptions";
 import * as fs from "fs-extra";
 import * as path from "path";
 
-import { AzureAccountProvider, ConfigFolderName, err, FxError, ok, Result, SubscriptionInfo } from "@microsoft/teamsfx-api";
+import {
+  AzureAccountProvider,
+  ConfigFolderName,
+  err,
+  FxError,
+  ok,
+  Result,
+  SubscriptionInfo,
+} from "@microsoft/teamsfx-api";
 
 import { NotSupportedProjectType, NotFoundSubscriptionId } from "../error";
 import { login, LoginStatus } from "./common/login";
 import { signedOut } from "./common/constant";
+import { isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 
 const clientId = process.env.E2E_CLIENT_ID ?? "";
 const secret = process.env.E2E_SECRET ?? "";
@@ -111,7 +120,12 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     AzureAccountManager.subscriptionId = subscriptionId;
 
     /// TODO: use api's constant
-    const configPath = path.resolve(root_folder, `.${ConfigFolderName}/env.default.json`);
+    const configPath = path.resolve(
+      root_folder,
+      isMultiEnvEnabled()
+        ? `.${ConfigFolderName}/publishProfiles/profile.default.json`
+        : `.${ConfigFolderName}/env.default.json`
+    );
     if (!(await fs.pathExists(configPath))) {
       return err(NotSupportedProjectType());
     }

@@ -31,6 +31,7 @@ import { LocalCrypto } from "../crypto";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { PermissionRequestFileProvider } from "../permissionRequest";
 import { readJson } from "../../common/fileUtils";
+import { isMultiEnvEnabled } from "../../common";
 
 export const ProjectSettingsLoaderMW: Middleware = async (
   ctx: CoreHookContext,
@@ -77,7 +78,9 @@ export async function loadProjectSettings(
     }
 
     const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
-    const settingsFile = path.resolve(confFolderPath, "settings.json");
+    const settingsFile = isMultiEnvEnabled()
+      ? path.resolve(confFolderPath, "configs", "projectSettings.json")
+      : path.resolve(confFolderPath, "settings.json");
     const projectSettings: ProjectSettings = await readJson(settingsFile);
     let projectIdMissing = false;
     if (!projectSettings.projectId) {

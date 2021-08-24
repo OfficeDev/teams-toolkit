@@ -23,6 +23,7 @@ import {
   WriteFileError,
 } from "..";
 import { dataNeedEncryption, deserializeDict, serializeDict } from "../..";
+import { isMultiEnvEnabled } from "../../common";
 import { readJson } from "../../common/fileUtils";
 import {
   Component,
@@ -82,12 +83,23 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<Result<undef
   if (!projectPathExist) {
     return err(PathNotExistError(inputs.projectPath));
   }
-  const confFolderPath = path.resolve(inputs.projectPath!, `.${ConfigFolderName}`);
-  const settingsFile = path.resolve(confFolderPath, "settings.json");
+  const confFolderPath = isMultiEnvEnabled()
+    ? path.resolve(inputs.projectPath, `.${ConfigFolderName}`, "configs")
+    : path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
+  const publishProfilesFolderPath = path.resolve(
+    inputs.projectPath,
+    `.${ConfigFolderName}`,
+    "publishProfiles"
+  );
+  const settingsFile = isMultiEnvEnabled()
+    ? path.resolve(confFolderPath, "projectSettings.json")
+    : path.resolve(confFolderPath, "settings.json");
   const projectSettings: ProjectSettings = await readJson(settingsFile);
   const defaultEnvName = environmentManager.defaultEnvName;
 
-  const contextPath = path.resolve(confFolderPath, `env.${defaultEnvName}.json`);
+  const contextPath = isMultiEnvEnabled()
+    ? path.resolve(publishProfilesFolderPath, `profile.${defaultEnvName}.json`)
+    : path.resolve(confFolderPath, `env.${defaultEnvName}.json`);
   const userDataPath = path.resolve(confFolderPath, `${defaultEnvName}.userdata`);
 
   let context: Json = {};

@@ -11,13 +11,16 @@ import {
   LocalSettingsFrontendKeys,
   LocalSettingsTeamsAppKeys,
 } from "./localSettingsConstants";
+import { isMultiEnvEnabled } from "./tools";
 
 export const localSettingsFileName = "localSettings.json";
 
 export class LocalSettingsProvider {
   public readonly localSettingsFilePath: string;
   constructor(workspaceFolder: string) {
-    this.localSettingsFilePath = `${workspaceFolder}/.${ConfigFolderName}/${localSettingsFileName}`;
+    this.localSettingsFilePath = isMultiEnvEnabled()
+      ? `${workspaceFolder}/.${ConfigFolderName}/configs/${localSettingsFileName}`
+      : `${workspaceFolder}/.${ConfigFolderName}/${localSettingsFileName}`;
   }
 
   public init(

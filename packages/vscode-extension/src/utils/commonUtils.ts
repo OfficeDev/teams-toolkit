@@ -6,7 +6,7 @@ import * as fs from "fs-extra";
 import { ext } from "../extensionVariables";
 import * as path from "path";
 import { ConfigFolderName } from "@microsoft/teamsfx-api";
-import { isValidProject } from "@microsoft/teamsfx-core";
+import { isMultiEnvEnabled, isValidProject } from "@microsoft/teamsfx-core";
 
 export function getPackageVersion(versionStr: string): string {
   if (versionStr.includes("alpha")) {
@@ -68,7 +68,12 @@ export function getProjectId(): string | undefined {
   try {
     const ws = ext.workspaceUri.fsPath;
     if (isValidProject(ws)) {
-      const settingsJsonPath = path.join(ws, `.${ConfigFolderName}/settings.json`);
+      const settingsJsonPath = path.join(
+        ws,
+        isMultiEnvEnabled()
+          ? `.${ConfigFolderName}/configs/projectSettings.json`
+          : `.${ConfigFolderName}/settings.json`
+      );
       const settingsJson = JSON.parse(fs.readFileSync(settingsJsonPath, "utf8"));
       return settingsJson.projectId;
     }

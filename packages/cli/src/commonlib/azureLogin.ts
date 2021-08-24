@@ -24,6 +24,7 @@ import {
   changeLoginTenantMessage,
   env,
   envDefaultJsonFile,
+  profileDefaultJsonFile,
   failToFindSubscription,
   loginComponent,
   MFACode,
@@ -41,6 +42,7 @@ import CLIUIInstance from "../userInteraction";
 import * as path from "path";
 import * as fs from "fs-extra";
 import { isWorkspaceSupported } from "../utils";
+import { isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 
 const accountName = "azure";
 const scopes = ["https://management.core.windows.net/user_impersonation"];
@@ -588,7 +590,9 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       const envDefalultFile = path.join(
         AzureAccountManager.rootPath,
         `.${ConfigFolderName}`,
-        envDefaultJsonFile
+        isMultiEnvEnabled()
+          ? path.join("publishProfiles", profileDefaultJsonFile)
+          : envDefaultJsonFile
       );
       if (!fs.existsSync(envDefalultFile)) {
         return undefined;

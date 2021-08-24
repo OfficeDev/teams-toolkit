@@ -26,15 +26,13 @@ export class AppStudio {
       headers: {
         post: {
           Authorization: `Bearer ${accessToken}`,
+          teamstoolkit: "true",
         },
         get: {
           Authorization: `Bearer ${accessToken}`,
+          teamstoolkit: "true",
         },
       },
-    });
-    instance.interceptors.request.use(function (config) {
-      config.params = { teamstoolkit: true, ...config.params };
-      return config;
     });
     return instance;
   }

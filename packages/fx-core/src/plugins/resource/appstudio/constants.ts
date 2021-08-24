@@ -30,6 +30,7 @@ export class ErrorMessages {
  * Config keys that are useful for generating remote teams app manifest
  */
 export const REMOTE_MANIFEST = "manifest.source.json";
+export const MANIFEST_TEMPLATE = "manifest.template.json";
 export const FRONTEND_ENDPOINT = "endpoint";
 export const FRONTEND_DOMAIN = "domain";
 export const FRONTEND_ENDPOINT_ARM = "frontendHosting_endpoint";
@@ -59,6 +60,46 @@ export const TEAMS_APP_MANIFEST_TEMPLATE = `{
   "icons": {
       "color": "color.png",
       "outline": "outline.png"
+  },
+  "name": {
+      "short": "{appName}",
+      "full": "This field is not used"
+  },
+  "description": {
+      "short": "Short description of {appName}.",
+      "full": "Full description of {appName}."
+  },
+  "accentColor": "#FFFFFF",
+  "bots": [],
+  "composeExtensions": [],
+  "configurableTabs": [],
+  "staticTabs": [],
+  "permissions": [
+      "identity",
+      "messageTeamMembers"
+  ],
+  "validDomains": [],
+  "webApplicationInfo": {
+      "id": "{appClientId}",
+      "resource": "{webApplicationInfoResource}"
+  }
+}`;
+
+export const TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV = `{
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.9/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.9",
+  "version": "{version}",
+  "id": "{appid}",
+  "packageName": "com.microsoft.teams.extension",
+  "developer": {
+      "name": "Teams App, Inc.",
+      "websiteUrl": "{baseUrl}",
+      "privacyUrl": "{baseUrl}/index.html#/privacy",
+      "termsOfUseUrl": "{baseUrl}/index.html#/termsofuse"
+  },
+  "icons": {
+      "color": "resources/color.png",
+      "outline": "resources/outline.png"
   },
   "name": {
       "short": "{appName}",

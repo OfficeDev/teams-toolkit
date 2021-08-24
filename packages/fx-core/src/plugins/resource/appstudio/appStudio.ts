@@ -424,7 +424,7 @@ export namespace AppStudioClient {
       throw error;
     }
 
-    const findUser = app.userList?.findIndex((user: any) => user["aadId"] === newUser.aadId);
+    const findUser = app.userList?.findIndex((user: IUserList) => user["aadId"] === newUser.aadId);
     if (findUser && findUser >= 0) {
       return;
     }

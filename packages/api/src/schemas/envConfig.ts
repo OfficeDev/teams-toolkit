@@ -23,9 +23,9 @@ export interface EnvConfig {
      */
     resourceGroupName?: string;
     /**
-     * The region of created resource group if needed.
+     * The location of created resource group if needed.
      */
-    region?: string;
+    location?: string;
     /**
      * The tenant to create AAD app.
      */

@@ -1,6 +1,5 @@
 {
   "$schema": "http://json-schema.org/draft-06/schema#",
-  "$id": "https://github.com/OfficeDev/TeamsFx/schemas/v1.0/envConfig.json",
   "type": "object",
   "description": "The schema of TeamsFx configuration.",
   "properties": {
@@ -19,9 +18,9 @@
           "type": "string",
           "description": "The default resource group of Azure resources."
         },
-        "region": {
+        "location": {
           "type": "string",
-          "description": "The region of created resource group if needed."
+          "description": "The location of created resource group if needed."
         },
         "tenantId": {
           "type": "string",

@@ -38,6 +38,13 @@ describe("AadAppForTeamsPlugin: CI", () => {
     sinon.stub(AadAppClient, "getAadApp").resolves(new ProvisionConfig());
     sinon.stub(AadAppClient, "checkPermission").resolves(true);
     sinon.stub(AadAppClient, "grantPermission").resolves();
+    sinon.stub(AadAppClient, "listCollaborator").resolves([
+      {
+        id: "id",
+        displayName: "displayName",
+        userPrincipalName: "userPrincipalName",
+      },
+    ]);
   });
 
   afterEach(() => {
@@ -136,6 +143,19 @@ describe("AadAppForTeamsPlugin: CI", () => {
 
     const grantPermission = await plugin.grantPermission(context);
     chai.assert.isTrue(grantPermission.isOk());
+  });
+
+  it("list collaborator", async function () {
+    const config = new Map();
+    config.set(ConfigKeys.objectId, faker.datatype.uuid());
+    context = await TestHelper.pluginContext(config, true, false, false);
+    context.graphTokenProvider = mockTokenProviderGraph();
+
+    const listCollaborator = await plugin.listCollaborator(context);
+    chai.assert.isTrue(listCollaborator.isOk());
+    if (listCollaborator.isOk()) {
+      chai.assert.equal(listCollaborator.value[0].id, "id");
+    }
   });
 });
 

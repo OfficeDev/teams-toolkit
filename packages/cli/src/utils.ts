@@ -29,6 +29,7 @@ import {
 import { ConfigNotFoundError, InvalidEnvFile, ReadFileError } from "./error";
 import AzureAccountManager from "./commonlib/azureLogin";
 import { FeatureFlags } from "./constants";
+import { isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 
 type Json = { [_: string]: any };
 
@@ -118,15 +119,30 @@ export function getActiveEnv(): string {
 }
 
 export function getConfigPath(projectFolder: string, fileName: string): string {
-  return path.resolve(projectFolder, `.${ConfigFolderName}`, fileName);
+  if (isMultiEnvEnabled()) {
+    return path.resolve(projectFolder, `.${ConfigFolderName}`, "configs", fileName);
+  } else {
+    return path.resolve(projectFolder, `.${ConfigFolderName}`, fileName);
+  }
+}
+
+function getPublishProfilesPath(projectFolder: string, fileName: string): string {
+  return path.resolve(projectFolder, `.${ConfigFolderName}`, "publishProfiles", fileName);
 }
 
 export function getEnvFilePath(projectFolder: string) {
-  return getConfigPath(projectFolder, `env.${getActiveEnv()}.json`);
+  if (isMultiEnvEnabled()) {
+    return getPublishProfilesPath(projectFolder, `profile.${getActiveEnv()}.json`);
+  } else {
+    return getConfigPath(projectFolder, `env.${getActiveEnv()}.json`);
+  }
 }
 
 export function getSettingsFilePath(projectFolder: string) {
-  return getConfigPath(projectFolder, "settings.json");
+  return getConfigPath(
+    projectFolder,
+    isMultiEnvEnabled() ? "projectSettings.json" : "settings.json"
+  );
 }
 
 export async function readEnvJsonFile(projectFolder: string): Promise<Result<Json, FxError>> {
@@ -172,7 +188,9 @@ export function readSettingsFileSync(projectFolder: string): Result<Json, FxErro
 export async function readProjectSecrets(
   projectFolder: string
 ): Promise<Result<dotenv.DotenvParseOutput, FxError>> {
-  const secretFile = getConfigPath(projectFolder, `${getActiveEnv()}.userdata`);
+  const secretFile = isMultiEnvEnabled()
+    ? getPublishProfilesPath(projectFolder, `${getActiveEnv()}.userdata`)
+    : getConfigPath(projectFolder, `${getActiveEnv()}.userdata`);
   if (!fs.existsSync(secretFile)) {
     return err(ConfigNotFoundError(secretFile));
   }
@@ -240,9 +258,13 @@ export function isWorkspaceSupported(workspace: string): boolean {
     p,
     `${p}/package.json`,
     `${p}/.${ConfigFolderName}`,
-    `${p}/.${ConfigFolderName}/settings.json`,
     `${getEnvFilePath(p)}`,
   ];
+  checklist.push(
+    isMultiEnvEnabled()
+      ? `${p}/.${ConfigFolderName}/configs/projectSettings.json`
+      : `${p}/.${ConfigFolderName}/settings.json`
+  );
 
   for (const fp of checklist) {
     if (!fs.existsSync(path.resolve(fp))) {
@@ -286,7 +308,9 @@ export function getLocalTeamsAppId(rootfolder: string | undefined): any {
       if (settingValue && settingValue.startsWith("{{") && settingValue.endsWith("}}")) {
         // setting in env.xxx.json is place holder and need to get actual value from xxx.userdata
         const placeHolder = settingValue.replace("{{", "").replace("}}", "");
-        const userdataPath = getConfigPath(rootfolder, `${getActiveEnv()}.userdata`);
+        const userdataPath = isMultiEnvEnabled()
+          ? getPublishProfilesPath(rootfolder, `${getActiveEnv()}.userdata`)
+          : getConfigPath(rootfolder, `${getActiveEnv()}.userdata`);
         if (fs.existsSync(userdataPath)) {
           const userdata = fs.readFileSync(userdataPath, "utf8");
           const userEnv = dotenv.parse(userdata);

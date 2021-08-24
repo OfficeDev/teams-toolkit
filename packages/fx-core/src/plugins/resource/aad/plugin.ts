@@ -1,7 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AzureSolutionSettings, LogProvider, PluginContext } from "@microsoft/teamsfx-api";
+import {
+  AzureSolutionSettings,
+  FxError,
+  LogProvider,
+  PluginContext,
+  Result,
+} from "@microsoft/teamsfx-api";
 import { AadResult, ResultFactory } from "./results";
 import {
   CheckPermissionConfig,
@@ -49,6 +55,7 @@ import * as fs from "fs-extra";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import { ConstantString, ResourcePlugins } from "../../../common/constants";
 import { getTemplatesFolder } from "../../..";
+import { AadOwner } from "../../../common/permissionInterface";
 
 export class AadAppForTeamsImpl {
   public async provision(ctx: PluginContext, isLocalDebug = false): Promise<AadResult> {
@@ -354,8 +361,8 @@ export class AadAppForTeamsImpl {
     return ResultFactory.Success(result);
   }
 
-  public async listCollaborator(ctx: PluginContext): Promise<AadResult> {
-    return ResultFactory.Success();
+  public async listCollaborator(ctx: PluginContext): Promise<Result<AadOwner[], FxError>> {
+    return ResultFactory.Success([]);
   }
 
   private static getRedirectUris(

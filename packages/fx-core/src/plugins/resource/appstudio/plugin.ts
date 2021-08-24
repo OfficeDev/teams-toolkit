@@ -86,7 +86,7 @@ import {
 } from "../../../common/localSettingsConstants";
 import { v4 } from "uuid";
 import isUUID from "validator/lib/isUUID";
-import { ResourcePermission } from "../../../common/permissionInterface";
+import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
 
 export class AppStudioPluginImpl {
   public async getAppDefinitionAndUpdate(
@@ -592,8 +592,8 @@ export class AppStudioPluginImpl {
     return result;
   }
 
-  public async listCollaborator(ctx: PluginContext): Promise<Result<any, FxError>> {
-    return ok(undefined);
+  public async listCollaborator(ctx: PluginContext): Promise<Result<TeamsAppAdmin[], FxError>> {
+    return ok([]);
   }
 
   private async beforePublish(

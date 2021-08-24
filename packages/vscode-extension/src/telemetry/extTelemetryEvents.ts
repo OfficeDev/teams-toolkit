@@ -89,6 +89,8 @@ export enum TelemetryEvent {
 
   OpenTeamsApp = "open-teams-app",
   UpdateTeamsApp = "update-teams-app",
+  CreateEnvStart = "create-env-start",
+  CreateEnv = "create-env",
 }
 
 export enum TelemetryProperty {

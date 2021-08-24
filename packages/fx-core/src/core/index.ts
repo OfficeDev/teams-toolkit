@@ -84,6 +84,7 @@ import { AxiosResponse } from "axios";
 import { ProjectUpgraderMW } from "./middleware/projectUpgrader";
 import { globalStateUpdate } from "../common/globalState";
 import {
+  CreateNewEnvMW,
   EnvInfoLoaderMW,
   upgradeDefaultFunctionName,
   upgradeProgrammingLanguage,
@@ -733,7 +734,7 @@ export class FxCore implements Core {
             description: "",
             author: "",
             scripts: {
-              test: "echo \"Error: no test specified\" && exit 1",
+              test: 'echo "Error: no test specified" && exit 1',
             },
             devDependencies: {
               "@microsoft/teamsfx-cli": "0.*",
@@ -787,8 +788,17 @@ export class FxCore implements Core {
   async buildArtifacts(inputs: Inputs): Promise<Result<Void, FxError>> {
     throw TaskNotSupportError(Stage.build);
   }
-  async createEnv(inputs: Inputs): Promise<Result<Void, FxError>> {
-    throw TaskNotSupportError(Stage.createEnv);
+
+  @hooks([
+    ErrorHandlerMW,
+    ProjectSettingsLoaderMW,
+    CreateNewEnvMW(isMultiEnvEnabled()),
+    SolutionLoaderMW(defaultSolutionLoader),
+    ContextInjecterMW,
+    EnvInfoWriterMW,
+  ])
+  async createEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+    return ok(Void);
   }
   async removeEnv(inputs: Inputs): Promise<Result<Void, FxError>> {
     throw TaskNotSupportError(Stage.removeEnv);

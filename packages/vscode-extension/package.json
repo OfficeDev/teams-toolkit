@@ -60,6 +60,7 @@
     "onCommand:fx-extension.openReportIssues",
     "onCommand:fx-extension.validate-dependencies",
     "onCommand:fx-extension.pre-debug-check",
+    "onCommand:fx-extension.createEnv",
     "workspaceContains:**/.fx/*",
     "onView:teamsfx",
     "onView:teamsfx-accounts",
@@ -288,6 +289,10 @@
         "command": "fx-extension.cicdGuide",
         "title": "CI/CD guide",
         "icon": "$(sync)"
+      },
+      {
+        "command": "fx-extension.createEnv",
+        "title": "Teams: Create New Environment"
       }
     ],
     "taskDefinitions": [

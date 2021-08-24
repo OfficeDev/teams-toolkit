@@ -176,6 +176,11 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<null
   return await runCommand(Stage.create);
 }
 
+export async function createEnvHandler(args?: any[]): Promise<Result<Void, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
+  return await createEnv();
+}
+
 export async function selectAndDebugHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.RunIconDebugStart);
   const result = await selectAndDebug();
@@ -281,6 +286,24 @@ export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
   }
   await processResult(eventName, result);
 
+  return result;
+}
+
+export async function createEnv(args?: any[]): Promise<Result<Void, FxError>> {
+  const eventName = TelemetryEvent.CreateEnv;
+  let result: Result<any, FxError> = ok(null);
+  try {
+    const checkCoreRes = checkCoreNotEmpty();
+    if (checkCoreRes.isErr()) {
+      throw checkCoreRes.error;
+    }
+
+    const inputs: Inputs = getSystemInputs();
+    result = await core.createEnv(inputs);
+  } catch (e) {
+    result = wrapError(e);
+  }
+  await processResult(eventName, result);
   return result;
 }
 

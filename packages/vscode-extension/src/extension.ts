@@ -182,6 +182,11 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(decryptCmd);
 
+  const createEnvCmd = vscode.commands.registerCommand("fx-extension.createEnv", (...args) =>
+    Correlator.run(handlers.createEnv, args)
+  );
+  context.subscriptions.push(createEnvCmd);
+
   // Setup CodeLens provider for userdata file
   const codelensProvider = new CryptoCodeLensProvider();
   const userDataSelector = {

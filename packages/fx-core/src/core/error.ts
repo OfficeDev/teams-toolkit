@@ -193,3 +193,12 @@ export function ProjectEnvNotExistError(env: string) {
     new Error().stack
   );
 }
+
+export function ProjectEnvAlreadyExistError(env: string): FxError {
+  return new UserError(
+    "ProjectEnvAlreadyExistError",
+    `Project environment ${env} already exists.`,
+    CoreSource,
+    new Error().stack
+  );
+}

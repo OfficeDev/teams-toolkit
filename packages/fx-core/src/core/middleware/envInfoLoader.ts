@@ -17,6 +17,7 @@ import {
 import { CoreHookContext, FxCore } from "../..";
 import {
   NoProjectOpenedError,
+  ProjectEnvAlreadyExistError,
   ProjectEnvNotExistError,
   ProjectSettingsUndefinedError,
 } from "../error";
@@ -35,7 +36,7 @@ import { shouldIgnored } from "./projectSettingsLoader";
 import { PermissionRequestFileProvider } from "../permissionRequest";
 
 const newTargetEnvNameOption = "+ new environment";
-const lastUsedMark = " (current)";
+const lastUsedMark = " (activate)";
 let lastUsedEnvName: string | undefined;
 
 export function EnvInfoLoaderMW(
@@ -68,6 +69,53 @@ export function EnvInfoLoaderMW(
       lastUsedEnvName = targetEnvName ?? lastUsedEnvName;
     } else {
       targetEnvName = environmentManager.defaultEnvName;
+    }
+
+    if (targetEnvName) {
+      const result = await loadSolutionContext(
+        core.tools,
+        inputs,
+        ctx.projectSettings,
+        ctx.projectIdMissing,
+        targetEnvName
+      );
+      if (result.isErr()) {
+        ctx.result = err(result.error);
+        return;
+      }
+
+      ctx.solutionContext = result.value;
+
+      await next();
+    }
+  };
+}
+
+export function CreateNewEnvMW(isMultiEnvEnabled: boolean): Middleware {
+  return async (ctx: CoreHookContext, next: NextFunction) => {
+    const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+
+    if (!isMultiEnvEnabled) {
+      await next();
+      return;
+    }
+
+    if (!ctx.projectSettings) {
+      ctx.result = err(ProjectSettingsUndefinedError());
+      return;
+    }
+
+    const core = ctx.self as FxCore;
+    const targetEnvName = await askNewEnvironment(ctx, inputs);
+
+    const envProfilesResult = await environmentManager.listEnvProfiles(inputs.projectPath!);
+    if (envProfilesResult.isErr()) {
+      return err(envProfilesResult.error);
+    }
+
+    if (envProfilesResult.value.indexOf(targetEnvName!) >= 0) {
+      ctx.result = err(ProjectEnvAlreadyExistError(targetEnvName!));
+      return;
     }
 
     if (targetEnvName) {
@@ -211,6 +259,44 @@ async function askTargetEnvironment(
   }
 }
 
+async function askNewEnvironment(
+  ctx: CoreHookContext,
+  inputs: Inputs
+): Promise<string | undefined> {
+  const getQuestionRes = await getQuestionsForNewEnv(inputs);
+  const core = ctx.self as FxCore;
+  if (getQuestionRes.isErr()) {
+    core.tools.logProvider.error(
+      `[core:env] failed to get questions for target environment: ${getQuestionRes.error.message}`
+    );
+    ctx.result = err(getQuestionRes.error);
+    return undefined;
+  }
+
+  core.tools.logProvider.debug(`[core:env] success to get questions for target environment.`);
+
+  const node = getQuestionRes.value;
+  if (node) {
+    const res = await traverse(node, inputs, core.tools.ui);
+    if (res.isErr()) {
+      core.tools.logProvider.debug(
+        `[core:env] failed to run question model for target environment.`
+      );
+      ctx.result = err(res.error);
+      return undefined;
+    }
+
+    const desensitized = desensitize(node, inputs);
+    core.tools.logProvider.info(
+      `[core:env] success to run question model for target environment, answers:${JSON.stringify(
+        desensitized
+      )}`
+    );
+  }
+
+  return inputs.newTargetEnvName;
+}
+
 async function useUserSetEnv(
   ctx: CoreHookContext,
   inputs: Inputs,
@@ -257,6 +343,18 @@ async function getQuestionsForTargetEnv(
   childNode.condition = { equals: newTargetEnvNameOption };
 
   node.addChild(childNode);
+
+  return ok(node.trim());
+}
+
+async function getQuestionsForNewEnv(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  if (!inputs.projectPath) {
+    return err(NoProjectOpenedError());
+  }
+
+  const node = new QTreeNode(QuestionNewTargetEnvironmentName);
 
   return ok(node.trim());
 }

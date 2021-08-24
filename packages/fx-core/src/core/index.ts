@@ -563,9 +563,9 @@ export class FxCore implements Core {
     ctx?: CoreHookContext
   ): Promise<Result<ProjectConfig | undefined, FxError>> {
     return ok({
-      settings: ctx!.solutionContext!.projectSettings,
-      config: ctx!.solutionContext!.config,
-      localSettings: ctx!.solutionContext!.localSettings,
+      settings: ctx!.projectSettings,
+      config: ctx!.solutionContext?.config,
+      localSettings: ctx!.solutionContext?.localSettings,
     });
   }
 

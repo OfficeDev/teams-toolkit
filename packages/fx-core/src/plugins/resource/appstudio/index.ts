@@ -6,7 +6,6 @@ import {
   FxError,
   ok,
   err,
-  LogProvider,
   Platform,
   Plugin,
   PluginContext,
@@ -16,11 +15,9 @@ import {
   TeamsAppManifest,
   SystemError,
   UserError,
-  ProjectSettings,
   Colors,
   AzureSolutionSettings,
   Func,
-  newUserError,
   newSystemError,
 } from "@microsoft/teamsfx-api";
 import { AppStudioPluginImpl } from "./plugin";
@@ -103,8 +100,16 @@ export class AppStudioPlugin implements Plugin {
    * @returns {string} - Remote teams app id
    */
   public async provision(ctx: PluginContext): Promise<Result<string, FxError>> {
+    TelemetryUtils.init(ctx);
+    TelemetryUtils.sendStartEvent(TelemetryEventName.provision);
     const remoteTeamsAppId = await this.appStudioPluginImpl.provision(ctx);
-    return ok(remoteTeamsAppId);
+    if (remoteTeamsAppId.isErr()) {
+      TelemetryUtils.sendErrorEvent(TelemetryEventName.provision, remoteTeamsAppId.error);
+      return remoteTeamsAppId;
+    } else {
+      TelemetryUtils.sendSuccessEvent(TelemetryEventName.provision);
+      return ok(remoteTeamsAppId.value);
+    }
   }
 
   /**
@@ -276,6 +281,30 @@ export class AppStudioPlugin implements Plugin {
   public async postLocalDebug(ctx: PluginContext): Promise<Result<string, FxError>> {
     const localTeamsAppId = await this.appStudioPluginImpl.postLocalDebug(ctx);
     return ok(localTeamsAppId);
+  }
+
+  public async checkPermission(ctx: PluginContext): Promise<Result<any, FxError>> {
+    TelemetryUtils.init(ctx);
+    TelemetryUtils.sendStartEvent(TelemetryEventName.checkPermission);
+
+    try {
+      const checkPermissionResult = await this.appStudioPluginImpl.checkPermission(ctx);
+      TelemetryUtils.sendSuccessEvent(TelemetryEventName.checkPermission);
+      return ok(checkPermissionResult);
+    } catch (error) {
+      TelemetryUtils.sendErrorEvent(TelemetryEventName.checkPermission, error);
+      return err(
+        error.name && error.name >= 400 && error.name < 500
+          ? AppStudioResultFactory.UserError(
+              AppStudioError.CheckPermissionFailedError.name,
+              AppStudioError.CheckPermissionFailedError.message(error)
+            )
+          : AppStudioResultFactory.SystemError(
+              AppStudioError.CheckPermissionFailedError.name,
+              AppStudioError.CheckPermissionFailedError.message(error)
+            )
+      );
+    }
   }
 
   async executeUserTask(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {

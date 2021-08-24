@@ -30,6 +30,9 @@ import {
   RunnableTask,
   AppPackageFolderName,
   SolutionConfig,
+  ArchiveFolderName,
+  ArchiveLogFileName,
+  TelemetryReporter,
 } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import {
@@ -73,6 +76,7 @@ import { SolutionLoaderMW } from "./middleware/solutionLoader";
 import { ContextInjecterMW } from "./middleware/contextInjecter";
 import { defaultSolutionLoader } from "./loader";
 import {
+  Component,
   sendTelemetryErrorEvent,
   sendTelemetryEvent,
   TelemetryEvent,
@@ -91,6 +95,7 @@ import {
 import { EnvInfoWriterMW } from "./middleware/envInfoWriter";
 import { LocalSettingsLoaderMW } from "./middleware/localSettingsLoader";
 import { LocalSettingsWriterMW } from "./middleware/localSettingsWriter";
+import { MigrateConditionHandlerMW } from "./middleware/migrateConditionHandler";
 
 export interface CoreHookContext extends HookContext {
   projectSettings?: ProjectSettings;
@@ -100,13 +105,15 @@ export interface CoreHookContext extends HookContext {
 }
 
 export let Logger: LogProvider;
-
+export let telemetryReporter: TelemetryReporter | undefined;
+export let currentStage: Stage;
 export class FxCore implements Core {
   tools: Tools;
 
   constructor(tools: Tools) {
     this.tools = tools;
     Logger = tools.logProvider;
+    telemetryReporter = tools.telemetryReporter;
   }
 
   @hooks([
@@ -117,6 +124,7 @@ export class FxCore implements Core {
     EnvInfoWriterMW,
   ])
   async createProject(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
+    currentStage = Stage.create;
     const folder = inputs[QuestionRootFolder.name] as string;
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
     let projectPath: string;
@@ -200,12 +208,14 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
+    MigrateConditionHandlerMW,
     QuestionModelMW,
     ContextInjecterMW,
     ProjectSettingsWriterMW,
     EnvInfoWriterMW,
   ])
   async migrateV1Project(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
+    currentStage = Stage.migrateV1;
     const globalStateDescription = "openReadme";
 
     const appName = (inputs[DefaultAppNameFunc.name] ?? inputs[QuestionV1AppName.name]) as string;
@@ -244,9 +254,14 @@ export class FxCore implements Core {
       answers: inputs,
     };
 
+    await this.archive(projectPath);
     await fs.ensureDir(projectPath);
     await fs.ensureDir(path.join(projectPath, `.${ConfigFolderName}`));
-    await fs.ensureDir(path.join(projectPath, `${AppPackageFolderName}`));
+
+    const createResult = await this.createBasicFolderStructure(inputs);
+    if (createResult.isErr()) {
+      return err(createResult.error);
+    }
 
     if (!solution.migrate) {
       return err(MigrateNotImplementError(projectPath));
@@ -254,11 +269,6 @@ export class FxCore implements Core {
     const migrateV1Res = await solution.migrate(solutionContext);
     if (migrateV1Res.isErr()) {
       return migrateV1Res;
-    }
-
-    const scaffoldRes = await solution.scaffold(solutionContext);
-    if (scaffoldRes.isErr()) {
-      return scaffoldRes;
     }
 
     ctx!.solution = solution;
@@ -269,6 +279,40 @@ export class FxCore implements Core {
     }
 
     return ok(projectPath);
+  }
+
+  async archive(projectPath: string): Promise<void> {
+    const archiveFolderPath = path.join(projectPath, ArchiveFolderName);
+    await fs.ensureDir(archiveFolderPath);
+
+    const fileNames = await fs.readdir(projectPath);
+    const archiveLog = async (projectPath: string, message: string): Promise<void> => {
+      await fs.appendFile(
+        path.join(projectPath, ArchiveLogFileName),
+        `[${new Date().toISOString()}] ${message}\n`
+      );
+    };
+
+    await archiveLog(projectPath, `Start to move files into '${ArchiveFolderName}' folder.`);
+    for (const fileName of fileNames) {
+      if (fileName === ArchiveFolderName || fileName === ArchiveLogFileName) {
+        continue;
+      }
+
+      try {
+        await fs.move(path.join(projectPath, fileName), path.join(archiveFolderPath, fileName), {
+          overwrite: true,
+        });
+      } catch (e: any) {
+        await archiveLog(projectPath, `Failed to move '${fileName}'. ${e.message}`);
+        throw e;
+      }
+
+      await archiveLog(
+        projectPath,
+        `'${fileName}' has been moved to '${ArchiveFolderName}' folder.`
+      );
+    }
   }
 
   async downloadSample(inputs: Inputs): Promise<Result<string, FxError>> {
@@ -287,35 +331,26 @@ export class FxCore implements Core {
         name: `Download code from '${url}'`,
         run: async (...args: any): Promise<Result<Void, FxError>> => {
           try {
-            sendTelemetryEvent(
-              this.tools.telemetryReporter,
-              inputs,
-              TelemetryEvent.DownloadSampleStart,
-              { [TelemetryProperty.SampleAppName]: sample.id, module: "fx-core" }
-            );
+            sendTelemetryEvent(Component.core, TelemetryEvent.DownloadSampleStart, {
+              [TelemetryProperty.SampleAppName]: sample.id,
+              module: "fx-core",
+            });
             fetchRes = await fetchCodeZip(url);
             if (fetchRes !== undefined) {
-              sendTelemetryEvent(
-                this.tools.telemetryReporter,
-                inputs,
-                TelemetryEvent.DownloadSample,
-                {
-                  [TelemetryProperty.SampleAppName]: sample.id,
-                  [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-                  module: "fx-core",
-                }
-              );
+              sendTelemetryEvent(Component.core, TelemetryEvent.DownloadSample, {
+                [TelemetryProperty.SampleAppName]: sample.id,
+                [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+                module: "fx-core",
+              });
               return ok(Void);
             } else return err(FetchSampleError());
           } catch (e) {
             sendTelemetryErrorEvent(
-              this.tools.telemetryReporter,
-              inputs,
+              Component.core,
               TelemetryEvent.DownloadSample,
               assembleError(e),
               {
                 [TelemetryProperty.SampleAppName]: sample.id,
-                [TelemetryProperty.Success]: TelemetrySuccess.No,
                 module: "fx-core",
               }
             );
@@ -353,27 +388,6 @@ export class FxCore implements Core {
       } else {
         return err(runRes.error);
       }
-      // const progress = this.tools.dialog.createProgressBar("Fetch sample app", 2);
-      // progress.start();
-      // try {
-      //   progress.next(`Downloading from '${url}'`);
-      //   sendTelemetryEvent(this.tools.telemetryReporter, inputs, TelemetryEvent.DownloadSampleStart, { [TelemetryProperty.SampleAppName]: sample.id, module: "fx-core" });
-      //   const fetchRes = await fetchCodeZip(url);
-      //   progress.next("Unzipping the sample package");
-      //   if (fetchRes !== undefined) {
-      //     await saveFilesRecursively(new AdmZip(fetchRes.data), sampleId, folder);
-      //     await downloadSampleHook(sampleId, sampleAppPath);
-      //     sendTelemetryEvent(this.tools.telemetryReporter, inputs, TelemetryEvent.DownloadSample, { [TelemetryProperty.SampleAppName]: sample.id, [TelemetryProperty.Success]: TelemetrySuccess.Yes, module: "fx-core" });
-      //     return ok(sampleAppPath);
-      //   } else {
-      //     sendTelemetryErrorEvent(this.tools.telemetryReporter, inputs, TelemetryEvent.DownloadSample, FetchSampleError(), { [TelemetryProperty.SampleAppName]: sample.id, [TelemetryProperty.Success]: TelemetrySuccess.No, module: "fx-core" });
-      //     return err(FetchSampleError());
-      //   }
-      // } catch (e) {
-      //   sendTelemetryErrorEvent(this.tools.telemetryReporter, inputs, TelemetryEvent.DownloadSample, assembleError(e), { [TelemetryProperty.SampleAppName]: sample.id, [TelemetryProperty.Success]: TelemetrySuccess.No, module: "fx-core" });
-      // } finally {
-      //   progress.end();
-      // }
     }
     return err(InvalidInputError(`invalid answer for '${CoreQuestionNames.Samples}'`, inputs));
   }
@@ -390,6 +404,7 @@ export class FxCore implements Core {
     EnvInfoWriterMW,
   ])
   async provisionResources(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+    currentStage = Stage.provision;
     return await ctx!.solution!.provision(ctx!.solutionContext!);
   }
 
@@ -405,6 +420,7 @@ export class FxCore implements Core {
     EnvInfoWriterMW,
   ])
   async deployArtifacts(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+    currentStage = Stage.deploy;
     return await ctx!.solution!.deploy(ctx!.solutionContext!);
   }
 
@@ -423,6 +439,7 @@ export class FxCore implements Core {
     LocalSettingsWriterMW,
   ])
   async localDebug(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+    currentStage = Stage.debug;
     upgradeProgrammingLanguage(
       ctx!.solutionContext!.config as SolutionConfig,
       ctx!.projectSettings!
@@ -447,6 +464,7 @@ export class FxCore implements Core {
     EnvInfoWriterMW,
   ])
   async publishApplication(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+    currentStage = Stage.publish;
     return await ctx!.solution!.publish(ctx!.solutionContext!);
   }
 
@@ -468,6 +486,7 @@ export class FxCore implements Core {
     inputs: Inputs,
     ctx?: CoreHookContext
   ): Promise<Result<unknown, FxError>> {
+    currentStage = Stage.userTask;
     if (ctx!.solutionContext === undefined)
       ctx!.solutionContext = await newSolutionContext(this.tools, inputs);
     const solution = ctx!.solution!;
@@ -580,6 +599,7 @@ export class FxCore implements Core {
     EnvInfoWriterMW,
   ])
   async grantPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    currentStage = Stage.grantPermission;
     return await ctx!.solution!.grantPermission!(ctx!.solutionContext!);
   }
 
@@ -595,6 +615,7 @@ export class FxCore implements Core {
     EnvInfoWriterMW,
   ])
   async checkPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    currentStage = Stage.checkPermission;
     return await ctx!.solution!.checkPermission!(ctx!.solutionContext!);
   }
 
@@ -610,6 +631,7 @@ export class FxCore implements Core {
     EnvInfoWriterMW,
   ])
   async listCollaborator(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    currentStage = Stage.listCollaborator;
     return await ctx!.solution!.listCollaborator!(ctx!.solutionContext!);
   }
 
@@ -677,15 +699,6 @@ export class FxCore implements Core {
     inputs: Inputs
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     const node = new QTreeNode({ type: "group" });
-    const defaultAppNameFunc = new QTreeNode(DefaultAppNameFunc);
-    node.addChild(defaultAppNameFunc);
-
-    const appNameQuestion = new QTreeNode(QuestionV1AppName);
-    appNameQuestion.condition = {
-      validFunc: (input: any) => (!input ? undefined : "App name is auto generated."),
-    };
-    defaultAppNameFunc.addChild(appNameQuestion);
-
     const globalSolutions: Solution[] = await defaultSolutionLoader.loadGlobalSolutions(inputs);
     const solutionContext = await newSolutionContext(this.tools, inputs);
 
@@ -700,6 +713,15 @@ export class FxCore implements Core {
         }
       }
     }
+
+    const defaultAppNameFunc = new QTreeNode(DefaultAppNameFunc);
+    node.addChild(defaultAppNameFunc);
+
+    const appNameQuestion = new QTreeNode(QuestionV1AppName);
+    appNameQuestion.condition = {
+      validFunc: (input: any) => (!input ? undefined : "App name is auto generated."),
+    };
+    defaultAppNameFunc.addChild(appNameQuestion);
     return ok(node.trim());
   }
 
@@ -733,7 +755,7 @@ export class FxCore implements Core {
             description: "",
             author: "",
             scripts: {
-              test: "echo \"Error: no test specified\" && exit 1",
+              test: 'echo "Error: no test specified" && exit 1',
             },
             devDependencies: {
               "@microsoft/teamsfx-cli": "0.*",
@@ -746,7 +768,7 @@ export class FxCore implements Core {
       );
       await fs.writeFile(
         path.join(inputs.projectPath!, `.gitignore`),
-        `node_modules\n/.${ConfigFolderName}/*.env\n/.${ConfigFolderName}/*.userdata\n.DS_Store`
+        `node_modules\n/.${ConfigFolderName}/*.env\n/.${ConfigFolderName}/*.userdata\n.DS_Store\n${ArchiveFolderName}\n${ArchiveLogFileName}`
       );
     } catch (e) {
       return err(WriteFileError(e));

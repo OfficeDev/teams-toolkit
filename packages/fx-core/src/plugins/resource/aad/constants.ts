@@ -20,6 +20,13 @@ export class Constants {
   static statusCodeUserError = 400;
   static statusCodeServerError = 500;
 
+  static permissions = {
+    name: "Azure AD App",
+    owner: "Owner",
+    noPermission: "No Permission",
+    type: "M365",
+  };
+
   static defaultPermissions: RequiredResourceAccess = {
     resourceAppId: "00000003-0000-0000-c000-000000000000",
     resourceAccess: [
@@ -107,6 +114,7 @@ export class ConfigKeysOfOtherPlugin {
   static remoteTeamsAppId = "remoteTeamsAppId";
   static frontendHostingEndpointArm = "frontendHosting_endpoint";
   static frontendHostingDomainArm = "frontendHosting_domain";
+  static solutionUserInfo = "userInfo";
 }
 
 export interface Messages {
@@ -178,6 +186,16 @@ export class Messages {
     telemetry: Messages.getEventName("update-permission"),
   };
 
+  static readonly StartCheckPermission: Messages = {
+    log: Messages.getLog("Start to check permission"),
+    telemetry: Messages.getEventName("check-permission-start"),
+  };
+
+  static readonly EndCheckPermission: Messages = {
+    log: Messages.getLog("Successfully check permission"),
+    telemetry: Messages.getEventName("check-permission"),
+  };
+
   static readonly GetAadAppSuccess = "Successfully get Azure AD app.";
   static readonly CreateAadAppSuccess = "Successfully created Azure AD app.";
   static readonly CreateAadAppPasswordSuccess = "Successfully created password for Azure AD app.";
@@ -224,7 +242,4 @@ export class TemplatePathInfo {
     TemplatePathInfo.TemplateRelativeDir,
     "bicep"
   );
-  static readonly ParameterFileName: string = "parameters.json";
-  static readonly InputParameterOrchestrationFileName: string = "input_param.template.bicep";
-  static readonly VariablesOrchestrationFileName: string = "variables.template.bicep";
 }

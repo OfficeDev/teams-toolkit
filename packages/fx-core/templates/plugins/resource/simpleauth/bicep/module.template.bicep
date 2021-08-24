@@ -5,9 +5,9 @@ module simpleAuthProvision '{{PluginOutput.fx-resource-simple-auth.Modules.simpl
     simpleAuthServerFarmsName: simpleAuth_serverFarmsName
     simpleAuthWebAppName: simpleAuth_webAppName
     sku: simpleAuth_sku
-    aadClientId: aadClientId
-    aadClientSecret: aadClientSecret
-    applicationIdUri: applicationIdUri
+    m365ClientId: m365ClientId
+    m365ClientSecret: m365ClientSecret
+    m365ApplicationIdUri: m365ApplicationIdUri
     {{#contains 'fx-resource-frontend-hosting' Plugins}}
     frontendHostingStorageEndpoint: {{../PluginOutput.fx-resource-frontend-hosting.Outputs.endpoint}}
     {{/contains}}

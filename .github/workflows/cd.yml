@@ -207,7 +207,7 @@ jobs:
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'simpleauth') && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' && github.event.inputs.preid != 'stable') }}
         run: |
           dotnet build --configuration Release
-          zip -r -j ../../Microsoft.TeamsFx.SimpleAuth_${{ steps.version-change.outputs.SIMPLEAUTH_VERSION_NUM }}.zip src/TeamsFxSimpleAuth/bin/Debug/*
+          zip -r -j ../../Microsoft.TeamsFx.SimpleAuth_${{ steps.version-change.outputs.SIMPLEAUTH_VERSION_NUM }}.zip src/TeamsFxSimpleAuth/bin/Release/*
         working-directory: ./packages/simpleauth  
 
       - name: download simpleauth to fx-core

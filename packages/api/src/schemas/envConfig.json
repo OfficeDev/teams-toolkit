@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "$id": "https://github.com/OfficeDev/TeamsFx/schemas/v1.0/envConfig.json",
+  "type": "object",
+  "description": "The schema of TeamsFx configuration.",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "azure": {
+      "type": "object",
+      "description": "The Azure resource related configuration.",
+      "properties": {
+        "subscriptionId": {
+          "type": "string",
+          "description": "The default subscription to provision Azure resources."
+        },
+        "resourceGroupName": {
+          "type": "string",
+          "description": "The default resource group of Azure resources."
+        },
+        "region": {
+          "type": "string",
+          "description": "The region of created resource group if needed."
+        },
+        "tenantId": {
+          "type": "string",
+          "description": "The tenant to create AAD app."
+        }
+      },
+      "additionalProperties": false
+    },
+    "manifest": {
+      "type": "object",
+      "description": "The Teams App mainfest related configuration.",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "values": {
+          "type": "object",
+          "description": "Configs to customize the Teams app manifest."
+        }
+      },
+      "required": ["values"]
+    },
+    "skipAddingSqlUser": {
+      "type": "boolean",
+      "description": "Skip to add user during SQL provision."
+    }
+  },
+  "additionalProperties": false,
+  "required": ["azure", "manifest"]
+}

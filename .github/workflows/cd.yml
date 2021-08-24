@@ -195,13 +195,12 @@ jobs:
           if [ ! -f Microsoft.TeamsFx.*.zip ]; then exit 1; fi
       
       - name: build SimpleAuth on prerelease
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'simpleauth') && github.event.inputs.preid != 'stable' }}
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'simpleauth') && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' && github.event.inputs.preid != 'stable') }}
         run: |
           dotnet build --configuration Release
           simpleAuthVer=$(echo ${{ steps.version-change.outputs.CHANGED }} | grep simpleauth | cut -d '@' -f2)
           cd src/TeamsFxSimpleAuth/bin/Release/*
-          zip -r Microsoft.TeamsFx.SimpleAuth_$simpleAuthVer.zip .
-          mv Microsoft.TeamsFx.SimpleAuth_*.zip ../../../../../../..
+          zip -r ../../../../../../../Microsoft.TeamsFx.SimpleAuth_$simpleAuthVer.zip .
         working-directory: ./packages/simpleauth  
 
       - name: download simpleauth to fx-core
@@ -218,7 +217,7 @@ jobs:
             fi
 
       - name: publish simpleauth to github release page
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'simpleauth') && github.ref == 'refs/heads/main' }}
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'simpleauth') }}
         uses: ncipollo/release-action@v1.7.3
         with:
           token: ${{ secrets.CD_PAT }}

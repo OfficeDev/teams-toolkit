@@ -1,10 +1,8 @@
 param sqlServerName string
 param sqlDatabaseName string 
 param administratorLogin string
+@secure()
 param administratorLoginPassword string
-param AADUser string
-param AADObjectId string
-param AADTenantId string
 
 resource sqlServer 'Microsoft.Sql/servers@2021-02-01-preview' = {
   location: resourceGroup().location
@@ -12,17 +10,6 @@ resource sqlServer 'Microsoft.Sql/servers@2021-02-01-preview' = {
   properties: {
     administratorLogin: administratorLogin
     administratorLoginPassword: administratorLoginPassword
-  }
-}
-
-resource sqlServerAAD 'Microsoft.Sql/servers/administrators@2021-02-01-preview' = {
-  parent: sqlServer
-  name: 'ActiveDirectory'
-  properties: {
-    administratorType: 'ActiveDirectory'
-    login: AADUser
-    sid: AADObjectId
-    tenantId: AADTenantId
   }
 }
 
@@ -35,7 +22,7 @@ resource sqlDatabase 'Microsoft.Sql/servers/databases@2021-02-01-preview' = {
   }
 }
 
-resource servers_tabfuncsql_sql_2b31ae_name_AllowAzure 'Microsoft.Sql/servers/firewallRules@2021-02-01-preview' = {
+resource sqlFirewallRules 'Microsoft.Sql/servers/firewallRules@2021-02-01-preview' = {
   parent: sqlServer
   name: 'AllowAzure'
   properties: {

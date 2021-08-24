@@ -172,7 +172,7 @@ export class IdentityPlugin implements Plugin {
 
     const result: ScaffoldArmTemplateResult = {
       Modules: {
-        identityProvision: {
+        userAssignedIdentityProvision: {
           Content: moduleContentResult.value,
         },
       },

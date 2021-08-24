@@ -91,8 +91,8 @@ export class SqlPluginImpl {
       if (ctx.answers?.platform === Platform.CLI_HELP) {
         this.buildQuestionNode(sqlNode);
         return ok(sqlNode);
-      } else if (isArmSupportEnabled()) {
       }
+
       await this.init(ctx);
       if (isArmSupportEnabled()) {
         this.config.admin = ctx.config.get(Constants.admin) as string;
@@ -262,9 +262,8 @@ export class SqlPluginImpl {
 
     await DialogUtils.progressBar?.start();
     await DialogUtils.progressBar?.next(ConfigureMessage.postProvisionAddAadmin);
-    if (!isArmSupportEnabled()) {
-      await this.CheckAndSetAadAdmin(ctx, managementClient);
-    }
+    await this.CheckAndSetAadAdmin(ctx, managementClient);
+
     this.getIdentity(ctx);
 
     if (!this.config.skipAddingUser) {
@@ -378,8 +377,6 @@ export class SqlPluginImpl {
   }
 
   private setContext(ctx: PluginContext) {
-    ctx.config.set(Constants.aadAdmin, this.config.aadAdmin);
-    ctx.config.set(Constants.aadAdminObjectId, this.config.aadAdminObjectId);
     ctx.config.set(Constants.admin, this.config.admin);
     ctx.config.set(Constants.adminPassword, this.config.adminPassword);
   }

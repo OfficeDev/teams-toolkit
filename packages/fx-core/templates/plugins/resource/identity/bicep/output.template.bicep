@@ -1,4 +1,4 @@
 
-output identity_identityName string = identityProvision.outputs.identityName
-output identity_identityId string = identityProvision.outputs.identityId
-output identity_identity string = identityProvision.outputs.identity
+output identity_identityName string = userAssignedIdentityProvision.outputs.identityName
+output identity_identityId string = userAssignedIdentityProvision.outputs.identityId
+output identity_identity string = userAssignedIdentityProvision.outputs.identity

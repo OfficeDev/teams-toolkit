@@ -8,7 +8,7 @@ module functionProvision '{{PluginOutput.fx-resource-function.Modules.functionPr
     m365ClientId: m365ClientId
     m365ClientSecret: m365ClientSecret
     m365TenantId: m365TenantId
-    applicationIdUri: applicationIdUri
+    m365ApplicationIdUri: m365ApplicationIdUri
     m365OauthAuthorityHost: m365OauthAuthorityHost
     {{#contains 'fx-resource-frontend-hosting' Plugins}}
     frontendHostingStorageEndpoint: {{../PluginOutput.fx-resource-frontend-hosting.Outputs.endpoint}}

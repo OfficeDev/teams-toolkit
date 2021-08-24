@@ -36,6 +36,7 @@ export const FRONTEND_ENDPOINT_ARM = "frontendHosting_endpoint";
 export const FRONTEND_DOMAIN_ARM = "frontendHosting_domain";
 export const BOT_ID = "botId";
 export const LOCAL_BOT_ID = "localBotId";
+export const V1_MANIFEST = "manifest.json";
 
 /**
  * Config Keys that are useful for remote collaboration

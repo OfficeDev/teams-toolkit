@@ -7,6 +7,8 @@ import { ext } from "../extensionVariables";
 import * as path from "path";
 import { ConfigFolderName } from "@microsoft/teamsfx-api";
 import { isValidProject } from "@microsoft/teamsfx-core";
+import { workspace } from "vscode";
+import * as commonUtils from "../debug/commonUtils";
 
 export function getPackageVersion(versionStr: string): string {
   if (versionStr.includes("alpha")) {
@@ -134,4 +136,17 @@ export function anonymizeFilePaths(stack?: string): string {
   }
 
   return updatedStack;
+}
+
+export async function isTeamsfx(): Promise<boolean> {
+  if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
+    const workspaceFolder = workspace.workspaceFolders[0];
+    const fxPath = await commonUtils.getProjectRoot(workspaceFolder.uri.fsPath, ".fx");
+    if (fxPath && fs.pathExistsSync(fxPath)) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+  return false;
 }

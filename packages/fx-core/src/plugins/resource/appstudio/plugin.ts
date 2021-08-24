@@ -72,6 +72,8 @@ import {
   V1_MANIFEST,
   ErrorMessages,
   SOLUTION,
+  MANIFEST_TEMPLATE,
+  TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV,
 } from "./constants";
 import { REMOTE_TEAMS_APP_ID } from "../../solution/fx-solution/constants";
 import AdmZip from "adm-zip";
@@ -174,7 +176,9 @@ export class AppStudioPluginImpl {
       solutionSettings.capabilities.includes(BotOptionItem.id) ||
       solutionSettings.capabilities.includes(MessageExtensionItem.id)
     ) {
-      let manifestString = TEAMS_APP_MANIFEST_TEMPLATE;
+      let manifestString = isMultiEnvEnabled()
+        ? TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV
+        : TEAMS_APP_MANIFEST_TEMPLATE;
       manifestString = this.replaceConfigValue(manifestString, "appName", settings.appName);
       manifestString = this.replaceConfigValue(manifestString, "version", "1.0.0");
       const manifest: TeamsAppManifest = JSON.parse(manifestString);
@@ -280,7 +284,7 @@ export class AppStudioPluginImpl {
     const remoteTeamsAppId = this.getTeamsAppId(ctx, false);
     let manifest: TeamsAppManifest;
     const appDirectory = await getAppDirectory(ctx.root);
-    const manifestPath = path.join(appDirectory, REMOTE_MANIFEST);
+    const manifestPath = await this.getManifestTemplatePath(ctx.root);
     const manifestResult = await this.reloadManifestAndCheckRequiredFields(manifestPath);
     if (manifestResult.isErr()) {
       throw manifestResult;
@@ -391,10 +395,16 @@ export class AppStudioPluginImpl {
       manifest = await this.createManifest(ctx.projectSettings!);
     }
 
-    await fs.writeFile(
-      `${ctx.root}/${AppPackageFolderName}/${REMOTE_MANIFEST}`,
-      JSON.stringify(manifest, null, 4)
-    );
+    // cannot use getAppDirectory before creating the manifest file
+    const appDir = isMultiEnvEnabled()
+      ? `${ctx.root}/templates/${AppPackageFolderName}`
+      : `${ctx.root}/${AppPackageFolderName}`;
+
+    await fs.ensureDir(appDir);
+    const manifestTemplatePath = isMultiEnvEnabled()
+      ? `${appDir}/${MANIFEST_TEMPLATE}`
+      : `${appDir}/${REMOTE_MANIFEST}`;
+    await fs.writeFile(manifestTemplatePath, JSON.stringify(manifest, null, 4));
 
     const defaultColorPath = path.join(
       templatesFolder,
@@ -410,8 +420,10 @@ export class AppStudioPluginImpl {
       "appstudio",
       "defaultOutline.png"
     );
-    await fs.copy(defaultColorPath, `${ctx.root}/${AppPackageFolderName}/color.png`);
-    await fs.copy(defaultOutlinePath, `${ctx.root}/${AppPackageFolderName}/outline.png`);
+    const resourcesDir = isMultiEnvEnabled() ? path.join(appDir, "resources") : appDir;
+    await fs.ensureDir(resourcesDir);
+    await fs.copy(defaultColorPath, `${resourcesDir}/color.png`);
+    await fs.copy(defaultOutlinePath, `${resourcesDir}/outline.png`);
 
     return undefined;
   }
@@ -426,11 +438,13 @@ export class AppStudioPluginImpl {
       zipFileName = `${appDirectory}/appPackage.zip`;
     } else {
       appDirectory = await getAppDirectory(ctx.root);
-      zipFileName = `${ctx.root}/${AppPackageFolderName}/appPackage.zip`;
+      zipFileName = isMultiEnvEnabled()
+        ? `${ctx.root}/templates/${AppPackageFolderName}/appPackage.zip`
+        : `${ctx.root}/${AppPackageFolderName}/appPackage.zip`;
     }
 
     if (this.isSPFxProject(ctx)) {
-      manifestString = (await fs.readFile(`${appDirectory}/${REMOTE_MANIFEST}`)).toString();
+      manifestString = (await fs.readFile(await this.getManifestTemplatePath(ctx.root))).toString();
     } else {
       const manifest = await this.getAppDefinitionAndManifest(ctx, false);
       if (manifest.isOk()) {
@@ -483,8 +497,8 @@ export class AppStudioPluginImpl {
 
     const zip = new AdmZip();
     zip.addFile(Constants.MANIFEST_FILE, Buffer.from(manifestString));
-    zip.addLocalFile(colorFile);
-    zip.addLocalFile(outlineFile);
+    zip.addLocalFile(colorFile, isMultiEnvEnabled() ? "resources" : "");
+    zip.addLocalFile(outlineFile, isMultiEnvEnabled() ? "resources" : "");
     zip.writeZip(zipFileName);
 
     if (this.isSPFxProject(ctx)) {
@@ -504,15 +518,21 @@ export class AppStudioPluginImpl {
 
       await fs.move(
         `${appDirectory}/${manifest.icons.color}`,
-        `${ctx.root}/${AppPackageFolderName}/${manifest.icons.color}`
+        isMultiEnvEnabled()
+          ? `${ctx.root}/templates/${AppPackageFolderName}/resources/${manifest.icons.color}`
+          : `${ctx.root}/${AppPackageFolderName}/${manifest.icons.color}`
       );
       await fs.move(
         `${appDirectory}/${manifest.icons.outline}`,
-        `${ctx.root}/${AppPackageFolderName}/${manifest.icons.outline}`
+        isMultiEnvEnabled()
+          ? `${ctx.root}/templates/${AppPackageFolderName}/resources/${manifest.icons.outline}`
+          : `${ctx.root}/${AppPackageFolderName}/${manifest.icons.outline}`
       );
       await fs.move(
         `${appDirectory}/${REMOTE_MANIFEST}`,
-        `${ctx.root}/${AppPackageFolderName}/${REMOTE_MANIFEST}`
+        isMultiEnvEnabled()
+          ? `${ctx.root}/templates/${AppPackageFolderName}/${MANIFEST_TEMPLATE}`
+          : `${ctx.root}/${AppPackageFolderName}/${REMOTE_MANIFEST}`
       );
     }
 
@@ -547,7 +567,9 @@ export class AppStudioPluginImpl {
       }
     } else {
       appDirectory = await getAppDirectory(ctx.root);
-      const manifestTpl: TeamsAppManifest = await fs.readJSON(`${appDirectory}/${REMOTE_MANIFEST}`);
+      const manifestTpl: TeamsAppManifest = await fs.readJSON(
+        await this.getManifestTemplatePath(ctx.root)
+      );
       if (this.isSPFxProject(ctx)) {
         manifest = manifestTpl;
       } else {
@@ -603,8 +625,7 @@ export class AppStudioPluginImpl {
   }
 
   public async postLocalDebug(ctx: PluginContext): Promise<string> {
-    const appDirectory = await getAppDirectory(ctx.root);
-    const manifestPath = path.join(appDirectory, REMOTE_MANIFEST);
+    const manifestPath = await this.getManifestTemplatePath(ctx.root);
     const manifest = await this.reloadManifestAndCheckRequiredFields(manifestPath);
     if (manifest.isErr()) {
       throw manifest;
@@ -1276,7 +1297,9 @@ export class AppStudioPluginImpl {
         AppStudioError.NotADirectoryError.message(appDirectory)
       );
     }
-    const manifest: TeamsAppManifest = await fs.readJSON(`${appDirectory}/${REMOTE_MANIFEST}`);
+    const manifest: TeamsAppManifest = await fs.readJSON(
+      await this.getManifestTemplatePath(ctx.root)
+    );
     manifest.bots = undefined;
     manifest.composeExtensions = undefined;
     // For SPFX remote teams app, manifest.id == componentId
@@ -1437,8 +1460,7 @@ export class AppStudioPluginImpl {
       validDomains.push(botDomain);
     }
 
-    const appDirectory: string = await getAppDirectory(ctx.root);
-    let manifest = (await fs.readFile(`${appDirectory}/${REMOTE_MANIFEST}`)).toString();
+    let manifest = (await fs.readFile(await this.getManifestTemplatePath(ctx.root))).toString();
 
     const appName = ctx.projectSettings?.appName;
     if (appName) {
@@ -1496,5 +1518,12 @@ export class AppStudioPluginImpl {
     }
 
     return ok([appDefinition, updatedManifest]);
+  }
+
+  private async getManifestTemplatePath(projectRoot: string): Promise<string> {
+    const appDir = await getAppDirectory(projectRoot);
+    return isMultiEnvEnabled()
+      ? `./${appDir}/${MANIFEST_TEMPLATE}`
+      : `./${appDir}/${REMOTE_MANIFEST}`;
   }
 }

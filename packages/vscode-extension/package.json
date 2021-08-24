@@ -322,15 +322,18 @@
       {
         "command": "fx-extension.addEnvironment",
         "title": "Teams: Add new environment",
-        "icon": "$(add)"
+        "icon": "$(add)",
+        "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {
         "command": "fx-extension.viewEnvironment",
-        "title": "Teams: View environment profile"
+        "title": "Teams: View environment profile",
+        "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {
         "command": "fx-extension.activateEnvironment",
-        "title": "Teams: Activate environment"
+        "title": "Teams: Activate environment",
+        "enablement": "fx-extension.isMultiEnvEnabled"
       }
     ],
     "taskDefinitions": [

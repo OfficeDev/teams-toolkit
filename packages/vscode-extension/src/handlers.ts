@@ -671,6 +671,42 @@ export async function createNewEnvironment(args?: any[]): Promise<Result<null, F
   }
 }
 
+export async function viewEnvironment(args?: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ViewEnvironment, getTriggerFromProperty(args));
+  if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
+    //todo add view environment logic
+    return ok(null);
+  } else {
+    const FxError: FxError = {
+      name: "NoWorkspace",
+      source: ExtensionSource,
+      message: StringResources.vsc.handlers.noOpenWorkspace,
+      timestamp: new Date(),
+    };
+    showError(FxError);
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ViewEnvironment, FxError);
+    return err(FxError);
+  }
+}
+
+export async function activateEnvironment(args?: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ActivateEnvironment, getTriggerFromProperty(args));
+  if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
+    //todo add activate environment logic
+    return ok(null);
+  } else {
+    const FxError: FxError = {
+      name: "NoWorkspace",
+      source: ExtensionSource,
+      message: StringResources.vsc.handlers.noOpenWorkspace,
+      timestamp: new Date(),
+    };
+    showError(FxError);
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ActivateEnvironment, FxError);
+    return err(FxError);
+  }
+}
+
 export async function openM365AccountHandler() {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenM365Portal);
   return env.openExternal(Uri.parse("https://admin.microsoft.com/Adminportal/"));

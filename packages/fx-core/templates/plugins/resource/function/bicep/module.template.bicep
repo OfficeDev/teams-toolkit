@@ -5,10 +5,10 @@ module functionProvision '{{PluginOutput.fx-resource-function.Modules.functionPr
     functionAppName: function_webappName
     functionServerfarmsName: function_serverfarmsName
     functionStorageName: function_storageName
-    aadClientId: aadClientId
-    aadClientSecret: aadClientSecret
+    m365ClientId: m365ClientId
+    m365ClientSecret: m365ClientSecret
     m365TenantId: m365TenantId
-    applicationIdUri: applicationIdUri
+    m365ApplicationIdUri: m365ApplicationIdUri
     m365OauthAuthorityHost: m365OauthAuthorityHost
     {{#contains 'fx-resource-frontend-hosting' Plugins}}
     frontendHostingStorageEndpoint: {{../PluginOutput.fx-resource-frontend-hosting.Outputs.endpoint}}
@@ -19,6 +19,7 @@ module functionProvision '{{PluginOutput.fx-resource-function.Modules.functionPr
     {{/contains}}
     {{#contains 'fx-resource-identity' Plugins}}
     identityId: {{../PluginOutput.fx-resource-identity.Outputs.identityId}}
+    identityName: {{../PluginOutput.fx-resource-identity.Outputs.identityName}}
     {{/contains}}
   }
 }

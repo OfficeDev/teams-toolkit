@@ -12,6 +12,7 @@ import {
   Stage,
   SystemError,
   UserError,
+  ArchiveFolderName,
 } from "@microsoft/teamsfx-api";
 
 export const CoreSource = "Core";
@@ -69,6 +70,22 @@ export function NoProjectOpenedError(): UserError {
     CoreSource,
     "NoProjectOpened",
     "No project opened, you can create a new project or open an existing one."
+  );
+}
+
+export function InvalidV1ProjectError(message?: string) {
+  return newUserError(
+    CoreSource,
+    "InvalidV1Project",
+    `The project is not a valid Teams Toolkit V1 project. ${message}`
+  );
+}
+
+export function ArchiveFolderExistError() {
+  return newUserError(
+    CoreSource,
+    "ArchiveFolderExist",
+    `Archive folder '${ArchiveFolderName}' already exists. Rollback the project or remove '${ArchiveFolderName}' folder.`
   );
 }
 
@@ -159,5 +176,13 @@ export function ProjectEnvNotExistError(env: string): SystemError {
     CoreSource,
     "ProjectEnvNotExistError",
     `The specified env ${env} does not exist. Select an existing env.`
+  );
+}
+
+export function InvalidEnvNameError(): FxError {
+  return new UserError(
+    CoreSource,
+    "InvalidEnvNameError",
+    `Environment name can only contain letters, digits, _ and -.`
   );
 }

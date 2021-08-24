@@ -100,3 +100,25 @@ export function isValidProject(workspacePath?: string): boolean {
     return false;
   }
 }
+
+export function isV1Project(workspacePath?: string): boolean {
+  if (!workspacePath) return false;
+  try {
+    const confFolderPath = path.resolve(workspacePath, `.${ConfigFolderName}`);
+    if (fs.existsSync(confFolderPath)) {
+      return false;
+    }
+    const packageJsonPath = path.resolve(workspacePath, "package.json");
+    const packageSettings = fs.readJsonSync(packageJsonPath);
+    return validateV1PackageSettings(packageSettings);
+  } catch (e) {
+    return false;
+  }
+}
+
+export function validateV1PackageSettings(settings: any): boolean {
+  if (settings?.msteams) {
+    return true;
+  }
+  return false;
+}

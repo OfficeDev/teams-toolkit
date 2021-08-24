@@ -1,10 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AzureSolutionSettings, LogProvider, PluginContext } from "@microsoft/teamsfx-api";
+import {
+  AzureSolutionSettings,
+  FxError,
+  LogProvider,
+  PluginContext,
+  Result,
+} from "@microsoft/teamsfx-api";
 import { AadResult, ResultFactory } from "./results";
 import {
-  CheckPermissionConfig,
+  CheckGrantPermissionConfig,
   ConfigUtils,
   PostProvisionConfig,
   ProvisionConfig,
@@ -47,8 +53,9 @@ import { Utils } from "./utils/common";
 import * as path from "path";
 import * as fs from "fs-extra";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
-import { ConstantString, ResourcePlugins } from "../../../common/constants";
+import { Bicep, ConstantString, ResourcePlugins } from "../../../common/constants";
 import { getTemplatesFolder } from "../../..";
+import { AadOwner } from "../../../common/permissionInterface";
 
 export class AadAppForTeamsImpl {
   public async provision(ctx: PluginContext, isLocalDebug = false): Promise<AadResult> {
@@ -297,13 +304,13 @@ export class AadAppForTeamsImpl {
     );
     const inputParameterOrchestrationFilePath = path.join(
       bicepTemplateDir,
-      TemplatePathInfo.InputParameterOrchestrationFileName
+      Bicep.ParameterOrchestrationFileName
     );
     const variablesOrchestrationFilePath = path.join(
       bicepTemplateDir,
-      TemplatePathInfo.VariablesOrchestrationFileName
+      Bicep.VariablesOrchestrationFileName
     );
-    const parameterFilePath = path.join(bicepTemplateDir, TemplatePathInfo.ParameterFileName);
+    const parameterFilePath = path.join(bicepTemplateDir, Bicep.ParameterFileName);
 
     const result: ScaffoldArmTemplateResult = {
       Orchestration: {
@@ -331,7 +338,7 @@ export class AadAppForTeamsImpl {
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartCheckPermission);
 
     await TokenProvider.init(ctx, TokenAudience.Graph);
-    const config = new CheckPermissionConfig();
+    const config = new CheckGrantPermissionConfig();
     await config.restoreConfigFromContext(ctx);
 
     const userObjectId = config?.userInfo["aadId"];
@@ -351,6 +358,38 @@ export class AadAppForTeamsImpl {
       },
     ];
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndCheckPermission);
+    return ResultFactory.Success(result);
+  }
+
+  public async listCollaborator(ctx: PluginContext): Promise<Result<AadOwner[], FxError>> {
+    return ResultFactory.Success([]);
+  }
+
+  public async grantPermission(ctx: PluginContext): Promise<AadResult> {
+    TelemetryUtils.init(ctx);
+    Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartGrantPermission);
+
+    await TokenProvider.init(ctx, TokenAudience.Graph);
+    const config = new CheckGrantPermissionConfig(true);
+    await config.restoreConfigFromContext(ctx);
+
+    const userObjectId = config?.userInfo["aadId"];
+    await AadAppClient.grantPermission(
+      ctx,
+      Messages.EndCheckPermission.telemetry,
+      config.objectId!,
+      userObjectId
+    );
+
+    const result = [
+      {
+        name: Constants.permissions.name,
+        type: Constants.permissions.type,
+        roles: Constants.permissions.owner,
+        resourceId: config.objectId!,
+      },
+    ];
+    Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndGrantPermission);
     return ResultFactory.Success(result);
   }
 

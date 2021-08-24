@@ -392,11 +392,11 @@ describe("Get AppDefinition and Update", () => {
 
     const fakeAxiosInstance = axios.create();
     sandbox.stub(fakeAxiosInstance, "post").resolves({
-      status: 200,
+      status: 502,
       data: {
-        appId: "appId",
-        id: "id",
-        secretText: "secretText",
+        error: {
+          code: "BadGateway",
+        },
       },
     });
     sandbox.stub(axios, "create").returns(fakeAxiosInstance);

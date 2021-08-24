@@ -162,5 +162,17 @@ describe("LocalEnvProvider", () => {
         chai.assert.isDefined(initLocalEnvs[key]);
       }
     });
+
+    it("tab migrate from v1", async () => {
+      const initLocalEnvs = localEnvProvider.initialLocalEnvs(true, false, false, false);
+
+      chai.assert.isDefined(initLocalEnvs);
+      const actualEntries = Object.entries(initLocalEnvs);
+      const expectedKeys = [LocalEnvFrontendKeys.Browser, LocalEnvFrontendKeys.Https];
+      chai.assert.equal(actualEntries.length, expectedKeys.length);
+      for (const key of expectedKeys) {
+        chai.assert.isDefined(initLocalEnvs[key]);
+      }
+    });
   });
 });

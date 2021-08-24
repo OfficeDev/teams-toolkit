@@ -284,18 +284,18 @@ describe("APIs of Environment Manager", () => {
     it("list all the env profiles with correct naming convention", async () => {
       const envFileNames = [
         // correct env file names
-        "env.default.json",
-        "env.42.JSON",
-        "env.dev1.json",
-        "ENV.dev2.JSON",
-        "ENV.dev_1.JSON",
-        "ENV.stage-42.json",
+        "profile.default.json",
+        "profile.42.JSON",
+        "profile.dev1.json",
+        "PROFILE.dev2.JSON",
+        "PROFILE.dev_1.JSON",
+        "PROFILE.stage-42.json",
         // incorrect env file names
-        "env..json",
-        "env. .json",
-        "env.4 2.json",
-        "env.+.json",
-        "env.=.json",
+        "profile..json",
+        "profile. .json",
+        "profile.4 2.json",
+        "profile.+.json",
+        "profile.=.json",
       ];
 
       for (const envFileName of envFileNames) {

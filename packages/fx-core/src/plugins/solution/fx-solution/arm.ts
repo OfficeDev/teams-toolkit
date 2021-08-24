@@ -110,7 +110,7 @@ export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<
     await fs.ensureDir(modulesFolderPath);
     for (const module of moduleFiles) {
       // module[0] contains relative path to template folder, e.g. "./modules/frontendHosting.bicep"
-      await fs.writeFile(path.join(templateFolder, module[0]), module[1]);
+      await fs.writeFile(path.join(templateFolderPath, module[0]), module[1]);
     }
 
     // Output parameter file

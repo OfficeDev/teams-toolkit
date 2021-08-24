@@ -55,6 +55,11 @@ jobs:
         with:
           node-version: 14
 
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 3.1.x
+
       - name: Setup npm registry
         run: |
           echo "${{ secrets.NPMRC }}" > ~/.npmrc
@@ -170,22 +175,34 @@ jobs:
       - name: cleanup templates
         run: rm -rf ./*.zip && git clean -df
 
-      - name: trigger simpleauth azure build pipeline
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'simpleauth') && github.ref == 'refs/heads/main' }}
+      - name: trigger simpleauth azure build pipeline for stable release
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'simpleauth') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
         uses: Azure/pipelines@v1
         with:
           azure-devops-project-url: 'https://dev.azure.com/mseng/VSIoT'
           azure-pipeline-name: 'Build Simple Auth Release Artifacts' 
           azure-devops-token: '${{ secrets.ADO_PAT }}'
       
-      - name: check build status and download assets
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'simpleauth') && github.ref == 'refs/heads/main' }}
+      - name: check build status and download assets for stable release
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'simpleauth') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
         run: |
           output=$(./.github/scripts/simpleauth-azdo-pipelines.sh ${{ secrets.ADO_PAT }} 11303 >&1)
           if [ -z $output ]; then exit 1; fi
+          echo $output
+          asset_id=$(echo $output | rev |cut -d ' ' -f 1 | rev)
           simpleAuthVer=$(echo ${{ steps.version-change.outputs.CHANGED }} | grep simpleauth | cut -d '@' -f2)
-          curl "https://dev.azure.com/mseng/_apis/resources/Containers/$output/drop?itemPath=drop/Microsoft.TeamsFx.SimpleAuth_$simpleAuthVer.zip" -L -O
+          curl "https://dev.azure.com/mseng/_apis/resources/Containers/$asset_id/drop?itemPath=drop/Microsoft.TeamsFx.SimpleAuth_$simpleAuthVer.zip" -L -O -u :${{ secrets.ADO_PAT }}
           if [ ! -f Microsoft.TeamsFx.*.zip ]; then exit 1; fi
+      
+      - name: build SimpleAuth on prerelease
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'simpleauth') && github.event.inputs.preid != 'stable' }}
+        run: |
+          dotnet build --configuration Release
+          simpleAuthVer=$(echo ${{ steps.version-change.outputs.CHANGED }} | grep simpleauth | cut -d '@' -f2)
+          cd src/TeamsFxSimpleAuth/bin/Release/*
+          zip -r Microsoft.TeamsFx.SimpleAuth_$simpleAuthVer.zip .
+          mv Microsoft.TeamsFx.SimpleAuth_*.zip ../../../../../../..
+        working-directory: ./packages/simpleauth  
 
       - name: download simpleauth to fx-core
         uses: nick-invision/retry@v2

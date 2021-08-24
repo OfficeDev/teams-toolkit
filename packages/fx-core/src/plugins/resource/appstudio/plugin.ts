@@ -88,7 +88,7 @@ import {
 } from "../../../common/localSettingsConstants";
 import { v4 } from "uuid";
 import isUUID from "validator/lib/isUUID";
-import { ResourcePermission } from "../../../common/permissionInterface";
+import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
 
 export class AppStudioPluginImpl {
   public async getAppDefinitionAndUpdate(
@@ -160,7 +160,8 @@ export class AppStudioPluginImpl {
    * @returns
    */
   public async createManifest(settings: ProjectSettings): Promise<TeamsAppManifest | undefined> {
-    const solutionSettings: AzureSolutionSettings = settings.solutionSettings as AzureSolutionSettings;
+    const solutionSettings: AzureSolutionSettings =
+      settings.solutionSettings as AzureSolutionSettings;
     if (
       !solutionSettings.capabilities ||
       (!solutionSettings.capabilities.includes(BotOptionItem.id) &&
@@ -654,6 +655,10 @@ export class AppStudioPluginImpl {
     ];
 
     return result;
+  }
+
+  public async listCollaborator(ctx: PluginContext): Promise<Result<TeamsAppAdmin[], FxError>> {
+    return ok([]);
   }
 
   public async grantPermission(ctx: PluginContext): Promise<ResourcePermission[]> {

@@ -199,20 +199,24 @@ describe("Graph API Test", () => {
   describe("checkPermission", () => {
     it("Happy Path", async () => {
       const fakeAxiosInstance = axios.create();
+      const userObjectId = faker.datatype.uuid();
       sinon.stub(axios, "create").returns(fakeAxiosInstance);
       sinon.stub(fakeAxiosInstance, "get").resolves({
         data: {
-          value: {
-            id: faker.datatype.uuid(),
-          },
+          value: [
+            {
+              id: userObjectId,
+            },
+          ],
         },
       });
 
       const checkPermissionResult = await GraphClient.checkPermission(
         "graphToken",
         faker.datatype.uuid(),
-        faker.datatype.uuid()
+        userObjectId
       );
+
       chai.assert.equal(checkPermissionResult, true);
     });
 

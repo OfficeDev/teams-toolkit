@@ -388,23 +388,31 @@ export namespace AppStudioClient {
     }
   }
 
-  export async function checkPermission(
+  export async function getUserList(
     teamsAppId: string,
-    appStudioToken: string,
-    userObjectId: string
-  ): Promise<string> {
+    appStudioToken: string
+  ): Promise<IUserList[] | undefined> {
     let app;
     try {
       app = await getApp(teamsAppId, appStudioToken);
     } catch (error) {
       if (error.name == 404) {
-        return Constants.PERMISSIONS.noPermission;
+        return undefined;
       } else {
         throw error;
       }
     }
 
-    const findUser = app.userList?.find((user: any) => user["aadId"] === userObjectId);
+    return app.userList;
+  }
+
+  export async function checkPermission(
+    teamsAppId: string,
+    appStudioToken: string,
+    userObjectId: string
+  ): Promise<string> {
+    const userList = await getUserList(teamsAppId, appStudioToken);
+    const findUser = userList?.find((user: IUserList) => user.aadId === userObjectId);
     if (!findUser) {
       return Constants.PERMISSIONS.noPermission;
     }

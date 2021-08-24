@@ -127,7 +127,7 @@ export class TelemetryEvent {
   static readonly SkipDeploy = "skip-deploy";
 
   static readonly GenerateArmTemplates = "generate-arm-templates";
-  static readonly MigrateV1Project = "migrate-v1-project";
+  static readonly ExecuteUserTask = "execute-user-task";
 }
 
 export class TelemetryKey {

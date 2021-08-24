@@ -61,6 +61,7 @@ import {
   LocalSettingsTeamsAppKeys,
 } from "../../../common/localSettingsConstants";
 import { TeamsClientId } from "../../../common/constants";
+import { ProjectSettingLoader } from "./projectSettingLoader";
 
 @Service(ResourcePlugins.LocalDebugPlugin)
 export class LocalDebugPlugin implements Plugin {
@@ -72,20 +73,12 @@ export class LocalDebugPlugin implements Plugin {
   }
 
   public async scaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
-    const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
-      ?.activeResourcePlugins;
-    const isSpfx = selectedPlugins?.some((pluginName) => pluginName === SpfxPlugin.Name);
-    const isMigrateFromV1 = !!ctx?.projectSettings?.solutionSettings?.migrateFromV1;
-    const includeFrontend = selectedPlugins?.some(
-      (pluginName) => pluginName === FrontendHostingPlugin.Name
-    );
-    const includeBackend = selectedPlugins?.some(
-      (pluginName) => pluginName === FunctionPlugin.Name
-    );
-    const includeBot = selectedPlugins?.some((pluginName) => pluginName === BotPlugin.Name);
-    const includeAuth =
-      selectedPlugins?.some((pluginName) => pluginName === AadPlugin.Name) &&
-      selectedPlugins?.some((pluginName) => pluginName === RuntimeConnectorPlugin.Name);
+    const isSpfx = ProjectSettingLoader.isSpfx(ctx);
+    const isMigrateFromV1 = ProjectSettingLoader.isMigrateFromV1(ctx);
+    const includeFrontend = ProjectSettingLoader.includeFrontend(ctx);
+    const includeBackend = ProjectSettingLoader.includeBackend(ctx);
+    const includeBot = ProjectSettingLoader.includeBot(ctx);
+    const includeAuth = ProjectSettingLoader.includeAuth(ctx);
     const programmingLanguage = ctx.projectSettings?.programmingLanguage ?? "";
 
     const telemetryProperties = {
@@ -151,6 +144,7 @@ export class LocalDebugPlugin implements Plugin {
           includeFrontend,
           includeBackend,
           includeBot,
+          includeAuth,
           isMigrateFromV1,
           programmingLanguage
         );
@@ -223,18 +217,10 @@ export class LocalDebugPlugin implements Plugin {
     }
 
     const vscEnv = ctx.answers?.vscodeEnv;
-    const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
-      ?.activeResourcePlugins;
-    const includeFrontend = selectedPlugins?.some(
-      (pluginName) => pluginName === FrontendHostingPlugin.Name
-    );
-    const includeBackend = selectedPlugins?.some(
-      (pluginName) => pluginName === FunctionPlugin.Name
-    );
-    const includeBot = selectedPlugins?.some((pluginName) => pluginName === BotPlugin.Name);
-    const includeAuth =
-      selectedPlugins?.some((pluginName) => pluginName === AadPlugin.Name) &&
-      selectedPlugins?.some((pluginName) => pluginName === RuntimeConnectorPlugin.Name);
+    const includeFrontend = ProjectSettingLoader.includeFrontend(ctx);
+    const includeBackend = ProjectSettingLoader.includeBackend(ctx);
+    const includeBot = ProjectSettingLoader.includeBot(ctx);
+    const includeAuth = ProjectSettingLoader.includeAuth(ctx);
     let skipNgrok = ctx.localSettings?.bot?.get(LocalSettingsBotKeys.SkipNgrok) as boolean;
 
     const telemetryProperties = {
@@ -366,19 +352,10 @@ export class LocalDebugPlugin implements Plugin {
   }
 
   public async getLocalDebugEnvs(ctx: PluginContext): Promise<Record<string, string>> {
-    const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
-      ?.activeResourcePlugins;
-    const includeFrontend = selectedPlugins?.some(
-      (pluginName) => pluginName === FrontendHostingPlugin.Name
-    );
-    const includeBackend = selectedPlugins?.some(
-      (pluginName) => pluginName === FunctionPlugin.Name
-    );
-    const includeBot = selectedPlugins?.some((pluginName) => pluginName === BotPlugin.Name);
-    const includeAuth =
-      selectedPlugins?.some((pluginName) => pluginName === AadPlugin.Name) &&
-      selectedPlugins?.some((pluginName) => pluginName === RuntimeConnectorPlugin.Name);
-
+    const includeFrontend = ProjectSettingLoader.includeFrontend(ctx);
+    const includeBackend = ProjectSettingLoader.includeBackend(ctx);
+    const includeBot = ProjectSettingLoader.includeBot(ctx);
+    const includeAuth = ProjectSettingLoader.includeAuth(ctx);
     // get config for local debug
     const clientId = ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId) as string;
     const clientSecret = ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientSecret) as string;

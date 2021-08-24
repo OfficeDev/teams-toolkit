@@ -9,6 +9,7 @@ export function generateTasks(
   includeFrontend: boolean,
   includeBackend: boolean,
   includeBot: boolean,
+  includeAuth: boolean,
   isMigrateFromV1: boolean,
   programmingLanguage: string
 ): Record<string, unknown>[] {
@@ -39,7 +40,7 @@ export function generateTasks(
   }
   tasks.push(prepareDevEnv(includeFrontend, includeBackend), prepareLocalEnvironment());
   if (includeFrontend) {
-    tasks.push(startFrontend(isMigrateFromV1), frontendNpmInstall());
+    tasks.push(startFrontend(includeAuth), frontendNpmInstall());
     if (includeBackend) {
       tasks.push(
         startBackend(programmingLanguage),
@@ -173,12 +174,12 @@ function prepareLocalEnvironment(): Record<string, unknown> {
   };
 }
 
-function startFrontend(isMigrateFromV1: boolean): Record<string, unknown> {
+function startFrontend(includeAuth: boolean): Record<string, unknown> {
   return {
     label: "Start Frontend",
-    dependsOn: isMigrateFromV1
-      ? [`${ProductName}: frontend start`]
-      : [`${ProductName}: frontend start`, `${ProductName}: auth start`],
+    dependsOn: includeAuth
+      ? [`${ProductName}: frontend start`, `${ProductName}: auth start`]
+      : [`${ProductName}: frontend start`],
     dependsOrder: "parallel",
   };
 }

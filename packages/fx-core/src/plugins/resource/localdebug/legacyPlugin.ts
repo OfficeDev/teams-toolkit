@@ -29,6 +29,7 @@ import {
   SolutionPlugin,
 } from "./constants";
 import { LocalEnvProvider } from "./localEnv";
+import { ProjectSettingLoader } from "./projectSettingLoader";
 import { getCodespaceName, getCodespaceUrl } from "./util/codespace";
 import {
   InvalidLocalBotEndpointFormat,
@@ -42,15 +43,10 @@ import { TelemetryEventName, TelemetryUtils } from "./util/telemetry";
 export class legacyLocalDebugPlugin {
   public static async localDebug(ctx: PluginContext): Promise<Result<any, FxError>> {
     const vscEnv = ctx.answers?.vscodeEnv;
-    const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
-      ?.activeResourcePlugins;
-    const includeFrontend = selectedPlugins?.some(
-      (pluginName) => pluginName === FrontendHostingPlugin.Name
-    );
-    const includeBackend = selectedPlugins?.some(
-      (pluginName) => pluginName === FunctionPlugin.Name
-    );
-    const includeBot = selectedPlugins?.some((pluginName) => pluginName === BotPlugin.Name);
+    const includeFrontend = ProjectSettingLoader.includeFrontend(ctx);
+    const includeBackend = ProjectSettingLoader.includeBackend(ctx);
+    const includeBot = ProjectSettingLoader.includeBot(ctx);
+    const includeAuth = ProjectSettingLoader.includeAuth(ctx);
     let skipNgrok = ctx.config?.get(LocalDebugConfigKeys.SkipNgrok) as string;
 
     const telemetryProperties = {
@@ -86,7 +82,9 @@ export class legacyLocalDebugPlugin {
         localFuncEndpoint = "http://localhost:7071";
       }
 
-      ctx.config.set(LocalDebugConfigKeys.LocalAuthEndpoint, localAuthEndpoint);
+      if (includeAuth) {
+        ctx.config.set(LocalDebugConfigKeys.LocalAuthEndpoint, localAuthEndpoint);
+      }
 
       if (includeFrontend) {
         ctx.config.set(LocalDebugConfigKeys.LocalTabEndpoint, localTabEndpoint);
@@ -136,19 +134,10 @@ export class legacyLocalDebugPlugin {
   }
 
   public static async postLocalDebug(ctx: PluginContext): Promise<Result<any, FxError>> {
-    const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
-      ?.activeResourcePlugins;
-    const includeFrontend = selectedPlugins?.some(
-      (pluginName) => pluginName === FrontendHostingPlugin.Name
-    );
-    const includeBackend = selectedPlugins?.some(
-      (pluginName) => pluginName === FunctionPlugin.Name
-    );
-    const includeAuth =
-      selectedPlugins?.some((pluginName) => pluginName === AadPlugin.Name) &&
-      selectedPlugins?.some((pluginName) => pluginName === RuntimeConnectorPlugin.Name);
-
-    const includeBot = selectedPlugins?.some((pluginName) => pluginName === BotPlugin.Name);
+    const includeFrontend = ProjectSettingLoader.includeFrontend(ctx);
+    const includeBackend = ProjectSettingLoader.includeBackend(ctx);
+    const includeBot = ProjectSettingLoader.includeBot(ctx);
+    const includeAuth = ProjectSettingLoader.includeAuth(ctx);
     let trustDevCert = ctx.config?.get(LocalDebugConfigKeys.TrustDevelopmentCertificate) as string;
 
     const telemetryProperties = {

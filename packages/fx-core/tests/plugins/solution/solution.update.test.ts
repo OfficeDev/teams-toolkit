@@ -39,6 +39,7 @@ import _ from "lodash";
 import * as uuid from "uuid";
 import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import Container from "typedi";
+import { MockUserInteraction } from "../../core/utils";
 const fehostPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin);
 const localDebug = Container.get<Plugin>(ResourcePlugins.LocalDebugPlugin);
 const sqlPlugin = Container.get<Plugin>(ResourcePlugins.SqlPlugin);
@@ -367,5 +368,53 @@ describe("update()", () => {
     expect(result.isOk()).equals(true);
     // provisionSucceeded is not changed because function is already added.
     expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be.false;
+  });
+
+  it("should ask for confirm regenerate ARM template when adding resources", async () => {
+    const solution = new TeamsAppSolution();
+    const mockedCtx = mockSolutionContext();
+    mockedCtx.answers = { platform: Platform.VSCode };
+    mockedCtx.projectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
+        version: "1.0",
+        capabilities: [TabOptionItem.id],
+        activeResourcePlugins: [fehostPlugin.name, localDebug.name],
+        azureResources: [],
+      },
+    };
+    mockedCtx.answers![AzureSolutionQuestionNames.AddResources] = [AzureResourceFunction.id];
+
+    let generateResourceTemplateResult = false;
+    let scaffoldExecuted = false;
+    let confirmDialogDisplayed = false;
+    solution.doScaffold = async (
+      _ctx: SolutionContext,
+      _selectedPlugins,
+      _generateResourceTemplate
+    ): Promise<Result<any, FxError>> => {
+      scaffoldExecuted = true;
+      generateResourceTemplateResult = _generateResourceTemplate;
+      return ok(Void);
+    };
+
+    mockedCtx.ui = new MockUserInteraction();
+    mockedCtx.ui.showMessage = async (
+      level: "info" | "warn" | "error",
+      message: string | any,
+      modal: boolean,
+      ...items: string[]
+    ): Promise<Result<string | undefined, FxError>> => {
+      confirmDialogDisplayed = true;
+      return ok("Ok");
+    };
+
+    const result = await solution.update(mockedCtx);
+    expect(result.isOk()).equals(true);
+    expect(scaffoldExecuted).equals(true);
+    expect(generateResourceTemplateResult).equals(true);
   });
 });

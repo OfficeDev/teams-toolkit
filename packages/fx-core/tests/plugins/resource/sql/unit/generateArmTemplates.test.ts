@@ -15,7 +15,7 @@ chai.use(chaiAsPromised);
 
 dotenv.config();
 
-describe("skipAddingUser", () => {
+describe("generateArmTemplates", () => {
   let sqlPlugin: SqlPlugin;
   let pluginContext: PluginContext;
   let credentials: msRestNodeAuth.TokenCredentialsBase;

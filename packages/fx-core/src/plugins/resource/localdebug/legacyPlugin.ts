@@ -144,6 +144,10 @@ export class legacyLocalDebugPlugin {
     const includeBackend = selectedPlugins?.some(
       (pluginName) => pluginName === FunctionPlugin.Name
     );
+    const includeAuth =
+      selectedPlugins?.some((pluginName) => pluginName === AadPlugin.Name) &&
+      selectedPlugins?.some((pluginName) => pluginName === RuntimeConnectorPlugin.Name);
+
     const includeBot = selectedPlugins?.some((pluginName) => pluginName === BotPlugin.Name);
     let trustDevCert = ctx.config?.get(LocalDebugConfigKeys.TrustDevelopmentCertificate) as string;
 
@@ -152,6 +156,7 @@ export class legacyLocalDebugPlugin {
       frontend: includeFrontend ? "true" : "false",
       function: includeBackend ? "true" : "false",
       bot: includeBot ? "true" : "false",
+      auth: includeAuth ? "true" : "false",
       "trust-development-certificate": trustDevCert,
     };
     TelemetryUtils.init(ctx);
@@ -162,7 +167,8 @@ export class legacyLocalDebugPlugin {
       const localEnvs = await localEnvProvider.loadLocalEnv(
         includeFrontend,
         includeBackend,
-        includeBot
+        includeBot,
+        includeAuth
       );
 
       // configs
@@ -180,36 +186,38 @@ export class legacyLocalDebugPlugin {
       ) as string;
 
       if (includeFrontend) {
-        // frontend local envs
-        localEnvs[LocalEnvFrontendKeys.TeamsFxEndpoint] = localDebugConfigs.get(
-          LocalDebugConfigKeys.LocalAuthEndpoint
-        ) as string;
-        localEnvs[LocalEnvFrontendKeys.LoginUrl] = `${
-          localDebugConfigs.get(LocalDebugConfigKeys.LocalTabEndpoint) as string
-        }/auth-start.html`;
-        localEnvs[LocalEnvFrontendKeys.ClientId] = clientId;
+        if (includeAuth) {
+          // frontend local envs
+          localEnvs[LocalEnvFrontendKeys.TeamsFxEndpoint] = localDebugConfigs.get(
+            LocalDebugConfigKeys.LocalAuthEndpoint
+          ) as string;
+          localEnvs[LocalEnvFrontendKeys.LoginUrl] = `${
+            localDebugConfigs.get(LocalDebugConfigKeys.LocalTabEndpoint) as string
+          }/auth-start.html`;
+          localEnvs[LocalEnvFrontendKeys.ClientId] = clientId;
 
-        // auth local envs (auth is only required by frontend)
-        localEnvs[LocalEnvAuthKeys.ClientId] = clientId;
-        localEnvs[LocalEnvAuthKeys.ClientSecret] = clientSecret;
-        localEnvs[LocalEnvAuthKeys.IdentifierUri] = aadConfigs?.get(
-          AadPlugin.LocalAppIdUri
-        ) as string;
-        localEnvs[
-          LocalEnvAuthKeys.AadMetadataAddress
-        ] = `https://login.microsoftonline.com/${teamsAppTenantId}/v2.0/.well-known/openid-configuration`;
-        localEnvs[
-          LocalEnvAuthKeys.OauthAuthority
-        ] = `https://login.microsoftonline.com/${teamsAppTenantId}`;
-        localEnvs[LocalEnvAuthKeys.TabEndpoint] = localDebugConfigs.get(
-          LocalDebugConfigKeys.LocalTabEndpoint
-        ) as string;
-        localEnvs[LocalEnvAuthKeys.AllowedAppIds] = [teamsMobileDesktopAppId, teamsWebAppId].join(
-          ";"
-        );
-        localEnvs[LocalEnvAuthKeys.ServicePath] = await prepareLocalAuthService(
-          localAuthPackagePath
-        );
+          // auth local envs (auth is only required by frontend)
+          localEnvs[LocalEnvAuthKeys.ClientId] = clientId;
+          localEnvs[LocalEnvAuthKeys.ClientSecret] = clientSecret;
+          localEnvs[LocalEnvAuthKeys.IdentifierUri] = aadConfigs?.get(
+            AadPlugin.LocalAppIdUri
+          ) as string;
+          localEnvs[
+            LocalEnvAuthKeys.AadMetadataAddress
+          ] = `https://login.microsoftonline.com/${teamsAppTenantId}/v2.0/.well-known/openid-configuration`;
+          localEnvs[
+            LocalEnvAuthKeys.OauthAuthority
+          ] = `https://login.microsoftonline.com/${teamsAppTenantId}`;
+          localEnvs[LocalEnvAuthKeys.TabEndpoint] = localDebugConfigs.get(
+            LocalDebugConfigKeys.LocalTabEndpoint
+          ) as string;
+          localEnvs[LocalEnvAuthKeys.AllowedAppIds] = [teamsMobileDesktopAppId, teamsWebAppId].join(
+            ";"
+          );
+          localEnvs[LocalEnvAuthKeys.ServicePath] = await prepareLocalAuthService(
+            localAuthPackagePath
+          );
+        }
 
         if (includeBackend) {
           localEnvs[LocalEnvFrontendKeys.FuncEndpoint] = localDebugConfigs.get(

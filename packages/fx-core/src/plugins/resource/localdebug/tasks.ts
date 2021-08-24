@@ -9,6 +9,7 @@ export function generateTasks(
   includeFrontend: boolean,
   includeBackend: boolean,
   includeBot: boolean,
+  isMigrateFromV1: boolean,
   programmingLanguage: string
 ): Record<string, unknown>[] {
   /**
@@ -28,13 +29,17 @@ export function generateTasks(
    *   - backend extensions install
    *   - bot npm install
    */
-  const tasks: Record<string, unknown>[] = [preDebugCheck(includeBot), dependencyCheck()];
+  const tasks: Record<string, unknown>[] = [preDebugCheck(includeBot, isMigrateFromV1)];
+  if (!isMigrateFromV1) {
+    tasks.push(dependencyCheck());
+  }
+
   if (includeBot) {
     tasks.push(startNgrok());
   }
   tasks.push(prepareDevEnv(includeFrontend, includeBackend), prepareLocalEnvironment());
   if (includeFrontend) {
-    tasks.push(startFrontend(), frontendNpmInstall());
+    tasks.push(startFrontend(isMigrateFromV1), frontendNpmInstall());
     if (includeBackend) {
       tasks.push(
         startBackend(programmingLanguage),
@@ -125,11 +130,13 @@ export function generateSpfxTasks(): Record<string, unknown>[] {
   ];
 }
 
-function preDebugCheck(includeBot: boolean): Record<string, unknown> {
+function preDebugCheck(includeBot: boolean, isMigrateFromV1: boolean): Record<string, unknown> {
   return {
     label: "Pre Debug Check",
     dependsOn: includeBot
       ? ["dependency check", "start ngrok", "prepare dev env"]
+      : isMigrateFromV1
+      ? ["prepare dev env"]
       : ["dependency check", "prepare dev env"],
     dependsOrder: "sequence",
   };
@@ -166,10 +173,12 @@ function prepareLocalEnvironment(): Record<string, unknown> {
   };
 }
 
-function startFrontend(): Record<string, unknown> {
+function startFrontend(isMigrateFromV1: boolean): Record<string, unknown> {
   return {
     label: "Start Frontend",
-    dependsOn: [`${ProductName}: frontend start`, `${ProductName}: auth start`],
+    dependsOn: isMigrateFromV1
+      ? [`${ProductName}: frontend start`]
+      : [`${ProductName}: frontend start`, `${ProductName}: auth start`],
     dependsOrder: "parallel",
   };
 }

@@ -42,7 +42,7 @@ export interface EnvFiles {
 class EnvironmentManager {
   public readonly defaultEnvName = "default";
   public readonly envNameRegex = /^[\w\d-_]+$/;
-  public readonly envProfileNameRegex = /env\.(?<envName>[\w\d-_]+)\.json/i;
+  public readonly envProfileNameRegex = /profile\.(?<envName>[\w\d-_]+)\.json/i;
 
   public async loadEnvProfile(
     projectPath: string,

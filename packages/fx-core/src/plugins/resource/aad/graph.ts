@@ -139,6 +139,29 @@ export namespace GraphClient {
     }
   }
 
+  export async function grantPermission(
+    graphToken: string,
+    objectId: string,
+    userObjectId: string
+  ): Promise<void> {
+    if (!objectId) {
+      throw new Error(
+        `${GraphClientErrorMessage.GrantPermissionFailed}: ${GraphClientErrorMessage.AppObjectIdIsNull}.`
+      );
+    }
+
+    if (!userObjectId) {
+      throw new Error(
+        `${GraphClientErrorMessage.GrantPermissionFailed}: ${GraphClientErrorMessage.UserObjectIdIsNull}.`
+      );
+    }
+
+    const instance = initAxiosInstance(graphToken);
+    await instance.post(`${baseUrl}/applications/${objectId}/owners/$ref`, {
+      "@odata.id": `${baseUrl}/directoryObjects/${userObjectId}`,
+    });
+  }
+
   export function initAxiosInstance(graphToken: string) {
     const instance = axios.create({
       baseURL: baseUrl,

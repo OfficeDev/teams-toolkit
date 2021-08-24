@@ -261,4 +261,48 @@ describe("Graph API Test", () => {
       chai.assert.equal(checkPermissionResult, false);
     });
   });
+
+  describe("grantPermission", () => {
+    it("Happy Path", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sinon.stub(fakeAxiosInstance, "post").resolves();
+
+      const grantPermissionResult = await GraphClient.grantPermission(
+        "graphToken",
+        faker.datatype.uuid(),
+        faker.datatype.uuid()
+      );
+    });
+
+    it("Empty Object Id", async () => {
+      try {
+        const grantPermissionResult = await GraphClient.grantPermission(
+          "graphToken",
+          "",
+          faker.datatype.uuid()
+        );
+      } catch (error) {
+        chai.assert.equal(
+          error.message,
+          `${GraphClientErrorMessage.GrantPermissionFailed}: ${GraphClientErrorMessage.AppObjectIdIsNull}.`
+        );
+      }
+    });
+
+    it("Empty User Object Id", async () => {
+      try {
+        const grantPermissionResult = await GraphClient.grantPermission(
+          "graphToken",
+          faker.datatype.uuid(),
+          ""
+        );
+      } catch (error) {
+        chai.assert.equal(
+          error.message,
+          `${GraphClientErrorMessage.GrantPermissionFailed}: ${GraphClientErrorMessage.UserObjectIdIsNull}.`
+        );
+      }
+    });
+  });
 });

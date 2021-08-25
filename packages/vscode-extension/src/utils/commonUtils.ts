@@ -62,12 +62,15 @@ export function getTeamsAppId() {
     const ws = ext.workspaceUri.fsPath;
     if (isValidProject(ws)) {
       const env = getActiveEnv();
-      const envJsonPath = isMultiEnvEnabled()
-        ? `.${ConfigFolderName}/${InputConfigsFolderName}/${EnvProfileFileNameTemplate.replace(
-            "@envName",
-            env
-          )}`
-        : `.${ConfigFolderName}/env.${env}.json`;
+      const envJsonPath = path.join(
+        ws,
+        isMultiEnvEnabled()
+          ? `.${ConfigFolderName}/${InputConfigsFolderName}/${EnvProfileFileNameTemplate.replace(
+              "@envName",
+              env
+            )}`
+          : `.${ConfigFolderName}/env.${env}.json`
+      );
       const envJson = JSON.parse(fs.readFileSync(envJsonPath, "utf8"));
       return envJson.solution.remoteTeamsAppId;
     }

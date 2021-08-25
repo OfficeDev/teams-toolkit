@@ -141,15 +141,7 @@ export function anonymizeFilePaths(stack?: string): string {
 export async function isTeamsfx(): Promise<boolean> {
   if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
     const workspaceFolder = workspace.workspaceFolders[0];
-    const fxPath = await commonUtils.getProjectRoot(
-      workspaceFolder.uri.fsPath,
-      `.${ConfigFolderName}`
-    );
-    if (fxPath && (await fs.pathExists(fxPath))) {
-      return true;
-    } else {
-      return false;
-    }
+    return await commonUtils.isFxProject(workspaceFolder.uri.fsPath);
   }
   return false;
 }

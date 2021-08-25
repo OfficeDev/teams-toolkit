@@ -1,6 +1,6 @@
 # Contributing
 
-Welcome and thank you for your interest in contributing to **Microsoft.TeamsFx.Blazor**! Before contributing to this project, please review this document for policies and procedures which will ease the contribution and review process for everyone. If you have questions, please raise your issue on github.
+Welcome and thank you for your interest in contributing to **Microsoft.TeamsFx**! Before contributing to this project, please review this document for policies and procedures which will ease the contribution and review process for everyone. If you have questions, please raise your issue on github.
 
 ## Setup Develop Environment
 
@@ -16,7 +16,7 @@ Build in Visual Studio directly, or use `dotnet build` command under root folder
 
 ### Run test cases
 
-Right click `TeamsFxBlazor.Test` project in Visual Studio, and choose `Run Tests`.
+Right click `TeamsFx.Test` project in Visual Studio, and choose `Run Tests`.
 
 ### Debug test cases
 

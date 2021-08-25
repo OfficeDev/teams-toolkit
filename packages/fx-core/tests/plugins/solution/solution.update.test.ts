@@ -40,6 +40,8 @@ import * as uuid from "uuid";
 import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import Container from "typedi";
 import { MockUserInteraction } from "../../core/utils";
+import mockedEnv from "mocked-env";
+
 const fehostPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin);
 const localDebug = Container.get<Plugin>(ResourcePlugins.LocalDebugPlugin);
 const sqlPlugin = Container.get<Plugin>(ResourcePlugins.SqlPlugin);
@@ -371,6 +373,10 @@ describe("update()", () => {
   });
 
   it("should ask for confirm regenerate ARM template when adding resources", async () => {
+    const restore = mockedEnv({
+      TEAMSFX_ARM_SUPPORT: "1",
+    });
+
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
     mockedCtx.answers = { platform: Platform.VSCode };
@@ -416,5 +422,7 @@ describe("update()", () => {
     expect(result.isOk()).equals(true);
     expect(scaffoldExecuted).equals(true);
     expect(generateResourceTemplateResult).equals(true);
+
+    restore();
   });
 });

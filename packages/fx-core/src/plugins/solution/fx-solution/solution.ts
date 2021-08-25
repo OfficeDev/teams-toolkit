@@ -111,7 +111,12 @@ import { scaffoldReadmeAndLocalSettings } from "./v2/scaffolding";
 import { PermissionRequestFileProvider } from "../../../core/permissionRequest";
 import { IUserList } from "../../resource/appstudio/interfaces/IAppDefinition";
 import axios from "axios";
-import { AadOwner, Collaborator, ResourcePermission } from "../../../common/permissionInterface";
+import {
+  AadOwner,
+  Collaborator,
+  ResourcePermission,
+  TeamsAppAdmin,
+} from "../../../common/permissionInterface";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -1483,10 +1488,68 @@ export class TeamsAppSolution implements Solution {
   }
 
   @hooks([ErrorHandlerMW])
-  async listCollaborator(
-    ctx: SolutionContext
-  ): Promise<Result<Collaborator[] | undefined, FxError>> {
-    return ok(undefined);
+  async listCollaborator(ctx: SolutionContext): Promise<Result<Collaborator[], FxError>> {
+    try {
+      const result = await this.checkAndGetCurrentUserInfo(ctx);
+      if (result.isErr()) {
+        return result;
+      }
+
+      const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, [
+        this.AppStudioPlugin,
+        this.AadPlugin,
+      ]);
+
+      const listCollaboratorWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(
+        ([plugin, context]) => {
+          return [plugin?.listCollaborator?.bind(plugin), context, plugin.name];
+        }
+      );
+
+      const results = await executeConcurrently("", listCollaboratorWithCtx);
+
+      const errors: any = [];
+
+      for (const result of results) {
+        if (result.isErr()) {
+          errors.push(result);
+        }
+      }
+
+      let errorMsg = "";
+      if (errors.length > 0) {
+        errorMsg += `Failed to list collaborator for the project.\n Error details: \n`;
+        for (const fxError of errors) {
+          errorMsg += fxError.error.message + "\n";
+        }
+      }
+
+      if (errorMsg) {
+        return err(
+          returnUserError(new Error(errorMsg), "Solution", SolutionError.FailedToListCollaborator)
+        );
+      }
+
+      const teamsAppOwners: TeamsAppAdmin[] = results[0].isErr() ? [] : results[0].value;
+      const aadOwners: AadOwner[] = results[1].isErr() ? [] : results[1].value;
+      const collaborators: Collaborator[] = [];
+
+      for (const teamsAppOwner of teamsAppOwners) {
+        const aadOwner = aadOwners.find((owner) => owner.id === teamsAppOwner.aadId);
+
+        collaborators.push({
+          userPrincipalName: teamsAppOwner.userPrincipalName,
+          userObjectId: teamsAppOwner.aadId,
+          isAadOwner: aadOwner ? true : false,
+        });
+      }
+
+      // TODO show message for CLI
+
+      return ok(collaborators);
+    } finally {
+      this.runningState = SolutionRunningState.Idle;
+    }
   }
 
   private async checkAndGetCurrentUserInfo(ctx: SolutionContext): Promise<Result<any, FxError>> {

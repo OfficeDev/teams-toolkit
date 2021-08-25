@@ -245,7 +245,7 @@ function getSettingWithUserData(jsonSelector: (jsonObject: any) => any): string 
       const env = getActiveEnv();
       const envJsonPath = isMultiEnvEnabled()
         ? path.join(ws, `.${ConfigFolderName}/${PublishProfilesFolderName}/profile.${env}.json`)
-        : path.join(ws, `.${ConfigFolderName}/${PublishProfilesFolderName}/env.${env}.json`);
+        : path.join(ws, `.${ConfigFolderName}/env.${env}.json`);
       const envJson = JSON.parse(fs.readFileSync(envJsonPath, "utf8"));
       const settingValue = jsonSelector(envJson) as string;
       if (settingValue && settingValue.startsWith("{{") && settingValue.endsWith("}}")) {

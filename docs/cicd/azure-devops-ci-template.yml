@@ -8,16 +8,6 @@ pr:
 
 jobs:
 - job: buildAndTest
-  container:
-    image: ubuntu:latest
-    env:
-      AZURE_ACCOUNT_NAME: $(AZURE_ACCOUNT_NAME)
-      AZURE_ACCOUNT_PASSWORD: $(AZURE_ACCOUNT_PASSWORD)
-      AZURE_SUBSCRIPTION_ID: $(AZURE_SUBSCRIPTION_ID)
-      AZURE_TENANT_ID: $(AZURE_TENANT_ID)
-      M365_ACCOUNT_NAME: $(M365_ACCOUNT_NAME)
-      M365_ACCOUNT_PASSWORD: $(M365_ACCOUNT_PASSWORD)
-
   steps:
     
   # Setup environment.

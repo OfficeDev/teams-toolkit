@@ -5,10 +5,11 @@ trigger:
 # When new commits are pushed onto the main branch.
 - main
 
+pool:
+  vmImage: 'ubuntu-latest'
+
 jobs:
 - job: buildAndPublish
-  container:
-    image: ubuntu:latest
     env:
       AZURE_ACCOUNT_NAME: $(AZURE_ACCOUNT_NAME)
       AZURE_ACCOUNT_PASSWORD: $(AZURE_ACCOUNT_PASSWORD)
@@ -52,6 +53,13 @@ jobs:
     # You should pick required secrets from .fx/default.userdata, and save them in the repository secrets (https://docs.github.com/en/actions/reference/encrypted-secrets) which can be refered by the step with name 'Generate default.userdata'. 
     # - task: teamsfx-cli-task@1
     #   displayName: Provision hosting environment
+    #   env:
+    #     AZURE_ACCOUNT_NAME: $(AZURE_ACCOUNT_NAME)
+    #     AZURE_ACCOUNT_PASSWORD: $(AZURE_ACCOUNT_PASSWORD)
+    #     AZURE_SUBSCRIPTION_ID: $(AZURE_SUBSCRIPTION_ID)
+    #     AZURE_TENANT_ID: $(AZURE_TENANT_ID)
+    #     M365_ACCOUNT_NAME: $(M365_ACCOUNT_NAME)
+    #     M365_ACCOUNT_PASSWORD: $(M365_ACCOUNT_PASSWORD)
     #   inputs:
     #     commands: 'provision'
     #     subscription: '$(AZURE_SUBSCRIPTION_ID)'
@@ -78,6 +86,13 @@ jobs:
 
     - task: teamsfx-cli-task@1
       displayName: Deploy to hosting environment
+      env:
+        AZURE_ACCOUNT_NAME: $(AZURE_ACCOUNT_NAME)
+        AZURE_ACCOUNT_PASSWORD: $(AZURE_ACCOUNT_PASSWORD)
+        AZURE_SUBSCRIPTION_ID: $(AZURE_SUBSCRIPTION_ID)
+        AZURE_TENANT_ID: $(AZURE_TENANT_ID)
+        M365_ACCOUNT_NAME: $(M365_ACCOUNT_NAME)
+        M365_ACCOUNT_PASSWORD: $(M365_ACCOUNT_PASSWORD)
       inputs:
         commands: deploy
 
@@ -97,5 +112,8 @@ jobs:
 
     - task: teamsfx-cli-task@1
       displayName: Publish Teams App
+      env:
+        M365_ACCOUNT_NAME: $(M365_ACCOUNT_NAME)
+        M365_ACCOUNT_PASSWORD: $(M365_ACCOUNT_PASSWORD)
       inputs:
         commands: publish

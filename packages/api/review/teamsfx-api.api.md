@@ -1218,6 +1218,8 @@ export enum TreeCategory {
     // (undocumented)
     Account = 1,
     // (undocumented)
+    Environment = 5,
+    // (undocumented)
     Feedback = 2,
     // (undocumented)
     GettingStarted = 0,
@@ -1236,7 +1238,11 @@ export interface TreeItem {
     // (undocumented)
     contextValue?: string;
     // (undocumented)
+    description?: string;
+    // (undocumented)
     icon?: string;
+    // (undocumented)
+    isCustom?: boolean;
     // (undocumented)
     label: string;
     // (undocumented)

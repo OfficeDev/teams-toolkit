@@ -39,7 +39,10 @@ export async function getSubscriptionId(): Promise<string | undefined> {
 }
 
 export async function getAzureSolutionSettings(): Promise<AzureSolutionSettings | undefined> {
-  const projectConfigRes = await core.getProjectConfig(getSystemInputs());
+  const input = getSystemInputs();
+  input.ignoreEnvInfo = true;
+  const projectConfigRes = await core.getProjectConfig(input);
+
   if (projectConfigRes.isOk()) {
     if (projectConfigRes.value) {
       return projectConfigRes.value.settings?.solutionSettings as AzureSolutionSettings;
@@ -52,7 +55,10 @@ export async function getAzureSolutionSettings(): Promise<AzureSolutionSettings 
 }
 
 export async function isValid(): Promise<boolean> {
-  const projectConfigRes = await core.getProjectConfig(getSystemInputs());
+  const input = getSystemInputs();
+  input.ignoreEnvInfo = true;
+  const projectConfigRes = await core.getProjectConfig(input);
+
   let supported = false;
   if (projectConfigRes.isOk()) {
     if (projectConfigRes.value) {
@@ -67,7 +73,6 @@ export async function isValid(): Promise<boolean> {
 
 export async function registerAccountTreeHandler(): Promise<Result<Void, FxError>> {
   let getSelectSubItem: undefined | ((token: any) => Promise<[TreeItem, boolean]>) = undefined;
-
   getSelectSubItem = async (token: any): Promise<[TreeItem, boolean]> => {
     let selectSubLabel = "";
     const subscriptions: SubscriptionInfo[] | undefined =

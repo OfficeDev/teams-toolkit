@@ -243,13 +243,17 @@ function getSettingWithUserData(jsonSelector: (jsonObject: any) => any): string 
     const ws = ext.workspaceUri.fsPath;
     if (isValidProject(ws)) {
       const env = getActiveEnv();
-      const envJsonPath = path.join(ws, `.${ConfigFolderName}/env.${env}.json`);
+      const envJsonPath = isMultiEnvEnabled()
+        ? path.join(ws, `.${ConfigFolderName}/publishProfiles/profile.${env}.json`)
+        : path.join(ws, `.${ConfigFolderName}/env.${env}.json`);
       const envJson = JSON.parse(fs.readFileSync(envJsonPath, "utf8"));
       const settingValue = jsonSelector(envJson) as string;
       if (settingValue && settingValue.startsWith("{{") && settingValue.endsWith("}}")) {
         // setting in env.xxx.json is place holder and need to get actual value from xxx.userdata
         const placeHolder = settingValue.replace("{{", "").replace("}}", "");
-        const userdataPath = path.join(ws, `.${ConfigFolderName}/${env}.userdata`);
+        const userdataPath = isMultiEnvEnabled()
+          ? path.join(ws, `.${ConfigFolderName}/publishProfiles/${env}.userdata`)
+          : path.join(ws, `.${ConfigFolderName}/${env}.userdata`);
         if (fs.existsSync(userdataPath)) {
           const userdata = fs.readFileSync(userdataPath, "utf8");
           const userEnv = dotenv.parse(userdata);

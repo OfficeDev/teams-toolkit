@@ -178,6 +178,7 @@ describe("Deploy ARM Template to Azure", () => {
   const testAppName = "my test app";
   let envRestore: () => void;
   const testClientId = "test_client_id";
+  const testClientSecret = "test_client_secret";
   const testEnvValue = "test env value";
   const testResourceSuffix = "-testSuffix";
   const testArmTemplateOutput = {
@@ -217,6 +218,9 @@ describe("Deploy ARM Template to Azure", () => {
   "aadClientId": {
     "value": "{{FX_RESOURCE_AAD_APP_FOR_TEAMS__CLIENTID}}"
   },
+  "aadClientSecret": {
+    "value": "{{FX_RESOURCE_AAD_APP_FOR_TEAMS__CLIENTSECRET}}"
+  },
   "envValue": {
     "value": "{{MOCKED_EXPAND_VAR_TEST}}"
   }
@@ -246,18 +250,6 @@ describe("Deploy ARM Template to Azure", () => {
     });
     mocker.stub(fs, "writeFile").callsFake((path: number | PathLike, data: any) => {
       resultFileContent.set(path.toString(), data);
-    });
-    mocker.stub(Deployments.prototype, "createOrUpdate").resolves({
-      properties: {
-        outputs: testArmTemplateOutput,
-      },
-      _response: {
-        request: {} as WebResourceLike,
-        status: 200,
-        headers: new HttpHeaders(),
-        bodyAsText: "",
-        parsedBody: {} as ResourceManagementModels.DeploymentExtended,
-      },
     });
 
     resultFileContent.clear();
@@ -304,10 +296,10 @@ describe("Deploy ARM Template to Azure", () => {
     // Assert
     chai.assert.isTrue(result.isErr());
     const error = (result as Err<void, FxError>).error;
-    chai.assert.strictEqual(error.name, "FailedToDeployArmTemplatesToAzure");
-    chai.assert.isTrue(
-      error.message.startsWith("Failed to compile bicep files to Json arm templates file:")
-    );
+    chai.expect(error.name).to.equal("FailedToDeployArmTemplatesToAzure");
+    chai
+      .expect(error.message)
+      .to.have.string("Failed to compile bicep files to Json arm templates file:");
   });
 
   it("should successfully update parameter and deploy arm templates to azure", async () => {
@@ -342,7 +334,10 @@ describe("Deploy ARM Template to Azure", () => {
     };
     mockedCtx.config.set(
       "fx-resource-aad-app-for-teams",
-      new ConfigMap([["clientId", testClientId]])
+      new ConfigMap([
+        ["clientId", testClientId],
+        ["clientSecret", testClientSecret],
+      ])
     );
     mockedCtx.config.set(
       SOLUTION_CONFIG,
@@ -363,6 +358,37 @@ describe("Deploy ARM Template to Azure", () => {
         });
       });
 
+    mocker
+      .stub(Deployments.prototype, "createOrUpdate")
+      .callsFake(
+        (
+          resourceGroupName: string,
+          deploymentName: string,
+          parameters: ResourceManagementModels.Deployment
+        ) => {
+          chai.assert.exists(parameters.properties.parameters?.aadClientSecret);
+          chai.assert.notStrictEqual(
+            parameters.properties.parameters?.aadClientSecret,
+            "{{FX_RESOURCE_AAD_APP_FOR_TEAMS__CLIENTSECRET}}"
+          );
+
+          return new Promise((resolve) => {
+            resolve({
+              properties: {
+                outputs: testArmTemplateOutput,
+              },
+              _response: {
+                request: {} as WebResourceLike,
+                status: 200,
+                headers: new HttpHeaders(),
+                bodyAsText: "",
+                parsedBody: {} as ResourceManagementModels.DeploymentExtended,
+              },
+            });
+          });
+        }
+      );
+
     // Act
     await deployArmTemplates(mockedCtx);
 
@@ -379,6 +405,9 @@ describe("Deploy ARM Template to Azure", () => {
         },
         "aadClientId": {
           "value": "${testClientId}"
+        },
+        "aadClientSecret": {
+          "value": "{{FX_RESOURCE_AAD_APP_FOR_TEAMS__CLIENTSECRET}}"
         },
         "envValue": {
           "value": "${testEnvValue}"

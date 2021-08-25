@@ -4,7 +4,7 @@
 "use strict";
 
 import * as vscode from "vscode";
-import { initializeExtensionVariables } from "./extensionVariables";
+import { ext, initializeExtensionVariables } from "./extensionVariables";
 import * as handlers from "./handlers";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import { registerTeamsfxTaskAndDebugEvents } from "./debug/teamsfxTaskHandler";
@@ -18,8 +18,10 @@ import { VsCodeUI } from "./qm/vsc_ui";
 import { exp } from "./exp";
 import { disableRunIcon, registerRunIcon } from "./debug/runIconHandler";
 import { CryptoCodeLensProvider } from "./codeLensProvider";
-import { Correlator } from "@microsoft/teamsfx-core";
+import { Correlator, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
+import { enableMigrateV1 } from "./handlers";
+import { isTeamsfx } from "./utils/commonUtils";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -36,7 +38,8 @@ export async function activate(context: vscode.ExtensionContext) {
     .getExpService()
     .getTreatmentVariableAsync(
       TreatmentVariables.VSCodeConfig,
-      TreatmentVariables.ExpandCreateCard
+      TreatmentVariables.ExpandCreateCard,
+      true
     )) as boolean | undefined;
 
   // 1.1 Register the creating command.
@@ -182,10 +185,17 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(decryptCmd);
 
-  const createEnvCmd = vscode.commands.registerCommand("fx-extension.createEnv", (...args) =>
-    Correlator.run(handlers.createEnv, args)
+  const createNewEnvironment = vscode.commands.registerCommand(
+    "fx-extension.addEnvironment",
+    (...args) => Correlator.run(handlers.createNewEnvironment, args)
   );
-  context.subscriptions.push(createEnvCmd);
+  context.subscriptions.push(createNewEnvironment);
+
+  vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isMultiEnvEnabled",
+    isMultiEnvEnabled() && (await isTeamsfx())
+  );
 
   // Setup CodeLens provider for userdata file
   const codelensProvider = new CryptoCodeLensProvider();
@@ -228,6 +238,14 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.workspace.onDidSaveTextDocument(handlers.saveTextDocumentHandler)
   );
+
+  ext.context.subscriptions.push(vscode.workspace.onDidChangeWorkspaceFolders(enableMigrateV1));
+  enableMigrateV1();
+  const migrateV1Cmd = vscode.commands.registerCommand(
+    "fx-extension.migrateV1Project",
+    handlers.migrateV1ProjectHandler
+  );
+  context.subscriptions.push(migrateV1Cmd);
 
   // 2. Call activate function of toolkit core.
   await handlers.activate();

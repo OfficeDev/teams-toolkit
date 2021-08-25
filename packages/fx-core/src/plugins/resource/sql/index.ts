@@ -2,8 +2,8 @@
 // Licensed under the MIT license.
 import {
   AzureSolutionSettings,
+  ok,
   err,
-  Func,
   FxError,
   Plugin,
   PluginContext,
@@ -14,6 +14,7 @@ import {
   UserError,
 } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
+import { isArmSupportEnabled } from "../../..";
 import {
   AzureResourceSQL,
   HostTypeOptionAzure,
@@ -50,13 +51,29 @@ export class SqlPlugin implements Plugin {
   }
 
   public async provision(ctx: PluginContext): Promise<SqlResult> {
-    return this.runWithSqlError(Telemetry.stage.provision, () => this.sqlImpl.provision(ctx), ctx);
+    if (!isArmSupportEnabled()) {
+      return this.runWithSqlError(
+        Telemetry.stage.provision,
+        () => this.sqlImpl.provision(ctx),
+        ctx
+      );
+    } else {
+      return ok(undefined);
+    }
   }
 
   public async postProvision(ctx: PluginContext): Promise<SqlResult> {
     return this.runWithSqlError(
       Telemetry.stage.postProvision,
       () => this.sqlImpl.postProvision(ctx),
+      ctx
+    );
+  }
+
+  public async generateArmTemplates(ctx: PluginContext): Promise<SqlResult> {
+    return this.runWithSqlError(
+      Telemetry.stage.generateArmTemplates,
+      () => this.sqlImpl.generateArmTemplates(ctx),
       ctx
     );
   }

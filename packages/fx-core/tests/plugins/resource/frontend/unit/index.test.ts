@@ -27,13 +27,13 @@ import {
   FrontendConfigInfo,
 } from "../../../../../src/plugins/resource/frontend/constants";
 import { FrontendPlugin } from "../../../../../src/plugins/resource/frontend/";
-import { FrontendProvision } from "../../../../../src/plugins/resource/frontend/ops/provision";
 import { FrontendScaffold } from "../../../../../src/plugins/resource/frontend/ops/scaffold";
 import { TestHelper } from "../helper";
 import { Utils } from "../../../../../src/plugins/resource/frontend/utils";
 import { StorageAccounts } from "@azure/arm-storage";
 import { AzureLib } from "../../../../../src/plugins/resource/frontend/utils/azure-client";
 import * as core from "../../../../../src";
+import { EnvironmentUtils } from "../../../../../src/plugins/resource/frontend/utils/environment-utils";
 
 chai.use(chaiAsPromised);
 
@@ -185,8 +185,6 @@ describe("FrontendPlugin", () => {
     });
 
     it("happy path", async () => {
-      sinon.stub(FrontendProvision, "setEnvironments");
-
       const result = await frontendPlugin.postProvision(pluginContext);
 
       chai.assert.isTrue(result.isOk());
@@ -207,6 +205,7 @@ describe("FrontendPlugin", () => {
       sinon.stub(fs, "readFile").resolves(Buffer.from(""));
       sinon.stub(fs, "writeFile").resolves();
       sinon.stub(fs, "ensureFile").resolves(Buffer.from(""));
+      sinon.stub(EnvironmentUtils, "writeEnvironments").resolves();
 
       staticWebsiteEnabledStub = sinon
         .stub(AzureStorageClient.prototype, "isStorageStaticWebsiteEnabled")

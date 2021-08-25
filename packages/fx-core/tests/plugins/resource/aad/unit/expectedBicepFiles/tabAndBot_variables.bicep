@@ -1,2 +1,2 @@
 
-var applicationIdUri = 'api://${test_frontend_hosting_domain_url}/botid-${BotClientId}'
+var m365ApplicationIdUri = 'api://${test_frontend_hosting_domain_url}/botid-${bot_aadClientId}'

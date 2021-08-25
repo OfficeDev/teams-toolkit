@@ -19,6 +19,7 @@ import { AadAppClient } from "../../../../../src/plugins/resource/aad/aadAppClie
 import { getAppStudioToken, getGraphToken } from "../tokenProvider";
 import { ConfigKeys } from "../../../../../src/plugins/resource/aad/constants";
 import { ProvisionConfig } from "../../../../../src/plugins/resource/aad/utils/configs";
+import faker from "faker";
 
 dotenv.config();
 const testWithAzure: boolean = process.env.UT_TEST_ON_AZURE ? true : false;
@@ -35,6 +36,8 @@ describe("AadAppForTeamsPlugin: CI", () => {
     sinon.stub(AadAppClient, "updateAadAppIdUri").resolves();
     sinon.stub(AadAppClient, "updateAadAppPermission").resolves();
     sinon.stub(AadAppClient, "getAadApp").resolves(new ProvisionConfig());
+    sinon.stub(AadAppClient, "checkPermission").resolves(true);
+    sinon.stub(AadAppClient, "grantPermission").resolves();
   });
 
   afterEach(() => {
@@ -113,6 +116,26 @@ describe("AadAppForTeamsPlugin: CI", () => {
 
     const postProvision = await plugin.postLocalDebug(context);
     chai.assert.isTrue(postProvision.isOk());
+  });
+
+  it("check permission", async function () {
+    const config = new Map();
+    config.set(ConfigKeys.objectId, faker.datatype.uuid());
+    context = await TestHelper.pluginContext(config, true, false, false);
+    context.graphTokenProvider = mockTokenProviderGraph();
+
+    const checkPermission = await plugin.checkPermission(context);
+    chai.assert.isTrue(checkPermission.isOk());
+  });
+
+  it("grant permission", async function () {
+    const config = new Map();
+    config.set(ConfigKeys.objectId, faker.datatype.uuid());
+    context = await TestHelper.pluginContext(config, true, false, false);
+    context.graphTokenProvider = mockTokenProviderGraph();
+
+    const grantPermission = await plugin.grantPermission(context);
+    chai.assert.isTrue(grantPermission.isOk());
   });
 });
 

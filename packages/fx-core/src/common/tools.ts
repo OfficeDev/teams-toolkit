@@ -138,15 +138,17 @@ const SecretDataMatchers = [
   "fx-resource-bot.bots",
   "fx-resource-bot.composeExtensions",
   "fx-resource-apim.apimClientAADClientSecret",
+  "fx-resource-azure-sql.adminPassword",
 ];
 
-const CryptoDataMatchers = new Set([
+export const CryptoDataMatchers = new Set([
   "fx-resource-aad-app-for-teams.clientSecret",
   "fx-resource-aad-app-for-teams.local_clientSecret",
   "fx-resource-simple-auth.environmentVariableParams",
   "fx-resource-bot.botPassword",
   "fx-resource-bot.localBotPassword",
   "fx-resource-apim.apimClientAADClientSecret",
+  "fx-resource-azure-sql.adminPassword",
 ]);
 
 /**
@@ -449,5 +451,31 @@ export function getAppStudioEndpoint(): string {
     return "https://dev-int.teams.microsoft.com";
   } else {
     return "https://dev.teams.microsoft.com";
+  }
+}
+
+export async function copyFiles(
+  srcPath: string,
+  distPath: string,
+  excludeFileList: { fileName: string; recursive: boolean }[] = []
+): Promise<void> {
+  await fs.ensureDir(distPath);
+
+  const excludeFileNames = excludeFileList.map((file) => file.fileName);
+  const recursiveExcludeFileNames = excludeFileList
+    .filter((file) => file.recursive)
+    .map((file) => file.fileName);
+
+  const fileNames = await fs.readdir(srcPath);
+  for (const fileName of fileNames) {
+    if (excludeFileNames.includes(fileName)) {
+      continue;
+    }
+    await fs.copy(path.join(srcPath, fileName), path.join(distPath, fileName), {
+      overwrite: false,
+      errorOnExist: true,
+      filter: (src: string, dest: string): boolean =>
+        !recursiveExcludeFileNames.includes(path.basename(src)),
+    });
   }
 }

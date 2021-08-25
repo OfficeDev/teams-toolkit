@@ -505,4 +505,109 @@ describe("AAD App Client Test", () => {
       }
     });
   });
+
+  describe("checkPermission", async () => {
+    it("Happy Path", async () => {
+      sinon.stub(GraphClient, "checkPermission").resolves(true);
+      const checkPermissionResult = await AadAppClient.checkPermission(
+        ctx,
+        "checkPermission",
+        faker.datatype.uuid(),
+        faker.datatype.uuid()
+      );
+      chai.assert.equal(checkPermissionResult, true);
+    });
+
+    it("User Error", async () => {
+      const error = {
+        response: {
+          status: 404,
+          message: "errorMessage",
+        },
+      };
+      sinon.stub(AadAppClient, "retryHanlder").throws(error);
+      try {
+        const checkPermissionResult = await AadAppClient.checkPermission(
+          ctx,
+          "checkPermission",
+          faker.datatype.uuid(),
+          faker.datatype.uuid()
+        );
+      } catch (error) {
+        chai.assert.isTrue(error instanceof UserError);
+      }
+    });
+
+    it("System Error", async () => {
+      const error = {
+        response: {
+          status: 500,
+          message: "errorMessage",
+        },
+      };
+      sinon.stub(AadAppClient, "retryHanlder").throws(error);
+      try {
+        const checkPermissionResult = await AadAppClient.checkPermission(
+          ctx,
+          "checkPermission",
+          faker.datatype.uuid(),
+          faker.datatype.uuid()
+        );
+      } catch (error) {
+        chai.assert.isTrue(error instanceof SystemError);
+      }
+    });
+  });
+
+  describe("grantPermission", async () => {
+    it("Happy Path", async () => {
+      sinon.stub(GraphClient, "grantPermission").resolves();
+      const grantPermissionResult = await AadAppClient.grantPermission(
+        ctx,
+        "checkPermission",
+        faker.datatype.uuid(),
+        faker.datatype.uuid()
+      );
+    });
+
+    it("User Error", async () => {
+      const error = {
+        response: {
+          status: 404,
+          message: "errorMessage",
+        },
+      };
+      sinon.stub(AadAppClient, "retryHanlder").throws(error);
+      try {
+        const grantPermissionResult = await AadAppClient.grantPermission(
+          ctx,
+          "grantPermission",
+          faker.datatype.uuid(),
+          faker.datatype.uuid()
+        );
+      } catch (error) {
+        chai.assert.isTrue(error instanceof UserError);
+      }
+    });
+
+    it("System Error", async () => {
+      const error = {
+        response: {
+          status: 500,
+          message: "errorMessage",
+        },
+      };
+      sinon.stub(GraphClient, "grantPermission").throws(error);
+      try {
+        const grantPermissionResult = await AadAppClient.grantPermission(
+          ctx,
+          "grantPermission",
+          faker.datatype.uuid(),
+          faker.datatype.uuid()
+        );
+      } catch (error) {
+        chai.assert.isTrue(error instanceof SystemError);
+      }
+    });
+  });
 });

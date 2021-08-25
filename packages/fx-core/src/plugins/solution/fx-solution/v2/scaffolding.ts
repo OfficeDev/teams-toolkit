@@ -1,5 +1,5 @@
-import { v2, Inputs, FxError, Result, ok, err, Void } from "@microsoft/teamsfx-api";
-import { getStrings, isArmSupportEnabled, isMultiEnvEnabled } from "../../../../common/tools";
+import { v2, Inputs, FxError, Result, ok, err } from "@microsoft/teamsfx-api";
+import { getStrings, isMultiEnvEnabled } from "../../../../common/tools";
 import {
   AzureResourceFunction,
   BotOptionItem,
@@ -12,14 +12,12 @@ import path from "path";
 import fs from "fs-extra";
 import { getTemplatesFolder } from "../../../..";
 import { LocalSettingsProvider } from "../../../../common/localSettingsProvider";
-import { ScaffoldingContextAdapter } from "./adaptor";
-import { generateArmTemplate } from "../arm";
 
 export async function scaffoldSourceCode(
   ctx: v2.Context,
   inputs: Inputs
 ): Promise<Result<Record<v2.PluginName, { output: Record<string, string> }>, FxError>> {
-  const plugins = getSelectedPlugins(ctx);
+  const plugins = getSelectedPlugins(getAzureSolutionSettings(ctx));
 
   const thunks: NamedThunk<{ output: Record<string, string> }>[] = plugins
     .filter((plugin) => !!plugin.scaffoldSourceCode)
@@ -66,6 +64,8 @@ export async function scaffoldReadmeAndLocalSettings(
       await fs.copy(readme, `${projectPath}/README.md`);
     }
   }
+
+  // TODO: add migrate V1 project README file
 
   const hasBackend = azureResources.includes(AzureResourceFunction.id);
 

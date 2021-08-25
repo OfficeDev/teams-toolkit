@@ -2,7 +2,7 @@
   "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit (Preview)",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "2.4.1",
+  "version": "2.5.0",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -60,10 +60,11 @@
     "onCommand:fx-extension.openReportIssues",
     "onCommand:fx-extension.validate-dependencies",
     "onCommand:fx-extension.pre-debug-check",
-    "onCommand:fx-extension.createEnv",
+    "onCommand:fx-extension.migrateV1Project",
     "workspaceContains:**/.fx/*",
     "onView:teamsfx",
     "onView:teamsfx-accounts",
+    "onView:teamsfx-environment",
     "onView:teamsfx-development",
     "onView:teamsfx-deployment",
     "onView:teamsfx-help-and-feedback"
@@ -85,6 +86,11 @@
           "name": "Accounts"
         },
         {
+          "id": "teamsfx-environment",
+          "name": "Environment",
+          "when": "fx-extension.isMultiEnvEnabled"
+        },
+        {
           "id": "teamsfx-development",
           "name": "Development"
         },
@@ -99,6 +105,13 @@
       ]
     },
     "menus": {
+      "view/title": [
+        {
+          "command": "fx-extension.addEnvironment",
+          "when": "view == teamsfx-environment",
+          "group": "navigation@1"
+        }
+      ],
       "view/item/context": [
         {
           "command": "fx-extension.signOut",
@@ -134,6 +147,14 @@
           "command": "fx-extension.signInGuideline",
           "when": "view == teamsfx-accounts && viewItem == signinAzure",
           "group": "inline"
+        },
+        {
+          "command": "fx-extension.viewEnvironment",
+          "when": "view == teamsfx-environment && viewItem == environment"
+        },
+        {
+          "command": "fx-extension.activateEnvironment",
+          "when": "view == teamsfx-environment && viewItem == environment"
         }
       ],
       "editor/title/run": [
@@ -171,6 +192,10 @@
         {
           "command": "fx-extension.cicdGuide",
           "when": "false"
+        },
+        {
+          "command": "fx-extension.migrateV1Project",
+          "when": "fx-extension.v1Project"
         }
       ]
     },
@@ -291,8 +316,24 @@
         "icon": "$(sync)"
       },
       {
-        "command": "fx-extension.createEnv",
-        "title": "Teams: Create New Environment"
+        "command": "fx-extension.migrateV1Project",
+        "title": "Teams: Initialize Your Project to Use Teams Toolkit V2"
+      },
+      {
+        "command": "fx-extension.addEnvironment",
+        "title": "Teams: Add new environment",
+        "icon": "$(add)",
+        "enablement": "fx-extension.isMultiEnvEnabled"
+      },
+      {
+        "command": "fx-extension.viewEnvironment",
+        "title": "Teams: View environment profile",
+        "enablement": "fx-extension.isMultiEnvEnabled"
+      },
+      {
+        "command": "fx-extension.activateEnvironment",
+        "title": "Teams: Activate environment",
+        "enablement": "fx-extension.isMultiEnvEnabled"
       }
     ],
     "taskDefinitions": [
@@ -582,15 +623,15 @@
     "@azure/identity": "^1.2.1",
     "@azure/ms-rest-nodeauth": "^3.0.7",
     "@azure/msal-node": "^1.0.0-beta.5",
-    "@microsoft/teamsfx-api": "^0.5.0",
-    "@microsoft/teamsfx-core": "^0.5.0",
+    "@microsoft/teamsfx-api": "^0.6.0",
+    "@microsoft/teamsfx-core": "^0.6.0",
     "async-mutex": "^0.3.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "jsonschema": "^1.4.0",
     "sudo-prompt": "^9.2.1",
     "underscore": "^1.12.1",
-    "vscode-extension-telemetry": "^0.1.6",
+    "vscode-extension-telemetry": "^0.2.9",
     "vscode-tas-client": "^0.1.22",
     "vscode-test": "^1.5.2"
   },

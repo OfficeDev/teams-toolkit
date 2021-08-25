@@ -9,8 +9,9 @@ import {
   FxError,
   ok,
   Result,
+  SystemError,
 } from "@microsoft/teamsfx-api";
-import path from "path";
+import path, { basename } from "path";
 import fs from "fs-extra";
 import {
   deserializeDict,
@@ -24,6 +25,9 @@ import {
   objectToMap,
 } from "..";
 import { GLOBAL_CONFIG } from "../plugins/solution/fx-solution/constants";
+import { readJson } from "../common/fileUtils";
+import { Component, sendTelemetryErrorEvent, TelemetryEvent } from "../common/telemetry";
+import { isMultiEnvEnabled } from "../common";
 
 export interface EnvInfo {
   envName: string;
@@ -38,7 +42,7 @@ export interface EnvFiles {
 class EnvironmentManager {
   public readonly defaultEnvName = "default";
   public readonly envNameRegex = /^[\w\d-_]+$/;
-  public readonly envProfileNameRegex = /env\.(?<envName>[\w\d-_]+)\.json/i;
+  public readonly envProfileNameRegex = /profile\.(?<envName>[\w\d-_]+)\.json/i;
 
   public async loadEnvProfile(
     projectPath: string,
@@ -63,7 +67,7 @@ class EnvironmentManager {
       return ok({ envName, data });
     }
 
-    const envData = await fs.readJson(envFiles.envProfile);
+    const envData = await readJson(envFiles.envProfile);
 
     mergeSerectData(userData, envData);
     const data = objectToMap(envData);
@@ -81,9 +85,9 @@ class EnvironmentManager {
       return err(PathNotExistError(projectPath));
     }
 
-    const configFolder = this.getConfigFolder(projectPath);
-    if (!(await fs.pathExists(configFolder))) {
-      await fs.ensureDir(configFolder);
+    const envProfilesFolder = this.getEnvProfilesFolder(projectPath);
+    if (!(await fs.pathExists(envProfilesFolder))) {
+      await fs.ensureDir(envProfilesFolder);
     }
 
     envName = envName ?? this.defaultEnvName;
@@ -110,12 +114,12 @@ class EnvironmentManager {
       return err(PathNotExistError(projectPath));
     }
 
-    const configFolder = this.getConfigFolder(projectPath);
-    if (!(await fs.pathExists(configFolder))) {
+    const envProfilesFolder = this.getEnvProfilesFolder(projectPath);
+    if (!(await fs.pathExists(envProfilesFolder))) {
       return ok([]);
     }
 
-    const configFiles = await fs.readdir(configFolder);
+    const configFiles = await fs.readdir(envProfilesFolder);
     const envNames = configFiles
       .map((file) => this.getEnvNameFromPath(file))
       .filter((name): name is string => name !== null);
@@ -136,8 +140,11 @@ class EnvironmentManager {
   }
 
   public getEnvFilesPath(envName: string, projectPath: string): EnvFiles {
-    const basePath = this.getConfigFolder(projectPath);
-    const envProfile = path.resolve(basePath, `env.${envName}.json`);
+    const basePath = this.getEnvProfilesFolder(projectPath);
+    const envProfile = path.resolve(
+      basePath,
+      isMultiEnvEnabled() ? `profile.${envName}.json` : `env.${envName}.json`
+    );
     const userDataFile = path.resolve(basePath, `${envName}.userdata`);
 
     return { envProfile, userDataFile };
@@ -156,6 +163,16 @@ class EnvironmentManager {
     return path.resolve(projectPath, `.${ConfigFolderName}`);
   }
 
+  private getPublishProfilesFolder(projectPath: string): string {
+    return path.resolve(this.getConfigFolder(projectPath), "publishProfiles");
+  }
+
+  private getEnvProfilesFolder(projectPath: string): string {
+    return isMultiEnvEnabled()
+      ? this.getPublishProfilesFolder(projectPath)
+      : this.getConfigFolder(projectPath);
+  }
+
   private async loadUserData(
     userDataPath: string,
     cryptoProvider?: CryptoProvider
@@ -170,7 +187,15 @@ class EnvironmentManager {
       return ok(secrets);
     }
 
-    return this.decrypt(secrets, cryptoProvider);
+    const res = this.decrypt(secrets, cryptoProvider);
+    if (res.isErr()) {
+      const fxError: SystemError = res.error;
+      const fileName = basename(userDataPath);
+      fxError.message = `Project update failed because of ${fxError.name}(file:${fileName}):${fxError.message}, if your local file '*.userdata' is not modified, please report to us by click 'Report Issue' button.`;
+      fxError.userData = `file: ${fileName}\n------------FILE START--------\n${content}\n------------FILE END----------`;
+      sendTelemetryErrorEvent(Component.core, TelemetryEvent.DecryptUserdata, fxError);
+    }
+    return res;
   }
 
   private encrypt(

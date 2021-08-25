@@ -7,6 +7,8 @@ import { ext } from "../extensionVariables";
 import * as path from "path";
 import { ConfigFolderName } from "@microsoft/teamsfx-api";
 import { isValidProject } from "@microsoft/teamsfx-core";
+import { workspace } from "vscode";
+import * as commonUtils from "../debug/commonUtils";
 
 export function getPackageVersion(versionStr: string): string {
   if (versionStr.includes("alpha")) {
@@ -80,6 +82,66 @@ export function getProjectId(): string | undefined {
 export async function isSPFxProject(workspacePath: string): Promise<boolean> {
   if (await fs.pathExists(`${workspacePath}/SPFx`)) {
     return true;
+  }
+  return false;
+}
+
+export function anonymizeFilePaths(stack?: string): string {
+  if (stack === undefined || stack === null) {
+    return "";
+  }
+
+  const cleanupPatterns: RegExp[] = [];
+
+  let updatedStack = stack;
+
+  const cleanUpIndexes: [number, number][] = [];
+  for (const regexp of cleanupPatterns) {
+    while (true) {
+      const result = regexp.exec(stack);
+      if (!result) {
+        break;
+      }
+      cleanUpIndexes.push([result.index, regexp.lastIndex]);
+    }
+  }
+
+  const nodeModulesRegex = /^[\\\/]?(node_modules|node_modules\.asar)[\\\/]/;
+  const fileRegex =
+    /(file:\/\/)?([a-zA-Z]:(\\\\|\\|\/)|(\\\\|\\|\/))?([\w-\._]+(\\\\|\\|\/))+[\w-\._]*/g;
+  let lastIndex = 0;
+  updatedStack = "";
+
+  while (true) {
+    const result = fileRegex.exec(stack);
+    if (!result) {
+      break;
+    }
+    // Anoynimize user file paths that do not need to be retained or cleaned up.
+    if (
+      !nodeModulesRegex.test(result[0]) &&
+      cleanUpIndexes.every(([x, y]) => result.index < x || result.index >= y)
+    ) {
+      updatedStack += stack.substring(lastIndex, result.index) + "<REDACTED: user-file-path>";
+      lastIndex = fileRegex.lastIndex;
+    }
+  }
+  if (lastIndex < stack.length) {
+    updatedStack += stack.substr(lastIndex);
+  }
+
+  // sanitize with configured cleanup patterns
+  for (const regexp of cleanupPatterns) {
+    updatedStack = updatedStack.replace(regexp, "");
+  }
+
+  return updatedStack;
+}
+
+export async function isTeamsfx(): Promise<boolean> {
+  if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
+    const workspaceFolder = workspace.workspaceFolders[0];
+    return await commonUtils.isFxProject(workspaceFolder.uri.fsPath);
   }
   return false;
 }

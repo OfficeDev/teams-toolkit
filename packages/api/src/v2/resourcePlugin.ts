@@ -28,10 +28,10 @@ export type BicepTemplate = {
 };
 
 export type ProvisionOutput = {
-  output: Record<string, string>;
-  states: Record<string, string>;
+  output: Json;
+  states: Json;
   // Encryption and decryption are handled transparently by the toolkit.
-  secrets: Record<string, string>;
+  secrets: Json;
 };
 
 /**

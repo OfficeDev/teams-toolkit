@@ -89,7 +89,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: appPackage
-          path: ./.fx/appPackage.zip
+          path: appPackage/appPackage.zip
 
       - name: Publish Teams App
         uses: OfficeDev/teamsfx-cli-action@v1

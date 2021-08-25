@@ -10,6 +10,7 @@ import {
   ok,
   FxError,
   returnSystemError,
+  ConfigFolderName,
 } from "@microsoft/teamsfx-api";
 import { ScaffoldArmTemplateResult, ArmResourcePlugin } from "../../../common/armInterface";
 import { getActivatedResourcePlugins } from "./ResourcePluginContainer";
@@ -19,7 +20,7 @@ import { compileHandlebarsTemplateString, getStrings } from "../../../common";
 import path from "path";
 import * as fs from "fs-extra";
 import { ConstantString, PluginDisplayName } from "../../../common/constants";
-import { Executor } from "../../../common/tools";
+import { Executor, CryptoDataMatchers, isFeatureFlagEnabled } from "../../../common/tools";
 import {
   ARM_TEMPLATE_OUTPUT,
   GLOBAL_CONFIG,
@@ -30,6 +31,7 @@ import {
 import { ResourceManagementClient, ResourceManagementModels } from "@azure/arm-resources";
 import { DeployArmTemplatesSteps, ProgressHelper } from "./utils/progressHelper";
 
+// Old folder structure constants
 const baseFolder = "./infra/azure";
 const templateFolder = "templates";
 const parameterFolder = "parameters";
@@ -43,6 +45,12 @@ const solutionLevelParameterObject = {
     value: "{{SOLUTION__RESOURCE_BASE_NAME}}",
   },
 };
+
+// New folder structure constants
+const templateFolderNew = "./templates/azure";
+const configsFolder = `.${ConfigFolderName}/configs`;
+const modulesFolder = "modules";
+const parameterFileNameTemplateNew = "azure.parameters.@envName.json";
 
 // Get ARM template content from each resource plugin and output to project folder
 export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<any, FxError>> {
@@ -86,7 +94,9 @@ export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<
   if (bicepOrchestrationTemplate.needsGenerateTemplate()) {
     // Output main.bicep file
     const bicepOrchestrationFileContent = bicepOrchestrationTemplate.getOrchestrationFileContent();
-    const templateFolderPath = path.join(ctx.root, baseFolder, templateFolder);
+    const templateFolderPath = isNewFolderStructureEnabled()
+      ? path.join(ctx.root, templateFolderNew)
+      : path.join(ctx.root, baseFolder, templateFolder);
     await fs.ensureDir(templateFolderPath);
     await fs.writeFile(
       path.join(templateFolderPath, bicepOrchestrationFileName),
@@ -94,18 +104,26 @@ export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<
     );
 
     // Output bicep module files from each resource plugin
+    const modulesFolderPath = isNewFolderStructureEnabled()
+      ? path.join(templateFolderPath, modulesFolder)
+      : templateFolderPath;
+    await fs.ensureDir(modulesFolderPath);
     for (const module of moduleFiles) {
+      // module[0] contains relative path to template folder, e.g. "./modules/frontendHosting.bicep"
       await fs.writeFile(path.join(templateFolderPath, module[0]), module[1]);
     }
 
     // Output parameter file
-    const parameterFileContent = bicepOrchestrationTemplate.getParameterFileContent();
-    const parameterFolderPath = path.join(ctx.root, baseFolder, parameterFolder);
-    await fs.ensureDir(parameterFolderPath);
-    await fs.writeFile(
-      path.join(parameterFolderPath, parameterTemplateFileName),
-      parameterFileContent
+    const parameterTemplateFolderPath = isNewFolderStructureEnabled()
+      ? path.join(ctx.root, templateFolderNew)
+      : path.join(ctx.root, baseFolder, parameterFolder);
+    const parameterTemplateFilePath = path.join(
+      parameterTemplateFolderPath,
+      parameterTemplateFileName
     );
+    const parameterFileContent = bicepOrchestrationTemplate.getParameterFileContent();
+    await fs.ensureDir(parameterTemplateFolderPath);
+    await fs.writeFile(parameterTemplateFilePath, parameterFileContent);
   }
 
   return ok(undefined); // Nothing to return when success
@@ -128,12 +146,12 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
   }
 
   // Compile bicep file to json
-  const templateDir = path.join(ctx.root, baseFolder, templateFolder);
+  const templateDir = isNewFolderStructureEnabled()
+    ? path.join(ctx.root, templateFolderNew)
+    : path.join(ctx.root, baseFolder, templateFolder);
   const armTemplateJsonFilePath = path.join(templateDir, armTemplateJsonFileName);
-  await compileBicepToJson(
-    path.join(templateDir, bicepOrchestrationFileName),
-    armTemplateJsonFilePath
-  );
+  const bicepOrchestrationFilePath = path.join(templateDir, bicepOrchestrationFileName);
+  await compileBicepToJson(bicepOrchestrationFilePath, armTemplateJsonFilePath);
   ctx.logProvider?.info(
     format(
       getStrings().solution.DeployArmTemplates.CompileBicepSuccessNotice,
@@ -264,32 +282,51 @@ async function getParameterJson(ctx: SolutionContext) {
     throw new Error("Failed to get target environment name from solution context.");
   }
 
-  const parameterFileName = parameterFileNameTemplate.replace("@envName", ctx.targetEnvName);
-  const parameterDir = path.join(ctx.root, baseFolder, parameterFolder);
-  const parameterDefaultFilePath = path.join(parameterDir, parameterFileName);
-  const parameterTemplateFilePath = path.join(parameterDir, parameterTemplateFileName);
-  let parameterFilePath = parameterDefaultFilePath;
+  let parameterFileName, parameterFolderPath, parameterTemplateFilePath;
+  if (isNewFolderStructureEnabled()) {
+    parameterFileName = parameterFileNameTemplateNew.replace("@envName", ctx.targetEnvName);
+    parameterFolderPath = path.join(ctx.root, configsFolder);
+    parameterTemplateFilePath = path.join(
+      path.join(ctx.root, templateFolderNew),
+      parameterTemplateFileName
+    );
+  } else {
+    parameterFileName = parameterFileNameTemplate.replace("@envName", ctx.targetEnvName);
+    parameterFolderPath = path.join(ctx.root, baseFolder, parameterFolder);
+    parameterTemplateFilePath = path.join(parameterFolderPath, parameterTemplateFileName);
+  }
+
+  const parameterFilePath = path.join(parameterFolderPath, parameterFileName);
+  let createNewParameterFile = false;
   try {
-    await fs.stat(parameterDefaultFilePath);
+    await fs.stat(parameterFilePath);
   } catch (err) {
     ctx.logProvider?.info(
-      `[${PluginDisplayName.Solution}] ${parameterDefaultFilePath} does not exist. Try ${parameterTemplateFilePath}.`
+      `[${PluginDisplayName.Solution}] ${parameterFilePath} does not exist. Try ${parameterTemplateFilePath}.`
     );
-    parameterFilePath = parameterTemplateFilePath;
+    createNewParameterFile = true;
   }
-  const parameterJson = await getExpandedParameter(ctx, parameterFilePath);
 
-  if (parameterFilePath === parameterTemplateFilePath) {
-    await fs.writeFile(parameterDefaultFilePath, JSON.stringify(parameterJson, undefined, 2));
+  let parameterJson;
+  if (createNewParameterFile) {
+    parameterJson = await getExpandedParameter(ctx, parameterTemplateFilePath, false); // do not expand secrets to avoid saving secrets to parameter file
+    await fs.ensureDir(parameterFolderPath);
+    await fs.writeFile(parameterFilePath, JSON.stringify(parameterJson, undefined, 2));
   }
+
+  parameterJson = await getExpandedParameter(ctx, parameterTemplateFilePath, true); // only expand secrets in memory
 
   return parameterJson;
 }
 
-async function getExpandedParameter(ctx: SolutionContext, filePath: string) {
+async function getExpandedParameter(
+  ctx: SolutionContext,
+  filePath: string,
+  expandSecrets: boolean
+) {
   try {
     const parameterTemplate = await fs.readFile(filePath, ConstantString.UTF8Encoding);
-    const parameterJsonString = expandParameterPlaceholders(ctx, parameterTemplate);
+    const parameterJsonString = expandParameterPlaceholders(ctx, parameterTemplate, expandSecrets);
     return JSON.parse(parameterJsonString);
   } catch (err) {
     ctx.logProvider?.error(
@@ -458,10 +495,16 @@ interface PluginModuleProperties {
 }
 
 function generateBicepModuleFilePath(moduleFileName: string) {
-  return `./${moduleFileName}.bicep`;
+  return isNewFolderStructureEnabled()
+    ? `./modules/${moduleFileName}.bicep`
+    : `./${moduleFileName}.bicep`;
 }
 
-function expandParameterPlaceholders(ctx: SolutionContext, parameterContent: string): string {
+function expandParameterPlaceholders(
+  ctx: SolutionContext,
+  parameterContent: string,
+  expandSecrets: boolean
+): string {
   const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
   const plugins = getActivatedResourcePlugins(azureSolutionSettings); // This function ensures return result won't be empty
   const availableVariables: Record<string, string> = {};
@@ -492,19 +535,35 @@ function expandParameterPlaceholders(ctx: SolutionContext, parameterContent: str
   // Add environment variable to available variables
   Object.assign(availableVariables, process.env); // The environment variable has higher priority
 
+  if (expandSecrets === false) {
+    escapeSecretPlaceholders(availableVariables);
+  }
+
   return compileHandlebarsTemplateString(parameterContent, availableVariables);
 }
 
 function normalizeToEnvName(input: string): string {
-  return input.toUpperCase().replace(/-|\./g, "_"); // replace "-" or "." to "_"
+  return input.toUpperCase().replace(/-/g, "_").replace(/\./g, "__"); // replace "-" to "_" and "." to "__"
 }
 
 function generateResourceName(ctx: SolutionContext): void {
   const maxAppNameLength = 10;
   const appName = ctx.projectSettings!.appName;
-  const sufix = ctx.config.get(GLOBAL_CONFIG)?.getString("resourceNameSuffix");
+  const suffix = ctx.config.get(GLOBAL_CONFIG)?.getString("resourceNameSuffix");
   const normalizedAppName = appName.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
   ctx.config
     .get(GLOBAL_CONFIG)
-    ?.set("resource_base_name", normalizedAppName.substr(0, maxAppNameLength) + sufix);
+    ?.set("resource_base_name", normalizedAppName.substr(0, maxAppNameLength) + suffix);
+}
+
+function escapeSecretPlaceholders(variables: Record<string, string>) {
+  for (const key of CryptoDataMatchers) {
+    const normalizedKey = `${normalizeToEnvName(key)}`;
+    variables[normalizedKey] = `{{${normalizedKey}}}`; // replace value of 'SECRET_PLACEHOLDER' with '{{SECRET_PLACEHOLDER}}' so the placeholder remains unchanged
+  }
+}
+
+const FeatureFlagNewFolderStructure = "TEAMSFX_ARM_NEW_FOLDER_STRUCTURE";
+function isNewFolderStructureEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagNewFolderStructure, false);
 }

@@ -111,7 +111,7 @@ import { scaffoldReadmeAndLocalSettings } from "./v2/scaffolding";
 import { PermissionRequestFileProvider } from "../../../core/permissionRequest";
 import { IUserList } from "../../resource/appstudio/interfaces/IAppDefinition";
 import axios from "axios";
-import { ResourcePermission } from "../../../common/permissionInterface";
+import { AadOwner, Collaborator, ResourcePermission } from "../../../common/permissionInterface";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -365,8 +365,34 @@ export class TeamsAppSolution implements Solution {
     }
 
     const solutionSettings = settingsRes.value;
-    //Reload plugins according to user answers
-    await this.reloadPlugins(solutionSettings);
+    const selectedPlugins = await this.reloadPlugins(solutionSettings);
+
+    const results: Result<any, FxError>[] = await Promise.all<Result<any, FxError>>(
+      selectedPlugins.map<Promise<Result<any, FxError>>>((migratePlugin) => {
+        return this.executeUserTask(
+          {
+            namespace: `${PluginNames.SOLUTION}/${migratePlugin.name}`,
+            method: "migrateV1Project",
+            params: {},
+          },
+          ctx
+        );
+      })
+    );
+
+    const errorResult = results.find((result) => {
+      return result.isErr();
+    });
+
+    if (errorResult) {
+      return errorResult;
+    }
+
+    const capabilities = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
+      .capabilities;
+    const azureResources = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
+      .azureResources;
+    await scaffoldReadmeAndLocalSettings(capabilities, azureResources, ctx.root);
 
     ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.Migrate, {
       [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
@@ -375,9 +401,10 @@ export class TeamsAppSolution implements Solution {
     return ok(Void);
   }
 
-  reloadPlugins(solutionSettings: AzureSolutionSettings) {
+  reloadPlugins(solutionSettings: AzureSolutionSettings): Plugin[] {
     const res = getActivatedResourcePlugins(solutionSettings);
     solutionSettings.activeResourcePlugins = res.map((p) => p.name);
+    return res;
   }
 
   private spfxSelected(ctx: SolutionContext): boolean {
@@ -556,22 +583,6 @@ export class TeamsAppSolution implements Solution {
       return canProvision;
     }
 
-    const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
-    if (provisioned) {
-      const msg = util.format(
-        getStrings().solution.AlreadyProvisionNotice,
-        ctx.projectSettings?.appName
-      );
-      ctx.ui?.showMessage("warn", msg, false);
-      const pluginCtx = getPluginContext(ctx, this.AppStudioPlugin.name);
-      const remoteTeamsAppId = await this.AppStudioPlugin.provision(pluginCtx);
-      if (remoteTeamsAppId.isOk()) {
-        ctx.config.get(GLOBAL_CONFIG)?.set(REMOTE_TEAMS_APP_ID, remoteTeamsAppId.value);
-      } else {
-        return remoteTeamsAppId;
-      }
-      return await this.AppStudioPlugin.postProvision(pluginCtx);
-    }
     try {
       // Just to trigger M365 login before the concurrent execution of provision.
       // Because concurrent exectution of provision may getAccessToken() concurrently, which
@@ -696,19 +707,29 @@ export class TeamsAppSolution implements Solution {
         );
         return ok(undefined);
       },
-      async (provisionResults?: any[]) => {
-        ctx.logProvider?.info(
-          util.format(getStrings().solution.ProvisionFinishNotice, PluginDisplayName.Solution)
-        );
+      async (provisionResults?: Result<any, FxError>[]) => {
         if (provisionWithCtx.length === provisionResults?.length) {
           provisionWithCtx.map(function (plugin, index) {
             if (plugin[2] === PluginNames.APPST) {
-              ctx.config
-                .get(GLOBAL_CONFIG)
-                ?.set(REMOTE_TEAMS_APP_ID, provisionResults[index].value);
+              const teamsAppResult = provisionResults[index];
+              if (teamsAppResult.isOk()) {
+                ctx.config.get(GLOBAL_CONFIG)?.set(REMOTE_TEAMS_APP_ID, teamsAppResult.value);
+              }
             }
           });
         }
+
+        if (provisionResults) {
+          for (const result of provisionResults) {
+            if (result.isErr()) {
+              return result;
+            }
+          }
+        }
+
+        ctx.logProvider?.info(
+          util.format(getStrings().solution.ProvisionFinishNotice, PluginDisplayName.Solution)
+        );
 
         if (isArmSupportEnabled()) {
           const armDeploymentResult = await deployArmTemplates(ctx);
@@ -829,6 +850,10 @@ export class TeamsAppSolution implements Solution {
         JSON.stringify(pluginsToDeploy.map((p) => p.name))
       )
     );
+    if (this.isAzureProject(ctx)) {
+      //make sure sub is selected
+      await ctx.azureAccountProvider?.getSelectedSubscription(true);
+    }
     const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(
       ctx,
       pluginsToDeploy
@@ -1275,54 +1300,118 @@ export class TeamsAppSolution implements Solution {
 
   @hooks([ErrorHandlerMW])
   async grantPermission(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    return ok(Void);
+    try {
+      const result = await this.checkAndGetCurrentUserInfo(ctx);
+      if (result.isErr()) {
+        return result;
+      }
+
+      const email = ctx.answers!["email"] as string;
+      const userInfo = await this.getUserInfo(ctx, email);
+
+      if (!userInfo) {
+        return err(
+          returnUserError(
+            new Error(
+              "Cannot find user in current tenant, please check whether your email address is correct"
+            ),
+            "Solution",
+            SolutionError.CannotFindUserInCurrentTenant
+          )
+        );
+      }
+
+      ctx.config.get(GLOBAL_CONFIG)?.set(USER_INFO, JSON.stringify(userInfo));
+
+      const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, [
+        this.AadPlugin,
+        this.AppStudioPlugin,
+      ]);
+
+      const grantPermissionWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(
+        ([plugin, context]) => {
+          return [plugin?.grantPermission?.bind(plugin), context, plugin.name];
+        }
+      );
+
+      if (ctx.answers?.platform === Platform.CLI) {
+        const aadAppTenantId = ctx.config?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
+
+        // Todo, when multi-environment is ready, we will update to current environment
+        ctx.ui?.showMessage("info", `Starting permission grant for environment: default`, false);
+        ctx.ui?.showMessage("info", `Tenant ID: ${aadAppTenantId}`, false);
+      }
+
+      const results = await executeConcurrently("", grantPermissionWithCtx);
+      const permissions: ResourcePermission[] = [];
+      const errors: any = [];
+      for (const result of results) {
+        if (result.isErr()) {
+          errors.push(result);
+          continue;
+        }
+
+        if (result && result.value) {
+          for (const res of result.value) {
+            permissions.push(res as ResourcePermission);
+          }
+        }
+      }
+
+      let errorMsg = "";
+      if (errors.length > 0) {
+        errorMsg += `Failed to grant permission for the below resources to user: ${email}.\n Resource details: \n`;
+        for (const fxError of errors) {
+          errorMsg += fxError.error.message + "\n";
+        }
+      }
+
+      if (ctx.answers?.platform === Platform.CLI) {
+        for (const permission of permissions) {
+          ctx.ui?.showMessage(
+            "info",
+            `${permission.roles?.join(" ")} permission has been granted to ${
+              permission.name
+            }, ID: ${permission.resourceId}`,
+            false
+          );
+        }
+
+        ctx.ui?.showMessage(
+          "info",
+          `Skip grant permission for Azure resources. You may want to handle that via Azure portal. `,
+          false
+        );
+
+        if (errorMsg) {
+          for (const fxError of errors) {
+            ctx.ui?.showMessage("error", errorMsg, false);
+          }
+        }
+      }
+
+      if (errorMsg) {
+        return err(
+          returnUserError(new Error(errorMsg), "Solution", SolutionError.FailedToGrantPermission)
+        );
+      }
+
+      return ok(permissions);
+    } finally {
+      ctx.config.get(GLOBAL_CONFIG)?.delete(USER_INFO);
+      this.runningState = SolutionRunningState.Idle;
+    }
   }
 
   @hooks([ErrorHandlerMW])
   async checkPermission(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    const canCheckPermission = this.checkWhetherSolutionIsIdle();
-    if (canCheckPermission.isErr()) {
-      return canCheckPermission;
-    }
-
-    const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
-    if (!provisioned) {
-      return err(
-        returnUserError(
-          new Error(
-            "Failed to check permission because the resources have not been provisioned yet. Make sure you do the provision first."
-          ),
-          "Solution",
-          SolutionError.CannotCheckPermissionBeforeProvision
-        )
-      );
-    }
-
     try {
-      const userInfo = await this.getUserInfo(ctx);
-
-      if (!userInfo) {
-        return err(
-          returnSystemError(
-            new Error("Failed to retrieve current user info from graph token"),
-            "Solution",
-            SolutionError.FailedToRetrieveUserInfo
-          )
-        );
+      const result = await this.checkAndGetCurrentUserInfo(ctx);
+      if (result.isErr()) {
+        return result;
       }
 
-      const aadAppTenantId = ctx.config?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
-      if (!aadAppTenantId || userInfo.tenantId != (aadAppTenantId as string)) {
-        return err(
-          returnUserError(
-            new Error(
-              "Tenant id of your account and the provisioned Azure AD app does not match. Please check whether you logined with wrong account."
-            ),
-            "Solution",
-            SolutionError.M365AccountNotMatch
-          )
-        );
-      }
+      const userInfo = result.value as IUserList;
 
       ctx.config.get(GLOBAL_CONFIG)?.set(USER_INFO, JSON.stringify(userInfo));
 
@@ -1337,11 +1426,22 @@ export class TeamsAppSolution implements Solution {
         }
       );
 
+      if (ctx.answers?.platform === Platform.CLI) {
+        const aadAppTenantId = ctx.config?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
+
+        // Todo, when multi-environment is ready, we will update to current environment
+        ctx.ui?.showMessage("info", `Starting permission check for environment: default`, false);
+        ctx.ui?.showMessage("info", `Tenant ID: ${aadAppTenantId}`, false);
+      }
+
       const results = await executeConcurrently("", checkPermissionWithCtx);
 
       const permissions: ResourcePermission[] = [];
+      const errors: any = [];
+
       for (const result of results) {
         if (result.isErr()) {
+          errors.push(result);
           continue;
         }
         if (result && result.value) {
@@ -1351,7 +1451,30 @@ export class TeamsAppSolution implements Solution {
         }
       }
 
-      // TODO: show cli messages
+      let errorMsg = "";
+      if (errors.length > 0) {
+        errorMsg += `Failed to check permission for the below resources.\n Resource details: \n`;
+        for (const fxError of errors) {
+          errorMsg += fxError.error.message + "\n";
+        }
+      }
+
+      if (ctx.answers?.platform === Platform.CLI) {
+        for (const permission of permissions) {
+          ctx.ui?.showMessage(
+            "info",
+            `Resource ID: ${permission.resourceId}, Resource Name: ${permission.name}, Permission: ${permission.roles}`,
+            false
+          );
+        }
+      }
+
+      if (errorMsg) {
+        return err(
+          returnUserError(new Error(errorMsg), "Solution", SolutionError.FailedToCheckPermission)
+        );
+      }
+
       return ok(permissions);
     } finally {
       ctx.config.get(GLOBAL_CONFIG)?.delete(USER_INFO);
@@ -1360,8 +1483,57 @@ export class TeamsAppSolution implements Solution {
   }
 
   @hooks([ErrorHandlerMW])
-  async listCollaborator(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    return ok(Void);
+  async listCollaborator(
+    ctx: SolutionContext
+  ): Promise<Result<Collaborator[] | undefined, FxError>> {
+    return ok(undefined);
+  }
+
+  private async checkAndGetCurrentUserInfo(ctx: SolutionContext): Promise<Result<any, FxError>> {
+    const canProcess = this.checkWhetherSolutionIsIdle();
+    if (canProcess.isErr()) {
+      return canProcess;
+    }
+
+    const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
+    if (!provisioned) {
+      return err(
+        returnUserError(
+          new Error(
+            "Failed to process because the resources have not been provisioned yet. Make sure you do the provision first."
+          ),
+          "Solution",
+          SolutionError.CannotProcessBeforeProvision
+        )
+      );
+    }
+
+    const user = await this.getUserInfo(ctx);
+
+    if (!user) {
+      return err(
+        returnSystemError(
+          new Error("Failed to retrieve current user info from graph token"),
+          "Solution",
+          SolutionError.FailedToRetrieveUserInfo
+        )
+      );
+    }
+
+    const aadAppTenantId = ctx.config?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
+    if (!aadAppTenantId || user.tenantId != (aadAppTenantId as string)) {
+      return err(
+        returnUserError(
+          new Error(
+            "Tenant id of your account and the provisioned Azure AD app does not match. Please check whether you logined with wrong account."
+          ),
+          "Solution",
+          SolutionError.M365AccountNotMatch
+        )
+      );
+    }
+
+    return ok(user);
   }
 
   private parseTeamsAppTenantId(appStudioToken?: object): Result<string, FxError> {
@@ -2212,17 +2384,17 @@ export class TeamsAppSolution implements Solution {
         return undefined;
       }
 
-      const collaborator = res.data.value.find(
-        (user: any) => (user["userPrincipalName"] as string) === email
+      const collaborator: AadOwner = res.data.value.find(
+        (user: AadOwner) => user.userPrincipalName === email
       );
 
       if (!collaborator) {
         return undefined;
       }
 
-      aadId = collaborator["id"] as string;
-      userPrincipalName = collaborator["userPrincipalName"] as string;
-      displayName = collaborator["displayName"] as string;
+      aadId = collaborator.id;
+      userPrincipalName = collaborator.userPrincipalName;
+      displayName = collaborator.displayName;
     }
 
     return {

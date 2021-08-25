@@ -95,7 +95,7 @@ describe("Frontend hosting V2", () => {
   it("Scaffold - happy path", async () => {
     const result = await pluginV2.generateResourceTemplate(context, inputs);
     // Assert
-    const testModuleFileName = "frontend_hosting_test.bicep";
+    const testModuleFileName = "frontend_hosting.bicep";
     const mockedSolutionDataContext = {
       Plugins: [pluginV2.name, "fx-resource-aad-app-for-teams", "fx-resource-simple-auth"],
       PluginOutput: {
@@ -126,7 +126,7 @@ describe("Frontend hosting V2", () => {
         expectedResult.Orchestration.ModuleTemplate!.Content,
         fs.readFileSync(expectedModuleSnippetFilePath, ConstantString.UTF8Encoding)
       );
-      const expectedParameterFilePath = path.join(expectedBicepFileDirectory, "input_param.bicep");
+      const expectedParameterFilePath = path.join(expectedBicepFileDirectory, "param.bicep");
       assert.strictEqual(
         expectedResult.Orchestration.ParameterTemplate!.Content,
         fs.readFileSync(expectedParameterFilePath, ConstantString.UTF8Encoding)

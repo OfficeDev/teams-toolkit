@@ -100,6 +100,22 @@ export class AadAppForTeamsPlugin implements Plugin, ArmResourcePlugin {
     );
   }
 
+  public async checkPermission(ctx: PluginContext): Promise<AadResult> {
+    return await this.runWithExceptionCatchingAsync(
+      () => this.pluginImpl.checkPermission(ctx),
+      ctx,
+      Messages.EndCheckPermission.telemetry
+    );
+  }
+
+  public async grantPermission(ctx: PluginContext): Promise<AadResult> {
+    return await this.runWithExceptionCatchingAsync(
+      () => this.pluginImpl.grantPermission(ctx),
+      ctx,
+      Messages.EndCheckPermission.telemetry
+    );
+  }
+
   private async runWithExceptionCatchingAsync(
     fn: () => Promise<AadResult>,
     ctx: PluginContext,

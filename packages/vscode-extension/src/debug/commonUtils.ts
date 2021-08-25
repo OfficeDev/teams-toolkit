@@ -12,7 +12,7 @@ import * as net from "net";
 import { ext } from "../extensionVariables";
 import { getActiveEnv } from "../utils/commonUtils";
 import { initializeFocusRects } from "@fluentui/utilities";
-import { isMultiEnvEnabled, isValidProject } from "@microsoft/teamsfx-core";
+import { isMultiEnvEnabled, isValidProject, isMigrateFromV1Project } from "@microsoft/teamsfx-core";
 
 export async function getProjectRoot(
   folderPath: string,
@@ -216,6 +216,10 @@ export async function getPortsInUse(): Promise<number[]> {
     const frontendRoot = await getProjectRoot(workspacePath, constants.frontendFolderName);
     if (frontendRoot) {
       ports.push(...constants.frontendPorts);
+    }
+    const migrateFromV1 = isMigrateFromV1Project(workspacePath);
+    if (!migrateFromV1) {
+      ports.push(...constants.simpleAuthPorts);
     }
     const backendRoot = await getProjectRoot(workspacePath, constants.backendFolderName);
     if (backendRoot) {

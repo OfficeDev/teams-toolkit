@@ -8,7 +8,7 @@ module functionProvision './function.bicep' = {
     m365ClientId: m365ClientId
     m365ClientSecret: m365ClientSecret
     m365TenantId: m365TenantId
-    applicationIdUri: applicationIdUri
+    m365ApplicationIdUri: m365ApplicationIdUri
     m365OauthAuthorityHost: m365OauthAuthorityHost
     frontendHostingStorageEndpoint: frontend_hosting_test_endpoint
   }

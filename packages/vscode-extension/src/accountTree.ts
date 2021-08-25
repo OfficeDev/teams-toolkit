@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import {
-  AzureSolutionSettings,
   err,
   FxError,
   ok,
@@ -12,9 +11,8 @@ import {
   TreeItem,
   Void,
 } from "@microsoft/teamsfx-api";
-import { AzureAccount } from "./commonlib/azure-account.api";
 import AzureAccountManager from "./commonlib/azureLogin";
-import { core, getSystemInputs, tools } from "./handlers";
+import { core, getSystemInputs, tools, getAzureSolutionSettings } from "./handlers";
 import { askSubscription } from "@microsoft/teamsfx-core";
 import { VS_CODE_UI } from "./extension";
 import {
@@ -31,22 +29,6 @@ export async function getSubscriptionId(): Promise<string | undefined> {
   const subscriptionInfo = await AzureAccountManager.getSelectedSubscription();
   if (subscriptionInfo) {
     return subscriptionInfo.subscriptionId;
-  }
-  // else {
-  //   showError(projectConfigRes.error);
-  // }
-  return undefined;
-}
-
-export async function getAzureSolutionSettings(): Promise<AzureSolutionSettings | undefined> {
-  const input = getSystemInputs();
-  input.ignoreEnvInfo = true;
-  const projectConfigRes = await core.getProjectConfig(input);
-
-  if (projectConfigRes.isOk()) {
-    if (projectConfigRes.value) {
-      return projectConfigRes.value.settings?.solutionSettings as AzureSolutionSettings;
-    }
   }
   // else {
   //   showError(projectConfigRes.error);
@@ -316,41 +298,49 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
       return Promise.resolve();
     }
   );
-  tools.treeProvider!.add([
-    {
-      commandId: "fx-extension.signinM365",
-      label: StringResources.vsc.handlers.signIn365,
-      callback: signinM365Callback,
-      parent: TreeCategory.Account,
-      contextValue: "signinM365",
-      icon: "M365",
-      tooltip: {
-        isMarkdown: true,
-        value: StringResources.vsc.accountTree.m365AccountTooltip,
-      },
+
+  const signinM365TreeItem: TreeItem = {
+    commandId: "fx-extension.signinM365",
+    label: StringResources.vsc.handlers.signIn365,
+    callback: signinM365Callback,
+    parent: TreeCategory.Account,
+    contextValue: "signinM365",
+    icon: "M365",
+    tooltip: {
+      isMarkdown: true,
+      value: StringResources.vsc.accountTree.m365AccountTooltip,
     },
-    {
-      commandId: "fx-extension.signinAzure",
-      label: StringContext.getSignInAzureContext(),
-      callback: async (args?: any[]) => {
-        return signinAzureCallback(args);
-      },
-      parent: TreeCategory.Account,
-      contextValue: "signinAzure",
-      subTreeItems: [],
-      icon: "azure",
-      tooltip: {
-        isMarkdown: true,
-        value: StringResources.vsc.accountTree.azureAccountTooltip,
-      },
+  };
+
+  const signinAzureTreeItem: TreeItem = {
+    commandId: "fx-extension.signinAzure",
+    label: StringContext.getSignInAzureContext(),
+    callback: async (args?: any[]) => {
+      return signinAzureCallback(args);
     },
-    {
-      commandId: "fx-extension.specifySubscription",
-      label: StringResources.vsc.accountTree.specifySubscription,
-      callback: selectSubscriptionCallback,
-      parent: undefined,
+    parent: TreeCategory.Account,
+    contextValue: "signinAzure",
+    subTreeItems: [],
+    icon: "azure",
+    tooltip: {
+      isMarkdown: true,
+      value: StringResources.vsc.accountTree.azureAccountTooltip,
     },
-  ]);
+  };
+
+  const specifySubscriptionTreeItem: TreeItem = {
+    commandId: "fx-extension.specifySubscription",
+    label: StringResources.vsc.accountTree.specifySubscription,
+    callback: selectSubscriptionCallback,
+    parent: undefined,
+  };
+
+  const solutionSettings = await getAzureSolutionSettings();
+  if (solutionSettings && "Azure" === solutionSettings.hostType) {
+    tools.treeProvider!.add([signinM365TreeItem, signinAzureTreeItem, specifySubscriptionTreeItem]);
+  } else {
+    tools.treeProvider!.add([signinM365TreeItem]);
+  }
 
   return ok(Void);
 }

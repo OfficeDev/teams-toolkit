@@ -8,6 +8,9 @@ module simpleAuthProvision '{{PluginOutput.fx-resource-simple-auth.Modules.simpl
 }
 module simpleAuthConfiguration '{{PluginOutput.fx-resource-simple-auth.Modules.simpleAuthConfiguration.Path}}' = {
   name: 'simpleAuthConfiguration'
+  dependsOn: [
+    simpleAuthProvision
+  ]
   params: {
     simpleAuthWebAppName: simpleAuth_webAppName
     m365ClientId: m365ClientId
@@ -18,5 +21,6 @@ module simpleAuthConfiguration '{{PluginOutput.fx-resource-simple-auth.Modules.s
     {{/contains}}
     m365TenantId: m365TenantId
     oauthAuthorityHost: m365OauthAuthorityHost
+    simpelAuthPackageUri: simpleAuth_packageUri
   }
 }

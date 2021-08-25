@@ -11,6 +11,9 @@ module functionProvision '{{PluginOutput.fx-resource-function.Modules.functionPr
 }
 module functionConfiguration '{{PluginOutput.fx-resource-function.Modules.functionConfiguration.Path}}' = {
   name: 'functionConfiguration'
+  dependsOn: [
+    functionProvision
+  ]
   params: {
     functionAppName: function_webappName
     functionStorageName: function_storageName

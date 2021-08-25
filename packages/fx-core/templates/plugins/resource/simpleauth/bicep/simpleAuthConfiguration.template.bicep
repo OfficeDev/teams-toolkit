@@ -5,6 +5,7 @@ param m365ClientId string
 param m365ClientSecret string
 param m365ApplicationIdUri string
 param oauthAuthorityHost string
+param simpelAuthPackageUri string
 {{#contains 'fx-resource-frontend-hosting' Plugins}}
 
 param frontendHostingStorageEndpoint string
@@ -20,8 +21,19 @@ resource simpleAuthWebApp 'Microsoft.Web/sites@2020-06-01' existing = {
   name: simpleAuthWebAppName
 }
 
+resource simpleAuthDeploy 'Microsoft.Web/sites/extensions@2021-01-15' = {
+  parent: simpleAuthWebApp
+  name: 'MSDeploy'
+  properties: {
+    packageUri: simpelAuthPackageUri
+  }
+}
+
 resource simpleAuthWebAppSettings 'Microsoft.Web/sites/config@2018-02-01' = {
   parent:simpleAuthWebApp
+  dependsOn: [
+    simpleAuthDeploy
+  ]
   name: 'appsettings'
   properties: {
     AAD_METADATA_ADDRESS: aadMetadataAddress
@@ -35,3 +47,5 @@ resource simpleAuthWebAppSettings 'Microsoft.Web/sites/config@2018-02-01' = {
     {{/contains}}
   }
 }
+
+

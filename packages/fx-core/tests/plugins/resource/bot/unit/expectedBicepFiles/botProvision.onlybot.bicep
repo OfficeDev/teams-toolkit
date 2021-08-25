@@ -5,9 +5,6 @@ param botServiceSKU string = 'F1'
 param botWebAppName string
 param botAadClientId string
 param botDisplayName string
-{{#contains 'fx-resource-identity' Plugins}}
-param identityName string
-{{/contains}}
 
 var botWebAppHostname = botWebApp.properties.hostNames[0]
 var botEndpoint = 'https://${botWebAppHostname}'
@@ -51,14 +48,6 @@ resource botWebApp 'Microsoft.Web/sites@2021-01-01' = {
       numberOfWorkers: 1
     }
   }
-  {{#contains 'fx-resource-identity' Plugins}}
-  identity: {
-    type: 'UserAssigned'
-    userAssignedIdentities: {
-      '${identityName}': {}
-    }
-  }
-  {{/contains}}
 }
 
 output botWebAppSKU string = botWebAppSKU // skuName

@@ -1,12 +1,8 @@
 param botServiceName string
-param botServerfarmsName string
-param botWebAppSKU string = 'F1'
-param botServiceSKU string = 'F1'
 param botWebAppName string
 param botAadClientId string
 @secure()
 param botAadClientSecret string
-param botDisplayName string
 param authLoginUriSuffix string
 param m365ClientId string
 @secure()
@@ -19,18 +15,8 @@ var botWebAppHostname = botWebApp.properties.hostNames[0]
 var botEndpoint = 'https://${botWebAppHostname}'
 var initiateLoginEndpoint = uri(botEndpoint, authLoginUriSuffix)
 
-resource botServices 'Microsoft.BotService/botServices@2021-03-01' = {
-  kind: 'azurebot'
-  location: 'global'
+resource botServices 'Microsoft.BotService/botServices@2021-03-01' existing = {
   name: botServiceName
-  properties: {
-    displayName: botDisplayName
-    endpoint: uri(botEndpoint, '/api/messages')
-    msaAppId: botAadClientId
-  }
-  sku: {
-    name: botServiceSKU
-  }
 }
 
 resource botServicesMsTeamsChannel 'Microsoft.BotService/botServices/channels@2021-03-01' = {
@@ -42,31 +28,8 @@ resource botServicesMsTeamsChannel 'Microsoft.BotService/botServices/channels@20
   }
 }
 
-resource botServerfarm 'Microsoft.Web/serverfarms@2021-01-01' = {
-  kind: 'app'
-  location: resourceGroup().location
-  name: botServerfarmsName
-  properties: {
-    reserved: false
-  }
-  sku: {
-    name: botWebAppSKU
-  }
-}
-
-resource botWebApp 'Microsoft.Web/sites@2021-01-01' = {
-  kind: 'app'
-  location: resourceGroup().location
+resource botWebApp 'Microsoft.Web/sites@2021-01-01' existing = {
   name: botWebAppName
-  properties: {
-    reserved: false
-    serverFarmId: botServerfarm.id
-    siteConfig: {
-      alwaysOn: false
-      http20Enabled: false
-      numberOfWorkers: 1
-    }
-  }
 }
 
 resource botWebAppSettings 'Microsoft.Web/sites/config@2021-01-01' = {
@@ -85,12 +48,3 @@ resource botWebAppSettings 'Microsoft.Web/sites/config@2021-01-01' = {
       WEBSITE_NODE_DEFAULT_VERSION: '12.13.0'
      }
 }
-
-output botWebAppSKU string = botWebAppSKU // skuName
-output botServiceSKU string = botServiceSKU
-output botWebAppName string = botWebAppName // siteName
-output botDomain string = botWebAppHostname // validDomain
-output appServicePlanName string = botServerfarmsName // appServicePlan
-output botServiceName string = botServiceName // botChannelReg
-output botWebAppEndpoint string = botEndpoint // siteEndpoint
-

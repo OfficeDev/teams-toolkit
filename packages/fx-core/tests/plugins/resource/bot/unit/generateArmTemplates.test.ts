@@ -30,14 +30,18 @@ describe("Bot Generates Arm Templates", () => {
     const result = await botPlugin.generateArmTemplates(pluginContext);
 
     // Assert
-    const testModuleFileName = "bot.onlybot.bicep";
+    const provisionModuleFileName = "botProvision.onlybot.bicep";
+    const configurationModuleFileName = "botConfiguration.onlybot.bicep";
     const mockedSolutionDataContext = {
       Plugins: activeResourcePlugins,
       PluginOutput: {
         "fx-resource-bot": {
           Modules: {
             botProvision: {
-              Path: `./${testModuleFileName}`,
+              Path: `./${provisionModuleFileName}`,
+            },
+            botConfiguration: {
+              Path: `./${configurationModuleFileName}`,
             },
           },
         },
@@ -51,10 +55,21 @@ describe("Bot Generates Arm Templates", () => {
       );
 
       const expectedBicepFileDirectory = path.join(__dirname, "expectedBicepFiles");
-      const expectedModuleFilePath = path.join(expectedBicepFileDirectory, testModuleFileName);
+      const expectedProvisionModuleFilePath = path.join(
+        expectedBicepFileDirectory,
+        provisionModuleFileName
+      );
       chai.assert.strictEqual(
         compiledResult.Modules!.botProvision.Content,
-        fs.readFileSync(expectedModuleFilePath, ConstantString.UTF8Encoding)
+        fs.readFileSync(expectedProvisionModuleFilePath, ConstantString.UTF8Encoding)
+      );
+      const expectedConfigurationModuleFilePath = path.join(
+        expectedBicepFileDirectory,
+        configurationModuleFileName
+      );
+      chai.assert.strictEqual(
+        compiledResult.Modules!.botConfiguration.Content,
+        fs.readFileSync(expectedConfigurationModuleFilePath, ConstantString.UTF8Encoding)
       );
       const expectedModuleSnippetFilePath = path.join(
         expectedBicepFileDirectory,
@@ -111,7 +126,8 @@ describe("Bot Generates Arm Templates", () => {
     const result = await botPlugin.generateArmTemplates(pluginContext);
 
     // Assert
-    const testModuleFileName = "bot.all.bicep";
+    const testProvisionModuleFileName = "botProvision.all.bicep";
+    const testConfigurationModuleFileName = "botConfiguration.all.bicep";
     const mockedSolutionDataContext = {
       Plugins: activeResourcePlugins,
       PluginOutput: {
@@ -121,7 +137,10 @@ describe("Bot Generates Arm Templates", () => {
         "fx-resource-bot": {
           Modules: {
             botProvision: {
-              Path: `./${testModuleFileName}`,
+              Path: `./${testProvisionModuleFileName}`,
+            },
+            botConfiguration: {
+              Path: `./${testConfigurationModuleFileName}`,
             },
           },
         },
@@ -152,10 +171,21 @@ describe("Bot Generates Arm Templates", () => {
       );
 
       const expectedBicepFileDirectory = path.join(__dirname, "expectedBicepFiles");
-      const expectedModuleFilePath = path.join(expectedBicepFileDirectory, testModuleFileName);
+      const expectedProvisionModuleFilePath = path.join(
+        expectedBicepFileDirectory,
+        testProvisionModuleFileName
+      );
       chai.assert.strictEqual(
         compiledResult.Modules!.botProvision.Content,
-        fs.readFileSync(expectedModuleFilePath, ConstantString.UTF8Encoding)
+        fs.readFileSync(expectedProvisionModuleFilePath, ConstantString.UTF8Encoding)
+      );
+      const expectedConfigurationModuleFilePath = path.join(
+        expectedBicepFileDirectory,
+        testConfigurationModuleFileName
+      );
+      chai.assert.strictEqual(
+        compiledResult.Modules!.botConfiguration.Content,
+        fs.readFileSync(expectedConfigurationModuleFilePath, ConstantString.UTF8Encoding)
       );
       const expectedModuleSnippetFilePath = path.join(
         expectedBicepFileDirectory,

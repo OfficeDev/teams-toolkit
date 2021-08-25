@@ -18,6 +18,9 @@ resource functionApp 'Microsoft.Web/sites@2020-06-01' = {
   name: functionAppName
   kind: 'functionapp'
   location: resourceGroup().location
+  properties: {
+    serverFarmId: functionServerfarms.id
+  }
   {{#contains 'fx-resource-identity' Plugins}}
   identity: {
     type: 'UserAssigned'

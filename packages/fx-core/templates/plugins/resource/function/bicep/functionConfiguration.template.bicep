@@ -33,7 +33,7 @@ resource functionStorage 'Microsoft.Storage/storageAccounts@2021-04-01' existing
 var oauthAuthority = uri(m365OauthAuthorityHost, m365TenantId)
 
 {{#contains 'fx-resource-frontend-hosting' Plugins}}
-resource functionAppConfig 'Microsoft.Web/sites/config@2020-06-01' = {
+resource functionAppConfig 'Microsoft.Web/sites/config@2021-01-15' = {
   parent: functionApp
   name: 'web'
   kind: 'functionapp'

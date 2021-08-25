@@ -107,12 +107,6 @@ export class SimpleAuthPluginImpl {
     const configs = Utils.getWebAppConfig(ctx, false);
 
     if (isArmSupportEnabled()) {
-      await this.initWebAppClient(ctx);
-
-      const simpleAuthFilePath = Utils.getSimpleAuthFilePath();
-      await Utils.downloadZip(simpleAuthFilePath);
-      await this.webAppClient.zipDeploy(simpleAuthFilePath);
-
       const endpoint = getArmOutput(ctx, Constants.ArmOutput.simpleAuthEndpoint) as string;
       ctx.config.set(Constants.SimpleAuthPlugin.configKeys.endpoint, endpoint);
 

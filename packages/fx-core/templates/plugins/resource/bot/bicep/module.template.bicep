@@ -15,6 +15,9 @@ module botProvision '{{PluginOutput.fx-resource-bot.Modules.botProvision.Path}}'
 }
 module botConfiguration '{{PluginOutput.fx-resource-bot.Modules.botConfiguration.Path}}' = {
   name: 'botConfiguration'
+  dependsOn: [
+    botProvision
+  ]
   params: {
     botAadClientId: bot_aadClientId
     botAadClientSecret: bot_aadClientSecret

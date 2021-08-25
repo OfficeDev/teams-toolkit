@@ -1,4 +1,3 @@
-
 module simpleAuthProvision '{{PluginOutput.fx-resource-simple-auth.Modules.simpleAuthProvision.Path}}' = {
   name: 'simpleAuthProvision'
   params: {
@@ -7,7 +6,6 @@ module simpleAuthProvision '{{PluginOutput.fx-resource-simple-auth.Modules.simpl
     sku: simpleAuth_sku
   }
 }
-
 module simpleAuthConfiguration '{{PluginOutput.fx-resource-simple-auth.Modules.simpleAuthConfiguration.Path}}' = {
   name: 'simpleAuthConfiguration'
   params: {

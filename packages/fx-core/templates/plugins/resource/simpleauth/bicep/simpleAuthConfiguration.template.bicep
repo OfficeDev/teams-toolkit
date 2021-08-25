@@ -1,4 +1,3 @@
-param simpleAuthServerFarmsName string
 param simpleAuthWebAppName string
 param m365TenantId string
 param m365ClientId string

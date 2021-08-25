@@ -195,5 +195,6 @@ export class FunctionArmOutput {
 }
 
 export class FunctionBicepFile {
-  static readonly moduleTemplateFileName: string = "function.template.bicep";
+  static readonly provisionModuleTemplateFileName: string = "functionProvision.template.bicep";
+  static readonly configurationTemplateFileName: string = "functionConfiguration.template.bicep";
 }

@@ -1,9 +1,18 @@
-
 module functionProvision '{{PluginOutput.fx-resource-function.Modules.functionProvision.Path}}' = {
   name: 'functionProvision'
   params: {
     functionAppName: function_webappName
     functionServerfarmsName: function_serverfarmsName
+    functionStorageName: function_storageName
+    {{#contains 'fx-resource-identity' Plugins}}
+    identityName: {{../PluginOutput.fx-resource-identity.Outputs.identityName}}
+    {{/contains}}
+  }
+}
+module functionConfiguration '{{PluginOutput.fx-resource-function.Modules.functionConfiguration.Path}}' = {
+  name: 'functionConfiguration'
+  params: {
+    functionAppName: function_webappName
     functionStorageName: function_storageName
     m365ClientId: m365ClientId
     m365ClientSecret: m365ClientSecret
@@ -19,7 +28,6 @@ module functionProvision '{{PluginOutput.fx-resource-function.Modules.functionPr
     {{/contains}}
     {{#contains 'fx-resource-identity' Plugins}}
     identityId: {{../PluginOutput.fx-resource-identity.Outputs.identityId}}
-    identityName: {{../PluginOutput.fx-resource-identity.Outputs.identityName}}
     {{/contains}}
   }
 }

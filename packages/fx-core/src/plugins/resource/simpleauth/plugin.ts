@@ -150,13 +150,28 @@ export class SimpleAuthPluginImpl {
       "bicep"
     );
 
-    const moduleTemplateFilePath = path.join(
+    const provisionModuleTemplateFilePath = path.join(
       bicepTemplateDirectory,
-      Constants.moduleTemplateFileName
+      Constants.provisionModuleTemplateFileName
     );
-    const moduleContentResult = await generateBicepFiles(moduleTemplateFilePath, context);
-    if (moduleContentResult.isErr()) {
-      throw moduleContentResult.error;
+    const provisionModuleContentResult = await generateBicepFiles(
+      provisionModuleTemplateFilePath,
+      context
+    );
+    if (provisionModuleContentResult.isErr()) {
+      throw provisionModuleContentResult.error;
+    }
+
+    const configurationModuleTemplateFilePath = path.join(
+      bicepTemplateDirectory,
+      Constants.configurationModuleTemplateFileName
+    );
+    const configurationModuleContentResult = await generateBicepFiles(
+      configurationModuleTemplateFilePath,
+      context
+    );
+    if (configurationModuleContentResult.isErr()) {
+      throw configurationModuleContentResult.error;
     }
 
     const parameterTemplateFilePath = path.join(
@@ -175,7 +190,10 @@ export class SimpleAuthPluginImpl {
     const result: ScaffoldArmTemplateResult = {
       Modules: {
         simpleAuthProvision: {
-          Content: moduleContentResult.value,
+          Content: provisionModuleContentResult.value,
+        },
+        simpleAuthConfiguration: {
+          Content: configurationModuleContentResult.value,
         },
       },
       Orchestration: {

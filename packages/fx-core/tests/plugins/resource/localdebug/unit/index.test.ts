@@ -68,6 +68,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
             version: "",
             activeResourcePlugins: [
               "fx-resource-aad-app-for-teams",
+              "fx-resource-simple-auth",
               "fx-resource-frontend-hosting",
               "fx-resource-function",
             ],
@@ -130,6 +131,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
             version: "",
             activeResourcePlugins: [
               "fx-resource-aad-app-for-teams",
+              "fx-resource-simple-auth",
               "fx-resource-frontend-hosting",
             ],
           },
@@ -241,6 +243,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
             version: "",
             activeResourcePlugins: [
               "fx-resource-aad-app-for-teams",
+              "fx-resource-simple-auth",
               "fx-resource-frontend-hosting",
               "fx-resource-function",
               "fx-resource-bot",
@@ -305,6 +308,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
             activeResourcePlugins: [
               "fx-resource-aad-app-for-teams",
               "fx-resource-frontend-hosting",
+              "fx-resource-simple-auth",
               "fx-resource-bot",
             ],
           },
@@ -398,6 +402,58 @@ describe(LocalDebugPluginInfo.pluginName, () => {
       chai.assert.isFalse(fs.existsSync(expectedTasksFile));
       chai.assert.isFalse(fs.existsSync(expectedSettingsFile));
       chai.assert.isFalse(fs.existsSync(expectedLocalEnvFile));
+    });
+
+    const parameters6: TestParameter[] = [
+      {
+        programmingLanguage: "javascript",
+        numConfigurations: 2,
+        numCompounds: 2,
+        numTasks: 5,
+        numLocalEnvs: 2,
+      },
+      {
+        programmingLanguage: "typescript",
+        numConfigurations: 2,
+        numCompounds: 2,
+        numTasks: 5,
+        numLocalEnvs: 2,
+      },
+    ];
+    parameters6.forEach((parameter: TestParameter) => {
+      it(`happy path: tab migrate from v1 (${parameter.programmingLanguage})`, async () => {
+        pluginContext.configOfOtherPlugins = new Map([
+          ["solution", new Map([["programmingLanguage", parameter.programmingLanguage]])],
+        ]);
+        pluginContext.projectSettings = {
+          appName: "",
+          projectId: uuid.v4(),
+          solutionSettings: {
+            name: "",
+            version: "",
+            activeResourcePlugins: ["fx-resource-frontend-hosting"],
+            migrateFromV1: true,
+          },
+        };
+        const result = await plugin.scaffold(pluginContext);
+        chai.assert.isTrue(result.isOk());
+
+        //assert output launch.json
+        const launch = fs.readJSONSync(expectedLaunchFile);
+        const configurations: [] = launch["configurations"];
+        const compounds: [] = launch["compounds"];
+        chai.assert.equal(configurations.length, parameter.numConfigurations);
+        chai.assert.equal(compounds.length, parameter.numCompounds);
+
+        //assert output tasks.json
+        const tasksAll = fs.readJSONSync(expectedTasksFile);
+        const tasks: [] = tasksAll["tasks"];
+        chai.assert.equal(tasks.length, parameter.numTasks);
+
+        //assert output local.env
+        const localEnvs = dotenv.parse(fs.readFileSync(expectedLocalEnvFile));
+        chai.assert.equal(Object.keys(localEnvs).length, parameter.numLocalEnvs);
+      });
     });
   });
 

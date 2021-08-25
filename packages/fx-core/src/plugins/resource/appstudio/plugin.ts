@@ -160,8 +160,7 @@ export class AppStudioPluginImpl {
    * @returns
    */
   public async createManifest(settings: ProjectSettings): Promise<TeamsAppManifest | undefined> {
-    const solutionSettings: AzureSolutionSettings =
-      settings.solutionSettings as AzureSolutionSettings;
+    const solutionSettings: AzureSolutionSettings = settings.solutionSettings as AzureSolutionSettings;
     if (
       !solutionSettings.capabilities ||
       (!solutionSettings.capabilities.includes(BotOptionItem.id) &&
@@ -978,7 +977,7 @@ export class AppStudioPluginImpl {
       );
     }
 
-    if (!aadId) {
+    if (!ctx?.projectSettings?.solutionSettings?.migrateFromV1 && !aadId) {
       return err(
         localDebug
           ? AppStudioResultFactory.SystemError(

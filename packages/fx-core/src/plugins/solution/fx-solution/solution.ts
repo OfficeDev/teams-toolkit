@@ -446,7 +446,7 @@ export class TeamsAppSolution implements Solution {
       return maybeSelectedPlugins;
     }
     const selectedPlugins = maybeSelectedPlugins.value;
-    const result = await this.doScaffold(ctx, selectedPlugins);
+    const result = await this.doScaffold(ctx, selectedPlugins, true);
     if (result.isOk()) {
       ctx.ui?.showMessage("info", `Success: ${getStrings().solution.ScaffoldSuccessNotice}`, false);
     }
@@ -455,7 +455,8 @@ export class TeamsAppSolution implements Solution {
 
   async doScaffold(
     ctx: SolutionContext,
-    selectedPlugins: LoadedPlugin[]
+    selectedPlugins: LoadedPlugin[],
+    generateResourceTemplate: boolean
   ): Promise<Result<any, FxError>> {
     const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(
       ctx,
@@ -481,7 +482,7 @@ export class TeamsAppSolution implements Solution {
       await scaffoldReadmeAndLocalSettings(capabilities, azureResources, ctx.root);
     }
 
-    if (isArmSupportEnabled()) {
+    if (isArmSupportEnabled() && generateResourceTemplate) {
       return await generateArmTemplate(ctx);
     } else {
       return res;
@@ -1873,7 +1874,7 @@ export class TeamsAppSolution implements Solution {
     let addNewResoruceToProvision = false;
     const notifications: string[] = [];
     const pluginsToScaffold: LoadedPlugin[] = [this.LocalDebugPlugin];
-    const azureResource = settings.azureResources || [];
+    const azureResource = Array.from(settings.azureResources || []);
     if (addFunc || ((addSQL || addApim) && !alreadyHaveFunction)) {
       pluginsToScaffold.push(functionPlugin);
       if (!azureResource.includes(AzureResourceFunction.id)) {
@@ -1896,9 +1897,16 @@ export class TeamsAppSolution implements Solution {
     }
 
     if (notifications.length > 0) {
+      if (isArmSupportEnabled() && addNewResoruceToProvision) {
+        const confirmed = await this.confirmRegenerateArmTemplate(ctx);
+        if (!confirmed) {
+          return ok(Void);
+        }
+      }
+      settings.azureResources = azureResource;
       await this.reloadPlugins(settings);
       ctx.logProvider?.info(`start scaffolding ${notifications.join(",")}.....`);
-      const scaffoldRes = await this.doScaffold(ctx, pluginsToScaffold);
+      const scaffoldRes = await this.doScaffold(ctx, pluginsToScaffold, addNewResoruceToProvision);
       if (scaffoldRes.isErr()) {
         ctx.logProvider?.info(`failed to scaffold ${notifications.join(",")}!`);
         ctx.projectSettings!.solutionSettings = originalSettings;
@@ -1991,9 +1999,10 @@ export class TeamsAppSolution implements Solution {
     let change = false;
     const notifications: string[] = [];
     const pluginsToScaffold: LoadedPlugin[] = [this.LocalDebugPlugin, this.AppStudioPlugin];
+    const capabilities = Array.from(settings.capabilities);
     for (const cap of capabilitiesAnswer!) {
-      if (!settings.capabilities.includes(cap)) {
-        settings.capabilities.push(cap);
+      if (!capabilities.includes(cap)) {
+        capabilities.push(cap);
         change = true;
         if (cap === TabOptionItem.id) {
           notifications.push("Azure Tab Frontend");
@@ -2009,9 +2018,16 @@ export class TeamsAppSolution implements Solution {
     }
 
     if (change) {
+      if (isArmSupportEnabled()) {
+        const confirmed = await this.confirmRegenerateArmTemplate(ctx);
+        if (!confirmed) {
+          return ok(Void);
+        }
+      }
+      settings.capabilities = capabilities;
       await this.reloadPlugins(settings);
       ctx.logProvider?.info(`start scaffolding ${notifications.join(",")}.....`);
-      const scaffoldRes = await this.doScaffold(ctx, pluginsToScaffold);
+      const scaffoldRes = await this.doScaffold(ctx, pluginsToScaffold, true);
       if (scaffoldRes.isErr()) {
         ctx.logProvider?.info(`failed to scaffold ${notifications.join(",")}!`);
         ctx.projectSettings!.solutionSettings = originalSettings;
@@ -2404,5 +2420,15 @@ export class TeamsAppSolution implements Solution {
       displayName,
       isAdministrator,
     };
+  }
+
+  private async confirmRegenerateArmTemplate(ctx: SolutionContext): Promise<boolean> {
+    const msg: string = util.format(getStrings().solution.RegenerateArmTemplateConfirmNotice);
+    const okItem = "Ok";
+    const confirmRes = await ctx.ui?.showMessage("warn", msg, true, okItem);
+
+    const confirm = confirmRes?.isOk() ? confirmRes.value : undefined;
+
+    return confirm === okItem;
   }
 }

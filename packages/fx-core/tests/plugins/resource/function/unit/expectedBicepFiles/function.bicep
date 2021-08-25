@@ -5,7 +5,7 @@ param m365ClientId string
 @secure()
 param m365ClientSecret string
 param m365TenantId string
-param applicationIdUri string
+param m365ApplicationIdUri string
 param m365OauthAuthorityHost string
 
 param frontendHostingStorageEndpoint string
@@ -66,7 +66,7 @@ resource functionAppAppSettings 'Microsoft.Web/sites/config@2018-02-01' = {
     AzureWebJobsStorage: 'DefaultEndpointsProtocol=https;AccountName=${functionStorage.name};AccountKey=${listKeys(functionStorage.id, functionStorage.apiVersion).keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
     FUNCTIONS_EXTENSION_VERSION: '~3'
     FUNCTIONS_WORKER_RUNTIME: 'node'
-    M365_APPLICATION_ID_URI: applicationIdUri
+    M365_APPLICATION_ID_URI: m365ApplicationIdUri
     M365_CLIENT_ID: m365ClientId
     M365_CLIENT_SECRET: m365ClientSecret
     M365_TENANT_ID: m365TenantId
@@ -87,7 +87,7 @@ resource functionAppAuthSettings 'Microsoft.Web/sites/config@2018-02-01' = {
     issuer: '${oauthAuthority}/v2.0'
     allowedAudiences: [
       m365ClientId
-      applicationIdUri
+      m365ApplicationIdUri
     ]
   }
 }

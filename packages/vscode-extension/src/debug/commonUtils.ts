@@ -6,13 +6,13 @@ import * as path from "path";
 import * as dotenv from "dotenv";
 import * as vscode from "vscode";
 import * as constants from "./constants";
-import { ConfigFolderName, Func } from "@microsoft/teamsfx-api";
+import { ConfigFolderName, Func, PublishProfilesFolderName } from "@microsoft/teamsfx-api";
 import { core, getSystemInputs, showError } from "../handlers";
 import * as net from "net";
 import { ext } from "../extensionVariables";
 import { getActiveEnv } from "../utils/commonUtils";
 import { initializeFocusRects } from "@fluentui/utilities";
-import { isMultiEnvEnabled, isValidProject } from "@microsoft/teamsfx-core";
+import { isMultiEnvEnabled, isValidProject, isMigrateFromV1Project } from "@microsoft/teamsfx-core";
 
 export async function getProjectRoot(
   folderPath: string,
@@ -217,6 +217,10 @@ export async function getPortsInUse(): Promise<number[]> {
     if (frontendRoot) {
       ports.push(...constants.frontendPorts);
     }
+    const migrateFromV1 = isMigrateFromV1Project(workspacePath);
+    if (!migrateFromV1) {
+      ports.push(...constants.simpleAuthPorts);
+    }
     const backendRoot = await getProjectRoot(workspacePath, constants.backendFolderName);
     if (backendRoot) {
       ports.push(...constants.backendPorts);
@@ -244,7 +248,7 @@ function getSettingWithUserData(jsonSelector: (jsonObject: any) => any): string 
     if (isValidProject(ws)) {
       const env = getActiveEnv();
       const envJsonPath = isMultiEnvEnabled()
-        ? path.join(ws, `.${ConfigFolderName}/publishProfiles/profile.${env}.json`)
+        ? path.join(ws, `.${ConfigFolderName}/${PublishProfilesFolderName}/profile.${env}.json`)
         : path.join(ws, `.${ConfigFolderName}/env.${env}.json`);
       const envJson = JSON.parse(fs.readFileSync(envJsonPath, "utf8"));
       const settingValue = jsonSelector(envJson) as string;

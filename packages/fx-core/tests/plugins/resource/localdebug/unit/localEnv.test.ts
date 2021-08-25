@@ -33,7 +33,7 @@ describe("LocalEnvProvider", () => {
       fs.createFileSync(testFilePath);
       fs.writeFileSync(testFilePath, testContent);
 
-      const envs = await localEnvProvider.loadLocalEnv(true, false, false);
+      const envs = await localEnvProvider.loadLocalEnv(true, false, false, true);
 
       chai.assert.isDefined(envs);
       chai.assert.equal(Object.keys(envs).length, 2);
@@ -44,7 +44,7 @@ describe("LocalEnvProvider", () => {
     it("empty file", async () => {
       fs.createFileSync(testFilePath);
 
-      const envs = await localEnvProvider.loadLocalEnv(true, false, false);
+      const envs = await localEnvProvider.loadLocalEnv(true, false, false, true);
 
       chai.assert.isDefined(envs);
       chai.assert.equal(Object.keys(envs).length, 0);
@@ -57,13 +57,13 @@ describe("LocalEnvProvider", () => {
       };
       await localEnvProvider.saveLocalEnv(expectedEnvs);
 
-      const actualEnvs = await localEnvProvider.loadLocalEnv(true, false, false);
+      const actualEnvs = await localEnvProvider.loadLocalEnv(true, false, false, true);
 
       chai.assert.deepEqual(actualEnvs, expectedEnvs);
     });
 
     it("no env file", async () => {
-      const actualEnvs = await localEnvProvider.loadLocalEnv(true, true, true);
+      const actualEnvs = await localEnvProvider.loadLocalEnv(true, true, true, true);
 
       chai.assert.isDefined(actualEnvs);
       const actualEntries = Object.entries(actualEnvs);
@@ -124,7 +124,7 @@ describe("LocalEnvProvider", () => {
     });
 
     it("tab include backend", async () => {
-      const initLocalEnvs = localEnvProvider.initialLocalEnvs(true, true, false);
+      const initLocalEnvs = localEnvProvider.initialLocalEnvs(true, true, false, true);
 
       chai.assert.isDefined(initLocalEnvs);
       const actualEntries = Object.entries(initLocalEnvs);
@@ -138,7 +138,7 @@ describe("LocalEnvProvider", () => {
     });
 
     it("tab exclude backend", async () => {
-      const initLocalEnvs = localEnvProvider.initialLocalEnvs(true, false, false);
+      const initLocalEnvs = localEnvProvider.initialLocalEnvs(true, false, false, true);
 
       chai.assert.isDefined(initLocalEnvs);
       const actualEntries = Object.entries(initLocalEnvs);
@@ -152,11 +152,23 @@ describe("LocalEnvProvider", () => {
     });
 
     it("bot", async () => {
-      const initLocalEnvs = localEnvProvider.initialLocalEnvs(false, false, true);
+      const initLocalEnvs = localEnvProvider.initialLocalEnvs(false, false, true, true);
 
       chai.assert.isDefined(initLocalEnvs);
       const actualEntries = Object.entries(initLocalEnvs);
       const expectedKeys = Object.values(LocalEnvBotKeys);
+      chai.assert.equal(actualEntries.length, expectedKeys.length);
+      for (const key of expectedKeys) {
+        chai.assert.isDefined(initLocalEnvs[key]);
+      }
+    });
+
+    it("tab migrate from v1", async () => {
+      const initLocalEnvs = localEnvProvider.initialLocalEnvs(true, false, false, false);
+
+      chai.assert.isDefined(initLocalEnvs);
+      const actualEntries = Object.entries(initLocalEnvs);
+      const expectedKeys = [LocalEnvFrontendKeys.Browser, LocalEnvFrontendKeys.Https];
       chai.assert.equal(actualEntries.length, expectedKeys.length);
       for (const key of expectedKeys) {
         chai.assert.isDefined(initLocalEnvs[key]);

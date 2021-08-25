@@ -84,7 +84,6 @@ export class PluginBot {
   public static readonly BOT_CHANNEL_REGISTRATION = "botChannelReg";
   public static readonly UNPACK_FLAG = "unPackFlag";
   public static readonly MESSAGE_EXTENSION_SECTION = "composeExtensions";
-  public static readonly REDIRECT_URI = "redirectUri";
   public static readonly LOCAL_REDIRECT_URI = "local_redirectUri";
 }
 

@@ -231,6 +231,9 @@ export interface EnvMeta {
 }
 
 // @public (undocumented)
+export const EnvProfileFileNameTemplate = "profile.@envName.json";
+
+// @public (undocumented)
 export interface FolderQuestion extends UserInputQuestion {
     default?: string | LocalFunc<string | undefined>;
     // (undocumented)
@@ -449,6 +452,9 @@ export interface IName {
     // (undocumented)
     short: string;
 }
+
+// @public (undocumented)
+export const InputConfigsFolderName = "configs";
 
 // @public
 export interface InputResult<T> {
@@ -775,6 +781,9 @@ export interface ProjectSettings {
     version?: string;
 }
 
+// @public (undocumented)
+export const ProjectSettingsFileName = "projectSettings.json";
+
 // @public
 export interface ProjectStates {
     // (undocumented)
@@ -794,6 +803,9 @@ type ProvisionOutput = {
     states: Json;
     secrets: Json;
 };
+
+// @public (undocumented)
+export const PublishProfilesFolderName = "publishProfiles";
 
 // @public
 export class QTreeNode {

@@ -978,7 +978,7 @@ export class AppStudioPluginImpl {
       );
     }
 
-    if (!aadId) {
+    if (!ctx?.projectSettings?.solutionSettings?.migrateFromV1 && !aadId) {
       return err(
         localDebug
           ? AppStudioResultFactory.SystemError(

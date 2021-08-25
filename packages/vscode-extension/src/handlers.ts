@@ -290,7 +290,9 @@ export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
     else if (stage === Stage.deploy) result = await core.deployArtifacts(inputs);
     else if (stage === Stage.debug) result = await core.localDebug(inputs);
     else if (stage === Stage.publish) result = await core.publishApplication(inputs);
-    else {
+    else if (stage === Stage.createEnv) {
+      result = await core.createEnv(inputs);
+    } else {
       throw new SystemError(
         ExtensionErrors.UnsupportedOperation,
         util.format(StringResources.vsc.handlers.operationNotSupport, stage),
@@ -651,75 +653,25 @@ export async function openManifestHandler(args?: any[]): Promise<Result<null, Fx
 }
 
 export async function createNewEnvironment(args?: any[]): Promise<Result<Void, FxError>> {
-  const eventName = TelemetryEvent.CreateNewEnvironment;
-  let result: Result<Void, FxError> = ok(Void);
-  try {
-    const checkCoreRes = checkCoreNotEmpty();
-    if (checkCoreRes.isErr()) {
-      throw checkCoreRes.error;
-    }
-    const inputs: Inputs = getSystemInputs();
-    result = await core.createEnv(inputs);
-  } catch (e) {
-    result = wrapError(e);
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.CreateNewEnvironmentStart,
+    getTriggerFromProperty(args)
+  );
+  const result = await runCommand(Stage.createEnv);
+  if (!result.isErr()) {
+    registerEnvTreeHandler();
   }
-
-  await processResult(eventName, result);
   return result;
 }
 
-// export async function createEnv(args?: any[]): Promise<Result<Void, FxError>> {
-//   const eventName = TelemetryEvent.CreateNewEnvironmentStart;
-//   let result: Result<any, FxError> = ok(null);
-//   try {
-//     const checkCoreRes = checkCoreNotEmpty();
-//     if (checkCoreRes.isErr()) {
-//       throw checkCoreRes.error;
-//     }
-
-//     const inputs: Inputs = getSystemInputs();
-//     result = await core.createEnv(inputs);
-//   } catch (e) {
-//     result = wrapError(e);
-//   }
-//   await processResult(eventName, result);
-//   return result;
-// }
-
-export async function viewEnvironment(args?: any[]): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ViewEnvironment, getTriggerFromProperty(args));
-  if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
-    //todo add view environment logic
-    return ok(null);
-  } else {
-    const FxError: FxError = {
-      name: "NoWorkspace",
-      source: ExtensionSource,
-      message: StringResources.vsc.handlers.noOpenWorkspace,
-      timestamp: new Date(),
-    };
-    showError(FxError);
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ViewEnvironment, FxError);
-    return err(FxError);
-  }
+export async function viewEnvironment(args?: any[]): Promise<Result<Void, FxError>> {
+  // todo add view logic
+  return ok(Void);
 }
 
-export async function activateEnvironment(args?: any[]): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ActivateEnvironment, getTriggerFromProperty(args));
-  if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
-    //todo add activate environment logic
-    return ok(null);
-  } else {
-    const FxError: FxError = {
-      name: "NoWorkspace",
-      source: ExtensionSource,
-      message: StringResources.vsc.handlers.noOpenWorkspace,
-      timestamp: new Date(),
-    };
-    showError(FxError);
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ActivateEnvironment, FxError);
-    return err(FxError);
-  }
+export async function activateEnvironment(args?: any[]): Promise<Result<Void, FxError>> {
+  // todo add acitvate logic
+  return ok(Void);
 }
 
 export async function openM365AccountHandler() {

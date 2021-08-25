@@ -4,6 +4,7 @@
 import { WayToRegisterBot } from "./enums/wayToRegisterBot";
 import { OptionItem, ConfigFolderName } from "@microsoft/teamsfx-api";
 import { ProgrammingLanguage } from "./enums/programmingLanguage";
+import path from "path";
 
 export class RegularExprs {
   public static readonly CHARS_TO_BE_SKIPPED: RegExp = /[^a-zA-Z0-9]/g;
@@ -97,6 +98,8 @@ export class LifecycleFuncNames {
   public static readonly LOCAL_DEBUG = "local-debug";
   public static readonly POST_LOCAL_DEBUG = "post-local-debug";
 
+  public static readonly GENERATE_ARM_TEMPLATES = "generate-arm-templates";
+
   // extra
   public static readonly PROVISION_WEB_APP = "provisionWebApp";
   public static readonly UPDATE_MESSAGE_ENDPOINT_AZURE = "updateMessageEndpointOnAzure";
@@ -160,7 +163,7 @@ export class QuestionOptions {
       label: "Use an existing bot registration",
     },
   ];
-  
+
   public static readonly PROGRAMMING_LANGUAGE_OPTIONS: OptionItem[] = Object.values(
     ProgrammingLanguage
   ).map((value) => {
@@ -260,4 +263,14 @@ export class TelemetryValues {
 
 export class AzureConstants {
   public static readonly requiredResourceProviders = ["Microsoft.Web", "Microsoft.BotService"];
+}
+
+export class PathInfo {
+  public static readonly BicepTemplateRelativeDir = path.join(
+    "plugins",
+    "resource",
+    "bot",
+    "bicep"
+  );
+  public static readonly moduleTemplateFileName = "bot.template.bicep";
 }

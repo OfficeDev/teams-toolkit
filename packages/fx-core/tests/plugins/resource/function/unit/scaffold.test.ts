@@ -18,30 +18,9 @@ import { FxResult } from "../../../../../src/plugins/resource/function/result";
 import { QuestionKey } from "../../../../../src/plugins/resource/function/enums";
 import { getTemplatesFolder } from "../../../../../src";
 import { Platform } from "@microsoft/teamsfx-api";
+import { MockContext } from "../helper";
 
-const context: any = {
-  configOfOtherPlugins: new Map<string, Map<string, string>>([
-    [
-      DependentPluginInfo.solutionPluginName,
-      new Map<string, string>([
-        [DependentPluginInfo.resourceGroupName, "ut"],
-        [DependentPluginInfo.subscriptionId, "ut"],
-        [DependentPluginInfo.resourceNameSuffix, "ut"],
-      ]),
-    ],
-  ]),
-  app: {
-    name: {
-      short: "ut",
-    },
-  },
-  projectSettings: {
-    appName: "ut",
-    programmingLanguage: "javascript",
-  },
-  config: new Map(),
-  root: path.join(__dirname, "ut"),
-};
+const context = MockContext();
 
 describe(FunctionPluginInfo.pluginName, () => {
   describe("Function Scaffold Test", () => {

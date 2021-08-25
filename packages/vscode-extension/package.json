@@ -2,7 +2,7 @@
   "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit (Preview)",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "2.4.1",
+  "version": "2.5.0",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -60,6 +60,7 @@
     "onCommand:fx-extension.openReportIssues",
     "onCommand:fx-extension.validate-dependencies",
     "onCommand:fx-extension.pre-debug-check",
+    "onCommand:fx-extension.migrateV1Project",
     "workspaceContains:**/.fx/*",
     "onView:teamsfx",
     "onView:teamsfx-accounts",
@@ -170,6 +171,10 @@
         {
           "command": "fx-extension.cicdGuide",
           "when": "false"
+        },
+        {
+          "command": "fx-extension.migrateV1Project",
+          "when": "fx-extension.v1Project"
         }
       ]
     },
@@ -288,6 +293,10 @@
         "command": "fx-extension.cicdGuide",
         "title": "CI/CD guide",
         "icon": "$(sync)"
+      },
+      {
+        "command": "fx-extension.migrateV1Project",
+        "title": "Teams: Initialize Your Project to Use Teams Toolkit V2"
       }
     ],
     "taskDefinitions": [
@@ -577,15 +586,15 @@
     "@azure/identity": "^1.2.1",
     "@azure/ms-rest-nodeauth": "^3.0.7",
     "@azure/msal-node": "^1.0.0-beta.5",
-    "@microsoft/teamsfx-api": "^0.5.0",
-    "@microsoft/teamsfx-core": "^0.5.0",
+    "@microsoft/teamsfx-api": "^0.6.0",
+    "@microsoft/teamsfx-core": "^0.6.0",
     "async-mutex": "^0.3.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "jsonschema": "^1.4.0",
     "sudo-prompt": "^9.2.1",
     "underscore": "^1.12.1",
-    "vscode-extension-telemetry": "^0.1.6",
+    "vscode-extension-telemetry": "^0.2.9",
     "vscode-tas-client": "^0.1.22",
     "vscode-test": "^1.5.2"
   },

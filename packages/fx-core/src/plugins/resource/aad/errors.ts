@@ -123,6 +123,16 @@ export const MissingPermissionsRequestProvider: AadError = {
   message: () => "permissionRequestProvider is missing in plugin context",
 };
 
+export const CheckPermissionError: AadError = {
+  name: "CheckPermissionError",
+  message: () => "Failed to check permission.",
+};
+
+export const GrantPermissionError: AadError = {
+  name: "CheckPermissionError",
+  message: (resource: string, id: string) => `${resource}: ${id}. Failed to grant permission.`,
+};
+
 export class ConfigErrorMessages {
   static readonly GetDisplayNameError = "Failed to get display name.";
   static readonly GetConfigError = (configName: string, plugin: string) =>
@@ -154,8 +164,11 @@ export class GraphClientErrorMessage {
   static readonly CreateSecretFailed =
     "Failed to create an application secret in Azure Active Directory.";
   static readonly GetFailed = "Failed to retrieve Azure Active Directory application registration.";
+  static readonly CheckPermissionFailed = "Failed to check permission in Azure Active Directory.";
+  static readonly GrantPermissionFailed = "Failed to grant permission in Azure Active Directory.";
 
   static readonly AppDefinitionIsNull = "Missing application definition.";
   static readonly AppObjectIdIsNull = "Missing Object ID.";
   static readonly EmptyResponse = "Missing response.";
+  static readonly UserObjectIdIsNull = "Missing User's Object ID.";
 }

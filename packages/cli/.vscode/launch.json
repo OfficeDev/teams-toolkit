@@ -28,7 +28,7 @@
       "name": "Launch provision command (non-interactive)",
       "skipFiles": ["<node_internals>/**"],
       "program": "${workspaceFolder}/cli.js",
-      "args": ["provision", "--folder", "../../../teams/app001"],
+      "args": ["provision", "--folder", "../../../teams/app01"],
       "outFiles": [
         "${workspaceFolder}/lib/**/*.js",
         "${workspaceFolder}/../fx-core/build/**/*.js",
@@ -67,6 +67,39 @@
       "skipFiles": ["<node_internals>/**"],
       "program": "${workspaceFolder}/cli.js",
       "args": ["permission", "status", "--folder", "../../../teams/app001"],
+      "env": {
+        "TEAMSFX_REMOTE_COL": "true"
+      },
+      "outFiles": [
+        "${workspaceFolder}/lib/**/*.js",
+        "${workspaceFolder}/../fx-core/build/**/*.js",
+        "${workspaceFolder}/../api/build/**/*.js"
+      ],
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/lib/**/*.js",
+        "${workspaceFolder}/../fx-core/build/**/*.js",
+        "${workspaceFolder}/../api/build/**/*.js"
+      ]
+    },
+    {
+      "type": "pwa-node",
+      "request": "launch",
+      "name": "Launch permission grant command (non-interactive)",
+      "skipFiles": ["<node_internals>/**"],
+      "program": "${workspaceFolder}/cli.js",
+      "args": [
+        "permission",
+        "grant",
+        "--folder",
+        "../../../../Test/collaborate",
+        "--env",
+        "default",
+        "--email",
+        "email.address"
+      ],
+      "env": {
+        "TEAMSFX_MULTI_ENV": "true"
+      },
       "outFiles": [
         "${workspaceFolder}/lib/**/*.js",
         "${workspaceFolder}/../fx-core/build/**/*.js",

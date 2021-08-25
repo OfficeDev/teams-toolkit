@@ -8,7 +8,7 @@ import {
   Stage,
   QTreeNode,
   Platform,
-  Func,
+  AzureSolutionSettings,
 } from "@microsoft/teamsfx-api";
 import { ManagementClient } from "./managementClient";
 import { ErrorMessage } from "./errors";
@@ -23,11 +23,26 @@ import { SqlConfig } from "./config";
 import { SqlClient } from "./sqlClient";
 import { ContextUtils } from "./utils/contextUtils";
 import { formatEndpoint, parseToken, UserType } from "./utils/commonUtils";
-import { Constants, HelpLinks, Telemetry } from "./constants";
+import {
+  AzureSqlArmOutput,
+  AzureSqlBicep,
+  AzureSqlBicepFile,
+  Constants,
+  HelpLinks,
+  Telemetry,
+} from "./constants";
 import { Message } from "./utils/message";
 import { TelemetryUtils } from "./utils/telemetryUtils";
 import { adminNameQuestion, adminPasswordQuestion, confirmPasswordQuestion } from "./questions";
 import { Providers, ResourceManagementClientContext } from "@azure/arm-resources";
+import path from "path";
+import { generateBicepFiles, getTemplatesFolder } from "../../..";
+import { Bicep, ConstantString } from "../../../common/constants";
+import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
+import * as fs from "fs-extra";
+import { getArmOutput } from "../utils4v2";
+import { isArmSupportEnabled } from "../../../common";
+import { IdentityArmOutput } from "../identity/constants";
 
 export class SqlPluginImpl {
   config: SqlConfig = new SqlConfig();
@@ -74,21 +89,24 @@ export class SqlPluginImpl {
         type: "group",
       });
       if (ctx.answers?.platform === Platform.CLI_HELP) {
-        sqlNode.addChild(new QTreeNode(adminNameQuestion));
-        sqlNode.addChild(new QTreeNode(adminPasswordQuestion));
-        sqlNode.addChild(new QTreeNode(confirmPasswordQuestion));
+        this.buildQuestionNode(sqlNode);
         return ok(sqlNode);
       }
+
       await this.init(ctx);
-      if (this.config.azureSubscriptionId) {
+      if (isArmSupportEnabled()) {
+        this.config.admin = ctx.config.get(Constants.admin) as string;
+        this.config.adminPassword = ctx.config.get(Constants.adminPassword) as string;
+        if (this.config.admin) {
+          this.config.existSql = true;
+        }
+      } else if (this.config.azureSubscriptionId) {
         const managementClient: ManagementClient = await ManagementClient.create(ctx, this.config);
         this.config.existSql = await managementClient.existAzureSQL();
       }
 
       if (!this.config.existSql) {
-        sqlNode.addChild(new QTreeNode(adminNameQuestion));
-        sqlNode.addChild(new QTreeNode(adminPasswordQuestion));
-        sqlNode.addChild(new QTreeNode(confirmPasswordQuestion));
+        this.buildQuestionNode(sqlNode);
       }
       return ok(sqlNode);
     }
@@ -123,9 +141,6 @@ export class SqlPluginImpl {
       this.config.skipAddingUser = skipAddingUser as boolean;
     }
 
-    // sql server name
-    ctx.logProvider?.debug(Message.endpoint(this.config.sqlEndpoint));
-
     if (!this.config.existSql) {
       this.config.admin = ctx.answers![Constants.questionKey.adminName] as string;
       this.config.adminPassword = ctx.answers![Constants.questionKey.adminPassword] as string;
@@ -138,10 +153,9 @@ export class SqlPluginImpl {
         ctx.logProvider?.error(ErrorMessage.SqlInputError.message());
         throw error;
       }
+      ctx.config.set(Constants.admin, this.config.admin);
+      ctx.config.set(Constants.adminPassword, this.config.adminPassword);
     }
-
-    ctx.config.set(Constants.sqlEndpoint, this.config.sqlEndpoint);
-    ctx.config.set(Constants.databaseName, this.config.databaseName);
 
     // get login user info to set aad admin in sql
     try {
@@ -161,6 +175,10 @@ export class SqlPluginImpl {
         _error
       );
       throw error;
+    }
+
+    if (isArmSupportEnabled()) {
+      this.setContext(ctx);
     }
     TelemetryUtils.sendEvent(Telemetry.stage.preProvision, true);
     ctx.logProvider?.info(Message.endPreProvision);
@@ -229,34 +247,24 @@ export class SqlPluginImpl {
         : Telemetry.valueNo,
     });
 
+    if (isArmSupportEnabled()) {
+      this.syncArmOutput(ctx);
+    }
+
+    ctx.config.set(Constants.sqlEndpoint, this.config.sqlEndpoint);
+    ctx.config.set(Constants.databaseName, this.config.databaseName);
+    ctx.config.delete(Constants.adminPassword);
+
     const managementClient: ManagementClient = await ManagementClient.create(ctx, this.config);
 
     ctx.logProvider?.info(Message.addFirewall);
-    await managementClient.addLocalFirewallRule();
-    await managementClient.addAzureFirewallRule();
+    await this.AddFireWallRules(managementClient);
 
     await DialogUtils.progressBar?.start();
     await DialogUtils.progressBar?.next(ConfigureMessage.postProvisionAddAadmin);
-    let existAdmin = false;
-    ctx.logProvider?.info(Message.checkAadAdmin);
-    existAdmin = await managementClient.existAadAdmin();
-    if (!existAdmin) {
-      ctx.logProvider?.info(Message.addSqlAadAdmin);
-      await managementClient.addAADadmin();
-    } else {
-      ctx.logProvider?.info(Message.skipAddAadAdmin);
-    }
+    await this.CheckAndSetAadAdmin(ctx, managementClient);
 
-    const identityConfig = ctx.configOfOtherPlugins.get(Constants.identityPlugin);
-    this.config.identity = identityConfig!.get(Constants.identity) as string;
-    if (!this.config.identity) {
-      const error = SqlResultFactory.SystemError(
-        ErrorMessage.SqlGetConfigError.name,
-        ErrorMessage.SqlGetConfigError.message(Constants.identityPlugin, Constants.identity)
-      );
-      ctx.logProvider?.error(error.message);
-      throw error;
-    }
+    this.getIdentity(ctx);
 
     if (!this.config.skipAddingUser) {
       await DialogUtils.progressBar?.next(ConfigureMessage.postProvisionAddUser);
@@ -300,5 +308,124 @@ export class SqlPluginImpl {
     ctx.logProvider?.info(Message.endPostProvision);
     await DialogUtils.progressBar?.end(true);
     return ok(undefined);
+  }
+
+  public async generateArmTemplates(ctx: PluginContext): Promise<Result<any, FxError>> {
+    const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
+      .activeResourcePlugins;
+    const context = {
+      Plugins: selectedPlugins,
+    };
+
+    const bicepTemplateDirectory = path.join(
+      getTemplatesFolder(),
+      "plugins",
+      "resource",
+      "sql",
+      "bicep"
+    );
+
+    const moduleTemplateFilePath = path.join(
+      bicepTemplateDirectory,
+      AzureSqlBicepFile.moduleTemplateFileName
+    );
+    const moduleContentResult = await generateBicepFiles(moduleTemplateFilePath, context);
+    if (moduleContentResult.isErr()) {
+      throw moduleContentResult.error;
+    }
+
+    const parameterTemplateFilePath = path.join(
+      bicepTemplateDirectory,
+      Bicep.ParameterOrchestrationFileName
+    );
+    const moduleOrchestrationFilePath = path.join(
+      bicepTemplateDirectory,
+      Bicep.ModuleOrchestrationFileName
+    );
+    const outputTemplateFilePath = path.join(
+      bicepTemplateDirectory,
+      Bicep.OutputOrchestrationFileName
+    );
+    const parameterFilePath = path.join(bicepTemplateDirectory, Bicep.ParameterFileName);
+
+    const result: ScaffoldArmTemplateResult = {
+      Modules: {
+        azureSqlProvision: {
+          Content: moduleContentResult.value,
+        },
+      },
+      Orchestration: {
+        ParameterTemplate: {
+          Content: await fs.readFile(parameterTemplateFilePath, ConstantString.UTF8Encoding),
+          ParameterJson: JSON.parse(
+            await fs.readFile(parameterFilePath, ConstantString.UTF8Encoding)
+          ),
+        },
+        ModuleTemplate: {
+          Content: await fs.readFile(moduleOrchestrationFilePath, ConstantString.UTF8Encoding),
+          Outputs: {
+            sqlEndpoint: AzureSqlBicep.sqlEndpoint,
+            databaseName: AzureSqlBicep.databaseName,
+          },
+        },
+        OutputTemplate: {
+          Content: await fs.readFile(outputTemplateFilePath, ConstantString.UTF8Encoding),
+        },
+      },
+    };
+    return ok(result);
+  }
+
+  private setContext(ctx: PluginContext) {
+    ctx.config.set(Constants.admin, this.config.admin);
+    ctx.config.set(Constants.adminPassword, this.config.adminPassword);
+  }
+
+  private syncArmOutput(ctx: PluginContext) {
+    this.config.sqlEndpoint = getArmOutput(ctx, AzureSqlArmOutput.sqlEndpoint)!;
+    this.config.databaseName = getArmOutput(ctx, AzureSqlArmOutput.databaseName)!;
+    this.config.sqlServer = this.config.sqlEndpoint.split(".")[0];
+  }
+
+  private buildQuestionNode(sqlNode: QTreeNode) {
+    sqlNode.addChild(new QTreeNode(adminNameQuestion));
+    sqlNode.addChild(new QTreeNode(adminPasswordQuestion));
+    sqlNode.addChild(new QTreeNode(confirmPasswordQuestion));
+  }
+
+  private async AddFireWallRules(client: ManagementClient) {
+    await client.addLocalFirewallRule();
+    if (!isArmSupportEnabled()) {
+      await client.addAzureFirewallRule();
+    }
+  }
+
+  private async CheckAndSetAadAdmin(ctx: PluginContext, client: ManagementClient) {
+    let existAdmin = false;
+    ctx.logProvider?.info(Message.checkAadAdmin);
+    existAdmin = await client.existAadAdmin();
+    if (!existAdmin) {
+      ctx.logProvider?.info(Message.addSqlAadAdmin);
+      await client.addAADadmin();
+    } else {
+      ctx.logProvider?.info(Message.skipAddAadAdmin);
+    }
+  }
+
+  private getIdentity(ctx: PluginContext) {
+    if (isArmSupportEnabled()) {
+      this.config.identity = getArmOutput(ctx, IdentityArmOutput.identity)!;
+    } else {
+      const identityConfig = ctx.configOfOtherPlugins.get(Constants.identityPlugin);
+      this.config.identity = identityConfig!.get(Constants.identity) as string;
+      if (!this.config.identity) {
+        const error = SqlResultFactory.SystemError(
+          ErrorMessage.SqlGetConfigError.name,
+          ErrorMessage.SqlGetConfigError.message(Constants.identityPlugin, Constants.identity)
+        );
+        ctx.logProvider?.error(error.message);
+        throw error;
+      }
+    }
   }
 }

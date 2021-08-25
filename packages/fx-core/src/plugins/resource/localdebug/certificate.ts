@@ -21,10 +21,10 @@ const continueText = "Continue";
 const learnMoreText = "Learn More";
 const learnMoreUrl = "https://aka.ms/teamsfx-ca-certificate";
 const warningMessage =
-  "To debug applications in Teams, your localhost server must be on HTTPS.\
+  'To debug applications in Teams, your localhost server must be on HTTPS.\
  For Teams to trust the self-signed SSL certificate used by the toolkit, a self-signed certificate must be added to your certificate store.\
- You may skip this step, but you'll have to manually trust the secure connection in a new browser window when debugging your apps in Teams.\
- For more information \"https://aka.ms/teamsfx-ca-certificate\".";
+ You may skip this step, but you\'ll have to manually trust the secure connection in a new browser window when debugging your apps in Teams.\
+ For more information "https://aka.ms/teamsfx-ca-certificate".';
 const confirmMessage =
   warningMessage +
   " You may be asked for your account credentials when installing the certificate.";

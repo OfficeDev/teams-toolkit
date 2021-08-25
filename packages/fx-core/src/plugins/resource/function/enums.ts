@@ -75,7 +75,14 @@ export enum FunctionEvent {
   deploy = "deploy",
   postDeploy = "post-deploy",
   getQuestions = "get-questions",
+  executeUserTask = "execute-user-task",
   callFunc = "call-func",
   scaffoldFallback = "scaffold-fallback",
   skipDeploy = "skip-deploy",
+  generateArmTemplates = "generate-arm-templates",
+  addResource = "add-resource",
+}
+
+export enum CustomizedTask {
+  addResource = "addResource",
 }

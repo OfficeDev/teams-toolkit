@@ -17,6 +17,7 @@ import {
 import { CoreHookContext, FxCore } from "../..";
 import {
   NoProjectOpenedError,
+  InvalidEnvNameError,
   ProjectEnvNotExistError,
   ProjectSettingsUndefinedError,
 } from "../error";
@@ -44,7 +45,7 @@ export function EnvInfoLoaderMW(
 ): Middleware {
   return async (ctx: CoreHookContext, next: NextFunction) => {
     const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-    if (shouldIgnored(ctx)) {
+    if (shouldIgnored(ctx) || inputs.ignoreEnvInfo === true) {
       await next();
       return;
     }
@@ -221,7 +222,14 @@ async function useUserSetEnv(
     ctx.result = checkEnv.error;
     return undefined;
   }
-  if (checkEnv.value || allowCreateNewEnv) {
+  if (checkEnv.value) {
+    return inputs.env;
+  } else if (allowCreateNewEnv) {
+    const match = inputs.env.match(environmentManager.envNameRegex);
+    if (!match) {
+      ctx.result = err(InvalidEnvNameError());
+      return undefined;
+    }
     return inputs.env;
   } else {
     ctx.result = err(ProjectEnvNotExistError(inputs.env));

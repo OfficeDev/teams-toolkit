@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Microsoft Teams Framework for Node.js and browser.",
   "main": "dist/index.js",
   "module": "dist-esm/src/index.js",
@@ -38,8 +38,8 @@
     "test:unit": "npm run build:test && npm run unit-test:node && npm run unit-test:browser",
     "ui-test": "mocha --no-timeouts -r test/mocha.env.ts -r ts-node/register test/ui/**/*.spec.ts --exit",
     "precommit": "lint-staged",
-    "version": "../../.github/scripts/sdk-version.sh",
-    "postversion": "../../.github/scripts/sdk-postversion.sh"
+    "version": "../../.github/scripts/pkg-version.sh templates",
+    "postversion": "../../.github/scripts/pkg-postversion.sh templates"
   },
   "files": [
     "dist/",

@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, Inputs, Platform, TelemetryReporter, UserError } from "@microsoft/teamsfx-api";
-import { Logger } from "../core";
+import { FxError, TelemetryReporter, UserError } from "@microsoft/teamsfx-api";
+import { telemetryReporter } from "../core";
 
 export enum TelemetryProperty {
   TriggerFrom = "trigger-from",
@@ -22,6 +22,8 @@ export enum TelemetryEvent {
   DownloadSample = "download-sample",
   ProjectUpgrade = "project-upgrade",
   ProjectUpgradeStart = "project-upgrade-start",
+  ReadJson = "read-json",
+  DecryptUserdata = "decrypt-userdata",
 }
 
 export enum TelemetrySuccess {
@@ -38,11 +40,12 @@ export enum Component {
   vsc = "extension",
   cli = "cli",
   vs = "vs",
+  core = "core",
+  solution = "solution",
 }
 
 export function sendTelemetryEvent(
-  telemetryReporter: TelemetryReporter | undefined,
-  inputs: Inputs,
+  component: string,
   eventName: string,
   properties?: { [p: string]: string },
   measurements?: { [p: string]: number }
@@ -50,59 +53,31 @@ export function sendTelemetryEvent(
   if (!properties) {
     properties = {};
   }
-
-  if (TelemetryProperty.Component in properties === false) {
-    if (inputs.platform === Platform.VSCode) {
-      properties[TelemetryProperty.Component] = Component.vsc;
-    } else if (inputs.platform === Platform.VS) {
-      properties[TelemetryProperty.Component] = Component.vs;
-    } else {
-      properties[TelemetryProperty.Component] = Component.cli;
-    }
-  }
-
+  properties[TelemetryProperty.Component] = component;
   telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
-  Logger.debug(`sendTelemetryEvent, event:${eventName}, properties:${JSON.stringify(properties)}`);
 }
 
 export function sendTelemetryErrorEvent(
-  telemetryReporter: TelemetryReporter | undefined,
-  inputs: Inputs,
+  component: string,
   eventName: string,
-  error: FxError,
-  properties?: { [p: string]: string },
-  measurements?: { [p: string]: number },
-  errorProps?: string[]
+  fxError: FxError,
+  properties?: { [p: string]: string }
 ): void {
   if (!properties) {
     properties = {};
   }
-
-  if (TelemetryProperty.Component in properties === false) {
-    if (inputs.platform === Platform.VSCode) {
-      properties[TelemetryProperty.Component] = Component.vsc;
-    } else if (inputs.platform === Platform.VS) {
-      properties[TelemetryProperty.Component] = Component.vs;
-    } else {
-      properties[TelemetryProperty.Component] = Component.cli;
-    }
-  }
-
+  properties[TelemetryProperty.Component] = component;
   properties[TelemetryProperty.Success] = TelemetrySuccess.No;
-  if (error instanceof UserError) {
+  if (fxError instanceof UserError) {
     properties[TelemetryProperty.ErrorType] = TelemetryErrorType.UserError;
   } else {
     properties[TelemetryProperty.ErrorType] = TelemetryErrorType.SystemError;
   }
 
-  properties[TelemetryProperty.ErrorCode] = `${error.source}.${error.name}`;
-  properties[TelemetryProperty.ErrorMessage] = error.message;
+  properties[TelemetryProperty.ErrorCode] = `${fxError.source}.${fxError.name}`;
+  properties[TelemetryProperty.ErrorMessage] = `${fxError.message}${
+    fxError.stack ? "\nstack:\n" + fxError.stack : ""
+  }`;
 
-  telemetryReporter?.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
-
-  Logger.debug(
-    `sendTelemetryErrorEvent, event:${eventName}, properties:${JSON.stringify(
-      properties
-    )}, errorProps:${JSON.stringify(errorProps)}`
-  );
+  telemetryReporter?.sendTelemetryErrorEvent(eventName, properties, {});
 }

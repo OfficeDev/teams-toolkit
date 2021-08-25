@@ -3,11 +3,12 @@
 
 import axios, { AxiosInstance } from "axios";
 import { SystemError, LogProvider } from "@microsoft/teamsfx-api";
-import { IAppDefinition } from "./interfaces/IAppDefinition";
+import { IAppDefinition, IUserList } from "./interfaces/IAppDefinition";
 import { AppStudioError } from "./errors";
 import { IPublishingAppDenition } from "./interfaces/IPublishingAppDefinition";
 import { AppStudioResultFactory } from "./results";
 import { getAppStudioEndpoint } from "../../..";
+import { Constants } from "./constants";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AppStudioClient {
@@ -29,10 +30,7 @@ export namespace AppStudioClient {
       baseURL: baseUrl,
     });
     instance.defaults.headers.common["Authorization"] = `Bearer ${appStudioToken}`;
-    instance.interceptors.request.use(function (config) {
-      config.params = { teamstoolkit: true, ...config.params };
-      return config;
-    });
+    instance.defaults.headers.common["teamstoolkit"] = "true";
     return instance;
   }
 
@@ -62,7 +60,11 @@ export namespace AppStudioClient {
           throw new Error(`Cannot create teams app`);
         }
       } catch (e) {
-        throw new Error(`Cannot create teams app due to ${e.name}: ${e.message}`);
+        const error = new Error(`Cannot create teams app due to ${e.name}: ${e.message}`);
+        if (e.response?.status) {
+          error.name = e.response?.status;
+        }
+        throw error;
       }
     } else {
       throw new Error("Teams app create failed, invalid app studio token");
@@ -130,14 +132,13 @@ export namespace AppStudioClient {
         }
       }
     } catch (e) {
-      if (e instanceof Error) {
-        await logProvider?.warning(
-          `Cannot get the app definition with app ID ${teamsAppId}, due to ${e.name}: ${e.message}`
-        );
+      const errorMessage = `Cannot get the app definition with app ID ${teamsAppId}, due to ${e.name}: ${e.message}`;
+      await logProvider?.warning(errorMessage);
+      const err = new Error(errorMessage);
+      if (e.response?.status) {
+        err.name = e.response?.status;
       }
-      throw new Error(
-        `Cannot get the app definition with app ID ${teamsAppId}, due to ${e.name}: ${e.message}`
-      );
+      throw err;
     }
     throw new Error(`Cannot get the app definition with app ID ${teamsAppId}`);
   }
@@ -382,5 +383,63 @@ export namespace AppStudioClient {
     } else {
       return undefined;
     }
+  }
+
+  export async function getUserList(
+    teamsAppId: string,
+    appStudioToken: string
+  ): Promise<IUserList[] | undefined> {
+    let app;
+    try {
+      app = await getApp(teamsAppId, appStudioToken);
+    } catch (error) {
+      if (error.name == 404) {
+        return undefined;
+      } else {
+        throw error;
+      }
+    }
+
+    return app.userList;
+  }
+
+  export async function checkPermission(
+    teamsAppId: string,
+    appStudioToken: string,
+    userObjectId: string
+  ): Promise<string> {
+    const userList = await getUserList(teamsAppId, appStudioToken);
+    const findUser = userList?.find((user: IUserList) => user.aadId === userObjectId);
+    if (!findUser) {
+      return Constants.PERMISSIONS.noPermission;
+    }
+
+    if (findUser.isAdministrator) {
+      return Constants.PERMISSIONS.admin;
+    } else {
+      return Constants.PERMISSIONS.operative;
+    }
+  }
+
+  export async function grantPermission(
+    teamsAppId: string,
+    appStudioToken: string,
+    newUser: IUserList
+  ): Promise<void> {
+    let app;
+    try {
+      app = await getApp(teamsAppId, appStudioToken);
+    } catch (error) {
+      throw error;
+    }
+
+    const findUser = app.userList?.findIndex((user: IUserList) => user["aadId"] === newUser.aadId);
+    if (findUser && findUser >= 0) {
+      return;
+    }
+
+    app.userList?.push(newUser);
+    const requester = createRequesterWithToken(appStudioToken);
+    const response = await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app);
   }
 }

@@ -12,9 +12,10 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import { getTemplatesFolder } from "../../..";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
-import { getArmOutput } from "../utils4v2";
 import { generateBicepFiles, isArmSupportEnabled, isMultiEnvEnabled } from "../../../common";
+import { getArmOutput } from "../utils4v2";
 import { LocalSettingsAuthKeys } from "../../../common/localSettingsConstants";
+import { Bicep, ConstantString } from "../../../common/constants";
 
 export class SimpleAuthPluginImpl {
   webAppClient!: WebAppClient;
@@ -138,7 +139,7 @@ export class SimpleAuthPluginImpl {
     const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
       .activeResourcePlugins;
     const context = {
-      plugins: selectedPlugins,
+      Plugins: selectedPlugins,
     };
 
     const bicepTemplateDirectory = path.join(
@@ -160,15 +161,15 @@ export class SimpleAuthPluginImpl {
 
     const parameterTemplateFilePath = path.join(
       bicepTemplateDirectory,
-      Constants.inputParameterOrchestrationFileName
+      Bicep.ParameterOrchestrationFileName
     );
     const resourceTemplateFilePath = path.join(
       bicepTemplateDirectory,
-      Constants.moduleOrchestrationFileName
+      Bicep.ModuleOrchestrationFileName
     );
     const outputTemplateFilePath = path.join(
       bicepTemplateDirectory,
-      Constants.outputOrchestrationFileName
+      Bicep.OutputOrchestrationFileName
     );
 
     const result: ScaffoldArmTemplateResult = {
@@ -179,17 +180,17 @@ export class SimpleAuthPluginImpl {
       },
       Orchestration: {
         ParameterTemplate: {
-          Content: await fs.readFile(parameterTemplateFilePath, "utf-8"),
+          Content: await fs.readFile(parameterTemplateFilePath, ConstantString.UTF8Encoding),
         },
         ModuleTemplate: {
-          Content: await fs.readFile(resourceTemplateFilePath, "utf-8"),
+          Content: await fs.readFile(resourceTemplateFilePath, ConstantString.UTF8Encoding),
           Outputs: {
             skuName: Constants.SimpleAuthBicepOutputSkuName,
             endpoint: Constants.SimpleAuthBicepOutputEndpoint,
           },
         },
         OutputTemplate: {
-          Content: await fs.readFile(outputTemplateFilePath, "utf-8"),
+          Content: await fs.readFile(outputTemplateFilePath, ConstantString.UTF8Encoding),
         },
       },
     };

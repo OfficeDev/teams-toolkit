@@ -11,9 +11,9 @@ import { Constants, PlaceHolders, PreDeployProgressMessage } from "./utils/const
 import { BuildSPPackageError, NoSPPackageError, ScaffoldError } from "./error";
 import * as util from "util";
 import { ProgressHelper } from "./utils/progress-helper";
-import { getStrings, getAppDirectory } from "../../../common/tools";
+import { getStrings, getAppDirectory, isMultiEnvEnabled } from "../../../common/tools";
 import { getTemplatesFolder } from "../../..";
-import { REMOTE_MANIFEST } from "../appstudio/constants";
+import { MANIFEST_TEMPLATE, REMOTE_MANIFEST } from "../appstudio/constants";
 
 export class SPFxPluginImpl {
   public async postScaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
@@ -169,7 +169,10 @@ export class SPFxPluginImpl {
 
       const appDirectory = await getAppDirectory(ctx.root);
       await Utils.configure(outputFolderPath, replaceMap);
-      await Utils.configure(`${appDirectory}/${REMOTE_MANIFEST}`, replaceMap);
+      const manifestTemplatePath = isMultiEnvEnabled()
+        ? path.join(appDirectory, MANIFEST_TEMPLATE)
+        : path.join(appDirectory, REMOTE_MANIFEST);
+      await Utils.configure(manifestTemplatePath, replaceMap);
       return ok(undefined);
     } catch (error) {
       return err(ScaffoldError(error));

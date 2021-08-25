@@ -169,6 +169,62 @@ class EnvironmentManager {
 
     return { envProfile, userDataFile };
   }
+  
+  private async loadEnvConfig(
+    projectPath: string,
+    envName: string
+  ): Promise<Result<EnvConfig, FxError>> {
+    const envConfigPath = this.getEnvConfigPath(envName, projectPath);
+
+    if (!(await fs.pathExists(envConfigPath))) {
+      return isMultiEnvEnabled()
+        ? err(ProjectEnvNotExistError(envName))
+        : ok({
+            azure: {},
+            manifest: { values: {} },
+          });
+    }
+
+    const validate = this.ajv.compile<EnvConfig>(envConfigSchema);
+    const data = await fs.readJson(envConfigPath);
+    if (validate(data)) {
+      return ok(data);
+    }
+
+    // never throw error while loading config.xxx.json if the feature flag of multi env is disabled.
+    return isMultiEnvEnabled()
+      ? err(InvalidEnvConfigError(envName, JSON.stringify(validate.errors)))
+      : ok({
+          azure: {},
+          manifest: { values: {} },
+        });
+  }
+
+  private async loadEnvProfile(
+    projectPath: string,
+    envName: string,
+    cryptoProvider?: CryptoProvider
+  ): Promise<Result<Map<string, any>, FxError>> {
+    const envFiles = this.getEnvProfileFilesPath(envName, projectPath);
+    const userDataResult = await this.loadUserData(envFiles.userDataFile, cryptoProvider);
+    if (userDataResult.isErr()) {
+      return err(userDataResult.error);
+    }
+    const userData = userDataResult.value;
+
+    if (!(await fs.pathExists(envFiles.envProfile))) {
+      const data = new Map<string, any>([[GLOBAL_CONFIG, new ConfigMap()]]);
+
+      return ok(data);
+    }
+
+    const envData = await readJson(envFiles.envProfile);
+
+    mergeSerectData(userData, envData);
+    const data = objectToMap(envData);
+
+    return ok(data);
+  }
 
   private async loadEnvConfig(
     projectPath: string,

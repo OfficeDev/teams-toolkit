@@ -108,5 +108,4 @@ output botDomain string = botWebAppHostname // validDomain
 output appServicePlanName string = botServerfarmsName // appServicePlan
 output botServiceName string = botServiceName // botChannelReg
 output botWebAppEndpoint string = botEndpoint // siteEndpoint
-output initiateLoginEndpoint string = initiateLoginEndpoint // redirectUri
 

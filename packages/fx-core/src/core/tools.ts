@@ -122,3 +122,16 @@ export function validateV1PackageSettings(settings: any): boolean {
   }
   return false;
 }
+
+export function isMigrateFromV1Project(workspacePath?: string): boolean {
+  if (!workspacePath) return false;
+  try {
+    const confFolderPath = path.resolve(workspacePath, `.${ConfigFolderName}`);
+    const settingsFile = path.resolve(confFolderPath, "settings.json");
+    const projectSettings: ProjectSettings = fs.readJsonSync(settingsFile);
+    if (validateSettings(projectSettings)) return false;
+    return !!projectSettings?.solutionSettings?.migrateFromV1;
+  } catch (e) {
+    return false;
+  }
+}

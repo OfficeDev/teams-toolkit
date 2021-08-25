@@ -275,3 +275,14 @@ export class PathInfo {
   public static readonly provisionModuleTemplateFileName = "botProvision.template.bicep";
   public static readonly configurationModuleTemplateFileName = "botConfiguration.template.bicep";
 }
+
+export class BotArmOutput {
+  static readonly WebAppSKU = "bot_webAppSKU";
+  static readonly ServiceSKU = "bot_serviceSKU";
+  static readonly WebAppName = "bot_webAppName";
+  static readonly Domain = "bot_domain";
+  static readonly AppServicePlanName = "bot_appServicePlanName";
+  static readonly BotServiceName = "bot_serviceName";
+  static readonly WebAppEndpoint = "bot_webAppEndpoint";
+  static readonly InitiateLoginEndpoint = "bot_initiateLoginEndpoint";
+}

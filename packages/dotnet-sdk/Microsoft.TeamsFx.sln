@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31610.360
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TeamsFx", "src\TeamsFx\Microsoft.TeamsFx.csproj", "{F89E71A0-DF73-4EF5-B20B-58D5A12A7145}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TeamsFx.Test", "src\TeamsFx.Test\Microsoft.TeamsFx.Test.csproj", "{2AC3543F-0DC5-4ABD-916C-9CB42AF59545}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F89E71A0-DF73-4EF5-B20B-58D5A12A7145}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F89E71A0-DF73-4EF5-B20B-58D5A12A7145}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F89E71A0-DF73-4EF5-B20B-58D5A12A7145}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F89E71A0-DF73-4EF5-B20B-58D5A12A7145}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2AC3543F-0DC5-4ABD-916C-9CB42AF59545}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2AC3543F-0DC5-4ABD-916C-9CB42AF59545}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2AC3543F-0DC5-4ABD-916C-9CB42AF59545}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2AC3543F-0DC5-4ABD-916C-9CB42AF59545}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8B2DB22D-BFB3-4115-80BA-8EC7285183E8}
+	EndGlobalSection
+EndGlobal

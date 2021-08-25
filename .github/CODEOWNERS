@@ -83,4 +83,6 @@
 
 /packages/function-extension @adashen @blackchoey @dilin-MS
 
+/packages/dotnet-sdk @tecton @jiayi-ruan @JerryYangKai
+
 /.github/workflows/cd.yml @adashen @LongOddCode @IvanJobs @qinezh @wenytang-ms

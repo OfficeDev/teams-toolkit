@@ -441,6 +441,8 @@ export async function getAppDirectory(projectRoot: string): Promise<string> {
   if (isMultiEnvEnabled()) {
     if (await fs.pathExists(`${appDirNewLocForMultiEnv}/${MANIFEST_TEMPLATE}`)) {
       return appDirNewLocForMultiEnv;
+    } else if (await fs.pathExists(`${appDirNewLoc}/${REMOTE_MANIFEST}`)) {
+      return appDirNewLoc;
     } else {
       return appDirOldLoc;
     }

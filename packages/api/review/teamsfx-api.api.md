@@ -217,8 +217,25 @@ export type DynamicOptions = LocalFunc<StaticOptions>;
 // @public (undocumented)
 export const DynamicPlatforms: Platform[];
 
-// @public (undocumented)
-export type EnvConfig = Json;
+// @public
+export interface EnvConfig {
+    // (undocumented)
+    $schema?: string;
+    azure: {
+        subscriptionId?: string;
+        resourceGroupName?: string;
+        location?: string;
+        tenantId?: string;
+    };
+    manifest: {
+        description?: string;
+        values: {
+            [k: string]: unknown;
+        };
+        [k: string]: unknown;
+    };
+    skipAddingSqlUser?: boolean;
+}
 
 // @public
 export interface EnvMeta {

@@ -12,4 +12,4 @@ export const loggingIn = "LoggingIn";
 
 export const subscriptionInfoFile = "subscriptionInfo.json";
 export const envDefaultJsonFile = "env.default.json";
-export const profileDefaultJsonFile = "profile.default.json";
+export const profileDefaultJsonFile = "profile.dev.json";

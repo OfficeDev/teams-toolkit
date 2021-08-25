@@ -23,6 +23,7 @@ export const botFolderName = "bot";
 export const localEnvFileName = "local.env";
 export const manifestFileName = "manifest.source.json";
 export const userDataFileName = "default.userdata"; // TODO: different file name for different environment
+export const userDataFileNameNew = "dev.userdata"; // TODO: different file name for different environment
 
 export const frontendLocalEnvPrefix = "FRONTEND_";
 export const backendLocalEnvPrefix = "BACKEND_";

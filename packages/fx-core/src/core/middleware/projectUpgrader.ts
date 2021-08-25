@@ -1,6 +1,7 @@
 import { Middleware, NextFunction } from "@feathersjs/hooks";
 import {
   ConfigFolderName,
+  PublishProfilesFolderName,
   err,
   FxError,
   Inputs,
@@ -9,6 +10,9 @@ import {
   ProjectSettings,
   Result,
   SystemError,
+  ProjectSettingsFileName,
+  InputConfigsFolderName,
+  EnvProfileFileNameTemplate,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as path from "path";
@@ -23,6 +27,7 @@ import {
   WriteFileError,
 } from "..";
 import { dataNeedEncryption, deserializeDict, serializeDict } from "../..";
+import { isMultiEnvEnabled } from "../../common";
 import { readJson } from "../../common/fileUtils";
 import {
   Component,
@@ -82,12 +87,26 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<Result<undef
   if (!projectPathExist) {
     return err(PathNotExistError(inputs.projectPath));
   }
-  const confFolderPath = path.resolve(inputs.projectPath!, `.${ConfigFolderName}`);
-  const settingsFile = path.resolve(confFolderPath, "settings.json");
+  const confFolderPath = isMultiEnvEnabled()
+    ? path.resolve(inputs.projectPath, `.${ConfigFolderName}`, InputConfigsFolderName)
+    : path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
+  const publishProfilesFolderPath = path.resolve(
+    inputs.projectPath,
+    `.${ConfigFolderName}`,
+    PublishProfilesFolderName
+  );
+  const settingsFile = isMultiEnvEnabled()
+    ? path.resolve(confFolderPath, ProjectSettingsFileName)
+    : path.resolve(confFolderPath, "settings.json");
   const projectSettings: ProjectSettings = await readJson(settingsFile);
   const defaultEnvName = environmentManager.defaultEnvName;
 
-  const contextPath = path.resolve(confFolderPath, `env.${defaultEnvName}.json`);
+  const contextPath = isMultiEnvEnabled()
+    ? path.resolve(
+        publishProfilesFolderPath,
+        EnvProfileFileNameTemplate.replace("@envName", defaultEnvName)
+      )
+    : path.resolve(confFolderPath, `env.${defaultEnvName}.json`);
   const userDataPath = path.resolve(confFolderPath, `${defaultEnvName}.userdata`);
 
   let context: Json = {};

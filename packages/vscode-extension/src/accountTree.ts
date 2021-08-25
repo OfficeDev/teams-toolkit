@@ -23,6 +23,7 @@ import {
   TelemetryProperty,
   TelemetryTiggerFrom,
 } from "./telemetry/extTelemetryEvents";
+import axios from "axios";
 import * as util from "util";
 import * as StringResources from "./resources/Strings.json";
 import { StringContext } from "./utils/stringContext";
@@ -136,6 +137,74 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
     }
   };
 
+  const getSideloadingItem = async (token: string): Promise<TreeItem[]> => {
+    const isSideloadingAllowed = await getSideloadingStatus(token);
+    if (isSideloadingAllowed === undefined) {
+      return [
+        {
+          commandId: "fx-extension.checkSideloading",
+          label: StringResources.vsc.accountTree.sideloadingUnknown,
+          callback: () => {
+            return Promise.resolve(ok(null));
+          },
+          parent: "fx-extension.signinM365",
+          contextValue: "sideloadingUnknown",
+          icon: "info",
+          tooltip: {
+            isMarkdown: false,
+            value: StringResources.vsc.accountTree.sideloadingTooltip,
+          },
+        },
+      ];
+    } else if (isSideloadingAllowed === true) {
+      return [
+        {
+          commandId: "fx-extension.checkSideloading",
+          label: StringResources.vsc.accountTree.sideloadingPass,
+          callback: () => {
+            return Promise.resolve(ok(null));
+          },
+          parent: "fx-extension.signinM365",
+          contextValue: "sideloadingPass",
+          icon: "pass",
+          tooltip: {
+            isMarkdown: false,
+            value: StringResources.vsc.accountTree.sideloadingTooltip,
+          },
+        },
+      ];
+    } else {
+      VS_CODE_UI.showMessage(
+        "warn",
+        StringResources.vsc.accountTree.sideloadingMessage,
+        false,
+        StringResources.vsc.common.readMore
+      )
+        .then(async (result) => {
+          if (result.isOk() && result.value === StringResources.vsc.common.readMore) {
+            await VS_CODE_UI.openUrl();
+          }
+        })
+        .catch((error) => {});
+      return [
+        {
+          commandId: "fx-extension.checkSideloading",
+          label: StringResources.vsc.accountTree.sideloadingWarning,
+          callback: () => {
+            return Promise.resolve(ok(null));
+          },
+          parent: "fx-extension.signinM365",
+          contextValue: "sideloadingWarning",
+          icon: "warning",
+          tooltip: {
+            isMarkdown: false,
+            value: StringResources.vsc.accountTree.sideloadingTooltip,
+          },
+        },
+      ];
+    }
+  };
+
   const selectSubscriptionCallback = async (args?: any[]): Promise<Result<null, FxError>> => {
     tools.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.SelectSubscription, {
       [TelemetryProperty.TriggerFrom]: args
@@ -214,6 +283,41 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
     return ok(null);
   };
 
+  tools.treeProvider!.add([
+    {
+      commandId: "fx-extension.signinM365",
+      label: StringResources.vsc.handlers.signIn365,
+      callback: signinM365Callback,
+      parent: TreeCategory.Account,
+      contextValue: "signinM365",
+      icon: "M365",
+      tooltip: {
+        isMarkdown: true,
+        value: StringResources.vsc.accountTree.m365AccountTooltip,
+      },
+    },
+    {
+      commandId: "fx-extension.signinAzure",
+      label: StringContext.getSignInAzureContext(),
+      callback: async (args?: any[]) => {
+        return signinAzureCallback(args);
+      },
+      parent: TreeCategory.Account,
+      contextValue: "signinAzure",
+      subTreeItems: [],
+      icon: "azure",
+      tooltip: {
+        isMarkdown: true,
+        value: StringResources.vsc.accountTree.azureAccountTooltip,
+      },
+    },
+    {
+      commandId: "fx-extension.specifySubscription",
+      label: StringResources.vsc.accountTree.specifySubscription,
+      callback: selectSubscriptionCallback,
+      parent: undefined,
+    },
+  ]);
   tools.tokenProvider.appStudioToken?.setStatusChangeMap(
     "tree-view",
     async (
@@ -222,18 +326,19 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
       accountInfo?: Record<string, unknown> | undefined
     ) => {
       if (status === "SignedIn") {
-        const token = await tools.tokenProvider.appStudioToken.getJsonObject(true);
-        if (token !== undefined) {
+        if (token !== undefined && accountInfo !== undefined) {
           tools.treeProvider?.refresh([
             {
               commandId: "fx-extension.signinM365",
-              label: (token as any).upn ? (token as any).upn : "",
+              label: (accountInfo.upn as string) ? (accountInfo.upn as string) : "",
               callback: signinM365Callback,
               parent: TreeCategory.Account,
               contextValue: "signedinM365",
               icon: "M365",
             },
           ]);
+          const subItem = await getSideloadingItem(token);
+          tools.treeProvider?.add(subItem);
         }
       } else if (status === "SigningIn") {
         tools.treeProvider?.refresh([
@@ -245,6 +350,13 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
             icon: "spinner",
           },
         ]);
+        tools.treeProvider?.remove([
+          {
+            commandId: "fx-extension.checkSideloading",
+            label: "",
+            parent: "fx-extension.signinM365",
+          },
+        ]);
       } else if (status === "SignedOut") {
         tools.treeProvider?.refresh([
           {
@@ -254,6 +366,13 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
             parent: TreeCategory.Account,
             icon: "M365",
             contextValue: "signinM365",
+          },
+        ]);
+        tools.treeProvider?.remove([
+          {
+            commandId: "fx-extension.checkSideloading",
+            label: "",
+            parent: "fx-extension.signinM365",
           },
         ]);
       }
@@ -316,41 +435,6 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
       return Promise.resolve();
     }
   );
-  tools.treeProvider!.add([
-    {
-      commandId: "fx-extension.signinM365",
-      label: StringResources.vsc.handlers.signIn365,
-      callback: signinM365Callback,
-      parent: TreeCategory.Account,
-      contextValue: "signinM365",
-      icon: "M365",
-      tooltip: {
-        isMarkdown: true,
-        value: StringResources.vsc.accountTree.m365AccountTooltip,
-      },
-    },
-    {
-      commandId: "fx-extension.signinAzure",
-      label: StringContext.getSignInAzureContext(),
-      callback: async (args?: any[]) => {
-        return signinAzureCallback(args);
-      },
-      parent: TreeCategory.Account,
-      contextValue: "signinAzure",
-      subTreeItems: [],
-      icon: "azure",
-      tooltip: {
-        isMarkdown: true,
-        value: StringResources.vsc.accountTree.azureAccountTooltip,
-      },
-    },
-    {
-      commandId: "fx-extension.specifySubscription",
-      label: StringResources.vsc.accountTree.specifySubscription,
-      callback: selectSubscriptionCallback,
-      parent: undefined,
-    },
-  ]);
 
   return ok(Void);
 }
@@ -377,5 +461,23 @@ async function setSubscription(subscription: SubscriptionInfo | undefined) {
         },
       },
     ]);
+  }
+}
+
+async function getSideloadingStatus(token: string): Promise<boolean | undefined> {
+  const instance = axios.create({
+    baseURL: "https://dev-int.teams.microsoft.com",
+    timeout: 30000,
+  });
+  instance.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+  try {
+    const response = await instance.get("/api/usersettings/mtUserAppPolicy");
+    if (response.status >= 400) {
+      return undefined;
+    } else {
+      return response.data?.value?.isSideloadingAllowed as boolean;
+    }
+  } catch (error) {
+    return undefined;
   }
 }

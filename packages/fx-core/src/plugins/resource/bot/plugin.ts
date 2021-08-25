@@ -386,10 +386,6 @@ export class TeamsBotImpl {
         context,
         BotArmOutput.WebAppEndpoint
       ) as string;
-      this.config.provision.redirectUri = getArmOutput(
-        context,
-        BotArmOutput.InitiateLoginEndpoint
-      ) as string;
       this.config.provision.skuName = getArmOutput(context, BotArmOutput.WebAppSKU) as string;
       this.config.provision.siteName = getArmOutput(context, BotArmOutput.WebAppName) as string;
     } else {

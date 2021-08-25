@@ -432,20 +432,15 @@ export class AppStudioPluginImpl {
     let manifestString: string | undefined = undefined;
     let appDirectory: string;
     let zipFileName: string;
-    let manifestOutputPath: string | undefined = undefined;
 
     if (ctx.answers?.platform === Platform.VS) {
       appDirectory = ctx.answers![Constants.PUBLISH_PATH_QUESTION] as string;
       zipFileName = `${appDirectory}/appPackage.zip`;
     } else {
       appDirectory = await getAppDirectory(ctx.root);
-      if (isMultiEnvEnabled()) {
-        const publishProfile = `${ctx.root}/.${ConfigFolderName}/publishProfiles/`;
-        zipFileName = `${publishProfile}/appPackage.${ctx.targetEnvName}.zip`;
-        manifestOutputPath = `${publishProfile}/manifest.${ctx.targetEnvName}.json`;
-      } else {
-        zipFileName = `${ctx.root}/${AppPackageFolderName}/appPackage.zip`;
-      }
+      zipFileName = isMultiEnvEnabled()
+        ? `${ctx.root}/${AppPackageFolderName}/appPackage.${ctx.targetEnvName}.zip`
+        : (zipFileName = `${ctx.root}/${AppPackageFolderName}/appPackage.zip`);
     }
 
     if (this.isSPFxProject(ctx)) {
@@ -500,9 +495,8 @@ export class AppStudioPluginImpl {
       );
     }
 
-    if (isMultiEnvEnabled() && manifestOutputPath) {
-      await fs.ensureDir(path.dirname(manifestOutputPath));
-      await fs.writeJSON(manifestOutputPath, manifestString, { spaces: 4 });
+    if (isMultiEnvEnabled()) {
+      await fs.ensureDir(path.dirname(zipFileName));
     }
 
     const zip = new AdmZip();

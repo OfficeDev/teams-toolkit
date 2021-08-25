@@ -6,7 +6,12 @@ import * as path from "path";
 import * as dotenv from "dotenv";
 import * as vscode from "vscode";
 import * as constants from "./constants";
-import { ConfigFolderName, Func, PublishProfilesFolderName } from "@microsoft/teamsfx-api";
+import {
+  ConfigFolderName,
+  Func,
+  InputConfigsFolderName,
+  PublishProfilesFolderName,
+} from "@microsoft/teamsfx-api";
 import { core, getSystemInputs, showError } from "../handlers";
 import * as net from "net";
 import { ext } from "../extensionVariables";
@@ -147,7 +152,9 @@ async function getLocalDebugConfig(key: string): Promise<string | undefined> {
   const userDataFilePath: string = path.join(
     workspacePath,
     `.${ConfigFolderName}`,
-    constants.userDataFileName
+    isMultiEnvEnabled()
+      ? path.join(InputConfigsFolderName, constants.userDataFileNameNew)
+      : constants.userDataFileName
   );
   if (!(await fs.pathExists(userDataFilePath))) {
     return undefined;

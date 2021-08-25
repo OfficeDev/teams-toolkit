@@ -1,4 +1,3 @@
-param functionServerfarmsName string
 param functionAppName string
 param functionStorageName string
 param m365ClientId string
@@ -17,62 +16,36 @@ param sqlEndpoint string
 {{/contains}}
 {{#contains 'fx-resource-identity' Plugins}}
 param identityId string
-param identityName string
 {{/contains}}
 
 var teamsMobileOrDesktopAppClientId = '1fec8e78-bce4-4aaf-ab1b-5451cc387264'
 var teamsWebAppClientId = '5e3ce6c0-2b1f-4285-8d4b-75ee78787346'
 var authorizedClientApplicationIds = '${teamsMobileOrDesktopAppClientId};${teamsWebAppClientId}'
 
-resource functionServerfarms 'Microsoft.Web/serverfarms@2020-06-01' = {
-  name: functionServerfarmsName
-  kind: 'functionapp'
-  location: resourceGroup().location
-  sku: {
-    name: 'Y1'
-  }
-}
-
-resource functionApp 'Microsoft.Web/sites@2020-06-01' = {
+resource functionApp 'Microsoft.Web/sites@2020-06-01' existing = {
   name: functionAppName
-  kind: 'functionapp'
-  location: resourceGroup().location
-  properties: {
-    reserved: false
-    serverFarmId: functionServerfarms.id
-    siteConfig: {
-      cors: {
-        allowedOrigins: [
-          frontendHostingStorageEndpoint
-        ]
-      }
-      numberOfWorkers: 1
-    }
-  }
-  {{#contains 'fx-resource-identity' Plugins}}
-  identity: {
-    type: 'UserAssigned'
-    userAssignedIdentities: {
-      '${identityName}':{}
-    }
-  }
-  {{/contains}}
 }
 
-resource functionStorage 'Microsoft.Storage/storageAccounts@2021-04-01' = {
+resource functionStorage 'Microsoft.Storage/storageAccounts@2021-04-01' existing = {
   name: functionStorageName
-  kind: 'StorageV2'
-  location: resourceGroup().location
-  properties: {
-    accessTier: 'Hot'
-    supportsHttpsTrafficOnly: true
-  }
-  sku: {
-    name: 'Standard_LRS'
-  }
 }
 
 var oauthAuthority = uri(m365OauthAuthorityHost, m365TenantId)
+
+{{#contains 'fx-resource-frontend-hosting' Plugins}}
+resource functionAppConfig 'Microsoft.Web/sites/config@2020-06-01' = {
+  parent: functionApp
+  name: 'web'
+  kind: 'functionapp'
+  properties: {
+    cors: {
+      allowedOrigins: [
+        frontendHostingStorageEndpoint
+      ]
+    }
+  }
+}
+{{/contains}}
 
 resource functionAppAppSettings 'Microsoft.Web/sites/config@2018-02-01' = {
   parent: functionApp
@@ -116,8 +89,3 @@ resource functionAppAuthSettings 'Microsoft.Web/sites/config@2018-02-01' = {
     ]
   }
 }
-
-output appServicePlanName string = functionServerfarms.name
-output functionEndpoint string = functionApp.properties.hostNames[0]
-output storageAccountName string = functionStorage.name
-output appName string = functionAppName

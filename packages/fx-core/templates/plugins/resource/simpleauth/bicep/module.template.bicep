@@ -5,6 +5,13 @@ module simpleAuthProvision '{{PluginOutput.fx-resource-simple-auth.Modules.simpl
     simpleAuthServerFarmsName: simpleAuth_serverFarmsName
     simpleAuthWebAppName: simpleAuth_webAppName
     sku: simpleAuth_sku
+  }
+}
+
+module simpleAuthConfiguration '{{PluginOutput.fx-resource-simple-auth.Modules.simpleAuthConfiguration.Path}}' = {
+  name: 'simpleAuthConfiguration'
+  params: {
+    simpleAuthWebAppName: simpleAuth_webAppName
     m365ClientId: m365ClientId
     m365ClientSecret: m365ClientSecret
     m365ApplicationIdUri: m365ApplicationIdUri

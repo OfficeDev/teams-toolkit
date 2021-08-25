@@ -355,10 +355,6 @@ export class TeamsBotImpl {
       this.config.provision.siteEndpoint = `${CommonStrings.HTTPS_PREFIX}${webappResponse.defaultHostName}`;
     }
 
-    if (!this.config.provision.redirectUri) {
-      this.config.provision.redirectUri = `${this.config.provision.siteEndpoint}${CommonStrings.AUTH_REDIRECT_URI_SUFFIX}`;
-    }
-
     if (!this.config.provision.appServicePlan) {
       this.config.provision.appServicePlan = appServicePlanName;
     }

@@ -27,7 +27,6 @@ export class ProvisionConfig {
   public siteName?: string;
   public skuName?: string;
   public siteEndpoint?: string;
-  public redirectUri?: string; // it's going to be useless, mark.
   public graphToken?: string;
   // Configs from SQL and Function.
   public sqlEndpoint?: string;
@@ -91,11 +90,7 @@ export class ProvisionConfig {
       }
     }
 
-    const siteEndpointValue: ConfigValue = context.config.get(PluginBot.SITE_ENDPOINT);
-    this.siteEndpoint = siteEndpointValue as string;
-    this.redirectUri = siteEndpointValue
-      ? `${siteEndpointValue}${CommonStrings.AUTH_REDIRECT_URI_SUFFIX}`
-      : undefined;
+    this.siteEndpoint = context.config.get(PluginBot.SITE_ENDPOINT) as string;
 
     this.botChannelRegName = context.config.get(PluginBot.BOT_CHANNEL_REGISTRATION) as string;
 
@@ -108,7 +103,6 @@ export class ProvisionConfig {
     utils.checkAndSaveConfig(context, PluginBot.BOT_CHANNEL_REGISTRATION, this.botChannelRegName);
     utils.checkAndSaveConfig(context, PluginBot.SITE_NAME, this.siteName);
     utils.checkAndSaveConfig(context, PluginBot.SITE_ENDPOINT, this.siteEndpoint);
-    utils.checkAndSaveConfig(context, PluginBot.REDIRECT_URI, this.redirectUri);
     utils.checkAndSaveConfig(context, PluginBot.SKU_NAME, this.skuName);
   }
 

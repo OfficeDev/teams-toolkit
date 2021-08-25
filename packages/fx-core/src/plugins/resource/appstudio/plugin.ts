@@ -682,8 +682,30 @@ export class AppStudioPluginImpl {
     return result;
   }
 
-  public async listCollaborator(ctx: PluginContext): Promise<Result<TeamsAppAdmin[], FxError>> {
-    return ok([]);
+  public async listCollaborator(ctx: PluginContext): Promise<TeamsAppAdmin[]> {
+    const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
+    const teamsAppId = (await ctx.configOfOtherPlugins
+      .get(SOLUTION)
+      ?.get(REMOTE_TEAMS_APP_ID)) as string;
+    if (!teamsAppId) {
+      throw new Error(ErrorMessages.GetConfigError(REMOTE_TEAMS_APP_ID, SOLUTION));
+    }
+
+    const userLists = await AppStudioClient.getUserList(teamsAppId, appStudioToken as string);
+
+    if (!userLists) {
+      return [];
+    }
+
+    const teamsAppAdmin: TeamsAppAdmin[] = userLists.map((userList, index) => {
+      return {
+        aadId: userList.aadId,
+        displayName: userList.displayName,
+        userPrincipalName: userList.userPrincipalName,
+      };
+    });
+
+    return teamsAppAdmin;
   }
 
   public async grantPermission(ctx: PluginContext): Promise<ResourcePermission[]> {

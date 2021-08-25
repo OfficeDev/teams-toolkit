@@ -9,7 +9,9 @@ import {
   AzureSolutionSettings,
   ConfigFolderName,
   err,
+  InputConfigsFolderName,
   Inputs,
+  ProjectSettingsFileName,
   StaticPlatforms,
 } from "@microsoft/teamsfx-api";
 import { WriteFileError } from "../error";
@@ -44,9 +46,9 @@ export const ProjectSettingsWriterMW: Middleware = async (
       if (!solutionSettings.azureResources) solutionSettings.azureResources = [];
       let settingFile;
       if (isMultiEnvEnabled()) {
-        const confFolderPathNew = path.resolve(confFolderPath, "configs");
+        const confFolderPathNew = path.resolve(confFolderPath, InputConfigsFolderName);
         await fs.ensureDir(confFolderPathNew);
-        settingFile = path.resolve(confFolderPathNew, "projectSettings.json");
+        settingFile = path.resolve(confFolderPathNew, ProjectSettingsFileName);
       } else {
         settingFile = path.resolve(confFolderPath, "settings.json");
       }

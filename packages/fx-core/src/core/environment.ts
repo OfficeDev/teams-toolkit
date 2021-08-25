@@ -5,6 +5,7 @@ import {
   ConfigFolderName,
   ConfigMap,
   CryptoProvider,
+  EnvProfileFileNameTemplate,
   err,
   FxError,
   ok,
@@ -144,7 +145,9 @@ class EnvironmentManager {
     const basePath = this.getEnvProfilesFolder(projectPath);
     const envProfile = path.resolve(
       basePath,
-      isMultiEnvEnabled() ? `profile.${envName}.json` : `env.${envName}.json`
+      isMultiEnvEnabled()
+        ? EnvProfileFileNameTemplate.replace("@envName", envName)
+        : `env.${envName}.json`
     );
     const userDataFile = path.resolve(basePath, `${envName}.userdata`);
 

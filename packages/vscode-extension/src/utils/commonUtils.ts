@@ -5,7 +5,12 @@ import * as extensionPackage from "./../../package.json";
 import * as fs from "fs-extra";
 import { ext } from "../extensionVariables";
 import * as path from "path";
-import { ConfigFolderName } from "@microsoft/teamsfx-api";
+import {
+  ConfigFolderName,
+  InputConfigsFolderName,
+  ProjectSettingsFileName,
+  EnvProfileFileNameTemplate,
+} from "@microsoft/teamsfx-api";
 import { isMultiEnvEnabled, isValidProject } from "@microsoft/teamsfx-core";
 import { workspace } from "vscode";
 import * as commonUtils from "../debug/commonUtils";
@@ -57,7 +62,12 @@ export function getTeamsAppId() {
     const ws = ext.workspaceUri.fsPath;
     if (isValidProject(ws)) {
       const env = getActiveEnv();
-      const envJsonPath = path.join(ws, `.${ConfigFolderName}/env.${env}.json`);
+      const envJsonPath = isMultiEnvEnabled()
+        ? `.${ConfigFolderName}/${InputConfigsFolderName}/${EnvProfileFileNameTemplate.replace(
+            "@envName",
+            env
+          )}`
+        : `.${ConfigFolderName}/env.${env}.json`;
       const envJson = JSON.parse(fs.readFileSync(envJsonPath, "utf8"));
       return envJson.solution.remoteTeamsAppId;
     }
@@ -73,7 +83,7 @@ export function getProjectId(): string | undefined {
       const settingsJsonPath = path.join(
         ws,
         isMultiEnvEnabled()
-          ? `.${ConfigFolderName}/configs/projectSettings.json`
+          ? `.${ConfigFolderName}/${InputConfigsFolderName}/${ProjectSettingsFileName}`
           : `.${ConfigFolderName}/settings.json`
       );
       const settingsJson = JSON.parse(fs.readFileSync(settingsJsonPath, "utf8"));

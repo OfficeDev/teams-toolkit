@@ -10,6 +10,9 @@ import {
   ProjectSettings,
   Result,
   SystemError,
+  ProjectSettingsFileName,
+  InputConfigsFolderName,
+  EnvProfileFileNameTemplate,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as path from "path";
@@ -85,7 +88,7 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<Result<undef
     return err(PathNotExistError(inputs.projectPath));
   }
   const confFolderPath = isMultiEnvEnabled()
-    ? path.resolve(inputs.projectPath, `.${ConfigFolderName}`, "configs")
+    ? path.resolve(inputs.projectPath, `.${ConfigFolderName}`, InputConfigsFolderName)
     : path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
   const publishProfilesFolderPath = path.resolve(
     inputs.projectPath,
@@ -93,13 +96,16 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<Result<undef
     PublishProfilesFolderName
   );
   const settingsFile = isMultiEnvEnabled()
-    ? path.resolve(confFolderPath, "projectSettings.json")
+    ? path.resolve(confFolderPath, ProjectSettingsFileName)
     : path.resolve(confFolderPath, "settings.json");
   const projectSettings: ProjectSettings = await readJson(settingsFile);
   const defaultEnvName = environmentManager.defaultEnvName;
 
   const contextPath = isMultiEnvEnabled()
-    ? path.resolve(publishProfilesFolderPath, `profile.${defaultEnvName}.json`)
+    ? path.resolve(
+        publishProfilesFolderPath,
+        EnvProfileFileNameTemplate.replace("@envName", defaultEnvName)
+      )
     : path.resolve(confFolderPath, `env.${defaultEnvName}.json`);
   const userDataPath = path.resolve(confFolderPath, `${defaultEnvName}.userdata`);
 

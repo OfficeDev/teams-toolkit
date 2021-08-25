@@ -5,10 +5,12 @@ import {
   ConfigFolderName,
   err,
   FxError,
+  InputConfigsFolderName,
   Inputs,
   ok,
   PluginConfig,
   ProjectSettings,
+  ProjectSettingsFileName,
   Result,
   SolutionContext,
   Stage,
@@ -79,7 +81,7 @@ export async function loadProjectSettings(
 
     const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
     const settingsFile = isMultiEnvEnabled()
-      ? path.resolve(confFolderPath, "configs", "projectSettings.json")
+      ? path.resolve(confFolderPath, InputConfigsFolderName, ProjectSettingsFileName)
       : path.resolve(confFolderPath, "settings.json");
     const projectSettings: ProjectSettings = await readJson(settingsFile);
     let projectIdMissing = false;

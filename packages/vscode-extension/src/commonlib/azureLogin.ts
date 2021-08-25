@@ -14,6 +14,7 @@ import {
   OptionItem,
   ok,
   ConfigFolderName,
+  PublishProfilesFolderName,
 } from "@microsoft/teamsfx-api";
 import { ExtensionErrors } from "../error";
 import { AzureAccount } from "./azure-account.api";
@@ -570,7 +571,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       const envDefalultFile = path.join(
         configRoot!,
         isMultiEnvEnabled()
-          ? path.join("publishProfiles", profileDefaultJsonFile)
+          ? path.join(PublishProfilesFolderName, profileDefaultJsonFile)
           : envDefaultJsonFile
       );
       if (!fs.existsSync(envDefalultFile)) {

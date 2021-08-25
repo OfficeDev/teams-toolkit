@@ -1,6 +1,7 @@
 import { Middleware, NextFunction } from "@feathersjs/hooks";
 import {
   ConfigFolderName,
+  PublishProfilesFolderName,
   err,
   FxError,
   Inputs,
@@ -89,7 +90,7 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<Result<undef
   const publishProfilesFolderPath = path.resolve(
     inputs.projectPath,
     `.${ConfigFolderName}`,
-    "publishProfiles"
+    PublishProfilesFolderName
   );
   const settingsFile = isMultiEnvEnabled()
     ? path.resolve(confFolderPath, "projectSettings.json")

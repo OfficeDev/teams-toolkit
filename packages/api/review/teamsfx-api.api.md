@@ -795,6 +795,9 @@ type ProvisionOutput = {
     secrets: Json;
 };
 
+// @public (undocumented)
+export const PublishProfilesFolderName = "publishProfiles";
+
 // @public
 export class QTreeNode {
     constructor(data: Question | Group);

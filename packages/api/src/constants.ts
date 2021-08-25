@@ -4,6 +4,7 @@
 
 export const ConfigFolderName = "fx";
 export const AppPackageFolderName = "appPackage";
+export const PublishProfilesFolderName = "publishProfiles";
 export const ProductName = "teamsfx";
 export const ArchiveFolderName = ".archive";
 export const ArchiveLogFileName = ".archive.log";

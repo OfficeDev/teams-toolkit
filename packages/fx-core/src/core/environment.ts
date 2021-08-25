@@ -8,6 +8,7 @@ import {
   err,
   FxError,
   ok,
+  PublishProfilesFolderName,
   Result,
   SystemError,
 } from "@microsoft/teamsfx-api";
@@ -164,7 +165,7 @@ class EnvironmentManager {
   }
 
   private getPublishProfilesFolder(projectPath: string): string {
-    return path.resolve(this.getConfigFolder(projectPath), "publishProfiles");
+    return path.resolve(this.getConfigFolder(projectPath), PublishProfilesFolderName);
   }
 
   private getEnvProfilesFolder(projectPath: string): string {

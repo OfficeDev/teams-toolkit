@@ -6,7 +6,7 @@ import * as path from "path";
 import * as dotenv from "dotenv";
 import * as vscode from "vscode";
 import * as constants from "./constants";
-import { ConfigFolderName, Func } from "@microsoft/teamsfx-api";
+import { ConfigFolderName, Func, PublishProfilesFolderName } from "@microsoft/teamsfx-api";
 import { core, getSystemInputs, showError } from "../handlers";
 import * as net from "net";
 import { ext } from "../extensionVariables";
@@ -244,8 +244,8 @@ function getSettingWithUserData(jsonSelector: (jsonObject: any) => any): string 
     if (isValidProject(ws)) {
       const env = getActiveEnv();
       const envJsonPath = isMultiEnvEnabled()
-        ? path.join(ws, `.${ConfigFolderName}/publishProfiles/profile.${env}.json`)
-        : path.join(ws, `.${ConfigFolderName}/env.${env}.json`);
+        ? path.join(ws, `.${ConfigFolderName}/${PublishProfilesFolderName}/profile.${env}.json`)
+        : path.join(ws, `.${ConfigFolderName}/${PublishProfilesFolderName}/env.${env}.json`);
       const envJson = JSON.parse(fs.readFileSync(envJsonPath, "utf8"));
       const settingValue = jsonSelector(envJson) as string;
       if (settingValue && settingValue.startsWith("{{") && settingValue.endsWith("}}")) {

@@ -122,7 +122,7 @@ async function askCommonQuestions(
 
   //2. check resource group
   const rmClient = new ResourceManagementClient(azureToken, subscriptionId);
-  // TODO: read resource group name from input config
+  // TODO: read resource group name and location from input config
   let resourceGroupName = config.get(GLOBAL_CONFIG)?.getString(RESOURCE_GROUP_NAME);
   let resourceGroupInfo: ResourceGroupInfo;
   if (resourceGroupName) {

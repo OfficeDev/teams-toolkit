@@ -99,7 +99,7 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<Result<undef
     ? path.resolve(confFolderPath, ProjectSettingsFileName)
     : path.resolve(confFolderPath, "settings.json");
   const projectSettings: ProjectSettings = await readJson(settingsFile);
-  const defaultEnvName = environmentManager.defaultEnvName;
+  const defaultEnvName = environmentManager.getDefaultEnvName();
 
   const contextPath = isMultiEnvEnabled()
     ? path.resolve(

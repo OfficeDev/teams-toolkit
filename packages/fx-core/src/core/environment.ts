@@ -43,6 +43,7 @@ export interface EnvFiles {
 
 class EnvironmentManager {
   public readonly defaultEnvName = "default";
+  public readonly defaultEnvNameNew = "dev";
   public readonly envNameRegex = /^[\w\d-_]+$/;
   public readonly envProfileNameRegex = /profile\.(?<envName>[\w\d-_]+)\.json/i;
 
@@ -55,7 +56,7 @@ class EnvironmentManager {
       return err(PathNotExistError(projectPath));
     }
 
-    envName = envName ?? this.defaultEnvName;
+    envName = envName ?? this.getDefaultEnvName();
     const envFiles = this.getEnvFilesPath(envName, projectPath);
     const userDataResult = await this.loadUserData(envFiles.userDataFile, cryptoProvider);
     if (userDataResult.isErr()) {
@@ -92,7 +93,7 @@ class EnvironmentManager {
       await fs.ensureDir(envProfilesFolder);
     }
 
-    envName = envName ?? this.defaultEnvName;
+    envName = envName ?? this.getDefaultEnvName();
     const envFiles = this.getEnvFilesPath(envName, projectPath);
 
     const data = mapToJson(envData);
@@ -239,6 +240,14 @@ class EnvironmentManager {
     }
 
     return ok(secrets);
+  }
+
+  public getDefaultEnvName() {
+    if (isMultiEnvEnabled()) {
+      return this.defaultEnvNameNew;
+    } else {
+      return this.defaultEnvName;
+    }
   }
 }
 

@@ -69,7 +69,7 @@ export function EnvInfoLoaderMW(
       }
       lastUsedEnvName = targetEnvName ?? lastUsedEnvName;
     } else {
-      targetEnvName = environmentManager.defaultEnvName;
+      targetEnvName = environmentManager.getDefaultEnvName();
     }
 
     if (targetEnvName) {

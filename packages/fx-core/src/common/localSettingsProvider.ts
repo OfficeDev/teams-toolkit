@@ -3,7 +3,12 @@
 "use strict";
 
 import * as fs from "fs-extra";
-import { ConfigFolderName, ConfigMap, LocalSettings } from "@microsoft/teamsfx-api";
+import {
+  ConfigFolderName,
+  ConfigMap,
+  InputConfigsFolderName,
+  LocalSettings,
+} from "@microsoft/teamsfx-api";
 import {
   LocalSettingsAuthKeys,
   LocalSettingsBackendKeys,
@@ -11,13 +16,16 @@ import {
   LocalSettingsFrontendKeys,
   LocalSettingsTeamsAppKeys,
 } from "./localSettingsConstants";
+import { isMultiEnvEnabled } from "./tools";
 
 export const localSettingsFileName = "localSettings.json";
 
 export class LocalSettingsProvider {
   public readonly localSettingsFilePath: string;
   constructor(workspaceFolder: string) {
-    this.localSettingsFilePath = `${workspaceFolder}/.${ConfigFolderName}/${localSettingsFileName}`;
+    this.localSettingsFilePath = isMultiEnvEnabled()
+      ? `${workspaceFolder}/.${ConfigFolderName}/${InputConfigsFolderName}/${localSettingsFileName}`
+      : `${workspaceFolder}/.${ConfigFolderName}/${localSettingsFileName}`;
   }
 
   public init(

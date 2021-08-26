@@ -24,12 +24,12 @@ import {
   UserError,
   SystemError,
   returnSystemError,
-  ConfigFolderName,
   Inputs,
   VsCodeEnv,
   AppStudioTokenProvider,
   Void,
   Tools,
+  AzureSolutionSettings,
 } from "@microsoft/teamsfx-api";
 import {
   isUserCancelError,
@@ -80,6 +80,7 @@ import { SPFxNodeChecker } from "./debug/depsChecker/spfxNodeChecker";
 import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
 import { VS_CODE_UI } from "./extension";
 import { registerAccountTreeHandler } from "./accountTree";
+import { registerEnvTreeHandler } from "./envTree";
 import { selectAndDebug } from "./debug/runIconHandler";
 import * as path from "path";
 import { exp } from "./exp/index";
@@ -147,6 +148,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
     };
     core = new FxCore(tools);
     await registerAccountTreeHandler();
+    await registerEnvTreeHandler();
     await openMarkdownHandler();
     await openSampleReadmeHandler();
   } catch (e) {
@@ -161,6 +163,22 @@ export async function activate(): Promise<Result<Void, FxError>> {
     return err(FxError);
   }
   return result;
+}
+
+export async function getAzureSolutionSettings(): Promise<AzureSolutionSettings | undefined> {
+  const input = getSystemInputs();
+  input.ignoreEnvInfo = true;
+  const projectConfigRes = await core.getProjectConfig(input);
+
+  if (projectConfigRes.isOk()) {
+    if (projectConfigRes.value) {
+      return projectConfigRes.value.settings?.solutionSettings as AzureSolutionSettings;
+    }
+  }
+  // else {
+  //   showError(projectConfigRes.error);
+  // }
+  return undefined;
 }
 
 export function getSystemInputs(): Inputs {
@@ -648,6 +666,63 @@ export async function openManifestHandler(args?: any[]): Promise<Result<null, Fx
   }
 }
 
+export async function createNewEnvironment(args?: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.CreateNewEnvironment,
+    getTriggerFromProperty(args)
+  );
+  if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
+    //todo add create new environment logic
+    return ok(null);
+  } else {
+    const FxError: FxError = {
+      name: "NoWorkspace",
+      source: ExtensionSource,
+      message: StringResources.vsc.handlers.noOpenWorkspace,
+      timestamp: new Date(),
+    };
+    showError(FxError);
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CreateNewEnvironment, FxError);
+    return err(FxError);
+  }
+}
+
+export async function viewEnvironment(args?: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ViewEnvironment, getTriggerFromProperty(args));
+  if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
+    //todo add view environment logic
+    return ok(null);
+  } else {
+    const FxError: FxError = {
+      name: "NoWorkspace",
+      source: ExtensionSource,
+      message: StringResources.vsc.handlers.noOpenWorkspace,
+      timestamp: new Date(),
+    };
+    showError(FxError);
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ViewEnvironment, FxError);
+    return err(FxError);
+  }
+}
+
+export async function activateEnvironment(args?: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ActivateEnvironment, getTriggerFromProperty(args));
+  if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
+    //todo add activate environment logic
+    return ok(null);
+  } else {
+    const FxError: FxError = {
+      name: "NoWorkspace",
+      source: ExtensionSource,
+      message: StringResources.vsc.handlers.noOpenWorkspace,
+      timestamp: new Date(),
+    };
+    showError(FxError);
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ActivateEnvironment, FxError);
+    return err(FxError);
+  }
+}
+
 export async function openM365AccountHandler() {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenM365Portal);
   return env.openExternal(Uri.parse("https://admin.microsoft.com/Adminportal/"));
@@ -833,17 +908,20 @@ export async function cmpAccountsHandler() {
     quickItemOptionArray.push(signInM365Option);
   }
 
-  const azureAccount = await AzureAccountManager.getStatus();
-  if (azureAccount.status === "SignedIn") {
-    const accountInfo = azureAccount.accountInfo;
-    const email = (accountInfo as any).upn ? (accountInfo as any).upn : undefined;
-    if (email !== undefined) {
-      signOutAzureOption.label = signOutAzureOption.label.concat(email);
+  const solutionSettings = await getAzureSolutionSettings();
+  if (solutionSettings && "Azure" === solutionSettings.hostType) {
+    const azureAccount = await AzureAccountManager.getStatus();
+    if (azureAccount.status === "SignedIn") {
+      const accountInfo = azureAccount.accountInfo;
+      const email = (accountInfo as any).upn ? (accountInfo as any).upn : undefined;
+      if (email !== undefined) {
+        signOutAzureOption.label = signOutAzureOption.label.concat(email);
+      }
+      quickItemOptionArray.push(signOutAzureOption);
+      //quickItemOptionArray.push(selectSubscriptionOption);
+    } else {
+      quickItemOptionArray.push(signInAzureOption);
     }
-    quickItemOptionArray.push(signOutAzureOption);
-    //quickItemOptionArray.push(selectSubscriptionOption);
-  } else {
-    quickItemOptionArray.push(signInAzureOption);
   }
 
   quickPick.items = quickItemOptionArray;

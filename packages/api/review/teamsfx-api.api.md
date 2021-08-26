@@ -217,8 +217,25 @@ export type DynamicOptions = LocalFunc<StaticOptions>;
 // @public (undocumented)
 export const DynamicPlatforms: Platform[];
 
-// @public (undocumented)
-export type EnvConfig = Json;
+// @public
+export interface EnvConfig {
+    // (undocumented)
+    $schema?: string;
+    azure: {
+        subscriptionId?: string;
+        resourceGroupName?: string;
+        location?: string;
+        tenantId?: string;
+    };
+    manifest: {
+        description?: string;
+        values: {
+            [k: string]: unknown;
+        };
+        [k: string]: unknown;
+    };
+    skipAddingSqlUser?: boolean;
+}
 
 // @public
 export interface EnvMeta {
@@ -229,6 +246,9 @@ export interface EnvMeta {
     // (undocumented)
     sideloading: boolean;
 }
+
+// @public (undocumented)
+export const EnvProfileFileNameTemplate = "profile.@envName.json";
 
 // @public (undocumented)
 export interface FolderQuestion extends UserInputQuestion {
@@ -449,6 +469,9 @@ export interface IName {
     // (undocumented)
     short: string;
 }
+
+// @public (undocumented)
+export const InputConfigsFolderName = "configs";
 
 // @public
 export interface InputResult<T> {
@@ -775,6 +798,9 @@ export interface ProjectSettings {
     version?: string;
 }
 
+// @public (undocumented)
+export const ProjectSettingsFileName = "projectSettings.json";
+
 // @public
 export interface ProjectStates {
     // (undocumented)
@@ -794,6 +820,9 @@ type ProvisionOutput = {
     states: Json;
     secrets: Json;
 };
+
+// @public (undocumented)
+export const PublishProfilesFolderName = "publishProfiles";
 
 // @public
 export class QTreeNode {
@@ -1218,6 +1247,8 @@ export enum TreeCategory {
     // (undocumented)
     Account = 1,
     // (undocumented)
+    Environment = 5,
+    // (undocumented)
     Feedback = 2,
     // (undocumented)
     GettingStarted = 0,
@@ -1236,7 +1267,11 @@ export interface TreeItem {
     // (undocumented)
     contextValue?: string;
     // (undocumented)
+    description?: string;
+    // (undocumented)
     icon?: string;
+    // (undocumented)
+    isCustom?: boolean;
     // (undocumented)
     label: string;
     // (undocumented)

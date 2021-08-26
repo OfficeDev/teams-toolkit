@@ -110,8 +110,6 @@ export interface EnvMeta {
   sideloading: boolean;
 }
 
-export type EnvConfig = Json;
-
 /**
  * project static settings
  */

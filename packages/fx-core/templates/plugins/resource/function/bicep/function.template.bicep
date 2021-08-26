@@ -5,7 +5,7 @@ param m365ClientId string
 @secure()
 param m365ClientSecret string
 param m365TenantId string
-param applicationIdUri string
+param m365ApplicationIdUri string
 param m365OauthAuthorityHost string
 
 {{#contains 'fx-resource-frontend-hosting' Plugins}}
@@ -17,6 +17,7 @@ param sqlEndpoint string
 {{/contains}}
 {{#contains 'fx-resource-identity' Plugins}}
 param identityId string
+param identityName string
 {{/contains}}
 
 var teamsMobileOrDesktopAppClientId = '1fec8e78-bce4-4aaf-ab1b-5451cc387264'
@@ -48,6 +49,14 @@ resource functionApp 'Microsoft.Web/sites@2020-06-01' = {
       numberOfWorkers: 1
     }
   }
+  {{#contains 'fx-resource-identity' Plugins}}
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${identityName}':{}
+    }
+  }
+  {{/contains}}
 }
 
 resource functionStorage 'Microsoft.Storage/storageAccounts@2021-04-01' = {
@@ -75,7 +84,7 @@ resource functionAppAppSettings 'Microsoft.Web/sites/config@2018-02-01' = {
     AzureWebJobsStorage: 'DefaultEndpointsProtocol=https;AccountName=${functionStorage.name};AccountKey=${listKeys(functionStorage.id, functionStorage.apiVersion).keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
     FUNCTIONS_EXTENSION_VERSION: '~3'
     FUNCTIONS_WORKER_RUNTIME: 'node'
-    M365_APPLICATION_ID_URI: applicationIdUri
+    M365_APPLICATION_ID_URI: m365ApplicationIdUri
     M365_CLIENT_ID: m365ClientId
     M365_CLIENT_SECRET: m365ClientSecret
     M365_TENANT_ID: m365TenantId
@@ -83,7 +92,7 @@ resource functionAppAppSettings 'Microsoft.Web/sites/config@2018-02-01' = {
     WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: 'DefaultEndpointsProtocol=https;AccountName=${functionStorage.name};AccountKey=${listKeys(functionStorage.id, functionStorage.apiVersion).keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
     WEBSITE_RUN_FROM_PACKAGE: '1'
     WEBSITE_CONTENTSHARE: toLower(functionAppName)
-    {{#contains 'fx-resource-azure-sql' Plugins}}
+    {{#contains 'fx-resource-identity' Plugins}}
     IDENTITY_ID: identityId
     {{/contains}}
     {{#contains 'fx-resource-azure-sql' Plugins}}
@@ -103,7 +112,7 @@ resource functionAppAuthSettings 'Microsoft.Web/sites/config@2018-02-01' = {
     issuer: '${oauthAuthority}/v2.0'
     allowedAudiences: [
       m365ClientId
-      applicationIdUri
+      m365ApplicationIdUri
     ]
   }
 }

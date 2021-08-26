@@ -5,11 +5,15 @@ import {
   ConfigFolderName,
   ConfigMap,
   CryptoProvider,
+  EnvProfileFileNameTemplate,
+  EnvConfig,
   err,
   FxError,
   ok,
+  PublishProfilesFolderName,
   Result,
   SystemError,
+  InputConfigsFolderName,
 } from "@microsoft/teamsfx-api";
 import path, { basename } from "path";
 import fs from "fs-extra";
@@ -23,27 +27,45 @@ import {
   WriteFileError,
   mapToJson,
   objectToMap,
+  ProjectEnvNotExistError,
+  InvalidEnvConfigError,
 } from "..";
 import { GLOBAL_CONFIG } from "../plugins/solution/fx-solution/constants";
 import { readJson } from "../common/fileUtils";
 import { Component, sendTelemetryErrorEvent, TelemetryEvent } from "../common/telemetry";
+import { isMultiEnvEnabled } from "../common";
+import Ajv from "ajv";
+import * as draft6MetaSchema from "ajv/dist/refs/json-schema-draft-06.json";
+import * as envConfigSchema from "@microsoft/teamsfx-api/build/schemas/envConfig.json";
 
 export interface EnvInfo {
   envName: string;
-  data: Map<string, any>;
+  // input
+  config: EnvConfig;
+  // output
+  profile: Map<string, any>;
 }
 
-export interface EnvFiles {
+export interface EnvProfileFiles {
   envProfile: string;
   userDataFile: string;
 }
 
 class EnvironmentManager {
   public readonly defaultEnvName = "default";
+  public readonly defaultEnvNameNew = "dev";
   public readonly envNameRegex = /^[\w\d-_]+$/;
-  public readonly envProfileNameRegex = /env\.(?<envName>[\w\d-_]+)\.json/i;
+  public readonly envConfigNameRegex = /config\.(?<envName>[\w\d-_]+)\.json/i;
+  public readonly envProfileNameRegex = /profile\.(?<envName>[\w\d-_]+)\.json/i;
 
-  public async loadEnvProfile(
+  private readonly ajv;
+
+  constructor() {
+    this.ajv = new Ajv();
+    this.ajv.addMetaSchema(draft6MetaSchema);
+  }
+
+  public async loadEnvInfo(
     projectPath: string,
     envName?: string,
     cryptoProvider?: CryptoProvider
@@ -52,26 +74,18 @@ class EnvironmentManager {
       return err(PathNotExistError(projectPath));
     }
 
-    envName = envName ?? this.defaultEnvName;
-    const envFiles = this.getEnvFilesPath(envName, projectPath);
-    const userDataResult = await this.loadUserData(envFiles.userDataFile, cryptoProvider);
-    if (userDataResult.isErr()) {
-      return err(userDataResult.error);
-    }
-    const userData = userDataResult.value;
-
-    if (!(await fs.pathExists(envFiles.envProfile))) {
-      const data = new Map<string, any>([[GLOBAL_CONFIG, new ConfigMap()]]);
-
-      return ok({ envName, data });
+    envName = envName ?? this.getDefaultEnvName();
+    const configResult = await this.loadEnvConfig(projectPath, envName);
+    if (configResult.isErr()) {
+      return err(configResult.error);
     }
 
-    const envData = await readJson(envFiles.envProfile);
+    const profileResult = await this.loadEnvProfile(projectPath, envName, cryptoProvider);
+    if (profileResult.isErr()) {
+      return err(profileResult.error);
+    }
 
-    mergeSerectData(userData, envData);
-    const data = objectToMap(envData);
-
-    return ok({ envName, data });
+    return ok({ envName, config: configResult.value, profile: profileResult.value });
   }
 
   public async writeEnvProfile(
@@ -84,13 +98,13 @@ class EnvironmentManager {
       return err(PathNotExistError(projectPath));
     }
 
-    const configFolder = this.getConfigFolder(projectPath);
-    if (!(await fs.pathExists(configFolder))) {
-      await fs.ensureDir(configFolder);
+    const envProfilesFolder = this.getEnvProfilesFolder(projectPath);
+    if (!(await fs.pathExists(envProfilesFolder))) {
+      await fs.ensureDir(envProfilesFolder);
     }
 
-    envName = envName ?? this.defaultEnvName;
-    const envFiles = this.getEnvFilesPath(envName, projectPath);
+    envName = envName ?? this.getDefaultEnvName();
+    const envFiles = this.getEnvProfileFilesPath(envName, projectPath);
 
     const data = mapToJson(envData);
     const secrets = sperateSecretData(data);
@@ -108,17 +122,17 @@ class EnvironmentManager {
     return ok(envFiles.envProfile);
   }
 
-  public async listEnvProfiles(projectPath: string): Promise<Result<Array<string>, FxError>> {
+  public async listEnvConfigs(projectPath: string): Promise<Result<Array<string>, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
       return err(PathNotExistError(projectPath));
     }
 
-    const configFolder = this.getConfigFolder(projectPath);
-    if (!(await fs.pathExists(configFolder))) {
+    const envConfigsFolder = this.getEnvConfigsFolder(projectPath);
+    if (!(await fs.pathExists(envConfigsFolder))) {
       return ok([]);
     }
 
-    const configFiles = await fs.readdir(configFolder);
+    const configFiles = await fs.readdir(envConfigsFolder);
     const envNames = configFiles
       .map((file) => this.getEnvNameFromPath(file))
       .filter((name): name is string => name !== null);
@@ -127,7 +141,7 @@ class EnvironmentManager {
   }
 
   public async checkEnvExist(projectPath: string, env: string): Promise<Result<boolean, FxError>> {
-    const envList = await environmentManager.listEnvProfiles(projectPath);
+    const envList = await environmentManager.listEnvConfigs(projectPath);
     if (envList.isErr()) {
       return err(envList.error);
     }
@@ -138,16 +152,77 @@ class EnvironmentManager {
     }
   }
 
-  public getEnvFilesPath(envName: string, projectPath: string): EnvFiles {
-    const basePath = this.getConfigFolder(projectPath);
-    const envProfile = path.resolve(basePath, `env.${envName}.json`);
+  public getEnvConfigPath(envName: string, projectPath: string): string {
+    const basePath = this.getEnvConfigsFolder(projectPath);
+    return path.resolve(basePath, `config.${envName}.json`);
+  }
+
+  public getEnvProfileFilesPath(envName: string, projectPath: string): EnvProfileFiles {
+    const basePath = this.getEnvProfilesFolder(projectPath);
+    const envProfile = path.resolve(
+      basePath,
+      isMultiEnvEnabled()
+        ? EnvProfileFileNameTemplate.replace("@envName", envName)
+        : `env.${envName}.json`
+    );
     const userDataFile = path.resolve(basePath, `${envName}.userdata`);
 
     return { envProfile, userDataFile };
   }
 
+  private async loadEnvConfig(
+    projectPath: string,
+    envName: string
+  ): Promise<Result<EnvConfig, FxError>> {
+    if (!isMultiEnvEnabled()) {
+      return ok({
+        azure: {},
+        manifest: { values: {} },
+      });
+    }
+
+    const envConfigPath = this.getEnvConfigPath(envName, projectPath);
+    if (!(await fs.pathExists(envConfigPath))) {
+      return err(ProjectEnvNotExistError(envName));
+    }
+
+    const validate = this.ajv.compile<EnvConfig>(envConfigSchema);
+    const data = await fs.readJson(envConfigPath);
+    if (validate(data)) {
+      return ok(data);
+    }
+
+    return err(InvalidEnvConfigError(envName, JSON.stringify(validate.errors)));
+  }
+
+  private async loadEnvProfile(
+    projectPath: string,
+    envName: string,
+    cryptoProvider?: CryptoProvider
+  ): Promise<Result<Map<string, any>, FxError>> {
+    const envFiles = this.getEnvProfileFilesPath(envName, projectPath);
+    const userDataResult = await this.loadUserData(envFiles.userDataFile, cryptoProvider);
+    if (userDataResult.isErr()) {
+      return err(userDataResult.error);
+    }
+    const userData = userDataResult.value;
+
+    if (!(await fs.pathExists(envFiles.envProfile))) {
+      const data = new Map<string, any>([[GLOBAL_CONFIG, new ConfigMap()]]);
+
+      return ok(data);
+    }
+
+    const envData = await readJson(envFiles.envProfile);
+
+    mergeSerectData(userData, envData);
+    const data = objectToMap(envData);
+
+    return ok(data);
+  }
+
   private getEnvNameFromPath(filePath: string): string | null {
-    const match = this.envProfileNameRegex.exec(filePath);
+    const match = this.envConfigNameRegex.exec(filePath);
     if (match != null && match.groups != null) {
       return match.groups.envName;
     }
@@ -157,6 +232,20 @@ class EnvironmentManager {
 
   private getConfigFolder(projectPath: string): string {
     return path.resolve(projectPath, `.${ConfigFolderName}`);
+  }
+
+  private getPublishProfilesFolder(projectPath: string): string {
+    return path.resolve(this.getConfigFolder(projectPath), PublishProfilesFolderName);
+  }
+
+  private getEnvProfilesFolder(projectPath: string): string {
+    return isMultiEnvEnabled()
+      ? this.getPublishProfilesFolder(projectPath)
+      : this.getConfigFolder(projectPath);
+  }
+
+  private getEnvConfigsFolder(projectPath: string): string {
+    return path.resolve(this.getConfigFolder(projectPath), InputConfigsFolderName);
   }
 
   private async loadUserData(
@@ -221,6 +310,14 @@ class EnvironmentManager {
     }
 
     return ok(secrets);
+  }
+
+  public getDefaultEnvName() {
+    if (isMultiEnvEnabled()) {
+      return this.defaultEnvNameNew;
+    } else {
+      return this.defaultEnvName;
+    }
   }
 }
 

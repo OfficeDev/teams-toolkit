@@ -363,8 +363,8 @@ export class AadAppForTeamsImpl {
 
   public async listCollaborator(ctx: PluginContext): Promise<Result<AadOwner[], FxError>> {
     return ResultFactory.Success([]);
-  }  
-  
+  }
+
   public async grantPermission(ctx: PluginContext): Promise<AadResult> {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartGrantPermission);

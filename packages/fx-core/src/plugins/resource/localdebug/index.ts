@@ -26,6 +26,7 @@ import {
   FrontendHostingPlugin,
   BotPlugin,
   LocalEnvBotKeys,
+  RuntimeConnectorPlugin,
 } from "./constants";
 import {
   LocalDebugConfigKeys,
@@ -60,6 +61,7 @@ import {
   LocalSettingsTeamsAppKeys,
 } from "../../../common/localSettingsConstants";
 import { TeamsClientId } from "../../../common/constants";
+import { ProjectSettingLoader } from "./projectSettingLoader";
 
 @Service(ResourcePlugins.LocalDebugPlugin)
 export class LocalDebugPlugin implements Plugin {
@@ -71,16 +73,12 @@ export class LocalDebugPlugin implements Plugin {
   }
 
   public async scaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
-    const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
-      ?.activeResourcePlugins;
-    const isSpfx = selectedPlugins?.some((pluginName) => pluginName === SpfxPlugin.Name);
-    const includeFrontend = selectedPlugins?.some(
-      (pluginName) => pluginName === FrontendHostingPlugin.Name
-    );
-    const includeBackend = selectedPlugins?.some(
-      (pluginName) => pluginName === FunctionPlugin.Name
-    );
-    const includeBot = selectedPlugins?.some((pluginName) => pluginName === BotPlugin.Name);
+    const isSpfx = ProjectSettingLoader.isSpfx(ctx);
+    const isMigrateFromV1 = ProjectSettingLoader.isMigrateFromV1(ctx);
+    const includeFrontend = ProjectSettingLoader.includeFrontend(ctx);
+    const includeBackend = ProjectSettingLoader.includeBackend(ctx);
+    const includeBot = ProjectSettingLoader.includeBot(ctx);
+    const includeAuth = ProjectSettingLoader.includeAuth(ctx);
     const programmingLanguage = ctx.projectSettings?.programmingLanguage ?? "";
 
     const telemetryProperties = {
@@ -89,6 +87,7 @@ export class LocalDebugPlugin implements Plugin {
       frontend: includeFrontend ? "true" : "false",
       function: includeBackend ? "true" : "false",
       bot: includeBot ? "true" : "false",
+      auth: includeAuth ? "true" : "false",
       "programming-language": programmingLanguage,
     };
     TelemetryUtils.init(ctx);
@@ -132,7 +131,8 @@ export class LocalDebugPlugin implements Plugin {
         const launchConfigurations = Launch.generateConfigurations(
           includeFrontend,
           includeBackend,
-          includeBot
+          includeBot,
+          isMigrateFromV1
         );
         const launchCompounds = Launch.generateCompounds(
           includeFrontend,
@@ -144,6 +144,8 @@ export class LocalDebugPlugin implements Plugin {
           includeFrontend,
           includeBackend,
           includeBot,
+          includeAuth,
+          isMigrateFromV1,
           programmingLanguage
         );
 
@@ -177,7 +179,12 @@ export class LocalDebugPlugin implements Plugin {
         if (!isMultiEnvEnabled()) {
           const localEnvProvider = new LocalEnvProvider(ctx.root);
           await localEnvProvider.saveLocalEnv(
-            localEnvProvider.initialLocalEnvs(includeFrontend, includeBackend, includeBot)
+            localEnvProvider.initialLocalEnvs(
+              includeFrontend,
+              includeBackend,
+              includeBot,
+              includeAuth
+            )
           );
 
           if (includeFrontend) {
@@ -210,15 +217,10 @@ export class LocalDebugPlugin implements Plugin {
     }
 
     const vscEnv = ctx.answers?.vscodeEnv;
-    const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
-      ?.activeResourcePlugins;
-    const includeFrontend = selectedPlugins?.some(
-      (pluginName) => pluginName === FrontendHostingPlugin.Name
-    );
-    const includeBackend = selectedPlugins?.some(
-      (pluginName) => pluginName === FunctionPlugin.Name
-    );
-    const includeBot = selectedPlugins?.some((pluginName) => pluginName === BotPlugin.Name);
+    const includeFrontend = ProjectSettingLoader.includeFrontend(ctx);
+    const includeBackend = ProjectSettingLoader.includeBackend(ctx);
+    const includeBot = ProjectSettingLoader.includeBot(ctx);
+    const includeAuth = ProjectSettingLoader.includeAuth(ctx);
     let skipNgrok = ctx.localSettings?.bot?.get(LocalSettingsBotKeys.SkipNgrok) as boolean;
 
     const telemetryProperties = {
@@ -227,6 +229,7 @@ export class LocalDebugPlugin implements Plugin {
       frontend: includeFrontend ? "true" : "false",
       function: includeBackend ? "true" : "false",
       bot: includeBot ? "true" : "false",
+      auth: includeAuth ? "true" : "false",
       "skip-ngrok": skipNgrok ? "true" : "false",
     };
     TelemetryUtils.init(ctx);
@@ -254,10 +257,12 @@ export class LocalDebugPlugin implements Plugin {
         localFuncEndpoint = "http://localhost:7071";
       }
 
-      ctx.localSettings?.auth?.set(
-        LocalSettingsAuthKeys.SimpleAuthServiceEndpoint,
-        localAuthEndpoint
-      );
+      if (includeAuth) {
+        ctx.localSettings?.auth?.set(
+          LocalSettingsAuthKeys.SimpleAuthServiceEndpoint,
+          localAuthEndpoint
+        );
+      }
 
       if (includeFrontend) {
         ctx.localSettings?.frontend?.set(LocalSettingsFrontendKeys.TabEndpoint, localTabEndpoint);
@@ -347,16 +352,10 @@ export class LocalDebugPlugin implements Plugin {
   }
 
   public async getLocalDebugEnvs(ctx: PluginContext): Promise<Record<string, string>> {
-    const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
-      ?.activeResourcePlugins;
-    const includeFrontend = selectedPlugins?.some(
-      (pluginName) => pluginName === FrontendHostingPlugin.Name
-    );
-    const includeBackend = selectedPlugins?.some(
-      (pluginName) => pluginName === FunctionPlugin.Name
-    );
-    const includeBot = selectedPlugins?.some((pluginName) => pluginName === BotPlugin.Name);
-
+    const includeFrontend = ProjectSettingLoader.includeFrontend(ctx);
+    const includeBackend = ProjectSettingLoader.includeBackend(ctx);
+    const includeBot = ProjectSettingLoader.includeBot(ctx);
+    const includeAuth = ProjectSettingLoader.includeAuth(ctx);
     // get config for local debug
     const clientId = ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId) as string;
     const clientSecret = ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientSecret) as string;
@@ -385,31 +384,33 @@ export class LocalDebugPlugin implements Plugin {
 
     const localEnvs: { [key: string]: string } = {};
     if (includeFrontend) {
-      // frontend local envs
-      localEnvs[LocalEnvFrontendKeys.TeamsFxEndpoint] = localAuthEndpoint;
-      localEnvs[LocalEnvFrontendKeys.LoginUrl] = `${localTabEndpoint}/auth-start.html`;
-      localEnvs[LocalEnvFrontendKeys.ClientId] = clientId;
+      if (includeAuth) {
+        // frontend local envs
+        localEnvs[LocalEnvFrontendKeys.TeamsFxEndpoint] = localAuthEndpoint;
+        localEnvs[LocalEnvFrontendKeys.LoginUrl] = `${localTabEndpoint}/auth-start.html`;
+        localEnvs[LocalEnvFrontendKeys.ClientId] = clientId;
 
-      // auth local envs (auth is only required by frontend)
-      localEnvs[LocalEnvAuthKeys.Urls] = localAuthEndpoint;
-      localEnvs[LocalEnvAuthKeys.ClientId] = clientId;
-      localEnvs[LocalEnvAuthKeys.ClientSecret] = clientSecret;
-      localEnvs[LocalEnvAuthKeys.IdentifierUri] = applicationIdUri;
-      localEnvs[
-        LocalEnvAuthKeys.AadMetadataAddress
-      ] = `https://login.microsoftonline.com/${teamsAppTenantId}/v2.0/.well-known/openid-configuration`;
-      localEnvs[
-        LocalEnvAuthKeys.OauthAuthority
-      ] = `https://login.microsoftonline.com/${teamsAppTenantId}`;
-      localEnvs[LocalEnvAuthKeys.TabEndpoint] = localTabEndpoint;
-      localEnvs[LocalEnvAuthKeys.AllowedAppIds] = [teamsMobileDesktopAppId, teamsWebAppId].join(
-        ";"
-      );
-
-      if (localAuthPackagePath) {
-        localEnvs[LocalEnvAuthKeys.ServicePath] = await prepareLocalAuthService(
-          localAuthPackagePath
+        // auth local envs (auth is only required by frontend)
+        localEnvs[LocalEnvAuthKeys.Urls] = localAuthEndpoint;
+        localEnvs[LocalEnvAuthKeys.ClientId] = clientId;
+        localEnvs[LocalEnvAuthKeys.ClientSecret] = clientSecret;
+        localEnvs[LocalEnvAuthKeys.IdentifierUri] = applicationIdUri;
+        localEnvs[
+          LocalEnvAuthKeys.AadMetadataAddress
+        ] = `https://login.microsoftonline.com/${teamsAppTenantId}/v2.0/.well-known/openid-configuration`;
+        localEnvs[
+          LocalEnvAuthKeys.OauthAuthority
+        ] = `https://login.microsoftonline.com/${teamsAppTenantId}`;
+        localEnvs[LocalEnvAuthKeys.TabEndpoint] = localTabEndpoint;
+        localEnvs[LocalEnvAuthKeys.AllowedAppIds] = [teamsMobileDesktopAppId, teamsWebAppId].join(
+          ";"
         );
+
+        if (localAuthPackagePath) {
+          localEnvs[LocalEnvAuthKeys.ServicePath] = await prepareLocalAuthService(
+            localAuthPackagePath
+          );
+        }
       }
 
       if (includeBackend) {
@@ -492,6 +493,8 @@ export class LocalDebugPlugin implements Plugin {
     } else if (func.method === "getLocalDebugEnvs") {
       const localEnvs = await this.getLocalDebugEnvs(ctx);
       return ok(localEnvs);
+    } else if (func.method === "migrateV1Project") {
+      return await this.scaffold(ctx);
     }
 
     return ok(undefined);

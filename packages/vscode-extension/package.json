@@ -482,8 +482,8 @@
         "properties": {
           "fx-extension.armSupportEnabled": {
             "type": "boolean",
-            "description": "Whether enable ARM support feaure.",
-            "default": true
+            "description": "Whether enable ARM support feaure. (Requires reload of VS Code)",
+            "default": false
           },
           "fx-extension.validateNode": {
             "type": "boolean",

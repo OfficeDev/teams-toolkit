@@ -31,5 +31,5 @@ export class PluginDisplayName {
 
 export class FeatureFlagName {
   static readonly MultiEnv = "TEAMSFX_MULTI_ENV";
-  static readonly ArmSupport = "armSupportEnabled";
+  static readonly ArmSupport = "TEAMSFX_ARM_SUPPORT";
 }

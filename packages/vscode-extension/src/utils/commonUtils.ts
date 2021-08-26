@@ -172,7 +172,7 @@ export function getConfiguration(key: string): boolean {
 
 export function syncFeatureFlags() {
   // Sync arm support
-  process.env[ConfigurationKey.ArmSupportEnabled] = getConfiguration(
+  process.env["TEAMSFX_ARM_SUPPORT"] = getConfiguration(
     ConfigurationKey.ArmSupportEnabled
   ).toString();
 }

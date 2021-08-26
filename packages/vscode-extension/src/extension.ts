@@ -20,7 +20,7 @@ import { disableRunIcon, registerRunIcon } from "./debug/runIconHandler";
 import { CryptoCodeLensProvider } from "./codeLensProvider";
 import { Correlator, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
-import { enableMigrateV1 } from "./handlers";
+import { enableMigrateV1 } from "./utils/migrateV1";
 import { isTeamsfx } from "./utils/commonUtils";
 
 export let VS_CODE_UI: VsCodeUI;

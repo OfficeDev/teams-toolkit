@@ -94,6 +94,8 @@ export enum TelemetryEvent {
 
   MigrateV1ProjectStart = "migrate-v1-project-start",
   MigrateV1Project = "migrate-v1-project",
+  MigrateV1ProjectNotificationStart = "migrate-v1-project-notification-start",
+  MigrateV1ProjectNotification = "migrate-v1-project-notification",
 
   ViewEnvironment = "view-environment",
   ActivateEnvironment = "activate-environment",

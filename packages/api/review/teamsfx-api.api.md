@@ -251,7 +251,7 @@ export interface EnvMeta {
 }
 
 // @public (undocumented)
-export const envNamePlaceholder = "@envName";
+export const EnvNamePlaceholder = "@envName";
 
 // @public (undocumented)
 export const EnvProfileFileNameTemplate: string;

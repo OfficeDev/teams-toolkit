@@ -11,7 +11,7 @@ import {
   ConfigFolderName,
   CryptoProvider,
   EnvConfigFileNameTemplate,
-  envNamePlaceholder,
+  EnvNamePlaceholder,
   FxError,
   InputConfigsFolderName,
   Json,
@@ -296,7 +296,7 @@ describe("APIs of Environment Manager", () => {
 
     it("write environment config with target env", async () => {
       const envName = "test";
-      const configName = EnvConfigFileNameTemplate.replace(envNamePlaceholder, envName);
+      const configName = EnvConfigFileNameTemplate.replace(EnvNamePlaceholder, envName);
       const envConfig = environmentManager.newEnvConfigData();
       const envConfigPathResult = await environmentManager.writeEnvConfig(
         projectPath,

@@ -15,7 +15,7 @@ import {
   SystemError,
   InputConfigsFolderName,
   EnvConfigFileNameTemplate,
-  envNamePlaceholder,
+  EnvNamePlaceholder,
 } from "@microsoft/teamsfx-api";
 import path, { basename } from "path";
 import fs from "fs-extra";
@@ -200,7 +200,7 @@ class EnvironmentManager {
 
   public getEnvConfigPath(envName: string, projectPath: string): string {
     const basePath = this.getEnvConfigsFolder(projectPath);
-    return path.resolve(basePath, EnvConfigFileNameTemplate.replace(envNamePlaceholder, envName));
+    return path.resolve(basePath, EnvConfigFileNameTemplate.replace(EnvNamePlaceholder, envName));
   }
 
   public getEnvProfileFilesPath(envName: string, projectPath: string): EnvProfileFiles {
@@ -208,7 +208,7 @@ class EnvironmentManager {
     const envProfile = path.resolve(
       basePath,
       isMultiEnvEnabled()
-        ? EnvProfileFileNameTemplate.replace(envNamePlaceholder, envName)
+        ? EnvProfileFileNameTemplate.replace(EnvNamePlaceholder, envName)
         : `env.${envName}.json`
     );
     const userDataFile = path.resolve(basePath, `${envName}.userdata`);

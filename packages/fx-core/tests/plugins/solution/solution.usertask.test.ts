@@ -4,14 +4,34 @@ import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { it } from "mocha";
 import { TeamsAppSolution } from " ../../../src/plugins/solution";
-import { ConfigMap, SolutionConfig, SolutionContext, Platform, Func } from "@microsoft/teamsfx-api";
+import {
+  ConfigMap,
+  SolutionConfig,
+  SolutionContext,
+  Platform,
+  Func,
+  ProjectSettings,
+  Inputs,
+  v2,
+} from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import { GLOBAL_CONFIG, SolutionError } from "../../../src/plugins/solution/fx-solution/constants";
-import { mockPublishThatAlwaysSucceed } from "./util";
+import {
+  MockedAppStudioProvider,
+  MockedAzureAccountProvider,
+  MockedV2Context,
+  mockPublishThatAlwaysSucceed,
+} from "./util";
 import _ from "lodash";
 import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import Container from "typedi";
 import { AppStudioPlugin } from "../../../src";
+import * as uuid from "uuid";
+import {
+  HostTypeOptionAzure,
+  HostTypeOptionSPFx,
+} from "../../../src/plugins/solution/fx-solution/question";
+import { executeUserTask } from "../../../src/plugins/solution/fx-solution/v2/executeUserTask";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -72,5 +92,88 @@ describe("executeUserTask VSpublish", async () => {
       expect(result.isOk()).to.be.true;
       expect(spy.calledOnce).to.be.true;
     });
+  });
+});
+
+describe("V2 implementation", () => {
+  it("should return err if given invalid router", async () => {
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [appStudioPlugin.name],
+      },
+    };
+    const mockedCtx = new MockedV2Context(projectSettings);
+    const mockedProvider = new MockedAppStudioProvider();
+    const mockedInputs: Inputs = {
+      platform: Platform.VSCode,
+    };
+
+    const result = await executeUserTask(
+      mockedCtx,
+      { namespace: "someInvalidNamespace", method: "invalid" },
+      mockedInputs,
+      mockedProvider
+    );
+    expect(result.isErr()).to.be.true;
+    expect(result._unsafeUnwrapErr().name).equals("executeUserTaskRouteFailed");
+  });
+
+  it("should return err when trying to add capability for SPFx project", async () => {
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionSPFx.id,
+        name: "test",
+        version: "1.0",
+        activeResourcePlugins: [appStudioPlugin.name],
+      },
+    };
+    const mockedCtx = new MockedV2Context(projectSettings);
+    const mockedProvider = new MockedAppStudioProvider();
+    const mockedInputs: Inputs = {
+      platform: Platform.VSCode,
+    };
+
+    const result = await executeUserTask(
+      mockedCtx,
+      { namespace: "solution", method: "addCapability" },
+      mockedInputs,
+      mockedProvider
+    );
+    expect(result.isErr()).to.be.true;
+    expect(result._unsafeUnwrapErr().name).equals(SolutionError.FailedToAddCapability);
+  });
+
+  it("should return err when trying to add resource for SPFx project", async () => {
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionSPFx.id,
+        name: "test",
+        version: "1.0",
+        activeResourcePlugins: [appStudioPlugin.name],
+      },
+    };
+    const mockedCtx = new MockedV2Context(projectSettings);
+    const mockedProvider = new MockedAppStudioProvider();
+    const mockedInputs: Inputs = {
+      platform: Platform.VSCode,
+    };
+
+    const result = await executeUserTask(
+      mockedCtx,
+      { namespace: "solution", method: "addResource" },
+      mockedInputs,
+      mockedProvider
+    );
+    expect(result.isErr()).to.be.true;
+    expect(result._unsafeUnwrapErr().name).equals(SolutionError.AddResourceNotSupport);
   });
 });

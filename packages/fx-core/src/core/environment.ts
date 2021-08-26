@@ -169,20 +169,21 @@ class EnvironmentManager {
 
     return { envProfile, userDataFile };
   }
-  
+
   private async loadEnvConfig(
     projectPath: string,
     envName: string
   ): Promise<Result<EnvConfig, FxError>> {
-    const envConfigPath = this.getEnvConfigPath(envName, projectPath);
+    if (!isMultiEnvEnabled()) {
+      return ok({
+        azure: {},
+        manifest: { values: {} },
+      });
+    }
 
+    const envConfigPath = this.getEnvConfigPath(envName, projectPath);
     if (!(await fs.pathExists(envConfigPath))) {
-      return isMultiEnvEnabled()
-        ? err(ProjectEnvNotExistError(envName))
-        : ok({
-            azure: {},
-            manifest: { values: {} },
-          });
+      return err(ProjectEnvNotExistError(envName));
     }
 
     const validate = this.ajv.compile<EnvConfig>(envConfigSchema);
@@ -191,13 +192,7 @@ class EnvironmentManager {
       return ok(data);
     }
 
-    // never throw error while loading config.xxx.json if the feature flag of multi env is disabled.
-    return isMultiEnvEnabled()
-      ? err(InvalidEnvConfigError(envName, JSON.stringify(validate.errors)))
-      : ok({
-          azure: {},
-          manifest: { values: {} },
-        });
+    return err(InvalidEnvConfigError(envName, JSON.stringify(validate.errors)));
   }
 
   private async loadEnvProfile(

@@ -24,11 +24,16 @@ import {
   Inputs,
   Platform,
   Colors,
+  InputConfigsFolderName,
+  PublishProfilesFolderName,
+  ProjectSettingsFileName,
+  EnvProfileFileNameTemplate,
 } from "@microsoft/teamsfx-api";
 
 import { ConfigNotFoundError, InvalidEnvFile, ReadFileError } from "./error";
 import AzureAccountManager from "./commonlib/azureLogin";
 import { FeatureFlags } from "./constants";
+import { isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 
 type Json = { [_: string]: any };
 
@@ -114,19 +119,41 @@ export async function sleep(ms: number): Promise<void> {
 }
 
 export function getActiveEnv(): string {
-  return "default";
+  return isMultiEnvEnabled() ? "dev" : "default";
 }
 
 export function getConfigPath(projectFolder: string, fileName: string): string {
-  return path.resolve(projectFolder, `.${ConfigFolderName}`, fileName);
+  if (isMultiEnvEnabled()) {
+    return path.resolve(projectFolder, `.${ConfigFolderName}`, InputConfigsFolderName, fileName);
+  } else {
+    return path.resolve(projectFolder, `.${ConfigFolderName}`, fileName);
+  }
+}
+
+export function getEnvProfilePath(projectFolder: string, fileName: string): string {
+  if (isMultiEnvEnabled()) {
+    return path.resolve(projectFolder, `.${ConfigFolderName}`, PublishProfilesFolderName, fileName);
+  } else {
+    return path.resolve(projectFolder, `.${ConfigFolderName}`, fileName);
+  }
 }
 
 export function getEnvFilePath(projectFolder: string) {
-  return getConfigPath(projectFolder, `env.${getActiveEnv()}.json`);
+  if (isMultiEnvEnabled()) {
+    return getEnvProfilePath(
+      projectFolder,
+      EnvProfileFileNameTemplate.replace("@envName", getActiveEnv())
+    );
+  } else {
+    return getEnvProfilePath(projectFolder, `env.${getActiveEnv()}.json`);
+  }
 }
 
 export function getSettingsFilePath(projectFolder: string) {
-  return getConfigPath(projectFolder, "settings.json");
+  return getConfigPath(
+    projectFolder,
+    isMultiEnvEnabled() ? ProjectSettingsFileName : "settings.json"
+  );
 }
 
 export async function readEnvJsonFile(projectFolder: string): Promise<Result<Json, FxError>> {
@@ -172,7 +199,7 @@ export function readSettingsFileSync(projectFolder: string): Result<Json, FxErro
 export async function readProjectSecrets(
   projectFolder: string
 ): Promise<Result<dotenv.DotenvParseOutput, FxError>> {
-  const secretFile = getConfigPath(projectFolder, `${getActiveEnv()}.userdata`);
+  const secretFile = getEnvProfilePath(projectFolder, `${getActiveEnv()}.userdata`);
   if (!fs.existsSync(secretFile)) {
     return err(ConfigNotFoundError(secretFile));
   }
@@ -185,7 +212,7 @@ export async function readProjectSecrets(
 }
 
 export function writeSecretToFile(secrets: dotenv.DotenvParseOutput, rootFolder: string): void {
-  const secretFile = `${rootFolder}/.${ConfigFolderName}/${getActiveEnv()}.userdata`;
+  const secretFile = getEnvProfilePath(rootFolder, `${getActiveEnv()}.userdata`);
   const array: string[] = [];
   for (const secretKey of Object.keys(secrets)) {
     const secretValue = secrets[secretKey];
@@ -240,12 +267,19 @@ export function isWorkspaceSupported(workspace: string): boolean {
     p,
     `${p}/package.json`,
     `${p}/.${ConfigFolderName}`,
-    `${p}/.${ConfigFolderName}/settings.json`,
     `${getEnvFilePath(p)}`,
   ];
+  if (isMultiEnvEnabled()) {
+    checklist.push(
+      `${p}/.${ConfigFolderName}/${InputConfigsFolderName}/${ProjectSettingsFileName}`
+    );
+  } else {
+    checklist.push(`${p}/.${ConfigFolderName}/settings.json`);
+  }
 
   for (const fp of checklist) {
     if (!fs.existsSync(path.resolve(fp))) {
+      console.log("file does not exists: " + fp);
       return false;
     }
   }
@@ -286,7 +320,7 @@ export function getLocalTeamsAppId(rootfolder: string | undefined): any {
       if (settingValue && settingValue.startsWith("{{") && settingValue.endsWith("}}")) {
         // setting in env.xxx.json is place holder and need to get actual value from xxx.userdata
         const placeHolder = settingValue.replace("{{", "").replace("}}", "");
-        const userdataPath = getConfigPath(rootfolder, `${getActiveEnv()}.userdata`);
+        const userdataPath = getEnvProfilePath(rootfolder, `${getActiveEnv()}.userdata`);
         if (fs.existsSync(userdataPath)) {
           const userdata = fs.readFileSync(userdataPath, "utf8");
           const userEnv = dotenv.parse(userdata);

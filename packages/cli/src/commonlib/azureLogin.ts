@@ -23,7 +23,7 @@ import { NotFoundSubscriptionId, NotSupportedProjectType } from "../error";
 import {
   changeLoginTenantMessage,
   env,
-  envDefaultJsonFile,
+  profileDefaultJsonFile,
   failToFindSubscription,
   loginComponent,
   MFACode,
@@ -33,6 +33,7 @@ import {
   signedOut,
   subscription,
   subscriptionInfoFile,
+  envDefaultJsonFile,
 } from "./common/constant";
 import { login, LoginStatus } from "./common/login";
 import { LogLevel as LLevel } from "@microsoft/teamsfx-api";
@@ -40,7 +41,8 @@ import { CodeFlowTenantLogin } from "./codeFlowTenantLogin";
 import CLIUIInstance from "../userInteraction";
 import * as path from "path";
 import * as fs from "fs-extra";
-import { isWorkspaceSupported } from "../utils";
+import { getEnvProfilePath, isWorkspaceSupported } from "../utils";
+import { isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 
 const accountName = "azure";
 const scopes = ["https://management.core.windows.net/user_impersonation"];
@@ -585,15 +587,14 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       if (!isWorkspaceSupported(AzureAccountManager.rootPath)) {
         return undefined;
       }
-      const envDefalultFile = path.join(
+      const envDefaultFile = getEnvProfilePath(
         AzureAccountManager.rootPath,
-        `.${ConfigFolderName}`,
-        envDefaultJsonFile
+        isMultiEnvEnabled() ? envDefaultJsonFile : profileDefaultJsonFile
       );
-      if (!fs.existsSync(envDefalultFile)) {
+      if (!fs.existsSync(envDefaultFile)) {
         return undefined;
       }
-      const envDefaultJson = (await fs.readFile(envDefalultFile)).toString();
+      const envDefaultJson = (await fs.readFile(envDefaultFile)).toString();
       const envDefault = JSON.parse(envDefaultJson);
       if (envDefault.solution && envDefault.solution.subscriptionId) {
         return {

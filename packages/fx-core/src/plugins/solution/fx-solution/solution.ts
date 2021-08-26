@@ -112,17 +112,16 @@ import { PermissionRequestFileProvider } from "../../../core/permissionRequest";
 import { IUserList } from "../../resource/appstudio/interfaces/IAppDefinition";
 import axios from "axios";
 import { AadOwner, Collaborator, ResourcePermission } from "../../../common/permissionInterface";
-import { canAddCapability, confirmRegenerateArmTemplate } from "./v2/executeUserTask";
+import {
+  canAddCapability,
+  canAddResource,
+  confirmRegenerateArmTemplate,
+  extractParamForRegisterTeamsAppAndAad,
+  ParamForRegisterTeamsAppAndAad,
+} from "./v2/executeUserTask";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
-
-type ParamForRegisterTeamsAppAndAad = {
-  "app-name": string;
-  environment: "local" | "remote";
-  endpoint: string;
-  "root-path": string;
-};
 
 // Maybe we need a state machine to track state transition.
 export enum SolutionRunningState {
@@ -1812,27 +1811,11 @@ export class TeamsAppSolution implements Solution {
     }
     const settings = this.getAzureSolutionSettings(ctx);
     const originalSettings = deepCopy(settings);
-    if (
-      !(
-        settings.hostType === HostTypeOptionAzure.id &&
-        settings.capabilities &&
-        settings.capabilities.includes(TabOptionItem.id)
-      )
-    ) {
-      const e = returnUserError(
-        new Error("Add resource is only supported for Tab app hosted in Azure."),
-        "Solution",
-        SolutionError.AddResourceNotSupport
-      );
-
-      return err(
-        sendErrorTelemetryThenReturnError(
-          SolutionTelemetryEvent.AddResource,
-          e,
-          ctx.telemetryReporter
-        )
-      );
+    const canProceed = canAddResource(settings, ctx.telemetryReporter!);
+    if (canProceed.isErr()) {
+      return canProceed;
     }
+
     const selectedPlugins = settings.activeResourcePlugins;
     const functionPlugin: Plugin = this.FunctionPlugin;
     const sqlPlugin: Plugin = this.SqlPlugin;
@@ -2076,7 +2059,7 @@ export class TeamsAppSolution implements Solution {
     }
     if (namespace.includes("solution")) {
       if (method === "registerTeamsAppAndAad") {
-        const maybeParams = this.extractParamForRegisterTeamsAppAndAad(ctx.answers);
+        const maybeParams = extractParamForRegisterTeamsAppAndAad(ctx.answers);
         if (maybeParams.isErr()) {
           return maybeParams;
         }
@@ -2123,42 +2106,6 @@ export class TeamsAppSolution implements Solution {
         `executeUserTaskRouteFailed`
       )
     );
-  }
-
-  private extractParamForRegisterTeamsAppAndAad(
-    answers?: Inputs
-  ): Result<ParamForRegisterTeamsAppAndAad, FxError> {
-    if (answers == undefined) {
-      return err(
-        returnSystemError(
-          new Error("Input is undefined"),
-          "Solution",
-          SolutionError.FailedToGetParamForRegisterTeamsAppAndAad
-        )
-      );
-    }
-
-    const param: ParamForRegisterTeamsAppAndAad = {
-      "app-name": "",
-      endpoint: "",
-      environment: "local",
-      "root-path": "",
-    };
-    for (const key of Object.keys(param)) {
-      const value = answers[key];
-      if (value == undefined) {
-        return err(
-          returnSystemError(
-            new Error(`${key} not found`),
-            "Solution",
-            SolutionError.FailedToGetParamForRegisterTeamsAppAndAad
-          )
-        );
-      }
-      (param as any)[key] = value;
-    }
-
-    return ok(param);
   }
 
   private prepareConfigForRegisterTeamsAppAndAad(

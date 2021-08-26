@@ -20,7 +20,7 @@ import HelpParamGenerator from "../helpParamGenerator";
 export default class Package extends YargsCommand {
   public readonly commandHead = `package`;
   public readonly command = `${this.commandHead}`;
-  public readonly description = "Build the current application.";
+  public readonly description = "Build your Teams app into a package for publishing.";
   public params: { [_: string]: Options } = {};
 
   public builder(yargs: Argv): Argv<any> {

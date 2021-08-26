@@ -15,24 +15,18 @@ var teamsMobileOrDesktopAppClientId = '1fec8e78-bce4-4aaf-ab1b-5451cc387264'
 var teamsWebAppClientId = '5e3ce6c0-2b1f-4285-8d4b-75ee78787346'
 var authorizedClientApplicationIds = '${teamsMobileOrDesktopAppClientId};${teamsWebAppClientId}'
 
-resource simpleAuthWebApp 'Microsoft.Web/sites@2020-06-01' existing = {
-  name: simpleAuthWebAppName
-}
-
 resource simpleAuthDeploy 'Microsoft.Web/sites/extensions@2021-01-15' = {
-  parent: simpleAuthWebApp
-  name: 'MSDeploy'
+  name: '${simpleAuthWebAppName}/MSDeploy'
   properties: {
     packageUri: simpelAuthPackageUri
   }
 }
 
 resource simpleAuthWebAppSettings 'Microsoft.Web/sites/config@2018-02-01' = {
-  parent:simpleAuthWebApp
   dependsOn: [
     simpleAuthDeploy
   ]
-  name: 'appsettings'
+  name: '${simpleAuthWebAppName}/appsettings'
   properties: {
     AAD_METADATA_ADDRESS: aadMetadataAddress
     ALLOWED_APP_IDS: authorizedClientApplicationIds

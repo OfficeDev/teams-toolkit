@@ -4,6 +4,7 @@ param botAadClientId string
 @secure()
 param botAadClientSecret string
 param authLoginUriSuffix string
+param botEndpoint string
 param m365ClientId string
 @secure()
 param m365ClientSecret string
@@ -15,30 +16,18 @@ param sqlDatabaseName string
 param sqlEndpoint string
 param identityId string
 
-var botWebAppHostname = botWebApp.properties.hostNames[0]
-var botEndpoint = 'https://${botWebAppHostname}'
 var initiateLoginEndpoint = uri(botEndpoint, authLoginUriSuffix)
 
-resource botServices 'Microsoft.BotService/botServices@2021-03-01' existing = {
-  name: botServiceName
-}
-
 resource botServicesMsTeamsChannel 'Microsoft.BotService/botServices/channels@2021-03-01' = {
-  parent: botServices
   location: 'global'
-  name: 'MsTeamsChannel'
+  name: '${botServiceName}/MsTeamsChannel'
   properties: {
     channelName: 'MsTeamsChannel'
   }
 }
 
-resource botWebApp 'Microsoft.Web/sites@2021-01-01' existing = {
-  name: botWebAppName
-}
-
 resource botWebAppSettings 'Microsoft.Web/sites/config@2021-01-01' = {
-    parent: botWebApp
-    name: 'appsettings'
+    name: '${botWebAppName}/appsettings'
      properties: {
       BOT_ID: botAadClientId
       BOT_PASSWORD: botAadClientSecret

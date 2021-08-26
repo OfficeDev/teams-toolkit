@@ -22,6 +22,7 @@ module botConfiguration './botConfiguration.all.bicep' = {
     botServiceName: bot_serviceName
     botWebAppName: bot_sitesName
     authLoginUriSuffix: authLoginUriSuffix
+    botEndpoint: botProvision.outputs.botWebAppEndpoint
     m365ApplicationIdUri: m365ApplicationIdUri
     m365ClientId: m365ClientId
     m365ClientSecret: m365ClientSecret

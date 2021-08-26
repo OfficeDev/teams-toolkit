@@ -111,7 +111,6 @@ import { scaffoldReadmeAndLocalSettings } from "./v2/scaffolding";
 import { PermissionRequestFileProvider } from "../../../core/permissionRequest";
 import { IUserList } from "../../resource/appstudio/interfaces/IAppDefinition";
 import axios from "axios";
-import { AadOwner, Collaborator, ResourcePermission } from "../../../common/permissionInterface";
 import {
   canAddCapability,
   canAddResource,
@@ -119,6 +118,12 @@ import {
   extractParamForRegisterTeamsAppAndAad,
   ParamForRegisterTeamsAppAndAad,
 } from "./v2/executeUserTask";
+import {
+  AadOwner,
+  Collaborator,
+  ResourcePermission,
+  TeamsAppAdmin,
+} from "../../../common/permissionInterface";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -1430,6 +1435,7 @@ export class TeamsAppSolution implements Solution {
       if (ctx.answers?.platform === Platform.CLI) {
         const aadAppTenantId = ctx.config?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
 
+        ctx.ui?.showMessage("info", `Account used to check: ${userInfo.userPrincipalName}`, false);
         // Todo, when multi-environment is ready, we will update to current environment
         ctx.ui?.showMessage("info", `Starting permission check for environment: default`, false);
         ctx.ui?.showMessage("info", `Tenant ID: ${aadAppTenantId}`, false);
@@ -1484,10 +1490,104 @@ export class TeamsAppSolution implements Solution {
   }
 
   @hooks([ErrorHandlerMW])
-  async listCollaborator(
-    ctx: SolutionContext
-  ): Promise<Result<Collaborator[] | undefined, FxError>> {
-    return ok(undefined);
+  async listCollaborator(ctx: SolutionContext): Promise<Result<Collaborator[], FxError>> {
+    try {
+      const result = await this.checkAndGetCurrentUserInfo(ctx);
+      if (result.isErr()) {
+        return result;
+      }
+      const userInfo = result.value as IUserList;
+
+      const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, [
+        this.AppStudioPlugin,
+        this.AadPlugin,
+      ]);
+
+      const listCollaboratorWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(
+        ([plugin, context]) => {
+          return [plugin?.listCollaborator?.bind(plugin), context, plugin.name];
+        }
+      );
+
+      if (ctx.answers?.platform === Platform.CLI) {
+        const aadAppTenantId = ctx.config?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
+        ctx.ui?.showMessage("info", `Account used to check: ${userInfo.userPrincipalName}`, false);
+
+        // Todo, when multi-environment is ready, we will update to current environment
+        ctx.ui?.showMessage(
+          "info",
+          `Starting list all collaborators for environment: default`,
+          false
+        );
+        ctx.ui?.showMessage("info", `Tenant ID: ${aadAppTenantId}`, false);
+      }
+
+      const results = await executeConcurrently("", listCollaboratorWithCtx);
+
+      const errors: any = [];
+
+      for (const result of results) {
+        if (result.isErr()) {
+          errors.push(result);
+        }
+      }
+
+      let errorMsg = "";
+      if (errors.length > 0) {
+        errorMsg += `Failed to list collaborator for the project.\n Error details: \n`;
+        for (const fxError of errors) {
+          errorMsg += fxError.error.message + "\n";
+        }
+      }
+
+      if (errorMsg) {
+        return err(
+          returnUserError(new Error(errorMsg), "Solution", SolutionError.FailedToListCollaborator)
+        );
+      }
+
+      const teamsAppOwners: TeamsAppAdmin[] = results[0].isErr() ? [] : results[0].value;
+      const aadOwners: AadOwner[] = results[1].isErr() ? [] : results[1].value;
+      const collaborators: Collaborator[] = [];
+
+      for (const teamsAppOwner of teamsAppOwners) {
+        const aadOwner = aadOwners.find(
+          (owner) => owner.userObjectId === teamsAppOwner.userObjectId
+        );
+
+        collaborators.push({
+          userPrincipalName: teamsAppOwner.userPrincipalName,
+          userObjectId: teamsAppOwner.userObjectId,
+          isAadOwner: aadOwner ? true : false,
+          aadResourceId: aadOwner ? aadOwner.resourceId : undefined,
+          teamsAppResourceId: teamsAppOwner.resourceId,
+        });
+      }
+
+      if (ctx.answers?.platform === Platform.CLI) {
+        for (const collaborator of collaborators) {
+          ctx.ui?.showMessage("info", `Account: ${collaborator.userPrincipalName}`, false);
+
+          ctx.ui?.showMessage(
+            "info",
+            `Resource ID: ${collaborator.teamsAppResourceId}, Resource Name: Teams App, Permission: Administrator`,
+            false
+          );
+
+          if (collaborator.aadResourceId) {
+            ctx.ui?.showMessage(
+              "info",
+              `Resource ID: ${collaborator.aadResourceId}, Resource Name: AAD App, Permission: Owner`,
+              false
+            );
+          }
+        }
+      }
+
+      return ok(collaborators);
+    } finally {
+      this.runningState = SolutionRunningState.Idle;
+    }
   }
 
   private async checkAndGetCurrentUserInfo(ctx: SolutionContext): Promise<Result<any, FxError>> {
@@ -2338,15 +2438,13 @@ export class TeamsAppSolution implements Solution {
         return undefined;
       }
 
-      const collaborator: AadOwner = res.data.value.find(
-        (user: AadOwner) => user.userPrincipalName === email
-      );
+      const collaborator = res.data.value.find((user: any) => user.userPrincipalName === email);
 
       if (!collaborator) {
         return undefined;
       }
 
-      aadId = collaborator.id;
+      aadId = collaborator.userObjectId;
       userPrincipalName = collaborator.userPrincipalName;
       displayName = collaborator.displayName;
     }

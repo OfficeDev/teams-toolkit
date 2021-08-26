@@ -18,9 +18,10 @@ import { VsCodeUI } from "./qm/vsc_ui";
 import { exp } from "./exp";
 import { disableRunIcon, registerRunIcon } from "./debug/runIconHandler";
 import { CryptoCodeLensProvider } from "./codeLensProvider";
-import { Correlator } from "@microsoft/teamsfx-core";
+import { Correlator, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
 import { enableMigrateV1 } from "./handlers";
+import { isTeamsfx } from "./utils/commonUtils";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -183,6 +184,18 @@ export async function activate(context: vscode.ExtensionContext) {
     (cipher, selection) => Correlator.run(handlers.decryptSecret, cipher, selection)
   );
   context.subscriptions.push(decryptCmd);
+
+  const createNewEnvironment = vscode.commands.registerCommand(
+    "fx-extension.addEnvironment",
+    (...args) => Correlator.run(handlers.createNewEnvironment, args)
+  );
+  context.subscriptions.push(createNewEnvironment);
+
+  vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isMultiEnvEnabled",
+    isMultiEnvEnabled() && (await isTeamsfx())
+  );
 
   // Setup CodeLens provider for userdata file
   const codelensProvider = new CryptoCodeLensProvider();

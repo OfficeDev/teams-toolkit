@@ -433,13 +433,25 @@ export function compileHandlebarsTemplateString(templateString: string, context:
 
 export async function getAppDirectory(projectRoot: string): Promise<string> {
   const REMOTE_MANIFEST = "manifest.source.json";
+  const MANIFEST_TEMPLATE = "manifest.template.json";
+  const appDirNewLocForMultiEnv = `${projectRoot}/templates/${AppPackageFolderName}`;
   const appDirNewLoc = `${projectRoot}/${AppPackageFolderName}`;
   const appDirOldLoc = `${projectRoot}/.${ConfigFolderName}`;
 
-  if (await fs.pathExists(`${appDirNewLoc}/${REMOTE_MANIFEST}`)) {
-    return appDirNewLoc;
+  if (isMultiEnvEnabled()) {
+    if (await fs.pathExists(`${appDirNewLocForMultiEnv}/${MANIFEST_TEMPLATE}`)) {
+      return appDirNewLocForMultiEnv;
+    } else if (await fs.pathExists(`${appDirNewLoc}/${REMOTE_MANIFEST}`)) {
+      return appDirNewLoc;
+    } else {
+      return appDirOldLoc;
+    }
   } else {
-    return appDirOldLoc;
+    if (await fs.pathExists(`${appDirNewLoc}/${REMOTE_MANIFEST}`)) {
+      return appDirNewLoc;
+    } else {
+      return appDirOldLoc;
+    }
   }
 }
 

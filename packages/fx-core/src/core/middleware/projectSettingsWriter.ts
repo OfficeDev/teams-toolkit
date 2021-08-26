@@ -9,11 +9,14 @@ import {
   AzureSolutionSettings,
   ConfigFolderName,
   err,
+  InputConfigsFolderName,
   Inputs,
+  ProjectSettingsFileName,
   StaticPlatforms,
 } from "@microsoft/teamsfx-api";
 import { WriteFileError } from "../error";
 import { CoreHookContext, FxCore } from "..";
+import { isMultiEnvEnabled } from "../../common";
 
 /**
  * This middleware will help to persist project settings if necessary.
@@ -41,7 +44,14 @@ export const ProjectSettingsWriterMW: Middleware = async (
         ?.solutionSettings as AzureSolutionSettings;
       if (!solutionSettings.activeResourcePlugins) solutionSettings.activeResourcePlugins = [];
       if (!solutionSettings.azureResources) solutionSettings.azureResources = [];
-      const settingFile = path.resolve(confFolderPath, "settings.json");
+      let settingFile;
+      if (isMultiEnvEnabled()) {
+        const confFolderPathNew = path.resolve(confFolderPath, InputConfigsFolderName);
+        await fs.ensureDir(confFolderPathNew);
+        settingFile = path.resolve(confFolderPathNew, ProjectSettingsFileName);
+      } else {
+        settingFile = path.resolve(confFolderPath, "settings.json");
+      }
       const core = ctx.self as FxCore;
       await fs.writeFile(settingFile, JSON.stringify(solutionContext.projectSettings, null, 4));
       core.tools.logProvider.debug(`[core] persist project setting file: ${settingFile}`);

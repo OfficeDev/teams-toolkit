@@ -68,7 +68,7 @@ export function EnvInfoLoaderMW(
       }
       lastUsedEnvName = targetEnvName ?? lastUsedEnvName;
     } else {
-      targetEnvName = environmentManager.defaultEnvName;
+      targetEnvName = environmentManager.getDefaultEnvName();
     }
 
     if (targetEnvName) {
@@ -105,7 +105,7 @@ export async function loadSolutionContext(
   const cryptoProvider = new LocalCrypto(projectSettings.projectId);
   // ensure backwards compatibility:
   // no need to decrypt the secrets in *.userdata for previous TeamsFx project, which has no project id.
-  const envDataResult = await environmentManager.loadEnvProfile(
+  const envDataResult = await environmentManager.loadEnvInfo(
     inputs.projectPath,
     targetEnvName,
     projectIdMissing ? undefined : cryptoProvider
@@ -117,14 +117,14 @@ export async function loadSolutionContext(
   const envInfo = envDataResult.value;
 
   // migrate programmingLanguage and defaultFunctionName to project settings if exists in previous env config
-  const solutionConfig = envInfo.data as SolutionConfig;
+  const solutionConfig = envInfo.profile as SolutionConfig;
   upgradeProgrammingLanguage(solutionConfig, projectSettings);
   upgradeDefaultFunctionName(solutionConfig, projectSettings);
 
   const solutionContext: SolutionContext = {
     projectSettings: projectSettings,
     targetEnvName: envInfo.envName,
-    config: envInfo.data,
+    config: envInfo.profile,
     root: inputs.projectPath || "",
     ...tools,
     ...tools.tokenProvider,
@@ -246,7 +246,7 @@ async function getQuestionsForTargetEnv(
     return err(NoProjectOpenedError());
   }
 
-  const envProfilesResult = await environmentManager.listEnvProfiles(inputs.projectPath);
+  const envProfilesResult = await environmentManager.listEnvConfigs(inputs.projectPath);
   if (envProfilesResult.isErr()) {
     return err(envProfilesResult.error);
   }

@@ -1,5 +1,4 @@
 # Microsoft Teams Framework (TeamsFx)
-[![CI workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/ci.yml/badge.svg)](https://github.com/OfficeDev/TeamsFx/actions/workflows/ci.yml)
 [![E2E Test workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/e2e-test.yml/badge.svg)](https://github.com/OfficeDev/TeamsFx/actions/workflows/e2e-test.yml)
 [![SDK CI workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/sdk-ci.yml/badge.svg)](https://github.com/OfficeDev/TeamsFx/actions/workflows/sdk-ci.yml)
 [![DotNet SDK CI workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/dotnetsdk-ci.yml/badge.svg)](https://github.com/OfficeDev/TeamsFx/actions/workflows/dotnetsdk-ci.yml)

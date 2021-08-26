@@ -92,53 +92,6 @@ export function EnvInfoLoaderMW(
   };
 }
 
-export function CreateNewEnvMW(isMultiEnvEnabled: boolean): Middleware {
-  return async (ctx: CoreHookContext, next: NextFunction) => {
-    const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-
-    if (!isMultiEnvEnabled) {
-      await next();
-      return;
-    }
-
-    if (!ctx.projectSettings) {
-      ctx.result = err(ProjectSettingsUndefinedError());
-      return;
-    }
-
-    const core = ctx.self as FxCore;
-    const targetEnvName = await askNewEnvironment(ctx, inputs);
-
-    const envProfilesResult = await environmentManager.listEnvProfiles(inputs.projectPath!);
-    if (envProfilesResult.isErr()) {
-      return err(envProfilesResult.error);
-    }
-
-    if (envProfilesResult.value.indexOf(targetEnvName!) >= 0) {
-      ctx.result = err(ProjectEnvAlreadyExistError(targetEnvName!));
-      return;
-    }
-
-    if (targetEnvName) {
-      const result = await loadSolutionContext(
-        core.tools,
-        inputs,
-        ctx.projectSettings,
-        ctx.projectIdMissing,
-        targetEnvName
-      );
-      if (result.isErr()) {
-        ctx.result = err(result.error);
-        return;
-      }
-
-      ctx.solutionContext = result.value;
-
-      await next();
-    }
-  };
-}
-
 export async function loadSolutionContext(
   tools: Tools,
   inputs: Inputs,
@@ -260,7 +213,7 @@ async function askTargetEnvironment(
   }
 }
 
-async function askNewEnvironment(
+export async function askNewEnvironment(
   ctx: CoreHookContext,
   inputs: Inputs
 ): Promise<string | undefined> {

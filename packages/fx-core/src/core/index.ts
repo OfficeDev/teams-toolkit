@@ -67,6 +67,7 @@ import {
   FunctionRouterError,
   InvalidInputError,
   MigrateNotImplementError,
+  ProjectEnvAlreadyExistError,
   ProjectFolderExistError,
   ProjectFolderNotExistError,
   TaskNotSupportError,
@@ -88,8 +89,9 @@ import { AxiosResponse } from "axios";
 import { ProjectUpgraderMW } from "./middleware/projectUpgrader";
 import { globalStateUpdate } from "../common/globalState";
 import {
-  CreateNewEnvMW,
+  askNewEnvironment,
   EnvInfoLoaderMW,
+  loadSolutionContext,
   upgradeDefaultFunctionName,
   upgradeProgrammingLanguage,
 } from "./middleware/envInfoLoader";
@@ -97,6 +99,7 @@ import { EnvInfoWriterMW } from "./middleware/envInfoWriter";
 import { LocalSettingsLoaderMW } from "./middleware/localSettingsLoader";
 import { LocalSettingsWriterMW } from "./middleware/localSettingsWriter";
 import { MigrateConditionHandlerMW } from "./middleware/migrateConditionHandler";
+import { environmentManager } from "..";
 
 export interface CoreHookContext extends HookContext {
   projectSettings?: ProjectSettings;
@@ -811,17 +814,40 @@ export class FxCore implements Core {
     throw TaskNotSupportError(Stage.build);
   }
 
-  @hooks([
-    ErrorHandlerMW,
-    ProjectSettingsLoaderMW,
-    CreateNewEnvMW(isMultiEnvEnabled()),
-    SolutionLoaderMW(defaultSolutionLoader),
-    ContextInjecterMW,
-    EnvInfoWriterMW,
-  ])
+  @hooks([ErrorHandlerMW, ProjectSettingsLoaderMW, ContextInjecterMW, EnvInfoWriterMW])
   async createEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+    if (!isMultiEnvEnabled()) {
+      return ok(Void);
+    }
+
+    const core = ctx!.self as FxCore;
+    const targetEnvName = await askNewEnvironment(ctx!, inputs);
+
+    const envProfilesResult = await environmentManager.listEnvProfiles(inputs.projectPath!);
+    if (envProfilesResult.isErr()) {
+      return err(envProfilesResult.error);
+    }
+
+    if (envProfilesResult.value.indexOf(targetEnvName!) >= 0) {
+      return err(ProjectEnvAlreadyExistError(targetEnvName!));
+    }
+
+    if (targetEnvName) {
+      const result = await loadSolutionContext(
+        core.tools,
+        inputs,
+        ctx!.projectSettings!,
+        ctx!.projectIdMissing,
+        targetEnvName
+      );
+      if (result.isErr()) {
+        return err(result.error);
+      }
+      ctx!.solutionContext = result.value;
+    }
     return ok(Void);
   }
+
   async removeEnv(inputs: Inputs): Promise<Result<Void, FxError>> {
     throw TaskNotSupportError(Stage.removeEnv);
   }

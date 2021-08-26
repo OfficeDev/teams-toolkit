@@ -10,12 +10,13 @@ import { randomAppName } from "./utils";
 import {
   ConfigFolderName,
   CryptoProvider,
+  EnvConfigFileNameTemplate,
+  EnvNamePlaceholder,
   FxError,
   InputConfigsFolderName,
   Json,
   ok,
   Result,
-  UserError,
 } from "@microsoft/teamsfx-api";
 import { environmentManager } from "../../src/core/environment";
 import * as tools from "../../src/common/tools";
@@ -262,6 +263,59 @@ describe("APIs of Environment Manager", () => {
     });
   });
 
+  describe("Write Environment Config", () => {
+    before(async () => {
+      sandbox.stub(fs, "pathExists").resolves(true);
+      sandbox.stub<any, any>(fs, "writeFile").callsFake(async (file: string, data: any) => {
+        fileMap.set(file, data);
+      });
+    });
+
+    afterEach(async () => {
+      fileMap.clear();
+      await fs.rmdir(projectPath, { recursive: true });
+    });
+
+    after(async () => {
+      sandbox.restore();
+    });
+
+    it("write environment config without target env", async () => {
+      const envConfig = environmentManager.newEnvConfigData();
+      const envConfigPathResult = await environmentManager.writeEnvConfig(projectPath, envConfig);
+      if (envConfigPathResult.isErr()) {
+        assert.fail("Failed to write environment config.");
+      }
+
+      const expectedContent = JSON.stringify(envConfig, null, 4);
+      assert.equal(
+        formatContent(fileMap.get(envConfigPathResult.value)),
+        formatContent(expectedContent)
+      );
+    });
+
+    it("write environment config with target env", async () => {
+      const envName = "test";
+      const configName = EnvConfigFileNameTemplate.replace(EnvNamePlaceholder, envName);
+      const envConfig = environmentManager.newEnvConfigData();
+      const envConfigPathResult = await environmentManager.writeEnvConfig(
+        projectPath,
+        envConfig,
+        envName
+      );
+      if (envConfigPathResult.isErr()) {
+        assert.fail("Failed to write environment config.");
+      }
+
+      assert.isTrue(envConfigPathResult.value.indexOf(configName) !== -1);
+      const expectedContent = JSON.stringify(envConfig, null, 4);
+      assert.equal(
+        formatContent(fileMap.get(envConfigPathResult.value)),
+        formatContent(expectedContent)
+      );
+    });
+  });
+
   describe("Write Environment Profile", () => {
     before(async () => {
       sandbox.stub(tools, "dataNeedEncryption").returns(true);
@@ -418,7 +472,7 @@ async function mockEnvProfiles(
   envName?: string,
   userData?: Record<string, string>
 ) {
-  envName = envName ?? environmentManager.defaultEnvName;
+  envName = envName ?? environmentManager.getDefaultEnvName();
   const envFiles = environmentManager.getEnvProfileFilesPath(envName, projectPath);
 
   await fs.ensureFile(envFiles.envProfile);

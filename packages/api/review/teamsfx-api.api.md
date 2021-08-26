@@ -237,6 +237,9 @@ export interface EnvConfig {
     skipAddingSqlUser?: boolean;
 }
 
+// @public (undocumented)
+export const EnvConfigFileNameTemplate: string;
+
 // @public
 export interface EnvMeta {
     // (undocumented)
@@ -248,7 +251,10 @@ export interface EnvMeta {
 }
 
 // @public (undocumented)
-export const EnvProfileFileNameTemplate = "profile.@envName.json";
+export const EnvNamePlaceholder = "@envName";
+
+// @public (undocumented)
+export const EnvProfileFileNameTemplate: string;
 
 // @public (undocumented)
 export interface FolderQuestion extends UserInputQuestion {

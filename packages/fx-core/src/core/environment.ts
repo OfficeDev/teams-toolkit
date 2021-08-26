@@ -14,6 +14,8 @@ import {
   Result,
   SystemError,
   InputConfigsFolderName,
+  EnvConfigFileNameTemplate,
+  EnvNamePlaceholder,
 } from "@microsoft/teamsfx-api";
 import path, { basename } from "path";
 import fs from "fs-extra";
@@ -52,13 +54,18 @@ export interface EnvProfileFiles {
 }
 
 class EnvironmentManager {
-  public readonly defaultEnvName = "default";
-  public readonly defaultEnvNameNew = "dev";
   public readonly envNameRegex = /^[\w\d-_]+$/;
   public readonly envConfigNameRegex = /config\.(?<envName>[\w\d-_]+)\.json/i;
   public readonly envProfileNameRegex = /profile\.(?<envName>[\w\d-_]+)\.json/i;
 
+  private readonly defaultEnvName = "default";
+  private readonly defaultEnvNameNew = "dev";
   private readonly ajv;
+  private readonly schema =
+    "https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/packages/api/src/schemas/envConfig.json";
+  private readonly manifestConfigDescription =
+    `You can customize the 'values' object to customize Teams app manifest for different environments.` +
+    ` Visit https://aka.ms/teamsfx-config to learn more about this.`;
 
   constructor() {
     this.ajv = new Ajv();
@@ -86,6 +93,45 @@ class EnvironmentManager {
     }
 
     return ok({ envName, config: configResult.value, profile: profileResult.value });
+  }
+
+  public newEnvConfigData(): EnvConfig {
+    const envConfig: EnvConfig = {
+      $schema: this.schema,
+      azure: {},
+      manifest: {
+        description: this.manifestConfigDescription,
+        values: {},
+      },
+    };
+
+    return envConfig;
+  }
+
+  public async writeEnvConfig(
+    projectPath: string,
+    envConfig: EnvConfig,
+    envName?: string
+  ): Promise<Result<string, FxError>> {
+    if (!(await fs.pathExists(projectPath))) {
+      return err(PathNotExistError(projectPath));
+    }
+
+    const envConfigsFolder = this.getEnvConfigsFolder(projectPath);
+    if (!(await fs.pathExists(envConfigsFolder))) {
+      await fs.ensureDir(envConfigsFolder);
+    }
+
+    envName = envName ?? this.getDefaultEnvName();
+    const envConfigPath = this.getEnvConfigPath(envName, projectPath);
+
+    try {
+      await fs.writeFile(envConfigPath, JSON.stringify(envConfig, null, 4));
+    } catch (error) {
+      return err(WriteFileError(error));
+    }
+
+    return ok(envConfigPath);
   }
 
   public async writeEnvProfile(
@@ -154,7 +200,7 @@ class EnvironmentManager {
 
   public getEnvConfigPath(envName: string, projectPath: string): string {
     const basePath = this.getEnvConfigsFolder(projectPath);
-    return path.resolve(basePath, `config.${envName}.json`);
+    return path.resolve(basePath, EnvConfigFileNameTemplate.replace(EnvNamePlaceholder, envName));
   }
 
   public getEnvProfileFilesPath(envName: string, projectPath: string): EnvProfileFiles {
@@ -162,7 +208,7 @@ class EnvironmentManager {
     const envProfile = path.resolve(
       basePath,
       isMultiEnvEnabled()
-        ? EnvProfileFileNameTemplate.replace("@envName", envName)
+        ? EnvProfileFileNameTemplate.replace(EnvNamePlaceholder, envName)
         : `env.${envName}.json`
     );
     const userDataFile = path.resolve(basePath, `${envName}.userdata`);

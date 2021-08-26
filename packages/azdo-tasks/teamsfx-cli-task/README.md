@@ -28,16 +28,6 @@ trigger:
 
 jobs:
 - job: buildAndPublish
-  container:
-    image: ubuntu:latest
-    env:
-      AZURE_ACCOUNT_NAME: $(AZURE_ACCOUNT_NAME)
-      AZURE_ACCOUNT_PASSWORD: $(AZURE_ACCOUNT_PASSWORD)
-      AZURE_SUBSCRIPTION_ID: $(AZURE_SUBSCRIPTION_ID)
-      AZURE_TENANT_ID: $(AZURE_TENANT_ID)
-      M365_ACCOUNT_NAME: $(M365_ACCOUNT_NAME)
-      M365_ACCOUNT_PASSWORD: $(M365_ACCOUNT_PASSWORD)
-
   steps:
     - task: NodeTool@0
       displayName: Setup environment
@@ -50,24 +40,41 @@ jobs:
         
     - task: teamsfx-cli-task@1
       displayName: Provision hosting environment
+      env:
+        AZURE_ACCOUNT_NAME: $(AZURE_ACCOUNT_NAME)
+        AZURE_ACCOUNT_PASSWORD: $(AZURE_ACCOUNT_PASSWORD)
+        AZURE_SUBSCRIPTION_ID: $(AZURE_SUBSCRIPTION_ID)
+        AZURE_TENANT_ID: $(AZURE_TENANT_ID)
+        M365_ACCOUNT_NAME: $(M365_ACCOUNT_NAME)
+        M365_ACCOUNT_PASSWORD: $(M365_ACCOUNT_PASSWORD)
       inputs:
         commands: 'provision'
         subscription: '$(AZURE_SUBSCRIPTION_ID)'
     
     - task: teamsfx-cli-task@1
       displayName: Deploy to hosting environment
+      env:
+        AZURE_ACCOUNT_NAME: $(AZURE_ACCOUNT_NAME)
+        AZURE_ACCOUNT_PASSWORD: $(AZURE_ACCOUNT_PASSWORD)
+        AZURE_SUBSCRIPTION_ID: $(AZURE_SUBSCRIPTION_ID)
+        AZURE_TENANT_ID: $(AZURE_TENANT_ID)
+        M365_ACCOUNT_NAME: $(M365_ACCOUNT_NAME)
+        M365_ACCOUNT_PASSWORD: $(M365_ACCOUNT_PASSWORD)
       inputs:
         commands: deploy
 
     - task: teamsfx-cli-task@1
       displayName: Publish Teams App
+      env:
+        M365_ACCOUNT_NAME: $(M365_ACCOUNT_NAME)
+        M365_ACCOUNT_PASSWORD: $(M365_ACCOUNT_PASSWORD)
       inputs:
         commands: publish
 ```
 
-### Configure M365/Azure credentials as GitHub Secret:
+### Configure M365/Azure credentials as Azure DevOps Secret:
 
-To use any credentials, add them as [secrets](https://docs.github.com/en/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets) in the GitHub repository and then use them in the workflow.
+To use any credentials, add them as [secrets](https://docs.microsoft.com/en-us/azure/devops/pipelines/process/variables?view=azure-devops&tabs=yaml%2Cbatch#secret-variables) in the Azure DevOps Pipelines.
 
 [TeamsFx CLI](https://www.npmjs.com/package/@microsoft/teamsfx-cli) relies on environment variables to provide login credentials for Azure and M365. The table below lists all of the environment variables.
 |Name|Description|

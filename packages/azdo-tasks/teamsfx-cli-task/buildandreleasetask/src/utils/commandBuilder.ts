@@ -9,7 +9,7 @@ import {OptionMap} from '../optionMap'
 
 export function BuildCommandString(): string {
   const commands = tl.getDelimitedInput(ActionInputs.Commands, Strings.NewLine) || []
-  const subCommand = commands.length > 0 ? commands[0] : ''
+  const subCommand = commands[0] ?? ''
   // Iterate to collect options.
   const optionsPart: string[] = []
 

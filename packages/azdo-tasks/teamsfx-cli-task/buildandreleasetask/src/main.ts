@@ -20,7 +20,7 @@ async function run(): Promise<void> {
     await Execute(commandString)
   } catch (error) {
     if (error instanceof BaseError) {
-      tl.setResult(tl.TaskResult.Failed, error.genMessage())
+      tl.setResult(tl.TaskResult.Failed, error.toString())
     } else {
       tl.setResult(tl.TaskResult.Failed, error.message)
     }

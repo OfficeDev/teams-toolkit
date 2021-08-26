@@ -10,14 +10,6 @@ pool:
 
 jobs:
 - job: buildAndPublish
-    env:
-      AZURE_ACCOUNT_NAME: $(AZURE_ACCOUNT_NAME)
-      AZURE_ACCOUNT_PASSWORD: $(AZURE_ACCOUNT_PASSWORD)
-      AZURE_SUBSCRIPTION_ID: $(AZURE_SUBSCRIPTION_ID)
-      AZURE_TENANT_ID: $(AZURE_TENANT_ID)
-      M365_ACCOUNT_NAME: $(M365_ACCOUNT_NAME)
-      M365_ACCOUNT_PASSWORD: $(M365_ACCOUNT_PASSWORD)
-
   steps:
     - task: NodeTool@0
       displayName: Setup environment

@@ -33,7 +33,7 @@ export class BaseError extends Error {
     Object.setPrototypeOf(this, BaseError.prototype)
   }
 
-  genMessage(): string {
+  toString(): string {
     return `${this.message} Suggestions: ${this.suggestions.join('\n')}`
   }
 }

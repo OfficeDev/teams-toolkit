@@ -12,8 +12,9 @@ import {
   EnvProfileFileNameTemplate,
 } from "@microsoft/teamsfx-api";
 import { isMultiEnvEnabled, isValidProject } from "@microsoft/teamsfx-core";
-import { workspace } from "vscode";
+import { workspace, WorkspaceConfiguration } from "vscode";
 import * as commonUtils from "../debug/commonUtils";
+import { ConfigurationKey, CONFIGURATION_PREFIX } from "../constants";
 
 export function getPackageVersion(versionStr: string): string {
   if (versionStr.includes("alpha")) {
@@ -162,4 +163,16 @@ export async function isTeamsfx(): Promise<boolean> {
     return await commonUtils.isFxProject(workspaceFolder.uri.fsPath);
   }
   return false;
+}
+
+export function getConfiguration(key: string): boolean {
+  const configuration: WorkspaceConfiguration = workspace.getConfiguration(CONFIGURATION_PREFIX);
+  return configuration.get<boolean>(key, false);
+}
+
+export function syncFeatureFlags() {
+  // Sync arm support
+  process.env[ConfigurationKey.ArmSupportEnabled] = getConfiguration(
+    ConfigurationKey.ArmSupportEnabled
+  ).toString();
 }

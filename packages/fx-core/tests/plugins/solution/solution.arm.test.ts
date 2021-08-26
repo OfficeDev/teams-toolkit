@@ -141,6 +141,7 @@ describe("Generate ARM Template for project", () => {
 
     const projectArmTemplateFolder = path.join(testFolder, templateFolder);
     const projectArmParameterFolder = path.join(testFolder, parameterFolder);
+    const projectArmBaseFolder = path.join(testFolder, baseFolder);
     const result = await generateArmTemplate(mockedCtx);
     expect(result.isOk()).to.be.true;
     expect(
@@ -188,6 +189,10 @@ Mocked simple auth output content`
     "SimpleAuthParameter": "SimpleAuthParameterValue"
   }
 }`
+    );
+    expect(await fs.readFile(path.join(projectArmBaseFolder, ".gitignore"), fileEncoding)).equals(
+      `# ignore ARM template backup folder
+/backup`
     );
   });
 

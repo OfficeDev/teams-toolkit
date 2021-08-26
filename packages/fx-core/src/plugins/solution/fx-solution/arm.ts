@@ -31,6 +31,7 @@ import {
 import { ResourceManagementClient, ResourceManagementModels } from "@azure/arm-resources";
 import { DeployArmTemplatesSteps, ProgressHelper } from "./utils/progressHelper";
 import dateFormat from "dateformat";
+import { getTemplatesFolder } from "../../../folder";
 
 // Old folder structure constants
 const baseFolder = "./infra/azure";
@@ -52,6 +53,8 @@ const templateFolderNew = "./templates/azure";
 const configsFolder = `.${ConfigFolderName}/configs`;
 const modulesFolder = "modules";
 const parameterFileNameTemplateNew = "azure.parameters.@envName.json";
+
+const fileEncoding = "UTF8";
 
 // Get ARM template content from each resource plugin and output to project folder
 export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<any, FxError>> {
@@ -126,6 +129,19 @@ export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<
     const parameterFileContent = bicepOrchestrationTemplate.getParameterFileContent();
     await fs.ensureDir(parameterTemplateFolderPath);
     await fs.writeFile(parameterTemplateFilePath, parameterFileContent);
+
+    // Output .gitignore file
+    const gitignoreContent = await fs.readFile(
+      path.join(getTemplatesFolder(), "plugins", "solution", "armGitignore"),
+      fileEncoding
+    );
+    const gitignoreFileName = ".gitignore";
+    const gitignoreFilePath = isNewFolderStructureEnabled()
+      ? path.join(ctx.root, templateFolderNew, gitignoreFileName)
+      : path.join(ctx.root, baseFolder, gitignoreFileName);
+    if (!(await fs.pathExists(gitignoreFilePath))) {
+      await fs.writeFile(gitignoreFilePath, gitignoreContent);
+    }
   }
 
   return ok(undefined); // Nothing to return when success

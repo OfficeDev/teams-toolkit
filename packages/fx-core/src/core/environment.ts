@@ -62,7 +62,7 @@ class EnvironmentManager {
   private readonly defaultEnvNameNew = "dev";
   private readonly ajv;
   private readonly schema =
-    "https://github.com/OfficeDev/TeamsFx/blob/dev/packages/api/src/schemas/envConfig.json";
+    "https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/packages/api/src/schemas/envConfig.json";
   private readonly manifestConfigDescription =
     `You can customize the 'values' object to customize Teams app manifest for different environments.` +
     ` Visit https://aka.ms/teamsfx-config to learn more about this.`;

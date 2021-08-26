@@ -615,9 +615,10 @@ describe("AAD App Client Test", () => {
     it("Happy Path", async () => {
       sinon.stub(GraphClient, "getAadOwners").resolves([
         {
-          id: "id",
+          userObjectId: "id",
           displayName: "displayName",
           userPrincipalName: "userPrincipalName",
+          resourceId: "resourceId",
         },
       ]);
       const listCollaboratorResult = await AadAppClient.listCollaborator(
@@ -626,7 +627,7 @@ describe("AAD App Client Test", () => {
         faker.datatype.uuid()
       );
 
-      chai.assert.equal(listCollaboratorResult![0].id, "id");
+      chai.assert.equal(listCollaboratorResult![0].userObjectId, "id");
     });
 
     it("User Error", async () => {

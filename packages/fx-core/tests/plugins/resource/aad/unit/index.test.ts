@@ -40,9 +40,10 @@ describe("AadAppForTeamsPlugin: CI", () => {
     sinon.stub(AadAppClient, "grantPermission").resolves();
     sinon.stub(AadAppClient, "listCollaborator").resolves([
       {
-        id: "id",
+        userObjectId: "id",
         displayName: "displayName",
         userPrincipalName: "userPrincipalName",
+        resourceId: "resourceId",
       },
     ]);
   });
@@ -154,7 +155,7 @@ describe("AadAppForTeamsPlugin: CI", () => {
     const listCollaborator = await plugin.listCollaborator(context);
     chai.assert.isTrue(listCollaborator.isOk());
     if (listCollaborator.isOk()) {
-      chai.assert.equal(listCollaborator.value[0].id, "id");
+      chai.assert.equal(listCollaborator.value[0].userObjectId, "id");
     }
   });
 });

@@ -28,12 +28,12 @@ async function showNotification(): Promise<void> {
 
   if (selection) {
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.MigrateV1ProjectNotification, {
-      status: StringResources.vsc.migrateV1.confirm.message,
+      status: StringResources.vsc.migrateV1.confirm.status,
     });
     await selection.run();
   } else {
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.MigrateV1ProjectNotification, {
-      status: StringResources.vsc.migrateV1.cancel.message,
+      status: StringResources.vsc.migrateV1.cancel.status,
     });
   }
 }

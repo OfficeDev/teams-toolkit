@@ -112,6 +112,7 @@ import { PermissionRequestFileProvider } from "../../../core/permissionRequest";
 import { IUserList } from "../../resource/appstudio/interfaces/IAppDefinition";
 import axios from "axios";
 import { AadOwner, Collaborator, ResourcePermission } from "../../../common/permissionInterface";
+import { canAddCapability, confirmRegenerateArmTemplate } from "./v2/executeUserTask";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -1898,7 +1899,7 @@ export class TeamsAppSolution implements Solution {
 
     if (notifications.length > 0) {
       if (isArmSupportEnabled() && addNewResoruceToProvision) {
-        const confirmed = await this.confirmRegenerateArmTemplate(ctx);
+        const confirmed = await confirmRegenerateArmTemplate(ctx.ui);
         if (!confirmed) {
           return ok(Void);
         }
@@ -1941,7 +1942,7 @@ export class TeamsAppSolution implements Solution {
     return ok(Void);
   }
 
-  async executeAddCapability(func: Func, ctx: SolutionContext): Promise<Result<any, FxError>> {
+  async executeAddCapability(ctx: SolutionContext): Promise<Result<any, FxError>> {
     ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.AddCapabilityStart, {
       [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
     });
@@ -1952,19 +1953,9 @@ export class TeamsAppSolution implements Solution {
     }
     const settings = this.getAzureSolutionSettings(ctx);
     const originalSettings = deepCopy(settings);
-    if (!(settings.hostType === HostTypeOptionAzure.id)) {
-      const e = returnUserError(
-        new Error("Add capability is not supported for SPFx project"),
-        "Solution",
-        SolutionError.FailedToAddCapability
-      );
-      return err(
-        sendErrorTelemetryThenReturnError(
-          SolutionTelemetryEvent.AddCapability,
-          e,
-          ctx.telemetryReporter
-        )
-      );
+    const canProceed = canAddCapability(settings, ctx.telemetryReporter!);
+    if (canProceed.isErr()) {
+      return canProceed;
     }
 
     const capabilitiesAnswer = ctx.answers[AzureSolutionQuestionNames.Capabilities] as string[];
@@ -2019,7 +2010,7 @@ export class TeamsAppSolution implements Solution {
 
     if (change) {
       if (isArmSupportEnabled()) {
-        const confirmed = await this.confirmRegenerateArmTemplate(ctx);
+        const confirmed = await confirmRegenerateArmTemplate(ctx.ui);
         if (!confirmed) {
           return ok(Void);
         }
@@ -2078,7 +2069,7 @@ export class TeamsAppSolution implements Solution {
     const method = func.method;
     const array = namespace.split("/");
     if (method === "addCapability") {
-      return this.executeAddCapability(func, ctx!);
+      return this.executeAddCapability(ctx!);
     }
     if (method === "addResource") {
       return this.executeAddResource(ctx);
@@ -2420,15 +2411,5 @@ export class TeamsAppSolution implements Solution {
       displayName,
       isAdministrator,
     };
-  }
-
-  private async confirmRegenerateArmTemplate(ctx: SolutionContext): Promise<boolean> {
-    const msg: string = util.format(getStrings().solution.RegenerateArmTemplateConfirmNotice);
-    const okItem = "Ok";
-    const confirmRes = await ctx.ui?.showMessage("warn", msg, true, okItem);
-
-    const confirm = confirmRes?.isOk() ? confirmRes.value : undefined;
-
-    return confirm === okItem;
   }
 }

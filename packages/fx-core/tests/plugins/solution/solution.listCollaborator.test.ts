@@ -266,6 +266,8 @@ describe("listCollaborator() for Teamsfx projects", () => {
     expect(result.value[0].isAadOwner).equal(true);
     expect(result.value[0].userObjectId).equal("fake-user-object-id");
     expect(result.value[0].userPrincipalName).equal("fake-user-principal-name");
+    expect(result.value[0].aadResourceId).equal("fake-aad-resource-id");
+    expect(result.value[0].teamsAppResourceId).equal("fake-teams-app-resource-id");
     sinon.restore();
   });
 });

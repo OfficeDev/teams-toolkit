@@ -9,6 +9,8 @@ export interface Collaborator {
   userPrincipalName: string;
   userObjectId: string;
   isAadOwner: boolean;
+  teamsAppResourceId: string;
+  aadResourceId?: string;
 }
 
 export interface AadOwner {

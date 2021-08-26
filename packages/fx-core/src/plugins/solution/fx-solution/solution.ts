@@ -1434,6 +1434,7 @@ export class TeamsAppSolution implements Solution {
       if (ctx.answers?.platform === Platform.CLI) {
         const aadAppTenantId = ctx.config?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
 
+        ctx.ui?.showMessage("info", `Account used to check: ${userInfo.userPrincipalName}`, false);
         // Todo, when multi-environment is ready, we will update to current environment
         ctx.ui?.showMessage("info", `Starting permission check for environment: default`, false);
         ctx.ui?.showMessage("info", `Tenant ID: ${aadAppTenantId}`, false);
@@ -1494,6 +1495,7 @@ export class TeamsAppSolution implements Solution {
       if (result.isErr()) {
         return result;
       }
+      const userInfo = result.value as IUserList;
 
       const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, [
         this.AppStudioPlugin,
@@ -1505,6 +1507,19 @@ export class TeamsAppSolution implements Solution {
           return [plugin?.listCollaborator?.bind(plugin), context, plugin.name];
         }
       );
+
+      if (ctx.answers?.platform === Platform.CLI) {
+        const aadAppTenantId = ctx.config?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
+        ctx.ui?.showMessage("info", `Account used to check: ${userInfo.userPrincipalName}`, false);
+
+        // Todo, when multi-environment is ready, we will update to current environment
+        ctx.ui?.showMessage(
+          "info",
+          `Starting list all collaborators for environment: default`,
+          false
+        );
+        ctx.ui?.showMessage("info", `Tenant ID: ${aadAppTenantId}`, false);
+      }
 
       const results = await executeConcurrently("", listCollaboratorWithCtx);
 
@@ -1543,10 +1558,30 @@ export class TeamsAppSolution implements Solution {
           userPrincipalName: teamsAppOwner.userPrincipalName,
           userObjectId: teamsAppOwner.userObjectId,
           isAadOwner: aadOwner ? true : false,
+          aadResourceId: aadOwner ? aadOwner.resourceId : undefined,
+          teamsAppResourceId: teamsAppOwner.resourceId,
         });
       }
 
-      // TODO show message for CLI
+      if (ctx.answers?.platform === Platform.CLI) {
+        for (const collaborator of collaborators) {
+          ctx.ui?.showMessage("info", `Account: ${collaborator.userPrincipalName}`, false);
+
+          ctx.ui?.showMessage(
+            "info",
+            `Resource ID: ${collaborator.teamsAppResourceId}, Resource Name: Teams App, Permission: Administrator`,
+            false
+          );
+
+          if (collaborator.aadResourceId) {
+            ctx.ui?.showMessage(
+              "info",
+              `Resource ID: ${collaborator.aadResourceId}, Resource Name: AAD App, Permission: Owner`,
+              false
+            );
+          }
+        }
+      }
 
       return ok(collaborators);
     } finally {

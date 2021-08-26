@@ -38,6 +38,7 @@ import {
   PreconditionError,
   SomethingMissingError,
   UserInputsError,
+  ExtractZipError,
 } from "./errors";
 import { TeamsBotConfig } from "./configs/teamsBotConfig";
 import AdmZip from "adm-zip";
@@ -158,7 +159,11 @@ export class TeamsBotImpl {
     );
 
     await handler?.next(ProgressBarConstants.SCAFFOLD_STEP_UNZIP);
-    zipContent.extractAllTo(this.config.scaffold.workingDir!, true);
+    try {
+      zipContent.extractAllTo(this.config.scaffold.workingDir!, true);
+    } catch (err) {
+      throw new ExtractZipError(this.config.scaffold.workingDir!, err);
+    }
 
     this.config.saveConfigIntoContext(context);
     Logger.info(Messages.SuccessfullyScaffoldedBot);

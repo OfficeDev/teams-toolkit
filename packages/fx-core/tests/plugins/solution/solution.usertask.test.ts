@@ -13,21 +13,19 @@ import {
   ProjectSettings,
   Inputs,
   v2,
+  Plugin,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import { GLOBAL_CONFIG, SolutionError } from "../../../src/plugins/solution/fx-solution/constants";
-import {
-  MockedAppStudioProvider,
-  MockedAzureAccountProvider,
-  MockedV2Context,
-  mockPublishThatAlwaysSucceed,
-} from "./util";
+import { MockedAppStudioProvider, MockedV2Context, mockPublishThatAlwaysSucceed } from "./util";
 import _ from "lodash";
 import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import Container from "typedi";
 import { AppStudioPlugin } from "../../../src";
 import * as uuid from "uuid";
 import {
+  AzureSolutionQuestionNames,
+  BotOptionItem,
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
 } from "../../../src/plugins/solution/fx-solution/question";
@@ -36,6 +34,7 @@ import { executeUserTask } from "../../../src/plugins/solution/fx-solution/v2/ex
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 const appStudioPlugin = Container.get<AppStudioPlugin>(ResourcePlugins.AppStudioPlugin);
+const botPlugin = Container.get<Plugin>(ResourcePlugins.BotPlugin);
 function mockSolutionContextWithPlatform(platform?: Platform): SolutionContext {
   const config: SolutionConfig = new Map();
   config.set(GLOBAL_CONFIG, new ConfigMap());
@@ -175,5 +174,34 @@ describe("V2 implementation", () => {
     );
     expect(result.isErr()).to.be.true;
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.AddResourceNotSupport);
+  });
+
+  it("should return err when trying to add bot capability repeatedly", async () => {
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "test",
+        version: "1.0",
+        activeResourcePlugins: [appStudioPlugin.name, botPlugin.name],
+        capabilities: [BotOptionItem.id],
+      },
+    };
+    const mockedCtx = new MockedV2Context(projectSettings);
+    const mockedProvider = new MockedAppStudioProvider();
+    const mockedInputs: Inputs = {
+      platform: Platform.VSCode,
+    };
+    mockedInputs[AzureSolutionQuestionNames.Capabilities] = [BotOptionItem.id];
+
+    const result = await executeUserTask(
+      mockedCtx,
+      { namespace: "solution", method: "addCapability" },
+      mockedInputs,
+      mockedProvider
+    );
+    expect(result.isErr()).to.be.true;
+    expect(result._unsafeUnwrapErr().name).equals(SolutionError.FailedToAddCapability);
   });
 });

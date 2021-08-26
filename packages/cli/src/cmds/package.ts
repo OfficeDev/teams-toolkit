@@ -17,8 +17,8 @@ import {
 } from "../telemetry/cliTelemetryEvents";
 import HelpParamGenerator from "../helpParamGenerator";
 
-export default class Build extends YargsCommand {
-  public readonly commandHead = `build`;
+export default class Package extends YargsCommand {
+  public readonly commandHead = `package`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "Build the current application.";
   public params: { [_: string]: Options } = {};

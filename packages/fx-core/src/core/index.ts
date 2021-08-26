@@ -823,12 +823,16 @@ export class FxCore implements Core {
 
   @hooks([ErrorHandlerMW, ProjectSettingsLoaderMW, ContextInjecterMW, EnvInfoWriterMW])
   async createEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
-    if (!isMultiEnvEnabled()) {
+    if (!isMultiEnvEnabled() || !ctx!.projectSettings) {
       return ok(Void);
     }
 
     const core = ctx!.self as FxCore;
     const targetEnvName = await askNewEnvironment(ctx!, inputs);
+
+    if (!targetEnvName) {
+      return ok(Void);
+    }
 
     const envProfilesResult = await environmentManager.listEnvProfiles(inputs.projectPath!);
     if (envProfilesResult.isErr()) {

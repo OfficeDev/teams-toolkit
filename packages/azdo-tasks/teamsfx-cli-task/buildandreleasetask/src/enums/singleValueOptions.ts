@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 // eslint-disable-next-line no-shadow
-export enum SingleOptions {
+export enum SingleValueOptions {
   Verbose = 'verbose',
   Version = 'version',
   Debug = 'debug',

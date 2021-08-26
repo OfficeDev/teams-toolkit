@@ -1,46 +1,46 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { MultipleOptions } from "./enums/multipleOptions";
-import { SingleOptions } from "./enums/singleOptions";
+import { MultiValueOptions } from "./enums/multiValueOptions";
+import { SingleValueOptions } from "./enums/singleValueOptions";
 
-export class OptionMap {
-    static optionMap: Map<string, string[]> = new Map([
-        ['account', [SingleOptions.Action]],
-        ['new', [SingleOptions.Interactive, SingleOptions.Scratch, MultipleOptions.Capabilities, SingleOptions.HostType, SingleOptions.SpfxFrameworkType, SingleOptions.SpfxWebpartDesp,
-            SingleOptions.SpfxWebpartName, MultipleOptions.AzureResources, SingleOptions.WayToRegisterBot, SingleOptions.BotId, SingleOptions.BotPassword,
-            SingleOptions.ProgrammingLanguage, SingleOptions.Folder, SingleOptions.AppName, SingleOptions.Samples
-        ]],
-        ['capability', []],
-        ['resource', []],
-        ['provision', [
-            SingleOptions.Subscription, SingleOptions.SqlAdminName, SingleOptions.SqlPassword,
-            SingleOptions.Folder
-        ]],
-        ['deploy', [
-            SingleOptions.OpenApiDocument, SingleOptions.ApiPrefix, SingleOptions.ApiVersion,
-            SingleOptions.Folder
-        ]],
-        ['init', [
-            SingleOptions.AppName, SingleOptions.Environment, SingleOptions.Endpoint,
-            SingleOptions.RootPath
-        ]],
-        ['build', [
-            SingleOptions.Folder
-        ]],
-        ['validate', [
-            SingleOptions.Folder
-        ]],
-        ['publish', [
-            SingleOptions.Folder
-        ]],
-        ['config', [
-            SingleOptions.Folder
-        ]]
-    ]) 
+export namespace OptionMap {
+    export const optionMap: { [key: string]: Array<string> } = {
+        account: [SingleValueOptions.Action],
+        new: [SingleValueOptions.Interactive, SingleValueOptions.Scratch, MultiValueOptions.Capabilities, SingleValueOptions.HostType, SingleValueOptions.SpfxFrameworkType, SingleValueOptions.SpfxWebpartDesp,
+        SingleValueOptions.SpfxWebpartName, MultiValueOptions.AzureResources, SingleValueOptions.WayToRegisterBot, SingleValueOptions.BotId, SingleValueOptions.BotPassword,
+        SingleValueOptions.ProgrammingLanguage, SingleValueOptions.Folder, SingleValueOptions.AppName, SingleValueOptions.Samples
+        ],
+        capability: [],
+        resource: [],
+        provision: [
+            SingleValueOptions.Subscription, SingleValueOptions.SqlAdminName, SingleValueOptions.SqlPassword,
+            SingleValueOptions.Folder
+        ],
+        deploy: [
+            SingleValueOptions.OpenApiDocument, SingleValueOptions.ApiPrefix, SingleValueOptions.ApiVersion,
+            SingleValueOptions.Folder
+        ],
+        init: [
+            SingleValueOptions.AppName, SingleValueOptions.Environment, SingleValueOptions.Endpoint,
+            SingleValueOptions.RootPath
+        ],
+        build: [
+            SingleValueOptions.Folder
+        ],
+        validate: [
+            SingleValueOptions.Folder
+        ],
+        publish: [
+            SingleValueOptions.Folder
+        ],
+        config: [
+            SingleValueOptions.Folder
+        ]
+    }
 
-    static validOptionInCommand(command: string, option: string): boolean {
-        const result = OptionMap.optionMap.get(command)?.includes(option)
+    export function validOptionInCommand(command: string, option: string): boolean {
+        const result = optionMap[command]?.includes(option)
         return result === undefined ? false : result
     }
 }

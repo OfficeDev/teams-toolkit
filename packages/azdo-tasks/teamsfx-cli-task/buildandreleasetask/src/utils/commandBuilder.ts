@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as tl from 'azure-pipelines-task-lib/task'
-import {ActionInputs, Commands, Strings} from '../constant'
-import {MultipleOptions} from '../enums/multipleOptions'
-import {SingleOptions} from '../enums/singleOptions'
-import {OptionMap} from '../optionMap'
+import tl from 'azure-pipelines-task-lib/task'
+import { ActionInputs, Commands, Strings } from '../constant'
+import { MultiValueOptions } from '../enums/multiValueOptions'
+import { SingleValueOptions } from '../enums/singleValueOptions'
+import { OptionMap } from '../optionMap'
 
 export function BuildCommandString(): string {
   const commands = tl.getDelimitedInput(ActionInputs.Commands, Strings.NewLine) || []
@@ -13,7 +13,7 @@ export function BuildCommandString(): string {
   // Iterate to collect options.
   const optionsPart: string[] = []
 
-  for (const optionName of Object.values<string>(SingleOptions)) {
+  for (const optionName of Object.values<string>(SingleValueOptions)) {
     if (!OptionMap.validOptionInCommand(subCommand, optionName)) {
       continue;
     }
@@ -21,13 +21,13 @@ export function BuildCommandString(): string {
     if (optionValue) {
       optionsPart.push(
         [Commands.AddOptionPrefix(optionName), optionValue].join(
-          Commands.CommandSpace
+          ' '
         )
       )
     }
   }
 
-  for (const optionName of Object.values<string>(MultipleOptions)) {
+  for (const optionName of Object.values<string>(MultiValueOptions)) {
     if (!OptionMap.validOptionInCommand(subCommand, optionName)) {
       continue;
     }
@@ -35,7 +35,7 @@ export function BuildCommandString(): string {
     if (optionValues.length > 0) {
       optionsPart.push(
         `${Commands.AddOptionPrefix(optionName)} ${optionValues.join(
-          Commands.CommandSpace
+          ' '
         )}`
       )
     }

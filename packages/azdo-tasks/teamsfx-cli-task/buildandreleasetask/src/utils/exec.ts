@@ -4,7 +4,7 @@
 import * as tl from 'azure-pipelines-task-lib/task'
 import { Strings } from '../constant'
 
-export async function Execute(
+export async function execute(
   cmd: string,
   workdir?: string
 ): Promise<number> {

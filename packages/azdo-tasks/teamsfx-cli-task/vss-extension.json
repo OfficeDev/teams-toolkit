@@ -2,8 +2,8 @@
     "manifestVersion": 1,
     "id": "teamsfx-cli-task",
     "name": "Teamsfx CLI Task",
-    "version": "0.4.1",
-    "publisher": "IvanJobs",
+    "version": "1.0.0",
+    "publisher": "TeamsDevApp",
     "targets": [
         {
             "id": "Microsoft.VisualStudio.Services"

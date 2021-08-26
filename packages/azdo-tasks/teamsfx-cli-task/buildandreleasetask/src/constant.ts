@@ -9,7 +9,6 @@ export class ActionInputs {
 }
 
 export class Commands {
-  static readonly CommandSpace: string = ' '
   static readonly TeamsfxCliName: string = 'npx teamsfx'
   static readonly AddOptionPrefix = (optionName: string): string =>
     `--${optionName}`
@@ -32,7 +31,6 @@ export class Strings {
   static readonly Space: string = ' '
 }
 
-export class Pathes {
-  static readonly TeamsfxCliPath = (workdir: string = '.') =>
-    path.join(workdir, 'node_modules', '@microsoft', 'teamsfx-cli')
+export function TeamsfxCliPath(workdir: string = '.') {
+  return path.join(workdir, 'node_modules', '@microsoft', 'teamsfx-cli')
 }

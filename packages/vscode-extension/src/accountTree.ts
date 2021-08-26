@@ -14,6 +14,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { AzureAccount } from "./commonlib/azure-account.api";
 import AzureAccountManager from "./commonlib/azureLogin";
+import AppStudioLogin from "./commonlib/appStudioLogin";
 import { core, getSystemInputs, tools } from "./handlers";
 import { askSubscription } from "@microsoft/teamsfx-core";
 import { VS_CODE_UI } from "./extension";
@@ -221,6 +222,35 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
     return ok(null);
   };
 
+  const refreshSideloadingCallback = async (args?: any[]): Promise<Result<null, FxError>> => {
+    const status = await AppStudioLogin.getStatus();
+    if (status.token !== undefined) {
+      const subItem = await getSideloadingItem(status.token);
+      tools.treeProvider?.refresh(subItem);
+    } else {
+      // just in corner case that cannot get token and show unknown status
+      const subItem = [
+        {
+          commandId: "fx-extension.checkSideloading",
+          label: StringResources.vsc.accountTree.sideloadingUnknown,
+          callback: () => {
+            return Promise.resolve(ok(null));
+          },
+          parent: "fx-extension.signinM365",
+          contextValue: "checkSideloading",
+          icon: "info",
+          tooltip: {
+            isMarkdown: false,
+            value: StringResources.vsc.accountTree.sideloadingTooltip,
+          },
+        } as TreeItem,
+      ];
+      tools.treeProvider?.refresh(subItem);
+    }
+
+    return ok(null);
+  };
+
   const signinM365Callback = async (args?: any[]): Promise<Result<null, FxError>> => {
     tools.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.LoginClick, {
       [TelemetryProperty.TriggerFrom]:
@@ -299,9 +329,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
     {
       commandId: "fx-extension.refreshSideloading",
       label: StringResources.vsc.accountTree.sideloadingRefresh,
-      callback: () => {
-        return Promise.resolve(ok(null));
-      },
+      callback: refreshSideloadingCallback,
       parent: undefined,
     },
     {

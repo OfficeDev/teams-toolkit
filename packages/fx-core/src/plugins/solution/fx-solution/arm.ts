@@ -54,8 +54,6 @@ const configsFolder = `.${ConfigFolderName}/configs`;
 const modulesFolder = "modules";
 const parameterFileNameTemplateNew = "azure.parameters.@envName.json";
 
-const fileEncoding = "UTF8";
-
 // Get ARM template content from each resource plugin and output to project folder
 export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<any, FxError>> {
   const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
@@ -133,7 +131,7 @@ export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<
     // Output .gitignore file
     const gitignoreContent = await fs.readFile(
       path.join(getTemplatesFolder(), "plugins", "solution", "armGitignore"),
-      fileEncoding
+      ConstantString.UTF8Encoding
     );
     const gitignoreFileName = ".gitignore";
     const gitignoreFilePath = isNewFolderStructureEnabled()

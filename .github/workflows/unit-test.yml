@@ -154,7 +154,6 @@ jobs:
 
       - name: calculate plugins' coverage
         id: plugins_coverage
-        working-directory: ./packages/fx-core
         shell: bash
         run: |
           plugins=`cat packages/fx-core/coverage/coverage-summary.json | jq '. | keys ' | grep 'fx-core/src/plugins/resource/' | awk -F 'plugins/resource/' 'index($2,"/") != 0 {print $2}' | awk -F '/' '{print $1}' | sort -nr | uniq`

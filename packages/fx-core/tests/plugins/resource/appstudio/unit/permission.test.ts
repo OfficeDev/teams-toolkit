@@ -148,7 +148,7 @@ describe("Remote Collaboration", () => {
     const listCollaborator = await plugin.listCollaborator(ctx);
     chai.assert.isTrue(listCollaborator.isOk());
     if (listCollaborator.isOk()) {
-      chai.assert.equal(listCollaborator.value[0].aadId, "aadId");
+      chai.assert.equal(listCollaborator.value[0].userObjectId, "aadId");
     }
   });
 });

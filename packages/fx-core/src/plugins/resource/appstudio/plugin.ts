@@ -699,9 +699,10 @@ export class AppStudioPluginImpl {
 
     const teamsAppAdmin: TeamsAppAdmin[] = userLists.map((userList, index) => {
       return {
-        aadId: userList.aadId,
+        userObjectId: userList.aadId,
         displayName: userList.displayName,
         userPrincipalName: userList.userPrincipalName,
+        resourceId: teamsAppId,
       };
     });
 

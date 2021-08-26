@@ -55,18 +55,17 @@ export class PermissionStatus extends YargsCommand {
 
     const core = result.value;
     const listAll = args[this.listAllCollaborator];
-    let coreResult;
-    if (listAll) {
-      coreResult = await core.listCollaborator(getSystemInputs(rootFolder, args.env));
-    } else {
-      coreResult = await core.checkPermission(getSystemInputs(rootFolder, args.env));
-    }
+    {
+      const result = listAll
+        ? await core.listCollaborator(getSystemInputs(rootFolder, args.env))
+        : await core.checkPermission(getSystemInputs(rootFolder, args.env));
 
-    if (coreResult.isErr()) {
-      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CheckPermission, coreResult.error, {
-        [TelemetryProperty.ListAllCollaborator]: listAll,
-      });
-      return err(coreResult.error);
+      if (result.isErr()) {
+        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CheckPermission, result.error, {
+          [TelemetryProperty.ListAllCollaborator]: listAll,
+        });
+        return err(result.error);
+      }
     }
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.CheckPermission, {

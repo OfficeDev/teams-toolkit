@@ -692,19 +692,22 @@ export class AppStudioPluginImpl {
     }
 
     const userLists = await AppStudioClient.getUserList(teamsAppId, appStudioToken as string);
-
     if (!userLists) {
       return [];
     }
 
-    const teamsAppAdmin: TeamsAppAdmin[] = userLists.map((userList, index) => {
-      return {
-        userObjectId: userList.aadId,
-        displayName: userList.displayName,
-        userPrincipalName: userList.userPrincipalName,
-        resourceId: teamsAppId,
-      };
-    });
+    const teamsAppAdmin: TeamsAppAdmin[] = userLists
+      .filter((userList, index) => {
+        return userList.isAdministrator;
+      })
+      .map((userList, index) => {
+        return {
+          userObjectId: userList.aadId,
+          displayName: userList.displayName,
+          userPrincipalName: userList.userPrincipalName,
+          resourceId: teamsAppId,
+        };
+      });
 
     return teamsAppAdmin;
   }

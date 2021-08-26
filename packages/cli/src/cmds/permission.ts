@@ -22,12 +22,17 @@ export class PermissionStatus extends YargsCommand {
   public readonly commandHead = `status`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "Check user's permission.";
+  private readonly listAllCollaborator = "list-all-collaborator";
 
   public params: { [_: string]: Options } = {};
 
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp(Stage.checkPermission);
-    return yargs.option(this.params);
+    return yargs.option(this.params).option(this.listAllCollaborator, {
+      description: `To list all collaborators`,
+      name: this.listAllCollaborator,
+      type: "boolean",
+    });
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
@@ -49,16 +54,24 @@ export class PermissionStatus extends YargsCommand {
     );
 
     const core = result.value;
-    {
-      const result = await core.checkPermission(getSystemInputs(rootFolder, args.env));
-      if (result.isErr()) {
-        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CheckPermission, result.error);
-        return err(result.error);
-      }
+    const listAll = args[this.listAllCollaborator];
+    let coreResult;
+    if (listAll) {
+      coreResult = await core.listCollaborator(getSystemInputs(rootFolder, args.env));
+    } else {
+      coreResult = await core.checkPermission(getSystemInputs(rootFolder, args.env));
+    }
+
+    if (coreResult.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CheckPermission, coreResult.error, {
+        [TelemetryProperty.ListAllCollaborator]: listAll,
+      });
+      return err(coreResult.error);
     }
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.CheckPermission, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+      [TelemetryProperty.ListAllCollaborator]: listAll,
     });
     return ok(null);
   }

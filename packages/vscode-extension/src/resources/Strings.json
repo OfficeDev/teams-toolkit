@@ -193,7 +193,7 @@
       "samplePageTitle": "Samples"
     },
     "migrateV1": {
-      "banner": "Click migrate to continue develop your project with the latest Teams Toolkit features. We will update some project configurations and recommend to use git for better tracking file changes.",
+      "banner": "Click migrate to continue developing your project with the latest Teams Toolkit features. We will update some project configurations and recommend using git for better tracking file changes.",
       "confirm": {
         "title": "Migrate",
         "status": "migrate"

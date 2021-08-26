@@ -21,19 +21,19 @@ async function showNotification(): Promise<void> {
       vscode.commands.executeCommand("fx-extension.migrateV1Project");
     },
   };
-  const selection = await vscode.window.showInformationMessage(
-    StringResources.vsc.migrateV1.banner,
-    confirm
-  );
 
-  if (selection) {
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.MigrateV1ProjectNotification, {
-      status: StringResources.vsc.migrateV1.confirm.status,
+  vscode.window
+    .showInformationMessage(StringResources.vsc.migrateV1.banner, confirm)
+    .then((selection) => {
+      if (selection) {
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.MigrateV1ProjectNotification, {
+          status: StringResources.vsc.migrateV1.confirm.status,
+        });
+        selection.run();
+      } else {
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.MigrateV1ProjectNotification, {
+          status: StringResources.vsc.migrateV1.cancel.status,
+        });
+      }
     });
-    await selection.run();
-  } else {
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.MigrateV1ProjectNotification, {
-      status: StringResources.vsc.migrateV1.cancel.status,
-    });
-  }
 }

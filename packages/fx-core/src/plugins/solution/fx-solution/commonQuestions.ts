@@ -140,7 +140,7 @@ async function askCommonQuestions(
   }
   if (resourceGroupInfo.createNewResourceGroup) {
     const response = await rmClient.resourceGroups.createOrUpdate(resourceGroupInfo.name, {
-      location: commonQuestions.location,
+      location: resourceGroupInfo.location,
     });
 
     if (response.name === undefined) {

@@ -1,5 +1,3 @@
-param sku string
-param simpleAuthServerFarmsName string
 param simpleAuthWebAppName string
 param m365TenantId string
 param m365ClientId string
@@ -7,6 +5,9 @@ param m365ClientId string
 param m365ClientSecret string
 param m365ApplicationIdUri string
 param oauthAuthorityHost string
+param simpelAuthPackageUri string
+
+param frontendHostingStorageEndpoint string
 
 var aadMetadataAddress = uri(oauthAuthorityHost, '${m365TenantId}/v2.0/.well-known/openid-configuration')
 var oauthAuthority = uri(oauthAuthorityHost, m365TenantId)
@@ -14,35 +15,23 @@ var teamsMobileOrDesktopAppClientId = '1fec8e78-bce4-4aaf-ab1b-5451cc387264'
 var teamsWebAppClientId = '5e3ce6c0-2b1f-4285-8d4b-75ee78787346'
 var authorizedClientApplicationIds = '${teamsMobileOrDesktopAppClientId};${teamsWebAppClientId}'
 
-resource simpleAuthServerFarms 'Microsoft.Web/serverfarms@2020-06-01' = {
-  name: simpleAuthServerFarmsName
-  location: resourceGroup().location
-  sku: {
-    name: sku
-  }
-  kind: 'app'
-  properties: {
-    reserved: false
-  }
+resource simpleAuthWebApp 'Microsoft.Web/sites@2020-06-01' existing = {
+  name: simpleAuthWebAppName
 }
 
-resource simpleAuthWebApp 'Microsoft.Web/sites@2020-06-01' = {
-  kind: 'app'
-  name: simpleAuthWebAppName
-  location: resourceGroup().location
+resource simpleAuthDeploy 'Microsoft.Web/sites/extensions@2021-01-15' = {
+  parent: simpleAuthWebApp
+  name: 'MSDeploy'
   properties: {
-    reserved: false
-    serverFarmId: simpleAuthServerFarms.id
-    siteConfig: {
-      alwaysOn: false
-      http20Enabled: false
-      numberOfWorkers: 1
-    }
+    packageUri: simpelAuthPackageUri
   }
 }
 
 resource simpleAuthWebAppSettings 'Microsoft.Web/sites/config@2018-02-01' = {
   parent:simpleAuthWebApp
+  dependsOn: [
+    simpleAuthDeploy
+  ]
   name: 'appsettings'
   properties: {
     AAD_METADATA_ADDRESS: aadMetadataAddress
@@ -51,10 +40,8 @@ resource simpleAuthWebAppSettings 'Microsoft.Web/sites/config@2018-02-01' = {
     CLIENT_ID: m365ClientId
     CLIENT_SECRET: m365ClientSecret
     OAUTH_AUTHORITY: oauthAuthority
+    TAB_APP_ENDPOINT: frontendHostingStorageEndpoint
   }
 }
 
-output webAppName string = simpleAuthWebAppName
-output skuName string = sku
-output endpoint string = 'https://${simpleAuthWebApp.properties.hostNames[0]}'
-output appServicePlanName string = simpleAuthServerFarmsName
+

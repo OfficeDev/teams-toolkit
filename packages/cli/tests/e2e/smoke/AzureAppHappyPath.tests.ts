@@ -132,8 +132,8 @@ describe("Azure App Happy Path", function () {
       chai.assert.isEmpty(validationResult.stderr);
     }
 
-    // build
-    await execAsyncWithRetry(`teamsfx build`, {
+    // package
+    await execAsyncWithRetry(`teamsfx package`, {
       cwd: projectPath,
       env: process.env,
       timeout: 0,

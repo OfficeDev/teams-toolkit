@@ -217,8 +217,28 @@ export type DynamicOptions = LocalFunc<StaticOptions>;
 // @public (undocumented)
 export const DynamicPlatforms: Platform[];
 
+// @public
+export interface EnvConfig {
+    // (undocumented)
+    $schema?: string;
+    azure: {
+        subscriptionId?: string;
+        resourceGroupName?: string;
+        location?: string;
+        tenantId?: string;
+    };
+    manifest: {
+        description?: string;
+        values: {
+            [k: string]: unknown;
+        };
+        [k: string]: unknown;
+    };
+    skipAddingSqlUser?: boolean;
+}
+
 // @public (undocumented)
-export type EnvConfig = Json;
+export const EnvConfigFileNameTemplate: string;
 
 // @public
 export interface EnvMeta {
@@ -231,7 +251,10 @@ export interface EnvMeta {
 }
 
 // @public (undocumented)
-export const EnvProfileFileNameTemplate = "profile.@envName.json";
+export const EnvNamePlaceholder = "@envName";
+
+// @public (undocumented)
+export const EnvProfileFileNameTemplate: string;
 
 // @public (undocumented)
 export interface FolderQuestion extends UserInputQuestion {

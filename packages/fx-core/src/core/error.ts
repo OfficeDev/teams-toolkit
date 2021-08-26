@@ -171,7 +171,7 @@ export function ProjectSettingsUndefinedError(): SystemError {
   );
 }
 
-export function ProjectEnvNotExistError(env: string): SystemError {
+export function ProjectEnvNotExistError(env: string): UserError {
   return newUserError(
     CoreSource,
     "ProjectEnvNotExistError",
@@ -179,7 +179,7 @@ export function ProjectEnvNotExistError(env: string): SystemError {
   );
 }
 
-export function InvalidEnvNameError(): FxError {
+export function InvalidEnvNameError(): UserError {
   return new UserError(
     CoreSource,
     "InvalidEnvNameError",
@@ -193,5 +193,13 @@ export function ProjectEnvAlreadyExistError(env: string): FxError {
     `Project environment ${env} already exists.`,
     CoreSource,
     new Error().stack
+  );
+}
+
+export function InvalidEnvConfigError(env: string, errorMsg: string): UserError {
+  return new UserError(
+    CoreSource,
+    "InvalidEnvConfigError",
+    `The configuration config.${env}.json is invalid, details: ${errorMsg}.`
   );
 }

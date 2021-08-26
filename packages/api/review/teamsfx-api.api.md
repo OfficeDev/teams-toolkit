@@ -231,6 +231,9 @@ export interface EnvMeta {
 }
 
 // @public (undocumented)
+export const EnvProfileFileNameTemplate = "profile.@envName.json";
+
+// @public (undocumented)
 export interface FolderQuestion extends UserInputQuestion {
     default?: string | LocalFunc<string | undefined>;
     // (undocumented)
@@ -449,6 +452,9 @@ export interface IName {
     // (undocumented)
     short: string;
 }
+
+// @public (undocumented)
+export const InputConfigsFolderName = "configs";
 
 // @public
 export interface InputResult<T> {
@@ -775,6 +781,9 @@ export interface ProjectSettings {
     version?: string;
 }
 
+// @public (undocumented)
+export const ProjectSettingsFileName = "projectSettings.json";
+
 // @public
 export interface ProjectStates {
     // (undocumented)
@@ -794,6 +803,9 @@ type ProvisionOutput = {
     states: Json;
     secrets: Json;
 };
+
+// @public (undocumented)
+export const PublishProfilesFolderName = "publishProfiles";
 
 // @public
 export class QTreeNode {
@@ -1218,6 +1230,8 @@ export enum TreeCategory {
     // (undocumented)
     Account = 1,
     // (undocumented)
+    Environment = 5,
+    // (undocumented)
     Feedback = 2,
     // (undocumented)
     GettingStarted = 0,
@@ -1236,7 +1250,11 @@ export interface TreeItem {
     // (undocumented)
     contextValue?: string;
     // (undocumented)
+    description?: string;
+    // (undocumented)
     icon?: string;
+    // (undocumented)
+    isCustom?: boolean;
     // (undocumented)
     label: string;
     // (undocumented)

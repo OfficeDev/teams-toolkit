@@ -64,6 +64,7 @@
     "workspaceContains:**/.fx/*",
     "onView:teamsfx",
     "onView:teamsfx-accounts",
+    "onView:teamsfx-environment",
     "onView:teamsfx-development",
     "onView:teamsfx-deployment",
     "onView:teamsfx-help-and-feedback"
@@ -85,6 +86,11 @@
           "name": "Accounts"
         },
         {
+          "id": "teamsfx-environment",
+          "name": "Environment",
+          "when": "fx-extension.isMultiEnvEnabled"
+        },
+        {
           "id": "teamsfx-development",
           "name": "Development"
         },
@@ -99,6 +105,13 @@
       ]
     },
     "menus": {
+      "view/title": [
+        {
+          "command": "fx-extension.addEnvironment",
+          "when": "view == teamsfx-environment",
+          "group": "navigation@1"
+        }
+      ],
       "view/item/context": [
         {
           "command": "fx-extension.signOut",
@@ -134,6 +147,14 @@
           "command": "fx-extension.signInGuideline",
           "when": "view == teamsfx-accounts && viewItem == signinAzure",
           "group": "inline"
+        },
+        {
+          "command": "fx-extension.viewEnvironment",
+          "when": "view == teamsfx-environment && viewItem == environment"
+        },
+        {
+          "command": "fx-extension.activateEnvironment",
+          "when": "view == teamsfx-environment && viewItem == environment"
         }
       ],
       "editor/title/run": [
@@ -297,6 +318,22 @@
       {
         "command": "fx-extension.migrateV1Project",
         "title": "Teams: Initialize Your Project to Use Teams Toolkit V2"
+      },
+      {
+        "command": "fx-extension.addEnvironment",
+        "title": "Teams: Add new environment",
+        "icon": "$(add)",
+        "enablement": "fx-extension.isMultiEnvEnabled"
+      },
+      {
+        "command": "fx-extension.viewEnvironment",
+        "title": "Teams: View environment profile",
+        "enablement": "fx-extension.isMultiEnvEnabled"
+      },
+      {
+        "command": "fx-extension.activateEnvironment",
+        "title": "Teams: Activate environment",
+        "enablement": "fx-extension.isMultiEnvEnabled"
       }
     ],
     "taskDefinitions": [

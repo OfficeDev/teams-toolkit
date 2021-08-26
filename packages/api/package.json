@@ -16,6 +16,7 @@
   "scripts": {
     "lint:staged": "lint-staged",
     "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "prebuild": "npx json2ts --input src/schemas/envConfig.json --output src/schemas/envConfig.ts",
     "build": "tsc -p ./ && npx api-extractor run --local",
     "build:api-markdown": "npm run build && rimraf ../../docs/api && npx api-documenter markdown -i temp -o ../../docs/api",
     "prepare": "npm run build",
@@ -42,6 +43,7 @@
     "chai-as-promised": "^7.1.1",
     "chai-spies": "^1.0.0",
     "eslint": "^7.22.0",
+    "json-schema-to-typescript": "^10.1.4",
     "lint-staged": "^10.5.4",
     "mocha": "^8.2.1",
     "nyc": "^15.1.0",

@@ -1,30 +1,33 @@
-import {Result} from "neverthrow"; 
+import { Result } from "neverthrow";
 import { FxError } from "../error";
 
 export interface TreeItem {
-    commandId: string;
-    label: string;
-    callback?: (args: any) => Promise<Result<null, FxError>>;
-    parent?: TreeCategory | string;
-    contextValue?: string;
-    icon?: string;
-    subTreeItems?: TreeItem[];
-    tooltip?: {
-        value: string,
-        isMarkdown: boolean
-    };
+  commandId: string;
+  label: string;
+  callback?: (args: any) => Promise<Result<null, FxError>>;
+  parent?: TreeCategory | string;
+  contextValue?: string;
+  icon?: string;
+  subTreeItems?: TreeItem[];
+  tooltip?: {
+    value: string;
+    isMarkdown: boolean;
+  };
+  description?: string;
+  isCustom?: boolean;
 }
 
-export interface TreeProvider{
-    refresh: (tree: TreeItem[]) => Promise<Result<null, FxError>>;
-    add: (tree: TreeItem[]) => Promise<Result<null, FxError>>;
-    remove: (tree: TreeItem[]) => Promise<Result<null, FxError>>;
+export interface TreeProvider {
+  refresh: (tree: TreeItem[]) => Promise<Result<null, FxError>>;
+  add: (tree: TreeItem[]) => Promise<Result<null, FxError>>;
+  remove: (tree: TreeItem[]) => Promise<Result<null, FxError>>;
 }
 
-export enum TreeCategory{
-    GettingStarted,
-    Account,
-    Feedback,
-    Project,
-    Provison
+export enum TreeCategory {
+  GettingStarted,
+  Account,
+  Feedback,
+  Project,
+  Provison,
+  Environment,
 }

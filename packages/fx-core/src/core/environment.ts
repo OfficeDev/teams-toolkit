@@ -5,9 +5,11 @@ import {
   ConfigFolderName,
   ConfigMap,
   CryptoProvider,
+  EnvProfileFileNameTemplate,
   err,
   FxError,
   ok,
+  PublishProfilesFolderName,
   Result,
   SystemError,
 } from "@microsoft/teamsfx-api";
@@ -27,6 +29,7 @@ import {
 import { GLOBAL_CONFIG } from "../plugins/solution/fx-solution/constants";
 import { readJson } from "../common/fileUtils";
 import { Component, sendTelemetryErrorEvent, TelemetryEvent } from "../common/telemetry";
+import { isMultiEnvEnabled } from "../common";
 
 export interface EnvInfo {
   envName: string;
@@ -40,8 +43,9 @@ export interface EnvFiles {
 
 class EnvironmentManager {
   public readonly defaultEnvName = "default";
+  public readonly defaultEnvNameNew = "dev";
   public readonly envNameRegex = /^[\w\d-_]+$/;
-  public readonly envProfileNameRegex = /env\.(?<envName>[\w\d-_]+)\.json/i;
+  public readonly envProfileNameRegex = /profile\.(?<envName>[\w\d-_]+)\.json/i;
 
   public async loadEnvProfile(
     projectPath: string,
@@ -52,7 +56,7 @@ class EnvironmentManager {
       return err(PathNotExistError(projectPath));
     }
 
-    envName = envName ?? this.defaultEnvName;
+    envName = envName ?? this.getDefaultEnvName();
     const envFiles = this.getEnvFilesPath(envName, projectPath);
     const userDataResult = await this.loadUserData(envFiles.userDataFile, cryptoProvider);
     if (userDataResult.isErr()) {
@@ -84,12 +88,12 @@ class EnvironmentManager {
       return err(PathNotExistError(projectPath));
     }
 
-    const configFolder = this.getConfigFolder(projectPath);
-    if (!(await fs.pathExists(configFolder))) {
-      await fs.ensureDir(configFolder);
+    const envProfilesFolder = this.getEnvProfilesFolder(projectPath);
+    if (!(await fs.pathExists(envProfilesFolder))) {
+      await fs.ensureDir(envProfilesFolder);
     }
 
-    envName = envName ?? this.defaultEnvName;
+    envName = envName ?? this.getDefaultEnvName();
     const envFiles = this.getEnvFilesPath(envName, projectPath);
 
     const data = mapToJson(envData);
@@ -113,12 +117,12 @@ class EnvironmentManager {
       return err(PathNotExistError(projectPath));
     }
 
-    const configFolder = this.getConfigFolder(projectPath);
-    if (!(await fs.pathExists(configFolder))) {
+    const envProfilesFolder = this.getEnvProfilesFolder(projectPath);
+    if (!(await fs.pathExists(envProfilesFolder))) {
       return ok([]);
     }
 
-    const configFiles = await fs.readdir(configFolder);
+    const configFiles = await fs.readdir(envProfilesFolder);
     const envNames = configFiles
       .map((file) => this.getEnvNameFromPath(file))
       .filter((name): name is string => name !== null);
@@ -139,8 +143,13 @@ class EnvironmentManager {
   }
 
   public getEnvFilesPath(envName: string, projectPath: string): EnvFiles {
-    const basePath = this.getConfigFolder(projectPath);
-    const envProfile = path.resolve(basePath, `env.${envName}.json`);
+    const basePath = this.getEnvProfilesFolder(projectPath);
+    const envProfile = path.resolve(
+      basePath,
+      isMultiEnvEnabled()
+        ? EnvProfileFileNameTemplate.replace("@envName", envName)
+        : `env.${envName}.json`
+    );
     const userDataFile = path.resolve(basePath, `${envName}.userdata`);
 
     return { envProfile, userDataFile };
@@ -157,6 +166,16 @@ class EnvironmentManager {
 
   private getConfigFolder(projectPath: string): string {
     return path.resolve(projectPath, `.${ConfigFolderName}`);
+  }
+
+  private getPublishProfilesFolder(projectPath: string): string {
+    return path.resolve(this.getConfigFolder(projectPath), PublishProfilesFolderName);
+  }
+
+  private getEnvProfilesFolder(projectPath: string): string {
+    return isMultiEnvEnabled()
+      ? this.getPublishProfilesFolder(projectPath)
+      : this.getConfigFolder(projectPath);
   }
 
   private async loadUserData(
@@ -221,6 +240,14 @@ class EnvironmentManager {
     }
 
     return ok(secrets);
+  }
+
+  public getDefaultEnvName() {
+    if (isMultiEnvEnabled()) {
+      return this.defaultEnvNameNew;
+    } else {
+      return this.defaultEnvName;
+    }
   }
 }
 

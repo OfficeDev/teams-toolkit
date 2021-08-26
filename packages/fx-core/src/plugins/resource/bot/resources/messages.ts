@@ -66,6 +66,9 @@ export class Messages {
   public static readonly SuccessfullyGenerateArmTemplatesBot =
     "Successfully generating ARM templates of bot.";
 
+  public static readonly SuccessfullyGetExistingBotAadAppCredential =
+    "Successfully get existing bot AAD app credential.";
+  public static readonly SuccessfullyCreatedBotAadApp = "Successfully created bot AAD app.";
   public static readonly ProvisioningAzureBotChannelRegistration =
     "Provisioning azure bot channel registration.";
   public static readonly SuccessfullyProvisionedAzureBotChannelRegistration =
@@ -124,5 +127,6 @@ export class Messages {
   public static readonly RegisterRequiredRP = (resourceProviders: string[]): string =>
     `Register ${resourceProviders.join(",")} resource provider for your subscription manually.`;
   public static readonly ReopenWorkingDir =
-    "Please check the working directory path is valid, if no, please move the project to a valid working directory path.";
+    "Please check whether the working directory path is valid, if no, please move the project to a valid working directory path.";
+  public static readonly PostProvisioningStart = "Start to Post Provision.";
 }

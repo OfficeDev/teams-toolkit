@@ -16,6 +16,7 @@ import {
   InputConfigsFolderName,
   EnvConfigFileNameTemplate,
   EnvNamePlaceholder,
+  EnvInfo,
 } from "@microsoft/teamsfx-api";
 import path, { basename } from "path";
 import fs from "fs-extra";
@@ -39,14 +40,6 @@ import { isMultiEnvEnabled } from "../common";
 import Ajv from "ajv";
 import * as draft6MetaSchema from "ajv/dist/refs/json-schema-draft-06.json";
 import * as envConfigSchema from "@microsoft/teamsfx-api/build/schemas/envConfig.json";
-
-export interface EnvInfo {
-  envName: string;
-  // input
-  config: EnvConfig;
-  // output
-  profile: Map<string, any>;
-}
 
 export interface EnvProfileFiles {
   envProfile: string;

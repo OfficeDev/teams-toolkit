@@ -434,13 +434,17 @@ export class AppStudioPluginImpl {
     let appDirectory: string;
     let zipFileName: string;
 
+    if (!ctx.envInfo?.envName) {
+      throw new Error("Failed to get target environment name from plugin context.");
+    }
+
     if (ctx.answers?.platform === Platform.VS) {
       appDirectory = ctx.answers![Constants.PUBLISH_PATH_QUESTION] as string;
       zipFileName = `${appDirectory}/appPackage.zip`;
     } else {
       appDirectory = await getAppDirectory(ctx.root);
       zipFileName = isMultiEnvEnabled()
-        ? `${ctx.root}/${AppPackageFolderName}/appPackage.${ctx.targetEnvName}.zip`
+        ? `${ctx.root}/${AppPackageFolderName}/appPackage.${ctx.envInfo.envName}.zip`
         : (zipFileName = `${ctx.root}/${AppPackageFolderName}/appPackage.zip`);
     }
 

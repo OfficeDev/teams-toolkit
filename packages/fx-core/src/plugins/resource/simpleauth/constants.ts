@@ -56,7 +56,9 @@ export class Constants {
     simpleAuthAppServicePlanName: "simpleAuth_appServicePlanName",
   };
 
-  static readonly moduleTemplateFileName: string = "simpleAuth.template.bicep";
+  static readonly provisionModuleTemplateFileName: string = "simpleAuthProvision.template.bicep";
+  static readonly configurationModuleTemplateFileName: string =
+    "simpleAuthConfiguration.template.bicep";
 
   static readonly SimpleAuthBicepOutputSkuName: string = "simpleAuthProvision.outputs.skuName";
   static readonly SimpleAuthBicepOutputEndpoint: string = "simpleAuthProvision.outputs.endpoint";

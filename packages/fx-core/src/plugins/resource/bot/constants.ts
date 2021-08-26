@@ -272,7 +272,8 @@ export class PathInfo {
     "bot",
     "bicep"
   );
-  public static readonly moduleTemplateFileName = "bot.template.bicep";
+  public static readonly provisionModuleTemplateFileName = "botProvision.template.bicep";
+  public static readonly configurationModuleTemplateFileName = "botConfiguration.template.bicep";
 }
 
 export class BotArmOutput {

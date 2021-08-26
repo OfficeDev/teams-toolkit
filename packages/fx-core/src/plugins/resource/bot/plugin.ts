@@ -255,15 +255,33 @@ export class TeamsBotImpl {
 
     const bicepTemplateDir = path.join(getTemplatesFolder(), PathInfo.BicepTemplateRelativeDir);
 
-    const moduleTemplateFilePath = path.join(bicepTemplateDir, PathInfo.moduleTemplateFileName);
     const selectedPlugins = (this.ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
       .activeResourcePlugins;
     const handleBarsContext = {
       Plugins: selectedPlugins,
     };
-    const moduleContentResult = await generateBicepFiles(moduleTemplateFilePath, handleBarsContext);
-    if (moduleContentResult.isErr()) {
-      throw moduleContentResult.error;
+
+    const provisionModuleTemplateFilePath = path.join(
+      bicepTemplateDir,
+      PathInfo.provisionModuleTemplateFileName
+    );
+    const provisionModuleContentResult = await generateBicepFiles(
+      provisionModuleTemplateFilePath,
+      handleBarsContext
+    );
+    if (provisionModuleContentResult.isErr()) {
+      throw provisionModuleContentResult.error;
+    }
+    const configurationModuleTemplateFilePath = path.join(
+      bicepTemplateDir,
+      PathInfo.configurationModuleTemplateFileName
+    );
+    const configurationModuleContentResult = await generateBicepFiles(
+      configurationModuleTemplateFilePath,
+      handleBarsContext
+    );
+    if (configurationModuleContentResult.isErr()) {
+      throw configurationModuleContentResult.error;
     }
 
     const inputParameterOrchestrationFilePath = path.join(
@@ -283,7 +301,10 @@ export class TeamsBotImpl {
     const result: ScaffoldArmTemplateResult = {
       Modules: {
         botProvision: {
-          Content: moduleContentResult.value,
+          Content: provisionModuleContentResult.value,
+        },
+        botConfiguration: {
+          Content: configurationModuleContentResult.value,
         },
       },
       Orchestration: {

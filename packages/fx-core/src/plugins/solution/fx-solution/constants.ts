@@ -126,6 +126,7 @@ export enum SolutionError {
   CannotFindUserInCurrentTenant = "CannotFindUserInCurrentTenant",
   FailedToGrantPermission = "FailedToGrantPermission",
   FailedToCheckPermission = "FailedToCheckPermission",
+  FailedToListCollaborator = "FailedToListCollaborator",
 }
 
 export const LOCAL_DEBUG_TAB_ENDPOINT = "localTabEndpoint";

@@ -124,8 +124,17 @@ export namespace GraphClient {
     const instance = initAxiosInstance(graphToken);
     const response = await instance.get(`${baseUrl}/applications/${objectId}/owners`);
 
+    const aadOwners: AadOwner[] = [];
     if (response && response.data && response.data.value) {
-      return response.data.value as AadOwner[];
+      for (const aadOwner of response.data.value) {
+        aadOwners.push({
+          userObjectId: aadOwner.id,
+          resourceId: objectId,
+          displayName: aadOwner.displayName,
+          userPrincipalName: aadOwner.userPrincipalName,
+        });
+      }
+      return aadOwners;
     }
 
     return undefined;
@@ -143,7 +152,7 @@ export namespace GraphClient {
     }
 
     const owners = await getAadOwners(graphToken, objectId);
-    const findUser = owners?.find((owner: AadOwner) => owner.id === userObjectId);
+    const findUser = owners?.find((owner: AadOwner) => owner.userObjectId === userObjectId);
     if (findUser) {
       return true;
     } else {

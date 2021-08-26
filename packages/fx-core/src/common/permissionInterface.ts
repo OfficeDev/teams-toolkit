@@ -12,13 +12,15 @@ export interface Collaborator {
 }
 
 export interface AadOwner {
-  id: string;
+  userObjectId: string;
+  resourceId: string;
   displayName: string;
   userPrincipalName: string;
 }
 
 export interface TeamsAppAdmin {
-  aadId: string;
+  userObjectId: string;
+  resourceId: string;
   displayName: string;
   userPrincipalName: string;
 }

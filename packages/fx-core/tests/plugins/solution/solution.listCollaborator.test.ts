@@ -235,9 +235,10 @@ describe("listCollaborator() for Teamsfx projects", () => {
     ): Promise<Result<any, FxError>> {
       return ok([
         {
-          id: "fake-user-object-id",
+          userObjectId: "fake-user-object-id",
           displayName: "fake-display-name",
           userPrincipalName: "fake-user-principal-name",
+          resourceId: "fake-aad-resource-id",
         },
       ]);
     };
@@ -247,9 +248,10 @@ describe("listCollaborator() for Teamsfx projects", () => {
     ): Promise<Result<any, FxError>> {
       return ok([
         {
-          aadId: "fake-user-object-id",
+          userObjectId: "fake-user-object-id",
           displayName: "fake-display-name",
           userPrincipalName: "fake-user-principal-name",
+          resourceId: "fake-teams-app-resource-id",
         },
       ]);
     };

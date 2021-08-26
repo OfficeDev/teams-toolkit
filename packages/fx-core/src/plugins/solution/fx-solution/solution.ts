@@ -1535,11 +1535,13 @@ export class TeamsAppSolution implements Solution {
       const collaborators: Collaborator[] = [];
 
       for (const teamsAppOwner of teamsAppOwners) {
-        const aadOwner = aadOwners.find((owner) => owner.id === teamsAppOwner.aadId);
+        const aadOwner = aadOwners.find(
+          (owner) => owner.userObjectId === teamsAppOwner.userObjectId
+        );
 
         collaborators.push({
           userPrincipalName: teamsAppOwner.userPrincipalName,
-          userObjectId: teamsAppOwner.aadId,
+          userObjectId: teamsAppOwner.userObjectId,
           isAadOwner: aadOwner ? true : false,
         });
       }
@@ -2447,15 +2449,13 @@ export class TeamsAppSolution implements Solution {
         return undefined;
       }
 
-      const collaborator: AadOwner = res.data.value.find(
-        (user: AadOwner) => user.userPrincipalName === email
-      );
+      const collaborator = res.data.value.find((user: any) => user.userPrincipalName === email);
 
       if (!collaborator) {
         return undefined;
       }
 
-      aadId = collaborator.id;
+      aadId = collaborator.userObjectId;
       userPrincipalName = collaborator.userPrincipalName;
       displayName = collaborator.displayName;
     }

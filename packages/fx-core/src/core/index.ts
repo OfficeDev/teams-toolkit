@@ -821,7 +821,7 @@ export class FxCore implements Core {
     throw TaskNotSupportError(Stage.build);
   }
 
-  @hooks([ErrorHandlerMW, ProjectSettingsLoaderMW, ContextInjecterMW, EnvInfoWriterMW])
+  @hooks([ErrorHandlerMW, ProjectSettingsLoaderMW, ContextInjecterMW])
   async createEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     if (!isMultiEnvEnabled() || !ctx!.projectSettings) {
       return ok(Void);
@@ -834,27 +834,9 @@ export class FxCore implements Core {
       return ok(Void);
     }
 
-    const envProfilesResult = await environmentManager.listEnvProfiles(inputs.projectPath!);
-    if (envProfilesResult.isErr()) {
-      return err(envProfilesResult.error);
-    }
-
-    if (envProfilesResult.value.indexOf(targetEnvName!) >= 0) {
-      return err(ProjectEnvAlreadyExistError(targetEnvName!));
-    }
-
     if (targetEnvName) {
-      const result = await loadSolutionContext(
-        core.tools,
-        inputs,
-        ctx!.projectSettings!,
-        ctx!.projectIdMissing,
-        targetEnvName
-      );
-      if (result.isErr()) {
-        return err(result.error);
-      }
-      ctx!.solutionContext = result.value;
+      const newEnvConfig = environmentManager.newEnvConfigData();
+      await environmentManager.writeEnvConfig(inputs.projectPath!, newEnvConfig, targetEnvName);
     }
     return ok(Void);
   }

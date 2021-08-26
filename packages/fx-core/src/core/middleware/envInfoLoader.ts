@@ -31,7 +31,7 @@ import {
   PluginNames,
   PROGRAMMING_LANGUAGE,
 } from "../../plugins/solution/fx-solution/constants";
-import { QuestionSelectTargetEnvironment, QuestionNewTargetEnvironmentName } from "../question";
+import { getQuestionNewTargetEnvironmentName, QuestionSelectTargetEnvironment } from "../question";
 import { desensitize } from "./questionModel";
 import { shouldIgnored } from "./projectSettingsLoader";
 import { PermissionRequestFileProvider } from "../permissionRequest";
@@ -300,7 +300,7 @@ async function getQuestionsForTargetEnv(
 
   const node = new QTreeNode(selectEnv);
 
-  const childNode = new QTreeNode(QuestionNewTargetEnvironmentName);
+  const childNode = new QTreeNode(getQuestionNewTargetEnvironmentName(inputs.projectPath));
   childNode.condition = { equals: newTargetEnvNameOption };
 
   node.addChild(childNode);
@@ -315,7 +315,7 @@ async function getQuestionsForNewEnv(
     return err(NoProjectOpenedError());
   }
 
-  const node = new QTreeNode(QuestionNewTargetEnvironmentName);
+  const node = new QTreeNode(getQuestionNewTargetEnvironmentName(inputs.projectPath));
 
   return ok(node.trim());
 }

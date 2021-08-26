@@ -116,6 +116,11 @@
           "group": "inline@2"
         },
         {
+          "command": "fx-extension.refreshSideloading",
+          "when": "view == teamsfx-accounts && viewItem == checkSideloading",
+          "group": "inline"
+        },
+        {
           "command": "fx-extension.azureAccountSettings",
           "when": "view == teamsfx-accounts && viewItem == signedinAzure",
           "group": "inline@2"
@@ -157,6 +162,10 @@
           "when": "false"
         },
         {
+          "command": "fx-extension.refreshSideloading",
+          "when": "false"
+        },
+        {
           "command": "fx-extension.azureAccountSettings",
           "when": "false"
         },
@@ -193,6 +202,11 @@
         "command": "fx-extension.m365AccountSettings",
         "title": "M365 portal",
         "icon": "$(settings-gear)"
+      },
+      {
+        "command": "fx-extension.refreshSideloading",
+        "title": "Refresh",
+        "icon": "$(refresh)"
       },
       {
         "command": "fx-extension.azureAccountSettings",

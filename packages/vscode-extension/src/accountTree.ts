@@ -148,7 +148,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
             return Promise.resolve(ok(null));
           },
           parent: "fx-extension.signinM365",
-          contextValue: "sideloadingUnknown",
+          contextValue: "checkSideloading",
           icon: "info",
           tooltip: {
             isMarkdown: false,
@@ -165,7 +165,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
             return Promise.resolve(ok(null));
           },
           parent: "fx-extension.signinM365",
-          contextValue: "sideloadingPass",
+          contextValue: "checkSideloading",
           icon: "pass",
           tooltip: {
             isMarkdown: false,
@@ -182,7 +182,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
       )
         .then(async (result) => {
           if (result.isOk() && result.value === StringResources.vsc.common.readMore) {
-            await VS_CODE_UI.openUrl();
+            await VS_CODE_UI.openUrl("https://aka.ms/teamsfx-custom-app");
           }
         })
         .catch((error) => {});
@@ -194,7 +194,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
             return Promise.resolve(ok(null));
           },
           parent: "fx-extension.signinM365",
-          contextValue: "sideloadingWarning",
+          contextValue: "checkSideloading",
           icon: "warning",
           tooltip: {
             isMarkdown: false,
@@ -295,6 +295,14 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
         isMarkdown: true,
         value: StringResources.vsc.accountTree.m365AccountTooltip,
       },
+    },
+    {
+      commandId: "fx-extension.refreshSideloading",
+      label: StringResources.vsc.accountTree.sideloadingRefresh,
+      callback: () => {
+        return Promise.resolve(ok(null));
+      },
+      parent: undefined,
     },
     {
       commandId: "fx-extension.signinAzure",

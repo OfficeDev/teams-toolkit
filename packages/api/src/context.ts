@@ -71,7 +71,7 @@ export interface SolutionContext extends Context {
 
   // app: TeamsAppManifest;
 
-  config: SolutionConfig;
+  envInfo: EnvInfo;
 }
 
 export interface PluginContext extends Context {

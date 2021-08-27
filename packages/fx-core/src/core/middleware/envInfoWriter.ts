@@ -29,12 +29,12 @@ export const EnvInfoWriterMW: Middleware = async (ctx: CoreHookContext, next: Ne
     if (solutionContext === undefined) return;
 
     // DO NOT persist local debug plugin config.
-    if (solutionContext.config.has(PluginNames.LDEBUG)) {
-      solutionContext.config.delete(PluginNames.LDEBUG);
+    if (solutionContext.envInfo.profile.has(PluginNames.LDEBUG)) {
+      solutionContext.envInfo.profile.delete(PluginNames.LDEBUG);
     }
 
     const envProfilePath = await environmentManager.writeEnvProfile(
-      solutionContext.config,
+      solutionContext.envInfo.profile,
       inputs.projectPath,
       solutionContext.envInfo?.envName,
       solutionContext.cryptoProvider

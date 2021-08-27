@@ -59,7 +59,6 @@ describe("Permission", function () {
     console.log("[Successfully] check permission");
 
     // Grant Permission
-    console.log(collaborator);
     const grantCollaboratorResult = await execAsync(
       `teamsfx permission grant --email ${collaborator}`,
       {
@@ -75,6 +74,19 @@ describe("Permission", function () {
     expect(grantCollaboratorResult.stdout).to.contains(
       "Administrator permission has been granted to Teams App"
     );
+    console.log("[Successfully] grant permission");
+
+    const listCollaboratorResult = await execAsync(
+      `teamsfx permission status --list-all-collaborator`,
+      {
+        cwd: projectPath,
+        env: process.env,
+        timeout: 0,
+      }
+    );
+
+    expect(listCollaboratorResult.stdout).to.contains(`Account: ${collaborator}`);
+    console.log("[Successfully] list collaborator");
   });
 
   after(async () => {

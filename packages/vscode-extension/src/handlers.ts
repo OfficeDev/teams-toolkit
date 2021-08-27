@@ -61,7 +61,7 @@ import * as commonUtils from "./debug/commonUtils";
 import { ExtensionErrors, ExtensionSource } from "./error";
 import { WebviewPanel } from "./controls/webviewPanel";
 import * as constants from "./debug/constants";
-import { anonymizeFilePaths, isSPFxProject } from "./utils/commonUtils";
+import { anonymizeFilePaths, isSPFxProject, syncFeatureFlags } from "./utils/commonUtils";
 import * as fs from "fs-extra";
 import * as vscode from "vscode";
 import { DepsChecker } from "./debug/depsChecker/checker";
@@ -100,6 +100,8 @@ export function getWorkspacePath(): string | undefined {
 export async function activate(): Promise<Result<Void, FxError>> {
   const result: Result<Void, FxError> = ok(Void);
   try {
+    syncFeatureFlags();
+
     if (isValidProject(getWorkspacePath())) {
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenTeamsApp, {});
     }

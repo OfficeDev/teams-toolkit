@@ -130,6 +130,8 @@ export interface Context {
     // (undocumented)
     cryptoProvider?: CryptoProvider;
     // (undocumented)
+    envInfo?: EnvInfo;
+    // (undocumented)
     graphTokenProvider?: GraphTokenProvider;
     // (undocumented)
     localSettings?: LocalSettings;
@@ -141,8 +143,6 @@ export interface Context {
     projectSettings?: ProjectSettings;
     // (undocumented)
     root: string;
-    // (undocumented)
-    targetEnvName?: string;
     // (undocumented)
     telemetryReporter?: TelemetryReporter;
     // (undocumented)
@@ -239,6 +239,16 @@ export interface EnvConfig {
 
 // @public (undocumented)
 export const EnvConfigFileNameTemplate: string;
+
+// @public (undocumented)
+export interface EnvInfo {
+    // (undocumented)
+    config: EnvConfig;
+    // (undocumented)
+    envName: string;
+    // (undocumented)
+    profile: Map<string, any>;
+}
 
 // @public
 export interface EnvMeta {

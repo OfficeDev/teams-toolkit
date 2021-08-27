@@ -280,20 +280,20 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
 }
 
 async function getParameterJson(ctx: SolutionContext) {
-  if (!ctx.targetEnvName) {
+  if (!ctx.envInfo?.envName) {
     throw new Error("Failed to get target environment name from solution context.");
   }
 
   let parameterFileName, parameterFolderPath, parameterTemplateFilePath;
   if (isNewFolderStructureEnabled()) {
-    parameterFileName = parameterFileNameTemplateNew.replace("@envName", ctx.targetEnvName);
+    parameterFileName = parameterFileNameTemplateNew.replace("@envName", ctx.envInfo.envName);
     parameterFolderPath = path.join(ctx.root, configsFolder);
     parameterTemplateFilePath = path.join(
       path.join(ctx.root, templateFolderNew),
       parameterTemplateFileName
     );
   } else {
-    parameterFileName = parameterFileNameTemplate.replace("@envName", ctx.targetEnvName);
+    parameterFileName = parameterFileNameTemplate.replace("@envName", ctx.envInfo.envName);
     parameterFolderPath = path.join(ctx.root, baseFolder, parameterFolder);
     parameterTemplateFilePath = path.join(parameterFolderPath, parameterTemplateFileName);
   }
@@ -304,7 +304,7 @@ async function getParameterJson(ctx: SolutionContext) {
     await fs.stat(parameterFilePath);
   } catch (err) {
     ctx.logProvider?.info(
-      `[${PluginDisplayName.Solution}] ${parameterFilePath} does not exist. Try ${parameterTemplateFilePath}.`
+      `[${PluginDisplayName.Solution}] ${parameterFilePath} does not exist. Generate it using ${parameterTemplateFilePath}.`
     );
     createNewParameterFile = true;
   }

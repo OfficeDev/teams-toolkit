@@ -36,7 +36,7 @@ export const EnvInfoWriterMW: Middleware = async (ctx: CoreHookContext, next: Ne
     const envProfilePath = await environmentManager.writeEnvProfile(
       solutionContext.config,
       inputs.projectPath,
-      solutionContext.targetEnvName,
+      solutionContext.envInfo?.envName,
       solutionContext.cryptoProvider
     );
 

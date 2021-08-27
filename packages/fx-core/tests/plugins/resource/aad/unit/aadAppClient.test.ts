@@ -610,4 +610,62 @@ describe("AAD App Client Test", () => {
       }
     });
   });
+
+  describe("listCollaborator", async () => {
+    it("Happy Path", async () => {
+      sinon.stub(GraphClient, "getAadOwners").resolves([
+        {
+          userObjectId: "id",
+          displayName: "displayName",
+          userPrincipalName: "userPrincipalName",
+          resourceId: "resourceId",
+        },
+      ]);
+      const listCollaboratorResult = await AadAppClient.listCollaborator(
+        ctx,
+        "listCollaborator",
+        faker.datatype.uuid()
+      );
+
+      chai.assert.equal(listCollaboratorResult![0].userObjectId, "id");
+    });
+
+    it("User Error", async () => {
+      const error = {
+        response: {
+          status: 404,
+          message: "errorMessage",
+        },
+      };
+      sinon.stub(AadAppClient, "retryHanlder").throws(error);
+      try {
+        const listCollaboratorResult = await AadAppClient.listCollaborator(
+          ctx,
+          "listCollaborator",
+          faker.datatype.uuid()
+        );
+      } catch (error) {
+        chai.assert.isTrue(error instanceof UserError);
+      }
+    });
+
+    it("System Error", async () => {
+      const error = {
+        response: {
+          status: 500,
+          message: "errorMessage",
+        },
+      };
+      sinon.stub(AadAppClient, "retryHanlder").throws(error);
+      try {
+        const listCollaboratorResult = await AadAppClient.listCollaborator(
+          ctx,
+          "listCollaborator",
+          faker.datatype.uuid()
+        );
+      } catch (error) {
+        chai.assert.isTrue(error instanceof SystemError);
+      }
+    });
+  });
 });

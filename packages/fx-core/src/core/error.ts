@@ -187,6 +187,15 @@ export function InvalidEnvNameError(): UserError {
   );
 }
 
+export function ProjectEnvAlreadyExistError(env: string): FxError {
+  return new UserError(
+    "ProjectEnvAlreadyExistError",
+    `Project environment ${env} already exists.`,
+    CoreSource,
+    new Error().stack
+  );
+}
+
 export function InvalidEnvConfigError(env: string, errorMsg: string): UserError {
   return new UserError(
     CoreSource,

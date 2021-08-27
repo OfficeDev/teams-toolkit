@@ -109,23 +109,31 @@ export const QuestionSelectTargetEnvironment: SingleSelectQuestion = {
   forgetLastValue: true,
 };
 
-export const QuestionNewTargetEnvironmentName: TextInputQuestion = {
-  type: "text",
-  name: CoreQuestionNames.NewTargetEnvName,
-  title: "New environment name",
-  validation: {
-    validFunc: async (input: string): Promise<string | undefined> => {
-      const targetEnvName = input as string;
-      const match = targetEnvName.match(environmentManager.envNameRegex);
-      if (!match) {
-        return "Environment name can only contain letters, digits, _ and -.";
-      }
+export function getQuestionNewTargetEnvironmentName(projectPath: string): TextInputQuestion {
+  return {
+    type: "text",
+    name: CoreQuestionNames.NewTargetEnvName,
+    title: "New environment name",
+    validation: {
+      validFunc: async (input: string): Promise<string | undefined> => {
+        const targetEnvName = input as string;
+        const match = targetEnvName.match(environmentManager.envNameRegex);
+        if (!match) {
+          return "Environment name can only contain letters, digits, _ and -.";
+        }
 
-      return undefined;
+        const envConfigs = await environmentManager.listEnvConfigs(projectPath);
+
+        if (!envConfigs.isErr() && envConfigs.value!.indexOf(targetEnvName!) >= 0) {
+          return `Project environment ${targetEnvName} already exists.`;
+        }
+
+        return undefined;
+      },
     },
-  },
-  placeholder: "New environment name",
-};
+    placeholder: "New environment name",
+  };
+}
 
 export const QuestionSelectResourceGroup: SingleSelectQuestion = {
   type: "singleSelect",

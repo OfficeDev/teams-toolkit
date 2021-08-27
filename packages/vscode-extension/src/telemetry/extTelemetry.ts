@@ -54,6 +54,8 @@ export namespace ExtTelemetry {
         return TelemetryEvent.Deploy;
       case Stage.publish:
         return TelemetryEvent.Publish;
+      case Stage.createEnv:
+        return TelemetryEvent.CreateNewEnvironment;
       default:
         return undefined;
     }

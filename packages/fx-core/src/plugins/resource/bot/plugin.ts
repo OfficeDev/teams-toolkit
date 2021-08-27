@@ -732,8 +732,8 @@ export class TeamsBotImpl {
         await handler?.end(true);
         Logger.info(Messages.EndMigrateV1Project(Alias.TEAMS_BOT_PLUGIN));
         return ok(undefined);
-      } catch {
-        throw new MigrateV1ProjectError();
+      } catch (err) {
+        throw new MigrateV1ProjectError(err);
       }
     }
     return ok(undefined);

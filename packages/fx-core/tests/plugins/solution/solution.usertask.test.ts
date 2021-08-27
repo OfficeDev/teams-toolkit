@@ -29,6 +29,7 @@ import {
 import Container from "typedi";
 import * as uuid from "uuid";
 import {
+  AzureResourceSQL,
   AzureSolutionQuestionNames,
   BotOptionItem,
   HostTypeOptionAzure,
@@ -44,6 +45,7 @@ import "../../../src/plugins/resource/appstudio/v2";
 import "../../../src/plugins/resource/frontend/v2";
 import "../../../src/plugins/resource/bot/v2";
 import { AppStudioPlugin, newEnvInfo } from "../../../src";
+import fs from "fs-extra";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -127,6 +129,13 @@ describe("executeUserTask VSpublish", async () => {
 });
 
 describe("V2 implementation", () => {
+  const mocker = sinon.createSandbox();
+  beforeEach(() => {
+    mocker.stub<any, any>(fs, "copy").resolves();
+  });
+  afterEach(() => {
+    mocker.restore();
+  });
   it("should return err if given invalid router", async () => {
     const projectSettings: ProjectSettings = {
       appName: "my app",
@@ -264,6 +273,101 @@ describe("V2 implementation", () => {
     const result = await executeUserTask(
       mockedCtx,
       { namespace: "solution", method: "addCapability" },
+      mockedInputs,
+      mockedProvider
+    );
+    expect(result.isOk()).to.be.true;
+  });
+
+  it("should return error when adding resource's input is invalid", async () => {
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "test",
+        version: "1.0",
+        activeResourcePlugins: [appStudioPluginV2.name],
+        capabilities: [TabOptionItem.id],
+        azureResources: [],
+      },
+    };
+    const mockedCtx = new MockedV2Context(projectSettings);
+    const mockedProvider = new MockedAppStudioProvider();
+    const mockedInputs: Inputs = {
+      platform: Platform.VSCode,
+    };
+
+    const result = await executeUserTask(
+      mockedCtx,
+      { namespace: "solution", method: "addResource" },
+      mockedInputs,
+      mockedProvider
+    );
+    expect(result.isErr()).to.be.true;
+    expect(result._unsafeUnwrapErr().name).equals(SolutionError.InvalidInput);
+  });
+
+  it("should return error when adding SQL resource repeatedly", async () => {
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "test",
+        version: "1.0",
+        activeResourcePlugins: [appStudioPluginV2.name, frontendPluginV2.name, sqlPluginV2.name],
+        capabilities: [TabOptionItem.id],
+        azureResources: [AzureResourceSQL.id],
+      },
+    };
+    const mockedCtx = new MockedV2Context(projectSettings);
+    const mockedProvider = new MockedAppStudioProvider();
+    const mockedInputs: Inputs = {
+      platform: Platform.VSCode,
+    };
+
+    mockedInputs[AzureSolutionQuestionNames.AddResources] = [AzureResourceSQL.id];
+
+    const result = await executeUserTask(
+      mockedCtx,
+      { namespace: "solution", method: "addResource" },
+      mockedInputs,
+      mockedProvider
+    );
+    expect(result.isErr()).to.be.true;
+    expect(result._unsafeUnwrapErr().name).equals(SolutionError.AddResourceNotSupport);
+    expect(result._unsafeUnwrapErr().message).contains("SQL/APIM is already added");
+  });
+
+  it("should return ok when adding SQL resource to a project without SQL", async () => {
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "test",
+        version: "1.0",
+        activeResourcePlugins: [appStudioPluginV2.name, frontendPluginV2.name],
+        capabilities: [TabOptionItem.id],
+        azureResources: [],
+      },
+    };
+    const mockedCtx = new MockedV2Context(projectSettings);
+    const mockedProvider = new MockedAppStudioProvider();
+    const mockedInputs: Inputs = {
+      platform: Platform.VSCode,
+    };
+
+    mockedInputs[AzureSolutionQuestionNames.AddResources] = [AzureResourceSQL.id];
+
+    mockScaffoldCodeThatAlwaysSucceeds(appStudioPluginV2);
+    mockScaffoldCodeThatAlwaysSucceeds(localDebugPluginV2);
+    mockScaffoldCodeThatAlwaysSucceeds(sqlPluginV2);
+
+    const result = await executeUserTask(
+      mockedCtx,
+      { namespace: "solution", method: "addResource" },
       mockedInputs,
       mockedProvider
     );

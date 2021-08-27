@@ -235,7 +235,7 @@ export class AppStudioPluginImpl {
 
     const includeBot = (
       ctx.projectSettings?.solutionSettings as AzureSolutionSettings
-    ).activeResourcePlugins.includes(BOT_PLUGIN_NAME);
+    ).activeResourcePlugins?.includes(BOT_PLUGIN_NAME);
     if (includeBot) {
       if (manifest.bots !== undefined && manifest.bots.length > 0) {
         manifest.bots[0].botId = `{${BOT_ID}}`;

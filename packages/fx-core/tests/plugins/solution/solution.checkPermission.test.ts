@@ -32,6 +32,7 @@ import sinon from "sinon";
 import { EnvConfig, MockGraphTokenProvider } from "../resource/apim/testUtil";
 import Container from "typedi";
 import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
+import { newEnvInfo } from "../../../src";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -43,8 +44,6 @@ describe("checkPermission() for Teamsfx projects", () => {
   const mockProjectTenantId = "mock_project_tenant_id";
 
   function mockSolutionContext(): SolutionContext {
-    const config: SolutionConfig = new Map();
-    config.set(GLOBAL_CONFIG, new ConfigMap());
     const mockGraphTokenProvider = new MockGraphTokenProvider(
       mockProjectTenantId,
       EnvConfig.servicePrincipalClientId,
@@ -52,7 +51,7 @@ describe("checkPermission() for Teamsfx projects", () => {
     );
     return {
       root: ".",
-      config,
+      envInfo: newEnvInfo(),
       answers: { platform: Platform.VSCode },
       projectSettings: undefined,
       graphTokenProvider: mockGraphTokenProvider,
@@ -111,7 +110,7 @@ describe("checkPermission() for Teamsfx projects", () => {
         version: "1.0",
       },
     };
-    mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+    mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
 
     sandbox
       .stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject")
@@ -136,7 +135,7 @@ describe("checkPermission() for Teamsfx projects", () => {
         version: "1.0",
       },
     };
-    mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+    mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
 
     sandbox.stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject").resolves({
       tid: "fake_tid",
@@ -145,8 +144,8 @@ describe("checkPermission() for Teamsfx projects", () => {
       name: "fake_name",
     });
 
-    mockedCtx.config.set(PluginNames.AAD, new ConfigMap());
-    mockedCtx.config.get(PluginNames.AAD)?.set(REMOTE_TENANT_ID, mockProjectTenantId);
+    mockedCtx.envInfo.profile.set(PluginNames.AAD, new ConfigMap());
+    mockedCtx.envInfo.profile.get(PluginNames.AAD)?.set(REMOTE_TENANT_ID, mockProjectTenantId);
 
     const result = await solution.checkPermission(mockedCtx);
     expect(result.isErr()).to.be.true;
@@ -167,7 +166,7 @@ describe("checkPermission() for Teamsfx projects", () => {
         version: "1.0",
       },
     };
-    mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+    mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
 
     sandbox.stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject").resolves({
       tid: mockProjectTenantId,
@@ -201,8 +200,8 @@ describe("checkPermission() for Teamsfx projects", () => {
       ]);
     };
 
-    mockedCtx.config.set(PluginNames.AAD, new ConfigMap());
-    mockedCtx.config.get(PluginNames.AAD)?.set(REMOTE_TENANT_ID, mockProjectTenantId);
+    mockedCtx.envInfo.profile.set(PluginNames.AAD, new ConfigMap());
+    mockedCtx.envInfo.profile.get(PluginNames.AAD)?.set(REMOTE_TENANT_ID, mockProjectTenantId);
 
     const result = await solution.checkPermission(mockedCtx);
     expect(result.isErr()).to.be.true;
@@ -223,7 +222,7 @@ describe("checkPermission() for Teamsfx projects", () => {
         version: "1.0",
       },
     };
-    mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+    mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
 
     sandbox.stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject").resolves({
       tid: mockProjectTenantId,
@@ -257,8 +256,8 @@ describe("checkPermission() for Teamsfx projects", () => {
         },
       ]);
     };
-    mockedCtx.config.set(PluginNames.AAD, new ConfigMap());
-    mockedCtx.config.get(PluginNames.AAD)?.set(REMOTE_TENANT_ID, mockProjectTenantId);
+    mockedCtx.envInfo.profile.set(PluginNames.AAD, new ConfigMap());
+    mockedCtx.envInfo.profile.get(PluginNames.AAD)?.set(REMOTE_TENANT_ID, mockProjectTenantId);
 
     const result = await solution.checkPermission(mockedCtx);
     if (result.isErr()) {

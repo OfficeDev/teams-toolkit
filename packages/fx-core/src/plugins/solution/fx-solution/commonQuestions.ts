@@ -23,6 +23,12 @@ export type AzureSubscription = {
   subscriptionId: string;
 };
 
+type ResourceGroupInfo = {
+  createNewResourceGroup: boolean;
+  name: string;
+  location: string;
+};
+
 class CommonQuestions {
   resourceNameSuffix = "";
   resourceGroupName = "";
@@ -49,9 +55,20 @@ export async function checkSubscription(
       )
     );
   }
-  const activeSubscriptionId = ctx.config.get(GLOBAL_CONFIG)?.get("subscriptionId");
   const askSubRes = await ctx.azureAccountProvider!.getSelectedSubscription(true);
   return ok(askSubRes!);
+}
+
+/**
+ * Ask user to use existing resource group or use an exsiting resource group
+ */
+async function askResourceGroupInfo(appName: string): Promise<ResourceGroupInfo> {
+  // TODO: ask user interactively
+  return {
+    createNewResourceGroup: true,
+    name: `${appName.replace(" ", "_")}-rg`,
+    location: "East US",
+  };
 }
 
 /**
@@ -104,20 +121,25 @@ async function askCommonQuestions(
 
   //2. check resource group
   const rmClient = new ResourceManagementClient(azureToken, subscriptionId);
+  // TODO: read resource group name and location from input config
   let resourceGroupName = config.get(GLOBAL_CONFIG)?.getString(RESOURCE_GROUP_NAME);
-  let needCreateResourceGroup = false;
+  let resourceGroupInfo: ResourceGroupInfo;
   if (resourceGroupName) {
+    resourceGroupInfo = {
+      name: resourceGroupName,
+      createNewResourceGroup: false,
+      location: "East US", // TODO: remove hard coding when input config is ready
+    };
     const checkRes = await rmClient.resourceGroups.checkExistence(resourceGroupName);
     if (!checkRes.body) {
-      needCreateResourceGroup = true;
+      resourceGroupInfo.createNewResourceGroup = true;
     }
   } else {
-    resourceGroupName = `${appName.replace(" ", "_")}-rg`;
-    needCreateResourceGroup = true;
+    resourceGroupInfo = await askResourceGroupInfo(appName);
   }
-  if (needCreateResourceGroup) {
-    const response = await rmClient.resourceGroups.createOrUpdate(resourceGroupName, {
-      location: commonQuestions.location,
+  if (resourceGroupInfo.createNewResourceGroup) {
+    const response = await rmClient.resourceGroups.createOrUpdate(resourceGroupInfo.name, {
+      location: resourceGroupInfo.location,
     });
 
     if (response.name === undefined) {
@@ -134,7 +156,8 @@ async function askCommonQuestions(
       `[${PluginDisplayName.Solution}] askCommonQuestions - resource group:'${resourceGroupName}' created!`
     );
   }
-  commonQuestions.resourceGroupName = resourceGroupName;
+  commonQuestions.resourceGroupName = resourceGroupInfo.name;
+  commonQuestions.location = resourceGroupInfo.location;
   ctx.logProvider?.info(
     `[${PluginDisplayName.Solution}] askCommonQuestions, step 2 - check resource group pass!`
   );

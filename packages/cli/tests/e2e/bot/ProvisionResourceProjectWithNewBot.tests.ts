@@ -96,15 +96,15 @@ describe("Provision", function () {
       /// TODO: add check for validate
     }
 
-    // build
-    await execAsyncWithRetry(`teamsfx build`, {
+    // package
+    await execAsyncWithRetry(`teamsfx package`, {
       cwd: projectPath,
       env: process.env,
       timeout: 0,
     });
 
     {
-      /// TODO: add check for build
+      /// TODO: add check for package
     }
   });
 

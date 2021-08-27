@@ -3,6 +3,7 @@
 
 import { FxError } from "@microsoft/teamsfx-api";
 import { PluginContext } from "@microsoft/teamsfx-api";
+import { AadOwner } from "../../../common/permissionInterface";
 import { AppStudio } from "./appStudio";
 import { ConfigKeys, Constants, Messages, Telemetry } from "./constants";
 import { GraphErrorCodes } from "./errorCodes";
@@ -18,6 +19,7 @@ import {
   AadError,
   CheckPermissionError,
   GrantPermissionError,
+  ListCollaboratorError,
 } from "./errors";
 import { GraphClient } from "./graph";
 import { IAADPassword } from "./interfaces/IAADApplication";
@@ -253,11 +255,26 @@ export class AadAppClient {
     }
   }
 
+  public static async listCollaborator(
+    ctx: PluginContext,
+    stage: string,
+    objectId: string
+  ): Promise<AadOwner[] | undefined> {
+    try {
+      return await this.retryHanlder(ctx, stage, () =>
+        GraphClient.getAadOwners(TokenProvider.token as string, objectId)
+      );
+    } catch (error) {
+      // TODO: Give out detailed help message for different errors.
+      throw AadAppClient.handleError(error, ListCollaboratorError);
+    }
+  }
+
   public static async retryHanlder(
     ctx: PluginContext,
     stage: string,
-    fn: () => Promise<IAADDefinition | IAADPassword | void | boolean>
-  ): Promise<IAADDefinition | IAADPassword | undefined | void | boolean> {
+    fn: () => Promise<any>
+  ): Promise<any> {
     let retries = Constants.maxRetryTimes;
     let response;
     TelemetryUtils.init(ctx);

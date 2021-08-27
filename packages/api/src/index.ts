@@ -14,6 +14,7 @@ export * from "./manifest";
 export * from "./utils";
 export * from "./error";
 export * from "./qm";
+export * from "./schemas";
 // api-extractor doesn't support export * as v2 from "./v2"; So we try to export a variable instead.
 export { v2 };
 

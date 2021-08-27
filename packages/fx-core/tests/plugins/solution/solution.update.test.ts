@@ -41,6 +41,7 @@ import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/Resou
 import Container from "typedi";
 import { MockUserInteraction } from "../../core/utils";
 import mockedEnv from "mocked-env";
+import { newEnvInfo } from "../../../src";
 
 const fehostPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin);
 const localDebug = Container.get<Plugin>(ResourcePlugins.LocalDebugPlugin);
@@ -51,7 +52,7 @@ function mockSolutionContext(): SolutionContext {
   const config: SolutionConfig = new Map();
   return {
     root: ".",
-    config,
+    envInfo: newEnvInfo(),
     answers: { platform: Platform.VSCode },
     projectSettings: undefined,
   };
@@ -258,8 +259,8 @@ describe("update()", () => {
       return ok(Void);
     };
     // mock that provision already succeeded
-    mockedCtx.config.set(GLOBAL_CONFIG, new ConfigMap());
-    mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+    mockedCtx.envInfo.profile.set(GLOBAL_CONFIG, new ConfigMap());
+    mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
     const result = await solution.update(mockedCtx);
     expect(result.isOk()).equals(true);
     expect(mockedCtx.projectSettings?.solutionSettings?.azureResources as string[]).contains(
@@ -268,7 +269,8 @@ describe("update()", () => {
     expect(mockedCtx.projectSettings?.solutionSettings?.azureResources as string[]).contains(
       AzureResourceFunction.id
     );
-    expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).is.false;
+    expect(mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).is
+      .false;
   });
 
   it("should leave projectSettings unchanged if scaffold fails", async () => {
@@ -296,13 +298,14 @@ describe("update()", () => {
       return err(returnSystemError(new Error("Some fake error"), "SolutionTest", "FakeError"));
     };
     // mock that provision already succeeded
-    mockedCtx.config.set(GLOBAL_CONFIG, new ConfigMap());
-    mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+    mockedCtx.envInfo.profile.set(GLOBAL_CONFIG, new ConfigMap());
+    mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
     const result = await solution.update(mockedCtx);
     expect(result.isOk()).equals(false);
     expect(mockedCtx.projectSettings).to.be.deep.equal(originalProjectSettings);
     // provisionSucceeded is not changed due to the failure of solution.update()
-    expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be.true;
+    expect(mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
+      .true;
   });
 
   it("shouldn't set provisionSucceeded to false when adding a new Function endpoint", async () => {
@@ -329,12 +332,13 @@ describe("update()", () => {
       return ok(Void);
     };
     // mock that provision already succeeded
-    mockedCtx.config.set(GLOBAL_CONFIG, new ConfigMap());
-    mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+    mockedCtx.envInfo.profile.set(GLOBAL_CONFIG, new ConfigMap());
+    mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
     const result = await solution.update(mockedCtx);
     expect(result.isOk()).equals(true);
     // provisionSucceeded is not changed because function is already added.
-    expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be.true;
+    expect(mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
+      .true;
   });
 
   it("should set provisionSucceeded to false when adding SQL to a project with Function", async () => {
@@ -364,12 +368,13 @@ describe("update()", () => {
       return ok(Void);
     };
     // mock that provision already succeeded
-    mockedCtx.config.set(GLOBAL_CONFIG, new ConfigMap());
-    mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+    mockedCtx.envInfo.profile.set(GLOBAL_CONFIG, new ConfigMap());
+    mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
     const result = await solution.update(mockedCtx);
     expect(result.isOk()).equals(true);
     // provisionSucceeded is not changed because function is already added.
-    expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be.false;
+    expect(mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
+      .false;
   });
 
   it("should ask for confirm regenerate ARM template when adding resources", async () => {

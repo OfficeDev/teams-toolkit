@@ -25,6 +25,7 @@ import { MockUserInteraction } from "./../helper";
 import { TeamsBot } from "./../../../../../src/plugins/resource/bot";
 import { ResourcePlugins } from "../../../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import Container from "typedi";
+import { environmentManager } from "../../../../../src/core/environment";
 
 describe("Publish Teams app", () => {
   let plugin: AppStudioPlugin;
@@ -41,6 +42,11 @@ describe("Publish Teams app", () => {
       configOfOtherPlugins: new Map(),
       config: new ConfigMap(),
       appStudioToken: mockTokenProvider(),
+      envInfo: {
+        envName: "dev",
+        profile: new Map<string, any>(),
+        config: environmentManager.newEnvConfigData(),
+      },
       answers: { platform: Platform.VSCode },
     };
     ctx.projectSettings = {

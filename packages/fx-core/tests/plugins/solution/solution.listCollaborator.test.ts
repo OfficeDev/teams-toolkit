@@ -15,7 +15,6 @@ import {
   PluginContext,
   Result,
   FxError,
-  Void,
   err,
   returnUserError,
 } from "@microsoft/teamsfx-api";
@@ -39,11 +38,13 @@ const expect = chai.expect;
 const appStudioPlugin = Container.get<Plugin>(ResourcePlugins.AppStudioPlugin);
 const aadPlugin = Container.get<Plugin>(ResourcePlugins.AadPlugin);
 
-describe("grantPermission() for Teamsfx projects", () => {
+describe("listCollaborator() for Teamsfx projects", () => {
   const sandbox = sinon.createSandbox();
   const mockProjectTenantId = "mock_project_tenant_id";
 
   function mockSolutionContext(): SolutionContext {
+    const config: SolutionConfig = new Map();
+    config.set(GLOBAL_CONFIG, new ConfigMap());
     const mockGraphTokenProvider = new MockGraphTokenProvider(
       mockProjectTenantId,
       EnvConfig.servicePrincipalClientId,
@@ -64,17 +65,17 @@ describe("grantPermission() for Teamsfx projects", () => {
 
     const mockedCtx = mockSolutionContext();
     solution.runningState = SolutionRunningState.ProvisionInProgress;
-    let result = await solution.grantPermission(mockedCtx);
+    let result = await solution.listCollaborator(mockedCtx);
     expect(result.isErr()).to.be.true;
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.ProvisionInProgress);
 
     solution.runningState = SolutionRunningState.DeployInProgress;
-    result = await solution.grantPermission(mockedCtx);
+    result = await solution.listCollaborator(mockedCtx);
     expect(result.isErr()).to.be.true;
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.DeploymentInProgress);
 
     solution.runningState = SolutionRunningState.PublishInProgress;
-    result = await solution.grantPermission(mockedCtx);
+    result = await solution.listCollaborator(mockedCtx);
     expect(result.isErr()).to.be.true;
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.PublishInProgress);
   });
@@ -92,12 +93,12 @@ describe("grantPermission() for Teamsfx projects", () => {
         version: "1.0",
       },
     };
-    const result = await solution.grantPermission(mockedCtx);
+    const result = await solution.listCollaborator(mockedCtx);
     expect(result.isErr()).to.be.true;
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.CannotProcessBeforeProvision);
   });
 
-  it("should return error if cannot get current user info", async () => {
+  it("should return error if cannot get user info", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
 
@@ -116,7 +117,7 @@ describe("grantPermission() for Teamsfx projects", () => {
       .stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject")
       .resolves(undefined);
 
-    const result = await solution.grantPermission(mockedCtx);
+    const result = await solution.listCollaborator(mockedCtx);
     expect(result.isErr()).to.be.true;
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.FailedToRetrieveUserInfo);
     sandbox.restore();
@@ -147,13 +148,13 @@ describe("grantPermission() for Teamsfx projects", () => {
     mockedCtx.envInfo.profile.set(PluginNames.AAD, new ConfigMap());
     mockedCtx.envInfo.profile.get(PluginNames.AAD)?.set(REMOTE_TENANT_ID, mockProjectTenantId);
 
-    const result = await solution.grantPermission(mockedCtx);
+    const result = await solution.listCollaborator(mockedCtx);
     expect(result.isErr()).to.be.true;
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.M365AccountNotMatch);
     sandbox.restore();
   });
 
-  it("should return error if cannot find user from email", async () => {
+  it("should return error if list collaborator failed", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
 
@@ -168,80 +169,33 @@ describe("grantPermission() for Teamsfx projects", () => {
     };
     mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
 
-    sandbox
-      .stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject")
-      .onCall(0)
-      .resolves({
-        tid: mockProjectTenantId,
-        oid: "fake_oid",
-        unique_name: "fake_unique_name",
-        name: "fake_name",
-      })
-      .onCall(1)
-      .resolves(undefined);
+    sandbox.stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject").resolves({
+      tid: mockProjectTenantId,
+      oid: "fake_oid",
+      unique_name: "fake_unique_name",
+      name: "fake_name",
+    });
 
-    mockedCtx.envInfo.profile.set(PluginNames.AAD, new ConfigMap());
-    mockedCtx.envInfo.profile.get(PluginNames.AAD)?.set(REMOTE_TENANT_ID, mockProjectTenantId);
-
-    const result = await solution.grantPermission(mockedCtx);
-    expect(result.isErr()).to.be.true;
-    expect(result._unsafeUnwrapErr().name).equals(SolutionError.CannotFindUserInCurrentTenant);
-    sandbox.restore();
-  });
-
-  it("should return error if check permission failed", async () => {
-    const solution = new TeamsAppSolution();
-    const mockedCtx = mockSolutionContext();
-
-    mockedCtx.projectSettings = {
-      appName: "my app",
-      projectId: uuid.v4(),
-      solutionSettings: {
-        hostType: HostTypeOptionAzure.id,
-        name: "azure",
-        version: "1.0",
-      },
-    };
-    mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
-
-    sandbox
-      .stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject")
-      .onCall(0)
-      .resolves({
-        tid: mockProjectTenantId,
-        oid: "fake_oid",
-        unique_name: "fake_unique_name",
-        name: "fake_name",
-      })
-      .onCall(1)
-      .resolves({
-        tid: mockProjectTenantId,
-        oid: "fake_oid_2",
-        unique_name: "fake_unique_name_2",
-        name: "fake_name_2",
-      });
-
-    appStudioPlugin.grantPermission = async function (
+    appStudioPlugin.listCollaborator = async function (
       _ctx: PluginContext
     ): Promise<Result<any, FxError>> {
       return err(
         returnUserError(
-          new Error(`Grant permission failed.`),
+          new Error(`List collaborator failed.`),
           "AppStudioPlugin",
-          SolutionError.FailedToGrantPermission
+          SolutionError.FailedToListCollaborator
         )
       );
     };
 
-    aadPlugin.grantPermission = async function (
+    aadPlugin.listCollaborator = async function (
       _ctx: PluginContext
     ): Promise<Result<any, FxError>> {
       return ok([
         {
-          name: "aad_app",
-          resourceId: "fake_aad_app_resource_id",
-          roles: "Owner",
-          type: "M365",
+          id: "fake-aad-user-object-id",
+          displayName: "fake-display-name",
+          userPrincipalName: "fake-user-principal-name",
         },
       ]);
     };
@@ -249,11 +203,10 @@ describe("grantPermission() for Teamsfx projects", () => {
     mockedCtx.envInfo.profile.set(PluginNames.AAD, new ConfigMap());
     mockedCtx.envInfo.profile.get(PluginNames.AAD)?.set(REMOTE_TENANT_ID, mockProjectTenantId);
 
-    const result = await solution.grantPermission(mockedCtx);
+    const result = await solution.listCollaborator(mockedCtx);
     expect(result.isErr()).to.be.true;
-    expect(result._unsafeUnwrapErr().name).equals(SolutionError.FailedToGrantPermission);
-
-    sandbox.restore();
+    expect(result._unsafeUnwrapErr().name).equals(SolutionError.FailedToListCollaborator);
+    sinon.restore();
   });
 
   it("happy path", async () => {
@@ -271,57 +224,51 @@ describe("grantPermission() for Teamsfx projects", () => {
     };
     mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
 
-    sandbox
-      .stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject")
-      .onCall(0)
-      .resolves({
-        tid: mockProjectTenantId,
-        oid: "fake_oid",
-        unique_name: "fake_unique_name",
-        name: "fake_name",
-      })
-      .onCall(1)
-      .resolves({
-        tid: mockProjectTenantId,
-        oid: "fake_oid_2",
-        unique_name: "fake_unique_name_2",
-        name: "fake_name_2",
-      });
+    sandbox.stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject").resolves({
+      tid: mockProjectTenantId,
+      oid: "fake_oid",
+      unique_name: "fake_unique_name",
+      name: "fake_name",
+    });
 
-    appStudioPlugin.grantPermission = async function (
+    aadPlugin.listCollaborator = async function (
       _ctx: PluginContext
     ): Promise<Result<any, FxError>> {
       return ok([
         {
-          name: "aad_app",
-          resourceId: "fake_aad_app_resource_id",
-          roles: "Owner",
-          type: "M365",
+          userObjectId: "fake-user-object-id",
+          displayName: "fake-display-name",
+          userPrincipalName: "fake-user-principal-name",
+          resourceId: "fake-aad-resource-id",
         },
       ]);
     };
 
-    aadPlugin.grantPermission = async function (
+    appStudioPlugin.listCollaborator = async function (
       _ctx: PluginContext
     ): Promise<Result<any, FxError>> {
       return ok([
         {
-          name: "teams_app",
-          resourceId: "fake_teams_app_resource_id",
-          roles: "Administrator",
-          type: "M365",
+          userObjectId: "fake-user-object-id",
+          displayName: "fake-display-name",
+          userPrincipalName: "fake-user-principal-name",
+          resourceId: "fake-teams-app-resource-id",
         },
       ]);
     };
     mockedCtx.envInfo.profile.set(PluginNames.AAD, new ConfigMap());
     mockedCtx.envInfo.profile.get(PluginNames.AAD)?.set(REMOTE_TENANT_ID, mockProjectTenantId);
 
-    const result = await solution.grantPermission(mockedCtx);
+    const result = await solution.listCollaborator(mockedCtx);
     if (result.isErr()) {
       chai.assert.fail("result is error");
     }
-    expect(result.value.length).equal(2);
-
+    expect(result.value.length).equal(1);
+    expect(result.value[0].isAadOwner).equal(true);
+    expect(result.value[0].userObjectId).equal("fake-user-object-id");
+    expect(result.value[0].userPrincipalName).equal("fake-user-principal-name");
+    expect(result.value[0].aadResourceId).equal("fake-aad-resource-id");
+    expect(result.value[0].teamsAppResourceId).equal("fake-teams-app-resource-id");
     sinon.restore();
   });
 });

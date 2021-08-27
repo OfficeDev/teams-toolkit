@@ -277,3 +277,15 @@ export class MigrateV1ProjectError extends PluginError {
     );
   }
 }
+
+export class ExtractZipError extends PluginError {
+  constructor(path: string, innerError?: Error) {
+    super(
+      ErrorType.User,
+      "ExtractZipError",
+      `Failed to extract zip, please check the input: ${path}`,
+      [Messages.CheckOutputLogAndTryToFix, Messages.ReopenWorkingDir],
+      innerError
+    );
+  }
+}

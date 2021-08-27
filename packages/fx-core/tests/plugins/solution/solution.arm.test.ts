@@ -75,7 +75,6 @@ function mockSolutionContext(): SolutionContext {
       profile: new Map<string, any>(),
       config: environmentManager.newEnvConfigData(),
     },
-    config,
     answers: { platform: Platform.VSCode },
     projectSettings: undefined,
     azureAccountProvider: Object as any & AzureAccountProvider,
@@ -355,11 +354,11 @@ describe("Deploy ARM Template to Azure", () => {
         capabilities: [TabOptionItem.id],
       },
     };
-    mockedCtx.config.set(
+    mockedCtx.envInfo.profile.set(
       "fx-resource-aad-app-for-teams",
       new ConfigMap([["clientId", testClientId]])
     );
-    mockedCtx.config.set(
+    mockedCtx.envInfo.profile.set(
       SOLUTION_CONFIG,
       new ConfigMap([
         ["resource-base-name", "mocked resource base name"],
@@ -413,14 +412,14 @@ describe("Deploy ARM Template to Azure", () => {
       } as SubscriptionInfo;
       return subscriptionInfo;
     };
-    mockedCtx.config.set(
+    mockedCtx.envInfo.profile.set(
       "fx-resource-aad-app-for-teams",
       new ConfigMap([
         ["clientId", testClientId],
         ["clientSecret", testClientSecret],
       ])
     );
-    mockedCtx.config.set(
+    mockedCtx.envInfo.profile.set(
       SOLUTION_CONFIG,
       new ConfigMap([
         ["resourceGroupName", "mocked resource group name"],
@@ -497,7 +496,7 @@ describe("Deploy ARM Template to Azure", () => {
       }`)
     );
     chai.assert.strictEqual(
-      mockedCtx.config.get(SOLUTION_CONFIG)?.get("armTemplateOutput"),
+      mockedCtx.envInfo.profile.get(SOLUTION_CONFIG)?.get("armTemplateOutput"),
       testArmTemplateOutput
     );
   });

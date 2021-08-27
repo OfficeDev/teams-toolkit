@@ -69,7 +69,7 @@ import { AppStudioPluginImpl } from "../../../src/plugins/resource/appstudio/plu
 import * as solutionUtil from "../../../src/plugins/solution/fx-solution/utils/util";
 import * as uuid from "uuid";
 import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
-import { AadAppForTeamsPlugin } from "../../../src";
+import { AadAppForTeamsPlugin, newEnvInfo } from "../../../src";
 import Container from "typedi";
 
 chai.use(chaiAsPromised);
@@ -252,11 +252,9 @@ class MockedAzureTokenProvider implements AzureAccountProvider {
 }
 
 function mockSolutionContext(): SolutionContext {
-  const config: SolutionConfig = new Map();
-  config.set(GLOBAL_CONFIG, new ConfigMap());
   return {
     root: ".",
-    config,
+    envInfo: newEnvInfo(),
     ui: new MockUserInteraction(),
     answers: { platform: Platform.VSCode },
     projectSettings: undefined,
@@ -336,7 +334,7 @@ describe("provision() simple cases", () => {
   it("should return false even if provisionSucceeded is true", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
-    mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+    mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
     const result = await solution.provision(mockedCtx);
     expect(result.isOk()).to.be.false;
   });
@@ -392,7 +390,7 @@ describe("provision() with permission.json file missing", () => {
         activeResourcePlugins: [spfxPlugin.name],
       },
     };
-    solution.doProvision = async function (_ctx: PluginContext): Promise<Result<any, FxError>> {
+    solution.doProvision = async function (_ctx: SolutionContext): Promise<Result<any, FxError>> {
       return ok(Void);
     };
 
@@ -452,12 +450,14 @@ describe("provision() happy path for SPFx projects", () => {
       },
     };
 
-    expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be.undefined;
-    expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).to.be.undefined;
+    expect(mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
+      .undefined;
+    expect(mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).to.be.undefined;
     const result = await solution.provision(mockedCtx);
     expect(result.isOk()).to.be.true;
-    expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be.true;
-    expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).equals(
+    expect(mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
+      .true;
+    expect(mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).equals(
       mockedAppDef.teamsAppId
     );
     expect(solution.runningState).equals(SolutionRunningState.Idle);
@@ -541,11 +541,12 @@ describe("provision() happy path for Azure projects", () => {
     };
     const spy = mocker.spy(aadPlugin, "setApplicationInContext");
 
-    expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be.undefined;
-    expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).to.be.undefined;
-    // mockedCtx.config.get(GLOBAL_CONFIG)?.set("resourceGroupName", resourceGroupName);
-    mockedCtx.config.get(GLOBAL_CONFIG)?.set("subscriptionId", mockedSubscriptionId);
-    mockedCtx.config.get(GLOBAL_CONFIG)?.set("tenantId", mockedTenantId);
+    expect(mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
+      .undefined;
+    expect(mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).to.be.undefined;
+    // mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set("resourceGroupName", resourceGroupName);
+    mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set("subscriptionId", mockedSubscriptionId);
+    mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set("tenantId", mockedTenantId);
     mocker.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns(
       ok({
         tabEndpoint: "tabEndpoint",
@@ -559,8 +560,9 @@ describe("provision() happy path for Azure projects", () => {
     const result = await solution.provision(mockedCtx);
     expect(result.isOk()).to.be.true;
     expect(spy.calledOnce).to.be.true;
-    expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be.true;
-    // expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).equals(
+    expect(mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
+      .true;
+    // expect(mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).equals(
     //   mockedAppDef.teamsAppId
     // );
   });

@@ -317,7 +317,7 @@
       },
       {
         "command": "fx-extension.migrateV1Project",
-        "title": "Teams: Initialize Your Project to Use Teams Toolkit V2"
+        "title": "Teams: Initialize Your Project to Work with the Latest Teams Toolkit"
       },
       {
         "command": "fx-extension.addEnvironment",

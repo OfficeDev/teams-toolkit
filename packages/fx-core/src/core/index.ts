@@ -122,7 +122,7 @@ export class FxCore implements Core {
     QuestionModelMW,
     ContextInjecterMW,
     ProjectSettingsWriterMW,
-    EnvInfoWriterMW,
+    EnvInfoWriterMW(isMultiEnvEnabled()),
   ])
   async createProject(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     currentStage = Stage.create;
@@ -220,7 +220,7 @@ export class FxCore implements Core {
     QuestionModelMW,
     ContextInjecterMW,
     ProjectSettingsWriterMW,
-    EnvInfoWriterMW,
+    EnvInfoWriterMW(),
   ])
   async migrateV1Project(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     currentStage = Stage.migrateV1;
@@ -409,7 +409,7 @@ export class FxCore implements Core {
     QuestionModelMW,
     ContextInjecterMW,
     ProjectSettingsWriterMW,
-    EnvInfoWriterMW,
+    EnvInfoWriterMW(),
   ])
   async provisionResources(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     currentStage = Stage.provision;
@@ -425,7 +425,7 @@ export class FxCore implements Core {
     QuestionModelMW,
     ContextInjecterMW,
     ProjectSettingsWriterMW,
-    EnvInfoWriterMW,
+    EnvInfoWriterMW(),
   ])
   async deployArtifacts(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     currentStage = Stage.deploy;
@@ -443,7 +443,7 @@ export class FxCore implements Core {
     QuestionModelMW,
     ContextInjecterMW,
     ProjectSettingsWriterMW,
-    EnvInfoWriterMW,
+    EnvInfoWriterMW(),
     LocalSettingsWriterMW,
   ])
   async localDebug(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
@@ -469,7 +469,7 @@ export class FxCore implements Core {
     QuestionModelMW,
     ContextInjecterMW,
     ProjectSettingsWriterMW,
-    EnvInfoWriterMW,
+    EnvInfoWriterMW(),
   ])
   async publishApplication(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     currentStage = Stage.publish;
@@ -486,7 +486,7 @@ export class FxCore implements Core {
     QuestionModelMW,
     ContextInjecterMW,
     ProjectSettingsWriterMW,
-    EnvInfoWriterMW,
+    EnvInfoWriterMW(),
     LocalSettingsWriterMW,
   ])
   async executeUserTask(
@@ -512,7 +512,7 @@ export class FxCore implements Core {
     EnvInfoLoaderMW(false, false),
     SolutionLoaderMW(defaultSolutionLoader),
     ContextInjecterMW,
-    EnvInfoWriterMW,
+    EnvInfoWriterMW(),
   ])
   async getQuestions(
     task: Stage,
@@ -541,7 +541,7 @@ export class FxCore implements Core {
     EnvInfoLoaderMW(false, false),
     SolutionLoaderMW(defaultSolutionLoader),
     ContextInjecterMW,
-    EnvInfoWriterMW,
+    EnvInfoWriterMW(),
   ])
   async getQuestionsForUserTask(
     func: FunctionRouter,
@@ -583,7 +583,7 @@ export class FxCore implements Core {
     EnvInfoLoaderMW(false, false),
     ContextInjecterMW,
     ProjectSettingsWriterMW,
-    EnvInfoWriterMW,
+    EnvInfoWriterMW(),
   ])
   async setSubscriptionInfo(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     const solutionContext = ctx!.solutionContext! as SolutionContext;
@@ -605,7 +605,7 @@ export class FxCore implements Core {
     QuestionModelMW,
     ContextInjecterMW,
     ProjectSettingsWriterMW,
-    EnvInfoWriterMW,
+    EnvInfoWriterMW(),
   ])
   async grantPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     currentStage = Stage.grantPermission;
@@ -621,7 +621,7 @@ export class FxCore implements Core {
     QuestionModelMW,
     ContextInjecterMW,
     ProjectSettingsWriterMW,
-    EnvInfoWriterMW,
+    EnvInfoWriterMW(),
   ])
   async checkPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     currentStage = Stage.checkPermission;
@@ -637,7 +637,7 @@ export class FxCore implements Core {
     QuestionModelMW,
     ContextInjecterMW,
     ProjectSettingsWriterMW,
-    EnvInfoWriterMW,
+    EnvInfoWriterMW(),
   ])
   async listCollaborator(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     currentStage = Stage.listCollaborator;
@@ -790,7 +790,7 @@ export class FxCore implements Core {
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false, false),
     ContextInjecterMW,
-    EnvInfoWriterMW,
+    EnvInfoWriterMW(),
   ])
   async encrypt(
     plaintext: string,
@@ -805,7 +805,7 @@ export class FxCore implements Core {
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false, false),
     ContextInjecterMW,
-    EnvInfoWriterMW,
+    EnvInfoWriterMW(),
   ])
   async decrypt(
     ciphertext: string,

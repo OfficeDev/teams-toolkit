@@ -3,7 +3,6 @@
 "use strict";
 
 import {
-  AzureSolutionSettings,
   err,
   FxError,
   ok,
@@ -17,14 +16,13 @@ import { LocalCertificateManager } from "./certificate";
 import {
   AadPlugin,
   BotPlugin,
-  FrontendHostingPlugin,
-  FunctionPlugin,
   LocalDebugConfigKeys,
   LocalEnvAuthKeys,
   LocalEnvBackendKeys,
   LocalEnvBotKeys,
   LocalEnvCertKeys,
   LocalEnvFrontendKeys,
+  LocalEnvBotKeysMigratedFromV1,
   RuntimeConnectorPlugin,
   SolutionPlugin,
 } from "./constants";
@@ -152,12 +150,15 @@ export class legacyLocalDebugPlugin {
     TelemetryUtils.sendStartEvent(TelemetryEventName.postLocalDebug, telemetryProperties);
 
     if (ctx.answers?.platform === Platform.VSCode || ctx.answers?.platform === Platform.CLI) {
+      const isMigrateFromV1 = ProjectSettingLoader.isMigrateFromV1(ctx);
+
       const localEnvProvider = new LocalEnvProvider(ctx.root);
       const localEnvs = await localEnvProvider.loadLocalEnv(
         includeFrontend,
         includeBackend,
         includeBot,
-        includeAuth
+        includeAuth,
+        isMigrateFromV1
       );
 
       // configs
@@ -253,20 +254,29 @@ export class legacyLocalDebugPlugin {
       if (includeBot) {
         // bot local env
         const botConfigs = ctx.configOfOtherPlugins.get(BotPlugin.Name);
-        localEnvs[LocalEnvBotKeys.BotId] = botConfigs?.get(BotPlugin.LocalBotId) as string;
-        localEnvs[LocalEnvBotKeys.BotPassword] = botConfigs?.get(
-          BotPlugin.LocalBotPassword
-        ) as string;
-        localEnvs[LocalEnvBotKeys.ClientId] = clientId;
-        localEnvs[LocalEnvBotKeys.ClientSecret] = clientSecret;
-        localEnvs[LocalEnvBotKeys.TenantID] = teamsAppTenantId;
-        localEnvs[LocalEnvBotKeys.OauthAuthority] = "https://login.microsoftonline.com";
-        localEnvs[LocalEnvBotKeys.LoginEndpoint] = `${
-          localDebugConfigs.get(LocalDebugConfigKeys.LocalBotEndpoint) as string
-        }/auth-start.html`;
-        localEnvs[LocalEnvBotKeys.ApplicationIdUri] = aadConfigs?.get(
-          AadPlugin.LocalAppIdUri
-        ) as string;
+        if (isMigrateFromV1) {
+          localEnvs[LocalEnvBotKeysMigratedFromV1.BotId] = botConfigs?.get(
+            BotPlugin.LocalBotId
+          ) as string;
+          localEnvs[LocalEnvBotKeysMigratedFromV1.BotPassword] = botConfigs?.get(
+            BotPlugin.LocalBotPassword
+          ) as string;
+        } else {
+          localEnvs[LocalEnvBotKeys.BotId] = botConfigs?.get(BotPlugin.LocalBotId) as string;
+          localEnvs[LocalEnvBotKeys.BotPassword] = botConfigs?.get(
+            BotPlugin.LocalBotPassword
+          ) as string;
+          localEnvs[LocalEnvBotKeys.ClientId] = clientId;
+          localEnvs[LocalEnvBotKeys.ClientSecret] = clientSecret;
+          localEnvs[LocalEnvBotKeys.TenantID] = teamsAppTenantId;
+          localEnvs[LocalEnvBotKeys.OauthAuthority] = "https://login.microsoftonline.com";
+          localEnvs[LocalEnvBotKeys.LoginEndpoint] = `${
+            localDebugConfigs.get(LocalDebugConfigKeys.LocalBotEndpoint) as string
+          }/auth-start.html`;
+          localEnvs[LocalEnvBotKeys.ApplicationIdUri] = aadConfigs?.get(
+            AadPlugin.LocalAppIdUri
+          ) as string;
+        }
 
         if (includeBackend) {
           localEnvs[LocalEnvBackendKeys.ApiEndpoint] = localDebugConfigs.get(

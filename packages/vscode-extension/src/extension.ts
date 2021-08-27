@@ -197,7 +197,7 @@ export async function activate(context: vscode.ExtensionContext) {
       Correlator.run(handlers.viewEnvironment, node.command.title);
     }
   );
-  context.subscriptions.push(createNewEnvironment);
+  context.subscriptions.push(viewEnvironment);
 
   vscode.commands.executeCommand(
     "setContext",

@@ -26,11 +26,6 @@ export class Suggestions {
   static readonly CreateAnIssue: string = 'Please create an issue on GitHub.'
 }
 
-export class Strings {
-  static readonly NewLine: string = '\n'
-  static readonly Space: string = ' '
-}
-
 export function TeamsfxCliPath(workdir: string = '.') {
   return path.join(workdir, 'node_modules', '@microsoft', 'teamsfx-cli')
 }

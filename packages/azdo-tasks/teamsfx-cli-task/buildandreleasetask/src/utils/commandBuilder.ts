@@ -2,13 +2,13 @@
 // Licensed under the MIT license.
 
 import tl from 'azure-pipelines-task-lib/task'
-import { ActionInputs, Commands, Strings } from '../constant'
+import { ActionInputs, Commands } from '../constant'
 import { MultiValueOptions } from '../enums/multiValueOptions'
 import { SingleValueOptions } from '../enums/singleValueOptions'
 import { OptionMap } from '../optionMap'
 
 export function BuildCommandString(): string {
-  const commands = tl.getDelimitedInput(ActionInputs.Commands, Strings.NewLine) || []
+  const commands = tl.getDelimitedInput(ActionInputs.Commands, '\n') || []
   const subCommand = commands[0] ?? ''
   // Iterate to collect options.
   const optionsPart: string[] = []
@@ -31,7 +31,7 @@ export function BuildCommandString(): string {
     if (!OptionMap.validOptionInCommand(subCommand, optionName)) {
       continue;
     }
-    const optionValues = tl.getDelimitedInput(optionName, Strings.NewLine) || []
+    const optionValues = tl.getDelimitedInput(optionName, '\n') || []
     if (optionValues.length > 0) {
       optionsPart.push(
         `${Commands.AddOptionPrefix(optionName)} ${optionValues.join(
@@ -44,5 +44,5 @@ export function BuildCommandString(): string {
   return [Commands.TeamsfxCliName]
     .concat(commands)
     .concat(optionsPart)
-    .join(Strings.Space)
+    .join(' ')
 }

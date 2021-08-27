@@ -2,7 +2,9 @@
 
 A bot, chatbot, or conversational bot is an app that responds to simple commands sent in chat and replies in meaningful ways. Examples of bots in everyday use include: bots that notify about build failures, bots that provide information about the weather or bus schedules, or provide travel information. A bot interaction can be a quick question and answer, or it can be a complex conversation. Being a cloud application, a bot can provide valuable and secure access to cloud services and corporate resources.
 
-This is a sample chatbot application demonstrating Single Sign-on using `botbuilder` and Teams Framework that can respond to a `hello` message.
+This is a sample bot application demonstrating how to create commands and build adaptive cards that best for automation and notification scenario using `botbuilder` and `adaptivecards-templating`.
+
+If you are looking for a sample that implements Single Sign On, please refer [here](https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/bot-sso).
 
 ## Prerequisites
 

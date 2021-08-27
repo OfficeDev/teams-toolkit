@@ -2,12 +2,17 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
-    <Version>0.1.0</Version>
+    <AssemblyName>Microsoft.TeamsFx</AssemblyName>
+    <RootNamespace>Microsoft.TeamsFx</RootNamespace>
+    <Version>0.1.0-rc</Version>
     <Authors>Microsoft</Authors>
     <Company>Microsoft</Company>
     <RepositoryUrl>https://github.com/OfficeDev/TeamsFx</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/OfficeDev/TeamsFx/tree/main/packages/dotnet-sdk</PackageProjectUrl>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <Description>This package aims to reduce the developer tasks of implementing identity and access to cloud resources down to single-line statements with "zero configuration".</Description>
   </PropertyGroup>
 
 

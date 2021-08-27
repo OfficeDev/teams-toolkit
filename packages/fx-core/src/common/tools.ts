@@ -404,7 +404,7 @@ export function isMultiEnvEnabled(): boolean {
 }
 
 export function isArmSupportEnabled(): boolean {
-  return isFeatureFlagEnabled("TEAMSFX_ARM_SUPPORT", false);
+  return isFeatureFlagEnabled(FeatureFlagName.ArmSupport, false);
 }
 
 export async function generateBicepFiles(

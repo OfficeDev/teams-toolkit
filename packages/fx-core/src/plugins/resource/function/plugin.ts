@@ -674,13 +674,27 @@ export class FunctionPluginImpl {
       "bicep"
     );
 
-    const moduleTemplateFilePath = path.join(
+    const provisionModuleTemplateFilePath = path.join(
       bicepTemplateDirectory,
-      FunctionBicepFile.moduleTemplateFileName
+      FunctionBicepFile.provisionModuleTemplateFileName
     );
-    const moduleContentResult = await generateBicepFiles(moduleTemplateFilePath, context);
-    if (moduleContentResult.isErr()) {
-      throw moduleContentResult.error;
+    const provisionModuleContentResult = await generateBicepFiles(
+      provisionModuleTemplateFilePath,
+      context
+    );
+    if (provisionModuleContentResult.isErr()) {
+      throw provisionModuleContentResult.error;
+    }
+    const configurationModuleTemplateFilePath = path.join(
+      bicepTemplateDirectory,
+      FunctionBicepFile.configurationTemplateFileName
+    );
+    const configurationModuleContentResult = await generateBicepFiles(
+      configurationModuleTemplateFilePath,
+      context
+    );
+    if (configurationModuleContentResult.isErr()) {
+      throw configurationModuleContentResult.error;
     }
 
     const parameterTemplateFilePath = path.join(
@@ -699,7 +713,10 @@ export class FunctionPluginImpl {
     const result: ScaffoldArmTemplateResult = {
       Modules: {
         functionProvision: {
-          Content: moduleContentResult.value,
+          Content: provisionModuleContentResult.value,
+        },
+        functionConfiguration: {
+          Content: configurationModuleContentResult.value,
         },
       },
       Orchestration: {

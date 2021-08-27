@@ -9,16 +9,20 @@ export interface Collaborator {
   userPrincipalName: string;
   userObjectId: string;
   isAadOwner: boolean;
+  teamsAppResourceId: string;
+  aadResourceId?: string;
 }
 
 export interface AadOwner {
-  id: string;
+  userObjectId: string;
+  resourceId: string;
   displayName: string;
   userPrincipalName: string;
 }
 
 export interface TeamsAppAdmin {
-  aadId: string;
+  userObjectId: string;
+  resourceId: string;
   displayName: string;
   userPrincipalName: string;
 }

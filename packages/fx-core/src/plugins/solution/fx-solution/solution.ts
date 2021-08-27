@@ -1316,7 +1316,7 @@ export class TeamsAppSolution implements Solution {
         return err(
           sendErrorTelemetryThenReturnError(
             SolutionTelemetryEvent.GrantPermission,
-            result,
+            result.error,
             ctx.telemetryReporter
           )
         );
@@ -1444,7 +1444,7 @@ export class TeamsAppSolution implements Solution {
         return err(
           sendErrorTelemetryThenReturnError(
             SolutionTelemetryEvent.CheckPermission,
-            result,
+            result.error,
             ctx.telemetryReporter
           )
         );
@@ -1542,7 +1542,7 @@ export class TeamsAppSolution implements Solution {
         return err(
           sendErrorTelemetryThenReturnError(
             SolutionTelemetryEvent.ListCollaborator,
-            result,
+            result.error,
             ctx.telemetryReporter
           )
         );

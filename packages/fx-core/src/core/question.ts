@@ -24,6 +24,9 @@ export enum CoreQuestionNames {
   Stage = "stage",
   SubStage = "substage",
   TargetEnvName = "targetEnvName",
+  TargetResourceGroupName = "targetResourceGroupName",
+  NewResourceGroupName = "newResourceGroupName",
+  NewResourceGroupLocation = "newResourceGroupLocation",
   NewTargetEnvName = "newTargetEnvName",
 }
 
@@ -122,6 +125,41 @@ export const QuestionNewTargetEnvironmentName: TextInputQuestion = {
     },
   },
   placeholder: "New environment name",
+};
+
+export const QuestionSelectResourceGroup: SingleSelectQuestion = {
+  type: "singleSelect",
+  name: CoreQuestionNames.TargetResourceGroupName,
+  title: "Select a resource group",
+  staticOptions: [],
+  skipSingleOption: true,
+  forgetLastValue: true,
+};
+
+export const QuestionNewResourceGroupName: TextInputQuestion = {
+  type: "text",
+  name: CoreQuestionNames.NewResourceGroupName,
+  title: "New resource group name",
+  validation: {
+    validFunc: async (input: string): Promise<string | undefined> => {
+      const name = input as string;
+      // https://docs.microsoft.com/en-us/rest/api/resources/resource-groups/create-or-update#uri-parameters
+      const match = name.match(/^[-\w._()]+$/);
+      if (!match) {
+        return "The name can only contain alphanumeric characters or the symbols ._-()";
+      }
+
+      return undefined;
+    },
+  },
+  placeholder: "New resource group name",
+};
+
+export const QuestionNewResourceGroupLocation: SingleSelectQuestion = {
+  type: "singleSelect",
+  name: CoreQuestionNames.NewResourceGroupLocation,
+  title: "Location for the new resource group",
+  staticOptions: [],
 };
 
 export const QuestionSelectSolution: SingleSelectQuestion = {

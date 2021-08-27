@@ -14,12 +14,19 @@ import {
   Inputs,
   v2,
   Plugin,
+  Void,
+  ok,
+  Result,
+  FxError,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import { GLOBAL_CONFIG, SolutionError } from "../../../src/plugins/solution/fx-solution/constants";
 import { MockedAppStudioProvider, MockedV2Context, mockPublishThatAlwaysSucceed } from "./util";
 import _ from "lodash";
-import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
+import {
+  ResourcePlugins,
+  ResourcePluginsV2,
+} from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import Container from "typedi";
 import { AppStudioPlugin } from "../../../src";
 import * as uuid from "uuid";
@@ -28,13 +35,39 @@ import {
   BotOptionItem,
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
+  TabOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 import { executeUserTask } from "../../../src/plugins/solution/fx-solution/v2/executeUserTask";
+import "../../../src/plugins/resource/function/v2";
+import "../../../src/plugins/resource/sql/v2";
+import "../../../src/plugins/resource/apim/v2";
+import "../../../src/plugins/resource/localdebug/v2";
+import "../../../src/plugins/resource/appstudio/v2";
+import "../../../src/plugins/resource/frontend/v2";
+import "../../../src/plugins/resource/bot/v2";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 const appStudioPlugin = Container.get<AppStudioPlugin>(ResourcePlugins.AppStudioPlugin);
 const botPlugin = Container.get<Plugin>(ResourcePlugins.BotPlugin);
+const functionPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.FunctionPlugin);
+const sqlPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.SqlPlugin);
+const apimPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.ApimPlugin);
+
+const localDebugPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.LocalDebugPlugin);
+const appStudioPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin);
+const frontendPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.FrontendPlugin);
+const botPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.BotPlugin);
+
+function mockScaffoldCodeThatAlwaysSucceeds(plugin: v2.ResourcePlugin) {
+  plugin.scaffoldSourceCode = async function (
+    _ctx: v2.Context,
+    _inputs: Inputs
+  ): Promise<Result<{ output: Record<string, string> }, FxError>> {
+    return ok({ output: {} });
+  };
+}
+
 function mockSolutionContextWithPlatform(platform?: Platform): SolutionContext {
   const config: SolutionConfig = new Map();
   config.set(GLOBAL_CONFIG, new ConfigMap());
@@ -203,5 +236,38 @@ describe("V2 implementation", () => {
     );
     expect(result.isErr()).to.be.true;
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.FailedToAddCapability);
+  });
+
+  it("should return ok when adding tab to bot project", async () => {
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "test",
+        version: "1.0",
+        activeResourcePlugins: [appStudioPlugin.name, botPlugin.name],
+        capabilities: [BotOptionItem.id],
+        azureResources: [],
+      },
+    };
+    const mockedCtx = new MockedV2Context(projectSettings);
+    const mockedProvider = new MockedAppStudioProvider();
+    const mockedInputs: Inputs = {
+      platform: Platform.VSCode,
+    };
+    mockedInputs[AzureSolutionQuestionNames.Capabilities] = [TabOptionItem.id];
+
+    mockScaffoldCodeThatAlwaysSucceeds(appStudioPluginV2);
+    mockScaffoldCodeThatAlwaysSucceeds(localDebugPluginV2);
+    mockScaffoldCodeThatAlwaysSucceeds(frontendPluginV2);
+
+    const result = await executeUserTask(
+      mockedCtx,
+      { namespace: "solution", method: "addCapability" },
+      mockedInputs,
+      mockedProvider
+    );
+    expect(result.isOk()).to.be.true;
   });
 });

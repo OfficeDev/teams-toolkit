@@ -289,7 +289,7 @@ async function scaffoldCodeAndResourceTemplate(
   if (result.isErr()) {
     return result;
   }
-  if (!generateTemplate) {
+  if (!generateTemplate || !isArmSupportEnabled()) {
     return result;
   }
   return generateResourceTemplate(ctx, inputs);

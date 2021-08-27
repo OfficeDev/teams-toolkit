@@ -74,8 +74,8 @@ export class ProgressBarConstants {
   public static readonly DEPLOY_STEPS_NUM: number = 3;
 
   // for the use of migrating v1 project
-  static readonly MIGRATE_V1_PROJECT_TITLE = "Migrating Bot";
-  static readonly MIGRATE_V1_PROJECT_STEP_MIGRATE = "Migrating Bot project.";
+  public static readonly MIGRATE_V1_PROJECT_TITLE = "Migrating Bot";
+  public static readonly MIGRATE_V1_PROJECT_STEP_MIGRATE = "Migrating Bot project.";
   public static readonly MIGRATE_V1_PROJECT_STEPS_NUM: number = 1;
 }
 

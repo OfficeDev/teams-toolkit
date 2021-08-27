@@ -2,7 +2,8 @@
 // Licensed under the MIT license.
 
 import tl from 'azure-pipelines-task-lib/task'
-import { ActionInputs, Commands } from '../constant'
+import { Commands } from '../constant'
+import { ActionInputs } from '../enums/actionInputs'
 import { MultiValueOptions } from '../enums/multiValueOptions'
 import { SingleValueOptions } from '../enums/singleValueOptions'
 import { OptionMap } from '../optionMap'

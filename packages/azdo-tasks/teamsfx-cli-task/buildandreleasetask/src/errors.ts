@@ -2,7 +2,8 @@
 // Licensed under the MIT license.
 
 import { ErrorType, BaseError } from './baseError'
-import { ErrorNames, Suggestions } from './constant'
+import { Suggestions } from './enums/suggestions'
+import { ErrorNames } from './enums/errorNames'
 
 export class InternalError extends BaseError {
   constructor(message: string) {

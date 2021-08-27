@@ -7,6 +7,7 @@ import { ext } from "./extensionVariables";
 import { TreeItem, TreeCategory, Result, FxError, ok } from "@microsoft/teamsfx-api";
 import * as StringResources from "./resources/Strings.json";
 import { Correlator } from "@microsoft/teamsfx-core";
+import { Void } from "@microsoft/teamsfx-api";
 
 class TreeViewManager {
   private static instance: TreeViewManager;
@@ -508,7 +509,7 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
     return Promise.resolve(ok(null));
   }
 
-  removeById(commandId: string): Result<null, FxError> {
+  removeById(commandId: string): Result<Void, FxError> {
     const parentCmd = this.findCommand(commandId);
 
     if (parentCmd) {
@@ -541,7 +542,7 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
     }
 
     this._onDidChangeTreeData.fire();
-    return ok(null);
+    return ok(Void);
   }
 
   getTreeItem(element: TreeViewCommand): vscode.TreeItem {

@@ -142,7 +142,7 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
   // update parameters
   const parameterJson = await getParameterJson(ctx);
 
-  const resourceGroupName = ctx.config.get(GLOBAL_CONFIG)?.getString(RESOURCE_GROUP_NAME);
+  const resourceGroupName = ctx.envInfo.profile.get(GLOBAL_CONFIG)?.getString(RESOURCE_GROUP_NAME);
   if (!resourceGroupName) {
     throw new Error("Failed to get resource group from project solution settings.");
   }
@@ -184,7 +184,9 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
             deploymentName
           )
         );
-        ctx.config.get(GLOBAL_CONFIG)?.set(ARM_TEMPLATE_OUTPUT, result.properties?.outputs);
+        ctx.envInfo.profile
+          .get(GLOBAL_CONFIG)
+          ?.set(ARM_TEMPLATE_OUTPUT, result.properties?.outputs);
         return result;
       })
       .finally(() => {
@@ -524,7 +526,7 @@ function expandParameterPlaceholders(
     }
   }
   // Add solution config to available variables
-  const solutionConfig = ctx.config.get(GLOBAL_CONFIG);
+  const solutionConfig = ctx.envInfo.profile.get(GLOBAL_CONFIG);
   if (solutionConfig) {
     for (const configItem of solutionConfig) {
       if (typeof configItem[1] === "string") {
@@ -551,9 +553,9 @@ function normalizeToEnvName(input: string): string {
 function generateResourceName(ctx: SolutionContext): void {
   const maxAppNameLength = 10;
   const appName = ctx.projectSettings!.appName;
-  const suffix = ctx.config.get(GLOBAL_CONFIG)?.getString("resourceNameSuffix");
+  const suffix = ctx.envInfo.profile.get(GLOBAL_CONFIG)?.getString("resourceNameSuffix");
   const normalizedAppName = appName.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
-  ctx.config
+  ctx.envInfo.profile
     .get(GLOBAL_CONFIG)
     ?.set("resource_base_name", normalizedAppName.substr(0, maxAppNameLength) + suffix);
 }

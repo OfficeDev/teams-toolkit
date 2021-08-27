@@ -55,7 +55,6 @@ export async function checkSubscription(
       )
     );
   }
-  const activeSubscriptionId = ctx.config.get(GLOBAL_CONFIG)?.get("subscriptionId");
   const askSubRes = await ctx.azureAccountProvider!.getSelectedSubscription(true);
   return ok(askSubRes!);
 }

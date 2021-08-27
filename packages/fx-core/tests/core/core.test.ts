@@ -140,7 +140,7 @@ describe("Core basic APIs", () => {
       const validRes = validateProject(solutionContext);
       assert.isTrue(validRes === undefined);
 
-      const solutioConfig = solutionContext.config.get("solution");
+      const solutioConfig = solutionContext.envInfo.profile.get("solution");
       assert.isTrue(solutioConfig !== undefined);
       assert.isTrue(solutioConfig!.get("create") === true);
       assert.isTrue(solutioConfig!.get("scaffold") === true);
@@ -186,7 +186,7 @@ describe("Core basic APIs", () => {
       const validRes = validateProject(solutionContext);
       assert.isTrue(validRes === undefined);
 
-      const solutioConfig = solutionContext.config.get("solution");
+      const solutioConfig = solutionContext.envInfo.profile.get("solution");
       assert.isTrue(solutioConfig !== undefined);
       assert.isTrue(solutioConfig!.get("provision") === true);
       assert.isTrue(solutioConfig!.get("deploy") === true);
@@ -344,7 +344,7 @@ describe("Core basic APIs", () => {
       const validRes = validateProject(solutionContext);
       assert.isTrue(validRes === undefined);
 
-      const solutioConfig = solutionContext.config.get("solution");
+      const solutioConfig = solutionContext.envInfo.profile.get("solution");
       assert.isTrue(solutioConfig !== undefined);
     }
     {
@@ -388,7 +388,7 @@ describe("Core basic APIs", () => {
       const validRes = validateProject(solutionContext);
       assert.isTrue(validRes === undefined);
 
-      const solutioConfig = solutionContext.config.get("solution");
+      const solutioConfig = solutionContext.envInfo.profile.get("solution");
       assert.isTrue(solutioConfig !== undefined);
       assert.isTrue(solutioConfig!.get("provision") === true);
       assert.isTrue(solutioConfig!.get("deploy") === true);
@@ -689,7 +689,7 @@ describe("Core basic APIs", () => {
         const validRes = validateProject(solutionContext);
         assert.isTrue(validRes === undefined);
 
-        const solutioConfig = solutionContext.config.get("solution");
+        const solutioConfig = solutionContext.envInfo.profile.get("solution");
         assert.isTrue(solutioConfig !== undefined);
       }
     });

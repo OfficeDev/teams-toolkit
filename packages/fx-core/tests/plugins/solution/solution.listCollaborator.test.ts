@@ -31,6 +31,7 @@ import sinon from "sinon";
 import { EnvConfig, MockGraphTokenProvider } from "../resource/apim/testUtil";
 import Container from "typedi";
 import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
+import { newEnvInfo } from "../../../src";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -51,7 +52,7 @@ describe("listCollaborator() for Teamsfx projects", () => {
     );
     return {
       root: ".",
-      config,
+      envInfo: newEnvInfo(),
       answers: { platform: Platform.VSCode },
       projectSettings: undefined,
       graphTokenProvider: mockGraphTokenProvider,
@@ -110,7 +111,7 @@ describe("listCollaborator() for Teamsfx projects", () => {
         version: "1.0",
       },
     };
-    mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+    mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
 
     sandbox
       .stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject")
@@ -135,7 +136,7 @@ describe("listCollaborator() for Teamsfx projects", () => {
         version: "1.0",
       },
     };
-    mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+    mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
 
     sandbox.stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject").resolves({
       tid: "fake_tid",
@@ -144,8 +145,8 @@ describe("listCollaborator() for Teamsfx projects", () => {
       name: "fake_name",
     });
 
-    mockedCtx.config.set(PluginNames.AAD, new ConfigMap());
-    mockedCtx.config.get(PluginNames.AAD)?.set(REMOTE_TENANT_ID, mockProjectTenantId);
+    mockedCtx.envInfo.profile.set(PluginNames.AAD, new ConfigMap());
+    mockedCtx.envInfo.profile.get(PluginNames.AAD)?.set(REMOTE_TENANT_ID, mockProjectTenantId);
 
     const result = await solution.listCollaborator(mockedCtx);
     expect(result.isErr()).to.be.true;
@@ -166,7 +167,7 @@ describe("listCollaborator() for Teamsfx projects", () => {
         version: "1.0",
       },
     };
-    mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+    mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
 
     sandbox.stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject").resolves({
       tid: mockProjectTenantId,
@@ -199,8 +200,8 @@ describe("listCollaborator() for Teamsfx projects", () => {
       ]);
     };
 
-    mockedCtx.config.set(PluginNames.AAD, new ConfigMap());
-    mockedCtx.config.get(PluginNames.AAD)?.set(REMOTE_TENANT_ID, mockProjectTenantId);
+    mockedCtx.envInfo.profile.set(PluginNames.AAD, new ConfigMap());
+    mockedCtx.envInfo.profile.get(PluginNames.AAD)?.set(REMOTE_TENANT_ID, mockProjectTenantId);
 
     const result = await solution.listCollaborator(mockedCtx);
     expect(result.isErr()).to.be.true;
@@ -221,7 +222,7 @@ describe("listCollaborator() for Teamsfx projects", () => {
         version: "1.0",
       },
     };
-    mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+    mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
 
     sandbox.stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject").resolves({
       tid: mockProjectTenantId,
@@ -255,8 +256,8 @@ describe("listCollaborator() for Teamsfx projects", () => {
         },
       ]);
     };
-    mockedCtx.config.set(PluginNames.AAD, new ConfigMap());
-    mockedCtx.config.get(PluginNames.AAD)?.set(REMOTE_TENANT_ID, mockProjectTenantId);
+    mockedCtx.envInfo.profile.set(PluginNames.AAD, new ConfigMap());
+    mockedCtx.envInfo.profile.get(PluginNames.AAD)?.set(REMOTE_TENANT_ID, mockProjectTenantId);
 
     const result = await solution.listCollaborator(mockedCtx);
     if (result.isErr()) {

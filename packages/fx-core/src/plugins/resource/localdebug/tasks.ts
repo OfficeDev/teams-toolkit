@@ -135,7 +135,9 @@ function preDebugCheck(includeBot: boolean, isMigrateFromV1: boolean): Record<st
   return {
     label: "Pre Debug Check",
     dependsOn: includeBot
-      ? ["dependency check", "start ngrok", "prepare dev env"]
+      ? isMigrateFromV1
+        ? ["start ngrok", "prepare dev env"]
+        : ["dependency check", "start ngrok", "prepare dev env"]
       : isMigrateFromV1
       ? ["prepare dev env"]
       : ["dependency check", "prepare dev env"],

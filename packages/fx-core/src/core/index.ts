@@ -838,9 +838,6 @@ export class FxCore implements Core {
 
     if (targetEnvName) {
       const newEnvConfig = environmentManager.newEnvConfigData();
-      core.tools.logProvider.debug(
-        `[core] persist ${targetEnvName} env profile: ${JSON.stringify(newEnvConfig)}`
-      );
       const writeEnvResult = await environmentManager.writeEnvConfig(
         inputs.projectPath!,
         newEnvConfig,
@@ -849,6 +846,11 @@ export class FxCore implements Core {
       if (writeEnvResult.isErr()) {
         return err(writeEnvResult.error);
       }
+      core.tools.logProvider.debug(
+        `[core] persist ${targetEnvName} env profile to path ${
+          writeEnvResult.value
+        }: ${JSON.stringify(newEnvConfig)}`
+      );
     }
     return ok(Void);
   }

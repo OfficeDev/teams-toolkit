@@ -244,7 +244,7 @@ export async function activate(context: vscode.ExtensionContext) {
   registerRunIcon();
 
   context.subscriptions.push(
-    vscode.workspace.onDidSaveTextDocument(handlers.saveTextDocumentHandler)
+    vscode.workspace.onWillSaveTextDocument(handlers.saveTextDocumentHandler)
   );
 
   ext.context.subscriptions.push(vscode.workspace.onDidChangeWorkspaceFolders(enableMigrateV1));

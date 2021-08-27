@@ -839,7 +839,9 @@ export class FxCore implements Core {
     if (targetEnvName) {
       const newEnvConfig = environmentManager.newEnvConfigData();
       core.tools.logProvider.debug(
-        `[core] persist ${targetEnvName} env profile: ${JSON.stringify(newEnvConfig)}`
+        `[core] persist ${targetEnvName} env profile to path ${
+          inputs.projectPath
+        }: ${JSON.stringify(newEnvConfig)}`
       );
       const writeEnvResult = await environmentManager.writeEnvConfig(
         inputs.projectPath!,

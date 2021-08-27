@@ -3,6 +3,7 @@
 
 import { ErrorNames, AzureConstants } from "./constants";
 import { Messages } from "./resources/messages";
+import { CommonStrings } from "./resources/strings";
 
 export enum ErrorType {
   User,
@@ -261,6 +262,18 @@ export class RegisterResourceProviderError extends PluginError {
         Messages.CheckOutputLogAndTryToFix,
       ],
       innerError
+    );
+  }
+}
+
+// for the use of migrating v1 project
+export class MigrateV1ProjectError extends PluginError {
+  constructor() {
+    super(
+      ErrorType.User,
+      "MigrateV1ProjectError",
+      `Failed to migrate Teams Toolkit V1 project into '${CommonStrings.BOT_WORKING_DIR_NAME}'.`,
+      [Messages.RollbackToV1Project, Messages.CheckOutputLogAndTryToFix]
     );
   }
 }

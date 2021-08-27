@@ -132,6 +132,7 @@ export enum TelemetryProperty {
   SampleAppName = "sample-app-name",
   CurrentAction = "current-action",
   VideoPlayFrom = "video-play-from",
+  UpdateTeamsAppReason = "update-teams-app-reason",
 }
 
 export enum TelemetrySuccess {
@@ -160,6 +161,12 @@ export enum TelemetryErrorType {
 export enum AccountType {
   M365 = "m365",
   Azure = "azure",
+}
+
+export enum TelemetryUpdateAppReason {
+  Manual = "manual",
+  AfterDelay = "afterDelay",
+  FocusOut = "focusOut",
 }
 
 export const TelemetryComponentType = "extension";

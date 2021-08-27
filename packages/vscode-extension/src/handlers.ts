@@ -55,6 +55,7 @@ import {
   TelemetryTiggerFrom,
   TelemetrySuccess,
   AccountType,
+  TelemetryUpdateAppReason,
 } from "./telemetry/extTelemetryEvents";
 import * as commonUtils from "./debug/commonUtils";
 import { ExtensionErrors, ExtensionSource } from "./error";
@@ -733,15 +734,30 @@ export async function openAzureAccountHandler() {
   return env.openExternal(Uri.parse("https://portal.azure.com/"));
 }
 
-export function saveTextDocumentHandler(document: vscode.TextDocument) {
+export function saveTextDocumentHandler(document: vscode.TextDocumentWillSaveEvent) {
   if (!isValidProject(getWorkspacePath())) {
     return;
   }
 
-  let curDirectory = path.dirname(document.fileName);
+  let reason: TelemetryUpdateAppReason | undefined = undefined;
+  switch (document.reason) {
+    case vscode.TextDocumentSaveReason.Manual:
+      reason = TelemetryUpdateAppReason.Manual;
+      break;
+    case vscode.TextDocumentSaveReason.AfterDelay:
+      reason = TelemetryUpdateAppReason.AfterDelay;
+      break;
+    case vscode.TextDocumentSaveReason.FocusOut:
+      reason = TelemetryUpdateAppReason.FocusOut;
+      break;
+  }
+
+  let curDirectory = path.dirname(document.document.fileName);
   while (curDirectory) {
     if (isValidProject(curDirectory)) {
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.UpdateTeamsApp, {});
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.UpdateTeamsApp, {
+        [TelemetryProperty.UpdateTeamsAppReason]: reason,
+      });
       return;
     }
 

@@ -42,6 +42,7 @@ import {
 } from "./util";
 import { ExecOptions } from "child_process";
 import { Executor } from "../../../src/common/tools";
+import * as os from "os";
 
 import "../../../src/plugins/resource/frontend";
 import "../../../src/plugins/resource/simpleauth";
@@ -195,8 +196,7 @@ Mocked simple auth output content`
 }`
     );
     expect(await fs.readFile(path.join(projectArmBaseFolder, ".gitignore"), fileEncoding)).equals(
-      `# ignore ARM template backup folder
-/backup`
+      `# ignore ARM template backup folder${os.EOL}/backup`
     );
   });
 

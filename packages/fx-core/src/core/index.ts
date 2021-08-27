@@ -96,6 +96,7 @@ import { EnvInfoWriterMW } from "./middleware/envInfoWriter";
 import { LocalSettingsLoaderMW } from "./middleware/localSettingsLoader";
 import { LocalSettingsWriterMW } from "./middleware/localSettingsWriter";
 import { MigrateConditionHandlerMW } from "./middleware/migrateConditionHandler";
+import { newEnvInfo } from "./tools";
 
 export interface CoreHookContext extends HookContext {
   projectSettings?: ProjectSettings;
@@ -169,7 +170,7 @@ export class FxCore implements Core {
 
       const solutionContext: SolutionContext = {
         projectSettings: projectSettings,
-        config: new Map<string, PluginConfig>(),
+        envInfo: newEnvInfo(),
         root: projectPath,
         ...this.tools,
         ...this.tools.tokenProvider,
@@ -254,7 +255,7 @@ export class FxCore implements Core {
 
     const solutionContext: SolutionContext = {
       projectSettings: projectSettings,
-      config: new Map<string, PluginConfig>(),
+      envInfo: newEnvInfo(),
       root: projectPath,
       ...this.tools,
       ...this.tools.tokenProvider,
@@ -448,11 +449,11 @@ export class FxCore implements Core {
   async localDebug(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     currentStage = Stage.debug;
     upgradeProgrammingLanguage(
-      ctx!.solutionContext!.config as SolutionConfig,
+      ctx!.solutionContext!.envInfo.profile as SolutionConfig,
       ctx!.projectSettings!
     );
     upgradeDefaultFunctionName(
-      ctx!.solutionContext!.config as SolutionConfig,
+      ctx!.solutionContext!.envInfo.profile as SolutionConfig,
       ctx!.projectSettings!
     );
 
@@ -571,7 +572,7 @@ export class FxCore implements Core {
   ): Promise<Result<ProjectConfig | undefined, FxError>> {
     return ok({
       settings: ctx!.projectSettings,
-      config: ctx!.solutionContext?.config,
+      config: ctx!.solutionContext?.envInfo.profile,
       localSettings: ctx!.solutionContext?.localSettings,
     });
   }
@@ -586,11 +587,12 @@ export class FxCore implements Core {
   ])
   async setSubscriptionInfo(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     const solutionContext = ctx!.solutionContext! as SolutionContext;
-    if (inputs.tenantId) solutionContext.config.get("solution")?.set("tenantId", inputs.tenantId);
-    else solutionContext.config.get("solution")?.delete("tenantId");
+    if (inputs.tenantId)
+      solutionContext.envInfo.profile.get("solution")?.set("tenantId", inputs.tenantId);
+    else solutionContext.envInfo.profile.get("solution")?.delete("tenantId");
     if (inputs.subscriptionId)
-      solutionContext.config.get("solution")?.set("subscriptionId", inputs.subscriptionId);
-    else solutionContext.config.get("solution")?.delete("subscriptionId");
+      solutionContext.envInfo.profile.get("solution")?.set("subscriptionId", inputs.subscriptionId);
+    else solutionContext.envInfo.profile.get("solution")?.delete("subscriptionId");
     return ok(Void);
   }
 

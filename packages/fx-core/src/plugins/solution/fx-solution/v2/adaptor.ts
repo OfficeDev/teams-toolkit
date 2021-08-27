@@ -15,9 +15,10 @@ import {
   UserInteraction,
   ConfigMap,
 } from "@microsoft/teamsfx-api";
+import { newEnvInfo } from "../../../../core/tools";
 
 class BaseSolutionContextAdaptor implements SolutionContext {
-  config: SolutionConfig = new Map();
+  envInfo = newEnvInfo();
   root = "";
   targetEnvName?: string | undefined;
   logProvider?: LogProvider | undefined;
@@ -54,6 +55,6 @@ export class ScaffoldingContextAdapter extends BaseSolutionContextAdaptor {
     this.localSettings = undefined;
     this.ui = v2context.userInteraction;
     this.cryptoProvider = undefined;
-    this.config = new Map(); // tbd
+    this.envInfo = newEnvInfo(); // tbd
   }
 }

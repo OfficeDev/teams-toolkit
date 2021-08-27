@@ -124,7 +124,6 @@ export async function loadSolutionContext(
   const solutionContext: SolutionContext = {
     projectSettings: projectSettings,
     envInfo,
-    config: envInfo.profile,
     root: inputs.projectPath || "",
     ...tools,
     ...tools.tokenProvider,

@@ -209,6 +209,16 @@ export class Messages {
     telemetry: Messages.getEventName("grant-permission"),
   };
 
+  static readonly StartListCollaborator: Messages = {
+    log: Messages.getLog("Start to list collaborator"),
+    telemetry: Messages.getEventName("list-collaborator-start"),
+  };
+
+  static readonly EndListCollaborator: Messages = {
+    log: Messages.getLog("Successfully list collaborator"),
+    telemetry: Messages.getEventName("list-collaborator"),
+  };
+
   static readonly GetAadAppSuccess = "Successfully get Azure AD app.";
   static readonly CreateAadAppSuccess = "Successfully created Azure AD app.";
   static readonly CreateAadAppPasswordSuccess = "Successfully created password for Azure AD app.";

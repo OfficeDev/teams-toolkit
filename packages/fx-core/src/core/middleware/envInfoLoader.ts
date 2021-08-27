@@ -123,7 +123,7 @@ export async function loadSolutionContext(
 
   const solutionContext: SolutionContext = {
     projectSettings: projectSettings,
-    targetEnvName: envInfo.envName,
+    envInfo,
     config: envInfo.profile,
     root: inputs.projectPath || "",
     ...tools,

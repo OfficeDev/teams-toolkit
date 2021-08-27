@@ -47,6 +47,7 @@ import "../../../src/plugins/resource/frontend";
 import "../../../src/plugins/resource/simpleauth";
 import "../../../src/plugins/resource/spfx";
 import "../../../src/plugins/resource/aad";
+import { environmentManager } from "../../../src";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -69,7 +70,11 @@ function mockSolutionContext(): SolutionContext {
   const config: SolutionConfig = new Map();
   return {
     root: "./",
-    targetEnvName: "default",
+    envInfo: {
+      envName: "default",
+      profile: new Map<string, any>(),
+      config: environmentManager.newEnvConfigData(),
+    },
     config,
     answers: { platform: Platform.VSCode },
     projectSettings: undefined,

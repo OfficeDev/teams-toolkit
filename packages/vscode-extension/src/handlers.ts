@@ -40,7 +40,6 @@ import {
   globalStateGet,
   Correlator,
   getAppDirectory,
-  isV1Project,
 } from "@microsoft/teamsfx-core";
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -61,7 +60,7 @@ import * as commonUtils from "./debug/commonUtils";
 import { ExtensionErrors, ExtensionSource } from "./error";
 import { WebviewPanel } from "./controls/webviewPanel";
 import * as constants from "./debug/constants";
-import { anonymizeFilePaths, isSPFxProject } from "./utils/commonUtils";
+import { anonymizeFilePaths, isSPFxProject, syncFeatureFlags } from "./utils/commonUtils";
 import * as fs from "fs-extra";
 import * as vscode from "vscode";
 import { DepsChecker } from "./debug/depsChecker/checker";
@@ -86,7 +85,6 @@ import * as path from "path";
 import { exp } from "./exp/index";
 import { TreatmentVariables } from "./exp/treatmentVariables";
 import { StringContext } from "./utils/stringContext";
-import { ext } from "./extensionVariables";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -100,6 +98,8 @@ export function getWorkspacePath(): string | undefined {
 export async function activate(): Promise<Result<Void, FxError>> {
   const result: Result<Void, FxError> = ok(Void);
   try {
+    syncFeatureFlags();
+
     if (isValidProject(getWorkspacePath())) {
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenTeamsApp, {});
     }
@@ -1038,9 +1038,4 @@ export interface VscQuickPickItem extends QuickPickItem {
   id: string;
 
   function: () => Promise<void>;
-}
-
-export function enableMigrateV1(): void {
-  const validProject = ext.workspaceUri && isV1Project(ext.workspaceUri.fsPath);
-  vscode.commands.executeCommand("setContext", "fx-extension.v1Project", validProject);
 }

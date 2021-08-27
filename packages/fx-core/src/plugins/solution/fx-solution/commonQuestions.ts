@@ -173,11 +173,17 @@ async function askResourceGroupInfo(
   } else {
     const targetResourceGroupName = inputs[CoreQuestionNames.TargetResourceGroupName];
     if (typeof targetResourceGroupName !== "string") {
-      // error
+      return err(
+        returnSystemError(
+          new Error(`Failed to get user input for resource group info`),
+          "Solution",
+          SolutionError.FailedToListResourceGroup
+        )
+      );
     }
     return ok({
       createNewResourceGroup: false,
-      name: targetResourceGroupName as string,
+      name: targetResourceGroupName,
     });
   }
 }

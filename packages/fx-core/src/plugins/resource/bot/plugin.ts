@@ -705,38 +705,35 @@ export class TeamsBotImpl {
     return ResultFactory.Success();
   }
 
-  public async executeUserTask(func: Func, ctx: PluginContext): Promise<FxResult> {
-    if (func.method === "migrateV1Project") {
-      try {
-        Logger.info(Messages.StartMigrateV1Project(Alias.TEAMS_BOT_PLUGIN));
-        const handler = await ProgressBarFactory.newProgressBar(
-          ProgressBarConstants.MIGRATE_V1_PROJECT_TITLE,
-          ProgressBarConstants.MIGRATE_V1_PROJECT_STEPS_NUM,
-          ctx
-        );
-        await handler?.start();
-        await handler?.next(ProgressBarConstants.MIGRATE_V1_PROJECT_STEP_MIGRATE);
+  public async migrateV1Project(ctx: PluginContext): Promise<FxResult> {
+    try {
+      Logger.info(Messages.StartMigrateV1Project(Alias.TEAMS_BOT_PLUGIN));
+      const handler = await ProgressBarFactory.newProgressBar(
+        ProgressBarConstants.MIGRATE_V1_PROJECT_TITLE,
+        ProgressBarConstants.MIGRATE_V1_PROJECT_STEPS_NUM,
+        ctx
+      );
+      await handler?.start();
+      await handler?.next(ProgressBarConstants.MIGRATE_V1_PROJECT_STEP_MIGRATE);
 
-        const sourceFolder = path.join(ctx.root, ArchiveFolderName);
-        const distFolder = path.join(ctx.root, CommonStrings.BOT_WORKING_DIR_NAME);
-        const excludeFiles = [
-          { fileName: ArchiveFolderName, recursive: false },
-          { fileName: ArchiveLogFileName, recursive: false },
-          { fileName: AppPackageFolderName, recursive: false },
-          { fileName: CommonStrings.README_FILE_NAME, recursive: false },
-          { fileName: CommonStrings.NODE_PACKAGE_FOLDER_NAME, recursive: true },
-        ];
+      const sourceFolder = path.join(ctx.root, ArchiveFolderName);
+      const distFolder = path.join(ctx.root, CommonStrings.BOT_WORKING_DIR_NAME);
+      const excludeFiles = [
+        { fileName: ArchiveFolderName, recursive: false },
+        { fileName: ArchiveLogFileName, recursive: false },
+        { fileName: AppPackageFolderName, recursive: false },
+        { fileName: CommonStrings.README_FILE_NAME, recursive: false },
+        { fileName: CommonStrings.NODE_PACKAGE_FOLDER_NAME, recursive: true },
+      ];
 
-        await copyFiles(sourceFolder, distFolder, excludeFiles);
+      await copyFiles(sourceFolder, distFolder, excludeFiles);
 
-        await handler?.end(true);
-        Logger.info(Messages.EndMigrateV1Project(Alias.TEAMS_BOT_PLUGIN));
-        return ok(undefined);
-      } catch (err) {
-        throw new MigrateV1ProjectError(err);
-      }
+      await handler?.end(true);
+      Logger.info(Messages.EndMigrateV1Project(Alias.TEAMS_BOT_PLUGIN));
+    } catch (err) {
+      throw new MigrateV1ProjectError(err);
     }
-    return ok(undefined);
+    return ResultFactory.Success();
   }
 
   private async updateMessageEndpointOnAppStudio(endpoint: string) {

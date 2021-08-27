@@ -12,6 +12,7 @@ import {
   SystemError,
   AzureSolutionSettings,
   Func,
+  ok,
 } from "@microsoft/teamsfx-api";
 
 import { FxResult, FxBotPluginResultFactory as ResultFactory } from "./result";
@@ -175,12 +176,15 @@ export class TeamsBot implements Plugin {
   public async executeUserTask(func: Func, context: PluginContext): Promise<FxResult> {
     Logger.setLogger(context.logProvider);
 
-    return await this.runWithExceptionCatching(
-      context,
-      () => this.teamsBotImpl.executeUserTask(func, context),
-      true,
-      LifecycleFuncNames.MIGRATE_V1_PROJECT
-    );
+    if (func.method === "migrateV1Project") {
+      return await this.runWithExceptionCatching(
+        context,
+        () => this.teamsBotImpl.migrateV1Project(context),
+        true,
+        LifecycleFuncNames.MIGRATE_V1_PROJECT
+      );
+    }
+    return ok(undefined);
   }
 
   private wrapError(

@@ -12,6 +12,7 @@ import {
   LocalEnvBackendKeys,
   LocalEnvAuthKeys,
   LocalEnvBotKeys,
+  LocalEnvBotKeysMigratedFromV1,
 } from "./constants";
 
 export class LocalEnvProvider {
@@ -24,12 +25,19 @@ export class LocalEnvProvider {
     includeFrontend: boolean,
     includeBackend: boolean,
     includeBot: boolean,
-    includeAuth: boolean
+    includeAuth: boolean,
+    isMigrateFromV1: boolean
   ): Promise<{ [name: string]: string }> {
     if (await fs.pathExists(this.localEnvFilePath)) {
       return dotenv.parse(await fs.readFile(this.localEnvFilePath));
     } else {
-      return this.initialLocalEnvs(includeFrontend, includeBackend, includeBot, includeAuth);
+      return this.initialLocalEnvs(
+        includeFrontend,
+        includeBackend,
+        includeBot,
+        includeAuth,
+        isMigrateFromV1
+      );
     }
   }
 
@@ -48,7 +56,8 @@ export class LocalEnvProvider {
     includeFrontend: boolean,
     includeBackend: boolean,
     includeBot: boolean,
-    includeAuth: boolean
+    includeAuth: boolean,
+    isMigrateFromV1: boolean
   ): { [name: string]: string } {
     const localEnvs: { [name: string]: string } = {};
     let keys: string[];
@@ -87,7 +96,9 @@ export class LocalEnvProvider {
     }
 
     if (includeBot) {
-      keys = Object.values(LocalEnvBotKeys);
+      keys = isMigrateFromV1
+        ? Object.values(LocalEnvBotKeysMigratedFromV1)
+        : Object.values(LocalEnvBotKeys);
       for (const key of keys) {
         // initial with empty string
         localEnvs[key] = "";

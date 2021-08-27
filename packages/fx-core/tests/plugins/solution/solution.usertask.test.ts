@@ -14,7 +14,6 @@ import {
   Inputs,
   v2,
   Plugin,
-  Void,
   ok,
   Result,
   FxError,
@@ -28,7 +27,6 @@ import {
   ResourcePluginsV2,
 } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import Container from "typedi";
-import { AppStudioPlugin } from "../../../src";
 import * as uuid from "uuid";
 import {
   AzureSolutionQuestionNames,
@@ -45,6 +43,7 @@ import "../../../src/plugins/resource/localdebug/v2";
 import "../../../src/plugins/resource/appstudio/v2";
 import "../../../src/plugins/resource/frontend/v2";
 import "../../../src/plugins/resource/bot/v2";
+import { AppStudioPlugin, newEnvInfo } from "../../../src";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -73,7 +72,7 @@ function mockSolutionContextWithPlatform(platform?: Platform): SolutionContext {
   config.set(GLOBAL_CONFIG, new ConfigMap());
   return {
     root: ".",
-    config,
+    envInfo: newEnvInfo(),
     answers: { platform: platform ? platform : Platform.VSCode },
     projectSettings: undefined,
   };

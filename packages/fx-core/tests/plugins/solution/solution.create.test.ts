@@ -24,6 +24,7 @@ import {
   TabOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 import * as uuid from "uuid";
+import { newEnvInfo } from "../../../src";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -37,10 +38,9 @@ describe("Solution running state on creation", () => {
 
 describe("Solution create()", async () => {
   function mockSolutionContext(): SolutionContext {
-    const config: SolutionConfig = new Map();
     return {
       root: ".",
-      config,
+      envInfo: newEnvInfo(),
       answers: { platform: Platform.VSCode },
       projectSettings: undefined,
     };
@@ -70,7 +70,7 @@ describe("Solution create()", async () => {
     const result = await solution.create(mockedSolutionCtx);
     expect(result.isErr()).equals(true);
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.InternelError);
-    expect(mockedSolutionCtx.config.get(GLOBAL_CONFIG)).to.be.not.undefined;
+    expect(mockedSolutionCtx.envInfo.profile.get(GLOBAL_CONFIG)).to.be.not.undefined;
   });
 
   it("should fail if projectSettings.solutionSettings is undefined", async () => {
@@ -120,7 +120,7 @@ describe("Solution create()", async () => {
     answers[AzureSolutionQuestionNames.Capabilities] = [BotOptionItem.id];
     const result = await solution.create(mockedSolutionCtx);
     expect(result.isOk()).equals(true);
-    expect(mockedSolutionCtx.config.get(GLOBAL_CONFIG)).is.not.undefined;
+    expect(mockedSolutionCtx.envInfo.profile.get(GLOBAL_CONFIG)).is.not.undefined;
   });
 
   it("should set programmingLanguage in config if programmingLanguage is in answers", async () => {
@@ -163,7 +163,9 @@ describe("Solution create()", async () => {
     answers[AzureSolutionQuestionNames.Capabilities as string] = [BotOptionItem.id];
     const result = await solution.create(mockedSolutionCtx);
     expect(result.isOk()).equals(true);
-    const lang = mockedSolutionCtx.config.get(GLOBAL_CONFIG)?.getString(PROGRAMMING_LANGUAGE);
+    const lang = mockedSolutionCtx.envInfo.profile
+      .get(GLOBAL_CONFIG)
+      ?.getString(PROGRAMMING_LANGUAGE);
     expect(lang).to.be.undefined;
   });
 

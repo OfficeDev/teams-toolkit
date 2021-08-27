@@ -10,6 +10,8 @@ import {
   Func,
   ok,
   newSystemError,
+  Result,
+  FxError,
 } from "@microsoft/teamsfx-api";
 import { AadAppForTeamsImpl } from "./plugin";
 import { AadResult, ResultFactory } from "./results";
@@ -23,6 +25,7 @@ import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { Links } from "../bot/constants";
 import { ArmResourcePlugin } from "../../../common/armInterface";
+import { AadOwner } from "../../../common/permissionInterface";
 
 @Service(ResourcePlugins.AadPlugin)
 export class AadAppForTeamsPlugin implements Plugin, ArmResourcePlugin {
@@ -113,6 +116,14 @@ export class AadAppForTeamsPlugin implements Plugin, ArmResourcePlugin {
       () => this.pluginImpl.grantPermission(ctx),
       ctx,
       Messages.EndCheckPermission.telemetry
+    );
+  }
+
+  public async listCollaborator(ctx: PluginContext): Promise<Result<AadOwner[], FxError>> {
+    return await this.runWithExceptionCatchingAsync(
+      () => this.pluginImpl.listCollaborator(ctx),
+      ctx,
+      Messages.EndListCollaborator.telemetry
     );
   }
 

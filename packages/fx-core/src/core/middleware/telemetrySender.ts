@@ -21,7 +21,7 @@ export const TelemetrySenderMW: Middleware = async (ctx: CoreHookContext, next: 
   const core = ctx.self as FxCore;
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   const solutionContext = ctx.solutionContext;
-  const appId = solutionContext?.config?.get("solution")?.get("remoteTeamsAppId") as string;
+  const appId = solutionContext?.envInfo.profile.get("solution")?.get("remoteTeamsAppId") as string;
   const properties: any = { module: "fx-core" };
   if (appId) properties[TelemetryProperty.AppId] = appId;
   const correlationId = inputs.correlationId === undefined ? "" : inputs.correlationId;

@@ -60,7 +60,7 @@ export class MockSolution implements Solution {
     ctx.projectSettings!.solutionSettings = this.solutionSettings();
     const config = new ConfigMap();
     config.set("create", true);
-    ctx.config.set("solution", config);
+    ctx.envInfo.profile.set("solution", config);
     return ok(Void);
   }
   solutionSettings(): AzureSolutionSettings {
@@ -74,23 +74,23 @@ export class MockSolution implements Solution {
     } as AzureSolutionSettings;
   }
   async scaffold(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    ctx.config.get("solution")!.set("scaffold", true);
+    ctx.envInfo.profile.get("solution")!.set("scaffold", true);
     return ok(Void);
   }
   async provision(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    ctx.config.get("solution")!.set("provision", true);
+    ctx.envInfo.profile.get("solution")!.set("provision", true);
     return ok(Void);
   }
   async deploy(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    ctx.config.get("solution")!.set("deploy", true);
+    ctx.envInfo.profile.get("solution")!.set("deploy", true);
     return ok(Void);
   }
   async publish(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    ctx.config.get("solution")!.set("publish", true);
+    ctx.envInfo.profile.get("solution")!.set("publish", true);
     return ok(Void);
   }
   async localDebug(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    ctx.config.get("solution")!.set("localDebug", true);
+    ctx.envInfo.profile.get("solution")!.set("localDebug", true);
     return ok(Void);
   }
   async getQuestions(
@@ -106,13 +106,13 @@ export class MockSolution implements Solution {
     return ok(undefined);
   }
   async executeUserTask(func: Func, ctx: SolutionContext): Promise<Result<any, FxError>> {
-    ctx.config.get("solution")!.set("executeUserTask", true);
+    ctx.envInfo.profile.get("solution")!.set("executeUserTask", true);
     return ok(Void);
   }
   async migrate(ctx: SolutionContext): Promise<Result<any, FxError>> {
     ctx.projectSettings!.solutionSettings = this.solutionSettings();
     const config = new ConfigMap();
-    ctx.config.set("solution", config);
+    ctx.envInfo.profile.set("solution", config);
     return ok(Void);
   }
 }

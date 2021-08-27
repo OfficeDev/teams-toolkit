@@ -47,6 +47,7 @@ import "../../../src/plugins/resource/frontend";
 import "../../../src/plugins/resource/simpleauth";
 import "../../../src/plugins/resource/spfx";
 import "../../../src/plugins/resource/aad";
+import { environmentManager } from "../../../src";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -69,8 +70,11 @@ function mockSolutionContext(): SolutionContext {
   const config: SolutionConfig = new Map();
   return {
     root: "./",
-    targetEnvName: "default",
-    config,
+    envInfo: {
+      envName: "default",
+      profile: new Map<string, any>(),
+      config: environmentManager.newEnvConfigData(),
+    },
     answers: { platform: Platform.VSCode },
     projectSettings: undefined,
     azureAccountProvider: Object as any & AzureAccountProvider,
@@ -141,6 +145,7 @@ describe("Generate ARM Template for project", () => {
 
     const projectArmTemplateFolder = path.join(testFolder, templateFolder);
     const projectArmParameterFolder = path.join(testFolder, parameterFolder);
+    const projectArmBaseFolder = path.join(testFolder, baseFolder);
     const result = await generateArmTemplate(mockedCtx);
     expect(result.isOk()).to.be.true;
     expect(
@@ -188,6 +193,10 @@ Mocked simple auth output content`
     "SimpleAuthParameter": "SimpleAuthParameterValue"
   }
 }`
+    );
+    expect(await fs.readFile(path.join(projectArmBaseFolder, ".gitignore"), fileEncoding)).equals(
+      `# ignore ARM template backup folder
+/backup`
     );
   });
 
@@ -350,11 +359,11 @@ describe("Deploy ARM Template to Azure", () => {
         capabilities: [TabOptionItem.id],
       },
     };
-    mockedCtx.config.set(
+    mockedCtx.envInfo.profile.set(
       "fx-resource-aad-app-for-teams",
       new ConfigMap([["clientId", testClientId]])
     );
-    mockedCtx.config.set(
+    mockedCtx.envInfo.profile.set(
       SOLUTION_CONFIG,
       new ConfigMap([
         ["resource-base-name", "mocked resource base name"],
@@ -408,14 +417,14 @@ describe("Deploy ARM Template to Azure", () => {
       } as SubscriptionInfo;
       return subscriptionInfo;
     };
-    mockedCtx.config.set(
+    mockedCtx.envInfo.profile.set(
       "fx-resource-aad-app-for-teams",
       new ConfigMap([
         ["clientId", testClientId],
         ["clientSecret", testClientSecret],
       ])
     );
-    mockedCtx.config.set(
+    mockedCtx.envInfo.profile.set(
       SOLUTION_CONFIG,
       new ConfigMap([
         ["resourceGroupName", "mocked resource group name"],
@@ -492,7 +501,7 @@ describe("Deploy ARM Template to Azure", () => {
       }`)
     );
     chai.assert.strictEqual(
-      mockedCtx.config.get(SOLUTION_CONFIG)?.get("armTemplateOutput"),
+      mockedCtx.envInfo.profile.get(SOLUTION_CONFIG)?.get("armTemplateOutput"),
       testArmTemplateOutput
     );
   });

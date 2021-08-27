@@ -508,12 +508,19 @@ async function getSideloadingStatus(token: string): Promise<boolean | undefined>
   instance.defaults.headers.common["Authorization"] = `Bearer ${token}`;
   try {
     const response = await instance.get("/api/usersettings/mtUserAppPolicy");
+    let result: boolean | undefined;
     if (response.status >= 400) {
-      return undefined;
+      result = undefined;
     } else {
-      return response.data?.value?.isSideloadingAllowed as boolean;
+      result = response.data?.value?.isSideloadingAllowed as boolean;
     }
+
+    tools.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.CheckSideloading, {
+      [TelemetryProperty.IsSideloadingAllowed]: result + "",
+    });
+    return result;
   } catch (error) {
+    tools.telemetryReporter?.sendTelemetryErrorEvent(TelemetryEvent.CheckSideloading, error);
     return undefined;
   }
 }

@@ -92,6 +92,8 @@ export enum TelemetryEvent {
 
   MigrateV1ProjectStart = "migrate-v1-project-start",
   MigrateV1Project = "migrate-v1-project",
+
+  CheckSideloading = "check-sideloading",
 }
 
 export enum TelemetryProperty {
@@ -125,6 +127,7 @@ export enum TelemetryProperty {
   SampleAppName = "sample-app-name",
   CurrentAction = "current-action",
   VideoPlayFrom = "video-play-from",
+  IsSideloadingAllowed = "is-sideloading-allowed",
 }
 
 export enum TelemetrySuccess {

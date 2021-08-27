@@ -401,18 +401,12 @@ describe("Deploy ARM Template to Azure", () => {
       },
     };
     mockArmDeploymentDependencies(mockedCtx);
+
     mockedCtx.envInfo.profile.set(
       "fx-resource-aad-app-for-teams",
       new ConfigMap([
         ["clientId", testClientId],
         ["clientSecret", testClientSecret],
-      ])
-    );
-    mockedCtx.envInfo.profile.set(
-      SOLUTION_CONFIG,
-      new ConfigMap([
-        ["resourceGroupName", "mocked resource group name"],
-        ["resourceNameSuffix", testResourceSuffix],
       ])
     );
     envRestore = mockedEnv({
@@ -451,9 +445,12 @@ describe("Deploy ARM Template to Azure", () => {
       );
 
     // Act
-    await deployArmTemplates(mockedCtx);
+    const result = await deployArmTemplates(mockedCtx);
 
     // Assert
+    if (result.isErr()) {
+      chai.assert.fail(`deployArmTemplate failed:${result.error}`);
+    }
     expect(
       JSON.parse(fileContent.get(path.join(parameterFolder, "parameters.default.json")))
     ).to.deep.equals(
@@ -511,6 +508,7 @@ describe("Deploy ARM Template to Azure", () => {
   }`
     );
 
+    let usedExistingParameterDefaultFile = false;
     mocker
       .stub(Deployments.prototype, "createOrUpdate")
       .callsFake(
@@ -519,7 +517,9 @@ describe("Deploy ARM Template to Azure", () => {
           deploymentName: string,
           parameters: ResourceManagementModels.Deployment
         ) => {
-          chai.assert.exists(parameters.properties.parameters?.existingFileTest); //parameter.default.json should not be override by parameter.template.json
+          if (parameters.properties.parameters?.existingFileTest) {
+            usedExistingParameterDefaultFile = true;
+          } //content of parameter.default.json should be used
 
           return new Promise((resolve) => {
             resolve({
@@ -539,10 +539,22 @@ describe("Deploy ARM Template to Azure", () => {
       );
 
     // Act
-    await deployArmTemplates(mockedCtx);
+    const result = await deployArmTemplates(mockedCtx);
+    if (result.isErr()) {
+      chai.assert.fail(`deployArmTemplate failed:${result.error}`);
+    }
+    chai.assert.strictEqual(usedExistingParameterDefaultFile, true);
   });
 
   function mockArmDeploymentDependencies(mockedCtx: SolutionContext) {
+    mockedCtx.envInfo.profile.set(
+      SOLUTION_CONFIG,
+      new ConfigMap([
+        ["resourceGroupName", "mocked resource group name"],
+        ["resourceNameSuffix", testResourceSuffix],
+      ])
+    );
+
     mockedCtx.azureAccountProvider!.getAccountCredentialAsync = async function () {
       const azureToken = new UserTokenCredentials(
         testClientId,

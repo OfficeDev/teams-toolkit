@@ -3,6 +3,7 @@
 
 import {
   AzureSolutionSettings,
+  ConfigValue,
   FxError,
   LogProvider,
   PluginContext,
@@ -362,9 +363,30 @@ export class AadAppForTeamsImpl {
   }
 
   public async listCollaborator(ctx: PluginContext): Promise<Result<AadOwner[], FxError>> {
-    return ResultFactory.Success([]);
-  }  
-  
+    TelemetryUtils.init(ctx);
+    Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartListCollaborator);
+
+    await TokenProvider.init(ctx, TokenAudience.Graph);
+
+    const objectId = ConfigUtils.getAadConfig(ctx, ConfigKeys.objectId, false);
+    if (!objectId) {
+      throw ResultFactory.SystemError(
+        GetConfigError.name,
+        GetConfigError.message(
+          ConfigErrorMessages.GetConfigError(ConfigKeys.objectId, Plugins.pluginName)
+        )
+      );
+    }
+
+    const owners = await AadAppClient.listCollaborator(
+      ctx,
+      Messages.EndListCollaborator.telemetry,
+      objectId
+    );
+    Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndListCollaborator);
+    return ResultFactory.Success(owners);
+  }
+
   public async grantPermission(ctx: PluginContext): Promise<AadResult> {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartGrantPermission);

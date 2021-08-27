@@ -14,6 +14,7 @@ import {
   OptionItem,
   ok,
   ConfigFolderName,
+  PublishProfilesFolderName,
 } from "@microsoft/teamsfx-api";
 import { ExtensionErrors } from "../error";
 import { AzureAccount } from "./azure-account.api";
@@ -25,6 +26,7 @@ import {
   loggedIn,
   loggedOut,
   loggingIn,
+  profileDefaultJsonFile,
   signedIn,
   signedOut,
   signingIn,
@@ -47,6 +49,7 @@ import TreeViewManagerInstance from "../commandsTreeViewProvider";
 import * as path from "path";
 import * as fs from "fs-extra";
 import * as commonUtils from "../debug/commonUtils";
+import { isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 
 export class AzureAccountManager extends login implements AzureAccountProvider {
   private static instance: AzureAccountManager;
@@ -564,7 +567,13 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         workspaceFolder.uri.fsPath,
         `.${ConfigFolderName}`
       );
-      const envDefalultFile = path.join(configRoot!, envDefaultJsonFile);
+
+      const envDefalultFile = path.join(
+        configRoot!,
+        isMultiEnvEnabled()
+          ? path.join(PublishProfilesFolderName, profileDefaultJsonFile)
+          : envDefaultJsonFile
+      );
       if (!fs.existsSync(envDefalultFile)) {
         return undefined;
       }

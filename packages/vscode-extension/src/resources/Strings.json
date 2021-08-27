@@ -197,6 +197,16 @@
       "downloadSampleFail": "Failed to download sample app",
       "quickStartPageTitle": "Quick Start",
       "samplePageTitle": "Samples"
+    },
+    "migrateV1": {
+      "banner": "Click migrate to continue developing your project with the latest Teams Toolkit features. We will update some project configurations and recommend using git for better tracking file changes.",
+      "confirm": {
+        "title": "Migrate",
+        "status": "migrate"
+      },
+      "cancel": {
+        "status": "cancel"
+      }
     }
   }
 }

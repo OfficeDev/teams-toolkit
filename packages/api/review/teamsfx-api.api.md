@@ -130,6 +130,8 @@ export interface Context {
     // (undocumented)
     cryptoProvider?: CryptoProvider;
     // (undocumented)
+    envInfo?: EnvInfo;
+    // (undocumented)
     graphTokenProvider?: GraphTokenProvider;
     // (undocumented)
     localSettings?: LocalSettings;
@@ -141,8 +143,6 @@ export interface Context {
     projectSettings?: ProjectSettings;
     // (undocumented)
     root: string;
-    // (undocumented)
-    targetEnvName?: string;
     // (undocumented)
     telemetryReporter?: TelemetryReporter;
     // (undocumented)
@@ -217,8 +217,38 @@ export type DynamicOptions = LocalFunc<StaticOptions>;
 // @public (undocumented)
 export const DynamicPlatforms: Platform[];
 
+// @public
+export interface EnvConfig {
+    // (undocumented)
+    $schema?: string;
+    azure: {
+        subscriptionId?: string;
+        resourceGroupName?: string;
+        location?: string;
+        tenantId?: string;
+    };
+    manifest: {
+        description?: string;
+        values: {
+            [k: string]: unknown;
+        };
+        [k: string]: unknown;
+    };
+    skipAddingSqlUser?: boolean;
+}
+
 // @public (undocumented)
-export type EnvConfig = Json;
+export const EnvConfigFileNameTemplate: string;
+
+// @public (undocumented)
+export interface EnvInfo {
+    // (undocumented)
+    config: EnvConfig;
+    // (undocumented)
+    envName: string;
+    // (undocumented)
+    profile: Map<string, any>;
+}
 
 // @public
 export interface EnvMeta {
@@ -229,6 +259,12 @@ export interface EnvMeta {
     // (undocumented)
     sideloading: boolean;
 }
+
+// @public (undocumented)
+export const EnvNamePlaceholder = "@envName";
+
+// @public (undocumented)
+export const EnvProfileFileNameTemplate: string;
 
 // @public (undocumented)
 export interface FolderQuestion extends UserInputQuestion {
@@ -449,6 +485,9 @@ export interface IName {
     // (undocumented)
     short: string;
 }
+
+// @public (undocumented)
+export const InputConfigsFolderName = "configs";
 
 // @public
 export interface InputResult<T> {
@@ -775,6 +814,9 @@ export interface ProjectSettings {
     version?: string;
 }
 
+// @public (undocumented)
+export const ProjectSettingsFileName = "projectSettings.json";
+
 // @public
 export interface ProjectStates {
     // (undocumented)
@@ -794,6 +836,9 @@ type ProvisionOutput = {
     states: Json;
     secrets: Json;
 };
+
+// @public (undocumented)
+export const PublishProfilesFolderName = "publishProfiles";
 
 // @public
 export class QTreeNode {
@@ -978,7 +1023,7 @@ export type SolutionConfig = Map<PluginIdentity, PluginConfig>;
 // @public (undocumented)
 export interface SolutionContext extends Context {
     // (undocumented)
-    config: SolutionConfig;
+    envInfo: EnvInfo;
 }
 
 // @public (undocumented)
@@ -1218,6 +1263,8 @@ export enum TreeCategory {
     // (undocumented)
     Account = 1,
     // (undocumented)
+    Environment = 5,
+    // (undocumented)
     Feedback = 2,
     // (undocumented)
     GettingStarted = 0,
@@ -1236,7 +1283,11 @@ export interface TreeItem {
     // (undocumented)
     contextValue?: string;
     // (undocumented)
+    description?: string;
+    // (undocumented)
     icon?: string;
+    // (undocumented)
+    isCustom?: boolean;
     // (undocumented)
     label: string;
     // (undocumented)

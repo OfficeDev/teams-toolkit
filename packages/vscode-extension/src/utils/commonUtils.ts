@@ -5,8 +5,16 @@ import * as extensionPackage from "./../../package.json";
 import * as fs from "fs-extra";
 import { ext } from "../extensionVariables";
 import * as path from "path";
-import { ConfigFolderName } from "@microsoft/teamsfx-api";
-import { isValidProject } from "@microsoft/teamsfx-core";
+import {
+  ConfigFolderName,
+  InputConfigsFolderName,
+  ProjectSettingsFileName,
+  EnvProfileFileNameTemplate,
+} from "@microsoft/teamsfx-api";
+import { isMultiEnvEnabled, isValidProject } from "@microsoft/teamsfx-core";
+import { workspace, WorkspaceConfiguration } from "vscode";
+import * as commonUtils from "../debug/commonUtils";
+import { ConfigurationKey, CONFIGURATION_PREFIX } from "../constants";
 
 export function getPackageVersion(versionStr: string): string {
   if (versionStr.includes("alpha")) {
@@ -55,7 +63,15 @@ export function getTeamsAppId() {
     const ws = ext.workspaceUri.fsPath;
     if (isValidProject(ws)) {
       const env = getActiveEnv();
-      const envJsonPath = path.join(ws, `.${ConfigFolderName}/env.${env}.json`);
+      const envJsonPath = path.join(
+        ws,
+        isMultiEnvEnabled()
+          ? `.${ConfigFolderName}/${InputConfigsFolderName}/${EnvProfileFileNameTemplate.replace(
+              "@envName",
+              env
+            )}`
+          : `.${ConfigFolderName}/env.${env}.json`
+      );
       const envJson = JSON.parse(fs.readFileSync(envJsonPath, "utf8"));
       return envJson.solution.remoteTeamsAppId;
     }
@@ -68,7 +84,12 @@ export function getProjectId(): string | undefined {
   try {
     const ws = ext.workspaceUri.fsPath;
     if (isValidProject(ws)) {
-      const settingsJsonPath = path.join(ws, `.${ConfigFolderName}/settings.json`);
+      const settingsJsonPath = path.join(
+        ws,
+        isMultiEnvEnabled()
+          ? `.${ConfigFolderName}/${InputConfigsFolderName}/${ProjectSettingsFileName}`
+          : `.${ConfigFolderName}/settings.json`
+      );
       const settingsJson = JSON.parse(fs.readFileSync(settingsJsonPath, "utf8"));
       return settingsJson.projectId;
     }
@@ -134,4 +155,24 @@ export function anonymizeFilePaths(stack?: string): string {
   }
 
   return updatedStack;
+}
+
+export async function isTeamsfx(): Promise<boolean> {
+  if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
+    const workspaceFolder = workspace.workspaceFolders[0];
+    return await commonUtils.isFxProject(workspaceFolder.uri.fsPath);
+  }
+  return false;
+}
+
+export function getConfiguration(key: string): boolean {
+  const configuration: WorkspaceConfiguration = workspace.getConfiguration(CONFIGURATION_PREFIX);
+  return configuration.get<boolean>(key, false);
+}
+
+export function syncFeatureFlags() {
+  // Sync arm support
+  process.env["TEAMSFX_ARM_SUPPORT"] = getConfiguration(
+    ConfigurationKey.ArmSupportEnabled
+  ).toString();
 }

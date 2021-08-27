@@ -385,7 +385,7 @@ describe("Middleware", () => {
 
     const inputs: Inputs = { platform: Platform.VSCode };
     inputs.projectPath = path.join(os.tmpdir(), appName);
-    const envName = environmentManager.defaultEnvName;
+    const envName = environmentManager.getDefaultEnvName();
     const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
     const settingsFile = path.resolve(confFolderPath, "settings.json");
     const envJsonFile = path.resolve(confFolderPath, `env.${envName}.json`);
@@ -416,7 +416,7 @@ describe("Middleware", () => {
           assert.isTrue(ctx !== undefined);
           assert.isTrue(ctx!.solutionContext !== undefined);
           const solutionContext = ctx!.solutionContext!;
-          assert.isTrue(solutionContext.config.get("solution") !== undefined);
+          assert.isTrue(solutionContext.envInfo.profile.get("solution") !== undefined);
           assert.deepEqual(projectSettings, solutionContext.projectSettings);
           return ok("");
         }
@@ -439,7 +439,7 @@ describe("Middleware", () => {
           const solutionContext = ctx!.solutionContext!;
           assert.isTrue(solutionContext.projectSettings !== undefined);
           assert.isTrue(solutionContext.projectSettings!.appName === appName);
-          assert.isTrue(solutionContext.config.get("solution") !== undefined);
+          assert.isTrue(solutionContext.envInfo.profile.get("solution") !== undefined);
           return ok("");
         }
       }
@@ -502,7 +502,7 @@ describe("Middleware", () => {
       inputs.projectPath = path.join(os.tmpdir(), appName);
       const tools = new MockTools();
       const solutionContext = await newSolutionContext(tools, inputs);
-      solutionContext.config.set("solution", new ConfigMap());
+      solutionContext.envInfo.profile.set("solution", new ConfigMap());
       solutionContext.projectSettings = MockProjectSettings(appName);
       const fileMap = new Map<string, any>();
 
@@ -511,7 +511,7 @@ describe("Middleware", () => {
       });
       sandbox.stub(fs, "pathExists").resolves(true);
 
-      const envName = environmentManager.defaultEnvName;
+      const envName = environmentManager.getDefaultEnvName();
       const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
       const settingsFile = path.resolve(confFolderPath, "settings.json");
       const envJsonFile = path.resolve(confFolderPath, `env.${envName}.json`);
@@ -532,7 +532,7 @@ describe("Middleware", () => {
       const settingsInFile = JSON.parse(content);
       content = fileMap.get(envJsonFile);
       const configInFile = JSON.parse(content);
-      const configExpected = mapToJson(solutionContext.config);
+      const configExpected = mapToJson(solutionContext.envInfo.profile);
       assert.deepEqual(solutionContext.projectSettings, settingsInFile);
       assert.deepEqual(configExpected, configInFile);
     });
@@ -556,8 +556,8 @@ describe("Middleware", () => {
       const secretName = "clientSecret";
       const secretText = "test";
       configMap.set(secretName, secretText);
-      solutionContext.config.set("solution", new ConfigMap());
-      solutionContext.config.set(pluginName, configMap);
+      solutionContext.envInfo.profile.set("solution", new ConfigMap());
+      solutionContext.envInfo.profile.set(pluginName, configMap);
       const oldProjectId = solutionContext.projectSettings!.projectId;
       solutionContext.projectSettings = MockProjectSettings(appName);
       solutionContext.projectSettings!.projectId = oldProjectId;
@@ -567,7 +567,7 @@ describe("Middleware", () => {
       });
       sandbox.stub(fs, "pathExists").resolves(true);
 
-      const envName = environmentManager.defaultEnvName;
+      const envName = environmentManager.getDefaultEnvName();
       const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
       const userdataFile = path.resolve(confFolderPath, `${envName}.userdata`);
       const settingsFile = path.resolve(confFolderPath, "settings.json");
@@ -591,8 +591,8 @@ describe("Middleware", () => {
           const solutionContext = ctx!.solutionContext!;
           assert.isTrue(solutionContext.projectSettings !== undefined);
           assert.isTrue(solutionContext.projectSettings!.appName === appName);
-          assert.isTrue(solutionContext.config.get(pluginName) !== undefined);
-          const value = solutionContext.config.get(pluginName)!.get(secretName);
+          assert.isTrue(solutionContext.envInfo.profile.get(pluginName) !== undefined);
+          const value = solutionContext.envInfo.profile.get(pluginName)!.get(secretName);
           assert.isTrue(value === secretText);
           return ok("");
         }
@@ -911,7 +911,7 @@ describe("Middleware", () => {
 
     const inputs: Inputs = { platform: Platform.VSCode };
     inputs.projectPath = path.join(os.tmpdir(), appName);
-    const envName = environmentManager.defaultEnvName;
+    const envName = environmentManager.getDefaultEnvName();
     const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
     const settingsFile = path.resolve(confFolderPath, "settings.json");
     const envJsonFile = path.resolve(confFolderPath, `env.${envName}.json`);

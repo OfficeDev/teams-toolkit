@@ -133,6 +133,11 @@ export const GrantPermissionError: AadError = {
   message: (resource: string, id: string) => `${resource}: ${id}. Failed to grant permission.`,
 };
 
+export const ListCollaboratorError: AadError = {
+  name: "ListCollaboratorError",
+  message: () => "Failed to list collaborator.",
+};
+
 export class ConfigErrorMessages {
   static readonly GetDisplayNameError = "Failed to get display name.";
   static readonly GetConfigError = (configName: string, plugin: string) =>

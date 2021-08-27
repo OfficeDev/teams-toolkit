@@ -90,8 +90,15 @@ export enum TelemetryEvent {
   OpenTeamsApp = "open-teams-app",
   UpdateTeamsApp = "update-teams-app",
 
+  CreateNewEnvironment = "create-new-environment",
+
   MigrateV1ProjectStart = "migrate-v1-project-start",
   MigrateV1Project = "migrate-v1-project",
+  MigrateV1ProjectNotificationStart = "migrate-v1-project-notification-start",
+  MigrateV1ProjectNotification = "migrate-v1-project-notification",
+
+  ViewEnvironment = "view-environment",
+  ActivateEnvironment = "activate-environment",
 
   CheckSideloading = "check-sideloading",
 }
@@ -127,6 +134,7 @@ export enum TelemetryProperty {
   SampleAppName = "sample-app-name",
   CurrentAction = "current-action",
   VideoPlayFrom = "video-play-from",
+  UpdateTeamsAppReason = "update-teams-app-reason",
   IsSideloadingAllowed = "is-sideloading-allowed",
 }
 
@@ -156,6 +164,12 @@ export enum TelemetryErrorType {
 export enum AccountType {
   M365 = "m365",
   Azure = "azure",
+}
+
+export enum TelemetryUpdateAppReason {
+  Manual = "manual",
+  AfterDelay = "afterDelay",
+  FocusOut = "focusOut",
 }
 
 export const TelemetryComponentType = "extension";

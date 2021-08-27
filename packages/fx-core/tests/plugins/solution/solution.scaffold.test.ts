@@ -27,7 +27,7 @@ import {
 } from "../../../src/plugins/solution/fx-solution/question";
 import _ from "lodash";
 import path from "path";
-import { getTemplatesFolder } from "../../../src";
+import { getTemplatesFolder, newEnvInfo } from "../../../src";
 import { validManifest } from "./util";
 import * as uuid from "uuid";
 import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
@@ -50,7 +50,7 @@ function mockSolutionContext(): SolutionContext {
   const config: SolutionConfig = new Map();
   return {
     root: ".",
-    config,
+    envInfo: newEnvInfo(),
     answers: { platform: Platform.VSCode },
     projectSettings: undefined,
   };
@@ -200,7 +200,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
     const result = await solution.scaffold(mockedCtx);
     expect(result.isOk()).to.be.true;
     // only need to check whether related files exist, tests to the content is covered by other test cases
-    expect(fileContent.size).equals(4);
+    expect(fileContent.size).equals(5);
     expect(fileContent.has(path.join("./infra/azure/templates", "main.bicep"))).to.be.true;
     expect(fileContent.has(path.join("./infra/azure/templates", "frontendHostingProvision.bicep")))
       .to.be.true;

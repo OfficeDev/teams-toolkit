@@ -151,3 +151,28 @@ jobs:
               --if-exists replace \
               --table-name TestCoverage
           done
+
+      - name: calculate plugins' coverage
+        id: plugins_coverage
+        shell: bash
+        run: |
+          plugins=`cat packages/fx-core/coverage/coverage-summary.json | jq '. | keys ' | grep 'fx-core/src/plugins/resource/' | awk -F 'plugins/resource/' 'index($2,"/") != 0 {print $2}' | awk -F '/' '{print $1}' | sort -nr | uniq`
+
+          get_pct() {
+            echo `cat packages/fx-core/coverage/src/plugins/$1/index.html | grep -B1 "<span class=\"quiet\">$2</span>" | head -1 | sed -e 's/<span class="strong">//g' | sed -e 's/% <\/span>//g'`
+          }
+
+          for plugin in $plugins
+          do
+            az storage entity insert \
+              --connection-string "${{ secrets.AZURE_STORAGE_ACCOUNT_TEAMSFXCLIDOWNLOADS_CS }}" \
+              --entity PartitionKey=TeamsFx RowKey=${{ github.run_id }}_fx-core_$plugin Package=resource/$plugin GitBranch=${{ github.ref }} Type=unit_test LinesPct=$(get_pct resource/$plugin 'Lines') BranchesPct=$(get_pct resource/$plugin 'Branches') StatementsPct=$(get_pct resource/$plugin 'Statements') FunctionsPct=$(get_pct resource/$plugin 'Functions') \
+              --if-exists replace \
+              --table-name TestCoverage
+          done
+
+          az storage entity insert \
+            --connection-string "${{ secrets.AZURE_STORAGE_ACCOUNT_TEAMSFXCLIDOWNLOADS_CS }}" \
+            --entity PartitionKey=TeamsFx RowKey=${{ github.run_id }}_fx-core_fx-solution Package=solution/fx-solution GitBranch=${{ github.ref }} Type=unit_test LinesPct=$(get_pct solution/fx-solution 'Lines') BranchesPct=$(get_pct solution/fx-solution 'Branches') StatementsPct=$(get_pct solution/fx-solution 'Statements') FunctionsPct=$(get_pct solution/fx-solution 'Functions') \
+            --if-exists replace \
+            --table-name TestCoverage

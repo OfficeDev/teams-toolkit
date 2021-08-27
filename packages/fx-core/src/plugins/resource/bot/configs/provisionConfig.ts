@@ -13,8 +13,12 @@ import {
 } from "../resources/strings";
 import { ConfigKeys, WebAppConstants } from "../constants";
 import { ConfigValidationError } from "../errors";
+import { isArmSupportEnabled } from "../../../../common";
 
 export class ProvisionConfig {
+  // Arm support config key
+  public validDomain?: string;
+
   public subscriptionId?: string;
   public resourceGroup?: string;
   public location?: string;
@@ -23,7 +27,6 @@ export class ProvisionConfig {
   public siteName?: string;
   public skuName?: string;
   public siteEndpoint?: string;
-  public redirectUri?: string; // it's going to be useless, mark.
   public graphToken?: string;
   // Configs from SQL and Function.
   public sqlEndpoint?: string;
@@ -78,18 +81,16 @@ export class ProvisionConfig {
     this.appServicePlan = context.config.get(PluginBot.APP_SERVICE_PLAN) as string;
     this.siteName = context.config.get(PluginBot.SITE_NAME) as string;
 
-    const skuNameValue: ConfigValue = context.config.get(PluginBot.SKU_NAME);
-    if (skuNameValue) {
-      this.skuName = skuNameValue as string;
-    } else {
-      this.skuName = WebAppConstants.APP_SERVICE_PLAN_DEFAULT_SKU_NAME;
+    if (!isArmSupportEnabled()) {
+      const skuNameValue: ConfigValue = context.config.get(PluginBot.SKU_NAME);
+      if (skuNameValue) {
+        this.skuName = skuNameValue as string;
+      } else {
+        this.skuName = WebAppConstants.APP_SERVICE_PLAN_DEFAULT_SKU_NAME;
+      }
     }
 
-    const siteEndpointValue: ConfigValue = context.config.get(PluginBot.SITE_ENDPOINT);
-    this.siteEndpoint = siteEndpointValue as string;
-    this.redirectUri = siteEndpointValue
-      ? `${siteEndpointValue}${CommonStrings.AUTH_REDIRECT_URI_SUFFIX}`
-      : undefined;
+    this.siteEndpoint = context.config.get(PluginBot.SITE_ENDPOINT) as string;
 
     this.botChannelRegName = context.config.get(PluginBot.BOT_CHANNEL_REGISTRATION) as string;
 
@@ -97,11 +98,11 @@ export class ProvisionConfig {
   }
 
   public saveConfigIntoContext(context: PluginContext): void {
+    utils.checkAndSaveConfig(context, PluginBot.VALID_DOMAIN, this.validDomain);
     utils.checkAndSaveConfig(context, PluginBot.APP_SERVICE_PLAN, this.appServicePlan);
     utils.checkAndSaveConfig(context, PluginBot.BOT_CHANNEL_REGISTRATION, this.botChannelRegName);
     utils.checkAndSaveConfig(context, PluginBot.SITE_NAME, this.siteName);
     utils.checkAndSaveConfig(context, PluginBot.SITE_ENDPOINT, this.siteEndpoint);
-    utils.checkAndSaveConfig(context, PluginBot.REDIRECT_URI, this.redirectUri);
     utils.checkAndSaveConfig(context, PluginBot.SKU_NAME, this.skuName);
   }
 

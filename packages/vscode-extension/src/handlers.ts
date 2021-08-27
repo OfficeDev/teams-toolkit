@@ -40,7 +40,6 @@ import {
   globalStateGet,
   Correlator,
   getAppDirectory,
-  isV1Project,
 } from "@microsoft/teamsfx-core";
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -56,6 +55,7 @@ import {
   TelemetryTiggerFrom,
   TelemetrySuccess,
   AccountType,
+  TelemetryUpdateAppReason,
 } from "./telemetry/extTelemetryEvents";
 import * as commonUtils from "./debug/commonUtils";
 import { ExtensionErrors, ExtensionSource } from "./error";
@@ -86,7 +86,6 @@ import * as path from "path";
 import { exp } from "./exp/index";
 import { TreatmentVariables } from "./exp/treatmentVariables";
 import { StringContext } from "./utils/stringContext";
-import { ext } from "./extensionVariables";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -735,15 +734,30 @@ export async function openAzureAccountHandler() {
   return env.openExternal(Uri.parse("https://portal.azure.com/"));
 }
 
-export function saveTextDocumentHandler(document: vscode.TextDocument) {
+export function saveTextDocumentHandler(document: vscode.TextDocumentWillSaveEvent) {
   if (!isValidProject(getWorkspacePath())) {
     return;
   }
 
-  let curDirectory = path.dirname(document.fileName);
+  let reason: TelemetryUpdateAppReason | undefined = undefined;
+  switch (document.reason) {
+    case vscode.TextDocumentSaveReason.Manual:
+      reason = TelemetryUpdateAppReason.Manual;
+      break;
+    case vscode.TextDocumentSaveReason.AfterDelay:
+      reason = TelemetryUpdateAppReason.AfterDelay;
+      break;
+    case vscode.TextDocumentSaveReason.FocusOut:
+      reason = TelemetryUpdateAppReason.FocusOut;
+      break;
+  }
+
+  let curDirectory = path.dirname(document.document.fileName);
   while (curDirectory) {
     if (isValidProject(curDirectory)) {
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.UpdateTeamsApp, {});
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.UpdateTeamsApp, {
+        [TelemetryProperty.UpdateTeamsAppReason]: reason,
+      });
       return;
     }
 
@@ -1040,9 +1054,4 @@ export interface VscQuickPickItem extends QuickPickItem {
   id: string;
 
   function: () => Promise<void>;
-}
-
-export function enableMigrateV1(): void {
-  const validProject = ext.workspaceUri && isV1Project(ext.workspaceUri.fsPath);
-  vscode.commands.executeCommand("setContext", "fx-extension.v1Project", validProject);
 }

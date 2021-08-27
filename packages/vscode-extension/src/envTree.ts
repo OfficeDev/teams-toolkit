@@ -20,7 +20,7 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
       TreeViewManagerInstance.getTreeView("teamsfx-environment")!;
     if (showEnvList.length > 0) {
       showEnvList.forEach(async (item) => {
-        await environmentTreeProvider.removeById("fx-extension.environment." + item);
+        environmentTreeProvider.removeById("fx-extension.environment." + item);
       });
     }
     showEnvList.splice(0);

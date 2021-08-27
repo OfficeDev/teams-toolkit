@@ -508,7 +508,7 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
     return Promise.resolve(ok(null));
   }
 
-  removeById(commandId: string): Promise<Result<null, FxError>> {
+  removeById(commandId: string): Result<null, FxError> {
     const parentCmd = this.findCommand(commandId);
 
     if (parentCmd) {
@@ -541,7 +541,7 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
     }
 
     this._onDidChangeTreeData.fire();
-    return Promise.resolve(ok(null));
+    return ok(null);
   }
 
   getTreeItem(element: TreeViewCommand): vscode.TreeItem {

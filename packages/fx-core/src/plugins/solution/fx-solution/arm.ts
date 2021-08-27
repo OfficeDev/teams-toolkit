@@ -304,7 +304,7 @@ async function getParameterJson(ctx: SolutionContext) {
     await fs.stat(parameterFilePath);
   } catch (err) {
     ctx.logProvider?.info(
-      `[${PluginDisplayName.Solution}] ${parameterFilePath} does not exist. Try ${parameterTemplateFilePath}.`
+      `[${PluginDisplayName.Solution}] ${parameterFilePath} does not exist. Generate it using ${parameterTemplateFilePath}.`
     );
     createNewParameterFile = true;
   }

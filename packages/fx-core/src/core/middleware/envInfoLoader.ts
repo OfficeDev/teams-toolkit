@@ -68,6 +68,7 @@ export function EnvInfoLoaderMW(
         targetEnvName = await askTargetEnvironment(ctx, inputs, allowCreateNewEnv, lastUsedEnvName);
       }
       lastUsedEnvName = targetEnvName ?? lastUsedEnvName;
+      ctx.projectSettings.activeEnvironment = lastUsedEnvName;
     } else {
       targetEnvName = environmentManager.getDefaultEnvName();
     }
@@ -90,6 +91,10 @@ export function EnvInfoLoaderMW(
       await next();
     }
   };
+}
+
+export function setLastUsedEnv(env: string) {
+  lastUsedEnvName = env;
 }
 
 export async function loadSolutionContext(

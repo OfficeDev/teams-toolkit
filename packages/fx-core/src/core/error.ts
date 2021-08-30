@@ -203,3 +203,7 @@ export function InvalidEnvConfigError(env: string, errorMsg: string): UserError 
     `The configuration config.${env}.json is invalid, details: ${errorMsg}.`
   );
 }
+
+export function NonExistEnvNameError(env: string): UserError {
+  return new UserError(CoreSource, "NonExistEnvNameError", `Can not find environment ${env}.`);
+}

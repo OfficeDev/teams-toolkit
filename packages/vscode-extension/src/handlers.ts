@@ -307,11 +307,17 @@ export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
         await commands.executeCommand("vscode.openFolder", uri);
         result = ok(null);
       }
-    } else if (stage === Stage.provision) result = await core.provisionResources(inputs);
-    else if (stage === Stage.deploy) result = await core.deployArtifacts(inputs);
-    else if (stage === Stage.debug) result = await core.localDebug(inputs);
-    else if (stage === Stage.publish) result = await core.publishApplication(inputs);
-    else if (stage === Stage.createEnv) {
+    } else if (stage === Stage.provision) {
+      result = await core.provisionResources(inputs);
+      registerEnvTreeHandler();
+    } else if (stage === Stage.deploy) {
+      result = await core.deployArtifacts(inputs);
+      registerEnvTreeHandler();
+    } else if (stage === Stage.debug) result = await core.localDebug(inputs);
+    else if (stage === Stage.publish) {
+      result = await core.publishApplication(inputs);
+      registerEnvTreeHandler();
+    } else if (stage === Stage.createEnv) {
       result = await core.createEnv(inputs);
     } else {
       throw new SystemError(
@@ -735,9 +741,25 @@ export async function viewEnvironment(env: string): Promise<Result<Void, FxError
   return ok(Void);
 }
 
-export async function activateEnvironment(args?: any[]): Promise<Result<Void, FxError>> {
-  // todo add acitvate logic
-  return ok(Void);
+export async function activateEnvironment(env: string): Promise<Result<Void, FxError>> {
+  // const eventName = ExtTelemetry.stageToEvent(stage);
+  let result: Result<any, FxError> = ok(Void);
+  try {
+    const checkCoreRes = checkCoreNotEmpty();
+    if (checkCoreRes.isErr()) {
+      throw checkCoreRes.error;
+    }
+
+    const inputs: Inputs = getSystemInputs();
+
+    result = await core.activateEnv(env, inputs);
+    registerEnvTreeHandler();
+  } catch (e) {
+    result = wrapError(e);
+  }
+  // await processResult(eventName, result);
+
+  return result;
 }
 
 export async function openM365AccountHandler() {

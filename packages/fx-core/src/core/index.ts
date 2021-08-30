@@ -67,6 +67,7 @@ import {
   FunctionRouterError,
   InvalidInputError,
   MigrateNotImplementError,
+  NonExistEnvNameError,
   ProjectEnvAlreadyExistError,
   ProjectFolderExistError,
   ProjectFolderNotExistError,
@@ -852,6 +853,45 @@ export class FxCore implements Core {
         }: ${JSON.stringify(newEnvConfig)}`
       );
     }
+    return ok(Void);
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ProjectSettingsLoaderMW,
+    SolutionLoaderMW(defaultSolutionLoader),
+    ContextInjecterMW,
+    ProjectSettingsWriterMW,
+  ])
+  async activateEnv(
+    env: string,
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
+    if (!isMultiEnvEnabled() || !ctx!.projectSettings) {
+      return ok(Void);
+    }
+
+    const envConfigs = await environmentManager.listEnvConfigs(inputs.projectPath!);
+
+    if (!envConfigs.isErr() && envConfigs.value!.indexOf(env!) < 0) {
+      return err(NonExistEnvNameError(env));
+    }
+
+    ctx!.projectSettings.activeEnvironment = env;
+    const core = ctx!.self as FxCore;
+    const solutionContext = await loadSolutionContext(
+      core.tools,
+      inputs,
+      ctx!.projectSettings,
+      ctx!.projectIdMissing,
+      env
+    );
+
+    if (!solutionContext.isErr()) {
+      ctx!.solutionContext = solutionContext.value;
+    }
+
     return ok(Void);
   }
 

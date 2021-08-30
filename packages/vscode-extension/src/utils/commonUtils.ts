@@ -54,8 +54,23 @@ export function isLinux() {
 }
 
 export function getActiveEnv() {
-  // TODO: need to get active env if multiple env configurations supported
-  return "default";
+  try {
+    const ws = ext.workspaceUri.fsPath;
+    // TODO: fix me
+    // if (isValidProject(ws)) {
+    if (ws) {
+      const settingsJsonPath = path.join(
+        ws,
+        isMultiEnvEnabled()
+          ? `.${ConfigFolderName}/${InputConfigsFolderName}/${ProjectSettingsFileName}`
+          : `.${ConfigFolderName}/settings.json`
+      );
+      const settingsJson = JSON.parse(fs.readFileSync(settingsJsonPath, "utf8"));
+      return settingsJson.activeEnvironment;
+    }
+  } catch (e) {
+    return undefined;
+  }
 }
 
 export function getTeamsAppId() {

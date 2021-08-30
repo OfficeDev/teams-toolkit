@@ -109,6 +109,14 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<Result<undef
     : path.resolve(confFolderPath, `env.${defaultEnvName}.json`);
   const userDataPath = path.resolve(confFolderPath, `${defaultEnvName}.userdata`);
 
+  // For the multi env scenario, profile.{envName}.json and {envName}.userdata are not created when scaffolding
+  // These projects must be the new projects, so skip upgrading.
+  try {
+    await Promise.all([fs.stat(contextPath), fs.stat(userDataPath)]);
+  } catch (error) {
+    return ok(undefined);
+  }
+
   let context: Json = {};
   let userData: Record<string, string> = {};
 

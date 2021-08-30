@@ -4,7 +4,14 @@ import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { it } from "mocha";
 import { TeamsAppSolution } from " ../../../src/plugins/solution";
-import { Platform, SolutionContext, ok, Result, FxError } from "@microsoft/teamsfx-api";
+import {
+  Platform,
+  SolutionContext,
+  ok,
+  Result,
+  FxError,
+  SolutionSettings,
+} from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs, { PathLike } from "fs-extra";
 import { GLOBAL_CONFIG, SolutionError } from "../../../src/plugins/solution/fx-solution/constants";
@@ -55,7 +62,7 @@ describe("Solution migrate()", async () => {
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
       projectId: uuid.v4(),
-      solutionSettings: undefined as unknown as SolutionSettings,
+      solutionSettings: (undefined as unknown) as SolutionSettings,
     };
     const result = await solution.migrate(mockedSolutionCtx);
     expect(result.isErr()).equals(true);

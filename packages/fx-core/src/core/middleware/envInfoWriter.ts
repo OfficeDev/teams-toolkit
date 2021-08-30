@@ -5,6 +5,7 @@
 import { NextFunction, Middleware } from "@feathersjs/hooks";
 import { Inputs, StaticPlatforms } from "@microsoft/teamsfx-api";
 import { CoreHookContext, FxCore } from "..";
+import { isMultiEnvEnabled } from "../../common";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { environmentManager } from "../environment";
 
@@ -34,7 +35,7 @@ export function EnvInfoWriterMW(skip = false): Middleware {
       if (solutionContext === undefined) return;
 
       // DO NOT persist local debug plugin config.
-      if (solutionContext.envInfo.profile.has(PluginNames.LDEBUG)) {
+      if (isMultiEnvEnabled() && solutionContext.envInfo.profile.has(PluginNames.LDEBUG)) {
         solutionContext.envInfo.profile.delete(PluginNames.LDEBUG);
       }
 

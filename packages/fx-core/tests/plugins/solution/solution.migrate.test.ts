@@ -3,38 +3,33 @@
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { it } from "mocha";
-import { SolutionRunningState, TeamsAppSolution } from " ../../../src/plugins/solution";
+import { TeamsAppSolution } from " ../../../src/plugins/solution";
 import {
   Platform,
-  SolutionConfig,
   SolutionContext,
   ok,
   Result,
   FxError,
+  SolutionSettings,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs, { PathLike } from "fs-extra";
-import {
-  GLOBAL_CONFIG,
-  PROGRAMMING_LANGUAGE,
-  SolutionError,
-} from "../../../src/plugins/solution/fx-solution/constants";
+import { GLOBAL_CONFIG, SolutionError } from "../../../src/plugins/solution/fx-solution/constants";
 import {
   AzureSolutionQuestionNames,
-  BotOptionItem,
   TabOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 import * as uuid from "uuid";
+import { newEnvInfo } from "../../../src";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
 describe("Solution migrate()", async () => {
   function mockSolutionContext(): SolutionContext {
-    const config: SolutionConfig = new Map();
     return {
       root: ".",
-      config,
+      envInfo: newEnvInfo(),
       answers: { platform: Platform.VSCode },
       projectSettings: undefined,
     };
@@ -56,7 +51,7 @@ describe("Solution migrate()", async () => {
     expect(result.isErr()).equals(true);
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.InternelError);
     expect(result._unsafeUnwrapErr().message).equals("projectSettings is undefined");
-    expect(mockedSolutionCtx.config.get(GLOBAL_CONFIG)).to.be.not.undefined;
+    expect(mockedSolutionCtx.envInfo.profile.get(GLOBAL_CONFIG)).to.be.not.undefined;
   });
 
   it("should fail if projectSettings.solutionSettings is undefined", async () => {
@@ -67,13 +62,13 @@ describe("Solution migrate()", async () => {
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
       projectId: uuid.v4(),
-      solutionSettings: undefined,
+      solutionSettings: (undefined as unknown) as SolutionSettings,
     };
     const result = await solution.migrate(mockedSolutionCtx);
     expect(result.isErr()).equals(true);
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.InternelError);
     expect(result._unsafeUnwrapErr().message).equals("solutionSettings is undefined");
-    expect(mockedSolutionCtx.config.get(GLOBAL_CONFIG)).to.be.not.undefined;
+    expect(mockedSolutionCtx.envInfo.profile.get(GLOBAL_CONFIG)).to.be.not.undefined;
   });
 
   it("should fail if capability is undefined", async () => {
@@ -95,12 +90,12 @@ describe("Solution migrate()", async () => {
     expect(result.isErr()).equals(true);
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.InternelError);
     expect(result._unsafeUnwrapErr().message).equals("capabilities is empty");
-    expect(mockedSolutionCtx.config.get(GLOBAL_CONFIG)).to.be.not.undefined;
+    expect(mockedSolutionCtx.envInfo.profile.get(GLOBAL_CONFIG)).to.be.not.undefined;
   });
 
   it("should succeed if projectSettings, solution settings and v1 capability are provided, language is javascript", async () => {
-    mocker.stub(fs, "access").callsFake((path: PathLike, mode?: number) => {
-      throw new Error("");
+    mocker.stub(fs, "pathExists").callsFake((path: PathLike) => {
+      return false;
     });
     fileContent.clear();
     const solution = new TeamsAppSolution();
@@ -121,14 +116,14 @@ describe("Solution migrate()", async () => {
 
     const result = await solution.migrate(mockedSolutionCtx);
     expect(result.isOk()).equals(true);
-    expect(mockedSolutionCtx.config.get(GLOBAL_CONFIG)).is.not.undefined;
+    expect(mockedSolutionCtx.envInfo.profile.get(GLOBAL_CONFIG)).is.not.undefined;
     const lang = mockedSolutionCtx.projectSettings.programmingLanguage;
     expect(lang).equals("javascript");
   });
 
   it("should succeed if projectSettings, solution settings and v1 capability are provided, language is typescript", async () => {
-    mocker.stub(fs, "access").callsFake(async (path: PathLike, mode?: number): Promise<void> => {
-      return;
+    mocker.stub(fs, "pathExists").callsFake((path: PathLike) => {
+      return true;
     });
     fileContent.clear();
     const solution = new TeamsAppSolution();
@@ -149,18 +144,18 @@ describe("Solution migrate()", async () => {
 
     const result = await solution.migrate(mockedSolutionCtx);
     expect(result.isOk()).equals(true);
-    expect(mockedSolutionCtx.config.get(GLOBAL_CONFIG)).is.not.undefined;
+    expect(mockedSolutionCtx.envInfo.profile.get(GLOBAL_CONFIG)).is.not.undefined;
     const lang = mockedSolutionCtx.projectSettings.programmingLanguage;
     expect(lang).equals("typescript");
   });
 });
 
 function cleanPlugins(solution: TeamsAppSolution, mocker: sinon.SinonSandbox) {
-  mocker
-    .stub(solution.LocalDebugPlugin, "executeUserTask")
-    .callsFake(async (): Promise<Result<any, FxError>> => {
+  mocker.stub(solution.LocalDebugPlugin, "executeUserTask").callsFake(
+    async (): Promise<Result<any, FxError>> => {
       return ok(undefined);
-    });
+    }
+  );
   mocker.stub(solution.AadPlugin, "activate").callsFake((): boolean => {
     return false;
   });

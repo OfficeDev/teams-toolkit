@@ -19,8 +19,9 @@
     "CancelProvision": "CancelProvision",
     "AlreadyProvisionNotice": "'%s' is already provisioned in the cloud, will create the teams app again if it has been removed.",
     "NotProvisionedNotice": "'%s' is not provisioned in the cloud yet. Please provision first.",
-
     "GenerateArmTemplateFailNotice": "'%s' Failed to create ARM template for required Azure services.",
+    "RegenerateArmTemplateConfirmNotice": "We will update your Azure resource template based on your resource and capability selection. The existing template file will be moved to backup folder under Azure resource template folder for your reference. We recommend to initialize your project workspace with git init to track all changes.",
+    "MigrateSuccessNotice": "Your project is now initialized with Teams Toolkit! You can debug your application by pressing F5. If you wish to host your application in Azure, we recommend you to re-create your project directly using the latest Teams Toolkit.",
 
     "DeployArmTemplates": {
       "StartNotice": "[%s] Start deploying ARM templates.",

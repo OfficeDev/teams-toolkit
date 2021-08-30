@@ -26,14 +26,14 @@ export function getPluginContext(
   pluginIdentifier: string
 ): PluginContext {
   const baseCtx: Context = solutionCtx;
-  if (!solutionCtx.config.has(pluginIdentifier)) {
-    solutionCtx.config.set(pluginIdentifier, new ConfigMap());
+  if (!solutionCtx.envInfo.profile.has(pluginIdentifier)) {
+    solutionCtx.envInfo.profile.set(pluginIdentifier, new ConfigMap());
   }
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const pluginConfig: PluginConfig = solutionCtx.config.get(pluginIdentifier)!;
+  const pluginConfig: PluginConfig = solutionCtx.envInfo.profile.get(pluginIdentifier)!;
   const pluginCtx: PluginContext = {
     ...baseCtx,
-    configOfOtherPlugins: solutionCtx.config,
+    configOfOtherPlugins: solutionCtx.envInfo.profile,
     config: pluginConfig,
   };
   return pluginCtx;
@@ -88,13 +88,4 @@ export function sendErrorTelemetryThenReturnError(
 
   reporter?.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
   return error;
-}
-
-export async function checkFileExist(filePath: string): Promise<boolean> {
-  try {
-    await fs.access(filePath, fs.constants.F_OK);
-    return true;
-  } catch (error) {
-    return false;
-  }
 }

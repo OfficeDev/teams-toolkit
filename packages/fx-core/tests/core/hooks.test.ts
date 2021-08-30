@@ -385,7 +385,7 @@ describe("Middleware", () => {
 
     const inputs: Inputs = { platform: Platform.VSCode };
     inputs.projectPath = path.join(os.tmpdir(), appName);
-    const envName = environmentManager.defaultEnvName;
+    const envName = environmentManager.getDefaultEnvName();
     const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
     const settingsFile = path.resolve(confFolderPath, "settings.json");
     const envJsonFile = path.resolve(confFolderPath, `env.${envName}.json`);
@@ -416,7 +416,7 @@ describe("Middleware", () => {
           assert.isTrue(ctx !== undefined);
           assert.isTrue(ctx!.solutionContext !== undefined);
           const solutionContext = ctx!.solutionContext!;
-          assert.isTrue(solutionContext.config.get("solution") !== undefined);
+          assert.isTrue(solutionContext.envInfo.profile.get("solution") !== undefined);
           assert.deepEqual(projectSettings, solutionContext.projectSettings);
           return ok("");
         }
@@ -439,7 +439,7 @@ describe("Middleware", () => {
           const solutionContext = ctx!.solutionContext!;
           assert.isTrue(solutionContext.projectSettings !== undefined);
           assert.isTrue(solutionContext.projectSettings!.appName === appName);
-          assert.isTrue(solutionContext.config.get("solution") !== undefined);
+          assert.isTrue(solutionContext.envInfo.profile.get("solution") !== undefined);
           return ok("");
         }
       }
@@ -502,7 +502,7 @@ describe("Middleware", () => {
       inputs.projectPath = path.join(os.tmpdir(), appName);
       const tools = new MockTools();
       const solutionContext = await newSolutionContext(tools, inputs);
-      solutionContext.config.set("solution", new ConfigMap());
+      solutionContext.envInfo.profile.set("solution", new ConfigMap());
       solutionContext.projectSettings = MockProjectSettings(appName);
       const fileMap = new Map<string, any>();
 
@@ -511,7 +511,7 @@ describe("Middleware", () => {
       });
       sandbox.stub(fs, "pathExists").resolves(true);
 
-      const envName = environmentManager.defaultEnvName;
+      const envName = environmentManager.getDefaultEnvName();
       const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
       const settingsFile = path.resolve(confFolderPath, "settings.json");
       const envJsonFile = path.resolve(confFolderPath, `env.${envName}.json`);
@@ -524,7 +524,7 @@ describe("Middleware", () => {
         }
       }
       hooks(MyClass, {
-        myMethod: [ContextInjecterMW, ProjectSettingsWriterMW, EnvInfoWriterMW],
+        myMethod: [ContextInjecterMW, ProjectSettingsWriterMW, EnvInfoWriterMW()],
       });
       const my = new MyClass();
       await my.myMethod(inputs);
@@ -532,7 +532,7 @@ describe("Middleware", () => {
       const settingsInFile = JSON.parse(content);
       content = fileMap.get(envJsonFile);
       const configInFile = JSON.parse(content);
-      const configExpected = mapToJson(solutionContext.config);
+      const configExpected = mapToJson(solutionContext.envInfo.profile);
       assert.deepEqual(solutionContext.projectSettings, settingsInFile);
       assert.deepEqual(configExpected, configInFile);
     });
@@ -556,8 +556,8 @@ describe("Middleware", () => {
       const secretName = "clientSecret";
       const secretText = "test";
       configMap.set(secretName, secretText);
-      solutionContext.config.set("solution", new ConfigMap());
-      solutionContext.config.set(pluginName, configMap);
+      solutionContext.envInfo.profile.set("solution", new ConfigMap());
+      solutionContext.envInfo.profile.set(pluginName, configMap);
       const oldProjectId = solutionContext.projectSettings!.projectId;
       solutionContext.projectSettings = MockProjectSettings(appName);
       solutionContext.projectSettings!.projectId = oldProjectId;
@@ -567,7 +567,7 @@ describe("Middleware", () => {
       });
       sandbox.stub(fs, "pathExists").resolves(true);
 
-      const envName = environmentManager.defaultEnvName;
+      const envName = environmentManager.getDefaultEnvName();
       const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
       const userdataFile = path.resolve(confFolderPath, `${envName}.userdata`);
       const settingsFile = path.resolve(confFolderPath, "settings.json");
@@ -591,14 +591,14 @@ describe("Middleware", () => {
           const solutionContext = ctx!.solutionContext!;
           assert.isTrue(solutionContext.projectSettings !== undefined);
           assert.isTrue(solutionContext.projectSettings!.appName === appName);
-          assert.isTrue(solutionContext.config.get(pluginName) !== undefined);
-          const value = solutionContext.config.get(pluginName)!.get(secretName);
+          assert.isTrue(solutionContext.envInfo.profile.get(pluginName) !== undefined);
+          const value = solutionContext.envInfo.profile.get(pluginName)!.get(secretName);
           assert.isTrue(value === secretText);
           return ok("");
         }
       }
       hooks(MyClass, {
-        WriteConfigTrigger: [ContextInjecterMW, ProjectSettingsWriterMW, EnvInfoWriterMW],
+        WriteConfigTrigger: [ContextInjecterMW, ProjectSettingsWriterMW, EnvInfoWriterMW()],
         ReadConfigTrigger: [
           ProjectSettingsLoaderMW,
           EnvInfoLoaderMW(false, false),
@@ -911,7 +911,7 @@ describe("Middleware", () => {
 
     const inputs: Inputs = { platform: Platform.VSCode };
     inputs.projectPath = path.join(os.tmpdir(), appName);
-    const envName = environmentManager.defaultEnvName;
+    const envName = environmentManager.getDefaultEnvName();
     const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
     const settingsFile = path.resolve(confFolderPath, "settings.json");
     const envJsonFile = path.resolve(confFolderPath, `env.${envName}.json`);
@@ -1056,6 +1056,45 @@ describe("Middleware", () => {
         async upgrade(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
           assert.equal(userData["fx-resource-aad-app-for-teams.local_clientId"], undefined);
           assert.equal(userData["solution.localDebugTeamsAppId"], undefined);
+          assert.equal(
+            (envJson["solution"] as any)["localDebugTeamsAppId"],
+            "{{solution.localDebugTeamsAppId}}"
+          );
+          assert.equal(
+            (envJson["fx-resource-aad-app-for-teams"] as any)["local_clientId"],
+            "{{fx-resource-aad-app-for-teams.local_clientId}}"
+          );
+          return ok("");
+        }
+      }
+
+      hooks(ProjectUpgradeHook, {
+        upgrade: [ProjectUpgraderMW],
+      });
+
+      const my = new ProjectUpgradeHook();
+      const res = await my.upgrade(inputs);
+      assert.isTrue(res.isOk() && res.value === "");
+    });
+
+    it("Should not upgrade for the new multi env project", async () => {
+      sandbox.stub(process, "env").get(() => {
+        return { TEAMSFX_MULTI_ENV: "true" };
+      });
+
+      envJson = MockLatestVersion2_3_0Context();
+      userData = MockLatestVersion2_3_0UserData();
+      MockFunctions();
+
+      class ProjectUpgradeHook {
+        name = "jay";
+        tools = new MockTools();
+        async upgrade(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+          assert.equal(
+            userData["fx-resource-aad-app-for-teams.local_clientId"],
+            "local_clientId_new"
+          );
+          assert.equal(userData["solution.localDebugTeamsAppId"], "teamsAppId_new");
           assert.equal(
             (envJson["solution"] as any)["localDebugTeamsAppId"],
             "{{solution.localDebugTeamsAppId}}"

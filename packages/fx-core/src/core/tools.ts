@@ -3,10 +3,13 @@ import {
   SolutionContext,
   ProjectSettings,
   AzureSolutionSettings,
+  EnvInfo,
+  ConfigMap,
+  ProjectSettingsFileName,
 } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import * as fs from "fs-extra";
-import { PluginNames } from "../plugins/solution/fx-solution/constants";
+import { GLOBAL_CONFIG, PluginNames } from "../plugins/solution/fx-solution/constants";
 import {
   AzureResourceApim,
   AzureResourceFunction,
@@ -16,6 +19,8 @@ import {
   MessageExtensionItem,
   TabOptionItem,
 } from "../plugins/solution/fx-solution/question";
+import { environmentManager } from "./environment";
+import { isMultiEnvEnabled } from "../common";
 export function validateProject(solutionContext: SolutionContext): string | undefined {
   const res = validateSettings(solutionContext.projectSettings);
   return res;
@@ -91,8 +96,13 @@ export function validateSettings(projectSettings?: ProjectSettings): string | un
 export function isValidProject(workspacePath?: string): boolean {
   if (!workspacePath) return false;
   try {
-    const confFolderPath = path.resolve(workspacePath, `.${ConfigFolderName}`);
-    const settingsFile = path.resolve(confFolderPath, "settings.json");
+    const confFolderPath = isMultiEnvEnabled()
+      ? path.resolve(workspacePath, `.${ConfigFolderName}`, "configs")
+      : path.resolve(workspacePath, `.${ConfigFolderName}`);
+    const settingsFile = path.resolve(
+      confFolderPath,
+      isMultiEnvEnabled() ? ProjectSettingsFileName : "settings.json"
+    );
     const projectSettings: ProjectSettings = fs.readJsonSync(settingsFile);
     if (validateSettings(projectSettings)) return false;
     return true;
@@ -121,4 +131,30 @@ export function validateV1PackageSettings(settings: any): boolean {
     return true;
   }
   return false;
+}
+
+export function isMigrateFromV1Project(workspacePath?: string): boolean {
+  if (!workspacePath) return false;
+  try {
+    const confFolderPath = path.resolve(workspacePath, `.${ConfigFolderName}`);
+    const settingsFile = path.resolve(confFolderPath, "settings.json");
+    const projectSettings: ProjectSettings = fs.readJsonSync(settingsFile);
+    if (validateSettings(projectSettings)) return false;
+    return !!projectSettings?.solutionSettings?.migrateFromV1;
+  } catch (e) {
+    return false;
+  }
+}
+
+export function newEnvInfo(): EnvInfo {
+  return {
+    envName: environmentManager.getDefaultEnvName(),
+    config: {
+      azure: {},
+      manifest: {
+        values: {},
+      },
+    },
+    profile: new Map<string, any>([[GLOBAL_CONFIG, new ConfigMap()]]),
+  };
 }

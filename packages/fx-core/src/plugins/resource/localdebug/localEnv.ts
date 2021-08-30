@@ -12,6 +12,7 @@ import {
   LocalEnvBackendKeys,
   LocalEnvAuthKeys,
   LocalEnvBotKeys,
+  LocalEnvBotKeysMigratedFromV1,
 } from "./constants";
 
 export class LocalEnvProvider {
@@ -23,12 +24,20 @@ export class LocalEnvProvider {
   public async loadLocalEnv(
     includeFrontend: boolean,
     includeBackend: boolean,
-    includeBot: boolean
+    includeBot: boolean,
+    includeAuth: boolean,
+    isMigrateFromV1: boolean
   ): Promise<{ [name: string]: string }> {
     if (await fs.pathExists(this.localEnvFilePath)) {
       return dotenv.parse(await fs.readFile(this.localEnvFilePath));
     } else {
-      return this.initialLocalEnvs(includeFrontend, includeBackend, includeBot);
+      return this.initialLocalEnvs(
+        includeFrontend,
+        includeBackend,
+        includeBot,
+        includeAuth,
+        isMigrateFromV1
+      );
     }
   }
 
@@ -46,25 +55,28 @@ export class LocalEnvProvider {
   public initialLocalEnvs(
     includeFrontend: boolean,
     includeBackend: boolean,
-    includeBot: boolean
+    includeBot: boolean,
+    includeAuth: boolean,
+    isMigrateFromV1: boolean
   ): { [name: string]: string } {
     const localEnvs: { [name: string]: string } = {};
     let keys: string[];
 
     if (includeFrontend) {
-      // auth is only required by frontend
-      keys = Object.values(LocalEnvAuthKeys);
-      for (const key of keys) {
-        // initial with empty string
-        localEnvs[key] = "";
-      }
-      // setup const environment variables
-      localEnvs[LocalEnvAuthKeys.Urls] = "http://localhost:5000";
-
-      keys = Object.values(LocalEnvFrontendKeys);
-      for (const key of keys) {
-        // initial with empty string
-        localEnvs[key] = "";
+      if (includeAuth) {
+        // auth is only required by frontend
+        keys = Object.values(LocalEnvAuthKeys);
+        for (const key of keys) {
+          // initial with empty string
+          localEnvs[key] = "";
+        }
+        // setup const environment variables
+        localEnvs[LocalEnvAuthKeys.Urls] = "http://localhost:5000";
+        keys = Object.values(LocalEnvFrontendKeys);
+        for (const key of keys) {
+          // initial with empty string
+          localEnvs[key] = "";
+        }
       }
 
       // setup const environment variables
@@ -84,7 +96,9 @@ export class LocalEnvProvider {
     }
 
     if (includeBot) {
-      keys = Object.values(LocalEnvBotKeys);
+      keys = isMigrateFromV1
+        ? Object.values(LocalEnvBotKeysMigratedFromV1)
+        : Object.values(LocalEnvBotKeys);
       for (const key of keys) {
         // initial with empty string
         localEnvs[key] = "";

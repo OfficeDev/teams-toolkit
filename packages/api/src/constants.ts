@@ -4,6 +4,12 @@
 
 export const ConfigFolderName = "fx";
 export const AppPackageFolderName = "appPackage";
+export const InputConfigsFolderName = "configs";
+export const PublishProfilesFolderName = "publishProfiles";
+export const ProjectSettingsFileName = "projectSettings.json";
+export const EnvNamePlaceholder = "@envName";
+export const EnvConfigFileNameTemplate = `config.${EnvNamePlaceholder}.json`;
+export const EnvProfileFileNameTemplate = `profile.${EnvNamePlaceholder}.json`;
 export const ProductName = "teamsfx";
 export const ArchiveFolderName = ".archive";
 export const ArchiveLogFileName = ".archive.log";

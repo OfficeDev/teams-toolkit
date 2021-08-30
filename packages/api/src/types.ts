@@ -110,8 +110,6 @@ export interface EnvMeta {
   sideloading: boolean;
 }
 
-export type EnvConfig = Json;
-
 /**
  * project static settings
  */
@@ -121,7 +119,7 @@ export interface ProjectSettings {
   projectId: string;
   programmingLanguage?: string;
   defaultFunctionName?: string;
-  solutionSettings?: SolutionSettings;
+  solutionSettings: SolutionSettings;
 }
 
 /**

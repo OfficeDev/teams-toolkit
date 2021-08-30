@@ -30,6 +30,8 @@ import {
 } from "./constants";
 import { ResourceManagementClient, ResourceManagementModels } from "@azure/arm-resources";
 import { DeployArmTemplatesSteps, ProgressHelper } from "./utils/progressHelper";
+import dateFormat from "dateformat";
+import { getTemplatesFolder } from "../../../folder";
 
 // Old folder structure constants
 const baseFolder = "./infra/azure";
@@ -92,6 +94,7 @@ export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<
 
   // Write bicep content to project folder
   if (bicepOrchestrationTemplate.needsGenerateTemplate()) {
+    await backupExistingFilesIfNecessary(ctx);
     // Output main.bicep file
     const bicepOrchestrationFileContent = bicepOrchestrationTemplate.getOrchestrationFileContent();
     const templateFolderPath = isNewFolderStructureEnabled()
@@ -124,6 +127,19 @@ export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<
     const parameterFileContent = bicepOrchestrationTemplate.getParameterFileContent();
     await fs.ensureDir(parameterTemplateFolderPath);
     await fs.writeFile(parameterTemplateFilePath, parameterFileContent);
+
+    // Output .gitignore file
+    const gitignoreContent = await fs.readFile(
+      path.join(getTemplatesFolder(), "plugins", "solution", "armGitignore"),
+      ConstantString.UTF8Encoding
+    );
+    const gitignoreFileName = ".gitignore";
+    const gitignoreFilePath = isNewFolderStructureEnabled()
+      ? path.join(ctx.root, templateFolderNew, gitignoreFileName)
+      : path.join(ctx.root, baseFolder, gitignoreFileName);
+    if (!(await fs.pathExists(gitignoreFilePath))) {
+      await fs.writeFile(gitignoreFilePath, gitignoreContent);
+    }
   }
 
   return ok(undefined); // Nothing to return when success
@@ -140,7 +156,7 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
   // update parameters
   const parameterJson = await getParameterJson(ctx);
 
-  const resourceGroupName = ctx.config.get(GLOBAL_CONFIG)?.getString(RESOURCE_GROUP_NAME);
+  const resourceGroupName = ctx.envInfo.profile.get(GLOBAL_CONFIG)?.getString(RESOURCE_GROUP_NAME);
   if (!resourceGroupName) {
     throw new Error("Failed to get resource group from project solution settings.");
   }
@@ -182,7 +198,9 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
             deploymentName
           )
         );
-        ctx.config.get(GLOBAL_CONFIG)?.set(ARM_TEMPLATE_OUTPUT, result.properties?.outputs);
+        ctx.envInfo.profile
+          .get(GLOBAL_CONFIG)
+          ?.set(ARM_TEMPLATE_OUTPUT, result.properties?.outputs);
         return result;
       })
       .finally(() => {
@@ -278,20 +296,20 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
 }
 
 async function getParameterJson(ctx: SolutionContext) {
-  if (!ctx.targetEnvName) {
+  if (!ctx.envInfo?.envName) {
     throw new Error("Failed to get target environment name from solution context.");
   }
 
   let parameterFileName, parameterFolderPath, parameterTemplateFilePath;
   if (isNewFolderStructureEnabled()) {
-    parameterFileName = parameterFileNameTemplateNew.replace("@envName", ctx.targetEnvName);
+    parameterFileName = parameterFileNameTemplateNew.replace("@envName", ctx.envInfo.envName);
     parameterFolderPath = path.join(ctx.root, configsFolder);
     parameterTemplateFilePath = path.join(
       path.join(ctx.root, templateFolderNew),
       parameterTemplateFileName
     );
   } else {
-    parameterFileName = parameterFileNameTemplate.replace("@envName", ctx.targetEnvName);
+    parameterFileName = parameterFileNameTemplate.replace("@envName", ctx.envInfo.envName);
     parameterFolderPath = path.join(ctx.root, baseFolder, parameterFolder);
     parameterTemplateFilePath = path.join(parameterFolderPath, parameterTemplateFileName);
   }
@@ -302,7 +320,7 @@ async function getParameterJson(ctx: SolutionContext) {
     await fs.stat(parameterFilePath);
   } catch (err) {
     ctx.logProvider?.info(
-      `[${PluginDisplayName.Solution}] ${parameterFilePath} does not exist. Try ${parameterTemplateFilePath}.`
+      `[${PluginDisplayName.Solution}] ${parameterFilePath} does not exist. Generate it using ${parameterTemplateFilePath}.`
     );
     createNewParameterFile = true;
   }
@@ -314,7 +332,7 @@ async function getParameterJson(ctx: SolutionContext) {
     await fs.writeFile(parameterFilePath, JSON.stringify(parameterJson, undefined, 2));
   }
 
-  parameterJson = await getExpandedParameter(ctx, parameterTemplateFilePath, true); // only expand secrets in memory
+  parameterJson = await getExpandedParameter(ctx, parameterFilePath, true); // only expand secrets in memory
 
   return parameterJson;
 }
@@ -522,7 +540,7 @@ function expandParameterPlaceholders(
     }
   }
   // Add solution config to available variables
-  const solutionConfig = ctx.config.get(GLOBAL_CONFIG);
+  const solutionConfig = ctx.envInfo.profile.get(GLOBAL_CONFIG);
   if (solutionConfig) {
     for (const configItem of solutionConfig) {
       if (typeof configItem[1] === "string") {
@@ -549,9 +567,9 @@ function normalizeToEnvName(input: string): string {
 function generateResourceName(ctx: SolutionContext): void {
   const maxAppNameLength = 10;
   const appName = ctx.projectSettings!.appName;
-  const suffix = ctx.config.get(GLOBAL_CONFIG)?.getString("resourceNameSuffix");
+  const suffix = ctx.envInfo.profile.get(GLOBAL_CONFIG)?.getString("resourceNameSuffix");
   const normalizedAppName = appName.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
-  ctx.config
+  ctx.envInfo.profile
     .get(GLOBAL_CONFIG)
     ?.set("resource_base_name", normalizedAppName.substr(0, maxAppNameLength) + suffix);
 }
@@ -561,6 +579,41 @@ function escapeSecretPlaceholders(variables: Record<string, string>) {
     const normalizedKey = `${normalizeToEnvName(key)}`;
     variables[normalizedKey] = `{{${normalizedKey}}}`; // replace value of 'SECRET_PLACEHOLDER' with '{{SECRET_PLACEHOLDER}}' so the placeholder remains unchanged
   }
+}
+
+// backup existing ARM template and parameter files to backup folder named with current timestamp
+async function backupExistingFilesIfNecessary(ctx: SolutionContext): Promise<void> {
+  const armBaseFolder = path.join(ctx.root, baseFolder);
+  const armTemplateFolder = path.join(armBaseFolder, templateFolder);
+  const armParameterFolder = path.join(armBaseFolder, parameterFolder);
+
+  const needsBackup = !(await areFoldersEmpty([armTemplateFolder, armParameterFolder]));
+  if (needsBackup) {
+    const backupFolder = path.join(
+      armBaseFolder,
+      "backup",
+      dateFormat(new Date(), "yyyymmddHHMMssl")
+    ); // example: ./infra/azure/backup/20210823080000000
+    const templateBackupFolder = path.join(backupFolder, templateFolder);
+    const parameterBackupFolder = path.join(backupFolder, parameterFolder);
+
+    await fs.move(armTemplateFolder, templateBackupFolder);
+    await fs.move(armParameterFolder, parameterBackupFolder);
+  }
+}
+
+async function areFoldersEmpty(folderPaths: string[]): Promise<boolean> {
+  let isEmpty = true;
+  for (const folderPath of folderPaths) {
+    if (await fs.pathExists(folderPath)) {
+      const files = await fs.readdir(folderPath);
+      if (files.length > 0) {
+        isEmpty = false;
+        break;
+      }
+    }
+  }
+  return isEmpty;
 }
 
 const FeatureFlagNewFolderStructure = "TEAMSFX_ARM_NEW_FOLDER_STRUCTURE";

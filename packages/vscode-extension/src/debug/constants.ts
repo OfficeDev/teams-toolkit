@@ -23,6 +23,8 @@ export const botFolderName = "bot";
 export const localEnvFileName = "local.env";
 export const manifestFileName = "manifest.source.json";
 export const userDataFileName = "default.userdata"; // TODO: different file name for different environment
+export const userDataFileNameNew = "dev.userdata"; // TODO: different file name for different environment
+export const localSettingsJsonName = "localSettings.json";
 
 export const frontendLocalEnvPrefix = "FRONTEND_";
 export const backendLocalEnvPrefix = "BACKEND_";
@@ -43,10 +45,8 @@ const loopbackAddressIPv4 = "127.0.0.1";
 const loopbackAddressIPv6 = "::1";
 const hosts = [allAddressIPv4, loopbackAddressIPv4, allAddressIPv6, loopbackAddressIPv6];
 
-export const frontendPorts: [number, string[]][] = [
-  [3000, hosts],
-  [5000, hosts],
-];
+export const frontendPorts: [number, string[]][] = [[3000, hosts]];
+export const simpleAuthPorts: [number, string[]][] = [[5000, hosts]];
 export const backendPorts: [number, string[]][] = [
   [7071, hosts],
   [9229, hosts],

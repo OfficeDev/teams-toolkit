@@ -404,7 +404,11 @@ export function isMultiEnvEnabled(): boolean {
 }
 
 export function isArmSupportEnabled(): boolean {
-  return isFeatureFlagEnabled("TEAMSFX_ARM_SUPPORT", false);
+  return isFeatureFlagEnabled(FeatureFlagName.ArmSupport, false);
+}
+
+export function isBicepEnvCheckerEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.BicepEnvCheckerEnable, false);
 }
 
 export async function generateBicepFiles(
@@ -433,13 +437,25 @@ export function compileHandlebarsTemplateString(templateString: string, context:
 
 export async function getAppDirectory(projectRoot: string): Promise<string> {
   const REMOTE_MANIFEST = "manifest.source.json";
+  const MANIFEST_TEMPLATE = "manifest.template.json";
+  const appDirNewLocForMultiEnv = `${projectRoot}/templates/${AppPackageFolderName}`;
   const appDirNewLoc = `${projectRoot}/${AppPackageFolderName}`;
   const appDirOldLoc = `${projectRoot}/.${ConfigFolderName}`;
 
-  if (await fs.pathExists(`${appDirNewLoc}/${REMOTE_MANIFEST}`)) {
-    return appDirNewLoc;
+  if (isMultiEnvEnabled()) {
+    if (await fs.pathExists(`${appDirNewLocForMultiEnv}/${MANIFEST_TEMPLATE}`)) {
+      return appDirNewLocForMultiEnv;
+    } else if (await fs.pathExists(`${appDirNewLoc}/${REMOTE_MANIFEST}`)) {
+      return appDirNewLoc;
+    } else {
+      return appDirOldLoc;
+    }
   } else {
-    return appDirOldLoc;
+    if (await fs.pathExists(`${appDirNewLoc}/${REMOTE_MANIFEST}`)) {
+      return appDirNewLoc;
+    } else {
+      return appDirOldLoc;
+    }
   }
 }
 

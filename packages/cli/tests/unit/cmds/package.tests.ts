@@ -7,7 +7,7 @@ import yargs, { Options } from "yargs";
 import { err, Func, FxError, Inputs, ok, UserError } from "@microsoft/teamsfx-api";
 import { FxCore } from "@microsoft/teamsfx-core";
 
-import Build from "../../../src/cmds/build";
+import Package from "../../../src/cmds/package";
 import CliTelemetry from "../../../src/telemetry/cliTelemetry";
 import HelpParamGenerator from "../../../src/helpParamGenerator";
 import {
@@ -21,7 +21,7 @@ import LogProvider from "../../../src/commonlib/log";
 import { expect } from "../utils";
 import { NotSupportedProjectType } from "../../../src/error";
 
-describe("Build Command Tests", function () {
+describe("Package Command Tests", function () {
   const sandbox = sinon.createSandbox();
   let registeredCommands: string[] = [];
   let options: string[] = [];
@@ -86,13 +86,13 @@ describe("Build Command Tests", function () {
   });
 
   it("Builder Check", () => {
-    const cmd = new Build();
+    const cmd = new Package();
     yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
-    expect(registeredCommands).deep.equals(["build"]);
+    expect(registeredCommands).deep.equals(["package"]);
   });
 
-  it("Build Command Running Check", async () => {
-    const cmd = new Build();
+  it("Package Command Running Check", async () => {
+    const cmd = new Package();
     const args = {
       [constants.RootFolderNode.data.name as string]: "real",
     };
@@ -101,8 +101,8 @@ describe("Build Command Tests", function () {
     expect(telemetryEventStatus).equals(TelemetrySuccess.Yes);
   });
 
-  it("Build Command Running Check with Error", async () => {
-    const cmd = new Build();
+  it("Package Command Running Check with Error", async () => {
+    const cmd = new Package();
     const args = {
       [constants.RootFolderNode.data.name as string]: "fake",
     };

@@ -82,6 +82,8 @@ export enum SolutionError {
   NoAppStudioToken = "NoAppStudioToken",
   NoTeamsAppTenantId = "NoTeamsAppTenantId",
   FailedToCreateResourceGroup = "FailedToCreateResourceGroup",
+  FailedToListResourceGroup = "FailedToListResourceGrouop",
+  FailedToGetResourceGroupInfoInputs = "FailedToGetResourceGroupInfoInputs",
   NotLoginToAzure = "NotLoginToAzure",
   AzureAccountExtensionNotInitialized = "AzureAccountExtensionNotInitialized",
   LocalTabEndpointMissing = "LocalTabEndpointMissing",
@@ -126,6 +128,7 @@ export enum SolutionError {
   CannotFindUserInCurrentTenant = "CannotFindUserInCurrentTenant",
   FailedToGrantPermission = "FailedToGrantPermission",
   FailedToCheckPermission = "FailedToCheckPermission",
+  FailedToListCollaborator = "FailedToListCollaborator",
 }
 
 export const LOCAL_DEBUG_TAB_ENDPOINT = "localTabEndpoint";

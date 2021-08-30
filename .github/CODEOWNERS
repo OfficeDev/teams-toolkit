@@ -40,6 +40,7 @@
 
 /packages/fx-core/src/core @jayzhang @LongOddCode @1yefuwang1
 /packages/fx-core/src/plugins/solution/fx-solution @1yefuwang1 @jayzhang @LongOddCode
+/packages/fx-core/src/plugins/solution/fx-solution/utils/depsChecker @a1exwang @kimizhu @meifans @qinezh
 
 /packages/fx-core/src/plugins/resource/aad @KennethBWSong @adashen @SLdragon
 /packages/fx-core/tests/plugins/resource/aad @KennethBWSong @adashen @SLdragon
@@ -82,5 +83,7 @@
 /packages/simpleauth @adashen @blackchoey @wenytang-ms
 
 /packages/function-extension @adashen @blackchoey @dilin-MS
+
+/packages/dotnet-sdk @tecton @jiayi-ruan @JerryYangKai
 
 /.github/workflows/cd.yml @adashen @LongOddCode @IvanJobs @qinezh @wenytang-ms

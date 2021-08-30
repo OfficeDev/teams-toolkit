@@ -72,6 +72,11 @@ export class ProgressBarConstants {
   public static readonly DEPLOY_STEP_ZIP_DEPLOY = "Uploading application package.";
 
   public static readonly DEPLOY_STEPS_NUM: number = 3;
+
+  // for the use of migrating v1 project
+  public static readonly MIGRATE_V1_PROJECT_TITLE = "Migrating Bot";
+  public static readonly MIGRATE_V1_PROJECT_STEP_MIGRATE = "Migrating Bot project.";
+  public static readonly MIGRATE_V1_PROJECT_STEPS_NUM: number = 1;
 }
 
 export class QuestionNames {
@@ -108,6 +113,9 @@ export class LifecycleFuncNames {
   public static readonly CREATE_NEW_BOT_REG_AZURE = "createNewBotRegistrationOnAzure";
   public static readonly CREATE_NEW_BOT_REG_APPSTUDIO = "createNewBotRegistrationOnAppStudio";
   public static readonly CHECK_AAD_APP = "checkAADApp";
+
+  // for the use of migrating v1 project
+  public static readonly MIGRATE_V1_PROJECT = "migrateV1Project";
 }
 
 export class Retry {
@@ -272,5 +280,17 @@ export class PathInfo {
     "bot",
     "bicep"
   );
-  public static readonly moduleTemplateFileName = "bot.template.bicep";
+  public static readonly provisionModuleTemplateFileName = "botProvision.template.bicep";
+  public static readonly configurationModuleTemplateFileName = "botConfiguration.template.bicep";
+}
+
+export class BotArmOutput {
+  static readonly WebAppSKU = "bot_webAppSKU";
+  static readonly ServiceSKU = "bot_serviceSKU";
+  static readonly WebAppName = "bot_webAppName";
+  static readonly Domain = "bot_domain";
+  static readonly AppServicePlanName = "bot_appServicePlanName";
+  static readonly BotServiceName = "bot_serviceName";
+  static readonly WebAppEndpoint = "bot_webAppEndpoint";
+  static readonly InitiateLoginEndpoint = "bot_initiateLoginEndpoint";
 }

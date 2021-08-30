@@ -8,7 +8,8 @@ import { LaunchBrowser } from "./constants";
 export function generateConfigurations(
   includeFrontend: boolean,
   includeBackend: boolean,
-  includeBot: boolean
+  includeBot: boolean,
+  isMigrateFromV1: boolean
 ): Record<string, unknown>[] {
   let edgeOrder = 2,
     chromeOrder = 1;
@@ -17,28 +18,30 @@ export function generateConfigurations(
     chromeOrder = 2;
   }
 
-  const launchConfigurations: Record<string, unknown>[] = [
-    {
-      name: "Launch Remote (Edge)",
-      type: LaunchBrowser.edge,
-      request: "launch",
-      url: "https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
-      presentation: {
-        group: "remote",
-        order: edgeOrder,
-      },
-    },
-    {
-      name: "Launch Remote (Chrome)",
-      type: LaunchBrowser.chrome,
-      request: "launch",
-      url: "https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
-      presentation: {
-        group: "remote",
-        order: chromeOrder,
-      },
-    },
-  ];
+  const launchConfigurations: Record<string, unknown>[] = isMigrateFromV1
+    ? []
+    : [
+        {
+          name: "Launch Remote (Edge)",
+          type: LaunchBrowser.edge,
+          request: "launch",
+          url: "https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
+          presentation: {
+            group: "remote",
+            order: edgeOrder,
+          },
+        },
+        {
+          name: "Launch Remote (Chrome)",
+          type: LaunchBrowser.chrome,
+          request: "launch",
+          url: "https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
+          presentation: {
+            group: "remote",
+            order: chromeOrder,
+          },
+        },
+      ];
 
   // Tab only
   if (includeFrontend && !includeBot) {

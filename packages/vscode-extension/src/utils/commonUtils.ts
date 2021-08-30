@@ -5,8 +5,16 @@ import * as extensionPackage from "./../../package.json";
 import * as fs from "fs-extra";
 import { ext } from "../extensionVariables";
 import * as path from "path";
-import { ConfigFolderName } from "@microsoft/teamsfx-api";
-import { isValidProject } from "@microsoft/teamsfx-core";
+import {
+  ConfigFolderName,
+  InputConfigsFolderName,
+  ProjectSettingsFileName,
+  EnvProfileFileNameTemplate,
+} from "@microsoft/teamsfx-api";
+import { isMultiEnvEnabled, isValidProject } from "@microsoft/teamsfx-core";
+import { workspace, WorkspaceConfiguration } from "vscode";
+import * as commonUtils from "../debug/commonUtils";
+import { ConfigurationKey, CONFIGURATION_PREFIX } from "../constants";
 
 export function getPackageVersion(versionStr: string): string {
   if (versionStr.includes("alpha")) {
@@ -55,7 +63,15 @@ export function getTeamsAppId() {
     const ws = ext.workspaceUri.fsPath;
     if (isValidProject(ws)) {
       const env = getActiveEnv();
-      const envJsonPath = path.join(ws, `.${ConfigFolderName}/env.${env}.json`);
+      const envJsonPath = path.join(
+        ws,
+        isMultiEnvEnabled()
+          ? `.${ConfigFolderName}/${InputConfigsFolderName}/${EnvProfileFileNameTemplate.replace(
+              "@envName",
+              env
+            )}`
+          : `.${ConfigFolderName}/env.${env}.json`
+      );
       const envJson = JSON.parse(fs.readFileSync(envJsonPath, "utf8"));
       return envJson.solution.remoteTeamsAppId;
     }
@@ -68,7 +84,12 @@ export function getProjectId(): string | undefined {
   try {
     const ws = ext.workspaceUri.fsPath;
     if (isValidProject(ws)) {
-      const settingsJsonPath = path.join(ws, `.${ConfigFolderName}/settings.json`);
+      const settingsJsonPath = path.join(
+        ws,
+        isMultiEnvEnabled()
+          ? `.${ConfigFolderName}/${InputConfigsFolderName}/${ProjectSettingsFileName}`
+          : `.${ConfigFolderName}/settings.json`
+      );
       const settingsJson = JSON.parse(fs.readFileSync(settingsJsonPath, "utf8"));
       return settingsJson.projectId;
     }
@@ -134,4 +155,52 @@ export function anonymizeFilePaths(stack?: string): string {
   }
 
   return updatedStack;
+}
+
+export async function isTeamsfx(): Promise<boolean> {
+  if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
+    const workspaceFolder = workspace.workspaceFolders[0];
+    return await commonUtils.isFxProject(workspaceFolder.uri.fsPath);
+  }
+  return false;
+}
+
+export function getConfiguration(key: string): boolean {
+  const configuration: WorkspaceConfiguration = workspace.getConfiguration(CONFIGURATION_PREFIX);
+  return configuration.get<boolean>(key, false);
+}
+
+export function syncFeatureFlags() {
+  // Sync arm support
+  process.env["TEAMSFX_ARM_SUPPORT"] = getConfiguration(
+    ConfigurationKey.ArmSupportEnabled
+  ).toString();
+}
+
+export class FeatureFlags {
+  static readonly RemoteCollaboration = "TEAMSFX_REMOTE_COL";
+  static readonly MultiEnv = "TEAMSFX_MULTI_ENV";
+  static readonly ArmSupport = "TEAMSFX_ARM_SUPPORT";
+}
+
+// Determine whether feature flag is enabled based on environment variable setting
+export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = false): boolean {
+  const flag = process.env[featureFlagName];
+  if (flag === undefined) {
+    return defaultValue; // allows consumer to set a default value when environment variable not set
+  } else {
+    return flag === "1" || flag.toLowerCase() === "true"; // can enable feature flag by set environment variable value to "1" or "true"
+  }
+}
+
+export function getAllFeatureFlags(): string[] | undefined {
+  const result = Object.values(FeatureFlags)
+    .filter((featureFlag) => {
+      return isFeatureFlagEnabled(featureFlag);
+    })
+    .map((featureFlag) => {
+      return featureFlag;
+    });
+
+  return result;
 }

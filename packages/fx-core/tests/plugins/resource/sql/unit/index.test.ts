@@ -43,9 +43,31 @@ describe("sqlPlugin", () => {
     sinon.restore();
   });
 
-  it("getQuestions", async function () {
+  it("getQuestions without sql", async function () {
     // Arrange
     sinon.stub(Servers.prototype, "checkNameAvailability").resolves({ available: true });
+    // Act
+    const getQuestionResult = await sqlPlugin.getQuestions(Stage.provision, pluginContext);
+
+    // Assert
+    chai.assert.isTrue(getQuestionResult.isOk());
+  });
+
+  it("getQuestions with sql", async function () {
+    // Arrange
+    sinon.stub(Servers.prototype, "checkNameAvailability").resolves({ available: false });
+    // Act
+    const getQuestionResult = await sqlPlugin.getQuestions(Stage.provision, pluginContext);
+
+    // Assert
+    chai.assert.isTrue(getQuestionResult.isOk());
+  });
+
+  it("getQuestions in cli help", async function () {
+    // Arrange
+    sinon.stub(Servers.prototype, "checkNameAvailability").resolves({ available: false });
+    pluginContext.answers === { platform: Platform.CLI_HELP };
+    // pluginContext.answers.platform === Platform.CLI_HELP;
     // Act
     const getQuestionResult = await sqlPlugin.getQuestions(Stage.provision, pluginContext);
 

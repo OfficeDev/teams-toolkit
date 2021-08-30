@@ -33,6 +33,8 @@ import {
   TaskConfig,
   AzureAccountProvider,
   SubscriptionInfo,
+  AppStudioTokenProvider,
+  Inputs,
 } from "@microsoft/teamsfx-api";
 
 export const validManifest = {
@@ -76,6 +78,20 @@ export const validManifest = {
 export function mockPublishThatAlwaysSucceed(plugin: Plugin) {
   plugin.publish = async function (_ctx: PluginContext): Promise<Result<any, FxError>> {
     return ok(Void);
+  };
+}
+
+export function mockV2PublishThatAlwaysSucceed(plugin: v2.ResourcePlugin): void {
+  plugin.publishApplication = async function (): Promise<Result<Void, FxError>> {
+    return ok(Void);
+  };
+}
+
+export function mockScaffoldCodeThatAlwaysSucceeds(plugin: v2.ResourcePlugin): void {
+  plugin.scaffoldSourceCode = async function (): Promise<
+    Result<{ output: Record<string, string> }, FxError>
+  > {
+    return ok({ output: {} });
   };
 }
 
@@ -282,6 +298,32 @@ class MockedTokenCredentials extends TokenCredentialsBase {
       resource: "mock",
       accessToken: "mock",
     };
+  }
+}
+
+export class MockedAppStudioProvider implements AppStudioTokenProvider {
+  async getAccessToken(showDialog?: boolean): Promise<string> {
+    return "fakeToken";
+  }
+  async getJsonObject(showDialog?: boolean): Promise<Record<string, unknown>> {
+    return {};
+  }
+  async signout(): Promise<boolean> {
+    return true;
+  }
+  async setStatusChangeMap(
+    name: string,
+    statusChange: (
+      status: string,
+      token?: string,
+      accountInfo?: Record<string, unknown>
+    ) => Promise<void>,
+    immediateCall?: boolean
+  ): Promise<boolean> {
+    return true;
+  }
+  async removeStatusChangeMap(name: string): Promise<boolean> {
+    return true;
   }
 }
 

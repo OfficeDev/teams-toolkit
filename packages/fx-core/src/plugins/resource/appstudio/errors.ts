@@ -143,7 +143,7 @@ export class AppStudioError {
     message: (error: any) =>
       error.message ? error.message : "Migrate Teams Toolkit V1 project failed!",
   };
-  
+
   public static readonly CheckPermissionFailedError = {
     name: "CheckPermissionFailed",
     message: (error: any) => `Check permission failed. Reason: ${error.message}`,
@@ -153,5 +153,10 @@ export class AppStudioError {
     name: "GrantPermissionFailed",
     message: (errorMessage: string, id?: string) =>
       `${Constants.PERMISSIONS.name}: ${id}. Grant permission failed. Reason: ${errorMessage}`,
+  };
+
+  public static readonly ListCollaboratorFailedError = {
+    name: "ListCollaboratorFailedError",
+    message: (error: any) => `List collaborator failed. Reason: ${error.message}`,
   };
 }

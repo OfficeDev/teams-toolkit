@@ -22,7 +22,7 @@ var teamsMobileOrDesktopAppClientId = '1fec8e78-bce4-4aaf-ab1b-5451cc387264'
 var teamsWebAppClientId = '5e3ce6c0-2b1f-4285-8d4b-75ee78787346'
 var authorizedClientApplicationIds = '${teamsMobileOrDesktopAppClientId};${teamsWebAppClientId}'
 
-resource functionApp 'Microsoft.Web/sites@2020-06-01' existing = {
+resource functionApp 'Microsoft.Web/sites@2021-01-15' existing = {
   name: functionAppName
 }
 
@@ -47,7 +47,7 @@ resource functionAppConfig 'Microsoft.Web/sites/config@2021-01-15' = {
 }
 {{/contains}}
 
-resource functionAppAppSettings 'Microsoft.Web/sites/config@2018-02-01' = {
+resource functionAppAppSettings 'Microsoft.Web/sites/config@2021-01-15' = {
   parent: functionApp
   name: 'appsettings'
   properties: {
@@ -75,7 +75,7 @@ resource functionAppAppSettings 'Microsoft.Web/sites/config@2018-02-01' = {
   }
 }
 
-resource functionAppAuthSettings 'Microsoft.Web/sites/config@2018-02-01' = {
+resource functionAppAuthSettings 'Microsoft.Web/sites/config@2021-01-15' = {
   parent: functionApp
   name: 'authsettings'
   properties: {

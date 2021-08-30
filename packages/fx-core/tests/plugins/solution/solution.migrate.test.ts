@@ -55,7 +55,7 @@ describe("Solution migrate()", async () => {
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
       projectId: uuid.v4(),
-      solutionSettings: undefined,
+      solutionSettings: undefined as unknown as SolutionSettings,
     };
     const result = await solution.migrate(mockedSolutionCtx);
     expect(result.isErr()).equals(true);

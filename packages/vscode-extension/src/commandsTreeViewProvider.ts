@@ -7,10 +7,11 @@ import { ext } from "./extensionVariables";
 import { TreeItem, TreeCategory, Result, FxError, ok } from "@microsoft/teamsfx-api";
 import * as StringResources from "./resources/Strings.json";
 import { Correlator } from "@microsoft/teamsfx-core";
+import { Void } from "@microsoft/teamsfx-api";
 
 class TreeViewManager {
   private static instance: TreeViewManager;
-  private treeviewMap: Map<string, CommandsTreeViewProvider>;
+  private treeviewMap: Map<string, any>;
 
   private constructor() {
     this.treeviewMap = new Map();
@@ -153,7 +154,8 @@ class TreeViewManager {
     ];
     const deployProvider = new CommandsTreeViewProvider(deployCommand);
     disposables.push(vscode.window.registerTreeDataProvider("teamsfx-deployment", deployProvider));
-
+    // const deployProvider = new CommandsWebviewProvider();
+    // disposables.push(vscode.window.registerWebviewViewProvider("teamsfx-deployment", deployProvider));
     const helpCommand = [
       new TreeViewCommand(
         StringResources.vsc.commandsTreeViewProvider.quickStartTitle,
@@ -310,14 +312,96 @@ class TreeViewManager {
   }
 }
 
+class CommandsWebviewProvider implements vscode.WebviewViewProvider {
+  private _view?: vscode.WebviewView;
+
+  constructor() {}
+
+  public resolveWebviewView(
+    webviewView: vscode.WebviewView,
+    context: vscode.WebviewViewResolveContext,
+    _token: vscode.CancellationToken
+  ) {
+    this._view = webviewView;
+
+    webviewView.webview.options = {
+      // Allow scripts in the webview
+      enableScripts: true,
+    };
+
+    webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+
+    webviewView.webview.onDidReceiveMessage((data) => {
+      switch (data.type) {
+      }
+    });
+  }
+
+  private _getHtmlForWebview(webview: vscode.Webview) {
+    const scriptBasePathOnDisk = vscode.Uri.file(path.join(ext.context.extensionPath, "out/"));
+    const scriptBaseUri = scriptBasePathOnDisk.with({ scheme: "vscode-resource" });
+    // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
+    const scriptPathOnDisk = vscode.Uri.file(
+      path.join(ext.context.extensionPath, "out/src", "tree.js")
+    );
+    const scriptUri = scriptPathOnDisk.with({ scheme: "vscode-resource" });
+    // // Do the same for the stylesheet.
+    // const styleResetUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'reset.css'));
+    // const styleVSCodeUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'vscode.css'));
+    // const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'main.css'));
+    const codiconsUri = webview.asWebviewUri(
+      vscode.Uri.file(
+        path.join(
+          ext.context.extensionPath,
+          "node_modules",
+          "@vscode/codicons",
+          "dist",
+          "codicon.css"
+        )
+      )
+    );
+    // Use a nonce to only allow a specific script to be run.
+    const nonce = getNonce();
+
+    return `<!DOCTYPE html>
+        <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <base href='${scriptBaseUri}' />
+            <meta http-equiv="Content-Security-Policy" content="font-src ${webview.cspSource};">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>ms-teams</title>
+            <link href="${codiconsUri}" rel="stylesheet" />
+          </head>
+          <body style="padding: 0 0">
+            <div id="root"></div>
+            <script>
+              const vscode = acquireVsCodeApi();
+            </script>
+            <script nonce="${nonce}"  type="module" src="${scriptUri}"></script>
+          </body>
+        </html>`;
+  }
+}
+
+function getNonce() {
+  let text = "";
+  const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  for (let i = 0; i < 32; i++) {
+    text += possible.charAt(Math.floor(Math.random() * possible.length));
+  }
+  return text;
+}
+
 export default TreeViewManager.getInstance();
 
 export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeViewCommand> {
   public static readonly TreeViewFlag = "TreeView";
-  private _onDidChangeTreeData: vscode.EventEmitter<TreeViewCommand | undefined | void> =
-    new vscode.EventEmitter<TreeViewCommand | undefined | void>();
-  readonly onDidChangeTreeData: vscode.Event<TreeViewCommand | undefined | void> =
-    this._onDidChangeTreeData.event;
+  private _onDidChangeTreeData: vscode.EventEmitter<
+    TreeViewCommand | undefined | void
+  > = new vscode.EventEmitter<TreeViewCommand | undefined | void>();
+  readonly onDidChangeTreeData: vscode.Event<TreeViewCommand | undefined | void> = this
+    ._onDidChangeTreeData.event;
 
   private commands: TreeViewCommand[] = [];
   private disposableMap: Map<string, vscode.Disposable> = new Map();
@@ -340,6 +424,16 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
         for (const subCommand of curCommand?.children) {
           commandStack.push(subCommand);
         }
+      }
+    }
+    return undefined;
+  }
+
+  removeCommand(commandId: string): undefined {
+    for (let i = 0; i < this.commands.length; ++i) {
+      const command = this.commands[i];
+      if (command.commandId === commandId) {
+        this.commands.splice(i, 1);
       }
     }
     return undefined;
@@ -496,6 +590,42 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
     }
     this._onDidChangeTreeData.fire();
     return Promise.resolve(ok(null));
+  }
+
+  removeById(commandId: string): Result<Void, FxError> {
+    const parentCmd = this.findCommand(commandId);
+
+    if (parentCmd) {
+      if (parentCmd.children) {
+        for (let i = 0; i < parentCmd.children?.length; i++) {
+          if (parentCmd.children.length === 1) {
+            parentCmd.collapsibleState = vscode.TreeItemCollapsibleState.None;
+          }
+
+          const removeCmd = parentCmd.children.splice(i--, 1);
+          const disposable = this.disposableMap.get(removeCmd[0].commandId!);
+          disposable?.dispose();
+          this.disposableMap.delete(removeCmd[0].commandId!);
+
+          if (removeCmd[0].children) {
+            for (const child of removeCmd[0].children) {
+              const subDisposable = this.disposableMap.get(child.commandId!);
+              subDisposable?.dispose();
+              this.disposableMap.delete(child.commandId!);
+            }
+          }
+        }
+      }
+
+      const disposable = this.disposableMap.get(commandId);
+      disposable?.dispose();
+      this.disposableMap.delete(commandId);
+
+      this.removeCommand(commandId);
+    }
+
+    this._onDidChangeTreeData.fire();
+    return ok(Void);
   }
 
   getTreeItem(element: TreeViewCommand): vscode.TreeItem {

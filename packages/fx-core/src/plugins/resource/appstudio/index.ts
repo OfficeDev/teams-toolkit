@@ -32,6 +32,7 @@ import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { FunctionRouterError } from "../../../core";
 import { Links } from "../bot/constants";
+import { TeamsAppAdmin } from "../../../common/permissionInterface";
 @Service(ResourcePlugins.AppStudioPlugin)
 export class AppStudioPlugin implements Plugin {
   name = "fx-resource-appstudio";
@@ -341,6 +342,25 @@ export class AppStudioPlugin implements Plugin {
         AppStudioResultFactory.SystemError(
           AppStudioError.GrantPermissionFailedError.name,
           error.message
+        )
+      );
+    }
+  }
+
+  public async listCollaborator(ctx: PluginContext): Promise<Result<TeamsAppAdmin[], FxError>> {
+    TelemetryUtils.init(ctx);
+    TelemetryUtils.sendStartEvent(TelemetryEventName.listCollaborator);
+
+    try {
+      const listCollaborator = await this.appStudioPluginImpl.listCollaborator(ctx);
+      TelemetryUtils.sendSuccessEvent(TelemetryEventName.listCollaborator);
+      return ok(listCollaborator);
+    } catch (error) {
+      TelemetryUtils.sendErrorEvent(TelemetryEventName.listCollaborator, error);
+      return err(
+        AppStudioResultFactory.SystemError(
+          AppStudioError.ListCollaboratorFailedError.name,
+          AppStudioError.ListCollaboratorFailedError.message(error)
         )
       );
     }

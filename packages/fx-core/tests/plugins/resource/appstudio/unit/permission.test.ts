@@ -106,10 +106,49 @@ describe("Remote Collaboration", () => {
     sandbox.stub(AppStudioClient, "grantPermission").resolves();
 
     const grantPermission = await plugin.grantPermission(ctx);
-    console.log(grantPermission);
     chai.assert.isTrue(grantPermission.isOk());
     if (grantPermission.isOk()) {
       chai.assert.deepEqual(grantPermission.value[0].roles, ["Administrator"]);
+    }
+  });
+
+  it("List collaborator", async () => {
+    const appId = faker.datatype.uuid();
+    const soltuionContext = new ConfigMap();
+    soltuionContext.set(REMOTE_TEAMS_APP_ID, appId);
+    configOfOtherPlugins.set(SOLUTION, soltuionContext);
+
+    ctx = {
+      root: "./tests/plugins/resource/appstudio/resources/",
+      configOfOtherPlugins: configOfOtherPlugins,
+      config: new ConfigMap(),
+      answers: { platform: Platform.VSCode },
+      appStudioToken: new MockedAppStudioTokenProvider(),
+    };
+    ctx.projectSettings = {
+      appName: "my app",
+      projectId: "project id",
+      solutionSettings: {
+        name: "azure",
+        version: "1.0",
+      },
+    };
+
+    sandbox.stub(ctx.appStudioToken!, "getAccessToken").resolves("anything");
+    sandbox.stub(AppStudioClient, "getUserList").resolves([
+      {
+        aadId: "aadId",
+        tenantId: "tenantId",
+        userPrincipalName: "userPrincipalName",
+        displayName: "displayName",
+        isAdministrator: true,
+      },
+    ]);
+
+    const listCollaborator = await plugin.listCollaborator(ctx);
+    chai.assert.isTrue(listCollaborator.isOk());
+    if (listCollaborator.isOk()) {
+      chai.assert.equal(listCollaborator.value[0].userObjectId, "aadId");
     }
   });
 });

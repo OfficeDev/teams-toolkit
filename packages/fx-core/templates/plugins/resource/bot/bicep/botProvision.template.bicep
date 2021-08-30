@@ -65,12 +65,12 @@ resource botWebApp 'Microsoft.Web/sites@2021-01-01' = {
   {{/contains}}
 }
 
-output botWebAppSKU string = botWebAppSKU // skuName
+output botWebAppSKU string = botWebAppSKU
 output botServiceSKU string = botServiceSKU
-output botWebAppName string = botWebAppName // siteName
-output botDomain string = botWebAppHostname // validDomain
-output appServicePlanName string = botServerfarmsName // appServicePlan
+output botWebAppName string = botWebAppName
+output botDomain string = botWebAppHostname
+output appServicePlanName string = botServerfarmsName
 {{#ifCond createNewBotService true}}
-output botServiceName string = botServiceName // botChannelReg
+output botServiceName string = botServiceName
 {{/ifCond}}
-output botWebAppEndpoint string = botEndpoint // siteEndpoint
+output botWebAppEndpoint string = botEndpoint

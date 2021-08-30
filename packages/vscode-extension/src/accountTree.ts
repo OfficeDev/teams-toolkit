@@ -327,13 +327,6 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
             icon: "spinner",
           },
         ]);
-        tools.treeProvider?.remove([
-          {
-            commandId: "fx-extension.checkSideloading",
-            label: "",
-            parent: "fx-extension.signinM365",
-          },
-        ]);
       } else if (status === "SignedOut") {
         tools.treeProvider?.refresh([
           {
@@ -498,7 +491,7 @@ async function setSubscription(subscription: SubscriptionInfo | undefined) {
 
 async function getSideloadingStatus(token: string): Promise<boolean | undefined> {
   const instance = axios.create({
-    baseURL: "https://dev-int.teams.microsoft.com",
+    baseURL: "https://dev.teams.microsoft.com",
     timeout: 30000,
   });
   instance.defaults.headers.common["Authorization"] = `Bearer ${token}`;

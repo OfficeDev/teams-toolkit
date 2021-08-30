@@ -31,10 +31,11 @@ import {
   SubscriptionInfo,
   ProjectSettings,
   SolutionSettings,
+  ArchiveFolderName,
 } from "@microsoft/teamsfx-api";
 import { checkSubscription, fillInCommonQuestions } from "./commonQuestions";
 import { executeLifecycles, executeConcurrently, LifecyclesWithContext } from "./executor";
-import { checkFileExist, getPluginContext, sendErrorTelemetryThenReturnError } from "./utils/util";
+import { getPluginContext, sendErrorTelemetryThenReturnError } from "./utils/util";
 import * as fs from "fs-extra";
 import {
   DEFAULT_PERMISSION_REQUEST,
@@ -117,6 +118,7 @@ import {
   ResourcePermission,
   TeamsAppAdmin,
 } from "../../../common/permissionInterface";
+import { checkFileExist } from "../../../common/fileUtils";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -273,7 +275,9 @@ export class TeamsAppSolution implements Solution {
     }
     const [answers, projectSettings, solutionSettingsSource] = assertRes.value;
 
-    const isTypescriptProject = await checkFileExist(path.join(ctx.root, "tsconfig.json"));
+    const isTypescriptProject = await checkFileExist(
+      path.join(ctx.root, ArchiveFolderName, "tsconfig.json")
+    );
     projectSettings.programmingLanguage = isTypescriptProject ? "typescript" : "javascript";
 
     const capability = answers[AzureSolutionQuestionNames.V1Capability] as string;

@@ -42,11 +42,13 @@ import {
 } from "./util";
 import { ExecOptions } from "child_process";
 import { Executor } from "../../../src/common/tools";
+import * as os from "os";
 
 import "../../../src/plugins/resource/frontend";
 import "../../../src/plugins/resource/simpleauth";
 import "../../../src/plugins/resource/spfx";
 import "../../../src/plugins/resource/aad";
+import { environmentManager } from "../../../src";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -69,8 +71,11 @@ function mockSolutionContext(): SolutionContext {
   const config: SolutionConfig = new Map();
   return {
     root: "./",
-    targetEnvName: "default",
-    config,
+    envInfo: {
+      envName: "default",
+      profile: new Map<string, any>(),
+      config: environmentManager.newEnvConfigData(),
+    },
     answers: { platform: Platform.VSCode },
     projectSettings: undefined,
     azureAccountProvider: Object as any & AzureAccountProvider,
@@ -141,6 +146,7 @@ describe("Generate ARM Template for project", () => {
 
     const projectArmTemplateFolder = path.join(testFolder, templateFolder);
     const projectArmParameterFolder = path.join(testFolder, parameterFolder);
+    const projectArmBaseFolder = path.join(testFolder, baseFolder);
     const result = await generateArmTemplate(mockedCtx);
     expect(result.isOk()).to.be.true;
     expect(
@@ -188,6 +194,9 @@ Mocked simple auth output content`
     "SimpleAuthParameter": "SimpleAuthParameterValue"
   }
 }`
+    );
+    expect(await fs.readFile(path.join(projectArmBaseFolder, ".gitignore"), fileEncoding)).equals(
+      `# ignore ARM template backup folder${os.EOL}/backup`
     );
   });
 
@@ -279,33 +288,8 @@ describe("Deploy ARM Template to Azure", () => {
       value: "https://testproject-simpleauth-webapp.azurewebsites.net",
     },
   };
-  const resultFileContent: Map<string, any> = new Map();
   const SOLUTION_CONFIG = "solution";
-  const inputFileContent: Map<string, any> = new Map([
-    [
-      path.join(parameterFolder, "parameters.template.json"),
-      `{
-"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
-"contentVersion": "1.0.0.0",
-"parameters": {
-  "resourceBaseName": {
-    "value": "{{SOLUTION__RESOURCE_BASE_NAME}}"
-  },
-  "aadClientId": {
-    "value": "{{FX_RESOURCE_AAD_APP_FOR_TEAMS__CLIENTID}}"
-  },
-  "aadClientSecret": {
-    "value": "{{FX_RESOURCE_AAD_APP_FOR_TEAMS__CLIENTSECRET}}"
-  },
-  "envValue": {
-    "value": "{{MOCKED_EXPAND_VAR_TEST}}"
-  }
-}
-}
-`,
-    ],
-    [path.join(templateFolder, "main.json"), `{"test_key": "test_value"}`],
-  ]);
+  let fileContent: Map<string, any>;
 
   beforeEach(() => {
     (
@@ -314,21 +298,45 @@ describe("Deploy ARM Template to Azure", () => {
         Promise<string>
       >
     ).callsFake((file: number | PathLike): Promise<string> => {
-      return inputFileContent.get(file.toString());
+      return fileContent.get(file.toString());
     });
     mocker.stub(fs, "stat").callsFake((filePath: PathLike): Promise<fs.Stats> => {
-      if (filePath === path.join(parameterFolder, "parameters.default.json")) {
-        throw new Error(`${filePath} does not exist.`);
+      if (fileContent.has(filePath.toString())) {
+        return new Promise<fs.Stats>((resolve) => {
+          resolve({} as fs.Stats);
+        });
       }
-      return new Promise<fs.Stats>((resolve) => {
-        resolve({} as fs.Stats);
-      });
+      throw new Error(`${filePath} does not exist.`);
     });
     mocker.stub(fs, "writeFile").callsFake((path: number | PathLike, data: any) => {
-      resultFileContent.set(path.toString(), data);
+      fileContent.set(path.toString(), data);
     });
 
-    resultFileContent.clear();
+    fileContent = new Map([
+      [
+        path.join(parameterFolder, "parameters.template.json"),
+        `{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "resourceBaseName": {
+      "value": "{{SOLUTION__RESOURCE_BASE_NAME}}"
+    },
+    "aadClientId": {
+      "value": "{{FX_RESOURCE_AAD_APP_FOR_TEAMS__CLIENTID}}"
+    },
+    "aadClientSecret": {
+      "value": "{{FX_RESOURCE_AAD_APP_FOR_TEAMS__CLIENTSECRET}}"
+    },
+    "envValue": {
+      "value": "{{MOCKED_EXPAND_VAR_TEST}}"
+    }
+  }
+  }
+  `,
+      ],
+      [path.join(templateFolder, "main.json"), `{"test_key": "test_value"}`],
+    ]);
   });
 
   afterEach(() => {
@@ -350,11 +358,11 @@ describe("Deploy ARM Template to Azure", () => {
         capabilities: [TabOptionItem.id],
       },
     };
-    mockedCtx.config.set(
+    mockedCtx.envInfo.profile.set(
       "fx-resource-aad-app-for-teams",
       new ConfigMap([["clientId", testClientId]])
     );
-    mockedCtx.config.set(
+    mockedCtx.envInfo.profile.set(
       SOLUTION_CONFIG,
       new ConfigMap([
         ["resource-base-name", "mocked resource base name"],
@@ -392,47 +400,18 @@ describe("Deploy ARM Template to Azure", () => {
         capabilities: [TabOptionItem.id],
       },
     };
-    mockedCtx.azureAccountProvider!.getAccountCredentialAsync = async function () {
-      const azureToken = new UserTokenCredentials(
-        testClientId,
-        "test_domain",
-        "test_username",
-        "test_password"
-      );
-      return azureToken;
-    };
-    mockedCtx.azureAccountProvider!.getSelectedSubscription = async function () {
-      const subscriptionInfo = {
-        subscriptionId: "test_subsctiption_id",
-        subscriptionName: "test_subsctiption_name",
-      } as SubscriptionInfo;
-      return subscriptionInfo;
-    };
-    mockedCtx.config.set(
+    mockArmDeploymentDependencies(mockedCtx);
+
+    mockedCtx.envInfo.profile.set(
       "fx-resource-aad-app-for-teams",
       new ConfigMap([
         ["clientId", testClientId],
         ["clientSecret", testClientSecret],
       ])
     );
-    mockedCtx.config.set(
-      SOLUTION_CONFIG,
-      new ConfigMap([
-        ["resourceGroupName", "mocked resource group name"],
-        ["resourceNameSuffix", testResourceSuffix],
-      ])
-    );
     envRestore = mockedEnv({
       MOCKED_EXPAND_VAR_TEST: testEnvValue,
     });
-
-    mocker
-      .stub(Executor, "execCommandAsync")
-      .callsFake((command: string, options?: ExecOptions): Promise<void> => {
-        return new Promise((resolve) => {
-          resolve();
-        });
-      });
 
     mocker
       .stub(Deployments.prototype, "createOrUpdate")
@@ -466,11 +445,14 @@ describe("Deploy ARM Template to Azure", () => {
       );
 
     // Act
-    await deployArmTemplates(mockedCtx);
+    const result = await deployArmTemplates(mockedCtx);
 
     // Assert
+    if (result.isErr()) {
+      chai.assert.fail(`deployArmTemplate failed:${result.error}`);
+    }
     expect(
-      JSON.parse(resultFileContent.get(path.join(parameterFolder, "parameters.default.json")))
+      JSON.parse(fileContent.get(path.join(parameterFolder, "parameters.default.json")))
     ).to.deep.equals(
       JSON.parse(`{
       "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
@@ -492,8 +474,111 @@ describe("Deploy ARM Template to Azure", () => {
       }`)
     );
     chai.assert.strictEqual(
-      mockedCtx.config.get(SOLUTION_CONFIG)?.get("armTemplateOutput"),
+      mockedCtx.envInfo.profile.get(SOLUTION_CONFIG)?.get("armTemplateOutput"),
       testArmTemplateOutput
     );
   });
+
+  it("should use existing parameter file", async () => {
+    const mockedCtx = mockSolutionContext();
+    mockedCtx.projectSettings = {
+      appName: testAppName,
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [fehostPlugin.name, simpleAuthPlugin.name],
+        capabilities: [TabOptionItem.id],
+      },
+    };
+
+    mockArmDeploymentDependencies(mockedCtx);
+
+    fileContent.set(
+      path.join(parameterFolder, "parameters.default.json"),
+      `{
+      "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+          "existingFileTest": {
+              "value": "mocked value"
+          }
+      }
+  }`
+    );
+
+    let usedExistingParameterDefaultFile = false;
+    mocker
+      .stub(Deployments.prototype, "createOrUpdate")
+      .callsFake(
+        (
+          resourceGroupName: string,
+          deploymentName: string,
+          parameters: ResourceManagementModels.Deployment
+        ) => {
+          if (parameters.properties.parameters?.existingFileTest) {
+            usedExistingParameterDefaultFile = true;
+          } //content of parameter.default.json should be used
+
+          return new Promise((resolve) => {
+            resolve({
+              properties: {
+                outputs: testArmTemplateOutput,
+              },
+              _response: {
+                request: {} as WebResourceLike,
+                status: 200,
+                headers: new HttpHeaders(),
+                bodyAsText: "",
+                parsedBody: {} as ResourceManagementModels.DeploymentExtended,
+              },
+            });
+          });
+        }
+      );
+
+    // Act
+    const result = await deployArmTemplates(mockedCtx);
+    if (result.isErr()) {
+      chai.assert.fail(`deployArmTemplate failed:${result.error}`);
+    }
+    chai.assert.strictEqual(usedExistingParameterDefaultFile, true);
+  });
+
+  function mockArmDeploymentDependencies(mockedCtx: SolutionContext) {
+    mockedCtx.envInfo.profile.set(
+      SOLUTION_CONFIG,
+      new ConfigMap([
+        ["resourceGroupName", "mocked resource group name"],
+        ["resourceNameSuffix", testResourceSuffix],
+      ])
+    );
+
+    mockedCtx.azureAccountProvider!.getAccountCredentialAsync = async function () {
+      const azureToken = new UserTokenCredentials(
+        testClientId,
+        "test_domain",
+        "test_username",
+        "test_password"
+      );
+      return azureToken;
+    };
+
+    mockedCtx.azureAccountProvider!.getSelectedSubscription = async function () {
+      const subscriptionInfo = {
+        subscriptionId: "test_subsctiption_id",
+        subscriptionName: "test_subsctiption_name",
+      } as SubscriptionInfo;
+      return subscriptionInfo;
+    };
+
+    mocker
+      .stub(Executor, "execCommandAsync")
+      .callsFake((command: string, options?: ExecOptions): Promise<void> => {
+        return new Promise((resolve) => {
+          resolve();
+        });
+      });
+  }
 });

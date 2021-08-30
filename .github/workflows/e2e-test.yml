@@ -115,6 +115,7 @@ jobs:
             }
             description="$description <tr> <td>$(_jq '.commit')</td> <td>$(_jq '.subject')</td> <td>$(_jq '.date')</td> <td><a href=\"#\" data-vss-mention=\"version:2.0,${email_uid[$(_jq '.email')]}\">$(_jq '.email')</a></td> </tr> "
           done
+          description=`echo $description | sed -e 's/"/\\\"/g'`
           echo "::set-output name=description::$description"
 
       - name: Create azure devops issue if test is failed
@@ -127,9 +128,22 @@ jobs:
             az boards work-item create --title="E2E tests failed" \
                              --type=Bug \
                              --area="Microsoft Teams Extensibility\Teams Extensibility E2E Team" \
-                             --assigned-to="haolong@microsoft.com" \
+                             --assigned-to="zhiyu.you@microsoft.com" \
                              --iteration="Microsoft Teams Extensibility" \
                              --organization="https://msazure.visualstudio.com/" \
                              --project="Microsoft Teams Extensibility" \
                              --fields "Microsoft.VSTS.TCM.ReproSteps=<a>https://github.com/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}</a>" "Microsoft.VSTS.Common.Triage=Triaged" \
                              --description="<table class=\"w3-table w3-striped w3-bordered\">${{ steps.git-log.outputs.description }}</table>"
+
+      - name: Send E-mail to the whole team
+        uses: satak/webrequest-action@master
+        with:
+          url: https://prod-30.eastus.logic.azure.com:443/workflows/9aa865da96054bd89749c2d4ce68df8e/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=uIoB06NUHSnKoZeWjNDI9t4rrhbTBKxJNiBtDoMRSQs
+          method: POST
+          payload: |
+            {
+              "to": "vsciotadt@microsoft.com",
+              "body": "TeamsFx CLI E2E Test failed <table class=\"w3-table w3-striped w3-bordered\">${{ steps.git-log.outputs.description }}</table>The detail can be found here: https://github.com/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}",
+              "subject": "[Failure] TeamsFx CLI E2E Test ${{ github.run-id }}",
+              "apiKey": "${{ secrets.MAIL_API_KEY }}"
+            }

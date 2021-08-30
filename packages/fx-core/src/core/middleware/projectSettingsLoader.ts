@@ -8,7 +8,6 @@ import {
   InputConfigsFolderName,
   Inputs,
   ok,
-  PluginConfig,
   ProjectSettings,
   ProjectSettingsFileName,
   Result,
@@ -27,7 +26,7 @@ import {
 import * as path from "path";
 import * as fs from "fs-extra";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
-import { validateSettings } from "../tools";
+import { newEnvInfo, validateSettings } from "../tools";
 import * as uuid from "uuid";
 import { LocalCrypto } from "../crypto";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
@@ -115,7 +114,7 @@ export async function newSolutionContext(tools: Tools, inputs: Inputs): Promise<
   };
   const solutionContext: SolutionContext = {
     projectSettings: projectSettings,
-    config: new Map<string, PluginConfig>(),
+    envInfo: newEnvInfo(),
     root: inputs.projectPath || "",
     ...tools,
     ...tools.tokenProvider,

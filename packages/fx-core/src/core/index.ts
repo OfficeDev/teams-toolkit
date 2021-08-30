@@ -67,6 +67,7 @@ import {
   FunctionRouterError,
   InvalidInputError,
   MigrateNotImplementError,
+  ProjectEnvAlreadyExistError,
   ProjectFolderExistError,
   ProjectFolderNotExistError,
   TaskNotSupportError,
@@ -88,7 +89,9 @@ import { AxiosResponse } from "axios";
 import { ProjectUpgraderMW } from "./middleware/projectUpgrader";
 import { globalStateUpdate } from "../common/globalState";
 import {
+  askNewEnvironment,
   EnvInfoLoaderMW,
+  loadSolutionContext,
   upgradeDefaultFunctionName,
   upgradeProgrammingLanguage,
 } from "./middleware/envInfoLoader";
@@ -96,6 +99,8 @@ import { EnvInfoWriterMW } from "./middleware/envInfoWriter";
 import { LocalSettingsLoaderMW } from "./middleware/localSettingsLoader";
 import { LocalSettingsWriterMW } from "./middleware/localSettingsWriter";
 import { MigrateConditionHandlerMW } from "./middleware/migrateConditionHandler";
+import { environmentManager } from "..";
+import { newEnvInfo } from "./tools";
 
 export interface CoreHookContext extends HookContext {
   projectSettings?: ProjectSettings;
@@ -169,7 +174,7 @@ export class FxCore implements Core {
 
       const solutionContext: SolutionContext = {
         projectSettings: projectSettings,
-        config: new Map<string, PluginConfig>(),
+        envInfo: newEnvInfo(),
         root: projectPath,
         ...this.tools,
         ...this.tools.tokenProvider,
@@ -254,7 +259,7 @@ export class FxCore implements Core {
 
     const solutionContext: SolutionContext = {
       projectSettings: projectSettings,
-      config: new Map<string, PluginConfig>(),
+      envInfo: newEnvInfo(),
       root: projectPath,
       ...this.tools,
       ...this.tools.tokenProvider,
@@ -448,11 +453,11 @@ export class FxCore implements Core {
   async localDebug(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     currentStage = Stage.debug;
     upgradeProgrammingLanguage(
-      ctx!.solutionContext!.config as SolutionConfig,
+      ctx!.solutionContext!.envInfo.profile as SolutionConfig,
       ctx!.projectSettings!
     );
     upgradeDefaultFunctionName(
-      ctx!.solutionContext!.config as SolutionConfig,
+      ctx!.solutionContext!.envInfo.profile as SolutionConfig,
       ctx!.projectSettings!
     );
 
@@ -571,7 +576,7 @@ export class FxCore implements Core {
   ): Promise<Result<ProjectConfig | undefined, FxError>> {
     return ok({
       settings: ctx!.projectSettings,
-      config: ctx!.solutionContext?.config,
+      config: ctx!.solutionContext?.envInfo.profile,
       localSettings: ctx!.solutionContext?.localSettings,
     });
   }
@@ -586,11 +591,12 @@ export class FxCore implements Core {
   ])
   async setSubscriptionInfo(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     const solutionContext = ctx!.solutionContext! as SolutionContext;
-    if (inputs.tenantId) solutionContext.config.get("solution")?.set("tenantId", inputs.tenantId);
-    else solutionContext.config.get("solution")?.delete("tenantId");
+    if (inputs.tenantId)
+      solutionContext.envInfo.profile.get("solution")?.set("tenantId", inputs.tenantId);
+    else solutionContext.envInfo.profile.get("solution")?.delete("tenantId");
     if (inputs.subscriptionId)
-      solutionContext.config.get("solution")?.set("subscriptionId", inputs.subscriptionId);
-    else solutionContext.config.get("solution")?.delete("subscriptionId");
+      solutionContext.envInfo.profile.get("solution")?.set("subscriptionId", inputs.subscriptionId);
+    else solutionContext.envInfo.profile.get("solution")?.delete("subscriptionId");
     return ok(Void);
   }
 
@@ -762,7 +768,7 @@ export class FxCore implements Core {
             description: "",
             author: "",
             scripts: {
-              test: 'echo "Error: no test specified" && exit 1',
+              test: "echo \"Error: no test specified\" && exit 1",
             },
             devDependencies: {
               "@microsoft/teamsfx-cli": "0.*",
@@ -816,9 +822,39 @@ export class FxCore implements Core {
   async buildArtifacts(inputs: Inputs): Promise<Result<Void, FxError>> {
     throw TaskNotSupportError(Stage.build);
   }
-  async createEnv(inputs: Inputs): Promise<Result<Void, FxError>> {
-    throw TaskNotSupportError(Stage.createEnv);
+
+  @hooks([ErrorHandlerMW, ProjectSettingsLoaderMW, ContextInjecterMW])
+  async createEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+    if (!isMultiEnvEnabled() || !ctx!.projectSettings) {
+      return ok(Void);
+    }
+
+    const core = ctx!.self as FxCore;
+    const targetEnvName = await askNewEnvironment(ctx!, inputs);
+
+    if (!targetEnvName) {
+      return ok(Void);
+    }
+
+    if (targetEnvName) {
+      const newEnvConfig = environmentManager.newEnvConfigData();
+      const writeEnvResult = await environmentManager.writeEnvConfig(
+        inputs.projectPath!,
+        newEnvConfig,
+        targetEnvName
+      );
+      if (writeEnvResult.isErr()) {
+        return err(writeEnvResult.error);
+      }
+      core.tools.logProvider.debug(
+        `[core] persist ${targetEnvName} env profile to path ${
+          writeEnvResult.value
+        }: ${JSON.stringify(newEnvConfig)}`
+      );
+    }
+    return ok(Void);
   }
+
   async removeEnv(inputs: Inputs): Promise<Result<Void, FxError>> {
     throw TaskNotSupportError(Stage.removeEnv);
   }

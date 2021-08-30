@@ -7,6 +7,7 @@ import { ext } from "./extensionVariables";
 import { TreeItem, TreeCategory, Result, FxError, ok } from "@microsoft/teamsfx-api";
 import * as StringResources from "./resources/Strings.json";
 import { Correlator } from "@microsoft/teamsfx-core";
+import { Void } from "@microsoft/teamsfx-api";
 
 class TreeViewManager {
   private static instance: TreeViewManager;
@@ -345,6 +346,16 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
     return undefined;
   }
 
+  removeCommand(commandId: string): undefined {
+    for (let i = 0; i < this.commands.length; ++i) {
+      const command = this.commands[i];
+      if (command.commandId === commandId) {
+        this.commands.splice(i, 1);
+      }
+    }
+    return undefined;
+  }
+
   async isRegistered(commandId: string): Promise<boolean> {
     const target = this.disposableMap.get(commandId);
     if (target !== undefined) {
@@ -496,6 +507,42 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
     }
     this._onDidChangeTreeData.fire();
     return Promise.resolve(ok(null));
+  }
+
+  removeById(commandId: string): Result<Void, FxError> {
+    const parentCmd = this.findCommand(commandId);
+
+    if (parentCmd) {
+      if (parentCmd.children) {
+        for (let i = 0; i < parentCmd.children?.length; i++) {
+          if (parentCmd.children.length === 1) {
+            parentCmd.collapsibleState = vscode.TreeItemCollapsibleState.None;
+          }
+
+          const removeCmd = parentCmd.children.splice(i--, 1);
+          const disposable = this.disposableMap.get(removeCmd[0].commandId!);
+          disposable?.dispose();
+          this.disposableMap.delete(removeCmd[0].commandId!);
+
+          if (removeCmd[0].children) {
+            for (const child of removeCmd[0].children) {
+              const subDisposable = this.disposableMap.get(child.commandId!);
+              subDisposable?.dispose();
+              this.disposableMap.delete(child.commandId!);
+            }
+          }
+        }
+      }
+
+      const disposable = this.disposableMap.get(commandId);
+      disposable?.dispose();
+      this.disposableMap.delete(commandId);
+
+      this.removeCommand(commandId);
+    }
+
+    this._onDidChangeTreeData.fire();
+    return ok(Void);
   }
 
   getTreeItem(element: TreeViewCommand): vscode.TreeItem {

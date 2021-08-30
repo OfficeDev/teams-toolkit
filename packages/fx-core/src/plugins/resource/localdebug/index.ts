@@ -18,16 +18,7 @@ import {
 import * as os from "os";
 
 import { LocalCertificateManager } from "./certificate";
-import {
-  AadPlugin,
-  FunctionPlugin,
-  SpfxPlugin,
-  SolutionPlugin,
-  FrontendHostingPlugin,
-  BotPlugin,
-  LocalEnvBotKeys,
-  RuntimeConnectorPlugin,
-} from "./constants";
+import { SolutionPlugin, LocalEnvBotKeys, LocalEnvBotKeysMigratedFromV1 } from "./constants";
 import {
   LocalDebugConfigKeys,
   LocalEnvFrontendKeys,
@@ -183,7 +174,8 @@ export class LocalDebugPlugin implements Plugin {
               includeFrontend,
               includeBackend,
               includeBot,
-              includeAuth
+              includeAuth,
+              isMigrateFromV1
             )
           );
 
@@ -442,20 +434,29 @@ export class LocalDebugPlugin implements Plugin {
 
     if (includeBot) {
       // bot local env
-      localEnvs[LocalEnvBotKeys.BotId] = ctx.localSettings?.bot?.get(
-        LocalSettingsBotKeys.BotId
-      ) as string;
-      localEnvs[LocalEnvBotKeys.BotPassword] = ctx.localSettings?.bot?.get(
-        LocalSettingsBotKeys.BotPassword
-      ) as string;
-      localEnvs[LocalEnvBotKeys.ClientId] = clientId;
-      localEnvs[LocalEnvBotKeys.ClientSecret] = clientSecret;
-      localEnvs[LocalEnvBotKeys.TenantID] = teamsAppTenantId;
-      localEnvs[LocalEnvBotKeys.OauthAuthority] = "https://login.microsoftonline.com";
-      localEnvs[LocalEnvBotKeys.LoginEndpoint] = ctx.localSettings?.bot?.get(
-        LocalSettingsBotKeys.BotEndpoint
-      ) as string;
-      localEnvs[LocalEnvBotKeys.ApplicationIdUri] = applicationIdUri;
+      if (ProjectSettingLoader.isMigrateFromV1(ctx)) {
+        localEnvs[LocalEnvBotKeysMigratedFromV1.BotId] = ctx.localSettings?.bot?.get(
+          LocalSettingsBotKeys.BotId
+        ) as string;
+        localEnvs[LocalEnvBotKeysMigratedFromV1.BotPassword] = ctx.localSettings?.bot?.get(
+          LocalSettingsBotKeys.BotPassword
+        ) as string;
+      } else {
+        localEnvs[LocalEnvBotKeys.BotId] = ctx.localSettings?.bot?.get(
+          LocalSettingsBotKeys.BotId
+        ) as string;
+        localEnvs[LocalEnvBotKeys.BotPassword] = ctx.localSettings?.bot?.get(
+          LocalSettingsBotKeys.BotPassword
+        ) as string;
+        localEnvs[LocalEnvBotKeys.ClientId] = clientId;
+        localEnvs[LocalEnvBotKeys.ClientSecret] = clientSecret;
+        localEnvs[LocalEnvBotKeys.TenantID] = teamsAppTenantId;
+        localEnvs[LocalEnvBotKeys.OauthAuthority] = "https://login.microsoftonline.com";
+        localEnvs[LocalEnvBotKeys.LoginEndpoint] = ctx.localSettings?.bot?.get(
+          LocalSettingsBotKeys.BotEndpoint
+        ) as string;
+        localEnvs[LocalEnvBotKeys.ApplicationIdUri] = applicationIdUri;
+      }
 
       if (includeBackend) {
         localEnvs[LocalEnvBackendKeys.ApiEndpoint] = localFuncEndpoint;

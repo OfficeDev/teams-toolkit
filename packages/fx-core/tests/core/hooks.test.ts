@@ -1076,5 +1076,44 @@ describe("Middleware", () => {
       const res = await my.upgrade(inputs);
       assert.isTrue(res.isOk() && res.value === "");
     });
+
+    it("Should not upgrade for the new multi env project", async () => {
+      sandbox.stub(process, "env").get(() => {
+        return { TEAMSFX_MULTI_ENV: "true" };
+      });
+
+      envJson = MockLatestVersion2_3_0Context();
+      userData = MockLatestVersion2_3_0UserData();
+      MockFunctions();
+
+      class ProjectUpgradeHook {
+        name = "jay";
+        tools = new MockTools();
+        async upgrade(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+          assert.equal(
+            userData["fx-resource-aad-app-for-teams.local_clientId"],
+            "local_clientId_new"
+          );
+          assert.equal(userData["solution.localDebugTeamsAppId"], "teamsAppId_new");
+          assert.equal(
+            (envJson["solution"] as any)["localDebugTeamsAppId"],
+            "{{solution.localDebugTeamsAppId}}"
+          );
+          assert.equal(
+            (envJson["fx-resource-aad-app-for-teams"] as any)["local_clientId"],
+            "{{fx-resource-aad-app-for-teams.local_clientId}}"
+          );
+          return ok("");
+        }
+      }
+
+      hooks(ProjectUpgradeHook, {
+        upgrade: [ProjectUpgraderMW],
+      });
+
+      const my = new ProjectUpgradeHook();
+      const res = await my.upgrade(inputs);
+      assert.isTrue(res.isOk() && res.value === "");
+    });
   });
 });

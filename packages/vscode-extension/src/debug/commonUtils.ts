@@ -282,9 +282,31 @@ function getSettingWithUserData(jsonSelector: (jsonObject: any) => any): string 
   return undefined;
 }
 
+// This is for the new folder structure for multi-env
+function getLocalSetting(jsonSelector: (jsonObject: any) => any): string | undefined {
+  if (ext.workspaceUri) {
+    const ws = ext.workspaceUri.fsPath;
+    if (isValidProject(ws)) {
+      const localSettingsPath = path.join(
+        ws,
+        `.${ConfigFolderName}/${InputConfigsFolderName}/${constants.localSettingsJsonName}`
+      );
+      const envJson = JSON.parse(fs.readFileSync(localSettingsPath, "utf8"));
+      const settingValue = jsonSelector(envJson) as string;
+      return settingValue;
+    }
+  }
+
+  return undefined;
+}
+
 export function getTeamsAppTenantId(): string | undefined {
   try {
-    return getSettingWithUserData((envJson) => envJson.solution.teamsAppTenantId);
+    if (isMultiEnvEnabled()) {
+      return getLocalSetting((localSettingsJson) => localSettingsJson.teamsApp.tenantId);
+    } else {
+      return getSettingWithUserData((envJson) => envJson.solution.teamsAppTenantId);
+    }
   } catch {
     // in case structure changes
     return undefined;
@@ -293,7 +315,11 @@ export function getTeamsAppTenantId(): string | undefined {
 
 export function getLocalTeamsAppId(): string | undefined {
   try {
-    return getSettingWithUserData((envJson) => envJson.solution.localDebugTeamsAppId);
+    if (isMultiEnvEnabled()) {
+      return getLocalSetting((localSettingsJson) => localSettingsJson.teamsApp.teamsAppId);
+    } else {
+      return getSettingWithUserData((envJson) => envJson.solution.localDebugTeamsAppId);
+    }
   } catch {
     // in case structure changes
     return undefined;

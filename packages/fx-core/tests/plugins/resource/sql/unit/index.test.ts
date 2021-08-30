@@ -66,7 +66,8 @@ describe("sqlPlugin", () => {
   it("getQuestions in cli help", async function () {
     // Arrange
     sinon.stub(Servers.prototype, "checkNameAvailability").resolves({ available: false });
-    pluginContext.answers.platform === Platform.CLI_HELP;
+    pluginContext.answers === { platform: Platform.CLI_HELP };
+    // pluginContext.answers.platform === Platform.CLI_HELP;
     // Act
     const getQuestionResult = await sqlPlugin.getQuestions(Stage.provision, pluginContext);
 

@@ -44,6 +44,7 @@ import {
   ScratchOptionYesVSC,
 } from "../../src/core/question";
 import { loadSolutionContext } from "../../src/core/middleware/envInfoLoader";
+import * as commonTools from "../../src/common/tools";
 
 describe("Core basic APIs", () => {
   const sandbox = sinon.createSandbox();
@@ -139,7 +140,7 @@ describe("Core basic APIs", () => {
       const validRes = validateProject(solutionContext);
       assert.isTrue(validRes === undefined);
 
-      const solutioConfig = solutionContext.config.get("solution");
+      const solutioConfig = solutionContext.envInfo.profile.get("solution");
       assert.isTrue(solutioConfig !== undefined);
       assert.isTrue(solutioConfig!.get("create") === true);
       assert.isTrue(solutioConfig!.get("scaffold") === true);
@@ -185,7 +186,7 @@ describe("Core basic APIs", () => {
       const validRes = validateProject(solutionContext);
       assert.isTrue(validRes === undefined);
 
-      const solutioConfig = solutionContext.config.get("solution");
+      const solutioConfig = solutionContext.envInfo.profile.get("solution");
       assert.isTrue(solutioConfig !== undefined);
       assert.isTrue(solutioConfig!.get("provision") === true);
       assert.isTrue(solutioConfig!.get("deploy") === true);
@@ -343,7 +344,7 @@ describe("Core basic APIs", () => {
       const validRes = validateProject(solutionContext);
       assert.isTrue(validRes === undefined);
 
-      const solutioConfig = solutionContext.config.get("solution");
+      const solutioConfig = solutionContext.envInfo.profile.get("solution");
       assert.isTrue(solutioConfig !== undefined);
     }
     {
@@ -387,7 +388,7 @@ describe("Core basic APIs", () => {
       const validRes = validateProject(solutionContext);
       assert.isTrue(validRes === undefined);
 
-      const solutioConfig = solutionContext.config.get("solution");
+      const solutioConfig = solutionContext.envInfo.profile.get("solution");
       assert.isTrue(solutioConfig !== undefined);
       assert.isTrue(solutioConfig!.get("provision") === true);
       assert.isTrue(solutioConfig!.get("deploy") === true);
@@ -688,8 +689,93 @@ describe("Core basic APIs", () => {
         const validRes = validateProject(solutionContext);
         assert.isTrue(validRes === undefined);
 
-        const solutioConfig = solutionContext.config.get("solution");
+        const solutioConfig = solutionContext.envInfo.profile.get("solution");
         assert.isTrue(solutioConfig !== undefined);
+      }
+    });
+  });
+
+  const envParameters = [
+    {
+      description: "skip ask env name",
+      appName: appName,
+      projectPath: projectPath,
+      skipAppNameQuestion: true,
+    },
+  ];
+
+  envParameters.forEach((testParam) => {
+    it(`happy path: create new env`, async () => {
+      const expectedInputs: Inputs = {
+        platform: Platform.CLI,
+        [CoreQuestionNames.AppName]: appName,
+        [CoreQuestionNames.Folder]: os.tmpdir(),
+        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+        projectPath: projectPath,
+        solution: mockSolution.name,
+      };
+      sandbox
+        .stub<any, any>(ui, "inputText")
+        .callsFake(async (config: InputTextConfig): Promise<Result<InputTextResult, FxError>> => {
+          if (config.name === CoreQuestionNames.AppName) {
+            return ok({
+              type: "success",
+              result: expectedInputs[CoreQuestionNames.AppName] as string,
+            });
+          }
+          if (config.name === CoreQuestionNames.NewTargetEnvName) {
+            return ok({
+              type: "success",
+              result: "newEnv",
+            });
+          }
+          throw err(InvalidInputError("invalid question"));
+        });
+      sandbox
+        .stub<any, any>(ui, "selectFolder")
+        .callsFake(
+          async (config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> => {
+            if (config.name === CoreQuestionNames.Folder) {
+              return ok({
+                type: "success",
+                result: expectedInputs[CoreQuestionNames.Folder] as string,
+              });
+            }
+            throw err(InvalidInputError("invalid question"));
+          }
+        );
+      sandbox
+        .stub<any, any>(ui, "selectOption")
+        .callsFake(
+          async (config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> => {
+            if (config.name === CoreQuestionNames.CreateFromScratch) {
+              return ok({
+                type: "success",
+                result: expectedInputs[CoreQuestionNames.CreateFromScratch] as string,
+              });
+            }
+            throw err(InvalidInputError("invalid question"));
+          }
+        );
+      sandbox.stub(commonTools, "isMultiEnvEnabled").returns(true);
+      const core = new FxCore(tools);
+      {
+        const inputs: Inputs = { platform: Platform.CLI };
+        const res = await core.createProject(inputs);
+        assert.isTrue(res.isOk() && res.value === projectPath);
+        assert.deepEqual(expectedInputs, inputs);
+
+        const projectSettingsResult = await loadProjectSettings(inputs);
+        if (projectSettingsResult.isErr()) {
+          assert.fail("failed to load project settings");
+        }
+
+        const [projectSettings, projectIdMissing] = projectSettingsResult.value;
+        const validSettingsResult = validateSettings(projectSettings);
+        assert.isTrue(validSettingsResult === undefined);
+
+        const createEnvRes = await core.createEnv(inputs);
+        assert.isTrue(createEnvRes.isOk());
       }
     });
   });

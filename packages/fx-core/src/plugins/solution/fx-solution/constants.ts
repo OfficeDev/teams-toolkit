@@ -82,6 +82,8 @@ export enum SolutionError {
   NoAppStudioToken = "NoAppStudioToken",
   NoTeamsAppTenantId = "NoTeamsAppTenantId",
   FailedToCreateResourceGroup = "FailedToCreateResourceGroup",
+  FailedToListResourceGroup = "FailedToListResourceGrouop",
+  FailedToGetResourceGroupInfoInputs = "FailedToGetResourceGroupInfoInputs",
   NotLoginToAzure = "NotLoginToAzure",
   AzureAccountExtensionNotInitialized = "AzureAccountExtensionNotInitialized",
   LocalTabEndpointMissing = "LocalTabEndpointMissing",

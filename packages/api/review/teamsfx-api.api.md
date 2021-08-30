@@ -1023,7 +1023,7 @@ export type SolutionConfig = Map<PluginIdentity, PluginConfig>;
 // @public (undocumented)
 export interface SolutionContext extends Context {
     // (undocumented)
-    config: SolutionConfig;
+    envInfo: EnvInfo;
 }
 
 // @public (undocumented)

@@ -309,8 +309,8 @@ export class TeamsAppSolution implements Solution {
     });
 
     // ensure that global namespace is present
-    if (!ctx.config.has(GLOBAL_CONFIG)) {
-      ctx.config.set(GLOBAL_CONFIG, new ConfigMap());
+    if (!ctx.envInfo.profile.has(GLOBAL_CONFIG)) {
+      ctx.envInfo.profile.set(GLOBAL_CONFIG, new ConfigMap());
     }
 
     // Only non-SPFx project will ask this question.
@@ -354,8 +354,8 @@ export class TeamsAppSolution implements Solution {
     });
 
     // ensure that global namespace is present
-    if (!ctx.config.has(GLOBAL_CONFIG)) {
-      ctx.config.set(GLOBAL_CONFIG, new ConfigMap());
+    if (!ctx.envInfo.profile.has(GLOBAL_CONFIG)) {
+      ctx.envInfo.profile.set(GLOBAL_CONFIG, new ConfigMap());
     }
 
     const settingsRes = await this.fillInV1SolutionSettings(ctx);
@@ -403,6 +403,8 @@ export class TeamsAppSolution implements Solution {
       [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
       [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
     });
+
+    ctx.ui?.showMessage("info", `Success: ${getStrings().solution.MigrateSuccessNotice}`, false);
     return ok(Void);
   }
 
@@ -611,7 +613,7 @@ export class TeamsAppSolution implements Solution {
         );
         ctx.logProvider?.info(msg);
         ctx.ui?.showMessage("info", msg, false);
-        ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+        ctx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
       } else {
         if (!isUserCancelError(provisionResult.error)) {
           const msg = util.format(
@@ -619,7 +621,7 @@ export class TeamsAppSolution implements Solution {
             ctx.projectSettings?.appName
           );
           ctx.logProvider?.error(msg);
-          ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false);
+          ctx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false);
         }
       }
       return provisionResult;
@@ -644,7 +646,7 @@ export class TeamsAppSolution implements Solution {
       const res = await fillInCommonQuestions(
         ctx,
         appName,
-        ctx.config,
+        ctx.envInfo.profile,
         ctx.azureAccountProvider,
         await ctx.appStudioToken?.getJsonObject()
       );
@@ -719,7 +721,9 @@ export class TeamsAppSolution implements Solution {
             if (plugin[2] === PluginNames.APPST) {
               const teamsAppResult = provisionResults[index];
               if (teamsAppResult.isOk()) {
-                ctx.config.get(GLOBAL_CONFIG)?.set(REMOTE_TEAMS_APP_ID, teamsAppResult.value);
+                ctx.envInfo.profile
+                  .get(GLOBAL_CONFIG)
+                  ?.set(REMOTE_TEAMS_APP_ID, teamsAppResult.value);
               }
             }
           });
@@ -758,7 +762,7 @@ export class TeamsAppSolution implements Solution {
         return ok(undefined);
       },
       async () => {
-        ctx.config.get(GLOBAL_CONFIG)?.delete(ARM_TEMPLATE_OUTPUT);
+        ctx.envInfo.profile.get(GLOBAL_CONFIG)?.delete(ARM_TEMPLATE_OUTPUT);
         ctx.logProvider?.info(
           util.format(getStrings().solution.ConfigurationFinishNotice, PluginDisplayName.Solution)
         );
@@ -775,7 +779,7 @@ export class TeamsAppSolution implements Solution {
     }
 
     const isAzureProject = this.isAzureProject(ctx);
-    const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
+    const provisioned = this.checkWetherProvisionSucceeded(ctx.envInfo.profile);
     if (isAzureProject && !provisioned) {
       return err(
         returnUserError(
@@ -890,7 +894,7 @@ export class TeamsAppSolution implements Solution {
     const checkRes = this.checkWhetherSolutionIsIdle();
     if (checkRes.isErr()) return err(checkRes.error);
     const isAzureProject = this.isAzureProject(ctx);
-    const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
+    const provisioned = this.checkWetherProvisionSucceeded(ctx.envInfo.profile);
     if (!provisioned) {
       return err(
         returnUserError(
@@ -1059,7 +1063,7 @@ export class TeamsAppSolution implements Solution {
         if (v1Blocked.isErr()) {
           return v1Blocked;
         }
-        const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
+        const provisioned = this.checkWetherProvisionSucceeded(ctx.envInfo.profile);
         if (provisioned) return ok(undefined);
       }
       let pluginsToProvision: LoadedPlugin[];
@@ -1094,7 +1098,7 @@ export class TeamsAppSolution implements Solution {
         }
 
         const isAzureProject = this.isAzureProject(ctx);
-        const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
+        const provisioned = this.checkWetherProvisionSucceeded(ctx.envInfo.profile);
         if (isAzureProject && !provisioned) {
           return err(
             returnUserError(
@@ -1167,7 +1171,7 @@ export class TeamsAppSolution implements Solution {
           return v1Blocked;
         }
         const isAzureProject = this.isAzureProject(ctx);
-        const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
+        const provisioned = this.checkWetherProvisionSucceeded(ctx.envInfo.profile);
         if (isAzureProject && !provisioned) {
           return err(
             returnUserError(
@@ -1293,7 +1297,7 @@ export class TeamsAppSolution implements Solution {
               combinedPostLocalDebugResults.value[index]
             );
           } else {
-            ctx.config
+            ctx.envInfo.profile
               .get(GLOBAL_CONFIG)
               ?.set(LOCAL_DEBUG_TEAMS_APP_ID, combinedPostLocalDebugResults.value[index]);
           }
@@ -1327,7 +1331,7 @@ export class TeamsAppSolution implements Solution {
         );
       }
 
-      ctx.config.get(GLOBAL_CONFIG)?.set(USER_INFO, JSON.stringify(userInfo));
+      ctx.envInfo.profile.get(GLOBAL_CONFIG)?.set(USER_INFO, JSON.stringify(userInfo));
 
       const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, [
         this.AadPlugin,
@@ -1341,7 +1345,7 @@ export class TeamsAppSolution implements Solution {
       );
 
       if (ctx.answers?.platform === Platform.CLI) {
-        const aadAppTenantId = ctx.config?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
+        const aadAppTenantId = ctx.envInfo.profile?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
 
         // Todo, when multi-environment is ready, we will update to current environment
         ctx.ui?.showMessage("info", `Starting permission grant for environment: default`, false);
@@ -1404,7 +1408,7 @@ export class TeamsAppSolution implements Solution {
 
       return ok(permissions);
     } finally {
-      ctx.config.get(GLOBAL_CONFIG)?.delete(USER_INFO);
+      ctx.envInfo.profile.get(GLOBAL_CONFIG)?.delete(USER_INFO);
       this.runningState = SolutionRunningState.Idle;
     }
   }
@@ -1419,7 +1423,7 @@ export class TeamsAppSolution implements Solution {
 
       const userInfo = result.value as IUserList;
 
-      ctx.config.get(GLOBAL_CONFIG)?.set(USER_INFO, JSON.stringify(userInfo));
+      ctx.envInfo.profile.get(GLOBAL_CONFIG)?.set(USER_INFO, JSON.stringify(userInfo));
 
       const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, [
         this.AadPlugin,
@@ -1433,7 +1437,7 @@ export class TeamsAppSolution implements Solution {
       );
 
       if (ctx.answers?.platform === Platform.CLI) {
-        const aadAppTenantId = ctx.config?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
+        const aadAppTenantId = ctx.envInfo.profile?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
 
         ctx.ui?.showMessage("info", `Account used to check: ${userInfo.userPrincipalName}`, false);
         // Todo, when multi-environment is ready, we will update to current environment
@@ -1484,7 +1488,7 @@ export class TeamsAppSolution implements Solution {
 
       return ok(permissions);
     } finally {
-      ctx.config.get(GLOBAL_CONFIG)?.delete(USER_INFO);
+      ctx.envInfo.profile.get(GLOBAL_CONFIG)?.delete(USER_INFO);
       this.runningState = SolutionRunningState.Idle;
     }
   }
@@ -1510,7 +1514,7 @@ export class TeamsAppSolution implements Solution {
       );
 
       if (ctx.answers?.platform === Platform.CLI) {
-        const aadAppTenantId = ctx.config?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
+        const aadAppTenantId = ctx.envInfo.profile?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
         ctx.ui?.showMessage("info", `Account used to check: ${userInfo.userPrincipalName}`, false);
 
         // Todo, when multi-environment is ready, we will update to current environment
@@ -1596,7 +1600,7 @@ export class TeamsAppSolution implements Solution {
       return canProcess;
     }
 
-    const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
+    const provisioned = this.checkWetherProvisionSucceeded(ctx.envInfo.profile);
     if (!provisioned) {
       return err(
         returnUserError(
@@ -1621,7 +1625,7 @@ export class TeamsAppSolution implements Solution {
       );
     }
 
-    const aadAppTenantId = ctx.config?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
+    const aadAppTenantId = ctx.envInfo.profile?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
     if (!aadAppTenantId || user.tenantId != (aadAppTenantId as string)) {
       return err(
         returnUserError(
@@ -1674,7 +1678,7 @@ export class TeamsAppSolution implements Solution {
       if (isLocalDebug && isMultiEnvEnabled()) {
         ctx.localSettings?.teamsApp.set(LocalSettingsTeamsAppKeys.TenantId, teamsAppTenantId);
       } else {
-        ctx.config.get(GLOBAL_CONFIG)?.set("teamsAppTenantId", teamsAppTenantId);
+        ctx.envInfo.profile.get(GLOBAL_CONFIG)?.set("teamsAppTenantId", teamsAppTenantId);
       }
 
       return ok(ctx);
@@ -2020,7 +2024,7 @@ export class TeamsAppSolution implements Solution {
       }
       ctx.logProvider?.info(`finish scaffolding ${notifications.join(",")}!`);
       if (addNewResoruceToProvision)
-        ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false); //if selected plugin changed, we need to re-do provision
+        ctx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false); //if selected plugin changed, we need to re-do provision
       ctx.ui?.showMessage(
         "info",
         util.format(
@@ -2140,7 +2144,7 @@ export class TeamsAppSolution implements Solution {
         );
       }
       ctx.logProvider?.info(`finish scaffolding ${notifications.join(",")}!`);
-      ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false);
+      ctx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false);
       const msg = util.format(
         ctx.answers.platform === Platform.CLI
           ? getStrings().solution.AddCapabilityNoticeForCli
@@ -2360,7 +2364,7 @@ export class TeamsAppSolution implements Solution {
     const isLocal: boolean = params.environment === "local";
     const mockedManifest = new TeamsAppManifest();
     mockedManifest.name.short = params["app-name"];
-    const domain = this.prepareConfigForRegisterTeamsAppAndAad(ctx.config, params);
+    const domain = this.prepareConfigForRegisterTeamsAppAndAad(ctx.envInfo.profile, params);
     const aadPlugin = this.AadPlugin as AadAppForTeamsPlugin;
     const aadPluginCtx = getPluginContext(ctx, aadPlugin.name);
 
@@ -2396,7 +2400,7 @@ export class TeamsAppSolution implements Solution {
       return postProvisionResult;
     }
 
-    const configResult = this.extractConfigForRegisterTeamsAppAndAad(ctx.config, isLocal);
+    const configResult = this.extractConfigForRegisterTeamsAppAndAad(ctx.envInfo.profile, isLocal);
     if (configResult.isErr()) {
       return err(configResult.error);
     }

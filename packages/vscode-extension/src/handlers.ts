@@ -40,7 +40,6 @@ import {
   globalStateGet,
   Correlator,
   getAppDirectory,
-  isV1Project,
 } from "@microsoft/teamsfx-core";
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -56,6 +55,7 @@ import {
   TelemetryTiggerFrom,
   TelemetrySuccess,
   AccountType,
+  TelemetryUpdateAppReason,
 } from "./telemetry/extTelemetryEvents";
 import * as commonUtils from "./debug/commonUtils";
 import { ExtensionErrors, ExtensionSource } from "./error";
@@ -86,7 +86,6 @@ import * as path from "path";
 import { exp } from "./exp/index";
 import { TreatmentVariables } from "./exp/treatmentVariables";
 import { StringContext } from "./utils/stringContext";
-import { ext } from "./extensionVariables";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -308,7 +307,9 @@ export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
     else if (stage === Stage.deploy) result = await core.deployArtifacts(inputs);
     else if (stage === Stage.debug) result = await core.localDebug(inputs);
     else if (stage === Stage.publish) result = await core.publishApplication(inputs);
-    else {
+    else if (stage === Stage.createEnv) {
+      result = await core.createEnv(inputs);
+    } else {
       throw new SystemError(
         ExtensionErrors.UnsupportedOperation,
         util.format(StringResources.vsc.handlers.operationNotSupport, stage),
@@ -668,61 +669,26 @@ export async function openManifestHandler(args?: any[]): Promise<Result<null, Fx
   }
 }
 
-export async function createNewEnvironment(args?: any[]): Promise<Result<null, FxError>> {
+export async function createNewEnvironment(args?: any[]): Promise<Result<Void, FxError>> {
   ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.CreateNewEnvironment,
+    TelemetryEvent.CreateNewEnvironmentStart,
     getTriggerFromProperty(args)
   );
-  if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
-    //todo add create new environment logic
-    return ok(null);
-  } else {
-    const FxError: FxError = {
-      name: "NoWorkspace",
-      source: ExtensionSource,
-      message: StringResources.vsc.handlers.noOpenWorkspace,
-      timestamp: new Date(),
-    };
-    showError(FxError);
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CreateNewEnvironment, FxError);
-    return err(FxError);
+  const result = await runCommand(Stage.createEnv);
+  if (!result.isErr()) {
+    registerEnvTreeHandler();
   }
+  return result;
 }
 
-export async function viewEnvironment(args?: any[]): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ViewEnvironment, getTriggerFromProperty(args));
-  if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
-    //todo add view environment logic
-    return ok(null);
-  } else {
-    const FxError: FxError = {
-      name: "NoWorkspace",
-      source: ExtensionSource,
-      message: StringResources.vsc.handlers.noOpenWorkspace,
-      timestamp: new Date(),
-    };
-    showError(FxError);
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ViewEnvironment, FxError);
-    return err(FxError);
-  }
+export async function viewEnvironment(args?: any[]): Promise<Result<Void, FxError>> {
+  // todo add view logic
+  return ok(Void);
 }
 
-export async function activateEnvironment(args?: any[]): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ActivateEnvironment, getTriggerFromProperty(args));
-  if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
-    //todo add activate environment logic
-    return ok(null);
-  } else {
-    const FxError: FxError = {
-      name: "NoWorkspace",
-      source: ExtensionSource,
-      message: StringResources.vsc.handlers.noOpenWorkspace,
-      timestamp: new Date(),
-    };
-    showError(FxError);
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ActivateEnvironment, FxError);
-    return err(FxError);
-  }
+export async function activateEnvironment(args?: any[]): Promise<Result<Void, FxError>> {
+  // todo add acitvate logic
+  return ok(Void);
 }
 
 export async function openM365AccountHandler() {
@@ -735,15 +701,30 @@ export async function openAzureAccountHandler() {
   return env.openExternal(Uri.parse("https://portal.azure.com/"));
 }
 
-export function saveTextDocumentHandler(document: vscode.TextDocument) {
+export function saveTextDocumentHandler(document: vscode.TextDocumentWillSaveEvent) {
   if (!isValidProject(getWorkspacePath())) {
     return;
   }
 
-  let curDirectory = path.dirname(document.fileName);
+  let reason: TelemetryUpdateAppReason | undefined = undefined;
+  switch (document.reason) {
+    case vscode.TextDocumentSaveReason.Manual:
+      reason = TelemetryUpdateAppReason.Manual;
+      break;
+    case vscode.TextDocumentSaveReason.AfterDelay:
+      reason = TelemetryUpdateAppReason.AfterDelay;
+      break;
+    case vscode.TextDocumentSaveReason.FocusOut:
+      reason = TelemetryUpdateAppReason.FocusOut;
+      break;
+  }
+
+  let curDirectory = path.dirname(document.document.fileName);
   while (curDirectory) {
     if (isValidProject(curDirectory)) {
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.UpdateTeamsApp, {});
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.UpdateTeamsApp, {
+        [TelemetryProperty.UpdateTeamsAppReason]: reason,
+      });
       return;
     }
 
@@ -1040,9 +1021,4 @@ export interface VscQuickPickItem extends QuickPickItem {
   id: string;
 
   function: () => Promise<void>;
-}
-
-export function enableMigrateV1(): void {
-  const validProject = ext.workspaceUri && isV1Project(ext.workspaceUri.fsPath);
-  vscode.commands.executeCommand("setContext", "fx-extension.v1Project", validProject);
 }

@@ -1,10 +1,10 @@
 param botServiceName string
+param botAadClientId string
+param botDisplayName string
 param botServerfarmsName string
 param botWebAppSKU string = 'F1'
 param botServiceSKU string = 'F1'
 param botWebAppName string
-param botAadClientId string
-param botDisplayName string
 
 var botWebAppHostname = botWebApp.properties.hostNames[0]
 var botEndpoint = 'https://${botWebAppHostname}'

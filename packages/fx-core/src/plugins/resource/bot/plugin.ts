@@ -259,44 +259,49 @@ export class TeamsBotImpl {
       .activeResourcePlugins;
     const handleBarsContext = {
       Plugins: selectedPlugins,
+      createNewBotService: !((this.config.scaffold.wayToRegisterBot ===
+        WayToRegisterBot.ReuseExisting) as boolean),
     };
 
-    const provisionModuleTemplateFilePath = path.join(
-      bicepTemplateDir,
-      PathInfo.provisionModuleTemplateFileName
-    );
     const provisionModuleContentResult = await generateBicepFiles(
-      provisionModuleTemplateFilePath,
+      path.join(bicepTemplateDir, PathInfo.provisionModuleTemplateFileName),
       handleBarsContext
     );
     if (provisionModuleContentResult.isErr()) {
       throw provisionModuleContentResult.error;
     }
-    const configurationModuleTemplateFilePath = path.join(
-      bicepTemplateDir,
-      PathInfo.configurationModuleTemplateFileName
-    );
+
     const configurationModuleContentResult = await generateBicepFiles(
-      configurationModuleTemplateFilePath,
+      path.join(bicepTemplateDir, PathInfo.configurationModuleTemplateFileName),
       handleBarsContext
     );
     if (configurationModuleContentResult.isErr()) {
       throw configurationModuleContentResult.error;
     }
 
-    const inputParameterOrchestrationFilePath = path.join(
-      bicepTemplateDir,
-      Bicep.ParameterOrchestrationFileName
+    const inputParameterContentResult = await generateBicepFiles(
+      path.join(bicepTemplateDir, Bicep.ParameterOrchestrationFileName),
+      handleBarsContext
     );
-    const moduleOrchestrationFilePath = path.join(
-      bicepTemplateDir,
-      Bicep.ModuleOrchestrationFileName
+    if (inputParameterContentResult.isErr()) {
+      throw inputParameterContentResult.error;
+    }
+
+    const moduleOrchestrationContentResult = await generateBicepFiles(
+      path.join(bicepTemplateDir, Bicep.ModuleOrchestrationFileName),
+      handleBarsContext
     );
-    const outputOrchestrationFilePath = path.join(
-      bicepTemplateDir,
-      Bicep.OutputOrchestrationFileName
+    if (moduleOrchestrationContentResult.isErr()) {
+      throw moduleOrchestrationContentResult.error;
+    }
+
+    const outputOrchestrationContentResult = await generateBicepFiles(
+      path.join(bicepTemplateDir, Bicep.OutputOrchestrationFileName),
+      handleBarsContext
     );
-    const parameterFilePath = path.join(bicepTemplateDir, Bicep.ParameterFileName);
+    if (outputOrchestrationContentResult.isErr()) {
+      throw outputOrchestrationContentResult.error;
+    }
 
     const result: ScaffoldArmTemplateResult = {
       Modules: {
@@ -309,19 +314,19 @@ export class TeamsBotImpl {
       },
       Orchestration: {
         ParameterTemplate: {
-          Content: await fs.readFile(
-            inputParameterOrchestrationFilePath,
-            ConstantString.UTF8Encoding
-          ),
+          Content: inputParameterContentResult.value,
           ParameterJson: JSON.parse(
-            await fs.readFile(parameterFilePath, ConstantString.UTF8Encoding)
+            await fs.readFile(
+              path.join(bicepTemplateDir, Bicep.ParameterFileName),
+              ConstantString.UTF8Encoding
+            )
           ),
         },
         ModuleTemplate: {
-          Content: await fs.readFile(moduleOrchestrationFilePath, ConstantString.UTF8Encoding),
+          Content: moduleOrchestrationContentResult.value,
         },
         OutputTemplate: {
-          Content: await fs.readFile(outputOrchestrationFilePath, ConstantString.UTF8Encoding),
+          Content: outputOrchestrationContentResult.value,
         },
       },
     };

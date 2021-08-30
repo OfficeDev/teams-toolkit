@@ -36,6 +36,12 @@ Please refer to [the official website](https://github.com/Azure/azure-functions-
 
 **NOTE**: Please restart all your Visual Studio Code instances after the installation is finished.
 
+## How to install Bicep CLI?
+
+Please refer to [the official website](https://docs.microsoft.com/en-us/azure/azure-resource-manager/bicep/install#install-manually) to install the supported versions: `Bicep CLI v4 `.
+
+**NOTE**: Please restart all your Visual Studio Code instances after the installation is finished.
+
 ## NodeNotFound
 ### Notification Message
 > Cannot find Node.js. Teams Toolkit requires Node.js; the recommended version is v14.

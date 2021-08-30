@@ -31,8 +31,7 @@ export class Constants {
   public static readonly skipAddingUser: string = "skipAddingUser";
   public static readonly admin: string = "admin";
   public static readonly adminPassword: string = "adminPassword";
-  public static readonly aadAdmin: string = "aadAdmin";
-  public static readonly aadAdminObjectId: string = "aadAdminObjectId";
+  public static readonly existSql: string = "existSql";
 
   public static readonly solution: string = "solution";
   public static readonly solutionPluginFullName = "fx-solution-azure";

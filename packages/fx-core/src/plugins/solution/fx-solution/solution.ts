@@ -1425,6 +1425,9 @@ export class TeamsAppSolution implements Solution {
       ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.GrantPermission, {
         [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
         [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
+        [SolutionTelemetryProperty.PlatformCli]: (
+          ctx.answers?.platform === Platform.CLI
+        ).toString(),
       });
 
       return ok(permissions);
@@ -1521,10 +1524,23 @@ export class TeamsAppSolution implements Solution {
         );
       }
 
+      const aadPermission = permissions.find((permission) => permission.name === "Azure AD App");
+      const teamsAppPermission = permissions.find((permission) => permission.name === "Teams App");
+
       ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.CheckPermission, {
         [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
         [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
+        [SolutionTelemetryProperty.AadPermission]: aadPermission?.roles
+          ? aadPermission.roles.join(";")
+          : "undefined",
+        [SolutionTelemetryProperty.TeamsAppPermission]: teamsAppPermission?.roles
+          ? teamsAppPermission.roles.join(";")
+          : "undefined",
+        [SolutionTelemetryProperty.PlatformCli]: (
+          ctx.answers?.platform === Platform.CLI
+        ).toString(),
       });
+
       return ok(permissions);
     } finally {
       ctx.envInfo.profile.get(GLOBAL_CONFIG)?.delete(USER_INFO);
@@ -1645,9 +1661,17 @@ export class TeamsAppSolution implements Solution {
         }
       }
 
+      const aadOwnerCount = collaborators.filter(
+        (collaborator) => collaborator.aadResourceId && collaborator.isAadOwner
+      ).length;
       ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.ListCollaborator, {
         [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
         [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
+        [SolutionTelemetryProperty.CollaboratorCount]: collaborators.length.toString(),
+        [SolutionTelemetryProperty.AadOwnerCount]: aadOwnerCount.toString(),
+        [SolutionTelemetryProperty.PlatformCli]: (
+          ctx.answers?.platform === Platform.CLI
+        ).toString(),
       });
 
       return ok(collaborators);

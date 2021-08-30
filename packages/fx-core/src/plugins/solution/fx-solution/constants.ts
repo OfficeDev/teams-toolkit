@@ -186,6 +186,11 @@ export enum SolutionTelemetryProperty {
   Resources = "resources",
   Capabilities = "capabilities",
   Success = "success",
+  CollaboratorCount = "collaborator-count",
+  AadOwnerCount = "aad-owner-count",
+  AadPermission = "aad-permission",
+  TeamsAppPermission = "teams-app-permission",
+  PlatformCli = "platform-cli",
 }
 
 export enum SolutionTelemetrySuccess {

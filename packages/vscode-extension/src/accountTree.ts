@@ -450,15 +450,15 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
   };
 
   const solutionSettings = await getAzureSolutionSettings();
-  if (solutionSettings && "Azure" === solutionSettings.hostType) {
+  if (solutionSettings && "SPFx" === solutionSettings.hostType) {
+    tools.treeProvider!.add([signinM365TreeItem, refreshSideloadingTreeItem]);
+  } else {
     tools.treeProvider!.add([
       signinM365TreeItem,
       refreshSideloadingTreeItem,
       signinAzureTreeItem,
       specifySubscriptionTreeItem,
     ]);
-  } else {
-    tools.treeProvider!.add([signinM365TreeItem, refreshSideloadingTreeItem]);
   }
 
   return ok(Void);

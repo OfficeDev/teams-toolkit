@@ -135,6 +135,7 @@ export enum TelemetryProperty {
   SampleAppName = "sample-app-name",
   CurrentAction = "current-action",
   VideoPlayFrom = "video-play-from",
+  FeatureFlags = "feature-flags",
   UpdateTeamsAppReason = "update-teams-app-reason",
   IsSideloadingAllowed = "is-sideloading-allowed",
 }

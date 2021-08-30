@@ -210,14 +210,16 @@ export class FxCore implements Core {
         return scaffoldRes;
       }
 
-      const createEnvResult = await this.createEnvWithName(
-        environmentManager.getDefaultEnvName(),
-        projectSettings,
-        inputs,
-        ctx!.self as FxCore
-      );
-      if (createEnvResult.isErr()) {
-        return err(createEnvResult.error);
+      if (isMultiEnvEnabled()) {
+        const createEnvResult = await this.createEnvWithName(
+          environmentManager.getDefaultEnvName(),
+          projectSettings,
+          inputs,
+          ctx!.self as FxCore
+        );
+        if (createEnvResult.isErr()) {
+          return err(createEnvResult.error);
+        }
       }
 
       ctx!.solution = solution;
@@ -837,10 +839,7 @@ export class FxCore implements Core {
   }
 
   @hooks([ErrorHandlerMW, ProjectSettingsLoaderMW, ContextInjecterMW])
-  async createEnv(
-    inputs: Inputs,
-    ctx?: CoreHookContext
-  ): Promise<Result<Void, FxError>> {
+  async createEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     const projectSettings = ctx!.projectSettings;
     if (!isMultiEnvEnabled() || !projectSettings) {
       return ok(Void);
@@ -922,5 +921,6 @@ export class FxCore implements Core {
     throw TaskNotSupportError(Stage.switchEnv);
   }
 }
+
 export * from "./error";
 export * from "./tools";

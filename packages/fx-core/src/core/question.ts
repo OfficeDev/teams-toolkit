@@ -24,6 +24,9 @@ export enum CoreQuestionNames {
   Stage = "stage",
   SubStage = "substage",
   TargetEnvName = "targetEnvName",
+  TargetResourceGroupName = "targetResourceGroupName",
+  NewResourceGroupName = "newResourceGroupName",
+  NewResourceGroupLocation = "newResourceGroupLocation",
   NewTargetEnvName = "newTargetEnvName",
 }
 
@@ -106,22 +109,65 @@ export const QuestionSelectTargetEnvironment: SingleSelectQuestion = {
   forgetLastValue: true,
 };
 
-export const QuestionNewTargetEnvironmentName: TextInputQuestion = {
+export function getQuestionNewTargetEnvironmentName(projectPath: string): TextInputQuestion {
+  return {
+    type: "text",
+    name: CoreQuestionNames.NewTargetEnvName,
+    title: "New environment name",
+    validation: {
+      validFunc: async (input: string): Promise<string | undefined> => {
+        const targetEnvName = input as string;
+        const match = targetEnvName.match(environmentManager.envNameRegex);
+        if (!match) {
+          return "Environment name can only contain letters, digits, _ and -.";
+        }
+
+        const envConfigs = await environmentManager.listEnvConfigs(projectPath);
+
+        if (!envConfigs.isErr() && envConfigs.value!.indexOf(targetEnvName!) >= 0) {
+          return `Project environment ${targetEnvName} already exists.`;
+        }
+
+        return undefined;
+      },
+    },
+    placeholder: "New environment name",
+  };
+}
+
+export const QuestionSelectResourceGroup: SingleSelectQuestion = {
+  type: "singleSelect",
+  name: CoreQuestionNames.TargetResourceGroupName,
+  title: "Select a resource group",
+  staticOptions: [],
+  skipSingleOption: true,
+  forgetLastValue: true,
+};
+
+export const QuestionNewResourceGroupName: TextInputQuestion = {
   type: "text",
-  name: CoreQuestionNames.NewTargetEnvName,
-  title: "New environment name",
+  name: CoreQuestionNames.NewResourceGroupName,
+  title: "New resource group name",
   validation: {
     validFunc: async (input: string): Promise<string | undefined> => {
-      const targetEnvName = input as string;
-      const match = targetEnvName.match(environmentManager.envNameRegex);
+      const name = input as string;
+      // https://docs.microsoft.com/en-us/rest/api/resources/resource-groups/create-or-update#uri-parameters
+      const match = name.match(/^[-\w._()]+$/);
       if (!match) {
-        return "Environment name can only contain letters, digits, _ and -.";
+        return "The name can only contain alphanumeric characters or the symbols ._-()";
       }
 
       return undefined;
     },
   },
-  placeholder: "New environment name",
+  placeholder: "New resource group name",
+};
+
+export const QuestionNewResourceGroupLocation: SingleSelectQuestion = {
+  type: "singleSelect",
+  name: CoreQuestionNames.NewResourceGroupLocation,
+  title: "Location for the new resource group",
+  staticOptions: [],
 };
 
 export const QuestionSelectSolution: SingleSelectQuestion = {

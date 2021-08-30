@@ -142,3 +142,8 @@ export const LocalEnvBotKeys = Object.freeze({
   ApiEndpoint: "BOT_API_ENDPOINT",
   ApplicationIdUri: "BOT_M365_APPLICATION_ID_URI",
 });
+
+export const LocalEnvBotKeysMigratedFromV1 = Object.freeze({
+  BotId: "BOT_BotId",
+  BotPassword: "BOT_BotPassword",
+});

@@ -200,7 +200,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
     const result = await solution.scaffold(mockedCtx);
     expect(result.isOk()).to.be.true;
     // only need to check whether related files exist, tests to the content is covered by other test cases
-    expect(fileContent.size).equals(4);
+    expect(fileContent.size).equals(5);
     expect(fileContent.has(path.join("./infra/azure/templates", "main.bicep"))).to.be.true;
     expect(fileContent.has(path.join("./infra/azure/templates", "frontendHostingProvision.bicep")))
       .to.be.true;

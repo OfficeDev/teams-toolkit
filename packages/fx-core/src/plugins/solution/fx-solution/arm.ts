@@ -31,6 +31,7 @@ import {
 import { ResourceManagementClient, ResourceManagementModels } from "@azure/arm-resources";
 import { DeployArmTemplatesSteps, ProgressHelper } from "./utils/progressHelper";
 import dateFormat from "dateformat";
+import { getTemplatesFolder } from "../../../folder";
 
 // Old folder structure constants
 const baseFolder = "./infra/azure";
@@ -126,6 +127,19 @@ export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<
     const parameterFileContent = bicepOrchestrationTemplate.getParameterFileContent();
     await fs.ensureDir(parameterTemplateFolderPath);
     await fs.writeFile(parameterTemplateFilePath, parameterFileContent);
+
+    // Output .gitignore file
+    const gitignoreContent = await fs.readFile(
+      path.join(getTemplatesFolder(), "plugins", "solution", "armGitignore"),
+      ConstantString.UTF8Encoding
+    );
+    const gitignoreFileName = ".gitignore";
+    const gitignoreFilePath = isNewFolderStructureEnabled()
+      ? path.join(ctx.root, templateFolderNew, gitignoreFileName)
+      : path.join(ctx.root, baseFolder, gitignoreFileName);
+    if (!(await fs.pathExists(gitignoreFilePath))) {
+      await fs.writeFile(gitignoreFilePath, gitignoreContent);
+    }
   }
 
   return ok(undefined); // Nothing to return when success
@@ -318,7 +332,7 @@ async function getParameterJson(ctx: SolutionContext) {
     await fs.writeFile(parameterFilePath, JSON.stringify(parameterJson, undefined, 2));
   }
 
-  parameterJson = await getExpandedParameter(ctx, parameterTemplateFilePath, true); // only expand secrets in memory
+  parameterJson = await getExpandedParameter(ctx, parameterFilePath, true); // only expand secrets in memory
 
   return parameterJson;
 }

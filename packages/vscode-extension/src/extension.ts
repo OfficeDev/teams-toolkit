@@ -191,6 +191,14 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(createNewEnvironment);
 
+  const viewEnvironment = vscode.commands.registerCommand(
+    "fx-extension.viewEnvironment",
+    (node) => {
+      Correlator.run(handlers.viewEnvironment, node.command.title);
+    }
+  );
+  context.subscriptions.push(viewEnvironment);
+
   vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isMultiEnvEnabled",
@@ -236,7 +244,7 @@ export async function activate(context: vscode.ExtensionContext) {
   registerRunIcon();
 
   context.subscriptions.push(
-    vscode.workspace.onDidSaveTextDocument(handlers.saveTextDocumentHandler)
+    vscode.workspace.onWillSaveTextDocument(handlers.saveTextDocumentHandler)
   );
 
   ext.context.subscriptions.push(vscode.workspace.onDidChangeWorkspaceFolders(enableMigrateV1));

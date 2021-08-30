@@ -90,6 +90,7 @@ export enum TelemetryEvent {
   OpenTeamsApp = "open-teams-app",
   UpdateTeamsApp = "update-teams-app",
 
+  CreateNewEnvironmentStart = "create-new-environment-start",
   CreateNewEnvironment = "create-new-environment",
 
   MigrateV1ProjectStart = "migrate-v1-project-start",
@@ -132,6 +133,8 @@ export enum TelemetryProperty {
   SampleAppName = "sample-app-name",
   CurrentAction = "current-action",
   VideoPlayFrom = "video-play-from",
+  FeatureFlags = "feature-flags",
+  UpdateTeamsAppReason = "update-teams-app-reason",
 }
 
 export enum TelemetrySuccess {
@@ -160,6 +163,12 @@ export enum TelemetryErrorType {
 export enum AccountType {
   M365 = "m365",
   Azure = "azure",
+}
+
+export enum TelemetryUpdateAppReason {
+  Manual = "manual",
+  AfterDelay = "afterDelay",
+  FocusOut = "focusOut",
 }
 
 export const TelemetryComponentType = "extension";

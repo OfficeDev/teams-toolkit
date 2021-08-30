@@ -41,6 +41,7 @@ import {
   globalStateGet,
   Correlator,
   getAppDirectory,
+  environmentManager,
 } from "@microsoft/teamsfx-core";
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -686,11 +687,9 @@ export async function createNewEnvironment(args?: any[]): Promise<Result<Void, F
 
 export async function viewEnvironment(env: string): Promise<Result<Void, FxError>> {
   if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
-    const envFilePath = path.join(
-      workspace.workspaceFolders![0].uri.fsPath,
-      `.${ConfigFolderName}`,
-      InputConfigsFolderName,
-      `config.${env}.json`
+    const envFilePath = environmentManager.getEnvConfigPath(
+      env,
+      workspace.workspaceFolders![0].uri.fsPath
     );
     const envPath: vscode.Uri = vscode.Uri.file(envFilePath);
     if (await fs.pathExists(envFilePath)) {
@@ -710,8 +709,8 @@ export async function viewEnvironment(env: string): Promise<Result<Void, FxError
         }
       );
     } else {
-      const noEnvError = new SystemError(
-        ExtensionErrors.NoEnvProfileError,
+      const noEnvError = new UserError(
+        ExtensionErrors.EnvProfileNotFoundError,
         `Can not find project environment ${env}.`,
         ExtensionSource
       );

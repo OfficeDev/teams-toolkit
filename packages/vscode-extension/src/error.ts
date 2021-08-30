@@ -17,5 +17,5 @@ export enum ExtensionErrors {
   InvalidProject = "InvalidProject",
   FetchSampleError = "FetchSampleError",
   OpenEnvProfileError = "OpenEnvProfileError",
-  NoEnvProfileError = "NoEnvProfileError",
+  EnvProfileNotFoundError = "EnvProfileNotFoundError",
 }

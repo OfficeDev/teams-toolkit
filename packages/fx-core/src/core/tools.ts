@@ -5,6 +5,8 @@ import {
   AzureSolutionSettings,
   EnvInfo,
   ConfigMap,
+  AppPackageFolderName,
+  V1ManifestFileName,
 } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import * as fs from "fs-extra";
@@ -19,6 +21,7 @@ import {
   TabOptionItem,
 } from "../plugins/solution/fx-solution/question";
 import { environmentManager } from "./environment";
+
 export function validateProject(solutionContext: SolutionContext): string | undefined {
   const res = validateSettings(solutionContext.projectSettings);
   return res;
@@ -104,26 +107,39 @@ export function isValidProject(workspacePath?: string): boolean {
   }
 }
 
-export function isV1Project(workspacePath?: string): boolean {
-  if (!workspacePath) return false;
-  try {
-    const confFolderPath = path.resolve(workspacePath, `.${ConfigFolderName}`);
-    if (fs.existsSync(confFolderPath)) {
-      return false;
-    }
-    const packageJsonPath = path.resolve(workspacePath, "package.json");
-    const packageSettings = fs.readJsonSync(packageJsonPath);
-    return validateV1PackageSettings(packageSettings);
-  } catch (e) {
-    return false;
+export async function validateV1Project(
+  workspacePath: string | undefined
+): Promise<string | undefined> {
+  if (!workspacePath) {
+    return "The workspace path cannot be empty.";
   }
-}
 
-export function validateV1PackageSettings(settings: any): boolean {
-  if (settings?.msteams) {
-    return true;
+  const v2ConfigFolder = path.resolve(workspacePath, `.${ConfigFolderName}`);
+  if (await fs.pathExists(v2ConfigFolder)) {
+    return `Folder '.${ConfigFolderName}' already exists.`;
   }
-  return false;
+
+  const packageJsonPath = path.resolve(workspacePath, "package.json");
+  let packageSettings: any | undefined;
+
+  try {
+    packageSettings = await fs.readJson(packageJsonPath);
+  } catch (error: any) {
+    return `Cannot read 'package.json'. ${error?.message}`;
+  }
+
+  if (!packageSettings?.msteams) {
+    return "Teams Toolkit V1 settings cannot be found in 'package.json'.";
+  }
+
+  const manifestPath = path.resolve(workspacePath, AppPackageFolderName, V1ManifestFileName);
+  if (!(await fs.pathExists(manifestPath))) {
+    return "The project should be created after version 1.2.0";
+  }
+
+  // TODO: Bot with SSO
+
+  return undefined;
 }
 
 export function isMigrateFromV1Project(workspacePath?: string): boolean {

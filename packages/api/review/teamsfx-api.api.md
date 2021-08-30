@@ -1364,6 +1364,9 @@ export interface UserInteraction {
     }>, modal: boolean, ...items: string[]): Promise<Result<string | undefined, FxError>>;
 }
 
+// @public (undocumented)
+export const V1ManifestFileName = "manifest.json";
+
 declare namespace v2 {
     export {
         ResourceTemplate_2 as ResourceTemplate,

@@ -5,6 +5,7 @@ import {
   AzureSolutionSettings,
   EnvInfo,
   ConfigMap,
+  ProjectSettingsFileName,
 } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import * as fs from "fs-extra";
@@ -100,7 +101,7 @@ export function isValidProject(workspacePath?: string): boolean {
       : path.resolve(workspacePath, `.${ConfigFolderName}`);
     const settingsFile = path.resolve(
       confFolderPath,
-      isMultiEnvEnabled() ? "localSettings.json" : "settings.json"
+      isMultiEnvEnabled() ? ProjectSettingsFileName : "settings.json"
     );
     const projectSettings: ProjectSettings = fs.readJsonSync(settingsFile);
     if (validateSettings(projectSettings)) return false;

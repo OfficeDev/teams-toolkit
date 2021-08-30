@@ -81,14 +81,6 @@ export function InvalidV1ProjectError(message?: string) {
   );
 }
 
-export function ArchiveFolderExistError() {
-  return newUserError(
-    CoreSource,
-    "ArchiveFolderExist",
-    `Archive folder '${ArchiveFolderName}' already exists. Rollback the project or remove '${ArchiveFolderName}' folder.`
-  );
-}
-
 export function PathNotExistError(path: string): UserError {
   return newUserError(CoreSource, "PathNotExist", `The path not exist: ${path}`);
 }

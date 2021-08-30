@@ -6,6 +6,7 @@ import {
   EnvInfo,
   ConfigMap,
   AppPackageFolderName,
+  ArchiveFolderName,
   V1ManifestFileName,
 } from "@microsoft/teamsfx-api";
 import * as path from "path";
@@ -21,6 +22,8 @@ import {
   TabOptionItem,
 } from "../plugins/solution/fx-solution/question";
 import { environmentManager } from "./environment";
+import * as dotenv from "dotenv";
+import { ConstantString } from "../common/constants";
 
 export function validateProject(solutionContext: SolutionContext): string | undefined {
   const res = validateSettings(solutionContext.projectSettings);
@@ -137,7 +140,21 @@ export async function validateV1Project(
     return "The project should be created after version 1.2.0";
   }
 
-  // TODO: Bot with SSO
+  try {
+    // Exclude Bot SSO project
+    const envFilePath = path.resolve(workspacePath, ".env");
+    const envFileContent = await fs.readFile(envFilePath, ConstantString.UTF8Encoding);
+    if (envFileContent.includes("connectionName")) {
+      return `Bot sso project has not been supported.`;
+    }
+  } catch (e: any) {
+    // If the project does not contain a valid .env file, it is still a valid v1 project
+  }
+
+  const archiveFolder = path.resolve(workspacePath, ArchiveFolderName);
+  if (await fs.pathExists(archiveFolder)) {
+    return `Archive folder '${ArchiveFolderName}' already exists. Rollback the project or remove '${ArchiveFolderName}' folder.`;
+  }
 
   return undefined;
 }

@@ -1181,7 +1181,7 @@ describe("Middleware", () => {
       }
     });
 
-    it("Migrate V1 project", async () => {
+    it("Failed to migrate v1 bot sso project", async () => {
       class MyClass {
         tools?: any = new MockTools();
         async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
@@ -1200,6 +1200,93 @@ describe("Middleware", () => {
         const appPackagePath = path.join(inputs.projectPath, AppPackageFolderName);
         await fs.ensureDir(appPackagePath);
         await fs.writeJSON(path.join(appPackagePath, "manifest.json"), {});
+
+        await fs.writeFile(path.join(inputs.projectPath, ".env"), "connectionName=xxx");
+
+        const res = await my.myMethod(inputs);
+        assert.isTrue(res.isErr());
+      } finally {
+        await fs.rmdir(inputs.projectPath!, { recursive: true });
+      }
+    });
+
+    it("Migrate v1 project without env file", async () => {
+      class MyClass {
+        tools?: any = new MockTools();
+        async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
+          return ok("");
+        }
+      }
+      hooks(MyClass, {
+        myMethod: [MigrateConditionHandlerMW],
+      });
+      const my = new MyClass();
+      const inputs: Inputs = { platform: Platform.VSCode };
+      inputs.projectPath = path.join(os.tmpdir(), randomAppName());
+      try {
+        await fs.ensureDir(inputs.projectPath);
+        await fs.writeJSON(path.join(inputs.projectPath, "package.json"), { msteams: {} });
+        const appPackagePath = path.join(inputs.projectPath, AppPackageFolderName);
+        await fs.ensureDir(appPackagePath);
+        await fs.writeJSON(path.join(appPackagePath, "manifest.json"), {});
+        const res = await my.myMethod(inputs);
+        assert.isTrue(res.isOk());
+      } finally {
+        await fs.rmdir(inputs.projectPath!, { recursive: true });
+      }
+    });
+
+    it("Migrate v1 project with valid .env file", async () => {
+      class MyClass {
+        tools?: any = new MockTools();
+        async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
+          return ok("");
+        }
+      }
+      hooks(MyClass, {
+        myMethod: [MigrateConditionHandlerMW],
+      });
+      const my = new MyClass();
+      const inputs: Inputs = { platform: Platform.VSCode };
+      inputs.projectPath = path.join(os.tmpdir(), randomAppName());
+      try {
+        await fs.ensureDir(inputs.projectPath);
+        await fs.writeJSON(path.join(inputs.projectPath, "package.json"), { msteams: {} });
+        const appPackagePath = path.join(inputs.projectPath, AppPackageFolderName);
+        await fs.ensureDir(appPackagePath);
+        await fs.writeJSON(path.join(appPackagePath, "manifest.json"), {});
+
+        await fs.writeFile(path.join(inputs.projectPath, ".env"), "HTTPS=true\nBROWSER=none");
+
+        const res = await my.myMethod(inputs);
+        assert.isTrue(res.isOk());
+      } finally {
+        await fs.rmdir(inputs.projectPath!, { recursive: true });
+      }
+    });
+
+    it("Migrate V1 project with invalid .env file", async () => {
+      class MyClass {
+        tools?: any = new MockTools();
+        async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
+          return ok("");
+        }
+      }
+      hooks(MyClass, {
+        myMethod: [MigrateConditionHandlerMW],
+      });
+      const my = new MyClass();
+      const inputs: Inputs = { platform: Platform.VSCode };
+      inputs.projectPath = path.join(os.tmpdir(), randomAppName());
+      try {
+        await fs.ensureDir(inputs.projectPath);
+        await fs.writeJSON(path.join(inputs.projectPath, "package.json"), { msteams: {} });
+        const appPackagePath = path.join(inputs.projectPath, AppPackageFolderName);
+        await fs.ensureDir(appPackagePath);
+        await fs.writeJSON(path.join(appPackagePath, "manifest.json"), {});
+
+        await fs.writeFile(path.join(inputs.projectPath, ".env"), "{}");
+
         const res = await my.myMethod(inputs);
         assert.isTrue(res.isOk());
       } finally {

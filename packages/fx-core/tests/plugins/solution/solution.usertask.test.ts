@@ -34,6 +34,7 @@ import {
   BotOptionItem,
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
+  ProgrammingLanguageQuestion,
   TabOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 import { executeUserTask } from "../../../src/plugins/solution/fx-solution/v2/executeUserTask";
@@ -46,6 +47,7 @@ import "../../../src/plugins/resource/frontend/v2";
 import "../../../src/plugins/resource/bot/v2";
 import { AppStudioPlugin, newEnvInfo } from "../../../src";
 import fs from "fs-extra";
+import { ProgrammingLanguage } from "../../../src/plugins/resource/bot/enums/programmingLanguage";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -354,16 +356,19 @@ describe("V2 implementation", () => {
       },
     };
     const mockedCtx = new MockedV2Context(projectSettings);
+    mockedCtx.projectSetting.programmingLanguage = ProgrammingLanguage.JavaScript;
     const mockedProvider = new MockedAppStudioProvider();
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
     };
 
     mockedInputs[AzureSolutionQuestionNames.AddResources] = [AzureResourceSQL.id];
+    mockedInputs.projectPath = "./";
 
     mockScaffoldCodeThatAlwaysSucceeds(appStudioPluginV2);
     mockScaffoldCodeThatAlwaysSucceeds(localDebugPluginV2);
     mockScaffoldCodeThatAlwaysSucceeds(sqlPluginV2);
+    mockScaffoldCodeThatAlwaysSucceeds(functionPluginV2);
 
     const result = await executeUserTask(
       mockedCtx,

@@ -38,6 +38,7 @@ import * as path from "path";
 import {
   downloadSampleHook,
   fetchCodeZip,
+  isArmSupportEnabled,
   isMultiEnvEnabled,
   saveFilesRecursively,
 } from "../common/tools";
@@ -91,7 +92,6 @@ import { globalStateUpdate } from "../common/globalState";
 import {
   askNewEnvironment,
   EnvInfoLoaderMW,
-  loadSolutionContext,
   upgradeDefaultFunctionName,
   upgradeProgrammingLanguage,
 } from "./middleware/envInfoLoader";
@@ -101,6 +101,9 @@ import { LocalSettingsWriterMW } from "./middleware/localSettingsWriter";
 import { MigrateConditionHandlerMW } from "./middleware/migrateConditionHandler";
 import { environmentManager } from "..";
 import { newEnvInfo } from "./tools";
+import { getParameterJson } from "../plugins/solution/fx-solution/arm";
+import { LocalCrypto } from "./crypto";
+import { PermissionRequestFileProvider } from "./permissionRequest";
 
 export interface CoreHookContext extends HookContext {
   projectSettings?: ProjectSettings;
@@ -205,6 +208,16 @@ export class FxCore implements Core {
       const scaffoldRes = await solution.scaffold(solutionContext);
       if (scaffoldRes.isErr()) {
         return scaffoldRes;
+      }
+
+      const createEnvResult = await this.createEnvWithName(
+        environmentManager.getDefaultEnvName(),
+        projectSettings,
+        inputs,
+        ctx!.self as FxCore
+      );
+      if (createEnvResult.isErr()) {
+        return err(createEnvResult.error);
       }
 
       ctx!.solution = solution;
@@ -824,8 +837,12 @@ export class FxCore implements Core {
   }
 
   @hooks([ErrorHandlerMW, ProjectSettingsLoaderMW, ContextInjecterMW])
-  async createEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
-    if (!isMultiEnvEnabled() || !ctx!.projectSettings) {
+  async createEnv(
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
+    const projectSettings = ctx!.projectSettings;
+    if (!isMultiEnvEnabled() || !projectSettings) {
       return ok(Void);
     }
 
@@ -837,21 +854,64 @@ export class FxCore implements Core {
     }
 
     if (targetEnvName) {
-      const newEnvConfig = environmentManager.newEnvConfigData();
-      const writeEnvResult = await environmentManager.writeEnvConfig(
-        inputs.projectPath!,
-        newEnvConfig,
-        targetEnvName
+      const createEnvResult = await this.createEnvWithName(
+        targetEnvName,
+        projectSettings,
+        inputs,
+        core
       );
-      if (writeEnvResult.isErr()) {
-        return err(writeEnvResult.error);
+      if (createEnvResult.isErr()) {
+        return createEnvResult;
       }
+    }
+
+    return ok(Void);
+  }
+
+  async createEnvWithName(
+    targetEnvName: string,
+    projectSettings: ProjectSettings,
+    inputs: Inputs,
+    core: FxCore
+  ): Promise<Result<Void, FxError>> {
+    const newEnvConfig = environmentManager.newEnvConfigData();
+    const writeEnvResult = await environmentManager.writeEnvConfig(
+      inputs.projectPath!,
+      newEnvConfig,
+      targetEnvName
+    );
+    if (writeEnvResult.isErr()) {
+      return err(writeEnvResult.error);
+    }
+    core.tools.logProvider.debug(
+      `[core] persist ${targetEnvName} env profile to path ${
+        writeEnvResult.value
+      }: ${JSON.stringify(newEnvConfig)}`
+    );
+
+    if (isArmSupportEnabled()) {
+      const solutionContext: SolutionContext = {
+        projectSettings,
+        envInfo: newEnvInfo(targetEnvName),
+        root: inputs.projectPath || "",
+        ...core.tools,
+        ...core.tools.tokenProvider,
+        answers: inputs,
+        cryptoProvider: new LocalCrypto(projectSettings.projectId),
+        permissionRequestProvider: inputs.projectPath
+          ? new PermissionRequestFileProvider(inputs.projectPath)
+          : undefined,
+      };
+
+      const [parameterFilePath, parameterJson] = await getParameterJson(solutionContext);
+
       core.tools.logProvider.debug(
-        `[core] persist ${targetEnvName} env profile to path ${
-          writeEnvResult.value
-        }: ${JSON.stringify(newEnvConfig)}`
+        `[core] persist ${targetEnvName} azure parameter file to path ${parameterFilePath}: ${JSON.stringify(
+          parameterJson
+        )}.`
       );
     }
+
     return ok(Void);
   }
 
@@ -862,6 +922,5 @@ export class FxCore implements Core {
     throw TaskNotSupportError(Stage.switchEnv);
   }
 }
-
 export * from "./error";
 export * from "./tools";

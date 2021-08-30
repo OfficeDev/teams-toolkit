@@ -139,9 +139,9 @@ export function isMigrateFromV1Project(workspacePath?: string): boolean {
   }
 }
 
-export function newEnvInfo(): EnvInfo {
+export function newEnvInfo(envName?: string): EnvInfo {
   return {
-    envName: environmentManager.getDefaultEnvName(),
+    envName: envName ?? environmentManager.getDefaultEnvName(),
     config: {
       azure: {},
       manifest: {

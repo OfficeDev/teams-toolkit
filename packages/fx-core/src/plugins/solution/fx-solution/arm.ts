@@ -20,7 +20,7 @@ import { compileHandlebarsTemplateString, getStrings } from "../../../common";
 import path from "path";
 import * as fs from "fs-extra";
 import { ConstantString, PluginDisplayName } from "../../../common/constants";
-import { Executor, CryptoDataMatchers, isFeatureFlagEnabled } from "../../../common/tools";
+import { Executor, CryptoDataMatchers, isMultiEnvEnabled } from "../../../common/tools";
 import {
   ARM_TEMPLATE_OUTPUT,
   GLOBAL_CONFIG,
@@ -97,7 +97,7 @@ export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<
     await backupExistingFilesIfNecessary(ctx);
     // Output main.bicep file
     const bicepOrchestrationFileContent = bicepOrchestrationTemplate.getOrchestrationFileContent();
-    const templateFolderPath = isNewFolderStructureEnabled()
+    const templateFolderPath = isMultiEnvEnabled()
       ? path.join(ctx.root, templateFolderNew)
       : path.join(ctx.root, baseFolder, templateFolder);
     await fs.ensureDir(templateFolderPath);
@@ -107,7 +107,7 @@ export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<
     );
 
     // Output bicep module files from each resource plugin
-    const modulesFolderPath = isNewFolderStructureEnabled()
+    const modulesFolderPath = isMultiEnvEnabled()
       ? path.join(templateFolderPath, modulesFolder)
       : templateFolderPath;
     await fs.ensureDir(modulesFolderPath);
@@ -117,7 +117,7 @@ export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<
     }
 
     // Output parameter file
-    const parameterTemplateFolderPath = isNewFolderStructureEnabled()
+    const parameterTemplateFolderPath = isMultiEnvEnabled()
       ? path.join(ctx.root, templateFolderNew)
       : path.join(ctx.root, baseFolder, parameterFolder);
     const parameterTemplateFilePath = path.join(
@@ -134,7 +134,7 @@ export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<
       ConstantString.UTF8Encoding
     );
     const gitignoreFileName = ".gitignore";
-    const gitignoreFilePath = isNewFolderStructureEnabled()
+    const gitignoreFilePath = isMultiEnvEnabled()
       ? path.join(ctx.root, templateFolderNew, gitignoreFileName)
       : path.join(ctx.root, baseFolder, gitignoreFileName);
     if (!(await fs.pathExists(gitignoreFilePath))) {
@@ -154,7 +154,7 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
   generateResourceName(ctx);
 
   // update parameters
-  const parameterJson = await getParameterJson(ctx);
+  const [_, parameterJson] = await getParameterJson(ctx);
 
   const resourceGroupName = ctx.envInfo.profile.get(GLOBAL_CONFIG)?.getString(RESOURCE_GROUP_NAME);
   if (!resourceGroupName) {
@@ -162,7 +162,7 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
   }
 
   // Compile bicep file to json
-  const templateDir = isNewFolderStructureEnabled()
+  const templateDir = isMultiEnvEnabled()
     ? path.join(ctx.root, templateFolderNew)
     : path.join(ctx.root, baseFolder, templateFolder);
   const armTemplateJsonFilePath = path.join(templateDir, armTemplateJsonFileName);
@@ -295,13 +295,13 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
   return result;
 }
 
-async function getParameterJson(ctx: SolutionContext) {
+export async function getParameterJson(ctx: SolutionContext): Promise<[string, any]> {
   if (!ctx.envInfo?.envName) {
     throw new Error("Failed to get target environment name from solution context.");
   }
 
   let parameterFileName, parameterFolderPath, parameterTemplateFilePath;
-  if (isNewFolderStructureEnabled()) {
+  if (isMultiEnvEnabled()) {
     parameterFileName = parameterFileNameTemplateNew.replace("@envName", ctx.envInfo.envName);
     parameterFolderPath = path.join(ctx.root, configsFolder);
     parameterTemplateFilePath = path.join(
@@ -327,14 +327,18 @@ async function getParameterJson(ctx: SolutionContext) {
 
   let parameterJson;
   if (createNewParameterFile) {
-    parameterJson = await getExpandedParameter(ctx, parameterTemplateFilePath, false); // do not expand secrets to avoid saving secrets to parameter file
     await fs.ensureDir(parameterFolderPath);
-    await fs.writeFile(parameterFilePath, JSON.stringify(parameterJson, undefined, 2));
+    if (isMultiEnvEnabled()) {
+      await fs.copyFile(parameterTemplateFilePath, parameterFilePath);
+    } else {
+      parameterJson = await getExpandedParameter(ctx, parameterTemplateFilePath, false); // do not expand secrets to avoid saving secrets to parameter file
+      await fs.writeFile(parameterFilePath, JSON.stringify(parameterJson, undefined, 2));
+    }
   }
 
   parameterJson = await getExpandedParameter(ctx, parameterFilePath, true); // only expand secrets in memory
 
-  return parameterJson;
+  return [parameterFilePath, parameterJson];
 }
 
 async function getExpandedParameter(
@@ -513,9 +517,7 @@ interface PluginModuleProperties {
 }
 
 function generateBicepModuleFilePath(moduleFileName: string) {
-  return isNewFolderStructureEnabled()
-    ? `./modules/${moduleFileName}.bicep`
-    : `./${moduleFileName}.bicep`;
+  return isMultiEnvEnabled() ? `./modules/${moduleFileName}.bicep` : `./${moduleFileName}.bicep`;
 }
 
 function expandParameterPlaceholders(
@@ -614,9 +616,4 @@ async function areFoldersEmpty(folderPaths: string[]): Promise<boolean> {
     }
   }
   return isEmpty;
-}
-
-const FeatureFlagNewFolderStructure = "TEAMSFX_ARM_NEW_FOLDER_STRUCTURE";
-function isNewFolderStructureEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagNewFolderStructure, false);
 }

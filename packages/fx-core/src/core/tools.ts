@@ -8,6 +8,7 @@ import {
   AppPackageFolderName,
   ArchiveFolderName,
   V1ManifestFileName,
+  ProjectSettingsFileName,
 } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import * as fs from "fs-extra";
@@ -24,6 +25,7 @@ import {
 import { environmentManager } from "./environment";
 import * as dotenv from "dotenv";
 import { ConstantString } from "../common/constants";
+import { isMultiEnvEnabled } from "../common";
 
 export function validateProject(solutionContext: SolutionContext): string | undefined {
   const res = validateSettings(solutionContext.projectSettings);
@@ -100,8 +102,13 @@ export function validateSettings(projectSettings?: ProjectSettings): string | un
 export function isValidProject(workspacePath?: string): boolean {
   if (!workspacePath) return false;
   try {
-    const confFolderPath = path.resolve(workspacePath, `.${ConfigFolderName}`);
-    const settingsFile = path.resolve(confFolderPath, "settings.json");
+    const confFolderPath = isMultiEnvEnabled()
+      ? path.resolve(workspacePath, `.${ConfigFolderName}`, "configs")
+      : path.resolve(workspacePath, `.${ConfigFolderName}`);
+    const settingsFile = path.resolve(
+      confFolderPath,
+      isMultiEnvEnabled() ? ProjectSettingsFileName : "settings.json"
+    );
     const projectSettings: ProjectSettings = fs.readJsonSync(settingsFile);
     if (validateSettings(projectSettings)) return false;
     return true;

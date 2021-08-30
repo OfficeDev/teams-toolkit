@@ -332,7 +332,7 @@ async function getParameterJson(ctx: SolutionContext) {
     await fs.writeFile(parameterFilePath, JSON.stringify(parameterJson, undefined, 2));
   }
 
-  parameterJson = await getExpandedParameter(ctx, parameterTemplateFilePath, true); // only expand secrets in memory
+  parameterJson = await getExpandedParameter(ctx, parameterFilePath, true); // only expand secrets in memory
 
   return parameterJson;
 }

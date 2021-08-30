@@ -17,6 +17,7 @@ import {
 import { CoreHookContext, FxCore } from "../..";
 import {
   NoProjectOpenedError,
+  ProjectEnvAlreadyExistError,
   InvalidEnvNameError,
   ProjectEnvNotExistError,
   ProjectSettingsUndefinedError,
@@ -30,13 +31,13 @@ import {
   PluginNames,
   PROGRAMMING_LANGUAGE,
 } from "../../plugins/solution/fx-solution/constants";
-import { QuestionSelectTargetEnvironment, QuestionNewTargetEnvironmentName } from "../question";
+import { getQuestionNewTargetEnvironmentName, QuestionSelectTargetEnvironment } from "../question";
 import { desensitize } from "./questionModel";
 import { shouldIgnored } from "./projectSettingsLoader";
 import { PermissionRequestFileProvider } from "../permissionRequest";
 
 const newTargetEnvNameOption = "+ new environment";
-const lastUsedMark = " (current)";
+const lastUsedMark = " (activate)";
 let lastUsedEnvName: string | undefined;
 
 export function EnvInfoLoaderMW(
@@ -211,6 +212,44 @@ async function askTargetEnvironment(
   }
 }
 
+export async function askNewEnvironment(
+  ctx: CoreHookContext,
+  inputs: Inputs
+): Promise<string | undefined> {
+  const getQuestionRes = await getQuestionsForNewEnv(inputs);
+  const core = ctx.self as FxCore;
+  if (getQuestionRes.isErr()) {
+    core.tools.logProvider.error(
+      `[core:env] failed to get questions for target environment: ${getQuestionRes.error.message}`
+    );
+    ctx.result = err(getQuestionRes.error);
+    return undefined;
+  }
+
+  core.tools.logProvider.debug(`[core:env] success to get questions for target environment.`);
+
+  const node = getQuestionRes.value;
+  if (node) {
+    const res = await traverse(node, inputs, core.tools.ui);
+    if (res.isErr()) {
+      core.tools.logProvider.debug(
+        `[core:env] failed to run question model for target environment.`
+      );
+      ctx.result = err(res.error);
+      return undefined;
+    }
+
+    const desensitized = desensitize(node, inputs);
+    core.tools.logProvider.info(
+      `[core:env] success to run question model for target environment, answers:${JSON.stringify(
+        desensitized
+      )}`
+    );
+  }
+
+  return inputs.newTargetEnvName;
+}
+
 async function useUserSetEnv(
   ctx: CoreHookContext,
   inputs: Inputs,
@@ -260,10 +299,22 @@ async function getQuestionsForTargetEnv(
 
   const node = new QTreeNode(selectEnv);
 
-  const childNode = new QTreeNode(QuestionNewTargetEnvironmentName);
+  const childNode = new QTreeNode(getQuestionNewTargetEnvironmentName(inputs.projectPath));
   childNode.condition = { equals: newTargetEnvNameOption };
 
   node.addChild(childNode);
+
+  return ok(node.trim());
+}
+
+async function getQuestionsForNewEnv(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  if (!inputs.projectPath) {
+    return err(NoProjectOpenedError());
+  }
+
+  const node = new QTreeNode(getQuestionNewTargetEnvironmentName(inputs.projectPath));
 
   return ok(node.trim());
 }

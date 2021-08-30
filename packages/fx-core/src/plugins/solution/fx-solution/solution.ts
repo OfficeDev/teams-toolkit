@@ -118,7 +118,6 @@ import {
   ResourcePermission,
   TeamsAppAdmin,
 } from "../../../common/permissionInterface";
-import { checkFileExist } from "../../../common/fileUtils";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -275,7 +274,7 @@ export class TeamsAppSolution implements Solution {
     }
     const [answers, projectSettings, solutionSettingsSource] = assertRes.value;
 
-    const isTypescriptProject = await checkFileExist(
+    const isTypescriptProject = await fs.pathExists(
       path.join(ctx.root, ArchiveFolderName, "tsconfig.json")
     );
     projectSettings.programmingLanguage = isTypescriptProject ? "typescript" : "javascript";

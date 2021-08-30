@@ -3,25 +3,13 @@
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { it } from "mocha";
-import { SolutionRunningState, TeamsAppSolution } from " ../../../src/plugins/solution";
-import {
-  Platform,
-  SolutionConfig,
-  SolutionContext,
-  ok,
-  Result,
-  FxError,
-} from "@microsoft/teamsfx-api";
+import { TeamsAppSolution } from " ../../../src/plugins/solution";
+import { Platform, SolutionContext, ok, Result, FxError } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs, { PathLike } from "fs-extra";
-import {
-  GLOBAL_CONFIG,
-  PROGRAMMING_LANGUAGE,
-  SolutionError,
-} from "../../../src/plugins/solution/fx-solution/constants";
+import { GLOBAL_CONFIG, SolutionError } from "../../../src/plugins/solution/fx-solution/constants";
 import {
   AzureSolutionQuestionNames,
-  BotOptionItem,
   TabOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 import * as uuid from "uuid";
@@ -99,8 +87,8 @@ describe("Solution migrate()", async () => {
   });
 
   it("should succeed if projectSettings, solution settings and v1 capability are provided, language is javascript", async () => {
-    mocker.stub(fs, "access").callsFake((path: PathLike, mode?: number) => {
-      throw new Error("");
+    mocker.stub(fs, "pathExists").callsFake((path: PathLike) => {
+      return false;
     });
     fileContent.clear();
     const solution = new TeamsAppSolution();
@@ -127,8 +115,8 @@ describe("Solution migrate()", async () => {
   });
 
   it("should succeed if projectSettings, solution settings and v1 capability are provided, language is typescript", async () => {
-    mocker.stub(fs, "access").callsFake(async (path: PathLike, mode?: number): Promise<void> => {
-      return;
+    mocker.stub(fs, "pathExists").callsFake((path: PathLike) => {
+      return true;
     });
     fileContent.clear();
     const solution = new TeamsAppSolution();
@@ -156,11 +144,11 @@ describe("Solution migrate()", async () => {
 });
 
 function cleanPlugins(solution: TeamsAppSolution, mocker: sinon.SinonSandbox) {
-  mocker
-    .stub(solution.LocalDebugPlugin, "executeUserTask")
-    .callsFake(async (): Promise<Result<any, FxError>> => {
+  mocker.stub(solution.LocalDebugPlugin, "executeUserTask").callsFake(
+    async (): Promise<Result<any, FxError>> => {
       return ok(undefined);
-    });
+    }
+  );
   mocker.stub(solution.AadPlugin, "activate").callsFake((): boolean => {
     return false;
   });

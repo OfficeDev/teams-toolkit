@@ -701,7 +701,10 @@ export async function viewEnvironment(env: string): Promise<Result<Void, FxError
           const openEnvError = new SystemError(
             ExtensionErrors.OpenEnvProfileError,
             `Can not open project environment ${env}.`,
-            ExtensionSource
+            ExtensionSource,
+            undefined,
+            undefined,
+            error
           );
           showError(openEnvError);
           ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ViewEnvironment, openEnvError);

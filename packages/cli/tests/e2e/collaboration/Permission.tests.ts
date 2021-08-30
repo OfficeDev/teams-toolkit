@@ -21,6 +21,7 @@ describe("Permission", function () {
   const subscription = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
   const collaborator = process.env["M365_ACCOUNT_COLLABORATOR"];
+  const owner = process.env["M365_ACCOUNT_NAME"];
 
   it("Permissions", async function () {
     // new a project
@@ -85,6 +86,11 @@ describe("Permission", function () {
       }
     );
 
+    console.log(listCollaboratorResult.stdout);
+    // Check collaborator.
+    // When collaborator account is guest account in the tenant. Account name pattern will change.
+    // e.g. Guest account "account@example.com" will appear as "account_example#EXT#@exampleTenant.onmicrosoft.com" under tenant "exampleTenant".
+    // Thus here will check the account name only.
     expect(listCollaboratorResult.stdout).to.contains(`Account: ${collaborator?.split("@")[0]}`);
     console.log("[Successfully] list collaborator");
   });

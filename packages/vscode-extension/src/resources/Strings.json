@@ -88,7 +88,9 @@
       "signOutOfAzure": "Sign out of Azure: ",
       "invalidProject": "Failed to debug Teams App. The project is not a valid Teams project.",
       "editSecretTitle": "Edit the decrypted secret value",
-      "decryptFailed": "Failed to decrypt secrect."
+      "decryptFailed": "Failed to decrypt secrect.",
+      "openEnvFailed": "Can not open project environment %s.",
+      "findEnvFailed": "Can not find project environment %s."
     },
     "progressHandler": {
       "teamsToolkitComponent": "[Teams Toolkit]",

@@ -89,12 +89,3 @@ export function sendErrorTelemetryThenReturnError(
   reporter?.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
   return error;
 }
-
-export async function checkFileExist(filePath: string): Promise<boolean> {
-  try {
-    await fs.access(filePath, fs.constants.F_OK);
-    return true;
-  } catch (error) {
-    return false;
-  }
-}

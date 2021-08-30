@@ -85,7 +85,7 @@ describe("Permission", function () {
       }
     );
 
-    expect(listCollaboratorResult.stdout).to.contains(`Account: ${collaborator}`);
+    expect(listCollaboratorResult.stdout).to.contains(`Account: ${collaborator?.split("@")[0]}`);
     console.log("[Successfully] list collaborator");
   });
 

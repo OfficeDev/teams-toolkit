@@ -2504,7 +2504,7 @@ export class TeamsAppSolution implements Solution {
         return undefined;
       }
 
-      const collaborator = res.data.value.find((user: any) => user.userPrincipalName === email);
+      const collaborator = res.data.value.find((user: any) => user.mail === email);
 
       if (!collaborator) {
         return undefined;

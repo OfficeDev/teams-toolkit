@@ -7,7 +7,7 @@ const xml2js = require(path.join(targetPath, "node_modules/xml2js"));
 const pkgName = process.env.npm_package_name;
 const pkgVer = process.env.npm_package_name;
 console.log("========= pkg name:", pkgName, " pkg version: ", pkgVer);
-// parse csproj file as XML
+
 function parseXml(xml) {
     return new Promise((resolve, reject) => {
         xml2js.parseString(xml, (err, result) => {

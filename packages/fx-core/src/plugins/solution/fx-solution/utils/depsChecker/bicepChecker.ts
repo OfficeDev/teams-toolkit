@@ -28,6 +28,7 @@ import {
 
 import { performance } from "perf_hooks";
 import { sendErrorTelemetryThenReturnError } from "../util";
+import { isBicepEnvCheckerEnabled } from "../../../../../common/tools";
 
 export const BicepName = "Bicep";
 export const installVersion = "v0.4";
@@ -64,7 +65,7 @@ class BicepChecker {
   }
 
   public async isEnabled(): Promise<boolean> {
-    const isBicepEnabled = false; // todo
+    const isBicepEnabled = isBicepEnvCheckerEnabled();
     if (!isBicepEnabled) {
       this._telemetry?.sendTelemetryEvent(DepsCheckerEvent.bicepCheckSkipped, getCommonProps());
     }

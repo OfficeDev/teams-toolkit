@@ -412,6 +412,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
     callback: signinM365Callback,
     parent: TreeCategory.Account,
     contextValue: "signinM365",
+    subTreeItems: [],
     icon: "M365",
     tooltip: {
       isMarkdown: true,
@@ -495,21 +496,32 @@ async function getSideloadingStatus(token: string): Promise<boolean | undefined>
     timeout: 30000,
   });
   instance.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-  try {
-    const response = await instance.get("/api/usersettings/mtUserAppPolicy");
-    let result: boolean | undefined;
-    if (response.status >= 400) {
-      result = undefined;
-    } else {
-      result = response.data?.value?.isSideloadingAllowed as boolean;
-    }
 
-    tools.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.CheckSideloading, {
-      [TelemetryProperty.IsSideloadingAllowed]: result + "",
-    });
-    return result;
-  } catch (error) {
-    tools.telemetryReporter?.sendTelemetryErrorEvent(TelemetryEvent.CheckSideloading, error);
-    return undefined;
-  }
+  let retry = 0;
+  const retryInterval = 2000;
+  do {
+    try {
+      const response = await instance.get("/api/usersettings/mtUserAppPolicy");
+      let result: boolean | undefined;
+      if (response.status >= 400) {
+        result = undefined;
+      } else {
+        result = response.data?.value?.isSideloadingAllowed as boolean;
+      }
+
+      tools.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.CheckSideloading, {
+        [TelemetryProperty.IsSideloadingAllowed]: result + "",
+      });
+      return result;
+    } catch (error) {
+      tools.telemetryReporter?.sendTelemetryErrorEvent(TelemetryEvent.CheckSideloading, error);
+      await delay((retry + 1) * retryInterval);
+    }
+  } while (++retry < 3);
+
+  return undefined;
+}
+
+function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }

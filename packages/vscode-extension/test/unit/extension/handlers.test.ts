@@ -185,7 +185,7 @@ suite("handlers", () => {
 
       sinon.restore();
       chai.expect(result.isErr()).equals(true);
-      chai.expect((result as any).error.name).equals("EnvProfileNotFoundError");
+      chai.expect((result as any).error.name).equals("NoWorkspace");
     });
   });
 

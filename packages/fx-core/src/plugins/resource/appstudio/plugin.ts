@@ -74,7 +74,6 @@ import {
   SOLUTION,
   MANIFEST_TEMPLATE,
   TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV,
-  BOT_PLUGIN_NAME,
 } from "./constants";
 import { REMOTE_TEAMS_APP_ID } from "../../solution/fx-solution/constants";
 import AdmZip from "adm-zip";
@@ -235,7 +234,7 @@ export class AppStudioPluginImpl {
 
     const includeBot = (
       ctx.projectSettings?.solutionSettings as AzureSolutionSettings
-    ).activeResourcePlugins?.includes(BOT_PLUGIN_NAME);
+    ).activeResourcePlugins?.includes(PluginNames.BOT);
     if (includeBot) {
       if (manifest.bots !== undefined && manifest.bots.length > 0) {
         manifest.bots[0].botId = `{${BOT_ID}}`;

@@ -1,12 +1,11 @@
 const fse = require("fs-extra");
 const path = require("path");
 const semver = require("semver");
-const targetPkgName = process.argv[2];
-const targetPath = path.join(__dirname, "../../packages", targetPkgName);
+const targetPath = process.env.INIT_CWD;
 const xml2js = require(path.join(targetPath, "node_modules/xml2js"));
 // ---- target pkg name and version -----
-const pkgName = require(path.join(targetPath, 'package.json')).name;
-const pkgVer = require(path.join(targetPath, "package.json")).version;
+const pkgName = process.env.npm_package_name;
+const pkgVer = process.env.npm_package_name;
 console.log("========= pkg name:", pkgName, " pkg version: ", pkgVer);
 // parse csproj file as XML
 function parseXml(xml) {
@@ -22,16 +21,16 @@ function parseXml(xml) {
 }
 
 // update target(simpleauth or function-extension) csproj file
-async function updateCurrentCSprojVer(csprojFile) {
+async function updateCurrentCSprojVer(csprojFile, targetVer) {
     const file = await fse.readFile(csprojFile);
     const result = await parseXml(file);
     for (let prop of result['Project'].PropertyGroup) {
         if (prop.Version) {
-            prop.Version[0] = pkgVer;
+            prop.Version[0] = targetVer;
             break;
         }
     }
-    // convert JSON objec to XML
+    // convert JSON object to XML
     const builder = new xml2js.Builder({ trim: true, headless: true });
     const xml = builder.buildObject(result);
     // write updated XML string to a file
@@ -39,7 +38,7 @@ async function updateCurrentCSprojVer(csprojFile) {
 }
 
 // only to sync up templates version with function-extension.
-async function syncUpTemplateVer(targetFile) {
+async function syncUpTemplateVer(targetFile,) {
     const file = await fse.readFile(targetFile, 'utf-8');
     const result = await parseXml(file);
     let changed = false;
@@ -109,7 +108,7 @@ async function updateFxCoreSimpleAuthVer(simpleauthVer, targetPkgPath) {
 async function updateSimpleAuth() {
     const synup = process.env.SkipSyncup;
     const csprojFile = path.join(targetPath, "src/TeamsFxSimpleAuth/Microsoft.TeamsFx.SimpleAuth.csproj");
-    await updateCurrentCSprojVer(csprojFile);
+    await updateCurrentCSprojVer(csprojFile, pkgVer);
     if (synup && synup.includes("fx-core")) {
         return;
     }
@@ -126,7 +125,7 @@ async function updateExtension() {
     const targetJsCsprojFile = path.join(templatePath, "function-base/js/default/extensions.csproj");
     const targetTsCsprojFile = path.join(templatePath, "function-base/ts/default/extensions.csproj");
     const csprojFile = path.join(targetPath, "src/Microsoft.Azure.WebJobs.Extensions.TeamsFx.csproj");
-    await updateCurrentCSprojVer(csprojFile);
+    await updateCurrentCSprojVer(csprojFile, pkgVer);
     if (synup && synup.includes("template")) {
         return;
     }

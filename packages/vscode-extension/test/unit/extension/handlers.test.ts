@@ -181,9 +181,11 @@ suite("handlers", () => {
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
 
-      await handlers.viewEnvironment("test");
+      const result = await handlers.viewEnvironment("test");
 
       sinon.restore();
+      chai.expect(result.isErr()).equals(true);
+      chai.expect((result as any).error.name).equals("EnvProfileNotFoundError");
     });
   });
 

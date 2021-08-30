@@ -700,7 +700,7 @@ export async function viewEnvironment(env: string): Promise<Result<Void, FxError
         (error: any) => {
           const openEnvError = new SystemError(
             ExtensionErrors.OpenEnvProfileError,
-            `Can not open project environment ${env}.`,
+            util.format(StringResources.vsc.handlers.openEnvFailed, env),
             ExtensionSource,
             undefined,
             undefined,
@@ -714,7 +714,7 @@ export async function viewEnvironment(env: string): Promise<Result<Void, FxError
     } else {
       const noEnvError = new UserError(
         ExtensionErrors.EnvProfileNotFoundError,
-        `Can not find project environment ${env}.`,
+        util.format(StringResources.vsc.handlers.findEnvFailed, env),
         ExtensionSource
       );
       showError(noEnvError);

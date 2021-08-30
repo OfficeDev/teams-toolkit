@@ -67,6 +67,7 @@ import {
   FunctionRouterError,
   InvalidInputError,
   MigrateNotImplementError,
+  ProjectEnvAlreadyExistError,
   ProjectFolderExistError,
   ProjectFolderNotExistError,
   TaskNotSupportError,
@@ -88,7 +89,9 @@ import { AxiosResponse } from "axios";
 import { ProjectUpgraderMW } from "./middleware/projectUpgrader";
 import { globalStateUpdate } from "../common/globalState";
 import {
+  askNewEnvironment,
   EnvInfoLoaderMW,
+  loadSolutionContext,
   upgradeDefaultFunctionName,
   upgradeProgrammingLanguage,
 } from "./middleware/envInfoLoader";
@@ -96,6 +99,7 @@ import { EnvInfoWriterMW } from "./middleware/envInfoWriter";
 import { LocalSettingsLoaderMW } from "./middleware/localSettingsLoader";
 import { LocalSettingsWriterMW } from "./middleware/localSettingsWriter";
 import { MigrateConditionHandlerMW } from "./middleware/migrateConditionHandler";
+import { environmentManager } from "..";
 import { newEnvInfo } from "./tools";
 
 export interface CoreHookContext extends HookContext {
@@ -818,9 +822,39 @@ export class FxCore implements Core {
   async buildArtifacts(inputs: Inputs): Promise<Result<Void, FxError>> {
     throw TaskNotSupportError(Stage.build);
   }
-  async createEnv(inputs: Inputs): Promise<Result<Void, FxError>> {
-    throw TaskNotSupportError(Stage.createEnv);
+
+  @hooks([ErrorHandlerMW, ProjectSettingsLoaderMW, ContextInjecterMW])
+  async createEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+    if (!isMultiEnvEnabled() || !ctx!.projectSettings) {
+      return ok(Void);
+    }
+
+    const core = ctx!.self as FxCore;
+    const targetEnvName = await askNewEnvironment(ctx!, inputs);
+
+    if (!targetEnvName) {
+      return ok(Void);
+    }
+
+    if (targetEnvName) {
+      const newEnvConfig = environmentManager.newEnvConfigData();
+      const writeEnvResult = await environmentManager.writeEnvConfig(
+        inputs.projectPath!,
+        newEnvConfig,
+        targetEnvName
+      );
+      if (writeEnvResult.isErr()) {
+        return err(writeEnvResult.error);
+      }
+      core.tools.logProvider.debug(
+        `[core] persist ${targetEnvName} env profile to path ${
+          writeEnvResult.value
+        }: ${JSON.stringify(newEnvConfig)}`
+      );
+    }
+    return ok(Void);
   }
+
   async removeEnv(inputs: Inputs): Promise<Result<Void, FxError>> {
     throw TaskNotSupportError(Stage.removeEnv);
   }

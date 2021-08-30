@@ -154,4 +154,9 @@ export class AppStudioError {
     message: (errorMessage: string, id?: string) =>
       `${Constants.PERMISSIONS.name}: ${id}. Grant permission failed. Reason: ${errorMessage}`,
   };
+
+  public static readonly ListCollaboratorFailedError = {
+    name: "ListCollaboratorFailedError",
+    message: (error: any) => `List collaborator failed. Reason: ${error.message}`,
+  };
 }

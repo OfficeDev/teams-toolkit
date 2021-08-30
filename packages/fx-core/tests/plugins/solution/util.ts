@@ -34,6 +34,7 @@ import {
   AzureAccountProvider,
   SubscriptionInfo,
   AppStudioTokenProvider,
+  Inputs,
 } from "@microsoft/teamsfx-api";
 
 export const validManifest = {
@@ -77,6 +78,20 @@ export const validManifest = {
 export function mockPublishThatAlwaysSucceed(plugin: Plugin) {
   plugin.publish = async function (_ctx: PluginContext): Promise<Result<any, FxError>> {
     return ok(Void);
+  };
+}
+
+export function mockV2PublishThatAlwaysSucceed(plugin: v2.ResourcePlugin): void {
+  plugin.publishApplication = async function (): Promise<Result<Void, FxError>> {
+    return ok(Void);
+  };
+}
+
+export function mockScaffoldCodeThatAlwaysSucceeds(plugin: v2.ResourcePlugin): void {
+  plugin.scaffoldSourceCode = async function (): Promise<
+    Result<{ output: Record<string, string> }, FxError>
+  > {
+    return ok({ output: {} });
   };
 }
 

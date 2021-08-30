@@ -14,13 +14,16 @@ import {
   Inputs,
   v2,
   Plugin,
-  ok,
-  Result,
-  FxError,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import { GLOBAL_CONFIG, SolutionError } from "../../../src/plugins/solution/fx-solution/constants";
-import { MockedAppStudioProvider, MockedV2Context, mockPublishThatAlwaysSucceed } from "./util";
+import {
+  MockedAppStudioProvider,
+  MockedV2Context,
+  mockPublishThatAlwaysSucceed,
+  mockV2PublishThatAlwaysSucceed,
+  mockScaffoldCodeThatAlwaysSucceeds,
+} from "./util";
 import _ from "lodash";
 import {
   ResourcePlugins,
@@ -34,7 +37,6 @@ import {
   BotOptionItem,
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
-  ProgrammingLanguageQuestion,
   TabOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 import { executeUserTask } from "../../../src/plugins/solution/fx-solution/v2/executeUserTask";
@@ -61,15 +63,6 @@ const localDebugPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.Lo
 const appStudioPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin);
 const frontendPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.FrontendPlugin);
 const botPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.BotPlugin);
-
-function mockScaffoldCodeThatAlwaysSucceeds(plugin: v2.ResourcePlugin) {
-  plugin.scaffoldSourceCode = async function (
-    _ctx: v2.Context,
-    _inputs: Inputs
-  ): Promise<Result<{ output: Record<string, string> }, FxError>> {
-    return ok({ output: {} });
-  };
-}
 
 function mockSolutionContextWithPlatform(platform?: Platform): SolutionContext {
   const config: SolutionConfig = new Map();
@@ -377,5 +370,76 @@ describe("V2 implementation", () => {
       mockedProvider
     );
     expect(result.isOk()).to.be.true;
+  });
+
+  describe("executeUserTask VSpublish", async () => {
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "test",
+        version: "1.0",
+        activeResourcePlugins: [appStudioPluginV2.name],
+        capabilities: [TabOptionItem.id],
+        azureResources: [],
+      },
+    };
+
+    it("should return error for non-vs platform", async () => {
+      const mockedCtx = new MockedV2Context(projectSettings);
+      const mockedProvider = new MockedAppStudioProvider();
+      const mockedInputs: Inputs = {
+        platform: Platform.VSCode,
+      };
+
+      let result = await executeUserTask(
+        mockedCtx,
+        { namespace: "solution", method: "VSpublish" },
+        mockedInputs,
+        mockedProvider
+      );
+      expect(result.isErr()).to.be.true;
+      expect(result._unsafeUnwrapErr().name).equals(SolutionError.UnsupportedPlatform);
+
+      (mockedInputs.platform = Platform.VSCode),
+        (result = await executeUserTask(
+          mockedCtx,
+          { namespace: "solution", method: "VSpublish" },
+          mockedInputs,
+          mockedProvider
+        ));
+      expect(result.isErr()).to.be.true;
+      expect(result._unsafeUnwrapErr().name).equals(SolutionError.UnsupportedPlatform);
+    });
+
+    describe("happy path", async () => {
+      const mocker = sinon.createSandbox();
+
+      beforeEach(() => {});
+
+      afterEach(() => {
+        mocker.restore();
+      });
+
+      it("should return ok", async () => {
+        const mockedCtx = new MockedV2Context(projectSettings);
+        const mockedProvider = new MockedAppStudioProvider();
+        const mockedInputs: Inputs = {
+          platform: Platform.VS,
+        };
+
+        mockV2PublishThatAlwaysSucceed(appStudioPluginV2);
+        const spy = mocker.spy(appStudioPluginV2, "publishApplication");
+        const result = await executeUserTask(
+          mockedCtx,
+          { namespace: "solution", method: "VSpublish" },
+          mockedInputs,
+          mockedProvider
+        );
+        expect(result.isOk()).to.be.true;
+        expect(spy.calledOnce, "publishApplication() is called").to.be.true;
+      });
+    });
   });
 });

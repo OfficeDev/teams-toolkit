@@ -111,10 +111,12 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<Result<undef
 
   // For the multi env scenario, profile.{envName}.json and {envName}.userdata are not created when scaffolding
   // These projects must be the new projects, so skip upgrading.
-  try {
-    await Promise.all([fs.stat(contextPath), fs.stat(userDataPath)]);
-  } catch (error) {
-    return ok(undefined);
+  if (isMultiEnvEnabled()) {
+    try {
+      await Promise.all([fs.stat(contextPath), fs.stat(userDataPath)]);
+    } catch (error) {
+      return ok(undefined);
+    }
   }
 
   let context: Json = {};

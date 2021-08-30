@@ -503,7 +503,7 @@
           "fx-extension.validateBicep": {
             "type": "boolean",
             "description": "Ensure Bicep CLI is installed.",
-            "default": true
+            "default": false
           },
           "fx-extension.stopTeamsToolkitTasksPostDebug": {
             "type": "boolean",

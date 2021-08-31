@@ -82,6 +82,7 @@ export async function checkSubscription(
 }
 
 async function getQuestionsForResourceGroup(
+  defaultResourceGroupName: string,
   existingResourceGroupNameLocations: [string, string][],
   availableLocations: string[]
 ) {
@@ -102,7 +103,9 @@ async function getQuestionsForResourceGroup(
 
   const node = new QTreeNode(selectResourceGroup);
 
-  const newResourceGroupNameNode = new QTreeNode(QuestionNewResourceGroupName);
+  const inputNewResourceGroupName = QuestionNewResourceGroupName;
+  inputNewResourceGroupName.default = defaultResourceGroupName;
+  const newResourceGroupNameNode = new QTreeNode(inputNewResourceGroupName);
   newResourceGroupNameNode.condition = { equals: newResourceGroupOption };
   node.addChild(newResourceGroupNameNode);
 
@@ -125,10 +128,11 @@ export async function askResourceGroupInfo(
   ui: UserInteraction,
   appName: string
 ): Promise<Result<ResourceGroupInfo, FxError>> {
+  const defaultResourceGroupName = `${appName.replace(" ", "_")}-rg`;
   if (!isMultiEnvEnabled()) {
     return ok({
       createNewResourceGroup: true,
-      name: `${appName.replace(" ", "_")}-rg`,
+      name: defaultResourceGroupName,
       location: DefaultResourceGroupLocation,
     });
   }
@@ -155,7 +159,11 @@ export async function askResourceGroupInfo(
   // And then filter by the 'resourceGroup' resource provider.
   // https://github.com/microsoft/vscode-azuretools/blob/cda6548af53a1c0f538a5ef7542c0eba1d5fa566/ui/src/wizard/LocationListStep.ts#L173
   const availableLocations = ["East US", "West US"];
-  const node = await getQuestionsForResourceGroup(resourceGroupNameLocations, availableLocations);
+  const node = await getQuestionsForResourceGroup(
+    defaultResourceGroupName,
+    resourceGroupNameLocations,
+    availableLocations
+  );
   if (node) {
     const res = await traverse(node, inputs, ui);
     if (res.isErr()) {

@@ -65,7 +65,8 @@ export function EnvInfoLoaderMW(
     const core = ctx.self as FxCore;
 
     if (inputs.ignoreEnvInfo === true) {
-      const result = await loadSolutionContextWithoutEnv(core.tools, inputs, ctx.projectSettings);
+      // load default env
+      const result = await loadSolutionContext(core.tools, inputs, ctx.projectSettings);
       if (result.isErr()) {
         ctx.result = err(result.error);
         return;
@@ -142,30 +143,6 @@ export async function loadSolutionContext(
   const solutionContext: SolutionContext = {
     projectSettings: projectSettings,
     envInfo,
-    root: inputs.projectPath || "",
-    ...tools,
-    ...tools.tokenProvider,
-    answers: inputs,
-    cryptoProvider: cryptoProvider,
-    permissionRequestProvider: new PermissionRequestFileProvider(inputs.projectPath),
-  };
-
-  return ok(solutionContext);
-}
-
-export async function loadSolutionContextWithoutEnv(
-  tools: Tools,
-  inputs: Inputs,
-  projectSettings: ProjectSettings
-): Promise<Result<SolutionContext, FxError>> {
-  if (!inputs.projectPath) {
-    return err(NoProjectOpenedError());
-  }
-
-  const cryptoProvider = new LocalCrypto(projectSettings.projectId);
-  const solutionContext: SolutionContext = {
-    projectSettings: projectSettings,
-    envInfo: newEnvInfo(),
     root: inputs.projectPath || "",
     ...tools,
     ...tools.tokenProvider,

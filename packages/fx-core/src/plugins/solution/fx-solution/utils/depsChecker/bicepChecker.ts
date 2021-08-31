@@ -47,8 +47,8 @@ export async function ensureBicep(ctx: SolutionContext): Promise<string> {
   } catch (err) {
     await ctx.logProvider?.debug(`Failed to check or install bicep, error = '${err}'`);
     if (!(await bicepChecker.isGlobalBicepInstalled())) {
-      // only notify user, not block
       await displayLearnMore(err.message, defaultHelpLink, ctx);
+      throw err;
     }
   }
   return bicepChecker.getBicepCommand();

@@ -10,6 +10,7 @@ import {
   TeamsAppManifest,
   Platform,
   AppPackageFolderName,
+  V1ManifestFileName,
 } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
 import fs, { PathLike } from "fs-extra";
@@ -19,7 +20,6 @@ import {
   CONFIGURABLE_TABS_TPL,
   REMOTE_MANIFEST,
   STATIC_TABS_TPL,
-  V1_MANIFEST,
 } from "../../../../../src/plugins/resource/appstudio/constants";
 import path from "path";
 import { ArchiveFolderName } from "@microsoft/teamsfx-api";
@@ -110,7 +110,9 @@ describe("Migrate", () => {
     });
 
     fileContent.set(
-      path.normalize(`${ctx.root}/${ArchiveFolderName}/${AppPackageFolderName}/${V1_MANIFEST}`),
+      path.normalize(
+        `${ctx.root}/${ArchiveFolderName}/${AppPackageFolderName}/${V1ManifestFileName}`
+      ),
       manifestStr
     );
     fileContent.set(

@@ -17,6 +17,7 @@ import {
   IBot,
   AppPackageFolderName,
   ArchiveFolderName,
+  V1ManifestFileName,
 } from "@microsoft/teamsfx-api";
 import { AppStudioClient } from "./appStudio";
 import {
@@ -69,7 +70,6 @@ import {
   REMOTE_MANIFEST,
   FRONTEND_ENDPOINT_ARM,
   FRONTEND_DOMAIN_ARM,
-  V1_MANIFEST,
   ErrorMessages,
   SOLUTION,
   MANIFEST_TEMPLATE,
@@ -162,8 +162,7 @@ export class AppStudioPluginImpl {
    * @returns
    */
   public async createManifest(settings: ProjectSettings): Promise<TeamsAppManifest | undefined> {
-    const solutionSettings: AzureSolutionSettings =
-      settings.solutionSettings as AzureSolutionSettings;
+    const solutionSettings: AzureSolutionSettings = settings.solutionSettings as AzureSolutionSettings;
     if (
       !solutionSettings.capabilities ||
       (!solutionSettings.capabilities.includes(BotOptionItem.id) &&
@@ -214,7 +213,7 @@ export class AppStudioPluginImpl {
       ctx.root,
       ArchiveFolderName,
       AppPackageFolderName,
-      V1_MANIFEST
+      V1ManifestFileName
     );
     const manifestSourceRes = await this.reloadManifestAndCheckRequiredFields(archiveManifestPath);
     if (manifestSourceRes.isErr()) {
@@ -232,9 +231,8 @@ export class AppStudioPluginImpl {
     manifest.id = "{appid}";
     manifest.validDomains = [];
 
-    const includeBot = (
-      ctx.projectSettings?.solutionSettings as AzureSolutionSettings
-    ).activeResourcePlugins?.includes(PluginNames.BOT);
+    const includeBot = (ctx.projectSettings
+      ?.solutionSettings as AzureSolutionSettings).activeResourcePlugins?.includes(PluginNames.BOT);
     if (includeBot) {
       if (manifest.bots !== undefined && manifest.bots.length > 0) {
         manifest.bots[0].botId = `{${BOT_ID}}`;
@@ -365,10 +363,10 @@ export class AppStudioPluginImpl {
     return ok(await AppStudioClient.validateManifest(manifestString, appStudioToken!));
   }
 
-  public async migrateV1Project(ctx: PluginContext): Promise<any> {
+  public async migrateV1Project(ctx: PluginContext): Promise<{ enableAuth: boolean }> {
     let manifest: TeamsAppManifest | undefined;
     const archiveAppPackageFolder = path.join(ctx.root, ArchiveFolderName, AppPackageFolderName);
-    const archiveManifestPath = path.join(archiveAppPackageFolder, V1_MANIFEST);
+    const archiveManifestPath = path.join(archiveAppPackageFolder, V1ManifestFileName);
     const newAppPackageFolder = path.join(ctx.root, AppPackageFolderName);
     await fs.ensureDir(newAppPackageFolder);
     if (await this.checkFileExist(archiveManifestPath)) {
@@ -387,8 +385,10 @@ export class AppStudioPluginImpl {
       if (await this.checkFileExist(archiveOutlineFile)) {
         await fs.copyFile(archiveOutlineFile, newOutlineFile);
       }
+      return { enableAuth: !!manifest.webApplicationInfo };
     } else {
       await this.scaffold(ctx);
+      return { enableAuth: false };
     }
   }
 

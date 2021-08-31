@@ -212,8 +212,10 @@ export class AppStudioPlugin implements Plugin {
     TelemetryUtils.sendStartEvent(TelemetryEventName.migrateV1Project);
 
     try {
-      await this.appStudioPluginImpl.migrateV1Project(ctx);
-      TelemetryUtils.sendSuccessEvent(TelemetryEventName.migrateV1Project);
+      const v1ProjectProperties = await this.appStudioPluginImpl.migrateV1Project(ctx);
+      TelemetryUtils.sendSuccessEvent(TelemetryEventName.migrateV1Project, {
+        enableAuth: v1ProjectProperties.enableAuth ? "true" : "false",
+      });
       return ok(Void);
     } catch (error) {
       TelemetryUtils.sendErrorEvent(TelemetryEventName.migrateV1Project, error);

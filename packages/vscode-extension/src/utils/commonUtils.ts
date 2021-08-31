@@ -56,9 +56,7 @@ export function isLinux() {
 export function getActiveEnv() {
   try {
     const ws = ext.workspaceUri.fsPath;
-    // TODO: fix me
-    // if (isValidProject(ws)) {
-    if (ws) {
+    if (isValidProject(ws)) {
       const settingsJsonPath = path.join(
         ws,
         isMultiEnvEnabled()

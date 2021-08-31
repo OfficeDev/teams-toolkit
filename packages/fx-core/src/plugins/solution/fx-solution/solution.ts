@@ -644,51 +644,78 @@ export class TeamsAppSolution implements Solution {
     const selectedPlugins = maybeSelectedPlugins.value;
 
     if (this.isAzureProject(ctx)) {
-      //1. ask common questions for azure resources.
-      const appName = ctx.projectSettings!.appName;
-      const res = await fillInCommonQuestions(
-        ctx,
-        appName,
-        ctx.envInfo.profile,
-        ctx.azureAccountProvider,
-        await ctx.appStudioToken?.getJsonObject()
-      );
-      if (res.isErr()) {
-        return res;
-      }
-      const azureToken = await ctx.azureAccountProvider?.getAccountCredentialAsync();
+      async function doConfirmProvision(): Promise<Result<any, FxError>> {
+        const azureToken = await ctx.azureAccountProvider?.getAccountCredentialAsync();
 
-      // Only Azure project requires this confirm dialog
-      const username = (azureToken as any).username ? (azureToken as any).username : "";
-      const subscriptionInfo = await ctx.azureAccountProvider?.getSelectedSubscription();
+        // Only Azure project requires this confirm dialog
+        const username = (azureToken as any).username ? (azureToken as any).username : "";
+        const subscriptionInfo = await ctx.azureAccountProvider?.getSelectedSubscription();
 
-      const subscriptionId = subscriptionInfo?.subscriptionId;
-      const subscriptionName = subscriptionInfo?.subscriptionName;
-      const msg = util.format(
-        getStrings().solution.ProvisionConfirmNotice,
-        username,
-        subscriptionName ? subscriptionName : subscriptionId
-      );
-      const confirmRes = await ctx.ui?.showMessage(
-        "warn",
-        msg,
-        true,
-        "Provision",
-        "Pricing calculator"
-      );
-      const confirm = confirmRes?.isOk() ? confirmRes.value : undefined;
-
-      if (confirm !== "Provision") {
-        if (confirm === "Pricing calculator") {
-          ctx.ui?.openUrl("https://azure.microsoft.com/en-us/pricing/calculator/");
-        }
-        return err(
-          returnUserError(
-            new Error(getStrings().solution.CancelProvision),
-            "Solution",
-            getStrings().solution.CancelProvision
-          )
+        const subscriptionId = subscriptionInfo?.subscriptionId;
+        const subscriptionName = subscriptionInfo?.subscriptionName;
+        const msg = util.format(
+          getStrings().solution.ProvisionConfirmNotice,
+          username,
+          subscriptionName ? subscriptionName : subscriptionId
         );
+        const confirmRes = await ctx.ui?.showMessage(
+          "warn",
+          msg,
+          true,
+          "Provision",
+          "Pricing calculator"
+        );
+        const confirm = confirmRes?.isOk() ? confirmRes.value : undefined;
+
+        if (confirm !== "Provision") {
+          if (confirm === "Pricing calculator") {
+            ctx.ui?.openUrl("https://azure.microsoft.com/en-us/pricing/calculator/");
+          }
+          return err(
+            returnUserError(
+              new Error(getStrings().solution.CancelProvision),
+              "Solution",
+              getStrings().solution.CancelProvision
+            )
+          );
+        }
+        return ok(undefined);
+      }
+
+      async function doAskCommonQuestsions(): Promise<Result<any, FxError>> {
+        const appName = ctx.projectSettings!.appName;
+        const res = await fillInCommonQuestions(
+          ctx,
+          appName,
+          ctx.envInfo.profile,
+          ctx.azureAccountProvider,
+          await ctx.appStudioToken?.getJsonObject()
+        );
+        if (res.isErr()) {
+          return res;
+        }
+        return ok(undefined);
+      }
+
+      // For the new multi-env scenario, we first ask for confirmation and then ask the resource group info
+      if (isMultiEnvEnabled()) {
+        const askQuestionsResult = await doAskCommonQuestsions();
+        if (askQuestionsResult.isErr()) {
+          return askQuestionsResult;
+        }
+        const confirmProvisionResult = await doConfirmProvision();
+        if (confirmProvisionResult.isErr()) {
+          return confirmProvisionResult;
+        }
+      } else {
+        const confirmProvisionResult = await doConfirmProvision();
+        if (confirmProvisionResult.isErr()) {
+          return confirmProvisionResult;
+        }
+        const askQuestionsResult = await doAskCommonQuestsions();
+        if (askQuestionsResult.isErr()) {
+          return askQuestionsResult;
+        }
       }
     }
 

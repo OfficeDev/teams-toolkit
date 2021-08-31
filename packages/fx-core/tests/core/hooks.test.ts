@@ -2,10 +2,11 @@
 // Licensed under the MIT license.
 
 import { hooks, Middleware, NextFunction } from "@feathersjs/hooks/lib";
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import "mocha";
 import * as dotenv from "dotenv";
 import { ErrorHandlerMW } from "../../src/core/middleware/errorHandler";
+import { TelemetrySenderMW } from "../../src/core/middleware/telemetrySender";
 import {
   UserCancelError,
   err,
@@ -25,8 +26,8 @@ import {
   FunctionRouter,
   Func,
   InputTextConfig,
-  SystemError,
   UserError,
+  ProductName,
 } from "@microsoft/teamsfx-api";
 import { ConcurrentLockerMW } from "../../src/core/middleware/concurrentLocker";
 import fs from "fs-extra";
@@ -39,6 +40,7 @@ import {
 } from "../../src/core/error";
 import * as os from "os";
 import {
+  base64Encode,
   CoreHookContext,
   deserializeDict,
   InvalidInputError,
@@ -165,6 +167,60 @@ describe("Middleware", () => {
   });
 
   describe("ConcurrentLockerMW", () => {
+    it("temp folder should be existed when it's locked", async () => {
+      class MyClass {
+        tools?: any = new MockTools();
+        async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
+          const lockFileDir = path.join(
+            os.tmpdir(),
+            `${ProductName}-${base64Encode(inputs.projectPath!)}`
+          );
+          expect(await fs.pathExists(lockFileDir)).is.true;
+          return ok("");
+        }
+      }
+      hooks(MyClass, {
+        myMethod: [ConcurrentLockerMW],
+      });
+      const my = new MyClass();
+      const inputs: Inputs = { platform: Platform.VSCode };
+      inputs.projectPath = path.join(os.tmpdir(), randomAppName());
+      try {
+        await fs.ensureDir(inputs.projectPath);
+        await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`));
+        const res = await my.myMethod(inputs);
+      } finally {
+        await fs.rmdir(inputs.projectPath!, { recursive: true });
+      }
+    });
+
+    it("temp folder should be removed after being unlocked", async () => {
+      class MyClass {
+        tools?: any = new MockTools();
+        async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
+          return ok("");
+        }
+      }
+      hooks(MyClass, {
+        myMethod: [ConcurrentLockerMW],
+      });
+      const my = new MyClass();
+      const inputs: Inputs = { platform: Platform.VSCode };
+      inputs.projectPath = path.join(os.tmpdir(), randomAppName());
+      try {
+        await fs.ensureDir(inputs.projectPath);
+        await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`));
+        const res = await my.myMethod(inputs);
+      } finally {
+        await fs.rmdir(inputs.projectPath!, { recursive: true });
+      }
+      const lockFileDir = path.join(
+        os.tmpdir(),
+        `${ProductName}-${base64Encode(inputs.projectPath!)}`
+      );
+      expect(await fs.pathExists(lockFileDir)).is.false;
+    });
+
     it("sequence: ok", async () => {
       class MyClass {
         tools?: any = new MockTools();

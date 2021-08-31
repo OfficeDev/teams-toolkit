@@ -32,7 +32,7 @@ import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { FunctionRouterError } from "../../../core";
 import { Links } from "../bot/constants";
-import { TeamsAppAdmin } from "../../../common/permissionInterface";
+import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
 @Service(ResourcePlugins.AppStudioPlugin)
 export class AppStudioPlugin implements Plugin {
   name = "fx-resource-appstudio";
@@ -306,7 +306,7 @@ export class AppStudioPlugin implements Plugin {
     return ok(localTeamsAppId);
   }
 
-  public async checkPermission(ctx: PluginContext): Promise<Result<any, FxError>> {
+  public async checkPermission(ctx: PluginContext): Promise<Result<ResourcePermission[], FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.checkPermission);
 
@@ -330,7 +330,7 @@ export class AppStudioPlugin implements Plugin {
     }
   }
 
-  public async grantPermission(ctx: PluginContext): Promise<Result<any, FxError>> {
+  public async grantPermission(ctx: PluginContext): Promise<Result<ResourcePermission[], FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.grantPermission);
 

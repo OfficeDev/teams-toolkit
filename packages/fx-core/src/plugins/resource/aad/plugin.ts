@@ -56,7 +56,7 @@ import * as fs from "fs-extra";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import { Bicep, ConstantString, ResourcePlugins } from "../../../common/constants";
 import { getTemplatesFolder } from "../../..";
-import { AadOwner } from "../../../common/permissionInterface";
+import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
 
 export class AadAppForTeamsImpl {
   public async provision(ctx: PluginContext, isLocalDebug = false): Promise<AadResult> {
@@ -334,7 +334,7 @@ export class AadAppForTeamsImpl {
     return ResultFactory.Success(result);
   }
 
-  public async checkPermission(ctx: PluginContext): Promise<AadResult> {
+  public async checkPermission(ctx: PluginContext): Promise<Result<ResourcePermission[], FxError>> {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartCheckPermission);
 
@@ -387,7 +387,7 @@ export class AadAppForTeamsImpl {
     return ResultFactory.Success(owners);
   }
 
-  public async grantPermission(ctx: PluginContext): Promise<AadResult> {
+  public async grantPermission(ctx: PluginContext): Promise<Result<ResourcePermission[], FxError>> {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartGrantPermission);
 
@@ -407,7 +407,7 @@ export class AadAppForTeamsImpl {
       {
         name: Constants.permissions.name,
         type: Constants.permissions.type,
-        roles: Constants.permissions.owner,
+        roles: [Constants.permissions.owner],
         resourceId: config.objectId!,
       },
     ];

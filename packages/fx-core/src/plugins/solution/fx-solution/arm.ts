@@ -154,7 +154,7 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
   generateResourceName(ctx);
 
   // update parameters
-  const [_, parameterJson] = await getParameterJson(ctx);
+  const parameterJson = await getParameterJson(ctx);
 
   const resourceGroupName = ctx.envInfo.profile.get(GLOBAL_CONFIG)?.getString(RESOURCE_GROUP_NAME);
   if (!resourceGroupName) {
@@ -295,7 +295,7 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
   return result;
 }
 
-export async function getParameterJson(ctx: SolutionContext): Promise<[string, any]> {
+export async function getParameterJson(ctx: SolutionContext) {
   if (!ctx.envInfo?.envName) {
     throw new Error("Failed to get target environment name from solution context.");
   }
@@ -338,7 +338,7 @@ export async function getParameterJson(ctx: SolutionContext): Promise<[string, a
 
   parameterJson = await getExpandedParameter(ctx, parameterFilePath, true); // only expand secrets in memory
 
-  return [parameterFilePath, parameterJson];
+  return parameterJson;
 }
 
 async function getExpandedParameter(

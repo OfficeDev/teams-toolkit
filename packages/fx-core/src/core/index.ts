@@ -902,13 +902,7 @@ export class FxCore implements Core {
           : undefined,
       };
 
-      const [parameterFilePath, parameterJson] = await getParameterJson(solutionContext);
-
-      core.tools.logProvider.debug(
-        `[core] persist ${targetEnvName} azure parameter file to path ${parameterFilePath}: ${JSON.stringify(
-          parameterJson
-        )}.`
-      );
+      await getParameterJson(solutionContext);
     }
 
     return ok(Void);

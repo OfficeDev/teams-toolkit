@@ -5,6 +5,10 @@ import {
   AzureSolutionSettings,
   EnvInfo,
   ConfigMap,
+  AppPackageFolderName,
+  ArchiveFolderName,
+  V1ManifestFileName,
+  ProjectSettingsFileName,
 } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import * as fs from "fs-extra";
@@ -19,6 +23,10 @@ import {
   TabOptionItem,
 } from "../plugins/solution/fx-solution/question";
 import { environmentManager } from "./environment";
+import * as dotenv from "dotenv";
+import { ConstantString } from "../common/constants";
+import { isMultiEnvEnabled } from "../common";
+
 export function validateProject(solutionContext: SolutionContext): string | undefined {
   const res = validateSettings(solutionContext.projectSettings);
   return res;
@@ -94,8 +102,13 @@ export function validateSettings(projectSettings?: ProjectSettings): string | un
 export function isValidProject(workspacePath?: string): boolean {
   if (!workspacePath) return false;
   try {
-    const confFolderPath = path.resolve(workspacePath, `.${ConfigFolderName}`);
-    const settingsFile = path.resolve(confFolderPath, "settings.json");
+    const confFolderPath = isMultiEnvEnabled()
+      ? path.resolve(workspacePath, `.${ConfigFolderName}`, "configs")
+      : path.resolve(workspacePath, `.${ConfigFolderName}`);
+    const settingsFile = path.resolve(
+      confFolderPath,
+      isMultiEnvEnabled() ? ProjectSettingsFileName : "settings.json"
+    );
     const projectSettings: ProjectSettings = fs.readJsonSync(settingsFile);
     if (validateSettings(projectSettings)) return false;
     return true;
@@ -104,26 +117,53 @@ export function isValidProject(workspacePath?: string): boolean {
   }
 }
 
-export function isV1Project(workspacePath?: string): boolean {
-  if (!workspacePath) return false;
-  try {
-    const confFolderPath = path.resolve(workspacePath, `.${ConfigFolderName}`);
-    if (fs.existsSync(confFolderPath)) {
-      return false;
-    }
-    const packageJsonPath = path.resolve(workspacePath, "package.json");
-    const packageSettings = fs.readJsonSync(packageJsonPath);
-    return validateV1PackageSettings(packageSettings);
-  } catch (e) {
-    return false;
+export async function validateV1Project(
+  workspacePath: string | undefined
+): Promise<string | undefined> {
+  if (!workspacePath) {
+    return "The workspace path cannot be empty.";
   }
-}
 
-export function validateV1PackageSettings(settings: any): boolean {
-  if (settings?.msteams) {
-    return true;
+  const v2ConfigFolder = path.resolve(workspacePath, `.${ConfigFolderName}`);
+  if (await fs.pathExists(v2ConfigFolder)) {
+    return `Folder '.${ConfigFolderName}' already exists.`;
   }
-  return false;
+
+  const packageJsonPath = path.resolve(workspacePath, "package.json");
+  let packageSettings: any | undefined;
+
+  try {
+    packageSettings = await fs.readJson(packageJsonPath);
+  } catch (error: any) {
+    return `Cannot read 'package.json'. ${error?.message}`;
+  }
+
+  if (!packageSettings?.msteams) {
+    return "Teams Toolkit V1 settings cannot be found in 'package.json'.";
+  }
+
+  const manifestPath = path.resolve(workspacePath, AppPackageFolderName, V1ManifestFileName);
+  if (!(await fs.pathExists(manifestPath))) {
+    return "The project should be created after version 1.2.0";
+  }
+
+  try {
+    // Exclude Bot SSO project
+    const envFilePath = path.resolve(workspacePath, ".env");
+    const envFileContent = await fs.readFile(envFilePath, ConstantString.UTF8Encoding);
+    if (envFileContent.includes("connectionName")) {
+      return `Bot sso project has not been supported.`;
+    }
+  } catch (e: any) {
+    // If the project does not contain a valid .env file, it is still a valid v1 project
+  }
+
+  const archiveFolder = path.resolve(workspacePath, ArchiveFolderName);
+  if (await fs.pathExists(archiveFolder)) {
+    return `Archive folder '${ArchiveFolderName}' already exists. Rollback the project or remove '${ArchiveFolderName}' folder.`;
+  }
+
+  return undefined;
 }
 
 export function isMigrateFromV1Project(workspacePath?: string): boolean {
@@ -139,9 +179,9 @@ export function isMigrateFromV1Project(workspacePath?: string): boolean {
   }
 }
 
-export function newEnvInfo(): EnvInfo {
+export function newEnvInfo(envName?: string): EnvInfo {
   return {
-    envName: environmentManager.getDefaultEnvName(),
+    envName: envName ?? environmentManager.getDefaultEnvName(),
     config: {
       azure: {},
       manifest: {
@@ -150,4 +190,8 @@ export function newEnvInfo(): EnvInfo {
     },
     profile: new Map<string, any>([[GLOBAL_CONFIG, new ConfigMap()]]),
   };
+}
+
+export function base64Encode(str: string): string {
+  return Buffer.from(str, "binary").toString("base64");
 }

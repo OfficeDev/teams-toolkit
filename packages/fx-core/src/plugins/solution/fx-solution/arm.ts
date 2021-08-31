@@ -10,12 +10,13 @@ import {
   ok,
   FxError,
   returnSystemError,
+  returnUserError,
   ConfigFolderName,
   returnUserError,
 } from "@microsoft/teamsfx-api";
 import { ScaffoldArmTemplateResult, ArmResourcePlugin } from "../../../common/armInterface";
 import { getActivatedResourcePlugins } from "./ResourcePluginContainer";
-import { getPluginContext } from "./utils/util";
+import { getPluginContext, sendErrorTelemetryThenReturnError } from "./utils/util";
 import { format } from "util";
 import { compileHandlebarsTemplateString, getStrings } from "../../../common";
 import path from "path";
@@ -28,6 +29,10 @@ import {
   PluginNames,
   RESOURCE_GROUP_NAME,
   SolutionError,
+  SolutionTelemetryComponentName,
+  SolutionTelemetryEvent,
+  SolutionTelemetryProperty,
+  SolutionTelemetrySuccess,
 } from "./constants";
 import { ResourceManagementClient, ResourceManagementModels } from "@azure/arm-resources";
 import { DeployArmTemplatesSteps, ProgressHelper } from "./utils/progressHelper";
@@ -37,6 +42,7 @@ import {
   ProvisioningState,
   DeploymentsListByResourceGroupResponse,
 } from "@azure/arm-resources/esm/models";
+import { ensureBicep } from "./utils/depsChecker/bicepChecker";
 
 // Old folder structure constants
 const baseFolder = "./infra/azure";
@@ -61,93 +67,39 @@ const parameterFileNameTemplateNew = "azure.parameters.@envName.json";
 
 // Get ARM template content from each resource plugin and output to project folder
 export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<any, FxError>> {
-  const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
-  const plugins = getActivatedResourcePlugins(azureSolutionSettings); // This function ensures return result won't be empty
-
-  const bicepOrchestrationTemplate = new BicepOrchestrationContent(plugins.map((p) => p.name));
-  const moduleFiles = new Map<string, string>();
-
-  // Get bicep content from each resource plugin
-  for (const plugin of plugins) {
-    const pluginWithArm = plugin as Plugin & ArmResourcePlugin; // Temporary solution before adding it to teamsfx-api
-    if (pluginWithArm.generateArmTemplates) {
-      // find method using method name
-      const pluginContext = getPluginContext(ctx, pluginWithArm.name);
-      const result = (await pluginWithArm.generateArmTemplates(pluginContext)) as Result<
-        ScaffoldArmTemplateResult,
-        FxError
-      >;
-      if (result.isOk()) {
-        bicepOrchestrationTemplate.applyTemplate(pluginWithArm.name, result.value);
-        if (result.value.Modules) {
-          for (const module of Object.entries(result.value.Modules)) {
-            const moduleFileName = module[0];
-            const moduleFileContent = module[1].Content;
-            moduleFiles.set(generateBicepModuleFilePath(moduleFileName), moduleFileContent);
-          }
-        }
-      } else {
-        const msg = format(
-          getStrings().solution.GenerateArmTemplateFailNotice,
-          ctx.projectSettings?.appName
-        );
-        ctx.logProvider?.error(msg);
-        return result;
-      }
+  let result: Result<void, FxError>;
+  ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.GenerateArmTemplateStart, {
+    [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+  });
+  try {
+    result = await doGenerateArmTemplate(ctx);
+    if (result.isOk()) {
+      ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.GenerateArmTemplate, {
+        [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+        [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
+      });
+    } else {
+      sendErrorTelemetryThenReturnError(
+        SolutionTelemetryEvent.GenerateArmTemplate,
+        result.error,
+        ctx.telemetryReporter
+      );
     }
+  } catch (error) {
+    result = err(
+      returnSystemError(
+        error,
+        PluginDisplayName.Solution,
+        SolutionError.FailedToDeployArmTemplatesToAzure
+      )
+    );
+    sendErrorTelemetryThenReturnError(
+      SolutionTelemetryEvent.GenerateArmTemplate,
+      result.error,
+      ctx.telemetryReporter
+    );
   }
-
-  // Write bicep content to project folder
-  if (bicepOrchestrationTemplate.needsGenerateTemplate()) {
-    await backupExistingFilesIfNecessary(ctx);
-    // Output main.bicep file
-    const bicepOrchestrationFileContent = bicepOrchestrationTemplate.getOrchestrationFileContent();
-    const templateFolderPath = isNewFolderStructureEnabled()
-      ? path.join(ctx.root, templateFolderNew)
-      : path.join(ctx.root, baseFolder, templateFolder);
-    await fs.ensureDir(templateFolderPath);
-    await fs.writeFile(
-      path.join(templateFolderPath, bicepOrchestrationFileName),
-      bicepOrchestrationFileContent
-    );
-
-    // Output bicep module files from each resource plugin
-    const modulesFolderPath = isNewFolderStructureEnabled()
-      ? path.join(templateFolderPath, modulesFolder)
-      : templateFolderPath;
-    await fs.ensureDir(modulesFolderPath);
-    for (const module of moduleFiles) {
-      // module[0] contains relative path to template folder, e.g. "./modules/frontendHosting.bicep"
-      await fs.writeFile(path.join(templateFolderPath, module[0]), module[1]);
-    }
-
-    // Output parameter file
-    const parameterTemplateFolderPath = isNewFolderStructureEnabled()
-      ? path.join(ctx.root, templateFolderNew)
-      : path.join(ctx.root, baseFolder, parameterFolder);
-    const parameterTemplateFilePath = path.join(
-      parameterTemplateFolderPath,
-      parameterTemplateFileName
-    );
-    const parameterFileContent = bicepOrchestrationTemplate.getParameterFileContent();
-    await fs.ensureDir(parameterTemplateFolderPath);
-    await fs.writeFile(parameterTemplateFilePath, parameterFileContent);
-
-    // Output .gitignore file
-    const gitignoreContent = await fs.readFile(
-      path.join(getTemplatesFolder(), "plugins", "solution", "armGitignore"),
-      ConstantString.UTF8Encoding
-    );
-    const gitignoreFileName = ".gitignore";
-    const gitignoreFilePath = isNewFolderStructureEnabled()
-      ? path.join(ctx.root, templateFolderNew, gitignoreFileName)
-      : path.join(ctx.root, baseFolder, gitignoreFileName);
-    if (!(await fs.pathExists(gitignoreFilePath))) {
-      await fs.writeFile(gitignoreFilePath, gitignoreContent);
-    }
-  }
-
-  return ok(undefined); // Nothing to return when success
+  return result;
 }
 
 type DeployContext = {
@@ -246,13 +198,15 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
     );
   }
 
+  const bicepCommand = await ensureBicep(ctx);
+
   // Compile bicep file to json
-  const templateDir = isNewFolderStructureEnabled()
+  const templateDir = isMultiEnvEnabled()
     ? path.join(ctx.root, templateFolderNew)
     : path.join(ctx.root, baseFolder, templateFolder);
   const armTemplateJsonFilePath = path.join(templateDir, armTemplateJsonFileName);
   const bicepOrchestrationFilePath = path.join(templateDir, bicepOrchestrationFileName);
-  await compileBicepToJson(bicepOrchestrationFilePath, armTemplateJsonFilePath);
+  await compileBicepToJson(bicepCommand, bicepOrchestrationFilePath, armTemplateJsonFilePath);
   ctx.logProvider?.info(
     format(
       getStrings().solution.DeployArmTemplates.CompileBicepSuccessNotice,
@@ -349,28 +303,40 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
     format(getStrings().solution.DeployArmTemplates.StartNotice, PluginDisplayName.Solution)
   );
   let result: Result<void, FxError>;
+  ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.ArmDeploymentStart, {
+    [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+  });
   try {
     result = await doDeployArmTemplates(ctx);
+    ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.ArmDeployment, {
+      [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+      [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
+    });
   } catch (error) {
     result = err(
-      returnSystemError(
+      returnUserError(
         error,
         PluginDisplayName.Solution,
         SolutionError.FailedToDeployArmTemplatesToAzure
       )
+    );
+    sendErrorTelemetryThenReturnError(
+      SolutionTelemetryEvent.ArmDeployment,
+      result.error,
+      ctx.telemetryReporter
     );
   }
   await ProgressHelper.endDeployArmTemplatesProgress(result.isOk());
   return result;
 }
 
-async function getParameterJson(ctx: SolutionContext) {
+export async function getParameterJson(ctx: SolutionContext) {
   if (!ctx.envInfo?.envName) {
     throw new Error("Failed to get target environment name from solution context.");
   }
 
   let parameterFileName, parameterFolderPath, parameterTemplateFilePath;
-  if (isNewFolderStructureEnabled()) {
+  if (isMultiEnvEnabled()) {
     parameterFileName = parameterFileNameTemplateNew.replace("@envName", ctx.envInfo.envName);
     parameterFolderPath = path.join(ctx.root, configsFolder);
     parameterTemplateFilePath = path.join(
@@ -396,14 +362,108 @@ async function getParameterJson(ctx: SolutionContext) {
 
   let parameterJson;
   if (createNewParameterFile) {
-    parameterJson = await getExpandedParameter(ctx, parameterTemplateFilePath, false); // do not expand secrets to avoid saving secrets to parameter file
     await fs.ensureDir(parameterFolderPath);
-    await fs.writeFile(parameterFilePath, JSON.stringify(parameterJson, undefined, 2));
+    if (isMultiEnvEnabled()) {
+      await fs.copyFile(parameterTemplateFilePath, parameterFilePath);
+    } else {
+      parameterJson = await getExpandedParameter(ctx, parameterTemplateFilePath, false); // do not expand secrets to avoid saving secrets to parameter file
+      await fs.writeFile(parameterFilePath, JSON.stringify(parameterJson, undefined, 2));
+    }
   }
 
   parameterJson = await getExpandedParameter(ctx, parameterFilePath, true); // only expand secrets in memory
 
   return parameterJson;
+}
+
+async function doGenerateArmTemplate(ctx: SolutionContext): Promise<Result<any, FxError>> {
+  const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
+  const plugins = getActivatedResourcePlugins(azureSolutionSettings); // This function ensures return result won't be empty
+
+  const bicepOrchestrationTemplate = new BicepOrchestrationContent(plugins.map((p) => p.name));
+  const moduleFiles = new Map<string, string>();
+
+  // Get bicep content from each resource plugin
+  for (const plugin of plugins) {
+    const pluginWithArm = plugin as Plugin & ArmResourcePlugin; // Temporary solution before adding it to teamsfx-api
+    if (pluginWithArm.generateArmTemplates) {
+      // find method using method name
+      const pluginContext = getPluginContext(ctx, pluginWithArm.name);
+      const result = (await pluginWithArm.generateArmTemplates(pluginContext)) as Result<
+        ScaffoldArmTemplateResult,
+        FxError
+      >;
+      if (result.isOk()) {
+        bicepOrchestrationTemplate.applyTemplate(pluginWithArm.name, result.value);
+        if (result.value.Modules) {
+          for (const module of Object.entries(result.value.Modules)) {
+            const moduleFileName = module[0];
+            const moduleFileContent = module[1].Content;
+            moduleFiles.set(generateBicepModuleFilePath(moduleFileName), moduleFileContent);
+          }
+        }
+      } else {
+        const msg = format(
+          getStrings().solution.GenerateArmTemplateFailNotice,
+          ctx.projectSettings?.appName
+        );
+        ctx.logProvider?.error(msg);
+        return result;
+      }
+    }
+  }
+
+  // Write bicep content to project folder
+  if (bicepOrchestrationTemplate.needsGenerateTemplate()) {
+    await backupExistingFilesIfNecessary(ctx);
+    // Output main.bicep file
+    const bicepOrchestrationFileContent = bicepOrchestrationTemplate.getOrchestrationFileContent();
+    const templateFolderPath = isMultiEnvEnabled()
+      ? path.join(ctx.root, templateFolderNew)
+      : path.join(ctx.root, baseFolder, templateFolder);
+    await fs.ensureDir(templateFolderPath);
+    await fs.writeFile(
+      path.join(templateFolderPath, bicepOrchestrationFileName),
+      bicepOrchestrationFileContent
+    );
+
+    // Output bicep module files from each resource plugin
+    const modulesFolderPath = isMultiEnvEnabled()
+      ? path.join(templateFolderPath, modulesFolder)
+      : templateFolderPath;
+    await fs.ensureDir(modulesFolderPath);
+    for (const module of moduleFiles) {
+      // module[0] contains relative path to template folder, e.g. "./modules/frontendHosting.bicep"
+      await fs.writeFile(path.join(templateFolderPath, module[0]), module[1]);
+    }
+
+    // Output parameter file
+    const parameterTemplateFolderPath = isMultiEnvEnabled()
+      ? path.join(ctx.root, templateFolderNew)
+      : path.join(ctx.root, baseFolder, parameterFolder);
+    const parameterTemplateFilePath = path.join(
+      parameterTemplateFolderPath,
+      parameterTemplateFileName
+    );
+    const parameterFileContent = bicepOrchestrationTemplate.getParameterFileContent();
+    await fs.ensureDir(parameterTemplateFolderPath);
+    await fs.writeFile(parameterTemplateFilePath, parameterFileContent);
+
+    // Output .gitignore file
+    const gitignoreContent = await fs.readFile(
+      path.join(getTemplatesFolder(), "plugins", "solution", "armGitignore"),
+      ConstantString.UTF8Encoding
+    );
+    const gitignoreFileName = ".gitignore";
+    const gitignoreFilePath = isMultiEnvEnabled()
+      ? path.join(ctx.root, templateFolderNew, gitignoreFileName)
+      : path.join(ctx.root, baseFolder, gitignoreFileName);
+    if (!(await fs.pathExists(gitignoreFilePath))) {
+      await fs.writeFile(gitignoreFilePath, gitignoreContent);
+    }
+  }
+
+  return ok(undefined); // Nothing to return when success
 }
 
 async function getExpandedParameter(
@@ -448,11 +508,11 @@ async function getResourceManagementClientForArmDeployment(
 }
 
 async function compileBicepToJson(
+  bicepCommand: string,
   bicepOrchestrationFilePath: string,
   jsonFilePath: string
 ): Promise<void> {
-  // TODO: ensure bicep cli is installed
-  const command = `bicep build ${bicepOrchestrationFilePath} --outfile ${jsonFilePath}`;
+  const command = `${bicepCommand} build ${bicepOrchestrationFilePath} --outfile ${jsonFilePath}`;
   try {
     await Executor.execCommandAsync(command);
   } catch (err) {
@@ -582,9 +642,7 @@ interface PluginModuleProperties {
 }
 
 function generateBicepModuleFilePath(moduleFileName: string) {
-  return isNewFolderStructureEnabled()
-    ? `./modules/${moduleFileName}.bicep`
-    : `./${moduleFileName}.bicep`;
+  return isMultiEnvEnabled() ? `./modules/${moduleFileName}.bicep` : `./${moduleFileName}.bicep`;
 }
 
 function expandParameterPlaceholders(

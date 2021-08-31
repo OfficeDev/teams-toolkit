@@ -45,6 +45,11 @@ export const ARM_TEMPLATE_OUTPUT = "armTemplateOutput";
 export const RESOURCE_GROUP_NAME = "resourceGroupName";
 
 /**
+ * Config key whose value is the resource group location of project.
+ */
+export const LOCATION = "location";
+
+/**
  * Config key whose value is the user info of collaborator
  */
 export const USER_INFO = "userInfo";
@@ -84,6 +89,7 @@ export enum SolutionError {
   FailedToCreateResourceGroup = "FailedToCreateResourceGroup",
   FailedToListResourceGroup = "FailedToListResourceGrouop",
   FailedToGetResourceGroupInfoInputs = "FailedToGetResourceGroupInfoInputs",
+  ResourceGroupNotFound = "ResourceGroupNotFound",
   NotLoginToAzure = "NotLoginToAzure",
   AzureAccountExtensionNotInitialized = "AzureAccountExtensionNotInitialized",
   LocalTabEndpointMissing = "LocalTabEndpointMissing",
@@ -172,6 +178,21 @@ export enum SolutionTelemetryEvent {
 
   AddCapabilityStart = "add-capability-start",
   AddCapability = "add-capability",
+
+  GrantPermissionStart = "grant-permission-start",
+  GrantPermission = "grant-permission",
+
+  CheckPermissionStart = "check-permission-start",
+  CheckPermission = "check-permission",
+
+  ListCollaboratorStart = "list-collaborator-start",
+  ListCollaborator = "list-collaborator",
+
+  GenerateArmTemplateStart = "generate-armtemplate-start",
+  GenerateArmTemplate = "generate-armtemplate",
+
+  ArmDeploymentStart = "deploy-armtemplate-start",
+  ArmDeployment = "deploy-armtemplate",
 }
 
 export enum SolutionTelemetryProperty {
@@ -179,6 +200,10 @@ export enum SolutionTelemetryProperty {
   Resources = "resources",
   Capabilities = "capabilities",
   Success = "success",
+  CollaboratorCount = "collaborator-count",
+  AadOwnerCount = "aad-owner-count",
+  AadPermission = "aad-permission",
+  TeamsAppPermission = "teams-app-permission",
 }
 
 export enum SolutionTelemetrySuccess {

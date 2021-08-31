@@ -1,10 +1,10 @@
 param botServiceName string
+param botAadClientId string
+param botDisplayName string
 param botServerfarmsName string
 param botWebAppSKU string = 'F1'
 param botServiceSKU string = 'F1'
 param botWebAppName string
-param botAadClientId string
-param botDisplayName string
 param identityName string
 
 var botWebAppHostname = botWebApp.properties.hostNames[0]
@@ -57,10 +57,10 @@ resource botWebApp 'Microsoft.Web/sites@2021-01-01' = {
   }
 }
 
-output botWebAppSKU string = botWebAppSKU // skuName
+output botWebAppSKU string = botWebAppSKU
 output botServiceSKU string = botServiceSKU
-output botWebAppName string = botWebAppName // siteName
-output botDomain string = botWebAppHostname // validDomain
-output appServicePlanName string = botServerfarmsName // appServicePlan
-output botServiceName string = botServiceName // botChannelReg
-output botWebAppEndpoint string = botEndpoint // siteEndpoint
+output botWebAppName string = botWebAppName
+output botDomain string = botWebAppHostname
+output appServicePlanName string = botServerfarmsName
+output botServiceName string = botServiceName
+output botWebAppEndpoint string = botEndpoint

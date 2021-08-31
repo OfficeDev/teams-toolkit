@@ -32,6 +32,7 @@ export class PluginDisplayName {
 export class FeatureFlagName {
   static readonly MultiEnv = "TEAMSFX_MULTI_ENV";
   static readonly ArmSupport = "TEAMSFX_ARM_SUPPORT";
+  static readonly BicepEnvCheckerEnable = "TEAMSFX_BICEP_ENV_CHECKER_ENABLE";
 }
 
 export class ArmDeploymentStatus {

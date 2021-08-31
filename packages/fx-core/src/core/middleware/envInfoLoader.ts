@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import {
+  EnvInfo,
   err,
   FxError,
   Inputs,
@@ -35,6 +36,7 @@ import { getQuestionNewTargetEnvironmentName, QuestionSelectTargetEnvironment } 
 import { desensitize } from "./questionModel";
 import { shouldIgnored } from "./projectSettingsLoader";
 import { PermissionRequestFileProvider } from "../permissionRequest";
+import { newEnvInfo } from "../tools";
 
 const newTargetEnvNameOption = "+ new environment";
 const lastUsedMark = " (activate)";
@@ -45,11 +47,12 @@ export function EnvInfoLoaderMW(
   allowCreateNewEnv: boolean
 ): Middleware {
   return async (ctx: CoreHookContext, next: NextFunction) => {
-    const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-    if (shouldIgnored(ctx) || inputs.ignoreEnvInfo === true) {
+    if (shouldIgnored(ctx)) {
       await next();
       return;
     }
+
+    const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
     if (inputs.previewType && inputs.previewType === "local") {
       isMultiEnvEnabled = false;
     }
@@ -60,6 +63,21 @@ export function EnvInfoLoaderMW(
     }
 
     const core = ctx.self as FxCore;
+
+    if (inputs.ignoreEnvInfo === true) {
+      // load default env
+      const result = await loadSolutionContext(core.tools, inputs, ctx.projectSettings);
+      if (result.isErr()) {
+        ctx.result = err(result.error);
+        return;
+      }
+
+      ctx.solutionContext = result.value;
+
+      await next();
+      return;
+    }
+
     let targetEnvName: string | undefined;
     if (isMultiEnvEnabled) {
       if (inputs.env) {

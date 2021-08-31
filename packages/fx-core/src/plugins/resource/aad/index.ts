@@ -25,7 +25,7 @@ import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { Links } from "../bot/constants";
 import { ArmResourcePlugin } from "../../../common/armInterface";
-import { AadOwner } from "../../../common/permissionInterface";
+import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
 
 @Service(ResourcePlugins.AadPlugin)
 export class AadAppForTeamsPlugin implements Plugin, ArmResourcePlugin {
@@ -103,7 +103,7 @@ export class AadAppForTeamsPlugin implements Plugin, ArmResourcePlugin {
     );
   }
 
-  public async checkPermission(ctx: PluginContext): Promise<AadResult> {
+  public async checkPermission(ctx: PluginContext): Promise<Result<ResourcePermission[], FxError>> {
     return await this.runWithExceptionCatchingAsync(
       () => this.pluginImpl.checkPermission(ctx),
       ctx,
@@ -111,7 +111,7 @@ export class AadAppForTeamsPlugin implements Plugin, ArmResourcePlugin {
     );
   }
 
-  public async grantPermission(ctx: PluginContext): Promise<AadResult> {
+  public async grantPermission(ctx: PluginContext): Promise<Result<ResourcePermission[], FxError>> {
     return await this.runWithExceptionCatchingAsync(
       () => this.pluginImpl.grantPermission(ctx),
       ctx,

@@ -69,11 +69,10 @@ import { AppStudioPluginImpl } from "../../../src/plugins/resource/appstudio/plu
 import * as solutionUtil from "../../../src/plugins/solution/fx-solution/utils/util";
 import * as uuid from "uuid";
 import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
-import { AadAppForTeamsPlugin, isMultiEnvEnabled, newEnvInfo } from "../../../src";
+import { AadAppForTeamsPlugin, newEnvInfo } from "../../../src";
 import Container from "typedi";
 import { askResourceGroupInfo } from "../../../src/plugins/solution/fx-solution/commonQuestions";
 import { ResourceManagementModels } from "@azure/arm-resources";
-import * as msRest from "@azure/ms-rest-js";
 import { CoreQuestionNames } from "../../../src/core/question";
 
 chai.use(chaiAsPromised);
@@ -141,7 +140,6 @@ class MockUserInteraction implements UserInteraction {
     throw new Error("Method not implemented.");
   }
 }
-
 class MockedAppStudioTokenProvider implements AppStudioTokenProvider {
   async getAccessToken(showDialog?: boolean): Promise<string> {
     return "someFakeToken";
@@ -430,8 +428,6 @@ describe("provision() with permission.json file missing", () => {
 
 describe("provision() happy path for SPFx projects", () => {
   const mocker = sinon.createSandbox();
-  // const permissionsJsonPath = "./permissions.json";
-
   const fileContent: Map<string, any> = new Map();
   const mockedAppDef: IAppDefinition = {
     appName: "MyApp",
@@ -452,7 +448,6 @@ describe("provision() happy path for SPFx projects", () => {
       .stub<any, any>(fs, "readJson")
       .withArgs(`./.${ConfigFolderName}/${REMOTE_MANIFEST}`)
       .resolves(mockedManifest);
-    // mocker.stub<any, any>(fs, "pathExists").withArgs(permissionsJsonPath).resolves(true);
     mocker.stub(AppStudioClient, "createApp").resolves(mockedAppDef);
     mocker.stub(AppStudioClient, "updateApp").resolves(mockedAppDef);
     mocker
@@ -464,7 +459,13 @@ describe("provision() happy path for SPFx projects", () => {
     mocker.restore();
   });
 
-  it("should succeed if app studio returns successfully", async () => {
+  it("should succeed if app studio returns successfully", () =>
+    provisionSpfxProjectShouldSucceed(false));
+
+  it("should succeed if arm support feature flag enabled", () =>
+    provisionSpfxProjectShouldSucceed(true));
+
+  async function provisionSpfxProjectShouldSucceed(armEnabled = false): Promise<void> {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
     mockedCtx.root = "./tests/plugins/resource/appstudio/resources/";
@@ -478,6 +479,9 @@ describe("provision() happy path for SPFx projects", () => {
         activeResourcePlugins: [spfxPlugin.name, appStudioPlugin.name],
       },
     };
+    mocker.stub(process, "env").get(() => {
+      return { TEAMSFX_ARM_SUPPORT: armEnabled.toString() };
+    });
 
     expect(mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
       .undefined;
@@ -490,7 +494,7 @@ describe("provision() happy path for SPFx projects", () => {
       mockedAppDef.teamsAppId
     );
     expect(solution.runningState).equals(SolutionRunningState.Idle);
-  });
+  }
 });
 
 describe("provision() happy path for Azure projects", () => {

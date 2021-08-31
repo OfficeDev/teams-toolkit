@@ -35,11 +35,13 @@
 
 /packages/api @jayzhang @1yefuwang1 @LongOddCode
 /packages/api/src/qm @jayzhang @1yefuwang1 @LongOddCode @jiayi-ruan
+/packages/api/src/schemas @dooriya @qinezh @kimizhu
 
 /packages/sdk @tecton @blackchoey @SLdragon @dilin-MS @wenytang-ms @jiayi-ruan
 
 /packages/fx-core/src/core @jayzhang @LongOddCode @1yefuwang1
 /packages/fx-core/src/plugins/solution/fx-solution @1yefuwang1 @jayzhang @LongOddCode
+/packages/fx-core/src/plugins/solution/fx-solution/utils/depsChecker @a1exwang @kimizhu @meifans @qinezh
 
 /packages/fx-core/src/plugins/resource/aad @KennethBWSong @adashen @SLdragon
 /packages/fx-core/tests/plugins/resource/aad @KennethBWSong @adashen @SLdragon

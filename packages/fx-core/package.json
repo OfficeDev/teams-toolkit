@@ -20,7 +20,6 @@
     "test:apim": "nyc mocha \"tests/plugins/resource/apim/**/*.test.ts\"",
     "test:unit": "nyc mocha \"tests/**/*.test.ts\"",
     "test:solution": "nyc mocha \"tests/plugins/solution/*.test.ts\"",
-    "test:solution-spfx": "nyc mocha \"tests/plugins/solution/solution.provision.test.ts\"",
     "test:core": "nyc mocha \"tests/core/*.test.ts\"",
     "clean": "rm -rf build",
     "build": "rimraf build && npx tsc -p ./",

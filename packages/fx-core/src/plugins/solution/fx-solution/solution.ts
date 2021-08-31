@@ -1425,9 +1425,6 @@ export class TeamsAppSolution implements Solution {
       ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.GrantPermission, {
         [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
         [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
-        [SolutionTelemetryProperty.PlatformCli]: (
-          ctx.answers?.platform === Platform.CLI
-        ).toString(),
       });
 
       return ok(permissions);
@@ -1536,9 +1533,6 @@ export class TeamsAppSolution implements Solution {
         [SolutionTelemetryProperty.TeamsAppPermission]: teamsAppPermission?.roles
           ? teamsAppPermission.roles.join(";")
           : "undefined",
-        [SolutionTelemetryProperty.PlatformCli]: (
-          ctx.answers?.platform === Platform.CLI
-        ).toString(),
       });
 
       return ok(permissions);
@@ -1669,9 +1663,6 @@ export class TeamsAppSolution implements Solution {
         [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
         [SolutionTelemetryProperty.CollaboratorCount]: collaborators.length.toString(),
         [SolutionTelemetryProperty.AadOwnerCount]: aadOwnerCount.toString(),
-        [SolutionTelemetryProperty.PlatformCli]: (
-          ctx.answers?.platform === Platform.CLI
-        ).toString(),
       });
 
       return ok(collaborators);

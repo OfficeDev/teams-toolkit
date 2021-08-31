@@ -699,22 +699,22 @@ export class TeamsAppSolution implements Solution {
 
       // For the new multi-env scenario, we first ask for confirmation and then ask the resource group info
       if (isMultiEnvEnabled()) {
-        const askQuestionsResult = await doAskCommonQuestsions();
-        if (askQuestionsResult.isErr()) {
-          return askQuestionsResult;
-        }
         const confirmProvisionResult = await doConfirmProvision();
         if (confirmProvisionResult.isErr()) {
           return confirmProvisionResult;
+        }
+        const askQuestionsResult = await doAskCommonQuestsions();
+        if (askQuestionsResult.isErr()) {
+          return askQuestionsResult;
         }
       } else {
-        const confirmProvisionResult = await doConfirmProvision();
-        if (confirmProvisionResult.isErr()) {
-          return confirmProvisionResult;
-        }
         const askQuestionsResult = await doAskCommonQuestsions();
         if (askQuestionsResult.isErr()) {
           return askQuestionsResult;
+        }
+        const confirmProvisionResult = await doConfirmProvision();
+        if (confirmProvisionResult.isErr()) {
+          return confirmProvisionResult;
         }
       }
     }

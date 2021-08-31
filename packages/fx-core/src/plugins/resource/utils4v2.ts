@@ -108,9 +108,35 @@ export async function provisionResourceAdapter(
 ): Promise<Result<ProvisionOutput, FxError>> {
   if (!plugin.provision) return err(PluginHasNoTaskImpl(plugin.displayName, "provision"));
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
-  //TODO
-  throw new Error();
+  pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
+  pluginContext.appStudioToken = tokenProvider.appStudioToken;
+  pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
+  const selfConfigMap = ConfigMap.fromJSON(provisionTemplate) || new ConfigMap();
+  pluginContext.config = selfConfigMap;
+  if (plugin.preProvision) {
+    const preRes = await plugin.preProvision(pluginContext);
+    if (preRes.isErr()) {
+      return err(preRes.error);
+    }
+  }
+  const res = await plugin.provision(pluginContext);
+  if (res.isErr()) {
+    return err(res.error);
+  }
+  if (plugin.postProvision) {
+    const postRes = await plugin.postProvision(pluginContext);
+    if (postRes.isErr()) {
+      return err(postRes.error);
+    }
+  }
+  const output: ProvisionOutput = {
+    output: selfConfigMap.toJSON(),
+    states: {},
+    secrets: {},
+  };
+  return ok(output);
 }
+
 export async function configureResourceAdapter(
   ctx: Context,
   inputs: Readonly<ProvisionInputs>,

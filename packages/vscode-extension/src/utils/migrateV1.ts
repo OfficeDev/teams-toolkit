@@ -3,12 +3,17 @@ import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
 import * as StringResources from "../resources/Strings.json";
 import { ext } from "../extensionVariables";
-import { isV1Project } from "@microsoft/teamsfx-core";
+import { validateV1Project } from "@microsoft/teamsfx-core";
 
-export function enableMigrateV1(): void {
-  const validProject = ext.workspaceUri && isV1Project(ext.workspaceUri.fsPath);
-  vscode.commands.executeCommand("setContext", "fx-extension.v1Project", validProject);
-  if (validProject) {
+export async function enableMigrateV1(): Promise<void> {
+  const v1ProjectErrorMessage = await validateV1Project(ext.workspaceUri?.fsPath);
+  const validV1Project = !v1ProjectErrorMessage;
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenV1Project, {
+    v1: validV1Project ? "true" : "false",
+    reason: v1ProjectErrorMessage ?? "",
+  });
+  vscode.commands.executeCommand("setContext", "fx-extension.v1Project", validV1Project);
+  if (validV1Project) {
     showNotification();
   }
 }

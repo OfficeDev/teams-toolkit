@@ -28,6 +28,8 @@ namespace Microsoft.TeamsFx
         /// Constructor of TeamsUserCredential.
         /// Developer need to call LoadConfigurationAsync(config) before using this class.
         /// </summary>
+        /// <exception cref="ExceptionCode.InvalidConfiguration">When client id, initiate login endpoint or simple auth endpoint is not found in config.</exception>
+        /// <exception cref="ExceptionCode.RuntimeNotSupported">When runtime is not in browser enviroment.</exception>
         public TeamsUserCredential(IJSRuntime jsRuntime)
         {
             moduleTask = new(() => jsRuntime.InvokeAsync<IJSObjectReference>(
@@ -49,9 +51,18 @@ namespace Microsoft.TeamsFx
         }
 
         /// <summary>
-        /// Get basic user info from SSO token
+        /// Get basic user info from SSO token.
+        /// <example>
+        /// For example:
+        /// <code>
+        /// var user = await teamsUserCredential.GetUserInfoAsync();
+        /// </code>
+        /// </example>
         /// </summary>
         /// <returns>Basic user info with user displayName, objectId and preferredUserName.</returns>
+        /// <exception cref="ExceptionCode.InternalError">When SSO token from Teams client is not valid.</exception>
+        /// <exception cref="ExceptionCode.InvalidParameter">When SSO token from Teams client is empty.</exception>
+        /// <exception cref="ExceptionCode.RuntimeNotSupported">When runtime is not in browser enviroment.</exception>
         public async ValueTask<UserInfo> GetUserInfoAsync()
         {
             try
@@ -67,11 +78,22 @@ namespace Microsoft.TeamsFx
 
         /// <summary>
         /// Popup login page to get user's access token with specific scopes.
+        /// <example>
+        /// For example:
+        /// <code>
+        /// await teamsUserCredential.LoginAsync("User.Read"); // single scopes using string
+        /// await teamsUserCredential.LoginAsync("User.Read Calendars.Read"); // multiple scopes using string
+        /// </code>
+        /// </example>
         /// </summary>
         /// <param name="scopes">The string of Microsoft Token scopes of access separated by space. Default value is `.default`.</param>
         /// <remarks>
         /// Can only be used within Teams.
         /// </remarks>
+        /// <exception cref="ExceptionCode.InternalError">When failed to login with unknown error.</exception>
+        /// <exception cref="ExceptionCode.ServiceError">When simple auth server failed to exchange access token.</exception>
+        /// <exception cref="ExceptionCode.ConsentFailed">When user canceled or failed to consent.</exception>
+        /// <exception cref="ExceptionCode.RuntimeNotSupported">When runtime is not in browser enviroment.</exception>
         public async Task LoginAsync(string scopes)
         {
             try
@@ -87,11 +109,22 @@ namespace Microsoft.TeamsFx
 
         /// <summary>
         /// Popup login page to get user's access token with specific scopes.
+        /// <example>
+        /// For example:
+        /// <code>
+        /// await teamsUserCredential.LoginAsync(new string[] { "User.Read" }); // single scope using string array
+        /// await teamsUserCredential.LoginAsync(new string[] { "User.Read Calendars.Read" }); //  multiple scopes using string array
+        /// </code>
+        /// </example>
         /// </summary>
         /// <param name="scopes">The array of Microsoft Token scopes of access. Default value is `[.default]`.</param>
         /// <remarks>
         /// Can only be used within Teams.
         /// </remarks>
+        /// <exception cref="ExceptionCode.InternalError">When failed to login with unknown error.</exception>
+        /// <exception cref="ExceptionCode.ServiceError">When simple auth server failed to exchange access token.</exception>
+        /// <exception cref="ExceptionCode.ConsentFailed">When user canceled or failed to consent.</exception>
+        /// <exception cref="ExceptionCode.RuntimeNotSupported">When runtime is not in browser enviroment.</exception>
         public async Task LoginAsync(string[] scopes)
         {
             try
@@ -121,6 +154,12 @@ namespace Microsoft.TeamsFx
 
         /// <summary>
         /// Get access token from credential.
+        /// <example>
+        /// For example:
+        /// <code>
+        /// await teamsUserCredential.GetTokenAsync(new TokenRequestContext(new string[] { "User.Read" }), new System.Threading.CancellationToken());
+        /// </code>
+        /// </example>
         /// </summary>
         /// <remarks>
         /// Can only be used within Teams.
@@ -128,6 +167,10 @@ namespace Microsoft.TeamsFx
         /// <returns>
         /// Access token with expected scopes. Throw exception if get access token failed.
         /// </returns>
+        /// <exception cref="ExceptionCode.InternalError">When failed to login with unknown error.</exception>
+        /// <exception cref="ExceptionCode.UiRequiredError">When need user consent to get access token.</exception>
+        /// <exception cref="ExceptionCode.ServiceError">When failed to get access token from simple auth server.</exception>
+        /// <exception cref="ExceptionCode.RuntimeNotSupported">When runtime is not in browser enviroment.</exception>
         public async override ValueTask<AccessToken> GetTokenAsync(TokenRequestContext requestContext, CancellationToken cancellationToken)
         {
             try

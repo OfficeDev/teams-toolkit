@@ -1,16 +1,13 @@
-module botProvision './botProvision.onlybot.bicep' = {
+module botProvision './botProvision.existingBot.bicep' = {
   name: 'botProvision'
   params: {
-    botAadClientId: bot_aadClientId
-    botDisplayName: bot_displayName
     botServerfarmsName: bot_serverfarmsName
-    botServiceName: bot_serviceName
     botServiceSKU: bot_serviceSKU
     botWebAppName: bot_sitesName
     botWebAppSKU: bot_webAppSKU
   }
 }
-module botConfiguration './botConfiguration.onlybot.bicep' = {
+module botConfiguration './botConfiguration.existingBot.bicep' = {
   name: 'botConfiguration'
   dependsOn: [
     botProvision
@@ -18,7 +15,6 @@ module botConfiguration './botConfiguration.onlybot.bicep' = {
   params: {
     botAadClientId: bot_aadClientId
     botAadClientSecret: bot_aadClientSecret
-    botServiceName: bot_serviceName
     botWebAppName: bot_sitesName
     authLoginUriSuffix: authLoginUriSuffix
     botEndpoint: botProvision.outputs.botWebAppEndpoint

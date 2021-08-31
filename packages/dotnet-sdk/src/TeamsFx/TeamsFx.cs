@@ -23,7 +23,15 @@ namespace Microsoft.TeamsFx
         }
 
         /// <summary>
-        /// Initialize configuration from environment variables or configuration object and set the global instance
+        /// Initialize configuration from environment variables or configuration object and set the global instance.
+        /// <example>
+        /// For example:
+        /// <code>
+        /// AuthenticationConfiguration authentication = new AuthenticationConfiguration(clientId: _clientId, simpleAuthEndpoint: _endpoint, initiateLoginEndpoint: _endpoint + "auth-start.html");
+        /// Configuration configuration = new Configuration(authentication);
+        /// await teamsfx.LoadConfigurationAsync(configuration);
+        /// </code>
+        /// </example>
         /// </summary>
         /// <param name="configuration">Optional configuration that overrides the default configuration values. The override depth is 1.</param>
         /// <returns></returns>
@@ -63,6 +71,16 @@ namespace Microsoft.TeamsFx
 
         /// <summary>
         /// Set custom log function to redirect logging output.
+        /// <example>
+        /// For example: Redirect the log messages to custom outputs like server console using SetLogLevelAsync. The messages can be found in Output panel from "{AppName} - ASP.NET Core Web Server".
+        /// <code>
+        /// private void log(LogLevel level, string message)
+        /// {
+        ///    Console.WriteLine(message);
+        /// }
+        /// await teamsfx.SetLogFunctionAsync(log);
+        /// </code>
+        /// </example>
         /// </summary>
         /// <param name="logFunction">Custom log function. If it's null, custom log function will be cleared.</param>
         public async Task SetLogFunctionAsync(LogFunction logFunction)
@@ -85,6 +103,7 @@ namespace Microsoft.TeamsFx
         /// <param name="resourceType">The type of resource</param>
         /// <param name="resourceName">The name of resource, default value is "default".</param>
         /// <returns>Resource configuration for target resource from global configuration instance.</returns>
+        /// <exception cref="ExceptionCode.InvalidConfiguration">When resource configuration with the specific type and name is not found.</exception>
         public async Task<Dictionary<string, object>> GetResourceConfigurationAsync(ResourceType resourceType, string? resourceName = "default")
         {
             try
@@ -102,6 +121,7 @@ namespace Microsoft.TeamsFx
         /// Get configuration for authentication.
         /// </summary>
         /// <returns>Authentication configuration from global configuration instance, the value may be undefined if no authentication config exists in current environment.</returns>
+        /// <exception cref="ExceptionCode.InvalidConfiguration">When global configuration does not exist.</exception>
         public async Task<AuthenticationConfiguration> GetAuthenticationConfigurationAsync()
         {
             try

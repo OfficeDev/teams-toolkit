@@ -100,6 +100,8 @@ export enum TelemetryEvent {
 
   ViewEnvironment = "view-environment",
   ActivateEnvironment = "activate-environment",
+
+  CheckSideloading = "check-sideloading",
 }
 
 export enum TelemetryProperty {
@@ -135,6 +137,7 @@ export enum TelemetryProperty {
   VideoPlayFrom = "video-play-from",
   FeatureFlags = "feature-flags",
   UpdateTeamsAppReason = "update-teams-app-reason",
+  IsSideloadingAllowed = "is-sideloading-allowed",
 }
 
 export enum TelemetrySuccess {

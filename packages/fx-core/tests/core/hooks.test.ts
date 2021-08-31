@@ -25,6 +25,8 @@ import {
   FunctionRouter,
   Func,
   InputTextConfig,
+  SystemError,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import { ConcurrentLockerMW } from "../../src/core/middleware/concurrentLocker";
 import fs from "fs-extra";
@@ -134,6 +136,28 @@ describe("Middleware", () => {
       const my = new MyClass();
       const res = await my.myMethod(inputs);
       assert.isTrue(res.isErr() && res.error.name === "unkown" && res.error.message === "hello");
+    });
+
+    it("convert system error to user error", async () => {
+      const msg =
+        "The client 'xxx@xxx.com' with object id 'xxx' does not have authorization to perform action '<REDACTED: user-file-path>' over scope '<REDACTED: user-file-path>' or the scope is invalid. If access was recently granted, please refresh your credentials.";
+      class MyClass {
+        tools?: any = new MockTools();
+        async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
+          throw new Error(msg);
+        }
+      }
+      hooks(MyClass, {
+        myMethod: [ErrorHandlerMW],
+      });
+      const my = new MyClass();
+      const res = await my.myMethod(inputs);
+      assert.isTrue(
+        res.isErr() &&
+          res.error.name === "Error" &&
+          res.error.message === msg &&
+          res.error instanceof UserError
+      );
     });
   });
 

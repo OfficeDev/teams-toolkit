@@ -11,6 +11,7 @@
     <PackageProjectUrl>https://github.com/OfficeDev/TeamsFx/tree/main/packages/dotnet-sdk</PackageProjectUrl>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <Description>This package aims to reduce the developer tasks of implementing identity and access to cloud resources down to single-line statements with "zero configuration".</Description>
   </PropertyGroup>
@@ -32,11 +33,9 @@
   <PropertyGroup>
     <TeamsFxJsUrl>https://unpkg.com/@microsoft/teamsfx@0.2.5/dist/teamsfx.js</TeamsFxJsUrl>
   </PropertyGroup>
+
   <Target Name="DownloadContentFiles" BeforeTargets="Build">
-    <DownloadFile
-        SourceUrl="$(TeamsFxJsUrl)"
-        DestinationFileName="teamsfx.js"
-        DestinationFolder="$(MSBuildProjectDirectory)\wwwroot">
+    <DownloadFile SourceUrl="$(TeamsFxJsUrl)" DestinationFileName="teamsfx.js" DestinationFolder="$(MSBuildProjectDirectory)\wwwroot">
     </DownloadFile>
   </Target>
 

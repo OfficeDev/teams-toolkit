@@ -10,6 +10,7 @@ import {
   ok,
   FxError,
   returnSystemError,
+  returnUserError,
   ConfigFolderName,
 } from "@microsoft/teamsfx-api";
 import { ScaffoldArmTemplateResult, ArmResourcePlugin } from "../../../common/armInterface";
@@ -241,7 +242,7 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
     });
   } catch (error) {
     result = err(
-      returnSystemError(
+      returnUserError(
         error,
         PluginDisplayName.Solution,
         SolutionError.FailedToDeployArmTemplatesToAzure

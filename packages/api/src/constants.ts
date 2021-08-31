@@ -54,3 +54,15 @@ export enum Stage {
   checkPermission = "checkPermission",
   listCollaborator = "listCollaborator",
 }
+
+export enum TelemetryEvent {
+  askQuestion = "askQuestion",
+}
+
+export enum TelemetryProperty {
+  inputResultType = "inputResultType",
+  question = "question",
+  answer = "answer",
+  platform = "platform",
+  stage = "stage",
+}

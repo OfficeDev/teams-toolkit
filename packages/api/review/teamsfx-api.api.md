@@ -1201,6 +1201,26 @@ export class TeamsAppManifest {
     webApplicationInfo?: IWebApplicationInfo;
 }
 
+// @public (undocumented)
+export enum TelemetryEvent {
+    // (undocumented)
+    askQuestion = "askQuestion"
+}
+
+// @public (undocumented)
+export enum TelemetryProperty {
+    // (undocumented)
+    answer = "answer",
+    // (undocumented)
+    inputResultType = "inputResultType",
+    // (undocumented)
+    platform = "platform",
+    // (undocumented)
+    question = "question",
+    // (undocumented)
+    stage = "stage"
+}
+
 // @public
 export interface TelemetryReporter {
     sendTelemetryErrorEvent(eventName: string, properties?: {
@@ -1256,7 +1276,7 @@ export interface Tools {
 }
 
 // @public (undocumented)
-export function traverse(root: QTreeNode, inputs: Inputs, ui: UserInteraction): Promise<Result<Void, FxError>>;
+export function traverse(root: QTreeNode, inputs: Inputs, ui: UserInteraction, telemetryReporter?: TelemetryReporter): Promise<Result<Void, FxError>>;
 
 // @public (undocumented)
 export enum TreeCategory {

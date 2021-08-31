@@ -38,7 +38,7 @@ const displayBicepName = `${BicepName} (${installVersion})`;
 const timeout = 5 * 60 * 1000;
 const source = "bicep-envchecker";
 
-export async function checkBicep(ctx: SolutionContext): Promise<string> {
+export async function ensureBicep(ctx: SolutionContext): Promise<string> {
   const bicepChecker = new BicepChecker(ctx.logProvider, ctx.telemetryReporter);
   try {
     if (bicepChecker.isEnabled() && !bicepChecker.isInstalled()) {
@@ -46,7 +46,8 @@ export async function checkBicep(ctx: SolutionContext): Promise<string> {
     }
   } catch (err) {
     await ctx.logProvider?.debug(`Failed to check or install bicep, error = '${err}'`);
-    await displayLearnMore(err.message, defaultHelpLink, ctx); // TODO: stop continue
+    // only notify user, not block
+    await displayLearnMore(err.message, defaultHelpLink, ctx);
   }
   return bicepChecker.getBicepCommand();
 }
@@ -269,6 +270,9 @@ class BicepChecker {
     if (isMacOS()) {
       return "bicep-osx-x64";
     }
+    if (fs.pathExistsSync("/lib/ld-musl-x86_64.so.1")) {
+      return "bicep-linux-musl-x64";
+    }
     return "bicep-linux-x64";
   }
 
@@ -349,7 +353,7 @@ async function displayLearnMore(
   if (userSelected === Messages.learnMoreButtonText) {
     ctx.telemetryReporter?.sendTelemetryEvent(DepsCheckerEvent.clickLearnMore, getCommonProps());
     ctx.ui?.openUrl(link);
-    return displayLearnMore(message, link, ctx);
+    return true;
   }
   ctx.telemetryReporter?.sendTelemetryEvent(DepsCheckerEvent.clickCancel);
   return false;

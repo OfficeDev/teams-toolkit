@@ -130,8 +130,6 @@ export interface Context {
     // (undocumented)
     cryptoProvider?: CryptoProvider;
     // (undocumented)
-    envInfo?: EnvInfo;
-    // (undocumented)
     graphTokenProvider?: GraphTokenProvider;
     // (undocumented)
     localSettings?: LocalSettings;
@@ -774,7 +772,7 @@ export interface PluginContext extends Context {
     // (undocumented)
     config: PluginConfig;
     // (undocumented)
-    configOfOtherPlugins: ReadonlySolutionConfig;
+    envInfo: Readonly<EnvInfo>;
 }
 
 // @public (undocumented)

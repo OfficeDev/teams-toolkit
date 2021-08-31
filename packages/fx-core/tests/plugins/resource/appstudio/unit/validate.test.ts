@@ -9,6 +9,7 @@ import path from "path";
 import { AppStudioPlugin } from "./../../../../../src/plugins/resource/appstudio";
 import { TeamsBot } from "./../../../../../src/plugins/resource/bot";
 import { ConfigMap, PluginContext, TeamsAppManifest, ok, Plugin } from "@microsoft/teamsfx-api";
+import { newEnvInfo } from "../../../../../src";
 
 describe("validate manifest", () => {
   let plugin: AppStudioPlugin;
@@ -20,7 +21,7 @@ describe("validate manifest", () => {
     plugin = new AppStudioPlugin();
     ctx = {
       root: "./",
-      configOfOtherPlugins: new Map(),
+      envInfo: newEnvInfo(),
       config: new ConfigMap(),
     };
 

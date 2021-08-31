@@ -18,6 +18,7 @@ import { DependentPluginInfo } from "../../../../src/plugins/resource/frontend/c
 import { FrontendConfig } from "../../../../src/plugins/resource/frontend/configs";
 import * as templates from "../../../../src/common/templates";
 import { StorageAccountsCreateResponse } from "@azure/arm-storage/esm/models";
+import { newEnvInfo } from "../../../../src";
 
 export class TestHelper {
   static appName = "app-test";
@@ -106,13 +107,17 @@ export class TestHelper {
     const pluginContext = {
       azureAccountProvider: TestHelper.fakeAzureAccountProvider,
       logProvider: TestHelper.fakeLogProvider,
-      configOfOtherPlugins: new Map([
-        [DependentPluginInfo.SolutionPluginName, solutionConfig],
-        [DependentPluginInfo.FunctionPluginName, functionConfig],
-        [DependentPluginInfo.RuntimePluginName, runtimeConfig],
-        [DependentPluginInfo.AADPluginName, aadConfig],
-        [DependentPluginInfo.LocalDebugPluginName, localDebugConfig],
-      ]),
+      envInfo: newEnvInfo(
+        undefined,
+        undefined,
+        new Map([
+          [DependentPluginInfo.SolutionPluginName, solutionConfig],
+          [DependentPluginInfo.FunctionPluginName, functionConfig],
+          [DependentPluginInfo.RuntimePluginName, runtimeConfig],
+          [DependentPluginInfo.AADPluginName, aadConfig],
+          [DependentPluginInfo.LocalDebugPluginName, localDebugConfig],
+        ])
+      ),
       projectSettings: {
         appName: TestHelper.appName,
         defaultFunctionName: TestHelper.functionDefaultEntry,

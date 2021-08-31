@@ -34,6 +34,7 @@ import {
   TaskConfig,
   UserInteraction,
 } from "@microsoft/teamsfx-api";
+import { newEnvInfo } from "../../../../../src";
 
 export class MockUserInteraction implements UserInteraction {
   selectOption(config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> {
@@ -166,30 +167,34 @@ export async function ensureResourceGroup(
 export function newPluginContext(): PluginContext {
   return {
     root: "",
-    configOfOtherPlugins: new Map<string, Map<string, string>>([
-      [
-        PluginAAD.PLUGIN_NAME,
-        new Map<string, string>([
-          [PluginAAD.CLIENT_ID, utils.genUUID()],
-          [PluginAAD.CLIENT_SECRET, utils.genUUID()],
-          [PluginAAD.APPLICATION_ID_URIS, "anything"],
-          [PluginAAD.CLIENT_ID, "anything"],
-          [PluginAAD.CLIENT_SECRET, "anything"],
-        ]),
-      ],
-      [
-        PluginSolution.PLUGIN_NAME,
-        new Map<string, string>([
-          [PluginSolution.LOCATION, "Central US"],
-          [PluginSolution.RESOURCE_GROUP_NAME, "anything"],
-          [PluginSolution.M365_TENANT_ID, "anything"],
-        ]),
-      ],
-      [
-        PluginLocalDebug.PLUGIN_NAME,
-        new Map<string, string>([[PluginLocalDebug.LOCAL_BOT_ENDPOINT, "anything"]]),
-      ],
-    ]),
+    envInfo: newEnvInfo(
+      undefined,
+      undefined,
+      new Map<string, Map<string, string>>([
+        [
+          PluginAAD.PLUGIN_NAME,
+          new Map<string, string>([
+            [PluginAAD.CLIENT_ID, utils.genUUID()],
+            [PluginAAD.CLIENT_SECRET, utils.genUUID()],
+            [PluginAAD.APPLICATION_ID_URIS, "anything"],
+            [PluginAAD.CLIENT_ID, "anything"],
+            [PluginAAD.CLIENT_SECRET, "anything"],
+          ]),
+        ],
+        [
+          PluginSolution.PLUGIN_NAME,
+          new Map<string, string>([
+            [PluginSolution.LOCATION, "Central US"],
+            [PluginSolution.RESOURCE_GROUP_NAME, "anything"],
+            [PluginSolution.M365_TENANT_ID, "anything"],
+          ]),
+        ],
+        [
+          PluginLocalDebug.PLUGIN_NAME,
+          new Map<string, string>([[PluginLocalDebug.LOCAL_BOT_ENDPOINT, "anything"]]),
+        ],
+      ])
+    ),
     config: new ConfigMap(),
     answers: { platform: Platform.VSCode },
     projectSettings: {

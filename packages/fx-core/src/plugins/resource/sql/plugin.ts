@@ -419,7 +419,7 @@ export class SqlPluginImpl {
     if (isArmSupportEnabled()) {
       this.config.identity = getArmOutput(ctx, IdentityArmOutput.identity)!;
     } else {
-      const identityConfig = ctx.configOfOtherPlugins.get(Constants.identityPlugin);
+      const identityConfig = ctx.envInfo.profile.get(Constants.identityPlugin);
       this.config.identity = identityConfig!.get(Constants.identity) as string;
       if (!this.config.identity) {
         const error = SqlResultFactory.SystemError(

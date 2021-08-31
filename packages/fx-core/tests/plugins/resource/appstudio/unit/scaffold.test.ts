@@ -25,6 +25,7 @@ import {
   REMOTE_MANIFEST,
   STATIC_TABS_TPL,
 } from "../../../../../src/plugins/resource/appstudio/constants";
+import { newEnvInfo } from "../../../../../src";
 
 describe("Scaffold", () => {
   let plugin: AppStudioPlugin;
@@ -37,7 +38,7 @@ describe("Scaffold", () => {
 
     ctx = {
       root: "./tests/plugins/resource/appstudio/resources",
-      configOfOtherPlugins: new Map(),
+      envInfo: newEnvInfo(),
       config: new ConfigMap(),
       answers: { platform: Platform.VSCode },
       projectSettings: undefined,

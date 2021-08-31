@@ -407,7 +407,7 @@ export async function fillInCommonQuestions(
 
 async function createNewResourceGroup(
   rmClient: ResourceManagementClient,
-  rgInfo: CreateResourceGroupInfo,
+  rgInfo: ResourceGroupInfo,
   logProvider?: LogProvider
 ): Promise<Result<string, FxError>> {
   let response: ResourceGroupsCreateOrUpdateResponse;

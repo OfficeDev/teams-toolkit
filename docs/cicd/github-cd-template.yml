@@ -80,7 +80,7 @@ jobs:
 
       # This step is to pack the Teams App as zip file,
       # which can be used to be uploaded onto Teams Client for installation.
-      - name: Package your Teams App for publishing
+      - name: Package Teams App for publishing
         uses: OfficeDev/teamsfx-cli-action@v1
         with:
           commands: package

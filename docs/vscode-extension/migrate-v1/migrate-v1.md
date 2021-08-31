@@ -5,7 +5,7 @@ You can debug your application by pressing F5. If you wish to host your applicat
 
 To understand more about the migration, you can read the readme file listed below to get further information.
 - [How to migrate Teams Toolkit V1 tab project](./migrate-v1-tab.md)
-- [How to migrate Teams Toolkit V1 bot / message extension poject](./migrate-v1-bot.md)
+- [How to migrate Teams Toolkit V1 bot / message extension project](./migrate-v1-bot.md)
 
 ## Limitations
 There are some limitations to migrate the Teams Toolkit V1 projects.

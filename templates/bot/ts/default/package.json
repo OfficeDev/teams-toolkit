@@ -6,7 +6,7 @@
   "license": "MIT",
   "main": "./lib/index.js",
   "scripts": {
-    "build": "tsc --build && shx cp -r ./public ./lib/",
+    "build": "tsc --build",
     "start": "node ./lib/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "watch": "nodemon --watch ./src -e ts --exec \"npm run start\""
@@ -28,7 +28,6 @@
     "ts-node": "~9.1.1",
     "typescript": "~3.9.2",
     "ngrok": "^3.4.0",
-    "nodemon": "^2.0.7",
-    "shx": "^0.3.3"
+    "nodemon": "^2.0.7"
   }
 }

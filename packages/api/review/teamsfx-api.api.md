@@ -1210,7 +1210,7 @@ export enum TelemetryProperty {
     // (undocumented)
     answer = "answer",
     // (undocumented)
-    inputResultType = "inputResultType",
+    answerType = "answerType",
     // (undocumented)
     platform = "platform",
     // (undocumented)

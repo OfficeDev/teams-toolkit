@@ -46,8 +46,10 @@ export async function ensureBicep(ctx: SolutionContext): Promise<string> {
     }
   } catch (err) {
     await ctx.logProvider?.debug(`Failed to check or install bicep, error = '${err}'`);
-    // only notify user, not block
-    await displayLearnMore(err.message, defaultHelpLink, ctx);
+    if (!(await bicepChecker.isGlobalBicepInstalled())) {
+      await displayLearnMore(err.message, defaultHelpLink, ctx);
+      throw err;
+    }
   }
   return bicepChecker.getBicepCommand();
 }
@@ -74,8 +76,8 @@ class BicepChecker {
   }
 
   public async isInstalled(): Promise<boolean> {
-    const isGlobalBicepInstalled: boolean = await this.isBicepInstalled("bicep");
-    const isPrivateBicepInstalled: boolean = await this.isBicepInstalled(this.getBicepExecPath());
+    const isGlobalBicepInstalled: boolean = await this.isGlobalBicepInstalled();
+    const isPrivateBicepInstalled: boolean = await this.isPrivateBicepInstalled();
 
     if (isGlobalBicepInstalled) {
       this._telemetry?.sendTelemetryEvent(DepsCheckerEvent.bicepAlreadyInstalled, getCommonProps());
@@ -235,9 +237,20 @@ class BicepChecker {
     return supportedVersions.some((supported) => version.includes(supported));
   }
 
-  private async isBicepInstalled(path: string): Promise<boolean> {
+  public async isGlobalBicepInstalled(): Promise<boolean> {
     try {
-      const version = await this.queryVersion(path);
+      const version = await this.queryVersion("bicep");
+      // not limit bicep versions of user
+      return version.includes("v");
+    } catch (e) {
+      // do nothing
+      return false;
+    }
+  }
+
+  private async isPrivateBicepInstalled(): Promise<boolean> {
+    try {
+      const version = await this.queryVersion(this.getBicepExecPath());
       return this.isVersionSupported(version);
     } catch (e) {
       // do nothing
@@ -247,7 +260,7 @@ class BicepChecker {
 
   public async getBicepCommand(): Promise<string> {
     if (await this.isInstalled()) {
-      return this.getBicepExecPath();
+      return `"${this.getBicepExecPath()}"`;
     }
     return "bicep";
   }

@@ -105,8 +105,24 @@ export async function activate(): Promise<Result<Void, FxError>> {
   try {
     syncFeatureFlags();
 
-    if (isValidProject(getWorkspacePath())) {
+    const validProject = isValidProject(getWorkspacePath());
+    if (validProject) {
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenTeamsApp, {});
+    }
+
+    if (
+      !validProject &&
+      (await exp
+        .getExpService()
+        .getTreatmentVariableAsync(
+          TreatmentVariables.VSCodeConfig,
+          TreatmentVariables.SidebarWelcome,
+          true
+        ))
+    ) {
+      vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome", true);
+    } else {
+      vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome", false);
     }
 
     const telemetry = ExtTelemetry.reporter;
@@ -785,16 +801,7 @@ export function saveTextDocumentHandler(document: vscode.TextDocumentWillSaveEve
 }
 
 export async function cmdHdlLoadTreeView(context: ExtensionContext) {
-  if (
-    (await exp
-      .getExpService()
-      .getTreatmentVariableAsync(
-        TreatmentVariables.VSCodeConfig,
-        TreatmentVariables.DynamicTreeView,
-        true
-      )) &&
-    !isValidProject(getWorkspacePath())
-  ) {
+  if (!isValidProject(getWorkspacePath())) {
     const disposables = await TreeViewManagerInstance.registerEmptyProjectTreeViews();
     context.subscriptions.push(...disposables);
   } else {

@@ -79,11 +79,18 @@
         }
       ]
     },
+    "viewsWelcome": [
+      {
+        "view": "teamsfx-empty-project",
+        "contents": "To start Teams app development, create a new Teams app or explore our samples. For more information, read [documentation](https://docs.microsoft.com/en-us/microsoftteams/platform/get-started/first-app-react?tabs=vscode).\n[Create a new Teams app](command:fx-extension.create)\n[View samples](command:fx-extension.openSamples)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)"
+      }
+    ],
     "views": {
       "teamsfx": [
         {
           "id": "teamsfx-accounts",
-          "name": "Accounts"
+          "name": "Accounts",
+          "when": "!fx-extension.sidebarWelcome"
         },
         {
           "id": "teamsfx-environment",
@@ -92,15 +99,23 @@
         },
         {
           "id": "teamsfx-development",
-          "name": "Development"
+          "name": "Development",
+          "when": "!fx-extension.sidebarWelcome"
         },
         {
           "id": "teamsfx-deployment",
-          "name": "Deployment"
+          "name": "Deployment",
+          "when": "!fx-extension.sidebarWelcome"
         },
         {
           "id": "teamsfx-help-and-feedback",
-          "name": "Help and feedback"
+          "name": "Help and feedback",
+          "when": "!fx-extension.sidebarWelcome"
+        },
+        {
+          "id": "teamsfx-empty-project",
+          "name": "NO PROJECT CREATED",
+          "when": "fx-extension.sidebarWelcome"
         }
       ]
     },

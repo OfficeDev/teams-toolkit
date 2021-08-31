@@ -33,7 +33,7 @@ jobs:
           creds: ${{ secrets.AZURE_TEST_CREDENTIALS }}
         run: |
           bash setup-testing-env.sh E2E-TEST-COLLABORATOR-USER-NAME
-        working-directory: .github/workflows/scripts
+        working-directory: .github/scripts
 
       - name: Setup node
         uses: actions/setup-node@v2.1.2

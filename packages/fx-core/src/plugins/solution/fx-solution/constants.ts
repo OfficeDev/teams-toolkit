@@ -182,6 +182,12 @@ export enum SolutionTelemetryEvent {
 
   ListCollaboratorStart = "list-collaborator-start",
   ListCollaborator = "list-collaborator",
+
+  GenerateArmTemplateStart = "generate-armtemplate-start",
+  GenerateArmTemplate = "generate-armtemplate",
+
+  ArmDeploymentStart = "deploy-armtemplate-start",
+  ArmDeployment = "deploy-armtemplate",
 }
 
 export enum SolutionTelemetryProperty {

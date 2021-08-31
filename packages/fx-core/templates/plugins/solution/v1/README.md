@@ -22,5 +22,5 @@ You can find the Teams manifest in `.fx/manifest.source.json`. It contains templ
 
 To understand more about what you can do after the migration, you can read the readme file listed below to get further information.
 
-- [Migrate a tab app created by Teams Toolkit V1](https://github.com/OfficeDev/TeamsFx/blob/dev/docs/vscode-extension/migrate-v1/migrate-v1-tab.md)
-- [Migrate a bot or messaging extension app created by Teams Toolkit V1](https://github.com/OfficeDev/TeamsFx/blob/dev/docs/vscode-extension/migrate-v1/migrate-v1-bot.md)
+- [Migrate a tab app created by Teams Toolkit V1](https://aka.ms/teamsfx-migrate-v1-tab)
+- [Migrate a bot or messaging extension app created by Teams Toolkit V1](https://aka.ms/teamsfx-migrate-v1-bot)

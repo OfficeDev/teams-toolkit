@@ -365,13 +365,14 @@ function sendTelemetryEvent(
 ) {
   if (qvres.isErr()) {
     telemetryReporter?.sendTelemetryEvent(TelemetryEvent.askQuestion, {
+      [TelemetryProperty.answerType]: qvres.error.name,
       [TelemetryProperty.question]: question.name,
       [TelemetryProperty.platform]: inputs.platform,
       [TelemetryProperty.stage]: inputs.stage ? inputs.stage : "",
     });
   } else {
     telemetryReporter?.sendTelemetryEvent(TelemetryEvent.askQuestion, {
-      [TelemetryProperty.inputResultType]: qvres.value.type,
+      [TelemetryProperty.answerType]: qvres.value.type,
       [TelemetryProperty.question]: question.name,
       [TelemetryProperty.answer]: qvres.value.result.toString(),
       [TelemetryProperty.platform]: inputs.platform,

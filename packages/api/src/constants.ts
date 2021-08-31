@@ -60,7 +60,7 @@ export enum TelemetryEvent {
 }
 
 export enum TelemetryProperty {
-  inputResultType = "inputResultType",
+  answerType = "answerType",
   question = "question",
   answer = "answer",
   platform = "platform",

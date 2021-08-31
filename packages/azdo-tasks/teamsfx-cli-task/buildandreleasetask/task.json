@@ -12,9 +12,9 @@
     ],
     "author": "Ivan He",
     "version": {
-        "Major": 0,
-        "Minor": 4,
-        "Patch": 1
+        "Major": 1,
+        "Minor": 0,
+        "Patch": 0
     },
     "instanceNameFormat": "Teams App CI/CD - $(commands)",
     "inputs": [

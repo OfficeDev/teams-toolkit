@@ -30,7 +30,6 @@ import {
   QuestionSelectResourceGroup,
 } from "../../../core/question";
 import { desensitize } from "../../../core/middleware/questionModel";
-import { SOLUTION } from "../../resource/appstudio/constants";
 
 export type AzureSubscription = {
   displayName: string;
@@ -262,8 +261,10 @@ async function askCommonQuestions(
   //   2. publish profile (profile.{envName}.json), for reprovision
   //   3. asking user with a popup
   const resourceGroupNameFromEnvConfig = ctx.envInfo.config.azure.resourceGroupName;
-  const resourceGroupNameFromProfile = ctx.envInfo.profile.get(SOLUTION).get(RESOURCE_GROUP_NAME);
-  const resourceGroupLocationFromProfile = ctx.envInfo.profile.get(SOLUTION).get(LOCATION);
+  const resourceGroupNameFromProfile = ctx.envInfo.profile
+    .get(GLOBAL_CONFIG)
+    ?.get(RESOURCE_GROUP_NAME);
+  const resourceGroupLocationFromProfile = ctx.envInfo.profile.get(GLOBAL_CONFIG)?.get(LOCATION);
   let resourceGroupInfo: ResourceGroupInfo;
   if (resourceGroupNameFromEnvConfig) {
     const checkRes = await rmClient.resourceGroups.checkExistence(resourceGroupNameFromEnvConfig);

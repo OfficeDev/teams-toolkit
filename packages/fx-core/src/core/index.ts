@@ -852,7 +852,7 @@ export class FxCore implements Core {
           writeEnvResult.value
         }: ${JSON.stringify(newEnvConfig)}`
       );
-      ctx!.userInteraction.showMessage("info", `${targetEnvName} environment created.`, false);
+      this.tools.ui.showMessage("info", `${targetEnvName} environment created.`, false);
     }
     return ok(Void);
   }
@@ -893,7 +893,7 @@ export class FxCore implements Core {
       ctx!.solutionContext = solutionContext.value;
     }
 
-    ctx!.userInteraction.showMessage("info", `[${env}] is activated.`, false);
+    this.tools.ui.showMessage("info", `[${env}] is activated.`, false);
     return ok(Void);
   }
 

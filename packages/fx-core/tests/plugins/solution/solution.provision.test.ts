@@ -125,7 +125,10 @@ class MockUserInteraction implements UserInteraction {
     modal: boolean,
     ...items: string[]
   ): Promise<Result<string | undefined, FxError>> {
-    if (modal === true && _.isEqual(["Provision", "Pricing calculator"], items)) {
+    if (
+      modal === true &&
+      _.isEqual(["Provision", "Switch environment", "Pricing calculator"], items)
+    ) {
       return ok("Provision");
     }
     throw new Error("Method not implemented.");

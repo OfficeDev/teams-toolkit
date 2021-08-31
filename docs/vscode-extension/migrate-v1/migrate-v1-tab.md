@@ -1,6 +1,8 @@
 # Teams Toolkit V1 tab app migration
 ## Debug Tab App migrated from V1
-Start debugging the project by hitting the `F5` key in Visual Studio Code. Alternatively use the `Run and Debug Activity Panel` in Visual Studio Code and click the `Start Debugging` green arrow button. A new teams app will be created for local debug.
+Start debugging the project by hitting the `F5` key in Visual Studio Code. Alternatively use the `Run and Debug Activity Panel` in Visual Studio Code and click the `Start Debugging` green arrow button. 
+
+> **Note**: A new teams app will be created for local debug.
 
 > **Note**: If your project is a tab app with SSO, there are some manual steps to enable debug after migration.
 

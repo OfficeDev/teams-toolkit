@@ -6,7 +6,7 @@ Your project is now initialized with Teams Toolkit! You can continue to develop 
 
 ## Debug
 
-Start debugging the project by hitting the `F5` key in Visual Studio Code. Alternatively use the `Run and Debug Activity Panel` in Visual Studio Code and click the `Start Debugging` green arrow button. A new teams app will be created for local debug.
+Start debugging the project by hitting the `F5` key in Visual Studio Code. Alternatively use the `Run and Debug Activity Panel` in Visual Studio Code and click the `Start Debugging` green arrow button.
 
 ## Rollback
 

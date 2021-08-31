@@ -22,14 +22,6 @@ export interface EnvConfig {
      * The default resource group of Azure resources.
      */
     resourceGroupName?: string;
-    /**
-     * The location of created resource group if needed.
-     */
-    location?: string;
-    /**
-     * The tenant to create AAD app.
-     */
-    tenantId?: string;
   };
   /**
    * The Teams App mainfest related configuration.

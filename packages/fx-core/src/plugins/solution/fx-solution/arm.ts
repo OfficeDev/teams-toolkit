@@ -11,6 +11,7 @@ import {
   FxError,
   returnSystemError,
   ConfigFolderName,
+  returnUserError,
 } from "@microsoft/teamsfx-api";
 import { ScaffoldArmTemplateResult, ArmResourcePlugin } from "../../../common/armInterface";
 import { getActivatedResourcePlugins } from "./ResourcePluginContainer";
@@ -236,7 +237,13 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
 
   const resourceGroupName = ctx.envInfo.profile.get(GLOBAL_CONFIG)?.getString(RESOURCE_GROUP_NAME);
   if (!resourceGroupName) {
-    throw new Error("Failed to get resource group from project solution settings.");
+    return err(
+      returnSystemError(
+        new Error("Failed to get resource group from project solution settings."),
+        "Solution",
+        "NoResourceGroupFound"
+      )
+    );
   }
 
   // Compile bicep file to json
@@ -307,6 +314,7 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
       )
     );
 
+    let returnError: Error;
     if (error.message.includes("At least one resource deployment operation failed")) {
       let errorMessage = "resource deployments failed. ";
       const deployments = await deployCtx.client.deployments.listByResourceGroup(
@@ -328,10 +336,11 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
           }
         }
       });
-      throw new Error(errorMessage);
+      returnError = new Error(errorMessage);
     } else {
-      throw new Error(`Failed to deploy arm templates to azure. Error: ${error.message}`);
+      returnError = new Error(`Failed to deploy arm templates to azure. Error: ${error.message}`);
     }
+    return err(returnUserError(returnError, "Solution", "ArmDeploymentFailed"));
   }
 }
 

@@ -91,9 +91,9 @@ jobs:
     # This step is to pack the Teams App as zip file,
     # which can be used to be uploaded onto Teams Client for installation.
     - task: teamsfx-cli-task@1
-      displayName: Build Teams App's package
+      displayName: Package Teams App for publishing
       inputs:
-        commands: build
+        commands: package
 
     - task: PublishBuildArtifacts@1
       displayName: Upload Teams App's package as artifact

@@ -10,7 +10,6 @@ import {
   ok,
   FxError,
   returnSystemError,
-  returnUserError,
   ConfigFolderName,
   returnUserError,
 } from "@microsoft/teamsfx-api";
@@ -22,7 +21,12 @@ import { compileHandlebarsTemplateString, getStrings } from "../../../common";
 import path from "path";
 import * as fs from "fs-extra";
 import { ArmDeploymentStatus, ConstantString, PluginDisplayName } from "../../../common/constants";
-import { Executor, CryptoDataMatchers, isFeatureFlagEnabled } from "../../../common/tools";
+import {
+  Executor,
+  CryptoDataMatchers,
+  isFeatureFlagEnabled,
+  isMultiEnvEnabled,
+} from "../../../common/tools";
 import {
   ARM_TEMPLATE_OUTPUT,
   GLOBAL_CONFIG,
@@ -38,10 +42,7 @@ import { ResourceManagementClient, ResourceManagementModels } from "@azure/arm-r
 import { DeployArmTemplatesSteps, ProgressHelper } from "./utils/progressHelper";
 import dateFormat from "dateformat";
 import { getTemplatesFolder } from "../../../folder";
-import {
-  ProvisioningState,
-  DeploymentsListByResourceGroupResponse,
-} from "@azure/arm-resources/esm/models";
+import { DeploymentsListByResourceGroupResponse } from "@azure/arm-resources/esm/models";
 import { ensureBicep } from "./utils/depsChecker/bicepChecker";
 
 // Old folder structure constants

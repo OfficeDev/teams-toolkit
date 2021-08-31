@@ -37,6 +37,7 @@ import { ResourceManagementClient, ResourceManagementModels } from "@azure/arm-r
 import { DeployArmTemplatesSteps, ProgressHelper } from "./utils/progressHelper";
 import dateFormat from "dateformat";
 import { getTemplatesFolder } from "../../../folder";
+import { ensureBicep } from "./utils/depsChecker/bicepChecker";
 
 // Old folder structure constants
 const baseFolder = "./infra/azure";
@@ -112,13 +113,15 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
     throw new Error("Failed to get resource group from project solution settings.");
   }
 
+  const bicepCommand = await ensureBicep(ctx);
+
   // Compile bicep file to json
   const templateDir = isMultiEnvEnabled()
     ? path.join(ctx.root, templateFolderNew)
     : path.join(ctx.root, baseFolder, templateFolder);
   const armTemplateJsonFilePath = path.join(templateDir, armTemplateJsonFileName);
   const bicepOrchestrationFilePath = path.join(templateDir, bicepOrchestrationFileName);
-  await compileBicepToJson(bicepOrchestrationFilePath, armTemplateJsonFilePath);
+  await compileBicepToJson(bicepCommand, bicepOrchestrationFilePath, armTemplateJsonFilePath);
   ctx.logProvider?.info(
     format(
       getStrings().solution.DeployArmTemplates.CompileBicepSuccessNotice,
@@ -436,11 +439,11 @@ async function getResourceManagementClientForArmDeployment(
 }
 
 async function compileBicepToJson(
+  bicepCommand: string,
   bicepOrchestrationFilePath: string,
   jsonFilePath: string
 ): Promise<void> {
-  // TODO: ensure bicep cli is installed
-  const command = `bicep build ${bicepOrchestrationFilePath} --outfile ${jsonFilePath}`;
+  const command = `${bicepCommand} build ${bicepOrchestrationFilePath} --outfile ${jsonFilePath}`;
   try {
     await Executor.execCommandAsync(command);
   } catch (err) {

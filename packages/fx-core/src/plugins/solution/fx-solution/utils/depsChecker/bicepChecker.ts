@@ -41,8 +41,8 @@ const source = "bicep-envchecker";
 export async function ensureBicep(ctx: SolutionContext): Promise<string> {
   const bicepChecker = new BicepChecker(ctx.logProvider, ctx.telemetryReporter);
   try {
-    if (bicepChecker.isEnabled() && !bicepChecker.isInstalled()) {
-      bicepChecker.install();
+    if ((await bicepChecker.isEnabled()) && !(await bicepChecker.isInstalled())) {
+      await bicepChecker.install();
     }
   } catch (err) {
     await ctx.logProvider?.debug(`Failed to check or install bicep, error = '${err}'`);

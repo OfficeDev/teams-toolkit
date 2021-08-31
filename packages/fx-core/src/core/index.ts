@@ -928,7 +928,11 @@ export class FxCore implements Core {
 
     const envConfigs = await environmentManager.listEnvConfigs(inputs.projectPath!);
 
-    if (!envConfigs.isErr() && envConfigs.value!.indexOf(env!) < 0) {
+    if (envConfigs.isErr()) {
+      return envConfigs;
+    }
+
+    if (envConfigs.isErr() && envConfigs.value.indexOf(env) < 0) {
       return err(NonExistEnvNameError(env));
     }
 

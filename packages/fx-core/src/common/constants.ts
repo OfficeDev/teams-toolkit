@@ -33,3 +33,9 @@ export class FeatureFlagName {
   static readonly MultiEnv = "TEAMSFX_MULTI_ENV";
   static readonly ArmSupport = "TEAMSFX_ARM_SUPPORT";
 }
+
+export class ArmDeploymentStatus {
+  static readonly Succeeded = "Succeeded";
+  static readonly Failed = "Failed";
+  static readonly Running = "Running";
+}

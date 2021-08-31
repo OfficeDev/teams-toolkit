@@ -175,6 +175,10 @@ export function syncFeatureFlags() {
   process.env["TEAMSFX_ARM_SUPPORT"] = getConfiguration(
     ConfigurationKey.ArmSupportEnabled
   ).toString();
+
+  process.env["TEAMSFX_BICEP_ENV_CHECKER_ENABLE"] = getConfiguration(
+    ConfigurationKey.BicepEnvCheckerEnable
+  ).toString();
 }
 
 export class FeatureFlags {

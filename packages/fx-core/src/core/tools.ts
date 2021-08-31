@@ -5,6 +5,7 @@ import {
   AzureSolutionSettings,
   EnvInfo,
   ConfigMap,
+  ProjectSettingsFileName,
 } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import * as fs from "fs-extra";
@@ -19,6 +20,7 @@ import {
   TabOptionItem,
 } from "../plugins/solution/fx-solution/question";
 import { environmentManager } from "./environment";
+import { isMultiEnvEnabled } from "../common";
 export function validateProject(solutionContext: SolutionContext): string | undefined {
   const res = validateSettings(solutionContext.projectSettings);
   return res;
@@ -94,8 +96,13 @@ export function validateSettings(projectSettings?: ProjectSettings): string | un
 export function isValidProject(workspacePath?: string): boolean {
   if (!workspacePath) return false;
   try {
-    const confFolderPath = path.resolve(workspacePath, `.${ConfigFolderName}`);
-    const settingsFile = path.resolve(confFolderPath, "settings.json");
+    const confFolderPath = isMultiEnvEnabled()
+      ? path.resolve(workspacePath, `.${ConfigFolderName}`, "configs")
+      : path.resolve(workspacePath, `.${ConfigFolderName}`);
+    const settingsFile = path.resolve(
+      confFolderPath,
+      isMultiEnvEnabled() ? ProjectSettingsFileName : "settings.json"
+    );
     const projectSettings: ProjectSettings = fs.readJsonSync(settingsFile);
     if (validateSettings(projectSettings)) return false;
     return true;
@@ -139,9 +146,9 @@ export function isMigrateFromV1Project(workspacePath?: string): boolean {
   }
 }
 
-export function newEnvInfo(): EnvInfo {
+export function newEnvInfo(envName?: string): EnvInfo {
   return {
-    envName: environmentManager.getDefaultEnvName(),
+    envName: envName ?? environmentManager.getDefaultEnvName(),
     config: {
       azure: {},
       manifest: {

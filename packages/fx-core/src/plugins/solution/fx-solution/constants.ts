@@ -84,6 +84,7 @@ export enum SolutionError {
   FailedToCreateResourceGroup = "FailedToCreateResourceGroup",
   FailedToListResourceGroup = "FailedToListResourceGrouop",
   FailedToGetResourceGroupInfoInputs = "FailedToGetResourceGroupInfoInputs",
+  ResourceGroupNotFound = "ResourceGroupNotFound",
   NotLoginToAzure = "NotLoginToAzure",
   AzureAccountExtensionNotInitialized = "AzureAccountExtensionNotInitialized",
   LocalTabEndpointMissing = "LocalTabEndpointMissing",
@@ -172,6 +173,15 @@ export enum SolutionTelemetryEvent {
 
   AddCapabilityStart = "add-capability-start",
   AddCapability = "add-capability",
+
+  GrantPermissionStart = "grant-permission-start",
+  GrantPermission = "grant-permission",
+
+  CheckPermissionStart = "check-permission-start",
+  CheckPermission = "check-permission",
+
+  ListCollaboratorStart = "list-collaborator-start",
+  ListCollaborator = "list-collaborator",
 }
 
 export enum SolutionTelemetryProperty {
@@ -179,6 +189,10 @@ export enum SolutionTelemetryProperty {
   Resources = "resources",
   Capabilities = "capabilities",
   Success = "success",
+  CollaboratorCount = "collaborator-count",
+  AadOwnerCount = "aad-owner-count",
+  AadPermission = "aad-permission",
+  TeamsAppPermission = "teams-app-permission",
 }
 
 export enum SolutionTelemetrySuccess {

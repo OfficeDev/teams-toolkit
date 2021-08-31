@@ -68,7 +68,6 @@ const parameterFolder = path.join(baseFolder, parameterFolderName);
 const templateFolder = path.join(baseFolder, templateFolderName);
 
 function mockSolutionContext(): SolutionContext {
-  const config: SolutionConfig = new Map();
   return {
     root: "./",
     envInfo: {

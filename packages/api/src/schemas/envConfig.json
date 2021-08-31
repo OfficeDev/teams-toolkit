@@ -12,19 +12,14 @@
       "properties": {
         "subscriptionId": {
           "type": "string",
-          "description": "The default subscription to provision Azure resources."
+          "description": "The default subscription to provision Azure resources.",
+          "minLength": 1
         },
         "resourceGroupName": {
           "type": "string",
-          "description": "The default resource group of Azure resources."
-        },
-        "location": {
-          "type": "string",
-          "description": "The location of created resource group if needed."
-        },
-        "tenantId": {
-          "type": "string",
-          "description": "The tenant to create AAD app."
+          "description": "The default resource group of Azure resources.",
+          "minLength": 1,
+          "pattern": "^[-\\w\\._\\(\\)]+$"
         }
       },
       "additionalProperties": false

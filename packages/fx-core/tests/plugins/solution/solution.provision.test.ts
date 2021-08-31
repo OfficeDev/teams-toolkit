@@ -37,6 +37,7 @@ import {
   RunnableTask,
   TaskConfig,
   TeamsAppManifest,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs, { PathLike } from "fs-extra";
@@ -497,6 +498,72 @@ describe("provision() happy path for SPFx projects", () => {
   }
 });
 
+function mockAzureProjectDeps(
+  mocker: sinon.SinonSandbox,
+  permissionsJsonPath: string,
+  mockedManifest: typeof validManifest,
+  mockedAppDef: IAppDefinition
+) {
+  mocker.stub<any, any>(fs, "pathExists").withArgs(permissionsJsonPath).resolves(true);
+  mocker
+    .stub<any, any>(fs, "readJSON")
+    .withArgs(permissionsJsonPath)
+    .resolves(DEFAULT_PERMISSION_REQUEST);
+  mocker
+    .stub<any, any>(fs, "readJson")
+    .withArgs(`./.${ConfigFolderName}/${REMOTE_MANIFEST}`)
+    .resolves(mockedManifest);
+  mocker.stub(AppStudioClient, "createApp").resolves(mockedAppDef);
+  mocker.stub(AppStudioClient, "updateApp").resolves(mockedAppDef);
+  mocker.stub(solutionUtil, "getSubsriptionDisplayName").resolves(mockedSubscriptionName);
+}
+
+describe("Resource group creation failed for provision() in Azure projects", () => {
+  const mocker = sinon.createSandbox();
+  const permissionsJsonPath = "./permissions.json";
+  const resourceGroupName = "test-rg";
+
+  const mockedAppDef: IAppDefinition = {
+    appName: "MyApp",
+    teamsAppId: "qwertasdf",
+  };
+  const mockedManifest = _.cloneDeep(validManifest);
+  // ignore icons for simplicity
+  mockedManifest.icons.color = "";
+  mockedManifest.icons.outline = "";
+  beforeEach(() => {
+    mockAzureProjectDeps(mocker, permissionsJsonPath, mockedManifest, mockedAppDef);
+    mocker.stub(ResourceGroups.prototype, "createOrUpdate").throws("some error");
+  });
+
+  afterEach(() => {
+    mocker.restore();
+  });
+
+  it("should return UserError if createOrUpdate throws", async () => {
+    const solution = new TeamsAppSolution();
+    const mockedCtx = mockSolutionContext();
+    mockedCtx.projectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [fehostPlugin.name, aadPlugin.name, appStudioPlugin.name],
+      },
+    };
+
+    const result = await solution.provision(mockedCtx);
+    expect(result.isErr()).to.be.true;
+    expect(result._unsafeUnwrapErr() instanceof UserError);
+    expect(result._unsafeUnwrapErr().name).equals(SolutionError.FailedToCreateResourceGroup);
+    expect(result._unsafeUnwrapErr().message).contains(
+      "Failed to create resource group my_app-rg due to some error"
+    );
+  });
+});
+
 describe("provision() happy path for Azure projects", () => {
   const mocker = sinon.createSandbox();
   const permissionsJsonPath = "./permissions.json";
@@ -511,20 +578,8 @@ describe("provision() happy path for Azure projects", () => {
   mockedManifest.icons.color = "";
   mockedManifest.icons.outline = "";
   beforeEach(() => {
-    mocker.stub<any, any>(fs, "pathExists").withArgs(permissionsJsonPath).resolves(true);
-    mocker
-      .stub<any, any>(fs, "readJSON")
-      .withArgs(permissionsJsonPath)
-      .resolves(DEFAULT_PERMISSION_REQUEST);
-    mocker
-      .stub<any, any>(fs, "readJson")
-      .withArgs(`./.${ConfigFolderName}/${REMOTE_MANIFEST}`)
-      .resolves(mockedManifest);
-    mocker.stub(AppStudioClient, "createApp").resolves(mockedAppDef);
-    mocker.stub(AppStudioClient, "updateApp").resolves(mockedAppDef);
-    // mocker.stub(ResourceGroups.prototype, "checkExistence").resolves({body: true});
+    mockAzureProjectDeps(mocker, permissionsJsonPath, mockedManifest, mockedAppDef);
     mocker.stub(ResourceGroups.prototype, "createOrUpdate").resolves({ name: resourceGroupName });
-    mocker.stub(solutionUtil, "getSubsriptionDisplayName").resolves(mockedSubscriptionName);
   });
 
   afterEach(() => {

@@ -2,21 +2,19 @@
 ## Debug Tab App migrated from V1
 Start debugging the project by hitting the `F5` key in Visual Studio Code. Alternatively use the `Run and Debug Activity Panel` in Visual Studio Code and click the `Start Debugging` green arrow button. 
 
-> **Note**: A new teams app will be created for local debug.
+> Note: A new teams app will be created for local debug. If your project is a tab app that also includes Single Sign-on feature, there are some manual steps to enable debug after migration.
 
-> **Note**: If your project is a tab app with SSO, there are some manual steps to enable debug after migration.
+## Manual steps for Tab project with Single Sign-on feature
 
-## Manual steps for Tab + SSO (Single sign-on) project
-
-### Manual auth service start steps
-If your project is a tab app with SSO, you should manually start the auth service. Under `tabs/api-server`, execute 
+### Start authentication service
+`tabs/api-server` folder contains a server workload to handle authentication logics for your tab project. If you wish to enable features such as Single Sign-on, you need to manually start the auth service. Under `tabs/api-server`, execute 
  ```
  npm install
  npm start
  ```
  
-### Manual configuration steps
-You should replace all the ngrok domain in the project to `localhost` because the debug in the latest Teams Toolkit do not need to use ngrok any more.
+### Setup configurations for Single Sign-on
+You need to replace all the ngrok domain in the project to `localhost` because the debug in the latest Teams Toolkit do not need to use ngrok any more.
 
 The following are the steps of how to manually configure a default tab app.
 
@@ -31,11 +29,11 @@ The following are the steps of how to manually configure a default tab app.
 			E.g. `api://contoso.ngrok.io/{app-id}` to `api://localhost/{app-id}`
 			![update application id uri](../../images/vscode-extension/migrate-v1/migrate-v1-application-id-uri.jpg)
  
-2. Edit manifest
+2. Change manifest
    
 	 Edit manifest template `appPackage/manifest.source.json`. Update the property `webApplicationInfo.resource` to the latest Application ID URI `api://localhost/{app-id}`.
 
-3. Edit environment variables
+3. Change environment variables
 	
 	Edit the environment configuration file `tabs/.env`. Update the value of `REACT_APP_BASE_URL` to `https://localhost:3000`.
 

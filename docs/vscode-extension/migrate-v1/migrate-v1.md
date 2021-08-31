@@ -1,5 +1,6 @@
 # Overall
-Teams toolkit can migrate the projects created before v2.0.0 and continue to develop your project with the latest Teams Toolkit.
+Teams toolkit can migrate the projects created using earlier versions (before v2.0.0) and help you continue local development with the latest Teams Toolkit debug feature.
+>Note: If you wish to host your application in Azure, we recommend you to re-create your project directly using the latest Teams Toolkit.
 
 ## Prerequisites
 - [NodeJS](https://nodejs.org/en/)
@@ -7,26 +8,25 @@ Teams toolkit can migrate the projects created before v2.0.0 and continue to dev
 - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) 
 
 ##  Initialize V1 project with the latest Teams Toolkit
-### How to migrate Teams Toolkit V1 project
 - Open an existing V1 project in Visual Studio Code.
-- From Visual Studio Code, open command palette and select `Teams: Initialize your project to work with the latest Teams Toolkit`
-- Choose the capability from the prompts accoring to your project type 
+- From Visual Studio Code, open the command palette and select: `Teams: Initialize your project to work with the latest Teams Toolkit`
+- Choose the capability from the prompts according to your project capability.
 
 ### Limitations
-There are some limitations to migrate the Teams Toolkit V1 projects.
+The migration support for projects created by earlier versions of Teams Toolkit is undergoing, so please be advised on the following limitations:
 - Only the projects created after Teams Toolkit v1.2.0 are supported.
-- The bot / message extension + SSO (Single sign-on) project hasn't been supported yet.
-- The tab + SSO (Single sign-on) project need some manual configuration steps.
+- Support for the bot / message extension project with Single Sign-on feature included is undergoing.
+- If your tab project include Single Sign-on feature, you will need some manual configuration setups.
 
-### Rollback
-All the files of the origin project are archived to the `.archive` folder. The archive log file `.archive.log` provide detail information about the archive process.
-We recommend to use git for better tracking file changes before migration.
+### Know about project structure and file change
+There will be some configuration change in your project to make it compatible with the latest Teams Toolkit. Your original project files are archived to the `.archive` folder. You can refer to `.archive.log` which provides detailed information about the archive process.
+
+> Note: We recommend to use git for better tracking file changes before migration.
 
 ## Learn more
 To understand more about what you can do after the migration, you can read the readme file listed below to get further information.
 - [Teams Toolkit V1 tab app migration](./migrate-v1-tab.md)
 - [Teams Toolkit V1 bot / message extension migration](./migrate-v1-bot.md)
->**Note**: If you wish to host your application in Azure, we recommend you to re-create your project directly using the latest Teams Toolkit.
 
 
 

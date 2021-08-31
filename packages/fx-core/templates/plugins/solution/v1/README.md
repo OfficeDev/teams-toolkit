@@ -1,17 +1,18 @@
 # More Information
 
-Your project is now initialized with Teams Toolkit! You can continue to develop your project with the latest Teams Toolkit features.
+Your project have been initialized to continue local development with the latest Teams Toolkit local debug features.
 
-> **Note**: If you wish to host your application in Azure, we recommend you to re-create your project directly using the latest Teams Toolkit.
+> Note: If you wish to host your application in Azure, we recommend you to re-create your project directly using the latest Teams Toolkit.
 
 ## Debug
 
 Start debugging the project by hitting the `F5` key in Visual Studio Code. Alternatively use the `Run and Debug Activity Panel` in Visual Studio Code and click the `Start Debugging` green arrow button.
 
-## Rollback
+### Know about project structure and file change
 
-All the files of the origin project are archived to the `.archive` folder. The archive log file `.archive.log` provide detail information about the archive process.
-We recommend to use git for better tracking file changes before migration.
+There are some configuration changed in your project to make it compatible with the latest Teams Toolkit. Your original project files are archived to the `.archive` folder. You can refer to `.archive.log` which provides detailed information about the archive process.
+
+> Note: We recommend to use git for better tracking file changes before migration.
 
 ## Edit the manifest
 
@@ -21,5 +22,5 @@ You can find the Teams manifest in `.fx/manifest.source.json`. It contains templ
 
 To understand more about what you can do after the migration, you can read the readme file listed below to get further information.
 
-- [Teams Toolkit V1 tab app migration](https://github.com/OfficeDev/TeamsFx/blob/dev/docs/vscode-extension/migrate-v1/migrate-v1-tab.md)
-- [Teams Toolkit V1 bot / message extension migration](https://github.com/OfficeDev/TeamsFx/blob/dev/docs/vscode-extension/migrate-v1/migrate-v1-bot.md)
+- [Migrate a tab app created by Teams Toolkit V1](https://github.com/OfficeDev/TeamsFx/blob/dev/docs/vscode-extension/migrate-v1/migrate-v1-tab.md)
+- [Migrate a bot or messaging extension app created by Teams Toolkit V1](https://github.com/OfficeDev/TeamsFx/blob/dev/docs/vscode-extension/migrate-v1/migrate-v1-bot.md)

@@ -224,7 +224,7 @@ export async function getPortsInUse(): Promise<number[]> {
     if (frontendRoot) {
       ports.push(...constants.frontendPorts);
     }
-    const migrateFromV1 = isMigrateFromV1Project(workspacePath);
+    const migrateFromV1 = await isMigrateFromV1Project(workspacePath);
     if (!migrateFromV1) {
       ports.push(...constants.simpleAuthPorts);
     }

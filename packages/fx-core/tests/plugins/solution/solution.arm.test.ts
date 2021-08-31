@@ -28,6 +28,7 @@ import {
   deployArmTemplates,
   generateArmTemplate,
 } from "../../../src/plugins/solution/fx-solution/arm";
+import * as bicepChecker from "../../../src/plugins/solution/fx-solution/utils/depsChecker/bicepChecker";
 import { it } from "mocha";
 import path from "path";
 import { ArmResourcePlugin } from "../../../src/common/armInterface";
@@ -311,6 +312,7 @@ describe("Deploy ARM Template to Azure", () => {
     mocker.stub(fs, "writeFile").callsFake((path: number | PathLike, data: any) => {
       fileContent.set(path.toString(), data);
     });
+    mocker.stub(bicepChecker, "ensureBicep").callsFake(async (ctx: SolutionContext) => "bicep");
 
     fileContent = new Map([
       [

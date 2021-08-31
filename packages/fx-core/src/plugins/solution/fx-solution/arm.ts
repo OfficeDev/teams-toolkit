@@ -390,7 +390,6 @@ async function compileBicepToJson(
   bicepOrchestrationFilePath: string,
   jsonFilePath: string
 ): Promise<void> {
-  // TODO: ensure bicep cli is installed
   const command = `${bicepCommand} build ${bicepOrchestrationFilePath} --outfile ${jsonFilePath}`;
   try {
     await Executor.execCommandAsync(command);

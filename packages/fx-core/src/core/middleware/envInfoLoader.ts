@@ -38,12 +38,9 @@ import { PermissionRequestFileProvider } from "../permissionRequest";
 
 const newTargetEnvNameOption = "+ new environment";
 const lastUsedMark = " (activate)";
-let lastUsedEnvName: string | undefined;
+let activeEnv: string | undefined;
 
-export function EnvInfoLoaderMW(
-  isMultiEnvEnabled: boolean,
-  allowCreateNewEnv: boolean
-): Middleware {
+export function EnvInfoLoaderMW(isMultiEnvEnabled: boolean): Middleware {
   return async (ctx: CoreHookContext, next: NextFunction) => {
     const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
     if (shouldIgnored(ctx) || inputs.ignoreEnvInfo === true) {
@@ -63,12 +60,14 @@ export function EnvInfoLoaderMW(
     let targetEnvName: string | undefined;
     if (isMultiEnvEnabled) {
       if (inputs.env) {
-        targetEnvName = await useUserSetEnv(ctx, inputs, allowCreateNewEnv);
+        targetEnvName = await useUserSetEnv(ctx, inputs);
       } else {
-        targetEnvName = await askTargetEnvironment(ctx, inputs, allowCreateNewEnv, lastUsedEnvName);
+        if (activeEnv) {
+          targetEnvName = activeEnv;
+        } else {
+          targetEnvName = await askTargetEnvironment(ctx, inputs, activeEnv);
+        }
       }
-      lastUsedEnvName = targetEnvName ?? lastUsedEnvName;
-      ctx.projectSettings.activeEnvironment = lastUsedEnvName;
     } else {
       targetEnvName = environmentManager.getDefaultEnvName();
     }
@@ -93,8 +92,8 @@ export function EnvInfoLoaderMW(
   };
 }
 
-export function setLastUsedEnv(env: string) {
-  lastUsedEnvName = env;
+export function setActiveEnv(env: string) {
+  activeEnv = env;
 }
 
 export async function loadSolutionContext(
@@ -173,10 +172,9 @@ export function upgradeDefaultFunctionName(
 async function askTargetEnvironment(
   ctx: CoreHookContext,
   inputs: Inputs,
-  allowCreateNewEnv: boolean,
   lastUsed?: string
 ): Promise<string | undefined> {
-  const getQuestionRes = await getQuestionsForTargetEnv(inputs, allowCreateNewEnv, lastUsed);
+  const getQuestionRes = await getQuestionsForTargetEnv(inputs, lastUsed);
   const core = ctx.self as FxCore;
   if (getQuestionRes.isErr()) {
     core.tools.logProvider.error(
@@ -255,24 +253,13 @@ export async function askNewEnvironment(
   return inputs.newTargetEnvName;
 }
 
-async function useUserSetEnv(
-  ctx: CoreHookContext,
-  inputs: Inputs,
-  allowCreateNewEnv: boolean
-): Promise<string | undefined> {
+async function useUserSetEnv(ctx: CoreHookContext, inputs: Inputs): Promise<string | undefined> {
   const checkEnv = await environmentManager.checkEnvExist(inputs.projectPath!, inputs.env);
   if (checkEnv.isErr()) {
     ctx.result = checkEnv.error;
     return undefined;
   }
   if (checkEnv.value) {
-    return inputs.env;
-  } else if (allowCreateNewEnv) {
-    const match = inputs.env.match(environmentManager.envNameRegex);
-    if (!match) {
-      ctx.result = err(InvalidEnvNameError());
-      return undefined;
-    }
     return inputs.env;
   } else {
     ctx.result = err(ProjectEnvNotExistError(inputs.env));
@@ -282,7 +269,6 @@ async function useUserSetEnv(
 
 async function getQuestionsForTargetEnv(
   inputs: Inputs,
-  allowCreateNewEnv: boolean,
   lastUsed?: string
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (!inputs.projectPath) {
@@ -296,11 +282,7 @@ async function getQuestionsForTargetEnv(
 
   const envList = reOrderEnvironments(envProfilesResult.value, lastUsed);
   const selectEnv = QuestionSelectTargetEnvironment;
-  if (allowCreateNewEnv) {
-    selectEnv.staticOptions = [newTargetEnvNameOption].concat(envList);
-  } else {
-    selectEnv.staticOptions = envList;
-  }
+  selectEnv.staticOptions = envList;
 
   const node = new QTreeNode(selectEnv);
 

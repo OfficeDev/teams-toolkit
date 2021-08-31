@@ -59,7 +59,7 @@ cd .. && npx teamsfx deploy
 # This step is to pack the Teams App as zip file,
 # which can be used to be uploaded onto Teams Client for installation.
 # Build Teams App's Package.
-npx teamsfx build
+npx teamsfx package
 
 # Upload Teams App's Package as artifacts.
 # Choose what your workflow/pipeline platform provided to

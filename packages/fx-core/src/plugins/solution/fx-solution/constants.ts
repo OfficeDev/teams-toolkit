@@ -172,6 +172,12 @@ export enum SolutionTelemetryEvent {
 
   AddCapabilityStart = "add-capability-start",
   AddCapability = "add-capability",
+
+  GenerateArmTemplateStart = "generate-armtemplate-start",
+  GenerateArmTemplate = "generate-armtemplate",
+
+  ArmDeploymentStart = "deploy-armtemplate-start",
+  ArmDeployment = "deploy-armtemplate",
 }
 
 export enum SolutionTelemetryProperty {

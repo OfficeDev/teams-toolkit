@@ -385,7 +385,7 @@ export class AppStudioPluginImpl {
       if (await this.checkFileExist(archiveOutlineFile)) {
         await fs.copyFile(archiveOutlineFile, newOutlineFile);
       }
-      return { enableAuth: !!manifest.webApplicationInfo };
+      return { enableAuth: !!manifest?.webApplicationInfo?.id };
     } else {
       await this.scaffold(ctx);
       return { enableAuth: false };

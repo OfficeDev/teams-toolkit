@@ -11,6 +11,7 @@ import {
   Platform,
   AppPackageFolderName,
   V1ManifestFileName,
+  ArchiveFolderName,
 } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
 import fs, { PathLike } from "fs-extra";
@@ -22,7 +23,6 @@ import {
   STATIC_TABS_TPL,
 } from "../../../../../src/plugins/resource/appstudio/constants";
 import path from "path";
-import { ArchiveFolderName } from "@microsoft/teamsfx-api";
 
 describe("Migrate", () => {
   let plugin: AppStudioPlugin;
@@ -106,7 +106,7 @@ describe("Migrate", () => {
   it("should generate manifest from an existing manifest.json file", async () => {
     fileContent.clear();
     sandbox.stub<any, any>(fs, "readdir").callsFake(async (filePath: fs.PathLike) => {
-      return [V1_MANIFEST, "color.png"];
+      return [V1ManifestFileName, "color.png"];
     });
 
     fileContent.set(

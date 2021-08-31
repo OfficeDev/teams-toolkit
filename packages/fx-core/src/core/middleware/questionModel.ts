@@ -58,7 +58,7 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
 
   const node = getQuestionRes.value;
   if (node) {
-    const res = await traverse(node, inputs, core.tools.ui);
+    const res = await traverse(node, inputs, core.tools.ui, core.tools.telemetryReporter);
     if (res.isErr()) {
       core.tools.logProvider.debug(`[core] failed to run question model for ${method}`);
       ctx.result = err(res.error);

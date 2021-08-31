@@ -22,6 +22,8 @@ import {
 import { Inputs, Void } from "../types";
 import { InputResult, UserInteraction } from "./ui";
 import { err, ok, Result } from "neverthrow";
+import { TelemetryReporter } from "../utils/telemetry";
+import { TelemetryEvent, TelemetryProperty } from "../constants";
 
 export function isAutoSkipSelect(q: Question): boolean {
   if (q.type === "singleSelect" || q.type === "multiSelect") {
@@ -236,7 +238,8 @@ const questionVisitor = async function (
 export async function traverse(
   root: QTreeNode,
   inputs: Inputs,
-  ui: UserInteraction
+  ui: UserInteraction,
+  telemetryReporter?: TelemetryReporter
 ): Promise<Result<Void, FxError>> {
   const stack: QTreeNode[] = [];
   const history: QTreeNode[] = [];
@@ -254,6 +257,7 @@ export async function traverse(
       const question = curr.data as Question;
       totalStep = step + stack.length;
       const qvres = await questionVisitor(question, ui, inputs, step, totalStep);
+      sendTelemetryEvent(telemetryReporter, qvres, question, inputs);
       if (qvres.isErr()) {
         // Cancel or Error
         return err(qvres.error);
@@ -351,4 +355,28 @@ export async function traverse(
     }
   }
   return ok(Void);
+}
+
+function sendTelemetryEvent(
+  telemetryReporter: TelemetryReporter | undefined,
+  qvres: Result<InputResult<any>, FxError>,
+  question: Question,
+  inputs: Inputs
+) {
+  if (qvres.isErr()) {
+    telemetryReporter?.sendTelemetryEvent(TelemetryEvent.askQuestion, {
+      [TelemetryProperty.answerType]: qvres.error.name,
+      [TelemetryProperty.question]: question.name,
+      [TelemetryProperty.platform]: inputs.platform,
+      [TelemetryProperty.stage]: inputs.stage ? inputs.stage : "",
+    });
+  } else {
+    telemetryReporter?.sendTelemetryEvent(TelemetryEvent.askQuestion, {
+      [TelemetryProperty.answerType]: qvres.value.type,
+      [TelemetryProperty.question]: question.name,
+      [TelemetryProperty.answer]: qvres.value.result?.toString(),
+      [TelemetryProperty.platform]: inputs.platform,
+      [TelemetryProperty.stage]: inputs.stage ? inputs.stage : "",
+    });
+  }
 }

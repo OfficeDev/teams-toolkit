@@ -16,6 +16,7 @@ import {
   traverse,
   Inputs,
   UserInteraction,
+  OptionItem,
 } from "@microsoft/teamsfx-api";
 import { GLOBAL_CONFIG, SolutionError } from "./constants";
 import { v4 as uuidv4 } from "uuid";
@@ -85,10 +86,19 @@ async function getQuestionsForResourceGroup(
   availableLocations: string[]
 ) {
   const selectResourceGroup = QuestionSelectResourceGroup;
-  const resourceGroupNames = existingResourceGroupNameLocations.map((item) => item[0]);
 
-  // TODO: display location alongaside with name
-  selectResourceGroup.staticOptions = [newResourceGroupOption].concat(resourceGroupNames);
+  const staticOptions: OptionItem[] = [
+    { id: newResourceGroupOption, label: newResourceGroupOption },
+  ];
+  selectResourceGroup.staticOptions = staticOptions.concat(
+    existingResourceGroupNameLocations.map((item) => {
+      return {
+        id: item[0],
+        label: item[0],
+        description: item[1],
+      };
+    })
+  );
 
   const node = new QTreeNode(selectResourceGroup);
 

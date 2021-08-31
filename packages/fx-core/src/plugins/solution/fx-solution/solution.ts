@@ -1312,7 +1312,7 @@ export class TeamsAppSolution implements Solution {
   }
 
   @hooks([ErrorHandlerMW])
-  async grantPermission(ctx: SolutionContext): Promise<Result<any, FxError>> {
+  async grantPermission(ctx: SolutionContext): Promise<Result<ResourcePermission[], FxError>> {
     ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.GrantPermissionStart, {
       [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
     });
@@ -1440,7 +1440,7 @@ export class TeamsAppSolution implements Solution {
   }
 
   @hooks([ErrorHandlerMW])
-  async checkPermission(ctx: SolutionContext): Promise<Result<any, FxError>> {
+  async checkPermission(ctx: SolutionContext): Promise<Result<ResourcePermission[], FxError>> {
     ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.CheckPermissionStart, {
       [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
     });
@@ -2530,7 +2530,7 @@ export class TeamsAppSolution implements Solution {
         return undefined;
       }
 
-      aadId = collaborator.userObjectId;
+      aadId = collaborator.id;
       userPrincipalName = collaborator.userPrincipalName;
       displayName = collaborator.displayName;
     }

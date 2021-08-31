@@ -36,12 +36,6 @@ Handlebars.registerHelper("notContains", (value, array, options) => {
   array = array instanceof Array ? array : [array];
   return array.indexOf(value) == -1 ? options.fn(this) : "";
 });
-Handlebars.registerHelper("ifCond", (v1, v2, options) => {
-  if (v1 === v2) {
-    return options.fn(this);
-  }
-  return options.inverse(this);
-});
 
 export const Executor = {
   async execCommandAsync(command: string, options?: ExecOptions) {

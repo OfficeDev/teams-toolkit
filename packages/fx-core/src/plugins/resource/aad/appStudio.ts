@@ -111,6 +111,10 @@ export namespace AppStudio {
     });
     instance.defaults.headers.common["Authorization"] = `Bearer ${appStudioToken}`;
     instance.defaults.headers.common["teamstoolkit"] = "true";
+    instance.interceptors.request.use(function (config) {
+      config.params = { teamstoolkit: true, ...config.params };
+      return config;
+    });
     return instance;
   }
 }

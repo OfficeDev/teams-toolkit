@@ -97,9 +97,12 @@ export enum TelemetryEvent {
   MigrateV1Project = "migrate-v1-project",
   MigrateV1ProjectNotificationStart = "migrate-v1-project-notification-start",
   MigrateV1ProjectNotification = "migrate-v1-project-notification",
+  OpenV1Project = "open-v1-project",
 
   ViewEnvironment = "view-environment",
   ActivateEnvironment = "activate-environment",
+
+  CheckSideloading = "check-sideloading",
 }
 
 export enum TelemetryProperty {
@@ -135,6 +138,7 @@ export enum TelemetryProperty {
   VideoPlayFrom = "video-play-from",
   FeatureFlags = "feature-flags",
   UpdateTeamsAppReason = "update-teams-app-reason",
+  IsSideloadingAllowed = "is-sideloading-allowed",
 }
 
 export enum TelemetrySuccess {

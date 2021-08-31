@@ -35,6 +35,7 @@
 
 /packages/api @jayzhang @1yefuwang1 @LongOddCode
 /packages/api/src/qm @jayzhang @1yefuwang1 @LongOddCode @jiayi-ruan
+/packages/api/src/schemas @dooriya @qinezh @kimizhu
 
 /packages/sdk @tecton @blackchoey @SLdragon @dilin-MS @wenytang-ms @jiayi-ruan
 

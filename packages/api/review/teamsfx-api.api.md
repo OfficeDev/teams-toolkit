@@ -224,8 +224,6 @@ export interface EnvConfig {
     azure: {
         subscriptionId?: string;
         resourceGroupName?: string;
-        location?: string;
-        tenantId?: string;
     };
     manifest: {
         description?: string;
@@ -1363,6 +1361,9 @@ export interface UserInteraction {
         color: Colors;
     }>, modal: boolean, ...items: string[]): Promise<Result<string | undefined, FxError>>;
 }
+
+// @public (undocumented)
+export const V1ManifestFileName = "manifest.json";
 
 declare namespace v2 {
     export {

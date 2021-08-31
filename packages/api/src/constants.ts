@@ -13,6 +13,7 @@ export const EnvProfileFileNameTemplate = `profile.${EnvNamePlaceholder}.json`;
 export const ProductName = "teamsfx";
 export const ArchiveFolderName = ".archive";
 export const ArchiveLogFileName = ".archive.log";
+export const V1ManifestFileName = "manifest.json";
 
 /**
  * questions for VS and CLI_HELP platforms are static question which don't depend on project context

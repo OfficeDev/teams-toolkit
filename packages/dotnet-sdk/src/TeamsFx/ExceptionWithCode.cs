@@ -9,6 +9,10 @@ namespace Microsoft.TeamsFx
     public enum ExceptionCode
     {
         /// <summary>
+        /// Invalid parameter error.
+        /// </summary>
+        InvalidParameter,
+        /// <summary>
         /// Invalid configuration error.
         /// </summary>
         InvalidConfiguration,

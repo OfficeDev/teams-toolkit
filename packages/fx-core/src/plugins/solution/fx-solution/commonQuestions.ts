@@ -18,7 +18,7 @@ import {
   UserInteraction,
   OptionItem,
 } from "@microsoft/teamsfx-api";
-import { GLOBAL_CONFIG, SolutionError } from "./constants";
+import { GLOBAL_CONFIG, LOCATION, RESOURCE_GROUP_NAME, SolutionError } from "./constants";
 import { v4 as uuidv4 } from "uuid";
 import { ResourceManagementClient } from "@azure/arm-resources";
 import { PluginDisplayName } from "../../../common/constants";
@@ -30,6 +30,7 @@ import {
   QuestionSelectResourceGroup,
 } from "../../../core/question";
 import { desensitize } from "../../../core/middleware/questionModel";
+import { SOLUTION } from "../../resource/appstudio/constants";
 
 export type AzureSubscription = {
   displayName: string;
@@ -37,16 +38,11 @@ export type AzureSubscription = {
 };
 
 const DefaultResourceGroupLocation = "East US";
-type CreateResourceGroupInfo = {
-  createNewResourceGroup: true;
+type ResourceGroupInfo = {
+  createNewResourceGroup: boolean;
   name: string;
   location: string;
 };
-type ExistingResourceGroupInfo = {
-  createNewResourceGroup: false;
-  name: string;
-};
-type ResourceGroupInfo = CreateResourceGroupInfo | ExistingResourceGroupInfo;
 
 // TODO: use the emoji plus sign like Azure Functions extension
 const newResourceGroupOption = "+ New resource group";
@@ -199,9 +195,13 @@ export async function askResourceGroupInfo(
         )
       );
     }
+
+    const target = resourceGroupNameLocations.find((item) => item[0] == targetResourceGroupName);
+    const location = target![1]; // location must exist because the user can only select from this list.
     return ok({
       createNewResourceGroup: false,
       name: targetResourceGroupName,
+      location: location,
     });
   }
 }
@@ -258,16 +258,20 @@ async function askCommonQuestions(
   const rmClient = new ResourceManagementClient(azureToken, subscriptionId);
 
   // Resource group info precedence are:
-  //   1. env config (config.{envName}.json)
-  //   2. asking user with a popup
-  const resouceGroupName = ctx.envInfo.config.azure.resourceGroupName;
+  //   1. env config (config.{envName}.json), for user customization
+  //   2. publish profile (profile.{envName}.json), for reprovision
+  //   3. asking user with a popup
+  const resourceGroupNameFromEnvConfig = ctx.envInfo.config.azure.resourceGroupName;
+  const resourceGroupNameFromProfile = ctx.envInfo.profile.get(SOLUTION).get(RESOURCE_GROUP_NAME);
+  const resourceGroupLocationFromProfile = ctx.envInfo.profile.get(SOLUTION).get(LOCATION);
   let resourceGroupInfo: ResourceGroupInfo;
-  if (resouceGroupName) {
-    const checkRes = await rmClient.resourceGroups.checkExistence(resouceGroupName);
+  if (resourceGroupNameFromEnvConfig) {
+    const checkRes = await rmClient.resourceGroups.checkExistence(resourceGroupNameFromEnvConfig);
     if (checkRes.body) {
       resourceGroupInfo = {
         createNewResourceGroup: false,
-        name: resouceGroupName,
+        name: resourceGroupNameFromEnvConfig,
+        location: DefaultResourceGroupLocation, // TODO: retrieve location using ARM SDK
       };
     } else {
       // Currently we do not support creating resource group by input config, so just throw an error.
@@ -278,6 +282,21 @@ async function askCommonQuestions(
           SolutionError.ResourceGroupNotFound
         )
       );
+    }
+  } else if (resourceGroupNameFromProfile && resourceGroupLocationFromProfile) {
+    const checkRes = await rmClient.resourceGroups.checkExistence(resourceGroupNameFromProfile);
+    if (checkRes.body) {
+      resourceGroupInfo = {
+        createNewResourceGroup: false,
+        name: resourceGroupNameFromProfile,
+        location: resourceGroupLocationFromProfile,
+      };
+    } else {
+      resourceGroupInfo = {
+        createNewResourceGroup: true,
+        name: resourceGroupNameFromProfile,
+        location: resourceGroupLocationFromProfile,
+      };
     }
   } else if (ctx.answers && ctx.ui) {
     const resourceGroupInfoResult = await askResourceGroupInfo(
@@ -319,6 +338,7 @@ async function askCommonQuestions(
     );
   }
   commonQuestions.resourceGroupName = resourceGroupInfo.name;
+  commonQuestions.location = resourceGroupInfo.location;
   ctx.logProvider?.info(
     `[${PluginDisplayName.Solution}] askCommonQuestions, step 2 - check resource group pass!`
   );

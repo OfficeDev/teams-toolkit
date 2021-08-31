@@ -45,6 +45,11 @@ export const ARM_TEMPLATE_OUTPUT = "armTemplateOutput";
 export const RESOURCE_GROUP_NAME = "resourceGroupName";
 
 /**
+ * Config key whose value is the resource group location of project.
+ */
+export const LOCATION = "location";
+
+/**
  * Config key whose value is the user info of collaborator
  */
 export const USER_INFO = "userInfo";

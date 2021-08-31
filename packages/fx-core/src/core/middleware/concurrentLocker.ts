@@ -23,8 +23,7 @@ import {
   PathNotExistError,
 } from "../error";
 import { lock, unlock } from "proper-lockfile";
-
-const encode = (str: string): string => Buffer.from(str, "binary").toString("base64");
+import { base64Encode } from "../tools";
 
 export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: NextFunction) => {
   const core = ctx.self as FxCore;
@@ -49,8 +48,10 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
       return;
     }
 
-    const lockFileDir = path.join(os.tmpdir(), `${ProductName}-${encode(inputs.projectPath!)}`);
-    console.log(lockFileDir);
+    const lockFileDir = path.join(
+      os.tmpdir(),
+      `${ProductName}-${base64Encode(inputs.projectPath!)}`
+    );
     await fs.ensureDir(lockFileDir);
 
     await lock(lf, { lockfilePath: path.join(lockFileDir, `${ConfigFolderName}.lock`) })

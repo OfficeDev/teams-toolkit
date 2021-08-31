@@ -191,3 +191,7 @@ export function newEnvInfo(envName?: string): EnvInfo {
     profile: new Map<string, any>([[GLOBAL_CONFIG, new ConfigMap()]]),
   };
 }
+
+export function base64Encode(str: string): string {
+  return Buffer.from(str, "binary").toString("base64");
+}

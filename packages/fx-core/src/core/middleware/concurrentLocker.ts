@@ -3,8 +3,17 @@
 "use strict";
 
 import { HookContext, NextFunction, Middleware } from "@feathersjs/hooks";
-import { ConfigFolderName, err, Inputs, ok, StaticPlatforms, Void } from "@microsoft/teamsfx-api";
+import {
+  ConfigFolderName,
+  err,
+  Inputs,
+  ok,
+  ProductName,
+  StaticPlatforms,
+  Void,
+} from "@microsoft/teamsfx-api";
 import * as path from "path";
+import * as os from "os";
 import * as fs from "fs-extra";
 import { FxCore } from "..";
 import {
@@ -14,6 +23,8 @@ import {
   PathNotExistError,
 } from "../error";
 import { lock, unlock } from "proper-lockfile";
+
+const encode = (str: string): string => Buffer.from(str, "binary").toString("base64");
 
 export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: NextFunction) => {
   const core = ctx.self as FxCore;
@@ -37,13 +48,19 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
       ctx.result = err(InvalidProjectError());
       return;
     }
-    await lock(lf, { lockfilePath: path.join(lf, `${ConfigFolderName}.lock`) })
+
+    const lockFileDir = path.join(os.tmpdir(), `${ProductName}-${encode(inputs.projectPath!)}`);
+    console.log(lockFileDir);
+    await fs.ensureDir(lockFileDir);
+
+    await lock(lf, { lockfilePath: path.join(lockFileDir, `${ConfigFolderName}.lock`) })
       .then(async () => {
         if (logger) logger.debug(`[core] success to aquire lock on: ${lf}`);
         try {
           await next();
         } finally {
-          await unlock(lf, { lockfilePath: path.join(lf, `${ConfigFolderName}.lock`) });
+          await unlock(lf, { lockfilePath: path.join(lockFileDir, `${ConfigFolderName}.lock`) });
+          await fs.rmdir(lockFileDir);
           if (logger) logger.debug(`[core] lock released on ${lf}`);
         }
       })

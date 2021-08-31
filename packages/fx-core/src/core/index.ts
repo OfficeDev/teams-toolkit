@@ -93,6 +93,7 @@ import { globalStateUpdate } from "../common/globalState";
 import {
   askNewEnvironment,
   EnvInfoLoaderMW,
+  loadSolutionContext,
   upgradeDefaultFunctionName,
   upgradeProgrammingLanguage,
 } from "./middleware/envInfoLoader";

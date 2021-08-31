@@ -125,6 +125,7 @@ import {
   ResourcePermission,
   TeamsAppAdmin,
 } from "../../../common/permissionInterface";
+import { askTargetEnvironment } from "../../../core/middleware/envInfoLoader";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -674,6 +675,7 @@ export class TeamsAppSolution implements Solution {
         msg,
         true,
         "Provision",
+        "Switch environment",
         "Pricing calculator"
       );
       const confirm = confirmRes?.isOk() ? confirmRes.value : undefined;
@@ -681,6 +683,12 @@ export class TeamsAppSolution implements Solution {
       if (confirm !== "Provision") {
         if (confirm === "Pricing calculator") {
           ctx.ui?.openUrl("https://azure.microsoft.com/en-us/pricing/calculator/");
+        } else if (confirm === "Switch environment") {
+          const envName = await askTargetEnvironment(ctx as any, ctx.answers!);
+          if (envName) {
+            ctx.projectSettings!.activeEnvironment = envName;
+            ctx.ui?.showMessage("info", `[${envName}] is activated.`, false);
+          }
         }
         return err(
           returnUserError(

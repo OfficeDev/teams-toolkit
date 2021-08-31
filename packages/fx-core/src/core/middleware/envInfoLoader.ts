@@ -21,6 +21,7 @@ import {
   InvalidEnvNameError,
   ProjectEnvNotExistError,
   ProjectSettingsUndefinedError,
+  NonActiveEnvError,
 } from "../error";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { LocalCrypto } from "../crypto";
@@ -65,7 +66,8 @@ export function EnvInfoLoaderMW(isMultiEnvEnabled: boolean): Middleware {
         if (activeEnv) {
           targetEnvName = activeEnv;
         } else {
-          targetEnvName = await askTargetEnvironment(ctx, inputs, activeEnv);
+          ctx.result = err(NonActiveEnvError);
+          return;
         }
       }
     } else {
@@ -169,36 +171,31 @@ export function upgradeDefaultFunctionName(
   }
 }
 
-async function askTargetEnvironment(
-  ctx: CoreHookContext,
+export async function askTargetEnvironment(
+  ctx: SolutionContext,
   inputs: Inputs,
   lastUsed?: string
 ): Promise<string | undefined> {
-  const getQuestionRes = await getQuestionsForTargetEnv(inputs, lastUsed);
-  const core = ctx.self as FxCore;
+  const getQuestionRes = await getQuestionsForTargetEnv(inputs, lastUsed ?? activeEnv);
   if (getQuestionRes.isErr()) {
-    core.tools.logProvider.error(
+    ctx.logProvider!.error(
       `[core:env] failed to get questions for target environment: ${getQuestionRes.error.message}`
     );
-    ctx.result = err(getQuestionRes.error);
     return undefined;
   }
 
-  core.tools.logProvider.debug(`[core:env] success to get questions for target environment.`);
+  ctx.logProvider!.debug(`[core:env] success to get questions for target environment.`);
 
   const node = getQuestionRes.value;
   if (node) {
-    const res = await traverse(node, inputs, core.tools.ui);
+    const res = await traverse(node, inputs, ctx.ui!);
     if (res.isErr()) {
-      core.tools.logProvider.debug(
-        `[core:env] failed to run question model for target environment.`
-      );
-      ctx.result = err(res.error);
+      ctx.logProvider!.debug(`[core:env] failed to run question model for target environment.`);
       return undefined;
     }
 
     const desensitized = desensitize(node, inputs);
-    core.tools.logProvider.info(
+    ctx.logProvider!.info(
       `[core:env] success to run question model for target environment, answers:${JSON.stringify(
         desensitized
       )}`
@@ -206,13 +203,13 @@ async function askTargetEnvironment(
   }
 
   const targetEnvName = inputs.targetEnvName;
-  if (targetEnvName === newTargetEnvNameOption) {
-    return inputs.newTargetEnvName;
-  } else if (targetEnvName?.endsWith(lastUsedMark)) {
-    return targetEnvName.slice(0, targetEnvName.indexOf(lastUsedMark));
+
+  if (targetEnvName?.endsWith(lastUsedMark)) {
+    activeEnv = targetEnvName.slice(0, targetEnvName.indexOf(lastUsedMark));
   } else {
-    return targetEnvName;
+    activeEnv = targetEnvName;
   }
+  return activeEnv;
 }
 
 export async function askNewEnvironment(

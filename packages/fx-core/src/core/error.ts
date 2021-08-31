@@ -207,3 +207,7 @@ export function InvalidEnvConfigError(env: string, errorMsg: string): UserError 
 export function NonExistEnvNameError(env: string): UserError {
   return new UserError(CoreSource, "NonExistEnvNameError", `Can not find environment ${env}.`);
 }
+
+export function NonActiveEnvError(): UserError {
+  return new UserError(CoreSource, "NonActiveEnvError", `Can not find active environment.`);
+}

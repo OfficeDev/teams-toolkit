@@ -259,7 +259,9 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<null, Fx
 
 export async function provisionHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ProvisionStart, getTriggerFromProperty(args));
-  return await runCommand(Stage.provision);
+  const result = await runCommand(Stage.provision);
+  registerEnvTreeHandler();
+  return result;
 }
 
 export async function deployHandler(args?: any[]): Promise<Result<null, FxError>> {

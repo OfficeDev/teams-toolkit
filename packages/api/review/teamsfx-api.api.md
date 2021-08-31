@@ -226,8 +226,6 @@ export interface EnvConfig {
     azure: {
         subscriptionId?: string;
         resourceGroupName?: string;
-        location?: string;
-        tenantId?: string;
     };
     manifest: {
         description?: string;

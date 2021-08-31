@@ -129,6 +129,11 @@
           "group": "inline@2"
         },
         {
+          "command": "fx-extension.refreshSideloading",
+          "when": "view == teamsfx-accounts && viewItem == checkSideloading",
+          "group": "inline"
+        },
+        {
           "command": "fx-extension.azureAccountSettings",
           "when": "view == teamsfx-accounts && viewItem == signedinAzure",
           "group": "inline@2"
@@ -178,6 +183,10 @@
           "when": "false"
         },
         {
+          "command": "fx-extension.refreshSideloading",
+          "when": "false"
+        },
+        {
           "command": "fx-extension.azureAccountSettings",
           "when": "false"
         },
@@ -214,6 +223,11 @@
         "command": "fx-extension.m365AccountSettings",
         "title": "M365 portal",
         "icon": "$(settings-gear)"
+      },
+      {
+        "command": "fx-extension.refreshSideloading",
+        "title": "Refresh",
+        "icon": "$(refresh)"
       },
       {
         "command": "fx-extension.azureAccountSettings",
@@ -327,12 +341,12 @@
       },
       {
         "command": "fx-extension.viewEnvironment",
-        "title": "Teams: View environment profile",
+        "title": "View environment",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {
         "command": "fx-extension.activateEnvironment",
-        "title": "Teams: Activate environment",
+        "title": "Activate environment",
         "enablement": "fx-extension.isMultiEnvEnabled"
       }
     ],
@@ -500,6 +514,11 @@
             "description": "Ensure Azure Function Core Tools is installed.",
             "default": true
           },
+          "fx-extension.validateBicep": {
+            "type": "boolean",
+            "description": "Ensure Bicep CLI is installed.",
+            "default": false
+          },
           "fx-extension.stopTeamsToolkitTasksPostDebug": {
             "type": "boolean",
             "description": "Automatically stop all Teams Toolkit tasks when debug session ends.",
@@ -531,6 +550,7 @@
     "copy-test-files": "copyfiles -u 1 test/**/*.ps1 test/**/*.sh out/test/",
     "compile": "tsc -p ./ && npm run copy-files",
     "build": "rimraf out && npm run compile",
+    "build-webpack": "rimraf out && webpack --mode development --config ./webpack.config.js",
     "build-failpoint": "rimraf out && npx ttsc -p ./",
     "watch": "webpack --watch --devtool nosources-source-map --info-verbosity verbose --config ./webpack.config.js",
     "package": "rimraf out && webpack --mode production --config ./webpack.config.js",
@@ -575,6 +595,7 @@
     "@types/underscore": "^1.11.0",
     "@types/uuid": "^8.3.0",
     "@types/vscode": "^1.51.0",
+    "@vscode/codicons": "0.0.21",
     "@typescript-eslint/eslint-plugin": "^4.19.0",
     "@typescript-eslint/parser": "^4.19.0",
     "adm-zip": "^0.5.4",

@@ -407,6 +407,10 @@ export function isArmSupportEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.ArmSupport, false);
 }
 
+export function isBicepEnvCheckerEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.BicepEnvCheckerEnable, false);
+}
+
 export async function generateBicepFiles(
   templateFilePath: string,
   context: any

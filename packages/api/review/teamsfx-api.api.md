@@ -224,8 +224,6 @@ export interface EnvConfig {
     azure: {
         subscriptionId?: string;
         resourceGroupName?: string;
-        location?: string;
-        tenantId?: string;
     };
     manifest: {
         description?: string;
@@ -809,7 +807,7 @@ export interface ProjectSettings {
     // (undocumented)
     projectId: string;
     // (undocumented)
-    solutionSettings?: SolutionSettings;
+    solutionSettings: SolutionSettings;
     // (undocumented)
     version?: string;
 }
@@ -1042,7 +1040,7 @@ interface SolutionPlugin {
     }>, FxError>>;
     // (undocumented)
     displayName: string;
-    executeUserTask?: (func: Func, inputs: Inputs, ctx?: Context_2) => Promise<Result<unknown, FxError>>;
+    executeUserTask?: (ctx: Context_2, func: Func, inputs: Inputs) => Promise<Result<unknown, FxError>>;
     generateResourceTemplate: (ctx: Context_2, inputs: Inputs) => Promise<Result<ResourceTempalte, FxError>>;
     getQuestionsForScaffolding: (inputs: Inputs, ctx?: Context_2) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)

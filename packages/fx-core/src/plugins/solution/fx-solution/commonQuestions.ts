@@ -16,8 +16,9 @@ import {
   traverse,
   Inputs,
   UserInteraction,
+  OptionItem,
 } from "@microsoft/teamsfx-api";
-import { GLOBAL_CONFIG, RESOURCE_GROUP_NAME, SolutionError } from "./constants";
+import { GLOBAL_CONFIG, SolutionError } from "./constants";
 import { v4 as uuidv4 } from "uuid";
 import { ResourceManagementClient } from "@azure/arm-resources";
 import { PluginDisplayName } from "../../../common/constants";
@@ -84,13 +85,22 @@ async function getQuestionsForResourceGroup(
   existingResourceGroupNameLocations: [string, string][],
   availableLocations: string[]
 ) {
-  const selectEnv = QuestionSelectResourceGroup;
-  const resourceGroupNames = existingResourceGroupNameLocations.map((item) => item[0]);
+  const selectResourceGroup = QuestionSelectResourceGroup;
 
-  // TODO: display location alongaside with name
-  selectEnv.staticOptions = [newResourceGroupOption].concat(resourceGroupNames);
+  const staticOptions: OptionItem[] = [
+    { id: newResourceGroupOption, label: newResourceGroupOption },
+  ];
+  selectResourceGroup.staticOptions = staticOptions.concat(
+    existingResourceGroupNameLocations.map((item) => {
+      return {
+        id: item[0],
+        label: item[0],
+        description: item[1],
+      };
+    })
+  );
 
-  const node = new QTreeNode(selectEnv);
+  const node = new QTreeNode(selectResourceGroup);
 
   const newResourceGroupNameNode = new QTreeNode(QuestionNewResourceGroupName);
   newResourceGroupNameNode.condition = { equals: newResourceGroupOption };
@@ -108,7 +118,7 @@ async function getQuestionsForResourceGroup(
 /**
  * Ask user to create a new resource group or use an exsiting resource group
  */
-async function askResourceGroupInfo(
+export async function askResourceGroupInfo(
   ctx: SolutionContext,
   rmClient: ResourceManagementClient,
   inputs: Inputs,
@@ -238,21 +248,28 @@ async function askCommonQuestions(
 
   //2. check resource group
   const rmClient = new ResourceManagementClient(azureToken, subscriptionId);
-  // TODO: read resource group name and location from input config and handle reprovision
-  let resourceGroupName = config.get(GLOBAL_CONFIG)?.getString(RESOURCE_GROUP_NAME);
+
+  // Resource group info precedence are:
+  //   1. env config (config.{envName}.json)
+  //   2. asking user with a popup
+  const resouceGroupName = ctx.envInfo.config.azure.resourceGroupName;
   let resourceGroupInfo: ResourceGroupInfo;
-  if (resourceGroupName) {
-    resourceGroupInfo = {
-      name: resourceGroupName,
-      createNewResourceGroup: false,
-    };
-    const checkRes = await rmClient.resourceGroups.checkExistence(resourceGroupName);
-    if (!checkRes.body) {
+  if (resouceGroupName) {
+    const checkRes = await rmClient.resourceGroups.checkExistence(resouceGroupName);
+    if (checkRes.body) {
       resourceGroupInfo = {
-        createNewResourceGroup: true,
-        name: resourceGroupName,
-        location: DefaultResourceGroupLocation, // TODO: remove hard coding when input config is ready
+        createNewResourceGroup: false,
+        name: resouceGroupName,
       };
+    } else {
+      // Currently we do not support creating resource group by input config, so just throw an error.
+      return err(
+        returnUserError(
+          new Error("Resource group does not exist"),
+          "Solution",
+          SolutionError.ResourceGroupNotFound
+        )
+      );
     }
   } else if (ctx.answers && ctx.ui) {
     const resourceGroupInfoResult = await askResourceGroupInfo(
@@ -282,15 +299,15 @@ async function askCommonQuestions(
     if (response.name === undefined) {
       return err(
         returnSystemError(
-          new Error(`Failed to create resource group ${resourceGroupName}`),
+          new Error(`Failed to create resource group ${resourceGroupInfo.name}`),
           "Solution",
           SolutionError.FailedToCreateResourceGroup
         )
       );
     }
-    resourceGroupName = response.name;
+    resourceGroupInfo.name = response.name;
     ctx.logProvider?.info(
-      `[${PluginDisplayName.Solution}] askCommonQuestions - resource group:'${resourceGroupName}' created!`
+      `[${PluginDisplayName.Solution}] askCommonQuestions - resource group:'${resourceGroupInfo.name}' created!`
     );
   }
   commonQuestions.resourceGroupName = resourceGroupInfo.name;

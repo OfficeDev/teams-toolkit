@@ -1,10 +1,10 @@
 module botProvision './botProvision.all.bicep' = {
   name: 'botProvision'
   params: {
-    botAadClientId: bot_aadClientId
-    botDisplayName: bot_displayName
     botServerfarmsName: bot_serverfarmsName
     botServiceName: bot_serviceName
+    botAadClientId: bot_aadClientId
+    botDisplayName: bot_displayName
     botServiceSKU: bot_serviceSKU
     botWebAppName: bot_sitesName
     botWebAppSKU: bot_webAppSKU

@@ -25,6 +25,8 @@ import {
   FunctionRouter,
   Func,
   InputTextConfig,
+  SystemError,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import { ConcurrentLockerMW } from "../../src/core/middleware/concurrentLocker";
 import fs from "fs-extra";
@@ -134,6 +136,28 @@ describe("Middleware", () => {
       const my = new MyClass();
       const res = await my.myMethod(inputs);
       assert.isTrue(res.isErr() && res.error.name === "unkown" && res.error.message === "hello");
+    });
+
+    it("convert system error to user error", async () => {
+      const msg =
+        "The client 'xxx@xxx.com' with object id 'xxx' does not have authorization to perform action '<REDACTED: user-file-path>' over scope '<REDACTED: user-file-path>' or the scope is invalid. If access was recently granted, please refresh your credentials.";
+      class MyClass {
+        tools?: any = new MockTools();
+        async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
+          throw new Error(msg);
+        }
+      }
+      hooks(MyClass, {
+        myMethod: [ErrorHandlerMW],
+      });
+      const my = new MyClass();
+      const res = await my.myMethod(inputs);
+      assert.isTrue(
+        res.isErr() &&
+          res.error.name === "Error" &&
+          res.error.message === msg &&
+          res.error instanceof UserError
+      );
     });
   });
 
@@ -524,7 +548,7 @@ describe("Middleware", () => {
         }
       }
       hooks(MyClass, {
-        myMethod: [ContextInjecterMW, ProjectSettingsWriterMW, EnvInfoWriterMW],
+        myMethod: [ContextInjecterMW, ProjectSettingsWriterMW, EnvInfoWriterMW()],
       });
       const my = new MyClass();
       await my.myMethod(inputs);
@@ -598,7 +622,7 @@ describe("Middleware", () => {
         }
       }
       hooks(MyClass, {
-        WriteConfigTrigger: [ContextInjecterMW, ProjectSettingsWriterMW, EnvInfoWriterMW],
+        WriteConfigTrigger: [ContextInjecterMW, ProjectSettingsWriterMW, EnvInfoWriterMW()],
         ReadConfigTrigger: [
           ProjectSettingsLoaderMW,
           EnvInfoLoaderMW(false, false),
@@ -1056,6 +1080,45 @@ describe("Middleware", () => {
         async upgrade(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
           assert.equal(userData["fx-resource-aad-app-for-teams.local_clientId"], undefined);
           assert.equal(userData["solution.localDebugTeamsAppId"], undefined);
+          assert.equal(
+            (envJson["solution"] as any)["localDebugTeamsAppId"],
+            "{{solution.localDebugTeamsAppId}}"
+          );
+          assert.equal(
+            (envJson["fx-resource-aad-app-for-teams"] as any)["local_clientId"],
+            "{{fx-resource-aad-app-for-teams.local_clientId}}"
+          );
+          return ok("");
+        }
+      }
+
+      hooks(ProjectUpgradeHook, {
+        upgrade: [ProjectUpgraderMW],
+      });
+
+      const my = new ProjectUpgradeHook();
+      const res = await my.upgrade(inputs);
+      assert.isTrue(res.isOk() && res.value === "");
+    });
+
+    it("Should not upgrade for the new multi env project", async () => {
+      sandbox.stub(process, "env").get(() => {
+        return { TEAMSFX_MULTI_ENV: "true" };
+      });
+
+      envJson = MockLatestVersion2_3_0Context();
+      userData = MockLatestVersion2_3_0UserData();
+      MockFunctions();
+
+      class ProjectUpgradeHook {
+        name = "jay";
+        tools = new MockTools();
+        async upgrade(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+          assert.equal(
+            userData["fx-resource-aad-app-for-teams.local_clientId"],
+            "local_clientId_new"
+          );
+          assert.equal(userData["solution.localDebugTeamsAppId"], "teamsAppId_new");
           assert.equal(
             (envJson["solution"] as any)["localDebugTeamsAppId"],
             "{{solution.localDebugTeamsAppId}}"

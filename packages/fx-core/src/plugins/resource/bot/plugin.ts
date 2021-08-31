@@ -1,6 +1,17 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { PluginContext, Result, Stage, QTreeNode, FxError } from "@microsoft/teamsfx-api";
+import {
+  PluginContext,
+  Result,
+  Stage,
+  QTreeNode,
+  FxError,
+  Func,
+  ArchiveFolderName,
+  ArchiveLogFileName,
+  AppPackageFolderName,
+  ok,
+} from "@microsoft/teamsfx-api";
 
 import { AADRegistration } from "./aadRegistration";
 import * as factory from "./clientFactory";
@@ -24,6 +35,7 @@ import {
   AzureConstants,
   PathInfo,
   BotArmOutput,
+  Alias,
 } from "./constants";
 import { WayToRegisterBot } from "./enums/wayToRegisterBot";
 import { getZipDeployEndpoint } from "./utils/zipDeploy";
@@ -34,6 +46,7 @@ import { CommonStrings, PluginBot, ConfigNames, PluginLocalDebug } from "./resou
 import { DialogUtils } from "./utils/dialog";
 import {
   CheckThrowSomethingMissing,
+  MigrateV1ProjectError,
   PackDirExistenceError,
   PreconditionError,
   SomethingMissingError,
@@ -56,7 +69,7 @@ import path from "path";
 import { getTemplatesFolder } from "../../..";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import { Bicep, ConstantString } from "../../../common/constants";
-import { generateBicepFiles, isArmSupportEnabled } from "../../../common";
+import { copyFiles, generateBicepFiles, isArmSupportEnabled } from "../../../common";
 import { AzureSolutionSettings } from "@microsoft/teamsfx-api";
 import { getArmOutput } from "../utils4v2";
 
@@ -259,44 +272,49 @@ export class TeamsBotImpl {
       .activeResourcePlugins;
     const handleBarsContext = {
       Plugins: selectedPlugins,
+      createNewBotService: !((this.config.scaffold.wayToRegisterBot ===
+        WayToRegisterBot.ReuseExisting) as boolean),
     };
 
-    const provisionModuleTemplateFilePath = path.join(
-      bicepTemplateDir,
-      PathInfo.provisionModuleTemplateFileName
-    );
     const provisionModuleContentResult = await generateBicepFiles(
-      provisionModuleTemplateFilePath,
+      path.join(bicepTemplateDir, PathInfo.provisionModuleTemplateFileName),
       handleBarsContext
     );
     if (provisionModuleContentResult.isErr()) {
       throw provisionModuleContentResult.error;
     }
-    const configurationModuleTemplateFilePath = path.join(
-      bicepTemplateDir,
-      PathInfo.configurationModuleTemplateFileName
-    );
+
     const configurationModuleContentResult = await generateBicepFiles(
-      configurationModuleTemplateFilePath,
+      path.join(bicepTemplateDir, PathInfo.configurationModuleTemplateFileName),
       handleBarsContext
     );
     if (configurationModuleContentResult.isErr()) {
       throw configurationModuleContentResult.error;
     }
 
-    const inputParameterOrchestrationFilePath = path.join(
-      bicepTemplateDir,
-      Bicep.ParameterOrchestrationFileName
+    const inputParameterContentResult = await generateBicepFiles(
+      path.join(bicepTemplateDir, Bicep.ParameterOrchestrationFileName),
+      handleBarsContext
     );
-    const moduleOrchestrationFilePath = path.join(
-      bicepTemplateDir,
-      Bicep.ModuleOrchestrationFileName
+    if (inputParameterContentResult.isErr()) {
+      throw inputParameterContentResult.error;
+    }
+
+    const moduleOrchestrationContentResult = await generateBicepFiles(
+      path.join(bicepTemplateDir, Bicep.ModuleOrchestrationFileName),
+      handleBarsContext
     );
-    const outputOrchestrationFilePath = path.join(
-      bicepTemplateDir,
-      Bicep.OutputOrchestrationFileName
+    if (moduleOrchestrationContentResult.isErr()) {
+      throw moduleOrchestrationContentResult.error;
+    }
+
+    const outputOrchestrationContentResult = await generateBicepFiles(
+      path.join(bicepTemplateDir, Bicep.OutputOrchestrationFileName),
+      handleBarsContext
     );
-    const parameterFilePath = path.join(bicepTemplateDir, Bicep.ParameterFileName);
+    if (outputOrchestrationContentResult.isErr()) {
+      throw outputOrchestrationContentResult.error;
+    }
 
     const result: ScaffoldArmTemplateResult = {
       Modules: {
@@ -309,19 +327,19 @@ export class TeamsBotImpl {
       },
       Orchestration: {
         ParameterTemplate: {
-          Content: await fs.readFile(
-            inputParameterOrchestrationFilePath,
-            ConstantString.UTF8Encoding
-          ),
+          Content: inputParameterContentResult.value,
           ParameterJson: JSON.parse(
-            await fs.readFile(parameterFilePath, ConstantString.UTF8Encoding)
+            await fs.readFile(
+              path.join(bicepTemplateDir, Bicep.ParameterFileName),
+              ConstantString.UTF8Encoding
+            )
           ),
         },
         ModuleTemplate: {
-          Content: await fs.readFile(moduleOrchestrationFilePath, ConstantString.UTF8Encoding),
+          Content: moduleOrchestrationContentResult.value,
         },
         OutputTemplate: {
-          Content: await fs.readFile(outputOrchestrationFilePath, ConstantString.UTF8Encoding),
+          Content: outputOrchestrationContentResult.value,
         },
       },
     };
@@ -689,6 +707,37 @@ export class TeamsBotImpl {
 
     this.config.saveConfigIntoContext(context);
 
+    return ResultFactory.Success();
+  }
+
+  public async migrateV1Project(ctx: PluginContext): Promise<FxResult> {
+    try {
+      Logger.info(Messages.StartMigrateV1Project(Alias.TEAMS_BOT_PLUGIN));
+      const handler = await ProgressBarFactory.newProgressBar(
+        ProgressBarConstants.MIGRATE_V1_PROJECT_TITLE,
+        ProgressBarConstants.MIGRATE_V1_PROJECT_STEPS_NUM,
+        ctx
+      );
+      await handler?.start();
+      await handler?.next(ProgressBarConstants.MIGRATE_V1_PROJECT_STEP_MIGRATE);
+
+      const sourceFolder = path.join(ctx.root, ArchiveFolderName);
+      const distFolder = path.join(ctx.root, CommonStrings.BOT_WORKING_DIR_NAME);
+      const excludeFiles = [
+        { fileName: ArchiveFolderName, recursive: false },
+        { fileName: ArchiveLogFileName, recursive: false },
+        { fileName: AppPackageFolderName, recursive: false },
+        { fileName: CommonStrings.README_FILE_NAME, recursive: false },
+        { fileName: CommonStrings.NODE_PACKAGE_FOLDER_NAME, recursive: true },
+      ];
+
+      await copyFiles(sourceFolder, distFolder, excludeFiles);
+
+      await handler?.end(true);
+      Logger.info(Messages.EndMigrateV1Project(Alias.TEAMS_BOT_PLUGIN));
+    } catch (err) {
+      throw new MigrateV1ProjectError(err);
+    }
     return ResultFactory.Success();
   }
 

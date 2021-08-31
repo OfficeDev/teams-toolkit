@@ -231,6 +231,15 @@ export class AppStudioPluginImpl {
     const manifest: TeamsAppManifest = JSON.parse(manifestString);
     manifest.id = "{appid}";
     manifest.validDomains = [];
+
+    const includeBot = (
+      ctx.projectSettings?.solutionSettings as AzureSolutionSettings
+    ).activeResourcePlugins?.includes(PluginNames.BOT);
+    if (includeBot) {
+      if (manifest.bots !== undefined && manifest.bots.length > 0) {
+        manifest.bots[0].botId = `{${BOT_ID}}`;
+      }
+    }
     return manifest;
   }
 

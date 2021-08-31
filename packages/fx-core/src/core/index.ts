@@ -38,6 +38,7 @@ import * as path from "path";
 import {
   downloadSampleHook,
   fetchCodeZip,
+  isArmSupportEnabled,
   isMultiEnvEnabled,
   saveFilesRecursively,
 } from "../common/tools";
@@ -91,7 +92,6 @@ import { globalStateUpdate } from "../common/globalState";
 import {
   askNewEnvironment,
   EnvInfoLoaderMW,
-  loadSolutionContext,
   upgradeDefaultFunctionName,
   upgradeProgrammingLanguage,
 } from "./middleware/envInfoLoader";
@@ -101,6 +101,9 @@ import { LocalSettingsWriterMW } from "./middleware/localSettingsWriter";
 import { MigrateConditionHandlerMW } from "./middleware/migrateConditionHandler";
 import { environmentManager } from "..";
 import { newEnvInfo } from "./tools";
+import { getParameterJson } from "../plugins/solution/fx-solution/arm";
+import { LocalCrypto } from "./crypto";
+import { PermissionRequestFileProvider } from "./permissionRequest";
 
 export interface CoreHookContext extends HookContext {
   projectSettings?: ProjectSettings;
@@ -126,7 +129,7 @@ export class FxCore implements Core {
     QuestionModelMW,
     ContextInjecterMW,
     ProjectSettingsWriterMW,
-    EnvInfoWriterMW,
+    EnvInfoWriterMW(isMultiEnvEnabled()),
   ])
   async createProject(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     currentStage = Stage.create;
@@ -207,6 +210,18 @@ export class FxCore implements Core {
         return scaffoldRes;
       }
 
+      if (isMultiEnvEnabled()) {
+        const createEnvResult = await this.createEnvWithName(
+          environmentManager.getDefaultEnvName(),
+          projectSettings,
+          inputs,
+          ctx!.self as FxCore
+        );
+        if (createEnvResult.isErr()) {
+          return err(createEnvResult.error);
+        }
+      }
+
       ctx!.solution = solution;
       ctx!.solutionContext = solutionContext;
     }
@@ -224,7 +239,7 @@ export class FxCore implements Core {
     QuestionModelMW,
     ContextInjecterMW,
     ProjectSettingsWriterMW,
-    EnvInfoWriterMW,
+    EnvInfoWriterMW(),
   ])
   async migrateV1Project(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     currentStage = Stage.migrateV1;
@@ -413,7 +428,7 @@ export class FxCore implements Core {
     QuestionModelMW,
     ContextInjecterMW,
     ProjectSettingsWriterMW,
-    EnvInfoWriterMW,
+    EnvInfoWriterMW(),
   ])
   async provisionResources(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     currentStage = Stage.provision;
@@ -429,7 +444,7 @@ export class FxCore implements Core {
     QuestionModelMW,
     ContextInjecterMW,
     ProjectSettingsWriterMW,
-    EnvInfoWriterMW,
+    EnvInfoWriterMW(),
   ])
   async deployArtifacts(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     currentStage = Stage.deploy;
@@ -447,7 +462,7 @@ export class FxCore implements Core {
     QuestionModelMW,
     ContextInjecterMW,
     ProjectSettingsWriterMW,
-    EnvInfoWriterMW,
+    EnvInfoWriterMW(),
     LocalSettingsWriterMW,
   ])
   async localDebug(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
@@ -473,7 +488,7 @@ export class FxCore implements Core {
     QuestionModelMW,
     ContextInjecterMW,
     ProjectSettingsWriterMW,
-    EnvInfoWriterMW,
+    EnvInfoWriterMW(),
   ])
   async publishApplication(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     currentStage = Stage.publish;
@@ -490,7 +505,7 @@ export class FxCore implements Core {
     QuestionModelMW,
     ContextInjecterMW,
     ProjectSettingsWriterMW,
-    EnvInfoWriterMW,
+    EnvInfoWriterMW(),
     LocalSettingsWriterMW,
   ])
   async executeUserTask(
@@ -516,7 +531,7 @@ export class FxCore implements Core {
     EnvInfoLoaderMW(false, false),
     SolutionLoaderMW(defaultSolutionLoader),
     ContextInjecterMW,
-    EnvInfoWriterMW,
+    EnvInfoWriterMW(),
   ])
   async getQuestions(
     task: Stage,
@@ -545,7 +560,7 @@ export class FxCore implements Core {
     EnvInfoLoaderMW(false, false),
     SolutionLoaderMW(defaultSolutionLoader),
     ContextInjecterMW,
-    EnvInfoWriterMW,
+    EnvInfoWriterMW(),
   ])
   async getQuestionsForUserTask(
     func: FunctionRouter,
@@ -587,7 +602,7 @@ export class FxCore implements Core {
     EnvInfoLoaderMW(false, false),
     ContextInjecterMW,
     ProjectSettingsWriterMW,
-    EnvInfoWriterMW,
+    EnvInfoWriterMW(),
   ])
   async setSubscriptionInfo(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     const solutionContext = ctx!.solutionContext! as SolutionContext;
@@ -609,7 +624,7 @@ export class FxCore implements Core {
     QuestionModelMW,
     ContextInjecterMW,
     ProjectSettingsWriterMW,
-    EnvInfoWriterMW,
+    EnvInfoWriterMW(),
   ])
   async grantPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     currentStage = Stage.grantPermission;
@@ -625,7 +640,7 @@ export class FxCore implements Core {
     QuestionModelMW,
     ContextInjecterMW,
     ProjectSettingsWriterMW,
-    EnvInfoWriterMW,
+    EnvInfoWriterMW(),
   ])
   async checkPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     currentStage = Stage.checkPermission;
@@ -641,7 +656,7 @@ export class FxCore implements Core {
     QuestionModelMW,
     ContextInjecterMW,
     ProjectSettingsWriterMW,
-    EnvInfoWriterMW,
+    EnvInfoWriterMW(),
   ])
   async listCollaborator(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     currentStage = Stage.listCollaborator;
@@ -794,7 +809,7 @@ export class FxCore implements Core {
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false, false),
     ContextInjecterMW,
-    EnvInfoWriterMW,
+    EnvInfoWriterMW(),
   ])
   async encrypt(
     plaintext: string,
@@ -809,7 +824,7 @@ export class FxCore implements Core {
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false, false),
     ContextInjecterMW,
-    EnvInfoWriterMW,
+    EnvInfoWriterMW(),
   ])
   async decrypt(
     ciphertext: string,
@@ -825,7 +840,8 @@ export class FxCore implements Core {
 
   @hooks([ErrorHandlerMW, ProjectSettingsLoaderMW, ContextInjecterMW])
   async createEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
-    if (!isMultiEnvEnabled() || !ctx!.projectSettings) {
+    const projectSettings = ctx!.projectSettings;
+    if (!isMultiEnvEnabled() || !projectSettings) {
       return ok(Void);
     }
 
@@ -837,21 +853,58 @@ export class FxCore implements Core {
     }
 
     if (targetEnvName) {
-      const newEnvConfig = environmentManager.newEnvConfigData();
-      const writeEnvResult = await environmentManager.writeEnvConfig(
-        inputs.projectPath!,
-        newEnvConfig,
-        targetEnvName
+      const createEnvResult = await this.createEnvWithName(
+        targetEnvName,
+        projectSettings,
+        inputs,
+        core
       );
-      if (writeEnvResult.isErr()) {
-        return err(writeEnvResult.error);
+      if (createEnvResult.isErr()) {
+        return createEnvResult;
       }
-      core.tools.logProvider.debug(
-        `[core] persist ${targetEnvName} env profile to path ${
-          writeEnvResult.value
-        }: ${JSON.stringify(newEnvConfig)}`
-      );
     }
+
+    return ok(Void);
+  }
+
+  async createEnvWithName(
+    targetEnvName: string,
+    projectSettings: ProjectSettings,
+    inputs: Inputs,
+    core: FxCore
+  ): Promise<Result<Void, FxError>> {
+    const newEnvConfig = environmentManager.newEnvConfigData();
+    const writeEnvResult = await environmentManager.writeEnvConfig(
+      inputs.projectPath!,
+      newEnvConfig,
+      targetEnvName
+    );
+    if (writeEnvResult.isErr()) {
+      return err(writeEnvResult.error);
+    }
+    core.tools.logProvider.debug(
+      `[core] persist ${targetEnvName} env profile to path ${
+        writeEnvResult.value
+      }: ${JSON.stringify(newEnvConfig)}`
+    );
+
+    if (isArmSupportEnabled()) {
+      const solutionContext: SolutionContext = {
+        projectSettings,
+        envInfo: newEnvInfo(targetEnvName),
+        root: inputs.projectPath || "",
+        ...core.tools,
+        ...core.tools.tokenProvider,
+        answers: inputs,
+        cryptoProvider: new LocalCrypto(projectSettings.projectId),
+        permissionRequestProvider: inputs.projectPath
+          ? new PermissionRequestFileProvider(inputs.projectPath)
+          : undefined,
+      };
+
+      await getParameterJson(solutionContext);
+    }
+
     return ok(Void);
   }
 

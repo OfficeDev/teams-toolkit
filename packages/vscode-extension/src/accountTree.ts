@@ -140,40 +140,16 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
         },
       ];
     } else if (isSideloadingAllowed === true) {
-      return [
-        {
-          commandId: "fx-extension.checkSideloading",
-          label: StringResources.vsc.accountTree.sideloadingPass,
-          callback: () => {
-            return Promise.resolve(ok(null));
-          },
-          parent: "fx-extension.signinM365",
-          contextValue: "checkSideloading",
-          icon: "pass",
-          tooltip: {
-            isMarkdown: false,
-            value: StringResources.vsc.accountTree.sideloadingTooltip,
-          },
-        },
-      ];
+      // show nothing if status is good
+      return [];
     } else {
-      VS_CODE_UI.showMessage(
-        "warn",
-        StringResources.vsc.accountTree.sideloadingMessage,
-        false,
-        StringResources.vsc.common.readMore
-      )
-        .then(async (result) => {
-          if (result.isOk() && result.value === StringResources.vsc.common.readMore) {
-            await VS_CODE_UI.openUrl("https://aka.ms/teamsfx-custom-app");
-          }
-        })
-        .catch((error) => {});
+      showSideloadingWarning();
       return [
         {
           commandId: "fx-extension.checkSideloading",
           label: StringResources.vsc.accountTree.sideloadingWarning,
           callback: () => {
+            showSideloadingWarning();
             return Promise.resolve(ok(null));
           },
           parent: "fx-extension.signinM365",
@@ -315,7 +291,9 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
             },
           ]);
           const subItem = await getSideloadingItem(token);
-          tools.treeProvider?.add(subItem);
+          if (subItem && subItem.length > 0) {
+            tools.treeProvider?.add(subItem);
+          }
         }
       } else if (status === "SigningIn") {
         tools.treeProvider?.refresh([
@@ -488,6 +466,21 @@ async function setSubscription(subscription: SubscriptionInfo | undefined) {
       },
     ]);
   }
+}
+
+function showSideloadingWarning() {
+  VS_CODE_UI.showMessage(
+    "warn",
+    StringResources.vsc.accountTree.sideloadingMessage,
+    false,
+    StringResources.vsc.common.readMore
+  )
+    .then(async (result) => {
+      if (result.isOk() && result.value === StringResources.vsc.common.readMore) {
+        await VS_CODE_UI.openUrl("https://aka.ms/teamsfx-custom-app");
+      }
+    })
+    .catch((error) => {});
 }
 
 async function getSideloadingStatus(token: string): Promise<boolean | undefined> {

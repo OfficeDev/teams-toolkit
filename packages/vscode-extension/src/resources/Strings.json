@@ -175,7 +175,6 @@
       "m365AccountTooltip": "M365 ACCOUNT  \nThe Teams Toolkit requires an Microsoft 365 organizational account where Teams is running and has been registered.",
       "azureAccountTooltip": "AZURE ACCOUNT  \nThe Teams Toolkit may require an Azure subscription to deploy the Azure resources for your project.",
       "specifySubscription": "Specify subscription",
-      "sideloadingPass": "Have custom app permission",
       "sideloadingWarning": "No custom app permission",
       "sideloadingUnknown": "Custom app permission unknown",
       "sideloadingRefresh": "Refresh",

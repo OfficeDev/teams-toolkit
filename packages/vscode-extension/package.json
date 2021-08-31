@@ -165,6 +165,11 @@
         {
           "command": "fx-extension.activateEnvironment",
           "when": "view == teamsfx-environment && viewItem == environment"
+        },
+        {
+          "command": "fx-extension.activateEnvironmentWithIcon",
+          "when": "view == teamsfx-environment && viewItem == environment",
+          "group": "inline@3"
         }
       ],
       "editor/title/run": [
@@ -358,6 +363,12 @@
       {
         "command": "fx-extension.activateEnvironment",
         "title": "Activate environment",
+        "enablement": "fx-extension.isMultiEnvEnabled"
+      },
+      {
+        "command": "fx-extension.activateEnvironmentWithIcon",
+        "title": "Activate environment",
+        "icon": "$(check)",
         "enablement": "fx-extension.isMultiEnvEnabled"
       }
     ],

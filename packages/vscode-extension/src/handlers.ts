@@ -110,19 +110,20 @@ export async function activate(): Promise<Result<Void, FxError>> {
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenTeamsApp, {});
     }
 
-    if (
-      !validProject &&
-      (await exp
-        .getExpService()
-        .getTreatmentVariableAsync(
+    const expService = exp.getExpService();
+    if (expService) {
+      if (
+        !validProject &&
+        (await expService.getTreatmentVariableAsync(
           TreatmentVariables.VSCodeConfig,
           TreatmentVariables.SidebarWelcome,
           true
         ))
-    ) {
-      vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome", true);
-    } else {
-      vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome", false);
+      ) {
+        vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome", true);
+      } else {
+        vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome", false);
+      }
     }
 
     const telemetry = ExtTelemetry.reporter;

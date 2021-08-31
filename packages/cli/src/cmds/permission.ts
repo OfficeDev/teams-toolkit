@@ -18,6 +18,12 @@ import { argsToInputs, getSystemInputs } from "../utils";
 import HelpParamGenerator from "../helpParamGenerator";
 import CLILogProvider from "../commonlib/log";
 
+const azureMessage =
+  "Notice: Azure resources permission needs to be handled by subscription owner since privileged account is " +
+  "required to grant permission to Azure resources.\n" +
+  "Assign Azure roles using the Azure portal: " +
+  "https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal?tabs=current";
+
 export class PermissionStatus extends YargsCommand {
   public readonly commandHead = `status`;
   public readonly command = `${this.commandHead}`;
@@ -45,13 +51,7 @@ export class PermissionStatus extends YargsCommand {
       return err(result.error);
     }
 
-    CLILogProvider.necessaryLog(
-      LogLevel.Info,
-      "Notice: Azure resources permission needs to be handled by subscription owner since privileged account is " +
-        "required to grant permission to Azure resources.\n" +
-        "[Assign Azure roles using the Azure portal] " +
-        "https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal?tabs=current"
-    );
+    CLILogProvider.necessaryLog(LogLevel.Info, azureMessage);
 
     const core = result.value;
     const listAll = args[this.listAllCollaborator];
@@ -98,13 +98,7 @@ export class PermissionGrant extends YargsCommand {
       return err(result.error);
     }
 
-    CLILogProvider.necessaryLog(
-      LogLevel.Info,
-      "Notice: Azure resources permission needs to be handled by subscription owner since privileged account is " +
-        "required to grant permission to Azure resources.\n" +
-        "[Assign Azure roles using the Azure portal] " +
-        "https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal?tabs=current"
-    );
+    CLILogProvider.necessaryLog(LogLevel.Info, azureMessage);
 
     const answers = argsToInputs(this.params, args);
     const core = result.value;

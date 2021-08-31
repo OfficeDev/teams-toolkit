@@ -1,4 +1,4 @@
-module botProvision './botProvision.all.bicep' = {
+module botProvision './botProvision.newBot.bicep' = {
   name: 'botProvision'
   params: {
     botServerfarmsName: bot_serverfarmsName
@@ -8,10 +8,9 @@ module botProvision './botProvision.all.bicep' = {
     botServiceSKU: bot_serviceSKU
     botWebAppName: bot_sitesName
     botWebAppSKU: bot_webAppSKU
-    identityName: test_identity_name
   }
 }
-module botConfiguration './botConfiguration.all.bicep' = {
+module botConfiguration './botConfiguration.newBot.bicep' = {
   name: 'botConfiguration'
   dependsOn: [
     botProvision
@@ -28,9 +27,5 @@ module botConfiguration './botConfiguration.all.bicep' = {
     m365ClientSecret: m365ClientSecret
     m365TenantId: m365TenantId
     m365OauthAuthorityHost: m365OauthAuthorityHost
-    functionEndpoint: test_function_endpoint
-    sqlDatabaseName: test_sql_database_name
-    sqlEndpoint: test_sql_endpoint
-    identityId: test_identity_id
   }
 }

@@ -105,7 +105,6 @@ import { ErrorHandlerMW } from "../../../core/middleware/errorHandler";
 import { hooks } from "@feathersjs/hooks/lib";
 import { Service, Container } from "typedi";
 import { deployArmTemplates, generateArmTemplate } from "./arm";
-import { LocalSettingsProvider } from "../../../common/localSettingsProvider";
 import { PluginDisplayName } from "../../../common/constants";
 import { LocalSettingsTeamsAppKeys } from "../../../common/localSettingsConstants";
 import { scaffoldReadmeAndLocalSettings } from "./v2/scaffolding";
@@ -744,7 +743,7 @@ export class TeamsAppSolution implements Solution {
           util.format(getStrings().solution.ProvisionFinishNotice, PluginDisplayName.Solution)
         );
 
-        if (isArmSupportEnabled()) {
+        if (isArmSupportEnabled() && this.isAzureProject(ctx)) {
           const armDeploymentResult = await deployArmTemplates(ctx);
           if (armDeploymentResult.isErr()) {
             return armDeploymentResult;

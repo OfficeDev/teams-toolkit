@@ -114,7 +114,7 @@ class BicepChecker {
   private async installBicep(): Promise<void> {
     try {
       const start = performance.now();
-      await runWithProgressIndicator(async () => await this.doInstallBicep(), this._logger);
+      await this.doInstallBicep();
       this._telemetry?.sendTelemetryEvent(
         DepsCheckerEvent.bicepInstallScriptCompleted,
         getCommonProps(),
@@ -332,23 +332,6 @@ function getCommonProps(): { [key: string]: string } {
   properties[SolutionTelemetryProperty.Component] = SolutionTelemetryComponentName;
   properties[SolutionTelemetryProperty.Success] = SolutionTelemetrySuccess.Yes;
   return properties;
-}
-
-async function runWithProgressIndicator(
-  callback: () => Promise<void>,
-  logger: LogProvider | undefined
-): Promise<void> {
-  let counter = 1;
-  const timer = setInterval(() => {
-    const dots = Array(counter).fill(".").join("");
-    logger?.info(dots);
-    counter += 1;
-  }, 1000); // same as vscode-dotnet-runtime);
-  try {
-    await callback();
-  } finally {
-    clearTimeout(timer);
-  }
 }
 
 async function displayLearnMore(

@@ -151,6 +151,12 @@ export async function executeLifecycles(
     if (onLifecycleFinishedResult.isErr()) {
       return onLifecycleFinishedResult;
     }
+  } else {
+    for (const result of results) {
+      if (result.isErr()) {
+        return result;
+      }
+    }
   }
 
   const postResults = await executeConcurrently("post", postLifecycles);

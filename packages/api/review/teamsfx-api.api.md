@@ -886,26 +886,22 @@ export type ResourceConfigs = ResourceTemplates;
 interface ResourcePlugin {
     activate(solutionSettings: AzureSolutionSettings): boolean;
     configureLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: LocalSettings_2, tokenProvider: TokenProvider) => Promise<Result<LocalSettings_2, FxError>>;
-    configureResource?: (ctx: Context_2, inputs: Readonly<ProvisionInputs>, provisionOutput: Readonly<ProvisionOutput>, provisionOutputOfOtherPlugins: Readonly<Record<PluginName, ProvisionOutput>>, tokenProvider: TokenProvider) => Promise<Result<ProvisionOutput, FxError>>;
-    deploy?: (ctx: Context_2, inputs: Readonly<DeploymentInputs>, provisionOutput: Readonly<ProvisionOutput>, tokenProvider: AzureAccountProvider) => Promise<Result<{
-        output: Record<string, string>;
-    }, FxError>>;
+    configureResource?: (ctx: Context_2, inputs: Readonly<ProvisionInputs>, envConfig: EnvConfig, envProfile: EnvProfile, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
+    deploy?: (ctx: Context_2, inputs: Readonly<DeploymentInputs>, envProfile: EnvProfile, tokenProvider: AzureAccountProvider) => Promise<Result<Void, FxError>>;
     // (undocumented)
     displayName: string;
     // (undocumented)
-    executeUserTask?: (ctx: Context_2, func: Func, inputs: Inputs) => Promise<Result<unknown, FxError>>;
+    executeUserTask?: (ctx: Context_2, inputs: Inputs, func: Func) => Promise<Result<unknown, FxError>>;
     generateResourceTemplate?: (ctx: Context_2, inputs: Inputs) => Promise<Result<ResourceTemplate_2, FxError>>;
     // (undocumented)
-    getQuestionsForScaffolding?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
+    getQuestionsForScaffolding?: (inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
     name: string;
-    package?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
+    package?: (ctx: Context_2, inputs: Inputs, envConfig: EnvConfig, envProfile: EnvProfile) => Promise<Result<Void, FxError>>;
     provisionLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: LocalSettings_2, tokenProvider: TokenProvider) => Promise<Result<LocalSettings_2, FxError>>;
-    provisionResource?: (ctx: Context_2, inputs: Readonly<ProvisionInputs>, provisionTemplate: Json, tokenProvider: TokenProvider) => Promise<Result<ProvisionOutput, FxError>>;
-    publishApplication?: (ctx: Context_2, inputs: Inputs, provisionOutputs: Readonly<Record<PluginName, ProvisionOutput>>, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
-    scaffoldSourceCode?: (ctx: Context_2, inputs: Inputs) => Promise<Result<{
-        output: Record<string, string>;
-    }, FxError>>;
+    provisionResource?: (ctx: Context_2, inputs: Readonly<ProvisionInputs>, envConfig: EnvConfig, tokenProvider: TokenProvider) => Promise<Result<Json, FxError>>;
+    publishApplication?: (ctx: Context_2, inputs: Inputs, envConfig: EnvConfig, envProfile: EnvProfile, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
+    scaffoldSourceCode?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
 }
 
 // @public (undocumented)

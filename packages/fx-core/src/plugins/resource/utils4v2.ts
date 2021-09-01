@@ -1,8 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import { Subscription } from "@azure/arm-subscriptions/esm/models/mappers";
 import {
   AzureAccountProvider,
   ConfigMap,
+  EnvConfig,
   err,
   Func,
   FxError,
@@ -102,17 +104,33 @@ export async function generateResourceTemplateAdapter(
 export async function provisionResourceAdapter(
   ctx: Context,
   inputs: Readonly<ProvisionInputs>,
-  provisionTemplate: Json,
+  envConfig: EnvConfig,
   tokenProvider: TokenProvider,
   plugin: Plugin
-): Promise<Result<ProvisionOutput, FxError>> {
+): Promise<Result<Json, FxError>> {
   if (!plugin.provision) return err(PluginHasNoTaskImpl(plugin.displayName, "provision"));
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
-  const selfConfigMap = ConfigMap.fromJSON(provisionTemplate) || new ConfigMap();
-  pluginContext.config = selfConfigMap;
+  const solutionConfig = new ConfigMap();
+  let subId = envConfig.azure.subscriptionId;
+  if (subId === undefined) {
+    const sub = await tokenProvider.azureAccountProvider.getSelectedSubscription(false);
+    if (sub) {
+      subId = sub.subscriptionId;
+    }
+  }
+  let rg = envConfig.azure.resourceGroupName;
+  if (rg === undefined) {
+    rg = inputs.resourceGroupName;
+  }
+  solutionConfig.set("subscriptionId", subId);
+  solutionConfig.set("resourceGroupName", rg);
+  const configOfOtherPlugins = new Map<string, ConfigMap>();
+  configOfOtherPlugins.set(GLOBAL_CONFIG, solutionConfig);
+  pluginContext.config = new ConfigMap();
+  pluginContext.configOfOtherPlugins = configOfOtherPlugins;
   if (plugin.preProvision) {
     const preRes = await plugin.preProvision(pluginContext);
     if (preRes.isErr()) {
@@ -129,12 +147,7 @@ export async function provisionResourceAdapter(
       return err(postRes.error);
     }
   }
-  const output: ProvisionOutput = {
-    output: selfConfigMap.toJSON(),
-    states: {},
-    secrets: {},
-  };
-  return ok(output);
+  return ok(pluginContext.config.toJSON());
 }
 
 export async function configureResourceAdapter(

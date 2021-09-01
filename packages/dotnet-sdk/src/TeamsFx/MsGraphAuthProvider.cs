@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 
 namespace Microsoft.TeamsFx
 {
+    /// <summary>
+    /// Microsoft Graph auth provider for Teams Framework.
+    /// </summary>
     public class MsGraphAuthProvider : IAuthenticationProvider
     {
         private const string DefaultScope = ".default";

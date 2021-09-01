@@ -11,9 +11,15 @@ using System.Threading.Tasks;
 
 namespace Microsoft.TeamsFx
 {
+    /// <summary>
+    /// Constructor of TeamsUserCredential.
+    /// </summary>
+    /// <remarks>
+    /// Can only be used within Teams.
+    /// </remarks>
     public class TeamsUserCredential : TokenCredential, IAsyncDisposable
     {
-        protected internal class AccessTokenJS
+        internal class AccessTokenJS
         {
             [JsonProperty("token")]
             public string Token { get; set; }

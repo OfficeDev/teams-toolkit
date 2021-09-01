@@ -238,6 +238,9 @@ export class AppStudioPluginImpl {
       if (manifest.bots !== undefined && manifest.bots.length > 0) {
         manifest.bots[0].botId = `{${BOT_ID}}`;
       }
+      if (manifest.composeExtensions !== undefined && manifest.composeExtensions.length > 0) {
+        manifest.composeExtensions[0].botId = `{${BOT_ID}}`;
+      }
     }
     return manifest;
   }

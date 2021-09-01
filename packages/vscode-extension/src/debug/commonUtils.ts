@@ -133,7 +133,8 @@ async function executeLocalDebugUserTask(funcName: string, params?: unknown): Pr
     const inputs = getSystemInputs();
     inputs.ignoreLock = true;
     inputs.ignoreConfigPersist = true;
-    inputs.ignoreEnvInfo = true;
+    const isRemote = params === "remote";
+    inputs.ignoreEnvInfo = !isRemote;
     const result = await core.executeUserTask(func, inputs);
     if (result.isErr()) {
       throw result.error;

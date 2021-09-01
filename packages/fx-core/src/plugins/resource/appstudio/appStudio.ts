@@ -166,51 +166,43 @@ export namespace AppStudioClient {
     outlineIconContent?: string
   ): Promise<IAppDefinition> {
     if (appDefinition && appStudioToken) {
-      try {
-        const requester = createRequesterWithToken(appStudioToken);
+      const requester = createRequesterWithToken(appStudioToken);
+      // Get userlist from existing app
+      const existingAppDefinition = await getApp(teamsAppId, appStudioToken, logProvider);
+      const userlist = existingAppDefinition.userList;
+      appDefinition.userList = userlist;
 
-        // Get userlist from existing app
-        const existingAppDefinition = await getApp(teamsAppId, appStudioToken, logProvider);
-        const userlist = existingAppDefinition.userList;
-        appDefinition.userList = userlist;
-
-        let result: { colorIconUrl: string; outlineIconUrl: string } | undefined;
-        if (colorIconContent && outlineIconContent) {
-          result = await uploadIcon(
-            teamsAppId,
-            appStudioToken,
-            colorIconContent,
-            outlineIconContent,
-            requester,
-            logProvider
-          );
-          if (!result) {
-            await logProvider?.error(`failed to upload color icon for: ${teamsAppId}`);
-            throw new Error(`failed to upload icons for ${teamsAppId}`);
-          }
-          appDefinition.colorIcon = result.colorIconUrl;
-          appDefinition.outlineIcon = result.outlineIconUrl;
-        }
-        const response = await requester.post(
-          `/api/appdefinitions/${teamsAppId}/override`,
-          appDefinition
+      let result: { colorIconUrl: string; outlineIconUrl: string } | undefined;
+      if (colorIconContent && outlineIconContent) {
+        result = await uploadIcon(
+          teamsAppId,
+          appStudioToken,
+          colorIconContent,
+          outlineIconContent,
+          requester,
+          logProvider
         );
-        if (response && response.data) {
-          const app = <IAppDefinition>response.data;
+        if (!result) {
+          await logProvider?.error(`failed to upload color icon for: ${teamsAppId}`);
+          throw new Error(`failed to upload icons for ${teamsAppId}`);
+        }
+        appDefinition.colorIcon = result.colorIconUrl;
+        appDefinition.outlineIcon = result.outlineIconUrl;
+      }
+      const response = await requester.post(
+        `/api/appdefinitions/${teamsAppId}/override`,
+        appDefinition
+      );
+      if (response && response.data) {
+        const app = <IAppDefinition>response.data;
 
-          if (app && app.teamsAppId && app.teamsAppId === teamsAppId) {
-            return app;
-          } else {
-            await logProvider?.error(
-              `teamsAppId mismatch. Input: ${teamsAppId}. Got: ${app.teamsAppId}`
-            );
-          }
+        if (app && app.teamsAppId && app.teamsAppId === teamsAppId) {
+          return app;
+        } else {
+          await logProvider?.error(
+            `teamsAppId mismatch. Input: ${teamsAppId}. Got: ${app.teamsAppId}`
+          );
         }
-      } catch (e) {
-        if (e instanceof Error) {
-          await logProvider?.warning(`failed to update app due to ${e.name}: ${e.message}`);
-        }
-        throw new Error(`failed to update app due to ${e.name}: ${e.message}`);
       }
     }
 

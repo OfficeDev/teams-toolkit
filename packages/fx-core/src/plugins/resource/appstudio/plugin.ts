@@ -162,7 +162,8 @@ export class AppStudioPluginImpl {
    * @returns
    */
   public async createManifest(settings: ProjectSettings): Promise<TeamsAppManifest | undefined> {
-    const solutionSettings: AzureSolutionSettings = settings.solutionSettings as AzureSolutionSettings;
+    const solutionSettings: AzureSolutionSettings =
+      settings.solutionSettings as AzureSolutionSettings;
     if (
       !solutionSettings.capabilities ||
       (!solutionSettings.capabilities.includes(BotOptionItem.id) &&
@@ -231,8 +232,9 @@ export class AppStudioPluginImpl {
     manifest.id = "{appid}";
     manifest.validDomains = [];
 
-    const includeBot = (ctx.projectSettings
-      ?.solutionSettings as AzureSolutionSettings).activeResourcePlugins?.includes(PluginNames.BOT);
+    const includeBot = (
+      ctx.projectSettings?.solutionSettings as AzureSolutionSettings
+    ).activeResourcePlugins?.includes(PluginNames.BOT);
     if (includeBot) {
       if (manifest.bots !== undefined && manifest.bots.length > 0) {
         manifest.bots[0].botId = `{${BOT_ID}}`;
@@ -823,14 +825,23 @@ export class AppStudioPluginImpl {
         manifest.icons.outline && !manifest.icons.outline.startsWith("https://")
           ? (await fs.readFile(`${appDirectory}/${manifest.icons.outline}`)).toString("base64")
           : undefined;
-      await AppStudioClient.updateApp(
-        remoteTeamsAppId!,
-        appDefinition,
-        appStudioToken!,
-        undefined,
-        colorIconContent,
-        outlineIconContent
-      );
+      try {
+        await AppStudioClient.updateApp(
+          remoteTeamsAppId!,
+          appDefinition,
+          appStudioToken!,
+          undefined,
+          colorIconContent,
+          outlineIconContent
+        );
+      } catch (e) {
+        if (e.name === 404) {
+          throw AppStudioResultFactory.UserError(
+            AppStudioError.TeamsAppNotFoundError.name,
+            AppStudioError.TeamsAppNotFoundError.message(remoteTeamsAppId!)
+          );
+        }
+      }
 
       // Build Teams App package
       // Platforms will be checked in buildTeamsAppPackage(ctx)

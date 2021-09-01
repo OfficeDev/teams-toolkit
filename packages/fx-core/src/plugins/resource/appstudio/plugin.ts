@@ -242,7 +242,7 @@ export class AppStudioPluginImpl {
       }
       if (manifest.composeExtensions !== undefined && manifest.composeExtensions.length > 0) {
         for (let index = 0; index < manifest.composeExtensions.length; ++index) {
-          manifest.bots[index].botId = `{${BOT_ID}}`;
+          manifest.composeExtensions[index].botId = `{${BOT_ID}}`;
         }
       }
     }

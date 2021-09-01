@@ -16,9 +16,6 @@ import {
 import { EnvConfig } from "../schemas";
 import { Context, EnvProfile, LocalSettings } from "./types";
 
-// Will check this with chaoyi.
-export type ResourceTemplate = unknown;
-
 export interface SolutionPlugin {
   name: string;
 

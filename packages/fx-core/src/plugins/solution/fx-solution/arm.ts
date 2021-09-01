@@ -248,13 +248,19 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
             2
           )}`
         );
-        failedDeployments.push(deployment.name!);
+        if (deployment.name !== deploymentName) {
+          failedDeployments.push(deployment.name + " module");
+        }
       }
     });
+
+    if (failedDeployments.length === 0) {
+      failedDeployments.push(deploymentName + " module");
+    }
     const returnError = new Error(
       `resource deployments (${failedDeployments.join(
         ", "
-      )}) failed. Please refer to output channel for more error details.`
+      )}) for your project failed. Please refer to output channel for more error details.`
     );
     return err(returnUserError(returnError, "Solution", "ArmDeploymentFailed"));
   }

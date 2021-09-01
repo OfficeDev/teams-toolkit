@@ -3,7 +3,7 @@
 "use strict";
 
 import { UserInteraction } from "../qm/ui";
-import { Inputs, ProjectSettings } from "../types";
+import { Inputs, Json, ProjectSettings } from "../types";
 import { CryptoProvider, LogProvider, TelemetryReporter } from "../utils";
 
 export type PluginName = string;
@@ -37,3 +37,5 @@ export type SolutionInputs = {
 
 export type ProvisionInputs = Inputs & SolutionInputs;
 export type DeploymentInputs = Inputs & SolutionInputs;
+
+export type EnvProfile = Json;

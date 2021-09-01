@@ -228,7 +228,7 @@ jobs:
             if [ -f Microsoft.TeamsFx.SimpleAuth_*.zip ]; then
               cp Microsoft.TeamsFx.SimpleAuth_*.zip packages/fx-core/templates/plugins/resource/simpleauth/SimpleAuth.zip
             else
-              ./.github/scripts/downloadSimpleAuth.ps1
+              ./.github/scripts/download-simpleauth.ps1
             fi
       - name: publish alpha simpleauth to github release page
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'simpleauth') && github.ref == 'refs/heads/dev' }}

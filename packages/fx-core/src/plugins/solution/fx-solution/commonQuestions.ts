@@ -124,9 +124,8 @@ export async function askResourceGroupInfo(
   rmClient: ResourceManagementClient,
   inputs: Inputs,
   ui: UserInteraction,
-  appName: string
+  defaultResourceGroupName: string
 ): Promise<Result<ResourceGroupInfo, FxError>> {
-  const defaultResourceGroupName = `${appName.replace(" ", "_")}-rg`;
   if (!isMultiEnvEnabled()) {
     return ok({
       createNewResourceGroup: true,
@@ -268,6 +267,9 @@ async function askCommonQuestions(
     .get(GLOBAL_CONFIG)
     ?.get(RESOURCE_GROUP_NAME);
   const resourceGroupLocationFromProfile = ctx.envInfo.profile.get(GLOBAL_CONFIG)?.get(LOCATION);
+  const defaultResourceGroupName = `${appName.replace(" ", "_")}${
+    isMultiEnvEnabled() ? "-" + ctx.envInfo.envName : ""
+  }-rg`;
   let resourceGroupInfo: ResourceGroupInfo;
   if (resourceGroupNameFromEnvConfig) {
     const checkRes = await rmClient.resourceGroups.checkExistence(resourceGroupNameFromEnvConfig);
@@ -308,7 +310,7 @@ async function askCommonQuestions(
       rmClient,
       ctx.answers,
       ctx.ui,
-      appName
+      defaultResourceGroupName
     );
     if (resourceGroupInfoResult.isErr()) {
       return err(resourceGroupInfoResult.error);
@@ -318,7 +320,7 @@ async function askCommonQuestions(
     // fall back to default values when user interaction is not available
     resourceGroupInfo = {
       createNewResourceGroup: true,
-      name: `${appName.replace(" ", "_")}-rg`,
+      name: defaultResourceGroupName,
       location: DefaultResourceGroupLocation,
     };
   }

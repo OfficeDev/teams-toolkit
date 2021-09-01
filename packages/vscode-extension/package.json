@@ -215,6 +215,26 @@
         {
           "command": "fx-extension.migrateV1Project",
           "when": "fx-extension.v1Project"
+        },
+        {
+          "command": "fx-extension.addEnvironment",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.viewEnvironment",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.viewEnvironmentWithIcon",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.activateEnvironment",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.activateEnvironmentWithIcon",
+          "when": "false"
         }
       ]
     },

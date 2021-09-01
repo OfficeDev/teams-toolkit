@@ -95,8 +95,12 @@ describe("Solution migrate()", async () => {
 
   it("should succeed if projectSettings, solution settings and v1 capability are provided, language is javascript", async () => {
     mocker.stub(fs, "pathExists").callsFake((path: PathLike) => {
+      if (path.toString().includes("README")) {
+        return true;
+      }
       return false;
     });
+    mocker.stub(fs, "copy").callsFake(() => {});
     fileContent.clear();
     const solution = new TeamsAppSolution();
     cleanPlugins(solution, mocker);
@@ -125,6 +129,7 @@ describe("Solution migrate()", async () => {
     mocker.stub(fs, "pathExists").callsFake((path: PathLike) => {
       return true;
     });
+    mocker.stub(fs, "copy").callsFake(() => {});
     fileContent.clear();
     const solution = new TeamsAppSolution();
     cleanPlugins(solution, mocker);

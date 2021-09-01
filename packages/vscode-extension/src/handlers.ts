@@ -42,6 +42,7 @@ import {
   Correlator,
   getAppDirectory,
   environmentManager,
+  isMigrateFromV1Project,
 } from "@microsoft/teamsfx-core";
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -206,7 +207,9 @@ export async function migrateV1ProjectHandler(args?: any[]): Promise<Result<null
     TelemetryEvent.MigrateV1ProjectStart,
     getTriggerFromProperty(args)
   );
-  return await runCommand(Stage.migrateV1);
+  const result = await runCommand(Stage.migrateV1);
+  await openMarkdownHandler();
+  return result;
 }
 
 export async function selectAndDebugHandler(args?: any[]): Promise<Result<null, FxError>> {
@@ -567,7 +570,9 @@ async function openMarkdownHandler() {
     const workspaceFolder = workspace.workspaceFolders[0];
     const workspacePath: string = workspaceFolder.uri.fsPath;
     let targetFolder: string | undefined;
-    if (await isSPFxProject(workspacePath)) {
+    if (await isMigrateFromV1Project(workspacePath)) {
+      targetFolder = workspacePath;
+    } else if (await isSPFxProject(workspacePath)) {
       targetFolder = `${workspacePath}/SPFx`;
     } else {
       const tabFolder = await commonUtils.getProjectRoot(

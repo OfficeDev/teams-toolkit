@@ -399,7 +399,7 @@ export class TeamsAppSolution implements Solution {
       .capabilities;
     const azureResources = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
       .azureResources;
-    await scaffoldReadmeAndLocalSettings(capabilities, azureResources, ctx.root);
+    await scaffoldReadmeAndLocalSettings(capabilities, azureResources, ctx.root, true);
 
     ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.Migrate, {
       [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,

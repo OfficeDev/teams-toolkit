@@ -94,11 +94,11 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
 export function createV1CapabilityQuestion(): SingleSelectQuestion {
   return {
     name: AzureSolutionQuestionNames.V1Capability,
-    title: "Select capabilities",
+    title: "Select capability",
     type: "singleSelect",
     staticOptions: [TabOptionItem, BotOptionItem, MessageExtensionItem],
     default: TabOptionItem.id,
-    placeholder: "Select 1 capability",
+    placeholder: "Select the same capability as your existing project",
     validation: { minItems: 1 },
   };
 }

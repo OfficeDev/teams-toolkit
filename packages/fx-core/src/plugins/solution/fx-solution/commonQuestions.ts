@@ -17,6 +17,7 @@ import {
   Inputs,
   UserInteraction,
   OptionItem,
+  LogProvider,
 } from "@microsoft/teamsfx-api";
 import { GLOBAL_CONFIG, LOCATION, RESOURCE_GROUP_NAME, SolutionError } from "./constants";
 import { v4 as uuidv4 } from "uuid";
@@ -30,6 +31,8 @@ import {
   QuestionSelectResourceGroup,
 } from "../../../core/question";
 import { desensitize } from "../../../core/middleware/questionModel";
+import { ResourceGroupsCreateOrUpdateResponse } from "@azure/arm-resources/esm/models";
+import { Solution } from "@azure/arm-appservice/esm/models/mappers";
 
 export type AzureSubscription = {
   displayName: string;
@@ -320,23 +323,11 @@ async function askCommonQuestions(
     };
   }
   if (resourceGroupInfo.createNewResourceGroup) {
-    const response = await rmClient.resourceGroups.createOrUpdate(resourceGroupInfo.name, {
-      location: resourceGroupInfo.location,
-    });
-
-    if (response.name === undefined) {
-      return err(
-        returnSystemError(
-          new Error(`Failed to create resource group ${resourceGroupInfo.name}`),
-          "Solution",
-          SolutionError.FailedToCreateResourceGroup
-        )
-      );
+    const maybeRgName = await createNewResourceGroup(rmClient, resourceGroupInfo, ctx.logProvider);
+    if (maybeRgName.isErr()) {
+      return err(maybeRgName.error);
     }
-    resourceGroupInfo.name = response.name;
-    ctx.logProvider?.info(
-      `[${PluginDisplayName.Solution}] askCommonQuestions - resource group:'${resourceGroupInfo.name}' created!`
-    );
+    resourceGroupInfo.name = maybeRgName.value;
   }
   commonQuestions.resourceGroupName = resourceGroupInfo.name;
   commonQuestions.location = resourceGroupInfo.location;
@@ -412,4 +403,44 @@ export async function fillInCommonQuestions(
     return ok(config);
   }
   return result.map((_) => config);
+}
+
+async function createNewResourceGroup(
+  rmClient: ResourceManagementClient,
+  rgInfo: ResourceGroupInfo,
+  logProvider?: LogProvider
+): Promise<Result<string, FxError>> {
+  let response: ResourceGroupsCreateOrUpdateResponse;
+  try {
+    response = await rmClient.resourceGroups.createOrUpdate(rgInfo.name, {
+      location: rgInfo.location,
+    });
+  } catch (e) {
+    let errMsg: string;
+    if (e instanceof Error) {
+      errMsg = `Failed to create resource group ${rgInfo.name} due to ${e.name}:${e.message}`;
+    } else {
+      errMsg = `Failed to create resource group ${
+        rgInfo.name
+      } due to unknown error ${JSON.stringify(e)}`;
+    }
+
+    return err(
+      returnUserError(new Error(errMsg), "Solution", SolutionError.FailedToCreateResourceGroup)
+    );
+  }
+
+  if (response.name === undefined) {
+    return err(
+      returnSystemError(
+        new Error(`Failed to create resource group ${rgInfo.name}`),
+        "Solution",
+        SolutionError.FailedToCreateResourceGroup
+      )
+    );
+  }
+  logProvider?.info(
+    `[${PluginDisplayName.Solution}] askCommonQuestions - resource group:'${response.name}' created!`
+  );
+  return ok(response.name);
 }

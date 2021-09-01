@@ -50,7 +50,7 @@ jobs:
           retry_on: error
           shell: pwsh
           command: |
-            ./.github/scripts/downloadSimpleAuth.ps1
+            ./.github/scripts/download-simpleauth.sh
 
       - name: Setup project
         uses: nick-invision/retry@v2

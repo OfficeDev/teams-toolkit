@@ -137,6 +137,8 @@ export interface SolutionPlugin {
    */
   provisionLocalResource?: (
     ctx: Context,
+    inputs: Inputs,
+    localSettings: LocalSettings,
     tokenProvider: TokenProvider
   ) => Promise<Result<LocalSettings, FxError>>;
 
@@ -151,9 +153,5 @@ export interface SolutionPlugin {
   /**
    * execute user customized task, for example `Add Resource`, `Add Capabilities`, etc
    */
-  executeUserTask?: (
-    ctx: Context,
-    func: Func,
-    inputs: Inputs,
-  ) => Promise<Result<unknown, FxError>>;
+  executeUserTask?: (ctx: Context, func: Func, inputs: Inputs) => Promise<Result<unknown, FxError>>;
 }

@@ -331,8 +331,10 @@ export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
       }
     } else if (stage === Stage.provision) result = await core.provisionResources(inputs);
     else if (stage === Stage.deploy) result = await core.deployArtifacts(inputs);
-    else if (stage === Stage.debug) result = await core.localDebug(inputs);
-    else if (stage === Stage.publish) result = await core.publishApplication(inputs);
+    else if (stage === Stage.debug) {
+      inputs.ignoreEnvInfo = true;
+      result = await core.localDebug(inputs);
+    } else if (stage === Stage.publish) result = await core.publishApplication(inputs);
     else if (stage === Stage.createEnv) {
       result = await core.createEnv(inputs);
     } else {

@@ -62,20 +62,6 @@ export function EnvInfoLoaderMW(isMultiEnvEnabled: boolean): Middleware {
 
     const core = ctx.self as FxCore;
 
-    if (inputs.ignoreEnvInfo === true) {
-      // load default env
-      const result = await loadSolutionContext(core.tools, inputs, ctx.projectSettings);
-      if (result.isErr()) {
-        ctx.result = err(result.error);
-        return;
-      }
-
-      ctx.solutionContext = result.value;
-
-      await next();
-      return;
-    }
-
     let targetEnvName: string | undefined;
     if (isMultiEnvEnabled) {
       if (inputs.env) {
@@ -98,7 +84,8 @@ export function EnvInfoLoaderMW(isMultiEnvEnabled: boolean): Middleware {
         inputs,
         ctx.projectSettings,
         ctx.projectIdMissing,
-        targetEnvName
+        targetEnvName,
+        inputs.ignoreEnvInfo
       );
       if (result.isErr()) {
         ctx.result = err(result.error);
@@ -106,7 +93,6 @@ export function EnvInfoLoaderMW(isMultiEnvEnabled: boolean): Middleware {
       }
 
       ctx.solutionContext = result.value;
-
       await next();
     }
   };
@@ -121,7 +107,8 @@ export async function loadSolutionContext(
   inputs: Inputs,
   projectSettings: ProjectSettings,
   projectIdMissing?: boolean,
-  targetEnvName?: string
+  targetEnvName?: string,
+  ignoreEnvInfo = false
 ): Promise<Result<SolutionContext, FxError>> {
   if (!inputs.projectPath) {
     return err(NoProjectOpenedError());
@@ -136,10 +123,20 @@ export async function loadSolutionContext(
     projectIdMissing ? undefined : cryptoProvider
   );
 
+  let envInfo: EnvInfo;
   if (envDataResult.isErr()) {
-    return err(envDataResult.error);
+    if (ignoreEnvInfo) {
+      // ignore env loading error
+      tools.logProvider.info(
+        `[core:env] failed to load '${targetEnvName}' environment, skipping because ignoreEnvInfo is set to true, error: ${envDataResult.error.message}`
+      );
+      envInfo = newEnvInfo();
+    } else {
+      return err(envDataResult.error);
+    }
+  } else {
+    envInfo = envDataResult.value;
   }
-  const envInfo = envDataResult.value;
 
   // migrate programmingLanguage and defaultFunctionName to project settings if exists in previous env config
   const solutionConfig = envInfo.profile as SolutionConfig;

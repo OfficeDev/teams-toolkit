@@ -6,6 +6,7 @@ import { isMultiEnvEnabled, environmentManager, setActiveEnv } from "@microsoft/
 import * as vscode from "vscode";
 import TreeViewManagerInstance, { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
 import { getActiveEnv } from "./utils/commonUtils";
+import * as StringResources from "./resources/Strings.json";
 
 const showEnvList: Array<string> = [];
 
@@ -39,7 +40,8 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
           contextValue: "environment",
           icon: "symbol-folder",
           isCustom: false,
-          description: item === activeEnv ? "active" : "",
+          description:
+            item === activeEnv ? StringResources.vsc.commandsTreeViewProvider.acitve : "",
         },
       ]);
     });

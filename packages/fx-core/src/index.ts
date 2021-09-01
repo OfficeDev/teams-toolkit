@@ -9,3 +9,4 @@ export * from "./plugins";
 export * from "./core";
 export * from "./folder";
 export * from "./core/environment";
+export { setActiveEnv } from "./core/middleware/envInfoLoader";

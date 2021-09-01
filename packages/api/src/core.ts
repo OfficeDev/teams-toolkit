@@ -20,6 +20,8 @@ export interface Core {
   removeEnv: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
   switchEnv: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
 
+  activateEnv: (env: string, systemInput: Inputs) => Promise<Result<Void, FxError>>;
+
   /**
    * only for CLI
    */

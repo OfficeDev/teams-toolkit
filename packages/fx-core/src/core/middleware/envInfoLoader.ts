@@ -22,6 +22,7 @@ import {
   InvalidEnvNameError,
   ProjectEnvNotExistError,
   ProjectSettingsUndefinedError,
+  NonActiveEnvError,
 } from "../error";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { LocalCrypto } from "../crypto";
@@ -40,12 +41,9 @@ import { newEnvInfo } from "../tools";
 
 const newTargetEnvNameOption = "+ new environment";
 const lastUsedMark = " (activate)";
-let lastUsedEnvName: string | undefined;
+let activeEnv: string | undefined;
 
-export function EnvInfoLoaderMW(
-  isMultiEnvEnabled: boolean,
-  allowCreateNewEnv: boolean
-): Middleware {
+export function EnvInfoLoaderMW(isMultiEnvEnabled: boolean): Middleware {
   return async (ctx: CoreHookContext, next: NextFunction) => {
     if (shouldIgnored(ctx)) {
       await next();
@@ -81,11 +79,15 @@ export function EnvInfoLoaderMW(
     let targetEnvName: string | undefined;
     if (isMultiEnvEnabled) {
       if (inputs.env) {
-        targetEnvName = await useUserSetEnv(ctx, inputs, allowCreateNewEnv);
+        targetEnvName = await useUserSetEnv(ctx, inputs);
       } else {
-        targetEnvName = await askTargetEnvironment(ctx, inputs, allowCreateNewEnv, lastUsedEnvName);
+        if (activeEnv) {
+          targetEnvName = activeEnv;
+        } else {
+          ctx.result = err(NonActiveEnvError);
+          return;
+        }
       }
-      lastUsedEnvName = targetEnvName ?? lastUsedEnvName;
     } else {
       targetEnvName = environmentManager.getDefaultEnvName();
     }
@@ -108,6 +110,10 @@ export function EnvInfoLoaderMW(
       await next();
     }
   };
+}
+
+export function setActiveEnv(env: string) {
+  activeEnv = env;
 }
 
 export async function loadSolutionContext(
@@ -183,37 +189,31 @@ export function upgradeDefaultFunctionName(
   }
 }
 
-async function askTargetEnvironment(
-  ctx: CoreHookContext,
+export async function askTargetEnvironment(
+  ctx: SolutionContext,
   inputs: Inputs,
-  allowCreateNewEnv: boolean,
   lastUsed?: string
 ): Promise<string | undefined> {
-  const getQuestionRes = await getQuestionsForTargetEnv(inputs, allowCreateNewEnv, lastUsed);
-  const core = ctx.self as FxCore;
+  const getQuestionRes = await getQuestionsForTargetEnv(inputs, lastUsed ?? activeEnv);
   if (getQuestionRes.isErr()) {
-    core.tools.logProvider.error(
+    ctx.logProvider!.error(
       `[core:env] failed to get questions for target environment: ${getQuestionRes.error.message}`
     );
-    ctx.result = err(getQuestionRes.error);
     return undefined;
   }
 
-  core.tools.logProvider.debug(`[core:env] success to get questions for target environment.`);
+  ctx.logProvider!.debug(`[core:env] success to get questions for target environment.`);
 
   const node = getQuestionRes.value;
   if (node) {
-    const res = await traverse(node, inputs, core.tools.ui);
+    const res = await traverse(node, inputs, ctx.ui!);
     if (res.isErr()) {
-      core.tools.logProvider.debug(
-        `[core:env] failed to run question model for target environment.`
-      );
-      ctx.result = err(res.error);
+      ctx.logProvider!.debug(`[core:env] failed to run question model for target environment.`);
       return undefined;
     }
 
     const desensitized = desensitize(node, inputs);
-    core.tools.logProvider.info(
+    ctx.logProvider!.info(
       `[core:env] success to run question model for target environment, answers:${JSON.stringify(
         desensitized
       )}`
@@ -221,13 +221,13 @@ async function askTargetEnvironment(
   }
 
   const targetEnvName = inputs.targetEnvName;
-  if (targetEnvName === newTargetEnvNameOption) {
-    return inputs.newTargetEnvName;
-  } else if (targetEnvName?.endsWith(lastUsedMark)) {
-    return targetEnvName.slice(0, targetEnvName.indexOf(lastUsedMark));
+
+  if (targetEnvName?.endsWith(lastUsedMark)) {
+    activeEnv = targetEnvName.slice(0, targetEnvName.indexOf(lastUsedMark));
   } else {
-    return targetEnvName;
+    activeEnv = targetEnvName;
   }
+  return activeEnv;
 }
 
 export async function askNewEnvironment(
@@ -268,24 +268,13 @@ export async function askNewEnvironment(
   return inputs.newTargetEnvName;
 }
 
-async function useUserSetEnv(
-  ctx: CoreHookContext,
-  inputs: Inputs,
-  allowCreateNewEnv: boolean
-): Promise<string | undefined> {
+async function useUserSetEnv(ctx: CoreHookContext, inputs: Inputs): Promise<string | undefined> {
   const checkEnv = await environmentManager.checkEnvExist(inputs.projectPath!, inputs.env);
   if (checkEnv.isErr()) {
     ctx.result = checkEnv.error;
     return undefined;
   }
   if (checkEnv.value) {
-    return inputs.env;
-  } else if (allowCreateNewEnv) {
-    const match = inputs.env.match(environmentManager.envNameRegex);
-    if (!match) {
-      ctx.result = err(InvalidEnvNameError());
-      return undefined;
-    }
     return inputs.env;
   } else {
     ctx.result = err(ProjectEnvNotExistError(inputs.env));
@@ -295,7 +284,6 @@ async function useUserSetEnv(
 
 async function getQuestionsForTargetEnv(
   inputs: Inputs,
-  allowCreateNewEnv: boolean,
   lastUsed?: string
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (!inputs.projectPath) {
@@ -309,11 +297,7 @@ async function getQuestionsForTargetEnv(
 
   const envList = reOrderEnvironments(envProfilesResult.value, lastUsed);
   const selectEnv = QuestionSelectTargetEnvironment;
-  if (allowCreateNewEnv) {
-    selectEnv.staticOptions = [newTargetEnvNameOption].concat(envList);
-  } else {
-    selectEnv.staticOptions = envList;
-  }
+  selectEnv.staticOptions = envList;
 
   const node = new QTreeNode(selectEnv);
 

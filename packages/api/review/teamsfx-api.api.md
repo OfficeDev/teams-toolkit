@@ -168,6 +168,8 @@ interface Context_2 {
 // @public (undocumented)
 export interface Core {
     // (undocumented)
+    activateEnv: (env: string, systemInput: Inputs) => Promise<Result<Void, FxError>>;
+    // (undocumented)
     buildArtifacts: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
     // (undocumented)
     checkPermission: (systemInputs: Inputs) => Promise<Result<any, FxError>>;
@@ -798,6 +800,8 @@ export interface ProjectConfig {
 
 // @public
 export interface ProjectSettings {
+    // (undocumented)
+    activeEnvironment?: string;
     // (undocumented)
     appName: string;
     // (undocumented)

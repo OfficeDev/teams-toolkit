@@ -124,6 +124,7 @@ import {
   ResourcePermission,
   TeamsAppAdmin,
 } from "../../../common/permissionInterface";
+import { askTargetEnvironment } from "../../../core/middleware/envInfoLoader";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -668,18 +669,42 @@ export class TeamsAppSolution implements Solution {
         username,
         subscriptionName ? subscriptionName : subscriptionId
       );
-      const confirmRes = await ctx.ui?.showMessage(
-        "warn",
-        msg,
-        true,
-        "Provision",
-        "Pricing calculator"
-      );
+      let confirmRes = undefined;
+      if (isMultiEnvEnabled()) {
+        const msgNew = util.format(
+          getStrings().solution.ProvisionConfirmEnvNotice,
+          ctx.projectSettings!.activeEnvironment,
+          username,
+          subscriptionName ? subscriptionName : subscriptionId
+        );
+        confirmRes = await ctx.ui?.showMessage(
+          "warn",
+          msgNew,
+          true,
+          "Provision",
+          "Switch environment",
+          "Pricing calculator"
+        );
+      } else {
+        confirmRes = await ctx.ui?.showMessage(
+          "warn",
+          msg,
+          true,
+          "Provision",
+          "Pricing calculator"
+        );
+      }
       const confirm = confirmRes?.isOk() ? confirmRes.value : undefined;
 
       if (confirm !== "Provision") {
         if (confirm === "Pricing calculator") {
           ctx.ui?.openUrl("https://azure.microsoft.com/en-us/pricing/calculator/");
+        } else if (confirm === "Switch environment") {
+          const envName = await askTargetEnvironment(ctx as any, ctx.answers!);
+          if (envName) {
+            ctx.projectSettings!.activeEnvironment = envName;
+            ctx.ui?.showMessage("info", `[${envName}] is activated.`, false);
+          }
         }
         return err(
           returnUserError(

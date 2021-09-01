@@ -68,6 +68,7 @@ import {
   FunctionRouterError,
   InvalidInputError,
   MigrateNotImplementError,
+  NonExistEnvNameError,
   ProjectEnvAlreadyExistError,
   ProjectFolderExistError,
   ProjectFolderNotExistError,
@@ -92,6 +93,7 @@ import { globalStateUpdate } from "../common/globalState";
 import {
   askNewEnvironment,
   EnvInfoLoaderMW,
+  loadSolutionContext,
   upgradeDefaultFunctionName,
   upgradeProgrammingLanguage,
 } from "./middleware/envInfoLoader";
@@ -423,7 +425,7 @@ export class FxCore implements Core {
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(isMultiEnvEnabled(), true),
+    EnvInfoLoaderMW(isMultiEnvEnabled()),
     SolutionLoaderMW(defaultSolutionLoader),
     QuestionModelMW,
     ContextInjecterMW,
@@ -439,7 +441,7 @@ export class FxCore implements Core {
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(isMultiEnvEnabled(), false),
+    EnvInfoLoaderMW(isMultiEnvEnabled()),
     SolutionLoaderMW(defaultSolutionLoader),
     QuestionModelMW,
     ContextInjecterMW,
@@ -456,7 +458,7 @@ export class FxCore implements Core {
     ConcurrentLockerMW,
     ProjectUpgraderMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(false, false),
+    EnvInfoLoaderMW(false),
     LocalSettingsLoaderMW,
     SolutionLoaderMW(defaultSolutionLoader),
     QuestionModelMW,
@@ -483,7 +485,7 @@ export class FxCore implements Core {
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(isMultiEnvEnabled(), false),
+    EnvInfoLoaderMW(isMultiEnvEnabled()),
     SolutionLoaderMW(defaultSolutionLoader),
     QuestionModelMW,
     ContextInjecterMW,
@@ -499,7 +501,7 @@ export class FxCore implements Core {
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(isMultiEnvEnabled(), false),
+    EnvInfoLoaderMW(isMultiEnvEnabled()),
     LocalSettingsLoaderMW,
     SolutionLoaderMW(defaultSolutionLoader),
     QuestionModelMW,
@@ -528,7 +530,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(false, false),
+    EnvInfoLoaderMW(false),
     SolutionLoaderMW(defaultSolutionLoader),
     ContextInjecterMW,
     EnvInfoWriterMW(),
@@ -557,7 +559,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(false, false),
+    EnvInfoLoaderMW(false),
     SolutionLoaderMW(defaultSolutionLoader),
     ContextInjecterMW,
     EnvInfoWriterMW(),
@@ -581,7 +583,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(isMultiEnvEnabled(), false),
+    EnvInfoLoaderMW(isMultiEnvEnabled()),
     LocalSettingsLoaderMW,
     ContextInjecterMW,
   ])
@@ -599,7 +601,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(false, false),
+    EnvInfoLoaderMW(false),
     ContextInjecterMW,
     ProjectSettingsWriterMW,
     EnvInfoWriterMW(),
@@ -619,7 +621,7 @@ export class FxCore implements Core {
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(isMultiEnvEnabled(), false),
+    EnvInfoLoaderMW(isMultiEnvEnabled()),
     SolutionLoaderMW(defaultSolutionLoader),
     QuestionModelMW,
     ContextInjecterMW,
@@ -635,7 +637,7 @@ export class FxCore implements Core {
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(isMultiEnvEnabled(), false),
+    EnvInfoLoaderMW(isMultiEnvEnabled()),
     SolutionLoaderMW(defaultSolutionLoader),
     QuestionModelMW,
     ContextInjecterMW,
@@ -651,7 +653,7 @@ export class FxCore implements Core {
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(isMultiEnvEnabled(), false),
+    EnvInfoLoaderMW(isMultiEnvEnabled()),
     SolutionLoaderMW(defaultSolutionLoader),
     QuestionModelMW,
     ContextInjecterMW,
@@ -807,7 +809,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(false, false),
+    EnvInfoLoaderMW(false),
     ContextInjecterMW,
     EnvInfoWriterMW(),
   ])
@@ -822,7 +824,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(false, false),
+    EnvInfoLoaderMW(false),
     ContextInjecterMW,
     EnvInfoWriterMW(),
   ])
@@ -905,6 +907,50 @@ export class FxCore implements Core {
       await getParameterJson(solutionContext);
     }
 
+    return ok(Void);
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ProjectSettingsLoaderMW,
+    SolutionLoaderMW(defaultSolutionLoader),
+    ContextInjecterMW,
+    ProjectSettingsWriterMW,
+  ])
+  async activateEnv(
+    env: string,
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
+    if (!isMultiEnvEnabled() || !ctx!.projectSettings) {
+      return ok(Void);
+    }
+
+    const envConfigs = await environmentManager.listEnvConfigs(inputs.projectPath!);
+
+    if (envConfigs.isErr()) {
+      return envConfigs;
+    }
+
+    if (envConfigs.isErr() && envConfigs.value.indexOf(env) < 0) {
+      return err(NonExistEnvNameError(env));
+    }
+
+    ctx!.projectSettings.activeEnvironment = env;
+    const core = ctx!.self as FxCore;
+    const solutionContext = await loadSolutionContext(
+      core.tools,
+      inputs,
+      ctx!.projectSettings,
+      ctx!.projectIdMissing,
+      env
+    );
+
+    if (!solutionContext.isErr()) {
+      ctx!.solutionContext = solutionContext.value;
+    }
+
+    this.tools.ui.showMessage("info", `[${env}] is activated.`, false);
     return ok(Void);
   }
 

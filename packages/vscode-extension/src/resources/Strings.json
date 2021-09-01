@@ -63,7 +63,8 @@
       "reportIssuesDescription": "Report any issues and let us know your feedback",
       "teamsDevPortalTitle": "Go To Developer Portal",
       "teamsDevPortalTitleNew": "Developer Portal for Teams",
-      "teamsDevPortalDescription": "Manage your Teams app registration and access more tools"
+      "teamsDevPortalDescription": "Manage your Teams app registration and access more tools",
+      "acitve": "(Active)"
     },
     "handlers": {
       "concurrentTriggerTask": "Task '%s' is still running. Wait for it to complete before starting another task.",

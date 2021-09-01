@@ -279,7 +279,9 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<null, Fx
 
 export async function provisionHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ProvisionStart, getTriggerFromProperty(args));
-  return await runCommand(Stage.provision);
+  const result = await runCommand(Stage.provision);
+  registerEnvTreeHandler();
+  return result;
 }
 
 export async function deployHandler(args?: any[]): Promise<Result<null, FxError>> {
@@ -757,9 +759,25 @@ export async function viewEnvironment(env: string): Promise<Result<Void, FxError
   return ok(Void);
 }
 
-export async function activateEnvironment(args?: any[]): Promise<Result<Void, FxError>> {
-  // todo add acitvate logic
-  return ok(Void);
+export async function activateEnvironment(env: string): Promise<Result<Void, FxError>> {
+  // const eventName = ExtTelemetry.stageToEvent(stage);
+  let result: Result<any, FxError> = ok(Void);
+  try {
+    const checkCoreRes = checkCoreNotEmpty();
+    if (checkCoreRes.isErr()) {
+      throw checkCoreRes.error;
+    }
+
+    const inputs: Inputs = getSystemInputs();
+
+    result = await core.activateEnv(env, inputs);
+    registerEnvTreeHandler();
+  } catch (e) {
+    result = wrapError(e);
+  }
+  // await processResult(eventName, result);
+
+  return result;
 }
 
 export async function openM365AccountHandler() {

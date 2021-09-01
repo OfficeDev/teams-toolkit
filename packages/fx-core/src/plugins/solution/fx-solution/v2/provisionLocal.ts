@@ -94,7 +94,7 @@ export async function provisionLocalResource(
     .map((plugin) => {
       return {
         pluginName: `${plugin.name}`,
-        taskName: "provisionLocalResource",
+        taskName: "configureLocalResource",
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         thunk: () => plugin.configureLocalResource!(ctx, inputs, localSettings, tokenProvider),
       };

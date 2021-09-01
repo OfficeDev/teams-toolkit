@@ -10,7 +10,6 @@ import {
   Result,
   PluginContext,
   TeamsAppManifest,
-  Platform,
   LogProvider,
   ProjectSettings,
   IComposeExtension,
@@ -442,22 +441,15 @@ export class AppStudioPluginImpl {
 
   public async buildTeamsAppPackage(ctx: PluginContext): Promise<string> {
     let manifestString: string | undefined = undefined;
-    let appDirectory: string;
-    let zipFileName: string;
 
     if (!ctx.envInfo?.envName) {
       throw new Error("Failed to get target environment name from plugin context.");
     }
 
-    if (ctx.answers?.platform === Platform.VS) {
-      appDirectory = ctx.answers![Constants.PUBLISH_PATH_QUESTION] as string;
-      zipFileName = `${appDirectory}/appPackage.zip`;
-    } else {
-      appDirectory = await getAppDirectory(ctx.root);
-      zipFileName = isMultiEnvEnabled()
-        ? `${ctx.root}/${AppPackageFolderName}/appPackage.${ctx.envInfo.envName}.zip`
-        : (zipFileName = `${ctx.root}/${AppPackageFolderName}/appPackage.zip`);
-    }
+    const appDirectory = await getAppDirectory(ctx.root);
+    const zipFileName: string = isMultiEnvEnabled()
+      ? `${ctx.root}/${AppPackageFolderName}/appPackage.${ctx.envInfo.envName}.zip`
+      : `${ctx.root}/${AppPackageFolderName}/appPackage.zip`;
 
     if (this.isSPFxProject(ctx)) {
       manifestString = (await fs.readFile(await this.getManifestTemplatePath(ctx.root))).toString();
@@ -525,10 +517,7 @@ export class AppStudioPluginImpl {
       await fs.copyFile(zipFileName, `${ctx.root}/SPFx/teams/TeamsSPFxApp.zip`);
     }
 
-    if (
-      appDirectory === `${ctx.root}/.${ConfigFolderName}` &&
-      ctx.answers?.platform !== Platform.VS
-    ) {
+    if (appDirectory === `${ctx.root}/.${ConfigFolderName}`) {
       await fs.ensureDir(path.join(ctx.root, `${AppPackageFolderName}`));
 
       const formerZipFileName = `${appDirectory}/appPackage.zip`;
@@ -560,45 +549,20 @@ export class AppStudioPluginImpl {
   }
 
   public async publish(ctx: PluginContext): Promise<{ name: string; id: string; update: boolean }> {
-    let appDirectory: string | undefined = undefined;
     let manifest: TeamsAppManifest | undefined;
 
-    // For vs platform, read the local manifest.json file
-    // For cli/vsc platform, get manifest from ctx
-    if (ctx.answers?.platform === Platform.VS) {
-      appDirectory = ctx.answers![Constants.PUBLISH_PATH_QUESTION] as string;
-      const manifestFile = `${appDirectory}/${Constants.MANIFEST_FILE}`;
-      try {
-        const manifestFileState = await fs.stat(manifestFile);
-        if (manifestFileState.isFile()) {
-          const manifestString = (await fs.readFile(manifestFile)).toString();
-          manifest = JSON.parse(manifestString);
-        } else {
-          throw AppStudioResultFactory.SystemError(
-            AppStudioError.FileNotFoundError.name,
-            AppStudioError.FileNotFoundError.message(manifestFile)
-          );
-        }
-      } catch (error) {
-        throw AppStudioResultFactory.SystemError(
-          AppStudioError.FileNotFoundError.name,
-          AppStudioError.FileNotFoundError.message(manifestFile)
-        );
-      }
+    const appDirectory = await getAppDirectory(ctx.root);
+    const manifestTpl: TeamsAppManifest = await fs.readJSON(
+      await this.getManifestTemplatePath(ctx.root)
+    );
+    if (this.isSPFxProject(ctx)) {
+      manifest = manifestTpl;
     } else {
-      appDirectory = await getAppDirectory(ctx.root);
-      const manifestTpl: TeamsAppManifest = await fs.readJSON(
-        await this.getManifestTemplatePath(ctx.root)
-      );
-      if (this.isSPFxProject(ctx)) {
-        manifest = manifestTpl;
+      const fillinRes = await this.getAppDefinitionAndManifest(ctx, false);
+      if (fillinRes.isOk()) {
+        manifest = fillinRes.value[1];
       } else {
-        const fillinRes = await this.getAppDefinitionAndManifest(ctx, false);
-        if (fillinRes.isOk()) {
-          manifest = fillinRes.value[1];
-        } else {
-          throw fillinRes.error;
-        }
+        throw fillinRes.error;
       }
     }
 
@@ -613,21 +577,15 @@ export class AppStudioPluginImpl {
     const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
     const existApp = await AppStudioClient.getAppByTeamsAppId(manifest.id, appStudioToken!);
     if (existApp) {
-      // For VS Code/CLI platform, let the user confirm before publish
-      // For VS platform, do not enable confirm
       let executePublishUpdate = false;
-      if (ctx.answers?.platform === Platform.VS) {
-        executePublishUpdate = true;
-      } else {
-        let description = `The app ${existApp.displayName} has already been submitted to tenant App Catalog.\nStatus: ${existApp.publishingState}\n`;
-        if (existApp.lastModifiedDateTime) {
-          description =
-            description + `Last Modified: ${existApp.lastModifiedDateTime?.toLocaleString()}\n`;
-        }
-        description = description + "Do you want to submit a new update?";
-        const res = await ctx.ui?.showMessage("warn", description, true, "Confirm");
-        if (res?.isOk() && res.value === "Confirm") executePublishUpdate = true;
+      let description = `The app ${existApp.displayName} has already been submitted to tenant App Catalog.\nStatus: ${existApp.publishingState}\n`;
+      if (existApp.lastModifiedDateTime) {
+        description =
+          description + `Last Modified: ${existApp.lastModifiedDateTime?.toLocaleString()}\n`;
       }
+      description = description + "Do you want to submit a new update?";
+      const res = await ctx.ui?.showMessage("warn", description, true, "Confirm");
+      if (res?.isOk() && res.value === "Confirm") executePublishUpdate = true;
 
       if (executePublishUpdate) {
         const appId = await this.beforePublish(ctx, appDirectory, JSON.stringify(manifest), true);
@@ -806,12 +764,7 @@ export class AppStudioPluginImpl {
       }
 
       // Update App in App Studio
-      let remoteTeamsAppId: string | undefined = undefined;
-      if (ctx.answers?.platform === Platform.VS) {
-        remoteTeamsAppId = ctx.answers![Constants.REMOTE_TEAMS_APP_ID] as string;
-      } else {
-        remoteTeamsAppId = this.getTeamsAppId(ctx, false);
-      }
+      const remoteTeamsAppId = this.getTeamsAppId(ctx, false);
       await publishProgress?.next(
         `Updating app definition for app ${remoteTeamsAppId} in app studio`
       );
@@ -827,7 +780,7 @@ export class AppStudioPluginImpl {
           : undefined;
       try {
         await AppStudioClient.updateApp(
-          remoteTeamsAppId!,
+          remoteTeamsAppId,
           appDefinition,
           appStudioToken!,
           undefined,
@@ -838,7 +791,7 @@ export class AppStudioPluginImpl {
         if (e.name === 404) {
           throw AppStudioResultFactory.UserError(
             AppStudioError.TeamsAppNotFoundError.name,
-            AppStudioError.TeamsAppNotFoundError.message(remoteTeamsAppId!)
+            AppStudioError.TeamsAppNotFoundError.message(remoteTeamsAppId)
           );
         }
       }

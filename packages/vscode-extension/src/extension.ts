@@ -22,6 +22,7 @@ import { Correlator, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
 import { enableMigrateV1 } from "./utils/migrateV1";
 import { isTeamsfx } from "./utils/commonUtils";
+import { ConfigFolderName, PublishProfilesFolderName } from "@microsoft/teamsfx-api";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -202,7 +203,9 @@ export async function activate(context: vscode.ExtensionContext) {
   const userDataSelector = {
     language: "plaintext",
     scheme: "file",
-    pattern: "**/.fx/*.userdata",
+    pattern: isMultiEnvEnabled()
+      ? `**/.${ConfigFolderName}/${PublishProfilesFolderName}/*.userdata`
+      : `**/.${ConfigFolderName}/*.userdata`,
   };
   context.subscriptions.push(
     vscode.languages.registerCodeLensProvider(userDataSelector, codelensProvider)

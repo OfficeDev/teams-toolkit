@@ -20,6 +20,7 @@ The following are the steps of how to manually configure a default tab app.
 
 1. Update AAD application
 	*	Go to your application in the [AAD portal](https://azure.microsoft.com/en-us/features/azure-portal/) and find your application.
+		> Note: The application client id can be found in the property `webApplicationInfo.id` of `appPackage/manifest.source.json` or `.archive/appPackage/manifest.json`.
 	*	Under **Manage**, select **Authentication**.
 	*	Change the redirect URI domain to `localhost:3000`. 
 			E.g. `https://contoso.ngrok.io/auth-end` to `https://localhost:3000/auth-end`

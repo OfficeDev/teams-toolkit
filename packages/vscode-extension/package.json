@@ -357,7 +357,7 @@
       {
         "command": "fx-extension.viewEnvironmentWithIcon",
         "title": "View environment",
-        "icon": "$(open-preview)",
+        "icon": "$(file-symlink-directory)",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {

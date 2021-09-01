@@ -672,9 +672,15 @@ export class TeamsAppSolution implements Solution {
       );
       let confirmRes = undefined;
       if (isMultiEnvEnabled()) {
+        const msgNew = util.format(
+          getStrings().solution.ProvisionConfirmEnvNotice,
+          ctx.projectSettings!.activeEnvironment,
+          username,
+          subscriptionName ? subscriptionName : subscriptionId
+        );
         confirmRes = await ctx.ui?.showMessage(
           "warn",
-          msg,
+          msgNew,
           true,
           "Provision",
           "Switch environment",

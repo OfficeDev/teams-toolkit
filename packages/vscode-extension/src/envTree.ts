@@ -39,7 +39,7 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
           contextValue: "environment",
           icon: "symbol-folder",
           isCustom: false,
-          description: item === activeEnv ? "activate" : "",
+          description: item === activeEnv ? "active" : "",
         },
       ]);
     });

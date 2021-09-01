@@ -5,7 +5,6 @@ export class CommonStrings {
   public static readonly DEFAULT_FILE_ENCODING = "utf-8";
 
   // for the use of migrating v1 project
-  public static readonly README_FILE_NAME = "README.md";
   public static readonly NODE_PACKAGE_FOLDER_NAME = "node_modules";
 
   public static readonly APP_SERVICE_PLAN = "App Service plan";

@@ -96,8 +96,7 @@ export class TeamsBotImpl {
   }
 
   private async getAzureAccountCredenial(): Promise<TokenCredentialsBase> {
-    const serviceClientCredentials =
-      await this.ctx?.azureAccountProvider?.getAccountCredentialAsync();
+    const serviceClientCredentials = await this.ctx?.azureAccountProvider?.getAccountCredentialAsync();
     if (!serviceClientCredentials) {
       throw new PreconditionError(Messages.FailToGetAzureCreds, [Messages.TryLoginAzure]);
     }
@@ -509,13 +508,12 @@ export class TeamsBotImpl {
         });
       }
 
-      const siteEnvelope: appService.WebSiteManagementModels.Site =
-        LanguageStrategy.getSiteEnvelope(
-          this.config.scaffold.programmingLanguage!,
-          this.config.provision.appServicePlan!,
-          this.config.provision.location!,
-          appSettings
-        );
+      const siteEnvelope: appService.WebSiteManagementModels.Site = LanguageStrategy.getSiteEnvelope(
+        this.config.scaffold.programmingLanguage!,
+        this.config.provision.appServicePlan!,
+        this.config.provision.location!,
+        appSettings
+      );
 
       if (this.config.provision.identityName) {
         siteEnvelope.identity = {
@@ -727,7 +725,6 @@ export class TeamsBotImpl {
         { fileName: ArchiveFolderName, recursive: false },
         { fileName: ArchiveLogFileName, recursive: false },
         { fileName: AppPackageFolderName, recursive: false },
-        { fileName: CommonStrings.README_FILE_NAME, recursive: false },
         { fileName: CommonStrings.NODE_PACKAGE_FOLDER_NAME, recursive: true },
       ];
 

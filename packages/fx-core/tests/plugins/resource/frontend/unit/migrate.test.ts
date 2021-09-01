@@ -36,6 +36,12 @@ describe("FrontendMigrateV1Project", () => {
       { method: "migrateV1Project", namespace: "fx-resource-frontend-hosting" },
       pluginContext
     );
-    chai.assert.deepEqual(copiedFiles, [path.join(pluginContext.root, "tabs", "src")]);
+    chai.assert.deepEqual(
+      copiedFiles.sort(),
+      [
+        path.join(pluginContext.root, "tabs", "src"),
+        path.join(pluginContext.root, "tabs", "README.md"),
+      ].sort()
+    );
   });
 });

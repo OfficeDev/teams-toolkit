@@ -67,7 +67,6 @@ export class FrontendPathInfo {
     FrontendPathInfo.NodePackageFolderName,
     FrontendPathInfo.TabDeploymentFolderName,
   ];
-  static ReadmeFileName = "README.md";
 }
 
 export class DependentPluginInfo {

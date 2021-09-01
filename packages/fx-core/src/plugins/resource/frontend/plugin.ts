@@ -344,7 +344,6 @@ export class FrontendPluginImpl {
         { fileName: ArchiveFolderName, recursive: false },
         { fileName: ArchiveLogFileName, recursive: false },
         { fileName: AppPackageFolderName, recursive: false },
-        { fileName: FrontendPathInfo.ReadmeFileName, recursive: false },
         { fileName: FrontendPathInfo.NodePackageFolderName, recursive: true },
       ];
 

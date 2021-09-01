@@ -34,9 +34,3 @@ export class FeatureFlagName {
   static readonly ArmSupport = "TEAMSFX_ARM_SUPPORT";
   static readonly BicepEnvCheckerEnable = "TEAMSFX_BICEP_ENV_CHECKER_ENABLE";
 }
-
-export class ArmDeploymentStatus {
-  static readonly Succeeded = "Succeeded";
-  static readonly Failed = "Failed";
-  static readonly Running = "Running";
-}

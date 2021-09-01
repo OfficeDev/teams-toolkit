@@ -20,7 +20,7 @@ import { format } from "util";
 import { compileHandlebarsTemplateString, getStrings } from "../../../common";
 import path from "path";
 import * as fs from "fs-extra";
-import { ArmDeploymentStatus, ConstantString, PluginDisplayName } from "../../../common/constants";
+import { ConstantString, PluginDisplayName } from "../../../common/constants";
 import {
   Executor,
   CryptoDataMatchers,
@@ -114,67 +114,27 @@ type DeployContext = {
 
 async function pollDeploymentStatus(deployCtx: DeployContext) {
   while (!deployCtx.finished) {
-    const deployments = await deployCtx.client.deployments.listByResourceGroup(
-      deployCtx.resourceGroupName
-    );
-    const status = extractDeploymentStatus(deployCtx, deployments);
     deployCtx.ctx.logProvider?.info(
       format(
         getStrings().solution.DeployArmTemplates.PollDeploymentStatusNotice,
         PluginDisplayName.Solution
       )
     );
-    if (status.get(ArmDeploymentStatus.Running)?.length) {
-      deployCtx.ctx.logProvider?.info(
-        `[${PluginDisplayName.Solution}] Running deployments-> ${status
-          .get(ArmDeploymentStatus.Running)
-          ?.join(",")}`
-      );
-    }
-    if (status.get(ArmDeploymentStatus.Succeeded)?.length) {
-      deployCtx.ctx.logProvider?.info(
-        `[${PluginDisplayName.Solution}] Succedded deployments-> ${status
-          .get(ArmDeploymentStatus.Succeeded)
-          ?.join(",")}`
-      );
-    }
-    if (status.get(ArmDeploymentStatus.Failed)?.length) {
-      deployCtx.ctx.logProvider?.info(
-        `[${PluginDisplayName.Solution}] Failed deployments-> ${status
-          .get(ArmDeploymentStatus.Failed)
-          ?.join(",")}`
-      );
-    }
+    const deployments = await deployCtx.client.deployments.listByResourceGroup(
+      deployCtx.resourceGroupName
+    );
+    deployments.forEach(async (deployment) => {
+      if (
+        deployment.properties?.timestamp &&
+        deployment.properties.timestamp.getTime() > deployCtx.deploymentStartTime
+      ) {
+        deployCtx.ctx.logProvider?.info(
+          `[${PluginDisplayName.Solution}] ${deployment.name} -> ${deployment.properties.provisioningState}`
+        );
+      }
+    });
     await waitSeconds(10);
   }
-}
-
-function extractDeploymentStatus(
-  deployCtx: DeployContext,
-  deployments: DeploymentsListByResourceGroupResponse
-): Map<string, string[]> {
-  const status = new Map<string, string[]>([
-    [ArmDeploymentStatus.Running, []],
-    [ArmDeploymentStatus.Failed, []],
-    [ArmDeploymentStatus.Succeeded, []],
-  ]);
-  deployments.forEach((deployment) => {
-    if (
-      deployment.properties?.timestamp &&
-      deployment.properties.timestamp.getTime() > deployCtx.deploymentStartTime &&
-      deployment.name &&
-      deployment.name !== deployCtx.deploymentName
-    ) {
-      if (deployment.properties.provisioningState === ArmDeploymentStatus.Succeeded) {
-        status.get(ArmDeploymentStatus.Succeeded)?.push(deployment.name);
-      } else if (deployment.properties.provisioningState === ArmDeploymentStatus.Failed) {
-        status.get(ArmDeploymentStatus.Failed)?.push(deployment.name);
-      } else {
-        status.get(ArmDeploymentStatus.Running)?.push(deployment.name);
-      }
-    }
-  });
-  return status;
 }
 
 export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result<void, FxError>> {
@@ -269,32 +229,33 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
       )
     );
 
-    let returnError: Error;
-    if (error.message.includes("At least one resource deployment operation failed")) {
-      let errorMessage = "resource deployments failed. ";
-      const deployments = await deployCtx.client.deployments.listByResourceGroup(
-        deployCtx.resourceGroupName
-      );
-      deployments.forEach((deployment) => {
-        if (
-          deployment.properties &&
-          deployment.properties.provisioningState === ArmDeploymentStatus.Failed &&
-          deployment.properties.error &&
-          deployment.properties.timestamp &&
-          deployment.properties.timestamp.getTime() > deployCtx.deploymentStartTime &&
-          deployment.name !== deployCtx.deploymentName
-        ) {
-          if (deployment.properties.error.details?.length) {
-            errorMessage += `(${deployment.name}) code: ${deployment.properties.error.details[0].code}, message: ${deployment.properties.error.details[0].message}.`;
-          } else {
-            errorMessage += `(${deployment.name}) code: ${deployment.properties.error.code}, message: ${deployment.properties.error.message}.`;
-          }
-        }
-      });
-      returnError = new Error(errorMessage);
-    } else {
-      returnError = new Error(`Failed to deploy arm templates to azure. Error: ${error.message}`);
-    }
+    const failedDeployments: string[] = [];
+    const deployments = await deployCtx.client.deployments.listByResourceGroup(
+      deployCtx.resourceGroupName
+    );
+
+    deployments.forEach((deployment) => {
+      if (
+        deployment.properties &&
+        deployment.properties.error &&
+        deployment.properties.timestamp &&
+        deployment.properties.timestamp.getTime() > deployCtx.deploymentStartTime
+      ) {
+        ctx.logProvider?.error(
+          `[${PluginDisplayName.Solution}] ${deployment.name} -> ${JSON.stringify(
+            deployment.properties.error,
+            undefined,
+            2
+          )}`
+        );
+        failedDeployments.push(deployment.name!);
+      }
+    });
+    const returnError = new Error(
+      `resource deployments (${failedDeployments.join(
+        ", "
+      )}) failed. Please refer to output channel for more error details.`
+    );
     return err(returnUserError(returnError, "Solution", "ArmDeploymentFailed"));
   }
 }
@@ -309,10 +270,18 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
   });
   try {
     result = await doDeployArmTemplates(ctx);
-    ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.ArmDeployment, {
-      [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
-      [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
-    });
+    if (result.isOk()) {
+      ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.ArmDeployment, {
+        [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+        [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
+      });
+    } else {
+      sendErrorTelemetryThenReturnError(
+        SolutionTelemetryEvent.ArmDeployment,
+        result.error,
+        ctx.telemetryReporter
+      );
+    }
   } catch (error) {
     result = err(
       returnUserError(
@@ -742,11 +711,6 @@ async function areFoldersEmpty(folderPaths: string[]): Promise<boolean> {
     }
   }
   return isEmpty;
-}
-
-const FeatureFlagNewFolderStructure = "TEAMSFX_ARM_NEW_FOLDER_STRUCTURE";
-function isNewFolderStructureEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagNewFolderStructure, false);
 }
 
 async function waitSeconds(second: number) {

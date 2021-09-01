@@ -262,6 +262,9 @@ export interface EnvMeta {
 export const EnvNamePlaceholder = "@envName";
 
 // @public (undocumented)
+type EnvProfile = Json;
+
+// @public (undocumented)
 export const EnvProfileFileNameTemplate: string;
 
 // @public (undocumented)
@@ -906,9 +909,6 @@ interface ResourcePlugin {
 }
 
 // @public (undocumented)
-type ResourceTempalte = unknown;
-
-// @public (undocumented)
 export type ResourceTemplate = Record<string, ConfigValue>;
 
 // @public (undocumented)
@@ -1035,23 +1035,19 @@ type SolutionInputs = {
 
 // @public (undocumented)
 interface SolutionPlugin {
-    deploy?: (ctx: Context_2, inputs: Inputs, provisionOutput: Readonly<Record<PluginName, ProvisionOutput>>, tokenProvider: AzureAccountProvider) => Promise<Result<Record<PluginName, {
-        output: Record<string, string>;
-    }>, FxError>>;
+    deploy?: (ctx: Context_2, inputs: Inputs, envProfile: EnvProfile, tokenProvider: AzureAccountProvider) => Promise<Result<Void, FxError>>;
     // (undocumented)
     displayName: string;
-    executeUserTask?: (ctx: Context_2, func: Func, inputs: Inputs) => Promise<Result<unknown, FxError>>;
-    generateResourceTemplate: (ctx: Context_2, inputs: Inputs) => Promise<Result<ResourceTempalte, FxError>>;
-    getQuestionsForScaffolding: (inputs: Inputs, ctx?: Context_2) => Promise<Result<QTreeNode | undefined, FxError>>;
+    executeUserTask?: (ctx: Context_2, inputs: Inputs, func: Func) => Promise<Result<unknown, FxError>>;
+    generateResourceTemplate: (ctx: Context_2, inputs: Inputs, envConfig: EnvConfig) => Promise<Result<Void, FxError>>;
+    getQuestionsForScaffolding: (inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
     name: string;
-    package?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
-    provisionLocalResource?: (ctx: Context_2, tokenProvider: TokenProvider) => Promise<Result<LocalSettings_2, FxError>>;
-    provisionResources: (ctx: Context_2, inputs: Inputs, provisionTemplates: Record<PluginName, Json>, tokenProvider: TokenProvider) => Promise<Result<Record<PluginName, ProvisionOutput>, FxError>>;
-    publishApplication?: (ctx: Context_2, inputs: Inputs, provisionOutput: Readonly<Record<PluginName, ProvisionOutput>>, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
-    scaffoldSourceCode?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Record<PluginName, {
-        output: Record<string, string>;
-    }>, FxError>>;
+    package?: (ctx: Context_2, envConfig: EnvConfig, envProfile: EnvProfile) => Promise<Result<Void, FxError>>;
+    provisionLocalResource?: (ctx: Context_2, inputs: Inputs, tokenProvider: TokenProvider) => Promise<Result<LocalSettings_2, FxError>>;
+    provisionResources: (ctx: Context_2, inputs: Inputs, envConfig: EnvConfig, tokenProvider: TokenProvider) => Promise<Result<EnvProfile, FxError>>;
+    publishApplication?: (ctx: Context_2, inputs: Inputs, envConfig: EnvConfig, envProfile: EnvProfile, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
+    scaffoldSourceCode?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
 }
 
 // @public
@@ -1392,7 +1388,6 @@ declare namespace v2 {
         BicepTemplate,
         ProvisionOutput,
         ResourcePlugin,
-        ResourceTempalte,
         SolutionPlugin,
         PluginName,
         Context_2 as Context,
@@ -1400,7 +1395,8 @@ declare namespace v2 {
         LocalSetting,
         SolutionInputs,
         ProvisionInputs,
-        DeploymentInputs
+        DeploymentInputs,
+        EnvProfile
     }
 }
 export { v2 }

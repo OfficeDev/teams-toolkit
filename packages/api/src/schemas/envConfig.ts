@@ -24,7 +24,7 @@ export interface EnvConfig {
     resourceGroupName?: string;
   };
   /**
-   * The Teams App manifest related configuration.
+   * The Teams App mainfest related configuration.
    */
   manifest: {
     description?: string;

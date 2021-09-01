@@ -521,8 +521,6 @@ function mockAzureProjectDeps(
 describe("Resource group creation failed for provision() in Azure projects", () => {
   const mocker = sinon.createSandbox();
   const permissionsJsonPath = "./permissions.json";
-  const resourceGroupName = "test-rg";
-
   const mockedAppDef: IAppDefinition = {
     appName: "MyApp",
     teamsAppId: "qwertasdf",
@@ -556,7 +554,7 @@ describe("Resource group creation failed for provision() in Azure projects", () 
 
     const result = await solution.provision(mockedCtx);
     expect(result.isErr()).to.be.true;
-    expect(result._unsafeUnwrapErr() instanceof UserError);
+    expect(result._unsafeUnwrapErr() instanceof UserError).to.be.true;
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.FailedToCreateResourceGroup);
     expect(result._unsafeUnwrapErr().message).contains(
       "Failed to create resource group my_app-rg due to some error"

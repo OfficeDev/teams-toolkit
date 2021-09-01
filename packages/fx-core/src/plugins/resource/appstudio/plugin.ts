@@ -236,10 +236,14 @@ export class AppStudioPluginImpl {
     ).activeResourcePlugins?.includes(PluginNames.BOT);
     if (includeBot) {
       if (manifest.bots !== undefined && manifest.bots.length > 0) {
-        manifest.bots[0].botId = `{${BOT_ID}}`;
+        for (let index = 0; index < manifest.bots.length; ++index) {
+          manifest.bots[index].botId = `{${BOT_ID}}`;
+        }
       }
       if (manifest.composeExtensions !== undefined && manifest.composeExtensions.length > 0) {
-        manifest.composeExtensions[0].botId = `{${BOT_ID}}`;
+        for (let index = 0; index < manifest.composeExtensions.length; ++index) {
+          manifest.bots[index].botId = `{${BOT_ID}}`;
+        }
       }
     }
     return manifest;

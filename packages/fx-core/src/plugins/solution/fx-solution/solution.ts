@@ -1631,7 +1631,11 @@ export class TeamsAppSolution implements Solution {
         );
 
         collaborators.push({
-          userPrincipalName: teamsAppOwner.userPrincipalName,
+          // Sometimes app studio will return null as userPrincipalName, thus using aad's instead.
+          userPrincipalName:
+            teamsAppOwner.userPrincipalName ??
+            aadOwner?.userPrincipalName ??
+            teamsAppOwner.userObjectId,
           userObjectId: teamsAppOwner.userObjectId,
           isAadOwner: aadOwner ? true : false,
           aadResourceId: aadOwner ? aadOwner.resourceId : undefined,
@@ -2523,7 +2527,7 @@ export class TeamsAppSolution implements Solution {
         return undefined;
       }
 
-      const collaborator = res.data.value.find((user: any) => user.userPrincipalName === email);
+      const collaborator = res.data.value.find((user: any) => user.mail === email);
 
       if (!collaborator) {
         return undefined;

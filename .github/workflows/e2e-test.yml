@@ -28,6 +28,15 @@ jobs:
           ref: ${{ github.ref }}
           clean: false
 
+      - name: setup env
+        id: keyvault
+        env:
+          creds: ${{ secrets.AZURE_TEST_CREDENTIALS }}
+        run: |
+          output=$(bash setup-testing-env.sh E2E-TEST-COLLABORATOR-USER-NAME)
+          echo "::set-output name=M365_ACCOUNT_COLLABORATOR::$output"
+        working-directory: .github/scripts
+
       - name: Setup node
         uses: actions/setup-node@v2.1.2
         with:
@@ -65,6 +74,8 @@ jobs:
           npx lerna run test:e2e:clean
 
       - name: E2E Test in Parallel
+        env: 
+          M365_ACCOUNT_COLLABORATOR: ${{ steps.version-change.outputs.M365_ACCOUNT_COLLABORATOR }}
         run: |
           npx lerna run test:e2e:parallel
 

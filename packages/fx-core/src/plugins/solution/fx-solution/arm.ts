@@ -284,7 +284,7 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
     }
   } catch (error) {
     result = err(
-      returnUserError(
+      returnSystemError(
         error,
         PluginDisplayName.Solution,
         SolutionError.FailedToDeployArmTemplatesToAzure

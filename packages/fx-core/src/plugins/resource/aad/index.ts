@@ -10,6 +10,8 @@ import {
   Func,
   ok,
   newSystemError,
+  Result,
+  FxError,
 } from "@microsoft/teamsfx-api";
 import { AadAppForTeamsImpl } from "./plugin";
 import { AadResult, ResultFactory } from "./results";
@@ -23,12 +25,16 @@ import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { Links } from "../bot/constants";
 import { ArmResourcePlugin } from "../../../common/armInterface";
+import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
 
 @Service(ResourcePlugins.AadPlugin)
 export class AadAppForTeamsPlugin implements Plugin, ArmResourcePlugin {
   name = "fx-resource-aad-app-for-teams";
   displayName = "AAD";
   activate(solutionSettings: AzureSolutionSettings): boolean {
+    if (solutionSettings?.migrateFromV1) {
+      return false;
+    }
     return solutionSettings.hostType === HostTypeOptionAzure.id;
   }
 
@@ -94,6 +100,30 @@ export class AadAppForTeamsPlugin implements Plugin, ArmResourcePlugin {
         `Failed to route function call:${JSON.stringify(func)}`,
         Links.ISSUE_LINK
       )
+    );
+  }
+
+  public async checkPermission(ctx: PluginContext): Promise<Result<ResourcePermission[], FxError>> {
+    return await this.runWithExceptionCatchingAsync(
+      () => this.pluginImpl.checkPermission(ctx),
+      ctx,
+      Messages.EndCheckPermission.telemetry
+    );
+  }
+
+  public async grantPermission(ctx: PluginContext): Promise<Result<ResourcePermission[], FxError>> {
+    return await this.runWithExceptionCatchingAsync(
+      () => this.pluginImpl.grantPermission(ctx),
+      ctx,
+      Messages.EndCheckPermission.telemetry
+    );
+  }
+
+  public async listCollaborator(ctx: PluginContext): Promise<Result<AadOwner[], FxError>> {
+    return await this.runWithExceptionCatchingAsync(
+      () => this.pluginImpl.listCollaborator(ctx),
+      ctx,
+      Messages.EndListCollaborator.telemetry
     );
   }
 

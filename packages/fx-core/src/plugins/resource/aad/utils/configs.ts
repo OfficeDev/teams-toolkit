@@ -353,3 +353,55 @@ export class UpdatePermissionConfig {
     this.permissionRequest = await ConfigUtils.getPermissionRequest(ctx);
   }
 }
+
+export class CheckGrantPermissionConfig {
+  public userInfo?: any;
+  public objectId?: string;
+  public isGrantPermission: boolean;
+
+  constructor(isGrantPermission = false) {
+    this.isGrantPermission = isGrantPermission;
+  }
+
+  public async restoreConfigFromContext(ctx: PluginContext): Promise<void> {
+    const objectId: ConfigValue = ctx.config?.get(ConfigKeys.objectId);
+    if (objectId) {
+      this.objectId = objectId as string;
+    } else {
+      throw ResultFactory.SystemError(
+        GetConfigError.name,
+        Utils.getPermissionErrorMessage(
+          GetConfigError.message(Errors.GetConfigError(ConfigKeys.objectId, Plugins.pluginName)),
+          this.isGrantPermission
+        )
+      );
+    }
+
+    const userInfo: ConfigValue = ctx.configOfOtherPlugins
+      ?.get(Plugins.solution)
+      ?.get(ConfigKeysOfOtherPlugin.solutionUserInfo);
+    if (!userInfo) {
+      throw ResultFactory.SystemError(
+        GetConfigError.name,
+        Utils.getPermissionErrorMessage(
+          Errors.GetConfigError(ConfigKeysOfOtherPlugin.solutionUserInfo, Plugins.solution),
+          this.isGrantPermission,
+          this.objectId
+        )
+      );
+    }
+
+    try {
+      this.userInfo = JSON.parse(userInfo);
+    } catch (error) {
+      throw ResultFactory.SystemError(
+        GetConfigError.name,
+        Utils.getPermissionErrorMessage(
+          GetConfigError.message(error.message),
+          this.isGrantPermission,
+          this.objectId
+        )
+      );
+    }
+  }
+}

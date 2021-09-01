@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { ArchiveFolderName } from "@microsoft/teamsfx-api";
+
 export class Messages {
   public static readonly SomethingIsInvalidWithValue = (something: string, value: string): string =>
     `'${something}' is invalid with value: '${value}'.`;
@@ -62,6 +64,13 @@ export class Messages {
   public static readonly DeployingBot = "Deploying bot.";
   public static readonly SuccessfullyDeployedBot = "Successfully deployed bot.";
 
+  public static readonly GeneratingArmTemplatesBot = "Generating ARM templates of bot.";
+  public static readonly SuccessfullyGenerateArmTemplatesBot =
+    "Successfully generating ARM templates of bot.";
+
+  public static readonly SuccessfullyGetExistingBotAadAppCredential =
+    "Successfully get existing bot AAD app credential.";
+  public static readonly SuccessfullyCreatedBotAadApp = "Successfully created bot AAD app.";
   public static readonly ProvisioningAzureBotChannelRegistration =
     "Provisioning azure bot channel registration.";
   public static readonly SuccessfullyProvisionedAzureBotChannelRegistration =
@@ -119,4 +128,12 @@ export class Messages {
     "Please check log in output channel and try to fix this issue.";
   public static readonly RegisterRequiredRP = (resourceProviders: string[]): string =>
     `Register ${resourceProviders.join(",")} resource provider for your subscription manually.`;
+  public static readonly ReopenWorkingDir =
+    "Please check whether the working directory path is valid, if no, please move the project to a valid working directory path.";
+  public static readonly PostProvisioningStart = "Start to Post Provision.";
+
+  // for the use of migrating v1 project
+  public static readonly StartMigrateV1Project = (name: string) => `Migrating '${name}'.`;
+  public static readonly EndMigrateV1Project = (name: string) => `Successfully migrated '${name}'.`;
+  public static readonly RollbackToV1Project = `Rollback your project from '${ArchiveFolderName}' folder.`;
 }

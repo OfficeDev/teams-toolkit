@@ -6,13 +6,18 @@ import * as path from "path";
 import * as dotenv from "dotenv";
 import * as vscode from "vscode";
 import * as constants from "./constants";
-import { ConfigFolderName, Func } from "@microsoft/teamsfx-api";
+import {
+  ConfigFolderName,
+  Func,
+  InputConfigsFolderName,
+  PublishProfilesFolderName,
+} from "@microsoft/teamsfx-api";
 import { core, getSystemInputs, showError } from "../handlers";
 import * as net from "net";
 import { ext } from "../extensionVariables";
 import { getActiveEnv } from "../utils/commonUtils";
 import { initializeFocusRects } from "@fluentui/utilities";
-import { isMultiEnvEnabled, isValidProject } from "@microsoft/teamsfx-core";
+import { isMultiEnvEnabled, isValidProject, isMigrateFromV1Project } from "@microsoft/teamsfx-core";
 
 export async function getProjectRoot(
   folderPath: string,
@@ -128,6 +133,7 @@ async function executeLocalDebugUserTask(funcName: string, params?: unknown): Pr
     const inputs = getSystemInputs();
     inputs.ignoreLock = true;
     inputs.ignoreConfigPersist = true;
+    inputs.ignoreEnvInfo = true;
     const result = await core.executeUserTask(func, inputs);
     if (result.isErr()) {
       throw result.error;
@@ -147,7 +153,9 @@ async function getLocalDebugConfig(key: string): Promise<string | undefined> {
   const userDataFilePath: string = path.join(
     workspacePath,
     `.${ConfigFolderName}`,
-    constants.userDataFileName
+    isMultiEnvEnabled()
+      ? path.join(InputConfigsFolderName, constants.userDataFileNameNew)
+      : constants.userDataFileName
   );
   if (!(await fs.pathExists(userDataFilePath))) {
     return undefined;
@@ -217,6 +225,10 @@ export async function getPortsInUse(): Promise<number[]> {
     if (frontendRoot) {
       ports.push(...constants.frontendPorts);
     }
+    const migrateFromV1 = await isMigrateFromV1Project(workspacePath);
+    if (!migrateFromV1) {
+      ports.push(...constants.simpleAuthPorts);
+    }
     const backendRoot = await getProjectRoot(workspacePath, constants.backendFolderName);
     if (backendRoot) {
       ports.push(...constants.backendPorts);
@@ -243,13 +255,17 @@ function getSettingWithUserData(jsonSelector: (jsonObject: any) => any): string 
     const ws = ext.workspaceUri.fsPath;
     if (isValidProject(ws)) {
       const env = getActiveEnv();
-      const envJsonPath = path.join(ws, `.${ConfigFolderName}/env.${env}.json`);
+      const envJsonPath = isMultiEnvEnabled()
+        ? path.join(ws, `.${ConfigFolderName}/${PublishProfilesFolderName}/profile.${env}.json`)
+        : path.join(ws, `.${ConfigFolderName}/env.${env}.json`);
       const envJson = JSON.parse(fs.readFileSync(envJsonPath, "utf8"));
       const settingValue = jsonSelector(envJson) as string;
       if (settingValue && settingValue.startsWith("{{") && settingValue.endsWith("}}")) {
         // setting in env.xxx.json is place holder and need to get actual value from xxx.userdata
         const placeHolder = settingValue.replace("{{", "").replace("}}", "");
-        const userdataPath = path.join(ws, `.${ConfigFolderName}/${env}.userdata`);
+        const userdataPath = isMultiEnvEnabled()
+          ? path.join(ws, `.${ConfigFolderName}/publishProfiles/${env}.userdata`)
+          : path.join(ws, `.${ConfigFolderName}/${env}.userdata`);
         if (fs.existsSync(userdataPath)) {
           const userdata = fs.readFileSync(userdataPath, "utf8");
           const userEnv = dotenv.parse(userdata);
@@ -267,9 +283,31 @@ function getSettingWithUserData(jsonSelector: (jsonObject: any) => any): string 
   return undefined;
 }
 
+// This is for the new folder structure for multi-env
+function getLocalSetting(jsonSelector: (jsonObject: any) => any): string | undefined {
+  if (ext.workspaceUri) {
+    const ws = ext.workspaceUri.fsPath;
+    if (isValidProject(ws)) {
+      const localSettingsPath = path.join(
+        ws,
+        `.${ConfigFolderName}/${InputConfigsFolderName}/${constants.localSettingsJsonName}`
+      );
+      const envJson = JSON.parse(fs.readFileSync(localSettingsPath, "utf8"));
+      const settingValue = jsonSelector(envJson) as string;
+      return settingValue;
+    }
+  }
+
+  return undefined;
+}
+
 export function getTeamsAppTenantId(): string | undefined {
   try {
-    return getSettingWithUserData((envJson) => envJson.solution.teamsAppTenantId);
+    if (isMultiEnvEnabled()) {
+      return getLocalSetting((localSettingsJson) => localSettingsJson.teamsApp.tenantId);
+    } else {
+      return getSettingWithUserData((envJson) => envJson.solution.teamsAppTenantId);
+    }
   } catch {
     // in case structure changes
     return undefined;
@@ -278,7 +316,11 @@ export function getTeamsAppTenantId(): string | undefined {
 
 export function getLocalTeamsAppId(): string | undefined {
   try {
-    return getSettingWithUserData((envJson) => envJson.solution.localDebugTeamsAppId);
+    if (isMultiEnvEnabled()) {
+      return getLocalSetting((localSettingsJson) => localSettingsJson.teamsApp.teamsAppId);
+    } else {
+      return getSettingWithUserData((envJson) => envJson.solution.localDebugTeamsAppId);
+    }
   } catch {
     // in case structure changes
     return undefined;

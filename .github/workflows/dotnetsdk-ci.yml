@@ -1,0 +1,34 @@
+name: DotNet SDK CI
+
+on:
+  push:
+    paths:
+    - 'packages/dotnet-sdk/**'
+    branches: [main, dev]
+  pull_request:
+    paths:
+      - 'packages/dotnet-sdk/**'
+    branches: [main, dev]
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: packages/dotnet-sdk/
+
+jobs:
+  test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.x
+    - name: Build
+      run: 
+        dotnet build -c Release Microsoft.TeamsFx.sln
+    - name: Test
+      run:
+        dotnet test Microsoft.TeamsFx.sln

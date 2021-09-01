@@ -28,6 +28,11 @@ export enum TelemetryEventName {
   validateManifest = "validate-manifest",
   buildTeamsPackage = "build",
   publish = "publish",
+  migrateV1Project = "migrate-v1-project",
+  provision = "provision",
+  checkPermission = "check-permission",
+  grantPermission = "grant-permission",
+  listCollaborator = "list-collaborator",
 }
 
 export class TelemetryUtils {

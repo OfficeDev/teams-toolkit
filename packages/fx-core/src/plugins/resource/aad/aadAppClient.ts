@@ -3,8 +3,9 @@
 
 import { FxError } from "@microsoft/teamsfx-api";
 import { PluginContext } from "@microsoft/teamsfx-api";
+import { AadOwner } from "../../../common/permissionInterface";
 import { AppStudio } from "./appStudio";
-import { ConfigKeys, Constants, Telemetry } from "./constants";
+import { ConfigKeys, Constants, Messages, Telemetry } from "./constants";
 import { GraphErrorCodes } from "./errorCodes";
 import {
   AppStudioErrorMessage,
@@ -16,6 +17,9 @@ import {
   GetAppError,
   GetAppConfigError,
   AadError,
+  CheckPermissionError,
+  GrantPermissionError,
+  ListCollaboratorError,
 } from "./errors";
 import { GraphClient } from "./graph";
 import { IAADPassword } from "./interfaces/IAADApplication";
@@ -211,11 +215,66 @@ export class AadAppClient {
     return config;
   }
 
+  public static async checkPermission(
+    ctx: PluginContext,
+    stage: string,
+    objectId: string,
+    userObjectId: string
+  ): Promise<boolean> {
+    try {
+      return (await this.retryHanlder(ctx, stage, () =>
+        GraphClient.checkPermission(TokenProvider.token as string, objectId, userObjectId)
+      )) as boolean;
+    } catch (error) {
+      // TODO: Give out detailed help message for different errors.
+      throw AadAppClient.handleError(error, CheckPermissionError);
+    }
+  }
+
+  public static async grantPermission(
+    ctx: PluginContext,
+    stage: string,
+    objectId: string,
+    userObjectId: string
+  ): Promise<void> {
+    try {
+      await GraphClient.grantPermission(TokenProvider.token as string, objectId, userObjectId);
+    } catch (error) {
+      if (error?.response?.data?.error.message == Constants.createOwnerDuplicatedMessage) {
+        ctx.logProvider?.info(Messages.OwnerAlreadyAdded(userObjectId, objectId));
+        return;
+      }
+
+      // TODO: Give out detailed help message for different errors.
+      throw AadAppClient.handleError(
+        error,
+        GrantPermissionError,
+        Constants.permissions.name,
+        objectId
+      );
+    }
+  }
+
+  public static async listCollaborator(
+    ctx: PluginContext,
+    stage: string,
+    objectId: string
+  ): Promise<AadOwner[] | undefined> {
+    try {
+      return await this.retryHanlder(ctx, stage, () =>
+        GraphClient.getAadOwners(TokenProvider.token as string, objectId)
+      );
+    } catch (error) {
+      // TODO: Give out detailed help message for different errors.
+      throw AadAppClient.handleError(error, ListCollaboratorError);
+    }
+  }
+
   public static async retryHanlder(
     ctx: PluginContext,
     stage: string,
-    fn: () => Promise<IAADDefinition | IAADPassword | void>
-  ): Promise<IAADDefinition | IAADPassword | undefined | void> {
+    fn: () => Promise<any>
+  ): Promise<any> {
     let retries = Constants.maxRetryTimes;
     let response;
     TelemetryUtils.init(ctx);
@@ -287,7 +346,7 @@ export class AadAppClient {
     };
   }
 
-  private static handleError(error: any, errorDetail: AadError): FxError {
+  private static handleError(error: any, errorDetail: AadError, ...args: string[]): FxError {
     if (
       error?.response?.status >= Constants.statusCodeUserError &&
       error?.response?.status < Constants.statusCodeServerError
@@ -298,14 +357,14 @@ export class AadAppClient {
       const helpLink = GraphErrorCodes.get(errorCode);
       return ResultFactory.UserError(
         errorDetail.name,
-        errorDetail.message(),
+        errorDetail.message(...args),
         error,
         undefined,
         helpLink ?? errorDetail.helpLink
       );
     } else {
       // System Error
-      return ResultFactory.SystemError(errorDetail.name, errorDetail.message(), error);
+      return ResultFactory.SystemError(errorDetail.name, errorDetail.message(...args), error);
     }
   }
 

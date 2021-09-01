@@ -9,17 +9,21 @@ import {
   AzureSolutionSettings,
   combine,
 } from "@microsoft/teamsfx-api";
-import { getActivatedV2ResourcePlugins } from "../ResourcePluginContainer";
+import { HostTypeOptionAzure } from "../question";
+import { getActivatedResourcePlugins, getActivatedV2ResourcePlugins } from "../ResourcePluginContainer";
 
-export function getSelectedPlugins(ctx: v2.Context): v2.ResourcePlugin[] {
-  const settings = getAzureSolutionSettings(ctx);
-  const plugins = getActivatedV2ResourcePlugins(settings);
-  settings.activeResourcePlugins = plugins.map((p) => p.name);
+export function getSelectedPlugins(azureSettings: AzureSolutionSettings): v2.ResourcePlugin[] {
+  const plugins = getActivatedV2ResourcePlugins(azureSettings);
+  azureSettings.activeResourcePlugins = plugins.map((p) => p.name);
   return plugins;
 }
 
 export function getAzureSolutionSettings(ctx: v2.Context): AzureSolutionSettings {
   return ctx.projectSetting.solutionSettings as AzureSolutionSettings;
+}
+
+export function isAzureProject(azureSettings: AzureSolutionSettings): boolean {
+  return HostTypeOptionAzure.id === azureSettings.hostType;
 }
 
 export function combineRecords(
@@ -31,4 +35,20 @@ export function combineRecords(
   }
 
   return ret;
+}
+
+export function extractSolutionInputs(record: Record<string, string>): v2.SolutionInputs {
+  return {
+    resourceNameSuffix: record["resourceNameSuffix"],
+    resourceGroupName: record["resourceGroupName"],
+    location: record["location"],
+    teamsAppTenantId: record["teamsAppTenantId"],
+    remoteTeamsAppId: undefined,
+  };
+}
+
+export function reloadV2Plugins(solutionSettings: AzureSolutionSettings): v2.ResourcePlugin[] {
+  const res = getActivatedV2ResourcePlugins(solutionSettings);
+  solutionSettings.activeResourcePlugins = res.map((p) => p.name);
+  return res;
 }

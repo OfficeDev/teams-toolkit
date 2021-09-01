@@ -3,11 +3,12 @@
 
 import axios, { AxiosInstance } from "axios";
 import { SystemError, LogProvider } from "@microsoft/teamsfx-api";
-import { IAppDefinition } from "./interfaces/IAppDefinition";
+import { IAppDefinition, IUserList } from "./interfaces/IAppDefinition";
 import { AppStudioError } from "./errors";
 import { IPublishingAppDenition } from "./interfaces/IPublishingAppDefinition";
 import { AppStudioResultFactory } from "./results";
 import { getAppStudioEndpoint } from "../../..";
+import { Constants } from "./constants";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AppStudioClient {
@@ -29,6 +30,7 @@ export namespace AppStudioClient {
       baseURL: baseUrl,
     });
     instance.defaults.headers.common["Authorization"] = `Bearer ${appStudioToken}`;
+    instance.defaults.headers.common["teamstoolkit"] = "true";
     instance.interceptors.request.use(function (config) {
       config.params = { teamstoolkit: true, ...config.params };
       return config;
@@ -62,7 +64,11 @@ export namespace AppStudioClient {
           throw new Error(`Cannot create teams app`);
         }
       } catch (e) {
-        throw new Error(`Cannot create teams app due to ${e.name}: ${e.message}`);
+        const error = new Error(`Cannot create teams app due to ${e.name}: ${e.message}`);
+        if (e.response?.status) {
+          error.name = e.response?.status;
+        }
+        throw error;
       }
     } else {
       throw new Error("Teams app create failed, invalid app studio token");
@@ -130,14 +136,13 @@ export namespace AppStudioClient {
         }
       }
     } catch (e) {
-      if (e instanceof Error) {
-        await logProvider?.warning(
-          `Cannot get the app definition with app ID ${teamsAppId}, due to ${e.name}: ${e.message}`
-        );
+      const errorMessage = `Cannot get the app definition with app ID ${teamsAppId}, due to ${e.name}: ${e.message}`;
+      await logProvider?.warning(errorMessage);
+      const err = new Error(errorMessage);
+      if (e.response?.status) {
+        err.name = e.response?.status;
       }
-      throw new Error(
-        `Cannot get the app definition with app ID ${teamsAppId}, due to ${e.name}: ${e.message}`
-      );
+      throw err;
     }
     throw new Error(`Cannot get the app definition with app ID ${teamsAppId}`);
   }
@@ -161,51 +166,43 @@ export namespace AppStudioClient {
     outlineIconContent?: string
   ): Promise<IAppDefinition> {
     if (appDefinition && appStudioToken) {
-      try {
-        const requester = createRequesterWithToken(appStudioToken);
+      const requester = createRequesterWithToken(appStudioToken);
+      // Get userlist from existing app
+      const existingAppDefinition = await getApp(teamsAppId, appStudioToken, logProvider);
+      const userlist = existingAppDefinition.userList;
+      appDefinition.userList = userlist;
 
-        // Get userlist from existing app
-        const existingAppDefinition = await getApp(teamsAppId, appStudioToken, logProvider);
-        const userlist = existingAppDefinition.userList;
-        appDefinition.userList = userlist;
-
-        let result: { colorIconUrl: string; outlineIconUrl: string } | undefined;
-        if (colorIconContent && outlineIconContent) {
-          result = await uploadIcon(
-            teamsAppId,
-            appStudioToken,
-            colorIconContent,
-            outlineIconContent,
-            requester,
-            logProvider
-          );
-          if (!result) {
-            await logProvider?.error(`failed to upload color icon for: ${teamsAppId}`);
-            throw new Error(`failed to upload icons for ${teamsAppId}`);
-          }
-          appDefinition.colorIcon = result.colorIconUrl;
-          appDefinition.outlineIcon = result.outlineIconUrl;
-        }
-        const response = await requester.post(
-          `/api/appdefinitions/${teamsAppId}/override`,
-          appDefinition
+      let result: { colorIconUrl: string; outlineIconUrl: string } | undefined;
+      if (colorIconContent && outlineIconContent) {
+        result = await uploadIcon(
+          teamsAppId,
+          appStudioToken,
+          colorIconContent,
+          outlineIconContent,
+          requester,
+          logProvider
         );
-        if (response && response.data) {
-          const app = <IAppDefinition>response.data;
+        if (!result) {
+          await logProvider?.error(`failed to upload color icon for: ${teamsAppId}`);
+          throw new Error(`failed to upload icons for ${teamsAppId}`);
+        }
+        appDefinition.colorIcon = result.colorIconUrl;
+        appDefinition.outlineIcon = result.outlineIconUrl;
+      }
+      const response = await requester.post(
+        `/api/appdefinitions/${teamsAppId}/override`,
+        appDefinition
+      );
+      if (response && response.data) {
+        const app = <IAppDefinition>response.data;
 
-          if (app && app.teamsAppId && app.teamsAppId === teamsAppId) {
-            return app;
-          } else {
-            await logProvider?.error(
-              `teamsAppId mismatch. Input: ${teamsAppId}. Got: ${app.teamsAppId}`
-            );
-          }
+        if (app && app.teamsAppId && app.teamsAppId === teamsAppId) {
+          return app;
+        } else {
+          await logProvider?.error(
+            `teamsAppId mismatch. Input: ${teamsAppId}. Got: ${app.teamsAppId}`
+          );
         }
-      } catch (e) {
-        if (e instanceof Error) {
-          await logProvider?.warning(`failed to update app due to ${e.name}: ${e.message}`);
-        }
-        throw new Error(`failed to update app due to ${e.name}: ${e.message}`);
       }
     }
 
@@ -382,5 +379,63 @@ export namespace AppStudioClient {
     } else {
       return undefined;
     }
+  }
+
+  export async function getUserList(
+    teamsAppId: string,
+    appStudioToken: string
+  ): Promise<IUserList[] | undefined> {
+    let app;
+    try {
+      app = await getApp(teamsAppId, appStudioToken);
+    } catch (error) {
+      if (error.name == 404) {
+        return undefined;
+      } else {
+        throw error;
+      }
+    }
+
+    return app.userList;
+  }
+
+  export async function checkPermission(
+    teamsAppId: string,
+    appStudioToken: string,
+    userObjectId: string
+  ): Promise<string> {
+    const userList = await getUserList(teamsAppId, appStudioToken);
+    const findUser = userList?.find((user: IUserList) => user.aadId === userObjectId);
+    if (!findUser) {
+      return Constants.PERMISSIONS.noPermission;
+    }
+
+    if (findUser.isAdministrator) {
+      return Constants.PERMISSIONS.admin;
+    } else {
+      return Constants.PERMISSIONS.operative;
+    }
+  }
+
+  export async function grantPermission(
+    teamsAppId: string,
+    appStudioToken: string,
+    newUser: IUserList
+  ): Promise<void> {
+    let app;
+    try {
+      app = await getApp(teamsAppId, appStudioToken);
+    } catch (error) {
+      throw error;
+    }
+
+    const findUser = app.userList?.findIndex((user: IUserList) => user["aadId"] === newUser.aadId);
+    if (findUser && findUser >= 0) {
+      return;
+    }
+
+    app.userList?.push(newUser);
+    const requester = createRequesterWithToken(appStudioToken);
+    const response = await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app);
   }
 }

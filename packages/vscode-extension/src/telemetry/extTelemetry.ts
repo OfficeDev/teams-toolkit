@@ -44,6 +44,8 @@ export namespace ExtTelemetry {
     switch (stage) {
       case Stage.create:
         return TelemetryEvent.CreateProject;
+      case Stage.migrateV1:
+        return TelemetryEvent.MigrateV1Project;
       case Stage.update:
         return TelemetryEvent.AddResource;
       case Stage.provision:
@@ -52,6 +54,8 @@ export namespace ExtTelemetry {
         return TelemetryEvent.Deploy;
       case Stage.publish:
         return TelemetryEvent.Publish;
+      case Stage.createEnv:
+        return TelemetryEvent.CreateNewEnvironment;
       default:
         return undefined;
     }
@@ -101,7 +105,9 @@ export namespace ExtTelemetry {
     }
 
     properties[TelemetryProperty.ErrorCode] = `${error.source}.${error.name}`;
-    properties[TelemetryProperty.ErrorMessage] = error.message;
+    properties[TelemetryProperty.ErrorMessage] = `${error.message}${
+      error.stack ? "\nstack:\n" + error.stack : ""
+    }`;
 
     reporter.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
   }

@@ -29,6 +29,9 @@ export class Constants {
   public static readonly sqlEndpoint: string = "sqlEndpoint";
   public static readonly databaseName: string = "databaseName";
   public static readonly skipAddingUser: string = "skipAddingUser";
+  public static readonly admin: string = "admin";
+  public static readonly adminPassword: string = "adminPassword";
+  public static readonly existSql: string = "existSql";
 
   public static readonly solution: string = "solution";
   public static readonly solutionPluginFullName = "fx-solution-azure";
@@ -75,6 +78,7 @@ export class Telemetry {
     provision: "provision",
     postProvision: "post-provision",
     getQuestion: "get-question",
+    generateArmTemplates: "generate-arm-templates",
   };
 
   static readonly properties = {
@@ -90,4 +94,18 @@ export class Telemetry {
 
 export class HelpLinks {
   static readonly default = "https://aka.ms/teamsfx-sql-help";
+}
+
+export class AzureSqlBicep {
+  static readonly sqlEndpoint: string = "azureSqlProvision.outputs.sqlEndpoint";
+  static readonly databaseName: string = "azureSqlProvision.outputs.databaseName";
+}
+
+export class AzureSqlArmOutput {
+  static readonly sqlEndpoint: string = "azureSql_sqlEndpoint";
+  static readonly databaseName: string = "azureSql_databaseName";
+}
+
+export class AzureSqlBicepFile {
+  static readonly moduleTemplateFileName: string = "sql.template.bicep";
 }

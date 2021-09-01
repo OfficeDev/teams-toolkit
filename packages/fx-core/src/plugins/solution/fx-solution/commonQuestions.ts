@@ -12,16 +12,42 @@ import {
   SolutionContext,
   AzureAccountProvider,
   SubscriptionInfo,
+  QTreeNode,
+  traverse,
+  Inputs,
+  UserInteraction,
+  OptionItem,
+  LogProvider,
 } from "@microsoft/teamsfx-api";
-import { GLOBAL_CONFIG, RESOURCE_GROUP_NAME, SolutionError } from "./constants";
+import { GLOBAL_CONFIG, LOCATION, RESOURCE_GROUP_NAME, SolutionError } from "./constants";
 import { v4 as uuidv4 } from "uuid";
 import { ResourceManagementClient } from "@azure/arm-resources";
 import { PluginDisplayName } from "../../../common/constants";
+import { isMultiEnvEnabled } from "../../../common";
+import {
+  CoreQuestionNames,
+  QuestionNewResourceGroupLocation,
+  QuestionNewResourceGroupName,
+  QuestionSelectResourceGroup,
+} from "../../../core/question";
+import { desensitize } from "../../../core/middleware/questionModel";
+import { ResourceGroupsCreateOrUpdateResponse } from "@azure/arm-resources/esm/models";
+import { Solution } from "@azure/arm-appservice/esm/models/mappers";
 
 export type AzureSubscription = {
   displayName: string;
   subscriptionId: string;
 };
+
+const DefaultResourceGroupLocation = "East US";
+type ResourceGroupInfo = {
+  createNewResourceGroup: boolean;
+  name: string;
+  location: string;
+};
+
+// TODO: use the emoji plus sign like Azure Functions extension
+const newResourceGroupOption = "+ New resource group";
 
 class CommonQuestions {
   resourceNameSuffix = "";
@@ -49,9 +75,136 @@ export async function checkSubscription(
       )
     );
   }
-  const activeSubscriptionId = ctx.config.get(GLOBAL_CONFIG)?.get("subscriptionId");
   const askSubRes = await ctx.azureAccountProvider!.getSelectedSubscription(true);
   return ok(askSubRes!);
+}
+
+async function getQuestionsForResourceGroup(
+  defaultResourceGroupName: string,
+  existingResourceGroupNameLocations: [string, string][],
+  availableLocations: string[]
+) {
+  const selectResourceGroup = QuestionSelectResourceGroup;
+
+  const staticOptions: OptionItem[] = [
+    { id: newResourceGroupOption, label: newResourceGroupOption },
+  ];
+  selectResourceGroup.staticOptions = staticOptions.concat(
+    existingResourceGroupNameLocations.map((item) => {
+      return {
+        id: item[0],
+        label: item[0],
+        description: item[1],
+      };
+    })
+  );
+
+  const node = new QTreeNode(selectResourceGroup);
+
+  const inputNewResourceGroupName = QuestionNewResourceGroupName;
+  inputNewResourceGroupName.default = defaultResourceGroupName;
+  const newResourceGroupNameNode = new QTreeNode(inputNewResourceGroupName);
+  newResourceGroupNameNode.condition = { equals: newResourceGroupOption };
+  node.addChild(newResourceGroupNameNode);
+
+  const selectLocation = QuestionNewResourceGroupLocation;
+  // TODO: maybe lazily load locations
+  selectLocation.staticOptions = availableLocations;
+  const newResourceGroupLocationNode = new QTreeNode(selectLocation);
+  newResourceGroupNameNode.addChild(newResourceGroupLocationNode);
+
+  return node.trim();
+}
+
+/**
+ * Ask user to create a new resource group or use an exsiting resource group
+ */
+export async function askResourceGroupInfo(
+  ctx: SolutionContext,
+  rmClient: ResourceManagementClient,
+  inputs: Inputs,
+  ui: UserInteraction,
+  defaultResourceGroupName: string
+): Promise<Result<ResourceGroupInfo, FxError>> {
+  if (!isMultiEnvEnabled()) {
+    return ok({
+      createNewResourceGroup: true,
+      name: defaultResourceGroupName,
+      location: DefaultResourceGroupLocation,
+    });
+  }
+
+  // TODO: support pagination
+  let resourceGroupResults;
+  try {
+    resourceGroupResults = await rmClient.resourceGroups.list();
+  } catch (error) {
+    ctx.logProvider?.error(`Failed to list resource group: error '${error}'`);
+    return err(
+      returnSystemError(
+        new Error(`Failed to list resource group`),
+        "Solution",
+        SolutionError.FailedToListResourceGroup
+      )
+    );
+  }
+  const resourceGroupNameLocations = resourceGroupResults
+    .filter((item) => item.name)
+    .map((item) => [item.name, item.location] as [string, string]);
+
+  // TODO: call Azure API directly to list all locations because ARM SDK does not wrap this API.
+  // And then filter by the 'resourceGroup' resource provider.
+  // https://github.com/microsoft/vscode-azuretools/blob/cda6548af53a1c0f538a5ef7542c0eba1d5fa566/ui/src/wizard/LocationListStep.ts#L173
+  const availableLocations = ["East US", "West US"];
+  const node = await getQuestionsForResourceGroup(
+    defaultResourceGroupName,
+    resourceGroupNameLocations,
+    availableLocations
+  );
+  if (node) {
+    const res = await traverse(node, inputs, ui);
+    if (res.isErr()) {
+      ctx.logProvider?.debug(
+        `[${PluginDisplayName.Solution}] failed to run question model for target resource group.`
+      );
+      return err(res.error);
+    }
+
+    const desensitized = desensitize(node, inputs);
+    ctx.logProvider?.info(
+      `[${
+        PluginDisplayName.Solution
+      }] success to run question model for resource group, answers:${JSON.stringify(desensitized)}`
+    );
+  }
+
+  const resourceGroupName = inputs[CoreQuestionNames.TargetResourceGroupName];
+  if (resourceGroupName === newResourceGroupOption) {
+    return ok({
+      name: inputs[CoreQuestionNames.NewResourceGroupName],
+      location: inputs[CoreQuestionNames.NewResourceGroupLocation],
+      createNewResourceGroup: true,
+    });
+  } else {
+    const targetResourceGroupName = inputs[CoreQuestionNames.TargetResourceGroupName];
+    if (typeof targetResourceGroupName !== "string") {
+      return err(
+        returnSystemError(
+          new Error(`Failed to get user input for resource group info`),
+          "Solution",
+          SolutionError.FailedToListResourceGroup
+        )
+      );
+    }
+
+    const target = resourceGroupNameLocations.find((item) => item[0] == targetResourceGroupName);
+    const location = target![1]; // location must exist because the user can only select from this list.
+    return ok({
+      createNewResourceGroup: false,
+      name: targetResourceGroupName,
+      location: location,
+    });
+  }
 }
 
 /**
@@ -104,37 +257,82 @@ async function askCommonQuestions(
 
   //2. check resource group
   const rmClient = new ResourceManagementClient(azureToken, subscriptionId);
-  let resourceGroupName = config.get(GLOBAL_CONFIG)?.getString(RESOURCE_GROUP_NAME);
-  let needCreateResourceGroup = false;
-  if (resourceGroupName) {
-    const checkRes = await rmClient.resourceGroups.checkExistence(resourceGroupName);
-    if (!checkRes.body) {
-      needCreateResourceGroup = true;
-    }
-  } else {
-    resourceGroupName = `${appName.replace(" ", "_")}-rg`;
-    needCreateResourceGroup = true;
-  }
-  if (needCreateResourceGroup) {
-    const response = await rmClient.resourceGroups.createOrUpdate(resourceGroupName, {
-      location: commonQuestions.location,
-    });
 
-    if (response.name === undefined) {
+  // Resource group info precedence are:
+  //   1. env config (config.{envName}.json), for user customization
+  //   2. publish profile (profile.{envName}.json), for reprovision
+  //   3. asking user with a popup
+  const resourceGroupNameFromEnvConfig = ctx.envInfo.config.azure.resourceGroupName;
+  const resourceGroupNameFromProfile = ctx.envInfo.profile
+    .get(GLOBAL_CONFIG)
+    ?.get(RESOURCE_GROUP_NAME);
+  const resourceGroupLocationFromProfile = ctx.envInfo.profile.get(GLOBAL_CONFIG)?.get(LOCATION);
+  const defaultResourceGroupName = `${appName.replace(" ", "_")}${
+    isMultiEnvEnabled() ? "-" + ctx.envInfo.envName : ""
+  }-rg`;
+  let resourceGroupInfo: ResourceGroupInfo;
+  if (resourceGroupNameFromEnvConfig) {
+    const checkRes = await rmClient.resourceGroups.checkExistence(resourceGroupNameFromEnvConfig);
+    if (checkRes.body) {
+      resourceGroupInfo = {
+        createNewResourceGroup: false,
+        name: resourceGroupNameFromEnvConfig,
+        location: DefaultResourceGroupLocation, // TODO: retrieve location using ARM SDK
+      };
+    } else {
+      // Currently we do not support creating resource group by input config, so just throw an error.
       return err(
-        returnSystemError(
-          new Error(`Failed to create resource group ${resourceGroupName}`),
+        returnUserError(
+          new Error("Resource group does not exist"),
           "Solution",
-          SolutionError.FailedToCreateResourceGroup
+          SolutionError.ResourceGroupNotFound
         )
       );
     }
-    resourceGroupName = response.name;
-    ctx.logProvider?.info(
-      `[${PluginDisplayName.Solution}] askCommonQuestions - resource group:'${resourceGroupName}' created!`
+  } else if (resourceGroupNameFromProfile && resourceGroupLocationFromProfile) {
+    const checkRes = await rmClient.resourceGroups.checkExistence(resourceGroupNameFromProfile);
+    if (checkRes.body) {
+      resourceGroupInfo = {
+        createNewResourceGroup: false,
+        name: resourceGroupNameFromProfile,
+        location: resourceGroupLocationFromProfile,
+      };
+    } else {
+      resourceGroupInfo = {
+        createNewResourceGroup: true,
+        name: resourceGroupNameFromProfile,
+        location: resourceGroupLocationFromProfile,
+      };
+    }
+  } else if (ctx.answers && ctx.ui) {
+    const resourceGroupInfoResult = await askResourceGroupInfo(
+      ctx,
+      rmClient,
+      ctx.answers,
+      ctx.ui,
+      defaultResourceGroupName
     );
+    if (resourceGroupInfoResult.isErr()) {
+      return err(resourceGroupInfoResult.error);
+    }
+    resourceGroupInfo = resourceGroupInfoResult.value;
+  } else {
+    // fall back to default values when user interaction is not available
+    resourceGroupInfo = {
+      createNewResourceGroup: true,
+      name: defaultResourceGroupName,
+      location: DefaultResourceGroupLocation,
+    };
   }
-  commonQuestions.resourceGroupName = resourceGroupName;
+  if (resourceGroupInfo.createNewResourceGroup) {
+    const maybeRgName = await createNewResourceGroup(rmClient, resourceGroupInfo, ctx.logProvider);
+    if (maybeRgName.isErr()) {
+      return err(maybeRgName.error);
+    }
+    resourceGroupInfo.name = maybeRgName.value;
+  }
+  commonQuestions.resourceGroupName = resourceGroupInfo.name;
+  commonQuestions.location = resourceGroupInfo.location;
   ctx.logProvider?.info(
     `[${PluginDisplayName.Solution}] askCommonQuestions, step 2 - check resource group pass!`
   );
@@ -207,4 +405,44 @@ export async function fillInCommonQuestions(
     return ok(config);
   }
   return result.map((_) => config);
+}
+
+async function createNewResourceGroup(
+  rmClient: ResourceManagementClient,
+  rgInfo: ResourceGroupInfo,
+  logProvider?: LogProvider
+): Promise<Result<string, FxError>> {
+  let response: ResourceGroupsCreateOrUpdateResponse;
+  try {
+    response = await rmClient.resourceGroups.createOrUpdate(rgInfo.name, {
+      location: rgInfo.location,
+    });
+  } catch (e) {
+    let errMsg: string;
+    if (e instanceof Error) {
+      errMsg = `Failed to create resource group ${rgInfo.name} due to ${e.name}:${e.message}`;
+    } else {
+      errMsg = `Failed to create resource group ${
+        rgInfo.name
+      } due to unknown error ${JSON.stringify(e)}`;
+    }
+
+    return err(
+      returnUserError(new Error(errMsg), "Solution", SolutionError.FailedToCreateResourceGroup)
+    );
+  }
+
+  if (response.name === undefined) {
+    return err(
+      returnSystemError(
+        new Error(`Failed to create resource group ${rgInfo.name}`),
+        "Solution",
+        SolutionError.FailedToCreateResourceGroup
+      )
+    );
+  }
+  logProvider?.info(
+    `[${PluginDisplayName.Solution}] askCommonQuestions - resource group:'${response.name}' created!`
+  );
+  return ok(response.name);
 }

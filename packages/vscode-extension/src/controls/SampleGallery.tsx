@@ -41,7 +41,7 @@ export default class SampleGallery extends React.Component<any, any> {
         >
           <SampleAppCard
             image={ToDoList}
-            tags={["React", "Azure function", "Azure SQL", "JS"]}
+            tags={["React", "Azure function", "Azure SQL", "JS", "CI/CD"]}
             title="Todo List with Azure backend"
             description="Todo List provides an easy way to manage to-do items in Teams Client. This app helps enabling task collaboration and management for your team. The frontend is a React app and the backend is hosted on Azure. You will need an Azure subscription to run the app."
             sampleAppFolder="todo-list-with-Azure-backend"

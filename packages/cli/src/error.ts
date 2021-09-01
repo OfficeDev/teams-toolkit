@@ -48,7 +48,7 @@ export function NotFoundSubscriptionId(): UserError {
 
 export function ConfigNotFoundError(configpath: string): UserError {
   return returnUserError(
-    new Error(`Config file ${configpath} does not exists`),
+    new Error(`Please execute this command in a TeamsFx project.`),
     constants.cliSource,
     "ConfigNotFound"
   );

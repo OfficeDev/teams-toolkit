@@ -2,10 +2,11 @@
 // Licensed under the MIT license.
 
 import { hooks, Middleware, NextFunction } from "@feathersjs/hooks/lib";
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import "mocha";
 import * as dotenv from "dotenv";
 import { ErrorHandlerMW } from "../../src/core/middleware/errorHandler";
+import { TelemetrySenderMW } from "../../src/core/middleware/telemetrySender";
 import {
   UserCancelError,
   err,
@@ -25,6 +26,8 @@ import {
   FunctionRouter,
   Func,
   InputTextConfig,
+  UserError,
+  ProductName,
 } from "@microsoft/teamsfx-api";
 import { ConcurrentLockerMW } from "../../src/core/middleware/concurrentLocker";
 import fs from "fs-extra";
@@ -37,6 +40,7 @@ import {
 } from "../../src/core/error";
 import * as os from "os";
 import {
+  base64Encode,
   CoreHookContext,
   deserializeDict,
   InvalidInputError,
@@ -68,6 +72,9 @@ import { ProjectUpgraderMW } from "../../src/core/middleware/projectUpgrader";
 import { environmentManager } from "../../src/core/environment";
 import { EnvInfoLoaderMW } from "../../src/core/middleware/envInfoLoader";
 import { EnvInfoWriterMW } from "../../src/core/middleware/envInfoWriter";
+import { MigrateConditionHandlerMW } from "../../src/core/middleware/migrateConditionHandler";
+import { AppPackageFolderName } from "@microsoft/teamsfx-api";
+import { ArchiveFolderName } from "@microsoft/teamsfx-api";
 
 describe("Middleware", () => {
   describe("ErrorHandlerMW", () => {
@@ -135,9 +142,85 @@ describe("Middleware", () => {
       const res = await my.myMethod(inputs);
       assert.isTrue(res.isErr() && res.error.name === "unkown" && res.error.message === "hello");
     });
+
+    it("convert system error to user error", async () => {
+      const msg =
+        "The client 'xxx@xxx.com' with object id 'xxx' does not have authorization to perform action '<REDACTED: user-file-path>' over scope '<REDACTED: user-file-path>' or the scope is invalid. If access was recently granted, please refresh your credentials.";
+      class MyClass {
+        tools?: any = new MockTools();
+        async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
+          throw new Error(msg);
+        }
+      }
+      hooks(MyClass, {
+        myMethod: [ErrorHandlerMW],
+      });
+      const my = new MyClass();
+      const res = await my.myMethod(inputs);
+      assert.isTrue(
+        res.isErr() &&
+          res.error.name === "Error" &&
+          res.error.message === msg &&
+          res.error instanceof UserError
+      );
+    });
   });
 
   describe("ConcurrentLockerMW", () => {
+    it("temp folder should be existed when it's locked", async () => {
+      class MyClass {
+        tools?: any = new MockTools();
+        async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
+          const lockFileDir = path.join(
+            os.tmpdir(),
+            `${ProductName}-${base64Encode(inputs.projectPath!)}`
+          );
+          expect(await fs.pathExists(lockFileDir)).is.true;
+          return ok("");
+        }
+      }
+      hooks(MyClass, {
+        myMethod: [ConcurrentLockerMW],
+      });
+      const my = new MyClass();
+      const inputs: Inputs = { platform: Platform.VSCode };
+      inputs.projectPath = path.join(os.tmpdir(), randomAppName());
+      try {
+        await fs.ensureDir(inputs.projectPath);
+        await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`));
+        const res = await my.myMethod(inputs);
+      } finally {
+        await fs.rmdir(inputs.projectPath!, { recursive: true });
+      }
+    });
+
+    it("temp folder should be removed after being unlocked", async () => {
+      class MyClass {
+        tools?: any = new MockTools();
+        async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
+          return ok("");
+        }
+      }
+      hooks(MyClass, {
+        myMethod: [ConcurrentLockerMW],
+      });
+      const my = new MyClass();
+      const inputs: Inputs = { platform: Platform.VSCode };
+      inputs.projectPath = path.join(os.tmpdir(), randomAppName());
+      try {
+        await fs.ensureDir(inputs.projectPath);
+        await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`));
+        const res = await my.myMethod(inputs);
+      } finally {
+        await fs.rmdir(inputs.projectPath!, { recursive: true });
+      }
+      const lockFileDir = path.join(
+        os.tmpdir(),
+        `${ProductName}-${base64Encode(inputs.projectPath!)}`
+      );
+      expect(await fs.pathExists(lockFileDir)).is.false;
+    });
+
     it("sequence: ok", async () => {
       class MyClass {
         tools?: any = new MockTools();
@@ -385,7 +468,7 @@ describe("Middleware", () => {
 
     const inputs: Inputs = { platform: Platform.VSCode };
     inputs.projectPath = path.join(os.tmpdir(), appName);
-    const envName = environmentManager.defaultEnvName;
+    const envName = environmentManager.getDefaultEnvName();
     const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
     const settingsFile = path.resolve(confFolderPath, "settings.json");
     const envJsonFile = path.resolve(confFolderPath, `env.${envName}.json`);
@@ -416,13 +499,13 @@ describe("Middleware", () => {
           assert.isTrue(ctx !== undefined);
           assert.isTrue(ctx!.solutionContext !== undefined);
           const solutionContext = ctx!.solutionContext!;
-          assert.isTrue(solutionContext.config.get("solution") !== undefined);
+          assert.isTrue(solutionContext.envInfo.profile.get("solution") !== undefined);
           assert.deepEqual(projectSettings, solutionContext.projectSettings);
           return ok("");
         }
       }
       hooks(MyClass, {
-        other: [ProjectSettingsLoaderMW, EnvInfoLoaderMW(false, false), ContextInjecterMW],
+        other: [ProjectSettingsLoaderMW, EnvInfoLoaderMW(false), ContextInjecterMW],
       });
       const my = new MyClass();
       const res = await my.other(inputs);
@@ -439,7 +522,7 @@ describe("Middleware", () => {
           const solutionContext = ctx!.solutionContext!;
           assert.isTrue(solutionContext.projectSettings !== undefined);
           assert.isTrue(solutionContext.projectSettings!.appName === appName);
-          assert.isTrue(solutionContext.config.get("solution") !== undefined);
+          assert.isTrue(solutionContext.envInfo.profile.get("solution") !== undefined);
           return ok("");
         }
       }
@@ -502,7 +585,7 @@ describe("Middleware", () => {
       inputs.projectPath = path.join(os.tmpdir(), appName);
       const tools = new MockTools();
       const solutionContext = await newSolutionContext(tools, inputs);
-      solutionContext.config.set("solution", new ConfigMap());
+      solutionContext.envInfo.profile.set("solution", new ConfigMap());
       solutionContext.projectSettings = MockProjectSettings(appName);
       const fileMap = new Map<string, any>();
 
@@ -511,7 +594,7 @@ describe("Middleware", () => {
       });
       sandbox.stub(fs, "pathExists").resolves(true);
 
-      const envName = environmentManager.defaultEnvName;
+      const envName = environmentManager.getDefaultEnvName();
       const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
       const settingsFile = path.resolve(confFolderPath, "settings.json");
       const envJsonFile = path.resolve(confFolderPath, `env.${envName}.json`);
@@ -524,7 +607,7 @@ describe("Middleware", () => {
         }
       }
       hooks(MyClass, {
-        myMethod: [ContextInjecterMW, ProjectSettingsWriterMW, EnvInfoWriterMW],
+        myMethod: [ContextInjecterMW, ProjectSettingsWriterMW, EnvInfoWriterMW()],
       });
       const my = new MyClass();
       await my.myMethod(inputs);
@@ -532,7 +615,7 @@ describe("Middleware", () => {
       const settingsInFile = JSON.parse(content);
       content = fileMap.get(envJsonFile);
       const configInFile = JSON.parse(content);
-      const configExpected = mapToJson(solutionContext.config);
+      const configExpected = mapToJson(solutionContext.envInfo.profile);
       assert.deepEqual(solutionContext.projectSettings, settingsInFile);
       assert.deepEqual(configExpected, configInFile);
     });
@@ -556,8 +639,8 @@ describe("Middleware", () => {
       const secretName = "clientSecret";
       const secretText = "test";
       configMap.set(secretName, secretText);
-      solutionContext.config.set("solution", new ConfigMap());
-      solutionContext.config.set(pluginName, configMap);
+      solutionContext.envInfo.profile.set("solution", new ConfigMap());
+      solutionContext.envInfo.profile.set(pluginName, configMap);
       const oldProjectId = solutionContext.projectSettings!.projectId;
       solutionContext.projectSettings = MockProjectSettings(appName);
       solutionContext.projectSettings!.projectId = oldProjectId;
@@ -567,7 +650,7 @@ describe("Middleware", () => {
       });
       sandbox.stub(fs, "pathExists").resolves(true);
 
-      const envName = environmentManager.defaultEnvName;
+      const envName = environmentManager.getDefaultEnvName();
       const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
       const userdataFile = path.resolve(confFolderPath, `${envName}.userdata`);
       const settingsFile = path.resolve(confFolderPath, "settings.json");
@@ -591,19 +674,15 @@ describe("Middleware", () => {
           const solutionContext = ctx!.solutionContext!;
           assert.isTrue(solutionContext.projectSettings !== undefined);
           assert.isTrue(solutionContext.projectSettings!.appName === appName);
-          assert.isTrue(solutionContext.config.get(pluginName) !== undefined);
-          const value = solutionContext.config.get(pluginName)!.get(secretName);
+          assert.isTrue(solutionContext.envInfo.profile.get(pluginName) !== undefined);
+          const value = solutionContext.envInfo.profile.get(pluginName)!.get(secretName);
           assert.isTrue(value === secretText);
           return ok("");
         }
       }
       hooks(MyClass, {
-        WriteConfigTrigger: [ContextInjecterMW, ProjectSettingsWriterMW, EnvInfoWriterMW],
-        ReadConfigTrigger: [
-          ProjectSettingsLoaderMW,
-          EnvInfoLoaderMW(false, false),
-          ContextInjecterMW,
-        ],
+        WriteConfigTrigger: [ContextInjecterMW, ProjectSettingsWriterMW, EnvInfoWriterMW()],
+        ReadConfigTrigger: [ProjectSettingsLoaderMW, EnvInfoLoaderMW(false), ContextInjecterMW],
       });
       const my = new MyClass();
       await my.WriteConfigTrigger(inputs);
@@ -911,7 +990,7 @@ describe("Middleware", () => {
 
     const inputs: Inputs = { platform: Platform.VSCode };
     inputs.projectPath = path.join(os.tmpdir(), appName);
-    const envName = environmentManager.defaultEnvName;
+    const envName = environmentManager.getDefaultEnvName();
     const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
     const settingsFile = path.resolve(confFolderPath, "settings.json");
     const envJsonFile = path.resolve(confFolderPath, `env.${envName}.json`);
@@ -1075,6 +1154,259 @@ describe("Middleware", () => {
       const my = new ProjectUpgradeHook();
       const res = await my.upgrade(inputs);
       assert.isTrue(res.isOk() && res.value === "");
+    });
+
+    it("Should not upgrade for the new multi env project", async () => {
+      sandbox.stub(process, "env").get(() => {
+        return { TEAMSFX_MULTI_ENV: "true" };
+      });
+
+      envJson = MockLatestVersion2_3_0Context();
+      userData = MockLatestVersion2_3_0UserData();
+      MockFunctions();
+
+      class ProjectUpgradeHook {
+        name = "jay";
+        tools = new MockTools();
+        async upgrade(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+          assert.equal(
+            userData["fx-resource-aad-app-for-teams.local_clientId"],
+            "local_clientId_new"
+          );
+          assert.equal(userData["solution.localDebugTeamsAppId"], "teamsAppId_new");
+          assert.equal(
+            (envJson["solution"] as any)["localDebugTeamsAppId"],
+            "{{solution.localDebugTeamsAppId}}"
+          );
+          assert.equal(
+            (envJson["fx-resource-aad-app-for-teams"] as any)["local_clientId"],
+            "{{fx-resource-aad-app-for-teams.local_clientId}}"
+          );
+          return ok("");
+        }
+      }
+
+      hooks(ProjectUpgradeHook, {
+        upgrade: [ProjectUpgraderMW],
+      });
+
+      const my = new ProjectUpgradeHook();
+      const res = await my.upgrade(inputs);
+      assert.isTrue(res.isOk() && res.value === "");
+    });
+  });
+
+  describe("MigrateConditionHandlerMW", () => {
+    it("Failed to migrate for v2 project", async () => {
+      class MyClass {
+        tools?: any = new MockTools();
+        async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
+          return ok("");
+        }
+      }
+      hooks(MyClass, {
+        myMethod: [MigrateConditionHandlerMW],
+      });
+      const my = new MyClass();
+      const inputs: Inputs = { platform: Platform.VSCode };
+      inputs.projectPath = path.join(os.tmpdir(), randomAppName());
+      try {
+        await fs.ensureDir(inputs.projectPath);
+        await fs.writeJSON(path.join(inputs.projectPath, "package.json"), { msteams: {} });
+        const appPackagePath = path.join(inputs.projectPath, AppPackageFolderName);
+        await fs.ensureDir(appPackagePath);
+        await fs.writeJSON(path.join(appPackagePath, "manifest.json"), {});
+
+        await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`));
+
+        const res = await my.myMethod(inputs);
+        assert.isTrue(res.isErr());
+      } finally {
+        await fs.rmdir(inputs.projectPath!, { recursive: true });
+      }
+    });
+
+    it("Failed to migrate if no project is opened", async () => {
+      class MyClass {
+        tools?: any = new MockTools();
+        async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
+          return ok("");
+        }
+      }
+      hooks(MyClass, {
+        myMethod: [MigrateConditionHandlerMW],
+      });
+      const my = new MyClass();
+      const inputs: Inputs = { platform: Platform.VSCode };
+      inputs.projectPath = undefined;
+      const res = await my.myMethod(inputs);
+      assert.isTrue(res.isErr());
+    });
+
+    it("Failed to migrate V1 project before v1.2.0", async () => {
+      class MyClass {
+        tools?: any = new MockTools();
+        async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
+          return ok("");
+        }
+      }
+      hooks(MyClass, {
+        myMethod: [MigrateConditionHandlerMW],
+      });
+      const my = new MyClass();
+      const inputs: Inputs = { platform: Platform.VSCode };
+      inputs.projectPath = path.join(os.tmpdir(), randomAppName());
+      try {
+        await fs.ensureDir(inputs.projectPath);
+        await fs.writeJSON(path.join(inputs.projectPath, "package.json"), { msteams: {} });
+        const appPackagePath = path.join(inputs.projectPath, AppPackageFolderName);
+        await fs.ensureDir(appPackagePath);
+        const res = await my.myMethod(inputs);
+        assert.isTrue(res.isErr());
+      } finally {
+        await fs.rmdir(inputs.projectPath!, { recursive: true });
+      }
+    });
+
+    it("Failed to migrate V1 project if archive folder already exists", async () => {
+      class MyClass {
+        tools?: any = new MockTools();
+        async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
+          return ok("");
+        }
+      }
+      hooks(MyClass, {
+        myMethod: [MigrateConditionHandlerMW],
+      });
+      const my = new MyClass();
+      const inputs: Inputs = { platform: Platform.VSCode };
+      inputs.projectPath = path.join(os.tmpdir(), randomAppName());
+      try {
+        await fs.ensureDir(inputs.projectPath);
+        await fs.writeJSON(path.join(inputs.projectPath, "package.json"), { msteams: {} });
+        const appPackagePath = path.join(inputs.projectPath, AppPackageFolderName);
+        await fs.ensureDir(appPackagePath);
+        await fs.writeJSON(path.join(appPackagePath, "manifest.json"), {});
+
+        await fs.ensureDir(path.join(inputs.projectPath, ArchiveFolderName));
+        const res = await my.myMethod(inputs);
+        assert.isTrue(res.isErr());
+      } finally {
+        await fs.rmdir(inputs.projectPath!, { recursive: true });
+      }
+    });
+
+    it("Failed to migrate v1 bot sso project", async () => {
+      class MyClass {
+        tools?: any = new MockTools();
+        async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
+          return ok("");
+        }
+      }
+      hooks(MyClass, {
+        myMethod: [MigrateConditionHandlerMW],
+      });
+      const my = new MyClass();
+      const inputs: Inputs = { platform: Platform.VSCode };
+      inputs.projectPath = path.join(os.tmpdir(), randomAppName());
+      try {
+        await fs.ensureDir(inputs.projectPath);
+        await fs.writeJSON(path.join(inputs.projectPath, "package.json"), { msteams: {} });
+        const appPackagePath = path.join(inputs.projectPath, AppPackageFolderName);
+        await fs.ensureDir(appPackagePath);
+        await fs.writeJSON(path.join(appPackagePath, "manifest.json"), {});
+
+        await fs.writeFile(path.join(inputs.projectPath, ".env"), "connectionName=xxx");
+
+        const res = await my.myMethod(inputs);
+        assert.isTrue(res.isErr());
+      } finally {
+        await fs.rmdir(inputs.projectPath!, { recursive: true });
+      }
+    });
+
+    it("Migrate v1 project without env file", async () => {
+      class MyClass {
+        tools?: any = new MockTools();
+        async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
+          return ok("");
+        }
+      }
+      hooks(MyClass, {
+        myMethod: [MigrateConditionHandlerMW],
+      });
+      const my = new MyClass();
+      const inputs: Inputs = { platform: Platform.VSCode };
+      inputs.projectPath = path.join(os.tmpdir(), randomAppName());
+      try {
+        await fs.ensureDir(inputs.projectPath);
+        await fs.writeJSON(path.join(inputs.projectPath, "package.json"), { msteams: {} });
+        const appPackagePath = path.join(inputs.projectPath, AppPackageFolderName);
+        await fs.ensureDir(appPackagePath);
+        await fs.writeJSON(path.join(appPackagePath, "manifest.json"), {});
+        const res = await my.myMethod(inputs);
+        assert.isTrue(res.isOk());
+      } finally {
+        await fs.rmdir(inputs.projectPath!, { recursive: true });
+      }
+    });
+
+    it("Migrate v1 project with valid .env file", async () => {
+      class MyClass {
+        tools?: any = new MockTools();
+        async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
+          return ok("");
+        }
+      }
+      hooks(MyClass, {
+        myMethod: [MigrateConditionHandlerMW],
+      });
+      const my = new MyClass();
+      const inputs: Inputs = { platform: Platform.VSCode };
+      inputs.projectPath = path.join(os.tmpdir(), randomAppName());
+      try {
+        await fs.ensureDir(inputs.projectPath);
+        await fs.writeJSON(path.join(inputs.projectPath, "package.json"), { msteams: {} });
+        const appPackagePath = path.join(inputs.projectPath, AppPackageFolderName);
+        await fs.ensureDir(appPackagePath);
+        await fs.writeJSON(path.join(appPackagePath, "manifest.json"), {});
+
+        await fs.writeFile(path.join(inputs.projectPath, ".env"), "HTTPS=true\nBROWSER=none");
+
+        const res = await my.myMethod(inputs);
+        assert.isTrue(res.isOk());
+      } finally {
+        await fs.rmdir(inputs.projectPath!, { recursive: true });
+      }
+    });
+
+    it("Migrate V1 project with invalid .env file", async () => {
+      class MyClass {
+        tools?: any = new MockTools();
+        async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
+          return ok("");
+        }
+      }
+      hooks(MyClass, {
+        myMethod: [MigrateConditionHandlerMW],
+      });
+      const my = new MyClass();
+      const inputs: Inputs = { platform: Platform.VSCode };
+      inputs.projectPath = path.join(os.tmpdir(), randomAppName());
+      try {
+        await fs.ensureDir(inputs.projectPath);
+        await fs.writeJSON(path.join(inputs.projectPath, "package.json"), { msteams: {} });
+        const appPackagePath = path.join(inputs.projectPath, AppPackageFolderName);
+        await fs.ensureDir(appPackagePath);
+        await fs.writeJSON(path.join(appPackagePath, "manifest.json"), {});
+
+        await fs.writeFile(path.join(inputs.projectPath, ".env"), "{}");
+
+        const res = await my.myMethod(inputs);
+        assert.isTrue(res.isOk());
+      } finally {
+        await fs.rmdir(inputs.projectPath!, { recursive: true });
+      }
     });
   });
 });

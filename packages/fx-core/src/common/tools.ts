@@ -138,15 +138,17 @@ const SecretDataMatchers = [
   "fx-resource-bot.bots",
   "fx-resource-bot.composeExtensions",
   "fx-resource-apim.apimClientAADClientSecret",
+  "fx-resource-azure-sql.adminPassword",
 ];
 
-const CryptoDataMatchers = new Set([
+export const CryptoDataMatchers = new Set([
   "fx-resource-aad-app-for-teams.clientSecret",
   "fx-resource-aad-app-for-teams.local_clientSecret",
   "fx-resource-simple-auth.environmentVariableParams",
   "fx-resource-bot.botPassword",
   "fx-resource-bot.localBotPassword",
   "fx-resource-apim.apimClientAADClientSecret",
+  "fx-resource-azure-sql.adminPassword",
 ]);
 
 /**
@@ -402,7 +404,11 @@ export function isMultiEnvEnabled(): boolean {
 }
 
 export function isArmSupportEnabled(): boolean {
-  return isFeatureFlagEnabled("TEAMSFX_ARM_SUPPORT", false);
+  return isFeatureFlagEnabled(FeatureFlagName.ArmSupport, false);
+}
+
+export function isBicepEnvCheckerEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.BicepEnvCheckerEnable, false);
 }
 
 export async function generateBicepFiles(
@@ -431,13 +437,25 @@ export function compileHandlebarsTemplateString(templateString: string, context:
 
 export async function getAppDirectory(projectRoot: string): Promise<string> {
   const REMOTE_MANIFEST = "manifest.source.json";
+  const MANIFEST_TEMPLATE = "manifest.template.json";
+  const appDirNewLocForMultiEnv = `${projectRoot}/templates/${AppPackageFolderName}`;
   const appDirNewLoc = `${projectRoot}/${AppPackageFolderName}`;
   const appDirOldLoc = `${projectRoot}/.${ConfigFolderName}`;
 
-  if (await fs.pathExists(`${appDirNewLoc}/${REMOTE_MANIFEST}`)) {
-    return appDirNewLoc;
+  if (isMultiEnvEnabled()) {
+    if (await fs.pathExists(`${appDirNewLocForMultiEnv}/${MANIFEST_TEMPLATE}`)) {
+      return appDirNewLocForMultiEnv;
+    } else if (await fs.pathExists(`${appDirNewLoc}/${REMOTE_MANIFEST}`)) {
+      return appDirNewLoc;
+    } else {
+      return appDirOldLoc;
+    }
   } else {
-    return appDirOldLoc;
+    if (await fs.pathExists(`${appDirNewLoc}/${REMOTE_MANIFEST}`)) {
+      return appDirNewLoc;
+    } else {
+      return appDirOldLoc;
+    }
   }
 }
 
@@ -449,5 +467,31 @@ export function getAppStudioEndpoint(): string {
     return "https://dev-int.teams.microsoft.com";
   } else {
     return "https://dev.teams.microsoft.com";
+  }
+}
+
+export async function copyFiles(
+  srcPath: string,
+  distPath: string,
+  excludeFileList: { fileName: string; recursive: boolean }[] = []
+): Promise<void> {
+  await fs.ensureDir(distPath);
+
+  const excludeFileNames = excludeFileList.map((file) => file.fileName);
+  const recursiveExcludeFileNames = excludeFileList
+    .filter((file) => file.recursive)
+    .map((file) => file.fileName);
+
+  const fileNames = await fs.readdir(srcPath);
+  for (const fileName of fileNames) {
+    if (excludeFileNames.includes(fileName)) {
+      continue;
+    }
+    await fs.copy(path.join(srcPath, fileName), path.join(distPath, fileName), {
+      overwrite: false,
+      errorOnExist: true,
+      filter: (src: string, dest: string): boolean =>
+        !recursiveExcludeFileNames.includes(path.basename(src)),
+    });
   }
 }

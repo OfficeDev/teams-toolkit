@@ -3,6 +3,7 @@
 
 import { ErrorNames, AzureConstants } from "./constants";
 import { Messages } from "./resources/messages";
+import { CommonStrings } from "./resources/strings";
 
 export enum ErrorType {
   User,
@@ -260,6 +261,31 @@ export class RegisterResourceProviderError extends PluginError {
         Messages.RegisterRequiredRP(AzureConstants.requiredResourceProviders),
         Messages.CheckOutputLogAndTryToFix,
       ],
+      innerError
+    );
+  }
+}
+
+// for the use of migrating v1 project
+export class MigrateV1ProjectError extends PluginError {
+  constructor(innerError?: Error) {
+    super(
+      ErrorType.User,
+      "MigrateV1ProjectError",
+      `Failed to migrate Teams Toolkit V1 project into '${CommonStrings.BOT_WORKING_DIR_NAME}'.`,
+      [Messages.RollbackToV1Project, Messages.CheckOutputLogAndTryToFix],
+      innerError
+    );
+  }
+}
+
+export class ExtractZipError extends PluginError {
+  constructor(path: string, innerError?: Error) {
+    super(
+      ErrorType.User,
+      "ExtractZipError",
+      `Failed to extract zip, please check the input: ${path}`,
+      [Messages.CheckOutputLogAndTryToFix, Messages.ReopenWorkingDir],
       innerError
     );
   }

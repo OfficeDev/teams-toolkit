@@ -5,10 +5,11 @@ import {
   ConfigFolderName,
   err,
   FxError,
+  InputConfigsFolderName,
   Inputs,
   ok,
-  PluginConfig,
   ProjectSettings,
+  ProjectSettingsFileName,
   Result,
   SolutionContext,
   Stage,
@@ -25,11 +26,13 @@ import {
 import * as path from "path";
 import * as fs from "fs-extra";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
-import { validateSettings } from "../tools";
+import { newEnvInfo, validateSettings } from "../tools";
 import * as uuid from "uuid";
 import { LocalCrypto } from "../crypto";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { PermissionRequestFileProvider } from "../permissionRequest";
+import { readJson } from "../../common/fileUtils";
+import { isMultiEnvEnabled } from "../../common";
 
 export const ProjectSettingsLoaderMW: Middleware = async (
   ctx: CoreHookContext,
@@ -76,8 +79,10 @@ export async function loadProjectSettings(
     }
 
     const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
-    const settingsFile = path.resolve(confFolderPath, "settings.json");
-    const projectSettings: ProjectSettings = await fs.readJson(settingsFile);
+    const settingsFile = isMultiEnvEnabled()
+      ? path.resolve(confFolderPath, InputConfigsFolderName, ProjectSettingsFileName)
+      : path.resolve(confFolderPath, "settings.json");
+    const projectSettings: ProjectSettings = await readJson(settingsFile);
     let projectIdMissing = false;
     if (!projectSettings.projectId) {
       projectSettings.projectId = uuid.v4();
@@ -109,7 +114,7 @@ export async function newSolutionContext(tools: Tools, inputs: Inputs): Promise<
   };
   const solutionContext: SolutionContext = {
     projectSettings: projectSettings,
-    config: new Map<string, PluginConfig>(),
+    envInfo: newEnvInfo(),
     root: inputs.projectPath || "",
     ...tools,
     ...tools.tokenProvider,

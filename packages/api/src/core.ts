@@ -20,6 +20,8 @@ export interface Core {
   removeEnv: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
   switchEnv: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
 
+  activateEnv: (env: string, systemInput: Inputs) => Promise<Result<Void, FxError>>;
+
   /**
    * only for CLI
    */
@@ -35,6 +37,7 @@ export interface Core {
   encrypt: (plaintext: string, inputs: Inputs) => Promise<Result<string, FxError>>;
   decrypt: (ciphertext: string, inputs: Inputs) => Promise<Result<string, FxError>>;
 
+  migrateV1Project: (systemInputs: Inputs) => Promise<Result<string, FxError>>;
   /**
    * For grant and check permission in remote collaboration
    */

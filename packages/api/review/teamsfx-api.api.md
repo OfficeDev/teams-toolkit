@@ -21,6 +21,12 @@ export interface AppStudioTokenProvider {
 }
 
 // @public (undocumented)
+export const ArchiveFolderName = ".archive";
+
+// @public (undocumented)
+export const ArchiveLogFileName = ".archive.log";
+
+// @public (undocumented)
 export function assembleError(e: any, source?: string): FxError;
 
 // @public
@@ -47,6 +53,8 @@ export interface AzureSolutionSettings extends SolutionSettings {
     capabilities: string[];
     // (undocumented)
     hostType: string;
+    // (undocumented)
+    migrateFromV1?: boolean;
 }
 
 // @public
@@ -122,6 +130,8 @@ export interface Context {
     // (undocumented)
     cryptoProvider?: CryptoProvider;
     // (undocumented)
+    envInfo?: EnvInfo;
+    // (undocumented)
     graphTokenProvider?: GraphTokenProvider;
     // (undocumented)
     localSettings?: LocalSettings;
@@ -133,8 +143,6 @@ export interface Context {
     projectSettings?: ProjectSettings;
     // (undocumented)
     root: string;
-    // (undocumented)
-    targetEnvName?: string;
     // (undocumented)
     telemetryReporter?: TelemetryReporter;
     // (undocumented)
@@ -160,6 +168,8 @@ interface Context_2 {
 // @public (undocumented)
 export interface Core {
     // (undocumented)
+    activateEnv: (env: string, systemInput: Inputs) => Promise<Result<Void, FxError>>;
+    // (undocumented)
     buildArtifacts: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
     // (undocumented)
     checkPermission: (systemInputs: Inputs) => Promise<Result<any, FxError>>;
@@ -182,6 +192,8 @@ export interface Core {
     listCollaborator: (systemInputs: Inputs) => Promise<Result<any, FxError>>;
     // (undocumented)
     localDebug: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
+    // (undocumented)
+    migrateV1Project: (systemInputs: Inputs) => Promise<Result<string, FxError>>;
     // (undocumented)
     provisionResources: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
     // (undocumented)
@@ -207,8 +219,36 @@ export type DynamicOptions = LocalFunc<StaticOptions>;
 // @public (undocumented)
 export const DynamicPlatforms: Platform[];
 
+// @public
+export interface EnvConfig {
+    // (undocumented)
+    $schema?: string;
+    azure: {
+        subscriptionId?: string;
+        resourceGroupName?: string;
+    };
+    manifest: {
+        description?: string;
+        values: {
+            [k: string]: unknown;
+        };
+        [k: string]: unknown;
+    };
+    skipAddingSqlUser?: boolean;
+}
+
 // @public (undocumented)
-export type EnvConfig = Json;
+export const EnvConfigFileNameTemplate: string;
+
+// @public (undocumented)
+export interface EnvInfo {
+    // (undocumented)
+    config: EnvConfig;
+    // (undocumented)
+    envName: string;
+    // (undocumented)
+    profile: Map<string, any>;
+}
 
 // @public
 export interface EnvMeta {
@@ -219,6 +259,12 @@ export interface EnvMeta {
     // (undocumented)
     sideloading: boolean;
 }
+
+// @public (undocumented)
+export const EnvNamePlaceholder = "@envName";
+
+// @public (undocumented)
+export const EnvProfileFileNameTemplate: string;
 
 // @public (undocumented)
 export interface FolderQuestion extends UserInputQuestion {
@@ -440,6 +486,9 @@ export interface IName {
     short: string;
 }
 
+// @public (undocumented)
+export const InputConfigsFolderName = "configs";
+
 // @public
 export interface InputResult<T> {
     result?: T;
@@ -450,6 +499,8 @@ export interface InputResult<T> {
 export interface Inputs extends Json {
     // (undocumented)
     ignoreConfigPersist?: boolean;
+    // (undocumented)
+    ignoreEnvInfo?: boolean;
     // (undocumented)
     ignoreLock?: boolean;
     // (undocumented)
@@ -637,10 +688,10 @@ export interface MultiSelectQuestion extends UserInputQuestion {
 export type MultiSelectResult = InputResult<StaticOptions>;
 
 // @public (undocumented)
-export function newSystemError(source: string, name: string, message: string, issueLink?: string): SystemError;
+export function newSystemError(source: string, name: string, message: string, issueLink?: string, innerError?: any): SystemError;
 
 // @public (undocumented)
-export function newUserError(source: string, name: string, message: string, helpLink?: string): UserError;
+export function newUserError(source: string, name: string, message: string, helpLink?: string, innerError?: any): UserError;
 
 // @public
 export interface OptionItem {
@@ -750,6 +801,8 @@ export interface ProjectConfig {
 // @public
 export interface ProjectSettings {
     // (undocumented)
+    activeEnvironment?: string;
+    // (undocumented)
     appName: string;
     // (undocumented)
     defaultFunctionName?: string;
@@ -758,10 +811,13 @@ export interface ProjectSettings {
     // (undocumented)
     projectId: string;
     // (undocumented)
-    solutionSettings?: SolutionSettings;
+    solutionSettings: SolutionSettings;
     // (undocumented)
     version?: string;
 }
+
+// @public (undocumented)
+export const ProjectSettingsFileName = "projectSettings.json";
 
 // @public
 export interface ProjectStates {
@@ -778,10 +834,13 @@ type ProvisionInputs = Inputs & SolutionInputs;
 
 // @public (undocumented)
 type ProvisionOutput = {
-    output: Record<string, string>;
-    states: Record<string, string>;
-    secrets: Record<string, string>;
+    output: Json;
+    states: Json;
+    secrets: Json;
 };
+
+// @public (undocumented)
+export const PublishProfilesFolderName = "publishProfiles";
 
 // @public
 export class QTreeNode {
@@ -949,6 +1008,8 @@ export interface Solution {
     // (undocumented)
     localDebug: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
     // (undocumented)
+    migrate?: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
+    // (undocumented)
     name: string;
     // (undocumented)
     provision: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
@@ -964,7 +1025,7 @@ export type SolutionConfig = Map<PluginIdentity, PluginConfig>;
 // @public (undocumented)
 export interface SolutionContext extends Context {
     // (undocumented)
-    config: SolutionConfig;
+    envInfo: EnvInfo;
 }
 
 // @public (undocumented)
@@ -983,7 +1044,7 @@ interface SolutionPlugin {
     }>, FxError>>;
     // (undocumented)
     displayName: string;
-    executeUserTask?: (func: Func, inputs: Inputs, ctx?: Context_2) => Promise<Result<unknown, FxError>>;
+    executeUserTask?: (ctx: Context_2, func: Func, inputs: Inputs) => Promise<Result<unknown, FxError>>;
     generateResourceTemplate: (ctx: Context_2, inputs: Inputs) => Promise<Result<ResourceTempalte, FxError>>;
     getQuestionsForScaffolding: (inputs: Inputs, ctx?: Context_2) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
@@ -991,7 +1052,7 @@ interface SolutionPlugin {
     package?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
     provisionLocalResource?: (ctx: Context_2, tokenProvider: TokenProvider) => Promise<Result<LocalSettings_2, FxError>>;
     provisionResources: (ctx: Context_2, inputs: Inputs, provisionTemplates: Record<PluginName, Json>, tokenProvider: TokenProvider) => Promise<Result<Record<PluginName, ProvisionOutput>, FxError>>;
-    publishApplication?: (ctx: Context_2, tokenProvider: AppStudioTokenProvider, inputs: Inputs) => Promise<Result<Void, FxError>>;
+    publishApplication?: (ctx: Context_2, inputs: Inputs, provisionOutput: Readonly<Record<PluginName, ProvisionOutput>>, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
     scaffoldSourceCode?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Record<PluginName, {
         output: Record<string, string>;
     }>, FxError>>;
@@ -1023,6 +1084,8 @@ export enum Stage {
     grantPermission = "grantPermission",
     // (undocumented)
     listCollaborator = "listCollaborator",
+    // (undocumented)
+    migrateV1 = "migrateV1",
     // (undocumented)
     package = "package",
     // (undocumented)
@@ -1089,6 +1152,7 @@ export class SystemError extends Error implements FxError {
     issueLink?: string;
     source: string;
     timestamp: Date;
+    userData?: string;
 }
 
 // @public
@@ -1137,6 +1201,26 @@ export class TeamsAppManifest {
     validDomains?: string[];
     version: string;
     webApplicationInfo?: IWebApplicationInfo;
+}
+
+// @public (undocumented)
+export enum TelemetryEvent {
+    // (undocumented)
+    askQuestion = "askQuestion"
+}
+
+// @public (undocumented)
+export enum TelemetryProperty {
+    // (undocumented)
+    answer = "answer",
+    // (undocumented)
+    answerType = "answerType",
+    // (undocumented)
+    platform = "platform",
+    // (undocumented)
+    question = "question",
+    // (undocumented)
+    stage = "stage"
 }
 
 // @public
@@ -1194,12 +1278,14 @@ export interface Tools {
 }
 
 // @public (undocumented)
-export function traverse(root: QTreeNode, inputs: Inputs, ui: UserInteraction): Promise<Result<Void, FxError>>;
+export function traverse(root: QTreeNode, inputs: Inputs, ui: UserInteraction, telemetryReporter?: TelemetryReporter): Promise<Result<Void, FxError>>;
 
 // @public (undocumented)
 export enum TreeCategory {
     // (undocumented)
     Account = 1,
+    // (undocumented)
+    Environment = 5,
     // (undocumented)
     Feedback = 2,
     // (undocumented)
@@ -1219,7 +1305,11 @@ export interface TreeItem {
     // (undocumented)
     contextValue?: string;
     // (undocumented)
+    description?: string;
+    // (undocumented)
     icon?: string;
+    // (undocumented)
+    isCustom?: boolean;
     // (undocumented)
     label: string;
     // (undocumented)
@@ -1295,6 +1385,9 @@ export interface UserInteraction {
         color: Colors;
     }>, modal: boolean, ...items: string[]): Promise<Result<string | undefined, FxError>>;
 }
+
+// @public (undocumented)
+export const V1ManifestFileName = "manifest.json";
 
 declare namespace v2 {
     export {

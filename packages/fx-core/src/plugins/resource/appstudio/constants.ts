@@ -10,18 +10,39 @@ export class Constants {
   public static readonly REMOTE_TEAMS_APP_ID = "teams-app-id";
   public static readonly READ_MORE = "Read more";
   public static readonly PUBLISH_GUIDE = "https://aka.ms/teamsfx-publish";
+
+  public static readonly PERMISSIONS = {
+    name: "Teams App",
+    noPermission: "No permission",
+    admin: "Administrator",
+    operative: "Operative",
+    type: "M365",
+  };
+}
+
+export class ErrorMessages {
+  static readonly GetConfigError = (configName: string, plugin: string) =>
+    `Failed to get configuration value "${configName}" for ${plugin}.`;
+  static readonly ParseUserInfoError = "Failed to parse userInfo.";
 }
 
 /**
  * Config keys that are useful for generating remote teams app manifest
  */
 export const REMOTE_MANIFEST = "manifest.source.json";
+export const MANIFEST_TEMPLATE = "manifest.template.json";
 export const FRONTEND_ENDPOINT = "endpoint";
 export const FRONTEND_DOMAIN = "domain";
 export const FRONTEND_ENDPOINT_ARM = "frontendHosting_endpoint";
 export const FRONTEND_DOMAIN_ARM = "frontendHosting_domain";
 export const BOT_ID = "botId";
 export const LOCAL_BOT_ID = "localBotId";
+
+/**
+ * Config Keys that are useful for remote collaboration
+ */
+export const SOLUTION = "solution";
+export const SOLUTION_USERINFO = "userinfo";
 
 export const TEAMS_APP_MANIFEST_TEMPLATE = `{
   "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.9/MicrosoftTeams.schema.json",
@@ -38,6 +59,46 @@ export const TEAMS_APP_MANIFEST_TEMPLATE = `{
   "icons": {
       "color": "color.png",
       "outline": "outline.png"
+  },
+  "name": {
+      "short": "{appName}",
+      "full": "This field is not used"
+  },
+  "description": {
+      "short": "Short description of {appName}.",
+      "full": "Full description of {appName}."
+  },
+  "accentColor": "#FFFFFF",
+  "bots": [],
+  "composeExtensions": [],
+  "configurableTabs": [],
+  "staticTabs": [],
+  "permissions": [
+      "identity",
+      "messageTeamMembers"
+  ],
+  "validDomains": [],
+  "webApplicationInfo": {
+      "id": "{appClientId}",
+      "resource": "{webApplicationInfoResource}"
+  }
+}`;
+
+export const TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV = `{
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.9/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.9",
+  "version": "{version}",
+  "id": "{appid}",
+  "packageName": "com.microsoft.teams.extension",
+  "developer": {
+      "name": "Teams App, Inc.",
+      "websiteUrl": "{baseUrl}",
+      "privacyUrl": "{baseUrl}/index.html#/privacy",
+      "termsOfUseUrl": "{baseUrl}/index.html#/termsofuse"
+  },
+  "icons": {
+      "color": "resources/color.png",
+      "outline": "resources/outline.png"
   },
   "name": {
       "short": "{appName}",
@@ -146,12 +207,12 @@ export const BOTS_TPL: IBot[] = [
         scopes: ["personal", "team", "groupchat"],
         commands: [
           {
-            title: "intro",
-            description: "Send introduction card of this Bot",
+            title: "welcome",
+            description: "Resend welcome card of this Bot",
           },
           {
-            title: "show",
-            description: "Show user profile by calling Microsoft Graph API with SSO",
+            title: "learn",
+            description: "Learn about Adaptive Card and Bot Command",
           },
         ],
       },

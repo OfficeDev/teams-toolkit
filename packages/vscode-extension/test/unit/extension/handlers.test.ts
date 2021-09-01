@@ -162,6 +162,31 @@ suite("handlers", () => {
       sinon.restore();
       sinon.assert.calledOnce(publishApplication);
     });
+
+    test("createEnv", async () => {
+      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      const createEnv = sinon.spy(handlers.core, "createEnv");
+      sinon.stub(vscode.commands, "executeCommand");
+
+      await handlers.runCommand(Stage.createEnv);
+
+      sinon.restore();
+      sinon.assert.calledOnce(createEnv);
+    });
+
+    test("viewEnv", async () => {
+      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+
+      const result = await handlers.viewEnvironment("test");
+
+      sinon.restore();
+      chai.expect(result.isErr()).equals(true);
+      chai.expect((result as any).error.name).equals("NoWorkspace");
+    });
   });
 
   suite("detectVsCodeEnv()", () => {

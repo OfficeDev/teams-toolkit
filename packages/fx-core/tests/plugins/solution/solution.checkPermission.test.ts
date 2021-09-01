@@ -10,9 +10,19 @@ import {
   SolutionContext,
   Platform,
   GraphTokenProvider,
+  ok,
+  Plugin,
+  PluginContext,
+  Result,
+  FxError,
+  Void,
+  err,
+  returnUserError,
 } from "@microsoft/teamsfx-api";
 import {
   GLOBAL_CONFIG,
+  PluginNames,
+  REMOTE_TENANT_ID,
   SolutionError,
   SOLUTION_PROVISION_SUCCEEDED,
 } from "../../../src/plugins/solution/fx-solution/constants";
@@ -20,17 +30,20 @@ import { HostTypeOptionAzure } from "../../../src/plugins/solution/fx-solution/q
 import * as uuid from "uuid";
 import sinon from "sinon";
 import { EnvConfig, MockGraphTokenProvider } from "../resource/apim/testUtil";
+import Container from "typedi";
+import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
+import { newEnvInfo } from "../../../src";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
+const appStudioPlugin = Container.get<Plugin>(ResourcePlugins.AppStudioPlugin);
+const aadPlugin = Container.get<Plugin>(ResourcePlugins.AadPlugin);
 
 describe("checkPermission() for Teamsfx projects", () => {
   const sandbox = sinon.createSandbox();
   const mockProjectTenantId = "mock_project_tenant_id";
 
   function mockSolutionContext(): SolutionContext {
-    const config: SolutionConfig = new Map();
-    config.set(GLOBAL_CONFIG, new ConfigMap());
     const mockGraphTokenProvider = new MockGraphTokenProvider(
       mockProjectTenantId,
       EnvConfig.servicePrincipalClientId,
@@ -38,7 +51,7 @@ describe("checkPermission() for Teamsfx projects", () => {
     );
     return {
       root: ".",
-      config,
+      envInfo: newEnvInfo(),
       answers: { platform: Platform.VSCode },
       projectSettings: undefined,
       graphTokenProvider: mockGraphTokenProvider,
@@ -81,9 +94,7 @@ describe("checkPermission() for Teamsfx projects", () => {
     };
     const result = await solution.checkPermission(mockedCtx);
     expect(result.isErr()).to.be.true;
-    expect(result._unsafeUnwrapErr().name).equals(
-      SolutionError.CannotCheckPermissionBeforeProvision
-    );
+    expect(result._unsafeUnwrapErr().name).equals(SolutionError.CannotProcessBeforeProvision);
   });
 
   it("should return error if cannot get user info", async () => {
@@ -99,7 +110,7 @@ describe("checkPermission() for Teamsfx projects", () => {
         version: "1.0",
       },
     };
-    mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+    mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
 
     sandbox
       .stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject")
@@ -124,7 +135,7 @@ describe("checkPermission() for Teamsfx projects", () => {
         version: "1.0",
       },
     };
-    mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+    mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
 
     sandbox.stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject").resolves({
       tid: "fake_tid",
@@ -133,9 +144,126 @@ describe("checkPermission() for Teamsfx projects", () => {
       name: "fake_name",
     });
 
+    mockedCtx.envInfo.profile.set(PluginNames.AAD, new ConfigMap());
+    mockedCtx.envInfo.profile.get(PluginNames.AAD)?.set(REMOTE_TENANT_ID, mockProjectTenantId);
+
     const result = await solution.checkPermission(mockedCtx);
     expect(result.isErr()).to.be.true;
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.M365AccountNotMatch);
     sandbox.restore();
+  });
+
+  it("should return error if check permission failed", async () => {
+    const solution = new TeamsAppSolution();
+    const mockedCtx = mockSolutionContext();
+
+    mockedCtx.projectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
+        version: "1.0",
+      },
+    };
+    mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+
+    sandbox.stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject").resolves({
+      tid: mockProjectTenantId,
+      oid: "fake_oid",
+      unique_name: "fake_unique_name",
+      name: "fake_name",
+    });
+
+    appStudioPlugin.checkPermission = async function (
+      _ctx: PluginContext
+    ): Promise<Result<any, FxError>> {
+      return err(
+        returnUserError(
+          new Error(`Check permission failed.`),
+          "AppStudioPlugin",
+          "FailedToCheckPermission"
+        )
+      );
+    };
+
+    aadPlugin.checkPermission = async function (
+      _ctx: PluginContext
+    ): Promise<Result<any, FxError>> {
+      return ok([
+        {
+          name: "aad_app",
+          resourceId: "fake_aad_app_resource_id",
+          roles: "Owner",
+          type: "M365",
+        },
+      ]);
+    };
+
+    mockedCtx.envInfo.profile.set(PluginNames.AAD, new ConfigMap());
+    mockedCtx.envInfo.profile.get(PluginNames.AAD)?.set(REMOTE_TENANT_ID, mockProjectTenantId);
+
+    const result = await solution.checkPermission(mockedCtx);
+    expect(result.isErr()).to.be.true;
+    expect(result._unsafeUnwrapErr().name).equals("FailedToCheckPermission");
+    sinon.restore();
+  });
+
+  it("happy path", async () => {
+    const solution = new TeamsAppSolution();
+    const mockedCtx = mockSolutionContext();
+
+    mockedCtx.projectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
+        version: "1.0",
+      },
+    };
+    mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+
+    sandbox.stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject").resolves({
+      tid: mockProjectTenantId,
+      oid: "fake_oid",
+      unique_name: "fake_unique_name",
+      name: "fake_name",
+    });
+
+    aadPlugin.checkPermission = async function (
+      _ctx: PluginContext
+    ): Promise<Result<any, FxError>> {
+      return ok([
+        {
+          name: "aad_app",
+          resourceId: "fake_aad_app_resource_id",
+          roles: "Owner",
+          type: "M365",
+        },
+      ]);
+    };
+
+    appStudioPlugin.checkPermission = async function (
+      _ctx: PluginContext
+    ): Promise<Result<any, FxError>> {
+      return ok([
+        {
+          name: "teams_app",
+          resourceId: "fake_teams_app_resource_id",
+          roles: "Administrator",
+          type: "M365",
+        },
+      ]);
+    };
+    mockedCtx.envInfo.profile.set(PluginNames.AAD, new ConfigMap());
+    mockedCtx.envInfo.profile.get(PluginNames.AAD)?.set(REMOTE_TENANT_ID, mockProjectTenantId);
+
+    const result = await solution.checkPermission(mockedCtx);
+    if (result.isErr()) {
+      chai.assert.fail("result is error");
+    }
+    expect(result.value.length).equal(2);
+    sinon.restore();
   });
 });

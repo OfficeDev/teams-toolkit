@@ -70,7 +70,7 @@ describe("simpleAuthPlugin", () => {
     );
   });
 
-  it("generate arm templates with only simple auth plugin", async function () {
+  it("generate arm templates: only simple auth plugin", async function () {
     // Act
     const activeResourcePlugins = [Constants.AadAppPlugin.id, Constants.SimpleAuthPlugin.id];
     pluginContext.projectSettings = {
@@ -85,14 +85,18 @@ describe("simpleAuthPlugin", () => {
     const generateArmTemplatesResult = await simpleAuthPlugin.generateArmTemplates(pluginContext);
 
     // Assert
-    const testModuleFileName = "simple_auth_test.bicep";
+    const testProvisionModuleFileName = "simple_auth_provision.only.bicep";
+    const testConfigurationModuleFileName = "simple_auth_configuration.only.bicep";
     const mockedSolutionDataContext = {
       Plugins: activeResourcePlugins,
       PluginOutput: {
         "fx-resource-simple-auth": {
           Modules: {
             simpleAuthProvision: {
-              Path: `./${testModuleFileName}`,
+              Path: `./${testProvisionModuleFileName}`,
+            },
+            simpleAuthConfiguration: {
+              Path: `./${testConfigurationModuleFileName}`,
             },
           },
         },
@@ -106,22 +110,32 @@ describe("simpleAuthPlugin", () => {
         generateArmTemplatesResult.value
       );
 
-      const expectedBicepFileDirectory = path.join(
-        __dirname,
-        "expectedBicepFiles",
-        "onlyWithSimpleAuthPlugin"
+      const expectedBicepFileDirectory = path.join(__dirname, "expectedBicepFiles");
+      const expectedProvisionModuleFilePath = path.join(
+        expectedBicepFileDirectory,
+        testProvisionModuleFileName
       );
-      const expectedModuleFilePath = path.join(expectedBicepFileDirectory, testModuleFileName);
       chai.assert.strictEqual(
         expectedResult.Modules!.simpleAuthProvision.Content,
-        fs.readFileSync(expectedModuleFilePath, ConstantString.UTF8Encoding)
+        fs.readFileSync(expectedProvisionModuleFilePath, ConstantString.UTF8Encoding)
       );
-      const expectedModuleSnippetFilePath = path.join(expectedBicepFileDirectory, "module.bicep");
+      const expectedConfigurationModuleFilePath = path.join(
+        expectedBicepFileDirectory,
+        testConfigurationModuleFileName
+      );
+      chai.assert.strictEqual(
+        expectedResult.Modules!.simpleAuthConfiguration.Content,
+        fs.readFileSync(expectedConfigurationModuleFilePath, ConstantString.UTF8Encoding)
+      );
+      const expectedModuleSnippetFilePath = path.join(
+        expectedBicepFileDirectory,
+        "module.only.bicep"
+      );
       chai.assert.strictEqual(
         expectedResult.Orchestration.ModuleTemplate!.Content,
         fs.readFileSync(expectedModuleSnippetFilePath, ConstantString.UTF8Encoding)
       );
-      const expectedParameterFilePath = path.join(expectedBicepFileDirectory, "input_param.bicep");
+      const expectedParameterFilePath = path.join(expectedBicepFileDirectory, "param.bicep");
       chai.assert.strictEqual(
         expectedResult.Orchestration.ParameterTemplate!.Content,
         fs.readFileSync(expectedParameterFilePath, ConstantString.UTF8Encoding)
@@ -136,7 +150,7 @@ describe("simpleAuthPlugin", () => {
     }
   });
 
-  it("generate arm templates with all plugins", async function () {
+  it("generate arm templates: simple auth plugin with all resource plugins enabled", async function () {
     // Act
     const activeResourcePlugins = [
       Constants.AadAppPlugin.id,
@@ -155,14 +169,18 @@ describe("simpleAuthPlugin", () => {
     const generateArmTemplatesResult = await simpleAuthPlugin.generateArmTemplates(pluginContext);
 
     // Assert
-    const testModuleFileName = "simple_auth_test.bicep";
+    const testProvisionModuleFileName = "simple_auth_provision.all.bicep";
+    const testConfigurationModuleFileName = "simple_auth_configuration.all.bicep";
     const mockedSolutionDataContext = {
       Plugins: activeResourcePlugins,
       PluginOutput: {
         "fx-resource-simple-auth": {
           Modules: {
             simpleAuthProvision: {
-              Path: `./${testModuleFileName}`,
+              Path: `./${testProvisionModuleFileName}`,
+            },
+            simpleAuthConfiguration: {
+              Path: `./${testConfigurationModuleFileName}`,
             },
           },
         },
@@ -181,22 +199,32 @@ describe("simpleAuthPlugin", () => {
         generateArmTemplatesResult.value
       );
 
-      const expectedBicepFileDirectory = path.join(
-        __dirname,
-        "expectedBicepFiles",
-        "withAllPlugins"
+      const expectedBicepFileDirectory = path.join(__dirname, "expectedBicepFiles");
+      const expectedProvisionModuleFilePath = path.join(
+        expectedBicepFileDirectory,
+        testProvisionModuleFileName
       );
-      const expectedModuleFilePath = path.join(expectedBicepFileDirectory, testModuleFileName);
       chai.assert.strictEqual(
         expectedResult.Modules!.simpleAuthProvision.Content,
-        fs.readFileSync(expectedModuleFilePath, ConstantString.UTF8Encoding)
+        fs.readFileSync(expectedProvisionModuleFilePath, ConstantString.UTF8Encoding)
       );
-      const expectedModuleSnippetFilePath = path.join(expectedBicepFileDirectory, "module.bicep");
+      const expectedConfigurationModuleFilePath = path.join(
+        expectedBicepFileDirectory,
+        testConfigurationModuleFileName
+      );
+      chai.assert.strictEqual(
+        expectedResult.Modules!.simpleAuthConfiguration.Content,
+        fs.readFileSync(expectedConfigurationModuleFilePath, ConstantString.UTF8Encoding)
+      );
+      const expectedModuleSnippetFilePath = path.join(
+        expectedBicepFileDirectory,
+        "module.all.bicep"
+      );
       chai.assert.strictEqual(
         expectedResult.Orchestration.ModuleTemplate!.Content,
         fs.readFileSync(expectedModuleSnippetFilePath, ConstantString.UTF8Encoding)
       );
-      const expectedParameterFilePath = path.join(expectedBicepFileDirectory, "input_param.bicep");
+      const expectedParameterFilePath = path.join(expectedBicepFileDirectory, "param.bicep");
       chai.assert.strictEqual(
         expectedResult.Orchestration.ParameterTemplate!.Content,
         fs.readFileSync(expectedParameterFilePath, ConstantString.UTF8Encoding)

@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import {
-  AzureSolutionSettings,
   err,
   FxError,
   ok,
@@ -12,9 +11,9 @@ import {
   TreeItem,
   Void,
 } from "@microsoft/teamsfx-api";
-import { AzureAccount } from "./commonlib/azure-account.api";
+import AppStudioLogin from "./commonlib/appStudioLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
-import { core, getSystemInputs, tools } from "./handlers";
+import { core, getSystemInputs, tools, getAzureSolutionSettings } from "./handlers";
 import { askSubscription } from "@microsoft/teamsfx-core";
 import { VS_CODE_UI } from "./extension";
 import {
@@ -23,6 +22,7 @@ import {
   TelemetryProperty,
   TelemetryTiggerFrom,
 } from "./telemetry/extTelemetryEvents";
+import axios from "axios";
 import * as util from "util";
 import * as StringResources from "./resources/Strings.json";
 import { StringContext } from "./utils/stringContext";
@@ -38,21 +38,11 @@ export async function getSubscriptionId(): Promise<string | undefined> {
   return undefined;
 }
 
-export async function getAzureSolutionSettings(): Promise<AzureSolutionSettings | undefined> {
-  const projectConfigRes = await core.getProjectConfig(getSystemInputs());
-  if (projectConfigRes.isOk()) {
-    if (projectConfigRes.value) {
-      return projectConfigRes.value.settings?.solutionSettings as AzureSolutionSettings;
-    }
-  }
-  // else {
-  //   showError(projectConfigRes.error);
-  // }
-  return undefined;
-}
-
 export async function isValid(): Promise<boolean> {
-  const projectConfigRes = await core.getProjectConfig(getSystemInputs());
+  const input = getSystemInputs();
+  input.ignoreEnvInfo = true;
+  const projectConfigRes = await core.getProjectConfig(input);
+
   let supported = false;
   if (projectConfigRes.isOk()) {
     if (projectConfigRes.value) {
@@ -67,7 +57,6 @@ export async function isValid(): Promise<boolean> {
 
 export async function registerAccountTreeHandler(): Promise<Result<Void, FxError>> {
   let getSelectSubItem: undefined | ((token: any) => Promise<[TreeItem, boolean]>) = undefined;
-
   getSelectSubItem = async (token: any): Promise<[TreeItem, boolean]> => {
     let selectSubLabel = "";
     const subscriptions: SubscriptionInfo[] | undefined =
@@ -131,6 +120,36 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
     }
   };
 
+  const getSideloadingItem = async (token: string): Promise<TreeItem[]> => {
+    const isSideloadingAllowed = await getSideloadingStatus(token);
+    if (isSideloadingAllowed === undefined) {
+      // show nothing if internal error (TODO: may add back if full status is required later)
+      return [];
+    } else if (isSideloadingAllowed === true) {
+      // show nothing if status is good (TODO: may add back if full status is required later)
+      return [];
+    } else {
+      showSideloadingWarning();
+      return [
+        {
+          commandId: "fx-extension.checkSideloading",
+          label: StringResources.vsc.accountTree.sideloadingWarning,
+          callback: () => {
+            showSideloadingWarning();
+            return Promise.resolve(ok(null));
+          },
+          parent: "fx-extension.signinM365",
+          contextValue: "checkSideloading",
+          icon: "warning",
+          tooltip: {
+            isMarkdown: false,
+            value: StringResources.vsc.accountTree.sideloadingTooltip,
+          },
+        },
+      ];
+    }
+  };
+
   const selectSubscriptionCallback = async (args?: any[]): Promise<Result<null, FxError>> => {
     tools.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.SelectSubscription, {
       [TelemetryProperty.TriggerFrom]: args
@@ -144,6 +163,16 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
     );
     if (askSubRes.isErr()) return err(askSubRes.error);
     await setSubscription(askSubRes.value);
+    return ok(null);
+  };
+
+  const refreshSideloadingCallback = async (args?: any[]): Promise<Result<null, FxError>> => {
+    const status = await AppStudioLogin.getStatus();
+    if (status.token !== undefined) {
+      const subItem = await getSideloadingItem(status.token);
+      tools.treeProvider?.refresh(subItem);
+    }
+
     return ok(null);
   };
 
@@ -217,18 +246,21 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
       accountInfo?: Record<string, unknown> | undefined
     ) => {
       if (status === "SignedIn") {
-        const token = await tools.tokenProvider.appStudioToken.getJsonObject(true);
-        if (token !== undefined) {
+        if (token !== undefined && accountInfo !== undefined) {
           tools.treeProvider?.refresh([
             {
               commandId: "fx-extension.signinM365",
-              label: (token as any).upn ? (token as any).upn : "",
+              label: (accountInfo.upn as string) ? (accountInfo.upn as string) : "",
               callback: signinM365Callback,
               parent: TreeCategory.Account,
               contextValue: "signedinM365",
               icon: "M365",
             },
           ]);
+          const subItem = await getSideloadingItem(token);
+          if (subItem && subItem.length > 0) {
+            tools.treeProvider?.add(subItem);
+          }
         }
       } else if (status === "SigningIn") {
         tools.treeProvider?.refresh([
@@ -249,6 +281,13 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
             parent: TreeCategory.Account,
             icon: "M365",
             contextValue: "signinM365",
+          },
+        ]);
+        tools.treeProvider?.remove([
+          {
+            commandId: "fx-extension.checkSideloading",
+            label: "",
+            parent: "fx-extension.signinM365",
           },
         ]);
       }
@@ -311,41 +350,62 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
       return Promise.resolve();
     }
   );
-  tools.treeProvider!.add([
-    {
-      commandId: "fx-extension.signinM365",
-      label: StringResources.vsc.handlers.signIn365,
-      callback: signinM365Callback,
-      parent: TreeCategory.Account,
-      contextValue: "signinM365",
-      icon: "M365",
-      tooltip: {
-        isMarkdown: true,
-        value: StringResources.vsc.accountTree.m365AccountTooltip,
-      },
+
+  const signinM365TreeItem: TreeItem = {
+    commandId: "fx-extension.signinM365",
+    label: StringResources.vsc.handlers.signIn365,
+    callback: signinM365Callback,
+    parent: TreeCategory.Account,
+    contextValue: "signinM365",
+    subTreeItems: [],
+    icon: "M365",
+    tooltip: {
+      isMarkdown: true,
+      value: StringResources.vsc.accountTree.m365AccountTooltip,
     },
-    {
-      commandId: "fx-extension.signinAzure",
-      label: StringContext.getSignInAzureContext(),
-      callback: async (args?: any[]) => {
-        return signinAzureCallback(args);
-      },
-      parent: TreeCategory.Account,
-      contextValue: "signinAzure",
-      subTreeItems: [],
-      icon: "azure",
-      tooltip: {
-        isMarkdown: true,
-        value: StringResources.vsc.accountTree.azureAccountTooltip,
-      },
+  };
+
+  const refreshSideloadingTreeItem: TreeItem = {
+    commandId: "fx-extension.refreshSideloading",
+    label: StringResources.vsc.accountTree.sideloadingRefresh,
+    callback: refreshSideloadingCallback,
+    parent: undefined,
+  };
+
+  const signinAzureTreeItem: TreeItem = {
+    commandId: "fx-extension.signinAzure",
+    label: StringContext.getSignInAzureContext(),
+    callback: async (args?: any[]) => {
+      return signinAzureCallback(args);
     },
-    {
-      commandId: "fx-extension.specifySubscription",
-      label: StringResources.vsc.accountTree.specifySubscription,
-      callback: selectSubscriptionCallback,
-      parent: undefined,
+    parent: TreeCategory.Account,
+    contextValue: "signinAzure",
+    subTreeItems: [],
+    icon: "azure",
+    tooltip: {
+      isMarkdown: true,
+      value: StringResources.vsc.accountTree.azureAccountTooltip,
     },
-  ]);
+  };
+
+  const specifySubscriptionTreeItem: TreeItem = {
+    commandId: "fx-extension.specifySubscription",
+    label: StringResources.vsc.accountTree.specifySubscription,
+    callback: selectSubscriptionCallback,
+    parent: undefined,
+  };
+
+  const solutionSettings = await getAzureSolutionSettings();
+  if (solutionSettings && "SPFx" === solutionSettings.hostType) {
+    tools.treeProvider!.add([signinM365TreeItem, refreshSideloadingTreeItem]);
+  } else {
+    tools.treeProvider!.add([
+      signinM365TreeItem,
+      refreshSideloadingTreeItem,
+      signinAzureTreeItem,
+      specifySubscriptionTreeItem,
+    ]);
+  }
 
   return ok(Void);
 }
@@ -373,4 +433,55 @@ async function setSubscription(subscription: SubscriptionInfo | undefined) {
       },
     ]);
   }
+}
+
+function showSideloadingWarning() {
+  VS_CODE_UI.showMessage(
+    "warn",
+    StringResources.vsc.accountTree.sideloadingMessage,
+    false,
+    StringResources.vsc.common.readMore
+  )
+    .then(async (result) => {
+      if (result.isOk() && result.value === StringResources.vsc.common.readMore) {
+        await VS_CODE_UI.openUrl("https://aka.ms/teamsfx-custom-app");
+      }
+    })
+    .catch((error) => {});
+}
+
+async function getSideloadingStatus(token: string): Promise<boolean | undefined> {
+  const instance = axios.create({
+    baseURL: "https://dev.teams.microsoft.com",
+    timeout: 30000,
+  });
+  instance.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
+  let retry = 0;
+  const retryInterval = 2000;
+  do {
+    try {
+      const response = await instance.get("/api/usersettings/mtUserAppPolicy");
+      let result: boolean | undefined;
+      if (response.status >= 400) {
+        result = undefined;
+      } else {
+        result = response.data?.value?.isSideloadingAllowed as boolean;
+      }
+
+      tools.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.CheckSideloading, {
+        [TelemetryProperty.IsSideloadingAllowed]: result + "",
+      });
+      return result;
+    } catch (error) {
+      tools.telemetryReporter?.sendTelemetryErrorEvent(TelemetryEvent.CheckSideloading, error);
+      await delay((retry + 1) * retryInterval);
+    }
+  } while (++retry < 3);
+
+  return undefined;
+}
+
+function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }

@@ -14,7 +14,7 @@ import Provision from "./provision";
 import Deploy from "./deploy";
 import Init from "./init";
 import Publish from "./publish";
-import Build from "./build";
+import Package from "./package";
 import Validate from "./validate";
 import Config from "./config";
 import Preview from "./preview/preview";
@@ -29,7 +29,7 @@ export const commands: YargsCommand[] = [
   new Provision(),
   new Deploy(),
   new Init(),
-  new Build(),
+  new Package(),
   new Validate(),
   new Publish(),
   new Config(),

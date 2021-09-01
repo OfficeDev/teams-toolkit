@@ -28,6 +28,7 @@ import {
   deployArmTemplates,
   generateArmTemplate,
 } from "../../../src/plugins/solution/fx-solution/arm";
+import * as bicepChecker from "../../../src/plugins/solution/fx-solution/utils/depsChecker/bicepChecker";
 import { it } from "mocha";
 import path from "path";
 import { ArmResourcePlugin } from "../../../src/common/armInterface";
@@ -42,11 +43,13 @@ import {
 } from "./util";
 import { ExecOptions } from "child_process";
 import { Executor } from "../../../src/common/tools";
+import * as os from "os";
 
 import "../../../src/plugins/resource/frontend";
 import "../../../src/plugins/resource/simpleauth";
 import "../../../src/plugins/resource/spfx";
 import "../../../src/plugins/resource/aad";
+import { environmentManager } from "../../../src";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -58,15 +61,21 @@ const simpleAuthPlugin = Container.get<Plugin>(ResourcePlugins.SimpleAuthPlugin)
 const spfxPlugin = Container.get<Plugin>(ResourcePlugins.SpfxPlugin) as Plugin & ArmResourcePlugin;
 const aadPlugin = Container.get<Plugin>(ResourcePlugins.AadPlugin) as Plugin & ArmResourcePlugin;
 
-const parameterFolder = "./infra/azure/parameters";
-const templateFolder = "./infra/azure/templates";
+const baseFolder = "./infra/azure";
+const parameterFolderName = "parameters";
+const templateFolderName = "templates";
+const fileEncoding = "UTF8";
+const parameterFolder = path.join(baseFolder, parameterFolderName);
+const templateFolder = path.join(baseFolder, templateFolderName);
 
 function mockSolutionContext(): SolutionContext {
-  const config: SolutionConfig = new Map();
   return {
     root: "./",
-    targetEnvName: "default",
-    config,
+    envInfo: {
+      envName: "default",
+      profile: new Map<string, any>(),
+      config: environmentManager.newEnvConfigData(),
+    },
     answers: { platform: Platform.VSCode },
     projectSettings: undefined,
     azureAccountProvider: Object as any & AzureAccountProvider,
@@ -76,21 +85,20 @@ function mockSolutionContext(): SolutionContext {
 describe("Generate ARM Template for project", () => {
   const mocker = sinon.createSandbox();
   const testAppName = "my test app";
-  const fileContent: Map<string, any> = new Map();
+  const testFolder = "./tests/plugins/solution/testproject";
 
-  beforeEach(() => {
-    fileContent.clear();
-    mocker.stub(fs, "writeFile").callsFake((path: number | PathLike, data: any) => {
-      fileContent.set(path.toString(), data);
-    });
+  beforeEach(async () => {
+    await fs.ensureDir(testFolder);
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    await fs.remove(testFolder);
     mocker.restore();
   });
 
   it("should do nothing when no plugin implements required interface", async () => {
     const mockedCtx = mockSolutionContext();
+    mockedCtx.root = testFolder;
     mockedCtx.projectSettings = {
       appName: testAppName,
       projectId: uuid.v4(),
@@ -105,11 +113,12 @@ describe("Generate ARM Template for project", () => {
 
     const result = await generateArmTemplate(mockedCtx);
     expect(result.isOk()).to.be.true;
-    expect(fileContent.size).equals(0);
+    expect(await fs.pathExists(path.join(testFolder, baseFolder))).to.be.false;
   });
 
   it("should output templates when plugin implements required interface", async () => {
     const mockedCtx = mockSolutionContext();
+    mockedCtx.root = testFolder;
     mockedCtx.projectSettings = {
       appName: testAppName,
       projectId: uuid.v4(),
@@ -135,9 +144,14 @@ describe("Generate ARM Template for project", () => {
       return ok(mockedAadScaffoldArmResult);
     });
 
+    const projectArmTemplateFolder = path.join(testFolder, templateFolder);
+    const projectArmParameterFolder = path.join(testFolder, parameterFolder);
+    const projectArmBaseFolder = path.join(testFolder, baseFolder);
     const result = await generateArmTemplate(mockedCtx);
     expect(result.isOk()).to.be.true;
-    expect(fileContent.get(path.join(templateFolder, "main.bicep"))).equals(
+    expect(
+      await fs.readFile(path.join(projectArmTemplateFolder, "main.bicep"), fileEncoding)
+    ).equals(
       `param resourceBaseName string
 Mocked frontend hosting parameter content
 Mocked simple auth parameter content
@@ -151,13 +165,24 @@ Mocked simple auth module content. Module path: ./simpleAuthProvision.bicep. Var
 Mocked frontend hosting output content
 Mocked simple auth output content`
     );
-    expect(fileContent.get(path.join(templateFolder, "frontendHostingProvision.bicep"))).equals(
-      "Mocked frontend hosting provision module content"
-    );
-    expect(fileContent.get(path.join(templateFolder, "simpleAuthProvision.bicep"))).equals(
-      "Mocked simple auth provision module content"
-    );
-    expect(fileContent.get(path.join(parameterFolder, "parameters.template.json"))).equals(
+    expect(
+      await fs.readFile(
+        path.join(projectArmTemplateFolder, "frontendHostingProvision.bicep"),
+        fileEncoding
+      )
+    ).equals("Mocked frontend hosting provision module content");
+    expect(
+      await fs.readFile(
+        path.join(projectArmTemplateFolder, "simpleAuthProvision.bicep"),
+        fileEncoding
+      )
+    ).equals("Mocked simple auth provision module content");
+    expect(
+      await fs.readFile(
+        path.join(projectArmParameterFolder, "parameters.template.json"),
+        fileEncoding
+      )
+    ).equals(
       `{
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
   "contentVersion": "1.0.0.0",
@@ -170,6 +195,66 @@ Mocked simple auth output content`
   }
 }`
     );
+    expect(await fs.readFile(path.join(projectArmBaseFolder, ".gitignore"), fileEncoding)).equals(
+      `# ignore ARM template backup folder${os.EOL}/backup`
+    );
+  });
+
+  it("should create backup folder when ARM template already exists", async () => {
+    const mockedCtx = mockSolutionContext();
+    mockedCtx.root = testFolder;
+    mockedCtx.projectSettings = {
+      appName: testAppName,
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [fehostPlugin.name, simpleAuthPlugin.name],
+        capabilities: [TabOptionItem.id],
+      },
+    };
+
+    const projectArmBaseFolder = path.join(mockedCtx.root, baseFolder);
+    const projectArmTemplateFolder = path.join(mockedCtx.root, templateFolder);
+    const projectArmParameterFolder = path.join(mockedCtx.root, parameterFolder);
+    const mockedParameterDefaultJsonContent = "mocked parameter.default.json file";
+    const mockedMainBicepContent = "mocked main.bicep file";
+    await fs.ensureDir(projectArmTemplateFolder);
+    await fs.ensureDir(projectArmParameterFolder);
+    await fs.writeFile(
+      path.join(projectArmParameterFolder, "parameter.default.json"),
+      mockedParameterDefaultJsonContent
+    );
+    await fs.writeFile(path.join(projectArmTemplateFolder, "main.bicep"), mockedMainBicepContent);
+
+    const result = await generateArmTemplate(mockedCtx);
+
+    expect(result.isOk()).to.be.true;
+    const backupBaseFolder = path.join(projectArmBaseFolder, "backup");
+    expect(await fs.pathExists(backupBaseFolder)).to.be.true;
+    const backupFolderItems = await fs.readdir(backupBaseFolder);
+    expect(backupFolderItems.length).equals(1);
+    const parameterBackupFolder = path.join(
+      backupBaseFolder,
+      backupFolderItems[0],
+      parameterFolderName
+    );
+    const parameterBackupFiles = await fs.readdir(parameterBackupFolder);
+    expect(parameterBackupFiles.length).equals(1);
+    expect(
+      await fs.readFile(path.join(parameterBackupFolder, parameterBackupFiles[0]), fileEncoding)
+    ).equals(mockedParameterDefaultJsonContent);
+    const templateBackupFolder = path.join(
+      backupBaseFolder,
+      backupFolderItems[0],
+      templateFolderName
+    );
+    const templateBackupFiles = await fs.readdir(templateBackupFolder);
+    expect(templateBackupFiles.length).equals(1);
+    expect(
+      await fs.readFile(path.join(templateBackupFolder, templateBackupFiles[0]), fileEncoding)
+    ).equals(mockedMainBicepContent);
   });
 });
 
@@ -178,6 +263,7 @@ describe("Deploy ARM Template to Azure", () => {
   const testAppName = "my test app";
   let envRestore: () => void;
   const testClientId = "test_client_id";
+  const testClientSecret = "test_client_secret";
   const testEnvValue = "test env value";
   const testResourceSuffix = "-testSuffix";
   const testArmTemplateOutput = {
@@ -202,30 +288,8 @@ describe("Deploy ARM Template to Azure", () => {
       value: "https://testproject-simpleauth-webapp.azurewebsites.net",
     },
   };
-  const resultFileContent: Map<string, any> = new Map();
   const SOLUTION_CONFIG = "solution";
-  const inputFileContent: Map<string, any> = new Map([
-    [
-      path.join(parameterFolder, "parameters.template.json"),
-      `{
-"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
-"contentVersion": "1.0.0.0",
-"parameters": {
-  "resourceBaseName": {
-    "value": "{{SOLUTION__RESOURCE_BASE_NAME}}"
-  },
-  "aadClientId": {
-    "value": "{{FX_RESOURCE_AAD_APP_FOR_TEAMS__CLIENTID}}"
-  },
-  "envValue": {
-    "value": "{{MOCKED_EXPAND_VAR_TEST}}"
-  }
-}
-}
-`,
-    ],
-    [path.join(templateFolder, "main.json"), `{"test_key": "test_value"}`],
-  ]);
+  let fileContent: Map<string, any>;
 
   beforeEach(() => {
     (
@@ -234,33 +298,46 @@ describe("Deploy ARM Template to Azure", () => {
         Promise<string>
       >
     ).callsFake((file: number | PathLike): Promise<string> => {
-      return inputFileContent.get(file.toString());
+      return fileContent.get(file.toString());
     });
     mocker.stub(fs, "stat").callsFake((filePath: PathLike): Promise<fs.Stats> => {
-      if (filePath === path.join(parameterFolder, "parameters.default.json")) {
-        throw new Error(`${filePath} does not exist.`);
+      if (fileContent.has(filePath.toString())) {
+        return new Promise<fs.Stats>((resolve) => {
+          resolve({} as fs.Stats);
+        });
       }
-      return new Promise<fs.Stats>((resolve) => {
-        resolve({} as fs.Stats);
-      });
+      throw new Error(`${filePath} does not exist.`);
     });
     mocker.stub(fs, "writeFile").callsFake((path: number | PathLike, data: any) => {
-      resultFileContent.set(path.toString(), data);
+      fileContent.set(path.toString(), data);
     });
-    mocker.stub(Deployments.prototype, "createOrUpdate").resolves({
-      properties: {
-        outputs: testArmTemplateOutput,
-      },
-      _response: {
-        request: {} as WebResourceLike,
-        status: 200,
-        headers: new HttpHeaders(),
-        bodyAsText: "",
-        parsedBody: {} as ResourceManagementModels.DeploymentExtended,
-      },
-    });
+    mocker.stub(bicepChecker, "ensureBicep").callsFake(async (ctx: SolutionContext) => "bicep");
 
-    resultFileContent.clear();
+    fileContent = new Map([
+      [
+        path.join(parameterFolder, "parameters.template.json"),
+        `{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "resourceBaseName": {
+      "value": "{{SOLUTION__RESOURCE_BASE_NAME}}"
+    },
+    "aadClientId": {
+      "value": "{{FX_RESOURCE_AAD_APP_FOR_TEAMS__CLIENTID}}"
+    },
+    "aadClientSecret": {
+      "value": "{{FX_RESOURCE_AAD_APP_FOR_TEAMS__CLIENTSECRET}}"
+    },
+    "envValue": {
+      "value": "{{MOCKED_EXPAND_VAR_TEST}}"
+    }
+  }
+  }
+  `,
+      ],
+      [path.join(templateFolder, "main.json"), `{"test_key": "test_value"}`],
+    ]);
   });
 
   afterEach(() => {
@@ -282,11 +359,11 @@ describe("Deploy ARM Template to Azure", () => {
         capabilities: [TabOptionItem.id],
       },
     };
-    mockedCtx.config.set(
+    mockedCtx.envInfo.profile.set(
       "fx-resource-aad-app-for-teams",
       new ConfigMap([["clientId", testClientId]])
     );
-    mockedCtx.config.set(
+    mockedCtx.envInfo.profile.set(
       SOLUTION_CONFIG,
       new ConfigMap([
         ["resource-base-name", "mocked resource base name"],
@@ -304,10 +381,10 @@ describe("Deploy ARM Template to Azure", () => {
     // Assert
     chai.assert.isTrue(result.isErr());
     const error = (result as Err<void, FxError>).error;
-    chai.assert.strictEqual(error.name, "FailedToDeployArmTemplatesToAzure");
-    chai.assert.isTrue(
-      error.message.startsWith("Failed to compile bicep files to Json arm templates file:")
-    );
+    chai.expect(error.name).to.equal("FailedToDeployArmTemplatesToAzure");
+    chai
+      .expect(error.message)
+      .to.have.string("Failed to compile bicep files to Json arm templates file:");
   });
 
   it("should successfully update parameter and deploy arm templates to azure", async () => {
@@ -324,31 +401,13 @@ describe("Deploy ARM Template to Azure", () => {
         capabilities: [TabOptionItem.id],
       },
     };
-    mockedCtx.azureAccountProvider!.getAccountCredentialAsync = async function () {
-      const azureToken = new UserTokenCredentials(
-        testClientId,
-        "test_domain",
-        "test_username",
-        "test_password"
-      );
-      return azureToken;
-    };
-    mockedCtx.azureAccountProvider!.getSelectedSubscription = async function () {
-      const subscriptionInfo = {
-        subscriptionId: "test_subsctiption_id",
-        subscriptionName: "test_subsctiption_name",
-      } as SubscriptionInfo;
-      return subscriptionInfo;
-    };
-    mockedCtx.config.set(
+    mockArmDeploymentDependencies(mockedCtx);
+
+    mockedCtx.envInfo.profile.set(
       "fx-resource-aad-app-for-teams",
-      new ConfigMap([["clientId", testClientId]])
-    );
-    mockedCtx.config.set(
-      SOLUTION_CONFIG,
       new ConfigMap([
-        ["resourceGroupName", "mocked resource group name"],
-        ["resourceNameSuffix", testResourceSuffix],
+        ["clientId", testClientId],
+        ["clientSecret", testClientSecret],
       ])
     );
     envRestore = mockedEnv({
@@ -356,19 +415,44 @@ describe("Deploy ARM Template to Azure", () => {
     });
 
     mocker
-      .stub(Executor, "execCommandAsync")
-      .callsFake((command: string, options?: ExecOptions): Promise<void> => {
-        return new Promise((resolve) => {
-          resolve();
-        });
-      });
+      .stub(Deployments.prototype, "createOrUpdate")
+      .callsFake(
+        (
+          resourceGroupName: string,
+          deploymentName: string,
+          parameters: ResourceManagementModels.Deployment
+        ) => {
+          chai.assert.exists(parameters.properties.parameters?.aadClientSecret);
+          chai.assert.notStrictEqual(
+            parameters.properties.parameters?.aadClientSecret,
+            "{{FX_RESOURCE_AAD_APP_FOR_TEAMS__CLIENTSECRET}}"
+          );
+
+          return new Promise((resolve) => {
+            resolve({
+              properties: {
+                outputs: testArmTemplateOutput,
+              },
+              _response: {
+                request: {} as WebResourceLike,
+                status: 200,
+                headers: new HttpHeaders(),
+                bodyAsText: "",
+                parsedBody: {} as ResourceManagementModels.DeploymentExtended,
+              },
+            });
+          });
+        }
+      );
 
     // Act
-    await deployArmTemplates(mockedCtx);
+    const result = await deployArmTemplates(mockedCtx);
 
     // Assert
+    chai.assert.isTrue(result.isErr());
+
     expect(
-      JSON.parse(resultFileContent.get(path.join(parameterFolder, "parameters.default.json")))
+      JSON.parse(fileContent.get(path.join(parameterFolder, "parameters.default.json")))
     ).to.deep.equals(
       JSON.parse(`{
       "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
@@ -380,6 +464,9 @@ describe("Deploy ARM Template to Azure", () => {
         "aadClientId": {
           "value": "${testClientId}"
         },
+        "aadClientSecret": {
+          "value": "{{FX_RESOURCE_AAD_APP_FOR_TEAMS__CLIENTSECRET}}"
+        },
         "envValue": {
           "value": "${testEnvValue}"
         }
@@ -387,8 +474,109 @@ describe("Deploy ARM Template to Azure", () => {
       }`)
     );
     chai.assert.strictEqual(
-      mockedCtx.config.get(SOLUTION_CONFIG)?.get("armTemplateOutput"),
+      mockedCtx.envInfo.profile.get(SOLUTION_CONFIG)?.get("armTemplateOutput"),
       testArmTemplateOutput
     );
   });
+
+  it("should use existing parameter file", async () => {
+    const mockedCtx = mockSolutionContext();
+    mockedCtx.projectSettings = {
+      appName: testAppName,
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [fehostPlugin.name, simpleAuthPlugin.name],
+        capabilities: [TabOptionItem.id],
+      },
+    };
+
+    mockArmDeploymentDependencies(mockedCtx);
+
+    fileContent.set(
+      path.join(parameterFolder, "parameters.default.json"),
+      `{
+      "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+          "existingFileTest": {
+              "value": "mocked value"
+          }
+      }
+  }`
+    );
+
+    let usedExistingParameterDefaultFile = false;
+    mocker
+      .stub(Deployments.prototype, "createOrUpdate")
+      .callsFake(
+        (
+          resourceGroupName: string,
+          deploymentName: string,
+          parameters: ResourceManagementModels.Deployment
+        ) => {
+          if (parameters.properties.parameters?.existingFileTest) {
+            usedExistingParameterDefaultFile = true;
+          } //content of parameter.default.json should be used
+
+          return new Promise((resolve) => {
+            resolve({
+              properties: {
+                outputs: testArmTemplateOutput,
+              },
+              _response: {
+                request: {} as WebResourceLike,
+                status: 200,
+                headers: new HttpHeaders(),
+                bodyAsText: "",
+                parsedBody: {} as ResourceManagementModels.DeploymentExtended,
+              },
+            });
+          });
+        }
+      );
+
+    // Act
+    const result = await deployArmTemplates(mockedCtx);
+    chai.assert.isTrue(result.isErr());
+    chai.assert.strictEqual(usedExistingParameterDefaultFile, true);
+  });
+
+  function mockArmDeploymentDependencies(mockedCtx: SolutionContext) {
+    mockedCtx.envInfo.profile.set(
+      SOLUTION_CONFIG,
+      new ConfigMap([
+        ["resourceGroupName", "mocked resource group name"],
+        ["resourceNameSuffix", testResourceSuffix],
+      ])
+    );
+
+    mockedCtx.azureAccountProvider!.getAccountCredentialAsync = async function () {
+      const azureToken = new UserTokenCredentials(
+        testClientId,
+        "test_domain",
+        "test_username",
+        "test_password"
+      );
+      return azureToken;
+    };
+
+    mockedCtx.azureAccountProvider!.getSelectedSubscription = async function () {
+      const subscriptionInfo = {
+        subscriptionId: "test_subsctiption_id",
+        subscriptionName: "test_subsctiption_name",
+      } as SubscriptionInfo;
+      return subscriptionInfo;
+    };
+
+    mocker
+      .stub(Executor, "execCommandAsync")
+      .callsFake((command: string, options?: ExecOptions): Promise<void> => {
+        return new Promise((resolve) => {
+          resolve();
+        });
+      });
+  }
 });

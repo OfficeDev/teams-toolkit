@@ -11,7 +11,7 @@
     "commandsTreeViewProvider": {
       "getStartTitle": "GETTING STARTED",
       "getStartDescription": "Get started with Teamsfx",
-      "quickStartTitle": "Quick Start",
+      "quickStartTitle": "Quick start",
       "quickStartDescription": "Quick tips to start building a Teams app",
       "samplesTitle": "Samples",
       "samplesTitleNew": "View samples",
@@ -43,7 +43,7 @@
       "provisionTitle": "Provision in the Cloud",
       "provisionTitleNew": "Provision in the cloud",
       "provisionDescription": "Provision the Teams app resources in Azure",
-      "deployTitle": "Deploy to the Cloud",
+      "deployTitle": "Deploy to the cloud",
       "deployTitleNew": "Deploy to the cloud",
       "deployDescription": "Deploy your Teams app to the provisioned resources in Azure",
       "publishTitle": "Publish to Teams",
@@ -63,7 +63,8 @@
       "reportIssuesDescription": "Report any issues and let us know your feedback",
       "teamsDevPortalTitle": "Go To Developer Portal",
       "teamsDevPortalTitleNew": "Developer Portal for Teams",
-      "teamsDevPortalDescription": "Manage your Teams app registration and access more tools"
+      "teamsDevPortalDescription": "Manage your Teams app registration and access more tools",
+      "acitve": "(Active)"
     },
     "handlers": {
       "concurrentTriggerTask": "Task '%s' is still running. Wait for it to complete before starting another task.",
@@ -88,7 +89,9 @@
       "signOutOfAzure": "Sign out of Azure: ",
       "invalidProject": "Failed to debug Teams App. The project is not a valid Teams project.",
       "editSecretTitle": "Edit the decrypted secret value",
-      "decryptFailed": "Failed to decrypt secrect."
+      "decryptFailed": "Failed to decrypt secrect.",
+      "openEnvFailed": "Can not open project environment %s.",
+      "findEnvFailed": "Can not find project environment %s."
     },
     "progressHandler": {
       "teamsToolkitComponent": "[Teams Toolkit]",
@@ -172,7 +175,11 @@
       "signingInAzure": "Azure: Signing in...",
       "m365AccountTooltip": "M365 ACCOUNT  \nThe Teams Toolkit requires an Microsoft 365 organizational account where Teams is running and has been registered.",
       "azureAccountTooltip": "AZURE ACCOUNT  \nThe Teams Toolkit may require an Azure subscription to deploy the Azure resources for your project.",
-      "specifySubscription": "Specify subscription"
+      "specifySubscription": "Specify subscription",
+      "sideloadingWarning": "No custom app permission",
+      "sideloadingRefresh": "Refresh",
+      "sideloadingTooltip": "Custom app permission is required to load your app within Teams.",
+      "sideloadingMessage": "[Teams Toolkit] Your Microsoft 365 account doesn't have a sideloading permission. Without this permission, you cannot load your app within Teams. Contact to your administrator to resolve this issue or signin another account with sideloading permission."
     },
     "qm": {
       "emptySelection": "select option is empty",
@@ -191,6 +198,20 @@
       "downloadSampleFail": "Failed to download sample app",
       "quickStartPageTitle": "Quick Start",
       "samplePageTitle": "Samples"
+    },
+    "migrateV1": {
+      "banner": "Click migrate to continue developing your project with the latest Teams Toolkit features. We will update some project configurations and recommend using git for better tracking file changes.",
+      "learnMore": {
+        "title": "Learn More",
+        "status": "learnMore"
+      },
+      "confirm": {
+        "title": "Migrate",
+        "status": "migrate"
+      },
+      "cancel": {
+        "status": "cancel"
+      }
     }
   }
 }

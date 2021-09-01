@@ -3,6 +3,7 @@
   "solution": {
     "ScaffoldSuccessNotice": "[Teams Toolkit] Scaffold successfully.",
     "ProvisionConfirmNotice": "The Teams Toolkit will provision resources and register corresponding resource providers under %s (Azure account) with %s (subscription). Costs may incur according to the pricing calculator.",
+    "ProvisionConfirmEnvNotice": "Do you want to provision resources in %s (environment)?\n%s (Azure account) with %s (subscription) will be used to provision the resources. Cost may incur according to the usage.",
     "ProvisionFailGuide": "Provision resources failed, subscription id: '%s', resource group: '%s'. You can choose to rollback to delete the resource group and redo provision.",
     "ProvisionSuccessNotice": "'%s' successfully provisioned in the cloud.",
     "ProvisionFailNotice": "fail to provision '%s' in the cloud!",
@@ -19,8 +20,9 @@
     "CancelProvision": "CancelProvision",
     "AlreadyProvisionNotice": "'%s' is already provisioned in the cloud, will create the teams app again if it has been removed.",
     "NotProvisionedNotice": "'%s' is not provisioned in the cloud yet. Please provision first.",
-
     "GenerateArmTemplateFailNotice": "'%s' Failed to create ARM template for required Azure services.",
+    "RegenerateArmTemplateConfirmNotice": "We will update your Azure resource template based on your resource and capability selection. The existing template file will be moved to backup folder under Azure resource template folder for your reference. We recommend to initialize your project workspace with git init to track all changes.",
+    "MigrateSuccessNotice": "Your project is now initialized with Teams Toolkit! You can debug your application by pressing F5. If you wish to host your application in Azure, we recommend you to re-create your project directly using the latest Teams Toolkit.",
 
     "DeployArmTemplates": {
       "StartNotice": "[%s] Start deploying ARM templates.",

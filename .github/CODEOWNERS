@@ -24,6 +24,7 @@
 /packages/cli/src/commonlib/common/userPasswordConfig.ts @chagong @Alive-Fish @jiayi-ruan
 /packages/cli/src/cmds/preview @swatDong @kuojianlu @qinezh @a1exwang @meifans
 /packages/cli/tests/e2e/aad @KennethBWSong @adashen @SLdragon
+/packages/cli/tests/e2e/collaboration @KennethBWSong @adashen @SLdragon
 /packages/cli/tests/e2e/simpleauth @KennethBWSong @adashen @formulahendry
 /packages/cli/tests/e2e/sql @xzf0587 @adashen @blackchoey
 /packages/cli/tests/e2e/apim @XiaofuHuang @dooriya @kimizhu
@@ -35,11 +36,13 @@
 
 /packages/api @jayzhang @1yefuwang1 @LongOddCode
 /packages/api/src/qm @jayzhang @1yefuwang1 @LongOddCode @jiayi-ruan
+/packages/api/src/schemas @dooriya @qinezh @kimizhu
 
 /packages/sdk @tecton @blackchoey @SLdragon @dilin-MS @wenytang-ms @jiayi-ruan
 
 /packages/fx-core/src/core @jayzhang @LongOddCode @1yefuwang1
 /packages/fx-core/src/plugins/solution/fx-solution @1yefuwang1 @jayzhang @LongOddCode
+/packages/fx-core/src/plugins/solution/fx-solution/utils/depsChecker @a1exwang @kimizhu @meifans @qinezh
 
 /packages/fx-core/src/plugins/resource/aad @KennethBWSong @adashen @SLdragon
 /packages/fx-core/tests/plugins/resource/aad @KennethBWSong @adashen @SLdragon
@@ -82,5 +85,7 @@
 /packages/simpleauth @adashen @blackchoey @wenytang-ms
 
 /packages/function-extension @adashen @blackchoey @dilin-MS
+
+/packages/dotnet-sdk @tecton @jiayi-ruan @JerryYangKai
 
 /.github/workflows/cd.yml @adashen @LongOddCode @IvanJobs @qinezh @wenytang-ms

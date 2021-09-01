@@ -55,6 +55,9 @@ export enum TelemetryEvent {
 
   CheckPermissionStart = "check-permission-start",
   CheckPermission = "check-permission",
+
+  GrantPermissionStart = "grant-permission-start",
+  GrantPermission = "grant-permission",
 }
 
 export enum TelemetryProperty {
@@ -85,6 +88,8 @@ export enum TelemetryProperty {
   PreviewServiceName = "preview-service-name",
   PreviewOSArch = "preview-os-arch",
   PreviewOSRelease = "preview-os-release",
+  ListAllCollaborator = "list-all-collaborator",
+  FeatureFlags = "feature-flags",
 }
 
 export enum TelemetrySuccess {

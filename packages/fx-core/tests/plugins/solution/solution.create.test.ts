@@ -4,7 +4,12 @@ import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { it } from "mocha";
 import { SolutionRunningState, TeamsAppSolution } from " ../../../src/plugins/solution";
-import { Platform, SolutionConfig, SolutionContext } from "@microsoft/teamsfx-api";
+import {
+  Platform,
+  SolutionConfig,
+  SolutionContext,
+  SolutionSettings,
+} from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs, { PathLike } from "fs-extra";
 import {
@@ -19,6 +24,7 @@ import {
   TabOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 import * as uuid from "uuid";
+import { newEnvInfo } from "../../../src";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -32,10 +38,9 @@ describe("Solution running state on creation", () => {
 
 describe("Solution create()", async () => {
   function mockSolutionContext(): SolutionContext {
-    const config: SolutionConfig = new Map();
     return {
       root: ".",
-      config,
+      envInfo: newEnvInfo(),
       answers: { platform: Platform.VSCode },
       projectSettings: undefined,
     };
@@ -65,7 +70,7 @@ describe("Solution create()", async () => {
     const result = await solution.create(mockedSolutionCtx);
     expect(result.isErr()).equals(true);
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.InternelError);
-    expect(mockedSolutionCtx.config.get(GLOBAL_CONFIG)).to.be.not.undefined;
+    expect(mockedSolutionCtx.envInfo.profile.get(GLOBAL_CONFIG)).to.be.not.undefined;
   });
 
   it("should fail if projectSettings.solutionSettings is undefined", async () => {
@@ -75,7 +80,7 @@ describe("Solution create()", async () => {
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
       projectId: uuid.v4(),
-      solutionSettings: undefined,
+      solutionSettings: undefined as unknown as SolutionSettings,
     };
     const result = await solution.create(mockedSolutionCtx);
     expect(result.isErr()).equals(true);
@@ -115,7 +120,7 @@ describe("Solution create()", async () => {
     answers[AzureSolutionQuestionNames.Capabilities] = [BotOptionItem.id];
     const result = await solution.create(mockedSolutionCtx);
     expect(result.isOk()).equals(true);
-    expect(mockedSolutionCtx.config.get(GLOBAL_CONFIG)).is.not.undefined;
+    expect(mockedSolutionCtx.envInfo.profile.get(GLOBAL_CONFIG)).is.not.undefined;
   });
 
   it("should set programmingLanguage in config if programmingLanguage is in answers", async () => {
@@ -158,7 +163,9 @@ describe("Solution create()", async () => {
     answers[AzureSolutionQuestionNames.Capabilities as string] = [BotOptionItem.id];
     const result = await solution.create(mockedSolutionCtx);
     expect(result.isOk()).equals(true);
-    const lang = mockedSolutionCtx.config.get(GLOBAL_CONFIG)?.getString(PROGRAMMING_LANGUAGE);
+    const lang = mockedSolutionCtx.envInfo.profile
+      .get(GLOBAL_CONFIG)
+      ?.getString(PROGRAMMING_LANGUAGE);
     expect(lang).to.be.undefined;
   });
 

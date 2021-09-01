@@ -15,7 +15,8 @@ Microsoft Teams supports the ability to run web-based UI inside "custom tabs" th
 
 ## Debug
 
-Start debugging the project by hitting the `F5` key in Visual Studio Code. Alternatively use the `Run and Debug Activity Panel` in Visual Studio Code and click the `Start Debugging` green arrow button.
+- From Visual Studio Code: Start debugging the project by hitting the `F5` key in Visual Studio Code. Alternatively use the `Run and Debug Activity Panel` in Visual Studio Code and click the `Start Debugging` green arrow button.
+- From TeamsFx CLI: Start debugging the project by executing the command `teamsfx preview --local` in your project directory.
 
 ## Edit the manifest
 
@@ -25,7 +26,7 @@ You can find the Teams manifest in `.fx/manifest.source.json`. It contains templ
 
 Deploy your project to Azure by following these steps:
 
-| From Visual Studio Code                                                                                                                                                                                                                                                                                                                                                  | Using TeamsFx CLI                                                                                                                                                                                                                   |
+| From Visual Studio Code                                                                                                                                                                                                                                                                                                                                                  | From TeamsFx CLI                                                                                                                                                                                                                    |
 | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | <ul><li>Open Teams Toolkit, and sign into Azure by clicking the `Sign in to Azure` under the `ACCOUNTS` section from sidebar.</li> <li>After you signed in, select a subscription under your account.</li><li>Open the command palette and select: `Teams: Provision in the Cloud`.</li><li>Open the command palette and select: `Teams: Deploy to the Cloud`.</li></ul> | <ul> <li>Run command `teamsfx account login azure`.</li> <li>Run command `teamsfx account set --subscription <your-subscription-id>`.</li> <li> Run command `teamsfx provision`.</li> <li>Run command: `teamsfx deploy`. </li></ul> |
 
@@ -35,9 +36,13 @@ Deploy your project to Azure by following these steps:
 
 Once the provisioning and deployment steps are finished, you can preview your app:
 
-1. From Visual Studio Code, open the `Run and Debug Activity Panel`.
-1. Select `Launch Remote (Edge)` or `Launch Remote (Chrome)` from the launch configuration drop-down.
-1. Press the Play (green arrow) button to launch your app - now running remotely from Azure.
+- From Visual Studio Code
+
+  1. Open the `Run and Debug Activity Panel`.
+  1. Select `Launch Remote (Edge)` or `Launch Remote (Chrome)` from the launch configuration drop-down.
+  1. Press the Play (green arrow) button to launch your app - now running remotely from Azure.
+
+- From TeamsFx CLI: execute `teamsfx preview --remote` in your project directory to launch your application.
 
 ## Validate manifest file
 

@@ -1,5 +1,5 @@
-import { v2, Inputs, FxError, Result, ok, err, Void } from "@microsoft/teamsfx-api";
-import { getStrings, isArmSupportEnabled, isMultiEnvEnabled } from "../../../../common/tools";
+import { v2, Inputs, FxError, Result, ok, err } from "@microsoft/teamsfx-api";
+import { getStrings, isMultiEnvEnabled } from "../../../../common/tools";
 import {
   AzureResourceFunction,
   BotOptionItem,
@@ -12,15 +12,49 @@ import path from "path";
 import fs from "fs-extra";
 import { getTemplatesFolder } from "../../../..";
 import { LocalSettingsProvider } from "../../../../common/localSettingsProvider";
-import { ScaffoldingContextAdapter } from "./adaptor";
-import { generateArmTemplate } from "../arm";
 
 export async function scaffoldSourceCode(
   ctx: v2.Context,
   inputs: Inputs
 ): Promise<Result<Record<v2.PluginName, { output: Record<string, string> }>, FxError>> {
-  const plugins = getSelectedPlugins(ctx);
+  const plugins = getSelectedPlugins(getAzureSolutionSettings(ctx));
 
+  const thunks: NamedThunk<{ output: Record<string, string> }>[] = plugins
+    .filter((plugin) => !!plugin.scaffoldSourceCode)
+    .map((plugin) => {
+      return {
+        pluginName: `${plugin.name}`,
+        taskName: "scaffoldSourceCode",
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        thunk: () => plugin.scaffoldSourceCode!(ctx, inputs),
+      };
+    });
+
+  const result = await executeConcurrently(thunks, ctx.logProvider);
+  const solutionSettings = getAzureSolutionSettings(ctx);
+  if (result.isOk()) {
+    const capabilities = solutionSettings.capabilities;
+    const azureResources = solutionSettings.azureResources;
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    await scaffoldReadmeAndLocalSettings(capabilities, azureResources, inputs.projectPath!);
+
+    ctx.userInteraction.showMessage(
+      "info",
+      `Success: ${getStrings().solution.ScaffoldSuccessNotice}`,
+      false
+    );
+    return ok(combineRecords(result.value));
+  } else {
+    return err(result.error);
+  }
+}
+
+export async function scaffoldByPlugins(
+  ctx: v2.Context,
+  inputs: Inputs,
+  plugins: v2.ResourcePlugin[]
+): Promise<Result<Record<v2.PluginName, { output: Record<string, string> }>, FxError>> {
   const thunks: NamedThunk<{ output: Record<string, string> }>[] = plugins
     .filter((plugin) => !!plugin.scaffoldSourceCode)
     .map((plugin) => {
@@ -55,13 +89,21 @@ export async function scaffoldSourceCode(
 export async function scaffoldReadmeAndLocalSettings(
   capabilities: string[],
   azureResources: string[],
-  projectPath: string
+  projectPath: string,
+  migrateFromV1?: boolean
 ): Promise<void> {
   const hasBot = capabilities.includes(BotOptionItem.id);
   const hasMsgExt = capabilities.includes(MessageExtensionItem.id);
   const hasTab = capabilities.includes(TabOptionItem.id);
   if (hasTab && (hasBot || hasMsgExt)) {
     const readme = path.join(getTemplatesFolder(), "plugins", "solution", "README.md");
+    if (await fs.pathExists(readme)) {
+      await fs.copy(readme, `${projectPath}/README.md`);
+    }
+  }
+
+  if (migrateFromV1) {
+    const readme = path.join(getTemplatesFolder(), "plugins", "solution", "v1", "README.md");
     if (await fs.pathExists(readme)) {
       await fs.copy(readme, `${projectPath}/README.md`);
     }

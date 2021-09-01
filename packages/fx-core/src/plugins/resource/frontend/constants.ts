@@ -54,10 +54,6 @@ export class FrontendPathInfo {
   static TemplateFileExt = ".tpl";
   static TemplatePackageExt = ".zip";
 
-  static BicepTemplateFolderName = "bicep";
-  static ModuleOrchestrationFileName = "module.template.bicep";
-  static InputParameterOrchestrationFileName = "input_param.template.bicep";
-  static OutputOrchestrationFileName = "output.template.bicep";
   static ModuleFileName = "frontendHosting.bicep";
 
   static BuildFolderName = "build";
@@ -130,6 +126,7 @@ export class TelemetryEvent {
   static readonly SkipDeploy = "skip-deploy";
 
   static readonly GenerateArmTemplates = "generate-arm-templates";
+  static readonly ExecuteUserTask = "execute-user-task";
 }
 
 export class TelemetryKey {

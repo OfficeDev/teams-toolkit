@@ -39,6 +39,7 @@ export const MessageExtensionItem: OptionItem = {
 
 export enum AzureSolutionQuestionNames {
   Capabilities = "capabilities",
+  V1Capability = "v1-capability",
   TabScopes = "tab-scopes",
   HostType = "host-type",
   AzureResources = "azure-resources",
@@ -86,6 +87,18 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
     staticOptions: [TabOptionItem, BotOptionItem, MessageExtensionItem],
     default: [TabOptionItem.id],
     placeholder: "Select at least 1 capability",
+    validation: { minItems: 1 },
+  };
+}
+
+export function createV1CapabilityQuestion(): SingleSelectQuestion {
+  return {
+    name: AzureSolutionQuestionNames.V1Capability,
+    title: "Select capability",
+    type: "singleSelect",
+    staticOptions: [TabOptionItem, BotOptionItem, MessageExtensionItem],
+    default: TabOptionItem.id,
+    placeholder: "Select the same capability as your existing project",
     validation: { minItems: 1 },
   };
 }

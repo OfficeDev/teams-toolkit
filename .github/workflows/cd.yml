@@ -11,6 +11,10 @@ on:
         description: "release RC version just with lerna publish, skip run lerna version(yes or no)"
         required: false
         default: "no"
+      skip-sync-version-pkg:
+        description: "skip sync up target pkg version. input templates to skip sync up version with sdk; fx-core to skip sync up with simpleauth"
+        required: false
+        default: ""
   schedule:
     - cron: "0 8 * * *"
 
@@ -55,19 +59,14 @@ jobs:
         with:
           node-version: 14
 
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 3.1.x
+
       - name: Setup npm registry
         run: |
           echo "${{ secrets.NPMRC }}" > ~/.npmrc
-
-      - name: Download Simple Auth bits
-        uses: nick-invision/retry@v2
-        with:
-          timeout_minutes: 10
-          max_attempts: 10
-          retry_on: error
-          shell: pwsh
-          command: |
-            ./.github/scripts/downloadSimpleAuth.ps1
 
       - name: Setup project
         run: |
@@ -87,23 +86,32 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' && github.ref == 'refs/heads/main' && github.event.inputs.skip-version-rc == 'no'}}
         run: |
           npx lerna version --conventional-commits --conventional-prerelease --preid=rc --no-changelog --ignore-scripts --yes
-      
+        env:
+          SkipSyncup: ${{ github.event.inputs.skip-sync-version-pkg }}
+
       - name: version rc npm packages to npmjs.org on hotfix
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' && startsWith(github.ref, 'refs/heads/hotfix/') && github.event.inputs.skip-version-rc == 'no'}}
         run: |
           npx lerna version --conventional-commits --conventional-prerelease --preid=rc-hotfix --no-changelog --allow-branch ${GITHUB_REF#refs/*/} --ignore-scripts --yes
+        env:
+          SkipSyncup: ${{ github.event.inputs.skip-sync-version-pkg }}
 
       - name: version stable npm packages to npmjs.org
         if: ${{ github.event_name == 'workflow_dispatch' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/hotfix/')) && github.event.inputs.preid == 'stable' }}
         run: |
           npx lerna version --conventional-commits --conventional-graduate --no-changelog --allow-branch ${GITHUB_REF#refs/*/} --yes
-      
+        env:
+          SkipSyncup: ${{ github.event.inputs.skip-sync-version-pkg }}
+
       - name: version change
         id: version-change
         run: |
           echo "::set-output name=CHANGED::$(git tag --points-at HEAD | xargs)"
           echo "::set-output name=TEMPLATE_VERSION::$(git tag --points-at HEAD | grep templates)"
+          echo "::set-output name=EXTENSION_VERSION_NUM::$(git tag --points-at HEAD | grep ms-teams-vscode-extension@ | cut -d '@' -f2)"
           echo "::set-output name=EXTENSION_VERSION::$(git tag --points-at HEAD | grep ms-teams-vscode-extension@)"
+          echo "::set-output name=SIMPLEAUTH_VERSION::$(git tag --points-at HEAD | grep simpleauth)"
+          echo "::set-output name=SIMPLEAUTH_VERSION_NUM::$(git tag --points-at HEAD| grep simpleauth| cut -d '@' -f2)"
           if git tag --points-at HEAD | grep templates | grep rc;
           then
               git push -d origin $(git tag --points-at HEAD | grep templates | grep rc)
@@ -178,6 +186,66 @@ jobs:
       - name: cleanup templates
         run: rm -rf ./*.zip && git clean -df
 
+      - name: just trigger function extension azure build pipeline for stable release
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'function-extension') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
+        uses: Azure/pipelines@v1
+        with:
+          azure-devops-project-url: 'https://dev.azure.com/mseng/VSIoT'
+          azure-pipeline-name: 'Build Function Extension Release Artifacts' 
+          azure-devops-token: '${{ secrets.ADO_PAT }}'
+
+      - name: trigger simpleauth azure build pipeline for stable release
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'simpleauth') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
+        uses: Azure/pipelines@v1
+        with:
+          azure-devops-project-url: 'https://dev.azure.com/mseng/VSIoT'
+          azure-pipeline-name: 'Build Simple Auth Release Artifacts' 
+          azure-devops-token: '${{ secrets.ADO_PAT }}'
+      
+      - name: check build status and download assets for stable release
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'simpleauth') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
+        run: |
+          output=$(./.github/scripts/simpleauth-azdo-pipelines.sh ${{ secrets.ADO_PAT }} 11303 >&1)
+          echo $output
+          asset_id=$(echo $output | rev |cut -d ' ' -f 1 | rev)
+          curl "https://dev.azure.com/mseng/_apis/resources/Containers/$asset_id/drop?itemPath=drop/Microsoft.TeamsFx.SimpleAuth_${{ steps.version-change.outputs.SIMPLEAUTH_VERSION_NUM }}.zip" -L -O -u :${{ secrets.ADO_PAT }}
+          if [ ! -f Microsoft.TeamsFx.*.zip ]; then exit 1; fi
+      
+      - name: build SimpleAuth on prerelease
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'simpleauth') && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' && github.event.inputs.preid != 'stable') }}
+        run: |
+          dotnet build --configuration Release
+          zip -r -j ../../Microsoft.TeamsFx.SimpleAuth_${{ steps.version-change.outputs.SIMPLEAUTH_VERSION_NUM }}.zip src/TeamsFxSimpleAuth/bin/Release/*
+        working-directory: ./packages/simpleauth  
+
+      - name: download simpleauth to fx-core
+        uses: nick-invision/retry@v2
+        with: 
+          timeout_minutes: 10
+          max_attempts: 10
+          retry_on: error
+          command: |
+            if [ -f Microsoft.TeamsFx.SimpleAuth_*.zip ]; then
+              cp Microsoft.TeamsFx.SimpleAuth_*.zip packages/fx-core/templates/plugins/resource/simpleauth/SimpleAuth.zip
+            else
+              ./.github/scripts/download-simpleauth.sh
+            fi
+      - name: publish alpha simpleauth to github release page
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'simpleauth') && github.ref == 'refs/heads/dev' }}
+        uses: ncipollo/release-action@v1.7.3
+        with:
+          token: ${{ secrets.CD_PAT }}
+          tag: 'simpleauth-${{steps.version-change.outputs.SIMPLEAUTH_VERSION_NUM}}'
+          artifacts: Microsoft.TeamsFx.SimpleAuth_*.zip
+
+      - name: publish simpleauth to github release page
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'simpleauth') && github.ref == 'refs/heads/main'}}
+        uses: ncipollo/release-action@v1.7.3
+        with:
+          token: ${{ secrets.CD_PAT }}
+          tag: ${{ steps.version-change.outputs.SIMPLEAUTH_VERSION }}
+          artifacts: Microsoft.TeamsFx.SimpleAuth_*.zip
+
       - name: publish alpha release to npm org
         if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/dev' && github.event.inputs.preid == 'alpha')}}
         run: |
@@ -234,8 +302,26 @@ jobs:
             npm install --only=production
             npx vsce package
 
-      - name: release VSCode extension to github
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') }}
+      - name: release daily VSCode extension to github
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.ref == 'refs/heads/dev'  }}
+        uses: ncipollo/release-action@v1.7.3
+        with:
+          token: ${{ secrets.CD_PAT }}
+          tag: 'vscode-extension-${{ steps.version-change.outputs.EXTENSION_VERSION_NUM }}'
+          artifacts: ./packages/**/*.vsix
+          prerelease: true
+
+      - name: release RC VSCode extension to github
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && contains(steps.version-change.outputs.CHANGED, 'rc') }}
+        uses: ncipollo/release-action@v1.7.3
+        with:
+          token: ${{ secrets.CD_PAT }}
+          tag: ${{ steps.version-change.outputs.EXTENSION_VERSION }}
+          artifacts: ./packages/**/*.vsix
+          prerelease: true
+      
+      - name: release stable VSCode extension to github
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && !contains(steps.version-change.outputs.CHANGED, 'rc') && github.ref == 'refs/heads/main' }}
         uses: ncipollo/release-action@v1.7.3
         with:
           token: ${{ secrets.CD_PAT }}

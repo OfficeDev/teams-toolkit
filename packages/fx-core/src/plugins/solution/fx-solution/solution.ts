@@ -670,14 +670,25 @@ export class TeamsAppSolution implements Solution {
         username,
         subscriptionName ? subscriptionName : subscriptionId
       );
-      const confirmRes = await ctx.ui?.showMessage(
-        "warn",
-        msg,
-        true,
-        "Provision",
-        "Switch environment",
-        "Pricing calculator"
-      );
+      let confirmRes = undefined;
+      if (isMultiEnvEnabled()) {
+        confirmRes = await ctx.ui?.showMessage(
+          "warn",
+          msg,
+          true,
+          "Provision",
+          "Switch environment",
+          "Pricing calculator"
+        );
+      } else {
+        confirmRes = await ctx.ui?.showMessage(
+          "warn",
+          msg,
+          true,
+          "Provision",
+          "Pricing calculator"
+        );
+      }
       const confirm = confirmRes?.isOk() ? confirmRes.value : undefined;
 
       if (confirm !== "Provision") {

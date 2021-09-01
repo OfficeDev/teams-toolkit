@@ -123,24 +123,10 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
   const getSideloadingItem = async (token: string): Promise<TreeItem[]> => {
     const isSideloadingAllowed = await getSideloadingStatus(token);
     if (isSideloadingAllowed === undefined) {
-      return [
-        {
-          commandId: "fx-extension.checkSideloading",
-          label: StringResources.vsc.accountTree.sideloadingUnknown,
-          callback: () => {
-            return Promise.resolve(ok(null));
-          },
-          parent: "fx-extension.signinM365",
-          contextValue: "checkSideloading",
-          icon: "info",
-          tooltip: {
-            isMarkdown: false,
-            value: StringResources.vsc.accountTree.sideloadingTooltip,
-          },
-        },
-      ];
+      // show nothing if internal error (TODO: may add back if full status is required later)
+      return [];
     } else if (isSideloadingAllowed === true) {
-      // show nothing if status is good
+      // show nothing if status is good (TODO: may add back if full status is required later)
       return [];
     } else {
       showSideloadingWarning();
@@ -184,25 +170,6 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
     const status = await AppStudioLogin.getStatus();
     if (status.token !== undefined) {
       const subItem = await getSideloadingItem(status.token);
-      tools.treeProvider?.refresh(subItem);
-    } else {
-      // just in corner case that cannot get token and show unknown status
-      const subItem = [
-        {
-          commandId: "fx-extension.checkSideloading",
-          label: StringResources.vsc.accountTree.sideloadingUnknown,
-          callback: () => {
-            return Promise.resolve(ok(null));
-          },
-          parent: "fx-extension.signinM365",
-          contextValue: "checkSideloading",
-          icon: "info",
-          tooltip: {
-            isMarkdown: false,
-            value: StringResources.vsc.accountTree.sideloadingTooltip,
-          },
-        } as TreeItem,
-      ];
       tools.treeProvider?.refresh(subItem);
     }
 

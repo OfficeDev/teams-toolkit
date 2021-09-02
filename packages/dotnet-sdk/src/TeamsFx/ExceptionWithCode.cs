@@ -6,6 +6,9 @@ using System;
 
 namespace Microsoft.TeamsFx
 {
+    /// <summary>
+    /// Exception code to trace the exception types.
+    /// </summary>
     public enum ExceptionCode
     {
         /// <summary>
@@ -54,8 +57,14 @@ namespace Microsoft.TeamsFx
         JSRuntimeError,
     }
 
+    /// <summary>
+    /// Exception class with code and message thrown by the SDK.
+    /// </summary>
     public class ExceptionWithCode : Exception
     {
+        /// <summary>
+        /// Exception Code.
+        /// </summary>
         public readonly ExceptionCode Code;
         internal ExceptionWithCode(Exception e) : base(e.Message)
         {

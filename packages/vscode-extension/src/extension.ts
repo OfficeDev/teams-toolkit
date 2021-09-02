@@ -22,6 +22,7 @@ import { Correlator, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
 import { enableMigrateV1 } from "./utils/migrateV1";
 import { isTeamsfx } from "./utils/commonUtils";
+import { ConfigFolderName, PublishProfilesFolderName } from "@microsoft/teamsfx-api";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -34,14 +35,6 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(new ExtTelemetry.Reporter(context));
 
   await exp.initialize(context);
-  TreatmentVariableValue.isExpandCard = (await exp
-    .getExpService()
-    .getTreatmentVariableAsync(
-      TreatmentVariables.VSCodeConfig,
-      TreatmentVariables.ExpandCreateCard,
-      true
-    )) as boolean | undefined;
-
   // 1.1 Register the creating command.
   const createCmd = vscode.commands.registerCommand("fx-extension.create", (...args) =>
     Correlator.run(handlers.createNewProjectHandler, args)
@@ -199,6 +192,30 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(viewEnvironment);
 
+  const viewEnvironmentWithIcon = vscode.commands.registerCommand(
+    "fx-extension.viewEnvironmentWithIcon",
+    (node) => {
+      Correlator.run(handlers.viewEnvironment, node.command.title);
+    }
+  );
+  context.subscriptions.push(viewEnvironmentWithIcon);
+
+  const activateEnvironment = vscode.commands.registerCommand(
+    "fx-extension.activateEnvironment",
+    (node) => {
+      Correlator.run(handlers.activateEnvironment, node.command.title);
+    }
+  );
+  context.subscriptions.push(activateEnvironment);
+
+  const activateEnvironmentWithIcon = vscode.commands.registerCommand(
+    "fx-extension.activateEnvironmentWithIcon",
+    (node) => {
+      Correlator.run(handlers.activateEnvironment, node.command.title);
+    }
+  );
+  context.subscriptions.push(activateEnvironmentWithIcon);
+
   vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isMultiEnvEnabled",
@@ -210,7 +227,9 @@ export async function activate(context: vscode.ExtensionContext) {
   const userDataSelector = {
     language: "plaintext",
     scheme: "file",
-    pattern: "**/.fx/*.userdata",
+    pattern: isMultiEnvEnabled()
+      ? `**/.${ConfigFolderName}/${PublishProfilesFolderName}/*.userdata`
+      : `**/.${ConfigFolderName}/*.userdata`,
   };
   context.subscriptions.push(
     vscode.languages.registerCodeLensProvider(userDataSelector, codelensProvider)

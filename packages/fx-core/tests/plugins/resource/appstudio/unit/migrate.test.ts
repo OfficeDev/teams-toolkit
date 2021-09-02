@@ -23,6 +23,7 @@ import {
   STATIC_TABS_TPL,
 } from "../../../../../src/plugins/resource/appstudio/constants";
 import path from "path";
+import { newEnvInfo } from "../../../../../src";
 
 describe("Migrate", () => {
   let plugin: AppStudioPlugin;
@@ -41,7 +42,7 @@ describe("Migrate", () => {
 
     ctx = {
       root: "./tests/plugins/resource/appstudio/resources",
-      configOfOtherPlugins: new Map(),
+      envInfo: newEnvInfo(),
       config: new ConfigMap(),
       answers: { platform: Platform.VSCode },
       projectSettings: undefined,

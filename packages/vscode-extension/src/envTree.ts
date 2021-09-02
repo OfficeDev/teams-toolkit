@@ -2,9 +2,11 @@
 // Licensed under the MIT license.
 
 import { FxError, Result, err, ok, Void, TreeCategory } from "@microsoft/teamsfx-api";
-import { isMultiEnvEnabled, environmentManager } from "@microsoft/teamsfx-core";
+import { isMultiEnvEnabled, environmentManager, setActiveEnv } from "@microsoft/teamsfx-core";
 import * as vscode from "vscode";
 import TreeViewManagerInstance, { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
+import { getActiveEnv } from "./utils/commonUtils";
+import * as StringResources from "./resources/Strings.json";
 
 const showEnvList: Array<string> = [];
 
@@ -16,8 +18,13 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
     if (envNamesResult.isErr()) {
       return err(envNamesResult.error);
     }
-    const environmentTreeProvider: CommandsTreeViewProvider =
-      TreeViewManagerInstance.getTreeView("teamsfx-environment")!;
+    const activeEnv = getActiveEnv();
+    if (activeEnv) {
+      setActiveEnv(activeEnv);
+    }
+    const environmentTreeProvider: CommandsTreeViewProvider = TreeViewManagerInstance.getTreeView(
+      "teamsfx-environment"
+    )!;
     if (showEnvList.length > 0) {
       showEnvList.forEach(async (item) => {
         environmentTreeProvider.removeById("fx-extension.environment." + item);
@@ -34,6 +41,8 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
           contextValue: "environment",
           icon: "symbol-folder",
           isCustom: false,
+          description:
+            item === activeEnv ? StringResources.vsc.commandsTreeViewProvider.acitve : "",
         },
       ]);
     });

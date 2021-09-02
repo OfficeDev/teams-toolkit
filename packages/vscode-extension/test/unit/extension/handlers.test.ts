@@ -11,6 +11,8 @@ import {
   err,
   UserError,
   Void,
+  Result,
+  FxError,
 } from "@microsoft/teamsfx-api";
 import AppStudioTokenInstance from "../../../src/commonlib/appStudioLogin";
 import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
@@ -21,6 +23,7 @@ import { MockCore } from "./mocks/mockCore";
 import * as extension from "../../../src/extension";
 import * as accountTree from "../../../src/accountTree";
 import TreeViewManagerInstance from "../../../src/commandsTreeViewProvider";
+import { CoreHookContext } from "../../../../fx-core/build";
 
 suite("handlers", () => {
   test("getWorkspacePath()", () => {
@@ -144,12 +147,25 @@ suite("handlers", () => {
     test("localDebug", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
-      const localDebug = sinon.spy(handlers.core, "localDebug");
+
+      let ignoreEnvInfo: boolean | undefined = undefined;
+      let localDebugCalled = 0;
+      sinon.stub(handlers.core, "localDebug").callsFake(
+        async (
+          inputs: Inputs,
+          ctx?: CoreHookContext | undefined
+        ): Promise<Result<Void, FxError>> => {
+          ignoreEnvInfo = inputs.ignoreEnvInfo;
+          localDebugCalled += 1;
+          return ok({});
+        }
+      );
 
       await handlers.runCommand(Stage.debug);
 
       sinon.restore();
-      sinon.assert.calledOnce(localDebug);
+      chai.expect(ignoreEnvInfo).to.not.equal(true);
+      chai.expect(localDebugCalled).equals(1);
     });
 
     test("publishApplication", async () => {

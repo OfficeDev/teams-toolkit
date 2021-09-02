@@ -25,10 +25,11 @@ import jwt_decode from "jwt-decode";
 import { Utils } from "../../../../src/plugins/resource/aad/utils/common";
 import { MockUserInteraction } from "../../../core/utils";
 import { DEFAULT_PERMISSION_REQUEST } from "../../../../src/plugins/solution/fx-solution/constants";
+import { newEnvInfo } from "../../../../src";
 
-const permissions = '[{"resource": "Microsoft Graph","delegated": ["User.Read"],"application":[]}]';
+const permissions = "[{\"resource\": \"Microsoft Graph\",\"delegated\": [\"User.Read\"],\"application\":[]}]";
 const permissionsWrong =
-  '[{"resource": "Microsoft Graph","delegated": ["User.ReadData"],"application":[]}]';
+  "[{\"resource\": \"Microsoft Graph\",\"delegated\": [\"User.ReadData\"],\"application\":[]}]";
 
 const mockPermissionRequestProvider: PermissionRequestProvider = {
   async checkPermissionRequest(): Promise<Result<undefined, FxError>> {
@@ -146,17 +147,17 @@ export class TestHelper {
       ? mockConfigOfOtherPluginsLocalDebug(domain, endpoint, botEndpoint, botId)
       : mockConfigOfOtherPluginsProvision(domain, endpoint, botEndpoint, botId);
 
-    const pluginContext = {
+    const pluginContext: PluginContext = ({
       logProvider: mockLogProvider,
       ui: mockUI,
       telemetryReporter: mockTelemetryReporter,
       config: config,
-      configOfOtherPlugins: configOfOtherPlugins,
+      envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       projectSettings: {
         appName: "aad-plugin-unit-test",
       },
       permissionRequestProvider: mockPermissionRequestProvider,
-    } as unknown as PluginContext;
+    } as unknown) as PluginContext;
 
     return pluginContext;
   }

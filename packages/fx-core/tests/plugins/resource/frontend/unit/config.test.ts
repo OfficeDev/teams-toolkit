@@ -14,6 +14,7 @@ import {
   UnauthenticatedError,
 } from "../../../../../src/plugins/resource/frontend/resources/errors";
 import { TestHelper } from "../helper";
+import { newEnvInfo } from "../../../../../src";
 
 chai.use(chaiAsPromised);
 
@@ -46,7 +47,7 @@ describe("FrontendConfig", () => {
     });
 
     it("no configs", async () => {
-      pluginContext.configOfOtherPlugins = new Map([["solution", new Map()]]);
+      pluginContext.envInfo = newEnvInfo();
 
       await assertRejected(
         () => FrontendConfig.fromPluginContext(pluginContext),

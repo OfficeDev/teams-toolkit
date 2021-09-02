@@ -89,7 +89,8 @@ export async function scaffoldByPlugins(
 export async function scaffoldReadmeAndLocalSettings(
   capabilities: string[],
   azureResources: string[],
-  projectPath: string
+  projectPath: string,
+  migrateFromV1?: boolean
 ): Promise<void> {
   const hasBot = capabilities.includes(BotOptionItem.id);
   const hasMsgExt = capabilities.includes(MessageExtensionItem.id);
@@ -101,7 +102,12 @@ export async function scaffoldReadmeAndLocalSettings(
     }
   }
 
-  // TODO: add migrate V1 project README file
+  if (migrateFromV1) {
+    const readme = path.join(getTemplatesFolder(), "plugins", "solution", "v1", "README.md");
+    if (await fs.pathExists(readme)) {
+      await fs.copy(readme, `${projectPath}/README.md`);
+    }
+  }
 
   const hasBackend = azureResources.includes(AzureResourceFunction.id);
 

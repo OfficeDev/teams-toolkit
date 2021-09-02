@@ -42,6 +42,8 @@ import {
   Correlator,
   getAppDirectory,
   environmentManager,
+  isMigrateFromV1Project,
+  isMultiEnvEnabled,
 } from "@microsoft/teamsfx-core";
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -105,8 +107,25 @@ export async function activate(): Promise<Result<Void, FxError>> {
   try {
     syncFeatureFlags();
 
-    if (isValidProject(getWorkspacePath())) {
+    const validProject = isValidProject(getWorkspacePath());
+    if (validProject) {
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenTeamsApp, {});
+    }
+
+    const expService = exp.getExpService();
+    if (expService) {
+      if (
+        !validProject &&
+        (await expService.getTreatmentVariableAsync(
+          TreatmentVariables.VSCodeConfig,
+          TreatmentVariables.SidebarWelcome,
+          true
+        ))
+      ) {
+        vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome", true);
+      } else {
+        vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome", false);
+      }
     }
 
     const telemetry = ExtTelemetry.reporter;
@@ -206,7 +225,9 @@ export async function migrateV1ProjectHandler(args?: any[]): Promise<Result<null
     TelemetryEvent.MigrateV1ProjectStart,
     getTriggerFromProperty(args)
   );
-  return await runCommand(Stage.migrateV1);
+  const result = await runCommand(Stage.migrateV1);
+  await openMarkdownHandler();
+  return result;
 }
 
 export async function selectAndDebugHandler(args?: any[]): Promise<Result<null, FxError>> {
@@ -259,7 +280,9 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<null, Fx
 
 export async function provisionHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ProvisionStart, getTriggerFromProperty(args));
-  return await runCommand(Stage.provision);
+  const result = await runCommand(Stage.provision);
+  registerEnvTreeHandler();
+  return result;
 }
 
 export async function deployHandler(args?: any[]): Promise<Result<null, FxError>> {
@@ -309,8 +332,12 @@ export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
       }
     } else if (stage === Stage.provision) result = await core.provisionResources(inputs);
     else if (stage === Stage.deploy) result = await core.deployArtifacts(inputs);
-    else if (stage === Stage.debug) result = await core.localDebug(inputs);
-    else if (stage === Stage.publish) result = await core.publishApplication(inputs);
+    else if (stage === Stage.debug) {
+      if (isMultiEnvEnabled()) {
+        inputs.ignoreEnvInfo = true;
+      }
+      result = await core.localDebug(inputs);
+    } else if (stage === Stage.publish) result = await core.publishApplication(inputs);
     else if (stage === Stage.createEnv) {
       result = await core.createEnv(inputs);
     } else {
@@ -567,7 +594,9 @@ async function openMarkdownHandler() {
     const workspaceFolder = workspace.workspaceFolders[0];
     const workspacePath: string = workspaceFolder.uri.fsPath;
     let targetFolder: string | undefined;
-    if (await isSPFxProject(workspacePath)) {
+    if (await isMigrateFromV1Project(workspacePath)) {
+      targetFolder = workspacePath;
+    } else if (await isSPFxProject(workspacePath)) {
       targetFolder = `${workspacePath}/SPFx`;
     } else {
       const tabFolder = await commonUtils.getProjectRoot(
@@ -735,9 +764,25 @@ export async function viewEnvironment(env: string): Promise<Result<Void, FxError
   return ok(Void);
 }
 
-export async function activateEnvironment(args?: any[]): Promise<Result<Void, FxError>> {
-  // todo add acitvate logic
-  return ok(Void);
+export async function activateEnvironment(env: string): Promise<Result<Void, FxError>> {
+  // const eventName = ExtTelemetry.stageToEvent(stage);
+  let result: Result<any, FxError> = ok(Void);
+  try {
+    const checkCoreRes = checkCoreNotEmpty();
+    if (checkCoreRes.isErr()) {
+      throw checkCoreRes.error;
+    }
+
+    const inputs: Inputs = getSystemInputs();
+
+    result = await core.activateEnv(env, inputs);
+    registerEnvTreeHandler();
+  } catch (e) {
+    result = wrapError(e);
+  }
+  // await processResult(eventName, result);
+
+  return result;
 }
 
 export async function openM365AccountHandler() {
@@ -785,16 +830,7 @@ export function saveTextDocumentHandler(document: vscode.TextDocumentWillSaveEve
 }
 
 export async function cmdHdlLoadTreeView(context: ExtensionContext) {
-  if (
-    (await exp
-      .getExpService()
-      .getTreatmentVariableAsync(
-        TreatmentVariables.VSCodeConfig,
-        TreatmentVariables.DynamicTreeView,
-        true
-      )) &&
-    !isValidProject(getWorkspacePath())
-  ) {
+  if (!isValidProject(getWorkspacePath())) {
     const disposables = await TreeViewManagerInstance.registerEmptyProjectTreeViews();
     context.subscriptions.push(...disposables);
   } else {

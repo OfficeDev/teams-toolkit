@@ -133,7 +133,10 @@ async function executeLocalDebugUserTask(funcName: string, params?: unknown): Pr
     const inputs = getSystemInputs();
     inputs.ignoreLock = true;
     inputs.ignoreConfigPersist = true;
-    inputs.ignoreEnvInfo = true;
+    if (isMultiEnvEnabled()) {
+      const isRemote = params === "remote";
+      inputs.ignoreEnvInfo = !isRemote;
+    }
     const result = await core.executeUserTask(func, inputs);
     if (result.isErr()) {
       throw result.error;
@@ -225,7 +228,7 @@ export async function getPortsInUse(): Promise<number[]> {
     if (frontendRoot) {
       ports.push(...constants.frontendPorts);
     }
-    const migrateFromV1 = isMigrateFromV1Project(workspacePath);
+    const migrateFromV1 = await isMigrateFromV1Project(workspacePath);
     if (!migrateFromV1) {
       ports.push(...constants.simpleAuthPorts);
     }

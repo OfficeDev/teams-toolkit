@@ -21,6 +21,11 @@ namespace Microsoft.TeamsFx.Model
         /// </summary>
         public ResourceConfiguration[]? Resources { get; }
 
+        /// <summary>
+        /// Configuration for current environment.
+        /// </summary>
+        /// <param name="auth">Authentication related configuration.</param>
+        /// <param name="resources">Configuration for resources.</param>
         public Configuration(AuthenticationConfiguration? auth = null, ResourceConfiguration[]? resources = null)
         {
             Authentication = auth;
@@ -69,6 +74,9 @@ namespace Microsoft.TeamsFx.Model
         /// </summary>
         public string? ApplicationIdUri { get; }
 
+        /// <summary>
+        /// Constructor of AuthenticationConfiguration.
+        /// </summary>
         public AuthenticationConfiguration(string? authorityHost = null, string? tenantId = null, string? clientId = null,
                                            string? clientSecret = null, string? simpleAuthEndpoint = null,
                                            string? initiateLoginEndpoint = null, string? applicationIdUri = null)
@@ -116,6 +124,9 @@ namespace Microsoft.TeamsFx.Model
         /// </summary>
         public Dictionary<string, object> Properties { get; }
 
+        /// <summary>
+        /// The constructor of ResourceConfiguration.
+        /// </summary>
         public ResourceConfiguration(ResourceType type, string name = "", Dictionary<string, object>? properties = null)
         {
             Type = type;

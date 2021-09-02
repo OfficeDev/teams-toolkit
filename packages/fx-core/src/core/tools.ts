@@ -9,6 +9,7 @@ import {
   ArchiveFolderName,
   V1ManifestFileName,
   ProjectSettingsFileName,
+  EnvConfig,
 } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import * as fs from "fs-extra";
@@ -166,12 +167,12 @@ export async function validateV1Project(
   return undefined;
 }
 
-export function isMigrateFromV1Project(workspacePath?: string): boolean {
+export async function isMigrateFromV1Project(workspacePath?: string): Promise<boolean> {
   if (!workspacePath) return false;
   try {
     const confFolderPath = path.resolve(workspacePath, `.${ConfigFolderName}`);
     const settingsFile = path.resolve(confFolderPath, "settings.json");
-    const projectSettings: ProjectSettings = fs.readJsonSync(settingsFile);
+    const projectSettings: ProjectSettings = await fs.readJson(settingsFile);
     if (validateSettings(projectSettings)) return false;
     return !!projectSettings?.solutionSettings?.migrateFromV1;
   } catch (e) {
@@ -179,16 +180,20 @@ export function isMigrateFromV1Project(workspacePath?: string): boolean {
   }
 }
 
-export function newEnvInfo(envName?: string): EnvInfo {
+export function newEnvInfo(
+  envName?: string,
+  config?: EnvConfig,
+  profile?: Map<string, any>
+): EnvInfo {
   return {
     envName: envName ?? environmentManager.getDefaultEnvName(),
-    config: {
+    config: config ?? {
       azure: {},
       manifest: {
         values: {},
       },
     },
-    profile: new Map<string, any>([[GLOBAL_CONFIG, new ConfigMap()]]),
+    profile: profile ?? new Map<string, any>([[GLOBAL_CONFIG, new ConfigMap()]]),
   };
 }
 

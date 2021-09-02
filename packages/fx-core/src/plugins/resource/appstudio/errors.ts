@@ -159,4 +159,9 @@ export class AppStudioError {
     name: "ListCollaboratorFailedError",
     message: (error: any) => `List collaborator failed. Reason: ${error.message}`,
   };
+
+  public static readonly TeamsAppNotFoundError = {
+    name: "TeamsAppNotFound",
+    message: (appId: string) => `Cannot found teams app with id ${appId}`,
+  };
 }

@@ -3,6 +3,7 @@ export class TreatmentVariables {
   public static readonly TreeView = "treeview";
   public static readonly DynamicTreeView = "dynamictreeview";
   public static readonly ExpandCreateCard = "expandcreatecard";
+  public static readonly SidebarWelcome = "sidebarwelcome";
 }
 
 export class TreatmentVariableValue {

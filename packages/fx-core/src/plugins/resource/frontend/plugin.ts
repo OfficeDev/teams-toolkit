@@ -303,7 +303,7 @@ export class FrontendPluginImpl {
   private async updateDotenv(ctx: PluginContext): Promise<void> {
     const envs: { [key: string]: string } = {};
 
-    const functionPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.FunctionPluginName);
+    const functionPlugin = ctx.envInfo.profile.get(DependentPluginInfo.FunctionPluginName);
     if (functionPlugin) {
       envs[EnvironmentVariables.FuncName] = ctx.projectSettings?.defaultFunctionName as string;
       envs[EnvironmentVariables.FuncEndpoint] = functionPlugin.get(
@@ -311,7 +311,7 @@ export class FrontendPluginImpl {
       ) as string;
     }
 
-    const authPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.RuntimePluginName);
+    const authPlugin = ctx.envInfo.profile.get(DependentPluginInfo.RuntimePluginName);
     if (authPlugin) {
       envs[EnvironmentVariables.RuntimeEndpoint] = authPlugin.get(
         DependentPluginInfo.RuntimeEndpoint
@@ -319,7 +319,7 @@ export class FrontendPluginImpl {
       envs[EnvironmentVariables.StartLoginPage] = DependentPluginInfo.StartLoginPageURL;
     }
 
-    const aadPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.AADPluginName);
+    const aadPlugin = ctx.envInfo.profile.get(DependentPluginInfo.AADPluginName);
     if (aadPlugin) {
       envs[EnvironmentVariables.ClientID] = aadPlugin.get(DependentPluginInfo.ClientID) as string;
     }
@@ -344,7 +344,6 @@ export class FrontendPluginImpl {
         { fileName: ArchiveFolderName, recursive: false },
         { fileName: ArchiveLogFileName, recursive: false },
         { fileName: AppPackageFolderName, recursive: false },
-        { fileName: FrontendPathInfo.ReadmeFileName, recursive: false },
         { fileName: FrontendPathInfo.NodePackageFolderName, recursive: true },
       ];
 

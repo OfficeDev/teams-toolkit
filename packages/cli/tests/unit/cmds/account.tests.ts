@@ -161,7 +161,7 @@ describe("Account Command Tests", function () {
     const cmd = new Account();
     const show = cmd.subCommands.find((cmd) => cmd.commandHead === "show");
     await show!.handler({});
-    expect(loglevels).deep.equals([LogLevel.Info, LogLevel.Info, LogLevel.Info, LogLevel.Info]);
+    expect(loglevels).deep.equals([LogLevel.Info, LogLevel.Info]);
   });
 
   it("Account Show Command Running Check - Azure signedIn but no Active Sub", async () => {

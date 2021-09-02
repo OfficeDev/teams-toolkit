@@ -24,6 +24,7 @@
 /packages/cli/src/commonlib/common/userPasswordConfig.ts @chagong @Alive-Fish @jiayi-ruan
 /packages/cli/src/cmds/preview @swatDong @kuojianlu @qinezh @a1exwang @meifans
 /packages/cli/tests/e2e/aad @KennethBWSong @adashen @SLdragon
+/packages/cli/tests/e2e/collaboration @KennethBWSong @adashen @SLdragon
 /packages/cli/tests/e2e/simpleauth @KennethBWSong @adashen @formulahendry
 /packages/cli/tests/e2e/sql @xzf0587 @adashen @blackchoey
 /packages/cli/tests/e2e/apim @XiaofuHuang @dooriya @kimizhu

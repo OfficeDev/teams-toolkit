@@ -124,6 +124,8 @@ import {
   ResourcePermission,
   TeamsAppAdmin,
 } from "../../../common/permissionInterface";
+import { askTargetEnvironment } from "../../../core/middleware/envInfoLoader";
+import { ensurePermissionRequest, parseTeamsAppTenantId } from "./v2/utils";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -399,7 +401,7 @@ export class TeamsAppSolution implements Solution {
       .capabilities;
     const azureResources = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
       .azureResources;
-    await scaffoldReadmeAndLocalSettings(capabilities, azureResources, ctx.root);
+    await scaffoldReadmeAndLocalSettings(capabilities, azureResources, ctx.root, true);
 
     ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.Migrate, {
       [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
@@ -498,33 +500,6 @@ export class TeamsAppSolution implements Solution {
     }
   }
 
-  private async ensurePermissionRequest(ctx: SolutionContext): Promise<Result<undefined, FxError>> {
-    if (ctx?.projectSettings?.solutionSettings?.migrateFromV1) {
-      return ok(undefined);
-    }
-
-    if (!this.isAzureProject(ctx)) {
-      return err(
-        returnUserError(
-          new Error("Cannot update permission for SPFx project"),
-          "Solution",
-          SolutionError.CannotUpdatePermissionForSPFx
-        )
-      );
-    }
-
-    if (ctx.permissionRequestProvider === undefined) {
-      ctx.permissionRequestProvider = new PermissionRequestFileProvider(ctx.root);
-    }
-
-    const result = await ctx.permissionRequestProvider.checkPermissionRequest();
-    if (result.isErr()) {
-      return result;
-    }
-
-    return ok(undefined);
-  }
-
   /**
    * Checks whether solution's state is idle
    */
@@ -600,8 +575,15 @@ export class TeamsAppSolution implements Solution {
       await ctx.appStudioToken?.getAccessToken();
 
       this.runningState = SolutionRunningState.ProvisionInProgress;
+
       if (this.isAzureProject(ctx)) {
-        const result = await this.ensurePermissionRequest(ctx);
+        if (ctx.permissionRequestProvider === undefined) {
+          ctx.permissionRequestProvider = new PermissionRequestFileProvider(ctx.root);
+        }
+        const result = await ensurePermissionRequest(
+          ctx.projectSettings?.solutionSettings as AzureSolutionSettings,
+          ctx.permissionRequestProvider
+        );
         if (result.isErr()) {
           return result;
         }
@@ -668,18 +650,42 @@ export class TeamsAppSolution implements Solution {
         username,
         subscriptionName ? subscriptionName : subscriptionId
       );
-      const confirmRes = await ctx.ui?.showMessage(
-        "warn",
-        msg,
-        true,
-        "Provision",
-        "Pricing calculator"
-      );
+      let confirmRes = undefined;
+      if (isMultiEnvEnabled()) {
+        const msgNew = util.format(
+          getStrings().solution.ProvisionConfirmEnvNotice,
+          ctx.projectSettings!.activeEnvironment,
+          username,
+          subscriptionName ? subscriptionName : subscriptionId
+        );
+        confirmRes = await ctx.ui?.showMessage(
+          "warn",
+          msgNew,
+          true,
+          "Provision",
+          "Switch environment",
+          "Pricing calculator"
+        );
+      } else {
+        confirmRes = await ctx.ui?.showMessage(
+          "warn",
+          msg,
+          true,
+          "Provision",
+          "Pricing calculator"
+        );
+      }
       const confirm = confirmRes?.isOk() ? confirmRes.value : undefined;
 
       if (confirm !== "Provision") {
         if (confirm === "Pricing calculator") {
           ctx.ui?.openUrl("https://azure.microsoft.com/en-us/pricing/calculator/");
+        } else if (confirm === "Switch environment") {
+          const envName = await askTargetEnvironment(ctx as any, ctx.answers!);
+          if (envName) {
+            ctx.projectSettings!.activeEnvironment = envName;
+            ctx.ui?.showMessage("info", `[${envName}] is activated.`, false);
+          }
         }
         return err(
           returnUserError(
@@ -1219,7 +1225,14 @@ export class TeamsAppSolution implements Solution {
   }
 
   async localDebug(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    const result = await this.ensurePermissionRequest(ctx);
+    if (ctx.permissionRequestProvider === undefined) {
+      ctx.permissionRequestProvider = new PermissionRequestFileProvider(ctx.root);
+    }
+
+    const result = await ensurePermissionRequest(
+      ctx.projectSettings?.solutionSettings as AzureSolutionSettings,
+      ctx.permissionRequestProvider
+    );
     if (result.isErr()) {
       return result;
     }
@@ -1631,7 +1644,11 @@ export class TeamsAppSolution implements Solution {
         );
 
         collaborators.push({
-          userPrincipalName: teamsAppOwner.userPrincipalName,
+          // Sometimes app studio will return null as userPrincipalName, thus using aad's instead.
+          userPrincipalName:
+            teamsAppOwner.userPrincipalName ??
+            aadOwner?.userPrincipalName ??
+            teamsAppOwner.userObjectId,
           userObjectId: teamsAppOwner.userObjectId,
           isAadOwner: aadOwner ? true : false,
           aadResourceId: aadOwner ? aadOwner.resourceId : undefined,
@@ -1722,48 +1739,22 @@ export class TeamsAppSolution implements Solution {
     return ok(user);
   }
 
-  private parseTeamsAppTenantId(appStudioToken?: object): Result<string, FxError> {
-    if (appStudioToken === undefined) {
-      return err(
-        returnSystemError(
-          new Error("Graph token json is undefined"),
-          "Solution",
-          SolutionError.NoAppStudioToken
-        )
-      );
-    }
-
-    const teamsAppTenantId = (appStudioToken as any).tid;
-    if (
-      teamsAppTenantId === undefined ||
-      !(typeof teamsAppTenantId === "string") ||
-      teamsAppTenantId.length === 0
-    ) {
-      return err(
-        returnSystemError(
-          new Error("Cannot find teams app tenant id"),
-          "Solution",
-          SolutionError.NoTeamsAppTenantId
-        )
-      );
-    }
-    return ok(teamsAppTenantId);
-  }
-
   private loadTeamsAppTenantId(
     ctx: SolutionContext,
     isLocalDebug: boolean,
     appStudioToken?: object
   ): Result<SolutionContext, FxError> {
-    return this.parseTeamsAppTenantId(appStudioToken).andThen((teamsAppTenantId) => {
-      if (isLocalDebug && isMultiEnvEnabled()) {
-        ctx.localSettings?.teamsApp.set(LocalSettingsTeamsAppKeys.TenantId, teamsAppTenantId);
-      } else {
-        ctx.envInfo.profile.get(GLOBAL_CONFIG)?.set("teamsAppTenantId", teamsAppTenantId);
-      }
+    return parseTeamsAppTenantId(appStudioToken as Record<string, unknown> | undefined).andThen(
+      (teamsAppTenantId) => {
+        if (isLocalDebug && isMultiEnvEnabled()) {
+          ctx.localSettings?.teamsApp.set(LocalSettingsTeamsAppKeys.TenantId, teamsAppTenantId);
+        } else {
+          ctx.envInfo.profile.get(GLOBAL_CONFIG)?.set("teamsAppTenantId", teamsAppTenantId);
+        }
 
-      return ok(ctx);
-    });
+        return ok(ctx);
+      }
+    );
   }
 
   getAzureSolutionSettings(ctx: SolutionContext): AzureSolutionSettings {
@@ -2464,7 +2455,7 @@ export class TeamsAppSolution implements Solution {
     const teamsAppId = maybeTeamsAppId.value;
 
     const appSettingsJSONTpl = (await fs.readFile(appSettingsJSONPath)).toString();
-    const maybeTenantId = this.parseTeamsAppTenantId(await ctx.appStudioToken?.getJsonObject());
+    const maybeTenantId = parseTeamsAppTenantId(await ctx.appStudioToken?.getJsonObject());
     if (maybeTenantId.isErr()) {
       return err(maybeTenantId.error);
     }
@@ -2523,7 +2514,7 @@ export class TeamsAppSolution implements Solution {
         return undefined;
       }
 
-      const collaborator = res.data.value.find((user: any) => user.userPrincipalName === email);
+      const collaborator = res.data.value.find((user: any) => user.mail === email);
 
       if (!collaborator) {
         return undefined;

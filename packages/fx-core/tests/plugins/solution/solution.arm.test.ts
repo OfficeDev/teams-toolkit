@@ -292,22 +292,24 @@ describe("Deploy ARM Template to Azure", () => {
   let fileContent: Map<string, any>;
 
   beforeEach(() => {
-    (
-      mocker.stub(fs, "readFile") as unknown as sinon.SinonStub<
-        [file: number | fs.PathLike],
-        Promise<string>
-      >
-    ).callsFake((file: number | PathLike): Promise<string> => {
-      return fileContent.get(file.toString());
-    });
-    mocker.stub(fs, "stat").callsFake((filePath: PathLike): Promise<fs.Stats> => {
-      if (fileContent.has(filePath.toString())) {
-        return new Promise<fs.Stats>((resolve) => {
-          resolve({} as fs.Stats);
-        });
+    ((mocker.stub(fs, "readFile") as unknown) as sinon.SinonStub<
+      [file: number | fs.PathLike],
+      Promise<string>
+    >).callsFake(
+      (file: number | PathLike): Promise<string> => {
+        return fileContent.get(file.toString());
       }
-      throw new Error(`${filePath} does not exist.`);
-    });
+    );
+    mocker.stub(fs, "stat").callsFake(
+      (filePath: PathLike): Promise<fs.Stats> => {
+        if (fileContent.has(filePath.toString())) {
+          return new Promise<fs.Stats>((resolve) => {
+            resolve({} as fs.Stats);
+          });
+        }
+        throw new Error(`${filePath} does not exist.`);
+      }
+    );
     mocker.stub(fs, "writeFile").callsFake((path: number | PathLike, data: any) => {
       fileContent.set(path.toString(), data);
     });
@@ -449,9 +451,8 @@ describe("Deploy ARM Template to Azure", () => {
     const result = await deployArmTemplates(mockedCtx);
 
     // Assert
-    if (result.isErr()) {
-      chai.assert.fail(`deployArmTemplate failed:${result.error}`);
-    }
+    chai.assert.isTrue(result.isErr());
+
     expect(
       JSON.parse(fileContent.get(path.join(parameterFolder, "parameters.default.json")))
     ).to.deep.equals(
@@ -541,9 +542,7 @@ describe("Deploy ARM Template to Azure", () => {
 
     // Act
     const result = await deployArmTemplates(mockedCtx);
-    if (result.isErr()) {
-      chai.assert.fail(`deployArmTemplate failed:${result.error}`);
-    }
+    chai.assert.isTrue(result.isErr());
     chai.assert.strictEqual(usedExistingParameterDefaultFile, true);
   });
 
@@ -574,12 +573,12 @@ describe("Deploy ARM Template to Azure", () => {
       return subscriptionInfo;
     };
 
-    mocker
-      .stub(Executor, "execCommandAsync")
-      .callsFake((command: string, options?: ExecOptions): Promise<void> => {
+    mocker.stub(Executor, "execCommandAsync").callsFake(
+      (command: string, options?: ExecOptions): Promise<void> => {
         return new Promise((resolve) => {
           resolve();
         });
-      });
+      }
+    );
   }
 });

@@ -161,6 +161,8 @@ export const QuestionNewResourceGroupName: TextInputQuestion = {
     },
   },
   placeholder: "New resource group name",
+  // default resource group name will change with env name
+  forgetLastValue: true,
 };
 
 export const QuestionNewResourceGroupLocation: SingleSelectQuestion = {

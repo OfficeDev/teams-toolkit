@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import {
-  ConfigFolderName,
   FxError,
   ok,
   err,
@@ -23,14 +22,12 @@ import {
 } from "@microsoft/teamsfx-api";
 import { AppStudioPluginImpl } from "./plugin";
 import { Constants } from "./constants";
-import { IAppDefinition } from "./interfaces/IAppDefinition";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
 import { manuallySubmitOption, autoPublishOption } from "./questions";
 import { TelemetryUtils, TelemetryEventName, TelemetryPropertyKey } from "./utils/telemetry";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
-import { FunctionRouterError } from "../../../core";
 import { Links } from "../bot/constants";
 import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
 @Service(ResourcePlugins.AppStudioPlugin)
@@ -51,22 +48,7 @@ export class AppStudioPlugin implements Plugin {
     });
 
     if (stage === Stage.publish) {
-      if (ctx.answers?.platform === Platform.VS) {
-        const appPath = new QTreeNode({
-          type: "folder",
-          name: Constants.PUBLISH_PATH_QUESTION,
-          title: "Please select the folder contains manifest.json and icons",
-          default: `${ctx.root}/.${ConfigFolderName}`,
-        });
-        appStudioQuestions.addChild(appPath);
-
-        const remoteTeamsAppId = new QTreeNode({
-          type: "text",
-          name: Constants.REMOTE_TEAMS_APP_ID,
-          title: "Please input the teams app id in App Studio",
-        });
-        appStudioQuestions.addChild(remoteTeamsAppId);
-      } else if (ctx.answers?.platform === Platform.VSCode) {
+      if (ctx.answers?.platform === Platform.VSCode) {
         const buildOrPublish = new QTreeNode({
           name: Constants.BUILD_OR_PUBLISH_QUESTION,
           type: "singleSelect",

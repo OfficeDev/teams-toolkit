@@ -17,6 +17,9 @@ import {
   Inputs,
   UserInteraction,
   OptionItem,
+  LogProvider,
+  EnvConfigFileNameTemplate,
+  EnvNamePlaceholder,
 } from "@microsoft/teamsfx-api";
 import { GLOBAL_CONFIG, LOCATION, RESOURCE_GROUP_NAME, SolutionError } from "./constants";
 import { v4 as uuidv4 } from "uuid";
@@ -30,6 +33,7 @@ import {
   QuestionSelectResourceGroup,
 } from "../../../core/question";
 import { desensitize } from "../../../core/middleware/questionModel";
+import { ResourceGroupsCreateOrUpdateResponse } from "@azure/arm-resources/esm/models";
 
 export type AzureSubscription = {
   displayName: string;
@@ -121,9 +125,8 @@ export async function askResourceGroupInfo(
   rmClient: ResourceManagementClient,
   inputs: Inputs,
   ui: UserInteraction,
-  appName: string
+  defaultResourceGroupName: string
 ): Promise<Result<ResourceGroupInfo, FxError>> {
-  const defaultResourceGroupName = `${appName.replace(" ", "_")}-rg`;
   if (!isMultiEnvEnabled()) {
     return ok({
       createNewResourceGroup: true,
@@ -205,6 +208,42 @@ export async function askResourceGroupInfo(
   }
 }
 
+async function getResourceGroupInfoFromEnvConfig(
+  ctx: SolutionContext,
+  rmClient: ResourceManagementClient,
+  envName: string,
+  resourceGroupName: string
+): Promise<Result<ResourceGroupInfo, FxError>> {
+  try {
+    const getRes = await rmClient.resourceGroups.get(resourceGroupName);
+    if (getRes.name) {
+      return ok({
+        createNewResourceGroup: false,
+        name: getRes.name,
+        location: getRes.location,
+      });
+    }
+  } catch (error) {
+    ctx.logProvider?.error(
+      `[${PluginDisplayName.Solution}] failed to get resource group '${resourceGroupName}'. error = '${error}'`
+    );
+  }
+
+  // Currently we do not support creating resource group by input config, so just throw an error.
+  return err(
+    returnUserError(
+      new Error(
+        `Resource group '${resourceGroupName}' does not exist, please check your ${EnvConfigFileNameTemplate.replace(
+          EnvNamePlaceholder,
+          envName
+        )} file.`
+      ),
+      "Solution",
+      SolutionError.ResourceGroupNotFound
+    )
+  );
+}
+
 /**
  * Asks common questions and puts the answers in the global namespace of SolutionConfig
  *
@@ -265,25 +304,22 @@ async function askCommonQuestions(
     .get(GLOBAL_CONFIG)
     ?.get(RESOURCE_GROUP_NAME);
   const resourceGroupLocationFromProfile = ctx.envInfo.profile.get(GLOBAL_CONFIG)?.get(LOCATION);
+  const defaultResourceGroupName = `${appName.replace(" ", "_")}${
+    isMultiEnvEnabled() ? "-" + ctx.envInfo.envName : ""
+  }-rg`;
   let resourceGroupInfo: ResourceGroupInfo;
+
   if (resourceGroupNameFromEnvConfig) {
-    const checkRes = await rmClient.resourceGroups.checkExistence(resourceGroupNameFromEnvConfig);
-    if (checkRes.body) {
-      resourceGroupInfo = {
-        createNewResourceGroup: false,
-        name: resourceGroupNameFromEnvConfig,
-        location: DefaultResourceGroupLocation, // TODO: retrieve location using ARM SDK
-      };
-    } else {
-      // Currently we do not support creating resource group by input config, so just throw an error.
-      return err(
-        returnUserError(
-          new Error("Resource group does not exist"),
-          "Solution",
-          SolutionError.ResourceGroupNotFound
-        )
-      );
+    const res = await getResourceGroupInfoFromEnvConfig(
+      ctx,
+      rmClient,
+      ctx.envInfo.envName,
+      resourceGroupNameFromEnvConfig
+    );
+    if (res.isErr()) {
+      return err(res.error);
     }
+    resourceGroupInfo = res.value;
   } else if (resourceGroupNameFromProfile && resourceGroupLocationFromProfile) {
     const checkRes = await rmClient.resourceGroups.checkExistence(resourceGroupNameFromProfile);
     if (checkRes.body) {
@@ -305,7 +341,7 @@ async function askCommonQuestions(
       rmClient,
       ctx.answers,
       ctx.ui,
-      appName
+      defaultResourceGroupName
     );
     if (resourceGroupInfoResult.isErr()) {
       return err(resourceGroupInfoResult.error);
@@ -315,28 +351,16 @@ async function askCommonQuestions(
     // fall back to default values when user interaction is not available
     resourceGroupInfo = {
       createNewResourceGroup: true,
-      name: `${appName.replace(" ", "_")}-rg`,
+      name: defaultResourceGroupName,
       location: DefaultResourceGroupLocation,
     };
   }
   if (resourceGroupInfo.createNewResourceGroup) {
-    const response = await rmClient.resourceGroups.createOrUpdate(resourceGroupInfo.name, {
-      location: resourceGroupInfo.location,
-    });
-
-    if (response.name === undefined) {
-      return err(
-        returnSystemError(
-          new Error(`Failed to create resource group ${resourceGroupInfo.name}`),
-          "Solution",
-          SolutionError.FailedToCreateResourceGroup
-        )
-      );
+    const maybeRgName = await createNewResourceGroup(rmClient, resourceGroupInfo, ctx.logProvider);
+    if (maybeRgName.isErr()) {
+      return err(maybeRgName.error);
     }
-    resourceGroupInfo.name = response.name;
-    ctx.logProvider?.info(
-      `[${PluginDisplayName.Solution}] askCommonQuestions - resource group:'${resourceGroupInfo.name}' created!`
-    );
+    resourceGroupInfo.name = maybeRgName.value;
   }
   commonQuestions.resourceGroupName = resourceGroupInfo.name;
   commonQuestions.location = resourceGroupInfo.location;
@@ -412,4 +436,44 @@ export async function fillInCommonQuestions(
     return ok(config);
   }
   return result.map((_) => config);
+}
+
+async function createNewResourceGroup(
+  rmClient: ResourceManagementClient,
+  rgInfo: ResourceGroupInfo,
+  logProvider?: LogProvider
+): Promise<Result<string, FxError>> {
+  let response: ResourceGroupsCreateOrUpdateResponse;
+  try {
+    response = await rmClient.resourceGroups.createOrUpdate(rgInfo.name, {
+      location: rgInfo.location,
+    });
+  } catch (e) {
+    let errMsg: string;
+    if (e instanceof Error) {
+      errMsg = `Failed to create resource group ${rgInfo.name} due to ${e.name}:${e.message}`;
+    } else {
+      errMsg = `Failed to create resource group ${
+        rgInfo.name
+      } due to unknown error ${JSON.stringify(e)}`;
+    }
+
+    return err(
+      returnUserError(new Error(errMsg), "Solution", SolutionError.FailedToCreateResourceGroup)
+    );
+  }
+
+  if (response.name === undefined) {
+    return err(
+      returnSystemError(
+        new Error(`Failed to create resource group ${rgInfo.name}`),
+        "Solution",
+        SolutionError.FailedToCreateResourceGroup
+      )
+    );
+  }
+  logProvider?.info(
+    `[${PluginDisplayName.Solution}] askCommonQuestions - resource group:'${response.name}' created!`
+  );
+  return ok(response.name);
 }

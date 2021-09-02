@@ -8,6 +8,7 @@ import {
   FunctionRouter,
   Stage,
   Func,
+  Void,
 } from "@microsoft/teamsfx-api";
 
 export class MockCore implements Core {
@@ -51,6 +52,10 @@ export class MockCore implements Core {
 
   async switchEnv(inputs: Inputs): Promise<Result<string, FxError>> {
     return ok("");
+  }
+
+  async activateEnv(env: string, inputs: Inputs): Promise<Result<Void, FxError>> {
+    return ok(Void);
   }
 
   async getQuestions(task: Stage, inputs: Inputs): Promise<Result<QTreeNode | undefined, FxError>> {

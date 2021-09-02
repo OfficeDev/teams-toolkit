@@ -51,7 +51,7 @@ export class TelemetryUtils {
       properties = {};
     }
     properties[TelemetryPropertyKey.component] = Constants.PLUGIN_NAME;
-    const teamsAppId = this.ctx.configOfOtherPlugins
+    const teamsAppId = this.ctx.envInfo.profile
       .get(GLOBAL_CONFIG)
       ?.get(REMOTE_TEAMS_APP_ID) as string;
     if (teamsAppId) {
@@ -74,7 +74,7 @@ export class TelemetryUtils {
     }
     properties[TelemetryPropertyKey.component] = Constants.PLUGIN_NAME;
     properties[TelemetryPropertyKey.success] = TelemetryPropertyValue.success;
-    const teamsAppId = this.ctx.configOfOtherPlugins
+    const teamsAppId = this.ctx.envInfo.profile
       .get(GLOBAL_CONFIG)
       ?.get(REMOTE_TEAMS_APP_ID) as string;
     if (teamsAppId) {
@@ -102,7 +102,7 @@ export class TelemetryUtils {
     properties[TelemetryPropertyKey.errorMessage] = error.message;
     properties[TelemetryPropertyKey.success] = TelemetryPropertyValue.failure;
 
-    const teamsAppId = this.ctx.configOfOtherPlugins
+    const teamsAppId = this.ctx.envInfo.profile
       .get(GLOBAL_CONFIG)
       ?.get(REMOTE_TEAMS_APP_ID) as string;
     if (teamsAppId) {

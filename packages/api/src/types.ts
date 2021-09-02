@@ -120,6 +120,7 @@ export interface ProjectSettings {
   programmingLanguage?: string;
   defaultFunctionName?: string;
   solutionSettings: SolutionSettings;
+  activeEnvironment?: string;
 }
 
 /**

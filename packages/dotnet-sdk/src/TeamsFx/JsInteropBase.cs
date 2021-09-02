@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace Microsoft.TeamsFx
 {
-    public abstract class JsInteropBase : IAsyncDisposable
+    internal class JsInteropBase : IAsyncDisposable
     {
-        protected readonly Lazy<Task<IJSObjectReference>> moduleTask;
+        internal readonly Lazy<Task<IJSObjectReference>> moduleTask;
 
-        public JsInteropBase(IJSRuntime jsRuntime)
+        internal JsInteropBase(IJSRuntime jsRuntime)
         {
             moduleTask = new(() => jsRuntime.InvokeAsync<IJSObjectReference>(
                "import", "./_content/Microsoft.TeamsFx/jsInterop.js").AsTask());

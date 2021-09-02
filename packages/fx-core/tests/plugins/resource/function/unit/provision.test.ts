@@ -18,55 +18,60 @@ import {
 import { NodeVersion } from "../../../../../src/plugins/resource/function/enums";
 import { FunctionPlugin } from "../../../../../src/plugins/resource/function";
 import { Platform } from "@microsoft/teamsfx-api";
+import { newEnvInfo } from "../../../../../src";
 
 const context: any = {
-  configOfOtherPlugins: new Map<string, Map<string, string | string[]>>([
-    [
-      DependentPluginInfo.solutionPluginName,
-      new Map<string, string | string[]>([
-        [DependentPluginInfo.resourceGroupName, "ut"],
-        [DependentPluginInfo.subscriptionId, "ut"],
-        [DependentPluginInfo.resourceNameSuffix, "ut"],
-        [DependentPluginInfo.location, "ut"],
-      ]),
-    ],
-    [
-      DependentPluginInfo.aadPluginName,
-      new Map<string, string>([
-        [DependentPluginInfo.aadClientId, "ut"],
-        [DependentPluginInfo.aadClientSecret, "ut"],
-        [DependentPluginInfo.oauthHost, "ut"],
-        [DependentPluginInfo.tenantId, "ut"],
-        [DependentPluginInfo.applicationIdUris, "ut"],
-      ]),
-    ],
-    [
-      DependentPluginInfo.frontendPluginName,
-      new Map<string, string>([
-        [DependentPluginInfo.frontendDomain, "ut"],
-        [DependentPluginInfo.frontendEndpoint, "ut"],
-      ]),
-    ],
-    [
-      DependentPluginInfo.identityPluginName,
-      new Map<string, string>([
-        [DependentPluginInfo.identityId, "ut"],
-        [DependentPluginInfo.identityName, "ut"],
-      ]),
-    ],
-    [
-      DependentPluginInfo.sqlPluginName,
-      new Map<string, string>([
-        [DependentPluginInfo.sqlPluginName, "ut"],
-        [DependentPluginInfo.sqlEndpoint, "ut"],
-        [DependentPluginInfo.databaseName, "ut"],
-      ]),
-    ],
-    [
-      DependentPluginInfo.apimPluginName,
-      new Map<string, string>([[DependentPluginInfo.apimAppId, "ut"]]),
-    ],
-  ]),
+  envInfo: newEnvInfo(
+    undefined,
+    undefined,
+    new Map<string, Map<string, string | string[]>>([
+      [
+        DependentPluginInfo.solutionPluginName,
+        new Map<string, string | string[]>([
+          [DependentPluginInfo.resourceGroupName, "ut"],
+          [DependentPluginInfo.subscriptionId, "ut"],
+          [DependentPluginInfo.resourceNameSuffix, "ut"],
+          [DependentPluginInfo.location, "ut"],
+        ]),
+      ],
+      [
+        DependentPluginInfo.aadPluginName,
+        new Map<string, string>([
+          [DependentPluginInfo.aadClientId, "ut"],
+          [DependentPluginInfo.aadClientSecret, "ut"],
+          [DependentPluginInfo.oauthHost, "ut"],
+          [DependentPluginInfo.tenantId, "ut"],
+          [DependentPluginInfo.applicationIdUris, "ut"],
+        ]),
+      ],
+      [
+        DependentPluginInfo.frontendPluginName,
+        new Map<string, string>([
+          [DependentPluginInfo.frontendDomain, "ut"],
+          [DependentPluginInfo.frontendEndpoint, "ut"],
+        ]),
+      ],
+      [
+        DependentPluginInfo.identityPluginName,
+        new Map<string, string>([
+          [DependentPluginInfo.identityId, "ut"],
+          [DependentPluginInfo.identityName, "ut"],
+        ]),
+      ],
+      [
+        DependentPluginInfo.sqlPluginName,
+        new Map<string, string>([
+          [DependentPluginInfo.sqlPluginName, "ut"],
+          [DependentPluginInfo.sqlEndpoint, "ut"],
+          [DependentPluginInfo.databaseName, "ut"],
+        ]),
+      ],
+      [
+        DependentPluginInfo.apimPluginName,
+        new Map<string, string>([[DependentPluginInfo.apimAppId, "ut"]]),
+      ],
+    ])
+  ),
   app: {
     name: {
       short: "ut",

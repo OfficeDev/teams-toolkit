@@ -12,13 +12,21 @@ using System.Threading.Tasks;
 
 namespace Microsoft.TeamsFx
 {
-    public class TeamsFx : JsInteropBase, IAsyncDisposable
+    /// <summary>
+    /// Top Level API in TeamsFx SDK.
+    /// </summary>
+    public class TeamsFx : IAsyncDisposable
     {
+        private readonly JsInteropBase jsInteropBase;
         private readonly LogFunctionCallback logFunctionCallback = new();
         private readonly DotNetObjectReference<LogFunctionCallback> logFunctionCallbackRef;
 
-        public TeamsFx(IJSRuntime jsRuntime) : base(jsRuntime)
+        /// <summary>
+        /// The constructor of TeamsFx.
+        /// </summary>
+        public TeamsFx(IJSRuntime jsRuntime)
         {
+            jsInteropBase = new JsInteropBase(jsRuntime);
             logFunctionCallbackRef = DotNetObjectReference.Create(logFunctionCallback);
         }
 
@@ -39,7 +47,7 @@ namespace Microsoft.TeamsFx
         {
             try
             {
-                var module = await moduleTask.Value.ConfigureAwait(false);
+                var module = await jsInteropBase.moduleTask.Value.ConfigureAwait(false);
                 await module.InvokeVoidAsync("loadConfiguration", configuration).ConfigureAwait(false);
             }
             catch (JSException e)
@@ -54,7 +62,7 @@ namespace Microsoft.TeamsFx
         /// <param name="logLevel">log level in configuration</param>
         public async Task SetLogLevelAsync(LogLevel logLevel)
         {
-            var module = await moduleTask.Value.ConfigureAwait(false);
+            var module = await jsInteropBase.moduleTask.Value.ConfigureAwait(false);
             await module.InvokeVoidAsync("setLogLevel", logLevel).ConfigureAwait(false);
         }
 
@@ -64,7 +72,7 @@ namespace Microsoft.TeamsFx
         /// <returns>Log level</returns>
         public async Task<LogLevel> GetLogLevelAsync()
         {
-            var module = await moduleTask.Value.ConfigureAwait(false);
+            var module = await jsInteropBase.moduleTask.Value.ConfigureAwait(false);
             var logLevel = await module.InvokeAsync<LogLevel>("getLogLevel").ConfigureAwait(false);
             return logLevel;
         }
@@ -86,7 +94,7 @@ namespace Microsoft.TeamsFx
         public async Task SetLogFunctionAsync(LogFunction logFunction)
         {
             logFunctionCallback.CustomLogFunction = logFunction;
-            var module = await moduleTask.Value.ConfigureAwait(false);
+            var module = await jsInteropBase.moduleTask.Value.ConfigureAwait(false);
             if (logFunction == null)
             {
                 await module.InvokeVoidAsync("clearLogFunctionCallback").ConfigureAwait(false);
@@ -108,7 +116,7 @@ namespace Microsoft.TeamsFx
         {
             try
             {
-                var module = await moduleTask.Value.ConfigureAwait(false);
+                var module = await jsInteropBase.moduleTask.Value.ConfigureAwait(false);
                 return await module.InvokeAsync<Dictionary<string, object>>("getResourceConfiguration", resourceType, resourceName).ConfigureAwait(false);
             }
             catch (JSException e)
@@ -126,7 +134,7 @@ namespace Microsoft.TeamsFx
         {
             try
             {
-                var module = await moduleTask.Value.ConfigureAwait(false);
+                var module = await jsInteropBase.moduleTask.Value.ConfigureAwait(false);
                 return await module.InvokeAsync<AuthenticationConfiguration>("getAuthenticationConfiguration").ConfigureAwait(false);
             }
             catch (JSException e)
@@ -161,9 +169,9 @@ namespace Microsoft.TeamsFx
             return client;
         }
 
-        public async new ValueTask DisposeAsync()
+        public async ValueTask DisposeAsync()
         {
-            await base.DisposeAsync().ConfigureAwait(false);
+            await jsInteropBase.DisposeAsync().ConfigureAwait(false);
             logFunctionCallbackRef?.Dispose();
         }
     }

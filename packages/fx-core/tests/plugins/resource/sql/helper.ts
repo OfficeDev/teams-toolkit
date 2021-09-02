@@ -1,5 +1,6 @@
 import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import { PluginContext } from "@microsoft/teamsfx-api";
+import { newEnvInfo } from "../../../../src";
 import { Constants } from "../../../../src/plugins/resource/sql/constants";
 import { MockUserInteraction } from "../../../core/utils";
 
@@ -7,7 +8,7 @@ export class TestHelper {
   static async pluginContext(
     credentials: msRestNodeAuth.TokenCredentialsBase
   ): Promise<PluginContext> {
-    const pluginContext = {
+    const pluginContext = ({
       azureAccountProvider: {
         getAccountCredentialAsync() {
           return credentials;
@@ -75,28 +76,32 @@ export class TestHelper {
         },
       },
       config: new Map(),
-      configOfOtherPlugins: new Map([
-        [
-          Constants.solution,
-          new Map([
-            [
-              Constants.solutionConfigKey.resourceNameSuffix,
-              Math.random().toString(36).substring(2, 8),
-            ],
-            [Constants.solutionConfigKey.subscriptionId, "1756abc0-3554-4341-8d6a-46674962ea19"],
-            [Constants.solutionConfigKey.resourceGroupName, "zhaofengtest"],
-            [Constants.solutionConfigKey.location, "eastus"],
-          ]),
-        ],
-        [Constants.identityPlugin, new Map([[Constants.identity, "zhaofeng-msi"]])],
-      ]),
+      envInfo: newEnvInfo(
+        undefined,
+        undefined,
+        new Map([
+          [
+            Constants.solution,
+            new Map([
+              [
+                Constants.solutionConfigKey.resourceNameSuffix,
+                Math.random().toString(36).substring(2, 8),
+              ],
+              [Constants.solutionConfigKey.subscriptionId, "1756abc0-3554-4341-8d6a-46674962ea19"],
+              [Constants.solutionConfigKey.resourceGroupName, "zhaofengtest"],
+              [Constants.solutionConfigKey.location, "eastus"],
+            ]),
+          ],
+          [Constants.identityPlugin, new Map([[Constants.identity, "zhaofeng-msi"]])],
+        ])
+      ),
       app: {
         name: {
           short: "hello-app",
         },
       },
       projectSettings: { appName: "hello-app" },
-    } as unknown as PluginContext;
+    } as unknown) as PluginContext;
 
     return pluginContext;
   }

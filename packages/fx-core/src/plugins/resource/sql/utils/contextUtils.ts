@@ -10,7 +10,7 @@ export class ContextUtils {
   }
 
   public static getConfigString(plugin: string, key: string): string {
-    const pluginConfig = ContextUtils.ctx.configOfOtherPlugins.get(plugin);
+    const pluginConfig = ContextUtils.ctx.envInfo.profile.get(plugin);
     return pluginConfig!.get(key) as string;
   }
 }

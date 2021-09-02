@@ -54,8 +54,22 @@ export function isLinux() {
 }
 
 export function getActiveEnv() {
-  // TODO: need to get active env if multiple env configurations supported
-  return "default";
+  if (!isMultiEnvEnabled()) {
+    return "default";
+  }
+  try {
+    const ws = ext.workspaceUri.fsPath;
+    if (isValidProject(ws)) {
+      const settingsJsonPath = path.join(
+        ws,
+        `.${ConfigFolderName}/${InputConfigsFolderName}/${ProjectSettingsFileName}`
+      );
+      const settingsJson = JSON.parse(fs.readFileSync(settingsJsonPath, "utf8"));
+      return settingsJson.activeEnvironment;
+    }
+  } catch (e) {
+    return undefined;
+  }
 }
 
 export function getTeamsAppId() {
@@ -126,8 +140,7 @@ export function anonymizeFilePaths(stack?: string): string {
   }
 
   const nodeModulesRegex = /^[\\\/]?(node_modules|node_modules\.asar)[\\\/]/;
-  const fileRegex =
-    /(file:\/\/)?([a-zA-Z]:(\\\\|\\|\/)|(\\\\|\\|\/))?([\w-\._]+(\\\\|\\|\/))+[\w-\._]*/g;
+  const fileRegex = /(file:\/\/)?([a-zA-Z]:(\\\\|\\|\/)|(\\\\|\\|\/))?([\w-\._]+(\\\\|\\|\/))+[\w-\._]*/g;
   let lastIndex = 0;
   updatedStack = "";
 

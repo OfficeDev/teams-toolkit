@@ -7,13 +7,10 @@ import { TelemetryKeys, TelemetryValues } from "../constants";
 import { PluginBot, PluginSolution } from "../resources/strings";
 
 export class telemetryHelper {
-  static fillCommonProperty(
-    ctx: PluginContext,
-    properties: { [key: string]: string }
-  ): void {
+  static fillCommonProperty(ctx: PluginContext, properties: { [key: string]: string }): void {
     properties[TelemetryKeys.Component] = PluginBot.PLUGIN_NAME;
     properties[TelemetryKeys.AppId] =
-      (ctx.configOfOtherPlugins
+      (ctx.envInfo.profile
         .get(PluginSolution.PLUGIN_NAME)
         ?.get(PluginSolution.REMOTE_TEAMS_APPID) as string) || "";
   }

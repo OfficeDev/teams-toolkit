@@ -31,6 +31,7 @@ import {
 } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
 import { AppStudioPlugin } from "..";
+import { newEnvInfo } from "../../../..";
 import {
   ResourcePlugins,
   ResourcePluginsV2,
@@ -154,8 +155,7 @@ export class AppStudioPluginV2 implements ResourcePlugin {
       const configMap = ConfigMap.fromJSON(output);
       if (configMap) configsOfOtherPlugins.set(key, configMap);
     }
-    pluginContext.configOfOtherPlugins = configsOfOtherPlugins;
-    //TODO replace values from envConfig.manifest
+    pluginContext.envInfo = newEnvInfo(undefined, undefined, configsOfOtherPlugins);
     const postRes = await this.plugin.publish(pluginContext);
     if (postRes.isErr()) {
       return err(postRes.error);

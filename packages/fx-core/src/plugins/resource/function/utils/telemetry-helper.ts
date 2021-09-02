@@ -19,7 +19,7 @@ export class TelemetryHelper {
   static fillCommonProperty(properties: { [key: string]: string }): void {
     properties[TelemetryKey.Component] = FunctionPluginInfo.pluginName;
     properties[TelemetryKey.AppId] =
-      (this.ctx?.configOfOtherPlugins
+      (this.ctx?.envInfo.profile
         .get(DependentPluginInfo.solutionPluginName)
         ?.get(DependentPluginInfo.remoteTeamsAppId) as string) || CommonConstants.emptyString;
   }

@@ -59,8 +59,9 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
   let getSelectSubItem: undefined | ((token: any) => Promise<[TreeItem, boolean]>) = undefined;
   getSelectSubItem = async (token: any): Promise<[TreeItem, boolean]> => {
     let selectSubLabel = "";
-    const subscriptions: SubscriptionInfo[] | undefined =
-      await tools.tokenProvider.azureAccountProvider.listSubscriptions();
+    const subscriptions:
+      | SubscriptionInfo[]
+      | undefined = await tools.tokenProvider.azureAccountProvider.listSubscriptions();
     if (subscriptions) {
       const activeSubscriptionId = await getSubscriptionId();
       const activeSubscription = subscriptions.find(
@@ -123,57 +124,19 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
   const getSideloadingItem = async (token: string): Promise<TreeItem[]> => {
     const isSideloadingAllowed = await getSideloadingStatus(token);
     if (isSideloadingAllowed === undefined) {
-      return [
-        {
-          commandId: "fx-extension.checkSideloading",
-          label: StringResources.vsc.accountTree.sideloadingUnknown,
-          callback: () => {
-            return Promise.resolve(ok(null));
-          },
-          parent: "fx-extension.signinM365",
-          contextValue: "checkSideloading",
-          icon: "info",
-          tooltip: {
-            isMarkdown: false,
-            value: StringResources.vsc.accountTree.sideloadingTooltip,
-          },
-        },
-      ];
+      // show nothing if internal error (TODO: may add back if full status is required later)
+      return [];
     } else if (isSideloadingAllowed === true) {
-      return [
-        {
-          commandId: "fx-extension.checkSideloading",
-          label: StringResources.vsc.accountTree.sideloadingPass,
-          callback: () => {
-            return Promise.resolve(ok(null));
-          },
-          parent: "fx-extension.signinM365",
-          contextValue: "checkSideloading",
-          icon: "pass",
-          tooltip: {
-            isMarkdown: false,
-            value: StringResources.vsc.accountTree.sideloadingTooltip,
-          },
-        },
-      ];
+      // show nothing if status is good (TODO: may add back if full status is required later)
+      return [];
     } else {
-      VS_CODE_UI.showMessage(
-        "warn",
-        StringResources.vsc.accountTree.sideloadingMessage,
-        false,
-        StringResources.vsc.common.readMore
-      )
-        .then(async (result) => {
-          if (result.isOk() && result.value === StringResources.vsc.common.readMore) {
-            await VS_CODE_UI.openUrl("https://aka.ms/teamsfx-custom-app");
-          }
-        })
-        .catch((error) => {});
+      showSideloadingWarning();
       return [
         {
           commandId: "fx-extension.checkSideloading",
           label: StringResources.vsc.accountTree.sideloadingWarning,
           callback: () => {
+            showSideloadingWarning();
             return Promise.resolve(ok(null));
           },
           parent: "fx-extension.signinM365",
@@ -208,25 +171,6 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
     const status = await AppStudioLogin.getStatus();
     if (status.token !== undefined) {
       const subItem = await getSideloadingItem(status.token);
-      tools.treeProvider?.refresh(subItem);
-    } else {
-      // just in corner case that cannot get token and show unknown status
-      const subItem = [
-        {
-          commandId: "fx-extension.checkSideloading",
-          label: StringResources.vsc.accountTree.sideloadingUnknown,
-          callback: () => {
-            return Promise.resolve(ok(null));
-          },
-          parent: "fx-extension.signinM365",
-          contextValue: "checkSideloading",
-          icon: "info",
-          tooltip: {
-            isMarkdown: false,
-            value: StringResources.vsc.accountTree.sideloadingTooltip,
-          },
-        } as TreeItem,
-      ];
       tools.treeProvider?.refresh(subItem);
     }
 
@@ -315,7 +259,9 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
             },
           ]);
           const subItem = await getSideloadingItem(token);
-          tools.treeProvider?.add(subItem);
+          if (subItem && subItem.length > 0) {
+            tools.treeProvider?.add(subItem);
+          }
         }
       } else if (status === "SigningIn") {
         tools.treeProvider?.refresh([
@@ -488,6 +434,21 @@ async function setSubscription(subscription: SubscriptionInfo | undefined) {
       },
     ]);
   }
+}
+
+function showSideloadingWarning() {
+  VS_CODE_UI.showMessage(
+    "warn",
+    StringResources.vsc.accountTree.sideloadingMessage,
+    false,
+    StringResources.vsc.common.readMore
+  )
+    .then(async (result) => {
+      if (result.isOk() && result.value === StringResources.vsc.common.readMore) {
+        await VS_CODE_UI.openUrl("https://aka.ms/teamsfx-custom-app");
+      }
+    })
+    .catch((error) => {});
 }
 
 async function getSideloadingStatus(token: string): Promise<boolean | undefined> {

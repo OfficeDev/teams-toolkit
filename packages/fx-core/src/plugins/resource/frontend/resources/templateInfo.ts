@@ -35,7 +35,7 @@ export class TemplateInfo {
     this.group = TemplateInfo.TemplateGroupName;
     this.version = TemplateInfo.version;
 
-    const solutionPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.SolutionPluginName);
+    const solutionPlugin = ctx.envInfo.profile.get(DependentPluginInfo.SolutionPluginName);
     const tabLanguage =
       (solutionPlugin?.get(DependentPluginInfo.ProgrammingLanguage) as string) ??
       TabLanguage.JavaScript;

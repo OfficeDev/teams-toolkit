@@ -28,15 +28,15 @@ import {
   ResourceTemplate,
 } from "@microsoft/teamsfx-api/build/v2";
 import { ArmResourcePlugin, ScaffoldArmTemplateResult } from "../../common/armInterface";
-import { NoProjectOpenedError, PluginHasNoTaskImpl } from "../../core";
-import { ARM_TEMPLATE_OUTPUT, GLOBAL_CONFIG } from "../solution/fx-solution/constants";
+import { newEnvInfo, NoProjectOpenedError, PluginHasNoTaskImpl } from "../../core";
+import { GLOBAL_CONFIG, ARM_TEMPLATE_OUTPUT } from "../solution/fx-solution/constants";
 
 export function convert2PluginContext(ctx: Context, inputs: Inputs): PluginContext {
   if (!inputs.projectPath) throw NoProjectOpenedError();
   const pluginContext: PluginContext = {
     root: inputs.projectPath,
     config: new ConfigMap(),
-    configOfOtherPlugins: new Map<string, ConfigMap>(),
+    envInfo: newEnvInfo(),
     projectSettings: ctx.projectSetting,
     answers: inputs,
     logProvider: ctx.logProvider,
@@ -119,7 +119,9 @@ export async function provisionResourceAdapter(
   const configOfOtherPlugins = new Map<string, ConfigMap>();
   if (solutionConfig) configOfOtherPlugins.set(GLOBAL_CONFIG, solutionConfig);
   pluginContext.config = new ConfigMap();
-  pluginContext.configOfOtherPlugins = configOfOtherPlugins;
+  pluginContext.envInfo = newEnvInfo();
+  pluginContext.envInfo.profile = configOfOtherPlugins;
+  pluginContext.envInfo.config = envConfig;
   if (plugin.preProvision) {
     const preRes = await plugin.preProvision(pluginContext);
     if (preRes.isErr()) {
@@ -151,6 +153,7 @@ export async function configureResourceAdapter(
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   setConfigs(plugin.name, pluginContext, envProfile);
+  pluginContext.envInfo.config = envConfig;
   const postRes = await plugin.postProvision(pluginContext);
   if (postRes.isErr()) {
     return err(postRes.error);
@@ -290,19 +293,19 @@ export async function getQuestionsForScaffoldingAdapter(
   return await plugin.getQuestions(Stage.create, pluginContext);
 }
 export function getArmOutput(ctx: PluginContext, key: string): string | undefined {
-  const solutionConfig = ctx.configOfOtherPlugins.get("solution");
+  const solutionConfig = ctx.envInfo.profile.get("solution");
   const output = solutionConfig?.get(ARM_TEMPLATE_OUTPUT);
   return output?.[key]?.value;
 }
 
 function setConfigs(pluginName: string, pluginContext: PluginContext, envProfile: EnvProfile) {
-  const configsOfOtherPlugins = new Map<string, ConfigMap>();
+  const envInfo = newEnvInfo();
   for (const key in envProfile) {
     const output = envProfile[key];
     const configMap = ConfigMap.fromJSON(output);
-    if (configMap) configsOfOtherPlugins.set(key, configMap);
+    if (configMap) envInfo.profile.set(key, configMap);
   }
-  const selfConfigMap = configsOfOtherPlugins.get(pluginName) || new ConfigMap();
+  const selfConfigMap = envInfo.profile.get(pluginName) || new ConfigMap();
   pluginContext.config = selfConfigMap;
-  pluginContext.configOfOtherPlugins = configsOfOtherPlugins;
+  pluginContext.envInfo = envInfo;
 }

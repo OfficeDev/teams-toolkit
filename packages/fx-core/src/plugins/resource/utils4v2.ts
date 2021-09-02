@@ -27,7 +27,7 @@ import {
   ResourceTemplate,
 } from "@microsoft/teamsfx-api/build/v2";
 import { ArmResourcePlugin, ScaffoldArmTemplateResult } from "../../common/armInterface";
-import { NoProjectOpenedError, PluginHasNoTaskImpl } from "../../core";
+import { newEnvInfo, NoProjectOpenedError, PluginHasNoTaskImpl } from "../../core";
 import { GLOBAL_CONFIG, ARM_TEMPLATE_OUTPUT } from "../solution/fx-solution/constants";
 
 export function convert2PluginContext(ctx: Context, inputs: Inputs): PluginContext {
@@ -35,7 +35,7 @@ export function convert2PluginContext(ctx: Context, inputs: Inputs): PluginConte
   const pluginContext: PluginContext = {
     root: inputs.projectPath,
     config: new ConfigMap(),
-    configOfOtherPlugins: new Map<string, ConfigMap>(),
+    envInfo: newEnvInfo(),
     projectSettings: ctx.projectSetting,
     answers: inputs,
     logProvider: ctx.logProvider,
@@ -148,15 +148,15 @@ export async function configureResourceAdapter(
   if (!plugin.postProvision) return err(PluginHasNoTaskImpl(plugin.displayName, "postProvision"));
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
-  const configsOfOtherPlugins = new Map<string, ConfigMap>();
+  const envInfo = newEnvInfo();
   for (const key in provisionOutputOfOtherPlugins) {
     const output = provisionOutputOfOtherPlugins[key].output;
     const configMap = ConfigMap.fromJSON(output);
-    if (configMap) configsOfOtherPlugins.set(key, configMap);
+    if (configMap) envInfo.profile.set(key, configMap);
   }
   const selfConfigMap = ConfigMap.fromJSON(provisionOutput.output) || new ConfigMap();
   pluginContext.config = selfConfigMap;
-  pluginContext.configOfOtherPlugins = configsOfOtherPlugins;
+  pluginContext.envInfo = envInfo;
   const postRes = await plugin.postProvision(pluginContext);
   if (postRes.isErr()) {
     return err(postRes.error);
@@ -179,16 +179,16 @@ export async function deployAdapter(
   if (!plugin.deploy) return err(PluginHasNoTaskImpl(plugin.displayName, "deploy"));
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
   pluginContext.azureAccountProvider = tokenProvider;
-  const configsOfOtherPlugins = new Map<string, ConfigMap>();
+  const envInfo = newEnvInfo();
   const solutionConfig = new ConfigMap();
   solutionConfig.set("resourceNameSuffix", inputs.resourceNameSuffix);
   solutionConfig.set("resourceGroupName", inputs.resourceGroupName);
   solutionConfig.set("location", inputs.location);
   solutionConfig.set("remoteTeamsAppId", inputs.remoteTeamsAppId);
-  configsOfOtherPlugins.set(GLOBAL_CONFIG, solutionConfig);
+  envInfo.profile.set(GLOBAL_CONFIG, solutionConfig);
   const selfConfigMap = ConfigMap.fromJSON(provisionOutput.output) || new ConfigMap();
   pluginContext.config = selfConfigMap;
-  pluginContext.configOfOtherPlugins = configsOfOtherPlugins;
+  pluginContext.envInfo = envInfo;
   if (plugin.preDeploy) {
     const preRes = await plugin.preDeploy(pluginContext);
     if (preRes.isErr()) {
@@ -311,7 +311,7 @@ export async function getQuestionsForScaffoldingAdapter(
   return await plugin.getQuestions(Stage.create, pluginContext);
 }
 export function getArmOutput(ctx: PluginContext, key: string): string | undefined {
-  const solutionConfig = ctx.configOfOtherPlugins.get("solution");
+  const solutionConfig = ctx.envInfo.profile.get("solution");
   const output = solutionConfig?.get(ARM_TEMPLATE_OUTPUT);
   return output?.[key]?.value;
 }

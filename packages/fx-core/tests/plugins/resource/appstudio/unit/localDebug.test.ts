@@ -37,6 +37,7 @@ import * as uuid from "uuid";
 import sinon from "sinon";
 import fs from "fs-extra";
 import { AppStudioResultFactory } from "../../../../../src/plugins/resource/appstudio/results";
+import { newEnvInfo } from "../../../../../src";
 
 class MockedAppStudioTokenProvider implements AppStudioTokenProvider {
   async getAccessToken(showDialog?: boolean): Promise<string> {
@@ -123,7 +124,7 @@ describe("Post Local Debug", () => {
     configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
     ctx = {
       root: "./tests/plugins/resource/appstudio/resources/",
-      configOfOtherPlugins: configOfOtherPlugins,
+      envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
       appStudioToken: new MockedAppStudioTokenProvider(),
     };
@@ -153,7 +154,7 @@ describe("Post Local Debug", () => {
   it("should return AppDefinition error", async () => {
     ctx = {
       root: "./tests/plugins/resource/appstudio/resources/",
-      configOfOtherPlugins: new Map(),
+      envInfo: newEnvInfo(),
       config: new ConfigMap(),
       appStudioToken: new MockedAppStudioTokenProvider(),
     };
@@ -192,7 +193,7 @@ describe("Post Local Debug", () => {
     configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
     ctx = {
       root: "./tests/plugins/resource/appstudio/resources/",
-      configOfOtherPlugins: configOfOtherPlugins,
+      envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
       appStudioToken: new MockedAppStudioTokenProvider(),
     };

@@ -8,9 +8,18 @@ import {
   err,
   AzureSolutionSettings,
   combine,
+  Void,
+  returnUserError,
+  PermissionRequestProvider,
+  returnSystemError,
 } from "@microsoft/teamsfx-api";
+import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
+import { SolutionError } from "../constants";
 import { HostTypeOptionAzure } from "../question";
-import { getActivatedResourcePlugins, getActivatedV2ResourcePlugins } from "../ResourcePluginContainer";
+import {
+  getActivatedResourcePlugins,
+  getActivatedV2ResourcePlugins,
+} from "../ResourcePluginContainer";
 
 export function getSelectedPlugins(azureSettings: AzureSolutionSettings): v2.ResourcePlugin[] {
   const plugins = getActivatedV2ResourcePlugins(azureSettings);
@@ -51,4 +60,73 @@ export function reloadV2Plugins(solutionSettings: AzureSolutionSettings): v2.Res
   const res = getActivatedV2ResourcePlugins(solutionSettings);
   solutionSettings.activeResourcePlugins = res.map((p) => p.name);
   return res;
+}
+
+export async function ensurePermissionRequest(
+  solutionSettings: AzureSolutionSettings,
+  permissionRequestProvider: PermissionRequestProvider
+): Promise<Result<Void, FxError>> {
+  if (solutionSettings.migrateFromV1) {
+    return ok(Void);
+  }
+
+  if (!isAzureProject(solutionSettings)) {
+    return err(
+      returnUserError(
+        new Error("Cannot update permission for SPFx project"),
+        "Solution",
+        SolutionError.CannotUpdatePermissionForSPFx
+      )
+    );
+  }
+
+  const result = await permissionRequestProvider.checkPermissionRequest();
+  if (result.isErr()) {
+    return result.map(err);
+  }
+
+  return ok(Void);
+}
+
+export function parseTeamsAppTenantId(
+  appStudioToken?: Record<string, unknown>
+): Result<string, FxError> {
+  if (appStudioToken === undefined) {
+    return err(
+      returnSystemError(
+        new Error("Graph token json is undefined"),
+        "Solution",
+        SolutionError.NoAppStudioToken
+      )
+    );
+  }
+
+  const teamsAppTenantId = appStudioToken["tid"];
+  if (
+    teamsAppTenantId === undefined ||
+    !(typeof teamsAppTenantId === "string") ||
+    teamsAppTenantId.length === 0
+  ) {
+    return err(
+      returnSystemError(
+        new Error("Cannot find teams app tenant id"),
+        "Solution",
+        SolutionError.NoTeamsAppTenantId
+      )
+    );
+  }
+  return ok(teamsAppTenantId);
+}
+
+// Loads teams app tenant id into local settings.
+export function loadTeamsAppTenantIdForLocal(
+  localSettings: v2.LocalSettings,
+  appStudioToken?: Record<string, unknown>
+): Result<Void, FxError> {
+  return parseTeamsAppTenantId(appStudioToken as Record<string, unknown> | undefined).andThen(
+    (teamsAppTenantId) => {
+      localSettings.teamsApp[LocalSettingsTeamsAppKeys.TenantId] = teamsAppTenantId;
+      return ok(Void);
+    }
+  );
 }

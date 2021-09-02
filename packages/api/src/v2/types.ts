@@ -4,7 +4,12 @@
 
 import { UserInteraction } from "../qm/ui";
 import { Inputs, ProjectSettings } from "../types";
-import { CryptoProvider, LogProvider, TelemetryReporter } from "../utils";
+import {
+  CryptoProvider,
+  LogProvider,
+  PermissionRequestProvider,
+  TelemetryReporter,
+} from "../utils";
 
 export type PluginName = string;
 
@@ -14,6 +19,7 @@ export interface Context {
   telemetryReporter: TelemetryReporter;
   cryptoProvider: CryptoProvider;
   projectSetting: ProjectSettings;
+  permissionRequestProvider: PermissionRequestProvider;
 }
 
 export interface LocalSettings {

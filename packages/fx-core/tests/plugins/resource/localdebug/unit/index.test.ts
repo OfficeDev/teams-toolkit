@@ -9,6 +9,7 @@ import * as path from "path";
 import { LocalDebugPluginInfo } from "../../../../../src/plugins/resource/localdebug/constants";
 import { LocalDebugPlugin } from "../../../../../src/plugins/resource/localdebug";
 import * as uuid from "uuid";
+import { newEnvInfo } from "../../../../../src";
 chai.use(chaiAsPromised);
 
 interface TestParameter {
@@ -32,6 +33,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
     beforeEach(() => {
       pluginContext = {
         root: path.resolve(__dirname, "../data/"),
+        envInfo: newEnvInfo(),
         config: new Map(),
         answers: { platform: Platform.VSCode },
       } as PluginContext;
@@ -57,9 +59,11 @@ describe(LocalDebugPluginInfo.pluginName, () => {
     ];
     parameters1.forEach((parameter: TestParameter) => {
       it(`happy path: tab with function (${parameter.programmingLanguage})`, async () => {
-        pluginContext.configOfOtherPlugins = new Map([
-          ["solution", new Map([["programmingLanguage", parameter.programmingLanguage]])],
-        ]);
+        pluginContext.envInfo = newEnvInfo(
+          undefined,
+          undefined,
+          new Map([["solution", new Map([["programmingLanguage", parameter.programmingLanguage]])]])
+        );
         pluginContext.projectSettings = {
           appName: "",
           projectId: uuid.v4(),
@@ -120,9 +124,11 @@ describe(LocalDebugPluginInfo.pluginName, () => {
     ];
     parameters2.forEach((parameter) => {
       it(`happy path: tab without function (${parameter.programmingLanguage})`, async () => {
-        pluginContext.configOfOtherPlugins = new Map([
-          ["solution", new Map([["programmingLanguage", parameter.programmingLanguage]])],
-        ]);
+        pluginContext.envInfo = newEnvInfo(
+          undefined,
+          undefined,
+          new Map([["solution", new Map([["programmingLanguage", parameter.programmingLanguage]])]])
+        );
         pluginContext.projectSettings = {
           appName: "",
           projectId: uuid.v4(),
@@ -178,9 +184,11 @@ describe(LocalDebugPluginInfo.pluginName, () => {
     ];
     parameters3.forEach((parameter) => {
       it(`happy path: bot (${parameter.programmingLanguage})`, async () => {
-        pluginContext.configOfOtherPlugins = new Map([
-          ["solution", new Map([["programmingLanguage", parameter.programmingLanguage]])],
-        ]);
+        pluginContext.envInfo = newEnvInfo(
+          undefined,
+          undefined,
+          new Map([["solution", new Map([["programmingLanguage", parameter.programmingLanguage]])]])
+        );
         pluginContext.projectSettings = {
           appName: "",
           projectId: uuid.v4(),
@@ -232,9 +240,11 @@ describe(LocalDebugPluginInfo.pluginName, () => {
     ];
     parameters4.forEach((parameter) => {
       it(`happy path: tab with function and bot (${parameter.programmingLanguage})`, async () => {
-        pluginContext.configOfOtherPlugins = new Map([
-          ["solution", new Map([["programmingLanguage", parameter.programmingLanguage]])],
-        ]);
+        pluginContext.envInfo = newEnvInfo(
+          undefined,
+          undefined,
+          new Map([["solution", new Map([["programmingLanguage", parameter.programmingLanguage]])]])
+        );
         pluginContext.projectSettings = {
           appName: "",
           projectId: uuid.v4(),
@@ -296,9 +306,11 @@ describe(LocalDebugPluginInfo.pluginName, () => {
     ];
     parameters5.forEach((parameter) => {
       it(`happy path: tab without function and bot (${parameter.programmingLanguage})`, async () => {
-        pluginContext.configOfOtherPlugins = new Map([
-          ["solution", new Map([["programmingLanguage", parameter.programmingLanguage]])],
-        ]);
+        pluginContext.envInfo = newEnvInfo(
+          undefined,
+          undefined,
+          new Map([["solution", new Map([["programmingLanguage", parameter.programmingLanguage]])]])
+        );
         pluginContext.projectSettings = {
           appName: "",
           projectId: uuid.v4(),
@@ -338,7 +350,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
     });
 
     it("spfx", async () => {
-      pluginContext.configOfOtherPlugins = new Map();
+      pluginContext.envInfo = newEnvInfo();
       pluginContext.projectSettings = {
         appName: "",
         projectId: uuid.v4(),
@@ -372,7 +384,11 @@ describe(LocalDebugPluginInfo.pluginName, () => {
 
     it("cli", async () => {
       pluginContext.answers!.platform = Platform.CLI;
-      pluginContext.configOfOtherPlugins = new Map([["fx-resource-function", new Map()]]);
+      pluginContext.envInfo = newEnvInfo(
+        undefined,
+        undefined,
+        new Map([["fx-resource-function", new Map()]])
+      );
       pluginContext.projectSettings = {
         appName: "",
         projectId: uuid.v4(),
@@ -422,9 +438,11 @@ describe(LocalDebugPluginInfo.pluginName, () => {
     ];
     parameters6.forEach((parameter: TestParameter) => {
       it(`happy path: tab migrate from v1 (${parameter.programmingLanguage})`, async () => {
-        pluginContext.configOfOtherPlugins = new Map([
-          ["solution", new Map([["programmingLanguage", parameter.programmingLanguage]])],
-        ]);
+        pluginContext.envInfo = newEnvInfo(
+          undefined,
+          undefined,
+          new Map([["solution", new Map([["programmingLanguage", parameter.programmingLanguage]])]])
+        );
         pluginContext.projectSettings = {
           appName: "",
           projectId: uuid.v4(),
@@ -462,7 +480,9 @@ describe(LocalDebugPluginInfo.pluginName, () => {
     let plugin: LocalDebugPlugin;
 
     beforeEach(() => {
-      pluginContext = {} as PluginContext;
+      pluginContext = {
+        envInfo: newEnvInfo(),
+      } as PluginContext;
       plugin = new LocalDebugPlugin();
     });
 
@@ -477,7 +497,9 @@ describe(LocalDebugPluginInfo.pluginName, () => {
     let plugin: LocalDebugPlugin;
 
     beforeEach(() => {
-      pluginContext = {} as PluginContext;
+      pluginContext = {
+        envInfo: newEnvInfo(),
+      } as PluginContext;
       plugin = new LocalDebugPlugin();
     });
 

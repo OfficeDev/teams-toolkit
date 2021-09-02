@@ -18,7 +18,7 @@ import { AppStudioPlugin } from "./../../../../../src/plugins/resource/appstudio
 import { AppStudioPluginImpl } from "./../../../../../src/plugins/resource/appstudio/plugin";
 import { TeamsBot } from "./../../../../../src/plugins/resource/bot";
 import AdmZip from "adm-zip";
-import { environmentManager } from "../../../../../src/core/environment";
+import { newEnvInfo } from "../../../../../src";
 
 describe("Build Teams Package", () => {
   let plugin: AppStudioPlugin;
@@ -31,13 +31,8 @@ describe("Build Teams Package", () => {
     plugin = new AppStudioPlugin();
     ctx = {
       root: "./tests/plugins/resource/appstudio/resources/",
-      configOfOtherPlugins: new Map(),
+      envInfo: newEnvInfo(),
       config: new ConfigMap(),
-      envInfo: {
-        envName: "dev",
-        profile: new Map<string, any>(),
-        config: environmentManager.newEnvConfigData(),
-      },
       answers: { platform: Platform.VSCode },
     };
     ctx.projectSettings = {

@@ -130,8 +130,6 @@ export interface Context {
     // (undocumented)
     cryptoProvider?: CryptoProvider;
     // (undocumented)
-    envInfo?: EnvInfo;
-    // (undocumented)
     graphTokenProvider?: GraphTokenProvider;
     // (undocumented)
     localSettings?: LocalSettings;
@@ -157,6 +155,8 @@ interface Context_2 {
     cryptoProvider: CryptoProvider;
     // (undocumented)
     logProvider: LogProvider;
+    // (undocumented)
+    permissionRequestProvider: PermissionRequestProvider;
     // (undocumented)
     projectSetting: ProjectSettings;
     // (undocumented)
@@ -776,7 +776,7 @@ export interface PluginContext extends Context {
     // (undocumented)
     config: PluginConfig;
     // (undocumented)
-    configOfOtherPlugins: ReadonlySolutionConfig;
+    envInfo: Readonly<EnvInfo>;
 }
 
 // @public (undocumented)
@@ -1050,7 +1050,7 @@ interface SolutionPlugin {
     // (undocumented)
     name: string;
     package?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
-    provisionLocalResource?: (ctx: Context_2, tokenProvider: TokenProvider) => Promise<Result<LocalSettings_2, FxError>>;
+    provisionLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: LocalSettings_2, tokenProvider: TokenProvider) => Promise<Result<LocalSettings_2, FxError>>;
     provisionResources: (ctx: Context_2, inputs: Inputs, provisionTemplates: Record<PluginName, Json>, tokenProvider: TokenProvider) => Promise<Result<Record<PluginName, ProvisionOutput>, FxError>>;
     publishApplication?: (ctx: Context_2, inputs: Inputs, provisionOutput: Readonly<Record<PluginName, ProvisionOutput>>, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
     scaffoldSourceCode?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Record<PluginName, {

@@ -35,7 +35,9 @@ import {
   SubscriptionInfo,
   AppStudioTokenProvider,
   Inputs,
+  PermissionRequestProvider,
 } from "@microsoft/teamsfx-api";
+import { MockPermissionRequestProvider } from "../../core/utils";
 
 export const validManifest = {
   $schema:
@@ -279,6 +281,7 @@ export class MockedV2Context implements v2.Context {
   telemetryReporter: TelemetryReporter;
   cryptoProvider: CryptoProvider;
   projectSetting: ProjectSettings;
+  permissionRequestProvider: PermissionRequestProvider;
 
   constructor(settings: ProjectSettings) {
     this.userInteraction = new MockedUserInteraction();
@@ -286,6 +289,7 @@ export class MockedV2Context implements v2.Context {
     this.telemetryReporter = new MockedTelemetryReporter();
     this.cryptoProvider = new MockedCryptoProvider();
     this.projectSetting = settings;
+    this.permissionRequestProvider = new MockPermissionRequestProvider();
   }
 }
 

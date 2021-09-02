@@ -270,7 +270,7 @@ describe("simpleAuthPlugin", () => {
 
       // Assert
       chai.assert.isTrue(provisionResult.isOk());
-      const resourceNameSuffix = pluginContext.configOfOtherPlugins
+      const resourceNameSuffix = pluginContext.envInfo.profile
         .get(Constants.SolutionPlugin.id)
         ?.get(Constants.SolutionPlugin.configKeys.resourceNameSuffix) as string;
       const webAppName = Utils.generateResourceName(

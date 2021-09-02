@@ -116,7 +116,7 @@ export class FunctionPluginImpl {
   };
 
   private async syncConfigFromContext(ctx: PluginContext): Promise<void> {
-    const solutionConfig: ReadonlyPluginConfig | undefined = ctx.configOfOtherPlugins.get(
+    const solutionConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.profile.get(
       DependentPluginInfo.solutionPluginName
     );
 
@@ -873,7 +873,7 @@ export class FunctionPluginImpl {
     if (!isArmSupportEnabled()) {
       FunctionProvision.updateFunctionSettingsSelf(site, functionEndpoint);
 
-      const aadConfig: ReadonlyPluginConfig | undefined = ctx.configOfOtherPlugins.get(
+      const aadConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.profile.get(
         DependentPluginInfo.aadPluginName
       );
       if (this.isPluginEnabled(ctx, DependentPluginInfo.aadPluginName) && aadConfig) {
@@ -910,7 +910,7 @@ export class FunctionPluginImpl {
         );
       }
 
-      const frontendConfig: ReadonlyPluginConfig | undefined = ctx.configOfOtherPlugins.get(
+      const frontendConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.profile.get(
         DependentPluginInfo.frontendPluginName
       );
       if (this.isPluginEnabled(ctx, DependentPluginInfo.frontendPluginName) && frontendConfig) {
@@ -924,10 +924,10 @@ export class FunctionPluginImpl {
         FunctionProvision.updateFunctionSettingsForFrontend(site, frontendEndpoint);
       }
 
-      const sqlConfig: ReadonlyPluginConfig | undefined = ctx.configOfOtherPlugins.get(
+      const sqlConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.profile.get(
         DependentPluginInfo.sqlPluginName
       );
-      const identityConfig: ReadonlyPluginConfig | undefined = ctx.configOfOtherPlugins.get(
+      const identityConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.profile.get(
         DependentPluginInfo.identityPluginName
       );
       if (
@@ -966,7 +966,7 @@ export class FunctionPluginImpl {
       }
     }
 
-    const apimConfig: ReadonlyPluginConfig | undefined = ctx.configOfOtherPlugins.get(
+    const apimConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.profile.get(
       DependentPluginInfo.apimPluginName
     );
     if (this.isPluginEnabled(ctx, DependentPluginInfo.apimPluginName) && apimConfig) {
@@ -982,10 +982,10 @@ export class FunctionPluginImpl {
   }
 
   private collectFunctionAppAuthSettings(ctx: PluginContext): SiteAuthSettings | undefined {
-    const aadConfig: ReadonlyPluginConfig | undefined = ctx.configOfOtherPlugins.get(
+    const aadConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.profile.get(
       DependentPluginInfo.aadPluginName
     );
-    const frontendConfig: ReadonlyPluginConfig | undefined = ctx.configOfOtherPlugins.get(
+    const frontendConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.profile.get(
       DependentPluginInfo.frontendPluginName
     );
 

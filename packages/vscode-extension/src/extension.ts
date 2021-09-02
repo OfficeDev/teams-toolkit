@@ -268,9 +268,8 @@ export async function activate(context: vscode.ExtensionContext) {
 
   ext.context.subscriptions.push(vscode.workspace.onDidChangeWorkspaceFolders(enableMigrateV1));
   enableMigrateV1();
-  const migrateV1Cmd = vscode.commands.registerCommand(
-    "fx-extension.migrateV1Project",
-    handlers.migrateV1ProjectHandler
+  const migrateV1Cmd = vscode.commands.registerCommand("fx-extension.migrateV1Project", () =>
+    Correlator.run(handlers.migrateV1ProjectHandler)
   );
   context.subscriptions.push(migrateV1Cmd);
 

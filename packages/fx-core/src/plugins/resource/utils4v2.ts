@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { Subscription } from "@azure/arm-subscriptions/esm/models/mappers";
 import {
   AzureAccountProvider,
   ConfigMap,
@@ -17,20 +16,20 @@ import {
   Result,
   Stage,
   TokenProvider,
+  Void,
 } from "@microsoft/teamsfx-api";
 import {
   BicepTemplate,
   Context,
   DeploymentInputs,
+  EnvProfile,
   LocalSettings,
-  PluginName,
   ProvisionInputs,
-  ProvisionOutput,
   ResourceTemplate,
 } from "@microsoft/teamsfx-api/build/v2";
 import { ArmResourcePlugin, ScaffoldArmTemplateResult } from "../../common/armInterface";
 import { NoProjectOpenedError, PluginHasNoTaskImpl } from "../../core";
-import { GLOBAL_CONFIG, ARM_TEMPLATE_OUTPUT } from "../solution/fx-solution/constants";
+import { ARM_TEMPLATE_OUTPUT, GLOBAL_CONFIG } from "../solution/fx-solution/constants";
 
 export function convert2PluginContext(ctx: Context, inputs: Inputs): PluginContext {
   if (!inputs.projectPath) throw NoProjectOpenedError();
@@ -103,7 +102,7 @@ export async function generateResourceTemplateAdapter(
 }
 export async function provisionResourceAdapter(
   ctx: Context,
-  inputs: Readonly<ProvisionInputs>,
+  inputs: ProvisionInputs,
   envConfig: EnvConfig,
   tokenProvider: TokenProvider,
   plugin: Plugin
@@ -113,22 +112,12 @@ export async function provisionResourceAdapter(
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
-  const solutionConfig = new ConfigMap();
-  let subId = envConfig.azure.subscriptionId;
-  if (subId === undefined) {
-    const sub = await tokenProvider.azureAccountProvider.getSelectedSubscription(false);
-    if (sub) {
-      subId = sub.subscriptionId;
-    }
-  }
-  let rg = envConfig.azure.resourceGroupName;
-  if (rg === undefined) {
-    rg = inputs.resourceGroupName;
-  }
-  solutionConfig.set("subscriptionId", subId);
-  solutionConfig.set("resourceGroupName", rg);
+  const json: Json = {};
+  Object.assign(json, inputs);
+  Object.assign(json, envConfig.azure);
+  const solutionConfig = ConfigMap.fromJSON(json);
   const configOfOtherPlugins = new Map<string, ConfigMap>();
-  configOfOtherPlugins.set(GLOBAL_CONFIG, solutionConfig);
+  if (solutionConfig) configOfOtherPlugins.set(GLOBAL_CONFIG, solutionConfig);
   pluginContext.config = new ConfigMap();
   pluginContext.configOfOtherPlugins = configOfOtherPlugins;
   if (plugin.preProvision) {
@@ -152,56 +141,34 @@ export async function provisionResourceAdapter(
 
 export async function configureResourceAdapter(
   ctx: Context,
-  inputs: Readonly<ProvisionInputs>,
-  provisionOutput: Readonly<ProvisionOutput>,
-  provisionOutputOfOtherPlugins: Readonly<Record<PluginName, ProvisionOutput>>,
+  inputs: ProvisionInputs,
+  envConfig: EnvConfig,
+  envProfile: EnvProfile,
   tokenProvider: TokenProvider,
   plugin: Plugin & ArmResourcePlugin
-): Promise<Result<ProvisionOutput, FxError>> {
+): Promise<Result<Void, FxError>> {
   if (!plugin.postProvision) return err(PluginHasNoTaskImpl(plugin.displayName, "postProvision"));
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
-  const configsOfOtherPlugins = new Map<string, ConfigMap>();
-  for (const key in provisionOutputOfOtherPlugins) {
-    const output = provisionOutputOfOtherPlugins[key].output;
-    const configMap = ConfigMap.fromJSON(output);
-    if (configMap) configsOfOtherPlugins.set(key, configMap);
-  }
-  const selfConfigMap = ConfigMap.fromJSON(provisionOutput.output) || new ConfigMap();
-  pluginContext.config = selfConfigMap;
-  pluginContext.configOfOtherPlugins = configsOfOtherPlugins;
+  setConfigs(plugin.name, pluginContext, envProfile);
   const postRes = await plugin.postProvision(pluginContext);
   if (postRes.isErr()) {
     return err(postRes.error);
   }
-  const output: ProvisionOutput = {
-    output: selfConfigMap.toJSON(),
-    states: {},
-    secrets: {},
-  };
-  return ok(output);
+  return ok(Void);
 }
 
 export async function deployAdapter(
   ctx: Context,
-  inputs: Readonly<DeploymentInputs>,
-  provisionOutput: Readonly<ProvisionOutput>,
+  inputs: DeploymentInputs,
+  envProfile: EnvProfile,
   tokenProvider: AzureAccountProvider,
   plugin: Plugin & ArmResourcePlugin
-): Promise<Result<{ output: Record<string, string> }, FxError>> {
+): Promise<Result<Void, FxError>> {
   if (!plugin.deploy) return err(PluginHasNoTaskImpl(plugin.displayName, "deploy"));
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
   pluginContext.azureAccountProvider = tokenProvider;
-  const configsOfOtherPlugins = new Map<string, ConfigMap>();
-  const solutionConfig = new ConfigMap();
-  solutionConfig.set("resourceNameSuffix", inputs.resourceNameSuffix);
-  solutionConfig.set("resourceGroupName", inputs.resourceGroupName);
-  solutionConfig.set("location", inputs.location);
-  solutionConfig.set("remoteTeamsAppId", inputs.remoteTeamsAppId);
-  configsOfOtherPlugins.set(GLOBAL_CONFIG, solutionConfig);
-  const selfConfigMap = ConfigMap.fromJSON(provisionOutput.output) || new ConfigMap();
-  pluginContext.config = selfConfigMap;
-  pluginContext.configOfOtherPlugins = configsOfOtherPlugins;
+  setConfigs(plugin.name, pluginContext, envProfile);
   if (plugin.preDeploy) {
     const preRes = await plugin.preDeploy(pluginContext);
     if (preRes.isErr()) {
@@ -218,8 +185,7 @@ export async function deployAdapter(
       return err(postRes.error);
     }
   }
-  const deployOutput = selfConfigMap.toJSON();
-  return ok({ output: deployOutput });
+  return ok(Void);
 }
 
 export async function provisionLocalResourceAdapter(
@@ -228,7 +194,7 @@ export async function provisionLocalResourceAdapter(
   localSettings: LocalSettings,
   tokenProvider: TokenProvider,
   plugin: Plugin & ArmResourcePlugin
-): Promise<Result<LocalSettings, FxError>> {
+): Promise<Result<Void, FxError>> {
   if (!plugin.localDebug) return err(PluginHasNoTaskImpl(plugin.displayName, "localDebug"));
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
   pluginContext.localSettings = {
@@ -258,7 +224,7 @@ export async function provisionLocalResourceAdapter(
   if (pluginContext.localSettings.frontend) {
     localSettings.frontend = pluginContext.localSettings.frontend.toJSON();
   }
-  return ok(localSettings);
+  return ok(Void);
 }
 
 export async function configureLocalResourceAdapter(
@@ -267,7 +233,7 @@ export async function configureLocalResourceAdapter(
   localSettings: LocalSettings,
   tokenProvider: TokenProvider,
   plugin: Plugin & ArmResourcePlugin
-): Promise<Result<LocalSettings, FxError>> {
+): Promise<Result<Void, FxError>> {
   if (!plugin.postLocalDebug) return err(PluginHasNoTaskImpl(plugin.displayName, "postLocalDebug"));
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
   pluginContext.localSettings = {
@@ -297,13 +263,13 @@ export async function configureLocalResourceAdapter(
   if (pluginContext.localSettings.frontend) {
     localSettings.frontend = pluginContext.localSettings.frontend.toJSON();
   }
-  return ok(localSettings);
+  return ok(Void);
 }
 
 export async function executeUserTaskAdapter(
   ctx: Context,
-  func: Func,
   inputs: Inputs,
+  func: Func,
   plugin: Plugin
 ): Promise<Result<unknown, FxError>> {
   if (!plugin.executeUserTask)
@@ -327,4 +293,16 @@ export function getArmOutput(ctx: PluginContext, key: string): string | undefine
   const solutionConfig = ctx.configOfOtherPlugins.get("solution");
   const output = solutionConfig?.get(ARM_TEMPLATE_OUTPUT);
   return output?.[key]?.value;
+}
+
+function setConfigs(pluginName: string, pluginContext: PluginContext, envProfile: EnvProfile) {
+  const configsOfOtherPlugins = new Map<string, ConfigMap>();
+  for (const key in envProfile) {
+    const output = envProfile[key];
+    const configMap = ConfigMap.fromJSON(output);
+    if (configMap) configsOfOtherPlugins.set(key, configMap);
+  }
+  const selfConfigMap = configsOfOtherPlugins.get(pluginName) || new ConfigMap();
+  pluginContext.config = selfConfigMap;
+  pluginContext.configOfOtherPlugins = configsOfOtherPlugins;
 }

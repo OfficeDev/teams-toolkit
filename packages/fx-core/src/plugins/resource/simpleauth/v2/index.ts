@@ -7,6 +7,7 @@ import {
   Inputs,
   Result,
   TokenProvider,
+  Void,
 } from "@microsoft/teamsfx-api";
 import {
   Context,
@@ -48,7 +49,7 @@ export class AadPluginV2 implements ResourcePlugin {
     inputs: Inputs,
     localSettings: LocalSettings,
     tokenProvider: TokenProvider
-  ): Promise<Result<LocalSettings, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await provisionLocalResourceAdapter(
       ctx,
       inputs,
@@ -63,7 +64,7 @@ export class AadPluginV2 implements ResourcePlugin {
     inputs: Inputs,
     localSettings: LocalSettings,
     tokenProvider: TokenProvider
-  ): Promise<Result<LocalSettings, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await configureLocalResourceAdapter(
       ctx,
       inputs,

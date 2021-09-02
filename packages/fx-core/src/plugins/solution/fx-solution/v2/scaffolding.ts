@@ -1,4 +1,4 @@
-import { v2, Inputs, FxError, Result, ok, err } from "@microsoft/teamsfx-api";
+import { v2, Inputs, FxError, Result, ok, err, Void } from "@microsoft/teamsfx-api";
 import { getStrings, isMultiEnvEnabled } from "../../../../common/tools";
 import {
   AzureResourceFunction,
@@ -7,7 +7,7 @@ import {
   TabOptionItem,
 } from "../question";
 import { executeConcurrently, NamedThunk } from "./executor";
-import { combineRecords, getAzureSolutionSettings, getSelectedPlugins } from "./utils";
+import { getAzureSolutionSettings, getSelectedPlugins } from "./utils";
 import path from "path";
 import fs from "fs-extra";
 import { getTemplatesFolder } from "../../../..";
@@ -16,10 +16,10 @@ import { LocalSettingsProvider } from "../../../../common/localSettingsProvider"
 export async function scaffoldSourceCode(
   ctx: v2.Context,
   inputs: Inputs
-): Promise<Result<Record<v2.PluginName, { output: Record<string, string> }>, FxError>> {
+): Promise<Result<Void, FxError>> {
   const plugins = getSelectedPlugins(getAzureSolutionSettings(ctx));
 
-  const thunks: NamedThunk<{ output: Record<string, string> }>[] = plugins
+  const thunks: NamedThunk<Void>[] = plugins
     .filter((plugin) => !!plugin.scaffoldSourceCode)
     .map((plugin) => {
       return {
@@ -44,14 +44,18 @@ export async function scaffoldSourceCode(
       `Success: ${getStrings().solution.ScaffoldSuccessNotice}`,
       false
     );
-    return ok(combineRecords(result.value));
+    return ok(Void);
   } else {
     return err(result.error);
   }
 }
 
-export async function scaffoldByPlugins(ctx: v2.Context, inputs: Inputs, plugins: v2.ResourcePlugin[]): Promise<Result<Record<v2.PluginName, { output: Record<string, string> }>, FxError>> {
-  const thunks: NamedThunk<{ output: Record<string, string> }>[] = plugins
+export async function scaffoldByPlugins(
+  ctx: v2.Context,
+  inputs: Inputs,
+  plugins: v2.ResourcePlugin[]
+): Promise<Result<Void, FxError>> {
+  const thunks: NamedThunk<Void>[] = plugins
     .filter((plugin) => !!plugin.scaffoldSourceCode)
     .map((plugin) => {
       return {
@@ -76,7 +80,7 @@ export async function scaffoldByPlugins(ctx: v2.Context, inputs: Inputs, plugins
       `Success: ${getStrings().solution.ScaffoldSuccessNotice}`,
       false
     );
-    return ok(combineRecords(result.value));
+    return ok(Void);
   } else {
     return err(result.error);
   }

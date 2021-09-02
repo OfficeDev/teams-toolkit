@@ -3,6 +3,7 @@
 
 import {
   AzureSolutionSettings,
+  EnvConfig,
   err,
   FxError,
   Json,
@@ -11,9 +12,11 @@ import {
   Stage,
   TokenProvider,
   traverse,
+  Void,
 } from "@microsoft/teamsfx-api";
 import {
   Context,
+  EnvProfile,
   PluginName,
   ProvisionInputs,
   ProvisionOutput,
@@ -44,10 +47,10 @@ export class SqlPluginV2 implements ResourcePlugin {
 
   async provisionResource(
     ctx: Context,
-    inputs: Readonly<ProvisionInputs>,
-    provisionTemplate: Json,
+    inputs: ProvisionInputs,
+    envConfig: EnvConfig,
     tokenProvider: TokenProvider
-  ): Promise<Result<ProvisionOutput, FxError>> {
+  ): Promise<Result<Json, FxError>> {
     // run question model for publish
     const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
     const getQuestionRes = await this.plugin.getQuestions(Stage.provision, pluginContext);
@@ -61,27 +64,21 @@ export class SqlPluginV2 implements ResourcePlugin {
       }
     }
 
-    return await provisionResourceAdapter(
-      ctx,
-      inputs,
-      provisionTemplate,
-      tokenProvider,
-      this.plugin
-    );
+    return await provisionResourceAdapter(ctx, inputs, envConfig, tokenProvider, this.plugin);
   }
 
   async configureResource(
     ctx: Context,
-    inputs: Readonly<ProvisionInputs>,
-    provisionOutput: Readonly<ProvisionOutput>,
-    provisionOutputOfOtherPlugins: Readonly<Record<PluginName, ProvisionOutput>>,
+    inputs: ProvisionInputs,
+    envConfig: EnvConfig,
+    envProfile: EnvProfile,
     tokenProvider: TokenProvider
-  ): Promise<Result<ProvisionOutput, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await configureResourceAdapter(
       ctx,
       inputs,
-      provisionOutput,
-      provisionOutputOfOtherPlugins,
+      envConfig,
+      envProfile,
       tokenProvider,
       this.plugin
     );

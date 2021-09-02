@@ -8,6 +8,7 @@ import {
   Inputs,
   Result,
   TokenProvider,
+  Void,
 } from "@microsoft/teamsfx-api";
 import { Context, LocalSettings, ResourcePlugin } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
@@ -45,7 +46,7 @@ export class LocalDebugPluginV2 implements ResourcePlugin {
     inputs: Inputs,
     localSettings: LocalSettings,
     tokenProvider: TokenProvider
-  ): Promise<Result<LocalSettings, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await provisionLocalResourceAdapter(
       ctx,
       inputs,
@@ -60,7 +61,7 @@ export class LocalDebugPluginV2 implements ResourcePlugin {
     inputs: Inputs,
     localSettings: LocalSettings,
     tokenProvider: TokenProvider
-  ): Promise<Result<LocalSettings, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await configureLocalResourceAdapter(
       ctx,
       inputs,
@@ -72,9 +73,9 @@ export class LocalDebugPluginV2 implements ResourcePlugin {
 
   async executeUserTask(
     ctx: Context,
-    func: Func,
-    inputs: Inputs
+    inputs: Inputs,
+    func: Func
   ): Promise<Result<unknown, FxError>> {
-    return await executeUserTaskAdapter(ctx, func, inputs, this.plugin);
+    return await executeUserTaskAdapter(ctx, inputs, func, this.plugin);
   }
 }

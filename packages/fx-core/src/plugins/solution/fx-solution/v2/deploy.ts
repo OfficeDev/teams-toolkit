@@ -7,6 +7,7 @@ import {
   err,
   returnUserError,
   AzureAccountProvider,
+  Void,
 } from "@microsoft/teamsfx-api";
 import { getStrings } from "../../../../common/tools";
 import { executeConcurrently, NamedThunk } from "./executor";
@@ -26,13 +27,11 @@ import { PluginDisplayName } from "../../../../common/constants";
 export async function deploy(
   ctx: v2.Context,
   inputs: Inputs,
-  provisionOutput: Readonly<Record<v2.PluginName, v2.ProvisionOutput>>,
+  envProfile: v2.EnvProfile,
   tokenProvider: AzureAccountProvider
-): Promise<Result<Record<v2.PluginName, { output: Record<string, string> }>, FxError>> {
+): Promise<Result<Void, FxError>> {
   const inAzureProject = isAzureProject(getAzureSolutionSettings(ctx));
-  const provisioned = provisionOutput[GLOBAL_CONFIG].states[
-    SOLUTION_PROVISION_SUCCEEDED
-  ] as boolean;
+  const provisioned = envProfile[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] as boolean;
 
   if (inAzureProject && !provisioned) {
     return err(
@@ -58,7 +57,7 @@ export async function deploy(
   }
 
   const plugins = getSelectedPlugins(getAzureSolutionSettings(ctx));
-  const thunks: NamedThunk<{ output: Record<string, string> }>[] = plugins
+  const thunks: NamedThunk<Void>[] = plugins
     .filter((plugin) => !isUndefined(plugin.deploy) && optionsToDeploy.includes(plugin.name))
     .map((plugin) => {
       return {
@@ -68,8 +67,8 @@ export async function deploy(
         thunk: () =>
           plugin.deploy!(
             ctx,
-            { ...inputs, ...extractSolutionInputs(provisionOutput[GLOBAL_CONFIG].output) },
-            provisionOutput[plugin.name],
+            { ...inputs, ...extractSolutionInputs(envProfile[GLOBAL_CONFIG]) },
+            envProfile[plugin.name],
             tokenProvider
           ),
       };
@@ -96,7 +95,7 @@ export async function deploy(
       ctx.logProvider.info(msg);
       ctx.userInteraction.showMessage("info", msg, false);
     }
-    return ok(combineRecords(result.value));
+    return ok(Void);
   } else {
     const msg = util.format(getStrings().solution.DeployFailNotice, ctx.projectSetting.appName);
     ctx.logProvider.info(msg);

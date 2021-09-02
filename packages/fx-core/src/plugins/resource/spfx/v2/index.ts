@@ -8,11 +8,12 @@ import {
   Inputs,
   QTreeNode,
   Result,
+  Void,
 } from "@microsoft/teamsfx-api";
 import {
   Context,
   DeploymentInputs,
-  ProvisionOutput,
+  EnvProfile,
   ResourcePlugin,
 } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
@@ -54,10 +55,10 @@ export class SpfxPluginV2 implements ResourcePlugin {
 
   async deploy(
     ctx: Context,
-    inputs: Readonly<DeploymentInputs>,
-    provisionOutput: Readonly<ProvisionOutput>,
+    inputs: DeploymentInputs,
+    envProfile: EnvProfile,
     tokenProvider: AzureAccountProvider
-  ): Promise<Result<{ output: Record<string, string> }, FxError>> {
-    return await deployAdapter(ctx, inputs, provisionOutput, tokenProvider, this.plugin);
+  ): Promise<Result<Void, FxError>> {
+    return await deployAdapter(ctx, inputs, envProfile, tokenProvider, this.plugin);
   }
 }

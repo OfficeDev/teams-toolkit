@@ -3,17 +3,13 @@
 
 import {
   AzureSolutionSettings,
+  EnvConfig,
   FxError,
   Json,
   Result,
   TokenProvider,
 } from "@microsoft/teamsfx-api";
-import {
-  Context,
-  ProvisionInputs,
-  ProvisionOutput,
-  ResourcePlugin,
-} from "@microsoft/teamsfx-api/build/v2";
+import { Context, ProvisionInputs, ResourcePlugin } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
 import { IdentityPlugin } from "..";
 import {
@@ -35,15 +31,9 @@ export class IdentityPluginV2 implements ResourcePlugin {
   async provisionResource(
     ctx: Context,
     inputs: Readonly<ProvisionInputs>,
-    provisionTemplate: Json,
+    envConfig: EnvConfig,
     tokenProvider: TokenProvider
-  ): Promise<Result<ProvisionOutput, FxError>> {
-    return await provisionResourceAdapter(
-      ctx,
-      inputs,
-      provisionTemplate,
-      tokenProvider,
-      this.plugin
-    );
+  ): Promise<Result<Json, FxError>> {
+    return await provisionResourceAdapter(ctx, inputs, envConfig, tokenProvider, this.plugin);
   }
 }

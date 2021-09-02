@@ -118,13 +118,13 @@ export interface SolutionPlugin {
    * @param {EnvProfile} envProfile - contains the provision output values for manifest placeholders
    * @param {EnvConfig} envConfig - system inputs.
    *
-   * @returns Void because side effect is expected.
+   * @returns {string} package path
    */
   package?: (
     ctx: Context,
     envConfig: EnvConfig,
     envProfile: EnvProfile
-  ) => Promise<Result<Void, FxError>>;
+  ) => Promise<Result<string, FxError>>;
 
   /**
    * provisionLocalResource is a special lifecycle, called when users press F5 in vscode.
@@ -135,18 +135,22 @@ export interface SolutionPlugin {
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {TokenProvider} tokenProvider - Tokens for Azure and AppStudio
    *
-   * @returns the output values, project state, secrect values for each plugin
+   * @returns the output values, project state, secret values for each plugin
    */
   provisionLocalResource?: (
     ctx: Context,
-    inputs: Inputs, 
+    inputs: Inputs,
+    localSettings: LocalSettings,
     tokenProvider: TokenProvider
-  ) => Promise<Result<LocalSettings, FxError>>;
+  ) => Promise<Result<Void, FxError>>;
 
   /**
    * get question model for lifecycle {@link Stage} (create), Questions are organized as a tree. Please check {@link QTreeNode}.
    */
-  getQuestionsForScaffolding: (inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
+  getQuestionsForScaffolding: (
+    ctx: Context,
+    inputs: Inputs
+  ) => Promise<Result<QTreeNode | undefined, FxError>>;
 
   /**
     inputs: Inputs,

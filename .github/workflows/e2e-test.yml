@@ -74,7 +74,7 @@ jobs:
           npx lerna run test:e2e:clean
 
       - name: E2E Test in Parallel
-        env: 
+        env:
           M365_ACCOUNT_COLLABORATOR: ${{ steps.version-change.outputs.M365_ACCOUNT_COLLABORATOR }}
         run: |
           npx lerna run test:e2e:parallel

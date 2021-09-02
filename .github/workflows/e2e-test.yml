@@ -22,7 +22,6 @@ jobs:
           clean: false
 
       - name: setup env
-        id: keyvault
         env:
           creds: ${{ secrets.AZURE_TEST_CREDENTIALS }}
         run: |

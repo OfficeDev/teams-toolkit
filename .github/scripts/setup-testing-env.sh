@@ -21,11 +21,12 @@ for key in ${!SimpleAuthMap[*]}; do
     echo "${SimpleAuthMap[$key]}=$value" >> $2
 done
 elif [ $1 == 'function-extension' ]; then
-declare -A FuncExtMap=(["FUNCTION-EXTENSION-CLIENTID"]="TeamsFx_BINDING_IntegrationTestSettings__ClientId" ["FUNCTION-EXTENSION-CLIENT-SECRET"]="TeamsFx_BINDING_IntegrationTestSettings__ClientSecret"\
- ["FUNCTION-EXTENSION-UNAUTHORIZED-AAD-APP-CLIENT-ID"]="TeamsFx_BINDING_IntegrationTestSettings__UnauthorizedAadAppClientId" ["FUNCTION-EXTENSION-UNAUTHORIZED-AAD-APP-CLIENT-SECRET"]="TeamsFx_BINDING_IntegrationTestSettings__UnauthorizedAadAppClientSecret" ["FUNCTION-EXTENSION-ALLOWED-APP-CLIENT-ID"]="TeamsFx_BINDING_IntegrationTestSettings__AllowedAppClientId"\
- ["FUNCTION-EXTENSION-ALLOWED-APP-CLIENT-SECRET"]="TeamsFx_BINDING_IntegrationTestSettings__AllowedAppClientSecret" ["FUNCTION-EXTENSION-AUTHORITY-HOST"]="TeamsFx_BINDING_IntegrationTestSettings__AuthorityHost" [""]="TeamsFx_BINDING_IntegrationTestSettings__TenantId") 
+declare -A FuncExtMap=(["FUNCTION-EXTENSION-CLIENTID"]="TeamsFx_BINDING_IntegrationTestSettings__ClientId" ["FUNCTION-EXTENSION-CLIENT-SECRET"]="TeamsFx_BINDING_IntegrationTestSettings__ClientSecret" ["FUNCTION-EXTENSION-UNAUTHORIZED-AAD-APP-CLIENT-ID"]="TeamsFx_BINDING_IntegrationTestSettings__UnauthorizedAadAppClientId"\
+ ["FUNCTION-EXTENSION-UNAUTHORIZED-AAD-APP-CLIENT-SECRET"]="TeamsFx_BINDING_IntegrationTestSettings__UnauthorizedAadAppClientSecret" ["FUNCTION-EXTENSION-ALLOWED-APP-CLIENT-ID"]="TeamsFx_BINDING_IntegrationTestSettings__AllowedAppClientId"\
+ ["FUNCTION-EXTENSION-ALLOWED-APP-CLIENT-SECRET"]="TeamsFx_BINDING_IntegrationTestSettings__AllowedAppClientSecret" ["FUNCTION-EXTENSION-AUTHORITY-HOST"]="TeamsFx_BINDING_IntegrationTestSettings__AuthorityHost" ["FUNCTION-EXTENSION-TENANT-ID"]="TeamsFx_BINDING_IntegrationTestSettings__TenantId") 
 for key in ${!FuncExtMap[*]}; do
     value=$(curl -H 'Accept: application/json' -H "Authorization: Bearer $token" "https://e2etestenv.vault.azure.net/secrets/$key?api-version=7.0" |jq -r '.value')
+    echo $key $value
     echo "${FuncExtMap[$key]}=$value" >> $2
 done
 fi

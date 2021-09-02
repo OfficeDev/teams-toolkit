@@ -40,7 +40,7 @@ Handlebars.registerHelper("notContains", (value, array, options) => {
 export const Executor = {
   async execCommandAsync(command: string, options?: ExecOptions) {
     const execAsync = promisify(exec);
-    await execAsync(command, options);
+    return await execAsync(command, options);
   },
 };
 

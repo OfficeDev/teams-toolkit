@@ -156,25 +156,21 @@ export async function askResourceGroupInfo(
     .filter((item) => item.name)
     .map((item) => [item.name, item.location] as [string, string]);
 
-  const credential = await ctx.azureAccountProvider!.getAccountCredentialAsync();
-  const subscriptionClient = new SubscriptionClient(credential as any);
-  const askSubRes = await ctx.azureAccountProvider!.getSelectedSubscription(true);
-  const listLocations = await subscriptionClient.subscriptions.listLocations(
-    askSubRes!.subscriptionId
-  );
-  const locations = listLocations.map((item) => item.displayName);
-  const providerData = await rmClient.providers.get(MsResources);
-  const resourceTypeData = providerData.resourceTypes?.find(
-    (rt) => rt.resourceType?.toLowerCase() === ResourceGroups.toLowerCase()
-  );
-  const resourceLocations = resourceTypeData?.locations;
-  resourceLocations?.filter((item) => locations.includes(item));
+  const locations = await getLocations(ctx, rmClient);
+  if (!locations || locations.length == 0) {
+    return err(
+      returnUserError(
+        new Error(`Failed to list resource group locations`),
+        "Solution",
+        SolutionError.FailedToListResourceGroup
+      )
+    );
+  }
 
-  const availableLocations = resourceLocations ?? ["East US", "West US"];
   const node = await getQuestionsForResourceGroup(
     defaultResourceGroupName,
     resourceGroupNameLocations,
-    availableLocations
+    locations!
   );
   if (node) {
     const res = await traverse(node, inputs, ui);
@@ -220,6 +216,22 @@ export async function askResourceGroupInfo(
       location: location,
     });
   }
+}
+
+async function getLocations(ctx: SolutionContext, rmClient: ResourceManagementClient) {
+  const credential = await ctx.azureAccountProvider!.getAccountCredentialAsync();
+  const subscriptionClient = new SubscriptionClient(credential as any);
+  const askSubRes = await ctx.azureAccountProvider!.getSelectedSubscription(true);
+  const listLocations = await subscriptionClient.subscriptions.listLocations(
+    askSubRes!.subscriptionId
+  );
+  const locations = listLocations.map((item) => item.displayName);
+  const providerData = await rmClient.providers.get(MsResources);
+  const resourceTypeData = providerData.resourceTypes?.find(
+    (rt) => rt.resourceType?.toLowerCase() === ResourceGroups.toLowerCase()
+  );
+  const resourceLocations = resourceTypeData?.locations;
+  return resourceLocations?.filter((item) => locations.includes(item));
 }
 
 /**

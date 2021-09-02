@@ -22,6 +22,7 @@ import {
 import { GLOBAL_CONFIG, LOCATION, RESOURCE_GROUP_NAME, SolutionError } from "./constants";
 import { v4 as uuidv4 } from "uuid";
 import { ResourceManagementClient } from "@azure/arm-resources";
+import { SubscriptionClient } from "@azure/arm-subscriptions";
 import { PluginDisplayName } from "../../../common/constants";
 import { isMultiEnvEnabled } from "../../../common";
 import {
@@ -33,6 +34,9 @@ import {
 import { desensitize } from "../../../core/middleware/questionModel";
 import { ResourceGroupsCreateOrUpdateResponse } from "@azure/arm-resources/esm/models";
 import { Solution } from "@azure/arm-appservice/esm/models/mappers";
+
+const MsResources = "Microsoft.Resources";
+const ResourceGroups = "resourceGroups";
 
 export type AzureSubscription = {
   displayName: string;
@@ -152,10 +156,21 @@ export async function askResourceGroupInfo(
     .filter((item) => item.name)
     .map((item) => [item.name, item.location] as [string, string]);
 
-  // TODO: call Azure API directly to list all locations because ARM SDK does not wrap this API.
-  // And then filter by the 'resourceGroup' resource provider.
-  // https://github.com/microsoft/vscode-azuretools/blob/cda6548af53a1c0f538a5ef7542c0eba1d5fa566/ui/src/wizard/LocationListStep.ts#L173
-  const availableLocations = ["East US", "West US"];
+  const credential = await ctx.azureAccountProvider!.getAccountCredentialAsync();
+  const subscriptionClient = new SubscriptionClient(credential as any);
+  const askSubRes = await ctx.azureAccountProvider!.getSelectedSubscription(true);
+  const listLocations = await subscriptionClient.subscriptions.listLocations(
+    askSubRes!.subscriptionId
+  );
+  const locations = listLocations.map((item) => item.displayName);
+  const providerData = await rmClient.providers.get(MsResources);
+  const resourceTypeData = providerData.resourceTypes?.find(
+    (rt) => rt.resourceType?.toLowerCase() === ResourceGroups.toLowerCase()
+  );
+  const resourceLocations = resourceTypeData?.locations;
+  resourceLocations?.filter((item) => locations.includes(item));
+
+  const availableLocations = resourceLocations ?? ["East US", "West US"];
   const node = await getQuestionsForResourceGroup(
     defaultResourceGroupName,
     resourceGroupNameLocations,

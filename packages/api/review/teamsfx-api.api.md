@@ -156,6 +156,8 @@ interface Context_2 {
     // (undocumented)
     logProvider: LogProvider;
     // (undocumented)
+    permissionRequestProvider: PermissionRequestProvider;
+    // (undocumented)
     projectSetting: ProjectSettings;
     // (undocumented)
     telemetryReporter: TelemetryReporter;
@@ -1048,7 +1050,7 @@ interface SolutionPlugin {
     // (undocumented)
     name: string;
     package?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
-    provisionLocalResource?: (ctx: Context_2, tokenProvider: TokenProvider) => Promise<Result<LocalSettings_2, FxError>>;
+    provisionLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: LocalSettings_2, tokenProvider: TokenProvider) => Promise<Result<LocalSettings_2, FxError>>;
     provisionResources: (ctx: Context_2, inputs: Inputs, provisionTemplates: Record<PluginName, Json>, tokenProvider: TokenProvider) => Promise<Result<Record<PluginName, ProvisionOutput>, FxError>>;
     publishApplication?: (ctx: Context_2, inputs: Inputs, provisionOutput: Readonly<Record<PluginName, ProvisionOutput>>, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
     scaffoldSourceCode?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Record<PluginName, {

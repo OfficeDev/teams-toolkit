@@ -18,6 +18,8 @@ import {
   UserInteraction,
   OptionItem,
   LogProvider,
+  EnvConfigFileNameTemplate,
+  EnvNamePlaceholder,
 } from "@microsoft/teamsfx-api";
 import { GLOBAL_CONFIG, LOCATION, RESOURCE_GROUP_NAME, SolutionError } from "./constants";
 import { v4 as uuidv4 } from "uuid";
@@ -32,7 +34,6 @@ import {
 } from "../../../core/question";
 import { desensitize } from "../../../core/middleware/questionModel";
 import { ResourceGroupsCreateOrUpdateResponse } from "@azure/arm-resources/esm/models";
-import { Solution } from "@azure/arm-appservice/esm/models/mappers";
 
 export type AzureSubscription = {
   displayName: string;
@@ -207,6 +208,42 @@ export async function askResourceGroupInfo(
   }
 }
 
+async function getResourceGroupInfoFromEnvConfig(
+  ctx: SolutionContext,
+  rmClient: ResourceManagementClient,
+  envName: string,
+  resourceGroupName: string
+): Promise<Result<ResourceGroupInfo, FxError>> {
+  try {
+    const getRes = await rmClient.resourceGroups.get(resourceGroupName);
+    if (getRes.name) {
+      return ok({
+        createNewResourceGroup: false,
+        name: getRes.name,
+        location: getRes.location,
+      });
+    }
+  } catch (error) {
+    ctx.logProvider?.error(
+      `[${PluginDisplayName.Solution}] failed to get resource group '${resourceGroupName}'. error = '${error}'`
+    );
+  }
+
+  // Currently we do not support creating resource group by input config, so just throw an error.
+  return err(
+    returnUserError(
+      new Error(
+        `Resource group '${resourceGroupName}' does not exist, please check your ${EnvConfigFileNameTemplate.replace(
+          EnvNamePlaceholder,
+          envName
+        )} file.`
+      ),
+      "Solution",
+      SolutionError.ResourceGroupNotFound
+    )
+  );
+}
+
 /**
  * Asks common questions and puts the answers in the global namespace of SolutionConfig
  *
@@ -271,24 +308,18 @@ async function askCommonQuestions(
     isMultiEnvEnabled() ? "-" + ctx.envInfo.envName : ""
   }-rg`;
   let resourceGroupInfo: ResourceGroupInfo;
+
   if (resourceGroupNameFromEnvConfig) {
-    const checkRes = await rmClient.resourceGroups.checkExistence(resourceGroupNameFromEnvConfig);
-    if (checkRes.body) {
-      resourceGroupInfo = {
-        createNewResourceGroup: false,
-        name: resourceGroupNameFromEnvConfig,
-        location: DefaultResourceGroupLocation, // TODO: retrieve location using ARM SDK
-      };
-    } else {
-      // Currently we do not support creating resource group by input config, so just throw an error.
-      return err(
-        returnUserError(
-          new Error("Resource group does not exist"),
-          "Solution",
-          SolutionError.ResourceGroupNotFound
-        )
-      );
+    const res = await getResourceGroupInfoFromEnvConfig(
+      ctx,
+      rmClient,
+      ctx.envInfo.envName,
+      resourceGroupNameFromEnvConfig
+    );
+    if (res.isErr()) {
+      return err(res.error);
     }
+    resourceGroupInfo = res.value;
   } else if (resourceGroupNameFromProfile && resourceGroupLocationFromProfile) {
     const checkRes = await rmClient.resourceGroups.checkExistence(resourceGroupNameFromProfile);
     if (checkRes.body) {

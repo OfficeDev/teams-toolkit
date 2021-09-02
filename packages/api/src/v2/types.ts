@@ -41,5 +41,5 @@ export type SolutionInputs = {
   remoteTeamsAppId?: string;
 };
 
-export type ProvisionInputs = Inputs & SolutionInputs;
-export type DeploymentInputs = Inputs & SolutionInputs;
+export type ProvisionInputs = Inputs & SolutionInputs & { projectPath: string };
+export type DeploymentInputs = Inputs & SolutionInputs & { projectPath: string };

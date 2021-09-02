@@ -211,7 +211,9 @@ export interface CryptoProvider {
 }
 
 // @public (undocumented)
-type DeploymentInputs = Inputs & SolutionInputs;
+type DeploymentInputs = Inputs & SolutionInputs & {
+    projectPath: string;
+};
 
 // @public
 export type DynamicOptions = LocalFunc<StaticOptions>;
@@ -830,7 +832,9 @@ export interface ProjectStates {
 }
 
 // @public (undocumented)
-type ProvisionInputs = Inputs & SolutionInputs;
+type ProvisionInputs = Inputs & SolutionInputs & {
+    projectPath: string;
+};
 
 // @public (undocumented)
 type ProvisionOutput = {

@@ -17,7 +17,7 @@ import {
   SolutionSettings,
 } from "@microsoft/teamsfx-api";
 import { getStrings, isArmSupportEnabled } from "../../../../common/tools";
-import { getAzureSolutionSettings, reloadV2Plugins } from "./utils";
+import { blockV1Project, getAzureSolutionSettings, reloadV2Plugins } from "./utils";
 import {
   SolutionError,
   SolutionTelemetryComponentName,
@@ -49,6 +49,10 @@ export async function executeUserTask(
   inputs: Inputs,
   tokenProvider: AppStudioTokenProvider
 ): Promise<Result<unknown, FxError>> {
+  const blockResult = blockV1Project(ctx.projectSetting.solutionSettings);
+  if (blockResult.isErr()) {
+    return err(blockResult.error);
+  }
   const namespace = func.namespace;
   const method = func.method;
   const array = namespace.split("/");

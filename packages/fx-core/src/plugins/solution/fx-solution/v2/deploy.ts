@@ -11,6 +11,7 @@ import {
 import { getStrings } from "../../../../common/tools";
 import { executeConcurrently, NamedThunk } from "./executor";
 import {
+  blockV1Project,
   combineRecords,
   extractSolutionInputs,
   getAzureSolutionSettings,
@@ -29,6 +30,10 @@ export async function deploy(
   provisionOutput: Readonly<Record<v2.PluginName, v2.ProvisionOutput>>,
   tokenProvider: AzureAccountProvider
 ): Promise<Result<Record<v2.PluginName, { output: Record<string, string> }>, FxError>> {
+  const blockResult = blockV1Project(ctx.projectSetting.solutionSettings);
+  if (blockResult.isErr()) {
+    return err(blockResult.error);
+  }
   const inAzureProject = isAzureProject(getAzureSolutionSettings(ctx));
   const provisioned = provisionOutput[GLOBAL_CONFIG].states[
     SOLUTION_PROVISION_SUCCEEDED

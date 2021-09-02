@@ -7,7 +7,12 @@ import {
   TabOptionItem,
 } from "../question";
 import { executeConcurrently, NamedThunk } from "./executor";
-import { combineRecords, getAzureSolutionSettings, getSelectedPlugins } from "./utils";
+import {
+  blockV1Project,
+  combineRecords,
+  getAzureSolutionSettings,
+  getSelectedPlugins,
+} from "./utils";
 import path from "path";
 import fs from "fs-extra";
 import { getTemplatesFolder } from "../../../..";
@@ -17,6 +22,10 @@ export async function scaffoldSourceCode(
   ctx: v2.Context,
   inputs: Inputs
 ): Promise<Result<Record<v2.PluginName, { output: Record<string, string> }>, FxError>> {
+  const blockResult = blockV1Project(ctx.projectSetting.solutionSettings);
+  if (blockResult.isErr()) {
+    return err(blockResult.error);
+  }
   const plugins = getSelectedPlugins(getAzureSolutionSettings(ctx));
 
   const thunks: NamedThunk<{ output: Record<string, string> }>[] = plugins
@@ -55,6 +64,10 @@ export async function scaffoldByPlugins(
   inputs: Inputs,
   plugins: v2.ResourcePlugin[]
 ): Promise<Result<Record<v2.PluginName, { output: Record<string, string> }>, FxError>> {
+  const blockResult = blockV1Project(ctx.projectSetting.solutionSettings);
+  if (blockResult.isErr()) {
+    return err(blockResult.error);
+  }
   const thunks: NamedThunk<{ output: Record<string, string> }>[] = plugins
     .filter((plugin) => !!plugin.scaffoldSourceCode)
     .map((plugin) => {

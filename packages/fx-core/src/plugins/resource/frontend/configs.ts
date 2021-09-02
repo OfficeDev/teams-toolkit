@@ -50,7 +50,7 @@ export class FrontendConfig {
     }
 
     const appName = ctx.projectSettings!.appName;
-    const solutionConfigs = ctx.configOfOtherPlugins.get(DependentPluginInfo.SolutionPluginName);
+    const solutionConfigs = ctx.envInfo.profile.get(DependentPluginInfo.SolutionPluginName);
 
     const subscriptionInfo = await ctx.azureAccountProvider?.getSelectedSubscription();
     if (!subscriptionInfo) {

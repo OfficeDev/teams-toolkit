@@ -9,6 +9,7 @@ import {
   ArchiveFolderName,
   V1ManifestFileName,
   ProjectSettingsFileName,
+  EnvConfig,
 } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import * as fs from "fs-extra";
@@ -179,16 +180,20 @@ export async function isMigrateFromV1Project(workspacePath?: string): Promise<bo
   }
 }
 
-export function newEnvInfo(envName?: string): EnvInfo {
+export function newEnvInfo(
+  envName?: string,
+  config?: EnvConfig,
+  profile?: Map<string, any>
+): EnvInfo {
   return {
     envName: envName ?? environmentManager.getDefaultEnvName(),
-    config: {
+    config: config ?? {
       azure: {},
       manifest: {
         values: {},
       },
     },
-    profile: new Map<string, any>([[GLOBAL_CONFIG, new ConfigMap()]]),
+    profile: profile ?? new Map<string, any>([[GLOBAL_CONFIG, new ConfigMap()]]),
   };
 }
 

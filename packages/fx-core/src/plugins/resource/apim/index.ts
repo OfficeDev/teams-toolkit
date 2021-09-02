@@ -91,14 +91,14 @@ export class ApimPlugin implements Plugin {
       await this.progressBar.init(PluginLifeCycleToProgressStep[lifeCycle], ctx);
       Telemetry.sendLifeCycleEvent(
         ctx.telemetryReporter,
-        ctx.configOfOtherPlugins,
+        ctx.envInfo.profile,
         lifeCycle,
         OperationStatus.Started
       );
       const result = await fn(ctx, this.progressBar, ...params);
       Telemetry.sendLifeCycleEvent(
         ctx.telemetryReporter,
-        ctx.configOfOtherPlugins,
+        ctx.envInfo.profile,
         lifeCycle,
         OperationStatus.Succeeded
       );
@@ -117,7 +117,7 @@ export class ApimPlugin implements Plugin {
       ctx.logProvider?.error(`[${ProjectConstants.pluginDisplayName}] ${error.message}`);
       Telemetry.sendLifeCycleEvent(
         ctx.telemetryReporter,
-        ctx.configOfOtherPlugins,
+        ctx.envInfo.profile,
         lifeCycle,
         OperationStatus.Failed,
         packagedError
@@ -179,7 +179,7 @@ async function _scaffold(ctx: PluginContext, progressBar: ProgressBar): Promise<
 }
 
 async function _provision(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {
-  const solutionConfig = new SolutionConfig(ctx.configOfOtherPlugins);
+  const solutionConfig = new SolutionConfig(ctx.envInfo.profile);
   const apimConfig = new ApimPluginConfig(ctx.config);
 
   const apimManager = await Factory.buildApimManager(ctx);
@@ -201,9 +201,9 @@ async function _provision(ctx: PluginContext, progressBar: ProgressBar): Promise
 }
 
 async function _postProvision(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {
-  const solutionConfig = new SolutionConfig(ctx.configOfOtherPlugins);
+  const solutionConfig = new SolutionConfig(ctx.envInfo.profile);
   const apimConfig = new ApimPluginConfig(ctx.config);
-  const aadConfig = new AadPluginConfig(ctx.configOfOtherPlugins);
+  const aadConfig = new AadPluginConfig(ctx.envInfo.profile);
 
   const apimManager = await Factory.buildApimManager(ctx);
   const aadManager = await Factory.buildAadManager(ctx);
@@ -231,9 +231,9 @@ async function _postProvision(ctx: PluginContext, progressBar: ProgressBar): Pro
 }
 
 async function _deploy(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {
-  const solutionConfig = new SolutionConfig(ctx.configOfOtherPlugins);
+  const solutionConfig = new SolutionConfig(ctx.envInfo.profile);
   const apimConfig = new ApimPluginConfig(ctx.config);
-  const functionConfig = new FunctionPluginConfig(ctx.configOfOtherPlugins);
+  const functionConfig = new FunctionPluginConfig(ctx.envInfo.profile);
   const answer = buildAnswer(ctx.answers);
 
   if (answer.validate) {

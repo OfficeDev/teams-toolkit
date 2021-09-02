@@ -2,14 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
-import {
-  Inputs,
-  LocalSettings,
-  PluginConfig,
-  ProjectSettings,
-  ReadonlySolutionConfig,
-  SolutionConfig,
-} from "./types";
+import { Inputs, LocalSettings, PluginConfig, ProjectSettings } from "./types";
 
 import {
   GraphTokenProvider,
@@ -30,8 +23,6 @@ import { EnvConfig } from "./schemas/envConfig";
  */
 export interface Context {
   root: string;
-
-  envInfo?: EnvInfo;
 
   logProvider?: LogProvider;
 
@@ -75,8 +66,8 @@ export interface SolutionContext extends Context {
 }
 
 export interface PluginContext extends Context {
-  // A readonly view of other plugins' config
-  configOfOtherPlugins: ReadonlySolutionConfig;
+  // A readonly view of env info
+  envInfo: Readonly<EnvInfo>;
 
   // A mutable config for current plugin
   config: PluginConfig;

@@ -26,6 +26,6 @@ declare -A FuncExtMap=(["FUNCTION-EXTENSION-CLIENTID"]="TeamsFx_BINDING_Integrat
  ["FUNCTION-EXTENSION-ALLOWED-APP-CLIENT-SECRET"]="TeamsFx_BINDING_IntegrationTestSettings__AllowedAppClientSecret" ["FUNCTION-EXTENSION-AUTHORITY-HOST"]="TeamsFx_BINDING_IntegrationTestSettings__AuthorityHost" [""]="TeamsFx_BINDING_IntegrationTestSettings__TenantId") 
 for key in ${!FuncExtMap[*]}; do
     value=$(curl -H 'Accept: application/json' -H "Authorization: Bearer $token" "https://e2etestenv.vault.azure.net/secrets/$key?api-version=7.0" |jq -r '.value')
-    echo "${SimpleAuthMap[$key]}=$value" >> $2
+    echo "${FuncExtMap[$key]}=$value" >> $2
 done
 fi

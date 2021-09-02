@@ -166,7 +166,7 @@ suite("handlers", () => {
       await handlers.runCommand(Stage.debug);
 
       sinon.restore();
-      chai.expect(ignoreEnvInfo).equals(true);
+      chai.expect(ignoreEnvInfo).to.not.equal(true);
       chai.expect(localDebugCalled).equals(1);
     });
 

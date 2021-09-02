@@ -218,7 +218,10 @@ export async function askResourceGroupInfo(
   }
 }
 
-async function getLocations(ctx: SolutionContext, rmClient: ResourceManagementClient) {
+async function getLocations(
+  ctx: SolutionContext,
+  rmClient: ResourceManagementClient
+): Promise<string[] | undefined> {
   const credential = await ctx.azureAccountProvider!.getAccountCredentialAsync();
   const subscriptionClient = new SubscriptionClient(credential as any);
   const askSubRes = await ctx.azureAccountProvider!.getSelectedSubscription(true);

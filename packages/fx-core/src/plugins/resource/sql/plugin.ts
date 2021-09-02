@@ -94,6 +94,8 @@ export class SqlPluginImpl {
       }
 
       await this.init(ctx);
+      this.config.prepareQuestion = true;
+
       if (isArmSupportEnabled()) {
         this.config.admin = ctx.config.get(Constants.admin) as string;
         this.config.adminPassword = ctx.config.get(Constants.adminPassword) as string;
@@ -104,8 +106,6 @@ export class SqlPluginImpl {
         const managementClient: ManagementClient = await ManagementClient.create(ctx, this.config);
         this.config.existSql = await managementClient.existAzureSQL();
       }
-
-      ctx.config.set(Constants.existSql, this.config.existSql);
 
       if (!this.config.existSql) {
         this.buildQuestionNode(sqlNode);
@@ -143,7 +143,10 @@ export class SqlPluginImpl {
       this.config.skipAddingUser = skipAddingUser as boolean;
     }
 
-    this.config.existSql = ctx.config.get(Constants.existSql);
+    if (!this.config.prepareQuestion) {
+      this.config.existSql = true;
+    }
+
     if (!this.config.existSql) {
       this.config.admin = ctx.answers![Constants.questionKey.adminName] as string;
       this.config.adminPassword = ctx.answers![Constants.questionKey.adminPassword] as string;
@@ -257,6 +260,7 @@ export class SqlPluginImpl {
     ctx.config.set(Constants.sqlEndpoint, this.config.sqlEndpoint);
     ctx.config.set(Constants.databaseName, this.config.databaseName);
     ctx.config.delete(Constants.adminPassword);
+    this.config.prepareQuestion = false;
 
     const managementClient: ManagementClient = await ManagementClient.create(ctx, this.config);
 

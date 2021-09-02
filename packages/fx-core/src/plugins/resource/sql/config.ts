@@ -19,4 +19,5 @@ export class SqlConfig {
   identity = "";
   existSql = false;
   skipAddingUser = false;
+  prepareQuestion = false;
 }

@@ -25,4 +25,4 @@ jobs:
           milestone-prefix: CY
           milestone-days: 14
           advanced-days: 5
-          token: ${{secrets.TEAMSFX_BOT}}
+          token: ${{secrets.GITHUB_TOKEN}}

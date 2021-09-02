@@ -9,13 +9,6 @@ jobs:
   e2e-tests:
     name: run e2e test on (self-hosted linux 8cpu node14)
     env:
-      AZURE_ACCOUNT_NAME: ${{ secrets.TEST_USER_NAME }}
-      AZURE_ACCOUNT_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
-      AZURE_SUBSCRIPTION_ID: ${{ secrets.TEST_SUBSCRIPTION_ID }}
-      AZURE_TENANT_ID: ${{ secrets.TEST_TENANT_ID }}
-      M365_ACCOUNT_NAME: ${{ secrets.TEST_USER_NAME }}
-      M365_ACCOUNT_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
-      M365_TENANT_ID: ${{ secrets.TEST_TENANT_ID_2 }}
       CI_ENABLED: "true"
 
     runs-on: [self-hosted, linux, 8cpu]
@@ -33,8 +26,7 @@ jobs:
         env:
           creds: ${{ secrets.AZURE_TEST_CREDENTIALS }}
         run: |
-          output=$(bash setup-testing-env.sh E2E-TEST-COLLABORATOR-USER-NAME)
-          echo "::set-output name=M365_ACCOUNT_COLLABORATOR::$output"
+          bash setup-testing-env.sh e2e $GITHUB_ENV
         working-directory: .github/scripts
 
       - name: Setup node
@@ -74,8 +66,6 @@ jobs:
           npx lerna run test:e2e:clean
 
       - name: E2E Test in Parallel
-        env:
-          M365_ACCOUNT_COLLABORATOR: ${{ steps.version-change.outputs.M365_ACCOUNT_COLLABORATOR }}
         run: |
           npx lerna run test:e2e:parallel
 

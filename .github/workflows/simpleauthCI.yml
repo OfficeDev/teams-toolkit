@@ -3,11 +3,11 @@ name: SimpleAuth CI
 on:
   push:
     paths:
-    - 'packages/simpleauth/**'
-    branches: [ main ]
+      - "packages/simpleauth/**"
+    branches: [main]
   pull_request:
     paths:
-      - 'packages/simpleauth/**'
+      - "packages/simpleauth/**"
   workflow_dispatch:
 
 defaults:
@@ -16,26 +16,21 @@ defaults:
 
 jobs:
   test:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 3.1.x
-    - name: Build
-      run: 
-        dotnet build -c Release -p:WebDriverPlatform=linux64 Microsoft.TeamsFx.SimpleAuth.sln
-    - name: Test
-      env: 
-        TEAMS_SIMPLE_AUTH_IntegrationTestSettings__AdminClientId: ${{secrets.SIMPLE_AUTH_TEST_ADMIN_CLIENT_ID}}
-        TEAMS_SIMPLE_AUTH_IntegrationTestSettings__AdminClientSecret: ${{secrets.SIMPLE_AUTH_TEST_ADMIN_CLIENT_SECRET}}
-        TEAMS_SIMPLE_AUTH_IntegrationTestSettings__TenantId: ${{secrets.SIMPLE_AUTH_TEST_TENANT_ID}}
-        TEAMS_SIMPLE_AUTH_IntegrationTestSettings__TestUserName: ${{secrets.SIMPLE_AUTH_TEST_USER_NAME}}
-        TEAMS_SIMPLE_AUTH_IntegrationTestSettings__TestPassword: ${{secrets.SIMPLE_AUTH_TEST_PASSWORD}}
-        TEAMS_SIMPLE_AUTH_IntegrationTestSettings__TestUserName2: ${{secrets.SIMPLE_AUTH_TEST_USER_NAME_2}}
-        TEAMS_SIMPLE_AUTH_IntegrationTestSettings__TestPassword2: ${{secrets.SIMPLE_AUTH_TEST_PASSWORD_2}}
-      run:
-        chmod +x "scripts/test.sh" && "scripts/test.sh"
+      - uses: actions/checkout@v2
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 3.1.x
+      - name: Build
+        run: dotnet build -c Release -p:WebDriverPlatform=linux64 Microsoft.TeamsFx.SimpleAuth.sln
+      - name: setup env
+        env:
+          creds: ${{ secrets.AZURE_TEST_CREDENTIALS }}
+        run: |
+          bash setup-testing-env.sh simpleauth $GITHUB_ENV
+        working-directory: .github/scripts
+      - name: Test
+        run: chmod +x "scripts/test.sh" && "scripts/test.sh"

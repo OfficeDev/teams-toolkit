@@ -54,14 +54,15 @@ export function isLinux() {
 }
 
 export function getActiveEnv() {
+  if (!isMultiEnvEnabled()) {
+    return "default";
+  }
   try {
     const ws = ext.workspaceUri.fsPath;
     if (isValidProject(ws)) {
       const settingsJsonPath = path.join(
         ws,
-        isMultiEnvEnabled()
-          ? `.${ConfigFolderName}/${InputConfigsFolderName}/${ProjectSettingsFileName}`
-          : `.${ConfigFolderName}/settings.json`
+        `.${ConfigFolderName}/${InputConfigsFolderName}/${ProjectSettingsFileName}`
       );
       const settingsJson = JSON.parse(fs.readFileSync(settingsJsonPath, "utf8"));
       return settingsJson.activeEnvironment;

@@ -94,7 +94,7 @@ export class SqlPluginImpl {
       }
 
       await this.init(ctx);
-      this.config.prepareQuestion = true;
+      this.config.prepareQuestions = true;
 
       if (isArmSupportEnabled()) {
         this.config.admin = ctx.config.get(Constants.admin) as string;
@@ -143,7 +143,7 @@ export class SqlPluginImpl {
       this.config.skipAddingUser = skipAddingUser as boolean;
     }
 
-    if (!this.config.prepareQuestion) {
+    if (!this.config.prepareQuestions) {
       this.config.existSql = true;
     }
 
@@ -260,7 +260,7 @@ export class SqlPluginImpl {
     ctx.config.set(Constants.sqlEndpoint, this.config.sqlEndpoint);
     ctx.config.set(Constants.databaseName, this.config.databaseName);
     ctx.config.delete(Constants.adminPassword);
-    this.config.prepareQuestion = false;
+    this.config.prepareQuestions = false;
 
     const managementClient: ManagementClient = await ManagementClient.create(ctx, this.config);
 

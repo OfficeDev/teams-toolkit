@@ -18,6 +18,8 @@ import {
   UserInteraction,
   OptionItem,
   LogProvider,
+  EnvConfigFileNameTemplate,
+  EnvNamePlaceholder,
 } from "@microsoft/teamsfx-api";
 import { GLOBAL_CONFIG, LOCATION, RESOURCE_GROUP_NAME, SolutionError } from "./constants";
 import { v4 as uuidv4 } from "uuid";
@@ -32,7 +34,6 @@ import {
 } from "../../../core/question";
 import { desensitize } from "../../../core/middleware/questionModel";
 import { ResourceGroupsCreateOrUpdateResponse } from "@azure/arm-resources/esm/models";
-import { Solution } from "@azure/arm-appservice/esm/models/mappers";
 
 export type AzureSubscription = {
   displayName: string;
@@ -232,7 +233,10 @@ async function getResourceGroupInfoFromEnvConfig(
   return err(
     returnUserError(
       new Error(
-        `Resource group '${resourceGroupName}' does not exist, please check your config.${envName}.json file.`
+        `Resource group '${resourceGroupName}' does not exist, please check your ${EnvConfigFileNameTemplate.replace(
+          EnvNamePlaceholder,
+          envName
+        )} file.`
       ),
       "Solution",
       SolutionError.ResourceGroupNotFound

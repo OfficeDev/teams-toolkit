@@ -111,10 +111,10 @@ export async function checkSubscription(
     return err(
       returnUserError(
         new Error(
-          `The subscription '${subscriptionId}' is not found in the tenant '${tenantId}', please check the ${EnvConfigFileNameTemplate.replace(
+          `The subscription '${subscriptionId}' is not found in the tenant '${tenantId}', please check the '${EnvConfigFileNameTemplate.replace(
             EnvNamePlaceholder,
             ctx.envInfo.envName
-          )}`
+          )}' file.`
         ),
         "Solution",
         SolutionError.SubscriptionNotFound

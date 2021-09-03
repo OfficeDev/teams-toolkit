@@ -86,6 +86,7 @@ export enum SolutionError {
   NoResourcePluginSelected = "NoResourcePluginSelected",
   NoAppStudioToken = "NoAppStudioToken",
   NoTeamsAppTenantId = "NoTeamsAppTenantId",
+  FailedToCheckResourceGroupExistence = "FailedToCheckResourceGroupExistence",
   FailedToCreateResourceGroup = "FailedToCreateResourceGroup",
   FailedToListResourceGroup = "FailedToListResourceGrouop",
   FailedToGetResourceGroupInfoInputs = "FailedToGetResourceGroupInfoInputs",

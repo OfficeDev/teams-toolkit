@@ -321,19 +321,23 @@ async function askCommonQuestions(
     }
     resourceGroupInfo = res.value;
   } else if (resourceGroupNameFromProfile && resourceGroupLocationFromProfile) {
-    const checkRes = await rmClient.resourceGroups.checkExistence(resourceGroupNameFromProfile);
-    if (checkRes.body) {
-      resourceGroupInfo = {
-        createNewResourceGroup: false,
-        name: resourceGroupNameFromProfile,
-        location: resourceGroupLocationFromProfile,
-      };
-    } else {
-      resourceGroupInfo = {
-        createNewResourceGroup: true,
-        name: resourceGroupNameFromProfile,
-        location: resourceGroupLocationFromProfile,
-      };
+    try {
+      const checkRes = await rmClient.resourceGroups.checkExistence(resourceGroupNameFromProfile);
+      if (checkRes.body) {
+        resourceGroupInfo = {
+          createNewResourceGroup: false,
+          name: resourceGroupNameFromProfile,
+          location: resourceGroupLocationFromProfile,
+        };
+      } else {
+        resourceGroupInfo = {
+          createNewResourceGroup: true,
+          name: resourceGroupNameFromProfile,
+          location: resourceGroupLocationFromProfile,
+        };
+      }
+    } catch (e) {
+      return err(returnUserError(e, "Solution", SolutionError.FailedToCheckResourceGroupExistence));
     }
   } else if (ctx.answers && ctx.ui) {
     const resourceGroupInfoResult = await askResourceGroupInfo(

@@ -117,7 +117,7 @@ export async function checkSubscription(
           )}`
         ),
         "Solution",
-        SolutionError.InternelError
+        SolutionError.SubscriptionNotFound
       )
     );
   }

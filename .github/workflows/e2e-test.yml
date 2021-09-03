@@ -17,6 +17,7 @@ jobs:
       M365_ACCOUNT_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
       M365_TENANT_ID: ${{ secrets.TEST_TENANT_ID_2 }}
       CI_ENABLED: "true"
+      M365_ACCOUNT_COLLABORATOR: ${{ secrets.TEST_COLLABORATOR_USER_NAME }}
 
     runs-on: [self-hosted, linux, 8cpu]
 
@@ -27,15 +28,6 @@ jobs:
           token: ${{ secrets.CD_PAT }}
           ref: ${{ github.ref }}
           clean: false
-
-      - name: setup env
-        id: keyvault
-        env:
-          creds: ${{ secrets.AZURE_TEST_CREDENTIALS }}
-        run: |
-          output=$(bash setup-testing-env.sh E2E-TEST-COLLABORATOR-USER-NAME)
-          echo "::set-output name=M365_ACCOUNT_COLLABORATOR::$output"
-        working-directory: .github/scripts
 
       - name: Setup node
         uses: actions/setup-node@v2.1.2
@@ -74,8 +66,6 @@ jobs:
           npx lerna run test:e2e:clean
 
       - name: E2E Test in Parallel
-        env: 
-          M365_ACCOUNT_COLLABORATOR: ${{ steps.version-change.outputs.M365_ACCOUNT_COLLABORATOR }}
         run: |
           npx lerna run test:e2e:parallel
 

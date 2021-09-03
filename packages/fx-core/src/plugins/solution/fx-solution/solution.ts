@@ -61,6 +61,8 @@ import {
   ARM_TEMPLATE_OUTPUT,
   USER_INFO,
   REMOTE_TENANT_ID,
+  SUBSCRIPTION_ID,
+  SUBSCRIPTION_NAME,
 } from "./constants";
 
 import {
@@ -641,10 +643,11 @@ export class TeamsAppSolution implements Solution {
 
       // Only Azure project requires this confirm dialog
       const username = (azureToken as any).username ? (azureToken as any).username : "";
-      const subscriptionInfo = await ctx.azureAccountProvider?.getSelectedSubscription();
+      const subscriptionId = ctx.envInfo.profile.get(GLOBAL_CONFIG)?.get(SUBSCRIPTION_ID) as string;
+      const subscriptionName = ctx.envInfo.profile
+        .get(GLOBAL_CONFIG)
+        ?.get(SUBSCRIPTION_NAME) as string;
 
-      const subscriptionId = subscriptionInfo?.subscriptionId;
-      const subscriptionName = subscriptionInfo?.subscriptionName;
       const msg = util.format(
         getStrings().solution.ProvisionConfirmNotice,
         username,
@@ -1861,6 +1864,7 @@ export class TeamsAppSolution implements Solution {
           AskSubscriptionQuestion.func = async (
             inputs: Inputs
           ): Promise<Result<SubscriptionInfo, FxError>> => {
+            ctx.envInfo.profile.get(GLOBAL_CONFIG)?.get(SUBSCRIPTION_ID);
             const res = await checkSubscription(ctx);
             if (res.isOk()) {
               const sub = res.value;

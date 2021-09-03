@@ -38,6 +38,7 @@ export class PluginLocalDebug {
 
 export class PluginSolution {
   public static readonly PLUGIN_NAME = "solution";
+  public static readonly SUBSCRIPTION_ID = "subscriptionId";
   public static readonly RESOURCE_GROUP_NAME = "resourceGroupName";
   public static readonly LOCATION = "location";
   public static readonly M365_TENANT_ID = "teamsAppTenantId";

@@ -158,11 +158,14 @@ export async function askResourceGroupInfo(
     .map((item) => [item.name, item.location] as [string, string]);
 
   const locations = await getLocations(ctx, rmClient);
+  if (locations.isErr()) {
+    return err(locations.error);
+  }
 
   const node = await getQuestionsForResourceGroup(
     defaultResourceGroupName,
     resourceGroupNameLocations,
-    locations!
+    locations.value!
   );
   if (node) {
     const res = await traverse(node, inputs, ui);
@@ -213,7 +216,7 @@ export async function askResourceGroupInfo(
 async function getLocations(
   ctx: SolutionContext,
   rmClient: ResourceManagementClient
-): Promise<string[] | undefined> {
+): Promise<Result<string[], FxError>> {
   const credential = await ctx.azureAccountProvider!.getAccountCredentialAsync();
   let subscriptionClient = undefined;
   if (credential) {
@@ -237,13 +240,15 @@ async function getLocations(
   const resourceLocations = resourceTypeData?.locations;
   const rgLocations = resourceLocations?.filter((item) => locations.includes(item));
   if (!rgLocations || rgLocations.length == 0) {
-    throw returnUserError(
-      new Error(`Failed to list resource group locations`),
-      "Solution",
-      SolutionError.FailedToListResourceGroupLocation
+    return err(
+      returnUserError(
+        new Error(`Failed to list resource group locations`),
+        "Solution",
+        SolutionError.FailedToListResourceGroupLocation
+      )
     );
   }
-  return rgLocations;
+  return ok(rgLocations);
 }
 
 async function getResourceGroupInfoFromEnvConfig(

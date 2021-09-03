@@ -1148,6 +1148,10 @@ export type SubscriptionInfo = {
 // @public
 export class SystemError extends Error implements FxError {
     constructor(name: string, message: string, source: string, stack?: string, issueLink?: string, innerError?: any);
+    // (undocumented)
+    static build(source: string, name?: string, message?: string, issueLink?: string): SystemError;
+    // (undocumented)
+    static build(source: string, error: Error, issueLink?: string): SystemError;
     innerError?: any;
     issueLink?: string;
     source: string;
@@ -1351,6 +1355,10 @@ export const UserCancelError: UserError;
 // @public
 export class UserError extends Error implements FxError {
     constructor(name: string, message: string, source: string, stack?: string, helpLink?: string, innerError?: any);
+    // (undocumented)
+    static build(source: string, name?: string, message?: string, helpLink?: string): UserError;
+    // (undocumented)
+    static build(source: string, error: Error, helpLink?: string): UserError;
     helpLink?: string;
     innerError?: any;
     source: string;

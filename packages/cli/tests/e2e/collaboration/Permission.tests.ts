@@ -78,7 +78,7 @@ describe("Permission", function () {
     console.log("[Successfully] grant permission");
 
     const listCollaboratorResult = await execAsync(
-      `teamsfx permission status --list-all-collaborator`,
+      `teamsfx permission status --list-all-collaborators`,
       {
         cwd: projectPath,
         env: process.env,

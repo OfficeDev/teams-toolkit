@@ -226,17 +226,19 @@ describe("error", function () {
           super(new.target.name, message || "", mySource);
         }
       }
-      const myerr = new MyError(myMessage);
-      chai.assert.equal(myerr.errorCode(), `${mySource}.MyError`);
-      chai.assert.equal(myerr.message, myMessage);
-      chai.assert.isTrue(myerr.stack?.includes("error.test.ts"));
+      const error = new MyError(myMessage);
+      chai.assert.equal(error.source, mySource);
+      chai.assert.equal(error.name, "MyError");
+      chai.assert.equal(error.message, myMessage);
+      chai.assert.isTrue(error.stack?.includes("error.test.ts"));
     });
   });
 
   describe("UserError.build", function () {
     it("build with Error", () => {
       const error = UserError.build(mySource, new RangeError(myMessage), myHelpLink);
-      chai.assert.equal(error.errorCode(), `${mySource}.RangeError`);
+      chai.assert.equal(error.source, mySource);
+      chai.assert.equal(error.name, "RangeError");
       chai.assert.equal(error.message, myMessage);
       chai.assert.equal(error.helpLink, myHelpLink);
       chai.assert.isTrue(error.stack?.includes("error.test.ts"));
@@ -244,7 +246,8 @@ describe("error", function () {
 
     it("build with name and message", () => {
       const error = UserError.build(mySource, myName, myMessage, myHelpLink);
-      chai.assert.equal(error.errorCode(), `${mySource}.${myName}`);
+      chai.assert.equal(error.source, mySource);
+      chai.assert.equal(error.name, myName);
       chai.assert.equal(error.message, myMessage);
       chai.assert.equal(error.helpLink, myHelpLink);
       chai.assert.isTrue(error.stack?.includes("error.test.ts"));

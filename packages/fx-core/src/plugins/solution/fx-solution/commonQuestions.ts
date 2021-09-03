@@ -20,12 +20,14 @@ import {
   LogProvider,
   EnvConfigFileNameTemplate,
   EnvNamePlaceholder,
+  AzureTokenJSONKeys,
+  InputConfigsFolderName,
 } from "@microsoft/teamsfx-api";
 import { GLOBAL_CONFIG, LOCATION, RESOURCE_GROUP_NAME, SolutionError } from "./constants";
 import { v4 as uuidv4 } from "uuid";
 import { ResourceManagementClient } from "@azure/arm-resources";
 import { PluginDisplayName } from "../../../common/constants";
-import { isMultiEnvEnabled } from "../../../common";
+import { askSubscription, isMultiEnvEnabled } from "../../../common";
 import {
   CoreQuestionNames,
   QuestionNewResourceGroupLocation,
@@ -77,8 +79,49 @@ export async function checkSubscription(
       )
     );
   }
-  const askSubRes = await ctx.azureAccountProvider!.getSelectedSubscription(true);
-  return ok(askSubRes!);
+
+  const subscriptionId = ctx.envInfo.config.azure.subscriptionId;
+  if (!isMultiEnvEnabled() || !subscriptionId) {
+    const askSubRes = await ctx.azureAccountProvider.getSelectedSubscription(true);
+    return ok(askSubRes!);
+  }
+
+  // make sure the user is logged in
+  await ctx.azureAccountProvider.getAccountCredentialAsync(true);
+  const tokenObject = await ctx.azureAccountProvider.getJsonObject(false);
+  if (!tokenObject) {
+    return err(
+      returnSystemError(
+        new Error("azure token JSON object is undefined"),
+        "Solution",
+        SolutionError.InternelError
+      )
+    );
+  }
+  const tenantId = tokenObject[AzureTokenJSONKeys.TenantId];
+  if (!tenantId) {
+    // Tenant ID is not required, so just write a warning log and continue.
+    ctx.logProvider?.warning(`The tenant id from the azure token is empty`);
+  }
+
+  // TODO: verify valid subscription (permission)
+  const subscriptions = await ctx.azureAccountProvider.listSubscriptions();
+  const targetSubInfo = subscriptions.find((item) => item.subscriptionId === subscriptionId);
+  if (!targetSubInfo) {
+    return err(
+      returnUserError(
+        new Error(
+          `The subscription '${subscriptionId}' is not found in the tenant '${tenantId}', please check the ${EnvConfigFileNameTemplate.replace(
+            EnvNamePlaceholder,
+            ctx.envInfo.envName
+          )}`
+        ),
+        "Solution",
+        SolutionError.InternelError
+      )
+    );
+  }
+  return ok(targetSubInfo);
 }
 
 async function getQuestionsForResourceGroup(

@@ -57,6 +57,12 @@ export interface AzureSolutionSettings extends SolutionSettings {
     migrateFromV1?: boolean;
 }
 
+// @public (undocumented)
+export enum AzureTokenJSONKeys {
+    // (undocumented)
+    TenantId = "tid"
+}
+
 // @public
 export interface BaseQuestion {
     default?: unknown;

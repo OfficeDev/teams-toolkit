@@ -57,6 +57,7 @@ export interface AzureAccountProvider {
    * - tid : tenantId
    * - unique_name : user name
    * - ...
+   * The keys are defined in the AzureTokenJSONKeys enum.
    * @param showDialog Control whether the UI layer displays pop-up windows
    */
   getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined>;
@@ -190,3 +191,8 @@ export type TokenProvider = {
   graphTokenProvider: GraphTokenProvider;
   appStudioToken: AppStudioTokenProvider;
 };
+
+// The raw token keys returned by AzureAccountProvider.getJsonObject()
+export enum AzureTokenJSONKeys {
+  TenantId = "tid",
+}

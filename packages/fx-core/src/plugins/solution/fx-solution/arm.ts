@@ -32,6 +32,7 @@ import {
   SolutionTelemetryEvent,
   SolutionTelemetryProperty,
   SolutionTelemetrySuccess,
+  SUBSCRIPTION_ID,
 } from "./constants";
 import { ResourceManagementClient, ResourceManagementModels } from "@azure/arm-resources";
 import { DeployArmTemplatesSteps, ProgressHelper } from "./utils/progressHelper";
@@ -463,8 +464,9 @@ async function getResourceManagementClientForArmDeployment(
     );
   }
 
-  const subscriptionId = (await ctx.azureAccountProvider?.getSelectedSubscription())
-    ?.subscriptionId;
+  const subscriptionId = ctx.envInfo.profile.get(GLOBAL_CONFIG)?.get(SUBSCRIPTION_ID) as
+    | string
+    | undefined;
   if (!subscriptionId) {
     throw returnSystemError(
       new Error(`Failed to get subscription id.`),

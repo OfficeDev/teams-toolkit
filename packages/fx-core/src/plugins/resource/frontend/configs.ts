@@ -52,11 +52,10 @@ export class FrontendConfig {
     const appName = ctx.projectSettings!.appName;
     const solutionConfigs = ctx.envInfo.profile.get(DependentPluginInfo.SolutionPluginName);
 
-    const subscriptionInfo = await ctx.azureAccountProvider?.getSelectedSubscription();
-    if (!subscriptionInfo) {
-      throw new InvalidConfigError(DependentPluginInfo.SubscriptionId);
-    }
-    const subscriptionId = subscriptionInfo.subscriptionId;
+    const subscriptionId = FrontendConfig.getConfig<string>(
+      DependentPluginInfo.SubscriptionId,
+      solutionConfigs
+    );
     const resourceNameSuffix = FrontendConfig.getConfig<string>(
       DependentPluginInfo.ResourceNameSuffix,
       solutionConfigs

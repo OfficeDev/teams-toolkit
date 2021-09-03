@@ -38,9 +38,9 @@ export class ProvisionConfig {
   public functionEndpoint?: string;
 
   public async restoreConfigFromContext(context: PluginContext): Promise<void> {
-    this.subscriptionId = (
-      await context.azureAccountProvider?.getSelectedSubscription()
-    )?.subscriptionId;
+    this.subscriptionId = context.envInfo.profile
+      .get(PluginSolution.PLUGIN_NAME)
+      ?.get(PluginSolution.SUBSCRIPTION_ID) as string;
 
     this.resourceGroup = context.envInfo.profile
       .get(PluginSolution.PLUGIN_NAME)

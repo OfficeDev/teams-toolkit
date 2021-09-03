@@ -55,6 +55,7 @@ class CommonQuestions {
   resourceGroupName = "";
   tenantId = "";
   subscriptionId = "";
+  subscriptionName = "";
   // default to East US for now
   location = "East US";
   teamsAppTenantId = "";
@@ -274,6 +275,7 @@ async function askCommonQuestions(
   }
   const subscriptionId = subscriptionResult.value.subscriptionId;
   commonQuestions.subscriptionId = subscriptionId;
+  commonQuestions.subscriptionName = subscriptionResult.value.subscriptionName;
   commonQuestions.tenantId = subscriptionResult.value.tenantId;
   ctx.logProvider?.info(
     `[${PluginDisplayName.Solution}] askCommonQuestions, step 1 - check subscriptionId pass!`

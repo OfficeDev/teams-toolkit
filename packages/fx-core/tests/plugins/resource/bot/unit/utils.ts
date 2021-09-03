@@ -187,6 +187,7 @@ export function newPluginContext(): PluginContext {
             [PluginSolution.LOCATION, "Central US"],
             [PluginSolution.RESOURCE_GROUP_NAME, "anything"],
             [PluginSolution.M365_TENANT_ID, "anything"],
+            [PluginSolution.SUBSCRIPTION_ID, "subscriptionId"],
           ]),
         ],
         [

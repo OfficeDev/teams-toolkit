@@ -49,10 +49,10 @@ export class SqlPluginImpl {
 
   async init(ctx: PluginContext) {
     ContextUtils.init(ctx);
-    const subscriptionInfo = await ctx.azureAccountProvider?.getSelectedSubscription();
-    if (subscriptionInfo) {
-      this.config.azureSubscriptionId = subscriptionInfo.subscriptionId;
-    }
+    this.config.azureSubscriptionId = ContextUtils.getConfigString(
+      Constants.solution,
+      Constants.solutionConfigKey.subscriptionId
+    );
     this.config.resourceGroup = ContextUtils.getConfigString(
       Constants.solution,
       Constants.solutionConfigKey.resourceGroupName

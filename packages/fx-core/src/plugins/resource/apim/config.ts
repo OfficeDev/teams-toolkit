@@ -49,6 +49,7 @@ export interface ISolutionConfig {
   resourceGroupName: string;
   location: string;
   remoteTeamsAppId?: string | undefined;
+  subscriptionId?: string | undefined;
 }
 
 export class ApimPluginConfig implements IApimPluginConfig {

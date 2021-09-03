@@ -1381,7 +1381,7 @@ export class TeamsAppSolution implements Solution {
           { content: `Account to grant permission: `, color: Colors.BRIGHT_WHITE },
           { content: userInfo.userPrincipalName + "\n", color: Colors.BRIGHT_MAGENTA },
           {
-            content: `Starting list all collaborators for environment: `,
+            content: `Starting grant permission for environment: `,
             color: Colors.BRIGHT_WHITE,
           },
           // Todo, when multi-environment is ready, we will update to current environment
@@ -1505,7 +1505,7 @@ export class TeamsAppSolution implements Solution {
           { content: `Account used to check: `, color: Colors.BRIGHT_WHITE },
           { content: userInfo.userPrincipalName + "\n", color: Colors.BRIGHT_MAGENTA },
           {
-            content: `Starting list all collaborators for environment: `,
+            content: `Starting check permission for environment: `,
             color: Colors.BRIGHT_WHITE,
           },
           // Todo, when multi-environment is ready, we will update to current environment

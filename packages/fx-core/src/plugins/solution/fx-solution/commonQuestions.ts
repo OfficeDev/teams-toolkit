@@ -337,13 +337,7 @@ async function askCommonQuestions(
         };
       }
     } catch (e) {
-      return err(
-        returnUserError(
-          new Error("Failed to check resource group existence"),
-          "Solution",
-          SolutionError.FailedToCheckResourceGroupExistence
-        )
-      );
+      return err(returnUserError(e, "Solution", SolutionError.FailedToCheckResourceGroupExistence));
     }
   } else if (ctx.answers && ctx.ui) {
     const resourceGroupInfoResult = await askResourceGroupInfo(

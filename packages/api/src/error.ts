@@ -14,8 +14,6 @@ export interface FxError extends Error {
    * Time of error.
    */
   timestamp: Date;
-
-  errorCode(): string;
 }
 
 /**
@@ -89,10 +87,6 @@ export class UserError extends Error implements FxError {
     }
     error.timestamp = new Date();
     return error;
-  }
-
-  errorCode(): string {
-    return `${this.source}.${this.name}`;
   }
 }
 
@@ -172,10 +166,6 @@ export class SystemError extends Error implements FxError {
     }
     error.timestamp = new Date();
     return error;
-  }
-
-  errorCode(): string {
-    return `${this.source}.${this.name}`;
   }
 }
 

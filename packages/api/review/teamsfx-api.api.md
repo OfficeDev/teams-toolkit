@@ -303,8 +303,6 @@ export interface FuncValidation<T extends string | string[] | undefined> {
 
 // @public (undocumented)
 export interface FxError extends Error {
-    // (undocumented)
-    errorCode(): string;
     innerError?: any;
     source: string;
     timestamp: Date;
@@ -1154,8 +1152,6 @@ export class SystemError extends Error implements FxError {
     static build(source: string, name?: string, message?: string, issueLink?: string): SystemError;
     // (undocumented)
     static build(source: string, error: Error, issueLink?: string): SystemError;
-    // (undocumented)
-    errorCode(): string;
     innerError?: any;
     issueLink?: string;
     source: string;
@@ -1363,8 +1359,6 @@ export class UserError extends Error implements FxError {
     static build(source: string, name?: string, message?: string, helpLink?: string): UserError;
     // (undocumented)
     static build(source: string, error: Error, helpLink?: string): UserError;
-    // (undocumented)
-    errorCode(): string;
     helpLink?: string;
     innerError?: any;
     source: string;

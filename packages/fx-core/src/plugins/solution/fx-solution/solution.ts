@@ -1864,7 +1864,6 @@ export class TeamsAppSolution implements Solution {
           AskSubscriptionQuestion.func = async (
             inputs: Inputs
           ): Promise<Result<SubscriptionInfo, FxError>> => {
-            ctx.envInfo.profile.get(GLOBAL_CONFIG)?.get(SUBSCRIPTION_ID);
             const res = await checkSubscription(ctx);
             if (res.isOk()) {
               const sub = res.value;

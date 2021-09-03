@@ -55,7 +55,7 @@ export const LOCATION = "location";
 export const SUBSCRIPTION_ID = "subscriptionId";
 
 /**
- * Config key whose value is the subscription ID of project.
+ * Config key whose value is the subscription name of project.
  */
 export const SUBSCRIPTION_NAME = "subscriptionName";
 

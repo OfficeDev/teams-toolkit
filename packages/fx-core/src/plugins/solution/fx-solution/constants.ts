@@ -88,6 +88,7 @@ export enum SolutionError {
   NoTeamsAppTenantId = "NoTeamsAppTenantId",
   FailedToCreateResourceGroup = "FailedToCreateResourceGroup",
   FailedToListResourceGroup = "FailedToListResourceGrouop",
+  FailedToListResourceGroupLocation = "FailedToListResourceGroupLocation",
   FailedToGetResourceGroupInfoInputs = "FailedToGetResourceGroupInfoInputs",
   ResourceGroupNotFound = "ResourceGroupNotFound",
   NotLoginToAzure = "NotLoginToAzure",

@@ -158,15 +158,6 @@ export async function askResourceGroupInfo(
     .map((item) => [item.name, item.location] as [string, string]);
 
   const locations = await getLocations(ctx, rmClient);
-  if (!locations || locations.length == 0) {
-    return err(
-      returnUserError(
-        new Error(`Failed to list resource group locations`),
-        "Solution",
-        SolutionError.FailedToListResourceGroup
-      )
-    );
-  }
 
   const node = await getQuestionsForResourceGroup(
     defaultResourceGroupName,
@@ -224,7 +215,16 @@ async function getLocations(
   rmClient: ResourceManagementClient
 ): Promise<string[] | undefined> {
   const credential = await ctx.azureAccountProvider!.getAccountCredentialAsync();
-  const subscriptionClient = new SubscriptionClient(credential as any);
+  let subscriptionClient = undefined;
+  if (credential) {
+    subscriptionClient = new SubscriptionClient(credential);
+  } else {
+    throw returnUserError(
+      new Error(`Failed to get azure credential`),
+      "Solution",
+      SolutionError.FailedToGetAzureCredential
+    );
+  }
   const askSubRes = await ctx.azureAccountProvider!.getSelectedSubscription(true);
   const listLocations = await subscriptionClient.subscriptions.listLocations(
     askSubRes!.subscriptionId
@@ -235,7 +235,15 @@ async function getLocations(
     (rt) => rt.resourceType?.toLowerCase() === ResourceGroups.toLowerCase()
   );
   const resourceLocations = resourceTypeData?.locations;
-  return resourceLocations?.filter((item) => locations.includes(item));
+  const rgLocations = resourceLocations?.filter((item) => locations.includes(item));
+  if (!rgLocations || rgLocations.length == 0) {
+    throw returnUserError(
+      new Error(`Failed to list resource group locations`),
+      "Solution",
+      SolutionError.FailedToListResourceGroupLocation
+    );
+  }
+  return rgLocations;
 }
 
 async function getResourceGroupInfoFromEnvConfig(

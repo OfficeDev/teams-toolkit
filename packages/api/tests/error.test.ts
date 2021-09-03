@@ -252,7 +252,8 @@ describe("error", function () {
 
     it("build with empty name and message", () => {
       const error = UserError.build(mySource, "", myMessage, myHelpLink);
-      chai.assert.equal(error.errorCode(), `${mySource}.UserError`);
+      chai.assert.equal(error.source, mySource);
+      chai.assert.equal(error.name, "UserError");
       chai.assert.equal(error.message, myMessage);
       chai.assert.equal(error.helpLink, myHelpLink);
       chai.assert.isTrue(error.stack?.includes("error.test.ts"));
@@ -262,7 +263,8 @@ describe("error", function () {
   describe("SystemError.build", function () {
     it("build with Error", () => {
       const error = SystemError.build(mySource, new RangeError(myMessage), myIssueLink);
-      chai.assert.equal(error.errorCode(), `${mySource}.RangeError`);
+      chai.assert.equal(error.source, mySource);
+      chai.assert.equal(error.name, "RangeError");
       chai.assert.equal(error.message, myMessage);
       chai.assert.equal(error.issueLink, myIssueLink);
       chai.assert.isTrue(error.stack?.includes("error.test.ts"));
@@ -270,7 +272,8 @@ describe("error", function () {
 
     it("build with name and message", () => {
       const error = SystemError.build(mySource, myName, myMessage, myIssueLink);
-      chai.assert.equal(error.errorCode(), `${mySource}.${myName}`);
+      chai.assert.equal(error.source, mySource);
+      chai.assert.equal(error.name, myName);
       chai.assert.equal(error.message, myMessage);
       chai.assert.equal(error.issueLink, myIssueLink);
       chai.assert.isTrue(error.stack?.includes("error.test.ts"));
@@ -278,7 +281,8 @@ describe("error", function () {
 
     it("build with empty name and message", () => {
       const error = SystemError.build(mySource, "", myMessage, myIssueLink);
-      chai.assert.equal(error.errorCode(), `${mySource}.SystemError`);
+      chai.assert.equal(error.source, mySource);
+      chai.assert.equal(error.name, "SystemError");
       chai.assert.equal(error.message, myMessage);
       chai.assert.equal(error.issueLink, myIssueLink);
       chai.assert.isTrue(error.stack?.includes("error.test.ts"));

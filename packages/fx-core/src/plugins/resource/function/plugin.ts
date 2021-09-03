@@ -126,10 +126,7 @@ export class FunctionPluginImpl {
     this.config.resourceGroupName = solutionConfig?.get(
       DependentPluginInfo.resourceGroupName
     ) as string;
-    const subscriptionInfo = await ctx.azureAccountProvider?.getSelectedSubscription();
-    if (subscriptionInfo) {
-      this.config.subscriptionId = subscriptionInfo.subscriptionId;
-    }
+    this.config.subscriptionId = solutionConfig?.get(DependentPluginInfo.subscriptionId) as string;
 
     this.config.location = solutionConfig?.get(DependentPluginInfo.location) as string;
     this.config.functionLanguage = ctx.projectSettings?.programmingLanguage as FunctionLanguage;

@@ -549,6 +549,7 @@ describe("Deploy ARM Template to Azure", () => {
       new ConfigMap([
         ["resourceGroupName", "mocked resource group name"],
         ["resourceNameSuffix", testResourceSuffix],
+        ["subscriptionId", "mocked subscription id"],
       ])
     );
 

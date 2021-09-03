@@ -28,13 +28,17 @@ import { AadDefaultValues } from "./constants";
 import { Lazy } from "./utils/commonUtils";
 import { ScaffoldManager } from "./managers/scaffoldManager";
 import { Providers, ResourceManagementClientContext } from "@azure/arm-resources";
+import { ISolutionConfig, SolutionConfig } from "./config";
 
 export class Factory {
   public static async buildApimManager(ctx: PluginContext): Promise<ApimManager> {
     const openApiProcessor = new OpenApiProcessor(ctx.telemetryReporter, ctx.logProvider);
+
+    const solutionConfig = new SolutionConfig(ctx.envInfo.profile);
     const lazyApimService = new Lazy<ApimService>(
       async () =>
         await Factory.buildApimService(
+          solutionConfig,
           ctx.azureAccountProvider,
           ctx.telemetryReporter,
           ctx.logProvider
@@ -78,12 +82,14 @@ export class Factory {
   }
 
   public static async buildQuestionManager(ctx: PluginContext): Promise<IQuestionManager> {
+    const solutionConfig = new SolutionConfig(ctx.envInfo.profile);
     switch (ctx.answers?.platform) {
       case Platform.VSCode:
         // Lazy init apim service to get the latest subscription id in configuration
         const lazyApimService = new Lazy<ApimService>(
           async () =>
             await Factory.buildApimService(
+              solutionConfig,
               ctx.azureAccountProvider,
               ctx.telemetryReporter,
               ctx.logProvider
@@ -148,6 +154,7 @@ export class Factory {
   }
 
   public static async buildApimService(
+    solutionConfig: ISolutionConfig,
     azureAccountProvider: AzureAccountProvider | undefined,
     telemetryReporter?: TelemetryReporter,
     logger?: LogProvider
@@ -156,21 +163,18 @@ export class Factory {
       "credential",
       await azureAccountProvider?.getAccountCredentialAsync()
     );
-    let subscriptionInfo = await azureAccountProvider?.getSelectedSubscription();
-    subscriptionInfo = AssertNotEmpty("subscriptionInfo", subscriptionInfo);
-    const apiManagementClient = new ApiManagementClient(
-      credential,
-      subscriptionInfo.subscriptionId
-    );
+    const maybeSubscriptionId = solutionConfig.subscriptionId;
+    const subscriptionId = AssertNotEmpty("subscriptionId", maybeSubscriptionId);
+    const apiManagementClient = new ApiManagementClient(credential, subscriptionId);
     const resourceProviderClient = new Providers(
-      new ResourceManagementClientContext(credential, subscriptionInfo.subscriptionId)
+      new ResourceManagementClientContext(credential, subscriptionId)
     );
 
     return new ApimService(
       apiManagementClient,
       resourceProviderClient,
       credential,
-      subscriptionInfo.subscriptionId,
+      subscriptionId,
       telemetryReporter,
       logger
     );

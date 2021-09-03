@@ -116,7 +116,6 @@ export interface SolutionPlugin {
    * @param {Inputs} inputs - system inputs.
    * @param {EnvConfig} envConfig - contains the user customized values for manifest placeholders
    * @param {EnvProfile} envProfile - contains the provision output values for manifest placeholders
-   * @param {EnvConfig} envConfig - system inputs.
    *
    * @returns {string} package path
    */

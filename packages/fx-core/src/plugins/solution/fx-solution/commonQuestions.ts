@@ -27,7 +27,7 @@ import { GLOBAL_CONFIG, LOCATION, RESOURCE_GROUP_NAME, SolutionError } from "./c
 import { v4 as uuidv4 } from "uuid";
 import { ResourceManagementClient } from "@azure/arm-resources";
 import { PluginDisplayName } from "../../../common/constants";
-import { askSubscription, isMultiEnvEnabled } from "../../../common";
+import { isMultiEnvEnabled } from "../../../common";
 import {
   CoreQuestionNames,
   QuestionNewResourceGroupLocation,

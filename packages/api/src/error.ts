@@ -14,6 +14,8 @@ export interface FxError extends Error {
    * Time of error.
    */
   timestamp: Date;
+
+  errorCode(): string;
 }
 
 /**
@@ -25,7 +27,7 @@ export class UserError extends Error implements FxError {
    */
   innerError?: any;
   /**
-   * Source name of error. (plugin name, eg: tab-scaffhold-plugin)
+   * Source name of error. (plugin name, eg: tab-scaffold-plugin)
    */
   source: string;
   /**
@@ -46,12 +48,51 @@ export class UserError extends Error implements FxError {
     innerError?: any
   ) {
     super(message);
-    this.name = name;
+    this.name = name ? name : new.target.name;
     this.source = source;
     this.timestamp = new Date();
     this.helpLink = helpLink;
     this.innerError = innerError;
-    Object.setPrototypeOf(this, UserError.prototype);
+    if (typeof (Error as any).captureStackTrace === "function") {
+      (Error as any).captureStackTrace(this, new.target);
+    }
+    if (typeof Object.setPrototypeOf === "function") {
+      Object.setPrototypeOf(this, new.target.prototype);
+    } else {
+      (this as any).__proto__ = new.target.prototype;
+    }
+  }
+
+  static build(source: string, name?: string, message?: string, helpLink?: string): UserError;
+  static build(source: string, error: Error, helpLink?: string): UserError;
+  static build(
+    source: string,
+    nameOrError?: string | Error,
+    messageOrHelplink?: string,
+    helpLink?: string
+  ): UserError {
+    let error: UserError;
+    if (nameOrError !== undefined && nameOrError instanceof Error) {
+      const err = nameOrError as Error;
+      error = new UserError(err.name, err.message, source, undefined, messageOrHelplink);
+      Object.assign(this, err);
+      error.name = err.name;
+      error.stack = err.stack;
+    } else {
+      error = new UserError(
+        nameOrError || "",
+        messageOrHelplink || "",
+        source,
+        undefined,
+        helpLink
+      );
+    }
+    error.timestamp = new Date();
+    return error;
+  }
+
+  errorCode(): string {
+    return `${this.source}.${this.name}`;
   }
 }
 
@@ -64,7 +105,7 @@ export class SystemError extends Error implements FxError {
    */
   innerError?: any;
   /**
-   * Source name of error. (plugin name, eg: tab-scaffhold-plugin)
+   * Source name of error. (plugin name, eg: tab-scaffold-plugin)
    */
   source: string;
   /**
@@ -90,12 +131,51 @@ export class SystemError extends Error implements FxError {
     innerError?: any
   ) {
     super(message);
-    this.name = name;
+    this.name = name ? name : new.target.name;
     this.source = source;
     this.timestamp = new Date();
     this.issueLink = issueLink;
     this.innerError = innerError;
-    Object.setPrototypeOf(this, SystemError.prototype);
+    if (typeof (Error as any).captureStackTrace === "function") {
+      (Error as any).captureStackTrace(this, new.target);
+    }
+    if (typeof Object.setPrototypeOf === "function") {
+      Object.setPrototypeOf(this, new.target.prototype);
+    } else {
+      (this as any).__proto__ = new.target.prototype;
+    }
+  }
+
+  static build(source: string, name?: string, message?: string, issueLink?: string): SystemError;
+  static build(source: string, error: Error, issueLink?: string): SystemError;
+  static build(
+    source: string,
+    nameOrError?: string | Error,
+    messageOrIssuelink?: string,
+    issueLink?: string
+  ): SystemError {
+    let error: SystemError;
+    if (nameOrError !== undefined && nameOrError instanceof Error) {
+      const err = nameOrError as Error;
+      error = new SystemError(err.name, err.message, source, undefined, messageOrIssuelink);
+      Object.assign(this, err);
+      error.name = err.name;
+      error.stack = err.stack;
+    } else {
+      error = new SystemError(
+        nameOrError || "",
+        messageOrIssuelink || "",
+        source,
+        undefined,
+        issueLink
+      );
+    }
+    error.timestamp = new Date();
+    return error;
+  }
+
+  errorCode(): string {
+    return `${this.source}.${this.name}`;
   }
 }
 

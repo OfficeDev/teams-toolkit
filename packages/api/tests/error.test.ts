@@ -41,7 +41,7 @@ describe("error", function () {
         chai.assert.equal(temp.source, mySource);
         chai.assert.isTrue(temp.stack !== undefined && temp.stack.includes("error.test.ts"));
         chai.assert.equal(temp.helpLink, myHelpLink);
-        // chai.assert.equal(temp.innerError, myInnerError);
+        chai.assert.equal(temp.innerError, myInnerError);
       });
   });
 
@@ -64,7 +64,7 @@ describe("error", function () {
         chai.assert.equal(temp.message, myMessage);
         chai.assert.equal(temp.source, mySource);
         chai.assert.equal(temp.helpLink, myHelpLink);
-        // chai.assert.equal(temp.innerError, myInnerError);
+        chai.assert.equal(temp.innerError, myInnerError);
       });
   });
 
@@ -91,7 +91,7 @@ describe("error", function () {
         chai.assert.equal(temp.source, mySource);
         chai.assert.isTrue(temp.stack !== undefined && temp.stack.includes("error.test.ts"));
         chai.assert.equal(temp.issueLink, myIssueLink);
-        // chai.assert.equal(temp.innerError, myInnerError);
+        chai.assert.equal(temp.innerError, myInnerError);
       });
   });
 

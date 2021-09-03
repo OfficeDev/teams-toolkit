@@ -28,18 +28,18 @@ import { AadDefaultValues } from "./constants";
 import { Lazy } from "./utils/commonUtils";
 import { ScaffoldManager } from "./managers/scaffoldManager";
 import { Providers, ResourceManagementClientContext } from "@azure/arm-resources";
-import { GLOBAL_CONFIG, SUBSCRIPTION_ID } from "../../solution/fx-solution/constants";
+import { ISolutionConfig, SolutionConfig } from "./config";
 
 export class Factory {
   public static async buildApimManager(ctx: PluginContext): Promise<ApimManager> {
     const openApiProcessor = new OpenApiProcessor(ctx.telemetryReporter, ctx.logProvider);
-    const subscriptionId = ctx.envInfo.profile.get(GLOBAL_CONFIG)?.get(SUBSCRIPTION_ID);
 
+    const solutionConfig = new SolutionConfig(ctx.envInfo.profile);
     const lazyApimService = new Lazy<ApimService>(
       async () =>
         await Factory.buildApimService(
+          solutionConfig,
           ctx.azureAccountProvider,
-          ctx.envInfo.profile,
           ctx.telemetryReporter,
           ctx.logProvider
         )
@@ -82,14 +82,15 @@ export class Factory {
   }
 
   public static async buildQuestionManager(ctx: PluginContext): Promise<IQuestionManager> {
+    const solutionConfig = new SolutionConfig(ctx.envInfo.profile);
     switch (ctx.answers?.platform) {
       case Platform.VSCode:
         // Lazy init apim service to get the latest subscription id in configuration
         const lazyApimService = new Lazy<ApimService>(
           async () =>
             await Factory.buildApimService(
+              solutionConfig,
               ctx.azureAccountProvider,
-              ctx.envInfo.profile,
               ctx.telemetryReporter,
               ctx.logProvider
             )
@@ -153,8 +154,8 @@ export class Factory {
   }
 
   public static async buildApimService(
+    solutionConfig: ISolutionConfig,
     azureAccountProvider: AzureAccountProvider | undefined,
-    envProfile: Map<string, any>,
     telemetryReporter?: TelemetryReporter,
     logger?: LogProvider
   ): Promise<ApimService> {
@@ -162,7 +163,7 @@ export class Factory {
       "credential",
       await azureAccountProvider?.getAccountCredentialAsync()
     );
-    const maybeSubscriptionId = envProfile.get(GLOBAL_CONFIG)?.get(SUBSCRIPTION_ID);
+    const maybeSubscriptionId = solutionConfig.subscriptionId;
     const subscriptionId = AssertNotEmpty("subscriptionId", maybeSubscriptionId);
     const apiManagementClient = new ApiManagementClient(credential, subscriptionId);
     const resourceProviderClient = new Providers(

@@ -80,6 +80,12 @@ jobs:
         run: |
           rsync --delete-before -d /tmp/empty/ ./
 
+      - name: Sync to Azure DevOps Test Plan
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: |
+          version =$(node -p -e "require('./packages/cli/package.json').version")
+          npx ts-node .github/scripts/testPlan.ts sync ./packages/cli/report.json cli $version
+
   report-stat:
     env:
       AZURE_DEVOPS_EXT_PAT: ${{ secrets.ADO_PAT }}

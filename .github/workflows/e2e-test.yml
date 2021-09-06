@@ -129,7 +129,7 @@ jobs:
             az boards work-item create --title="E2E tests failed" \
                              --type=Bug \
                              --area="Microsoft Teams Extensibility\Teams Extensibility E2E Team" \
-                             --assigned-to="zhiyu.you@microsoft.com" \
+                             --assigned-to="haolong@microsoft.com" \
                              --iteration="Microsoft Teams Extensibility" \
                              --organization="https://msazure.visualstudio.com/" \
                              --project="Microsoft Teams Extensibility" \
@@ -137,6 +137,7 @@ jobs:
                              --description="<table class=\"w3-table w3-striped w3-bordered\">${{ steps.git-log.outputs.description }}</table>"
 
       - name: Send E-mail to the whole team
+        if: ${{ always() }}
         uses: satak/webrequest-action@master
         with:
           url: https://prod-30.eastus.logic.azure.com:443/workflows/9aa865da96054bd89749c2d4ce68df8e/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=uIoB06NUHSnKoZeWjNDI9t4rrhbTBKxJNiBtDoMRSQs

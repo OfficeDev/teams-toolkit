@@ -292,24 +292,22 @@ describe("Deploy ARM Template to Azure", () => {
   let fileContent: Map<string, any>;
 
   beforeEach(() => {
-    ((mocker.stub(fs, "readFile") as unknown) as sinon.SinonStub<
-      [file: number | fs.PathLike],
-      Promise<string>
-    >).callsFake(
-      (file: number | PathLike): Promise<string> => {
-        return fileContent.get(file.toString());
+    (
+      mocker.stub(fs, "readFile") as unknown as sinon.SinonStub<
+        [file: number | fs.PathLike],
+        Promise<string>
+      >
+    ).callsFake((file: number | PathLike): Promise<string> => {
+      return fileContent.get(file.toString());
+    });
+    mocker.stub(fs, "stat").callsFake((filePath: PathLike): Promise<fs.Stats> => {
+      if (fileContent.has(filePath.toString())) {
+        return new Promise<fs.Stats>((resolve) => {
+          resolve({} as fs.Stats);
+        });
       }
-    );
-    mocker.stub(fs, "stat").callsFake(
-      (filePath: PathLike): Promise<fs.Stats> => {
-        if (fileContent.has(filePath.toString())) {
-          return new Promise<fs.Stats>((resolve) => {
-            resolve({} as fs.Stats);
-          });
-        }
-        throw new Error(`${filePath} does not exist.`);
-      }
-    );
+      throw new Error(`${filePath} does not exist.`);
+    });
     mocker.stub(fs, "writeFile").callsFake((path: number | PathLike, data: any) => {
       fileContent.set(path.toString(), data);
     });
@@ -573,15 +571,15 @@ describe("Deploy ARM Template to Azure", () => {
       return subscriptionInfo;
     };
 
-    mocker.stub(Executor, "execCommandAsync").callsFake(
-      (command: string, options?: ExecOptions): Promise<any> => {
+    mocker
+      .stub(Executor, "execCommandAsync")
+      .callsFake((command: string, options?: ExecOptions): Promise<any> => {
         return new Promise((resolve) => {
           resolve({
             stdout: `{"test_key": "test_value"}`,
             stderr: "",
           });
         });
-      }
-    );
+      });
   }
 });

@@ -59,9 +59,8 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
   let getSelectSubItem: undefined | ((token: any) => Promise<[TreeItem, boolean]>) = undefined;
   getSelectSubItem = async (token: any): Promise<[TreeItem, boolean]> => {
     let selectSubLabel = "";
-    const subscriptions:
-      | SubscriptionInfo[]
-      | undefined = await tools.tokenProvider.azureAccountProvider.listSubscriptions();
+    const subscriptions: SubscriptionInfo[] | undefined =
+      await tools.tokenProvider.azureAccountProvider.listSubscriptions();
     if (subscriptions) {
       const activeSubscriptionId = await getSubscriptionId();
       const activeSubscription = subscriptions.find(

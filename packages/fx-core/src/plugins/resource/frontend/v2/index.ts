@@ -3,33 +3,30 @@
 
 import {
   AzureAccountProvider,
-  AzureSolutionSettings,
-  EnvConfig,
-  FxError,
+  AzureSolutionSettings, FxError,
   Inputs,
+  Json,
   Result,
   TokenProvider,
-  Void,
+  Void
 } from "@microsoft/teamsfx-api";
 import {
   Context,
-  DeploymentInputs,
-  EnvProfile,
-  ProvisionInputs,
+  DeploymentInputs, ProvisionInputs,
   ResourcePlugin,
-  ResourceTemplate,
+  ResourceTemplate
 } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
 import { FrontendPlugin } from "../..";
 import {
   ResourcePlugins,
-  ResourcePluginsV2,
+  ResourcePluginsV2
 } from "../../../solution/fx-solution/ResourcePluginContainer";
 import {
   configureResourceAdapter,
   deployAdapter,
   generateResourceTemplateAdapter,
-  scaffoldSourceCodeAdapter,
+  scaffoldSourceCodeAdapter
 } from "../../utils4v2";
 
 @Service(ResourcePluginsV2.FrontendPlugin)
@@ -57,15 +54,15 @@ export class FrontendPluginV2 implements ResourcePlugin {
   async configureResource(
     ctx: Context,
     inputs: ProvisionInputs,
-    envConfig: EnvConfig,
-    envProfile: EnvProfile,
+    provisionInputConfig: Json,
+    provisionOutputs: Json,
     tokenProvider: TokenProvider
-  ): Promise<Result<Void, FxError>> {
+  ): Promise<Result<Json, FxError>> {
     return await configureResourceAdapter(
       ctx,
       inputs,
-      envConfig,
-      envProfile,
+      provisionInputConfig,
+      provisionOutputs,
       tokenProvider,
       this.plugin
     );
@@ -73,10 +70,10 @@ export class FrontendPluginV2 implements ResourcePlugin {
 
   async deploy(
     ctx: Context,
-    inputs: Readonly<DeploymentInputs>,
-    envProfile: EnvProfile,
+    inputs: DeploymentInputs,
+    provisionOutput: Json,
     tokenProvider: AzureAccountProvider
-  ): Promise<Result<Void, FxError>> {
-    return await deployAdapter(ctx, inputs, envProfile, tokenProvider, this.plugin);
+  ): Promise<Result<Json, FxError>> {
+    return await deployAdapter(ctx, inputs, provisionOutput, tokenProvider, this.plugin);
   }
 }

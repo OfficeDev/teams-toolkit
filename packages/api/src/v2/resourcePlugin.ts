@@ -118,7 +118,7 @@ export interface ResourcePlugin {
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {ProvisionInputs} inputs - inputs injected by Toolkit runtime and solution.
    * @param {Json} provisionInputConfig - model for config.${env}.json, in which, user can customize some inputs for provision
-   * @param {Json} provisionOutput - the profile (persist by core as `profile.${env}.json`) containing provision outputs
+   * @param {Json} provisionOutputs - the profile (persist by core as `profile.${env}.json`) containing provision outputs
    * @param {TokenProvider} tokenProvider - Tokens for Azure and AppStudio
    *
    * @returns a new copy of provisionOutput possibly with added fields. Toolkit will persist it and pass it to {@link deploy}.
@@ -128,9 +128,9 @@ export interface ResourcePlugin {
     ctx: Context,
     inputs: ProvisionInputs,
     provisionInputConfig: Json,
-    provisionOutput: Json,
+    provisionOutputs: Json,
     tokenProvider: TokenProvider
-  ) => Promise<Result<Void, FxError>>;
+  ) => Promise<Result<Json, FxError>>;
 
   /**
    * Generates a Teams manifest package for the current project,
@@ -141,7 +141,7 @@ export interface ResourcePlugin {
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {Inputs} inputs - system inputs.
    * @param {Json} provisionInputConfig - contains the user customized values for manifest placeholders
-   * @param {Json} provisionOutput - contains the provision output values for manifest placeholders
+   * @param {Json} provisionOutputs - contains the provision output values for manifest placeholders
    *
    * @returns Void because side effect is expected.
    */
@@ -149,7 +149,7 @@ export interface ResourcePlugin {
     ctx: Context,
     inputs: Inputs,
     provisionInputConfig: Json,
-    provisionOutput: Json
+    provisionOutputs: Json
   ) => Promise<Result<Void, FxError>>;
 
   /**
@@ -168,14 +168,14 @@ export interface ResourcePlugin {
     inputs: DeploymentInputs,
     provisionOutput: Json,
     tokenProvider: AzureAccountProvider
-  ) => Promise<Result<Void, FxError>>;
+  ) => Promise<Result<Json, FxError>>;
 
   /**
    * Depends on the output of {@link package}. Uploads Teams package to AppStudio
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {Inputs} inputs - system inputs.
    * @param {Json} provisionInputConfig - contains the user customized values for manifest placeholders
-   * @param {Json} provisionOutput - contains the provision output values for manifest placeholders
+   * @param {Json} provisionOutputs - contains the provision output values for manifest placeholders
    * @param {AppStudioTokenProvider} tokenProvider - Token for AppStudio
    *
    * @returns Void because side effect is expected.
@@ -184,7 +184,7 @@ export interface ResourcePlugin {
     ctx: Context,
     inputs: Inputs,
     provisionInputConfig: Json,
-    provisionOutput: Json,
+    provisionOutputs: Json,
     tokenProvider: AppStudioTokenProvider
   ) => Promise<Result<Void, FxError>>;
 
@@ -203,7 +203,7 @@ export interface ResourcePlugin {
     inputs: Inputs,
     localSettings: Json,
     tokenProvider: TokenProvider
-  ) => Promise<Result<Void, FxError>>;
+  ) => Promise<Result<Json, FxError>>;
 
   /**
    * configureLocalResource works like {@link configureResource} but only for local debugging resources.
@@ -220,7 +220,7 @@ export interface ResourcePlugin {
     inputs: Inputs,
     localSettings: Json,
     tokenProvider: TokenProvider
-  ) => Promise<Result<Void, FxError>>;
+  ) => Promise<Result<Json, FxError>>;
 
   getQuestionsForScaffolding?: (
     ctx: Context,

@@ -155,7 +155,7 @@ export async function configureResourceAdapter(
   provisionOutput: Json,
   tokenProvider: TokenProvider,
   plugin: Plugin & ArmResourcePlugin
-): Promise<Result<Void, FxError>> {
+): Promise<Result<Json, FxError>> {
   if (!plugin.postProvision) return err(PluginHasNoTaskImpl(plugin.displayName, "postProvision"));
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
@@ -165,7 +165,7 @@ export async function configureResourceAdapter(
   if (postRes.isErr()) {
     return err(postRes.error);
   }
-  return ok(Void);
+  return ok(pluginContext.config.toJSON());
 }
 
 export async function deployAdapter(
@@ -174,7 +174,7 @@ export async function deployAdapter(
   provisionOutput: Json,
   tokenProvider: AzureAccountProvider,
   plugin: Plugin & ArmResourcePlugin
-): Promise<Result<Void, FxError>> {
+): Promise<Result<Json, FxError>> {
   if (!plugin.deploy) return err(PluginHasNoTaskImpl(plugin.displayName, "deploy"));
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
   pluginContext.azureAccountProvider = tokenProvider;
@@ -195,7 +195,7 @@ export async function deployAdapter(
       return err(postRes.error);
     }
   }
-  return ok(Void);
+  return ok(pluginContext.config.toJSON());
 }
 
 export async function provisionLocalResourceAdapter(
@@ -204,7 +204,7 @@ export async function provisionLocalResourceAdapter(
   localSettings: Json,
   tokenProvider: TokenProvider,
   plugin: Plugin & ArmResourcePlugin
-): Promise<Result<Void, FxError>> {
+): Promise<Result<Json, FxError>> {
   if (!plugin.localDebug) return err(PluginHasNoTaskImpl(plugin.displayName, "localDebug"));
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
   pluginContext.localSettings = {
@@ -234,7 +234,7 @@ export async function provisionLocalResourceAdapter(
   if (pluginContext.localSettings.frontend) {
     localSettings.frontend = pluginContext.localSettings.frontend.toJSON();
   }
-  return ok(Void);
+  return ok(localSettings);
 }
 
 export async function configureLocalResourceAdapter(
@@ -243,7 +243,7 @@ export async function configureLocalResourceAdapter(
   localSettings: Json,
   tokenProvider: TokenProvider,
   plugin: Plugin & ArmResourcePlugin
-): Promise<Result<Void, FxError>> {
+): Promise<Result<Json, FxError>> {
   if (!plugin.postLocalDebug) return err(PluginHasNoTaskImpl(plugin.displayName, "postLocalDebug"));
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
   pluginContext.localSettings = {
@@ -273,7 +273,7 @@ export async function configureLocalResourceAdapter(
   if (pluginContext.localSettings.frontend) {
     localSettings.frontend = pluginContext.localSettings.frontend.toJSON();
   }
-  return ok(Void);
+  return ok(localSettings);
 }
 
 export async function executeUserTaskAdapter(

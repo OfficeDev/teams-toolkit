@@ -2,29 +2,25 @@
 // Licensed under the MIT license.
 
 import {
-  AzureSolutionSettings,
-  EnvConfig,
-  Func,
+  AzureSolutionSettings, Func,
   FxError,
   Inputs,
   Json,
   Result,
   TokenProvider,
-  Void,
+  Void
 } from "@microsoft/teamsfx-api";
 import {
-  Context,
-  EnvProfile,
-  LocalSettings,
-  ProvisionInputs,
+  Context, ProvisionInputs,
   ResourcePlugin,
-  ResourceTemplate,
+  ResourceProvisionOutput,
+  ResourceTemplate
 } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
 import { AadAppForTeamsPlugin } from "..";
 import {
   ResourcePlugins,
-  ResourcePluginsV2,
+  ResourcePluginsV2
 } from "../../../solution/fx-solution/ResourcePluginContainer";
 import {
   configureLocalResourceAdapter,
@@ -32,7 +28,7 @@ import {
   executeUserTaskAdapter,
   generateResourceTemplateAdapter,
   provisionLocalResourceAdapter,
-  provisionResourceAdapter,
+  provisionResourceAdapter
 } from "../../utils4v2";
 
 @Service(ResourcePluginsV2.AadPlugin)
@@ -55,24 +51,24 @@ export class AadPluginV2 implements ResourcePlugin {
   async provisionResource(
     ctx: Context,
     inputs: ProvisionInputs,
-    envConfig: EnvConfig,
+    provisionInputConfig: Json,
     tokenProvider: TokenProvider
-  ): Promise<Result<Json, FxError>> {
-    return await provisionResourceAdapter(ctx, inputs, envConfig, tokenProvider, this.plugin);
+  ): Promise<Result<ResourceProvisionOutput, FxError>> {
+    return await provisionResourceAdapter(ctx, inputs, provisionInputConfig, tokenProvider, this.plugin);
   }
 
   async configureResource(
     ctx: Context,
     inputs: Readonly<ProvisionInputs>,
-    envConfig: EnvConfig,
-    envProfile: EnvProfile,
+    provisionInputConfig: Json,
+    provisionOutputs: Json,
     tokenProvider: TokenProvider
-  ): Promise<Result<Void, FxError>> {
+  ): Promise<Result<Json, FxError>> {
     return await configureResourceAdapter(
       ctx,
       inputs,
-      envConfig,
-      envProfile,
+      provisionInputConfig,
+      provisionOutputs,
       tokenProvider,
       this.plugin
     );
@@ -81,9 +77,9 @@ export class AadPluginV2 implements ResourcePlugin {
   async provisionLocalResource(
     ctx: Context,
     inputs: Inputs,
-    localSettings: LocalSettings,
+    localSettings: Json,
     tokenProvider: TokenProvider
-  ): Promise<Result<Void, FxError>> {
+  ): Promise<Result<Json, FxError>> {
     return await provisionLocalResourceAdapter(
       ctx,
       inputs,
@@ -96,9 +92,9 @@ export class AadPluginV2 implements ResourcePlugin {
   async configureLocalResource(
     ctx: Context,
     inputs: Inputs,
-    localSettings: LocalSettings,
+    localSettings: Json,
     tokenProvider: TokenProvider
-  ): Promise<Result<Void, FxError>> {
+  ): Promise<Result<Json, FxError>> {
     return await configureLocalResourceAdapter(
       ctx,
       inputs,

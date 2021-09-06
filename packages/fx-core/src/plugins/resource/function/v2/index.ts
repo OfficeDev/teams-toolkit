@@ -52,7 +52,7 @@ export class FunctionPluginV2 implements ResourcePlugin {
   async scaffoldSourceCode(
     ctx: Context,
     inputs: Inputs
-  ): Promise<Result<{ output: Record<string, string> }, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await scaffoldSourceCodeAdapter(ctx, inputs, this.plugin);
   }
 

@@ -76,7 +76,7 @@ export interface SolutionPlugin {
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {Inputs} inputs - system inputs
-   * @param {Json} provisionOutput - provision outputs
+   * @param {Json} provisionOutputs - provision outputs
    * @param {AzureAccountProvider} tokenProvider - Tokens for Azure and AppStudio
    *
    * @returns deployment output values for each plugin, which will be persisted by the Toolkit and available to other plugins for other lifecyles.
@@ -84,9 +84,9 @@ export interface SolutionPlugin {
   deploy?: (
     ctx: Context,
     inputs: Inputs,
-    provisionOutput: Json,
+    provisionOutputs: Json,
     tokenProvider: AzureAccountProvider
-  ) => Promise<Result<Void, FxError>>;
+  ) => Promise<Result<Json, FxError>>;
 
   /**
    * Depends on the output of {@link package}. Uploads Teams package to AppStudio

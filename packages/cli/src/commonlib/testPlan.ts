@@ -169,7 +169,7 @@ class ADOTestPlanClient {
     auth: {
       username: "",
 
-      password: process.env.ADO_TOKEN ?? "",
+      password: process.env.AZURE_DEVOPS_EXT_PAT ?? "",
     },
   });
 

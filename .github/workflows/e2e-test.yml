@@ -86,6 +86,7 @@ jobs:
           manual_cases=`npx ts-node src/commonlib/testPlan.ts stat cli | jq '.points'`
           pct=`printf %.4f "$((10**4 * $auto_cases*100/$manual_cases))e-4"`
 
+          export AZURE_DEVOPS_EXT_PAT=${{ secrets.ADO_PAT }}
           az storage entity insert \
             --connection-string "${{ secrets.AZURE_STORAGE_ACCOUNT_TEAMSFXCLIDOWNLOADS_CS }}" \
             --entity PartitionKey=TeamsFx RowKey=${{ github.run_id }}_cli Package=cli GitBranch=${{ github.ref }} Type=e2e_test AutomatedCases=$auto_cases ManualCases=$manual_cases AutomationPct=$pct \

@@ -375,7 +375,7 @@ export function detectVsCodeEnv(): VsCodeEnv {
   }
 }
 
-async function runUserTask(func: Func, eventName: string): Promise<Result<any, FxError>> {
+export async function runUserTask(func: Func, eventName: string): Promise<Result<any, FxError>> {
   let result: Result<any, FxError> = ok(null);
   try {
     const checkCoreRes = checkCoreNotEmpty();

@@ -48,8 +48,33 @@ export class ScaffoldingContextAdapter extends BaseSolutionContextAdaptor {
     this.graphTokenProvider = undefined;
     this.appStudioToken = undefined;
     this.treeProvider = undefined;
-    (this.answers = inputs), //tbd
-      (this.projectSettings = v2context.projectSetting);
+    this.answers = inputs;
+    this.projectSettings = v2context.projectSetting;
+    this.localSettings = undefined;
+    this.ui = v2context.userInteraction;
+    this.cryptoProvider = undefined;
+    this.envInfo = newEnvInfo(); // tbd
+  }
+}
+
+export class ProvisionContextAdapter extends BaseSolutionContextAdaptor {
+  constructor(params: Parameters<NonNullable<v2.SolutionPlugin["provisionResources"]>>) {
+    super();
+    const v2context: v2.Context = params[0];
+    const inputs: Inputs = params[1];
+    const templates = params[2];
+    const tokenProvidier = params[3];
+
+    this.root = inputs.projectPath ?? "";
+    this.targetEnvName = inputs.targetEnvName;
+    this.logProvider = v2context.logProvider;
+    this.telemetryReporter = v2context.telemetryReporter;
+    this.azureAccountProvider = tokenProvidier.azureAccountProvider;
+    this.graphTokenProvider = tokenProvidier.graphTokenProvider;
+    this.appStudioToken = tokenProvidier.appStudioToken;
+    this.treeProvider = undefined;
+    this.answers = inputs;
+    this.projectSettings = v2context.projectSetting;
     this.localSettings = undefined;
     this.ui = v2context.userInteraction;
     this.cryptoProvider = undefined;

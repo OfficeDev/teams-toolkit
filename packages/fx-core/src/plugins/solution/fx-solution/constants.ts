@@ -216,6 +216,7 @@ export enum SolutionTelemetryProperty {
   AadOwnerCount = "aad-owner-count",
   AadPermission = "aad-permission",
   TeamsAppPermission = "teams-app-permission",
+  ProgrammingLanguage = "programming-language",
 }
 
 export enum SolutionTelemetrySuccess {

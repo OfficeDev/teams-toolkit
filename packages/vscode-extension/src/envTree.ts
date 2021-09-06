@@ -22,9 +22,8 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
     if (activeEnv) {
       setActiveEnv(activeEnv);
     }
-    const environmentTreeProvider: CommandsTreeViewProvider = TreeViewManagerInstance.getTreeView(
-      "teamsfx-environment"
-    )!;
+    const environmentTreeProvider: CommandsTreeViewProvider =
+      TreeViewManagerInstance.getTreeView("teamsfx-environment")!;
     if (showEnvList.length > 0) {
       showEnvList.forEach(async (item) => {
         environmentTreeProvider.removeById("fx-extension.environment." + item);

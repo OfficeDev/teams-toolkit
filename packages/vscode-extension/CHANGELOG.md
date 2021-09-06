@@ -15,6 +15,7 @@ Enhancement:
   - Hide Azure account login for SharePoint projects.
   - Tree View A/B testing: with non-Teams projects open, you may randomly see either one of two different Tree View layouts in the side bar.
 - Optimization of created project folder structure.
+- Improved getting start experience of creating new project for Bot.
 - Upgrade Sample apps. Enable CI/CD workflow for Todo-List with Azure backend sample. More samples are coming, view them at [Sample GitHub open source repo](https://github.com/OfficeDev/TeamsFx-samples)
 
 ## 2.5.0 - Aug 23 2021

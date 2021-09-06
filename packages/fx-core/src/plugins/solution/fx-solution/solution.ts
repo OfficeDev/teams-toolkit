@@ -349,6 +349,8 @@ export class TeamsAppSolution implements Solution {
         [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
         [SolutionTelemetryProperty.Resources]: solutionSettings.azureResources.join(";"),
         [SolutionTelemetryProperty.Capabilities]: solutionSettings.capabilities.join(";"),
+        [SolutionTelemetryProperty.ProgrammingLanguage]:
+          ctx.projectSettings?.programmingLanguage ?? "",
       });
     }
     return ok(Void);

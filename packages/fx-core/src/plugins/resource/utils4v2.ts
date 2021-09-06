@@ -22,11 +22,11 @@ import {
   BicepTemplate,
   Context,
   DeploymentInputs,
-  EnvProfile,
-  LocalSettings,
   ProvisionInputs,
+  ResourceProvisionOutput,
   ResourceTemplate,
 } from "@microsoft/teamsfx-api/build/v2";
+import { CryptoDataMatchers } from "../../common";
 import { ArmResourcePlugin, ScaffoldArmTemplateResult } from "../../common/armInterface";
 import { newEnvInfo, NoProjectOpenedError, PluginHasNoTaskImpl } from "../../core";
 import { GLOBAL_CONFIG, ARM_TEMPLATE_OUTPUT } from "../solution/fx-solution/constants";
@@ -51,7 +51,7 @@ export async function scaffoldSourceCodeAdapter(
   ctx: Context,
   inputs: Inputs,
   plugin: Plugin & ArmResourcePlugin
-): Promise<Result<{ output: Record<string, string> }, FxError>> {
+): Promise<Result<Void, FxError>> {
   if (!plugin.scaffold && !plugin.postScaffold)
     return err(PluginHasNoTaskImpl(plugin.displayName, "scaffold"));
   if (!inputs.projectPath) {
@@ -79,9 +79,7 @@ export async function scaffoldSourceCodeAdapter(
       return err(postRes.error);
     }
   }
-
-  const output = pluginContext.config.toJSON();
-  return ok({ output: output });
+  return ok(Void);
 }
 
 export async function generateResourceTemplateAdapter(
@@ -103,10 +101,10 @@ export async function generateResourceTemplateAdapter(
 export async function provisionResourceAdapter(
   ctx: Context,
   inputs: ProvisionInputs,
-  envConfig: EnvConfig,
+  provisionInputConfig: Json,
   tokenProvider: TokenProvider,
   plugin: Plugin
-): Promise<Result<Json, FxError>> {
+): Promise<Result<ResourceProvisionOutput, FxError>> {
   if (!plugin.provision) return err(PluginHasNoTaskImpl(plugin.displayName, "provision"));
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
@@ -114,14 +112,14 @@ export async function provisionResourceAdapter(
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
   const json: Json = {};
   Object.assign(json, inputs);
-  Object.assign(json, envConfig.azure);
+  Object.assign(json, provisionInputConfig.azure);
   const solutionConfig = ConfigMap.fromJSON(json);
   const configOfOtherPlugins = new Map<string, ConfigMap>();
   if (solutionConfig) configOfOtherPlugins.set(GLOBAL_CONFIG, solutionConfig);
   pluginContext.config = new ConfigMap();
   pluginContext.envInfo = newEnvInfo();
   pluginContext.envInfo.profile = configOfOtherPlugins;
-  pluginContext.envInfo.config = envConfig;
+  pluginContext.envInfo.config = provisionInputConfig as EnvConfig;
   if (plugin.preProvision) {
     const preRes = await plugin.preProvision(pluginContext);
     if (preRes.isErr()) {
@@ -138,22 +136,31 @@ export async function provisionResourceAdapter(
       return err(postRes.error);
     }
   }
-  return ok(pluginContext.config.toJSON());
+  const output = pluginContext.config.toJSON();
+  //separate secret keys from output
+  const secrets:Json = {};
+  for(const key of Object.keys(output)) {
+    if(CryptoDataMatchers.has(`${plugin.name}.${key}`)){
+      secrets[key] = output[key];
+      delete output[key];
+    }
+  }
+  return ok({output: output, states: {}, secrets: secrets});
 }
 
 export async function configureResourceAdapter(
   ctx: Context,
   inputs: ProvisionInputs,
-  envConfig: EnvConfig,
-  envProfile: EnvProfile,
+  provisionInputConfig: Json,
+  provisionOutput: Json,
   tokenProvider: TokenProvider,
   plugin: Plugin & ArmResourcePlugin
 ): Promise<Result<Void, FxError>> {
   if (!plugin.postProvision) return err(PluginHasNoTaskImpl(plugin.displayName, "postProvision"));
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
-  setConfigs(plugin.name, pluginContext, envProfile);
-  pluginContext.envInfo.config = envConfig;
+  setConfigs(plugin.name, pluginContext, provisionOutput);
+  pluginContext.envInfo.config = provisionInputConfig as EnvConfig;
   const postRes = await plugin.postProvision(pluginContext);
   if (postRes.isErr()) {
     return err(postRes.error);
@@ -164,14 +171,14 @@ export async function configureResourceAdapter(
 export async function deployAdapter(
   ctx: Context,
   inputs: DeploymentInputs,
-  envProfile: EnvProfile,
+  provisionOutput: Json,
   tokenProvider: AzureAccountProvider,
   plugin: Plugin & ArmResourcePlugin
 ): Promise<Result<Void, FxError>> {
   if (!plugin.deploy) return err(PluginHasNoTaskImpl(plugin.displayName, "deploy"));
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
   pluginContext.azureAccountProvider = tokenProvider;
-  setConfigs(plugin.name, pluginContext, envProfile);
+  setConfigs(plugin.name, pluginContext, provisionOutput);
   if (plugin.preDeploy) {
     const preRes = await plugin.preDeploy(pluginContext);
     if (preRes.isErr()) {
@@ -194,14 +201,14 @@ export async function deployAdapter(
 export async function provisionLocalResourceAdapter(
   ctx: Context,
   inputs: Inputs,
-  localSettings: LocalSettings,
+  localSettings: Json,
   tokenProvider: TokenProvider,
   plugin: Plugin & ArmResourcePlugin
 ): Promise<Result<Void, FxError>> {
   if (!plugin.localDebug) return err(PluginHasNoTaskImpl(plugin.displayName, "localDebug"));
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
   pluginContext.localSettings = {
-    teamsApp: ConfigMap.fromJSON(localSettings.teamsApp)!,
+    teamsApp: ConfigMap.fromJSON(localSettings.teamsApp) || new ConfigMap(),
     auth: ConfigMap.fromJSON(localSettings.auth),
     backend: ConfigMap.fromJSON(localSettings.backend),
     bot: ConfigMap.fromJSON(localSettings.bot),
@@ -233,14 +240,14 @@ export async function provisionLocalResourceAdapter(
 export async function configureLocalResourceAdapter(
   ctx: Context,
   inputs: Inputs,
-  localSettings: LocalSettings,
+  localSettings: Json,
   tokenProvider: TokenProvider,
   plugin: Plugin & ArmResourcePlugin
 ): Promise<Result<Void, FxError>> {
   if (!plugin.postLocalDebug) return err(PluginHasNoTaskImpl(plugin.displayName, "postLocalDebug"));
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
   pluginContext.localSettings = {
-    teamsApp: ConfigMap.fromJSON(localSettings.teamsApp)!,
+    teamsApp: ConfigMap.fromJSON(localSettings.teamsApp) || new ConfigMap(),
     auth: ConfigMap.fromJSON(localSettings.auth),
     backend: ConfigMap.fromJSON(localSettings.backend),
     bot: ConfigMap.fromJSON(localSettings.bot),
@@ -298,10 +305,10 @@ export function getArmOutput(ctx: PluginContext, key: string): string | undefine
   return output?.[key]?.value;
 }
 
-function setConfigs(pluginName: string, pluginContext: PluginContext, envProfile: EnvProfile) {
+function setConfigs(pluginName: string, pluginContext: PluginContext, provisionOutput: Json) {
   const envInfo = newEnvInfo();
-  for (const key in envProfile) {
-    const output = envProfile[key];
+  for (const key in provisionOutput) {
+    const output = provisionOutput[key];
     const configMap = ConfigMap.fromJSON(output);
     if (configMap) envInfo.profile.set(key, configMap);
   }

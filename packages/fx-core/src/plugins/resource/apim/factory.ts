@@ -163,8 +163,16 @@ export class Factory {
       "credential",
       await azureAccountProvider?.getAccountCredentialAsync()
     );
-    const maybeSubscriptionId = solutionConfig.subscriptionId;
-    const subscriptionId = AssertNotEmpty("subscriptionId", maybeSubscriptionId);
+    let subscriptionId;
+    if (solutionConfig.subscriptionId) {
+      subscriptionId = solutionConfig.subscriptionId;
+    } else {
+      // fall back to asking user subscription info because some operations like "AddResource" can be before provision
+      let subscriptionInfo = await azureAccountProvider?.getSelectedSubscription();
+      subscriptionInfo = AssertNotEmpty("subscriptionInfo", subscriptionInfo);
+      subscriptionId = subscriptionInfo.subscriptionId;
+    }
+
     const apiManagementClient = new ApiManagementClient(credential, subscriptionId);
     const resourceProviderClient = new Providers(
       new ResourceManagementClientContext(credential, subscriptionId)

@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { Kind, SkuName, SkuTier } from "@azure/arm-storage/esm/models";
-import { TeamsClientId } from "../../../common/constants";
+import { getAllowedAppIds } from "../../../common/tools";
 
 import { FunctionConfigKey, FunctionLanguage, NodeVersion } from "./enums";
 
@@ -139,7 +139,7 @@ export class DefaultProvisionConfigs {
   });
 
   public static readonly functionAppStaticSettings: { [key: string]: string } = {
-    ALLOWED_APP_IDS: [TeamsClientId.MobileDesktop, TeamsClientId.Web].join(";"),
+    ALLOWED_APP_IDS: getAllowedAppIds().join(";"),
     FUNCTIONS_EXTENSION_VERSION: "~3",
     WEBSITE_RUN_FROM_PACKAGE: "1",
   };

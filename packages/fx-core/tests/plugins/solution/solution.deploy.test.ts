@@ -39,7 +39,7 @@ import { AadAppForTeamsPlugin, newEnvInfo } from "../../../src";
 import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import Container from "typedi";
 import { deploy } from "../../../src/plugins/solution/fx-solution/v2/deploy";
-import { ProvisionOutput } from "@microsoft/teamsfx-api/build/v2";
+import { ResourceProvisionOutput } from "@microsoft/teamsfx-api/build/v2";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -247,7 +247,7 @@ describe("API v2 cases: deploy() for Azure projects", () => {
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
     };
-    const provisionOutput: Record<string, ProvisionOutput> = {
+    const provisionOutput: Record<string, ResourceProvisionOutput> = {
       solution: { output: {}, secrets: {}, states: {} },
     };
     const result = await deploy(mockedCtx, mockedInputs, provisionOutput, mockedProvider);
@@ -271,7 +271,7 @@ describe("API v2 cases: deploy() for Azure projects", () => {
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
     };
-    const provisionOutput: Record<string, ProvisionOutput> = {
+    const provisionOutput: Record<string, ResourceProvisionOutput> = {
       solution: { output: {}, secrets: {}, states: { provisionSucceeded: true } },
     };
     const result = await deploy(mockedCtx, mockedInputs, provisionOutput, mockedProvider);
@@ -296,7 +296,7 @@ describe("API v2 cases: deploy() for Azure projects", () => {
       platform: Platform.VSCode,
     };
     mockedInputs[AzureSolutionQuestionNames.PluginSelectionDeploy] = [fehostPlugin.name];
-    const provisionOutput: Record<string, ProvisionOutput> = {
+    const provisionOutput: Record<string, ResourceProvisionOutput> = {
       solution: { output: {}, secrets: {}, states: { provisionSucceeded: true } },
     };
     mockDeployThatAlwaysSucceed(fehostPlugin);

@@ -20,8 +20,6 @@ import {
   LogProvider,
   EnvConfigFileNameTemplate,
   EnvNamePlaceholder,
-  AzureTokenJSONKeys,
-  InputConfigsFolderName,
 } from "@microsoft/teamsfx-api";
 import { GLOBAL_CONFIG, LOCATION, RESOURCE_GROUP_NAME, SolutionError } from "./constants";
 import { v4 as uuidv4 } from "uuid";
@@ -88,21 +86,6 @@ export async function checkSubscription(
 
   // make sure the user is logged in
   await ctx.azureAccountProvider.getAccountCredentialAsync(true);
-  const tokenObject = await ctx.azureAccountProvider.getJsonObject(false);
-  if (!tokenObject) {
-    return err(
-      returnSystemError(
-        new Error("azure token JSON object is undefined"),
-        "Solution",
-        SolutionError.InternelError
-      )
-    );
-  }
-  const tenantId = tokenObject[AzureTokenJSONKeys.TenantId];
-  if (!tenantId) {
-    // Tenant ID is not required, so just write a warning log and continue.
-    ctx.logProvider?.warning(`The tenant id from the azure token is empty`);
-  }
 
   // TODO: verify valid subscription (permission)
   const subscriptions = await ctx.azureAccountProvider.listSubscriptions();
@@ -111,7 +94,7 @@ export async function checkSubscription(
     return err(
       returnUserError(
         new Error(
-          `The subscription '${subscriptionId}' is not found in the tenant '${tenantId}', please check the '${EnvConfigFileNameTemplate.replace(
+          `The subscription '${subscriptionId}' is not found in the current account, please check the '${EnvConfigFileNameTemplate.replace(
             EnvNamePlaceholder,
             ctx.envInfo.envName
           )}' file.`

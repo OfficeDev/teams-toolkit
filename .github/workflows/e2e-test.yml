@@ -80,6 +80,42 @@ jobs:
         run: |
           rsync --delete-before -d /tmp/empty/ ./
 
+  report-stat:
+    env:
+      AZURE_DEVOPS_EXT_PAT: ${{ secrets.ADO_PAT }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.CD_PAT }}
+          ref: ${{ github.ref }}
+          clean: false
+
+      - name: Setup node
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: 14
+
+      - name: Download Simple Auth bits
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 10
+          retry_on: error
+          shell: pwsh
+          command: |
+            ./.github/scripts/download-simpleauth.sh
+
+      - name: Setup project
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 10
+          retry_on: error
+          command: |
+            npm run setup
+
       - name: report cli e2e tests stat
         working-directory: packages/cli
         run: |

@@ -46,9 +46,6 @@ export async function provisionResource(
   await tokenProvider.appStudioToken.getAccessToken();
 
   if (isAzureProject(azureSolutionSettings)) {
-    if (ctx.permissionRequestProvider === undefined) {
-      ctx.permissionRequestProvider = new PermissionRequestFileProvider(inputs.projectPath);
-    }
     const result = await ensurePermissionRequest(
       azureSolutionSettings,
       ctx.permissionRequestProvider
@@ -56,5 +53,9 @@ export async function provisionResource(
     if (result.isErr()) {
       return err(result.error);
     }
+  }
+
+  const plugins = getSelectedPlugins(azureSolutionSettings);
+  if (isAzureProject(azureSolutionSettings)) {
   }
 }

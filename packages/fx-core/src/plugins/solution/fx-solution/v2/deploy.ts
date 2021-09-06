@@ -26,7 +26,7 @@ import { PluginDisplayName } from "../../../../common/constants";
 
 export async function deploy(
   ctx: v2.Context,
-  inputs: Inputs,
+  inputs: v2.DeploymentInputs,
   provisionOutput: Readonly<Record<v2.PluginName, v2.ProvisionOutput>>,
   tokenProvider: AzureAccountProvider
 ): Promise<Result<Record<v2.PluginName, { output: Record<string, string> }>, FxError>> {

@@ -30,6 +30,7 @@ const context: any = {
       [
         DependentPluginInfo.solutionPluginName,
         new Map<string, string>([
+          [DependentPluginInfo.subscriptionId, "ut"],
           [DependentPluginInfo.resourceGroupName, "ut"],
           [DependentPluginInfo.resourceNameSuffix, "ut"],
           [DependentPluginInfo.location, "ut"],

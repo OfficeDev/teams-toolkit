@@ -338,7 +338,6 @@ describe("Deploy ARM Template to Azure", () => {
   }
   `,
       ],
-      [path.join(templateFolder, "main.json"), `{"test_key": "test_value"}`],
     ]);
   });
 
@@ -552,6 +551,7 @@ describe("Deploy ARM Template to Azure", () => {
       new ConfigMap([
         ["resourceGroupName", "mocked resource group name"],
         ["resourceNameSuffix", testResourceSuffix],
+        ["subscriptionId", "mocked subscription id"],
       ])
     );
 
@@ -574,9 +574,12 @@ describe("Deploy ARM Template to Azure", () => {
     };
 
     mocker.stub(Executor, "execCommandAsync").callsFake(
-      (command: string, options?: ExecOptions): Promise<void> => {
+      (command: string, options?: ExecOptions): Promise<any> => {
         return new Promise((resolve) => {
-          resolve();
+          resolve({
+            stdout: `{"test_key": "test_value"}`,
+            stderr: "",
+          });
         });
       }
     );

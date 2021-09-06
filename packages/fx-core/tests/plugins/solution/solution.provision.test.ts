@@ -64,7 +64,7 @@ import { IAppDefinition } from "../../../src/plugins/resource/appstudio/interfac
 import _ from "lodash";
 import { TokenCredential } from "@azure/core-auth";
 import { TokenCredentialsBase, UserTokenCredentials } from "@azure/ms-rest-nodeauth";
-import { ResourceGroups, ResourceManagementClient } from "@azure/arm-resources";
+import { Providers, ResourceGroups, ResourceManagementClient } from "@azure/arm-resources";
 import { AppStudioClient } from "../../../src/plugins/resource/appstudio/appStudio";
 import { AppStudioPluginImpl } from "../../../src/plugins/resource/appstudio/plugin";
 import * as solutionUtil from "../../../src/plugins/solution/fx-solution/utils/util";
@@ -75,6 +75,10 @@ import Container from "typedi";
 import { askResourceGroupInfo } from "../../../src/plugins/solution/fx-solution/commonQuestions";
 import { ResourceManagementModels } from "@azure/arm-resources";
 import { CoreQuestionNames } from "../../../src/core/question";
+import { Subscriptions } from "@azure/arm-subscriptions";
+import { SubscriptionsListLocationsResponse } from "@azure/arm-subscriptions/esm/models";
+import * as msRest from "@azure/ms-rest-js";
+import { ProvidersGetOptionalParams, ProvidersGetResponse } from "@azure/arm-resources/esm/models";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -678,6 +682,43 @@ function mockListResourceGroupResult(
   );
 }
 
+function mockListLocationResult(mocker: sinon.SinonSandbox, subscriptionId: string) {
+  mocker.stub(Subscriptions.prototype, "listLocations").callsFake(
+    async (
+      subscriptionId: string,
+      options?: msRest.RequestOptionsBase
+    ): Promise<SubscriptionsListLocationsResponse> => {
+      return [
+        {
+          id: "location",
+          subscriptionId: subscriptionId,
+          name: "location",
+          displayName: "location",
+        },
+      ] as SubscriptionsListLocationsResponse;
+    }
+  );
+}
+
+function mockProviderGetResult(mocker: sinon.SinonSandbox) {
+  mocker.stub(Providers.prototype, "get").callsFake(
+    async (
+      resourceProviderNamespace: string,
+      options?: ProvidersGetOptionalParams
+    ): Promise<ProvidersGetResponse> => {
+      return {
+        id: "location",
+        resourceTypes: [
+          {
+            resourceType: "resourceGroups",
+            locations: ["location"],
+          },
+        ],
+      } as ProvidersGetResponse;
+    }
+  );
+}
+
 describe("before provision() asking for resource group info", () => {
   const mocker = sinon.createSandbox();
   const resourceGroupsCreated = new Map<string, string>();
@@ -705,6 +746,8 @@ describe("before provision() asking for resource group info", () => {
       mockNewResourceGroupLocation
     );
     mockListResourceGroupResult(mocker, fakeSubscriptionId, []);
+    mockListLocationResult(mocker, fakeSubscriptionId);
+    mockProviderGetResult(mocker);
 
     mockedCtx.projectSettings = {
       appName: "my app",
@@ -751,6 +794,8 @@ describe("before provision() asking for resource group info", () => {
 
     const mockedCtx = mockCtxWithResourceGroupQuestions(false, mockResourceGroupName);
     mockListResourceGroupResult(mocker, fakeSubscriptionId, mockResourceGroupList);
+    mockListLocationResult(mocker, fakeSubscriptionId);
+    mockProviderGetResult(mocker);
 
     mockedCtx.projectSettings = {
       appName: "my app",

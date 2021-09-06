@@ -17,6 +17,7 @@ jobs:
       M365_ACCOUNT_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
       M365_TENANT_ID: ${{ secrets.TEST_TENANT_ID_2 }}
       CI_ENABLED: "true"
+      M365_ACCOUNT_COLLABORATOR: ${{ secrets.TEST_COLLABORATOR_USER_NAME }}
 
     runs-on: [self-hosted, linux, 8cpu]
 
@@ -27,15 +28,6 @@ jobs:
           token: ${{ secrets.CD_PAT }}
           ref: ${{ github.ref }}
           clean: false
-
-      - name: setup env
-        id: keyvault
-        env:
-          creds: ${{ secrets.AZURE_TEST_CREDENTIALS }}
-        run: |
-          output=$(bash setup-testing-env.sh E2E-TEST-COLLABORATOR-USER-NAME)
-          echo "::set-output name=M365_ACCOUNT_COLLABORATOR::$output"
-        working-directory: .github/scripts
 
       - name: Setup node
         uses: actions/setup-node@v2.1.2
@@ -74,8 +66,6 @@ jobs:
           npx lerna run test:e2e:clean
 
       - name: E2E Test in Parallel
-        env: 
-          M365_ACCOUNT_COLLABORATOR: ${{ steps.version-change.outputs.M365_ACCOUNT_COLLABORATOR }}
         run: |
           npx lerna run test:e2e:parallel
 
@@ -139,7 +129,7 @@ jobs:
             az boards work-item create --title="E2E tests failed" \
                              --type=Bug \
                              --area="Microsoft Teams Extensibility\Teams Extensibility E2E Team" \
-                             --assigned-to="zhiyu.you@microsoft.com" \
+                             --assigned-to="haolong@microsoft.com" \
                              --iteration="Microsoft Teams Extensibility" \
                              --organization="https://msazure.visualstudio.com/" \
                              --project="Microsoft Teams Extensibility" \
@@ -147,6 +137,7 @@ jobs:
                              --description="<table class=\"w3-table w3-striped w3-bordered\">${{ steps.git-log.outputs.description }}</table>"
 
       - name: Send E-mail to the whole team
+        if: ${{ always() }}
         uses: satak/webrequest-action@master
         with:
           url: https://prod-30.eastus.logic.azure.com:443/workflows/9aa865da96054bd89749c2d4ce68df8e/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=uIoB06NUHSnKoZeWjNDI9t4rrhbTBKxJNiBtDoMRSQs

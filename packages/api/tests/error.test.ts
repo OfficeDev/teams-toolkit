@@ -218,4 +218,77 @@ describe("error", function () {
       chai.assert.equal(error.issueLink, myIssueLink);
     });
   });
+
+  describe("Sub class", function () {
+    it("happy path", () => {
+      class MyError extends UserError {
+        constructor(message?: string) {
+          super(new.target.name, message || "", mySource);
+        }
+      }
+      const error = new MyError(myMessage);
+      chai.assert.equal(error.source, mySource);
+      chai.assert.equal(error.name, "MyError");
+      chai.assert.equal(error.message, myMessage);
+      chai.assert.isTrue(error.stack?.includes("error.test.ts"));
+    });
+  });
+
+  describe("UserError.build", function () {
+    it("build with Error", () => {
+      const error = UserError.build(mySource, new RangeError(myMessage), myHelpLink);
+      chai.assert.equal(error.source, mySource);
+      chai.assert.equal(error.name, "RangeError");
+      chai.assert.equal(error.message, myMessage);
+      chai.assert.equal(error.helpLink, myHelpLink);
+      chai.assert.isTrue(error.stack?.includes("error.test.ts"));
+    });
+
+    it("build with name and message", () => {
+      const error = UserError.build(mySource, myName, myMessage, myHelpLink);
+      chai.assert.equal(error.source, mySource);
+      chai.assert.equal(error.name, myName);
+      chai.assert.equal(error.message, myMessage);
+      chai.assert.equal(error.helpLink, myHelpLink);
+      chai.assert.isTrue(error.stack?.includes("error.test.ts"));
+    });
+
+    it("build with empty name and message", () => {
+      const error = UserError.build(mySource, "", myMessage, myHelpLink);
+      chai.assert.equal(error.source, mySource);
+      chai.assert.equal(error.name, "UserError");
+      chai.assert.equal(error.message, myMessage);
+      chai.assert.equal(error.helpLink, myHelpLink);
+      chai.assert.isTrue(error.stack?.includes("error.test.ts"));
+    });
+  });
+
+  describe("SystemError.build", function () {
+    it("build with Error", () => {
+      const error = SystemError.build(mySource, new RangeError(myMessage), myIssueLink);
+      chai.assert.equal(error.source, mySource);
+      chai.assert.equal(error.name, "RangeError");
+      chai.assert.equal(error.message, myMessage);
+      chai.assert.equal(error.issueLink, myIssueLink);
+      chai.assert.isTrue(error.stack?.includes("error.test.ts"));
+    });
+
+    it("build with name and message", () => {
+      const error = SystemError.build(mySource, myName, myMessage, myIssueLink);
+      chai.assert.equal(error.source, mySource);
+      chai.assert.equal(error.name, myName);
+      chai.assert.equal(error.message, myMessage);
+      chai.assert.equal(error.issueLink, myIssueLink);
+      chai.assert.isTrue(error.stack?.includes("error.test.ts"));
+    });
+
+    it("build with empty name and message", () => {
+      const error = SystemError.build(mySource, "", myMessage, myIssueLink);
+      chai.assert.equal(error.source, mySource);
+      chai.assert.equal(error.name, "SystemError");
+      chai.assert.equal(error.message, myMessage);
+      chai.assert.equal(error.issueLink, myIssueLink);
+      chai.assert.isTrue(error.stack?.includes("error.test.ts"));
+    });
+  });
 });

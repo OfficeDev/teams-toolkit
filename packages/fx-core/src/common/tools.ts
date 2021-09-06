@@ -26,7 +26,13 @@ import * as uuid from "uuid";
 import { glob } from "glob";
 import { getResourceFolder } from "../folder";
 import * as Handlebars from "handlebars";
-import { ConstantString, FeatureFlagName } from "./constants";
+import {
+  ConstantString,
+  FeatureFlagName,
+  TeamsClientId,
+  OfficeClientId,
+  OutlookClientId,
+} from "./constants";
 
 Handlebars.registerHelper("contains", (value, array, options) => {
   array = array instanceof Array ? array : [array];
@@ -494,4 +500,18 @@ export async function copyFiles(
         !recursiveExcludeFileNames.includes(path.basename(src)),
     });
   }
+}
+
+export function getAllowedAppIds(): string[] {
+  return [
+    TeamsClientId.MobileDesktop,
+    TeamsClientId.Web,
+    OfficeClientId.Desktop,
+    OfficeClientId.Mobile,
+    OfficeClientId.Web1,
+    OfficeClientId.Web2,
+    // OutlookClientId.Desktop, // duplicate with Office Mobile
+    OutlookClientId.Mobile,
+    OutlookClientId.Web,
+  ];
 }

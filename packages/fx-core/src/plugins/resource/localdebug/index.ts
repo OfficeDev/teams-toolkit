@@ -51,7 +51,7 @@ import {
   LocalSettingsFrontendKeys,
   LocalSettingsTeamsAppKeys,
 } from "../../../common/localSettingsConstants";
-import { TeamsClientId } from "../../../common/constants";
+import { getAllowedAppIds } from "../../../common/tools";
 import { ProjectSettingLoader } from "./projectSettingLoader";
 
 @Service(ResourcePlugins.LocalDebugPlugin)
@@ -358,9 +358,6 @@ export class LocalDebugPlugin implements Plugin {
       LocalSettingsTeamsAppKeys.TenantId
     ) as string;
 
-    const teamsMobileDesktopAppId = TeamsClientId.MobileDesktop;
-    const teamsWebAppId = TeamsClientId.Web;
-
     const localAuthPackagePath = ctx.localSettings?.auth?.get(
       LocalSettingsAuthKeys.SimpleAuthFilePath
     ) as string;
@@ -394,9 +391,7 @@ export class LocalDebugPlugin implements Plugin {
           LocalEnvAuthKeys.OauthAuthority
         ] = `https://login.microsoftonline.com/${teamsAppTenantId}`;
         localEnvs[LocalEnvAuthKeys.TabEndpoint] = localTabEndpoint;
-        localEnvs[LocalEnvAuthKeys.AllowedAppIds] = [teamsMobileDesktopAppId, teamsWebAppId].join(
-          ";"
-        );
+        localEnvs[LocalEnvAuthKeys.AllowedAppIds] = getAllowedAppIds().join(";");
 
         if (localAuthPackagePath) {
           localEnvs[LocalEnvAuthKeys.ServicePath] = await prepareLocalAuthService(
@@ -418,10 +413,7 @@ export class LocalDebugPlugin implements Plugin {
         localEnvs[LocalEnvBackendKeys.TenantId] = teamsAppTenantId;
         localEnvs[LocalEnvBackendKeys.ApiEndpoint] = localFuncEndpoint;
         localEnvs[LocalEnvBackendKeys.ApplicationIdUri] = applicationIdUri;
-        localEnvs[LocalEnvBackendKeys.AllowedAppIds] = [
-          teamsMobileDesktopAppId,
-          teamsWebAppId,
-        ].join(";");
+        localEnvs[LocalEnvBackendKeys.AllowedAppIds] = getAllowedAppIds().join(";");
       }
 
       localEnvs[LocalEnvCertKeys.SslCrtFile] = ctx.localSettings?.frontend?.get(

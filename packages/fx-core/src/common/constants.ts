@@ -15,6 +15,19 @@ export class TeamsClientId {
   static readonly Web = "5e3ce6c0-2b1f-4285-8d4b-75ee78787346";
 }
 
+export class OfficeClientId {
+  static readonly Desktop = "0ec893e0-5785-4de6-99da-4ed124e5296c";
+  static readonly Mobile = "d3590ed6-52b3-4102-aeff-aad2292ab01c";
+  static readonly Web1 = "4345a7b9-9a63-4910-a426-35363201d503";
+  static readonly Web2 = "4765445b-32c6-49b0-83e6-1d93765276ca";
+}
+
+export class OutlookClientId {
+  static readonly Desktop = "d3590ed6-52b3-4102-aeff-aad2292ab01c";
+  static readonly Mobile = "27922004-5251-4030-b22d-91ecd9a37ea4";
+  static readonly Web = "00000002-0000-0ff1-ce00-000000000000";
+}
+
 export class ResourcePlugins {
   static readonly Aad = "fx-resource-aad-app-for-teams";
   static readonly FrontendHosting = "fx-resource-frontend-hosting";

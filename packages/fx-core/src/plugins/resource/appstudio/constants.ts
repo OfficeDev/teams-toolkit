@@ -101,12 +101,12 @@ export const TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV = `{
       "outline": "resources/outline.png"
   },
   "name": {
-      "short": "{appName}",
-      "full": "This field is not used"
+      "short": "{{config.manifest.values.appName.short}}",
+      "full": "{{config.manifest.values.appName.full}}"
   },
   "description": {
-      "short": "Short description of {appName}.",
-      "full": "Full description of {appName}."
+      "short": "{{config.manifest.values.description.short}}",
+      "full": "{{config.manifest.values.description.full}}"
   },
   "accentColor": "#FFFFFF",
   "bots": [],

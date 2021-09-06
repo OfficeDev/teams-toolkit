@@ -789,7 +789,7 @@ export class FxCore implements Core {
             description: "",
             author: "",
             scripts: {
-              test: 'echo "Error: no test specified" && exit 1',
+              test: "echo \"Error: no test specified\" && exit 1",
             },
             devDependencies: {
               "@microsoft/teamsfx-cli": "0.*",
@@ -879,7 +879,8 @@ export class FxCore implements Core {
     inputs: Inputs,
     core: FxCore
   ): Promise<Result<Void, FxError>> {
-    const newEnvConfig = environmentManager.newEnvConfigData();
+    const appName = projectSettings.appName;
+    const newEnvConfig = environmentManager.newEnvConfigData(appName);
     const writeEnvResult = await environmentManager.writeEnvConfig(
       inputs.projectPath!,
       newEnvConfig,

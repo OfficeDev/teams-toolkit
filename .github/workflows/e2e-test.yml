@@ -84,7 +84,7 @@ jobs:
         working-directory: packages/cli
         run: |
           auto_cases=`npx mocha --require ts-node/register --dry-run tests/e2e/**/*.tests.ts | grep passing | awk '{print $1}'`
-          manual_cases=`npx ts-node src/commonlib/testPlan.ts stat cli | jq '.points'`
+          manual_cases=`npx ../../.github/scripts/testPlan.ts stat cli | jq '.points'`
           pct=`printf %.4f "$((10**4 * $auto_cases*100/$manual_cases))e-4"`
 
           az storage entity insert \

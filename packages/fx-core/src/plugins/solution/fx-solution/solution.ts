@@ -687,7 +687,11 @@ export class TeamsAppSolution implements Solution {
           const envName = await askTargetEnvironment(ctx as any, ctx.answers!);
           if (envName) {
             ctx.projectSettings!.activeEnvironment = envName;
-            ctx.ui?.showMessage("info", `[${envName}] is activated.`, false);
+            ctx.ui?.showMessage(
+              "info",
+              `[${envName}] is activated. Please try to do provision again`,
+              false
+            );
           }
         }
         return err(

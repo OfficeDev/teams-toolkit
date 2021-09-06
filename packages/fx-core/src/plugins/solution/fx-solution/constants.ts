@@ -99,6 +99,7 @@ export enum SolutionError {
   FailedToCheckResourceGroupExistence = "FailedToCheckResourceGroupExistence",
   FailedToCreateResourceGroup = "FailedToCreateResourceGroup",
   FailedToListResourceGroup = "FailedToListResourceGrouop",
+  FailedToListResourceGroupLocation = "FailedToListResourceGroupLocation",
   FailedToGetResourceGroupInfoInputs = "FailedToGetResourceGroupInfoInputs",
   ResourceGroupNotFound = "ResourceGroupNotFound",
   NotLoginToAzure = "NotLoginToAzure",

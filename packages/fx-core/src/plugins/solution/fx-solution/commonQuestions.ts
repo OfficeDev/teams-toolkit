@@ -24,6 +24,7 @@ import {
 import { GLOBAL_CONFIG, LOCATION, RESOURCE_GROUP_NAME, SolutionError } from "./constants";
 import { v4 as uuidv4 } from "uuid";
 import { ResourceManagementClient } from "@azure/arm-resources";
+import { SubscriptionClient } from "@azure/arm-subscriptions";
 import { PluginDisplayName } from "../../../common/constants";
 import { isMultiEnvEnabled } from "../../../common";
 import {
@@ -34,6 +35,9 @@ import {
 } from "../../../core/question";
 import { desensitize } from "../../../core/middleware/questionModel";
 import { ResourceGroupsCreateOrUpdateResponse } from "@azure/arm-resources/esm/models";
+
+const MsResources = "Microsoft.Resources";
+const ResourceGroups = "resourceGroups";
 
 export type AzureSubscription = {
   displayName: string;
@@ -154,14 +158,15 @@ export async function askResourceGroupInfo(
     .filter((item) => item.name)
     .map((item) => [item.name, item.location] as [string, string]);
 
-  // TODO: call Azure API directly to list all locations because ARM SDK does not wrap this API.
-  // And then filter by the 'resourceGroup' resource provider.
-  // https://github.com/microsoft/vscode-azuretools/blob/cda6548af53a1c0f538a5ef7542c0eba1d5fa566/ui/src/wizard/LocationListStep.ts#L173
-  const availableLocations = ["East US", "West US"];
+  const locations = await getLocations(ctx, rmClient);
+  if (locations.isErr()) {
+    return err(locations.error);
+  }
+
   const node = await getQuestionsForResourceGroup(
     defaultResourceGroupName,
     resourceGroupNameLocations,
-    availableLocations
+    locations.value!
   );
   if (node) {
     const res = await traverse(node, inputs, ui);
@@ -207,6 +212,44 @@ export async function askResourceGroupInfo(
       location: location,
     });
   }
+}
+
+async function getLocations(
+  ctx: SolutionContext,
+  rmClient: ResourceManagementClient
+): Promise<Result<string[], FxError>> {
+  const credential = await ctx.azureAccountProvider!.getAccountCredentialAsync();
+  let subscriptionClient = undefined;
+  if (credential) {
+    subscriptionClient = new SubscriptionClient(credential);
+  } else {
+    throw returnUserError(
+      new Error(`Failed to get azure credential`),
+      "Solution",
+      SolutionError.FailedToGetAzureCredential
+    );
+  }
+  const askSubRes = await ctx.azureAccountProvider!.getSelectedSubscription(true);
+  const listLocations = await subscriptionClient.subscriptions.listLocations(
+    askSubRes!.subscriptionId
+  );
+  const locations = listLocations.map((item) => item.displayName);
+  const providerData = await rmClient.providers.get(MsResources);
+  const resourceTypeData = providerData.resourceTypes?.find(
+    (rt) => rt.resourceType?.toLowerCase() === ResourceGroups.toLowerCase()
+  );
+  const resourceLocations = resourceTypeData?.locations;
+  const rgLocations = resourceLocations?.filter((item) => locations.includes(item));
+  if (!rgLocations || rgLocations.length == 0) {
+    return err(
+      returnUserError(
+        new Error(`Failed to list resource group locations`),
+        "Solution",
+        SolutionError.FailedToListResourceGroupLocation
+      )
+    );
+  }
+  return ok(rgLocations);
 }
 
 async function getResourceGroupInfoFromEnvConfig(

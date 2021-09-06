@@ -9,7 +9,8 @@ import {
   Result,
   Stage,
   TokenProvider,
-  traverse
+  traverse,
+  Void
 } from "@microsoft/teamsfx-api";
 import {
   Context, ProvisionInputs, ResourcePlugin,
@@ -66,7 +67,7 @@ export class SqlPluginV2 implements ResourcePlugin {
     provisionInputConfig: Json,
     provisionOutputs: Json,
     tokenProvider: TokenProvider
-  ): Promise<Result<Json, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await configureResourceAdapter(
       ctx,
       inputs,

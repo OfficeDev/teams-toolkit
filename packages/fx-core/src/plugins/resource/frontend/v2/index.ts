@@ -57,7 +57,7 @@ export class FrontendPluginV2 implements ResourcePlugin {
     provisionInputConfig: Json,
     provisionOutputs: Json,
     tokenProvider: TokenProvider
-  ): Promise<Result<Json, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await configureResourceAdapter(
       ctx,
       inputs,
@@ -73,7 +73,7 @@ export class FrontendPluginV2 implements ResourcePlugin {
     inputs: DeploymentInputs,
     provisionOutput: Json,
     tokenProvider: AzureAccountProvider
-  ): Promise<Result<Json, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await deployAdapter(ctx, inputs, provisionOutput, tokenProvider, this.plugin);
   }
 }

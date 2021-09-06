@@ -75,7 +75,7 @@ export class ApimPluginV2 implements ResourcePlugin {
     provisionInputConfig: Json,
     provisionOutputs: Json,
     tokenProvider: TokenProvider
-  ): Promise<Result<Json, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await configureResourceAdapter(
       ctx,
       inputs,
@@ -91,7 +91,7 @@ export class ApimPluginV2 implements ResourcePlugin {
     inputs: DeploymentInputs,
     provisionOutput: Json,
     tokenProvider: AzureAccountProvider
-  ): Promise<Result<Json, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     const questionRes = await this.plugin.getQuestions(
       Stage.deploy,
       convert2PluginContext(ctx, inputs)

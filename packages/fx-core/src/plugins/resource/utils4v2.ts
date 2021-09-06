@@ -98,6 +98,8 @@ export async function generateResourceTemplateAdapter(
   const bicepTemplate: BicepTemplate = { kind: "bicep", template: output };
   return ok(bicepTemplate);
 }
+
+
 export async function provisionResourceAdapter(
   ctx: Context,
   inputs: ProvisionInputs,
@@ -145,27 +147,28 @@ export async function provisionResourceAdapter(
       delete output[key];
     }
   }
-  return ok({output: output, states: {}, secrets: secrets});
+  return ok({output: output, secrets: secrets});
 }
 
 export async function configureResourceAdapter(
   ctx: Context,
   inputs: ProvisionInputs,
   provisionInputConfig: Json,
-  provisionOutput: Json,
+  provisionOutputs: Json,
   tokenProvider: TokenProvider,
   plugin: Plugin & ArmResourcePlugin
-): Promise<Result<Json, FxError>> {
+): Promise<Result<Void, FxError>> {
   if (!plugin.postProvision) return err(PluginHasNoTaskImpl(plugin.displayName, "postProvision"));
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
-  setConfigs(plugin.name, pluginContext, provisionOutput);
+  setConfigs(plugin.name, pluginContext, provisionOutputs);
   pluginContext.envInfo.config = provisionInputConfig as EnvConfig;
   const postRes = await plugin.postProvision(pluginContext);
   if (postRes.isErr()) {
     return err(postRes.error);
   }
-  return ok(pluginContext.config.toJSON());
+  setProvisionOutputs(provisionOutputs, pluginContext);
+  return ok(Void);
 }
 
 export async function deployAdapter(
@@ -174,11 +177,18 @@ export async function deployAdapter(
   provisionOutput: Json,
   tokenProvider: AzureAccountProvider,
   plugin: Plugin & ArmResourcePlugin
-): Promise<Result<Json, FxError>> {
+): Promise<Result<Void, FxError>> {
   if (!plugin.deploy) return err(PluginHasNoTaskImpl(plugin.displayName, "deploy"));
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
   pluginContext.azureAccountProvider = tokenProvider;
-  setConfigs(plugin.name, pluginContext, provisionOutput);
+  const json: Json = {};
+  Object.assign(json, inputs);
+  const solutionConfig = ConfigMap.fromJSON(json);
+  const configOfOtherPlugins = new Map<string, ConfigMap>();
+  if (solutionConfig) configOfOtherPlugins.set(GLOBAL_CONFIG, solutionConfig);
+  const config = ConfigMap.fromJSON(provisionOutput);
+  if(config) pluginContext.config = config;
+
   if (plugin.preDeploy) {
     const preRes = await plugin.preDeploy(pluginContext);
     if (preRes.isErr()) {
@@ -195,7 +205,9 @@ export async function deployAdapter(
       return err(postRes.error);
     }
   }
-  return ok(pluginContext.config.toJSON());
+  const output = pluginContext.config.toJSON();
+  Object.assign(provisionOutput, output);
+  return ok(Void);
 }
 
 export async function provisionLocalResourceAdapter(
@@ -221,20 +233,8 @@ export async function provisionLocalResourceAdapter(
   if (res.isErr()) {
     return err(res.error);
   }
-  localSettings.teamsApp = pluginContext.localSettings.teamsApp.toJSON();
-  if (pluginContext.localSettings.auth) {
-    localSettings.auth = pluginContext.localSettings.auth.toJSON();
-  }
-  if (pluginContext.localSettings.backend) {
-    localSettings.backend = pluginContext.localSettings.backend.toJSON();
-  }
-  if (pluginContext.localSettings.bot) {
-    localSettings.bot = pluginContext.localSettings.bot.toJSON();
-  }
-  if (pluginContext.localSettings.frontend) {
-    localSettings.frontend = pluginContext.localSettings.frontend.toJSON();
-  }
-  return ok(localSettings);
+  setLocalSettings(localSettings, pluginContext);
+  return ok(Void);
 }
 
 export async function configureLocalResourceAdapter(
@@ -260,20 +260,8 @@ export async function configureLocalResourceAdapter(
   if (res.isErr()) {
     return err(res.error);
   }
-  localSettings.teamsApp = pluginContext.localSettings.teamsApp.toJSON();
-  if (pluginContext.localSettings.auth) {
-    localSettings.auth = pluginContext.localSettings.auth.toJSON();
-  }
-  if (pluginContext.localSettings.backend) {
-    localSettings.backend = pluginContext.localSettings.backend.toJSON();
-  }
-  if (pluginContext.localSettings.bot) {
-    localSettings.bot = pluginContext.localSettings.bot.toJSON();
-  }
-  if (pluginContext.localSettings.frontend) {
-    localSettings.frontend = pluginContext.localSettings.frontend.toJSON();
-  }
-  return ok(localSettings);
+  setLocalSettings(localSettings, pluginContext);
+  return ok(Void);
 }
 
 export async function executeUserTaskAdapter(
@@ -305,14 +293,33 @@ export function getArmOutput(ctx: PluginContext, key: string): string | undefine
   return output?.[key]?.value;
 }
 
-function setConfigs(pluginName: string, pluginContext: PluginContext, provisionOutput: Json) {
+function setConfigs(pluginName: string, pluginContext: PluginContext, provisionOutputs: Json) {
   const envInfo = newEnvInfo();
-  for (const key in provisionOutput) {
-    const output = provisionOutput[key];
+  for (const key in provisionOutputs) {
+    const output = provisionOutputs[key];
     const configMap = ConfigMap.fromJSON(output);
     if (configMap) envInfo.profile.set(key, configMap);
   }
   const selfConfigMap = envInfo.profile.get(pluginName) || new ConfigMap();
   pluginContext.config = selfConfigMap;
   pluginContext.envInfo = envInfo;
+}
+
+
+function setProvisionOutputs(provisionOutputs: Json, pluginContext: PluginContext){
+  for(const key of pluginContext.envInfo.profile.keys()) {
+    const map = pluginContext.envInfo.profile.get(key) as ConfigMap;
+    const value = map?.toJSON();
+    if(value){
+      provisionOutputs[key] = value;
+    }
+  }
+}
+
+function setLocalSettings(localSettings: Json, pluginContext: PluginContext) {
+  localSettings.teamsApp = pluginContext.localSettings?.teamsApp?.toJSON();
+  localSettings.auth = pluginContext.localSettings?.auth?.toJSON();
+  localSettings.backend = pluginContext.localSettings?.backend?.toJSON();
+  localSettings.bot = pluginContext.localSettings?.bot?.toJSON();
+  localSettings.frontend = pluginContext.localSettings?.frontend?.toJSON();
 }

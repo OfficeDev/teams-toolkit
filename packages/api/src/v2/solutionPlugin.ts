@@ -41,8 +41,7 @@ export interface SolutionPlugin {
    * based on the resource templates returned by resource plugins.
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
-   * @param {Inputs} inputs - User's answers to questions defined in {@link getQuestionsForLifecycleTask}
-   * for {@link Stage.create} along with some system inputs.
+   * @param {Inputs} inputs - User's answers to questions defined in {@link getQuestionsForLifecycleTask} for {@link Stage.create} along with some system inputs.
    * @param {Json} - model for config.${env}.json, which is created core, solution will fill in some keys in it, such as azure, manifest
    *
    * @return {Json} envConfig
@@ -79,14 +78,13 @@ export interface SolutionPlugin {
    * @param {Json} provisionOutputs - provision outputs
    * @param {AzureAccountProvider} tokenProvider - Tokens for Azure and AppStudio
    *
-   * @returns deployment output values for each plugin, which will be persisted by the Toolkit and available to other plugins for other lifecyles.
    */
   deploy?: (
     ctx: Context,
     inputs: Inputs,
     provisionOutputs: Json,
     tokenProvider: AzureAccountProvider
-  ) => Promise<Result<Json, FxError>>;
+  ) => Promise<Result<Void, FxError>>;
 
   /**
    * Depends on the output of {@link package}. Uploads Teams package to AppStudio
@@ -95,9 +93,6 @@ export interface SolutionPlugin {
    * @param {Json} provisionInputConfig - contains the user customized values for manifest placeholders
    * @param {Json} provisionOutputs - contains the provision output values for manifest placeholders
    * @param {AppStudioTokenProvider} tokenProvider - Token for AppStudio
-   * for {@link Stage.publish} along with some system inputs.
-   *
-   * @returns Void because side effect is expected.
    */
   publishApplication?: (
     ctx: Context,
@@ -106,24 +101,6 @@ export interface SolutionPlugin {
     provisionOutputs: Json,
     tokenProvider: AppStudioTokenProvider
   ) => Promise<Result<Void, FxError>>;
-
-  /**
-   * Generates a Teams manifest package for the current project,
-   * and stores it on disk.
-   *
-   * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
-   * @param {Inputs} inputs - system inputs.
-   * @param {Json} provisionInputConfig - contains the user customized values for manifest placeholders
-   * @param {Json} provisionOutput - contains the provision output values for manifest placeholders
-   *
-   * @returns {string} package path
-   */
-  package?: (
-    ctx: Context,
-    inputs: Inputs,
-    provisionInputConfig: Json,
-    provisionOutput: Json
-  ) => Promise<Result<string, FxError>>;
 
   /**
    * provisionLocalResource is a special lifecycle, called when users press F5 in vscode.

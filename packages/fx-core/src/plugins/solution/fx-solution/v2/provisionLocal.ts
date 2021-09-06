@@ -7,6 +7,8 @@ import {
   err,
   TokenProvider,
   returnSystemError,
+  Void,
+  Json,
 } from "@microsoft/teamsfx-api";
 import { executeConcurrently } from "./executor";
 import {
@@ -23,9 +25,9 @@ import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 export async function provisionLocalResource(
   ctx: v2.Context,
   inputs: Inputs,
-  localSettings: v2.LocalSettings,
+  localSettings: Json,
   tokenProvider: TokenProvider
-): Promise<Result<v2.LocalSettings, FxError>> {
+): Promise<Result<Void, FxError>> {
   const azureSolutionSettings = getAzureSolutionSettings(ctx);
   const result = await ensurePermissionRequest(
     azureSolutionSettings,
@@ -78,7 +80,7 @@ export async function provisionLocalResource(
   }
 
   const parseTenantIdresult = loadTeamsAppTenantIdForLocal(
-    localSettings,
+    localSettings as  v2.LocalSettings,
     await tokenProvider.appStudioToken.getJsonObject()
   );
   if (parseTenantIdresult.isErr()) {
@@ -104,5 +106,5 @@ export async function provisionLocalResource(
     return err(configureResourceResult.error);
   }
 
-  return ok(localSettings);
+  return ok(Void);
 }

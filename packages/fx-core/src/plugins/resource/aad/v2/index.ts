@@ -63,7 +63,7 @@ export class AadPluginV2 implements ResourcePlugin {
     provisionInputConfig: Json,
     provisionOutputs: Json,
     tokenProvider: TokenProvider
-  ): Promise<Result<Json, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await configureResourceAdapter(
       ctx,
       inputs,
@@ -79,7 +79,7 @@ export class AadPluginV2 implements ResourcePlugin {
     inputs: Inputs,
     localSettings: Json,
     tokenProvider: TokenProvider
-  ): Promise<Result<Json, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await provisionLocalResourceAdapter(
       ctx,
       inputs,
@@ -94,7 +94,7 @@ export class AadPluginV2 implements ResourcePlugin {
     inputs: Inputs,
     localSettings: Json,
     tokenProvider: TokenProvider
-  ): Promise<Result<Json, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await configureLocalResourceAdapter(
       ctx,
       inputs,

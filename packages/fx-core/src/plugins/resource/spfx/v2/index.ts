@@ -57,7 +57,7 @@ export class SpfxPluginV2 implements ResourcePlugin {
     inputs: DeploymentInputs,
     provisionOutput: Json,
     tokenProvider: AzureAccountProvider
-  ): Promise<Result<Json, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await deployAdapter(ctx, inputs, provisionOutput, tokenProvider, this.plugin);
   }
 }

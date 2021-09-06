@@ -47,7 +47,7 @@ export class LocalDebugPluginV2 implements ResourcePlugin {
     inputs: Inputs,
     localSettings: Json,
     tokenProvider: TokenProvider
-  ): Promise<Result<Json, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await provisionLocalResourceAdapter(
       ctx,
       inputs,
@@ -62,7 +62,7 @@ export class LocalDebugPluginV2 implements ResourcePlugin {
     inputs: Inputs,
     localSettings: Json,
     tokenProvider: TokenProvider
-  ): Promise<Result<Json, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await configureLocalResourceAdapter(
       ctx,
       inputs,

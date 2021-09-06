@@ -21,7 +21,7 @@ export async function deploy(
   inputs: Inputs,
   provisionOutputs: Json,
   tokenProvider: AzureAccountProvider
-): Promise<Result<Json, FxError>> {
+): Promise<Result<Void, FxError>> {
   const inAzureProject = isAzureProject(getAzureSolutionSettings(ctx));
   const provisioned = provisionOutputs[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] as boolean;
 
@@ -87,7 +87,7 @@ export async function deploy(
       ctx.logProvider.info(msg);
       ctx.userInteraction.showMessage("info", msg, false);
     }
-    return ok(combineRecords(result.value));
+    return ok(Void);
   } else {
     const msg = util.format(getStrings().solution.DeployFailNotice, ctx.projectSetting.appName);
     ctx.logProvider.info(msg);

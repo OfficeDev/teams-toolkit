@@ -84,7 +84,7 @@ export class AppStudioPluginV2 implements ResourcePlugin {
     provisionInputConfig: Json,
     provisionOutputs: Json,
     tokenProvider: TokenProvider
-  ): Promise<Result<Json, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await configureResourceAdapter(
       ctx,
       inputs,
@@ -99,7 +99,7 @@ export class AppStudioPluginV2 implements ResourcePlugin {
     inputs: Inputs,
     localSettings: Json,
     tokenProvider: TokenProvider
-  ): Promise<Result<Json, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await configureLocalResourceAdapter(
       ctx,
       inputs,
@@ -113,7 +113,7 @@ export class AppStudioPluginV2 implements ResourcePlugin {
     inputs: DeploymentInputs,
     provisionOutput: Json,
     tokenProvider: AzureAccountProvider
-  ): Promise<Result<Json, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await deployAdapter(ctx, inputs, provisionOutput, tokenProvider, this.plugin);
   }
 

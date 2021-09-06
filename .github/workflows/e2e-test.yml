@@ -18,6 +18,7 @@ jobs:
       M365_TENANT_ID: ${{ secrets.TEST_TENANT_ID_2 }}
       CI_ENABLED: "true"
       M365_ACCOUNT_COLLABORATOR: ${{ secrets.TEST_COLLABORATOR_USER_NAME }}
+      AZURE_DEVOPS_EXT_PAT: ${{ secrets.ADO_PAT }}
 
     runs-on: [self-hosted, linux, 8cpu]
 
@@ -86,7 +87,6 @@ jobs:
           manual_cases=`npx ts-node src/commonlib/testPlan.ts stat cli | jq '.points'`
           pct=`printf %.4f "$((10**4 * $auto_cases*100/$manual_cases))e-4"`
 
-          export AZURE_DEVOPS_EXT_PAT=${{ secrets.ADO_PAT }}
           az storage entity insert \
             --connection-string "${{ secrets.AZURE_STORAGE_ACCOUNT_TEAMSFXCLIDOWNLOADS_CS }}" \
             --entity PartitionKey=TeamsFx RowKey=${{ github.run_id }}_cli Package=cli GitBranch=${{ github.ref }} Type=e2e_test AutomatedCases=$auto_cases ManualCases=$manual_cases AutomationPct=$pct \
@@ -94,6 +94,8 @@ jobs:
             --table-name TestCoverage
 
   create-ado-issue:
+    env:
+      AZURE_DEVOPS_EXT_PAT: ${{ secrets.ADO_PAT }}
     runs-on: ubuntu-latest
     needs: e2e-tests
     if: ${{ failure() && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main') }}
@@ -138,7 +140,6 @@ jobs:
         with:
           azcliversion: 2.25.0
           inlineScript: |
-            export AZURE_DEVOPS_EXT_PAT=${{ secrets.ADO_PAT }}
             az extension add --name azure-devops
             az boards work-item create --title="E2E tests failed" \
                              --type=Bug \

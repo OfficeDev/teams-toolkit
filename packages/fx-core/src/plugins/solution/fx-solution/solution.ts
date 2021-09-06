@@ -32,6 +32,7 @@ import {
   ProjectSettings,
   SolutionSettings,
   ArchiveFolderName,
+  Colors,
 } from "@microsoft/teamsfx-api";
 import { checkSubscription, fillInCommonQuestions } from "./commonQuestions";
 import { executeLifecycles, executeConcurrently, LifecyclesWithContext } from "./executor";
@@ -1379,9 +1380,20 @@ export class TeamsAppSolution implements Solution {
       if (ctx.answers?.platform === Platform.CLI) {
         const aadAppTenantId = ctx.envInfo.profile?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
 
-        // Todo, when multi-environment is ready, we will update to current environment
-        ctx.ui?.showMessage("info", `Starting permission grant for environment: default`, false);
-        ctx.ui?.showMessage("info", `Tenant ID: ${aadAppTenantId}`, false);
+        const message = [
+          { content: `Account to grant permission: `, color: Colors.BRIGHT_WHITE },
+          { content: userInfo.userPrincipalName + "\n", color: Colors.BRIGHT_MAGENTA },
+          {
+            content: `Starting grant permission for environment: `,
+            color: Colors.BRIGHT_WHITE,
+          },
+          // Todo, when multi-environment is ready, we will update to current environment
+          { content: "default\n", color: Colors.BRIGHT_MAGENTA },
+          { content: `Tenant ID: `, color: Colors.BRIGHT_WHITE },
+          { content: aadAppTenantId + "\n", color: Colors.BRIGHT_MAGENTA },
+        ];
+
+        ctx.ui?.showMessage("info", message, false);
       }
 
       const results = await executeConcurrently("", grantPermissionWithCtx);
@@ -1410,18 +1422,20 @@ export class TeamsAppSolution implements Solution {
 
       if (ctx.answers?.platform === Platform.CLI) {
         for (const permission of permissions) {
-          ctx.ui?.showMessage(
-            "info",
-            `${permission.roles?.join(" ")} permission has been granted to ${
-              permission.name
-            }, ID: ${permission.resourceId}`,
-            false
-          );
+          const message = [
+            { content: `${permission.roles?.join(",")} `, color: Colors.BRIGHT_MAGENTA },
+            { content: "permission has been granted to ", color: Colors.BRIGHT_WHITE },
+            { content: permission.name, color: Colors.BRIGHT_MAGENTA },
+            { content: ", Resource ID: ", color: Colors.BRIGHT_WHITE },
+            { content: `${permission.resourceId}`, color: Colors.BRIGHT_MAGENTA },
+          ];
+
+          ctx.ui?.showMessage("info", message, false);
         }
 
         ctx.ui?.showMessage(
           "info",
-          `Skip grant permission for Azure resources. You may want to handle that via Azure portal. `,
+          `\nSkip grant permission for Azure resources. You may want to handle that via Azure portal. `,
           false
         );
 
@@ -1490,10 +1504,20 @@ export class TeamsAppSolution implements Solution {
       if (ctx.answers?.platform === Platform.CLI) {
         const aadAppTenantId = ctx.envInfo.profile?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
 
-        ctx.ui?.showMessage("info", `Account used to check: ${userInfo.userPrincipalName}`, false);
-        // Todo, when multi-environment is ready, we will update to current environment
-        ctx.ui?.showMessage("info", `Starting permission check for environment: default`, false);
-        ctx.ui?.showMessage("info", `Tenant ID: ${aadAppTenantId}`, false);
+        const message = [
+          { content: `Account used to check: `, color: Colors.BRIGHT_WHITE },
+          { content: userInfo.userPrincipalName + "\n", color: Colors.BRIGHT_MAGENTA },
+          {
+            content: `Starting check permission for environment: `,
+            color: Colors.BRIGHT_WHITE,
+          },
+          // Todo, when multi-environment is ready, we will update to current environment
+          { content: "default\n", color: Colors.BRIGHT_MAGENTA },
+          { content: `Tenant ID: `, color: Colors.BRIGHT_WHITE },
+          { content: aadAppTenantId + "\n", color: Colors.BRIGHT_MAGENTA },
+        ];
+
+        ctx.ui?.showMessage("info", message, false);
       }
 
       const results = await executeConcurrently("", checkPermissionWithCtx);
@@ -1523,11 +1547,19 @@ export class TeamsAppSolution implements Solution {
 
       if (ctx.answers?.platform === Platform.CLI) {
         for (const permission of permissions) {
-          ctx.ui?.showMessage(
-            "info",
-            `Resource ID: ${permission.resourceId}, Resource Name: ${permission.name}, Permission: ${permission.roles}`,
-            false
-          );
+          const message = [
+            { content: `Resource ID: `, color: Colors.BRIGHT_WHITE },
+            { content: permission.resourceId ?? "undefined", color: Colors.BRIGHT_MAGENTA },
+            { content: `, Resource Name: `, color: Colors.BRIGHT_WHITE },
+            { content: permission.name, color: Colors.BRIGHT_MAGENTA },
+            { content: `, Permission: `, color: Colors.BRIGHT_WHITE },
+            {
+              content: permission.roles ? permission.roles.toString() : "undefined" + "\n",
+              color: Colors.BRIGHT_MAGENTA,
+            },
+          ];
+
+          ctx.ui?.showMessage("info", message, false);
         }
       }
 
@@ -1594,15 +1626,20 @@ export class TeamsAppSolution implements Solution {
 
       if (ctx.answers?.platform === Platform.CLI) {
         const aadAppTenantId = ctx.envInfo.profile?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
-        ctx.ui?.showMessage("info", `Account used to check: ${userInfo.userPrincipalName}`, false);
+        const message = [
+          { content: `Account used to check: `, color: Colors.BRIGHT_WHITE },
+          { content: userInfo.userPrincipalName + "\n", color: Colors.BRIGHT_MAGENTA },
+          {
+            content: `Starting list all collaborators for environment: `,
+            color: Colors.BRIGHT_WHITE,
+          },
+          // Todo, when multi-environment is ready, we will update to current environment
+          { content: "default\n", color: Colors.BRIGHT_MAGENTA },
+          { content: `Tenant ID: `, color: Colors.BRIGHT_WHITE },
+          { content: aadAppTenantId + "\n", color: Colors.BRIGHT_MAGENTA },
+        ];
 
-        // Todo, when multi-environment is ready, we will update to current environment
-        ctx.ui?.showMessage(
-          "info",
-          `Starting list all collaborators for environment: default`,
-          false
-        );
-        ctx.ui?.showMessage("info", `Tenant ID: ${aadAppTenantId}`, false);
+        ctx.ui?.showMessage("info", message, false);
       }
 
       const results = await executeConcurrently("", listCollaboratorWithCtx);
@@ -1661,21 +1698,30 @@ export class TeamsAppSolution implements Solution {
 
       if (ctx.answers?.platform === Platform.CLI) {
         for (const collaborator of collaborators) {
-          ctx.ui?.showMessage("info", `Account: ${collaborator.userPrincipalName}`, false);
-
-          ctx.ui?.showMessage(
-            "info",
-            `Resource ID: ${collaborator.teamsAppResourceId}, Resource Name: Teams App, Permission: Administrator`,
-            false
-          );
+          const message = [
+            { content: `Account: `, color: Colors.BRIGHT_WHITE },
+            { content: collaborator.userPrincipalName + "\n", color: Colors.BRIGHT_MAGENTA },
+            { content: `Resource ID: `, color: Colors.BRIGHT_WHITE },
+            { content: collaborator.teamsAppResourceId, color: Colors.BRIGHT_MAGENTA },
+            { content: `, Resource Name: `, color: Colors.BRIGHT_WHITE },
+            { content: `Teams App`, color: Colors.BRIGHT_MAGENTA },
+            { content: `, Permission: `, color: Colors.BRIGHT_WHITE },
+            { content: `Administrator`, color: Colors.BRIGHT_MAGENTA },
+          ];
 
           if (collaborator.aadResourceId) {
-            ctx.ui?.showMessage(
-              "info",
-              `Resource ID: ${collaborator.aadResourceId}, Resource Name: AAD App, Permission: Owner`,
-              false
+            message.push(
+              { content: `\nResource ID: `, color: Colors.BRIGHT_WHITE },
+              { content: collaborator.aadResourceId, color: Colors.BRIGHT_MAGENTA },
+              { content: `, Resource Name: `, color: Colors.BRIGHT_WHITE },
+              { content: `AAD App`, color: Colors.BRIGHT_MAGENTA },
+              { content: `, Permission: `, color: Colors.BRIGHT_WHITE },
+              { content: `Owner`, color: Colors.BRIGHT_MAGENTA }
             );
           }
+
+          message.push({ content: "\n", color: Colors.BRIGHT_WHITE });
+          ctx.ui?.showMessage("info", message, false);
         }
       }
 

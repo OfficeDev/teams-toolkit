@@ -227,6 +227,7 @@ export async function migrateV1ProjectHandler(args?: any[]): Promise<Result<null
   );
   const result = await runCommand(Stage.migrateV1);
   await openMarkdownHandler();
+  await vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome", false);
   return result;
 }
 

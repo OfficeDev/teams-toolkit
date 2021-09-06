@@ -20,6 +20,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import path, { basename } from "path";
 import fs from "fs-extra";
+import jsum from "jsum";
 import {
   deserializeDict,
   dataNeedEncryption,
@@ -32,6 +33,7 @@ import {
   objectToMap,
   ProjectEnvNotExistError,
   InvalidEnvConfigError,
+  CorruptedSecretError,
 } from "..";
 import { GLOBAL_CONFIG } from "../plugins/solution/fx-solution/constants";
 import { readJson } from "../common/fileUtils";
@@ -54,6 +56,7 @@ class EnvironmentManager {
   private readonly defaultEnvName = "default";
   private readonly defaultEnvNameNew = "dev";
   private readonly ajv;
+  private readonly checksumKey = "_checksum";
   private readonly schema =
     "https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/packages/api/src/schemas/envConfig.json";
   private readonly manifestConfigDescription =
@@ -301,6 +304,11 @@ class EnvironmentManager {
       return ok(secrets);
     }
 
+    if (!this.checksumMatch(secrets)) {
+      const error = CorruptedSecretError();
+      sendTelemetryErrorEvent(Component.core, TelemetryEvent.DecryptUserdata, error);
+      return err(error);
+    }
     const res = this.decrypt(secrets, cryptoProvider);
     if (res.isErr()) {
       const fxError: SystemError = res.error;
@@ -326,6 +334,8 @@ class EnvironmentManager {
         secrets[secretKey] = encryptedSecret.value;
       }
     }
+    const checksum = jsum.digest(secrets, "SHA256", "hex");
+    secrets[this.checksumKey] = checksum;
 
     return ok(secrets);
   }
@@ -349,6 +359,15 @@ class EnvironmentManager {
     }
 
     return ok(secrets);
+  }
+
+  private checksumMatch(secrets: Record<string, string>): boolean {
+    const checksum = secrets[this.checksumKey];
+    if (checksum) {
+      delete secrets[this.checksumKey];
+      return jsum.digest(secrets, "SHA256", "hex") === checksum;
+    }
+    return true;
   }
 
   public getDefaultEnvName() {

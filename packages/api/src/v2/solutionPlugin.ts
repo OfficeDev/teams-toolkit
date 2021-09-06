@@ -5,10 +5,14 @@
 import { Result } from "neverthrow";
 import { ResourceProvisionOutput } from ".";
 import {
-  AppStudioTokenProvider, AzureAccountProvider, Func, FxError,
+  AppStudioTokenProvider,
+  AzureAccountProvider,
+  Func,
+  FxError,
   Inputs,
   QTreeNode,
-  TokenProvider, Void
+  TokenProvider,
+  Void,
 } from "../index";
 import { Json } from "../types";
 import { Context } from "./types";
@@ -39,14 +43,11 @@ export interface SolutionPlugin {
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {Inputs} inputs - User's answers to questions defined in {@link getQuestionsForLifecycleTask}
    * for {@link Stage.create} along with some system inputs.
-   * @param {EnvConfig} envConfig - model for config.${env}.json, which is created core, solution will fill in some keys in it, such as azure, manifest
+   * @param {Json} - model for config.${env}.json, which is created core, solution will fill in some keys in it, such as azure, manifest
    *
    * @return {Json} envConfig
    */
-  generateResourceTemplate: (
-    ctx: Context,
-    inputs: Inputs,
-  ) => Promise<Result<Json, FxError>>;
+  generateResourceTemplate: (ctx: Context, inputs: Inputs) => Promise<Result<Json, FxError>>;
 
   /**
    * This method is called by the Toolkit when users run "Provision in the Cloud" command.

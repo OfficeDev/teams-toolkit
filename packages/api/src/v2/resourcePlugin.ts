@@ -101,7 +101,7 @@ export interface ResourcePlugin {
    * @param {Json} provisionInputConfig - model for config.${env}.json, in which, user can customize some inputs for provision
    * @param {TokenProvider} tokenProvider - Tokens for Azure and AppStudio
    *
-   * @returns {ResourceProvisionOutput} part of {@link EnvProfile}
+   * @returns {ResourceProvisionOutput} resource provision output
    */
   provisionResource?: (
     ctx: Context,

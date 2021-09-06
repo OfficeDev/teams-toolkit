@@ -104,9 +104,8 @@ const VSCodeTestPlanTemplate: TestPlan = {
   name: "VSCode Test Plan Template",
 };
 
-const BaseURL: URL = new URL(
-  "https://dev.azure.com/msazure/Microsoft Teams Extensibility/_apis/testplan"
-);
+const BaseURL: string =
+  "https://dev.azure.com/msazure/Microsoft Teams Extensibility/_apis/testplan";
 
 const CommonHeaders = {
   "Content-Type": "application/json",
@@ -115,7 +114,7 @@ const CommonHeaders = {
 
 class ADOTestPlanClient {
   private static client: axios.AxiosInstance = axios.default.create({
-    baseURL: BaseURL.toString(),
+    baseURL: BaseURL,
     timeout: 1000 * 100,
     headers: CommonHeaders,
     auth: {

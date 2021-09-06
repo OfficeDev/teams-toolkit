@@ -689,7 +689,7 @@ export class TeamsAppSolution implements Solution {
             ctx.projectSettings!.activeEnvironment = envName;
             ctx.ui?.showMessage(
               "info",
-              `[${envName}] is activated. Please try to do provision again`,
+              `[${envName}] is activated. Please try to do provision again.`,
               false
             );
           }

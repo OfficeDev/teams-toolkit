@@ -19,7 +19,7 @@ import {
   LocalSettingsAuthKeys,
   LocalSettingsFrontendKeys,
 } from "../../../../common/localSettingsConstants";
-import { TeamsClientId } from "../../../../common/constants";
+import { getAllowedAppIds } from "../../../../common/tools";
 export class Utils {
   public static generateResourceName(appName: string, resourceNameSuffix: string): string {
     const paddingLength =
@@ -84,8 +84,6 @@ export class Utils {
     const clientSecret = this.getClientSecret(ctx, isLocalDebug);
     const oauthAuthority = this.getOauthAuthority(ctx, isLocalDebug);
     const applicationIdUris = this.getApplicationIdUris(ctx, isLocalDebug);
-    const teamsMobileDesktopAppId = TeamsClientId.MobileDesktop;
-    const teamsWebAppId = TeamsClientId.Web;
 
     let endpoint: string;
     if (!isArmSupportEnabled() || isLocalDebug) {
@@ -94,7 +92,7 @@ export class Utils {
       endpoint = getArmOutput(ctx, Constants.ArmOutput.frontendEndpoint) as string;
     }
 
-    const allowedAppIds = [teamsMobileDesktopAppId, teamsWebAppId].join(";");
+    const allowedAppIds = getAllowedAppIds().join(";");
     const aadMetadataAddress = `${oauthAuthority}/v2.0/.well-known/openid-configuration`;
     let endpointUrl;
     try {

@@ -11,7 +11,7 @@ import {
   Result,
   VsCodeEnv,
 } from "@microsoft/teamsfx-api";
-import { TeamsClientId } from "../../../common/constants";
+import { getAllowedAppIds } from "../../../common/tools";
 import { LocalCertificateManager } from "./certificate";
 import {
   AadPlugin,
@@ -169,8 +169,6 @@ export class legacyLocalDebugPlugin {
       const clientId = aadConfigs?.get(AadPlugin.LocalClientId) as string;
       const clientSecret = aadConfigs?.get(AadPlugin.LocalClientSecret) as string;
       const teamsAppTenantId = solutionConfigs?.get(SolutionPlugin.TeamsAppTenantId) as string;
-      const teamsMobileDesktopAppId = TeamsClientId.MobileDesktop;
-      const teamsWebAppId = TeamsClientId.Web;
       const localAuthPackagePath = runtimeConnectorConfigs?.get(
         RuntimeConnectorPlugin.FilePath
       ) as string;
@@ -201,9 +199,7 @@ export class legacyLocalDebugPlugin {
           localEnvs[LocalEnvAuthKeys.TabEndpoint] = localDebugConfigs.get(
             LocalDebugConfigKeys.LocalTabEndpoint
           ) as string;
-          localEnvs[LocalEnvAuthKeys.AllowedAppIds] = [teamsMobileDesktopAppId, teamsWebAppId].join(
-            ";"
-          );
+          localEnvs[LocalEnvAuthKeys.AllowedAppIds] = getAllowedAppIds().join(";");
           localEnvs[LocalEnvAuthKeys.ServicePath] = await prepareLocalAuthService(
             localAuthPackagePath
           );
@@ -227,10 +223,7 @@ export class legacyLocalDebugPlugin {
           localEnvs[LocalEnvBackendKeys.ApplicationIdUri] = aadConfigs?.get(
             AadPlugin.LocalAppIdUri
           ) as string;
-          localEnvs[LocalEnvBackendKeys.AllowedAppIds] = [
-            teamsMobileDesktopAppId,
-            teamsWebAppId,
-          ].join(";");
+          localEnvs[LocalEnvBackendKeys.AllowedAppIds] = getAllowedAppIds().join(";");
         }
 
         // local certificate

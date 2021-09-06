@@ -13,7 +13,7 @@ import {
 import { AzureLib } from "../utils/azure-client";
 import { FunctionLanguage } from "../enums";
 import { LanguageStrategyFactory } from "../language-strategy";
-import { TeamsClientId } from "../../../../common/constants";
+import { getAllowedAppIds } from "../../../../common/tools";
 
 type Site = WebSiteManagementModels.Site;
 type NameValuePair = WebSiteManagementModels.NameValuePair;
@@ -217,10 +217,7 @@ export class FunctionProvision {
       site.siteConfig = {};
     }
 
-    const clientIds: string[] = extClientIds.concat([
-      TeamsClientId.MobileDesktop,
-      TeamsClientId.Web,
-    ]);
+    const clientIds: string[] = extClientIds.concat(getAllowedAppIds());
     const rawOldClientIds: string | undefined = site.siteConfig.appSettings?.find(
       (kv: NameValuePair) => kv.name === FunctionAppSettingKeys.allowedAppIds
     )?.value;

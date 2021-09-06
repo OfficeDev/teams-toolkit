@@ -28,7 +28,13 @@ import * as path from "path";
 import { promisify } from "util";
 import * as uuid from "uuid";
 import { getResourceFolder } from "../folder";
-import { ConstantString, FeatureFlagName } from "./constants";
+import {
+  ConstantString,
+  FeatureFlagName,
+  TeamsClientId,
+  OfficeClientId,
+  OutlookClientId,
+} from "./constants";
 import * as crypto from "crypto";
 import { FailedToParseResourceIdError, SolutionError } from "..";
 import * as os from "os";
@@ -671,4 +677,15 @@ function _redactObject(
  **/
 export function redactObject(obj: unknown, jsonSchema: unknown, maxRecursionDepth = 8): unknown {
   return _redactObject(obj, jsonSchema, maxRecursionDepth, 0);
+}
+
+export function getAllowedAppIds(): string[] {
+  return [
+    TeamsClientId.MobileDesktop,
+    TeamsClientId.Web,
+    OfficeClientId.Web1,
+    OfficeClientId.Web2,
+    OutlookClientId.Desktop,
+    OutlookClientId.Web,
+  ];
 }

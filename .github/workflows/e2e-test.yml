@@ -79,6 +79,19 @@ jobs:
         run: |
           rsync --delete-before -d /tmp/empty/ ./
 
+      - name: report cli e2e tests stat
+        working-directory: packages/cli
+        run: |
+          auto_cases=`npx mocha --require ts-node/register --dry-run tests/e2e/**/*.tests.ts | grep passing | awk '{print $1}'`
+          manual_cases=`npx ts-node src/commonlib/testPlan.ts stat cli | jq '.points'`
+          pct=`printf %.4f "$((10**4 * $auto_cases*100/$manual_cases))e-4"`
+
+          az storage entity insert \
+            --connection-string "${{ secrets.AZURE_STORAGE_ACCOUNT_TEAMSFXCLIDOWNLOADS_CS }}" \
+            --entity PartitionKey=TeamsFx RowKey=${{ github.run_id }}_cli Package=cli GitBranch=${{ github.ref }} Type=e2e_test AutomatedCases=$auto_cases ManualCases=$manual_cases AutomationPct=$pct \
+            --if-exists replace \
+            --table-name TestCoverage
+
   create-ado-issue:
     runs-on: ubuntu-latest
     needs: e2e-tests

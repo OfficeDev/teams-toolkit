@@ -264,9 +264,6 @@ export interface EnvMeta {
 export const EnvNamePlaceholder = "@envName";
 
 // @public (undocumented)
-type EnvProfile = Json;
-
-// @public (undocumented)
 export const EnvProfileFileNameTemplate: string;
 
 // @public (undocumented)
@@ -619,7 +616,7 @@ export interface LocalSettings {
 }
 
 // @public (undocumented)
-interface LocalSettings_2 {
+interface LocalSettings_2 extends Json {
     // (undocumented)
     auth?: Record<string, string>;
     // (undocumented)
@@ -836,13 +833,6 @@ export interface ProjectStates {
 type ProvisionInputs = Inputs & SolutionInputs;
 
 // @public (undocumented)
-type ProvisionOutput = {
-    output: Json;
-    states: Json;
-    secrets: Json;
-};
-
-// @public (undocumented)
 export const PublishProfilesFolderName = "publishProfiles";
 
 // @public
@@ -889,9 +879,9 @@ export type ResourceConfigs = ResourceTemplates;
 // @public
 interface ResourcePlugin {
     activate(solutionSettings: AzureSolutionSettings): boolean;
-    configureLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: LocalSettings_2, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
-    configureResource?: (ctx: Context_2, inputs: ProvisionInputs, envConfig: EnvConfig, envProfile: EnvProfile, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
-    deploy?: (ctx: Context_2, inputs: DeploymentInputs, envProfile: EnvProfile, tokenProvider: AzureAccountProvider) => Promise<Result<Void, FxError>>;
+    configureLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: Json, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
+    configureResource?: (ctx: Context_2, inputs: ProvisionInputs, provisionInputConfig: Json, provisionOutput: Json, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
+    deploy?: (ctx: Context_2, inputs: DeploymentInputs, provisionOutput: Json, tokenProvider: AzureAccountProvider) => Promise<Result<Void, FxError>>;
     // (undocumented)
     displayName: string;
     // (undocumented)
@@ -901,12 +891,19 @@ interface ResourcePlugin {
     getQuestionsForScaffolding?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
     name: string;
-    package?: (ctx: Context_2, inputs: Inputs, envConfig: EnvConfig, envProfile: EnvProfile) => Promise<Result<Void, FxError>>;
-    provisionLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: LocalSettings_2, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
-    provisionResource?: (ctx: Context_2, inputs: ProvisionInputs, envConfig: EnvConfig, tokenProvider: TokenProvider) => Promise<Result<Json, FxError>>;
-    publishApplication?: (ctx: Context_2, inputs: Inputs, envConfig: EnvConfig, envProfile: EnvProfile, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
+    package?: (ctx: Context_2, inputs: Inputs, provisionInputConfig: Json, provisionOutput: Json) => Promise<Result<Void, FxError>>;
+    provisionLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: Json, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
+    provisionResource?: (ctx: Context_2, inputs: ProvisionInputs, provisionInputConfig: Json, tokenProvider: TokenProvider) => Promise<Result<ResourceProvisionOutput, FxError>>;
+    publishApplication?: (ctx: Context_2, inputs: Inputs, provisionInputConfig: Json, provisionOutput: Json, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
     scaffoldSourceCode?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
 }
+
+// @public (undocumented)
+type ResourceProvisionOutput = {
+    output: Json;
+    states: Json;
+    secrets: Json;
+};
 
 // @public (undocumented)
 export type ResourceTemplate = Record<string, ConfigValue>;
@@ -1035,20 +1032,23 @@ type SolutionInputs = {
 
 // @public (undocumented)
 interface SolutionPlugin {
-    deploy?: (ctx: Context_2, inputs: Inputs, envProfile: EnvProfile, tokenProvider: AzureAccountProvider) => Promise<Result<Void, FxError>>;
+    deploy?: (ctx: Context_2, inputs: Inputs, provisionOutput: Json, tokenProvider: AzureAccountProvider) => Promise<Result<Void, FxError>>;
     // (undocumented)
     displayName: string;
     executeUserTask?: (ctx: Context_2, inputs: Inputs, func: Func) => Promise<Result<unknown, FxError>>;
-    generateResourceTemplate: (ctx: Context_2, inputs: Inputs, envConfig: EnvConfig) => Promise<Result<Void, FxError>>;
+    generateResourceTemplate: (ctx: Context_2, inputs: Inputs) => Promise<Result<Json, FxError>>;
     getQuestionsForScaffolding: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
     name: string;
-    package?: (ctx: Context_2, envConfig: EnvConfig, envProfile: EnvProfile) => Promise<Result<string, FxError>>;
-    provisionLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: LocalSettings_2, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
-    provisionResources: (ctx: Context_2, inputs: Inputs, envConfig: EnvConfig, tokenProvider: TokenProvider) => Promise<Result<EnvProfile, FxError>>;
-    publishApplication?: (ctx: Context_2, inputs: Inputs, envConfig: EnvConfig, envProfile: EnvProfile, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
+    package?: (ctx: Context_2, inputs: Inputs, provisionInputConfig: Json, provisionOutput: Json) => Promise<Result<string, FxError>>;
+    provisionLocalResource?: (ctx: Context_2, inputs: Inputs, tokenProvider: TokenProvider) => Promise<Result<Json, FxError>>;
+    provisionResources: (ctx: Context_2, inputs: Inputs, provisionInputConfig: Json, tokenProvider: TokenProvider) => Promise<Result<SolutionProvisionOutput, FxError>>;
+    publishApplication?: (ctx: Context_2, inputs: Inputs, provisionInputConfig: Json, provisionOutput: Json, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
     scaffoldSourceCode?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
 }
+
+// @public (undocumented)
+type SolutionProvisionOutput = Record<string, ResourceProvisionOutput>;
 
 // @public
 export interface SolutionSettings extends Json {
@@ -1386,8 +1386,9 @@ declare namespace v2 {
         ResourceTemplate_2 as ResourceTemplate,
         JsonTemplate,
         BicepTemplate,
-        ProvisionOutput,
+        ResourceProvisionOutput,
         ResourcePlugin,
+        SolutionProvisionOutput,
         SolutionPlugin,
         PluginName,
         Context_2 as Context,
@@ -1395,8 +1396,7 @@ declare namespace v2 {
         LocalSetting,
         SolutionInputs,
         ProvisionInputs,
-        DeploymentInputs,
-        EnvProfile
+        DeploymentInputs
     }
 }
 export { v2 }

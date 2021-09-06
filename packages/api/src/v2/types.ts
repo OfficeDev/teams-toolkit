@@ -22,7 +22,7 @@ export interface Context {
   permissionRequestProvider: PermissionRequestProvider;
 }
 
-export interface LocalSettings {
+export interface LocalSettings extends Json{
   teamsApp: Record<string, string>;
   auth?: Record<string, string>;
   frontend?: Record<string, string>;
@@ -43,5 +43,3 @@ export type SolutionInputs = {
 
 export type ProvisionInputs = Inputs & SolutionInputs;
 export type DeploymentInputs = Inputs & SolutionInputs;
-
-export type EnvProfile = Json;

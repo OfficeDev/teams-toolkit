@@ -3,18 +3,17 @@
 "use strict";
 
 import { Result } from "neverthrow";
+import { ResourceProvisionOutput } from ".";
 import {
-  FxError,
+  AppStudioTokenProvider, AzureAccountProvider, Func, FxError,
   Inputs,
   QTreeNode,
-  TokenProvider,
-  Func,
-  Void,
-  AzureAccountProvider,
-  AppStudioTokenProvider,
+  TokenProvider, Void
 } from "../index";
-import { EnvConfig } from "../schemas";
-import { Context, EnvProfile, LocalSettings } from "./types";
+import { Json } from "../types";
+import { Context } from "./types";
+
+export type SolutionProvisionOutput = Record<string, ResourceProvisionOutput>;
 
 export interface SolutionPlugin {
   name: string;
@@ -42,13 +41,12 @@ export interface SolutionPlugin {
    * for {@link Stage.create} along with some system inputs.
    * @param {EnvConfig} envConfig - model for config.${env}.json, which is created core, solution will fill in some keys in it, such as azure, manifest
    *
-   * @return Void because side effect is expected.
+   * @return {Json} envConfig
    */
   generateResourceTemplate: (
     ctx: Context,
     inputs: Inputs,
-    envConfig: EnvConfig
-  ) => Promise<Result<Void, FxError>>;
+  ) => Promise<Result<Json, FxError>>;
 
   /**
    * This method is called by the Toolkit when users run "Provision in the Cloud" command.
@@ -59,7 +57,7 @@ export interface SolutionPlugin {
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {Inputs} inputs - system inputs
-   * @param {EnvConfig} envConfig - model for config.${env}.json, in which, user can customize some inputs for provision
+   * @param {Json} provisionInputConfig - model for config.${env}.json, in which, user can customize some inputs for provision
    * @param {TokenProvider} tokenProvider - Tokens for Azure and AppStudio
    *
    * @returns {EnvProfile} the profile (persist by core as `profile.${env}.json`) containing provision outputs, which will be used for deploy and publish
@@ -67,9 +65,9 @@ export interface SolutionPlugin {
   provisionResources: (
     ctx: Context,
     inputs: Inputs,
-    envConfig: EnvConfig,
+    provisionInputConfig: Json,
     tokenProvider: TokenProvider
-  ) => Promise<Result<EnvProfile, FxError>>;
+  ) => Promise<Result<SolutionProvisionOutput, FxError>>;
 
   /**
    * Depends on the values returned by {@link provisionResources}.
@@ -77,7 +75,7 @@ export interface SolutionPlugin {
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {Inputs} inputs - system inputs
-   * @param {EnvProfile} envProfile - profile containing provision outputs
+   * @param {Json} provisionOutput - provision outputs
    * @param {AzureAccountProvider} tokenProvider - Tokens for Azure and AppStudio
    *
    * @returns deployment output values for each plugin, which will be persisted by the Toolkit and available to other plugins for other lifecyles.
@@ -85,7 +83,7 @@ export interface SolutionPlugin {
   deploy?: (
     ctx: Context,
     inputs: Inputs,
-    envProfile: EnvProfile,
+    provisionOutput: Json,
     tokenProvider: AzureAccountProvider
   ) => Promise<Result<Void, FxError>>;
 
@@ -93,8 +91,8 @@ export interface SolutionPlugin {
    * Depends on the output of {@link package}. Uploads Teams package to AppStudio
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {Inputs} inputs - User answers to questions defined in {@link getQuestionsForLifecycleTask}
-   * @param {EnvConfig} envConfig - contains the user customized values for manifest placeholders
-   * @param {EnvProfile} envProfile - contains the provision output values for manifest placeholders
+   * @param {Json} provisionInputConfig - contains the user customized values for manifest placeholders
+   * @param {Json} provisionOutput - contains the provision output values for manifest placeholders
    * @param {AppStudioTokenProvider} tokenProvider - Token for AppStudio
    * for {@link Stage.publish} along with some system inputs.
    *
@@ -103,8 +101,8 @@ export interface SolutionPlugin {
   publishApplication?: (
     ctx: Context,
     inputs: Inputs,
-    envConfig: EnvConfig,
-    envProfile: EnvProfile,
+    provisionInputConfig: Json,
+    provisionOutput: Json,
     tokenProvider: AppStudioTokenProvider
   ) => Promise<Result<Void, FxError>>;
 
@@ -114,15 +112,16 @@ export interface SolutionPlugin {
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {Inputs} inputs - system inputs.
-   * @param {EnvConfig} envConfig - contains the user customized values for manifest placeholders
-   * @param {EnvProfile} envProfile - contains the provision output values for manifest placeholders
+   * @param {Json} provisionInputConfig - contains the user customized values for manifest placeholders
+   * @param {Json} provisionOutput - contains the provision output values for manifest placeholders
    *
    * @returns {string} package path
    */
   package?: (
     ctx: Context,
-    envConfig: EnvConfig,
-    envProfile: EnvProfile
+    inputs: Inputs,
+    provisionInputConfig: Json,
+    provisionOutput: Json
   ) => Promise<Result<string, FxError>>;
 
   /**
@@ -134,14 +133,13 @@ export interface SolutionPlugin {
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {TokenProvider} tokenProvider - Tokens for Azure and AppStudio
    *
-   * @returns the output values, project state, secret values for each plugin
+   * @returns the output localSettings
    */
   provisionLocalResource?: (
     ctx: Context,
     inputs: Inputs,
-    localSettings: LocalSettings,
     tokenProvider: TokenProvider
-  ) => Promise<Result<Void, FxError>>;
+  ) => Promise<Result<Json, FxError>>;
 
   /**
    * get question model for lifecycle {@link Stage} (create), Questions are organized as a tree. Please check {@link QTreeNode}.
@@ -152,8 +150,6 @@ export interface SolutionPlugin {
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
 
   /**
-    inputs: Inputs,
-    
    * execute user customized task, for example `Add Resource`, `Add Capabilities`, etc
    */
   executeUserTask?: (ctx: Context, inputs: Inputs, func: Func) => Promise<Result<unknown, FxError>>;

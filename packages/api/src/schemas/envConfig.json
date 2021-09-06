@@ -44,5 +44,5 @@
     }
   },
   "additionalProperties": false,
-  "required": ["azure", "manifest"]
+  "required": ["manifest"]
 }

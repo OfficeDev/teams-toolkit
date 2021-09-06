@@ -93,7 +93,7 @@ export interface SolutionPlugin {
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {Inputs} inputs - User answers to questions defined in {@link getQuestionsForLifecycleTask}
    * @param {Json} provisionInputConfig - contains the user customized values for manifest placeholders
-   * @param {Json} provisionOutput - contains the provision output values for manifest placeholders
+   * @param {Json} provisionOutputs - contains the provision output values for manifest placeholders
    * @param {AppStudioTokenProvider} tokenProvider - Token for AppStudio
    * for {@link Stage.publish} along with some system inputs.
    *
@@ -103,7 +103,7 @@ export interface SolutionPlugin {
     ctx: Context,
     inputs: Inputs,
     provisionInputConfig: Json,
-    provisionOutput: Json,
+    provisionOutputs: Json,
     tokenProvider: AppStudioTokenProvider
   ) => Promise<Result<Void, FxError>>;
 

@@ -13,7 +13,7 @@ export interface EnvConfig {
   /**
    * The Azure resource related configuration.
    */
-  azure: {
+  azure?: {
     /**
      * The default subscription to provision Azure resources.
      */

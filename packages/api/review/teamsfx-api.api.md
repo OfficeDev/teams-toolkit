@@ -223,7 +223,7 @@ export const DynamicPlatforms: Platform[];
 export interface EnvConfig {
     // (undocumented)
     $schema?: string;
-    azure: {
+    azure?: {
         subscriptionId?: string;
         resourceGroupName?: string;
     };

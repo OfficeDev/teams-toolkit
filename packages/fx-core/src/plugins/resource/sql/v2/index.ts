@@ -2,36 +2,29 @@
 // Licensed under the MIT license.
 
 import {
-  AzureSolutionSettings,
-  EnvConfig,
-  err,
+  AzureSolutionSettings, err,
   FxError,
   Json,
   PluginContext,
   Result,
   Stage,
   TokenProvider,
-  traverse,
-  Void,
+  traverse
 } from "@microsoft/teamsfx-api";
 import {
-  Context,
-  EnvProfile,
-  PluginName,
-  ProvisionInputs,
-  ProvisionOutput,
-  ResourcePlugin,
+  Context, ProvisionInputs, ResourcePlugin,
+  ResourceProvisionOutput
 } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
 import { SqlPlugin } from "..";
 import {
   ResourcePlugins,
-  ResourcePluginsV2,
+  ResourcePluginsV2
 } from "../../../solution/fx-solution/ResourcePluginContainer";
 import {
   configureResourceAdapter,
   convert2PluginContext,
-  provisionResourceAdapter,
+  provisionResourceAdapter
 } from "../../utils4v2";
 
 @Service(ResourcePluginsV2.SqlPlugin)
@@ -48,9 +41,9 @@ export class SqlPluginV2 implements ResourcePlugin {
   async provisionResource(
     ctx: Context,
     inputs: ProvisionInputs,
-    envConfig: EnvConfig,
+    provisionInputConfig: Json,
     tokenProvider: TokenProvider
-  ): Promise<Result<Json, FxError>> {
+  ): Promise<Result<ResourceProvisionOutput, FxError>> {
     // run question model for publish
     const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
     const getQuestionRes = await this.plugin.getQuestions(Stage.provision, pluginContext);
@@ -64,21 +57,21 @@ export class SqlPluginV2 implements ResourcePlugin {
       }
     }
 
-    return await provisionResourceAdapter(ctx, inputs, envConfig, tokenProvider, this.plugin);
+    return await provisionResourceAdapter(ctx, inputs, provisionInputConfig, tokenProvider, this.plugin);
   }
 
   async configureResource(
     ctx: Context,
     inputs: ProvisionInputs,
-    envConfig: EnvConfig,
-    envProfile: EnvProfile,
+    provisionInputConfig: Json,
+    provisionOutputs: Json,
     tokenProvider: TokenProvider
-  ): Promise<Result<Void, FxError>> {
+  ): Promise<Result<Json, FxError>> {
     return await configureResourceAdapter(
       ctx,
       inputs,
-      envConfig,
-      envProfile,
+      provisionInputConfig,
+      provisionOutputs,
       tokenProvider,
       this.plugin
     );

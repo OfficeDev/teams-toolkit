@@ -1,37 +1,29 @@
 import {
-  v2,
-  Inputs,
-  FxError,
-  Result,
-  ok,
-  err,
-  returnUserError,
-  AzureAccountProvider,
-  Void,
+  AzureAccountProvider, err, FxError, Inputs, Json, ok, Result, returnUserError, v2, Void
 } from "@microsoft/teamsfx-api";
+import { isUndefined } from "lodash";
+import * as util from "util";
+import { PluginDisplayName } from "../../../../common/constants";
 import { getStrings } from "../../../../common/tools";
+import { GLOBAL_CONFIG, SolutionError, SOLUTION_PROVISION_SUCCEEDED } from "../constants";
+import { AzureSolutionQuestionNames } from "../question";
 import { executeConcurrently, NamedThunk } from "./executor";
 import {
   combineRecords,
   extractSolutionInputs,
   getAzureSolutionSettings,
   getSelectedPlugins,
-  isAzureProject,
+  isAzureProject
 } from "./utils";
-import { GLOBAL_CONFIG, SolutionError, SOLUTION_PROVISION_SUCCEEDED } from "../constants";
-import * as util from "util";
-import { AzureSolutionQuestionNames } from "../question";
-import { isUndefined } from "lodash";
-import { PluginDisplayName } from "../../../../common/constants";
 
 export async function deploy(
   ctx: v2.Context,
   inputs: Inputs,
-  envProfile: v2.EnvProfile,
+  provisionOutputs: Json,
   tokenProvider: AzureAccountProvider
-): Promise<Result<Void, FxError>> {
+): Promise<Result<Json, FxError>> {
   const inAzureProject = isAzureProject(getAzureSolutionSettings(ctx));
-  const provisioned = envProfile[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] as boolean;
+  const provisioned = provisionOutputs[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] as boolean;
 
   if (inAzureProject && !provisioned) {
     return err(
@@ -57,7 +49,7 @@ export async function deploy(
   }
 
   const plugins = getSelectedPlugins(getAzureSolutionSettings(ctx));
-  const thunks: NamedThunk<Void>[] = plugins
+  const thunks: NamedThunk<Json>[] = plugins
     .filter((plugin) => !isUndefined(plugin.deploy) && optionsToDeploy.includes(plugin.name))
     .map((plugin) => {
       return {
@@ -67,8 +59,8 @@ export async function deploy(
         thunk: () =>
           plugin.deploy!(
             ctx,
-            { ...inputs, ...extractSolutionInputs(envProfile[GLOBAL_CONFIG]) },
-            envProfile[plugin.name],
+            { ...inputs, ...extractSolutionInputs(provisionOutputs[GLOBAL_CONFIG]) },
+            provisionOutputs[plugin.name],
             tokenProvider
           ),
       };
@@ -95,7 +87,7 @@ export async function deploy(
       ctx.logProvider.info(msg);
       ctx.userInteraction.showMessage("info", msg, false);
     }
-    return ok(Void);
+    return ok(combineRecords(result.value));
   } else {
     const msg = util.format(getStrings().solution.DeployFailNotice, ctx.projectSetting.appName);
     ctx.logProvider.info(msg);

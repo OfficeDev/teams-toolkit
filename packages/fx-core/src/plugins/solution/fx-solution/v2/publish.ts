@@ -9,6 +9,7 @@ import {
   AppStudioTokenProvider,
   Void,
   EnvConfig,
+  Json,
 } from "@microsoft/teamsfx-api";
 import { getStrings } from "../../../../common/tools";
 import { executeConcurrently } from "./executor";
@@ -21,12 +22,12 @@ import { PluginDisplayName } from "../../../../common/constants";
 export async function publishApplication(
   ctx: v2.Context,
   inputs: Inputs,
-  envConfig: EnvConfig,
-  envProfile: v2.EnvProfile,
+  provisionInputConfig: Json,
+  provisionOutputs: Json,
   tokenProvider: AppStudioTokenProvider
 ): Promise<Result<Void, FxError>> {
   const inAzureProject = isAzureProject(getAzureSolutionSettings(ctx));
-  const provisioned = envProfile[GLOBAL_CONFIG].states[SOLUTION_PROVISION_SUCCEEDED];
+  const provisioned = provisionOutputs[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED];
 
   if (inAzureProject && !provisioned) {
     return err(
@@ -48,7 +49,7 @@ export async function publishApplication(
         pluginName: `${plugin.name}`,
         taskName: "publishApplication",
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        thunk: () => plugin.publishApplication!(ctx, inputs, envConfig, envProfile, tokenProvider),
+        thunk: () => plugin.publishApplication!(ctx, inputs, provisionInputConfig, provisionOutputs, tokenProvider),
       };
     });
 

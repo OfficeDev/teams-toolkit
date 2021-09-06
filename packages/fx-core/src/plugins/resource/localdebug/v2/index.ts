@@ -6,22 +6,23 @@ import {
   Func,
   FxError,
   Inputs,
+  Json,
   Result,
   TokenProvider,
-  Void,
+  Void
 } from "@microsoft/teamsfx-api";
-import { Context, LocalSettings, ResourcePlugin } from "@microsoft/teamsfx-api/build/v2";
+import { Context, ResourcePlugin } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
 import { LocalDebugPlugin } from "..";
 import {
   ResourcePlugins,
-  ResourcePluginsV2,
+  ResourcePluginsV2
 } from "../../../solution/fx-solution/ResourcePluginContainer";
 import {
   configureLocalResourceAdapter,
   executeUserTaskAdapter,
   provisionLocalResourceAdapter,
-  scaffoldSourceCodeAdapter,
+  scaffoldSourceCodeAdapter
 } from "../../utils4v2";
 
 @Service(ResourcePluginsV2.LocalDebugPlugin)
@@ -37,16 +38,16 @@ export class LocalDebugPluginV2 implements ResourcePlugin {
   async scaffoldSourceCode(
     ctx: Context,
     inputs: Inputs
-  ): Promise<Result<{ output: Record<string, string> }, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await scaffoldSourceCodeAdapter(ctx, inputs, this.plugin);
   }
 
   async provisionLocalResource(
     ctx: Context,
     inputs: Inputs,
-    localSettings: LocalSettings,
+    localSettings: Json,
     tokenProvider: TokenProvider
-  ): Promise<Result<Void, FxError>> {
+  ): Promise<Result<Json, FxError>> {
     return await provisionLocalResourceAdapter(
       ctx,
       inputs,
@@ -59,9 +60,9 @@ export class LocalDebugPluginV2 implements ResourcePlugin {
   async configureLocalResource(
     ctx: Context,
     inputs: Inputs,
-    localSettings: LocalSettings,
+    localSettings: Json,
     tokenProvider: TokenProvider
-  ): Promise<Result<Void, FxError>> {
+  ): Promise<Result<Json, FxError>> {
     return await configureLocalResourceAdapter(
       ctx,
       inputs,

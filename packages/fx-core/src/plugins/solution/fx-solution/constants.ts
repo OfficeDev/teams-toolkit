@@ -50,6 +50,16 @@ export const RESOURCE_GROUP_NAME = "resourceGroupName";
 export const LOCATION = "location";
 
 /**
+ * Config key whose value is the subscription ID of project.
+ */
+export const SUBSCRIPTION_ID = "subscriptionId";
+
+/**
+ * Config key whose value is the subscription name of project.
+ */
+export const SUBSCRIPTION_NAME = "subscriptionName";
+
+/**
  * Config key whose value is the user info of collaborator
  */
 export const USER_INFO = "userInfo";
@@ -86,10 +96,13 @@ export enum SolutionError {
   NoResourcePluginSelected = "NoResourcePluginSelected",
   NoAppStudioToken = "NoAppStudioToken",
   NoTeamsAppTenantId = "NoTeamsAppTenantId",
+  FailedToCheckResourceGroupExistence = "FailedToCheckResourceGroupExistence",
   FailedToCreateResourceGroup = "FailedToCreateResourceGroup",
   FailedToListResourceGroup = "FailedToListResourceGrouop",
+  FailedToListResourceGroupLocation = "FailedToListResourceGroupLocation",
   FailedToGetResourceGroupInfoInputs = "FailedToGetResourceGroupInfoInputs",
   ResourceGroupNotFound = "ResourceGroupNotFound",
+  SubscriptionNotFound = "SubscriptionNotFound",
   NotLoginToAzure = "NotLoginToAzure",
   AzureAccountExtensionNotInitialized = "AzureAccountExtensionNotInitialized",
   LocalTabEndpointMissing = "LocalTabEndpointMissing",
@@ -204,6 +217,7 @@ export enum SolutionTelemetryProperty {
   AadOwnerCount = "aad-owner-count",
   AadPermission = "aad-permission",
   TeamsAppPermission = "teams-app-permission",
+  ProgrammingLanguage = "programming-language",
 }
 
 export enum SolutionTelemetrySuccess {

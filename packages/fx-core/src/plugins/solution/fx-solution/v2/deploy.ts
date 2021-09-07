@@ -1,14 +1,21 @@
 import {
-  v2,
-  Inputs,
-  FxError,
-  Result,
-  ok,
-  err,
-  returnUserError,
   AzureAccountProvider,
+  err,
+  FxError,
+  Inputs,
+  Json,
+  ok,
+  Result,
+  returnUserError,
+  v2,
+  Void,
 } from "@microsoft/teamsfx-api";
+import { isUndefined } from "lodash";
+import * as util from "util";
+import { PluginDisplayName } from "../../../../common/constants";
 import { getStrings } from "../../../../common/tools";
+import { GLOBAL_CONFIG, SolutionError, SOLUTION_PROVISION_SUCCEEDED } from "../constants";
+import { AzureSolutionQuestionNames } from "../question";
 import { executeConcurrently, NamedThunk } from "./executor";
 import {
   blockV1Project,
@@ -18,26 +25,19 @@ import {
   getSelectedPlugins,
   isAzureProject,
 } from "./utils";
-import { GLOBAL_CONFIG, SolutionError, SOLUTION_PROVISION_SUCCEEDED } from "../constants";
-import * as util from "util";
-import { AzureSolutionQuestionNames } from "../question";
-import { isUndefined } from "lodash";
-import { PluginDisplayName } from "../../../../common/constants";
 
 export async function deploy(
   ctx: v2.Context,
   inputs: v2.DeploymentInputs,
-  provisionOutput: Readonly<Record<v2.PluginName, v2.ProvisionOutput>>,
+  provisionOutputs: Json,
   tokenProvider: AzureAccountProvider
-): Promise<Result<Record<v2.PluginName, { output: Record<string, string> }>, FxError>> {
+): Promise<Result<Void, FxError>> {
   const blockResult = blockV1Project(ctx.projectSetting.solutionSettings);
   if (blockResult.isErr()) {
     return err(blockResult.error);
   }
   const inAzureProject = isAzureProject(getAzureSolutionSettings(ctx));
-  const provisioned = provisionOutput[GLOBAL_CONFIG].states[
-    SOLUTION_PROVISION_SUCCEEDED
-  ] as boolean;
+  const provisioned = provisionOutputs[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] as boolean;
 
   if (inAzureProject && !provisioned) {
     return err(
@@ -63,7 +63,7 @@ export async function deploy(
   }
 
   const plugins = getSelectedPlugins(getAzureSolutionSettings(ctx));
-  const thunks: NamedThunk<{ output: Record<string, string> }>[] = plugins
+  const thunks: NamedThunk<Json>[] = plugins
     .filter((plugin) => !isUndefined(plugin.deploy) && optionsToDeploy.includes(plugin.name))
     .map((plugin) => {
       return {
@@ -73,8 +73,8 @@ export async function deploy(
         thunk: () =>
           plugin.deploy!(
             ctx,
-            { ...inputs, ...extractSolutionInputs(provisionOutput[GLOBAL_CONFIG].output) },
-            provisionOutput[plugin.name],
+            { ...inputs, ...extractSolutionInputs(provisionOutputs[GLOBAL_CONFIG]) },
+            provisionOutputs[plugin.name],
             tokenProvider
           ),
       };
@@ -101,7 +101,7 @@ export async function deploy(
       ctx.logProvider.info(msg);
       ctx.userInteraction.showMessage("info", msg, false);
     }
-    return ok(combineRecords(result.value));
+    return ok(Void);
   } else {
     const msg = util.format(getStrings().solution.DeployFailNotice, ctx.projectSetting.appName);
     ctx.logProvider.info(msg);

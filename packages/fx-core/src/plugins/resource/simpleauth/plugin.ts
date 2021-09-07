@@ -223,17 +223,11 @@ export class SimpleAuthPluginImpl {
       Constants.SolutionPlugin.id,
       Constants.SolutionPlugin.configKeys.resourceNameSuffix
     ) as string;
-    const subscriptionInfo = await ctx.azureAccountProvider?.getSelectedSubscription();
-    if (!subscriptionInfo) {
-      throw ResultFactory.SystemError(
-        NoConfigError.name,
-        NoConfigError.message(
-          Constants.SolutionPlugin.id,
-          Constants.SolutionPlugin.configKeys.subscriptionId
-        )
-      );
-    }
-    const subscriptionId = subscriptionInfo!.subscriptionId;
+    const subscriptionId = Utils.getConfigValueWithValidation(
+      ctx,
+      Constants.SolutionPlugin.id,
+      Constants.SolutionPlugin.configKeys.subscriptionId
+    ) as string;
     const resourceGroupName = Utils.getConfigValueWithValidation(
       ctx,
       Constants.SolutionPlugin.id,

@@ -87,19 +87,35 @@ export async function executeUserTask(
       }
       const appStudioPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin);
       if (appStudioPlugin.publishApplication) {
-        return appStudioPlugin.publishApplication(ctx, inputs, {}, tokenProvider);
+        return appStudioPlugin.publishApplication(
+          ctx,
+          inputs,
+          func.params.envConfig,
+          func.params.envProfile,
+          tokenProvider
+        );
       }
     } else if (method === "validateManifest") {
       const appStudioPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin);
       if (appStudioPlugin.executeUserTask) {
-        return appStudioPlugin.executeUserTask(ctx, func, inputs);
+        return await appStudioPlugin.executeUserTask(ctx, inputs, func);
+      }
+    } else if (method === "buildPackage") {
+      const appStudioPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin);
+      if (appStudioPlugin.executeUserTask) {
+        return await appStudioPlugin.executeUserTask(ctx, inputs, func);
+      }
+    } else if (method === "validateManifest") {
+      const appStudioPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin);
+      if (appStudioPlugin.executeUserTask) {
+        return appStudioPlugin.executeUserTask(ctx, inputs, func);
       }
     } else if (array.length == 2) {
       const pluginName = array[1];
       const pluginMap = getAllV2ResourcePluginMap();
       const plugin = pluginMap.get(pluginName);
       if (plugin && plugin.executeUserTask) {
-        return plugin.executeUserTask(ctx, func, inputs);
+        return plugin.executeUserTask(ctx, inputs, func);
       }
     }
   }

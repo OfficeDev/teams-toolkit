@@ -43,6 +43,7 @@ import {
   getAppDirectory,
   environmentManager,
   isMigrateFromV1Project,
+  isMultiEnvEnabled,
 } from "@microsoft/teamsfx-core";
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -332,7 +333,9 @@ export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
     } else if (stage === Stage.provision) result = await core.provisionResources(inputs);
     else if (stage === Stage.deploy) result = await core.deployArtifacts(inputs);
     else if (stage === Stage.debug) {
-      inputs.ignoreEnvInfo = true;
+      if (isMultiEnvEnabled()) {
+        inputs.ignoreEnvInfo = true;
+      }
       result = await core.localDebug(inputs);
     } else if (stage === Stage.publish) result = await core.publishApplication(inputs);
     else if (stage === Stage.createEnv) {
@@ -372,7 +375,7 @@ export function detectVsCodeEnv(): VsCodeEnv {
   }
 }
 
-async function runUserTask(func: Func, eventName: string): Promise<Result<any, FxError>> {
+export async function runUserTask(func: Func, eventName: string): Promise<Result<any, FxError>> {
   let result: Result<any, FxError> = ok(null);
   try {
     const checkCoreRes = checkCoreNotEmpty();

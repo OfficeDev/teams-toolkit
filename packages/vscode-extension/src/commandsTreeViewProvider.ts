@@ -4,10 +4,13 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import { ext } from "./extensionVariables";
-import { TreeItem, TreeCategory, Result, FxError, ok } from "@microsoft/teamsfx-api";
+import { TreeItem, TreeCategory, Result, FxError, ok, Stage, Func } from "@microsoft/teamsfx-api";
 import * as StringResources from "./resources/Strings.json";
 import { Correlator } from "@microsoft/teamsfx-core";
 import { Void } from "@microsoft/teamsfx-api";
+import { Commands } from "./controls/Commands";
+import { runCommand, runUserTask } from "./handlers";
+import { TelemetryEvent } from "./telemetry/extTelemetryEvents";
 
 class TreeViewManager {
   private static instance: TreeViewManager;
@@ -331,8 +334,33 @@ class CommandsWebviewProvider implements vscode.WebviewViewProvider {
 
     webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
-    webviewView.webview.onDidReceiveMessage((data) => {
-      switch (data.type) {
+    webviewView.webview.onDidReceiveMessage(async (msg) => {
+      switch (msg.command) {
+        case Commands.Provision:
+          await runCommand(Stage.provision);
+          break;
+        case Commands.ValidateManifest:
+          const validateFunc: Func = {
+            namespace: "fx-solution-azure",
+            method: "validateManifest",
+          };
+          await runUserTask(validateFunc, TelemetryEvent.ValidateManifest);
+          break;
+        case Commands.PackageTeams:
+          const packageFunc: Func = {
+            namespace: "fx-solution-azure",
+            method: "buildPackage",
+          };
+          await runUserTask(packageFunc, TelemetryEvent.Build);
+          break;
+        case Commands.Deploy:
+          await runCommand(Stage.deploy);
+          break;
+        case Commands.Publish:
+          await runCommand(Stage.publish);
+          break;
+        case Commands.OpenExternalLink:
+          vscode.env.openExternal(vscode.Uri.parse(msg.data));
       }
     });
   }
@@ -397,11 +425,10 @@ export default TreeViewManager.getInstance();
 
 export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeViewCommand> {
   public static readonly TreeViewFlag = "TreeView";
-  private _onDidChangeTreeData: vscode.EventEmitter<
-    TreeViewCommand | undefined | void
-  > = new vscode.EventEmitter<TreeViewCommand | undefined | void>();
-  readonly onDidChangeTreeData: vscode.Event<TreeViewCommand | undefined | void> = this
-    ._onDidChangeTreeData.event;
+  private _onDidChangeTreeData: vscode.EventEmitter<TreeViewCommand | undefined | void> =
+    new vscode.EventEmitter<TreeViewCommand | undefined | void>();
+  readonly onDidChangeTreeData: vscode.Event<TreeViewCommand | undefined | void> =
+    this._onDidChangeTreeData.event;
 
   private commands: TreeViewCommand[] = [];
   private disposableMap: Map<string, vscode.Disposable> = new Map();

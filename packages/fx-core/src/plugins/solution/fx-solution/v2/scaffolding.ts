@@ -1,4 +1,4 @@
-import { v2, Inputs, FxError, Result, ok, err } from "@microsoft/teamsfx-api";
+import { v2, Inputs, FxError, Result, ok, err, Void } from "@microsoft/teamsfx-api";
 import { getStrings, isMultiEnvEnabled } from "../../../../common/tools";
 import {
   AzureResourceFunction,
@@ -21,14 +21,14 @@ import { LocalSettingsProvider } from "../../../../common/localSettingsProvider"
 export async function scaffoldSourceCode(
   ctx: v2.Context,
   inputs: Inputs
-): Promise<Result<Record<v2.PluginName, { output: Record<string, string> }>, FxError>> {
+): Promise<Result<Void, FxError>> {
   const blockResult = blockV1Project(ctx.projectSetting.solutionSettings);
   if (blockResult.isErr()) {
     return err(blockResult.error);
   }
   const plugins = getSelectedPlugins(getAzureSolutionSettings(ctx));
 
-  const thunks: NamedThunk<{ output: Record<string, string> }>[] = plugins
+  const thunks: NamedThunk<Void>[] = plugins
     .filter((plugin) => !!plugin.scaffoldSourceCode)
     .map((plugin) => {
       return {
@@ -53,7 +53,7 @@ export async function scaffoldSourceCode(
       `Success: ${getStrings().solution.ScaffoldSuccessNotice}`,
       false
     );
-    return ok(combineRecords(result.value));
+    return ok(Void);
   } else {
     return err(result.error);
   }
@@ -63,12 +63,12 @@ export async function scaffoldByPlugins(
   ctx: v2.Context,
   inputs: Inputs,
   plugins: v2.ResourcePlugin[]
-): Promise<Result<Record<v2.PluginName, { output: Record<string, string> }>, FxError>> {
+): Promise<Result<Void, FxError>> {
   const blockResult = blockV1Project(ctx.projectSetting.solutionSettings);
   if (blockResult.isErr()) {
     return err(blockResult.error);
   }
-  const thunks: NamedThunk<{ output: Record<string, string> }>[] = plugins
+  const thunks: NamedThunk<Void>[] = plugins
     .filter((plugin) => !!plugin.scaffoldSourceCode)
     .map((plugin) => {
       return {
@@ -93,7 +93,7 @@ export async function scaffoldByPlugins(
       `Success: ${getStrings().solution.ScaffoldSuccessNotice}`,
       false
     );
-    return ok(combineRecords(result.value));
+    return ok(Void);
   } else {
     return err(result.error);
   }

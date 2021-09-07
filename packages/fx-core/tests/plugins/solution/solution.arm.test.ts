@@ -74,7 +74,7 @@ function mockSolutionContext(): SolutionContext {
     envInfo: {
       envName: "default",
       profile: new Map<string, any>(),
-      config: environmentManager.newEnvConfigData(),
+      config: environmentManager.newEnvConfigData("myApp"),
     },
     answers: { platform: Platform.VSCode },
     projectSettings: undefined,

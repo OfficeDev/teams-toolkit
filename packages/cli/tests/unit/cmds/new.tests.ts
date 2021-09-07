@@ -125,7 +125,6 @@ describe("New Command Tests", function () {
     });
 
     it("Folder not exists", async function () {
-      this.timeout(5000);
       const folder = path.join(TestFolder, sampleAppName);
       deleteFolderIfExists(folder);
       await cmd.subCommands[0].handler({

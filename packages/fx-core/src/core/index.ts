@@ -804,7 +804,8 @@ export class FxCore implements Core {
     inputs: Inputs,
     core: FxCore
   ): Promise<Result<Void, FxError>> {
-    const newEnvConfig = environmentManager.newEnvConfigData();
+    const appName = projectSettings.appName;
+    const newEnvConfig = environmentManager.newEnvConfigData(appName);
     const writeEnvResult = await environmentManager.writeEnvConfig(
       inputs.projectPath!,
       newEnvConfig,
@@ -822,7 +823,7 @@ export class FxCore implements Core {
     if (isArmSupportEnabled()) {
       const solutionContext: SolutionContext = {
         projectSettings,
-        envInfo: newEnvInfo(targetEnvName),
+        envInfo: newEnvInfo(targetEnvName, newEnvConfig),
         root: inputs.projectPath || "",
         ...core.tools,
         ...core.tools.tokenProvider,

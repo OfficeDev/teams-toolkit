@@ -88,13 +88,18 @@ class EnvironmentManager {
     return ok({ envName, config: configResult.value, profile: profileResult.value });
   }
 
-  public newEnvConfigData(): EnvConfig {
+  public newEnvConfigData(appName: string): EnvConfig {
     const envConfig: EnvConfig = {
       $schema: this.schema,
       azure: {},
       manifest: {
         description: this.manifestConfigDescription,
-        values: {},
+        values: {
+          appName: {
+            short: appName,
+            full: `Full name for ${appName}`,
+          },
+        },
       },
     };
 
@@ -216,7 +221,7 @@ class EnvironmentManager {
     if (!isMultiEnvEnabled()) {
       return ok({
         azure: {},
-        manifest: { values: {} },
+        manifest: { values: { appName: { short: "" } } },
       });
     }
 

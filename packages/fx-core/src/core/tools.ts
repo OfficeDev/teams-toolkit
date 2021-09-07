@@ -190,7 +190,11 @@ export function newEnvInfo(
     config: config ?? {
       azure: {},
       manifest: {
-        values: {},
+        values: {
+          appName: {
+            short: "",
+          },
+        },
       },
     },
     profile: profile ?? new Map<string, any>([[GLOBAL_CONFIG, new ConfigMap()]]),

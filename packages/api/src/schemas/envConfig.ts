@@ -32,6 +32,20 @@ export interface EnvConfig {
      * Configs to customize the Teams app manifest.
      */
     values: {
+      /**
+       * Teams app name.
+       */
+      appName: {
+        /**
+         * A short display name for teams app.
+         */
+        short: string;
+        /**
+         * The full name for teams app.
+         */
+        full?: string;
+        [k: string]: unknown;
+      };
       [k: string]: unknown;
     };
     [k: string]: unknown;

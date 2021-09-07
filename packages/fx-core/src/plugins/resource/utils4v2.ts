@@ -114,7 +114,9 @@ export async function provisionResourceAdapter(
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
   const json: Json = {};
   Object.assign(json, inputs);
-  Object.assign(json, provisionInputConfig.azure);
+  if(provisionInputConfig.azure) {
+    Object.assign(json, provisionInputConfig.azure);
+  }
   const solutionConfig = ConfigMap.fromJSON(json);
   const configOfOtherPlugins = new Map<string, ConfigMap>();
   if (solutionConfig) configOfOtherPlugins.set(GLOBAL_CONFIG, solutionConfig);
@@ -219,13 +221,7 @@ export async function provisionLocalResourceAdapter(
 ): Promise<Result<Json, FxError>> {
   if (!plugin.localDebug) return err(PluginHasNoTaskImpl(plugin.displayName, "localDebug"));
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
-  pluginContext.localSettings = {
-    teamsApp: ConfigMap.fromJSON(localSettings.teamsApp) || new ConfigMap(),
-    auth: ConfigMap.fromJSON(localSettings.auth),
-    backend: ConfigMap.fromJSON(localSettings.backend),
-    bot: ConfigMap.fromJSON(localSettings.bot),
-    frontend: ConfigMap.fromJSON(localSettings.frontend),
-  };
+  setLocalSettingsV1(pluginContext, localSettings);
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
@@ -233,7 +229,7 @@ export async function provisionLocalResourceAdapter(
   if (res.isErr()) {
     return err(res.error);
   }
-  setLocalSettings(localSettings, pluginContext);
+  setLocalSettingsV2(localSettings, pluginContext);
   return ok(Void);
 }
 
@@ -246,13 +242,7 @@ export async function configureLocalResourceAdapter(
 ): Promise<Result<Json, FxError>> {
   if (!plugin.postLocalDebug) return err(PluginHasNoTaskImpl(plugin.displayName, "postLocalDebug"));
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
-  pluginContext.localSettings = {
-    teamsApp: ConfigMap.fromJSON(localSettings.teamsApp) || new ConfigMap(),
-    auth: ConfigMap.fromJSON(localSettings.auth),
-    backend: ConfigMap.fromJSON(localSettings.backend),
-    bot: ConfigMap.fromJSON(localSettings.bot),
-    frontend: ConfigMap.fromJSON(localSettings.frontend),
-  };
+  setLocalSettingsV1(pluginContext, localSettings);
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
@@ -260,7 +250,7 @@ export async function configureLocalResourceAdapter(
   if (res.isErr()) {
     return err(res.error);
   }
-  setLocalSettings(localSettings, pluginContext);
+  setLocalSettingsV2(localSettings, pluginContext);
   return ok(Void);
 }
 
@@ -293,7 +283,7 @@ export function getArmOutput(ctx: PluginContext, key: string): string | undefine
   return output?.[key]?.value;
 }
 
-function setConfigs(pluginName: string, pluginContext: PluginContext, provisionOutputs: Json) {
+export function setConfigs(pluginName: string, pluginContext: PluginContext, provisionOutputs: Json) :void{
   const envInfo = newEnvInfo();
   for (const key in provisionOutputs) {
     const output = provisionOutputs[key];
@@ -306,7 +296,7 @@ function setConfigs(pluginName: string, pluginContext: PluginContext, provisionO
 }
 
 
-function setProvisionOutputs(provisionOutputs: Json, pluginContext: PluginContext){
+export function setProvisionOutputs(provisionOutputs: Json, pluginContext: PluginContext):void{
   for(const key of pluginContext.envInfo.profile.keys()) {
     const map = pluginContext.envInfo.profile.get(key) as ConfigMap;
     const value = map?.toJSON();
@@ -316,10 +306,20 @@ function setProvisionOutputs(provisionOutputs: Json, pluginContext: PluginContex
   }
 }
 
-function setLocalSettings(localSettings: Json, pluginContext: PluginContext) {
+export function setLocalSettingsV2(localSettings: Json, pluginContext: PluginContext):void {
   localSettings.teamsApp = pluginContext.localSettings?.teamsApp?.toJSON();
   localSettings.auth = pluginContext.localSettings?.auth?.toJSON();
   localSettings.backend = pluginContext.localSettings?.backend?.toJSON();
   localSettings.bot = pluginContext.localSettings?.bot?.toJSON();
   localSettings.frontend = pluginContext.localSettings?.frontend?.toJSON();
+}
+
+export function setLocalSettingsV1(pluginContext: PluginContext, localSettings: Json):void {
+  pluginContext.localSettings = {
+    teamsApp: ConfigMap.fromJSON(localSettings.teamsApp) || new ConfigMap(),
+    auth: ConfigMap.fromJSON(localSettings.auth),
+    backend: ConfigMap.fromJSON(localSettings.backend),
+    bot: ConfigMap.fromJSON(localSettings.bot),
+    frontend: ConfigMap.fromJSON(localSettings.frontend),
+  };
 }

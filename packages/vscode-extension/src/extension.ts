@@ -35,13 +35,6 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(new ExtTelemetry.Reporter(context));
 
   await exp.initialize(context);
-  TreatmentVariableValue.isExpandCard = (await exp
-    .getExpService()
-    .getTreatmentVariableAsync(
-      TreatmentVariables.VSCodeConfig,
-      TreatmentVariables.ExpandCreateCard,
-      true
-    )) as boolean | undefined;
   TreatmentVariableValue.isEmbeddedSurvey = (await exp
     .getExpService()
     .getTreatmentVariableAsync(

@@ -1,112 +1,83 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as fs from "fs-extra";
-import {
-  Core,
-  err,
-  Func,
-  ok,
-  Platform,
-  QTreeNode,
-  Result,
-  SolutionContext,
-  Stage,
-  SingleSelectQuestion,
-  FxError,
-  ConfigFolderName,
-  Inputs,
-  Tools,
-  Void,
-  FunctionRouter,
-  OptionItem,
-  Solution,
-  ProjectConfig,
-  ProjectSettings,
-  PluginConfig,
-  assembleError,
-  LogProvider,
-  GroupOfTasks,
-  RunnableTask,
-  AppPackageFolderName,
-  SolutionConfig,
-  ArchiveFolderName,
-  ArchiveLogFileName,
-  TelemetryReporter,
-} from "@microsoft/teamsfx-api";
-import * as path from "path";
-import {
-  downloadSample,
-  downloadSampleHook,
-  fetchCodeZip,
-  isArmSupportEnabled,
-  isMultiEnvEnabled,
-  saveFilesRecursively,
-} from "../common/tools";
-import {
-  CoreQuestionNames,
-  ProjectNamePattern,
-  QuestionAppName,
-  QuestionRootFolder,
-  QuestionSelectSolution,
-  SampleSelect,
-  ScratchOptionNo,
-  ScratchOptionYes,
-  getCreateNewOrFromSampleQuestion,
-  QuestionV1AppName,
-  DefaultAppNameFunc,
-} from "./question";
-import * as jsonschema from "jsonschema";
-import AdmZip from "adm-zip";
 import { HookContext, hooks } from "@feathersjs/hooks";
-import { ErrorHandlerMW } from "./middleware/errorHandler";
-import { QuestionModelMW } from "./middleware/questionModel";
-import { ProjectSettingsWriterMW } from "./middleware/projectSettingsWriter";
-import { ProjectSettingsLoaderMW, newSolutionContext } from "./middleware/projectSettingsLoader";
-import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import {
-  FetchSampleError,
-  FunctionRouterError,
-  InvalidInputError,
-  MigrateNotImplementError,
-  NonExistEnvNameError,
-  ProjectEnvAlreadyExistError,
-  ProjectFolderExistError,
-  ProjectFolderNotExistError,
-  TaskNotSupportError,
-  WriteFileError,
-} from "./error";
-import { SolutionLoaderMW } from "./middleware/solutionLoader";
-import { ContextInjecterMW } from "./middleware/contextInjecter";
-import { defaultSolutionLoader } from "./loader";
+  AppPackageFolderName, ArchiveFolderName,
+  ArchiveLogFileName, assembleError, ConfigFolderName, Core,
+  err,
+  Func, FunctionRouter, FxError, GroupOfTasks, Inputs, LogProvider, ok, OptionItem, Platform, ProjectConfig,
+  ProjectSettings, QTreeNode,
+  Result, RunnableTask, SingleSelectQuestion, Solution, SolutionConfig, SolutionContext,
+  Stage, TelemetryReporter, Tools,
+  Void
+} from "@microsoft/teamsfx-api";
+import AdmZip from "adm-zip";
+import { AxiosResponse } from "axios";
+import * as fs from "fs-extra";
+import * as jsonschema from "jsonschema";
+import * as path from "path";
+import * as uuid from "uuid";
+import { environmentManager } from "..";
+import { globalStateUpdate } from "../common/globalState";
 import {
   Component,
   sendTelemetryErrorEvent,
   sendTelemetryEvent,
   TelemetryEvent,
   TelemetryProperty,
-  TelemetrySuccess,
+  TelemetrySuccess
 } from "../common/telemetry";
-import * as uuid from "uuid";
-import { AxiosResponse } from "axios";
-import { ProjectUpgraderMW } from "./middleware/projectUpgrader";
-import { globalStateUpdate } from "../common/globalState";
+import {
+  downloadSampleHook,
+  fetchCodeZip,
+  isArmSupportEnabled,
+  isMultiEnvEnabled,
+  saveFilesRecursively
+} from "../common/tools";
+import { getParameterJson } from "../plugins/solution/fx-solution/arm";
+import { LocalCrypto } from "./crypto";
+import {
+  FetchSampleError,
+  FunctionRouterError,
+  InvalidInputError,
+  MigrateNotImplementError,
+  NonExistEnvNameError, ProjectFolderExistError,
+  ProjectFolderNotExistError,
+  TaskNotSupportError,
+  WriteFileError
+} from "./error";
+import { defaultSolutionLoader } from "./loader";
+import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
+import { ContextInjecterMW } from "./middleware/contextInjecter";
 import {
   askNewEnvironment,
   EnvInfoLoaderMW,
   loadSolutionContext,
   upgradeDefaultFunctionName,
-  upgradeProgrammingLanguage,
+  upgradeProgrammingLanguage
 } from "./middleware/envInfoLoader";
 import { EnvInfoWriterMW } from "./middleware/envInfoWriter";
+import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { LocalSettingsLoaderMW } from "./middleware/localSettingsLoader";
 import { LocalSettingsWriterMW } from "./middleware/localSettingsWriter";
 import { MigrateConditionHandlerMW } from "./middleware/migrateConditionHandler";
-import { environmentManager } from "..";
-import { newEnvInfo} from "./tools";
-import { getParameterJson } from "../plugins/solution/fx-solution/arm";
-import { LocalCrypto } from "./crypto";
+import { newSolutionContext, ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
+import { ProjectSettingsWriterMW } from "./middleware/projectSettingsWriter";
+import { ProjectUpgraderMW } from "./middleware/projectUpgrader";
+import { QuestionModelMW } from "./middleware/questionModel";
+import { SolutionLoaderMW } from "./middleware/solutionLoader";
 import { PermissionRequestFileProvider } from "./permissionRequest";
+import {
+  CoreQuestionNames, DefaultAppNameFunc, getCreateNewOrFromSampleQuestion, ProjectNamePattern,
+  QuestionAppName,
+  QuestionRootFolder,
+  QuestionSelectSolution, QuestionV1AppName, SampleSelect,
+  ScratchOptionNo,
+  ScratchOptionYes
+} from "./question";
+import { newEnvInfo } from "./tools";
+import { TOOLS } from "./v2";
 
 export interface CoreHookContext extends HookContext {
   version: "1",
@@ -890,7 +861,87 @@ export class FxCore implements Core {
   async switchEnv(inputs: Inputs): Promise<Result<Void, FxError>> {
     throw TaskNotSupportError(Stage.switchEnv);
   }
+
+}
+
+
+export async function downloadSample(inputs: Inputs): Promise<Result<string, FxError>>{
+  const folder = inputs[QuestionRootFolder.name] as string;
+  const sample = inputs[CoreQuestionNames.Samples] as OptionItem;
+  if (sample && sample.data && folder) {
+    const url = sample.data as string;
+    const sampleId = sample.id;
+    const sampleAppPath = path.resolve(folder, sampleId);
+    if ((await fs.pathExists(sampleAppPath)) && (await fs.readdir(sampleAppPath)).length > 0) {
+      return err(ProjectFolderExistError(sampleAppPath));
+    }
+
+    let fetchRes: AxiosResponse<any> | undefined;
+    const task1: RunnableTask<Void> = {
+      name: `Download code from '${url}'`,
+      run: async (...args: any): Promise<Result<Void, FxError>> => {
+        try {
+          sendTelemetryEvent(Component.core, TelemetryEvent.DownloadSampleStart, {
+            [TelemetryProperty.SampleAppName]: sample.id,
+            module: "fx-core",
+          });
+          fetchRes = await fetchCodeZip(url);
+          if (fetchRes !== undefined) {
+            sendTelemetryEvent(Component.core, TelemetryEvent.DownloadSample, {
+              [TelemetryProperty.SampleAppName]: sample.id,
+              [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+              module: "fx-core",
+            });
+            return ok(Void);
+          } else return err(FetchSampleError());
+        } catch (e) {
+          sendTelemetryErrorEvent(
+            Component.core,
+            TelemetryEvent.DownloadSample,
+            assembleError(e),
+            {
+              [TelemetryProperty.SampleAppName]: sample.id,
+              module: "fx-core",
+            }
+          );
+          return err(assembleError(e));
+        }
+      },
+    };
+
+    const task2: RunnableTask<Void> = {
+      name: "Save and unzip package",
+      run: async (...args: any): Promise<Result<Void, FxError>> => {
+        if (fetchRes) {
+          await saveFilesRecursively(new AdmZip(fetchRes.data), sampleId, folder);
+        }
+        return ok(Void);
+      },
+    };
+    const task3: RunnableTask<Void> = {
+      name: "post process",
+      run: async (...args: any): Promise<Result<Void, FxError>> => {
+        await downloadSampleHook(sampleId, sampleAppPath);
+        return ok(Void);
+      },
+    };
+    const group = new GroupOfTasks<Void>([task1, task2, task3], {
+      sequential: true,
+      fastFail: true,
+    });
+    const runRes = await TOOLS.ui.runWithProgress(group, {
+      showProgress: true,
+      cancellable: false,
+    });
+    if (runRes.isOk()) {
+      return ok(sampleAppPath);
+    } else {
+      return err(runRes.error);
+    }
+  }
+  return err(InvalidInputError(`invalid answer for '${CoreQuestionNames.Samples}'`, inputs));
 }
 
 export * from "./error";
 export * from "./tools";
+

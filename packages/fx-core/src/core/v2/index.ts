@@ -16,17 +16,16 @@ import * as fs from "fs-extra";
 import * as jsonschema from "jsonschema";
 import * as path from "path";
 import * as uuid from "uuid";
-import { LoadSolutionError, NotImplementedError } from "..";
+import { downloadSample, LoadSolutionError, NotImplementedError } from "..";
 import { environmentManager } from "../../";
 import { globalStateUpdate } from "../../common/globalState";
 import {
-  downloadSample, isArmSupportEnabled,
+  isArmSupportEnabled,
   isMultiEnvEnabled
 } from "../../common/tools";
 import { getParameterJson } from "../../plugins/solution/fx-solution/arm";
 import { LocalCrypto } from "../crypto";
 import {
-  FunctionRouterError,
   InvalidInputError, NonExistEnvNameError, ProjectFolderExistError, TaskNotSupportError,
   WriteFileError
 } from "../error";
@@ -691,7 +690,7 @@ export class FxCoreV2 implements Core {
     inputs: Inputs,
     core: FxCoreV2
   ): Promise<Result<Void, FxError>> {
-    const newEnvConfig = environmentManager.newEnvConfigData();
+    const newEnvConfig = environmentManager.newEnvConfigData(projectSettings.appName);
     const writeEnvResult = await environmentManager.writeEnvConfig(
       inputs.projectPath!,
       newEnvConfig,

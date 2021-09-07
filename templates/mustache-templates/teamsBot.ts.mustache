@@ -13,11 +13,24 @@ export class {{#IS_BOT}}TeamsBot{{/IS_BOT}}{{^IS_BOT}}MessageExtensionBot{{/IS_B
   {{#IS_BOT}}
   // record the likeCount
   likeCountObj: { likeCount: number };
+  
+  conversationState: BotState;
+  userState: BotState;
+  dialog: SSODialog;
+  dialogState: any;
 
-  constructor() {
+  constructor(
+    conversationState: BotState,
+    userState: BotState,
+    dialog: SSODialog
+  ) {
     super();
 
     this.likeCountObj = { likeCount: 0 };
+    this.conversationState = conversationState;
+    this.userState = userState;
+    this.dialog = dialog;
+    this.dialogState = this.conversationState.createProperty("DialogState");
 
     this.onMessage(async (context, next) => {
       console.log("Running with Message Activity.");
@@ -32,25 +45,11 @@ export class {{#IS_BOT}}TeamsBot{{/IS_BOT}}{{^IS_BOT}}MessageExtensionBot{{/IS_B
       }
 
       // Trigger command by IM text
-      switch (txt) {
-        case "welcome": {
-          const card = this.renderAdaptiveCard(rawWelcomeCard);
-          await context.sendActivity({ attachments: [card] });
-          break;
-        }
-        case "learn": {
-          this.likeCountObj.likeCount = 0;
-          const card = this.renderAdaptiveCard(rawLearnCard, this.likeCountObj);
-          await context.sendActivity({ attachments: [card] });
-          break;
-        }
-        /**
-         * case "yourCommand": {
-         *   await context.sendActivity(`Add your response here!`);
-         *   break;
-         * }
-         */
-      }
+      await Utils.triggerCommand(txt, {
+        context: context,
+        ssoDialog: this.dialog,
+        dialogState: this.dialogState,
+      });
 
       // By calling next() you ensure that the next BotHandler is run.
       await next();
@@ -60,7 +59,7 @@ export class {{#IS_BOT}}TeamsBot{{/IS_BOT}}{{^IS_BOT}}MessageExtensionBot{{/IS_B
       const membersAdded = context.activity.membersAdded;
       for (let cnt = 0; cnt < membersAdded.length; cnt++) {
         if (membersAdded[cnt].id) {
-          const card = this.renderAdaptiveCard(rawWelcomeCard);
+          const card = Utils.renderAdaptiveCard(rawWelcomeCard);
           await context.sendActivity({ attachments: [card] });
           break;
         }
@@ -78,7 +77,7 @@ export class {{#IS_BOT}}TeamsBot{{/IS_BOT}}{{^IS_BOT}}MessageExtensionBot{{/IS_B
     // The verb "userlike" is sent from the Adaptive Card defined in adaptiveCards/learn.json
     if (invokeValue.action.verb === "userlike") {
       this.likeCountObj.likeCount++;
-      const card = this.renderAdaptiveCard(rawLearnCard, this.likeCountObj);
+      const card = Utils.renderAdaptiveCard(rawLearnCard, this.likeCountObj);
       await context.updateActivity({
         type: "message",
         id: context.activity.replyToId,
@@ -88,12 +87,33 @@ export class {{#IS_BOT}}TeamsBot{{/IS_BOT}}{{^IS_BOT}}MessageExtensionBot{{/IS_B
     }
   }
 
-  // Bind AdaptiveCard with data
-  renderAdaptiveCard(rawCardTemplate: any, dataObj?: any): Attachment {
-    const cardTemplate = new ACData.Template(rawCardTemplate);
-    const cardWithData = cardTemplate.expand({ $root: dataObj });
-    const card = CardFactory.adaptiveCard(cardWithData);
-    return card;
+  async run(context: TurnContext) {
+    await super.run(context);
+
+    // Save any state changes. The load happened during the execution of the Dialog.
+    await this.conversationState.saveChanges(context, false);
+    await this.userState.saveChanges(context, false);
+  }
+
+  async handleTeamsSigninVerifyState(
+    context: TurnContext,
+    query: SigninStateVerificationQuery
+  ) {
+    console.log(
+      "Running dialog with signin/verifystate from an Invoke Activity."
+    );
+    await this.dialog.run(context, this.dialogState);
+  }
+
+  async handleTeamsSigninTokenExchange(
+    context: TurnContext,
+    query: SigninStateVerificationQuery
+  ) {
+    await this.dialog.run(context, this.dialogState);
+  }
+
+  async onSignInInvoke(context: TurnContext) {
+    await this.dialog.run(context, this.dialogState);
   }
   {{/IS_BOT}}
 

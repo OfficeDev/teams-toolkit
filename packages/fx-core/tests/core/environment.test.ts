@@ -53,7 +53,11 @@ describe("APIs of Environment Manager", () => {
     azure: {},
     manifest: {
       description: "",
-      values: {},
+      values: {
+        appName: {
+          short: appName,
+        },
+      },
     },
   };
   const invalidEnvConfigData = {};
@@ -107,7 +111,7 @@ describe("APIs of Environment Manager", () => {
       assert.equal(envConfigInfo.envName, environmentManager.getDefaultEnvName());
       assert.isEmpty(envConfigInfo.config.azure);
       assert.equal(envConfigInfo.config.manifest.description, "");
-      assert.isEmpty(envConfigInfo.config.manifest.values);
+      assert.equal(envConfigInfo.config.manifest.values.appName.short, appName);
     });
 
     it("load valid environment config file with target env", async () => {
@@ -123,7 +127,7 @@ describe("APIs of Environment Manager", () => {
       assert.equal(envConfigInfo.envName, envName);
       assert.isEmpty(envConfigInfo.config.azure);
       assert.equal(envConfigInfo.config.manifest.description, "");
-      assert.isEmpty(envConfigInfo.config.manifest.values);
+      assert.equal(envConfigInfo.config.manifest.values.appName.short, appName);
     });
 
     it("load invalid enviornment config file", async () => {

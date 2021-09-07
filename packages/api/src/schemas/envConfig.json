@@ -26,7 +26,7 @@
     },
     "manifest": {
       "type": "object",
-      "description": "The Teams App mainfest related configuration.",
+      "description": "The Teams App manifest related configuration.",
       "properties": {
         "description": {
           "type": "string"
@@ -44,5 +44,5 @@
     }
   },
   "additionalProperties": false,
-  "required": ["azure", "manifest"]
+  "required": ["manifest"]
 }

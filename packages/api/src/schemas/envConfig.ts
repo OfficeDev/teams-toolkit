@@ -13,7 +13,7 @@ export interface EnvConfig {
   /**
    * The Azure resource related configuration.
    */
-  azure: {
+  azure?: {
     /**
      * The default subscription to provision Azure resources.
      */
@@ -24,7 +24,7 @@ export interface EnvConfig {
     resourceGroupName?: string;
   };
   /**
-   * The Teams App mainfest related configuration.
+   * The Teams App manifest related configuration.
    */
   manifest: {
     description?: string;

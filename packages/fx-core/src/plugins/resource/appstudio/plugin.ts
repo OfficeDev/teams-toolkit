@@ -161,8 +161,7 @@ export class AppStudioPluginImpl {
    * @returns
    */
   public async createManifest(settings: ProjectSettings): Promise<TeamsAppManifest | undefined> {
-    const solutionSettings: AzureSolutionSettings =
-      settings.solutionSettings as AzureSolutionSettings;
+    const solutionSettings: AzureSolutionSettings = settings.solutionSettings as AzureSolutionSettings;
     if (
       !solutionSettings.capabilities ||
       (!solutionSettings.capabilities.includes(BotOptionItem.id) &&
@@ -231,9 +230,8 @@ export class AppStudioPluginImpl {
     manifest.id = "{appid}";
     manifest.validDomains = [];
 
-    const includeBot = (
-      ctx.projectSettings?.solutionSettings as AzureSolutionSettings
-    ).activeResourcePlugins?.includes(PluginNames.BOT);
+    const includeBot = (ctx.projectSettings
+      ?.solutionSettings as AzureSolutionSettings).activeResourcePlugins?.includes(PluginNames.BOT);
     if (includeBot) {
       if (manifest.bots !== undefined && manifest.bots.length > 0) {
         for (let index = 0; index < manifest.bots.length; ++index) {

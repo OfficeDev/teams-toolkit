@@ -327,8 +327,8 @@ export default class Survey extends React.Component<any, any> {
           },
         },
       });
-    }
 
-    this.setState({ surveyTaken: true });
+      this.setState({ surveyTaken: true });
+    }
   };
 }

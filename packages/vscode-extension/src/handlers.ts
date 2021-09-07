@@ -973,7 +973,8 @@ export async function cmpAccountsHandler() {
   }
 
   const solutionSettings = await getAzureSolutionSettings();
-  if (solutionSettings && "Azure" === solutionSettings.hostType) {
+  // if non-teamsfx project or Azure project then show Azure account info
+  if (!solutionSettings || (solutionSettings && "Azure" === solutionSettings.hostType)) {
     const azureAccount = await AzureAccountManager.getStatus();
     if (azureAccount.status === "SignedIn") {
       const accountInfo = azureAccount.accountInfo;

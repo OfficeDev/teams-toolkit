@@ -230,13 +230,8 @@ export interface EnvConfig {
     manifest: {
         description?: string;
         values: {
-            appName?: {
-                short?: string;
-                full?: string;
-                [k: string]: unknown;
-            };
-            description?: {
-                short?: string;
+            appName: {
+                short: string;
                 full?: string;
                 [k: string]: unknown;
             };

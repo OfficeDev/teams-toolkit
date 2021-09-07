@@ -99,10 +99,6 @@ class EnvironmentManager {
             short: appName,
             full: `Full name for ${appName}`,
           },
-          description: {
-            short: `Short description for ${appName}`,
-            full: `Full description for ${appName}`,
-          },
         },
       },
     };
@@ -225,7 +221,7 @@ class EnvironmentManager {
     if (!isMultiEnvEnabled()) {
       return ok({
         azure: {},
-        manifest: { values: {} },
+        manifest: { values: { appName: { short: "myApp" } } },
       });
     }
 

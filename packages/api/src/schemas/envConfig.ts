@@ -35,27 +35,13 @@ export interface EnvConfig {
       /**
        * Teams app name.
        */
-      appName?: {
+      appName: {
         /**
          * A short display name for teams app.
          */
-        short?: string;
+        short: string;
         /**
          * The full name for teams app.
-         */
-        full?: string;
-        [k: string]: unknown;
-      };
-      /**
-       * Teams app description.
-       */
-      description?: {
-        /**
-         * A short description of the app used when space is limited. Maximum length is 80 characters.
-         */
-        short?: string;
-        /**
-         * The full description of the app. Maximum length is 4000 characters.
          */
         full?: string;
         [k: string]: unknown;

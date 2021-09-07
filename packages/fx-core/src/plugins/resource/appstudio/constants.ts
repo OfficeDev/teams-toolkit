@@ -105,8 +105,8 @@ export const TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV = `{
       "full": "{{config.manifest.values.appName.full}}"
   },
   "description": {
-      "short": "{{config.manifest.values.description.short}}",
-      "full": "{{config.manifest.values.description.full}}"
+      "short": "Short description of {{config.manifest.values.appName.short}}",
+      "full": "Full description of {{config.manifest.values.appName.short}}"
   },
   "accentColor": "#FFFFFF",
   "bots": [],

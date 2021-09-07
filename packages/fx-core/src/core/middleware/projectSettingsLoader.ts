@@ -3,6 +3,7 @@
 
 import {
   ConfigFolderName,
+  Core,
   err,
   FxError,
   InputConfigsFolderName,
@@ -16,7 +17,7 @@ import {
   StaticPlatforms,
   Tools,
 } from "@microsoft/teamsfx-api";
-import { CoreHookContext } from "../..";
+import { CoreHookContext, FxCore } from "../..";
 import {
   InvalidProjectError,
   NoProjectOpenedError,
@@ -66,7 +67,7 @@ export const ProjectSettingsLoaderMW: Middleware = async (
 
     ctx.projectSettings = projectSettings;
     ctx.projectIdMissing = projectIdMissing;
-    if(ctx.version === "2") {
+    if ((ctx.self as Core).version === "2") {
       ctx.contextV2 = (ctx.self as FxCoreV2).createV2Context(projectSettings);
     }
   }

@@ -202,6 +202,8 @@ export interface Core {
     removeEnv: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
     // (undocumented)
     switchEnv: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
+    // (undocumented)
+    version?: string;
 }
 
 // @public

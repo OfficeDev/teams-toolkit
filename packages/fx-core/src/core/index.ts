@@ -3,14 +3,35 @@
 
 import { HookContext, hooks } from "@feathersjs/hooks";
 import {
-  AppPackageFolderName, ArchiveFolderName,
-  ArchiveLogFileName, assembleError, ConfigFolderName, Core,
+  AppPackageFolderName,
+  ArchiveFolderName,
+  ArchiveLogFileName,
+  assembleError,
+  ConfigFolderName,
+  Core,
   err,
-  Func, FunctionRouter, FxError, GroupOfTasks, Inputs, LogProvider, ok, OptionItem, Platform, ProjectConfig,
-  ProjectSettings, QTreeNode,
-  Result, RunnableTask, SingleSelectQuestion, Solution, SolutionConfig, SolutionContext,
-  Stage, TelemetryReporter, Tools,
-  Void
+  Func,
+  FunctionRouter,
+  FxError,
+  GroupOfTasks,
+  Inputs,
+  LogProvider,
+  ok,
+  OptionItem,
+  Platform,
+  ProjectConfig,
+  ProjectSettings,
+  QTreeNode,
+  Result,
+  RunnableTask,
+  SingleSelectQuestion,
+  Solution,
+  SolutionConfig,
+  SolutionContext,
+  Stage,
+  TelemetryReporter,
+  Tools,
+  Void,
 } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import { AxiosResponse } from "axios";
@@ -26,14 +47,14 @@ import {
   sendTelemetryEvent,
   TelemetryEvent,
   TelemetryProperty,
-  TelemetrySuccess
+  TelemetrySuccess,
 } from "../common/telemetry";
 import {
   downloadSampleHook,
   fetchCodeZip,
   isArmSupportEnabled,
   isMultiEnvEnabled,
-  saveFilesRecursively
+  saveFilesRecursively,
 } from "../common/tools";
 import { getParameterJson } from "../plugins/solution/fx-solution/arm";
 import { LocalCrypto } from "./crypto";
@@ -42,10 +63,11 @@ import {
   FunctionRouterError,
   InvalidInputError,
   MigrateNotImplementError,
-  NonExistEnvNameError, ProjectFolderExistError,
+  NonExistEnvNameError,
+  ProjectFolderExistError,
   ProjectFolderNotExistError,
   TaskNotSupportError,
-  WriteFileError
+  WriteFileError,
 } from "./error";
 import { defaultSolutionLoader } from "./loader";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
@@ -55,7 +77,7 @@ import {
   EnvInfoLoaderMW,
   loadSolutionContext,
   upgradeDefaultFunctionName,
-  upgradeProgrammingLanguage
+  upgradeProgrammingLanguage,
 } from "./middleware/envInfoLoader";
 import { EnvInfoWriterMW } from "./middleware/envInfoWriter";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
@@ -69,18 +91,22 @@ import { QuestionModelMW } from "./middleware/questionModel";
 import { SolutionLoaderMW } from "./middleware/solutionLoader";
 import { PermissionRequestFileProvider } from "./permissionRequest";
 import {
-  CoreQuestionNames, DefaultAppNameFunc, getCreateNewOrFromSampleQuestion, ProjectNamePattern,
+  CoreQuestionNames,
+  DefaultAppNameFunc,
+  getCreateNewOrFromSampleQuestion,
+  ProjectNamePattern,
   QuestionAppName,
   QuestionRootFolder,
-  QuestionSelectSolution, QuestionV1AppName, SampleSelect,
+  QuestionSelectSolution,
+  QuestionV1AppName,
+  SampleSelect,
   ScratchOptionNo,
-  ScratchOptionYes
+  ScratchOptionYes,
 } from "./question";
 import { newEnvInfo } from "./tools";
 import { FxCoreV2 } from "./v2";
 
 export interface CoreHookContext extends HookContext {
-  version: "1",
   projectSettings?: ProjectSettings;
   projectIdMissing?: boolean;
   solutionContext?: SolutionContext;
@@ -92,6 +118,7 @@ export let telemetryReporter: TelemetryReporter | undefined;
 export let currentStage: Stage;
 export let TOOLS: Tools;
 export class FxCore implements Core {
+  version = "1";
   tools: Tools;
 
   constructor(tools: Tools) {
@@ -322,7 +349,7 @@ export class FxCore implements Core {
       );
     }
   }
-  
+
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
@@ -687,7 +714,7 @@ export class FxCore implements Core {
             description: "",
             author: "",
             scripts: {
-              test: "echo \"Error: no test specified\" && exit 1",
+              test: 'echo "Error: no test specified" && exit 1',
             },
             devDependencies: {
               "@microsoft/teamsfx-cli": "0.*",
@@ -863,11 +890,12 @@ export class FxCore implements Core {
   async switchEnv(inputs: Inputs): Promise<Result<Void, FxError>> {
     throw TaskNotSupportError(Stage.switchEnv);
   }
-
 }
 
-
-export async function downloadSample(fxcore: FxCore|FxCoreV2, inputs: Inputs): Promise<Result<string, FxError>>{
+export async function downloadSample(
+  fxcore: FxCore | FxCoreV2,
+  inputs: Inputs
+): Promise<Result<string, FxError>> {
   const folder = inputs[QuestionRootFolder.name] as string;
   const sample = inputs[CoreQuestionNames.Samples] as OptionItem;
   if (sample && sample.data && folder) {
@@ -897,15 +925,10 @@ export async function downloadSample(fxcore: FxCore|FxCoreV2, inputs: Inputs): P
             return ok(Void);
           } else return err(FetchSampleError());
         } catch (e) {
-          sendTelemetryErrorEvent(
-            Component.core,
-            TelemetryEvent.DownloadSample,
-            assembleError(e),
-            {
-              [TelemetryProperty.SampleAppName]: sample.id,
-              module: "fx-core",
-            }
-          );
+          sendTelemetryErrorEvent(Component.core, TelemetryEvent.DownloadSample, assembleError(e), {
+            [TelemetryProperty.SampleAppName]: sample.id,
+            module: "fx-core",
+          });
           return err(assembleError(e));
         }
       },
@@ -946,4 +969,3 @@ export async function downloadSample(fxcore: FxCore|FxCoreV2, inputs: Inputs): P
 
 export * from "./error";
 export * from "./tools";
-

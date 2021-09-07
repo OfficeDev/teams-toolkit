@@ -81,8 +81,34 @@ export async function checkSubscription(
       )
     );
   }
-  const askSubRes = await ctx.azureAccountProvider!.getSelectedSubscription(true);
-  return ok(askSubRes!);
+
+  const subscriptionId = ctx.envInfo.config.azure.subscriptionId;
+  if (!isMultiEnvEnabled() || !subscriptionId) {
+    const askSubRes = await ctx.azureAccountProvider.getSelectedSubscription(true);
+    return ok(askSubRes!);
+  }
+
+  // make sure the user is logged in
+  await ctx.azureAccountProvider.getAccountCredentialAsync(true);
+
+  // TODO: verify valid subscription (permission)
+  const subscriptions = await ctx.azureAccountProvider.listSubscriptions();
+  const targetSubInfo = subscriptions.find((item) => item.subscriptionId === subscriptionId);
+  if (!targetSubInfo) {
+    return err(
+      returnUserError(
+        new Error(
+          `The subscription '${subscriptionId}' is not found in the current account, please check the '${EnvConfigFileNameTemplate.replace(
+            EnvNamePlaceholder,
+            ctx.envInfo.envName
+          )}' file.`
+        ),
+        "Solution",
+        SolutionError.SubscriptionNotFound
+      )
+    );
+  }
+  return ok(targetSubInfo);
 }
 
 async function getQuestionsForResourceGroup(

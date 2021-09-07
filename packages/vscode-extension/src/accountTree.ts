@@ -247,19 +247,22 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
     ) => {
       if (status === "SignedIn") {
         if (token !== undefined && accountInfo !== undefined) {
-          tools.treeProvider?.refresh([
-            {
-              commandId: "fx-extension.signinM365",
-              label: (accountInfo.upn as string) ? (accountInfo.upn as string) : "",
-              callback: signinM365Callback,
-              parent: TreeCategory.Account,
-              contextValue: "signedinM365",
-              icon: "M365",
-            },
-          ]);
+          const treeItem = {
+            commandId: "fx-extension.signinM365",
+            label: (accountInfo.upn as string) ? (accountInfo.upn as string) : "",
+            callback: signinM365Callback,
+            parent: TreeCategory.Account,
+            contextValue: "signedinM365",
+            icon: "M365",
+          };
+          tools.treeProvider?.refresh([treeItem]);
           const subItem = await getSideloadingItem(token);
           if (subItem && subItem.length > 0) {
             tools.treeProvider?.add(subItem);
+
+            // this is a workaround to expand this child, to be improved when TreeView.reveal is supported
+            treeItem.label += " ";
+            tools.treeProvider?.refresh([treeItem]);
           }
         }
       } else if (status === "SigningIn") {

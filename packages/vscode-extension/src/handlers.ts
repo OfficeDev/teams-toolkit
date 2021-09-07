@@ -31,6 +31,8 @@ import {
   Tools,
   AzureSolutionSettings,
   ConfigFolderName,
+  TreeItem,
+  TreeCategory,
 } from "@microsoft/teamsfx-api";
 import {
   isUserCancelError,
@@ -300,6 +302,11 @@ export async function cicdGuideHandler(args?: any[]): Promise<boolean> {
   return await env.openExternal(Uri.parse("https://aka.ms/teamsfx-cicd-guide"));
 }
 
+export async function listCollaboratorHandler(args?: any[]): Promise<Result<any, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ListCollaborator, getTriggerFromProperty(args));
+  return await runCommand(Stage.listCollaborator);
+}
+
 export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
   const eventName = ExtTelemetry.stageToEvent(stage);
   let result: Result<any, FxError> = ok(null);
@@ -340,6 +347,8 @@ export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
     } else if (stage === Stage.publish) result = await core.publishApplication(inputs);
     else if (stage === Stage.createEnv) {
       result = await core.createEnv(inputs);
+    } else if (stage === Stage.listCollaborator) {
+      result = await core.listCollaborator(inputs);
     } else {
       throw new SystemError(
         ExtensionErrors.UnsupportedOperation,
@@ -781,6 +790,47 @@ export async function activateEnvironment(env: string): Promise<Result<Void, FxE
     result = wrapError(e);
   }
   // await processResult(eventName, result);
+
+  return result;
+}
+
+export async function listCollaborator(env: string): Promise<TreeItem[]> {
+  let result: TreeItem[] = [];
+  try {
+    const checkCoreRes = checkCoreNotEmpty();
+    if (checkCoreRes.isErr()) {
+      throw checkCoreRes.error;
+    }
+
+    const inputs: Inputs = getSystemInputs();
+    inputs.env = env;
+    const userList = await core.listCollaborator(inputs);
+    if (userList.isErr()) {
+      throw userList.error;
+    }
+    result = userList.value.map((user: any) => {
+      return {
+        commandId: `fx-extension.listcollaborator.${env}.${user.userObjectId}`,
+        label: user.userPrincipalName,
+        parent: TreeCategory.Environment,
+        contextValue: "environment",
+        icon: user.isAadOwner ? "person" : "warning",
+        isCustom: false,
+        description: user.isAadOwner ? "" : "This account doesn't have AAD permission.",
+      };
+    });
+  } catch (e) {
+    result = [
+      {
+        commandId: `fx-extension.listcollaborator.${env}`,
+        label: e.message,
+        parent: TreeCategory.Environment,
+        contextValue: "environment",
+        icon: "warning",
+        isCustom: false,
+      },
+    ];
+  }
 
   return result;
 }

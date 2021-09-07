@@ -103,6 +103,8 @@ export enum TelemetryEvent {
   ActivateEnvironment = "activate-environment",
 
   CheckSideloading = "check-sideloading",
+
+  ListCollaborator = "list-collaborator",
 }
 
 export enum TelemetryProperty {

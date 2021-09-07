@@ -425,11 +425,10 @@ export default TreeViewManager.getInstance();
 
 export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeViewCommand> {
   public static readonly TreeViewFlag = "TreeView";
-  private _onDidChangeTreeData: vscode.EventEmitter<
-    TreeViewCommand | undefined | void
-  > = new vscode.EventEmitter<TreeViewCommand | undefined | void>();
-  readonly onDidChangeTreeData: vscode.Event<TreeViewCommand | undefined | void> = this
-    ._onDidChangeTreeData.event;
+  private _onDidChangeTreeData: vscode.EventEmitter<TreeViewCommand | undefined | void> =
+    new vscode.EventEmitter<TreeViewCommand | undefined | void>();
+  readonly onDidChangeTreeData: vscode.Event<TreeViewCommand | undefined | void> =
+    this._onDidChangeTreeData.event;
 
   private commands: TreeViewCommand[] = [];
   private disposableMap: Map<string, vscode.Disposable> = new Map();
@@ -570,7 +569,19 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
               subTreeItem.commandId,
               subTreeItem.subTreeItems && subTreeItem.subTreeItems.length > 0
                 ? vscode.TreeItemCollapsibleState.Expanded
-                : undefined
+                : undefined,
+              typeof subTreeItem.parent === "number"
+                ? (subTreeItem.parent as TreeCategory)
+                : undefined,
+              [],
+              subTreeItem.icon
+                ? {
+                    name: subTreeItem.icon,
+                    custom: subTreeItem.isCustom === undefined ? true : subTreeItem.isCustom,
+                  }
+                : undefined,
+              subTreeItem.contextValue,
+              subTreeItem.description
             );
 
             if (command.children === undefined) {

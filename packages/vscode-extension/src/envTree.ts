@@ -7,6 +7,7 @@ import * as vscode from "vscode";
 import TreeViewManagerInstance, { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
 import { getActiveEnv } from "./utils/commonUtils";
 import * as StringResources from "./resources/Strings.json";
+import { listCollaborator } from "./handlers";
 
 const showEnvList: Array<string> = [];
 
@@ -30,8 +31,9 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
       });
     }
     showEnvList.splice(0);
-    envNamesResult.value.forEach((item) => {
+    for (const item of envNamesResult.value) {
       showEnvList.push(item);
+      const userList = await listCollaborator(item);
       environmentTreeProvider.add([
         {
           commandId: "fx-extension.environment." + item,
@@ -42,9 +44,10 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
           isCustom: false,
           description:
             item === activeEnv ? StringResources.vsc.commandsTreeViewProvider.acitve : "",
+          subTreeItems: userList ?? [],
         },
       ]);
-    });
+    }
   }
   return ok(Void);
 }

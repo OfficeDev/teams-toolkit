@@ -204,10 +204,6 @@ export function NonActiveEnvError(): UserError {
   return new UserError(CoreSource, "NonActiveEnvError", `Can not find active environment.`);
 }
 
-export function CorruptedSecretError(): UserError {
-  return new UserError(
-    CoreSource,
-    "CorruptedSecretError",
-    "The secret file has been changed incorrectly."
-  );
+export function ModifiedSecretError(): UserError {
+  return new UserError(CoreSource, "ModifiedSecretError", "The secret file has been changed.");
 }

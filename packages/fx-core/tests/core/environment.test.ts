@@ -257,22 +257,6 @@ describe("APIs of Environment Manager", () => {
       assert.equal(envInfo.profile.get("solution").get("key"), expectedSolutionConfig.key);
     });
 
-    it("with userdata (corrupted): load environment profile without target env", async () => {
-      await mockEnvProfiles(projectPath, envProfileDataWithCredential, undefined, {
-        "solution.teamsAppTenantId": "corrupted",
-        _checksum: "81595a4344a4345ecfd90232f9e3540ce2b72e50745b3b83adc484c8e5055a33",
-      });
-
-      const actualEnvDataResult = await environmentManager.loadEnvInfo(
-        projectPath,
-        undefined,
-        cryptoProvider
-      );
-      if (actualEnvDataResult.isErr()) {
-        assert.equal(actualEnvDataResult.error.message, "CorruptedSecretError");
-      }
-    });
-
     it("with userdata (legacy project): load environment profile with target env", async () => {
       await mockEnvProfiles(projectPath, envProfileDataWithCredential, targetEnvName, userData);
 

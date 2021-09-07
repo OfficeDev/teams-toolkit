@@ -77,7 +77,7 @@ import {
   ScratchOptionYes
 } from "./question";
 import { newEnvInfo } from "./tools";
-import { TOOLS } from "./v2";
+import { FxCoreV2 } from "./v2";
 
 export interface CoreHookContext extends HookContext {
   version: "1",
@@ -90,11 +90,13 @@ export interface CoreHookContext extends HookContext {
 export let Logger: LogProvider;
 export let telemetryReporter: TelemetryReporter | undefined;
 export let currentStage: Stage;
+export let TOOLS: Tools;
 export class FxCore implements Core {
   tools: Tools;
 
   constructor(tools: Tools) {
     this.tools = tools;
+    TOOLS = tools;
     Logger = tools.logProvider;
     telemetryReporter = tools.telemetryReporter;
   }
@@ -115,7 +117,7 @@ export class FxCore implements Core {
 
     if (scratch === ScratchOptionNo.id) {
       // create from sample
-      const downloadRes = await downloadSample(inputs);
+      const downloadRes = await downloadSample(this, inputs);
       if (downloadRes.isErr()) {
         return err(downloadRes.error);
       }
@@ -865,7 +867,7 @@ export class FxCore implements Core {
 }
 
 
-export async function downloadSample(inputs: Inputs): Promise<Result<string, FxError>>{
+export async function downloadSample(fxcore: FxCore|FxCoreV2, inputs: Inputs): Promise<Result<string, FxError>>{
   const folder = inputs[QuestionRootFolder.name] as string;
   const sample = inputs[CoreQuestionNames.Samples] as OptionItem;
   if (sample && sample.data && folder) {
@@ -929,7 +931,7 @@ export async function downloadSample(inputs: Inputs): Promise<Result<string, FxE
       sequential: true,
       fastFail: true,
     });
-    const runRes = await TOOLS.ui.runWithProgress(group, {
+    const runRes = await fxcore.tools.ui.runWithProgress(group, {
       showProgress: true,
       cancellable: false,
     });

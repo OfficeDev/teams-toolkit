@@ -60,11 +60,7 @@ import {
 } from "../question";
 import { newEnvInfo } from "../tools";
 import { getSolutionPlugin } from "./SolutionPluginContainer";
-
-export let Logger: LogProvider;
-export let telemetryReporter: TelemetryReporter | undefined;
-export let currentStage: Stage;
-export let TOOLS: Tools;
+  
 
 export interface CoreHookContextV2 extends HookContext {
   version: "2",
@@ -75,16 +71,15 @@ export interface CoreHookContextV2 extends HookContext {
   provisionInputConfig?: Json;
 }
 
-
+export let Logger: LogProvider;
+export let telemetryReporter: TelemetryReporter | undefined;
+export let currentStage: Stage;
 
 export class FxCoreV2 implements Core {
   tools: Tools;
 
   constructor(tools: Tools) {
     this.tools = tools;
-    TOOLS = tools;
-
-
   }
 
   createV2Context(projectSettings: ProjectSettings): v2.Context {
@@ -115,7 +110,7 @@ export class FxCoreV2 implements Core {
 
     if (scratch === ScratchOptionNo.id) {
       // create from sample
-      const downloadRes = await downloadSample(inputs);
+      const downloadRes = await downloadSample(this, inputs);
       if (downloadRes.isErr()) {
         return err(downloadRes.error);
       }

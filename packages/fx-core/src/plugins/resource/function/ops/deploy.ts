@@ -24,7 +24,6 @@ import { Logger } from "../utils/logger";
 import { WebAppsListPublishingCredentialsResponse } from "@azure/arm-appservice/esm/models";
 import { execute } from "../utils/execute";
 import { forEachFileAndDir } from "../utils/dir-walk";
-import { requestWithRetry } from "../utils/templates-fetch";
 import { BackendExtensionsInstaller } from "../utils/depsChecker/backendExtensionsInstall";
 import { DotnetChecker } from "../utils/depsChecker/dotnetChecker";
 import { FuncPluginAdapter } from "../utils/depsChecker/funcPluginAdapter";
@@ -32,6 +31,7 @@ import { funcPluginLogger } from "../utils/depsChecker/funcPluginLogger";
 import { FuncPluginTelemetry } from "../utils/depsChecker/funcPluginTelemetry";
 import { PluginContext } from "@microsoft/teamsfx-api";
 import { TelemetryHelper } from "../utils/telemetry-helper";
+import { sendRequestWithRetry } from "../../../../common/templates-helper";
 
 export class FunctionDeploy {
   public static async getLastDeploymentTime(componentPath: string): Promise<Date> {
@@ -195,8 +195,7 @@ export class FunctionDeploy {
           StepGroup.DeployStepGroup,
           DeploySteps.deploy,
           async () =>
-            await requestWithRetry(
-              DefaultValues.maxTryCount,
+            await sendRequestWithRetry(
               async () =>
                 await axios.post(AzureInfo.zipDeployURL(functionAppName), zipContent, {
                   headers: {
@@ -210,7 +209,8 @@ export class FunctionDeploy {
                   maxContentLength: Infinity,
                   maxBodyLength: Infinity,
                   timeout: DefaultValues.deployTimeoutInMs,
-                })
+                }),
+              DefaultValues.maxTryCount,
             )
         )
     );

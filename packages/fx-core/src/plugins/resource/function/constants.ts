@@ -35,7 +35,6 @@ export class FunctionPluginInfo {
 
 export class FunctionPluginPathInfo {
   public static readonly solutionFolderName: string = "api";
-  public static readonly templateFileExt: string = ".tpl";
   public static readonly templateZipExt: string = ".zip";
   public static readonly templateZipNameSep: string = ".";
   public static readonly functionExtensionsFolderName: string = "bin";

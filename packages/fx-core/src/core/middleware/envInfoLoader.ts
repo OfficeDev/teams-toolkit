@@ -38,6 +38,7 @@ import { desensitize } from "./questionModel";
 import { shouldIgnored } from "./projectSettingsLoader";
 import { PermissionRequestFileProvider } from "../permissionRequest";
 import { newEnvInfo } from "../tools";
+import { CoreHookContextV2 } from "../v2";
 
 const newTargetEnvNameOption = "+ new environment";
 const lastUsedMark = " (activate)";
@@ -228,7 +229,7 @@ export async function askTargetEnvironment(
 }
 
 export async function askNewEnvironment(
-  ctx: CoreHookContext,
+  ctx: CoreHookContext|CoreHookContextV2,
   inputs: Inputs
 ): Promise<string | undefined> {
   const getQuestionRes = await getQuestionsForNewEnv(inputs);

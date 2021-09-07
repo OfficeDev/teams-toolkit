@@ -17,9 +17,14 @@ import {
   SubscriptionInfo,
   UserInteraction,
   AppPackageFolderName,
+  Void,
+  RunnableTask,
+  assembleError,
+  Inputs,
+  GroupOfTasks,
 } from "@microsoft/teamsfx-api";
 import { promisify } from "util";
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import AdmZip from "adm-zip";
 import * as path from "path";
 import * as uuid from "uuid";
@@ -27,6 +32,10 @@ import { glob } from "glob";
 import { getResourceFolder } from "../folder";
 import * as Handlebars from "handlebars";
 import { ConstantString, FeatureFlagName } from "./constants";
+import { CoreQuestionNames, QuestionRootFolder } from "../core/question";
+import { FetchSampleError, InvalidInputError, ProjectFolderExistError } from "..";
+import { Component, sendTelemetryErrorEvent, sendTelemetryEvent, TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "./telemetry";
+import { TOOLS } from "../core/v2";
 
 Handlebars.registerHelper("contains", (value, array, options) => {
   array = array instanceof Array ? array : [array];
@@ -494,4 +503,82 @@ export async function copyFiles(
         !recursiveExcludeFileNames.includes(path.basename(src)),
     });
   }
+}
+
+
+export async function downloadSample(inputs: Inputs): Promise<Result<string, FxError>>{
+  const folder = inputs[QuestionRootFolder.name] as string;
+  const sample = inputs[CoreQuestionNames.Samples] as OptionItem;
+  if (sample && sample.data && folder) {
+    const url = sample.data as string;
+    const sampleId = sample.id;
+    const sampleAppPath = path.resolve(folder, sampleId);
+    if ((await fs.pathExists(sampleAppPath)) && (await fs.readdir(sampleAppPath)).length > 0) {
+      return err(ProjectFolderExistError(sampleAppPath));
+    }
+
+    let fetchRes: AxiosResponse<any> | undefined;
+    const task1: RunnableTask<Void> = {
+      name: `Download code from '${url}'`,
+      run: async (...args: any): Promise<Result<Void, FxError>> => {
+        try {
+          sendTelemetryEvent(Component.core, TelemetryEvent.DownloadSampleStart, {
+            [TelemetryProperty.SampleAppName]: sample.id,
+            module: "fx-core",
+          });
+          fetchRes = await fetchCodeZip(url);
+          if (fetchRes !== undefined) {
+            sendTelemetryEvent(Component.core, TelemetryEvent.DownloadSample, {
+              [TelemetryProperty.SampleAppName]: sample.id,
+              [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+              module: "fx-core",
+            });
+            return ok(Void);
+          } else return err(FetchSampleError());
+        } catch (e) {
+          sendTelemetryErrorEvent(
+            Component.core,
+            TelemetryEvent.DownloadSample,
+            assembleError(e),
+            {
+              [TelemetryProperty.SampleAppName]: sample.id,
+              module: "fx-core",
+            }
+          );
+          return err(assembleError(e));
+        }
+      },
+    };
+
+    const task2: RunnableTask<Void> = {
+      name: "Save and unzip package",
+      run: async (...args: any): Promise<Result<Void, FxError>> => {
+        if (fetchRes) {
+          await saveFilesRecursively(new AdmZip(fetchRes.data), sampleId, folder);
+        }
+        return ok(Void);
+      },
+    };
+    const task3: RunnableTask<Void> = {
+      name: "post process",
+      run: async (...args: any): Promise<Result<Void, FxError>> => {
+        await downloadSampleHook(sampleId, sampleAppPath);
+        return ok(Void);
+      },
+    };
+    const group = new GroupOfTasks<Void>([task1, task2, task3], {
+      sequential: true,
+      fastFail: true,
+    });
+    const runRes = await TOOLS.ui.runWithProgress(group, {
+      showProgress: true,
+      cancellable: false,
+    });
+    if (runRes.isOk()) {
+      return ok(sampleAppPath);
+    } else {
+      return err(runRes.error);
+    }
+  }
+  return err(InvalidInputError(`invalid answer for '${CoreQuestionNames.Samples}'`, inputs));
 }

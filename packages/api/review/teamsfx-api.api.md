@@ -1041,7 +1041,7 @@ interface SolutionPlugin {
     provisionLocalResource?: (ctx: Context_2, inputs: Inputs, tokenProvider: TokenProvider) => Promise<Result<Json, FxError>>;
     provisionResources: (ctx: Context_2, inputs: Inputs, provisionInputConfig: Json, tokenProvider: TokenProvider) => Promise<Result<SolutionProvisionOutput, FxError>>;
     publishApplication?: (ctx: Context_2, inputs: Inputs, provisionInputConfig: Json, provisionOutputs: Json, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
-    scaffoldSourceCode?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
+    scaffoldSourceCode: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
 }
 
 // @public (undocumented)

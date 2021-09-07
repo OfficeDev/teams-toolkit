@@ -33,9 +33,10 @@ import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { PermissionRequestFileProvider } from "../permissionRequest";
 import { readJson } from "../../common/fileUtils";
 import { isMultiEnvEnabled } from "../../common";
+import { CoreHookContextV2, FxCoreV2 } from "../v2";
 
 export const ProjectSettingsLoaderMW: Middleware = async (
-  ctx: CoreHookContext,
+  ctx: CoreHookContext | CoreHookContextV2,
   next: NextFunction
 ) => {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
@@ -65,6 +66,9 @@ export const ProjectSettingsLoaderMW: Middleware = async (
 
     ctx.projectSettings = projectSettings;
     ctx.projectIdMissing = projectIdMissing;
+    if(ctx.version === "2") {
+      ctx.contextV2 = (ctx.self as FxCoreV2).createV2Context(projectSettings);
+    }
   }
 
   await next();
@@ -127,7 +131,7 @@ export async function newSolutionContext(tools: Tools, inputs: Inputs): Promise<
   return solutionContext;
 }
 
-export function shouldIgnored(ctx: CoreHookContext): boolean {
+export function shouldIgnored(ctx: CoreHookContext | CoreHookContextV2): boolean {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   const method = ctx.method;
 

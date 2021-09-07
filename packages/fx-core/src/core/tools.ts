@@ -192,7 +192,7 @@ export function newEnvInfo(
       manifest: {
         values: {
           appName: {
-            short: "myApp",
+            short: "",
           },
         },
       },

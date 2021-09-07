@@ -33,6 +33,8 @@ import {
   ArchiveFolderName,
   ArchiveLogFileName,
   TelemetryReporter,
+  AzureSolutionSettings,
+  SolutionSettings,
 } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import {
@@ -106,6 +108,7 @@ import { newEnvInfo } from "./tools";
 import { getParameterJson } from "../plugins/solution/fx-solution/arm";
 import { LocalCrypto } from "./crypto";
 import { PermissionRequestFileProvider } from "./permissionRequest";
+import { HostTypeOptionAzure } from "../plugins/solution/fx-solution/question";
 
 export interface CoreHookContext extends HookContext {
   projectSettings?: ProjectSettings;
@@ -894,7 +897,7 @@ export class FxCore implements Core {
       }: ${JSON.stringify(newEnvConfig)}`
     );
 
-    if (isArmSupportEnabled()) {
+    if (isArmSupportEnabled() && isAzureProject(projectSettings.solutionSettings)) {
       const solutionContext: SolutionContext = {
         projectSettings,
         envInfo: newEnvInfo(targetEnvName),
@@ -964,6 +967,11 @@ export class FxCore implements Core {
   async switchEnv(inputs: Inputs): Promise<Result<Void, FxError>> {
     throw TaskNotSupportError(Stage.switchEnv);
   }
+}
+
+function isAzureProject(solutionSettings: SolutionSettings): boolean {
+  const settings = solutionSettings as AzureSolutionSettings;
+  return settings?.hostType === HostTypeOptionAzure.id;
 }
 
 export * from "./error";

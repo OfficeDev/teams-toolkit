@@ -302,11 +302,6 @@ export async function cicdGuideHandler(args?: any[]): Promise<boolean> {
   return await env.openExternal(Uri.parse("https://aka.ms/teamsfx-cicd-guide"));
 }
 
-export async function listCollaboratorHandler(args?: any[]): Promise<Result<any, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ListCollaborator, getTriggerFromProperty(args));
-  return await runCommand(Stage.listCollaborator);
-}
-
 export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
   const eventName = ExtTelemetry.stageToEvent(stage);
   let result: Result<any, FxError> = ok(null);
@@ -812,11 +807,12 @@ export async function listCollaborator(env: string): Promise<TreeItem[]> {
       return {
         commandId: `fx-extension.listcollaborator.${env}.${user.userObjectId}`,
         label: user.userPrincipalName,
-        parent: TreeCategory.Environment,
-        contextValue: "environment",
         icon: user.isAadOwner ? "person" : "warning",
         isCustom: false,
-        description: user.isAadOwner ? "" : "This account doesn't have AAD permission.",
+        tooltip: {
+          value: user.isAadOwner ? "" : "This account doesn't have the AAD permission.",
+          isMarkdown: false,
+        },
       };
     });
   } catch (e) {
@@ -824,8 +820,6 @@ export async function listCollaborator(env: string): Promise<TreeItem[]> {
       {
         commandId: `fx-extension.listcollaborator.${env}`,
         label: e.message,
-        parent: TreeCategory.Environment,
-        contextValue: "environment",
         icon: "warning",
         isCustom: false,
       },

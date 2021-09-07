@@ -563,9 +563,20 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
               );
               this.disposableMap.set(subTreeItem.commandId, disposable);
             }
+
+            let tooltip: string | vscode.MarkdownString = treeItem.label;
+            if (subTreeItem.tooltip) {
+              if (subTreeItem.tooltip.isMarkdown) {
+                const markdown = new vscode.MarkdownString(subTreeItem.tooltip.value);
+                tooltip = markdown;
+              } else {
+                tooltip = subTreeItem.tooltip.value;
+              }
+            }
+
             const subCommand = new TreeViewCommand(
               subTreeItem.label,
-              subTreeItem.label,
+              tooltip ?? subTreeItem.label,
               subTreeItem.commandId,
               subTreeItem.subTreeItems && subTreeItem.subTreeItems.length > 0
                 ? vscode.TreeItemCollapsibleState.Expanded

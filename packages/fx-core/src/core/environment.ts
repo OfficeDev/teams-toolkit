@@ -221,7 +221,7 @@ class EnvironmentManager {
     if (!isMultiEnvEnabled()) {
       return ok({
         azure: {},
-        manifest: { values: { appName: { short: "myApp" } } },
+        manifest: { values: { appName: { short: "" } } },
       });
     }
 

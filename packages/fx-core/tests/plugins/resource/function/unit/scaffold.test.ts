@@ -8,9 +8,8 @@ import * as sinon from "sinon";
 import AdmZip from "adm-zip";
 import mock from "mock-fs";
 
-import * as fetch from "../../../../../src/plugins/resource/function/utils/templates-fetch";
+import * as fetch from "../../../../../src/common/templates-helper";
 import {
-  DependentPluginInfo,
   FunctionPluginInfo,
 } from "../../../../../src/plugins/resource/function/constants";
 import { FunctionPlugin } from "../../../../../src/plugins/resource/function/index";
@@ -75,8 +74,8 @@ describe(FunctionPluginInfo.pluginName, () => {
       context.answers[QuestionKey.functionName] = "httpTrigger";
       const zip = new AdmZip();
       zip.addFile("test.js.tpl", Buffer.from("{{appName}} {{functionName}}"));
-      sinon.stub(fetch, "getTemplateURL").resolves(undefined);
-      sinon.stub(fetch, "fetchZipFromURL").resolves(zip);
+      sinon.stub(fetch, "fetchTemplateUrl").resolves("fackurl");
+      sinon.stub(fetch, "fetchZipFromUrl").resolves(zip);
 
       const plugin: FunctionPlugin = new FunctionPlugin();
 
@@ -94,8 +93,8 @@ describe(FunctionPluginInfo.pluginName, () => {
       context.answers[QuestionKey.functionName] = "httpTrigger";
       const zip = new AdmZip();
       zip.addFile("test.js.tpl", Buffer.from("{{appName}} {{functionName}}"));
-      sinon.stub(fetch, "getTemplateURL").resolves(undefined);
-      sinon.stub(fetch, "fetchZipFromURL").resolves(zip);
+      sinon.stub(fetch, "fetchTemplateUrl").resolves(undefined);
+      sinon.stub(fetch, "fetchZipFromUrl").resolves(zip);
 
       const plugin: FunctionPlugin = new FunctionPlugin();
 
@@ -111,7 +110,7 @@ describe(FunctionPluginInfo.pluginName, () => {
       // Arrange
       context.answers = context.answers = { platform: Platform.VSCode };
       context.answers[QuestionKey.functionName] = "httpTrigger";
-      sinon.stub(fetch, "getTemplateURL").rejects(new Error());
+      sinon.stub(fetch, "fetchTemplateUrl").rejects(new Error());
       const plugin: FunctionPlugin = new FunctionPlugin();
 
       // Act

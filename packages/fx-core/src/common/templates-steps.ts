@@ -10,8 +10,8 @@ import {
 } from "./templates-helper";
 
 // The entire progress has following actions:
-// 1. get zip url. (to fill ScaffoldContext.zipUrl)
-// 2. get template zip. (to fill ScaffoldContext.zip)
+// 1. get zip url. (to fill ScaffoldContext.zipUrl).
+// 2. get template zip. (to fill ScaffoldContext.zip).
 // 3. get template unzip.
 //
 // If any of the target field are filled, the action will be skipped.

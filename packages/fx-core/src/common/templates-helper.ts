@@ -13,8 +13,6 @@ import { selectTag, templateURL } from "./templates";
 export const tagListUrl = config.tagListURL;
 export const templateFileExt = ".tpl";
 
-//TODO: Add common Error
-
 export async function sendRequestWithRetry<T>(
   requestFn: () => Promise<AxiosResponse<T>>,
   tryLimits: number

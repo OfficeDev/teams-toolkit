@@ -112,16 +112,30 @@ TeamsFx SDK provides helper functions to ease the configuration for third-party 
 
 API will throw `ErrorWithCode` if error happens. Each `ErrorWithCode` contains error code and error message.
 
-For example, to filter out all errors, you could use the following check:
+For example, to filter out specific error, you could use the following check:
+
+```ts
+try {
+  const credential = new TeamsUserCredential();
+  credential.getToken("User.Read");
+} catch (err: unknown) {
+  // Show login button when specific ErrorWithCode is caught.
+  if (err instanceof ErrorWithCode && err.code === ErrorCode.UiRequiredError) {
+    this.setState({
+      showLoginBtn: true,
+    });
+  }
+}
+```
 
 ```ts
 try {
   const credential = new TeamsUserCredential();
   const graphClient = createMicrosoftGraphClient(credential, ["User.Read"]); // Initializes MS Graph SDK using our MsGraphAuthProvider
   const profile = await graphClient.api("/me").get();
-} catch (err) {
-  // Show login button when specific ErrorWithCode is caught.
-  if (err instanceof ErrorWithCode && err.code === ErrorCode.UiRequiredError) {
+} catch (err: unknown) {
+  // ErrorWithCode is handled by Graph client
+  if (err instanceof GraphError && err.code?.includes(ErrorCode.UiRequiredError)) {
     this.setState({
       showLoginBtn: true,
     });

@@ -122,7 +122,7 @@ export interface SolutionPlugin {
   /**
    * get question model for lifecycle {@link Stage} (create), Questions are organized as a tree. Please check {@link QTreeNode}.
    */
-  getQuestionsForScaffolding: (
+  getQuestionsForScaffolding?: (
     ctx: Context,
     inputs: Inputs
   ) => Promise<Result<QTreeNode | undefined, FxError>>;

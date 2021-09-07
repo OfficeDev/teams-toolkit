@@ -59,7 +59,7 @@ import {
   ScratchOptionYes
 } from "../question";
 import { newEnvInfo } from "../tools";
-import { getSolutionPlugin } from "./SolutionPluginContainer";
+import { getAllSolutionPlugins, getSolutionPlugin } from "./SolutionPluginContainer";
   
 
 export interface CoreHookContextV2 extends HookContext {
@@ -506,16 +506,17 @@ export class FxCoreV2 implements Core {
     const createNew = new QTreeNode({ type: "group" });
     node.addChild(createNew);
     createNew.condition = { equals: ScratchOptionYes.id };
-    const globalSolutions: Solution[] = await defaultSolutionLoader.loadGlobalSolutions(inputs);
+    const globalSolutions: v2.SolutionPlugin[] = await getAllSolutionPlugins();
     const solutionNames: string[] = globalSolutions.map((s) => s.name);
     const selectSolution: SingleSelectQuestion = QuestionSelectSolution;
     selectSolution.staticOptions = solutionNames;
     const solutionSelectNode = new QTreeNode(selectSolution);
     createNew.addChild(solutionSelectNode);
-    const solutionContext = await newSolutionContext(this.tools, inputs);
+    const projectSettings = newProjectSettings();
+    const context:v2.Context = this.createV2Context(projectSettings);
     for (const v of globalSolutions) {
-      if (v.getQuestions) {
-        const res = await v.getQuestions(Stage.create, solutionContext);
+      if (v.getQuestionsForScaffolding) {
+        const res = await v.getQuestionsForScaffolding(context, inputs);
         if (res.isErr()) return res;
         if (res.value) {
           const solutionNode = res.value as QTreeNode;
@@ -770,4 +771,17 @@ export class FxCoreV2 implements Core {
   async switchEnv(inputs: Inputs): Promise<Result<Void, FxError>> {
     throw TaskNotSupportError(Stage.switchEnv);
   }
+}
+
+
+export function newProjectSettings() {
+  const projectSettings: ProjectSettings = {
+    appName: "",
+    projectId: uuid.v4(),
+    version: "2.0.0",
+    solutionSettings: {
+      name: "",
+    },
+  };
+  return projectSettings;
 }

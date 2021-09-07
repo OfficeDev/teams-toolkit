@@ -17,12 +17,13 @@ import {
 import { WriteFileError } from "../error";
 import { CoreHookContext, FxCore } from "..";
 import { isMultiEnvEnabled } from "../../common";
+import { CoreHookContextV2 } from "../v2";
 
 /**
  * This middleware will help to persist project settings if necessary.
  */
 export const ProjectSettingsWriterMW: Middleware = async (
-  ctx: CoreHookContext,
+  ctx: CoreHookContext|CoreHookContextV2,
   next: NextFunction
 ) => {
   try {

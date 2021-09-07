@@ -82,7 +82,7 @@ export async function checkSubscription(
     );
   }
 
-  const subscriptionId = ctx.envInfo.config.azure.subscriptionId;
+  const subscriptionId = ctx.envInfo.config.azure?.subscriptionId;
   if (!isMultiEnvEnabled() || !subscriptionId) {
     const askSubRes = await ctx.azureAccountProvider.getSelectedSubscription(true);
     return ok(askSubRes!);

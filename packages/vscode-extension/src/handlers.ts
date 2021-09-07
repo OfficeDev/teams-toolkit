@@ -572,6 +572,10 @@ export async function openWelcomeHandler(args?: any[]) {
   WebviewPanel.createOrShow(PanelType.QuickStart);
 }
 
+export async function openSurveyHandler(args?: any[]) {
+  WebviewPanel.createOrShow(PanelType.Survey);
+}
+
 function getTriggerFromProperty(args?: any[]) {
   if (!args) {
     return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette };

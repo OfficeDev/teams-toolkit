@@ -178,11 +178,13 @@ export class HelpParamGenerator {
       const capabilityNodes = rootCopy.children!.filter((node) =>
         ((node.condition as any).containsAny as string[]).includes(capabilityId as string)
       )[0];
-      const capabilities = (
-        (rootCopy.data as MultiSelectQuestion).staticOptions as OptionItem[]
-      ).map((op) => [op.cliName!, op.id!]);
-      const capabilityCliName = capabilities.find((c) => c[1] === capabilityId)![0];
-      (rootCopy.data as any).default = [capabilityCliName];
+      const items = (rootCopy.data as MultiSelectQuestion).staticOptions as OptionItem[];
+      const index = items.findIndex(
+        (item) => item.id === capabilityId || item.cliName === capabilityId
+      );
+      if (index > -1) {
+        (rootCopy.data as any).default = [items[index].cliName || items[index].id];
+      }
       (rootCopy.data as any).hide = true;
       rootCopy.children = undefined;
       nodes = [rootCopy].concat(capabilityNodes ? flattenNodes(capabilityNodes) : []);

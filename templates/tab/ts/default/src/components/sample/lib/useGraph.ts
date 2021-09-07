@@ -1,6 +1,6 @@
 import { useData } from "./useData";
-import { TeamsUserCredential, createMicrosoftGraphClient, ErrorWithCode } from "@microsoft/teamsfx";
-import { Client } from "@microsoft/microsoft-graph-client";
+import { TeamsUserCredential, createMicrosoftGraphClient } from "@microsoft/teamsfx";
+import { Client, GraphError } from "@microsoft/microsoft-graph-client";
 
 export function useGraph<T>(
   asyncFunc: (graph: Client) => Promise<T>,
@@ -13,7 +13,7 @@ export function useGraph<T>(
       const graph = createMicrosoftGraphClient(credential, scope);
       return await asyncFunc(graph);
     } catch (err: unknown) {
-      if (err instanceof ErrorWithCode && err.code?.includes("UiRequiredError")) {
+      if (err instanceof GraphError && err.code?.includes("UiRequiredError")) {
         // Silently fail for user didn't login error
       } else {
         throw err;

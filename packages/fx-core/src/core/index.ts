@@ -63,6 +63,7 @@ import {
   saveFilesRecursively,
 } from "../common/tools";
 import { HostTypeOptionAzure } from "../plugins/solution/fx-solution/question";
+import { ProjectMigratorMW } from "./middleware/projectMigrator";
 import {
   CopyFileError,
   FetchSampleError,
@@ -247,14 +248,14 @@ export class FxCore implements Core {
           contextV2,
           inputs
         );
-        if(solution.createEnv) {
+        if (solution.createEnv) {
           inputs.copy = false;
           const createEnvRes = await solution.createEnv(contextV2, inputs);
           if (createEnvRes.isErr()) {
             return err(createEnvRes.error);
           }
         }
-       
+
         if (generateResourceTemplateRes.isErr()) {
           return err(generateResourceTemplateRes.error);
         }
@@ -284,7 +285,7 @@ export class FxCore implements Core {
         if (scaffoldRes.isErr()) {
           return scaffoldRes;
         }
-        if(solution.createEnv) {
+        if (solution.createEnv) {
           solutionContext.answers!.copy = false;
           const createEnvRes = await solution.createEnv(solutionContext);
           if (createEnvRes.isErr()) {
@@ -429,6 +430,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(isMultiEnvEnabled()),
     SolutionLoaderMW(),
@@ -458,6 +460,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(isMultiEnvEnabled()),
     SolutionLoaderMW(),
@@ -489,6 +492,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    ProjectMigratorMW,
     ProjectUpgraderMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
@@ -538,6 +542,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(isMultiEnvEnabled()),
     SolutionLoaderMW(),
@@ -574,6 +579,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(isMultiEnvEnabled()),
     LocalSettingsLoaderMW,
@@ -620,6 +626,7 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
+    ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW(),
@@ -653,6 +660,7 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
+    ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW(),
@@ -677,6 +685,7 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
+    ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(isMultiEnvEnabled()),
     LocalSettingsLoaderMW,
@@ -704,6 +713,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(isMultiEnvEnabled()),
     SolutionLoaderMW(),
@@ -720,6 +730,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(isMultiEnvEnabled()),
     SolutionLoaderMW(),
@@ -736,6 +747,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(isMultiEnvEnabled()),
     SolutionLoaderMW(),
@@ -853,7 +865,13 @@ export class FxCore implements Core {
     throw TaskNotSupportError(Stage.build);
   }
 
-  @hooks([ErrorHandlerMW, ProjectSettingsLoaderMW, SolutionLoaderMW(), EnvInfoLoaderMW(isMultiEnvEnabled()), ContextInjectorMW])
+  @hooks([
+    ErrorHandlerMW,
+    ProjectSettingsLoaderMW,
+    SolutionLoaderMW(),
+    EnvInfoLoaderMW(isMultiEnvEnabled()),
+    ContextInjectorMW,
+  ])
   async createEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     if (!ctx) return err(new ObjectIsUndefinedError("createEnv input stuff"));
     const projectSettings = ctx.projectSettings;
@@ -886,21 +904,21 @@ export class FxCore implements Core {
 
     inputs.sourceEnvName = createEnvCopyInput.sourceEnvName;
     inputs.targetEnvName = createEnvCopyInput.targetEnvName;
-    
+
     if (isV2()) {
       if (!ctx.solutionV2 || !ctx.contextV2)
         return err(new ObjectIsUndefinedError("ctx.solutionV2, ctx.contextV2"));
-      if (ctx.solutionV2.createEnv){
+      if (ctx.solutionV2.createEnv) {
         inputs.copy = true;
         return await ctx.solutionV2.createEnv(ctx.contextV2, inputs);
-      } 
+      }
     } else {
       if (!ctx.solution || !ctx.solutionContext)
         return err(new ObjectIsUndefinedError("ctx.solution, ctx.solutionContext"));
-      if (ctx.solution.createEnv){
+      if (ctx.solution.createEnv) {
         ctx.solutionContext.answers!.copy = true;
         return await ctx.solution.createEnv(ctx.solutionContext);
-      } 
+      }
     }
     return ok(Void);
   }
@@ -985,10 +1003,7 @@ export class FxCore implements Core {
     ContextInjectorMW,
     ProjectSettingsWriterMW,
   ])
-  async activateEnv(
-    inputs: Inputs,
-    ctx?: CoreHookContext
-  ): Promise<Result<Void, FxError>> {
+  async activateEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     const env = inputs.env;
     if (!env) {
       return err(new ObjectIsUndefinedError("env"));

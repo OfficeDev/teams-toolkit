@@ -400,7 +400,7 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
 }
 
 export function isMultiEnvEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.MultiEnv, true);
+  return isFeatureFlagEnabled(FeatureFlagName.MultiEnv, false);
 }
 
 export function isArmSupportEnabled(): boolean {

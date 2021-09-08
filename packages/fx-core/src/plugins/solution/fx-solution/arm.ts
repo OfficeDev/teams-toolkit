@@ -299,6 +299,24 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
   return result;
 }
 
+export async function copyParameterJson(ctx: SolutionContext, sourceEnvName: string) {
+  if (!isMultiEnvEnabled() || !ctx.envInfo?.envName || !sourceEnvName) {
+    return;
+  }
+
+  const parameterFolderPath = path.join(ctx.root, configsFolder);
+  const targetParameterFileName = parameterFileNameTemplateNew.replace(
+    "@envName",
+    ctx.envInfo.envName
+  );
+  const sourceParameterFileName = parameterFileNameTemplateNew.replace("@envName", sourceEnvName);
+  const targetParameterFilePath = path.join(parameterFolderPath, targetParameterFileName);
+  const sourceParameterFilePath = path.join(parameterFolderPath, sourceParameterFileName);
+
+  await fs.ensureDir(parameterFolderPath);
+  await fs.copy(sourceParameterFilePath, targetParameterFilePath);
+}
+
 export async function getParameterJson(ctx: SolutionContext) {
   if (!ctx.envInfo?.envName) {
     throw new Error("Failed to get target environment name from solution context.");

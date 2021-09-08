@@ -407,7 +407,9 @@ export class AppStudioPluginImpl {
 
     if (this.isSPFxProject(ctx)) {
       const templateManifestFolder = path.join(templatesFolder, "plugins", "resource", "spfx");
-      const manifestFile = path.resolve(templateManifestFolder, "./solution/manifest.json");
+      const manifestFile = isMultiEnvEnabled()
+        ? path.resolve(templateManifestFolder, "./solution/manifest_multi_env.json")
+        : path.resolve(templateManifestFolder, "./solution/manifest.json");
       const manifestString = (await fs.readFile(manifestFile)).toString();
       manifest = JSON.parse(manifestString);
     } else {

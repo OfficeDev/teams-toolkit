@@ -33,7 +33,5 @@ resource functionStorage 'Microsoft.Storage/storageAccounts@2021-04-01' = {
   }
 }
 
-output appServicePlanName string = functionServerfarms.name
 output functionEndpoint string = functionApp.properties.hostNames[0]
-output storageAccountName string = functionStorage.name
-output appName string = functionAppName
+output appId string = functionApp.id

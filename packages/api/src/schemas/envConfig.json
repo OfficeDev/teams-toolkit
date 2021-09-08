@@ -24,6 +24,27 @@
       },
       "additionalProperties": false
     },
+    "bot": {
+      "type": "object",
+      "description": "Existing bot AAD app configuration.",
+      "properties": {
+        "appId": {
+          "type": "string",
+          "description": "The id of existing bot AAD app.",
+          "minLength": 1
+        },
+        "appPassword": {
+          "type": "string",
+          "description": "The password of existing bot AAD app.",
+          "minLength": 1
+        }
+      },
+      "dependencies": {
+        "appId": ["appPassword"],
+        "appPassword": ["appId"]
+      },
+      "additionalProperties": false
+    },
     "manifest": {
       "type": "object",
       "description": "The Teams App manifest related configuration.",

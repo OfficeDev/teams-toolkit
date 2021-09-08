@@ -229,7 +229,7 @@ export async function askTargetEnvironment(
 }
 
 export async function askNewEnvironment(
-  ctx: CoreHookContext|CoreHookContextV2,
+  ctx: CoreHookContext | CoreHookContextV2,
   inputs: Inputs
 ): Promise<string | undefined> {
   const getQuestionRes = await getQuestionsForNewEnv(inputs);

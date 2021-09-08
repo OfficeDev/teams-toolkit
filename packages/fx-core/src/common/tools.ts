@@ -1,7 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import {
-  AppPackageFolderName, AzureAccountProvider,
+  AppPackageFolderName,
+  AzureAccountProvider,
   ConfigFolderName,
   ConfigMap,
   err,
@@ -13,7 +14,7 @@ import {
   returnSystemError,
   returnUserError,
   SubscriptionInfo,
-  UserInteraction
+  UserInteraction,
 } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import axios from "axios";
@@ -26,7 +27,6 @@ import { promisify } from "util";
 import * as uuid from "uuid";
 import { getResourceFolder } from "../folder";
 import { ConstantString, FeatureFlagName } from "./constants";
-
 
 Handlebars.registerHelper("contains", (value, array, options) => {
   array = array instanceof Array ? array : [array];

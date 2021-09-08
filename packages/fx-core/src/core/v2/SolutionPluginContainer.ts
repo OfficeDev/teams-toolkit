@@ -3,9 +3,9 @@
 import { v2 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Container } from "typedi";
- 
+
 export const SolutionPlugins = {
-  AzureTeamsSolution: "fx-solution-azure"
+  AzureTeamsSolution: "fx-solution-azure",
 };
 
 /**
@@ -21,7 +21,7 @@ export function getAllSolutionPlugins(): v2.SolutionPlugin[] {
   }
   return plugins;
 }
- 
-export function getSolutionPlugin(name: string): v2.SolutionPlugin{
+
+export function getSolutionPlugin(name: string): v2.SolutionPlugin {
   return Container.get<v2.SolutionPlugin>(name);
 }

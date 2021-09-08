@@ -30,6 +30,8 @@ import {
   SolutionContext,
   Stage,
   TelemetryReporter,
+  AzureSolutionSettings,
+  SolutionSettings,
   Tools,
   Void,
 } from "@microsoft/teamsfx-api";
@@ -90,6 +92,7 @@ import { ProjectUpgraderMW } from "./middleware/projectUpgrader";
 import { QuestionModelMW } from "./middleware/questionModel";
 import { SolutionLoaderMW } from "./middleware/solutionLoader";
 import { PermissionRequestFileProvider } from "./permissionRequest";
+import { HostTypeOptionAzure } from "../plugins/solution/fx-solution/question";
 import {
   CoreQuestionNames,
   DefaultAppNameFunc,
@@ -714,7 +717,7 @@ export class FxCore implements Core {
             description: "",
             author: "",
             scripts: {
-              test: 'echo "Error: no test specified" && exit 1',
+              test: "echo \"Error: no test specified\" && exit 1",
             },
             devDependencies: {
               "@microsoft/teamsfx-cli": "0.*",
@@ -820,7 +823,7 @@ export class FxCore implements Core {
       }: ${JSON.stringify(newEnvConfig)}`
     );
 
-    if (isArmSupportEnabled()) {
+    if (isArmSupportEnabled() && isAzureProject(projectSettings.solutionSettings)) {
       const solutionContext: SolutionContext = {
         projectSettings,
         envInfo: newEnvInfo(targetEnvName, newEnvConfig),
@@ -890,6 +893,11 @@ export class FxCore implements Core {
   async switchEnv(inputs: Inputs): Promise<Result<Void, FxError>> {
     throw TaskNotSupportError(Stage.switchEnv);
   }
+}
+
+function isAzureProject(solutionSettings: SolutionSettings): boolean {
+  const settings = solutionSettings as AzureSolutionSettings;
+  return settings?.hostType === HostTypeOptionAzure.id;
 }
 
 export async function downloadSample(

@@ -33,10 +33,10 @@ export async function provisionResource(
   inputs: Readonly<v2.ProvisionInputs>,
   provisionTemplates: Record<v2.PluginName, Json>,
   tokenProvider: TokenProvider
-): Promise<Result<v2.ProvisionOutput, FxError>> {
+): Promise<v2.FxResult<v2.SolutionProvisionOutput, FxError>> {
   const blockResult = blockV1Project(ctx.projectSetting.solutionSettings);
   if (blockResult.isErr()) {
-    return err(blockResult.error);
+    return new v2.FxFailure(blockResult.error);
   }
 
   const azureSolutionSettings = getAzureSolutionSettings(ctx);
@@ -51,11 +51,12 @@ export async function provisionResource(
       ctx.permissionRequestProvider
     );
     if (result.isErr()) {
-      return err(result.error);
+      return new v2.FxFailure(result.error);
     }
   }
 
   const plugins = getSelectedPlugins(azureSolutionSettings);
   if (isAzureProject(azureSolutionSettings)) {
+    const appName = ctx.projectSetting.appName;
   }
 }

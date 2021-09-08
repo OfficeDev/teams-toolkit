@@ -13,6 +13,7 @@ import {
   TreeProvider,
   UserInteraction,
 } from "@microsoft/teamsfx-api";
+import { profile } from "console";
 import { newEnvInfo } from "../../../../core/tools";
 
 class BaseSolutionContextAdaptor implements SolutionContext {
@@ -78,6 +79,10 @@ export class ProvisionContextAdapter extends BaseSolutionContextAdaptor {
     this.localSettings = undefined;
     this.ui = v2context.userInteraction;
     this.cryptoProvider = undefined;
-    this.envInfo = newEnvInfo(); // tbd
+    this.envInfo = {
+      envName: "default",
+      config: undefined,
+      profile: undefined,
+    };
   }
 }

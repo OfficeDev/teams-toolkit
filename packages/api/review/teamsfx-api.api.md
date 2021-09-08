@@ -311,6 +311,38 @@ export interface FxError extends Error {
 }
 
 // @public (undocumented)
+class FxFailure<Error = FxError> {
+    constructor(error: Error);
+    // (undocumented)
+    error: Error;
+    // (undocumented)
+    kind: "failure";
+}
+
+// @public (undocumented)
+class FxPartialSuccess<T, Error = FxError> {
+    constructor(output: T, error: Error);
+    // (undocumented)
+    error: Error;
+    // (undocumented)
+    kind: "partialSuccess";
+    // (undocumented)
+    output: T;
+}
+
+// @public (undocumented)
+type FxResult<T, Error = FxError> = FxSuccess<T> | FxPartialSuccess<T, Error> | FxFailure<Error>;
+
+// @public (undocumented)
+class FxSuccess<T> {
+    constructor(output: T);
+    // (undocumented)
+    kind: "success";
+    // (undocumented)
+    output: T;
+}
+
+// @public (undocumented)
 export function getCallFuncValue(inputs: Inputs, raw?: unknown): Promise<unknown>;
 
 // @public (undocumented)
@@ -884,7 +916,7 @@ export type ResourceConfigs = ResourceTemplates;
 interface ResourcePlugin {
     activate(solutionSettings: AzureSolutionSettings): boolean;
     configureLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: Json, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
-    configureResource?: (ctx: Context_2, inputs: ProvisionInputs, provisionInputConfig: Json, provisionOutputs: Json, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
+    configureResource?: (ctx: Context_2, inputs: ProvisionInputs, provisionInputConfig: Json, provisionOutputs: Readonly<Record<string, ResourceProvisionOutput>>, tokenProvider: TokenProvider) => Promise<FxResult<ResourceProvisionOutput, FxError>>;
     deploy?: (ctx: Context_2, inputs: DeploymentInputs, provisionOutputs: Json, tokenProvider: AzureAccountProvider) => Promise<Result<Void, FxError>>;
     // (undocumented)
     displayName: string;
@@ -896,7 +928,7 @@ interface ResourcePlugin {
     // (undocumented)
     name: string;
     provisionLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: Json, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
-    provisionResource?: (ctx: Context_2, inputs: ProvisionInputs, provisionInputConfig: Json, tokenProvider: TokenProvider) => Promise<Result<ResourceProvisionOutput, FxError>>;
+    provisionResource?: (ctx: Context_2, inputs: ProvisionInputs, provisionInputConfig: Json, tokenProvider: TokenProvider) => Promise<FxResult<ResourceProvisionOutput, FxError>>;
     publishApplication?: (ctx: Context_2, inputs: Inputs, provisionInputConfig: Json, provisionOutputs: Json, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
     scaffoldSourceCode?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
 }
@@ -1043,7 +1075,7 @@ interface SolutionPlugin {
     // (undocumented)
     name: string;
     provisionLocalResource?: (ctx: Context_2, inputs: Inputs, tokenProvider: TokenProvider) => Promise<Result<Json, FxError>>;
-    provisionResources: (ctx: Context_2, inputs: Inputs, provisionInputConfig: Json, tokenProvider: TokenProvider) => Promise<Result<SolutionProvisionOutput, FxError>>;
+    provisionResources: (ctx: Context_2, inputs: Inputs, provisionInputConfig: Json, tokenProvider: TokenProvider) => Promise<FxResult<SolutionProvisionOutput, FxError>>;
     publishApplication?: (ctx: Context_2, inputs: Inputs, provisionInputConfig: Json, provisionOutputs: Json, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
     scaffoldSourceCode?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
 }
@@ -1405,7 +1437,11 @@ declare namespace v2 {
         LocalSetting,
         SolutionInputs,
         ProvisionInputs,
-        DeploymentInputs
+        DeploymentInputs,
+        FxSuccess,
+        FxPartialSuccess,
+        FxFailure,
+        FxResult
     }
 }
 export { v2 }

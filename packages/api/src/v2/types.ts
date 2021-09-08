@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
+import { FxError } from "..";
 import { UserInteraction } from "../qm/ui";
 import { Inputs, Json, ProjectSettings } from "../types";
 import {
@@ -10,6 +11,7 @@ import {
   TelemetryReporter,
   PermissionRequestProvider,
 } from "../utils";
+import { EnvInfo } from "../context";
 
 export type PluginName = string;
 
@@ -43,3 +45,37 @@ export type SolutionInputs = {
 
 export type ProvisionInputs = Inputs & SolutionInputs & { projectPath: string };
 export type DeploymentInputs = Inputs & SolutionInputs & { projectPath: string };
+
+export class FxSuccess<T> {
+  kind: "success";
+  output: T;
+  constructor(output: T) {
+    this.kind = "success";
+    this.output = output;
+  }
+}
+
+export class FxPartialSuccess<T, Error = FxError> {
+  kind: "partialSuccess";
+  output: T;
+  error: Error;
+  constructor(output: T, error: Error) {
+    this.kind = "partialSuccess";
+    this.output = output;
+    this.error = error;
+  }
+}
+
+export class FxFailure<Error = FxError> {
+  kind: "failure";
+  error: Error;
+  constructor(error: Error) {
+    this.kind = "failure";
+    this.error = error;
+  }
+}
+
+export type FxResult<T, Error = FxError> =
+  | FxSuccess<T>
+  | FxPartialSuccess<T, Error>
+  | FxFailure<Error>;

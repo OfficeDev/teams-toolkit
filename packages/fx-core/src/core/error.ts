@@ -203,3 +203,15 @@ export function NonExistEnvNameError(env: string): UserError {
 export function NonActiveEnvError(): UserError {
   return new UserError(CoreSource, "NonActiveEnvError", `Can not find active environment.`);
 }
+
+export class LoadSolutionError extends SystemError {
+  constructor() {
+    super(new.target.name, "Failed to load solution", CoreSource);
+  }
+}
+
+export class NotImplementedError extends SystemError {
+  constructor(method: string) {
+    super(new.target.name, `Method not implemented:${method}`, CoreSource);
+  }
+}

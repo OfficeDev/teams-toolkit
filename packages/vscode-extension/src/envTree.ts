@@ -12,7 +12,7 @@ import * as vscode from "vscode";
 import TreeViewManagerInstance, { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
 import { getActiveEnv } from "./utils/commonUtils";
 import * as StringResources from "./resources/Strings.json";
-import { listCollaborator } from "./handlers";
+import { checkPermission, listCollaborator } from "./handlers";
 
 const showEnvList: Array<string> = [];
 
@@ -39,6 +39,7 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
     for (const item of envNamesResult.value) {
       showEnvList.push(item);
       let userList: TreeItem[] = [];
+      const canAddCollaborator = await checkPermission(item);
       if (isRemoteCollaborateEnabled()) {
         userList = await listCollaborator(item);
       }
@@ -47,7 +48,7 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
           commandId: "fx-extension.environment." + item,
           label: item,
           parent: TreeCategory.Environment,
-          contextValue: "environment",
+          contextValue: canAddCollaborator ? "environmentWithPermission" : "environment",
           icon: item === activeEnv ? "folder-active" : "symbol-folder",
           isCustom: false,
           description:

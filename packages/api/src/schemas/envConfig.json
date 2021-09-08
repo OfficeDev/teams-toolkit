@@ -6,6 +6,39 @@
     "$schema": {
       "type": "string"
     },
+    "auth": {
+      "type": "object",
+      "description": "Existing tab AAD app configuration.",
+      "properties": {
+        "clientId": {
+          "type": "string",
+          "description": "The client id of existing AAD app for tab.",
+          "minLength": 1
+        },
+        "clientSecret": {
+          "type": "string",
+          "description": "The secret of existing AAD app for tab.",
+          "minLength": 1
+        },
+        "objectId": {
+          "type": "string",
+          "description": "The object id of existing AAD app for tab.",
+          "minLength": 1
+        },
+        "oauth2PermissionScopeId": {
+          "type": "string",
+          "description": "The oauth2 permission scope id of existing AAD app for tab.",
+          "minLength": 1
+        }
+      },
+      "dependencies": {
+        "clientId": ["clientSecret", "objectId", "oauth2PermissionScopeId"],
+        "clientSecret": ["clientId", "objectId", "oauth2PermissionScopeId"],
+        "objectId": ["clientId", "clientSecret", "oauth2PermissionScopeId"],
+        "oauth2PermissionScopeId": ["clientId", "clientSecret", "objectId"]
+      },
+      "additionalProperties": false
+    },
     "azure": {
       "type": "object",
       "description": "The Azure resource related configuration.",

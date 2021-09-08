@@ -11,6 +11,27 @@
 export interface EnvConfig {
   $schema?: string;
   /**
+   * Existing tab AAD app configuration.
+   */
+  auth?: {
+    /**
+     * The client id of existing AAD app for tab.
+     */
+    clientId?: string;
+    /**
+     * The secret of existing AAD app for tab.
+     */
+    clientSecret?: string;
+    /**
+     * The object id of existing AAD app for tab.
+     */
+    objectId?: string;
+    /**
+     * The oauth2 permission scope id of existing AAD app for tab.
+     */
+    oauth2PermissionScopeId?: string;
+  };
+  /**
    * The Azure resource related configuration.
    */
   azure?: {

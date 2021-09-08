@@ -17,7 +17,7 @@
         },
         "clientSecret": {
           "type": "string",
-          "description": "The secret of existing AAD app for tab.",
+          "description": "The client secret of existing AAD app for tab.",
           "minLength": 1
         },
         "objectId": {

@@ -19,7 +19,7 @@ export interface EnvConfig {
      */
     clientId?: string;
     /**
-     * The secret of existing AAD app for tab.
+     * The client secret of existing AAD app for tab.
      */
     clientSecret?: string;
     /**

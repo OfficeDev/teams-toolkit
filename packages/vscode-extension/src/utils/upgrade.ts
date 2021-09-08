@@ -22,7 +22,7 @@ export class ExtensionUpgrade {
 
     if (
       syncedVersion === undefined ||
-      versionUtil.compare(teamsToolkitVersion, syncedVersion) == 1
+      versionUtil.compare(teamsToolkitVersion, syncedVersion) === 1
     ) {
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowWhatIsNewNotification);
       this.context.globalState.update(SyncedState.Version, teamsToolkitVersion);

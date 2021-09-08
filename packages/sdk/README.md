@@ -117,16 +117,18 @@ For example, to filter out specific error, you could use the following check:
 ```ts
 try {
   const credential = new TeamsUserCredential();
-  credential.getToken("User.Read");
+  await credential.login("User.Read");
 } catch (err: unknown) {
-  // Show login button when specific ErrorWithCode is caught.
-  if (err instanceof ErrorWithCode && err.code === ErrorCode.UiRequiredError) {
-    this.setState({
-      showLoginBtn: true,
-    });
+  if (err instanceof ErrorWithCode && err.code !== ErrorCode.ConsentFailed) {
+    throw err;
+  } else {
+    // Silently fail because user cancels the consent dialog
+    return;
   }
 }
 ```
+
+And if credential instance is used in other library like Microsoft Graph, it's possible that error is catched and transformed.
 
 ```ts
 try {

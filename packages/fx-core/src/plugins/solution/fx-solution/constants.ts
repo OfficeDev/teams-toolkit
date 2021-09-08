@@ -147,6 +147,7 @@ export enum SolutionError {
   FailedToGrantPermission = "FailedToGrantPermission",
   FailedToCheckPermission = "FailedToCheckPermission",
   FailedToListCollaborator = "FailedToListCollaborator",
+  EmailCannotBeEmptyOrSame = "EmailCannotBeEmptyOrSame",
 }
 
 export const LOCAL_DEBUG_TAB_ENDPOINT = "localTabEndpoint";

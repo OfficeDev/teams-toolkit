@@ -85,6 +85,7 @@ import {
   addCapabilityQuestion,
   ProgrammingLanguageQuestion,
   createV1CapabilityQuestion,
+  GetUserEmailQuestion,
 } from "./question";
 import Mustache from "mustache";
 import path from "path";
@@ -1230,6 +1231,8 @@ export class TeamsAppSolution implements Solution {
           }
         }
       }
+    } else if (stage === Stage.grantPermission) {
+      node.addChild(new QTreeNode(GetUserEmailQuestion));
     }
     return ok(node);
   }
@@ -1352,6 +1355,21 @@ export class TeamsAppSolution implements Solution {
       }
 
       const email = ctx.answers!["email"] as string;
+
+      if (!email || email === result.value.userPrincipalName) {
+        return err(
+          sendErrorTelemetryThenReturnError(
+            SolutionTelemetryEvent.GrantPermission,
+            returnUserError(
+              new Error("Collaborator's email cannot be null or same as current user"),
+              "Solution",
+              SolutionError.EmailCannotBeEmptyOrSame
+            ),
+            ctx.telemetryReporter
+          )
+        );
+      }
+
       const userInfo = await this.getUserInfo(ctx, email);
 
       if (!userInfo) {

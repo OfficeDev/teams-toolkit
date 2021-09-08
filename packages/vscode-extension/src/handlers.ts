@@ -789,6 +789,33 @@ export async function activateEnvironment(env: string): Promise<Result<Void, FxE
   return result;
 }
 
+export async function grantPermission(env: string): Promise<Result<Void, FxError>> {
+  let result: Result<any, FxError> = ok(Void);
+  const eventName = ExtTelemetry.stageToEvent(Stage.grantPermission);
+  try {
+    const checkCoreRes = checkCoreNotEmpty();
+    if (checkCoreRes.isErr()) {
+      throw checkCoreRes.error;
+    }
+
+    const inputs: Inputs = getSystemInputs();
+    inputs.env = env;
+
+    result = await core.grantPermission(inputs);
+    if (result.isErr()) {
+      throw result.error;
+    }
+    window.showInformationMessage(
+      `Added account: '${inputs.email}'' to the environment '${env}' as a collaborator`
+    );
+  } catch (e) {
+    result = wrapError(e);
+  }
+
+  await processResult(eventName, result);
+  return result;
+}
+
 export async function listCollaborator(env: string): Promise<TreeItem[]> {
   let result: TreeItem[] = [];
   try {

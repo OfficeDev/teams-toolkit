@@ -9,6 +9,7 @@ import {
   returnSystemError,
   SingleSelectQuestion,
   StaticOptions,
+  TextInputQuestion,
   Void,
 } from "@microsoft/teamsfx-api";
 import { SolutionError } from "./constants";
@@ -235,5 +236,24 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
     const hostType = inputs[AzureSolutionQuestionNames.HostType] as string;
     if (HostTypeOptionSPFx.id === hostType) return "SPFx is currently supporting TypeScript only.";
     return "Select a programming language.";
+  },
+};
+
+export const GetUserEmailQuestion: TextInputQuestion = {
+  name: "email",
+  type: "text",
+  title: "Input the email address of your collaborator",
+  validation: {
+    validFunc: (input: string, previousInputs?: Inputs): string | undefined => {
+      if (!input || input.trim() === "") {
+        return "email address cannot be null or empty";
+      }
+
+      const re = /\S+@\S+\.\S+/;
+      if (!re.test(input)) {
+        return "email address is not valid";
+      }
+      return undefined;
+    },
   },
 };

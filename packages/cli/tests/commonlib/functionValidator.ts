@@ -3,6 +3,8 @@
 
 import axios from "axios";
 import * as chai from "chai";
+import glob from "glob";
+import path from "path";
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
 
 const baseUrlAppSettings = (subscriptionId: string, rg: string, name: string) =>
@@ -102,7 +104,27 @@ export class FunctionValidator {
     return functionObject;
   }
 
-  public static async validateProvision(functionObject: IFunctionObject, sqlEnabled = true) {
+  public static async validateScaffold(
+    projectPath: string,
+    programmingLanguage: string
+  ): Promise<void> {
+    const indexFile: { [key: string]: string } = {
+      typescript: "index.ts",
+      javascript: "index.js",
+    };
+    glob(
+      `**/${indexFile[programmingLanguage]}`,
+      { cwd: path.resolve(projectPath, "api") },
+      (err, files) => {
+        chai.assert.isAtLeast(files.length, 1);
+      }
+    );
+  }
+
+  public static async validateProvision(
+    functionObject: IFunctionObject,
+    sqlEnabled = true
+  ): Promise<void> {
     console.log("Start to validate Function Provision.");
 
     const tokenProvider = MockAzureAccountProvider;
@@ -197,7 +219,7 @@ export class FunctionValidator {
     return fn();
   }
 
-  public static async validateDeploy(functionObject: IFunctionObject) {
+  public static async validateDeploy(functionObject: IFunctionObject): Promise<void> {
     console.log("Start to validate Function Deployment.");
 
     // Disable validate deployment since we have too many requests and the test is not stable.

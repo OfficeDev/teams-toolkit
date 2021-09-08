@@ -3,6 +3,8 @@
 
 import axios from "axios";
 import * as chai from "chai";
+import * as fs from "fs";
+import path from "path";
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
 
 const baseUrlContainer = (
@@ -70,7 +72,23 @@ export class FrontendValidator {
     return frontendObject;
   }
 
-  public static async validateProvision(frontendObject: IFrontendObject) {
+  public static async validateScaffold(
+    projectPath: string,
+    programmingLanguage: string
+  ): Promise<void> {
+    const indexFile: { [key: string]: string } = {
+      typescript: "index.tsx",
+      javascript: "index.jsx",
+    };
+    const indexPath = path.resolve(projectPath, "tabs", "src", indexFile[programmingLanguage]);
+
+    fs.access(indexPath, fs.constants.F_OK, (err) => {
+      // err is null means file exists
+      chai.assert.isNull(err);
+    });
+  }
+
+  public static async validateProvision(frontendObject: IFrontendObject): Promise<void> {
     console.log("Start to validate Frontend Provision.");
 
     const tokenProvider = MockAzureAccountProvider;
@@ -90,7 +108,7 @@ export class FrontendValidator {
     console.log("Successfully validate Frontend Provision.");
   }
 
-  public static async validateDeploy(frontendObject: IFrontendObject) {
+  public static async validateDeploy(frontendObject: IFrontendObject): Promise<void> {
     console.log("Start to validate Frontend Deploy.");
 
     const tokenProvider = MockAzureAccountProvider;

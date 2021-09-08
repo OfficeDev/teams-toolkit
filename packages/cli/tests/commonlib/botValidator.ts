@@ -3,6 +3,8 @@
 
 import axios from "axios";
 import * as chai from "chai";
+import * as fs from "fs";
+import path from "path";
 
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
 
@@ -92,7 +94,23 @@ export class BotValidator {
     return botObject;
   }
 
-  public static async validateProvision(botObject: IBotObject) {
+  public static async validateScaffold(
+    projectPath: string,
+    programmingLanguage: string
+  ): Promise<void> {
+    const indexFile: { [key: string]: string } = {
+      typescript: "index.ts",
+      javascript: "index.js",
+    };
+    const indexPath = path.resolve(projectPath, "bot", indexFile[programmingLanguage]);
+
+    fs.access(indexPath, fs.constants.F_OK, (err) => {
+      // err is null means file exists
+      chai.assert.isNull(err);
+    });
+  }
+
+  public static async validateProvision(botObject: IBotObject): Promise<void> {
     console.log("Start to validate Bot Provision.");
 
     const tokenProvider = MockAzureAccountProvider;
@@ -127,7 +145,7 @@ export class BotValidator {
     console.log("Successfully validate Bot Provision.");
   }
 
-  public static async validateDeploy(botObject: IBotObject) {
+  public static async validateDeploy(botObject: IBotObject): Promise<void> {
     // ToDo: uncomment this function in the future.
     /*
         console.log("Start to validate Bot Deployment.");

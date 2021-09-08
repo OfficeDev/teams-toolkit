@@ -25,6 +25,7 @@ export class FunctionPluginInfo {
     FunctionConfigKey.storageAccountName,
     FunctionConfigKey.appServicePlanName,
     FunctionConfigKey.functionEndpoint,
+    FunctionConfigKey.functionAppId,
   ];
 
   public static readonly templateBaseGroupName: string = "function-base";
@@ -34,8 +35,6 @@ export class FunctionPluginInfo {
 
 export class FunctionPluginPathInfo {
   public static readonly solutionFolderName: string = "api";
-  // public static readonly rootPath: string = path.join(__dirname, "..", "..", "..", "..");
-  // public static readonly templateFolderPath: string = path.join("templates", "plugins", "resource", "function");
   public static readonly templateFileExt: string = ".tpl";
   public static readonly templateZipExt: string = ".zip";
   public static readonly templateZipNameSep: string = ".";
@@ -182,16 +181,12 @@ export class QuestionValidationFunc {
 }
 
 export class FunctionBicep {
-  static readonly storageAccountName: string = "functionProvision.outputs.storageAccountName";
-  static readonly appServicePlanName: string = "functionProvision.outputs.appServicePlanName";
   static readonly functionEndpoint: string = "functionProvision.outputs.functionEndpoint";
 }
 
 export class FunctionArmOutput {
-  static readonly StorageName: string = "function_storageAccountName";
-  static readonly AppServicePlanName: string = "function_appServicePlanName";
   static readonly Endpoint: string = "function_functionEndpoint";
-  static readonly AppName: string = "function_appName";
+  static readonly AppId: string = "function_appResourceId";
 }
 
 export class FunctionBicepFile {

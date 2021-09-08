@@ -411,6 +411,10 @@ export function isBicepEnvCheckerEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.BicepEnvCheckerEnable, false);
 }
 
+export function isRemoteCollaborateEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.RemoteCollaboration, false);
+}
+
 export async function generateBicepFiles(
   templateFilePath: string,
   context: any

@@ -808,6 +808,8 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
     window.showInformationMessage(
       `Added account: '${inputs.email}'' to the environment '${env}' as a collaborator`
     );
+
+    registerEnvTreeHandler();
   } catch (e) {
     result = wrapError(e);
   }

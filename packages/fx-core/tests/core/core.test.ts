@@ -29,6 +29,7 @@ import fs from "fs-extra";
 import * as path from "path";
 import * as os from "os";
 import {
+  environmentManager,
   FunctionRouterError,
   FxCore,
   InvalidInputError,
@@ -662,7 +663,7 @@ describe("Core basic APIs", () => {
   ];
 
   envParameters.forEach((testParam) => {
-    it(`happy path: create new env`, async () => {
+    it(`happy path: scaffold and create new env copy`, async () => {
       const expectedInputs: Inputs = {
         platform: Platform.CLI,
         [CoreQuestionNames.AppName]: appName,
@@ -671,6 +672,8 @@ describe("Core basic APIs", () => {
         projectPath: projectPath,
         solution: mockSolution.name,
       };
+
+      const newEnvName = "newEnv";
       sandbox
         .stub<any, any>(ui, "inputText")
         .callsFake(async (config: InputTextConfig): Promise<Result<InputTextResult, FxError>> => {
@@ -683,7 +686,7 @@ describe("Core basic APIs", () => {
           if (config.name === CoreQuestionNames.NewTargetEnvName) {
             return ok({
               type: "success",
-              result: "newEnv",
+              result: newEnvName,
             });
           }
           throw err(InvalidInputError("invalid question"));
@@ -727,12 +730,28 @@ describe("Core basic APIs", () => {
           assert.fail("failed to load project settings");
         }
 
+        // assert default env is created on scaffold
+        const envListResult = await environmentManager.listEnvConfigs(inputs.projectPath!);
+        if (envListResult.isErr()) {
+          assert.fail("failed to list env names");
+        }
+        assert.isTrue(envListResult.value.length === 1);
+        assert.isTrue(envListResult.value[0] === environmentManager.getDefaultEnvName());
+
         const [projectSettings, projectIdMissing] = projectSettingsResult.value;
         const validSettingsResult = validateSettings(projectSettings);
         assert.isTrue(validSettingsResult === undefined);
 
         const createEnvRes = await core.createEnv(inputs);
         assert.isTrue(createEnvRes.isOk());
+
+        const newEnvListResult = await environmentManager.listEnvConfigs(inputs.projectPath!);
+        if (newEnvListResult.isErr()) {
+          assert.fail("failed to list env names");
+        }
+        assert.isTrue(newEnvListResult.value.length === 2);
+        assert.isTrue(newEnvListResult.value[0] === environmentManager.getDefaultEnvName());
+        assert.isTrue(newEnvListResult.value[1] === newEnvName);
       }
     });
   });

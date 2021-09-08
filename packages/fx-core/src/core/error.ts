@@ -59,6 +59,13 @@ export function ReadFileError(e: Error): SystemError {
   return error;
 }
 
+export function CopyFileError(e: Error): SystemError {
+  const error = assembleError(e);
+  error.name = "CopyFileError";
+  error.source = CoreSource;
+  return error;
+}
+
 export function NoneFxError(e: any): FxError {
   const err = assembleError(e);
   err.name = "NoneFxError";

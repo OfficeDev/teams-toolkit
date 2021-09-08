@@ -19,28 +19,37 @@ import {
 import { isV2 } from "..";
 import { CoreHookContext, FxCore } from "../..";
 import {
+  NoProjectOpenedError,
+  ProjectEnvNotExistError,
+  ProjectSettingsUndefinedError,
+  NonActiveEnvError,
+} from "../error";
+import { LocalCrypto } from "../crypto";
+import { environmentManager } from "../environment";
+import {
   DEFAULT_FUNC_NAME,
   GLOBAL_CONFIG,
   PluginNames,
   PROGRAMMING_LANGUAGE,
 } from "../../plugins/solution/fx-solution/constants";
-import { LocalCrypto } from "../crypto";
-import { environmentManager } from "../environment";
 import {
-  NonActiveEnvError,
-  NoProjectOpenedError,
-  ProjectEnvNotExistError,
-  ProjectSettingsUndefinedError,
-} from "../error";
-import { PermissionRequestFileProvider } from "../permissionRequest";
-import { getQuestionNewTargetEnvironmentName, QuestionSelectTargetEnvironment } from "../question";
-import { newEnvInfo } from "../tools";
-import { shouldIgnored } from "./projectSettingsLoader";
+  getQuestionNewTargetEnvironmentName,
+  QuestionSelectSourceEnvironment,
+  QuestionSelectTargetEnvironment,
+} from "../question";
 import { desensitize } from "./questionModel";
+import { shouldIgnored } from "./projectSettingsLoader";
+import { PermissionRequestFileProvider } from "../permissionRequest";
+import { newEnvInfo } from "../tools";
 
 const newTargetEnvNameOption = "+ new environment";
 const lastUsedMark = " (activate)";
 let activeEnv: string | undefined;
+
+export type CreateEnvCopyInput = {
+  targetEnvName: string;
+  sourceEnvName: string;
+};
 
 export function EnvInfoLoaderMW(isMultiEnvEnabled: boolean): Middleware {
   return async (ctx: CoreHookContext, next: NextFunction) => {
@@ -265,7 +274,7 @@ export async function askTargetEnvironment(
 export async function askNewEnvironment(
   ctx: CoreHookContext,
   inputs: Inputs
-): Promise<string | undefined> {
+): Promise<CreateEnvCopyInput | undefined> {
   const getQuestionRes = await getQuestionsForNewEnv(inputs);
   const core = ctx.self as FxCore;
   if (getQuestionRes.isErr()) {
@@ -297,7 +306,10 @@ export async function askNewEnvironment(
     );
   }
 
-  return inputs.newTargetEnvName;
+  return {
+    targetEnvName: inputs.newTargetEnvName,
+    sourceEnvName: inputs.sourceEnvName,
+  };
 }
 
 async function useUserSetEnv(ctx: CoreHookContext, inputs: Inputs): Promise<string | undefined> {
@@ -349,6 +361,19 @@ async function getQuestionsForNewEnv(
   }
 
   const node = new QTreeNode(getQuestionNewTargetEnvironmentName(inputs.projectPath));
+
+  const envProfilesResult = await environmentManager.listEnvConfigs(inputs.projectPath);
+  if (envProfilesResult.isErr()) {
+    return err(envProfilesResult.error);
+  }
+
+  const envList = reOrderEnvironments(envProfilesResult.value);
+  const selectSourceEnv = QuestionSelectSourceEnvironment;
+  selectSourceEnv.staticOptions = envList;
+  selectSourceEnv.default = activeEnv;
+
+  const selectSourceEnvNode = new QTreeNode(selectSourceEnv);
+  node.addChild(selectSourceEnvNode);
 
   return ok(node.trim());
 }

@@ -44,7 +44,6 @@ import * as jsonschema from "jsonschema";
 import * as path from "path";
 import Container from "typedi";
 import * as uuid from "uuid";
-import { environmentManager } from "..";
 import { globalStateUpdate } from "../common/globalState";
 import {
   Component,
@@ -61,10 +60,9 @@ import {
   isMultiEnvEnabled,
   saveFilesRecursively,
 } from "../common/tools";
-import { getParameterJson } from "../plugins/solution/fx-solution/arm";
 import { HostTypeOptionAzure } from "../plugins/solution/fx-solution/question";
-import { LocalCrypto } from "./crypto";
 import {
+  CopyFileError,
   FetchSampleError,
   FunctionRouterError,
   InvalidInputError,
@@ -93,11 +91,10 @@ import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { LocalSettingsLoaderMW } from "./middleware/localSettingsLoader";
 import { LocalSettingsWriterMW } from "./middleware/localSettingsWriter";
 import { MigrateConditionHandlerMW } from "./middleware/migrateConditionHandler";
-import { newSolutionContext, ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
-import { ProjectSettingsWriterMW } from "./middleware/projectSettingsWriter";
-import { ProjectUpgraderMW } from "./middleware/projectUpgrader";
-import { QuestionModelMW } from "./middleware/questionModel";
-import { SolutionLoaderMW } from "./middleware/solutionLoader";
+import { environmentManager } from "..";
+import { newEnvInfo } from "./tools";
+import { copyParameterJson, getParameterJson } from "../plugins/solution/fx-solution/arm";
+import { LocalCrypto } from "./crypto";
 import { PermissionRequestFileProvider } from "./permissionRequest";
 import {
   CoreQuestionNames,
@@ -118,7 +115,11 @@ import {
   getSolutionPluginV2,
   SolutionPlugins,
 } from "./SolutionPluginContainer";
-import { newEnvInfo } from "./tools";
+import { QuestionModelMW } from "./middleware/questionModel";
+import { ProjectSettingsWriterMW } from "./middleware/projectSettingsWriter";
+import { newSolutionContext, ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
+import { SolutionLoaderMW } from "./middleware/solutionLoader";
+import { ProjectUpgraderMW } from "./middleware/projectUpgrader";
 
 export interface CoreHookContext extends HookContext {
   projectSettings?: ProjectSettings;
@@ -832,16 +833,120 @@ export class FxCore implements Core {
     }
 
     const core = ctx!.self as FxCore;
-    const targetEnvName = await askNewEnvironment(ctx!, inputs);
+    const createEnvCopyInput = await askNewEnvironment(ctx!, inputs);
 
-    if (!targetEnvName) {
+    if (
+      !createEnvCopyInput ||
+      !createEnvCopyInput.targetEnvName ||
+      !createEnvCopyInput.sourceEnvName
+    ) {
       return ok(Void);
     }
 
-    if (targetEnvName) {
-      const createEnvResult = await createEnvWithName(targetEnvName, projectSettings, inputs, core);
-      if (createEnvResult.isErr()) {
-        return createEnvResult;
+    const createEnvResult = await this.createEnvCopy(
+      createEnvCopyInput.targetEnvName,
+      createEnvCopyInput.sourceEnvName,
+      projectSettings,
+      inputs,
+      core
+    );
+
+    if (createEnvResult.isErr()) {
+      return createEnvResult;
+    }
+
+    return ok(Void);
+  }
+
+  async createEnvWithName(
+    targetEnvName: string,
+    projectSettings: ProjectSettings,
+    inputs: Inputs,
+    core: FxCore
+  ): Promise<Result<Void, FxError>> {
+    const appName = projectSettings.appName;
+    const newEnvConfig = environmentManager.newEnvConfigData(appName);
+    const writeEnvResult = await environmentManager.writeEnvConfig(
+      inputs.projectPath!,
+      newEnvConfig,
+      targetEnvName
+    );
+    if (writeEnvResult.isErr()) {
+      return err(writeEnvResult.error);
+    }
+    core.tools.logProvider.debug(
+      `[core] persist ${targetEnvName} env profile to path ${
+        writeEnvResult.value
+      }: ${JSON.stringify(newEnvConfig)}`
+    );
+
+    //TODO need arm support API V2
+    if (isArmSupportEnabled() && isAzureProject(projectSettings.solutionSettings)) {
+      const solutionContext: SolutionContext = {
+        projectSettings,
+        envInfo: newEnvInfo(targetEnvName, newEnvConfig),
+        root: inputs.projectPath || "",
+        ...core.tools,
+        ...core.tools.tokenProvider,
+        answers: inputs,
+        cryptoProvider: new LocalCrypto(projectSettings.projectId),
+        permissionRequestProvider: inputs.projectPath
+          ? new PermissionRequestFileProvider(inputs.projectPath)
+          : undefined,
+      };
+
+      await getParameterJson(solutionContext);
+    }
+
+    return ok(Void);
+  }
+ 
+  async createEnvCopy(
+    targetEnvName: string,
+    sourceEnvName: string,
+    projectSettings: ProjectSettings,
+    inputs: Inputs,
+    core: FxCore
+  ): Promise<Result<Void, FxError>> {
+    // copy env config file
+    const targetEnvConfigFilePath = environmentManager.getEnvConfigPath(
+      targetEnvName,
+      inputs.projectPath!
+    );
+    const sourceEnvConfigFilePath = environmentManager.getEnvConfigPath(
+      sourceEnvName,
+      inputs.projectPath!
+    );
+
+    try {
+      await fs.copy(sourceEnvConfigFilePath, targetEnvConfigFilePath);
+    } catch (e) {
+      return err(CopyFileError(e));
+    }
+
+    core.tools.logProvider.debug(
+      `[core] copy env config file for ${targetEnvName} environment to path ${targetEnvConfigFilePath}`
+    );
+
+    // copy bicep parameter file
+    if (isArmSupportEnabled() && isAzureProject(projectSettings.solutionSettings)) {
+      const solutionContext: SolutionContext = {
+        projectSettings,
+        envInfo: newEnvInfo(targetEnvName),
+        root: inputs.projectPath || "",
+        ...core.tools,
+        ...core.tools.tokenProvider,
+        answers: inputs,
+        cryptoProvider: new LocalCrypto(projectSettings.projectId),
+        permissionRequestProvider: inputs.projectPath
+          ? new PermissionRequestFileProvider(inputs.projectPath)
+          : undefined,
+      };
+
+      try {
+        await copyParameterJson(solutionContext, sourceEnvName);
+      } catch (e) {
+        return err(CopyFileError(e));
       }
     }
 
@@ -1070,48 +1175,6 @@ export async function downloadSample(
     }
   }
   return err(InvalidInputError(`invalid answer for '${CoreQuestionNames.Samples}'`, inputs));
-}
-
-export async function createEnvWithName(
-  targetEnvName: string,
-  projectSettings: ProjectSettings,
-  inputs: Inputs,
-  core: FxCore
-): Promise<Result<Void, FxError>> {
-  const appName = projectSettings.appName;
-  const newEnvConfig = environmentManager.newEnvConfigData(appName);
-  const writeEnvResult = await environmentManager.writeEnvConfig(
-    inputs.projectPath!,
-    newEnvConfig,
-    targetEnvName
-  );
-  if (writeEnvResult.isErr()) {
-    return err(writeEnvResult.error);
-  }
-  core.tools.logProvider.debug(
-    `[core] persist ${targetEnvName} env profile to path ${writeEnvResult.value}: ${JSON.stringify(
-      newEnvConfig
-    )}`
-  );
-
-  if (isArmSupportEnabled() && isAzureProject(projectSettings.solutionSettings)) {
-    const solutionContext: SolutionContext = {
-      projectSettings,
-      envInfo: newEnvInfo(targetEnvName, newEnvConfig),
-      root: inputs.projectPath || "",
-      ...core.tools,
-      ...core.tools.tokenProvider,
-      answers: inputs,
-      cryptoProvider: new LocalCrypto(projectSettings.projectId),
-      permissionRequestProvider: inputs.projectPath
-        ? new PermissionRequestFileProvider(inputs.projectPath)
-        : undefined,
-    };
-
-    await getParameterJson(solutionContext);
-  }
-
-  return ok(Void);
 }
 
 export function newProjectSettings() {

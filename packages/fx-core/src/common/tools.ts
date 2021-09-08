@@ -497,10 +497,7 @@ export async function copyFiles(
 }
 
 export function getSiteNameFromResourceId(resourceId: string): string {
-  const result = parseFromResourceId(
-    /providers\/Microsoft.Web\/sites\/([0-9a-zA-Z-]*)/,
-    resourceId
-  );
+  const result = parseFromResourceId(/providers\/Microsoft.Web\/sites\/([^\/]*)/, resourceId);
   if (!result) {
     throw new Error("Failed to get site name from resource id: " + resourceId);
   }
@@ -508,7 +505,7 @@ export function getSiteNameFromResourceId(resourceId: string): string {
 }
 
 export function getResourceGroupNameFromResourceId(resourceId: string): string {
-  const result = parseFromResourceId(/resourceGroups\/([0-9a-zA-Z-——()]*)\//, resourceId);
+  const result = parseFromResourceId(/resourceGroups\/([^\/]*)\//, resourceId);
   if (!result) {
     throw new Error("Failed to get resource group name from resource id: " + resourceId);
   }
@@ -516,7 +513,7 @@ export function getResourceGroupNameFromResourceId(resourceId: string): string {
 }
 
 export function getSubscriptionIdFromResourceId(resourceId: string): string {
-  const result = parseFromResourceId(/subscriptions\/([0-9a-z-]*)\//, resourceId);
+  const result = parseFromResourceId(/subscriptions\/([^\/]*)\//, resourceId);
   if (!result) {
     throw new Error("Failed to get subscription id from resource id: " + resourceId);
   }

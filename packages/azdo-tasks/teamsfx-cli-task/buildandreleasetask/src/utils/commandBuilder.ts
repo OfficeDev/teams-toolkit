@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import tl from 'azure-pipelines-task-lib/task'
+import * as tl from 'azure-pipelines-task-lib/task'
 import { Commands } from '../constant'
 import { ActionInputs } from '../enums/actionInputs'
 import { MultiValueOptions } from '../enums/multiValueOptions'

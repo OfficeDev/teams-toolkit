@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import tl from 'azure-pipelines-task-lib/task'
+import * as tl from 'azure-pipelines-task-lib/task'
 import { BaseError } from './baseError'
 import { BuildCommandString } from './utils/commandBuilder'
 import { execute } from './utils/exec'

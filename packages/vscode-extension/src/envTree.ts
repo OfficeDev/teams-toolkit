@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, Result, err, ok, Void, TreeCategory } from "@microsoft/teamsfx-api";
+import { FxError, Result, err, ok, Void, TreeCategory, TreeItem } from "@microsoft/teamsfx-api";
 import {
   isMultiEnvEnabled,
   environmentManager,
@@ -38,7 +38,10 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
     showEnvList.splice(0);
     for (const item of envNamesResult.value) {
       showEnvList.push(item);
-      const userList = await listCollaborator(item);
+      let userList: TreeItem[] = [];
+      if (isRemoteCollaborateEnabled()) {
+        userList = await listCollaborator(item);
+      }
       environmentTreeProvider.add([
         {
           commandId: "fx-extension.environment." + item,
@@ -49,7 +52,7 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
           isCustom: false,
           description:
             item === activeEnv ? StringResources.vsc.commandsTreeViewProvider.acitve : "",
-          subTreeItems: isRemoteCollaborateEnabled() ? userList ?? [] : [],
+          subTreeItems: userList ?? [],
         },
       ]);
     }

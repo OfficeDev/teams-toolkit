@@ -73,6 +73,8 @@ import {
   SOLUTION,
   MANIFEST_TEMPLATE,
   TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV,
+  STATIC_TABS_TPL_FOR_MULTI_ENV,
+  CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV,
 } from "./constants";
 import { REMOTE_TEAMS_APP_ID } from "../../solution/fx-solution/constants";
 import AdmZip from "adm-zip";
@@ -162,7 +164,8 @@ export class AppStudioPluginImpl {
    * @returns
    */
   public async createManifest(settings: ProjectSettings): Promise<TeamsAppManifest | undefined> {
-    const solutionSettings: AzureSolutionSettings = settings.solutionSettings as AzureSolutionSettings;
+    const solutionSettings: AzureSolutionSettings =
+      settings.solutionSettings as AzureSolutionSettings;
     if (
       !solutionSettings.capabilities ||
       (!solutionSettings.capabilities.includes(BotOptionItem.id) &&
@@ -183,8 +186,10 @@ export class AppStudioPluginImpl {
       manifestString = this.replaceConfigValue(manifestString, "version", "1.0.0");
       const manifest: TeamsAppManifest = JSON.parse(manifestString);
       if (solutionSettings.capabilities.includes(TabOptionItem.id)) {
-        manifest.staticTabs = STATIC_TABS_TPL;
-        manifest.configurableTabs = CONFIGURABLE_TABS_TPL;
+        manifest.staticTabs = isMultiEnvEnabled() ? STATIC_TABS_TPL_FOR_MULTI_ENV : STATIC_TABS_TPL;
+        manifest.configurableTabs = isMultiEnvEnabled()
+          ? CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV
+          : CONFIGURABLE_TABS_TPL;
       }
       if (solutionSettings.capabilities.includes(BotOptionItem.id)) {
         manifest.bots = BOTS_TPL;
@@ -231,8 +236,9 @@ export class AppStudioPluginImpl {
     manifest.id = "{appid}";
     manifest.validDomains = [];
 
-    const includeBot = (ctx.projectSettings
-      ?.solutionSettings as AzureSolutionSettings).activeResourcePlugins?.includes(PluginNames.BOT);
+    const includeBot = (
+      ctx.projectSettings?.solutionSettings as AzureSolutionSettings
+    ).activeResourcePlugins?.includes(PluginNames.BOT);
     if (includeBot) {
       if (manifest.bots !== undefined && manifest.bots.length > 0) {
         for (let index = 0; index < manifest.bots.length; ++index) {
@@ -1487,7 +1493,18 @@ export class AppStudioPluginImpl {
     let manifest = (await fs.readFile(await this.getManifestTemplatePath(ctx.root))).toString();
 
     if (isMultiEnvEnabled()) {
-      const view = { config: ctx.envInfo.config };
+      const view = {
+        config: ctx.envInfo.config,
+        profile: {
+          "fx-resource-frontend-hosting": {
+            endpoint: tabEndpoint,
+          },
+          "fx-resource-aad-app-for-teams": {
+            clientId: aadId,
+            getApplicationIdUris: webApplicationInfoResource,
+          },
+        },
+      };
       manifest = Mustache.render(manifest, view);
     }
 

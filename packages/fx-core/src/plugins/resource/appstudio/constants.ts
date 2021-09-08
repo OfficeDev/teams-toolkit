@@ -92,9 +92,9 @@ export const TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV = `{
   "packageName": "com.microsoft.teams.extension",
   "developer": {
       "name": "Teams App, Inc.",
-      "websiteUrl": "{baseUrl}",
-      "privacyUrl": "{baseUrl}/index.html#/privacy",
-      "termsOfUseUrl": "{baseUrl}/index.html#/termsofuse"
+      "websiteUrl": "{{{profile.fx-resource-frontend-hosting.endpoint}}}",
+      "privacyUrl": "{{{profile.fx-resource-frontend-hosting.endpoint}}}/index.html#/privacy",
+      "termsOfUseUrl": "{{{profile.fx-resource-frontend-hosting.endpoint}}}/index.html#/termsofuse"
   },
   "icons": {
       "color": "resources/color.png",
@@ -119,8 +119,8 @@ export const TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV = `{
   ],
   "validDomains": [],
   "webApplicationInfo": {
-      "id": "{appClientId}",
-      "resource": "{webApplicationInfoResource}"
+      "id": "{{profile.fx-resource-aad-app-for-teams.clientId}}",
+      "resource": "{{{profile.fx-resource-aad-app-for-teams.applicationIdUris}}}"
   }
 }`;
 
@@ -234,6 +234,24 @@ export const STATIC_TABS_TPL: IStaticTab[] = [
     contentUrl: "{baseUrl}/index.html#/tab",
     websiteUrl: "{baseUrl}/index.html#/tab",
     scopes: ["personal"],
+  },
+];
+
+export const STATIC_TABS_TPL_FOR_MULTI_ENV: IStaticTab[] = [
+  {
+    entityId: "index",
+    name: "Personal Tab",
+    contentUrl: "{{{profile.fx-resource-frontend-hosting.endpoint}}}/index.html#/tab",
+    websiteUrl: "{{{profile.fx-resource-frontend-hosting.endpoint}}}/index.html#/tab",
+    scopes: ["personal"],
+  },
+];
+
+export const CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV: IConfigurableTab[] = [
+  {
+    configurationUrl: "{{{profile.fx-resource-frontend-hosting.endpoint}}}/index.html#/config",
+    canUpdateConfiguration: true,
+    scopes: ["team", "groupchat"],
   },
 ];
 

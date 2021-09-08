@@ -291,7 +291,7 @@ export async function activate(context: vscode.ExtensionContext) {
   await handlers.activate();
 
   if (!TreatmentVariableValue.isEmbeddedSurvey) {
-    const survey = new ExtensionSurvey();
+    const survey = ExtensionSurvey.getInstance();
     survey.activate();
   }
 

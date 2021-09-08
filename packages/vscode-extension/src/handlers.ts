@@ -842,6 +842,16 @@ export async function listCollaborator(env: string): Promise<TreeItem[]> {
         },
       };
     });
+    if (!result || result.length === 0) {
+      result = [
+        {
+          commandId: `fx-extension.listcollaborator.${env}`,
+          label: "No permission to list all collaborators.",
+          icon: "warning",
+          isCustom: false,
+        },
+      ];
+    }
   } catch (e) {
     result = [
       {
@@ -851,6 +861,31 @@ export async function listCollaborator(env: string): Promise<TreeItem[]> {
         isCustom: false,
       },
     ];
+  }
+
+  return result;
+}
+
+export async function checkPermission(env: string): Promise<boolean> {
+  let result = false;
+  try {
+    const checkCoreRes = checkCoreNotEmpty();
+    if (checkCoreRes.isErr()) {
+      throw checkCoreRes.error;
+    }
+
+    const inputs: Inputs = getSystemInputs();
+    inputs.env = env;
+    const permissions = await core.checkPermission(inputs);
+    if (permissions.isErr()) {
+      throw permissions.error;
+    }
+    const teamsAppPermission = permissions.value.find(
+      (permission: any) => permission.name === "Teams App"
+    );
+    result = teamsAppPermission.roles?.includes("Administrator") ?? false;
+  } catch (e) {
+    result = false;
   }
 
   return result;

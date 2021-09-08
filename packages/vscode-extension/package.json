@@ -417,7 +417,7 @@
       },
       {
         "command": "fx-extension.grantPermission",
-        "title": "Activate environment",
+        "title": "Grant permission",
         "icon": "$(person-add)",
         "enablement": "fx-extension.isMultiEnvEnabled && fx-extension.isRemoteCollaborateEnabled"
       }

@@ -188,7 +188,6 @@ export function newEnvInfo(
   return {
     envName: envName ?? environmentManager.getDefaultEnvName(),
     config: config ?? {
-      azure: {},
       manifest: {
         values: {
           appName: {

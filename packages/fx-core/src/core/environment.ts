@@ -91,7 +91,6 @@ class EnvironmentManager {
   public newEnvConfigData(appName: string): EnvConfig {
     const envConfig: EnvConfig = {
       $schema: this.schema,
-      azure: {},
       manifest: {
         description: this.manifestConfigDescription,
         values: {
@@ -220,7 +219,6 @@ class EnvironmentManager {
   ): Promise<Result<EnvConfig, FxError>> {
     if (!isMultiEnvEnabled()) {
       return ok({
-        azure: {},
         manifest: { values: { appName: { short: "" } } },
       });
     }

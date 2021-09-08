@@ -18,7 +18,7 @@ import { ScaffoldSteps, StepGroup, step } from "../resources/steps";
 import { TemplateZipFallbackError, runWithErrorCatchAndThrow, FunctionPluginError, UnknownFallbackError, UnzipError, TemplateManifestError } from "../resources/errors";
 import { getTemplatesFolder } from "../../../..";
 import { TelemetryHelper } from "../utils/telemetry-helper";
-import { genTemplateRenderReplaceFn, removeTemplateExtReplaceFn, ScaffoldAction, ScaffoldActionName, ScaffoldContext, scaffoldFromTemplates } from "../../../../common/templates-steps";
+import { genTemplateRenderReplaceFn, removeTemplateExtReplaceFn, ScaffoldAction, ScaffoldActionName, ScaffoldContext, scaffoldFromTemplates } from "../../../../common/templatesActions";
 
 export type TemplateVariables = {[key: string]: string}
 

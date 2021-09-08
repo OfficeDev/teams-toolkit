@@ -8,7 +8,7 @@ import * as sinon from "sinon";
 import AdmZip from "adm-zip";
 import mock from "mock-fs";
 
-import * as fetch from "../../../../../src/common/templates-helper";
+import * as fetch from "../../../../../src/common/templatesUtils";
 import {
   FunctionPluginInfo,
 } from "../../../../../src/plugins/resource/function/constants";

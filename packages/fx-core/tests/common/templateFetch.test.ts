@@ -7,7 +7,7 @@ import AdmZip from "adm-zip";
 import axios from "axios";
 
 import * as templates from "../../src/common/templates";
-import { fetchTemplateUrl, fetchZipFromUrl, sendRequestWithRetry } from "../../src/common/templates-helper";
+import { fetchTemplateUrl, fetchZipFromUrl, sendRequestWithRetry } from "../../src/common/templatesUtils";
 
 const candidateTag = templates.tagPrefix + templates.templatesVersion.replace(/\*/g, "0");
 const targetTag = templates.tagPrefix + templates.templatesVersion.replace(/\*/g, "1");

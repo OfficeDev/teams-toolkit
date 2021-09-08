@@ -7,7 +7,7 @@ import {
   fetchZipFromUrl,
   renderTemplateContent,
   unzip,
-} from "./templates-helper";
+} from "./templatesUtils";
 
 // The entire progress has following actions:
 // 1. get zip url. (to fill ScaffoldContext.zipUrl).

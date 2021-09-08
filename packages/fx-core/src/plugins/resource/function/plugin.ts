@@ -558,18 +558,9 @@ export class FunctionPluginImpl {
   }
 
   public async postProvision(ctx: PluginContext): Promise<FxResult> {
-    const functionAppName = this.getFunctionAppName(ctx);
-    const resourceGroupName = this.getFunctionAppResourceGroupName(ctx);
-    const subscriptionId = this.getFunctionAppSubscriptionId(ctx);
-    Logger.debug(
-      "[dilin-debug] functionAppName: " +
-        functionAppName +
-        "\tresourceGroupName: " +
-        resourceGroupName +
-        "\tsubscriptionId: " +
-        subscriptionId
-    );
-
+    const functionAppName = this.getFunctionAppName(ctx, true);
+    const resourceGroupName = this.getFunctionAppResourceGroupName(ctx, true);
+    const subscriptionId = this.getFunctionAppSubscriptionId(ctx, true);
     const credential = this.checkAndGet(
       await ctx.azureAccountProvider?.getAccountCredentialAsync(),
       FunctionConfigKey.credential
@@ -759,9 +750,9 @@ export class FunctionPluginImpl {
     }
 
     const workingPath: string = this.getFunctionProjectRootPath(ctx);
-    const subscriptionId: string = this.getFunctionAppSubscriptionId(ctx);
-    const functionAppName: string = this.getFunctionAppName(ctx);
-    const resourceGroupName: string = this.getFunctionAppResourceGroupName(ctx);
+    const functionAppName = this.getFunctionAppName(ctx);
+    const resourceGroupName = this.getFunctionAppResourceGroupName(ctx);
+    const subscriptionId = this.getFunctionAppSubscriptionId(ctx);
     const functionLanguage: FunctionLanguage = this.checkAndGet(
       this.config.functionLanguage,
       FunctionConfigKey.functionLanguage
@@ -776,6 +767,9 @@ export class FunctionPluginImpl {
       () => AzureClientFactory.getWebSiteManagementClient(credential, subscriptionId)
     );
 
+    Logger.debug(
+      `deploy function with subscription id: ${subscriptionId}, resourceGroup name: ${resourceGroupName}, function web app name: ${functionAppName}`
+    );
     await FunctionDeploy.deployFunction(
       webSiteManagementClient,
       workingPath,
@@ -804,23 +798,30 @@ export class FunctionPluginImpl {
     return selectedPlugins.includes(plugin);
   }
 
-  private getFunctionAppName(ctx: PluginContext): string {
+  private getFunctionAppId(ctx: PluginContext, getFromArmOutput = false): string {
+    if (getFromArmOutput) {
+      return getArmOutput(ctx, FunctionArmOutput.AppId)!;
+    }
+    return this.checkAndGet(this.config.functionAppId, FunctionConfigKey.functionAppId);
+  }
+
+  private getFunctionAppName(ctx: PluginContext, getFromArmOutput = false): string {
     if (isArmSupportEnabled()) {
-      return getSiteNameFromResourceId(getArmOutput(ctx, FunctionArmOutput.AppId)!);
+      return getSiteNameFromResourceId(this.getFunctionAppId(ctx, getFromArmOutput));
     }
     return this.checkAndGet(this.config.functionAppName, FunctionConfigKey.functionAppName);
   }
 
-  private getFunctionAppResourceGroupName(ctx: PluginContext): string {
+  private getFunctionAppResourceGroupName(ctx: PluginContext, getFromArmOutput = false): string {
     if (isArmSupportEnabled()) {
-      return getResourceGroupNameFromResourceId(getArmOutput(ctx, FunctionArmOutput.AppId)!);
+      return getResourceGroupNameFromResourceId(this.getFunctionAppId(ctx, getFromArmOutput));
     }
     return this.checkAndGet(this.config.resourceGroupName, FunctionConfigKey.resourceGroupName);
   }
 
-  private getFunctionAppSubscriptionId(ctx: PluginContext): string {
+  private getFunctionAppSubscriptionId(ctx: PluginContext, getFromArmOutput = false): string {
     if (isArmSupportEnabled()) {
-      return getSubscriptionIdFromResourceId(getArmOutput(ctx, FunctionArmOutput.AppId)!);
+      return getSubscriptionIdFromResourceId(this.getFunctionAppId(ctx, getFromArmOutput));
     }
     return this.checkAndGet(this.config.subscriptionId, FunctionConfigKey.subscriptionId);
   }

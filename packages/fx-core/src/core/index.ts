@@ -271,7 +271,7 @@ export class FxCore implements Core {
       }
 
       if (multiEnv) {
-        const createEnvResult = await createEnvWithName(
+        const createEnvResult = await this.createEnvWithName(
           environmentManager.getDefaultEnvName(),
           projectSettings,
           inputs,

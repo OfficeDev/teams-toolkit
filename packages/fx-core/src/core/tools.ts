@@ -188,9 +188,12 @@ export function newEnvInfo(
   return {
     envName: envName ?? environmentManager.getDefaultEnvName(),
     config: config ?? {
-      azure: {},
       manifest: {
-        values: {},
+        values: {
+          appName: {
+            short: "",
+          },
+        },
       },
     },
     profile: profile ?? new Map<string, any>([[GLOBAL_CONFIG, new ConfigMap()]]),

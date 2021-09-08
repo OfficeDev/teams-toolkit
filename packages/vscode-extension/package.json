@@ -250,6 +250,10 @@
         {
           "command": "fx-extension.activateEnvironmentWithIcon",
           "when": "false"
+        },
+        {
+          "command": "fx-extension.openSurvey",
+          "when": "false"
         }
       ]
     },
@@ -291,6 +295,10 @@
       {
         "command": "fx-extension.openWelcome",
         "title": "Teams: Quick Start"
+      },
+      {
+        "command": "fx-extension.openSurvey",
+        "title": "Teams: Survey"
       },
       {
         "command": "fx-extension.openSamples",

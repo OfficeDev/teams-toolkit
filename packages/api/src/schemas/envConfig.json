@@ -33,7 +33,28 @@
         },
         "values": {
           "type": "object",
-          "description": "Configs to customize the Teams app manifest."
+          "description": "Configs to customize the Teams app manifest.",
+          "properties": {
+            "appName": {
+              "type": "object",
+              "description": "Teams app name.",
+              "properties": {
+                "short": {
+                  "type": "string",
+                  "description": "A short display name for teams app.",
+                  "maxLength": 30,
+                  "minLength": 1
+                },
+                "full": {
+                  "type": "string",
+                  "description": "The full name for teams app.",
+                  "maxLength": 100
+                }
+              },
+              "required": ["short"]
+            }
+          },
+          "required": ["appName"]
         }
       },
       "required": ["values"]

@@ -50,7 +50,6 @@ describe("APIs of Environment Manager", () => {
   const cryptoProvider = new MockCrypto(encreptedSecret, decryptedValue);
   const targetEnvName = "dev";
   const validEnvConfigData = {
-    azure: {},
     manifest: {
       description: "",
       values: {
@@ -109,7 +108,7 @@ describe("APIs of Environment Manager", () => {
 
       const envConfigInfo = actualEnvDataResult.value;
       assert.equal(envConfigInfo.envName, environmentManager.getDefaultEnvName());
-      assert.isEmpty(envConfigInfo.config.azure);
+      assert.isUndefined(envConfigInfo.config.azure);
       assert.equal(envConfigInfo.config.manifest.description, "");
       assert.equal(envConfigInfo.config.manifest.values.appName.short, appName);
     });
@@ -125,7 +124,7 @@ describe("APIs of Environment Manager", () => {
 
       const envConfigInfo = actualEnvDataResult.value;
       assert.equal(envConfigInfo.envName, envName);
-      assert.isEmpty(envConfigInfo.config.azure);
+      assert.isUndefined(envConfigInfo.config.azure);
       assert.equal(envConfigInfo.config.manifest.description, "");
       assert.equal(envConfigInfo.config.manifest.values.appName.short, appName);
     });

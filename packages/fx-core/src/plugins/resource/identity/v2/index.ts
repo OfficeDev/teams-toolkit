@@ -11,8 +11,8 @@ import {
 import {
   Context,
   ProvisionInputs,
-  ProvisionOutput,
   ResourcePlugin,
+  ResourceProvisionOutput,
 } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
 import { IdentityPlugin } from "..";
@@ -34,14 +34,14 @@ export class IdentityPluginV2 implements ResourcePlugin {
   }
   async provisionResource(
     ctx: Context,
-    inputs: Readonly<ProvisionInputs>,
-    provisionTemplate: Json,
+    inputs: ProvisionInputs,
+    provisionInputConfig: Json,
     tokenProvider: TokenProvider
-  ): Promise<Result<ProvisionOutput, FxError>> {
+  ): Promise<Result<ResourceProvisionOutput, FxError>> {
     return await provisionResourceAdapter(
       ctx,
       inputs,
-      provisionTemplate,
+      provisionInputConfig,
       tokenProvider,
       this.plugin
     );

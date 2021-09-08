@@ -10,15 +10,14 @@ import {
   QTreeNode,
   Result,
   TokenProvider,
+  Void,
 } from "@microsoft/teamsfx-api";
 import {
   Context,
   DeploymentInputs,
-  LocalSettings,
-  PluginName,
   ProvisionInputs,
-  ProvisionOutput,
   ResourcePlugin,
+  ResourceProvisionOutput,
   ResourceTemplate,
 } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
@@ -54,10 +53,7 @@ export class BotPluginV2 implements ResourcePlugin {
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     return await getQuestionsForScaffoldingAdapter(ctx, inputs, this.plugin);
   }
-  async scaffoldSourceCode(
-    ctx: Context,
-    inputs: Inputs
-  ): Promise<Result<{ output: Record<string, string> }, FxError>> {
+  async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
     return await scaffoldSourceCodeAdapter(ctx, inputs, this.plugin);
   }
 
@@ -69,14 +65,14 @@ export class BotPluginV2 implements ResourcePlugin {
   }
   async provisionResource(
     ctx: Context,
-    inputs: Readonly<ProvisionInputs>,
-    provisionTemplate: Json,
+    inputs: ProvisionInputs,
+    provisionInputConfig: Json,
     tokenProvider: TokenProvider
-  ): Promise<Result<ProvisionOutput, FxError>> {
+  ): Promise<Result<ResourceProvisionOutput, FxError>> {
     return await provisionResourceAdapter(
       ctx,
       inputs,
-      provisionTemplate,
+      provisionInputConfig,
       tokenProvider,
       this.plugin
     );
@@ -84,16 +80,16 @@ export class BotPluginV2 implements ResourcePlugin {
 
   async configureResource(
     ctx: Context,
-    inputs: Readonly<ProvisionInputs>,
-    provisionOutput: Readonly<ProvisionOutput>,
-    provisionOutputOfOtherPlugins: Readonly<Record<PluginName, ProvisionOutput>>,
+    inputs: ProvisionInputs,
+    provisionInputConfig: Json,
+    provisionOutputs: Json,
     tokenProvider: TokenProvider
-  ): Promise<Result<ProvisionOutput, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await configureResourceAdapter(
       ctx,
       inputs,
-      provisionOutput,
-      provisionOutputOfOtherPlugins,
+      provisionInputConfig,
+      provisionOutputs,
       tokenProvider,
       this.plugin
     );
@@ -101,9 +97,9 @@ export class BotPluginV2 implements ResourcePlugin {
   async provisionLocalResource(
     ctx: Context,
     inputs: Inputs,
-    localSettings: LocalSettings,
+    localSettings: Json,
     tokenProvider: TokenProvider
-  ): Promise<Result<LocalSettings, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await provisionLocalResourceAdapter(
       ctx,
       inputs,
@@ -116,9 +112,9 @@ export class BotPluginV2 implements ResourcePlugin {
   async configureLocalResource(
     ctx: Context,
     inputs: Inputs,
-    localSettings: LocalSettings,
+    localSettings: Json,
     tokenProvider: TokenProvider
-  ): Promise<Result<LocalSettings, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await configureLocalResourceAdapter(
       ctx,
       inputs,
@@ -130,10 +126,10 @@ export class BotPluginV2 implements ResourcePlugin {
 
   async deploy(
     ctx: Context,
-    inputs: Readonly<DeploymentInputs>,
-    provisionOutput: Readonly<ProvisionOutput>,
+    inputs: DeploymentInputs,
+    provisionOutput: Json,
     tokenProvider: AzureAccountProvider
-  ): Promise<Result<{ output: Record<string, string> }, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await deployAdapter(ctx, inputs, provisionOutput, tokenProvider, this.plugin);
   }
 }

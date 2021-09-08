@@ -50,10 +50,13 @@ describe("APIs of Environment Manager", () => {
   const cryptoProvider = new MockCrypto(encreptedSecret, decryptedValue);
   const targetEnvName = "dev";
   const validEnvConfigData = {
-    azure: {},
     manifest: {
       description: "",
-      values: {},
+      values: {
+        appName: {
+          short: appName,
+        },
+      },
     },
   };
   const invalidEnvConfigData = {};
@@ -105,9 +108,9 @@ describe("APIs of Environment Manager", () => {
 
       const envConfigInfo = actualEnvDataResult.value;
       assert.equal(envConfigInfo.envName, environmentManager.getDefaultEnvName());
-      assert.isEmpty(envConfigInfo.config.azure);
+      assert.isUndefined(envConfigInfo.config.azure);
       assert.equal(envConfigInfo.config.manifest.description, "");
-      assert.isEmpty(envConfigInfo.config.manifest.values);
+      assert.equal(envConfigInfo.config.manifest.values.appName.short, appName);
     });
 
     it("load valid environment config file with target env", async () => {
@@ -121,9 +124,9 @@ describe("APIs of Environment Manager", () => {
 
       const envConfigInfo = actualEnvDataResult.value;
       assert.equal(envConfigInfo.envName, envName);
-      assert.isEmpty(envConfigInfo.config.azure);
+      assert.isUndefined(envConfigInfo.config.azure);
       assert.equal(envConfigInfo.config.manifest.description, "");
-      assert.isEmpty(envConfigInfo.config.manifest.values);
+      assert.equal(envConfigInfo.config.manifest.values.appName.short, appName);
     });
 
     it("load invalid enviornment config file", async () => {
@@ -281,7 +284,7 @@ describe("APIs of Environment Manager", () => {
     });
 
     it("write environment config without target env", async () => {
-      const envConfig = environmentManager.newEnvConfigData();
+      const envConfig = environmentManager.newEnvConfigData(appName);
       const envConfigPathResult = await environmentManager.writeEnvConfig(projectPath, envConfig);
       if (envConfigPathResult.isErr()) {
         assert.fail("Failed to write environment config.");
@@ -297,7 +300,7 @@ describe("APIs of Environment Manager", () => {
     it("write environment config with target env", async () => {
       const envName = "test";
       const configName = EnvConfigFileNameTemplate.replace(EnvNamePlaceholder, envName);
-      const envConfig = environmentManager.newEnvConfigData();
+      const envConfig = environmentManager.newEnvConfigData(appName);
       const envConfigPathResult = await environmentManager.writeEnvConfig(
         projectPath,
         envConfig,

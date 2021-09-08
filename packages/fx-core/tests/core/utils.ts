@@ -173,7 +173,7 @@ export class MockAzureAccountProvider implements AzureAccountProvider {
   }
 }
 
-class MockGraphTokenProvider implements GraphTokenProvider {
+export class MockGraphTokenProvider implements GraphTokenProvider {
   getAccessToken(): Promise<string | undefined> {
     const result = new Promise<string>(function (resovle, {}) {
       resovle("success");
@@ -204,7 +204,7 @@ class MockGraphTokenProvider implements GraphTokenProvider {
   }
 }
 
-class MockAppStudioTokenProvider implements AppStudioTokenProvider {
+export class MockAppStudioTokenProvider implements AppStudioTokenProvider {
   /**
    * Get team access token
    * @param showDialog Control whether the UI layer displays pop-up windows

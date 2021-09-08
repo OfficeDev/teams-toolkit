@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import {
   EnvInfo,
   err,
@@ -15,30 +16,27 @@ import {
   Tools,
   traverse,
 } from "@microsoft/teamsfx-api";
+import { isV2 } from "..";
 import { CoreHookContext, FxCore } from "../..";
-import {
-  NoProjectOpenedError,
-  ProjectEnvAlreadyExistError,
-  InvalidEnvNameError,
-  ProjectEnvNotExistError,
-  ProjectSettingsUndefinedError,
-  NonActiveEnvError,
-} from "../error";
-import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
-import { LocalCrypto } from "../crypto";
-import { environmentManager } from "../environment";
 import {
   DEFAULT_FUNC_NAME,
   GLOBAL_CONFIG,
   PluginNames,
   PROGRAMMING_LANGUAGE,
 } from "../../plugins/solution/fx-solution/constants";
-import { getQuestionNewTargetEnvironmentName, QuestionSelectTargetEnvironment } from "../question";
-import { desensitize } from "./questionModel";
-import { shouldIgnored } from "./projectSettingsLoader";
+import { LocalCrypto } from "../crypto";
+import { environmentManager } from "../environment";
+import {
+  NonActiveEnvError,
+  NoProjectOpenedError,
+  ProjectEnvNotExistError,
+  ProjectSettingsUndefinedError,
+} from "../error";
 import { PermissionRequestFileProvider } from "../permissionRequest";
+import { getQuestionNewTargetEnvironmentName, QuestionSelectTargetEnvironment } from "../question";
 import { newEnvInfo } from "../tools";
-import { CoreHookContextV2 } from "../v2";
+import { shouldIgnored } from "./projectSettingsLoader";
+import { desensitize } from "./questionModel";
 
 const newTargetEnvNameOption = "+ new environment";
 const lastUsedMark = " (activate)";
@@ -93,7 +91,14 @@ export function EnvInfoLoaderMW(isMultiEnvEnabled: boolean): Middleware {
         return;
       }
 
-      ctx.solutionContext = result.value;
+      if (isV2()) {
+        //TODO core should not know the details of envInfo
+        ctx.provisionInputConfig = result.value.envInfo.config;
+        ctx.provisionOutputs = result.value.envInfo.profile;
+        ctx.envName = result.value.envInfo.envName;
+      } else {
+        ctx.solutionContext = result.value;
+      }
       await next();
     }
   };
@@ -187,6 +192,35 @@ export function upgradeDefaultFunctionName(
   }
 }
 
+export function upgradeProgrammingLanguageV2(
+  solutionConfig: SolutionConfig,
+  projectSettings: ProjectSettings
+) {
+  const programmingLanguage = solutionConfig.get(GLOBAL_CONFIG)?.get(PROGRAMMING_LANGUAGE);
+  if (programmingLanguage) {
+    // add programmingLanguage in project settings
+    projectSettings.programmingLanguage = programmingLanguage;
+
+    // remove programmingLanguage in solution config
+    solutionConfig.get(GLOBAL_CONFIG)?.delete(PROGRAMMING_LANGUAGE);
+  }
+}
+
+export function upgradeDefaultFunctionNameV2(
+  solutionConfig: SolutionConfig,
+  projectSettings: ProjectSettings
+) {
+  // upgrade defaultFunctionName if exists.
+  const defaultFunctionName = solutionConfig.get(PluginNames.FUNC)?.get(DEFAULT_FUNC_NAME);
+  if (defaultFunctionName) {
+    // add defaultFunctionName in project settings
+    projectSettings.defaultFunctionName = defaultFunctionName;
+
+    // remove defaultFunctionName in function plugin's config
+    solutionConfig.get(PluginNames.FUNC)?.delete(DEFAULT_FUNC_NAME);
+  }
+}
+
 export async function askTargetEnvironment(
   ctx: SolutionContext,
   inputs: Inputs,
@@ -229,7 +263,7 @@ export async function askTargetEnvironment(
 }
 
 export async function askNewEnvironment(
-  ctx: CoreHookContext | CoreHookContextV2,
+  ctx: CoreHookContext,
   inputs: Inputs
 ): Promise<string | undefined> {
   const getQuestionRes = await getQuestionsForNewEnv(inputs);

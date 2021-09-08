@@ -93,12 +93,14 @@ export function InvalidProjectError(msg?: string): UserError {
   );
 }
 
-export function ConcurrentError(): UserError {
-  return newUserError(
-    CoreSource,
-    "ConcurrentOperation",
-    "Concurrent operation error, please wait until the running task finish or you can reload the window to cancel it."
-  );
+export class ConcurrentError extends UserError {
+  constructor() {
+    super(
+      new.target.name,
+      "Concurrent operation error, please wait until the running task finish or you can reload the window to cancel it.",
+      CoreSource
+    );
+  }
 }
 
 export function TaskNotSupportError(task: Stage | string): SystemError {
@@ -217,5 +219,11 @@ export class LoadSolutionError extends SystemError {
 export class NotImplementedError extends SystemError {
   constructor(method: string) {
     super(new.target.name, `Method not implemented:${method}`, CoreSource);
+  }
+}
+
+export class ObjectIsUndefinedError extends SystemError {
+  constructor(name: string) {
+    super(new.target.name, `Object ${name} is undefined, which is not expected`, CoreSource);
   }
 }

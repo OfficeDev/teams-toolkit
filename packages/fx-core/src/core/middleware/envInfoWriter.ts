@@ -4,7 +4,7 @@
 
 import { NextFunction, Middleware } from "@feathersjs/hooks";
 import { Inputs, StaticPlatforms } from "@microsoft/teamsfx-api";
-import { CoreHookContext, FxCore } from "..";
+import { CoreHookContext, FxCore, isV2 } from "..";
 import { isMultiEnvEnabled } from "../../common";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { environmentManager } from "../environment";
@@ -31,24 +31,44 @@ export function EnvInfoWriterMW(skip = false): Middleware {
       )
         return;
 
-      const solutionContext = ctx.solutionContext;
-      if (solutionContext === undefined) return;
+      if (isV2()) {
+        const provisionOutputs = ctx.provisionOutputs;
+        if (provisionOutputs === undefined) return;
+        // DO NOT persist local debug plugin config.
+        if (isMultiEnvEnabled() && provisionOutputs[PluginNames.LDEBUG]) {
+          delete provisionOutputs[PluginNames.LDEBUG];
+        }
+        const envProfilePath = await environmentManager.writeEnvProfileV2(
+          provisionOutputs,
+          inputs.projectPath,
+          ctx.envName,
+          ctx.contextV2!.cryptoProvider
+        );
 
-      // DO NOT persist local debug plugin config.
-      if (isMultiEnvEnabled() && solutionContext.envInfo.profile.has(PluginNames.LDEBUG)) {
-        solutionContext.envInfo.profile.delete(PluginNames.LDEBUG);
-      }
+        if (envProfilePath.isOk()) {
+          const core = ctx.self as FxCore;
+          core.tools.logProvider.debug(`[core] persist env profile: ${envProfilePath.value}`);
+        }
+      } else {
+        const solutionContext = ctx.solutionContext;
+        if (solutionContext === undefined) return;
 
-      const envProfilePath = await environmentManager.writeEnvProfile(
-        solutionContext.envInfo.profile,
-        inputs.projectPath,
-        solutionContext.envInfo?.envName,
-        solutionContext.cryptoProvider
-      );
+        // DO NOT persist local debug plugin config.
+        if (isMultiEnvEnabled() && solutionContext.envInfo.profile.has(PluginNames.LDEBUG)) {
+          solutionContext.envInfo.profile.delete(PluginNames.LDEBUG);
+        }
 
-      if (envProfilePath.isOk()) {
-        const core = ctx.self as FxCore;
-        core.tools.logProvider.debug(`[core] persist env profile: ${envProfilePath.value}`);
+        const envProfilePath = await environmentManager.writeEnvProfile(
+          solutionContext.envInfo.profile,
+          inputs.projectPath,
+          solutionContext.envInfo?.envName,
+          solutionContext.cryptoProvider
+        );
+
+        if (envProfilePath.isOk()) {
+          const core = ctx.self as FxCore;
+          core.tools.logProvider.debug(`[core] persist env profile: ${envProfilePath.value}`);
+        }
       }
     }
   };

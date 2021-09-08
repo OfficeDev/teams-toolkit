@@ -375,7 +375,7 @@ export function detectVsCodeEnv(): VsCodeEnv {
   }
 }
 
-async function runUserTask(func: Func, eventName: string): Promise<Result<any, FxError>> {
+export async function runUserTask(func: Func, eventName: string): Promise<Result<any, FxError>> {
   let result: Result<any, FxError> = ok(null);
   try {
     const checkCoreRes = checkCoreNotEmpty();
@@ -570,6 +570,10 @@ export async function openDocumentHandler(args: any[]): Promise<boolean> {
 export async function openWelcomeHandler(args?: any[]) {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.QuickStart, getTriggerFromProperty(args));
   WebviewPanel.createOrShow(PanelType.QuickStart);
+}
+
+export async function openSurveyHandler(args?: any[]) {
+  WebviewPanel.createOrShow(PanelType.Survey);
 }
 
 function getTriggerFromProperty(args?: any[]) {

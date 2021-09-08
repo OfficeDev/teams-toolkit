@@ -28,15 +28,15 @@ export class PermissionStatus extends YargsCommand {
   public readonly commandHead = `status`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "Check user's permission.";
-  private readonly listAllCollaborator = "list-all-collaborator";
+  private readonly listAllCollaborators = "list-all-collaborators";
 
   public params: { [_: string]: Options } = {};
 
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp(Stage.checkPermission);
-    return yargs.option(this.params).option(this.listAllCollaborator, {
+    return yargs.option(this.params).option(this.listAllCollaborators, {
       description: `To list all collaborators`,
-      name: this.listAllCollaborator,
+      name: this.listAllCollaborators,
       type: "boolean",
     });
   }
@@ -54,7 +54,7 @@ export class PermissionStatus extends YargsCommand {
     CLILogProvider.necessaryLog(LogLevel.Info, azureMessage);
 
     const core = result.value;
-    const listAll = args[this.listAllCollaborator];
+    const listAll = args[this.listAllCollaborators];
     {
       const result = listAll
         ? await core.listCollaborator(getSystemInputs(rootFolder, args.env))
@@ -62,7 +62,7 @@ export class PermissionStatus extends YargsCommand {
 
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CheckPermission, result.error, {
-          [TelemetryProperty.ListAllCollaborator]: listAll,
+          [TelemetryProperty.ListAllCollaborators]: listAll,
         });
         return err(result.error);
       }
@@ -70,7 +70,7 @@ export class PermissionStatus extends YargsCommand {
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.CheckPermission, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-      [TelemetryProperty.ListAllCollaborator]: listAll,
+      [TelemetryProperty.ListAllCollaborators]: listAll,
     });
     return ok(null);
   }

@@ -90,6 +90,7 @@ import {
 import { v4 } from "uuid";
 import isUUID from "validator/lib/isUUID";
 import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
+import Mustache from "mustache";
 
 export class AppStudioPluginImpl {
   public async getAppDefinitionAndUpdate(
@@ -161,8 +162,7 @@ export class AppStudioPluginImpl {
    * @returns
    */
   public async createManifest(settings: ProjectSettings): Promise<TeamsAppManifest | undefined> {
-    const solutionSettings: AzureSolutionSettings =
-      settings.solutionSettings as AzureSolutionSettings;
+    const solutionSettings: AzureSolutionSettings = settings.solutionSettings as AzureSolutionSettings;
     if (
       !solutionSettings.capabilities ||
       (!solutionSettings.capabilities.includes(BotOptionItem.id) &&
@@ -231,9 +231,8 @@ export class AppStudioPluginImpl {
     manifest.id = "{appid}";
     manifest.validDomains = [];
 
-    const includeBot = (
-      ctx.projectSettings?.solutionSettings as AzureSolutionSettings
-    ).activeResourcePlugins?.includes(PluginNames.BOT);
+    const includeBot = (ctx.projectSettings
+      ?.solutionSettings as AzureSolutionSettings).activeResourcePlugins?.includes(PluginNames.BOT);
     if (includeBot) {
       if (manifest.bots !== undefined && manifest.bots.length > 0) {
         for (let index = 0; index < manifest.bots.length; ++index) {
@@ -1268,6 +1267,7 @@ export class AppStudioPluginImpl {
 
     appDefinition.appName = appManifest.name.short;
     appDefinition.shortName = appManifest.name.short;
+    appDefinition.longName = appManifest.name.full;
     appDefinition.version = appManifest.version;
 
     appDefinition.packageName = appManifest.packageName;
@@ -1485,6 +1485,11 @@ export class AppStudioPluginImpl {
     }
 
     let manifest = (await fs.readFile(await this.getManifestTemplatePath(ctx.root))).toString();
+
+    if (isMultiEnvEnabled()) {
+      const view = { config: ctx.envInfo.config };
+      manifest = Mustache.render(manifest, view);
+    }
 
     const appName = ctx.projectSettings?.appName;
     if (appName) {

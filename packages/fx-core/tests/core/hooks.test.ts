@@ -493,6 +493,7 @@ describe("Middleware", () => {
 
     it("success to load solutionContext happy path", async () => {
       class MyClass {
+        version = "1";
         name = "jay";
         tools = new MockTools();
         async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
@@ -514,6 +515,7 @@ describe("Middleware", () => {
 
     it("fail to load solutionContext, missing plugins", async () => {
       class MyClass {
+        version = "1";
         name = "jay";
         tools = new MockTools();
         async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
@@ -549,6 +551,7 @@ describe("Middleware", () => {
     it("ignore write", async () => {
       const spy = sandbox.spy(fs, "writeFile");
       class MyClass {
+        version = "1";
         tools?: any = new MockTools();
         async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
           return ok("");
@@ -600,6 +603,7 @@ describe("Middleware", () => {
       const envJsonFile = path.resolve(confFolderPath, `env.${envName}.json`);
 
       class MyClass {
+        version = "1";
         tools = tools;
         async myMethod(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
           ctx!.solutionContext = solutionContext;
@@ -726,6 +730,7 @@ describe("Middleware", () => {
         return ok({ type: "success", result: questionValue });
       });
       class MockCore {
+        version = "1";
         tools = tools;
         async createProject(inputs: Inputs): Promise<Result<string, FxError>> {
           assert.isTrue(inputs[questionName] === questionValue);
@@ -863,6 +868,7 @@ describe("Middleware", () => {
         return ok({ type: "success", result: questionValue });
       });
       class MockCore {
+        version = "1";
         tools = tools;
         async createProject(inputs: Inputs): Promise<Result<string, FxError>> {
           return ok("");

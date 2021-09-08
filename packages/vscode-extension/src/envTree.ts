@@ -38,7 +38,7 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
           label: item,
           parent: TreeCategory.Environment,
           contextValue: "environment",
-          icon: "symbol-folder",
+          icon: item === activeEnv ? "folder-active" : "symbol-folder",
           isCustom: false,
           description:
             item === activeEnv ? StringResources.vsc.commandsTreeViewProvider.acitve : "",

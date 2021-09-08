@@ -1,0 +1,116 @@
+.survey-page {
+  max-width: 770px;
+  margin: auto;
+  font-size: var(--vscode-font-size);
+
+  .logo {
+    text-align: center;
+  }
+
+  .logo-text {
+    display: inline-block;
+    font-size: 20px;
+  }
+
+  .survey-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .highlight {
+    color: var(--vscode-textLink-foreground);
+  }
+
+  .question {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin: auto;
+    text-align: center;
+    width: 100%;
+  }
+
+  .question-background {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin: auto;
+    text-align: center;
+    width: 100%;
+    background-color: var(--vscode-editor-selectionBackground);
+  }
+
+  .question-title {
+    flex: 100%;
+    width: 100%;
+    text-align: left;
+    flex-direction: row;
+  }
+
+  .question-desc {
+    display: flex;
+    flex-direction: row;
+  }
+
+  .question-desc-first {
+    flex: 100%;
+    text-align: left;
+  }
+
+  .question-desc-last {
+    flex: 100%;
+    text-align: right;
+  }
+
+  .question-label {
+    display: flex;
+    flex-direction: row;
+  }
+
+  .question-label-item {
+    flex-direction: row;
+    flex: 100%;
+  }
+
+  .question-textfield {
+    margin: auto;
+    width: 100%;
+    flex: 100%;
+  }
+
+  .question-radio {
+    display: flex;
+    flex-direction: row;
+  }
+
+  .question-radio-item {
+    flex: 100%;
+  }
+
+  .submit-div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-top: 30px;
+  }
+
+  .submit-button {
+    background-color: var(--vscode-button-background);
+    color: var(--vscode-button-foreground);
+    border: none;
+    margin-top: 20px;
+    padding: 1px 50px;
+  }
+
+  .validation-error {
+    text-align: center;
+    padding: 5px 0 10px 0;
+    color: var(--vscode-errorForeground);
+  }
+
+  .thankyou-page {
+    margin: auto;
+    font-size: 20px;
+  }
+}

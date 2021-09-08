@@ -81,8 +81,34 @@ export async function checkSubscription(
       )
     );
   }
-  const askSubRes = await ctx.azureAccountProvider!.getSelectedSubscription(true);
-  return ok(askSubRes!);
+
+  const subscriptionId = ctx.envInfo.config.azure?.subscriptionId;
+  if (!isMultiEnvEnabled() || !subscriptionId) {
+    const askSubRes = await ctx.azureAccountProvider.getSelectedSubscription(true);
+    return ok(askSubRes!);
+  }
+
+  // make sure the user is logged in
+  await ctx.azureAccountProvider.getAccountCredentialAsync(true);
+
+  // TODO: verify valid subscription (permission)
+  const subscriptions = await ctx.azureAccountProvider.listSubscriptions();
+  const targetSubInfo = subscriptions.find((item) => item.subscriptionId === subscriptionId);
+  if (!targetSubInfo) {
+    return err(
+      returnUserError(
+        new Error(
+          `The subscription '${subscriptionId}' is not found in the current account, please check the '${EnvConfigFileNameTemplate.replace(
+            EnvNamePlaceholder,
+            ctx.envInfo.envName
+          )}' file.`
+        ),
+        "Solution",
+        SolutionError.SubscriptionNotFound
+      )
+    );
+  }
+  return ok(targetSubInfo);
 }
 
 async function getQuestionsForResourceGroup(
@@ -344,7 +370,7 @@ async function askCommonQuestions(
   //   1. env config (config.{envName}.json), for user customization
   //   2. publish profile (profile.{envName}.json), for reprovision
   //   3. asking user with a popup
-  const resourceGroupNameFromEnvConfig = ctx.envInfo.config.azure.resourceGroupName;
+  const resourceGroupNameFromEnvConfig = ctx.envInfo.config.azure?.resourceGroupName;
   const resourceGroupNameFromProfile = ctx.envInfo.profile
     .get(GLOBAL_CONFIG)
     ?.get(RESOURCE_GROUP_NAME);

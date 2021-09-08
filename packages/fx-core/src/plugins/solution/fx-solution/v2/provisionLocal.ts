@@ -7,6 +7,8 @@ import {
   err,
   TokenProvider,
   returnSystemError,
+  Void,
+  Json,
 } from "@microsoft/teamsfx-api";
 import { executeConcurrently } from "./executor";
 import {
@@ -23,9 +25,9 @@ import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 export async function provisionLocalResource(
   ctx: v2.Context,
   inputs: Inputs,
-  localSettings: v2.LocalSettings,
+  localSettings: Json,
   tokenProvider: TokenProvider
-): Promise<Result<v2.LocalSettings, FxError>> {
+): Promise<Result<Void, FxError>> {
   const azureSolutionSettings = getAzureSolutionSettings(ctx);
   const result = await ensurePermissionRequest(
     azureSolutionSettings,
@@ -36,7 +38,7 @@ export async function provisionLocalResource(
   }
 
   // Just to trigger M365 login before the concurrent execution of localDebug.
-  // Because concurrent exectution of localDebug may getAccessToken() concurrently, which
+  // Because concurrent execution of localDebug may getAccessToken() concurrently, which
   // causes 2 M365 logins before the token caching in common lib takes effect.
   await tokenProvider.appStudioToken.getAccessToken();
 
@@ -59,15 +61,11 @@ export async function provisionLocalResource(
 
   const aadPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin);
   if (plugins.some((plugin) => plugin.name === aadPlugin.name) && aadPlugin.executeUserTask) {
-    const result = await aadPlugin.executeUserTask(
-      ctx,
-      {
-        namespace: `${PluginNames.SOLUTION}/${PluginNames.AAD}`,
-        method: "setApplicationInContext",
-        params: { isLocal: true },
-      },
-      inputs
-    );
+    const result = await aadPlugin.executeUserTask(ctx, inputs, {
+      namespace: `${PluginNames.SOLUTION}/${PluginNames.AAD}`,
+      method: "setApplicationInContext",
+      params: { isLocal: true },
+    });
     if (result.isErr()) {
       return err(result.error);
     }
@@ -82,7 +80,7 @@ export async function provisionLocalResource(
   }
 
   const parseTenantIdresult = loadTeamsAppTenantIdForLocal(
-    localSettings,
+    localSettings as  v2.LocalSettings,
     await tokenProvider.appStudioToken.getJsonObject()
   );
   if (parseTenantIdresult.isErr()) {
@@ -108,5 +106,5 @@ export async function provisionLocalResource(
     return err(configureResourceResult.error);
   }
 
-  return ok(localSettings);
+  return ok(Void);
 }

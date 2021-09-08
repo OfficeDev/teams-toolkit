@@ -83,6 +83,7 @@ export enum TelemetryEvent {
   DebugNpmInstall = "debug-npm-install",
 
   Survey = "survey",
+  SurveyData = "survey-data",
 
   EditSecretStart = "edit-secret-start",
   EditSecret = "edit-secret",
@@ -173,6 +174,19 @@ export enum TelemetryUpdateAppReason {
   Manual = "manual",
   AfterDelay = "afterDelay",
   FocusOut = "focusOut",
+}
+
+export enum TelemetrySurveyDataProperty {
+  Q1Title = "q1-title",
+  Q1Result = "q1-result",
+  Q2Title = "q2-title",
+  Q2Result = "q2-result",
+  Q3Title = "q3-title",
+  Q3Result = "q3-result",
+  Q4Title = "q4-title",
+  Q4Result = "q4-result",
+  Q5Title = "q5-title",
+  Q5Result = "q5-result",
 }
 
 export const TelemetryComponentType = "extension";

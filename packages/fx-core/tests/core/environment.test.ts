@@ -236,6 +236,30 @@ describe("APIs of Environment Manager", () => {
       assert.equal(envInfo.profile.get("solution").get("key"), expectedSolutionConfig.key);
     });
 
+    it("with userdata (has checksum): load environment profile without target env", async () => {
+      await mockEnvProfiles(projectPath, envProfileDataWithCredential, undefined, {
+        ...userData,
+        _checksum: "81595a4344a4345ecfd90232f9e3540ce2b72e50745b3b83adc484c8e5055a33",
+      });
+
+      const actualEnvDataResult = await environmentManager.loadEnvInfo(
+        projectPath,
+        undefined,
+        cryptoProvider
+      );
+      if (actualEnvDataResult.isErr()) {
+        assert.fail("Error ocurrs while loading environment profile.");
+      }
+
+      const envInfo = actualEnvDataResult.value;
+      const expectedSolutionConfig = envProfileDataWithCredential.solution as Record<
+        string,
+        string
+      >;
+      assert.equal(envInfo.profile.get("solution").get("teamsAppTenantId"), decryptedValue);
+      assert.equal(envInfo.profile.get("solution").get("key"), expectedSolutionConfig.key);
+    });
+
     it("with userdata (legacy project): load environment profile with target env", async () => {
       await mockEnvProfiles(projectPath, envProfileDataWithCredential, targetEnvName, userData);
 
@@ -378,7 +402,7 @@ describe("APIs of Environment Manager", () => {
       const envFiles = environmentManager.getEnvProfileFilesPath("default", projectPath);
 
       const expectedEnvProfileContent = JSON.stringify(envProfileDataWithCredential, null, 4);
-      const expectedUserDataFileContent = `solution.teamsAppTenantId=${encreptedSecret}`;
+      const expectedUserDataFileContent = `solution.teamsAppTenantId=${encreptedSecret}\n_checksum=81595a4344a4345ecfd90232f9e3540ce2b72e50745b3b83adc484c8e5055a33`;
       assert.equal(
         formatContent(fileMap.get(envFiles.envProfile)),
         formatContent(expectedEnvProfileContent)
@@ -399,7 +423,7 @@ describe("APIs of Environment Manager", () => {
       const envFiles = environmentManager.getEnvProfileFilesPath(targetEnvName, projectPath);
 
       const expectedEnvProfileContent = JSON.stringify(envProfileDataWithCredential, null, 4);
-      const expectedUserDataFileContent = `solution.teamsAppTenantId=${encreptedSecret}`;
+      const expectedUserDataFileContent = `solution.teamsAppTenantId=${encreptedSecret}\n_checksum=81595a4344a4345ecfd90232f9e3540ce2b72e50745b3b83adc484c8e5055a33`;
       assert.equal(
         formatContent(fileMap.get(envFiles.envProfile)),
         formatContent(expectedEnvProfileContent)

@@ -229,6 +229,10 @@ export interface EnvConfig {
         subscriptionId?: string;
         resourceGroupName?: string;
     };
+    bot?: {
+        appId?: string;
+        appPassword?: string;
+    };
     manifest: {
         description?: string;
         values: {

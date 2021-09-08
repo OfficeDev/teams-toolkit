@@ -33,7 +33,7 @@ export interface SolutionPlugin {
    *
    * @returns scaffold return nothing in API, all source code are persist in FS.
    */
-  scaffoldSourceCode?: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
+  scaffoldSourceCode: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
 
   /**
    * Called when creating a new project or adding a new resource.
@@ -122,7 +122,7 @@ export interface SolutionPlugin {
   /**
    * get question model for lifecycle {@link Stage} (create), Questions are organized as a tree. Please check {@link QTreeNode}.
    */
-  getQuestionsForScaffolding: (
+  getQuestionsForScaffolding?: (
     ctx: Context,
     inputs: Inputs
   ) => Promise<Result<QTreeNode | undefined, FxError>>;

@@ -3,6 +3,7 @@
 
 import { NextFunction, Middleware } from "@feathersjs/hooks";
 import {
+  Core,
   err,
   Func,
   FxError,
@@ -15,14 +16,18 @@ import {
 } from "@microsoft/teamsfx-api";
 import { CoreHookContext, FxCore } from "../..";
 import { deepCopy } from "../../common";
+import { CoreHookContextV2, FxCoreV2 } from "../v2";
 
 /**
  * This middleware will help to collect input from question flow
  */
-export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
+export const QuestionModelMW: Middleware = async (
+  ctx: CoreHookContext | CoreHookContextV2,
+  next: NextFunction
+) => {
   const inputs: Inputs = ctx.arguments[ctx.arguments.length - 1];
   const method = ctx.method;
-  const core = ctx.self as FxCore;
+  const core = ctx.self as FxCore | FxCoreV2;
 
   let getQuestionRes: Result<QTreeNode | undefined, FxError> = ok(undefined);
   if (method === "createProject") {
@@ -30,19 +35,31 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
   } else if (method === "migrateV1Project") {
     getQuestionRes = await core._getQuestionsForMigrateV1Project(inputs);
   } else {
-    const solution = ctx.solution!;
-    const solutionContext = ctx.solutionContext!;
-    if (method === "provisionResources") {
-      getQuestionRes = await core._getQuestions(solutionContext, solution, Stage.provision, inputs);
-    } else if (method === "localDebug") {
-      getQuestionRes = await core._getQuestions(solutionContext, solution, Stage.debug, inputs);
-    } else if (method === "deployArtifacts") {
-      getQuestionRes = await core._getQuestions(solutionContext, solution, Stage.deploy, inputs);
-    } else if (method === "publishApplication") {
-      getQuestionRes = await core._getQuestions(solutionContext, solution, Stage.publish, inputs);
-    } else if (method === "executeUserTask") {
-      const func = ctx.arguments[0] as Func;
-      getQuestionRes = await core._getQuestionsForUserTask(solutionContext, solution, func, inputs);
+    if ((ctx.self as Core).version === "1") {
+      const solution = ctx.solution!;
+      const solutionContext = ctx.solutionContext!;
+      if (method === "provisionResources") {
+        getQuestionRes = await core._getQuestions(
+          solutionContext,
+          solution,
+          Stage.provision,
+          inputs
+        );
+      } else if (method === "localDebug") {
+        getQuestionRes = await core._getQuestions(solutionContext, solution, Stage.debug, inputs);
+      } else if (method === "deployArtifacts") {
+        getQuestionRes = await core._getQuestions(solutionContext, solution, Stage.deploy, inputs);
+      } else if (method === "publishApplication") {
+        getQuestionRes = await core._getQuestions(solutionContext, solution, Stage.publish, inputs);
+      } else if (method === "executeUserTask") {
+        const func = ctx.arguments[0] as Func;
+        getQuestionRes = await core._getQuestionsForUserTask(
+          solutionContext,
+          solution,
+          func,
+          inputs
+        );
+      }
     }
   }
 
@@ -82,7 +99,7 @@ export function desensitize(node: QTreeNode, input: Inputs): Inputs {
   return copy;
 }
 
-export function traverseToCollectPasswordNodes(node: QTreeNode, names: Set<string>) {
+export function traverseToCollectPasswordNodes(node: QTreeNode, names: Set<string>): void {
   if (node.data.type === "text" && node.data.password === true) {
     names.add(node.data.name);
   }

@@ -1,9 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { exec, ExecOptions } from "child_process";
-import * as fs from "fs-extra";
 import {
-  AzureAccountProvider,
+  AppPackageFolderName, AzureAccountProvider,
   ConfigFolderName,
   ConfigMap,
   err,
@@ -15,18 +13,20 @@ import {
   returnSystemError,
   returnUserError,
   SubscriptionInfo,
-  UserInteraction,
-  AppPackageFolderName,
+  UserInteraction
 } from "@microsoft/teamsfx-api";
-import { promisify } from "util";
-import axios from "axios";
 import AdmZip from "adm-zip";
-import * as path from "path";
-import * as uuid from "uuid";
+import axios from "axios";
+import { exec, ExecOptions } from "child_process";
+import * as fs from "fs-extra";
 import { glob } from "glob";
-import { getResourceFolder } from "../folder";
 import * as Handlebars from "handlebars";
+import * as path from "path";
+import { promisify } from "util";
+import * as uuid from "uuid";
+import { getResourceFolder } from "../folder";
 import { ConstantString, FeatureFlagName } from "./constants";
+
 
 Handlebars.registerHelper("contains", (value, array, options) => {
   array = array instanceof Array ? array : [array];

@@ -1,75 +1,54 @@
-import { commands, Uri, workspace, ExtensionContext, MessageItem } from "vscode";
+import * as vscode from "vscode";
 import * as versionUtil from "./versionUtil";
 import { SyncedState } from "../constants";
-import * as path from "path";
+import * as StringResources from "../resources/Strings.json";
+import * as util from "util";
+import { ExtTelemetry } from "../telemetry/extTelemetry";
+import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
+import * as folder from "../folder";
 
 export class ExtensionUpgrade {
-  private context: ExtensionContext;
+  private context: vscode.ExtensionContext;
 
-  constructor(context: ExtensionContext) {
+  constructor(context: vscode.ExtensionContext) {
     this.context = context;
   }
 
   public async showChangeLog() {
-    const extensionId = "TeamsDevApp.ms-teams-vscode-extension";
+    const extensionId = versionUtil.getExtensionId();
     const teamsToolkit = vscode.extensions.getExtension(extensionId);
     const teamsToolkitVersion = teamsToolkit?.packageJSON.version;
     const syncedVersion = this.context.globalState.get<string>(SyncedState.Version);
 
-    if (syncedVersion === undefined) {
-      //show change log
-    } else if (versionUtil.compare(teamsToolkitVersion, syncedVersion) > 1) {
+    if (
+      syncedVersion === undefined ||
+      versionUtil.compare(teamsToolkitVersion, syncedVersion) == 1
+    ) {
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowWhatIsNewNotification);
+      this.context.globalState.update(SyncedState.Version, teamsToolkitVersion);
+
       const whatIsNew = {
-        title: "StringResources.vsc.migrateV1.learnMore.title",
+        title: StringResources.vsc.upgrade.whatIsNewTitle,
         run: async (): Promise<void> => {
-          const uri = Uri.file(`${this.getResourceDir()}/CHANGELOG.md`);
-          workspace.openTextDocument(uri).then(() => {
+          const uri = vscode.Uri.file(`${folder.getResourceFolder()}/CHANGELOG.md`);
+          vscode.workspace.openTextDocument(uri).then(() => {
             const PreviewMarkdownCommand = "markdown.showPreview";
-            commands.executeCommand(PreviewMarkdownCommand, uri);
+            vscode.commands.executeCommand(PreviewMarkdownCommand, uri);
           });
         },
       };
 
-      // vscode.window
-      // .showInformationMessage("Teams Toolkit has been updated to v11.6.0 — check out what's new!", whatIsNew, confirm)
-      // .then((selection) => {
-      //   if (selection?.title === StringResources.vsc.migrateV1.confirm.title) {
-      //     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.MigrateV1ProjectNotification, {
-      //       status: StringResources.vsc.migrateV1.confirm.status,
-      //     });
-      //     selection.run();
-      //   }
-      // });
+      vscode.window
+        .showInformationMessage(
+          util.format(StringResources.vsc.upgrade.banner, teamsToolkitVersion),
+          whatIsNew
+        )
+        .then((selection) => {
+          if (selection?.title === StringResources.vsc.upgrade.whatIsNewTitle) {
+            ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowWhatIsNewContext);
+            selection.run();
+          }
+        });
     }
-
-    teamsToolkit?.packageJSON.version;
-  }
-
-  private getResourceDir(): string {
-    return path.resolve(__dirname, "resource");
-  }
-
-  private getChangeLogFilePath(): string {
-    return path.join(this.getResourceDir(), "CHANGELOG.md");
-  }
-
-  private async showWhatsNewMessage(version: string) {
-    const actions: MessageItem[] = [{ title: "What's New" }, { title: "❤ Sponsor" }];
-
-    // const result = await vscode.sh.showMessage(
-    // 	'info',
-    // 	`GitLens has been updated to v${version} — check out what's new!`,
-    // 	undefined,
-    // 	null,
-    // 	...actions,
-    // );
-
-    // if (result != null) {
-    // 	if (result === actions[0]) {
-    // 		await env.openExternal(Uri.parse('https://gitlens.amod.io/#whats-new'));
-    // 	} else if (result === actions[1]) {
-    // 		await env.openExternal(Uri.parse('https://gitlens.amod.io/#sponsor'));
-    // 	}
-    // }
   }
 }

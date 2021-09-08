@@ -23,6 +23,7 @@ import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVaria
 import { enableMigrateV1 } from "./utils/migrateV1";
 import { isTeamsfx } from "./utils/commonUtils";
 import { ConfigFolderName, PublishProfilesFolderName } from "@microsoft/teamsfx-api";
+import { ExtensionUpgrade } from "./utils/upgrade";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -279,6 +280,10 @@ export async function activate(context: vscode.ExtensionContext) {
 
   const survey = new ExtensionSurvey(context);
   survey.activate();
+
+  // activate upgrade
+  const upgrade = new ExtensionUpgrade(context);
+  upgrade.showChangeLog();
 
   openWelcomePageAfterExtensionInstallation();
 }

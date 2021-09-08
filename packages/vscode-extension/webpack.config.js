@@ -98,7 +98,7 @@ const config = {
         },
         {
           from: "./CHANGELOG.md",
-          to: "resource/CHANGELOG.md",
+          to: "../resource/CHANGELOG.md",
         },
       ],
     }),

@@ -60,13 +60,3 @@ export function fromString(version: string): Version {
 export function getExtensionId(): string {
   return extensionPackage.publisher + "." + extensionPackage.name;
 }
-
-export function getLocalVersion() {
-  const gitlens = extensions.getExtension(getExtensionId());
-  //const gitlensVersion = gitlens.packageJSON.version;
-}
-
-export function getSyncedVersion() {
-  const teamsToolkit = extensions.getExtension(getExtensionId());
-  teamsToolkit?.packageJSON.version;
-}

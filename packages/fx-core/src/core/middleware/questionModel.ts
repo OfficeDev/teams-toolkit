@@ -43,6 +43,13 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
     } else if (method === "executeUserTask") {
       const func = ctx.arguments[0] as Func;
       getQuestionRes = await core._getQuestionsForUserTask(solutionContext, solution, func, inputs);
+    } else if (method === "grantPermission") {
+      getQuestionRes = await core._getQuestions(
+        solutionContext,
+        solution,
+        Stage.grantPermission,
+        inputs
+      );
     }
   }
 

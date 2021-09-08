@@ -216,6 +216,14 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(activateEnvironmentWithIcon);
 
+  const grantPermission = vscode.commands.registerCommand(
+    "fx-extension.grantPermission",
+    (node) => {
+      Correlator.run(handlers.grantPermission, node.command.title);
+    }
+  );
+  context.subscriptions.push(grantPermission);
+
   vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isMultiEnvEnabled",

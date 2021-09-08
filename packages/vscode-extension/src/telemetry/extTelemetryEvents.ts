@@ -105,6 +105,7 @@ export enum TelemetryEvent {
   CheckSideloading = "check-sideloading",
 
   ListCollaborator = "list-collaborator",
+  GrantPermission = "grant-permission",
 }
 
 export enum TelemetryProperty {

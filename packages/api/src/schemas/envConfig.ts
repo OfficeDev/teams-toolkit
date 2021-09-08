@@ -24,6 +24,19 @@ export interface EnvConfig {
     resourceGroupName?: string;
   };
   /**
+   * Existing bot AAD app configuration.
+   */
+  bot?: {
+    /**
+     * The id of existing bot AAD app.
+     */
+    appId?: string;
+    /**
+     * The password of existing bot AAD app.
+     */
+    appPassword?: string;
+  };
+  /**
    * The Teams App manifest related configuration.
    */
   manifest: {

@@ -92,8 +92,6 @@ import * as path from "path";
 import { exp } from "./exp/index";
 import { TreatmentVariables } from "./exp/treatmentVariables";
 import { StringContext } from "./utils/stringContext";
-import { ext } from "./extensionVariables";
-import { InputConfigsFolderName } from "@microsoft/teamsfx-api";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -835,7 +833,7 @@ export async function listCollaborator(env: string): Promise<TreeItem[]> {
         commandId: `fx-extension.listcollaborator.${env}.${user.userObjectId}`,
         label: user.userPrincipalName,
         icon: user.isAadOwner ? "person" : "warning",
-        isCustom: false,
+        isCustom: !user.isAadOwner,
         tooltip: {
           value: user.isAadOwner ? "" : "This account doesn't have the AAD permission.",
           isMarkdown: false,
@@ -848,7 +846,7 @@ export async function listCollaborator(env: string): Promise<TreeItem[]> {
           commandId: `fx-extension.listcollaborator.${env}`,
           label: "No permission to list all collaborators.",
           icon: "warning",
-          isCustom: false,
+          isCustom: true,
         },
       ];
     }
@@ -858,7 +856,7 @@ export async function listCollaborator(env: string): Promise<TreeItem[]> {
         commandId: `fx-extension.listcollaborator.${env}`,
         label: e.message,
         icon: "warning",
-        isCustom: false,
+        isCustom: true,
       },
     ];
   }

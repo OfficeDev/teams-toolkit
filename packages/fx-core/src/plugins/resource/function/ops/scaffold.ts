@@ -75,7 +75,7 @@ export class FunctionScaffold {
             case ScaffoldActionName.FetchTemplatesUrlWithTag:
             case ScaffoldActionName.FetchTemplatesZipFromUrl:
               TelemetryHelper.sendScaffoldFallbackEvent(new TemplateManifestError(error.message));
-              Logger.warning(InfoMessages.getTemplateFromLocal);
+              Logger.info(InfoMessages.getTemplateFromLocal);
               break;
             case ScaffoldActionName.FetchTemplateZipFromLocal:
               throw new TemplateZipFallbackError();

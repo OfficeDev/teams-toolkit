@@ -1,33 +1,35 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { assert } from "chai";
-import "mocha";
 import {
+  AppPackageFolderName,
   err,
-  FxError,
-  Result,
-  ok,
-  Inputs,
-  Platform,
-  Stage,
-  SolutionContext,
-  QTreeNode,
   Func,
+  FxError,
+  Inputs,
   InputTextConfig,
   InputTextResult,
+  ok,
+  OptionItem,
+  Platform,
+  QTreeNode,
+  Result,
   SelectFolderConfig,
   SelectFolderResult,
   SingleSelectConfig,
   SingleSelectResult,
-  OptionItem,
+  SolutionContext,
+  Stage,
   traverse,
-  AppPackageFolderName,
   V1ManifestFileName,
 } from "@microsoft/teamsfx-api";
+import { assert } from "chai";
 import fs from "fs-extra";
-import * as path from "path";
+import "mocha";
 import * as os from "os";
+import * as path from "path";
+import sinon from "sinon";
+import Container from "typedi";
 import {
   environmentManager,
   FunctionRouterError,
@@ -36,18 +38,17 @@ import {
   validateProject,
   validateSettings,
 } from "../../src";
-import sinon from "sinon";
-import { MockSolution, MockTools, randomAppName } from "./utils";
+import * as commonTools from "../../src/common/tools";
+import { loadSolutionContext } from "../../src/core/middleware/envInfoLoader";
 import { loadProjectSettings } from "../../src/core/middleware/projectSettingsLoader";
-import { defaultSolutionLoader } from "../../src/core/loader";
 import {
   CoreQuestionNames,
   SampleSelect,
   ScratchOptionNoVSC,
   ScratchOptionYesVSC,
 } from "../../src/core/question";
-import { loadSolutionContext } from "../../src/core/middleware/envInfoLoader";
-import * as commonTools from "../../src/common/tools";
+import { SolutionPlugins } from "../../src/core/SolutionPluginContainer";
+import { MockSolution, MockTools, randomAppName } from "./utils";
 
 describe("Core basic APIs", () => {
   const sandbox = sinon.createSandbox();
@@ -58,8 +59,8 @@ describe("Core basic APIs", () => {
   let projectPath = path.resolve(os.tmpdir(), appName);
 
   beforeEach(() => {
-    sandbox.stub<any, any>(defaultSolutionLoader, "loadSolution").resolves(mockSolution);
-    sandbox.stub<any, any>(defaultSolutionLoader, "loadGlobalSolutions").resolves([mockSolution]);
+    SolutionPlugins.AzureTeamsSolution = mockSolution.name;
+    Container.set(SolutionPlugins.AzureTeamsSolution, mockSolution);
   });
 
   afterEach(async () => {
@@ -280,6 +281,7 @@ describe("Core basic APIs", () => {
       }
 
       const [projectSettings, projectIdMissing] = projectSettingsResult.value;
+      projectSettings.solutionSettings.name = mockSolution.name;
       const validSettingsResult = validateSettings(projectSettings);
       assert.isTrue(validSettingsResult === undefined);
 
@@ -299,55 +301,6 @@ describe("Core basic APIs", () => {
 
       const solutioConfig = solutionContext.envInfo.profile.get("solution");
       assert.isTrue(solutioConfig !== undefined);
-    }
-    {
-      const inputs: Inputs = { platform: Platform.CLI, projectPath: projectPath };
-      let res = await core.provisionResources(inputs);
-      assert.isTrue(res.isOk());
-
-      res = await core.deployArtifacts(inputs);
-      assert.isTrue(res.isOk());
-
-      res = await core.localDebug(inputs);
-      assert.isTrue(res.isOk());
-
-      res = await core.publishApplication(inputs);
-      assert.isTrue(res.isOk());
-
-      const func: Func = { method: "test", namespace: "fx-solution-mock" };
-      const res2 = await core.executeUserTask(func, inputs);
-      assert.isTrue(res2.isOk());
-
-      const projectSettingsResult = await loadProjectSettings(inputs);
-      if (projectSettingsResult.isErr()) {
-        assert.fail("failed to load project settings");
-      }
-
-      const [projectSettings, projectIdMissing] = projectSettingsResult.value;
-      const validSettingsResult = validateSettings(projectSettings);
-      assert.isTrue(validSettingsResult === undefined);
-
-      const envInfoResult = await loadSolutionContext(
-        tools,
-        inputs,
-        projectSettings,
-        projectIdMissing
-      );
-      if (envInfoResult.isErr()) {
-        assert.fail("failed to load env info");
-      }
-
-      const solutionContext = envInfoResult.value;
-      const validRes = validateProject(solutionContext);
-      assert.isTrue(validRes === undefined);
-
-      const solutioConfig = solutionContext.envInfo.profile.get("solution");
-      assert.isTrue(solutioConfig !== undefined);
-      assert.isTrue(solutioConfig!.get("provision") === true);
-      assert.isTrue(solutioConfig!.get("deploy") === true);
-      assert.isTrue(solutioConfig!.get("localDebug") === true);
-      assert.isTrue(solutioConfig!.get("publish") === true);
-      assert.isTrue(solutioConfig!.get("executeUserTask") === true);
     }
   });
 

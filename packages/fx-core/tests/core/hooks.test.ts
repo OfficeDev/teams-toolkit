@@ -2,43 +2,38 @@
 // Licensed under the MIT license.
 
 import { hooks, Middleware, NextFunction } from "@feathersjs/hooks/lib";
-import { assert, expect } from "chai";
-import "mocha";
-import * as dotenv from "dotenv";
-import { ErrorHandlerMW } from "../../src/core/middleware/errorHandler";
-import { TelemetrySenderMW } from "../../src/core/middleware/telemetrySender";
 import {
-  UserCancelError,
-  err,
-  FxError,
-  Result,
-  ok,
-  Inputs,
-  Platform,
-  ConfigFolderName,
-  Solution,
-  Stage,
-  SolutionContext,
-  Json,
+  AppPackageFolderName,
+  ArchiveFolderName,
   AzureSolutionSettings,
+  ConfigFolderName,
   ConfigMap,
-  QTreeNode,
-  FunctionRouter,
+  err,
   Func,
+  FunctionRouter,
+  FxError,
+  Inputs,
   InputTextConfig,
-  UserError,
+  Json,
+  ok,
+  Platform,
   ProductName,
+  QTreeNode,
+  Result,
+  Solution,
+  SolutionContext,
+  Stage,
+  UserCancelError,
+  UserError,
 } from "@microsoft/teamsfx-api";
-import { ConcurrentLockerMW } from "../../src/core/middleware/concurrentLocker";
+import { assert, expect } from "chai";
+import * as dotenv from "dotenv";
 import fs from "fs-extra";
-import * as path from "path";
-import {
-  ConcurrentError,
-  InvalidProjectError,
-  NoProjectOpenedError,
-  PathNotExistError,
-} from "../../src/core/error";
+import "mocha";
 import * as os from "os";
+import * as path from "path";
+import sinon from "sinon";
+import { Container } from "typedi";
 import {
   base64Encode,
   CoreHookContext,
@@ -47,36 +42,47 @@ import {
   mapToJson,
   serializeDict,
 } from "../../src";
-import { SolutionLoaderMW } from "../../src/core/middleware/solutionLoader";
-import { ContextInjecterMW } from "../../src/core/middleware/contextInjecter";
-import { ProjectSettingsWriterMW } from "../../src/core/middleware/projectSettingsWriter";
-import sinon from "sinon";
+import { environmentManager } from "../../src/core/environment";
 import {
-  MockLatestVersion2_3_0UserData,
+  ConcurrentError,
+  InvalidProjectError,
+  NoProjectOpenedError,
+  PathNotExistError,
+} from "../../src/core/error";
+import { ConcurrentLockerMW } from "../../src/core/middleware/concurrentLocker";
+import { ContextInjectorMW } from "../../src/core/middleware/contextInjector";
+import { EnvInfoLoaderMW } from "../../src/core/middleware/envInfoLoader";
+import { EnvInfoWriterMW } from "../../src/core/middleware/envInfoWriter";
+import { ErrorHandlerMW } from "../../src/core/middleware/errorHandler";
+import { MigrateConditionHandlerMW } from "../../src/core/middleware/migrateConditionHandler";
+import {
+  newSolutionContext,
+  ProjectSettingsLoaderMW,
+} from "../../src/core/middleware/projectSettingsLoader";
+import { ProjectSettingsWriterMW } from "../../src/core/middleware/projectSettingsWriter";
+import { ProjectUpgraderMW } from "../../src/core/middleware/projectUpgrader";
+import { QuestionModelMW } from "../../src/core/middleware/questionModel";
+import { SolutionLoaderMW } from "../../src/core/middleware/solutionLoader";
+import { SolutionPlugins } from "../../src/core/SolutionPluginContainer";
+import { PluginNames } from "../../src/plugins/solution/fx-solution/constants";
+import { AzureResourceSQL } from "../../src/plugins/solution/fx-solution/question";
+import {
   MockLatestVersion2_3_0Context,
-  MockPreviousVersionBefore2_3_0UserData,
+  MockLatestVersion2_3_0UserData,
   MockPreviousVersionBefore2_3_0Context,
+  MockPreviousVersionBefore2_3_0UserData,
   MockProjectSettings,
-  MockSolutionLoader,
+  MockSolution,
   MockTools,
   randomAppName,
 } from "./utils";
-import {
-  ProjectSettingsLoaderMW,
-  newSolutionContext,
-} from "../../src/core/middleware/projectSettingsLoader";
-import { AzureResourceSQL } from "../../src/plugins/solution/fx-solution/question";
-import { PluginNames } from "../../src/plugins/solution/fx-solution/constants";
-import { QuestionModelMW } from "../../src/core/middleware/questionModel";
-import { ProjectUpgraderMW } from "../../src/core/middleware/projectUpgrader";
-import { environmentManager } from "../../src/core/environment";
-import { EnvInfoLoaderMW } from "../../src/core/middleware/envInfoLoader";
-import { EnvInfoWriterMW } from "../../src/core/middleware/envInfoWriter";
-import { MigrateConditionHandlerMW } from "../../src/core/middleware/migrateConditionHandler";
-import { AppPackageFolderName } from "@microsoft/teamsfx-api";
-import { ArchiveFolderName } from "@microsoft/teamsfx-api";
-
 describe("Middleware", () => {
+  const mockSolution = new MockSolution();
+  beforeEach(() => {
+    SolutionPlugins.AzureTeamsSolution = mockSolution.name;
+    Container.set(SolutionPlugins.AzureTeamsSolution, mockSolution);
+  });
+
   describe("ErrorHandlerMW", () => {
     const inputs: Inputs = { platform: Platform.VSCode };
 
@@ -332,10 +338,10 @@ describe("Middleware", () => {
         tools?: any = new MockTools();
         async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
           const res = await this.myMethod(inputs);
-          assert.isTrue(res.isErr() && res.error.name === ConcurrentError().name);
+          assert.isTrue(res.isErr() && res.error.name === new ConcurrentError().name);
           this.tools = undefined;
           const res2 = await this.myMethod(inputs);
-          assert.isTrue(res2.isErr() && res2.error.name === ConcurrentError().name);
+          assert.isTrue(res2.isErr() && res2.error.name === new ConcurrentError().name);
           return ok("");
         }
       }
@@ -384,7 +390,7 @@ describe("Middleware", () => {
     });
   });
 
-  describe("SolutionLoaderMW, ContextInjecterMW", () => {
+  describe("SolutionLoaderMW, ContextInjectorMW", () => {
     it("load solution and inject", async () => {
       class MyClass {
         tools?: any = new MockTools();
@@ -394,7 +400,7 @@ describe("Middleware", () => {
         }
       }
       hooks(MyClass, {
-        myMethod: [SolutionLoaderMW(new MockSolutionLoader()), ContextInjecterMW],
+        myMethod: [SolutionLoaderMW(), ContextInjectorMW],
       });
       const my = new MyClass();
       const inputs: Inputs = { platform: Platform.VSCode };
@@ -421,8 +427,8 @@ describe("Middleware", () => {
         }
       }
       hooks(MyClass, {
-        getQuestions: [ProjectSettingsLoaderMW, ContextInjecterMW],
-        other: [ProjectSettingsLoaderMW, ContextInjecterMW],
+        getQuestions: [ProjectSettingsLoaderMW, ContextInjectorMW],
+        other: [ProjectSettingsLoaderMW, ContextInjectorMW],
       });
       const my = new MyClass();
       const inputs: Inputs = { platform: Platform.VSCode };
@@ -443,7 +449,7 @@ describe("Middleware", () => {
         }
       }
       hooks(MyClass, {
-        other: [ProjectSettingsLoaderMW, ContextInjecterMW],
+        other: [ProjectSettingsLoaderMW, ContextInjectorMW],
       });
       const my = new MyClass();
       const inputs: Inputs = { platform: Platform.VSCode };
@@ -506,7 +512,7 @@ describe("Middleware", () => {
         }
       }
       hooks(MyClass, {
-        other: [ProjectSettingsLoaderMW, EnvInfoLoaderMW(false), ContextInjecterMW],
+        other: [ProjectSettingsLoaderMW, EnvInfoLoaderMW(false), ContextInjectorMW],
       });
       const my = new MyClass();
       const res = await my.other(inputs);
@@ -529,7 +535,7 @@ describe("Middleware", () => {
         }
       }
       hooks(MyClass, {
-        other: [ProjectSettingsLoaderMW, ContextInjecterMW],
+        other: [ProjectSettingsLoaderMW, ContextInjectorMW],
       });
       const my = new MyClass();
       (projectSettings.solutionSettings as AzureSolutionSettings).azureResources.push(
@@ -611,7 +617,7 @@ describe("Middleware", () => {
         }
       }
       hooks(MyClass, {
-        myMethod: [ContextInjecterMW, ProjectSettingsWriterMW, EnvInfoWriterMW()],
+        myMethod: [ContextInjectorMW, ProjectSettingsWriterMW, EnvInfoWriterMW()],
       });
       const my = new MyClass();
       await my.myMethod(inputs);
@@ -685,8 +691,8 @@ describe("Middleware", () => {
         }
       }
       hooks(MyClass, {
-        WriteConfigTrigger: [ContextInjecterMW, ProjectSettingsWriterMW, EnvInfoWriterMW()],
-        ReadConfigTrigger: [ProjectSettingsLoaderMW, EnvInfoLoaderMW(false), ContextInjecterMW],
+        WriteConfigTrigger: [ContextInjectorMW, ProjectSettingsWriterMW, EnvInfoWriterMW()],
+        ReadConfigTrigger: [ProjectSettingsLoaderMW, EnvInfoLoaderMW(false), ContextInjectorMW],
       });
       const my = new MyClass();
       await my.WriteConfigTrigger(inputs);
@@ -795,36 +801,12 @@ describe("Middleware", () => {
         }
       }
       hooks(MockCore, {
-        createProject: [
-          SolutionLoaderMW(new MockSolutionLoader()),
-          MockContextLoaderMW,
-          QuestionModelMW,
-        ],
-        provisionResources: [
-          SolutionLoaderMW(new MockSolutionLoader()),
-          MockContextLoaderMW,
-          QuestionModelMW,
-        ],
-        deployArtifacts: [
-          SolutionLoaderMW(new MockSolutionLoader()),
-          MockContextLoaderMW,
-          QuestionModelMW,
-        ],
-        localDebug: [
-          SolutionLoaderMW(new MockSolutionLoader()),
-          MockContextLoaderMW,
-          QuestionModelMW,
-        ],
-        publishApplication: [
-          SolutionLoaderMW(new MockSolutionLoader()),
-          MockContextLoaderMW,
-          QuestionModelMW,
-        ],
-        executeUserTask: [
-          SolutionLoaderMW(new MockSolutionLoader()),
-          MockContextLoaderMW,
-          QuestionModelMW,
-        ],
+        createProject: [SolutionLoaderMW(), MockContextLoaderMW, QuestionModelMW],
+        provisionResources: [SolutionLoaderMW(), MockContextLoaderMW, QuestionModelMW],
+        deployArtifacts: [SolutionLoaderMW(), MockContextLoaderMW, QuestionModelMW],
+        localDebug: [SolutionLoaderMW(), MockContextLoaderMW, QuestionModelMW],
+        publishApplication: [SolutionLoaderMW(), MockContextLoaderMW, QuestionModelMW],
+        executeUserTask: [SolutionLoaderMW(), MockContextLoaderMW, QuestionModelMW],
       });
       const my = new MockCore();
 
@@ -917,42 +899,22 @@ describe("Middleware", () => {
         }
       }
       hooks(MockCore, {
-        createProject: [
-          ErrorHandlerMW,
-          SolutionLoaderMW(new MockSolutionLoader()),
-          MockContextLoaderMW,
-          QuestionModelMW,
-        ],
+        createProject: [ErrorHandlerMW, SolutionLoaderMW(), MockContextLoaderMW, QuestionModelMW],
         provisionResources: [
           ErrorHandlerMW,
-          SolutionLoaderMW(new MockSolutionLoader()),
+          SolutionLoaderMW(),
           MockContextLoaderMW,
           QuestionModelMW,
         ],
-        deployArtifacts: [
-          ErrorHandlerMW,
-          SolutionLoaderMW(new MockSolutionLoader()),
-          MockContextLoaderMW,
-          QuestionModelMW,
-        ],
-        localDebug: [
-          ErrorHandlerMW,
-          SolutionLoaderMW(new MockSolutionLoader()),
-          MockContextLoaderMW,
-          QuestionModelMW,
-        ],
+        deployArtifacts: [ErrorHandlerMW, SolutionLoaderMW(), MockContextLoaderMW, QuestionModelMW],
+        localDebug: [ErrorHandlerMW, SolutionLoaderMW(), MockContextLoaderMW, QuestionModelMW],
         publishApplication: [
           ErrorHandlerMW,
-          SolutionLoaderMW(new MockSolutionLoader()),
+          SolutionLoaderMW(),
           MockContextLoaderMW,
           QuestionModelMW,
         ],
-        executeUserTask: [
-          ErrorHandlerMW,
-          SolutionLoaderMW(new MockSolutionLoader()),
-          MockContextLoaderMW,
-          QuestionModelMW,
-        ],
+        executeUserTask: [ErrorHandlerMW, SolutionLoaderMW(), MockContextLoaderMW, QuestionModelMW],
       });
       const my = new MockCore();
 

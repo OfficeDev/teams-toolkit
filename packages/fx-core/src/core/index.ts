@@ -76,9 +76,8 @@ import {
   TaskNotSupportError,
   WriteFileError,
 } from "./error";
-import { defaultSolutionLoader } from "./loader";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
-import { ContextInjectorMW } from "./middleware/contextInjecter";
+import { ContextInjectorMW } from "./middleware/contextInjector";
 import {
   askNewEnvironment,
   EnvInfoLoaderMW,
@@ -112,6 +111,7 @@ import {
 import {
   getAllSolutionPlugins,
   getAllSolutionPluginsV2,
+  getSolutionPlugin,
   getSolutionPluginV2,
   SolutionPlugins,
 } from "./SolutionPluginContainer";
@@ -192,6 +192,7 @@ export class FxCore implements Core {
       }
 
       projectPath = path.join(folder, appName);
+      inputs.projectPath = projectPath;
       const folderExist = await fs.pathExists(projectPath);
       if (folderExist) {
         return err(ProjectFolderExistError(projectPath));
@@ -208,9 +209,6 @@ export class FxCore implements Core {
       if (basicFolderRes.isErr()) {
         return err(basicFolderRes.error);
       }
-
-      inputs.projectPath = projectPath;
-
       const projectSettings: ProjectSettings = {
         appName: appName,
         projectId: uuid.v4(),
@@ -245,7 +243,7 @@ export class FxCore implements Core {
         }
         ctx.provisionInputConfig = generateResourceTemplateRes.value;
       } else {
-        const solution = await defaultSolutionLoader.loadSolution(inputs);
+        const solution = await getSolutionPlugin(inputs[CoreQuestionNames.Solution]);
         if (!solution) {
           return err(new LoadSolutionError());
         }
@@ -321,7 +319,7 @@ export class FxCore implements Core {
       return err(new NotImplementedError("migrateV1Project"));
     }
 
-    const solution = await defaultSolutionLoader.loadSolution(inputs);
+    const solution = await getAllSolutionPlugins()[0];
     const projectSettings: ProjectSettings = {
       appName: appName,
       projectId: uuid.v4(),
@@ -580,7 +578,8 @@ export class FxCore implements Core {
           return err(new ObjectIsUndefinedError("executeUserTask input stuff"));
         if (!ctx.solutionContext)
           ctx.solutionContext = await newSolutionContext(this.tools, inputs);
-        if (ctx.solution) return await ctx.solution.publish(ctx.solutionContext);
+        if (ctx.solution.executeUserTask)
+          return await ctx.solution.executeUserTask(func, ctx.solutionContext);
         else return err(FunctionRouterError(func));
       }
     }
@@ -640,10 +639,7 @@ export class FxCore implements Core {
       ctx!.solutionContext === undefined
         ? await newSolutionContext(this.tools, inputs)
         : ctx!.solutionContext;
-    const solution =
-      ctx!.solution === undefined
-        ? await defaultSolutionLoader.loadSolution(inputs)
-        : ctx!.solution;
+    const solution = ctx!.solution === undefined ? await getAllSolutionPlugins()[0] : ctx!.solution;
     return await this._getQuestionsForUserTask(solutionContext, solution, func, inputs);
   }
 
@@ -747,7 +743,7 @@ export class FxCore implements Core {
     inputs: Inputs
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     const node = new QTreeNode({ type: "group" });
-    const globalSolutions: Solution[] = await defaultSolutionLoader.loadGlobalSolutions(inputs);
+    const globalSolutions: Solution[] = await getAllSolutionPlugins();
     const solutionContext = await newSolutionContext(this.tools, inputs);
 
     for (const v of globalSolutions) {
@@ -900,7 +896,7 @@ export class FxCore implements Core {
 
     return ok(Void);
   }
- 
+
   async createEnvCopy(
     targetEnvName: string,
     sourceEnvName: string,
@@ -921,7 +917,7 @@ export class FxCore implements Core {
     try {
       await fs.copy(sourceEnvConfigFilePath, targetEnvConfigFilePath);
     } catch (e) {
-      return err(CopyFileError(e));
+      return err(CopyFileError(e as Error));
     }
 
     core.tools.logProvider.debug(
@@ -946,7 +942,7 @@ export class FxCore implements Core {
       try {
         await copyParameterJson(solutionContext, sourceEnvName);
       } catch (e) {
-        return err(CopyFileError(e));
+        return err(CopyFileError(e as Error));
       }
     }
 

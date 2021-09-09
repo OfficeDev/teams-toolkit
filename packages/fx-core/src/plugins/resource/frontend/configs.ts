@@ -108,7 +108,7 @@ export class FrontendConfig {
       ? getArmOutput(ctx, ArmOutput.FrontendStorageResourceId)
       : ctx.config.getString(FrontendConfigInfo.StorageResourceId);
     if (!result) {
-      throw new Error("Failed to get storaget accounts resource id");
+      throw new InvalidConfigError("storage accounts resource id");
     }
     return result;
   }
@@ -121,7 +121,7 @@ export class FrontendConfig {
           ctx.envInfo.profile.get(DependentPluginInfo.SolutionPluginName)
         );
     if (!result) {
-      throw new Error("Failed to get subscription id");
+      throw new InvalidConfigError("subscription id");
     }
     return result;
   }
@@ -136,7 +136,7 @@ export class FrontendConfig {
           ctx.envInfo.profile.get(DependentPluginInfo.SolutionPluginName)
         );
     if (!result) {
-      throw new Error("Failed to get resource group name");
+      throw new InvalidConfigError("resource group name");
     }
     return result;
   }

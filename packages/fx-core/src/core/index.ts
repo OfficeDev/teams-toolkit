@@ -34,6 +34,8 @@ import {
   SolutionSettings,
   Tools,
   Void,
+  InputConfigsFolderName,
+  PublishProfilesFolderName,
 } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import { AxiosResponse } from "axios";
@@ -109,6 +111,7 @@ import { ProjectSettingsWriterMW } from "./middleware/projectSettingsWriter";
 import { newSolutionContext, ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
 import { SolutionLoaderMW } from "./middleware/solutionLoader";
 import { ProjectUpgraderMW } from "./middleware/projectUpgrader";
+import { localSettingsFileName } from "../common/localSettingsProvider";
 
 export interface CoreHookContext extends HookContext {
   projectSettings?: ProjectSettings;
@@ -718,7 +721,7 @@ export class FxCore implements Core {
             description: "",
             author: "",
             scripts: {
-              test: 'echo "Error: no test specified" && exit 1',
+              test: "echo \"Error: no test specified\" && exit 1",
             },
             devDependencies: {
               "@microsoft/teamsfx-cli": "0.*",
@@ -731,7 +734,9 @@ export class FxCore implements Core {
       );
       await fs.writeFile(
         path.join(inputs.projectPath!, `.gitignore`),
-        `node_modules\n/.${ConfigFolderName}/*.env\n/.${ConfigFolderName}/*.userdata\n.DS_Store\n${ArchiveFolderName}\n${ArchiveLogFileName}`
+        isMultiEnvEnabled()
+          ? `node_modules\n.${ConfigFolderName}/${InputConfigsFolderName}/${localSettingsFileName}\n.${ConfigFolderName}/${PublishProfilesFolderName}/*.userdata\n.DS_Store\n${ArchiveFolderName}\n${ArchiveLogFileName}`
+          : `node_modules\n/.${ConfigFolderName}/*.env\n/.${ConfigFolderName}/*.userdata\n.DS_Store\n${ArchiveFolderName}\n${ArchiveLogFileName}`
       );
     } catch (e) {
       return err(WriteFileError(e));

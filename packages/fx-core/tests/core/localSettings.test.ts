@@ -147,11 +147,15 @@ describe("LocalSettings provider APIs", () => {
         updatedLocalSettings!.auth?.get(LocalSettingsAuthKeys.SimpleAuthServiceEndpoint),
         updateValue
       );
+
+      await localSettingsProvider.loadV2();
     });
 
     it("should return undefined if file doesn't exist", async () => {
       const localSettings = await localSettingsProvider.load();
       chai.assert.isUndefined(localSettings);
+      const localSettingsv2 = await localSettingsProvider.loadV2();
+      chai.assert.isUndefined(localSettingsv2);
     });
   });
 

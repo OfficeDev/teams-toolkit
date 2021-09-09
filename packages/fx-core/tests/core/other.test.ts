@@ -18,6 +18,7 @@ import {
   isMultiEnvEnabled
 } from "../../src/common/tools";
 import {
+  ContextUpgradeError,
   FetchSampleError,
   NoneFxError,
   ProjectFolderExistError,
@@ -231,4 +232,11 @@ describe("Other test case", () => {
     }
   });
 
+  it("ContextUpgradeError", async () => {
+    const userError = ContextUpgradeError(new Error("11"), true);
+    assert.isTrue(userError instanceof UserError);
+    const sysError = ContextUpgradeError(new Error("11"), false);
+    assert.isTrue(sysError instanceof SystemError);
+  });
+  
 });

@@ -66,6 +66,7 @@ import { ProjectSettingsWriterMW } from "../../src/core/middleware/projectSettin
 import { ProjectUpgraderMW } from "../../src/core/middleware/projectUpgrader";
 import { QuestionModelMW } from "../../src/core/middleware/questionModel";
 import { SolutionLoaderMW } from "../../src/core/middleware/solutionLoader";
+import { TelemetrySenderMW } from "../../src/core/middleware/telemetrySender";
 import { SolutionPlugins } from "../../src/core/SolutionPluginContainer";
 import { PluginNames } from "../../src/plugins/solution/fx-solution/constants";
 import { AzureResourceSQL } from "../../src/plugins/solution/fx-solution/question";
@@ -1396,7 +1397,7 @@ describe("Middleware", () => {
         }
       }
       hooks(MyClass, {
-        other: [LocalSettingsLoaderMW, ContextInjectorMW],
+        other: [TelemetrySenderMW, LocalSettingsLoaderMW, ContextInjectorMW],
       });
       const my = new MyClass();
       const inputs: Inputs = { platform: Platform.VSCode };

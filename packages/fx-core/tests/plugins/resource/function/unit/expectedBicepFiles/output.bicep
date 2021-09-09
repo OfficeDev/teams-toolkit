@@ -1,5 +1,3 @@
 
-output function_storageAccountName string = functionProvision.outputs.storageAccountName
-output function_appServicePlanName string = functionProvision.outputs.appServicePlanName
 output function_functionEndpoint string = functionProvision.outputs.functionEndpoint
-output function_appName string = functionProvision.outputs.appName
+output function_appResourceId string = functionProvision.outputs.functionAppResourceId

@@ -2,7 +2,8 @@
 // Licensed under the MIT license.
 
 import {
-  AzureSolutionSettings, err,
+  AzureSolutionSettings,
+  err,
   FxError,
   Json,
   PluginContext,
@@ -10,22 +11,24 @@ import {
   Stage,
   TokenProvider,
   traverse,
-  Void
+  Void,
 } from "@microsoft/teamsfx-api";
 import {
-  Context, ProvisionInputs, ResourcePlugin,
-  ResourceProvisionOutput
+  Context,
+  ProvisionInputs,
+  ResourcePlugin,
+  ResourceProvisionOutput,
 } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
 import { SqlPlugin } from "..";
 import {
   ResourcePlugins,
-  ResourcePluginsV2
+  ResourcePluginsV2,
 } from "../../../solution/fx-solution/ResourcePluginContainer";
 import {
   configureResourceAdapter,
   convert2PluginContext,
-  provisionResourceAdapter
+  provisionResourceAdapter,
 } from "../../utils4v2";
 
 @Service(ResourcePluginsV2.SqlPlugin)
@@ -58,7 +61,13 @@ export class SqlPluginV2 implements ResourcePlugin {
       }
     }
 
-    return await provisionResourceAdapter(ctx, inputs, provisionInputConfig, tokenProvider, this.plugin);
+    return await provisionResourceAdapter(
+      ctx,
+      inputs,
+      provisionInputConfig,
+      tokenProvider,
+      this.plugin
+    );
   }
 
   async configureResource(

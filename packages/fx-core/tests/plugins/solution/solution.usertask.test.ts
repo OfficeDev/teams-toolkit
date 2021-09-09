@@ -433,7 +433,7 @@ describe("V2 implementation", () => {
         const spy = mocker.spy(appStudioPluginV2, "publishApplication");
         const result = await executeUserTask(
           mockedCtx,
-          { namespace: "solution", method: "VSpublish" , params: {envConfig: {}, envProfile: {}}},
+          { namespace: "solution", method: "VSpublish", params: { envConfig: {}, envProfile: {} } },
           mockedInputs,
           mockedProvider
         );

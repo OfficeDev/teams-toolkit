@@ -3,30 +3,32 @@
 
 import {
   AzureAccountProvider,
-  AzureSolutionSettings, FxError,
+  AzureSolutionSettings,
+  FxError,
   Inputs,
   Json,
   Result,
   TokenProvider,
-  Void
+  Void,
 } from "@microsoft/teamsfx-api";
 import {
   Context,
-  DeploymentInputs, ProvisionInputs,
+  DeploymentInputs,
+  ProvisionInputs,
   ResourcePlugin,
-  ResourceTemplate
+  ResourceTemplate,
 } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
 import { FrontendPlugin } from "../..";
 import {
   ResourcePlugins,
-  ResourcePluginsV2
+  ResourcePluginsV2,
 } from "../../../solution/fx-solution/ResourcePluginContainer";
 import {
   configureResourceAdapter,
   deployAdapter,
   generateResourceTemplateAdapter,
-  scaffoldSourceCodeAdapter
+  scaffoldSourceCodeAdapter,
 } from "../../utils4v2";
 
 @Service(ResourcePluginsV2.FrontendPlugin)

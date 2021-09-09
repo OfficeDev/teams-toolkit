@@ -7,6 +7,9 @@ import AdmZip from "adm-zip";
 import axios from "axios";
 import ignore, { Ignore } from "ignore";
 
+import { WebAppsListPublishingCredentialsResponse } from "@azure/arm-appservice/esm/models";
+import { PluginContext } from '@microsoft/teamsfx-api';
+
 import { AzureInfo, CommonConstants, DefaultValues, FunctionPluginPathInfo } from "../constants";
 import {
   ConfigFunctionAppError,
@@ -18,19 +21,18 @@ import {
 } from "../resources/errors";
 import { DeploySteps, StepGroup, step } from "../resources/steps";
 import { ErrorMessages, InfoMessages } from "../resources/message";
-import { FunctionLanguage } from "../enums";
+import { FunctionEvent, FunctionLanguage } from "../enums";
 import { LanguageStrategyFactory } from "../language-strategy";
 import { Logger } from "../utils/logger";
-import { WebAppsListPublishingCredentialsResponse } from "@azure/arm-appservice/esm/models";
 import { execute } from "../utils/execute";
 import { forEachFileAndDir } from "../utils/dir-walk";
-import { requestWithRetry } from "../utils/templates-fetch";
 import { BackendExtensionsInstaller } from "../utils/depsChecker/backendExtensionsInstall";
 import { DotnetChecker } from "../utils/depsChecker/dotnetChecker";
 import { FuncPluginAdapter } from "../utils/depsChecker/funcPluginAdapter";
 import { funcPluginLogger } from "../utils/depsChecker/funcPluginLogger";
 import { FuncPluginTelemetry } from "../utils/depsChecker/funcPluginTelemetry";
-import { PluginContext } from "@microsoft/teamsfx-api";
+import { TelemetryHelper } from "../utils/telemetry-helper";
+import { sendRequestWithRetry } from "../../../../common/templatesUtils";
 
 export class FunctionDeploy {
   public static async getLastDeploymentTime(componentPath: string): Promise<Date> {
@@ -42,8 +44,13 @@ export class FunctionDeploy {
       deploymentInfoDir,
       FunctionPluginPathInfo.funcDeploymentInfoFileName
     );
-    const lastFunctionDeployJson = await fs.readJSON(deploymentInfoPath);
-    return new Date(lastFunctionDeployJson.time);
+    try {
+      const lastFunctionDeployJson = await fs.readJSON(deploymentInfoPath);
+      return new Date(lastFunctionDeployJson.time);
+    } catch (err) {
+      TelemetryHelper.sendGeneralEvent(FunctionEvent.DeploymentInfoNotFound);
+      throw err;
+    }
   }
 
   public static async hasUpdatedContent(
@@ -189,8 +196,7 @@ export class FunctionDeploy {
           StepGroup.DeployStepGroup,
           DeploySteps.deploy,
           async () =>
-            await requestWithRetry(
-              DefaultValues.maxTryCount,
+            await sendRequestWithRetry(
               async () =>
                 await axios.post(AzureInfo.zipDeployURL(functionAppName), zipContent, {
                   headers: {
@@ -204,7 +210,8 @@ export class FunctionDeploy {
                   maxContentLength: Infinity,
                   maxBodyLength: Infinity,
                   timeout: DefaultValues.deployTimeoutInMs,
-                })
+                }),
+              DefaultValues.maxTryCount,
             )
         )
     );

@@ -81,10 +81,18 @@ jobs:
           rsync --delete-before -d /tmp/empty/ ./
 
       - name: Sync to Azure DevOps Test Plan
-        if: ${{ github.ref == 'refs/heads/main' }}
+        if: ${{ always() && github.ref == 'refs/heads/main' }}
         run: |
           version =$(node -p -e "require('./packages/cli/package.json').version")
           npx ts-node .github/scripts/testPlan.ts sync ./packages/cli/report.json cli $version
+
+      - name: Upload test report
+        uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: report.json
+          path: |
+            ./packages/cli/report.json
 
   report-stat:
     env:

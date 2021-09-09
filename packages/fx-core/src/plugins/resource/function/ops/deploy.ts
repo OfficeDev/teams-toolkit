@@ -18,7 +18,7 @@ import {
 } from "../resources/errors";
 import { DeploySteps, StepGroup, step } from "../resources/steps";
 import { ErrorMessages, InfoMessages } from "../resources/message";
-import { FunctionLanguage } from "../enums";
+import { FunctionEvent, FunctionLanguage } from "../enums";
 import { LanguageStrategyFactory } from "../language-strategy";
 import { Logger } from "../utils/logger";
 import { WebAppsListPublishingCredentialsResponse } from "@azure/arm-appservice/esm/models";
@@ -31,6 +31,7 @@ import { FuncPluginAdapter } from "../utils/depsChecker/funcPluginAdapter";
 import { funcPluginLogger } from "../utils/depsChecker/funcPluginLogger";
 import { FuncPluginTelemetry } from "../utils/depsChecker/funcPluginTelemetry";
 import { PluginContext } from "@microsoft/teamsfx-api";
+import { TelemetryHelper } from "../utils/telemetry-helper";
 
 export class FunctionDeploy {
   public static async getLastDeploymentTime(componentPath: string): Promise<Date> {
@@ -42,8 +43,13 @@ export class FunctionDeploy {
       deploymentInfoDir,
       FunctionPluginPathInfo.funcDeploymentInfoFileName
     );
-    const lastFunctionDeployJson = await fs.readJSON(deploymentInfoPath);
-    return new Date(lastFunctionDeployJson.time);
+    try {
+      const lastFunctionDeployJson = await fs.readJSON(deploymentInfoPath);
+      return new Date(lastFunctionDeployJson.time);
+    } catch (err) {
+      TelemetryHelper.sendGeneralEvent(FunctionEvent.DeploymentInfoNotFound);
+      throw err;
+    }
   }
 
   public static async hasUpdatedContent(

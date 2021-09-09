@@ -121,19 +121,6 @@ export class FunctionPluginImpl {
   };
 
   private async syncConfigFromContext(ctx: PluginContext): Promise<void> {
-    const solutionConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.profile.get(
-      DependentPluginInfo.solutionPluginName
-    );
-
-    this.config.resourceNameSuffix = solutionConfig?.get(
-      DependentPluginInfo.resourceNameSuffix
-    ) as string;
-    this.config.resourceGroupName = solutionConfig?.get(
-      DependentPluginInfo.resourceGroupName
-    ) as string;
-    this.config.subscriptionId = solutionConfig?.get(DependentPluginInfo.subscriptionId) as string;
-
-    this.config.location = solutionConfig?.get(DependentPluginInfo.location) as string;
     this.config.functionLanguage = ctx.projectSettings?.programmingLanguage as FunctionLanguage;
     this.config.defaultFunctionName = ctx.projectSettings?.defaultFunctionName as string;
 
@@ -141,6 +128,19 @@ export class FunctionPluginImpl {
     if (isArmSupportEnabled()) {
       this.config.functionAppId = ctx.config.get(FunctionConfigKey.functionAppId) as string;
     } else {
+      const solutionConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.profile.get(
+        DependentPluginInfo.solutionPluginName
+      );
+      this.config.resourceNameSuffix = solutionConfig?.get(
+        DependentPluginInfo.resourceNameSuffix
+      ) as string;
+      this.config.resourceGroupName = solutionConfig?.get(
+        DependentPluginInfo.resourceGroupName
+      ) as string;
+      this.config.subscriptionId = solutionConfig?.get(
+        DependentPluginInfo.subscriptionId
+      ) as string;
+      this.config.location = solutionConfig?.get(DependentPluginInfo.location) as string;
       this.config.functionAppName = ctx.config.get(FunctionConfigKey.functionAppName) as string;
       this.config.storageAccountName = ctx.config.get(
         FunctionConfigKey.storageAccountName
@@ -400,14 +400,8 @@ export class FunctionPluginImpl {
   }
 
   public async provision(ctx: PluginContext): Promise<FxResult> {
-    const resourceGroupName = this.checkAndGet(
-      this.config.resourceGroupName,
-      FunctionConfigKey.resourceGroupName
-    );
-    const subscriptionId = this.checkAndGet(
-      this.config.subscriptionId,
-      FunctionConfigKey.subscriptionId
-    );
+    const resourceGroupName = this.getFunctionAppResourceGroupName(ctx);
+    const subscriptionId = this.getFunctionAppSubscriptionId(ctx);
     const location = this.checkAndGet(this.config.location, FunctionConfigKey.location);
     const appServicePlanName = this.checkAndGet(
       this.config.appServicePlanName,

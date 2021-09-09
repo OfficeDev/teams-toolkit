@@ -31,107 +31,63 @@ class App extends React.Component {
     return (
       <div>
         <TreeItem
-          name="Provision in the cloud"
+          label="Provision in the cloud"
           tooltip={StringResources.vsc.commandsTreeViewProvider.provisionDescription}
           icon="codicon codicon-type-hierarchy"
           customized={false}
           disable={false}
-          onclick={this.onProvision}
+          command="fx-extension.provision"
         ></TreeItem>
         <TreeItem
-          name="Validate manifest file"
+          label="Validate manifest file"
           tooltip={StringResources.vsc.commandsTreeViewProvider.validateManifestDescription}
           icon="codicon codicon-checklist"
           customized={false}
           disable={true}
-          onclick={this.onValidateManifest}
+          command="fx-extension.validateManifest"
         ></TreeItem>
         <TreeItem
-          name="Zip Teams metadata package"
+          label="Zip Teams metadata package"
           tooltip={StringResources.vsc.commandsTreeViewProvider.buildPackageDescription}
           icon="codicon codicon-package"
           customized={false}
           disable={false}
-          onclick={this.onPackageTeams}
+          command="fx-extension.build"
         ></TreeItem>
         <TreeItem
-          name="Deploy to the cloud"
+          label="Deploy to the cloud"
           tooltip={StringResources.vsc.commandsTreeViewProvider.deployDescription}
           icon="codicon codicon-cloud-upload"
           customized={false}
           disable={false}
-          onclick={this.onDeploy}
+          command="fx-extension.deploy"
         ></TreeItem>
         <TreeItem
-          name="Publish to Teams"
+          label="Publish to Teams"
           tooltip={StringResources.vsc.commandsTreeViewProvider.publishDescription}
           icon={publish_dark}
           customized={true}
           disable={false}
-          onclick={this.onPublish}
+          command="fx-extension.publish"
         ></TreeItem>
         <TreeItem
-          name="Developer Portal for Teams"
+          label="Developer Portal for Teams"
           tooltip={StringResources.vsc.commandsTreeViewProvider.teamsDevPortalDescription}
           icon={developerPortal_dark}
           customized={true}
           disable={false}
-          onclick={this.onDevPortal}
+          command="fx-extension.openAppManagement"
         ></TreeItem>
         {/* <TreeItem
-          name="CI/CD guide"
+          label="CI/CD guide"
           icon="codicon codicon-sync"
           customized={false}
           disable={false}
-          onclick={this.onCiCd}
+          command="fx-extension.cicdGuide"
         ></TreeItem> */}
       </div>
     );
   }
-
-  onProvision = () => {
-    vscode.postMessage({
-      command: Commands.Provision,
-    });
-  };
-
-  onValidateManifest = () => {
-    vscode.postMessage({
-      command: Commands.ValidateManifest,
-    });
-  };
-
-  onPackageTeams = () => {
-    vscode.postMessage({
-      command: Commands.PackageTeams,
-    });
-  };
-
-  onDeploy = () => {
-    vscode.postMessage({
-      command: Commands.Deploy,
-    });
-  };
-
-  onPublish = () => {
-    vscode.postMessage({
-      command: Commands.Publish,
-    });
-  };
-
-  onDevPortal = () => {
-    vscode.postMessage({
-      command: Commands.OpenExternalLink,
-      data: "https://dev.teams.microsoft.com/home",
-    });
-  };
-
-  onCiCd = () => {
-    vscode.postMessage({
-      command: Commands.OpenExternalLink,
-      data: "https://aka.ms/teamsfx-cicd-guide",
-    });
-  };
 }
 
 class TreeItem extends React.Component<any, any> {
@@ -177,7 +133,7 @@ class TreeItem extends React.Component<any, any> {
           },
         }}
       >
-        <div id={this.props.name} className="row">
+        <div id={this.props.label} className="row">
           <ActionButton
             allowDisabledFocus
             disabled={this.props.disable}
@@ -188,7 +144,8 @@ class TreeItem extends React.Component<any, any> {
           >
             {this.props.customized && <img src={this.props.icon}></img>}
             {!this.props.customized && <div className={this.props.icon}></div>}
-            {this.props.name}
+            {this.props.label}
+            <p>{this.props.description}</p>
           </ActionButton>
         </div>
       </TooltipHost>
@@ -197,10 +154,13 @@ class TreeItem extends React.Component<any, any> {
 
   onMouseUp = (e: React.MouseEvent<HTMLElement>) => {
     if (e.button === 0) {
-      const item = document.getElementById(this.props.name);
+      const item = document.getElementById(this.props.label);
       if (item) {
         item.focus();
-        this.props.onclick();
+        vscode.postMessage({
+          command: Commands.ExecuteCommand,
+          id: this.props.command,
+        });
       }
     }
   };

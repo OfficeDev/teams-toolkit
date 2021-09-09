@@ -242,4 +242,58 @@ describe("Post Local Debug", () => {
 
     chai.assert.isTrue(postLocalDebugResult.isOk());
   });
+
+  it("should return Ok for SPFx postLocalDebug happy path", async () => {
+    ctx = {
+      root: "./tests/plugins/resource/appstudio/spfx-resources/",
+      envInfo: newEnvInfo(),
+      config: new ConfigMap(),
+      appStudioToken: new MockedAppStudioTokenProvider(),
+    };
+    ctx.projectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        name: "spfx",
+        version: "1.0",
+        capabilities: ["Tab"],
+        activeResourcePlugins: ["fx-resource-spfx"],
+      },
+    };
+
+    const appDef: IAppDefinition = {
+      appName: "my app",
+      teamsAppId: "appId",
+      userList: [
+        {
+          tenantId: uuid.v4(),
+          aadId: uuid.v4(),
+          displayName: "displayName",
+          userPrincipalName: "principalName",
+          isAdministrator: true,
+        },
+      ],
+      outlineIcon: "outline.png",
+      colorIcon: "color.png",
+    };
+
+    const fakeAxiosInstance = axios.create();
+    sandbox.stub(fakeAxiosInstance, "get").resolves({
+      status: 200,
+      data: appDef,
+    });
+
+    sandbox.stub<any, any>(fakeAxiosInstance, "post").callsFake(async (url: string) => {
+      if (url == "/api/appdefinitions/appId/image") return {};
+      if (url == "/api/appdefinitions/appId/override") return { status: 200, data: appDef };
+      return {};
+    });
+
+    sandbox.stub(axios, "create").returns(fakeAxiosInstance);
+    sandbox.stub(AppStudioClient, "createApp").resolves(appDef);
+
+    const postLocalDebugResult = await plugin.postLocalDebug(ctx);
+
+    chai.assert.isTrue(postLocalDebugResult.isOk());
+  });
 });

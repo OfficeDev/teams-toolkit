@@ -104,6 +104,9 @@ export enum TelemetryEvent {
   ActivateEnvironment = "activate-environment",
 
   CheckSideloading = "check-sideloading",
+
+  ShowWhatIsNewNotification = "show-what-is-new-notification",
+  ShowWhatIsNewContext = "show-what-is-new-context",
 }
 
 export enum TelemetryProperty {

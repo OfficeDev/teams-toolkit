@@ -120,6 +120,7 @@ import { ProjectSettingsWriterMW } from "./middleware/projectSettingsWriter";
 import { newSolutionContext, ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
 import { SolutionLoaderMW } from "./middleware/solutionLoader";
 import { ProjectUpgraderMW } from "./middleware/projectUpgrader";
+import { FeatureFlagName } from "../common/constants";
 
 export interface CoreHookContext extends HookContext {
   projectSettings?: ProjectSettings;
@@ -135,9 +136,14 @@ export interface CoreHookContext extends HookContext {
   localSettings?: Json;
 }
 
-// switcher
+// API V2 feature flag
 export function isV2() {
-  return false;
+  const flag = process.env[FeatureFlagName.APIV2];
+  if (flag === undefined) {
+    return false; 
+  } else {
+    return flag === "1" || flag.toLowerCase() === "true"; 
+  }
 }
 
 export let Logger: LogProvider;

@@ -1198,6 +1198,8 @@ export async function signOutM365(isFromTreeView: boolean) {
       },
     ]);
   }
+
+  registerEnvTreeHandler();
 }
 
 export async function signInAzure() {

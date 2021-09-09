@@ -151,6 +151,7 @@ export function blazorConfig() {
         preferBuiltins: false,
         browser: true,
       }),
+      json(),
       cjs(),
       terser({
         mangle: {

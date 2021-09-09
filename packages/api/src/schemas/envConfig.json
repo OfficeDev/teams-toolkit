@@ -8,26 +8,26 @@
     },
     "auth": {
       "type": "object",
-      "description": "Existing tab AAD app configuration.",
+      "description": "Existing AAD app configuration.",
       "properties": {
         "clientId": {
           "type": "string",
-          "description": "The client id of existing AAD app for tab.",
+          "description": "The client id of existing AAD app for Teams app.",
           "minLength": 1
         },
         "clientSecret": {
           "type": "string",
-          "description": "The client secret of existing AAD app for tab.",
+          "description": "The client secret of existing AAD app for Teams app.",
           "minLength": 1
         },
         "objectId": {
           "type": "string",
-          "description": "The object id of existing AAD app for tab.",
+          "description": "The object id of existing AAD app for Teams app.",
           "minLength": 1
         },
-        "oauth2PermissionScopeId": {
+        "accessAsUserScopeId": {
           "type": "string",
-          "description": "The oauth2 permission scope id of existing AAD app for tab.",
+          "description": "The access_as_user scope id of existing AAD app for Teams app.",
           "minLength": 1
         }
       },

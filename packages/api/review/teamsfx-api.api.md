@@ -229,7 +229,7 @@ export interface EnvConfig {
         clientId?: string;
         clientSecret?: string;
         objectId?: string;
-        oauth2PermissionScopeId?: string;
+        accessAsUserScopeId?: string;
     };
     azure?: {
         subscriptionId?: string;

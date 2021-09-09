@@ -2,7 +2,7 @@ import "mocha";
 import * as chai from "chai";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { ConfigFolderName, LocalSettings } from "@microsoft/teamsfx-api";
+import { ConfigFolderName, Json, LocalSettings } from "@microsoft/teamsfx-api";
 import { LocalSettingsProvider } from "../../src/common/localSettingsProvider";
 import {
   LocalSettingsAuthKeys,
@@ -11,6 +11,7 @@ import {
   LocalSettingsFrontendKeys,
   LocalSettingsTeamsAppKeys,
 } from "../../src/common/localSettingsConstants";
+import { assert } from "console";
 
 describe("LocalSettings provider APIs", () => {
   const workspaceFolder = path.resolve(__dirname, "./data/");
@@ -78,7 +79,40 @@ describe("LocalSettings provider APIs", () => {
       );
     });
   });
+  describe("initV2 localSettings", () => {
+    it("should init with tab and backaned", () => {
+      hasFrontend = true;
+      hasBackend = true;
+      hasBot = false;
 
+      const localSettings = localSettingsProvider.initV2(hasFrontend, hasBackend, hasBot);
+      chai.assert.isDefined(localSettings.frontend);
+      chai.assert.isDefined(localSettings.backend);
+      chai.assert.isUndefined(localSettings.bot);
+    });
+
+    it("should init with tab and without backaned", () => {
+      hasFrontend = true;
+      hasBackend = false;
+      hasBot = false;
+
+      const localSettings = localSettingsProvider.init(hasFrontend, hasBackend, hasBot);
+      chai.assert.isDefined(localSettings.frontend);
+      chai.assert.isUndefined(localSettings.backend);
+      chai.assert.isUndefined(localSettings.bot);
+    });
+
+    it("should init with bot", () => {
+      hasFrontend = false;
+      hasBackend = false;
+      hasBot = true;
+
+      const localSettings = localSettingsProvider.init(hasFrontend, hasBackend, hasBot);
+      chai.assert.isUndefined(localSettings.frontend);
+      chai.assert.isUndefined(localSettings.backend);
+      chai.assert.isDefined(localSettings.bot);
+    });
+  });
   describe("save localSettings", () => {
     it("should create with default settings", async () => {
       hasFrontend = true;

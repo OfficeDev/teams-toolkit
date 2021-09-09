@@ -15,6 +15,7 @@ import {
   Plugin,
   Platform,
   v2,
+  Inputs,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs, { PathLike } from "fs-extra";
@@ -27,7 +28,7 @@ import {
 } from "../../../src/plugins/solution/fx-solution/question";
 import _ from "lodash";
 import path from "path";
-import { getTemplatesFolder, newEnvInfo } from "../../../src";
+import { createV2Context, getTemplatesFolder, newEnvInfo, newProjectSettings } from "../../../src";
 import { validManifest } from "./util";
 import * as uuid from "uuid";
 import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
@@ -35,6 +36,9 @@ import Container from "typedi";
 import mockedEnv from "mocked-env";
 import { ArmResourcePlugin } from "../../../src/common/armInterface";
 import { mockedFehostScaffoldArmResult, mockedSimpleAuthScaffoldArmResult } from "./util";
+import { getQuestionsForScaffolding } from "../../../src/plugins/solution/fx-solution/v2/getQuestions";
+import { MockTools } from "../../core/utils";
+import { assert } from "console";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -243,5 +247,19 @@ describe("Solution scaffold() reading valid manifest file", () => {
     expect(fileContent.size).equals(0);
 
     restore();
+  });
+  it("getQuestionsForScaffolding", async () => {
+    const tools = new MockTools();
+    const contextv2: v2.Context = {
+        userInteraction: tools.ui,
+        logProvider: tools.logProvider,
+        telemetryReporter: tools.telemetryReporter!,
+        cryptoProvider: tools.cryptoProvider!,
+        permissionRequestProvider: tools.permissionRequestProvider!,
+        projectSetting: newProjectSettings(),
+    };
+    const inputs: Inputs = {platform: Platform.CLI, projectPath: "."};
+    const res = await getQuestionsForScaffolding(contextv2, inputs);
+    assert(res.isOk());
   });
 });

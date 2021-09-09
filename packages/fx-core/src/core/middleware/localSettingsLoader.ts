@@ -14,7 +14,7 @@ export const LocalSettingsLoaderMW: Middleware = async (
   ctx: CoreHookContext,
   next: NextFunction
 ) => {
-  if (isMultiEnvEnabled() && ctx.solutionContext) {
+  if (isMultiEnvEnabled()) {
     const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
     if (!inputs.projectPath) {
       ctx.result = err(NoProjectOpenedError());
@@ -41,7 +41,7 @@ export const LocalSettingsLoaderMW: Middleware = async (
       } else {
         ctx.localSettings = localSettingsProvider.initV2(hasFrontend, hasBackend, hasBot);
       }
-    } else {
+    } else if(ctx.solutionContext) {
       if (await fs.pathExists(localSettingsProvider.localSettingsFilePath)) {
         ctx.solutionContext.localSettings = await localSettingsProvider.load();
       } else {

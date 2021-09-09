@@ -136,7 +136,7 @@ class EnvironmentManager {
   }
 
   public async writeEnvProfile(
-    envData: Map<string, any>,
+    envData: Map<string, any> | Json,
     projectPath: string,
     envName?: string,
     cryptoProvider?: CryptoProvider
@@ -153,7 +153,7 @@ class EnvironmentManager {
     envName = envName ?? this.getDefaultEnvName();
     const envFiles = this.getEnvProfileFilesPath(envName, projectPath);
 
-    const data = mapToJson(envData);
+    const data = (envData instanceof Map) ? mapToJson(envData) : envData;
     const secrets = sperateSecretData(data);
     if (cryptoProvider) {
       this.encrypt(secrets, cryptoProvider);
@@ -171,41 +171,7 @@ class EnvironmentManager {
 
     return ok(envFiles.envProfile);
   }
-  public async writeEnvProfileV2(
-    envData: Json,
-    projectPath: string,
-    envName?: string,
-    cryptoProvider?: CryptoProvider
-  ): Promise<Result<string, FxError>> {
-    if (!(await fs.pathExists(projectPath))) {
-      return err(PathNotExistError(projectPath));
-    }
-
-    const envProfilesFolder = this.getEnvProfilesFolder(projectPath);
-    if (!(await fs.pathExists(envProfilesFolder))) {
-      await fs.ensureDir(envProfilesFolder);
-    }
-
-    envName = envName ?? this.getDefaultEnvName();
-    const envFiles = this.getEnvProfileFilesPath(envName, projectPath);
-
-    const secrets = sperateSecretData(envData);
-    if (cryptoProvider) {
-      this.encrypt(secrets, cryptoProvider);
-    }
-    if (Object.keys(secrets).length) {
-      secrets[this.checksumKey] = jsum.digest(secrets, "SHA256", "hex");
-    }
-
-    try {
-      await fs.writeFile(envFiles.envProfile, JSON.stringify(envData, null, 4));
-      await fs.writeFile(envFiles.userDataFile, serializeDict(secrets));
-    } catch (error) {
-      return err(WriteFileError(error));
-    }
-
-    return ok(envFiles.envProfile);
-  }
+  
   public async listEnvConfigs(projectPath: string): Promise<Result<Array<string>, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
       return err(PathNotExistError(projectPath));

@@ -38,7 +38,7 @@ export function EnvInfoWriterMW(skip = false): Middleware {
         if (isMultiEnvEnabled() && provisionOutputs[PluginNames.LDEBUG]) {
           delete provisionOutputs[PluginNames.LDEBUG];
         }
-        const envProfilePath = await environmentManager.writeEnvProfileV2(
+        const envProfilePath = await environmentManager.writeEnvProfile(
           provisionOutputs,
           inputs.projectPath,
           ctx.envName,

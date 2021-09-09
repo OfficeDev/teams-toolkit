@@ -18,6 +18,7 @@ import {
   ok,
   Platform,
   ProductName,
+  ProjectSettings,
   QTreeNode,
   Result,
   Solution,
@@ -42,6 +43,7 @@ import {
   mapToJson,
   serializeDict,
 } from "../../src";
+import { FeatureFlagName } from "../../src/common/constants";
 import { environmentManager } from "../../src/core/environment";
 import {
   ConcurrentError,
@@ -54,6 +56,7 @@ import { ContextInjectorMW } from "../../src/core/middleware/contextInjector";
 import { EnvInfoLoaderMW } from "../../src/core/middleware/envInfoLoader";
 import { EnvInfoWriterMW } from "../../src/core/middleware/envInfoWriter";
 import { ErrorHandlerMW } from "../../src/core/middleware/errorHandler";
+import { LocalSettingsLoaderMW } from "../../src/core/middleware/localSettingsLoader";
 import { MigrateConditionHandlerMW } from "../../src/core/middleware/migrateConditionHandler";
 import {
   newSolutionContext,
@@ -77,11 +80,15 @@ import {
   randomAppName,
 } from "./utils";
 describe("Middleware", () => {
+  const sandbox = sinon.createSandbox();
+
   const mockSolution = new MockSolution();
   beforeEach(() => {
     Container.set(SolutionPlugins.AzureTeamsSolution, mockSolution);
   });
-
+  afterEach(() => {
+    sandbox.restore();
+  });
   describe("ErrorHandlerMW", () => {
     const inputs: Inputs = { platform: Platform.VSCode };
 
@@ -1375,5 +1382,27 @@ describe("Middleware", () => {
         await fs.rmdir(inputs.projectPath!, { recursive: true });
       }
     });
+  });
+
+  describe("LocalSettingsLoaderMW, ContextInjectorMW", () => {
+    
+    it("NoProjectOpenedError", async () => {
+      const original = process.env[FeatureFlagName.MultiEnv];
+      process.env[FeatureFlagName.MultiEnv] = "true";
+      class MyClass {
+        tools = new MockTools();
+        async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+          return ok("");
+        }
+      }
+      hooks(MyClass, {
+        other: [LocalSettingsLoaderMW, ContextInjectorMW],
+      });
+      const my = new MyClass();
+      const inputs: Inputs = { platform: Platform.VSCode };
+      const res = await my.other(inputs);
+      assert.isTrue(res.isErr() && res.error.name === NoProjectOpenedError().name);
+      process.env[FeatureFlagName.MultiEnv] = original;
+    }); 
   });
 });

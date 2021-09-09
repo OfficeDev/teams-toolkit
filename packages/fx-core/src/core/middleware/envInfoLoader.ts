@@ -201,35 +201,6 @@ export function upgradeDefaultFunctionName(
   }
 }
 
-export function upgradeProgrammingLanguageV2(
-  solutionConfig: SolutionConfig,
-  projectSettings: ProjectSettings
-) {
-  const programmingLanguage = solutionConfig.get(GLOBAL_CONFIG)?.get(PROGRAMMING_LANGUAGE);
-  if (programmingLanguage) {
-    // add programmingLanguage in project settings
-    projectSettings.programmingLanguage = programmingLanguage;
-
-    // remove programmingLanguage in solution config
-    solutionConfig.get(GLOBAL_CONFIG)?.delete(PROGRAMMING_LANGUAGE);
-  }
-}
-
-export function upgradeDefaultFunctionNameV2(
-  solutionConfig: SolutionConfig,
-  projectSettings: ProjectSettings
-) {
-  // upgrade defaultFunctionName if exists.
-  const defaultFunctionName = solutionConfig.get(PluginNames.FUNC)?.get(DEFAULT_FUNC_NAME);
-  if (defaultFunctionName) {
-    // add defaultFunctionName in project settings
-    projectSettings.defaultFunctionName = defaultFunctionName;
-
-    // remove defaultFunctionName in function plugin's config
-    solutionConfig.get(PluginNames.FUNC)?.delete(DEFAULT_FUNC_NAME);
-  }
-}
-
 export async function askTargetEnvironment(
   ctx: SolutionContext,
   inputs: Inputs,

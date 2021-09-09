@@ -35,3 +35,25 @@ export class FeatureFlagName {
   static readonly BicepEnvCheckerEnable = "TEAMSFX_BICEP_ENV_CHECKER_ENABLE";
   static readonly APIV2 = "TEAMSFX_APIV2";
 }
+
+export class ArmParameters {
+  static readonly FEStorageName = "frontendHosting_storageName";
+  static readonly IdentityName = "identity_managedIdentityName";
+  static readonly SQLServer = "azureSql_serverName";
+  static readonly SQLDatabase = "azureSql_databaseName";
+  static readonly SimpleAuthSku = "simpleAuth_sku";
+  static readonly functionServerName = "function_serverfarmsName";
+  static readonly functionStorageName = "function_storageName";
+  static readonly functionAppName = "function_webappName";
+}
+
+export class EnvConfigName {
+  static readonly StorageName = "storageName";
+  static readonly IdentityName = "identity";
+  static readonly SqlEndpoint = "sqlEndpoint";
+  static readonly SqlDataBase = "databaseName";
+  static readonly SkuName = "skuName";
+  static readonly AppServicePlanName = "appServicePlanName";
+  static readonly StorageAccountName = "storageAccountName";
+  static readonly FuncAppName = "functionAppName";
+}

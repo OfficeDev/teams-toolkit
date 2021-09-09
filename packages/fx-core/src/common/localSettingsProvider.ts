@@ -20,13 +20,14 @@ import {
 import { isMultiEnvEnabled } from "./tools";
 
 export const localSettingsFileName = "localSettings.json";
+export const localSettingsFile = "settings.json";
 
 export class LocalSettingsProvider {
   public readonly localSettingsFilePath: string;
   constructor(workspaceFolder: string) {
     this.localSettingsFilePath = isMultiEnvEnabled()
       ? `${workspaceFolder}/.${ConfigFolderName}/${InputConfigsFolderName}/${localSettingsFileName}`
-      : `${workspaceFolder}/.${ConfigFolderName}/${localSettingsFileName}`;
+      : `${workspaceFolder}/.${ConfigFolderName}/${localSettingsFile}`;
   }
 
   public init(

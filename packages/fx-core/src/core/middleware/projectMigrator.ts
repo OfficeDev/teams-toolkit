@@ -3,17 +3,25 @@
 
 import {
   AppPackageFolderName,
+  AzureSolutionSettings,
   ConfigFolderName,
   EnvConfig,
+  err,
   InputConfigsFolderName,
   Inputs,
   ProjectSettings,
   ProjectSettingsFileName,
   PublishProfilesFolderName,
   TeamsAppManifest,
-  AzureSolutionSettings,
 } from "@microsoft/teamsfx-api";
-import { CoreHookContext, deserializeDict, NoProjectOpenedError, serializeDict } from "../..";
+import {
+  CoreHookContext,
+  deserializeDict,
+  NoProjectOpenedError,
+  serializeDict,
+  SolutionConfigError,
+  ProjectSettingError,
+} from "../..";
 import { LocalSettingsProvider } from "../../common/localSettingsProvider";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import fs from "fs-extra";
@@ -26,7 +34,10 @@ import {
   isArmSupportEnabled,
   isBicepEnvCheckerEnabled,
 } from "../../common/tools";
-
+import { loadProjectSettings } from "./projectSettingsLoader";
+import { generateArmTemplate } from "../../plugins/solution/fx-solution/arm";
+import { loadSolutionContext } from "./envInfoLoader";
+import { ArmParameters, EnvConfigName, ResourcePlugins } from "../../common/constants";
 import { getActivatedResourcePlugins } from "../../plugins/solution/fx-solution/ResourcePluginContainer";
 
 const MigrationMessage =
@@ -91,7 +102,7 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
   if (hasProvision) {
     const devProfile = path.join(fxPublishProfile, "profile.dev.json");
     const devUserData = path.join(fxPublishProfile, "dev.userdata");
-    await fs.copy(path.join(fx, "env.default.json"), devProfile);
+    await fs.copy(path.join(fx, "new.env.default.json"), devProfile);
     await fs.copy(path.join(fx, "default.userdata"), devUserData);
     await removeExpiredFields(devProfile, devUserData);
     await ensureActiveEnv(projectSettings);
@@ -196,6 +207,7 @@ async function removeOldProjectFiles(projectPath: string): Promise<void> {
   await fs.remove(path.join(fx, "settings.json"));
   await fs.remove(path.join(fx, "local.env"));
   await fs.remove(path.join(projectPath, AppPackageFolderName));
+  await fs.remove(path.join(fx, "new.env.default.json"));
   // version <= 2.4.1, rmove .fx/appPackage.
   await fs.remove(path.join(fx, AppPackageFolderName));
 }
@@ -231,28 +243,30 @@ async function cleanup(projectPath: string): Promise<void> {
   await fs.remove(fxConfig);
   await fs.remove(templateAppPackage);
   await fs.remove(fxPublishProfile);
-  // TODO: delte bicep files
+  await fs.remove(path.join(templateAppPackage, ".."));
+  if (checkFileExist(path.join(fxConfig, "..", "new.env.default.json"))) {
+    await fs.remove(path.join(fxConfig, "..", "new.env.default.json"));
+  }
 }
 
 async function needMigrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<boolean> {
-  // if (!preCheckEnvEnabled()) {
-  //   return false;
-  // }
-  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-  if (!inputs.projectPath) {
-    throw NoProjectOpenedError();
+  if (!preCheckEnvEnabled()) {
+    return false;
   }
-  const fxExist = await fs.pathExists(path.join(inputs.projectPath, ".fx"));
+  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+  const fxExist = await fs.pathExists(path.join(inputs.projectPath as string, ".fx"));
   if (!fxExist) {
     return false;
   }
 
   const envFileExist = await checkFileExist(
-    path.join(inputs.projectPath, ".fx", "env.default.json")
+    path.join(inputs.projectPath as string, ".fx", "env.default.json")
   );
-  const configDirExist = await fs.pathExists(path.join(inputs.projectPath, ".fx", "configs"));
+  const configDirExist = await fs.pathExists(
+    path.join(inputs.projectPath as string, ".fx", "configs")
+  );
   const armParameterExist = await checkFileExist(
-    path.join(inputs.projectPath, ".fx", "configs", "azure.parameters.dev.json")
+    path.join(inputs.projectPath as string, ".fx", "configs", "azure.parameters.dev.json")
   );
   if (envFileExist && (!armParameterExist || !configDirExist)) {
     return true;
@@ -266,4 +280,148 @@ function preCheckEnvEnabled() {
   }
   return false;
 }
-async function migrateArm(ctx: CoreHookContext) {}
+
+async function migrateArm(ctx: CoreHookContext) {
+  await removeBotConfig(ctx);
+  await generateArmTempaltesFiles(ctx);
+  await generateArmParameterJson(ctx);
+}
+
+async function removeBotConfig(ctx: CoreHookContext) {
+  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+  const fx = path.join(inputs.projectPath as string, `.${ConfigFolderName}`);
+  const envConfig = await fs.readJson(path.join(fx, "env.default.json"));
+  if (envConfig[ResourcePlugins.Bot]) {
+    delete envConfig[ResourcePlugins.Bot];
+    envConfig[ResourcePlugins.Bot] = { wayToRegisterBot: "create-new" };
+  }
+  await fs.writeFile(path.join(fx, "new.env.default.json"), JSON.stringify(envConfig, null, 4));
+}
+
+async function generateArmTempaltesFiles(ctx: CoreHookContext) {
+  const fakeCtx: CoreHookContext = { arguments: ctx.arguments };
+  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+  const core = ctx.self as FxCore;
+
+  const fx = path.join(inputs.projectPath as string, `.${ConfigFolderName}`);
+  const fxConfig = path.join(fx, InputConfigsFolderName);
+  const templateAzure = path.join(inputs.projectPath as string, "templates", "azure");
+  await fs.ensureDir(fx);
+  await fs.ensureDir(fxConfig);
+  await fs.ensureDir(templateAzure);
+  // load local settings.json
+  const loadRes = await loadProjectSettings(inputs);
+  if (loadRes.isErr()) {
+    throw ProjectSettingError();
+  }
+  const [projectSettings, projectIdMissing] = loadRes.value;
+  fakeCtx.projectSettings = projectSettings;
+  fakeCtx.projectIdMissing = projectIdMissing;
+
+  // load envinfo env.default.json
+  const targetEnvName = "default";
+  const result = await loadSolutionContext(
+    core.tools,
+    inputs,
+    fakeCtx.projectSettings,
+    fakeCtx.projectIdMissing,
+    targetEnvName,
+    inputs.ignoreEnvInfo
+  );
+  if (result.isErr()) {
+    throw SolutionConfigError();
+  }
+  fakeCtx.solutionContext = result.value;
+  // generate bicep files.
+  try {
+    await generateArmTemplate(fakeCtx.solutionContext);
+  } catch (error) {
+    return error;
+  }
+  if (await checkFileExist(path.join(templateAzure, "parameters.template.json"))) {
+    await fs.move(
+      path.join(templateAzure, "parameters.template.json"),
+      path.join(fxConfig, "azure.parameters.dev.json")
+    );
+  } else {
+    const parameterObject = {
+      $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+      contentVersion: "1.0.0.0",
+    };
+    await fs.writeFile(
+      path.join(fxConfig, "azure.parameters.dev.json"),
+      JSON.stringify(parameterObject, null, 4)
+    );
+  }
+}
+
+async function generateArmParameterJson(ctx: CoreHookContext) {
+  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+  const fx = path.join(inputs.projectPath as string, `.${ConfigFolderName}`);
+  const fxConfig = path.join(fx, InputConfigsFolderName);
+  const envConfig = await fs.readJson(path.join(fx, "env.default.json"));
+  const targetJson = await fs.readJson(path.join(fxConfig, "azure.parameters.dev.json"));
+  const ArmParameter = "parameters";
+  // frontend hosting
+  if (envConfig[ResourcePlugins.FrontendHosting]) {
+    if (envConfig[ResourcePlugins.FrontendHosting][EnvConfigName.StorageName]) {
+      targetJson[ArmParameter][ArmParameters.FEStorageName] = {
+        value: envConfig[ResourcePlugins.FrontendHosting][EnvConfigName.StorageName],
+      };
+    }
+  }
+  // manage identity
+  if (envConfig[ResourcePlugins.Identity]) {
+    if (envConfig[ResourcePlugins.Identity][EnvConfigName.IdentityName]) {
+      targetJson[ArmParameter][ArmParameters.IdentityName] = {
+        value: envConfig[ResourcePlugins.Identity][EnvConfigName.IdentityName],
+      };
+    }
+  }
+  // azure SQL
+  if (envConfig[ResourcePlugins.AzureSQL]) {
+    if (envConfig[ResourcePlugins.AzureSQL][EnvConfigName.SqlEndpoint]) {
+      targetJson[ArmParameter][ArmParameters.SQLServer] = {
+        value:
+          envConfig[ResourcePlugins.AzureSQL][EnvConfigName.SqlEndpoint].split(
+            ".database.windows.net"
+          )[0],
+      };
+    }
+    if (envConfig[ResourcePlugins.AzureSQL][EnvConfigName.SqlDataBase]) {
+      targetJson[ArmParameter][ArmParameters.SQLDatabase] = {
+        value: envConfig[ResourcePlugins.AzureSQL][EnvConfigName.SqlDataBase],
+      };
+    }
+  }
+  // SimpleAuth
+  if (envConfig[ResourcePlugins.SimpleAuth]) {
+    if (envConfig[ResourcePlugins.SimpleAuth][EnvConfigName.SkuName]) {
+      targetJson[ArmParameter][ArmParameters.SimpleAuthSku] = {
+        value: envConfig[ResourcePlugins.SimpleAuth][EnvConfigName.SkuName],
+      };
+    }
+  }
+  // Function
+  if (envConfig[ResourcePlugins.Function]) {
+    if (envConfig[ResourcePlugins.Function][EnvConfigName.AppServicePlanName]) {
+      targetJson[ArmParameter][ArmParameters.functionServerName] = {
+        value: envConfig[ResourcePlugins.Function][EnvConfigName.AppServicePlanName],
+      };
+    }
+    if (envConfig[ResourcePlugins.Function][EnvConfigName.StorageAccountName]) {
+      targetJson[ArmParameter][ArmParameters.functionStorageName] = {
+        value: envConfig[ResourcePlugins.Function][EnvConfigName.StorageAccountName],
+      };
+    }
+    if (envConfig[ResourcePlugins.Function][EnvConfigName.FuncAppName]) {
+      targetJson[ArmParameter][ArmParameters.functionAppName] = {
+        value: envConfig[ResourcePlugins.Function][EnvConfigName.FuncAppName],
+      };
+    }
+  }
+  await fs.writeFile(
+    path.join(fxConfig, "azure.parameters.dev.json"),
+    JSON.stringify(targetJson, null, 4)
+  );
+}

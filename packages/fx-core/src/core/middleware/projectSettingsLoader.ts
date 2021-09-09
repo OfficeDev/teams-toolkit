@@ -50,7 +50,7 @@ export const ProjectSettingsLoaderMW: Middleware = async (
       ctx.result = err(PathNotExistError(inputs.projectPath));
       return;
     }
-    const loadRes = await loadProjectSettings(inputs);
+    const loadRes = await loadProjectSettings(inputs, isMultiEnvEnabled());
     if (loadRes.isErr()) {
       ctx.result = err(loadRes.error);
       return;
@@ -75,7 +75,8 @@ export const ProjectSettingsLoaderMW: Middleware = async (
 };
 
 export async function loadProjectSettings(
-  inputs: Inputs
+  inputs: Inputs,
+  isMultiEnvEnabled = false
 ): Promise<Result<[ProjectSettings, boolean], FxError>> {
   try {
     if (!inputs.projectPath) {
@@ -83,7 +84,7 @@ export async function loadProjectSettings(
     }
 
     const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
-    const settingsFile = isMultiEnvEnabled()
+    const settingsFile = isMultiEnvEnabled
       ? path.resolve(confFolderPath, InputConfigsFolderName, ProjectSettingsFileName)
       : path.resolve(confFolderPath, "settings.json");
     const projectSettings: ProjectSettings = await readJson(settingsFile);

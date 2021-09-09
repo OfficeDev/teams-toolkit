@@ -643,7 +643,7 @@ export class FxCoreV2 implements Core {
             description: "",
             author: "",
             scripts: {
-              test: "echo \"Error: no test specified\" && exit 1",
+              test: 'echo "Error: no test specified" && exit 1',
             },
             devDependencies: {
               "@microsoft/teamsfx-cli": "0.*",
@@ -657,7 +657,14 @@ export class FxCoreV2 implements Core {
       await fs.writeFile(
         path.join(inputs.projectPath!, `.gitignore`),
         isMultiEnvEnabled()
-          ? `node_modules\n.${ConfigFolderName}/${InputConfigsFolderName}/${localSettingsFileName}\n.${ConfigFolderName}/${PublishProfilesFolderName}/*.userdata\n.DS_Store\n${ArchiveFolderName}\n${ArchiveLogFileName}`
+          ? [
+              "node_modules",
+              `.${ConfigFolderName}/${InputConfigsFolderName}/${localSettingsFileName}`,
+              `.${ConfigFolderName}/${PublishProfilesFolderName}/*.userdata`,
+              ".DS_Store",
+              `${ArchiveFolderName}`,
+              `${ArchiveLogFileName}`,
+            ].join("\n")
           : `node_modules\n/.${ConfigFolderName}/*.env\n/.${ConfigFolderName}/*.userdata\n.DS_Store\n${ArchiveFolderName}\n${ArchiveLogFileName}`
       );
     } catch (e) {

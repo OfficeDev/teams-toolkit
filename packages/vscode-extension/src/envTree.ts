@@ -88,8 +88,7 @@ export async function updateCollaboratorList(env: string): Promise<void> {
           },
         ];
       }
+      await environmentTreeProvider.add(userList);
     }
-
-    await environmentTreeProvider.add(userList);
   }
 }

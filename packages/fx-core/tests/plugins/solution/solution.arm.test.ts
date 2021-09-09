@@ -267,7 +267,7 @@ describe("Deploy ARM Template to Azure", () => {
   const testEnvValue = "test env value";
   const testResourceSuffix = "-testSuffix";
   const testArmTemplateOutput = {
-    frontendHosting_storageName: {
+    frontendHosting_storageResourceId: {
       type: "String",
       value: "frontendstgagag4xom3ewiq",
     },

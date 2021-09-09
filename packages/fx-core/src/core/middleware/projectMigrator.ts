@@ -16,14 +16,31 @@ import { LocalSettingsProvider } from "../../common/localSettingsProvider";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import fs from "fs-extra";
 import path from "path";
-import { readJson } from "../../common/fileUtils";
+import { readJson, checkFileExist } from "../../common/fileUtils";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
+import { FxCore } from "..";
+import {
+  isMultiEnvEnabled,
+  isArmSupportEnabled,
+  isBicepEnvCheckerEnabled,
+} from "../../common/tools";
+
+const MigrationMessage = (stage: string) =>
+  `In order to proceed with ${stage}, we will update your project code to use the latest Teams Toolkit. We recommend to initialize your workspace with git for better tracking file changes. We recommend to initialize your workspace with git for better tracking file changes.`;
 
 export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
+  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+  if (!inputs.projectPath) {
+    throw NoProjectOpenedError();
+  }
   if (await needMigrateToArmAndMultiEnv(ctx)) {
-    // TODO: ui - user confirm
-    const userCanceled = true;
-    if (userCanceled) {
+    const core = ctx.self as FxCore;
+    const response = await core.tools.ui.showMessage(
+      "info",
+      MigrationMessage(inputs.stage as string),
+      true
+    );
+    if (!response) {
       return;
     }
     await migrateToArmAndMultiEnv(ctx);
@@ -154,6 +171,35 @@ function getConfigDevJson(): EnvConfig {
 async function cleanup(ctx: CoreHookContext) {}
 
 async function needMigrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<boolean> {
+  // if (!preCheckEnvEnabled()) {
+  //   return false;
+  // }
+  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+  if (!inputs.projectPath) {
+    throw NoProjectOpenedError();
+  }
+  const fxExist = await fs.pathExists(path.join(inputs.projectPath, ".fx"));
+  if (!fxExist) {
+    return false;
+  }
+
+  const envFileExist = await checkFileExist(
+    path.join(inputs.projectPath, ".fx", "env.default.json")
+  );
+  const configDirExist = await fs.pathExists(path.join(inputs.projectPath, ".fx", "configs"));
+  const armParameterExist = await checkFileExist(
+    path.join(inputs.projectPath, ".fx", "configs", "azure.parameters.dev.json")
+  );
+  if (envFileExist && (!armParameterExist || !configDirExist)) {
+    return true;
+  }
+  return false;
+}
+
+function preCheckEnvEnabled() {
+  if (isMultiEnvEnabled() && isArmSupportEnabled() && isBicepEnvCheckerEnabled()) {
+    return true;
+  }
   return false;
 }
 

@@ -186,7 +186,7 @@ export class FunctionBicep {
 
 export class FunctionArmOutput {
   static readonly Endpoint: string = "function_functionEndpoint";
-  static readonly AppId: string = "function_appResourceId";
+  static readonly AppResourceId: string = "function_appResourceId";
 }
 
 export class FunctionBicepFile {

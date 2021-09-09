@@ -34,4 +34,4 @@ resource functionStorage 'Microsoft.Storage/storageAccounts@2021-04-01' = {
 }
 
 output functionEndpoint string = functionApp.properties.hostNames[0]
-output appId string = functionApp.id
+output functionAppResourceId string = functionApp.id

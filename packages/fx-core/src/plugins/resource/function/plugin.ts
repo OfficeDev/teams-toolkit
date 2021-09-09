@@ -800,7 +800,7 @@ export class FunctionPluginImpl {
 
   private getFunctionAppId(ctx: PluginContext, getFromArmOutput = false): string {
     if (getFromArmOutput) {
-      return getArmOutput(ctx, FunctionArmOutput.AppId)!;
+      return getArmOutput(ctx, FunctionArmOutput.AppResourceId)!;
     }
     return this.checkAndGet(this.config.functionAppId, FunctionConfigKey.functionAppId);
   }
@@ -828,7 +828,7 @@ export class FunctionPluginImpl {
 
   private syncArmOutput(ctx: PluginContext) {
     this.config.functionEndpoint = `https://${getArmOutput(ctx, FunctionArmOutput.Endpoint)}`;
-    this.config.functionAppId = getArmOutput(ctx, FunctionArmOutput.AppId);
+    this.config.functionAppId = getArmOutput(ctx, FunctionArmOutput.AppResourceId);
   }
 
   private async getSite(

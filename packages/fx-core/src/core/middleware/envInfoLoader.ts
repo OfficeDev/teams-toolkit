@@ -43,7 +43,7 @@ import { newEnvInfo } from "../tools";
 import { CoreHookContextV2 } from "../v2";
 
 const newTargetEnvNameOption = "+ new environment";
-const lastUsedMark = " (activate)";
+const lastUsedMark = " (active)";
 let activeEnv: string | undefined;
 
 export type CreateEnvCopyInput = {
@@ -270,9 +270,17 @@ export async function askNewEnvironment(
     );
   }
 
+  const sourceEnvName = inputs.sourceEnvName;
+  let selectedEnvName: string;
+  if (sourceEnvName?.endsWith(lastUsedMark)) {
+    selectedEnvName = sourceEnvName.slice(0, sourceEnvName.indexOf(lastUsedMark));
+  } else {
+    selectedEnvName = sourceEnvName;
+  }
+
   return {
     targetEnvName: inputs.newTargetEnvName,
-    sourceEnvName: inputs.sourceEnvName,
+    sourceEnvName: selectedEnvName,
   };
 }
 
@@ -331,10 +339,10 @@ async function getQuestionsForNewEnv(
     return err(envProfilesResult.error);
   }
 
-  const envList = reOrderEnvironments(envProfilesResult.value);
+  const envList = reOrderEnvironments(envProfilesResult.value, activeEnv);
   const selectSourceEnv = QuestionSelectSourceEnvironment;
   selectSourceEnv.staticOptions = envList;
-  selectSourceEnv.default = activeEnv;
+  selectSourceEnv.default = activeEnv + lastUsedMark;
 
   const selectSourceEnvNode = new QTreeNode(selectSourceEnv);
   node.addChild(selectSourceEnvNode);

@@ -47,6 +47,7 @@ export enum Stage {
   package = "package",
   publish = "publish",
   createEnv = "createEnv",
+  listEnv = "listEnv",
   removeEnv = "removeEnv",
   switchEnv = "switchEnv",
   userTask = "userTask",

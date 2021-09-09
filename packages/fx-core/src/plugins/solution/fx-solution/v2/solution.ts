@@ -18,6 +18,7 @@ import { PluginDisplayName } from "../../../../common/constants";
 import { deploy } from "./deploy";
 import { executeUserTask } from "./executeUserTask";
 import { generateResourceTemplate } from "./generateResourceTemplate";
+import { getQuestionsForScaffolding } from "./getQuestions";
 import { provisionLocalResource } from "./provisionLocal";
 import { publishApplication } from "./publish";
 import { scaffoldSourceCode } from "./scaffolding";
@@ -61,9 +62,11 @@ export class TeamsAppSolutionV2 implements v2.SolutionPlugin {
     localSettings: Json,
     tokenProvider: TokenProvider
   ) => Promise<Result<Json, FxError>> = provisionLocalResource;
-  getQuestionsForScaffolding?:
-    | ((ctx: v2.Context, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>)
-    | undefined;
+
+  getQuestionsForScaffolding?: (
+    ctx: v2.Context,
+    inputs: Inputs
+  ) => Promise<Result<QTreeNode | undefined, FxError>> = getQuestionsForScaffolding;
 
   executeUserTask?: (
     ctx: v2.Context,

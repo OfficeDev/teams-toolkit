@@ -15,9 +15,13 @@ import {
 import { core, getSystemInputs, showError } from "../handlers";
 import * as net from "net";
 import { ext } from "../extensionVariables";
-import { getActiveEnv } from "../utils/commonUtils";
 import { initializeFocusRects } from "@fluentui/utilities";
-import { isMultiEnvEnabled, isValidProject, isMigrateFromV1Project } from "@microsoft/teamsfx-core";
+import {
+  isMultiEnvEnabled,
+  isValidProject,
+  isMigrateFromV1Project,
+  getActiveEnv,
+} from "@microsoft/teamsfx-core";
 
 export async function getProjectRoot(
   folderPath: string,
@@ -257,7 +261,7 @@ function getSettingWithUserData(jsonSelector: (jsonObject: any) => any): string 
   if (ext.workspaceUri) {
     const ws = ext.workspaceUri.fsPath;
     if (isValidProject(ws)) {
-      const env = getActiveEnv();
+      const env = getActiveEnv(ws);
       const envJsonPath = isMultiEnvEnabled()
         ? path.join(ws, `.${ConfigFolderName}/${PublishProfilesFolderName}/profile.${env}.json`)
         : path.join(ws, `.${ConfigFolderName}/env.${env}.json`);

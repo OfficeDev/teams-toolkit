@@ -34,7 +34,7 @@ import {
 import { ConfigNotFoundError, InvalidEnvFile, ReadFileError } from "./error";
 import AzureAccountManager from "./commonlib/azureLogin";
 import { FeatureFlags } from "./constants";
-import { isMultiEnvEnabled, environmentManager } from "@microsoft/teamsfx-core";
+import { isMultiEnvEnabled, getActiveEnv, environmentManager } from "@microsoft/teamsfx-core";
 
 type Json = { [_: string]: any };
 
@@ -119,26 +119,26 @@ export async function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export function getActiveEnv(): string {
-  // TODO: support reading from configs
-  return environmentManager.getDefaultEnvName();
-}
-
 // TODO: remove after multi-env feature flag enabled
 export function getConfigPath(projectFolder: string, filePath: string): string {
   return path.resolve(projectFolder, `.${ConfigFolderName}`, filePath);
 }
 
-export function getEnvFilePath(projectFolder: string) {
+// TODO: move config read/write utils to core
+export function getEnvFilePath(projectFolder: string): string {
   if (isMultiEnvEnabled()) {
+    // NOTE: The fallback logic is to prevent this function from returning undefined, which will cause a lot of useless refactoring work.
+    // Because sooner or later we will move the config file related util functions to core, it is meaningless to refactor here.
+    // TODO: return undefined instead of default env after refactoring.
+    const envName = getActiveEnv(projectFolder) || environmentManager.getDefaultEnvName();
     return path.join(
       projectFolder,
       `.${ConfigFolderName}`,
       PublishProfilesFolderName,
-      EnvProfileFileNameTemplate.replace(EnvNamePlaceholder, getActiveEnv())
+      EnvProfileFileNameTemplate.replace(EnvNamePlaceholder, envName)
     );
   } else {
-    return getConfigPath(projectFolder, `env.${getActiveEnv()}.json`);
+    return getConfigPath(projectFolder, `env.${getActiveEnv(projectFolder)}.json`);
   }
 }
 
@@ -161,14 +161,14 @@ export function getSecretFilePath(projectRoot: string) {
         projectRoot,
         `.${ConfigFolderName}`,
         PublishProfilesFolderName,
-        `${getActiveEnv()}.userdata`
+        `${getActiveEnv(projectRoot)}.userdata`
       )
-    : path.join(projectRoot, `.${ConfigFolderName}`, `${getActiveEnv()}.userdata`);
+    : path.join(projectRoot, `.${ConfigFolderName}`, `${getActiveEnv(projectRoot)}.userdata`);
 }
 
 export async function readEnvJsonFile(projectFolder: string): Promise<Result<Json, FxError>> {
   const filePath = getEnvFilePath(projectFolder);
-  if (!fs.existsSync(filePath)) {
+  if (!filePath || !fs.existsSync(filePath)) {
     return err(ConfigNotFoundError(filePath));
   }
   try {
@@ -222,7 +222,7 @@ export async function readProjectSecrets(
 }
 
 export function writeSecretToFile(secrets: dotenv.DotenvParseOutput, rootFolder: string): void {
-  const secretFile = `${rootFolder}/.${ConfigFolderName}/${getActiveEnv()}.userdata`;
+  const secretFile = `${rootFolder}/.${ConfigFolderName}/${getActiveEnv(rootFolder)}.userdata`;
   const array: string[] = [];
   for (const secretKey of Object.keys(secrets)) {
     const secretValue = secrets[secretKey];
@@ -326,7 +326,7 @@ export function getLocalTeamsAppId(rootfolder: string | undefined): any {
       if (settingValue && settingValue.startsWith("{{") && settingValue.endsWith("}}")) {
         // setting in env.xxx.json is place holder and need to get actual value from xxx.userdata
         const placeHolder = settingValue.replace("{{", "").replace("}}", "");
-        const userdataPath = getConfigPath(rootfolder, `${getActiveEnv()}.userdata`);
+        const userdataPath = getConfigPath(rootfolder, `${getActiveEnv(rootfolder)}.userdata`);
         if (fs.existsSync(userdataPath)) {
           const userdata = fs.readFileSync(userdataPath, "utf8");
           const userEnv = dotenv.parse(userdata);

@@ -10,6 +10,7 @@ import {
   V1ManifestFileName,
   ProjectSettingsFileName,
   EnvConfig,
+  InputConfigsFolderName,
 } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import * as fs from "fs-extra";
@@ -115,6 +116,24 @@ export function isValidProject(workspacePath?: string): boolean {
     return true;
   } catch (e) {
     return false;
+  }
+}
+
+export function getActiveEnv(projectRoot: string): string | undefined {
+  if (!isMultiEnvEnabled()) {
+    return "default";
+  }
+  try {
+    if (isValidProject(projectRoot)) {
+      const settingsJsonPath = path.join(
+        projectRoot,
+        `.${ConfigFolderName}/${InputConfigsFolderName}/${ProjectSettingsFileName}`
+      );
+      const settingsJson = JSON.parse(fs.readFileSync(settingsJsonPath, "utf8"));
+      return settingsJson.activeEnvironment;
+    }
+  } catch (e) {
+    return undefined;
   }
 }
 

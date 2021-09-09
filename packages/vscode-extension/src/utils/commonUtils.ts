@@ -11,7 +11,7 @@ import {
   ProjectSettingsFileName,
   EnvProfileFileNameTemplate,
 } from "@microsoft/teamsfx-api";
-import { isMultiEnvEnabled, isValidProject } from "@microsoft/teamsfx-core";
+import { isMultiEnvEnabled, isValidProject, getActiveEnv } from "@microsoft/teamsfx-core";
 import { workspace, WorkspaceConfiguration } from "vscode";
 import * as commonUtils from "../debug/commonUtils";
 import { ConfigurationKey, CONFIGURATION_PREFIX } from "../constants";
@@ -53,30 +53,14 @@ export function isLinux() {
   return os.type() === "Linux";
 }
 
-export function getActiveEnv() {
-  if (!isMultiEnvEnabled()) {
-    return "default";
-  }
-  try {
-    const ws = ext.workspaceUri.fsPath;
-    if (isValidProject(ws)) {
-      const settingsJsonPath = path.join(
-        ws,
-        `.${ConfigFolderName}/${InputConfigsFolderName}/${ProjectSettingsFileName}`
-      );
-      const settingsJson = JSON.parse(fs.readFileSync(settingsJsonPath, "utf8"));
-      return settingsJson.activeEnvironment;
-    }
-  } catch (e) {
-    return undefined;
-  }
-}
-
 export function getTeamsAppId() {
   try {
     const ws = ext.workspaceUri.fsPath;
     if (isValidProject(ws)) {
-      const env = getActiveEnv();
+      const env = getActiveEnv(ws);
+      if (!env) {
+        return undefined;
+      }
       const envJsonPath = path.join(
         ws,
         isMultiEnvEnabled()

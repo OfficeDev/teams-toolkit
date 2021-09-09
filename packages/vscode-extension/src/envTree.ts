@@ -2,10 +2,14 @@
 // Licensed under the MIT license.
 
 import { FxError, Result, err, ok, Void, TreeCategory } from "@microsoft/teamsfx-api";
-import { isMultiEnvEnabled, environmentManager, setActiveEnv } from "@microsoft/teamsfx-core";
+import {
+  isMultiEnvEnabled,
+  environmentManager,
+  setActiveEnv,
+  getActiveEnv,
+} from "@microsoft/teamsfx-core";
 import * as vscode from "vscode";
 import TreeViewManagerInstance, { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
-import { getActiveEnv } from "./utils/commonUtils";
 import * as StringResources from "./resources/Strings.json";
 
 const showEnvList: Array<string> = [];
@@ -18,7 +22,7 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
     if (envNamesResult.isErr()) {
       return err(envNamesResult.error);
     }
-    const activeEnv = getActiveEnv();
+    const activeEnv = getActiveEnv(workspacePath);
     if (activeEnv) {
       setActiveEnv(activeEnv);
     }

@@ -30,6 +30,9 @@ export interface ScaffoldContext {
   tryLimits?: number;
   timeoutInMs?: number;
 
+  // Used by fallback zip.
+  templatesFolderName?: string;
+
   // Used by rendering template file.
   fileNameReplaceFn?: (name: string, data: Buffer) => string;
   fileDataReplaceFn?: (name: string, data: Buffer) => string;
@@ -122,13 +125,17 @@ export const fetchTemplateZipFromLocalAction: ScaffoldAction = {
       throw new Error(missKeyErrorInfo("scenario"));
     }
 
+    if (!context.templatesFolderName) {
+      throw new Error(missKeyErrorInfo("templatesFolderName"));
+    }
+
     const fileName: string = [context.group, context.lang, context.scenario, "zip"].join(".");
 
     const zipPath: string = path.join(
       getTemplatesFolder(),
       "plugins",
       "resource",
-      "function",
+      context.templatesFolderName,
       fileName
     );
 

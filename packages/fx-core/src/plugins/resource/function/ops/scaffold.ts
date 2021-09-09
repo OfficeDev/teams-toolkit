@@ -15,8 +15,7 @@ import { InfoMessages } from "../resources/message";
 import { LanguageStrategyFactory } from "../language-strategy";
 import { Logger } from "../utils/logger";
 import { ScaffoldSteps, StepGroup, step } from "../resources/steps";
-import { TemplateZipFallbackError, runWithErrorCatchAndThrow, FunctionPluginError, UnknownFallbackError, UnzipError, TemplateManifestError } from "../resources/errors";
-import { getTemplatesFolder } from "../../../..";
+import { TemplateZipFallbackError, UnknownFallbackError, UnzipError, TemplateManifestError } from "../resources/errors";
 import { TelemetryHelper } from "../utils/telemetry-helper";
 import { genTemplateRenderReplaceFn, removeTemplateExtReplaceFn, ScaffoldAction, ScaffoldActionName, ScaffoldContext, scaffoldFromTemplates } from "../../../../common/templatesActions";
 
@@ -59,6 +58,7 @@ export class FunctionScaffold {
       group: group,
       lang: this.convertTemplateLanguage(language),
       scenario: scenario,
+      templatesFolderName: PathInfo.templateFolderName,
       dst: componentPath,
       fileNameReplaceFn: _nameReplaceFn,
       fileDataReplaceFn: genTemplateRenderReplaceFn(variables),

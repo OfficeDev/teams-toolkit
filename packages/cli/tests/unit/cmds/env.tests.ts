@@ -45,7 +45,6 @@ describe("Env List Command Tests", function () {
     sandbox
       .stub<any, any>(yargs, "command")
       .callsFake((command: string, description: string, builder: any, handler: any) => {
-        console.log("builder");
         registeredCommands.push(command);
         builder(yargs);
       });

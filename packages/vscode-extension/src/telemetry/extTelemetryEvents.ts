@@ -104,6 +104,7 @@ export enum TelemetryEvent {
   ActivateEnvironment = "activate-environment",
 
   CheckSideloading = "check-sideloading",
+  OpenSideloadingReadmore = "open-sideloading-readmore",
 }
 
 export enum TelemetryProperty {

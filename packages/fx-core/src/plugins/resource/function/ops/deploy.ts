@@ -30,7 +30,7 @@ import { DotnetChecker } from "../utils/depsChecker/dotnetChecker";
 import { FuncPluginAdapter } from "../utils/depsChecker/funcPluginAdapter";
 import { funcPluginLogger } from "../utils/depsChecker/funcPluginLogger";
 import { FuncPluginTelemetry } from "../utils/depsChecker/funcPluginTelemetry";
-import { PluginContext } from '@microsoft/teamsfx-api';
+import { PluginContext } from "@microsoft/teamsfx-api";
 
 export class FunctionDeploy {
   public static async getLastDeploymentTime(componentPath: string): Promise<Date> {
@@ -115,7 +115,7 @@ export class FunctionDeploy {
     const dotnetChecker = new DotnetChecker(
       new FuncPluginAdapter(ctx, telemetry),
       funcPluginLogger,
-      telemetry,
+      telemetry
     );
     const backendExtensionsInstaller = new BackendExtensionsInstaller(
       dotnetChecker,

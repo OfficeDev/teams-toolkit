@@ -80,7 +80,7 @@ export async function provisionLocalResource(
   }
 
   const parseTenantIdresult = loadTeamsAppTenantIdForLocal(
-    localSettings as  v2.LocalSettings,
+    localSettings as v2.LocalSettings,
     await tokenProvider.appStudioToken.getJsonObject()
   );
   if (parseTenantIdresult.isErr()) {

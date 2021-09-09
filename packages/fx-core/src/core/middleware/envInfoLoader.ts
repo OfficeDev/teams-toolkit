@@ -18,8 +18,6 @@ import {
 import { CoreHookContext, FxCore } from "../..";
 import {
   NoProjectOpenedError,
-  ProjectEnvAlreadyExistError,
-  InvalidEnvNameError,
   ProjectEnvNotExistError,
   ProjectSettingsUndefinedError,
   NonActiveEnvError,
@@ -33,15 +31,25 @@ import {
   PluginNames,
   PROGRAMMING_LANGUAGE,
 } from "../../plugins/solution/fx-solution/constants";
-import { getQuestionNewTargetEnvironmentName, QuestionSelectTargetEnvironment } from "../question";
+import {
+  getQuestionNewTargetEnvironmentName,
+  QuestionSelectSourceEnvironment,
+  QuestionSelectTargetEnvironment,
+} from "../question";
 import { desensitize } from "./questionModel";
 import { shouldIgnored } from "./projectSettingsLoader";
 import { PermissionRequestFileProvider } from "../permissionRequest";
 import { newEnvInfo } from "../tools";
+import { CoreHookContextV2 } from "../v2";
 
 const newTargetEnvNameOption = "+ new environment";
 const lastUsedMark = " (activate)";
 let activeEnv: string | undefined;
+
+export type CreateEnvCopyInput = {
+  targetEnvName: string;
+  sourceEnvName: string;
+};
 
 export function EnvInfoLoaderMW(isMultiEnvEnabled: boolean): Middleware {
   return async (ctx: CoreHookContext, next: NextFunction) => {
@@ -228,9 +236,9 @@ export async function askTargetEnvironment(
 }
 
 export async function askNewEnvironment(
-  ctx: CoreHookContext,
+  ctx: CoreHookContext | CoreHookContextV2,
   inputs: Inputs
-): Promise<string | undefined> {
+): Promise<CreateEnvCopyInput | undefined> {
   const getQuestionRes = await getQuestionsForNewEnv(inputs);
   const core = ctx.self as FxCore;
   if (getQuestionRes.isErr()) {
@@ -262,7 +270,10 @@ export async function askNewEnvironment(
     );
   }
 
-  return inputs.newTargetEnvName;
+  return {
+    targetEnvName: inputs.newTargetEnvName,
+    sourceEnvName: inputs.sourceEnvName,
+  };
 }
 
 async function useUserSetEnv(ctx: CoreHookContext, inputs: Inputs): Promise<string | undefined> {
@@ -314,6 +325,19 @@ async function getQuestionsForNewEnv(
   }
 
   const node = new QTreeNode(getQuestionNewTargetEnvironmentName(inputs.projectPath));
+
+  const envProfilesResult = await environmentManager.listEnvConfigs(inputs.projectPath);
+  if (envProfilesResult.isErr()) {
+    return err(envProfilesResult.error);
+  }
+
+  const envList = reOrderEnvironments(envProfilesResult.value);
+  const selectSourceEnv = QuestionSelectSourceEnvironment;
+  selectSourceEnv.staticOptions = envList;
+  selectSourceEnv.default = activeEnv;
+
+  const selectSourceEnvNode = new QTreeNode(selectSourceEnv);
+  node.addChild(selectSourceEnvNode);
 
   return ok(node.trim());
 }

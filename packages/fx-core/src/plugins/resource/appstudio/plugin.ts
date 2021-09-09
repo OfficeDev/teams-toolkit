@@ -158,6 +158,43 @@ export class AppStudioPluginImpl {
     }
   }
 
+  private async getSPFxLocalDebugAppDefinitionAndUpdate(
+    ctx: PluginContext,
+    manifest: TeamsAppManifest
+  ): Promise<Result<string, FxError>> {
+    const appDirectory = await getAppDirectory(ctx.root);
+    const appStudioToken = await ctx.appStudioToken?.getAccessToken();
+    const componentID = manifest.id;
+    if (manifest.configurableTabs) {
+      for (const tab of manifest.configurableTabs) {
+        tab.configurationUrl = `https://{teamSiteDomain}{teamSitePath}/_layouts/15/TeamsLogon.aspx?SPFX=true&dest={teamSitePath}/_layouts/15/TeamsWorkBench.aspx%3FcomponentId=${componentID}%26openPropertyPane=true%26teams%26forceLocale={locale}%26loadSPFX%3Dtrue%26debugManifestsFile%3Dhttps%3A%2F%2Flocalhost%3A4321%2Ftemp%2Fmanifests.js`;
+      }
+    }
+    if (manifest.staticTabs) {
+      for (const tab of manifest.staticTabs) {
+        tab.contentUrl = `https://{teamSiteDomain}/_layouts/15/TeamsLogon.aspx?SPFX=true&dest={teamSitePath}/_layouts/15/TeamsWorkBench.aspx%3FcomponentId=${componentID}%26teams%26personal%26forceLocale={locale}%26loadSPFX%3Dtrue%26debugManifestsFile%3Dhttps%3A%2F%2Flocalhost%3A4321%2Ftemp%2Fmanifests.js`;
+      }
+    }
+    const appDefinition: IAppDefinition = this.convertToAppDefinition(manifest, false);
+    const localTeamsAppID = this.getTeamsAppId(ctx, true);
+    let createIfNotExist = false;
+    if (!localTeamsAppID) {
+      createIfNotExist = true;
+    }
+    const maybeTeamsAppId = await this.updateApp(
+      ctx,
+      appDefinition,
+      appStudioToken!,
+      "localDebug",
+      createIfNotExist,
+      createIfNotExist ? undefined : localTeamsAppID,
+      ctx.logProvider,
+      appDirectory
+    );
+
+    return maybeTeamsAppId;
+  }
+
   /**
    * ask app common questions to generate app manifest
    * @param settings
@@ -414,7 +451,9 @@ export class AppStudioPluginImpl {
 
     if (this.isSPFxProject(ctx)) {
       const templateManifestFolder = path.join(templatesFolder, "plugins", "resource", "spfx");
-      const manifestFile = path.resolve(templateManifestFolder, "./solution/manifest.json");
+      const manifestFile = isMultiEnvEnabled()
+        ? path.resolve(templateManifestFolder, "./solution/manifest_multi_env.json")
+        : path.resolve(templateManifestFolder, "./solution/manifest.json");
       const manifestString = (await fs.readFile(manifestFile)).toString();
       manifest = JSON.parse(manifestString);
     } else {
@@ -623,7 +662,12 @@ export class AppStudioPluginImpl {
     if (manifest.isErr()) {
       throw manifest;
     }
-    const teamsAppId = await this.getAppDefinitionAndUpdate(ctx, "localDebug", manifest.value);
+    let teamsAppId;
+    if (this.isSPFxProject(ctx)) {
+      teamsAppId = await this.getSPFxLocalDebugAppDefinitionAndUpdate(ctx, manifest.value);
+    } else {
+      teamsAppId = await this.getAppDefinitionAndUpdate(ctx, "localDebug", manifest.value);
+    }
     if (teamsAppId.isErr()) {
       throw teamsAppId;
     }

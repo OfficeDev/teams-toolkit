@@ -8,6 +8,7 @@ import { FxError } from "./error";
 import { Stage } from ".";
 
 export interface Core {
+  version?: string;
   createProject: (systemInputs: Inputs) => Promise<Result<string, FxError>>;
   provisionResources: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
   buildArtifacts: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;

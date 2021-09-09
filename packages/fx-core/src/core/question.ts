@@ -23,6 +23,7 @@ export enum CoreQuestionNames {
   Samples = "samples",
   Stage = "stage",
   SubStage = "substage",
+  SourceEnvName = "sourceEnvName",
   TargetEnvName = "targetEnvName",
   TargetResourceGroupName = "targetResourceGroupName",
   NewResourceGroupName = "newResourceGroupName",
@@ -134,6 +135,15 @@ export function getQuestionNewTargetEnvironmentName(projectPath: string): TextIn
     placeholder: "New environment name",
   };
 }
+
+export const QuestionSelectSourceEnvironment: SingleSelectQuestion = {
+  type: "singleSelect",
+  name: CoreQuestionNames.SourceEnvName,
+  title: "Select an environment to create copy",
+  staticOptions: [],
+  skipSingleOption: true,
+  forgetLastValue: true,
+};
 
 export const QuestionSelectResourceGroup: SingleSelectQuestion = {
   type: "singleSelect",

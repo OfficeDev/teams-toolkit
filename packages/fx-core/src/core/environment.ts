@@ -20,6 +20,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import path, { basename } from "path";
 import fs from "fs-extra";
+import jsum from "jsum";
 import {
   deserializeDict,
   dataNeedEncryption,
@@ -32,6 +33,7 @@ import {
   objectToMap,
   ProjectEnvNotExistError,
   InvalidEnvConfigError,
+  ModifiedSecretError,
 } from "..";
 import { GLOBAL_CONFIG } from "../plugins/solution/fx-solution/constants";
 import { readJson } from "../common/fileUtils";
@@ -54,6 +56,7 @@ class EnvironmentManager {
   private readonly defaultEnvName = "default";
   private readonly defaultEnvNameNew = "dev";
   private readonly ajv;
+  private readonly checksumKey = "_checksum";
   private readonly schema =
     "https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/packages/api/src/schemas/envConfig.json";
   private readonly manifestConfigDescription =
@@ -91,7 +94,6 @@ class EnvironmentManager {
   public newEnvConfigData(appName: string): EnvConfig {
     const envConfig: EnvConfig = {
       $schema: this.schema,
-      azure: {},
       manifest: {
         description: this.manifestConfigDescription,
         values: {
@@ -154,6 +156,9 @@ class EnvironmentManager {
     const secrets = sperateSecretData(data);
     if (cryptoProvider) {
       this.encrypt(secrets, cryptoProvider);
+    }
+    if (Object.keys(secrets).length) {
+      secrets[this.checksumKey] = jsum.digest(secrets, "SHA256", "hex");
     }
 
     try {
@@ -220,7 +225,6 @@ class EnvironmentManager {
   ): Promise<Result<EnvConfig, FxError>> {
     if (!isMultiEnvEnabled()) {
       return ok({
-        azure: {},
         manifest: { values: { appName: { short: "" } } },
       });
     }
@@ -308,11 +312,19 @@ class EnvironmentManager {
 
     const res = this.decrypt(secrets, cryptoProvider);
     if (res.isErr()) {
-      const fxError: SystemError = res.error;
-      const fileName = basename(userDataPath);
-      fxError.message = `Project update failed because of ${fxError.name}(file:${fileName}):${fxError.message}, if your local file '*.userdata' is not modified, please report to us by click 'Report Issue' button.`;
-      fxError.userData = `file: ${fileName}\n------------FILE START--------\n${content}\n------------FILE END----------`;
-      sendTelemetryErrorEvent(Component.core, TelemetryEvent.DecryptUserdata, fxError);
+      if (!this.checksumMatch(secrets)) {
+        sendTelemetryErrorEvent(
+          Component.core,
+          TelemetryEvent.DecryptUserdata,
+          ModifiedSecretError()
+        );
+      } else {
+        const fxError: SystemError = res.error;
+        const fileName = basename(userDataPath);
+        fxError.message = `Project update failed because of ${fxError.name}(file:${fileName}):${fxError.message}, if your local file '*.userdata' is not modified, please report to us by click 'Report Issue' button.`;
+        fxError.userData = `file: ${fileName}\n------------FILE START--------\n${content}\n------------FILE END----------`;
+        sendTelemetryErrorEvent(Component.core, TelemetryEvent.DecryptUserdata, fxError);
+      }
     }
     return res;
   }
@@ -354,6 +366,15 @@ class EnvironmentManager {
     }
 
     return ok(secrets);
+  }
+
+  private checksumMatch(secrets: Record<string, string>): boolean {
+    const checksum = secrets[this.checksumKey];
+    if (checksum) {
+      delete secrets[this.checksumKey];
+      return jsum.digest(secrets, "SHA256", "hex") === checksum;
+    }
+    return true;
   }
 
   public getDefaultEnvName() {

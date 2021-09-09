@@ -202,6 +202,8 @@ export interface Core {
     removeEnv: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
     // (undocumented)
     switchEnv: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
+    // (undocumented)
+    version?: string;
 }
 
 // @public
@@ -226,6 +228,10 @@ export interface EnvConfig {
     azure?: {
         subscriptionId?: string;
         resourceGroupName?: string;
+    };
+    bot?: {
+        appId?: string;
+        appPassword?: string;
     };
     manifest: {
         description?: string;
@@ -1040,13 +1046,13 @@ interface SolutionPlugin {
     displayName: string;
     executeUserTask?: (ctx: Context_2, inputs: Inputs, func: Func) => Promise<Result<unknown, FxError>>;
     generateResourceTemplate: (ctx: Context_2, inputs: Inputs) => Promise<Result<Json, FxError>>;
-    getQuestionsForScaffolding: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
+    getQuestionsForScaffolding?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
     name: string;
     provisionLocalResource?: (ctx: Context_2, inputs: Inputs, tokenProvider: TokenProvider) => Promise<Result<Json, FxError>>;
     provisionResources: (ctx: Context_2, inputs: Inputs, provisionInputConfig: Json, tokenProvider: TokenProvider) => Promise<Result<SolutionProvisionOutput, FxError>>;
     publishApplication?: (ctx: Context_2, inputs: Inputs, provisionInputConfig: Json, provisionOutputs: Json, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
-    scaffoldSourceCode?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
+    scaffoldSourceCode: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
 }
 
 // @public (undocumented)

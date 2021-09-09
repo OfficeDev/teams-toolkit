@@ -1,4 +1,5 @@
 export * from "./solution";
+import "./v2/solution";
 // import { ok, FxError, Result, Solution } from "@microsoft/teamsfx-api";
 // import { TeamsAppSolution } from "./solution";
 

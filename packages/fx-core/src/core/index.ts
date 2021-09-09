@@ -111,8 +111,8 @@ import {
 import {
   getAllSolutionPlugins,
   getAllSolutionPluginsV2,
-  getSolutionPlugin,
-  getSolutionPluginV2,
+  getSolutionPluginByName,
+  getSolutionPluginV2ByName,
   SolutionPlugins,
 } from "./SolutionPluginContainer";
 import { QuestionModelMW } from "./middleware/questionModel";
@@ -137,7 +137,7 @@ export interface CoreHookContext extends HookContext {
 
 // switcher
 export function isV2() {
-  return false;
+  return true;
 }
 
 export let Logger: LogProvider;
@@ -221,7 +221,7 @@ export class FxCore implements Core {
       };
 
       if (isV2()) {
-        const solution = await getSolutionPluginV2(inputs[CoreQuestionNames.Solution]);
+        const solution = await getSolutionPluginV2ByName(inputs[CoreQuestionNames.Solution]);
         if (!solution) {
           return err(new LoadSolutionError());
         }
@@ -243,7 +243,7 @@ export class FxCore implements Core {
         }
         ctx.provisionInputConfig = generateResourceTemplateRes.value;
       } else {
-        const solution = await getSolutionPlugin(inputs[CoreQuestionNames.Solution]);
+        const solution = await getSolutionPluginByName(inputs[CoreQuestionNames.Solution]);
         if (!solution) {
           return err(new LoadSolutionError());
         }
@@ -478,12 +478,13 @@ export class FxCore implements Core {
     currentStage = Stage.debug;
 
     if (isV2()) {
-      if (!ctx || !ctx.solutionV2 || !ctx.contextV2)
+      if (!ctx || !ctx.solutionV2 || !ctx.contextV2 || !ctx.localSettings)
         return err(new ObjectIsUndefinedError("localDebug input stuff"));
       if (ctx.solutionV2.provisionLocalResource) {
         const res = await ctx.solutionV2.provisionLocalResource(
           ctx.contextV2,
           inputs,
+          ctx.localSettings,
           this.tools.tokenProvider
         );
         if (res.isOk()) {
@@ -571,7 +572,12 @@ export class FxCore implements Core {
           return err(new ObjectIsUndefinedError("executeUserTask input stuff"));
         if (!ctx.contextV2) ctx.contextV2 = createV2Context(this, newProjectSettings());
         if (ctx.solutionV2.executeUserTask)
-          return await ctx.solutionV2.executeUserTask(ctx.contextV2, inputs, func);
+          return await ctx.solutionV2.executeUserTask(
+            ctx.contextV2,
+            inputs,
+            func,
+            this.tools.tokenProvider.appStudioToken
+          );
         else return err(FunctionRouterError(func));
       } else {
         if (!ctx || !ctx.solution)

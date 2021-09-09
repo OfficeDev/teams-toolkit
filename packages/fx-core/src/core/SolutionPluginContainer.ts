@@ -5,11 +5,11 @@ import "reflect-metadata";
 import { Container } from "typedi";
 
 export const SolutionPlugins: any = {
-  AzureTeamsSolution: "fx-solution-azure",
+  AzureTeamsSolution: "AzureTeamsSolution",
 };
 
 export const SolutionPluginsV2: any = {
-  AzureTeamsSolutionV2: "fx-solution-azure-v2",
+  AzureTeamsSolutionV2: "AzureTeamsSolutionV2",
 };
 
 /**
@@ -17,8 +17,8 @@ export const SolutionPluginsV2: any = {
  */
 export function getAllSolutionPluginsV2(): v2.SolutionPlugin[] {
   const plugins: v2.SolutionPlugin[] = [];
-  for (const k in SolutionPlugins) {
-    const plugin = Container.get<v2.SolutionPlugin>(SolutionPluginsV2[k]);
+  for (const k in SolutionPluginsV2) {
+    const plugin = Container.get<v2.SolutionPlugin>(k);
     if (plugin) {
       plugins.push(plugin);
     }
@@ -32,7 +32,7 @@ export function getAllSolutionPluginsV2(): v2.SolutionPlugin[] {
 export function getAllSolutionPlugins(): Solution[] {
   const plugins: Solution[] = [];
   for (const k in SolutionPlugins) {
-    const plugin = Container.get<Solution>(SolutionPlugins[k]);
+    const plugin = Container.get<Solution>(k);
     if (plugin) {
       plugins.push(plugin);
     }
@@ -40,10 +40,14 @@ export function getAllSolutionPlugins(): Solution[] {
   return plugins;
 }
 
-export function getSolutionPluginV2(name: string): v2.SolutionPlugin {
-  return Container.get<v2.SolutionPlugin>(name);
+export function getSolutionPluginV2ByName(name: string): v2.SolutionPlugin | undefined {
+  const solutions = getAllSolutionPluginsV2().filter((s) => s.name === name);
+  if (solutions.length > 0) return solutions[0];
+  return undefined;
 }
 
-export function getSolutionPlugin(name: string): Solution {
-  return Container.get<Solution>(name);
+export function getSolutionPluginByName(name: string): Solution | undefined {
+  const solutions = getAllSolutionPlugins().filter((s) => s.name === name);
+  if (solutions.length > 0) return solutions[0];
+  return undefined;
 }

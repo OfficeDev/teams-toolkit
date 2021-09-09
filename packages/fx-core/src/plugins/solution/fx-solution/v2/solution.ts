@@ -15,6 +15,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
 import { PluginDisplayName } from "../../../../common/constants";
+import { SolutionPluginsV2 } from "../../../../core/SolutionPluginContainer";
 import { deploy } from "./deploy";
 import { executeUserTask } from "./executeUserTask";
 import { generateResourceTemplate } from "./generateResourceTemplate";
@@ -22,7 +23,7 @@ import { provisionLocalResource } from "./provisionLocal";
 import { publishApplication } from "./publish";
 import { scaffoldSourceCode } from "./scaffolding";
 
-@Service("fx-solution-azure")
+@Service(SolutionPluginsV2.AzureTeamsSolutionV2)
 export class TeamsAppSolutionV2 implements v2.SolutionPlugin {
   name = "fx-solution-azure";
   displayName: string = PluginDisplayName.Solution;
@@ -48,7 +49,7 @@ export class TeamsAppSolutionV2 implements v2.SolutionPlugin {
     tokenProvider: AzureAccountProvider
   ) => Promise<Result<Void, FxError>> = deploy;
 
-  publishApplication?: (
+  publishApplication: (
     ctx: v2.Context,
     inputs: Inputs,
     provisionInputConfig: Json,

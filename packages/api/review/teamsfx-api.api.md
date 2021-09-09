@@ -225,6 +225,12 @@ export const DynamicPlatforms: Platform[];
 export interface EnvConfig {
     // (undocumented)
     $schema?: string;
+    auth?: {
+        clientId?: string;
+        clientSecret?: string;
+        objectId?: string;
+        accessAsUserScopeId?: string;
+    };
     azure?: {
         subscriptionId?: string;
         resourceGroupName?: string;

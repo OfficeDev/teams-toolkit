@@ -6,6 +6,39 @@
     "$schema": {
       "type": "string"
     },
+    "auth": {
+      "type": "object",
+      "description": "Existing AAD app configuration.",
+      "properties": {
+        "clientId": {
+          "type": "string",
+          "description": "The client id of existing AAD app for Teams app.",
+          "minLength": 1
+        },
+        "clientSecret": {
+          "type": "string",
+          "description": "The client secret of existing AAD app for Teams app.",
+          "minLength": 1
+        },
+        "objectId": {
+          "type": "string",
+          "description": "The object id of existing AAD app for Teams app.",
+          "minLength": 1
+        },
+        "accessAsUserScopeId": {
+          "type": "string",
+          "description": "The access_as_user scope id of existing AAD app for Teams app.",
+          "minLength": 1
+        }
+      },
+      "dependencies": {
+        "clientId": ["clientSecret", "objectId", "accessAsUserScopeId"],
+        "clientSecret": ["clientId", "objectId", "accessAsUserScopeId"],
+        "objectId": ["clientId", "clientSecret", "accessAsUserScopeId"],
+        "accessAsUserScopeId": ["clientId", "clientSecret", "objectId"]
+      },
+      "additionalProperties": false
+    },
     "azure": {
       "type": "object",
       "description": "The Azure resource related configuration.",

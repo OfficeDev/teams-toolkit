@@ -12,6 +12,7 @@ import {
   PermissionRequestProvider,
 } from "../utils";
 import { EnvInfo } from "../context";
+import { SolutionProvisionOutput } from "./solutionPlugin";
 
 export type PluginName = string;
 
@@ -79,3 +80,5 @@ export type FxResult<T, Error = FxError> =
   | FxSuccess<T>
   | FxPartialSuccess<T, Error>
   | FxFailure<Error>;
+
+export type EnvInfoV2 = Omit<EnvInfo, "profile"> & { profile: SolutionProvisionOutput };

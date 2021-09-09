@@ -9,6 +9,7 @@ import {
   AzureAccountProvider,
   TokenProvider,
   Json,
+  EnvInfo,
 } from "@microsoft/teamsfx-api";
 import { getStrings } from "../../../../common/tools";
 import { executeConcurrently, NamedThunk } from "./executor";
@@ -30,8 +31,8 @@ import { PermissionRequestFileProvider } from "../../../../core/permissionReques
 
 export async function provisionResource(
   ctx: v2.Context,
-  inputs: Readonly<v2.ProvisionInputs>,
-  provisionTemplates: Record<v2.PluginName, Json>,
+  inputs: Inputs,
+  envInfo: Omit<EnvInfo, "profile">,
   tokenProvider: TokenProvider
 ): Promise<v2.FxResult<v2.SolutionProvisionOutput, FxError>> {
   const blockResult = blockV1Project(ctx.projectSetting.solutionSettings);

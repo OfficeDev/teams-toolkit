@@ -106,7 +106,7 @@ export interface ResourcePlugin {
   provisionResource?: (
     ctx: Context,
     inputs: ProvisionInputs,
-    envInfo: Omit<EnvInfo, "profile">,
+    envInfo: EnvInfo,
     tokenProvider: TokenProvider
   ) => Promise<FxResult<ResourceProvisionOutput, FxError>>;
 

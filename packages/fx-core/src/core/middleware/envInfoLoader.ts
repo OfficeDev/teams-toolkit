@@ -43,7 +43,7 @@ import { PermissionRequestFileProvider } from "../permissionRequest";
 import { newEnvInfo } from "../tools";
 
 const newTargetEnvNameOption = "+ new environment";
-const lastUsedMark = " (activate)";
+const activeMark = " (active)";
 let activeEnv: string | undefined;
 
 export type CreateEnvCopyInput = {
@@ -263,8 +263,8 @@ export async function askTargetEnvironment(
 
   const targetEnvName = inputs.targetEnvName;
 
-  if (targetEnvName?.endsWith(lastUsedMark)) {
-    activeEnv = targetEnvName.slice(0, targetEnvName.indexOf(lastUsedMark));
+  if (targetEnvName?.endsWith(activeMark)) {
+    activeEnv = targetEnvName.slice(0, targetEnvName.indexOf(activeMark));
   } else {
     activeEnv = targetEnvName;
   }
@@ -306,9 +306,17 @@ export async function askNewEnvironment(
     );
   }
 
+  const sourceEnvName = inputs.sourceEnvName;
+  let selectedEnvName: string;
+  if (sourceEnvName?.endsWith(activeMark)) {
+    selectedEnvName = sourceEnvName.slice(0, sourceEnvName.indexOf(activeMark));
+  } else {
+    selectedEnvName = sourceEnvName;
+  }
+
   return {
     targetEnvName: inputs.newTargetEnvName,
-    sourceEnvName: inputs.sourceEnvName,
+    sourceEnvName: selectedEnvName,
   };
 }
 
@@ -367,10 +375,10 @@ async function getQuestionsForNewEnv(
     return err(envProfilesResult.error);
   }
 
-  const envList = reOrderEnvironments(envProfilesResult.value);
+  const envList = reOrderEnvironments(envProfilesResult.value, activeEnv);
   const selectSourceEnv = QuestionSelectSourceEnvironment;
   selectSourceEnv.staticOptions = envList;
-  selectSourceEnv.default = activeEnv;
+  selectSourceEnv.default = activeEnv + activeMark;
 
   const selectSourceEnvNode = new QTreeNode(selectSourceEnv);
   node.addChild(selectSourceEnvNode);
@@ -388,7 +396,7 @@ function reOrderEnvironments(environments: Array<string>, lastUsed?: string): Ar
     return environments;
   }
 
-  return [lastUsed + lastUsedMark]
+  return [lastUsed + activeMark]
     .concat(environments.slice(0, index))
     .concat(environments.slice(index + 1));
 }

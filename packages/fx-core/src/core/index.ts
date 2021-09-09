@@ -986,7 +986,7 @@ export class FxCore implements Core {
       return envConfigs;
     }
 
-    if (envConfigs.isErr() && envConfigs.value.indexOf(env) < 0) {
+    if (envConfigs.isErr() || envConfigs.value.indexOf(env) < 0) {
       return err(NonExistEnvNameError(env));
     }
 

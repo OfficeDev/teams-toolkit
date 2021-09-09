@@ -59,7 +59,6 @@ describe("Core basic APIs", () => {
   let projectPath = path.resolve(os.tmpdir(), appName);
 
   beforeEach(() => {
-    SolutionPlugins.AzureTeamsSolution = mockSolution.name;
     Container.set(SolutionPlugins.AzureTeamsSolution, mockSolution);
   });
 
@@ -163,7 +162,7 @@ describe("Core basic APIs", () => {
       res = await core.publishApplication(inputs);
       assert.isTrue(res.isOk());
 
-      const func: Func = { method: "test", namespace: "fx-solution-mock" };
+      const func: Func = { method: "test", namespace: "fx-solution-azure" };
       const res2 = await core.executeUserTask(func, inputs);
       assert.isTrue(res2.isOk());
 
@@ -208,7 +207,7 @@ describe("Core basic APIs", () => {
     //getQuestionsForUserTask
     {
       const inputs: Inputs = { platform: Platform.VSCode, projectPath: projectPath };
-      const func: Func = { namespace: "fx-solution-mock", method: "mock" };
+      const func: Func = { namespace: "fx-solution-azure", method: "mock" };
       const res = await core.getQuestionsForUserTask(func, inputs);
       assert.isTrue(res.isOk() && res.value === undefined);
     }
@@ -379,13 +378,13 @@ describe("Core basic APIs", () => {
     }
     {
       const inputs: Inputs = { platform: Platform.VS };
-      const func: Func = { namespace: "fx-solution-mock", method: "mock" };
+      const func: Func = { namespace: "fx-solution-azure", method: "mock" };
       const res = await core.getQuestionsForUserTask(func, inputs);
       assert.isTrue(res.isOk() && res.value === undefined);
     }
     {
       const inputs: Inputs = { platform: Platform.CLI_HELP };
-      const func: Func = { namespace: "fx-solution-mock", method: "mock" };
+      const func: Func = { namespace: "fx-solution-azure", method: "mock" };
       const res = await core.getQuestionsForUserTask(func, inputs);
       assert.isTrue(res.isOk() && res.value === undefined);
     }
@@ -441,13 +440,13 @@ describe("Core basic APIs", () => {
     }
     {
       const inputs: Inputs = { platform: Platform.VS };
-      const func: Func = { namespace: "fx-solution-mock", method: "mock" };
+      const func: Func = { namespace: "fx-solution-azure", method: "mock" };
       const res = await core.getQuestionsForUserTask(func, inputs);
       assert.isTrue(res.isOk() && res.value && res.value.data.name === "mock-question-user-task");
     }
     {
       const inputs: Inputs = { platform: Platform.CLI_HELP };
-      const func: Func = { namespace: "fx-solution-mock", method: "mock" };
+      const func: Func = { namespace: "fx-solution-azure", method: "mock" };
       const res = await core.getQuestionsForUserTask(func, inputs);
       assert.isTrue(res.isOk() && res.value && res.value.data.name === "mock-question-user-task");
     }

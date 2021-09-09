@@ -79,7 +79,6 @@ import {
 describe("Middleware", () => {
   const mockSolution = new MockSolution();
   beforeEach(() => {
-    SolutionPlugins.AzureTeamsSolution = mockSolution.name;
     Container.set(SolutionPlugins.AzureTeamsSolution, mockSolution);
   });
 

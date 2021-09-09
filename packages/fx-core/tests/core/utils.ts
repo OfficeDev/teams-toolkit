@@ -53,7 +53,7 @@ import {
 } from "../../src/plugins/solution/fx-solution/constants";
 
 export class MockSolution implements Solution {
-  name = "fx-solution-mock";
+  name = "fx-solution-azure";
   async create(ctx: SolutionContext): Promise<Result<any, FxError>> {
     ctx.projectSettings!.solutionSettings = this.solutionSettings();
     const config = new ConfigMap();

@@ -137,7 +137,7 @@ export interface CoreHookContext extends HookContext {
 
 // switcher
 export function isV2() {
-  return true;
+  return false;
 }
 
 export let Logger: LogProvider;

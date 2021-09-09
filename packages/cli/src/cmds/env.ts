@@ -8,7 +8,7 @@ import { Argv, Options } from "yargs";
 import { FxError, err, ok, Result, Stage, LogLevel } from "@microsoft/teamsfx-api";
 
 import { YargsCommand } from "../yargsCommand";
-import { environmentManager, isValidProject } from "@microsoft/teamsfx-core";
+import { environmentManager } from "@microsoft/teamsfx-core";
 import * as process from "process";
 import * as os from "os";
 import CLILogProvider from "../commonlib/log";
@@ -17,7 +17,7 @@ import HelpParamGenerator from "../helpParamGenerator";
 import activate from "../activate";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryEvent } from "../telemetry/cliTelemetryEvents";
-import { getSystemInputs } from "../utils";
+import { getSystemInputs, isWorkspaceSupported } from "../utils";
 
 export default class Env extends YargsCommand {
   public readonly commandHead = `env`;
@@ -61,7 +61,7 @@ class EnvList extends YargsCommand {
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     const projectDir = args.folder || process.cwd();
 
-    if (!isValidProject(projectDir)) {
+    if (!isWorkspaceSupported(projectDir)) {
       return err(WorkspaceNotSupported(projectDir));
     }
 

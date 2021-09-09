@@ -1,6 +1,4 @@
-{{#if createNewBotService}}
 param botServiceName string
-{{/if}}
 param botWebAppName string
 param botAadClientId string
 @secure()
@@ -26,7 +24,6 @@ param identityId string
 
 var initiateLoginEndpoint = uri(botEndpoint, authLoginUriSuffix)
 
-{{#if createNewBotService}}
 resource botServicesMsTeamsChannel 'Microsoft.BotService/botServices/channels@2021-03-01' = {
   location: 'global'
   name: '${botServiceName}/MsTeamsChannel'
@@ -35,7 +32,6 @@ resource botServicesMsTeamsChannel 'Microsoft.BotService/botServices/channels@20
   }
 }
 
-{{/if}}
 resource botWebAppSettings 'Microsoft.Web/sites/config@2021-01-01' = {
     name: '${botWebAppName}/appsettings'
      properties: {

@@ -3,26 +3,28 @@
 
 import {
   AzureAccountProvider,
-  AzureSolutionSettings, FxError,
+  AzureSolutionSettings,
+  FxError,
   Inputs,
   Json,
   QTreeNode,
   Result,
   TokenProvider,
-  Void
+  Void,
 } from "@microsoft/teamsfx-api";
 import {
   Context,
-  DeploymentInputs, ProvisionInputs,
+  DeploymentInputs,
+  ProvisionInputs,
   ResourcePlugin,
   ResourceProvisionOutput,
-  ResourceTemplate
+  ResourceTemplate,
 } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
 import { TeamsBot } from "..";
 import {
   ResourcePlugins,
-  ResourcePluginsV2
+  ResourcePluginsV2,
 } from "../../../solution/fx-solution/ResourcePluginContainer";
 import {
   configureLocalResourceAdapter,
@@ -32,7 +34,7 @@ import {
   getQuestionsForScaffoldingAdapter,
   provisionLocalResourceAdapter,
   provisionResourceAdapter,
-  scaffoldSourceCodeAdapter
+  scaffoldSourceCodeAdapter,
 } from "../../utils4v2";
 
 @Service(ResourcePluginsV2.BotPlugin)
@@ -51,10 +53,7 @@ export class BotPluginV2 implements ResourcePlugin {
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     return await getQuestionsForScaffoldingAdapter(ctx, inputs, this.plugin);
   }
-  async scaffoldSourceCode(
-    ctx: Context,
-    inputs: Inputs
-  ): Promise<Result<Void, FxError>> {
+  async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
     return await scaffoldSourceCodeAdapter(ctx, inputs, this.plugin);
   }
 
@@ -70,7 +69,13 @@ export class BotPluginV2 implements ResourcePlugin {
     provisionInputConfig: Json,
     tokenProvider: TokenProvider
   ): Promise<Result<ResourceProvisionOutput, FxError>> {
-    return await provisionResourceAdapter(ctx, inputs, provisionInputConfig, tokenProvider, this.plugin);
+    return await provisionResourceAdapter(
+      ctx,
+      inputs,
+      provisionInputConfig,
+      tokenProvider,
+      this.plugin
+    );
   }
 
   async configureResource(

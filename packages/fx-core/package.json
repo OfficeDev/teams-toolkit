@@ -24,7 +24,7 @@
     "test:apiv2": "nyc mocha \"tests/plugins/resource/apiv2/*.test.ts\"",
     "clean": "rm -rf build",
     "build": "rimraf build && npx tsc -p ./",
-    "eslint:fix": "eslint package.json tsconfig.json src test --ext .ts --fix",
+    "lint:fix": "eslint --fix \"src/**/*.ts\" \"tests/**/*.ts\"",
     "prepare": "npm run build && node ./scripts/download-templates-zip.js",
     "prepublishOnly": "npm run test:unit && npm run build",
     "package": "rimraf build && webpack --mode production --config ./webpack.config.js",

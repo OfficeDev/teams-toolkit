@@ -3,7 +3,8 @@
 
 import {
   AzureAccountProvider,
-  AzureSolutionSettings, err,
+  AzureSolutionSettings,
+  err,
   Func,
   FxError,
   Inputs,
@@ -13,19 +14,20 @@ import {
   Stage,
   TokenProvider,
   traverse,
-  Void
+  Void,
 } from "@microsoft/teamsfx-api";
 import {
   Context,
-  DeploymentInputs, ProvisionInputs,
+  DeploymentInputs,
+  ProvisionInputs,
   ResourcePlugin,
-  ResourceProvisionOutput
+  ResourceProvisionOutput,
 } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
 import { ApimPlugin } from "..";
 import {
   ResourcePlugins,
-  ResourcePluginsV2
+  ResourcePluginsV2,
 } from "../../../solution/fx-solution/ResourcePluginContainer";
 import {
   configureResourceAdapter,
@@ -34,7 +36,7 @@ import {
   executeUserTaskAdapter,
   getQuestionsForScaffoldingAdapter,
   provisionResourceAdapter,
-  scaffoldSourceCodeAdapter
+  scaffoldSourceCodeAdapter,
 } from "../../utils4v2";
 
 @Service(ResourcePluginsV2.ApimPlugin)
@@ -53,10 +55,7 @@ export class ApimPluginV2 implements ResourcePlugin {
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     return await getQuestionsForScaffoldingAdapter(ctx, inputs, this.plugin);
   }
-  async scaffoldSourceCode(
-    ctx: Context,
-    inputs: Inputs
-  ): Promise<Result<Void, FxError>> {
+  async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
     return await scaffoldSourceCodeAdapter(ctx, inputs, this.plugin);
   }
 
@@ -66,7 +65,13 @@ export class ApimPluginV2 implements ResourcePlugin {
     provisionInputConfig: Json,
     tokenProvider: TokenProvider
   ): Promise<Result<ResourceProvisionOutput, FxError>> {
-    return await provisionResourceAdapter(ctx, inputs, provisionInputConfig, tokenProvider, this.plugin);
+    return await provisionResourceAdapter(
+      ctx,
+      inputs,
+      provisionInputConfig,
+      tokenProvider,
+      this.plugin
+    );
   }
 
   async configureResource(

@@ -150,8 +150,8 @@ describe("V2 implementation", () => {
 
     const result = await executeUserTask(
       mockedCtx,
-      { namespace: "someInvalidNamespace", method: "invalid" },
       mockedInputs,
+      { namespace: "someInvalidNamespace", method: "invalid" },
       mockedProvider
     );
     expect(result.isErr()).to.be.true;
@@ -177,8 +177,8 @@ describe("V2 implementation", () => {
 
     const result = await executeUserTask(
       mockedCtx,
-      { namespace: "solution", method: "addCapability" },
       mockedInputs,
+      { namespace: "solution", method: "addCapability" },
       mockedProvider
     );
     expect(result.isErr()).to.be.true;
@@ -204,8 +204,8 @@ describe("V2 implementation", () => {
 
     const result = await executeUserTask(
       mockedCtx,
-      { namespace: "solution", method: "addResource" },
       mockedInputs,
+      { namespace: "solution", method: "addResource" },
       mockedProvider
     );
     expect(result.isErr()).to.be.true;
@@ -233,8 +233,8 @@ describe("V2 implementation", () => {
 
     const result = await executeUserTask(
       mockedCtx,
-      { namespace: "solution", method: "addCapability" },
       mockedInputs,
+      { namespace: "solution", method: "addCapability" },
       mockedProvider
     );
     expect(result.isErr()).to.be.true;
@@ -267,8 +267,8 @@ describe("V2 implementation", () => {
 
     const result = await executeUserTask(
       mockedCtx,
-      { namespace: "solution", method: "addCapability" },
       mockedInputs,
+      { namespace: "solution", method: "addCapability" },
       mockedProvider
     );
     expect(result.isOk()).to.be.true;
@@ -295,8 +295,8 @@ describe("V2 implementation", () => {
 
     const result = await executeUserTask(
       mockedCtx,
-      { namespace: "solution", method: "addResource" },
       mockedInputs,
+      { namespace: "solution", method: "addResource" },
       mockedProvider
     );
     expect(result.isErr()).to.be.true;
@@ -326,8 +326,8 @@ describe("V2 implementation", () => {
 
     const result = await executeUserTask(
       mockedCtx,
-      { namespace: "solution", method: "addResource" },
       mockedInputs,
+      { namespace: "solution", method: "addResource" },
       mockedProvider
     );
     expect(result.isErr()).to.be.true;
@@ -365,8 +365,8 @@ describe("V2 implementation", () => {
 
     const result = await executeUserTask(
       mockedCtx,
-      { namespace: "solution", method: "addResource" },
       mockedInputs,
+      { namespace: "solution", method: "addResource" },
       mockedProvider
     );
     expect(result.isOk()).to.be.true;
@@ -395,8 +395,8 @@ describe("V2 implementation", () => {
 
       let result = await executeUserTask(
         mockedCtx,
-        { namespace: "solution", method: "VSpublish" },
         mockedInputs,
+        { namespace: "solution", method: "VSpublish" },
         mockedProvider
       );
       expect(result.isErr()).to.be.true;
@@ -405,8 +405,8 @@ describe("V2 implementation", () => {
       (mockedInputs.platform = Platform.VSCode),
         (result = await executeUserTask(
           mockedCtx,
-          { namespace: "solution", method: "VSpublish" },
           mockedInputs,
+          { namespace: "solution", method: "VSpublish" },
           mockedProvider
         ));
       expect(result.isErr()).to.be.true;
@@ -433,8 +433,8 @@ describe("V2 implementation", () => {
         const spy = mocker.spy(appStudioPluginV2, "publishApplication");
         const result = await executeUserTask(
           mockedCtx,
-          { namespace: "solution", method: "VSpublish" , params: {envConfig: {}, envProfile: {}}},
           mockedInputs,
+          { namespace: "solution", method: "VSpublish", params: { envConfig: {}, envProfile: {} } },
           mockedProvider
         );
         expect(result.isOk()).to.be.true;

@@ -1,5 +1,14 @@
 import {
-  AzureAccountProvider, err, FxError, Inputs, Json, ok, Result, returnUserError, v2, Void
+  AzureAccountProvider,
+  err,
+  FxError,
+  Inputs,
+  Json,
+  ok,
+  Result,
+  returnUserError,
+  v2,
+  Void,
 } from "@microsoft/teamsfx-api";
 import { isUndefined } from "lodash";
 import * as util from "util";
@@ -13,7 +22,7 @@ import {
   extractSolutionInputs,
   getAzureSolutionSettings,
   getSelectedPlugins,
-  isAzureProject
+  isAzureProject,
 } from "./utils";
 
 export async function deploy(

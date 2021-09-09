@@ -27,7 +27,7 @@ export async function provisionLocalResource(
   inputs: Inputs,
   localSettings: Json,
   tokenProvider: TokenProvider
-): Promise<Result<Void, FxError>> {
+): Promise<Result<Json, FxError>> {
   const azureSolutionSettings = getAzureSolutionSettings(ctx);
   const result = await ensurePermissionRequest(
     azureSolutionSettings,
@@ -80,7 +80,7 @@ export async function provisionLocalResource(
   }
 
   const parseTenantIdresult = loadTeamsAppTenantIdForLocal(
-    localSettings as  v2.LocalSettings,
+    localSettings as v2.LocalSettings,
     await tokenProvider.appStudioToken.getJsonObject()
   );
   if (parseTenantIdresult.isErr()) {
@@ -106,5 +106,5 @@ export async function provisionLocalResource(
     return err(configureResourceResult.error);
   }
 
-  return ok(Void);
+  return ok(localSettings);
 }

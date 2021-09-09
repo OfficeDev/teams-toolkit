@@ -99,7 +99,6 @@ export async function generateResourceTemplateAdapter(
   return ok(bicepTemplate);
 }
 
-
 export async function provisionResourceAdapter(
   ctx: Context,
   inputs: ProvisionInputs,
@@ -114,7 +113,7 @@ export async function provisionResourceAdapter(
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
   const json: Json = {};
   Object.assign(json, inputs);
-  if(provisionInputConfig.azure) {
+  if (provisionInputConfig.azure) {
     Object.assign(json, provisionInputConfig.azure);
   }
   const solutionConfig = ConfigMap.fromJSON(json);
@@ -142,14 +141,14 @@ export async function provisionResourceAdapter(
   }
   const output = pluginContext.config.toJSON();
   //separate secret keys from output
-  const secrets:Json = {};
-  for(const key of Object.keys(output)) {
-    if(CryptoDataMatchers.has(`${plugin.name}.${key}`)){
+  const secrets: Json = {};
+  for (const key of Object.keys(output)) {
+    if (CryptoDataMatchers.has(`${plugin.name}.${key}`)) {
       secrets[key] = output[key];
       delete output[key];
     }
   }
-  return ok({output: output, secrets: secrets});
+  return ok({ output: output, secrets: secrets });
 }
 
 export async function configureResourceAdapter(
@@ -189,7 +188,7 @@ export async function deployAdapter(
   const configOfOtherPlugins = new Map<string, ConfigMap>();
   if (solutionConfig) configOfOtherPlugins.set(GLOBAL_CONFIG, solutionConfig);
   const config = ConfigMap.fromJSON(provisionOutput);
-  if(config) pluginContext.config = config;
+  if (config) pluginContext.config = config;
 
   if (plugin.preDeploy) {
     const preRes = await plugin.preDeploy(pluginContext);
@@ -283,7 +282,11 @@ export function getArmOutput(ctx: PluginContext, key: string): string | undefine
   return output?.[key]?.value;
 }
 
-export function setConfigs(pluginName: string, pluginContext: PluginContext, provisionOutputs: Json) :void{
+export function setConfigs(
+  pluginName: string,
+  pluginContext: PluginContext,
+  provisionOutputs: Json
+): void {
   const envInfo = newEnvInfo();
   for (const key in provisionOutputs) {
     const output = provisionOutputs[key];
@@ -295,18 +298,17 @@ export function setConfigs(pluginName: string, pluginContext: PluginContext, pro
   pluginContext.envInfo = envInfo;
 }
 
-
-export function setProvisionOutputs(provisionOutputs: Json, pluginContext: PluginContext):void{
-  for(const key of pluginContext.envInfo.profile.keys()) {
+export function setProvisionOutputs(provisionOutputs: Json, pluginContext: PluginContext): void {
+  for (const key of pluginContext.envInfo.profile.keys()) {
     const map = pluginContext.envInfo.profile.get(key) as ConfigMap;
     const value = map?.toJSON();
-    if(value){
+    if (value) {
       provisionOutputs[key] = value;
     }
   }
 }
 
-export function setLocalSettingsV2(localSettings: Json, pluginContext: PluginContext):void {
+export function setLocalSettingsV2(localSettings: Json, pluginContext: PluginContext): void {
   localSettings.teamsApp = pluginContext.localSettings?.teamsApp?.toJSON();
   localSettings.auth = pluginContext.localSettings?.auth?.toJSON();
   localSettings.backend = pluginContext.localSettings?.backend?.toJSON();
@@ -314,7 +316,7 @@ export function setLocalSettingsV2(localSettings: Json, pluginContext: PluginCon
   localSettings.frontend = pluginContext.localSettings?.frontend?.toJSON();
 }
 
-export function setLocalSettingsV1(pluginContext: PluginContext, localSettings: Json):void {
+export function setLocalSettingsV1(pluginContext: PluginContext, localSettings: Json): void {
   pluginContext.localSettings = {
     teamsApp: ConfigMap.fromJSON(localSettings.teamsApp) || new ConfigMap(),
     auth: ConfigMap.fromJSON(localSettings.auth),

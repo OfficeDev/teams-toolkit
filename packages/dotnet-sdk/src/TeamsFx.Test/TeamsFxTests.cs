@@ -32,7 +32,7 @@ namespace Microsoft.TeamsFx.Test
         [TestMethod]
         public async Task TestLoadConfigurationAsync()
         {
-            var configuration = new Configuration();
+            var configuration = new Model.Configuration();
             await functions.LoadConfigurationAsync(configuration);
 
             moduleMock.Verify(m => m.InvokeAsync<object>("loadConfiguration", It.IsAny<object[]>()));

@@ -1,12 +1,9 @@
-import * as path from "path";
 import * as vscode from "vscode";
 import { globalStateGet, globalStateUpdate } from "@microsoft/teamsfx-core";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
 import * as StringResources from "../resources/Strings.json";
 import { TreatmentVariableValue } from "../exp/treatmentVariables";
-import { ext } from "../extensionVariables";
-import { Commands } from "../controls/Commands";
 
 const SURVEY_URL = "https://aka.ms/teams-toolkit-survey";
 
@@ -28,8 +25,17 @@ export class ExtensionSurvey {
   private checkSurveyInterval?: NodeJS.Timeout;
   private showSurveyTimeout?: NodeJS.Timeout;
   private needToShow = false;
+  private static instance: ExtensionSurvey;
 
-  constructor(
+  public static getInstance(): ExtensionSurvey {
+    if (!ExtensionSurvey.instance) {
+      ExtensionSurvey.instance = new ExtensionSurvey();
+    }
+
+    return ExtensionSurvey.instance;
+  }
+
+  private constructor(
     timeToShowSurvey?: number,
     samplePercentage?: number,
     timeToDisableSurvey?: number,
@@ -71,7 +77,7 @@ export class ExtensionSurvey {
     }
   }
 
-  public shouldShowBanner(): boolean {
+  private shouldShowBanner(): boolean {
     const doNotShowAgain = globalStateGet(ExtensionSurveyStateKeys.DoNotShowAgain, false);
     if (doNotShowAgain) {
       return false;
@@ -91,11 +97,11 @@ export class ExtensionSurvey {
     return true;
   }
 
-  public async showWebviewSurvey(): Promise<void> {
+  private async showWebviewSurvey(): Promise<void> {
     vscode.commands.executeCommand("fx-extension.openSurvey");
   }
 
-  public async showSurvey(): Promise<void> {
+  private async showSurvey(): Promise<void> {
     const extension = vscode.extensions.getExtension("TeamsDevApp.ms-teams-vscode-extension");
     if (!extension) {
       return;

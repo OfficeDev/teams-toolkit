@@ -13,6 +13,7 @@ import {
   Func,
   FunctionRouter,
   FxError,
+  InputConfigsFolderName,
   Inputs,
   Json,
   LogProvider,
@@ -20,6 +21,7 @@ import {
   Platform,
   ProjectConfig,
   ProjectSettings,
+  PublishProfilesFolderName,
   QTreeNode,
   Result,
   SingleSelectQuestion,
@@ -40,6 +42,7 @@ import * as uuid from "uuid";
 import { downloadSample, FxCore, LoadSolutionError, NotImplementedError } from "..";
 import { environmentManager } from "../../";
 import { globalStateUpdate } from "../../common/globalState";
+import { localSettingsFileName } from "../../common/localSettingsProvider";
 import { isArmSupportEnabled, isMultiEnvEnabled } from "../../common/tools";
 import { copyParameterJson, getParameterJson } from "../../plugins/solution/fx-solution/arm";
 import { HostTypeOptionAzure } from "../../plugins/solution/fx-solution/question";
@@ -653,7 +656,16 @@ export class FxCoreV2 implements Core {
       );
       await fs.writeFile(
         path.join(inputs.projectPath!, `.gitignore`),
-        `node_modules\n/.${ConfigFolderName}/*.env\n/.${ConfigFolderName}/*.userdata\n.DS_Store\n${ArchiveFolderName}\n${ArchiveLogFileName}`
+        isMultiEnvEnabled()
+          ? [
+              "node_modules",
+              `.${ConfigFolderName}/${InputConfigsFolderName}/${localSettingsFileName}`,
+              `.${ConfigFolderName}/${PublishProfilesFolderName}/*.userdata`,
+              ".DS_Store",
+              `${ArchiveFolderName}`,
+              `${ArchiveLogFileName}`,
+            ].join("\n")
+          : `node_modules\n/.${ConfigFolderName}/*.env\n/.${ConfigFolderName}/*.userdata\n.DS_Store\n${ArchiveFolderName}\n${ArchiveLogFileName}`
       );
     } catch (e) {
       return err(WriteFileError(e));

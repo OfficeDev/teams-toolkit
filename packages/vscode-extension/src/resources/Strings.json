@@ -215,7 +215,7 @@
     },
     "upgrade": {
       "banner": "Teams Toolkit has been updated to v%s — check out what's new!",
-      "whatIsNewTitle": "Waht's New"
+      "whatIsNewTitle": "What's New"
     }
   }
 }

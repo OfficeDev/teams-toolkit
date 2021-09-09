@@ -147,7 +147,7 @@ export class SqlPluginImpl {
           new ResourceManagementClientContext(credentials!, this.config.azureSubscriptionId)
         );
         await resourceManagementClient.register(Constants.resourceProvider);
-      } catch (error) {
+      } catch (error: any) {
         ctx.logProvider?.info(Message.registerResourceProviderFailed(error?.message));
       }
     } else {
@@ -198,7 +198,6 @@ export class SqlPluginImpl {
     ctx.config.set(Constants.sqlEndpoint, this.config.sqlEndpoint);
     ctx.config.set(Constants.databaseName, this.config.databaseName);
     ctx.config.delete(Constants.adminPassword);
-    this.config.prepareQuestions = false;
 
     const managementClient: ManagementClient = await ManagementClient.create(ctx, this.config);
 
@@ -425,14 +424,13 @@ export class SqlPluginImpl {
       this.config.aadAdminObjectId = tokenInfo.objectId;
       this.config.aadAdminType = tokenInfo.userType;
       ctx.logProvider?.debug(Message.adminName(tokenInfo.name));
-    } catch (_error) {
-      ctx.logProvider?.error(ErrorMessage.SqlUserInfoError.message() + `:${_error.message}`);
-      const error = SqlResultFactory.SystemError(
+    } catch (error: any) {
+      ctx.logProvider?.error(ErrorMessage.SqlUserInfoError.message() + `:${error.message}`);
+      throw SqlResultFactory.SystemError(
         ErrorMessage.SqlUserInfoError.name,
         ErrorMessage.SqlUserInfoError.message(),
-        _error
+        error
       );
-      throw error;
     }
   }
 }

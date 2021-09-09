@@ -43,7 +43,7 @@ namespace Microsoft.TeamsFx
         /// </summary>
         /// <param name="configuration">Optional configuration that overrides the default configuration values. The override depth is 1.</param>
         /// <returns></returns>
-        public async Task LoadConfigurationAsync(Configuration configuration)
+        public async Task LoadConfigurationAsync(Model.Configuration configuration)
         {
             try
             {

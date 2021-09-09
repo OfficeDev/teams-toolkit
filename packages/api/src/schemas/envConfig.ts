@@ -13,7 +13,7 @@ export interface EnvConfig {
   /**
    * The Azure resource related configuration.
    */
-  azure: {
+  azure?: {
     /**
      * The default subscription to provision Azure resources.
      */
@@ -24,7 +24,20 @@ export interface EnvConfig {
     resourceGroupName?: string;
   };
   /**
-   * The Teams App mainfest related configuration.
+   * Existing bot AAD app configuration.
+   */
+  bot?: {
+    /**
+     * The id of existing bot AAD app.
+     */
+    appId?: string;
+    /**
+     * The password of existing bot AAD app.
+     */
+    appPassword?: string;
+  };
+  /**
+   * The Teams App manifest related configuration.
    */
   manifest: {
     description?: string;
@@ -32,6 +45,20 @@ export interface EnvConfig {
      * Configs to customize the Teams app manifest.
      */
     values: {
+      /**
+       * Teams app name.
+       */
+      appName: {
+        /**
+         * A short display name for teams app.
+         */
+        short: string;
+        /**
+         * The full name for teams app.
+         */
+        full?: string;
+        [k: string]: unknown;
+      };
       [k: string]: unknown;
     };
     [k: string]: unknown;

@@ -67,7 +67,7 @@ export interface SolutionContext extends Context {
 
 export interface PluginContext extends Context {
   // A readonly view of env info
-  envInfo: Readonly<EnvInfo>;
+  envInfo: EnvInfo;
 
   // A mutable config for current plugin
   config: PluginConfig;

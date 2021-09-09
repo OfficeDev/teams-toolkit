@@ -24,11 +24,17 @@ import {
   Inputs,
   Platform,
   Colors,
+  PublishProfilesFolderName,
+  EnvNamePlaceholder,
+  ProjectSettingsFileName,
+  EnvProfileFileNameTemplate,
+  InputConfigsFolderName,
 } from "@microsoft/teamsfx-api";
 
 import { ConfigNotFoundError, InvalidEnvFile, ReadFileError } from "./error";
 import AzureAccountManager from "./commonlib/azureLogin";
 import { FeatureFlags } from "./constants";
+import { isMultiEnvEnabled, environmentManager } from "@microsoft/teamsfx-core";
 
 type Json = { [_: string]: any };
 
@@ -114,19 +120,50 @@ export async function sleep(ms: number): Promise<void> {
 }
 
 export function getActiveEnv(): string {
-  return "default";
+  // TODO: support reading from configs
+  return environmentManager.getDefaultEnvName();
 }
 
-export function getConfigPath(projectFolder: string, fileName: string): string {
-  return path.resolve(projectFolder, `.${ConfigFolderName}`, fileName);
+// TODO: remove after multi-env feature flag enabled
+export function getConfigPath(projectFolder: string, filePath: string): string {
+  return path.resolve(projectFolder, `.${ConfigFolderName}`, filePath);
 }
 
 export function getEnvFilePath(projectFolder: string) {
-  return getConfigPath(projectFolder, `env.${getActiveEnv()}.json`);
+  if (isMultiEnvEnabled()) {
+    return path.join(
+      projectFolder,
+      `.${ConfigFolderName}`,
+      PublishProfilesFolderName,
+      EnvProfileFileNameTemplate.replace(EnvNamePlaceholder, getActiveEnv())
+    );
+  } else {
+    return getConfigPath(projectFolder, `env.${getActiveEnv()}.json`);
+  }
 }
 
 export function getSettingsFilePath(projectFolder: string) {
-  return getConfigPath(projectFolder, "settings.json");
+  if (isMultiEnvEnabled()) {
+    return path.join(
+      projectFolder,
+      `.${ConfigFolderName}`,
+      InputConfigsFolderName,
+      ProjectSettingsFileName
+    );
+  } else {
+    return getConfigPath(projectFolder, "settings.json");
+  }
+}
+
+export function getSecretFilePath(projectRoot: string) {
+  return isMultiEnvEnabled()
+    ? path.join(
+        projectRoot,
+        `.${ConfigFolderName}`,
+        PublishProfilesFolderName,
+        `${getActiveEnv()}.userdata`
+      )
+    : path.join(projectRoot, `.${ConfigFolderName}`, `${getActiveEnv()}.userdata`);
 }
 
 export async function readEnvJsonFile(projectFolder: string): Promise<Result<Json, FxError>> {
@@ -172,7 +209,7 @@ export function readSettingsFileSync(projectFolder: string): Result<Json, FxErro
 export async function readProjectSecrets(
   projectFolder: string
 ): Promise<Result<dotenv.DotenvParseOutput, FxError>> {
-  const secretFile = getConfigPath(projectFolder, `${getActiveEnv()}.userdata`);
+  const secretFile = getSecretFilePath(projectFolder);
   if (!fs.existsSync(secretFile)) {
     return err(ConfigNotFoundError(secretFile));
   }
@@ -236,13 +273,16 @@ export async function setSubscriptionId(
 export function isWorkspaceSupported(workspace: string): boolean {
   const p = workspace;
 
-  const checklist: string[] = [
-    p,
-    `${p}/package.json`,
-    `${p}/.${ConfigFolderName}`,
-    `${p}/.${ConfigFolderName}/settings.json`,
-    `${getEnvFilePath(p)}`,
-  ];
+  const checklist: string[] = [p, `${p}/package.json`, `${p}/.${ConfigFolderName}`];
+  if (isMultiEnvEnabled()) {
+    checklist.push(
+      path.join(p, `.${ConfigFolderName}`, InputConfigsFolderName, ProjectSettingsFileName)
+    );
+    // in the multi-env case, the env file may not exist for a valid project.
+  } else {
+    checklist.push(path.join(p, `.${ConfigFolderName}`, "settings.json"));
+    checklist.push(`${getEnvFilePath(p)}`);
+  }
 
   for (const fp of checklist) {
     if (!fs.existsSync(path.resolve(fp))) {

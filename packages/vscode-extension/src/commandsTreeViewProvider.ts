@@ -4,10 +4,13 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import { ext } from "./extensionVariables";
-import { TreeItem, TreeCategory, Result, FxError, ok } from "@microsoft/teamsfx-api";
+import { TreeItem, TreeCategory, Result, FxError, ok, Stage, Func } from "@microsoft/teamsfx-api";
 import * as StringResources from "./resources/Strings.json";
 import { Correlator } from "@microsoft/teamsfx-core";
 import { Void } from "@microsoft/teamsfx-api";
+import { Commands } from "./controls/Commands";
+import { runCommand, runUserTask } from "./handlers";
+import { TelemetryEvent } from "./telemetry/extTelemetryEvents";
 
 class TreeViewManager {
   private static instance: TreeViewManager;
@@ -331,8 +334,13 @@ class CommandsWebviewProvider implements vscode.WebviewViewProvider {
 
     webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
-    webviewView.webview.onDidReceiveMessage((data) => {
-      switch (data.type) {
+    webviewView.webview.onDidReceiveMessage(async (msg) => {
+      switch (msg.command) {
+        case Commands.ExecuteCommand:
+          await vscode.commands.executeCommand(msg.id, "TreeView");
+          break;
+        case Commands.OpenExternalLink:
+          vscode.env.openExternal(vscode.Uri.parse(msg.data));
       }
     });
   }

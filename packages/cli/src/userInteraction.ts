@@ -147,8 +147,19 @@ export class CLIUserInteraction implements UserInteraction {
     if (this.ciEnabled) {
       if (question.default !== undefined) {
         return ok(question.default);
-      } else if ("choices" in question && question.choices) {
-        return ok((question.choices as Array<any>)[0]);
+      } else if (
+        "choices" in question &&
+        question.choices &&
+        Array.isArray(question.choices) &&
+        question.choices.length > 0
+      ) {
+        const firstChoice = question.choices[0];
+        if (typeof firstChoice === "string") {
+          // TODO: maybe prevent type casting with compile time type assertions or method overloading?
+          return ok(firstChoice as any);
+        } else {
+          return ok((firstChoice as ChoiceOptions).name as any);
+        }
       }
     }
 

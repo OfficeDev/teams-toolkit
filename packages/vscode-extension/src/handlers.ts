@@ -227,6 +227,7 @@ export async function migrateV1ProjectHandler(args?: any[]): Promise<Result<null
   );
   const result = await runCommand(Stage.migrateV1);
   await openMarkdownHandler();
+  await vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome", false);
   return result;
 }
 
@@ -375,7 +376,7 @@ export function detectVsCodeEnv(): VsCodeEnv {
   }
 }
 
-async function runUserTask(func: Func, eventName: string): Promise<Result<any, FxError>> {
+export async function runUserTask(func: Func, eventName: string): Promise<Result<any, FxError>> {
   let result: Result<any, FxError> = ok(null);
   try {
     const checkCoreRes = checkCoreNotEmpty();
@@ -570,6 +571,10 @@ export async function openDocumentHandler(args: any[]): Promise<boolean> {
 export async function openWelcomeHandler(args?: any[]) {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.QuickStart, getTriggerFromProperty(args));
   WebviewPanel.createOrShow(PanelType.QuickStart);
+}
+
+export async function openSurveyHandler(args?: any[]) {
+  WebviewPanel.createOrShow(PanelType.Survey);
 }
 
 function getTriggerFromProperty(args?: any[]) {
@@ -977,7 +982,8 @@ export async function cmpAccountsHandler() {
   }
 
   const solutionSettings = await getAzureSolutionSettings();
-  if (solutionSettings && "Azure" === solutionSettings.hostType) {
+  // if non-teamsfx project or Azure project then show Azure account info
+  if (!solutionSettings || (solutionSettings && "Azure" === solutionSettings.hostType)) {
     const azureAccount = await AzureAccountManager.getStatus();
     if (azureAccount.status === "SignedIn") {
       const accountInfo = azureAccount.accountInfo;

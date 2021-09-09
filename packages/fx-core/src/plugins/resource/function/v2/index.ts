@@ -12,14 +12,14 @@ import {
   Result,
   TokenProvider,
   traverse,
+  Void,
 } from "@microsoft/teamsfx-api";
 import {
   Context,
   DeploymentInputs,
-  PluginName,
   ProvisionInputs,
-  ProvisionOutput,
   ResourcePlugin,
+  ResourceProvisionOutput,
   ResourceTemplate,
 } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
@@ -49,10 +49,7 @@ export class FunctionPluginV2 implements ResourcePlugin {
     return this.plugin.activate(solutionSettings);
   }
 
-  async scaffoldSourceCode(
-    ctx: Context,
-    inputs: Inputs
-  ): Promise<Result<{ output: Record<string, string> }, FxError>> {
+  async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
     return await scaffoldSourceCodeAdapter(ctx, inputs, this.plugin);
   }
 
@@ -65,14 +62,14 @@ export class FunctionPluginV2 implements ResourcePlugin {
 
   async provisionResource(
     ctx: Context,
-    inputs: Readonly<ProvisionInputs>,
-    provisionTemplate: Json,
+    inputs: ProvisionInputs,
+    provisionInputConfig: Json,
     tokenProvider: TokenProvider
-  ): Promise<Result<ProvisionOutput, FxError>> {
+  ): Promise<Result<ResourceProvisionOutput, FxError>> {
     return await provisionResourceAdapter(
       ctx,
       inputs,
-      provisionTemplate,
+      provisionInputConfig,
       tokenProvider,
       this.plugin
     );
@@ -80,16 +77,16 @@ export class FunctionPluginV2 implements ResourcePlugin {
 
   async configureResource(
     ctx: Context,
-    inputs: Readonly<ProvisionInputs>,
-    provisionOutput: Readonly<ProvisionOutput>,
-    provisionOutputOfOtherPlugins: Readonly<Record<PluginName, ProvisionOutput>>,
+    inputs: ProvisionInputs,
+    provisionInputConfig: Json,
+    provisionOutputs: Json,
     tokenProvider: TokenProvider
-  ): Promise<Result<ProvisionOutput, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await configureResourceAdapter(
       ctx,
       inputs,
-      provisionOutput,
-      provisionOutputOfOtherPlugins,
+      provisionInputConfig,
+      provisionOutputs,
       tokenProvider,
       this.plugin
     );
@@ -97,17 +94,17 @@ export class FunctionPluginV2 implements ResourcePlugin {
 
   async deploy(
     ctx: Context,
-    inputs: Readonly<DeploymentInputs>,
-    provisionOutput: Readonly<ProvisionOutput>,
+    inputs: DeploymentInputs,
+    provisionOutput: Json,
     tokenProvider: AzureAccountProvider
-  ): Promise<Result<{ output: Record<string, string> }, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await deployAdapter(ctx, inputs, provisionOutput, tokenProvider, this.plugin);
   }
 
   async executeUserTask(
     ctx: Context,
-    func: Func,
-    inputs: Inputs
+    inputs: Inputs,
+    func: Func
   ): Promise<Result<unknown, FxError>> {
     const questionRes = await this.plugin.getQuestionsForUserTask(
       func,
@@ -122,6 +119,6 @@ export class FunctionPluginV2 implements ResourcePlugin {
         }
       }
     }
-    return await executeUserTaskAdapter(ctx, func, inputs, this.plugin);
+    return await executeUserTaskAdapter(ctx, inputs, func, this.plugin);
   }
 }

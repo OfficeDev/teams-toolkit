@@ -374,7 +374,10 @@ function sendTelemetryEvent(
     telemetryReporter?.sendTelemetryEvent(TelemetryEvent.askQuestion, {
       [TelemetryProperty.answerType]: qvres.value.type,
       [TelemetryProperty.question]: question.name,
-      [TelemetryProperty.answer]: qvres.value.result?.toString(),
+      [TelemetryProperty.answer]:
+        question.type == "singleSelect" || question.type == "multiSelect"
+          ? qvres.value.result?.toString()
+          : "",
       [TelemetryProperty.platform]: inputs.platform,
       [TelemetryProperty.stage]: inputs.stage ? inputs.stage : "",
     });

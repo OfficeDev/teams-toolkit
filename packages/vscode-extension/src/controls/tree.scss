@@ -1,41 +1,70 @@
 .row {
   display: flex;
   height: 22px;
-
-  span {
-    line-height: 22px;
-    font-size: 13px;
-    margin: 0;
-    i {
-      width: 16px;
-      padding-right: 6px;
-      height: 22px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #c5c5c5;
-      margin: 0;
-    }
-
-    div {
-      padding-right: 6px;
-    }
-
-    img {
-      width: 16px;
-      height: 16px;
-      padding-right: 6px;
-    }
-  }
+  color: #cccccc;
 
   button {
     height: 22px;
     color: #cccccc;
     padding-left: 8px;
+    width: 100%;
+
+    span {
+      line-height: 22px;
+      font-size: 13px;
+      margin: 0;
+      color: #cccccc;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+
+      i {
+        width: 16px;
+        padding-right: 6px;
+        height: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #c5c5c5;
+        margin: 0;
+      }
+
+      div {
+        padding-right: 6px;
+      }
+
+      img {
+        width: 16px;
+        height: 16px;
+        padding-right: 6px;
+      }
+    }
+
+    p {
+      opacity: 0.7;
+      margin-left: 0.5em;
+      font-size: 0.9em;
+      white-space: pre;
+      line-height: 22px;
+    }
   }
 
-  button:disabled,
-  button[disabled] {
-    color: #555555;
+  button:hover {
+    background-color: #2a2d2e;
+  }
+
+  button:focus {
+    background-color: #094771;
+    outline: 1px solid #007fd4;
+    outline-offset: -1px;
+
+    span {
+      color: white;
+    }
+  }
+
+  button[aria-disabled] button:aria-disabled {
+    span {
+      color: #333333;
+    }
   }
 }

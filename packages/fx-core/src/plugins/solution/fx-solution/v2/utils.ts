@@ -12,6 +12,7 @@ import {
   returnUserError,
   PermissionRequestProvider,
   returnSystemError,
+  Json,
 } from "@microsoft/teamsfx-api";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
 import { SolutionError } from "../constants";
@@ -35,10 +36,8 @@ export function isAzureProject(azureSettings: AzureSolutionSettings): boolean {
   return HostTypeOptionAzure.id === azureSettings.hostType;
 }
 
-export function combineRecords(
-  records: { name: string; result: { output: Record<string, string> } }[]
-): Record<string, { output: Record<string, string> }> {
-  const ret: Record<v2.PluginName, { output: Record<string, string> }> = {};
+export function combineRecords(records: { name: string; result: Json }[]): Record<string, Json> {
+  const ret: Record<v2.PluginName, Json> = {};
   for (const record of records) {
     ret[record.name] = record.result;
   }

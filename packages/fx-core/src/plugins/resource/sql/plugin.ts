@@ -50,10 +50,10 @@ export class SqlPluginImpl {
 
   async init(ctx: PluginContext) {
     ContextUtils.init(ctx);
-    const subscriptionInfo = await ctx.azureAccountProvider?.getSelectedSubscription();
-    if (subscriptionInfo) {
-      this.config.azureSubscriptionId = subscriptionInfo.subscriptionId;
-    }
+    this.config.azureSubscriptionId = ContextUtils.getConfigString(
+      Constants.solution,
+      Constants.solutionConfigKey.subscriptionId
+    );
     this.config.resourceGroup = ContextUtils.getConfigString(
       Constants.solution,
       Constants.solutionConfigKey.resourceGroupName
@@ -198,6 +198,7 @@ export class SqlPluginImpl {
     ctx.config.set(Constants.sqlEndpoint, this.config.sqlEndpoint);
     ctx.config.set(Constants.databaseName, this.config.databaseName);
     ctx.config.delete(Constants.adminPassword);
+    this.config.prepareQuestions = false;
 
     const managementClient: ManagementClient = await ManagementClient.create(ctx, this.config);
 

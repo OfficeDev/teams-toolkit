@@ -21,12 +21,7 @@ import { compileHandlebarsTemplateString, getStrings } from "../../../common";
 import path from "path";
 import * as fs from "fs-extra";
 import { ConstantString, PluginDisplayName } from "../../../common/constants";
-import {
-  Executor,
-  CryptoDataMatchers,
-  isFeatureFlagEnabled,
-  isMultiEnvEnabled,
-} from "../../../common/tools";
+import { Executor, CryptoDataMatchers, isMultiEnvEnabled } from "../../../common/tools";
 import {
   ARM_TEMPLATE_OUTPUT,
   GLOBAL_CONFIG,
@@ -37,12 +32,12 @@ import {
   SolutionTelemetryEvent,
   SolutionTelemetryProperty,
   SolutionTelemetrySuccess,
+  SUBSCRIPTION_ID,
 } from "./constants";
 import { ResourceManagementClient, ResourceManagementModels } from "@azure/arm-resources";
 import { DeployArmTemplatesSteps, ProgressHelper } from "./utils/progressHelper";
 import dateFormat from "dateformat";
 import { getTemplatesFolder } from "../../../folder";
-import { DeploymentsListByResourceGroupResponse } from "@azure/arm-resources/esm/models";
 import { ensureBicep } from "./utils/depsChecker/bicepChecker";
 
 // Old folder structure constants
@@ -50,7 +45,6 @@ const baseFolder = "./infra/azure";
 const templateFolder = "templates";
 const parameterFolder = "parameters";
 const bicepOrchestrationFileName = "main.bicep";
-const armTemplateJsonFileName = "main.json";
 const parameterTemplateFileName = "parameters.template.json";
 const parameterFileNameTemplate = "parameters.@envName.json";
 const solutionLevelParameters = `param resourceBaseName string\n`;
@@ -165,9 +159,8 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
   const templateDir = isMultiEnvEnabled()
     ? path.join(ctx.root, templateFolderNew)
     : path.join(ctx.root, baseFolder, templateFolder);
-  const armTemplateJsonFilePath = path.join(templateDir, armTemplateJsonFileName);
   const bicepOrchestrationFilePath = path.join(templateDir, bicepOrchestrationFileName);
-  await compileBicepToJson(bicepCommand, bicepOrchestrationFilePath, armTemplateJsonFilePath);
+  const armTemplateJson = await compileBicepToJson(bicepCommand, bicepOrchestrationFilePath);
   ctx.logProvider?.info(
     format(
       getStrings().solution.DeployArmTemplates.CompileBicepSuccessNotice,
@@ -181,7 +174,7 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
   const deploymentParameters: ResourceManagementModels.Deployment = {
     properties: {
       parameters: parameterJson.parameters,
-      template: JSON.parse(await fs.readFile(armTemplateJsonFilePath, ConstantString.UTF8Encoding)),
+      template: armTemplateJson,
       mode: "Incremental" as ResourceManagementModels.DeploymentMode,
     },
   };
@@ -304,6 +297,24 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
   }
   await ProgressHelper.endDeployArmTemplatesProgress(result.isOk());
   return result;
+}
+
+export async function copyParameterJson(ctx: SolutionContext, sourceEnvName: string) {
+  if (!isMultiEnvEnabled() || !ctx.envInfo?.envName || !sourceEnvName) {
+    return;
+  }
+
+  const parameterFolderPath = path.join(ctx.root, configsFolder);
+  const targetParameterFileName = parameterFileNameTemplateNew.replace(
+    "@envName",
+    ctx.envInfo.envName
+  );
+  const sourceParameterFileName = parameterFileNameTemplateNew.replace("@envName", sourceEnvName);
+  const targetParameterFilePath = path.join(parameterFolderPath, targetParameterFileName);
+  const sourceParameterFilePath = path.join(parameterFolderPath, sourceParameterFileName);
+
+  await fs.ensureDir(parameterFolderPath);
+  await fs.copy(sourceParameterFilePath, targetParameterFilePath);
 }
 
 export async function getParameterJson(ctx: SolutionContext) {
@@ -471,8 +482,9 @@ async function getResourceManagementClientForArmDeployment(
     );
   }
 
-  const subscriptionId = (await ctx.azureAccountProvider?.getSelectedSubscription())
-    ?.subscriptionId;
+  const subscriptionId = ctx.envInfo.profile.get(GLOBAL_CONFIG)?.get(SUBSCRIPTION_ID) as
+    | string
+    | undefined;
   if (!subscriptionId) {
     throw returnSystemError(
       new Error(`Failed to get subscription id.`),
@@ -485,12 +497,12 @@ async function getResourceManagementClientForArmDeployment(
 
 async function compileBicepToJson(
   bicepCommand: string,
-  bicepOrchestrationFilePath: string,
-  jsonFilePath: string
-): Promise<void> {
-  const command = `${bicepCommand} build ${bicepOrchestrationFilePath} --outfile ${jsonFilePath}`;
+  bicepOrchestrationFilePath: string
+): Promise<JSON> {
+  const command = `${bicepCommand} build ${bicepOrchestrationFilePath} --stdout`;
   try {
-    await Executor.execCommandAsync(command);
+    const result = await Executor.execCommandAsync(command);
+    return JSON.parse(result.stdout as string);
   } catch (err) {
     throw new Error(`Failed to compile bicep files to Json arm templates file: ${err.message}`);
   }

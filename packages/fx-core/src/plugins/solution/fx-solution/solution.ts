@@ -1342,6 +1342,7 @@ export class TeamsAppSolution implements Solution {
       [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
     });
 
+    const progressBar = ctx.ui?.createProgressBar("Granting permission", 1);
     try {
       const result = await this.checkAndGetCurrentUserInfo(ctx);
       if (result.isErr()) {
@@ -1388,7 +1389,6 @@ export class TeamsAppSolution implements Solution {
         );
       }
 
-      const progressBar = ctx.ui?.createProgressBar("Granting permission", 1);
       progressBar?.start();
       progressBar?.next(`Grant permission for user ${email}`);
       ctx.envInfo.profile.get(GLOBAL_CONFIG)?.set(USER_INFO, JSON.stringify(userInfo));
@@ -1424,7 +1424,6 @@ export class TeamsAppSolution implements Solution {
       }
 
       const results = await executeConcurrently("", grantPermissionWithCtx);
-      await progressBar?.end(true);
       const permissions: ResourcePermission[] = [];
       const errors: any = [];
       for (const result of results) {
@@ -1491,6 +1490,7 @@ export class TeamsAppSolution implements Solution {
 
       return ok(permissions);
     } finally {
+      await progressBar?.end(true);
       ctx.envInfo.profile.get(GLOBAL_CONFIG)?.delete(USER_INFO);
       this.runningState = SolutionRunningState.Idle;
     }

@@ -1235,16 +1235,19 @@ export class TeamsAppSolution implements Solution {
   }
 
   async localDebug(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    if (ctx.permissionRequestProvider === undefined) {
-      ctx.permissionRequestProvider = new PermissionRequestFileProvider(ctx.root);
-    }
+    if (!this.spfxSelected(ctx)) {
+      if (ctx.permissionRequestProvider === undefined) {
+        ctx.permissionRequestProvider = new PermissionRequestFileProvider(ctx.root);
+      }
 
-    const result = await ensurePermissionRequest(
-      ctx.projectSettings?.solutionSettings as AzureSolutionSettings,
-      ctx.permissionRequestProvider
-    );
-    if (result.isErr()) {
-      return result;
+      const result = await ensurePermissionRequest(
+        ctx.projectSettings?.solutionSettings as AzureSolutionSettings,
+        ctx.permissionRequestProvider
+      );
+      
+      if (result.isErr()) {
+        return result;
+      }
     }
 
     return await this.doLocalDebug(ctx);
@@ -1284,18 +1287,20 @@ export class TeamsAppSolution implements Solution {
       }
     }
 
-    const aadPlugin = this.AadPlugin as AadAppForTeamsPlugin;
-    if (selectedPlugins.some((plugin) => plugin.name === aadPlugin.name)) {
-      const result = await aadPlugin.executeUserTask(
-        {
-          namespace: `${PluginNames.SOLUTION}/${PluginNames.AAD}`,
-          method: "setApplicationInContext",
-          params: { isLocal: true },
-        },
-        getPluginContext(ctx, aadPlugin.name)
-      );
-      if (result.isErr()) {
-        return result;
+    if (!this.spfxSelected(ctx)) {
+      const aadPlugin = this.AadPlugin as AadAppForTeamsPlugin;
+      if (selectedPlugins.some((plugin) => plugin.name === aadPlugin.name)) {
+        const result = await aadPlugin.executeUserTask(
+          {
+            namespace: `${PluginNames.SOLUTION}/${PluginNames.AAD}`,
+            method: "setApplicationInContext",
+            params: { isLocal: true },
+          },
+          getPluginContext(ctx, aadPlugin.name)
+        );
+        if (result.isErr()) {
+          return result;
+        }
       }
     }
 

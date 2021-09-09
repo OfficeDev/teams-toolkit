@@ -1388,6 +1388,9 @@ export class TeamsAppSolution implements Solution {
         );
       }
 
+      const progressBar = ctx.ui?.createProgressBar("Granting permission", 1);
+      progressBar?.start();
+      progressBar?.next(`Grant permission for user ${email}`);
       ctx.envInfo.profile.get(GLOBAL_CONFIG)?.set(USER_INFO, JSON.stringify(userInfo));
 
       const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, [
@@ -1421,6 +1424,7 @@ export class TeamsAppSolution implements Solution {
       }
 
       const results = await executeConcurrently("", grantPermissionWithCtx);
+      await progressBar?.end(true);
       const permissions: ResourcePermission[] = [];
       const errors: any = [];
       for (const result of results) {

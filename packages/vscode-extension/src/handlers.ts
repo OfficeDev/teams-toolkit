@@ -883,7 +883,12 @@ export async function checkPermission(env: string): Promise<boolean> {
     const teamsAppPermission = permissions.value.find(
       (permission: any) => permission.name === "Teams App"
     );
-    result = teamsAppPermission.roles?.includes("Administrator") ?? false;
+    const aadPermission = permissions.value.find(
+      (permission: any) => permission.name === "Azure AD App"
+    );
+    result =
+      (teamsAppPermission.roles?.includes("Administrator") ?? false) &&
+      (aadPermission.roles?.includes("Owner") ?? false);
   } catch (e) {
     result = false;
   }

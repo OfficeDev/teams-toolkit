@@ -1068,7 +1068,7 @@ export class AppStudioPluginImpl {
                 true
               )
             )
-          : AppStudioResultFactory.SystemError(
+          : AppStudioResultFactory.UserError(
               AppStudioError.GetRemoteConfigFailedError.name,
               AppStudioError.GetRemoteConfigFailedError.message("webApplicationInfoResource", true)
             )
@@ -1082,9 +1082,9 @@ export class AppStudioPluginImpl {
               AppStudioError.GetLocalDebugConfigFailedError.name,
               AppStudioError.GetLocalDebugConfigFailedError.message(LOCAL_DEBUG_AAD_ID, true)
             )
-          : AppStudioResultFactory.SystemError(
+          : AppStudioResultFactory.UserError(
               AppStudioError.GetRemoteConfigFailedError.name,
-              AppStudioError.GetRemoteConfigFailedError.message(LOCAL_DEBUG_AAD_ID, true)
+              AppStudioError.GetRemoteConfigFailedError.message(REMOTE_AAD_ID, true)
             )
       );
     }
@@ -1100,7 +1100,7 @@ export class AppStudioPluginImpl {
                   false
                 )
               )
-            : AppStudioResultFactory.SystemError(
+            : AppStudioResultFactory.UserError(
                 AppStudioError.GetRemoteConfigFailedError.name,
                 AppStudioError.GetRemoteConfigFailedError.message(
                   FRONTEND_ENDPOINT_ARM + ", " + BOT_ID,
@@ -1118,7 +1118,7 @@ export class AppStudioPluginImpl {
                   false
                 )
               )
-            : AppStudioResultFactory.SystemError(
+            : AppStudioResultFactory.UserError(
                 AppStudioError.GetRemoteConfigFailedError.name,
                 AppStudioError.GetRemoteConfigFailedError.message(
                   FRONTEND_ENDPOINT + ", " + BOT_ID,
@@ -1183,7 +1183,7 @@ export class AppStudioPluginImpl {
                 AppStudioError.GetLocalDebugConfigFailedError.name,
                 AppStudioError.GetLocalDebugConfigFailedError.message(LOCAL_DEBUG_BOT_DOMAIN, false)
               )
-            : AppStudioResultFactory.SystemError(
+            : AppStudioResultFactory.UserError(
                 AppStudioError.GetRemoteConfigFailedError.name,
                 AppStudioError.GetRemoteConfigFailedError.message(BOT_DOMAIN, false)
               )

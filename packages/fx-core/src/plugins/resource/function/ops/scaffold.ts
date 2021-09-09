@@ -3,7 +3,6 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import AdmZip from "adm-zip";
-import Mustache from "mustache";
 
 import {
   CommonConstants,
@@ -16,22 +15,22 @@ import { InfoMessages } from "../resources/message";
 import { LanguageStrategyFactory } from "../language-strategy";
 import { Logger } from "../utils/logger";
 import { ScaffoldSteps, StepGroup, step } from "../resources/steps";
-import { TemplateZipFallbackError, runWithErrorCatchAndThrow, FunctionPluginError, UnknownFallbackError } from "../resources/errors";
-import {
-  convertTemplateLanguage,
-  fetchZipFromURL,
-  getTemplateURL,
-  unzip,
-} from "../utils/templates-fetch";
-import { getTemplatesFolder } from "../../../..";
+import { TemplateZipFallbackError, UnknownFallbackError, UnzipError, TemplateManifestError } from "../resources/errors";
 import { TelemetryHelper } from "../utils/telemetry-helper";
+import { genTemplateRenderReplaceFn, removeTemplateExtReplaceFn, ScaffoldAction, ScaffoldActionName, ScaffoldContext, scaffoldFromTemplates } from "../../../../common/templatesActions";
 
-export interface TemplateVariables {
-  appName: string;
-  functionName: string;
-}
+export type TemplateVariables = {[key: string]: string}
 
 export class FunctionScaffold {
+  public static convertTemplateLanguage(language: FunctionLanguage): string {
+    switch (language) {
+      case FunctionLanguage.JavaScript:
+        return "js";
+      case FunctionLanguage.TypeScript:
+        return "ts";
+    }
+  }
+
   public static async doesFunctionPathExist(
     componentPath: string,
     language: FunctionLanguage,
@@ -42,45 +41,6 @@ export class FunctionScaffold {
     return fs.pathExists(path.join(componentPath, entryFileOrFolderName));
   }
 
-  public static async getTemplateZip(
-    group: string,
-    language: FunctionLanguage,
-    scenario: string
-  ): Promise<AdmZip> {
-    try {
-      const url: string = await getTemplateURL(group, language, scenario);
-      Logger.info(InfoMessages.getTemplateFrom(url));
-
-      const zip: AdmZip = await fetchZipFromURL(url);
-      return zip;
-    } catch (e) {
-      Logger.error(e.toString());
-
-      if (e instanceof FunctionPluginError) {
-        TelemetryHelper.sendScaffoldFallbackEvent(e);
-      } else {
-        TelemetryHelper.sendScaffoldFallbackEvent(new UnknownFallbackError());
-      }
-
-      return await runWithErrorCatchAndThrow(new TemplateZipFallbackError(), async () => {
-        const templateLanguage: string = convertTemplateLanguage(language);
-        const fileName: string =
-          [group, templateLanguage, scenario].join(PathInfo.templateZipNameSep) +
-          PathInfo.templateZipExt;
-        const zipPath: string = path.join(
-          getTemplatesFolder(),
-          "plugins",
-          "resource",
-          "function",
-          fileName
-        );
-        const data: Buffer = await fs.readFile(zipPath);
-        const zip: AdmZip = new AdmZip(data);
-        return zip;
-      });
-    }
-  }
-
   private static async scaffoldFromZipPackage(
     componentPath: string,
     group: string,
@@ -89,14 +49,43 @@ export class FunctionScaffold {
     variables: TemplateVariables,
     nameReplaceFn?: (filePath: string, data: Buffer) => string
   ): Promise<void> {
-    const zip = await this.getTemplateZip(group, language, scenario);
-    const _dataReplaceFn = (name: string, data: Buffer) => this.fulfill(name, data, variables);
     const _nameReplaceFn = (name: string, data: Buffer) => {
       name = nameReplaceFn ? nameReplaceFn(name, data) : name;
-      return name.replace(RegularExpr.replaceTemplateExtName, CommonConstants.emptyString);
+      return removeTemplateExtReplaceFn(name, data);
     };
 
-    await unzip(zip, componentPath, _nameReplaceFn, _dataReplaceFn);
+    await scaffoldFromTemplates({
+      group: group,
+      lang: this.convertTemplateLanguage(language),
+      scenario: scenario,
+      templatesFolderName: PathInfo.templateFolderName,
+      dst: componentPath,
+      fileNameReplaceFn: _nameReplaceFn,
+      fileDataReplaceFn: genTemplateRenderReplaceFn(variables),
+      onActionEnd:
+        async (action: ScaffoldAction, context: ScaffoldContext) => {
+          if (action.name === ScaffoldActionName.FetchTemplatesUrlWithTag) {
+            Logger.info(InfoMessages.getTemplateFrom(context.zipUrl ?? CommonConstants.emptyString));
+          }
+        },
+      onActionError:
+        async (action: ScaffoldAction, context: ScaffoldContext, error: Error) => {
+          Logger.info(error.toString());
+          switch(action.name) {
+            case ScaffoldActionName.FetchTemplatesUrlWithTag:
+            case ScaffoldActionName.FetchTemplatesZipFromUrl:
+              TelemetryHelper.sendScaffoldFallbackEvent(new TemplateManifestError(error.message));
+              Logger.info(InfoMessages.getTemplateFromLocal);
+              break;
+            case ScaffoldActionName.FetchTemplateZipFromLocal:
+              throw new TemplateZipFallbackError();
+            case ScaffoldActionName.Unzip:
+              throw new UnzipError();
+            default:
+              throw new UnknownFallbackError();
+          }
+        },
+    });
   }
 
   public static async scaffoldFunction(
@@ -148,16 +137,5 @@ export class FunctionScaffold {
       PluginInfo.templateBaseScenarioName,
       variables
     );
-  }
-
-  private static fulfill(
-    filePath: string,
-    data: Buffer,
-    variables: TemplateVariables
-  ): Buffer | string {
-    if (path.extname(filePath) === PathInfo.templateFileExt) {
-      return Mustache.render(data.toString(), variables);
-    }
-    return data;
   }
 }

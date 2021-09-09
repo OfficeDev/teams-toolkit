@@ -7,9 +7,9 @@ export class Constants {
   public static readonly PLUGIN_NAME = "AppStudioPlugin";
   public static readonly PUBLISH_PATH_QUESTION = "manifest-folder";
   public static readonly BUILD_OR_PUBLISH_QUESTION = "build-or-publish";
-  public static readonly REMOTE_TEAMS_APP_ID = "teams-app-id";
   public static readonly READ_MORE = "Read more";
   public static readonly PUBLISH_GUIDE = "https://aka.ms/teamsfx-publish";
+  public static readonly TEAMS_APP_ID = "teamsAppId";
 
   public static readonly PERMISSIONS = {
     name: "Teams App",
@@ -87,8 +87,8 @@ export const TEAMS_APP_MANIFEST_TEMPLATE = `{
 export const TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV = `{
   "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.9/MicrosoftTeams.schema.json",
   "manifestVersion": "1.9",
-  "version": "{version}",
-  "id": "{appid}",
+  "version": "1.0.0",
+  "id": "{{profile.fx-resource-appstudio.teamsAppId}}",
   "packageName": "com.microsoft.teams.extension",
   "developer": {
       "name": "Teams App, Inc.",

@@ -734,17 +734,19 @@ export class TeamsAppSolution implements Solution {
         return ok(undefined);
       },
       async (provisionResults?: Result<any, FxError>[]) => {
-        if (provisionWithCtx.length === provisionResults?.length) {
-          provisionWithCtx.map(function (plugin, index) {
-            if (plugin[2] === PluginNames.APPST) {
-              const teamsAppResult = provisionResults[index];
-              if (teamsAppResult.isOk()) {
-                ctx.envInfo.profile
-                  .get(GLOBAL_CONFIG)
-                  ?.set(REMOTE_TEAMS_APP_ID, teamsAppResult.value);
+        if (!isMultiEnvEnabled()) {
+          if (provisionWithCtx.length === provisionResults?.length) {
+            provisionWithCtx.map(function (plugin, index) {
+              if (plugin[2] === PluginNames.APPST) {
+                const teamsAppResult = provisionResults[index];
+                if (teamsAppResult.isOk()) {
+                  ctx.envInfo.profile
+                    .get(GLOBAL_CONFIG)
+                    ?.set(REMOTE_TEAMS_APP_ID, teamsAppResult.value);
+                }
               }
-            }
-          });
+            });
+          }
         }
 
         if (provisionResults) {
@@ -754,7 +756,6 @@ export class TeamsAppSolution implements Solution {
             }
           }
         }
-
         ctx.logProvider?.info(
           util.format(getStrings().solution.ProvisionFinishNotice, PluginDisplayName.Solution)
         );

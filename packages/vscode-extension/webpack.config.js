@@ -96,6 +96,10 @@ const config = {
           from: "../fx-core/templates/",
           to: "../templates/",
         },
+        {
+          from: "./CHANGELOG.md",
+          to: "../resource/CHANGELOG.md",
+        },
       ],
     }),
   ],

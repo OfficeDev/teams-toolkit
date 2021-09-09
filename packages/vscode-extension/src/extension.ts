@@ -23,6 +23,7 @@ import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVaria
 import { enableMigrateV1 } from "./utils/migrateV1";
 import { isTeamsfx } from "./utils/commonUtils";
 import { ConfigFolderName, PublishProfilesFolderName } from "@microsoft/teamsfx-api";
+import { ExtensionUpgrade } from "./utils/upgrade";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -281,9 +282,8 @@ export async function activate(context: vscode.ExtensionContext) {
 
   ext.context.subscriptions.push(vscode.workspace.onDidChangeWorkspaceFolders(enableMigrateV1));
   enableMigrateV1();
-  const migrateV1Cmd = vscode.commands.registerCommand(
-    "fx-extension.migrateV1Project",
-    handlers.migrateV1ProjectHandler
+  const migrateV1Cmd = vscode.commands.registerCommand("fx-extension.migrateV1Project", () =>
+    Correlator.run(handlers.migrateV1ProjectHandler)
   );
   context.subscriptions.push(migrateV1Cmd);
 
@@ -294,6 +294,10 @@ export async function activate(context: vscode.ExtensionContext) {
     const survey = new ExtensionSurvey();
     survey.activate();
   }
+
+  // activate upgrade
+  const upgrade = new ExtensionUpgrade(context);
+  upgrade.showChangeLog();
 
   openWelcomePageAfterExtensionInstallation();
 }

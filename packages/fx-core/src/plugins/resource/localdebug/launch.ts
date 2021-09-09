@@ -52,7 +52,8 @@ export function generateConfigurations(
           name: "Start and Attach to Frontend (Edge)",
           type: LaunchBrowser.edge,
           request: "launch",
-          url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
+          url:
+            "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
           preLaunchTask: "Start Frontend",
           cascadeTerminateToConfigurations: ["Start and Attach to Backend"],
           presentation: {
@@ -64,7 +65,8 @@ export function generateConfigurations(
           name: "Start and Attach to Frontend (Chrome)",
           type: LaunchBrowser.chrome,
           request: "launch",
-          url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
+          url:
+            "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
           preLaunchTask: "Start Frontend",
           cascadeTerminateToConfigurations: ["Start and Attach to Backend"],
           presentation: {
@@ -92,7 +94,8 @@ export function generateConfigurations(
           name: "Start and Attach to Frontend (Edge)",
           type: LaunchBrowser.edge,
           request: "launch",
-          url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
+          url:
+            "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
           preLaunchTask: "Start Frontend",
           presentation: {
             group: "all",
@@ -103,7 +106,8 @@ export function generateConfigurations(
           name: "Start and Attach to Frontend (Chrome)",
           type: LaunchBrowser.chrome,
           request: "launch",
-          url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
+          url:
+            "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
           preLaunchTask: "Start Frontend",
           presentation: {
             group: "all",
@@ -121,7 +125,8 @@ export function generateConfigurations(
         name: "Launch Bot (Edge)",
         type: LaunchBrowser.edge,
         request: "launch",
-        url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
+        url:
+          "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
         cascadeTerminateToConfigurations: ["Start and Attach to Bot"],
         presentation: {
           group: "all",
@@ -132,7 +137,8 @@ export function generateConfigurations(
         name: "Launch Bot (Chrome)",
         type: LaunchBrowser.chrome,
         request: "launch",
-        url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
+        url:
+          "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
         cascadeTerminateToConfigurations: ["Start and Attach to Bot"],
         presentation: {
           group: "all",
@@ -161,7 +167,8 @@ export function generateConfigurations(
         name: "Start and Attach to Frontend (Edge)",
         type: LaunchBrowser.edge,
         request: "launch",
-        url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
+        url:
+          "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
         preLaunchTask: "Start Frontend",
         cascadeTerminateToConfigurations: includeBackend
           ? ["Start and Attach to Bot", "Start and Attach to Backend"]
@@ -175,7 +182,8 @@ export function generateConfigurations(
         name: "Start and Attach to Frontend (Chrome)",
         type: LaunchBrowser.chrome,
         request: "launch",
-        url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
+        url:
+          "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
         preLaunchTask: "Start Frontend",
         cascadeTerminateToConfigurations: includeBackend
           ? ["Start and Attach to Bot", "Start and Attach to Backend"]
@@ -453,5 +461,76 @@ export function generateSpfxConfigurations(): Record<string, unknown>[] {
         order: chromeOrder,
       },
     },
+    {
+      name: "Start Teams workbench (Edge)",
+      type: "pwa-msedge",
+      request: "launch",
+      url:
+        "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
+      webRoot: "${workspaceRoot}/SPFx",
+      sourceMaps: true,
+      sourceMapPathOverrides: {
+        "webpack:///.././src/*": "${webRoot}/src/*",
+        "webpack:///../../../src/*": "${webRoot}/src/*",
+        "webpack:///../../../../src/*": "${webRoot}/src/*",
+        "webpack:///../../../../../src/*": "${webRoot}/src/*",
+      },
+      postDebugTask: "Terminate All Tasks",
+      presentation: {
+        hidden: true,
+      },
+    },
+    {
+      name: "Start Teams workbench (Chrome)",
+      type: "pwa-chrome",
+      request: "launch",
+      url:
+        "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
+      webRoot: "${workspaceRoot}/SPFx",
+      sourceMaps: true,
+      sourceMapPathOverrides: {
+        "webpack:///.././src/*": "${webRoot}/src/*",
+        "webpack:///../../../src/*": "${webRoot}/src/*",
+        "webpack:///../../../../src/*": "${webRoot}/src/*",
+        "webpack:///../../../../../src/*": "${webRoot}/src/*",
+      },
+      postDebugTask: "Terminate All Tasks",
+      presentation: {
+        hidden: true,
+      },
+    },
   ];
+}
+
+export function generateSpfxCompounds(): Record<string, unknown>[] {
+  const launchCompounds: Record<string, unknown>[] = [];
+  let edgeOrder = 2,
+    chromeOrder = 1;
+  if (os.type() === "Windows_NT") {
+    edgeOrder = 1;
+    chromeOrder = 2;
+  }
+  launchCompounds.push(
+    {
+      name: "Teams workbench (Edge)",
+      configurations: ["Start Teams workbench (Edge)"],
+      preLaunchTask: "prepare dev env",
+      presentation: {
+        group: "teams",
+        order: edgeOrder,
+      },
+      stopAll: true,
+    },
+    {
+      name: "Teams workbench (Chrome)",
+      configurations: ["Start Teams workbench (Chrome)"],
+      preLaunchTask: "prepare dev env",
+      presentation: {
+        group: "teams",
+        order: chromeOrder,
+      },
+      stopAll: true,
+    }
+  );
+  return launchCompounds;
 }

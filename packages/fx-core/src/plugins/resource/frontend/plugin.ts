@@ -231,7 +231,6 @@ export class FrontendPluginImpl {
         ModuleTemplate: {
           Content: await fs.readFile(moduleOrchestrationFilePath, ConstantString.UTF8Encoding),
           Outputs: {
-            storageName: FrontendOutputBicepSnippet.StorageName,
             endpoint: FrontendOutputBicepSnippet.Endpoint,
             domain: FrontendOutputBicepSnippet.Domain,
           },
@@ -247,6 +246,7 @@ export class FrontendPluginImpl {
 
   private async syncArmOutput(ctx: PluginContext) {
     const config = await FrontendConfig.fromPluginContext(ctx, true);
+    config.storageResourceId = getArmOutput(ctx, ArmOutput.FrontendStorageResourceId) as string;
     config.endpoint = getArmOutput(ctx, ArmOutput.FrontendEndpoint) as string;
     config.domain = getArmOutput(ctx, ArmOutput.FrontendDomain) as string;
     config.syncToPluginContext(ctx);

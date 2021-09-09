@@ -28,9 +28,10 @@ export class FrontendConfig {
   subscriptionId: string;
   resourceGroupName: string;
   location: string;
-  storageName: string;
   credentials: TokenCredentialsBase;
 
+  storageName: string;
+  storageResourceId?: string;
   endpoint?: string;
   domain?: string;
 

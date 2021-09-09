@@ -86,7 +86,7 @@ import { SPFxNodeChecker } from "./debug/depsChecker/spfxNodeChecker";
 import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
 import { VS_CODE_UI } from "./extension";
 import { registerAccountTreeHandler } from "./accountTree";
-import { registerEnvTreeHandler } from "./envTree";
+import { registerEnvTreeHandler, updateCollaboratorList } from "./envTree";
 import { selectAndDebug } from "./debug/runIconHandler";
 import * as path from "path";
 import { exp } from "./exp/index";
@@ -807,7 +807,7 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
       `Added account: '${inputs.email}'' to the environment '${env}' as a collaborator`
     );
 
-    registerEnvTreeHandler();
+    updateCollaboratorList(env);
   } catch (e) {
     result = wrapError(e);
   }
@@ -840,6 +840,7 @@ export async function listCollaborator(env: string): Promise<TreeItem[]> {
           value: user.isAadOwner ? "" : "This account doesn't have the AAD permission.",
           isMarkdown: false,
         },
+        parent: "fx-extension.environment." + env,
       };
     });
     if (!result || result.length === 0) {
@@ -849,6 +850,7 @@ export async function listCollaborator(env: string): Promise<TreeItem[]> {
           label: "No permission to list all collaborators.",
           icon: "warning",
           isCustom: true,
+          parent: "fx-extension.environment." + env,
         },
       ];
     }
@@ -859,6 +861,7 @@ export async function listCollaborator(env: string): Promise<TreeItem[]> {
         label: e.message,
         icon: "warning",
         isCustom: true,
+        parent: "fx-extension.environment." + env,
       },
     ];
   }

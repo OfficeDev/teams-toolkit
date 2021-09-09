@@ -525,7 +525,7 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
         treeItem.label,
         tooltip,
         treeItem.commandId,
-        treeItem.subTreeItems && treeItem.subTreeItems.length > 0
+        (treeItem.subTreeItems && treeItem.subTreeItems.length > 0) || treeItem.expanded
           ? vscode.TreeItemCollapsibleState.Expanded
           : undefined,
         typeof treeItem.parent === "number" ? (treeItem.parent as TreeCategory) : undefined,
@@ -578,7 +578,8 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
               subTreeItem.label,
               tooltip ?? subTreeItem.label,
               subTreeItem.commandId,
-              subTreeItem.subTreeItems && subTreeItem.subTreeItems.length > 0
+              (subTreeItem.subTreeItems && subTreeItem.subTreeItems.length > 0) ||
+              subTreeItem.expanded
                 ? vscode.TreeItemCollapsibleState.Expanded
                 : undefined,
               typeof subTreeItem.parent === "number"

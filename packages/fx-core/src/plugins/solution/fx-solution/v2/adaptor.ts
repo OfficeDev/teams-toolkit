@@ -12,7 +12,9 @@ import {
   TelemetryReporter,
   TreeProvider,
   UserInteraction,
+  ConfigMap,
 } from "@microsoft/teamsfx-api";
+import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { profile } from "console";
 import { newEnvInfo } from "../../../../core/tools";
 
@@ -63,7 +65,7 @@ export class ProvisionContextAdapter extends BaseSolutionContextAdaptor {
     super();
     const v2context: v2.Context = params[0];
     const inputs: Inputs = params[1];
-    const templates = params[2];
+    const envInfo: EnvInfoV2 = params[2];
     const tokenProvidier = params[3];
 
     this.root = inputs.projectPath ?? "";
@@ -79,10 +81,14 @@ export class ProvisionContextAdapter extends BaseSolutionContextAdaptor {
     this.localSettings = undefined;
     this.ui = v2context.userInteraction;
     this.cryptoProvider = undefined;
+    const profile = ConfigMap.fromJSON(envInfo.profile);
+    if (!profile) {
+      throw new Error(`failed to convert profile ${JSON.stringify(envInfo.profile)}`);
+    }
     this.envInfo = {
-      envName: "default",
-      config: undefined,
-      profile: undefined,
+      envName: envInfo.envName,
+      config: envInfo.config,
+      profile: profile,
     };
   }
 }

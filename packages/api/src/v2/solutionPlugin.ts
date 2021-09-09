@@ -16,7 +16,7 @@ import {
   Void,
 } from "../index";
 import { Json } from "../types";
-import { Context, FxResult } from "./types";
+import { Context, EnvInfoV2, FxResult } from "./types";
 
 export type SolutionProvisionOutput = Record<string, ResourceProvisionOutput>;
 
@@ -34,7 +34,7 @@ export interface SolutionPlugin {
    *
    * @returns scaffold return nothing in API, all source code are persist in FS.
    */
-  scaffoldSourceCode?: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
+  scaffoldSourceCode: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
 
   /**
    * Called when creating a new project or adding a new resource.
@@ -66,7 +66,7 @@ export interface SolutionPlugin {
   provisionResources: (
     ctx: Context,
     inputs: Inputs,
-    envInfo: Omit<EnvInfo, "profile">,
+    envInfo: EnvInfoV2,
     tokenProvider: TokenProvider
   ) => Promise<FxResult<SolutionProvisionOutput, FxError>>;
 
@@ -110,6 +110,8 @@ export interface SolutionPlugin {
    * them finishes, call configureLocalResource of each plugin.
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
+   * @param {Inputs} inputs - User answers to questions defined in {@link getQuestionsForLifecycleTask}
+   * @param {Json} localSettings - JSON holding the output values for debugging
    * @param {TokenProvider} tokenProvider - Tokens for Azure and AppStudio
    *
    * @returns the output localSettings
@@ -117,13 +119,14 @@ export interface SolutionPlugin {
   provisionLocalResource?: (
     ctx: Context,
     inputs: Inputs,
+    localSettings: Json,
     tokenProvider: TokenProvider
   ) => Promise<Result<Json, FxError>>;
 
   /**
    * get question model for lifecycle {@link Stage} (create), Questions are organized as a tree. Please check {@link QTreeNode}.
    */
-  getQuestionsForScaffolding: (
+  getQuestionsForScaffolding?: (
     ctx: Context,
     inputs: Inputs
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
@@ -131,5 +134,10 @@ export interface SolutionPlugin {
   /**
    * execute user customized task, for example `Add Resource`, `Add Capabilities`, etc
    */
-  executeUserTask?: (ctx: Context, inputs: Inputs, func: Func) => Promise<Result<unknown, FxError>>;
+  executeUserTask?: (
+    ctx: Context,
+    inputs: Inputs,
+    func: Func,
+    tokenProvider: AppStudioTokenProvider
+  ) => Promise<Result<unknown, FxError>>;
 }

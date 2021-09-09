@@ -50,20 +50,10 @@ describe("Help Parameter Tests", function () {
   });
 
   it("Capability Add Parameter Hardcode Check", async () => {
-    const capabilities = ["tab", "bot", "messagingextension"];
+    const capabilities = ["Tab", "Bot", "MessagingExtension"];
     capabilities.forEach((capabilityName) => {
       const result = HelpParamGenerator.getYargsParamForHelp("addCapability-" + capabilityName);
       expect(result.folder.default).equals("./");
-
-      const nodes = Object.values(result);
-      const rootNodes = nodes.filter(
-        (node) =>
-          typeof node.default === "object" &&
-          node.default.length === 1 &&
-          node.default[0] === capabilityName
-      );
-      expect(rootNodes.length === 1, JSON.stringify(nodes)).to.be.true;
-      expect(rootNodes[0].hidden).to.be.true;
     });
   });
 

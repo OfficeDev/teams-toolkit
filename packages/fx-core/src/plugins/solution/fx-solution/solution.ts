@@ -129,6 +129,7 @@ import {
 } from "../../../common/permissionInterface";
 import { askTargetEnvironment } from "../../../core/middleware/envInfoLoader";
 import { blockV1Project, ensurePermissionRequest, parseTeamsAppTenantId } from "./v2/utils";
+import { askForProvisionConsent } from "./v2/provision";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -629,68 +630,9 @@ export class TeamsAppSolution implements Solution {
       if (res.isErr()) {
         return res;
       }
-      const azureToken = await ctx.azureAccountProvider?.getAccountCredentialAsync();
-
-      // Only Azure project requires this confirm dialog
-      const username = (azureToken as any).username ? (azureToken as any).username : "";
-      const subscriptionId = ctx.envInfo.profile.get(GLOBAL_CONFIG)?.get(SUBSCRIPTION_ID) as string;
-      const subscriptionName = ctx.envInfo.profile
-        .get(GLOBAL_CONFIG)
-        ?.get(SUBSCRIPTION_NAME) as string;
-
-      const msg = util.format(
-        getStrings().solution.ProvisionConfirmNotice,
-        username,
-        subscriptionName ? subscriptionName : subscriptionId
-      );
-      let confirmRes = undefined;
-      if (isMultiEnvEnabled()) {
-        const msgNew = util.format(
-          getStrings().solution.ProvisionConfirmEnvNotice,
-          ctx.projectSettings!.activeEnvironment,
-          username,
-          subscriptionName ? subscriptionName : subscriptionId
-        );
-        confirmRes = await ctx.ui?.showMessage(
-          "warn",
-          msgNew,
-          true,
-          "Provision",
-          "Switch environment",
-          "Pricing calculator"
-        );
-      } else {
-        confirmRes = await ctx.ui?.showMessage(
-          "warn",
-          msg,
-          true,
-          "Provision",
-          "Pricing calculator"
-        );
-      }
-      const confirm = confirmRes?.isOk() ? confirmRes.value : undefined;
-
-      if (confirm !== "Provision") {
-        if (confirm === "Pricing calculator") {
-          ctx.ui?.openUrl("https://azure.microsoft.com/en-us/pricing/calculator/");
-        } else if (confirm === "Switch environment") {
-          const envName = await askTargetEnvironment(ctx as any, ctx.answers!);
-          if (envName) {
-            ctx.projectSettings!.activeEnvironment = envName;
-            ctx.ui?.showMessage(
-              "info",
-              `[${envName}] is activated. Please try to do provision again.`,
-              false
-            );
-          }
-        }
-        return err(
-          returnUserError(
-            new Error(getStrings().solution.CancelProvision),
-            "Solution",
-            getStrings().solution.CancelProvision
-          )
-        );
+      const consentResult = await askForProvisionConsent(ctx);
+      if (consentResult.isErr()) {
+        return consentResult;
       }
     }
 
@@ -1222,16 +1164,19 @@ export class TeamsAppSolution implements Solution {
   }
 
   async localDebug(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    if (ctx.permissionRequestProvider === undefined) {
-      ctx.permissionRequestProvider = new PermissionRequestFileProvider(ctx.root);
-    }
+    if (!this.spfxSelected(ctx)) {
+      if (ctx.permissionRequestProvider === undefined) {
+        ctx.permissionRequestProvider = new PermissionRequestFileProvider(ctx.root);
+      }
 
-    const result = await ensurePermissionRequest(
-      ctx.projectSettings?.solutionSettings as AzureSolutionSettings,
-      ctx.permissionRequestProvider
-    );
-    if (result.isErr()) {
-      return result;
+      const result = await ensurePermissionRequest(
+        ctx.projectSettings?.solutionSettings as AzureSolutionSettings,
+        ctx.permissionRequestProvider
+      );
+
+      if (result.isErr()) {
+        return result;
+      }
     }
 
     return await this.doLocalDebug(ctx);
@@ -1271,18 +1216,20 @@ export class TeamsAppSolution implements Solution {
       }
     }
 
-    const aadPlugin = this.AadPlugin as AadAppForTeamsPlugin;
-    if (selectedPlugins.some((plugin) => plugin.name === aadPlugin.name)) {
-      const result = await aadPlugin.executeUserTask(
-        {
-          namespace: `${PluginNames.SOLUTION}/${PluginNames.AAD}`,
-          method: "setApplicationInContext",
-          params: { isLocal: true },
-        },
-        getPluginContext(ctx, aadPlugin.name)
-      );
-      if (result.isErr()) {
-        return result;
+    if (!this.spfxSelected(ctx)) {
+      const aadPlugin = this.AadPlugin as AadAppForTeamsPlugin;
+      if (selectedPlugins.some((plugin) => plugin.name === aadPlugin.name)) {
+        const result = await aadPlugin.executeUserTask(
+          {
+            namespace: `${PluginNames.SOLUTION}/${PluginNames.AAD}`,
+            method: "setApplicationInContext",
+            params: { isLocal: true },
+          },
+          getPluginContext(ctx, aadPlugin.name)
+        );
+        if (result.isErr()) {
+          return result;
+        }
       }
     }
 

@@ -13,9 +13,5 @@ export enum Commands {
   UpdateGlobalStepsDone = "update-global-steps-done",
   GetGlobalStepsDone = "get-global-steps-done",
   SendTelemetryEvent = "send-telemetry-event",
-  Provision = "provision",
-  ValidateManifest = "validate-manifest",
-  PackageTeams = "package-teams",
-  Deploy = "deploy",
-  Publish = "publish",
+  ExecuteCommand = "execute-command",
 }

@@ -45,8 +45,8 @@ import { generateResourceTemplate } from "./generateResourceTemplate";
 
 export async function executeUserTask(
   ctx: v2.Context,
-  func: Func,
   inputs: Inputs,
+  func: Func,
   tokenProvider: AppStudioTokenProvider
 ): Promise<Result<unknown, FxError>> {
   const blockResult = blockV1Project(ctx.projectSetting.solutionSettings);

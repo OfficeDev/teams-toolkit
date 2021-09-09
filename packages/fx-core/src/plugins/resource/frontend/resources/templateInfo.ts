@@ -35,10 +35,8 @@ export class TemplateInfo {
     this.group = TemplateInfo.TemplateGroupName;
     this.version = TemplateInfo.version;
 
-    const solutionPlugin = ctx.envInfo.profile.get(DependentPluginInfo.SolutionPluginName);
     const tabLanguage =
-      (solutionPlugin?.get(DependentPluginInfo.ProgrammingLanguage) as string) ??
-      TabLanguage.JavaScript;
+      (ctx.projectSettings?.programmingLanguage as string) ?? TabLanguage.JavaScript;
     this.language = this.validateTabLanguage(tabLanguage);
 
     const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)

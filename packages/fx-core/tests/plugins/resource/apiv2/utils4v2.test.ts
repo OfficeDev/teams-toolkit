@@ -167,7 +167,7 @@ describe("API V2 adapter", () => {
     };
     const provisionInputConfig: EnvConfig = {
       azure: { subscriptionId: "123455", resourceGroupName: "rg" },
-      manifest: { values: { k1: "v1" } },
+      manifest: { values: { appName: { short: appName } } },
     };
     const tokenProvider: TokenProvider = {
       appStudioToken: new MockAppStudioTokenProvider(),

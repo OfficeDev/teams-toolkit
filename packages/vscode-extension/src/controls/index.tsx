@@ -7,6 +7,7 @@ import WelcomePanel from "./WelcomePanel";
 import LearnToolkit from "./LearnToolkit";
 import QuickStart from "./QuickStart";
 import SampleGallery from "./SampleGallery";
+import Survey from "./Survey";
 import { PanelType } from "./PanelType";
 
 const language = "en";
@@ -24,13 +25,16 @@ export default function App(props: any) {
 
   return (
     <MemoryRouter
-      initialEntries={["/quick-start", "/sample-gallery", "/welcome-page", "/learn-toolkit"]}
-      initialIndex={panelType === PanelType.QuickStart ? 0 : 1}
+      initialEntries={["/quick-start", "/sample-gallery", "/survey"]}
+      initialIndex={
+        panelType === PanelType.QuickStart ? 0 : panelType === PanelType.SampleGallery ? 1 : 2
+      }
     >
       <Route path="/welcome-page" component={WelcomePanel} />
       <Route path="/learn-toolkit" component={LearnToolkit} />
       <Route path="/quick-start" component={QuickStart} />
       <Route path="/sample-gallery" component={SampleGallery} />
+      <Route path="/survey" component={Survey} />
     </MemoryRouter>
   );
 }

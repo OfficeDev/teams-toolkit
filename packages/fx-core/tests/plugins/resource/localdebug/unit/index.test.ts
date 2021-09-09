@@ -366,13 +366,15 @@ describe(LocalDebugPluginInfo.pluginName, () => {
       //assert output launch.json
       const launch = fs.readJSONSync(expectedLaunchFile);
       const configurations: [] = launch["configurations"];
-      chai.assert.equal(configurations.length, 4);
+      const compounds: [] = launch["compounds"];
+      chai.assert.equal(configurations.length, 6);
+      chai.assert.equal(compounds.length, 2);
 
       //assert output tasks.json
       const tasksAll = fs.readJSONSync(expectedTasksFile);
       const tasks: [] = tasksAll["tasks"];
       const tasksInput: [] = tasksAll["inputs"];
-      chai.assert.equal(tasks.length, 5);
+      chai.assert.equal(tasks.length, 7);
       chai.assert.equal(tasksInput.length, 1);
 
       //no settings.json

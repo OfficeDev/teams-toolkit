@@ -197,7 +197,8 @@
       "emptyData": "Empty zip file",
       "downloadSampleFail": "Failed to download sample app",
       "quickStartPageTitle": "Quick Start",
-      "samplePageTitle": "Samples"
+      "samplePageTitle": "Samples",
+      "surveyPageTitle": "Teams Toolkit Survey"
     },
     "migrateV1": {
       "banner": "Click migrate to continue developing your project with the latest Teams Toolkit features. We will update some project configurations and recommend using git for better tracking file changes.",
@@ -212,6 +213,10 @@
       "cancel": {
         "status": "cancel"
       }
+    },
+    "upgrade": {
+      "banner": "Teams Toolkit has been updated to v%s — check out what's new!",
+      "whatIsNewTitle": "What's New"
     }
   }
 }

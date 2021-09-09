@@ -26,6 +26,7 @@ import axios from "axios";
 import * as util from "util";
 import * as StringResources from "./resources/Strings.json";
 import { StringContext } from "./utils/stringContext";
+import { registerEnvTreeHandler } from "./envTree";
 
 export async function getSubscriptionId(): Promise<string | undefined> {
   const subscriptionInfo = await AzureAccountManager.getSelectedSubscription();
@@ -197,6 +198,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
       ]);
     }
 
+    registerEnvTreeHandler();
     return ok(null);
   };
 

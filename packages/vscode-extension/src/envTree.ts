@@ -13,6 +13,8 @@ import TreeViewManagerInstance, { CommandsTreeViewProvider } from "./commandsTre
 import { getActiveEnv } from "./utils/commonUtils";
 import * as StringResources from "./resources/Strings.json";
 import { checkPermission, listCollaborator } from "./handlers";
+import { signedIn } from "./commonlib/common/constant";
+import { AppStudioLogin } from "./commonlib/appStudioLogin";
 
 const showEnvList: Array<string> = [];
 
@@ -36,12 +38,25 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
       });
     }
     showEnvList.splice(0);
+    const loginStatus = await AppStudioLogin.getInstance().getStatus();
     for (const item of envNamesResult.value) {
       showEnvList.push(item);
       let userList: TreeItem[] = [];
-      const canAddCollaborator = await checkPermission(item);
-      if (isRemoteCollaborateEnabled()) {
-        userList = await listCollaborator(item);
+      let canAddCollaborator = false;
+      if (loginStatus.status == signedIn) {
+        canAddCollaborator = await checkPermission(item);
+        if (isRemoteCollaborateEnabled()) {
+          userList = await listCollaborator(item);
+        }
+      } else {
+        userList = [
+          {
+            commandId: `fx-extension.listcollaborator.${item}`,
+            label: "You need to log in first to view all collaborators.",
+            icon: "warning",
+            isCustom: true,
+          },
+        ];
       }
       environmentTreeProvider.add([
         {

@@ -6,6 +6,7 @@ import {
   AppPackageFolderName,
   ArchiveFolderName,
   ArchiveLogFileName,
+  AzureSolutionSettings,
   ConfigFolderName,
   Core,
   err,
@@ -25,6 +26,7 @@ import {
   Solution,
   SolutionConfig,
   SolutionContext,
+  SolutionSettings,
   Stage,
   TelemetryReporter,
   Tools,
@@ -39,9 +41,11 @@ import { downloadSample, FxCore, LoadSolutionError, NotImplementedError } from "
 import { environmentManager } from "../../";
 import { globalStateUpdate } from "../../common/globalState";
 import { isArmSupportEnabled, isMultiEnvEnabled } from "../../common/tools";
-import { getParameterJson } from "../../plugins/solution/fx-solution/arm";
+import { copyParameterJson, getParameterJson } from "../../plugins/solution/fx-solution/arm";
+import { HostTypeOptionAzure } from "../../plugins/solution/fx-solution/question";
 import { LocalCrypto } from "../crypto";
 import {
+  CopyFileError,
   InvalidInputError,
   NonExistEnvNameError,
   ProjectFolderExistError,
@@ -698,22 +702,27 @@ export class FxCoreV2 implements Core {
       return ok(Void);
     }
 
-    const targetEnvName = await askNewEnvironment(ctx!, inputs);
+    const core = ctx!.self as FxCore;
+    const createEnvCopyInput = await askNewEnvironment(ctx!, inputs);
 
-    if (!targetEnvName) {
+    if (
+      !createEnvCopyInput ||
+      !createEnvCopyInput.targetEnvName ||
+      !createEnvCopyInput.sourceEnvName
+    ) {
       return ok(Void);
     }
 
-    if (targetEnvName) {
-      const createEnvResult = await this.createEnvWithName(
-        targetEnvName,
-        projectSettings,
-        inputs,
-        this
-      );
-      if (createEnvResult.isErr()) {
-        return createEnvResult;
-      }
+    const createEnvResult = await this.createEnvCopy(
+      createEnvCopyInput.targetEnvName,
+      createEnvCopyInput.sourceEnvName,
+      projectSettings,
+      inputs,
+      core
+    );
+
+    if (createEnvResult.isErr()) {
+      return createEnvResult;
     }
 
     return ok(Void);
@@ -740,7 +749,7 @@ export class FxCoreV2 implements Core {
       }: ${JSON.stringify(newEnvConfig)}`
     );
 
-    if (isArmSupportEnabled()) {
+    if (isArmSupportEnabled() && isAzureProject(projectSettings.solutionSettings)) {
       const solutionContext: SolutionContext = {
         projectSettings,
         envInfo: newEnvInfo(targetEnvName),
@@ -755,6 +764,58 @@ export class FxCoreV2 implements Core {
       };
 
       await getParameterJson(solutionContext);
+    }
+
+    return ok(Void);
+  }
+
+  async createEnvCopy(
+    targetEnvName: string,
+    sourceEnvName: string,
+    projectSettings: ProjectSettings,
+    inputs: Inputs,
+    core: FxCore
+  ): Promise<Result<Void, FxError>> {
+    // copy env config file
+    const targetEnvConfigFilePath = environmentManager.getEnvConfigPath(
+      targetEnvName,
+      inputs.projectPath!
+    );
+    const sourceEnvConfigFilePath = environmentManager.getEnvConfigPath(
+      sourceEnvName,
+      inputs.projectPath!
+    );
+
+    try {
+      await fs.copy(sourceEnvConfigFilePath, targetEnvConfigFilePath);
+    } catch (e) {
+      return err(CopyFileError(e));
+    }
+
+    core.tools.logProvider.debug(
+      `[core] copy env config file for ${targetEnvName} environment to path ${targetEnvConfigFilePath}`
+    );
+
+    // copy bicep parameter file
+    if (isArmSupportEnabled() && isAzureProject(projectSettings.solutionSettings)) {
+      const solutionContext: SolutionContext = {
+        projectSettings,
+        envInfo: newEnvInfo(targetEnvName),
+        root: inputs.projectPath || "",
+        ...core.tools,
+        ...core.tools.tokenProvider,
+        answers: inputs,
+        cryptoProvider: new LocalCrypto(projectSettings.projectId),
+        permissionRequestProvider: inputs.projectPath
+          ? new PermissionRequestFileProvider(inputs.projectPath)
+          : undefined,
+      };
+
+      try {
+        await copyParameterJson(solutionContext, sourceEnvName);
+      } catch (e) {
+        return err(CopyFileError(e));
+      }
     }
 
     return ok(Void);
@@ -822,4 +883,9 @@ export function newProjectSettings() {
     },
   };
   return projectSettings;
+}
+
+function isAzureProject(solutionSettings: SolutionSettings): boolean {
+  const settings = solutionSettings as AzureSolutionSettings;
+  return settings?.hostType === HostTypeOptionAzure.id;
 }

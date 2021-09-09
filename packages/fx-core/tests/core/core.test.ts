@@ -29,6 +29,7 @@ import fs from "fs-extra";
 import * as path from "path";
 import * as os from "os";
 import {
+  environmentManager,
   FunctionRouterError,
   FxCore,
   InvalidInputError,
@@ -75,8 +76,9 @@ describe("Core basic APIs", () => {
       projectPath: projectPath,
       solution: mockSolution.name,
     };
-    sandbox.stub<any, any>(ui, "inputText").callsFake(
-      async (config: InputTextConfig): Promise<Result<InputTextResult, FxError>> => {
+    sandbox
+      .stub<any, any>(ui, "inputText")
+      .callsFake(async (config: InputTextConfig): Promise<Result<InputTextResult, FxError>> => {
         if (config.name === CoreQuestionNames.AppName) {
           return ok({
             type: "success",
@@ -84,30 +86,33 @@ describe("Core basic APIs", () => {
           });
         }
         throw err(InvalidInputError("invalid question"));
-      }
-    );
-    sandbox.stub<any, any>(ui, "selectFolder").callsFake(
-      async (config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> => {
-        if (config.name === CoreQuestionNames.Folder) {
-          return ok({
-            type: "success",
-            result: expectedInputs[CoreQuestionNames.Folder] as string,
-          });
+      });
+    sandbox
+      .stub<any, any>(ui, "selectFolder")
+      .callsFake(
+        async (config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> => {
+          if (config.name === CoreQuestionNames.Folder) {
+            return ok({
+              type: "success",
+              result: expectedInputs[CoreQuestionNames.Folder] as string,
+            });
+          }
+          throw err(InvalidInputError("invalid question"));
         }
-        throw err(InvalidInputError("invalid question"));
-      }
-    );
-    sandbox.stub<any, any>(ui, "selectOption").callsFake(
-      async (config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> => {
-        if (config.name === CoreQuestionNames.CreateFromScratch) {
-          return ok({
-            type: "success",
-            result: expectedInputs[CoreQuestionNames.CreateFromScratch] as string,
-          });
+      );
+    sandbox
+      .stub<any, any>(ui, "selectOption")
+      .callsFake(
+        async (config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> => {
+          if (config.name === CoreQuestionNames.CreateFromScratch) {
+            return ok({
+              type: "success",
+              result: expectedInputs[CoreQuestionNames.CreateFromScratch] as string,
+            });
+          }
+          throw err(InvalidInputError("invalid question"));
         }
-        throw err(InvalidInputError("invalid question"));
-      }
-    );
+      );
     const core = new FxCore(tools);
     {
       const inputs: Inputs = { platform: Platform.CLI };
@@ -282,31 +287,35 @@ describe("Core basic APIs", () => {
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionNoVSC.id,
       [CoreQuestionNames.Samples]: sampleOption,
     };
-    sandbox.stub<any, any>(ui, "selectFolder").callsFake(
-      async (config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> => {
-        if (config.name === CoreQuestionNames.Folder) {
-          return ok({
-            type: "success",
-            result: expectedInputs[CoreQuestionNames.Folder] as string,
-          });
+    sandbox
+      .stub<any, any>(ui, "selectFolder")
+      .callsFake(
+        async (config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> => {
+          if (config.name === CoreQuestionNames.Folder) {
+            return ok({
+              type: "success",
+              result: expectedInputs[CoreQuestionNames.Folder] as string,
+            });
+          }
+          throw err(InvalidInputError("invalid question"));
         }
-        throw err(InvalidInputError("invalid question"));
-      }
-    );
-    sandbox.stub<any, any>(ui, "selectOption").callsFake(
-      async (config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> => {
-        if (config.name === CoreQuestionNames.CreateFromScratch) {
-          return ok({
-            type: "success",
-            result: expectedInputs[CoreQuestionNames.CreateFromScratch] as string,
-          });
+      );
+    sandbox
+      .stub<any, any>(ui, "selectOption")
+      .callsFake(
+        async (config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> => {
+          if (config.name === CoreQuestionNames.CreateFromScratch) {
+            return ok({
+              type: "success",
+              result: expectedInputs[CoreQuestionNames.CreateFromScratch] as string,
+            });
+          }
+          if (config.name === CoreQuestionNames.Samples) {
+            return ok({ type: "success", result: sampleOption });
+          }
+          throw err(InvalidInputError("invalid question"));
         }
-        if (config.name === CoreQuestionNames.Samples) {
-          return ok({ type: "success", result: sampleOption });
-        }
-        throw err(InvalidInputError("invalid question"));
-      }
-    );
+      );
     const core = new FxCore(tools);
     {
       const inputs: Inputs = { platform: Platform.CLI };
@@ -400,8 +409,9 @@ describe("Core basic APIs", () => {
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
       solution: mockSolution.name,
     };
-    sandbox.stub<any, any>(ui, "inputText").callsFake(
-      async (config: InputTextConfig): Promise<Result<InputTextResult, FxError>> => {
+    sandbox
+      .stub<any, any>(ui, "inputText")
+      .callsFake(async (config: InputTextConfig): Promise<Result<InputTextResult, FxError>> => {
         if (config.name === CoreQuestionNames.AppName) {
           return ok({
             type: "success",
@@ -409,30 +419,33 @@ describe("Core basic APIs", () => {
           });
         }
         throw err(InvalidInputError("invalid question"));
-      }
-    );
-    sandbox.stub<any, any>(ui, "selectFolder").callsFake(
-      async (config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> => {
-        if (config.name === CoreQuestionNames.Folder) {
-          return ok({
-            type: "success",
-            result: expectedInputs[CoreQuestionNames.Folder] as string,
-          });
+      });
+    sandbox
+      .stub<any, any>(ui, "selectFolder")
+      .callsFake(
+        async (config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> => {
+          if (config.name === CoreQuestionNames.Folder) {
+            return ok({
+              type: "success",
+              result: expectedInputs[CoreQuestionNames.Folder] as string,
+            });
+          }
+          throw err(InvalidInputError("invalid question"));
         }
-        throw err(InvalidInputError("invalid question"));
-      }
-    );
-    sandbox.stub<any, any>(ui, "selectOption").callsFake(
-      async (config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> => {
-        if (config.name === CoreQuestionNames.CreateFromScratch) {
-          return ok({
-            type: "success",
-            result: expectedInputs[CoreQuestionNames.CreateFromScratch] as string,
-          });
+      );
+    sandbox
+      .stub<any, any>(ui, "selectOption")
+      .callsFake(
+        async (config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> => {
+          if (config.name === CoreQuestionNames.CreateFromScratch) {
+            return ok({
+              type: "success",
+              result: expectedInputs[CoreQuestionNames.CreateFromScratch] as string,
+            });
+          }
+          throw err(InvalidInputError("invalid question"));
         }
-        throw err(InvalidInputError("invalid question"));
-      }
-    );
+      );
 
     const core = new FxCore(tools);
     const inputs: Inputs = { platform: Platform.CLI };
@@ -480,31 +493,38 @@ describe("Core basic APIs", () => {
       assert.isTrue(res.isErr() && res.error.name === FunctionRouterError(func).name);
     }
 
-    sandbox.stub<any, any>(mockSolution, "getQuestions").callsFake(
-      async (
-        task: Stage,
-        ctx: SolutionContext
-      ): Promise<Result<QTreeNode | undefined, FxError>> => {
-        return ok(
-          new QTreeNode({
-            type: "text",
-            name: "mock-question",
-            title: "mock-question",
-          })
-        );
-      }
-    );
-    sandbox.stub<any, any>(mockSolution, "getQuestionsForUserTask").callsFake(
-      async (func: Func, ctx: SolutionContext): Promise<Result<QTreeNode | undefined, FxError>> => {
-        return ok(
-          new QTreeNode({
-            type: "text",
-            name: "mock-question-user-task",
-            title: "mock-question-user-task",
-          })
-        );
-      }
-    );
+    sandbox
+      .stub<any, any>(mockSolution, "getQuestions")
+      .callsFake(
+        async (
+          task: Stage,
+          ctx: SolutionContext
+        ): Promise<Result<QTreeNode | undefined, FxError>> => {
+          return ok(
+            new QTreeNode({
+              type: "text",
+              name: "mock-question",
+              title: "mock-question",
+            })
+          );
+        }
+      );
+    sandbox
+      .stub<any, any>(mockSolution, "getQuestionsForUserTask")
+      .callsFake(
+        async (
+          func: Func,
+          ctx: SolutionContext
+        ): Promise<Result<QTreeNode | undefined, FxError>> => {
+          return ok(
+            new QTreeNode({
+              type: "text",
+              name: "mock-question-user-task",
+              title: "mock-question-user-task",
+            })
+          );
+        }
+      );
 
     {
       const inputs: Inputs = { platform: Platform.VS };
@@ -541,8 +561,9 @@ describe("Core basic APIs", () => {
       projectPath: projectPath,
       solution: mockSolution.name,
     };
-    sandbox.stub<any, any>(ui, "inputText").callsFake(
-      async (config: InputTextConfig): Promise<Result<InputTextResult, FxError>> => {
+    sandbox
+      .stub<any, any>(ui, "inputText")
+      .callsFake(async (config: InputTextConfig): Promise<Result<InputTextResult, FxError>> => {
         if (config.name === CoreQuestionNames.AppName) {
           return ok({
             type: "success",
@@ -550,30 +571,33 @@ describe("Core basic APIs", () => {
           });
         }
         throw err(InvalidInputError("invalid question"));
-      }
-    );
-    sandbox.stub<any, any>(ui, "selectFolder").callsFake(
-      async (config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> => {
-        if (config.name === CoreQuestionNames.Folder) {
-          return ok({
-            type: "success",
-            result: expectedInputs[CoreQuestionNames.Folder] as string,
-          });
+      });
+    sandbox
+      .stub<any, any>(ui, "selectFolder")
+      .callsFake(
+        async (config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> => {
+          if (config.name === CoreQuestionNames.Folder) {
+            return ok({
+              type: "success",
+              result: expectedInputs[CoreQuestionNames.Folder] as string,
+            });
+          }
+          throw err(InvalidInputError("invalid question"));
         }
-        throw err(InvalidInputError("invalid question"));
-      }
-    );
-    sandbox.stub<any, any>(ui, "selectOption").callsFake(
-      async (config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> => {
-        if (config.name === CoreQuestionNames.CreateFromScratch) {
-          return ok({
-            type: "success",
-            result: expectedInputs[CoreQuestionNames.CreateFromScratch] as string,
-          });
+      );
+    sandbox
+      .stub<any, any>(ui, "selectOption")
+      .callsFake(
+        async (config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> => {
+          if (config.name === CoreQuestionNames.CreateFromScratch) {
+            return ok({
+              type: "success",
+              result: expectedInputs[CoreQuestionNames.CreateFromScratch] as string,
+            });
+          }
+          throw err(InvalidInputError("invalid question"));
         }
-        throw err(InvalidInputError("invalid question"));
-      }
-    );
+      );
     const core = new FxCore(tools);
     {
       const inputs: Inputs = { platform: Platform.CLI };
@@ -631,8 +655,9 @@ describe("Core basic APIs", () => {
         expectedInputs[CoreQuestionNames.AppName] = testParam.appName;
       }
 
-      sandbox.stub<any, any>(ui, "inputText").callsFake(
-        async (config: InputTextConfig): Promise<Result<InputTextResult, FxError>> => {
+      sandbox
+        .stub<any, any>(ui, "inputText")
+        .callsFake(async (config: InputTextConfig): Promise<Result<InputTextResult, FxError>> => {
           if (config.name === CoreQuestionNames.AppName) {
             return ok({
               type: "success",
@@ -640,8 +665,7 @@ describe("Core basic APIs", () => {
             });
           }
           throw err(InvalidInputError("invalid question"));
-        }
-      );
+        });
       const core = new FxCore(tools);
       {
         const inputs: Inputs = { platform: Platform.VSCode, projectPath: testParam.projectPath };
@@ -689,7 +713,7 @@ describe("Core basic APIs", () => {
   ];
 
   envParameters.forEach((testParam) => {
-    it(`happy path: create new env`, async () => {
+    it(`happy path: scaffold and create new env copy`, async () => {
       const expectedInputs: Inputs = {
         platform: Platform.CLI,
         [CoreQuestionNames.AppName]: appName,
@@ -698,8 +722,11 @@ describe("Core basic APIs", () => {
         projectPath: projectPath,
         solution: mockSolution.name,
       };
-      sandbox.stub<any, any>(ui, "inputText").callsFake(
-        async (config: InputTextConfig): Promise<Result<InputTextResult, FxError>> => {
+
+      const newEnvName = "newEnv";
+      sandbox
+        .stub<any, any>(ui, "inputText")
+        .callsFake(async (config: InputTextConfig): Promise<Result<InputTextResult, FxError>> => {
           if (config.name === CoreQuestionNames.AppName) {
             return ok({
               type: "success",
@@ -709,34 +736,37 @@ describe("Core basic APIs", () => {
           if (config.name === CoreQuestionNames.NewTargetEnvName) {
             return ok({
               type: "success",
-              result: "newEnv",
+              result: newEnvName,
             });
           }
           throw err(InvalidInputError("invalid question"));
-        }
-      );
-      sandbox.stub<any, any>(ui, "selectFolder").callsFake(
-        async (config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> => {
-          if (config.name === CoreQuestionNames.Folder) {
-            return ok({
-              type: "success",
-              result: expectedInputs[CoreQuestionNames.Folder] as string,
-            });
+        });
+      sandbox
+        .stub<any, any>(ui, "selectFolder")
+        .callsFake(
+          async (config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> => {
+            if (config.name === CoreQuestionNames.Folder) {
+              return ok({
+                type: "success",
+                result: expectedInputs[CoreQuestionNames.Folder] as string,
+              });
+            }
+            throw err(InvalidInputError("invalid question"));
           }
-          throw err(InvalidInputError("invalid question"));
-        }
-      );
-      sandbox.stub<any, any>(ui, "selectOption").callsFake(
-        async (config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> => {
-          if (config.name === CoreQuestionNames.CreateFromScratch) {
-            return ok({
-              type: "success",
-              result: expectedInputs[CoreQuestionNames.CreateFromScratch] as string,
-            });
+        );
+      sandbox
+        .stub<any, any>(ui, "selectOption")
+        .callsFake(
+          async (config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> => {
+            if (config.name === CoreQuestionNames.CreateFromScratch) {
+              return ok({
+                type: "success",
+                result: expectedInputs[CoreQuestionNames.CreateFromScratch] as string,
+              });
+            }
+            throw err(InvalidInputError("invalid question"));
           }
-          throw err(InvalidInputError("invalid question"));
-        }
-      );
+        );
       sandbox.stub(commonTools, "isMultiEnvEnabled").returns(true);
       const core = new FxCore(tools);
       {
@@ -750,12 +780,28 @@ describe("Core basic APIs", () => {
           assert.fail("failed to load project settings");
         }
 
+        // assert default env is created on scaffold
+        const envListResult = await environmentManager.listEnvConfigs(inputs.projectPath!);
+        if (envListResult.isErr()) {
+          assert.fail("failed to list env names");
+        }
+        assert.isTrue(envListResult.value.length === 1);
+        assert.isTrue(envListResult.value[0] === environmentManager.getDefaultEnvName());
+
         const [projectSettings, projectIdMissing] = projectSettingsResult.value;
         const validSettingsResult = validateSettings(projectSettings);
         assert.isTrue(validSettingsResult === undefined);
 
         const createEnvRes = await core.createEnv(inputs);
         assert.isTrue(createEnvRes.isOk());
+
+        const newEnvListResult = await environmentManager.listEnvConfigs(inputs.projectPath!);
+        if (newEnvListResult.isErr()) {
+          assert.fail("failed to list env names");
+        }
+        assert.isTrue(newEnvListResult.value.length === 2);
+        assert.isTrue(newEnvListResult.value[0] === environmentManager.getDefaultEnvName());
+        assert.isTrue(newEnvListResult.value[1] === newEnvName);
       }
     });
   });

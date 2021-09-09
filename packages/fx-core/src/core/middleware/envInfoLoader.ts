@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import {
   EnvInfo,
   err,
@@ -15,6 +16,7 @@ import {
   Tools,
   traverse,
 } from "@microsoft/teamsfx-api";
+import { isV2 } from "..";
 import { CoreHookContext, FxCore } from "../..";
 import {
   NoProjectOpenedError,
@@ -22,7 +24,6 @@ import {
   ProjectSettingsUndefinedError,
   NonActiveEnvError,
 } from "../error";
-import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { LocalCrypto } from "../crypto";
 import { environmentManager } from "../environment";
 import {
@@ -40,7 +41,6 @@ import { desensitize } from "./questionModel";
 import { shouldIgnored } from "./projectSettingsLoader";
 import { PermissionRequestFileProvider } from "../permissionRequest";
 import { newEnvInfo } from "../tools";
-import { CoreHookContextV2 } from "../v2";
 
 const newTargetEnvNameOption = "+ new environment";
 const activeMark = " (active)";
@@ -100,7 +100,14 @@ export function EnvInfoLoaderMW(isMultiEnvEnabled: boolean): Middleware {
         return;
       }
 
-      ctx.solutionContext = result.value;
+      if (isV2()) {
+        //TODO core should not know the details of envInfo
+        ctx.provisionInputConfig = result.value.envInfo.config;
+        ctx.provisionOutputs = result.value.envInfo.profile;
+        ctx.envName = result.value.envInfo.envName;
+      } else {
+        ctx.solutionContext = result.value;
+      }
       await next();
     }
   };
@@ -236,7 +243,7 @@ export async function askTargetEnvironment(
 }
 
 export async function askNewEnvironment(
-  ctx: CoreHookContext | CoreHookContextV2,
+  ctx: CoreHookContext,
   inputs: Inputs
 ): Promise<CreateEnvCopyInput | undefined> {
   const getQuestionRes = await getQuestionsForNewEnv(inputs);

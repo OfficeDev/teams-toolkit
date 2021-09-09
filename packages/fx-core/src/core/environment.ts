@@ -17,6 +17,7 @@ import {
   EnvConfigFileNameTemplate,
   EnvNamePlaceholder,
   EnvInfo,
+  Json,
 } from "@microsoft/teamsfx-api";
 import path, { basename } from "path";
 import fs from "fs-extra";
@@ -135,7 +136,7 @@ class EnvironmentManager {
   }
 
   public async writeEnvProfile(
-    envData: Map<string, any>,
+    envData: Map<string, any> | Json,
     projectPath: string,
     envName?: string,
     cryptoProvider?: CryptoProvider
@@ -152,7 +153,7 @@ class EnvironmentManager {
     envName = envName ?? this.getDefaultEnvName();
     const envFiles = this.getEnvProfileFilesPath(envName, projectPath);
 
-    const data = mapToJson(envData);
+    const data = (envData instanceof Map) ? mapToJson(envData) : envData;
     const secrets = sperateSecretData(data);
     if (cryptoProvider) {
       this.encrypt(secrets, cryptoProvider);
@@ -170,7 +171,7 @@ class EnvironmentManager {
 
     return ok(envFiles.envProfile);
   }
-
+  
   public async listEnvConfigs(projectPath: string): Promise<Result<Array<string>, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
       return err(PathNotExistError(projectPath));

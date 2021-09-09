@@ -1,61 +1,59 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  Solution,
-  SolutionContext,
-  FxError,
-  Result,
-  QTreeNode,
-  Func,
-  Stage,
-  LogProvider,
-  LogLevel,
-  AzureAccountProvider,
-  GraphTokenProvider,
-  Tools,
-  TokenProvider,
-  AppStudioTokenProvider,
-  TelemetryReporter,
-  UserInteraction,
-  IProgressHandler,
-  SingleSelectConfig,
-  MultiSelectConfig,
-  InputTextConfig,
-  SelectFileConfig,
-  SelectFilesConfig,
-  SelectFolderConfig,
-  SingleSelectResult,
-  MultiSelectResult,
-  InputTextResult,
-  SelectFileResult,
-  SelectFilesResult,
-  SelectFolderResult,
-  RunnableTask,
-  TaskConfig,
-  SubscriptionInfo,
-  Inputs,
-  ProjectSettings,
-  AzureSolutionSettings,
-  ok,
-  Void,
-  ConfigMap,
-  Colors,
-  Json,
-  CryptoProvider,
-  PermissionRequestProvider,
-} from "@microsoft/teamsfx-api";
 import { TokenCredential } from "@azure/core-auth";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
-import { SolutionLoader } from "../../src/core/loader";
+import {
+  AppStudioTokenProvider,
+  AzureAccountProvider,
+  AzureSolutionSettings,
+  Colors,
+  ConfigMap,
+  CryptoProvider,
+  Func,
+  FxError,
+  GraphTokenProvider,
+  InputTextConfig,
+  InputTextResult,
+  IProgressHandler,
+  Json,
+  LogLevel,
+  LogProvider,
+  MultiSelectConfig,
+  MultiSelectResult,
+  ok,
+  PermissionRequestProvider,
+  ProjectSettings,
+  QTreeNode,
+  Result,
+  RunnableTask,
+  SelectFileConfig,
+  SelectFileResult,
+  SelectFilesConfig,
+  SelectFilesResult,
+  SelectFolderConfig,
+  SelectFolderResult,
+  SingleSelectConfig,
+  SingleSelectResult,
+  Solution,
+  SolutionContext,
+  Stage,
+  SubscriptionInfo,
+  TaskConfig,
+  TelemetryReporter,
+  TokenProvider,
+  Tools,
+  UserInteraction,
+  Void,
+} from "@microsoft/teamsfx-api";
+import * as uuid from "uuid";
 import {
   DEFAULT_PERMISSION_REQUEST,
   PluginNames,
 } from "../../src/plugins/solution/fx-solution/constants";
-import * as uuid from "uuid";
 
 export class MockSolution implements Solution {
-  name = "fx-solution-mock";
+  name = "fx-solution-azure";
   async create(ctx: SolutionContext): Promise<Result<any, FxError>> {
     ctx.projectSettings!.solutionSettings = this.solutionSettings();
     const config = new ConfigMap();
@@ -114,15 +112,6 @@ export class MockSolution implements Solution {
     const config = new ConfigMap();
     ctx.envInfo.profile.set("solution", config);
     return ok(Void);
-  }
-}
-
-export class MockSolutionLoader implements SolutionLoader {
-  async loadSolution(inputs: Inputs): Promise<Solution> {
-    return new MockSolution();
-  }
-  async loadGlobalSolutions(inputs: Inputs): Promise<Solution[]> {
-    return [new MockSolution()];
   }
 }
 

@@ -32,10 +32,10 @@
         }
       },
       "dependencies": {
-        "clientId": ["clientSecret", "objectId", "oauth2PermissionScopeId"],
-        "clientSecret": ["clientId", "objectId", "oauth2PermissionScopeId"],
-        "objectId": ["clientId", "clientSecret", "oauth2PermissionScopeId"],
-        "oauth2PermissionScopeId": ["clientId", "clientSecret", "objectId"]
+        "clientId": ["clientSecret", "objectId", "accessAsUserScopeId"],
+        "clientSecret": ["clientId", "objectId", "accessAsUserScopeId"],
+        "objectId": ["clientId", "clientSecret", "accessAsUserScopeId"],
+        "accessAsUserScopeId": ["clientId", "clientSecret", "objectId"]
       },
       "additionalProperties": false
     },

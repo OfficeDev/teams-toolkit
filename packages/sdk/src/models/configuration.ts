@@ -55,6 +55,13 @@ export interface AuthenticationConfiguration {
   readonly clientSecret?: string;
 
   /**
+   * The path to a PEM-encoded public/private key certificate on the filesystem. Default value comes from M365_CERTIFICATE_PATH environment variable
+   *
+   * @readonly
+   */
+  readonly certificatePath?: string;
+
+  /**
    * Endpoint of auth service provisioned by Teams Framework. Default value comes from SIMPLE_AUTH_ENDPOINT environment variable.
    *
    * @readonly

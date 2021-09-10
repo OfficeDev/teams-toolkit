@@ -7,9 +7,9 @@ export class Constants {
   public static readonly PLUGIN_NAME = "AppStudioPlugin";
   public static readonly PUBLISH_PATH_QUESTION = "manifest-folder";
   public static readonly BUILD_OR_PUBLISH_QUESTION = "build-or-publish";
-  public static readonly REMOTE_TEAMS_APP_ID = "teams-app-id";
   public static readonly READ_MORE = "Read more";
   public static readonly PUBLISH_GUIDE = "https://aka.ms/teamsfx-publish";
+  public static readonly TEAMS_APP_ID = "teamsAppId";
 
   public static readonly PERMISSIONS = {
     name: "Teams App",
@@ -87,14 +87,14 @@ export const TEAMS_APP_MANIFEST_TEMPLATE = `{
 export const TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV = `{
   "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.9/MicrosoftTeams.schema.json",
   "manifestVersion": "1.9",
-  "version": "{version}",
-  "id": "{appid}",
+  "version": "1.0.0",
+  "id": "{{profile.fx-resource-appstudio.teamsAppId}}",
   "packageName": "com.microsoft.teams.extension",
   "developer": {
       "name": "Teams App, Inc.",
-      "websiteUrl": "{baseUrl}",
-      "privacyUrl": "{baseUrl}/index.html#/privacy",
-      "termsOfUseUrl": "{baseUrl}/index.html#/termsofuse"
+      "websiteUrl": "{{{profile.fx-resource-frontend-hosting.endpoint}}}",
+      "privacyUrl": "{{{profile.fx-resource-frontend-hosting.endpoint}}}/index.html#/privacy",
+      "termsOfUseUrl": "{{{profile.fx-resource-frontend-hosting.endpoint}}}/index.html#/termsofuse"
   },
   "icons": {
       "color": "resources/color.png",
@@ -119,8 +119,8 @@ export const TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV = `{
   ],
   "validDomains": [],
   "webApplicationInfo": {
-      "id": "{appClientId}",
-      "resource": "{webApplicationInfoResource}"
+      "id": "{{profile.fx-resource-aad-app-for-teams.clientId}}",
+      "resource": "{{{profile.fx-resource-aad-app-for-teams.applicationIdUris}}}"
   }
 }`;
 
@@ -234,6 +234,24 @@ export const STATIC_TABS_TPL: IStaticTab[] = [
     contentUrl: "{baseUrl}/index.html#/tab",
     websiteUrl: "{baseUrl}/index.html#/tab",
     scopes: ["personal"],
+  },
+];
+
+export const STATIC_TABS_TPL_FOR_MULTI_ENV: IStaticTab[] = [
+  {
+    entityId: "index",
+    name: "Personal Tab",
+    contentUrl: "{{{profile.fx-resource-frontend-hosting.endpoint}}}/index.html#/tab",
+    websiteUrl: "{{{profile.fx-resource-frontend-hosting.endpoint}}}/index.html#/tab",
+    scopes: ["personal"],
+  },
+];
+
+export const CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV: IConfigurableTab[] = [
+  {
+    configurationUrl: "{{{profile.fx-resource-frontend-hosting.endpoint}}}/index.html#/config",
+    canUpdateConfiguration: true,
+    scopes: ["team", "groupchat"],
   },
 ];
 

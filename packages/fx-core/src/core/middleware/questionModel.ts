@@ -1,9 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { NextFunction, Middleware } from "@feathersjs/hooks";
+import { Middleware, NextFunction } from "@feathersjs/hooks";
 import {
-  Core,
   err,
   Func,
   FxError,
@@ -14,20 +13,17 @@ import {
   Stage,
   traverse,
 } from "@microsoft/teamsfx-api";
+import { isV2 } from "..";
 import { CoreHookContext, FxCore } from "../..";
 import { deepCopy } from "../../common";
-import { CoreHookContextV2, FxCoreV2 } from "../v2";
 
 /**
  * This middleware will help to collect input from question flow
  */
-export const QuestionModelMW: Middleware = async (
-  ctx: CoreHookContext | CoreHookContextV2,
-  next: NextFunction
-) => {
+export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
   const inputs: Inputs = ctx.arguments[ctx.arguments.length - 1];
   const method = ctx.method;
-  const core = ctx.self as FxCore | FxCoreV2;
+  const core = ctx.self as FxCore;
 
   let getQuestionRes: Result<QTreeNode | undefined, FxError> = ok(undefined);
   if (method === "createProject") {
@@ -35,30 +31,42 @@ export const QuestionModelMW: Middleware = async (
   } else if (method === "migrateV1Project") {
     getQuestionRes = await core._getQuestionsForMigrateV1Project(inputs);
   } else {
-    if ((ctx.self as Core).version === "1") {
-      const solution = ctx.solution!;
-      const solutionContext = ctx.solutionContext!;
-      if (method === "provisionResources") {
-        getQuestionRes = await core._getQuestions(
-          solutionContext,
-          solution,
-          Stage.provision,
-          inputs
-        );
-      } else if (method === "localDebug") {
-        getQuestionRes = await core._getQuestions(solutionContext, solution, Stage.debug, inputs);
-      } else if (method === "deployArtifacts") {
-        getQuestionRes = await core._getQuestions(solutionContext, solution, Stage.deploy, inputs);
-      } else if (method === "publishApplication") {
-        getQuestionRes = await core._getQuestions(solutionContext, solution, Stage.publish, inputs);
-      } else if (method === "executeUserTask") {
-        const func = ctx.arguments[0] as Func;
-        getQuestionRes = await core._getQuestionsForUserTask(
-          solutionContext,
-          solution,
-          func,
-          inputs
-        );
+    if (!isV2()) {
+      if (ctx.solution && ctx.solutionContext) {
+        const solution = ctx.solution;
+        const solutionContext = ctx.solutionContext;
+        if (method === "provisionResources") {
+          getQuestionRes = await core._getQuestions(
+            solutionContext,
+            solution,
+            Stage.provision,
+            inputs
+          );
+        } else if (method === "localDebug") {
+          getQuestionRes = await core._getQuestions(solutionContext, solution, Stage.debug, inputs);
+        } else if (method === "deployArtifacts") {
+          getQuestionRes = await core._getQuestions(
+            solutionContext,
+            solution,
+            Stage.deploy,
+            inputs
+          );
+        } else if (method === "publishApplication") {
+          getQuestionRes = await core._getQuestions(
+            solutionContext,
+            solution,
+            Stage.publish,
+            inputs
+          );
+        } else if (method === "executeUserTask") {
+          const func = ctx.arguments[0] as Func;
+          getQuestionRes = await core._getQuestionsForUserTask(
+            solutionContext,
+            solution,
+            func,
+            inputs
+          );
+        }
       }
     }
   }

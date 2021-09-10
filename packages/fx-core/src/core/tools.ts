@@ -10,6 +10,11 @@ import {
   V1ManifestFileName,
   ProjectSettingsFileName,
   EnvConfig,
+  InputConfigsFolderName,
+  err,
+  FxError,
+  Result,
+  ok,
 } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import * as fs from "fs-extra";
@@ -24,9 +29,9 @@ import {
   TabOptionItem,
 } from "../plugins/solution/fx-solution/question";
 import { environmentManager } from "./environment";
-import * as dotenv from "dotenv";
 import { ConstantString } from "../common/constants";
 import { isMultiEnvEnabled } from "../common";
+import { InvalidProjectError, InvalidProjectSettingsFileError, ReadFileError } from ".";
 
 export function validateProject(solutionContext: SolutionContext): string | undefined {
   const res = validateSettings(solutionContext.projectSettings);
@@ -97,6 +102,15 @@ export function validateSettings(projectSettings?: ProjectSettings): string | un
         return `${PluginNames.APIM} setting is missing in settings.json`;
     }
   }
+
+  if (isMultiEnvEnabled()) {
+    if (
+      !projectSettings.activeEnvironment ||
+      typeof projectSettings.activeEnvironment !== "string"
+    ) {
+      return `activeEnvironment is missing or not a string in ${ProjectSettingsFileName}`;
+    }
+  }
   return undefined;
 }
 
@@ -116,6 +130,51 @@ export function isValidProject(workspacePath?: string): boolean {
   } catch (e) {
     return false;
   }
+}
+
+// TODO: add an async version
+export function getActiveEnv(projectRoot: string): Result<string, FxError> {
+  if (!isMultiEnvEnabled()) {
+    return ok("default");
+  }
+  if (!isValidProject(projectRoot)) {
+    return err(InvalidProjectError());
+  }
+  const settingsJsonPath = path.join(
+    projectRoot,
+    `.${ConfigFolderName}/${InputConfigsFolderName}/${ProjectSettingsFileName}`
+  );
+  let settingsContent;
+  try {
+    settingsContent = fs.readFileSync(settingsJsonPath, "utf8");
+  } catch (error) {
+    return err(ReadFileError(error));
+  }
+
+  let settingsJson;
+  try {
+    settingsJson = JSON.parse(settingsContent);
+  } catch (error) {
+    return err(
+      InvalidProjectSettingsFileError(
+        `Project settings file is not a valid JSON, error: '${error}'`
+      )
+    );
+  }
+
+  if (
+    !settingsJson ||
+    !settingsJson.activeEnvironment ||
+    typeof settingsJson.activeEnvironment !== "string"
+  ) {
+    return err(
+      InvalidProjectSettingsFileError(
+        "The property 'activeEnvironment' does not exist in project settings file."
+      )
+    );
+  }
+
+  return ok(settingsJson.activeEnvironment as string);
 }
 
 export async function validateV1Project(

@@ -4,91 +4,50 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import { hooks } from "@feathersjs/hooks/lib";
 import {
-  ok,
-  err,
-  QTreeNode,
-  ConfigMap,
-  Stage,
+  ArchiveFolderName,
+  AzureSolutionSettings,
+  Colors,
   combine,
-  returnSystemError,
-  returnUserError,
-  PluginContext,
-  Plugin,
+  ConfigMap,
+  DynamicPlatforms,
+  err,
   Func,
   FxError,
+  Inputs,
+  ok,
+  OptionItem,
+  Platform,
+  Plugin,
+  PluginContext,
+  ProjectSettings,
+  QTreeNode,
   Result,
+  returnSystemError,
+  returnUserError,
   Solution,
   SolutionConfig,
   SolutionContext,
-  TeamsAppManifest,
-  OptionItem,
-  AppPackageFolderName,
-  AzureSolutionSettings,
-  Platform,
-  Inputs,
-  DynamicPlatforms,
-  SubscriptionInfo,
-  ProjectSettings,
   SolutionSettings,
-  ArchiveFolderName,
-  Colors,
+  Stage,
+  SubscriptionInfo,
+  TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
-import { checkSubscription, fillInCommonQuestions } from "./commonQuestions";
-import { executeLifecycles, executeConcurrently, LifecyclesWithContext } from "./executor";
-import { getPluginContext, sendErrorTelemetryThenReturnError } from "./utils/util";
+import axios from "axios";
 import * as fs from "fs-extra";
-import {
-  DEFAULT_PERMISSION_REQUEST,
-  GLOBAL_CONFIG,
-  SolutionError,
-  LOCAL_DEBUG_AAD_ID,
-  LOCAL_DEBUG_TEAMS_APP_ID,
-  Void,
-  SOLUTION_PROVISION_SUCCEEDED,
-  LOCAL_APPLICATION_ID_URIS,
-  LOCAL_CLIENT_SECRET,
-  REMOTE_AAD_ID,
-  REMOTE_APPLICATION_ID_URIS,
-  REMOTE_CLIENT_SECRET,
-  PROGRAMMING_LANGUAGE,
-  REMOTE_TEAMS_APP_ID,
-  CancelError,
-  SolutionTelemetryProperty,
-  SolutionTelemetryEvent,
-  SolutionTelemetryComponentName,
-  SolutionTelemetrySuccess,
-  PluginNames,
-  ARM_TEMPLATE_OUTPUT,
-  USER_INFO,
-  REMOTE_TENANT_ID,
-  SUBSCRIPTION_ID,
-  SUBSCRIPTION_NAME,
-} from "./constants";
-
-import {
-  AzureResourceFunction,
-  AzureResourceSQL,
-  AzureResourcesQuestion,
-  AzureSolutionQuestionNames,
-  BotOptionItem,
-  DeployPluginSelectQuestion,
-  HostTypeOptionAzure,
-  HostTypeOptionSPFx,
-  FrontendHostTypeQuestion,
-  TabOptionItem,
-  MessageExtensionItem,
-  AzureResourceApim,
-  createCapabilityQuestion,
-  createAddAzureResourceQuestion,
-  AskSubscriptionQuestion,
-  addCapabilityQuestion,
-  ProgrammingLanguageQuestion,
-  createV1CapabilityQuestion,
-} from "./question";
 import Mustache from "mustache";
 import path from "path";
+import { Container, Service } from "typedi";
 import * as util from "util";
+import { PluginDisplayName } from "../../../common/constants";
+import { LocalSettingsTeamsAppKeys } from "../../../common/localSettingsConstants";
+import {
+  AadOwner,
+  Collaborator,
+  ResourcePermission,
+  TeamsAppAdmin,
+} from "../../../common/permissionInterface";
 import {
   deepCopy,
   getStrings,
@@ -96,24 +55,68 @@ import {
   isMultiEnvEnabled,
   isUserCancelError,
 } from "../../../common/tools";
-import { getTemplatesFolder } from "../../..";
+import { askTargetEnvironment } from "../../../core/middleware/envInfoLoader";
+import { ErrorHandlerMW } from "../../../core/middleware/errorHandler";
+import { PermissionRequestFileProvider } from "../../../core/permissionRequest";
+import { SolutionPlugins } from "../../../core/SolutionPluginContainer";
+import { AadAppForTeamsPlugin, AppStudioPlugin, SpfxPlugin } from "../../resource";
+import { IUserList } from "../../resource/appstudio/interfaces/IAppDefinition";
+import { deployArmTemplates, generateArmTemplate } from "./arm";
+import { checkSubscription, fillInCommonQuestions } from "./commonQuestions";
+import {
+  ARM_TEMPLATE_OUTPUT,
+  CancelError,
+  DEFAULT_PERMISSION_REQUEST,
+  GLOBAL_CONFIG,
+  LOCAL_APPLICATION_ID_URIS,
+  LOCAL_CLIENT_SECRET,
+  LOCAL_DEBUG_AAD_ID,
+  LOCAL_DEBUG_TEAMS_APP_ID,
+  PluginNames,
+  REMOTE_AAD_ID,
+  REMOTE_APPLICATION_ID_URIS,
+  REMOTE_CLIENT_SECRET,
+  REMOTE_TEAMS_APP_ID,
+  REMOTE_TENANT_ID,
+  SolutionError,
+  SolutionTelemetryComponentName,
+  SolutionTelemetryEvent,
+  SolutionTelemetryProperty,
+  SolutionTelemetrySuccess,
+  SOLUTION_PROVISION_SUCCEEDED,
+  SUBSCRIPTION_ID,
+  SUBSCRIPTION_NAME,
+  USER_INFO,
+  Void,
+} from "./constants";
+import { executeConcurrently, executeLifecycles, LifecyclesWithContext } from "./executor";
+import {
+  addCapabilityQuestion,
+  AskSubscriptionQuestion,
+  AzureResourceApim,
+  AzureResourceFunction,
+  AzureResourceSQL,
+  AzureResourcesQuestion,
+  AzureSolutionQuestionNames,
+  BotOptionItem,
+  createAddAzureResourceQuestion,
+  createCapabilityQuestion,
+  createV1CapabilityQuestion,
+  DeployPluginSelectQuestion,
+  FrontendHostTypeQuestion,
+  HostTypeOptionAzure,
+  HostTypeOptionSPFx,
+  MessageExtensionItem,
+  ProgrammingLanguageQuestion,
+  TabOptionItem,
+} from "./question";
 import {
   getActivatedResourcePlugins,
   getAllResourcePluginMap,
   getAllResourcePlugins,
   ResourcePlugins,
 } from "./ResourcePluginContainer";
-import { AadAppForTeamsPlugin, AppStudioPlugin, SpfxPlugin } from "../../resource";
-import { ErrorHandlerMW } from "../../../core/middleware/errorHandler";
-import { hooks } from "@feathersjs/hooks/lib";
-import { Service, Container } from "typedi";
-import { deployArmTemplates, generateArmTemplate } from "./arm";
-import { PluginDisplayName } from "../../../common/constants";
-import { LocalSettingsTeamsAppKeys } from "../../../common/localSettingsConstants";
-import { scaffoldReadmeAndLocalSettings } from "./v2/scaffolding";
-import { PermissionRequestFileProvider } from "../../../core/permissionRequest";
-import { IUserList } from "../../resource/appstudio/interfaces/IAppDefinition";
-import axios from "axios";
+import { getPluginContext, sendErrorTelemetryThenReturnError } from "./utils/util";
 import {
   canAddCapability,
   canAddResource,
@@ -121,15 +124,9 @@ import {
   extractParamForRegisterTeamsAppAndAad,
   ParamForRegisterTeamsAppAndAad,
 } from "./v2/executeUserTask";
-import {
-  AadOwner,
-  Collaborator,
-  ResourcePermission,
-  TeamsAppAdmin,
-} from "../../../common/permissionInterface";
-import { askTargetEnvironment } from "../../../core/middleware/envInfoLoader";
 import { blockV1Project, ensurePermissionRequest, parseTeamsAppTenantId } from "./v2/utils";
 import { askForProvisionConsent } from "./v2/provision";
+import { scaffoldReadmeAndLocalSettings } from "./v2/scaffolding";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -142,7 +139,7 @@ export enum SolutionRunningState {
   PublishInProgress = "PublishInProgress",
 }
 
-@Service()
+@Service(SolutionPlugins.AzureTeamsSolution)
 export class TeamsAppSolution implements Solution {
   SpfxPlugin: SpfxPlugin;
   AppStudioPlugin: AppStudioPlugin;
@@ -663,17 +660,19 @@ export class TeamsAppSolution implements Solution {
         return ok(undefined);
       },
       async (provisionResults?: Result<any, FxError>[]) => {
-        if (provisionWithCtx.length === provisionResults?.length) {
-          provisionWithCtx.map(function (plugin, index) {
-            if (plugin[2] === PluginNames.APPST) {
-              const teamsAppResult = provisionResults[index];
-              if (teamsAppResult.isOk()) {
-                ctx.envInfo.profile
-                  .get(GLOBAL_CONFIG)
-                  ?.set(REMOTE_TEAMS_APP_ID, teamsAppResult.value);
+        if (!isMultiEnvEnabled()) {
+          if (provisionWithCtx.length === provisionResults?.length) {
+            provisionWithCtx.map(function (plugin, index) {
+              if (plugin[2] === PluginNames.APPST) {
+                const teamsAppResult = provisionResults[index];
+                if (teamsAppResult.isOk()) {
+                  ctx.envInfo.profile
+                    .get(GLOBAL_CONFIG)
+                    ?.set(REMOTE_TEAMS_APP_ID, teamsAppResult.value);
+                }
               }
-            }
-          });
+            });
+          }
         }
 
         if (provisionResults) {
@@ -683,7 +682,6 @@ export class TeamsAppSolution implements Solution {
             }
           }
         }
-
         ctx.logProvider?.info(
           util.format(getStrings().solution.ProvisionFinishNotice, PluginDisplayName.Solution)
         );

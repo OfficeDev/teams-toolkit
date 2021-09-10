@@ -178,7 +178,7 @@ export class AppStudioPlugin implements Plugin {
     } catch (error) {
       TelemetryUtils.sendErrorEvent(TelemetryEventName.buildTeamsPackage, error);
       return err(
-        AppStudioResultFactory.SystemError(
+        AppStudioResultFactory.UserError(
           AppStudioError.TeamsPackageBuildError.name,
           AppStudioError.TeamsPackageBuildError.message(error)
         )
@@ -237,7 +237,7 @@ export class AppStudioPlugin implements Plugin {
         } catch (error) {
           TelemetryUtils.sendErrorEvent(TelemetryEventName.publish, error);
           return err(
-            AppStudioResultFactory.SystemError(
+            AppStudioResultFactory.UserError(
               AppStudioError.TeamsPackageBuildError.name,
               AppStudioError.TeamsPackageBuildError.message(error)
             )

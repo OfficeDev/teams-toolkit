@@ -95,7 +95,7 @@ export interface SolutionPlugin {
    * @param {Json} provisionOutputs - contains the provision output values for manifest placeholders
    * @param {AppStudioTokenProvider} tokenProvider - Token for AppStudio
    */
-  publishApplication?: (
+  publishApplication: (
     ctx: Context,
     inputs: Inputs,
     provisionInputConfig: Json,

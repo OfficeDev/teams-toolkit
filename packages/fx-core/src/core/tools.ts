@@ -108,7 +108,7 @@ export function validateSettings(projectSettings?: ProjectSettings): string | un
       !projectSettings.activeEnvironment ||
       typeof projectSettings.activeEnvironment !== "string"
     ) {
-      return `activeEnvironment is missing or not a string in settings.json`;
+      return `activeEnvironment is missing or not a string in ${ProjectSettingsFileName}`;
     }
   }
   return undefined;

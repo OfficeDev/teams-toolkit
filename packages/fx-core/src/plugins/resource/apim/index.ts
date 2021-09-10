@@ -83,7 +83,7 @@ export class ApimPlugin implements Plugin {
   }
 
   public async executeUserTask(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {
-    if (func.method === UserTask.addResource) {
+    if (func.method === UserTask.addResourceFuncName) {
       return await this.executeWithFxError(PluginLifeCycle.Scaffold, _scaffold, ctx);
     }
     return err(BuildError(NotImplemented));

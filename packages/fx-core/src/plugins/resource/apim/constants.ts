@@ -400,6 +400,6 @@ export enum OpenApiSchemaVersion {
   V3 = "v3",
 }
 
-export enum UserTask {
-  addResource = "addResource",
+export class UserTask {
+  static addResourceFuncName = "addResource";
 }

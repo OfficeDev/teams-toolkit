@@ -34,7 +34,12 @@ import {
 import { ConfigNotFoundError, InvalidEnvFile, ReadFileError } from "./error";
 import AzureAccountManager from "./commonlib/azureLogin";
 import { FeatureFlags } from "./constants";
-import { isMultiEnvEnabled, getActiveEnv, environmentManager } from "@microsoft/teamsfx-core";
+import {
+  isMultiEnvEnabled,
+  getActiveEnv,
+  environmentManager,
+  WriteFileError,
+} from "@microsoft/teamsfx-core";
 
 type Json = { [_: string]: any };
 
@@ -242,14 +247,27 @@ export async function readProjectSecrets(
   }
 }
 
-export function writeSecretToFile(secrets: dotenv.DotenvParseOutput, rootFolder: string): void {
-  const secretFile = `${rootFolder}/.${ConfigFolderName}/${getActiveEnv(rootFolder)}.userdata`;
+export function writeSecretToFile(
+  secrets: dotenv.DotenvParseOutput,
+  rootFolder: string
+): Result<undefined, FxError> {
+  const envResult = getActiveEnv(rootFolder);
+  if (envResult.isErr()) {
+    return err(envResult.error);
+  }
+
+  const secretFile = `${rootFolder}/.${ConfigFolderName}/${envResult.value}.userdata`;
   const array: string[] = [];
   for (const secretKey of Object.keys(secrets)) {
     const secretValue = secrets[secretKey];
     array.push(`${secretKey}=${secretValue}`);
   }
-  fs.writeFileSync(secretFile, array.join("\n"));
+  try {
+    fs.writeFileSync(secretFile, array.join("\n"));
+  } catch (e) {
+    return err(WriteFileError(e));
+  }
+  return ok(undefined);
 }
 
 export async function getSolutionPropertyFromEnvFile(

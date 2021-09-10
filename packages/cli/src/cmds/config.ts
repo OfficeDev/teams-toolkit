@@ -300,7 +300,10 @@ export class ConfigSet extends YargsCommand {
       }
       secretData[option] = encrypted.value;
     }
-    writeSecretToFile(secretData, rootFolder);
+    const writeFileResult = writeSecretToFile(secretData, rootFolder);
+    if (writeFileResult.isErr()) {
+      return err(writeFileResult.error);
+    }
     CLILogProvider.necessaryLog(
       LogLevel.Info,
       `Successfully configured project setting ${option}.`

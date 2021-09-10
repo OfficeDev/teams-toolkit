@@ -64,7 +64,9 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
   beforeEach(function () {
     mockedEnvRestore = mockedEnv({
       M365_CLIENT_ID: clientId,
-      M365_CLIENT_SECRET: clientSecret,
+      // M365_CLIENT_SECRET: clientSecret,
+      M365_CERTIFICATE_PATH:
+        "E:\\Teams\\test\\SDK\\active-directory-dotnetcore-daemon-v2\\0908-convert-from-pfx.pem",
       M365_AUTHORITY_HOST: authorityHost,
       M365_TENANT_ID: tenantId,
     });
@@ -133,7 +135,7 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
       .with.property("code", InvalidConfiguration);
   });
 
-  it("create OnBehalfOfUserCredential instance should throw InvalidConfiguration Error when clientSecret not found", async function () {
+  it("create OnBehalfOfUserCredential instance should throw InvalidConfiguration Error when clientSecret, certificatePath not found", async function () {
     mockedEnvRestore = mockedEnv(
       {
         M365_CLIENT_ID: clientId,
@@ -147,7 +149,10 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
     expect(() => {
       new OnBehalfOfUserCredential(ssoToken);
     })
-      .to.throw(ErrorWithCode, "clientSecret in configuration is invalid: undefined")
+      .to.throw(
+        ErrorWithCode,
+        "clientSecret, certificatePath in configuration is invalid: undefined"
+      )
       .with.property("code", InvalidConfiguration);
   });
 
@@ -169,7 +174,7 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
       .with.property("code", InvalidConfiguration);
   });
 
-  it("create OnBehalfOfUserCredential instance should throw InvalidConfiguration Error when clientId, clientSecret, authorityHost, tenantId not found", async function () {
+  it("create OnBehalfOfUserCredential instance should throw InvalidConfiguration Error when clientId, clientSecret, certificatePath, authorityHost, tenantId not found", async function () {
     mockedEnvRestore = mockedEnv({}, { clear: true });
     loadConfiguration();
 
@@ -178,7 +183,7 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
     })
       .to.throw(
         ErrorWithCode,
-        "clientId, authorityHost, clientSecret, tenantId in configuration is invalid: undefined"
+        "clientId, authorityHost, clientSecret, certificatePath, tenantId in configuration is invalid: undefined"
       )
       .with.property("code", InvalidConfiguration);
   });

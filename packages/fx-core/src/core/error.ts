@@ -110,6 +110,14 @@ export class ConcurrentError extends UserError {
   }
 }
 
+export function InvalidProjectSettingsFileError(msg?: string): UserError {
+  return newUserError(
+    CoreSource,
+    "InvalidProjectSettingsFile",
+    `The projectSettings.json file is corrupted.`
+  );
+}
+
 export function TaskNotSupportError(task: Stage | string): SystemError {
   return newSystemError(CoreSource, "TaskNotSupport", `Task is not supported yet: ${task}`);
 }

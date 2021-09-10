@@ -155,6 +155,7 @@ export enum TelemetryTiggerFrom {
   TreeView = "TreeView",
   Webview = "Webview",
   Other = "Other",
+  Unknow = "Unknow",
 }
 
 export enum WatchVideoFrom {

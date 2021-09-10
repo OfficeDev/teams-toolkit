@@ -125,7 +125,7 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<Result<undef
   try {
     // Read context and userdata file.
     context = await readContext(contextPath);
-    userData = await readUserData(userDataPath, projectSettings.projectId);
+    userData = await readUserData(userDataPath);
   } catch (error) {
     const errorObject = ReadFileError(error);
     core?.tools?.logProvider?.info(errorObject.message);
@@ -160,7 +160,7 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<Result<undef
   try {
     // Save the updated context and UserData.
     await saveContext(contextPath, context);
-    await saveUserData(userDataPath, userData, projectSettings.projectId);
+    await saveUserData(userDataPath, userData);
   } catch (error) {
     const errorObject = WriteFileError(error);
     core?.tools?.logProvider?.info(errorObject.message);
@@ -179,58 +179,18 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<Result<undef
 }
 
 // TODO: add readUserData as basic API in core since used in multiple places.
-async function readUserData(
-  userDataPath: string,
-  projectId?: string
-): Promise<Record<string, string>> {
+async function readUserData(userDataPath: string): Promise<Record<string, string>> {
+  let dict: Record<string, string> = {};
   if (await fs.pathExists(userDataPath)) {
     const dictContent = await fs.readFile(userDataPath, "UTF-8");
-    if (dictContent) {
-      const dict = deserializeDict(dictContent);
-      if (dict && projectId) {
-        const cryptoProvider = new LocalCrypto(projectId);
-        for (const secretKey of Object.keys(dict)) {
-          if (!dataNeedEncryption(secretKey)) {
-            continue;
-          }
-          const secretValue = dict[secretKey];
-          const plaintext = cryptoProvider.decrypt(secretValue);
-          if (plaintext.isErr()) {
-            const fxError: SystemError = plaintext.error;
-            const fileName = basename(userDataPath);
-            fxError.message = `Project update failed because of ${fxError.name}(file:${fileName}):${fxError.message}, if your local file '*.userdata' is not modified, please report to us by click 'Report Issue' button.`;
-            fxError.userData = `file: ${fileName}\n------------FILE START--------\n${dictContent}\n------------FILE END----------`;
-            sendTelemetryErrorEvent(Component.core, TelemetryEvent.DecryptUserdata, fxError);
-            throw plaintext.error;
-          }
-          dict[secretKey] = plaintext.value;
-        }
-        return dict;
-      }
-    }
+    dict = deserializeDict(dictContent);
   }
-  return {};
+
+  return dict;
 }
 
 // TODO: add saveUserData as basic API in core since used in multiple places.
-async function saveUserData(
-  userDataPath: string,
-  userData: Record<string, string>,
-  projectId?: string
-): Promise<void> {
-  if (projectId) {
-    const cryptoProvider = new LocalCrypto(projectId);
-    for (const secretKey of Object.keys(userData)) {
-      if (!dataNeedEncryption(secretKey)) {
-        continue;
-      }
-
-      const encryptedSecret = cryptoProvider.encrypt(userData[secretKey]);
-      if (encryptedSecret.isOk()) {
-        userData[secretKey] = encryptedSecret.value;
-      }
-    }
-  }
+async function saveUserData(userDataPath: string, userData: Record<string, string>): Promise<void> {
   await fs.writeFile(userDataPath, serializeDict(userData));
 }
 

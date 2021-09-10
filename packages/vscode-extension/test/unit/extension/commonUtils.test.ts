@@ -1,7 +1,13 @@
 import * as chai from "chai";
+
 import * as sinon from "sinon";
+
 import * as fs from "fs-extra";
+
+import * as os from "os";
+
 import * as commonUtils from "../../../src/utils/commonUtils";
+
 import * as extensionPackage from "../../../package.json";
 
 suite("CommonUtils", () => {
@@ -36,6 +42,7 @@ suite("CommonUtils", () => {
       sinon.stub(extensionPackage, "featureFlag").value("true");
 
       chai.expect(commonUtils.isFeatureFlag()).equals(true);
+
       sinon.restore();
     });
 
@@ -43,6 +50,7 @@ suite("CommonUtils", () => {
       sinon.stub(extensionPackage, "featureFlag").value("false");
 
       chai.expect(commonUtils.isFeatureFlag()).equals(false);
+
       sinon.restore();
     });
   });
@@ -50,27 +58,69 @@ suite("CommonUtils", () => {
   suite("isSPFxProject", () => {
     test("return false for non-spfx project", async () => {
       const testPath = "./testProject/SPFx";
+
       sinon.stub(fs, "pathExists").callsFake((path: string) => {
         if (path === testPath) {
           return true;
         }
+
         return false;
       });
 
       chai.expect(await commonUtils.isSPFxProject("./invalidPath")).equals(false);
+
       sinon.restore();
     });
 
     test("return true for spfx project", async () => {
       const testPath = "./testProject";
+
       sinon.stub(fs, "pathExists").callsFake((path: string) => {
         if (path === `${testPath}/SPFx`) {
           return true;
         }
+
         return false;
       });
 
       chai.expect(await commonUtils.isSPFxProject(testPath)).equals(true);
+
+      sinon.restore();
+    });
+  });
+
+  suite("sleep", () => {
+    test("sleep should be accurate", async () => {
+      const start = Date.now();
+
+      commonUtils.sleep(1000).then(() => {
+        const millis = Date.now() - start;
+
+        chai.expect(millis).gte(1000);
+
+        chai.expect(millis).lte(1100);
+      });
+    });
+  });
+
+  suite("os assertion", () => {
+    test("should return exactly result according to os.type", async () => {
+      sinon.stub(os, "type").returns("Windows_NT");
+
+      chai.expect(commonUtils.isWindows()).equals(true);
+
+      sinon.restore();
+
+      sinon.stub(os, "type").returns("Linux");
+
+      chai.expect(commonUtils.isLinux()).equals(true);
+
+      sinon.restore();
+
+      sinon.stub(os, "type").returns("Darwin");
+
+      chai.expect(commonUtils.isMacOS()).equals(true);
+
       sinon.restore();
     });
   });

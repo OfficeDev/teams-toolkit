@@ -20,6 +20,8 @@ import Config from "./config";
 import Preview from "./preview/preview";
 import { isRemoteCollaborationEnabled } from "../utils";
 import Permission from "./permission";
+import { isMultiEnvEnabled } from "@microsoft/teamsfx-core";
+import Env from "./env";
 
 export const commands: YargsCommand[] = [
   new Account(),
@@ -35,6 +37,10 @@ export const commands: YargsCommand[] = [
   new Config(),
   new Preview(),
 ];
+
+if (isMultiEnvEnabled()) {
+  commands.push(new Env());
+}
 
 /**
  * Registers cli and partner commands with yargs.

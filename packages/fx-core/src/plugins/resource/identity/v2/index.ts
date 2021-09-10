@@ -2,17 +2,23 @@
 // Licensed under the MIT license.
 
 import {
-  AzureSolutionSettings, FxError,
+  AzureSolutionSettings,
+  FxError,
   Json,
   Result,
-  TokenProvider
+  TokenProvider,
 } from "@microsoft/teamsfx-api";
-import { Context, ProvisionInputs, ResourcePlugin, ResourceProvisionOutput } from "@microsoft/teamsfx-api/build/v2";
+import {
+  Context,
+  ProvisionInputs,
+  ResourcePlugin,
+  ResourceProvisionOutput,
+} from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
 import { IdentityPlugin } from "..";
 import {
   ResourcePlugins,
-  ResourcePluginsV2
+  ResourcePluginsV2,
 } from "../../../solution/fx-solution/ResourcePluginContainer";
 import { provisionResourceAdapter } from "../../utils4v2";
 
@@ -32,6 +38,12 @@ export class IdentityPluginV2 implements ResourcePlugin {
     provisionInputConfig: Json,
     tokenProvider: TokenProvider
   ): Promise<Result<ResourceProvisionOutput, FxError>> {
-    return await provisionResourceAdapter(ctx, inputs, provisionInputConfig, tokenProvider, this.plugin);
+    return await provisionResourceAdapter(
+      ctx,
+      inputs,
+      provisionInputConfig,
+      tokenProvider,
+      this.plugin
+    );
   }
 }

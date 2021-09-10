@@ -9,22 +9,19 @@ import {
   Json,
   QTreeNode,
   Result,
-  Void
+  Void,
 } from "@microsoft/teamsfx-api";
-import {
-  Context,
-  DeploymentInputs, ResourcePlugin
-} from "@microsoft/teamsfx-api/build/v2";
+import { Context, DeploymentInputs, ResourcePlugin } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
 import { SpfxPlugin } from "../..";
 import {
   ResourcePlugins,
-  ResourcePluginsV2
+  ResourcePluginsV2,
 } from "../../../solution/fx-solution/ResourcePluginContainer";
 import {
   deployAdapter,
   getQuestionsForScaffoldingAdapter,
-  scaffoldSourceCodeAdapter
+  scaffoldSourceCodeAdapter,
 } from "../../utils4v2";
 
 @Service(ResourcePluginsV2.SpfxPlugin)
@@ -45,10 +42,7 @@ export class SpfxPluginV2 implements ResourcePlugin {
     return await getQuestionsForScaffoldingAdapter(ctx, inputs, this.plugin);
   }
 
-  async scaffoldSourceCode(
-    ctx: Context,
-    inputs: Inputs
-  ): Promise<Result<Void, FxError>> {
+  async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
     return await scaffoldSourceCodeAdapter(ctx, inputs, this.plugin);
   }
 

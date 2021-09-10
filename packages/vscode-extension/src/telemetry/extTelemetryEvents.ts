@@ -105,6 +105,9 @@ export enum TelemetryEvent {
 
   CheckSideloading = "check-sideloading",
   OpenSideloadingReadmore = "open-sideloading-readmore",
+
+  ShowWhatIsNewNotification = "show-what-is-new-notification",
+  ShowWhatIsNewContext = "show-what-is-new-context",
 }
 
 export enum TelemetryProperty {

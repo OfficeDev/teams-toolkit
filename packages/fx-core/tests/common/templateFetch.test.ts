@@ -6,14 +6,12 @@ import * as sinon from "sinon";
 import AdmZip from "adm-zip";
 import axios from "axios";
 
-import * as templates from "../../../../../src/common/templates";
-import { FunctionPluginInfo } from "../../../../../src/plugins/resource/function/constants";
+import * as templates from "../../src/common/templates";
 import {
-  fetchZipFromURL,
-  getTemplateURL,
-  requestWithRetry,
-} from "../../../../../src/plugins/resource/function/utils/templates-fetch";
-import { FunctionLanguage } from "../../../../../src/plugins/resource/function/enums";
+  fetchTemplateUrl,
+  fetchZipFromUrl,
+  sendRequestWithRetry,
+} from "../../src/common/templatesUtils";
 
 const candidateTag = templates.tagPrefix + templates.templatesVersion.replace(/\*/g, "0");
 const targetTag = templates.tagPrefix + templates.templatesVersion.replace(/\*/g, "1");
@@ -28,7 +26,10 @@ ${candidateTag}
 ${targetTag}
 `;
 
-describe(FunctionPluginInfo.pluginName, () => {
+const tryLimits = 1;
+const timeout = 1000;
+
+describe("template-helper", () => {
   describe("Template Fetch Test", () => {
     afterEach(() => {
       sinon.restore();
@@ -39,7 +40,7 @@ describe(FunctionPluginInfo.pluginName, () => {
       sinon.stub(axios, "get").resolves({ status: 200, data: manifest });
 
       // Act
-      const url = await getTemplateURL("a", FunctionLanguage.JavaScript, "c");
+      const url = await fetchTemplateUrl("a", "js", "c", tryLimits, timeout);
 
       // Assert
       chai.assert.equal(url, templates.templateURL(targetTag, "a.js.c"));
@@ -50,13 +51,13 @@ describe(FunctionPluginInfo.pluginName, () => {
       sinon.stub(axios, "get").resolves({ status: 200, data: new AdmZip().toBuffer() });
 
       // Act
-      const zip = await fetchZipFromURL("ut");
+      const zip = await fetchZipFromUrl("ut", tryLimits, timeout);
 
       // Assert
       chai.assert.equal(zip.getEntries().length, 0);
     });
 
-    it("Test requestWithRetry", async () => {
+    it("Test sendRequestWithRetry", async () => {
       // Arrange
       let cnt = 1;
       const fn = async (): Promise<any> => {
@@ -67,7 +68,7 @@ describe(FunctionPluginInfo.pluginName, () => {
       };
 
       // Act
-      const res = await requestWithRetry(2, fn);
+      const res = await sendRequestWithRetry(fn, 2);
 
       // Assert
       chai.assert.deepEqual(res, { status: 200 } as any);

@@ -1,9 +1,6 @@
 module.exports = {
   exit: true,
-
   timeout: 0,
-
-  reporter: "@mochajs/json-file-reporter",
-
+  reporter: "spec",
   require: "ts-node/register",
 };

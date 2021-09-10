@@ -8,22 +8,19 @@ import {
   Json,
   Result,
   TokenProvider,
-  Void
+  Void,
 } from "@microsoft/teamsfx-api";
-import {
-  Context, ResourcePlugin,
-  ResourceTemplate
-} from "@microsoft/teamsfx-api/build/v2";
+import { Context, ResourcePlugin, ResourceTemplate } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
 import { SimpleAuthPlugin } from "../..";
 import {
   ResourcePlugins,
-  ResourcePluginsV2
+  ResourcePluginsV2,
 } from "../../../solution/fx-solution/ResourcePluginContainer";
 import {
   configureLocalResourceAdapter,
   generateResourceTemplateAdapter,
-  provisionLocalResourceAdapter
+  provisionLocalResourceAdapter,
 } from "../../utils4v2";
 
 @Service(ResourcePluginsV2.SimpleAuthPlugin)

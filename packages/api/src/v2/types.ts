@@ -22,7 +22,7 @@ export interface Context {
   permissionRequestProvider: PermissionRequestProvider;
 }
 
-export interface LocalSettings extends Json{
+export interface LocalSettings extends Json {
   teamsApp: Record<string, string>;
   auth?: Record<string, string>;
   frontend?: Record<string, string>;

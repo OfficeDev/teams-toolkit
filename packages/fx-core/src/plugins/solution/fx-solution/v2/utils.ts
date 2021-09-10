@@ -36,9 +36,7 @@ export function isAzureProject(azureSettings: AzureSolutionSettings): boolean {
   return HostTypeOptionAzure.id === azureSettings.hostType;
 }
 
-export function combineRecords(
-  records: { name: string; result: Json }[]
-): Record<string, Json> {
+export function combineRecords(records: { name: string; result: Json }[]): Record<string, Json> {
   const ret: Record<v2.PluginName, Json> = {};
   for (const record of records) {
     ret[record.name] = record.result;

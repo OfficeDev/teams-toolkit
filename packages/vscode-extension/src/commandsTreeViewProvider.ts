@@ -336,28 +336,8 @@ class CommandsWebviewProvider implements vscode.WebviewViewProvider {
 
     webviewView.webview.onDidReceiveMessage(async (msg) => {
       switch (msg.command) {
-        case Commands.Provision:
-          await runCommand(Stage.provision);
-          break;
-        case Commands.ValidateManifest:
-          const validateFunc: Func = {
-            namespace: "fx-solution-azure",
-            method: "validateManifest",
-          };
-          await runUserTask(validateFunc, TelemetryEvent.ValidateManifest);
-          break;
-        case Commands.PackageTeams:
-          const packageFunc: Func = {
-            namespace: "fx-solution-azure",
-            method: "buildPackage",
-          };
-          await runUserTask(packageFunc, TelemetryEvent.Build);
-          break;
-        case Commands.Deploy:
-          await runCommand(Stage.deploy);
-          break;
-        case Commands.Publish:
-          await runCommand(Stage.publish);
+        case Commands.ExecuteCommand:
+          await vscode.commands.executeCommand(msg.id, "TreeView");
           break;
         case Commands.OpenExternalLink:
           vscode.env.openExternal(vscode.Uri.parse(msg.data));
@@ -425,11 +405,10 @@ export default TreeViewManager.getInstance();
 
 export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeViewCommand> {
   public static readonly TreeViewFlag = "TreeView";
-  private _onDidChangeTreeData: vscode.EventEmitter<
-    TreeViewCommand | undefined | void
-  > = new vscode.EventEmitter<TreeViewCommand | undefined | void>();
-  readonly onDidChangeTreeData: vscode.Event<TreeViewCommand | undefined | void> = this
-    ._onDidChangeTreeData.event;
+  private _onDidChangeTreeData: vscode.EventEmitter<TreeViewCommand | undefined | void> =
+    new vscode.EventEmitter<TreeViewCommand | undefined | void>();
+  readonly onDidChangeTreeData: vscode.Event<TreeViewCommand | undefined | void> =
+    this._onDidChangeTreeData.event;
 
   private commands: TreeViewCommand[] = [];
   private disposableMap: Map<string, vscode.Disposable> = new Map();

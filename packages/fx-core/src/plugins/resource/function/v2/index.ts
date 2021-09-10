@@ -3,7 +3,8 @@
 
 import {
   AzureAccountProvider,
-  AzureSolutionSettings, err,
+  AzureSolutionSettings,
+  err,
   Func,
   FxError,
   Inputs,
@@ -11,20 +12,21 @@ import {
   Result,
   TokenProvider,
   traverse,
-  Void
+  Void,
 } from "@microsoft/teamsfx-api";
 import {
   Context,
-  DeploymentInputs, ProvisionInputs,
+  DeploymentInputs,
+  ProvisionInputs,
   ResourcePlugin,
   ResourceProvisionOutput,
-  ResourceTemplate
+  ResourceTemplate,
 } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
 import { FunctionPlugin } from "../..";
 import {
   ResourcePlugins,
-  ResourcePluginsV2
+  ResourcePluginsV2,
 } from "../../../solution/fx-solution/ResourcePluginContainer";
 import {
   configureResourceAdapter,
@@ -33,7 +35,7 @@ import {
   executeUserTaskAdapter,
   generateResourceTemplateAdapter,
   provisionResourceAdapter,
-  scaffoldSourceCodeAdapter
+  scaffoldSourceCodeAdapter,
 } from "../../utils4v2";
 
 @Service(ResourcePluginsV2.FunctionPlugin)
@@ -47,10 +49,7 @@ export class FunctionPluginV2 implements ResourcePlugin {
     return this.plugin.activate(solutionSettings);
   }
 
-  async scaffoldSourceCode(
-    ctx: Context,
-    inputs: Inputs
-  ): Promise<Result<Void, FxError>> {
+  async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
     return await scaffoldSourceCodeAdapter(ctx, inputs, this.plugin);
   }
 
@@ -67,7 +66,13 @@ export class FunctionPluginV2 implements ResourcePlugin {
     provisionInputConfig: Json,
     tokenProvider: TokenProvider
   ): Promise<Result<ResourceProvisionOutput, FxError>> {
-    return await provisionResourceAdapter(ctx, inputs, provisionInputConfig, tokenProvider, this.plugin);
+    return await provisionResourceAdapter(
+      ctx,
+      inputs,
+      provisionInputConfig,
+      tokenProvider,
+      this.plugin
+    );
   }
 
   async configureResource(

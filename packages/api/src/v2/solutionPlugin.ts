@@ -94,7 +94,7 @@ export interface SolutionPlugin {
    * @param {Json} provisionOutputs - contains the provision output values for manifest placeholders
    * @param {AppStudioTokenProvider} tokenProvider - Token for AppStudio
    */
-  publishApplication?: (
+  publishApplication: (
     ctx: Context,
     inputs: Inputs,
     provisionInputConfig: Json,
@@ -109,6 +109,8 @@ export interface SolutionPlugin {
    * them finishes, call configureLocalResource of each plugin.
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
+   * @param {Inputs} inputs - User answers to questions defined in {@link getQuestionsForLifecycleTask}
+   * @param {Json} localSettings - JSON holding the output values for debugging
    * @param {TokenProvider} tokenProvider - Tokens for Azure and AppStudio
    *
    * @returns the output localSettings
@@ -116,6 +118,7 @@ export interface SolutionPlugin {
   provisionLocalResource?: (
     ctx: Context,
     inputs: Inputs,
+    localSettings: Json,
     tokenProvider: TokenProvider
   ) => Promise<Result<Json, FxError>>;
 
@@ -130,5 +133,10 @@ export interface SolutionPlugin {
   /**
    * execute user customized task, for example `Add Resource`, `Add Capabilities`, etc
    */
-  executeUserTask?: (ctx: Context, inputs: Inputs, func: Func) => Promise<Result<unknown, FxError>>;
+  executeUserTask?: (
+    ctx: Context,
+    inputs: Inputs,
+    func: Func,
+    tokenProvider: AppStudioTokenProvider
+  ) => Promise<Result<unknown, FxError>>;
 }

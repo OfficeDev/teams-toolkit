@@ -84,12 +84,12 @@ export class ValidationError extends FunctionPluginError {
   }
 }
 
-export class TemplateManifestNetworkError extends FunctionPluginError {
-  constructor(url: string) {
+export class TemplateManifestError extends FunctionPluginError {
+  constructor(msg: string) {
     super(
       ErrorType.User,
-      "TemplateManifestNetworkError",
-      `Failed to retrieve template package list from ${url}.`,
+      "TemplateManifestError",
+      `Failed to find template from manifest: ${msg}.`,
       [tips.checkNetwork, tips.retryRequest]
     );
   }
@@ -114,14 +114,6 @@ export class TemplateZipFallbackError extends FunctionPluginError {
       "Failed to download zip package and open local zip package.",
       [tips.checkLog, tips.checkNetwork, tips.retryRequest]
     );
-  }
-}
-
-export class BadTemplateManifestError extends FunctionPluginError {
-  constructor(compose: string) {
-    super(ErrorType.User, "BadTemplateManifestError", `Failed to find template for ${compose}.`, [
-      tips.chooseAnotherCompose,
-    ]);
   }
 }
 

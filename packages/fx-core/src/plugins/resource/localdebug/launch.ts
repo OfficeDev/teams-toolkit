@@ -453,5 +453,74 @@ export function generateSpfxConfigurations(): Record<string, unknown>[] {
         order: chromeOrder,
       },
     },
+    {
+      name: "Start Teams workbench (Edge)",
+      type: "pwa-msedge",
+      request: "launch",
+      url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
+      webRoot: "${workspaceRoot}/SPFx",
+      sourceMaps: true,
+      sourceMapPathOverrides: {
+        "webpack:///.././src/*": "${webRoot}/src/*",
+        "webpack:///../../../src/*": "${webRoot}/src/*",
+        "webpack:///../../../../src/*": "${webRoot}/src/*",
+        "webpack:///../../../../../src/*": "${webRoot}/src/*",
+      },
+      postDebugTask: "Terminate All Tasks",
+      presentation: {
+        hidden: true,
+      },
+    },
+    {
+      name: "Start Teams workbench (Chrome)",
+      type: "pwa-chrome",
+      request: "launch",
+      url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
+      webRoot: "${workspaceRoot}/SPFx",
+      sourceMaps: true,
+      sourceMapPathOverrides: {
+        "webpack:///.././src/*": "${webRoot}/src/*",
+        "webpack:///../../../src/*": "${webRoot}/src/*",
+        "webpack:///../../../../src/*": "${webRoot}/src/*",
+        "webpack:///../../../../../src/*": "${webRoot}/src/*",
+      },
+      postDebugTask: "Terminate All Tasks",
+      presentation: {
+        hidden: true,
+      },
+    },
   ];
+}
+
+export function generateSpfxCompounds(): Record<string, unknown>[] {
+  const launchCompounds: Record<string, unknown>[] = [];
+  let edgeOrder = 2,
+    chromeOrder = 1;
+  if (os.type() === "Windows_NT") {
+    edgeOrder = 1;
+    chromeOrder = 2;
+  }
+  launchCompounds.push(
+    {
+      name: "Teams workbench (Edge)",
+      configurations: ["Start Teams workbench (Edge)"],
+      preLaunchTask: "prepare dev env",
+      presentation: {
+        group: "teams",
+        order: edgeOrder,
+      },
+      stopAll: true,
+    },
+    {
+      name: "Teams workbench (Chrome)",
+      configurations: ["Start Teams workbench (Chrome)"],
+      preLaunchTask: "prepare dev env",
+      presentation: {
+        group: "teams",
+        order: chromeOrder,
+      },
+      stopAll: true,
+    }
+  );
+  return launchCompounds;
 }

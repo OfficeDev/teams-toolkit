@@ -11,6 +11,27 @@
 export interface EnvConfig {
   $schema?: string;
   /**
+   * Existing AAD app configuration.
+   */
+  auth?: {
+    /**
+     * The client id of existing AAD app for Teams app.
+     */
+    clientId?: string;
+    /**
+     * The client secret of existing AAD app for Teams app.
+     */
+    clientSecret?: string;
+    /**
+     * The object id of existing AAD app for Teams app.
+     */
+    objectId?: string;
+    /**
+     * The access_as_user scope id of existing AAD app for Teams app.
+     */
+    accessAsUserScopeId?: string;
+  };
+  /**
    * The Azure resource related configuration.
    */
   azure?: {

@@ -249,7 +249,7 @@ describe("API v2 cases: deploy() for Azure projects", () => {
       platform: Platform.VSCode,
     };
     const provisionOutput: Record<string, Json> = {
-      solution: {  },
+      solution: {},
     };
     const result = await deploy(mockedCtx, mockedInputs, provisionOutput, mockedProvider);
     expect(result.isErr()).to.be.true;
@@ -273,7 +273,7 @@ describe("API v2 cases: deploy() for Azure projects", () => {
       platform: Platform.VSCode,
     };
     const provisionOutput: Record<string, Json> = {
-      solution: { provisionSucceeded: true  },
+      solution: { provisionSucceeded: true },
     };
     const result = await deploy(mockedCtx, mockedInputs, provisionOutput, mockedProvider);
     expect(result.isErr()).to.be.true;

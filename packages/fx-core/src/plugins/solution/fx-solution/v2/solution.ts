@@ -37,7 +37,7 @@ export class TeamsAppSolutionV2 implements v2.SolutionPlugin {
 
   provisionResources: (
     ctx: v2.Context,
-    inputs: ProvisionInputs,
+    inputs: Inputs,
     provisionInputConfig: EnvInfoV2,
     tokenProvider: TokenProvider
   ) => Promise<v2.FxResult<v2.SolutionProvisionOutput, FxError>> = function () {
@@ -46,7 +46,7 @@ export class TeamsAppSolutionV2 implements v2.SolutionPlugin {
 
   deploy?: (
     ctx: v2.Context,
-    inputs: DeploymentInputs,
+    inputs: Inputs,
     provisionOutputs: Json,
     tokenProvider: AzureAccountProvider
   ) => Promise<Result<Void, FxError>> = deploy;
@@ -63,7 +63,7 @@ export class TeamsAppSolutionV2 implements v2.SolutionPlugin {
     inputs: Inputs,
     localSettings: Json,
     tokenProvider: TokenProvider
-  ) => Promise<Result<Json, FxError>> = provisionLocalResource;
+  ) => Promise<v2.FxResult<Json, FxError>> = provisionLocalResource;
 
   getQuestionsForScaffolding?: (
     ctx: v2.Context,

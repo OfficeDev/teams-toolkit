@@ -28,7 +28,7 @@ import {
 
 export async function deploy(
   ctx: v2.Context,
-  inputs: v2.DeploymentInputs,
+  inputs: Inputs,
   provisionOutputs: Json,
   tokenProvider: AzureAccountProvider
 ): Promise<Result<Void, FxError>> {
@@ -69,11 +69,15 @@ export async function deploy(
       return {
         pluginName: `${plugin.name}`,
         taskName: "deploy",
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         thunk: () =>
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           plugin.deploy!(
             ctx,
-            { ...inputs, ...extractSolutionInputs(provisionOutputs[GLOBAL_CONFIG]) },
+            {
+              ...inputs,
+              ...extractSolutionInputs(provisionOutputs[GLOBAL_CONFIG]),
+              projectPath: inputs.projectPath!,
+            },
             provisionOutputs[plugin.name],
             tokenProvider
           ),

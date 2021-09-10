@@ -22,13 +22,19 @@ import {
   BicepTemplate,
   Context,
   DeploymentInputs,
+  EnvInfoV2,
   ProvisionInputs,
   ResourceProvisionOutput,
   ResourceTemplate,
 } from "@microsoft/teamsfx-api/build/v2";
 import { CryptoDataMatchers } from "../../common";
 import { ArmResourcePlugin, ScaffoldArmTemplateResult } from "../../common/armInterface";
-import { newEnvInfo, NoProjectOpenedError, PluginHasNoTaskImpl } from "../../core";
+import {
+  InvalidProfileError,
+  newEnvInfo,
+  NoProjectOpenedError,
+  PluginHasNoTaskImpl,
+} from "../../core";
 import { GLOBAL_CONFIG, ARM_TEMPLATE_OUTPUT } from "../solution/fx-solution/constants";
 
 export function convert2PluginContext(ctx: Context, inputs: Inputs): PluginContext {
@@ -102,27 +108,25 @@ export async function generateResourceTemplateAdapter(
 export async function provisionResourceAdapter(
   ctx: Context,
   inputs: ProvisionInputs,
-  provisionInputConfig: Json,
+  envInfo: Readonly<EnvInfoV2>,
   tokenProvider: TokenProvider,
   plugin: Plugin
 ): Promise<Result<ResourceProvisionOutput, FxError>> {
-  if (!plugin.provision) return err(PluginHasNoTaskImpl(plugin.displayName, "provision"));
+  if (!plugin.provision) {
+    return err(PluginHasNoTaskImpl(plugin.displayName, "provision"));
+  }
+  const profile: ConfigMap | undefined = ConfigMap.fromJSON(envInfo.profile);
+  if (!profile) {
+    return err(InvalidProfileError(plugin.name, envInfo.profile));
+  }
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
-  const json: Json = {};
-  Object.assign(json, inputs);
-  if (provisionInputConfig.azure) {
-    Object.assign(json, provisionInputConfig.azure);
-  }
-  const solutionConfig = ConfigMap.fromJSON(json);
-  const configOfOtherPlugins = new Map<string, ConfigMap>();
-  if (solutionConfig) configOfOtherPlugins.set(GLOBAL_CONFIG, solutionConfig);
-  pluginContext.config = new ConfigMap();
-  pluginContext.envInfo = newEnvInfo();
-  pluginContext.envInfo.profile = configOfOtherPlugins;
-  pluginContext.envInfo.config = provisionInputConfig as EnvConfig;
+  pluginContext.envInfo = newEnvInfo(ctx.projectSetting.activeEnvironment);
+  pluginContext.envInfo.profile = profile;
+  pluginContext.envInfo.config = envInfo.config;
+  pluginContext.config = pluginContext.envInfo.profile.get(plugin.name);
   if (plugin.preProvision) {
     const preRes = await plugin.preProvision(pluginContext);
     if (preRes.isErr()) {
@@ -154,22 +158,21 @@ export async function provisionResourceAdapter(
 export async function configureResourceAdapter(
   ctx: Context,
   inputs: ProvisionInputs,
-  provisionInputConfig: Json,
-  provisionOutputs: Json,
+  envInfo: Readonly<EnvInfoV2>,
   tokenProvider: TokenProvider,
   plugin: Plugin & ArmResourcePlugin
-): Promise<Result<Void, FxError>> {
+): Promise<Result<ResourceProvisionOutput, FxError>> {
   if (!plugin.postProvision) return err(PluginHasNoTaskImpl(plugin.displayName, "postProvision"));
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
-  setConfigs(plugin.name, pluginContext, provisionOutputs);
-  pluginContext.envInfo.config = provisionInputConfig as EnvConfig;
+  setConfigs(plugin.name, pluginContext, envInfo.profile);
+  pluginContext.envInfo.config = envInfo.config as EnvConfig;
   const postRes = await plugin.postProvision(pluginContext);
   if (postRes.isErr()) {
     return err(postRes.error);
   }
-  setProvisionOutputs(provisionOutputs, pluginContext);
-  return ok(Void);
+  setProvisionOutputs(envInfo.profile, pluginContext);
+  return ok({ output: envInfo.profile, secrets: {} });
 }
 
 export async function deployAdapter(

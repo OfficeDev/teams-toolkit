@@ -143,9 +143,9 @@ export interface CoreHookContext extends HookContext {
 export function isV2() {
   const flag = process.env[FeatureFlagName.APIV2];
   if (flag === undefined) {
-    return false; 
+    return false;
   } else {
-    return flag === "1" || flag.toLowerCase() === "true"; 
+    return flag === "1" || flag.toLowerCase() === "true";
   }
 }
 
@@ -274,6 +274,7 @@ export class FxCore implements Core {
           ...this.tools.tokenProvider,
           answers: inputs,
         };
+        ctx.projectSettings = projectSettings;
         ctx.solutionContext = solutionContext;
         const createRes = await solution.create(solutionContext);
         if (createRes.isErr()) {
@@ -382,6 +383,7 @@ export class FxCore implements Core {
 
     ctx!.solution = solution;
     ctx!.solutionContext = solutionContext;
+    ctx!.projectSettings = projectSettings;
 
     if (inputs.platform === Platform.VSCode) {
       await globalStateUpdate(globalStateDescription, true);
@@ -1108,7 +1110,7 @@ export async function createBasicFolderStructure(inputs: Inputs): Promise<Result
           description: "",
           author: "",
           scripts: {
-            test: "echo \"Error: no test specified\" && exit 1",
+            test: 'echo "Error: no test specified" && exit 1',
           },
           devDependencies: {
             "@microsoft/teamsfx-cli": "0.*",

@@ -54,6 +54,7 @@ import fs from "fs-extra";
 import { ProgrammingLanguage } from "../../../src/plugins/resource/bot/enums/programmingLanguage";
 import { MockGraphTokenProvider } from "../../core/utils";
 import { createEnv } from "../../../src/plugins/solution/fx-solution/v2/createEnv";
+import { ScaffoldingContextAdapter } from "../../../src/plugins/solution/fx-solution/v2/adaptor";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -453,6 +454,16 @@ describe("V2 implementation", () => {
       mockedInputs.copy = true;
       const result2 = await createEnv(mockedCtx, mockedInputs);
       expect(result2.isOk()).to.be.true;
+    });
+    
+    it("createEnv, ScaffoldingContextAdapter", async () => {
+      const mockedCtx = new MockedV2Context(projectSettings);
+      const mockedInputs: Inputs = {
+        platform: Platform.VSCode,
+      };
+
+      const result = await new ScaffoldingContextAdapter([mockedCtx, mockedInputs]);
+      expect(result.answers!.platform).to.be.equal(Platform.VSCode);
     });
   });
 });

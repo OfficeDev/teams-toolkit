@@ -789,6 +789,8 @@ export async function activateEnvironment(env: string): Promise<Result<Void, FxE
 
 export async function grantPermission(env: string): Promise<Result<Void, FxError>> {
   let result: Result<any, FxError> = ok(Void);
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.GrantPermission);
+
   const eventName = ExtTelemetry.stageToEvent(Stage.grantPermission);
   try {
     const checkCoreRes = checkCoreNotEmpty();
@@ -818,6 +820,8 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
 
 export async function listCollaborator(env: string): Promise<TreeItem[]> {
   let result: TreeItem[] = [];
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ListCollaboratorStart);
+
   try {
     const checkCoreRes = checkCoreNotEmpty();
     if (checkCoreRes.isErr()) {
@@ -854,11 +858,11 @@ export async function listCollaborator(env: string): Promise<TreeItem[]> {
         },
       ];
     }
-    ExtTelemetry.sendTelemetryEvent(Stage.listCollaborator, {
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ListCollaborator, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
     });
   } catch (e) {
-    ExtTelemetry.sendTelemetryErrorEvent(Stage.listCollaborator, e);
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ListCollaborator, e);
     VsCodeLogInstance.warning(
       `code:${e.source}.${e.name}, message: Failed to list collaborator for environment '${env}':  ${e.message}`
     );
@@ -886,6 +890,8 @@ export async function listCollaborator(env: string): Promise<TreeItem[]> {
 
 export async function checkPermission(env: string): Promise<boolean> {
   let result = false;
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CheckPermissionStart);
+
   try {
     const checkCoreRes = checkCoreNotEmpty();
     if (checkCoreRes.isErr()) {

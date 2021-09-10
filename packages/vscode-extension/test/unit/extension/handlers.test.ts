@@ -25,7 +25,6 @@ import * as extension from "../../../src/extension";
 import * as accountTree from "../../../src/accountTree";
 import TreeViewManagerInstance from "../../../src/commandsTreeViewProvider";
 import { CoreHookContext } from "../../../../fx-core/build";
-import { updateCollaboratorList } from "../../../src/envTree";
 
 suite("handlers", () => {
   test("getWorkspacePath()", () => {

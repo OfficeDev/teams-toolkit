@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { ConfigFolderName, InputConfigsFolderName } from "@microsoft/teamsfx-api";
 import { deserializeDict } from "@microsoft/teamsfx-core";
 import { exec } from "child_process";
 import fs from "fs-extra";
@@ -66,6 +67,11 @@ export function getSubscriptionId() {
 }
 
 const envFilePathSuffix = path.join(".fx", "env.default.json");
+const defaultBicepParameterFileSuffix = path.join(
+  `.${ConfigFolderName}`,
+  InputConfigsFolderName,
+  "azure.parameters.dev.json"
+);
 
 export function getConfigFileName(appName: string): string {
   return path.resolve(testFolder, appName, envFilePathSuffix);
@@ -81,6 +87,13 @@ export async function setSimpleAuthSkuNameToB1(projectPath: string) {
   const context = await fs.readJSON(envFilePath);
   context[simpleAuthPluginName]["skuName"] = "B1";
   return fs.writeJSON(envFilePath, context, { spaces: 4 });
+}
+
+export async function setSimpleAuthSkuNameToB1Bicep(projectPath: string) {
+  const parametersFilePath = path.resolve(projectPath, defaultBicepParameterFileSuffix);
+  const parameters = await fs.readJSON(parametersFilePath);
+  parameters["parameters"]["simpleAuth_sku"] = { value: "B1" };
+  return fs.writeJSON(parametersFilePath, parameters, { spaces: 4 });
 }
 
 export async function setBotSkuNameToB1(projectPath: string) {
@@ -257,6 +270,14 @@ export async function readContext(projectPath: string): Promise<any> {
   }
 
   return context;
+}
+
+export function mockTeamsfxMultiEnvFeatureFlag() {
+  const env = Object.assign(process.env, {});
+  env["TEAMSFX_MULTI_ENV"] = "true";
+  env["TEAMSFX_ARM_SUPPORT"] = "true";
+  env["TEAMSFX_BICEP_ENV_CHECKER_ENABLE"] = "true";
+  return env;
 }
 
 function isSecretPattern(value: string) {

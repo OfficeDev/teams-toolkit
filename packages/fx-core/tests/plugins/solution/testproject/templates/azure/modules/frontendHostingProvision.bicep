@@ -1,1 +1,0 @@
-Mocked frontend hosting provision module content

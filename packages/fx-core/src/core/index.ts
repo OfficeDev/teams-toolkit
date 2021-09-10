@@ -247,6 +247,14 @@ export class FxCore implements Core {
           contextV2,
           inputs
         );
+        if(solution.createEnv) {
+          inputs.copy = false;
+          const createEnvRes = await solution.createEnv(contextV2, inputs);
+          if (createEnvRes.isErr()) {
+            return err(createEnvRes.error);
+          }
+        }
+       
         if (generateResourceTemplateRes.isErr()) {
           return err(generateResourceTemplateRes.error);
         }
@@ -274,6 +282,13 @@ export class FxCore implements Core {
         const scaffoldRes = await solution.scaffold(solutionContext);
         if (scaffoldRes.isErr()) {
           return scaffoldRes;
+        }
+        if(solution.createEnv) {
+          solutionContext.answers!.copy = false;
+          const createEnvRes = await solution.createEnv(solutionContext);
+          if (createEnvRes.isErr()) {
+            return err(createEnvRes.error);
+          }
         }
       }
 
@@ -585,7 +600,7 @@ export class FxCore implements Core {
             ctx.contextV2,
             inputs,
             func,
-            this.tools.tokenProvider.appStudioToken
+            this.tools.tokenProvider
           );
         else return err(FunctionRouterError(func));
       } else {
@@ -836,9 +851,10 @@ export class FxCore implements Core {
     throw TaskNotSupportError(Stage.build);
   }
 
-  @hooks([ErrorHandlerMW, ProjectSettingsLoaderMW, ContextInjectorMW])
+  @hooks([ErrorHandlerMW, ProjectSettingsLoaderMW, SolutionLoaderMW(), EnvInfoLoaderMW(isMultiEnvEnabled()), ContextInjectorMW])
   async createEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
-    const projectSettings = ctx!.projectSettings;
+    if (!ctx) return err(new ObjectIsUndefinedError("createEnv input stuff"));
+    const projectSettings = ctx.projectSettings;
     if (!isMultiEnvEnabled() || !projectSettings) {
       return ok(Void);
     }
@@ -866,6 +882,24 @@ export class FxCore implements Core {
       return createEnvResult;
     }
 
+    inputs.sourceEnvName = createEnvCopyInput.sourceEnvName;
+    inputs.targetEnvName = createEnvCopyInput.targetEnvName;
+    
+    if (isV2()) {
+      if (!ctx.solutionV2 || !ctx.contextV2)
+        return err(new ObjectIsUndefinedError("ctx.solutionV2, ctx.contextV2"));
+      if (ctx.solutionV2.createEnv){
+        inputs.copy = true;
+        return await ctx.solutionV2.createEnv(ctx.contextV2, inputs);
+      } 
+    } else {
+      if (!ctx.solution || !ctx.solutionContext)
+        return err(new ObjectIsUndefinedError("ctx.solution, ctx.solutionContext"));
+      if (ctx.solution.createEnv){
+        ctx.solutionContext.answers!.copy = true;
+        return await ctx.solution.createEnv(ctx.solutionContext);
+      } 
+    }
     return ok(Void);
   }
 
@@ -939,28 +973,6 @@ export class FxCore implements Core {
       `[core] copy env config file for ${targetEnvName} environment to path ${targetEnvConfigFilePath}`
     );
 
-    // copy bicep parameter file
-    if (isArmSupportEnabled() && isAzureProject(projectSettings.solutionSettings)) {
-      const solutionContext: SolutionContext = {
-        projectSettings,
-        envInfo: newEnvInfo(targetEnvName),
-        root: inputs.projectPath || "",
-        ...core.tools,
-        ...core.tools.tokenProvider,
-        answers: inputs,
-        cryptoProvider: new LocalCrypto(projectSettings.projectId),
-        permissionRequestProvider: inputs.projectPath
-          ? new PermissionRequestFileProvider(inputs.projectPath)
-          : undefined,
-      };
-
-      try {
-        await copyParameterJson(solutionContext, sourceEnvName);
-      } catch (e) {
-        return err(CopyFileError(e as Error));
-      }
-    }
-
     return ok(Void);
   }
 
@@ -972,10 +984,13 @@ export class FxCore implements Core {
     ProjectSettingsWriterMW,
   ])
   async activateEnv(
-    env: string,
     inputs: Inputs,
     ctx?: CoreHookContext
   ): Promise<Result<Void, FxError>> {
+    const env = inputs.env;
+    if (!env) {
+      return err(new ObjectIsUndefinedError("env"));
+    }
     if (!isMultiEnvEnabled() || !ctx!.projectSettings) {
       return ok(Void);
     }

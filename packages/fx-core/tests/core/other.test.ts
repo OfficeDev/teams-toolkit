@@ -1,7 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FuncValidation, Inputs, Platform, Stage, SystemError, UserError } from "@microsoft/teamsfx-api";
+import {
+  FuncValidation,
+  Inputs,
+  Json,
+  Platform,
+  Stage,
+  SystemError,
+  UserError,
+} from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import fs from "fs-extra";
 import "mocha";
@@ -15,7 +23,7 @@ import { readJson } from "../../src/common/fileUtils";
 import {
   isArmSupportEnabled,
   isFeatureFlagEnabled,
-  isMultiEnvEnabled
+  isMultiEnvEnabled,
 } from "../../src/common/tools";
 import {
   ContextUpgradeError,
@@ -24,10 +32,17 @@ import {
   ProjectFolderExistError,
   ReadFileError,
   TaskNotSupportError,
-  WriteFileError
+  WriteFileError,
 } from "../../src/core/error";
 import { QuestionAppName } from "../../src/core/question";
-import { getAllSolutionPluginsV2, getSolutionPluginByName, getSolutionPluginV2ByName, SolutionPlugins, SolutionPluginsV2 } from "../../src/core/SolutionPluginContainer";
+import {
+  getAllSolutionPluginsV2,
+  getSolutionPluginByName,
+  getSolutionPluginV2ByName,
+  SolutionPlugins,
+  SolutionPluginsV2,
+} from "../../src/core/SolutionPluginContainer";
+import { parseTeamsAppTenantId } from "../../src/plugins/solution/fx-solution/v2/utils";
 import { randomAppName } from "./utils";
 
 describe("Other test case", () => {
@@ -210,24 +225,28 @@ describe("Other test case", () => {
 
   it("SolutionPluginContainer", () => {
     const solutionPluginsV2 = getAllSolutionPluginsV2();
-    assert.isTrue(solutionPluginsV2.map(s=>s.name).includes("fx-solution-azure"));
-    assert.equal(getSolutionPluginV2ByName("fx-solution-azure"), Container.get(SolutionPluginsV2.AzureTeamsSolutionV2));
-    assert.equal(getSolutionPluginByName("fx-solution-azure"), Container.get(SolutionPlugins.AzureTeamsSolution));
+    assert.isTrue(solutionPluginsV2.map((s) => s.name).includes("fx-solution-azure"));
+    assert.equal(
+      getSolutionPluginV2ByName("fx-solution-azure"),
+      Container.get(SolutionPluginsV2.AzureTeamsSolutionV2)
+    );
+    assert.equal(
+      getSolutionPluginByName("fx-solution-azure"),
+      Container.get(SolutionPlugins.AzureTeamsSolution)
+    );
   });
 
   it("fileUtils", async () => {
     try {
       await readJson("abc");
-    }
-    catch(e) {
+    } catch (e) {
       assert.isTrue(e instanceof UserError);
     }
     sandbox.stub<any, any>(fs, "readJson").rejects(new Error("invalid json"));
     sandbox.stub<any, any>(fs, "pathExists").resolves(true);
     try {
       await readJson("abc");
-    }
-    catch(e) {
+    } catch (e) {
       assert.isTrue(e instanceof SystemError);
     }
   });
@@ -238,5 +257,13 @@ describe("Other test case", () => {
     const sysError = ContextUpgradeError(new Error("11"), false);
     assert.isTrue(sysError instanceof SystemError);
   });
-  
+
+  it("parseTeamsAppTenantId", async () => {
+    const res1 = parseTeamsAppTenantId({ tid: "123" });
+    assert.isTrue(res1.isOk());
+    const res2 = parseTeamsAppTenantId();
+    assert.isTrue(res2.isErr());
+    const res3 = parseTeamsAppTenantId({ abd: "123" });
+    assert.isTrue(res3.isErr());
+  });
 });

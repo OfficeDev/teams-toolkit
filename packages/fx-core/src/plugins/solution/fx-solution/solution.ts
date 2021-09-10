@@ -55,13 +55,14 @@ import {
   isMultiEnvEnabled,
   isUserCancelError,
 } from "../../../common/tools";
+import { CopyFileError } from "../../../core";
 import { askTargetEnvironment } from "../../../core/middleware/envInfoLoader";
 import { ErrorHandlerMW } from "../../../core/middleware/errorHandler";
 import { PermissionRequestFileProvider } from "../../../core/permissionRequest";
 import { SolutionPlugins } from "../../../core/SolutionPluginContainer";
 import { AadAppForTeamsPlugin, AppStudioPlugin, SpfxPlugin } from "../../resource";
 import { IUserList } from "../../resource/appstudio/interfaces/IAppDefinition";
-import { deployArmTemplates, generateArmTemplate } from "./arm";
+import { copyParameterJson, deployArmTemplates, generateArmTemplate, getParameterJson } from "./arm";
 import { checkSubscription, fillInCommonQuestions } from "./commonQuestions";
 import {
   ARM_TEMPLATE_OUTPUT,
@@ -125,7 +126,7 @@ import {
   ParamForRegisterTeamsAppAndAad,
 } from "./v2/executeUserTask";
 import { scaffoldReadmeAndLocalSettings } from "./v2/scaffolding";
-import { ensurePermissionRequest, parseTeamsAppTenantId } from "./v2/utils";
+import { ensurePermissionRequest, isAzureProject, parseTeamsAppTenantId } from "./v2/utils";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -495,11 +496,29 @@ export class TeamsAppSolution implements Solution {
       await scaffoldReadmeAndLocalSettings(capabilities, azureResources, ctx.root);
     }
 
-    if (isArmSupportEnabled() && generateResourceTemplate) {
+    if (isArmSupportEnabled() && generateResourceTemplate && this.isAzureProject(ctx)) {
       return await generateArmTemplate(ctx);
     } else {
       return res;
     }
+  }
+  async createEnv(ctx: SolutionContext): Promise<Result<any, FxError>> {
+    if (
+      isArmSupportEnabled() &&
+      isAzureProject(ctx.projectSettings!.solutionSettings as AzureSolutionSettings)
+    ) {
+      try {
+        if(ctx.answers!.copy === true) {
+          await copyParameterJson(ctx, ctx.answers!.sourceEnvName);
+        }
+        else {
+          await getParameterJson(ctx);
+        }
+      } catch (e) {
+        return err(CopyFileError(e));
+      }
+    }
+    return ok(Void);
   }
 
   /**

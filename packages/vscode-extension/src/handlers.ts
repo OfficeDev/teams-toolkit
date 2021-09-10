@@ -847,18 +847,33 @@ export async function listCollaborator(env: string): Promise<TreeItem[]> {
       result = [
         {
           commandId: `fx-extension.listcollaborator.${env}`,
-          label: "No permission to list all collaborators.",
+          label: "No permission to list collaborators",
           icon: "warning",
           isCustom: true,
           parent: "fx-extension.environment." + env,
         },
       ];
     }
+    ExtTelemetry.sendTelemetryEvent(Stage.listCollaborator, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+    });
   } catch (e) {
+    ExtTelemetry.sendTelemetryErrorEvent(Stage.listCollaborator, e);
+    VsCodeLogInstance.warning(
+      `code:${e.source}.${e.name}, message: Failed to list collaborator for environment '${env}':  ${e.message}`
+    );
+    let label = e.message;
+    if (e.name === "CannotProcessBeforeProvision") {
+      label = "Unable to find Teams app registration";
+    }
     result = [
       {
         commandId: `fx-extension.listcollaborator.${env}`,
-        label: e.message,
+        label: label,
+        tooltip: {
+          value: e.message,
+          isMarkdown: false,
+        },
         icon: "warning",
         isCustom: true,
         parent: "fx-extension.environment." + env,
@@ -892,7 +907,11 @@ export async function checkPermission(env: string): Promise<boolean> {
     result =
       (teamsAppPermission.roles?.includes("Administrator") ?? false) &&
       (aadPermission.roles?.includes("Owner") ?? false);
+    ExtTelemetry.sendTelemetryEvent(Stage.checkPermission, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+    });
   } catch (e) {
+    ExtTelemetry.sendTelemetryErrorEvent(Stage.checkPermission, e);
     result = false;
   }
 

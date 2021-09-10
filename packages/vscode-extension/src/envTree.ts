@@ -81,7 +81,7 @@ export async function updateCollaboratorList(env: string): Promise<void> {
         userList = [
           {
             commandId: `fx-extension.listcollaborator.${env}`,
-            label: "You need to log in first to view all collaborators.",
+            label: "Login M365 account to view all collaborators",
             icon: "warning",
             isCustom: true,
             parent: "fx-extension.environment." + env,

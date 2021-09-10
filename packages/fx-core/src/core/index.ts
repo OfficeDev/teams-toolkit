@@ -998,6 +998,7 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
+    ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     SolutionLoaderMW(),
     ContextInjectorMW,

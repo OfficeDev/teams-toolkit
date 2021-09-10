@@ -7,9 +7,11 @@ import {
   EnvConfig,
   InputConfigsFolderName,
   Inputs,
+  ProjectSettings,
   ProjectSettingsFileName,
   PublishProfilesFolderName,
   TeamsAppManifest,
+  AzureSolutionSettings,
 } from "@microsoft/teamsfx-api";
 import { CoreHookContext, deserializeDict, NoProjectOpenedError, serializeDict } from "../..";
 import { LocalSettingsProvider } from "../../common/localSettingsProvider";
@@ -24,6 +26,8 @@ import {
   isArmSupportEnabled,
   isBicepEnvCheckerEnabled,
 } from "../../common/tools";
+
+import { getActivatedResourcePlugins } from "../../plugins/solution/fx-solution/ResourcePluginContainer";
 
 const MigrationMessage = (stage: string) =>
   `In order to proceed with ${stage}, we will update your project code to use the latest Teams Toolkit. We recommend to initialize your workspace with git for better tracking file changes. We recommend to initialize your workspace with git for better tracking file changes.`;
@@ -40,55 +44,43 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
       MigrationMessage(inputs.stage as string),
       true
     );
-    if (!response) {
+    if (response.isErr()) {
       return;
     }
-    await migrateToArmAndMultiEnv(ctx);
+    await migrateToArmAndMultiEnv(ctx, inputs.projectPath);
   }
   await next();
 };
 
-async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
+async function migrateToArmAndMultiEnv(ctx: CoreHookContext, projectPath: string): Promise<void> {
   try {
     await migrateArm(ctx);
-    await migrateMultiEnv(ctx);
+    await migrateMultiEnv(projectPath);
   } catch (err) {
-    // TODO: cleanup files if failed.
-    await cleanup(ctx);
+    await cleanup(projectPath);
     throw err;
   }
-  await removeOldProjectFiles();
+  await removeOldProjectFiles(projectPath);
 }
 
-async function migrateMultiEnv(ctx: CoreHookContext): Promise<void> {
-  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-  if (!inputs.projectPath) {
-    throw NoProjectOpenedError();
-  }
-
-  const fx = path.join(inputs.projectPath, `.${ConfigFolderName}`);
-  const fxConfig = path.join(fx, InputConfigsFolderName);
-  const templateAppPackage = path.join(inputs.projectPath, "templates", AppPackageFolderName);
-  const fxPublishProfile = path.join(fx, PublishProfilesFolderName);
-  // TODO: search capability and resource
-  const hasProvision = false;
-  const hasTab = false;
-  const hasBackend = false;
-  const hasBot = false;
-
-  await fs.ensureDir(fx);
-  await fs.ensureDir(fxConfig);
-  await fs.ensureDir(templateAppPackage);
+async function migrateMultiEnv(projectPath: string): Promise<void> {
+  const { fx, fxConfig, templateAppPackage, fxPublishProfile } = await getMultiEnvFolders(
+    projectPath
+  );
+  const { hasFrontend, hasBackend, hasBot, hasProvision } = await queryProjectStatus(fx);
 
   //config.dev.json
-  await fs.writeFile(fxConfig, JSON.stringify(getConfigDevJson(), null, 4));
+  await fs.writeFile(
+    path.join(fxConfig, "config.dev.json"),
+    JSON.stringify(getConfigDevJson(), null, 4)
+  );
   //localSettings.json
-  const localSettingsProvider = new LocalSettingsProvider(inputs.projectPath);
-  await localSettingsProvider.save(localSettingsProvider.init(hasTab, hasBackend, hasBot));
+  const localSettingsProvider = new LocalSettingsProvider(projectPath);
+  await localSettingsProvider.save(localSettingsProvider.init(hasFrontend, hasBackend, hasBot));
   //projectSettings.json
   await fs.copy(path.join(fx, "settings.json"), path.join(fxConfig, ProjectSettingsFileName));
   // appPackage
-  await fs.copy(path.join(fx, AppPackageFolderName), templateAppPackage);
+  await fs.copy(path.join(projectPath, AppPackageFolderName), templateAppPackage);
   await fs.rename(
     path.join(templateAppPackage, "manifest.source.json"),
     path.join(templateAppPackage, "manifest.template.json")
@@ -119,18 +111,18 @@ async function moveIconsToResourceFolder(templateAppPackage: string): Promise<vo
   // move to resources
   const resource = path.join(templateAppPackage, "resources");
   await fs.ensureDir(resource);
-  await fs.copy(
+  await fs.move(
     path.join(templateAppPackage, manifest.icons.color),
     path.join(resource, manifest.icons.color)
   );
-  await fs.copy(
+  await fs.move(
     path.join(templateAppPackage, manifest.icons.outline),
     path.join(resource, manifest.icons.outline)
   );
 
   // update icons
-  manifest.icons.color = path.join("resources", manifest.icons.color);
-  manifest.icons.outline = path.join("resources", manifest.icons.outline);
+  manifest.icons.color = `resources/${manifest.icons.color}`;
+  manifest.icons.outline = `resources/${manifest.icons.outline}`;
   await fs.writeFile(
     path.join(templateAppPackage, "manifest.template.json"),
     JSON.stringify(manifest, null, 4)
@@ -150,10 +142,6 @@ async function removeFxResourceLocalDebug(devProfile: string, devUserData: strin
   }
 }
 
-async function removeOldProjectFiles(): Promise<void> {
-  // TODO
-}
-
 function getConfigDevJson(): EnvConfig {
   return {
     $schema:
@@ -168,7 +156,53 @@ function getConfigDevJson(): EnvConfig {
   };
 }
 
-async function cleanup(ctx: CoreHookContext) {}
+async function queryProjectStatus(fx: string): Promise<any> {
+  const settings: ProjectSettings = await readJson(path.join(fx, "settings.json"));
+  const solutionSettings: AzureSolutionSettings =
+    settings.solutionSettings as AzureSolutionSettings;
+  const plugins = getActivatedResourcePlugins(solutionSettings);
+  const envDefaultJson: { solution: { provisionSucceeded: boolean } } = await readJson(
+    path.join(fx, "env.default.json")
+  );
+  const hasFrontend = plugins?.some((plugin) => plugin.name === PluginNames.FE);
+  const hasBackend = plugins?.some((plugin) => plugin.name === PluginNames.FUNC);
+  const hasBot = plugins?.some((plugin) => plugin.name === PluginNames.BOT);
+  const hasProvision = envDefaultJson.solution?.provisionSucceeded as boolean;
+  return { hasFrontend, hasBackend, hasBot, hasProvision };
+}
+
+async function getMultiEnvFolders(projectPath: string): Promise<any> {
+  const fx = path.join(projectPath, `.${ConfigFolderName}`);
+  const fxConfig = path.join(fx, InputConfigsFolderName);
+  const templateAppPackage = path.join(projectPath, "templates", AppPackageFolderName);
+  const fxPublishProfile = path.join(fx, PublishProfilesFolderName);
+  await fs.ensureDir(fxConfig);
+  await fs.ensureDir(templateAppPackage);
+  return { fx, fxConfig, templateAppPackage, fxPublishProfile };
+}
+
+async function removeOldProjectFiles(projectPath: string): Promise<void> {
+  const fx = path.join(projectPath, `.${ConfigFolderName}`);
+  await fs.remove(path.join(fx, "env.default.json"));
+  await fs.remove(path.join(fx, "default.userdata"));
+  await fs.remove(path.join(fx, "settings.json"));
+  await fs.remove(path.join(fx, "local.env"));
+  await fs.remove(path.join(projectPath, AppPackageFolderName));
+  // version <= 2.4.1, rmove .fx/appPackage.
+  await fs.remove(path.join(fx, AppPackageFolderName));
+}
+
+async function cleanup(projectPath: string): Promise<void> {
+  const { _, fxConfig, templateAppPackage, fxPublishProfile } = await getMultiEnvFolders(
+    projectPath
+  );
+  await fs.remove(path.join(fxConfig, "config.dev.json"));
+  await fs.remove(path.join(fxConfig, "localSettings.json"));
+  await fs.remove(path.join(fxConfig, ProjectSettingsFileName));
+  await fs.remove(templateAppPackage);
+  await fs.remove(fxPublishProfile);
+  // TODO: delte bicep files
+}
 
 async function needMigrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<boolean> {
   // if (!preCheckEnvEnabled()) {

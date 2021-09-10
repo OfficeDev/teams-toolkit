@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import {
   EnvInfo,
   err,
@@ -15,6 +16,7 @@ import {
   Tools,
   traverse,
 } from "@microsoft/teamsfx-api";
+import { isV2 } from "..";
 import { CoreHookContext, FxCore } from "../..";
 import {
   NoProjectOpenedError,
@@ -22,7 +24,6 @@ import {
   ProjectSettingsUndefinedError,
   NonActiveEnvError,
 } from "../error";
-import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { LocalCrypto } from "../crypto";
 import { environmentManager } from "../environment";
 import {
@@ -40,10 +41,9 @@ import { desensitize } from "./questionModel";
 import { shouldIgnored } from "./projectSettingsLoader";
 import { PermissionRequestFileProvider } from "../permissionRequest";
 import { newEnvInfo } from "../tools";
-import { CoreHookContextV2 } from "../v2";
 
 const newTargetEnvNameOption = "+ new environment";
-const lastUsedMark = " (activate)";
+const activeMark = " (active)";
 let activeEnv: string | undefined;
 
 export type CreateEnvCopyInput = {
@@ -100,7 +100,14 @@ export function EnvInfoLoaderMW(isMultiEnvEnabled: boolean): Middleware {
         return;
       }
 
-      ctx.solutionContext = result.value;
+      if (isV2()) {
+        //TODO core should not know the details of envInfo
+        ctx.provisionInputConfig = result.value.envInfo.config;
+        ctx.provisionOutputs = result.value.envInfo.profile;
+        ctx.envName = result.value.envInfo.envName;
+      } else {
+        ctx.solutionContext = result.value;
+      }
       await next();
     }
   };
@@ -227,8 +234,8 @@ export async function askTargetEnvironment(
 
   const targetEnvName = inputs.targetEnvName;
 
-  if (targetEnvName?.endsWith(lastUsedMark)) {
-    activeEnv = targetEnvName.slice(0, targetEnvName.indexOf(lastUsedMark));
+  if (targetEnvName?.endsWith(activeMark)) {
+    activeEnv = targetEnvName.slice(0, targetEnvName.indexOf(activeMark));
   } else {
     activeEnv = targetEnvName;
   }
@@ -236,7 +243,7 @@ export async function askTargetEnvironment(
 }
 
 export async function askNewEnvironment(
-  ctx: CoreHookContext | CoreHookContextV2,
+  ctx: CoreHookContext,
   inputs: Inputs
 ): Promise<CreateEnvCopyInput | undefined> {
   const getQuestionRes = await getQuestionsForNewEnv(inputs);
@@ -270,9 +277,17 @@ export async function askNewEnvironment(
     );
   }
 
+  const sourceEnvName = inputs.sourceEnvName;
+  let selectedEnvName: string;
+  if (sourceEnvName?.endsWith(activeMark)) {
+    selectedEnvName = sourceEnvName.slice(0, sourceEnvName.indexOf(activeMark));
+  } else {
+    selectedEnvName = sourceEnvName;
+  }
+
   return {
     targetEnvName: inputs.newTargetEnvName,
-    sourceEnvName: inputs.sourceEnvName,
+    sourceEnvName: selectedEnvName,
   };
 }
 
@@ -331,10 +346,10 @@ async function getQuestionsForNewEnv(
     return err(envProfilesResult.error);
   }
 
-  const envList = reOrderEnvironments(envProfilesResult.value);
+  const envList = reOrderEnvironments(envProfilesResult.value, activeEnv);
   const selectSourceEnv = QuestionSelectSourceEnvironment;
   selectSourceEnv.staticOptions = envList;
-  selectSourceEnv.default = activeEnv;
+  selectSourceEnv.default = activeEnv + activeMark;
 
   const selectSourceEnvNode = new QTreeNode(selectSourceEnv);
   node.addChild(selectSourceEnvNode);
@@ -352,7 +367,7 @@ function reOrderEnvironments(environments: Array<string>, lastUsed?: string): Ar
     return environments;
   }
 
-  return [lastUsed + lastUsedMark]
+  return [lastUsed + activeMark]
     .concat(environments.slice(0, index))
     .concat(environments.slice(index + 1));
 }

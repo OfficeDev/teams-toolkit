@@ -7,6 +7,7 @@ import {
   ConfigFolderName,
   ConfigMap,
   InputConfigsFolderName,
+  Json,
   LocalSettings,
 } from "@microsoft/teamsfx-api";
 import {
@@ -61,6 +62,33 @@ export class LocalSettingsProvider {
     return localSettings;
   }
 
+  public initV2(includeFrontend: boolean, includeBackend: boolean, includeBot: boolean): Json {
+    const localSettings: Json = {
+      teamsApp: {
+        [LocalSettingsTeamsAppKeys.TenantId]: "",
+        [LocalSettingsTeamsAppKeys.TeamsAppId]: "",
+      },
+    };
+
+    // initialize frontend and simple auth local settings.
+    if (includeFrontend) {
+      localSettings.frontend = this.initFrontend().toJSON();
+      localSettings.auth = this.initSimpleAuth().toJSON();
+    }
+
+    // initialize backend local settings.
+    if (includeBackend) {
+      localSettings.backend = this.initBackend().toJSON();
+    }
+
+    // initialize bot local settings.
+    if (includeBot) {
+      localSettings.bot = this.initBot().toJSON();
+    }
+
+    return localSettings;
+  }
+
   public incrementalInit(
     localSettings: LocalSettings,
     addBackaned: boolean,
@@ -93,8 +121,15 @@ export class LocalSettingsProvider {
       return undefined;
     }
   }
-
-  public async save(localSettings: LocalSettings): Promise<void> {
+  public async loadV2(): Promise<Json | undefined> {
+    if (await fs.pathExists(this.localSettingsFilePath)) {
+      const localSettingsJson: Json = await fs.readJSON(this.localSettingsFilePath);
+      return localSettingsJson;
+    } else {
+      return undefined;
+    }
+  }
+  public async save(localSettings: LocalSettings | Json): Promise<void> {
     await fs.createFile(this.localSettingsFilePath);
     await fs.writeFile(this.localSettingsFilePath, JSON.stringify(localSettings, null, 4));
   }

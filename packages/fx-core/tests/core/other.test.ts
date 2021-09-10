@@ -1,31 +1,34 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import "mocha";
-import { FuncValidation, Inputs, Platform, Stage } from "@microsoft/teamsfx-api";
-import { QuestionAppName } from "../../src/core/question";
+import { FuncValidation, Inputs, Platform, Stage, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
-import { randomAppName } from "./utils";
-import sinon from "sinon";
 import fs from "fs-extra";
+import "mocha";
+import mockedEnv from "mocked-env";
 import os from "os";
 import * as path from "path";
-import { defaultSolutionLoader } from "../../src/core/loader";
+import sinon from "sinon";
+import Container from "typedi";
+import { FeatureFlagName } from "../../src/common/constants";
+import { readJson } from "../../src/common/fileUtils";
 import {
+  isArmSupportEnabled,
+  isFeatureFlagEnabled,
+  isMultiEnvEnabled
+} from "../../src/common/tools";
+import {
+  ContextUpgradeError,
   FetchSampleError,
   NoneFxError,
   ProjectFolderExistError,
   ReadFileError,
   TaskNotSupportError,
-  WriteFileError,
+  WriteFileError
 } from "../../src/core/error";
-import mockedEnv from "mocked-env";
-import {
-  isArmSupportEnabled,
-  isFeatureFlagEnabled,
-  isMultiEnvEnabled,
-} from "../../src/common/tools";
-import { FeatureFlagName } from "../../src/common/constants";
+import { QuestionAppName } from "../../src/core/question";
+import { getAllSolutionPluginsV2, getSolutionPluginByName, getSolutionPluginV2ByName, SolutionPlugins, SolutionPluginsV2 } from "../../src/core/SolutionPluginContainer";
+import { randomAppName } from "./utils";
 
 describe("Other test case", () => {
   const sandbox = sinon.createSandbox();
@@ -68,14 +71,6 @@ describe("Other test case", () => {
       inputs
     );
     assert.isTrue(validRes === undefined);
-  });
-
-  it("loader: DefaultSolutionLoader", async () => {
-    const inputs: Inputs = { platform: Platform.VSCode };
-    const solution = await defaultSolutionLoader.loadSolution(inputs);
-    assert.isTrue(solution.name === "fx-solution-azure");
-    const solutions = await defaultSolutionLoader.loadGlobalSolutions(inputs);
-    assert.isTrue(solutions.length === 1 && solutions[0].name === "fx-solution-azure");
   });
 
   it("error: ProjectFolderExistError", async () => {
@@ -212,4 +207,36 @@ describe("Other test case", () => {
     assert.isTrue(isMultiEnvEnabled());
     restore();
   });
+
+  it("SolutionPluginContainer", () => {
+    const solutionPluginsV2 = getAllSolutionPluginsV2();
+    assert.isTrue(solutionPluginsV2.map(s=>s.name).includes("fx-solution-azure"));
+    assert.equal(getSolutionPluginV2ByName("fx-solution-azure"), Container.get(SolutionPluginsV2.AzureTeamsSolutionV2));
+    assert.equal(getSolutionPluginByName("fx-solution-azure"), Container.get(SolutionPlugins.AzureTeamsSolution));
+  });
+
+  it("fileUtils", async () => {
+    try {
+      await readJson("abc");
+    }
+    catch(e) {
+      assert.isTrue(e instanceof UserError);
+    }
+    sandbox.stub<any, any>(fs, "readJson").rejects(new Error("invalid json"));
+    sandbox.stub<any, any>(fs, "pathExists").resolves(true);
+    try {
+      await readJson("abc");
+    }
+    catch(e) {
+      assert.isTrue(e instanceof SystemError);
+    }
+  });
+
+  it("ContextUpgradeError", async () => {
+    const userError = ContextUpgradeError(new Error("11"), true);
+    assert.isTrue(userError instanceof UserError);
+    const sysError = ContextUpgradeError(new Error("11"), false);
+    assert.isTrue(sysError instanceof SystemError);
+  });
+  
 });

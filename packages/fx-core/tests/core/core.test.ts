@@ -1,33 +1,35 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { assert } from "chai";
-import "mocha";
 import {
+  AppPackageFolderName,
   err,
-  FxError,
-  Result,
-  ok,
-  Inputs,
-  Platform,
-  Stage,
-  SolutionContext,
-  QTreeNode,
   Func,
+  FxError,
+  Inputs,
   InputTextConfig,
   InputTextResult,
+  ok,
+  OptionItem,
+  Platform,
+  QTreeNode,
+  Result,
   SelectFolderConfig,
   SelectFolderResult,
   SingleSelectConfig,
   SingleSelectResult,
-  OptionItem,
+  SolutionContext,
+  Stage,
   traverse,
-  AppPackageFolderName,
   V1ManifestFileName,
 } from "@microsoft/teamsfx-api";
+import { assert } from "chai";
 import fs from "fs-extra";
-import * as path from "path";
+import "mocha";
 import * as os from "os";
+import * as path from "path";
+import sinon from "sinon";
+import Container from "typedi";
 import {
   environmentManager,
   FunctionRouterError,
@@ -36,18 +38,17 @@ import {
   validateProject,
   validateSettings,
 } from "../../src";
-import sinon from "sinon";
-import { MockSolution, MockTools, randomAppName } from "./utils";
+import * as commonTools from "../../src/common/tools";
+import { loadSolutionContext } from "../../src/core/middleware/envInfoLoader";
 import { loadProjectSettings } from "../../src/core/middleware/projectSettingsLoader";
-import { defaultSolutionLoader } from "../../src/core/loader";
 import {
   CoreQuestionNames,
   SampleSelect,
   ScratchOptionNoVSC,
   ScratchOptionYesVSC,
 } from "../../src/core/question";
-import { loadSolutionContext } from "../../src/core/middleware/envInfoLoader";
-import * as commonTools from "../../src/common/tools";
+import { SolutionPlugins } from "../../src/core/SolutionPluginContainer";
+import { MockSolution, MockTools, randomAppName } from "./utils";
 
 describe("Core basic APIs", () => {
   const sandbox = sinon.createSandbox();
@@ -58,8 +59,7 @@ describe("Core basic APIs", () => {
   let projectPath = path.resolve(os.tmpdir(), appName);
 
   beforeEach(() => {
-    sandbox.stub<any, any>(defaultSolutionLoader, "loadSolution").resolves(mockSolution);
-    sandbox.stub<any, any>(defaultSolutionLoader, "loadGlobalSolutions").resolves([mockSolution]);
+    Container.set(SolutionPlugins.AzureTeamsSolution, mockSolution);
   });
 
   afterEach(async () => {
@@ -67,7 +67,7 @@ describe("Core basic APIs", () => {
     await fs.rmdir(projectPath, { recursive: true });
   });
 
-  it("happy path: create from new, provision, deploy, localDebug, publish, getQuestion, getQuestionsForUserTask, getProjectConfig, setSubscriptionInfo", async () => {
+  it("happy path: create from new, provision, deploy, localDebug, publish, getQuestion, getQuestionsForUserTask, getProjectConfig", async () => {
     const expectedInputs: Inputs = {
       platform: Platform.CLI,
       [CoreQuestionNames.AppName]: appName,
@@ -162,7 +162,7 @@ describe("Core basic APIs", () => {
       res = await core.publishApplication(inputs);
       assert.isTrue(res.isOk());
 
-      const func: Func = { method: "test", namespace: "fx-solution-mock" };
+      const func: Func = { method: "test", namespace: "fx-solution-azure" };
       const res2 = await core.executeUserTask(func, inputs);
       assert.isTrue(res2.isOk());
 
@@ -207,7 +207,7 @@ describe("Core basic APIs", () => {
     //getQuestionsForUserTask
     {
       const inputs: Inputs = { platform: Platform.VSCode, projectPath: projectPath };
-      const func: Func = { namespace: "fx-solution-mock", method: "mock" };
+      const func: Func = { namespace: "fx-solution-azure", method: "mock" };
       const res = await core.getQuestionsForUserTask(func, inputs);
       assert.isTrue(res.isOk() && res.value === undefined);
     }
@@ -222,56 +222,6 @@ describe("Core basic APIs", () => {
         if (projectConfig !== undefined) {
           assert.isTrue(projectConfig.settings !== undefined);
           assert.isTrue(projectConfig.config !== undefined);
-        }
-      }
-    }
-    //setSubscriptionInfo
-    {
-      const inputs: Inputs = { platform: Platform.VSCode, projectPath: projectPath };
-      inputs["subscriptionId"] = "000000-11111";
-      inputs["tenantId"] = "222222-33333";
-      const res = await core.setSubscriptionInfo(inputs);
-      assert.isTrue(res.isOk());
-
-      const inputs2: Inputs = { platform: Platform.VSCode, projectPath: projectPath };
-      const res2 = await core.getProjectConfig(inputs2);
-      assert.isTrue(res2.isOk());
-      if (res2.isOk()) {
-        const projectConfig = res2.value;
-        assert.isTrue(projectConfig !== undefined);
-        if (projectConfig !== undefined) {
-          assert.isTrue(projectConfig.settings !== undefined);
-          assert.isTrue(projectConfig.config !== undefined);
-          const sconfig = projectConfig.config!.get("solution");
-          assert.isTrue(
-            sconfig !== undefined &&
-              sconfig.get("subscriptionId") === "000000-11111" &&
-              sconfig.get("tenantId") === "222222-33333"
-          );
-        }
-      }
-    }
-
-    {
-      const inputs: Inputs = { platform: Platform.VSCode, projectPath: projectPath };
-      const res = await core.setSubscriptionInfo(inputs);
-      assert.isTrue(res.isOk());
-
-      const inputs2: Inputs = { platform: Platform.VSCode, projectPath: projectPath };
-      const res2 = await core.getProjectConfig(inputs2);
-      assert.isTrue(res2.isOk());
-      if (res2.isOk()) {
-        const projectConfig = res2.value;
-        assert.isTrue(projectConfig !== undefined);
-        if (projectConfig !== undefined) {
-          assert.isTrue(projectConfig.settings !== undefined);
-          assert.isTrue(projectConfig.config !== undefined);
-          const sconfig = projectConfig.config!.get("solution");
-          assert.isTrue(
-            sconfig !== undefined &&
-              sconfig.get("subscriptionId") === undefined &&
-              sconfig.get("tenantId") === undefined
-          );
         }
       }
     }
@@ -330,6 +280,7 @@ describe("Core basic APIs", () => {
       }
 
       const [projectSettings, projectIdMissing] = projectSettingsResult.value;
+      projectSettings.solutionSettings.name = mockSolution.name;
       const validSettingsResult = validateSettings(projectSettings);
       assert.isTrue(validSettingsResult === undefined);
 
@@ -349,55 +300,6 @@ describe("Core basic APIs", () => {
 
       const solutioConfig = solutionContext.envInfo.profile.get("solution");
       assert.isTrue(solutioConfig !== undefined);
-    }
-    {
-      const inputs: Inputs = { platform: Platform.CLI, projectPath: projectPath };
-      let res = await core.provisionResources(inputs);
-      assert.isTrue(res.isOk());
-
-      res = await core.deployArtifacts(inputs);
-      assert.isTrue(res.isOk());
-
-      res = await core.localDebug(inputs);
-      assert.isTrue(res.isOk());
-
-      res = await core.publishApplication(inputs);
-      assert.isTrue(res.isOk());
-
-      const func: Func = { method: "test", namespace: "fx-solution-mock" };
-      const res2 = await core.executeUserTask(func, inputs);
-      assert.isTrue(res2.isOk());
-
-      const projectSettingsResult = await loadProjectSettings(inputs);
-      if (projectSettingsResult.isErr()) {
-        assert.fail("failed to load project settings");
-      }
-
-      const [projectSettings, projectIdMissing] = projectSettingsResult.value;
-      const validSettingsResult = validateSettings(projectSettings);
-      assert.isTrue(validSettingsResult === undefined);
-
-      const envInfoResult = await loadSolutionContext(
-        tools,
-        inputs,
-        projectSettings,
-        projectIdMissing
-      );
-      if (envInfoResult.isErr()) {
-        assert.fail("failed to load env info");
-      }
-
-      const solutionContext = envInfoResult.value;
-      const validRes = validateProject(solutionContext);
-      assert.isTrue(validRes === undefined);
-
-      const solutioConfig = solutionContext.envInfo.profile.get("solution");
-      assert.isTrue(solutioConfig !== undefined);
-      assert.isTrue(solutioConfig!.get("provision") === true);
-      assert.isTrue(solutioConfig!.get("deploy") === true);
-      assert.isTrue(solutioConfig!.get("localDebug") === true);
-      assert.isTrue(solutioConfig!.get("publish") === true);
-      assert.isTrue(solutioConfig!.get("executeUserTask") === true);
     }
   });
 
@@ -476,13 +378,13 @@ describe("Core basic APIs", () => {
     }
     {
       const inputs: Inputs = { platform: Platform.VS };
-      const func: Func = { namespace: "fx-solution-mock", method: "mock" };
+      const func: Func = { namespace: "fx-solution-azure", method: "mock" };
       const res = await core.getQuestionsForUserTask(func, inputs);
       assert.isTrue(res.isOk() && res.value === undefined);
     }
     {
       const inputs: Inputs = { platform: Platform.CLI_HELP };
-      const func: Func = { namespace: "fx-solution-mock", method: "mock" };
+      const func: Func = { namespace: "fx-solution-azure", method: "mock" };
       const res = await core.getQuestionsForUserTask(func, inputs);
       assert.isTrue(res.isOk() && res.value === undefined);
     }
@@ -538,13 +440,13 @@ describe("Core basic APIs", () => {
     }
     {
       const inputs: Inputs = { platform: Platform.VS };
-      const func: Func = { namespace: "fx-solution-mock", method: "mock" };
+      const func: Func = { namespace: "fx-solution-azure", method: "mock" };
       const res = await core.getQuestionsForUserTask(func, inputs);
       assert.isTrue(res.isOk() && res.value && res.value.data.name === "mock-question-user-task");
     }
     {
       const inputs: Inputs = { platform: Platform.CLI_HELP };
-      const func: Func = { namespace: "fx-solution-mock", method: "mock" };
+      const func: Func = { namespace: "fx-solution-azure", method: "mock" };
       const res = await core.getQuestionsForUserTask(func, inputs);
       assert.isTrue(res.isOk() && res.value && res.value.data.name === "mock-question-user-task");
     }

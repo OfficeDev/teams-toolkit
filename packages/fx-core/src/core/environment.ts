@@ -397,23 +397,18 @@ class EnvironmentManager {
     if (!isMultiEnvEnabled()) {
       return ok("default");
     }
-    if (!isValidProject(projectRoot)) {
-      return err(InvalidProjectError());
-    }
+
     const settingsJsonPath = path.join(
       projectRoot,
       `.${ConfigFolderName}/${InputConfigsFolderName}/${ProjectSettingsFileName}`
     );
-    let settingsContent;
-    try {
-      settingsContent = fs.readFileSync(settingsJsonPath, "utf8");
-    } catch (error) {
-      return err(ReadFileError(error));
+    if (!fs.existsSync(settingsJsonPath)) {
+      return err(PathNotExistError(settingsJsonPath));
     }
 
     let settingsJson;
     try {
-      settingsJson = JSON.parse(settingsContent);
+      settingsJson = fs.readJSONSync(settingsJsonPath, { encoding: "utf8" });
     } catch (error) {
       return err(
         InvalidProjectSettingsFileError(

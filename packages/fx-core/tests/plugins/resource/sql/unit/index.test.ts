@@ -16,6 +16,7 @@ import { SqlClient } from "../../../../../src/plugins/resource/sql/sqlClient";
 import { Constants } from "../../../../../src/plugins/resource/sql/constants";
 import * as commonUtils from "../../../../../src/plugins/resource/sql/utils/commonUtils";
 import { UserType } from "../../../../../src/plugins/resource/sql/utils/commonUtils";
+import { ManagementClient } from "../../../../../src/plugins/resource/sql/managementClient";
 
 chai.use(chaiAsPromised);
 
@@ -105,6 +106,7 @@ describe("sqlPlugin", () => {
     sinon.stub(Databases.prototype, "listByServer").resolves();
     sinon.stub(Databases.prototype, "createOrUpdate").resolves();
     sinon.stub(Providers.prototype, "register").resolves();
+    sinon.stub(ManagementClient.prototype, "delay").resolves();
 
     // Act
     const provisionResult = await sqlPlugin.provision(pluginContext);

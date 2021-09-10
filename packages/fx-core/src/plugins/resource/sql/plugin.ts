@@ -389,14 +389,16 @@ export class SqlPluginImpl {
   }
 
   private async checkSqlExisting(ctx: PluginContext) {
+    const managementClient: ManagementClient = await ManagementClient.create(ctx, this.config);
     if (isArmSupportEnabled()) {
       this.config.admin = ctx.config.get(Constants.admin) as string;
       this.config.adminPassword = ctx.config.get(Constants.adminPassword) as string;
-      if (this.config.admin) {
-        this.config.existSql = true;
+      this.config.sqlEndpoint = ctx.config.get(Constants.sqlEndpoint);
+      if (this.config.sqlEndpoint) {
+        ctx.logProvider?.debug("enter arm check existing sql");
+        this.config.existSql = await managementClient.existAzureSQL();
       }
-    } else if (this.config.azureSubscriptionId) {
-      const managementClient: ManagementClient = await ManagementClient.create(ctx, this.config);
+    } else {
       this.config.existSql = await managementClient.existAzureSQL();
     }
   }

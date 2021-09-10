@@ -126,22 +126,21 @@ export function getConfigPath(projectFolder: string, filePath: string): string {
 
 // TODO: move config read/write utils to core
 export function getEnvFilePath(projectFolder: string): Result<string, FxError> {
-  if (isMultiEnvEnabled()) {
-    const envResult = getActiveEnv(projectFolder);
-    if (envResult.isErr()) {
-      return err(envResult.error);
-    }
-    return ok(
-      path.join(
-        projectFolder,
-        `.${ConfigFolderName}`,
-        PublishProfilesFolderName,
-        EnvProfileFileNameTemplate.replace(EnvNamePlaceholder, envResult.value)
-      )
-    );
-  } else {
+  if (!isMultiEnvEnabled()) {
     return ok(getConfigPath(projectFolder, `env.default.json`));
   }
+  const envResult = getActiveEnv(projectFolder);
+  if (envResult.isErr()) {
+    return err(envResult.error);
+  }
+  return ok(
+    path.join(
+      projectFolder,
+      `.${ConfigFolderName}`,
+      PublishProfilesFolderName,
+      EnvProfileFileNameTemplate.replace(EnvNamePlaceholder, envResult.value)
+    )
+  );
 }
 
 export function getSettingsFilePath(projectFolder: string) {
@@ -182,9 +181,7 @@ export async function readEnvJsonFile(projectFolder: string): Promise<Result<Jso
     return err(filePathResult.error);
   }
   const filePath = filePathResult.value;
-  try {
-    fs.stat(filePath);
-  } catch (error) {
+  if (!fs.existsSync(filePath)) {
     return err(ConfigNotFoundError(filePath));
   }
   try {
@@ -201,9 +198,7 @@ export function readEnvJsonFileSync(projectFolder: string): Result<Json, FxError
     return err(filePathResult.error);
   }
   const filePath = filePathResult.value;
-  try {
-    fs.stat(filePath);
-  } catch (error) {
+  if (!fs.existsSync(filePath)) {
     return err(ConfigNotFoundError(filePath));
   }
   try {

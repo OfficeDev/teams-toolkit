@@ -53,7 +53,7 @@ import {
 } from "../../../common/localSettingsConstants";
 import { TeamsClientId } from "../../../common/constants";
 import { ProjectSettingLoader } from "./projectSettingLoader";
-
+import "./v2";
 @Service(ResourcePlugins.LocalDebugPlugin)
 export class LocalDebugPlugin implements Plugin {
   name = "fx-resource-local-debug";

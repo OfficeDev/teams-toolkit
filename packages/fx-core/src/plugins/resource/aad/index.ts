@@ -26,7 +26,7 @@ import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContai
 import { Links } from "../bot/constants";
 import { ArmResourcePlugin } from "../../../common/armInterface";
 import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
-
+import "./v2";
 @Service(ResourcePlugins.AadPlugin)
 export class AadAppForTeamsPlugin implements Plugin, ArmResourcePlugin {
   name = "fx-resource-aad-app-for-teams";

@@ -33,7 +33,7 @@ namespace Microsoft.TeamsFx
             {
                 scopes = DefaultScope;
             }
-            _scopes = scopes.Split(null);
+            _scopes = scopes.Split(' ');
         }
 
         /// <summary>

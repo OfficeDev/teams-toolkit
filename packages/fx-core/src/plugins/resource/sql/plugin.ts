@@ -395,7 +395,6 @@ export class SqlPluginImpl {
       this.config.adminPassword = ctx.config.get(Constants.adminPassword) as string;
       this.config.sqlEndpoint = ctx.config.get(Constants.sqlEndpoint);
       if (this.config.sqlEndpoint) {
-        ctx.logProvider?.debug("enter arm check existing sql");
         this.config.existSql = await managementClient.existAzureSQL();
       }
     } else {

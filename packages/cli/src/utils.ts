@@ -157,15 +157,23 @@ export function getSettingsFilePath(projectFolder: string) {
   }
 }
 
-export function getSecretFilePath(projectRoot: string) {
-  return isMultiEnvEnabled()
-    ? path.join(
-        projectRoot,
-        `.${ConfigFolderName}`,
-        PublishProfilesFolderName,
-        `${getActiveEnv(projectRoot)}.userdata`
-      )
-    : path.join(projectRoot, `.${ConfigFolderName}`, `${getActiveEnv(projectRoot)}.userdata`);
+export function getSecretFilePath(projectRoot: string): Result<string, FxError> {
+  if (!isMultiEnvEnabled()) {
+    return ok(path.join(projectRoot, `.${ConfigFolderName}`, `default.userdata`));
+  }
+  const envResult = getActiveEnv(projectRoot);
+  if (envResult.isErr()) {
+    return err(envResult.error);
+  }
+
+  return ok(
+    path.join(
+      projectRoot,
+      `.${ConfigFolderName}`,
+      PublishProfilesFolderName,
+      `${envResult.value}.userdata`
+    )
+  );
 }
 
 export async function readEnvJsonFile(projectFolder: string): Promise<Result<Json, FxError>> {
@@ -223,7 +231,11 @@ export function readSettingsFileSync(projectFolder: string): Result<Json, FxErro
 export async function readProjectSecrets(
   projectFolder: string
 ): Promise<Result<dotenv.DotenvParseOutput, FxError>> {
-  const secretFile = getSecretFilePath(projectFolder);
+  const secretFileResult = getSecretFilePath(projectFolder);
+  if (secretFileResult.isErr()) {
+    return err(secretFileResult.error);
+  }
+  const secretFile = secretFileResult.value;
   if (!fs.existsSync(secretFile)) {
     return err(ConfigNotFoundError(secretFile));
   }

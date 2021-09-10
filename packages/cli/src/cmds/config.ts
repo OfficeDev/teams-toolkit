@@ -302,7 +302,7 @@ export class ConfigSet extends YargsCommand {
     }
     const writeFileResult = writeSecretToFile(secretData, rootFolder);
     if (writeFileResult.isErr()) {
-      return err(writeFileResult.error);
+      return writeFileResult;
     }
     CLILogProvider.necessaryLog(
       LogLevel.Info,

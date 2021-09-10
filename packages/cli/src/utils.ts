@@ -250,7 +250,7 @@ export async function readProjectSecrets(
 export function writeSecretToFile(
   secrets: dotenv.DotenvParseOutput,
   rootFolder: string
-): Result<undefined, FxError> {
+): Result<null, FxError> {
   const envResult = getActiveEnv(rootFolder);
   if (envResult.isErr()) {
     return err(envResult.error);
@@ -267,7 +267,7 @@ export function writeSecretToFile(
   } catch (e) {
     return err(WriteFileError(e));
   }
-  return ok(undefined);
+  return ok(null);
 }
 
 export async function getSolutionPropertyFromEnvFile(

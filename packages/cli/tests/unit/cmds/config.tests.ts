@@ -318,12 +318,10 @@ describe("Config Set Command Check", () => {
       });
     sandbox
       .stub(Utils, "writeSecretToFile")
-      .callsFake(
-        (secrets: dotenv.DotenvParseOutput, rootFolder: string): Result<undefined, FxError> => {
-          secretFile = secrets;
-          return ok(undefined);
-        }
-      );
+      .callsFake((secrets: dotenv.DotenvParseOutput, rootFolder: string): Result<null, FxError> => {
+        secretFile = secrets;
+        return ok(null);
+      });
     sandbox
       .stub(Utils, "readProjectSecrets")
       .returns(Promise.resolve(ok(dotenv.parse("fx-resource-bot.botPassword=password\ntest=abc"))));

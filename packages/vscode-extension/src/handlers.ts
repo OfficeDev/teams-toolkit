@@ -789,6 +789,8 @@ export async function activateEnvironment(env: string): Promise<Result<Void, FxE
 
 export async function grantPermission(env: string): Promise<Result<Void, FxError>> {
   let result: Result<any, FxError> = ok(Void);
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.GrantPermission);
+
   const eventName = ExtTelemetry.stageToEvent(Stage.grantPermission);
   try {
     const checkCoreRes = checkCoreNotEmpty();
@@ -818,6 +820,8 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
 
 export async function listCollaborator(env: string): Promise<TreeItem[]> {
   let result: TreeItem[] = [];
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ListCollaboratorStart);
+
   try {
     const checkCoreRes = checkCoreNotEmpty();
     if (checkCoreRes.isErr()) {
@@ -847,18 +851,33 @@ export async function listCollaborator(env: string): Promise<TreeItem[]> {
       result = [
         {
           commandId: `fx-extension.listcollaborator.${env}`,
-          label: "No permission to list all collaborators.",
+          label: "No permission to list collaborators",
           icon: "warning",
           isCustom: true,
           parent: "fx-extension.environment." + env,
         },
       ];
     }
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ListCollaborator, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+    });
   } catch (e) {
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ListCollaborator, e);
+    VsCodeLogInstance.warning(
+      `code:${e.source}.${e.name}, message: Failed to list collaborator for environment '${env}':  ${e.message}`
+    );
+    let label = e.message;
+    if (e.name === "CannotProcessBeforeProvision") {
+      label = "Unable to find Teams app registration";
+    }
     result = [
       {
         commandId: `fx-extension.listcollaborator.${env}`,
-        label: e.message,
+        label: label,
+        tooltip: {
+          value: e.message,
+          isMarkdown: false,
+        },
         icon: "warning",
         isCustom: true,
         parent: "fx-extension.environment." + env,
@@ -871,6 +890,8 @@ export async function listCollaborator(env: string): Promise<TreeItem[]> {
 
 export async function checkPermission(env: string): Promise<boolean> {
   let result = false;
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CheckPermissionStart);
+
   try {
     const checkCoreRes = checkCoreNotEmpty();
     if (checkCoreRes.isErr()) {
@@ -892,7 +913,11 @@ export async function checkPermission(env: string): Promise<boolean> {
     result =
       (teamsAppPermission.roles?.includes("Administrator") ?? false) &&
       (aadPermission.roles?.includes("Owner") ?? false);
+    ExtTelemetry.sendTelemetryEvent(Stage.checkPermission, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+    });
   } catch (e) {
+    ExtTelemetry.sendTelemetryErrorEvent(Stage.checkPermission, e);
     result = false;
   }
 

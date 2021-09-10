@@ -16,7 +16,7 @@ import {
   Void,
   SolutionContext,
 } from "@microsoft/teamsfx-api";
-import { getStrings, isMultiEnvEnabled } from "../../../../common/tools";
+import { getStrings, isArmSupportEnabled, isMultiEnvEnabled } from "../../../../common/tools";
 import { executeConcurrently, NamedThunk } from "./executor";
 import {
   blockV1Project,
@@ -28,7 +28,9 @@ import {
   isAzureProject,
 } from "./utils";
 import {
+  ARM_TEMPLATE_OUTPUT,
   GLOBAL_CONFIG,
+  PluginNames,
   SolutionError,
   SOLUTION_PROVISION_SUCCEEDED,
   SUBSCRIPTION_ID,
@@ -44,11 +46,14 @@ import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { fillInCommonQuestions } from "../commonQuestions";
 import { TransparentDataEncryptionActivitiesListByConfigurationResponse } from "@azure/arm-sql/esm/models";
 import { askTargetEnvironment } from "../../../../core/middleware/envInfoLoader";
+import { deployArmTemplates } from "../arm";
+import Container from "typedi";
+import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 
 export async function provisionResource(
   ctx: v2.Context,
-  inputs: Inputs,
-  envInfo: EnvInfoV2,
+  inputs: v2.ProvisionInputs,
+  envInfo: v2.EnvInfoV2,
   tokenProvider: TokenProvider
 ): Promise<v2.FxResult<v2.SolutionProvisionOutput, FxError>> {
   const blockResult = blockV1Project(ctx.projectSetting.solutionSettings);
@@ -100,12 +105,12 @@ export async function provisionResource(
       return {
         pluginName: `${plugin.name}`,
         taskName: "provisionResource",
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         thunk: () =>
-          plugin.deploy!(
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          plugin.provisionResource!(
             ctx,
-            { ...inputs, ...extractSolutionInputs(provisionOutputs[GLOBAL_CONFIG]) },
-            provisionOutputs[plugin.name],
+            { ...inputs, ...extractSolutionInputs(envInfo.profile) },
+            { ...envInfo, profile: envInfo.profile[plugin.name] },
             tokenProvider
           ),
       };
@@ -114,6 +119,79 @@ export async function provisionResource(
   ctx.logProvider?.info(
     util.format(getStrings().solution.ProvisionStartNotice, PluginDisplayName.Solution)
   );
+  const provisionResult = await executeConcurrently(provisionThunks, ctx.logProvider);
+  if (provisionResult.kind === "failure") {
+    return provisionResult;
+  } else if (provisionResult.kind === "partialSuccess") {
+    return new v2.FxPartialSuccess(combineRecords(provisionResult.output), provisionResult.error);
+  } else {
+    envInfo.profile = combineRecords(provisionResult.output);
+  }
+
+  ctx.logProvider?.info(
+    util.format(getStrings().solution.ProvisionFinishNotice, PluginDisplayName.Solution)
+  );
+
+  if (isArmSupportEnabled() && isAzureProject(azureSolutionSettings)) {
+    const contextAdaptor = new ProvisionContextAdapter([ctx, inputs, envInfo, tokenProvider]);
+    const armDeploymentResult = await deployArmTemplates(contextAdaptor);
+    if (armDeploymentResult.isErr()) {
+      return new v2.FxPartialSuccess(
+        combineRecords(provisionResult.output),
+        armDeploymentResult.error
+      );
+    }
+    // contextAdaptor deep-copies original JSON into a map. We need to convert it back.
+    envInfo.profile = (contextAdaptor.envInfo.profile as ConfigMap).toJSON();
+  }
+
+  const aadPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin);
+  if (plugins.some((plugin) => plugin.name === aadPlugin.name) && aadPlugin.executeUserTask) {
+    const result = await aadPlugin.executeUserTask(ctx, inputs, {
+      namespace: `${PluginNames.SOLUTION}/${PluginNames.AAD}`,
+      method: "setApplicationInContext",
+      params: { isLocal: false },
+    });
+    if (result.isErr()) {
+      return new v2.FxPartialSuccess(combineRecords(provisionResult.output), result.error);
+    }
+  }
+
+  const configureResourceThunks = plugins
+    .filter((plugin) => !isUndefined(plugin.configureResource))
+    .map((plugin) => {
+      return {
+        pluginName: `${plugin.name}`,
+        taskName: "configureLocalResource",
+        thunk: () =>
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          plugin.configureResource!(
+            ctx,
+            { ...inputs, ...extractSolutionInputs(envInfo.profile) },
+            { ...envInfo, profile: envInfo.profile[plugin.name] },
+            tokenProvider
+          ),
+      };
+    });
+
+  const configureResourceResult = await executeConcurrently(
+    configureResourceThunks,
+    ctx.logProvider
+  );
+  if (configureResourceResult.kind === "failure") {
+    return configureResourceResult;
+  } else if (configureResourceResult.kind === "partialSuccess") {
+    return new v2.FxPartialSuccess(
+      combineRecords(configureResourceResult.output),
+      configureResourceResult.error
+    );
+  } else {
+    envInfo.profile.get(GLOBAL_CONFIG)?.delete(ARM_TEMPLATE_OUTPUT);
+    ctx.logProvider?.info(
+      util.format(getStrings().solution.ConfigurationFinishNotice, PluginDisplayName.Solution)
+    );
+    return new v2.FxSuccess(combineRecords(configureResourceResult.output));
+  }
 }
 
 export async function askForProvisionConsent(ctx: SolutionContext): Promise<Result<Void, FxError>> {

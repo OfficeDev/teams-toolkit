@@ -41,7 +41,7 @@ export async function scaffoldSourceCode(
 
   const result = await executeConcurrently(thunks, ctx.logProvider);
   const solutionSettings = getAzureSolutionSettings(ctx);
-  if (result.isOk()) {
+  if (result.kind === "success") {
     const capabilities = solutionSettings.capabilities;
     const azureResources = solutionSettings.azureResources;
 
@@ -81,7 +81,7 @@ export async function scaffoldByPlugins(
 
   const result = await executeConcurrently(thunks, ctx.logProvider);
   const solutionSettings = getAzureSolutionSettings(ctx);
-  if (result.isOk()) {
+  if (result.kind === "success") {
     const capabilities = solutionSettings.capabilities;
     const azureResources = solutionSettings.azureResources;
 

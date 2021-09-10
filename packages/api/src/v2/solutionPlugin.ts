@@ -3,7 +3,7 @@
 "use strict";
 
 import { Result } from "neverthrow";
-import { ResourceProvisionOutput } from ".";
+import { DeploymentInputs, ProvisionInputs, ResourceProvisionOutput } from ".";
 import { EnvInfo } from "../context";
 import {
   AppStudioTokenProvider,
@@ -57,7 +57,7 @@ export interface SolutionPlugin {
    * 3) Call resource plugins' configureResource.
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
-   * @param {Inputs} inputs - system inputs
+   * @param {ProvisionInputs} inputs - system inputs
    * @param {Omit<EnvInfo, "profile">} envInfo - model for config.${env}.json, in which, user can customize some inputs for provision
    * @param {TokenProvider} tokenProvider - Tokens for Azure and AppStudio
    *
@@ -121,7 +121,7 @@ export interface SolutionPlugin {
     inputs: Inputs,
     localSettings: Json,
     tokenProvider: TokenProvider
-  ) => Promise<Result<Json, FxError>>;
+  ) => Promise<FxResult<Json, FxError>>;
 
   /**
    * get question model for lifecycle {@link Stage} (create), Questions are organized as a tree. Please check {@link QTreeNode}.

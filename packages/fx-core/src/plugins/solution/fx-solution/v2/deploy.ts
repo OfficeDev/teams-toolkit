@@ -92,7 +92,7 @@ export async function deploy(
   );
   const result = await executeConcurrently(thunks, ctx.logProvider);
 
-  if (result.isOk()) {
+  if (result.kind === "success") {
     if (inAzureProject) {
       const msg = util.format(
         `Success: ${getStrings().solution.DeploySuccessNotice}`,

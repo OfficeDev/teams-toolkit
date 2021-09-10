@@ -13,6 +13,7 @@ import {
   QTreeNode,
   TokenProvider,
 } from "@microsoft/teamsfx-api";
+import { DeploymentInputs, EnvInfoV2, ProvisionInputs } from "@microsoft/teamsfx-api/build/v2";
 import { Service } from "typedi";
 import { PluginDisplayName } from "../../../../common/constants";
 import { deploy } from "./deploy";
@@ -34,16 +35,16 @@ export class TeamsAppSolutionV2 implements v2.SolutionPlugin {
 
   provisionResources: (
     ctx: v2.Context,
-    inputs: Inputs,
-    provisionInputConfig: Json,
+    inputs: ProvisionInputs,
+    provisionInputConfig: EnvInfoV2,
     tokenProvider: TokenProvider
-  ) => Promise<Result<v2.SolutionProvisionOutput, FxError>> = function () {
+  ) => Promise<v2.FxResult<v2.SolutionProvisionOutput, FxError>> = function () {
     throw new Error("not implemented");
   };
 
   deploy?: (
     ctx: v2.Context,
-    inputs: Inputs,
+    inputs: DeploymentInputs,
     provisionOutputs: Json,
     tokenProvider: AzureAccountProvider
   ) => Promise<Result<Void, FxError>> = deploy;
@@ -60,7 +61,7 @@ export class TeamsAppSolutionV2 implements v2.SolutionPlugin {
     inputs: Inputs,
     localSettings: Json,
     tokenProvider: TokenProvider
-  ) => Promise<Result<Json, FxError>> = provisionLocalResource;
+  ) => Promise<v2.FxResult<Json, FxError>> = provisionLocalResource;
   getQuestionsForScaffolding?:
     | ((ctx: v2.Context, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>)
     | undefined;

@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import { Result } from "neverthrow";
-import { SolutionProvisionOutput } from ".";
 import { FxError, QTreeNode, TokenProvider, Void, Func, Json, Inputs, EnvInfo } from "../index";
 import { AzureSolutionSettings } from "../types";
 import { AppStudioTokenProvider, AzureAccountProvider } from "../utils";
@@ -108,7 +107,7 @@ export interface ResourcePlugin {
     inputs: ProvisionInputs,
     envInfo: Readonly<EnvInfoV2>,
     tokenProvider: TokenProvider
-  ) => Promise<FxResult<ResourceProvisionOutput, FxError>>;
+  ) => Promise<Result<ResourceProvisionOutput, FxError>>;
 
   /**
    * configureResource is guarantee to run after Bicep/ARM provisioning.
@@ -128,7 +127,7 @@ export interface ResourcePlugin {
     inputs: ProvisionInputs,
     envInfo: Readonly<EnvInfoV2>,
     tokenProvider: TokenProvider
-  ) => Promise<FxResult<ResourceProvisionOutput, FxError>>;
+  ) => Promise<Result<ResourceProvisionOutput, FxError>>;
 
   /**
    * Depends on the values returned by {@link provisionResource} and {@link configureResource}.

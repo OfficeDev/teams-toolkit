@@ -37,8 +37,8 @@ export function isAzureProject(azureSettings: AzureSolutionSettings): boolean {
   return HostTypeOptionAzure.id === azureSettings.hostType;
 }
 
-export function combineRecords(records: { name: string; result: Json }[]): Record<string, Json> {
-  const ret: Record<v2.PluginName, Json> = {};
+export function combineRecords<T>(records: { name: string; result: T }[]): Record<string, T> {
+  const ret: Record<v2.PluginName, T> = {};
   for (const record of records) {
     ret[record.name] = record.result;
   }
@@ -46,7 +46,7 @@ export function combineRecords(records: { name: string; result: Json }[]): Recor
   return ret;
 }
 
-export function extractSolutionInputs(record: Record<string, string>): v2.SolutionInputs {
+export function extractSolutionInputs(record: Json): v2.SolutionInputs {
   return {
     resourceNameSuffix: record["resourceNameSuffix"],
     resourceGroupName: record["resourceGroupName"],

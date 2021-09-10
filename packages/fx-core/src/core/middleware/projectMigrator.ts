@@ -29,8 +29,8 @@ import {
 
 import { getActivatedResourcePlugins } from "../../plugins/solution/fx-solution/ResourcePluginContainer";
 
-const MigrationMessage = (stage: string) =>
-  `In order to proceed with ${stage}, we will update your project code to use the latest Teams Toolkit. We recommend to initialize your workspace with git for better tracking file changes.`;
+const MigrationMessage =
+  "In order to continue using the latest Teams Toolkit, we will update your project code to use the latest Teams Toolkit. We recommend to initialize your workspace with git for better tracking file changes.";
 
 export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
@@ -39,13 +39,9 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
   }
   if (await needMigrateToArmAndMultiEnv(ctx)) {
     const core = ctx.self as FxCore;
-    const response = await core.tools.ui.showMessage(
-      "info",
-      MigrationMessage(inputs.stage as string),
-      true,
-      "OK"
-    );
-    if (!response || response["value"] != "OK") {
+    const res = await core.tools.ui.showMessage("warn", MigrationMessage, true, "OK");
+    const answer = res?.isOk() ? res.value : undefined;
+    if (!answer || answer != "OK") {
       return;
     }
     await migrateToArmAndMultiEnv(ctx, inputs.projectPath);

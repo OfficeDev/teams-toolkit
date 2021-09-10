@@ -251,14 +251,14 @@ describe("Solution scaffold() reading valid manifest file", () => {
   it("getQuestionsForScaffolding", async () => {
     const tools = new MockTools();
     const contextv2: v2.Context = {
-      userInteraction: tools.ui,
-      logProvider: tools.logProvider,
-      telemetryReporter: tools.telemetryReporter!,
-      cryptoProvider: tools.cryptoProvider!,
-      permissionRequestProvider: tools.permissionRequestProvider!,
-      projectSetting: newProjectSettings(),
+        userInteraction: tools.ui,
+        logProvider: tools.logProvider,
+        telemetryReporter: tools.telemetryReporter!,
+        cryptoProvider: tools.cryptoProvider!,
+        permissionRequestProvider: tools.permissionRequestProvider!,
+        projectSetting: newProjectSettings(),
     };
-    const inputs: Inputs = { platform: Platform.CLI, projectPath: "." };
+    const inputs: Inputs = {platform: Platform.CLI, projectPath: "."};
     const res = await getQuestionsForScaffolding(contextv2, inputs);
     assert(res.isOk());
   });

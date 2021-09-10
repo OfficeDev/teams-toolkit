@@ -1386,6 +1386,7 @@ describe("Middleware", () => {
   });
 
   describe("LocalSettingsLoaderMW, ContextInjectorMW", () => {
+    
     it("NoProjectOpenedError", async () => {
       const original = process.env[FeatureFlagName.MultiEnv];
       process.env[FeatureFlagName.MultiEnv] = "true";
@@ -1403,6 +1404,6 @@ describe("Middleware", () => {
       const res = await my.other(inputs);
       assert.isTrue(res.isErr() && res.error.name === NoProjectOpenedError().name);
       process.env[FeatureFlagName.MultiEnv] = original;
-    });
+    }); 
   });
 });

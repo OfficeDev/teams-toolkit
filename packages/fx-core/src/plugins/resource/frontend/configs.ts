@@ -81,11 +81,16 @@ export class FrontendConfig {
   }
 
   static getStorageName(ctx: PluginContext, getFromArmOutput = false): string {
-    let result = isArmSupportEnabled()
-      ? getStorageAccountNameFromResourceId(
-          FrontendConfig.getStorageResourceId(ctx, getFromArmOutput)
-        )
-      : ctx.config.getString(FrontendConfigInfo.StorageName);
+    let result;
+    try {
+      result = isArmSupportEnabled()
+        ? getStorageAccountNameFromResourceId(
+            FrontendConfig.getStorageResourceId(ctx, getFromArmOutput)
+          )
+        : ctx.config.getString(FrontendConfigInfo.StorageName);
+    } catch (e) {
+      throw new InvalidConfigError(FrontendConfigInfo.StorageName, (e as Error).message);
+    }
     if (!result) {
       const resourceNameSuffix = FrontendConfig.getConfig<string>(
         DependentPluginInfo.ResourceNameSuffix,
@@ -108,7 +113,7 @@ export class FrontendConfig {
       ? getArmOutput(ctx, ArmOutput.FrontendStorageResourceId)
       : ctx.config.getString(FrontendConfigInfo.StorageResourceId);
     if (!result) {
-      throw new InvalidConfigError("storage accounts resource id");
+      throw new InvalidConfigError(FrontendConfigInfo.StorageResourceId);
     }
     return result;
   }
@@ -121,7 +126,7 @@ export class FrontendConfig {
           ctx.envInfo.profile.get(DependentPluginInfo.SolutionPluginName)
         );
     if (!result) {
-      throw new InvalidConfigError("subscription id");
+      throw new InvalidConfigError(DependentPluginInfo.SubscriptionId);
     }
     return result;
   }
@@ -136,7 +141,7 @@ export class FrontendConfig {
           ctx.envInfo.profile.get(DependentPluginInfo.SolutionPluginName)
         );
     if (!result) {
-      throw new InvalidConfigError("resource group name");
+      throw new InvalidConfigError(DependentPluginInfo.ResourceGroupName);
     }
     return result;
   }

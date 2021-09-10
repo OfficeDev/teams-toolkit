@@ -602,7 +602,7 @@ describe("Middleware", () => {
       const tools = new MockTools();
       const solutionContext = await newSolutionContext(tools, inputs);
       solutionContext.envInfo.profile.set("solution", new ConfigMap());
-      solutionContext.projectSettings = MockProjectSettings(appName);
+      const mockProjectSettings = MockProjectSettings(appName);
       const fileMap = new Map<string, any>();
 
       sandbox.stub<any, any>(fs, "writeFile").callsFake(async (file: string, data: any) => {
@@ -620,6 +620,7 @@ describe("Middleware", () => {
         tools = tools;
         async myMethod(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
           ctx!.solutionContext = solutionContext;
+          ctx!.projectSettings = mockProjectSettings;
           return ok("");
         }
       }
@@ -633,7 +634,7 @@ describe("Middleware", () => {
       content = fileMap.get(envJsonFile);
       const configInFile = JSON.parse(content);
       const configExpected = mapToJson(solutionContext.envInfo.profile);
-      assert.deepEqual(solutionContext.projectSettings, settingsInFile);
+      assert.deepEqual(mockProjectSettings, settingsInFile);
       assert.deepEqual(configExpected, configInFile);
     });
   });
@@ -1386,7 +1387,6 @@ describe("Middleware", () => {
   });
 
   describe("LocalSettingsLoaderMW, ContextInjectorMW", () => {
-    
     it("NoProjectOpenedError", async () => {
       const original = process.env[FeatureFlagName.MultiEnv];
       process.env[FeatureFlagName.MultiEnv] = "true";
@@ -1404,6 +1404,6 @@ describe("Middleware", () => {
       const res = await my.other(inputs);
       assert.isTrue(res.isErr() && res.error.name === NoProjectOpenedError().name);
       process.env[FeatureFlagName.MultiEnv] = original;
-    }); 
+    });
   });
 });

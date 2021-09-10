@@ -19,6 +19,7 @@ import { TokenResponse } from 'botframework-schema';
 export interface AuthenticationConfiguration {
     readonly applicationIdUri?: string;
     readonly authorityHost?: string;
+    readonly certificatePath?: string;
     readonly clientId?: string;
     readonly clientSecret?: string;
     readonly initiateLoginEndpoint?: string;
@@ -46,6 +47,7 @@ export enum ErrorCode {
     ConsentFailed = "ConsentFailed",
     FailedOperation = "FailedOperation",
     InternalError = "InternalError",
+    InvalidCertificate = "InvalidCertificate",
     InvalidConfiguration = "InvalidConfiguration",
     InvalidParameter = "InvalidParameter",
     RuntimeNotSupported = "RuntimeNotSupported",

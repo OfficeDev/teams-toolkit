@@ -2,12 +2,18 @@
 // Licensed under the MIT license.
 
 import { AccessToken, GetTokenOptions, TokenCredential } from "@azure/identity";
-import { AuthenticationResult, ConfidentialClientApplication } from "@azure/msal-node";
+import {
+  AuthenticationResult,
+  ConfidentialClientApplication,
+  NodeAuthOptions,
+} from "@azure/msal-node";
 import { config } from "../core/configurationProvider";
 import { UserInfo } from "../models/userinfo";
 import { internalLogger } from "../util/logger";
 import { formatString, getUserInfoFromSsoToken, parseJwt, validateScopesType } from "../util/utils";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
+import fs from "fs";
+import { createHash } from "crypto";
 
 /**
  * Represent on-behalf-of flow to get user identity, and it is designed to be used in server side.
@@ -35,7 +41,7 @@ export class OnBehalfOfUserCredential implements TokenCredential {
    *
    * @param {string} ssoToken - User token provided by Teams SSO feature.
    *
-   * @throws {@link ErrorCode|InvalidConfiguration} when client id, client secret, authority host or tenant id is not found in config.
+   * @throws {@link ErrorCode|InvalidConfiguration} when client id, client secret, certificate path, authority host or tenant id is not found in config.
    * @throws {@link ErrorCode|InternalError} when SSO token is not valid.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
    *
@@ -53,8 +59,9 @@ export class OnBehalfOfUserCredential implements TokenCredential {
       missingConfigurations.push("authorityHost");
     }
 
-    if (!config?.authentication?.clientSecret) {
+    if (!config?.authentication?.clientSecret && !config?.authentication?.certificatePath) {
       missingConfigurations.push("clientSecret");
+      missingConfigurations.push("certificatePath");
     }
 
     if (!config?.authentication?.tenantId) {
@@ -72,14 +79,24 @@ export class OnBehalfOfUserCredential implements TokenCredential {
     }
 
     const normalizedAuthorityHost = config.authentication!.authorityHost!.replace(/\/+$/g, "");
-    const authority: string =
-      normalizedAuthorityHost + "/" + config.authentication?.tenantId;
+    const authority: string = normalizedAuthorityHost + "/" + config.authentication?.tenantId;
+    let clientCertificate: ClientCertificate | undefined;
+    if (!config?.authentication?.clientSecret) {
+      clientCertificate = this.parseCertificate(config.authentication!.certificatePath);
+    }
+
+    const auth: NodeAuthOptions = {
+      clientId: config.authentication!.clientId!,
+      authority: authority,
+    };
+    if (config?.authentication?.clientSecret) {
+      auth.clientSecret = config.authentication!.clientSecret;
+    }
+    if (clientCertificate) {
+      auth.clientCertificate = clientCertificate;
+    }
     this.msalClient = new ConfidentialClientApplication({
-      auth: {
-        clientId: config.authentication!.clientId!,
-        authority: authority,
-        clientSecret: config.authentication!.clientSecret!,
-      },
+      auth,
     });
 
     const decodedSsoToken = parseJwt(ssoToken);
@@ -214,4 +231,37 @@ export class OnBehalfOfUserCredential implements TokenCredential {
       return new ErrorWithCode(fullErrorMsg, ErrorCode.ServiceError);
     }
   }
+
+  private parseCertificate(certificatePath: string | undefined): ClientCertificate | undefined {
+    if (!certificatePath) {
+      return undefined;
+    }
+
+    const certificateContent = fs.readFileSync(certificatePath, "utf8");
+    const certificatePattern =
+      /(-+BEGIN CERTIFICATE-+)(\n\r?|\r\n?)([A-Za-z0-9+/\n\r]+=*)(\n\r?|\r\n?)(-+END CERTIFICATE-+)/;
+    const match = certificatePattern.exec(certificateContent);
+    if (!match) {
+      const errorMsg = "The file at the specified path does not contain a PEM-encoded certificate.";
+      internalLogger.error(errorMsg);
+      throw new ErrorWithCode(errorMsg, ErrorCode.InvalidCertificate);
+    }
+    const thumbprint = createHash("sha1")
+      .update(Buffer.from(match[3], "base64"))
+      .digest("hex")
+      .toUpperCase();
+
+    return {
+      thumbprint: thumbprint,
+      privateKey: certificateContent,
+    };
+  }
+}
+
+/**
+ * @internal
+ */
+interface ClientCertificate {
+  thumbprint: string;
+  privateKey: string;
 }

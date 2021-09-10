@@ -8,6 +8,7 @@ import {
   ClientSecretCredential,
   TokenCredentialOptions,
   AuthenticationError,
+  ClientCertificateCredential,
 } from "@azure/identity";
 import { AuthenticationConfiguration } from "../models/configuration";
 import { internalLogger } from "../util/logger";
@@ -30,7 +31,7 @@ import { ErrorCode, ErrorMessage, ErrorWithCode } from "../core/errors";
  * @beta
  */
 export class M365TenantCredential implements TokenCredential {
-  private readonly clientSecretCredential: ClientSecretCredential;
+  private readonly clientCredential: ClientSecretCredential | ClientCertificateCredential;
 
   /**
    * Constructor of M365TenantCredential.
@@ -52,12 +53,20 @@ export class M365TenantCredential implements TokenCredential {
       authorityHost: config.authorityHost,
     };
 
-    this.clientSecretCredential = new ClientSecretCredential(
-      config.tenantId!,
-      config.clientId!,
-      config.clientSecret!,
-      tokenCredentialOptions
-    );
+    if (config.clientSecret) {
+      this.clientCredential = new ClientSecretCredential(
+        config.tenantId!,
+        config.clientId!,
+        config.clientSecret!,
+        tokenCredentialOptions
+      );
+    } else {
+      this.clientCredential = new ClientCertificateCredential(
+        config.tenantId!,
+        config.clientId!,
+        config.certificatePath!
+      );
+    }
   }
 
   /**
@@ -96,7 +105,7 @@ export class M365TenantCredential implements TokenCredential {
     internalLogger.info("Get access token with scopes: " + scopesStr);
 
     try {
-      accessToken = await this.clientSecretCredential.getToken(scopes);
+      accessToken = await this.clientCredential.getToken(scopes);
     } catch (err) {
       if (err instanceof AuthenticationError) {
         const authError = err as AuthenticationError;
@@ -147,8 +156,9 @@ export class M365TenantCredential implements TokenCredential {
       missingValues.push("clientId");
     }
 
-    if (!config.clientSecret) {
+    if (!config.clientSecret && !config.certificatePath) {
       missingValues.push("clientSecret");
+      missingValues.push("certificatePath");
     }
 
     if (!config.tenantId) {

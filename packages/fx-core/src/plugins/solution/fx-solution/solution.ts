@@ -32,6 +32,7 @@ import {
   SolutionSettings,
   Stage,
   SubscriptionInfo,
+  SystemError,
   TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
 import axios from "axios";
@@ -246,7 +247,7 @@ export class TeamsAppSolution implements Solution {
     ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.CreateStart, {
       [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
     });
-
+    if(!ctx.projectSettings) return err(new SystemError(SolutionError.InternelError, "projectSettings undefined", "Solution"));
     // ensure that global namespace is present
     if (!ctx.envInfo.profile.has(GLOBAL_CONFIG)) {
       ctx.envInfo.profile.set(GLOBAL_CONFIG, new ConfigMap());

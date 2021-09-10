@@ -45,11 +45,7 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
       true,
       "OK"
     );
-<<<<<<< HEAD
-    if (response.isErr()) {
-=======
     if (!response || response["value"] != "OK") {
->>>>>>> 5fd90d35... chore: fix messagebox
       return;
     }
     await migrateToArmAndMultiEnv(ctx, inputs.projectPath);

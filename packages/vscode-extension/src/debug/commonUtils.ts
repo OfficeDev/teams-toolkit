@@ -16,12 +16,7 @@ import { core, getSystemInputs, showError } from "../handlers";
 import * as net from "net";
 import { ext } from "../extensionVariables";
 import { initializeFocusRects } from "@fluentui/utilities";
-import {
-  isMultiEnvEnabled,
-  isValidProject,
-  isMigrateFromV1Project,
-  getActiveEnv,
-} from "@microsoft/teamsfx-core";
+import { isMultiEnvEnabled, isValidProject, isMigrateFromV1Project } from "@microsoft/teamsfx-core";
 
 export async function getProjectRoot(
   folderPath: string,
@@ -255,24 +250,21 @@ export async function getPortsInUse(): Promise<number[]> {
   return portsInUse;
 }
 
+// This function is not used with multi-env.
+// In the multi-env case, it will use getLocalSettings().
 function getSettingWithUserData(jsonSelector: (jsonObject: any) => any): string | undefined {
   // get final setting value from env.xxx.json and xxx.userdata
   // Note: this is a workaround and need to be updated after multi-env
   if (ext.workspaceUri) {
     const ws = ext.workspaceUri.fsPath;
     if (isValidProject(ws)) {
-      const env = getActiveEnv(ws);
-      const envJsonPath = isMultiEnvEnabled()
-        ? path.join(ws, `.${ConfigFolderName}/${PublishProfilesFolderName}/profile.${env}.json`)
-        : path.join(ws, `.${ConfigFolderName}/env.${env}.json`);
+      const envJsonPath = path.join(ws, `.${ConfigFolderName}/env.default.json`);
       const envJson = JSON.parse(fs.readFileSync(envJsonPath, "utf8"));
       const settingValue = jsonSelector(envJson) as string;
       if (settingValue && settingValue.startsWith("{{") && settingValue.endsWith("}}")) {
         // setting in env.xxx.json is place holder and need to get actual value from xxx.userdata
         const placeHolder = settingValue.replace("{{", "").replace("}}", "");
-        const userdataPath = isMultiEnvEnabled()
-          ? path.join(ws, `.${ConfigFolderName}/publishProfiles/${env}.userdata`)
-          : path.join(ws, `.${ConfigFolderName}/${env}.userdata`);
+        const userdataPath = path.join(ws, `.${ConfigFolderName}/default.userdata`);
         if (fs.existsSync(userdataPath)) {
           const userdata = fs.readFileSync(userdataPath, "utf8");
           const userEnv = dotenv.parse(userdata);

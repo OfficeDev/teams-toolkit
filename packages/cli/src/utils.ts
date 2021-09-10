@@ -125,20 +125,22 @@ export function getConfigPath(projectFolder: string, filePath: string): string {
 }
 
 // TODO: move config read/write utils to core
-export function getEnvFilePath(projectFolder: string): string {
+export function getEnvFilePath(projectFolder: string): Result<string, FxError> {
   if (isMultiEnvEnabled()) {
-    // NOTE: The fallback logic is to prevent this function from returning undefined, which will cause a lot of useless refactoring work.
-    // Because sooner or later we will move the config file related util functions to core, it is meaningless to refactor here.
-    // TODO: return undefined instead of default env after refactoring.
-    const envName = getActiveEnv(projectFolder) || environmentManager.getDefaultEnvName();
-    return path.join(
-      projectFolder,
-      `.${ConfigFolderName}`,
-      PublishProfilesFolderName,
-      EnvProfileFileNameTemplate.replace(EnvNamePlaceholder, envName)
+    const envResult = getActiveEnv(projectFolder);
+    if (envResult.isErr()) {
+      return err(envResult.error);
+    }
+    return ok(
+      path.join(
+        projectFolder,
+        `.${ConfigFolderName}`,
+        PublishProfilesFolderName,
+        EnvProfileFileNameTemplate.replace(EnvNamePlaceholder, envResult.value)
+      )
     );
   } else {
-    return getConfigPath(projectFolder, `env.${getActiveEnv(projectFolder)}.json`);
+    return ok(getConfigPath(projectFolder, `env.default.json`));
   }
 }
 
@@ -167,8 +169,14 @@ export function getSecretFilePath(projectRoot: string) {
 }
 
 export async function readEnvJsonFile(projectFolder: string): Promise<Result<Json, FxError>> {
-  const filePath = getEnvFilePath(projectFolder);
-  if (!filePath || !fs.existsSync(filePath)) {
+  const filePathResult = getEnvFilePath(projectFolder);
+  if (filePathResult.isErr()) {
+    return err(filePathResult.error);
+  }
+  const filePath = filePathResult.value;
+  try {
+    fs.stat(filePath);
+  } catch (error) {
     return err(ConfigNotFoundError(filePath));
   }
   try {
@@ -180,8 +188,14 @@ export async function readEnvJsonFile(projectFolder: string): Promise<Result<Jso
 }
 
 export function readEnvJsonFileSync(projectFolder: string): Result<Json, FxError> {
-  const filePath = getEnvFilePath(projectFolder);
-  if (!fs.existsSync(filePath)) {
+  const filePathResult = getEnvFilePath(projectFolder);
+  if (filePathResult.isErr()) {
+    return err(filePathResult.error);
+  }
+  const filePath = filePathResult.value;
+  try {
+    fs.stat(filePath);
+  } catch (error) {
     return err(ConfigNotFoundError(filePath));
   }
   try {
@@ -235,6 +249,10 @@ export async function getSolutionPropertyFromEnvFile(
   projectFolder: string,
   propertyName: string
 ): Promise<Result<any, FxError>> {
+  const envFilePathResult = getEnvFilePath(projectFolder);
+  if (envFilePathResult.isErr()) {
+    return err(envFilePathResult.error);
+  }
   const result = await readEnvJsonFile(projectFolder);
   if (result.isErr()) {
     return err(result.error);
@@ -246,7 +264,7 @@ export async function getSolutionPropertyFromEnvFile(
     return err(
       InvalidEnvFile(
         `The property \`solution\` does not exist in the project's env file.`,
-        getEnvFilePath(projectFolder)
+        envFilePathResult.value
       )
     );
   }
@@ -281,7 +299,7 @@ export function isWorkspaceSupported(workspace: string): boolean {
     // in the multi-env case, the env file may not exist for a valid project.
   } else {
     checklist.push(path.join(p, `.${ConfigFolderName}`, "settings.json"));
-    checklist.push(`${getEnvFilePath(p)}`);
+    checklist.push(getConfigPath(p, `env.default.json`));
   }
 
   for (const fp of checklist) {
@@ -314,6 +332,11 @@ export function getLocalTeamsAppId(rootfolder: string | undefined): any {
   }
 
   if (isWorkspaceSupported(rootfolder)) {
+    // TODO: read local teams app ID from localSettings.json instead of env file
+    if (isMultiEnvEnabled()) {
+      return undefined;
+    }
+
     const result = readEnvJsonFileSync(rootfolder);
     if (result.isErr()) {
       throw result.error;
@@ -326,7 +349,7 @@ export function getLocalTeamsAppId(rootfolder: string | undefined): any {
       if (settingValue && settingValue.startsWith("{{") && settingValue.endsWith("}}")) {
         // setting in env.xxx.json is place holder and need to get actual value from xxx.userdata
         const placeHolder = settingValue.replace("{{", "").replace("}}", "");
-        const userdataPath = getConfigPath(rootfolder, `${getActiveEnv(rootfolder)}.userdata`);
+        const userdataPath = getConfigPath(rootfolder, `default.userdata`);
         if (fs.existsSync(userdataPath)) {
           const userdata = fs.readFileSync(userdataPath, "utf8");
           const userEnv = dotenv.parse(userdata);

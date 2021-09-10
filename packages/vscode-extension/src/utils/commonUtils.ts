@@ -57,8 +57,9 @@ export function getTeamsAppId() {
   try {
     const ws = ext.workspaceUri.fsPath;
     if (isValidProject(ws)) {
-      const env = getActiveEnv(ws);
-      if (!env) {
+      const envResult = getActiveEnv(ws);
+      // ignore env error for telemetry
+      if (envResult.isErr()) {
         return undefined;
       }
       const envJsonPath = path.join(
@@ -66,9 +67,9 @@ export function getTeamsAppId() {
         isMultiEnvEnabled()
           ? `.${ConfigFolderName}/${InputConfigsFolderName}/${EnvProfileFileNameTemplate.replace(
               "@envName",
-              env
+              envResult.value
             )}`
-          : `.${ConfigFolderName}/env.${env}.json`
+          : `.${ConfigFolderName}/env.${envResult.value}.json`
       );
       const envJson = JSON.parse(fs.readFileSync(envJsonPath, "utf8"));
       return envJson.solution.remoteTeamsAppId;

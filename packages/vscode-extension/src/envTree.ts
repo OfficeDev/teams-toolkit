@@ -22,8 +22,11 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
     if (envNamesResult.isErr()) {
       return err(envNamesResult.error);
     }
-    const activeEnv = getActiveEnv(workspacePath);
-    if (activeEnv) {
+    let activeEnv: string | undefined = undefined;
+    const envResult = getActiveEnv(workspacePath);
+    // do not block user to manage env if active env cannot be retrieved
+    if (envResult.isOk()) {
+      activeEnv = envResult.value;
       setActiveEnv(activeEnv);
     }
     const environmentTreeProvider: CommandsTreeViewProvider =

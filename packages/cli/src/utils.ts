@@ -34,12 +34,7 @@ import {
 import { ConfigNotFoundError, InvalidEnvFile, ReadFileError } from "./error";
 import AzureAccountManager from "./commonlib/azureLogin";
 import { FeatureFlags } from "./constants";
-import {
-  isMultiEnvEnabled,
-  getActiveEnv,
-  environmentManager,
-  WriteFileError,
-} from "@microsoft/teamsfx-core";
+import { isMultiEnvEnabled, environmentManager, WriteFileError } from "@microsoft/teamsfx-core";
 
 type Json = { [_: string]: any };
 
@@ -134,7 +129,7 @@ export function getEnvFilePath(projectFolder: string): Result<string, FxError> {
   if (!isMultiEnvEnabled()) {
     return ok(getConfigPath(projectFolder, `env.default.json`));
   }
-  const envResult = getActiveEnv(projectFolder);
+  const envResult = environmentManager.getActiveEnv(projectFolder);
   if (envResult.isErr()) {
     return err(envResult.error);
   }
@@ -165,7 +160,7 @@ export function getSecretFilePath(projectRoot: string): Result<string, FxError> 
   if (!isMultiEnvEnabled()) {
     return ok(path.join(projectRoot, `.${ConfigFolderName}`, `default.userdata`));
   }
-  const envResult = getActiveEnv(projectRoot);
+  const envResult = environmentManager.getActiveEnv(projectRoot);
   if (envResult.isErr()) {
     return err(envResult.error);
   }
@@ -251,7 +246,7 @@ export function writeSecretToFile(
   secrets: dotenv.DotenvParseOutput,
   rootFolder: string
 ): Result<null, FxError> {
-  const envResult = getActiveEnv(rootFolder);
+  const envResult = environmentManager.getActiveEnv(rootFolder);
   if (envResult.isErr()) {
     return err(envResult.error);
   }

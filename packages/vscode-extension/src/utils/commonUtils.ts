@@ -11,7 +11,7 @@ import {
   ProjectSettingsFileName,
   EnvProfileFileNameTemplate,
 } from "@microsoft/teamsfx-api";
-import { isMultiEnvEnabled, isValidProject, getActiveEnv } from "@microsoft/teamsfx-core";
+import { environmentManager, isMultiEnvEnabled, isValidProject } from "@microsoft/teamsfx-core";
 import { workspace, WorkspaceConfiguration } from "vscode";
 import * as commonUtils from "../debug/commonUtils";
 import { ConfigurationKey, CONFIGURATION_PREFIX } from "../constants";
@@ -57,7 +57,7 @@ export function getTeamsAppId() {
   try {
     const ws = ext.workspaceUri.fsPath;
     if (isValidProject(ws)) {
-      const envResult = getActiveEnv(ws);
+      const envResult = environmentManager.getActiveEnv(ws);
       // ignore env error for telemetry
       if (envResult.isErr()) {
         return undefined;

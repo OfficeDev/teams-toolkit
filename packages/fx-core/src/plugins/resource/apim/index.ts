@@ -13,7 +13,7 @@ import {
   Stage,
   Func,
 } from "@microsoft/teamsfx-api";
-import { AssertNotEmpty, BuildError, UnhandledError } from "./error";
+import { AssertNotEmpty, BuildError, NotImplemented, UnhandledError } from "./error";
 import { Telemetry } from "./utils/telemetry";
 import { AadPluginConfig, ApimPluginConfig, FunctionPluginConfig, SolutionConfig } from "./config";
 import {
@@ -24,6 +24,7 @@ import {
   ProgressStep,
   ProjectConstants,
   OperationStatus,
+  UserTask,
 } from "./constants";
 import { Factory } from "./factory";
 import { ProgressBar } from "./utils/progressBar";
@@ -79,6 +80,13 @@ export class ApimPlugin implements Plugin {
 
   public async deploy(ctx: PluginContext): Promise<Result<any, FxError>> {
     return await this.executeWithFxError(PluginLifeCycle.Deploy, _deploy, ctx);
+  }
+
+  public async executeUserTask(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {
+    if (func.method === UserTask.addResource) {
+      return await this.executeWithFxError(PluginLifeCycle.Scaffold, _scaffold, ctx);
+    }
+    return err(BuildError(NotImplemented));
   }
 
   private async executeWithFxError<T>(

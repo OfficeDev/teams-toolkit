@@ -31,7 +31,7 @@ export async function provisionLocalResource(
   const azureSolutionSettings = getAzureSolutionSettings(ctx);
   const result = await ensurePermissionRequest(
     azureSolutionSettings,
-    ctx.permissionRequestProvider
+    ctx.permissionRequestProvider!
   );
   if (result.isErr()) {
     return err(result.error);

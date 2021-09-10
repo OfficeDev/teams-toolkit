@@ -16,6 +16,7 @@ import {
 import { Service } from "typedi";
 import { PluginDisplayName } from "../../../../common/constants";
 import { SolutionPluginsV2 } from "../../../../core/SolutionPluginContainer";
+import { createEnv } from "./createEnv";
 import { deploy } from "./deploy";
 import { executeUserTask } from "./executeUserTask";
 import { generateResourceTemplate } from "./generateResourceTemplate";
@@ -73,6 +74,8 @@ export class TeamsAppSolutionV2 implements v2.SolutionPlugin {
     ctx: v2.Context,
     inputs: Inputs,
     func: Func,
-    tokenProvider: AppStudioTokenProvider
+    tokenProvider: TokenProvider
   ) => Promise<Result<unknown, FxError>> = executeUserTask;
+
+  createEnv?: (ctx: v2.Context, inputs: Inputs) => Promise<Result<Void, FxError>> = createEnv;
 }

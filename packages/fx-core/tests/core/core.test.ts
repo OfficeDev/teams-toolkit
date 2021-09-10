@@ -64,7 +64,7 @@ describe("Core basic APIs", () => {
 
   afterEach(async () => {
     sandbox.restore();
-    await fs.rmdir(projectPath, { recursive: true });
+    await fs.rmdir(projectPath, { recursive: true});
   });
 
   it("happy path: create from new, provision, deploy, localDebug, publish, getQuestion, getQuestionsForUserTask, getProjectConfig", async () => {
@@ -780,7 +780,8 @@ describe("Core basic APIs", () => {
 
         const createEnvRes = await core.createEnv(inputs);
         assert.isTrue(createEnvRes.isOk());
-        const activateEnvRes = await core.activateEnv("newEnv", inputs);
+        inputs.env = "newEnv";
+        const activateEnvRes = await core.activateEnv(inputs);
         assert.isTrue(activateEnvRes.isOk());
       }
     });

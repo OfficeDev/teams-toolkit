@@ -36,9 +36,7 @@ export const ProjectSettingsWriterMW: Middleware = async (
       StaticPlatforms.includes(inputs.platform)
     )
       return;
-    const projectSettings = isV2()
-      ? ctx.contextV2?.projectSetting
-      : ctx.solutionContext?.projectSettings;
+    const projectSettings = ctx.projectSettings;
     if (projectSettings === undefined) return;
     try {
       const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);

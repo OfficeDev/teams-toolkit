@@ -1242,7 +1242,7 @@ export class TeamsAppSolution implements Solution {
         ctx.projectSettings?.solutionSettings as AzureSolutionSettings,
         ctx.permissionRequestProvider
       );
-
+      
       if (result.isErr()) {
         return result;
       }

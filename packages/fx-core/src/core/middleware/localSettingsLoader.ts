@@ -41,7 +41,7 @@ export const LocalSettingsLoaderMW: Middleware = async (
       } else {
         ctx.localSettings = localSettingsProvider.initV2(hasFrontend, hasBackend, hasBot);
       }
-    } else if (ctx.solutionContext) {
+    } else if(ctx.solutionContext) {
       if (await fs.pathExists(localSettingsProvider.localSettingsFilePath)) {
         ctx.solutionContext.localSettings = await localSettingsProvider.load();
       } else {

@@ -153,7 +153,7 @@ class EnvironmentManager {
     envName = envName ?? this.getDefaultEnvName();
     const envFiles = this.getEnvProfileFilesPath(envName, projectPath);
 
-    const data = envData instanceof Map ? mapToJson(envData) : envData;
+    const data = (envData instanceof Map) ? mapToJson(envData) : envData;
     const secrets = sperateSecretData(data);
     if (cryptoProvider) {
       this.encrypt(secrets, cryptoProvider);
@@ -171,7 +171,7 @@ class EnvironmentManager {
 
     return ok(envFiles.envProfile);
   }
-
+  
   public async listEnvConfigs(projectPath: string): Promise<Result<Array<string>, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
       return err(PathNotExistError(projectPath));

@@ -2,7 +2,12 @@ import AdmZip from "adm-zip";
 import fs from "fs-extra";
 import path from "path";
 import { getTemplatesFolder } from "..";
-import { fetchTemplateUrl, fetchZipFromUrl, renderTemplateContent, unzip } from "./templatesUtils";
+import {
+  fetchTemplateUrl,
+  fetchZipFromUrl,
+  renderTemplateContent,
+  unzip,
+} from "./templatesUtils";
 
 // The entire progress has following actions:
 // 1. get zip url. (to fill ScaffoldContext.zipUrl).

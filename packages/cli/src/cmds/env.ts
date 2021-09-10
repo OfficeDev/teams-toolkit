@@ -18,13 +18,16 @@ import activate from "../activate";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryEvent } from "../telemetry/cliTelemetryEvents";
 import { getSystemInputs, isWorkspaceSupported } from "../utils";
+import { EnvNodeNoCreate } from "../constants";
+
+const ActiveMark = " (active)";
 
 export default class Env extends YargsCommand {
   public readonly commandHead = `env`;
   public readonly command = `${this.commandHead} [action]`;
   public readonly description = "Manage environments.";
 
-  public readonly subCommands: YargsCommand[] = [new EnvList()];
+  public readonly subCommands: YargsCommand[] = [new EnvList(), new EnvActivate()];
 
   public builder(yargs: Argv): Argv<any> {
     yargs.options("action", {
@@ -70,9 +73,57 @@ class EnvList extends YargsCommand {
       return err(envResult.error);
     }
 
+    const activeEnvResult = await environmentManager.getActiveEnv(projectDir);
+    let activeEnv: string | undefined;
+    if (activeEnvResult.isOk()) {
+      activeEnv = activeEnvResult.value;
+    } else {
+      // Do not block user to list envs on failure to retrieve activeEnv
+      CLILogProvider.warning("Failed to get active env, error: " + activeEnvResult.error);
+    }
+
     // TODO: support --details
-    const envList = envResult.value.join(os.EOL);
+    const envList = envResult.value
+      .map((env) => (env === activeEnv ? env + ActiveMark : env))
+      .join(os.EOL);
     CLILogProvider.necessaryLog(LogLevel.Info, envList, true);
+    return ok(null);
+  }
+}
+
+class EnvActivate extends YargsCommand {
+  public readonly commandHead = `activate`;
+  public readonly command = `${this.commandHead}`;
+  public readonly description = "Activate an environments.";
+  public params: { [_: string]: Options } = {};
+
+  public builder(yargs: Argv): Argv<any> {
+    this.params = HelpParamGenerator.getYargsParamForHelp(Stage.switchEnv);
+    return yargs.version(false).options(this.params).demandOption(EnvNodeNoCreate.data.name!);
+  }
+
+  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+    const projectDir = args.folder || process.cwd();
+    // env always exists because we have `demandOption` in builder.
+    const env = args.env as string;
+
+    if (!isWorkspaceSupported(projectDir)) {
+      return err(WorkspaceNotSupported(projectDir));
+    }
+
+    const coreResult = await activate(projectDir);
+    if (coreResult.isErr()) {
+      return err(coreResult.error);
+    }
+
+    const fxCore = coreResult.value;
+    const inputs = getSystemInputs(projectDir);
+    inputs.env = env;
+    const result = await fxCore.activateEnv(inputs);
+    if (result.isErr()) {
+      return err(result.error);
+    }
+
     return ok(null);
   }
 }

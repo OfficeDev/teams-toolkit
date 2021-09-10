@@ -2,7 +2,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { IntlProvider } from "react-intl";
 import { initializeIcons } from "@fluentui/react/lib/Icons";
-import { ActionButton, Callout, DirectionalHint, Tooltip, TooltipHost } from "@fluentui/react";
+import { ActionButton, DirectionalHint, TextFieldBase, TooltipHost } from "@fluentui/react";
 import "./tree.scss";
 import publish_dark from "../../media/dark/publish.svg";
 import publish_light from "../../media/light/publish.svg";
@@ -10,21 +10,47 @@ import developerPortal_dark from "../../media/dark/developerPortal.svg";
 import developerPortal_light from "../../media/light/developerPortal.svg";
 import { Commands } from "./Commands";
 import * as StringResources from "../resources/Strings.json";
-import { buildPackageHandler } from "../handlers";
+import { getCurrentTheme, Theme } from "./theme";
 
 const language = "en";
 
-class App extends React.Component {
+class App extends React.Component<any, any> {
   constructor(props: any) {
     super(props);
+    this.state = {
+      colorTheme: Theme.Dark,
+      locked: false,
+    };
     // Initializing the office-ui-fabric-icons here to avoid multiple initializations in every component.
     initializeIcons();
   }
 
   componentDidMount() {
+    window.addEventListener("message", this.receiveMessage, false);
     document.addEventListener("contextmenu", (e) => {
       e.preventDefault();
     });
+
+    const targetNode = document.getElementsByTagName("body")[0];
+    // Options for the observer (which mutations to observe)
+    const config = { attributes: true };
+    // Callback function to execute when mutations are observed
+    const callback = (mutationsList: any) => {
+      // Use traditional 'for loops' for IE 11
+      for (const mutation of mutationsList) {
+        if (mutation.type === "attributes") {
+          const theme = getCurrentTheme(mutation);
+          this.setState({
+            colorTheme: theme,
+          });
+        }
+      }
+    };
+
+    // Create an observer instance linked to the callback function
+    const observer = new MutationObserver(callback);
+    // Start observing the target node for configured mutations
+    observer.observe(targetNode, config);
   }
 
   render() {
@@ -35,7 +61,7 @@ class App extends React.Component {
           tooltip={StringResources.vsc.commandsTreeViewProvider.provisionDescription}
           icon="codicon codicon-type-hierarchy"
           customized={false}
-          disable={false}
+          disable={this.state.locked}
           command="fx-extension.provision"
         ></TreeItem>
         <TreeItem
@@ -43,7 +69,7 @@ class App extends React.Component {
           tooltip={StringResources.vsc.commandsTreeViewProvider.validateManifestDescription}
           icon="codicon codicon-checklist"
           customized={false}
-          disable={true}
+          disable={false}
           command="fx-extension.validateManifest"
         ></TreeItem>
         <TreeItem
@@ -59,35 +85,47 @@ class App extends React.Component {
           tooltip={StringResources.vsc.commandsTreeViewProvider.deployDescription}
           icon="codicon codicon-cloud-upload"
           customized={false}
-          disable={false}
+          disable={this.state.locked}
           command="fx-extension.deploy"
         ></TreeItem>
         <TreeItem
           label="Publish to Teams"
           tooltip={StringResources.vsc.commandsTreeViewProvider.publishDescription}
-          icon={publish_dark}
+          icon={this.state.colorTheme === Theme.Dark ? publish_dark : publish_light}
           customized={true}
-          disable={false}
+          disable={this.state.locked}
           command="fx-extension.publish"
         ></TreeItem>
         <TreeItem
           label="Developer Portal for Teams"
           tooltip={StringResources.vsc.commandsTreeViewProvider.teamsDevPortalDescription}
-          icon={developerPortal_dark}
+          icon={this.state.colorTheme === Theme.Dark ? developerPortal_dark : developerPortal_light}
           customized={true}
           disable={false}
           command="fx-extension.openAppManagement"
         ></TreeItem>
-        {/* <TreeItem
+        <TreeItem
           label="CI/CD guide"
           icon="codicon codicon-sync"
           customized={false}
           disable={false}
           command="fx-extension.cicdGuide"
-        ></TreeItem> */}
+        ></TreeItem>
       </div>
     );
   }
+
+  receiveMessage = (event: any) => {
+    const message = event.data.message;
+
+    switch (message) {
+      case "concurrencyStatus":
+        this.setState({ locked: event.data.data });
+        break;
+      default:
+        break;
+    }
+  };
 }
 
 class TreeItem extends React.Component<any, any> {
@@ -115,9 +153,8 @@ class TreeItem extends React.Component<any, any> {
           },
         }}
         calloutProps={{
-          gapSpace: 0,
+          gapSpace: 2,
           isBeakVisible: false,
-          target: this.state.hoverEvent,
           directionalHint: DirectionalHint.bottomLeftEdge,
           styles: {
             root: {

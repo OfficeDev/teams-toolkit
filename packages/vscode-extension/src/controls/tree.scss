@@ -13,7 +13,7 @@
       line-height: 22px;
       font-size: 13px;
       margin: 0;
-      color: #cccccc;
+      color: var(--vscode-foreground);
       white-space: nowrap;
       text-overflow: ellipsis;
 
@@ -49,16 +49,20 @@
   }
 
   button:hover {
-    background-color: #2a2d2e;
+    background-color: var(--vscode-list-hoverBackground);
   }
 
   button:focus {
-    background-color: #094771;
-    outline: 1px solid #007fd4;
+    background-color: var(--vscode-list-activeSelectionBackground);
+    outline: 1px solid var(--vscode-list-focusOutline);
     outline-offset: -1px;
 
     span {
-      color: white;
+      color: var(--vscode-list-activeSelectionForeground);
+    }
+
+    .codicon {
+      color: var(--vscode-list-activeSelectionForeground);
     }
   }
 
@@ -67,4 +71,21 @@
       color: #333333;
     }
   }
+}
+
+.codicon {
+  color: var(--vscode-icon-foreground);
+}
+
+.ms-Tooltip {
+  background-color: var(--vscode-sideBar-background);
+  border: 1px solid var(--vscode-editorWidget-border);
+}
+
+.ms-Callout-main {
+  background-color: var(--vscode-sideBar-background);
+}
+
+.ms-Tooltip-content {
+  color: var(--vscode-foreground);
 }

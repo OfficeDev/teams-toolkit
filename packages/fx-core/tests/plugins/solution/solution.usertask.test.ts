@@ -53,6 +53,7 @@ import { AppStudioPlugin, newEnvInfo } from "../../../src";
 import fs from "fs-extra";
 import { ProgrammingLanguage } from "../../../src/plugins/resource/bot/enums/programmingLanguage";
 import { MockGraphTokenProvider } from "../../core/utils";
+import { createEnv } from "../../../src/plugins/solution/fx-solution/v2/createEnv";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -66,7 +67,11 @@ const localDebugPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.Lo
 const appStudioPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin);
 const frontendPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.FrontendPlugin);
 const botPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.BotPlugin);
-const mockedProvider:TokenProvider = {appStudioToken: new MockedAppStudioProvider(), azureAccountProvider: new MockedAzureAccountProvider(), graphTokenProvider: new MockGraphTokenProvider()};
+const mockedProvider: TokenProvider = {
+  appStudioToken: new MockedAppStudioProvider(),
+  azureAccountProvider: new MockedAzureAccountProvider(),
+  graphTokenProvider: new MockGraphTokenProvider(),
+};
 function mockSolutionContextWithPlatform(platform?: Platform): SolutionContext {
   const config: SolutionConfig = new Map();
   config.set(GLOBAL_CONFIG, new ConfigMap());
@@ -198,7 +203,7 @@ describe("V2 implementation", () => {
       },
     };
     const mockedCtx = new MockedV2Context(projectSettings);
-    
+
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
     };
@@ -434,6 +439,20 @@ describe("V2 implementation", () => {
         expect(result.isOk()).to.be.true;
         expect(spy.calledOnce, "publishApplication() is called").to.be.true;
       });
+    });
+
+    it("createEnv", async () => {
+      const mockedCtx = new MockedV2Context(projectSettings);
+      const mockedInputs: Inputs = {
+        platform: Platform.VSCode,
+      };
+
+      const result = await createEnv(mockedCtx, mockedInputs);
+      expect(result.isOk()).to.be.true;
+
+      mockedInputs.copy = true;
+      const result2 = await createEnv(mockedCtx, mockedInputs);
+      expect(result2.isOk()).to.be.true;
     });
   });
 });

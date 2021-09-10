@@ -398,11 +398,20 @@ export class AppStudioPluginImpl {
     if (this.isSPFxProject(ctx)) {
       manifestString = (await fs.readFile(await this.getManifestTemplatePath(ctx.root))).toString();
       if (isMultiEnvEnabled()) {
+        const teamsAppId = this.getTeamsAppId(ctx, false);
+        if (!teamsAppId) {
+          return err(
+            AppStudioResultFactory.UserError(
+              AppStudioError.GetRemoteConfigError.name,
+              AppStudioError.GetRemoteConfigError.message("Manifest validation failed")
+            )
+          );
+        }
         const view = {
           config: ctx.envInfo.config,
           profile: {
             "fx-resource-appstudio": {
-              teamsAppId: this.getTeamsAppId(ctx, false),
+              teamsAppId: teamsAppId,
             },
           },
         };

@@ -89,6 +89,11 @@ export enum Colors {
 }
 
 // @public (undocumented)
+export class ConcurrentError extends UserError {
+    constructor(source: string);
+}
+
+// @public (undocumented)
 export const ConfigFolderName = "fx";
 
 // @public (undocumented)
@@ -217,6 +222,11 @@ export type DynamicOptions = LocalFunc<StaticOptions>;
 // @public (undocumented)
 export const DynamicPlatforms: Platform[];
 
+// @public (undocumented)
+export class EmptyOptionError extends SystemError {
+    constructor(source?: string);
+}
+
 // @public
 export interface EnvConfig {
     // (undocumented)
@@ -280,6 +290,20 @@ export const EnvNamePlaceholder = "@envName";
 export const EnvProfileFileNameTemplate: string;
 
 // @public (undocumented)
+export interface ErrorOptionBase {
+    // (undocumented)
+    error?: Error;
+    // (undocumented)
+    message?: string;
+    // (undocumented)
+    name?: string;
+    // (undocumented)
+    source?: string;
+    // (undocumented)
+    userData?: any;
+}
+
+// @public (undocumented)
 export interface FolderQuestion extends UserInputQuestion {
     default?: string | LocalFunc<string | undefined>;
     // (undocumented)
@@ -319,6 +343,8 @@ export interface FxError extends Error {
     innerError?: any;
     source: string;
     timestamp: Date;
+    // (undocumented)
+    userData?: any;
 }
 
 // @public (undocumented)
@@ -539,6 +565,26 @@ export interface InputTextConfig extends UIConfig<string> {
 export type InputTextResult = InputResult<string>;
 
 // @public (undocumented)
+export class InvalidInputError extends UserError {
+    constructor(source: string, name: string, reason?: string);
+}
+
+// @public (undocumented)
+export class InvalidObjectError extends UserError {
+    constructor(source: string, name: string, reason?: string);
+}
+
+// @public (undocumented)
+export class InvalidOperationError extends UserError {
+    constructor(source: string, name: string, reason?: string);
+}
+
+// @public (undocumented)
+export class InvalidProjectError extends UserError {
+    constructor(source: string, msg?: string);
+}
+
+// @public (undocumented)
 export interface IParameter {
     choices?: {
         title: string;
@@ -701,10 +747,24 @@ export interface MultiSelectQuestion extends UserInputQuestion {
 export type MultiSelectResult = InputResult<StaticOptions>;
 
 // @public (undocumented)
-export function newSystemError(source: string, name: string, message: string, issueLink?: string, innerError?: any): SystemError;
+export class NoProjectOpenedError extends UserError {
+    constructor(source: string);
+}
 
 // @public (undocumented)
-export function newUserError(source: string, name: string, message: string, helpLink?: string, innerError?: any): UserError;
+export class NotImplementedError extends SystemError {
+    constructor(source: string, method: string);
+}
+
+// @public (undocumented)
+export class ObjectAlreadyExistsError extends UserError {
+    constructor(source: string, name: string);
+}
+
+// @public (undocumented)
+export class ObjectNotExistError extends UserError {
+    constructor(source: string, name: string);
+}
 
 // @public
 export interface OptionItem {
@@ -714,6 +774,16 @@ export interface OptionItem {
     detail?: string;
     id: string;
     label: string;
+}
+
+// @public (undocumented)
+export class PathAlreadyExistsError extends UserError {
+    constructor(source: string, path: string);
+}
+
+// @public (undocumented)
+export class PathNotExistError extends UserError {
+    constructor(source: string, path: string);
 }
 
 // @public
@@ -868,6 +938,11 @@ export class QTreeNode {
 
 // @public (undocumented)
 export type Question = SingleSelectQuestion | MultiSelectQuestion | TextInputQuestion | SingleFileQuestion | MultiFileQuestion | FolderQuestion | FuncQuestion | SingleFileQuestion;
+
+// @public (undocumented)
+export class ReadFileError extends SystemError {
+    constructor(source: string, e: Error);
+}
 
 // @public (undocumented)
 export type ReadonlyPluginConfig = ReadonlyMap<string, ConfigValue>;
@@ -1162,16 +1237,20 @@ export type SubscriptionInfo = {
 
 // @public
 export class SystemError extends Error implements FxError {
+    constructor(error: Error, source?: string, name?: string, issueLink?: string);
+    constructor(opt: SystemErrorOptions);
     constructor(name: string, message: string, source: string, stack?: string, issueLink?: string, innerError?: any);
-    // (undocumented)
-    static build(source: string, name?: string, message?: string, issueLink?: string): SystemError;
-    // (undocumented)
-    static build(source: string, error: Error, issueLink?: string): SystemError;
     innerError?: any;
     issueLink?: string;
     source: string;
     timestamp: Date;
     userData?: string;
+}
+
+// @public (undocumented)
+export interface SystemErrorOptions extends ErrorOptionBase {
+    // (undocumented)
+    issueLink?: string;
 }
 
 // @public
@@ -1365,19 +1444,34 @@ export interface UIConfig<T> {
 }
 
 // @public (undocumented)
+export class UndefinedError extends SystemError {
+    constructor(source: string, name: string);
+}
+
+// @public (undocumented)
+export class UnknownError extends SystemError {
+    constructor(source?: string, message?: string);
+}
+
+// @public (undocumented)
 export const UserCancelError: UserError;
 
 // @public
 export class UserError extends Error implements FxError {
+    constructor(error: Error, source?: string, name?: string, helpLink?: string);
+    constructor(opt: UserErrorOptions);
     constructor(name: string, message: string, source: string, stack?: string, helpLink?: string, innerError?: any);
-    // (undocumented)
-    static build(source: string, name?: string, message?: string, helpLink?: string): UserError;
-    // (undocumented)
-    static build(source: string, error: Error, helpLink?: string): UserError;
     helpLink?: string;
     innerError?: any;
     source: string;
     timestamp: Date;
+    userData?: string;
+}
+
+// @public (undocumented)
+export interface UserErrorOptions extends ErrorOptionBase {
+    // (undocumented)
+    helpLink?: string;
 }
 
 // @public
@@ -1464,6 +1558,11 @@ export enum VsCodeEnv {
     local = "local",
     // (undocumented)
     remote = "remote"
+}
+
+// @public (undocumented)
+export class WriteFileError extends SystemError {
+    constructor(source: string, e: Error);
 }
 
 

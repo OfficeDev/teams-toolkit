@@ -109,10 +109,10 @@ export class UserError extends Error implements FxError {
     }
 
     // message
-    const messages: string[] = [];
-    if (option.message) messages.push(option.message);
-    if (option.error && option.error.message) messages.push(option.error.message);
-    const message = messages.join(", ") || "";
+    const messages = new Set<string>();
+    if (option.message) messages.add(option.message);
+    if (option.error && option.error.message) messages.add(option.error.message);
+    const message = Array.from(messages).join(", ") || "";
     super(message);
 
     //name
@@ -219,10 +219,10 @@ export class SystemError extends Error implements FxError {
     }
 
     // message
-    const messages: string[] = [];
-    if (option.message) messages.push(option.message);
-    if (option.error && option.error.message) messages.push(option.error.message);
-    const message = messages.join(", ") || "";
+    const messages = new Set<string>();
+    if (option.message) messages.add(option.message);
+    if (option.error && option.error.message) messages.add(option.error.message);
+    const message = Array.from(messages).join(", ") || "";
     super(message);
 
     //name

@@ -171,11 +171,12 @@ describe("Middleware", () => {
       });
       const my = new MyClass();
       const res = await my.myMethod(inputs);
-      assert.isTrue(
-        res.isErr() &&
-          res.error.message === msg &&
-          res.error instanceof UserError
-      );
+      assert.isTrue( res.isErr() );
+      if(res.isErr()) {
+        const error = res.error;
+        assert.isTrue( error  instanceof UserError);
+        assert.equal( error.message, msg);
+      }
     });
   });
 

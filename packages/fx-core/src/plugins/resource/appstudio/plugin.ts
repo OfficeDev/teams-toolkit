@@ -179,6 +179,11 @@ export class AppStudioPluginImpl {
         if (result && result.length > 0) {
           const componentID = result[0];
           tab.configurationUrl = `https://{teamSiteDomain}{teamSitePath}/_layouts/15/TeamsLogon.aspx?SPFX=true&dest={teamSitePath}/_layouts/15/TeamsWorkBench.aspx%3FcomponentId=${componentID}%26openPropertyPane=true%26teams%26forceLocale={locale}%26loadSPFX%3Dtrue%26debugManifestsFile%3Dhttps%3A%2F%2Flocalhost%3A4321%2Ftemp%2Fmanifests.js`;
+        } else {
+          const message =
+            "Cannot find componentID in configurableTabs[0].configrationUrl, local debug may fail.";
+          ctx.logProvider?.error(message);
+          ctx.ui?.showMessage("warn", message, false);
         }
       }
     }

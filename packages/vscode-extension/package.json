@@ -721,7 +721,6 @@
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "jsonschema": "^1.4.0",
-    "markdown-navbar": "^1.4.3",
     "sudo-prompt": "^9.2.1",
     "underscore": "^1.12.1",
     "vscode-extension-telemetry": "^0.2.9",

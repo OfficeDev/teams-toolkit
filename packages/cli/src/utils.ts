@@ -35,6 +35,7 @@ import { ConfigNotFoundError, InvalidEnvFile, ReadFileError } from "./error";
 import AzureAccountManager from "./commonlib/azureLogin";
 import { FeatureFlags } from "./constants";
 import { isMultiEnvEnabled, environmentManager, WriteFileError } from "@microsoft/teamsfx-core";
+import { WorkspaceNotSupported } from "./cmds/preview/errors";
 
 type Json = { [_: string]: any };
 
@@ -295,9 +296,15 @@ export async function setSubscriptionId(
   rootFolder = "./"
 ): Promise<Result<null, FxError>> {
   if (subscriptionId) {
-    const result = await readEnvJsonFile(rootFolder);
-    if (result.isErr()) {
-      return err(result.error);
+    if (isMultiEnvEnabled()) {
+      if (!isWorkspaceSupported(rootFolder)) {
+        return err(WorkspaceNotSupported(rootFolder));
+      }
+    } else {
+      const result = await readEnvJsonFile(rootFolder);
+      if (result.isErr()) {
+        return err(result.error);
+      }
     }
 
     AzureAccountManager.setRootPath(rootFolder);

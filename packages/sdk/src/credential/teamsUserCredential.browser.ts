@@ -241,7 +241,7 @@ export class TeamsUserCredential implements TokenCredential {
           expiresOnTimestamp: tokenResult.expires_on,
         });
         return;
-      } catch (err) {
+      } catch (err: any) {
         if (err.response?.data?.type && err.response.data.type === "AadUiRequiredException") {
           internalLogger.warn("Exchange access token failed, retry...");
           if (retryCount < maxRetryCount) {

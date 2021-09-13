@@ -2,12 +2,10 @@ import {
   v2,
   Inputs,
   FxError,
-  LogProvider,
   Result,
   ok,
   err,
   AzureSolutionSettings,
-  combine,
   Void,
   returnUserError,
   PermissionRequestProvider,
@@ -17,11 +15,17 @@ import {
 } from "@microsoft/teamsfx-api";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
 import { SolutionError } from "../constants";
-import { HostTypeOptionAzure } from "../question";
 import {
-  getActivatedResourcePlugins,
-  getActivatedV2ResourcePlugins,
-} from "../ResourcePluginContainer";
+  AzureResourceApim,
+  AzureResourceFunction,
+  AzureResourceSQL,
+  AzureSolutionQuestionNames,
+  BotOptionItem,
+  HostTypeOptionAzure,
+  MessageExtensionItem,
+  TabOptionItem,
+} from "../question";
+import { getActivatedV2ResourcePlugins } from "../ResourcePluginContainer";
 
 export function getSelectedPlugins(azureSettings: AzureSolutionSettings): v2.ResourcePlugin[] {
   const plugins = getActivatedV2ResourcePlugins(azureSettings);
@@ -142,5 +146,42 @@ export function blockV1Project(solutionSettings?: SolutionSettings): Result<Void
       )
     );
   }
+  return ok(Void);
+}
+
+export function fillInSolutionSettings(
+  solutionSettings: AzureSolutionSettings,
+  answers: Inputs
+): Result<Void, FxError> {
+  const capabilities = (answers[AzureSolutionQuestionNames.Capabilities] as string[]) || [];
+  if (!capabilities || capabilities.length === 0) {
+    return err(
+      returnSystemError(new Error("capabilities is empty"), "Solution", SolutionError.InternelError)
+    );
+  }
+  let hostType = answers[AzureSolutionQuestionNames.HostType] as string;
+  if (capabilities.includes(BotOptionItem.id) || capabilities.includes(MessageExtensionItem.id))
+    hostType = HostTypeOptionAzure.id;
+  if (!hostType) {
+    return err(
+      returnSystemError(new Error("hostType is undefined"), "Solution", SolutionError.InternelError)
+    );
+  }
+  solutionSettings.hostType = hostType;
+  let azureResources: string[] | undefined;
+  if (hostType === HostTypeOptionAzure.id && capabilities.includes(TabOptionItem.id)) {
+    azureResources = answers[AzureSolutionQuestionNames.AzureResources] as string[];
+    if (azureResources) {
+      if (
+        (azureResources.includes(AzureResourceSQL.id) ||
+          azureResources.includes(AzureResourceApim.id)) &&
+        !azureResources.includes(AzureResourceFunction.id)
+      ) {
+        azureResources.push(AzureResourceFunction.id);
+      }
+    } else azureResources = [];
+  }
+  solutionSettings.azureResources = azureResources || [];
+  solutionSettings.capabilities = capabilities || [];
   return ok(Void);
 }

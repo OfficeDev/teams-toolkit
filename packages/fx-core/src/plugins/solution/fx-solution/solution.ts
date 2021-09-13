@@ -32,6 +32,7 @@ import {
   SolutionSettings,
   Stage,
   SubscriptionInfo,
+  SystemError,
   TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
 import axios from "axios";
@@ -135,6 +136,7 @@ import {
   isAzureProject,
   ensurePermissionRequest,
   parseTeamsAppTenantId,
+  fillInSolutionSettings,
 } from "./v2/utils";
 import { askForProvisionConsent } from "./v2/provision";
 import { scaffoldReadmeAndLocalSettings } from "./v2/scaffolding";
@@ -200,72 +202,6 @@ export class TeamsAppSolution implements Solution {
     return ok(settings);
   }
 
-  fillInSolutionSettings(ctx: SolutionContext): Result<AzureSolutionSettings, FxError> {
-    const assertList: [
-      Result<Inputs, FxError>,
-      Result<ProjectSettings, FxError>,
-      Result<SolutionSettings, FxError>
-    ] = [
-      this.assertSettingsNotEmpty<Inputs>(ctx.answers, "answers"),
-      this.assertSettingsNotEmpty<ProjectSettings>(ctx.projectSettings, "projectSettings"),
-      this.assertSettingsNotEmpty<SolutionSettings>(
-        ctx?.projectSettings?.solutionSettings,
-        "solutionSettings"
-      ),
-    ];
-    const assertRes = combine(assertList);
-    if (assertRes.isErr()) {
-      return err(assertRes.error);
-    }
-    const [answers, projectSettings, solutionSettingsSource] = assertRes.value;
-
-    const capabilities = (answers[AzureSolutionQuestionNames.Capabilities] as string[]) || [];
-    if (!capabilities || capabilities.length === 0) {
-      return err(
-        returnSystemError(
-          new Error("capabilities is empty"),
-          "Solution",
-          SolutionError.InternelError
-        )
-      );
-    }
-    let hostType = answers[AzureSolutionQuestionNames.HostType] as string;
-    if (capabilities.includes(BotOptionItem.id) || capabilities.includes(MessageExtensionItem.id))
-      hostType = HostTypeOptionAzure.id;
-    if (!hostType) {
-      return err(
-        returnSystemError(
-          new Error("hostType is undefined"),
-          "Solution",
-          SolutionError.InternelError
-        )
-      );
-    }
-    let azureResources: string[] | undefined;
-    if (hostType === HostTypeOptionAzure.id && capabilities.includes(TabOptionItem.id)) {
-      azureResources = answers[AzureSolutionQuestionNames.AzureResources] as string[];
-      if (azureResources) {
-        if (
-          (azureResources.includes(AzureResourceSQL.id) ||
-            azureResources.includes(AzureResourceApim.id)) &&
-          !azureResources.includes(AzureResourceFunction.id)
-        ) {
-          azureResources.push(AzureResourceFunction.id);
-        }
-      } else azureResources = [];
-    }
-    const solutionSettings: AzureSolutionSettings = {
-      name: solutionSettingsSource.name,
-      version: solutionSettingsSource.version,
-      hostType: hostType,
-      capabilities: capabilities,
-      azureResources: azureResources || [],
-      activeResourcePlugins: [],
-    };
-    projectSettings.solutionSettings = solutionSettings;
-    return ok(solutionSettings);
-  }
-
   async fillInV1SolutionSettings(
     ctx: SolutionContext
   ): Promise<Result<AzureSolutionSettings, FxError>> {
@@ -323,7 +259,10 @@ export class TeamsAppSolution implements Solution {
     ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.CreateStart, {
       [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
     });
-
+    if (!ctx.projectSettings)
+      return err(
+        new SystemError(SolutionError.InternelError, "projectSettings undefined", "Solution")
+      );
     // ensure that global namespace is present
     if (!ctx.envInfo.profile.has(GLOBAL_CONFIG)) {
       ctx.envInfo.profile.set(GLOBAL_CONFIG, new ConfigMap());
@@ -334,8 +273,8 @@ export class TeamsAppSolution implements Solution {
     if (lang) {
       ctx.projectSettings!.programmingLanguage = lang;
     }
-
-    const settingsRes = this.fillInSolutionSettings(ctx);
+    const solutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
+    const settingsRes = fillInSolutionSettings(solutionSettings, ctx.answers!);
     if (settingsRes.isErr()) {
       return err(
         sendErrorTelemetryThenReturnError(
@@ -345,8 +284,6 @@ export class TeamsAppSolution implements Solution {
         )
       );
     }
-
-    const solutionSettings = settingsRes.value;
 
     //Reload plugins according to user answers
     await this.reloadPlugins(solutionSettings);

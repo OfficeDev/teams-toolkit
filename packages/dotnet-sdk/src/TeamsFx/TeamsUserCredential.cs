@@ -2,8 +2,10 @@
 // Licensed under the MIT License.
 
 using Azure.Core;
+using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 using Microsoft.TeamsFx.Model;
+using Microsoft.TeamsFx.Configuration;
 using Newtonsoft.Json;
 using System;
 using System.Threading;
@@ -29,6 +31,7 @@ namespace Microsoft.TeamsFx
 
         private readonly Lazy<Task<IJSObjectReference>> moduleTask;
         private readonly Lazy<Task<IJSObjectReference>> instanceTask;
+        private AuthenticationOptions authenticationOptions;
 
         /// <summary>
         /// Constructor of TeamsUserCredential.
@@ -36,11 +39,12 @@ namespace Microsoft.TeamsFx
         /// </summary>
         /// <exception cref="ExceptionCode.InvalidConfiguration">When client id, initiate login endpoint or simple auth endpoint is not found in config.</exception>
         /// <exception cref="ExceptionCode.RuntimeNotSupported">When runtime is not in browser enviroment.</exception>
-        public TeamsUserCredential(IJSRuntime jsRuntime)
+        public TeamsUserCredential(IJSRuntime jsRuntime, IOptions<AuthenticationOptions> authenticationOptions)
         {
             moduleTask = new(() => jsRuntime.InvokeAsync<IJSObjectReference>(
                 "import", "./_content/Microsoft.TeamsFx/jsInterop.js").AsTask());
             instanceTask = new(() => CreateTeamsUserCredential().AsTask());
+            this.authenticationOptions = authenticationOptions.Value;
         }
 
         private async ValueTask<IJSObjectReference> CreateTeamsUserCredential()

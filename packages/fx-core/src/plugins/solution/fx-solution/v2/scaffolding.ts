@@ -1,4 +1,13 @@
-import { v2, Inputs, FxError, Result, ok, err, Void } from "@microsoft/teamsfx-api";
+import {
+  v2,
+  Inputs,
+  FxError,
+  Result,
+  ok,
+  err,
+  Void,
+  AzureSolutionSettings,
+} from "@microsoft/teamsfx-api";
 import { getStrings, isMultiEnvEnabled } from "../../../../common/tools";
 import {
   AzureResourceFunction,
@@ -12,6 +21,7 @@ import {
   combineRecords,
   getAzureSolutionSettings,
   getSelectedPlugins,
+  fillInSolutionSettings,
 } from "./utils";
 import path from "path";
 import fs from "fs-extra";
@@ -26,7 +36,10 @@ export async function scaffoldSourceCode(
   if (blockResult.isErr()) {
     return err(blockResult.error);
   }
-  const plugins = getSelectedPlugins(getAzureSolutionSettings(ctx));
+  const solutionSettings: AzureSolutionSettings = getAzureSolutionSettings(ctx);
+  const fillinRes = fillInSolutionSettings(solutionSettings, inputs);
+  if (fillinRes.isErr()) return err(fillinRes.error);
+  const plugins = getSelectedPlugins(solutionSettings);
 
   const thunks: NamedThunk<Void>[] = plugins
     .filter((plugin) => !!plugin.scaffoldSourceCode)
@@ -40,7 +53,6 @@ export async function scaffoldSourceCode(
     });
 
   const result = await executeConcurrently(thunks, ctx.logProvider);
-  const solutionSettings = getAzureSolutionSettings(ctx);
   if (result.kind === "success") {
     const capabilities = solutionSettings.capabilities;
     const azureResources = solutionSettings.azureResources;

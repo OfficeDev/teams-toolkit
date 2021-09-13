@@ -113,8 +113,6 @@ export class ApimPluginV2 implements ResourcePlugin {
     return await deployAdapter(ctx, inputs, provisionOutput, tokenProvider, this.plugin);
   }
 
-  //addResource
-  //TODO apim plugin implement executeUserTask() for addResource (preScaffold + scaffold)
   async executeUserTask(
     ctx: Context,
     inputs: Inputs,

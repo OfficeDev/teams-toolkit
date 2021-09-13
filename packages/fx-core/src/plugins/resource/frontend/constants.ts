@@ -93,14 +93,14 @@ export class DependentPluginInfo {
 }
 
 export class ArmOutput {
-  static readonly SimpleAuthEndpoint = "simpleAuth_endpoint";
   static readonly FrontendEndpoint = "frontendHosting_endpoint";
   static readonly FrontendDomain = "frontendHosting_domain";
-  static readonly FrontendStorageName = "frontendHosting_storageName";
+  static readonly FrontendStorageResourceId = "frontendHosting_storageResourceId";
 }
 
 export class FrontendConfigInfo {
-  static readonly StorageName = "storageName";
+  static readonly StorageName = "storageName"; // TODO: Remove this storageName config when arm-disabled scenario removed
+  static readonly StorageResourceId = "storageResourceId";
   static readonly Endpoint = "endpoint";
   static readonly Domain = "domain";
 }

@@ -5,7 +5,6 @@ import { FxError, Result, err, ok, Void, TreeCategory } from "@microsoft/teamsfx
 import { isMultiEnvEnabled, environmentManager, setActiveEnv } from "@microsoft/teamsfx-core";
 import * as vscode from "vscode";
 import TreeViewManagerInstance, { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
-import { getActiveEnv } from "./utils/commonUtils";
 import * as StringResources from "./resources/Strings.json";
 
 const showEnvList: Array<string> = [];
@@ -18,8 +17,11 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
     if (envNamesResult.isErr()) {
       return err(envNamesResult.error);
     }
-    const activeEnv = getActiveEnv();
-    if (activeEnv) {
+    let activeEnv: string | undefined = undefined;
+    const envResult = environmentManager.getActiveEnv(workspacePath);
+    // do not block user to manage env if active env cannot be retrieved
+    if (envResult.isOk()) {
+      activeEnv = envResult.value;
       setActiveEnv(activeEnv);
     }
     const environmentTreeProvider: CommandsTreeViewProvider =

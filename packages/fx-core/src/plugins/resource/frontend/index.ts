@@ -53,6 +53,10 @@ export class FrontendPlugin implements Plugin, ArmResourcePlugin {
   }
 
   public async preProvision(ctx: PluginContext): Promise<TeamsFxResult> {
+    if (isArmSupportEnabled()) {
+      return ok(undefined);
+    }
+
     FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(ctx, TelemetryEvent.PreProvision, () =>
       this.frontendPluginImpl.preProvision(ctx)
@@ -62,12 +66,12 @@ export class FrontendPlugin implements Plugin, ArmResourcePlugin {
   public async provision(ctx: PluginContext): Promise<TeamsFxResult> {
     if (isArmSupportEnabled()) {
       return ok(undefined);
-    } else {
-      FrontendPlugin.setContext(ctx);
-      return this.runWithErrorHandling(ctx, TelemetryEvent.Provision, () =>
-        this.frontendPluginImpl.provision(ctx)
-      );
     }
+
+    FrontendPlugin.setContext(ctx);
+    return this.runWithErrorHandling(ctx, TelemetryEvent.Provision, () =>
+      this.frontendPluginImpl.provision(ctx)
+    );
   }
 
   public async postProvision(ctx: PluginContext): Promise<TeamsFxResult> {

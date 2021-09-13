@@ -137,6 +137,31 @@ export interface SolutionPlugin {
     ctx: Context,
     inputs: Inputs,
     func: Func,
-    tokenProvider: AppStudioTokenProvider
+    tokenProvider: TokenProvider
   ) => Promise<Result<unknown, FxError>>;
+
+  
+  /**
+   * for env management
+   */
+   createEnv?: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
+   activateEnv?: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
+   /**
+    * For grant and check permission in remote collaboration
+    */
+   grantPermission?: (
+     ctx: Context,
+     inputs: Inputs,
+     tokenProvider: TokenProvider
+   ) => Promise<Result<any, FxError>>;
+   checkPermission?: (
+     ctx: Context,
+     inputs: Inputs,
+     tokenProvider: TokenProvider
+   ) => Promise<Result<any, FxError>>;
+   listCollaborator?: (
+     ctx: Context,
+     inputs: Inputs,
+     tokenProvider: TokenProvider
+   ) => Promise<Result<any, FxError>>;
 }

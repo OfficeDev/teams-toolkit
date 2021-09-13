@@ -152,11 +152,11 @@ export interface Context {
 // @public (undocumented)
 interface Context_2 {
     // (undocumented)
-    cryptoProvider: CryptoProvider;
+    cryptoProvider?: CryptoProvider;
     // (undocumented)
     logProvider: LogProvider;
     // (undocumented)
-    permissionRequestProvider: PermissionRequestProvider;
+    permissionRequestProvider?: PermissionRequestProvider;
     // (undocumented)
     projectSetting: ProjectSettings;
     // (undocumented)
@@ -168,40 +168,36 @@ interface Context_2 {
 // @public (undocumented)
 export interface Core {
     // (undocumented)
-    activateEnv: (env: string, systemInput: Inputs) => Promise<Result<Void, FxError>>;
+    activateEnv: (inputs: Inputs) => Promise<Result<Void, FxError>>;
     // (undocumented)
-    buildArtifacts: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
+    buildArtifacts: (inputs: Inputs) => Promise<Result<Void, FxError>>;
     // (undocumented)
-    checkPermission: (systemInputs: Inputs) => Promise<Result<any, FxError>>;
+    checkPermission: (inputs: Inputs) => Promise<Result<any, FxError>>;
     // (undocumented)
-    createEnv: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
+    createEnv: (inputs: Inputs) => Promise<Result<Void, FxError>>;
     // (undocumented)
-    createProject: (systemInputs: Inputs) => Promise<Result<string, FxError>>;
+    createProject: (inputs: Inputs) => Promise<Result<string, FxError>>;
     // (undocumented)
     decrypt: (ciphertext: string, inputs: Inputs) => Promise<Result<string, FxError>>;
     // (undocumented)
-    deployArtifacts: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
+    deployArtifacts: (inputs: Inputs) => Promise<Result<Void, FxError>>;
     encrypt: (plaintext: string, inputs: Inputs) => Promise<Result<string, FxError>>;
     // (undocumented)
     executeUserTask: (func: Func, inputs: Inputs) => Promise<Result<unknown, FxError>>;
     getQuestions: (task: Stage, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
     getQuestionsForUserTask?: (router: FunctionRouter, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
-    grantPermission: (systemInputs: Inputs) => Promise<Result<any, FxError>>;
+    grantPermission: (inputs: Inputs) => Promise<Result<any, FxError>>;
     // (undocumented)
-    listCollaborator: (systemInputs: Inputs) => Promise<Result<any, FxError>>;
+    listCollaborator: (inputs: Inputs) => Promise<Result<any, FxError>>;
     // (undocumented)
-    localDebug: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
+    localDebug: (inputs: Inputs) => Promise<Result<Void, FxError>>;
     // (undocumented)
-    migrateV1Project: (systemInputs: Inputs) => Promise<Result<string, FxError>>;
+    migrateV1Project: (inputs: Inputs) => Promise<Result<string, FxError>>;
     // (undocumented)
-    provisionResources: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
+    provisionResources: (inputs: Inputs) => Promise<Result<Void, FxError>>;
     // (undocumented)
-    publishApplication: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
-    // (undocumented)
-    removeEnv: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
-    // (undocumented)
-    switchEnv: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
+    publishApplication: (inputs: Inputs) => Promise<Result<Void, FxError>>;
     // (undocumented)
     version?: string;
 }
@@ -999,9 +995,12 @@ export type SingleSelectResult = InputResult<string | OptionItem>;
 // @public (undocumented)
 export interface Solution {
     // (undocumented)
+    activateEnv?: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
+    // (undocumented)
     checkPermission?: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
     // (undocumented)
     create: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
+    createEnv?: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
     // (undocumented)
     deploy: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
     // (undocumented)
@@ -1047,12 +1046,20 @@ type SolutionInputs = {
 
 // @public (undocumented)
 interface SolutionPlugin {
+    // (undocumented)
+    activateEnv?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
+    // (undocumented)
+    checkPermission?: (ctx: Context_2, inputs: Inputs, tokenProvider: TokenProvider) => Promise<Result<any, FxError>>;
+    createEnv?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
     deploy?: (ctx: Context_2, inputs: Inputs, provisionOutputs: Json, tokenProvider: AzureAccountProvider) => Promise<Result<Void, FxError>>;
     // (undocumented)
     displayName: string;
-    executeUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, tokenProvider: AppStudioTokenProvider) => Promise<Result<unknown, FxError>>;
+    executeUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, tokenProvider: TokenProvider) => Promise<Result<unknown, FxError>>;
     generateResourceTemplate: (ctx: Context_2, inputs: Inputs) => Promise<Result<Json, FxError>>;
     getQuestionsForScaffolding?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
+    grantPermission?: (ctx: Context_2, inputs: Inputs, tokenProvider: TokenProvider) => Promise<Result<any, FxError>>;
+    // (undocumented)
+    listCollaborator?: (ctx: Context_2, inputs: Inputs, tokenProvider: TokenProvider) => Promise<Result<any, FxError>>;
     // (undocumented)
     name: string;
     provisionLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: Json, tokenProvider: TokenProvider) => Promise<Result<Json, FxError>>;

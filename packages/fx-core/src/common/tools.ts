@@ -496,6 +496,17 @@ export async function copyFiles(
   }
 }
 
+export function getStorageAccountNameFromResourceId(resourceId: string): string {
+  const result = parseFromResourceId(
+    /providers\/Microsoft.Storage\/storageAccounts\/([^\/]*)/i,
+    resourceId
+  );
+  if (!result) {
+    throw new Error("Failed to get storage accounts name from resource id: " + resourceId);
+  }
+  return result;
+}
+
 export function getSiteNameFromResourceId(resourceId: string): string {
   const result = parseFromResourceId(/providers\/Microsoft.Web\/sites\/([^\/]*)/i, resourceId);
   if (!result) {

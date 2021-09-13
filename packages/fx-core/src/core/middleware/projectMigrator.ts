@@ -32,6 +32,9 @@ import { getActivatedResourcePlugins } from "../../plugins/solution/fx-solution/
 const MigrationMessage =
   "In order to continue using the latest Teams Toolkit, we will update your project code to use the latest Teams Toolkit. We recommend to initialize your workspace with git for better tracking file changes.";
 
+const programmingLanguage = "programmingLanguage";
+const defaultFunctionName = "defaultFunctionName";
+
 export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   if (!inputs.projectPath) {
@@ -48,7 +51,6 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
   }
   await next();
 };
-
 async function migrateToArmAndMultiEnv(ctx: CoreHookContext, projectPath: string): Promise<void> {
   try {
     await migrateArm(ctx);
@@ -59,13 +61,12 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext, projectPath: string
   }
   await removeOldProjectFiles(projectPath);
 }
-
 async function migrateMultiEnv(projectPath: string): Promise<void> {
   const { fx, fxConfig, templateAppPackage, fxPublishProfile } = await getMultiEnvFolders(
     projectPath
   );
-  const { hasFrontend, hasBackend, hasBot, hasProvision } = await queryProjectStatus(fx);
 
+  const { hasFrontend, hasBackend, hasBot, hasProvision } = await queryProjectStatus(fx);
   //config.dev.json
   await fs.writeFile(
     path.join(fxConfig, "config.dev.json"),
@@ -75,25 +76,27 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
   const localSettingsProvider = new LocalSettingsProvider(projectPath);
   await localSettingsProvider.save(localSettingsProvider.init(hasFrontend, hasBackend, hasBot));
   //projectSettings.json
-  await fs.copy(path.join(fx, "settings.json"), path.join(fxConfig, ProjectSettingsFileName));
+  const projectSettings = path.join(fxConfig, ProjectSettingsFileName);
+  await fs.copy(path.join(fx, "settings.json"), projectSettings);
+  await ensureProgrammingLanguage(projectSettings, path.join(fx, "env.default.json"));
+
   // appPackage
   await fs.copy(path.join(projectPath, AppPackageFolderName), templateAppPackage);
   await fs.rename(
     path.join(templateAppPackage, "manifest.source.json"),
     path.join(templateAppPackage, "manifest.template.json")
   );
-  await moveIconsToResourceFolder(templateAppPackage);
 
+  await moveIconsToResourceFolder(templateAppPackage);
   if (hasProvision) {
     const devProfile = path.join(fxPublishProfile, "profile.dev.json");
     const devUserData = path.join(fxPublishProfile, "dev.userdata");
     await fs.copy(path.join(fx, "env.default.json"), devProfile);
     await fs.copy(path.join(fx, "default.userdata"), devUserData);
-    // remove fx-resource-local-debug.trustDevCert
-    await removeFxResourceLocalDebug(devProfile, devUserData);
+    await removeExpiredFields(devProfile, devUserData);
+    await ensureActiveEnv(projectSettings);
   }
 }
-
 async function moveIconsToResourceFolder(templateAppPackage: string): Promise<void> {
   // see AppStudioPluginImpl.buildTeamsAppPackage()
   const manifest: TeamsAppManifest = await readJson(
@@ -104,7 +107,6 @@ async function moveIconsToResourceFolder(templateAppPackage: string): Promise<vo
   if (!hasColorIcon || !hasOutlineIcon) {
     return;
   }
-
   // move to resources
   const resource = path.join(templateAppPackage, "resources");
   await fs.ensureDir(resource);
@@ -112,11 +114,11 @@ async function moveIconsToResourceFolder(templateAppPackage: string): Promise<vo
     path.join(templateAppPackage, manifest.icons.color),
     path.join(resource, manifest.icons.color)
   );
+
   await fs.move(
     path.join(templateAppPackage, manifest.icons.outline),
     path.join(resource, manifest.icons.outline)
   );
-
   // update icons
   manifest.icons.color = `resources/${manifest.icons.color}`;
   manifest.icons.outline = `resources/${manifest.icons.outline}`;
@@ -126,15 +128,24 @@ async function moveIconsToResourceFolder(templateAppPackage: string): Promise<vo
   );
 }
 
-async function removeFxResourceLocalDebug(devProfile: string, devUserData: string): Promise<void> {
-  const profileData: Map<string, any> = await readJson(devProfile);
-  if (profileData.has(PluginNames.LDEBUG)) {
-    profileData.delete(PluginNames.LDEBUG);
-    await fs.writeFile(devProfile, JSON.stringify(profileData, null, 4), { encoding: "UTF-8" });
+async function removeExpiredFields(devProfile: string, devUserData: string): Promise<void> {
+  // remove fx-resource-local-debug.trustDevCert, solution.programmingLanguage, fx-resource-function.defaultFunctionName
+  const profileData = await readJson(devProfile);
+  if (profileData[PluginNames.LDEBUG]) {
+    delete profileData[PluginNames.LDEBUG];
   }
+  if (profileData[PluginNames.SOLUTION] && profileData[PluginNames.SOLUTION][programmingLanguage]) {
+    delete profileData[PluginNames.SOLUTION][programmingLanguage];
+  }
+  if (profileData[PluginNames.FUNC] && profileData[PluginNames.FUNC][defaultFunctionName]) {
+    delete profileData[PluginNames.FUNC][defaultFunctionName];
+  }
+  await fs.writeFile(devProfile, JSON.stringify(profileData, null, 4), { encoding: "UTF-8" });
+  const trustDevCertKey = `${PluginNames.LDEBUG}.trustDevCert`;
   const secrets: Record<string, string> = deserializeDict(await fs.readFile(devUserData, "UTF-8"));
-  if (secrets[PluginNames.LDEBUG]) {
-    delete secrets[PluginNames.LDEBUG];
+
+  if (secrets[trustDevCertKey]) {
+    delete secrets[trustDevCertKey];
     await fs.writeFile(devUserData, serializeDict(secrets), { encoding: "UTF-8" });
   }
 }
@@ -189,13 +200,35 @@ async function removeOldProjectFiles(projectPath: string): Promise<void> {
   await fs.remove(path.join(fx, AppPackageFolderName));
 }
 
+async function ensureProgrammingLanguage(
+  projectSettingPath: string,
+  envDefaultPath: string
+): Promise<void> {
+  const settings: ProjectSettings = await readJson(projectSettingPath);
+  if (!settings.programmingLanguage || !settings.defaultFunctionName) {
+    const envDefault = await readJson(envDefaultPath);
+    settings.programmingLanguage = envDefault[PluginNames.SOLUTION][programmingLanguage];
+    settings.defaultFunctionName = envDefault[PluginNames.FUNC][defaultFunctionName];
+    await fs.writeFile(projectSettingPath, JSON.stringify(settings, null, 4), {
+      encoding: "UTF-8",
+    });
+  }
+}
+async function ensureActiveEnv(projectSettingPath: string): Promise<void> {
+  const settings: ProjectSettings = await readJson(projectSettingPath);
+  if (!settings.activeEnvironment) {
+    settings.activeEnvironment = "dev";
+    await fs.writeFile(projectSettingPath, JSON.stringify(settings, null, 4), {
+      encoding: "UTF-8",
+    });
+  }
+}
+
 async function cleanup(projectPath: string): Promise<void> {
   const { _, fxConfig, templateAppPackage, fxPublishProfile } = await getMultiEnvFolders(
     projectPath
   );
-  await fs.remove(path.join(fxConfig, "config.dev.json"));
-  await fs.remove(path.join(fxConfig, "localSettings.json"));
-  await fs.remove(path.join(fxConfig, ProjectSettingsFileName));
+  await fs.remove(fxConfig);
   await fs.remove(templateAppPackage);
   await fs.remove(fxPublishProfile);
   // TODO: delte bicep files
@@ -233,5 +266,4 @@ function preCheckEnvEnabled() {
   }
   return false;
 }
-
 async function migrateArm(ctx: CoreHookContext) {}

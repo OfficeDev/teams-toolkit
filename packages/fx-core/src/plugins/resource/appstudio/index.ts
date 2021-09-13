@@ -17,7 +17,6 @@ import {
   Colors,
   AzureSolutionSettings,
   Func,
-  newSystemError,
   Void,
 } from "@microsoft/teamsfx-api";
 import { AppStudioPluginImpl } from "./plugin";
@@ -30,6 +29,7 @@ import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { Links } from "../bot/constants";
 import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
+import "./v2";
 @Service(ResourcePlugins.AppStudioPlugin)
 export class AppStudioPlugin implements Plugin {
   name = "fx-resource-appstudio";
@@ -364,10 +364,11 @@ export class AppStudioPlugin implements Plugin {
         );
       }
       return err(
-        newSystemError(
-          Constants.PLUGIN_NAME,
+        new SystemError(
           "InvalidParam",
           `Invalid param:${JSON.stringify(func)}`,
+          Constants.PLUGIN_NAME,
+          undefined,
           Links.ISSUE_LINK
         )
       );
@@ -375,7 +376,7 @@ export class AppStudioPlugin implements Plugin {
       return await this.migrateV1Project(ctx);
     }
     return err(
-      newSystemError(
+      new SystemError(
         Constants.PLUGIN_NAME,
         "FunctionRouterError",
         `Failed to route function call:${JSON.stringify(func)}`,

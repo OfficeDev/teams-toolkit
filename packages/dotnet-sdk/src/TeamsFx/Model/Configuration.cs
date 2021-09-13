@@ -39,38 +39,33 @@ namespace Microsoft.TeamsFx.Model
     public class AuthenticationConfiguration
     {
         /// <summary>
-        /// Hostname of AAD authority. Default value comes from M365_AUTHORITY_HOST environment variable.
+        /// Hostname of AAD authority.
         /// </summary>
         public string? AuthorityHost { get; }
         /// <summary>
-        /// AAD tenant id, default value comes from M365_TENANT_ID environment variable.
+        /// AAD tenant id.
         /// </summary>
         public string? TenantId { get; }
         /// <summary>
-        /// The client (application) ID of an App Registration in the tenant. 
-        /// Default value comes from M365_CLIENT_ID environment variable.
+        /// The client (application) ID of an App Registration in the tenant.
         /// </summary>
         public string? ClientId { get; }
         /// <summary>
         /// Secret string that the application uses when requesting a token. 
         /// Only used in confidential client applications. 
-        /// Can be created in the Azure app registration portal. 
-        /// Default value comes from M365_CLIENT_SECRET environment variable.
+        /// Can be created in the Azure app registration portal.
         /// </summary>
         public string? ClientSecret { get; }
         /// <summary>
-        /// Endpoint of auth service provisioned by Teams Framework. 
-        /// Default value comes from SIMPLE_AUTH_ENDPOINT environment variable.
+        /// Endpoint of auth service provisioned by Teams Framework.
         /// </summary>
         public string? SimpleAuthEndpoint { get; }
         /// <summary>
-        /// Login page for Teams to redirect to. 
-        /// Default value comes from INITIATE_LOGIN_ENDPOINT environment variable.
+        /// Login page for Teams to redirect to.
         /// </summary>
         public string? InitiateLoginEndpoint { get; }
         /// <summary>
-        /// Application ID URI. 
-        /// Default value comes from M365_APPLICATION_ID_URI environment variable.
+        /// Application ID URI.
         /// </summary>
         public string? ApplicationIdUri { get; }
 

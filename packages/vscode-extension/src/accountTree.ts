@@ -482,10 +482,10 @@ async function getSideloadingStatus(token: string): Promise<boolean | undefined>
       } else {
         ExtTelemetry.sendTelemetryErrorEvent(
           TelemetryEvent.CheckSideloading,
-          SystemError.build(
-            "M365Account",
+          new SystemError(
             "UnknownValue",
-            `AppStudio response code: ${response.status}, body: ${response.data}`
+            `AppStudio response code: ${response.status}, body: ${response.data}`,
+            "M365Account"
           )
         );
       }
@@ -494,7 +494,7 @@ async function getSideloadingStatus(token: string): Promise<boolean | undefined>
     } catch (error) {
       ExtTelemetry.sendTelemetryErrorEvent(
         TelemetryEvent.CheckSideloading,
-        SystemError.build("M365Account", error as Error)
+        new SystemError(error as Error,"M365Account")
       );
       await delay((retry + 1) * retryInterval);
     }

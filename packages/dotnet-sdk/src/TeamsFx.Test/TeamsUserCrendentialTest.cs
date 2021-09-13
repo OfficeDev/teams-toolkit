@@ -2,7 +2,9 @@
 // Licensed under the MIT License.
 
 using Azure.Core;
+using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
+using Microsoft.TeamsFx.Configuration;
 using Microsoft.TeamsFx.Model;
 using Microsoft.TeamsFx.Test.Helper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -24,10 +26,11 @@ namespace Microsoft.TeamsFx.Test
             // Executes once for the test class. (Optional)
             var jsRuntimeMock = new Mock<IJSRuntime>();
             var moduleMock = new Mock<IJSObjectReference>();
+            var authOptionMock = new Mock<IOptions<AuthenticationOptions>>();
             instanceTask = new Mock<IJSObjectReference>();
             jsRuntimeMock.Setup(r => r.InvokeAsync<IJSObjectReference>("import", It.IsAny<object[]>())).ReturnsAsync(() => moduleMock.Object);
             moduleMock.Setup(m => m.InvokeAsync<IJSObjectReference>("createTeamsUserCredential", It.IsAny<object[]>())).ReturnsAsync(() => instanceTask.Object);
-            teamsCredential = new TeamsUserCredential(jsRuntimeMock.Object);
+            teamsCredential = new TeamsUserCredential(jsRuntimeMock.Object, authOptionMock.Object);
         }
 
         [TestMethod]

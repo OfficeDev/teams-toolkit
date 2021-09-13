@@ -81,4 +81,4 @@ export type FxResult<T, Error = FxError> =
   | FxPartialSuccess<T, Error>
   | FxFailure<Error>;
 
-export type EnvInfoV2 = Omit<EnvInfo, "profile"> & { profile: Json };
+export type EnvInfoV2 = Omit<EnvInfo, "profile" | "config"> & { profile: Json } & { config: Json };

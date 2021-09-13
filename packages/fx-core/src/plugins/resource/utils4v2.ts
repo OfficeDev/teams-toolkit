@@ -125,7 +125,7 @@ export async function provisionResourceAdapter(
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
   pluginContext.envInfo = newEnvInfo(ctx.projectSetting.activeEnvironment);
   pluginContext.envInfo.profile = profile;
-  pluginContext.envInfo.config = envInfo.config;
+  pluginContext.envInfo.config = envInfo.config as EnvConfig;
   pluginContext.config = pluginContext.envInfo.profile.get(plugin.name) ?? new ConfigMap();
   if (plugin.preProvision) {
     const preRes = await plugin.preProvision(pluginContext);

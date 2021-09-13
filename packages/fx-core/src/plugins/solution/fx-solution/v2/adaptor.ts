@@ -13,6 +13,7 @@ import {
   TreeProvider,
   UserInteraction,
   ConfigMap,
+  EnvConfig,
 } from "@microsoft/teamsfx-api";
 import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { profile } from "console";
@@ -87,7 +88,7 @@ export class ProvisionContextAdapter extends BaseSolutionContextAdaptor {
     }
     this.envInfo = {
       envName: envInfo.envName,
-      config: envInfo.config,
+      config: envInfo.config as EnvConfig,
       profile: profile,
     };
   }

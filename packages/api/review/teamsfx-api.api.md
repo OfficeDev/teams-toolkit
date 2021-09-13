@@ -276,8 +276,10 @@ export interface EnvInfo {
 }
 
 // @public (undocumented)
-type EnvInfoV2 = Omit<EnvInfo, "profile"> & {
+type EnvInfoV2 = Omit<EnvInfo, "profile" | "config"> & {
     profile: Json;
+} & {
+    config: Json;
 };
 
 // @public

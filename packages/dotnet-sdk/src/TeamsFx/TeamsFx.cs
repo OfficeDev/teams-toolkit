@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-#nullable enable
 using Azure.Core;
 using Microsoft.Graph;
 using Microsoft.JSInterop;
@@ -9,6 +8,8 @@ using Microsoft.TeamsFx.Model;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using LogLevel = Microsoft.TeamsFx.Model.LogLevel;
 
 namespace Microsoft.TeamsFx
 {
@@ -18,15 +19,19 @@ namespace Microsoft.TeamsFx
     public class TeamsFx : IAsyncDisposable
     {
         private readonly JsInteropBase jsInteropBase;
+        private readonly ILogger<TeamsFx> _logger;
+        private readonly ILogger<MsGraphAuthProvider> _authLogger;
         private readonly LogFunctionCallback logFunctionCallback = new();
         private readonly DotNetObjectReference<LogFunctionCallback> logFunctionCallbackRef;
 
         /// <summary>
         /// The constructor of TeamsFx.
         /// </summary>
-        public TeamsFx(IJSRuntime jsRuntime)
+        public TeamsFx(IJSRuntime jsRuntime, ILogger<TeamsFx> logger, ILogger<MsGraphAuthProvider> authLogger)
         {
             jsInteropBase = new JsInteropBase(jsRuntime);
+            _logger = logger;
+            _authLogger = authLogger;
             logFunctionCallbackRef = DotNetObjectReference.Create(logFunctionCallback);
         }
 
@@ -112,7 +117,7 @@ namespace Microsoft.TeamsFx
         /// <param name="resourceName">The name of resource, default value is "default".</param>
         /// <returns>Resource configuration for target resource from global configuration instance.</returns>
         /// <exception cref="ExceptionCode.InvalidConfiguration">When resource configuration with the specific type and name is not found.</exception>
-        public async Task<Dictionary<string, object>> GetResourceConfigurationAsync(ResourceType resourceType, string? resourceName = "default")
+        public async Task<Dictionary<string, object>> GetResourceConfigurationAsync(ResourceType resourceType, string resourceName = "default")
         {
             try
             {
@@ -148,10 +153,12 @@ namespace Microsoft.TeamsFx
         /// </summary>
         /// <param name="credential">Token credential instance.</param>
         /// <param name="scopes">The string of Microsoft Token scopes of access separated by space. Default value is `.default`.</param>
+        /// <param name="logger">Logger of MsGraphAuthProvider class. If the value is null, it will use the logger constructed by DI during TeamsFx class initialization.</param>
         /// <returns>Graph client with specified scopes.</returns>
-        public static GraphServiceClient CreateMicrosoftGraphClient(TokenCredential credential, string scopes = ".default")
+        public GraphServiceClient CreateMicrosoftGraphClient(TokenCredential credential, string scopes = ".default", ILogger<MsGraphAuthProvider> logger = null)
         {
-            var authProvider = new MsGraphAuthProvider(credential, scopes);
+            logger ??= _authLogger;
+            var  authProvider = new MsGraphAuthProvider(credential, scopes, logger);
             var client = new GraphServiceClient(authProvider);
             return client;
         }
@@ -161,10 +168,12 @@ namespace Microsoft.TeamsFx
         /// </summary>
         /// <param name="credential">Token credential instance.</param>
         /// <param name="scopes">The array of Microsoft Token scopes of access. Default value is `[.default]`.</param>
+        /// <param name="logger">Logger of MsGraphAuthProvider class. If the value is null, it will use the logger constructed by DI during TeamsFx class initialization.</param>
         /// <returns>Graph client with specified scopes.</returns>
-        public static GraphServiceClient CreateMicrosoftGraphClient(TokenCredential credential, string[] scopes)
+        public GraphServiceClient CreateMicrosoftGraphClient(TokenCredential credential, string[] scopes, ILogger<MsGraphAuthProvider> logger = null)
         {
-            var authProvider = new MsGraphAuthProvider(credential, scopes);
+            logger ??= _authLogger;
+            var authProvider = new MsGraphAuthProvider(credential, scopes, logger);
             var client = new GraphServiceClient(authProvider);
             return client;
         }

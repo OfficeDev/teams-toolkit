@@ -54,7 +54,7 @@ export class MockCore implements Core {
     return ok("");
   }
 
-  async activateEnv(env: string, inputs: Inputs): Promise<Result<Void, FxError>> {
+  async activateEnv(inputs: Inputs): Promise<Result<Void, FxError>> {
     return ok(Void);
   }
 

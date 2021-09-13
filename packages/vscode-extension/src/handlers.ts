@@ -784,8 +784,8 @@ export async function activateEnvironment(env: string): Promise<Result<Void, FxE
     }
 
     const inputs: Inputs = getSystemInputs();
-
-    result = await core.activateEnv(env, inputs);
+    inputs.env = env;
+    result = await core.activateEnv(inputs);
     registerEnvTreeHandler();
   } catch (e) {
     result = wrapError(e);

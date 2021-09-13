@@ -780,7 +780,8 @@ describe("Core basic APIs", () => {
 
         const createEnvRes = await core.createEnv(inputs);
         assert.isTrue(createEnvRes.isOk());
-        const activateEnvRes = await core.activateEnv("newEnv", inputs);
+        inputs.env = "newEnv";
+        const activateEnvRes = await core.activateEnv(inputs);
         assert.isTrue(activateEnvRes.isOk());
       }
     });

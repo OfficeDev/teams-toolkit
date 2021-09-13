@@ -41,6 +41,7 @@ import {
   SolutionPlugins,
   SolutionPluginsV2,
 } from "../../src/core/SolutionPluginContainer";
+import { parseTeamsAppTenantId } from "../../src/plugins/solution/fx-solution/v2/utils";
 import { randomAppName } from "./utils";
 
 describe("Other test case", () => {
@@ -254,5 +255,14 @@ describe("Other test case", () => {
     assert.isTrue(userError instanceof UserError);
     const sysError = ContextUpgradeError(new Error("11"), false);
     assert.isTrue(sysError instanceof SystemError);
+  });
+
+  it("parseTeamsAppTenantId", async () => {
+    const res1 = parseTeamsAppTenantId({ tid: "123" });
+    assert.isTrue(res1.isOk());
+    const res2 = parseTeamsAppTenantId();
+    assert.isTrue(res2.isErr());
+    const res3 = parseTeamsAppTenantId({ abd: "123" });
+    assert.isTrue(res3.isErr());
   });
 });

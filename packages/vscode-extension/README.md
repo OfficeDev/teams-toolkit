@@ -2,11 +2,11 @@
 
 ## What is the Teams Toolkit?
 
-The Teams Toolkit helps developers create and deploy Teams apps with integrated Identity, access to cloud storage, data from [Microsoft Graph](https://docs.microsoft.com/en-us/graph/teams-concept-overview), and other services in [Azure](https://docs.microsoft.com/en-us/microsoftteams/platform/build-your-first-app/build-bot) and [M365](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant) with a “zero-configuration” approach to the developer experience.
+The Teams Toolkit helps developers create and deploy Teams apps with integrated Identity, access to cloud storage, data from [Microsoft Graph](https://docs.microsoft.com/en-us/graph/teams-concept-overview), and other services in [Azure](https://docs.microsoft.com/en-us/microsoftteams/platform/build-your-first-app/build-bot) and [M365](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant) with a "zero-configuration" approach to the developer experience.
 
 <img src="https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/media/landingPage_MicrosoftTeams.png">
 
-## What are Teams app “Capabilities”?
+## What are Teams app "Capabilities"?
 
 Teams apps are a combination of [capabilities](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/capabilities-overview) and [entry points](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/extensibility-points). For example, people can chat with your app's bot (capability) in a channel (entry point).
 
@@ -134,6 +134,7 @@ Give security researchers information on how to privately report security vulner
 The software may collect information about you and your use of the software and send it to Microsoft. Microsoft may use this information to provide services and improve our products and services. You may turn off the telemetry as described in the repository. There are also some features in the software that may enable you and Microsoft to collect data from users of your applications. If you use these features, you must comply with` applicable law, including providing appropriate notices to users of your applications together with a copy of Microsoft's privacy statement. Our privacy statement is located at [Microsoft Privacy Statement](https://go.microsoft.com/fwlink/?LinkID=824704). You can learn more about data collection and use in the help documentation and our privacy statement. Your use of the software operates as your consent to these practices.
 
 ### Telemetry Configuration
+
 Telemetry collection is on by default. To opt out, please set the `telemetry.enableTelemetry` setting to `false`. Learn more in our [FAQ](https://code.visualstudio.com/docs/supporting/faq#_how-to-disable-telemetry-reporting).
 
 ## Code of conduct

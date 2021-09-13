@@ -15,6 +15,7 @@ import {
   UserInteraction,
   AppStudioTokenProvider,
   SolutionSettings,
+  TokenProvider,
 } from "@microsoft/teamsfx-api";
 import { getStrings, isArmSupportEnabled } from "../../../../common/tools";
 import { blockV1Project, getAzureSolutionSettings, reloadV2Plugins } from "./utils";
@@ -47,7 +48,7 @@ export async function executeUserTask(
   ctx: v2.Context,
   inputs: Inputs,
   func: Func,
-  tokenProvider: AppStudioTokenProvider
+  tokenProvider: TokenProvider
 ): Promise<Result<unknown, FxError>> {
   const blockResult = blockV1Project(ctx.projectSetting.solutionSettings);
   if (blockResult.isErr()) {
@@ -92,7 +93,7 @@ export async function executeUserTask(
           inputs,
           func.params.envConfig,
           func.params.envProfile,
-          tokenProvider
+          tokenProvider.appStudioToken
         );
       }
     } else if (method === "validateManifest") {

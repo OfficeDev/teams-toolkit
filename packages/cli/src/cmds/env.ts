@@ -94,7 +94,7 @@ class EnvList extends YargsCommand {
 class EnvActivate extends YargsCommand {
   public readonly commandHead = `activate`;
   public readonly command = `${this.commandHead}`;
-  public readonly description = "Activate an environments.";
+  public readonly description = "Activate an environment.";
   public params: { [_: string]: Options } = {};
 
   public builder(yargs: Argv): Argv<any> {

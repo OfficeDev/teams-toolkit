@@ -98,7 +98,7 @@ const config = {
         },
         {
           from: "./WHATISNEW.md",
-          to: "../resource/CHANGELOG.md",
+          to: "../resource/WHATISNEW.md",
         },
         {
           from: "./img/",

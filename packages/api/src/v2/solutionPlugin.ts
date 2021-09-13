@@ -3,7 +3,7 @@
 "use strict";
 
 import { Result } from "neverthrow";
-import { DeploymentInputs, ProvisionInputs, ResourceProvisionOutput } from ".";
+import { DeepReadonly, DeploymentInputs, ProvisionInputs, ResourceProvisionOutput } from ".";
 import { EnvInfo } from "../context";
 import {
   AppStudioTokenProvider,
@@ -58,7 +58,7 @@ export interface SolutionPlugin {
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {ProvisionInputs} inputs - system inputs
-   * @param {Omit<EnvInfo, "profile">} envInfo - model for config.${env}.json, in which, user can customize some inputs for provision
+   * @param {DeepReadonly<EnvInfoV2>} envInfo - model for config.${env}.json, in which, user can customize some inputs for provision
    * @param {TokenProvider} tokenProvider - Tokens for Azure and AppStudio
    *
    * @returns {EnvProfile} the profile (persist by core as `profile.${env}.json`) containing provision outputs, which will be used for deploy and publish
@@ -66,7 +66,7 @@ export interface SolutionPlugin {
   provisionResources: (
     ctx: Context,
     inputs: Inputs,
-    envInfo: EnvInfoV2,
+    envInfo: DeepReadonly<EnvInfoV2>,
     tokenProvider: TokenProvider
   ) => Promise<FxResult<SolutionProvisionOutput, FxError>>;
 

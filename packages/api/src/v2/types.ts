@@ -82,3 +82,9 @@ export type FxResult<T, Error = FxError> =
   | FxFailure<Error>;
 
 export type EnvInfoV2 = Omit<EnvInfo, "profile" | "config"> & { profile: Json } & { config: Json };
+
+// This type has not been supported by TypeScript yet.
+// Check here https://github.com/microsoft/TypeScript/issues/13923.
+export type DeepReadonly<T> = {
+  readonly [P in keyof T]: DeepReadonly<T[P]>;
+};

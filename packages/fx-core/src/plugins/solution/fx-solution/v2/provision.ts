@@ -45,11 +45,13 @@ import { askTargetEnvironment } from "../../../../core/middleware/envInfoLoader"
 import { deployArmTemplates } from "../arm";
 import Container from "typedi";
 import { ResourcePluginsV2 } from "../ResourcePluginContainer";
+import _ from "lodash";
+import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 
 export async function provisionResource(
   ctx: v2.Context,
   inputs: Inputs,
-  envInfo: v2.EnvInfoV2,
+  envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
   tokenProvider: TokenProvider
 ): Promise<v2.FxResult<v2.SolutionProvisionOutput, FxError>> {
   if (inputs.projectPath === undefined) {
@@ -84,9 +86,10 @@ export async function provisionResource(
     }
   }
 
+  const newEnvInfo: EnvInfoV2 = _.cloneDeep(envInfo);
   if (isAzureProject(azureSolutionSettings)) {
     const appName = ctx.projectSetting.appName;
-    const contextAdaptor = new ProvisionContextAdapter([ctx, inputs, envInfo, tokenProvider]);
+    const contextAdaptor = new ProvisionContextAdapter([ctx, inputs, newEnvInfo, tokenProvider]);
     const res = await fillInCommonQuestions(
       contextAdaptor,
       appName,
@@ -98,7 +101,7 @@ export async function provisionResource(
       return new v2.FxFailure(res.error);
     }
     // contextAdaptor deep-copies original JSON into a map. We need to convert it back.
-    envInfo.profile = (contextAdaptor.envInfo.profile as ConfigMap).toJSON();
+    newEnvInfo.profile = (contextAdaptor.envInfo.profile as ConfigMap).toJSON();
     const consentResult = await askForProvisionConsent(contextAdaptor);
     if (consentResult.isErr()) {
       return new v2.FxFailure(consentResult.error);
@@ -116,8 +119,8 @@ export async function provisionResource(
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           plugin.provisionResource!(
             ctx,
-            { ...inputs, ...extractSolutionInputs(envInfo.profile), projectPath: projectPath },
-            { ...envInfo, profile: envInfo.profile[plugin.name] },
+            { ...inputs, ...extractSolutionInputs(newEnvInfo.profile), projectPath: projectPath },
+            { ...newEnvInfo, profile: newEnvInfo.profile[plugin.name] },
             tokenProvider
           ),
       };
@@ -132,7 +135,7 @@ export async function provisionResource(
   } else if (provisionResult.kind === "partialSuccess") {
     return new v2.FxPartialSuccess(combineRecords(provisionResult.output), provisionResult.error);
   } else {
-    envInfo.profile = combineRecords(provisionResult.output);
+    newEnvInfo.profile = combineRecords(provisionResult.output);
   }
 
   ctx.logProvider?.info(
@@ -140,7 +143,7 @@ export async function provisionResource(
   );
 
   if (isArmSupportEnabled() && isAzureProject(azureSolutionSettings)) {
-    const contextAdaptor = new ProvisionContextAdapter([ctx, inputs, envInfo, tokenProvider]);
+    const contextAdaptor = new ProvisionContextAdapter([ctx, inputs, newEnvInfo, tokenProvider]);
     const armDeploymentResult = await deployArmTemplates(contextAdaptor);
     if (armDeploymentResult.isErr()) {
       return new v2.FxPartialSuccess(
@@ -149,7 +152,7 @@ export async function provisionResource(
       );
     }
     // contextAdaptor deep-copies original JSON into a map. We need to convert it back.
-    envInfo.profile = (contextAdaptor.envInfo.profile as ConfigMap).toJSON();
+    newEnvInfo.profile = (contextAdaptor.envInfo.profile as ConfigMap).toJSON();
   }
 
   const aadPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin);
@@ -174,8 +177,8 @@ export async function provisionResource(
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           plugin.configureResource!(
             ctx,
-            { ...inputs, ...extractSolutionInputs(envInfo.profile), projectPath: projectPath },
-            { ...envInfo, profile: envInfo.profile[plugin.name] },
+            { ...inputs, ...extractSolutionInputs(newEnvInfo.profile), projectPath: projectPath },
+            { ...newEnvInfo, profile: newEnvInfo.profile[plugin.name] },
             tokenProvider
           ),
       };
@@ -193,8 +196,11 @@ export async function provisionResource(
       configureResourceResult.error
     );
   } else {
-    if (envInfo.profile[GLOBAL_CONFIG] && envInfo.profile[GLOBAL_CONFIG][ARM_TEMPLATE_OUTPUT]) {
-      delete envInfo.profile[GLOBAL_CONFIG][ARM_TEMPLATE_OUTPUT];
+    if (
+      newEnvInfo.profile[GLOBAL_CONFIG] &&
+      newEnvInfo.profile[GLOBAL_CONFIG][ARM_TEMPLATE_OUTPUT]
+    ) {
+      delete newEnvInfo.profile[GLOBAL_CONFIG][ARM_TEMPLATE_OUTPUT];
     }
     ctx.logProvider?.info(
       util.format(getStrings().solution.ConfigurationFinishNotice, PluginDisplayName.Solution)

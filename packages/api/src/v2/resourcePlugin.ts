@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import { Result } from "neverthrow";
+import { DeepReadonly } from ".";
 import { FxError, QTreeNode, TokenProvider, Void, Func, Json, Inputs, EnvInfo } from "../index";
 import { AzureSolutionSettings } from "../types";
 import { AppStudioTokenProvider, AzureAccountProvider } from "../utils";
@@ -97,7 +98,7 @@ export interface ResourcePlugin {
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {ProvisionInputs} inputs - inputs injected by Toolkit runtime and solution.
-   * @param {EnvInfoV2>} envInfo - model for (config|profile).${env}.json
+   * @param {DeepReadonly<EnvInfoV2>} envInfo - model for (config|profile).${env}.json
    * @param {TokenProvider} tokenProvider - Tokens for Azure and AppStudio
    *
    * @returns {ResourceProvisionOutput} resource provision output
@@ -105,7 +106,7 @@ export interface ResourcePlugin {
   provisionResource?: (
     ctx: Context,
     inputs: ProvisionInputs,
-    envInfo: Readonly<EnvInfoV2>,
+    envInfo: DeepReadonly<EnvInfoV2>,
     tokenProvider: TokenProvider
   ) => Promise<Result<ResourceProvisionOutput, FxError>>;
 

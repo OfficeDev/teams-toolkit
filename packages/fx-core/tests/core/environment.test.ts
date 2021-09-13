@@ -134,7 +134,7 @@ describe("APIs of Environment Manager", () => {
 
       const actualEnvDataResult = await environmentManager.loadEnvInfo(projectPath);
       if (actualEnvDataResult.isErr()) {
-        assert.equal(actualEnvDataResult.error.message, "InvalidEnvConfigError");
+        assert.equal(actualEnvDataResult.error.name, "InvalidEnvConfigError");
       } else {
         assert.fail("Failed to get expected error.");
       }

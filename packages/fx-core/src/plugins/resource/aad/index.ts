@@ -9,7 +9,6 @@ import {
   err,
   Func,
   ok,
-  newSystemError,
   Result,
   FxError,
 } from "@microsoft/teamsfx-api";
@@ -94,10 +93,11 @@ export class AadAppForTeamsPlugin implements Plugin, ArmResourcePlugin {
       return Promise.resolve(this.setApplicationInContext(ctx, isLocal));
     }
     return err(
-      newSystemError(
-        Plugins.pluginNameShort,
+      new SystemError(
         "FunctionRouterError",
         `Failed to route function call:${JSON.stringify(func)}`,
+        Plugins.pluginNameShort,
+        undefined,
         Links.ISSUE_LINK
       )
     );

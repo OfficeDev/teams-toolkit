@@ -15,9 +15,10 @@ import {
   ProjectSettings,
   Void,
   SolutionContext,
+  returnSystemError,
 } from "@microsoft/teamsfx-api";
 import { getStrings, isArmSupportEnabled, isMultiEnvEnabled } from "../../../../common/tools";
-import { executeConcurrently, NamedThunk } from "./executor";
+import { executeConcurrently } from "./executor";
 import {
   blockV1Project,
   combineRecords,
@@ -32,19 +33,14 @@ import {
   GLOBAL_CONFIG,
   PluginNames,
   SolutionError,
-  SOLUTION_PROVISION_SUCCEEDED,
   SUBSCRIPTION_ID,
   SUBSCRIPTION_NAME,
 } from "../constants";
 import * as util from "util";
-import { AzureSolutionQuestionNames } from "../question";
 import { isUndefined } from "lodash";
 import { PluginDisplayName } from "../../../../common/constants";
-import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
 import { ProvisionContextAdapter } from "./adaptor";
-import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { fillInCommonQuestions } from "../commonQuestions";
-import { TransparentDataEncryptionActivitiesListByConfigurationResponse } from "@azure/arm-sql/esm/models";
 import { askTargetEnvironment } from "../../../../core/middleware/envInfoLoader";
 import { deployArmTemplates } from "../arm";
 import Container from "typedi";
@@ -52,10 +48,21 @@ import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 
 export async function provisionResource(
   ctx: v2.Context,
-  inputs: v2.ProvisionInputs,
+  inputs: Inputs,
   envInfo: v2.EnvInfoV2,
   tokenProvider: TokenProvider
 ): Promise<v2.FxResult<v2.SolutionProvisionOutput, FxError>> {
+  if (inputs.projectPath === undefined) {
+    return new v2.FxFailure(
+      returnSystemError(
+        new Error("projectPath is undefined"),
+        "Solution",
+        SolutionError.InternelError
+      )
+    );
+  }
+  const projectPath: string = inputs.projectPath;
+
   const blockResult = blockV1Project(ctx.projectSetting.solutionSettings);
   if (blockResult.isErr()) {
     return new v2.FxFailure(blockResult.error);
@@ -109,7 +116,7 @@ export async function provisionResource(
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           plugin.provisionResource!(
             ctx,
-            { ...inputs, ...extractSolutionInputs(envInfo.profile) },
+            { ...inputs, ...extractSolutionInputs(envInfo.profile), projectPath: projectPath },
             { ...envInfo, profile: envInfo.profile[plugin.name] },
             tokenProvider
           ),
@@ -167,7 +174,7 @@ export async function provisionResource(
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           plugin.configureResource!(
             ctx,
-            { ...inputs, ...extractSolutionInputs(envInfo.profile) },
+            { ...inputs, ...extractSolutionInputs(envInfo.profile), projectPath: projectPath },
             { ...envInfo, profile: envInfo.profile[plugin.name] },
             tokenProvider
           ),
@@ -186,7 +193,9 @@ export async function provisionResource(
       configureResourceResult.error
     );
   } else {
-    envInfo.profile.get(GLOBAL_CONFIG)?.delete(ARM_TEMPLATE_OUTPUT);
+    if (envInfo.profile[GLOBAL_CONFIG] && envInfo.profile[GLOBAL_CONFIG][ARM_TEMPLATE_OUTPUT]) {
+      delete envInfo.profile[GLOBAL_CONFIG][ARM_TEMPLATE_OUTPUT];
+    }
     ctx.logProvider?.info(
       util.format(getStrings().solution.ConfigurationFinishNotice, PluginDisplayName.Solution)
     );

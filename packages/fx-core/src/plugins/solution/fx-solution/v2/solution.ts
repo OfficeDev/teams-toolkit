@@ -22,6 +22,7 @@ import { deploy } from "./deploy";
 import { executeUserTask } from "./executeUserTask";
 import { generateResourceTemplate } from "./generateResourceTemplate";
 import { getQuestionsForScaffolding } from "./getQuestions";
+import { provisionResource } from "./provision";
 import { provisionLocalResource } from "./provisionLocal";
 import { publishApplication } from "./publish";
 import { scaffoldSourceCode } from "./scaffolding";
@@ -39,11 +40,9 @@ export class TeamsAppSolutionV2 implements v2.SolutionPlugin {
   provisionResources: (
     ctx: v2.Context,
     inputs: Inputs,
-    provisionInputConfig: EnvInfoV2,
+    envInfo: EnvInfoV2,
     tokenProvider: TokenProvider
-  ) => Promise<v2.FxResult<v2.SolutionProvisionOutput, FxError>> = function () {
-    throw new Error("not implemented");
-  };
+  ) => Promise<v2.FxResult<v2.SolutionProvisionOutput, FxError>> = provisionResource;
 
   deploy?: (
     ctx: v2.Context,

@@ -62,7 +62,7 @@ describe("Create single tab", function () {
 
       // Validate Simple Auth
       const simpleAuth = SimpleAuthValidator.init(context);
-      await SimpleAuthValidator.validate(simpleAuth, aad);
+      await SimpleAuthValidator.validate(simpleAuth, aad, "B1", true);
 
       // Validate Tab Frontend
       const frontend = FrontendValidator.init(context);

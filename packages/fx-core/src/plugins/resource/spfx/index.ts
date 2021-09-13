@@ -19,7 +19,7 @@ import { SPFxPluginImpl } from "./plugin";
 import { TelemetryEvent } from "./utils/constants";
 import { ProgressHelper } from "./utils/progress-helper";
 import { telemetryHelper } from "./utils/telemetry-helper";
-
+import "./v2";
 export enum SPFXQuestionNames {
   framework_type = "spfx-framework-type",
   webpart_name = "spfx-webpart-name",

@@ -28,7 +28,7 @@ import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { isArmSupportEnabled } from "../../..";
 import { ArmResourcePlugin } from "../../../common/armInterface";
-export * from "./v2";
+import "./v2";
 
 @Service(ResourcePlugins.FrontendPlugin)
 export class FrontendPlugin implements Plugin, ArmResourcePlugin {

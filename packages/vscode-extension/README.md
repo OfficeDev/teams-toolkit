@@ -2,11 +2,11 @@
 
 ## What is the Teams Toolkit?
 
-The Teams Toolkit helps developers create and deploy Teams apps with integrated Identity, access to cloud storage, data from [Microsoft Graph](https://docs.microsoft.com/en-us/graph/teams-concept-overview), and other services in [Azure](https://docs.microsoft.com/en-us/microsoftteams/platform/build-your-first-app/build-bot) and [M365](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant) with a “zero-configuration” approach to the developer experience.
+The Teams Toolkit helps developers create and deploy Teams apps with integrated Identity, access to cloud storage, data from [Microsoft Graph](https://docs.microsoft.com/en-us/graph/teams-concept-overview), and other services in [Azure](https://docs.microsoft.com/en-us/microsoftteams/platform/build-your-first-app/build-bot) and [M365](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant) with a "zero-configuration" approach to the developer experience.
 
 <img src="https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/media/landingPage_MicrosoftTeams.png">
 
-## What are Teams app “Capabilities”?
+## What are Teams app "Capabilities"?
 
 Teams apps are a combination of [capabilities](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/capabilities-overview) and [entry points](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/extensibility-points). For example, people can chat with your app's bot (capability) in a channel (entry point).
 

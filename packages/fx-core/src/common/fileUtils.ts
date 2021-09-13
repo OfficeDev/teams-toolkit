@@ -12,7 +12,7 @@ const sleep = promisify(setTimeout);
 
 export async function readJson(filePath: string): Promise<any> {
   if(!await fs.pathExists(filePath)) {
-    throw UserError.build(CoreSource, "FileNotFoundError", `File not found, make sure you don't move the original file: ${filePath}`);
+    throw new UserError("FileNotFoundError", `File not found, make sure you don't move the original file: ${filePath}`, CoreSource);
   }
   let rawError;
   for (let i = 0; i < 5; ++i) {
@@ -27,8 +27,7 @@ export async function readJson(filePath: string): Promise<any> {
   /**
    * failed, read raw content into userData field, which will be reported in issue body
    */
-  const fxError: SystemError = SystemError.build(CoreSource, rawError as Error);
-  fxError.name = "ReadJsonError";
+  const fxError: SystemError = new SystemError(rawError as Error, CoreSource, "ReadJsonError");
   const fileName = basename(filePath);
   fxError.message = `task '${currentStage}' failed because of ${fxError.name}(file:${fileName}):${fxError.message}, if your local file 'env.*.json' is not modified, please report to us by click 'Report Issue' button.`;
   let content: string|undefined = undefined;

@@ -27,7 +27,7 @@ describe("Create single tab", function () {
   const processEnv = mockTeamsfxMultiEnvFeatureFlag();
 
   it(`Tab`, async function () {
-    // new a project ( tab + function + sql )
+    // new a project (tab only)
     await execAsync(`teamsfx new --interactive false --app-name ${appName} --capabilities tab `, {
       cwd: testFolder,
       env: processEnv,

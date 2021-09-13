@@ -153,6 +153,6 @@ Root cause of this error is that toolkit can not find Azure AD app with the same
 3. Go to Azure Portal, login with the same account as the M365 account in toolkit, select "Azure Active Directory"
 4. Select "App Registrations" and search for you Azure AD app by client id noted above.
 
-If you can find your Azure AD app, please check your network status and try again.
+If you can find your Azure AD app, please check your network status and try again. If this problem still exists, please remove objectId from env.default.json file and then try again.
 
 If you can not find your Azure AD app, please check whether you logged in with the correct account.

@@ -126,7 +126,7 @@ export async function provisionResourceAdapter(
   pluginContext.envInfo = newEnvInfo(ctx.projectSetting.activeEnvironment);
   pluginContext.envInfo.profile = profile;
   pluginContext.envInfo.config = envInfo.config;
-  pluginContext.config = pluginContext.envInfo.profile.get(plugin.name);
+  pluginContext.config = pluginContext.envInfo.profile.get(plugin.name) ?? new ConfigMap();
   if (plugin.preProvision) {
     const preRes = await plugin.preProvision(pluginContext);
     if (preRes.isErr()) {

@@ -6,15 +6,12 @@ import {
   AzureSolutionSettings,
   FxError,
   Inputs,
+  Json,
   QTreeNode,
   Result,
+  Void,
 } from "@microsoft/teamsfx-api";
-import {
-  Context,
-  DeploymentInputs,
-  ProvisionOutput,
-  ResourcePlugin,
-} from "@microsoft/teamsfx-api/build/v2";
+import { Context, DeploymentInputs, ResourcePlugin } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
 import { SpfxPlugin } from "../..";
 import {
@@ -45,19 +42,16 @@ export class SpfxPluginV2 implements ResourcePlugin {
     return await getQuestionsForScaffoldingAdapter(ctx, inputs, this.plugin);
   }
 
-  async scaffoldSourceCode(
-    ctx: Context,
-    inputs: Inputs
-  ): Promise<Result<{ output: Record<string, string> }, FxError>> {
+  async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
     return await scaffoldSourceCodeAdapter(ctx, inputs, this.plugin);
   }
 
   async deploy(
     ctx: Context,
-    inputs: Readonly<DeploymentInputs>,
-    provisionOutput: Readonly<ProvisionOutput>,
+    inputs: DeploymentInputs,
+    provisionOutput: Json,
     tokenProvider: AzureAccountProvider
-  ): Promise<Result<{ output: Record<string, string> }, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await deployAdapter(ctx, inputs, provisionOutput, tokenProvider, this.plugin);
   }
 }

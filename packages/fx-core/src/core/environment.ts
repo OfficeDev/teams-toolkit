@@ -17,9 +17,12 @@ import {
   EnvConfigFileNameTemplate,
   EnvNamePlaceholder,
   EnvInfo,
+  Json,
+  ProjectSettingsFileName,
 } from "@microsoft/teamsfx-api";
 import path, { basename } from "path";
 import fs from "fs-extra";
+import jsum from "jsum";
 import {
   deserializeDict,
   dataNeedEncryption,
@@ -32,6 +35,7 @@ import {
   objectToMap,
   ProjectEnvNotExistError,
   InvalidEnvConfigError,
+  ModifiedSecretError,
 } from "..";
 import { GLOBAL_CONFIG } from "../plugins/solution/fx-solution/constants";
 import { readJson } from "../common/fileUtils";
@@ -40,6 +44,12 @@ import { isMultiEnvEnabled } from "../common";
 import Ajv from "ajv";
 import * as draft6MetaSchema from "ajv/dist/refs/json-schema-draft-06.json";
 import * as envConfigSchema from "@microsoft/teamsfx-api/build/schemas/envConfig.json";
+import {
+  InvalidProjectError,
+  InvalidProjectSettingsFileError,
+  isValidProject,
+  ReadFileError,
+} from ".";
 
 export interface EnvProfileFiles {
   envProfile: string;
@@ -54,6 +64,7 @@ class EnvironmentManager {
   private readonly defaultEnvName = "default";
   private readonly defaultEnvNameNew = "dev";
   private readonly ajv;
+  private readonly checksumKey = "_checksum";
   private readonly schema =
     "https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/packages/api/src/schemas/envConfig.json";
   private readonly manifestConfigDescription =
@@ -88,13 +99,17 @@ class EnvironmentManager {
     return ok({ envName, config: configResult.value, profile: profileResult.value });
   }
 
-  public newEnvConfigData(): EnvConfig {
+  public newEnvConfigData(appName: string): EnvConfig {
     const envConfig: EnvConfig = {
       $schema: this.schema,
-      azure: {},
       manifest: {
         description: this.manifestConfigDescription,
-        values: {},
+        values: {
+          appName: {
+            short: appName,
+            full: `Full name for ${appName}`,
+          },
+        },
       },
     };
 
@@ -128,7 +143,7 @@ class EnvironmentManager {
   }
 
   public async writeEnvProfile(
-    envData: Map<string, any>,
+    envData: Map<string, any> | Json,
     projectPath: string,
     envName?: string,
     cryptoProvider?: CryptoProvider
@@ -145,10 +160,13 @@ class EnvironmentManager {
     envName = envName ?? this.getDefaultEnvName();
     const envFiles = this.getEnvProfileFilesPath(envName, projectPath);
 
-    const data = mapToJson(envData);
+    const data = envData instanceof Map ? mapToJson(envData) : envData;
     const secrets = sperateSecretData(data);
     if (cryptoProvider) {
       this.encrypt(secrets, cryptoProvider);
+    }
+    if (Object.keys(secrets).length) {
+      secrets[this.checksumKey] = jsum.digest(secrets, "SHA256", "hex");
     }
 
     try {
@@ -215,8 +233,7 @@ class EnvironmentManager {
   ): Promise<Result<EnvConfig, FxError>> {
     if (!isMultiEnvEnabled()) {
       return ok({
-        azure: {},
-        manifest: { values: {} },
+        manifest: { values: { appName: { short: "" } } },
       });
     }
 
@@ -303,11 +320,19 @@ class EnvironmentManager {
 
     const res = this.decrypt(secrets, cryptoProvider);
     if (res.isErr()) {
-      const fxError: SystemError = res.error;
-      const fileName = basename(userDataPath);
-      fxError.message = `Project update failed because of ${fxError.name}(file:${fileName}):${fxError.message}, if your local file '*.userdata' is not modified, please report to us by click 'Report Issue' button.`;
-      fxError.userData = `file: ${fileName}\n------------FILE START--------\n${content}\n------------FILE END----------`;
-      sendTelemetryErrorEvent(Component.core, TelemetryEvent.DecryptUserdata, fxError);
+      if (!this.checksumMatch(secrets)) {
+        sendTelemetryErrorEvent(
+          Component.core,
+          TelemetryEvent.DecryptUserdata,
+          ModifiedSecretError()
+        );
+      } else {
+        const fxError: SystemError = res.error;
+        const fileName = basename(userDataPath);
+        fxError.message = `Project update failed because of ${fxError.name}(file:${fileName}):${fxError.message}, if your local file '*.userdata' is not modified, please report to us by click 'Report Issue' button.`;
+        fxError.userData = `file: ${fileName}\n------------FILE START--------\n${content}\n------------FILE END----------`;
+        sendTelemetryErrorEvent(Component.core, TelemetryEvent.DecryptUserdata, fxError);
+      }
     }
     return res;
   }
@@ -351,12 +376,60 @@ class EnvironmentManager {
     return ok(secrets);
   }
 
+  private checksumMatch(secrets: Record<string, string>): boolean {
+    const checksum = secrets[this.checksumKey];
+    if (checksum) {
+      delete secrets[this.checksumKey];
+      return jsum.digest(secrets, "SHA256", "hex") === checksum;
+    }
+    return true;
+  }
+
   public getDefaultEnvName() {
     if (isMultiEnvEnabled()) {
       return this.defaultEnvNameNew;
     } else {
       return this.defaultEnvName;
     }
+  }
+
+  public getActiveEnv(projectRoot: string): Result<string, FxError> {
+    if (!isMultiEnvEnabled()) {
+      return ok("default");
+    }
+
+    const settingsJsonPath = path.join(
+      projectRoot,
+      `.${ConfigFolderName}/${InputConfigsFolderName}/${ProjectSettingsFileName}`
+    );
+    if (!fs.existsSync(settingsJsonPath)) {
+      return err(PathNotExistError(settingsJsonPath));
+    }
+
+    let settingsJson;
+    try {
+      settingsJson = fs.readJSONSync(settingsJsonPath, { encoding: "utf8" });
+    } catch (error) {
+      return err(
+        InvalidProjectSettingsFileError(
+          `Project settings file is not a valid JSON, error: '${error}'`
+        )
+      );
+    }
+
+    if (
+      !settingsJson ||
+      !settingsJson.activeEnvironment ||
+      typeof settingsJson.activeEnvironment !== "string"
+    ) {
+      return err(
+        InvalidProjectSettingsFileError(
+          "The property 'activeEnvironment' does not exist in project settings file."
+        )
+      );
+    }
+
+    return ok(settingsJson.activeEnvironment as string);
   }
 }
 

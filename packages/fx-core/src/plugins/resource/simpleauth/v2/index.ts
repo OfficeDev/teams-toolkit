@@ -5,15 +5,12 @@ import {
   AzureSolutionSettings,
   FxError,
   Inputs,
+  Json,
   Result,
   TokenProvider,
+  Void,
 } from "@microsoft/teamsfx-api";
-import {
-  Context,
-  LocalSettings,
-  ResourcePlugin,
-  ResourceTemplate,
-} from "@microsoft/teamsfx-api/build/v2";
+import { Context, ResourcePlugin, ResourceTemplate } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
 import { SimpleAuthPlugin } from "../..";
 import {
@@ -46,9 +43,9 @@ export class AadPluginV2 implements ResourcePlugin {
   async provisionLocalResource(
     ctx: Context,
     inputs: Inputs,
-    localSettings: LocalSettings,
+    localSettings: Json,
     tokenProvider: TokenProvider
-  ): Promise<Result<LocalSettings, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await provisionLocalResourceAdapter(
       ctx,
       inputs,
@@ -61,9 +58,9 @@ export class AadPluginV2 implements ResourcePlugin {
   async configureLocalResource(
     ctx: Context,
     inputs: Inputs,
-    localSettings: LocalSettings,
+    localSettings: Json,
     tokenProvider: TokenProvider
-  ): Promise<Result<LocalSettings, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await configureLocalResourceAdapter(
       ctx,
       inputs,

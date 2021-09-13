@@ -2,25 +2,23 @@
 // Licensed under the MIT license.
 
 import { Result } from "neverthrow";
-import { Inputs, ProjectConfig, Void } from "./types";
-import { Func, FunctionRouter, QTreeNode } from "./qm";
-import { FxError } from "./error";
 import { Stage } from ".";
+import { FxError } from "./error";
+import { Func, FunctionRouter, QTreeNode } from "./qm";
+import { Inputs, Void } from "./types";
 
 export interface Core {
-  createProject: (systemInputs: Inputs) => Promise<Result<string, FxError>>;
-  provisionResources: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
-  buildArtifacts: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
-  deployArtifacts: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
-  localDebug: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
-  publishApplication: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
+  version?: string;
+  createProject: (inputs: Inputs) => Promise<Result<string, FxError>>;
+  provisionResources: (inputs: Inputs) => Promise<Result<Void, FxError>>;
+  buildArtifacts: (inputs: Inputs) => Promise<Result<Void, FxError>>;
+  deployArtifacts: (inputs: Inputs) => Promise<Result<Void, FxError>>;
+  localDebug: (inputs: Inputs) => Promise<Result<Void, FxError>>;
+  publishApplication: (inputs: Inputs) => Promise<Result<Void, FxError>>;
   executeUserTask: (func: Func, inputs: Inputs) => Promise<Result<unknown, FxError>>;
 
-  createEnv: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
-  removeEnv: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
-  switchEnv: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
-
-  activateEnv: (env: string, systemInput: Inputs) => Promise<Result<Void, FxError>>;
+  createEnv: (inputs: Inputs) => Promise<Result<Void, FxError>>;
+  activateEnv: (inputs: Inputs) => Promise<Result<Void, FxError>>;
 
   /**
    * only for CLI
@@ -37,11 +35,11 @@ export interface Core {
   encrypt: (plaintext: string, inputs: Inputs) => Promise<Result<string, FxError>>;
   decrypt: (ciphertext: string, inputs: Inputs) => Promise<Result<string, FxError>>;
 
-  migrateV1Project: (systemInputs: Inputs) => Promise<Result<string, FxError>>;
+  migrateV1Project: (inputs: Inputs) => Promise<Result<string, FxError>>;
   /**
    * For grant and check permission in remote collaboration
    */
-  grantPermission: (systemInputs: Inputs) => Promise<Result<any, FxError>>;
-  checkPermission: (systemInputs: Inputs) => Promise<Result<any, FxError>>;
-  listCollaborator: (systemInputs: Inputs) => Promise<Result<any, FxError>>;
+  grantPermission: (inputs: Inputs) => Promise<Result<any, FxError>>;
+  checkPermission: (inputs: Inputs) => Promise<Result<any, FxError>>;
+  listCollaborator: (inputs: Inputs) => Promise<Result<any, FxError>>;
 }

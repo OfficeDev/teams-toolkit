@@ -1,7 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import * as semver from "semver";
-import * as config from "./templates-config.json";
+
+import semver from "semver";
+import config from "./templates-config.json";
 
 export const templatesVersion = config.version;
 export const tagPrefix = config.tagPrefix;

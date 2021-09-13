@@ -1,8 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { exec, ExecOptions } from "child_process";
-import * as fs from "fs-extra";
 import {
+  AppPackageFolderName,
   AzureAccountProvider,
   ConfigFolderName,
   ConfigMap,
@@ -16,16 +15,17 @@ import {
   returnUserError,
   SubscriptionInfo,
   UserInteraction,
-  AppPackageFolderName,
 } from "@microsoft/teamsfx-api";
-import { promisify } from "util";
-import axios from "axios";
 import AdmZip from "adm-zip";
-import * as path from "path";
-import * as uuid from "uuid";
+import axios from "axios";
+import { exec, ExecOptions } from "child_process";
+import * as fs from "fs-extra";
 import { glob } from "glob";
-import { getResourceFolder } from "../folder";
 import * as Handlebars from "handlebars";
+import * as path from "path";
+import { promisify } from "util";
+import * as uuid from "uuid";
+import { getResourceFolder } from "../folder";
 import { ConstantString, FeatureFlagName } from "./constants";
 
 Handlebars.registerHelper("contains", (value, array, options) => {
@@ -498,4 +498,44 @@ export async function copyFiles(
         !recursiveExcludeFileNames.includes(path.basename(src)),
     });
   }
+}
+
+export function getStorageAccountNameFromResourceId(resourceId: string): string {
+  const result = parseFromResourceId(
+    /providers\/Microsoft.Storage\/storageAccounts\/([^\/]*)/i,
+    resourceId
+  );
+  if (!result) {
+    throw new Error("Failed to get storage accounts name from resource id: " + resourceId);
+  }
+  return result;
+}
+
+export function getSiteNameFromResourceId(resourceId: string): string {
+  const result = parseFromResourceId(/providers\/Microsoft.Web\/sites\/([^\/]*)/i, resourceId);
+  if (!result) {
+    throw new Error("Failed to get site name from resource id: " + resourceId);
+  }
+  return result;
+}
+
+export function getResourceGroupNameFromResourceId(resourceId: string): string {
+  const result = parseFromResourceId(/\/resourceGroups\/([^\/]*)\//i, resourceId);
+  if (!result) {
+    throw new Error("Failed to get resource group name from resource id: " + resourceId);
+  }
+  return result;
+}
+
+export function getSubscriptionIdFromResourceId(resourceId: string): string {
+  const result = parseFromResourceId(/\/subscriptions\/([^\/]*)\//i, resourceId);
+  if (!result) {
+    throw new Error("Failed to get subscription id from resource id: " + resourceId);
+  }
+  return result;
+}
+
+export function parseFromResourceId(pattern: RegExp, resourceId: string): string {
+  const result = resourceId.match(pattern);
+  return result ? result[1].trim() : "";
 }

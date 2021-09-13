@@ -227,6 +227,7 @@ export async function migrateV1ProjectHandler(args?: any[]): Promise<Result<null
   );
   const result = await runCommand(Stage.migrateV1);
   await openMarkdownHandler();
+  await vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome", false);
   return result;
 }
 
@@ -574,8 +575,15 @@ export async function openWelcomeHandler(args?: any[]) {
   WebviewPanel.createOrShow(PanelType.QuickStart);
 }
 
+export async function openSurveyHandler(args?: any[]) {
+  WebviewPanel.createOrShow(PanelType.Survey);
+}
+
 function getTriggerFromProperty(args?: any[]) {
-  if (!args) {
+  // if not args are not supplied, by default, it is trigger from "CommandPalette"
+  // e.g. vscode.commands.executeCommand("fx-extension.openWelcome");
+  // in this case, "fx-exentiosn.openWelcome" is trigged from "CommandPalette".
+  if (!args || (args && args.length === 0)) {
     return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette };
   }
 
@@ -584,8 +592,10 @@ function getTriggerFromProperty(args?: any[]) {
       return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.TreeView };
     case TelemetryTiggerFrom.Webview:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview };
-    default:
+    case TelemetryTiggerFrom.Other:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Other };
+    default:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Unknow };
   }
 }
 
@@ -776,8 +786,8 @@ export async function activateEnvironment(env: string): Promise<Result<Void, FxE
     }
 
     const inputs: Inputs = getSystemInputs();
-
-    result = await core.activateEnv(env, inputs);
+    inputs.env = env;
+    result = await core.activateEnv(inputs);
     registerEnvTreeHandler();
   } catch (e) {
     result = wrapError(e);
@@ -1116,7 +1126,8 @@ export async function cmpAccountsHandler() {
   }
 
   const solutionSettings = await getAzureSolutionSettings();
-  if (solutionSettings && "Azure" === solutionSettings.hostType) {
+  // if non-teamsfx project or Azure project then show Azure account info
+  if (!solutionSettings || (solutionSettings && "Azure" === solutionSettings.hostType)) {
     const azureAccount = await AzureAccountManager.getStatus();
     if (azureAccount.status === "SignedIn") {
       const accountInfo = azureAccount.accountInfo;

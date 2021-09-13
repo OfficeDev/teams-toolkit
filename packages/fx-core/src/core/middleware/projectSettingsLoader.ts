@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import {
   ConfigFolderName,
   err,
@@ -16,23 +17,23 @@ import {
   StaticPlatforms,
   Tools,
 } from "@microsoft/teamsfx-api";
-import { CoreHookContext } from "../..";
+import * as fs from "fs-extra";
+import * as path from "path";
+import * as uuid from "uuid";
+import { createV2Context, isV2 } from "..";
+import { CoreHookContext, FxCore } from "../..";
+import { isMultiEnvEnabled } from "../../common";
+import { readJson } from "../../common/fileUtils";
+import { PluginNames } from "../../plugins/solution/fx-solution/constants";
+import { LocalCrypto } from "../crypto";
 import {
   InvalidProjectError,
   NoProjectOpenedError,
   PathNotExistError,
   ReadFileError,
 } from "../error";
-import * as path from "path";
-import * as fs from "fs-extra";
-import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
-import { newEnvInfo, validateSettings } from "../tools";
-import * as uuid from "uuid";
-import { LocalCrypto } from "../crypto";
-import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { PermissionRequestFileProvider } from "../permissionRequest";
-import { readJson } from "../../common/fileUtils";
-import { isMultiEnvEnabled } from "../../common";
+import { newEnvInfo, validateSettings } from "../tools";
 
 export const ProjectSettingsLoaderMW: Middleware = async (
   ctx: CoreHookContext,
@@ -65,6 +66,9 @@ export const ProjectSettingsLoaderMW: Middleware = async (
 
     ctx.projectSettings = projectSettings;
     ctx.projectIdMissing = projectIdMissing;
+    if (isV2()) {
+      ctx.contextV2 = createV2Context(ctx.self as FxCore, projectSettings);
+    }
   }
 
   await next();

@@ -12,6 +12,7 @@ import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 export interface AzureAccountProvider {
   /**
    * Async get ms-rest-* [credential](https://github.com/Azure/ms-rest-nodeauth/blob/master/lib/credentials/tokenCredentialsBase.ts)
+   * On login failure or user cancellation, it will throw an exception instead of returning undefined. This method never returns undefined.
    * @param showDialog Control whether the UI layer displays pop-up windows.
    * @param tenantId Tenant or directory id
    */

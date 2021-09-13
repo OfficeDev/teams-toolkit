@@ -6,15 +6,15 @@ import {
   AzureSolutionSettings,
   FxError,
   Inputs,
+  Json,
   Result,
   TokenProvider,
+  Void,
 } from "@microsoft/teamsfx-api";
 import {
   Context,
   DeploymentInputs,
-  PluginName,
   ProvisionInputs,
-  ProvisionOutput,
   ResourcePlugin,
   ResourceTemplate,
 } from "@microsoft/teamsfx-api/build/v2";
@@ -42,10 +42,7 @@ export class FrontendPluginV2 implements ResourcePlugin {
     return this.plugin.activate(solutionSettings);
   }
 
-  async scaffoldSourceCode(
-    ctx: Context,
-    inputs: Inputs
-  ): Promise<Result<{ output: Record<string, string> }, FxError>> {
+  async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
     return await scaffoldSourceCodeAdapter(ctx, inputs, this.plugin);
   }
 
@@ -58,16 +55,16 @@ export class FrontendPluginV2 implements ResourcePlugin {
 
   async configureResource(
     ctx: Context,
-    inputs: Readonly<ProvisionInputs>,
-    provisionOutput: Readonly<ProvisionOutput>,
-    provisionOutputOfOtherPlugins: Readonly<Record<PluginName, ProvisionOutput>>,
+    inputs: ProvisionInputs,
+    provisionInputConfig: Json,
+    provisionOutputs: Json,
     tokenProvider: TokenProvider
-  ): Promise<Result<ProvisionOutput, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await configureResourceAdapter(
       ctx,
       inputs,
-      provisionOutput,
-      provisionOutputOfOtherPlugins,
+      provisionInputConfig,
+      provisionOutputs,
       tokenProvider,
       this.plugin
     );
@@ -75,10 +72,10 @@ export class FrontendPluginV2 implements ResourcePlugin {
 
   async deploy(
     ctx: Context,
-    inputs: Readonly<DeploymentInputs>,
-    provisionOutput: Readonly<ProvisionOutput>,
+    inputs: DeploymentInputs,
+    provisionOutput: Json,
     tokenProvider: AzureAccountProvider
-  ): Promise<Result<{ output: Record<string, string> }, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await deployAdapter(ctx, inputs, provisionOutput, tokenProvider, this.plugin);
   }
 }

@@ -80,6 +80,20 @@ jobs:
         run: |
           rsync --delete-before -d /tmp/empty/ ./
 
+      - name: Sync to Azure DevOps Test Plan
+        if: ${{ always() && github.ref == 'refs/heads/main' }}
+        run: |
+          version =$(node -p -e "require('./packages/cli/package.json').version")
+          npx ts-node .github/scripts/testPlan.ts sync ./packages/cli/report.json cli $version
+
+      - name: Upload test report
+        uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: report.json
+          path: |
+            ./packages/cli/report.json
+
   report-stat:
     env:
       AZURE_DEVOPS_EXT_PAT: ${{ secrets.ADO_PAT }}
@@ -120,7 +134,7 @@ jobs:
         run: |
           manual_cases=`npx ts-node .github/scripts/testPlan.ts stat cli | jq '.points'`
           cd packages/cli
-          auto_cases=`npx mocha --require ts-node/register --dry-run tests/e2e/**/*.tests.ts | grep passing | awk '{print $1}'`
+          auto_cases=`npx mocha --reporter=spec --dry-run tests/e2e/**/*.tests.ts | grep passing | awk '{print $1}'`
           pct=`printf %.4f "$((10**4 * $auto_cases*100/$manual_cases))e-4"`
 
           az storage entity insert \

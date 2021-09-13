@@ -18,6 +18,8 @@ import * as util from "util";
 import VsCodeLogInstance from "../commonlib/log";
 import { globalStateGet, globalStateUpdate } from "@microsoft/teamsfx-core";
 import * as constants from "../debug/constants";
+import { ExtensionSurvey } from "../utils/survey";
+import { TreatmentVariableValue } from "../exp/treatmentVariables";
 
 interface IRunningTeamsfxTask {
   source: string;
@@ -89,6 +91,12 @@ function onDidStartTaskProcessHandler(event: vscode.TaskProcessStartEvent): void
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugNpmInstallStart, {
           [TelemetryProperty.DebugNpmInstallName]: task.name,
         });
+
+        if (TreatmentVariableValue.isEmbeddedSurvey) {
+          // Survey triggering point
+          const survey = ExtensionSurvey.getInstance();
+          survey.activate();
+        }
       } catch {
         // ignore telemetry error
       }

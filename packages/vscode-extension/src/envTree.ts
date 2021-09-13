@@ -10,7 +10,6 @@ import {
 } from "@microsoft/teamsfx-core";
 import * as vscode from "vscode";
 import TreeViewManagerInstance, { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
-import { getActiveEnv } from "./utils/commonUtils";
 import * as StringResources from "./resources/Strings.json";
 import { checkPermission, listCollaborator } from "./handlers";
 import { signedIn } from "./commonlib/common/constant";
@@ -27,8 +26,11 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
     if (envNamesResult.isErr()) {
       return err(envNamesResult.error);
     }
-    const activeEnv = getActiveEnv();
-    if (activeEnv) {
+    let activeEnv: string | undefined = undefined;
+    const envResult = environmentManager.getActiveEnv(workspacePath);
+    // do not block user to manage env if active env cannot be retrieved
+    if (envResult.isOk()) {
+      activeEnv = envResult.value;
       setActiveEnv(activeEnv);
     }
     environmentTreeProvider = TreeViewManagerInstance.getTreeView("teamsfx-environment")!;

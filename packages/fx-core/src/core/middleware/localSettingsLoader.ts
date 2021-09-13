@@ -3,18 +3,18 @@
 
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { AzureSolutionSettings, err, Inputs, Plugin } from "@microsoft/teamsfx-api";
-import { CoreHookContext, NoProjectOpenedError, PathNotExistError } from "..";
-import { LocalSettingsProvider } from "../../common/localSettingsProvider";
 import * as fs from "fs-extra";
+import { CoreHookContext, isV2, NoProjectOpenedError, PathNotExistError } from "..";
 import { isMultiEnvEnabled } from "../../common";
-import { getActivatedResourcePlugins } from "../../plugins/solution/fx-solution/ResourcePluginContainer";
+import { LocalSettingsProvider } from "../../common/localSettingsProvider";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
+import { getActivatedResourcePlugins } from "../../plugins/solution/fx-solution/ResourcePluginContainer";
 
 export const LocalSettingsLoaderMW: Middleware = async (
   ctx: CoreHookContext,
   next: NextFunction
 ) => {
-  if (isMultiEnvEnabled() && ctx.solutionContext) {
+  if (isMultiEnvEnabled()) {
     const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
     if (!inputs.projectPath) {
       ctx.result = err(NoProjectOpenedError());
@@ -35,14 +35,22 @@ export const LocalSettingsLoaderMW: Middleware = async (
     const hasBot = selectedPlugins?.some((plugin) => plugin.name === PluginNames.BOT);
 
     const localSettingsProvider = new LocalSettingsProvider(inputs.projectPath);
-    if (await fs.pathExists(localSettingsProvider.localSettingsFilePath)) {
-      ctx.solutionContext.localSettings = await localSettingsProvider.load();
-    } else {
-      ctx.solutionContext.localSettings = localSettingsProvider.init(
-        hasFrontend,
-        hasBackend,
-        hasBot
-      );
+    if (isV2()) {
+      if (await fs.pathExists(localSettingsProvider.localSettingsFilePath)) {
+        ctx.localSettings = await localSettingsProvider.loadV2();
+      } else {
+        ctx.localSettings = localSettingsProvider.initV2(hasFrontend, hasBackend, hasBot);
+      }
+    } else if (ctx.solutionContext) {
+      if (await fs.pathExists(localSettingsProvider.localSettingsFilePath)) {
+        ctx.solutionContext.localSettings = await localSettingsProvider.load();
+      } else {
+        ctx.solutionContext.localSettings = localSettingsProvider.init(
+          hasFrontend,
+          hasBackend,
+          hasBot
+        );
+      }
     }
   }
 

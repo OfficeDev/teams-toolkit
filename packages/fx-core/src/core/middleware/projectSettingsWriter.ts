@@ -2,9 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
-import * as fs from "fs-extra";
-import * as path from "path";
-import { NextFunction, Middleware } from "@feathersjs/hooks";
+import { Middleware, NextFunction } from "@feathersjs/hooks";
 import {
   AzureSolutionSettings,
   ConfigFolderName,
@@ -14,9 +12,11 @@ import {
   ProjectSettingsFileName,
   StaticPlatforms,
 } from "@microsoft/teamsfx-api";
-import { WriteFileError } from "../error";
-import { CoreHookContext, FxCore } from "..";
+import * as fs from "fs-extra";
+import * as path from "path";
+import { CoreHookContext, FxCore, isV2 } from "..";
 import { isMultiEnvEnabled } from "../../common";
+import { WriteFileError } from "../error";
 
 /**
  * This middleware will help to persist project settings if necessary.
@@ -36,12 +36,11 @@ export const ProjectSettingsWriterMW: Middleware = async (
       StaticPlatforms.includes(inputs.platform)
     )
       return;
-    const solutionContext = ctx.solutionContext;
-    if (solutionContext === undefined) return;
+    const projectSettings = ctx.projectSettings;
+    if (projectSettings === undefined) return;
     try {
       const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
-      const solutionSettings = solutionContext.projectSettings
-        ?.solutionSettings as AzureSolutionSettings;
+      const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
       if (!solutionSettings.activeResourcePlugins) solutionSettings.activeResourcePlugins = [];
       if (!solutionSettings.azureResources) solutionSettings.azureResources = [];
       let settingFile;
@@ -53,7 +52,7 @@ export const ProjectSettingsWriterMW: Middleware = async (
         settingFile = path.resolve(confFolderPath, "settings.json");
       }
       const core = ctx.self as FxCore;
-      await fs.writeFile(settingFile, JSON.stringify(solutionContext.projectSettings, null, 4));
+      await fs.writeFile(settingFile, JSON.stringify(projectSettings, null, 4));
       core.tools.logProvider.debug(`[core] persist project setting file: ${settingFile}`);
     } catch (e) {
       ctx.res = err(WriteFileError(e));

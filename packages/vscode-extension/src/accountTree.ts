@@ -7,6 +7,7 @@ import {
   ok,
   Result,
   SubscriptionInfo,
+  SystemError,
   TreeCategory,
   TreeItem,
   Void,
@@ -16,6 +17,7 @@ import AzureAccountManager from "./commonlib/azureLogin";
 import { core, getSystemInputs, tools, getAzureSolutionSettings } from "./handlers";
 import { askSubscription } from "@microsoft/teamsfx-core";
 import { VS_CODE_UI } from "./extension";
+import { ExtTelemetry } from "./telemetry/extTelemetry";
 import {
   AccountType,
   TelemetryEvent,
@@ -249,19 +251,22 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
     ) => {
       if (status === "SignedIn") {
         if (token !== undefined && accountInfo !== undefined) {
-          tools.treeProvider?.refresh([
-            {
-              commandId: "fx-extension.signinM365",
-              label: (accountInfo.upn as string) ? (accountInfo.upn as string) : "",
-              callback: signinM365Callback,
-              parent: TreeCategory.Account,
-              contextValue: "signedinM365",
-              icon: "M365",
-            },
-          ]);
+          const treeItem = {
+            commandId: "fx-extension.signinM365",
+            label: (accountInfo.upn as string) ? (accountInfo.upn as string) : "",
+            callback: signinM365Callback,
+            parent: TreeCategory.Account,
+            contextValue: "signedinM365",
+            icon: "M365",
+          };
+          tools.treeProvider?.refresh([treeItem]);
           const subItem = await getSideloadingItem(token);
           if (subItem && subItem.length > 0) {
             tools.treeProvider?.add(subItem);
+
+            // this is a workaround to expand this child, to be improved when TreeView.reveal is supported
+            treeItem.label += " ";
+            tools.treeProvider?.refresh([treeItem]);
           }
         }
       } else if (status === "SigningIn") {
@@ -447,6 +452,7 @@ function showSideloadingWarning() {
     .then(async (result) => {
       if (result.isOk() && result.value === StringResources.vsc.common.readMore) {
         await VS_CODE_UI.openUrl("https://aka.ms/teamsfx-custom-app");
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenSideloadingReadmore);
       }
     })
     .catch((error) => {});
@@ -471,12 +477,27 @@ async function getSideloadingStatus(token: string): Promise<boolean | undefined>
         result = response.data?.value?.isSideloadingAllowed as boolean;
       }
 
-      tools.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.CheckSideloading, {
-        [TelemetryProperty.IsSideloadingAllowed]: result + "",
-      });
+      if (result !== undefined) {
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CheckSideloading, {
+          [TelemetryProperty.IsSideloadingAllowed]: result + "",
+        });
+      } else {
+        ExtTelemetry.sendTelemetryErrorEvent(
+          TelemetryEvent.CheckSideloading,
+          SystemError.build(
+            "M365Account",
+            "UnknownValue",
+            `AppStudio response code: ${response.status}, body: ${response.data}`
+          )
+        );
+      }
+
       return result;
     } catch (error) {
-      tools.telemetryReporter?.sendTelemetryErrorEvent(TelemetryEvent.CheckSideloading, error);
+      ExtTelemetry.sendTelemetryErrorEvent(
+        TelemetryEvent.CheckSideloading,
+        SystemError.build("M365Account", error as Error)
+      );
       await delay((retry + 1) * retryInterval);
     }
   } while (++retry < 3);

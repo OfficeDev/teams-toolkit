@@ -59,6 +59,13 @@ export function ReadFileError(e: Error): SystemError {
   return error;
 }
 
+export function CopyFileError(e: Error): SystemError {
+  const error = assembleError(e);
+  error.name = "CopyFileError";
+  error.source = CoreSource;
+  return error;
+}
+
 export function NoneFxError(e: any): FxError {
   const err = assembleError(e);
   err.name = "NoneFxError";
@@ -93,11 +100,21 @@ export function InvalidProjectError(msg?: string): UserError {
   );
 }
 
-export function ConcurrentError(): UserError {
+export class ConcurrentError extends UserError {
+  constructor() {
+    super(
+      new.target.name,
+      "Concurrent operation error, please wait until the running task finish or you can reload the window to cancel it.",
+      CoreSource
+    );
+  }
+}
+
+export function InvalidProjectSettingsFileError(msg?: string): UserError {
   return newUserError(
     CoreSource,
-    "ConcurrentOperation",
-    "Concurrent operation error, please wait until the running task finish or you can reload the window to cancel it."
+    "InvalidProjectSettingsFile",
+    `The projectSettings.json file is corrupted.`
   );
 }
 
@@ -202,4 +219,26 @@ export function NonExistEnvNameError(env: string): UserError {
 
 export function NonActiveEnvError(): UserError {
   return new UserError(CoreSource, "NonActiveEnvError", `Can not find active environment.`);
+}
+
+export function ModifiedSecretError(): UserError {
+  return new UserError(CoreSource, "ModifiedSecretError", "The secret file has been changed.");
+}
+
+export class LoadSolutionError extends SystemError {
+  constructor() {
+    super(new.target.name, "Failed to load solution", CoreSource);
+  }
+}
+
+export class NotImplementedError extends SystemError {
+  constructor(method: string) {
+    super(new.target.name, `Method not implemented:${method}`, CoreSource);
+  }
+}
+
+export class ObjectIsUndefinedError extends SystemError {
+  constructor(name: string) {
+    super(new.target.name, `Object ${name} is undefined, which is not expected`, CoreSource);
+  }
 }

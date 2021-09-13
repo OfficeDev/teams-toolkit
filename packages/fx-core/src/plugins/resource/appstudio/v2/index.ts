@@ -22,12 +22,10 @@ import {
 import {
   Context,
   DeploymentInputs,
-  PluginName,
   ProvisionInputs,
-  ProvisionOutput,
   ResourcePlugin,
+  ResourceProvisionOutput,
   ResourceTemplate,
-  LocalSettings,
 } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
 import { AppStudioPlugin } from "..";
@@ -58,10 +56,7 @@ export class AppStudioPluginV2 implements ResourcePlugin {
     return this.plugin.activate(solutionSettings);
   }
 
-  async scaffoldSourceCode(
-    ctx: Context,
-    inputs: Inputs
-  ): Promise<Result<{ output: Record<string, string> }, FxError>> {
+  async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
     return await scaffoldSourceCodeAdapter(ctx, inputs, this.plugin);
   }
 
@@ -74,14 +69,14 @@ export class AppStudioPluginV2 implements ResourcePlugin {
 
   async provisionResource(
     ctx: Context,
-    inputs: Readonly<ProvisionInputs>,
-    provisionTemplate: Json,
+    inputs: ProvisionInputs,
+    provisionInputConfig: Json,
     tokenProvider: TokenProvider
-  ): Promise<Result<ProvisionOutput, FxError>> {
+  ): Promise<Result<ResourceProvisionOutput, FxError>> {
     return await provisionResourceAdapter(
       ctx,
       inputs,
-      provisionTemplate,
+      provisionInputConfig,
       tokenProvider,
       this.plugin
     );
@@ -90,15 +85,15 @@ export class AppStudioPluginV2 implements ResourcePlugin {
   async configureResource(
     ctx: Context,
     inputs: Readonly<ProvisionInputs>,
-    provisionOutput: Readonly<ProvisionOutput>,
-    provisionOutputOfOtherPlugins: Readonly<Record<PluginName, ProvisionOutput>>,
+    provisionInputConfig: Json,
+    provisionOutputs: Json,
     tokenProvider: TokenProvider
-  ): Promise<Result<ProvisionOutput, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await configureResourceAdapter(
       ctx,
       inputs,
-      provisionOutput,
-      provisionOutputOfOtherPlugins,
+      provisionInputConfig,
+      provisionOutputs,
       tokenProvider,
       this.plugin
     );
@@ -106,9 +101,9 @@ export class AppStudioPluginV2 implements ResourcePlugin {
   async configureLocalResource(
     ctx: Context,
     inputs: Inputs,
-    localSettings: LocalSettings,
+    localSettings: Json,
     tokenProvider: TokenProvider
-  ): Promise<Result<LocalSettings, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await configureLocalResourceAdapter(
       ctx,
       inputs,
@@ -119,25 +114,26 @@ export class AppStudioPluginV2 implements ResourcePlugin {
   }
   async deploy(
     ctx: Context,
-    inputs: Readonly<DeploymentInputs>,
-    provisionOutput: Readonly<ProvisionOutput>,
+    inputs: DeploymentInputs,
+    provisionOutput: Json,
     tokenProvider: AzureAccountProvider
-  ): Promise<Result<{ output: Record<string, string> }, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await deployAdapter(ctx, inputs, provisionOutput, tokenProvider, this.plugin);
   }
 
   async executeUserTask(
     ctx: Context,
-    func: Func,
-    inputs: Inputs
+    inputs: Inputs,
+    func: Func
   ): Promise<Result<unknown, FxError>> {
-    return await executeUserTaskAdapter(ctx, func, inputs, this.plugin);
+    return await executeUserTaskAdapter(ctx, inputs, func, this.plugin);
   }
 
   async publishApplication(
     ctx: Context,
     inputs: Inputs,
-    provisionOutputs: Readonly<Record<PluginName, ProvisionOutput>>,
+    provisionInputConfig: Json,
+    provisionOutputs: Json,
     tokenProvider: AppStudioTokenProvider
   ): Promise<Result<Void, FxError>> {
     const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
@@ -156,11 +152,12 @@ export class AppStudioPluginV2 implements ResourcePlugin {
     }
     const configsOfOtherPlugins = new Map<string, ConfigMap>();
     for (const key in provisionOutputs) {
-      const output = provisionOutputs[key].output;
+      const output = provisionOutputs[key];
       const configMap = ConfigMap.fromJSON(output);
       if (configMap) configsOfOtherPlugins.set(key, configMap);
     }
     pluginContext.envInfo = newEnvInfo(undefined, undefined, configsOfOtherPlugins);
+    //TODO pass provisionInputConfig into config??
     const postRes = await this.plugin.publish(pluginContext);
     if (postRes.isErr()) {
       return err(postRes.error);

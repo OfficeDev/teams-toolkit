@@ -23,6 +23,7 @@ import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVaria
 import { enableMigrateV1 } from "./utils/migrateV1";
 import { isTeamsfx } from "./utils/commonUtils";
 import { ConfigFolderName, PublishProfilesFolderName } from "@microsoft/teamsfx-api";
+import { ExtensionUpgrade } from "./utils/upgrade";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -35,6 +36,14 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(new ExtTelemetry.Reporter(context));
 
   await exp.initialize(context);
+  TreatmentVariableValue.isEmbeddedSurvey = (await exp
+    .getExpService()
+    .getTreatmentVariableAsync(
+      TreatmentVariables.VSCodeConfig,
+      TreatmentVariables.EmbeddedSurvey,
+      true
+    )) as boolean | undefined;
+
   // 1.1 Register the creating command.
   const createCmd = vscode.commands.registerCommand("fx-extension.create", (...args) =>
     Correlator.run(handlers.createNewProjectHandler, args)
@@ -121,6 +130,11 @@ export async function activate(context: vscode.ExtensionContext) {
     Correlator.run(handlers.openWelcomeHandler, args)
   );
   context.subscriptions.push(openWelcomeCmd);
+
+  const openSurveyCmd = vscode.commands.registerCommand("fx-extension.openSurvey", (...args) =>
+    Correlator.run(handlers.openSurveyHandler, args)
+  );
+  context.subscriptions.push(openSurveyCmd);
 
   const openSamplesCmd = vscode.commands.registerCommand("fx-extension.openSamples", (...args) =>
     Correlator.run(handlers.openSamplesHandler, args)
@@ -282,17 +296,22 @@ export async function activate(context: vscode.ExtensionContext) {
 
   ext.context.subscriptions.push(vscode.workspace.onDidChangeWorkspaceFolders(enableMigrateV1));
   enableMigrateV1();
-  const migrateV1Cmd = vscode.commands.registerCommand(
-    "fx-extension.migrateV1Project",
-    handlers.migrateV1ProjectHandler
+  const migrateV1Cmd = vscode.commands.registerCommand("fx-extension.migrateV1Project", () =>
+    Correlator.run(handlers.migrateV1ProjectHandler)
   );
   context.subscriptions.push(migrateV1Cmd);
 
   // 2. Call activate function of toolkit core.
   await handlers.activate();
 
-  const survey = new ExtensionSurvey(context);
-  survey.activate();
+  if (!TreatmentVariableValue.isEmbeddedSurvey) {
+    const survey = ExtensionSurvey.getInstance();
+    survey.activate();
+  }
+
+  // activate upgrade
+  const upgrade = new ExtensionUpgrade(context);
+  upgrade.showChangeLog();
 
   openWelcomePageAfterExtensionInstallation();
 }

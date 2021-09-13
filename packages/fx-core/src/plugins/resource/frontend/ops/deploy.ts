@@ -155,6 +155,7 @@ export class FrontendDeployment {
     try {
       return await fs.readJSON(deploymentInfoPath);
     } catch {
+      TelemetryHelper.sendGeneralEvent(TelemetryEvent.DeploymentInfoNotFound);
       return undefined;
     }
   }

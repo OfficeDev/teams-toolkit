@@ -98,7 +98,7 @@ class EnvActivate extends YargsCommand {
   public params: { [_: string]: Options } = {};
 
   public builder(yargs: Argv): Argv<any> {
-    this.params = HelpParamGenerator.getYargsParamForHelp(Stage.switchEnv);
+    this.params = HelpParamGenerator.getYargsParamForHelp(Stage.activateEnv);
     return yargs.version(false).options(this.params).demandOption(EnvNodeNoCreate.data.name!);
   }
 

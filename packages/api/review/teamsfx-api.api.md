@@ -1157,6 +1157,8 @@ export interface SolutionSettings extends Json {
 // @public (undocumented)
 export enum Stage {
     // (undocumented)
+    activateEnv = "activateEnv",
+    // (undocumented)
     build = "build",
     // (undocumented)
     checkPermission = "checkPermission",

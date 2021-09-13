@@ -49,7 +49,7 @@ export class HelpParamGenerator {
     Stage.grantPermission,
     Stage.checkPermission,
     "validate",
-    Stage.switchEnv,
+    Stage.activateEnv,
   ];
 
   private static instance: HelpParamGenerator;

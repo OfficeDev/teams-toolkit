@@ -703,11 +703,11 @@ export class AppStudioPluginImpl {
     }
   }
 
-  public async postLocalDebug(ctx: PluginContext): Promise<string> {
+  public async postLocalDebug(ctx: PluginContext): Promise<Result<string, FxError>> {
     const manifestPath = await this.getManifestTemplatePath(ctx.root);
     const manifest = await this.reloadManifestAndCheckRequiredFields(manifestPath);
     if (manifest.isErr()) {
-      throw manifest;
+      return err(manifest.error);
     }
     let teamsAppId;
     if (this.isSPFxProject(ctx)) {
@@ -716,9 +716,9 @@ export class AppStudioPluginImpl {
       teamsAppId = await this.getAppDefinitionAndUpdate(ctx, "localDebug", manifest.value);
     }
     if (teamsAppId.isErr()) {
-      throw teamsAppId;
+      return teamsAppId;
     }
-    return teamsAppId.value;
+    return ok(teamsAppId.value);
   }
 
   public async checkPermission(ctx: PluginContext): Promise<ResourcePermission[]> {
@@ -1640,7 +1640,23 @@ export class AppStudioPluginImpl {
       );
     }
 
-    const updatedManifest = JSON.parse(manifest) as TeamsAppManifest;
+    let updatedManifest: TeamsAppManifest;
+    try {
+      updatedManifest = JSON.parse(manifest) as TeamsAppManifest;
+    } catch (error) {
+      if (error.stack && error.stack.startsWith("SyntaxError")) {
+        return err(
+          AppStudioResultFactory.UserError(
+            AppStudioError.InvalidManifestError.name,
+            AppStudioError.InvalidManifestError.message(error),
+            undefined,
+            error.stack
+          )
+        );
+      } else {
+        return err(error);
+      }
+    }
 
     for (const domain of validDomains) {
       updatedManifest.validDomains?.push(domain);

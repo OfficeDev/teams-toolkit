@@ -432,7 +432,7 @@ suite("handlers", () => {
       sinon.stub(MockCore.prototype, "listCollaborator").returns(Promise.resolve(ok([])));
 
       const result = await handlers.listCollaborator("env");
-      chai.assert.equal(result[0].label, "No permission to list all collaborators.");
+      chai.assert.equal(result[0].label, "No permission to list collaborators");
       chai.assert.equal(result[0].commandId, "fx-extension.listcollaborator.env");
       chai.assert.equal(result[0].icon, "warning");
       chai.assert.equal(result[0].isCustom, true);

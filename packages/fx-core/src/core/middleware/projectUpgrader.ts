@@ -98,6 +98,10 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<Result<undef
   const settingsFile = isMultiEnvEnabled()
     ? path.resolve(confFolderPath, ProjectSettingsFileName)
     : path.resolve(confFolderPath, "settings.json");
+  if (!(await fs.pathExists(settingsFile))) {
+    // Do nothing if file does not exist.
+    return ok(undefined);
+  }
   const projectSettings: ProjectSettings = await readJson(settingsFile);
   const defaultEnvName = environmentManager.getDefaultEnvName();
 
@@ -107,7 +111,16 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<Result<undef
         EnvProfileFileNameTemplate.replace("@envName", defaultEnvName)
       )
     : path.resolve(confFolderPath, `env.${defaultEnvName}.json`);
+  if (!(await fs.pathExists(contextPath))) {
+    // Do nothing if file does not exist.
+    return ok(undefined);
+  }
+
   const userDataPath = path.resolve(confFolderPath, `${defaultEnvName}.userdata`);
+  if (!(await fs.pathExists(userDataPath))) {
+    // Do nothing if file does not exist.
+    return ok(undefined);
+  }
 
   // For the multi env scenario, profile.{envName}.json and {envName}.userdata are not created when scaffolding
   // These projects must be the new projects, so skip upgrading.

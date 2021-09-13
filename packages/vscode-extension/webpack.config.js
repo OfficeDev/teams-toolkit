@@ -97,8 +97,12 @@ const config = {
           to: "../templates/",
         },
         {
-          from: "./CHANGELOG.md",
+          from: "./WHATISNEW.md",
           to: "../resource/CHANGELOG.md",
+        },
+        {
+          from: "./img/",
+          to: "../resource/img/",
         },
       ],
     }),

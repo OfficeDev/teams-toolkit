@@ -30,7 +30,7 @@ export class ExtensionUpgrade {
       const whatIsNew = {
         title: StringResources.vsc.upgrade.whatIsNewTitle,
         run: async (): Promise<void> => {
-          const uri = vscode.Uri.file(`${folder.getResourceFolder()}/CHANGELOG.md`);
+          const uri = vscode.Uri.file(`${folder.getResourceFolder()}/WHATISNEW.md`);
           vscode.workspace.openTextDocument(uri).then(() => {
             const PreviewMarkdownCommand = "markdown.showPreview";
             vscode.commands.executeCommand(PreviewMarkdownCommand, uri);

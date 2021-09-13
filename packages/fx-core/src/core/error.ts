@@ -12,6 +12,7 @@ import {
   UserError,
   ArchiveFolderName,
   Json,
+  newSystemError,
 } from "@microsoft/teamsfx-api";
 
 export const CoreSource = "Core";

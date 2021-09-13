@@ -87,7 +87,9 @@ export class SimpleAuthValidator {
     );
 
     console.log("Validating app service plan.");
-    const servicePlanName = resourceName.replace("-webapp", "-serverfarms");
+    const servicePlanName = isMultiEnvEnabled
+      ? resourceName.replace("-webapp", "-serverfarms")
+      : resourceName;
     const serivcePlanResponse = await this.getWebappServicePlan(
       this.subscriptionId,
       this.rg,

@@ -157,10 +157,7 @@ namespace Microsoft.TeamsFx
         /// <returns>Graph client with specified scopes.</returns>
         public GraphServiceClient CreateMicrosoftGraphClient(TokenCredential credential, string scopes = ".default", ILogger<MsGraphAuthProvider> logger = null)
         {
-            if (logger == null)
-            {
-                logger = _authLogger;
-            }
+            logger ??= _authLogger;
             var  authProvider = new MsGraphAuthProvider(credential, scopes, logger);
             var client = new GraphServiceClient(authProvider);
             return client;
@@ -175,10 +172,7 @@ namespace Microsoft.TeamsFx
         /// <returns>Graph client with specified scopes.</returns>
         public GraphServiceClient CreateMicrosoftGraphClient(TokenCredential credential, string[] scopes, ILogger<MsGraphAuthProvider> logger = null)
         {
-            if (logger == null)
-            {
-                logger = _authLogger;
-            }
+            logger ??= _authLogger;
             var authProvider = new MsGraphAuthProvider(credential, scopes, logger);
             var client = new GraphServiceClient(authProvider);
             return client;

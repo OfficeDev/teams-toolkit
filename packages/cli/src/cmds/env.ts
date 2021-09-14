@@ -44,7 +44,18 @@ export default class Env extends YargsCommand {
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
-    // TODO: display current active env info.
+    const projectDir = args.folder || process.cwd();
+
+    if (!isWorkspaceSupported(projectDir)) {
+      return err(WorkspaceNotSupported(projectDir));
+    }
+
+    const activeEnvResult = environmentManager.getActiveEnv(projectDir);
+    if (activeEnvResult.isErr()) {
+      return err(activeEnvResult.error);
+    }
+
+    CLILogProvider.necessaryLog(LogLevel.Info, activeEnvResult.value, true);
     return ok(null);
   }
 }

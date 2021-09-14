@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import {
   ConfigFolderName,
-  Core,
   err,
   FxError,
   InputConfigsFolderName,
@@ -17,27 +17,26 @@ import {
   StaticPlatforms,
   Tools,
 } from "@microsoft/teamsfx-api";
+import * as fs from "fs-extra";
+import * as path from "path";
+import * as uuid from "uuid";
+import { createV2Context, isV2 } from "..";
 import { CoreHookContext, FxCore } from "../..";
+import { isMultiEnvEnabled } from "../../common";
+import { readJson } from "../../common/fileUtils";
+import { PluginNames } from "../../plugins/solution/fx-solution/constants";
+import { LocalCrypto } from "../crypto";
 import {
   InvalidProjectError,
   NoProjectOpenedError,
   PathNotExistError,
   ReadFileError,
 } from "../error";
-import * as path from "path";
-import * as fs from "fs-extra";
-import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
-import { newEnvInfo, validateSettings } from "../tools";
-import * as uuid from "uuid";
-import { LocalCrypto } from "../crypto";
-import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { PermissionRequestFileProvider } from "../permissionRequest";
-import { readJson } from "../../common/fileUtils";
-import { isMultiEnvEnabled } from "../../common";
-import { CoreHookContextV2, FxCoreV2 } from "../v2";
+import { newEnvInfo, validateSettings } from "../tools";
 
 export const ProjectSettingsLoaderMW: Middleware = async (
-  ctx: CoreHookContext | CoreHookContextV2,
+  ctx: CoreHookContext,
   next: NextFunction
 ) => {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
@@ -67,8 +66,8 @@ export const ProjectSettingsLoaderMW: Middleware = async (
 
     ctx.projectSettings = projectSettings;
     ctx.projectIdMissing = projectIdMissing;
-    if ((ctx.self as Core).version === "2") {
-      ctx.contextV2 = (ctx.self as FxCoreV2).createV2Context(projectSettings);
+    if (isV2()) {
+      ctx.contextV2 = createV2Context(ctx.self as FxCore, projectSettings);
     }
   }
 
@@ -132,7 +131,7 @@ export async function newSolutionContext(tools: Tools, inputs: Inputs): Promise<
   return solutionContext;
 }
 
-export function shouldIgnored(ctx: CoreHookContext | CoreHookContextV2): boolean {
+export function shouldIgnored(ctx: CoreHookContext): boolean {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   const method = ctx.method;
 

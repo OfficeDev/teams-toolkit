@@ -94,7 +94,7 @@ function onDidStartTaskProcessHandler(event: vscode.TaskProcessStartEvent): void
 
         if (TreatmentVariableValue.isEmbeddedSurvey) {
           // Survey triggering point
-          const survey = new ExtensionSurvey();
+          const survey = ExtensionSurvey.getInstance();
           survey.activate();
         }
       } catch {

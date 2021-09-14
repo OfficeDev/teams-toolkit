@@ -495,3 +495,43 @@ export async function copyFiles(
     });
   }
 }
+
+export function getStorageAccountNameFromResourceId(resourceId: string): string {
+  const result = parseFromResourceId(
+    /providers\/Microsoft.Storage\/storageAccounts\/([^\/]*)/i,
+    resourceId
+  );
+  if (!result) {
+    throw new Error("Failed to get storage accounts name from resource id: " + resourceId);
+  }
+  return result;
+}
+
+export function getSiteNameFromResourceId(resourceId: string): string {
+  const result = parseFromResourceId(/providers\/Microsoft.Web\/sites\/([^\/]*)/i, resourceId);
+  if (!result) {
+    throw new Error("Failed to get site name from resource id: " + resourceId);
+  }
+  return result;
+}
+
+export function getResourceGroupNameFromResourceId(resourceId: string): string {
+  const result = parseFromResourceId(/\/resourceGroups\/([^\/]*)\//i, resourceId);
+  if (!result) {
+    throw new Error("Failed to get resource group name from resource id: " + resourceId);
+  }
+  return result;
+}
+
+export function getSubscriptionIdFromResourceId(resourceId: string): string {
+  const result = parseFromResourceId(/\/subscriptions\/([^\/]*)\//i, resourceId);
+  if (!result) {
+    throw new Error("Failed to get subscription id from resource id: " + resourceId);
+  }
+  return result;
+}
+
+export function parseFromResourceId(pattern: RegExp, resourceId: string): string {
+  const result = resourceId.match(pattern);
+  return result ? result[1].trim() : "";
+}

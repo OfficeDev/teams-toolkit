@@ -9,20 +9,20 @@ import {
   Json,
   Result,
   TokenProvider,
-  Void
+  Void,
 } from "@microsoft/teamsfx-api";
 import { Context, ResourcePlugin } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
 import { LocalDebugPlugin } from "..";
 import {
   ResourcePlugins,
-  ResourcePluginsV2
+  ResourcePluginsV2,
 } from "../../../solution/fx-solution/ResourcePluginContainer";
 import {
   configureLocalResourceAdapter,
   executeUserTaskAdapter,
   provisionLocalResourceAdapter,
-  scaffoldSourceCodeAdapter
+  scaffoldSourceCodeAdapter,
 } from "../../utils4v2";
 
 @Service(ResourcePluginsV2.LocalDebugPlugin)
@@ -35,10 +35,7 @@ export class LocalDebugPluginV2 implements ResourcePlugin {
     return this.plugin.activate(solutionSettings);
   }
 
-  async scaffoldSourceCode(
-    ctx: Context,
-    inputs: Inputs
-  ): Promise<Result<Void, FxError>> {
+  async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
     return await scaffoldSourceCodeAdapter(ctx, inputs, this.plugin);
   }
 

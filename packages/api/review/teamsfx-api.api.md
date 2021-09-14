@@ -89,6 +89,11 @@ export enum Colors {
 }
 
 // @public (undocumented)
+export class ConcurrentError extends UserError {
+    constructor(source: string);
+}
+
+// @public (undocumented)
 export const ConfigFolderName = "fx";
 
 // @public (undocumented)
@@ -152,11 +157,11 @@ export interface Context {
 // @public (undocumented)
 interface Context_2 {
     // (undocumented)
-    cryptoProvider: CryptoProvider;
+    cryptoProvider?: CryptoProvider;
     // (undocumented)
     logProvider: LogProvider;
     // (undocumented)
-    permissionRequestProvider: PermissionRequestProvider;
+    permissionRequestProvider?: PermissionRequestProvider;
     // (undocumented)
     projectSetting: ProjectSettings;
     // (undocumented)
@@ -168,43 +173,51 @@ interface Context_2 {
 // @public (undocumented)
 export interface Core {
     // (undocumented)
-    activateEnv: (env: string, systemInput: Inputs) => Promise<Result<Void, FxError>>;
+    activateEnv: (inputs: Inputs) => Promise<Result<Void, FxError>>;
     // (undocumented)
-    buildArtifacts: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
+    buildArtifacts: (inputs: Inputs) => Promise<Result<Void, FxError>>;
     // (undocumented)
-    checkPermission: (systemInputs: Inputs) => Promise<Result<any, FxError>>;
+    checkPermission: (inputs: Inputs) => Promise<Result<any, FxError>>;
     // (undocumented)
-    createEnv: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
+    createEnv: (inputs: Inputs) => Promise<Result<Void, FxError>>;
     // (undocumented)
-    createProject: (systemInputs: Inputs) => Promise<Result<string, FxError>>;
+    createProject: (inputs: Inputs) => Promise<Result<string, FxError>>;
     // (undocumented)
     decrypt: (ciphertext: string, inputs: Inputs) => Promise<Result<string, FxError>>;
     // (undocumented)
-    deployArtifacts: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
+    deployArtifacts: (inputs: Inputs) => Promise<Result<Void, FxError>>;
     encrypt: (plaintext: string, inputs: Inputs) => Promise<Result<string, FxError>>;
     // (undocumented)
     executeUserTask: (func: Func, inputs: Inputs) => Promise<Result<unknown, FxError>>;
     getQuestions: (task: Stage, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
     getQuestionsForUserTask?: (router: FunctionRouter, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
-    grantPermission: (systemInputs: Inputs) => Promise<Result<any, FxError>>;
+    grantPermission: (inputs: Inputs) => Promise<Result<any, FxError>>;
     // (undocumented)
-    listCollaborator: (systemInputs: Inputs) => Promise<Result<any, FxError>>;
+    listCollaborator: (inputs: Inputs) => Promise<Result<any, FxError>>;
     // (undocumented)
-    localDebug: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
+    localDebug: (inputs: Inputs) => Promise<Result<Void, FxError>>;
     // (undocumented)
-    migrateV1Project: (systemInputs: Inputs) => Promise<Result<string, FxError>>;
+    migrateV1Project: (inputs: Inputs) => Promise<Result<string, FxError>>;
+    on: (event: CoreCallbackEvent, callback: CoreCallbackFunc) => void;
     // (undocumented)
-    provisionResources: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
+    provisionResources: (inputs: Inputs) => Promise<Result<Void, FxError>>;
     // (undocumented)
-    publishApplication: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
-    // (undocumented)
-    removeEnv: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
-    // (undocumented)
-    switchEnv: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
+    publishApplication: (inputs: Inputs) => Promise<Result<Void, FxError>>;
     // (undocumented)
     version?: string;
 }
+
+// @public
+export enum CoreCallbackEvent {
+    // (undocumented)
+    lock = "lock",
+    // (undocumented)
+    unlock = "unlock"
+}
+
+// @public (undocumented)
+export type CoreCallbackFunc = (err?: FxError, data?: any) => void;
 
 // @public
 export interface CryptoProvider {
@@ -221,10 +234,21 @@ export type DynamicOptions = LocalFunc<StaticOptions>;
 // @public (undocumented)
 export const DynamicPlatforms: Platform[];
 
+// @public (undocumented)
+export class EmptyOptionError extends SystemError {
+    constructor(source?: string);
+}
+
 // @public
 export interface EnvConfig {
     // (undocumented)
     $schema?: string;
+    auth?: {
+        clientId?: string;
+        clientSecret?: string;
+        objectId?: string;
+        accessAsUserScopeId?: string;
+    };
     azure?: {
         subscriptionId?: string;
         resourceGroupName?: string;
@@ -278,6 +302,20 @@ export const EnvNamePlaceholder = "@envName";
 export const EnvProfileFileNameTemplate: string;
 
 // @public (undocumented)
+export interface ErrorOptionBase {
+    // (undocumented)
+    error?: Error;
+    // (undocumented)
+    message?: string;
+    // (undocumented)
+    name?: string;
+    // (undocumented)
+    source?: string;
+    // (undocumented)
+    userData?: any;
+}
+
+// @public (undocumented)
 export interface FolderQuestion extends UserInputQuestion {
     default?: string | LocalFunc<string | undefined>;
     // (undocumented)
@@ -317,6 +355,8 @@ export interface FxError extends Error {
     innerError?: any;
     source: string;
     timestamp: Date;
+    // (undocumented)
+    userData?: any;
 }
 
 // @public (undocumented)
@@ -521,6 +561,8 @@ export interface Inputs extends Json {
     // (undocumented)
     projectPath?: string;
     // (undocumented)
+    sourceEnvName?: string;
+    // (undocumented)
     stage?: Stage;
     // (undocumented)
     targetEnvName?: string;
@@ -535,6 +577,26 @@ export interface InputTextConfig extends UIConfig<string> {
 
 // @public (undocumented)
 export type InputTextResult = InputResult<string>;
+
+// @public (undocumented)
+export class InvalidInputError extends UserError {
+    constructor(source: string, name: string, reason?: string);
+}
+
+// @public (undocumented)
+export class InvalidObjectError extends UserError {
+    constructor(source: string, name: string, reason?: string);
+}
+
+// @public (undocumented)
+export class InvalidOperationError extends UserError {
+    constructor(source: string, name: string, reason?: string);
+}
+
+// @public (undocumented)
+export class InvalidProjectError extends UserError {
+    constructor(source: string, msg?: string);
+}
 
 // @public (undocumented)
 export interface IParameter {
@@ -699,10 +761,24 @@ export interface MultiSelectQuestion extends UserInputQuestion {
 export type MultiSelectResult = InputResult<StaticOptions>;
 
 // @public (undocumented)
-export function newSystemError(source: string, name: string, message: string, issueLink?: string, innerError?: any): SystemError;
+export class NoProjectOpenedError extends UserError {
+    constructor(source: string);
+}
 
 // @public (undocumented)
-export function newUserError(source: string, name: string, message: string, helpLink?: string, innerError?: any): UserError;
+export class NotImplementedError extends SystemError {
+    constructor(source: string, method: string);
+}
+
+// @public (undocumented)
+export class ObjectAlreadyExistsError extends UserError {
+    constructor(source: string, name: string);
+}
+
+// @public (undocumented)
+export class ObjectNotExistError extends UserError {
+    constructor(source: string, name: string);
+}
 
 // @public
 export interface OptionItem {
@@ -712,6 +788,16 @@ export interface OptionItem {
     detail?: string;
     id: string;
     label: string;
+}
+
+// @public (undocumented)
+export class PathAlreadyExistsError extends UserError {
+    constructor(source: string, path: string);
+}
+
+// @public (undocumented)
+export class PathNotExistError extends UserError {
+    constructor(source: string, path: string);
 }
 
 // @public
@@ -802,9 +888,9 @@ export const ProductName = "teamsfx";
 // @public (undocumented)
 export interface ProjectConfig {
     // (undocumented)
-    config?: SolutionConfig;
+    config?: SolutionConfig | Json;
     // (undocumented)
-    localSettings?: LocalSettings;
+    localSettings?: LocalSettings | Json;
     // (undocumented)
     settings?: ProjectSettings;
 }
@@ -866,6 +952,11 @@ export class QTreeNode {
 
 // @public (undocumented)
 export type Question = SingleSelectQuestion | MultiSelectQuestion | TextInputQuestion | SingleFileQuestion | MultiFileQuestion | FolderQuestion | FuncQuestion | SingleFileQuestion;
+
+// @public (undocumented)
+export class ReadFileError extends SystemError {
+    constructor(source: string, e: Error);
+}
 
 // @public (undocumented)
 export type ReadonlyPluginConfig = ReadonlyMap<string, ConfigValue>;
@@ -993,9 +1084,12 @@ export type SingleSelectResult = InputResult<string | OptionItem>;
 // @public (undocumented)
 export interface Solution {
     // (undocumented)
+    activateEnv?: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
+    // (undocumented)
     checkPermission?: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
     // (undocumented)
     create: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
+    createEnv?: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
     // (undocumented)
     deploy: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
     // (undocumented)
@@ -1041,17 +1135,25 @@ type SolutionInputs = {
 
 // @public (undocumented)
 interface SolutionPlugin {
+    // (undocumented)
+    activateEnv?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
+    // (undocumented)
+    checkPermission?: (ctx: Context_2, inputs: Inputs, tokenProvider: TokenProvider) => Promise<Result<any, FxError>>;
+    createEnv?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
     deploy?: (ctx: Context_2, inputs: Inputs, provisionOutputs: Json, tokenProvider: AzureAccountProvider) => Promise<Result<Void, FxError>>;
     // (undocumented)
     displayName: string;
-    executeUserTask?: (ctx: Context_2, inputs: Inputs, func: Func) => Promise<Result<unknown, FxError>>;
+    executeUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, tokenProvider: TokenProvider) => Promise<Result<unknown, FxError>>;
     generateResourceTemplate: (ctx: Context_2, inputs: Inputs) => Promise<Result<Json, FxError>>;
     getQuestionsForScaffolding?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
+    grantPermission?: (ctx: Context_2, inputs: Inputs, tokenProvider: TokenProvider) => Promise<Result<any, FxError>>;
+    // (undocumented)
+    listCollaborator?: (ctx: Context_2, inputs: Inputs, tokenProvider: TokenProvider) => Promise<Result<any, FxError>>;
     // (undocumented)
     name: string;
-    provisionLocalResource?: (ctx: Context_2, inputs: Inputs, tokenProvider: TokenProvider) => Promise<Result<Json, FxError>>;
+    provisionLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: Json, tokenProvider: TokenProvider) => Promise<Result<Json, FxError>>;
     provisionResources: (ctx: Context_2, inputs: Inputs, provisionInputConfig: Json, tokenProvider: TokenProvider) => Promise<Result<SolutionProvisionOutput, FxError>>;
-    publishApplication?: (ctx: Context_2, inputs: Inputs, provisionInputConfig: Json, provisionOutputs: Json, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
+    publishApplication: (ctx: Context_2, inputs: Inputs, provisionInputConfig: Json, provisionOutputs: Json, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
     scaffoldSourceCode: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
 }
 
@@ -1069,6 +1171,8 @@ export interface SolutionSettings extends Json {
 // @public (undocumented)
 export enum Stage {
     // (undocumented)
+    activateEnv = "activateEnv",
+    // (undocumented)
     build = "build",
     // (undocumented)
     checkPermission = "checkPermission",
@@ -1084,6 +1188,8 @@ export enum Stage {
     grantPermission = "grantPermission",
     // (undocumented)
     listCollaborator = "listCollaborator",
+    // (undocumented)
+    listEnv = "listEnv",
     // (undocumented)
     migrateV1 = "migrateV1",
     // (undocumented)
@@ -1147,16 +1253,20 @@ export type SubscriptionInfo = {
 
 // @public
 export class SystemError extends Error implements FxError {
+    constructor(error: Error, source?: string, name?: string, issueLink?: string);
+    constructor(opt: SystemErrorOptions);
     constructor(name: string, message: string, source: string, stack?: string, issueLink?: string, innerError?: any);
-    // (undocumented)
-    static build(source: string, name?: string, message?: string, issueLink?: string): SystemError;
-    // (undocumented)
-    static build(source: string, error: Error, issueLink?: string): SystemError;
     innerError?: any;
     issueLink?: string;
     source: string;
     timestamp: Date;
     userData?: string;
+}
+
+// @public (undocumented)
+export interface SystemErrorOptions extends ErrorOptionBase {
+    // (undocumented)
+    issueLink?: string;
 }
 
 // @public
@@ -1350,19 +1460,34 @@ export interface UIConfig<T> {
 }
 
 // @public (undocumented)
+export class UndefinedError extends SystemError {
+    constructor(source: string, name: string);
+}
+
+// @public (undocumented)
+export class UnknownError extends SystemError {
+    constructor(source?: string, message?: string);
+}
+
+// @public (undocumented)
 export const UserCancelError: UserError;
 
 // @public
 export class UserError extends Error implements FxError {
+    constructor(error: Error, source?: string, name?: string, helpLink?: string);
+    constructor(opt: UserErrorOptions);
     constructor(name: string, message: string, source: string, stack?: string, helpLink?: string, innerError?: any);
-    // (undocumented)
-    static build(source: string, name?: string, message?: string, helpLink?: string): UserError;
-    // (undocumented)
-    static build(source: string, error: Error, helpLink?: string): UserError;
     helpLink?: string;
     innerError?: any;
     source: string;
     timestamp: Date;
+    userData?: string;
+}
+
+// @public (undocumented)
+export interface UserErrorOptions extends ErrorOptionBase {
+    // (undocumented)
+    helpLink?: string;
 }
 
 // @public
@@ -1449,6 +1574,11 @@ export enum VsCodeEnv {
     local = "local",
     // (undocumented)
     remote = "remote"
+}
+
+// @public (undocumented)
+export class WriteFileError extends SystemError {
+    constructor(source: string, e: Error);
 }
 
 

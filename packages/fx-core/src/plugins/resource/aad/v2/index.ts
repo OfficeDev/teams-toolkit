@@ -2,25 +2,27 @@
 // Licensed under the MIT license.
 
 import {
-  AzureSolutionSettings, Func,
+  AzureSolutionSettings,
+  Func,
   FxError,
   Inputs,
   Json,
   Result,
   TokenProvider,
-  Void
+  Void,
 } from "@microsoft/teamsfx-api";
 import {
-  Context, ProvisionInputs,
+  Context,
+  ProvisionInputs,
   ResourcePlugin,
   ResourceProvisionOutput,
-  ResourceTemplate
+  ResourceTemplate,
 } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
 import { AadAppForTeamsPlugin } from "..";
 import {
   ResourcePlugins,
-  ResourcePluginsV2
+  ResourcePluginsV2,
 } from "../../../solution/fx-solution/ResourcePluginContainer";
 import {
   configureLocalResourceAdapter,
@@ -28,7 +30,7 @@ import {
   executeUserTaskAdapter,
   generateResourceTemplateAdapter,
   provisionLocalResourceAdapter,
-  provisionResourceAdapter
+  provisionResourceAdapter,
 } from "../../utils4v2";
 
 @Service(ResourcePluginsV2.AadPlugin)
@@ -54,7 +56,13 @@ export class AadPluginV2 implements ResourcePlugin {
     provisionInputConfig: Json,
     tokenProvider: TokenProvider
   ): Promise<Result<ResourceProvisionOutput, FxError>> {
-    return await provisionResourceAdapter(ctx, inputs, provisionInputConfig, tokenProvider, this.plugin);
+    return await provisionResourceAdapter(
+      ctx,
+      inputs,
+      provisionInputConfig,
+      tokenProvider,
+      this.plugin
+    );
   }
 
   async configureResource(

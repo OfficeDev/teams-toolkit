@@ -2,27 +2,27 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { HookContext, NextFunction, Middleware } from "@feathersjs/hooks";
+import { HookContext, Middleware, NextFunction } from "@feathersjs/hooks";
 import {
   ConfigFolderName,
+  CoreCallbackEvent,
   err,
   Inputs,
-  ok,
   ProductName,
   StaticPlatforms,
-  Void,
 } from "@microsoft/teamsfx-api";
-import * as path from "path";
-import * as os from "os";
 import * as fs from "fs-extra";
+import * as os from "os";
+import * as path from "path";
+import { lock, unlock } from "proper-lockfile";
 import { FxCore } from "..";
+import { CallbackRegistry } from "../callback";
 import {
   ConcurrentError,
   InvalidProjectError,
   NoProjectOpenedError,
   PathNotExistError,
 } from "../error";
-import { lock, unlock } from "proper-lockfile";
 import { base64Encode } from "../tools";
 
 export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: NextFunction) => {
@@ -42,7 +42,7 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
       ctx.result = err(PathNotExistError(inputs.projectPath));
       return;
     }
-    const lf = path.join(inputs.projectPath!, `.${ConfigFolderName}`);
+    const lf = path.join(inputs.projectPath, `.${ConfigFolderName}`);
     if (!(await fs.pathExists(lf))) {
       ctx.result = err(InvalidProjectError());
       return;
@@ -50,25 +50,32 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
 
     const lockFileDir = path.join(
       os.tmpdir(),
-      `${ProductName}-${base64Encode(inputs.projectPath!)}`
+      `${ProductName}-${base64Encode(inputs.projectPath)}`
     );
     await fs.ensureDir(lockFileDir);
 
     await lock(lf, { lockfilePath: path.join(lockFileDir, `${ConfigFolderName}.lock`) })
       .then(async () => {
-        if (logger) logger.debug(`[core] success to aquire lock on: ${lf}`);
+        if (logger) logger.debug(`[core] success to acquire lock on: ${lf}`);
+        for (const f of CallbackRegistry.get(CoreCallbackEvent.lock)) {
+          f();
+        }
         try {
           await next();
         } finally {
           await unlock(lf, { lockfilePath: path.join(lockFileDir, `${ConfigFolderName}.lock`) });
           await fs.rmdir(lockFileDir);
+
+          for (const f of CallbackRegistry.get(CoreCallbackEvent.unlock)) {
+            f();
+          }
           if (logger) logger.debug(`[core] lock released on ${lf}`);
         }
       })
       .catch((e: any) => {
         if (e["code"] === "ELOCKED") {
-          if (logger) logger.warning(`[core] failed to aquire lock on: ${lf}`);
-          ctx.result = err(ConcurrentError());
+          if (logger) logger.warning(`[core] failed to acquire lock on: ${lf}`);
+          ctx.result = err(new ConcurrentError());
           return;
         }
         throw e;

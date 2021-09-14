@@ -17,12 +17,12 @@ export interface Context {
   userInteraction: UserInteraction;
   logProvider: LogProvider;
   telemetryReporter: TelemetryReporter;
-  cryptoProvider: CryptoProvider;
+  cryptoProvider?: CryptoProvider;
   projectSetting: ProjectSettings;
-  permissionRequestProvider: PermissionRequestProvider;
+  permissionRequestProvider?: PermissionRequestProvider;
 }
 
-export interface LocalSettings extends Json{
+export interface LocalSettings extends Json {
   teamsApp: Record<string, string>;
   auth?: Record<string, string>;
   frontend?: Record<string, string>;

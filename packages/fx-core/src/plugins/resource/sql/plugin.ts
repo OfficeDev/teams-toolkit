@@ -9,6 +9,7 @@ import {
   QTreeNode,
   Platform,
   AzureSolutionSettings,
+  traverse,
 } from "@microsoft/teamsfx-api";
 import { ManagementClient } from "./managementClient";
 import { ErrorMessage } from "./errors";
@@ -83,33 +84,8 @@ export class SqlPluginImpl {
     stage: Stage,
     ctx: PluginContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    if (stage === Stage.provision) {
-      ctx.logProvider?.info(Message.startGetQuestions);
-      const sqlNode = new QTreeNode({
-        type: "group",
-      });
-      if (ctx.answers?.platform === Platform.CLI_HELP) {
-        this.buildQuestionNode(sqlNode);
-        return ok(sqlNode);
-      }
-
-      await this.init(ctx);
-      if (isArmSupportEnabled()) {
-        this.config.admin = ctx.config.get(Constants.admin) as string;
-        this.config.adminPassword = ctx.config.get(Constants.adminPassword) as string;
-        if (this.config.admin) {
-          this.config.existSql = true;
-        }
-      } else if (this.config.azureSubscriptionId) {
-        const managementClient: ManagementClient = await ManagementClient.create(ctx, this.config);
-        this.config.existSql = await managementClient.existAzureSQL();
-      }
-
-      ctx.config.set(Constants.existSql, this.config.existSql);
-
-      if (!this.config.existSql) {
-        this.buildQuestionNode(sqlNode);
-      }
+    if (stage === Stage.provision && ctx.answers?.platform === Platform.CLI_HELP) {
+      const sqlNode = this.buildQuestionNode();
       return ok(sqlNode);
     }
     return ok(undefined);
@@ -117,34 +93,17 @@ export class SqlPluginImpl {
 
   async preProvision(ctx: PluginContext): Promise<Result<any, FxError>> {
     ctx.logProvider?.info(Message.startPreProvision);
-
     await this.init(ctx);
-    if (!this.config.azureSubscriptionId) {
-      const error = SqlResultFactory.SystemError(
-        ErrorMessage.SqlGetConfigError.name,
-        ErrorMessage.SqlGetConfigError.message(
-          Constants.solutionConfigKey.subscriptionId,
-          Constants.solution
-        )
-      );
-      ctx.logProvider?.error(error.message);
-    }
 
     DialogUtils.init(ctx);
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendEvent(Telemetry.stage.preProvision + Telemetry.startSuffix);
 
-    const skipAddingUser = ctx.config.get(Constants.skipAddingUser);
-    if (skipAddingUser === undefined) {
-      this.config.skipAddingUser = (await ctx.azureAccountProvider?.getIdentityCredentialAsync())
-        ? false
-        : true;
-    } else {
-      this.config.skipAddingUser = skipAddingUser as boolean;
-    }
+    await this.loadSkipAddingUser(ctx);
+    await this.checkSqlExisting(ctx);
 
-    this.config.existSql = ctx.config.get(Constants.existSql);
     if (!this.config.existSql) {
+      await this.askInputs(ctx);
       this.config.admin = ctx.answers![Constants.questionKey.adminName] as string;
       this.config.adminPassword = ctx.answers![Constants.questionKey.adminPassword] as string;
 
@@ -160,25 +119,7 @@ export class SqlPluginImpl {
       ctx.config.set(Constants.adminPassword, this.config.adminPassword);
     }
 
-    // get login user info to set aad admin in sql
-    try {
-      const credential = await ctx.azureAccountProvider!.getAccountCredentialAsync();
-      const token = await credential!.getToken();
-      const accessToken = token.accessToken;
-      const tokenInfo = parseToken(accessToken);
-      this.config.aadAdmin = tokenInfo.name;
-      this.config.aadAdminObjectId = tokenInfo.objectId;
-      this.config.aadAdminType = tokenInfo.userType;
-      ctx.logProvider?.debug(Message.adminName(tokenInfo.name));
-    } catch (_error) {
-      ctx.logProvider?.error(ErrorMessage.SqlUserInfoError.message() + `:${_error.message}`);
-      const error = SqlResultFactory.SystemError(
-        ErrorMessage.SqlUserInfoError.name,
-        ErrorMessage.SqlUserInfoError.message(),
-        _error
-      );
-      throw error;
-    }
+    await this.parseLoginToken(ctx);
 
     if (isArmSupportEnabled()) {
       this.setContext(ctx);
@@ -206,7 +147,7 @@ export class SqlPluginImpl {
           new ResourceManagementClientContext(credentials!, this.config.azureSubscriptionId)
         );
         await resourceManagementClient.register(Constants.resourceProvider);
-      } catch (error) {
+      } catch (error: any) {
         ctx.logProvider?.info(Message.registerResourceProviderFailed(error?.message));
       }
     } else {
@@ -390,10 +331,14 @@ export class SqlPluginImpl {
     this.config.sqlServer = this.config.sqlEndpoint.split(".")[0];
   }
 
-  private buildQuestionNode(sqlNode: QTreeNode) {
+  private buildQuestionNode() {
+    const sqlNode = new QTreeNode({
+      type: "group",
+    });
     sqlNode.addChild(new QTreeNode(adminNameQuestion));
     sqlNode.addChild(new QTreeNode(adminPasswordQuestion));
     sqlNode.addChild(new QTreeNode(confirmPasswordQuestion));
+    return sqlNode;
   }
 
   private async AddFireWallRules(client: ManagementClient) {
@@ -429,6 +374,64 @@ export class SqlPluginImpl {
         ctx.logProvider?.error(error.message);
         throw error;
       }
+    }
+  }
+
+  private async loadSkipAddingUser(ctx: PluginContext) {
+    const skipAddingUser = ctx.config.get(Constants.skipAddingUser);
+    if (skipAddingUser === undefined) {
+      this.config.skipAddingUser = (await ctx.azureAccountProvider?.getIdentityCredentialAsync())
+        ? false
+        : true;
+    } else {
+      this.config.skipAddingUser = skipAddingUser as boolean;
+    }
+  }
+
+  private async checkSqlExisting(ctx: PluginContext) {
+    const managementClient: ManagementClient = await ManagementClient.create(ctx, this.config);
+    if (isArmSupportEnabled()) {
+      this.config.admin = ctx.config.get(Constants.admin) as string;
+      this.config.adminPassword = ctx.config.get(Constants.adminPassword) as string;
+      this.config.sqlEndpoint = ctx.config.get(Constants.sqlEndpoint);
+      if (this.config.sqlEndpoint) {
+        this.config.existSql = await managementClient.existAzureSQL();
+      }
+    } else {
+      this.config.existSql = await managementClient.existAzureSQL();
+    }
+  }
+
+  private async askInputs(ctx: PluginContext) {
+    const node = this.buildQuestionNode();
+    const res = await traverse(node, ctx.answers!, ctx.ui!);
+    if (res.isErr()) {
+      throw SqlResultFactory.UserError(
+        ErrorMessage.SqlAskInputError.name,
+        ErrorMessage.SqlAskInputError.message(),
+        res.error
+      );
+    }
+  }
+
+  private async parseLoginToken(ctx: PluginContext) {
+    // get login user info to set aad admin in sql
+    try {
+      const credential = await ctx.azureAccountProvider!.getAccountCredentialAsync();
+      const token = await credential!.getToken();
+      const accessToken = token.accessToken;
+      const tokenInfo = parseToken(accessToken);
+      this.config.aadAdmin = tokenInfo.name;
+      this.config.aadAdminObjectId = tokenInfo.objectId;
+      this.config.aadAdminType = tokenInfo.userType;
+      ctx.logProvider?.debug(Message.adminName(tokenInfo.name));
+    } catch (error: any) {
+      ctx.logProvider?.error(ErrorMessage.SqlUserInfoError.message() + `:${error.message}`);
+      throw SqlResultFactory.SystemError(
+        ErrorMessage.SqlUserInfoError.name,
+        ErrorMessage.SqlUserInfoError.message(),
+        error
+      );
     }
   }
 }

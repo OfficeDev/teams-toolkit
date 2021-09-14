@@ -88,8 +88,11 @@ export class NoPreStepError extends FrontendPluginError {
 }
 
 export class InvalidConfigError extends FrontendPluginError {
-  constructor(key: string) {
-    super(ErrorType.User, "InvalidConfigError", `Get invalid ${key}.`, [tips.restoreEnvironment]);
+  constructor(key: string, detailedErrorMessage?: string) {
+    const detailedMsg = detailedErrorMessage ? ` Error message: ${detailedErrorMessage}` : "";
+    super(ErrorType.User, "InvalidConfigError", `Get invalid ${key}.${detailedMsg}`, [
+      tips.restoreEnvironment,
+    ]);
   }
 }
 

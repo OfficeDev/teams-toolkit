@@ -104,6 +104,10 @@ export enum TelemetryEvent {
   ActivateEnvironment = "activate-environment",
 
   CheckSideloading = "check-sideloading",
+  OpenSideloadingReadmore = "open-sideloading-readmore",
+
+  ShowWhatIsNewNotification = "show-what-is-new-notification",
+  ShowWhatIsNewContext = "show-what-is-new-context",
 }
 
 export enum TelemetryProperty {
@@ -152,6 +156,7 @@ export enum TelemetryTiggerFrom {
   TreeView = "TreeView",
   Webview = "Webview",
   Other = "Other",
+  Unknow = "Unknow",
 }
 
 export enum WatchVideoFrom {

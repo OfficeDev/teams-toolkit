@@ -2,29 +2,27 @@
 // Licensed under the MIT license.
 "use strict";
 
-import * as fs from "fs-extra";
-import * as path from "path";
-import { NextFunction, Middleware } from "@feathersjs/hooks";
+import { Middleware, NextFunction } from "@feathersjs/hooks";
 import {
   AzureSolutionSettings,
   ConfigFolderName,
-  Core,
   err,
   InputConfigsFolderName,
   Inputs,
   ProjectSettingsFileName,
   StaticPlatforms,
 } from "@microsoft/teamsfx-api";
-import { WriteFileError } from "../error";
-import { CoreHookContext, FxCore } from "..";
+import * as fs from "fs-extra";
+import * as path from "path";
+import { CoreHookContext, FxCore, isV2 } from "..";
 import { isMultiEnvEnabled } from "../../common";
-import { CoreHookContextV2 } from "../v2";
+import { WriteFileError } from "../error";
 
 /**
  * This middleware will help to persist project settings if necessary.
  */
 export const ProjectSettingsWriterMW: Middleware = async (
-  ctx: CoreHookContext | CoreHookContextV2,
+  ctx: CoreHookContext,
   next: NextFunction
 ) => {
   try {
@@ -38,10 +36,7 @@ export const ProjectSettingsWriterMW: Middleware = async (
       StaticPlatforms.includes(inputs.platform)
     )
       return;
-    const projectSettings =
-      (ctx.self as Core).version === "1"
-        ? ctx.solutionContext?.projectSettings
-        : ctx.contextV2?.projectSettings;
+    const projectSettings = ctx.projectSettings;
     if (projectSettings === undefined) return;
     try {
       const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);

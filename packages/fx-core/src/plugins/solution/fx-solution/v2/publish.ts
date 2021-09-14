@@ -49,7 +49,14 @@ export async function publishApplication(
         pluginName: `${plugin.name}`,
         taskName: "publishApplication",
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        thunk: () => plugin.publishApplication!(ctx, inputs, provisionInputConfig, provisionOutputs, tokenProvider),
+        thunk: () =>
+          plugin.publishApplication!(
+            ctx,
+            inputs,
+            provisionInputConfig,
+            provisionOutputs,
+            tokenProvider
+          ),
       };
     });
 

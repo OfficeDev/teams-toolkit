@@ -14,6 +14,7 @@ import {
   Inputs,
   v2,
   Plugin,
+  TokenProvider,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import { GLOBAL_CONFIG, SolutionError } from "../../../src/plugins/solution/fx-solution/constants";
@@ -23,6 +24,7 @@ import {
   mockPublishThatAlwaysSucceed,
   mockV2PublishThatAlwaysSucceed,
   mockScaffoldCodeThatAlwaysSucceeds,
+  MockedAzureAccountProvider,
 } from "./util";
 import _ from "lodash";
 import {
@@ -50,6 +52,9 @@ import "../../../src/plugins/resource/bot/v2";
 import { AppStudioPlugin, newEnvInfo } from "../../../src";
 import fs from "fs-extra";
 import { ProgrammingLanguage } from "../../../src/plugins/resource/bot/enums/programmingLanguage";
+import { MockGraphTokenProvider } from "../../core/utils";
+import { createEnv } from "../../../src/plugins/solution/fx-solution/v2/createEnv";
+import { ScaffoldingContextAdapter } from "../../../src/plugins/solution/fx-solution/v2/adaptor";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -63,7 +68,11 @@ const localDebugPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.Lo
 const appStudioPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin);
 const frontendPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.FrontendPlugin);
 const botPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.BotPlugin);
-
+const mockedProvider: TokenProvider = {
+  appStudioToken: new MockedAppStudioProvider(),
+  azureAccountProvider: new MockedAzureAccountProvider(),
+  graphTokenProvider: new MockGraphTokenProvider(),
+};
 function mockSolutionContextWithPlatform(platform?: Platform): SolutionContext {
   const config: SolutionConfig = new Map();
   config.set(GLOBAL_CONFIG, new ConfigMap());
@@ -143,15 +152,14 @@ describe("V2 implementation", () => {
       },
     };
     const mockedCtx = new MockedV2Context(projectSettings);
-    const mockedProvider = new MockedAppStudioProvider();
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
     };
 
     const result = await executeUserTask(
       mockedCtx,
-      { namespace: "someInvalidNamespace", method: "invalid" },
       mockedInputs,
+      { namespace: "someInvalidNamespace", method: "invalid" },
       mockedProvider
     );
     expect(result.isErr()).to.be.true;
@@ -170,15 +178,14 @@ describe("V2 implementation", () => {
       },
     };
     const mockedCtx = new MockedV2Context(projectSettings);
-    const mockedProvider = new MockedAppStudioProvider();
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
     };
 
     const result = await executeUserTask(
       mockedCtx,
-      { namespace: "solution", method: "addCapability" },
       mockedInputs,
+      { namespace: "solution", method: "addCapability" },
       mockedProvider
     );
     expect(result.isErr()).to.be.true;
@@ -197,15 +204,15 @@ describe("V2 implementation", () => {
       },
     };
     const mockedCtx = new MockedV2Context(projectSettings);
-    const mockedProvider = new MockedAppStudioProvider();
+
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
     };
 
     const result = await executeUserTask(
       mockedCtx,
-      { namespace: "solution", method: "addResource" },
       mockedInputs,
+      { namespace: "solution", method: "addResource" },
       mockedProvider
     );
     expect(result.isErr()).to.be.true;
@@ -225,7 +232,6 @@ describe("V2 implementation", () => {
       },
     };
     const mockedCtx = new MockedV2Context(projectSettings);
-    const mockedProvider = new MockedAppStudioProvider();
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
     };
@@ -233,8 +239,8 @@ describe("V2 implementation", () => {
 
     const result = await executeUserTask(
       mockedCtx,
-      { namespace: "solution", method: "addCapability" },
       mockedInputs,
+      { namespace: "solution", method: "addCapability" },
       mockedProvider
     );
     expect(result.isErr()).to.be.true;
@@ -255,7 +261,6 @@ describe("V2 implementation", () => {
       },
     };
     const mockedCtx = new MockedV2Context(projectSettings);
-    const mockedProvider = new MockedAppStudioProvider();
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
     };
@@ -267,8 +272,8 @@ describe("V2 implementation", () => {
 
     const result = await executeUserTask(
       mockedCtx,
-      { namespace: "solution", method: "addCapability" },
       mockedInputs,
+      { namespace: "solution", method: "addCapability" },
       mockedProvider
     );
     expect(result.isOk()).to.be.true;
@@ -288,15 +293,14 @@ describe("V2 implementation", () => {
       },
     };
     const mockedCtx = new MockedV2Context(projectSettings);
-    const mockedProvider = new MockedAppStudioProvider();
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
     };
 
     const result = await executeUserTask(
       mockedCtx,
-      { namespace: "solution", method: "addResource" },
       mockedInputs,
+      { namespace: "solution", method: "addResource" },
       mockedProvider
     );
     expect(result.isErr()).to.be.true;
@@ -317,7 +321,6 @@ describe("V2 implementation", () => {
       },
     };
     const mockedCtx = new MockedV2Context(projectSettings);
-    const mockedProvider = new MockedAppStudioProvider();
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
     };
@@ -326,8 +329,8 @@ describe("V2 implementation", () => {
 
     const result = await executeUserTask(
       mockedCtx,
-      { namespace: "solution", method: "addResource" },
       mockedInputs,
+      { namespace: "solution", method: "addResource" },
       mockedProvider
     );
     expect(result.isErr()).to.be.true;
@@ -350,7 +353,6 @@ describe("V2 implementation", () => {
     };
     const mockedCtx = new MockedV2Context(projectSettings);
     mockedCtx.projectSetting.programmingLanguage = ProgrammingLanguage.JavaScript;
-    const mockedProvider = new MockedAppStudioProvider();
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
     };
@@ -365,8 +367,8 @@ describe("V2 implementation", () => {
 
     const result = await executeUserTask(
       mockedCtx,
-      { namespace: "solution", method: "addResource" },
       mockedInputs,
+      { namespace: "solution", method: "addResource" },
       mockedProvider
     );
     expect(result.isOk()).to.be.true;
@@ -388,15 +390,14 @@ describe("V2 implementation", () => {
 
     it("should return error for non-vs platform", async () => {
       const mockedCtx = new MockedV2Context(projectSettings);
-      const mockedProvider = new MockedAppStudioProvider();
       const mockedInputs: Inputs = {
         platform: Platform.VSCode,
       };
 
       let result = await executeUserTask(
         mockedCtx,
-        { namespace: "solution", method: "VSpublish" },
         mockedInputs,
+        { namespace: "solution", method: "VSpublish" },
         mockedProvider
       );
       expect(result.isErr()).to.be.true;
@@ -405,8 +406,8 @@ describe("V2 implementation", () => {
       (mockedInputs.platform = Platform.VSCode),
         (result = await executeUserTask(
           mockedCtx,
-          { namespace: "solution", method: "VSpublish" },
           mockedInputs,
+          { namespace: "solution", method: "VSpublish" },
           mockedProvider
         ));
       expect(result.isErr()).to.be.true;
@@ -424,7 +425,6 @@ describe("V2 implementation", () => {
 
       it("should return ok", async () => {
         const mockedCtx = new MockedV2Context(projectSettings);
-        const mockedProvider = new MockedAppStudioProvider();
         const mockedInputs: Inputs = {
           platform: Platform.VS,
         };
@@ -433,13 +433,37 @@ describe("V2 implementation", () => {
         const spy = mocker.spy(appStudioPluginV2, "publishApplication");
         const result = await executeUserTask(
           mockedCtx,
-          { namespace: "solution", method: "VSpublish" , params: {envConfig: {}, envProfile: {}}},
           mockedInputs,
+          { namespace: "solution", method: "VSpublish", params: { envConfig: {}, envProfile: {} } },
           mockedProvider
         );
         expect(result.isOk()).to.be.true;
         expect(spy.calledOnce, "publishApplication() is called").to.be.true;
       });
+    });
+
+    it("createEnv", async () => {
+      const mockedCtx = new MockedV2Context(projectSettings);
+      const mockedInputs: Inputs = {
+        platform: Platform.VSCode,
+      };
+
+      const result = await createEnv(mockedCtx, mockedInputs);
+      expect(result.isOk()).to.be.true;
+
+      mockedInputs.copy = true;
+      const result2 = await createEnv(mockedCtx, mockedInputs);
+      expect(result2.isOk()).to.be.true;
+    });
+    
+    it("createEnv, ScaffoldingContextAdapter", async () => {
+      const mockedCtx = new MockedV2Context(projectSettings);
+      const mockedInputs: Inputs = {
+        platform: Platform.VSCode,
+      };
+
+      const result = await new ScaffoldingContextAdapter([mockedCtx, mockedInputs]);
+      expect(result.answers!.platform).to.be.equal(Platform.VSCode);
     });
   });
 });

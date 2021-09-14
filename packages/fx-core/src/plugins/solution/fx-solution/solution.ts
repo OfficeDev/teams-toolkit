@@ -4,91 +4,51 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import { hooks } from "@feathersjs/hooks/lib";
 import {
-  ok,
-  err,
-  QTreeNode,
-  ConfigMap,
-  Stage,
+  ArchiveFolderName,
+  AzureSolutionSettings,
+  Colors,
   combine,
-  returnSystemError,
-  returnUserError,
-  PluginContext,
-  Plugin,
+  ConfigMap,
+  DynamicPlatforms,
+  err,
   Func,
   FxError,
+  Inputs,
+  ok,
+  OptionItem,
+  Platform,
+  Plugin,
+  PluginContext,
+  ProjectSettings,
+  QTreeNode,
   Result,
+  returnSystemError,
+  returnUserError,
   Solution,
   SolutionConfig,
   SolutionContext,
-  TeamsAppManifest,
-  OptionItem,
-  AppPackageFolderName,
-  AzureSolutionSettings,
-  Platform,
-  Inputs,
-  DynamicPlatforms,
-  SubscriptionInfo,
-  ProjectSettings,
   SolutionSettings,
-  ArchiveFolderName,
-  Colors,
+  Stage,
+  SubscriptionInfo,
+  SystemError,
+  TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
-import { checkSubscription, fillInCommonQuestions } from "./commonQuestions";
-import { executeLifecycles, executeConcurrently, LifecyclesWithContext } from "./executor";
-import { getPluginContext, sendErrorTelemetryThenReturnError } from "./utils/util";
+import axios from "axios";
 import * as fs from "fs-extra";
-import {
-  DEFAULT_PERMISSION_REQUEST,
-  GLOBAL_CONFIG,
-  SolutionError,
-  LOCAL_DEBUG_AAD_ID,
-  LOCAL_DEBUG_TEAMS_APP_ID,
-  Void,
-  SOLUTION_PROVISION_SUCCEEDED,
-  LOCAL_APPLICATION_ID_URIS,
-  LOCAL_CLIENT_SECRET,
-  REMOTE_AAD_ID,
-  REMOTE_APPLICATION_ID_URIS,
-  REMOTE_CLIENT_SECRET,
-  PROGRAMMING_LANGUAGE,
-  REMOTE_TEAMS_APP_ID,
-  CancelError,
-  SolutionTelemetryProperty,
-  SolutionTelemetryEvent,
-  SolutionTelemetryComponentName,
-  SolutionTelemetrySuccess,
-  PluginNames,
-  ARM_TEMPLATE_OUTPUT,
-  USER_INFO,
-  REMOTE_TENANT_ID,
-  SUBSCRIPTION_ID,
-  SUBSCRIPTION_NAME,
-} from "./constants";
-
-import {
-  AzureResourceFunction,
-  AzureResourceSQL,
-  AzureResourcesQuestion,
-  AzureSolutionQuestionNames,
-  BotOptionItem,
-  DeployPluginSelectQuestion,
-  HostTypeOptionAzure,
-  HostTypeOptionSPFx,
-  FrontendHostTypeQuestion,
-  TabOptionItem,
-  MessageExtensionItem,
-  AzureResourceApim,
-  createCapabilityQuestion,
-  createAddAzureResourceQuestion,
-  AskSubscriptionQuestion,
-  addCapabilityQuestion,
-  ProgrammingLanguageQuestion,
-  createV1CapabilityQuestion,
-} from "./question";
 import Mustache from "mustache";
 import path from "path";
+import { Container, Service } from "typedi";
 import * as util from "util";
+import { PluginDisplayName } from "../../../common/constants";
+import { LocalSettingsTeamsAppKeys } from "../../../common/localSettingsConstants";
+import {
+  AadOwner,
+  Collaborator,
+  ResourcePermission,
+  TeamsAppAdmin,
+} from "../../../common/permissionInterface";
 import {
   deepCopy,
   getStrings,
@@ -96,24 +56,74 @@ import {
   isMultiEnvEnabled,
   isUserCancelError,
 } from "../../../common/tools";
-import { getTemplatesFolder } from "../../..";
+import { CopyFileError } from "../../../core";
+import { askTargetEnvironment } from "../../../core/middleware/envInfoLoader";
+import { ErrorHandlerMW } from "../../../core/middleware/errorHandler";
+import { PermissionRequestFileProvider } from "../../../core/permissionRequest";
+import { SolutionPlugins } from "../../../core/SolutionPluginContainer";
+import { AadAppForTeamsPlugin, AppStudioPlugin, SpfxPlugin } from "../../resource";
+import { IUserList } from "../../resource/appstudio/interfaces/IAppDefinition";
+import {
+  copyParameterJson,
+  deployArmTemplates,
+  generateArmTemplate,
+  getParameterJson,
+} from "./arm";
+import { checkSubscription, fillInCommonQuestions } from "./commonQuestions";
+import {
+  ARM_TEMPLATE_OUTPUT,
+  CancelError,
+  DEFAULT_PERMISSION_REQUEST,
+  GLOBAL_CONFIG,
+  LOCAL_APPLICATION_ID_URIS,
+  LOCAL_CLIENT_SECRET,
+  LOCAL_DEBUG_AAD_ID,
+  LOCAL_DEBUG_TEAMS_APP_ID,
+  PluginNames,
+  REMOTE_AAD_ID,
+  REMOTE_APPLICATION_ID_URIS,
+  REMOTE_CLIENT_SECRET,
+  REMOTE_TEAMS_APP_ID,
+  REMOTE_TENANT_ID,
+  SolutionError,
+  SolutionTelemetryComponentName,
+  SolutionTelemetryEvent,
+  SolutionTelemetryProperty,
+  SolutionTelemetrySuccess,
+  SOLUTION_PROVISION_SUCCEEDED,
+  SUBSCRIPTION_ID,
+  SUBSCRIPTION_NAME,
+  USER_INFO,
+  Void,
+} from "./constants";
+import { executeConcurrently, executeLifecycles, LifecyclesWithContext } from "./executor";
+import {
+  addCapabilityQuestion,
+  AskSubscriptionQuestion,
+  AzureResourceApim,
+  AzureResourceFunction,
+  AzureResourceSQL,
+  AzureResourcesQuestion,
+  AzureSolutionQuestionNames,
+  BotOptionItem,
+  createAddAzureResourceQuestion,
+  createCapabilityQuestion,
+  createV1CapabilityQuestion,
+  DeployPluginSelectQuestion,
+  FrontendHostTypeQuestion,
+  HostTypeOptionAzure,
+  HostTypeOptionSPFx,
+  MessageExtensionItem,
+  ProgrammingLanguageQuestion,
+  TabOptionItem,
+} from "./question";
 import {
   getActivatedResourcePlugins,
   getAllResourcePluginMap,
   getAllResourcePlugins,
   ResourcePlugins,
 } from "./ResourcePluginContainer";
-import { AadAppForTeamsPlugin, AppStudioPlugin, SpfxPlugin } from "../../resource";
-import { ErrorHandlerMW } from "../../../core/middleware/errorHandler";
-import { hooks } from "@feathersjs/hooks/lib";
-import { Service, Container } from "typedi";
-import { deployArmTemplates, generateArmTemplate } from "./arm";
-import { PluginDisplayName } from "../../../common/constants";
-import { LocalSettingsTeamsAppKeys } from "../../../common/localSettingsConstants";
-import { scaffoldReadmeAndLocalSettings } from "./v2/scaffolding";
-import { PermissionRequestFileProvider } from "../../../core/permissionRequest";
-import { IUserList } from "../../resource/appstudio/interfaces/IAppDefinition";
-import axios from "axios";
+import { getPluginContext, sendErrorTelemetryThenReturnError } from "./utils/util";
 import {
   canAddCapability,
   canAddResource,
@@ -121,14 +131,13 @@ import {
   extractParamForRegisterTeamsAppAndAad,
   ParamForRegisterTeamsAppAndAad,
 } from "./v2/executeUserTask";
+import { scaffoldReadmeAndLocalSettings } from "./v2/scaffolding";
 import {
-  AadOwner,
-  Collaborator,
-  ResourcePermission,
-  TeamsAppAdmin,
-} from "../../../common/permissionInterface";
-import { askTargetEnvironment } from "../../../core/middleware/envInfoLoader";
-import { ensurePermissionRequest, parseTeamsAppTenantId } from "./v2/utils";
+  ensurePermissionRequest,
+  fillInSolutionSettings,
+  isAzureProject,
+  parseTeamsAppTenantId,
+} from "./v2/utils";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -141,7 +150,7 @@ export enum SolutionRunningState {
   PublishInProgress = "PublishInProgress",
 }
 
-@Service()
+@Service(SolutionPlugins.AzureTeamsSolution)
 export class TeamsAppSolution implements Solution {
   SpfxPlugin: SpfxPlugin;
   AppStudioPlugin: AppStudioPlugin;
@@ -189,72 +198,6 @@ export class TeamsAppSolution implements Solution {
       );
     }
     return ok(settings);
-  }
-
-  fillInSolutionSettings(ctx: SolutionContext): Result<AzureSolutionSettings, FxError> {
-    const assertList: [
-      Result<Inputs, FxError>,
-      Result<ProjectSettings, FxError>,
-      Result<SolutionSettings, FxError>
-    ] = [
-      this.assertSettingsNotEmpty<Inputs>(ctx.answers, "answers"),
-      this.assertSettingsNotEmpty<ProjectSettings>(ctx.projectSettings, "projectSettings"),
-      this.assertSettingsNotEmpty<SolutionSettings>(
-        ctx?.projectSettings?.solutionSettings,
-        "solutionSettings"
-      ),
-    ];
-    const assertRes = combine(assertList);
-    if (assertRes.isErr()) {
-      return err(assertRes.error);
-    }
-    const [answers, projectSettings, solutionSettingsSource] = assertRes.value;
-
-    const capabilities = (answers[AzureSolutionQuestionNames.Capabilities] as string[]) || [];
-    if (!capabilities || capabilities.length === 0) {
-      return err(
-        returnSystemError(
-          new Error("capabilities is empty"),
-          "Solution",
-          SolutionError.InternelError
-        )
-      );
-    }
-    let hostType = answers[AzureSolutionQuestionNames.HostType] as string;
-    if (capabilities.includes(BotOptionItem.id) || capabilities.includes(MessageExtensionItem.id))
-      hostType = HostTypeOptionAzure.id;
-    if (!hostType) {
-      return err(
-        returnSystemError(
-          new Error("hostType is undefined"),
-          "Solution",
-          SolutionError.InternelError
-        )
-      );
-    }
-    let azureResources: string[] | undefined;
-    if (hostType === HostTypeOptionAzure.id && capabilities.includes(TabOptionItem.id)) {
-      azureResources = answers[AzureSolutionQuestionNames.AzureResources] as string[];
-      if (azureResources) {
-        if (
-          (azureResources.includes(AzureResourceSQL.id) ||
-            azureResources.includes(AzureResourceApim.id)) &&
-          !azureResources.includes(AzureResourceFunction.id)
-        ) {
-          azureResources.push(AzureResourceFunction.id);
-        }
-      } else azureResources = [];
-    }
-    const solutionSettings: AzureSolutionSettings = {
-      name: solutionSettingsSource.name,
-      version: solutionSettingsSource.version,
-      hostType: hostType,
-      capabilities: capabilities,
-      azureResources: azureResources || [],
-      activeResourcePlugins: [],
-    };
-    projectSettings.solutionSettings = solutionSettings;
-    return ok(solutionSettings);
   }
 
   async fillInV1SolutionSettings(
@@ -314,7 +257,10 @@ export class TeamsAppSolution implements Solution {
     ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.CreateStart, {
       [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
     });
-
+    if (!ctx.projectSettings)
+      return err(
+        new SystemError(SolutionError.InternelError, "projectSettings undefined", "Solution")
+      );
     // ensure that global namespace is present
     if (!ctx.envInfo.profile.has(GLOBAL_CONFIG)) {
       ctx.envInfo.profile.set(GLOBAL_CONFIG, new ConfigMap());
@@ -325,8 +271,8 @@ export class TeamsAppSolution implements Solution {
     if (lang) {
       ctx.projectSettings!.programmingLanguage = lang;
     }
-
-    const settingsRes = this.fillInSolutionSettings(ctx);
+    const solutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
+    const settingsRes = fillInSolutionSettings(solutionSettings, ctx.answers!);
     if (settingsRes.isErr()) {
       return err(
         sendErrorTelemetryThenReturnError(
@@ -336,8 +282,6 @@ export class TeamsAppSolution implements Solution {
         )
       );
     }
-
-    const solutionSettings = settingsRes.value;
 
     //Reload plugins according to user answers
     await this.reloadPlugins(solutionSettings);
@@ -498,11 +442,28 @@ export class TeamsAppSolution implements Solution {
       await scaffoldReadmeAndLocalSettings(capabilities, azureResources, ctx.root);
     }
 
-    if (isArmSupportEnabled() && generateResourceTemplate) {
+    if (isArmSupportEnabled() && generateResourceTemplate && this.isAzureProject(ctx)) {
       return await generateArmTemplate(ctx);
     } else {
       return res;
     }
+  }
+  async createEnv(ctx: SolutionContext): Promise<Result<any, FxError>> {
+    if (
+      isArmSupportEnabled() &&
+      isAzureProject(ctx.projectSettings!.solutionSettings as AzureSolutionSettings)
+    ) {
+      try {
+        if (ctx.answers!.copy === true) {
+          await copyParameterJson(ctx, ctx.answers!.targetEnvName!, ctx.answers!.sourceEnvName!);
+        } else {
+          await getParameterJson(ctx);
+        }
+      } catch (e) {
+        return err(CopyFileError(e));
+      }
+    }
+    return ok(Void);
   }
 
   /**
@@ -734,17 +695,19 @@ export class TeamsAppSolution implements Solution {
         return ok(undefined);
       },
       async (provisionResults?: Result<any, FxError>[]) => {
-        if (provisionWithCtx.length === provisionResults?.length) {
-          provisionWithCtx.map(function (plugin, index) {
-            if (plugin[2] === PluginNames.APPST) {
-              const teamsAppResult = provisionResults[index];
-              if (teamsAppResult.isOk()) {
-                ctx.envInfo.profile
-                  .get(GLOBAL_CONFIG)
-                  ?.set(REMOTE_TEAMS_APP_ID, teamsAppResult.value);
+        if (!isMultiEnvEnabled()) {
+          if (provisionWithCtx.length === provisionResults?.length) {
+            provisionWithCtx.map(function (plugin, index) {
+              if (plugin[2] === PluginNames.APPST) {
+                const teamsAppResult = provisionResults[index];
+                if (teamsAppResult.isOk()) {
+                  ctx.envInfo.profile
+                    .get(GLOBAL_CONFIG)
+                    ?.set(REMOTE_TEAMS_APP_ID, teamsAppResult.value);
+                }
               }
-            }
-          });
+            });
+          }
         }
 
         if (provisionResults) {
@@ -754,7 +717,6 @@ export class TeamsAppSolution implements Solution {
             }
           }
         }
-
         ctx.logProvider?.info(
           util.format(getStrings().solution.ProvisionFinishNotice, PluginDisplayName.Solution)
         );
@@ -1235,16 +1197,19 @@ export class TeamsAppSolution implements Solution {
   }
 
   async localDebug(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    if (ctx.permissionRequestProvider === undefined) {
-      ctx.permissionRequestProvider = new PermissionRequestFileProvider(ctx.root);
-    }
+    if (!this.spfxSelected(ctx)) {
+      if (ctx.permissionRequestProvider === undefined) {
+        ctx.permissionRequestProvider = new PermissionRequestFileProvider(ctx.root);
+      }
 
-    const result = await ensurePermissionRequest(
-      ctx.projectSettings?.solutionSettings as AzureSolutionSettings,
-      ctx.permissionRequestProvider
-    );
-    if (result.isErr()) {
-      return result;
+      const result = await ensurePermissionRequest(
+        ctx.projectSettings?.solutionSettings as AzureSolutionSettings,
+        ctx.permissionRequestProvider
+      );
+
+      if (result.isErr()) {
+        return result;
+      }
     }
 
     return await this.doLocalDebug(ctx);
@@ -1284,18 +1249,20 @@ export class TeamsAppSolution implements Solution {
       }
     }
 
-    const aadPlugin = this.AadPlugin as AadAppForTeamsPlugin;
-    if (selectedPlugins.some((plugin) => plugin.name === aadPlugin.name)) {
-      const result = await aadPlugin.executeUserTask(
-        {
-          namespace: `${PluginNames.SOLUTION}/${PluginNames.AAD}`,
-          method: "setApplicationInContext",
-          params: { isLocal: true },
-        },
-        getPluginContext(ctx, aadPlugin.name)
-      );
-      if (result.isErr()) {
-        return result;
+    if (!this.spfxSelected(ctx)) {
+      const aadPlugin = this.AadPlugin as AadAppForTeamsPlugin;
+      if (selectedPlugins.some((plugin) => plugin.name === aadPlugin.name)) {
+        const result = await aadPlugin.executeUserTask(
+          {
+            namespace: `${PluginNames.SOLUTION}/${PluginNames.AAD}`,
+            method: "setApplicationInContext",
+            params: { isLocal: true },
+          },
+          getPluginContext(ctx, aadPlugin.name)
+        );
+        if (result.isErr()) {
+          return result;
+        }
       }
     }
 

@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import sinon, { SinonSandbox } from "sinon";
-import yargs, { Options, string } from "yargs";
+import yargs, { Options } from "yargs";
 
 import {
   err,
@@ -28,6 +28,7 @@ import { YargsCommand } from "../../../src/yargsCommand";
 import { FxCore } from "@microsoft/teamsfx-core";
 
 enum CommandName {
+  Add = "add",
   List = "list",
   Activate = "activate",
 }
@@ -175,6 +176,94 @@ describe("Env Show Command Tests", function () {
     // Act
     try {
       await cmd.handler(args);
+    } catch (error) {
+      exceptionThrown = true;
+
+      // Assert
+      expect(error).instanceOf(UserError);
+      expect(error.name).equals("WorkspaceNotSupported");
+    }
+
+    expect(exceptionThrown);
+  });
+});
+
+describe("Env Add Command Tests", function () {
+  const sandbox = sinon.createSandbox();
+  const vars = { value: new MockVars() };
+  let validProject = true;
+  let checkedRootDir = "";
+  let envList = ["dev", "test", "staging"];
+  const activeEnv = envList[1];
+
+  let sourceEnvName: string | undefined;
+  let newTargetEnvName: string | undefined;
+
+  before(() => {
+    mockYargs(sandbox, vars);
+    mockCommonUtils(sandbox, vars);
+    sandbox.stub(Utils, "isWorkspaceSupported").callsFake((rootDir: string): boolean => {
+      checkedRootDir = rootDir;
+      return validProject;
+    });
+    sandbox.stub(core.environmentManager, "listEnvConfigs").callsFake(async (projectPath) => {
+      return ok(envList);
+    });
+    sandbox
+      .stub(core.environmentManager, "getActiveEnv")
+      .callsFake((projectPath: string): Result<string, FxError> => {
+        return ok(activeEnv);
+      });
+    sandbox
+      .stub(core.FxCore.prototype, "createEnv")
+      .callsFake(
+        async (inputs: Inputs, ctx?: core.CoreHookContext): Promise<Result<Void, FxError>> => {
+          sourceEnvName = inputs.sourceEnvName;
+          newTargetEnvName = inputs.newTargetEnvName;
+          return ok(Void);
+        }
+      );
+  });
+
+  after(() => {
+    sandbox.restore();
+  });
+
+  beforeEach(() => {
+    vars.value = new MockVars();
+    validProject = true;
+    envList = ["dev", "test", "staging"];
+  });
+
+  it("adds a new env by copying from the active env", async () => {
+    // Arrange
+    validProject = true;
+    const cmd = new Env();
+    const addCmd = getCommand(cmd, CommandName.Add);
+    const args = {
+      name: "production",
+    };
+
+    // Act
+    await addCmd.handler(args);
+
+    // Assert
+    expect(sourceEnvName).to.equal(activeEnv);
+    expect(newTargetEnvName).to.equal(args.name);
+    expect(vars.value.logs).to.equal("");
+  });
+
+  it("throws on non-Teamsfx project", async () => {
+    // Arrange
+    validProject = false;
+    const cmd = new Env();
+    const addCmd = getCommand(cmd, CommandName.Add);
+    const args = {};
+    let exceptionThrown = false;
+
+    // Act
+    try {
+      await addCmd.handler(args);
     } catch (error) {
       exceptionThrown = true;
 

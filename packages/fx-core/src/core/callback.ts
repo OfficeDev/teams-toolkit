@@ -27,4 +27,8 @@ export class CallbackRegistry {
       return [];
     }
   }
+
+  public static refresh(): void {
+    this.registry = new Map();
+  }
 }

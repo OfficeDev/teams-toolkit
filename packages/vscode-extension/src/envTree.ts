@@ -52,7 +52,7 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
           isCustom: false,
           description:
             item === activeEnv ? StringResources.vsc.commandsTreeViewProvider.acitve : "",
-          expanded: true,
+          expanded: activeEnv === item,
         },
       ]);
     }

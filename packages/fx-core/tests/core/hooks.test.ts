@@ -86,7 +86,8 @@ import {
   MockTools,
   randomAppName,
 } from "./utils";
-import { ProjectMigratorMW } from "packages/fx-core/src/core/middleware/projectMigrator";
+import { ProjectMigratorMW } from "../../src/core/middleware/projectMigrator";
+import exp = require("constants");
 
 describe("Middleware", () => {
   const sandbox = sinon.createSandbox();
@@ -1576,8 +1577,12 @@ describe("Middleware", () => {
           JSON.stringify(["mock"], null, 4)
         );
 
-        const res = await my.other(inputs);
-        assert.isFalse(res.isErr());
+        // await my.other(inputs);
+        expect(async function () {
+          await my.other(inputs);
+        }).to.not.throw();
+        console.log(fx);
+        assert.isTrue(fs.existsSync(path.join(fx, ".configs", "projectSettings.json")));
       } finally {
         await fs.rmdir(inputs.projectPath!, { recursive: true });
       }

@@ -146,7 +146,7 @@ export class M365TenantCredential implements TokenCredential {
       );
     }
 
-    if (config.clientId && config.clientSecret && config.tenantId) {
+    if (config.clientId && (config.clientSecret || config.certificatePath) && config.tenantId) {
       return config;
     }
 

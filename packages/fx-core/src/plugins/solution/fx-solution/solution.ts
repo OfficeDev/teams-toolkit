@@ -457,7 +457,7 @@ export class TeamsAppSolution implements Solution {
     ) {
       try {
         if (ctx.answers!.copy === true) {
-          await copyParameterJson(ctx, ctx.answers!.sourceEnvName);
+          await copyParameterJson(ctx, ctx.answers!.targetEnvName!, ctx.answers!.sourceEnvName!);
         } else {
           await getParameterJson(ctx);
         }

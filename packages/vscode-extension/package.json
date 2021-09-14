@@ -400,7 +400,7 @@
       },
       {
         "command": "fx-extension.addEnvironment",
-        "title": "Teams: Add new environment",
+        "title": "Teams: Create new environment copy",
         "icon": "$(add)",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },

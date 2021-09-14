@@ -63,7 +63,12 @@ import { PermissionRequestFileProvider } from "../../../core/permissionRequest";
 import { SolutionPlugins } from "../../../core/SolutionPluginContainer";
 import { AadAppForTeamsPlugin, AppStudioPlugin, SpfxPlugin } from "../../resource";
 import { IUserList } from "../../resource/appstudio/interfaces/IAppDefinition";
-import { copyParameterJson, deployArmTemplates, generateArmTemplate, getParameterJson } from "./arm";
+import {
+  copyParameterJson,
+  deployArmTemplates,
+  generateArmTemplate,
+  getParameterJson,
+} from "./arm";
 import { checkSubscription, fillInCommonQuestions } from "./commonQuestions";
 import {
   ARM_TEMPLATE_OUTPUT,
@@ -127,7 +132,12 @@ import {
   ParamForRegisterTeamsAppAndAad,
 } from "./v2/executeUserTask";
 import { scaffoldReadmeAndLocalSettings } from "./v2/scaffolding";
-import { ensurePermissionRequest, fillInSolutionSettings, isAzureProject, parseTeamsAppTenantId } from "./v2/utils";
+import {
+  ensurePermissionRequest,
+  fillInSolutionSettings,
+  isAzureProject,
+  parseTeamsAppTenantId,
+} from "./v2/utils";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -247,7 +257,10 @@ export class TeamsAppSolution implements Solution {
     ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.CreateStart, {
       [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
     });
-    if(!ctx.projectSettings) return err(new SystemError(SolutionError.InternelError, "projectSettings undefined", "Solution"));
+    if (!ctx.projectSettings)
+      return err(
+        new SystemError(SolutionError.InternelError, "projectSettings undefined", "Solution")
+      );
     // ensure that global namespace is present
     if (!ctx.envInfo.profile.has(GLOBAL_CONFIG)) {
       ctx.envInfo.profile.set(GLOBAL_CONFIG, new ConfigMap());
@@ -441,10 +454,9 @@ export class TeamsAppSolution implements Solution {
       isAzureProject(ctx.projectSettings!.solutionSettings as AzureSolutionSettings)
     ) {
       try {
-        if(ctx.answers!.copy === true) {
-          await copyParameterJson(ctx, ctx.answers!.sourceEnvName);
-        }
-        else {
+        if (ctx.answers!.copy === true) {
+          await copyParameterJson(ctx, ctx.answers!.targetEnvName!, ctx.answers!.sourceEnvName!);
+        } else {
           await getParameterJson(ctx);
         }
       } catch (e) {
@@ -1194,7 +1206,7 @@ export class TeamsAppSolution implements Solution {
         ctx.projectSettings?.solutionSettings as AzureSolutionSettings,
         ctx.permissionRequestProvider
       );
-      
+
       if (result.isErr()) {
         return result;
       }

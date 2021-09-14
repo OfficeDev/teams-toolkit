@@ -549,6 +549,8 @@ export interface Inputs extends Json {
     // (undocumented)
     projectPath?: string;
     // (undocumented)
+    sourceEnvName?: string;
+    // (undocumented)
     stage?: Stage;
     // (undocumented)
     targetEnvName?: string;

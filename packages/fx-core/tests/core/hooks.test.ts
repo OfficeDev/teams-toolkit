@@ -1530,7 +1530,7 @@ describe("Middleware", () => {
       }
 
       hooks(MyClass, {
-        other: [ErrorHandlerMW, ProjectMigratorMW],
+        other: [ProjectMigratorMW],
       });
       process.env[FeatureFlagName.MultiEnv] = "true";
       process.env[FeatureFlagName.ArmSupport] = "true";

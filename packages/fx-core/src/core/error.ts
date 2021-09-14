@@ -10,7 +10,7 @@ import {
   Stage,
   SystemError,
   UserError,
-  ArchiveFolderName,
+  Json,
 } from "@microsoft/teamsfx-api";
 
 export const CoreSource = "Core";
@@ -151,6 +151,14 @@ export function ContextUpgradeError(error: any, isUserError = false): FxError {
       error
     );
   }
+}
+
+export function InvalidProfileError(pluginName: string, profile: Json): SystemError {
+  return new SystemError(
+    CoreSource,
+    "InvalidProfileError",
+    `Plugin ${pluginName}'s profile(${JSON.stringify(profile)}) is invalid`
+  );
 }
 
 export function PluginHasNoTaskImpl(pluginName: string, task: string): SystemError {

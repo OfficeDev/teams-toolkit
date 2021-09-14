@@ -3,7 +3,8 @@
 "use strict";
 
 import { Result } from "neverthrow";
-import { ResourceProvisionOutput } from ".";
+import { DeepReadonly, DeploymentInputs, ProvisionInputs, ResourceProvisionOutput } from ".";
+import { EnvInfo } from "../context";
 import {
   AppStudioTokenProvider,
   AzureAccountProvider,
@@ -15,7 +16,7 @@ import {
   Void,
 } from "../index";
 import { Json } from "../types";
-import { Context } from "./types";
+import { Context, EnvInfoV2, FxResult } from "./types";
 
 export type SolutionProvisionOutput = Record<string, ResourceProvisionOutput>;
 
@@ -56,8 +57,8 @@ export interface SolutionPlugin {
    * 3) Call resource plugins' configureResource.
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
-   * @param {Inputs} inputs - system inputs
-   * @param {Json} provisionInputConfig - model for config.${env}.json, in which, user can customize some inputs for provision
+   * @param {ProvisionInputs} inputs - system inputs
+   * @param {DeepReadonly<EnvInfoV2>} envInfo - model for config.${env}.json, in which, user can customize some inputs for provision
    * @param {TokenProvider} tokenProvider - Tokens for Azure and AppStudio
    *
    * @returns {EnvProfile} the profile (persist by core as `profile.${env}.json`) containing provision outputs, which will be used for deploy and publish
@@ -65,9 +66,9 @@ export interface SolutionPlugin {
   provisionResources: (
     ctx: Context,
     inputs: Inputs,
-    provisionInputConfig: Json,
+    envInfo: DeepReadonly<EnvInfoV2>,
     tokenProvider: TokenProvider
-  ) => Promise<Result<SolutionProvisionOutput, FxError>>;
+  ) => Promise<FxResult<SolutionProvisionOutput, FxError>>;
 
   /**
    * Depends on the values returned by {@link provisionResources}.
@@ -120,7 +121,7 @@ export interface SolutionPlugin {
     inputs: Inputs,
     localSettings: Json,
     tokenProvider: TokenProvider
-  ) => Promise<Result<Json, FxError>>;
+  ) => Promise<FxResult<Json, FxError>>;
 
   /**
    * get question model for lifecycle {@link Stage} (create), Questions are organized as a tree. Please check {@link QTreeNode}.

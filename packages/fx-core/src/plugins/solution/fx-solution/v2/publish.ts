@@ -66,10 +66,10 @@ export async function publishApplication(
 
   const result = await executeConcurrently(thunks, ctx.logProvider);
 
-  if (result.isErr()) {
+  if (result.kind !== "success") {
     const msg = util.format(getStrings().solution.PublishFailNotice, ctx.projectSetting.appName);
     ctx.logProvider?.info(msg);
-    return result;
+    return err(result.error);
   }
   return ok(Void);
 }

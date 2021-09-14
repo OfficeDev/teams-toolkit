@@ -16,7 +16,7 @@ import {
   TokenProvider,
   Void,
 } from "@microsoft/teamsfx-api";
-import { Context, ProvisionInputs } from "@microsoft/teamsfx-api/build/v2";
+import { Context, EnvInfoV2, ProvisionInputs } from "@microsoft/teamsfx-api/build/v2";
 import { assert } from "chai";
 import "mocha";
 import { newEnvInfo } from "../../../../src";
@@ -35,6 +35,11 @@ import {
   MockTools,
   randomAppName,
 } from "../../../core/utils";
+import Container from "typedi";
+import {
+  ResourcePlugins,
+  ResourcePluginsV2,
+} from "../../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 
 describe("API V2 adapter", () => {
   beforeEach(() => {});
@@ -162,19 +167,18 @@ describe("API V2 adapter", () => {
       azure: { subscriptionId: "123455", resourceGroupName: "rg" },
       manifest: { values: { appName: { short: appName } } },
     };
+    const envInfo: EnvInfoV2 = {
+      envName: "default",
+      config: provisionInputConfig,
+      profile: {},
+    };
     const tokenProvider: TokenProvider = {
       appStudioToken: new MockAppStudioTokenProvider(),
       graphTokenProvider: new MockGraphTokenProvider(),
       azureAccountProvider: new MockAzureAccountProvider(),
     };
 
-    const res = await provisionResourceAdapter(
-      context,
-      inputs,
-      provisionInputConfig,
-      tokenProvider,
-      plugin
-    );
+    const res = await provisionResourceAdapter(context, inputs, envInfo, tokenProvider, plugin);
 
     assert.isTrue(res.isOk());
   });

@@ -114,16 +114,14 @@ async function pollDeploymentStatus(deployCtx: DeployContext) {
         PluginDisplayName.Solution
       )
     );
-    const deployments = await deployCtx.client.deployments.listByResourceGroup(
-      deployCtx.resourceGroupName
+    const operations = await deployCtx.client.deploymentOperations.list(
+      deployCtx.resourceGroupName,
+      deployCtx.deploymentName
     );
-    deployments.forEach(async (deployment) => {
-      if (
-        deployment.properties?.timestamp &&
-        deployment.properties.timestamp.getTime() > deployCtx.deploymentStartTime
-      ) {
+    operations.forEach(async (operation) => {
+      if (operation.properties?.targetResource?.resourceName) {
         deployCtx.ctx.logProvider?.info(
-          `[${PluginDisplayName.Solution}] ${deployment.name} -> ${deployment.properties.provisioningState}`
+          `[${PluginDisplayName.Solution}] ${operation.properties?.targetResource?.resourceName} -> ${operation.properties.provisioningState}`
         );
       }
     });
@@ -222,40 +220,22 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
       )
     );
 
-    const failedDeployments: string[] = [];
-    const deployments = await deployCtx.client.deployments.listByResourceGroup(
-      deployCtx.resourceGroupName
+    const deploymentError = await getDeploymentError(deployCtx, resourceGroupName, deploymentName);
+    ctx.logProvider?.error(
+      `[${PluginDisplayName.Solution}] ${deploymentName} -> ${JSON.stringify(
+        deploymentError,
+        undefined,
+        2
+      )}`
     );
-
-    deployments.forEach((deployment) => {
-      if (
-        deployment.properties &&
-        deployment.properties.error &&
-        deployment.properties.timestamp &&
-        deployment.properties.timestamp.getTime() > deployCtx.deploymentStartTime
-      ) {
-        ctx.logProvider?.error(
-          `[${PluginDisplayName.Solution}] ${deployment.name} -> ${JSON.stringify(
-            deployment.properties.error,
-            undefined,
-            2
-          )}`
-        );
-        if (deployment.name !== deploymentName) {
-          failedDeployments.push(deployment.name + " module");
-        }
-      }
-    });
-
-    if (failedDeployments.length === 0) {
-      failedDeployments.push(deploymentName + " module");
+    let failedDeployments: string[] = [];
+    if (deploymentError.subErrors) {
+      failedDeployments = Object.keys(deploymentError.subErrors);
+    } else {
+      failedDeployments.push(deploymentName);
     }
-    const returnError = new Error(
-      `resource deployments (${failedDeployments.join(
-        ", "
-      )}) for your project failed. Please refer to output channel for more error details.`
-    );
-    return err(returnUserError(returnError, "Solution", "ArmDeploymentFailed"));
+
+    return buildDeploymentErrorMessage(failedDeployments);
   }
 }
 
@@ -734,4 +714,77 @@ async function areFoldersEmpty(folderPaths: string[]): Promise<boolean> {
 
 async function waitSeconds(second: number) {
   return new Promise((resolve) => setTimeout(resolve, second * 1000));
+}
+
+async function getDeploymentError(
+  deployCtx: DeployContext,
+  resourceGroupName: string,
+  deploymentName: string
+): Promise<any> {
+  let deployment;
+  try {
+    deployment = await deployCtx.client.deployments.get(resourceGroupName, deploymentName);
+  } catch (error) {
+    return undefined;
+  }
+  if (!deployment.properties?.error) {
+    return undefined;
+  }
+  const deploymentError: any = {
+    error: deployment.properties?.error,
+  };
+  const operations = await deployCtx.client.deploymentOperations.list(
+    resourceGroupName,
+    deploymentName
+  );
+  for (const operation of operations) {
+    if (operation.properties?.statusMessage?.error) {
+      if (!deploymentError.subErrors) {
+        deploymentError.subErrors = {};
+      }
+      const name = operation.properties.targetResource?.resourceName ?? operation.id;
+      deploymentError.subErrors[name!] = {
+        error: operation.properties.statusMessage.error,
+      };
+      if (
+        operation.properties.targetResource?.resourceType ===
+          ConstantString.DeploymentResourceType &&
+        operation.properties.targetResource?.resourceName &&
+        operation.properties.targetResource?.id
+      ) {
+        const resourceGroupName: string = getResourceGroupFromDeploymentId(
+          operation.properties.targetResource.id
+        );
+        const subError = await getDeploymentError(
+          deployCtx,
+          resourceGroupName,
+          operation.properties.targetResource?.resourceName
+        );
+        if (subError) {
+          deploymentError.subErrors[name!].inner = subError;
+        }
+      }
+    }
+  }
+  return deploymentError;
+}
+
+function getResourceGroupFromDeploymentId(deploymentId: string | undefined) {
+  if (deploymentId) {
+    const resultArr = deploymentId.match(/\/resourceGroups\/[a-zA-Z_0-9-]*/);
+    if (resultArr && resultArr.length > 0) {
+      return resultArr[0].substring(16);
+    }
+  }
+  return "";
+}
+
+function buildDeploymentErrorMessage(failedDeployments: string[]): Result<void, FxError> {
+  const format = failedDeployments.map((deployment) => deployment + " module");
+  const returnError = new Error(
+    `resource deployments (${format.join(
+      ", "
+    )}) for your project failed. Please refer to output channel for more error details.`
+  );
+  return err(returnUserError(returnError, "Solution", "ArmDeploymentFailed"));
 }

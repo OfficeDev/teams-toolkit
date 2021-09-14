@@ -24,7 +24,7 @@ export class ExtensionUpgrade {
       syncedVersion === undefined ||
       versionUtil.compare(teamsToolkitVersion, syncedVersion) === 1
     ) {
-      // if syncedVersion is undefined, then it is not upgrade user
+      // if syncedVersion is undefined, then it is not existinig user
       this.context.globalState.update(
         UserState.IsExisting,
         syncedVersion === undefined ? "no" : "yes"

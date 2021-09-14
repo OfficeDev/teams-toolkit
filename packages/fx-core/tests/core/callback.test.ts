@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { CoreCallbackEvent, FxError, newUserError } from "@microsoft/teamsfx-api";
+import { CoreCallbackEvent, FxError, InvalidObjectError } from "@microsoft/teamsfx-api";
 import { CallbackRegistry } from "../../src/core/callback";
 import { it, describe } from "mocha";
 import { expect } from "chai";
@@ -29,7 +29,7 @@ describe("Core event callback tests", async () => {
     const funcs = CallbackRegistry.get(CoreCallbackEvent.lock);
     expect(funcs.length).eql(1);
 
-    funcs[0](newUserError("", "", ""), ["1", "2"]);
+    funcs[0](new InvalidObjectError("", "", ""), ["1", "2"]);
     expect(e).is.true;
     expect(d.length).eql(2);
 

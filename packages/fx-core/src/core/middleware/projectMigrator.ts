@@ -93,7 +93,7 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
   //projectSettings.json
   const projectSettings = path.join(fxConfig, ProjectSettingsFileName);
   await fs.copy(path.join(fx, "settings.json"), projectSettings);
-  await ensureProgrammingLanguage(projectSettings, path.join(fx, "env.default.json"));
+  await ensureLanguageAndFunctionName(projectSettings, path.join(fx, "env.default.json"));
   //config.dev.json
   await fs.writeFile(
     path.join(fxConfig, "config.dev.json"),
@@ -223,7 +223,7 @@ async function removeOldProjectFiles(projectPath: string): Promise<void> {
   await fs.remove(path.join(fx, AppPackageFolderName));
 }
 
-async function ensureProgrammingLanguage(
+async function ensureLanguageAndFunctionName(
   projectSettingPath: string,
   envDefaultPath: string
 ): Promise<void> {

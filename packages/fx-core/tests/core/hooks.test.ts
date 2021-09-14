@@ -1575,14 +1575,14 @@ describe("Middleware", () => {
       assert.strictEqual(armParam.parameters.function_storageName.value, "test");
       assert.strictEqual(armParam.parameters.function_webappName.value, "test");
 
-      const newEnv = await fs.readJson(path.join(projectPath, ".fx", "new.env.default.json"));
-      const envFile = await fs.readJson(path.join(projectPath, ".fx", "env.default.json"));
-      assert.strictEqual(
-        newEnv["fx-resource-bot"].wayToRegisterBot,
-        envFile["fx-resource-bot"].wayToRegisterBot
-      );
-      assert.isUndefined(newEnv["fx-resource-bot"].skuName);
-      assert.isNotNull(envFile["fx-resource-bot"].skuName);
+      // const newEnv = await fs.readJson(path.join(projectPath, ".fx", "new.env.default.json"));
+      // const envFile = await fs.readJson(path.join(projectPath, ".fx", "env.default.json"));
+      // assert.strictEqual(
+      //   newEnv["fx-resource-bot"].wayToRegisterBot,
+      //   envFile["fx-resource-bot"].wayToRegisterBot
+      // );
+      // assert.isUndefined(newEnv["fx-resource-bot"].skuName);
+      // assert.isNotNull(envFile["fx-resource-bot"].skuName);
     });
   });
   describe("ProjectMigratorMW", () => {

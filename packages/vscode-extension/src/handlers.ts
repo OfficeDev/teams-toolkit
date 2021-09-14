@@ -52,8 +52,8 @@ import AzureAccountManager from "./commonlib/azureLogin";
 import AppStudioTokenInstance from "./commonlib/appStudioLogin";
 import AppStudioCodeSpaceTokenInstance from "./commonlib/appStudioCodeSpaceLogin";
 import VsCodeLogInstance from "./commonlib/log";
-import { TreeViewCommand } from "./commandsTreeViewProvider";
-import TreeViewManagerInstance from "./commandsTreeViewProvider";
+import { TreeViewCommand } from "./treeview/commandsTreeViewProvider";
+import TreeViewManagerInstance from "./treeview/treeViewManager";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import {
   TelemetryEvent,
@@ -92,6 +92,10 @@ import * as path from "path";
 import { exp } from "./exp/index";
 import { TreatmentVariables } from "./exp/treatmentVariables";
 import { StringContext } from "./utils/stringContext";
+import { ext } from "./extensionVariables";
+import { InputConfigsFolderName } from "@microsoft/teamsfx-api";
+import { CoreCallbackEvent } from "@microsoft/teamsfx-api";
+import { CommandsWebviewProvider } from "./treeview/commandsWebviewProvider";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -171,6 +175,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
       ui: VS_CODE_UI,
     };
     core = new FxCore(tools);
+    registerCoreEvents();
     await registerAccountTreeHandler();
     await registerEnvTreeHandler();
     await openMarkdownHandler();
@@ -187,6 +192,36 @@ export async function activate(): Promise<Result<Void, FxError>> {
     return err(FxError);
   }
   return result;
+}
+
+function registerCoreEvents() {
+  const developmentView = TreeViewManagerInstance.getTreeView("teamsfx-development");
+  if (developmentView instanceof CommandsWebviewProvider) {
+    core.on(CoreCallbackEvent.lock, () => {
+      (TreeViewManagerInstance.getTreeView(
+        "teamsfx-development"
+      ) as CommandsWebviewProvider).onLockChanged(true);
+    });
+    core.on(CoreCallbackEvent.unlock, () => {
+      (TreeViewManagerInstance.getTreeView(
+        "teamsfx-development"
+      ) as CommandsWebviewProvider).onLockChanged(false);
+    });
+  }
+
+  const deploymentView = TreeViewManagerInstance.getTreeView("teamsfx-deployment");
+  if (deploymentView instanceof CommandsWebviewProvider) {
+    core.on(CoreCallbackEvent.lock, () => {
+      (TreeViewManagerInstance.getTreeView(
+        "teamsfx-deployment"
+      ) as CommandsWebviewProvider).onLockChanged(true);
+    });
+    core.on(CoreCallbackEvent.unlock, () => {
+      (TreeViewManagerInstance.getTreeView(
+        "teamsfx-deployment"
+      ) as CommandsWebviewProvider).onLockChanged(false);
+    });
+  }
 }
 
 export async function getAzureSolutionSettings(): Promise<AzureSolutionSettings | undefined> {

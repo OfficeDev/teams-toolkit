@@ -45,7 +45,11 @@ export class TreeItem extends React.Component<any, any> {
           },
         }}
       >
-        <div id={this.props.label} className="row">
+        <div
+          id={this.props.label}
+          className="row"
+          style={{ opacity: this.props.disable ? 0.4 : 1 }}
+        >
           <ActionButton
             allowDisabledFocus
             disabled={this.props.disable}

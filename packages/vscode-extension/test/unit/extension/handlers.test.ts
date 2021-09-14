@@ -23,7 +23,7 @@ import { AzureAccountManager } from "../../../src/commonlib/azureLogin";
 import { MockCore } from "./mocks/mockCore";
 import * as extension from "../../../src/extension";
 import * as accountTree from "../../../src/accountTree";
-import TreeViewManagerInstance from "../../../src/commandsTreeViewProvider";
+import TreeViewManagerInstance from "../../../src/treeview/treeViewManager";
 import { CoreHookContext } from "../../../../fx-core/build";
 
 suite("handlers", () => {
@@ -151,18 +151,16 @@ suite("handlers", () => {
 
       let ignoreEnvInfo: boolean | undefined = undefined;
       let localDebugCalled = 0;
-      sinon
-        .stub(handlers.core, "localDebug")
-        .callsFake(
-          async (
-            inputs: Inputs,
-            ctx?: CoreHookContext | undefined
-          ): Promise<Result<Void, FxError>> => {
-            ignoreEnvInfo = inputs.ignoreEnvInfo;
-            localDebugCalled += 1;
-            return ok({});
-          }
-        );
+      sinon.stub(handlers.core, "localDebug").callsFake(
+        async (
+          inputs: Inputs,
+          ctx?: CoreHookContext | undefined
+        ): Promise<Result<Void, FxError>> => {
+          ignoreEnvInfo = inputs.ignoreEnvInfo;
+          localDebugCalled += 1;
+          return ok({});
+        }
+      );
 
       await handlers.runCommand(Stage.debug);
 

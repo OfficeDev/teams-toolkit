@@ -50,13 +50,10 @@ describe("M365TenantCredential Tests - Node", () => {
   it("create M365TenantCredential instance should success with valid config", function () {
     const credential: any = new M365TenantCredential();
 
-    assert.strictEqual(credential.clientSecretCredential.clientId, clientId);
-    assert.strictEqual(credential.clientSecretCredential.tenantId, tenantId);
-    assert.strictEqual(credential.clientSecretCredential.clientSecret, clientSecret);
-    assert.strictEqual(
-      credential.clientSecretCredential.identityClient.authorityHost,
-      authorityHost
-    );
+    assert.strictEqual(credential.clientCredential.clientId, clientId);
+    assert.strictEqual(credential.clientCredential.tenantId, tenantId);
+    assert.strictEqual(credential.clientCredential.clientSecret, clientSecret);
+    assert.strictEqual(credential.clientCredential.identityClient.authorityHost, authorityHost);
   });
 
   it("create M365TenantCredential instance should throw InvalidConfiguration when configuration is not valid", function () {
@@ -72,7 +69,7 @@ describe("M365TenantCredential Tests - Node", () => {
     })
       .to.throw(
         ErrorWithCode,
-        "clientId, clientSecret, tenantId in configuration is invalid: undefined."
+        "clientId, clientSecret, certificatePath, tenantId in configuration is invalid: undefined."
       )
       .with.property("code", ErrorCode.InvalidConfiguration);
 
@@ -82,7 +79,10 @@ describe("M365TenantCredential Tests - Node", () => {
     expect(() => {
       new M365TenantCredential();
     })
-      .to.throw(ErrorWithCode, "clientSecret, tenantId in configuration is invalid: undefined.")
+      .to.throw(
+        ErrorWithCode,
+        "clientSecret, certificatePath, tenantId in configuration is invalid: undefined."
+      )
       .with.property("code", ErrorCode.InvalidConfiguration);
 
     process.env.M365_TENANT_ID = tenantId;
@@ -91,7 +91,10 @@ describe("M365TenantCredential Tests - Node", () => {
     expect(() => {
       new M365TenantCredential();
     })
-      .to.throw(ErrorWithCode, "clientSecret in configuration is invalid: undefined.")
+      .to.throw(
+        ErrorWithCode,
+        "clientSecret, certificatePath in configuration is invalid: undefined."
+      )
       .with.property("code", ErrorCode.InvalidConfiguration);
   });
 

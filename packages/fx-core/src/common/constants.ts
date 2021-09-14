@@ -3,6 +3,8 @@ export class ConstantString {
   static readonly DeploymentResourceType = "Microsoft.Resources/deployments";
 }
 
+export const ArmHelpLink = "https://aka.ms/teamsfx-arm-help";
+
 export class Bicep {
   static readonly ParameterOrchestrationFileName: string = "param.template.bicep";
   static readonly ModuleOrchestrationFileName: string = "module.template.bicep";

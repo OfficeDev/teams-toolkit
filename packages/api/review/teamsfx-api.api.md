@@ -199,6 +199,7 @@ export interface Core {
     localDebug: (inputs: Inputs) => Promise<Result<Void, FxError>>;
     // (undocumented)
     migrateV1Project: (inputs: Inputs) => Promise<Result<string, FxError>>;
+    on: (event: CoreCallbackEvent, callback: CoreCallbackFunc) => void;
     // (undocumented)
     provisionResources: (inputs: Inputs) => Promise<Result<Void, FxError>>;
     // (undocumented)
@@ -206,6 +207,17 @@ export interface Core {
     // (undocumented)
     version?: string;
 }
+
+// @public
+export enum CoreCallbackEvent {
+    // (undocumented)
+    lock = "lock",
+    // (undocumented)
+    unlock = "unlock"
+}
+
+// @public (undocumented)
+export type CoreCallbackFunc = (err?: FxError, data?: any) => void;
 
 // @public
 export interface CryptoProvider {

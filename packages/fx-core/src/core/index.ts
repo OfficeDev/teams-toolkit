@@ -39,6 +39,8 @@ import {
   InputConfigsFolderName,
   PublishProfilesFolderName,
   EnvConfig,
+  CoreCallbackEvent,
+  CoreCallbackFunc,
 } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import { AxiosResponse } from "axios";
@@ -126,6 +128,7 @@ import { ProjectUpgraderMW } from "./middleware/projectUpgrader";
 import { FeatureFlagName } from "../common/constants";
 import { localSettingsFileName } from "../common/localSettingsProvider";
 import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
+import { CallbackRegistry } from "./callback";
 
 export interface CoreHookContext extends HookContext {
   projectSettings?: ProjectSettings;
@@ -163,6 +166,14 @@ export class FxCore implements Core {
     TOOLS = tools;
     Logger = tools.logProvider;
     telemetryReporter = tools.telemetryReporter;
+  }
+
+  /**
+   * @todo this's a really primitive implement. Maybe could use Subscription Model to
+   * refactor later.
+   */
+  public on(event: CoreCallbackEvent, callback: CoreCallbackFunc): void {
+    return CallbackRegistry.set(event, callback);
   }
 
   @hooks([

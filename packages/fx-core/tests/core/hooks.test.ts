@@ -89,6 +89,8 @@ import {
 } from "./utils";
 import { ProjectMigratorMW, migrateArm } from "../../src/core/middleware/projectMigrator";
 import exp = require("constants");
+import mockedEnv from "mocked-env";
+let mockedEnvRestore: () => void;
 describe("Middleware", () => {
   const sandbox = sinon.createSandbox();
 
@@ -1527,14 +1529,15 @@ describe("Middleware", () => {
         path.join(__dirname, "../samples/migration/.fx/settings.json"),
         path.join(projectPath, ".fx", "settings.json")
       );
-      process.env.TEAMSFX_MULTI_ENV = "true";
-      process.env.TEAMSFX_ARM_SUPPORT = "true";
+      mockedEnvRestore = mockedEnv({
+        TEAMSFX_MULTI_ENV: "true",
+        TEAMSFX_ARM_SUPPORT: "true",
+      });
     });
     afterEach(async () => {
       await fs.remove(projectPath);
       sandbox.restore();
-      delete process.env.TEAMSFX_MULTI_ENV;
-      delete process.env.TEAMSFX_ARM_SUPPORT;
+      mockedEnvRestore();
     });
     it("successfully migration arm templates", async () => {
       class MyClass {

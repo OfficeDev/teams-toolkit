@@ -144,7 +144,7 @@ export enum TelemetryProperty {
   FeatureFlags = "feature-flags",
   UpdateTeamsAppReason = "update-teams-app-reason",
   IsSideloadingAllowed = "is-sideloading-allowed",
-  IsUpgradeUser = "is-upgrade-user",
+  IsExistingUser = "is-existing-user",
 }
 
 export enum TelemetrySuccess {

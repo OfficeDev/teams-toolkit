@@ -4,6 +4,8 @@ import { Stage, returnUserError } from "@microsoft/teamsfx-api";
 import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
 import { TelemetryEvent } from "../../../src/telemetry/extTelemetryEvents";
 import { NoneFxError } from "../../../../fx-core/build";
+import sinon = require("sinon");
+import * as commonUtils from "../../../src/utils/commonUtils";
 
 chai.use(spies);
 const spy = chai.spy;
@@ -87,6 +89,8 @@ suite("ExtTelemetry", () => {
   suite("Send Telemetry", () => {
     suiteSetup(() => {
       chai.util.addProperty(ExtTelemetry, "reporter", () => reporterSpy);
+      const sandbox = sinon.createSandbox();
+      sandbox.stub(commonUtils, "getIsExistingUser").returns(undefined);
     });
 
     test("sendTelemetryEvent", () => {
@@ -102,7 +106,7 @@ suite("ExtTelemetry", () => {
           stringProp: "some string",
           appid: undefined,
           component: "extension",
-          "is-upgrade-user": "yes",
+          "is-existing-user": "",
         },
         { numericMeasure: 123 }
       );
@@ -125,7 +129,7 @@ suite("ExtTelemetry", () => {
           appid: undefined,
           component: "extension",
           success: "no",
-          "is-upgrade-user": "yes",
+          "is-existing-user": "",
           "error-type": "user",
           "error-message": `${error.message}${error.stack ? "\nstack:\n" + error.stack : ""}`,
           "error-code": "test.UserTestError",
@@ -149,6 +153,7 @@ suite("ExtTelemetry", () => {
           stringProp: "some string",
           appid: undefined,
           component: "extension",
+          "is-existing-user": "",
         },
         { numericMeasure: 123 }
       );

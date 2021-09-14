@@ -208,6 +208,6 @@ export function getAllFeatureFlags(): string[] | undefined {
   return result;
 }
 
-export function getIsUpgradeUser(): string | undefined {
-  return ext.context.globalState.get<string>(UserState.IsUpgrade);
+export function getIsExistingUser(): string | undefined {
+  return ext.context.globalState.get<string>(UserState.IsExisting);
 }

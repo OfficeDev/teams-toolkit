@@ -26,7 +26,7 @@ export class ExtensionUpgrade {
     ) {
       // if syncedVersion is undefined, then it is not upgrade user
       this.context.globalState.update(
-        UserState.IsUpgrade,
+        UserState.IsExisting,
         syncedVersion === undefined ? "no" : "yes"
       );
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowWhatIsNewNotification);

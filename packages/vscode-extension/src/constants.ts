@@ -11,5 +11,5 @@ export enum SyncedState {
 }
 
 export enum UserState {
-  IsUpgrade = "teamsToolkit:user:isUpgrade",
+  IsExisting = "teamsToolkit:user:isExisting",
 }

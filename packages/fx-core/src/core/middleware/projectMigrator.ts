@@ -41,6 +41,10 @@ import { LocalDebugConfigKeys } from "../../plugins/resource/localdebug/constant
 
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";
+const learnMoreText = "Learn More";
+const migrationSuccessMessage =
+  "Migration Success! please run provision command before executing other commands, otherwise the commands may fail. click the link for more information";
+const migrationGuideUrl = "https://github.com/OfficeDev/TeamsFx/wiki/Migration-Guide";
 
 class EnvConfigName {
   static readonly StorageName = "storageName";
@@ -84,6 +88,15 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext, projectPath: string
     throw err;
   }
   await removeOldProjectFiles(projectPath);
+  const core = ctx.self as FxCore;
+  core.tools.ui
+    .showMessage("info", migrationSuccessMessage, false, learnMoreText)
+    .then((result) => {
+      const userSelected = result.isOk() ? result.value : undefined;
+      if (userSelected === learnMoreText) {
+        core.tools.ui!.openUrl(migrationGuideUrl);
+      }
+    });
 }
 
 async function migrateMultiEnv(projectPath: string): Promise<void> {

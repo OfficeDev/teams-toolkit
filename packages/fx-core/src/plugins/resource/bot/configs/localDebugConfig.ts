@@ -13,8 +13,8 @@ export class LocalDebugConfig {
   public localObjectId?: string;
   public localRedirectUri?: string;
 
-  public botRegistrationCreated(): boolean {
-    if (this.localBotId && this.localBotPassword && this.localObjectId) {
+  public botAADCreated(): boolean {
+    if (this.localBotId && this.localBotPassword) {
       return true;
     }
 

@@ -31,6 +31,8 @@ import {
   Tools,
   AzureSolutionSettings,
   ConfigFolderName,
+  TreeItem,
+  TreeCategory,
 } from "@microsoft/teamsfx-api";
 import {
   isUserCancelError,
@@ -84,14 +86,12 @@ import { SPFxNodeChecker } from "./debug/depsChecker/spfxNodeChecker";
 import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
 import { VS_CODE_UI } from "./extension";
 import { registerAccountTreeHandler } from "./accountTree";
-import { registerEnvTreeHandler } from "./envTree";
+import { registerEnvTreeHandler, updateCollaboratorList } from "./envTree";
 import { selectAndDebug } from "./debug/runIconHandler";
 import * as path from "path";
 import { exp } from "./exp/index";
 import { TreatmentVariables } from "./exp/treatmentVariables";
 import { StringContext } from "./utils/stringContext";
-import { ext } from "./extensionVariables";
-import { InputConfigsFolderName } from "@microsoft/teamsfx-api";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -341,6 +341,8 @@ export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
     } else if (stage === Stage.publish) result = await core.publishApplication(inputs);
     else if (stage === Stage.createEnv) {
       result = await core.createEnv(inputs);
+    } else if (stage === Stage.listCollaborator) {
+      result = await core.listCollaborator(inputs);
     } else {
       throw new SystemError(
         ExtensionErrors.UnsupportedOperation,
@@ -795,6 +797,143 @@ export async function activateEnvironment(env: string): Promise<Result<Void, FxE
   return result;
 }
 
+export async function grantPermission(env: string): Promise<Result<Void, FxError>> {
+  let result: Result<any, FxError> = ok(Void);
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.GrantPermission);
+
+  const eventName = ExtTelemetry.stageToEvent(Stage.grantPermission);
+  try {
+    const checkCoreRes = checkCoreNotEmpty();
+    if (checkCoreRes.isErr()) {
+      throw checkCoreRes.error;
+    }
+
+    const inputs: Inputs = getSystemInputs();
+    inputs.env = env;
+
+    result = await core.grantPermission(inputs);
+    if (result.isErr()) {
+      throw result.error;
+    }
+    window.showInformationMessage(
+      `Added account: '${inputs.email}'' to the environment '${env}' as a collaborator`
+    );
+
+    updateCollaboratorList(env);
+  } catch (e) {
+    result = wrapError(e);
+  }
+
+  await processResult(eventName, result);
+  return result;
+}
+
+export async function listCollaborator(env: string): Promise<TreeItem[]> {
+  let result: TreeItem[] = [];
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ListCollaboratorStart);
+
+  try {
+    const checkCoreRes = checkCoreNotEmpty();
+    if (checkCoreRes.isErr()) {
+      throw checkCoreRes.error;
+    }
+
+    const inputs: Inputs = getSystemInputs();
+    inputs.env = env;
+    const userList = await core.listCollaborator(inputs);
+    if (userList.isErr()) {
+      throw userList.error;
+    }
+    result = userList.value.map((user: any) => {
+      return {
+        commandId: `fx-extension.listcollaborator.${env}.${user.userObjectId}`,
+        label: user.userPrincipalName,
+        icon: user.isAadOwner ? "person" : "warning",
+        isCustom: !user.isAadOwner,
+        tooltip: {
+          value: user.isAadOwner ? "" : "This account doesn't have the AAD permission.",
+          isMarkdown: false,
+        },
+        parent: "fx-extension.environment." + env,
+      };
+    });
+    if (!result || result.length === 0) {
+      result = [
+        {
+          commandId: `fx-extension.listcollaborator.${env}`,
+          label: StringResources.vsc.commandsTreeViewProvider.noPermissionToListCollaborators,
+          icon: "warning",
+          isCustom: true,
+          parent: "fx-extension.environment." + env,
+        },
+      ];
+    }
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ListCollaborator, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+    });
+  } catch (e) {
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ListCollaborator, e);
+    VsCodeLogInstance.warning(
+      `code:${e.source}.${e.name}, message: Failed to list collaborator for environment '${env}':  ${e.message}`
+    );
+    let label = e.message;
+    if (e.name === "CannotProcessBeforeProvision") {
+      label = StringResources.vsc.commandsTreeViewProvider.unableToFindTeamsAppRegistration;
+    }
+    result = [
+      {
+        commandId: `fx-extension.listcollaborator.${env}`,
+        label: label,
+        tooltip: {
+          value: e.message,
+          isMarkdown: false,
+        },
+        icon: "warning",
+        isCustom: true,
+        parent: "fx-extension.environment." + env,
+      },
+    ];
+  }
+
+  return result;
+}
+
+export async function checkPermission(env: string): Promise<boolean> {
+  let result = false;
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CheckPermissionStart);
+
+  try {
+    const checkCoreRes = checkCoreNotEmpty();
+    if (checkCoreRes.isErr()) {
+      throw checkCoreRes.error;
+    }
+
+    const inputs: Inputs = getSystemInputs();
+    inputs.env = env;
+    const permissions = await core.checkPermission(inputs);
+    if (permissions.isErr()) {
+      throw permissions.error;
+    }
+    const teamsAppPermission = permissions.value.find(
+      (permission: any) => permission.name === "Teams App"
+    );
+    const aadPermission = permissions.value.find(
+      (permission: any) => permission.name === "Azure AD App"
+    );
+    result =
+      (teamsAppPermission.roles?.includes("Administrator") ?? false) &&
+      (aadPermission.roles?.includes("Owner") ?? false);
+    ExtTelemetry.sendTelemetryEvent(Stage.checkPermission, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+    });
+  } catch (e) {
+    ExtTelemetry.sendTelemetryErrorEvent(Stage.checkPermission, e);
+    result = false;
+  }
+
+  return result;
+}
+
 export async function openM365AccountHandler() {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenM365Portal);
   return env.openExternal(Uri.parse("https://admin.microsoft.com/Adminportal/"));
@@ -1116,6 +1255,8 @@ export async function signOutM365(isFromTreeView: boolean) {
       },
     ]);
   }
+
+  registerEnvTreeHandler();
 }
 
 export async function signInAzure() {

@@ -148,6 +148,7 @@ export enum SolutionError {
   FailedToGrantPermission = "FailedToGrantPermission",
   FailedToCheckPermission = "FailedToCheckPermission",
   FailedToListCollaborator = "FailedToListCollaborator",
+  EmailCannotBeEmptyOrSame = "EmailCannotBeEmptyOrSame",
   FailedToExecuteTasks = "FailedToExecuteTasks",
 }
 

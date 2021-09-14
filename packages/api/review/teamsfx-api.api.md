@@ -1469,6 +1469,8 @@ export interface TreeItem {
     // (undocumented)
     description?: string;
     // (undocumented)
+    expanded?: boolean;
+    // (undocumented)
     icon?: string;
     // (undocumented)
     isCustom?: boolean;

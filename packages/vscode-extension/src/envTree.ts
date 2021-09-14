@@ -1,13 +1,22 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, Result, err, ok, Void, TreeCategory } from "@microsoft/teamsfx-api";
-import { isMultiEnvEnabled, environmentManager, setActiveEnv } from "@microsoft/teamsfx-core";
+import { FxError, Result, err, ok, Void, TreeCategory, TreeItem } from "@microsoft/teamsfx-api";
+import {
+  isMultiEnvEnabled,
+  environmentManager,
+  setActiveEnv,
+  isRemoteCollaborateEnabled,
+} from "@microsoft/teamsfx-core";
 import * as vscode from "vscode";
 import TreeViewManagerInstance, { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
 import * as StringResources from "./resources/Strings.json";
+import { checkPermission, listCollaborator } from "./handlers";
+import { signedIn } from "./commonlib/common/constant";
+import { AppStudioLogin } from "./commonlib/appStudioLogin";
 
 const showEnvList: Array<string> = [];
+let environmentTreeProvider: CommandsTreeViewProvider;
 
 export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
   if (isMultiEnvEnabled() && vscode.workspace.workspaceFolders) {
@@ -24,15 +33,14 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
       activeEnv = envResult.value;
       setActiveEnv(activeEnv);
     }
-    const environmentTreeProvider: CommandsTreeViewProvider =
-      TreeViewManagerInstance.getTreeView("teamsfx-environment")!;
+    environmentTreeProvider = TreeViewManagerInstance.getTreeView("teamsfx-environment")!;
     if (showEnvList.length > 0) {
       showEnvList.forEach(async (item) => {
         environmentTreeProvider.removeById("fx-extension.environment." + item);
       });
     }
     showEnvList.splice(0);
-    envNamesResult.value.forEach((item) => {
+    for (const item of envNamesResult.value) {
       showEnvList.push(item);
       environmentTreeProvider.add([
         {
@@ -44,9 +52,45 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
           isCustom: false,
           description:
             item === activeEnv ? StringResources.vsc.commandsTreeViewProvider.acitve : "",
+          expanded: activeEnv === item,
         },
       ]);
-    });
+    }
+
+    for (const item of envNamesResult.value) {
+      await updateCollaboratorList(item);
+    }
   }
   return ok(Void);
+}
+
+export async function updateCollaboratorList(env: string): Promise<void> {
+  if (environmentTreeProvider && isRemoteCollaborateEnabled()) {
+    let userList: TreeItem[] = [];
+
+    const parentCommand = environmentTreeProvider.findCommand("fx-extension.environment." + env);
+    if (parentCommand) {
+      const loginStatus = await AppStudioLogin.getInstance().getStatus();
+      if (loginStatus.status == signedIn) {
+        const canAddCollaborator = await checkPermission(env);
+        parentCommand.contextValue = canAddCollaborator
+          ? "environmentWithPermission"
+          : "environment";
+        if (isRemoteCollaborateEnabled()) {
+          userList = await listCollaborator(env);
+        }
+      } else {
+        userList = [
+          {
+            commandId: `fx-extension.listcollaborator.${env}`,
+            label: StringResources.vsc.commandsTreeViewProvider.loginM365AccountToViewCollaborators,
+            icon: "warning",
+            isCustom: true,
+            parent: "fx-extension.environment." + env,
+          },
+        ];
+      }
+      await environmentTreeProvider.add(userList);
+    }
+  }
 }

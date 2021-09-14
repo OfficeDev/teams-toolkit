@@ -182,20 +182,25 @@
         },
         {
           "command": "fx-extension.viewEnvironment",
-          "when": "view == teamsfx-environment && viewItem == environment"
+          "when": "view == teamsfx-environment && viewItem =~ /environment/"
         },
         {
           "command": "fx-extension.viewEnvironmentWithIcon",
-          "when": "view == teamsfx-environment && viewItem == environment",
+          "when": "view == teamsfx-environment && viewItem =~ /environment/",
           "group": "inline@3"
         },
         {
           "command": "fx-extension.activateEnvironment",
-          "when": "view == teamsfx-environment && viewItem == environment"
+          "when": "view == teamsfx-environment && viewItem =~ /environment/"
         },
         {
           "command": "fx-extension.activateEnvironmentWithIcon",
-          "when": "view == teamsfx-environment && viewItem == environment",
+          "when": "view == teamsfx-environment && viewItem =~ /environment/",
+          "group": "inline@3"
+        },
+        {
+          "command": "fx-extension.grantPermission",
+          "when": "view == teamsfx-environment && viewItem == environmentWithPermission",
           "group": "inline@3"
         }
       ],
@@ -261,6 +266,10 @@
         },
         {
           "command": "fx-extension.activateEnvironmentWithIcon",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.grantPermission",
           "when": "false"
         },
         {
@@ -425,6 +434,12 @@
         "title": "Activate environment",
         "icon": "$(check)",
         "enablement": "fx-extension.isMultiEnvEnabled"
+      },
+      {
+        "command": "fx-extension.grantPermission",
+        "title": "Grant permission",
+        "icon": "$(person-add)",
+        "enablement": "fx-extension.isMultiEnvEnabled && fx-extension.isRemoteCollaborateEnabled"
       }
     ],
     "taskDefinitions": [

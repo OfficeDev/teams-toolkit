@@ -116,6 +116,7 @@ import {
   MessageExtensionItem,
   ProgrammingLanguageQuestion,
   TabOptionItem,
+  GetUserEmailQuestion,
 } from "./question";
 import {
   getActivatedResourcePlugins,
@@ -1122,6 +1123,8 @@ export class TeamsAppSolution implements Solution {
           }
         }
       }
+    } else if (stage === Stage.grantPermission) {
+      node.addChild(new QTreeNode(GetUserEmailQuestion));
     }
     return ok(node);
   }
@@ -1236,6 +1239,7 @@ export class TeamsAppSolution implements Solution {
       [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
     });
 
+    const progressBar = ctx.ui?.createProgressBar("Granting permission", 1);
     try {
       const result = await this.checkAndGetCurrentUserInfo(ctx);
       if (result.isErr()) {
@@ -1249,6 +1253,21 @@ export class TeamsAppSolution implements Solution {
       }
 
       const email = ctx.answers!["email"] as string;
+
+      if (!email || email === result.value.userPrincipalName) {
+        return err(
+          sendErrorTelemetryThenReturnError(
+            SolutionTelemetryEvent.GrantPermission,
+            returnUserError(
+              new Error("Collaborator's email cannot be null or same as current user"),
+              "Solution",
+              SolutionError.EmailCannotBeEmptyOrSame
+            ),
+            ctx.telemetryReporter
+          )
+        );
+      }
+
       const userInfo = await this.getUserInfo(ctx, email);
 
       if (!userInfo) {
@@ -1267,6 +1286,8 @@ export class TeamsAppSolution implements Solution {
         );
       }
 
+      progressBar?.start();
+      progressBar?.next(`Grant permission for user ${email}`);
       ctx.envInfo.profile.get(GLOBAL_CONFIG)?.set(USER_INFO, JSON.stringify(userInfo));
 
       const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, [
@@ -1366,6 +1387,7 @@ export class TeamsAppSolution implements Solution {
 
       return ok(permissions);
     } finally {
+      await progressBar?.end(true);
       ctx.envInfo.profile.get(GLOBAL_CONFIG)?.delete(USER_INFO);
       this.runningState = SolutionRunningState.Idle;
     }

@@ -95,14 +95,7 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<Result<undef
     `.${ConfigFolderName}`,
     PublishProfilesFolderName
   );
-  const settingsFile = isMultiEnvEnabled()
-    ? path.resolve(confFolderPath, ProjectSettingsFileName)
-    : path.resolve(confFolderPath, "settings.json");
-  if (!(await fs.pathExists(settingsFile))) {
-    // Do nothing if file does not exist.
-    return ok(undefined);
-  }
-  const projectSettings: ProjectSettings = await readJson(settingsFile);
+
   const defaultEnvName = environmentManager.getDefaultEnvName();
 
   const contextPath = isMultiEnvEnabled()
@@ -111,16 +104,8 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<Result<undef
         EnvProfileFileNameTemplate.replace("@envName", defaultEnvName)
       )
     : path.resolve(confFolderPath, `env.${defaultEnvName}.json`);
-  if (!(await fs.pathExists(contextPath))) {
-    // Do nothing if file does not exist.
-    return ok(undefined);
-  }
 
   const userDataPath = path.resolve(confFolderPath, `${defaultEnvName}.userdata`);
-  if (!(await fs.pathExists(userDataPath))) {
-    // Do nothing if file does not exist.
-    return ok(undefined);
-  }
 
   // For the multi env scenario, profile.{envName}.json and {envName}.userdata are not created when scaffolding
   // These projects must be the new projects, so skip upgrading.
@@ -132,13 +117,18 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<Result<undef
     }
   }
 
-  let context: Json = {};
-  let userData: Record<string, string> = {};
+  let context: Json | undefined = {};
+  let userData: Record<string, string> | undefined = {};
 
   try {
     // Read context and userdata file.
     context = await readContext(contextPath);
     userData = await readUserData(userDataPath);
+
+    if (!context || !userData) {
+      // Do nothing if file does not exist.
+      return ok(undefined);
+    }
   } catch (error) {
     const errorObject = ReadFileError(error);
     core?.tools?.logProvider?.info(errorObject.message);
@@ -192,9 +182,11 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<Result<undef
 }
 
 // TODO: add readUserData as basic API in core since used in multiple places.
-async function readUserData(userDataPath: string): Promise<Record<string, string>> {
+async function readUserData(userDataPath: string): Promise<Record<string, string> | undefined> {
   let dict: Record<string, string> = {};
-  if (await fs.pathExists(userDataPath)) {
+  if (!(await fs.pathExists(userDataPath))) {
+    return undefined;
+  } else {
     const dictContent = await fs.readFile(userDataPath, "UTF-8");
     dict = deserializeDict(dictContent);
   }
@@ -207,9 +199,13 @@ async function saveUserData(userDataPath: string, userData: Record<string, strin
   await fs.writeFile(userDataPath, serializeDict(userData));
 }
 
-async function readContext(contextPath: string): Promise<Json> {
-  const configJson: Json = await readJson(contextPath);
-  return configJson;
+async function readContext(contextPath: string): Promise<Json | undefined> {
+  if (!(await fs.pathExists(contextPath))) {
+    return undefined;
+  } else {
+    const configJson: Json = await readJson(contextPath);
+    return configJson;
+  }
 }
 
 async function saveContext(contextPath: string, context: Json): Promise<void> {

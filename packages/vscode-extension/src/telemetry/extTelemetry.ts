@@ -13,7 +13,7 @@ import {
 } from "./extTelemetryEvents";
 import * as extensionPackage from "../../package.json";
 import { FxError, Stage, UserError } from "@microsoft/teamsfx-api";
-import { getTeamsAppId } from "../utils/commonUtils";
+import { getIsUpgradeUser, getTeamsAppId } from "../utils/commonUtils";
 
 export namespace ExtTelemetry {
   export let reporter: VSCodeTelemetryReporter;
@@ -76,6 +76,9 @@ export namespace ExtTelemetry {
     }
 
     properties[TelemetryProperty.AapId] = getTeamsAppId();
+
+    const isUpgradeUser = getIsUpgradeUser();
+    properties[TelemetryProperty.IsUpgradeUser] = isUpgradeUser ? isUpgradeUser : "";
 
     reporter.sendTelemetryEvent(eventName, properties, measurements);
   }

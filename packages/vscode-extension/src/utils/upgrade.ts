@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import * as versionUtil from "./versionUtil";
-import { SyncedState } from "../constants";
+import { SyncedState, UserState } from "../constants";
 import * as StringResources from "../resources/Strings.json";
 import * as util from "util";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
@@ -24,6 +24,11 @@ export class ExtensionUpgrade {
       syncedVersion === undefined ||
       versionUtil.compare(teamsToolkitVersion, syncedVersion) === 1
     ) {
+      // if syncedVersion is undefined, then it is not upgrade user
+      this.context.globalState.update(
+        UserState.IsUpgrade,
+        syncedVersion === undefined ? "no" : "yes"
+      );
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowWhatIsNewNotification);
       this.context.globalState.update(SyncedState.Version, teamsToolkitVersion);
 

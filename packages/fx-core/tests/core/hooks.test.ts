@@ -6,6 +6,7 @@ import {
   AppPackageFolderName,
   ArchiveFolderName,
   AzureSolutionSettings,
+  Colors,
   ConfigFolderName,
   ConfigMap,
   err,
@@ -27,6 +28,7 @@ import {
   SystemError,
   UserCancelError,
   UserError,
+  UserInteraction,
 } from "@microsoft/teamsfx-api";
 import { assert, expect } from "chai";
 import * as dotenv from "dotenv";
@@ -73,18 +75,14 @@ import { SolutionPlugins } from "../../src/core/SolutionPluginContainer";
 import { PluginNames } from "../../src/plugins/solution/fx-solution/constants";
 import { AzureResourceSQL } from "../../src/plugins/solution/fx-solution/question";
 import {
-  MockDefaultUserData,
-  MockEnvDefaultJson,
   MockLatestVersion2_3_0Context,
   MockLatestVersion2_3_0UserData,
-  MockManifest,
   MockPreviousVersionBefore2_3_0Context,
   MockPreviousVersionBefore2_3_0UserData,
   MockProjectSettings,
-  MockSettingJson,
   MockSolution,
-  MockSub,
   MockTools,
+  MockUserInteraction,
   randomAppName,
 } from "./utils";
 import { ProjectMigratorMW, migrateArm } from "../../src/core/middleware/projectMigrator";
@@ -93,8 +91,8 @@ import mockedEnv from "mocked-env";
 let mockedEnvRestore: () => void;
 describe("Middleware", () => {
   const sandbox = sinon.createSandbox();
-
   const mockSolution = new MockSolution();
+
   beforeEach(() => {
     Container.set(SolutionPlugins.AzureTeamsSolution, mockSolution);
   });
@@ -202,7 +200,6 @@ describe("Middleware", () => {
       }
     });
   });
-
   describe("ConcurrentLockerMW", () => {
     it("temp folder should be existed when it's locked", async () => {
       class MyClass {
@@ -1514,6 +1511,7 @@ describe("Middleware", () => {
       process.env[FeatureFlagName.MultiEnv] = original;
     });
   });
+
   describe("migrateArm success", () => {
     const sandbox = sinon.createSandbox();
     const appName = randomAppName();
@@ -1587,77 +1585,45 @@ describe("Middleware", () => {
       assert.isNotNull(envFile["fx-resource-bot"].skuName);
     });
   });
-
   describe("ProjectMigratorMW", () => {
     const sandbox = sinon.createSandbox();
+    const appName = randomAppName();
+    const projectPath = path.join(os.tmpdir(), appName);
 
-    afterEach(function () {
+    beforeEach(async () => {
+      await fs.ensureDir(projectPath);
+      await fs.copy(path.join(__dirname, "../samples/migration/"), path.join(projectPath));
+      mockedEnvRestore = mockedEnv({
+        TEAMSFX_MULTI_ENV: "true",
+        TEAMSFX_ARM_SUPPORT: "true",
+      });
+      sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok("OK"));
+    });
+
+    afterEach(async () => {
+      await fs.remove(projectPath);
       sandbox.restore();
+      mockedEnvRestore();
     });
 
     it("successfully migrate to version of arm and multi-env", async () => {
       class MyClass {
-        tools = new MockTools();
-
+        tools?: any = new MockTools();
         async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
           return ok("");
         }
       }
-
       hooks(MyClass, {
         other: [ProjectMigratorMW],
       });
-      process.env[FeatureFlagName.MultiEnv] = "true";
-      process.env[FeatureFlagName.ArmSupport] = "true";
 
-      const appName = randomAppName();
       const inputs: Inputs = { platform: Platform.VSCode };
-      inputs.projectPath = path.join(os.tmpdir(), appName);
+      inputs.projectPath = projectPath;
       const my = new MyClass();
 
       try {
-        const appPackagePath = path.join(inputs.projectPath, AppPackageFolderName);
-        const fx = path.join(inputs.projectPath, `.${ConfigFolderName}`);
-        await fs.ensureDir(fx);
-        await fs.ensureDir(appPackagePath);
-
-        await fs.writeJSON(path.join(appPackagePath, "manifest.json"), {});
-        await fs.writeJSON(
-          path.join(fx, "env.default.json"),
-          JSON.stringify(MockEnvDefaultJson(), null, 4),
-          { encoding: "UTF-8" }
-        );
-        await fs.writeJSON(
-          path.join(fx, "settings.json"),
-          JSON.stringify(MockSettingJson(appName), null, 4),
-          { encoding: "UTF-8" }
-        );
-        await fs.writeJSON(
-          path.join(fx, "subscriptionInfo.json"),
-          JSON.stringify(MockSub(), null, 4),
-          { encoding: "UTF-8" }
-        );
-        await fs.writeJSON(path.join(fx, "default.data"), serializeDict(MockDefaultUserData()));
-        await fs.writeJSON(
-          path.join(appPackagePath, "manifest.source.json"),
-          JSON.stringify(MockManifest(), null, 4),
-          { encoding: "UTF-8" }
-        );
-        await fs.writeFile(
-          path.join(appPackagePath, "color.png"),
-          JSON.stringify(["mock"], null, 4)
-        );
-        await fs.writeFile(
-          path.join(appPackagePath, "outline.png"),
-          JSON.stringify(["mock"], null, 4)
-        );
-
-        // await my.other(inputs);
-        expect(async function () {
-          await my.other(inputs);
-        }).to.not.throw();
-        console.log(fx);
-        assert.isTrue(fs.existsSync(path.join(fx, ".configs", "projectSettings.json")));
+        const res = await my.other(inputs);
+        assert.isTrue(res.isOk());
       } finally {
         await fs.rmdir(inputs.projectPath!, { recursive: true });
       }

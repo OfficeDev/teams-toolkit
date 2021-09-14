@@ -1,0 +1,16 @@
+solution.localDebugTeamsAppId=test
+solution.teamsAppTenantId=test
+fx-resource-aad-app-for-teams.clientSecret=test
+fx-resource-aad-app-for-teams.local_clientSecret=test
+fx-resource-aad-app-for-teams.local_clientId=test
+fx-resource-aad-app-for-teams.local_objectId=test
+fx-resource-aad-app-for-teams.local_oauth2PermissionScopeId=test
+fx-resource-aad-app-for-teams.local_tenantId=test
+fx-resource-aad-app-for-teams.local_applicationIdUris=test
+fx-resource-simple-auth.filePath=test
+fx-resource-simple-auth.environmentVariableParams=test
+fx-resource-local-debug.trustDevCert=true
+fx-resource-local-debug.localAuthEndpoint=test
+fx-resource-local-debug.localTabEndpoint=test
+fx-resource-local-debug.localTabDomain=test
+fx-resource-local-debug.localFunctionEndpoint=test

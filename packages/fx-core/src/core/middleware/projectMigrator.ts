@@ -81,8 +81,9 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
 
 async function migrateToArmAndMultiEnv(ctx: CoreHookContext, projectPath: string): Promise<void> {
   try {
-    await migrateArm(ctx);
+    await removeBotConfig(ctx);
     await migrateMultiEnv(projectPath);
+    await migrateArm(ctx);
   } catch (err) {
     await cleanup(projectPath);
     throw err;
@@ -326,7 +327,6 @@ function preCheckEnvEnabled() {
 }
 
 export async function migrateArm(ctx: CoreHookContext) {
-  await removeBotConfig(ctx);
   await generateArmTempaltesFiles(ctx);
   await generateArmParameterJson(ctx);
 }
@@ -361,8 +361,7 @@ async function generateArmTempaltesFiles(ctx: CoreHookContext) {
   minorCtx.projectSettings = projectSettings;
   minorCtx.projectIdMissing = projectIdMissing;
 
-  // load envinfo env.default.json
-  const targetEnvName = "default";
+  const targetEnvName = "dev";
   const result = await loadSolutionContext(
     core.tools,
     inputs,

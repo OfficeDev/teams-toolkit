@@ -20,8 +20,6 @@ on:
 
 jobs:
   cd:
-    env:
-      NODE_OPTIONS: "--max-old-space-size=5120"
     runs-on: ubuntu-latest
 
     steps:

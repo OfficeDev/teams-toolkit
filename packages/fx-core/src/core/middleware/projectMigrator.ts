@@ -76,13 +76,8 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
   const { fx, fxConfig, templateAppPackage, fxPublishProfile } = await getMultiEnvFolders(
     projectPath
   );
-
   const { hasFrontend, hasBackend, hasBot, hasProvision } = await queryProjectStatus(fx);
-  //config.dev.json
-  await fs.writeFile(
-    path.join(fxConfig, "config.dev.json"),
-    JSON.stringify(getConfigDevJson(), null, 4)
-  );
+
   //localSettings.json
   const localSettingsProvider = new LocalSettingsProvider(projectPath);
   await localSettingsProvider.save(localSettingsProvider.init(hasFrontend, hasBackend, hasBot));
@@ -90,7 +85,11 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
   const projectSettings = path.join(fxConfig, ProjectSettingsFileName);
   await fs.copy(path.join(fx, "settings.json"), projectSettings);
   await ensureProgrammingLanguage(projectSettings, path.join(fx, "env.default.json"));
-
+  //config.dev.json
+  await fs.writeFile(
+    path.join(fxConfig, "config.dev.json"),
+    JSON.stringify(getConfigDevJson(await getAppName(projectSettings)), null, 4)
+  );
   // appPackage
   await fs.copy(path.join(projectPath, AppPackageFolderName), templateAppPackage);
   await fs.rename(
@@ -161,18 +160,21 @@ async function removeExpiredFields(devProfile: string, devUserData: string): Pro
   }
 }
 
-function getConfigDevJson(): EnvConfig {
-  return {
+function getConfigDevJson(appName: string): EnvConfig {
+  const envConfig: EnvConfig = {
     $schema:
       "https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/packages/api/src/schemas/envConfig.json",
-    azure: {},
     manifest: {
-      description:
-        `You can customize the 'values' object to customize Teams app manifest for different environments.` +
-        ` Visit https://aka.ms/teamsfx-config to learn more about this.`,
-      values: {},
+      description: `You can customize the 'values' object to customize Teams app manifest for different environments. Visit https://aka.ms/teamsfx-config to learn more about this.`,
+      values: {
+        appName: {
+          short: appName,
+          full: `Full name for ${appName}`,
+        },
+      },
     },
   };
+  return envConfig;
 }
 
 async function queryProjectStatus(fx: string): Promise<any> {
@@ -226,6 +228,12 @@ async function ensureProgrammingLanguage(
     });
   }
 }
+
+async function getAppName(projectSettingPath: string): Promise<string> {
+  const settings: ProjectSettings = await readJson(projectSettingPath);
+  return settings.appName;
+}
+
 async function ensureActiveEnv(projectSettingPath: string): Promise<void> {
   const settings: ProjectSettings = await readJson(projectSettingPath);
   if (!settings.activeEnvironment) {

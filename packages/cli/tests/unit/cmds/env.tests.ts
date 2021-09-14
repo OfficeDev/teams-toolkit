@@ -4,7 +4,17 @@
 import sinon from "sinon";
 import yargs, { Options, string } from "yargs";
 
-import { FxError, Inputs, LogLevel, ok, Result, UserError, Void } from "@microsoft/teamsfx-api";
+import {
+  err,
+  FxError,
+  Inputs,
+  LogLevel,
+  ok,
+  Result,
+  returnUserError,
+  UserError,
+  Void,
+} from "@microsoft/teamsfx-api";
 import * as core from "@microsoft/teamsfx-core";
 
 import Env from "../../../src/cmds/env";
@@ -25,6 +35,141 @@ enum CommandName {
 function getCommand(cmd: Env, name: string): YargsCommand {
   return cmd.subCommands.find((cmd) => cmd.commandHead === name)!;
 }
+
+describe("Env Show Command Tests", function () {
+  const sandbox = sinon.createSandbox();
+  let registeredCommands: string[] = [];
+  let options: string[] = [];
+  let positionals: string[] = [];
+  let telemetryEvents: string[] = [];
+  let logs = "";
+  let validProject = true;
+  let checkedRootDir = "";
+  let getActiveEnvError: FxError | undefined = undefined;
+  const activeEnv = "testing";
+
+  before(() => {
+    sandbox.stub(HelpParamGenerator, "getYargsParamForHelp").callsFake(() => {
+      return {};
+    });
+    sandbox.stub(Utils, "isWorkspaceSupported").callsFake((rootDir: string): boolean => {
+      checkedRootDir = rootDir;
+      return validProject;
+    });
+    sandbox
+      .stub<any, any>(yargs, "command")
+      .callsFake((command: string, description: string, builder: any, handler: any) => {
+        registeredCommands.push(command);
+        builder(yargs);
+      });
+    sandbox.stub(yargs, "options").callsFake((ops: { [key: string]: Options }) => {
+      if (typeof ops === "string") {
+        options.push(ops);
+      } else {
+        options = options.concat(...Object.keys(ops));
+      }
+      return yargs;
+    });
+    sandbox.stub(yargs, "positional").callsFake((name: string) => {
+      positionals.push(name);
+      return yargs;
+    });
+    sandbox.stub(yargs, "exit").callsFake((code: number, err: Error) => {
+      throw err;
+    });
+    sandbox.stub(CliTelemetry, "sendTelemetryEvent").callsFake((eventName: string) => {
+      telemetryEvents.push(eventName);
+    });
+    sandbox
+      .stub(CliTelemetry, "sendTelemetryErrorEvent")
+      .callsFake((eventName: string, error: FxError) => {
+        telemetryEvents.push(eventName);
+      });
+    sandbox
+      .stub(core.environmentManager, "getActiveEnv")
+      .callsFake((projectPath: string): Result<string, FxError> => {
+        if (getActiveEnvError) {
+          return err(getActiveEnvError);
+        } else {
+          return ok(activeEnv);
+        }
+      });
+    sandbox.stub(LogProvider, "necessaryLog").callsFake((level: LogLevel, message: string) => {
+      logs += message + "\n";
+    });
+  });
+
+  after(() => {
+    sandbox.restore();
+  });
+
+  beforeEach(() => {
+    registeredCommands = [];
+    options = [];
+    positionals = [];
+    telemetryEvents = [];
+    logs = "";
+    validProject = true;
+    getActiveEnvError = undefined;
+  });
+
+  it("prints active env", async () => {
+    // Arrange
+    validProject = true;
+    const cmd = new Env();
+    const args = {};
+
+    // Act
+    await cmd.handler(args);
+
+    // Assert
+    expect(logs).to.equal(activeEnv + "\n");
+  });
+
+  it("returns error on getActiveEnv errors.", async () => {
+    // Arrange
+    validProject = true;
+    getActiveEnvError = returnUserError(
+      new Error("fake user error message"),
+      "CLI",
+      "FakeUserError"
+    );
+    const cmd = new Env();
+    const args = {};
+
+    // Act
+    try {
+      await cmd.handler(args);
+    } catch (error) {
+      expect(error).instanceOf(UserError);
+      expect(error.name === "FakeUserError");
+    }
+
+    // Assert
+    expect(logs).to.equal("[CLI.FakeUserError]: fake user error message\n");
+  });
+
+  it("throws on non-Teamsfx project", async () => {
+    // Arrange
+    validProject = false;
+    const cmd = new Env();
+    const args = {};
+    let exceptionThrown = false;
+
+    // Act
+    try {
+      await cmd.handler(args);
+    } catch (error) {
+      exceptionThrown = true;
+
+      // Assert
+      expect(error).instanceOf(UserError);
+      expect(error.name).equals("WorkspaceNotSupported");
+    }
+
+    expect(exceptionThrown);
+  });
+});
 
 describe("Env List Command Tests", function () {
   const sandbox = sinon.createSandbox();

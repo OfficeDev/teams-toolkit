@@ -24,6 +24,7 @@ import {
   Solution,
   SolutionContext,
   Stage,
+  SystemError,
   UserCancelError,
   UserError,
 } from "@microsoft/teamsfx-api";
@@ -145,7 +146,7 @@ describe("Middleware", () => {
       class MyClass {
         tools?: any = new MockTools();
         async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
-          throw { name: "unkown", message: "hello", stack: new Error().stack } as Error;
+          throw new Error("unknown");
         }
       }
       hooks(MyClass, {
@@ -153,7 +154,7 @@ describe("Middleware", () => {
       });
       const my = new MyClass();
       const res = await my.myMethod(inputs);
-      assert.isTrue(res.isErr() && res.error.name === "unkown" && res.error.message === "hello");
+      assert.isTrue(res.isErr() && res.error instanceof SystemError && res.error.message === "unknown");
     });
 
     it("convert system error to user error", async () => {
@@ -170,12 +171,12 @@ describe("Middleware", () => {
       });
       const my = new MyClass();
       const res = await my.myMethod(inputs);
-      assert.isTrue(
-        res.isErr() &&
-          res.error.name === "Error" &&
-          res.error.message === msg &&
-          res.error instanceof UserError
-      );
+      assert.isTrue( res.isErr() );
+      if(res.isErr()) {
+        const error = res.error;
+        assert.isTrue( error  instanceof UserError);
+        assert.equal( error.message, msg);
+      }
     });
   });
 
@@ -602,7 +603,7 @@ describe("Middleware", () => {
       const tools = new MockTools();
       const solutionContext = await newSolutionContext(tools, inputs);
       solutionContext.envInfo.profile.set("solution", new ConfigMap());
-      solutionContext.projectSettings = MockProjectSettings(appName);
+      const mockProjectSettings = MockProjectSettings(appName);
       const fileMap = new Map<string, any>();
 
       sandbox.stub<any, any>(fs, "writeFile").callsFake(async (file: string, data: any) => {
@@ -620,6 +621,7 @@ describe("Middleware", () => {
         tools = tools;
         async myMethod(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
           ctx!.solutionContext = solutionContext;
+          ctx!.projectSettings = mockProjectSettings;
           return ok("");
         }
       }
@@ -633,7 +635,7 @@ describe("Middleware", () => {
       content = fileMap.get(envJsonFile);
       const configInFile = JSON.parse(content);
       const configExpected = mapToJson(solutionContext.envInfo.profile);
-      assert.deepEqual(solutionContext.projectSettings, settingsInFile);
+      assert.deepEqual(mockProjectSettings, settingsInFile);
       assert.deepEqual(configExpected, configInFile);
     });
   });
@@ -1386,7 +1388,6 @@ describe("Middleware", () => {
   });
 
   describe("LocalSettingsLoaderMW, ContextInjectorMW", () => {
-    
     it("NoProjectOpenedError", async () => {
       const original = process.env[FeatureFlagName.MultiEnv];
       process.env[FeatureFlagName.MultiEnv] = "true";
@@ -1404,6 +1405,6 @@ describe("Middleware", () => {
       const res = await my.other(inputs);
       assert.isTrue(res.isErr() && res.error.name === NoProjectOpenedError().name);
       process.env[FeatureFlagName.MultiEnv] = original;
-    }); 
+    });
   });
 });

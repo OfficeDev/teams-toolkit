@@ -578,7 +578,10 @@ export async function openSurveyHandler(args?: any[]) {
 }
 
 function getTriggerFromProperty(args?: any[]) {
-  if (!args) {
+  // if not args are not supplied, by default, it is trigger from "CommandPalette"
+  // e.g. vscode.commands.executeCommand("fx-extension.openWelcome");
+  // in this case, "fx-exentiosn.openWelcome" is trigged from "CommandPalette".
+  if (!args || (args && args.length === 0)) {
     return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette };
   }
 
@@ -587,8 +590,10 @@ function getTriggerFromProperty(args?: any[]) {
       return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.TreeView };
     case TelemetryTiggerFrom.Webview:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview };
-    default:
+    case TelemetryTiggerFrom.Other:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Other };
+    default:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Unknow };
   }
 }
 
@@ -779,8 +784,8 @@ export async function activateEnvironment(env: string): Promise<Result<Void, FxE
     }
 
     const inputs: Inputs = getSystemInputs();
-
-    result = await core.activateEnv(env, inputs);
+    inputs.env = env;
+    result = await core.activateEnv(inputs);
     registerEnvTreeHandler();
   } catch (e) {
     result = wrapError(e);
@@ -835,6 +840,19 @@ export function saveTextDocumentHandler(document: vscode.TextDocumentWillSaveEve
 }
 
 export async function cmdHdlLoadTreeView(context: ExtensionContext) {
+  if (
+    await exp
+      .getExpService()
+      .getTreatmentVariableAsync(
+        TreatmentVariables.VSCodeConfig,
+        TreatmentVariables.CustomizeTreeview,
+        true
+      )
+  ) {
+    vscode.commands.executeCommand("setContext", "fx-extension.customizedTreeview", true);
+  } else {
+    vscode.commands.executeCommand("setContext", "fx-extension.customizedTreeview", false);
+  }
   if (!isValidProject(getWorkspacePath())) {
     const disposables = await TreeViewManagerInstance.registerEmptyProjectTreeViews();
     context.subscriptions.push(...disposables);

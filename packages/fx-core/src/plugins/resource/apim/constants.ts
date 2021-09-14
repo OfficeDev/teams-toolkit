@@ -399,3 +399,7 @@ export enum OpenApiSchemaVersion {
   V2 = "v2",
   V3 = "v3",
 }
+
+export class UserTask {
+  static addResourceFuncName = "addResource";
+}

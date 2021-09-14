@@ -16,6 +16,7 @@ import { SqlClient } from "../../../../../src/plugins/resource/sql/sqlClient";
 import { Constants } from "../../../../../src/plugins/resource/sql/constants";
 import * as commonUtils from "../../../../../src/plugins/resource/sql/utils/commonUtils";
 import { UserType } from "../../../../../src/plugins/resource/sql/utils/commonUtils";
+import { ManagementClient } from "../../../../../src/plugins/resource/sql/managementClient";
 
 chai.use(chaiAsPromised);
 
@@ -65,9 +66,7 @@ describe("sqlPlugin", () => {
 
   it("getQuestions in cli help", async function () {
     // Arrange
-    sinon.stub(Servers.prototype, "checkNameAvailability").resolves({ available: false });
     pluginContext.answers === { platform: Platform.CLI_HELP };
-    // pluginContext.answers.platform === Platform.CLI_HELP;
     // Act
     const getQuestionResult = await sqlPlugin.getQuestions(Stage.provision, pluginContext);
 
@@ -77,6 +76,7 @@ describe("sqlPlugin", () => {
 
   it("preProvision", async function () {
     // Arrange
+    sinon.stub(Servers.prototype, "checkNameAvailability").resolves({ available: false });
     sinon
       .stub(ApplicationTokenCredentials.prototype, "getToken")
       .resolves({ accessToken: faker.random.word() } as TokenResponse);
@@ -106,6 +106,7 @@ describe("sqlPlugin", () => {
     sinon.stub(Databases.prototype, "listByServer").resolves();
     sinon.stub(Databases.prototype, "createOrUpdate").resolves();
     sinon.stub(Providers.prototype, "register").resolves();
+    sinon.stub(ManagementClient.prototype, "delay").resolves();
 
     // Act
     const provisionResult = await sqlPlugin.provision(pluginContext);

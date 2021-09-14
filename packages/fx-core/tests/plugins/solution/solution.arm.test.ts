@@ -267,17 +267,17 @@ describe("Deploy ARM Template to Azure", () => {
   const testEnvValue = "test env value";
   const testResourceSuffix = "-testSuffix";
   const testArmTemplateOutput = {
-    frontendHosting_storageName: {
+    frontendHosting_storageResourceId: {
       type: "String",
-      value: "frontendstgagag4xom3ewiq",
+      value: "test_storage_resource_id",
     },
     frontendHosting_endpoint: {
       type: "String",
-      value: "https://frontendstgagag4xom3ewiq.z13.web.core.windows.net/",
+      value: "https://test_frontendhosting_domain/",
     },
     frontendHosting_domain: {
       type: "String",
-      value: "frontendstgagag4xom3ewiq.z13.web.core.windows.net",
+      value: "test_frontendhosting_domain",
     },
     simpleAuth_skuName: {
       type: "String",
@@ -285,7 +285,7 @@ describe("Deploy ARM Template to Azure", () => {
     },
     simpleAuth_endpoint: {
       type: "String",
-      value: "https://testproject-simpleauth-webapp.azurewebsites.net",
+      value: "https://test_simpleauth_domain",
     },
   };
   const SOLUTION_CONFIG = "solution";

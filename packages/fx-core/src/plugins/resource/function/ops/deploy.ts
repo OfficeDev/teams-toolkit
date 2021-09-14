@@ -8,7 +8,7 @@ import axios from "axios";
 import ignore, { Ignore } from "ignore";
 
 import { WebAppsListPublishingCredentialsResponse } from "@azure/arm-appservice/esm/models";
-import { PluginContext } from '@microsoft/teamsfx-api';
+import { PluginContext } from "@microsoft/teamsfx-api";
 
 import { AzureInfo, CommonConstants, DefaultValues, FunctionPluginPathInfo } from "../constants";
 import {
@@ -211,7 +211,7 @@ export class FunctionDeploy {
                   maxBodyLength: Infinity,
                   timeout: DefaultValues.deployTimeoutInMs,
                 }),
-              DefaultValues.maxTryCount,
+              DefaultValues.maxTryCount
             )
         )
     );

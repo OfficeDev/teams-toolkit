@@ -19,6 +19,6 @@ resource frontendHostingStorage 'Microsoft.Storage/storageAccounts@2021-04-01' =
   }
 }
 
-output storageName string = frontendHostingStorage.name
+output resourceId string = frontendHostingStorage.id
 output endpoint string = 'https://${siteDomain}'
 output domain string = siteDomain

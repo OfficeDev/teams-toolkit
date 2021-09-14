@@ -33,7 +33,7 @@ import { Bicep, ConstantString } from "../../../common/constants";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import { isArmSupportEnabled } from "../../../common";
 import { getArmOutput } from "../utils4v2";
-
+import "./v2";
 @Service(ResourcePlugins.IdentityPlugin)
 export class IdentityPlugin implements Plugin {
   name = "fx-resource-identity";

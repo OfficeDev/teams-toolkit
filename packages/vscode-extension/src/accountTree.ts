@@ -7,6 +7,7 @@ import {
   ok,
   Result,
   SubscriptionInfo,
+  SystemError,
   TreeCategory,
   TreeItem,
   Void,
@@ -16,6 +17,7 @@ import AzureAccountManager from "./commonlib/azureLogin";
 import { core, getSystemInputs, tools, getAzureSolutionSettings } from "./handlers";
 import { askSubscription } from "@microsoft/teamsfx-core";
 import { VS_CODE_UI } from "./extension";
+import { ExtTelemetry } from "./telemetry/extTelemetry";
 import {
   AccountType,
   TelemetryEvent,
@@ -448,6 +450,7 @@ function showSideloadingWarning() {
     .then(async (result) => {
       if (result.isOk() && result.value === StringResources.vsc.common.readMore) {
         await VS_CODE_UI.openUrl("https://aka.ms/teamsfx-custom-app");
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenSideloadingReadmore);
       }
     })
     .catch((error) => {});
@@ -472,12 +475,27 @@ async function getSideloadingStatus(token: string): Promise<boolean | undefined>
         result = response.data?.value?.isSideloadingAllowed as boolean;
       }
 
-      tools.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.CheckSideloading, {
-        [TelemetryProperty.IsSideloadingAllowed]: result + "",
-      });
+      if (result !== undefined) {
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CheckSideloading, {
+          [TelemetryProperty.IsSideloadingAllowed]: result + "",
+        });
+      } else {
+        ExtTelemetry.sendTelemetryErrorEvent(
+          TelemetryEvent.CheckSideloading,
+          new SystemError(
+            "UnknownValue",
+            `AppStudio response code: ${response.status}, body: ${response.data}`,
+            "M365Account"
+          )
+        );
+      }
+
       return result;
     } catch (error) {
-      tools.telemetryReporter?.sendTelemetryErrorEvent(TelemetryEvent.CheckSideloading, error);
+      ExtTelemetry.sendTelemetryErrorEvent(
+        TelemetryEvent.CheckSideloading,
+        new SystemError(error as Error,"M365Account")
+      );
       await delay((retry + 1) * retryInterval);
     }
   } while (++retry < 3);

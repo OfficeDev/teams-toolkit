@@ -44,4 +44,11 @@ export interface Solution {
   checkPermission?: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
 
   listCollaborator?: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
+
+  
+  /**
+   * for env management
+   */
+   createEnv?: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
+   activateEnv?: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
 }

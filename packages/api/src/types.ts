@@ -162,6 +162,7 @@ export interface ProjectStates {
 export interface Inputs extends Json {
   projectPath?: string;
   targetEnvName?: string;
+  sourceEnvName?: string;
   platform: Platform;
   stage?: Stage;
   vscodeEnv?: VsCodeEnv;

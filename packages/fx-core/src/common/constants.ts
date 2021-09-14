@@ -46,14 +46,3 @@ export class ArmParameters {
   static readonly functionStorageName = "function_storageName";
   static readonly functionAppName = "function_webappName";
 }
-
-export class EnvConfigName {
-  static readonly StorageName = "storageName";
-  static readonly IdentityName = "identity";
-  static readonly SqlEndpoint = "sqlEndpoint";
-  static readonly SqlDataBase = "databaseName";
-  static readonly SkuName = "skuName";
-  static readonly AppServicePlanName = "appServicePlanName";
-  static readonly StorageAccountName = "storageAccountName";
-  static readonly FuncAppName = "functionAppName";
-}

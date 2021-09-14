@@ -12,6 +12,7 @@ import {
   ProjectSettings,
   ProjectSettingsFileName,
   PublishProfilesFolderName,
+  returnSystemError,
   TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
 import {
@@ -26,25 +27,33 @@ import { LocalSettingsProvider } from "../../common/localSettingsProvider";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import fs from "fs-extra";
 import path from "path";
-import { readJson, checkFileExist } from "../../common/fileUtils";
+import { readJson } from "../../common/fileUtils";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { FxCore } from "..";
 import {
   isMultiEnvEnabled,
   isArmSupportEnabled,
   isBicepEnvCheckerEnabled,
+  getStrings,
 } from "../../common/tools";
 import { loadProjectSettings } from "./projectSettingsLoader";
 import { generateArmTemplate } from "../../plugins/solution/fx-solution/arm";
 import { loadSolutionContext } from "./envInfoLoader";
-import { ArmParameters, EnvConfigName, ResourcePlugins } from "../../common/constants";
+import { ArmParameters, ResourcePlugins } from "../../common/constants";
 import { getActivatedResourcePlugins } from "../../plugins/solution/fx-solution/ResourcePluginContainer";
-
-const MigrationMessage =
-  "In order to continue using the latest Teams Toolkit, we will update your project code to use the latest Teams Toolkit. We recommend to initialize your workspace with git for better tracking file changes.";
 
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";
+class EnvConfigName {
+  static readonly StorageName = "storageName";
+  static readonly IdentityName = "identity";
+  static readonly SqlEndpoint = "sqlEndpoint";
+  static readonly SqlDataBase = "databaseName";
+  static readonly SkuName = "skuName";
+  static readonly AppServicePlanName = "appServicePlanName";
+  static readonly StorageAccountName = "storageAccountName";
+  static readonly FuncAppName = "functionAppName";
+}
 
 export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
@@ -53,7 +62,12 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
   }
   if (await needMigrateToArmAndMultiEnv(ctx)) {
     const core = ctx.self as FxCore;
-    const res = await core.tools.ui.showMessage("warn", MigrationMessage, true, "OK");
+    const res = await core.tools.ui.showMessage(
+      "warn",
+      getStrings().solution.MigrationToArmAndMultiEnvMessage,
+      true,
+      "OK"
+    );
     const answer = res?.isOk() ? res.value : undefined;
     if (!answer || answer != "OK") {
       return;
@@ -252,7 +266,7 @@ async function cleanup(projectPath: string): Promise<void> {
   await fs.remove(templateAppPackage);
   await fs.remove(fxPublishProfile);
   await fs.remove(path.join(templateAppPackage, ".."));
-  if (checkFileExist(path.join(fxConfig, "..", "new.env.default.json"))) {
+  if (await fs.pathExists(path.join(fxConfig, "..", "new.env.default.json"))) {
     await fs.remove(path.join(fxConfig, "..", "new.env.default.json"));
   }
 }
@@ -267,13 +281,13 @@ async function needMigrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<boolea
     return false;
   }
 
-  const envFileExist = await checkFileExist(
+  const envFileExist = await fs.pathExists(
     path.join(inputs.projectPath as string, ".fx", "env.default.json")
   );
   const configDirExist = await fs.pathExists(
     path.join(inputs.projectPath as string, ".fx", "configs")
   );
-  const armParameterExist = await checkFileExist(
+  const armParameterExist = await fs.pathExists(
     path.join(inputs.projectPath as string, ".fx", "configs", "azure.parameters.dev.json")
   );
   if (envFileExist && (!armParameterExist || !configDirExist)) {
@@ -307,14 +321,13 @@ async function removeBotConfig(ctx: CoreHookContext) {
 }
 
 async function generateArmTempaltesFiles(ctx: CoreHookContext) {
-  const fakeCtx: CoreHookContext = { arguments: ctx.arguments };
+  const minorCtx: CoreHookContext = { arguments: ctx.arguments };
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   const core = ctx.self as FxCore;
 
   const fx = path.join(inputs.projectPath as string, `.${ConfigFolderName}`);
   const fxConfig = path.join(fx, InputConfigsFolderName);
   const templateAzure = path.join(inputs.projectPath as string, "templates", "azure");
-  await fs.ensureDir(fx);
   await fs.ensureDir(fxConfig);
   await fs.ensureDir(templateAzure);
   // load local settings.json
@@ -323,42 +336,41 @@ async function generateArmTempaltesFiles(ctx: CoreHookContext) {
     throw ProjectSettingError();
   }
   const [projectSettings, projectIdMissing] = loadRes.value;
-  fakeCtx.projectSettings = projectSettings;
-  fakeCtx.projectIdMissing = projectIdMissing;
+  minorCtx.projectSettings = projectSettings;
+  minorCtx.projectIdMissing = projectIdMissing;
 
   // load envinfo env.default.json
   const targetEnvName = "default";
   const result = await loadSolutionContext(
     core.tools,
     inputs,
-    fakeCtx.projectSettings,
-    fakeCtx.projectIdMissing,
+    minorCtx.projectSettings,
+    minorCtx.projectIdMissing,
     targetEnvName,
     inputs.ignoreEnvInfo
   );
   if (result.isErr()) {
     throw SolutionConfigError();
   }
-  fakeCtx.solutionContext = result.value;
+  minorCtx.solutionContext = result.value;
   // generate bicep files.
   try {
-    await generateArmTemplate(fakeCtx.solutionContext);
+    await generateArmTemplate(minorCtx.solutionContext);
   } catch (error) {
-    return error;
+    throw error;
   }
-  if (await checkFileExist(path.join(templateAzure, "parameters.template.json"))) {
+  if (await fs.pathExists(path.join(templateAzure, "parameters.template.json"))) {
     await fs.move(
       path.join(templateAzure, "parameters.template.json"),
       path.join(fxConfig, "azure.parameters.dev.json")
     );
   } else {
-    const parameterObject = {
-      $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
-      contentVersion: "1.0.0.0",
-    };
-    await fs.writeFile(
-      path.join(fxConfig, "azure.parameters.dev.json"),
-      JSON.stringify(parameterObject, null, 4)
+    throw err(
+      returnSystemError(
+        new Error("Failed to generate parameter.dev.json"),
+        "Solution",
+        "GenerateArmTemplateFailed"
+      )
     );
   }
 }

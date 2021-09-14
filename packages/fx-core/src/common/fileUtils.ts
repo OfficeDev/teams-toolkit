@@ -11,8 +11,12 @@ import { Component, sendTelemetryErrorEvent, TelemetryEvent } from "./telemetry"
 const sleep = promisify(setTimeout);
 
 export async function readJson(filePath: string): Promise<any> {
-  if(!await fs.pathExists(filePath)) {
-    throw new UserError("FileNotFoundError", `File not found, make sure you don't move the original file: ${filePath}`, CoreSource);
+  if (!(await fs.pathExists(filePath))) {
+    throw new UserError(
+      "FileNotFoundError",
+      `File not found, make sure you don't move the original file: ${filePath}`,
+      CoreSource
+    );
   }
   let rawError;
   for (let i = 0; i < 5; ++i) {
@@ -30,23 +34,12 @@ export async function readJson(filePath: string): Promise<any> {
   const fxError: SystemError = new SystemError(rawError as Error, CoreSource, "ReadJsonError");
   const fileName = basename(filePath);
   fxError.message = `task '${currentStage}' failed because of ${fxError.name}(file:${fileName}):${fxError.message}, if your local file 'env.*.json' is not modified, please report to us by click 'Report Issue' button.`;
-  let content: string|undefined = undefined;
+  let content: string | undefined = undefined;
   try {
     content = fs.readFileSync(filePath, { encoding: "utf-8" });
-  }
-  catch(e){
-  }
-  if(content)
+  } catch (e) {}
+  if (content)
     fxError.userData = `file: ${fileName}\n------------FILE START--------\n${content}\n------------FILE END----------`;
   sendTelemetryErrorEvent(Component.core, TelemetryEvent.ReadJson, fxError);
   throw fxError;
-}
-
-export async function checkFileExist(filePath: string): Promise<boolean> {
-  try {
-    await fs.stat(filePath);
-    return true;
-  } catch (error) {
-    return false;
-  }
 }

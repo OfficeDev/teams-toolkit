@@ -23,7 +23,7 @@
     "GenerateArmTemplateFailNotice": "'%s' Failed to create ARM template for required Azure services.",
     "RegenerateArmTemplateConfirmNotice": "We will update your Azure resource template based on your resource and capability selection. The existing template file will be moved to backup folder under Azure resource template folder for your reference. We recommend to initialize your project workspace with git init to track all changes.",
     "MigrateSuccessNotice": "Your project is now initialized with Teams Toolkit! You can debug your application by pressing F5. If you wish to host your application in Azure, we recommend you to re-create your project directly using the latest Teams Toolkit.",
-
+    "MigrationToArmAndMultiEnvMessage": "In order to continue using the latest Teams Toolkit, we will update your project code to use the latest Teams Toolkit. We recommend to initialize your workspace with git for better tracking file changes.",
     "DeployArmTemplates": {
       "StartNotice": "[%s] Start deploying ARM templates.",
       "CompileBicepSuccessNotice": "[%s] Successfully compile bicep files to JSON.",

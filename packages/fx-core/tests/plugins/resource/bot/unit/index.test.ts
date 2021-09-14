@@ -229,6 +229,7 @@ describe("Teams Bot Resource Plugin", () => {
       botPluginImpl.config.scaffold.botId = "anything";
       botPluginImpl.config.scaffold.botPassword = "anything";
       botPluginImpl.config.provision.siteEndpoint = "https://anything.azurewebsites.net";
+      botPluginImpl.config.provision.botChannelRegName = "anything";
       botPluginImpl.config.saveConfigIntoContext(pluginContext);
 
       sinon.stub(pluginContext.appStudioToken!, "getAccessToken").resolves("anything");
@@ -243,10 +244,8 @@ describe("Teams Bot Resource Plugin", () => {
         "anything"
       );
       sinon.stub(factory, "createWebSiteMgmtClient").returns(fakeWebClient);
-
       sinon.stub(AzureOperations, "CreateOrUpdateAzureWebApp").resolves();
       sinon.stub(AzureOperations, "UpdateBotChannelRegistration").resolves();
-
       // Act
       const result = await botPlugin.postProvision(pluginContext);
 

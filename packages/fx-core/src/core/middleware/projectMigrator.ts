@@ -79,20 +79,20 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext, projectPath: string
   try {
     await migrateArm(ctx);
     await migrateMultiEnv(projectPath);
-    const core = ctx.self as FxCore;
-    core.tools.ui
-      .showMessage("info", migrationSuccessMessage, false, learnMoreText)
-      .then((result) => {
-        const userSelected = result.isOk() ? result.value : undefined;
-        if (userSelected === learnMoreText) {
-          core.tools.ui!.openUrl(migrationGuideUrl);
-        }
-      });
   } catch (err) {
     await cleanup(projectPath);
     throw err;
   }
   await removeOldProjectFiles(projectPath);
+  const core = ctx.self as FxCore;
+  core.tools.ui
+    .showMessage("info", migrationSuccessMessage, false, learnMoreText)
+    .then((result) => {
+      const userSelected = result.isOk() ? result.value : undefined;
+      if (userSelected === learnMoreText) {
+        core.tools.ui!.openUrl(migrationGuideUrl);
+      }
+    });
 }
 async function migrateMultiEnv(projectPath: string): Promise<void> {
   const { fx, fxConfig, templateAppPackage, fxPublishProfile } = await getMultiEnvFolders(

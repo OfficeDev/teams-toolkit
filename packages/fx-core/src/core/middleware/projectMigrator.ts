@@ -30,12 +30,7 @@ import path from "path";
 import { readJson } from "../../common/fileUtils";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { FxCore } from "..";
-import {
-  isMultiEnvEnabled,
-  isArmSupportEnabled,
-  isBicepEnvCheckerEnabled,
-  getStrings,
-} from "../../common/tools";
+import { isMultiEnvEnabled, isArmSupportEnabled, getStrings } from "../../common/tools";
 import { loadProjectSettings } from "./projectSettingsLoader";
 import { generateArmTemplate } from "../../plugins/solution/fx-solution/arm";
 import { loadSolutionContext } from "./envInfoLoader";
@@ -297,7 +292,7 @@ async function needMigrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<boolea
 }
 
 function preCheckEnvEnabled() {
-  if (isMultiEnvEnabled() && isArmSupportEnabled() && isBicepEnvCheckerEnabled()) {
+  if (isMultiEnvEnabled() && isArmSupportEnabled()) {
     return true;
   }
   return false;

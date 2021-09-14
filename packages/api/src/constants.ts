@@ -69,3 +69,12 @@ export enum TelemetryProperty {
   platform = "platform",
   stage = "stage",
 }
+
+/**
+ * You can register your callback function when you want to be notified
+ * at some predefined events.
+ */
+export enum CoreCallbackEvent {
+  lock = "lock",
+  unlock = "unlock",
+}

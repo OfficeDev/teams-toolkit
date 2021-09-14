@@ -27,14 +27,14 @@ export async function provisionLocalResource(
   inputs: Inputs,
   localSettings: Json,
   tokenProvider: TokenProvider
-): Promise<Result<Json, FxError>> {
+): Promise<v2.FxResult<Json, FxError>> {
   const azureSolutionSettings = getAzureSolutionSettings(ctx);
   const result = await ensurePermissionRequest(
     azureSolutionSettings,
     ctx.permissionRequestProvider!
   );
   if (result.isErr()) {
-    return err(result.error);
+    return new v2.FxFailure(result.error);
   }
 
   // Just to trigger M365 login before the concurrent execution of localDebug.
@@ -55,8 +55,8 @@ export async function provisionLocalResource(
     });
 
   const provisionResult = await executeConcurrently(provisionLocalResourceThunks, ctx.logProvider);
-  if (provisionResult.isErr()) {
-    return err(provisionResult.error);
+  if (provisionResult.kind !== "success") {
+    return provisionResult;
   }
 
   const aadPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin);
@@ -67,10 +67,10 @@ export async function provisionLocalResource(
       params: { isLocal: true },
     });
     if (result.isErr()) {
-      return err(result.error);
+      return new v2.FxPartialSuccess(localSettings, result.error);
     }
   } else {
-    return err(
+    return new v2.FxFailure(
       returnSystemError(
         new Error("AAD plugin not selected or executeUserTask is undefined"),
         "Solution",
@@ -84,7 +84,7 @@ export async function provisionLocalResource(
     await tokenProvider.appStudioToken.getJsonObject()
   );
   if (parseTenantIdresult.isErr()) {
-    return err(parseTenantIdresult.error);
+    return new v2.FxFailure(parseTenantIdresult.error);
   }
 
   const configureLocalResourceThunks = plugins
@@ -102,9 +102,9 @@ export async function provisionLocalResource(
     configureLocalResourceThunks,
     ctx.logProvider
   );
-  if (configureResourceResult.isErr()) {
-    return err(configureResourceResult.error);
+  if (configureResourceResult.kind !== "success") {
+    return configureResourceResult;
   }
 
-  return ok(localSettings);
+  return new v2.FxSuccess(localSettings);
 }

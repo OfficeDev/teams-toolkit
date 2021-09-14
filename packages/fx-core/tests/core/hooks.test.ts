@@ -8,6 +8,7 @@ import {
   AzureSolutionSettings,
   ConfigFolderName,
   ConfigMap,
+  CoreCallbackEvent,
   err,
   Func,
   FunctionRouter,
@@ -45,6 +46,7 @@ import {
   serializeDict,
 } from "../../src";
 import { FeatureFlagName } from "../../src/common/constants";
+import { CallbackRegistry } from "../../src/core/callback";
 import { environmentManager } from "../../src/core/environment";
 import {
   ConcurrentError,
@@ -154,7 +156,9 @@ describe("Middleware", () => {
       });
       const my = new MyClass();
       const res = await my.myMethod(inputs);
-      assert.isTrue(res.isErr() && res.error instanceof SystemError && res.error.message === "unknown");
+      assert.isTrue(
+        res.isErr() && res.error instanceof SystemError && res.error.message === "unknown"
+      );
     });
 
     it("convert system error to user error", async () => {
@@ -171,11 +175,11 @@ describe("Middleware", () => {
       });
       const my = new MyClass();
       const res = await my.myMethod(inputs);
-      assert.isTrue( res.isErr() );
-      if(res.isErr()) {
+      assert.isTrue(res.isErr());
+      if (res.isErr()) {
         const error = res.error;
-        assert.isTrue( error  instanceof UserError);
-        assert.equal( error.message, msg);
+        assert.isTrue(error instanceof UserError);
+        assert.equal(error.message, msg);
       }
     });
   });
@@ -392,6 +396,45 @@ describe("Middleware", () => {
         await fs.ensureDir(inputs.projectPath);
         await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`));
         await my.myMethod(inputs);
+      } finally {
+        await fs.rmdir(inputs.projectPath!, { recursive: true });
+      }
+    });
+
+    it("callback should work", async () => {
+      class MyClass {
+        tools?: any = new MockTools();
+        async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
+          return ok("");
+        }
+      }
+
+      let d = 0;
+
+      const lockCb = () => {
+        d++;
+      };
+
+      const unlockCb = () => {
+        d--;
+      };
+
+      CallbackRegistry.set(CoreCallbackEvent.lock, lockCb);
+      CallbackRegistry.set(CoreCallbackEvent.lock, lockCb);
+      CallbackRegistry.set(CoreCallbackEvent.unlock, unlockCb);
+
+      hooks(MyClass, {
+        myMethod: [ConcurrentLockerMW],
+      });
+
+      const my = new MyClass();
+      const inputs: Inputs = { platform: Platform.VSCode };
+      inputs.projectPath = path.join(os.tmpdir(), randomAppName());
+      try {
+        await fs.ensureDir(inputs.projectPath);
+        await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`));
+        await my.myMethod(inputs);
+        expect(d).eql(1);
       } finally {
         await fs.rmdir(inputs.projectPath!, { recursive: true });
       }

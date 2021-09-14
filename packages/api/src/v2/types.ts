@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
+import { FxError } from "..";
 import { UserInteraction } from "../qm/ui";
 import { Inputs, Json, ProjectSettings } from "../types";
 import {
@@ -10,6 +11,8 @@ import {
   TelemetryReporter,
   PermissionRequestProvider,
 } from "../utils";
+import { EnvInfo } from "../context";
+import { SolutionProvisionOutput } from "./solutionPlugin";
 
 export type PluginName = string;
 
@@ -41,5 +44,47 @@ export type SolutionInputs = {
   remoteTeamsAppId?: string;
 };
 
-export type ProvisionInputs = Inputs & SolutionInputs;
-export type DeploymentInputs = Inputs & SolutionInputs;
+export type ProvisionInputs = Inputs & SolutionInputs & { projectPath: string };
+export type DeploymentInputs = Inputs & SolutionInputs & { projectPath: string };
+
+export class FxSuccess<T> {
+  kind: "success";
+  output: T;
+  constructor(output: T) {
+    this.kind = "success";
+    this.output = output;
+  }
+}
+
+export class FxPartialSuccess<T, Error = FxError> {
+  kind: "partialSuccess";
+  output: T;
+  error: Error;
+  constructor(output: T, error: Error) {
+    this.kind = "partialSuccess";
+    this.output = output;
+    this.error = error;
+  }
+}
+
+export class FxFailure<Error = FxError> {
+  kind: "failure";
+  error: Error;
+  constructor(error: Error) {
+    this.kind = "failure";
+    this.error = error;
+  }
+}
+
+export type FxResult<T, Error = FxError> =
+  | FxSuccess<T>
+  | FxPartialSuccess<T, Error>
+  | FxFailure<Error>;
+
+export type EnvInfoV2 = Omit<EnvInfo, "profile" | "config"> & { profile: Json } & { config: Json };
+
+// This type has not been supported by TypeScript yet.
+// Check here https://github.com/microsoft/TypeScript/issues/13923.
+export type DeepReadonly<T> = {
+  readonly [P in keyof T]: DeepReadonly<T[P]>;
+};

@@ -9,6 +9,7 @@ import {
   Json,
   Result,
   TokenProvider,
+  v2,
   Void,
 } from "@microsoft/teamsfx-api";
 import {
@@ -16,6 +17,7 @@ import {
   DeploymentInputs,
   ProvisionInputs,
   ResourcePlugin,
+  ResourceProvisionOutput,
   ResourceTemplate,
 } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
@@ -56,18 +58,10 @@ export class FrontendPluginV2 implements ResourcePlugin {
   async configureResource(
     ctx: Context,
     inputs: ProvisionInputs,
-    provisionInputConfig: Json,
-    provisionOutputs: Json,
+    envInfo: Readonly<v2.EnvInfoV2>,
     tokenProvider: TokenProvider
-  ): Promise<Result<Void, FxError>> {
-    return await configureResourceAdapter(
-      ctx,
-      inputs,
-      provisionInputConfig,
-      provisionOutputs,
-      tokenProvider,
-      this.plugin
-    );
+  ): Promise<Result<ResourceProvisionOutput, FxError>> {
+    return await configureResourceAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
   }
 
   async deploy(

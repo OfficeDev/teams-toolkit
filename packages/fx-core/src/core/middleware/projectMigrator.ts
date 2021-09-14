@@ -22,6 +22,7 @@ import {
   serializeDict,
   SolutionConfigError,
   ProjectSettingError,
+  environmentManager,
 } from "../..";
 import { LocalSettingsProvider } from "../../common/localSettingsProvider";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
@@ -36,9 +37,11 @@ import { generateArmTemplate } from "../../plugins/solution/fx-solution/arm";
 import { loadSolutionContext } from "./envInfoLoader";
 import { ArmParameters, ResourcePlugins } from "../../common/constants";
 import { getActivatedResourcePlugins } from "../../plugins/solution/fx-solution/ResourcePluginContainer";
+import { LocalDebugConfigKeys } from "../../plugins/resource/localdebug/constants";
 
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";
+
 class EnvConfigName {
   static readonly StorageName = "storageName";
   static readonly IdentityName = "identity";
@@ -71,6 +74,7 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
   }
   await next();
 };
+
 async function migrateToArmAndMultiEnv(ctx: CoreHookContext, projectPath: string): Promise<void> {
   try {
     await migrateArm(ctx);
@@ -81,6 +85,7 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext, projectPath: string
   }
   await removeOldProjectFiles(projectPath);
 }
+
 async function migrateMultiEnv(projectPath: string): Promise<void> {
   const { fx, fxConfig, templateAppPackage, fxPublishProfile } = await getMultiEnvFolders(
     projectPath
@@ -116,6 +121,7 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
     await ensureActiveEnv(projectSettings);
   }
 }
+
 async function moveIconsToResourceFolder(templateAppPackage: string): Promise<void> {
   // see AppStudioPluginImpl.buildTeamsAppPackage()
   const manifest: TeamsAppManifest = await readJson(
@@ -148,42 +154,50 @@ async function moveIconsToResourceFolder(templateAppPackage: string): Promise<vo
 }
 
 async function removeExpiredFields(devProfile: string, devUserData: string): Promise<void> {
-  // remove fx-resource-local-debug.trustDevCert, solution.programmingLanguage, fx-resource-function.defaultFunctionName
   const profileData = await readJson(devProfile);
-  if (profileData[PluginNames.LDEBUG]) {
-    delete profileData[PluginNames.LDEBUG];
-  }
-  if (profileData[PluginNames.SOLUTION] && profileData[PluginNames.SOLUTION][programmingLanguage]) {
-    delete profileData[PluginNames.SOLUTION][programmingLanguage];
-  }
-  if (profileData[PluginNames.FUNC] && profileData[PluginNames.FUNC][defaultFunctionName]) {
-    delete profileData[PluginNames.FUNC][defaultFunctionName];
-  }
-  await fs.writeFile(devProfile, JSON.stringify(profileData, null, 4), { encoding: "UTF-8" });
-  const trustDevCertKey = `${PluginNames.LDEBUG}.trustDevCert`;
   const secrets: Record<string, string> = deserializeDict(await fs.readFile(devUserData, "UTF-8"));
 
-  if (secrets[trustDevCertKey]) {
-    delete secrets[trustDevCertKey];
-    await fs.writeFile(devUserData, serializeDict(secrets), { encoding: "UTF-8" });
+  const expiredProfileKeys: [string, string][] = [
+    [PluginNames.LDEBUG, ""],
+    [PluginNames.SOLUTION, programmingLanguage],
+    [PluginNames.SOLUTION, defaultFunctionName],
+    [PluginNames.SOLUTION, "localDebugTeamsAppId"],
+    [PluginNames.AAD, "local_clientId"],
+    [PluginNames.AAD, "local_objectId"],
+    [PluginNames.AAD, "local_tenantId"],
+    [PluginNames.AAD, "local_clientSecret"],
+    [PluginNames.AAD, "local_oauth2PermissionScopeId"],
+    [PluginNames.AAD, "local_applicationIdUris"],
+    [PluginNames.SA, "filePath"],
+    [PluginNames.SA, "environmentVariableParams"],
+  ];
+  for (const [k, v] of expiredProfileKeys) {
+    if (profileData[k]) {
+      if (!v) {
+        delete profileData[k];
+      } else if (profileData[k][v]) {
+        delete profileData[k][v];
+      }
+    }
+  }
+
+  for (const [_, value] of Object.entries(LocalDebugConfigKeys)) {
+    deleteUserDataKey(secrets, `${PluginNames.LDEBUG}.${value}`);
+  }
+  deleteUserDataKey(secrets, `${PluginNames.AAD}.local_clientSecret`);
+
+  await fs.writeFile(devProfile, JSON.stringify(profileData, null, 4), { encoding: "UTF-8" });
+  await fs.writeFile(devUserData, serializeDict(secrets), { encoding: "UTF-8" });
+}
+
+function deleteUserDataKey(secrets: Record<string, string>, key: string) {
+  if (secrets[key]) {
+    delete secrets[key];
   }
 }
 
 function getConfigDevJson(appName: string): EnvConfig {
-  const envConfig: EnvConfig = {
-    $schema:
-      "https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/packages/api/src/schemas/envConfig.json",
-    manifest: {
-      description: `You can customize the 'values' object to customize Teams app manifest for different environments. Visit https://aka.ms/teamsfx-config to learn more about this.`,
-      values: {
-        appName: {
-          short: appName,
-          full: `Full name for ${appName}`,
-        },
-      },
-    },
-  };
-  return envConfig;
+  return environmentManager.newEnvConfigData(appName);
 }
 
 async function queryProjectStatus(fx: string): Promise<any> {
@@ -219,7 +233,7 @@ async function removeOldProjectFiles(projectPath: string): Promise<void> {
   await fs.remove(path.join(fx, "local.env"));
   await fs.remove(path.join(projectPath, AppPackageFolderName));
   await fs.remove(path.join(fx, "new.env.default.json"));
-  // version <= 2.4.1, rmove .fx/appPackage.
+  // version <= 2.4.1, remove .fx/appPackage.
   await fs.remove(path.join(fx, AppPackageFolderName));
 }
 

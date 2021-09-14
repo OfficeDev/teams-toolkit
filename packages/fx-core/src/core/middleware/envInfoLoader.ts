@@ -277,7 +277,7 @@ export async function askNewEnvironment(
     );
   }
 
-  const sourceEnvName = inputs.sourceEnvName;
+  const sourceEnvName = inputs.sourceEnvName!;
   let selectedEnvName: string;
   if (sourceEnvName?.endsWith(activeMark)) {
     selectedEnvName = sourceEnvName.slice(0, sourceEnvName.indexOf(activeMark));

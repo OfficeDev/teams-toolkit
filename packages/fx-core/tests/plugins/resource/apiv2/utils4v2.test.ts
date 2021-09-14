@@ -1,14 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import "mocha";
-import { assert } from "chai";
 import {
   AzureSolutionSettings,
   ConfigMap,
   EnvConfig,
   FxError,
-  Inputs,
   Json,
   ok,
   Platform,
@@ -19,7 +16,11 @@ import {
   TokenProvider,
   Void,
 } from "@microsoft/teamsfx-api";
-import { FrontendPlugin, FrontendPluginV2, newEnvInfo } from "../../../../src";
+import { Context, ProvisionInputs } from "@microsoft/teamsfx-api/build/v2";
+import { assert } from "chai";
+import "mocha";
+import { newEnvInfo } from "../../../../src";
+import { TabLanguage } from "../../../../src/plugins/resource/frontend/resources/templateInfo";
 import {
   provisionResourceAdapter,
   setConfigs,
@@ -27,7 +28,6 @@ import {
   setLocalSettingsV2,
   setProvisionOutputs,
 } from "../../../../src/plugins/resource/utils4v2";
-import { v1 } from "uuid";
 import {
   MockAppStudioTokenProvider,
   MockAzureAccountProvider,
@@ -35,13 +35,6 @@ import {
   MockTools,
   randomAppName,
 } from "../../../core/utils";
-import Container from "typedi";
-import {
-  ResourcePlugins,
-  ResourcePluginsV2,
-} from "../../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
-import { TabLanguage } from "../../../../src/plugins/resource/frontend/resources/templateInfo";
-import { Context, ProvisionInputs } from "@microsoft/teamsfx-api/build/v2";
 
 describe("API V2 adapter", () => {
   beforeEach(() => {});

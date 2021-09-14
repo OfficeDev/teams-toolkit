@@ -100,12 +100,24 @@
         {
           "id": "teamsfx-development",
           "name": "Development",
-          "when": "!fx-extension.sidebarWelcome"
+          "when": "!fx-extension.sidebarWelcome && !fx-extension.customizedTreeview"
+        },
+        {
+          "type": "webview",
+          "id": "teamsfx-development-webview",
+          "name": "Development",
+          "when": "!fx-extension.sidebarWelcome && fx-extension.customizedTreeview"
         },
         {
           "id": "teamsfx-deployment",
           "name": "Deployment",
-          "when": "!fx-extension.sidebarWelcome"
+          "when": "!fx-extension.sidebarWelcome && !fx-extension.customizedTreeview"
+        },
+        {
+          "type": "webview",
+          "id": "teamsfx-deployment-webview",
+          "name": "Deployment",
+          "when": "!fx-extension.sidebarWelcome && fx-extension.customizedTreeview"
         },
         {
           "id": "teamsfx-help-and-feedback",
@@ -397,7 +409,7 @@
       },
       {
         "command": "fx-extension.addEnvironment",
-        "title": "Teams: Add new environment",
+        "title": "Teams: Create new environment copy",
         "icon": "$(add)",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },

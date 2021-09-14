@@ -25,6 +25,7 @@ import { telemetryHelper } from "./utils/telemetry-helper";
 import { BotOptionItem, MessageExtensionItem } from "../../solution/fx-solution/question";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+import "./v2";
 @Service(ResourcePlugins.BotPlugin)
 export class TeamsBot implements Plugin {
   name = "fx-resource-bot";

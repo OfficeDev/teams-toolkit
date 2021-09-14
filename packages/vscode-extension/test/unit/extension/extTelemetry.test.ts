@@ -102,6 +102,7 @@ suite("ExtTelemetry", () => {
           stringProp: "some string",
           appid: undefined,
           component: "extension",
+          "is-upgrade-user": "yes",
         },
         { numericMeasure: 123 }
       );
@@ -124,6 +125,7 @@ suite("ExtTelemetry", () => {
           appid: undefined,
           component: "extension",
           success: "no",
+          "is-upgrade-user": "yes",
           "error-type": "user",
           "error-message": `${error.message}${error.stack ? "\nstack:\n" + error.stack : ""}`,
           "error-code": "test.UserTestError",

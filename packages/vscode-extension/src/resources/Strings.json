@@ -64,7 +64,7 @@
       "teamsDevPortalTitle": "Go To Developer Portal",
       "teamsDevPortalTitleNew": "Developer Portal for Teams",
       "teamsDevPortalDescription": "Manage your Teams app registration and access more tools",
-      "acitve": "(Active)",
+      "active": "(Active)",
       "loginM365AccountToViewCollaborators": "Login M365 account to view all collaborators",
       "noPermissionToListCollaborators": "No permission to list collaborators",
       "unableToFindTeamsAppRegistration": "Unable to find Teams app registration"

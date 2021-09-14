@@ -10,6 +10,7 @@ import {
 } from "@microsoft/teamsfx-core";
 import * as vscode from "vscode";
 import TreeViewManagerInstance, { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
+import { LocalEnvironment } from "./constants";
 import * as StringResources from "./resources/Strings.json";
 import { checkPermission, listCollaborator } from "./handlers";
 import { signedIn } from "./commonlib/common/constant";
@@ -40,18 +41,20 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
       });
     }
     showEnvList.splice(0);
-    for (const item of envNamesResult.value) {
+
+    const envNames = [LocalEnvironment].concat(envNamesResult.value);
+    for (const item of envNames) {
       showEnvList.push(item);
       environmentTreeProvider.add([
         {
           commandId: "fx-extension.environment." + item,
           label: item,
           parent: TreeCategory.Environment,
-          contextValue: "environment",
-          icon: item === activeEnv ? "folder-active" : "symbol-folder",
+          contextValue: item === LocalEnvironment ? "local" : "environment",
+          icon: getTreeViewItemIcon(item, activeEnv),
           isCustom: false,
           description:
-            item === activeEnv ? StringResources.vsc.commandsTreeViewProvider.acitve : "",
+            item === activeEnv ? StringResources.vsc.commandsTreeViewProvider.active : "",
           expanded: activeEnv === item,
         },
       ]);
@@ -92,5 +95,16 @@ export async function updateCollaboratorList(env: string): Promise<void> {
       }
       await environmentTreeProvider.add(userList);
     }
+  }
+}
+
+function getTreeViewItemIcon(envName: string, activeEnv: string | undefined) {
+  switch (envName) {
+    case activeEnv:
+      return "folder-active";
+    case LocalEnvironment:
+    // return "lock";
+    default:
+      return "symbol-folder";
   }
 }

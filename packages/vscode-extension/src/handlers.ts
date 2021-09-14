@@ -861,7 +861,7 @@ export async function listCollaborator(env: string): Promise<TreeItem[]> {
       result = [
         {
           commandId: `fx-extension.listcollaborator.${env}`,
-          label: "No permission to list collaborators",
+          label: StringResources.vsc.commandsTreeViewProvider.noPermissionToListCollaborators,
           icon: "warning",
           isCustom: true,
           parent: "fx-extension.environment." + env,
@@ -878,7 +878,7 @@ export async function listCollaborator(env: string): Promise<TreeItem[]> {
     );
     let label = e.message;
     if (e.name === "CannotProcessBeforeProvision") {
-      label = "Unable to find Teams app registration";
+      label = StringResources.vsc.commandsTreeViewProvider.unableToFindTeamsAppRegistration;
     }
     result = [
       {

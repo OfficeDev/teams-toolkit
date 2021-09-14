@@ -20,7 +20,7 @@ import { format } from "util";
 import { compileHandlebarsTemplateString, getStrings } from "../../../common";
 import path from "path";
 import * as fs from "fs-extra";
-import { ConstantString, PluginDisplayName } from "../../../common/constants";
+import { ArmHelpLink, ConstantString, PluginDisplayName } from "../../../common/constants";
 import { Executor, CryptoDataMatchers, isMultiEnvEnabled } from "../../../common/tools";
 import {
   ARM_TEMPLATE_OUTPUT,
@@ -786,5 +786,5 @@ function buildDeploymentErrorMessage(failedDeployments: string[]): Result<void, 
       ", "
     )}) for your project failed. Please refer to output channel for more error details.`
   );
-  return err(returnUserError(returnError, "Solution", "ArmDeploymentFailed"));
+  return err(returnUserError(returnError, "Solution", "ArmDeploymentFailed", ArmHelpLink));
 }

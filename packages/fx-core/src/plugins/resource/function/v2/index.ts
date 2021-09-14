@@ -12,6 +12,7 @@ import {
   Result,
   TokenProvider,
   traverse,
+  v2,
   Void,
 } from "@microsoft/teamsfx-api";
 import {
@@ -63,33 +64,19 @@ export class FunctionPluginV2 implements ResourcePlugin {
   async provisionResource(
     ctx: Context,
     inputs: ProvisionInputs,
-    provisionInputConfig: Json,
+    envInfo: Readonly<v2.EnvInfoV2>,
     tokenProvider: TokenProvider
   ): Promise<Result<ResourceProvisionOutput, FxError>> {
-    return await provisionResourceAdapter(
-      ctx,
-      inputs,
-      provisionInputConfig,
-      tokenProvider,
-      this.plugin
-    );
+    return await provisionResourceAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
   }
 
   async configureResource(
     ctx: Context,
     inputs: ProvisionInputs,
-    provisionInputConfig: Json,
-    provisionOutputs: Json,
+    envInfo: Readonly<v2.EnvInfoV2>,
     tokenProvider: TokenProvider
-  ): Promise<Result<Void, FxError>> {
-    return await configureResourceAdapter(
-      ctx,
-      inputs,
-      provisionInputConfig,
-      provisionOutputs,
-      tokenProvider,
-      this.plugin
-    );
+  ): Promise<Result<ResourceProvisionOutput, FxError>> {
+    return await configureResourceAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
   }
 
   async deploy(

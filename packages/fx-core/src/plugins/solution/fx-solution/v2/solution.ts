@@ -13,6 +13,7 @@ import {
   QTreeNode,
   TokenProvider,
 } from "@microsoft/teamsfx-api";
+import { DeploymentInputs, EnvInfoV2, ProvisionInputs } from "@microsoft/teamsfx-api/build/v2";
 import { Service } from "typedi";
 import { PluginDisplayName } from "../../../../common/constants";
 import { SolutionPluginsV2 } from "../../../../core/SolutionPluginContainer";
@@ -21,6 +22,7 @@ import { deploy } from "./deploy";
 import { executeUserTask } from "./executeUserTask";
 import { generateResourceTemplate } from "./generateResourceTemplate";
 import { getQuestionsForScaffolding } from "./getQuestions";
+import { provisionResource } from "./provision";
 import { provisionLocalResource } from "./provisionLocal";
 import { publishApplication } from "./publish";
 import { scaffoldSourceCode } from "./scaffolding";
@@ -38,11 +40,9 @@ export class TeamsAppSolutionV2 implements v2.SolutionPlugin {
   provisionResources: (
     ctx: v2.Context,
     inputs: Inputs,
-    provisionInputConfig: Json,
+    envInfo: EnvInfoV2,
     tokenProvider: TokenProvider
-  ) => Promise<Result<v2.SolutionProvisionOutput, FxError>> = function () {
-    throw new Error("not implemented");
-  };
+  ) => Promise<v2.FxResult<v2.SolutionProvisionOutput, FxError>> = provisionResource;
 
   deploy?: (
     ctx: v2.Context,
@@ -63,7 +63,7 @@ export class TeamsAppSolutionV2 implements v2.SolutionPlugin {
     inputs: Inputs,
     localSettings: Json,
     tokenProvider: TokenProvider
-  ) => Promise<Result<Json, FxError>> = provisionLocalResource;
+  ) => Promise<v2.FxResult<Json, FxError>> = provisionLocalResource;
 
   getQuestionsForScaffolding?: (
     ctx: v2.Context,

@@ -148,6 +148,7 @@ export enum SolutionError {
   FailedToGrantPermission = "FailedToGrantPermission",
   FailedToCheckPermission = "FailedToCheckPermission",
   FailedToListCollaborator = "FailedToListCollaborator",
+  FailedToExecuteTasks = "FailedToExecuteTasks",
 }
 
 export const LOCAL_DEBUG_TAB_ENDPOINT = "localTabEndpoint";

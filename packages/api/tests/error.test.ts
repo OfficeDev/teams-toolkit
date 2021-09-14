@@ -25,7 +25,7 @@ import {
   UndefinedError,
   UnknownError,
   UserError,
-  WriteFileError
+  WriteFileError,
 } from "../src/error";
 import fs from "fs-extra";
 
@@ -95,7 +95,13 @@ describe("error", function () {
       });
     it("constructor with UserErrorOptions object", () => {
       {
-        const error = new UserError({ error: new RangeError(myMessage), source: mySource, message: myMessage2, name: myName, helpLink: myHelpLink });
+        const error = new UserError({
+          error: new RangeError(myMessage),
+          source: mySource,
+          message: myMessage2,
+          name: myName,
+          helpLink: myHelpLink,
+        });
         chai.assert.equal(error.name, myName);
         chai.assert.isTrue(error.message && error.message.includes(myMessage));
         chai.assert.isTrue(error.message && error.message.includes(myMessage2));
@@ -105,7 +111,12 @@ describe("error", function () {
         chai.assert.isTrue(error instanceof UserError);
       }
       {
-        const error = new UserError({ error: new RangeError(myMessage), source: mySource, message: myMessage2, helpLink: myHelpLink });
+        const error = new UserError({
+          error: new RangeError(myMessage),
+          source: mySource,
+          message: myMessage2,
+          helpLink: myHelpLink,
+        });
         chai.assert.equal(error.name, "RangeError");
         chai.assert.isTrue(error.message && error.message.includes(myMessage));
         chai.assert.isTrue(error.message && error.message.includes(myMessage2));
@@ -115,7 +126,11 @@ describe("error", function () {
         chai.assert.isTrue(error instanceof UserError);
       }
       {
-        const error = new UserError({ error: new RangeError(myMessage), source: mySource, helpLink: myHelpLink });
+        const error = new UserError({
+          error: new RangeError(myMessage),
+          source: mySource,
+          helpLink: myHelpLink,
+        });
         chai.assert.equal(error.name, "RangeError");
         chai.assert.equal(error.message, myMessage);
         chai.assert.equal(error.source, mySource);
@@ -156,7 +171,14 @@ describe("error", function () {
       }
       {
         const innerError = new RangeError(myMessage2);
-        const error = new SystemError(myName, myMessage, mySource, undefined, myIssueLink, innerError);
+        const error = new SystemError(
+          myName,
+          myMessage,
+          mySource,
+          undefined,
+          myIssueLink,
+          innerError
+        );
         chai.assert.equal(error.name, myName);
         chai.assert.isTrue(error.message.includes(myMessage));
         chai.assert.isTrue(error.message.includes(myMessage2));
@@ -199,7 +221,13 @@ describe("error", function () {
       });
     it("constructor with SystemErrorOptions object", () => {
       {
-        const error = new SystemError({ error: new RangeError(myMessage), source: mySource, message: myMessage2, name: myName, issueLink: myIssueLink });
+        const error = new SystemError({
+          error: new RangeError(myMessage),
+          source: mySource,
+          message: myMessage2,
+          name: myName,
+          issueLink: myIssueLink,
+        });
         chai.assert.equal(error.name, myName);
         chai.assert.isTrue(error.message && error.message.includes(myMessage));
         chai.assert.isTrue(error.message && error.message.includes(myMessage2));
@@ -209,7 +237,12 @@ describe("error", function () {
         chai.assert.isTrue(error instanceof SystemError);
       }
       {
-        const error = new SystemError({ error: new RangeError(myMessage), source: mySource, message: myMessage2, issueLink: myIssueLink });
+        const error = new SystemError({
+          error: new RangeError(myMessage),
+          source: mySource,
+          message: myMessage2,
+          issueLink: myIssueLink,
+        });
         chai.assert.equal(error.name, "RangeError");
         chai.assert.isTrue(error.message && error.message.includes(myMessage));
         chai.assert.isTrue(error.message && error.message.includes(myMessage2));
@@ -219,7 +252,11 @@ describe("error", function () {
         chai.assert.isTrue(error instanceof SystemError);
       }
       {
-        const error = new SystemError({ error: new RangeError(myMessage), source: mySource, issueLink: myIssueLink });
+        const error = new SystemError({
+          error: new RangeError(myMessage),
+          source: mySource,
+          issueLink: myIssueLink,
+        });
         chai.assert.equal(error.name, "RangeError");
         chai.assert.equal(error.message, myMessage);
         chai.assert.equal(error.source, mySource);
@@ -284,7 +321,7 @@ describe("error", function () {
         chai.assert.isTrue(fxError instanceof SystemError);
         chai.assert.isTrue(
           fxError.message !== undefined &&
-          fxError.message.includes("ENOENT: no such file or directory")
+            fxError.message.includes("ENOENT: no such file or directory")
         );
         chai.assert.isTrue(fxError.name === "Error");
         chai.assert.isTrue(fxError.source === mySource);
@@ -300,7 +337,6 @@ describe("error", function () {
       chai.assert.isTrue(fxError.stack && fxError.stack.includes("error.test.ts"));
     });
   });
-
 
   describe("Sub class", function () {
     it("happy path", () => {
@@ -417,18 +453,13 @@ describe("error", function () {
       chai.assert.equal(temp.message, myMessage);
       chai.assert.equal(temp.source, mySource);
     }),
-    it("happy path with more info", () => {
-      const temp = returnSystemError(
-        new Error(myMessage),
-        mySource,
-        myName,
-        myIssueLink
-      );
-      chai.assert.equal(temp.name, myName);
-      chai.assert.equal(temp.message, myMessage);
-      chai.assert.equal(temp.source, mySource);
-      chai.assert.equal(temp.issueLink, myIssueLink);
-    });
+      it("happy path with more info", () => {
+        const temp = returnSystemError(new Error(myMessage), mySource, myName, myIssueLink);
+        chai.assert.equal(temp.name, myName);
+        chai.assert.equal(temp.message, myMessage);
+        chai.assert.equal(temp.source, mySource);
+        chai.assert.equal(temp.issueLink, myIssueLink);
+      });
   });
 
   describe("returnUserError", function () {
@@ -438,17 +469,12 @@ describe("error", function () {
       chai.assert.equal(temp.message, myMessage);
       chai.assert.equal(temp.source, mySource);
     }),
-    it("happy path with more info", () => {
-      const temp = returnUserError(
-        new Error(myMessage),
-        mySource,
-        myName,
-        myHelpLink
-      );
-      chai.assert.equal(temp.name, myName);
-      chai.assert.equal(temp.message, myMessage);
-      chai.assert.equal(temp.source, mySource);
-      chai.assert.equal(temp.helpLink, myHelpLink);
-    });
+      it("happy path with more info", () => {
+        const temp = returnUserError(new Error(myMessage), mySource, myName, myHelpLink);
+        chai.assert.equal(temp.name, myName);
+        chai.assert.equal(temp.message, myMessage);
+        chai.assert.equal(temp.source, mySource);
+        chai.assert.equal(temp.helpLink, myHelpLink);
+      });
   });
 });

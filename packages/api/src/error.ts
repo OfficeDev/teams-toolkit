@@ -18,19 +18,19 @@ export interface FxError extends Error {
   userData?: any;
 }
 export interface ErrorOptionBase {
-  source?: string,
-  name?: string,
-  message?: string,
-  error?: Error,
+  source?: string;
+  name?: string;
+  message?: string;
+  error?: Error;
   userData?: any;
 }
 
 export interface UserErrorOptions extends ErrorOptionBase {
-  helpLink?: string,
+  helpLink?: string;
 }
 
 export interface SystemErrorOptions extends ErrorOptionBase {
-  issueLink?: string,
+  issueLink?: string;
 }
 /**
  * Users can recover by themselves, e.g., users input invalid app names.
@@ -57,13 +57,8 @@ export class UserError extends Error implements FxError {
    */
   userData?: string;
 
-  constructor(
-    error: Error, 
-    source?: string, 
-    name?: string, 
-    helpLink?: string
-  ); 
-  constructor(opt: UserErrorOptions); 
+  constructor(error: Error, source?: string, name?: string, helpLink?: string);
+  constructor(opt: UserErrorOptions);
   constructor(
     name: string,
     message: string,
@@ -79,11 +74,10 @@ export class UserError extends Error implements FxError {
     param4?: string,
     param5?: string,
     innerError?: any
-  ) 
-  {
-    let option:UserErrorOptions;
-    let stack: string|undefined;
-    if(typeof param1 === "string") {
+  ) {
+    let option: UserErrorOptions;
+    let stack: string | undefined;
+    if (typeof param1 === "string") {
       option = {
         name: param1,
         message: param2,
@@ -91,11 +85,10 @@ export class UserError extends Error implements FxError {
         helpLink: param5,
         error: innerError instanceof Error ? innerError : undefined,
       };
-      if(innerError instanceof Error) {
+      if (innerError instanceof Error) {
         stack = innerError.stack;
       }
-    }
-    else if(param1 instanceof Error) {
+    } else if (param1 instanceof Error) {
       option = {
         error: param1,
         name: param3,
@@ -103,8 +96,7 @@ export class UserError extends Error implements FxError {
         helpLink: param4,
       };
       stack = param1.stack;
-    }
-    else {
+    } else {
       option = param1;
     }
 
@@ -122,20 +114,18 @@ export class UserError extends Error implements FxError {
     this.source = option.source || "unknown";
     this.helpLink = option.helpLink;
     this.userData = option.userData;
-    
+
     this.timestamp = new Date();
 
-    if(stack) {
+    if (stack) {
       this.stack = stack;
-    }
-    else {
+    } else {
       Error.captureStackTrace(this, new.target);
     }
     Object.setPrototypeOf(this, new.target.prototype);
-    if(typeof param1 === "string") {
+    if (typeof param1 === "string") {
       this.innerError = innerError;
-    }
-    else if(param1 instanceof Error) {
+    } else if (param1 instanceof Error) {
       this.innerError = param1;
     }
   }
@@ -167,13 +157,8 @@ export class SystemError extends Error implements FxError {
    */
   userData?: string;
 
-  constructor(
-    error: Error, 
-    source?: string, 
-    name?: string, 
-    issueLink?: string
-  ); 
-  constructor(opt: SystemErrorOptions); 
+  constructor(error: Error, source?: string, name?: string, issueLink?: string);
+  constructor(opt: SystemErrorOptions);
   constructor(
     name: string,
     message: string,
@@ -189,11 +174,10 @@ export class SystemError extends Error implements FxError {
     param4?: string,
     param5?: string,
     innerError?: any
-  ) 
-  {
-    let option:SystemErrorOptions;
-    let stack: string|undefined;
-    if(typeof param1 === "string") {
+  ) {
+    let option: SystemErrorOptions;
+    let stack: string | undefined;
+    if (typeof param1 === "string") {
       option = {
         name: param1,
         message: param2,
@@ -201,11 +185,10 @@ export class SystemError extends Error implements FxError {
         issueLink: param5,
         error: innerError instanceof Error ? innerError : undefined,
       };
-      if(innerError instanceof Error) {
+      if (innerError instanceof Error) {
         stack = innerError.stack;
       }
-    }
-    else if(param1 instanceof Error) {
+    } else if (param1 instanceof Error) {
       option = {
         error: param1,
         name: param3,
@@ -213,8 +196,7 @@ export class SystemError extends Error implements FxError {
         issueLink: param4,
       };
       stack = param1.stack;
-    }
-    else {
+    } else {
       option = param1;
     }
 
@@ -232,20 +214,18 @@ export class SystemError extends Error implements FxError {
     this.source = option.source || "unknown";
     this.issueLink = option.issueLink;
     this.userData = option.userData;
-    
+
     this.timestamp = new Date();
 
-    if(stack) {
+    if (stack) {
       this.stack = stack;
-    }
-    else {
+    } else {
       Error.captureStackTrace(this, new.target);
     }
     Object.setPrototypeOf(this, new.target.prototype);
-    if(typeof param1 === "string") {
+    if (typeof param1 === "string") {
       this.innerError = innerError;
-    }
-    else if(param1 instanceof Error) {
+    } else if (param1 instanceof Error) {
       this.innerError = param1;
     }
   }
@@ -291,7 +271,6 @@ export function returnSystemError(
   return new SystemError(e, source, name, issueLink);
 }
 
-
 export function assembleError(e: any, source?: string): FxError {
   if (e instanceof UserError || e instanceof SystemError) return e;
   if (!source) source = "unknown";
@@ -310,7 +289,7 @@ export function assembleError(e: any, source?: string): FxError {
 
 export class UnknownError extends SystemError {
   constructor(source?: string, message?: string) {
-    super({ source: source || "API", message: message});
+    super({ source: source || "API", message: message });
   }
 }
 
@@ -360,25 +339,32 @@ export class NotImplementedError extends SystemError {
 
 export class WriteFileError extends SystemError {
   constructor(source: string, e: Error) {
-    super({ source: source, error: e, name: "WriteFileError"});
+    super({ source: source, error: e, name: "WriteFileError" });
   }
 }
 
 export class ReadFileError extends SystemError {
   constructor(source: string, e: Error) {
-    super({ source: source, error: e , name: "ReadFileError"});
+    super({ source: source, error: e, name: "ReadFileError" });
   }
 }
 
 export class NoProjectOpenedError extends UserError {
   constructor(source: string) {
-    super({ source: source, message: "No project opened, you can create a new project or open an existing one." });
+    super({
+      source: source,
+      message: "No project opened, you can create a new project or open an existing one.",
+    });
   }
 }
 
 export class ConcurrentError extends UserError {
   constructor(source: string) {
-    super({ source: source, message: "Concurrent operation error, please wait until the running task finish or you can reload the window to cancel it." });
+    super({
+      source: source,
+      message:
+        "Concurrent operation error, please wait until the running task finish or you can reload the window to cancel it.",
+    });
   }
 }
 
@@ -390,7 +376,12 @@ export class InvalidInputError extends UserError {
 
 export class InvalidProjectError extends UserError {
   constructor(source: string, msg?: string) {
-    super({ source: source, message: `The command only works for project created by Teamsfx Toolkit. ${msg ? ": " + msg : ""}` });
+    super({
+      source: source,
+      message: `The command only works for project created by Teamsfx Toolkit. ${
+        msg ? ": " + msg : ""
+      }`,
+    });
   }
 }
 

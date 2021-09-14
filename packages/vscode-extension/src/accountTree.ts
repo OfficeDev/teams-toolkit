@@ -494,7 +494,7 @@ async function getSideloadingStatus(token: string): Promise<boolean | undefined>
     } catch (error) {
       ExtTelemetry.sendTelemetryErrorEvent(
         TelemetryEvent.CheckSideloading,
-        new SystemError(error as Error,"M365Account")
+        new SystemError(error as Error, "M365Account")
       );
       await delay((retry + 1) * retryInterval);
     }

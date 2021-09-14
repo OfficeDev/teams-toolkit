@@ -36,6 +36,7 @@ import {
   AppStudioTokenProvider,
   Inputs,
   PermissionRequestProvider,
+  GraphTokenProvider,
 } from "@microsoft/teamsfx-api";
 import { MockPermissionRequestProvider } from "../../core/utils";
 
@@ -302,6 +303,32 @@ class MockedTokenCredentials extends TokenCredentialsBase {
       resource: "mock",
       accessToken: "mock",
     };
+  }
+}
+
+export class MockedGraphTokenProvider implements GraphTokenProvider {
+  async getAccessToken(showDialog?: boolean): Promise<string> {
+    return "some token";
+  }
+  async getJsonObject(showDialog?: boolean): Promise<Record<string, unknown>> {
+    return {};
+  }
+  async signout(): Promise<boolean> {
+    return true;
+  }
+  async setStatusChangeMap(
+    name: string,
+    statusChange: (
+      status: string,
+      token?: string,
+      accountInfo?: Record<string, unknown>
+    ) => Promise<void>,
+    immediateCall?: boolean
+  ): Promise<boolean> {
+    return true;
+  }
+  async removeStatusChangeMap(name: string): Promise<boolean> {
+    return true;
   }
 }
 

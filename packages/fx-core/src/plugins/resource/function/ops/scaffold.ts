@@ -15,11 +15,23 @@ import { InfoMessages } from "../resources/message";
 import { LanguageStrategyFactory } from "../language-strategy";
 import { Logger } from "../utils/logger";
 import { ScaffoldSteps, StepGroup, step } from "../resources/steps";
-import { TemplateZipFallbackError, UnknownFallbackError, UnzipError, TemplateManifestError } from "../resources/errors";
+import {
+  TemplateZipFallbackError,
+  UnknownFallbackError,
+  UnzipError,
+  TemplateManifestError,
+} from "../resources/errors";
 import { TelemetryHelper } from "../utils/telemetry-helper";
-import { genTemplateRenderReplaceFn, removeTemplateExtReplaceFn, ScaffoldAction, ScaffoldActionName, ScaffoldContext, scaffoldFromTemplates } from "../../../../common/templatesActions";
+import {
+  genTemplateRenderReplaceFn,
+  removeTemplateExtReplaceFn,
+  ScaffoldAction,
+  ScaffoldActionName,
+  ScaffoldContext,
+  scaffoldFromTemplates,
+} from "../../../../common/templatesActions";
 
-export type TemplateVariables = {[key: string]: string}
+export type TemplateVariables = { [key: string]: string };
 
 export class FunctionScaffold {
   public static convertTemplateLanguage(language: FunctionLanguage): string {
@@ -62,29 +74,27 @@ export class FunctionScaffold {
       dst: componentPath,
       fileNameReplaceFn: _nameReplaceFn,
       fileDataReplaceFn: genTemplateRenderReplaceFn(variables),
-      onActionEnd:
-        async (action: ScaffoldAction, context: ScaffoldContext) => {
-          if (action.name === ScaffoldActionName.FetchTemplatesUrlWithTag) {
-            Logger.info(InfoMessages.getTemplateFrom(context.zipUrl ?? CommonConstants.emptyString));
-          }
-        },
-      onActionError:
-        async (action: ScaffoldAction, context: ScaffoldContext, error: Error) => {
-          Logger.info(error.toString());
-          switch(action.name) {
-            case ScaffoldActionName.FetchTemplatesUrlWithTag:
-            case ScaffoldActionName.FetchTemplatesZipFromUrl:
-              TelemetryHelper.sendScaffoldFallbackEvent(new TemplateManifestError(error.message));
-              Logger.info(InfoMessages.getTemplateFromLocal);
-              break;
-            case ScaffoldActionName.FetchTemplateZipFromLocal:
-              throw new TemplateZipFallbackError();
-            case ScaffoldActionName.Unzip:
-              throw new UnzipError();
-            default:
-              throw new UnknownFallbackError();
-          }
-        },
+      onActionEnd: async (action: ScaffoldAction, context: ScaffoldContext) => {
+        if (action.name === ScaffoldActionName.FetchTemplatesUrlWithTag) {
+          Logger.info(InfoMessages.getTemplateFrom(context.zipUrl ?? CommonConstants.emptyString));
+        }
+      },
+      onActionError: async (action: ScaffoldAction, context: ScaffoldContext, error: Error) => {
+        Logger.info(error.toString());
+        switch (action.name) {
+          case ScaffoldActionName.FetchTemplatesUrlWithTag:
+          case ScaffoldActionName.FetchTemplatesZipFromUrl:
+            TelemetryHelper.sendScaffoldFallbackEvent(new TemplateManifestError(error.message));
+            Logger.info(InfoMessages.getTemplateFromLocal);
+            break;
+          case ScaffoldActionName.FetchTemplateZipFromLocal:
+            throw new TemplateZipFallbackError();
+          case ScaffoldActionName.Unzip:
+            throw new UnzipError();
+          default:
+            throw new UnknownFallbackError();
+        }
+      },
     });
   }
 

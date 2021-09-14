@@ -38,6 +38,7 @@ import {
   Void,
   InputConfigsFolderName,
   PublishProfilesFolderName,
+  EnvConfig,
   CoreCallbackEvent,
   CoreCallbackFunc,
 } from "@microsoft/teamsfx-api";
@@ -126,6 +127,7 @@ import { SolutionLoaderMW } from "./middleware/solutionLoader";
 import { ProjectUpgraderMW } from "./middleware/projectUpgrader";
 import { FeatureFlagName } from "../common/constants";
 import { localSettingsFileName } from "../common/localSettingsProvider";
+import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { CallbackRegistry } from "./callback";
 
 export interface CoreHookContext extends HookContext {
@@ -451,14 +453,32 @@ export class FxCore implements Core {
   async provisionResources(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     currentStage = Stage.provision;
     if (isV2()) {
-      if (!ctx || !ctx.solutionV2 || !ctx.contextV2 || !ctx.provisionInputConfig)
+      if (
+        !ctx ||
+        !ctx.solutionV2 ||
+        !ctx.contextV2 ||
+        !ctx.provisionInputConfig ||
+        !ctx.contextV2.projectSetting.activeEnvironment ||
+        !ctx.provisionOutputs
+      )
         return err(new ObjectIsUndefinedError("Provision input stuff"));
-      return await ctx.solutionV2.provisionResources(
+      const envInfo: EnvInfoV2 = {
+        envName: ctx.contextV2.projectSetting.activeEnvironment,
+        config: ctx.provisionInputConfig as EnvConfig,
+        profile: ctx.provisionOutputs,
+      };
+      const result = await ctx.solutionV2.provisionResources(
         ctx.contextV2,
         inputs,
-        ctx.provisionInputConfig,
+        envInfo,
         this.tools.tokenProvider
       );
+      // todo(yefuwang): persist profile on success and partialSuccess
+      if (result.kind === "success") {
+        return ok(Void);
+      } else {
+        return err(result.error);
+      }
     } else {
       if (!ctx || !ctx.solution || !ctx.solutionContext)
         return err(new ObjectIsUndefinedError("Provision input stuff"));
@@ -524,9 +544,12 @@ export class FxCore implements Core {
           ctx.localSettings,
           this.tools.tokenProvider
         );
-        if (res.isOk()) {
-          ctx.localSettings = res.value;
+        if (res.kind === "success") {
+          ctx.localSettings = res.output;
           return ok(Void);
+        } else if (res.kind === "partialSuccess") {
+          ctx.localSettings = res.output;
+          return err(res.error);
         } else {
           return err(res.error);
         }
@@ -1124,7 +1147,7 @@ export async function createBasicFolderStructure(inputs: Inputs): Promise<Result
           description: "",
           author: "",
           scripts: {
-            test: 'echo "Error: no test specified" && exit 1',
+            test: "echo \"Error: no test specified\" && exit 1",
           },
           devDependencies: {
             "@microsoft/teamsfx-cli": "0.*",

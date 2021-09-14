@@ -156,7 +156,9 @@ describe("Middleware", () => {
       });
       const my = new MyClass();
       const res = await my.myMethod(inputs);
-      assert.isTrue(res.isErr() && res.error instanceof SystemError && res.error.message === "unknown");
+      assert.isTrue(
+        res.isErr() && res.error instanceof SystemError && res.error.message === "unknown"
+      );
     });
 
     it("convert system error to user error", async () => {
@@ -173,11 +175,11 @@ describe("Middleware", () => {
       });
       const my = new MyClass();
       const res = await my.myMethod(inputs);
-      assert.isTrue( res.isErr() );
-      if(res.isErr()) {
+      assert.isTrue(res.isErr());
+      if (res.isErr()) {
         const error = res.error;
-        assert.isTrue( error  instanceof UserError);
-        assert.equal( error.message, msg);
+        assert.isTrue(error instanceof UserError);
+        assert.equal(error.message, msg);
       }
     });
   });

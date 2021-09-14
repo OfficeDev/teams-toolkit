@@ -2,10 +2,11 @@
 // Licensed under the MIT license.
 
 import { Result } from "neverthrow";
-import { FxError, QTreeNode, TokenProvider, Void, Func, Json, Inputs } from "../index";
+import { DeepReadonly } from ".";
+import { FxError, QTreeNode, TokenProvider, Void, Func, Json, Inputs, EnvInfo } from "../index";
 import { AzureSolutionSettings } from "../types";
 import { AppStudioTokenProvider, AzureAccountProvider } from "../utils";
-import { Context, DeploymentInputs, ProvisionInputs } from "./types";
+import { Context, DeploymentInputs, EnvInfoV2, FxResult, ProvisionInputs } from "./types";
 
 export type ResourceTemplate = BicepTemplate | JsonTemplate;
 
@@ -97,7 +98,7 @@ export interface ResourcePlugin {
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {ProvisionInputs} inputs - inputs injected by Toolkit runtime and solution.
-   * @param {Json} provisionInputConfig - model for config.${env}.json, in which, user can customize some inputs for provision
+   * @param {DeepReadonly<EnvInfoV2>} envInfo - model for (config|profile).${env}.json
    * @param {TokenProvider} tokenProvider - Tokens for Azure and AppStudio
    *
    * @returns {ResourceProvisionOutput} resource provision output
@@ -105,7 +106,7 @@ export interface ResourcePlugin {
   provisionResource?: (
     ctx: Context,
     inputs: ProvisionInputs,
-    provisionInputConfig: Json,
+    envInfo: DeepReadonly<EnvInfoV2>,
     tokenProvider: TokenProvider
   ) => Promise<Result<ResourceProvisionOutput, FxError>>;
 
@@ -117,17 +118,17 @@ export interface ResourcePlugin {
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {ProvisionInputs} inputs - inputs injected by Toolkit runtime and solution.
    * @param {Json} provisionInputConfig - model for config.${env}.json, in which, user can customize some inputs for provision
-   * @param {Json} provisionOutputs - the profile (persist by core as `profile.${env}.json`) containing provision outputs
+   * @param {Readonly<SolutionProvisionOutput>} provisionOutputs - the profile (persist by core as `profile.${env}.json`) containing provision outputs
    * @param {TokenProvider} tokenProvider - Tokens for Azure and AppStudio
    *
+   * @returns {ResourceProvisionOutput} resource provision output
    */
   configureResource?: (
     ctx: Context,
     inputs: ProvisionInputs,
-    provisionInputConfig: Json,
-    provisionOutputs: Json,
+    envInfo: Readonly<EnvInfoV2>,
     tokenProvider: TokenProvider
-  ) => Promise<Result<Void, FxError>>;
+  ) => Promise<Result<ResourceProvisionOutput, FxError>>;
 
   /**
    * Depends on the values returned by {@link provisionResource} and {@link configureResource}.

@@ -72,12 +72,17 @@ import { SolutionPlugins } from "../../src/core/SolutionPluginContainer";
 import { PluginNames } from "../../src/plugins/solution/fx-solution/constants";
 import { AzureResourceSQL } from "../../src/plugins/solution/fx-solution/question";
 import {
+  MockDefaultUserData,
+  MockEnvDefaultJson,
   MockLatestVersion2_3_0Context,
   MockLatestVersion2_3_0UserData,
+  MockManifest,
   MockPreviousVersionBefore2_3_0Context,
   MockPreviousVersionBefore2_3_0UserData,
   MockProjectSettings,
+  MockSettingJson,
   MockSolution,
+  MockSub,
   MockTools,
   randomAppName,
 } from "./utils";
@@ -1541,9 +1546,38 @@ describe("Middleware", () => {
         await fs.ensureDir(appPackagePath);
 
         await fs.writeJSON(path.join(appPackagePath, "manifest.json"), {});
+        await fs.writeJSON(
+          path.join(fx, "env.default.json"),
+          JSON.stringify(MockEnvDefaultJson(), null, 4),
+          { encoding: "UTF-8" }
+        );
+        await fs.writeJSON(
+          path.join(fx, "settings.json"),
+          JSON.stringify(MockSettingJson(appName), null, 4),
+          { encoding: "UTF-8" }
+        );
+        await fs.writeJSON(
+          path.join(fx, "subscriptionInfo.json"),
+          JSON.stringify(MockSub(), null, 4),
+          { encoding: "UTF-8" }
+        );
+        await fs.writeJSON(path.join(fx, "default.data"), serializeDict(MockDefaultUserData()));
+        await fs.writeJSON(
+          path.join(appPackagePath, "manifest.source.json"),
+          JSON.stringify(MockManifest(), null, 4),
+          { encoding: "UTF-8" }
+        );
+        await fs.writeFile(
+          path.join(appPackagePath, "color.png"),
+          JSON.stringify(["mock"], null, 4)
+        );
+        await fs.writeFile(
+          path.join(appPackagePath, "outline.png"),
+          JSON.stringify(["mock"], null, 4)
+        );
 
         const res = await my.other(inputs);
-        assert.isTrue(res.isErr());
+        assert.isFalse(res.isErr());
       } finally {
         await fs.rmdir(inputs.projectPath!, { recursive: true });
       }

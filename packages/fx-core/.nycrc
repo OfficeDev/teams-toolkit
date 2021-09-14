@@ -8,7 +8,8 @@
   "exclude": [
       "src/plugins/resource/function/utils/depsChecker/**/*",
       "src/plugins/solution/fx-solution/utils/depsChecker/**/*",
-      "src/plugins/resource/localdebug/legacyPlugin.ts"
+      "src/plugins/resource/localdebug/legacyPlugin.ts",
+      "src/core/middleware/projectMigrator.ts"
   ],
   "reporter": [
     "text",

@@ -325,7 +325,7 @@ function preCheckEnvEnabled() {
   return false;
 }
 
-async function migrateArm(ctx: CoreHookContext) {
+export async function migrateArm(ctx: CoreHookContext) {
   await removeBotConfig(ctx);
   await generateArmTempaltesFiles(ctx);
   await generateArmParameterJson(ctx);
@@ -402,6 +402,10 @@ async function generateArmParameterJson(ctx: CoreHookContext) {
   const fx = path.join(inputs.projectPath as string, `.${ConfigFolderName}`);
   const fxConfig = path.join(fx, InputConfigsFolderName);
   const envConfig = await fs.readJson(path.join(fx, "env.default.json"));
+  const hasProvision = envConfig.solution?.provisionSucceeded as boolean;
+  if (!hasProvision) {
+    return;
+  }
   const targetJson = await fs.readJson(path.join(fxConfig, "azure.parameters.dev.json"));
   const ArmParameter = "parameters";
   // frontend hosting

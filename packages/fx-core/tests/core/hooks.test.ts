@@ -43,6 +43,7 @@ import {
   InvalidInputError,
   mapToJson,
   serializeDict,
+  sperateSecretData,
 } from "../../src";
 import { FeatureFlagName } from "../../src/common/constants";
 import { environmentManager } from "../../src/core/environment";
@@ -86,9 +87,8 @@ import {
   MockTools,
   randomAppName,
 } from "./utils";
-import { ProjectMigratorMW } from "../../src/core/middleware/projectMigrator";
+import { ProjectMigratorMW, migrateArm } from "../../src/core/middleware/projectMigrator";
 import exp = require("constants");
-
 describe("Middleware", () => {
   const sandbox = sinon.createSandbox();
 
@@ -1510,6 +1510,78 @@ describe("Middleware", () => {
       const res = await my.other(inputs);
       assert.isTrue(res.isErr() && res.error.name === NoProjectOpenedError().name);
       process.env[FeatureFlagName.MultiEnv] = original;
+    });
+  });
+  describe("migrateArm success", () => {
+    const sandbox = sinon.createSandbox();
+    const appName = randomAppName();
+    const projectPath = path.join(os.tmpdir(), appName);
+    beforeEach(async () => {
+      await fs.ensureDir(projectPath);
+      await fs.ensureDir(path.join(projectPath, ".fx"));
+      await fs.copy(
+        path.join(__dirname, "../samples/migration/.fx/env.default.json"),
+        path.join(projectPath, ".fx", "env.default.json")
+      );
+      await fs.copy(
+        path.join(__dirname, "../samples/migration/.fx/settings.json"),
+        path.join(projectPath, ".fx", "settings.json")
+      );
+      process.env.TEAMSFX_MULTI_ENV = "true";
+      process.env.TEAMSFX_ARM_SUPPORT = "true";
+    });
+    afterEach(async () => {
+      await fs.remove(projectPath);
+      sandbox.restore();
+      delete process.env.TEAMSFX_MULTI_ENV;
+      delete process.env.TEAMSFX_ARM_SUPPORT;
+    });
+    it("successfully migration arm templates", async () => {
+      class MyClass {
+        tools = new MockTools();
+        async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+          return ok("");
+        }
+      }
+      hooks(MyClass, {
+        other: [migrateArm],
+      });
+      const my = new MyClass();
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: projectPath,
+        ignoreEnvInfo: true,
+      };
+      await my.other(inputs);
+      assert.isTrue(await fs.pathExists(path.join(projectPath, ".fx", "configs")));
+      assert.isTrue(
+        await fs.pathExists(path.join(projectPath, ".fx", "configs", "azure.parameters.dev.json"))
+      );
+      assert.isTrue(await fs.pathExists(path.join(projectPath, "templates", "azure")));
+      assert.isTrue(
+        await fs.pathExists(path.join(projectPath, "templates", "azure", "main.bicep"))
+      );
+      const armParam = await fs.readJson(
+        path.join(projectPath, ".fx", "configs", "azure.parameters.dev.json")
+      );
+      assert.isNotNull(armParam.parameters.resourceBaseName);
+      assert.isNotNull(armParam.parameters.azureSql_admin);
+      assert.strictEqual(armParam.parameters.frontendHosting_storageName.value, "test");
+      assert.strictEqual(armParam.parameters.identity_managedIdentityName.value, "test");
+      assert.strictEqual(armParam.parameters.azureSql_serverName.value, "test");
+      assert.strictEqual(armParam.parameters.azureSql_databaseName.value, "test");
+      assert.strictEqual(armParam.parameters.function_serverfarmsName.value, "test");
+      assert.strictEqual(armParam.parameters.function_storageName.value, "test");
+      assert.strictEqual(armParam.parameters.function_webappName.value, "test");
+
+      const newEnv = await fs.readJson(path.join(projectPath, ".fx", "new.env.default.json"));
+      const envFile = await fs.readJson(path.join(projectPath, ".fx", "env.default.json"));
+      assert.strictEqual(
+        newEnv["fx-resource-bot"].wayToRegisterBot,
+        envFile["fx-resource-bot"].wayToRegisterBot
+      );
+      assert.isUndefined(newEnv["fx-resource-bot"].skuName);
+      assert.isNotNull(envFile["fx-resource-bot"].skuName);
     });
   });
 

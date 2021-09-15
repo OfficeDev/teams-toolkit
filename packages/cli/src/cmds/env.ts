@@ -112,7 +112,7 @@ class EnvAdd extends YargsCommand {
       sourceEnv = activeEnvResult.value;
     }
 
-    const validNewTargetEnvResult = await this.validNewTargetEnvName(projectDir, targetEnv);
+    const validNewTargetEnvResult = await this.validateNewTargetEnvName(projectDir, targetEnv);
     if (validNewTargetEnvResult.isErr()) {
       return err(validNewTargetEnvResult.error);
     }

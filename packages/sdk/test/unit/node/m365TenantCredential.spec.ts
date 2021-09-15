@@ -38,13 +38,15 @@ fakeCert
   );
 
   beforeEach(function () {
-    mockedEnvRestore = mockedEnv({
-      M365_CLIENT_ID: clientId,
-      M365_CLIENT_SECRET: clientSecret,
-      M365_CERTIFICATE_PATH: certificatePath,
-      M365_TENANT_ID: tenantId,
-      M365_AUTHORITY_HOST: authorityHost,
-    });
+    mockedEnvRestore = mockedEnv(
+      {
+        M365_CLIENT_ID: clientId,
+        M365_CLIENT_SECRET: clientSecret,
+        M365_TENANT_ID: tenantId,
+        M365_AUTHORITY_HOST: authorityHost,
+      },
+      { clear: true }
+    );
     loadConfiguration();
   });
 
@@ -66,8 +68,6 @@ fakeCert
   });
 
   it("create M365TenantCredential instance should success with valid config for ClientSecretCredential", function () {
-    delete process.env.M365_CERTIFICATE_PATH;
-
     loadConfiguration();
 
     const credential: any = new M365TenantCredential();
@@ -80,9 +80,14 @@ fakeCert
   });
 
   it("create M365TenantCredential instance should success with valid config for ClientCertificateCredential", function () {
-    delete process.env.M365_AUTHORITY_HOST;
-    delete process.env.M365_CLIENT_SECRET;
-
+    mockedEnvRestore = mockedEnv(
+      {
+        M365_CLIENT_ID: clientId,
+        M365_CERTIFICATE_PATH: certificatePath,
+        M365_TENANT_ID: tenantId,
+      },
+      { clear: true }
+    );
     loadConfiguration();
 
     const credential: any = new M365TenantCredential();
@@ -175,9 +180,14 @@ fakeCert
         });
       });
 
-    delete process.env.M365_AUTHORITY_HOST;
-    delete process.env.M365_CLIENT_SECRET;
-
+    mockedEnvRestore = mockedEnv(
+      {
+        M365_CLIENT_ID: clientId,
+        M365_CERTIFICATE_PATH: certificatePath,
+        M365_TENANT_ID: tenantId,
+      },
+      { clear: true }
+    );
     loadConfiguration();
 
     const credential = new M365TenantCredential();

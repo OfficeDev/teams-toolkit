@@ -80,20 +80,18 @@ export class OnBehalfOfUserCredential implements TokenCredential {
 
     const normalizedAuthorityHost = config.authentication!.authorityHost!.replace(/\/+$/g, "");
     const authority: string = normalizedAuthorityHost + "/" + config.authentication?.tenantId;
-    let clientCertificate: ClientCertificate | undefined;
-    if (!config?.authentication?.clientSecret) {
-      clientCertificate = this.parseCertificate(config.authentication!.certificatePath);
-    }
+    const clientCertificate: ClientCertificate | undefined = this.parseCertificate(
+      config.authentication!.certificatePath
+    );
 
     const auth: NodeAuthOptions = {
       clientId: config.authentication!.clientId!,
       authority: authority,
     };
-    if (config?.authentication?.clientSecret) {
-      auth.clientSecret = config.authentication!.clientSecret;
-    }
     if (clientCertificate) {
       auth.clientCertificate = clientCertificate;
+    } else if (config?.authentication?.clientSecret) {
+      auth.clientSecret = config.authentication!.clientSecret;
     }
     this.msalClient = new ConfidentialClientApplication({
       auth,

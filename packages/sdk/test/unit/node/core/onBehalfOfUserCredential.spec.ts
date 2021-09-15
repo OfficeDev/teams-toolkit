@@ -74,13 +74,15 @@ fakeCert
   const sandbox = sinon.createSandbox();
 
   beforeEach(function () {
-    mockedEnvRestore = mockedEnv({
-      M365_CLIENT_ID: clientId,
-      M365_CLIENT_SECRET: clientSecret,
-      M365_CERTIFICATE_PATH: certificatePath,
-      M365_AUTHORITY_HOST: authorityHost,
-      M365_TENANT_ID: tenantId,
-    });
+    mockedEnvRestore = mockedEnv(
+      {
+        M365_CLIENT_ID: clientId,
+        M365_CLIENT_SECRET: clientSecret,
+        M365_AUTHORITY_HOST: authorityHost,
+        M365_TENANT_ID: tenantId,
+      },
+      { clear: true }
+    );
 
     // Mock ConfidentialClientApplication implementation
     sandbox

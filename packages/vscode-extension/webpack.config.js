@@ -100,10 +100,6 @@ const config = {
           from: "./WHATISNEW.md",
           to: "../resource/WHATISNEW.md",
         },
-        {
-          from: "./img/",
-          to: "../resource/img/",
-        },
       ],
     }),
   ],

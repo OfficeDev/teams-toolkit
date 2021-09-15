@@ -66,6 +66,13 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
             func,
             inputs
           );
+        } else if (method === "grantPermission") {
+          getQuestionRes = await core._getQuestions(
+            solutionContext,
+            solution,
+            Stage.grantPermission,
+            inputs
+          );
         }
       }
     }

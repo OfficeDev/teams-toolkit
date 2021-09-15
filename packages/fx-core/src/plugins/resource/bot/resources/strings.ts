@@ -74,7 +74,6 @@ export class PluginBot {
   public static readonly LOCAL_BOT_PASSWORD = "localBotPassword";
   public static readonly LOCAL_OBJECT_ID = "localObjectId";
   public static readonly PROGRAMMING_LANGUAGE = "programmingLanguage";
-  public static readonly WAY_TO_REGISTER_BOT = "wayToRegisterBot";
   public static readonly SCAFFOLDED = "scaffolded";
   public static readonly APP_SERVICE_PLAN = "appServicePlan";
   public static readonly SITE_NAME = "siteName";

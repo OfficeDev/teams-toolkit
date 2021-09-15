@@ -104,6 +104,15 @@ export enum TelemetryEvent {
   ActivateEnvironment = "activate-environment",
 
   CheckSideloading = "check-sideloading",
+
+  ListCollaboratorStart = "list-collaborator-start",
+  ListCollaborator = "list-collaborator",
+
+  GrantPermissionStart = "grant-permission-start",
+  GrantPermission = "grant-permission",
+
+  CheckPermissionStart = "check-permission-start",
+  CheckPermission = "check-permission",
   OpenSideloadingReadmore = "open-sideloading-readmore",
 
   ShowWhatIsNewNotification = "show-what-is-new-notification",
@@ -144,6 +153,7 @@ export enum TelemetryProperty {
   FeatureFlags = "feature-flags",
   UpdateTeamsAppReason = "update-teams-app-reason",
   IsSideloadingAllowed = "is-sideloading-allowed",
+  IsExistingUser = "is-existing-user",
 }
 
 export enum TelemetrySuccess {

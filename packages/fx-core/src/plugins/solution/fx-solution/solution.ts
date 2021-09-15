@@ -63,7 +63,12 @@ import { PermissionRequestFileProvider } from "../../../core/permissionRequest";
 import { SolutionPlugins } from "../../../core/SolutionPluginContainer";
 import { AadAppForTeamsPlugin, AppStudioPlugin, SpfxPlugin } from "../../resource";
 import { IUserList } from "../../resource/appstudio/interfaces/IAppDefinition";
-import { copyParameterJson, deployArmTemplates, generateArmTemplate, getParameterJson } from "./arm";
+import {
+  copyParameterJson,
+  deployArmTemplates,
+  generateArmTemplate,
+  getParameterJson,
+} from "./arm";
 import { checkSubscription, fillInCommonQuestions } from "./commonQuestions";
 import {
   ARM_TEMPLATE_OUTPUT,
@@ -111,6 +116,7 @@ import {
   MessageExtensionItem,
   ProgrammingLanguageQuestion,
   TabOptionItem,
+  GetUserEmailQuestion,
 } from "./question";
 import {
   getActivatedResourcePlugins,
@@ -126,8 +132,15 @@ import {
   extractParamForRegisterTeamsAppAndAad,
   ParamForRegisterTeamsAppAndAad,
 } from "./v2/executeUserTask";
+import {
+  blockV1Project,
+  isAzureProject,
+  ensurePermissionRequest,
+  parseTeamsAppTenantId,
+  fillInSolutionSettings,
+} from "./v2/utils";
+import { askForProvisionConsent } from "./v2/provision";
 import { scaffoldReadmeAndLocalSettings } from "./v2/scaffolding";
-import { ensurePermissionRequest, fillInSolutionSettings, isAzureProject, parseTeamsAppTenantId } from "./v2/utils";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -247,7 +260,10 @@ export class TeamsAppSolution implements Solution {
     ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.CreateStart, {
       [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
     });
-    if(!ctx.projectSettings) return err(new SystemError(SolutionError.InternelError, "projectSettings undefined", "Solution"));
+    if (!ctx.projectSettings)
+      return err(
+        new SystemError(SolutionError.InternelError, "projectSettings undefined", "Solution")
+      );
     // ensure that global namespace is present
     if (!ctx.envInfo.profile.has(GLOBAL_CONFIG)) {
       ctx.envInfo.profile.set(GLOBAL_CONFIG, new ConfigMap());
@@ -369,7 +385,7 @@ export class TeamsAppSolution implements Solution {
   }
 
   async update(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    const v1Blocked = this.blockV1Project(ctx.projectSettings?.solutionSettings);
+    const v1Blocked = blockV1Project(ctx.projectSettings?.solutionSettings);
     if (v1Blocked.isErr()) {
       return v1Blocked;
     }
@@ -441,10 +457,9 @@ export class TeamsAppSolution implements Solution {
       isAzureProject(ctx.projectSettings!.solutionSettings as AzureSolutionSettings)
     ) {
       try {
-        if(ctx.answers!.copy === true) {
-          await copyParameterJson(ctx, ctx.answers!.sourceEnvName);
-        }
-        else {
+        if (ctx.answers!.copy === true) {
+          await copyParameterJson(ctx, ctx.answers!.targetEnvName!, ctx.answers!.sourceEnvName!);
+        } else {
           await getParameterJson(ctx);
         }
       } catch (e) {
@@ -492,19 +507,6 @@ export class TeamsAppSolution implements Solution {
     return !!solutionConfig.get(GLOBAL_CONFIG)?.getBoolean(SOLUTION_PROVISION_SUCCEEDED);
   }
 
-  private blockV1Project(solutionSettings: SolutionSettings | undefined): Result<any, FxError> {
-    if (solutionSettings?.migrateFromV1) {
-      return err(
-        returnUserError(
-          new Error("Command is not supported in Teams Toolkit V1 Project"),
-          "Solution",
-          SolutionError.V1ProjectNotSupported
-        )
-      );
-    }
-    return ok(null);
-  }
-
   /**
    * Provision resources. It can only run in a non-SPFx project when solution's running state is Idle.
    * Solution's provisionSucceeded config value will be set to true if provision succeeds, to false otherwise.
@@ -512,7 +514,7 @@ export class TeamsAppSolution implements Solution {
    */
   @hooks([ErrorHandlerMW])
   async provision(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    const v1Blocked = this.blockV1Project(ctx.projectSettings?.solutionSettings);
+    const v1Blocked = blockV1Project(ctx.projectSettings?.solutionSettings);
     if (v1Blocked.isErr()) {
       return v1Blocked;
     }
@@ -591,68 +593,9 @@ export class TeamsAppSolution implements Solution {
       if (res.isErr()) {
         return res;
       }
-      const azureToken = await ctx.azureAccountProvider?.getAccountCredentialAsync();
-
-      // Only Azure project requires this confirm dialog
-      const username = (azureToken as any).username ? (azureToken as any).username : "";
-      const subscriptionId = ctx.envInfo.profile.get(GLOBAL_CONFIG)?.get(SUBSCRIPTION_ID) as string;
-      const subscriptionName = ctx.envInfo.profile
-        .get(GLOBAL_CONFIG)
-        ?.get(SUBSCRIPTION_NAME) as string;
-
-      const msg = util.format(
-        getStrings().solution.ProvisionConfirmNotice,
-        username,
-        subscriptionName ? subscriptionName : subscriptionId
-      );
-      let confirmRes = undefined;
-      if (isMultiEnvEnabled()) {
-        const msgNew = util.format(
-          getStrings().solution.ProvisionConfirmEnvNotice,
-          ctx.projectSettings!.activeEnvironment,
-          username,
-          subscriptionName ? subscriptionName : subscriptionId
-        );
-        confirmRes = await ctx.ui?.showMessage(
-          "warn",
-          msgNew,
-          true,
-          "Provision",
-          "Switch environment",
-          "Pricing calculator"
-        );
-      } else {
-        confirmRes = await ctx.ui?.showMessage(
-          "warn",
-          msg,
-          true,
-          "Provision",
-          "Pricing calculator"
-        );
-      }
-      const confirm = confirmRes?.isOk() ? confirmRes.value : undefined;
-
-      if (confirm !== "Provision") {
-        if (confirm === "Pricing calculator") {
-          ctx.ui?.openUrl("https://azure.microsoft.com/en-us/pricing/calculator/");
-        } else if (confirm === "Switch environment") {
-          const envName = await askTargetEnvironment(ctx as any, ctx.answers!);
-          if (envName) {
-            ctx.projectSettings!.activeEnvironment = envName;
-            ctx.ui?.showMessage(
-              "info",
-              `[${envName}] is activated. Please try to do provision again.`,
-              false
-            );
-          }
-        }
-        return err(
-          returnUserError(
-            new Error(getStrings().solution.CancelProvision),
-            "Solution",
-            getStrings().solution.CancelProvision
-          )
-        );
+      const consentResult = await askForProvisionConsent(ctx);
+      if (consentResult.isErr()) {
+        return consentResult;
       }
     }
 
@@ -741,7 +684,7 @@ export class TeamsAppSolution implements Solution {
 
   @hooks([ErrorHandlerMW])
   async deploy(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    const v1Blocked = this.blockV1Project(ctx.projectSettings?.solutionSettings);
+    const v1Blocked = blockV1Project(ctx.projectSettings?.solutionSettings);
     if (v1Blocked.isErr()) {
       return v1Blocked;
     }
@@ -854,7 +797,7 @@ export class TeamsAppSolution implements Solution {
   }
   @hooks([ErrorHandlerMW])
   async publish(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    const v1Blocked = this.blockV1Project(ctx.projectSettings?.solutionSettings);
+    const v1Blocked = blockV1Project(ctx.projectSettings?.solutionSettings);
     if (v1Blocked.isErr()) {
       return v1Blocked;
     }
@@ -1027,9 +970,9 @@ export class TeamsAppSolution implements Solution {
       node.addChild(capNode);
     } else if (stage === Stage.provision) {
       if (isDynamicQuestion) {
-        const v1Blocked = this.blockV1Project(ctx.projectSettings?.solutionSettings);
+        const v1Blocked = blockV1Project(ctx.projectSettings?.solutionSettings);
         if (v1Blocked.isErr()) {
-          return v1Blocked;
+          return err(v1Blocked.error);
         }
         const provisioned = this.checkWetherProvisionSucceeded(ctx.envInfo.profile);
         if (provisioned) return ok(undefined);
@@ -1060,9 +1003,9 @@ export class TeamsAppSolution implements Solution {
       }
     } else if (stage === Stage.deploy) {
       if (isDynamicQuestion) {
-        const v1Blocked = this.blockV1Project(ctx.projectSettings?.solutionSettings);
+        const v1Blocked = blockV1Project(ctx.projectSettings?.solutionSettings);
         if (v1Blocked.isErr()) {
-          return v1Blocked;
+          return err(v1Blocked.error);
         }
 
         const isAzureProject = this.isAzureProject(ctx);
@@ -1134,9 +1077,9 @@ export class TeamsAppSolution implements Solution {
       }
     } else if (stage === Stage.publish) {
       if (isDynamicQuestion) {
-        const v1Blocked = this.blockV1Project(ctx.projectSettings?.solutionSettings);
+        const v1Blocked = blockV1Project(ctx.projectSettings?.solutionSettings);
         if (v1Blocked.isErr()) {
-          return v1Blocked;
+          return err(v1Blocked.error);
         }
         const isAzureProject = this.isAzureProject(ctx);
         const provisioned = this.checkWetherProvisionSucceeded(ctx.envInfo.profile);
@@ -1180,6 +1123,8 @@ export class TeamsAppSolution implements Solution {
           }
         }
       }
+    } else if (stage === Stage.grantPermission) {
+      node.addChild(new QTreeNode(GetUserEmailQuestion));
     }
     return ok(node);
   }
@@ -1194,7 +1139,7 @@ export class TeamsAppSolution implements Solution {
         ctx.projectSettings?.solutionSettings as AzureSolutionSettings,
         ctx.permissionRequestProvider
       );
-      
+
       if (result.isErr()) {
         return result;
       }
@@ -1294,6 +1239,7 @@ export class TeamsAppSolution implements Solution {
       [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
     });
 
+    const progressBar = ctx.ui?.createProgressBar("Granting permission", 1);
     try {
       const result = await this.checkAndGetCurrentUserInfo(ctx);
       if (result.isErr()) {
@@ -1307,6 +1253,21 @@ export class TeamsAppSolution implements Solution {
       }
 
       const email = ctx.answers!["email"] as string;
+
+      if (!email || email === result.value.userPrincipalName) {
+        return err(
+          sendErrorTelemetryThenReturnError(
+            SolutionTelemetryEvent.GrantPermission,
+            returnUserError(
+              new Error("Collaborator's email cannot be null or same as current user"),
+              "Solution",
+              SolutionError.EmailCannotBeEmptyOrSame
+            ),
+            ctx.telemetryReporter
+          )
+        );
+      }
+
       const userInfo = await this.getUserInfo(ctx, email);
 
       if (!userInfo) {
@@ -1325,6 +1286,8 @@ export class TeamsAppSolution implements Solution {
         );
       }
 
+      progressBar?.start();
+      progressBar?.next(`Grant permission for user ${email}`);
       ctx.envInfo.profile.get(GLOBAL_CONFIG)?.set(USER_INFO, JSON.stringify(userInfo));
 
       const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, [
@@ -1424,6 +1387,7 @@ export class TeamsAppSolution implements Solution {
 
       return ok(permissions);
     } finally {
+      await progressBar?.end(true);
       ctx.envInfo.profile.get(GLOBAL_CONFIG)?.delete(USER_INFO);
       this.runningState = SolutionRunningState.Idle;
     }
@@ -1775,9 +1739,9 @@ export class TeamsAppSolution implements Solution {
     func: Func,
     ctx: SolutionContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const v1Blocked = this.blockV1Project(ctx.projectSettings?.solutionSettings);
+    const v1Blocked = blockV1Project(ctx.projectSettings?.solutionSettings);
     if (v1Blocked.isErr()) {
-      return v1Blocked;
+      return err(v1Blocked.error);
     }
 
     const isDynamicQuestion = DynamicPlatforms.includes(ctx.answers!.platform!);
@@ -1890,9 +1854,9 @@ export class TeamsAppSolution implements Solution {
   async getQuestionsForAddCapability(
     ctx: SolutionContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const v1Blocked = this.blockV1Project(ctx.projectSettings?.solutionSettings);
+    const v1Blocked = blockV1Project(ctx.projectSettings?.solutionSettings);
     if (v1Blocked.isErr()) {
-      return v1Blocked;
+      return err(v1Blocked.error);
     }
 
     const isDynamicQuestion = DynamicPlatforms.includes(ctx.answers!.platform!);

@@ -455,7 +455,7 @@ describe("V2 implementation", () => {
       const result2 = await createEnv(mockedCtx, mockedInputs);
       expect(result2.isOk()).to.be.true;
     });
-    
+
     it("createEnv, ScaffoldingContextAdapter", async () => {
       const mockedCtx = new MockedV2Context(projectSettings);
       const mockedInputs: Inputs = {

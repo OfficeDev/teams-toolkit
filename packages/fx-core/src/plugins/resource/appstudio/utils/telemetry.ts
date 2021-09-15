@@ -38,6 +38,7 @@ export enum TelemetryEventName {
   checkPermission = "check-permission",
   grantPermission = "grant-permission",
   listCollaborator = "list-collaborator",
+  localDebug = "localdebug",
 }
 
 export class TelemetryUtils {

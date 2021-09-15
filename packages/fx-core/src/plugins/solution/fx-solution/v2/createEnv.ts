@@ -26,10 +26,9 @@ export async function createEnv(ctx: v2.Context, inputs: Inputs): Promise<Result
       answers: inputs,
     };
     try {
-      if(inputs.copy === true) {
-        await copyParameterJson(solutionContext, inputs.sourceEnvName);
-      }
-      else {
+      if (inputs.copy === true) {
+        await copyParameterJson(solutionContext, inputs.targetEnvName!, inputs.sourceEnvName!);
+      } else {
         await getParameterJson(solutionContext);
       }
     } catch (e) {

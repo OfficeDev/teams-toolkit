@@ -1,6 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import {
+  ConfigFolderName,
+  EnvNamePlaceholder,
+  EnvProfileFileNameTemplate,
+  InputConfigsFolderName,
+  PublishProfilesFolderName,
+} from "@microsoft/teamsfx-api";
 import { deserializeDict } from "@microsoft/teamsfx-core";
 import { exec } from "child_process";
 import fs from "fs-extra";
@@ -66,9 +73,27 @@ export function getSubscriptionId() {
 }
 
 const envFilePathSuffix = path.join(".fx", "env.default.json");
+const envFilePathSuffixMultiEnv = path.join(
+  ".fx",
+  PublishProfilesFolderName,
+  EnvProfileFileNameTemplate.replace(EnvNamePlaceholder, "dev")
+);
+const defaultBicepParameterFileSuffix = path.join(
+  `.${ConfigFolderName}`,
+  InputConfigsFolderName,
+  "azure.parameters.dev.json"
+);
 
-export function getConfigFileName(appName: string): string {
-  return path.resolve(testFolder, appName, envFilePathSuffix);
+function getEnvFilePathSuffix(isMultiEnvEnabled: boolean) {
+  if (isMultiEnvEnabled) {
+    return envFilePathSuffixMultiEnv;
+  } else {
+    return envFilePathSuffix;
+  }
+}
+
+export function getConfigFileName(appName: string, isMultiEnvEnabled = false): string {
+  return path.resolve(testFolder, appName, getEnvFilePathSuffix(isMultiEnvEnabled));
 }
 
 const aadPluginName = "fx-resource-aad-app-for-teams";
@@ -83,6 +108,13 @@ export async function setSimpleAuthSkuNameToB1(projectPath: string) {
   return fs.writeJSON(envFilePath, context, { spaces: 4 });
 }
 
+export async function setSimpleAuthSkuNameToB1Bicep(projectPath: string) {
+  const parametersFilePath = path.resolve(projectPath, defaultBicepParameterFileSuffix);
+  const parameters = await fs.readJSON(parametersFilePath);
+  parameters["parameters"]["simpleAuth_sku"] = { value: "B1" };
+  return fs.writeJSON(parametersFilePath, parameters, { spaces: 4 });
+}
+
 export async function setBotSkuNameToB1(projectPath: string) {
   const envFilePath = path.resolve(projectPath, envFilePathSuffix);
   const context = await fs.readJSON(envFilePath);
@@ -94,9 +126,10 @@ export async function cleanUpAadApp(
   projectPath: string,
   hasAadPlugin?: boolean,
   hasBotPlugin?: boolean,
-  hasApimPlugin?: boolean
+  hasApimPlugin?: boolean,
+  isMultiEnvEnabled = false
 ) {
-  const envFilePath = path.resolve(projectPath, envFilePathSuffix);
+  const envFilePath = path.resolve(projectPath, getEnvFilePathSuffix(isMultiEnvEnabled));
   const context = await fs.readJSON(envFilePath);
   const manager = await AadManager.init();
   const promises: Promise<boolean>[] = [];
@@ -160,8 +193,8 @@ export async function cleanUpLocalProject(projectPath: string, necessary?: Promi
       await fs.remove(projectPath);
       console.log(`[Successfully] clean up the local folder: ${projectPath}.`);
       return resolve(true);
-    } catch {
-      console.log(`[Failed] clean up the local folder: ${projectPath}.`);
+    } catch (e) {
+      console.log(`[Failed] clean up the local folder: ${projectPath}. error = '${e}'`);
       return resolve(false);
     }
   });
@@ -172,13 +205,15 @@ export async function cleanUp(
   projectPath: string,
   hasAadPlugin = true,
   hasBotPlugin = false,
-  hasApimPlugin = false
+  hasApimPlugin = false,
+  isMultiEnvEnabled = false
 ) {
   const cleanUpAadAppPromise = cleanUpAadApp(
     projectPath,
     hasAadPlugin,
     hasBotPlugin,
-    hasApimPlugin
+    hasApimPlugin,
+    isMultiEnvEnabled
   );
   return Promise.all([
     // delete aad app
@@ -257,6 +292,14 @@ export async function readContext(projectPath: string): Promise<any> {
   }
 
   return context;
+}
+
+export function mockTeamsfxMultiEnvFeatureFlag() {
+  const env = Object.assign({}, process.env);
+  env["TEAMSFX_MULTI_ENV"] = "true";
+  env["TEAMSFX_ARM_SUPPORT"] = "true";
+  env["TEAMSFX_BICEP_ENV_CHECKER_ENABLE"] = "true";
+  return env;
 }
 
 function isSecretPattern(value: string) {

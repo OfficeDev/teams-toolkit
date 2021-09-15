@@ -107,8 +107,6 @@ export class Messages {
     "The subscription didn't register to use namespace 'Microsoft.BotService'.";
   public static readonly MaxFreeAppServicePlanIsTen =
     "The maximum number of Free App Service Plan allowed in a Subscription is 10.";
-  public static readonly RemindUsersToUpdateMessageEndpoint = (messageEndpoint: string): string =>
-    `Before running this bot, please manually update bot's message endpoint(${messageEndpoint}). Click 'Get Help' button for more details.`;
 
   // Suggestions
   public static readonly RetryTheCurrentStep = "Please retry the current step.";

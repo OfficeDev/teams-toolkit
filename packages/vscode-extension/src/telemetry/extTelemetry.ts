@@ -13,7 +13,7 @@ import {
 } from "./extTelemetryEvents";
 import * as extensionPackage from "../../package.json";
 import { FxError, Stage, UserError } from "@microsoft/teamsfx-api";
-import { getTeamsAppId } from "../utils/commonUtils";
+import { getIsExistingUser, getTeamsAppId } from "../utils/commonUtils";
 
 export namespace ExtTelemetry {
   export let reporter: VSCodeTelemetryReporter;
@@ -56,6 +56,8 @@ export namespace ExtTelemetry {
         return TelemetryEvent.Publish;
       case Stage.createEnv:
         return TelemetryEvent.CreateNewEnvironment;
+      case Stage.grantPermission:
+        return TelemetryEvent.GrantPermission;
       default:
         return undefined;
     }
@@ -77,6 +79,9 @@ export namespace ExtTelemetry {
 
     properties[TelemetryProperty.AapId] = getTeamsAppId();
 
+    const isExistingUser = getIsExistingUser();
+    properties[TelemetryProperty.IsExistingUser] = isExistingUser ? isExistingUser : "";
+
     reporter.sendTelemetryEvent(eventName, properties, measurements);
   }
 
@@ -96,6 +101,9 @@ export namespace ExtTelemetry {
     }
 
     properties[TelemetryProperty.AapId] = getTeamsAppId();
+
+    const isExistingUser = getIsExistingUser();
+    properties[TelemetryProperty.IsExistingUser] = isExistingUser ? isExistingUser : "";
 
     properties[TelemetryProperty.Success] = TelemetrySuccess.No;
     if (error instanceof UserError) {
@@ -126,6 +134,9 @@ export namespace ExtTelemetry {
     }
 
     properties[TelemetryProperty.AapId] = getTeamsAppId();
+
+    const isExistingUser = getIsExistingUser();
+    properties[TelemetryProperty.IsExistingUser] = isExistingUser ? isExistingUser : "";
 
     reporter.sendTelemetryException(error, properties, measurements);
   }

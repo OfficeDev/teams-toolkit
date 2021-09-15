@@ -52,7 +52,7 @@ describe("grantPermission() for Teamsfx projects", () => {
     return {
       root: ".",
       envInfo: newEnvInfo(),
-      answers: { platform: Platform.VSCode },
+      answers: { platform: Platform.VSCode, email: "your_collaborator@yourcompany.com" },
       projectSettings: undefined,
       graphTokenProvider: mockGraphTokenProvider,
     };
@@ -153,6 +153,46 @@ describe("grantPermission() for Teamsfx projects", () => {
     sandbox.restore();
   });
 
+  it("should return error if user email is undefined", async () => {
+    const solution = new TeamsAppSolution();
+    const mockedCtx = mockSolutionContext();
+
+    mockedCtx.projectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
+        version: "1.0",
+      },
+    };
+    mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+    mockedCtx.answers = {
+      email: undefined,
+      platform: Platform.VSCode,
+    };
+
+    sandbox
+      .stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject")
+      .onCall(0)
+      .resolves({
+        tid: mockProjectTenantId,
+        oid: "fake_oid",
+        unique_name: "fake_unique_name",
+        name: "fake_name",
+      })
+      .onCall(1)
+      .resolves(undefined);
+
+    mockedCtx.envInfo.profile.set(PluginNames.AAD, new ConfigMap());
+    mockedCtx.envInfo.profile.get(PluginNames.AAD)?.set(REMOTE_TENANT_ID, mockProjectTenantId);
+
+    const result = await solution.grantPermission(mockedCtx);
+    expect(result.isErr()).to.be.true;
+    expect(result._unsafeUnwrapErr().name).equals(SolutionError.EmailCannotBeEmptyOrSame);
+    sandbox.restore();
+  });
+
   it("should return error if cannot find user from email", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
@@ -167,7 +207,6 @@ describe("grantPermission() for Teamsfx projects", () => {
       },
     };
     mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
-
     sandbox
       .stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject")
       .onCall(0)
@@ -189,7 +228,7 @@ describe("grantPermission() for Teamsfx projects", () => {
     sandbox.restore();
   });
 
-  it("should return error if check permission failed", async () => {
+  it("should return error if grant permission failed", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
 
@@ -219,6 +258,25 @@ describe("grantPermission() for Teamsfx projects", () => {
         oid: "fake_oid_2",
         unique_name: "fake_unique_name_2",
         name: "fake_name_2",
+      });
+
+    sandbox
+      .stub(solution as any, "getUserInfo")
+      .onCall(0)
+      .resolves({
+        tenantId: mockProjectTenantId,
+        aadId: "aadId",
+        userPrincipalName: "userPrincipalName",
+        displayName: "displayName",
+        isAdministrator: true,
+      })
+      .onCall(1)
+      .resolves({
+        tenantId: mockProjectTenantId,
+        aadId: "aadId",
+        userPrincipalName: "userPrincipalName2",
+        displayName: "displayName2",
+        isAdministrator: true,
       });
 
     appStudioPlugin.grantPermission = async function (
@@ -272,20 +330,22 @@ describe("grantPermission() for Teamsfx projects", () => {
     mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
 
     sandbox
-      .stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject")
+      .stub(solution as any, "getUserInfo")
       .onCall(0)
       .resolves({
-        tid: mockProjectTenantId,
-        oid: "fake_oid",
-        unique_name: "fake_unique_name",
-        name: "fake_name",
+        tenantId: mockProjectTenantId,
+        aadId: "aadId",
+        userPrincipalName: "userPrincipalName",
+        displayName: "displayName",
+        isAdministrator: true,
       })
       .onCall(1)
       .resolves({
-        tid: mockProjectTenantId,
-        oid: "fake_oid_2",
-        unique_name: "fake_unique_name_2",
-        name: "fake_name_2",
+        tenantId: mockProjectTenantId,
+        aadId: "aadId",
+        userPrincipalName: "userPrincipalName2",
+        displayName: "displayName2",
+        isAdministrator: true,
       });
 
     appStudioPlugin.grantPermission = async function (

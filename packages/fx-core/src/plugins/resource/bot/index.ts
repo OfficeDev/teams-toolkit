@@ -36,24 +36,6 @@ export class TeamsBot implements Plugin {
   }
   public teamsBotImpl: TeamsBotImpl = new TeamsBotImpl();
 
-  public async getQuestions(
-    stage: Stage,
-    ctx: PluginContext
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
-    return this.teamsBotImpl.getQuestions(stage, ctx);
-  }
-
-  public async preScaffold(context: PluginContext): Promise<FxResult> {
-    Logger.setLogger(context.logProvider);
-
-    return await this.runWithExceptionCatching(
-      context,
-      () => this.teamsBotImpl.preScaffold(context),
-      true,
-      LifecycleFuncNames.PRE_SCAFFOLD
-    );
-  }
-
   public async scaffold(context: PluginContext): Promise<FxResult> {
     Logger.setLogger(context.logProvider);
 

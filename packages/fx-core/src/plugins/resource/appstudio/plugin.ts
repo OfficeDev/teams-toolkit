@@ -76,6 +76,8 @@ import {
   TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV,
   STATIC_TABS_TPL_FOR_MULTI_ENV,
   CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV,
+  BOTS_TPL_FOR_MULTI_ENV,
+  COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV,
 } from "./constants";
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
@@ -242,10 +244,12 @@ export class AppStudioPluginImpl {
           : CONFIGURABLE_TABS_TPL;
       }
       if (solutionSettings.capabilities.includes(BotOptionItem.id)) {
-        manifest.bots = BOTS_TPL;
+        manifest.bots = isMultiEnvEnabled() ? BOTS_TPL_FOR_MULTI_ENV : BOTS_TPL;
       }
       if (solutionSettings.capabilities.includes(MessageExtensionItem.id)) {
-        manifest.composeExtensions = COMPOSE_EXTENSIONS_TPL;
+        manifest.composeExtensions = isMultiEnvEnabled()
+          ? COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV
+          : COMPOSE_EXTENSIONS_TPL;
       }
 
       if (settings?.solutionSettings?.migrateFromV1) {
@@ -703,11 +707,11 @@ export class AppStudioPluginImpl {
     }
   }
 
-  public async postLocalDebug(ctx: PluginContext): Promise<string> {
+  public async postLocalDebug(ctx: PluginContext): Promise<Result<string, FxError>> {
     const manifestPath = await this.getManifestTemplatePath(ctx.root);
     const manifest = await this.reloadManifestAndCheckRequiredFields(manifestPath);
     if (manifest.isErr()) {
-      throw manifest;
+      return err(manifest.error);
     }
     let teamsAppId;
     if (this.isSPFxProject(ctx)) {
@@ -716,9 +720,9 @@ export class AppStudioPluginImpl {
       teamsAppId = await this.getAppDefinitionAndUpdate(ctx, "localDebug", manifest.value);
     }
     if (teamsAppId.isErr()) {
-      throw teamsAppId;
+      return teamsAppId;
     }
-    return teamsAppId.value;
+    return ok(teamsAppId.value);
   }
 
   public async checkPermission(ctx: PluginContext): Promise<ResourcePermission[]> {
@@ -1606,10 +1610,13 @@ export class AppStudioPluginImpl {
           },
           "fx-resource-aad-app-for-teams": {
             clientId: aadId,
-            getApplicationIdUris: webApplicationInfoResource,
+            applicationIdUris: webApplicationInfoResource,
           },
           "fx-resource-appstudio": {
             teamsAppId: teamsAppId,
+          },
+          "fx-resource-bot": {
+            botId: botId,
           },
         },
       };
@@ -1640,7 +1647,23 @@ export class AppStudioPluginImpl {
       );
     }
 
-    const updatedManifest = JSON.parse(manifest) as TeamsAppManifest;
+    let updatedManifest: TeamsAppManifest;
+    try {
+      updatedManifest = JSON.parse(manifest) as TeamsAppManifest;
+    } catch (error) {
+      if (error.stack && error.stack.startsWith("SyntaxError")) {
+        return err(
+          AppStudioResultFactory.UserError(
+            AppStudioError.InvalidManifestError.name,
+            AppStudioError.InvalidManifestError.message(error),
+            undefined,
+            error.stack
+          )
+        );
+      } else {
+        return err(error);
+      }
+    }
 
     for (const domain of validDomains) {
       updatedManifest.validDomains?.push(domain);

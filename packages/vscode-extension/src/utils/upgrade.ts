@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import * as versionUtil from "./versionUtil";
-import { SyncedState } from "../constants";
+import { SyncedState, UserState } from "../constants";
 import * as StringResources from "../resources/Strings.json";
 import * as util from "util";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
@@ -24,13 +24,18 @@ export class ExtensionUpgrade {
       syncedVersion === undefined ||
       versionUtil.compare(teamsToolkitVersion, syncedVersion) === 1
     ) {
+      // if syncedVersion is undefined, then it is not existinig user
+      this.context.globalState.update(
+        UserState.IsExisting,
+        syncedVersion === undefined ? "no" : "yes"
+      );
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowWhatIsNewNotification);
       this.context.globalState.update(SyncedState.Version, teamsToolkitVersion);
 
       const whatIsNew = {
         title: StringResources.vsc.upgrade.whatIsNewTitle,
         run: async (): Promise<void> => {
-          const uri = vscode.Uri.file(`${folder.getResourceFolder()}/CHANGELOG.md`);
+          const uri = vscode.Uri.file(`${folder.getResourceFolder()}/WHATISNEW.md`);
           vscode.workspace.openTextDocument(uri).then(() => {
             const PreviewMarkdownCommand = "markdown.showPreview";
             vscode.commands.executeCommand(PreviewMarkdownCommand, uri);

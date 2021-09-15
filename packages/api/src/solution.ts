@@ -45,10 +45,9 @@ export interface Solution {
 
   listCollaborator?: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
 
-  
   /**
    * for env management
    */
-   createEnv?: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
-   activateEnv?: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
+  createEnv?: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
+  activateEnv?: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
 }

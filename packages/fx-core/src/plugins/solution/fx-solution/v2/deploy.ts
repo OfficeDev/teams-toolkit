@@ -18,6 +18,7 @@ import { GLOBAL_CONFIG, SolutionError, SOLUTION_PROVISION_SUCCEEDED } from "../c
 import { AzureSolutionQuestionNames } from "../question";
 import { executeConcurrently, NamedThunk } from "./executor";
 import {
+  blockV1Project,
   combineRecords,
   extractSolutionInputs,
   getAzureSolutionSettings,
@@ -31,6 +32,10 @@ export async function deploy(
   provisionOutputs: Json,
   tokenProvider: AzureAccountProvider
 ): Promise<Result<Void, FxError>> {
+  const blockResult = blockV1Project(ctx.projectSetting.solutionSettings);
+  if (blockResult.isErr()) {
+    return err(blockResult.error);
+  }
   const inAzureProject = isAzureProject(getAzureSolutionSettings(ctx));
   const provisioned = provisionOutputs[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] as boolean;
 
@@ -64,11 +69,15 @@ export async function deploy(
       return {
         pluginName: `${plugin.name}`,
         taskName: "deploy",
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         thunk: () =>
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           plugin.deploy!(
             ctx,
-            { ...inputs, ...extractSolutionInputs(provisionOutputs[GLOBAL_CONFIG]) },
+            {
+              ...inputs,
+              ...extractSolutionInputs(provisionOutputs[GLOBAL_CONFIG]),
+              projectPath: inputs.projectPath!,
+            },
             provisionOutputs[plugin.name],
             tokenProvider
           ),
@@ -87,7 +96,7 @@ export async function deploy(
   );
   const result = await executeConcurrently(thunks, ctx.logProvider);
 
-  if (result.isOk()) {
+  if (result.kind === "success") {
     if (inAzureProject) {
       const msg = util.format(
         `Success: ${getStrings().solution.DeploySuccessNotice}`,

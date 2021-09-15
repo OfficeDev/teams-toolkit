@@ -38,6 +38,9 @@ import {
   Void,
   InputConfigsFolderName,
   PublishProfilesFolderName,
+  EnvConfig,
+  CoreCallbackEvent,
+  CoreCallbackFunc,
 } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import { AxiosResponse } from "axios";
@@ -95,7 +98,7 @@ import { LocalSettingsWriterMW } from "./middleware/localSettingsWriter";
 import { MigrateConditionHandlerMW } from "./middleware/migrateConditionHandler";
 import { environmentManager } from "..";
 import { newEnvInfo } from "./tools";
-import { copyParameterJson, getParameterJson } from "../plugins/solution/fx-solution/arm";
+// import { copyParameterJson, getParameterJson } from "../plugins/solution/fx-solution/arm";
 import { LocalCrypto } from "./crypto";
 import { PermissionRequestFileProvider } from "./permissionRequest";
 import {
@@ -125,6 +128,8 @@ import { SolutionLoaderMW } from "./middleware/solutionLoader";
 import { ProjectUpgraderMW } from "./middleware/projectUpgrader";
 import { FeatureFlagName } from "../common/constants";
 import { localSettingsFileName } from "../common/localSettingsProvider";
+import { EnvInfoV2, SolutionPlugin } from "@microsoft/teamsfx-api/build/v2";
+import { CallbackRegistry } from "./callback";
 
 export interface CoreHookContext extends HookContext {
   projectSettings?: ProjectSettings;
@@ -162,6 +167,14 @@ export class FxCore implements Core {
     TOOLS = tools;
     Logger = tools.logProvider;
     telemetryReporter = tools.telemetryReporter;
+  }
+
+  /**
+   * @todo this's a really primitive implement. Maybe could use Subscription Model to
+   * refactor later.
+   */
+  public on(event: CoreCallbackEvent, callback: CoreCallbackFunc): void {
+    return CallbackRegistry.set(event, callback);
   }
 
   @hooks([
@@ -230,6 +243,17 @@ export class FxCore implements Core {
         activeEnvironment: multiEnv ? environmentManager.getDefaultEnvName() : "default",
       };
 
+      if (multiEnv) {
+        const createEnvResult = await this.createEnvWithName(
+          environmentManager.getDefaultEnvName(),
+          projectSettings,
+          inputs
+        );
+        if (createEnvResult.isErr()) {
+          return err(createEnvResult.error);
+        }
+      }
+
       if (isV2()) {
         const solution = await getSolutionPluginV2ByName(inputs[CoreQuestionNames.Solution]);
         if (!solution) {
@@ -248,18 +272,19 @@ export class FxCore implements Core {
           contextV2,
           inputs
         );
-        if (solution.createEnv) {
-          inputs.copy = false;
-          const createEnvRes = await solution.createEnv(contextV2, inputs);
-          if (createEnvRes.isErr()) {
-            return err(createEnvRes.error);
-          }
-        }
-
         if (generateResourceTemplateRes.isErr()) {
           return err(generateResourceTemplateRes.error);
         }
         ctx.provisionInputConfig = generateResourceTemplateRes.value;
+        if (multiEnv) {
+          if (solution.createEnv) {
+            inputs.copy = false;
+            const createEnvRes = await solution.createEnv(contextV2, inputs);
+            if (createEnvRes.isErr()) {
+              return err(createEnvRes.error);
+            }
+          }
+        }
       } else {
         const solution = await getSolutionPluginByName(inputs[CoreQuestionNames.Solution]);
         if (!solution) {
@@ -285,24 +310,14 @@ export class FxCore implements Core {
         if (scaffoldRes.isErr()) {
           return scaffoldRes;
         }
-        if (solution.createEnv) {
-          solutionContext.answers!.copy = false;
-          const createEnvRes = await solution.createEnv(solutionContext);
-          if (createEnvRes.isErr()) {
-            return err(createEnvRes.error);
+        if (multiEnv) {
+          if (solution.createEnv) {
+            solutionContext.answers!.copy = false;
+            const createEnvRes = await solution.createEnv(solutionContext);
+            if (createEnvRes.isErr()) {
+              return err(createEnvRes.error);
+            }
           }
-        }
-      }
-
-      if (multiEnv) {
-        const createEnvResult = await this.createEnvWithName(
-          environmentManager.getDefaultEnvName(),
-          projectSettings,
-          inputs,
-          this
-        );
-        if (createEnvResult.isErr()) {
-          return err(createEnvResult.error);
         }
       }
     }
@@ -442,14 +457,32 @@ export class FxCore implements Core {
   async provisionResources(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     currentStage = Stage.provision;
     if (isV2()) {
-      if (!ctx || !ctx.solutionV2 || !ctx.contextV2 || !ctx.provisionInputConfig)
+      if (
+        !ctx ||
+        !ctx.solutionV2 ||
+        !ctx.contextV2 ||
+        !ctx.provisionInputConfig ||
+        !ctx.contextV2.projectSetting.activeEnvironment ||
+        !ctx.provisionOutputs
+      )
         return err(new ObjectIsUndefinedError("Provision input stuff"));
-      return await ctx.solutionV2.provisionResources(
+      const envInfo: EnvInfoV2 = {
+        envName: ctx.contextV2.projectSetting.activeEnvironment,
+        config: ctx.provisionInputConfig as EnvConfig,
+        profile: ctx.provisionOutputs,
+      };
+      const result = await ctx.solutionV2.provisionResources(
         ctx.contextV2,
         inputs,
-        ctx.provisionInputConfig,
+        envInfo,
         this.tools.tokenProvider
       );
+      // todo(yefuwang): persist profile on success and partialSuccess
+      if (result.kind === "success") {
+        return ok(Void);
+      } else {
+        return err(result.error);
+      }
     } else {
       if (!ctx || !ctx.solution || !ctx.solutionContext)
         return err(new ObjectIsUndefinedError("Provision input stuff"));
@@ -517,9 +550,12 @@ export class FxCore implements Core {
           ctx.localSettings,
           this.tools.tokenProvider
         );
-        if (res.isOk()) {
-          ctx.localSettings = res.value;
+        if (res.kind === "success") {
+          ctx.localSettings = res.output;
           return ok(Void);
+        } else if (res.kind === "partialSuccess") {
+          ctx.localSettings = res.output;
+          return err(res.error);
         } else {
           return err(res.error);
         }
@@ -926,8 +962,7 @@ export class FxCore implements Core {
   async createEnvWithName(
     targetEnvName: string,
     projectSettings: ProjectSettings,
-    inputs: Inputs,
-    core: FxCore
+    inputs: Inputs
   ): Promise<Result<Void, FxError>> {
     const appName = projectSettings.appName;
     const newEnvConfig = environmentManager.newEnvConfigData(appName);
@@ -939,30 +974,11 @@ export class FxCore implements Core {
     if (writeEnvResult.isErr()) {
       return err(writeEnvResult.error);
     }
-    core.tools.logProvider.debug(
+    this.tools.logProvider.debug(
       `[core] persist ${targetEnvName} env profile to path ${
         writeEnvResult.value
       }: ${JSON.stringify(newEnvConfig)}`
     );
-
-    //TODO need arm support API V2
-    if (isArmSupportEnabled() && isAzureProject(projectSettings.solutionSettings)) {
-      const solutionContext: SolutionContext = {
-        projectSettings,
-        envInfo: newEnvInfo(targetEnvName, newEnvConfig),
-        root: inputs.projectPath || "",
-        ...core.tools,
-        ...core.tools.tokenProvider,
-        answers: inputs,
-        cryptoProvider: new LocalCrypto(projectSettings.projectId),
-        permissionRequestProvider: inputs.projectPath
-          ? new PermissionRequestFileProvider(inputs.projectPath)
-          : undefined,
-      };
-
-      await getParameterJson(solutionContext);
-    }
-
     return ok(Void);
   }
 
@@ -1126,7 +1142,7 @@ export async function createBasicFolderStructure(inputs: Inputs): Promise<Result
           description: "",
           author: "",
           scripts: {
-            test: 'echo "Error: no test specified" && exit 1',
+            test: "echo \"Error: no test specified\" && exit 1",
           },
           devDependencies: {
             "@microsoft/teamsfx-cli": "0.*",

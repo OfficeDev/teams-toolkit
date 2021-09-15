@@ -45,7 +45,7 @@ import {
   TelemetryErrorType,
 } from "../telemetry/extTelemetryEvents";
 import { VS_CODE_UI } from "../extension";
-import TreeViewManagerInstance from "../commandsTreeViewProvider";
+import TreeViewManagerInstance from "../treeview/treeViewManager";
 import * as path from "path";
 import * as fs from "fs-extra";
 import * as commonUtils from "../debug/commonUtils";

@@ -67,10 +67,6 @@ class ArmParameters {
 }
 
 export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
-  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-  if (!inputs.projectPath) {
-    throw NoProjectOpenedError();
-  }
   if (await needMigrateToArmAndMultiEnv(ctx)) {
     const core = ctx.self as FxCore;
     const res = await core.tools.ui.showMessage(
@@ -83,12 +79,14 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
     if (!answer || answer != "OK") {
       return;
     }
-    await migrateToArmAndMultiEnv(ctx, inputs.projectPath);
+    await migrateToArmAndMultiEnv(ctx);
   }
   await next();
 };
 
-async function migrateToArmAndMultiEnv(ctx: CoreHookContext, projectPath: string): Promise<void> {
+async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
+  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+  const projectPath = inputs.projectPath as string;
   try {
     await removeBotConfig(ctx);
     await migrateMultiEnv(projectPath);

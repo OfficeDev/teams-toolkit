@@ -42,9 +42,7 @@ import { LocalDebugConfigKeys } from "../../plugins/resource/localdebug/constant
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";
 const learnMoreText = "Learn More";
-const migrationSuccessMessage =
-  "Migration Success! please run provision command before executing other commands, otherwise the commands may fail. click the link for more information";
-const migrationGuideUrl = "https://github.com/OfficeDev/TeamsFx/wiki/Migration-Guide";
+const migrationGuideUrl = "https://aka.ms/teamsfx-migration-guide";
 
 class EnvConfigName {
   static readonly StorageName = "storageName";
@@ -102,7 +100,12 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext, projectPath: string
   await removeOldProjectFiles(projectPath);
   const core = ctx.self as FxCore;
   core.tools.ui
-    .showMessage("info", migrationSuccessMessage, false, learnMoreText)
+    .showMessage(
+      "info",
+      getStrings().solution.MigrationToArmAndMultiEnvSuccessMessage,
+      false,
+      learnMoreText
+    )
     .then((result) => {
       const userSelected = result.isOk() ? result.value : undefined;
       if (userSelected === learnMoreText) {
@@ -252,7 +255,12 @@ async function getMultiEnvFolders(projectPath: string): Promise<any> {
 
 async function removeOldProjectFiles(projectPath: string): Promise<void> {
   const fx = path.join(projectPath, `.${ConfigFolderName}`);
-  await fs.remove(path.join(fx, "env.default.json"));
+  // backup the env.default.json to migrationbackup folder.
+  await fs.ensureDir(path.join(fx, "migrationbackup"));
+  await fs.move(
+    path.join(fx, "env.default.json"),
+    path.join(fx, "migrationbackup", "env.default.json")
+  );
   await fs.remove(path.join(fx, "default.userdata"));
   await fs.remove(path.join(fx, "settings.json"));
   await fs.remove(path.join(fx, "local.env"));
@@ -412,10 +420,6 @@ async function generateArmParameterJson(ctx: CoreHookContext) {
   const fx = path.join(inputs.projectPath as string, `.${ConfigFolderName}`);
   const fxConfig = path.join(fx, InputConfigsFolderName);
   const envConfig = await fs.readJson(path.join(fx, "env.default.json"));
-  const hasProvision = envConfig.solution?.provisionSucceeded as boolean;
-  if (!hasProvision) {
-    return;
-  }
   const targetJson = await fs.readJson(path.join(fxConfig, "azure.parameters.dev.json"));
   const ArmParameter = "parameters";
   // frontend hosting

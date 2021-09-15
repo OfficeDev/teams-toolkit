@@ -76,6 +76,8 @@ import {
   TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV,
   STATIC_TABS_TPL_FOR_MULTI_ENV,
   CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV,
+  BOTS_TPL_FOR_MULTI_ENV,
+  COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV,
 } from "./constants";
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
@@ -242,10 +244,12 @@ export class AppStudioPluginImpl {
           : CONFIGURABLE_TABS_TPL;
       }
       if (solutionSettings.capabilities.includes(BotOptionItem.id)) {
-        manifest.bots = BOTS_TPL;
+        manifest.bots = isMultiEnvEnabled() ? BOTS_TPL_FOR_MULTI_ENV : BOTS_TPL;
       }
       if (solutionSettings.capabilities.includes(MessageExtensionItem.id)) {
-        manifest.composeExtensions = COMPOSE_EXTENSIONS_TPL;
+        manifest.composeExtensions = isMultiEnvEnabled()
+          ? COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV
+          : COMPOSE_EXTENSIONS_TPL;
       }
 
       if (settings?.solutionSettings?.migrateFromV1) {
@@ -1606,10 +1610,13 @@ export class AppStudioPluginImpl {
           },
           "fx-resource-aad-app-for-teams": {
             clientId: aadId,
-            getApplicationIdUris: webApplicationInfoResource,
+            applicationIdUris: webApplicationInfoResource,
           },
           "fx-resource-appstudio": {
             teamsAppId: teamsAppId,
+          },
+          "fx-resource-bot": {
+            botId: botId,
           },
         },
       };

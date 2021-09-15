@@ -737,7 +737,6 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
-    ConcurrentLockerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(isMultiEnvEnabled()),
     SolutionLoaderMW(),
@@ -753,7 +752,6 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
-    ConcurrentLockerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(isMultiEnvEnabled()),
     SolutionLoaderMW(),
@@ -769,7 +767,6 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
-    ConcurrentLockerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(isMultiEnvEnabled()),
     SolutionLoaderMW(),

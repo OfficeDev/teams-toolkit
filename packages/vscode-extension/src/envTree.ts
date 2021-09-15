@@ -10,7 +10,8 @@ import {
   LocalSettingsProvider,
 } from "@microsoft/teamsfx-core";
 import * as vscode from "vscode";
-import TreeViewManagerInstance, { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
+import { CommandsTreeViewProvider } from "./treeview/commandsTreeViewProvider";
+import TreeViewManagerInstance from "./treeview/treeViewManager";
 import { LocalEnvironment } from "./constants";
 import * as StringResources from "./resources/Strings.json";
 import { checkPermission, listCollaborator } from "./handlers";

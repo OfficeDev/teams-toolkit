@@ -96,7 +96,7 @@ export class DevelopmentView extends React.Component<any, any> {
     const message = event.data.message;
 
     switch (message) {
-      case "concurrencyStatus":
+      case "lockChanged":
         this.setState({ locked: event.data.data });
         break;
       default:

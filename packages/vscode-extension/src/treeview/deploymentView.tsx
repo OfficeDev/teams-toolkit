@@ -61,7 +61,7 @@ export class DeploymentView extends React.Component<any, any> {
           tooltip={StringResources.vsc.commandsTreeViewProvider.validateManifestDescription}
           icon="codicon codicon-checklist"
           customized={false}
-          disable={false}
+          disable={this.state.locked}
           command="fx-extension.validateManifest"
         ></TreeItem>
         <TreeItem
@@ -69,7 +69,7 @@ export class DeploymentView extends React.Component<any, any> {
           tooltip={StringResources.vsc.commandsTreeViewProvider.buildPackageDescription}
           icon="codicon codicon-package"
           customized={false}
-          disable={false}
+          disable={this.state.locked}
           command="fx-extension.build"
         ></TreeItem>
         <TreeItem
@@ -98,6 +98,7 @@ export class DeploymentView extends React.Component<any, any> {
         ></TreeItem>
         <TreeItem
           label="CI/CD guide"
+          tooltip={StringResources.vsc.commandsTreeViewProvider.cicdGuideDescription}
           icon="codicon codicon-sync"
           customized={false}
           disable={false}
@@ -111,7 +112,7 @@ export class DeploymentView extends React.Component<any, any> {
     const message = event.data.message;
 
     switch (message) {
-      case "concurrencyStatus":
+      case "lockChanged":
         this.setState({ locked: event.data.data });
         break;
       default:

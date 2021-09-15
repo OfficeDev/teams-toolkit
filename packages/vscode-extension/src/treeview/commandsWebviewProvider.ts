@@ -1,8 +1,8 @@
 import * as vscode from "vscode";
 import * as path from "path";
-import { Commands } from "./controls/Commands";
-import { ext } from "./extensionVariables";
-import { TreeContainerType } from "./treeview/treeContainerType";
+import { Commands } from "../controls/Commands";
+import { ext } from "../extensionVariables";
+import { TreeContainerType } from "../treeview/treeContainerType";
 
 export class CommandsWebviewProvider implements vscode.WebviewViewProvider {
   private _view?: vscode.WebviewView;
@@ -34,6 +34,13 @@ export class CommandsWebviewProvider implements vscode.WebviewViewProvider {
         case Commands.OpenExternalLink:
           vscode.env.openExternal(vscode.Uri.parse(msg.data));
       }
+    });
+  }
+
+  public onLockChanged(locked: boolean) {
+    this._view?.webview.postMessage({
+      message: "lockChanged",
+      data: locked,
     });
   }
 

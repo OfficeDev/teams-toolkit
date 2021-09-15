@@ -10,4 +10,8 @@ export enum SyncedState {
   Version = "teamsToolkit:synced:version",
 }
 
+export enum UserState {
+  IsExisting = "teamsToolkit:user:isExisting",
+}
+
 export const LocalEnvironment = "local";

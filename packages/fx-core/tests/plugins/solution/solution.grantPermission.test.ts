@@ -52,7 +52,7 @@ describe("grantPermission() for Teamsfx projects", () => {
     return {
       root: ".",
       envInfo: newEnvInfo(),
-      answers: { platform: Platform.VSCode, email: "collaborator@xxx.com" },
+      answers: { platform: Platform.VSCode, email: "your_collaborator@yourcompany.com" },
       projectSettings: undefined,
       graphTokenProvider: mockGraphTokenProvider,
     };

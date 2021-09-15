@@ -345,7 +345,7 @@ export function getTeamsAppId(rootfolder: string | undefined): any {
   if (isWorkspaceSupported(rootfolder)) {
     const result = readEnvJsonFileSync(rootfolder);
     if (result.isErr()) {
-      throw result.error;
+      return undefined;
     }
     return result.value.solution.remoteTeamsAppId;
   }
@@ -366,7 +366,7 @@ export function getLocalTeamsAppId(rootfolder: string | undefined): any {
 
     const result = readEnvJsonFileSync(rootfolder);
     if (result.isErr()) {
-      throw result.error;
+      return undefined;
     }
 
     // get final setting value from env.xxx.json and xxx.userdata
@@ -405,7 +405,7 @@ export function getProjectId(rootfolder: string | undefined): any {
   if (isWorkspaceSupported(rootfolder)) {
     const result = readSettingsFileSync(rootfolder);
     if (result.isErr()) {
-      throw result.error;
+      return undefined;
     }
 
     return result.value.projectId;

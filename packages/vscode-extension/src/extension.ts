@@ -35,6 +35,10 @@ export async function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(new ExtTelemetry.Reporter(context));
 
+  // activate upgrade
+  const upgrade = new ExtensionUpgrade(context);
+  upgrade.showChangeLog();
+
   await exp.initialize(context);
   TreatmentVariableValue.isEmbeddedSurvey = (await exp
     .getExpService()
@@ -308,10 +312,6 @@ export async function activate(context: vscode.ExtensionContext) {
     const survey = ExtensionSurvey.getInstance();
     survey.activate();
   }
-
-  // activate upgrade
-  const upgrade = new ExtensionUpgrade(context);
-  upgrade.showChangeLog();
 
   openWelcomePageAfterExtensionInstallation();
 }

@@ -242,7 +242,7 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
 export const GetUserEmailQuestion: TextInputQuestion = {
   name: "email",
   type: "text",
-  title: "Input the email address of your collaborator",
+  title: "Invite a collaborator (email)",
   validation: {
     validFunc: (input: string, previousInputs?: Inputs): string | undefined => {
       if (!input || input.trim() === "") {

@@ -7,6 +7,7 @@ import {
   environmentManager,
   setActiveEnv,
   isRemoteCollaborateEnabled,
+  LocalSettingsProvider,
 } from "@microsoft/teamsfx-core";
 import * as vscode from "vscode";
 import TreeViewManagerInstance, { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
@@ -15,6 +16,7 @@ import * as StringResources from "./resources/Strings.json";
 import { checkPermission, listCollaborator } from "./handlers";
 import { signedIn } from "./commonlib/common/constant";
 import { AppStudioLogin } from "./commonlib/appStudioLogin";
+import * as fs from "fs-extra";
 
 const showEnvList: Array<string> = [];
 let environmentTreeProvider: CommandsTreeViewProvider;
@@ -42,7 +44,9 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
     }
     showEnvList.splice(0);
 
-    const envNames = [LocalEnvironment].concat(envNamesResult.value);
+    const envNames = (await localSettingsExists(workspacePath))
+      ? [LocalEnvironment].concat(envNamesResult.value)
+      : envNamesResult.value;
     for (const item of envNames) {
       showEnvList.push(item);
       environmentTreeProvider.add([
@@ -107,4 +111,9 @@ function getTreeViewItemIcon(envName: string, activeEnv: string | undefined) {
     default:
       return "symbol-folder";
   }
+}
+
+async function localSettingsExists(projectRoot: string): Promise<boolean> {
+  const provider = new LocalSettingsProvider(projectRoot);
+  return await fs.pathExists(provider.localSettingsFilePath);
 }

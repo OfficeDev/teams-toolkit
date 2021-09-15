@@ -77,7 +77,7 @@ describe("ConfigurationProvider Tests - Node", () => {
     });
     try {
       getResourceConfiguration(ResourceType.API);
-    } catch (err) {
+    } catch (err: any) {
       expect(err).to.be.instanceOf(ErrorWithCode);
       expect(err.code).to.eql(ErrorCode.InvalidConfiguration);
     }
@@ -101,7 +101,7 @@ describe("ConfigurationProvider Tests - Node", () => {
     });
     try {
       getResourceConfiguration(ResourceType.SQL, "API-1");
-    } catch (err) {
+    } catch (err: any) {
       expect(err).to.be.instanceOf(ErrorWithCode);
       expect(err.code).to.eql(ErrorCode.InvalidConfiguration);
     }

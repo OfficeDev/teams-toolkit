@@ -12,7 +12,7 @@ import { ApplicationTokenCredentials } from "@azure/ms-rest-nodeauth";
 import { TokenResponse } from "adal-node/lib/adal";
 import { Constants } from "../../../../../src/plugins/resource/sql/constants";
 import * as commonUtils from "../../../../../src/plugins/resource/sql/utils/commonUtils";
-import { FirewallRules, ServerAzureADAdministrators } from "@azure/arm-sql";
+import { FirewallRules, ServerAzureADAdministrators, Servers } from "@azure/arm-sql";
 
 chai.use(chaiAsPromised);
 
@@ -42,6 +42,7 @@ describe("skipAddingUser", () => {
 
   it("preProvision", async function () {
     // Arrange
+    sinon.stub(Servers.prototype, "checkNameAvailability").resolves({ available: false });
     sinon
       .stub(ApplicationTokenCredentials.prototype, "getToken")
       .resolves({ accessToken: faker.random.word() } as TokenResponse);

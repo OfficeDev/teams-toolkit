@@ -33,7 +33,7 @@ export function getPluginContext(
   const pluginConfig: PluginConfig = solutionCtx.envInfo.profile.get(pluginIdentifier)!;
   const pluginCtx: PluginContext = {
     ...baseCtx,
-    configOfOtherPlugins: solutionCtx.envInfo.profile,
+    envInfo: solutionCtx.envInfo,
     config: pluginConfig,
   };
   return pluginCtx;

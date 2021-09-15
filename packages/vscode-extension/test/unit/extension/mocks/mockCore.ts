@@ -9,10 +9,16 @@ import {
   Stage,
   Func,
   Void,
+  CoreCallbackEvent,
+  CoreCallbackFunc,
 } from "@microsoft/teamsfx-api";
 
 export class MockCore implements Core {
   constructor() {}
+
+  public on(event: CoreCallbackEvent, callback: CoreCallbackFunc): void {
+    return;
+  }
 
   async createProject(inputs: Inputs): Promise<Result<string, FxError>> {
     return ok("");
@@ -54,7 +60,7 @@ export class MockCore implements Core {
     return ok("");
   }
 
-  async activateEnv(env: string, inputs: Inputs): Promise<Result<Void, FxError>> {
+  async activateEnv(inputs: Inputs): Promise<Result<Void, FxError>> {
     return ok(Void);
   }
 
@@ -64,6 +70,7 @@ export class MockCore implements Core {
 
   async getQuestionsForUserTask(
     router: FunctionRouter,
+
     inputs: Inputs
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     return ok(new QTreeNode({ type: "group" }));

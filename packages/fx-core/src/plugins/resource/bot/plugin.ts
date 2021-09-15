@@ -16,7 +16,6 @@ import {
 import { AADRegistration } from "./aadRegistration";
 import * as factory from "./clientFactory";
 import * as utils from "./utils/common";
-import { createQuestions } from "./questions";
 import { LanguageStrategy } from "./languageStrategy";
 import { Messages } from "./resources/messages";
 import { FxResult, FxBotPluginResultFactory as ResultFactory } from "./result";
@@ -37,7 +36,6 @@ import {
   BotArmOutput,
   Alias,
 } from "./constants";
-import { WayToRegisterBot } from "./enums/wayToRegisterBot";
 import { getZipDeployEndpoint } from "./utils/zipDeploy";
 
 import * as appService from "@azure/arm-appservice";
@@ -78,61 +76,13 @@ export class TeamsBotImpl {
   public config: TeamsBotConfig = new TeamsBotConfig();
   private ctx?: PluginContext;
 
-  public async getQuestions(
-    stage: Stage,
-    ctx: PluginContext
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
-    switch (stage) {
-      case Stage.create: {
-        return ResultFactory.Success(createQuestions);
-      }
-    }
-
-    return ResultFactory.Success(
-      new QTreeNode({
-        type: "group",
-      })
-    );
-  }
-
   private async getAzureAccountCredenial(): Promise<TokenCredentialsBase> {
-    const serviceClientCredentials = await this.ctx?.azureAccountProvider?.getAccountCredentialAsync();
+    const serviceClientCredentials =
+      await this.ctx?.azureAccountProvider?.getAccountCredentialAsync();
     if (!serviceClientCredentials) {
       throw new PreconditionError(Messages.FailToGetAzureCreds, [Messages.TryLoginAzure]);
     }
     return serviceClientCredentials;
-  }
-
-  public async preScaffold(context: PluginContext): Promise<FxResult> {
-    this.ctx = context;
-    await this.config.restoreConfigFromContext(context);
-    Logger.info(Messages.PreScaffoldingBot);
-
-    const rawWay = this.ctx.answers![QuestionNames.WAY_TO_REGISTER_BOT];
-
-    if (!rawWay) {
-      throw new UserInputsError(QuestionNames.WAY_TO_REGISTER_BOT, rawWay as string);
-    }
-
-    const pickedWay: WayToRegisterBot = rawWay as WayToRegisterBot;
-
-    let botRegistration = {
-      botId: "",
-      botPassword: "",
-    };
-
-    if (pickedWay === WayToRegisterBot.ReuseExisting) {
-      botRegistration = await this.reuseExistingBotRegistration();
-
-      this.config.scaffold.botId = botRegistration.botId;
-      this.config.scaffold.botPassword = botRegistration.botPassword;
-    }
-
-    this.config.scaffold.wayToRegisterBot = pickedWay;
-
-    this.config.saveConfigIntoContext(context);
-
-    return ResultFactory.Success();
   }
 
   public async scaffold(context: PluginContext): Promise<FxResult> {
@@ -239,15 +189,11 @@ export class TeamsBotImpl {
     await factory.ensureResourceProvider(rpClient, AzureConstants.requiredResourceProviders);
 
     // 1. Do bot registration.
-    if (this.config.scaffold.wayToRegisterBot === WayToRegisterBot.CreateNew) {
-      await handler?.next(ProgressBarConstants.PROVISION_STEP_BOT_REG);
-      const botAuthCreds = await this.createOrGetBotAppRegistration();
-
-      if (!isArmSupportEnabled()) {
-        await this.provisionBotServiceOnAzure(botAuthCreds);
-      }
+    await handler?.next(ProgressBarConstants.PROVISION_STEP_BOT_REG);
+    const botAuthCreds = await this.createOrGetBotAppRegistration();
+    if (!isArmSupportEnabled()) {
+      await this.provisionBotServiceOnAzure(botAuthCreds);
     }
-
     if (!isArmSupportEnabled()) {
       await handler?.next(ProgressBarConstants.PROVISION_STEP_WEB_APP);
       // 2. Provision azure web app for hosting bot project.
@@ -271,8 +217,6 @@ export class TeamsBotImpl {
       .activeResourcePlugins;
     const handleBarsContext = {
       Plugins: selectedPlugins,
-      createNewBotService: !((this.config.scaffold.wayToRegisterBot ===
-        WayToRegisterBot.ReuseExisting) as boolean),
     };
 
     const provisionModuleContentResult = await generateBicepFiles(
@@ -508,12 +452,13 @@ export class TeamsBotImpl {
         });
       }
 
-      const siteEnvelope: appService.WebSiteManagementModels.Site = LanguageStrategy.getSiteEnvelope(
-        this.config.scaffold.programmingLanguage!,
-        this.config.provision.appServicePlan!,
-        this.config.provision.location!,
-        appSettings
-      );
+      const siteEnvelope: appService.WebSiteManagementModels.Site =
+        LanguageStrategy.getSiteEnvelope(
+          this.config.scaffold.programmingLanguage!,
+          this.config.provision.appServicePlan!,
+          this.config.provision.location!,
+          appSettings
+        );
 
       if (this.config.provision.identityName) {
         siteEnvelope.identity = {
@@ -535,34 +480,11 @@ export class TeamsBotImpl {
       Logger.info(Messages.SuccessfullyUpdatedAzureWebAppSettings);
 
       // 3. Update message endpoint for bot registration.
-      switch (this.config.scaffold.wayToRegisterBot) {
-        case WayToRegisterBot.CreateNew: {
-          await this.updateMessageEndpointOnAzure(
-            `${this.config.provision.siteEndpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`
-          );
-          break;
-        }
-        case WayToRegisterBot.ReuseExisting: {
-          // Remind end developers to update message endpoint manually.
-          await DialogUtils.showAndHelp(
-            context,
-            Messages.RemindUsersToUpdateMessageEndpoint(
-              `${this.config.provision.siteEndpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`
-            ),
-            Links.UPDATE_MESSAGE_ENDPOINT
-          );
-          Logger.info(
-            Messages.RemindUsersToUpdateMessageEndpoint(
-              `${this.config.provision.siteEndpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`
-            )
-          );
-          break;
-        }
-      }
+      await this.updateMessageEndpointOnAzure(
+        `${this.config.provision.siteEndpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`
+      );
     }
-
     this.config.saveConfigIntoContext(context);
-
     return ResultFactory.Success();
   }
 
@@ -779,37 +701,10 @@ export class TeamsBotImpl {
     Logger.info(Messages.SuccessfullyUpdatedBotMessageEndpoint);
   }
 
-  private async reuseExistingBotRegistration() {
-    const rawBotId = this.ctx!.answers![QuestionNames.GET_BOT_ID];
-    if (!rawBotId) {
-      throw new UserInputsError(QuestionNames.GET_BOT_ID, rawBotId as string);
-    }
-    const botId = rawBotId as string;
-
-    const rawBotPassword = this.ctx!.answers![QuestionNames.GET_BOT_PASSWORD];
-    if (!rawBotPassword) {
-      throw new UserInputsError(QuestionNames.GET_BOT_PASSWORD, rawBotPassword as string);
-    }
-    const botPassword = rawBotPassword as string;
-
-    return {
-      botId: botId,
-      botPassword: botPassword,
-    };
-  }
-
   private async createNewBotRegistrationOnAppStudio() {
     const appStudioToken = await this.ctx?.appStudioToken?.getAccessToken();
     CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
     CheckThrowSomethingMissing(CommonStrings.SHORT_APP_NAME, this.ctx?.projectSettings?.appName);
-
-    if (
-      this.config.localDebug.botRegistrationCreated() &&
-      (await AppStudio.isAADAppExisting(appStudioToken!, this.config.localDebug.localObjectId!))
-    ) {
-      Logger.debug("Local bot has already been registered, just return.");
-      return;
-    }
 
     // 1. Create a new AAD App Registraion with client secret.
     const aadDisplayName = ResourceNameFactory.createCommonName(
@@ -818,12 +713,24 @@ export class TeamsBotImpl {
       MaxLengths.AAD_DISPLAY_NAME
     );
 
-    Logger.info(Messages.ProvisioningBotRegistration);
-    const botAuthCreds = await AADRegistration.registerAADAppAndGetSecretByAppStudio(
-      appStudioToken!,
-      aadDisplayName
-    );
-    Logger.info(Messages.SuccessfullyProvisionedBotRegistration);
+    let botAuthCreds: BotAuthCredential = new BotAuthCredential();
+    if (
+      this.config.localDebug.botAADCreated()
+      // if user input AAD, the object id is not required
+      // && (await AppStudio.isAADAppExisting(appStudioToken!, this.config.localDebug.localObjectId!))
+    ) {
+      botAuthCreds.clientId = this.config.localDebug.localBotId;
+      botAuthCreds.clientSecret = this.config.localDebug.localBotPassword;
+      botAuthCreds.objectId = this.config.localDebug.localObjectId;
+      Logger.debug(Messages.SuccessfullyGetExistingBotAadAppCredential);
+    } else {
+      Logger.info(Messages.ProvisioningBotRegistration);
+      botAuthCreds = await AADRegistration.registerAADAppAndGetSecretByAppStudio(
+        appStudioToken!,
+        aadDisplayName
+      );
+      Logger.info(Messages.SuccessfullyProvisionedBotRegistration);
+    }
 
     // 2. Register bot by app studio.
     const botReg: IBotRegistration = {
@@ -859,7 +766,7 @@ export class TeamsBotImpl {
 
     let botAuthCreds = new BotAuthCredential();
 
-    if (!this.config.scaffold.botRegistrationCreated()) {
+    if (!this.config.scaffold.botAADCreated()) {
       const aadDisplayName = ResourceNameFactory.createCommonName(
         this.config.resourceNameSuffix,
         this.ctx?.projectSettings?.appName,

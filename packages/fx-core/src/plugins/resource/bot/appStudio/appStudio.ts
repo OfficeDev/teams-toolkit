@@ -26,11 +26,11 @@ export class AppStudio {
       headers: {
         post: {
           Authorization: `Bearer ${accessToken}`,
-          teamstoolkit: "true",
+          "Client-Source": "teamstoolkit",
         },
         get: {
           Authorization: `Bearer ${accessToken}`,
-          teamstoolkit: "true",
+          "Client-Source": "teamstoolkit",
         },
       },
     });

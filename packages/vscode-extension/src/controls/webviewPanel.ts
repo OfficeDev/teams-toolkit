@@ -231,6 +231,8 @@ export class WebviewPanel {
         return StringResources.vsc.webview.quickStartPageTitle;
       case PanelType.SampleGallery:
         return StringResources.vsc.webview.samplePageTitle;
+      case PanelType.Survey:
+        return StringResources.vsc.webview.surveyPageTitle;
     }
   }
 

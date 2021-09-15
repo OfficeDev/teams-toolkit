@@ -19,7 +19,7 @@ const config = {
   entry: {
     extension: "./src/extension.ts", // the entry point of this extension, 📖 -> https://webpack.js.org/configuration/entry-context/
     client: "./src/controls/index.tsx",
-    tree: "./src/controls/tree.tsx",
+    tree: "./src/treeview/tree.tsx",
   },
   output: {
     // the bundle is stored in the 'dist' folder (check package.json), 📖 -> https://webpack.js.org/configuration/output/
@@ -95,6 +95,10 @@ const config = {
         {
           from: "../fx-core/templates/",
           to: "../templates/",
+        },
+        {
+          from: "./WHATISNEW.md",
+          to: "../resource/WHATISNEW.md",
         },
       ],
     }),

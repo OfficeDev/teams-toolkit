@@ -163,9 +163,9 @@ export class legacyLocalDebugPlugin {
 
       // configs
       const localDebugConfigs = ctx.config;
-      const aadConfigs = ctx.configOfOtherPlugins.get(AadPlugin.Name);
-      const runtimeConnectorConfigs = ctx.configOfOtherPlugins.get(RuntimeConnectorPlugin.Name);
-      const solutionConfigs = ctx.configOfOtherPlugins.get(SolutionPlugin.Name);
+      const aadConfigs = ctx.envInfo.profile.get(AadPlugin.Name);
+      const runtimeConnectorConfigs = ctx.envInfo.profile.get(RuntimeConnectorPlugin.Name);
+      const solutionConfigs = ctx.envInfo.profile.get(SolutionPlugin.Name);
       const clientId = aadConfigs?.get(AadPlugin.LocalClientId) as string;
       const clientSecret = aadConfigs?.get(AadPlugin.LocalClientSecret) as string;
       const teamsAppTenantId = solutionConfigs?.get(SolutionPlugin.TeamsAppTenantId) as string;
@@ -253,7 +253,7 @@ export class legacyLocalDebugPlugin {
 
       if (includeBot) {
         // bot local env
-        const botConfigs = ctx.configOfOtherPlugins.get(BotPlugin.Name);
+        const botConfigs = ctx.envInfo.profile.get(BotPlugin.Name);
         if (isMigrateFromV1) {
           localEnvs[LocalEnvBotKeysMigratedFromV1.BotId] = botConfigs?.get(
             BotPlugin.LocalBotId

@@ -18,11 +18,12 @@ import { VsCodeUI } from "./qm/vsc_ui";
 import { exp } from "./exp";
 import { disableRunIcon, registerRunIcon } from "./debug/runIconHandler";
 import { CryptoCodeLensProvider } from "./codeLensProvider";
-import { Correlator, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
+import { Correlator, isMultiEnvEnabled, isRemoteCollaborateEnabled } from "@microsoft/teamsfx-core";
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
 import { enableMigrateV1 } from "./utils/migrateV1";
 import { isTeamsfx } from "./utils/commonUtils";
 import { ConfigFolderName, PublishProfilesFolderName } from "@microsoft/teamsfx-api";
+import { ExtensionUpgrade } from "./utils/upgrade";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -34,7 +35,19 @@ export async function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(new ExtTelemetry.Reporter(context));
 
+  // activate upgrade
+  const upgrade = new ExtensionUpgrade(context);
+  upgrade.showChangeLog();
+
   await exp.initialize(context);
+  TreatmentVariableValue.isEmbeddedSurvey = (await exp
+    .getExpService()
+    .getTreatmentVariableAsync(
+      TreatmentVariables.VSCodeConfig,
+      TreatmentVariables.EmbeddedSurvey,
+      true
+    )) as boolean | undefined;
+
   // 1.1 Register the creating command.
   const createCmd = vscode.commands.registerCommand("fx-extension.create", (...args) =>
     Correlator.run(handlers.createNewProjectHandler, args)
@@ -121,6 +134,11 @@ export async function activate(context: vscode.ExtensionContext) {
     Correlator.run(handlers.openWelcomeHandler, args)
   );
   context.subscriptions.push(openWelcomeCmd);
+
+  const openSurveyCmd = vscode.commands.registerCommand("fx-extension.openSurvey", (...args) =>
+    Correlator.run(handlers.openSurveyHandler, args)
+  );
+  context.subscriptions.push(openSurveyCmd);
 
   const openSamplesCmd = vscode.commands.registerCommand("fx-extension.openSamples", (...args) =>
     Correlator.run(handlers.openSamplesHandler, args)
@@ -216,10 +234,24 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(activateEnvironmentWithIcon);
 
+  const grantPermission = vscode.commands.registerCommand(
+    "fx-extension.grantPermission",
+    (node) => {
+      Correlator.run(handlers.grantPermission, node.command.title);
+    }
+  );
+  context.subscriptions.push(grantPermission);
+
   vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isMultiEnvEnabled",
     isMultiEnvEnabled() && (await isTeamsfx())
+  );
+
+  vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isRemoteCollaborateEnabled",
+    isRemoteCollaborateEnabled() && (await isTeamsfx())
   );
 
   // Setup CodeLens provider for userdata file
@@ -276,8 +308,10 @@ export async function activate(context: vscode.ExtensionContext) {
   // 2. Call activate function of toolkit core.
   await handlers.activate();
 
-  const survey = new ExtensionSurvey(context);
-  survey.activate();
+  if (!TreatmentVariableValue.isEmbeddedSurvey) {
+    const survey = ExtensionSurvey.getInstance();
+    survey.activate();
+  }
 
   openWelcomePageAfterExtensionInstallation();
 }

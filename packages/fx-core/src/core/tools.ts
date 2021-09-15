@@ -9,6 +9,12 @@ import {
   ArchiveFolderName,
   V1ManifestFileName,
   ProjectSettingsFileName,
+  EnvConfig,
+  InputConfigsFolderName,
+  err,
+  FxError,
+  Result,
+  ok,
 } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import * as fs from "fs-extra";
@@ -23,9 +29,9 @@ import {
   TabOptionItem,
 } from "../plugins/solution/fx-solution/question";
 import { environmentManager } from "./environment";
-import * as dotenv from "dotenv";
 import { ConstantString } from "../common/constants";
 import { isMultiEnvEnabled } from "../common";
+import { InvalidProjectError, InvalidProjectSettingsFileError, ReadFileError } from ".";
 
 export function validateProject(solutionContext: SolutionContext): string | undefined {
   const res = validateSettings(solutionContext.projectSettings);
@@ -96,6 +102,15 @@ export function validateSettings(projectSettings?: ProjectSettings): string | un
         return `${PluginNames.APIM} setting is missing in settings.json`;
     }
   }
+
+  if (isMultiEnvEnabled()) {
+    if (
+      !projectSettings.activeEnvironment ||
+      typeof projectSettings.activeEnvironment !== "string"
+    ) {
+      return `activeEnvironment is missing or not a string in ${ProjectSettingsFileName}`;
+    }
+  }
   return undefined;
 }
 
@@ -117,6 +132,7 @@ export function isValidProject(workspacePath?: string): boolean {
   }
 }
 
+// TODO: add an async version
 export async function validateV1Project(
   workspacePath: string | undefined
 ): Promise<string | undefined> {
@@ -179,16 +195,23 @@ export async function isMigrateFromV1Project(workspacePath?: string): Promise<bo
   }
 }
 
-export function newEnvInfo(envName?: string): EnvInfo {
+export function newEnvInfo(
+  envName?: string,
+  config?: EnvConfig,
+  profile?: Map<string, any>
+): EnvInfo {
   return {
     envName: envName ?? environmentManager.getDefaultEnvName(),
-    config: {
-      azure: {},
+    config: config ?? {
       manifest: {
-        values: {},
+        values: {
+          appName: {
+            short: "",
+          },
+        },
       },
     },
-    profile: new Map<string, any>([[GLOBAL_CONFIG, new ConfigMap()]]),
+    profile: profile ?? new Map<string, any>([[GLOBAL_CONFIG, new ConfigMap()]]),
   };
 }
 

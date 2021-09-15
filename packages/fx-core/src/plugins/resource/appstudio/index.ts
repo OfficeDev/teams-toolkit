@@ -17,7 +17,6 @@ import {
   Colors,
   AzureSolutionSettings,
   Func,
-  newSystemError,
   Void,
 } from "@microsoft/teamsfx-api";
 import { AppStudioPluginImpl } from "./plugin";
@@ -30,6 +29,7 @@ import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { Links } from "../bot/constants";
 import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
+import "./v2";
 @Service(ResourcePlugins.AppStudioPlugin)
 export class AppStudioPlugin implements Plugin {
   name = "fx-resource-appstudio";
@@ -178,7 +178,7 @@ export class AppStudioPlugin implements Plugin {
     } catch (error) {
       TelemetryUtils.sendErrorEvent(TelemetryEventName.buildTeamsPackage, error);
       return err(
-        AppStudioResultFactory.SystemError(
+        AppStudioResultFactory.UserError(
           AppStudioError.TeamsPackageBuildError.name,
           AppStudioError.TeamsPackageBuildError.message(error)
         )
@@ -237,7 +237,7 @@ export class AppStudioPlugin implements Plugin {
         } catch (error) {
           TelemetryUtils.sendErrorEvent(TelemetryEventName.publish, error);
           return err(
-            AppStudioResultFactory.SystemError(
+            AppStudioResultFactory.UserError(
               AppStudioError.TeamsPackageBuildError.name,
               AppStudioError.TeamsPackageBuildError.message(error)
             )
@@ -284,8 +284,26 @@ export class AppStudioPlugin implements Plugin {
   }
 
   public async postLocalDebug(ctx: PluginContext): Promise<Result<string, FxError>> {
+    TelemetryUtils.init(ctx);
+    TelemetryUtils.sendStartEvent(TelemetryEventName.localDebug);
     const localTeamsAppId = await this.appStudioPluginImpl.postLocalDebug(ctx);
-    return ok(localTeamsAppId);
+    if (localTeamsAppId.isOk()) {
+      TelemetryUtils.sendSuccessEvent(TelemetryEventName.localDebug);
+      return localTeamsAppId;
+    } else {
+      const error = localTeamsAppId.error;
+      if (error instanceof SystemError || error instanceof UserError) {
+        TelemetryUtils.sendErrorEvent(TelemetryEventName.localDebug, error);
+        return err(error);
+      } else {
+        const updateFailedError = AppStudioResultFactory.UserError(
+          AppStudioError.LocalAppIdUpdateFailedError.name,
+          AppStudioError.LocalAppIdUpdateFailedError.message(error)
+        );
+        TelemetryUtils.sendErrorEvent(TelemetryEventName.localDebug, updateFailedError);
+        return err(updateFailedError);
+      }
+    }
   }
 
   public async checkPermission(ctx: PluginContext): Promise<Result<ResourcePermission[], FxError>> {
@@ -364,10 +382,11 @@ export class AppStudioPlugin implements Plugin {
         );
       }
       return err(
-        newSystemError(
-          Constants.PLUGIN_NAME,
+        new SystemError(
           "InvalidParam",
           `Invalid param:${JSON.stringify(func)}`,
+          Constants.PLUGIN_NAME,
+          undefined,
           Links.ISSUE_LINK
         )
       );
@@ -375,7 +394,7 @@ export class AppStudioPlugin implements Plugin {
       return await this.migrateV1Project(ctx);
     }
     return err(
-      newSystemError(
+      new SystemError(
         Constants.PLUGIN_NAME,
         "FunctionRouterError",
         `Failed to route function call:${JSON.stringify(func)}`,

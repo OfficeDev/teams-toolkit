@@ -48,6 +48,12 @@ export class AppStudioError {
     message: "Failed to get app studio token.",
   };
 
+  public static readonly InvalidManifestError = {
+    name: "InvalidManifest",
+    message: (error: any) =>
+      `Failed to parse manifest string, dut to error: ${error}. This might be caused by invalid configurations.`,
+  };
+
   public static readonly ManifestLoadFailedError = {
     name: "ManifestLoadFailed",
     message: (error: string) => `Failed to read manifest file. Error: ${error}.`,

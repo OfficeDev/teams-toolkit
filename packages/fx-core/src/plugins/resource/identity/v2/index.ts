@@ -7,12 +7,13 @@ import {
   Json,
   Result,
   TokenProvider,
+  v2,
 } from "@microsoft/teamsfx-api";
 import {
   Context,
   ProvisionInputs,
-  ProvisionOutput,
   ResourcePlugin,
+  ResourceProvisionOutput,
 } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
 import { IdentityPlugin } from "..";
@@ -34,16 +35,10 @@ export class IdentityPluginV2 implements ResourcePlugin {
   }
   async provisionResource(
     ctx: Context,
-    inputs: Readonly<ProvisionInputs>,
-    provisionTemplate: Json,
+    inputs: ProvisionInputs,
+    envInfo: Readonly<v2.EnvInfoV2>,
     tokenProvider: TokenProvider
-  ): Promise<Result<ProvisionOutput, FxError>> {
-    return await provisionResourceAdapter(
-      ctx,
-      inputs,
-      provisionTemplate,
-      tokenProvider,
-      this.plugin
-    );
+  ): Promise<Result<ResourceProvisionOutput, FxError>> {
+    return await provisionResourceAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
   }
 }

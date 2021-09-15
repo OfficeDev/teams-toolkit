@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { NextFunction, Middleware } from "@feathersjs/hooks";
+import { Middleware, NextFunction } from "@feathersjs/hooks";
 import {
   err,
   Func,
@@ -13,6 +13,7 @@ import {
   Stage,
   traverse,
 } from "@microsoft/teamsfx-api";
+import { isV2 } from "..";
 import { CoreHookContext, FxCore } from "../..";
 import { deepCopy } from "../../common";
 
@@ -30,19 +31,50 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
   } else if (method === "migrateV1Project") {
     getQuestionRes = await core._getQuestionsForMigrateV1Project(inputs);
   } else {
-    const solution = ctx.solution!;
-    const solutionContext = ctx.solutionContext!;
-    if (method === "provisionResources") {
-      getQuestionRes = await core._getQuestions(solutionContext, solution, Stage.provision, inputs);
-    } else if (method === "localDebug") {
-      getQuestionRes = await core._getQuestions(solutionContext, solution, Stage.debug, inputs);
-    } else if (method === "deployArtifacts") {
-      getQuestionRes = await core._getQuestions(solutionContext, solution, Stage.deploy, inputs);
-    } else if (method === "publishApplication") {
-      getQuestionRes = await core._getQuestions(solutionContext, solution, Stage.publish, inputs);
-    } else if (method === "executeUserTask") {
-      const func = ctx.arguments[0] as Func;
-      getQuestionRes = await core._getQuestionsForUserTask(solutionContext, solution, func, inputs);
+    if (!isV2()) {
+      if (ctx.solution && ctx.solutionContext) {
+        const solution = ctx.solution;
+        const solutionContext = ctx.solutionContext;
+        if (method === "provisionResources") {
+          getQuestionRes = await core._getQuestions(
+            solutionContext,
+            solution,
+            Stage.provision,
+            inputs
+          );
+        } else if (method === "localDebug") {
+          getQuestionRes = await core._getQuestions(solutionContext, solution, Stage.debug, inputs);
+        } else if (method === "deployArtifacts") {
+          getQuestionRes = await core._getQuestions(
+            solutionContext,
+            solution,
+            Stage.deploy,
+            inputs
+          );
+        } else if (method === "publishApplication") {
+          getQuestionRes = await core._getQuestions(
+            solutionContext,
+            solution,
+            Stage.publish,
+            inputs
+          );
+        } else if (method === "executeUserTask") {
+          const func = ctx.arguments[0] as Func;
+          getQuestionRes = await core._getQuestionsForUserTask(
+            solutionContext,
+            solution,
+            func,
+            inputs
+          );
+        } else if (method === "grantPermission") {
+          getQuestionRes = await core._getQuestions(
+            solutionContext,
+            solution,
+            Stage.grantPermission,
+            inputs
+          );
+        }
+      }
     }
   }
 
@@ -82,7 +114,7 @@ export function desensitize(node: QTreeNode, input: Inputs): Inputs {
   return copy;
 }
 
-export function traverseToCollectPasswordNodes(node: QTreeNode, names: Set<string>) {
+export function traverseToCollectPasswordNodes(node: QTreeNode, names: Set<string>): void {
   if (node.data.type === "text" && node.data.password === true) {
     names.add(node.data.name);
   }

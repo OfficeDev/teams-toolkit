@@ -1,4 +1,14 @@
-import { FxError, LogProvider, Result, ok, err, returnSystemError } from "@microsoft/teamsfx-api";
+import {
+  FxError,
+  LogProvider,
+  Result,
+  ok,
+  err,
+  returnSystemError,
+  v2,
+  SystemError,
+  returnUserError,
+} from "@microsoft/teamsfx-api";
 import { PluginDisplayName } from "../../../../common/constants";
 import { SolutionError } from "../constants";
 
@@ -9,7 +19,7 @@ export type NamedThunk<R> = { pluginName: string; taskName: string; thunk: Thunk
 export async function executeConcurrently<R>(
   namedThunks: NamedThunk<R>[],
   logger: LogProvider
-): Promise<Result<{ name: string; result: R }[], FxError>> {
+): Promise<v2.FxResult<{ name: string; result: R }[], FxError>> {
   const results = await Promise.all(
     namedThunks.map(async (namedThunk) => {
       logger.info(`Running ${namedThunk.pluginName} concurrently`);
@@ -22,8 +32,8 @@ export async function executeConcurrently<R>(
   }
 
   let failed = false;
-  const ret = [];
-  const errors = [];
+  const ret: { name: string; result: R }[] = [];
+  const errors: FxError[] = [];
   for (let i = 0; i < results.length; ++i) {
     const name = `${namedThunks[i].pluginName}-${namedThunks[i].taskName}`;
     const result = results[i];
@@ -43,17 +53,35 @@ export async function executeConcurrently<R>(
     );
 
   if (failed) {
-    return err(
-      returnSystemError(
-        new Error(
-          `Failed to run tasks concurrently due to ${JSON.stringify(
-            errors.map((e) => `${e.name}:${e.message}`)
-          )}`
-        ),
-        "Solution",
-        SolutionError.InternelError
-      )
-    );
+    const errMsg = JSON.stringify(errors.map((e) => `${e.name}:${e.message}`));
+    return ret.length === 0
+      ? new v2.FxFailure(
+          returnSystemError(
+            new Error(`Failed to run tasks concurrently due to ${errMsg}`),
+            "Solution",
+            SolutionError.InternelError
+          )
+        )
+      : new v2.FxPartialSuccess(ret, mergeFxErrors(errors));
   }
-  return ok(ret);
+
+  return new v2.FxSuccess(ret);
+}
+
+function mergeFxErrors(errors: FxError[]): FxError {
+  let hasSystemError = false;
+  const errMsgs: string[] = [];
+  for (const err of errors) {
+    if (err instanceof SystemError) {
+      hasSystemError = true;
+    }
+    errMsgs.push(`${err.name}:${err.message}`);
+  }
+  return hasSystemError
+    ? returnSystemError(
+        new Error(errMsgs.join(";")),
+        "Solution",
+        SolutionError.FailedToExecuteTasks
+      )
+    : returnUserError(new Error(errMsgs.join(";")), "Solution", SolutionError.FailedToExecuteTasks);
 }

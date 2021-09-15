@@ -26,6 +26,7 @@ import { TeamsBot } from "./../../../../../src/plugins/resource/bot";
 import { ResourcePlugins } from "../../../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import Container from "typedi";
 import { environmentManager } from "../../../../../src/core/environment";
+import { newEnvInfo } from "../../../../../src";
 
 describe("Publish Teams app", () => {
   let plugin: AppStudioPlugin;
@@ -39,14 +40,9 @@ describe("Publish Teams app", () => {
     plugin = new AppStudioPlugin();
     ctx = {
       root: path.resolve(__dirname, "./../resources"),
-      configOfOtherPlugins: new Map(),
+      envInfo: newEnvInfo(),
       config: new ConfigMap(),
       appStudioToken: mockTokenProvider(),
-      envInfo: {
-        envName: "dev",
-        profile: new Map<string, any>(),
-        config: environmentManager.newEnvConfigData(),
-      },
       answers: { platform: Platform.VSCode },
     };
     ctx.projectSettings = {

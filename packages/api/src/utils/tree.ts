@@ -15,6 +15,7 @@ export interface TreeItem {
   };
   description?: string;
   isCustom?: boolean;
+  expanded?: boolean;
 }
 
 export interface TreeProvider {

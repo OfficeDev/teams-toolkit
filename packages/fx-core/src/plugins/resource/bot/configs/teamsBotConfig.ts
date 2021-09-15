@@ -29,19 +29,19 @@ export class TeamsBotConfig {
     await this.localDebug.restoreConfigFromContext(context);
     await this.deploy.restoreConfigFromContext(context);
 
-    this.teamsAppClientId = context.configOfOtherPlugins
+    this.teamsAppClientId = context.envInfo.profile
       .get(PluginAAD.PLUGIN_NAME)
       ?.get(PluginAAD.CLIENT_ID) as string;
 
-    this.teamsAppClientSecret = context.configOfOtherPlugins
+    this.teamsAppClientSecret = context.envInfo.profile
       .get(PluginAAD.PLUGIN_NAME)
       ?.get(PluginAAD.CLIENT_SECRET) as string;
 
-    this.teamsAppTenant = context.configOfOtherPlugins
+    this.teamsAppTenant = context.envInfo.profile
       .get(PluginSolution.PLUGIN_NAME)
       ?.get(PluginSolution.M365_TENANT_ID) as string;
 
-    this.applicationIdUris = context.configOfOtherPlugins
+    this.applicationIdUris = context.envInfo.profile
       .get(PluginAAD.PLUGIN_NAME)
       ?.get(PluginAAD.APPLICATION_ID_URIS) as string;
 
@@ -59,7 +59,7 @@ export class TeamsBotConfig {
       this.actRoles.push(PluginActRoles.MessageExtension);
     }
 
-    const resourceNameSuffixValue: ConfigValue = context.configOfOtherPlugins
+    const resourceNameSuffixValue: ConfigValue = context.envInfo.profile
       .get(PluginSolution.PLUGIN_NAME)
       ?.get(PluginSolution.RESOURCE_NAME_SUFFIX);
     this.resourceNameSuffix = resourceNameSuffixValue
@@ -77,5 +77,4 @@ export class TeamsBotConfig {
   public toString(): string {
     return JSON.stringify(this);
   }
-
 }

@@ -26,6 +26,7 @@ export enum FunctionConfigKey {
   storageAccountName = "storageAccountName",
   appServicePlanName = "appServicePlanName",
   functionEndpoint = "functionEndpoint",
+  functionAppId = "functionAppId",
 
   /* Intermediate  */
   functionName = "functionName",
@@ -79,6 +80,7 @@ export enum FunctionEvent {
   callFunc = "call-func",
   scaffoldFallback = "scaffold-fallback",
   skipDeploy = "skip-deploy",
+  DeploymentInfoNotFound = "deployment-info-not-found",
   generateArmTemplates = "generate-arm-templates",
   addResource = "add-resource",
 }

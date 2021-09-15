@@ -97,7 +97,7 @@ export class M365TenantCredential implements TokenCredential {
 
     try {
       accessToken = await this.clientSecretCredential.getToken(scopes);
-    } catch (err) {
+    } catch (err: any) {
       if (err instanceof AuthenticationError) {
         const authError = err as AuthenticationError;
         const errorMsg = `Get M365 tenant credential with authentication error: status code ${authError.statusCode}, error messages: ${authError.message}`;

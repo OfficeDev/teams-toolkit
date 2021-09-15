@@ -35,7 +35,10 @@ import {
   SubscriptionInfo,
   AppStudioTokenProvider,
   Inputs,
+  PermissionRequestProvider,
+  GraphTokenProvider,
 } from "@microsoft/teamsfx-api";
+import { MockPermissionRequestProvider } from "../../core/utils";
 
 export const validManifest = {
   $schema:
@@ -279,6 +282,7 @@ export class MockedV2Context implements v2.Context {
   telemetryReporter: TelemetryReporter;
   cryptoProvider: CryptoProvider;
   projectSetting: ProjectSettings;
+  permissionRequestProvider: PermissionRequestProvider;
 
   constructor(settings: ProjectSettings) {
     this.userInteraction = new MockedUserInteraction();
@@ -286,6 +290,7 @@ export class MockedV2Context implements v2.Context {
     this.telemetryReporter = new MockedTelemetryReporter();
     this.cryptoProvider = new MockedCryptoProvider();
     this.projectSetting = settings;
+    this.permissionRequestProvider = new MockPermissionRequestProvider();
   }
 }
 
@@ -298,6 +303,32 @@ class MockedTokenCredentials extends TokenCredentialsBase {
       resource: "mock",
       accessToken: "mock",
     };
+  }
+}
+
+export class MockedGraphTokenProvider implements GraphTokenProvider {
+  async getAccessToken(showDialog?: boolean): Promise<string> {
+    return "some token";
+  }
+  async getJsonObject(showDialog?: boolean): Promise<Record<string, unknown>> {
+    return {};
+  }
+  async signout(): Promise<boolean> {
+    return true;
+  }
+  async setStatusChangeMap(
+    name: string,
+    statusChange: (
+      status: string,
+      token?: string,
+      accountInfo?: Record<string, unknown>
+    ) => Promise<void>,
+    immediateCall?: boolean
+  ): Promise<boolean> {
+    return true;
+  }
+  async removeStatusChangeMap(name: string): Promise<boolean> {
+    return true;
   }
 }
 

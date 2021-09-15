@@ -25,7 +25,11 @@ export function Graph() {
       <p>Click below to authorize this app to read your profile photo using Microsoft Graph.</p>
       <Button primary content="Authorize" disabled={loading} onClick={reload} />
       {loading && ProfileCard(true)}
-      {!loading && error && <div className="error">{error.toString()}</div>}
+      {!loading && error && (
+        <div className="error">
+          Failed to read your profile. Please try again later. <br /> Details: {error.toString()}
+        </div>
+      )}
       {!loading && data && ProfileCard(false, data)}
     </div>
   );

@@ -65,13 +65,6 @@ import { EnvironmentUtils } from "./utils/environment-utils";
 import { copyFiles } from "../../../common";
 
 export class FrontendPluginImpl {
-  private setConfigIfNotExists(ctx: PluginContext, key: string, value: unknown): void {
-    if (ctx.config.get(key)) {
-      return;
-    }
-    ctx.config.set(key, value);
-  }
-
   public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
     Logger.info(Messages.StartScaffold(PluginInfo.DisplayName));
     const progressHandler = await ProgressHelper.startScaffoldProgressHandler(ctx);
@@ -103,18 +96,9 @@ export class FrontendPluginImpl {
 
   public async preProvision(ctx: PluginContext): Promise<TeamsFxResult> {
     Logger.info(Messages.StartPreProvision(PluginInfo.DisplayName));
-
-    const config = await FrontendConfig.fromPluginContext(ctx);
-    const azureStorageClient = new AzureStorageClient(config);
-
-    const resourceGroupExists: boolean = await runWithErrorCatchAndThrow(
-      new CheckResourceGroupError(),
-      async () => await azureStorageClient.doesResourceGroupExists()
+    await this.ensureResourceGroupExists(
+      new AzureStorageClient(await FrontendConfig.fromPluginContext(ctx))
     );
-    if (!resourceGroupExists) {
-      throw new NoResourceGroupError();
-    }
-
     Logger.info(Messages.EndPreProvision(PluginInfo.DisplayName));
     return ok(undefined);
   }
@@ -183,36 +167,10 @@ export class FrontendPluginImpl {
 
     await this.updateDotenv(ctx);
 
-    const config = await FrontendConfig.fromPluginContext(ctx);
-    const client = new AzureStorageClient(config);
-
     await progressHandler?.next(PreDeploySteps.CheckStorage);
+    await this.checkStorageAvailability(ctx);
 
-    const resourceGroupExists: boolean = await runWithErrorCatchAndThrow(
-      new CheckResourceGroupError(),
-      async () => await client.doesResourceGroupExists()
-    );
-    if (!resourceGroupExists) {
-      throw new NoResourceGroupError();
-    }
-
-    const storageExists: boolean = await runWithErrorCatchAndThrow(
-      new CheckStorageError(),
-      async () => await client.doesStorageAccountExists()
-    );
-    if (!storageExists) {
-      throw new NoStorageError();
-    }
-
-    const storageAvailable: boolean | undefined = await runWithErrorCatchAndThrow(
-      new CheckStorageError(),
-      async () => await client.isStorageStaticWebsiteEnabled()
-    );
-    if (!storageAvailable) {
-      throw new StaticWebsiteDisabledError();
-    }
-
-    ProgressHelper.endPreDeployProgress(true);
+    await ProgressHelper.endPreDeployProgress(true);
     Logger.info(Messages.EndPreDeploy(PluginInfo.DisplayName));
     return ok(undefined);
   }
@@ -273,7 +231,6 @@ export class FrontendPluginImpl {
         ModuleTemplate: {
           Content: await fs.readFile(moduleOrchestrationFilePath, ConstantString.UTF8Encoding),
           Outputs: {
-            storageName: FrontendOutputBicepSnippet.StorageName,
             endpoint: FrontendOutputBicepSnippet.Endpoint,
             domain: FrontendOutputBicepSnippet.Domain,
           },
@@ -288,7 +245,8 @@ export class FrontendPluginImpl {
   }
 
   private async syncArmOutput(ctx: PluginContext) {
-    const config = await FrontendConfig.fromPluginContext(ctx);
+    const config = await FrontendConfig.fromPluginContext(ctx, true);
+    config.storageResourceId = getArmOutput(ctx, ArmOutput.FrontendStorageResourceId) as string;
     config.endpoint = getArmOutput(ctx, ArmOutput.FrontendEndpoint) as string;
     config.domain = getArmOutput(ctx, ArmOutput.FrontendDomain) as string;
     config.syncToPluginContext(ctx);
@@ -303,7 +261,7 @@ export class FrontendPluginImpl {
   private async updateDotenv(ctx: PluginContext): Promise<void> {
     const envs: { [key: string]: string } = {};
 
-    const functionPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.FunctionPluginName);
+    const functionPlugin = ctx.envInfo.profile.get(DependentPluginInfo.FunctionPluginName);
     if (functionPlugin) {
       envs[EnvironmentVariables.FuncName] = ctx.projectSettings?.defaultFunctionName as string;
       envs[EnvironmentVariables.FuncEndpoint] = functionPlugin.get(
@@ -311,7 +269,7 @@ export class FrontendPluginImpl {
       ) as string;
     }
 
-    const authPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.RuntimePluginName);
+    const authPlugin = ctx.envInfo.profile.get(DependentPluginInfo.RuntimePluginName);
     if (authPlugin) {
       envs[EnvironmentVariables.RuntimeEndpoint] = authPlugin.get(
         DependentPluginInfo.RuntimeEndpoint
@@ -319,7 +277,7 @@ export class FrontendPluginImpl {
       envs[EnvironmentVariables.StartLoginPage] = DependentPluginInfo.StartLoginPageURL;
     }
 
-    const aadPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.AADPluginName);
+    const aadPlugin = ctx.envInfo.profile.get(DependentPluginInfo.AADPluginName);
     if (aadPlugin) {
       envs[EnvironmentVariables.ClientID] = aadPlugin.get(DependentPluginInfo.ClientID) as string;
     }
@@ -356,5 +314,42 @@ export class FrontendPluginImpl {
       return ok(undefined);
     }
     throw new UserTaskNotImplementedError(func.method);
+  }
+
+  private async checkStorageAvailability(ctx: PluginContext) {
+    const client = new AzureStorageClient(await FrontendConfig.fromPluginContext(ctx));
+    await this.ensureResourceGroupExists(client);
+    await this.ensureStorageExists(client);
+    await this.ensureStorageAvailable(client);
+  }
+
+  private async ensureResourceGroupExists(client: AzureStorageClient) {
+    const resourceGroupExists: boolean = await runWithErrorCatchAndThrow(
+      new CheckResourceGroupError(),
+      async () => await client.doesResourceGroupExists()
+    );
+    if (!resourceGroupExists) {
+      throw new NoResourceGroupError();
+    }
+  }
+
+  private async ensureStorageExists(client: AzureStorageClient) {
+    const storageExists: boolean = await runWithErrorCatchAndThrow(
+      new CheckStorageError(),
+      async () => await client.doesStorageAccountExists()
+    );
+    if (!storageExists) {
+      throw new NoStorageError();
+    }
+  }
+
+  private async ensureStorageAvailable(client: AzureStorageClient) {
+    const storageAvailable: boolean | undefined = await runWithErrorCatchAndThrow(
+      new CheckStorageError(),
+      async () => await client.isStorageStaticWebsiteEnabled()
+    );
+    if (!storageAvailable) {
+      throw new StaticWebsiteDisabledError();
+    }
   }
 }

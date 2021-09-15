@@ -1,61 +1,60 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  Solution,
-  SolutionContext,
-  FxError,
-  Result,
-  QTreeNode,
-  Func,
-  Stage,
-  LogProvider,
-  LogLevel,
-  AzureAccountProvider,
-  GraphTokenProvider,
-  Tools,
-  TokenProvider,
-  AppStudioTokenProvider,
-  TelemetryReporter,
-  UserInteraction,
-  IProgressHandler,
-  SingleSelectConfig,
-  MultiSelectConfig,
-  InputTextConfig,
-  SelectFileConfig,
-  SelectFilesConfig,
-  SelectFolderConfig,
-  SingleSelectResult,
-  MultiSelectResult,
-  InputTextResult,
-  SelectFileResult,
-  SelectFilesResult,
-  SelectFolderResult,
-  RunnableTask,
-  TaskConfig,
-  SubscriptionInfo,
-  Inputs,
-  ProjectSettings,
-  AzureSolutionSettings,
-  ok,
-  Void,
-  ConfigMap,
-  Colors,
-  Json,
-  CryptoProvider,
-  PermissionRequestProvider,
-} from "@microsoft/teamsfx-api";
 import { TokenCredential } from "@azure/core-auth";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
-import { SolutionLoader } from "../../src/core/loader";
+import {
+  AppStudioTokenProvider,
+  AzureAccountProvider,
+  AzureSolutionSettings,
+  Colors,
+  ConfigMap,
+  CryptoProvider,
+  Func,
+  FxError,
+  GraphTokenProvider,
+  InputTextConfig,
+  InputTextResult,
+  IProgressHandler,
+  Json,
+  LogLevel,
+  LogProvider,
+  MultiSelectConfig,
+  MultiSelectResult,
+  ok,
+  PermissionRequestProvider,
+  ProjectSettings,
+  QTreeNode,
+  Result,
+  RunnableTask,
+  SelectFileConfig,
+  SelectFileResult,
+  SelectFilesConfig,
+  SelectFilesResult,
+  SelectFolderConfig,
+  SelectFolderResult,
+  SingleSelectConfig,
+  SingleSelectResult,
+  Solution,
+  SolutionContext,
+  Stage,
+  SubscriptionInfo,
+  TaskConfig,
+  TelemetryReporter,
+  TokenProvider,
+  Tools,
+  UserInteraction,
+  Void,
+} from "@microsoft/teamsfx-api";
+import * as uuid from "uuid";
 import {
   DEFAULT_PERMISSION_REQUEST,
   PluginNames,
 } from "../../src/plugins/solution/fx-solution/constants";
-import * as uuid from "uuid";
 
 export class MockSolution implements Solution {
-  name = "fx-solution-mock";
+  name = "fx-solution-azure";
+
   async create(ctx: SolutionContext): Promise<Result<any, FxError>> {
     ctx.projectSettings!.solutionSettings = this.solutionSettings();
     const config = new ConfigMap();
@@ -63,6 +62,7 @@ export class MockSolution implements Solution {
     ctx.envInfo.profile.set("solution", config);
     return ok(Void);
   }
+
   solutionSettings(): AzureSolutionSettings {
     return {
       name: this.name,
@@ -73,56 +73,56 @@ export class MockSolution implements Solution {
       activeResourcePlugins: [PluginNames.FE, PluginNames.LDEBUG, PluginNames.AAD, PluginNames.SA],
     } as AzureSolutionSettings;
   }
+
   async scaffold(ctx: SolutionContext): Promise<Result<any, FxError>> {
     ctx.envInfo.profile.get("solution")!.set("scaffold", true);
     return ok(Void);
   }
+
   async provision(ctx: SolutionContext): Promise<Result<any, FxError>> {
     ctx.envInfo.profile.get("solution")!.set("provision", true);
     return ok(Void);
   }
+
   async deploy(ctx: SolutionContext): Promise<Result<any, FxError>> {
     ctx.envInfo.profile.get("solution")!.set("deploy", true);
     return ok(Void);
   }
+
   async publish(ctx: SolutionContext): Promise<Result<any, FxError>> {
     ctx.envInfo.profile.get("solution")!.set("publish", true);
     return ok(Void);
   }
+
   async localDebug(ctx: SolutionContext): Promise<Result<any, FxError>> {
     ctx.envInfo.profile.get("solution")!.set("localDebug", true);
     return ok(Void);
   }
+
   async getQuestions(
     task: Stage,
     ctx: SolutionContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     return ok(undefined);
   }
+
   async getQuestionsForUserTask(
     func: Func,
     ctx: SolutionContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     return ok(undefined);
   }
+
   async executeUserTask(func: Func, ctx: SolutionContext): Promise<Result<any, FxError>> {
     ctx.envInfo.profile.get("solution")!.set("executeUserTask", true);
     return ok(Void);
   }
+
   async migrate(ctx: SolutionContext): Promise<Result<any, FxError>> {
     ctx.projectSettings!.solutionSettings = this.solutionSettings();
     const config = new ConfigMap();
     ctx.envInfo.profile.set("solution", config);
     return ok(Void);
-  }
-}
-
-export class MockSolutionLoader implements SolutionLoader {
-  async loadSolution(inputs: Inputs): Promise<Solution> {
-    return new MockSolution();
-  }
-  async loadGlobalSolutions(inputs: Inputs): Promise<Solution[]> {
-    return [new MockSolution()];
   }
 }
 
@@ -134,12 +134,15 @@ export class MockAzureAccountProvider implements AzureAccountProvider {
   getAccountCredentialAsync(): Promise<TokenCredentialsBase | undefined> {
     throw new Error("getAccountCredentialAsync Method not implemented.");
   }
+
   getIdentityCredentialAsync(): Promise<TokenCredential | undefined> {
     throw new Error("getIdentityCredentialAsync Method not implemented.");
   }
+
   signout(): Promise<boolean> {
     throw new Error("Method not implemented.");
   }
+
   setStatusChangeMap(
     name: string,
     statusChange: (
@@ -150,45 +153,55 @@ export class MockAzureAccountProvider implements AzureAccountProvider {
   ): Promise<boolean> {
     throw new Error("Method not implemented.");
   }
+
   removeStatusChangeMap(name: string): Promise<boolean> {
     throw new Error("Method not implemented.");
   }
+
   getJsonObject(showDialog?: boolean): Promise<Record<string, unknown>> {
     throw new Error("Method not implemented.");
   }
+
   listSubscriptions(): Promise<SubscriptionInfo[]> {
     throw new Error("Method not implemented.");
   }
+
   setSubscription(subscriptionId: string): Promise<void> {
     throw new Error("Method not implemented.");
   }
+
   getAccountInfo(): Record<string, string> {
     throw new Error("Method not implemented.");
   }
+
   getSelectedSubscription(): Promise<SubscriptionInfo | undefined> {
     throw new Error("Method not implemented.");
   }
+
   selectSubscription(subscriptionId?: string): Promise<string> {
     throw new Error("Method not implemented.");
   }
 }
 
-class MockGraphTokenProvider implements GraphTokenProvider {
+export class MockGraphTokenProvider implements GraphTokenProvider {
   getAccessToken(): Promise<string | undefined> {
     const result = new Promise<string>(function (resovle, {}) {
       resovle("success");
     });
     return result;
   }
+
   getJsonObject(): Promise<Record<string, unknown> | undefined> {
     const result = new Promise<Record<string, unknown>>(function (resovle, {}) {
       resovle({});
     });
     return result;
   }
+
   signout(): Promise<boolean> {
     throw new Error("Method not implemented.");
   }
+
   setStatusChangeMap(
     name: string,
     statusChange: (
@@ -199,12 +212,13 @@ class MockGraphTokenProvider implements GraphTokenProvider {
   ): Promise<boolean> {
     throw new Error("Method not implemented.");
   }
+
   removeStatusChangeMap(name: string): Promise<boolean> {
     throw new Error("Method not implemented.");
   }
 }
 
-class MockAppStudioTokenProvider implements AppStudioTokenProvider {
+export class MockAppStudioTokenProvider implements AppStudioTokenProvider {
   /**
    * Get team access token
    * @param showDialog Control whether the UI layer displays pop-up windows
@@ -289,18 +303,23 @@ export class MockUserInteraction implements UserInteraction {
   selectOption(config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> {
     throw new Error("Method not implemented.");
   }
+
   selectOptions(config: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> {
     throw new Error("Method not implemented.");
   }
+
   inputText(config: InputTextConfig): Promise<Result<InputTextResult, FxError>> {
     throw new Error("Method not implemented.");
   }
+
   selectFile(config: SelectFileConfig): Promise<Result<SelectFileResult, FxError>> {
     throw new Error("Method not implemented.");
   }
+
   selectFiles(config: SelectFilesConfig): Promise<Result<SelectFilesResult, FxError>> {
     throw new Error("Method not implemented.");
   }
+
   selectFolder(config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> {
     throw new Error("Method not implemented.");
   }
@@ -308,6 +327,7 @@ export class MockUserInteraction implements UserInteraction {
   openUrl(link: string): Promise<Result<boolean, FxError>> {
     throw new Error("Method not implemented.");
   }
+
   async showMessage(
     level: "info" | "warn" | "error",
     message: string,
@@ -330,6 +350,7 @@ export class MockUserInteraction implements UserInteraction {
   ): Promise<Result<string | undefined, FxError>> {
     return ok("");
   }
+
   createProgressBar(title: string, totalSteps: number): IProgressHandler {
     const handler: IProgressHandler = {
       start: async (detail?: string): Promise<void> => {},
@@ -338,6 +359,7 @@ export class MockUserInteraction implements UserInteraction {
     };
     return handler;
   }
+
   async runWithProgress<T>(
     task: RunnableTask<T>,
     config: TaskConfig,
@@ -364,6 +386,7 @@ export class MockCryptoProvider implements CryptoProvider {
   encrypt(plaintext: string): Result<string, FxError> {
     return ok(plaintext);
   }
+
   decrypt(ciphertext: string): Result<string, FxError> {
     return ok(ciphertext);
   }
@@ -383,21 +406,27 @@ export class MockLogProvider implements LogProvider {
   async trace({}: string): Promise<boolean> {
     return true;
   }
+
   async debug({}: string): Promise<boolean> {
     return true;
   }
+
   async info({}: string | Array<any>): Promise<boolean> {
     return true;
   }
+
   async warning({}: string): Promise<boolean> {
     return true;
   }
+
   async error({}: string): Promise<boolean> {
     return true;
   }
+
   async fatal({}: string): Promise<boolean> {
     return true;
   }
+
   async log({}: LogLevel, {}: string): Promise<boolean> {
     return true;
   }

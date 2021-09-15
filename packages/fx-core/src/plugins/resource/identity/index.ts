@@ -33,7 +33,7 @@ import { Bicep, ConstantString } from "../../../common/constants";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import { isArmSupportEnabled } from "../../../common";
 import { getArmOutput } from "../utils4v2";
-
+import "./v2";
 @Service(ResourcePlugins.IdentityPlugin)
 export class IdentityPlugin implements Plugin {
   name = "fx-resource-identity";
@@ -78,10 +78,10 @@ export class IdentityPlugin implements Plugin {
     TelemetryUtils.sendEvent(Telemetry.stage.provision + Telemetry.startSuffix);
 
     ContextUtils.init(ctx);
-    const subscriptionInfo = await ctx.azureAccountProvider?.getSelectedSubscription();
-    if (subscriptionInfo) {
-      this.config.azureSubscriptionId = subscriptionInfo.subscriptionId;
-    }
+    this.config.azureSubscriptionId = ContextUtils.getConfigString(
+      Constants.solution,
+      Constants.subscriptionId
+    );
     this.config.resourceGroup = ContextUtils.getConfigString(
       Constants.solution,
       Constants.resourceGroupName

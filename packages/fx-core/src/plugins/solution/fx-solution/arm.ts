@@ -20,12 +20,12 @@ import { format } from "util";
 import { compileHandlebarsTemplateString, getStrings } from "../../../common";
 import path from "path";
 import * as fs from "fs-extra";
-import { ConstantString, PluginDisplayName } from "../../../common/constants";
+import { ArmHelpLink, ConstantString, PluginDisplayName } from "../../../common/constants";
 import {
   Executor,
   CryptoDataMatchers,
-  isFeatureFlagEnabled,
   isMultiEnvEnabled,
+  getResourceGroupNameFromResourceId,
 } from "../../../common/tools";
 import {
   ARM_TEMPLATE_OUTPUT,
@@ -37,12 +37,12 @@ import {
   SolutionTelemetryEvent,
   SolutionTelemetryProperty,
   SolutionTelemetrySuccess,
+  SUBSCRIPTION_ID,
 } from "./constants";
 import { ResourceManagementClient, ResourceManagementModels } from "@azure/arm-resources";
 import { DeployArmTemplatesSteps, ProgressHelper } from "./utils/progressHelper";
 import dateFormat from "dateformat";
 import { getTemplatesFolder } from "../../../folder";
-import { DeploymentsListByResourceGroupResponse } from "@azure/arm-resources/esm/models";
 import { ensureBicep } from "./utils/depsChecker/bicepChecker";
 
 // Old folder structure constants
@@ -50,7 +50,6 @@ const baseFolder = "./infra/azure";
 const templateFolder = "templates";
 const parameterFolder = "parameters";
 const bicepOrchestrationFileName = "main.bicep";
-const armTemplateJsonFileName = "main.json";
 const parameterTemplateFileName = "parameters.template.json";
 const parameterFileNameTemplate = "parameters.@envName.json";
 const solutionLevelParameters = `param resourceBaseName string\n`;
@@ -120,16 +119,14 @@ async function pollDeploymentStatus(deployCtx: DeployContext) {
         PluginDisplayName.Solution
       )
     );
-    const deployments = await deployCtx.client.deployments.listByResourceGroup(
-      deployCtx.resourceGroupName
+    const operations = await deployCtx.client.deploymentOperations.list(
+      deployCtx.resourceGroupName,
+      deployCtx.deploymentName
     );
-    deployments.forEach(async (deployment) => {
-      if (
-        deployment.properties?.timestamp &&
-        deployment.properties.timestamp.getTime() > deployCtx.deploymentStartTime
-      ) {
+    operations.forEach((operation) => {
+      if (operation.properties?.targetResource?.resourceName) {
         deployCtx.ctx.logProvider?.info(
-          `[${PluginDisplayName.Solution}] ${deployment.name} -> ${deployment.properties.provisioningState}`
+          `[${PluginDisplayName.Solution}] ${operation.properties?.targetResource?.resourceName} -> ${operation.properties.provisioningState}`
         );
       }
     });
@@ -165,9 +162,8 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
   const templateDir = isMultiEnvEnabled()
     ? path.join(ctx.root, templateFolderNew)
     : path.join(ctx.root, baseFolder, templateFolder);
-  const armTemplateJsonFilePath = path.join(templateDir, armTemplateJsonFileName);
   const bicepOrchestrationFilePath = path.join(templateDir, bicepOrchestrationFileName);
-  await compileBicepToJson(bicepCommand, bicepOrchestrationFilePath, armTemplateJsonFilePath);
+  const armTemplateJson = await compileBicepToJson(bicepCommand, bicepOrchestrationFilePath);
   ctx.logProvider?.info(
     format(
       getStrings().solution.DeployArmTemplates.CompileBicepSuccessNotice,
@@ -181,7 +177,7 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
   const deploymentParameters: ResourceManagementModels.Deployment = {
     properties: {
       parameters: parameterJson.parameters,
-      template: JSON.parse(await fs.readFile(armTemplateJsonFilePath, ConstantString.UTF8Encoding)),
+      template: armTemplateJson,
       mode: "Incremental" as ResourceManagementModels.DeploymentMode,
     },
   };
@@ -229,40 +225,26 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
       )
     );
 
-    const failedDeployments: string[] = [];
-    const deployments = await deployCtx.client.deployments.listByResourceGroup(
-      deployCtx.resourceGroupName
-    );
-
-    deployments.forEach((deployment) => {
-      if (
-        deployment.properties &&
-        deployment.properties.error &&
-        deployment.properties.timestamp &&
-        deployment.properties.timestamp.getTime() > deployCtx.deploymentStartTime
-      ) {
-        ctx.logProvider?.error(
-          `[${PluginDisplayName.Solution}] ${deployment.name} -> ${JSON.stringify(
-            deployment.properties.error,
-            undefined,
-            2
-          )}`
-        );
-        if (deployment.name !== deploymentName) {
-          failedDeployments.push(deployment.name + " module");
-        }
+    const result = await wrapGetDeploymentError(deployCtx, resourceGroupName, deploymentName);
+    if (result.isOk()) {
+      const deploymentError = result.value;
+      ctx.logProvider?.error(
+        `[${PluginDisplayName.Solution}] ${deploymentName} -> ${JSON.stringify(
+          result,
+          undefined,
+          2
+        )}`
+      );
+      let failedDeployments: string[] = [];
+      if (deploymentError.subErrors) {
+        failedDeployments = Object.keys(deploymentError.subErrors);
+      } else {
+        failedDeployments.push(deploymentName);
       }
-    });
-
-    if (failedDeployments.length === 0) {
-      failedDeployments.push(deploymentName + " module");
+      return formattedDeploymentName(failedDeployments);
+    } else {
+      return result;
     }
-    const returnError = new Error(
-      `resource deployments (${failedDeployments.join(
-        ", "
-      )}) for your project failed. Please refer to output channel for more error details.`
-    );
-    return err(returnUserError(returnError, "Solution", "ArmDeploymentFailed"));
   }
 }
 
@@ -304,6 +286,25 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
   }
   await ProgressHelper.endDeployArmTemplatesProgress(result.isOk());
   return result;
+}
+
+export async function copyParameterJson(
+  ctx: SolutionContext,
+  targetEnvName: string,
+  sourceEnvName: string
+) {
+  if (!isMultiEnvEnabled() || !targetEnvName || !sourceEnvName) {
+    return;
+  }
+
+  const parameterFolderPath = path.join(ctx.root, configsFolder);
+  const targetParameterFileName = parameterFileNameTemplateNew.replace("@envName", targetEnvName);
+  const sourceParameterFileName = parameterFileNameTemplateNew.replace("@envName", sourceEnvName);
+  const targetParameterFilePath = path.join(parameterFolderPath, targetParameterFileName);
+  const sourceParameterFilePath = path.join(parameterFolderPath, sourceParameterFileName);
+
+  await fs.ensureDir(parameterFolderPath);
+  await fs.copy(sourceParameterFilePath, targetParameterFilePath);
 }
 
 export async function getParameterJson(ctx: SolutionContext) {
@@ -471,8 +472,9 @@ async function getResourceManagementClientForArmDeployment(
     );
   }
 
-  const subscriptionId = (await ctx.azureAccountProvider?.getSelectedSubscription())
-    ?.subscriptionId;
+  const subscriptionId = ctx.envInfo.profile.get(GLOBAL_CONFIG)?.get(SUBSCRIPTION_ID) as
+    | string
+    | undefined;
   if (!subscriptionId) {
     throw returnSystemError(
       new Error(`Failed to get subscription id.`),
@@ -485,12 +487,12 @@ async function getResourceManagementClientForArmDeployment(
 
 async function compileBicepToJson(
   bicepCommand: string,
-  bicepOrchestrationFilePath: string,
-  jsonFilePath: string
-): Promise<void> {
-  const command = `${bicepCommand} build ${bicepOrchestrationFilePath} --outfile ${jsonFilePath}`;
+  bicepOrchestrationFilePath: string
+): Promise<JSON> {
+  const command = `${bicepCommand} build ${bicepOrchestrationFilePath} --stdout`;
   try {
-    await Executor.execCommandAsync(command);
+    const result = await Executor.execCommandAsync(command);
+    return JSON.parse(result.stdout as string);
   } catch (err) {
     throw new Error(`Failed to compile bicep files to Json arm templates file: ${err.message}`);
   }
@@ -541,11 +543,12 @@ class BicepOrchestrationContent {
   private VariableTemplate = "";
   private ModuleTemplate = "";
   private OutputTemplate = "";
-  private ParameterJsonTemplate: Record<string, unknown> = solutionLevelParameterObject;
+  private ParameterJsonTemplate: Record<string, unknown> = {};
   private RenderContenxt: ArmTemplateRenderContext;
   private TemplateAdded = false;
 
   constructor(pluginNames: string[]) {
+    Object.assign(this.ParameterJsonTemplate, solutionLevelParameterObject);
     this.RenderContenxt = new ArmTemplateRenderContext(pluginNames);
   }
 
@@ -721,4 +724,92 @@ async function areFoldersEmpty(folderPaths: string[]): Promise<boolean> {
 
 async function waitSeconds(second: number) {
   return new Promise((resolve) => setTimeout(resolve, second * 1000));
+}
+
+async function wrapGetDeploymentError(
+  deployCtx: DeployContext,
+  resourceGroupName: string,
+  deploymentName: string
+): Promise<Result<any, FxError>> {
+  try {
+    const deploymentError = await getDeploymentError(deployCtx, resourceGroupName, deploymentName);
+    return ok(deploymentError);
+  } catch (error: any) {
+    deployCtx.ctx.logProvider?.error(
+      `[${PluginDisplayName.Solution}] Failed to get deployment error for ${error.message}.`
+    );
+    const returnError = new Error(
+      `resource deployments (${deployCtx.deploymentName} module) for your project failed and get the error message failed. Please refer to the resource group ${deployCtx.resourceGroupName} in portal for deployment error.`
+    );
+    return err(returnUserError(returnError, "Solution", "GetDeploymentErrorFailed"));
+  }
+}
+
+async function getDeploymentError(
+  deployCtx: DeployContext,
+  resourceGroupName: string,
+  deploymentName: string
+): Promise<any> {
+  let deployment;
+  try {
+    deployment = await deployCtx.client.deployments.get(resourceGroupName, deploymentName);
+  } catch (error: any) {
+    if (
+      deploymentName !== deployCtx.deploymentName &&
+      error.code === ConstantString.DeploymentNotFound
+    ) {
+      return undefined;
+    }
+    throw error;
+  }
+  if (!deployment.properties?.error) {
+    return undefined;
+  }
+  const deploymentError: any = {
+    error: deployment.properties?.error,
+  };
+  const operations = await deployCtx.client.deploymentOperations.list(
+    resourceGroupName,
+    deploymentName
+  );
+  for (const operation of operations) {
+    if (operation.properties?.statusMessage?.error) {
+      if (!deploymentError.subErrors) {
+        deploymentError.subErrors = {};
+      }
+      const name = operation.properties.targetResource?.resourceName ?? operation.id;
+      deploymentError.subErrors[name!] = {
+        error: operation.properties.statusMessage.error,
+      };
+      if (
+        operation.properties.targetResource?.resourceType ===
+          ConstantString.DeploymentResourceType &&
+        operation.properties.targetResource?.resourceName &&
+        operation.properties.targetResource?.id
+      ) {
+        const resourceGroupName: string = getResourceGroupNameFromResourceId(
+          operation.properties.targetResource.id
+        );
+        const subError = await getDeploymentError(
+          deployCtx,
+          resourceGroupName,
+          operation.properties.targetResource?.resourceName
+        );
+        if (subError) {
+          deploymentError.subErrors[name!].inner = subError;
+        }
+      }
+    }
+  }
+  return deploymentError;
+}
+
+function formattedDeploymentName(failedDeployments: string[]): Result<void, FxError> {
+  const format = failedDeployments.map((deployment) => deployment + " module");
+  const returnError = new Error(
+    `resource deployments (${format.join(
+      ", "
+    )}) for your project failed. Please refer to output channel for more error details.`
+  );
+  return err(returnUserError(returnError, "Solution", "ArmDeploymentFailed", ArmHelpLink));
 }

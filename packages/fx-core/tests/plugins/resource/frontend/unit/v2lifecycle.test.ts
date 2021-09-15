@@ -54,6 +54,7 @@ describe("Frontend hosting V2", () => {
     telemetryReporter: tools.telemetryReporter,
     cryptoProvider: tools.cryptoProvider,
     projectSetting: projectSettings,
+    permissionRequestProvider: tools.permissionRequestProvider,
   };
 
   beforeEach(() => {

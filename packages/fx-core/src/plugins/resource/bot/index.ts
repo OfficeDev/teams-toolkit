@@ -25,6 +25,7 @@ import { telemetryHelper } from "./utils/telemetry-helper";
 import { BotOptionItem, MessageExtensionItem } from "../../solution/fx-solution/question";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+import "./v2";
 @Service(ResourcePlugins.BotPlugin)
 export class TeamsBot implements Plugin {
   name = "fx-resource-bot";
@@ -34,24 +35,6 @@ export class TeamsBot implements Plugin {
     return cap.includes(BotOptionItem.id) || cap.includes(MessageExtensionItem.id);
   }
   public teamsBotImpl: TeamsBotImpl = new TeamsBotImpl();
-
-  public async getQuestions(
-    stage: Stage,
-    ctx: PluginContext
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
-    return this.teamsBotImpl.getQuestions(stage, ctx);
-  }
-
-  public async preScaffold(context: PluginContext): Promise<FxResult> {
-    Logger.setLogger(context.logProvider);
-
-    return await this.runWithExceptionCatching(
-      context,
-      () => this.teamsBotImpl.preScaffold(context),
-      true,
-      LifecycleFuncNames.PRE_SCAFFOLD
-    );
-  }
 
   public async scaffold(context: PluginContext): Promise<FxResult> {
     Logger.setLogger(context.logProvider);

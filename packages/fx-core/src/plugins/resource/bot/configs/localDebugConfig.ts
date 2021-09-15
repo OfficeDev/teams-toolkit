@@ -13,8 +13,8 @@ export class LocalDebugConfig {
   public localObjectId?: string;
   public localRedirectUri?: string;
 
-  public botRegistrationCreated(): boolean {
-    if (this.localBotId && this.localBotPassword && this.localObjectId) {
+  public botAADCreated(): boolean {
+    if (this.localBotId && this.localBotPassword) {
       return true;
     }
 
@@ -41,7 +41,7 @@ export class LocalDebugConfig {
         LocalSettingsBotKeys.BotRedirectUri
       ) as string;
     } else {
-      const localBotEndpoint: ConfigValue | undefined = context.configOfOtherPlugins
+      const localBotEndpoint: ConfigValue | undefined = context.envInfo.profile
         .get(PluginLocalDebug.PLUGIN_NAME)
         ?.get(PluginLocalDebug.LOCAL_BOT_ENDPOINT);
       this.localEndpoint = localBotEndpoint as string;

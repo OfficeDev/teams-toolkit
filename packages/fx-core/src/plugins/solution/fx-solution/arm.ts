@@ -20,7 +20,7 @@ import { format } from "util";
 import { compileHandlebarsTemplateString, getStrings } from "../../../common";
 import path from "path";
 import * as fs from "fs-extra";
-import { ConstantString, PluginDisplayName } from "../../../common/constants";
+import { ArmHelpLink, ConstantString, PluginDisplayName } from "../../../common/constants";
 import {
   Executor,
   CryptoDataMatchers,

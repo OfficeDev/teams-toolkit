@@ -21,7 +21,12 @@ import { compileHandlebarsTemplateString, getStrings } from "../../../common";
 import path from "path";
 import * as fs from "fs-extra";
 import { ArmHelpLink, ConstantString, PluginDisplayName } from "../../../common/constants";
-import { Executor, CryptoDataMatchers, isMultiEnvEnabled } from "../../../common/tools";
+import {
+  Executor,
+  CryptoDataMatchers,
+  isMultiEnvEnabled,
+  getResourceGroupNameFromResourceId,
+} from "../../../common/tools";
 import {
   ARM_TEMPLATE_OUTPUT,
   GLOBAL_CONFIG,
@@ -220,22 +225,26 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
       )
     );
 
-    const deploymentError = await getDeploymentError(deployCtx, resourceGroupName, deploymentName);
-    ctx.logProvider?.error(
-      `[${PluginDisplayName.Solution}] ${deploymentName} -> ${JSON.stringify(
-        deploymentError,
-        undefined,
-        2
-      )}`
-    );
-    let failedDeployments: string[] = [];
-    if (deploymentError.subErrors) {
-      failedDeployments = Object.keys(deploymentError.subErrors);
+    const result = await wrapGetDeploymentError(deployCtx, resourceGroupName, deploymentName);
+    if (result.isOk()) {
+      const deploymentError = result.value;
+      ctx.logProvider?.error(
+        `[${PluginDisplayName.Solution}] ${deploymentName} -> ${JSON.stringify(
+          result,
+          undefined,
+          2
+        )}`
+      );
+      let failedDeployments: string[] = [];
+      if (deploymentError.subErrors) {
+        failedDeployments = Object.keys(deploymentError.subErrors);
+      } else {
+        failedDeployments.push(deploymentName);
+      }
+      return formattedDeploymentName(failedDeployments);
     } else {
-      failedDeployments.push(deploymentName);
+      return result;
     }
-
-    return buildDeploymentErrorMessage(failedDeployments);
   }
 }
 
@@ -716,6 +725,25 @@ async function waitSeconds(second: number) {
   return new Promise((resolve) => setTimeout(resolve, second * 1000));
 }
 
+async function wrapGetDeploymentError(
+  deployCtx: DeployContext,
+  resourceGroupName: string,
+  deploymentName: string
+): Promise<Result<any, FxError>> {
+  try {
+    const deploymentError = await getDeploymentError(deployCtx, resourceGroupName, deploymentName);
+    return ok(deploymentError);
+  } catch (error: any) {
+    deployCtx.ctx.logProvider?.error(
+      `[${PluginDisplayName.Solution}] Failed to get deployment error for ${error.message}.`
+    );
+    const returnError = new Error(
+      `resource deployments (${deployCtx.deploymentName} module) for your project failed and get the error message failed. Please refer to the resource group ${deployCtx.resourceGroupName} in portal for deployment error.`
+    );
+    return err(returnUserError(returnError, "Solution", "GetDeploymentErrorFailed"));
+  }
+}
+
 async function getDeploymentError(
   deployCtx: DeployContext,
   resourceGroupName: string,
@@ -724,8 +752,14 @@ async function getDeploymentError(
   let deployment;
   try {
     deployment = await deployCtx.client.deployments.get(resourceGroupName, deploymentName);
-  } catch (error) {
-    return undefined;
+  } catch (error: any) {
+    if (
+      deploymentName !== deployCtx.deploymentName &&
+      error.code === ConstantString.DeploymentNotFound
+    ) {
+      return undefined;
+    }
+    throw error;
   }
   if (!deployment.properties?.error) {
     return undefined;
@@ -752,7 +786,7 @@ async function getDeploymentError(
         operation.properties.targetResource?.resourceName &&
         operation.properties.targetResource?.id
       ) {
-        const resourceGroupName: string = getResourceGroupFromDeploymentId(
+        const resourceGroupName: string = getResourceGroupNameFromResourceId(
           operation.properties.targetResource.id
         );
         const subError = await getDeploymentError(
@@ -769,17 +803,7 @@ async function getDeploymentError(
   return deploymentError;
 }
 
-function getResourceGroupFromDeploymentId(deploymentId: string | undefined) {
-  if (deploymentId) {
-    const resultArr = deploymentId.match(/\/resourceGroups\/[a-zA-Z_0-9-]*/);
-    if (resultArr && resultArr.length > 0) {
-      return resultArr[0].substring(16);
-    }
-  }
-  return "";
-}
-
-function buildDeploymentErrorMessage(failedDeployments: string[]): Result<void, FxError> {
+function formattedDeploymentName(failedDeployments: string[]): Result<void, FxError> {
   const format = failedDeployments.map((deployment) => deployment + " module");
   const returnError = new Error(
     `resource deployments (${format.join(

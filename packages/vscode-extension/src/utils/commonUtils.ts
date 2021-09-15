@@ -218,10 +218,6 @@ export function getIsExistingUser(): string | undefined {
   return ext.context.globalState.get<string>(UserState.IsExisting);
 }
 
-export function getDefaultEnv(): string {
-  return isMultiEnvEnabled() ? "dev" : "default";
-}
-
 export async function getSubscriptionInfoFromEnv(
   env: string
 ): Promise<SubscriptionInfo | undefined> {

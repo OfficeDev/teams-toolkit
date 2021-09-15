@@ -14,7 +14,6 @@ import {
   OptionItem,
   ok,
   ConfigFolderName,
-  PublishProfilesFolderName,
 } from "@microsoft/teamsfx-api";
 import { ExtensionErrors } from "../error";
 import { AzureAccount } from "./azure-account.api";
@@ -22,11 +21,9 @@ import { LoginFailureError } from "./codeFlowLogin";
 import * as vscode from "vscode";
 import * as identity from "@azure/identity";
 import {
-  envDefaultJsonFile,
   loggedIn,
   loggedOut,
   loggingIn,
-  profileDefaultJsonFile,
   signedIn,
   signedOut,
   signingIn,
@@ -49,8 +46,8 @@ import TreeViewManagerInstance from "../commandsTreeViewProvider";
 import * as path from "path";
 import * as fs from "fs-extra";
 import * as commonUtils from "../debug/commonUtils";
-import { isMultiEnvEnabled } from "@microsoft/teamsfx-core";
-import { getDefaultEnv, getSubscriptionInfoFromEnv } from "../utils/commonUtils";
+import { environmentManager } from "@microsoft/teamsfx-core";
+import { getSubscriptionInfoFromEnv } from "../utils/commonUtils";
 
 export class AzureAccountManager extends login implements AzureAccountProvider {
   private static instance: AzureAccountManager;
@@ -519,7 +516,9 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   async readSubscription(): Promise<SubscriptionInfo | undefined> {
     const subscriptionFilePath = await this.getSubscriptionInfoPath();
     if (!subscriptionFilePath || !fs.existsSync(subscriptionFilePath)) {
-      const solutionSubscriptionInfo = await getSubscriptionInfoFromEnv(getDefaultEnv());
+      const solutionSubscriptionInfo = await getSubscriptionInfoFromEnv(
+        environmentManager.getDefaultEnvName()
+      );
       if (solutionSubscriptionInfo) {
         await this.saveSubscription(solutionSubscriptionInfo);
         return solutionSubscriptionInfo;

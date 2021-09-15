@@ -31,7 +31,7 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
   } else if (method === "migrateV1Project") {
     getQuestionRes = await core._getQuestionsForMigrateV1Project(inputs);
   } else {
-    if ((isV2() && ctx.solutionV2 && ctx.contextV2) || (ctx.ctx.solution && ctx.solutionContext)) {
+    if ((isV2() && ctx.solutionV2 && ctx.contextV2) || (ctx.solution && ctx.solutionContext)) {
       const solution = isV2() ? ctx.solutionV2 : ctx.solution;
       const context = isV2() ? ctx.contextV2 : ctx.solutionContext;
       if (solution && context) {

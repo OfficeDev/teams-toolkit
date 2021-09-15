@@ -42,7 +42,7 @@ import { Bicep, ConstantString } from "../../../common/constants";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import * as fs from "fs-extra";
 import { getArmOutput } from "../utils4v2";
-import { isArmSupportEnabled } from "../../../common";
+import { getResourceGroupNameFromResourceId, isArmSupportEnabled } from "../../../common";
 import { IdentityArmOutput } from "../identity/constants";
 
 export class SqlPluginImpl {
@@ -193,10 +193,13 @@ export class SqlPluginImpl {
 
     if (isArmSupportEnabled()) {
       this.syncArmOutput(ctx);
+      ctx.config.set(Constants.sqlResourceId, this.config.sqlResourceId);
+      ctx.config.set(Constants.resourceGroupName, this.config.resourceGroup);
     }
 
     ctx.config.set(Constants.sqlEndpoint, this.config.sqlEndpoint);
     ctx.config.set(Constants.databaseName, this.config.databaseName);
+
     ctx.config.delete(Constants.adminPassword);
 
     const managementClient: ManagementClient = await ManagementClient.create(ctx, this.config);
@@ -326,9 +329,11 @@ export class SqlPluginImpl {
   }
 
   private syncArmOutput(ctx: PluginContext) {
+    this.config.sqlResourceId = getArmOutput(ctx, AzureSqlArmOutput.sqlResourceId)!;
     this.config.sqlEndpoint = getArmOutput(ctx, AzureSqlArmOutput.sqlEndpoint)!;
     this.config.databaseName = getArmOutput(ctx, AzureSqlArmOutput.databaseName)!;
     this.config.sqlServer = this.config.sqlEndpoint.split(".")[0];
+    this.config.resourceGroup = getResourceGroupNameFromResourceId(this.config.sqlResourceId);
   }
 
   private buildQuestionNode() {

@@ -31,7 +31,7 @@ import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContai
 import { Providers, ResourceManagementClientContext } from "@azure/arm-resources";
 import { Bicep, ConstantString } from "../../../common/constants";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
-import { isArmSupportEnabled } from "../../../common";
+import { getResourceGroupNameFromResourceId, isArmSupportEnabled } from "../../../common";
 import { getArmOutput } from "../utils4v2";
 import "./v2";
 @Service(ResourcePlugins.IdentityPlugin)
@@ -253,9 +253,13 @@ export class IdentityPlugin implements Plugin {
   }
 
   private syncArmOutput(ctx: PluginContext) {
-    ctx.config.set(Constants.identityName, getArmOutput(ctx, IdentityArmOutput.identityName));
+    const resourceId = getArmOutput(ctx, IdentityArmOutput.identityName);
+    const resourceGroup = getResourceGroupNameFromResourceId(resourceId!);
+
+    ctx.config.set(Constants.identityName, resourceId);
     ctx.config.set(Constants.identityId, getArmOutput(ctx, IdentityArmOutput.identityId));
     ctx.config.set(Constants.identity, getArmOutput(ctx, IdentityArmOutput.identity));
+    ctx.config.set(Constants.resourceGroupName, resourceGroup);
   }
 }
 

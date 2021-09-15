@@ -1,5 +1,5 @@
 param sqlServerName string
-param sqlDatabaseName string 
+param sqlDatabaseName string
 param administratorLogin string
 @secure()
 param administratorLoginPassword string
@@ -8,7 +8,7 @@ resource sqlServer 'Microsoft.Sql/servers@2021-02-01-preview' = {
   location: resourceGroup().location
   name: sqlServerName
   properties: {
-    administratorLogin: administratorLogin
+    administratorLogin: empty(administratorLogin) ? null : administratorLogin
     administratorLoginPassword: administratorLoginPassword
   }
 }
@@ -31,5 +31,6 @@ resource sqlFirewallRules 'Microsoft.Sql/servers/firewallRules@2021-02-01-previe
   }
 }
 
+output resourceId string = sqlServer.id
 output sqlEndpoint string = sqlServer.properties.fullyQualifiedDomainName
 output databaseName string = sqlDatabaseName

@@ -204,4 +204,13 @@ export interface ResourcePlugin {
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
 
   executeUserTask?: (ctx: Context, inputs: Inputs, func: Func) => Promise<Result<unknown, FxError>>;
+
+  //legacy API for compatibility reason
+  getQuestions?: (ctx: Context, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
+
+  getQuestionsForUserTask?: (
+    ctx: Context,
+    inputs: Inputs,
+    func: Func
+  ) => Promise<Result<QTreeNode | undefined, FxError>>;
 }

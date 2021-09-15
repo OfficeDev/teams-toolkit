@@ -43,10 +43,11 @@ export class LocalSettingsProvider {
       teamsApp: teamsAppLocalConfig,
     };
 
+    localSettings.auth = this.initSimpleAuth();
+
     // initialize frontend and simple auth local settings.
     if (includeFrontend) {
       localSettings.frontend = this.initFrontend();
-      localSettings.auth = this.initSimpleAuth();
     }
 
     // initialize backend local settings.

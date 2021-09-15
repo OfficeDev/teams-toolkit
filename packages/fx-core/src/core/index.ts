@@ -66,6 +66,7 @@ import {
   saveFilesRecursively,
 } from "../common/tools";
 import { HostTypeOptionAzure } from "../plugins/solution/fx-solution/question";
+import { ProjectMigratorMW } from "./middleware/projectMigrator";
 import {
   CopyFileError,
   FetchSampleError,
@@ -444,6 +445,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(isMultiEnvEnabled()),
     SolutionLoaderMW(),
@@ -491,6 +493,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(isMultiEnvEnabled()),
     SolutionLoaderMW(),
@@ -522,6 +525,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    ProjectMigratorMW,
     ProjectUpgraderMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
@@ -574,6 +578,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(isMultiEnvEnabled()),
     SolutionLoaderMW(),
@@ -610,6 +615,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(isMultiEnvEnabled()),
     LocalSettingsLoaderMW,
@@ -656,6 +662,7 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
+    ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW(),
@@ -689,6 +696,7 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
+    ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW(),
@@ -713,6 +721,8 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
+    ConcurrentLockerMW,
+    ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(isMultiEnvEnabled()),
     LocalSettingsLoaderMW,
@@ -739,6 +749,7 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
+    ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(isMultiEnvEnabled()),
     SolutionLoaderMW(),
@@ -752,6 +763,7 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
+    ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(isMultiEnvEnabled()),
     SolutionLoaderMW(),
@@ -765,6 +777,7 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
+    ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(isMultiEnvEnabled()),
     SolutionLoaderMW(),
@@ -993,6 +1006,7 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
+    ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     SolutionLoaderMW(),
     ContextInjectorMW,

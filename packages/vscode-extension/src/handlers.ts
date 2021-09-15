@@ -200,28 +200,28 @@ function registerCoreEvents() {
   const developmentView = TreeViewManagerInstance.getTreeView("teamsfx-development");
   if (developmentView instanceof CommandsWebviewProvider) {
     core.on(CoreCallbackEvent.lock, () => {
-      (TreeViewManagerInstance.getTreeView(
-        "teamsfx-development"
-      ) as CommandsWebviewProvider).onLockChanged(true);
+      (
+        TreeViewManagerInstance.getTreeView("teamsfx-development") as CommandsWebviewProvider
+      ).onLockChanged(true);
     });
     core.on(CoreCallbackEvent.unlock, () => {
-      (TreeViewManagerInstance.getTreeView(
-        "teamsfx-development"
-      ) as CommandsWebviewProvider).onLockChanged(false);
+      (
+        TreeViewManagerInstance.getTreeView("teamsfx-development") as CommandsWebviewProvider
+      ).onLockChanged(false);
     });
   }
 
   const deploymentView = TreeViewManagerInstance.getTreeView("teamsfx-deployment");
   if (deploymentView instanceof CommandsWebviewProvider) {
     core.on(CoreCallbackEvent.lock, () => {
-      (TreeViewManagerInstance.getTreeView(
-        "teamsfx-deployment"
-      ) as CommandsWebviewProvider).onLockChanged(true);
+      (
+        TreeViewManagerInstance.getTreeView("teamsfx-deployment") as CommandsWebviewProvider
+      ).onLockChanged(true);
     });
     core.on(CoreCallbackEvent.unlock, () => {
-      (TreeViewManagerInstance.getTreeView(
-        "teamsfx-deployment"
-      ) as CommandsWebviewProvider).onLockChanged(false);
+      (
+        TreeViewManagerInstance.getTreeView("teamsfx-deployment") as CommandsWebviewProvider
+      ).onLockChanged(false);
     });
   }
 }

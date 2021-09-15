@@ -543,11 +543,12 @@ class BicepOrchestrationContent {
   private VariableTemplate = "";
   private ModuleTemplate = "";
   private OutputTemplate = "";
-  private ParameterJsonTemplate: Record<string, unknown> = solutionLevelParameterObject;
+  private ParameterJsonTemplate: Record<string, unknown> = {};
   private RenderContenxt: ArmTemplateRenderContext;
   private TemplateAdded = false;
 
   constructor(pluginNames: string[]) {
+    Object.assign(this.ParameterJsonTemplate, solutionLevelParameterObject);
     this.RenderContenxt = new ArmTemplateRenderContext(pluginNames);
   }
 

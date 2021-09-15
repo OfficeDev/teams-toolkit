@@ -49,6 +49,8 @@ import {
 } from "../../src/core/question";
 import { SolutionPlugins } from "../../src/core/SolutionPluginContainer";
 import { MockSolution, MockTools, randomAppName } from "./utils";
+import mockedEnv from "mocked-env";
+let mockedEnvRestore: () => void;
 
 describe("Core basic APIs", () => {
   const sandbox = sinon.createSandbox();
@@ -59,6 +61,10 @@ describe("Core basic APIs", () => {
   let projectPath = path.resolve(os.tmpdir(), appName);
 
   beforeEach(() => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_MULTI_ENV: "false",
+      TEAMSFX_ARM_SUPPORT: "false",
+    });
     Container.set(SolutionPlugins.AzureTeamsSolution, mockSolution);
   });
 
@@ -677,7 +683,7 @@ describe("Core basic APIs", () => {
         assert.isTrue(res.isOk() && res.value === projectPath);
         assert.deepEqual(expectedInputs, inputs);
 
-        const projectSettingsResult = await loadProjectSettings(inputs);
+        const projectSettingsResult = await loadProjectSettings(inputs, true);
         if (projectSettingsResult.isErr()) {
           assert.fail("failed to load project settings");
         }
@@ -769,7 +775,7 @@ describe("Core basic APIs", () => {
         assert.isTrue(res.isOk() && res.value === projectPath);
         assert.deepEqual(expectedInputs, inputs);
 
-        const projectSettingsResult = await loadProjectSettings(inputs);
+        const projectSettingsResult = await loadProjectSettings(inputs, true);
         if (projectSettingsResult.isErr()) {
           assert.fail("failed to load project settings");
         }

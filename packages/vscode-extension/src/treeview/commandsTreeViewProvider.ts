@@ -116,9 +116,9 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
         [],
         treeItem.icon
           ? {
-            name: treeItem.icon,
-            custom: treeItem.isCustom === undefined ? true : treeItem.isCustom,
-          }
+              name: treeItem.icon,
+              custom: treeItem.isCustom === undefined ? true : treeItem.isCustom,
+            }
           : undefined,
         treeItem.contextValue,
         treeItem.description
@@ -163,7 +163,7 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
               tooltip,
               subTreeItem.commandId,
               (subTreeItem.subTreeItems && subTreeItem.subTreeItems.length > 0) ||
-                subTreeItem.expanded
+              subTreeItem.expanded
                 ? vscode.TreeItemCollapsibleState.Expanded
                 : undefined,
               typeof subTreeItem.parent === "number"
@@ -172,9 +172,9 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
               [],
               subTreeItem.icon
                 ? {
-                  name: subTreeItem.icon,
-                  custom: subTreeItem.isCustom === undefined ? true : subTreeItem.isCustom,
-                }
+                    name: subTreeItem.icon,
+                    custom: subTreeItem.isCustom === undefined ? true : subTreeItem.isCustom,
+                  }
                 : undefined,
               subTreeItem.contextValue,
               subTreeItem.description

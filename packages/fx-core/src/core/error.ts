@@ -238,3 +238,11 @@ export class ObjectIsUndefinedError extends SystemError {
     super(new.target.name, `Object ${name} is undefined, which is not expected`, CoreSource);
   }
 }
+
+export function SolutionConfigError(): UserError {
+  return new UserError("SolutionConfigError", "Load solution context failed.", CoreSource);
+}
+
+export function ProjectSettingError(): UserError {
+  return new UserError("ProjectSettingError", "Load project settings failed.", CoreSource);
+}

@@ -151,16 +151,18 @@ suite("handlers", () => {
 
       let ignoreEnvInfo: boolean | undefined = undefined;
       let localDebugCalled = 0;
-      sinon.stub(handlers.core, "localDebug").callsFake(
-        async (
-          inputs: Inputs,
-          ctx?: CoreHookContext | undefined
-        ): Promise<Result<Void, FxError>> => {
-          ignoreEnvInfo = inputs.ignoreEnvInfo;
-          localDebugCalled += 1;
-          return ok({});
-        }
-      );
+      sinon
+        .stub(handlers.core, "localDebug")
+        .callsFake(
+          async (
+            inputs: Inputs,
+            ctx?: CoreHookContext | undefined
+          ): Promise<Result<Void, FxError>> => {
+            ignoreEnvInfo = inputs.ignoreEnvInfo;
+            localDebugCalled += 1;
+            return ok({});
+          }
+        );
 
       await handlers.runCommand(Stage.debug);
 

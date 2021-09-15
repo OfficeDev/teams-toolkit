@@ -121,7 +121,7 @@ async function localSettingsExists(projectRoot: string): Promise<boolean> {
 }
 
 export async function addSubscriptionAndResourceGroupNode(env: string) {
-  if (!environmentTreeProvider) {
+  if (!environmentTreeProvider || env === LocalEnvironment) {
     return;
   }
 

@@ -448,7 +448,7 @@ describe("Deploy ARM Template to Azure", () => {
     const result = await deployArmTemplates(mockedCtx);
 
     // Assert
-    chai.assert.isTrue(result.isErr());
+    chai.assert.isTrue(result.isOk());
 
     expect(
       JSON.parse(fileContent.get(path.join(parameterFolder, "parameters.default.json")))
@@ -539,7 +539,7 @@ describe("Deploy ARM Template to Azure", () => {
 
     // Act
     const result = await deployArmTemplates(mockedCtx);
-    chai.assert.isTrue(result.isErr());
+    chai.assert.isTrue(result.isOk());
     chai.assert.strictEqual(usedExistingParameterDefaultFile, true);
   });
 

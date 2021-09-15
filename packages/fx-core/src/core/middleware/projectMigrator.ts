@@ -124,27 +124,28 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
   //projectSettings.json
   const projectSettings = path.join(fxConfig, ProjectSettingsFileName);
   await fs.copy(path.join(fx, "settings.json"), projectSettings);
-  await ensureLanguageAndFunctionName(projectSettings, path.join(fx, "env.default.json"));
+  await ensureProjectSettings(projectSettings, path.join(fx, "env.default.json"));
+
   //config.dev.json
   await fs.writeFile(
     path.join(fxConfig, "config.dev.json"),
     JSON.stringify(getConfigDevJson(await getAppName(projectSettings)), null, 4)
   );
+
   // appPackage
   await fs.copy(path.join(projectPath, AppPackageFolderName), templateAppPackage);
   await fs.rename(
     path.join(templateAppPackage, "manifest.source.json"),
     path.join(templateAppPackage, "manifest.template.json")
   );
-
   await moveIconsToResourceFolder(templateAppPackage);
+
   if (hasProvision) {
     const devProfile = path.join(fxPublishProfile, "profile.dev.json");
     const devUserData = path.join(fxPublishProfile, "dev.userdata");
     await fs.copy(path.join(fx, "new.env.default.json"), devProfile);
     await fs.copy(path.join(fx, "default.userdata"), devUserData);
     await removeExpiredFields(devProfile, devUserData);
-    await ensureActiveEnv(projectSettings);
   }
 }
 
@@ -268,7 +269,7 @@ async function removeOldProjectFiles(projectPath: string): Promise<void> {
   await fs.remove(path.join(fx, AppPackageFolderName));
 }
 
-async function ensureLanguageAndFunctionName(
+async function ensureProjectSettings(
   projectSettingPath: string,
   envDefaultPath: string
 ): Promise<void> {
@@ -277,10 +278,16 @@ async function ensureLanguageAndFunctionName(
     const envDefault = await readJson(envDefaultPath);
     settings.programmingLanguage = envDefault[PluginNames.SOLUTION][programmingLanguage];
     settings.defaultFunctionName = envDefault[PluginNames.FUNC][defaultFunctionName];
-    await fs.writeFile(projectSettingPath, JSON.stringify(settings, null, 4), {
-      encoding: "UTF-8",
-    });
   }
+  if (!settings.activeEnvironment) {
+    settings.activeEnvironment = "dev";
+  }
+  if (!settings.version) {
+    settings.version = "1.0.0";
+  }
+  await fs.writeFile(projectSettingPath, JSON.stringify(settings, null, 4), {
+    encoding: "UTF-8",
+  });
 }
 
 async function getAppName(projectSettingPath: string): Promise<string> {

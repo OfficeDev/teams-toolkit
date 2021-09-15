@@ -97,6 +97,21 @@ describe("sqlPlugin", () => {
     chai.assert.isTrue(preProvisionResult.isOk());
   });
 
+  it("preProvision failed for no answer", async function () {
+    // Arrange
+    sinon.stub(Servers.prototype, "checkNameAvailability").resolves({ available: false });
+    sinon
+      .stub(ApplicationTokenCredentials.prototype, "getToken")
+      .resolves({ accessToken: faker.random.word() } as TokenResponse);
+    pluginContext.answers = { platform: Platform.VSCode };
+
+    // Act
+    const preProvisionResult = await sqlPlugin.preProvision(pluginContext);
+
+    // Assert
+    chai.assert.isTrue(preProvisionResult.isErr());
+  });
+
   it("provision", async function () {
     sqlPlugin.sqlImpl.config.existSql = false;
     sqlPlugin.sqlImpl.config.sqlServer = "test-sql";

@@ -14,7 +14,7 @@ import {
 import { environmentManager, isMultiEnvEnabled, isValidProject } from "@microsoft/teamsfx-core";
 import { workspace, WorkspaceConfiguration } from "vscode";
 import * as commonUtils from "../debug/commonUtils";
-import { ConfigurationKey, CONFIGURATION_PREFIX } from "../constants";
+import { ConfigurationKey, CONFIGURATION_PREFIX, UserState } from "../constants";
 
 export function getPackageVersion(versionStr: string): string {
   if (versionStr.includes("alpha")) {
@@ -206,4 +206,8 @@ export function getAllFeatureFlags(): string[] | undefined {
     });
 
   return result;
+}
+
+export function getIsExistingUser(): string | undefined {
+  return ext.context.globalState.get<string>(UserState.IsExisting);
 }

@@ -5,6 +5,7 @@
 import { HookContext, Middleware, NextFunction } from "@feathersjs/hooks";
 import {
   ConfigFolderName,
+  CoreCallbackEvent,
   err,
   Inputs,
   ProductName,
@@ -15,6 +16,7 @@ import * as os from "os";
 import * as path from "path";
 import { lock, unlock } from "proper-lockfile";
 import { FxCore } from "..";
+import { CallbackRegistry } from "../callback";
 import {
   ConcurrentError,
   InvalidProjectError,
@@ -55,11 +57,18 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
     await lock(lf, { lockfilePath: path.join(lockFileDir, `${ConfigFolderName}.lock`) })
       .then(async () => {
         if (logger) logger.debug(`[core] success to acquire lock on: ${lf}`);
+        for (const f of CallbackRegistry.get(CoreCallbackEvent.lock)) {
+          f();
+        }
         try {
           await next();
         } finally {
           await unlock(lf, { lockfilePath: path.join(lockFileDir, `${ConfigFolderName}.lock`) });
           await fs.rmdir(lockFileDir);
+
+          for (const f of CallbackRegistry.get(CoreCallbackEvent.unlock)) {
+            f();
+          }
           if (logger) logger.debug(`[core] lock released on ${lf}`);
         }
       })

@@ -1,7 +1,5 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-
-import { WayToRegisterBot } from "./enums/wayToRegisterBot";
 import { OptionItem, ConfigFolderName } from "@microsoft/teamsfx-api";
 import { ProgrammingLanguage } from "./enums/programmingLanguage";
 import path from "path";
@@ -81,7 +79,6 @@ export class ProgressBarConstants {
 
 export class QuestionNames {
   public static readonly PROGRAMMING_LANGUAGE = "programming-language";
-  public static readonly WAY_TO_REGISTER_BOT = "way-to-register-bot";
   public static readonly GET_BOT_ID = "bot-id";
   public static readonly GET_BOT_PASSWORD = "bot-password";
   public static readonly CAPABILITIES = "capabilities";
@@ -161,17 +158,6 @@ export class Alias {
 }
 
 export class QuestionOptions {
-  public static readonly WAY_TO_REGISTER_BOT_OPTIONS: OptionItem[] = [
-    {
-      id: WayToRegisterBot.CreateNew,
-      label: "Create a new bot registration",
-    },
-    {
-      id: WayToRegisterBot.ReuseExisting,
-      label: "Use an existing bot registration",
-    },
-  ];
-
   public static readonly PROGRAMMING_LANGUAGE_OPTIONS: OptionItem[] = Object.values(
     ProgrammingLanguage
   ).map((value) => {

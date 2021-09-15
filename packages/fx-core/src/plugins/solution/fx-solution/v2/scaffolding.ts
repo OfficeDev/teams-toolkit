@@ -1,4 +1,13 @@
-import { v2, Inputs, FxError, Result, ok, err, Void } from "@microsoft/teamsfx-api";
+import {
+  v2,
+  Inputs,
+  FxError,
+  Result,
+  ok,
+  err,
+  Void,
+  AzureSolutionSettings,
+} from "@microsoft/teamsfx-api";
 import { getStrings, isMultiEnvEnabled } from "../../../../common/tools";
 import {
   AzureResourceFunction,
@@ -7,7 +16,13 @@ import {
   TabOptionItem,
 } from "../question";
 import { executeConcurrently, NamedThunk } from "./executor";
-import { getAzureSolutionSettings, getSelectedPlugins } from "./utils";
+import {
+  blockV1Project,
+  combineRecords,
+  getAzureSolutionSettings,
+  getSelectedPlugins,
+  fillInSolutionSettings,
+} from "./utils";
 import path from "path";
 import fs from "fs-extra";
 import { getTemplatesFolder } from "../../../..";
@@ -17,7 +32,14 @@ export async function scaffoldSourceCode(
   ctx: v2.Context,
   inputs: Inputs
 ): Promise<Result<Void, FxError>> {
-  const plugins = getSelectedPlugins(getAzureSolutionSettings(ctx));
+  const blockResult = blockV1Project(ctx.projectSetting.solutionSettings);
+  if (blockResult.isErr()) {
+    return err(blockResult.error);
+  }
+  const solutionSettings: AzureSolutionSettings = getAzureSolutionSettings(ctx);
+  const fillinRes = fillInSolutionSettings(solutionSettings, inputs);
+  if (fillinRes.isErr()) return err(fillinRes.error);
+  const plugins = getSelectedPlugins(solutionSettings);
 
   const thunks: NamedThunk<Void>[] = plugins
     .filter((plugin) => !!plugin.scaffoldSourceCode)
@@ -31,8 +53,7 @@ export async function scaffoldSourceCode(
     });
 
   const result = await executeConcurrently(thunks, ctx.logProvider);
-  const solutionSettings = getAzureSolutionSettings(ctx);
-  if (result.isOk()) {
+  if (result.kind === "success") {
     const capabilities = solutionSettings.capabilities;
     const azureResources = solutionSettings.azureResources;
 
@@ -55,6 +76,10 @@ export async function scaffoldByPlugins(
   inputs: Inputs,
   plugins: v2.ResourcePlugin[]
 ): Promise<Result<Void, FxError>> {
+  const blockResult = blockV1Project(ctx.projectSetting.solutionSettings);
+  if (blockResult.isErr()) {
+    return err(blockResult.error);
+  }
   const thunks: NamedThunk<Void>[] = plugins
     .filter((plugin) => !!plugin.scaffoldSourceCode)
     .map((plugin) => {
@@ -68,7 +93,7 @@ export async function scaffoldByPlugins(
 
   const result = await executeConcurrently(thunks, ctx.logProvider);
   const solutionSettings = getAzureSolutionSettings(ctx);
-  if (result.isOk()) {
+  if (result.kind === "success") {
     const capabilities = solutionSettings.capabilities;
     const azureResources = solutionSettings.azureResources;
 

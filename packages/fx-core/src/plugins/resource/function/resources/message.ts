@@ -26,7 +26,8 @@ export class InfoMessages {
     `Failed to install .NET SDK, error = '${error}'`;
 
   public static readonly getTemplateFrom = (url: string) => `Retrieving template from '${url}'.`;
-  public static readonly getTemplateFromLocal = "Failed to get newest template from github, trying to use the local template.";
+  public static readonly getTemplateFromLocal =
+    "Failed to get newest template from github, trying to use the local template.";
 
   public static readonly projectScaffoldAt = (basePath: string) =>
     `Project scaffolded at '${basePath}'.`;

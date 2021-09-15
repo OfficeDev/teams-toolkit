@@ -35,6 +35,7 @@ import { ConfigNotFoundError, InvalidEnvFile, ReadFileError } from "./error";
 import AzureAccountManager from "./commonlib/azureLogin";
 import { FeatureFlags } from "./constants";
 import { isMultiEnvEnabled, environmentManager, WriteFileError } from "@microsoft/teamsfx-core";
+import { WorkspaceNotSupported } from "./cmds/preview/errors";
 
 type Json = { [_: string]: any };
 
@@ -295,9 +296,15 @@ export async function setSubscriptionId(
   rootFolder = "./"
 ): Promise<Result<null, FxError>> {
   if (subscriptionId) {
-    const result = await readEnvJsonFile(rootFolder);
-    if (result.isErr()) {
-      return err(result.error);
+    if (isMultiEnvEnabled()) {
+      if (!isWorkspaceSupported(rootFolder)) {
+        return err(WorkspaceNotSupported(rootFolder));
+      }
+    } else {
+      const result = await readEnvJsonFile(rootFolder);
+      if (result.isErr()) {
+        return err(result.error);
+      }
     }
 
     AzureAccountManager.setRootPath(rootFolder);
@@ -338,7 +345,7 @@ export function getTeamsAppId(rootfolder: string | undefined): any {
   if (isWorkspaceSupported(rootfolder)) {
     const result = readEnvJsonFileSync(rootfolder);
     if (result.isErr()) {
-      throw result.error;
+      return undefined;
     }
     return result.value.solution.remoteTeamsAppId;
   }
@@ -359,7 +366,7 @@ export function getLocalTeamsAppId(rootfolder: string | undefined): any {
 
     const result = readEnvJsonFileSync(rootfolder);
     if (result.isErr()) {
-      throw result.error;
+      return undefined;
     }
 
     // get final setting value from env.xxx.json and xxx.userdata
@@ -398,7 +405,7 @@ export function getProjectId(rootfolder: string | undefined): any {
   if (isWorkspaceSupported(rootfolder)) {
     const result = readSettingsFileSync(rootfolder);
     if (result.isErr()) {
-      throw result.error;
+      return undefined;
     }
 
     return result.value.projectId;

@@ -2,6 +2,7 @@ import * as chai from "chai";
 import * as vscode from "vscode";
 import * as sinon from "sinon";
 import * as handlers from "../../../src/handlers";
+import * as envTree from "../../../src/envTree";
 import {
   Inputs,
   Platform,
@@ -22,7 +23,7 @@ import { AzureAccountManager } from "../../../src/commonlib/azureLogin";
 import { MockCore } from "./mocks/mockCore";
 import * as extension from "../../../src/extension";
 import * as accountTree from "../../../src/accountTree";
-import TreeViewManagerInstance from "../../../src/commandsTreeViewProvider";
+import TreeViewManagerInstance from "../../../src/treeview/treeViewManager";
 import { CoreHookContext } from "../../../../fx-core/build";
 
 suite("handlers", () => {
@@ -150,18 +151,16 @@ suite("handlers", () => {
 
       let ignoreEnvInfo: boolean | undefined = undefined;
       let localDebugCalled = 0;
-      sinon
-        .stub(handlers.core, "localDebug")
-        .callsFake(
-          async (
-            inputs: Inputs,
-            ctx?: CoreHookContext | undefined
-          ): Promise<Result<Void, FxError>> => {
-            ignoreEnvInfo = inputs.ignoreEnvInfo;
-            localDebugCalled += 1;
-            return ok({});
-          }
-        );
+      sinon.stub(handlers.core, "localDebug").callsFake(
+        async (
+          inputs: Inputs,
+          ctx?: CoreHookContext | undefined
+        ): Promise<Result<Void, FxError>> => {
+          ignoreEnvInfo = inputs.ignoreEnvInfo;
+          localDebugCalled += 1;
+          return ok({});
+        }
+      );
 
       await handlers.runCommand(Stage.debug);
 
@@ -356,6 +355,152 @@ suite("handlers", () => {
       sinon.assert.calledOnce(showMessage);
       sinon.assert.calledOnce(sendTelemetryEvent);
       sinon.assert.calledOnce(sendTelemetryErrorEvent);
+      sinon.restore();
+    });
+  });
+
+  suite("permissions", async () => {
+    test("grant permission", async () => {
+      sinon.stub(handlers, "core").value(new MockCore());
+      const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(envTree, "updateCollaboratorList").resolves();
+      sinon.stub(MockCore.prototype, "grantPermission").returns(
+        Promise.resolve(
+          ok([
+            {
+              name: "name",
+              type: "type",
+              resourceId: "id",
+              roles: ["Owner"],
+            },
+          ])
+        )
+      );
+
+      const result = await handlers.grantPermission("env");
+      chai.expect(result.isOk()).equals(true);
+      sinon.restore();
+    });
+
+    test("list collaborator: with user", async () => {
+      sinon.stub(handlers, "core").value(new MockCore());
+      const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(MockCore.prototype, "listCollaborator").returns(
+        Promise.resolve(
+          ok([
+            {
+              userPrincipalName: "userName",
+              userObjectId: "userObjectId",
+              isAadOwner: true,
+              teamsAppResourceId: "teamsId",
+              aadResourceId: "aadId",
+            },
+          ])
+        )
+      );
+
+      const result = await handlers.listCollaborator("env");
+      chai.assert.equal(result[0].label, "userName");
+      chai.assert.equal(result[0].commandId, "fx-extension.listcollaborator.env.userObjectId");
+      chai.assert.equal(result[0].icon, "person");
+      chai.assert.equal(result[0].isCustom, false);
+      sinon.restore();
+    });
+
+    test("list collaborator: with error", async () => {
+      sinon.stub(handlers, "core").value(new MockCore());
+      const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(MockCore.prototype, "listCollaborator").throws(new Error("error"));
+
+      const result = await handlers.listCollaborator("env");
+      chai.assert.equal(result[0].label, "error");
+      chai.assert.equal(result[0].commandId, "fx-extension.listcollaborator.env");
+      chai.assert.equal(result[0].icon, "warning");
+      chai.assert.equal(result[0].isCustom, true);
+      sinon.restore();
+    });
+
+    test("list collaborator: with empty user info", async () => {
+      sinon.stub(handlers, "core").value(new MockCore());
+      const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(MockCore.prototype, "listCollaborator").returns(Promise.resolve(ok([])));
+
+      const result = await handlers.listCollaborator("env");
+      chai.assert.equal(result[0].label, "No permission to list collaborators");
+      chai.assert.equal(result[0].commandId, "fx-extension.listcollaborator.env");
+      chai.assert.equal(result[0].icon, "warning");
+      chai.assert.equal(result[0].isCustom, true);
+      sinon.restore();
+    });
+
+    test("check permission: with both permission", async () => {
+      sinon.stub(handlers, "core").value(new MockCore());
+      const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(MockCore.prototype, "checkPermission").returns(
+        Promise.resolve(
+          ok([
+            {
+              name: "Teams App",
+              type: "m365",
+              resourceId: "teamsId",
+              roles: ["Administrator"],
+            },
+            {
+              name: "Azure AD App",
+              type: "m365",
+              resourceId: "aadId",
+              roles: ["Owner"],
+            },
+          ])
+        )
+      );
+
+      const result = await handlers.checkPermission("env");
+      chai.assert.equal(result, true);
+      sinon.restore();
+    });
+
+    test("check permission: without permission", async () => {
+      sinon.stub(handlers, "core").value(new MockCore());
+      const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(MockCore.prototype, "checkPermission").returns(
+        Promise.resolve(
+          ok([
+            {
+              name: "Teams App",
+              type: "m365",
+              resourceId: "teamsId",
+              roles: ["Administrator"],
+            },
+            {
+              name: "Azure AD App",
+              type: "m365",
+              resourceId: "aadId",
+              roles: ["no permission"],
+            },
+          ])
+        )
+      );
+
+      const result = await handlers.checkPermission("env");
+      chai.assert.equal(result, false);
+      sinon.restore();
+    });
+
+    test("check permission: without permission", async () => {
+      sinon.stub(handlers, "core").value(new MockCore());
+      const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(MockCore.prototype, "checkPermission").throws(new Error("error"));
+
+      const result = await handlers.checkPermission("env");
+      chai.assert.equal(result, false);
       sinon.restore();
     });
   });

@@ -28,6 +28,7 @@ import axios from "axios";
 import * as util from "util";
 import * as StringResources from "./resources/Strings.json";
 import { StringContext } from "./utils/stringContext";
+import { registerEnvTreeHandler } from "./envTree";
 
 export async function getSubscriptionId(): Promise<string | undefined> {
   const subscriptionInfo = await AzureAccountManager.getSelectedSubscription();
@@ -199,6 +200,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
       ]);
     }
 
+    registerEnvTreeHandler();
     return ok(null);
   };
 
@@ -482,10 +484,10 @@ async function getSideloadingStatus(token: string): Promise<boolean | undefined>
       } else {
         ExtTelemetry.sendTelemetryErrorEvent(
           TelemetryEvent.CheckSideloading,
-          SystemError.build(
-            "M365Account",
+          new SystemError(
             "UnknownValue",
-            `AppStudio response code: ${response.status}, body: ${response.data}`
+            `AppStudio response code: ${response.status}, body: ${response.data}`,
+            "M365Account"
           )
         );
       }
@@ -494,7 +496,7 @@ async function getSideloadingStatus(token: string): Promise<boolean | undefined>
     } catch (error) {
       ExtTelemetry.sendTelemetryErrorEvent(
         TelemetryEvent.CheckSideloading,
-        SystemError.build("M365Account", error as Error)
+        new SystemError(error as Error, "M365Account")
       );
       await delay((retry + 1) * retryInterval);
     }

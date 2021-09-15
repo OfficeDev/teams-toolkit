@@ -15,7 +15,7 @@
     "copy-files": "copyfiles -u 1 src/**/*.html src/**/*.css src/**/*.sh src/**/*.ps1 lib/",
     "build": "rimraf lib && tsc -p ./ && npm run copy-files",
     "watch": "rimraf lib && npm run copy-files && tsc -w -p ./",
-    "package": "rimraf lib && npx webpack --mode production --config ./webpack.config.js",
+    "package": "rimraf lib && node --max-old-space-size=4096 node_modules/webpack/bin/webpack.js --mode production --config ./webpack.config.js",
     "prepack": "npm run package",
     "test:e2e": "npm run test:e2e:clean && npm run test:e2e:parallel",
     "test:e2e:clean": "ts-node tests/e2e/clean.ts",

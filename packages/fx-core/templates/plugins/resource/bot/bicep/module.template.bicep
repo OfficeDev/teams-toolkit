@@ -2,11 +2,9 @@ module botProvision '\{{PluginOutput.fx-resource-bot.Modules.botProvision.Path}}
   name: 'botProvision'
   params: {
     botServerfarmsName: bot_serverfarmsName
-    {{#if createNewBotService}}
     botServiceName: bot_serviceName
     botAadClientId: bot_aadClientId
     botDisplayName: bot_displayName
-    {{/if}}
     botServiceSKU: bot_serviceSKU
     botWebAppName: bot_sitesName
     botWebAppSKU: bot_webAppSKU
@@ -23,9 +21,7 @@ module botConfiguration '\{{PluginOutput.fx-resource-bot.Modules.botConfiguratio
   params: {
     botAadClientId: bot_aadClientId
     botAadClientSecret: bot_aadClientSecret
-    {{#if createNewBotService}}
     botServiceName: bot_serviceName
-    {{/if}}
     botWebAppName: bot_sitesName
     authLoginUriSuffix: authLoginUriSuffix
     botEndpoint: botProvision.outputs.botWebAppEndpoint

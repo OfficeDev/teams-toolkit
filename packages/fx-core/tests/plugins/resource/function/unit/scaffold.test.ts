@@ -9,9 +9,7 @@ import AdmZip from "adm-zip";
 import mock from "mock-fs";
 
 import * as fetch from "../../../../../src/common/templatesUtils";
-import {
-  FunctionPluginInfo,
-} from "../../../../../src/plugins/resource/function/constants";
+import { FunctionPluginInfo } from "../../../../../src/plugins/resource/function/constants";
 import { FunctionPlugin } from "../../../../../src/plugins/resource/function/index";
 import { FxResult } from "../../../../../src/plugins/resource/function/result";
 import { QuestionKey } from "../../../../../src/plugins/resource/function/enums";

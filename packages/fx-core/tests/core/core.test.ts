@@ -64,7 +64,7 @@ describe("Core basic APIs", () => {
 
   afterEach(async () => {
     sandbox.restore();
-    await fs.rmdir(projectPath, { recursive: true});
+    await fs.rmdir(projectPath, { recursive: true });
   });
 
   it("happy path: create from new, provision, deploy, localDebug, publish, getQuestion, getQuestionsForUserTask, getProjectConfig", async () => {

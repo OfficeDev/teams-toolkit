@@ -299,16 +299,17 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
   return result;
 }
 
-export async function copyParameterJson(ctx: SolutionContext, sourceEnvName: string) {
-  if (!isMultiEnvEnabled() || !ctx.envInfo?.envName || !sourceEnvName) {
+export async function copyParameterJson(
+  ctx: SolutionContext,
+  targetEnvName: string,
+  sourceEnvName: string
+) {
+  if (!isMultiEnvEnabled() || !targetEnvName || !sourceEnvName) {
     return;
   }
 
   const parameterFolderPath = path.join(ctx.root, configsFolder);
-  const targetParameterFileName = parameterFileNameTemplateNew.replace(
-    "@envName",
-    ctx.envInfo.envName
-  );
+  const targetParameterFileName = parameterFileNameTemplateNew.replace("@envName", targetEnvName);
   const sourceParameterFileName = parameterFileNameTemplateNew.replace("@envName", sourceEnvName);
   const targetParameterFilePath = path.join(parameterFolderPath, targetParameterFileName);
   const sourceParameterFilePath = path.join(parameterFolderPath, sourceParameterFileName);

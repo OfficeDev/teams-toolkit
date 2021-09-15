@@ -1,14 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import "mocha";
-import { assert } from "chai";
 import {
   AzureSolutionSettings,
   ConfigMap,
   EnvConfig,
   FxError,
-  Inputs,
   Json,
   ok,
   Platform,
@@ -19,7 +16,11 @@ import {
   TokenProvider,
   Void,
 } from "@microsoft/teamsfx-api";
-import { FrontendPlugin, FrontendPluginV2, newEnvInfo } from "../../../../src";
+import { Context, EnvInfoV2, ProvisionInputs } from "@microsoft/teamsfx-api/build/v2";
+import { assert } from "chai";
+import "mocha";
+import { newEnvInfo } from "../../../../src";
+import { TabLanguage } from "../../../../src/plugins/resource/frontend/resources/templateInfo";
 import {
   provisionResourceAdapter,
   setConfigs,
@@ -27,7 +28,6 @@ import {
   setLocalSettingsV2,
   setProvisionOutputs,
 } from "../../../../src/plugins/resource/utils4v2";
-import { v1 } from "uuid";
 import {
   MockAppStudioTokenProvider,
   MockAzureAccountProvider,
@@ -40,8 +40,6 @@ import {
   ResourcePlugins,
   ResourcePluginsV2,
 } from "../../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
-import { TabLanguage } from "../../../../src/plugins/resource/frontend/resources/templateInfo";
-import { Context, ProvisionInputs } from "@microsoft/teamsfx-api/build/v2";
 
 describe("API V2 adapter", () => {
   beforeEach(() => {});
@@ -169,19 +167,18 @@ describe("API V2 adapter", () => {
       azure: { subscriptionId: "123455", resourceGroupName: "rg" },
       manifest: { values: { appName: { short: appName } } },
     };
+    const envInfo: EnvInfoV2 = {
+      envName: "default",
+      config: provisionInputConfig,
+      profile: {},
+    };
     const tokenProvider: TokenProvider = {
       appStudioToken: new MockAppStudioTokenProvider(),
       graphTokenProvider: new MockGraphTokenProvider(),
       azureAccountProvider: new MockAzureAccountProvider(),
     };
 
-    const res = await provisionResourceAdapter(
-      context,
-      inputs,
-      provisionInputConfig,
-      tokenProvider,
-      plugin
-    );
+    const res = await provisionResourceAdapter(context, inputs, envInfo, tokenProvider, plugin);
 
     assert.isTrue(res.isOk());
   });

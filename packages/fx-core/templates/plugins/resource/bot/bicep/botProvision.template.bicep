@@ -1,8 +1,6 @@
-{{#if createNewBotService}}
 param botServiceName string
 param botAadClientId string
 param botDisplayName string
-{{/if}}
 param botServerfarmsName string
 param botWebAppSKU string = 'F1'
 param botServiceSKU string = 'F1'
@@ -14,7 +12,6 @@ param identityName string
 var botWebAppHostname = botWebApp.properties.hostNames[0]
 var botEndpoint = 'https://${botWebAppHostname}'
 
-{{#if createNewBotService}}
 resource botServices 'Microsoft.BotService/botServices@2021-03-01' = {
   kind: 'azurebot'
   location: 'global'
@@ -29,7 +26,6 @@ resource botServices 'Microsoft.BotService/botServices@2021-03-01' = {
   }
 }
 
-{{/if}}
 resource botServerfarm 'Microsoft.Web/serverfarms@2021-01-01' = {
   kind: 'app'
   location: resourceGroup().location
@@ -70,7 +66,5 @@ output botServiceSKU string = botServiceSKU
 output botWebAppName string = botWebAppName
 output botDomain string = botWebAppHostname
 output appServicePlanName string = botServerfarmsName
-{{#if createNewBotService}}
 output botServiceName string = botServiceName
-{{/if}}
 output botWebAppEndpoint string = botEndpoint

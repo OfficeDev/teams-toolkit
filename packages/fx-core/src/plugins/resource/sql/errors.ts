@@ -10,6 +10,11 @@ export class ErrorMessage {
     message: () => "SQL admin name or password is empty",
   };
 
+  public static readonly SqlAskInputError = {
+    name: "SqlAskInputError",
+    message: () => "Failed to get answer for SQL questions",
+  };
+
   public static readonly SqlEndpointError = {
     name: "SqlEndpointError",
     message: (sqlName: string) => `SQL Server '${sqlName}' is invalid.`,

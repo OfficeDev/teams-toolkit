@@ -123,7 +123,7 @@ async function pollDeploymentStatus(deployCtx: DeployContext) {
       deployCtx.resourceGroupName,
       deployCtx.deploymentName
     );
-    operations.forEach(async (operation) => {
+    operations.forEach((operation) => {
       if (operation.properties?.targetResource?.resourceName) {
         deployCtx.ctx.logProvider?.info(
           `[${PluginDisplayName.Solution}] ${operation.properties?.targetResource?.resourceName} -> ${operation.properties.provisioningState}`

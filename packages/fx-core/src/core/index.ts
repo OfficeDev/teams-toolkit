@@ -97,7 +97,7 @@ import { LocalSettingsWriterMW } from "./middleware/localSettingsWriter";
 import { MigrateConditionHandlerMW } from "./middleware/migrateConditionHandler";
 import { environmentManager } from "..";
 import { newEnvInfo } from "./tools";
-import { copyParameterJson, getParameterJson } from "../plugins/solution/fx-solution/arm";
+// import { copyParameterJson, getParameterJson } from "../plugins/solution/fx-solution/arm";
 import { LocalCrypto } from "./crypto";
 import { PermissionRequestFileProvider } from "./permissionRequest";
 import {
@@ -127,7 +127,7 @@ import { SolutionLoaderMW } from "./middleware/solutionLoader";
 import { ProjectUpgraderMW } from "./middleware/projectUpgrader";
 import { FeatureFlagName } from "../common/constants";
 import { localSettingsFileName } from "../common/localSettingsProvider";
-import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
+import { EnvInfoV2, SolutionPlugin } from "@microsoft/teamsfx-api/build/v2";
 import { CallbackRegistry } from "./callback";
 
 export interface CoreHookContext extends HookContext {
@@ -242,6 +242,17 @@ export class FxCore implements Core {
         activeEnvironment: multiEnv ? environmentManager.getDefaultEnvName() : "default",
       };
 
+      if (multiEnv) {
+        const createEnvResult = await this.createEnvWithName(
+          environmentManager.getDefaultEnvName(),
+          projectSettings,
+          inputs
+        );
+        if (createEnvResult.isErr()) {
+          return err(createEnvResult.error);
+        }
+      }
+
       if (isV2()) {
         const solution = await getSolutionPluginV2ByName(inputs[CoreQuestionNames.Solution]);
         if (!solution) {
@@ -260,18 +271,19 @@ export class FxCore implements Core {
           contextV2,
           inputs
         );
-        if (solution.createEnv) {
-          inputs.copy = false;
-          const createEnvRes = await solution.createEnv(contextV2, inputs);
-          if (createEnvRes.isErr()) {
-            return err(createEnvRes.error);
-          }
-        }
-
         if (generateResourceTemplateRes.isErr()) {
           return err(generateResourceTemplateRes.error);
         }
         ctx.provisionInputConfig = generateResourceTemplateRes.value;
+        if (multiEnv) {
+          if (solution.createEnv) {
+            inputs.copy = false;
+            const createEnvRes = await solution.createEnv(contextV2, inputs);
+            if (createEnvRes.isErr()) {
+              return err(createEnvRes.error);
+            }
+          }
+        }
       } else {
         const solution = await getSolutionPluginByName(inputs[CoreQuestionNames.Solution]);
         if (!solution) {
@@ -297,24 +309,14 @@ export class FxCore implements Core {
         if (scaffoldRes.isErr()) {
           return scaffoldRes;
         }
-        if (solution.createEnv) {
-          solutionContext.answers!.copy = false;
-          const createEnvRes = await solution.createEnv(solutionContext);
-          if (createEnvRes.isErr()) {
-            return err(createEnvRes.error);
+        if (multiEnv) {
+          if (solution.createEnv) {
+            solutionContext.answers!.copy = false;
+            const createEnvRes = await solution.createEnv(solutionContext);
+            if (createEnvRes.isErr()) {
+              return err(createEnvRes.error);
+            }
           }
-        }
-      }
-
-      if (multiEnv) {
-        const createEnvResult = await this.createEnvWithName(
-          environmentManager.getDefaultEnvName(),
-          projectSettings,
-          inputs,
-          this
-        );
-        if (createEnvResult.isErr()) {
-          return err(createEnvResult.error);
         }
       }
     }
@@ -948,8 +950,7 @@ export class FxCore implements Core {
   async createEnvWithName(
     targetEnvName: string,
     projectSettings: ProjectSettings,
-    inputs: Inputs,
-    core: FxCore
+    inputs: Inputs
   ): Promise<Result<Void, FxError>> {
     const appName = projectSettings.appName;
     const newEnvConfig = environmentManager.newEnvConfigData(appName);
@@ -961,30 +962,11 @@ export class FxCore implements Core {
     if (writeEnvResult.isErr()) {
       return err(writeEnvResult.error);
     }
-    core.tools.logProvider.debug(
+    this.tools.logProvider.debug(
       `[core] persist ${targetEnvName} env profile to path ${
         writeEnvResult.value
       }: ${JSON.stringify(newEnvConfig)}`
     );
-
-    //TODO need arm support API V2
-    if (isArmSupportEnabled() && isAzureProject(projectSettings.solutionSettings)) {
-      const solutionContext: SolutionContext = {
-        projectSettings,
-        envInfo: newEnvInfo(targetEnvName, newEnvConfig),
-        root: inputs.projectPath || "",
-        ...core.tools,
-        ...core.tools.tokenProvider,
-        answers: inputs,
-        cryptoProvider: new LocalCrypto(projectSettings.projectId),
-        permissionRequestProvider: inputs.projectPath
-          ? new PermissionRequestFileProvider(inputs.projectPath)
-          : undefined,
-      };
-
-      await getParameterJson(solutionContext);
-    }
-
     return ok(Void);
   }
 

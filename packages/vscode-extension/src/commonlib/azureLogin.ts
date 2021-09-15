@@ -14,7 +14,6 @@ import {
   OptionItem,
   ok,
   ConfigFolderName,
-  PublishProfilesFolderName,
 } from "@microsoft/teamsfx-api";
 import { ExtensionErrors } from "../error";
 import { AzureAccount } from "./azure-account.api";
@@ -22,11 +21,9 @@ import { LoginFailureError } from "./codeFlowLogin";
 import * as vscode from "vscode";
 import * as identity from "@azure/identity";
 import {
-  envDefaultJsonFile,
   loggedIn,
   loggedOut,
   loggingIn,
-  profileDefaultJsonFile,
   signedIn,
   signedOut,
   signingIn,
@@ -49,7 +46,8 @@ import TreeViewManagerInstance from "../treeview/treeViewManager";
 import * as path from "path";
 import * as fs from "fs-extra";
 import * as commonUtils from "../debug/commonUtils";
-import { isMultiEnvEnabled } from "@microsoft/teamsfx-core";
+import { environmentManager } from "@microsoft/teamsfx-core";
+import { getSubscriptionInfoFromEnv } from "../utils/commonUtils";
 
 export class AzureAccountManager extends login implements AzureAccountProvider {
   private static instance: AzureAccountManager;
@@ -524,7 +522,9 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   async readSubscription(): Promise<SubscriptionInfo | undefined> {
     const subscriptionFilePath = await this.getSubscriptionInfoPath();
     if (!subscriptionFilePath || !fs.existsSync(subscriptionFilePath)) {
-      const solutionSubscriptionInfo = await this.getSubscriptionInfoFromEnv();
+      const solutionSubscriptionInfo = await getSubscriptionInfoFromEnv(
+        environmentManager.getDefaultEnvName()
+      );
       if (solutionSubscriptionInfo) {
         await this.saveSubscription(solutionSubscriptionInfo);
         return solutionSubscriptionInfo;
@@ -557,43 +557,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       );
       const subscriptionFile = path.join(configRoot!, subscriptionInfoFile);
       return subscriptionFile;
-    } else {
-      return undefined;
-    }
-  }
-
-  async getSubscriptionInfoFromEnv(): Promise<SubscriptionInfo | undefined> {
-    if (vscode.workspace.workspaceFolders) {
-      const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];
-      const workspacePath: string = workspaceFolder.uri.fsPath;
-      if (!(await commonUtils.isFxProject(workspacePath))) {
-        return undefined;
-      }
-      const configRoot = await commonUtils.getProjectRoot(
-        workspaceFolder.uri.fsPath,
-        `.${ConfigFolderName}`
-      );
-
-      const envDefalultFile = path.join(
-        configRoot!,
-        isMultiEnvEnabled()
-          ? path.join(PublishProfilesFolderName, profileDefaultJsonFile)
-          : envDefaultJsonFile
-      );
-      if (!fs.existsSync(envDefalultFile)) {
-        return undefined;
-      }
-      const envDefaultJson = (await fs.readFile(envDefalultFile)).toString();
-      const envDefault = JSON.parse(envDefaultJson);
-      if (envDefault.solution && envDefault.solution.subscriptionId) {
-        return {
-          subscriptionId: envDefault.solution.subscriptionId,
-          tenantId: envDefault.solution.tenantId,
-          subscriptionName: "",
-        };
-      } else {
-        return undefined;
-      }
     } else {
       return undefined;
     }

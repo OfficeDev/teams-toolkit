@@ -163,6 +163,7 @@ export interface Inputs extends Json {
   projectPath?: string;
   targetEnvName?: string;
   sourceEnvName?: string;
+  targetResourceGroupName?: string;
   platform: Platform;
   stage?: Stage;
   vscodeEnv?: VsCodeEnv;

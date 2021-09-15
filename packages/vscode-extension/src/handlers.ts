@@ -46,6 +46,7 @@ import {
   environmentManager,
   isMigrateFromV1Project,
   isMultiEnvEnabled,
+  LocalSettingsProvider,
 } from "@microsoft/teamsfx-core";
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -92,6 +93,9 @@ import * as path from "path";
 import { exp } from "./exp/index";
 import { TreatmentVariables } from "./exp/treatmentVariables";
 import { StringContext } from "./utils/stringContext";
+import { ext } from "./extensionVariables";
+import { InputConfigsFolderName } from "@microsoft/teamsfx-api";
+import { LocalEnvironment } from "./constants";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -728,10 +732,14 @@ export async function createNewEnvironment(args?: any[]): Promise<Result<Void, F
 
 export async function viewEnvironment(env: string): Promise<Result<Void, FxError>> {
   if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
-    const envFilePath = environmentManager.getEnvConfigPath(
-      env,
-      workspace.workspaceFolders![0].uri.fsPath
-    );
+    const projectRoot = workspace.workspaceFolders![0].uri.fsPath;
+    const localSettingsProvider = new LocalSettingsProvider(projectRoot);
+
+    const envFilePath =
+      env === LocalEnvironment
+        ? localSettingsProvider.localSettingsFilePath
+        : environmentManager.getEnvConfigPath(env, projectRoot);
+
     const envPath: vscode.Uri = vscode.Uri.file(envFilePath);
     if (await fs.pathExists(envFilePath)) {
       vscode.workspace.openTextDocument(envPath).then(

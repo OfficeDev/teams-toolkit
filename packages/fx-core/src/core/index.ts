@@ -709,15 +709,18 @@ export class FxCore implements Core {
     inputs: Inputs,
     ctx?: CoreHookContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
+    if (!ctx) return err(new ObjectIsUndefinedError("getQuestionsForUserTask input stuff"));
     if (isV2()) {
-      return err(new NotImplementedError("getQuestionsForUserTask"));
+      const contextV2 = ctx.contextV2 ? ctx.contextV2 : createV2Context(this, newProjectSettings());
+      const solutionV2 = ctx.solutionV2 ? ctx.solutionV2 : await getAllSolutionPluginsV2()[0];
+      return await this._getQuestionsForUserTask(contextV2, solutionV2, func, inputs);
+    } else {
+      const solutionContext = ctx.solutionContext
+        ? ctx.solutionContext
+        : await newSolutionContext(this.tools, inputs);
+      const solution = ctx.solution ? ctx.solution : getAllSolutionPlugins()[0];
+      return await this._getQuestionsForUserTask(solutionContext, solution, func, inputs);
     }
-    const solutionContext =
-      ctx!.solutionContext === undefined
-        ? await newSolutionContext(this.tools, inputs)
-        : ctx!.solutionContext;
-    const solution = ctx!.solution === undefined ? await getAllSolutionPlugins()[0] : ctx!.solution;
-    return await this._getQuestionsForUserTask(solutionContext, solution, func, inputs);
   }
 
   @hooks([
@@ -791,16 +794,26 @@ export class FxCore implements Core {
   }
 
   async _getQuestionsForUserTask(
-    ctx: SolutionContext,
-    solution: Solution,
+    ctx: SolutionContext | v2.Context,
+    solution: Solution | SolutionPlugin,
     func: FunctionRouter,
     inputs: Inputs
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     const namespace = func.namespace;
     const array = namespace ? namespace.split("/") : [];
-    if (namespace && "" !== namespace && array.length > 0 && solution.getQuestionsForUserTask) {
-      ctx!.answers = inputs;
-      const res = await solution.getQuestionsForUserTask!(func, ctx!);
+    if (namespace && "" !== namespace && array.length > 0) {
+      let res: Result<QTreeNode | undefined, FxError> = ok(undefined);
+      if (isV2()) {
+        const solutionV2 = solution as SolutionPlugin;
+        if (solutionV2.getQuestionsForUserTask) {
+          res = await solutionV2.getQuestionsForUserTask(ctx as v2.Context, inputs, func);
+        }
+      } else {
+        const solutionv1 = solution as Solution;
+        if (solutionv1.getQuestionsForUserTask) {
+          res = await solutionv1.getQuestionsForUserTask(func, ctx as SolutionContext);
+        }
+      }
       if (res.isOk()) {
         if (res.value) {
           const node = res.value.trim();

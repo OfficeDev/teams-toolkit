@@ -20,8 +20,13 @@ import { format } from "util";
 import { compileHandlebarsTemplateString, getStrings } from "../../../common";
 import path from "path";
 import * as fs from "fs-extra";
-import { ConstantString, PluginDisplayName } from "../../../common/constants";
-import { Executor, CryptoDataMatchers, isMultiEnvEnabled } from "../../../common/tools";
+import { ArmHelpLink, ConstantString, PluginDisplayName } from "../../../common/constants";
+import {
+  Executor,
+  CryptoDataMatchers,
+  isMultiEnvEnabled,
+  getResourceGroupNameFromResourceId,
+} from "../../../common/tools";
 import {
   ARM_TEMPLATE_OUTPUT,
   GLOBAL_CONFIG,
@@ -114,16 +119,14 @@ async function pollDeploymentStatus(deployCtx: DeployContext) {
         PluginDisplayName.Solution
       )
     );
-    const deployments = await deployCtx.client.deployments.listByResourceGroup(
-      deployCtx.resourceGroupName
+    const operations = await deployCtx.client.deploymentOperations.list(
+      deployCtx.resourceGroupName,
+      deployCtx.deploymentName
     );
-    deployments.forEach(async (deployment) => {
-      if (
-        deployment.properties?.timestamp &&
-        deployment.properties.timestamp.getTime() > deployCtx.deploymentStartTime
-      ) {
+    operations.forEach((operation) => {
+      if (operation.properties?.targetResource?.resourceName) {
         deployCtx.ctx.logProvider?.info(
-          `[${PluginDisplayName.Solution}] ${deployment.name} -> ${deployment.properties.provisioningState}`
+          `[${PluginDisplayName.Solution}] ${operation.properties?.targetResource?.resourceName} -> ${operation.properties.provisioningState}`
         );
       }
     });
@@ -222,40 +225,26 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
       )
     );
 
-    const failedDeployments: string[] = [];
-    const deployments = await deployCtx.client.deployments.listByResourceGroup(
-      deployCtx.resourceGroupName
-    );
-
-    deployments.forEach((deployment) => {
-      if (
-        deployment.properties &&
-        deployment.properties.error &&
-        deployment.properties.timestamp &&
-        deployment.properties.timestamp.getTime() > deployCtx.deploymentStartTime
-      ) {
-        ctx.logProvider?.error(
-          `[${PluginDisplayName.Solution}] ${deployment.name} -> ${JSON.stringify(
-            deployment.properties.error,
-            undefined,
-            2
-          )}`
-        );
-        if (deployment.name !== deploymentName) {
-          failedDeployments.push(deployment.name + " module");
-        }
+    const result = await wrapGetDeploymentError(deployCtx, resourceGroupName, deploymentName);
+    if (result.isOk()) {
+      const deploymentError = result.value;
+      ctx.logProvider?.error(
+        `[${PluginDisplayName.Solution}] ${deploymentName} -> ${JSON.stringify(
+          result,
+          undefined,
+          2
+        )}`
+      );
+      let failedDeployments: string[] = [];
+      if (deploymentError.subErrors) {
+        failedDeployments = Object.keys(deploymentError.subErrors);
+      } else {
+        failedDeployments.push(deploymentName);
       }
-    });
-
-    if (failedDeployments.length === 0) {
-      failedDeployments.push(deploymentName + " module");
+      return formattedDeploymentName(failedDeployments);
+    } else {
+      return result;
     }
-    const returnError = new Error(
-      `resource deployments (${failedDeployments.join(
-        ", "
-      )}) for your project failed. Please refer to output channel for more error details.`
-    );
-    return err(returnUserError(returnError, "Solution", "ArmDeploymentFailed"));
   }
 }
 
@@ -734,4 +723,92 @@ async function areFoldersEmpty(folderPaths: string[]): Promise<boolean> {
 
 async function waitSeconds(second: number) {
   return new Promise((resolve) => setTimeout(resolve, second * 1000));
+}
+
+async function wrapGetDeploymentError(
+  deployCtx: DeployContext,
+  resourceGroupName: string,
+  deploymentName: string
+): Promise<Result<any, FxError>> {
+  try {
+    const deploymentError = await getDeploymentError(deployCtx, resourceGroupName, deploymentName);
+    return ok(deploymentError);
+  } catch (error: any) {
+    deployCtx.ctx.logProvider?.error(
+      `[${PluginDisplayName.Solution}] Failed to get deployment error for ${error.message}.`
+    );
+    const returnError = new Error(
+      `resource deployments (${deployCtx.deploymentName} module) for your project failed and get the error message failed. Please refer to the resource group ${deployCtx.resourceGroupName} in portal for deployment error.`
+    );
+    return err(returnUserError(returnError, "Solution", "GetDeploymentErrorFailed"));
+  }
+}
+
+async function getDeploymentError(
+  deployCtx: DeployContext,
+  resourceGroupName: string,
+  deploymentName: string
+): Promise<any> {
+  let deployment;
+  try {
+    deployment = await deployCtx.client.deployments.get(resourceGroupName, deploymentName);
+  } catch (error: any) {
+    if (
+      deploymentName !== deployCtx.deploymentName &&
+      error.code === ConstantString.DeploymentNotFound
+    ) {
+      return undefined;
+    }
+    throw error;
+  }
+  if (!deployment.properties?.error) {
+    return undefined;
+  }
+  const deploymentError: any = {
+    error: deployment.properties?.error,
+  };
+  const operations = await deployCtx.client.deploymentOperations.list(
+    resourceGroupName,
+    deploymentName
+  );
+  for (const operation of operations) {
+    if (operation.properties?.statusMessage?.error) {
+      if (!deploymentError.subErrors) {
+        deploymentError.subErrors = {};
+      }
+      const name = operation.properties.targetResource?.resourceName ?? operation.id;
+      deploymentError.subErrors[name!] = {
+        error: operation.properties.statusMessage.error,
+      };
+      if (
+        operation.properties.targetResource?.resourceType ===
+          ConstantString.DeploymentResourceType &&
+        operation.properties.targetResource?.resourceName &&
+        operation.properties.targetResource?.id
+      ) {
+        const resourceGroupName: string = getResourceGroupNameFromResourceId(
+          operation.properties.targetResource.id
+        );
+        const subError = await getDeploymentError(
+          deployCtx,
+          resourceGroupName,
+          operation.properties.targetResource?.resourceName
+        );
+        if (subError) {
+          deploymentError.subErrors[name!].inner = subError;
+        }
+      }
+    }
+  }
+  return deploymentError;
+}
+
+function formattedDeploymentName(failedDeployments: string[]): Result<void, FxError> {
+  const format = failedDeployments.map((deployment) => deployment + " module");
+  const returnError = new Error(
+    `resource deployments (${format.join(
+      ", "
+    )}) for your project failed. Please refer to output channel for more error details.`
+  );
+  return err(returnUserError(returnError, "Solution", "ArmDeploymentFailed", ArmHelpLink));
 }

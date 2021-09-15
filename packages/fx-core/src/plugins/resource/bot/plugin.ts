@@ -137,7 +137,6 @@ export class TeamsBotImpl {
     this.ctx = context;
     await this.config.restoreConfigFromContext(context);
     Logger.info(Messages.PreProvisioningBot);
-    // todo: check on Azure whether resources are provisioned, if true, skip provision
 
     // Preconditions checking.
     CheckThrowSomethingMissing(
@@ -724,7 +723,6 @@ export class TeamsBotImpl {
       botAuthCreds.clientSecret = this.config.localDebug.localBotPassword;
       botAuthCreds.objectId = this.config.localDebug.localObjectId;
       Logger.debug(Messages.SuccessfullyGetExistingBotAadAppCredential);
-      return;
     } else {
       Logger.info(Messages.ProvisioningBotRegistration);
       botAuthCreds = await AADRegistration.registerAADAppAndGetSecretByAppStudio(

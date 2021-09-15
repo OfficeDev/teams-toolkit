@@ -1515,7 +1515,7 @@ describe("Middleware", () => {
   describe("migrateArm success", () => {
     const sandbox = sinon.createSandbox();
     const appName = randomAppName();
-    const projectPath = path.join(os.tmpdir(), appName);
+    const projectPath = "MigrationArmSuccessTestSample";
     beforeEach(async () => {
       await fs.ensureDir(projectPath);
       await fs.ensureDir(path.join(projectPath, ".fx"));

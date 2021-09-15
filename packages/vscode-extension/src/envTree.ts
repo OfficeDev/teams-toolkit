@@ -17,6 +17,7 @@ import { checkPermission, listCollaborator } from "./handlers";
 import { signedIn } from "./commonlib/common/constant";
 import { AppStudioLogin } from "./commonlib/appStudioLogin";
 import * as fs from "fs-extra";
+import { getResourceGroupNameFromEnv, getSubscriptionInfoFromEnv } from "./utils/commonUtils";
 
 const showEnvList: Array<string> = [];
 let environmentTreeProvider: CommandsTreeViewProvider;
@@ -65,6 +66,7 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
     }
 
     for (const item of envNamesResult.value) {
+      await addSubscriptionAndResourceGroupNode(item);
       await updateCollaboratorList(item);
     }
   }
@@ -116,4 +118,44 @@ function getTreeViewItemIcon(envName: string, activeEnv: string | undefined) {
 async function localSettingsExists(projectRoot: string): Promise<boolean> {
   const provider = new LocalSettingsProvider(projectRoot);
   return await fs.pathExists(provider.localSettingsFilePath);
+}
+
+export async function addSubscriptionAndResourceGroupNode(env: string) {
+  if (!environmentTreeProvider) {
+    return;
+  }
+
+  const parentCommand = environmentTreeProvider.findCommand("fx-extension.environment." + env);
+  if (!parentCommand) {
+    return;
+  }
+
+  const envSubItems: TreeItem[] = [];
+  const subscriptionInfo = await getSubscriptionInfoFromEnv(env);
+  if (subscriptionInfo) {
+    const subscriptionTreeItem: TreeItem = {
+      commandId: `fx-extension.environment.${env}.subscription`,
+      label: subscriptionInfo.subscriptionName,
+      icon: "key",
+      isCustom: false,
+      parent: "fx-extension.environment." + env,
+    };
+
+    envSubItems.push(subscriptionTreeItem);
+  }
+
+  const resourceGroupName = await getResourceGroupNameFromEnv(env);
+  if (resourceGroupName) {
+    const resourceGroupTreeItem: TreeItem = {
+      commandId: `fx-extension.environment.${env}.resourceGroup`,
+      label: resourceGroupName,
+      icon: "symbol-method",
+      isCustom: false,
+      parent: `fx-extension.environment.${env}.subscription`,
+    };
+
+    envSubItems.push(resourceGroupTreeItem);
+  }
+
+  await environmentTreeProvider.add(envSubItems);
 }

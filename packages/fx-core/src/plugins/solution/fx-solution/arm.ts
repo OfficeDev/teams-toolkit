@@ -112,25 +112,37 @@ type DeployContext = {
 };
 
 async function pollDeploymentStatus(deployCtx: DeployContext) {
+  const failedCount = 4;
+  let tryCount = 0;
   while (!deployCtx.finished) {
+    await waitSeconds(10);
     deployCtx.ctx.logProvider?.info(
       format(
         getStrings().solution.DeployArmTemplates.PollDeploymentStatusNotice,
         PluginDisplayName.Solution
       )
     );
-    const operations = await deployCtx.client.deploymentOperations.list(
-      deployCtx.resourceGroupName,
-      deployCtx.deploymentName
-    );
-    operations.forEach((operation) => {
-      if (operation.properties?.targetResource?.resourceName) {
-        deployCtx.ctx.logProvider?.info(
-          `[${PluginDisplayName.Solution}] ${operation.properties?.targetResource?.resourceName} -> ${operation.properties.provisioningState}`
-        );
+    try {
+      const operations = await deployCtx.client.deploymentOperations.list(
+        deployCtx.resourceGroupName,
+        deployCtx.deploymentName
+      );
+      operations.forEach((operation) => {
+        if (operation.properties?.targetResource?.resourceName) {
+          deployCtx.ctx.logProvider?.info(
+            `[${PluginDisplayName.Solution}] ${operation.properties?.targetResource?.resourceName} -> ${operation.properties.provisioningState}`
+          );
+        }
+      });
+    } catch (error) {
+      tryCount++;
+      if (tryCount > failedCount) {
+        throw error;
       }
-    });
-    await waitSeconds(10);
+      deployCtx.ctx.logProvider?.warning(
+        `[${PluginDisplayName.Solution}] ${deployCtx.deploymentName} -> waiting to get deplomyment status [${tryCount}]`
+      );
+    }
   }
 }
 

@@ -191,10 +191,12 @@ describe("Env Show Command Tests", function () {
 describe("Env Add Command Tests", function () {
   const sandbox = sinon.createSandbox();
   const vars = { value: new MockVars() };
-  let validProject = true;
   let checkedRootDir = "";
+  let validProject = true;
   let envList = ["dev", "test", "staging"];
   const activeEnv = envList[1];
+  const sourceEnvFromArgs = envList[2];
+  let createEnvError: FxError | undefined = undefined;
 
   let sourceEnvName: string | undefined;
   let newTargetEnvName: string | undefined;
@@ -218,6 +220,9 @@ describe("Env Add Command Tests", function () {
       .stub(core.FxCore.prototype, "createEnv")
       .callsFake(
         async (inputs: Inputs, ctx?: core.CoreHookContext): Promise<Result<Void, FxError>> => {
+          if (createEnvError) {
+            return err(createEnvError);
+          }
           sourceEnvName = inputs.sourceEnvName;
           newTargetEnvName = inputs.newTargetEnvName;
           return ok(Void);
@@ -251,6 +256,109 @@ describe("Env Add Command Tests", function () {
     expect(sourceEnvName).to.equal(activeEnv);
     expect(newTargetEnvName).to.equal(args.name);
     expect(vars.value.logs).to.equal("");
+  });
+
+  it("adds a new env by copying from the specified env", async () => {
+    // Arrange
+    validProject = true;
+    const cmd = new Env();
+    const addCmd = getCommand(cmd, CommandName.Add);
+    const args = {
+      name: "production",
+      env: sourceEnvFromArgs,
+    };
+
+    // Act
+    await addCmd.handler(args);
+
+    // Assert
+    expect(sourceEnvName).to.equal(sourceEnvFromArgs);
+    expect(newTargetEnvName).to.equal(args.name);
+    expect(vars.value.logs).to.equal("");
+  });
+
+  it("handles error if target env exists", async () => {
+    // Arrange
+    validProject = true;
+    const cmd = new Env();
+    const addCmd = getCommand(cmd, CommandName.Add);
+    let exceptionThrown = false;
+    const args = {
+      name: envList[0],
+    };
+
+    // Act
+    try {
+      await addCmd.handler(args);
+    } catch (error) {
+      exceptionThrown = true;
+
+      // Assert
+      expect(error).instanceOf(UserError);
+      expect(error.name).equals("ProjectEnvAlreadyExistError");
+      expect(vars.value.logs).to.equal(
+        "[Core.ProjectEnvAlreadyExistError]: Project environment dev already exists.\n"
+      );
+    }
+
+    expect(exceptionThrown).to.be.true;
+  });
+
+  it("handles error if target env name is of wrong format", async () => {
+    // Arrange
+    validProject = true;
+    const cmd = new Env();
+    const addCmd = getCommand(cmd, CommandName.Add);
+    let exceptionThrown = false;
+    const args = {
+      name: "invalid?env!",
+    };
+
+    // Act
+    try {
+      await addCmd.handler(args);
+    } catch (error) {
+      exceptionThrown = true;
+
+      // Assert
+      expect(error).instanceOf(UserError);
+      expect(error.name).equals("InvalidEnvNameError");
+      expect(vars.value.logs).to.equal(
+        "[Core.InvalidEnvNameError]: Environment name can only contain letters, digits, _ and -.\n"
+      );
+    }
+
+    expect(exceptionThrown).to.be.true;
+  });
+
+  it("handles error if createEnv returns error", async () => {
+    // Arrange
+    validProject = true;
+    const cmd = new Env();
+    const addCmd = getCommand(cmd, CommandName.Add);
+    createEnvError = returnUserError(
+      new Error("mock createEnv error"),
+      "CLII",
+      "MockCreateEnvError"
+    );
+    let exceptionThrown = false;
+    const args = {
+      name: "production",
+    };
+
+    // Act
+    try {
+      await addCmd.handler(args);
+    } catch (error) {
+      exceptionThrown = true;
+
+      // Assert
+      expect(error).instanceOf(UserError);
+      expect(error.name).equals("MockCreateEnvError");
+      expect(vars.value.logs).to.equal("[CLII.MockCreateEnvError]: mock createEnv error\n");
+    }
+
+    expect(exceptionThrown).to.be.true;
   });
 
   it("throws on non-Teamsfx project", async () => {

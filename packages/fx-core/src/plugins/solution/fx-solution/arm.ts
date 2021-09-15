@@ -119,16 +119,14 @@ async function pollDeploymentStatus(deployCtx: DeployContext) {
         PluginDisplayName.Solution
       )
     );
-    const deployments = await deployCtx.client.deployments.listByResourceGroup(
-      deployCtx.resourceGroupName
+    const operations = await deployCtx.client.deploymentOperations.list(
+      deployCtx.resourceGroupName,
+      deployCtx.deploymentName
     );
-    deployments.forEach(async (deployment) => {
-      if (
-        deployment.properties?.timestamp &&
-        deployment.properties.timestamp.getTime() > deployCtx.deploymentStartTime
-      ) {
+    operations.forEach((operation) => {
+      if (operation.properties?.targetResource?.resourceName) {
         deployCtx.ctx.logProvider?.info(
-          `[${PluginDisplayName.Solution}] ${deployment.name} -> ${deployment.properties.provisioningState}`
+          `[${PluginDisplayName.Solution}] ${operation.properties?.targetResource?.resourceName} -> ${operation.properties.provisioningState}`
         );
       }
     });

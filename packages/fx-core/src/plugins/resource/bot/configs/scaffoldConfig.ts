@@ -18,7 +18,6 @@ export class ScaffoldConfig {
     if (this.botId && this.botPassword) {
       return true;
     }
-    // todo: valid this appid and password
     return false;
   }
 

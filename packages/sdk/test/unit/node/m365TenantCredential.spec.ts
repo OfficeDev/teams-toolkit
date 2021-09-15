@@ -1,13 +1,19 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AccessToken, AuthenticationError, ClientSecretCredential } from "@azure/identity";
+import {
+  AccessToken,
+  AuthenticationError,
+  ClientSecretCredential,
+  ClientCertificateCredential,
+} from "@azure/identity";
 import { assert, expect, use as chaiUse } from "chai";
 import chaiPromises from "chai-as-promised";
 import sinon from "sinon";
 import mockedEnv from "mocked-env";
 import { loadConfiguration, M365TenantCredential } from "../../../src";
 import { ErrorCode, ErrorWithCode } from "../../../src/core/errors";
+import fs from "fs";
 
 chaiUse(chaiPromises);
 let mockedEnvRestore: () => void;
@@ -15,15 +21,27 @@ let mockedEnvRestore: () => void;
 describe("M365TenantCredential Tests - Node", () => {
   const scopes = "fake_scope";
   const clientId = "fake_client_id";
-  const tenantId = "fake_tenant_id";
+  const tenantId = "fake-tenant-id";
   const clientSecret = "fake_client_secret";
+  const certificatePath = "fake_certificate.pem";
   const authorityHost = "https://fake_authority_host";
   const fakeToken = "fake_token";
+
+  fs.writeFileSync(
+    certificatePath,
+    `-----BEGIN PRIVATE KEY-----
+fakeKey
+-----END PRIVATE KEY-----
+-----BEGIN CERTIFICATE-----
+fakeCert
+-----END CERTIFICATE-----`
+  );
 
   beforeEach(function () {
     mockedEnvRestore = mockedEnv({
       M365_CLIENT_ID: clientId,
       M365_CLIENT_SECRET: clientSecret,
+      M365_CERTIFICATE_PATH: certificatePath,
       M365_TENANT_ID: tenantId,
       M365_AUTHORITY_HOST: authorityHost,
     });
@@ -47,19 +65,42 @@ describe("M365TenantCredential Tests - Node", () => {
     );
   });
 
-  it("create M365TenantCredential instance should success with valid config", function () {
+  it("create M365TenantCredential instance should success with valid config for ClientSecretCredential", function () {
+    delete process.env.M365_CERTIFICATE_PATH;
+
+    loadConfiguration();
+
     const credential: any = new M365TenantCredential();
 
     assert.strictEqual(credential.clientCredential.clientId, clientId);
     assert.strictEqual(credential.clientCredential.tenantId, tenantId);
     assert.strictEqual(credential.clientCredential.clientSecret, clientSecret);
+    assert.notExists(credential.clientCredential.certificatePath);
     assert.strictEqual(credential.clientCredential.identityClient.authorityHost, authorityHost);
+  });
+
+  it("create M365TenantCredential instance should success with valid config for ClientCertificateCredential", function () {
+    delete process.env.M365_AUTHORITY_HOST;
+    delete process.env.M365_CLIENT_SECRET;
+
+    loadConfiguration();
+
+    const credential: any = new M365TenantCredential();
+
+    assert.strictEqual(credential.clientCredential.clientId, clientId);
+    assert.strictEqual(credential.clientCredential.tenantId, tenantId);
+    assert.notExists(credential.clientCredential.clientSecret);
+    assert.strictEqual(
+      credential.clientCredential.certificateThumbprint,
+      "06BA994A93FF2138DC51E669EB284ABAB8112153"
+    );
   });
 
   it("create M365TenantCredential instance should throw InvalidConfiguration when configuration is not valid", function () {
     delete process.env.M365_CLIENT_ID;
     delete process.env.M365_TENANT_ID;
     delete process.env.M365_CLIENT_SECRET;
+    delete process.env.M365_CERTIFICATE_PATH;
     delete process.env.M365_AUTHORITY_HOST;
 
     loadConfiguration();
@@ -98,7 +139,7 @@ describe("M365TenantCredential Tests - Node", () => {
       .with.property("code", ErrorCode.InvalidConfiguration);
   });
 
-  it("getToken should success with valid config", async function () {
+  it("getToken should success with valid config for ClientSecretCredential", async function () {
     sinon
       .stub(ClientSecretCredential.prototype, "getToken")
       .callsFake((): Promise<AccessToken | null> => {
@@ -110,6 +151,34 @@ describe("M365TenantCredential Tests - Node", () => {
           resolve(token);
         });
       });
+
+    const credential = new M365TenantCredential();
+    const token = await credential.getToken(scopes);
+    assert.isNotNull(token);
+    if (token) {
+      assert.strictEqual(token.token, fakeToken);
+    }
+
+    sinon.restore();
+  });
+
+  it("getToken should success with valid config for ClientCertificateCredential", async function () {
+    sinon
+      .stub(ClientCertificateCredential.prototype, "getToken")
+      .callsFake((): Promise<AccessToken | null> => {
+        const token: AccessToken = {
+          token: fakeToken,
+          expiresOnTimestamp: Date.now() + 10 * 1000 * 60,
+        };
+        return new Promise((resolve) => {
+          resolve(token);
+        });
+      });
+
+    delete process.env.M365_AUTHORITY_HOST;
+    delete process.env.M365_CLIENT_SECRET;
+
+    loadConfiguration();
 
     const credential = new M365TenantCredential();
     const token = await credential.getToken(scopes);

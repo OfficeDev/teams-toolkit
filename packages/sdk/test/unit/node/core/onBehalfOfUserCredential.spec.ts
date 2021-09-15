@@ -13,6 +13,7 @@ import {
 import sinon from "sinon";
 import mockedEnv from "mocked-env";
 import { AuthenticationResult, ConfidentialClientApplication } from "@azure/msal-node";
+import fs from "fs";
 
 chaiUse(chaiPromises);
 let mockedEnvRestore: () => void;
@@ -22,6 +23,7 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
   const scope = "fake_scope";
   const clientId = "fake_client_id";
   const clientSecret = "fake_client_secret";
+  const certificatePath = "fake_certificate.pem";
   const authorityHost = "fake_authority_host";
   const tenantId = "fake_tenant_id";
   const accessToken = "fake_access_token";
@@ -59,14 +61,23 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
     ver: "2.0",
   });
 
+  fs.writeFileSync(
+    certificatePath,
+    `-----BEGIN PRIVATE KEY-----
+fakeKey
+-----END PRIVATE KEY-----
+-----BEGIN CERTIFICATE-----
+fakeCert
+-----END CERTIFICATE-----`
+  );
+
   const sandbox = sinon.createSandbox();
 
   beforeEach(function () {
     mockedEnvRestore = mockedEnv({
       M365_CLIENT_ID: clientId,
       M365_CLIENT_SECRET: clientSecret,
-      // M365_CERTIFICATE_PATH:
-      //   "E:\\Teams\\test\\SDK\\active-directory-dotnetcore-daemon-v2\\0908-convert-from-pfx.pem",
+      M365_CERTIFICATE_PATH: certificatePath,
       M365_AUTHORITY_HOST: authorityHost,
       M365_TENANT_ID: tenantId,
     });
@@ -97,6 +108,40 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
   afterEach(function () {
     sandbox.restore();
     mockedEnvRestore();
+  });
+
+  it("create OnBehalfOfUserCredential instance should not throw InvalidConfiguration Error when clientSecret not found", async function () {
+    mockedEnvRestore = mockedEnv(
+      {
+        M365_CLIENT_ID: clientId,
+        M365_CERTIFICATE_PATH: certificatePath,
+        M365_AUTHORITY_HOST: authorityHost,
+        M365_TENANT_ID: tenantId,
+      },
+      { clear: true }
+    );
+    loadConfiguration();
+
+    expect(() => {
+      new OnBehalfOfUserCredential(ssoToken);
+    }).to.not.throw();
+  });
+
+  it("create OnBehalfOfUserCredential instance should not throw InvalidConfiguration Error when certificatePath not found", async function () {
+    mockedEnvRestore = mockedEnv(
+      {
+        M365_CLIENT_ID: clientId,
+        M365_CLIENT_SECRET: clientSecret,
+        M365_AUTHORITY_HOST: authorityHost,
+        M365_TENANT_ID: tenantId,
+      },
+      { clear: true }
+    );
+    loadConfiguration();
+
+    expect(() => {
+      new OnBehalfOfUserCredential(ssoToken);
+    }).to.not.throw();
   });
 
   it("create OnBehalfOfUserCredential instance should throw InvalidConfiguration Error when clientId not found", async function () {
@@ -197,6 +242,23 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
     })
       .to.throw(ErrorWithCode, "Parse jwt token failed in node env with error: ")
       .with.property("code", InternalError);
+  });
+
+  it("getToken should success for client certificate", async function () {
+    mockedEnvRestore = mockedEnv(
+      {
+        M365_CLIENT_ID: clientId,
+        M365_CERTIFICATE_PATH: certificatePath,
+        M365_AUTHORITY_HOST: authorityHost,
+        M365_TENANT_ID: tenantId,
+      },
+      { clear: true }
+    );
+    loadConfiguration();
+    const oboCredential = new OnBehalfOfUserCredential(ssoToken);
+    const token = await oboCredential.getToken(scope);
+    assert.strictEqual(token!.token, accessToken);
+    assert.strictEqual(token!.expiresOnTimestamp, accessTokenExpNumber);
   });
 
   it("getToken should success when scopes is empty string", async function () {

@@ -49,11 +49,11 @@ export class M365TenantCredential implements TokenCredential {
 
     const config = this.loadAndValidateConfig();
 
-    const tokenCredentialOptions: TokenCredentialOptions = {
-      authorityHost: config.authorityHost,
-    };
-
     if (config.clientSecret) {
+      const tokenCredentialOptions: TokenCredentialOptions = {
+        authorityHost: config.authorityHost,
+      };
+
       this.clientCredential = new ClientSecretCredential(
         config.tenantId!,
         config.clientId!,

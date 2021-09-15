@@ -31,44 +31,24 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
   } else if (method === "migrateV1Project") {
     getQuestionRes = await core._getQuestionsForMigrateV1Project(inputs);
   } else {
-    if (!isV2()) {
-      if (ctx.solution && ctx.solutionContext) {
-        const solution = ctx.solution;
-        const solutionContext = ctx.solutionContext;
+    if ((isV2() && ctx.solutionV2 && ctx.contextV2) || (ctx.ctx.solution && ctx.solutionContext)) {
+      const solution = isV2() ? ctx.solutionV2 : ctx.solution;
+      const context = isV2() ? ctx.contextV2 : ctx.solutionContext;
+      if (solution && context) {
         if (method === "provisionResources") {
-          getQuestionRes = await core._getQuestions(
-            solutionContext,
-            solution,
-            Stage.provision,
-            inputs
-          );
+          getQuestionRes = await core._getQuestions(context, solution, Stage.provision, inputs);
         } else if (method === "localDebug") {
-          getQuestionRes = await core._getQuestions(solutionContext, solution, Stage.debug, inputs);
+          getQuestionRes = await core._getQuestions(context, solution, Stage.debug, inputs);
         } else if (method === "deployArtifacts") {
-          getQuestionRes = await core._getQuestions(
-            solutionContext,
-            solution,
-            Stage.deploy,
-            inputs
-          );
+          getQuestionRes = await core._getQuestions(context, solution, Stage.deploy, inputs);
         } else if (method === "publishApplication") {
-          getQuestionRes = await core._getQuestions(
-            solutionContext,
-            solution,
-            Stage.publish,
-            inputs
-          );
+          getQuestionRes = await core._getQuestions(context, solution, Stage.publish, inputs);
         } else if (method === "executeUserTask") {
           const func = ctx.arguments[0] as Func;
-          getQuestionRes = await core._getQuestionsForUserTask(
-            solutionContext,
-            solution,
-            func,
-            inputs
-          );
+          getQuestionRes = await core._getQuestionsForUserTask(context, solution, func, inputs);
         } else if (method === "grantPermission") {
           getQuestionRes = await core._getQuestions(
-            solutionContext,
+            context,
             solution,
             Stage.grantPermission,
             inputs

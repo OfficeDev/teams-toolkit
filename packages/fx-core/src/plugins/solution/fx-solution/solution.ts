@@ -145,14 +145,6 @@ import { scaffoldReadmeAndLocalSettings } from "./v2/scaffolding";
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
 
-// Maybe we need a state machine to track state transition.
-export enum SolutionRunningState {
-  Idle = "idle",
-  ProvisionInProgress = "ProvisionInProgress",
-  DeployInProgress = "DeployInProgress",
-  PublishInProgress = "PublishInProgress",
-}
-
 @Service(SolutionPlugins.AzureTeamsSolution)
 export class TeamsAppSolution implements Solution {
   SpfxPlugin: SpfxPlugin;
@@ -167,8 +159,6 @@ export class TeamsAppSolution implements Solution {
 
   name = "fx-solution-azure";
 
-  runningState: SolutionRunningState;
-
   constructor() {
     this.SpfxPlugin = Container.get<SpfxPlugin>(ResourcePlugins.SpfxPlugin);
     this.AppStudioPlugin = Container.get<AppStudioPlugin>(ResourcePlugins.AppStudioPlugin);
@@ -179,7 +169,6 @@ export class TeamsAppSolution implements Solution {
     this.SqlPlugin = Container.get<Plugin>(ResourcePlugins.SqlPlugin);
     this.ApimPlugin = Container.get<Plugin>(ResourcePlugins.ApimPlugin);
     this.LocalDebugPlugin = Container.get<Plugin>(ResourcePlugins.LocalDebugPlugin);
-    this.runningState = SolutionRunningState.Idle;
   }
 
   private getPluginAndContextArray(
@@ -469,40 +458,6 @@ export class TeamsAppSolution implements Solution {
     return ok(Void);
   }
 
-  /**
-   * Checks whether solution's state is idle
-   */
-  private checkWhetherSolutionIsIdle(): Result<Void, FxError> {
-    switch (this.runningState) {
-      case SolutionRunningState.Idle:
-        return ok(Void);
-      case SolutionRunningState.ProvisionInProgress:
-        return err(
-          returnUserError(
-            new Error("Provision in progress. Please wait for its completion."),
-            "Solution",
-            SolutionError.ProvisionInProgress
-          )
-        );
-      case SolutionRunningState.DeployInProgress:
-        return err(
-          returnUserError(
-            new Error("Deployment in progress. Please wait for its completion."),
-            "Solution",
-            SolutionError.DeploymentInProgress
-          )
-        );
-      case SolutionRunningState.PublishInProgress:
-        return err(
-          returnUserError(
-            new Error("Publish in progress. Please wait for its completion."),
-            "Solution",
-            SolutionError.PublishInProgress
-          )
-        );
-    }
-  }
-
   private checkWetherProvisionSucceeded(solutionConfig: SolutionConfig): boolean {
     return !!solutionConfig.get(GLOBAL_CONFIG)?.getBoolean(SOLUTION_PROVISION_SUCCEEDED);
   }
@@ -518,56 +473,44 @@ export class TeamsAppSolution implements Solution {
     if (v1Blocked.isErr()) {
       return v1Blocked;
     }
+    // Just to trigger M365 login before the concurrent execution of provision.
+    // Because concurrent exectution of provision may getAccessToken() concurrently, which
+    // causes 2 M365 logins before the token caching in common lib takes effect.
+    await ctx.appStudioToken?.getAccessToken();
 
-    const canProvision = this.checkWhetherSolutionIsIdle();
-    if (canProvision.isErr()) {
-      return canProvision;
+    if (this.isAzureProject(ctx)) {
+      if (ctx.permissionRequestProvider === undefined) {
+        ctx.permissionRequestProvider = new PermissionRequestFileProvider(ctx.root);
+      }
+      const result = await ensurePermissionRequest(
+        ctx.projectSettings?.solutionSettings as AzureSolutionSettings,
+        ctx.permissionRequestProvider
+      );
+      if (result.isErr()) {
+        return result;
+      }
     }
 
-    try {
-      // Just to trigger M365 login before the concurrent execution of provision.
-      // Because concurrent exectution of provision may getAccessToken() concurrently, which
-      // causes 2 M365 logins before the token caching in common lib takes effect.
-      await ctx.appStudioToken?.getAccessToken();
-
-      this.runningState = SolutionRunningState.ProvisionInProgress;
-
-      if (this.isAzureProject(ctx)) {
-        if (ctx.permissionRequestProvider === undefined) {
-          ctx.permissionRequestProvider = new PermissionRequestFileProvider(ctx.root);
-        }
-        const result = await ensurePermissionRequest(
-          ctx.projectSettings?.solutionSettings as AzureSolutionSettings,
-          ctx.permissionRequestProvider
-        );
-        if (result.isErr()) {
-          return result;
-        }
-      }
-
-      const provisionResult = await this.doProvision(ctx);
-      if (provisionResult.isOk()) {
+    const provisionResult = await this.doProvision(ctx);
+    if (provisionResult.isOk()) {
+      const msg = util.format(
+        `Success: ${getStrings().solution.ProvisionSuccessNotice}`,
+        ctx.projectSettings?.appName
+      );
+      ctx.logProvider?.info(msg);
+      ctx.ui?.showMessage("info", msg, false);
+      ctx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+    } else {
+      if (!isUserCancelError(provisionResult.error)) {
         const msg = util.format(
-          `Success: ${getStrings().solution.ProvisionSuccessNotice}`,
+          getStrings().solution.ProvisionFailNotice,
           ctx.projectSettings?.appName
         );
-        ctx.logProvider?.info(msg);
-        ctx.ui?.showMessage("info", msg, false);
-        ctx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
-      } else {
-        if (!isUserCancelError(provisionResult.error)) {
-          const msg = util.format(
-            getStrings().solution.ProvisionFailNotice,
-            ctx.projectSettings?.appName
-          );
-          ctx.logProvider?.error(msg);
-          ctx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false);
-        }
+        ctx.logProvider?.error(msg);
+        ctx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false);
       }
-      return provisionResult;
-    } finally {
-      this.runningState = SolutionRunningState.Idle;
     }
+    return provisionResult;
   }
 
   /**
@@ -702,37 +645,29 @@ export class TeamsAppSolution implements Solution {
         )
       );
     }
-    try {
-      if (this.isAzureProject(ctx)) {
-        // Just to trigger M365 login before the concurrent execution of deploy.
-        // Because concurrent exectution of deploy may getAccessToken() concurrently, which
-        // causes 2 M365 logins before the token caching in common lib takes effect.
-        await ctx.appStudioToken?.getAccessToken();
-      }
+    if (this.isAzureProject(ctx)) {
+      // Just to trigger M365 login before the concurrent execution of deploy.
+      // Because concurrent exectution of deploy may getAccessToken() concurrently, which
+      // causes 2 M365 logins before the token caching in common lib takes effect.
+      await ctx.appStudioToken?.getAccessToken();
+    }
 
-      this.runningState = SolutionRunningState.DeployInProgress;
-      const result = await this.doDeploy(ctx);
-      if (result.isOk()) {
-        if (this.isAzureProject(ctx)) {
-          const msg = util.format(
-            `Success: ${getStrings().solution.DeploySuccessNotice}`,
-            ctx.projectSettings?.appName
-          );
-          ctx.logProvider?.info(msg);
-          ctx.ui?.showMessage("info", msg, false);
-        }
-      } else {
+    const result = await this.doDeploy(ctx);
+    if (result.isOk()) {
+      if (this.isAzureProject(ctx)) {
         const msg = util.format(
-          getStrings().solution.DeployFailNotice,
+          `Success: ${getStrings().solution.DeploySuccessNotice}`,
           ctx.projectSettings?.appName
         );
         ctx.logProvider?.info(msg);
+        ctx.ui?.showMessage("info", msg, false);
       }
-
-      return result;
-    } finally {
-      this.runningState = SolutionRunningState.Idle;
+    } else {
+      const msg = util.format(getStrings().solution.DeployFailNotice, ctx.projectSettings?.appName);
+      ctx.logProvider?.info(msg);
     }
+
+    return result;
   }
 
   /**
@@ -802,8 +737,6 @@ export class TeamsAppSolution implements Solution {
       return v1Blocked;
     }
 
-    const checkRes = this.checkWhetherSolutionIsIdle();
-    if (checkRes.isErr()) return err(checkRes.error);
     const isAzureProject = this.isAzureProject(ctx);
     const provisioned = this.checkWetherProvisionSucceeded(ctx.envInfo.profile);
     if (!provisioned) {
@@ -818,36 +751,30 @@ export class TeamsAppSolution implements Solution {
       );
     }
 
-    try {
-      this.runningState = SolutionRunningState.PublishInProgress;
+    const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, [
+      this.AppStudioPlugin,
+    ]);
+    const publishWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(([plugin, context]) => {
+      return [plugin?.publish?.bind(plugin), context, plugin.name];
+    });
 
-      const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, [
-        this.AppStudioPlugin,
-      ]);
-      const publishWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(([plugin, context]) => {
-        return [plugin?.publish?.bind(plugin), context, plugin.name];
-      });
+    ctx.logProvider?.info(
+      util.format(getStrings().solution.PublishStartNotice, PluginDisplayName.Solution)
+    );
 
-      ctx.logProvider?.info(
-        util.format(getStrings().solution.PublishStartNotice, PluginDisplayName.Solution)
-      );
+    const results = await executeConcurrently("", publishWithCtx);
 
-      const results = await executeConcurrently("", publishWithCtx);
-
-      for (const result of results) {
-        if (result.isErr()) {
-          const msg = util.format(
-            getStrings().solution.PublishFailNotice,
-            ctx.projectSettings?.appName
-          );
-          ctx.logProvider?.info(msg);
-          return result;
-        }
+    for (const result of results) {
+      if (result.isErr()) {
+        const msg = util.format(
+          getStrings().solution.PublishFailNotice,
+          ctx.projectSettings?.appName
+        );
+        ctx.logProvider?.info(msg);
+        return result;
       }
-      return ok(undefined);
-    } finally {
-      this.runningState = SolutionRunningState.Idle;
     }
+    return ok(undefined);
   }
 
   async getTabScaffoldQuestions(
@@ -909,10 +836,6 @@ export class TeamsAppSolution implements Solution {
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     const isDynamicQuestion = DynamicPlatforms.includes(ctx.answers!.platform!);
     const node = new QTreeNode({ type: "group" });
-    if (stage !== Stage.create && isDynamicQuestion) {
-      const checkRes = this.checkWhetherSolutionIsIdle();
-      if (checkRes.isErr()) return err(checkRes.error);
-    }
 
     if (stage === Stage.create) {
       // 1. capabilities
@@ -1389,7 +1312,6 @@ export class TeamsAppSolution implements Solution {
     } finally {
       await progressBar?.end(true);
       ctx.envInfo.profile.get(GLOBAL_CONFIG)?.delete(USER_INFO);
-      this.runningState = SolutionRunningState.Idle;
     }
   }
 
@@ -1515,7 +1437,6 @@ export class TeamsAppSolution implements Solution {
       return ok(permissions);
     } finally {
       ctx.envInfo.profile.get(GLOBAL_CONFIG)?.delete(USER_INFO);
-      this.runningState = SolutionRunningState.Idle;
     }
   }
 
@@ -1525,153 +1446,138 @@ export class TeamsAppSolution implements Solution {
       [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
     });
 
-    try {
-      const result = await this.checkAndGetCurrentUserInfo(ctx);
-      if (result.isErr()) {
-        return err(
-          sendErrorTelemetryThenReturnError(
-            SolutionTelemetryEvent.ListCollaborator,
-            result.error,
-            ctx.telemetryReporter
-          )
-        );
-      }
-      const userInfo = result.value as IUserList;
-
-      const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, [
-        this.AppStudioPlugin,
-        this.AadPlugin,
-      ]);
-
-      const listCollaboratorWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(
-        ([plugin, context]) => {
-          return [plugin?.listCollaborator?.bind(plugin), context, plugin.name];
-        }
+    const result = await this.checkAndGetCurrentUserInfo(ctx);
+    if (result.isErr()) {
+      return err(
+        sendErrorTelemetryThenReturnError(
+          SolutionTelemetryEvent.ListCollaborator,
+          result.error,
+          ctx.telemetryReporter
+        )
       );
+    }
+    const userInfo = result.value as IUserList;
 
-      if (ctx.answers?.platform === Platform.CLI) {
-        const aadAppTenantId = ctx.envInfo.profile?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
+    const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, [
+      this.AppStudioPlugin,
+      this.AadPlugin,
+    ]);
+
+    const listCollaboratorWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(
+      ([plugin, context]) => {
+        return [plugin?.listCollaborator?.bind(plugin), context, plugin.name];
+      }
+    );
+
+    if (ctx.answers?.platform === Platform.CLI) {
+      const aadAppTenantId = ctx.envInfo.profile?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
+      const message = [
+        { content: `Account used to check: `, color: Colors.BRIGHT_WHITE },
+        { content: userInfo.userPrincipalName + "\n", color: Colors.BRIGHT_MAGENTA },
+        {
+          content: `Starting list all collaborators for environment: `,
+          color: Colors.BRIGHT_WHITE,
+        },
+        // Todo, when multi-environment is ready, we will update to current environment
+        { content: "default\n", color: Colors.BRIGHT_MAGENTA },
+        { content: `Tenant ID: `, color: Colors.BRIGHT_WHITE },
+        { content: aadAppTenantId + "\n", color: Colors.BRIGHT_MAGENTA },
+      ];
+
+      ctx.ui?.showMessage("info", message, false);
+    }
+
+    const results = await executeConcurrently("", listCollaboratorWithCtx);
+
+    const errors: any = [];
+
+    for (const result of results) {
+      if (result.isErr()) {
+        errors.push(result);
+      }
+    }
+
+    let errorMsg = "";
+    if (errors.length > 0) {
+      errorMsg += `Failed to list collaborator for the project.\n Error details: \n`;
+      for (const fxError of errors) {
+        errorMsg += fxError.error.message + "\n";
+      }
+    }
+
+    if (errorMsg) {
+      return err(
+        sendErrorTelemetryThenReturnError(
+          SolutionTelemetryEvent.ListCollaborator,
+          returnUserError(new Error(errorMsg), "Solution", SolutionError.FailedToListCollaborator),
+          ctx.telemetryReporter
+        )
+      );
+    }
+
+    const teamsAppOwners: TeamsAppAdmin[] = results[0].isErr() ? [] : results[0].value;
+    const aadOwners: AadOwner[] = results[1].isErr() ? [] : results[1].value;
+    const collaborators: Collaborator[] = [];
+
+    for (const teamsAppOwner of teamsAppOwners) {
+      const aadOwner = aadOwners.find((owner) => owner.userObjectId === teamsAppOwner.userObjectId);
+
+      collaborators.push({
+        // Sometimes app studio will return null as userPrincipalName, thus using aad's instead.
+        userPrincipalName:
+          teamsAppOwner.userPrincipalName ??
+          aadOwner?.userPrincipalName ??
+          teamsAppOwner.userObjectId,
+        userObjectId: teamsAppOwner.userObjectId,
+        isAadOwner: aadOwner ? true : false,
+        aadResourceId: aadOwner ? aadOwner.resourceId : undefined,
+        teamsAppResourceId: teamsAppOwner.resourceId,
+      });
+    }
+
+    if (ctx.answers?.platform === Platform.CLI) {
+      for (const collaborator of collaborators) {
         const message = [
-          { content: `Account used to check: `, color: Colors.BRIGHT_WHITE },
-          { content: userInfo.userPrincipalName + "\n", color: Colors.BRIGHT_MAGENTA },
-          {
-            content: `Starting list all collaborators for environment: `,
-            color: Colors.BRIGHT_WHITE,
-          },
-          // Todo, when multi-environment is ready, we will update to current environment
-          { content: "default\n", color: Colors.BRIGHT_MAGENTA },
-          { content: `Tenant ID: `, color: Colors.BRIGHT_WHITE },
-          { content: aadAppTenantId + "\n", color: Colors.BRIGHT_MAGENTA },
+          { content: `Account: `, color: Colors.BRIGHT_WHITE },
+          { content: collaborator.userPrincipalName + "\n", color: Colors.BRIGHT_MAGENTA },
+          { content: `Resource ID: `, color: Colors.BRIGHT_WHITE },
+          { content: collaborator.teamsAppResourceId, color: Colors.BRIGHT_MAGENTA },
+          { content: `, Resource Name: `, color: Colors.BRIGHT_WHITE },
+          { content: `Teams App`, color: Colors.BRIGHT_MAGENTA },
+          { content: `, Permission: `, color: Colors.BRIGHT_WHITE },
+          { content: `Administrator`, color: Colors.BRIGHT_MAGENTA },
         ];
 
+        if (collaborator.aadResourceId) {
+          message.push(
+            { content: `\nResource ID: `, color: Colors.BRIGHT_WHITE },
+            { content: collaborator.aadResourceId, color: Colors.BRIGHT_MAGENTA },
+            { content: `, Resource Name: `, color: Colors.BRIGHT_WHITE },
+            { content: `AAD App`, color: Colors.BRIGHT_MAGENTA },
+            { content: `, Permission: `, color: Colors.BRIGHT_WHITE },
+            { content: `Owner`, color: Colors.BRIGHT_MAGENTA }
+          );
+        }
+
+        message.push({ content: "\n", color: Colors.BRIGHT_WHITE });
         ctx.ui?.showMessage("info", message, false);
       }
-
-      const results = await executeConcurrently("", listCollaboratorWithCtx);
-
-      const errors: any = [];
-
-      for (const result of results) {
-        if (result.isErr()) {
-          errors.push(result);
-        }
-      }
-
-      let errorMsg = "";
-      if (errors.length > 0) {
-        errorMsg += `Failed to list collaborator for the project.\n Error details: \n`;
-        for (const fxError of errors) {
-          errorMsg += fxError.error.message + "\n";
-        }
-      }
-
-      if (errorMsg) {
-        return err(
-          sendErrorTelemetryThenReturnError(
-            SolutionTelemetryEvent.ListCollaborator,
-            returnUserError(
-              new Error(errorMsg),
-              "Solution",
-              SolutionError.FailedToListCollaborator
-            ),
-            ctx.telemetryReporter
-          )
-        );
-      }
-
-      const teamsAppOwners: TeamsAppAdmin[] = results[0].isErr() ? [] : results[0].value;
-      const aadOwners: AadOwner[] = results[1].isErr() ? [] : results[1].value;
-      const collaborators: Collaborator[] = [];
-
-      for (const teamsAppOwner of teamsAppOwners) {
-        const aadOwner = aadOwners.find(
-          (owner) => owner.userObjectId === teamsAppOwner.userObjectId
-        );
-
-        collaborators.push({
-          // Sometimes app studio will return null as userPrincipalName, thus using aad's instead.
-          userPrincipalName:
-            teamsAppOwner.userPrincipalName ??
-            aadOwner?.userPrincipalName ??
-            teamsAppOwner.userObjectId,
-          userObjectId: teamsAppOwner.userObjectId,
-          isAadOwner: aadOwner ? true : false,
-          aadResourceId: aadOwner ? aadOwner.resourceId : undefined,
-          teamsAppResourceId: teamsAppOwner.resourceId,
-        });
-      }
-
-      if (ctx.answers?.platform === Platform.CLI) {
-        for (const collaborator of collaborators) {
-          const message = [
-            { content: `Account: `, color: Colors.BRIGHT_WHITE },
-            { content: collaborator.userPrincipalName + "\n", color: Colors.BRIGHT_MAGENTA },
-            { content: `Resource ID: `, color: Colors.BRIGHT_WHITE },
-            { content: collaborator.teamsAppResourceId, color: Colors.BRIGHT_MAGENTA },
-            { content: `, Resource Name: `, color: Colors.BRIGHT_WHITE },
-            { content: `Teams App`, color: Colors.BRIGHT_MAGENTA },
-            { content: `, Permission: `, color: Colors.BRIGHT_WHITE },
-            { content: `Administrator`, color: Colors.BRIGHT_MAGENTA },
-          ];
-
-          if (collaborator.aadResourceId) {
-            message.push(
-              { content: `\nResource ID: `, color: Colors.BRIGHT_WHITE },
-              { content: collaborator.aadResourceId, color: Colors.BRIGHT_MAGENTA },
-              { content: `, Resource Name: `, color: Colors.BRIGHT_WHITE },
-              { content: `AAD App`, color: Colors.BRIGHT_MAGENTA },
-              { content: `, Permission: `, color: Colors.BRIGHT_WHITE },
-              { content: `Owner`, color: Colors.BRIGHT_MAGENTA }
-            );
-          }
-
-          message.push({ content: "\n", color: Colors.BRIGHT_WHITE });
-          ctx.ui?.showMessage("info", message, false);
-        }
-      }
-
-      const aadOwnerCount = collaborators.filter(
-        (collaborator) => collaborator.aadResourceId && collaborator.isAadOwner
-      ).length;
-      ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.ListCollaborator, {
-        [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
-        [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
-        [SolutionTelemetryProperty.CollaboratorCount]: collaborators.length.toString(),
-        [SolutionTelemetryProperty.AadOwnerCount]: aadOwnerCount.toString(),
-      });
-
-      return ok(collaborators);
-    } finally {
-      this.runningState = SolutionRunningState.Idle;
     }
+
+    const aadOwnerCount = collaborators.filter(
+      (collaborator) => collaborator.aadResourceId && collaborator.isAadOwner
+    ).length;
+    ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.ListCollaborator, {
+      [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+      [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
+      [SolutionTelemetryProperty.CollaboratorCount]: collaborators.length.toString(),
+      [SolutionTelemetryProperty.AadOwnerCount]: aadOwnerCount.toString(),
+    });
+
+    return ok(collaborators);
   }
 
   private async checkAndGetCurrentUserInfo(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    const canProcess = this.checkWhetherSolutionIsIdle();
-    if (canProcess.isErr()) {
-      return canProcess;
-    }
-
     const provisioned = this.checkWetherProvisionSucceeded(ctx.envInfo.profile);
     if (!provisioned) {
       return err(

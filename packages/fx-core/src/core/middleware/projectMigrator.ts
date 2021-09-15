@@ -35,7 +35,7 @@ import { isMultiEnvEnabled, isArmSupportEnabled, getStrings } from "../../common
 import { loadProjectSettings } from "./projectSettingsLoader";
 import { generateArmTemplate } from "../../plugins/solution/fx-solution/arm";
 import { loadSolutionContext } from "./envInfoLoader";
-import { ArmParameters, ResourcePlugins } from "../../common/constants";
+import { ResourcePlugins } from "../../common/constants";
 import { getActivatedResourcePlugins } from "../../plugins/solution/fx-solution/ResourcePluginContainer";
 import { LocalDebugConfigKeys } from "../../plugins/resource/localdebug/constants";
 
@@ -55,6 +55,17 @@ class EnvConfigName {
   static readonly AppServicePlanName = "appServicePlanName";
   static readonly StorageAccountName = "storageAccountName";
   static readonly FuncAppName = "functionAppName";
+}
+
+class ArmParameters {
+  static readonly FEStorageName = "frontendHosting_storageName";
+  static readonly IdentityName = "identity_managedIdentityName";
+  static readonly SQLServer = "azureSql_serverName";
+  static readonly SQLDatabase = "azureSql_databaseName";
+  static readonly SimpleAuthSku = "simpleAuth_sku";
+  static readonly functionServerName = "function_serverfarmsName";
+  static readonly functionStorageName = "function_storageName";
+  static readonly functionAppName = "function_webappName";
 }
 
 export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {

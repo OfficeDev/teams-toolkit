@@ -111,7 +111,7 @@ type DeployContext = {
   deploymentName: string;
 };
 
-async function pollDeploymentStatus(deployCtx: DeployContext) {
+export async function pollDeploymentStatus(deployCtx: DeployContext) {
   const failedCount = 4;
   let tryCount = 0;
   while (!deployCtx.finished) {
@@ -734,7 +734,7 @@ async function areFoldersEmpty(folderPaths: string[]): Promise<boolean> {
   return isEmpty;
 }
 
-async function waitSeconds(second: number) {
+export async function waitSeconds(second: number) {
   return new Promise((resolve) => setTimeout(resolve, second * 1000));
 }
 

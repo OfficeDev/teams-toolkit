@@ -78,20 +78,4 @@ export class TeamsAppSolutionV2 implements v2.SolutionPlugin {
   ) => Promise<Result<unknown, FxError>> = executeUserTask;
 
   createEnv?: (ctx: v2.Context, inputs: Inputs) => Promise<Result<Void, FxError>> = createEnv;
-
-  // grantPermission?: (
-  //   ctx: v2.Context,
-  //   inputs: Inputs,
-  //   tokenProvider: TokenProvider
-  // ) => Promise<Result<any, FxError>>;
-  // checkPermission?: (
-  //   ctx: v2.Context,
-  //   inputs: Inputs,
-  //   tokenProvider: TokenProvider
-  // ) => Promise<Result<any, FxError>>;
-  // listCollaborator?: (
-  //   ctx: v2.Context,
-  //   inputs: Inputs,
-  //   tokenProvider: TokenProvider
-  // ) => Promise<Result<any, FxError>>;
 }

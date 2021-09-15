@@ -739,14 +739,11 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
-    ConcurrentLockerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(isMultiEnvEnabled()),
     SolutionLoaderMW(),
     QuestionModelMW,
     ContextInjectorMW,
-    ProjectSettingsWriterMW,
-    EnvInfoWriterMW(),
   ])
   async grantPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     currentStage = Stage.grantPermission;
@@ -755,14 +752,11 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
-    ConcurrentLockerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(isMultiEnvEnabled()),
     SolutionLoaderMW(),
     QuestionModelMW,
     ContextInjectorMW,
-    ProjectSettingsWriterMW,
-    EnvInfoWriterMW(),
   ])
   async checkPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     currentStage = Stage.checkPermission;
@@ -771,14 +765,11 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
-    ConcurrentLockerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(isMultiEnvEnabled()),
     SolutionLoaderMW(),
     QuestionModelMW,
     ContextInjectorMW,
-    ProjectSettingsWriterMW,
-    EnvInfoWriterMW(),
   ])
   async listCollaborator(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     currentStage = Stage.listCollaborator;

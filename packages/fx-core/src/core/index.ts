@@ -673,15 +673,16 @@ export class FxCore implements Core {
       return await this._getQuestionsForCreateProject(inputs);
     } else {
       if (isV2()) {
-        //TODO CLI???
-        return ok(undefined);
+        const contextV2 = ctx.contextV2
+          ? ctx.contextV2
+          : createV2Context(this, newProjectSettings());
+        const solutionV2 = ctx.solutionV2 ? ctx.solutionV2 : await getAllSolutionPluginsV2()[0];
+        return await this._getQuestions(contextV2, solutionV2, task, inputs);
       } else {
         const solutionContext = ctx.solutionContext
           ? ctx.solutionContext
           : await newSolutionContext(this.tools, inputs);
-        const solution = ctx.solution
-          ? ctx.solution
-          : Container.get<Solution>(SolutionPlugins.AzureTeamsSolution);
+        const solution = ctx.solution ? ctx.solution : getAllSolutionPlugins()[0];
         return await this._getQuestions(solutionContext, solution, task, inputs);
       }
     }
@@ -829,21 +830,30 @@ export class FxCore implements Core {
   }
 
   async _getQuestions(
-    ctx: SolutionContext,
-    solution: Solution,
+    ctx: SolutionContext | v2.Context,
+    solution: Solution | SolutionPlugin,
     stage: Stage,
     inputs: Inputs
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const node = new QTreeNode({ type: "group" });
     if (stage !== Stage.create) {
-      const res = await solution.getQuestions(stage, ctx);
+      let res: Result<QTreeNode | undefined, FxError> = ok(undefined);
+      if (isV2()) {
+        const solutionV2 = solution as SolutionPlugin;
+        if (solutionV2.getQuestions) {
+          res = await solutionV2.getQuestions(ctx as v2.Context, inputs);
+        }
+      } else {
+        res = await (solution as Solution).getQuestions(stage, ctx as SolutionContext);
+      }
       if (res.isErr()) return res;
       if (res.value) {
-        const child = res.value as QTreeNode;
-        if (child.data) node.addChild(child);
+        const node = res.value as QTreeNode;
+        if (node.data) {
+          return ok(node.trim());
+        }
       }
     }
-    return ok(node.trim());
+    return ok(undefined);
   }
 
   @hooks([

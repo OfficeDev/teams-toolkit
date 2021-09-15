@@ -4,6 +4,7 @@
 
 import { Result } from "neverthrow";
 import { DeepReadonly, DeploymentInputs, ProvisionInputs, ResourceProvisionOutput } from ".";
+import { Stage } from "../constants";
 import { EnvInfo } from "../context";
 import {
   AppStudioTokenProvider,
@@ -164,4 +165,13 @@ export interface SolutionPlugin {
     inputs: Inputs,
     tokenProvider: TokenProvider
   ) => Promise<Result<any, FxError>>;
+
+  //legacy API for compatibility reason
+  getQuestions?: (ctx: Context, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
+
+  getQuestionsForUserTask?: (
+    ctx: Context,
+    inputs: Inputs,
+    func: Func
+  ) => Promise<Result<QTreeNode | undefined, FxError>>;
 }

@@ -1,6 +1,7 @@
 export class ConstantString {
   static readonly UTF8Encoding = "utf-8";
   static readonly DeploymentResourceType = "Microsoft.Resources/deployments";
+  static readonly DeploymentNotFound = "DeploymentNotFound";
 }
 
 export const ArmHelpLink = "https://aka.ms/teamsfx-arm-help";

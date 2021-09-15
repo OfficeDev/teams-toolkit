@@ -129,7 +129,7 @@ class EnvAdd extends YargsCommand {
     return ok(null);
   }
 
-  private async validNewTargetEnvName(
+  private async validateNewTargetEnvName(
     projectDir: string,
     newTargetEnvName: string
   ): Promise<Result<null, FxError>> {

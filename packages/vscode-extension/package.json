@@ -182,11 +182,11 @@
         },
         {
           "command": "fx-extension.viewEnvironment",
-          "when": "view == teamsfx-environment && viewItem =~ /environment/"
+          "when": "view == teamsfx-environment && viewItem =~ /^environment|^local$/"
         },
         {
           "command": "fx-extension.viewEnvironmentWithIcon",
-          "when": "view == teamsfx-environment && viewItem =~ /environment/",
+          "when": "view == teamsfx-environment && viewItem =~ /^environment|^local$/",
           "group": "inline@3"
         },
         {

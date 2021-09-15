@@ -284,8 +284,26 @@ export class AppStudioPlugin implements Plugin {
   }
 
   public async postLocalDebug(ctx: PluginContext): Promise<Result<string, FxError>> {
+    TelemetryUtils.init(ctx);
+    TelemetryUtils.sendStartEvent(TelemetryEventName.localDebug);
     const localTeamsAppId = await this.appStudioPluginImpl.postLocalDebug(ctx);
-    return ok(localTeamsAppId);
+    if (localTeamsAppId.isOk()) {
+      TelemetryUtils.sendSuccessEvent(TelemetryEventName.localDebug);
+      return localTeamsAppId;
+    } else {
+      const error = localTeamsAppId.error;
+      if (error instanceof SystemError || error instanceof UserError) {
+        TelemetryUtils.sendErrorEvent(TelemetryEventName.localDebug, error);
+        return err(error);
+      } else {
+        const updateFailedError = AppStudioResultFactory.UserError(
+          AppStudioError.LocalAppIdUpdateFailedError.name,
+          AppStudioError.LocalAppIdUpdateFailedError.message(error)
+        );
+        TelemetryUtils.sendErrorEvent(TelemetryEventName.localDebug, updateFailedError);
+        return err(updateFailedError);
+      }
+    }
   }
 
   public async checkPermission(ctx: PluginContext): Promise<Result<ResourcePermission[], FxError>> {

@@ -215,8 +215,13 @@ async function checkSubscriptionPermission(
     const subscriptions: SubscriptionInfo[] | undefined =
       await tools.tokenProvider.azureAccountProvider.listSubscriptions();
 
-    const targetSub = subscriptions.find((sub) => sub.subscriptionId === subscriptionId);
-    if (!targetSub) {
+    let checkSucceeded = false;
+    if (subscriptions) {
+      const targetSub = subscriptions.find((sub) => sub.subscriptionId === subscriptionId);
+      checkSucceeded = targetSub !== undefined;
+    }
+
+    if (!checkSucceeded) {
       const warningTreeItem: TreeItem = {
         commandId: `fx-extension.environment.${env}.checkSubscription`,
         label: StringResources.vsc.commandsTreeViewProvider.noSubscriptionFoundInAzureAccount,

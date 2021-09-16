@@ -941,6 +941,7 @@ describe("API v2 implementation", () => {
         profile: {},
       };
       mockProvisionV2ThatAlwaysSucceed(spfxPluginV2);
+      mockProvisionV2ThatAlwaysSucceed(appStudioPluginV2);
 
       const solution = new TeamsAppSolutionV2();
       const result = await solution.provisionResources(

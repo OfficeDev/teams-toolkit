@@ -184,6 +184,9 @@ export function syncFeatureFlags() {
   process.env["TEAMSFX_BICEP_ENV_CHECKER_ENABLE"] = getConfiguration(
     ConfigurationKey.BicepEnvCheckerEnable
   ).toString();
+
+  // Sync multi-env support
+  process.env["TEAMSFX_MULTI_ENV"] = getConfiguration(ConfigurationKey.MultiEnvEnabled).toString();
 }
 
 export class FeatureFlags {

@@ -52,8 +52,10 @@ export function getAllResourcePlugins(): Plugin[] {
  */
 export function getAllV2ResourcePlugins(): v2.ResourcePlugin[] {
   const plugins: v2.ResourcePlugin[] = [];
-  for (const k in ResourcePluginsV2) {
-    const plugin = Container.get<v2.ResourcePlugin>(k);
+  let k: keyof typeof ResourcePluginsV2;
+  for (k in ResourcePluginsV2) {
+    const pluginName = ResourcePluginsV2[k];
+    const plugin = Container.get<v2.ResourcePlugin>(pluginName);
     if (plugin) {
       plugins.push(plugin);
     }

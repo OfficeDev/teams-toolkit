@@ -38,6 +38,10 @@ import {
   TaskConfig,
   TeamsAppManifest,
   UserError,
+  ProjectSettings,
+  Inputs,
+  TokenProvider,
+  v2,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs, { PathLike } from "fs-extra";
@@ -59,22 +63,32 @@ import {
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
 } from "../../../src/plugins/solution/fx-solution/question";
-import { validManifest } from "./util";
+import { MockedGraphTokenProvider, MockedV2Context, validManifest } from "./util";
 import { IAppDefinition } from "../../../src/plugins/resource/appstudio/interfaces/IAppDefinition";
 import _ from "lodash";
 import { TokenCredential } from "@azure/core-auth";
 import { TokenCredentialsBase, UserTokenCredentials } from "@azure/ms-rest-nodeauth";
-import { ResourceGroups, ResourceManagementClient } from "@azure/arm-resources";
+import { Providers, ResourceGroups, ResourceManagementClient } from "@azure/arm-resources";
 import { AppStudioClient } from "../../../src/plugins/resource/appstudio/appStudio";
 import { AppStudioPluginImpl } from "../../../src/plugins/resource/appstudio/plugin";
 import * as solutionUtil from "../../../src/plugins/solution/fx-solution/utils/util";
 import * as uuid from "uuid";
-import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
+import {
+  ResourcePlugins,
+  ResourcePluginsV2,
+} from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import { AadAppForTeamsPlugin, newEnvInfo } from "../../../src";
 import Container from "typedi";
 import { askResourceGroupInfo } from "../../../src/plugins/solution/fx-solution/commonQuestions";
 import { ResourceManagementModels } from "@azure/arm-resources";
 import { CoreQuestionNames } from "../../../src/core/question";
+import { Subscriptions } from "@azure/arm-subscriptions";
+import { SubscriptionsListLocationsResponse } from "@azure/arm-subscriptions/esm/models";
+import * as msRest from "@azure/ms-rest-js";
+import { ProvidersGetOptionalParams, ProvidersGetResponse } from "@azure/arm-resources/esm/models";
+import { SolutionPluginsV2 } from "../../../src/core/SolutionPluginContainer";
+import { TeamsAppSolutionV2 } from "../../../src/plugins/solution/fx-solution/v2/solution";
+import { EnvInfoV2, ResourceProvisionOutput } from "@microsoft/teamsfx-api/build/v2";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -82,6 +96,12 @@ const aadPlugin = Container.get<Plugin>(ResourcePlugins.AadPlugin) as AadAppForT
 const spfxPlugin = Container.get<Plugin>(ResourcePlugins.SpfxPlugin);
 const fehostPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin);
 const appStudioPlugin = Container.get<Plugin>(ResourcePlugins.AppStudioPlugin);
+
+const aadPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin);
+const spfxPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.SpfxPlugin);
+const fehostPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.FrontendPlugin);
+const appStudioPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin);
+
 class MockUserInteraction implements UserInteraction {
   selectOption(config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> {
     throw new Error("Method not implemented.");
@@ -275,6 +295,16 @@ function mockProvisionThatAlwaysSucceed(plugin: Plugin) {
   };
   plugin.postProvision = async function (_ctx: PluginContext): Promise<Result<any, FxError>> {
     return ok(Void);
+  };
+}
+
+function mockProvisionV2ThatAlwaysSucceed(plugin: v2.ResourcePlugin) {
+  plugin.provisionResource = async function (): Promise<Result<ResourceProvisionOutput, FxError>> {
+    return ok({ output: {}, secrets: {} });
+  };
+
+  plugin.configureResource = async function (): Promise<Result<ResourceProvisionOutput, FxError>> {
+    return ok({ output: {}, secrets: {} });
   };
 }
 
@@ -680,6 +710,47 @@ function mockListResourceGroupResult(
     );
 }
 
+function mockListLocationResult(mocker: sinon.SinonSandbox, subscriptionId: string) {
+  mocker
+    .stub(Subscriptions.prototype, "listLocations")
+    .callsFake(
+      async (
+        subscriptionId: string,
+        options?: msRest.RequestOptionsBase
+      ): Promise<SubscriptionsListLocationsResponse> => {
+        return [
+          {
+            id: "location",
+            subscriptionId: subscriptionId,
+            name: "location",
+            displayName: "location",
+          },
+        ] as SubscriptionsListLocationsResponse;
+      }
+    );
+}
+
+function mockProviderGetResult(mocker: sinon.SinonSandbox) {
+  mocker
+    .stub(Providers.prototype, "get")
+    .callsFake(
+      async (
+        resourceProviderNamespace: string,
+        options?: ProvidersGetOptionalParams
+      ): Promise<ProvidersGetResponse> => {
+        return {
+          id: "location",
+          resourceTypes: [
+            {
+              resourceType: "resourceGroups",
+              locations: ["location"],
+            },
+          ],
+        } as ProvidersGetResponse;
+      }
+    );
+}
+
 describe("before provision() asking for resource group info", () => {
   const mocker = sinon.createSandbox();
   const resourceGroupsCreated = new Map<string, string>();
@@ -707,6 +778,8 @@ describe("before provision() asking for resource group info", () => {
       mockNewResourceGroupLocation
     );
     mockListResourceGroupResult(mocker, fakeSubscriptionId, []);
+    mockListLocationResult(mocker, fakeSubscriptionId);
+    mockProviderGetResult(mocker);
 
     mockedCtx.projectSettings = {
       appName: "my app",
@@ -753,6 +826,8 @@ describe("before provision() asking for resource group info", () => {
 
     const mockedCtx = mockCtxWithResourceGroupQuestions(false, mockResourceGroupName);
     mockListResourceGroupResult(mocker, fakeSubscriptionId, mockResourceGroupList);
+    mockListLocationResult(mocker, fakeSubscriptionId);
+    mockProviderGetResult(mocker);
 
     mockedCtx.projectSettings = {
       appName: "my app",
@@ -834,5 +909,47 @@ describe("before provision() asking for resource group info", () => {
     expect(resourceGroupInfoResult._unsafeUnwrapErr().name).to.equal(
       SolutionError.FailedToListResourceGroup
     );
+  });
+});
+
+describe("API v2 implementation", () => {
+  describe("SPFx projects", () => {
+    it("should work on happy path", async () => {
+      const projectSettings: ProjectSettings = {
+        appName: "my app",
+        projectId: uuid.v4(),
+        solutionSettings: {
+          hostType: HostTypeOptionSPFx.id,
+          name: "azure",
+          version: "1.0",
+          activeResourcePlugins: [spfxPluginV2.name],
+        },
+      };
+      const mockedCtx = new MockedV2Context(projectSettings);
+      const mockedInputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: "./",
+      };
+      const mockedTokenProvider: TokenProvider = {
+        azureAccountProvider: new MockedAzureTokenProvider(),
+        appStudioToken: new MockedAppStudioTokenProvider(),
+        graphTokenProvider: new MockedGraphTokenProvider(),
+      };
+      const mockedEnvInfo: EnvInfoV2 = {
+        envName: "default",
+        config: { manifest: { values: { appName: { short: "test-app" } } } },
+        profile: {},
+      };
+      mockProvisionV2ThatAlwaysSucceed(spfxPluginV2);
+
+      const solution = new TeamsAppSolutionV2();
+      const result = await solution.provisionResources(
+        mockedCtx,
+        mockedInputs,
+        mockedEnvInfo,
+        mockedTokenProvider
+      );
+      expect(result.kind).equals("success");
+    });
   });
 });

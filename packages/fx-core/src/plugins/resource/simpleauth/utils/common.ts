@@ -138,7 +138,7 @@ export class Utils {
     isLocalDebug = false
   ): string {
     const key = Utils.addLocalDebugPrefix(isLocalDebug, configKey);
-    const configValue = ctx.configOfOtherPlugins.get(pluginId)?.get(key);
+    const configValue = ctx.envInfo.profile.get(pluginId)?.get(key);
     if (!configValue) {
       throw ResultFactory.SystemError(NoConfigError.name, NoConfigError.message(pluginId, key));
     }

@@ -26,7 +26,7 @@ export function parseJwt(token: string): SSOTokenInfoBase {
     }
 
     return tokenObj;
-  } catch (err) {
+  } catch (err: any) {
     const errorMsg = "Parse jwt token failed in node env with error: " + err.message;
     internalLogger.error(errorMsg);
     throw new ErrorWithCode(errorMsg, ErrorCode.InternalError);

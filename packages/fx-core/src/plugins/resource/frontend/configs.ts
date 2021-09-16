@@ -16,16 +16,22 @@ import {
   UnauthenticatedError,
 } from "./resources/errors";
 import { Utils } from "./utils";
-import { isArmSupportEnabled } from "../../..";
+import {
+  getResourceGroupNameFromResourceId,
+  getStorageAccountNameFromResourceId,
+  getSubscriptionIdFromResourceId,
+  isArmSupportEnabled,
+} from "../../..";
 import { getArmOutput } from "../utils4v2";
 
 export class FrontendConfig {
   subscriptionId: string;
   resourceGroupName: string;
   location: string;
-  storageName: string;
   credentials: TokenCredentialsBase;
 
+  storageName: string;
+  storageResourceId?: string;
   endpoint?: string;
   domain?: string;
 
@@ -43,59 +49,23 @@ export class FrontendConfig {
     this.credentials = credentials;
   }
 
-  static async fromPluginContext(ctx: PluginContext): Promise<FrontendConfig> {
+  static async fromPluginContext(
+    ctx: PluginContext,
+    getFromArmOutput = false
+  ): Promise<FrontendConfig> {
     const credentials = await ctx.azureAccountProvider?.getAccountCredentialAsync();
     if (!credentials) {
       throw new UnauthenticatedError();
     }
 
-    const appName = ctx.projectSettings!.appName;
-    const solutionConfigs = ctx.configOfOtherPlugins.get(DependentPluginInfo.SolutionPluginName);
-
-    const subscriptionInfo = await ctx.azureAccountProvider?.getSelectedSubscription();
-    if (!subscriptionInfo) {
-      throw new InvalidConfigError(DependentPluginInfo.SubscriptionId);
-    }
-    const subscriptionId = subscriptionInfo.subscriptionId;
-    const resourceNameSuffix = FrontendConfig.getConfig<string>(
-      DependentPluginInfo.ResourceNameSuffix,
-      solutionConfigs
-    );
-    const resourceGroupName = FrontendConfig.getConfig<string>(
-      DependentPluginInfo.ResourceGroupName,
-      solutionConfigs
-    );
-    const location = FrontendConfig.getConfig<string>(
-      DependentPluginInfo.Location,
-      solutionConfigs
-    );
-
-    let storageName: string | undefined;
-    if (isArmSupportEnabled()) {
-      storageName = getArmOutput(ctx, ArmOutput.FrontendStorageName) as string;
-      if (!storageName) {
-        storageName = ctx.config.getString(FrontendConfigInfo.StorageName);
-      }
-    } else {
-      storageName = ctx.config.getString(FrontendConfigInfo.StorageName);
-    }
-    if (!storageName) {
-      storageName = Utils.generateStorageAccountName(
-        appName,
-        resourceNameSuffix,
-        Constants.FrontendSuffix
-      );
-    }
-
-    if (!RegularExpr.FrontendStorageNamePattern.test(storageName)) {
-      throw new InvalidStorageNameError();
-    }
-
     return new FrontendConfig(
-      subscriptionId,
-      resourceGroupName,
-      location,
-      storageName,
+      FrontendConfig.getSubscriptionId(ctx, getFromArmOutput),
+      FrontendConfig.getResourceGroupName(ctx, getFromArmOutput),
+      FrontendConfig.getConfig<string>(
+        DependentPluginInfo.Location,
+        ctx.envInfo.profile.get(DependentPluginInfo.SolutionPluginName)
+      ),
+      FrontendConfig.getStorageName(ctx, getFromArmOutput),
       credentials
     );
   }
@@ -108,6 +78,72 @@ export class FrontendConfig {
           FrontendConfig.setConfigIfNotExists(ctx, kv[0], kv[1]);
         }
       });
+  }
+
+  static getStorageName(ctx: PluginContext, getFromArmOutput = false): string {
+    let result;
+    try {
+      result = isArmSupportEnabled()
+        ? getStorageAccountNameFromResourceId(
+            FrontendConfig.getStorageResourceId(ctx, getFromArmOutput)
+          )
+        : ctx.config.getString(FrontendConfigInfo.StorageName);
+    } catch (e) {
+      throw new InvalidConfigError(FrontendConfigInfo.StorageName, (e as Error).message);
+    }
+    if (!result) {
+      const resourceNameSuffix = FrontendConfig.getConfig<string>(
+        DependentPluginInfo.ResourceNameSuffix,
+        ctx.envInfo.profile.get(DependentPluginInfo.SolutionPluginName)
+      );
+      result = Utils.generateStorageAccountName(
+        ctx.projectSettings!.appName,
+        resourceNameSuffix,
+        Constants.FrontendSuffix
+      );
+    }
+    if (!RegularExpr.FrontendStorageNamePattern.test(result)) {
+      throw new InvalidStorageNameError();
+    }
+    return result;
+  }
+
+  static getStorageResourceId(ctx: PluginContext, getFromArmOutput = false): string {
+    const result = getFromArmOutput
+      ? getArmOutput(ctx, ArmOutput.FrontendStorageResourceId)
+      : ctx.config.getString(FrontendConfigInfo.StorageResourceId);
+    if (!result) {
+      throw new InvalidConfigError(FrontendConfigInfo.StorageResourceId);
+    }
+    return result;
+  }
+
+  static getSubscriptionId(ctx: PluginContext, getFromArmOutput = false): string {
+    const result = isArmSupportEnabled()
+      ? getSubscriptionIdFromResourceId(FrontendConfig.getStorageResourceId(ctx, getFromArmOutput))
+      : FrontendConfig.getConfig<string>(
+          DependentPluginInfo.SubscriptionId,
+          ctx.envInfo.profile.get(DependentPluginInfo.SolutionPluginName)
+        );
+    if (!result) {
+      throw new InvalidConfigError(DependentPluginInfo.SubscriptionId);
+    }
+    return result;
+  }
+
+  static getResourceGroupName(ctx: PluginContext, getFromArmOutput = false): string {
+    const result = isArmSupportEnabled()
+      ? getResourceGroupNameFromResourceId(
+          FrontendConfig.getStorageResourceId(ctx, getFromArmOutput)
+        )
+      : FrontendConfig.getConfig<string>(
+          DependentPluginInfo.ResourceGroupName,
+          ctx.envInfo.profile.get(DependentPluginInfo.SolutionPluginName)
+        );
+    if (!result) {
+      throw new InvalidConfigError(DependentPluginInfo.ResourceGroupName);
+    }
+    return result;
   }
 
   private static persistentConfigList = Object.values(FrontendConfigInfo);

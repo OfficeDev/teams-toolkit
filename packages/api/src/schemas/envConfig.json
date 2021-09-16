@@ -6,6 +6,39 @@
     "$schema": {
       "type": "string"
     },
+    "auth": {
+      "type": "object",
+      "description": "Existing AAD app configuration.",
+      "properties": {
+        "clientId": {
+          "type": "string",
+          "description": "The client id of existing AAD app for Teams app.",
+          "minLength": 1
+        },
+        "clientSecret": {
+          "type": "string",
+          "description": "The client secret of existing AAD app for Teams app.",
+          "minLength": 1
+        },
+        "objectId": {
+          "type": "string",
+          "description": "The object id of existing AAD app for Teams app.",
+          "minLength": 1
+        },
+        "accessAsUserScopeId": {
+          "type": "string",
+          "description": "The access_as_user scope id of existing AAD app for Teams app.",
+          "minLength": 1
+        }
+      },
+      "dependencies": {
+        "clientId": ["clientSecret", "objectId", "accessAsUserScopeId"],
+        "clientSecret": ["clientId", "objectId", "accessAsUserScopeId"],
+        "objectId": ["clientId", "clientSecret", "accessAsUserScopeId"],
+        "accessAsUserScopeId": ["clientId", "clientSecret", "objectId"]
+      },
+      "additionalProperties": false
+    },
     "azure": {
       "type": "object",
       "description": "The Azure resource related configuration.",
@@ -24,16 +57,58 @@
       },
       "additionalProperties": false
     },
+    "bot": {
+      "type": "object",
+      "description": "Existing bot AAD app configuration.",
+      "properties": {
+        "appId": {
+          "type": "string",
+          "description": "The id of existing bot AAD app.",
+          "minLength": 1
+        },
+        "appPassword": {
+          "type": "string",
+          "description": "The password of existing bot AAD app.",
+          "minLength": 1
+        }
+      },
+      "dependencies": {
+        "appId": ["appPassword"],
+        "appPassword": ["appId"]
+      },
+      "additionalProperties": false
+    },
     "manifest": {
       "type": "object",
-      "description": "The Teams App mainfest related configuration.",
+      "description": "The Teams App manifest related configuration.",
       "properties": {
         "description": {
           "type": "string"
         },
         "values": {
           "type": "object",
-          "description": "Configs to customize the Teams app manifest."
+          "description": "Configs to customize the Teams app manifest.",
+          "properties": {
+            "appName": {
+              "type": "object",
+              "description": "Teams app name.",
+              "properties": {
+                "short": {
+                  "type": "string",
+                  "description": "A short display name for teams app.",
+                  "maxLength": 30,
+                  "minLength": 1
+                },
+                "full": {
+                  "type": "string",
+                  "description": "The full name for teams app.",
+                  "maxLength": 100
+                }
+              },
+              "required": ["short"]
+            }
+          },
+          "required": ["appName"]
         }
       },
       "required": ["values"]
@@ -44,5 +119,5 @@
     }
   },
   "additionalProperties": false,
-  "required": ["azure", "manifest"]
+  "required": ["manifest"]
 }

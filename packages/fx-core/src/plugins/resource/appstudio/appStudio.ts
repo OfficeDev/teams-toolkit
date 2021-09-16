@@ -30,7 +30,7 @@ export namespace AppStudioClient {
       baseURL: baseUrl,
     });
     instance.defaults.headers.common["Authorization"] = `Bearer ${appStudioToken}`;
-    instance.defaults.headers.common["teamstoolkit"] = "true";
+    instance.defaults.headers.common["Client-Source"] = "teamstoolkit";
     instance.interceptors.request.use(function (config) {
       config.params = { teamstoolkit: true, ...config.params };
       return config;
@@ -389,11 +389,7 @@ export namespace AppStudioClient {
     try {
       app = await getApp(teamsAppId, appStudioToken);
     } catch (error) {
-      if (error.name == 404) {
-        return undefined;
-      } else {
-        throw error;
-      }
+      throw error;
     }
 
     return app.userList;
@@ -404,7 +400,13 @@ export namespace AppStudioClient {
     appStudioToken: string,
     userObjectId: string
   ): Promise<string> {
-    const userList = await getUserList(teamsAppId, appStudioToken);
+    let userList;
+    try {
+      userList = await getUserList(teamsAppId, appStudioToken);
+    } catch (error) {
+      return Constants.PERMISSIONS.noPermission;
+    }
+
     const findUser = userList?.find((user: IUserList) => user.aadId === userObjectId);
     if (!findUser) {
       return Constants.PERMISSIONS.noPermission;

@@ -38,43 +38,43 @@ export class ProvisionConfig {
   public functionEndpoint?: string;
 
   public async restoreConfigFromContext(context: PluginContext): Promise<void> {
-    this.subscriptionId = (
-      await context.azureAccountProvider?.getSelectedSubscription()
-    )?.subscriptionId;
+    this.subscriptionId = context.envInfo.profile
+      .get(PluginSolution.PLUGIN_NAME)
+      ?.get(PluginSolution.SUBSCRIPTION_ID) as string;
 
-    this.resourceGroup = context.configOfOtherPlugins
+    this.resourceGroup = context.envInfo.profile
       .get(PluginSolution.PLUGIN_NAME)
       ?.get(PluginSolution.RESOURCE_GROUP_NAME) as string;
 
-    this.location = context.configOfOtherPlugins
+    this.location = context.envInfo.profile
       .get(PluginSolution.PLUGIN_NAME)
       ?.get(PluginSolution.LOCATION) as string;
 
-    this.sqlEndpoint = context.configOfOtherPlugins
+    this.sqlEndpoint = context.envInfo.profile
       .get(PluginSql.PLUGIN_NAME)
       ?.get(PluginSql.SQL_ENDPOINT) as string;
 
-    this.sqlDatabaseName = context.configOfOtherPlugins
+    this.sqlDatabaseName = context.envInfo.profile
       .get(PluginSql.PLUGIN_NAME)
       ?.get(PluginSql.SQL_DATABASE_NAME) as string;
 
-    this.sqlUserName = context.configOfOtherPlugins
+    this.sqlUserName = context.envInfo.profile
       .get(PluginSql.PLUGIN_NAME)
       ?.get(PluginSql.SQL_USERNAME) as string;
 
-    this.sqlPassword = context.configOfOtherPlugins
+    this.sqlPassword = context.envInfo.profile
       .get(PluginSql.PLUGIN_NAME)
       ?.get(PluginSql.SQL_PASSWORD) as string;
 
-    this.identityId = context.configOfOtherPlugins
+    this.identityId = context.envInfo.profile
       .get(PluginIdentity.PLUGIN_NAME)
       ?.get(PluginIdentity.IDENTITY_ID) as string;
 
-    this.identityName = context.configOfOtherPlugins
+    this.identityName = context.envInfo.profile
       .get(PluginIdentity.PLUGIN_NAME)
       ?.get(PluginIdentity.IDENTITY_NAME) as string;
 
-    this.functionEndpoint = context.configOfOtherPlugins
+    this.functionEndpoint = context.envInfo.profile
       .get(PluginFunction.PLUGIN_NAME)
       ?.get(PluginFunction.ENDPOINT) as string;
 

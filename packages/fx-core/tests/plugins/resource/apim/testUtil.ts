@@ -12,6 +12,7 @@ import {
   Platform,
   SubscriptionInfo,
   Inputs,
+  EnvInfo,
 } from "@microsoft/teamsfx-api";
 import {
   AadOperationError,
@@ -34,6 +35,7 @@ import { AxiosInstance, Method } from "axios";
 import { IAadInfo } from "../../../../src/plugins/resource/apim/interfaces/IAadResource";
 import { ApiManagementClient } from "@azure/arm-apimanagement";
 import dotenv from "dotenv";
+import { newEnvInfo } from "../../../../src";
 
 dotenv.config();
 
@@ -169,7 +171,7 @@ export class MockGraphTokenProvider implements GraphTokenProvider {
 }
 
 export class MockPluginContext implements PluginContext {
-  configOfOtherPlugins: Map<string, Map<string, string>>;
+  envInfo: EnvInfo = newEnvInfo();
   config: ConfigMap = new ConfigMap();
   app: Readonly<TeamsAppManifest> = new TeamsAppManifest();
   root = "./~$test/scaffold";
@@ -192,22 +194,19 @@ export class MockPluginContext implements PluginContext {
       EnvConfig.servicePrincipalClientSecret
     );
     this.azureAccountProvider = new MockAzureAccountProvider();
-    this.configOfOtherPlugins = new Map<string, Map<string, string>>();
-    this.configOfOtherPlugins.set(
+    this.envInfo = newEnvInfo();
+    this.envInfo.profile.set(
       TeamsToolkitComponent.Solution,
       new Map(Object.entries(solutionConfig))
     );
     this.app.name.short = appName;
 
     if (aadConfig) {
-      this.configOfOtherPlugins.set(
-        TeamsToolkitComponent.AadPlugin,
-        new Map(Object.entries(aadConfig))
-      );
+      this.envInfo.profile.set(TeamsToolkitComponent.AadPlugin, new Map(Object.entries(aadConfig)));
     }
 
     if (functionConfig) {
-      this.configOfOtherPlugins.set(
+      this.envInfo.profile.set(
         TeamsToolkitComponent.FunctionPlugin,
         new Map(Object.entries(functionConfig))
       );

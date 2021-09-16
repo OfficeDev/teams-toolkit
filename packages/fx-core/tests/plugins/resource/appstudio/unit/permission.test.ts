@@ -18,6 +18,7 @@ import {
 } from "../../../../../src/plugins/solution/fx-solution/constants";
 import { AppStudioClient } from "./../../../../../src/plugins/resource/appstudio/appStudio";
 import { MockedAppStudioTokenProvider } from "../helper";
+import { newEnvInfo } from "../../../../../src";
 
 const userList = {
   tenantId: faker.datatype.uuid(),
@@ -53,7 +54,7 @@ describe("Remote Collaboration", () => {
 
     ctx = {
       root: "./tests/plugins/resource/appstudio/resources/",
-      configOfOtherPlugins: configOfOtherPlugins,
+      envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
       answers: { platform: Platform.VSCode },
       appStudioToken: new MockedAppStudioTokenProvider(),
@@ -88,7 +89,7 @@ describe("Remote Collaboration", () => {
 
     ctx = {
       root: "./tests/plugins/resource/appstudio/resources/",
-      configOfOtherPlugins: configOfOtherPlugins,
+      envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
       answers: { platform: Platform.VSCode },
       appStudioToken: new MockedAppStudioTokenProvider(),
@@ -120,7 +121,7 @@ describe("Remote Collaboration", () => {
 
     ctx = {
       root: "./tests/plugins/resource/appstudio/resources/",
-      configOfOtherPlugins: configOfOtherPlugins,
+      envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
       answers: { platform: Platform.VSCode },
       appStudioToken: new MockedAppStudioTokenProvider(),

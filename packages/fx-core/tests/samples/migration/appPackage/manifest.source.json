@@ -1,0 +1,50 @@
+{
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.9/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.9",
+  "version": "1.0.0",
+  "id": "{appid}",
+  "packageName": "test",
+  "developer": {
+    "name": "test",
+    "websiteUrl": "{baseUrl}",
+    "privacyUrl": "{baseUrl}/index.html#/privacy",
+    "termsOfUseUrl": "{baseUrl}/index.html#/termsofuse"
+  },
+  "icons": {
+    "color": "color.png",
+    "outline": "outline.png"
+  },
+  "name": {
+    "short": "test",
+    "full": "test"
+  },
+  "description": {
+    "short": "test",
+    "full": "test"
+  },
+  "accentColor": "#FFFFFF",
+  "bots": [],
+  "composeExtensions": [],
+  "configurableTabs": [
+    {
+      "configurationUrl": "{baseUrl}/index.html#/config",
+      "canUpdateConfiguration": true,
+      "scopes": ["team", "groupchat"]
+    }
+  ],
+  "staticTabs": [
+    {
+      "entityId": "index",
+      "name": "test",
+      "contentUrl": "{baseUrl}/index.html#/tab",
+      "websiteUrl": "{baseUrl}/index.html#/tab",
+      "scopes": ["personal"]
+    }
+  ],
+  "permissions": ["identity", "messageTeamMembers"],
+  "validDomains": [],
+  "webApplicationInfo": {
+    "id": "{appClientId}",
+    "resource": "{webApplicationInfoResource}"
+  }
+}

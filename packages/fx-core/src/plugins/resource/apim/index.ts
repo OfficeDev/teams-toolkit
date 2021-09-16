@@ -13,7 +13,7 @@ import {
   Stage,
   Func,
 } from "@microsoft/teamsfx-api";
-import { AssertNotEmpty, BuildError, UnhandledError } from "./error";
+import { AssertNotEmpty, BuildError, NotImplemented, UnhandledError } from "./error";
 import { Telemetry } from "./utils/telemetry";
 import { AadPluginConfig, ApimPluginConfig, FunctionPluginConfig, SolutionConfig } from "./config";
 import {
@@ -24,6 +24,7 @@ import {
   ProgressStep,
   ProjectConstants,
   OperationStatus,
+  UserTask,
 } from "./constants";
 import { Factory } from "./factory";
 import { ProgressBar } from "./utils/progressBar";
@@ -32,6 +33,7 @@ import { AzureSolutionSettings } from "@microsoft/teamsfx-api";
 import { AzureResourceApim } from "../../solution/fx-solution/question";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+import "./v2";
 @Service(ResourcePlugins.ApimPlugin)
 export class ApimPlugin implements Plugin {
   name = "fx-resource-apim";
@@ -81,6 +83,13 @@ export class ApimPlugin implements Plugin {
     return await this.executeWithFxError(PluginLifeCycle.Deploy, _deploy, ctx);
   }
 
+  public async executeUserTask(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {
+    if (func.method === UserTask.addResourceFuncName) {
+      return await this.executeWithFxError(PluginLifeCycle.Scaffold, _scaffold, ctx);
+    }
+    return err(BuildError(NotImplemented));
+  }
+
   private async executeWithFxError<T>(
     lifeCycle: PluginLifeCycle,
     fn: (ctx: PluginContext, progressBar: ProgressBar, ...params: any[]) => Promise<T>,
@@ -91,14 +100,14 @@ export class ApimPlugin implements Plugin {
       await this.progressBar.init(PluginLifeCycleToProgressStep[lifeCycle], ctx);
       Telemetry.sendLifeCycleEvent(
         ctx.telemetryReporter,
-        ctx.configOfOtherPlugins,
+        ctx.envInfo.profile,
         lifeCycle,
         OperationStatus.Started
       );
       const result = await fn(ctx, this.progressBar, ...params);
       Telemetry.sendLifeCycleEvent(
         ctx.telemetryReporter,
-        ctx.configOfOtherPlugins,
+        ctx.envInfo.profile,
         lifeCycle,
         OperationStatus.Succeeded
       );
@@ -117,7 +126,7 @@ export class ApimPlugin implements Plugin {
       ctx.logProvider?.error(`[${ProjectConstants.pluginDisplayName}] ${error.message}`);
       Telemetry.sendLifeCycleEvent(
         ctx.telemetryReporter,
-        ctx.configOfOtherPlugins,
+        ctx.envInfo.profile,
         lifeCycle,
         OperationStatus.Failed,
         packagedError
@@ -179,7 +188,7 @@ async function _scaffold(ctx: PluginContext, progressBar: ProgressBar): Promise<
 }
 
 async function _provision(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {
-  const solutionConfig = new SolutionConfig(ctx.configOfOtherPlugins);
+  const solutionConfig = new SolutionConfig(ctx.envInfo.profile);
   const apimConfig = new ApimPluginConfig(ctx.config);
 
   const apimManager = await Factory.buildApimManager(ctx);
@@ -201,9 +210,9 @@ async function _provision(ctx: PluginContext, progressBar: ProgressBar): Promise
 }
 
 async function _postProvision(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {
-  const solutionConfig = new SolutionConfig(ctx.configOfOtherPlugins);
+  const solutionConfig = new SolutionConfig(ctx.envInfo.profile);
   const apimConfig = new ApimPluginConfig(ctx.config);
-  const aadConfig = new AadPluginConfig(ctx.configOfOtherPlugins);
+  const aadConfig = new AadPluginConfig(ctx.envInfo.profile);
 
   const apimManager = await Factory.buildApimManager(ctx);
   const aadManager = await Factory.buildAadManager(ctx);
@@ -231,9 +240,9 @@ async function _postProvision(ctx: PluginContext, progressBar: ProgressBar): Pro
 }
 
 async function _deploy(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {
-  const solutionConfig = new SolutionConfig(ctx.configOfOtherPlugins);
+  const solutionConfig = new SolutionConfig(ctx.envInfo.profile);
   const apimConfig = new ApimPluginConfig(ctx.config);
-  const functionConfig = new FunctionPluginConfig(ctx.configOfOtherPlugins);
+  const functionConfig = new FunctionPluginConfig(ctx.envInfo.profile);
   const answer = buildAnswer(ctx.answers);
 
   if (answer.validate) {

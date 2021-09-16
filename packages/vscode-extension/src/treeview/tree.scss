@@ -1,0 +1,91 @@
+.row {
+  display: flex;
+  height: 22px;
+  color: #cccccc;
+
+  button {
+    height: 22px;
+    color: #cccccc;
+    padding-left: 8px;
+    width: 100%;
+
+    span {
+      line-height: 22px;
+      font-size: 13px;
+      margin: 0;
+      color: var(--vscode-foreground);
+      white-space: nowrap;
+      text-overflow: ellipsis;
+
+      i {
+        width: 16px;
+        padding-right: 6px;
+        height: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #c5c5c5;
+        margin: 0;
+      }
+
+      div {
+        padding-right: 6px;
+      }
+
+      img {
+        width: 16px;
+        height: 16px;
+        padding-right: 6px;
+      }
+    }
+
+    p {
+      opacity: 0.7;
+      margin-left: 0.5em;
+      font-size: 0.9em;
+      white-space: pre;
+      line-height: 22px;
+    }
+  }
+
+  button:hover {
+    background-color: var(--vscode-list-hoverBackground);
+  }
+
+  button:focus {
+    background-color: var(--vscode-list-activeSelectionBackground);
+    outline: 1px solid var(--vscode-list-focusOutline);
+    outline-offset: -1px;
+
+    span {
+      color: var(--vscode-list-activeSelectionForeground);
+    }
+
+    .codicon {
+      color: var(--vscode-list-activeSelectionForeground);
+    }
+  }
+
+  button[aria-disabled] button:aria-disabled {
+    span {
+      color: #333333;
+    }
+  }
+}
+
+.codicon {
+  color: var(--vscode-icon-foreground);
+}
+
+.ms-Tooltip {
+  background-color: var(--vscode-sideBar-background);
+  border: 1px solid var(--vscode-editorWidget-border);
+}
+
+.ms-Callout-main {
+  background-color: var(--vscode-sideBar-background);
+}
+
+.ms-Tooltip-content {
+  color: var(--vscode-foreground);
+}

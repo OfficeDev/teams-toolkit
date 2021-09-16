@@ -23,6 +23,7 @@ export enum CoreQuestionNames {
   Samples = "samples",
   Stage = "stage",
   SubStage = "substage",
+  SourceEnvName = "sourceEnvName",
   TargetEnvName = "targetEnvName",
   TargetResourceGroupName = "targetResourceGroupName",
   NewResourceGroupName = "newResourceGroupName",
@@ -135,6 +136,15 @@ export function getQuestionNewTargetEnvironmentName(projectPath: string): TextIn
   };
 }
 
+export const QuestionSelectSourceEnvironment: SingleSelectQuestion = {
+  type: "singleSelect",
+  name: CoreQuestionNames.SourceEnvName,
+  title: "Select an environment to create copy",
+  staticOptions: [],
+  skipSingleOption: true,
+  forgetLastValue: true,
+};
+
 export const QuestionSelectResourceGroup: SingleSelectQuestion = {
   type: "singleSelect",
   name: CoreQuestionNames.TargetResourceGroupName,
@@ -161,6 +171,8 @@ export const QuestionNewResourceGroupName: TextInputQuestion = {
     },
   },
   placeholder: "New resource group name",
+  // default resource group name will change with env name
+  forgetLastValue: true,
 };
 
 export const QuestionNewResourceGroupLocation: SingleSelectQuestion = {

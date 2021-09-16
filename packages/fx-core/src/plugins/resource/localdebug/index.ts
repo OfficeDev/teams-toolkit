@@ -53,7 +53,7 @@ import {
 } from "../../../common/localSettingsConstants";
 import { TeamsClientId } from "../../../common/constants";
 import { ProjectSettingLoader } from "./projectSettingLoader";
-
+import "./v2";
 @Service(ResourcePlugins.LocalDebugPlugin)
 export class LocalDebugPlugin implements Plugin {
   name = "fx-resource-local-debug";
@@ -89,6 +89,7 @@ export class LocalDebugPlugin implements Plugin {
       if (isSpfx) {
         // Only generate launch.json and tasks.json for SPFX
         const launchConfigurations = Launch.generateSpfxConfigurations();
+        const launchCompounds = Launch.generateSpfxCompounds();
         const tasks = Tasks.generateSpfxTasks();
         const tasksInputs = Tasks.generateInputs();
 
@@ -99,6 +100,7 @@ export class LocalDebugPlugin implements Plugin {
           {
             version: "0.2.0",
             configurations: launchConfigurations,
+            compounds: launchCompounds,
           },
           {
             spaces: 4,
@@ -469,7 +471,7 @@ export class LocalDebugPlugin implements Plugin {
   public async executeUserTask(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {
     if (func.method == "getLaunchInput") {
       const env = func.params as string;
-      const solutionConfigs = ctx.configOfOtherPlugins.get(SolutionPlugin.Name);
+      const solutionConfigs = ctx.envInfo.profile.get(SolutionPlugin.Name);
       if (env === "remote") {
         // return remote teams app id
         const remoteId = solutionConfigs?.get(SolutionPlugin.RemoteTeamsAppId) as string;

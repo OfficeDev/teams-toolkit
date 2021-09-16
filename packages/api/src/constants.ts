@@ -47,8 +47,10 @@ export enum Stage {
   package = "package",
   publish = "publish",
   createEnv = "createEnv",
+  listEnv = "listEnv",
   removeEnv = "removeEnv",
   switchEnv = "switchEnv",
+  activateEnv = "activateEnv",
   userTask = "userTask",
   update = "update", //never used again except APIM just for reference
   grantPermission = "grantPermission",
@@ -66,4 +68,13 @@ export enum TelemetryProperty {
   answer = "answer",
   platform = "platform",
   stage = "stage",
+}
+
+/**
+ * You can register your callback function when you want to be notified
+ * at some predefined events.
+ */
+export enum CoreCallbackEvent {
+  lock = "lock",
+  unlock = "unlock",
 }

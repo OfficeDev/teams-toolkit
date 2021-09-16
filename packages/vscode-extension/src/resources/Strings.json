@@ -64,7 +64,10 @@
       "teamsDevPortalTitle": "Go To Developer Portal",
       "teamsDevPortalTitleNew": "Developer Portal for Teams",
       "teamsDevPortalDescription": "Manage your Teams app registration and access more tools",
-      "acitve": "(Active)"
+      "active": "(Active)",
+      "loginM365AccountToViewCollaborators": "Login M365 account to view all collaborators",
+      "noPermissionToListCollaborators": "No permission to list collaborators",
+      "unableToFindTeamsAppRegistration": "Unable to find Teams app registration"
     },
     "handlers": {
       "concurrentTriggerTask": "Task '%s' is still running. Wait for it to complete before starting another task.",
@@ -197,7 +200,8 @@
       "emptyData": "Empty zip file",
       "downloadSampleFail": "Failed to download sample app",
       "quickStartPageTitle": "Quick Start",
-      "samplePageTitle": "Samples"
+      "samplePageTitle": "Samples",
+      "surveyPageTitle": "Teams Toolkit Survey"
     },
     "migrateV1": {
       "banner": "Click migrate to continue developing your project with the latest Teams Toolkit features. We will update some project configurations and recommend using git for better tracking file changes.",
@@ -212,6 +216,10 @@
       "cancel": {
         "status": "cancel"
       }
+    },
+    "upgrade": {
+      "banner": "Teams Toolkit has been updated to v%s — check out what's new!",
+      "whatIsNewTitle": "What's New"
     }
   }
 }

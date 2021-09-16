@@ -318,8 +318,9 @@ describe("Config Set Command Check", () => {
       });
     sandbox
       .stub(Utils, "writeSecretToFile")
-      .callsFake((secrets: dotenv.DotenvParseOutput, rootFolder: string): void => {
+      .callsFake((secrets: dotenv.DotenvParseOutput, rootFolder: string): Result<null, FxError> => {
         secretFile = secrets;
+        return ok(null);
       });
     sandbox
       .stub(Utils, "readProjectSecrets")

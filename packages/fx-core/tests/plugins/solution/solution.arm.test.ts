@@ -28,13 +28,14 @@ import {
   deployArmTemplates,
   generateArmTemplate,
 } from "../../../src/plugins/solution/fx-solution/arm";
+import * as arm from "../../../src/plugins/solution/fx-solution/arm";
 import * as bicepChecker from "../../../src/plugins/solution/fx-solution/utils/depsChecker/bicepChecker";
 import { it } from "mocha";
 import path from "path";
 import { ArmResourcePlugin } from "../../../src/common/armInterface";
 import mockedEnv from "mocked-env";
 import { UserTokenCredentials } from "@azure/ms-rest-nodeauth";
-import { ResourceManagementModels, Deployments } from "@azure/arm-resources";
+import { ResourceManagementModels, Deployments, DeploymentOperations } from "@azure/arm-resources";
 import { WebResourceLike, HttpHeaders } from "@azure/ms-rest-js";
 import {
   mockedAadScaffoldArmResult,
@@ -74,7 +75,7 @@ function mockSolutionContext(): SolutionContext {
     envInfo: {
       envName: "default",
       profile: new Map<string, any>(),
-      config: environmentManager.newEnvConfigData(),
+      config: environmentManager.newEnvConfigData("myApp"),
     },
     answers: { platform: Platform.VSCode },
     projectSettings: undefined,
@@ -267,17 +268,17 @@ describe("Deploy ARM Template to Azure", () => {
   const testEnvValue = "test env value";
   const testResourceSuffix = "-testSuffix";
   const testArmTemplateOutput = {
-    frontendHosting_storageName: {
+    frontendHosting_storageResourceId: {
       type: "String",
-      value: "frontendstgagag4xom3ewiq",
+      value: "test_storage_resource_id",
     },
     frontendHosting_endpoint: {
       type: "String",
-      value: "https://frontendstgagag4xom3ewiq.z13.web.core.windows.net/",
+      value: "https://test_frontendhosting_domain/",
     },
     frontendHosting_domain: {
       type: "String",
-      value: "frontendstgagag4xom3ewiq.z13.web.core.windows.net",
+      value: "test_frontendhosting_domain",
     },
     simpleAuth_skuName: {
       type: "String",
@@ -285,7 +286,7 @@ describe("Deploy ARM Template to Azure", () => {
     },
     simpleAuth_endpoint: {
       type: "String",
-      value: "https://testproject-simpleauth-webapp.azurewebsites.net",
+      value: "https://test_simpleauth_domain",
     },
   };
   const SOLUTION_CONFIG = "solution";
@@ -336,7 +337,6 @@ describe("Deploy ARM Template to Azure", () => {
   }
   `,
       ],
-      [path.join(templateFolder, "main.json"), `{"test_key": "test_value"}`],
     ]);
   });
 
@@ -444,12 +444,13 @@ describe("Deploy ARM Template to Azure", () => {
           });
         }
       );
+    mocker.stub(arm, "pollDeploymentStatus").resolves();
 
     // Act
     const result = await deployArmTemplates(mockedCtx);
 
     // Assert
-    chai.assert.isTrue(result.isErr());
+    chai.assert.isTrue(result.isOk());
 
     expect(
       JSON.parse(fileContent.get(path.join(parameterFolder, "parameters.default.json")))
@@ -537,10 +538,11 @@ describe("Deploy ARM Template to Azure", () => {
           });
         }
       );
+    mocker.stub(arm, "pollDeploymentStatus").resolves();
 
     // Act
     const result = await deployArmTemplates(mockedCtx);
-    chai.assert.isTrue(result.isErr());
+    chai.assert.isTrue(result.isOk());
     chai.assert.strictEqual(usedExistingParameterDefaultFile, true);
   });
 
@@ -550,6 +552,7 @@ describe("Deploy ARM Template to Azure", () => {
       new ConfigMap([
         ["resourceGroupName", "mocked resource group name"],
         ["resourceNameSuffix", testResourceSuffix],
+        ["subscriptionId", "mocked subscription id"],
       ])
     );
 
@@ -573,10 +576,50 @@ describe("Deploy ARM Template to Azure", () => {
 
     mocker
       .stub(Executor, "execCommandAsync")
-      .callsFake((command: string, options?: ExecOptions): Promise<void> => {
+      .callsFake((command: string, options?: ExecOptions): Promise<any> => {
         return new Promise((resolve) => {
-          resolve();
+          resolve({
+            stdout: `{"test_key": "test_value"}`,
+            stderr: "",
+          });
         });
       });
   }
+});
+
+describe("Arm Template Failed Test", () => {
+  const mocker = sinon.createSandbox();
+  let clock: sinon.SinonFakeTimers;
+
+  beforeEach(async () => {
+    clock = sinon.useFakeTimers();
+  });
+
+  afterEach(async () => {
+    mocker.restore();
+    clock.restore();
+  });
+
+  it("pollDeploymentStatus", async () => {
+    mocker.stub(arm, "waitSeconds").resolves();
+    const mockedCtx = mockSolutionContext();
+    const mockedDeployCtx: any = {
+      resourceGroupName: "poll-deployment-rg",
+      deploymentName: "poll-deployment",
+      finished: false,
+      ctx: mockedCtx,
+      client: {
+        deploymentOperations: {
+          list: async () => {
+            throw new Error("mocked error");
+          },
+        },
+      },
+    };
+    try {
+      arm.pollDeploymentStatus(mockedDeployCtx);
+    } catch (error) {
+      chai.assert.strictEqual(error.message, "mocked error");
+    }
+  });
 });

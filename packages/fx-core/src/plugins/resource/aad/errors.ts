@@ -18,6 +18,7 @@ export const GetAppError: AadError = {
     `Failed to get app info with current Object Id in env.default.json. ` +
     "Please make sure object id is valid, " +
     `or delete 'objectId' under ${Plugins.pluginNameComplex} in env.default.json and try again.`,
+  helpLink: aadHelpLink,
 };
 
 export const GetAppConfigError: AadError = {

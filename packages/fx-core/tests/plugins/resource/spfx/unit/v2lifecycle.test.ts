@@ -55,6 +55,7 @@ describe("SPFX V2", () => {
     telemetryReporter: tools.telemetryReporter,
     cryptoProvider: tools.cryptoProvider,
     projectSetting: projectSettings,
+    permissionRequestProvider: tools.permissionRequestProvider,
   };
 
   beforeEach(() => {
@@ -94,7 +95,7 @@ describe("SPFX V2", () => {
       location: "",
       teamsAppTenantId: "",
     };
-    const deployInputs: DeploymentInputs = { ...inputs, ...solutionInputs };
+    const deployInputs: DeploymentInputs = { ...inputs, ...solutionInputs, projectPath: "./" };
     mockDeployThatAlwaysSucceed(pluginV1);
     const res = await pluginV2.deploy(
       context,

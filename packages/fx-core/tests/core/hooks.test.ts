@@ -2,43 +2,43 @@
 // Licensed under the MIT license.
 
 import { hooks, Middleware, NextFunction } from "@feathersjs/hooks/lib";
-import { assert, expect } from "chai";
-import "mocha";
-import * as dotenv from "dotenv";
-import { ErrorHandlerMW } from "../../src/core/middleware/errorHandler";
-import { TelemetrySenderMW } from "../../src/core/middleware/telemetrySender";
 import {
-  UserCancelError,
-  err,
-  FxError,
-  Result,
-  ok,
-  Inputs,
-  Platform,
-  ConfigFolderName,
-  Solution,
-  Stage,
-  SolutionContext,
-  Json,
+  AppPackageFolderName,
+  ArchiveFolderName,
   AzureSolutionSettings,
+  Colors,
+  ConfigFolderName,
   ConfigMap,
-  QTreeNode,
-  FunctionRouter,
+  CoreCallbackEvent,
+  err,
   Func,
+  FunctionRouter,
+  FxError,
+  Inputs,
   InputTextConfig,
-  UserError,
+  Json,
+  ok,
+  Platform,
   ProductName,
+  ProjectSettings,
+  QTreeNode,
+  Result,
+  Solution,
+  SolutionContext,
+  Stage,
+  SystemError,
+  UserCancelError,
+  UserError,
+  UserInteraction,
 } from "@microsoft/teamsfx-api";
-import { ConcurrentLockerMW } from "../../src/core/middleware/concurrentLocker";
+import { assert, expect } from "chai";
+import * as dotenv from "dotenv";
 import fs from "fs-extra";
-import * as path from "path";
-import {
-  ConcurrentError,
-  InvalidProjectError,
-  NoProjectOpenedError,
-  PathNotExistError,
-} from "../../src/core/error";
+import "mocha";
 import * as os from "os";
+import * as path from "path";
+import sinon from "sinon";
+import { Container } from "typedi";
 import {
   base64Encode,
   CoreHookContext,
@@ -46,47 +46,73 @@ import {
   InvalidInputError,
   mapToJson,
   serializeDict,
+  sperateSecretData,
 } from "../../src";
-import { SolutionLoaderMW } from "../../src/core/middleware/solutionLoader";
-import { ContextInjecterMW } from "../../src/core/middleware/contextInjecter";
-import { ProjectSettingsWriterMW } from "../../src/core/middleware/projectSettingsWriter";
-import sinon from "sinon";
-import {
-  MockLatestVersion2_3_0UserData,
-  MockLatestVersion2_3_0Context,
-  MockPreviousVersionBefore2_3_0UserData,
-  MockPreviousVersionBefore2_3_0Context,
-  MockProjectSettings,
-  MockSolutionLoader,
-  MockTools,
-  randomAppName,
-} from "./utils";
-import {
-  ProjectSettingsLoaderMW,
-  newSolutionContext,
-} from "../../src/core/middleware/projectSettingsLoader";
-import { AzureResourceSQL } from "../../src/plugins/solution/fx-solution/question";
-import { PluginNames } from "../../src/plugins/solution/fx-solution/constants";
-import { QuestionModelMW } from "../../src/core/middleware/questionModel";
-import { ProjectUpgraderMW } from "../../src/core/middleware/projectUpgrader";
+import { FeatureFlagName } from "../../src/common/constants";
+import { CallbackRegistry } from "../../src/core/callback";
 import { environmentManager } from "../../src/core/environment";
+import {
+  ConcurrentError,
+  InvalidProjectError,
+  NoProjectOpenedError,
+  PathNotExistError,
+} from "../../src/core/error";
+import { ConcurrentLockerMW } from "../../src/core/middleware/concurrentLocker";
+import { ContextInjectorMW } from "../../src/core/middleware/contextInjector";
 import { EnvInfoLoaderMW } from "../../src/core/middleware/envInfoLoader";
 import { EnvInfoWriterMW } from "../../src/core/middleware/envInfoWriter";
+import { ErrorHandlerMW } from "../../src/core/middleware/errorHandler";
+import { LocalSettingsLoaderMW } from "../../src/core/middleware/localSettingsLoader";
 import { MigrateConditionHandlerMW } from "../../src/core/middleware/migrateConditionHandler";
-import { AppPackageFolderName } from "@microsoft/teamsfx-api";
-import { ArchiveFolderName } from "@microsoft/teamsfx-api";
-
+import {
+  newSolutionContext,
+  ProjectSettingsLoaderMW,
+} from "../../src/core/middleware/projectSettingsLoader";
+import { ProjectSettingsWriterMW } from "../../src/core/middleware/projectSettingsWriter";
+import { ProjectUpgraderMW } from "../../src/core/middleware/projectUpgrader";
+import { QuestionModelMW } from "../../src/core/middleware/questionModel";
+import { SolutionLoaderMW } from "../../src/core/middleware/solutionLoader";
+import { TelemetrySenderMW } from "../../src/core/middleware/telemetrySender";
+import { SolutionPlugins } from "../../src/core/SolutionPluginContainer";
+import { PluginNames } from "../../src/plugins/solution/fx-solution/constants";
+import { AzureResourceSQL } from "../../src/plugins/solution/fx-solution/question";
+import {
+  MockLatestVersion2_3_0Context,
+  MockLatestVersion2_3_0UserData,
+  MockPreviousVersionBefore2_3_0Context,
+  MockPreviousVersionBefore2_3_0UserData,
+  MockProjectSettings,
+  MockSolution,
+  MockTools,
+  MockUserInteraction,
+  randomAppName,
+} from "./utils";
+import { ProjectMigratorMW, migrateArm } from "../../src/core/middleware/projectMigrator";
+import exp = require("constants");
+import mockedEnv from "mocked-env";
+let mockedEnvRestore: () => void;
 describe("Middleware", () => {
+  const sandbox = sinon.createSandbox();
+  const mockSolution = new MockSolution();
+
+  beforeEach(() => {
+    Container.set(SolutionPlugins.AzureTeamsSolution, mockSolution);
+  });
+  afterEach(() => {
+    sandbox.restore();
+  });
   describe("ErrorHandlerMW", () => {
     const inputs: Inputs = { platform: Platform.VSCode };
 
     it("return error", async () => {
       class MyClass {
         tools?: any = new MockTools();
+
         async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
           return err(UserCancelError);
         }
       }
+
       hooks(MyClass, {
         myMethod: [ErrorHandlerMW],
       });
@@ -98,10 +124,12 @@ describe("Middleware", () => {
     it("return ok", async () => {
       class MyClass {
         tools?: any = new MockTools();
+
         async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
           return ok("hello");
         }
       }
+
       hooks(MyClass, {
         myMethod: [ErrorHandlerMW],
       });
@@ -116,10 +144,12 @@ describe("Middleware", () => {
     it("throw known error", async () => {
       class MyClass {
         tools?: any = new MockTools();
+
         async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
           throw UserCancelError;
         }
       }
+
       hooks(MyClass, {
         myMethod: [ErrorHandlerMW],
       });
@@ -131,45 +161,52 @@ describe("Middleware", () => {
     it("throw unknown error", async () => {
       class MyClass {
         tools?: any = new MockTools();
-        async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
-          throw { name: "unkown", message: "hello", stack: new Error().stack } as Error;
-        }
-      }
-      hooks(MyClass, {
-        myMethod: [ErrorHandlerMW],
-      });
-      const my = new MyClass();
-      const res = await my.myMethod(inputs);
-      assert.isTrue(res.isErr() && res.error.name === "unkown" && res.error.message === "hello");
-    });
 
-    it("convert system error to user error", async () => {
-      const msg =
-        "The client 'xxx@xxx.com' with object id 'xxx' does not have authorization to perform action '<REDACTED: user-file-path>' over scope '<REDACTED: user-file-path>' or the scope is invalid. If access was recently granted, please refresh your credentials.";
-      class MyClass {
-        tools?: any = new MockTools();
         async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
-          throw new Error(msg);
+          throw new Error("unknown");
         }
       }
+
       hooks(MyClass, {
         myMethod: [ErrorHandlerMW],
       });
       const my = new MyClass();
       const res = await my.myMethod(inputs);
       assert.isTrue(
-        res.isErr() &&
-          res.error.name === "Error" &&
-          res.error.message === msg &&
-          res.error instanceof UserError
+        res.isErr() && res.error instanceof SystemError && res.error.message === "unknown"
       );
     });
-  });
 
+    it("convert system error to user error", async () => {
+      const msg =
+        "The client 'xxx@xxx.com' with object id 'xxx' does not have authorization to perform action '<REDACTED: user-file-path>' over scope '<REDACTED: user-file-path>' or the scope is invalid. If access was recently granted, please refresh your credentials.";
+
+      class MyClass {
+        tools?: any = new MockTools();
+
+        async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
+          throw new Error(msg);
+        }
+      }
+
+      hooks(MyClass, {
+        myMethod: [ErrorHandlerMW],
+      });
+      const my = new MyClass();
+      const res = await my.myMethod(inputs);
+      assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        const error = res.error;
+        assert.isTrue(error instanceof UserError);
+        assert.equal(error.message, msg);
+      }
+    });
+  });
   describe("ConcurrentLockerMW", () => {
     it("temp folder should be existed when it's locked", async () => {
       class MyClass {
         tools?: any = new MockTools();
+
         async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
           const lockFileDir = path.join(
             os.tmpdir(),
@@ -179,6 +216,7 @@ describe("Middleware", () => {
           return ok("");
         }
       }
+
       hooks(MyClass, {
         myMethod: [ConcurrentLockerMW],
       });
@@ -197,10 +235,12 @@ describe("Middleware", () => {
     it("temp folder should be removed after being unlocked", async () => {
       class MyClass {
         tools?: any = new MockTools();
+
         async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
           return ok("");
         }
       }
+
       hooks(MyClass, {
         myMethod: [ConcurrentLockerMW],
       });
@@ -224,10 +264,12 @@ describe("Middleware", () => {
     it("sequence: ok", async () => {
       class MyClass {
         tools?: any = new MockTools();
+
         async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
           return ok("");
         }
       }
+
       hooks(MyClass, {
         myMethod: [ConcurrentLockerMW],
       });
@@ -250,10 +292,12 @@ describe("Middleware", () => {
     it("single: throw error", async () => {
       class MyClass {
         tools?: any = new MockTools();
+
         async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
           throw UserCancelError;
         }
       }
+
       hooks(MyClass, {
         myMethod: [ConcurrentLockerMW],
       });
@@ -274,10 +318,12 @@ describe("Middleware", () => {
     it("single: invalid NoProjectOpenedError", async () => {
       class MyClass {
         tools?: any = new MockTools();
+
         async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
           return ok("");
         }
       }
+
       hooks(MyClass, {
         myMethod: [ConcurrentLockerMW],
       });
@@ -291,10 +337,12 @@ describe("Middleware", () => {
     it("single: invalid PathNotExistError", async () => {
       class MyClass {
         tools?: any = new MockTools();
+
         async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
           return ok("");
         }
       }
+
       hooks(MyClass, {
         myMethod: [ConcurrentLockerMW],
       });
@@ -308,10 +356,12 @@ describe("Middleware", () => {
     it("single: invalid InvalidProjectError", async () => {
       class MyClass {
         tools?: any = new MockTools();
+
         async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
           return ok("");
         }
       }
+
       hooks(MyClass, {
         myMethod: [ConcurrentLockerMW],
       });
@@ -330,15 +380,17 @@ describe("Middleware", () => {
     it("concurrent: fail to get lock", async () => {
       class MyClass {
         tools?: any = new MockTools();
+
         async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
           const res = await this.myMethod(inputs);
-          assert.isTrue(res.isErr() && res.error.name === ConcurrentError().name);
+          assert.isTrue(res.isErr() && res.error.name === new ConcurrentError().name);
           this.tools = undefined;
           const res2 = await this.myMethod(inputs);
-          assert.isTrue(res2.isErr() && res2.error.name === ConcurrentError().name);
+          assert.isTrue(res2.isErr() && res2.error.name === new ConcurrentError().name);
           return ok("");
         }
       }
+
       hooks(MyClass, {
         myMethod: [ConcurrentLockerMW],
       });
@@ -357,16 +409,19 @@ describe("Middleware", () => {
     it("concurrent: ignore lock", async () => {
       class MyClass {
         tools?: any = new MockTools();
+
         async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
           const inputs2: Inputs = { platform: Platform.VSCode, ignoreLock: true };
           const res2 = await this.myMethod2(inputs2);
           assert.isTrue(res2.isOk() && res2.value === "");
           return ok("");
         }
+
         async myMethod2(inputs: Inputs): Promise<Result<any, FxError>> {
           return ok("");
         }
       }
+
       hooks(MyClass, {
         myMethod: [ConcurrentLockerMW],
         myMethod2: [ConcurrentLockerMW],
@@ -382,19 +437,60 @@ describe("Middleware", () => {
         await fs.rmdir(inputs.projectPath!, { recursive: true });
       }
     });
+
+    it("callback should work", async () => {
+      class MyClass {
+        tools?: any = new MockTools();
+        async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
+          return ok("");
+        }
+      }
+
+      let d = 0;
+
+      const lockCb = () => {
+        d++;
+      };
+
+      const unlockCb = () => {
+        d--;
+      };
+
+      CallbackRegistry.set(CoreCallbackEvent.lock, lockCb);
+      CallbackRegistry.set(CoreCallbackEvent.lock, lockCb);
+      CallbackRegistry.set(CoreCallbackEvent.unlock, unlockCb);
+
+      hooks(MyClass, {
+        myMethod: [ConcurrentLockerMW],
+      });
+
+      const my = new MyClass();
+      const inputs: Inputs = { platform: Platform.VSCode };
+      inputs.projectPath = path.join(os.tmpdir(), randomAppName());
+      try {
+        await fs.ensureDir(inputs.projectPath);
+        await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`));
+        await my.myMethod(inputs);
+        expect(d).eql(1);
+      } finally {
+        await fs.rmdir(inputs.projectPath!, { recursive: true });
+      }
+    });
   });
 
-  describe("SolutionLoaderMW, ContextInjecterMW", () => {
+  describe("SolutionLoaderMW, ContextInjectorMW", () => {
     it("load solution and inject", async () => {
       class MyClass {
         tools?: any = new MockTools();
+
         async myMethod(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
           assert.isTrue(ctx !== undefined && ctx.solution !== undefined);
           return ok("");
         }
       }
+
       hooks(MyClass, {
-        myMethod: [SolutionLoaderMW(new MockSolutionLoader()), ContextInjecterMW],
+        myMethod: [SolutionLoaderMW(), ContextInjectorMW],
       });
       const my = new MyClass();
       const inputs: Inputs = { platform: Platform.VSCode };
@@ -407,6 +503,7 @@ describe("Middleware", () => {
     it("fail to load: ignore", async () => {
       class MyClass {
         tools = new MockTools();
+
         async getQuestions(
           stage: Stage,
           inputs: Inputs,
@@ -415,14 +512,16 @@ describe("Middleware", () => {
           assert.isTrue(ctx !== undefined && ctx.solutionContext === undefined);
           return ok("");
         }
+
         async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
           assert.isTrue(ctx !== undefined && ctx.solutionContext === undefined);
           return ok("");
         }
       }
+
       hooks(MyClass, {
-        getQuestions: [ProjectSettingsLoaderMW, ContextInjecterMW],
-        other: [ProjectSettingsLoaderMW, ContextInjecterMW],
+        getQuestions: [ProjectSettingsLoaderMW, ContextInjectorMW],
+        other: [ProjectSettingsLoaderMW, ContextInjectorMW],
       });
       const my = new MyClass();
       const inputs: Inputs = { platform: Platform.VSCode };
@@ -438,12 +537,14 @@ describe("Middleware", () => {
     it("failed to load: NoProjectOpenedError, PathNotExistError", async () => {
       class MyClass {
         tools?: any = new MockTools();
+
         async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
           return ok("");
         }
       }
+
       hooks(MyClass, {
-        other: [ProjectSettingsLoaderMW, ContextInjecterMW],
+        other: [ProjectSettingsLoaderMW, ContextInjectorMW],
       });
       const my = new MyClass();
       const inputs: Inputs = { platform: Platform.VSCode };
@@ -493,8 +594,10 @@ describe("Middleware", () => {
 
     it("success to load solutionContext happy path", async () => {
       class MyClass {
+        version = "1";
         name = "jay";
         tools = new MockTools();
+
         async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
           assert.isTrue(ctx !== undefined);
           assert.isTrue(ctx!.solutionContext !== undefined);
@@ -504,8 +607,9 @@ describe("Middleware", () => {
           return ok("");
         }
       }
+
       hooks(MyClass, {
-        other: [ProjectSettingsLoaderMW, EnvInfoLoaderMW(false), ContextInjecterMW],
+        other: [ProjectSettingsLoaderMW, EnvInfoLoaderMW(false), ContextInjectorMW],
       });
       const my = new MyClass();
       const res = await my.other(inputs);
@@ -514,8 +618,10 @@ describe("Middleware", () => {
 
     it("fail to load solutionContext, missing plugins", async () => {
       class MyClass {
+        version = "1";
         name = "jay";
         tools = new MockTools();
+
         async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
           assert.isTrue(ctx !== undefined);
           assert.isTrue(ctx!.solutionContext !== undefined);
@@ -526,8 +632,9 @@ describe("Middleware", () => {
           return ok("");
         }
       }
+
       hooks(MyClass, {
-        other: [ProjectSettingsLoaderMW, ContextInjecterMW],
+        other: [ProjectSettingsLoaderMW, ContextInjectorMW],
       });
       const my = new MyClass();
       (projectSettings.solutionSettings as AzureSolutionSettings).azureResources.push(
@@ -548,12 +655,16 @@ describe("Middleware", () => {
     });
     it("ignore write", async () => {
       const spy = sandbox.spy(fs, "writeFile");
+
       class MyClass {
+        version = "1";
         tools?: any = new MockTools();
+
         async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
           return ok("");
         }
       }
+
       hooks(MyClass, {
         myMethod: [ProjectSettingsWriterMW],
       });
@@ -586,7 +697,7 @@ describe("Middleware", () => {
       const tools = new MockTools();
       const solutionContext = await newSolutionContext(tools, inputs);
       solutionContext.envInfo.profile.set("solution", new ConfigMap());
-      solutionContext.projectSettings = MockProjectSettings(appName);
+      const mockProjectSettings = MockProjectSettings(appName);
       const fileMap = new Map<string, any>();
 
       sandbox.stub<any, any>(fs, "writeFile").callsFake(async (file: string, data: any) => {
@@ -600,14 +711,18 @@ describe("Middleware", () => {
       const envJsonFile = path.resolve(confFolderPath, `env.${envName}.json`);
 
       class MyClass {
+        version = "1";
         tools = tools;
+
         async myMethod(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
           ctx!.solutionContext = solutionContext;
+          ctx!.projectSettings = mockProjectSettings;
           return ok("");
         }
       }
+
       hooks(MyClass, {
-        myMethod: [ContextInjecterMW, ProjectSettingsWriterMW, EnvInfoWriterMW()],
+        myMethod: [ContextInjectorMW, ProjectSettingsWriterMW, EnvInfoWriterMW()],
       });
       const my = new MyClass();
       await my.myMethod(inputs);
@@ -616,7 +731,7 @@ describe("Middleware", () => {
       content = fileMap.get(envJsonFile);
       const configInFile = JSON.parse(content);
       const configExpected = mapToJson(solutionContext.envInfo.profile);
-      assert.deepEqual(solutionContext.projectSettings, settingsInFile);
+      assert.deepEqual(mockProjectSettings, settingsInFile);
       assert.deepEqual(configExpected, configInFile);
     });
   });
@@ -658,6 +773,7 @@ describe("Middleware", () => {
 
       class MyClass {
         tools = tools;
+
         async WriteConfigTrigger(
           inputs: Inputs,
           ctx?: CoreHookContext
@@ -665,6 +781,7 @@ describe("Middleware", () => {
           ctx!.solutionContext = solutionContext;
           return ok("");
         }
+
         async ReadConfigTrigger(
           inputs: Inputs,
           ctx?: CoreHookContext
@@ -680,9 +797,10 @@ describe("Middleware", () => {
           return ok("");
         }
       }
+
       hooks(MyClass, {
-        WriteConfigTrigger: [ContextInjecterMW, ProjectSettingsWriterMW, EnvInfoWriterMW()],
-        ReadConfigTrigger: [ProjectSettingsLoaderMW, EnvInfoLoaderMW(false), ContextInjecterMW],
+        WriteConfigTrigger: [ContextInjectorMW, ProjectSettingsWriterMW, EnvInfoWriterMW()],
+        ReadConfigTrigger: [ProjectSettingsLoaderMW, EnvInfoLoaderMW(false), ContextInjectorMW],
       });
       const my = new MyClass();
       await my.WriteConfigTrigger(inputs);
@@ -725,32 +843,41 @@ describe("Middleware", () => {
       sandbox.stub(ui, "inputText").callsFake(async (config: InputTextConfig) => {
         return ok({ type: "success", result: questionValue });
       });
+
       class MockCore {
+        version = "1";
         tools = tools;
+
         async createProject(inputs: Inputs): Promise<Result<string, FxError>> {
           assert.isTrue(inputs[questionName] === questionValue);
           return ok("");
         }
+
         async provisionResources(inputs: Inputs): Promise<Result<any, FxError>> {
           assert.isTrue(inputs[questionName] === questionValue);
           return ok("");
         }
+
         async deployArtifacts(inputs: Inputs): Promise<Result<any, FxError>> {
           assert.isTrue(inputs[questionName] === questionValue);
           return ok("");
         }
+
         async localDebug(inputs: Inputs): Promise<Result<any, FxError>> {
           assert.isTrue(inputs[questionName] === questionValue);
           return ok("");
         }
+
         async publishApplication(inputs: Inputs): Promise<Result<any, FxError>> {
           assert.isTrue(inputs[questionName] === questionValue);
           return ok("");
         }
+
         async executeUserTask(func: Func, inputs: Inputs): Promise<Result<unknown, FxError>> {
           assert.isTrue(inputs[questionName] === questionValue);
           return ok("");
         }
+
         async _getQuestionsForCreateProject(
           inputs: Inputs
         ): Promise<Result<QTreeNode | undefined, FxError>> {
@@ -761,6 +888,7 @@ describe("Middleware", () => {
           });
           return ok(node);
         }
+
         async _getQuestions(
           ctx: SolutionContext,
           solution: Solution,
@@ -775,6 +903,7 @@ describe("Middleware", () => {
           });
           return ok(node);
         }
+
         async _getQuestionsForUserTask(
           ctx: SolutionContext,
           solution: Solution,
@@ -789,37 +918,14 @@ describe("Middleware", () => {
           return ok(node);
         }
       }
+
       hooks(MockCore, {
-        createProject: [
-          SolutionLoaderMW(new MockSolutionLoader()),
-          MockContextLoaderMW,
-          QuestionModelMW,
-        ],
-        provisionResources: [
-          SolutionLoaderMW(new MockSolutionLoader()),
-          MockContextLoaderMW,
-          QuestionModelMW,
-        ],
-        deployArtifacts: [
-          SolutionLoaderMW(new MockSolutionLoader()),
-          MockContextLoaderMW,
-          QuestionModelMW,
-        ],
-        localDebug: [
-          SolutionLoaderMW(new MockSolutionLoader()),
-          MockContextLoaderMW,
-          QuestionModelMW,
-        ],
-        publishApplication: [
-          SolutionLoaderMW(new MockSolutionLoader()),
-          MockContextLoaderMW,
-          QuestionModelMW,
-        ],
-        executeUserTask: [
-          SolutionLoaderMW(new MockSolutionLoader()),
-          MockContextLoaderMW,
-          QuestionModelMW,
-        ],
+        createProject: [SolutionLoaderMW(), MockContextLoaderMW, QuestionModelMW],
+        provisionResources: [SolutionLoaderMW(), MockContextLoaderMW, QuestionModelMW],
+        deployArtifacts: [SolutionLoaderMW(), MockContextLoaderMW, QuestionModelMW],
+        localDebug: [SolutionLoaderMW(), MockContextLoaderMW, QuestionModelMW],
+        publishApplication: [SolutionLoaderMW(), MockContextLoaderMW, QuestionModelMW],
+        executeUserTask: [SolutionLoaderMW(), MockContextLoaderMW, QuestionModelMW],
       });
       const my = new MockCore();
 
@@ -862,31 +968,41 @@ describe("Middleware", () => {
       sandbox.stub(ui, "inputText").callsFake(async (config: InputTextConfig) => {
         return ok({ type: "success", result: questionValue });
       });
+
       class MockCore {
+        version = "1";
         tools = tools;
+
         async createProject(inputs: Inputs): Promise<Result<string, FxError>> {
           return ok("");
         }
+
         async provisionResources(inputs: Inputs): Promise<Result<any, FxError>> {
           return ok("");
         }
+
         async deployArtifacts(inputs: Inputs): Promise<Result<any, FxError>> {
           return ok("");
         }
+
         async localDebug(inputs: Inputs): Promise<Result<any, FxError>> {
           return ok("");
         }
+
         async publishApplication(inputs: Inputs): Promise<Result<any, FxError>> {
           return ok("");
         }
+
         async executeUserTask(func: Func, inputs: Inputs): Promise<Result<unknown, FxError>> {
           return ok("");
         }
+
         async _getQuestionsForCreateProject(
           inputs: Inputs
         ): Promise<Result<QTreeNode | undefined, FxError>> {
           return err(InvalidInputError("mock"));
         }
+
         async _getQuestions(
           ctx: SolutionContext,
           solution: Solution,
@@ -895,6 +1011,7 @@ describe("Middleware", () => {
         ): Promise<Result<QTreeNode | undefined, FxError>> {
           return err(InvalidInputError("mock"));
         }
+
         async _getQuestionsForUserTask(
           ctx: SolutionContext,
           solution: Solution,
@@ -910,43 +1027,24 @@ describe("Middleware", () => {
           return ok(node);
         }
       }
+
       hooks(MockCore, {
-        createProject: [
-          ErrorHandlerMW,
-          SolutionLoaderMW(new MockSolutionLoader()),
-          MockContextLoaderMW,
-          QuestionModelMW,
-        ],
+        createProject: [ErrorHandlerMW, SolutionLoaderMW(), MockContextLoaderMW, QuestionModelMW],
         provisionResources: [
           ErrorHandlerMW,
-          SolutionLoaderMW(new MockSolutionLoader()),
+          SolutionLoaderMW(),
           MockContextLoaderMW,
           QuestionModelMW,
         ],
-        deployArtifacts: [
-          ErrorHandlerMW,
-          SolutionLoaderMW(new MockSolutionLoader()),
-          MockContextLoaderMW,
-          QuestionModelMW,
-        ],
-        localDebug: [
-          ErrorHandlerMW,
-          SolutionLoaderMW(new MockSolutionLoader()),
-          MockContextLoaderMW,
-          QuestionModelMW,
-        ],
+        deployArtifacts: [ErrorHandlerMW, SolutionLoaderMW(), MockContextLoaderMW, QuestionModelMW],
+        localDebug: [ErrorHandlerMW, SolutionLoaderMW(), MockContextLoaderMW, QuestionModelMW],
         publishApplication: [
           ErrorHandlerMW,
-          SolutionLoaderMW(new MockSolutionLoader()),
+          SolutionLoaderMW(),
           MockContextLoaderMW,
           QuestionModelMW,
         ],
-        executeUserTask: [
-          ErrorHandlerMW,
-          SolutionLoaderMW(new MockSolutionLoader()),
-          MockContextLoaderMW,
-          QuestionModelMW,
-        ],
+        executeUserTask: [ErrorHandlerMW, SolutionLoaderMW(), MockContextLoaderMW, QuestionModelMW],
       });
       const my = new MockCore();
 
@@ -1035,6 +1133,7 @@ describe("Middleware", () => {
 
       class ProjectUpgradeHook {
         tools = new MockTools();
+
         async upgrade(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
           assert.equal(userData["fx-resource-aad-app-for-teams.local_clientId"], "local_clientId");
           assert.equal(userData["solution.localDebugTeamsAppId"], "teamsAppId");
@@ -1066,6 +1165,7 @@ describe("Middleware", () => {
 
       class ProjectUpgradeHook {
         tools = new MockTools();
+
         async upgrade(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
           assert.equal(
             userData["fx-resource-aad-app-for-teams.local_clientId"],
@@ -1100,6 +1200,7 @@ describe("Middleware", () => {
 
       class ProjectUpgradeHook {
         tools = new MockTools();
+
         async upgrade(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
           assert.equal(userData["fx-resource-aad-app-for-teams.local_clientId"], undefined);
           assert.equal(userData["solution.localDebugTeamsAppId"], undefined);
@@ -1132,6 +1233,7 @@ describe("Middleware", () => {
       class ProjectUpgradeHook {
         name = "jay";
         tools = new MockTools();
+
         async upgrade(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
           assert.equal(userData["fx-resource-aad-app-for-teams.local_clientId"], undefined);
           assert.equal(userData["solution.localDebugTeamsAppId"], undefined);
@@ -1168,6 +1270,7 @@ describe("Middleware", () => {
       class ProjectUpgradeHook {
         name = "jay";
         tools = new MockTools();
+
         async upgrade(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
           assert.equal(
             userData["fx-resource-aad-app-for-teams.local_clientId"],
@@ -1197,13 +1300,15 @@ describe("Middleware", () => {
   });
 
   describe("MigrateConditionHandlerMW", () => {
-    it("Failed to migrate for v2 project", async () => {
+    it("Happy ", async () => {
       class MyClass {
         tools?: any = new MockTools();
+
         async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
           return ok("");
         }
       }
+
       hooks(MyClass, {
         myMethod: [MigrateConditionHandlerMW],
       });
@@ -1229,10 +1334,12 @@ describe("Middleware", () => {
     it("Failed to migrate if no project is opened", async () => {
       class MyClass {
         tools?: any = new MockTools();
+
         async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
           return ok("");
         }
       }
+
       hooks(MyClass, {
         myMethod: [MigrateConditionHandlerMW],
       });
@@ -1246,10 +1353,12 @@ describe("Middleware", () => {
     it("Failed to migrate V1 project before v1.2.0", async () => {
       class MyClass {
         tools?: any = new MockTools();
+
         async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
           return ok("");
         }
       }
+
       hooks(MyClass, {
         myMethod: [MigrateConditionHandlerMW],
       });
@@ -1271,10 +1380,12 @@ describe("Middleware", () => {
     it("Failed to migrate V1 project if archive folder already exists", async () => {
       class MyClass {
         tools?: any = new MockTools();
+
         async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
           return ok("");
         }
       }
+
       hooks(MyClass, {
         myMethod: [MigrateConditionHandlerMW],
       });
@@ -1299,10 +1410,12 @@ describe("Middleware", () => {
     it("Failed to migrate v1 bot sso project", async () => {
       class MyClass {
         tools?: any = new MockTools();
+
         async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
           return ok("");
         }
       }
+
       hooks(MyClass, {
         myMethod: [MigrateConditionHandlerMW],
       });
@@ -1328,10 +1441,12 @@ describe("Middleware", () => {
     it("Migrate v1 project without env file", async () => {
       class MyClass {
         tools?: any = new MockTools();
+
         async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
           return ok("");
         }
       }
+
       hooks(MyClass, {
         myMethod: [MigrateConditionHandlerMW],
       });
@@ -1354,10 +1469,12 @@ describe("Middleware", () => {
     it("Migrate v1 project with valid .env file", async () => {
       class MyClass {
         tools?: any = new MockTools();
+
         async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
           return ok("");
         }
       }
+
       hooks(MyClass, {
         myMethod: [MigrateConditionHandlerMW],
       });
@@ -1383,10 +1500,12 @@ describe("Middleware", () => {
     it("Migrate V1 project with invalid .env file", async () => {
       class MyClass {
         tools?: any = new MockTools();
+
         async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
           return ok("");
         }
       }
+
       hooks(MyClass, {
         myMethod: [MigrateConditionHandlerMW],
       });
@@ -1403,6 +1522,148 @@ describe("Middleware", () => {
         await fs.writeFile(path.join(inputs.projectPath, ".env"), "{}");
 
         const res = await my.myMethod(inputs);
+        assert.isTrue(res.isOk());
+      } finally {
+        await fs.rmdir(inputs.projectPath!, { recursive: true });
+      }
+    });
+  });
+
+  describe("LocalSettingsLoaderMW, ContextInjectorMW", () => {
+    it("NoProjectOpenedError", async () => {
+      const original = process.env[FeatureFlagName.MultiEnv];
+      process.env[FeatureFlagName.MultiEnv] = "true";
+
+      class MyClass {
+        tools = new MockTools();
+
+        async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+          return ok("");
+        }
+      }
+
+      hooks(MyClass, {
+        other: [TelemetrySenderMW, LocalSettingsLoaderMW, ContextInjectorMW],
+      });
+      const my = new MyClass();
+      const inputs: Inputs = { platform: Platform.VSCode };
+      const res = await my.other(inputs);
+      assert.isTrue(res.isErr() && res.error.name === NoProjectOpenedError().name);
+      process.env[FeatureFlagName.MultiEnv] = original;
+    });
+  });
+
+  describe("migrateArm success", () => {
+    const sandbox = sinon.createSandbox();
+    const appName = randomAppName();
+    const projectPath = "MigrationArmSuccessTestSample";
+    beforeEach(async () => {
+      await fs.ensureDir(projectPath);
+      await fs.ensureDir(path.join(projectPath, ".fx"));
+      await fs.copy(
+        path.join(__dirname, "../samples/migration/.fx/env.default.json"),
+        path.join(projectPath, ".fx", "env.default.json")
+      );
+      await fs.copy(
+        path.join(__dirname, "../samples/migration/.fx/settings.json"),
+        path.join(projectPath, ".fx", "settings.json")
+      );
+      mockedEnvRestore = mockedEnv({
+        TEAMSFX_MULTI_ENV: "true",
+        TEAMSFX_ARM_SUPPORT: "true",
+      });
+    });
+    afterEach(async () => {
+      await fs.remove(projectPath);
+      sandbox.restore();
+      mockedEnvRestore();
+    });
+    it("successfully migration arm templates", async () => {
+      class MyClass {
+        tools = new MockTools();
+        async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+          return ok("");
+        }
+      }
+      hooks(MyClass, {
+        other: [migrateArm],
+      });
+      const my = new MyClass();
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: projectPath,
+        ignoreEnvInfo: true,
+      };
+      await my.other(inputs);
+      assert.isTrue(await fs.pathExists(path.join(projectPath, ".fx", "configs")));
+      assert.isTrue(
+        await fs.pathExists(path.join(projectPath, ".fx", "configs", "azure.parameters.dev.json"))
+      );
+      assert.isTrue(await fs.pathExists(path.join(projectPath, "templates", "azure")));
+      assert.isTrue(
+        await fs.pathExists(path.join(projectPath, "templates", "azure", "main.bicep"))
+      );
+      const armParam = await fs.readJson(
+        path.join(projectPath, ".fx", "configs", "azure.parameters.dev.json")
+      );
+      assert.isNotNull(armParam.parameters.resourceBaseName);
+      assert.isNotNull(armParam.parameters.azureSql_admin);
+      assert.strictEqual(armParam.parameters.frontendHosting_storageName.value, "test");
+      assert.strictEqual(armParam.parameters.identity_managedIdentityName.value, "test");
+      assert.strictEqual(armParam.parameters.azureSql_serverName.value, "test");
+      assert.strictEqual(armParam.parameters.azureSql_databaseName.value, "test");
+      assert.strictEqual(armParam.parameters.function_serverfarmsName.value, "test");
+      assert.strictEqual(armParam.parameters.function_storageName.value, "test");
+      assert.strictEqual(armParam.parameters.function_webappName.value, "test");
+
+      // const newEnv = await fs.readJson(path.join(projectPath, ".fx", "new.env.default.json"));
+      // const envFile = await fs.readJson(path.join(projectPath, ".fx", "env.default.json"));
+      // assert.strictEqual(
+      //   newEnv["fx-resource-bot"].wayToRegisterBot,
+      //   envFile["fx-resource-bot"].wayToRegisterBot
+      // );
+      // assert.isUndefined(newEnv["fx-resource-bot"].skuName);
+      // assert.isNotNull(envFile["fx-resource-bot"].skuName);
+    });
+  });
+  describe("ProjectMigratorMW", () => {
+    const sandbox = sinon.createSandbox();
+    const appName = randomAppName();
+    const projectPath = path.join(os.tmpdir(), appName);
+
+    beforeEach(async () => {
+      await fs.ensureDir(projectPath);
+      await fs.copy(path.join(__dirname, "../samples/migration/"), path.join(projectPath));
+      mockedEnvRestore = mockedEnv({
+        TEAMSFX_MULTI_ENV: "true",
+        TEAMSFX_ARM_SUPPORT: "true",
+      });
+      sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok("OK"));
+    });
+
+    afterEach(async () => {
+      await fs.remove(projectPath);
+      sandbox.restore();
+      mockedEnvRestore();
+    });
+
+    it("successfully migrate to version of arm and multi-env", async () => {
+      class MyClass {
+        tools?: any = new MockTools();
+        async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+          return ok("");
+        }
+      }
+      hooks(MyClass, {
+        other: [ProjectMigratorMW],
+      });
+
+      const inputs: Inputs = { platform: Platform.VSCode };
+      inputs.projectPath = projectPath;
+      const my = new MyClass();
+
+      try {
+        const res = await my.other(inputs);
         assert.isTrue(res.isOk());
       } finally {
         await fs.rmdir(inputs.projectPath!, { recursive: true });

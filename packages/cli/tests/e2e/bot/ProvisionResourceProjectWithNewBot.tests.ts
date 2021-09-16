@@ -111,7 +111,6 @@ describe("Provision", function () {
   after(async () => {
     // clean up
     console.log(`[Successfully] start to clean up for ${projectPath}`);
-    // disable temporarily to protect env for debug
-    // await cleanUp(appName, projectPath, true, true, false);
+    await cleanUp(appName, projectPath, true, true, false);
   });
 });

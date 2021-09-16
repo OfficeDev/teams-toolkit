@@ -103,19 +103,19 @@ export class ApimPluginV2 implements ResourcePlugin {
     provisionOutput: Json,
     tokenProvider: AzureAccountProvider
   ): Promise<Result<Void, FxError>> {
-    const questionRes = await this.plugin.getQuestions(
-      Stage.deploy,
-      convert2PluginContext(ctx, inputs)
-    );
-    if (questionRes.isOk()) {
-      const node = questionRes.value;
-      if (node) {
-        const res = await traverse(node, inputs, ctx.userInteraction);
-        if (res.isErr()) {
-          return err(res.error);
-        }
-      }
-    }
+    // const questionRes = await this.plugin.getQuestions(
+    //   Stage.deploy,
+    //   convert2PluginContext(ctx, inputs)
+    // );
+    // if (questionRes.isOk()) {
+    //   const node = questionRes.value;
+    //   if (node) {
+    //     const res = await traverse(node, inputs, ctx.userInteraction);
+    //     if (res.isErr()) {
+    //       return err(res.error);
+    //     }
+    //   }
+    // }
     return await deployAdapter(ctx, inputs, provisionOutput, tokenProvider, this.plugin);
   }
 
@@ -124,19 +124,19 @@ export class ApimPluginV2 implements ResourcePlugin {
     inputs: Inputs,
     func: Func
   ): Promise<Result<unknown, FxError>> {
-    const questionRes = await this.plugin.getQuestionsForUserTask(
-      func,
-      convert2PluginContext(ctx, inputs)
-    );
-    if (questionRes.isOk()) {
-      const node = questionRes.value;
-      if (node) {
-        const res = await traverse(node, inputs, ctx.userInteraction);
-        if (res.isErr()) {
-          return err(res.error);
-        }
-      }
-    }
+    // const questionRes = await this.plugin.getQuestionsForUserTask(
+    //   func,
+    //   convert2PluginContext(ctx, inputs)
+    // );
+    // if (questionRes.isOk()) {
+    //   const node = questionRes.value;
+    //   if (node) {
+    //     const res = await traverse(node, inputs, ctx.userInteraction);
+    //     if (res.isErr()) {
+    //       return err(res.error);
+    //     }
+    //   }
+    // }
     return await executeUserTaskAdapter(ctx, inputs, func, this.plugin);
   }
 }

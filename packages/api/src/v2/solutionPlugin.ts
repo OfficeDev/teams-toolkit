@@ -139,6 +139,7 @@ export interface SolutionPlugin {
     ctx: Context,
     inputs: Inputs,
     func: Func,
+    envInfo: EnvInfoV2,
     tokenProvider: TokenProvider
   ) => Promise<Result<unknown, FxError>>;
 
@@ -167,11 +168,18 @@ export interface SolutionPlugin {
   ) => Promise<Result<any, FxError>>;
 
   //legacy API for compatibility reason
-  getQuestions?: (ctx: Context, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
+  getQuestions?: (
+    ctx: Context, 
+    inputs: Inputs, 
+    envInfo: DeepReadonly<EnvInfoV2>,
+    tokenProvider: TokenProvider
+  ) => Promise<Result<QTreeNode | undefined, FxError>>;
 
   getQuestionsForUserTask?: (
     ctx: Context,
     inputs: Inputs,
-    func: Func
+    func: Func,
+    envInfo: DeepReadonly<EnvInfoV2>,
+    tokenProvider: TokenProvider
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
 }

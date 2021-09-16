@@ -1037,14 +1037,14 @@ interface ResourcePlugin {
     // (undocumented)
     displayName: string;
     // (undocumented)
-    executeUserTask?: (ctx: Context_2, inputs: Inputs, func: Func) => Promise<Result<unknown, FxError>>;
+    executeUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, envInfo: EnvInfoV2, tokenProvider: TokenProvider) => Promise<Result<unknown, FxError>>;
     generateResourceTemplate?: (ctx: Context_2, inputs: Inputs) => Promise<Result<ResourceTemplate_2, FxError>>;
     // (undocumented)
-    getQuestions?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
+    getQuestions?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
     getQuestionsForScaffolding?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
-    getQuestionsForUserTask?: (ctx: Context_2, inputs: Inputs, func: Func) => Promise<Result<QTreeNode | undefined, FxError>>;
+    getQuestionsForUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
     name: string;
     provisionLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: Json, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
@@ -1197,13 +1197,13 @@ interface SolutionPlugin {
     deploy?: (ctx: Context_2, inputs: Inputs, provisionOutputs: Json, tokenProvider: AzureAccountProvider) => Promise<Result<Void, FxError>>;
     // (undocumented)
     displayName: string;
-    executeUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, tokenProvider: TokenProvider) => Promise<Result<unknown, FxError>>;
+    executeUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, envInfo: EnvInfoV2, tokenProvider: TokenProvider) => Promise<Result<unknown, FxError>>;
     generateResourceTemplate: (ctx: Context_2, inputs: Inputs) => Promise<Result<Json, FxError>>;
     // (undocumented)
-    getQuestions?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
+    getQuestions?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
     getQuestionsForScaffolding?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
-    getQuestionsForUserTask?: (ctx: Context_2, inputs: Inputs, func: Func) => Promise<Result<QTreeNode | undefined, FxError>>;
+    getQuestionsForUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
     grantPermission?: (ctx: Context_2, inputs: Inputs, tokenProvider: TokenProvider) => Promise<Result<any, FxError>>;
     // (undocumented)
     listCollaborator?: (ctx: Context_2, inputs: Inputs, tokenProvider: TokenProvider) => Promise<Result<any, FxError>>;

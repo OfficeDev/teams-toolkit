@@ -275,10 +275,21 @@ export async function getQuestionsForScaffoldingAdapter(
   inputs: Inputs,
   plugin: Plugin
 ): Promise<Result<QTreeNode | undefined, FxError>> {
-  if (!plugin.getQuestions) return err(PluginHasNoTaskImpl(plugin.displayName, "getQuestions"));
+  if (!plugin.getQuestions) return ok(undefined);
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
   return await plugin.getQuestions(Stage.create, pluginContext);
 }
+
+export async function getQuestionsAdapter(
+  ctx: Context,
+  inputs: Inputs,
+  plugin: Plugin
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  if (!plugin.getQuestions) return ok(undefined);
+  const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
+  return await plugin.getQuestions(inputs.stage!, pluginContext);
+}
+
 export function getArmOutput(ctx: PluginContext, key: string): string | undefined {
   const solutionConfig = ctx.envInfo.profile.get("solution");
   const output = solutionConfig?.get(ARM_TEMPLATE_OUTPUT);

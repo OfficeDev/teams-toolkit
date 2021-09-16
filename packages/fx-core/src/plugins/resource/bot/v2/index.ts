@@ -48,12 +48,7 @@ export class BotPluginV2 implements ResourcePlugin {
   activate(solutionSettings: AzureSolutionSettings): boolean {
     return this.plugin.activate(solutionSettings);
   }
-  async getQuestionsForScaffolding(
-    ctx: Context,
-    inputs: Inputs
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
-    return await getQuestionsForScaffoldingAdapter(ctx, inputs, this.plugin);
-  }
+
   async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
     return await scaffoldSourceCodeAdapter(ctx, inputs, this.plugin);
   }

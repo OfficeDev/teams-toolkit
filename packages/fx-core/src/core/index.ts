@@ -275,7 +275,7 @@ export class FxCore implements Core {
         if (generateResourceTemplateRes.isErr()) {
           return err(generateResourceTemplateRes.error);
         }
-        ctx.provisionInputConfig = generateResourceTemplateRes.value;
+        // ctx.provisionInputConfig = generateResourceTemplateRes.value;
         if (multiEnv) {
           if (solution.createEnv) {
             inputs.copy = false;

@@ -93,22 +93,11 @@ export class FunctionPluginV2 implements ResourcePlugin {
   async executeUserTask(
     ctx: Context,
     inputs: Inputs,
-    func: Func
+    func: Func,
+    envInfo: v2.EnvInfoV2,
+    tokenProvider: TokenProvider
   ): Promise<Result<unknown, FxError>> {
-    // const questionRes = await this.plugin.getQuestionsForUserTask(
-    //   func,
-    //   convert2PluginContext(ctx, inputs)
-    // );
-    // if (questionRes.isOk()) {
-    //   const node = questionRes.value;
-    //   if (node) {
-    //     const res = await traverse(node, inputs, ctx.userInteraction);
-    //     if (res.isErr()) {
-    //       return err(res.error);
-    //     }
-    //   }
-    // }
-    return await executeUserTaskAdapter(ctx, inputs, func, this.plugin);
+    return await executeUserTaskAdapter(ctx, inputs, func, envInfo, tokenProvider, this.plugin);
   }
 
   async getQuestionsForUserTask(

@@ -260,11 +260,18 @@ export async function executeUserTaskAdapter(
   ctx: Context,
   inputs: Inputs,
   func: Func,
+  envInfo: EnvInfoV2,
+  tokenProvider: TokenProvider,
   plugin: Plugin
 ): Promise<Result<unknown, FxError>> {
   if (!plugin.executeUserTask)
     return err(PluginHasNoTaskImpl(plugin.displayName, "executeUserTask"));
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
+  const config = ConfigMap.fromJSON(envInfo.profile) || new ConfigMap();
+  pluginContext.config = config;
+  pluginContext.appStudioToken = tokenProvider.appStudioToken;
+  pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
+  pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
   const res = await plugin.executeUserTask(func, pluginContext);
   if (res.isErr()) return err(res.error);
   return ok(res.value);

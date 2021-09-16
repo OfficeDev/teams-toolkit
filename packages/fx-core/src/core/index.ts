@@ -139,8 +139,7 @@ export interface CoreHookContext extends HookContext {
   //for v2 api
   contextV2?: v2.Context;
   solutionV2?: v2.SolutionPlugin;
-  provisionInputConfig?: Json;
-  provisionOutputs?: Json;
+  envInfoV2?: v2.EnvInfoV2;
   envName?: string;
   localSettings?: Json;
 }
@@ -636,7 +635,7 @@ export class FxCore implements Core {
     const array = namespace ? namespace.split("/") : [];
     if ("" !== namespace && array.length > 0) {
       if (isV2()) {
-        if (!ctx || !ctx.solutionV2)
+        if (!ctx || !ctx.solutionV2 || ! ctx.envInfoV2)
           return err(new ObjectIsUndefinedError("executeUserTask input stuff"));
         if (!ctx.contextV2) ctx.contextV2 = createV2Context(this, newProjectSettings());
         if (ctx.solutionV2.executeUserTask)
@@ -644,6 +643,7 @@ export class FxCore implements Core {
             ctx.contextV2,
             inputs,
             func,
+            ctx.envInfoV2,
             this.tools.tokenProvider
           );
         else return err(FunctionRouterError(func));

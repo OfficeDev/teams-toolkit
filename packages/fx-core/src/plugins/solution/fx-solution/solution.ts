@@ -141,6 +141,7 @@ import {
 } from "./v2/utils";
 import { askForProvisionConsent } from "./v2/provision";
 import { scaffoldReadmeAndLocalSettings } from "./v2/scaffolding";
+import { UserError } from "@microsoft/teamsfx-api";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -1243,6 +1244,9 @@ export class TeamsAppSolution implements Solution {
     try {
       const result = await this.checkAndGetCurrentUserInfo(ctx);
       if (result.isErr()) {
+        if (result.error instanceof UserError) {
+          return result;
+        }
         return err(
           sendErrorTelemetryThenReturnError(
             SolutionTelemetryEvent.GrantPermission,
@@ -1402,6 +1406,9 @@ export class TeamsAppSolution implements Solution {
     try {
       const result = await this.checkAndGetCurrentUserInfo(ctx);
       if (result.isErr()) {
+        if (result.error instanceof UserError) {
+          return result;
+        }
         return err(
           sendErrorTelemetryThenReturnError(
             SolutionTelemetryEvent.CheckPermission,
@@ -1528,6 +1535,9 @@ export class TeamsAppSolution implements Solution {
     try {
       const result = await this.checkAndGetCurrentUserInfo(ctx);
       if (result.isErr()) {
+        if (result.error instanceof UserError) {
+          return result;
+        }
         return err(
           sendErrorTelemetryThenReturnError(
             SolutionTelemetryEvent.ListCollaborator,

@@ -211,7 +211,7 @@ export async function askResourceGroupInfo(
     );
   }
 
-  const resourceGroupName = inputs[CoreQuestionNames.TargetResourceGroupName];
+  const resourceGroupName = inputs.targetResourceGroupName;
   if (resourceGroupName === newResourceGroupOption) {
     return ok({
       name: inputs[CoreQuestionNames.NewResourceGroupName],
@@ -219,7 +219,7 @@ export async function askResourceGroupInfo(
       createNewResourceGroup: true,
     });
   } else {
-    const targetResourceGroupName = inputs[CoreQuestionNames.TargetResourceGroupName];
+    const targetResourceGroupName = inputs.targetResourceGroupName;
     if (typeof targetResourceGroupName !== "string") {
       return err(
         returnSystemError(
@@ -278,20 +278,19 @@ async function getLocations(
   return ok(rgLocations);
 }
 
-async function getResourceGroupInfoFromEnvConfig(
+async function getResourceGroupInfo(
   ctx: SolutionContext,
   rmClient: ResourceManagementClient,
-  envName: string,
   resourceGroupName: string
-): Promise<Result<ResourceGroupInfo, FxError>> {
+): Promise<ResourceGroupInfo | undefined> {
   try {
     const getRes = await rmClient.resourceGroups.get(resourceGroupName);
     if (getRes.name) {
-      return ok({
+      return {
         createNewResourceGroup: false,
         name: getRes.name,
         location: getRes.location,
-      });
+      };
     }
   } catch (error) {
     ctx.logProvider?.error(
@@ -299,19 +298,7 @@ async function getResourceGroupInfoFromEnvConfig(
     );
   }
 
-  // Currently we do not support creating resource group by input config, so just throw an error.
-  return err(
-    returnUserError(
-      new Error(
-        `Resource group '${resourceGroupName}' does not exist, please check your ${EnvConfigFileNameTemplate.replace(
-          EnvNamePlaceholder,
-          envName
-        )} file.`
-      ),
-      "Solution",
-      SolutionError.ResourceGroupNotFound
-    )
-  );
+  return undefined;
 }
 
 /**
@@ -367,9 +354,10 @@ async function askCommonQuestions(
   const rmClient = new ResourceManagementClient(azureToken, subscriptionId);
 
   // Resource group info precedence are:
-  //   1. env config (config.{envName}.json), for user customization
-  //   2. publish profile (profile.{envName}.json), for reprovision
-  //   3. asking user with a popup
+  //   1. ctx.answers, for CLI --resource-group argument, only support exsting resource group
+  //   2. env config (config.{envName}.json), for user customization, only support exsting resource group
+  //   3. publish profile (profile.{envName}.json), for reprovision
+  //   4. asking user with a popup
   const resourceGroupNameFromEnvConfig = ctx.envInfo.config.azure?.resourceGroupName;
   const resourceGroupNameFromProfile = ctx.envInfo.profile
     .get(GLOBAL_CONFIG)
@@ -380,17 +368,42 @@ async function askCommonQuestions(
   }-rg`;
   let resourceGroupInfo: ResourceGroupInfo;
 
-  if (resourceGroupNameFromEnvConfig) {
-    const res = await getResourceGroupInfoFromEnvConfig(
+  if (ctx.answers?.targetResourceGroupName) {
+    const maybeResourceGroupInfo = await getResourceGroupInfo(
       ctx,
       rmClient,
-      ctx.envInfo.envName,
-      resourceGroupNameFromEnvConfig
+      ctx.answers.targetResourceGroupName
     );
-    if (res.isErr()) {
-      return err(res.error);
+    if (!maybeResourceGroupInfo) {
+      // Currently we do not support creating resource group from command line arguments
+      return err(
+        returnUserError(
+          new Error(
+            `Resource group '${resourceGroupNameFromEnvConfig}' does not exist, please specify an existing resource group.`
+          ),
+          "Solution",
+          SolutionError.ResourceGroupNotFound
+        )
+      );
     }
-    resourceGroupInfo = res.value;
+    resourceGroupInfo = maybeResourceGroupInfo;
+  } else if (resourceGroupNameFromEnvConfig) {
+    const resourceGroupName = resourceGroupNameFromEnvConfig;
+    const maybeResourceGroupInfo = await getResourceGroupInfo(ctx, rmClient, resourceGroupName);
+    if (!maybeResourceGroupInfo) {
+      // Currently we do not support creating resource group by input config, so just throw an error.
+      const envFile = EnvConfigFileNameTemplate.replace(EnvNamePlaceholder, ctx.envInfo.envName);
+      return err(
+        returnUserError(
+          new Error(
+            `Resource group '${resourceGroupName}' does not exist, please check your '${envFile}' file.`
+          ),
+          "Solution",
+          SolutionError.ResourceGroupNotFound
+        )
+      );
+    }
+    resourceGroupInfo = maybeResourceGroupInfo;
   } else if (resourceGroupNameFromProfile && resourceGroupLocationFromProfile) {
     try {
       const checkRes = await rmClient.resourceGroups.checkExistence(resourceGroupNameFromProfile);

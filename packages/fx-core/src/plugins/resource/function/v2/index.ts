@@ -9,6 +9,7 @@ import {
   FxError,
   Inputs,
   Json,
+  QTreeNode,
   Result,
   TokenProvider,
   traverse,
@@ -35,6 +36,7 @@ import {
   deployAdapter,
   executeUserTaskAdapter,
   generateResourceTemplateAdapter,
+  getQuestionsForUserTaskAdapter,
   provisionResourceAdapter,
   scaffoldSourceCodeAdapter,
 } from "../../utils4v2";
@@ -93,19 +95,27 @@ export class FunctionPluginV2 implements ResourcePlugin {
     inputs: Inputs,
     func: Func
   ): Promise<Result<unknown, FxError>> {
-    const questionRes = await this.plugin.getQuestionsForUserTask(
-      func,
-      convert2PluginContext(ctx, inputs)
-    );
-    if (questionRes.isOk()) {
-      const node = questionRes.value;
-      if (node) {
-        const res = await traverse(node, inputs, ctx.userInteraction);
-        if (res.isErr()) {
-          return err(res.error);
-        }
-      }
-    }
+    // const questionRes = await this.plugin.getQuestionsForUserTask(
+    //   func,
+    //   convert2PluginContext(ctx, inputs)
+    // );
+    // if (questionRes.isOk()) {
+    //   const node = questionRes.value;
+    //   if (node) {
+    //     const res = await traverse(node, inputs, ctx.userInteraction);
+    //     if (res.isErr()) {
+    //       return err(res.error);
+    //     }
+    //   }
+    // }
     return await executeUserTaskAdapter(ctx, inputs, func, this.plugin);
+  }
+
+  async getQuestionsForUserTask(
+    ctx: Context,
+    inputs: Inputs,
+    func: Func
+  ): Promise<Result<QTreeNode | undefined, FxError>> {
+    return await getQuestionsForUserTaskAdapter(ctx, inputs, func, this.plugin);
   }
 }

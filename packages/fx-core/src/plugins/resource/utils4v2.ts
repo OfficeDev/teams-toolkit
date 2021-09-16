@@ -289,7 +289,16 @@ export async function getQuestionsAdapter(
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
   return await plugin.getQuestions(inputs.stage!, pluginContext);
 }
-
+export async function getQuestionsForUserTaskAdapter(
+  ctx: Context,
+  inputs: Inputs,
+  func: Func,
+  plugin: Plugin
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  if (!plugin.getQuestionsForUserTask) return ok(undefined);
+  const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
+  return await plugin.getQuestionsForUserTask(func, pluginContext);
+}
 export function getArmOutput(ctx: PluginContext, key: string): string | undefined {
   const solutionConfig = ctx.envInfo.profile.get("solution");
   const output = solutionConfig?.get(ARM_TEMPLATE_OUTPUT);

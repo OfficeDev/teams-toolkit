@@ -13,6 +13,7 @@ import {
   Json,
   ok,
   PluginContext,
+  QTreeNode,
   Result,
   Stage,
   TokenProvider,
@@ -42,6 +43,7 @@ import {
   deployAdapter,
   executeUserTaskAdapter,
   generateResourceTemplateAdapter,
+  getQuestionsAdapter,
   provisionResourceAdapter,
   scaffoldSourceCodeAdapter,
 } from "../../utils4v2";
@@ -116,6 +118,13 @@ export class AppStudioPluginV2 implements ResourcePlugin {
   ): Promise<Result<unknown, FxError>> {
     return await executeUserTaskAdapter(ctx, inputs, func, this.plugin);
   }
+  
+  async getQuestions(
+    ctx: Context,
+    inputs: Inputs
+  ): Promise<Result<QTreeNode | undefined, FxError>> {
+    return await getQuestionsAdapter(ctx, inputs, this.plugin);
+  }
 
   async publishApplication(
     ctx: Context,
@@ -128,16 +137,16 @@ export class AppStudioPluginV2 implements ResourcePlugin {
     pluginContext.appStudioToken = tokenProvider;
 
     // run question model for publish
-    const getQuestionRes = await this.plugin.getQuestions(Stage.publish, pluginContext);
-    if (getQuestionRes.isOk()) {
-      const node = getQuestionRes.value;
-      if (node) {
-        const res = await traverse(node, inputs, ctx.userInteraction);
-        if (res.isErr()) {
-          return err(res.error);
-        }
-      }
-    }
+    // const getQuestionRes = await this.plugin.getQuestions(Stage.publish, pluginContext);
+    // if (getQuestionRes.isOk()) {
+    //   const node = getQuestionRes.value;
+    //   if (node) {
+    //     const res = await traverse(node, inputs, ctx.userInteraction);
+    //     if (res.isErr()) {
+    //       return err(res.error);
+    //     }
+    //   }
+    // }
     const configsOfOtherPlugins = new Map<string, ConfigMap>();
     for (const key in provisionOutputs) {
       const output = provisionOutputs[key];

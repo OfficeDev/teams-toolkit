@@ -35,7 +35,9 @@ import {
   convert2PluginContext,
   deployAdapter,
   executeUserTaskAdapter,
+  getQuestionsAdapter,
   getQuestionsForScaffoldingAdapter,
+  getQuestionsForUserTaskAdapter,
   provisionResourceAdapter,
   scaffoldSourceCodeAdapter,
 } from "../../utils4v2";
@@ -50,12 +52,29 @@ export class ApimPluginV2 implements ResourcePlugin {
   activate(solutionSettings: AzureSolutionSettings): boolean {
     return this.plugin.activate(solutionSettings);
   }
+  
+  async getQuestions(
+    ctx: Context,
+    inputs: Inputs
+  ): Promise<Result<QTreeNode | undefined, FxError>> {
+    return await getQuestionsAdapter(ctx, inputs, this.plugin);
+  }
+  
   async getQuestionsForScaffolding(
     ctx: Context,
     inputs: Inputs
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     return await getQuestionsForScaffoldingAdapter(ctx, inputs, this.plugin);
   }
+
+  async getQuestionsForUserTask(
+    ctx: Context,
+    inputs: Inputs,
+    func: Func
+  ): Promise<Result<QTreeNode | undefined, FxError>> {
+    return await getQuestionsForUserTaskAdapter(ctx, inputs, func, this.plugin);
+  }
+
   async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
     return await scaffoldSourceCodeAdapter(ctx, inputs, this.plugin);
   }

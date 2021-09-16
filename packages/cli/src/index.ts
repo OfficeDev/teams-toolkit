@@ -11,6 +11,7 @@ import * as constants from "./constants";
 import { registerPrompts } from "./prompts";
 import HelpParamGenerator from "./helpParamGenerator";
 import { getVersion } from "./utils";
+import { CLILogProvider } from "./commonlib/log";
 
 function changeArgv(argv: string[]): string[] {
   return argv.map((s) => (s.startsWith("--") ? s.toLocaleLowerCase() : s));
@@ -21,7 +22,10 @@ function changeArgv(argv: string[]): string[] {
  */
 export async function start() {
   registerPrompts();
-  await HelpParamGenerator.initializeQuestionsForHelp();
+  const result = await HelpParamGenerator.initializeQuestionsForHelp();
+  if (result.isErr()) {
+    throw result.error;
+  }
   const argv = yargs(changeArgv(hideBin(process.argv))).parserConfiguration({
     "parse-numbers": false,
     "camel-case-expansion": false,

@@ -199,7 +199,7 @@ class EnvActivate extends YargsCommand {
     this.params = HelpParamGenerator.getYargsParamForHelp(Stage.activateEnv);
     yargs.positional("env", {
       type: "string",
-      description: "Select a environment to activate",
+      description: "Select an environment to activate",
       demandOption: true,
     });
     return yargs.version(false).options(this.params);

@@ -857,7 +857,7 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
       throw result.error;
     }
     window.showInformationMessage(
-      `Added account: '${inputs.email}'' to the environment '${env}' as a collaborator`
+      `Added account: '${inputs.email}' to the environment '${env}' as a collaborator`
     );
 
     updateCollaboratorList(env);

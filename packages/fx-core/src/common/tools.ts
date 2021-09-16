@@ -539,3 +539,7 @@ export function parseFromResourceId(pattern: RegExp, resourceId: string): string
   const result = resourceId.match(pattern);
   return result ? result[1].trim() : "";
 }
+
+export async function waitSeconds(second: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, second * 1000));
+}

@@ -44,19 +44,7 @@ describe("sqlPlugin", () => {
     sinon.restore();
   });
 
-  it("getQuestions without sql", async function () {
-    // Arrange
-    sinon.stub(Servers.prototype, "checkNameAvailability").resolves({ available: true });
-    // Act
-    const getQuestionResult = await sqlPlugin.getQuestions(Stage.provision, pluginContext);
-
-    // Assert
-    chai.assert.isTrue(getQuestionResult.isOk());
-  });
-
-  it("getQuestions with sql", async function () {
-    // Arrange
-    sinon.stub(Servers.prototype, "checkNameAvailability").resolves({ available: false });
+  it("getQuestions", async function () {
     // Act
     const getQuestionResult = await sqlPlugin.getQuestions(Stage.provision, pluginContext);
 

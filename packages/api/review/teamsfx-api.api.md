@@ -613,6 +613,8 @@ export interface Inputs extends Json {
     // (undocumented)
     targetEnvName?: string;
     // (undocumented)
+    targetResourceGroupName?: string;
+    // (undocumented)
     vscodeEnv?: VsCodeEnv;
 }
 

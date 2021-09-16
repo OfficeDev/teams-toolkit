@@ -196,7 +196,7 @@ export async function getSubscriptionAndResourceGroupNode(env: string): Promise<
 function checkAzureAccountStatus(env: string): TreeItem | undefined {
   if (AzureAccountManager.getAccountInfo() === undefined) {
     return {
-      commandId: `fx-extension.environment.${env}.checkAzureAccount`,
+      commandId: `fx-extension.environment.${env}.permission`,
       label: StringResources.vsc.commandsTreeViewProvider.noAzureAccountSignedIn,
       icon: "warning",
       isCustom: true,
@@ -211,28 +211,21 @@ async function checkSubscriptionPermission(
   env: string,
   subscriptionId: string
 ): Promise<TreeItem | undefined> {
-  if (tools.tokenProvider.azureAccountProvider.getAccountInfo()) {
-    const subscriptions: SubscriptionInfo[] | undefined =
-      await tools.tokenProvider.azureAccountProvider.listSubscriptions();
+  const subscriptions: SubscriptionInfo[] | undefined =
+    await tools.tokenProvider.azureAccountProvider.listSubscriptions();
 
-    let checkSucceeded = false;
-    if (subscriptions) {
-      const targetSub = subscriptions.find((sub) => sub.subscriptionId === subscriptionId);
-      checkSucceeded = targetSub !== undefined;
-    }
+  const targetSub = subscriptions.find((sub) => sub.subscriptionId === subscriptionId);
+  if (!targetSub) {
+    const warningTreeItem: TreeItem = {
+      commandId: `fx-extension.environment.${env}.checkSubscription`,
+      label: StringResources.vsc.commandsTreeViewProvider.noSubscriptionFoundInAzureAccount,
+      icon: "warning",
+      isCustom: true,
+      parent: `fx-extension.environment.${env}`,
+    };
 
-    if (!checkSucceeded) {
-      const warningTreeItem: TreeItem = {
-        commandId: `fx-extension.environment.${env}.checkSubscription`,
-        label: StringResources.vsc.commandsTreeViewProvider.noSubscriptionFoundInAzureAccount,
-        icon: "warning",
-        isCustom: true,
-        parent: `fx-extension.environment.${env}`,
-      };
-
-      return warningTreeItem;
-    }
+    return warningTreeItem;
+  } else {
+    return undefined;
   }
-
-  return undefined;
 }

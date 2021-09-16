@@ -76,6 +76,14 @@ jobs:
           git tag -f e2e HEAD
           git push origin -f e2e
 
+      - name: Upload test report
+        uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: report.json
+          path: |
+            ./packages/cli/report.json
+
       - name: Clean the Repo
         if: ${{ always() }}
         run: |
@@ -86,14 +94,6 @@ jobs:
         run: |
           version =$(node -p -e "require('./packages/cli/package.json').version")
           npx ts-node .github/scripts/testPlan.ts sync ./packages/cli/report.json cli $version
-
-      - name: Upload test report
-        uses: actions/upload-artifact@v2
-        if: failure()
-        with:
-          name: report.json
-          path: |
-            ./packages/cli/report.json
 
   report-stat:
     env:

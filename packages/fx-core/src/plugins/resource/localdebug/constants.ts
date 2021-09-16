@@ -72,6 +72,11 @@ export class SolutionPlugin {
   public static readonly ProgrammingLanguage: string = "programmingLanguage";
 }
 
+export class AppStudioPlugin {
+  public static readonly Name: string = "fx-resource-appstudio";
+  public static readonly TeamsAppId: string = "teamsAppId";
+}
+
 export class FrontendHostingPlugin {
   public static readonly Name: string = "fx-resource-frontend-hosting";
 }

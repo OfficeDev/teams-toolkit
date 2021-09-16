@@ -662,7 +662,6 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
-    ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW(),
@@ -697,7 +696,6 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
-    ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW(),

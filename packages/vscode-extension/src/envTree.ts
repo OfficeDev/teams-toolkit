@@ -196,7 +196,7 @@ export async function getSubscriptionAndResourceGroupNode(env: string): Promise<
 function checkAzureAccountStatus(env: string): TreeItem | undefined {
   if (AzureAccountManager.getAccountInfo() === undefined) {
     return {
-      commandId: `fx-extension.environment.${env}.permission`,
+      commandId: `fx-extension.environment.${env}.checkAzureAccount`,
       label: StringResources.vsc.commandsTreeViewProvider.noAzureAccountSignedIn,
       icon: "warning",
       isCustom: true,
@@ -211,21 +211,23 @@ async function checkSubscriptionPermission(
   env: string,
   subscriptionId: string
 ): Promise<TreeItem | undefined> {
-  const subscriptions: SubscriptionInfo[] | undefined =
-    await tools.tokenProvider.azureAccountProvider.listSubscriptions();
+  if (tools.tokenProvider.azureAccountProvider.getAccountInfo()) {
+    const subscriptions: SubscriptionInfo[] | undefined =
+      await tools.tokenProvider.azureAccountProvider.listSubscriptions();
 
-  const targetSub = subscriptions.find((sub) => sub.subscriptionId === subscriptionId);
-  if (!targetSub) {
-    const warningTreeItem: TreeItem = {
-      commandId: `fx-extension.environment.${env}.checkSubscription`,
-      label: StringResources.vsc.commandsTreeViewProvider.noSubscriptionFoundInAzureAccount,
-      icon: "warning",
-      isCustom: true,
-      parent: `fx-extension.environment.${env}`,
-    };
+    const targetSub = subscriptions.find((sub) => sub.subscriptionId === subscriptionId);
+    if (!targetSub) {
+      const warningTreeItem: TreeItem = {
+        commandId: `fx-extension.environment.${env}.checkSubscription`,
+        label: StringResources.vsc.commandsTreeViewProvider.noSubscriptionFoundInAzureAccount,
+        icon: "warning",
+        isCustom: true,
+        parent: `fx-extension.environment.${env}`,
+      };
 
-    return warningTreeItem;
-  } else {
-    return undefined;
+      return warningTreeItem;
+    }
   }
+
+  return undefined;
 }

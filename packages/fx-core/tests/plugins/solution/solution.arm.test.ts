@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import "mocha";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
@@ -27,8 +28,8 @@ import {
 import {
   deployArmTemplates,
   generateArmTemplate,
+  pollDeploymentStatus,
 } from "../../../src/plugins/solution/fx-solution/arm";
-import * as arm from "../../../src/plugins/solution/fx-solution/arm";
 import * as bicepChecker from "../../../src/plugins/solution/fx-solution/utils/depsChecker/bicepChecker";
 import { it } from "mocha";
 import path from "path";
@@ -44,6 +45,8 @@ import {
 } from "./util";
 import { ExecOptions } from "child_process";
 import { Executor } from "../../../src/common/tools";
+import * as tools from "../../../src/common/tools";
+
 import * as os from "os";
 
 import "../../../src/plugins/resource/frontend";
@@ -313,6 +316,7 @@ describe("Deploy ARM Template to Azure", () => {
       fileContent.set(path.toString(), data);
     });
     mocker.stub(bicepChecker, "ensureBicep").callsFake(async (ctx: SolutionContext) => "bicep");
+    mocker.stub(tools, "waitSeconds").resolves();
 
     fileContent = new Map([
       [
@@ -444,7 +448,6 @@ describe("Deploy ARM Template to Azure", () => {
           });
         }
       );
-    mocker.stub(arm, "pollDeploymentStatus").resolves();
 
     // Act
     const result = await deployArmTemplates(mockedCtx);
@@ -538,7 +541,6 @@ describe("Deploy ARM Template to Azure", () => {
           });
         }
       );
-    mocker.stub(arm, "pollDeploymentStatus").resolves();
 
     // Act
     const result = await deployArmTemplates(mockedCtx);
@@ -589,19 +591,15 @@ describe("Deploy ARM Template to Azure", () => {
 
 describe("Arm Template Failed Test", () => {
   const mocker = sinon.createSandbox();
-  let clock: sinon.SinonFakeTimers;
-
   beforeEach(async () => {
-    clock = sinon.useFakeTimers();
+    mocker.stub(tools, "waitSeconds").resolves();
   });
 
   afterEach(async () => {
     mocker.restore();
-    clock.restore();
   });
 
   it("pollDeploymentStatus", async () => {
-    mocker.stub(arm, "waitSeconds").resolves();
     const mockedCtx = mockSolutionContext();
     const mockedDeployCtx: any = {
       resourceGroupName: "poll-deployment-rg",
@@ -616,10 +614,13 @@ describe("Arm Template Failed Test", () => {
         },
       },
     };
+    let isErrorThrown = false;
     try {
-      arm.pollDeploymentStatus(mockedDeployCtx);
+      await pollDeploymentStatus(mockedDeployCtx);
     } catch (error) {
       chai.assert.strictEqual(error.message, "mocked error");
+      isErrorThrown = true;
     }
+    chai.assert.isTrue(isErrorThrown);
   });
 });

@@ -187,11 +187,11 @@ export async function activate(): Promise<Result<Void, FxError>> {
     if (workspacePath) {
       // refresh env tree when env config files added or deleted.
       workspace.onDidCreateFiles(async (event) => {
-        await refreshEnvTree(workspacePath, event.files);
+        await refreshEnvTreeOnFileChanged(workspacePath, event.files);
       });
 
       workspace.onDidDeleteFiles(async (event) => {
-        await refreshEnvTree(workspacePath, event.files);
+        await refreshEnvTreeOnFileChanged(workspacePath, event.files);
       });
     }
   } catch (e) {
@@ -208,7 +208,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
   return result;
 }
 
-async function refreshEnvTree(workspacePath: string, files: readonly Uri[]) {
+async function refreshEnvTreeOnFileChanged(workspacePath: string, files: readonly Uri[]) {
   let needRefresh = false;
   for (const file of files) {
     // check if file is env config

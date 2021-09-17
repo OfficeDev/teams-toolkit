@@ -17,7 +17,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  check-uncommit:
+  check-format:
     if: ${{ github.event_name == 'pull_request' && github.event.action != 'edited' }}
     runs-on: ubuntu-latest
     steps:
@@ -33,7 +33,7 @@ jobs:
         with:
           node-version: 14
 
-      - name: check prepare
+      - name: Setup Project
         run: |
           npm run setup
 

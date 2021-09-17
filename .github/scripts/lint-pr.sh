@@ -1,5 +1,5 @@
 #!/bin/bash
-VAR=$(git diff --name-only HEAD $1 -- . | cut -c $2- | xargs)
+VAR=$(git diff -U0 origin/$1 --name-only -- . | cut -c $2- | xargs)
 echo $VAR
 if [ ! -z "$VAR" ]
 then 

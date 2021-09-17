@@ -58,8 +58,8 @@ export interface EnvProfileFiles {
 
 class EnvironmentManager {
   public readonly envNameRegex = /^[\w\d-_]+$/;
-  public readonly envConfigNameRegex = /config\.(?<envName>[\w\d-_]+)\.json/i;
-  public readonly envProfileNameRegex = /profile\.(?<envName>[\w\d-_]+)\.json/i;
+  public readonly envConfigNameRegex = /^config\.(?<envName>[\w\d-_]+)\.json$/i;
+  public readonly envProfileNameRegex = /^profile\.(?<envName>[\w\d-_]+)\.json$/i;
 
   private readonly defaultEnvName = "default";
   private readonly defaultEnvNameNew = "dev";

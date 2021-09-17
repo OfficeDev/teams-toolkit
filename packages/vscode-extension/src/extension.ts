@@ -24,6 +24,7 @@ import { enableMigrateV1 } from "./utils/migrateV1";
 import { isTeamsfx, syncFeatureFlags } from "./utils/commonUtils";
 import { ConfigFolderName, PublishProfilesFolderName } from "@microsoft/teamsfx-api";
 import { ExtensionUpgrade } from "./utils/upgrade";
+import { registerEnvTreeHandler } from "./envTree";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -205,6 +206,12 @@ export async function activate(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(handlers.createNewEnvironment, args)
   );
   context.subscriptions.push(createNewEnvironment);
+
+  const refreshEnvironment = vscode.commands.registerCommand(
+    "fx-extension.refreshEnvironment",
+    (...args) => Correlator.run(handlers.refreshEnvironment, args)
+  );
+  context.subscriptions.push(refreshEnvironment);
 
   const viewEnvironment = vscode.commands.registerCommand(
     "fx-extension.viewEnvironment",

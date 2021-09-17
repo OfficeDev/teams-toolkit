@@ -28,7 +28,8 @@
     "prepare": "npm run build && node ./scripts/download-templates-zip.js",
     "prepublishOnly": "npm run test:unit && npm run build",
     "package": "rimraf build && webpack --mode production --config ./webpack.config.js",
-    "precommit": "lint-staged"
+    "precommit": "lint-staged",
+    "format-check": "if [ ! -z \"$(git diff --name-only HEAD..$npm_config_source -- .)\" ]; then npx prettier --config .prettierrc.js --write $(git diff --name-only HEAD..$npm_config_source -- . | cut -c 18-) --ignore-path .prettierignore; fi"
   },
   "dependencies": {
     "@apidevtools/swagger-parser": "^10.0.2",

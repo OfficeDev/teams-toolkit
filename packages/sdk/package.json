@@ -39,7 +39,8 @@
     "ui-test": "mocha --no-timeouts -r test/mocha.env.ts -r ts-node/register test/ui/**/*.spec.ts --exit",
     "precommit": "lint-staged",
     "version": "../../.github/scripts/pkg-version.sh templates",
-    "postversion": "../../.github/scripts/pkg-postversion.sh templates"
+    "postversion": "../../.github/scripts/pkg-postversion.sh templates",
+    "format-check": "if [ ! -z \"$(git diff --name-only HEAD..$npm_config_source -- .)\" ]; then npx prettier --config .prettierrc.js --write $(git diff --name-only HEAD..$npm_config_source -- . | cut -c 14-) --ignore-path .prettierignore; fi"
   },
   "files": [
     "dist/",

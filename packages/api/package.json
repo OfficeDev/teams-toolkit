@@ -25,7 +25,8 @@
     "doc": "typedoc",
     "test:unit": "nyc mocha --no-timeouts --require ts-node/register \"tests/**/*.ts\"",
     "prepublishOnly": "npm run test:unit && npm run build",
-    "precommit": "lint-staged"
+    "precommit": "lint-staged",
+    "format-check": "if [ ! -z \"$(git diff --name-only HEAD..$npm_config_source -- .)\" ]; then npx prettier --config .prettierrc.js --write $(git diff --name-only HEAD..$npm_config_source -- . | cut -c 14-) --ignore-path .prettierignore; fi"
   },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "^1.0.1",

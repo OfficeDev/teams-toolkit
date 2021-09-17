@@ -27,7 +27,8 @@
     "format": "prettier --write --config .prettierrc.json --ignore-path .prettierignore \"{src,tests}/**/*.ts\" \"*.{js,json}\"",
     "lint:fix": "eslint \"src/**/*.ts\" \"tests/**/*.ts\" --fix",
     "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
-    "precommit": "lint-staged"
+    "precommit": "lint-staged",
+    "format-check": "if [ ! -z \"$(git diff --name-only HEAD..$npm_config_source -- .)\" ]; then npx prettier --config .prettierrc.js --write $(git diff --name-only HEAD..$npm_config_source -- . | cut -c 14-) --ignore-path .prettierignore; fi"
   },
   "keywords": [
     "teamsfx",

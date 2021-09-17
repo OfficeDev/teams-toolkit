@@ -19,7 +19,8 @@
     "test": "npm run test:unit",
     "test:unit": "npx nyc --check-coverage --reporter=json-summary --reporter=text mocha --no-timeouts --require ts-node/register test/**/*.test.ts",
     "build": "npx tsc -p ./",
-    "prepare": "rimraf build && npm run build"
+    "prepare": "rimraf build && npm run build",
+    "format-check": "echo test"
   },
   "bugs": {
     "url": "https://github.com/OfficeDev/TeamsFx/issues"

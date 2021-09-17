@@ -23,7 +23,7 @@ import {
   setSimpleAuthSkuNameToB1Bicep,
 } from "../commonUtils";
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
-import { deserializeDict, environmentManager } from "@microsoft/teamsfx-core";
+import { deserializeDict } from "@microsoft/teamsfx-core";
 import {
   err,
   FxError,
@@ -34,8 +34,9 @@ import {
   EnvProfileFileNameTemplate,
   EnvNamePlaceholder,
 } from "@microsoft/teamsfx-api";
+import { expect } from "chai";
 
-// Load envProfile with userdata (not decrpted)
+// Load envProfile with userdata (not decrypted)
 async function loadContext(projectPath: string, env: string): Promise<Result<any, FxError>> {
   const context = await fs.readJson(
     path.join(
@@ -74,8 +75,8 @@ describe("Create single tab/bot/function", function () {
   const projectPath = path.resolve(testFolder, appName);
   const processEnv = mockTeamsfxMultiEnvFeatureFlag();
 
-  it(`Tab`, async function () {
-    // new a project (tab only)
+  it(`Happy path`, async function () {
+    // new a project (tab + bot + function)
     try {
       let result;
       result = await execAsync(
@@ -106,6 +107,7 @@ describe("Create single tab/bot/function", function () {
       });
       console.log(`[Successfully] env add, stdout: '${result.stdout}', stderr: '${result.stderr}'`);
 
+      // update SKU from free to B1 to prevent free SKU limit error
       await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
       console.log(`[Successfully] update simple auth sku to B1`);
 
@@ -117,6 +119,31 @@ describe("Create single tab/bot/function", function () {
       });
       console.log(
         `[Successfully] env activate, stdout: '${result.stdout}', stderr: '${result.stderr}'`
+      );
+
+      // list env
+      result = await execAsync(`teamsfx env list`, {
+        cwd: projectPath,
+        env: processEnv,
+        timeout: 0,
+      });
+      const envs = result.stdout.trim().split(/\r?\n/).sort();
+      expect(envs).to.deep.equal(["dev", "e2e (active)"]);
+      expect(result.stderr).to.be.empty;
+      console.log(
+        `[Successfully] env list, stdout: '${result.stdout}', stderr: '${result.stderr}'`
+      );
+
+      // show env
+      result = await execAsync(`teamsfx env`, {
+        cwd: projectPath,
+        env: processEnv,
+        timeout: 0,
+      });
+      expect(result.stdout).to.equal("e2e\n");
+      expect(result.stderr).to.be.empty;
+      console.log(
+        `[Successfully] env show, stdout: '${result.stdout}', stderr: '${result.stderr}'`
       );
 
       // provision

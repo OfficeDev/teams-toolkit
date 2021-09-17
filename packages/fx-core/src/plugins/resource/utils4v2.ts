@@ -38,10 +38,10 @@ import {
 } from "../../core";
 import { GLOBAL_CONFIG, ARM_TEMPLATE_OUTPUT } from "../solution/fx-solution/constants";
 
-export function convert2PluginContext(ctx: Context, inputs: Inputs): PluginContext {
-  if (!inputs.projectPath) throw NoProjectOpenedError();
+export function convert2PluginContext(ctx: Context, inputs: Inputs, ignoreEmptyProjectPath = false): PluginContext {
+  if (!ignoreEmptyProjectPath && !inputs.projectPath) throw NoProjectOpenedError();
   const pluginContext: PluginContext = {
-    root: inputs.projectPath,
+    root: inputs.projectPath || "",
     config: new ConfigMap(),
     envInfo: newEnvInfo(),
     projectSettings: ctx.projectSetting,
@@ -284,7 +284,7 @@ export async function getQuestionsForScaffoldingAdapter(
   plugin: Plugin
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (!plugin.getQuestions) return ok(undefined);
-  const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
+  const pluginContext: PluginContext = convert2PluginContext(ctx, inputs, true);
   return await plugin.getQuestions(Stage.create, pluginContext);
 }
 
@@ -296,7 +296,7 @@ export async function getQuestionsAdapter(
   plugin: Plugin
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (!plugin.getQuestions) return ok(undefined);
-  const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
+  const pluginContext: PluginContext = convert2PluginContext(ctx, inputs, true);
   const config = ConfigMap.fromJSON(envInfo.profile) || new ConfigMap();
   pluginContext.config = config;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
@@ -313,7 +313,7 @@ export async function getQuestionsForUserTaskAdapter(
   plugin: Plugin
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (!plugin.getQuestionsForUserTask) return ok(undefined);
-  const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
+  const pluginContext: PluginContext = convert2PluginContext(ctx, inputs, true);
   const config = ConfigMap.fromJSON(envInfo.profile) || new ConfigMap();
   pluginContext.config = config;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;

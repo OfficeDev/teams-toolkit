@@ -1,11 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import {
+  AzureSolutionSettings,
   ConfigMap, Inputs, ok, Platform, ProjectSettings, SolutionConfig,
   SolutionContext, Stage,
   TokenProvider, v2
 } from "@microsoft/teamsfx-api";
-import chai from "chai";
+import chai, { assert } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { it } from "mocha";
 import * as sinon from "sinon";
@@ -20,9 +21,9 @@ import "../../../src/plugins/resource/function/v2";
 import "../../../src/plugins/resource/localdebug/v2";
 import "../../../src/plugins/resource/spfx/v2";
 import "../../../src/plugins/resource/sql/v2";
-import { GLOBAL_CONFIG } from "../../../src/plugins/solution/fx-solution/constants";
+import { GLOBAL_CONFIG, SOLUTION_PROVISION_SUCCEEDED } from "../../../src/plugins/solution/fx-solution/constants";
 import {
-  HostTypeOptionAzure
+  HostTypeOptionAzure, HostTypeOptionSPFx
 } from "../../../src/plugins/solution/fx-solution/question";
 import {
   ResourcePluginsV2
@@ -101,7 +102,6 @@ describe("getQuestionsForScaffolding()", async () => {
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
     };
-
     const result = await getQuestionsForScaffolding(mockedCtx, mockedInputs);
     expect(result.isOk()).to.be.true;
   });
@@ -113,6 +113,43 @@ describe("getQuestionsForScaffolding()", async () => {
       stage: Stage.migrateV1
     };
     const result = await getQuestions(mockedCtx, mockedInputs, envInfo,mockedProvider);
-    expect(result.isOk() && result.value.data).to.be.true;
+    assert.isTrue(result.isOk());
+    if(result.isOk ()) {
+      const node = result.value;
+      assert.isTrue(node !== undefined && node.data !== undefined);
+    }
   });
+
+  it("getQuestions - provision", async () => {
+    const mockedCtx = new MockedV2Context(projectSettings);
+    const mockedInputs: Inputs = {
+      platform: Platform.VSCode,
+      stage: Stage.provision
+    };
+    const result = await getQuestions(mockedCtx, mockedInputs, envInfo,mockedProvider);
+    assert.isTrue(result.isOk());
+    if(result.isOk ()) {
+      const node = result.value;
+      assert.isTrue(node !== undefined && node.data !== undefined);
+    }
+  });
+
+  it("getQuestions - deploy", async () => {
+    const mockedCtx = new MockedV2Context(projectSettings);
+    const mockedInputs: Inputs = {
+      platform: Platform.VSCode,
+      stage: Stage.deploy
+    };
+    const result1 = await getQuestions(mockedCtx, mockedInputs, envInfo,mockedProvider);
+    assert.isTrue(result1.isErr());
+    envInfo.profile[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] = true;
+    const result2 = await getQuestions(mockedCtx, mockedInputs, envInfo,mockedProvider);
+    assert.isTrue(result2.isOk());
+    if(result2.isOk ()) {
+      const node = result2.value;
+      assert.isTrue(node !== undefined && node.data !== undefined);
+    }
+  });
+
+
 });

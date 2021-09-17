@@ -187,5 +187,5 @@ export function fillInSolutionSettings(
 }
 
 export function checkWetherProvisionSucceeded(config: Json): boolean {
-  return !!config[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED];
+  return config[GLOBAL_CONFIG] && config[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED];
 }

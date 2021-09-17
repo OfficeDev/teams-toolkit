@@ -24,7 +24,7 @@ import { MockCore } from "./mocks/mockCore";
 import * as extension from "../../../src/extension";
 import * as accountTree from "../../../src/accountTree";
 import TreeViewManagerInstance from "../../../src/treeview/treeViewManager";
-import { CollaborationState, CoreHookContext } from "../../../../fx-core/build";
+import { CollaborationState, CoreHookContext } from "@microsoft/teamsfx-core";
 
 suite("handlers", () => {
   test("getWorkspacePath()", () => {

@@ -2,10 +2,11 @@
 // Licensed under the MIT license.
 import {
   AzureSolutionSettings,
-  ConfigMap, Inputs, ok, Platform, ProjectSettings, SolutionConfig,
+  ConfigMap, Inputs, Json, ok, Platform, ProjectSettings, SolutionConfig,
   SolutionContext, Stage,
   TokenProvider, v2
 } from "@microsoft/teamsfx-api";
+import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import chai, { assert } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { it } from "mocha";
@@ -50,7 +51,7 @@ const mockedProvider: TokenProvider = {
   azureAccountProvider: new MockedAzureAccountProvider(),
   graphTokenProvider: new MockGraphTokenProvider(),
 };
-const envInfo = {envName: "default", config: {}, profile:{}};
+const envInfo:EnvInfoV2 = {envName: "default", config: {}, profile:{solution:{}}};
 function mockSolutionContextWithPlatform(platform?: Platform): SolutionContext {
   const config: SolutionConfig = new Map();
   config.set(GLOBAL_CONFIG, new ConfigMap());
@@ -112,7 +113,7 @@ describe("getQuestionsForScaffolding()", async () => {
       platform: Platform.VSCode,
       stage: Stage.migrateV1
     };
-    const result = await getQuestions(mockedCtx, mockedInputs, envInfo,mockedProvider);
+    const result = await getQuestions(mockedCtx, mockedInputs, envInfo, mockedProvider);
     assert.isTrue(result.isOk());
     if(result.isOk ()) {
       const node = result.value;
@@ -126,7 +127,7 @@ describe("getQuestionsForScaffolding()", async () => {
       platform: Platform.VSCode,
       stage: Stage.provision
     };
-    const result = await getQuestions(mockedCtx, mockedInputs, envInfo,mockedProvider);
+    const result = await getQuestions(mockedCtx, mockedInputs, envInfo, mockedProvider);
     assert.isTrue(result.isOk());
     if(result.isOk ()) {
       const node = result.value;

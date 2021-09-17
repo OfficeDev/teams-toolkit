@@ -319,7 +319,7 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<null, Fx
 export async function provisionHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ProvisionStart, getTriggerFromProperty(args));
   const result = await runCommand(Stage.provision);
-  registerEnvTreeHandler();
+  await registerEnvTreeHandler();
   return result;
 }
 
@@ -758,7 +758,7 @@ export async function createNewEnvironment(args?: any[]): Promise<Result<Void, F
   );
   const result = await runCommand(Stage.createEnv);
   if (!result.isErr()) {
-    registerEnvTreeHandler();
+    await registerEnvTreeHandler();
   }
   return result;
 }
@@ -829,7 +829,7 @@ export async function activateEnvironment(env: string): Promise<Result<Void, FxE
     const inputs: Inputs = getSystemInputs();
     inputs.env = env;
     result = await core.activateEnv(inputs);
-    registerEnvTreeHandler();
+    await registerEnvTreeHandler();
   } catch (e) {
     result = wrapError(e);
   }
@@ -1297,7 +1297,7 @@ export async function signOutM365(isFromTreeView: boolean) {
     ]);
   }
 
-  registerEnvTreeHandler();
+  await registerEnvTreeHandler();
 }
 
 export async function signInAzure() {

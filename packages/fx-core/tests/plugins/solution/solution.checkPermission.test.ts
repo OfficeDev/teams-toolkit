@@ -32,7 +32,7 @@ import sinon from "sinon";
 import { EnvConfig, MockGraphTokenProvider } from "../resource/apim/testUtil";
 import Container from "typedi";
 import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
-import { newEnvInfo } from "../../../src";
+import { CollaborationState, newEnvInfo } from "../../../src";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -58,28 +58,33 @@ describe("checkPermission() for Teamsfx projects", () => {
     };
   }
 
-  it("should return error if solution state is not idle", async () => {
+  it("should return SolutionIsNotIdle state if solution state is not idle", async () => {
     const solution = new TeamsAppSolution();
     expect(solution.runningState).equal(SolutionRunningState.Idle);
 
     const mockedCtx = mockSolutionContext();
     solution.runningState = SolutionRunningState.ProvisionInProgress;
     let result = await solution.checkPermission(mockedCtx);
-    expect(result.isErr()).to.be.true;
-    expect(result._unsafeUnwrapErr().name).equals(SolutionError.ProvisionInProgress);
+    expect(result.isErr()).to.be.false;
+    if (!result.isErr()) {
+      expect(result.value.state).equals(CollaborationState.SolutionIsNotIdle);
+    }
 
     solution.runningState = SolutionRunningState.DeployInProgress;
     result = await solution.checkPermission(mockedCtx);
-    expect(result.isErr()).to.be.true;
-    expect(result._unsafeUnwrapErr().name).equals(SolutionError.DeploymentInProgress);
-
+    expect(result.isErr()).to.be.false;
+    if (!result.isErr()) {
+      expect(result.value.state).equals(CollaborationState.SolutionIsNotIdle);
+    }
     solution.runningState = SolutionRunningState.PublishInProgress;
     result = await solution.checkPermission(mockedCtx);
-    expect(result.isErr()).to.be.true;
-    expect(result._unsafeUnwrapErr().name).equals(SolutionError.PublishInProgress);
+    expect(result.isErr()).to.be.false;
+    if (!result.isErr()) {
+      expect(result.value.state).equals(CollaborationState.SolutionIsNotIdle);
+    }
   });
 
-  it("should return error if Teamsfx project hasn't been provisioned", async () => {
+  it("should return NotProvisioned state if Teamsfx project hasn't been provisioned", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
 
@@ -93,8 +98,10 @@ describe("checkPermission() for Teamsfx projects", () => {
       },
     };
     const result = await solution.checkPermission(mockedCtx);
-    expect(result.isErr()).to.be.true;
-    expect(result._unsafeUnwrapErr().name).equals(SolutionError.CannotProcessBeforeProvision);
+    expect(result.isErr()).to.be.false;
+    if (!result.isErr()) {
+      expect(result.value.state).equals(CollaborationState.NotProvisioned);
+    }
   });
 
   it("should return error if cannot get user info", async () => {
@@ -122,7 +129,7 @@ describe("checkPermission() for Teamsfx projects", () => {
     sandbox.restore();
   });
 
-  it("should return error if tenant is not match", async () => {
+  it("should return M365AccountNotMatch state if tenant is not match", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
 
@@ -148,8 +155,10 @@ describe("checkPermission() for Teamsfx projects", () => {
     mockedCtx.envInfo.profile.get(PluginNames.AAD)?.set(REMOTE_TENANT_ID, mockProjectTenantId);
 
     const result = await solution.checkPermission(mockedCtx);
-    expect(result.isErr()).to.be.true;
-    expect(result._unsafeUnwrapErr().name).equals(SolutionError.M365AccountNotMatch);
+    expect(result.isErr()).to.be.false;
+    if (!result.isErr()) {
+      expect(result.value.state).equals(CollaborationState.M365AccountNotMatch);
+    }
     sandbox.restore();
   });
 
@@ -263,7 +272,7 @@ describe("checkPermission() for Teamsfx projects", () => {
     if (result.isErr()) {
       chai.assert.fail("result is error");
     }
-    expect(result.value.length).equal(2);
+    expect(result.value.permissions!.length).equal(2);
     sinon.restore();
   });
 });

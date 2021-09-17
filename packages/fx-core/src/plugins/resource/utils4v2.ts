@@ -21,6 +21,7 @@ import {
 import {
   BicepTemplate,
   Context,
+  DeepReadonly,
   DeploymentInputs,
   EnvInfoV2,
   ProvisionInputs,
@@ -290,20 +291,34 @@ export async function getQuestionsForScaffoldingAdapter(
 export async function getQuestionsAdapter(
   ctx: Context,
   inputs: Inputs,
+  envInfo: DeepReadonly<EnvInfoV2>,
+  tokenProvider: TokenProvider,
   plugin: Plugin
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (!plugin.getQuestions) return ok(undefined);
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
+  const config = ConfigMap.fromJSON(envInfo.profile) || new ConfigMap();
+  pluginContext.config = config;
+  pluginContext.appStudioToken = tokenProvider.appStudioToken;
+  pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
+  pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
   return await plugin.getQuestions(inputs.stage!, pluginContext);
 }
 export async function getQuestionsForUserTaskAdapter(
   ctx: Context,
   inputs: Inputs,
   func: Func,
+  envInfo: DeepReadonly<EnvInfoV2>,
+  tokenProvider: TokenProvider,
   plugin: Plugin
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (!plugin.getQuestionsForUserTask) return ok(undefined);
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
+  const config = ConfigMap.fromJSON(envInfo.profile) || new ConfigMap();
+  pluginContext.config = config;
+  pluginContext.appStudioToken = tokenProvider.appStudioToken;
+  pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
+  pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
   return await plugin.getQuestionsForUserTask(func, pluginContext);
 }
 export function getArmOutput(ctx: PluginContext, key: string): string | undefined {

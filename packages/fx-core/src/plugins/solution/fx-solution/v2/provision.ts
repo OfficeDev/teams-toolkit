@@ -161,7 +161,7 @@ export async function provisionResource(
       namespace: `${PluginNames.SOLUTION}/${PluginNames.AAD}`,
       method: "setApplicationInContext",
       params: { isLocal: false },
-    });
+    }, envInfo, tokenProvider);
     if (result.isErr()) {
       return new v2.FxPartialSuccess(combineRecords(provisionResult.output), result.error);
     }

@@ -18,6 +18,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import {
   Context,
+  DeepReadonly,
   ProvisionInputs,
   ResourcePlugin,
   ResourceProvisionOutput,
@@ -79,8 +80,10 @@ export class SqlPluginV2 implements ResourcePlugin {
 
   async getQuestions(
     ctx: Context,
-    inputs: Inputs
+    inputs: Inputs,
+    envInfo: DeepReadonly<v2.EnvInfoV2>,
+    tokenProvider: TokenProvider
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    return await getQuestionsAdapter(ctx, inputs, this.plugin);
+    return await getQuestionsAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
   }
 }

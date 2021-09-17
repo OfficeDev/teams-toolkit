@@ -1,4 +1,4 @@
-import { v2, Inputs, FxError, Result, err, Void, returnSystemError } from "@microsoft/teamsfx-api";
+import { v2, Inputs, FxError, Result, err, Void, returnSystemError, SystemError, NotImplementedError } from "@microsoft/teamsfx-api";
 import { PluginNames, SolutionError } from "../constants";
 import Container from "typedi";
 import { ResourcePluginsV2 } from "../ResourcePluginContainer";
@@ -27,5 +27,6 @@ export async function createPackage(
     method: "buildPackage",
   };
 
-  return (await appStudioPlugin.executeUserTask(ctx, inputs, func)).map((_) => Void);
+  // return (await appStudioPlugin.executeUserTask(ctx, inputs, func)).map((_) => Void);
+  throw new NotImplementedError("Solution", "createPackage");
 }

@@ -21,6 +21,7 @@ import { PluginNames, SolutionError } from "../constants";
 import { isUndefined } from "lodash";
 import Container from "typedi";
 import { ResourcePluginsV2 } from "../ResourcePluginContainer";
+import { environmentManager } from "../../../../core/environment";
 
 export async function provisionLocalResource(
   ctx: v2.Context,
@@ -65,7 +66,7 @@ export async function provisionLocalResource(
       namespace: `${PluginNames.SOLUTION}/${PluginNames.AAD}`,
       method: "setApplicationInContext",
       params: { isLocal: true },
-    });
+    }, {envName: environmentManager.getDefaultEnvName(), config: {}, profile: {}}, tokenProvider);
     if (result.isErr()) {
       return new v2.FxPartialSuccess(localSettings, result.error);
     }

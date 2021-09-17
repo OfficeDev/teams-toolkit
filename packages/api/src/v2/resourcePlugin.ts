@@ -159,8 +159,7 @@ export interface ResourcePlugin {
   publishApplication?: (
     ctx: Context,
     inputs: Inputs,
-    provisionInputConfig: Json,
-    provisionOutputs: Json,
+    envInfo: DeepReadonly<EnvInfoV2>,
     tokenProvider: AppStudioTokenProvider
   ) => Promise<Result<Void, FxError>>;
 

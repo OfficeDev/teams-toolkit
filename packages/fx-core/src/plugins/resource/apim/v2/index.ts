@@ -19,6 +19,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import {
   Context,
+  DeepReadonly,
   DeploymentInputs,
   ProvisionInputs,
   ResourcePlugin,
@@ -55,9 +56,11 @@ export class ApimPluginV2 implements ResourcePlugin {
   
   async getQuestions(
     ctx: Context,
-    inputs: Inputs
+    inputs: Inputs,
+    envInfo: DeepReadonly<v2.EnvInfoV2>,
+    tokenProvider: TokenProvider,
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    return await getQuestionsAdapter(ctx, inputs, this.plugin);
+    return await getQuestionsAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
   }
   
   async getQuestionsForScaffolding(
@@ -70,9 +73,11 @@ export class ApimPluginV2 implements ResourcePlugin {
   async getQuestionsForUserTask(
     ctx: Context,
     inputs: Inputs,
-    func: Func
+    func: Func,
+    envInfo: DeepReadonly<v2.EnvInfoV2>,
+    tokenProvider: TokenProvider,
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    return await getQuestionsForUserTaskAdapter(ctx, inputs, func, this.plugin);
+    return await getQuestionsForUserTaskAdapter(ctx, inputs, func, envInfo, tokenProvider, this.plugin);
   }
 
   async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {

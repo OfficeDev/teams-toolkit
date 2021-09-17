@@ -23,6 +23,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import {
   Context,
+  DeepReadonly,
   DeploymentInputs,
   ProvisionInputs,
   ResourcePlugin,
@@ -123,16 +124,17 @@ export class AppStudioPluginV2 implements ResourcePlugin {
   
   async getQuestions(
     ctx: Context,
-    inputs: Inputs
+    inputs: Inputs,
+    envInfo: v2.EnvInfoV2,
+    tokenProvider: TokenProvider
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    return await getQuestionsAdapter(ctx, inputs, this.plugin);
+    return await getQuestionsAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
   }
 
   async publishApplication(
     ctx: Context,
     inputs: Inputs,
-    provisionInputConfig: Json,
-    provisionOutputs: Json,
+    envInfo: DeepReadonly<v2.EnvInfoV2>,
     tokenProvider: AppStudioTokenProvider
   ): Promise<Result<Void, FxError>> {
     const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
@@ -150,8 +152,8 @@ export class AppStudioPluginV2 implements ResourcePlugin {
     //   }
     // }
     const configsOfOtherPlugins = new Map<string, ConfigMap>();
-    for (const key in provisionOutputs) {
-      const output = provisionOutputs[key];
+    for (const key in envInfo.profile) {
+      const output = envInfo.profile[key];
       const configMap = ConfigMap.fromJSON(output);
       if (configMap) configsOfOtherPlugins.set(key, configMap);
     }

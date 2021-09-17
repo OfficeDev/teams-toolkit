@@ -20,6 +20,9 @@ import {
   LogProvider,
   EnvConfigFileNameTemplate,
   EnvNamePlaceholder,
+  v2,
+  TokenProvider,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import { GLOBAL_CONFIG, LOCATION, RESOURCE_GROUP_NAME, SolutionError } from "./constants";
 import { v4 as uuidv4 } from "uuid";
@@ -35,6 +38,7 @@ import {
 } from "../../../core/question";
 import { desensitize } from "../../../core/middleware/questionModel";
 import { ResourceGroupsCreateOrUpdateResponse } from "@azure/arm-resources/esm/models";
+import { isV2 } from "../../../core";
 
 const MsResources = "Microsoft.Resources";
 const ResourceGroups = "resourceGroups";
@@ -70,9 +74,10 @@ class CommonQuestions {
  *
  */
 export async function checkSubscription(
-  ctx: SolutionContext
+  ctx: SolutionContext | v2.Context, envInfo?: v2.EnvInfoV2, tokenProvider?: TokenProvider
 ): Promise<Result<SubscriptionInfo, FxError>> {
-  if (ctx.azureAccountProvider === undefined) {
+  const azureAccountProvider = isV2() ? tokenProvider?.azureAccountProvider : (ctx as SolutionContext).azureAccountProvider;
+  if (!azureAccountProvider) {
     return err(
       returnSystemError(
         new Error("azureAccountProvider is undefined"),
@@ -81,30 +86,27 @@ export async function checkSubscription(
       )
     );
   }
-
-  const subscriptionId = ctx.envInfo.config.azure?.subscriptionId;
+  const subscriptionId = isV2() ? envInfo?.config.azure?.subscriptionId : (ctx as SolutionContext).envInfo.config.azure?.subscriptionId;
   if (!isMultiEnvEnabled() || !subscriptionId) {
-    const askSubRes = await ctx.azureAccountProvider.getSelectedSubscription(true);
+    const askSubRes = await azureAccountProvider.getSelectedSubscription(true);
     return ok(askSubRes!);
   }
 
   // make sure the user is logged in
-  await ctx.azureAccountProvider.getAccountCredentialAsync(true);
+  await azureAccountProvider.getAccountCredentialAsync(true);
 
   // TODO: verify valid subscription (permission)
-  const subscriptions = await ctx.azureAccountProvider.listSubscriptions();
+  const subscriptions = await azureAccountProvider.listSubscriptions();
   const targetSubInfo = subscriptions.find((item) => item.subscriptionId === subscriptionId);
   if (!targetSubInfo) {
     return err(
-      returnUserError(
-        new Error(
-          `The subscription '${subscriptionId}' is not found in the current account, please check the '${EnvConfigFileNameTemplate.replace(
-            EnvNamePlaceholder,
-            ctx.envInfo.envName
-          )}' file.`
-        ),
+      new UserError(
+        SolutionError.SubscriptionNotFound,
+        `The subscription '${subscriptionId}' is not found in the current account, please check the '${EnvConfigFileNameTemplate.replace(
+          EnvNamePlaceholder,
+          isV2() ? envInfo!.envName : (ctx as SolutionContext).envInfo.envName
+        )}' file.`,
         "Solution",
-        SolutionError.SubscriptionNotFound
       )
     );
   }

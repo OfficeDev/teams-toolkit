@@ -99,8 +99,7 @@ export interface SolutionPlugin {
   publishApplication: (
     ctx: Context,
     inputs: Inputs,
-    provisionInputConfig: Json,
-    provisionOutputs: Json,
+    envInfo: DeepReadonly<EnvInfoV2>,
     tokenProvider: AppStudioTokenProvider
   ) => Promise<Result<Void, FxError>>;
 

@@ -3,42 +3,37 @@
 
 import {
   AzureAccountProvider,
-  AzureSolutionSettings,
-  err,
-  Func,
+  AzureSolutionSettings, Func,
   FxError,
   Inputs,
   Json,
   QTreeNode,
   Result,
-  TokenProvider,
-  traverse,
-  v2,
-  Void,
+  TokenProvider, v2,
+  Void
 } from "@microsoft/teamsfx-api";
 import {
   Context,
+  DeepReadonly,
   DeploymentInputs,
   ProvisionInputs,
   ResourcePlugin,
   ResourceProvisionOutput,
-  ResourceTemplate,
+  ResourceTemplate
 } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
 import { FunctionPlugin } from "../..";
 import {
   ResourcePlugins,
-  ResourcePluginsV2,
+  ResourcePluginsV2
 } from "../../../solution/fx-solution/ResourcePluginContainer";
 import {
-  configureResourceAdapter,
-  convert2PluginContext,
-  deployAdapter,
+  configureResourceAdapter, deployAdapter,
   executeUserTaskAdapter,
   generateResourceTemplateAdapter,
   getQuestionsForUserTaskAdapter,
   provisionResourceAdapter,
-  scaffoldSourceCodeAdapter,
+  scaffoldSourceCodeAdapter
 } from "../../utils4v2";
 
 @Service(ResourcePluginsV2.FunctionPlugin)
@@ -103,8 +98,10 @@ export class FunctionPluginV2 implements ResourcePlugin {
   async getQuestionsForUserTask(
     ctx: Context,
     inputs: Inputs,
-    func: Func
+    func: Func,
+    envInfo: DeepReadonly<v2.EnvInfoV2>,
+    tokenProvider: TokenProvider
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    return await getQuestionsForUserTaskAdapter(ctx, inputs, func, this.plugin);
+    return await getQuestionsForUserTaskAdapter(ctx, inputs, func, envInfo, tokenProvider,this.plugin);
   }
 }

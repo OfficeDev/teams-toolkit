@@ -36,22 +36,23 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
       const context = isV2() ? ctx.contextV2 : ctx.solutionContext;
       if (solution && context) {
         if (method === "provisionResources") {
-          getQuestionRes = await core._getQuestions(context, solution, Stage.provision, inputs);
+          getQuestionRes = await core._getQuestions(context, solution, Stage.provision, inputs, isV2() ? ctx.envInfoV2 : undefined);
         } else if (method === "localDebug") {
-          getQuestionRes = await core._getQuestions(context, solution, Stage.debug, inputs);
+          getQuestionRes = await core._getQuestions(context, solution, Stage.debug, inputs, isV2() ? ctx.envInfoV2 : undefined);
         } else if (method === "deployArtifacts") {
-          getQuestionRes = await core._getQuestions(context, solution, Stage.deploy, inputs);
+          getQuestionRes = await core._getQuestions(context, solution, Stage.deploy, inputs, isV2() ? ctx.envInfoV2 : undefined);
         } else if (method === "publishApplication") {
-          getQuestionRes = await core._getQuestions(context, solution, Stage.publish, inputs);
+          getQuestionRes = await core._getQuestions(context, solution, Stage.publish, inputs, isV2() ? ctx.envInfoV2 : undefined);
         } else if (method === "executeUserTask") {
           const func = ctx.arguments[0] as Func;
-          getQuestionRes = await core._getQuestionsForUserTask(context, solution, func, inputs);
+          getQuestionRes = await core._getQuestionsForUserTask(context, solution, func, inputs, isV2() ? ctx.envInfoV2 : undefined);
         } else if (method === "grantPermission") {
           getQuestionRes = await core._getQuestions(
             context,
             solution,
             Stage.grantPermission,
-            inputs
+            inputs,
+            isV2() ? ctx.envInfoV2 : undefined
           );
         }
       }

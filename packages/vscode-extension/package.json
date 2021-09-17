@@ -424,7 +424,7 @@
       },
       {
         "command": "fx-extension.refreshEnvironment",
-        "title": "Refresh environment",
+        "title": "Refresh",
         "icon": "$(refresh)",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },

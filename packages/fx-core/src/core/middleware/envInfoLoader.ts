@@ -102,7 +102,7 @@ export function EnvInfoLoaderMW(isMultiEnvEnabled: boolean): Middleware {
 
       if (isV2()) {
         //TODO core should not know the details of envInfo
-        ctx.provisionInputConfig = result.value.envInfo.config;
+        ctx.envInfo = result.value.envInfo.config;
         ctx.provisionOutputs = result.value.envInfo.profile;
         ctx.envName = result.value.envInfo.envName;
       } else {

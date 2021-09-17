@@ -9,21 +9,19 @@ import {
   assembleError,
   AzureSolutionSettings,
   ConfigFolderName,
-  Core,
-  err,
+  Core, CoreCallbackEvent,
+  CoreCallbackFunc, EnvConfig, err,
   Func,
   FunctionRouter,
   FxError,
-  GroupOfTasks,
-  Inputs,
+  GroupOfTasks, InputConfigsFolderName, Inputs,
   Json,
   LogProvider,
   ok,
   OptionItem,
   Platform,
   ProjectConfig,
-  ProjectSettings,
-  QTreeNode,
+  ProjectSettings, PublishProfilesFolderName, QTreeNode,
   Result,
   RunnableTask,
   SingleSelectQuestion,
@@ -35,38 +33,36 @@ import {
   TelemetryReporter,
   Tools,
   v2,
-  Void,
-  InputConfigsFolderName,
-  PublishProfilesFolderName,
-  EnvConfig,
-  CoreCallbackEvent,
-  CoreCallbackFunc,
+  Void
 } from "@microsoft/teamsfx-api";
+import { EnvInfoV2, SolutionPlugin } from "@microsoft/teamsfx-api/build/v2";
 import AdmZip from "adm-zip";
 import { AxiosResponse } from "axios";
 import * as fs from "fs-extra";
 import * as jsonschema from "jsonschema";
 import * as path from "path";
-import Container from "typedi";
 import * as uuid from "uuid";
+import { environmentManager } from "..";
+import { FeatureFlagName } from "../common/constants";
 import { globalStateUpdate } from "../common/globalState";
+import { localSettingsFileName } from "../common/localSettingsProvider";
 import {
   Component,
   sendTelemetryErrorEvent,
   sendTelemetryEvent,
   TelemetryEvent,
   TelemetryProperty,
-  TelemetrySuccess,
+  TelemetrySuccess
 } from "../common/telemetry";
 import {
   downloadSampleHook,
-  fetchCodeZip,
-  isArmSupportEnabled,
-  isMultiEnvEnabled,
-  saveFilesRecursively,
+  fetchCodeZip, isMultiEnvEnabled,
+  saveFilesRecursively
 } from "../common/tools";
+import { PluginNames } from "../plugins";
 import { HostTypeOptionAzure } from "../plugins/solution/fx-solution/question";
-import { ProjectMigratorMW } from "./middleware/projectMigrator";
+import { getAllV2ResourcePluginMap, getAllV2ResourcePlugins } from "../plugins/solution/fx-solution/ResourcePluginContainer";
+import { CallbackRegistry } from "./callback";
 import {
   CopyFileError,
   FetchSampleError,
@@ -80,7 +76,7 @@ import {
   ProjectFolderExistError,
   ProjectFolderNotExistError,
   TaskNotSupportError,
-  WriteFileError,
+  WriteFileError
 } from "./error";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ContextInjectorMW } from "./middleware/contextInjector";
@@ -89,18 +85,19 @@ import {
   EnvInfoLoaderMW,
   loadSolutionContext,
   upgradeDefaultFunctionName,
-  upgradeProgrammingLanguage,
+  upgradeProgrammingLanguage
 } from "./middleware/envInfoLoader";
 import { EnvInfoWriterMW } from "./middleware/envInfoWriter";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { LocalSettingsLoaderMW } from "./middleware/localSettingsLoader";
 import { LocalSettingsWriterMW } from "./middleware/localSettingsWriter";
 import { MigrateConditionHandlerMW } from "./middleware/migrateConditionHandler";
-import { environmentManager } from "..";
-import { newEnvInfo } from "./tools";
-// import { copyParameterJson, getParameterJson } from "../plugins/solution/fx-solution/arm";
-import { LocalCrypto } from "./crypto";
-import { PermissionRequestFileProvider } from "./permissionRequest";
+import { ProjectMigratorMW } from "./middleware/projectMigrator";
+import { newSolutionContext, ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
+import { ProjectSettingsWriterMW } from "./middleware/projectSettingsWriter";
+import { ProjectUpgraderMW } from "./middleware/projectUpgrader";
+import { QuestionModelMW } from "./middleware/questionModel";
+import { SolutionLoaderMW } from "./middleware/solutionLoader";
 import {
   CoreQuestionNames,
   DefaultAppNameFunc,
@@ -112,24 +109,15 @@ import {
   QuestionV1AppName,
   SampleSelect,
   ScratchOptionNo,
-  ScratchOptionYes,
+  ScratchOptionYes
 } from "./question";
 import {
   getAllSolutionPlugins,
   getAllSolutionPluginsV2,
   getSolutionPluginByName,
-  getSolutionPluginV2ByName,
-  SolutionPlugins,
+  getSolutionPluginV2ByName
 } from "./SolutionPluginContainer";
-import { QuestionModelMW } from "./middleware/questionModel";
-import { ProjectSettingsWriterMW } from "./middleware/projectSettingsWriter";
-import { newSolutionContext, ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
-import { SolutionLoaderMW } from "./middleware/solutionLoader";
-import { ProjectUpgraderMW } from "./middleware/projectUpgrader";
-import { FeatureFlagName } from "../common/constants";
-import { localSettingsFileName } from "../common/localSettingsProvider";
-import { EnvInfoV2, SolutionPlugin } from "@microsoft/teamsfx-api/build/v2";
-import { CallbackRegistry } from "./callback";
+import { newEnvInfo } from "./tools";
 
 export interface CoreHookContext extends HookContext {
   projectSettings?: ProjectSettings;
@@ -139,9 +127,7 @@ export interface CoreHookContext extends HookContext {
   //for v2 api
   contextV2?: v2.Context;
   solutionV2?: v2.SolutionPlugin;
-  provisionInputConfig?: Json;
-  provisionOutputs?: Json;
-  envName?: string;
+  envInfoV2?: v2.EnvInfoV2;
   localSettings?: Json;
 }
 
@@ -242,7 +228,7 @@ export class FxCore implements Core {
         version: "1.0.0",
         activeEnvironment: multiEnv ? environmentManager.getDefaultEnvName() : "default",
       };
-
+      ctx.projectSettings = projectSettings;
       if (multiEnv) {
         const createEnvResult = await this.createEnvWithName(
           environmentManager.getDefaultEnvName(),
@@ -285,6 +271,19 @@ export class FxCore implements Core {
             }
           }
         }
+        else {
+          //TODO lagacy env.default.json
+          const profile: Json = {solution:{}};
+          for(const plugin of getAllV2ResourcePlugins() ) {
+            profile[plugin.name] = {};
+          }
+          profile[PluginNames.LDEBUG]["trustDevCert"] = "true";
+          ctx.envInfoV2 = {
+            envName: environmentManager.getDefaultEnvName(),
+            config: {},
+            profile: profile,
+          };
+        }
       } else {
         const solution = await getSolutionPluginByName(inputs[CoreQuestionNames.Solution]);
         if (!solution) {
@@ -300,7 +299,6 @@ export class FxCore implements Core {
           ...this.tools.tokenProvider,
           answers: inputs,
         };
-        ctx.projectSettings = projectSettings;
         ctx.solutionContext = solutionContext;
         const createRes = await solution.create(solutionContext);
         if (createRes.isErr()) {
@@ -1285,3 +1283,4 @@ export function createV2Context(core: FxCore, projectSettings: ProjectSettings):
 
 export * from "./error";
 export * from "./tools";
+

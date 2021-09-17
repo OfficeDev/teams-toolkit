@@ -593,7 +593,7 @@
           },
           "fx-extension.multipleEnvironmentsSupportEnabled": {
             "type": "boolean",
-            "description": "Enable multiple environments support. (Requires reload of VS Code)",
+            "description": "[Experimental] Enable multiple environments support. (Requires reload of VS Code)",
             "default": false
           },
           "fx-extension.validateNode": {

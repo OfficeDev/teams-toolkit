@@ -192,8 +192,13 @@ export function syncFeatureFlags() {
     ConfigurationKey.BicepEnvCheckerEnable
   ).toString();
 
-  // Sync multi-env support
-  process.env["TEAMSFX_MULTI_ENV"] = getConfiguration(ConfigurationKey.MultiEnvEnabled).toString();
+  // Sync multi-env support (bundled ARM support & bicep env checker)
+  const flag = getConfiguration(ConfigurationKey.MultiEnvEnabled);
+  if (flag) {
+    process.env["TEAMSFX_MULTI_ENV"] = flag.toString();
+    process.env["TEAMSFX_ARM_SUPPORT"] = flag.toString();
+    process.env["TEAMSFX_BICEP_ENV_CHECKER_ENABLE"] = flag.toString();
+  }
 }
 
 export class FeatureFlags {

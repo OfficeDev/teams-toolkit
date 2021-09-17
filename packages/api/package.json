@@ -25,8 +25,7 @@
     "doc": "typedoc",
     "test:unit": "nyc mocha --no-timeouts --require ts-node/register \"tests/**/*.ts\"",
     "prepublishOnly": "npm run test:unit && npm run build",
-    "precommit": "lint-staged",
-    "format-check": "bash ../../.github/scripts/lint-pr.sh $npm_config_source 14"
+    "precommit": "lint-staged"
   },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "^1.0.1",

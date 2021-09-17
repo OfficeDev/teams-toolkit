@@ -678,8 +678,7 @@
     "lint:fix": "eslint --config .eslintrc.js package.json src test --ext .ts --fix --fix-type [problem,suggestion]",
     "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\"",
     "prepare": "npm run build",
-    "precommit": "lint-staged",
-    "format-check": "bash ../../.github/scripts/lint-pr.sh $npm_config_source 27"
+    "precommit": "lint-staged"
   },
   "devDependencies": {
     "@azure/arm-subscriptions": "^3.0.0",

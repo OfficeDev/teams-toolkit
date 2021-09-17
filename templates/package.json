@@ -4,8 +4,7 @@
   "private": "true",
   "license": "MIT",
   "scripts": {
-    "precommit": "lint-staged",
-    "format-check": "bash ../.github/scripts/lint-pr.sh $npm_config_source 11"
+    "precommit": "lint-staged"
   },
   "devDependencies": {
     "@shared/eslint-config": "file:../packages/eslint-config",

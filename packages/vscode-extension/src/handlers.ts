@@ -763,6 +763,10 @@ export async function createNewEnvironment(args?: any[]): Promise<Result<Void, F
   return result;
 }
 
+export async function refreshEnvironment(args?: any[]): Promise<Result<Void, FxError>> {
+  return await registerEnvTreeHandler();
+}
+
 export async function viewEnvironment(env: string): Promise<Result<Void, FxError>> {
   if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
     const projectRoot = workspace.workspaceFolders![0].uri.fsPath;

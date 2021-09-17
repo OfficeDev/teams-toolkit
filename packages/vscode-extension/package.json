@@ -137,6 +137,11 @@
           "command": "fx-extension.addEnvironment",
           "when": "view == teamsfx-environment",
           "group": "navigation@1"
+        },
+        {
+          "command": "fx-extension.refreshEnvironment",
+          "when": "view == teamsfx-environment",
+          "group": "navigation@2"
         }
       ],
       "view/item/context": [
@@ -250,6 +255,10 @@
         },
         {
           "command": "fx-extension.addEnvironment",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.refreshEnvironment",
           "when": "false"
         },
         {

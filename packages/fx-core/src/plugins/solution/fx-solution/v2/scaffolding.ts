@@ -11,6 +11,7 @@ import {
 import { getStrings, isMultiEnvEnabled } from "../../../../common/tools";
 import {
   AzureResourceFunction,
+  AzureSolutionQuestionNames,
   BotOptionItem,
   MessageExtensionItem,
   TabOptionItem,
@@ -35,6 +36,10 @@ export async function scaffoldSourceCode(
   const blockResult = blockV1Project(ctx.projectSetting.solutionSettings);
   if (blockResult.isErr()) {
     return err(blockResult.error);
+  }
+  const lang = inputs[AzureSolutionQuestionNames.ProgrammingLanguage] as string;
+  if (lang) {
+    ctx.projectSetting.programmingLanguage = lang;
   }
   const solutionSettings: AzureSolutionSettings = getAzureSolutionSettings(ctx);
   const fillinRes = fillInSolutionSettings(solutionSettings, inputs);

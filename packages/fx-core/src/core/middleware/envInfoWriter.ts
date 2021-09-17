@@ -32,7 +32,7 @@ export function EnvInfoWriterMW(skip = false): Middleware {
         return;
 
       if (isV2()) {
-        const provisionOutputs = ctx.provisionOutputs;
+        const provisionOutputs = ctx.envInfoV2?.profile;
         if (provisionOutputs === undefined) return;
         // DO NOT persist local debug plugin config.
         if (isMultiEnvEnabled() && provisionOutputs[PluginNames.LDEBUG]) {

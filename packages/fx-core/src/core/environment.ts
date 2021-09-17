@@ -209,6 +209,20 @@ class EnvironmentManager {
     }
   }
 
+  public isEnvConfig(projectPath: string, filePath: string): boolean {
+    const fileName = path.basename(filePath);
+    const fileDirname = path.dirname(filePath);
+    const configFolder = this.getEnvConfigsFolder(projectPath);
+    const relativeFilePath = path.relative(configFolder, fileDirname);
+
+    if (relativeFilePath !== "") {
+      return false;
+    }
+
+    const match = fileName.match(environmentManager.envConfigNameRegex);
+    return match !== null;
+  }
+
   public getEnvConfigPath(envName: string, projectPath: string): string {
     const basePath = this.getEnvConfigsFolder(projectPath);
     return path.resolve(basePath, EnvConfigFileNameTemplate.replace(EnvNamePlaceholder, envName));

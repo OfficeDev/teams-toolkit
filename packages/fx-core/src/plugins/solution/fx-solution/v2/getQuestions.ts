@@ -269,7 +269,7 @@ export async function getQuestions(
             getStrings().solution.SPFxAskProvisionBeforePublish,
             false
           );
-          throw CancelError;
+          return err(CancelError);
         } else {
           return err(
             returnUserError(

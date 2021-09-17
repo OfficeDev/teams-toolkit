@@ -2,14 +2,14 @@
 // Licensed under the MIT license.
 import {
   AzureSolutionSettings,
-  ConfigMap, Inputs, Json, ok, Platform, ProjectSettings, SolutionConfig,
+  ConfigMap, Func, Inputs, Json, ok, Platform, ProjectSettings, SolutionConfig,
   SolutionContext, Stage,
   TokenProvider, v2
 } from "@microsoft/teamsfx-api";
 import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import chai, { assert } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import { it } from "mocha";
+import {  it } from "mocha";
 import * as sinon from "sinon";
 import Container from "typedi";
 import * as uuid from "uuid";
@@ -29,7 +29,7 @@ import {
 import {
   ResourcePluginsV2
 } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
-import { getQuestions, getQuestionsForScaffolding } from "../../../src/plugins/solution/fx-solution/v2/getQuestions";
+import { getQuestions, getQuestionsForScaffolding, getQuestionsForUserTask } from "../../../src/plugins/solution/fx-solution/v2/getQuestions";
 import { MockGraphTokenProvider } from "../../core/utils";
 import {
   MockedAppStudioProvider, MockedAzureAccountProvider, MockedV2Context
@@ -141,6 +141,7 @@ describe("getQuestionsForScaffolding()", async () => {
       platform: Platform.VSCode,
       stage: Stage.deploy
     };
+    envInfo.profile[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] = false;
     const result1 = await getQuestions(mockedCtx, mockedInputs, envInfo,mockedProvider);
     assert.isTrue(result1.isErr());
     envInfo.profile[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] = true;
@@ -153,4 +154,93 @@ describe("getQuestionsForScaffolding()", async () => {
   });
 
 
+  it("getQuestions - publish", async () => {
+    const mockedCtx = new MockedV2Context(projectSettings);
+    const mockedInputs: Inputs = {
+      platform: Platform.VSCode,
+      stage: Stage.publish
+    };
+    envInfo.profile[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] = false;
+    const result1 = await getQuestions(mockedCtx, mockedInputs, envInfo,mockedProvider);
+    assert.isTrue(result1.isErr());
+
+    (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).hostType = HostTypeOptionSPFx.id;
+    const result11 = await getQuestions(mockedCtx, mockedInputs, envInfo,mockedProvider);
+    assert.isTrue(result11.isErr());
+
+    envInfo.profile[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] = true;
+    const result2 = await getQuestions(mockedCtx, mockedInputs, envInfo,mockedProvider);
+    assert.isTrue(result2.isOk());
+    if(result2.isOk ()) {
+      const node = result2.value;
+      assert.isTrue(node !== undefined && node.data !== undefined);
+    }
+  });
+
+  it("getQuestions - grantPermission", async () => {
+    const mockedCtx = new MockedV2Context(projectSettings);
+    const mockedInputs: Inputs = {
+      platform: Platform.VSCode,
+      stage: Stage.grantPermission
+    };
+    const result2 = await getQuestions(mockedCtx, mockedInputs, envInfo,mockedProvider);
+    assert.isTrue(result2.isOk());
+    if(result2.isOk ()) {
+      const node = result2.value;
+      assert.isTrue(node !== undefined && node.data !== undefined);
+    }
+  });
+
+
+  it("getQuestionsForUserTask - addCapability", async () => {
+    const mockedCtx = new MockedV2Context(projectSettings);
+    const mockedInputs: Inputs = {
+      platform: Platform.VSCode,
+      stage: Stage.grantPermission
+    };
+    const func: Func = {
+      method: "addCapability",
+      namespace: "fx-solution-azure"
+    };
+    {
+      (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).hostType = HostTypeOptionSPFx.id;
+      const res = await getQuestionsForUserTask(mockedCtx, mockedInputs, func, envInfo,mockedProvider);
+      assert.isTrue(res.isErr());
+    }
+    {
+      (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).hostType = HostTypeOptionAzure.id;
+      const res = await getQuestionsForUserTask(mockedCtx, mockedInputs, func, envInfo,mockedProvider);
+      assert.isTrue(res.isOk());
+      if(res.isOk ()) {
+        const node = res.value;
+        assert.isTrue(node !== undefined && node.data !== undefined);
+      }
+    }
+  });
+
+  it("getQuestionsForUserTask - addResource", async () => {
+    const mockedCtx = new MockedV2Context(projectSettings);
+    const mockedInputs: Inputs = {
+      platform: Platform.VSCode,
+      stage: Stage.grantPermission
+    };
+    const func: Func = {
+      method: "addResource",
+      namespace: "fx-solution-azure"
+    };
+    {
+      (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).hostType = HostTypeOptionSPFx.id;
+      const res = await getQuestionsForUserTask(mockedCtx, mockedInputs, func, envInfo,mockedProvider);
+      assert.isTrue(res.isErr());
+    }
+    {
+      (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).hostType = HostTypeOptionAzure.id;
+      const res = await getQuestionsForUserTask(mockedCtx, mockedInputs, func, envInfo,mockedProvider);
+      assert.isTrue(res.isOk());
+      if(res.isOk ()) {
+        const node = res.value;
+        assert.isTrue(node !== undefined && node.data !== undefined);
+      }
+    }
+  });
 });

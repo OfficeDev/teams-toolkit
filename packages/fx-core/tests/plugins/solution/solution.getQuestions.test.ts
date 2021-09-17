@@ -1,58 +1,37 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import {
+  ConfigMap, Inputs, ok, Platform, ProjectSettings, SolutionConfig,
+  SolutionContext, Stage,
+  TokenProvider, v2
+} from "@microsoft/teamsfx-api";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { it } from "mocha";
-import { TeamsAppSolution } from " ../../../src/plugins/solution";
-import {
-  ConfigMap,
-  SolutionConfig,
-  SolutionContext,
-  Platform,
-  Func,
-  ProjectSettings,
-  Inputs,
-  v2,
-  Plugin,
-  ok,
-} from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
-import { GLOBAL_CONFIG, SolutionError } from "../../../src/plugins/solution/fx-solution/constants";
-import {
-  MockedAppStudioProvider,
-  MockedV2Context,
-  mockPublishThatAlwaysSucceed,
-  mockV2PublishThatAlwaysSucceed,
-  mockScaffoldCodeThatAlwaysSucceeds,
-} from "./util";
-import _ from "lodash";
-import {
-  ResourcePlugins,
-  ResourcePluginsV2,
-} from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import Container from "typedi";
 import * as uuid from "uuid";
-import {
-  AzureResourceSQL,
-  AzureSolutionQuestionNames,
-  BotOptionItem,
-  HostTypeOptionAzure,
-  HostTypeOptionSPFx,
-  TabOptionItem,
-} from "../../../src/plugins/solution/fx-solution/question";
-import { getQuestionsForScaffolding } from "../../../src/plugins/solution/fx-solution/v2/getQuestions";
-import "../../../src/plugins/resource/function/v2";
-import "../../../src/plugins/resource/sql/v2";
+import { newEnvInfo } from "../../../src";
 import "../../../src/plugins/resource/apim/v2";
-import "../../../src/plugins/resource/localdebug/v2";
 import "../../../src/plugins/resource/appstudio/v2";
-import "../../../src/plugins/resource/frontend/v2";
 import "../../../src/plugins/resource/bot/v2";
+import "../../../src/plugins/resource/frontend/v2";
+import "../../../src/plugins/resource/function/v2";
+import "../../../src/plugins/resource/localdebug/v2";
 import "../../../src/plugins/resource/spfx/v2";
-import { AppStudioPlugin, newEnvInfo } from "../../../src";
-import fs from "fs-extra";
-import { ProgrammingLanguage } from "../../../src/plugins/resource/bot/enums/programmingLanguage";
-import { getQuestionsForScaffoldingAdapter } from "../../../src/plugins/resource/utils4v2";
+import "../../../src/plugins/resource/sql/v2";
+import { GLOBAL_CONFIG } from "../../../src/plugins/solution/fx-solution/constants";
+import {
+  HostTypeOptionAzure
+} from "../../../src/plugins/solution/fx-solution/question";
+import {
+  ResourcePluginsV2
+} from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
+import { getQuestions, getQuestionsForScaffolding } from "../../../src/plugins/solution/fx-solution/v2/getQuestions";
+import { MockGraphTokenProvider } from "../../core/utils";
+import {
+  MockedAppStudioProvider, MockedAzureAccountProvider, MockedV2Context
+} from "./util";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -65,7 +44,12 @@ const localDebugPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.Lo
 const appStudioPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin);
 const frontendPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.FrontendPlugin);
 const botPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.BotPlugin);
-
+const mockedProvider: TokenProvider = {
+  appStudioToken: new MockedAppStudioProvider(),
+  azureAccountProvider: new MockedAzureAccountProvider(),
+  graphTokenProvider: new MockGraphTokenProvider(),
+};
+const envInfo = {envName: "default", config: {}, profile:{}};
 function mockSolutionContextWithPlatform(platform?: Platform): SolutionContext {
   const config: SolutionConfig = new Map();
   config.set(GLOBAL_CONFIG, new ConfigMap());
@@ -112,7 +96,7 @@ describe("getQuestionsForScaffolding()", async () => {
 
   afterEach(() => {});
 
-  it("should contain capability questions", async () => {
+  it("getQuestionsForScaffolding", async () => {
     const mockedCtx = new MockedV2Context(projectSettings);
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
@@ -120,5 +104,15 @@ describe("getQuestionsForScaffolding()", async () => {
 
     const result = await getQuestionsForScaffolding(mockedCtx, mockedInputs);
     expect(result.isOk()).to.be.true;
+  });
+
+  it("getQuestions - migrateV1", async () => {
+    const mockedCtx = new MockedV2Context(projectSettings);
+    const mockedInputs: Inputs = {
+      platform: Platform.VSCode,
+      stage: Stage.migrateV1
+    };
+    const result = await getQuestions(mockedCtx, mockedInputs, envInfo,mockedProvider);
+    expect(result.isOk() && result.value.data).to.be.true;
   });
 });

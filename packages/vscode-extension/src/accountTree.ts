@@ -200,7 +200,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
       ]);
     }
 
-    registerEnvTreeHandler();
+    await registerEnvTreeHandler();
     return ok(null);
   };
 
@@ -239,6 +239,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
       }
     }
 
+    await registerEnvTreeHandler();
     return ok(null);
   };
 
@@ -352,6 +353,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
             parent: "fx-extension.signinAzure",
           },
         ]);
+        await registerEnvTreeHandler();
       }
 
       return Promise.resolve();

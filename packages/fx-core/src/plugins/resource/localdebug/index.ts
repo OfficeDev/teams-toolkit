@@ -18,7 +18,12 @@ import {
 import * as os from "os";
 
 import { LocalCertificateManager } from "./certificate";
-import { SolutionPlugin, LocalEnvBotKeys, LocalEnvBotKeysMigratedFromV1 } from "./constants";
+import {
+  SolutionPlugin,
+  LocalEnvBotKeys,
+  LocalEnvBotKeysMigratedFromV1,
+  AppStudioPlugin,
+} from "./constants";
 import {
   LocalDebugConfigKeys,
   LocalEnvFrontendKeys,
@@ -474,7 +479,11 @@ export class LocalDebugPlugin implements Plugin {
       const solutionConfigs = ctx.envInfo.profile.get(SolutionPlugin.Name);
       if (env === "remote") {
         // return remote teams app id
-        const remoteId = solutionConfigs?.get(SolutionPlugin.RemoteTeamsAppId) as string;
+        const remoteId = isMultiEnvEnabled()
+          ? (ctx.envInfo.profile
+              .get(AppStudioPlugin.Name)
+              ?.get(AppStudioPlugin.TeamsAppId) as string)
+          : (solutionConfigs?.get(SolutionPlugin.RemoteTeamsAppId) as string);
         if (/^[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$/.test(remoteId)) {
           return ok(remoteId);
         } else {

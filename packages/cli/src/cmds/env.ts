@@ -191,13 +191,18 @@ class EnvList extends YargsCommand {
 
 class EnvActivate extends YargsCommand {
   public readonly commandHead = `activate`;
-  public readonly command = `${this.commandHead}`;
+  public readonly command = `${this.commandHead} <env>`;
   public readonly description = "Activate an environment.";
   public params: { [_: string]: Options } = {};
 
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp(Stage.activateEnv);
-    return yargs.version(false).options(this.params).demandOption(EnvNodeNoCreate.data.name!);
+    yargs.positional("env", {
+      type: "string",
+      description: "Select an environment to activate",
+      demandOption: true,
+    });
+    return yargs.version(false).options(this.params);
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {

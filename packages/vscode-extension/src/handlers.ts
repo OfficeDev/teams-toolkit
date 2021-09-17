@@ -111,7 +111,8 @@ export function getWorkspacePath(): string | undefined {
 export async function activate(): Promise<Result<Void, FxError>> {
   const result: Result<Void, FxError> = ok(Void);
   try {
-    const validProject = isValidProject(getWorkspacePath());
+    const workspacePath = getWorkspacePath();
+    const validProject = isValidProject(workspacePath);
     if (validProject) {
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenTeamsApp, {});
     }
@@ -180,6 +181,17 @@ export async function activate(): Promise<Result<Void, FxError>> {
     await registerEnvTreeHandler();
     await openMarkdownHandler();
     await openSampleReadmeHandler();
+
+    if (workspacePath) {
+      // refresh env tree when env config files added or deleted.
+      workspace.onDidCreateFiles(async (event) => {
+        await refreshEnvTreeOnFileChanged(workspacePath, event.files);
+      });
+
+      workspace.onDidDeleteFiles(async (event) => {
+        await refreshEnvTreeOnFileChanged(workspacePath, event.files);
+      });
+    }
   } catch (e) {
     const FxError: FxError = {
       name: e.name,
@@ -192,6 +204,21 @@ export async function activate(): Promise<Result<Void, FxError>> {
     return err(FxError);
   }
   return result;
+}
+
+async function refreshEnvTreeOnFileChanged(workspacePath: string, files: readonly Uri[]) {
+  let needRefresh = false;
+  for (const file of files) {
+    // check if file is env config
+    if (environmentManager.isEnvConfig(workspacePath, file.fsPath)) {
+      needRefresh = true;
+      break;
+    }
+  }
+
+  if (needRefresh) {
+    await registerEnvTreeHandler();
+  }
 }
 
 function registerCoreEvents() {
@@ -317,7 +344,7 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<null, Fx
 export async function provisionHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ProvisionStart, getTriggerFromProperty(args));
   const result = await runCommand(Stage.provision);
-  registerEnvTreeHandler();
+  await registerEnvTreeHandler();
   return result;
 }
 
@@ -755,9 +782,6 @@ export async function createNewEnvironment(args?: any[]): Promise<Result<Void, F
     getTriggerFromProperty(args)
   );
   const result = await runCommand(Stage.createEnv);
-  if (!result.isErr()) {
-    registerEnvTreeHandler();
-  }
   return result;
 }
 
@@ -827,7 +851,7 @@ export async function activateEnvironment(env: string): Promise<Result<Void, FxE
     const inputs: Inputs = getSystemInputs();
     inputs.env = env;
     result = await core.activateEnv(inputs);
-    registerEnvTreeHandler();
+    await registerEnvTreeHandler();
   } catch (e) {
     result = wrapError(e);
   }
@@ -855,7 +879,7 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
       throw result.error;
     }
     window.showInformationMessage(
-      `Added account: '${inputs.email}'' to the environment '${env}' as a collaborator`
+      `Added account: '${inputs.email}' to the environment '${env}' as a collaborator`
     );
 
     updateCollaboratorList(env);
@@ -1295,7 +1319,7 @@ export async function signOutM365(isFromTreeView: boolean) {
     ]);
   }
 
-  registerEnvTreeHandler();
+  await registerEnvTreeHandler();
 }
 
 export async function signInAzure() {

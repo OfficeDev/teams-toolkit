@@ -26,6 +26,7 @@ import {
   CryptoDataMatchers,
   isMultiEnvEnabled,
   getResourceGroupNameFromResourceId,
+  waitSeconds,
 } from "../../../common/tools";
 import {
   ARM_TEMPLATE_OUTPUT,
@@ -732,10 +733,6 @@ async function areFoldersEmpty(folderPaths: string[]): Promise<boolean> {
     }
   }
   return isEmpty;
-}
-
-export async function waitSeconds(second: number) {
-  return new Promise((resolve) => setTimeout(resolve, second * 1000));
 }
 
 async function wrapGetDeploymentError(

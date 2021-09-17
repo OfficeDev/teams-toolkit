@@ -16,7 +16,12 @@ import {
   Json,
   SubscriptionInfo,
 } from "@microsoft/teamsfx-api";
-import { environmentManager, isMultiEnvEnabled, isValidProject } from "@microsoft/teamsfx-core";
+import {
+  environmentManager,
+  isMultiEnvEnabled,
+  isValidProject,
+  PluginNames,
+} from "@microsoft/teamsfx-core";
 import { workspace, WorkspaceConfiguration } from "vscode";
 import * as commonUtils from "../debug/commonUtils";
 import { ConfigurationKey, CONFIGURATION_PREFIX, UserState } from "../constants";
@@ -71,14 +76,16 @@ export function getTeamsAppId() {
       const envJsonPath = path.join(
         ws,
         isMultiEnvEnabled()
-          ? `.${ConfigFolderName}/${InputConfigsFolderName}/${EnvProfileFileNameTemplate.replace(
+          ? `.${ConfigFolderName}/${PublishProfilesFolderName}/${EnvProfileFileNameTemplate.replace(
               "@envName",
               envResult.value
             )}`
           : `.${ConfigFolderName}/env.${envResult.value}.json`
       );
       const envJson = JSON.parse(fs.readFileSync(envJsonPath, "utf8"));
-      return envJson.solution.remoteTeamsAppId;
+      return isMultiEnvEnabled()
+        ? envJson[PluginNames.APPST].teamsAppId
+        : envJson.solution.remoteTeamsAppId;
     }
   } catch (e) {
     return undefined;

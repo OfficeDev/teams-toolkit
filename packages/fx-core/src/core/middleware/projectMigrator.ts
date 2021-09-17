@@ -277,7 +277,7 @@ async function ensureProjectSettings(
   if (!settings.programmingLanguage || !settings.defaultFunctionName) {
     const envDefault = await readJson(envDefaultPath);
     settings.programmingLanguage = envDefault[PluginNames.SOLUTION][programmingLanguage];
-    settings.defaultFunctionName = envDefault[PluginNames.FUNC][defaultFunctionName];
+    settings.defaultFunctionName = envDefault[PluginNames.FUNC]?.[defaultFunctionName];
   }
   if (!settings.activeEnvironment) {
     settings.activeEnvironment = "dev";
@@ -323,6 +323,9 @@ async function needMigrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<boolea
     return false;
   }
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+  if (!inputs.projectPath) {
+    return false;
+  }
   const fxExist = await fs.pathExists(path.join(inputs.projectPath as string, ".fx"));
   if (!fxExist) {
     return false;

@@ -277,7 +277,7 @@ async function ensureProjectSettings(
   if (!settings.programmingLanguage || !settings.defaultFunctionName) {
     const envDefault = await readJson(envDefaultPath);
     settings.programmingLanguage = envDefault[PluginNames.SOLUTION][programmingLanguage];
-    settings.defaultFunctionName = envDefault[PluginNames.FUNC][defaultFunctionName];
+    settings.defaultFunctionName = envDefault[PluginNames.FUNC]?.[defaultFunctionName];
   }
   if (!settings.activeEnvironment) {
     settings.activeEnvironment = "dev";

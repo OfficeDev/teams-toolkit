@@ -44,7 +44,7 @@ jobs:
       - name: Check if there are changes
         id: changes
         run: |
-          VAR=$(git stash list)
+          VAR=$(git diff --cached --name-only)
           VAR1=$(git diff --name-only)
           if [[ ! -z "$VAR" || ! -z "$VAR1" ]]
           then 

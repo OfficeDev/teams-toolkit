@@ -24,7 +24,7 @@ import "../../../src/plugins/resource/spfx/v2";
 import "../../../src/plugins/resource/sql/v2";
 import { GLOBAL_CONFIG, SOLUTION_PROVISION_SUCCEEDED } from "../../../src/plugins/solution/fx-solution/constants";
 import {
-  HostTypeOptionAzure, HostTypeOptionSPFx
+  HostTypeOptionAzure, HostTypeOptionSPFx, TabOptionItem
 } from "../../../src/plugins/solution/fx-solution/question";
 import {
   ResourcePluginsV2
@@ -52,16 +52,6 @@ const mockedProvider: TokenProvider = {
   graphTokenProvider: new MockGraphTokenProvider(),
 };
 const envInfo:EnvInfoV2 = {envName: "default", config: {}, profile:{solution:{}}};
-function mockSolutionContextWithPlatform(platform?: Platform): SolutionContext {
-  const config: SolutionConfig = new Map();
-  config.set(GLOBAL_CONFIG, new ConfigMap());
-  return {
-    root: ".",
-    envInfo: newEnvInfo(),
-    answers: { platform: platform ? platform : Platform.VSCode },
-    projectSettings: undefined,
-  };
-}
 
 describe("getQuestionsForScaffolding()", async () => {
   const mocker = sinon.createSandbox();
@@ -235,6 +225,12 @@ describe("getQuestionsForScaffolding()", async () => {
     }
     {
       (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).hostType = HostTypeOptionAzure.id;
+      const res = await getQuestionsForUserTask(mockedCtx, mockedInputs, func, envInfo,mockedProvider);
+      assert.isTrue(res.isErr());
+    }
+    {
+      (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).hostType = HostTypeOptionAzure.id;
+      (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).capabilities = [TabOptionItem.id];
       const res = await getQuestionsForUserTask(mockedCtx, mockedInputs, func, envInfo,mockedProvider);
       assert.isTrue(res.isOk());
       if(res.isOk ()) {

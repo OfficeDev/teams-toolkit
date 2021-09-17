@@ -301,7 +301,10 @@ export class FunctionPluginImpl {
     await this.syncConfigFromContext(ctx);
 
     const workingPath: string = this.getFunctionProjectRootPath(ctx);
-    const functionLanguage = ctx.projectSettings?.programmingLanguage;
+    const functionLanguage = (ctx.projectSettings?.programmingLanguage) ? ctx.projectSettings?.programmingLanguage : this.checkAndGet(
+      this.config.functionLanguage,
+      FunctionConfigKey.functionLanguage
+    );
 
     const name: string =
       (ctx.answers![QuestionKey.functionName] as string) ?? DefaultValues.functionName;

@@ -301,14 +301,14 @@ export class FunctionPluginImpl {
     await this.syncConfigFromContext(ctx);
 
     const workingPath: string = this.getFunctionProjectRootPath(ctx);
-    const functionLanguage = (ctx.projectSettings?.programmingLanguage) ? ctx.projectSettings?.programmingLanguage : this.checkAndGet(
+    const functionLanguage: FunctionLanguage = this.checkAndGet(
       this.config.functionLanguage,
       FunctionConfigKey.functionLanguage
     );
 
     const name: string =
       (ctx.answers![QuestionKey.functionName] as string) ?? DefaultValues.functionName;
-    if (await FunctionScaffold.doesFunctionPathExist(workingPath, functionLanguage! as FunctionLanguage, name)) {
+    if (await FunctionScaffold.doesFunctionPathExist(workingPath, functionLanguage, name)) {
       throw new FunctionNameConflictError();
     }
 

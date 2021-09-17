@@ -679,7 +679,7 @@
     "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\"",
     "prepare": "npm run build",
     "precommit": "lint-staged",
-    "format-check": "if [ ! -z \"$(git diff --name-only HEAD..$npm_config_source -- .)\" ]; then npx prettier --config .prettierrc.js --write $(git diff --name-only HEAD..$npm_config_source -- . | cut -c 27- | xargs) --ignore-path .prettierignore; fi"
+    "format-check": "bash ../../.github/scripts/lint-pr.sh $npm_config_source 27"
   },
   "devDependencies": {
     "@azure/arm-subscriptions": "^3.0.0",

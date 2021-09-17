@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "precommit": "lint-staged",
-    "format-check": "if [[ ! -z \"$(git diff --name-only HEAD..$npm_config_source -- .)\" ]]; then npx prettier --config .prettierrc.js --write $(git diff --name-only HEAD..$npm_config_source -- . | cut -c 11-) --ignore-path .prettierignore; fi"
+    "format-check": "bash ../.github/scripts/lint-pr.sh $npm_config_source 11"
   },
   "devDependencies": {
     "@shared/eslint-config": "file:../packages/eslint-config",

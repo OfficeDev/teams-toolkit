@@ -63,6 +63,13 @@ describe("grantPermission() for Teamsfx projects", () => {
     expect(solution.runningState).equal(SolutionRunningState.Idle);
 
     const mockedCtx = mockSolutionContext();
+    sandbox.stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject").resolves({
+      tid: "fake_tid",
+      oid: "fake_oid",
+      unique_name: "fake_unique_name",
+      name: "fake_name",
+    });
+
     solution.runningState = SolutionRunningState.ProvisionInProgress;
     let result = await solution.grantPermission(mockedCtx);
     expect(result.isErr()).to.be.false;
@@ -83,6 +90,8 @@ describe("grantPermission() for Teamsfx projects", () => {
     if (!result.isErr()) {
       expect(result.value.state).equals(CollaborationState.SolutionIsNotIdle);
     }
+
+    sandbox.restore();
   });
 
   it("should return NotProvisioned state if Teamsfx project hasn't been provisioned", async () => {
@@ -98,11 +107,19 @@ describe("grantPermission() for Teamsfx projects", () => {
         version: "1.0",
       },
     };
+    sandbox.stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject").resolves({
+      tid: "fake_tid",
+      oid: "fake_oid",
+      unique_name: "fake_unique_name",
+      name: "fake_name",
+    });
+
     const result = await solution.grantPermission(mockedCtx);
     expect(result.isErr()).to.be.false;
     if (!result.isErr()) {
       expect(result.value.state).equals(CollaborationState.NotProvisioned);
     }
+    sandbox.restore();
   });
 
   it("should return error if cannot get current user info", async () => {

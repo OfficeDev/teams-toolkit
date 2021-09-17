@@ -435,7 +435,14 @@ suite("handlers", () => {
       sinon.stub(handlers, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      sinon.stub(MockCore.prototype, "listCollaborator").returns(Promise.resolve(ok([])));
+      sinon.stub(MockCore.prototype, "listCollaborator").returns(
+        Promise.resolve(
+          ok({
+            state: CollaborationState.OK,
+            collaborators: [],
+          })
+        )
+      );
 
       const result = await handlers.listCollaborator("env");
       chai.assert.equal(result[0].label, "No permission to list collaborators");

@@ -980,11 +980,11 @@ export async function checkPermission(env: string): Promise<boolean> {
     if (permissions.isErr()) {
       throw permissions.error;
     }
-    if ((permissions.value.state = CollaborationState.OK)) {
-      const teamsAppPermission = permissions.value.find(
+    if (permissions.value.state === CollaborationState.OK) {
+      const teamsAppPermission = permissions.value.permissions.find(
         (permission: any) => permission.name === "Teams App"
       );
-      const aadPermission = permissions.value.find(
+      const aadPermission = permissions.value.permissions.find(
         (permission: any) => permission.name === "Azure AD App"
       );
       result =

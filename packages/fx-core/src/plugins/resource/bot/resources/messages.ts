@@ -46,6 +46,8 @@ export class Messages {
     "Falling back to use local template zip.";
   public static readonly ResourceProviderExist = (rp: string): string =>
     `Resource Provider ${rp} already exists, do not need to register.`;
+  public static readonly BotResourceExist = (where: string): string =>
+    `Bot resource already existed on ${where}, skip creating Bot resource.`;
 
   public static readonly WorkingDirIsMissing = "Working directory is missing.";
   public static readonly FailToGetAzureCreds = "Failed to retrieve Azure credentials.";

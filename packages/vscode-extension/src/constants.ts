@@ -2,6 +2,7 @@ export const CONFIGURATION_PREFIX = "fx-extension";
 export enum ConfigurationKey {
   ArmSupportEnabled = "armSupportEnabled",
   BicepEnvCheckerEnable = "validateBicep",
+  MultiEnvEnabled = "multipleEnvironmentsSupportEnabled",
 }
 
 export const migrateV1DocUrl = "https://aka.ms/teamsfx-migrate-v1";

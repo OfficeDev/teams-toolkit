@@ -111,8 +111,6 @@ export function getWorkspacePath(): string | undefined {
 export async function activate(): Promise<Result<Void, FxError>> {
   const result: Result<Void, FxError> = ok(Void);
   try {
-    syncFeatureFlags();
-
     const workspacePath = getWorkspacePath();
     const validProject = isValidProject(workspacePath);
     if (validProject) {

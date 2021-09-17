@@ -591,6 +591,11 @@
             "description": "Enable provision Azure resources with ARM templates. (Requires reload of VS Code)",
             "default": false
           },
+          "fx-extension.multipleEnvironmentsSupportEnabled": {
+            "type": "boolean",
+            "description": "[Experimental] Enable multiple environments support. (Requires reload of VS Code)",
+            "default": false
+          },
           "fx-extension.validateNode": {
             "type": "boolean",
             "description": "Ensure Node.js is installed.",

@@ -44,9 +44,9 @@ jobs:
       - name: Check if there are changes
         id: changes
         run: |
+          git add .
           VAR=$(git diff --cached --name-only)
-          VAR1=$(git diff --name-only)
-          if [[ ! -z "$VAR" || ! -z "$VAR1" ]]
+          if [ ! -z "$VAR" ]
           then 
             echo "there has some prettier format error, you may run npm run setup local, and check your commit files is formatted."
             exit 1

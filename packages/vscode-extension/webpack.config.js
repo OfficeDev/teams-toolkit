@@ -100,6 +100,14 @@ const config = {
           from: "./WHATISNEW.md",
           to: "../resource/WHATISNEW.md",
         },
+        {
+          from: "./node_modules/@vscode/codicons/dist/codicon.css",
+          to: "../resource/codicon.css",
+        },
+        {
+          from: "./node_modules/@vscode/codicons/dist/codicon.ttf",
+          to: "../resource/codicon.ttf",
+        },
       ],
     }),
   ],

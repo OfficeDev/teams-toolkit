@@ -73,27 +73,25 @@ export function getSubscriptionId() {
 }
 
 const envFilePathSuffix = path.join(".fx", "env.default.json");
-const envFilePathSuffixMultiEnv = path.join(
-  ".fx",
-  PublishProfilesFolderName,
-  EnvProfileFileNameTemplate.replace(EnvNamePlaceholder, "dev")
-);
-const defaultBicepParameterFileSuffix = path.join(
-  `.${ConfigFolderName}`,
-  InputConfigsFolderName,
-  "azure.parameters.dev.json"
-);
 
-function getEnvFilePathSuffix(isMultiEnvEnabled: boolean) {
+function getEnvFilePathSuffix(isMultiEnvEnabled: boolean, envName: string) {
   if (isMultiEnvEnabled) {
-    return envFilePathSuffixMultiEnv;
+    return path.join(
+      ".fx",
+      PublishProfilesFolderName,
+      EnvProfileFileNameTemplate.replace(EnvNamePlaceholder, envName)
+    );
   } else {
     return envFilePathSuffix;
   }
 }
 
-export function getConfigFileName(appName: string, isMultiEnvEnabled = false): string {
-  return path.resolve(testFolder, appName, getEnvFilePathSuffix(isMultiEnvEnabled));
+export function getConfigFileName(
+  appName: string,
+  isMultiEnvEnabled = false,
+  envName = "dev"
+): string {
+  return path.resolve(testFolder, appName, getEnvFilePathSuffix(isMultiEnvEnabled, envName));
 }
 
 const aadPluginName = "fx-resource-aad-app-for-teams";
@@ -108,8 +106,13 @@ export async function setSimpleAuthSkuNameToB1(projectPath: string) {
   return fs.writeJSON(envFilePath, context, { spaces: 4 });
 }
 
-export async function setSimpleAuthSkuNameToB1Bicep(projectPath: string) {
-  const parametersFilePath = path.resolve(projectPath, defaultBicepParameterFileSuffix);
+export async function setSimpleAuthSkuNameToB1Bicep(projectPath: string, envName: string) {
+  const bicepParameterFile = path.join(
+    `.${ConfigFolderName}`,
+    InputConfigsFolderName,
+    `azure.parameters.${envName}.json`
+  );
+  const parametersFilePath = path.resolve(projectPath, bicepParameterFile);
   const parameters = await fs.readJSON(parametersFilePath);
   parameters["parameters"]["simpleAuth_sku"] = { value: "B1" };
   return fs.writeJSON(parametersFilePath, parameters, { spaces: 4 });
@@ -127,9 +130,10 @@ export async function cleanUpAadApp(
   hasAadPlugin?: boolean,
   hasBotPlugin?: boolean,
   hasApimPlugin?: boolean,
-  isMultiEnvEnabled = false
+  isMultiEnvEnabled = false,
+  envName = "dev"
 ) {
-  const envFilePath = path.resolve(projectPath, getEnvFilePathSuffix(isMultiEnvEnabled));
+  const envFilePath = path.resolve(projectPath, getEnvFilePathSuffix(isMultiEnvEnabled, envName));
   const context = await fs.readJSON(envFilePath);
   const manager = await AadManager.init();
   const promises: Promise<boolean>[] = [];
@@ -206,14 +210,16 @@ export async function cleanUp(
   hasAadPlugin = true,
   hasBotPlugin = false,
   hasApimPlugin = false,
-  isMultiEnvEnabled = false
+  isMultiEnvEnabled = false,
+  envName = "dev"
 ) {
   const cleanUpAadAppPromise = cleanUpAadApp(
     projectPath,
     hasAadPlugin,
     hasBotPlugin,
     hasApimPlugin,
-    isMultiEnvEnabled
+    isMultiEnvEnabled,
+    envName
   );
   return Promise.all([
     // delete aad app

@@ -242,7 +242,7 @@ export class FxCore implements Core {
         version: "1.0.0",
         activeEnvironment: multiEnv ? environmentManager.getDefaultEnvName() : "default",
       };
-
+      ctx.projectSettings = projectSettings;
       if (multiEnv) {
         const createEnvResult = await this.createEnvWithName(
           environmentManager.getDefaultEnvName(),
@@ -300,7 +300,6 @@ export class FxCore implements Core {
           ...this.tools.tokenProvider,
           answers: inputs,
         };
-        ctx.projectSettings = projectSettings;
         ctx.solutionContext = solutionContext;
         const createRes = await solution.create(solutionContext);
         if (createRes.isErr()) {

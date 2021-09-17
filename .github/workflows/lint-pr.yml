@@ -16,14 +16,15 @@ jobs:
       - uses: amannn/action-semantic-pull-request@v3.4.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  
-  check-uncommit:
+
+  check-format:
     if: ${{ github.event_name == 'pull_request' && github.event.action != 'edited' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout branch
         uses: actions/checkout@v2
         with:
+          fetch-depth: 0
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{github.event.pull_request.head.repo.full_name}}
 
@@ -32,15 +33,21 @@ jobs:
         with:
           node-version: 14
 
-      - name: check prepare
+      - name: Setup Project
         run: |
           npm run setup
 
+      - name: prettier check files in PR
+        run: |
+          npx lerna exec -- bash \$LERNA_ROOT_PATH/.github/scripts/lint-pr.sh ${{ github.event.pull_request.base.ref }}
+
       - name: Check if there are changes
         id: changes
-        uses: UnicornGlobal/has-changes-action@v1.0.11
-      
-      - name: changes result
-        if: steps.changes.outputs.changed == 1
-        run:
-          exit 1
+        run: |
+          git add .
+          VAR=$(git diff --cached --name-only)
+          if [ ! -z "$VAR" ]
+          then 
+            echo "there has some prettier format error, you may run npm run setup local, and check your commit files is formatted."
+            exit 1
+          fi

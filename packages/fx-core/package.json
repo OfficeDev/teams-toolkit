@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx-core",
-  "version": "0.8.0-rc.0",
+  "version": "0.8.0-rc.1",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "license": "MIT",

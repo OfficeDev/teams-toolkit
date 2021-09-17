@@ -187,7 +187,7 @@ export class FunctionValidator {
       });
     }
 
-    if (isMultiEnvEnabled) {
+    if (!isMultiEnvEnabled) {
       console.log("Validating app service plan.");
       const servicePlanResponse = await this.getWebappServicePlan(
         this.subscriptionId,

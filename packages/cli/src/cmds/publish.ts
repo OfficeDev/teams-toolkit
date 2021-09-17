@@ -41,8 +41,7 @@ export default class Publish extends YargsCommand {
       CliTelemetry.sendTelemetryEvent(TelemetryEvent.PublishStart);
       result = await activate();
     } else {
-      const rootFolder = answers["folder"] as string;
-      delete answers.folder;
+      const rootFolder = answers.projectPath || ".";
       CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.PublishStart);
       result = await activate(rootFolder);
     }

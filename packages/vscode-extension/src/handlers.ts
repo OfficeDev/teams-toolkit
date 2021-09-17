@@ -113,7 +113,8 @@ export async function activate(): Promise<Result<Void, FxError>> {
   try {
     syncFeatureFlags();
 
-    const validProject = isValidProject(getWorkspacePath());
+    const workspacePath = getWorkspacePath();
+    const validProject = isValidProject(workspacePath);
     if (validProject) {
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenTeamsApp, {});
     }
@@ -182,6 +183,17 @@ export async function activate(): Promise<Result<Void, FxError>> {
     await registerEnvTreeHandler();
     await openMarkdownHandler();
     await openSampleReadmeHandler();
+
+    if (workspacePath) {
+      // refresh env tree when env config files added or deleted.
+      workspace.onDidCreateFiles(async (event) => {
+        await refreshEnvTree(workspacePath, event.files);
+      });
+
+      workspace.onDidDeleteFiles(async (event) => {
+        await refreshEnvTree(workspacePath, event.files);
+      });
+    }
   } catch (e) {
     const FxError: FxError = {
       name: e.name,
@@ -194,6 +206,21 @@ export async function activate(): Promise<Result<Void, FxError>> {
     return err(FxError);
   }
   return result;
+}
+
+async function refreshEnvTree(workspacePath: string, files: readonly Uri[]) {
+  let needRefresh = false;
+  for (const file of files) {
+    // check if file is env config
+    if (environmentManager.isEnvConfig(workspacePath, file.fsPath)) {
+      needRefresh = true;
+      break;
+    }
+  }
+
+  if (needRefresh) {
+    await registerEnvTreeHandler();
+  }
 }
 
 function registerCoreEvents() {
@@ -757,9 +784,6 @@ export async function createNewEnvironment(args?: any[]): Promise<Result<Void, F
     getTriggerFromProperty(args)
   );
   const result = await runCommand(Stage.createEnv);
-  if (!result.isErr()) {
-    await registerEnvTreeHandler();
-  }
   return result;
 }
 

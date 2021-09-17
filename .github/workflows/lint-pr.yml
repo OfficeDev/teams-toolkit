@@ -43,10 +43,11 @@ jobs:
 
       - name: Check if there are changes
         id: changes
-        uses: UnicornGlobal/has-changes-action@v1.0.11
-
-      - name: changes result
-        if: steps.changes.outputs.changed == 1
         run: |
-          echo "there has some prettier format error, you may run npm run setup local, and check your commit files is formatted."
-          exit 1
+          VAR=$(git stash list)
+          VAR1=$(git diff --name-only)
+          if [[ ! -z "$VAR" || ! -z "$VAR1" ]]
+          then 
+            echo "there has some prettier format error, you may run npm run setup local, and check your commit files is formatted."
+            exit 1
+          fi

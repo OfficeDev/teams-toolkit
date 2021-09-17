@@ -120,14 +120,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
 
     const expService = exp.getExpService();
     if (expService) {
-      if (
-        !validProject &&
-        (await expService.getTreatmentVariableAsync(
-          TreatmentVariables.VSCodeConfig,
-          TreatmentVariables.SidebarWelcome,
-          true
-        ))
-      ) {
+      if (!validProject) {
         vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome", true);
       } else {
         vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome", false);
@@ -200,28 +193,28 @@ function registerCoreEvents() {
   const developmentView = TreeViewManagerInstance.getTreeView("teamsfx-development");
   if (developmentView instanceof CommandsWebviewProvider) {
     core.on(CoreCallbackEvent.lock, () => {
-      (
-        TreeViewManagerInstance.getTreeView("teamsfx-development") as CommandsWebviewProvider
-      ).onLockChanged(true);
+      (TreeViewManagerInstance.getTreeView(
+        "teamsfx-development"
+      ) as CommandsWebviewProvider).onLockChanged(true);
     });
     core.on(CoreCallbackEvent.unlock, () => {
-      (
-        TreeViewManagerInstance.getTreeView("teamsfx-development") as CommandsWebviewProvider
-      ).onLockChanged(false);
+      (TreeViewManagerInstance.getTreeView(
+        "teamsfx-development"
+      ) as CommandsWebviewProvider).onLockChanged(false);
     });
   }
 
   const deploymentView = TreeViewManagerInstance.getTreeView("teamsfx-deployment");
   if (deploymentView instanceof CommandsWebviewProvider) {
     core.on(CoreCallbackEvent.lock, () => {
-      (
-        TreeViewManagerInstance.getTreeView("teamsfx-deployment") as CommandsWebviewProvider
-      ).onLockChanged(true);
+      (TreeViewManagerInstance.getTreeView(
+        "teamsfx-deployment"
+      ) as CommandsWebviewProvider).onLockChanged(true);
     });
     core.on(CoreCallbackEvent.unlock, () => {
-      (
-        TreeViewManagerInstance.getTreeView("teamsfx-deployment") as CommandsWebviewProvider
-      ).onLockChanged(false);
+      (TreeViewManagerInstance.getTreeView(
+        "teamsfx-deployment"
+      ) as CommandsWebviewProvider).onLockChanged(false);
     });
   }
 }

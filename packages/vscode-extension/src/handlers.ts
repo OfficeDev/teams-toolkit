@@ -784,6 +784,9 @@ export async function createNewEnvironment(args?: any[]): Promise<Result<Void, F
     getTriggerFromProperty(args)
   );
   const result = await runCommand(Stage.createEnv);
+  if (!result.isErr()) {
+    await registerEnvTreeHandler();
+  }
   return result;
 }
 

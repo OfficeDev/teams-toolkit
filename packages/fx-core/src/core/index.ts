@@ -640,15 +640,16 @@ export class FxCore implements Core {
         if (!ctx || !ctx.solutionV2 || !ctx.envInfoV2)
           return err(new ObjectIsUndefinedError("executeUserTask input stuff"));
         if (!ctx.contextV2) ctx.contextV2 = createV2Context(this, newProjectSettings());
-        if (ctx.solutionV2.executeUserTask)
-          return await ctx.solutionV2.executeUserTask(
+        if (ctx.solutionV2.executeUserTask) {
+          const res = await ctx.solutionV2.executeUserTask(
             ctx.contextV2,
             inputs,
             func,
             ctx.envInfoV2,
             this.tools.tokenProvider
           );
-        else return err(FunctionRouterError(func));
+          return res;
+        } else return err(FunctionRouterError(func));
       } else {
         if (!ctx || !ctx.solution)
           return err(new ObjectIsUndefinedError("executeUserTask input stuff"));

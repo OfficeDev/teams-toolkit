@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.7.0 - Sep 17, 2021
+
+Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
+
+Enhancement:
+
+- Improved version upgrade experience by adding "What is New?" info.
+- Simplified welcome view when clicking the Toolkit logo on the sidebar.
+
+
 ## 2.6.0 - Sep 06, 2021
 
 Incremental version for Teams Toolkit with multiple bugs fixed and the following updates：
@@ -10,13 +20,8 @@ New Feature:
 - Support local debug experience for Teams Tab/Bot/Message Extension project migrated from Teams Toolkit V1.
 - Check permission to turn-on Teams custom app uploading when user sign-in to M365 account. Learn more about [Teams app uploading or sideloading permission](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading).
 - (Preview Feature) Support provision cloud resources using Azure Resource Manager. To enable this feature, please follow [instructions](https://github.com/OfficeDev/TeamsFx/wiki/Enable-Preview-Features-in-Teams-Toolkit).
-  <<<<<<< HEAD
-
-# Enhancement:
 
 Enhancement:
-
-> > > > > > > dev
 
 - UI Enhancement:
   - Hide Azure account login for SharePoint projects.

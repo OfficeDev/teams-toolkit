@@ -6,6 +6,7 @@ import path from "path";
 
 import {
   AadValidator,
+  AppStudioValidator,
   BotValidator,
   FrontendValidator,
   FunctionValidator,
@@ -33,6 +34,7 @@ import {
   PublishProfilesFolderName,
   EnvProfileFileNameTemplate,
   EnvNamePlaceholder,
+  AppPackageFolderName,
 } from "@microsoft/teamsfx-api";
 import { expect } from "chai";
 
@@ -179,7 +181,7 @@ describe("Create single tab/bot/function", function () {
 
         // Validate Function App
         const func = FunctionValidator.init(context);
-        await FunctionValidator.validateProvision(func, false);
+        await FunctionValidator.validateProvision(func, false, true);
 
         // Validate Bot Provision
         const bot = BotValidator.init(context);
@@ -215,15 +217,16 @@ describe("Create single tab/bot/function", function () {
         await BotValidator.validateDeploy(bot);
       }
 
-      // validate
-      await execAsyncWithRetry(`teamsfx validate`, {
+      // validate manifest
+      result = await execAsyncWithRetry(`teamsfx validate`, {
         cwd: projectPath,
         env: processEnv,
         timeout: 0,
       });
 
       {
-        /// TODO: add check for validate
+        // Validate validate manifest
+        chai.assert.isEmpty(result.stderr);
       }
 
       // package
@@ -234,7 +237,30 @@ describe("Create single tab/bot/function", function () {
       });
 
       {
-        /// TODO: add check for package
+        // Validate package
+        const file = `${projectPath}/${AppPackageFolderName}/appPackage.${env}.zip`;
+        chai.assert.isTrue(await fs.pathExists(file));
+      }
+
+      // publish
+      await execAsyncWithRetry(`teamsfx publish`, {
+        cwd: projectPath,
+        env: processEnv,
+        timeout: 0,
+      });
+
+      {
+        // Validate publish result
+        const contextResult = await loadContext(projectPath, env);
+        if (contextResult.isErr()) {
+          throw contextResult.error;
+        }
+        const context = contextResult.value;
+        const aad = AadValidator.init(context, false, AppStudioLogin);
+        const appId = aad.clientId;
+
+        AppStudioValidator.init();
+        await AppStudioValidator.validatePublish(appId);
       }
     } catch (e) {
       console.log("Unexpected exception is thrown when running test: " + e);

@@ -3,10 +3,12 @@
 
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import {
+  ConfigMap,
   EnvInfo,
   err,
   FxError,
   Inputs,
+  Json,
   ok,
   ProjectSettings,
   QTreeNode,
@@ -101,10 +103,15 @@ export function EnvInfoLoaderMW(isMultiEnvEnabled: boolean): Middleware {
       }
 
       if (isV2()) {
-        //TODO core should not know the details of envInfo
-        ctx.envInfo = result.value.envInfo.config;
-        ctx.provisionOutputs = result.value.envInfo.profile;
-        ctx.envName = result.value.envInfo.envName;
+        const envInfo = result.value.envInfo;
+        const profile: Json = {};
+        for (const key of envInfo.profile.keys()) {
+          const map = envInfo.profile.get(key);
+          if (map) {
+            profile[key] = (map as ConfigMap).toJSON();
+          }
+        }
+        ctx.envInfoV2 = { envName: envInfo.envName, config: envInfo.config, profile: profile };
       } else {
         ctx.solutionContext = result.value;
       }

@@ -240,12 +240,10 @@ export class IdentityPlugin implements Plugin {
 
   private syncArmOutput(ctx: PluginContext) {
     const resourceId = getArmOutput(ctx, IdentityArmOutput.identityName);
-    const resourceGroup = getResourceGroupNameFromResourceId(resourceId!);
 
     ctx.config.set(Constants.identityName, resourceId);
     ctx.config.set(Constants.identityId, getArmOutput(ctx, IdentityArmOutput.identityId));
     ctx.config.set(Constants.identity, getArmOutput(ctx, IdentityArmOutput.identity));
-    ctx.config.set(Constants.resourceGroupName, resourceGroup);
   }
 
   private loadConfig(ctx: PluginContext) {
@@ -268,9 +266,7 @@ export class IdentityPlugin implements Plugin {
   }
 
   private loadConfigResourceGroup(ctx: PluginContext) {
-    if (isArmSupportEnabled()) {
-      this.config.resourceGroup = ctx.config.get(Constants.resourceGroupName) as string;
-    } else {
+    if (!isArmSupportEnabled()) {
       this.config.resourceGroup = ContextUtils.getConfig<string>(
         ctx,
         Constants.solution,

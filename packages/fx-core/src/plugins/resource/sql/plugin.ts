@@ -42,18 +42,18 @@ import { Bicep, ConstantString } from "../../../common/constants";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import * as fs from "fs-extra";
 import { getArmOutput } from "../utils4v2";
-import { getResourceGroupNameFromResourceId, isArmSupportEnabled } from "../../../common";
+import {
+  getResourceGroupNameFromResourceId,
+  getSubscriptionIdFromResourceId,
+  isArmSupportEnabled,
+} from "../../../common";
 import { IdentityArmOutput } from "../identity/constants";
 
 export class SqlPluginImpl {
   config: SqlConfig = new SqlConfig();
 
   async loadConfig(ctx: PluginContext) {
-    this.config.azureSubscriptionId = ContextUtils.getConfig<string>(
-      ctx,
-      Constants.solution,
-      Constants.solutionConfigKey.subscriptionId
-    );
+    this.loadConfigSubscription(ctx);
     this.loadConfigResourceGroup(ctx);
     this.config.resourceNameSuffix = ContextUtils.getConfig<string>(
       ctx,
@@ -327,6 +327,7 @@ export class SqlPluginImpl {
     this.config.databaseName = getArmOutput(ctx, AzureSqlArmOutput.databaseName)!;
     this.config.sqlServer = this.config.sqlEndpoint.split(".")[0];
     this.config.resourceGroup = getResourceGroupNameFromResourceId(this.config.sqlResourceId);
+    this.config.azureSubscriptionId = getSubscriptionIdFromResourceId(this.config.sqlResourceId);
   }
 
   private buildQuestionNode() {
@@ -392,7 +393,7 @@ export class SqlPluginImpl {
       this.config.admin = ctx.config.get(Constants.admin) as string;
       this.config.adminPassword = ctx.config.get(Constants.adminPassword) as string;
       this.config.sqlEndpoint = ctx.config.get(Constants.sqlEndpoint);
-      if (this.config.sqlEndpoint) {
+      if (this.config.sqlEndpoint && this.config.azureSubscriptionId) {
         this.config.existSql = await managementClient.existAzureSQL();
       }
     } else {
@@ -452,6 +453,31 @@ export class SqlPluginImpl {
         ctx,
         Constants.solution,
         Constants.solutionConfigKey.resourceGroupName
+      );
+    }
+  }
+
+  private loadConfigSubscription(ctx: PluginContext) {
+    if (isArmSupportEnabled()) {
+      this.config.sqlResourceId = ctx.config.get(Constants.sqlResourceId) as string;
+      if (this.config.sqlResourceId) {
+        try {
+          this.config.azureSubscriptionId = getSubscriptionIdFromResourceId(
+            this.config.sqlResourceId
+          );
+        } catch (error) {
+          throw SqlResultFactory.UserError(
+            ErrorMessage.SqlInvalidConfigError.name,
+            ErrorMessage.SqlInvalidConfigError.message(this.config.sqlResourceId, error.message),
+            error
+          );
+        }
+      }
+    } else {
+      this.config.azureSubscriptionId = ContextUtils.getConfig<string>(
+        ctx,
+        Constants.solution,
+        Constants.solutionConfigKey.subscriptionId
       );
     }
   }

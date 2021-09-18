@@ -324,6 +324,7 @@ async function needMigrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<boolea
   }
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   if (!inputs.projectPath) {
+    console.log("this is error");
     return false;
   }
   const fxExist = await fs.pathExists(path.join(inputs.projectPath as string, ".fx"));

@@ -1384,6 +1384,7 @@ export class AppStudioPluginImpl {
     appDefinition.appName = appManifest.name.short;
     appDefinition.shortName = appManifest.name.short;
     appDefinition.longName = appManifest.name.full;
+    appDefinition.manifestVersion = appManifest.manifestVersion;
     appDefinition.version = appManifest.version;
 
     appDefinition.packageName = appManifest.packageName;

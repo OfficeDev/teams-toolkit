@@ -10,6 +10,7 @@ import {
   FrontendValidator,
   FunctionValidator,
   SimpleAuthValidator,
+  SqlValidator,
 } from "../../commonlib";
 
 import {
@@ -80,7 +81,7 @@ describe("Create single tab/bot/function", function () {
     try {
       let result;
       result = await execAsync(
-        `teamsfx new --interactive false --app-name ${appName} --capabilities tab bot --azure-resources function --programming-language javascript`,
+        `teamsfx new --interactive false --app-name ${appName} --capabilities tab bot --azure-resources function sql --programming-language javascript`,
         {
           cwd: testFolder,
           env: processEnv,
@@ -147,11 +148,14 @@ describe("Create single tab/bot/function", function () {
       );
 
       // provision
-      result = await execAsyncWithRetry(`teamsfx provision`, {
-        cwd: projectPath,
-        env: processEnv,
-        timeout: 0,
-      });
+      result = await execAsyncWithRetry(
+        `teamsfx provision --sql-admin-name e2e --sql-password 'Abc123456%'`,
+        {
+          cwd: projectPath,
+          env: processEnv,
+          timeout: 0,
+        }
+      );
       console.log(
         `[Successfully] provision, stdout: '${result.stdout}', stderr: '${result.stderr}'`
       );
@@ -180,6 +184,10 @@ describe("Create single tab/bot/function", function () {
         // Validate Function App
         const func = FunctionValidator.init(context);
         await FunctionValidator.validateProvision(func, false);
+
+        // Validate SQL
+        await SqlValidator.init(context);
+        await SqlValidator.validateSql();
 
         // Validate Bot Provision
         const bot = BotValidator.init(context);
@@ -245,6 +253,6 @@ describe("Create single tab/bot/function", function () {
 
   after(async () => {
     // clean up
-    await cleanUp(appName, projectPath, true, false, false, true, env);
+    await cleanUp(appName, projectPath, true, true, false, true, env);
   });
 });

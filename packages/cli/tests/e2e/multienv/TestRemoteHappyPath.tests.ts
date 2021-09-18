@@ -36,7 +36,6 @@ import {
   EnvNamePlaceholder,
   AppPackageFolderName,
 } from "@microsoft/teamsfx-api";
-import { expect } from "chai";
 
 // Load envProfile with userdata (not decrypted)
 async function loadContext(projectPath: string, env: string): Promise<Result<any, FxError>> {
@@ -226,7 +225,7 @@ describe("Create single tab/bot/function", function () {
 
       {
         // Validate validate manifest
-        chai.assert.isEmpty(result.stderr);
+        expect(result.stderr).to.be.empty;
       }
 
       // package
@@ -239,7 +238,7 @@ describe("Create single tab/bot/function", function () {
       {
         // Validate package
         const file = `${projectPath}/${AppPackageFolderName}/appPackage.${env}.zip`;
-        chai.assert.isTrue(await fs.pathExists(file));
+        expect(await fs.pathExists(file)).to.be.true;
       }
 
       // publish

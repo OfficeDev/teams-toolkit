@@ -16,6 +16,10 @@
         {
             "placeholder": "input[name=Password]",
             "_justification": "This is the secret place holder used by TeamsFx project."
+        },
+        {
+            "placeholder": "anything",
+            "_justification": "This is the secret place holder used by TeamsFx project."
         }
     ]
 }

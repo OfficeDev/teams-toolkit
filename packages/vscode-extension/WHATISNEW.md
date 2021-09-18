@@ -2,7 +2,7 @@
 
 Incremental version for Teams Toolkit with multiple bugs fixed and the following updates：
 
-![Alt Text](https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/packages/vscode-extension/img/sample.gif)
+![Alt Text](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/sample.gif)
 
 Enhancement:
 

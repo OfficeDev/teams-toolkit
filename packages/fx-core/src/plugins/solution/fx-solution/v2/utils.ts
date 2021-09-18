@@ -14,7 +14,7 @@ import {
   Json,
 } from "@microsoft/teamsfx-api";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
-import { SolutionError } from "../constants";
+import { GLOBAL_CONFIG, SolutionError, SOLUTION_PROVISION_SUCCEEDED } from "../constants";
 import {
   AzureResourceApim,
   AzureResourceFunction,
@@ -184,4 +184,8 @@ export function fillInSolutionSettings(
   solutionSettings.azureResources = azureResources || [];
   solutionSettings.capabilities = capabilities || [];
   return ok(Void);
+}
+
+export function checkWetherProvisionSucceeded(config: Json): boolean {
+  return config[GLOBAL_CONFIG] && config[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED];
 }

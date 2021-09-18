@@ -21,6 +21,7 @@ import {
 import {
   BicepTemplate,
   Context,
+  DeepReadonly,
   DeploymentInputs,
   EnvInfoV2,
   ProvisionInputs,
@@ -37,10 +38,14 @@ import {
 } from "../../core";
 import { GLOBAL_CONFIG, ARM_TEMPLATE_OUTPUT } from "../solution/fx-solution/constants";
 
-export function convert2PluginContext(ctx: Context, inputs: Inputs): PluginContext {
-  if (!inputs.projectPath) throw NoProjectOpenedError();
+export function convert2PluginContext(
+  ctx: Context,
+  inputs: Inputs,
+  ignoreEmptyProjectPath = false
+): PluginContext {
+  if (!ignoreEmptyProjectPath && !inputs.projectPath) throw NoProjectOpenedError();
   const pluginContext: PluginContext = {
-    root: inputs.projectPath,
+    root: inputs.projectPath || "",
     config: new ConfigMap(),
     envInfo: newEnvInfo(),
     projectSettings: ctx.projectSetting,
@@ -260,11 +265,18 @@ export async function executeUserTaskAdapter(
   ctx: Context,
   inputs: Inputs,
   func: Func,
+  envInfo: EnvInfoV2,
+  tokenProvider: TokenProvider,
   plugin: Plugin
 ): Promise<Result<unknown, FxError>> {
   if (!plugin.executeUserTask)
     return err(PluginHasNoTaskImpl(plugin.displayName, "executeUserTask"));
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
+  const config = ConfigMap.fromJSON(envInfo.profile) || new ConfigMap();
+  pluginContext.config = config;
+  pluginContext.appStudioToken = tokenProvider.appStudioToken;
+  pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
+  pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
   const res = await plugin.executeUserTask(func, pluginContext);
   if (res.isErr()) return err(res.error);
   return ok(res.value);
@@ -276,20 +288,43 @@ export async function getQuestionsForScaffoldingAdapter(
   plugin: Plugin
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (!plugin.getQuestions) return ok(undefined);
-  const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
+  const pluginContext: PluginContext = convert2PluginContext(ctx, inputs, true);
   return await plugin.getQuestions(Stage.create, pluginContext);
 }
 
 export async function getQuestionsAdapter(
   ctx: Context,
   inputs: Inputs,
+  envInfo: DeepReadonly<EnvInfoV2>,
+  tokenProvider: TokenProvider,
   plugin: Plugin
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (!plugin.getQuestions) return ok(undefined);
-  const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
+  const pluginContext: PluginContext = convert2PluginContext(ctx, inputs, true);
+  const config = ConfigMap.fromJSON(envInfo.profile) || new ConfigMap();
+  pluginContext.config = config;
+  pluginContext.appStudioToken = tokenProvider.appStudioToken;
+  pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
+  pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
   return await plugin.getQuestions(inputs.stage!, pluginContext);
 }
-
+export async function getQuestionsForUserTaskAdapter(
+  ctx: Context,
+  inputs: Inputs,
+  func: Func,
+  envInfo: DeepReadonly<EnvInfoV2>,
+  tokenProvider: TokenProvider,
+  plugin: Plugin
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  if (!plugin.getQuestionsForUserTask) return ok(undefined);
+  const pluginContext: PluginContext = convert2PluginContext(ctx, inputs, true);
+  const config = ConfigMap.fromJSON(envInfo.profile) || new ConfigMap();
+  pluginContext.config = config;
+  pluginContext.appStudioToken = tokenProvider.appStudioToken;
+  pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
+  pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
+  return await plugin.getQuestionsForUserTask(func, pluginContext);
+}
 export function getArmOutput(ctx: PluginContext, key: string): string | undefined {
   const solutionConfig = ctx.envInfo.profile.get("solution");
   const output = solutionConfig?.get(ARM_TEMPLATE_OUTPUT);

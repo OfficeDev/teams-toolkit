@@ -157,11 +157,17 @@ export async function provisionResource(
 
   const aadPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin);
   if (plugins.some((plugin) => plugin.name === aadPlugin.name) && aadPlugin.executeUserTask) {
-    const result = await aadPlugin.executeUserTask(ctx, inputs, {
-      namespace: `${PluginNames.SOLUTION}/${PluginNames.AAD}`,
-      method: "setApplicationInContext",
-      params: { isLocal: false },
-    });
+    const result = await aadPlugin.executeUserTask(
+      ctx,
+      inputs,
+      {
+        namespace: `${PluginNames.SOLUTION}/${PluginNames.AAD}`,
+        method: "setApplicationInContext",
+        params: { isLocal: false },
+      },
+      envInfo,
+      tokenProvider
+    );
     if (result.isErr()) {
       return new v2.FxPartialSuccess(combineRecords(provisionResult.output), result.error);
     }

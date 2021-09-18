@@ -4,6 +4,7 @@
 import {
   AzureAccountProvider,
   AzureSolutionSettings,
+  Func,
   FxError,
   Inputs,
   Json,
@@ -31,6 +32,7 @@ import {
   configureLocalResourceAdapter,
   configureResourceAdapter,
   deployAdapter,
+  executeUserTaskAdapter,
   generateResourceTemplateAdapter,
   getQuestionsForScaffoldingAdapter,
   provisionLocalResourceAdapter,
@@ -113,5 +115,15 @@ export class BotPluginV2 implements ResourcePlugin {
     tokenProvider: AzureAccountProvider
   ): Promise<Result<Void, FxError>> {
     return await deployAdapter(ctx, inputs, provisionOutput, tokenProvider, this.plugin);
+  }
+
+  async executeUserTask(
+    ctx: Context,
+    inputs: Inputs,
+    func: Func,
+    envInfo: v2.EnvInfoV2,
+    tokenProvider: TokenProvider
+  ): Promise<Result<unknown, FxError>> {
+    return await executeUserTaskAdapter(ctx, inputs, func, envInfo, tokenProvider, this.plugin);
   }
 }

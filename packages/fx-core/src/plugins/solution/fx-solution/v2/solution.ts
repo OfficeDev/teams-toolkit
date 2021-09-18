@@ -1,19 +1,17 @@
 import {
-  v2,
-  Inputs,
-  FxError,
-  Result,
-  ok,
-  err,
-  Void,
   AppStudioTokenProvider,
   AzureAccountProvider,
   Func,
+  FxError,
+  Inputs,
   Json,
   QTreeNode,
+  Result,
   TokenProvider,
+  v2,
+  Void,
 } from "@microsoft/teamsfx-api";
-import { DeploymentInputs, EnvInfoV2, ProvisionInputs } from "@microsoft/teamsfx-api/build/v2";
+import { DeepReadonly, EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { Service } from "typedi";
 import { PluginDisplayName } from "../../../../common/constants";
 import { SolutionPluginsV2 } from "../../../../core/SolutionPluginContainer";
@@ -21,7 +19,7 @@ import { createEnv } from "./createEnv";
 import { deploy } from "./deploy";
 import { executeUserTask } from "./executeUserTask";
 import { generateResourceTemplate } from "./generateResourceTemplate";
-import { getQuestionsForScaffolding } from "./getQuestions";
+import { getQuestions, getQuestionsForScaffolding, getQuestionsForUserTask } from "./getQuestions";
 import { provisionResource } from "./provision";
 import { provisionLocalResource } from "./provisionLocal";
 import { publishApplication } from "./publish";
@@ -54,8 +52,7 @@ export class TeamsAppSolutionV2 implements v2.SolutionPlugin {
   publishApplication: (
     ctx: v2.Context,
     inputs: Inputs,
-    provisionInputConfig: Json,
-    provisionOutputs: Json,
+    envInfo: v2.EnvInfoV2,
     tokenProvider: AppStudioTokenProvider
   ) => Promise<Result<Void, FxError>> = publishApplication;
   provisionLocalResource?: (
@@ -74,8 +71,24 @@ export class TeamsAppSolutionV2 implements v2.SolutionPlugin {
     ctx: v2.Context,
     inputs: Inputs,
     func: Func,
+    envInfo: EnvInfoV2,
     tokenProvider: TokenProvider
   ) => Promise<Result<unknown, FxError>> = executeUserTask;
 
   createEnv?: (ctx: v2.Context, inputs: Inputs) => Promise<Result<Void, FxError>> = createEnv;
+
+  getQuestions?: (
+    ctx: v2.Context,
+    inputs: Inputs,
+    envInfo: DeepReadonly<EnvInfoV2>,
+    tokenProvider: TokenProvider
+  ) => Promise<Result<QTreeNode | undefined, FxError>> = getQuestions;
+
+  getQuestionsForUserTask?: (
+    ctx: v2.Context,
+    inputs: Inputs,
+    func: Func,
+    envInfo: DeepReadonly<EnvInfoV2>,
+    tokenProvider: TokenProvider
+  ) => Promise<Result<QTreeNode | undefined, FxError>> = getQuestionsForUserTask;
 }

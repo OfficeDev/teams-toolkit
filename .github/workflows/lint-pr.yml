@@ -39,7 +39,8 @@ jobs:
 
       - name: prettier check files in PR
         run: |
-          npx lerna exec -- bash \$LERNA_ROOT_PATH/.github/scripts/lint-pr.sh ${{ github.event.pull_request.base.ref }}
+          VAR=$(realpath .github/scripts/lint-pr.sh)
+          npx lerna exec -- bash $VAR ${{ github.event.pull_request.base.ref }}
 
       - name: Check if there are changes
         id: changes

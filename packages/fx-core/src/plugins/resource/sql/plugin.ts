@@ -326,6 +326,7 @@ export class SqlPluginImpl {
     this.config.sqlEndpoint = getArmOutput(ctx, AzureSqlArmOutput.sqlEndpoint)!;
     this.config.databaseName = getArmOutput(ctx, AzureSqlArmOutput.databaseName)!;
     this.config.sqlServer = this.config.sqlEndpoint.split(".")[0];
+    this.config.resourceGroup = getResourceGroupNameFromResourceId(this.config.sqlResourceId);
   }
 
   private buildQuestionNode() {

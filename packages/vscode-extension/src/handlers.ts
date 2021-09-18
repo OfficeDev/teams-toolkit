@@ -111,8 +111,6 @@ export function getWorkspacePath(): string | undefined {
 export async function activate(): Promise<Result<Void, FxError>> {
   const result: Result<Void, FxError> = ok(Void);
   try {
-    syncFeatureFlags();
-
     const workspacePath = getWorkspacePath();
     const validProject = isValidProject(workspacePath);
     if (validProject) {
@@ -784,7 +782,14 @@ export async function createNewEnvironment(args?: any[]): Promise<Result<Void, F
     getTriggerFromProperty(args)
   );
   const result = await runCommand(Stage.createEnv);
+  if (!result.isErr()) {
+    await registerEnvTreeHandler();
+  }
   return result;
+}
+
+export async function refreshEnvironment(args?: any[]): Promise<Result<Void, FxError>> {
+  return await registerEnvTreeHandler();
 }
 
 export async function viewEnvironment(env: string): Promise<Result<Void, FxError>> {

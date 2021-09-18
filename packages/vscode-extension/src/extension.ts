@@ -21,14 +21,19 @@ import { CryptoCodeLensProvider } from "./codeLensProvider";
 import { Correlator, isMultiEnvEnabled, isRemoteCollaborateEnabled } from "@microsoft/teamsfx-core";
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
 import { enableMigrateV1 } from "./utils/migrateV1";
-import { isTeamsfx } from "./utils/commonUtils";
+import { isTeamsfx, syncFeatureFlags } from "./utils/commonUtils";
 import { ConfigFolderName, PublishProfilesFolderName } from "@microsoft/teamsfx-api";
 import { ExtensionUpgrade } from "./utils/upgrade";
+import { registerEnvTreeHandler } from "./envTree";
 
 export let VS_CODE_UI: VsCodeUI;
 
 export async function activate(context: vscode.ExtensionContext) {
   VsCodeLogInstance.info(StringResources.vsc.extension.activate);
+
+  // load the feature flags.
+  syncFeatureFlags();
+
   VS_CODE_UI = new VsCodeUI(context);
   // Init context
   initializeExtensionVariables(context);
@@ -201,6 +206,12 @@ export async function activate(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(handlers.createNewEnvironment, args)
   );
   context.subscriptions.push(createNewEnvironment);
+
+  const refreshEnvironment = vscode.commands.registerCommand(
+    "fx-extension.refreshEnvironment",
+    (...args) => Correlator.run(handlers.refreshEnvironment, args)
+  );
+  context.subscriptions.push(refreshEnvironment);
 
   const viewEnvironment = vscode.commands.registerCommand(
     "fx-extension.viewEnvironment",

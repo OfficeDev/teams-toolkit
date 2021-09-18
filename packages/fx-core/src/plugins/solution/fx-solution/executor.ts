@@ -88,6 +88,7 @@ export async function executeConcurrently(
       const lifecycle = pair[0];
       const context = pair[1];
       const pluginName = pair[2];
+      const taskname = lifecycle?.name.replace("bound ", "");
       logger = context.logProvider;
       if (lifecycle) {
         try {
@@ -100,7 +101,7 @@ export async function executeConcurrently(
           return err(
             new SystemError(
               "UnknownError",
-              `[Solution.executeConcurrently part 1] unknown error from plugin: ${pluginName}, e: ${JSON.stringify(
+              `[Solution.executeConcurrently part 1] unknown error from plugin: ${pluginName}, taskName:${taskname}, error: ${JSON.stringify(
                 e
               )}`,
               "Solution"

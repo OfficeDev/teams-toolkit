@@ -13,6 +13,7 @@ export interface IAppDefinition {
   appId?: string;
   appName: string;
   appStudioVersion?: string;
+  manifestVersion?: string;
   version?: string;
   packageName?: string;
   shortName?: string;

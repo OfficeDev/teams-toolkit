@@ -327,7 +327,6 @@ export class SqlPluginImpl {
     this.config.sqlEndpoint = getArmOutput(ctx, AzureSqlArmOutput.sqlEndpoint)!;
     this.config.databaseName = getArmOutput(ctx, AzureSqlArmOutput.databaseName)!;
     this.config.sqlServer = this.config.sqlEndpoint.split(".")[0];
-    this.config.resourceGroup = getResourceGroupNameFromResourceId(this.config.sqlResourceId);
   }
 
   private buildQuestionNode() {
@@ -436,7 +435,18 @@ export class SqlPluginImpl {
 
   private loadConfigResourceGroup(ctx: PluginContext) {
     if (isArmSupportEnabled()) {
-      this.config.resourceGroup = ctx.config.get(Constants.resourceGroupName) as string;
+      this.config.sqlResourceId = ctx.config.get(Constants.sqlResourceId) as string;
+      if (this.config.sqlResourceId) {
+        try {
+          this.config.resourceGroup = getResourceGroupNameFromResourceId(this.config.sqlResourceId);
+        } catch (error) {
+          throw SqlResultFactory.UserError(
+            ErrorMessage.SqlInvalidConfigError.name,
+            ErrorMessage.SqlInvalidConfigError.message(this.config.sqlResourceId, error.message),
+            error
+          );
+        }
+      }
     } else {
       this.config.resourceGroup = ContextUtils.getConfig<string>(
         ctx,

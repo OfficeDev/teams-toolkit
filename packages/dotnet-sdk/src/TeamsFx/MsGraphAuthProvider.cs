@@ -89,7 +89,7 @@ namespace Microsoft.TeamsFx
             if (accessToken.Token.Length == 0)
             {
                 var errorMsg = "Graph access token is undefined or empty";
-                 _logger?.LogError(errorMsg);
+                _logger?.LogError(errorMsg);
                 throw new ExceptionWithCode(errorMsg, ExceptionCode.InternalError);
             }
             return accessToken.Token;

@@ -2,13 +2,13 @@
 // Licensed under the MIT License.
 
 using Azure.Core;
+using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 using Microsoft.JSInterop;
 using Microsoft.TeamsFx.Model;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using LogLevel = Microsoft.TeamsFx.Model.LogLevel;
 
 namespace Microsoft.TeamsFx
@@ -158,7 +158,7 @@ namespace Microsoft.TeamsFx
         public GraphServiceClient CreateMicrosoftGraphClient(TokenCredential credential, string scopes = ".default", ILogger<MsGraphAuthProvider> logger = null)
         {
             logger ??= _authLogger;
-            var  authProvider = new MsGraphAuthProvider(credential, scopes, logger);
+            var authProvider = new MsGraphAuthProvider(credential, scopes, logger);
             var client = new GraphServiceClient(authProvider);
             return client;
         }

@@ -6,9 +6,7 @@ Incremental version for Teams Toolkit with multiple bugs fixed and the following
 
 Enhancement:
 
-- Improved version upgrade experience
-- UI Enhancement:
-  - Disable relevant TreeView item when corresponding operation is still in progress.
+- Improved version upgrade experience by adding "What is new?" UI.
 
 ## 2.6.0 - Sep 06, 2021
 

@@ -1,5 +1,13 @@
 import {
-  AppStudioTokenProvider, err, FxError, Inputs, ok, Result, returnUserError, v2, Void
+  AppStudioTokenProvider,
+  err,
+  FxError,
+  Inputs,
+  ok,
+  Result,
+  returnUserError,
+  v2,
+  Void,
 } from "@microsoft/teamsfx-api";
 import { isUndefined } from "lodash";
 import * as util from "util";
@@ -38,13 +46,7 @@ export async function publishApplication(
         pluginName: `${plugin.name}`,
         taskName: "publishApplication",
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        thunk: () =>
-          plugin.publishApplication!(
-            ctx,
-            inputs,
-            envInfo,
-            tokenProvider
-          ),
+        thunk: () => plugin.publishApplication!(ctx, inputs, envInfo, tokenProvider),
       };
     });
 

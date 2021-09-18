@@ -74,9 +74,13 @@ class CommonQuestions {
  *
  */
 export async function checkSubscription(
-  ctx: SolutionContext | v2.Context, envInfo?: v2.EnvInfoV2, tokenProvider?: TokenProvider
+  ctx: SolutionContext | v2.Context,
+  envInfo?: v2.EnvInfoV2,
+  tokenProvider?: TokenProvider
 ): Promise<Result<SubscriptionInfo, FxError>> {
-  const azureAccountProvider = isV2() ? tokenProvider?.azureAccountProvider : (ctx as SolutionContext).azureAccountProvider;
+  const azureAccountProvider = isV2()
+    ? tokenProvider?.azureAccountProvider
+    : (ctx as SolutionContext).azureAccountProvider;
   if (!azureAccountProvider) {
     return err(
       returnSystemError(
@@ -86,7 +90,9 @@ export async function checkSubscription(
       )
     );
   }
-  const subscriptionId = isV2() ? envInfo?.config.azure?.subscriptionId : (ctx as SolutionContext).envInfo.config.azure?.subscriptionId;
+  const subscriptionId = isV2()
+    ? envInfo?.config.azure?.subscriptionId
+    : (ctx as SolutionContext).envInfo.config.azure?.subscriptionId;
   if (!isMultiEnvEnabled() || !subscriptionId) {
     const askSubRes = await azureAccountProvider.getSelectedSubscription(true);
     return ok(askSubRes!);
@@ -106,7 +112,7 @@ export async function checkSubscription(
           EnvNamePlaceholder,
           isV2() ? envInfo!.envName : (ctx as SolutionContext).envInfo.envName
         )}' file.`,
-        "Solution",
+        "Solution"
       )
     );
   }

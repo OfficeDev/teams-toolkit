@@ -121,7 +121,7 @@ export class AppStudioPluginV2 implements ResourcePlugin {
   ): Promise<Result<unknown, FxError>> {
     return await executeUserTaskAdapter(ctx, inputs, func, envInfo, tokenProvider, this.plugin);
   }
-  
+
   async getQuestions(
     ctx: Context,
     inputs: Inputs,

@@ -1,8 +1,15 @@
 import {
   AppStudioTokenProvider,
   AzureAccountProvider,
-  Func, FxError, Inputs, Json,
-  QTreeNode, Result, TokenProvider, v2, Void
+  Func,
+  FxError,
+  Inputs,
+  Json,
+  QTreeNode,
+  Result,
+  TokenProvider,
+  v2,
+  Void,
 } from "@microsoft/teamsfx-api";
 import { DeepReadonly, EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { Service } from "typedi";
@@ -71,8 +78,8 @@ export class TeamsAppSolutionV2 implements v2.SolutionPlugin {
   createEnv?: (ctx: v2.Context, inputs: Inputs) => Promise<Result<Void, FxError>> = createEnv;
 
   getQuestions?: (
-    ctx: v2.Context, 
-    inputs: Inputs, 
+    ctx: v2.Context,
+    inputs: Inputs,
     envInfo: DeepReadonly<EnvInfoV2>,
     tokenProvider: TokenProvider
   ) => Promise<Result<QTreeNode | undefined, FxError>> = getQuestions;

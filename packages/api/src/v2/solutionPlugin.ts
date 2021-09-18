@@ -168,8 +168,8 @@ export interface SolutionPlugin {
 
   //legacy API for compatibility reason
   getQuestions?: (
-    ctx: Context, 
-    inputs: Inputs, 
+    ctx: Context,
+    inputs: Inputs,
     envInfo: DeepReadonly<EnvInfoV2>,
     tokenProvider: TokenProvider
   ) => Promise<Result<QTreeNode | undefined, FxError>>;

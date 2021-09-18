@@ -38,7 +38,11 @@ import {
 } from "../../core";
 import { GLOBAL_CONFIG, ARM_TEMPLATE_OUTPUT } from "../solution/fx-solution/constants";
 
-export function convert2PluginContext(ctx: Context, inputs: Inputs, ignoreEmptyProjectPath = false): PluginContext {
+export function convert2PluginContext(
+  ctx: Context,
+  inputs: Inputs,
+  ignoreEmptyProjectPath = false
+): PluginContext {
   if (!ignoreEmptyProjectPath && !inputs.projectPath) throw NoProjectOpenedError();
   const pluginContext: PluginContext = {
     root: inputs.projectPath || "",

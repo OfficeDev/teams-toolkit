@@ -203,8 +203,8 @@ export interface ResourcePlugin {
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
 
   executeUserTask?: (
-    ctx: Context, 
-    inputs: Inputs, 
+    ctx: Context,
+    inputs: Inputs,
     func: Func,
     envInfo: EnvInfoV2,
     tokenProvider: TokenProvider
@@ -212,7 +212,7 @@ export interface ResourcePlugin {
 
   //legacy API for compatibility reason
   getQuestions?: (
-    ctx: Context, 
+    ctx: Context,
     inputs: Inputs,
     envInfo: DeepReadonly<EnvInfoV2>,
     tokenProvider: TokenProvider

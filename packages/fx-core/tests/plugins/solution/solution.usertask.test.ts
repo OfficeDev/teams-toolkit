@@ -160,7 +160,7 @@ describe("V2 implementation", () => {
       mockedCtx,
       mockedInputs,
       { namespace: "someInvalidNamespace", method: "invalid" },
-      {envName: "default", config: {}, profile: {}},
+      { envName: "default", config: {}, profile: {} },
       mockedProvider
     );
     expect(result.isErr()).to.be.true;
@@ -187,7 +187,7 @@ describe("V2 implementation", () => {
       mockedCtx,
       mockedInputs,
       { namespace: "solution", method: "addCapability" },
-      {envName: "default", config: {}, profile: {}},
+      { envName: "default", config: {}, profile: {} },
       mockedProvider
     );
     expect(result.isErr()).to.be.true;
@@ -215,7 +215,7 @@ describe("V2 implementation", () => {
       mockedCtx,
       mockedInputs,
       { namespace: "solution", method: "addResource" },
-      {envName: "default", config: {}, profile: {}},
+      { envName: "default", config: {}, profile: {} },
       mockedProvider
     );
     expect(result.isErr()).to.be.true;
@@ -244,7 +244,7 @@ describe("V2 implementation", () => {
       mockedCtx,
       mockedInputs,
       { namespace: "solution", method: "addCapability" },
-      {envName: "default", config: {}, profile: {}},
+      { envName: "default", config: {}, profile: {} },
       mockedProvider
     );
     expect(result.isErr()).to.be.true;
@@ -278,7 +278,7 @@ describe("V2 implementation", () => {
       mockedCtx,
       mockedInputs,
       { namespace: "solution", method: "addCapability" },
-      {envName: "default", config: {}, profile: {}},
+      { envName: "default", config: {}, profile: {} },
       mockedProvider
     );
     expect(result.isOk()).to.be.true;
@@ -306,7 +306,7 @@ describe("V2 implementation", () => {
       mockedCtx,
       mockedInputs,
       { namespace: "solution", method: "addResource" },
-      {envName: "default", config: {}, profile: {}},
+      { envName: "default", config: {}, profile: {} },
       mockedProvider
     );
     expect(result.isErr()).to.be.true;
@@ -337,7 +337,7 @@ describe("V2 implementation", () => {
       mockedCtx,
       mockedInputs,
       { namespace: "solution", method: "addResource" },
-      {envName: "default", config: {}, profile: {}},
+      { envName: "default", config: {}, profile: {} },
       mockedProvider
     );
     expect(result.isErr()).to.be.true;
@@ -376,7 +376,7 @@ describe("V2 implementation", () => {
       mockedCtx,
       mockedInputs,
       { namespace: "solution", method: "addResource" },
-      {envName: "default", config: {}, profile: {}},
+      { envName: "default", config: {}, profile: {} },
       mockedProvider
     );
     expect(result.isOk()).to.be.true;
@@ -406,7 +406,7 @@ describe("V2 implementation", () => {
         mockedCtx,
         mockedInputs,
         { namespace: "solution", method: "VSpublish" },
-        {envName: "default", config: {}, profile: {}},
+        { envName: "default", config: {}, profile: {} },
         mockedProvider
       );
       expect(result.isErr()).to.be.true;
@@ -417,7 +417,7 @@ describe("V2 implementation", () => {
           mockedCtx,
           mockedInputs,
           { namespace: "solution", method: "VSpublish" },
-          {envName: "default", config: {}, profile: {}},
+          { envName: "default", config: {}, profile: {} },
           mockedProvider
         ));
       expect(result.isErr()).to.be.true;
@@ -444,8 +444,8 @@ describe("V2 implementation", () => {
         const result = await executeUserTask(
           mockedCtx,
           mockedInputs,
-          { namespace: "solution", method: "VSpublish"},
-          {envName: "default", config: {}, profile: {}},
+          { namespace: "solution", method: "VSpublish" },
+          { envName: "default", config: {}, profile: {} },
           mockedProvider
         );
         expect(result.isOk()).to.be.true;

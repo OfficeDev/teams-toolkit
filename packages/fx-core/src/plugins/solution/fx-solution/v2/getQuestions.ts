@@ -1,4 +1,23 @@
-import { AzureSolutionSettings, DynamicPlatforms, err, Func, FxError, Inputs, InvalidInputError, ok, OptionItem, Platform, QTreeNode, Result, returnUserError, Stage, SubscriptionInfo, TokenProvider, UserError, v2 } from "@microsoft/teamsfx-api";
+import {
+  AzureSolutionSettings,
+  DynamicPlatforms,
+  err,
+  Func,
+  FxError,
+  Inputs,
+  InvalidInputError,
+  ok,
+  OptionItem,
+  Platform,
+  QTreeNode,
+  Result,
+  returnUserError,
+  Stage,
+  SubscriptionInfo,
+  TokenProvider,
+  UserError,
+  v2,
+} from "@microsoft/teamsfx-api";
 import Container from "typedi";
 import { getStrings } from "../../../../common";
 import { checkSubscription } from "../commonQuestions";
@@ -23,8 +42,17 @@ import {
   ProgrammingLanguageQuestion,
   TabOptionItem,
 } from "../question";
-import { getAllV2ResourcePluginMap, getAllV2ResourcePlugins, ResourcePluginsV2 } from "../ResourcePluginContainer";
-import { blockV1Project, checkWetherProvisionSucceeded, getSelectedPlugins, isAzureProject} from "./utils";
+import {
+  getAllV2ResourcePluginMap,
+  getAllV2ResourcePlugins,
+  ResourcePluginsV2,
+} from "../ResourcePluginContainer";
+import {
+  blockV1Project,
+  checkWetherProvisionSucceeded,
+  getSelectedPlugins,
+  isAzureProject,
+} from "./utils";
 
 export async function getQuestionsForScaffolding(
   ctx: v2.Context,
@@ -139,7 +167,6 @@ export async function getTabScaffoldQuestionsV2(
   }
   return ok(tabNode);
 }
-
 
 export async function getQuestions(
   ctx: v2.Context,
@@ -304,7 +331,6 @@ export async function getQuestions(
   return ok(node);
 }
 
-
 export async function getQuestionsForUserTask(
   ctx: v2.Context,
   inputs: Inputs,
@@ -331,10 +357,9 @@ export async function getQuestionsForUserTask(
   return ok(undefined);
 }
 
-
 export async function getQuestionsForAddCapability(
   ctx: v2.Context,
-  inputs: Inputs,
+  inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   const settings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
   const v1Blocked = blockV1Project(settings);
@@ -361,8 +386,7 @@ export async function getQuestionsForAddCapability(
     capabilities.includes(BotOptionItem.id) || capabilities.includes(MessageExtensionItem.id);
 
   if (alreadyHaveBotOrMe && alreadyHaveTab) {
-    const cannotAddCapWarnMsg =
-      "Your App already has both Tab and Bot/Me, can not Add Capability.";
+    const cannotAddCapWarnMsg = "Your App already has both Tab and Bot/Me, can not Add Capability.";
     ctx.userInteraction?.showMessage("error", cannotAddCapWarnMsg, false);
     return ok(undefined);
   }
@@ -384,7 +408,6 @@ export async function getQuestionsForAddCapability(
   // Bot has no question at all
   return ok(addCapNode);
 }
-
 
 export async function getQuestionsForAddResource(
   ctx: v2.Context,
@@ -413,7 +436,7 @@ export async function getQuestionsForAddResource(
       new UserError(
         SolutionError.AddResourceNotSupport,
         "Add resource is only supported for Tab app hosted in Azure.",
-        "Solution",
+        "Solution"
       )
     );
   }
@@ -429,9 +452,15 @@ export async function getQuestionsForAddResource(
       )
     );
   }
-  const functionPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.FunctionPlugin);
-  const sqlPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.SqlPlugin);
-  const apimPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.ApimPlugin);
+  const functionPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(
+    ResourcePluginsV2.FunctionPlugin
+  );
+  const sqlPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(
+    ResourcePluginsV2.SqlPlugin
+  );
+  const apimPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(
+    ResourcePluginsV2.ApimPlugin
+  );
   const alreadyHaveFunction = selectedPlugins.includes(functionPlugin.name);
   const alreadyHaveSQL = selectedPlugins.includes(sqlPlugin.name);
   const alreadyHaveAPIM = selectedPlugins.includes(apimPlugin.name);
@@ -446,7 +475,13 @@ export async function getQuestionsForAddResource(
 
   // there two cases to add function re-scaffold: 1. select add function   2. select add sql and function is not selected when creating
   if (functionPlugin.getQuestionsForUserTask) {
-    const res = await functionPlugin.getQuestionsForUserTask(ctx, inputs, func, envInfo, tokenProvider);
+    const res = await functionPlugin.getQuestionsForUserTask(
+      ctx,
+      inputs,
+      func,
+      envInfo,
+      tokenProvider
+    );
     if (res.isErr()) return res;
     if (res.value) {
       const azure_function = res.value as QTreeNode;

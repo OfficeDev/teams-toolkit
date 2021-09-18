@@ -2,14 +2,23 @@
 // Licensed under the MIT license.
 import {
   AzureSolutionSettings,
-  ConfigMap, Func, Inputs, Json, ok, Platform, ProjectSettings, SolutionConfig,
-  SolutionContext, Stage,
-  TokenProvider, v2
+  ConfigMap,
+  Func,
+  Inputs,
+  Json,
+  ok,
+  Platform,
+  ProjectSettings,
+  SolutionConfig,
+  SolutionContext,
+  Stage,
+  TokenProvider,
+  v2,
 } from "@microsoft/teamsfx-api";
 import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import chai, { assert } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import {  it } from "mocha";
+import { it } from "mocha";
 import * as sinon from "sinon";
 import Container from "typedi";
 import * as uuid from "uuid";
@@ -22,18 +31,23 @@ import "../../../src/plugins/resource/function/v2";
 import "../../../src/plugins/resource/localdebug/v2";
 import "../../../src/plugins/resource/spfx/v2";
 import "../../../src/plugins/resource/sql/v2";
-import { GLOBAL_CONFIG, SOLUTION_PROVISION_SUCCEEDED } from "../../../src/plugins/solution/fx-solution/constants";
 import {
-  HostTypeOptionAzure, HostTypeOptionSPFx, TabOptionItem
+  GLOBAL_CONFIG,
+  SOLUTION_PROVISION_SUCCEEDED,
+} from "../../../src/plugins/solution/fx-solution/constants";
+import {
+  HostTypeOptionAzure,
+  HostTypeOptionSPFx,
+  TabOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
+import { ResourcePluginsV2 } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import {
-  ResourcePluginsV2
-} from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
-import { getQuestions, getQuestionsForScaffolding, getQuestionsForUserTask } from "../../../src/plugins/solution/fx-solution/v2/getQuestions";
+  getQuestions,
+  getQuestionsForScaffolding,
+  getQuestionsForUserTask,
+} from "../../../src/plugins/solution/fx-solution/v2/getQuestions";
 import { MockGraphTokenProvider } from "../../core/utils";
-import {
-  MockedAppStudioProvider, MockedAzureAccountProvider, MockedV2Context
-} from "./util";
+import { MockedAppStudioProvider, MockedAzureAccountProvider, MockedV2Context } from "./util";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -51,7 +65,7 @@ const mockedProvider: TokenProvider = {
   azureAccountProvider: new MockedAzureAccountProvider(),
   graphTokenProvider: new MockGraphTokenProvider(),
 };
-const envInfo:EnvInfoV2 = {envName: "default", config: {}, profile:{solution:{}}};
+const envInfo: EnvInfoV2 = { envName: "default", config: {}, profile: { solution: {} } };
 
 describe("getQuestionsForScaffolding()", async () => {
   const mocker = sinon.createSandbox();
@@ -101,11 +115,11 @@ describe("getQuestionsForScaffolding()", async () => {
     const mockedCtx = new MockedV2Context(projectSettings);
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
-      stage: Stage.migrateV1
+      stage: Stage.migrateV1,
     };
     const result = await getQuestions(mockedCtx, mockedInputs, envInfo, mockedProvider);
     assert.isTrue(result.isOk());
-    if(result.isOk ()) {
+    if (result.isOk()) {
       const node = result.value;
       assert.isTrue(node !== undefined && node.data !== undefined);
     }
@@ -115,11 +129,11 @@ describe("getQuestionsForScaffolding()", async () => {
     const mockedCtx = new MockedV2Context(projectSettings);
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
-      stage: Stage.provision
+      stage: Stage.provision,
     };
     const result = await getQuestions(mockedCtx, mockedInputs, envInfo, mockedProvider);
     assert.isTrue(result.isOk());
-    if(result.isOk ()) {
+    if (result.isOk()) {
       const node = result.value;
       assert.isTrue(node !== undefined && node.data !== undefined);
     }
@@ -129,39 +143,39 @@ describe("getQuestionsForScaffolding()", async () => {
     const mockedCtx = new MockedV2Context(projectSettings);
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
-      stage: Stage.deploy
+      stage: Stage.deploy,
     };
     envInfo.profile[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] = false;
-    const result1 = await getQuestions(mockedCtx, mockedInputs, envInfo,mockedProvider);
+    const result1 = await getQuestions(mockedCtx, mockedInputs, envInfo, mockedProvider);
     assert.isTrue(result1.isErr());
     envInfo.profile[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] = true;
-    const result2 = await getQuestions(mockedCtx, mockedInputs, envInfo,mockedProvider);
+    const result2 = await getQuestions(mockedCtx, mockedInputs, envInfo, mockedProvider);
     assert.isTrue(result2.isOk());
-    if(result2.isOk ()) {
+    if (result2.isOk()) {
       const node = result2.value;
       assert.isTrue(node !== undefined && node.data !== undefined);
     }
   });
 
-
   it("getQuestions - publish", async () => {
     const mockedCtx = new MockedV2Context(projectSettings);
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
-      stage: Stage.publish
+      stage: Stage.publish,
     };
     envInfo.profile[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] = false;
-    const result1 = await getQuestions(mockedCtx, mockedInputs, envInfo,mockedProvider);
+    const result1 = await getQuestions(mockedCtx, mockedInputs, envInfo, mockedProvider);
     assert.isTrue(result1.isErr());
 
-    (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).hostType = HostTypeOptionSPFx.id;
-    const result11 = await getQuestions(mockedCtx, mockedInputs, envInfo,mockedProvider);
+    (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).hostType =
+      HostTypeOptionSPFx.id;
+    const result11 = await getQuestions(mockedCtx, mockedInputs, envInfo, mockedProvider);
     assert.isTrue(result11.isErr());
 
     envInfo.profile[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] = true;
-    const result2 = await getQuestions(mockedCtx, mockedInputs, envInfo,mockedProvider);
+    const result2 = await getQuestions(mockedCtx, mockedInputs, envInfo, mockedProvider);
     assert.isTrue(result2.isOk());
-    if(result2.isOk ()) {
+    if (result2.isOk()) {
       const node = result2.value;
       assert.isTrue(node !== undefined && node.data !== undefined);
     }
@@ -171,37 +185,50 @@ describe("getQuestionsForScaffolding()", async () => {
     const mockedCtx = new MockedV2Context(projectSettings);
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
-      stage: Stage.grantPermission
+      stage: Stage.grantPermission,
     };
-    const result2 = await getQuestions(mockedCtx, mockedInputs, envInfo,mockedProvider);
+    const result2 = await getQuestions(mockedCtx, mockedInputs, envInfo, mockedProvider);
     assert.isTrue(result2.isOk());
-    if(result2.isOk ()) {
+    if (result2.isOk()) {
       const node = result2.value;
       assert.isTrue(node !== undefined && node.data !== undefined);
     }
   });
 
-
   it("getQuestionsForUserTask - addCapability", async () => {
     const mockedCtx = new MockedV2Context(projectSettings);
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
-      stage: Stage.grantPermission
+      stage: Stage.grantPermission,
     };
     const func: Func = {
       method: "addCapability",
-      namespace: "fx-solution-azure"
+      namespace: "fx-solution-azure",
     };
     {
-      (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).hostType = HostTypeOptionSPFx.id;
-      const res = await getQuestionsForUserTask(mockedCtx, mockedInputs, func, envInfo,mockedProvider);
+      (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).hostType =
+        HostTypeOptionSPFx.id;
+      const res = await getQuestionsForUserTask(
+        mockedCtx,
+        mockedInputs,
+        func,
+        envInfo,
+        mockedProvider
+      );
       assert.isTrue(res.isErr());
     }
     {
-      (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).hostType = HostTypeOptionAzure.id;
-      const res = await getQuestionsForUserTask(mockedCtx, mockedInputs, func, envInfo,mockedProvider);
+      (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).hostType =
+        HostTypeOptionAzure.id;
+      const res = await getQuestionsForUserTask(
+        mockedCtx,
+        mockedInputs,
+        func,
+        envInfo,
+        mockedProvider
+      );
       assert.isTrue(res.isOk());
-      if(res.isOk ()) {
+      if (res.isOk()) {
         const node = res.value;
         assert.isTrue(node !== undefined && node.data !== undefined);
       }
@@ -212,28 +239,51 @@ describe("getQuestionsForScaffolding()", async () => {
     const mockedCtx = new MockedV2Context(projectSettings);
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
-      stage: Stage.grantPermission
+      stage: Stage.grantPermission,
     };
     const func: Func = {
       method: "addResource",
-      namespace: "fx-solution-azure"
+      namespace: "fx-solution-azure",
     };
     {
-      (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).hostType = HostTypeOptionSPFx.id;
-      const res = await getQuestionsForUserTask(mockedCtx, mockedInputs, func, envInfo,mockedProvider);
+      (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).hostType =
+        HostTypeOptionSPFx.id;
+      const res = await getQuestionsForUserTask(
+        mockedCtx,
+        mockedInputs,
+        func,
+        envInfo,
+        mockedProvider
+      );
       assert.isTrue(res.isErr());
     }
     {
-      (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).hostType = HostTypeOptionAzure.id;
-      const res = await getQuestionsForUserTask(mockedCtx, mockedInputs, func, envInfo,mockedProvider);
+      (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).hostType =
+        HostTypeOptionAzure.id;
+      const res = await getQuestionsForUserTask(
+        mockedCtx,
+        mockedInputs,
+        func,
+        envInfo,
+        mockedProvider
+      );
       assert.isTrue(res.isErr());
     }
     {
-      (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).hostType = HostTypeOptionAzure.id;
-      (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).capabilities = [TabOptionItem.id];
-      const res = await getQuestionsForUserTask(mockedCtx, mockedInputs, func, envInfo,mockedProvider);
+      (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).hostType =
+        HostTypeOptionAzure.id;
+      (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).capabilities = [
+        TabOptionItem.id,
+      ];
+      const res = await getQuestionsForUserTask(
+        mockedCtx,
+        mockedInputs,
+        func,
+        envInfo,
+        mockedProvider
+      );
       assert.isTrue(res.isOk());
-      if(res.isOk ()) {
+      if (res.isOk()) {
         const node = res.value;
         assert.isTrue(node !== undefined && node.data !== undefined);
       }

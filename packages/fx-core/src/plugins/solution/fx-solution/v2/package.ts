@@ -1,4 +1,14 @@
-import { v2, Inputs, FxError, Result, err, Void, returnSystemError, SystemError, NotImplementedError } from "@microsoft/teamsfx-api";
+import {
+  v2,
+  Inputs,
+  FxError,
+  Result,
+  err,
+  Void,
+  returnSystemError,
+  SystemError,
+  NotImplementedError,
+} from "@microsoft/teamsfx-api";
 import { PluginNames, SolutionError } from "../constants";
 import Container from "typedi";
 import { ResourcePluginsV2 } from "../ResourcePluginContainer";

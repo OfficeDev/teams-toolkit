@@ -53,16 +53,16 @@ export class ApimPluginV2 implements ResourcePlugin {
   activate(solutionSettings: AzureSolutionSettings): boolean {
     return this.plugin.activate(solutionSettings);
   }
-  
+
   async getQuestions(
     ctx: Context,
     inputs: Inputs,
     envInfo: DeepReadonly<v2.EnvInfoV2>,
-    tokenProvider: TokenProvider,
+    tokenProvider: TokenProvider
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     return await getQuestionsAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
   }
-  
+
   async getQuestionsForScaffolding(
     ctx: Context,
     inputs: Inputs
@@ -75,9 +75,16 @@ export class ApimPluginV2 implements ResourcePlugin {
     inputs: Inputs,
     func: Func,
     envInfo: DeepReadonly<v2.EnvInfoV2>,
-    tokenProvider: TokenProvider,
+    tokenProvider: TokenProvider
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    return await getQuestionsForUserTaskAdapter(ctx, inputs, func, envInfo, tokenProvider, this.plugin);
+    return await getQuestionsForUserTaskAdapter(
+      ctx,
+      inputs,
+      func,
+      envInfo,
+      tokenProvider,
+      this.plugin
+    );
   }
 
   async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {

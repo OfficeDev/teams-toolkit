@@ -105,13 +105,13 @@ export function EnvInfoLoaderMW(isMultiEnvEnabled: boolean): Middleware {
       if (isV2()) {
         const envInfo = result.value.envInfo;
         const profile: Json = {};
-        for(const key of envInfo.profile.keys()) {
+        for (const key of envInfo.profile.keys()) {
           const map = envInfo.profile.get(key);
-          if(map){
+          if (map) {
             profile[key] = (map as ConfigMap).toJSON();
           }
         }
-        ctx.envInfoV2 = {envName: envInfo.envName, config: envInfo.config, profile: profile};
+        ctx.envInfoV2 = { envName: envInfo.envName, config: envInfo.config, profile: profile };
       } else {
         ctx.solutionContext = result.value;
       }

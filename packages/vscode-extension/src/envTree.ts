@@ -71,7 +71,7 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
           isCustom: false,
           description:
             item === activeEnv ? StringResources.vsc.commandsTreeViewProvider.active : "",
-          expanded: activeEnv === item,
+          expanded: activeEnv === item ? true : undefined,
         },
       ]);
     }
@@ -94,6 +94,15 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
 
 export async function getCollaboratorList(env: string): Promise<TreeItem[]> {
   if (environmentTreeProvider && isRemoteCollaborateEnabled()) {
+    const collaboratorParentNode: TreeItem = {
+      commandId: `fx-extension.listcollaborator.parentNode.${env}`,
+      label: StringResources.vsc.commandsTreeViewProvider.collaboratorParentNode,
+      icon: "organization",
+      isCustom: false,
+      parent: "fx-extension.environment." + env,
+      expanded: false,
+    };
+
     let userList: TreeItem[] = [];
 
     const parentCommand = environmentTreeProvider.findCommand("fx-extension.environment." + env);
@@ -114,13 +123,13 @@ export async function getCollaboratorList(env: string): Promise<TreeItem[]> {
             label: StringResources.vsc.commandsTreeViewProvider.loginM365AccountToViewCollaborators,
             icon: "warning",
             isCustom: true,
-            parent: "fx-extension.environment." + env,
+            parent: `fx-extension.listcollaborator.parentNode.${env}`,
           },
         ];
       }
     }
 
-    return userList;
+    return [collaboratorParentNode].concat(userList);
   } else {
     return [];
   }

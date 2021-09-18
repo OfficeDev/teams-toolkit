@@ -924,7 +924,7 @@ export async function listCollaborator(env: string): Promise<TreeItem[]> {
           value: user.isAadOwner ? "" : "This account doesn't have the AAD permission.",
           isMarkdown: false,
         },
-        parent: "fx-extension.environment." + env,
+        parent: `fx-extension.listcollaborator.parentNode.${env}`,
       };
     });
     if (!result || result.length === 0) {
@@ -934,7 +934,7 @@ export async function listCollaborator(env: string): Promise<TreeItem[]> {
           label: StringResources.vsc.commandsTreeViewProvider.noPermissionToListCollaborators,
           icon: "warning",
           isCustom: true,
-          parent: "fx-extension.environment." + env,
+          parent: `fx-extension.listcollaborator.parentNode.${env}`,
         },
       ];
     }
@@ -960,7 +960,7 @@ export async function listCollaborator(env: string): Promise<TreeItem[]> {
         },
         icon: "warning",
         isCustom: true,
-        parent: "fx-extension.environment." + env,
+        parent: `fx-extension.listcollaborator.parentNode.${env}`,
       },
     ];
   }

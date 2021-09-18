@@ -9,19 +9,26 @@ import {
   assembleError,
   AzureSolutionSettings,
   ConfigFolderName,
-  Core, CoreCallbackEvent,
-  CoreCallbackFunc, EnvConfig, err,
+  Core,
+  CoreCallbackEvent,
+  CoreCallbackFunc,
+  EnvConfig,
+  err,
   Func,
   FunctionRouter,
   FxError,
-  GroupOfTasks, InputConfigsFolderName, Inputs,
+  GroupOfTasks,
+  InputConfigsFolderName,
+  Inputs,
   Json,
   LogProvider,
   ok,
   OptionItem,
   Platform,
   ProjectConfig,
-  ProjectSettings, PublishProfilesFolderName, QTreeNode,
+  ProjectSettings,
+  PublishProfilesFolderName,
+  QTreeNode,
   Result,
   RunnableTask,
   SingleSelectQuestion,
@@ -33,7 +40,7 @@ import {
   TelemetryReporter,
   Tools,
   v2,
-  Void
+  Void,
 } from "@microsoft/teamsfx-api";
 import { EnvInfoV2, SolutionPlugin } from "@microsoft/teamsfx-api/build/v2";
 import AdmZip from "adm-zip";
@@ -52,16 +59,20 @@ import {
   sendTelemetryEvent,
   TelemetryEvent,
   TelemetryProperty,
-  TelemetrySuccess
+  TelemetrySuccess,
 } from "../common/telemetry";
 import {
   downloadSampleHook,
-  fetchCodeZip, isMultiEnvEnabled,
-  saveFilesRecursively
+  fetchCodeZip,
+  isMultiEnvEnabled,
+  saveFilesRecursively,
 } from "../common/tools";
 import { PluginNames } from "../plugins";
 import { HostTypeOptionAzure } from "../plugins/solution/fx-solution/question";
-import { getAllV2ResourcePluginMap, getAllV2ResourcePlugins } from "../plugins/solution/fx-solution/ResourcePluginContainer";
+import {
+  getAllV2ResourcePluginMap,
+  getAllV2ResourcePlugins,
+} from "../plugins/solution/fx-solution/ResourcePluginContainer";
 import { CallbackRegistry } from "./callback";
 import {
   CopyFileError,
@@ -76,7 +87,7 @@ import {
   ProjectFolderExistError,
   ProjectFolderNotExistError,
   TaskNotSupportError,
-  WriteFileError
+  WriteFileError,
 } from "./error";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ContextInjectorMW } from "./middleware/contextInjector";
@@ -85,7 +96,7 @@ import {
   EnvInfoLoaderMW,
   loadSolutionContext,
   upgradeDefaultFunctionName,
-  upgradeProgrammingLanguage
+  upgradeProgrammingLanguage,
 } from "./middleware/envInfoLoader";
 import { EnvInfoWriterMW } from "./middleware/envInfoWriter";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
@@ -109,13 +120,13 @@ import {
   QuestionV1AppName,
   SampleSelect,
   ScratchOptionNo,
-  ScratchOptionYes
+  ScratchOptionYes,
 } from "./question";
 import {
   getAllSolutionPlugins,
   getAllSolutionPluginsV2,
   getSolutionPluginByName,
-  getSolutionPluginV2ByName
+  getSolutionPluginV2ByName,
 } from "./SolutionPluginContainer";
 import { newEnvInfo } from "./tools";
 
@@ -168,7 +179,7 @@ export class FxCore implements Core {
     QuestionModelMW,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
-    EnvInfoWriterMW(isMultiEnvEnabled()),
+    EnvInfoWriterMW(true),
   ])
   async createProject(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     if (!ctx) {
@@ -270,11 +281,10 @@ export class FxCore implements Core {
               return err(createEnvRes.error);
             }
           }
-        }
-        else {
+        } else {
           //TODO lagacy env.default.json
-          const profile: Json = {solution:{}};
-          for(const plugin of getAllV2ResourcePlugins() ) {
+          const profile: Json = { solution: {} };
+          for (const plugin of getAllV2ResourcePlugins()) {
             profile[plugin.name] = {};
           }
           profile[PluginNames.LDEBUG]["trustDevCert"] = "true";
@@ -1283,4 +1293,3 @@ export function createV2Context(core: FxCore, projectSettings: ProjectSettings):
 
 export * from "./error";
 export * from "./tools";
-

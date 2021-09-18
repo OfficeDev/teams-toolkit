@@ -7,3 +7,4 @@ Incremental version for Teams Toolkit with multiple bugs fixed and the following
 Enhancement:
 
 - Improved version upgrade experience by adding "What is New?" info.
+- Simplified welcome view when clicking the Toolkit logo on the sidebar.

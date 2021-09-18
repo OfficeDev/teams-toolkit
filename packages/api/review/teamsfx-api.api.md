@@ -595,6 +595,8 @@ export interface InputResult<T> {
 // @public (undocumented)
 export interface Inputs extends Json {
     // (undocumented)
+    askEnvSelect?: boolean;
+    // (undocumented)
     ignoreConfigPersist?: boolean;
     // (undocumented)
     ignoreEnvInfo?: boolean;

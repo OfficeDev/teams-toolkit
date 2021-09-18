@@ -171,6 +171,7 @@ export interface Inputs extends Json {
   ignoreTypeCheck?: boolean;
   ignoreConfigPersist?: boolean;
   ignoreEnvInfo?: boolean;
+  askEnvSelect?: boolean;
 }
 
 export interface ProjectConfig {

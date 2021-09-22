@@ -8,6 +8,30 @@ export interface ResourcePermission {
   roles: string[] | undefined;
 }
 
+export enum CollaborationState {
+  OK,
+  NotProvisioned,
+  M365TenantNotMatch,
+  SolutionIsNotIdle,
+}
+
+export interface CollaborationStateResult {
+  state: CollaborationState;
+  message?: string;
+}
+
+export interface ListCollaboratorResult {
+  state: CollaborationState;
+  message?: string;
+  collaborators?: Collaborator[];
+}
+
+export interface PermissionsResult {
+  state: CollaborationState;
+  message?: string;
+  permissions?: ResourcePermission[];
+}
+
 export interface Collaborator {
   userPrincipalName: string;
   userObjectId: string;

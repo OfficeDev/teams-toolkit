@@ -42,42 +42,36 @@ import { Bicep, ConstantString } from "../../../common/constants";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import * as fs from "fs-extra";
 import { getArmOutput } from "../utils4v2";
-import { isArmSupportEnabled } from "../../../common";
+import {
+  getResourceGroupNameFromResourceId,
+  getSubscriptionIdFromResourceId,
+  isArmSupportEnabled,
+} from "../../../common";
 import { IdentityArmOutput } from "../identity/constants";
 
 export class SqlPluginImpl {
   config: SqlConfig = new SqlConfig();
 
-  async init(ctx: PluginContext) {
-    ContextUtils.init(ctx);
-    this.config.azureSubscriptionId = ContextUtils.getConfigString(
-      Constants.solution,
-      Constants.solutionConfigKey.subscriptionId
-    );
-    this.config.resourceGroup = ContextUtils.getConfigString(
-      Constants.solution,
-      Constants.solutionConfigKey.resourceGroupName
-    );
-    this.config.resourceNameSuffix = ContextUtils.getConfigString(
+  async loadConfig(ctx: PluginContext) {
+    this.loadConfigSubscription(ctx);
+    this.loadConfigResourceGroup(ctx);
+    this.config.resourceNameSuffix = ContextUtils.getConfig<string>(
+      ctx,
       Constants.solution,
       Constants.solutionConfigKey.resourceNameSuffix
     );
-    this.config.location = ContextUtils.getConfigString(
+    this.config.location = ContextUtils.getConfig<string>(
+      ctx,
       Constants.solution,
       Constants.solutionConfigKey.location
     );
-    this.config.tenantId = ContextUtils.getConfigString(
+    this.config.tenantId = ContextUtils.getConfig<string>(
+      ctx,
       Constants.solution,
       Constants.solutionConfigKey.tenantId
     );
 
-    let defaultEndpoint = `${ctx.projectSettings!.appName}-sql-${this.config.resourceNameSuffix}`;
-    defaultEndpoint = formatEndpoint(defaultEndpoint);
-    this.config.sqlServer = defaultEndpoint;
-    this.config.sqlEndpoint = `${this.config.sqlServer}.database.windows.net`;
-    // database
-    const defaultDatabase = `${ctx.projectSettings!.appName}-db-${this.config.resourceNameSuffix}`;
-    this.config.databaseName = defaultDatabase;
+    this.loadConfigSql(ctx);
   }
 
   async getQuestions(
@@ -93,7 +87,7 @@ export class SqlPluginImpl {
 
   async preProvision(ctx: PluginContext): Promise<Result<any, FxError>> {
     ctx.logProvider?.info(Message.startPreProvision);
-    await this.init(ctx);
+    await this.loadConfig(ctx);
 
     DialogUtils.init(ctx);
     TelemetryUtils.init(ctx);
@@ -193,10 +187,12 @@ export class SqlPluginImpl {
 
     if (isArmSupportEnabled()) {
       this.syncArmOutput(ctx);
+      ctx.config.set(Constants.sqlResourceId, this.config.sqlResourceId);
     }
 
     ctx.config.set(Constants.sqlEndpoint, this.config.sqlEndpoint);
     ctx.config.set(Constants.databaseName, this.config.databaseName);
+
     ctx.config.delete(Constants.adminPassword);
 
     const managementClient: ManagementClient = await ManagementClient.create(ctx, this.config);
@@ -326,9 +322,12 @@ export class SqlPluginImpl {
   }
 
   private syncArmOutput(ctx: PluginContext) {
+    this.config.sqlResourceId = getArmOutput(ctx, AzureSqlArmOutput.sqlResourceId)!;
     this.config.sqlEndpoint = getArmOutput(ctx, AzureSqlArmOutput.sqlEndpoint)!;
     this.config.databaseName = getArmOutput(ctx, AzureSqlArmOutput.databaseName)!;
     this.config.sqlServer = this.config.sqlEndpoint.split(".")[0];
+    this.config.resourceGroup = getResourceGroupNameFromResourceId(this.config.sqlResourceId);
+    this.config.azureSubscriptionId = getSubscriptionIdFromResourceId(this.config.sqlResourceId);
   }
 
   private buildQuestionNode() {
@@ -394,7 +393,7 @@ export class SqlPluginImpl {
       this.config.admin = ctx.config.get(Constants.admin) as string;
       this.config.adminPassword = ctx.config.get(Constants.adminPassword) as string;
       this.config.sqlEndpoint = ctx.config.get(Constants.sqlEndpoint);
-      if (this.config.sqlEndpoint) {
+      if (this.config.sqlEndpoint && this.config.azureSubscriptionId) {
         this.config.existSql = await managementClient.existAzureSQL();
       }
     } else {
@@ -432,6 +431,74 @@ export class SqlPluginImpl {
         ErrorMessage.SqlUserInfoError.message(),
         error
       );
+    }
+  }
+
+  private loadConfigResourceGroup(ctx: PluginContext) {
+    if (isArmSupportEnabled()) {
+      this.config.sqlResourceId = ctx.config.get(Constants.sqlResourceId) as string;
+      if (this.config.sqlResourceId) {
+        try {
+          this.config.resourceGroup = getResourceGroupNameFromResourceId(this.config.sqlResourceId);
+        } catch (error) {
+          throw SqlResultFactory.UserError(
+            ErrorMessage.SqlInvalidConfigError.name,
+            ErrorMessage.SqlInvalidConfigError.message(this.config.sqlResourceId, error.message),
+            error
+          );
+        }
+      }
+    } else {
+      this.config.resourceGroup = ContextUtils.getConfig<string>(
+        ctx,
+        Constants.solution,
+        Constants.solutionConfigKey.resourceGroupName
+      );
+    }
+  }
+
+  private loadConfigSubscription(ctx: PluginContext) {
+    if (isArmSupportEnabled()) {
+      this.config.sqlResourceId = ctx.config.get(Constants.sqlResourceId) as string;
+      if (this.config.sqlResourceId) {
+        try {
+          this.config.azureSubscriptionId = getSubscriptionIdFromResourceId(
+            this.config.sqlResourceId
+          );
+        } catch (error) {
+          throw SqlResultFactory.UserError(
+            ErrorMessage.SqlInvalidConfigError.name,
+            ErrorMessage.SqlInvalidConfigError.message(this.config.sqlResourceId, error.message),
+            error
+          );
+        }
+      }
+    } else {
+      this.config.azureSubscriptionId = ContextUtils.getConfig<string>(
+        ctx,
+        Constants.solution,
+        Constants.solutionConfigKey.subscriptionId
+      );
+    }
+  }
+
+  private loadConfigSql(ctx: PluginContext) {
+    if (isArmSupportEnabled()) {
+      this.config.sqlEndpoint = ctx.config.get(Constants.sqlEndpoint) as string;
+      this.config.databaseName = ctx.config.get(Constants.databaseName) as string;
+      if (this.config.sqlEndpoint) {
+        this.config.sqlServer = this.config.sqlEndpoint.split(".")[0];
+      }
+    } else {
+      let defaultEndpoint = `${ctx.projectSettings!.appName}-sql-${this.config.resourceNameSuffix}`;
+      defaultEndpoint = formatEndpoint(defaultEndpoint);
+      this.config.sqlServer = defaultEndpoint;
+      this.config.sqlEndpoint = `${this.config.sqlServer}.database.windows.net`;
+
+      const defaultDatabase = `${ctx.projectSettings!.appName}-db-${
+        this.config.resourceNameSuffix
+      }`;
+      this.config.databaseName = defaultDatabase;
     }
   }
 }

@@ -20,10 +20,14 @@ export async function createEnv(ctx: v2.Context, inputs: Inputs): Promise<Result
     isAzureProject(ctx.projectSetting.solutionSettings as AzureSolutionSettings)
   ) {
     const solutionContext: SolutionContext = {
+      root: inputs.projectPath || "",
       envInfo: newEnvInfo(inputs.targetEnvName),
-      root: inputs.projectPath!,
-      ...ctx,
+      projectSettings: ctx.projectSetting,
       answers: inputs,
+      logProvider: ctx.logProvider,
+      telemetryReporter: ctx.telemetryReporter,
+      cryptoProvider: ctx.cryptoProvider,
+      ui: ctx.userInteraction,
     };
     try {
       if (inputs.copy === true) {

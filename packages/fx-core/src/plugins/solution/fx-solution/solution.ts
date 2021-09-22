@@ -46,7 +46,11 @@ import { PluginDisplayName } from "../../../common/constants";
 import { LocalSettingsTeamsAppKeys } from "../../../common/localSettingsConstants";
 import {
   AadOwner,
+  CollaborationState,
+  CollaborationStateResult,
   Collaborator,
+  ListCollaboratorResult,
+  PermissionsResult,
   ResourcePermission,
   TeamsAppAdmin,
 } from "../../../common/permissionInterface";
@@ -58,7 +62,6 @@ import {
   isUserCancelError,
 } from "../../../common/tools";
 import { CopyFileError } from "../../../core";
-import { askTargetEnvironment } from "../../../core/middleware/envInfoLoader";
 import { ErrorHandlerMW } from "../../../core/middleware/errorHandler";
 import { PermissionRequestFileProvider } from "../../../core/permissionRequest";
 import { SolutionPlugins } from "../../../core/SolutionPluginContainer";
@@ -1272,14 +1275,14 @@ export class TeamsAppSolution implements Solution {
   }
 
   @hooks([ErrorHandlerMW])
-  async grantPermission(ctx: SolutionContext): Promise<Result<ResourcePermission[], FxError>> {
+  async grantPermission(ctx: SolutionContext): Promise<Result<PermissionsResult, FxError>> {
     ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.GrantPermissionStart, {
       [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
     });
 
     const progressBar = ctx.ui?.createProgressBar("Granting permission", 1);
     try {
-      const result = await this.checkAndGetCurrentUserInfo(ctx);
+      const result = await this.getCurrentUserInfo(ctx);
       if (result.isErr()) {
         return err(
           sendErrorTelemetryThenReturnError(
@@ -1288,6 +1291,18 @@ export class TeamsAppSolution implements Solution {
             ctx.telemetryReporter
           )
         );
+      }
+
+      const stateResult = await this.getCurrentCollaborationState(ctx, result.value);
+
+      if (stateResult.state != CollaborationState.OK) {
+        if (ctx.answers?.platform === Platform.CLI) {
+          ctx.ui?.showMessage("warn", stateResult.message!, false);
+        }
+        return ok({
+          state: stateResult.state,
+          message: stateResult.message,
+        });
       }
 
       const email = ctx.answers!["email"] as string;
@@ -1423,7 +1438,10 @@ export class TeamsAppSolution implements Solution {
         [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
       });
 
-      return ok(permissions);
+      return ok({
+        state: CollaborationState.OK,
+        permissions,
+      });
     } finally {
       await progressBar?.end(true);
       ctx.envInfo.profile.get(GLOBAL_CONFIG)?.delete(USER_INFO);
@@ -1432,13 +1450,13 @@ export class TeamsAppSolution implements Solution {
   }
 
   @hooks([ErrorHandlerMW])
-  async checkPermission(ctx: SolutionContext): Promise<Result<ResourcePermission[], FxError>> {
+  async checkPermission(ctx: SolutionContext): Promise<Result<PermissionsResult, FxError>> {
     ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.CheckPermissionStart, {
       [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
     });
 
     try {
-      const result = await this.checkAndGetCurrentUserInfo(ctx);
+      const result = await this.getCurrentUserInfo(ctx);
       if (result.isErr()) {
         return err(
           sendErrorTelemetryThenReturnError(
@@ -1447,6 +1465,18 @@ export class TeamsAppSolution implements Solution {
             ctx.telemetryReporter
           )
         );
+      }
+
+      const stateResult = await this.getCurrentCollaborationState(ctx, result.value);
+
+      if (stateResult.state != CollaborationState.OK) {
+        if (ctx.answers?.platform === Platform.CLI) {
+          ctx.ui?.showMessage("warn", stateResult.message!, false);
+        }
+        return ok({
+          state: stateResult.state,
+          message: stateResult.message,
+        });
       }
 
       const userInfo = result.value as IUserList;
@@ -1550,7 +1580,10 @@ export class TeamsAppSolution implements Solution {
           : "undefined",
       });
 
-      return ok(permissions);
+      return ok({
+        state: CollaborationState.OK,
+        permissions,
+      });
     } finally {
       ctx.envInfo.profile.get(GLOBAL_CONFIG)?.delete(USER_INFO);
       this.runningState = SolutionRunningState.Idle;
@@ -1558,13 +1591,13 @@ export class TeamsAppSolution implements Solution {
   }
 
   @hooks([ErrorHandlerMW])
-  async listCollaborator(ctx: SolutionContext): Promise<Result<Collaborator[], FxError>> {
+  async listCollaborator(ctx: SolutionContext): Promise<Result<ListCollaboratorResult, FxError>> {
     ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.ListCollaboratorStart, {
       [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
     });
 
     try {
-      const result = await this.checkAndGetCurrentUserInfo(ctx);
+      const result = await this.getCurrentUserInfo(ctx);
       if (result.isErr()) {
         return err(
           sendErrorTelemetryThenReturnError(
@@ -1574,6 +1607,19 @@ export class TeamsAppSolution implements Solution {
           )
         );
       }
+
+      const stateResult = await this.getCurrentCollaborationState(ctx, result.value);
+
+      if (stateResult.state != CollaborationState.OK) {
+        if (ctx.answers?.platform === Platform.CLI) {
+          ctx.ui?.showMessage("warn", stateResult.message!, false);
+        }
+        return ok({
+          state: stateResult.state,
+          message: stateResult.message,
+        });
+      }
+
       const userInfo = result.value as IUserList;
 
       const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, [
@@ -1698,31 +1744,16 @@ export class TeamsAppSolution implements Solution {
         [SolutionTelemetryProperty.AadOwnerCount]: aadOwnerCount.toString(),
       });
 
-      return ok(collaborators);
+      return ok({
+        collaborators: collaborators,
+        state: CollaborationState.OK,
+      });
     } finally {
       this.runningState = SolutionRunningState.Idle;
     }
   }
 
-  private async checkAndGetCurrentUserInfo(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    const canProcess = this.checkWhetherSolutionIsIdle();
-    if (canProcess.isErr()) {
-      return canProcess;
-    }
-
-    const provisioned = this.checkWetherProvisionSucceeded(ctx.envInfo.profile);
-    if (!provisioned) {
-      return err(
-        returnUserError(
-          new Error(
-            "Failed to process because the resources have not been provisioned yet. Make sure you do the provision first."
-          ),
-          "Solution",
-          SolutionError.CannotProcessBeforeProvision
-        )
-      );
-    }
-
+  private async getCurrentUserInfo(ctx: SolutionContext): Promise<Result<IUserList, FxError>> {
     const user = await this.getUserInfo(ctx);
 
     if (!user) {
@@ -1735,20 +1766,44 @@ export class TeamsAppSolution implements Solution {
       );
     }
 
-    const aadAppTenantId = ctx.envInfo.profile?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
-    if (!aadAppTenantId || user.tenantId != (aadAppTenantId as string)) {
-      return err(
-        returnUserError(
-          new Error(
-            "Tenant id of your account and the provisioned Azure AD app does not match. Please check whether you logined with wrong account."
-          ),
-          "Solution",
-          SolutionError.M365AccountNotMatch
-        )
-      );
+    return ok(user);
+  }
+
+  private getCurrentCollaborationState(
+    ctx: SolutionContext,
+    user: IUserList
+  ): CollaborationStateResult {
+    const canProcess = this.checkWhetherSolutionIsIdle();
+    if (canProcess.isErr()) {
+      return {
+        state: CollaborationState.SolutionIsNotIdle,
+        message: canProcess.error.message,
+      };
     }
 
-    return ok(user);
+    const provisioned = this.checkWetherProvisionSucceeded(ctx.envInfo.profile);
+    if (!provisioned) {
+      const warningMsg =
+        "Failed to process because the resources have not been provisioned yet. Make sure you do the provision first.";
+      return {
+        state: CollaborationState.NotProvisioned,
+        message: warningMsg,
+      };
+    }
+
+    const aadAppTenantId = ctx.envInfo.profile?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
+    if (!aadAppTenantId || user.tenantId != (aadAppTenantId as string)) {
+      const warningMsg =
+        "Tenant id of your account and the provisioned Azure AD app does not match. Please check whether you logined with wrong account.";
+      return {
+        state: CollaborationState.M365TenantNotMatch,
+        message: warningMsg,
+      };
+    }
+
+    return {
+      state: CollaborationState.OK,
+    };
   }
 
   private loadTeamsAppTenantId(

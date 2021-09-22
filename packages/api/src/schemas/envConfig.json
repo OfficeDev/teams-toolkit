@@ -36,8 +36,7 @@
         "clientSecret": ["clientId", "objectId", "accessAsUserScopeId"],
         "objectId": ["clientId", "clientSecret", "accessAsUserScopeId"],
         "accessAsUserScopeId": ["clientId", "clientSecret", "objectId"]
-      },
-      "additionalProperties": false
+      }
     },
     "azure": {
       "type": "object",
@@ -54,8 +53,7 @@
           "minLength": 1,
           "pattern": "^[-\\w\\._\\(\\)]+$"
         }
-      },
-      "additionalProperties": false
+      }
     },
     "bot": {
       "type": "object",
@@ -75,8 +73,7 @@
       "dependencies": {
         "appId": ["appPassword"],
         "appPassword": ["appId"]
-      },
-      "additionalProperties": false
+      }
     },
     "manifest": {
       "type": "object",
@@ -118,6 +115,5 @@
       "description": "Skip to add user during SQL provision."
     }
   },
-  "additionalProperties": false,
   "required": ["manifest"]
 }

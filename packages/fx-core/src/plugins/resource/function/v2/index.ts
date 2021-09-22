@@ -4,19 +4,19 @@
 import {
   AzureAccountProvider,
   AzureSolutionSettings,
-  err,
   Func,
   FxError,
   Inputs,
   Json,
+  QTreeNode,
   Result,
   TokenProvider,
-  traverse,
   v2,
   Void,
 } from "@microsoft/teamsfx-api";
 import {
   Context,
+  DeepReadonly,
   DeploymentInputs,
   ProvisionInputs,
   ResourcePlugin,
@@ -31,10 +31,10 @@ import {
 } from "../../../solution/fx-solution/ResourcePluginContainer";
 import {
   configureResourceAdapter,
-  convert2PluginContext,
   deployAdapter,
   executeUserTaskAdapter,
   generateResourceTemplateAdapter,
+  getQuestionsForUserTaskAdapter,
   provisionResourceAdapter,
   scaffoldSourceCodeAdapter,
 } from "../../utils4v2";
@@ -91,21 +91,27 @@ export class FunctionPluginV2 implements ResourcePlugin {
   async executeUserTask(
     ctx: Context,
     inputs: Inputs,
-    func: Func
+    func: Func,
+    envInfo: v2.EnvInfoV2,
+    tokenProvider: TokenProvider
   ): Promise<Result<unknown, FxError>> {
-    const questionRes = await this.plugin.getQuestionsForUserTask(
+    return await executeUserTaskAdapter(ctx, inputs, func, envInfo, tokenProvider, this.plugin);
+  }
+
+  async getQuestionsForUserTask(
+    ctx: Context,
+    inputs: Inputs,
+    func: Func,
+    envInfo: DeepReadonly<v2.EnvInfoV2>,
+    tokenProvider: TokenProvider
+  ): Promise<Result<QTreeNode | undefined, FxError>> {
+    return await getQuestionsForUserTaskAdapter(
+      ctx,
+      inputs,
       func,
-      convert2PluginContext(ctx, inputs)
+      envInfo,
+      tokenProvider,
+      this.plugin
     );
-    if (questionRes.isOk()) {
-      const node = questionRes.value;
-      if (node) {
-        const res = await traverse(node, inputs, ctx.userInteraction);
-        if (res.isErr()) {
-          return err(res.error);
-        }
-      }
-    }
-    return await executeUserTaskAdapter(ctx, inputs, func, this.plugin);
   }
 }

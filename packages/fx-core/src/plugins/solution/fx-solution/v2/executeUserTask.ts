@@ -13,13 +13,14 @@ import {
   Void,
   Platform,
   UserInteraction,
-  AppStudioTokenProvider,
   SolutionSettings,
   TokenProvider,
+  combine,
 } from "@microsoft/teamsfx-api";
 import { getStrings, isArmSupportEnabled } from "../../../../common/tools";
 import { blockV1Project, getAzureSolutionSettings, reloadV2Plugins } from "./utils";
 import {
+  PluginNames,
   SolutionError,
   SolutionTelemetryComponentName,
   SolutionTelemetryEvent,
@@ -48,6 +49,7 @@ export async function executeUserTask(
   ctx: v2.Context,
   inputs: Inputs,
   func: Func,
+  envInfo: v2.EnvInfoV2,
   tokenProvider: TokenProvider
 ): Promise<Result<unknown, FxError>> {
   const blockResult = blockV1Project(ctx.projectSetting.solutionSettings);
@@ -61,7 +63,7 @@ export async function executeUserTask(
     return addCapability(ctx, inputs);
   }
   if (method === "addResource") {
-    return addResource(ctx, inputs);
+    return addResource(ctx, inputs, func, envInfo, tokenProvider);
   }
   if (namespace.includes("solution")) {
     if (method === "registerTeamsAppAndAad") {
@@ -91,32 +93,31 @@ export async function executeUserTask(
         return appStudioPlugin.publishApplication(
           ctx,
           inputs,
-          func.params.envConfig,
-          func.params.envProfile,
+          envInfo,
           tokenProvider.appStudioToken
         );
       }
     } else if (method === "validateManifest") {
       const appStudioPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin);
       if (appStudioPlugin.executeUserTask) {
-        return await appStudioPlugin.executeUserTask(ctx, inputs, func);
+        return await appStudioPlugin.executeUserTask(ctx, inputs, func, envInfo, tokenProvider);
       }
     } else if (method === "buildPackage") {
       const appStudioPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin);
       if (appStudioPlugin.executeUserTask) {
-        return await appStudioPlugin.executeUserTask(ctx, inputs, func);
+        return await appStudioPlugin.executeUserTask(ctx, inputs, func, envInfo, tokenProvider);
       }
     } else if (method === "validateManifest") {
       const appStudioPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin);
       if (appStudioPlugin.executeUserTask) {
-        return appStudioPlugin.executeUserTask(ctx, inputs, func);
+        return appStudioPlugin.executeUserTask(ctx, inputs, func, envInfo, tokenProvider);
       }
     } else if (array.length == 2) {
       const pluginName = array[1];
       const pluginMap = getAllV2ResourcePluginMap();
       const plugin = pluginMap.get(pluginName);
       if (plugin && plugin.executeUserTask) {
-        return plugin.executeUserTask(ctx, inputs, func);
+        return plugin.executeUserTask(ctx, inputs, func, envInfo, tokenProvider);
       }
     }
   }
@@ -318,7 +319,10 @@ async function scaffoldCodeAndResourceTemplate(
 
 export async function addResource(
   ctx: v2.Context,
-  inputs: Inputs
+  inputs: Inputs,
+  func: Func,
+  envInfo: v2.EnvInfoV2,
+  tokenProvider: TokenProvider
 ): Promise<Result<unknown, FxError>> {
   ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.AddResourceStart, {
     [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
@@ -374,6 +378,7 @@ export async function addResource(
   const notifications: string[] = [];
   const pluginsToScaffold: v2.ResourcePlugin[] = [localDebugPlugin];
   const azureResource = Array.from(settings.azureResources || []);
+  let scaffoldApim = false;
   if (addFunc || ((addSQL || addApim) && !alreadyHaveFunction)) {
     pluginsToScaffold.push(functionPlugin);
     if (!azureResource.includes(AzureResourceFunction.id)) {
@@ -389,10 +394,14 @@ export async function addResource(
     addNewResoruceToProvision = true;
   }
   if (addApim && !alreadyHaveApim) {
-    pluginsToScaffold.push(apimPlugin);
+    // We don't add apimPlugin into pluginsToScaffold because
+    // apim plugin needs to modify config output during scaffolding,
+    // which is not supported by the scaffoldSourceCode API.
+    // The scaffolding will run later as a usertask as a work around.
     azureResource.push(AzureResourceApim.id);
     notifications.push(AzureResourceApim.label);
     addNewResoruceToProvision = true;
+    scaffoldApim = true;
   }
 
   if (notifications.length > 0) {
@@ -405,12 +414,22 @@ export async function addResource(
     settings.azureResources = azureResource;
     reloadV2Plugins(settings);
     ctx.logProvider?.info(`start scaffolding ${notifications.join(",")}.....`);
-    const scaffoldRes = await scaffoldCodeAndResourceTemplate(
+    let scaffoldRes = await scaffoldCodeAndResourceTemplate(
       ctx,
       inputs,
       pluginsToScaffold,
       addNewResoruceToProvision
     );
+
+    if (scaffoldApim) {
+      if (apimPlugin && apimPlugin.executeUserTask) {
+        const result = await apimPlugin.executeUserTask(ctx, inputs, func, envInfo, tokenProvider);
+        if (result.isErr()) {
+          scaffoldRes = combine([scaffoldRes, result]);
+        }
+      }
+    }
+
     if (scaffoldRes.isErr()) {
       ctx.logProvider?.info(`failed to scaffold ${notifications.join(",")}!`);
       return err(
@@ -421,6 +440,7 @@ export async function addResource(
         )
       );
     }
+
     ctx.logProvider?.info(`finish scaffolding ${notifications.join(",")}!`);
     ctx.userInteraction.showMessage(
       "info",

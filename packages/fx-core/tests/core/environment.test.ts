@@ -45,9 +45,9 @@ describe("APIs of Environment Manager", () => {
   const appName = randomAppName();
   const projectPath = path.resolve(os.tmpdir(), appName);
   const fileMap = new Map<string, any>();
-  const encreptedSecret = "secretOfLife";
+  const encryptedSecret = "secretOfLife";
   const decryptedValue = "42";
-  const cryptoProvider = new MockCrypto(encreptedSecret, decryptedValue);
+  const cryptoProvider = new MockCrypto(encryptedSecret, decryptedValue);
   const targetEnvName = "dev";
   const validEnvConfigData = {
     manifest: {
@@ -119,7 +119,7 @@ describe("APIs of Environment Manager", () => {
 
       const actualEnvDataResult = await environmentManager.loadEnvInfo(projectPath, envName);
       if (actualEnvDataResult.isErr()) {
-        assert.fail("Error ocurrs while loading environment config.");
+        assert.fail("Error occurs while loading environment config.");
       }
 
       const envConfigInfo = actualEnvDataResult.value;
@@ -129,7 +129,7 @@ describe("APIs of Environment Manager", () => {
       assert.equal(envConfigInfo.config.manifest.values.appName.short, appName);
     });
 
-    it("load invalid enviornment config file", async () => {
+    it("load invalid environment config file", async () => {
       await mockEnvConfigs(projectPath, invalidEnvConfigData);
 
       const actualEnvDataResult = await environmentManager.loadEnvInfo(projectPath);
@@ -143,7 +143,7 @@ describe("APIs of Environment Manager", () => {
 
   describe("Load Environment Profile File", () => {
     const userData = {
-      "solution.teamsAppTenantId": encreptedSecret,
+      "solution.teamsAppTenantId": encryptedSecret,
     };
 
     before(async () => {
@@ -277,7 +277,7 @@ describe("APIs of Environment Manager", () => {
         string,
         string
       >;
-      assert.equal(envInfo.profile.get("solution").get("teamsAppTenantId"), encreptedSecret);
+      assert.equal(envInfo.profile.get("solution").get("teamsAppTenantId"), encryptedSecret);
       assert.equal(envInfo.profile.get("solution").get("key"), expectedSolutionConfig.key);
     });
 
@@ -402,7 +402,7 @@ describe("APIs of Environment Manager", () => {
       const envFiles = environmentManager.getEnvProfileFilesPath("default", projectPath);
 
       const expectedEnvProfileContent = JSON.stringify(envProfileDataWithCredential, null, 4);
-      const expectedUserDataFileContent = `solution.teamsAppTenantId=${encreptedSecret}\n_checksum=81595a4344a4345ecfd90232f9e3540ce2b72e50745b3b83adc484c8e5055a33`;
+      const expectedUserDataFileContent = `solution.teamsAppTenantId=${encryptedSecret}\n_checksum=81595a4344a4345ecfd90232f9e3540ce2b72e50745b3b83adc484c8e5055a33`;
       assert.equal(
         formatContent(fileMap.get(envFiles.envProfile)),
         formatContent(expectedEnvProfileContent)
@@ -423,7 +423,7 @@ describe("APIs of Environment Manager", () => {
       const envFiles = environmentManager.getEnvProfileFilesPath(targetEnvName, projectPath);
 
       const expectedEnvProfileContent = JSON.stringify(envProfileDataWithCredential, null, 4);
-      const expectedUserDataFileContent = `solution.teamsAppTenantId=${encreptedSecret}\n_checksum=81595a4344a4345ecfd90232f9e3540ce2b72e50745b3b83adc484c8e5055a33`;
+      const expectedUserDataFileContent = `solution.teamsAppTenantId=${encryptedSecret}\n_checksum=81595a4344a4345ecfd90232f9e3540ce2b72e50745b3b83adc484c8e5055a33`;
       assert.equal(
         formatContent(fileMap.get(envFiles.envProfile)),
         formatContent(expectedEnvProfileContent)
@@ -435,7 +435,7 @@ describe("APIs of Environment Manager", () => {
     });
   });
 
-  describe("List Environment configs", () => {
+  describe("List Environment Configs", () => {
     const configFolder = path.resolve(projectPath, `.${ConfigFolderName}`, InputConfigsFolderName);
 
     beforeEach(async () => {
@@ -489,6 +489,34 @@ describe("APIs of Environment Manager", () => {
       }
 
       assert.isEmpty(envNamesResult.value);
+    });
+  });
+
+  describe("Check If File Is Environment Config", () => {
+    const configFolder = path.resolve(projectPath, `.${ConfigFolderName}`, InputConfigsFolderName);
+
+    it("correct env config", () => {
+      const fileName = "config.test1.json";
+      const isEnvConfig = environmentManager.isEnvConfig(
+        projectPath,
+        path.resolve(configFolder, fileName)
+      );
+      assert.isTrue(isEnvConfig);
+    });
+
+    it("file in incorrect folder", () => {
+      const fileName = "config.test1.json";
+      const isEnvConfig = environmentManager.isEnvConfig(projectPath, fileName);
+      assert.isFalse(isEnvConfig);
+    });
+
+    it("file with incorrect name", () => {
+      const fileName = "config.json";
+      const isEnvConfig = environmentManager.isEnvConfig(
+        projectPath,
+        path.resolve(configFolder, fileName)
+      );
+      assert.isFalse(isEnvConfig);
     });
   });
 });

@@ -12,12 +12,12 @@ import { environmentManager } from "../environment";
 /**
  * This middleware will help to persist environment profile if necessary.
  */
-export function EnvInfoWriterMW(skip = false): Middleware {
+export function EnvInfoWriterMW(isScaffolding = false): Middleware {
   return async (ctx: CoreHookContext, next: NextFunction) => {
     try {
       await next();
     } finally {
-      if (skip) {
+      if (isScaffolding && isMultiEnvEnabled()) {
         return;
       }
 
@@ -32,7 +32,7 @@ export function EnvInfoWriterMW(skip = false): Middleware {
         return;
 
       if (isV2()) {
-        const provisionOutputs = ctx.provisionOutputs;
+        const provisionOutputs = ctx.envInfoV2?.profile;
         if (provisionOutputs === undefined) return;
         // DO NOT persist local debug plugin config.
         if (isMultiEnvEnabled() && provisionOutputs[PluginNames.LDEBUG]) {

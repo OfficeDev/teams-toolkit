@@ -137,6 +137,11 @@
           "command": "fx-extension.addEnvironment",
           "when": "view == teamsfx-environment",
           "group": "navigation@1"
+        },
+        {
+          "command": "fx-extension.refreshEnvironment",
+          "when": "view == teamsfx-environment",
+          "group": "navigation@2"
         }
       ],
       "view/item/context": [
@@ -250,6 +255,10 @@
         },
         {
           "command": "fx-extension.addEnvironment",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.refreshEnvironment",
           "when": "false"
         },
         {
@@ -411,6 +420,12 @@
         "command": "fx-extension.addEnvironment",
         "title": "Teams: Create new environment copy",
         "icon": "$(add)",
+        "enablement": "fx-extension.isMultiEnvEnabled"
+      },
+      {
+        "command": "fx-extension.refreshEnvironment",
+        "title": "Refresh",
+        "icon": "$(refresh)",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {
@@ -589,6 +604,11 @@
           "fx-extension.armSupportEnabled": {
             "type": "boolean",
             "description": "Enable provision Azure resources with ARM templates. (Requires reload of VS Code)",
+            "default": false
+          },
+          "fx-extension.multipleEnvironmentsSupportEnabled": {
+            "type": "boolean",
+            "description": "[Experimental] Enable multiple environments support. (Requires reload of VS Code)",
             "default": false
           },
           "fx-extension.validateNode": {

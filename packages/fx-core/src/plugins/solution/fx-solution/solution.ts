@@ -34,6 +34,7 @@ import {
   SubscriptionInfo,
   SystemError,
   TeamsAppManifest,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import axios from "axios";
 import * as fs from "fs-extra";
@@ -1134,107 +1135,144 @@ export class TeamsAppSolution implements Solution {
   }
 
   async localDebug(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    if (!this.spfxSelected(ctx)) {
-      if (ctx.permissionRequestProvider === undefined) {
-        ctx.permissionRequestProvider = new PermissionRequestFileProvider(ctx.root);
-      }
-
-      const result = await ensurePermissionRequest(
-        ctx.projectSettings?.solutionSettings as AzureSolutionSettings,
-        ctx.permissionRequestProvider
-      );
-
-      if (result.isErr()) {
-        return result;
-      }
-    }
-
-    return await this.doLocalDebug(ctx);
-  }
-
-  async doLocalDebug(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    const maybeSelectedPlugins = this.getSelectedPlugins(ctx);
-
-    if (maybeSelectedPlugins.isErr()) {
-      return maybeSelectedPlugins;
-    }
-
-    const selectedPlugins = maybeSelectedPlugins.value;
-
-    // Just to trigger M365 login before the concurrent execution of localDebug.
-    // Because concurrent exectution of localDebug may getAccessToken() concurrently, which
-    // causes 2 M365 logins before the token caching in common lib takes effect.
-    await ctx.appStudioToken?.getAccessToken();
-
-    const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(
-      ctx,
-      selectedPlugins
-    );
-    const localDebugWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(([plugin, context]) => {
-      return [plugin?.localDebug?.bind(plugin), context, plugin.name];
-    });
-    const postLocalDebugWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(
-      ([plugin, context]) => {
-        return [plugin?.postLocalDebug?.bind(plugin), context, plugin.name];
-      }
-    );
-
-    const localDebugResults = await executeConcurrently("", localDebugWithCtx);
-    for (const localDebugResult of localDebugResults) {
-      if (localDebugResult.isErr()) {
-        return localDebugResult;
-      }
-    }
-
-    if (!this.spfxSelected(ctx)) {
-      const aadPlugin = this.AadPlugin as AadAppForTeamsPlugin;
-      if (selectedPlugins.some((plugin) => plugin.name === aadPlugin.name)) {
-        const result = await aadPlugin.executeUserTask(
-          {
-            namespace: `${PluginNames.SOLUTION}/${PluginNames.AAD}`,
-            method: "setApplicationInContext",
-            params: { isLocal: true },
-          },
-          getPluginContext(ctx, aadPlugin.name)
+    try {
+      if (!this.spfxSelected(ctx)) {
+        if (ctx.permissionRequestProvider === undefined) {
+          ctx.permissionRequestProvider = new PermissionRequestFileProvider(ctx.root);
+        }
+        const result = await ensurePermissionRequest(
+          ctx.projectSettings?.solutionSettings as AzureSolutionSettings,
+          ctx.permissionRequestProvider
         );
         if (result.isErr()) {
           return result;
         }
       }
+    } catch (e) {
+      if (e instanceof UserError || e instanceof SystemError) {
+        return err(e);
+      }
+      return err(
+        new SystemError("UnknownError", "check point 1 - " + JSON.stringify(e), "Solution")
+      );
     }
+    return await this.doLocalDebug(ctx);
+  }
 
-    // set local debug Teams app tenant id in context.
-    const result = this.loadTeamsAppTenantId(ctx, true, await ctx.appStudioToken?.getJsonObject());
-    if (result.isErr()) {
-      return result;
-    }
+  async doLocalDebug(ctx: SolutionContext): Promise<Result<any, FxError>> {
+    let checkPoint = 1;
+    try {
+      //check point 2
+      const maybeSelectedPlugins = this.getSelectedPlugins(ctx);
 
-    const postLocalDebugResults = await executeConcurrently("post", postLocalDebugWithCtx);
+      if (maybeSelectedPlugins.isErr()) {
+        return maybeSelectedPlugins;
+      }
+      const selectedPlugins = maybeSelectedPlugins.value;
+      checkPoint = 2;
 
-    const combinedPostLocalDebugResults = combine(postLocalDebugResults);
-    if (combinedPostLocalDebugResults.isErr()) {
-      return combinedPostLocalDebugResults;
-    }
+      //check point 3
 
-    // set local debug Teams app id in context.
-    if (postLocalDebugWithCtx.length === combinedPostLocalDebugResults.value.length) {
-      postLocalDebugWithCtx.map(function (plugin, index) {
-        if (plugin[2] === PluginNames.APPST) {
-          if (isMultiEnvEnabled()) {
-            ctx.localSettings?.teamsApp.set(
-              LocalSettingsTeamsAppKeys.TeamsAppId,
-              combinedPostLocalDebugResults.value[index]
-            );
-          } else {
-            ctx.envInfo.profile
-              .get(GLOBAL_CONFIG)
-              ?.set(LOCAL_DEBUG_TEAMS_APP_ID, combinedPostLocalDebugResults.value[index]);
+      // Just to trigger M365 login before the concurrent execution of localDebug.
+      // Because concurrent exectution of localDebug may getAccessToken() concurrently, which
+      // causes 2 M365 logins before the token caching in common lib takes effect.
+      await ctx.appStudioToken?.getAccessToken();
+      checkPoint = 3;
+
+      //check point 4
+      const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(
+        ctx,
+        selectedPlugins
+      );
+      const localDebugWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(([plugin, context]) => {
+        return [plugin?.localDebug?.bind(plugin), context, plugin.name];
+      });
+      const postLocalDebugWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(
+        ([plugin, context]) => {
+          return [plugin?.postLocalDebug?.bind(plugin), context, plugin.name];
+        }
+      );
+
+      const localDebugResults = await executeConcurrently("", localDebugWithCtx);
+      for (const localDebugResult of localDebugResults) {
+        if (localDebugResult.isErr()) {
+          return localDebugResult;
+        }
+      }
+      checkPoint = 4;
+
+      //check point 5
+      if (!this.spfxSelected(ctx)) {
+        const aadPlugin = this.AadPlugin as AadAppForTeamsPlugin;
+        if (selectedPlugins.some((plugin) => plugin.name === aadPlugin.name)) {
+          const result = await aadPlugin.executeUserTask(
+            {
+              namespace: `${PluginNames.SOLUTION}/${PluginNames.AAD}`,
+              method: "setApplicationInContext",
+              params: { isLocal: true },
+            },
+            getPluginContext(ctx, aadPlugin.name)
+          );
+          if (result.isErr()) {
+            return result;
           }
         }
-      });
-    }
+      }
+      checkPoint = 5;
 
-    return ok(Void);
+      // check point 6
+      // set local debug Teams app tenant id in context.
+      const result = this.loadTeamsAppTenantId(
+        ctx,
+        true,
+        await ctx.appStudioToken?.getJsonObject()
+      );
+      if (result.isErr()) {
+        return result;
+      }
+      checkPoint = 6;
+
+      //check point 7
+      const postLocalDebugResults = await executeConcurrently("post", postLocalDebugWithCtx);
+
+      const combinedPostLocalDebugResults = combine(postLocalDebugResults);
+      if (combinedPostLocalDebugResults.isErr()) {
+        return combinedPostLocalDebugResults;
+      }
+      checkPoint = 7;
+
+      //check point 8
+      // set local debug Teams app id in context.
+      if (postLocalDebugWithCtx.length === combinedPostLocalDebugResults.value.length) {
+        postLocalDebugWithCtx.map(function (plugin, index) {
+          if (plugin[2] === PluginNames.APPST) {
+            if (isMultiEnvEnabled()) {
+              ctx.localSettings?.teamsApp.set(
+                LocalSettingsTeamsAppKeys.TeamsAppId,
+                combinedPostLocalDebugResults.value[index]
+              );
+            } else {
+              ctx.envInfo.profile
+                .get(GLOBAL_CONFIG)
+                ?.set(LOCAL_DEBUG_TEAMS_APP_ID, combinedPostLocalDebugResults.value[index]);
+            }
+          }
+        });
+      }
+      checkPoint = 8;
+      return ok(Void);
+    } catch (e) {
+      if (e instanceof UserError || e instanceof SystemError) {
+        return err(e);
+      }
+      return err(
+        new SystemError(
+          "UnknownError",
+          `check point ${checkPoint} - ${JSON.stringify(e)}`,
+          "Solution"
+        )
+      );
+    }
   }
 
   @hooks([ErrorHandlerMW])

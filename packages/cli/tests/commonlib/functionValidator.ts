@@ -7,6 +7,14 @@ import glob from "glob";
 import path from "path";
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
 
+function functionAppNameFromId(functionAppId: string) {
+  const tokens = functionAppId.split("/");
+  if (tokens.length == 0) {
+    return "";
+  }
+  return tokens[tokens.length - 1];
+}
+
 const baseUrlAppSettings = (subscriptionId: string, rg: string, name: string) =>
   `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${rg}/providers/Microsoft.Web/sites/${name}/config/appsettings/list?api-version=2019-08-01`;
 const baseUrlPlan = (subscriptionId: string, rg: string, name: string) =>
@@ -70,6 +78,7 @@ interface IFunctionObject {
   functionAppName: string;
   appServicePlanName: string;
   expectValues: Map<string, string>;
+  functionAppId?: string;
 }
 
 export class FunctionValidator {
@@ -123,7 +132,8 @@ export class FunctionValidator {
 
   public static async validateProvision(
     functionObject: IFunctionObject,
-    sqlEnabled = true
+    sqlEnabled = true,
+    isMultiEnvEnabled = false
   ): Promise<void> {
     console.log("Start to validate Function Provision.");
 
@@ -148,12 +158,17 @@ export class FunctionValidator {
     }
 
     console.log("Validating app settings.");
+
+    const appName = functionObject.functionAppId
+      ? functionAppNameFromId(functionObject.functionAppId)
+      : functionObject.functionAppName;
     const response = await this.getWebappConfigs(
       this.subscriptionId,
       this.rg,
-      functionObject.functionAppName,
+      appName,
       token as string
     );
+
     chai.assert.exists(response);
 
     Object.values(BaseConfig).forEach((v: string) => {
@@ -172,14 +187,16 @@ export class FunctionValidator {
       });
     }
 
-    console.log("Validating app service plan.");
-    const servicePlanResponse = await this.getWebappServicePlan(
-      this.subscriptionId,
-      this.rg,
-      functionObject.appServicePlanName,
-      token as string
-    );
-    chai.assert(servicePlanResponse, functionObject.appServicePlanName);
+    if (!isMultiEnvEnabled) {
+      console.log("Validating app service plan.");
+      const servicePlanResponse = await this.getWebappServicePlan(
+        this.subscriptionId,
+        this.rg,
+        functionObject.appServicePlanName,
+        token as string
+      );
+      chai.assert(servicePlanResponse, functionObject.appServicePlanName);
+    }
 
     console.log("Successfully validate Function Provision.");
   }
@@ -226,17 +243,21 @@ export class FunctionValidator {
     const tokenCredential = await MockAzureAccountProvider.getAccountCredentialAsync();
     const token = (await tokenCredential?.getToken())?.accessToken;
 
+    const appName = functionObject.functionAppId
+      ? functionAppNameFromId(functionObject.functionAppId)
+      : functionObject.functionAppName;
+
     const deployments = await this.getDeployments(
       this.subscriptionId,
       this.rg,
-      functionObject.functionAppName,
+      appName,
       token as string
     );
     const deploymentId = deployments?.[0]?.properties?.id;
     const deploymentLog = await this.getDeploymentLog(
       this.subscriptionId,
       this.rg,
-      functionObject.functionAppName,
+      appName,
       token as string,
       deploymentId!
     );

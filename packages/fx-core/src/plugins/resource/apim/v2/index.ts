@@ -19,6 +19,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import {
   Context,
+  DeepReadonly,
   DeploymentInputs,
   ProvisionInputs,
   ResourcePlugin,
@@ -35,7 +36,9 @@ import {
   convert2PluginContext,
   deployAdapter,
   executeUserTaskAdapter,
+  getQuestionsAdapter,
   getQuestionsForScaffoldingAdapter,
+  getQuestionsForUserTaskAdapter,
   provisionResourceAdapter,
   scaffoldSourceCodeAdapter,
 } from "../../utils4v2";
@@ -50,12 +53,40 @@ export class ApimPluginV2 implements ResourcePlugin {
   activate(solutionSettings: AzureSolutionSettings): boolean {
     return this.plugin.activate(solutionSettings);
   }
+
+  async getQuestions(
+    ctx: Context,
+    inputs: Inputs,
+    envInfo: DeepReadonly<v2.EnvInfoV2>,
+    tokenProvider: TokenProvider
+  ): Promise<Result<QTreeNode | undefined, FxError>> {
+    return await getQuestionsAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
+  }
+
   async getQuestionsForScaffolding(
     ctx: Context,
     inputs: Inputs
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     return await getQuestionsForScaffoldingAdapter(ctx, inputs, this.plugin);
   }
+
+  async getQuestionsForUserTask(
+    ctx: Context,
+    inputs: Inputs,
+    func: Func,
+    envInfo: DeepReadonly<v2.EnvInfoV2>,
+    tokenProvider: TokenProvider
+  ): Promise<Result<QTreeNode | undefined, FxError>> {
+    return await getQuestionsForUserTaskAdapter(
+      ctx,
+      inputs,
+      func,
+      envInfo,
+      tokenProvider,
+      this.plugin
+    );
+  }
+
   async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
     return await scaffoldSourceCodeAdapter(ctx, inputs, this.plugin);
   }
@@ -84,40 +115,29 @@ export class ApimPluginV2 implements ResourcePlugin {
     provisionOutput: Json,
     tokenProvider: AzureAccountProvider
   ): Promise<Result<Void, FxError>> {
-    const questionRes = await this.plugin.getQuestions(
-      Stage.deploy,
-      convert2PluginContext(ctx, inputs)
-    );
-    if (questionRes.isOk()) {
-      const node = questionRes.value;
-      if (node) {
-        const res = await traverse(node, inputs, ctx.userInteraction);
-        if (res.isErr()) {
-          return err(res.error);
-        }
-      }
-    }
+    // const questionRes = await this.plugin.getQuestions(
+    //   Stage.deploy,
+    //   convert2PluginContext(ctx, inputs)
+    // );
+    // if (questionRes.isOk()) {
+    //   const node = questionRes.value;
+    //   if (node) {
+    //     const res = await traverse(node, inputs, ctx.userInteraction);
+    //     if (res.isErr()) {
+    //       return err(res.error);
+    //     }
+    //   }
+    // }
     return await deployAdapter(ctx, inputs, provisionOutput, tokenProvider, this.plugin);
   }
 
   async executeUserTask(
     ctx: Context,
     inputs: Inputs,
-    func: Func
+    func: Func,
+    envInfo: v2.EnvInfoV2,
+    tokenProvider: TokenProvider
   ): Promise<Result<unknown, FxError>> {
-    const questionRes = await this.plugin.getQuestionsForUserTask(
-      func,
-      convert2PluginContext(ctx, inputs)
-    );
-    if (questionRes.isOk()) {
-      const node = questionRes.value;
-      if (node) {
-        const res = await traverse(node, inputs, ctx.userInteraction);
-        if (res.isErr()) {
-          return err(res.error);
-        }
-      }
-    }
-    return await executeUserTaskAdapter(ctx, inputs, func, this.plugin);
+    return await executeUserTaskAdapter(ctx, inputs, func, envInfo, tokenProvider, this.plugin);
   }
 }

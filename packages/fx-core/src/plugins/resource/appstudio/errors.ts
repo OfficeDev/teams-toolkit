@@ -50,8 +50,9 @@ export class AppStudioError {
 
   public static readonly InvalidManifestError = {
     name: "InvalidManifest",
-    message: (error: any) =>
-      `Failed to parse manifest string, dut to error: ${error}. This might be caused by invalid configurations.`,
+    message: (error: any, key?: string) =>
+      `Failed to parse manifest string, dut to error: ${error}. This might be caused by invalid configurations. ` +
+        key ?? "",
   };
 
   public static readonly ManifestLoadFailedError = {

@@ -112,9 +112,8 @@ export function getWorkspacePath(): string | undefined {
 export async function activate(): Promise<Result<Void, FxError>> {
   const result: Result<Void, FxError> = ok(Void);
   try {
-    syncFeatureFlags();
-
-    const validProject = isValidProject(getWorkspacePath());
+    const workspacePath = getWorkspacePath();
+    const validProject = isValidProject(workspacePath);
     if (validProject) {
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenTeamsApp, {});
     }
@@ -183,6 +182,17 @@ export async function activate(): Promise<Result<Void, FxError>> {
     await registerEnvTreeHandler();
     await openMarkdownHandler();
     await openSampleReadmeHandler();
+
+    if (workspacePath) {
+      // refresh env tree when env config files added or deleted.
+      workspace.onDidCreateFiles(async (event) => {
+        await refreshEnvTreeOnFileChanged(workspacePath, event.files);
+      });
+
+      workspace.onDidDeleteFiles(async (event) => {
+        await refreshEnvTreeOnFileChanged(workspacePath, event.files);
+      });
+    }
   } catch (e) {
     const FxError: FxError = {
       name: e.name,
@@ -195,6 +205,21 @@ export async function activate(): Promise<Result<Void, FxError>> {
     return err(FxError);
   }
   return result;
+}
+
+async function refreshEnvTreeOnFileChanged(workspacePath: string, files: readonly Uri[]) {
+  let needRefresh = false;
+  for (const file of files) {
+    // check if file is env config
+    if (environmentManager.isEnvConfig(workspacePath, file.fsPath)) {
+      needRefresh = true;
+      break;
+    }
+  }
+
+  if (needRefresh) {
+    await registerEnvTreeHandler();
+  }
 }
 
 function registerCoreEvents() {
@@ -304,7 +329,7 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
     namespace: "fx-solution-azure",
     method: "validateManifest",
   };
-  return await runUserTask(func, TelemetryEvent.ValidateManifest);
+  return await runUserTask(func, TelemetryEvent.ValidateManifest, true);
 }
 
 export async function buildPackageHandler(args?: any[]): Promise<Result<null, FxError>> {
@@ -314,13 +339,13 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<null, Fx
     namespace: "fx-solution-azure",
     method: "buildPackage",
   };
-  return await runUserTask(func, TelemetryEvent.Build);
+  return await runUserTask(func, TelemetryEvent.Build, true);
 }
 
 export async function provisionHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ProvisionStart, getTriggerFromProperty(args));
   const result = await runCommand(Stage.provision);
-  registerEnvTreeHandler();
+  await registerEnvTreeHandler();
   return result;
 }
 
@@ -351,42 +376,65 @@ export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
     const inputs: Inputs = getSystemInputs();
     inputs.stage = stage;
 
-    if (stage === Stage.create) {
-      const tmpResult = await core.createProject(inputs);
-      if (tmpResult.isErr()) {
-        result = err(tmpResult.error);
-      } else {
-        const uri = Uri.file(tmpResult.value);
-        await commands.executeCommand("vscode.openFolder", uri);
-        result = ok(null);
+    switch (stage) {
+      case Stage.create: {
+        const tmpResult = await core.createProject(inputs);
+        if (tmpResult.isErr()) {
+          result = err(tmpResult.error);
+        } else {
+          const uri = Uri.file(tmpResult.value);
+          await commands.executeCommand("vscode.openFolder", uri);
+          result = ok(null);
+        }
+        break;
       }
-    } else if (stage === Stage.migrateV1) {
-      const tmpResult = await core.migrateV1Project(inputs);
-      if (tmpResult.isErr()) {
-        result = err(tmpResult.error);
-      } else {
-        const uri = Uri.file(tmpResult.value);
-        await commands.executeCommand("vscode.openFolder", uri);
-        result = ok(null);
+      case Stage.migrateV1: {
+        const tmpResult = await core.migrateV1Project(inputs);
+        if (tmpResult.isErr()) {
+          result = err(tmpResult.error);
+        } else {
+          const uri = Uri.file(tmpResult.value);
+          await commands.executeCommand("vscode.openFolder", uri);
+          result = ok(null);
+        }
+        break;
       }
-    } else if (stage === Stage.provision) result = await core.provisionResources(inputs);
-    else if (stage === Stage.deploy) result = await core.deployArtifacts(inputs);
-    else if (stage === Stage.debug) {
-      if (isMultiEnvEnabled()) {
-        inputs.ignoreEnvInfo = true;
+      case Stage.provision: {
+        inputs.askEnvSelect = isMultiEnvEnabled() ? true : false;
+        result = await core.provisionResources(inputs);
+        break;
       }
-      result = await core.localDebug(inputs);
-    } else if (stage === Stage.publish) result = await core.publishApplication(inputs);
-    else if (stage === Stage.createEnv) {
-      result = await core.createEnv(inputs);
-    } else if (stage === Stage.listCollaborator) {
-      result = await core.listCollaborator(inputs);
-    } else {
-      throw new SystemError(
-        ExtensionErrors.UnsupportedOperation,
-        util.format(StringResources.vsc.handlers.operationNotSupport, stage),
-        ExtensionSource
-      );
+      case Stage.deploy: {
+        inputs.askEnvSelect = isMultiEnvEnabled() ? true : false;
+        result = await core.deployArtifacts(inputs);
+        break;
+      }
+      case Stage.publish: {
+        inputs.askEnvSelect = isMultiEnvEnabled() ? true : false;
+        result = await core.publishApplication(inputs);
+        break;
+      }
+      case Stage.debug: {
+        if (isMultiEnvEnabled()) {
+          inputs.ignoreEnvInfo = true;
+        }
+        result = await core.localDebug(inputs);
+        break;
+      }
+      case Stage.createEnv: {
+        result = await core.createEnv(inputs);
+        break;
+      }
+      case Stage.listCollaborator: {
+        result = await core.listCollaborator(inputs);
+        break;
+      }
+      default:
+        throw new SystemError(
+          ExtensionErrors.UnsupportedOperation,
+          util.format(StringResources.vsc.handlers.operationNotSupport, stage),
+          ExtensionSource
+        );
     }
   } catch (e) {
     result = wrapError(e);
@@ -416,15 +464,21 @@ export function detectVsCodeEnv(): VsCodeEnv {
   }
 }
 
-export async function runUserTask(func: Func, eventName: string): Promise<Result<any, FxError>> {
+export async function runUserTask(
+  func: Func,
+  eventName: string,
+  needSelectEnv = false
+): Promise<Result<any, FxError>> {
   let result: Result<any, FxError> = ok(null);
   try {
     const checkCoreRes = checkCoreNotEmpty();
     if (checkCoreRes.isErr()) {
       throw checkCoreRes.error;
     }
-    const answers: Inputs = getSystemInputs();
-    result = await core.executeUserTask(func, answers);
+
+    const inputs: Inputs = getSystemInputs();
+    inputs.askEnvSelect = needSelectEnv;
+    result = await core.executeUserTask(func, inputs);
   } catch (e) {
     result = wrapError(e);
   }
@@ -759,9 +813,13 @@ export async function createNewEnvironment(args?: any[]): Promise<Result<Void, F
   );
   const result = await runCommand(Stage.createEnv);
   if (!result.isErr()) {
-    registerEnvTreeHandler();
+    await registerEnvTreeHandler();
   }
   return result;
+}
+
+export async function refreshEnvironment(args?: any[]): Promise<Result<Void, FxError>> {
+  return await registerEnvTreeHandler();
 }
 
 export async function viewEnvironment(env: string): Promise<Result<Void, FxError>> {
@@ -830,7 +888,7 @@ export async function activateEnvironment(env: string): Promise<Result<Void, FxE
     const inputs: Inputs = getSystemInputs();
     inputs.env = env;
     result = await core.activateEnv(inputs);
-    registerEnvTreeHandler();
+    await registerEnvTreeHandler();
   } catch (e) {
     result = wrapError(e);
   }
@@ -1326,7 +1384,7 @@ export async function signOutM365(isFromTreeView: boolean) {
     ]);
   }
 
-  registerEnvTreeHandler();
+  await registerEnvTreeHandler();
 }
 
 export async function signInAzure() {

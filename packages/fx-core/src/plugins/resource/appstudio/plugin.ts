@@ -1384,6 +1384,7 @@ export class AppStudioPluginImpl {
     appDefinition.appName = appManifest.name.short;
     appDefinition.shortName = appManifest.name.short;
     appDefinition.longName = appManifest.name.full;
+    appDefinition.manifestVersion = appManifest.manifestVersion;
     appDefinition.version = appManifest.version;
 
     appDefinition.packageName = appManifest.packageName;
@@ -1652,6 +1653,19 @@ export class AppStudioPluginImpl {
       updatedManifest = JSON.parse(manifest) as TeamsAppManifest;
     } catch (error) {
       if (error.stack && error.stack.startsWith("SyntaxError")) {
+        // teams app id in userData may be updated by user, result to invalid manifest
+        const reg = /^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$/;
+        const result = teamsAppId.match(reg);
+        if (!result) {
+          return err(
+            AppStudioResultFactory.UserError(
+              AppStudioError.InvalidManifestError.name,
+              AppStudioError.InvalidManifestError.message(error, "teamsAppId"),
+              undefined,
+              error.stack
+            )
+          );
+        }
         return err(
           AppStudioResultFactory.UserError(
             AppStudioError.InvalidManifestError.name,

@@ -161,6 +161,14 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       [TelemetryProperty.AccountType]: AccountType.Azure,
     });
     await vscode.commands.executeCommand("azure-account.login");
+    const azureAccount = this.getAzureAccount();
+    if (azureAccount.status != loggedIn) {
+      throw new UserError(
+        StringResources.vsc.codeFlowLogin.loginTimeoutTitle,
+        StringResources.vsc.codeFlowLogin.loginTimeoutDescription,
+        StringResources.vsc.codeFlowLogin.loginComponent
+      );
+    }
   }
 
   private doGetAccountCredentialAsync(): Promise<TokenCredentialsBase | undefined> {

@@ -180,7 +180,7 @@ export function ProjectSettingsUndefinedError(): SystemError {
 export function ProjectEnvNotExistError(env: string): UserError {
   return new UserError(
     "ProjectEnvNotExistError",
-    `The specified env ${env} does not exist. Select an existing env.`,
+    `Environment ${env} not found. Make sure the config.${env}.json file exist.`,
     CoreSource
   );
 }

@@ -58,8 +58,8 @@ export interface EnvProfileFiles {
 
 class EnvironmentManager {
   public readonly envNameRegex = /^[\w\d-_]+$/;
-  public readonly envConfigNameRegex = /config\.(?<envName>[\w\d-_]+)\.json/i;
-  public readonly envProfileNameRegex = /profile\.(?<envName>[\w\d-_]+)\.json/i;
+  public readonly envConfigNameRegex = /^config\.(?<envName>[\w\d-_]+)\.json$/i;
+  public readonly envProfileNameRegex = /^profile\.(?<envName>[\w\d-_]+)\.json$/i;
 
   private readonly defaultEnvName = "default";
   private readonly defaultEnvNameNew = "dev";
@@ -207,6 +207,20 @@ class EnvironmentManager {
     } else {
       return ok(false);
     }
+  }
+
+  public isEnvConfig(projectPath: string, filePath: string): boolean {
+    const fileName = path.basename(filePath);
+    const fileDirname = path.dirname(filePath);
+    const configFolder = this.getEnvConfigsFolder(projectPath);
+    const relativeFilePath = path.relative(configFolder, fileDirname);
+
+    if (relativeFilePath !== "") {
+      return false;
+    }
+
+    const match = fileName.match(environmentManager.envConfigNameRegex);
+    return match !== null;
   }
 
   public getEnvConfigPath(envName: string, projectPath: string): string {

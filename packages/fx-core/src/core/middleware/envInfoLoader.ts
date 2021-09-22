@@ -3,10 +3,12 @@
 
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import {
+  ConfigMap,
   EnvInfo,
   err,
   FxError,
   Inputs,
+  Json,
   ok,
   ProjectSettings,
   QTreeNode,
@@ -72,15 +74,22 @@ export function EnvInfoLoaderMW(isMultiEnvEnabled: boolean): Middleware {
 
     let targetEnvName: string | undefined;
     if (isMultiEnvEnabled) {
-      if (inputs.env) {
-        targetEnvName = await useUserSetEnv(ctx, inputs);
-      } else {
-        if (activeEnv) {
-          targetEnvName = activeEnv;
-        } else {
-          ctx.result = err(NonActiveEnvError);
-          return;
+      if (inputs.askEnvSelect) {
+        targetEnvName = await askTargetEnvironment(core.tools, inputs);
+        if (targetEnvName) {
+          ctx.ui?.showMessage(
+            "info",
+            `[${targetEnvName}] is selected as the target environment to ${inputs.stage}`,
+            false
+          );
         }
+      } else if (inputs.env) {
+        targetEnvName = await useUserSetEnv(ctx, inputs);
+      } else if (activeEnv) {
+        targetEnvName = activeEnv;
+      } else {
+        ctx.result = err(NonActiveEnvError);
+        return;
       }
     } else {
       targetEnvName = environmentManager.getDefaultEnvName();
@@ -101,10 +110,15 @@ export function EnvInfoLoaderMW(isMultiEnvEnabled: boolean): Middleware {
       }
 
       if (isV2()) {
-        //TODO core should not know the details of envInfo
-        ctx.provisionInputConfig = result.value.envInfo.config;
-        ctx.provisionOutputs = result.value.envInfo.profile;
-        ctx.envName = result.value.envInfo.envName;
+        const envInfo = result.value.envInfo;
+        const profile: Json = {};
+        for (const key of envInfo.profile.keys()) {
+          const map = envInfo.profile.get(key);
+          if (map) {
+            profile[key] = (map as ConfigMap).toJSON();
+          }
+        }
+        ctx.envInfoV2 = { envName: envInfo.envName, config: envInfo.config, profile: profile };
       } else {
         ctx.solutionContext = result.value;
       }
@@ -202,44 +216,42 @@ export function upgradeDefaultFunctionName(
 }
 
 export async function askTargetEnvironment(
-  ctx: SolutionContext,
+  tools: Tools,
   inputs: Inputs,
   lastUsed?: string
 ): Promise<string | undefined> {
   const getQuestionRes = await getQuestionsForTargetEnv(inputs, lastUsed ?? activeEnv);
   if (getQuestionRes.isErr()) {
-    ctx.logProvider!.error(
+    tools.logProvider.error(
       `[core:env] failed to get questions for target environment: ${getQuestionRes.error.message}`
     );
     return undefined;
   }
 
-  ctx.logProvider!.debug(`[core:env] success to get questions for target environment.`);
+  tools.logProvider.debug(`[core:env] success to get questions for target environment.`);
 
   const node = getQuestionRes.value;
   if (node) {
-    const res = await traverse(node, inputs, ctx.ui!);
+    const res = await traverse(node, inputs, tools.ui);
     if (res.isErr()) {
-      ctx.logProvider!.debug(`[core:env] failed to run question model for target environment.`);
+      tools.logProvider.debug(`[core:env] failed to run question model for target environment.`);
       return undefined;
     }
 
     const desensitized = desensitize(node, inputs);
-    ctx.logProvider!.info(
+    tools.logProvider.info(
       `[core:env] success to run question model for target environment, answers:${JSON.stringify(
         desensitized
       )}`
     );
   }
 
-  const targetEnvName = inputs.targetEnvName;
-
+  let targetEnvName = inputs.targetEnvName;
   if (targetEnvName?.endsWith(activeMark)) {
-    activeEnv = targetEnvName.slice(0, targetEnvName.indexOf(activeMark));
-  } else {
-    activeEnv = targetEnvName;
+    targetEnvName = targetEnvName.slice(0, targetEnvName.indexOf(activeMark));
   }
-  return activeEnv;
+
+  return targetEnvName;
 }
 
 export async function askNewEnvironment(

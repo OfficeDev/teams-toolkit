@@ -46,6 +46,7 @@ import Container from "typedi";
 import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import _ from "lodash";
 import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
+import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
 
 export async function provisionResource(
   ctx: v2.Context,
@@ -76,6 +77,9 @@ export async function provisionResource(
   await tokenProvider.appStudioToken.getAccessToken();
 
   if (isAzureProject(azureSolutionSettings)) {
+    if (ctx.permissionRequestProvider === undefined) {
+      ctx.permissionRequestProvider = new PermissionRequestFileProvider(inputs.projectPath);
+    }
     const result = await ensurePermissionRequest(
       azureSolutionSettings,
       ctx.permissionRequestProvider

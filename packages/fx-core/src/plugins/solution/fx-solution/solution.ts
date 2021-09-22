@@ -1928,7 +1928,16 @@ export class TeamsAppSolution implements Solution {
           AskSubscriptionQuestion.func = async (
             inputs: Inputs
           ): Promise<Result<SubscriptionInfo, FxError>> => {
-            const res = await checkSubscription(ctx);
+            if (!ctx.azureAccountProvider) {
+              return err(
+                returnSystemError(
+                  new Error("azureAccountProvider is undefined"),
+                  "Solution",
+                  SolutionError.InternelError
+                )
+              );
+            }
+            const res = await checkSubscription(ctx.envInfo, ctx.azureAccountProvider);
             if (res.isOk()) {
               const sub = res.value;
               inputs.subscriptionId = sub.subscriptionId;

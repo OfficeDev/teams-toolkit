@@ -469,16 +469,12 @@ export class FxCore implements Core {
         !ctx ||
         !ctx.solutionV2 ||
         !ctx.contextV2 ||
-        !ctx.provisionInputConfig ||
-        !ctx.contextV2.projectSetting.activeEnvironment ||
-        !ctx.provisionOutputs
-      )
+        !ctx.envInfoV2 ||
+        !ctx.contextV2.projectSetting.activeEnvironment
+      ) {
         return err(new ObjectIsUndefinedError("Provision input stuff"));
-      const envInfo: EnvInfoV2 = {
-        envName: ctx.contextV2.projectSetting.activeEnvironment,
-        config: ctx.provisionInputConfig as EnvConfig,
-        profile: ctx.provisionOutputs,
-      };
+      }
+      const envInfo = ctx.envInfoV2;
       const result = await ctx.solutionV2.provisionResources(
         ctx.contextV2,
         inputs,
@@ -492,8 +488,10 @@ export class FxCore implements Core {
         return err(result.error);
       }
     } else {
-      if (!ctx || !ctx.solution || !ctx.solutionContext)
+      if (!ctx || !ctx.solution || !ctx.solutionContext) {
         return err(new ObjectIsUndefinedError("Provision input stuff"));
+      }
+
       return await ctx.solution.provision(ctx.solutionContext);
     }
   }

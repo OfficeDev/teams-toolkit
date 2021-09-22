@@ -62,7 +62,11 @@ export class ConfigMap extends Map<string, ConfigValue> {
   toJSON(): Json {
     const out: Json = {};
     for (const entry of super.entries()) {
-      out[entry[0]] = entry[1];
+      if (entry[1] instanceof ConfigMap) {
+        out[entry[0]] = entry[1].toJSON();
+      } else {
+        out[entry[0]] = entry[1];
+      }
     }
     return out;
   }
@@ -71,7 +75,11 @@ export class ConfigMap extends Map<string, ConfigValue> {
     if (!obj) return undefined;
     const map = new ConfigMap();
     for (const entry of Object.entries(obj)) {
-      map.set(entry[0], entry[1]);
+      if (typeof entry[1] !== "object") {
+        map.set(entry[0], entry[1]);
+      } else {
+        map.set(entry[0], this.fromJSON(entry[1]));
+      }
     }
     return map;
   }

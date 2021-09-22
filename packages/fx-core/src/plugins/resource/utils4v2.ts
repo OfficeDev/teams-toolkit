@@ -53,6 +53,7 @@ export function convert2PluginContext(
     logProvider: ctx.logProvider,
     telemetryReporter: ctx.telemetryReporter,
     cryptoProvider: ctx.cryptoProvider,
+    permissionRequestProvider: ctx.permissionRequestProvider,
     ui: ctx.userInteraction,
   };
   return pluginContext;

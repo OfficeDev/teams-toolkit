@@ -8,6 +8,7 @@ import {
   v2,
   SystemError,
   returnUserError,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import { PluginDisplayName } from "../../../../common/constants";
 import { SolutionError } from "../constants";
@@ -23,7 +24,22 @@ export async function executeConcurrently<R>(
   const results = await Promise.all(
     namedThunks.map(async (namedThunk) => {
       logger.info(`Running ${namedThunk.pluginName} concurrently`);
-      return namedThunk.thunk();
+      try {
+        return namedThunk.thunk();
+      } catch (e) {
+        if (e instanceof UserError || e instanceof SystemError) {
+          return err(e);
+        }
+        return err(
+          new SystemError(
+            "UnknownError",
+            `[SolutionV2.executeConcurrently] unknown error, plugin: ${
+              namedThunk.pluginName
+            }, taskName: ${namedThunk.taskName}, error: ${JSON.stringify(e)}`,
+            "Solution"
+          )
+        );
+      }
     })
   );
 

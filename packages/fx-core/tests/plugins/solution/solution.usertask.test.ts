@@ -25,6 +25,7 @@ import {
   mockV2PublishThatAlwaysSucceed,
   mockScaffoldCodeThatAlwaysSucceeds,
   MockedAzureAccountProvider,
+  mockExecuteUserTaskThatAlwaysSucceeds,
 } from "./util";
 import _ from "lodash";
 import {
@@ -34,6 +35,7 @@ import {
 import Container from "typedi";
 import * as uuid from "uuid";
 import {
+  AzureResourceApim,
   AzureResourceSQL,
   AzureSolutionQuestionNames,
   BotOptionItem,
@@ -380,6 +382,48 @@ describe("V2 implementation", () => {
       mockedProvider
     );
     expect(result.isOk()).to.be.true;
+  });
+
+  it("should return ok when adding APIM", async () => {
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "test",
+        version: "1.0",
+        activeResourcePlugins: [appStudioPluginV2.name, frontendPluginV2.name],
+        capabilities: [TabOptionItem.id],
+        azureResources: [],
+      },
+    };
+    const mockedCtx = new MockedV2Context(projectSettings);
+    mockedCtx.projectSetting.programmingLanguage = ProgrammingLanguage.JavaScript;
+    const mockedInputs: Inputs = {
+      platform: Platform.VSCode,
+    };
+
+    mockedInputs[AzureSolutionQuestionNames.AddResources] = [AzureResourceApim.id];
+    mockedInputs.projectPath = "./";
+
+    mockScaffoldCodeThatAlwaysSucceeds(appStudioPluginV2);
+    mockScaffoldCodeThatAlwaysSucceeds(localDebugPluginV2);
+    mockScaffoldCodeThatAlwaysSucceeds(sqlPluginV2);
+    mockScaffoldCodeThatAlwaysSucceeds(functionPluginV2);
+    mockExecuteUserTaskThatAlwaysSucceeds(apimPluginV2);
+
+    const apimSpy = mocker.spy(apimPluginV2);
+    const result = await executeUserTask(
+      mockedCtx,
+      mockedInputs,
+      { namespace: "solution", method: "addResource" },
+      { envName: "default", config: {}, profile: {} },
+      mockedProvider
+    );
+    expect(result.isOk()).to.be.true;
+    expect(apimSpy.executeUserTask?.calledOnce, "APIM::executeUserTask() is called").to.be.true;
+    expect(apimSpy.scaffoldSourceCode?.notCalled, "APIM::scaffoldSourceCode() is not called").to.be
+      .true;
   });
 
   describe("executeUserTask VSpublish", async () => {

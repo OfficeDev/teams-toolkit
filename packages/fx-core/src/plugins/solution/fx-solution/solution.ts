@@ -62,7 +62,6 @@ import {
   isUserCancelError,
 } from "../../../common/tools";
 import { CopyFileError } from "../../../core";
-import { askTargetEnvironment } from "../../../core/middleware/envInfoLoader";
 import { ErrorHandlerMW } from "../../../core/middleware/errorHandler";
 import { PermissionRequestFileProvider } from "../../../core/permissionRequest";
 import { SolutionPlugins } from "../../../core/SolutionPluginContainer";

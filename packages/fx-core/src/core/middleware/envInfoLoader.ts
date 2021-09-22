@@ -17,6 +17,7 @@ import {
   SolutionContext,
   Tools,
   traverse,
+  UserCancelError,
 } from "@microsoft/teamsfx-api";
 import { isV2 } from "..";
 import { CoreHookContext, FxCore, isMultiEnvEnabled } from "../..";
@@ -72,19 +73,27 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
 
     const core = ctx.self as FxCore;
 
-    let targetEnvName: string | undefined;
+    let targetEnvName: string;
     if (!skip && isMultiEnvEnabled()) {
       if (inputs.askEnvSelect) {
-        targetEnvName = await askTargetEnvironment(core.tools, inputs);
-        if (targetEnvName) {
-          ctx.ui?.showMessage(
-            "info",
-            `[${targetEnvName}] is selected as the target environment to ${inputs.stage}`,
-            false
-          );
+        const result = await askTargetEnvironment(core.tools, inputs);
+        if (result.isErr()) {
+          ctx.result = err(result.error);
+          return;
         }
+        targetEnvName = result.value;
+        ctx.ui?.showMessage(
+          "info",
+          `[${targetEnvName}] is selected as the target environment to ${inputs.stage}`,
+          false
+        );
       } else if (inputs.env) {
-        targetEnvName = await useUserSetEnv(ctx, inputs);
+        const result = await useUserSetEnv(inputs);
+        if (result.isErr()) {
+          ctx.result = result.error;
+          return;
+        }
+        targetEnvName = result.value;
       } else if (activeEnv) {
         targetEnvName = activeEnv;
       } else {
@@ -95,35 +104,33 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
       targetEnvName = environmentManager.getDefaultEnvName();
     }
 
-    if (targetEnvName) {
-      const result = await loadSolutionContext(
-        core.tools,
-        inputs,
-        ctx.projectSettings,
-        ctx.projectIdMissing,
-        targetEnvName,
-        inputs.ignoreEnvInfo
-      );
-      if (result.isErr()) {
-        ctx.result = err(result.error);
-        return;
-      }
-
-      if (isV2()) {
-        const envInfo = result.value.envInfo;
-        const profile: Json = {};
-        for (const key of envInfo.profile.keys()) {
-          const map = envInfo.profile.get(key);
-          if (map) {
-            profile[key] = (map as ConfigMap).toJSON();
-          }
-        }
-        ctx.envInfoV2 = { envName: envInfo.envName, config: envInfo.config, profile: profile };
-      } else {
-        ctx.solutionContext = result.value;
-      }
-      await next();
+    const result = await loadSolutionContext(
+      core.tools,
+      inputs,
+      ctx.projectSettings,
+      ctx.projectIdMissing,
+      targetEnvName,
+      inputs.ignoreEnvInfo
+    );
+    if (result.isErr()) {
+      ctx.result = err(result.error);
+      return;
     }
+
+    if (isV2()) {
+      const envInfo = result.value.envInfo;
+      const profile: Json = {};
+      for (const key of envInfo.profile.keys()) {
+        const map = envInfo.profile.get(key);
+        if (map) {
+          profile[key] = (map as ConfigMap).toJSON();
+        }
+      }
+      ctx.envInfoV2 = { envName: envInfo.envName, config: envInfo.config, profile: profile };
+    } else {
+      ctx.solutionContext = result.value;
+    }
+    await next();
   };
 }
 
@@ -219,13 +226,13 @@ export async function askTargetEnvironment(
   tools: Tools,
   inputs: Inputs,
   lastUsed?: string
-): Promise<string | undefined> {
+): Promise<Result<string, FxError>> {
   const getQuestionRes = await getQuestionsForTargetEnv(inputs, lastUsed ?? activeEnv);
   if (getQuestionRes.isErr()) {
     tools.logProvider.error(
       `[core:env] failed to get questions for target environment: ${getQuestionRes.error.message}`
     );
-    return undefined;
+    return err(getQuestionRes.error);
   }
 
   tools.logProvider.debug(`[core:env] success to get questions for target environment.`);
@@ -235,7 +242,7 @@ export async function askTargetEnvironment(
     const res = await traverse(node, inputs, tools.ui);
     if (res.isErr()) {
       tools.logProvider.debug(`[core:env] failed to run question model for target environment.`);
-      return undefined;
+      return err(res.error);
     }
 
     const desensitized = desensitize(node, inputs);
@@ -246,12 +253,16 @@ export async function askTargetEnvironment(
     );
   }
 
+  if (!inputs.targetEnvName) {
+    return err(UserCancelError);
+  }
+
   let targetEnvName = inputs.targetEnvName;
-  if (targetEnvName?.endsWith(activeMark)) {
+  if (targetEnvName.endsWith(activeMark)) {
     targetEnvName = targetEnvName.slice(0, targetEnvName.indexOf(activeMark));
   }
 
-  return targetEnvName;
+  return ok(targetEnvName);
 }
 
 export async function askNewEnvironment(
@@ -303,18 +314,18 @@ export async function askNewEnvironment(
   };
 }
 
-async function useUserSetEnv(ctx: CoreHookContext, inputs: Inputs): Promise<string | undefined> {
+async function useUserSetEnv(inputs: Inputs): Promise<Result<string, FxError>> {
   const checkEnv = await environmentManager.checkEnvExist(inputs.projectPath!, inputs.env);
   if (checkEnv.isErr()) {
-    ctx.result = checkEnv.error;
-    return undefined;
+    return err(checkEnv.error);
   }
-  if (checkEnv.value) {
-    return inputs.env;
-  } else {
-    ctx.result = err(ProjectEnvNotExistError(inputs.env));
-    return undefined;
+
+  const envExists = checkEnv.value;
+  if (!envExists) {
+    return err(ProjectEnvNotExistError(inputs.env));
   }
+
+  return ok(inputs.env);
 }
 
 async function getQuestionsForTargetEnv(

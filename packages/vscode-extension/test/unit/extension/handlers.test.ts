@@ -24,7 +24,7 @@ import { MockCore } from "./mocks/mockCore";
 import * as extension from "../../../src/extension";
 import * as accountTree from "../../../src/accountTree";
 import TreeViewManagerInstance from "../../../src/treeview/treeViewManager";
-import { CoreHookContext } from "../../../../fx-core/build";
+import { CollaborationState, CoreHookContext } from "@microsoft/teamsfx-core";
 
 suite("handlers", () => {
   test("getWorkspacePath()", () => {
@@ -369,14 +369,17 @@ suite("handlers", () => {
       sinon.stub(envTree, "updateCollaboratorList").resolves();
       sinon.stub(MockCore.prototype, "grantPermission").returns(
         Promise.resolve(
-          ok([
-            {
-              name: "name",
-              type: "type",
-              resourceId: "id",
-              roles: ["Owner"],
-            },
-          ])
+          ok({
+            state: CollaborationState.OK,
+            permissions: [
+              {
+                name: "name",
+                type: "type",
+                resourceId: "id",
+                roles: ["Owner"],
+              },
+            ],
+          })
         )
       );
 
@@ -391,15 +394,18 @@ suite("handlers", () => {
       const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       sinon.stub(MockCore.prototype, "listCollaborator").returns(
         Promise.resolve(
-          ok([
-            {
-              userPrincipalName: "userName",
-              userObjectId: "userObjectId",
-              isAadOwner: true,
-              teamsAppResourceId: "teamsId",
-              aadResourceId: "aadId",
-            },
-          ])
+          ok({
+            state: CollaborationState.OK,
+            collaborators: [
+              {
+                userPrincipalName: "userName",
+                userObjectId: "userObjectId",
+                isAadOwner: true,
+                teamsAppResourceId: "teamsId",
+                aadResourceId: "aadId",
+              },
+            ],
+          })
         )
       );
 
@@ -429,7 +435,14 @@ suite("handlers", () => {
       sinon.stub(handlers, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      sinon.stub(MockCore.prototype, "listCollaborator").returns(Promise.resolve(ok([])));
+      sinon.stub(MockCore.prototype, "listCollaborator").returns(
+        Promise.resolve(
+          ok({
+            state: CollaborationState.OK,
+            collaborators: [],
+          })
+        )
+      );
 
       const result = await handlers.listCollaborator("env");
       chai.assert.equal(result[0].label, "No permission to list collaborators");
@@ -445,20 +458,23 @@ suite("handlers", () => {
       const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       sinon.stub(MockCore.prototype, "checkPermission").returns(
         Promise.resolve(
-          ok([
-            {
-              name: "Teams App",
-              type: "m365",
-              resourceId: "teamsId",
-              roles: ["Administrator"],
-            },
-            {
-              name: "Azure AD App",
-              type: "m365",
-              resourceId: "aadId",
-              roles: ["Owner"],
-            },
-          ])
+          ok({
+            state: CollaborationState.OK,
+            permissions: [
+              {
+                name: "Teams App",
+                type: "m365",
+                resourceId: "teamsId",
+                roles: ["Administrator"],
+              },
+              {
+                name: "Azure AD App",
+                type: "m365",
+                resourceId: "aadId",
+                roles: ["Owner"],
+              },
+            ],
+          })
         )
       );
 
@@ -473,20 +489,23 @@ suite("handlers", () => {
       const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       sinon.stub(MockCore.prototype, "checkPermission").returns(
         Promise.resolve(
-          ok([
-            {
-              name: "Teams App",
-              type: "m365",
-              resourceId: "teamsId",
-              roles: ["Administrator"],
-            },
-            {
-              name: "Azure AD App",
-              type: "m365",
-              resourceId: "aadId",
-              roles: ["no permission"],
-            },
-          ])
+          ok({
+            state: CollaborationState.OK,
+            permissions: [
+              {
+                name: "Teams App",
+                type: "m365",
+                resourceId: "teamsId",
+                roles: ["Administrator"],
+              },
+              {
+                name: "Azure AD App",
+                type: "m365",
+                resourceId: "aadId",
+                roles: ["no permission"],
+              },
+            ],
+          })
         )
       );
 

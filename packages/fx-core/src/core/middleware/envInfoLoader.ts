@@ -19,7 +19,7 @@ import {
   traverse,
 } from "@microsoft/teamsfx-api";
 import { isV2 } from "..";
-import { CoreHookContext, FxCore } from "../..";
+import { CoreHookContext, FxCore, isMultiEnvEnabled } from "../..";
 import {
   NoProjectOpenedError,
   ProjectEnvNotExistError,
@@ -53,7 +53,7 @@ export type CreateEnvCopyInput = {
   sourceEnvName: string;
 };
 
-export function EnvInfoLoaderMW(isMultiEnvEnabled: boolean): Middleware {
+export function EnvInfoLoaderMW(skip: boolean): Middleware {
   return async (ctx: CoreHookContext, next: NextFunction) => {
     if (shouldIgnored(ctx)) {
       await next();
@@ -62,7 +62,7 @@ export function EnvInfoLoaderMW(isMultiEnvEnabled: boolean): Middleware {
 
     const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
     if (inputs.previewType && inputs.previewType === "local") {
-      isMultiEnvEnabled = false;
+      skip = true;
     }
 
     if (!ctx.projectSettings) {
@@ -73,7 +73,7 @@ export function EnvInfoLoaderMW(isMultiEnvEnabled: boolean): Middleware {
     const core = ctx.self as FxCore;
 
     let targetEnvName: string | undefined;
-    if (isMultiEnvEnabled) {
+    if (!skip && isMultiEnvEnabled()) {
       if (inputs.askEnvSelect) {
         targetEnvName = await askTargetEnvironment(core.tools, inputs);
         if (targetEnvName) {

@@ -47,6 +47,7 @@ import {
   isMigrateFromV1Project,
   isMultiEnvEnabled,
   LocalSettingsProvider,
+  CollaborationState,
 } from "@microsoft/teamsfx-core";
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -914,11 +915,15 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
     if (result.isErr()) {
       throw result.error;
     }
-    window.showInformationMessage(
-      `Added account: '${inputs.email}' to the environment '${env}' as a collaborator`
-    );
+    if (result.value.state === CollaborationState.OK) {
+      window.showInformationMessage(
+        `Added account: '${inputs.email}' to the environment '${env}' as a collaborator`
+      );
 
-    updateCollaboratorList(env);
+      updateCollaboratorList(env);
+    } else {
+      window.showWarningMessage(result.value.message);
+    }
   } catch (e) {
     result = wrapError(e);
   }
@@ -943,30 +948,54 @@ export async function listCollaborator(env: string): Promise<TreeItem[]> {
     if (userList.isErr()) {
       throw userList.error;
     }
-    result = userList.value.map((user: any) => {
-      return {
-        commandId: `fx-extension.listcollaborator.${env}.${user.userObjectId}`,
-        label: user.userPrincipalName,
-        icon: user.isAadOwner ? "person" : "warning",
-        isCustom: !user.isAadOwner,
-        tooltip: {
-          value: user.isAadOwner ? "" : "This account doesn't have the AAD permission.",
-          isMarkdown: false,
-        },
-        parent: `fx-extension.listcollaborator.parentNode.${env}`,
-      };
-    });
-    if (!result || result.length === 0) {
+
+    if (userList.value.state === CollaborationState.OK) {
+      result = userList.value.collaborators.map((user: any) => {
+        return {
+          commandId: `fx-extension.listcollaborator.${env}.${user.userObjectId}`,
+          label: user.userPrincipalName,
+          icon: user.isAadOwner ? "person" : "warning",
+          isCustom: !user.isAadOwner,
+          tooltip: {
+            value: user.isAadOwner ? "" : "This account doesn't have the AAD permission.",
+            isMarkdown: false,
+          },
+          parent: `fx-extension.listcollaborator.parentNode.${env}`,
+        };
+      });
+      if (!result || result.length === 0) {
+        result = [
+          {
+            commandId: `fx-extension.listcollaborator.${env}`,
+            label: StringResources.vsc.commandsTreeViewProvider.noPermissionToListCollaborators,
+            icon: "warning",
+            isCustom: true,
+            parent: `fx-extension.listcollaborator.parentNode.${env}`,
+          },
+        ];
+      }
+    } else {
+      let label = userList.value.message;
+      const toolTip = userList.value.message;
+      if (userList.value.state === CollaborationState.NotProvisioned) {
+        label = StringResources.vsc.commandsTreeViewProvider.unableToFindTeamsAppRegistration;
+      }
+
       result = [
         {
           commandId: `fx-extension.listcollaborator.${env}`,
-          label: StringResources.vsc.commandsTreeViewProvider.noPermissionToListCollaborators,
+          label: label,
+          tooltip: {
+            value: toolTip,
+            isMarkdown: false,
+          },
           icon: "warning",
           isCustom: true,
-          parent: `fx-extension.listcollaborator.parentNode.${env}`,
+          parent: "fx-extension.environment." + env,
         },
       ];
     }
+
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ListCollaborator, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
     });
@@ -975,14 +1004,10 @@ export async function listCollaborator(env: string): Promise<TreeItem[]> {
     VsCodeLogInstance.warning(
       `code:${e.source}.${e.name}, message: Failed to list collaborator for environment '${env}':  ${e.message}`
     );
-    let label = e.message;
-    if (e.name === "CannotProcessBeforeProvision") {
-      label = StringResources.vsc.commandsTreeViewProvider.unableToFindTeamsAppRegistration;
-    }
     result = [
       {
         commandId: `fx-extension.listcollaborator.${env}`,
-        label: label,
+        label: e.message,
         tooltip: {
           value: e.message,
           isMarkdown: false,
@@ -1013,18 +1038,22 @@ export async function checkPermission(env: string): Promise<boolean> {
     if (permissions.isErr()) {
       throw permissions.error;
     }
-    const teamsAppPermission = permissions.value.find(
-      (permission: any) => permission.name === "Teams App"
-    );
-    const aadPermission = permissions.value.find(
-      (permission: any) => permission.name === "Azure AD App"
-    );
-    result =
-      (teamsAppPermission.roles?.includes("Administrator") ?? false) &&
-      (aadPermission.roles?.includes("Owner") ?? false);
-    ExtTelemetry.sendTelemetryEvent(Stage.checkPermission, {
-      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-    });
+    if (permissions.value.state === CollaborationState.OK) {
+      const teamsAppPermission = permissions.value.permissions.find(
+        (permission: any) => permission.name === "Teams App"
+      );
+      const aadPermission = permissions.value.permissions.find(
+        (permission: any) => permission.name === "Azure AD App"
+      );
+      result =
+        (teamsAppPermission.roles?.includes("Administrator") ?? false) &&
+        (aadPermission.roles?.includes("Owner") ?? false);
+      ExtTelemetry.sendTelemetryEvent(Stage.checkPermission, {
+        [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+      });
+    } else {
+      result = false;
+    }
   } catch (e) {
     ExtTelemetry.sendTelemetryErrorEvent(Stage.checkPermission, e);
     result = false;

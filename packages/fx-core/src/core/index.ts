@@ -941,7 +941,7 @@ export class FxCore implements Core {
     ErrorHandlerMW,
     ProjectSettingsLoaderMW,
     SolutionLoaderMW(),
-    EnvInfoLoaderMW(false),
+    EnvInfoLoaderMW(true),
     ContextInjectorMW,
   ])
   async createEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {

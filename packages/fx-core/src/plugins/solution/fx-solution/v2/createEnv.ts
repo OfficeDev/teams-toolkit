@@ -27,6 +27,7 @@ export async function createEnv(ctx: v2.Context, inputs: Inputs): Promise<Result
       logProvider: ctx.logProvider,
       telemetryReporter: ctx.telemetryReporter,
       cryptoProvider: ctx.cryptoProvider,
+      permissionRequestProvider: ctx.permissionRequestProvider,
       ui: ctx.userInteraction,
     };
     try {

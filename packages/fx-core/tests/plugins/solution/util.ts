@@ -98,6 +98,12 @@ export function mockScaffoldCodeThatAlwaysSucceeds(plugin: v2.ResourcePlugin): v
   };
 }
 
+export function mockExecuteUserTaskThatAlwaysSucceeds(plugin: v2.ResourcePlugin): void {
+  plugin.executeUserTask = async function (): Promise<Result<unknown, FxError>> {
+    return ok(Void);
+  };
+}
+
 export const mockedFehostScaffoldArmResult = {
   Modules: {
     frontendHostingProvision: {

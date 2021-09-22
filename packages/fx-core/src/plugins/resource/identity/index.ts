@@ -77,21 +77,7 @@ export class IdentityPlugin implements Plugin {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendEvent(Telemetry.stage.provision + Telemetry.startSuffix);
 
-    ContextUtils.init(ctx);
-    this.config.azureSubscriptionId = ContextUtils.getConfigString(
-      Constants.solution,
-      Constants.subscriptionId
-    );
-    this.config.resourceGroup = ContextUtils.getConfigString(
-      Constants.solution,
-      Constants.resourceGroupName
-    );
-    this.config.resourceNameSuffix = ContextUtils.getConfigString(
-      Constants.solution,
-      Constants.resourceNameSuffix
-    );
-    this.config.location = ContextUtils.getConfigString(Constants.solution, Constants.location);
-
+    this.loadConfig(ctx);
     try {
       ctx.logProvider?.info(Message.checkProvider);
       const credentials = await ctx.azureAccountProvider!.getAccountCredentialAsync();
@@ -253,9 +239,40 @@ export class IdentityPlugin implements Plugin {
   }
 
   private syncArmOutput(ctx: PluginContext) {
-    ctx.config.set(Constants.identityName, getArmOutput(ctx, IdentityArmOutput.identityName));
+    const resourceId = getArmOutput(ctx, IdentityArmOutput.identityName);
+
+    ctx.config.set(Constants.identityName, resourceId);
     ctx.config.set(Constants.identityId, getArmOutput(ctx, IdentityArmOutput.identityId));
     ctx.config.set(Constants.identity, getArmOutput(ctx, IdentityArmOutput.identity));
+  }
+
+  private loadConfig(ctx: PluginContext) {
+    this.config.azureSubscriptionId = ContextUtils.getConfig<string>(
+      ctx,
+      Constants.solution,
+      Constants.subscriptionId
+    );
+    this.loadConfigResourceGroup(ctx);
+    this.config.resourceNameSuffix = ContextUtils.getConfig<string>(
+      ctx,
+      Constants.solution,
+      Constants.resourceNameSuffix
+    );
+    this.config.location = ContextUtils.getConfig<string>(
+      ctx,
+      Constants.solution,
+      Constants.location
+    );
+  }
+
+  private loadConfigResourceGroup(ctx: PluginContext) {
+    if (!isArmSupportEnabled()) {
+      this.config.resourceGroup = ContextUtils.getConfig<string>(
+        ctx,
+        Constants.solution,
+        Constants.resourceGroupName
+      );
+    }
   }
 }
 

@@ -22,6 +22,7 @@ import { isUndefined } from "lodash";
 import Container from "typedi";
 import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { environmentManager } from "../../../../core/environment";
+import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
 
 export async function provisionLocalResource(
   ctx: v2.Context,
@@ -29,10 +30,22 @@ export async function provisionLocalResource(
   localSettings: Json,
   tokenProvider: TokenProvider
 ): Promise<v2.FxResult<Json, FxError>> {
+  if (inputs.projectPath === undefined) {
+    return new v2.FxFailure(
+      returnSystemError(
+        new Error("projectPath is undefined"),
+        "Solution",
+        SolutionError.InternelError
+      )
+    );
+  }
   const azureSolutionSettings = getAzureSolutionSettings(ctx);
+  if (ctx.permissionRequestProvider === undefined) {
+    ctx.permissionRequestProvider = new PermissionRequestFileProvider(inputs.projectPath);
+  }
   const result = await ensurePermissionRequest(
     azureSolutionSettings,
-    ctx.permissionRequestProvider!
+    ctx.permissionRequestProvider
   );
   if (result.isErr()) {
     return new v2.FxFailure(result.error);

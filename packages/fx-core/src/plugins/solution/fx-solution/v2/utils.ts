@@ -68,7 +68,7 @@ export function reloadV2Plugins(solutionSettings: AzureSolutionSettings): v2.Res
 
 export async function ensurePermissionRequest(
   solutionSettings: AzureSolutionSettings,
-  permissionRequestProvider?: PermissionRequestProvider
+  permissionRequestProvider: PermissionRequestProvider
 ): Promise<Result<Void, FxError>> {
   if (solutionSettings.migrateFromV1) {
     return ok(Void);
@@ -84,7 +84,7 @@ export async function ensurePermissionRequest(
     );
   }
 
-  const result = await permissionRequestProvider?.checkPermissionRequest();
+  const result = await permissionRequestProvider.checkPermissionRequest();
   if (result && result.isErr()) {
     return result.map(err);
   }

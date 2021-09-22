@@ -14,6 +14,7 @@ import {
   UserInteraction,
   ConfigMap,
   EnvConfig,
+  PermissionRequestProvider,
 } from "@microsoft/teamsfx-api";
 import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { profile } from "console";
@@ -34,6 +35,7 @@ class BaseSolutionContextAdaptor implements SolutionContext {
   localSettings?: LocalSettings | undefined;
   ui?: UserInteraction | undefined;
   cryptoProvider?: CryptoProvider | undefined;
+  permissionRequestProvider?: PermissionRequestProvider;
 }
 
 /**
@@ -82,6 +84,7 @@ export class ProvisionContextAdapter extends BaseSolutionContextAdaptor {
     this.localSettings = undefined;
     this.ui = v2context.userInteraction;
     this.cryptoProvider = undefined;
+    this.permissionRequestProvider = v2context.permissionRequestProvider;
     const profile = ConfigMap.fromJSON(envInfo.profile);
     if (!profile) {
       throw new Error(`failed to convert profile ${JSON.stringify(envInfo.profile)}`);

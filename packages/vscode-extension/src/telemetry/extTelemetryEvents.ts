@@ -101,7 +101,6 @@ export enum TelemetryEvent {
   OpenV1Project = "open-v1-project",
 
   ViewEnvironment = "view-environment",
-  ActivateEnvironment = "activate-environment",
 
   CheckSideloading = "check-sideloading",
 

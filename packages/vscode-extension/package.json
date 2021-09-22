@@ -195,15 +195,6 @@
           "group": "inline@3"
         },
         {
-          "command": "fx-extension.activateEnvironment",
-          "when": "view == teamsfx-environment && viewItem =~ /environment/"
-        },
-        {
-          "command": "fx-extension.activateEnvironmentWithIcon",
-          "when": "view == teamsfx-environment && viewItem =~ /environment/",
-          "group": "inline@3"
-        },
-        {
           "command": "fx-extension.grantPermission",
           "when": "view == teamsfx-environment && viewItem == environmentWithPermission",
           "group": "inline@3"
@@ -267,14 +258,6 @@
         },
         {
           "command": "fx-extension.viewEnvironmentWithIcon",
-          "when": "false"
-        },
-        {
-          "command": "fx-extension.activateEnvironment",
-          "when": "false"
-        },
-        {
-          "command": "fx-extension.activateEnvironmentWithIcon",
           "when": "false"
         },
         {
@@ -437,17 +420,6 @@
         "command": "fx-extension.viewEnvironmentWithIcon",
         "title": "View environment",
         "icon": "$(file-symlink-directory)",
-        "enablement": "fx-extension.isMultiEnvEnabled"
-      },
-      {
-        "command": "fx-extension.activateEnvironment",
-        "title": "Activate environment",
-        "enablement": "fx-extension.isMultiEnvEnabled"
-      },
-      {
-        "command": "fx-extension.activateEnvironmentWithIcon",
-        "title": "Activate environment",
-        "icon": "$(check)",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {

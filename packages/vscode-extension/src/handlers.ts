@@ -876,27 +876,6 @@ export async function viewEnvironment(env: string): Promise<Result<Void, FxError
   return ok(Void);
 }
 
-export async function activateEnvironment(env: string): Promise<Result<Void, FxError>> {
-  // const eventName = ExtTelemetry.stageToEvent(stage);
-  let result: Result<any, FxError> = ok(Void);
-  try {
-    const checkCoreRes = checkCoreNotEmpty();
-    if (checkCoreRes.isErr()) {
-      throw checkCoreRes.error;
-    }
-
-    const inputs: Inputs = getSystemInputs();
-    inputs.env = env;
-    result = await core.activateEnv(inputs);
-    await registerEnvTreeHandler();
-  } catch (e) {
-    result = wrapError(e);
-  }
-  // await processResult(eventName, result);
-
-  return result;
-}
-
 export async function grantPermission(env: string): Promise<Result<Void, FxError>> {
   let result: Result<any, FxError> = ok(Void);
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.GrantPermission);

@@ -14,7 +14,6 @@ import {
 import {
   isMultiEnvEnabled,
   environmentManager,
-  setActiveEnv,
   isRemoteCollaborateEnabled,
   LocalSettingsProvider,
 } from "@microsoft/teamsfx-core";
@@ -41,13 +40,6 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
     if (envNamesResult.isErr()) {
       return err(envNamesResult.error);
     }
-    let activeEnv: string | undefined = undefined;
-    const envResult = environmentManager.getActiveEnv(workspacePath);
-    // do not block user to manage env if active env cannot be retrieved
-    if (envResult.isOk()) {
-      activeEnv = envResult.value;
-      setActiveEnv(activeEnv);
-    }
     environmentTreeProvider = TreeViewManagerInstance.getTreeView("teamsfx-environment")!;
     if (showEnvList.length > 0) {
       showEnvList.forEach(async (item) => {
@@ -67,11 +59,11 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
           label: item,
           parent: TreeCategory.Environment,
           contextValue: item === LocalEnvironment ? "local" : "environment",
-          icon: getTreeViewItemIcon(item, activeEnv),
+          icon: "symbol-folder",
           isCustom: false,
-          description:
-            item === activeEnv ? StringResources.vsc.commandsTreeViewProvider.active : "",
-          expanded: activeEnv === item ? true : undefined,
+          // description:
+          //   item === activeEnv ? StringResources.vsc.commandsTreeViewProvider.active : "",
+          expanded: true,
         },
       ]);
     }
@@ -145,7 +137,7 @@ export async function updateCollaboratorList(env: string): Promise<void> {
 function getTreeViewItemIcon(envName: string, activeEnv: string | undefined) {
   switch (envName) {
     case activeEnv:
-      return "folder-active";
+    // return "folder-active";
     case LocalEnvironment:
     // return "lock";
     default:

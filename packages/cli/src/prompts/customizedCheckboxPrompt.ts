@@ -8,6 +8,7 @@ import inquirer from "inquirer";
 import { Interface as ReadlineInterface } from "readline";
 import CheckboxPrompt from "inquirer/lib/prompts/checkbox";
 
+import ScreenManager from "../console/screen";
 import { addChoiceDetail } from "./utils";
 
 /**
@@ -79,6 +80,7 @@ export default class CustomizedCheckboxPrompt extends CheckboxPrompt {
       bottomContent = chalk.red(">> ") + error;
     }
 
+    ScreenManager["moveCursorDown"](0);
     this.screen.render(message, bottomContent);
   }
 }

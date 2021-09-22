@@ -158,7 +158,7 @@ describe("Azure App Happy Path", function () {
       const aad = AadValidator.init(context, false, AppStudioLogin);
       const appId = aad.clientId;
 
-      AppStudioValidator.init();
+      AppStudioValidator.init(context);
       await AppStudioValidator.validatePublish(appId);
     }
   });

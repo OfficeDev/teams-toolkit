@@ -5,8 +5,11 @@ import {
   ConfigFolderName,
   EnvNamePlaceholder,
   EnvProfileFileNameTemplate,
+  FxError,
   InputConfigsFolderName,
   PublishProfilesFolderName,
+  Result,
+  ok,
 } from "@microsoft/teamsfx-api";
 import { deserializeDict } from "@microsoft/teamsfx-core";
 import { exec } from "child_process";
@@ -311,4 +314,35 @@ export function mockTeamsfxMultiEnvFeatureFlag() {
 function isSecretPattern(value: string) {
   console.log(value);
   return value.startsWith("{{") && value.endsWith("}}");
+}
+
+// Load envProfile with userdata (not decrypted)
+export async function loadContext(projectPath: string, env: string): Promise<Result<any, FxError>> {
+  const context = await fs.readJson(
+    path.join(
+      projectPath,
+      `.${ConfigFolderName}`,
+      PublishProfilesFolderName,
+      EnvProfileFileNameTemplate.replace(EnvNamePlaceholder, env)
+    )
+  );
+  const userdataContent = await fs.readFile(
+    path.join(projectPath, `.${ConfigFolderName}`, PublishProfilesFolderName, `${env}.userdata`),
+    "utf8"
+  );
+  const userdata = deserializeDict(userdataContent);
+
+  const regex = /\{\{([^{}]+)\}\}/;
+  for (const component in context) {
+    for (const key in context[component]) {
+      const matchResult = regex.exec(context[component][key]);
+      if (matchResult) {
+        const userdataKey = matchResult[1];
+        if (userdataKey in userdata) {
+          context[component][key] = userdata[key];
+        }
+      }
+    }
+  }
+  return ok(context);
 }

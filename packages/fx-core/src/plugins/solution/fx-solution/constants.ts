@@ -141,7 +141,7 @@ export enum SolutionError {
   FailedToDeployArmTemplatesToAzure = "FailedToDeployArmTemplatesToAzure",
   V1ProjectNotSupported = "V1ProjectNotSupported",
   FailedToRetrieveUserInfo = "FailedToRetrieveUserInfo",
-  M365AccountNotMatch = "M365AccountNotMatch",
+  M365TenantNotMatch = "M365TenantNotMatch",
   FeatureNotSupported = "FeatureNotSupported",
   CannotProcessBeforeProvision = "CannotProcessBeforeProvision",
   CannotFindUserInCurrentTenant = "CannotFindUserInCurrentTenant",

@@ -120,14 +120,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
 
     const expService = exp.getExpService();
     if (expService) {
-      if (
-        !validProject &&
-        (await expService.getTreatmentVariableAsync(
-          TreatmentVariables.VSCodeConfig,
-          TreatmentVariables.SidebarWelcome,
-          true
-        ))
-      ) {
+      if (!validProject) {
         vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome", true);
       } else {
         vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome", false);

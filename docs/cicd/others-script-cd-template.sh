@@ -4,12 +4,16 @@ set -euxo pipefail
 # This is just an example workflow for continuous deployment.
 # You should customize it to meet your own requirements.
 # Also you should export the following environment variables for Azure/M365 login:
-# AZURE_ACCOUNT_NAME
-# AZURE_ACCOUNT_PASSWORD
-# AZURE_SUBSCRIPTION_ID
-# AZURE_TENANT_ID
-# M365_ACCOUNT_NAME
-# M365_ACCOUNT_PASSWORD
+# export AZURE_ACCOUNT_NAME={AZURE_ACCOUNT_NAME}
+# export AZURE_ACCOUNT_PASSWORD={AZURE_ACCOUNT_PASSWORD}
+# export AZURE_SUBSCRIPTION_ID={AZURE_SUBSCRIPTION_ID}
+# export AZURE_TENANT_ID={AZURE_TENANT_ID}
+# export M365_ACCOUNT_NAME={M365_ACCOUNT_NAME}
+# export M365_ACCOUNT_PASSWORD={M365_ACCOUNT_PASSWORD}
+
+# To enable @microsoft/teamsfx-cli running in CI mode, turn on CI_ENABLED like below.
+# In CI mode, @microsoft/teamsfx-cli is friendly for CI/CD. 
+export CI_ENABLED=true
 
 # Setup environment.
 # Sufficient permissions are required to run the commands below.

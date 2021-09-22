@@ -256,7 +256,8 @@ export class AppStudioPlugin implements Plugin {
       );
       const properties: { [key: string]: string } = {};
       properties[TelemetryPropertyKey.updateExistingApp] = String(result.update);
-      TelemetryUtils.sendSuccessEvent(TelemetryEventName.publish);
+      properties[TelemetryPropertyKey.publishedAppId] = String(result.id);
+      TelemetryUtils.sendSuccessEvent(TelemetryEventName.publish, properties);
       return ok(result.id);
     } catch (error) {
       if (error instanceof SystemError || error instanceof UserError) {

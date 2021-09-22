@@ -991,7 +991,7 @@ export async function listCollaborator(env: string): Promise<TreeItem[]> {
           },
           icon: "warning",
           isCustom: true,
-          parent: "fx-extension.environment." + env,
+          parent: `fx-extension.listcollaborator.parentNode.${env}`,
         },
       ];
     }

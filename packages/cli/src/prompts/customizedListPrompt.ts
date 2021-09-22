@@ -8,6 +8,7 @@ import inquirer from "inquirer";
 import { Interface as ReadlineInterface } from "readline";
 import ListPrompt from "inquirer/lib/prompts/list";
 
+import ScreenManager from "../console/screen";
 import { addChoiceDetail, white } from "./utils";
 
 /**
@@ -66,6 +67,7 @@ export default class CustomizedListPrompt extends ListPrompt {
 
     this.firstRender = false;
 
+    ScreenManager["moveCursorDown"](0);
     this.screen.render(message, "");
   }
 }

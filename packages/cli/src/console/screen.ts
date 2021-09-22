@@ -113,6 +113,8 @@ export class ScreenManager {
 
     // show cursor at first
     this.showCursor();
+    // localize the cursor position
+    this.moveCursorDown(0);
   }
 
   /**

@@ -86,13 +86,13 @@ export default class Progress implements IProgressHandler {
 
   private updatePercentage() {
     const needArrivedPercentage = ((this.currentStep - 1) / this.totalSteps) * 100;
-    const nextArrivedPercentage = (this.currentStep / this.totalSteps) * 100;
+    const nextArrivedPercentage = (this.currentStep / this.totalSteps) * 100 - 1;
     if (this.currentPercentage < needArrivedPercentage) {
       const diff = needArrivedPercentage - this.currentPercentage;
       this.currentPercentage += diff / ScreenManager.fps >= 5 ? diff / ScreenManager.fps : 5;
     } else if (this.currentPercentage < nextArrivedPercentage) {
       const diff = nextArrivedPercentage - this.currentPercentage;
-      this.currentPercentage += diff / ScreenManager.fps / 10;
+      this.currentPercentage += diff / ScreenManager.fps / 20;
     }
     this.currentPercentage = Math.min(this.currentPercentage, 100);
   }

@@ -1759,7 +1759,7 @@ export class TeamsAppSolution implements Solution {
       const warningMsg =
         "Tenant id of your account and the provisioned Azure AD app does not match. Please check whether you logined with wrong account.";
       return {
-        state: CollaborationState.M365AccountNotMatch,
+        state: CollaborationState.M365TenantNotMatch,
         message: warningMsg,
       };
     }

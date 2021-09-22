@@ -147,7 +147,7 @@ describe("grantPermission() for Teamsfx projects", () => {
     sandbox.restore();
   });
 
-  it("should return M365AccountNotMatch state if tenant is not match", async () => {
+  it("should return M365TenantNotMatch state if tenant is not match", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
 
@@ -175,7 +175,7 @@ describe("grantPermission() for Teamsfx projects", () => {
     const result = await solution.grantPermission(mockedCtx);
     expect(result.isErr()).to.be.false;
     if (!result.isErr()) {
-      expect(result.value.state).equals(CollaborationState.M365AccountNotMatch);
+      expect(result.value.state).equals(CollaborationState.M365TenantNotMatch);
     }
     sandbox.restore();
   });

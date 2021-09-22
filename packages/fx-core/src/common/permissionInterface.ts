@@ -11,7 +11,7 @@ export interface ResourcePermission {
 export enum CollaborationState {
   OK,
   NotProvisioned,
-  M365AccountNotMatch,
+  M365TenantNotMatch,
   SolutionIsNotIdle,
 }
 

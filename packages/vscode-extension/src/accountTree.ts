@@ -173,7 +173,18 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
     const status = await AppStudioLogin.getStatus();
     if (status.token !== undefined) {
       const subItem = await getSideloadingItem(status.token);
-      tools.treeProvider?.refresh(subItem);
+      if (subItem && subItem.length > 0) {
+        tools.treeProvider?.refresh(subItem);
+      } else {
+        // nothing to show, remove status
+        tools.treeProvider?.remove([
+          {
+            commandId: "fx-extension.checkSideloading",
+            label: "",
+            parent: "fx-extension.signinM365",
+          },
+        ]);
+      }
     }
 
     return ok(null);

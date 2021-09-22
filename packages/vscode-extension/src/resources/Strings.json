@@ -66,6 +66,7 @@
       "teamsDevPortalDescription": "Manage your Teams app registration and access more tools",
       "active": "(Active)",
       "loginM365AccountToViewCollaborators": "Login M365 account to view all collaborators",
+      "collaboratorParentNode": "Collaborators",
       "noPermissionToListCollaborators": "No permission to list collaborators",
       "unableToFindTeamsAppRegistration": "Unable to find Teams app registration",
       "noAzureAccountSignedIn": "No Azure account signed in. Please sign in to Azure.",

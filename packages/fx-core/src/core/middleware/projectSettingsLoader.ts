@@ -142,5 +142,5 @@ export function shouldIgnored(ctx: CoreHookContext): boolean {
     isCreate = task === Stage.create;
   }
 
-  return inputs.ignoreTypeCheck === true || StaticPlatforms.includes(inputs.platform) || isCreate;
+  return StaticPlatforms.includes(inputs.platform) || isCreate;
 }

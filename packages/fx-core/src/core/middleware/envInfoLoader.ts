@@ -46,8 +46,9 @@ import { PermissionRequestFileProvider } from "../permissionRequest";
 import { newEnvInfo } from "../tools";
 
 const newTargetEnvNameOption = "+ new environment";
-const activeMark = " (active)";
 let activeEnv: string | undefined;
+const lastUsedMark = " (last used)";
+let lastUsedEnv: string | undefined;
 
 export type CreateEnvCopyInput = {
   targetEnvName: string;
@@ -62,7 +63,7 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
     }
 
     const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-    if (inputs.previewType && inputs.previewType === "local") {
+    if ((inputs.previewType && inputs.previewType === "local") || inputs.ignoreEnvInfo) {
       skip = true;
     }
 
@@ -87,6 +88,8 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
           `[${targetEnvName}] is selected as the target environment to ${inputs.stage}`,
           false
         );
+
+        lastUsedEnv = targetEnvName;
       } else if (inputs.env) {
         const result = await useUserSetEnv(inputs);
         if (result.isErr()) {
@@ -222,12 +225,11 @@ export function upgradeDefaultFunctionName(
   }
 }
 
-export async function askTargetEnvironment(
+async function askTargetEnvironment(
   tools: Tools,
-  inputs: Inputs,
-  lastUsed?: string
+  inputs: Inputs
 ): Promise<Result<string, FxError>> {
-  const getQuestionRes = await getQuestionsForTargetEnv(inputs, lastUsed ?? activeEnv);
+  const getQuestionRes = await getQuestionsForTargetEnv(inputs, lastUsedEnv);
   if (getQuestionRes.isErr()) {
     tools.logProvider.error(
       `[core:env] failed to get questions for target environment: ${getQuestionRes.error.message}`
@@ -258,8 +260,8 @@ export async function askTargetEnvironment(
   }
 
   let targetEnvName = inputs.targetEnvName;
-  if (targetEnvName.endsWith(activeMark)) {
-    targetEnvName = targetEnvName.slice(0, targetEnvName.indexOf(activeMark));
+  if (targetEnvName.endsWith(lastUsedMark)) {
+    targetEnvName = targetEnvName.slice(0, targetEnvName.indexOf(lastUsedMark));
   }
 
   return ok(targetEnvName);
@@ -269,7 +271,7 @@ export async function askNewEnvironment(
   ctx: CoreHookContext,
   inputs: Inputs
 ): Promise<CreateEnvCopyInput | undefined> {
-  const getQuestionRes = await getQuestionsForNewEnv(inputs);
+  const getQuestionRes = await getQuestionsForNewEnv(inputs, lastUsedEnv);
   const core = ctx.self as FxCore;
   if (getQuestionRes.isErr()) {
     core.tools.logProvider.error(
@@ -302,8 +304,8 @@ export async function askNewEnvironment(
 
   const sourceEnvName = inputs.sourceEnvName!;
   let selectedEnvName: string;
-  if (sourceEnvName?.endsWith(activeMark)) {
-    selectedEnvName = sourceEnvName.slice(0, sourceEnvName.indexOf(activeMark));
+  if (sourceEnvName?.endsWith(lastUsedMark)) {
+    selectedEnvName = sourceEnvName.slice(0, sourceEnvName.indexOf(lastUsedMark));
   } else {
     selectedEnvName = sourceEnvName;
   }
@@ -356,7 +358,8 @@ async function getQuestionsForTargetEnv(
 }
 
 async function getQuestionsForNewEnv(
-  inputs: Inputs
+  inputs: Inputs,
+  lastUsed?: string
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (!inputs.projectPath) {
     return err(NoProjectOpenedError());
@@ -369,10 +372,10 @@ async function getQuestionsForNewEnv(
     return err(envProfilesResult.error);
   }
 
-  const envList = reOrderEnvironments(envProfilesResult.value, activeEnv);
+  const envList = reOrderEnvironments(envProfilesResult.value, lastUsed);
   const selectSourceEnv = QuestionSelectSourceEnvironment;
   selectSourceEnv.staticOptions = envList;
-  selectSourceEnv.default = activeEnv + activeMark;
+  selectSourceEnv.default = lastUsed + lastUsedMark;
 
   const selectSourceEnvNode = new QTreeNode(selectSourceEnv);
   node.addChild(selectSourceEnvNode);
@@ -390,7 +393,7 @@ function reOrderEnvironments(environments: Array<string>, lastUsed?: string): Ar
     return environments;
   }
 
-  return [lastUsed + activeMark]
+  return [lastUsed + lastUsedMark]
     .concat(environments.slice(0, index))
     .concat(environments.slice(index + 1));
 }

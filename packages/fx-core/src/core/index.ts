@@ -364,10 +364,6 @@ export class FxCore implements Core {
       return err(ProjectFolderNotExistError(projectPath ?? ""));
     }
 
-    if (isV2()) {
-      return err(new NotImplementedError("migrateV1Project"));
-    }
-
     const solution = await getAllSolutionPlugins()[0];
     const projectSettings: ProjectSettings = {
       appName: appName,
@@ -513,13 +509,13 @@ export class FxCore implements Core {
   async deployArtifacts(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     currentStage = Stage.deploy;
     if (isV2()) {
-      if (!ctx || !ctx.solutionV2 || !ctx.contextV2 || !ctx.provisionOutputs)
+      if (!ctx || !ctx.solutionV2 || !ctx.contextV2 || !ctx.envInfoV2)
         return err(new ObjectIsUndefinedError("Deploy input stuff"));
       if (ctx.solutionV2.deploy)
         return await ctx.solutionV2.deploy(
           ctx.contextV2,
           inputs,
-          ctx.provisionOutputs,
+          ctx.envInfoV2.profile,
           this.tools.tokenProvider.azureAccountProvider
         );
       else return ok(Void);
@@ -549,8 +545,9 @@ export class FxCore implements Core {
     currentStage = Stage.debug;
 
     if (isV2()) {
-      if (!ctx || !ctx.solutionV2 || !ctx.contextV2 || !ctx.localSettings)
+      if (!ctx || !ctx.solutionV2 || !ctx.contextV2)
         return err(new ObjectIsUndefinedError("localDebug input stuff"));
+      if (!ctx.localSettings) ctx.localSettings = {};
       if (ctx.solutionV2.provisionLocalResource) {
         const res = await ctx.solutionV2.provisionLocalResource(
           ctx.contextV2,
@@ -934,14 +931,14 @@ export class FxCore implements Core {
   }
 
   async buildArtifacts(inputs: Inputs): Promise<Result<Void, FxError>> {
-    throw TaskNotSupportError(Stage.build);
+    throw new TaskNotSupportError(Stage.build);
   }
 
   @hooks([
     ErrorHandlerMW,
     ProjectSettingsLoaderMW,
     SolutionLoaderMW(),
-    EnvInfoLoaderMW(false),
+    EnvInfoLoaderMW(true),
     ContextInjectorMW,
   ])
   async createEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
@@ -1164,7 +1161,7 @@ export async function createBasicFolderStructure(inputs: Inputs): Promise<Result
           description: "",
           author: "",
           scripts: {
-            test: 'echo "Error: no test specified" && exit 1',
+            test: "echo \"Error: no test specified\" && exit 1",
           },
           devDependencies: {
             "@microsoft/teamsfx-cli": "0.*",

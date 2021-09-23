@@ -120,14 +120,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
 
     const expService = exp.getExpService();
     if (expService) {
-      if (
-        !validProject &&
-        (await expService.getTreatmentVariableAsync(
-          TreatmentVariables.VSCodeConfig,
-          TreatmentVariables.SidebarWelcome,
-          true
-        ))
-      ) {
+      if (!validProject) {
         vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome", true);
       } else {
         vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome", false);
@@ -874,27 +867,6 @@ export async function viewEnvironment(env: string): Promise<Result<Void, FxError
     return err(FxError);
   }
   return ok(Void);
-}
-
-export async function activateEnvironment(env: string): Promise<Result<Void, FxError>> {
-  // const eventName = ExtTelemetry.stageToEvent(stage);
-  let result: Result<any, FxError> = ok(Void);
-  try {
-    const checkCoreRes = checkCoreNotEmpty();
-    if (checkCoreRes.isErr()) {
-      throw checkCoreRes.error;
-    }
-
-    const inputs: Inputs = getSystemInputs();
-    inputs.env = env;
-    result = await core.activateEnv(inputs);
-    await registerEnvTreeHandler();
-  } catch (e) {
-    result = wrapError(e);
-  }
-  // await processResult(eventName, result);
-
-  return result;
 }
 
 export async function grantPermission(env: string): Promise<Result<Void, FxError>> {

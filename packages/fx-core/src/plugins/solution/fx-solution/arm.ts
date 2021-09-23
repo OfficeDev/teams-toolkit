@@ -24,7 +24,6 @@ import { ArmHelpLink, ConstantString, PluginDisplayName } from "../../../common/
 import {
   Executor,
   CryptoDataMatchers,
-  isMultiEnvEnabled,
   getResourceGroupNameFromResourceId,
   waitSeconds,
 } from "../../../common/tools";
@@ -47,12 +46,9 @@ import { getTemplatesFolder } from "../../../folder";
 import { ensureBicep } from "./utils/depsChecker/bicepChecker";
 
 // Old folder structure constants
-const baseFolder = "./infra/azure";
 const templateFolder = "templates";
 const parameterFolder = "parameters";
 const bicepOrchestrationFileName = "main.bicep";
-const parameterTemplateFileName = "parameters.template.json";
-const parameterFileNameTemplate = "parameters.@envName.json";
 const solutionLevelParameters = `param resourceBaseName string\n`;
 const solutionLevelParameterObject = {
   resourceBaseName: {
@@ -64,7 +60,8 @@ const solutionLevelParameterObject = {
 const templateFolderNew = "./templates/azure";
 const configsFolder = `.${ConfigFolderName}/configs`;
 const modulesFolder = "modules";
-const parameterFileNameTemplateNew = "azure.parameters.@envName.json";
+const parameterFileNameTemplate = "azure.parameters.@envName.json";
+const parameterFileDefaultTemplate = "azure.parameters.dev.json";
 
 // Get ARM template content from each resource plugin and output to project folder
 export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<any, FxError>> {
@@ -172,9 +169,7 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
   const bicepCommand = await ensureBicep(ctx);
 
   // Compile bicep file to json
-  const templateDir = isMultiEnvEnabled()
-    ? path.join(ctx.root, templateFolderNew)
-    : path.join(ctx.root, baseFolder, templateFolder);
+  const templateDir = path.join(ctx.root, templateFolderNew);
   const bicepOrchestrationFilePath = path.join(templateDir, bicepOrchestrationFileName);
   const armTemplateJson = await compileBicepToJson(bicepCommand, bicepOrchestrationFilePath);
   ctx.logProvider?.info(
@@ -306,13 +301,13 @@ export async function copyParameterJson(
   targetEnvName: string,
   sourceEnvName: string
 ) {
-  if (!isMultiEnvEnabled() || !targetEnvName || !sourceEnvName) {
+  if (!targetEnvName || !sourceEnvName) {
     return;
   }
 
   const parameterFolderPath = path.join(ctx.root, configsFolder);
-  const targetParameterFileName = parameterFileNameTemplateNew.replace("@envName", targetEnvName);
-  const sourceParameterFileName = parameterFileNameTemplateNew.replace("@envName", sourceEnvName);
+  const targetParameterFileName = parameterFileNameTemplate.replace("@envName", targetEnvName);
+  const sourceParameterFileName = parameterFileNameTemplate.replace("@envName", sourceEnvName);
   const targetParameterFilePath = path.join(parameterFolderPath, targetParameterFileName);
   const sourceParameterFilePath = path.join(parameterFolderPath, sourceParameterFileName);
 
@@ -325,19 +320,12 @@ export async function getParameterJson(ctx: SolutionContext) {
     throw new Error("Failed to get target environment name from solution context.");
   }
 
-  let parameterFileName, parameterFolderPath, parameterTemplateFilePath;
-  if (isMultiEnvEnabled()) {
-    parameterFileName = parameterFileNameTemplateNew.replace("@envName", ctx.envInfo.envName);
-    parameterFolderPath = path.join(ctx.root, configsFolder);
-    parameterTemplateFilePath = path.join(
-      path.join(ctx.root, templateFolderNew),
-      parameterTemplateFileName
-    );
-  } else {
-    parameterFileName = parameterFileNameTemplate.replace("@envName", ctx.envInfo.envName);
-    parameterFolderPath = path.join(ctx.root, baseFolder, parameterFolder);
-    parameterTemplateFilePath = path.join(parameterFolderPath, parameterTemplateFileName);
-  }
+  const parameterFileName = parameterFileNameTemplate.replace("@envName", ctx.envInfo.envName);
+  const parameterFolderPath = path.join(ctx.root, configsFolder);
+  const parameterEnvFilePath = path.join(
+    path.join(ctx.root, configsFolder),
+    parameterFileDefaultTemplate
+  );
 
   const parameterFilePath = path.join(parameterFolderPath, parameterFileName);
   let createNewParameterFile = false;
@@ -345,23 +333,17 @@ export async function getParameterJson(ctx: SolutionContext) {
     await fs.stat(parameterFilePath);
   } catch (err) {
     ctx.logProvider?.info(
-      `[${PluginDisplayName.Solution}] ${parameterFilePath} does not exist. Generate it using ${parameterTemplateFilePath}.`
+      `[${PluginDisplayName.Solution}] ${parameterFilePath} does not exist. Generate it using ${parameterEnvFilePath}.`
     );
     createNewParameterFile = true;
   }
 
-  let parameterJson;
   if (createNewParameterFile) {
     await fs.ensureDir(parameterFolderPath);
-    if (isMultiEnvEnabled()) {
-      await fs.copyFile(parameterTemplateFilePath, parameterFilePath);
-    } else {
-      parameterJson = await getExpandedParameter(ctx, parameterTemplateFilePath, false); // do not expand secrets to avoid saving secrets to parameter file
-      await fs.writeFile(parameterFilePath, JSON.stringify(parameterJson, undefined, 2));
-    }
+    await fs.copyFile(parameterEnvFilePath, parameterFilePath);
   }
 
-  parameterJson = await getExpandedParameter(ctx, parameterFilePath, true); // only expand secrets in memory
+  const parameterJson = await getExpandedParameter(ctx, parameterFilePath, true); // only expand secrets in memory
 
   return parameterJson;
 }
@@ -408,9 +390,7 @@ async function doGenerateArmTemplate(ctx: SolutionContext): Promise<Result<any, 
     await backupExistingFilesIfNecessary(ctx);
     // Output main.bicep file
     const bicepOrchestrationFileContent = bicepOrchestrationTemplate.getOrchestrationFileContent();
-    const templateFolderPath = isMultiEnvEnabled()
-      ? path.join(ctx.root, templateFolderNew)
-      : path.join(ctx.root, baseFolder, templateFolder);
+    const templateFolderPath = path.join(ctx.root, templateFolderNew);
     await fs.ensureDir(templateFolderPath);
     await fs.writeFile(
       path.join(templateFolderPath, bicepOrchestrationFileName),
@@ -418,9 +398,7 @@ async function doGenerateArmTemplate(ctx: SolutionContext): Promise<Result<any, 
     );
 
     // Output bicep module files from each resource plugin
-    const modulesFolderPath = isMultiEnvEnabled()
-      ? path.join(templateFolderPath, modulesFolder)
-      : templateFolderPath;
+    const modulesFolderPath = path.join(templateFolderPath, modulesFolder);
     await fs.ensureDir(modulesFolderPath);
     for (const module of moduleFiles) {
       // module[0] contains relative path to template folder, e.g. "./modules/frontendHosting.bicep"
@@ -428,16 +406,13 @@ async function doGenerateArmTemplate(ctx: SolutionContext): Promise<Result<any, 
     }
 
     // Output parameter file
-    const parameterTemplateFolderPath = isMultiEnvEnabled()
-      ? path.join(ctx.root, templateFolderNew)
-      : path.join(ctx.root, baseFolder, parameterFolder);
-    const parameterTemplateFilePath = path.join(
-      parameterTemplateFolderPath,
-      parameterTemplateFileName
-    );
+    const parameterFileName = parameterFileNameTemplate.replace("@envName", ctx.envInfo.envName);
+    const parameterTemplateFolderPath = path.join(ctx.root, configsFolder);
+    const parameterTemplateFilePath = path.join(parameterTemplateFolderPath, parameterFileName);
     const parameterFileContent = bicepOrchestrationTemplate.getParameterFileContent();
     await fs.ensureDir(parameterTemplateFolderPath);
     await fs.writeFile(parameterTemplateFilePath, parameterFileContent);
+    generateResourceName(ctx);
 
     // Output .gitignore file
     const gitignoreContent = await fs.readFile(
@@ -445,9 +420,7 @@ async function doGenerateArmTemplate(ctx: SolutionContext): Promise<Result<any, 
       ConstantString.UTF8Encoding
     );
     const gitignoreFileName = ".gitignore";
-    const gitignoreFilePath = isMultiEnvEnabled()
-      ? path.join(ctx.root, templateFolderNew, gitignoreFileName)
-      : path.join(ctx.root, baseFolder, gitignoreFileName);
+    const gitignoreFilePath = path.join(ctx.root, templateFolderNew, gitignoreFileName);
     if (!(await fs.pathExists(gitignoreFilePath))) {
       await fs.writeFile(gitignoreFilePath, gitignoreContent);
     }
@@ -634,7 +607,7 @@ interface PluginModuleProperties {
 }
 
 function generateBicepModuleFilePath(moduleFileName: string) {
-  return isMultiEnvEnabled() ? `./modules/${moduleFileName}.bicep` : `./${moduleFileName}.bicep`;
+  return `./modules/${moduleFileName}.bicep`;
 }
 
 function expandParameterPlaceholders(
@@ -702,7 +675,7 @@ function escapeSecretPlaceholders(variables: Record<string, string>) {
 
 // backup existing ARM template and parameter files to backup folder named with current timestamp
 async function backupExistingFilesIfNecessary(ctx: SolutionContext): Promise<void> {
-  const armBaseFolder = path.join(ctx.root, baseFolder);
+  const armBaseFolder = path.join(ctx.root, configsFolder);
   const armTemplateFolder = path.join(armBaseFolder, templateFolder);
   const armParameterFolder = path.join(armBaseFolder, parameterFolder);
 

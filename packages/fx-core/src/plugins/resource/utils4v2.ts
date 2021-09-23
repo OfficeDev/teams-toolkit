@@ -56,6 +56,7 @@ export function convert2PluginContext(
     cryptoProvider: ctx.cryptoProvider,
     permissionRequestProvider: ctx.permissionRequestProvider,
     ui: ctx.userInteraction,
+    permissionRequestProvider: ctx.permissionRequestProvider,
   };
   return pluginContext;
 }

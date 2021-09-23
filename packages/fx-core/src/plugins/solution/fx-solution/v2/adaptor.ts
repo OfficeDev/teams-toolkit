@@ -15,10 +15,8 @@ import {
   ConfigMap,
   EnvConfig,
   PermissionRequestProvider,
-  mergeConfigMap,
 } from "@microsoft/teamsfx-api";
 import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
-import { profile } from "console";
 import { newEnvInfo } from "../../../../core/tools";
 
 class BaseSolutionContextAdaptor implements SolutionContext {

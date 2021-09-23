@@ -879,7 +879,6 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
 
     const inputs: Inputs = getSystemInputs();
     inputs.env = env;
-    inputs.ignoreEnvInfo = true;
 
     result = await core.grantPermission(inputs);
     if (result.isErr()) {
@@ -914,7 +913,6 @@ export async function listCollaborator(env: string): Promise<TreeItem[]> {
 
     const inputs: Inputs = getSystemInputs();
     inputs.env = env;
-    inputs.ignoreEnvInfo = true;
     const userList = await core.listCollaborator(inputs);
     if (userList.isErr()) {
       throw userList.error;
@@ -1005,7 +1003,6 @@ export async function checkPermission(env: string): Promise<boolean> {
 
     const inputs: Inputs = getSystemInputs();
     inputs.env = env;
-    inputs.ignoreEnvInfo = true;
     const permissions = await core.checkPermission(inputs);
     if (permissions.isErr()) {
       throw permissions.error;

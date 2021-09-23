@@ -150,6 +150,7 @@ export enum SolutionError {
   FailedToListCollaborator = "FailedToListCollaborator",
   EmailCannotBeEmptyOrSame = "EmailCannotBeEmptyOrSame",
   FailedToExecuteTasks = "FailedToExecuteTasks",
+  FailedToGetEnvName = "FailedToGetEnvName",
 }
 
 export const LOCAL_DEBUG_TAB_ENDPOINT = "localTabEndpoint";

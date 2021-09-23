@@ -364,10 +364,6 @@ export class FxCore implements Core {
       return err(ProjectFolderNotExistError(projectPath ?? ""));
     }
 
-    if (isV2()) {
-      return err(new NotImplementedError("migrateV1Project"));
-    }
-
     const solution = await getAllSolutionPlugins()[0];
     const projectSettings: ProjectSettings = {
       appName: appName,
@@ -549,8 +545,9 @@ export class FxCore implements Core {
     currentStage = Stage.debug;
 
     if (isV2()) {
-      if (!ctx || !ctx.solutionV2 || !ctx.contextV2 || !ctx.localSettings)
+      if (!ctx || !ctx.solutionV2 || !ctx.contextV2)
         return err(new ObjectIsUndefinedError("localDebug input stuff"));
+      if (!ctx.localSettings) ctx.localSettings = {};
       if (ctx.solutionV2.provisionLocalResource) {
         const res = await ctx.solutionV2.provisionLocalResource(
           ctx.contextV2,
@@ -934,7 +931,7 @@ export class FxCore implements Core {
   }
 
   async buildArtifacts(inputs: Inputs): Promise<Result<Void, FxError>> {
-    throw TaskNotSupportError(Stage.build);
+    throw new TaskNotSupportError(Stage.build);
   }
 
   @hooks([
@@ -1164,7 +1161,7 @@ export async function createBasicFolderStructure(inputs: Inputs): Promise<Result
           description: "",
           author: "",
           scripts: {
-            test: 'echo "Error: no test specified" && exit 1',
+            test: "echo \"Error: no test specified\" && exit 1",
           },
           devDependencies: {
             "@microsoft/teamsfx-cli": "0.*",

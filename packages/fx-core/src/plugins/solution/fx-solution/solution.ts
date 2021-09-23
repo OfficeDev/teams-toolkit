@@ -1360,7 +1360,7 @@ export class TeamsAppSolution implements Solution {
         if (!envName) {
           return err(
             sendErrorTelemetryThenReturnError(
-              SolutionTelemetryEvent.CheckPermission,
+              SolutionTelemetryEvent.GrantPermission,
               returnSystemError(
                 new Error("Failed to get env name."),
                 "Solution",
@@ -1665,7 +1665,7 @@ export class TeamsAppSolution implements Solution {
         if (!envName) {
           return err(
             sendErrorTelemetryThenReturnError(
-              SolutionTelemetryEvent.CheckPermission,
+              SolutionTelemetryEvent.ListCollaborator,
               returnSystemError(
                 new Error("Failed to get env name."),
                 "Solution",

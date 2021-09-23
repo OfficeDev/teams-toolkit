@@ -77,8 +77,16 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
 
     let targetEnvName: string;
     if (!skip && isMultiEnvEnabled()) {
-      // Only ask user to select an env in VS Code
-      if (inputs.platform === Platform.VSCode) {
+      // TODO: This is a workaround for collabrator feature to programmatically load an env in extension.
+      if (inputs.env) {
+        const result = await useUserSetEnv(inputs);
+        if (result.isErr()) {
+          ctx.result = result.error;
+          return;
+        }
+        targetEnvName = result.value;
+      } else if (inputs.platform === Platform.VSCode) {
+        // Only ask user to select an env in VS Code
         const result = await askTargetEnvironment(core.tools, inputs);
         if (result.isErr()) {
           ctx.result = err(result.error);
@@ -92,13 +100,6 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
         );
 
         lastUsedEnv = targetEnvName;
-      } else if (inputs.env) {
-        const result = await useUserSetEnv(inputs);
-        if (result.isErr()) {
-          ctx.result = result.error;
-          return;
-        }
-        targetEnvName = result.value;
       } else if (activeEnv) {
         targetEnvName = activeEnv;
       } else {

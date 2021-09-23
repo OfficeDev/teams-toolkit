@@ -300,7 +300,7 @@ export async function addResourceHandler(args?: any[]): Promise<Result<null, FxE
     namespace: "fx-solution-azure",
     method: "addResource",
   };
-  return await runUserTask(func, TelemetryEvent.AddResource);
+  return await runUserTask(func, TelemetryEvent.AddResource, true);
 }
 
 export async function addCapabilityHandler(args: any[]): Promise<Result<null, FxError>> {
@@ -309,7 +309,7 @@ export async function addCapabilityHandler(args: any[]): Promise<Result<null, Fx
     namespace: "fx-solution-azure",
     method: "addCapability",
   };
-  return await runUserTask(func, TelemetryEvent.AddCap);
+  return await runUserTask(func, TelemetryEvent.AddCap, true);
 }
 
 export async function validateManifestHandler(args?: any[]): Promise<Result<null, FxError>> {
@@ -322,7 +322,7 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
     namespace: "fx-solution-azure",
     method: "validateManifest",
   };
-  return await runUserTask(func, TelemetryEvent.ValidateManifest, true);
+  return await runUserTask(func, TelemetryEvent.ValidateManifest, false);
 }
 
 export async function buildPackageHandler(args?: any[]): Promise<Result<null, FxError>> {
@@ -332,7 +332,7 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<null, Fx
     namespace: "fx-solution-azure",
     method: "buildPackage",
   };
-  return await runUserTask(func, TelemetryEvent.Build, true);
+  return await runUserTask(func, TelemetryEvent.Build, false);
 }
 
 export async function provisionHandler(args?: any[]): Promise<Result<null, FxError>> {
@@ -393,17 +393,14 @@ export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
         break;
       }
       case Stage.provision: {
-        inputs.askEnvSelect = isMultiEnvEnabled() ? true : false;
         result = await core.provisionResources(inputs);
         break;
       }
       case Stage.deploy: {
-        inputs.askEnvSelect = isMultiEnvEnabled() ? true : false;
         result = await core.deployArtifacts(inputs);
         break;
       }
       case Stage.publish: {
-        inputs.askEnvSelect = isMultiEnvEnabled() ? true : false;
         result = await core.publishApplication(inputs);
         break;
       }
@@ -460,7 +457,7 @@ export function detectVsCodeEnv(): VsCodeEnv {
 export async function runUserTask(
   func: Func,
   eventName: string,
-  needSelectEnv = false
+  ignoreEnvInfo: boolean
 ): Promise<Result<any, FxError>> {
   let result: Result<any, FxError> = ok(null);
   try {
@@ -470,7 +467,7 @@ export async function runUserTask(
     }
 
     const inputs: Inputs = getSystemInputs();
-    inputs.askEnvSelect = needSelectEnv;
+    inputs.ignoreEnvInfo = ignoreEnvInfo;
     result = await core.executeUserTask(func, inputs);
   } catch (e) {
     result = wrapError(e);

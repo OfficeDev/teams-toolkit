@@ -106,10 +106,10 @@ export class AadAppForTeamsPlugin implements Plugin, ArmResourcePlugin {
 
   public async checkPermission(
     ctx: PluginContext,
-    userInfo: IUserList
+    userInfo: Record<string, any>
   ): Promise<Result<ResourcePermission[], FxError>> {
     return await this.runWithExceptionCatchingAsync(
-      () => this.pluginImpl.checkPermission(ctx, userInfo),
+      () => this.pluginImpl.checkPermission(ctx, userInfo as IUserList),
       ctx,
       Messages.EndCheckPermission.telemetry
     );
@@ -117,10 +117,10 @@ export class AadAppForTeamsPlugin implements Plugin, ArmResourcePlugin {
 
   public async grantPermission(
     ctx: PluginContext,
-    userInfo: IUserList
+    userInfo: Record<string, any>
   ): Promise<Result<ResourcePermission[], FxError>> {
     return await this.runWithExceptionCatchingAsync(
-      () => this.pluginImpl.grantPermission(ctx, userInfo),
+      () => this.pluginImpl.grantPermission(ctx, userInfo as IUserList),
       ctx,
       Messages.EndCheckPermission.telemetry
     );

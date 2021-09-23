@@ -310,13 +310,16 @@ export class AppStudioPlugin implements Plugin {
 
   public async checkPermission(
     ctx: PluginContext,
-    userInfo: IUserList
+    userInfo: Record<string, any>
   ): Promise<Result<ResourcePermission[], FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.checkPermission);
 
     try {
-      const checkPermissionResult = await this.appStudioPluginImpl.checkPermission(ctx, userInfo);
+      const checkPermissionResult = await this.appStudioPluginImpl.checkPermission(
+        ctx,
+        userInfo as IUserList
+      );
       TelemetryUtils.sendSuccessEvent(TelemetryEventName.checkPermission);
       return ok(checkPermissionResult);
     } catch (error) {
@@ -337,13 +340,16 @@ export class AppStudioPlugin implements Plugin {
 
   public async grantPermission(
     ctx: PluginContext,
-    userInfo: IUserList
+    userInfo: Record<string, any>
   ): Promise<Result<ResourcePermission[], FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.grantPermission);
 
     try {
-      const grantPermissionResult = await this.appStudioPluginImpl.grantPermission(ctx, userInfo);
+      const grantPermissionResult = await this.appStudioPluginImpl.grantPermission(
+        ctx,
+        userInfo as IUserList
+      );
       TelemetryUtils.sendSuccessEvent(TelemetryEventName.grantPermission);
       return ok(grantPermissionResult);
     } catch (error) {

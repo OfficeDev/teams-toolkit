@@ -31,7 +31,8 @@ namespace Microsoft.TeamsFx
     public class TeamsUserCredentialV2 : TokenCredential, IAsyncDisposable
     {
         private readonly AuthenticationOptions _authenticationOptions;
-        private AccessToken _ssoToken;
+        internal AccessToken _ssoToken;
+        internal bool _isWebAssembly;
 
         #region JS Interop
         private readonly Lazy<Task<IJSObjectReference>> _teamsSdkTask;
@@ -42,8 +43,7 @@ namespace Microsoft.TeamsFx
         private readonly ILogger<TeamsUserCredentialV2> _logger;
         private readonly IHttpClientFactory _clientFactory;
         private readonly IMemoryCache _cache;
-        private readonly bool _isWebAssembly;
-
+        
         private const int HttpRequestMaxRetryCount = 3;
         private const int HttpRequestRetryTimeSpanInMillisecond = 3000;
         #endregion
@@ -217,7 +217,7 @@ namespace Microsoft.TeamsFx
         {
             var scopes = requestContext.Scopes;
             var ssoToken = await GetSsoTokenAsync().ConfigureAwait(false);
-            if (scopes.Length == 0)
+            if (scopes == null || scopes.Length == 0)
             {
                 _logger.LogInformation("Get SSO token");
                 return ssoToken.ToAzureAccessToken();

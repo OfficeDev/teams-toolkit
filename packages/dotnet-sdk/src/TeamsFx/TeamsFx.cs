@@ -178,6 +178,10 @@ namespace Microsoft.TeamsFx
             return client;
         }
 
+        /// <summary>
+        /// Dispose.
+        /// </summary>
+        /// <returns></returns>
         public async ValueTask DisposeAsync()
         {
             await jsInteropBase.DisposeAsync().ConfigureAwait(false);

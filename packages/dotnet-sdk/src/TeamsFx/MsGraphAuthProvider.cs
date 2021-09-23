@@ -65,6 +65,11 @@ namespace Microsoft.TeamsFx
             _logger?.LogInformation("Create Microsoft Graph Authentication Provider with {scopes}", _scopes);
         }
 
+        /// <summary>
+        /// Authenticates the specified request message.
+        /// </summary>
+        /// <param name="request">The System.Net.Http.HttpRequestMessage to authenticate.</param>
+        /// <returns>The task to await.</returns>
         public async Task AuthenticateRequestAsync(HttpRequestMessage request)
         {
             var tokenRequestContext = new TokenRequestContext(_scopes);

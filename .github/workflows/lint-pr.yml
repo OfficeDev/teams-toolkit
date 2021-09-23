@@ -60,6 +60,6 @@ jobs:
           then 
             echo "There may be some unformatted files in your PR, please run these commands on Git Bash terminal: \
             1. VAR=$(realpath .github/scripts/lint-pr.sh) \
-            2. npx lerna exec – bash $VAR ${your-PR-target-branch}"
+            2. npx lerna exec -- bash $VAR ${your-PR-target-branch}"
             exit 1
           fi

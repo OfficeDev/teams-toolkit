@@ -89,6 +89,16 @@ export class ConfigMap extends Map<string, ConfigValue> {
   }
 }
 
+export function mergeConfigMap(lhs?: ConfigMap, rhs?: ConfigMap): ConfigMap | undefined {
+  if (!lhs) {
+    return rhs;
+  }
+  if (!rhs) {
+    return lhs;
+  }
+  return new ConfigMap([...lhs.entries(), ...rhs.entries()]);
+}
+
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type Void = {};
 export const Void = {};

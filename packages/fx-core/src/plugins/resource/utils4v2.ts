@@ -9,6 +9,7 @@ import {
   FxError,
   Inputs,
   Json,
+  mergeConfigMap,
   ok,
   Plugin,
   PluginContext,
@@ -55,7 +56,6 @@ export function convert2PluginContext(
     cryptoProvider: ctx.cryptoProvider,
     permissionRequestProvider: ctx.permissionRequestProvider,
     ui: ctx.userInteraction,
-    permissionRequestProvider: ctx.permissionRequestProvider,
   };
   return pluginContext;
 }
@@ -140,26 +140,30 @@ export async function provisionResourceAdapter(
       return err(preRes.error);
     }
   }
+
   const res = await plugin.provision(pluginContext);
   if (res.isErr()) {
     return err(res.error);
   }
-  if (plugin.postProvision) {
-    const postRes = await plugin.postProvision(pluginContext);
-    if (postRes.isErr()) {
-      return err(postRes.error);
-    }
-  }
-  const output = pluginContext.config.toJSON();
+
+  return ok(legacyConfig2EnvProfile(pluginContext.config, plugin.name));
+}
+
+// Convert legacy config map to env profile with output and secrets fields
+function legacyConfig2EnvProfile(
+  config: ConfigMap,
+  pluginName: string
+): { output: Json; secrets: Json } {
+  const output = config.toJSON();
   //separate secret keys from output
   const secrets: Json = {};
   for (const key of Object.keys(output)) {
-    if (CryptoDataMatchers.has(`${plugin.name}.${key}`)) {
+    if (CryptoDataMatchers.has(`${pluginName}.${key}`)) {
       secrets[key] = output[key];
       delete output[key];
     }
   }
-  return ok({ output: output, secrets: secrets });
+  return { output, secrets };
 }
 
 export async function configureResourceAdapter(
@@ -275,13 +279,18 @@ export async function executeUserTaskAdapter(
   if (!plugin.executeUserTask)
     return err(PluginHasNoTaskImpl(plugin.displayName, "executeUserTask"));
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
-  setConfigs(plugin.name, pluginContext, envInfo.profile);
+  const config =
+    mergeConfigMap(
+      ConfigMap.fromJSON(envInfo.profile[plugin.name].output),
+      ConfigMap.fromJSON(envInfo.profile[plugin.name].secrets)
+    ) || new ConfigMap();
+  pluginContext.config = config;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
   const res = await plugin.executeUserTask(func, pluginContext);
   if (res.isErr()) return err(res.error);
-  envInfo.profile[plugin.name] = pluginContext.config.toJSON();
+  envInfo.profile[plugin.name] = legacyConfig2EnvProfile(pluginContext.config, plugin.name);
   return ok(res.value);
 }
 

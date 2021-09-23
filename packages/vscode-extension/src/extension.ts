@@ -235,22 +235,6 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(viewEnvironmentWithIcon);
 
-  const activateEnvironment = vscode.commands.registerCommand(
-    "fx-extension.activateEnvironment",
-    (node) => {
-      Correlator.run(handlers.activateEnvironment, node.command.title);
-    }
-  );
-  context.subscriptions.push(activateEnvironment);
-
-  const activateEnvironmentWithIcon = vscode.commands.registerCommand(
-    "fx-extension.activateEnvironmentWithIcon",
-    (node) => {
-      Correlator.run(handlers.activateEnvironment, node.command.title);
-    }
-  );
-  context.subscriptions.push(activateEnvironmentWithIcon);
-
   const grantPermission = vscode.commands.registerCommand(
     "fx-extension.grantPermission",
     (node) => {

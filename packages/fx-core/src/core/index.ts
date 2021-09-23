@@ -513,13 +513,13 @@ export class FxCore implements Core {
   async deployArtifacts(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     currentStage = Stage.deploy;
     if (isV2()) {
-      if (!ctx || !ctx.solutionV2 || !ctx.contextV2 || !ctx.provisionOutputs)
+      if (!ctx || !ctx.solutionV2 || !ctx.contextV2 || !ctx.envInfoV2)
         return err(new ObjectIsUndefinedError("Deploy input stuff"));
       if (ctx.solutionV2.deploy)
         return await ctx.solutionV2.deploy(
           ctx.contextV2,
           inputs,
-          ctx.provisionOutputs,
+          ctx.envInfoV2.profile,
           this.tools.tokenProvider.azureAccountProvider
         );
       else return ok(Void);
@@ -941,7 +941,7 @@ export class FxCore implements Core {
     ErrorHandlerMW,
     ProjectSettingsLoaderMW,
     SolutionLoaderMW(),
-    EnvInfoLoaderMW(false),
+    EnvInfoLoaderMW(true),
     ContextInjectorMW,
   ])
   async createEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {

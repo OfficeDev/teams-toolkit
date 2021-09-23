@@ -393,7 +393,7 @@ export class AppStudioPluginImpl {
       ctx.logProvider
     );
     if (result.isErr()) {
-      throw result;
+      throw result.error;
     }
 
     ctx.logProvider?.info(`Teams app updated: ${result.value}`);

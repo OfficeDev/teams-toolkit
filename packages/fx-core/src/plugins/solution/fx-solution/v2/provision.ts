@@ -112,6 +112,7 @@ export async function provisionResource(
   }
 
   const plugins = getSelectedPlugins(azureSolutionSettings);
+  const solutionInputs = extractSolutionInputs(newEnvInfo.profile[GLOBAL_CONFIG]);
   const provisionThunks = plugins
     .filter((plugin) => !isUndefined(plugin.provisionResource))
     .map((plugin) => {
@@ -122,7 +123,7 @@ export async function provisionResource(
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           plugin.provisionResource!(
             ctx,
-            { ...inputs, ...extractSolutionInputs(newEnvInfo.profile), projectPath: projectPath },
+            { ...inputs, ...solutionInputs, projectPath: projectPath },
             { ...newEnvInfo, profile: newEnvInfo.profile[plugin.name] },
             tokenProvider
           ),
@@ -186,7 +187,7 @@ export async function provisionResource(
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           plugin.configureResource!(
             ctx,
-            { ...inputs, ...extractSolutionInputs(newEnvInfo.profile), projectPath: projectPath },
+            { ...inputs, ...solutionInputs, projectPath: projectPath },
             { ...newEnvInfo, profile: newEnvInfo.profile[plugin.name] },
             tokenProvider
           ),

@@ -181,13 +181,13 @@ namespace Microsoft.TeamsFx
         /// <exception cref="ExceptionCode.UiRequiredError">When need user consent to get access token.</exception>
         /// <exception cref="ExceptionCode.ServiceError">When failed to get access token from simple auth server.</exception>
         /// <exception cref="ExceptionCode.RuntimeNotSupported">When runtime is not in browser enviroment.</exception>
-        public async override ValueTask<AccessToken> GetTokenAsync(TokenRequestContext requestContext, CancellationToken cancellationToken)
+        public async override ValueTask<Azure.Core.AccessToken> GetTokenAsync(TokenRequestContext requestContext, CancellationToken cancellationToken)
         {
             try
             {
                 var instance = await instanceTask.Value.ConfigureAwait(false);
                 var tokenJS = await instance.InvokeAsync<AccessTokenJS>("getToken", requestContext.Scopes, cancellationToken).ConfigureAwait(false);
-                return new AccessToken(tokenJS.Token, tokenJS.ExpiresOn);
+                return new Azure.Core.AccessToken(tokenJS.Token, tokenJS.ExpiresOn);
             }
             catch (JSException e)
             {
@@ -198,7 +198,7 @@ namespace Microsoft.TeamsFx
         /// <summary>
         /// Not implemented for now.
         /// </summary>
-        public override AccessToken GetToken(TokenRequestContext requestContext, CancellationToken cancellationToken)
+        public override Azure.Core.AccessToken GetToken(TokenRequestContext requestContext, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }

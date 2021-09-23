@@ -268,7 +268,7 @@ describe("getQuestionsForScaffolding()", async () => {
         envInfo,
         mockedProvider
       );
-      assert.isTrue(res.isErr());
+      assert.isTrue(res.isOk());
     }
     {
       (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).hostType =

@@ -117,9 +117,8 @@ describe("Other test case", () => {
   });
 
   it("error: TaskNotSupportError", async () => {
-    const error = TaskNotSupportError(Stage.createEnv);
+    const error = new TaskNotSupportError(Stage.createEnv);
     assert.isTrue(error.name === "TaskNotSupport");
-    assert.isTrue(error.message === `Task is not supported yet: ${Stage.createEnv}`);
   });
 
   it("error: FetchSampleError", async () => {

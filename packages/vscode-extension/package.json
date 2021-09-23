@@ -2,7 +2,7 @@
   "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit (Preview)",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "2.6.0",
+  "version": "2.7.0",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -195,15 +195,6 @@
           "group": "inline@3"
         },
         {
-          "command": "fx-extension.activateEnvironment",
-          "when": "view == teamsfx-environment && viewItem =~ /environment/"
-        },
-        {
-          "command": "fx-extension.activateEnvironmentWithIcon",
-          "when": "view == teamsfx-environment && viewItem =~ /environment/",
-          "group": "inline@3"
-        },
-        {
           "command": "fx-extension.grantPermission",
           "when": "view == teamsfx-environment && viewItem == environmentWithPermission",
           "group": "inline@3"
@@ -267,14 +258,6 @@
         },
         {
           "command": "fx-extension.viewEnvironmentWithIcon",
-          "when": "false"
-        },
-        {
-          "command": "fx-extension.activateEnvironment",
-          "when": "false"
-        },
-        {
-          "command": "fx-extension.activateEnvironmentWithIcon",
           "when": "false"
         },
         {
@@ -437,17 +420,6 @@
         "command": "fx-extension.viewEnvironmentWithIcon",
         "title": "View environment",
         "icon": "$(file-symlink-directory)",
-        "enablement": "fx-extension.isMultiEnvEnabled"
-      },
-      {
-        "command": "fx-extension.activateEnvironment",
-        "title": "Activate environment",
-        "enablement": "fx-extension.isMultiEnvEnabled"
-      },
-      {
-        "command": "fx-extension.activateEnvironmentWithIcon",
-        "title": "Activate environment",
-        "icon": "$(check)",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {
@@ -761,8 +733,8 @@
     "@azure/identity": "^1.2.1",
     "@azure/ms-rest-nodeauth": "^3.0.7",
     "@azure/msal-node": "^1.0.0-beta.5",
-    "@microsoft/teamsfx-api": "^0.7.0",
-    "@microsoft/teamsfx-core": "^0.7.0",
+    "@microsoft/teamsfx-api": "^0.8.0",
+    "@microsoft/teamsfx-core": "^0.8.0",
     "async-mutex": "^0.3.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",

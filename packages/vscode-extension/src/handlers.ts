@@ -47,6 +47,7 @@ import {
   isMigrateFromV1Project,
   isMultiEnvEnabled,
   LocalSettingsProvider,
+  CollaborationState,
 } from "@microsoft/teamsfx-core";
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -119,14 +120,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
 
     const expService = exp.getExpService();
     if (expService) {
-      if (
-        !validProject &&
-        (await expService.getTreatmentVariableAsync(
-          TreatmentVariables.VSCodeConfig,
-          TreatmentVariables.SidebarWelcome,
-          true
-        ))
-      ) {
+      if (!validProject) {
         vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome", true);
       } else {
         vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome", false);
@@ -328,7 +322,7 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
     namespace: "fx-solution-azure",
     method: "validateManifest",
   };
-  return await runUserTask(func, TelemetryEvent.ValidateManifest);
+  return await runUserTask(func, TelemetryEvent.ValidateManifest, true);
 }
 
 export async function buildPackageHandler(args?: any[]): Promise<Result<null, FxError>> {
@@ -338,7 +332,7 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<null, Fx
     namespace: "fx-solution-azure",
     method: "buildPackage",
   };
-  return await runUserTask(func, TelemetryEvent.Build);
+  return await runUserTask(func, TelemetryEvent.Build, true);
 }
 
 export async function provisionHandler(args?: any[]): Promise<Result<null, FxError>> {
@@ -375,42 +369,65 @@ export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
     const inputs: Inputs = getSystemInputs();
     inputs.stage = stage;
 
-    if (stage === Stage.create) {
-      const tmpResult = await core.createProject(inputs);
-      if (tmpResult.isErr()) {
-        result = err(tmpResult.error);
-      } else {
-        const uri = Uri.file(tmpResult.value);
-        await commands.executeCommand("vscode.openFolder", uri);
-        result = ok(null);
+    switch (stage) {
+      case Stage.create: {
+        const tmpResult = await core.createProject(inputs);
+        if (tmpResult.isErr()) {
+          result = err(tmpResult.error);
+        } else {
+          const uri = Uri.file(tmpResult.value);
+          await commands.executeCommand("vscode.openFolder", uri);
+          result = ok(null);
+        }
+        break;
       }
-    } else if (stage === Stage.migrateV1) {
-      const tmpResult = await core.migrateV1Project(inputs);
-      if (tmpResult.isErr()) {
-        result = err(tmpResult.error);
-      } else {
-        const uri = Uri.file(tmpResult.value);
-        await commands.executeCommand("vscode.openFolder", uri);
-        result = ok(null);
+      case Stage.migrateV1: {
+        const tmpResult = await core.migrateV1Project(inputs);
+        if (tmpResult.isErr()) {
+          result = err(tmpResult.error);
+        } else {
+          const uri = Uri.file(tmpResult.value);
+          await commands.executeCommand("vscode.openFolder", uri);
+          result = ok(null);
+        }
+        break;
       }
-    } else if (stage === Stage.provision) result = await core.provisionResources(inputs);
-    else if (stage === Stage.deploy) result = await core.deployArtifacts(inputs);
-    else if (stage === Stage.debug) {
-      if (isMultiEnvEnabled()) {
-        inputs.ignoreEnvInfo = true;
+      case Stage.provision: {
+        inputs.askEnvSelect = isMultiEnvEnabled() ? true : false;
+        result = await core.provisionResources(inputs);
+        break;
       }
-      result = await core.localDebug(inputs);
-    } else if (stage === Stage.publish) result = await core.publishApplication(inputs);
-    else if (stage === Stage.createEnv) {
-      result = await core.createEnv(inputs);
-    } else if (stage === Stage.listCollaborator) {
-      result = await core.listCollaborator(inputs);
-    } else {
-      throw new SystemError(
-        ExtensionErrors.UnsupportedOperation,
-        util.format(StringResources.vsc.handlers.operationNotSupport, stage),
-        ExtensionSource
-      );
+      case Stage.deploy: {
+        inputs.askEnvSelect = isMultiEnvEnabled() ? true : false;
+        result = await core.deployArtifacts(inputs);
+        break;
+      }
+      case Stage.publish: {
+        inputs.askEnvSelect = isMultiEnvEnabled() ? true : false;
+        result = await core.publishApplication(inputs);
+        break;
+      }
+      case Stage.debug: {
+        if (isMultiEnvEnabled()) {
+          inputs.ignoreEnvInfo = true;
+        }
+        result = await core.localDebug(inputs);
+        break;
+      }
+      case Stage.createEnv: {
+        result = await core.createEnv(inputs);
+        break;
+      }
+      case Stage.listCollaborator: {
+        result = await core.listCollaborator(inputs);
+        break;
+      }
+      default:
+        throw new SystemError(
+          ExtensionErrors.UnsupportedOperation,
+          util.format(StringResources.vsc.handlers.operationNotSupport, stage),
+          ExtensionSource
+        );
     }
   } catch (e) {
     result = wrapError(e);
@@ -440,15 +457,21 @@ export function detectVsCodeEnv(): VsCodeEnv {
   }
 }
 
-export async function runUserTask(func: Func, eventName: string): Promise<Result<any, FxError>> {
+export async function runUserTask(
+  func: Func,
+  eventName: string,
+  needSelectEnv = false
+): Promise<Result<any, FxError>> {
   let result: Result<any, FxError> = ok(null);
   try {
     const checkCoreRes = checkCoreNotEmpty();
     if (checkCoreRes.isErr()) {
       throw checkCoreRes.error;
     }
-    const answers: Inputs = getSystemInputs();
-    result = await core.executeUserTask(func, answers);
+
+    const inputs: Inputs = getSystemInputs();
+    inputs.askEnvSelect = needSelectEnv;
+    result = await core.executeUserTask(func, inputs);
   } catch (e) {
     result = wrapError(e);
   }
@@ -846,27 +869,6 @@ export async function viewEnvironment(env: string): Promise<Result<Void, FxError
   return ok(Void);
 }
 
-export async function activateEnvironment(env: string): Promise<Result<Void, FxError>> {
-  // const eventName = ExtTelemetry.stageToEvent(stage);
-  let result: Result<any, FxError> = ok(Void);
-  try {
-    const checkCoreRes = checkCoreNotEmpty();
-    if (checkCoreRes.isErr()) {
-      throw checkCoreRes.error;
-    }
-
-    const inputs: Inputs = getSystemInputs();
-    inputs.env = env;
-    result = await core.activateEnv(inputs);
-    await registerEnvTreeHandler();
-  } catch (e) {
-    result = wrapError(e);
-  }
-  // await processResult(eventName, result);
-
-  return result;
-}
-
 export async function grantPermission(env: string): Promise<Result<Void, FxError>> {
   let result: Result<any, FxError> = ok(Void);
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.GrantPermission);
@@ -885,11 +887,15 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
     if (result.isErr()) {
       throw result.error;
     }
-    window.showInformationMessage(
-      `Added account: '${inputs.email}' to the environment '${env}' as a collaborator`
-    );
+    if (result.value.state === CollaborationState.OK) {
+      window.showInformationMessage(
+        `Added account: '${inputs.email}' to the environment '${env}' as a collaborator`
+      );
 
-    updateCollaboratorList(env);
+      updateCollaboratorList(env);
+    } else {
+      window.showWarningMessage(result.value.message);
+    }
   } catch (e) {
     result = wrapError(e);
   }
@@ -914,30 +920,54 @@ export async function listCollaborator(env: string): Promise<TreeItem[]> {
     if (userList.isErr()) {
       throw userList.error;
     }
-    result = userList.value.map((user: any) => {
-      return {
-        commandId: `fx-extension.listcollaborator.${env}.${user.userObjectId}`,
-        label: user.userPrincipalName,
-        icon: user.isAadOwner ? "person" : "warning",
-        isCustom: !user.isAadOwner,
-        tooltip: {
-          value: user.isAadOwner ? "" : "This account doesn't have the AAD permission.",
-          isMarkdown: false,
-        },
-        parent: "fx-extension.environment." + env,
-      };
-    });
-    if (!result || result.length === 0) {
+
+    if (userList.value.state === CollaborationState.OK) {
+      result = userList.value.collaborators.map((user: any) => {
+        return {
+          commandId: `fx-extension.listcollaborator.${env}.${user.userObjectId}`,
+          label: user.userPrincipalName,
+          icon: user.isAadOwner ? "person" : "warning",
+          isCustom: !user.isAadOwner,
+          tooltip: {
+            value: user.isAadOwner ? "" : "This account doesn't have the AAD permission.",
+            isMarkdown: false,
+          },
+          parent: `fx-extension.listcollaborator.parentNode.${env}`,
+        };
+      });
+      if (!result || result.length === 0) {
+        result = [
+          {
+            commandId: `fx-extension.listcollaborator.${env}`,
+            label: StringResources.vsc.commandsTreeViewProvider.noPermissionToListCollaborators,
+            icon: "warning",
+            isCustom: true,
+            parent: `fx-extension.listcollaborator.parentNode.${env}`,
+          },
+        ];
+      }
+    } else {
+      let label = userList.value.message;
+      const toolTip = userList.value.message;
+      if (userList.value.state === CollaborationState.NotProvisioned) {
+        label = StringResources.vsc.commandsTreeViewProvider.unableToFindTeamsAppRegistration;
+      }
+
       result = [
         {
           commandId: `fx-extension.listcollaborator.${env}`,
-          label: StringResources.vsc.commandsTreeViewProvider.noPermissionToListCollaborators,
+          label: label,
+          tooltip: {
+            value: toolTip,
+            isMarkdown: false,
+          },
           icon: "warning",
           isCustom: true,
-          parent: "fx-extension.environment." + env,
+          parent: `fx-extension.listcollaborator.parentNode.${env}`,
         },
       ];
     }
+
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ListCollaborator, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
     });
@@ -946,21 +976,17 @@ export async function listCollaborator(env: string): Promise<TreeItem[]> {
     VsCodeLogInstance.warning(
       `code:${e.source}.${e.name}, message: Failed to list collaborator for environment '${env}':  ${e.message}`
     );
-    let label = e.message;
-    if (e.name === "CannotProcessBeforeProvision") {
-      label = StringResources.vsc.commandsTreeViewProvider.unableToFindTeamsAppRegistration;
-    }
     result = [
       {
         commandId: `fx-extension.listcollaborator.${env}`,
-        label: label,
+        label: e.message,
         tooltip: {
           value: e.message,
           isMarkdown: false,
         },
         icon: "warning",
         isCustom: true,
-        parent: "fx-extension.environment." + env,
+        parent: `fx-extension.listcollaborator.parentNode.${env}`,
       },
     ];
   }
@@ -984,18 +1010,22 @@ export async function checkPermission(env: string): Promise<boolean> {
     if (permissions.isErr()) {
       throw permissions.error;
     }
-    const teamsAppPermission = permissions.value.find(
-      (permission: any) => permission.name === "Teams App"
-    );
-    const aadPermission = permissions.value.find(
-      (permission: any) => permission.name === "Azure AD App"
-    );
-    result =
-      (teamsAppPermission.roles?.includes("Administrator") ?? false) &&
-      (aadPermission.roles?.includes("Owner") ?? false);
-    ExtTelemetry.sendTelemetryEvent(Stage.checkPermission, {
-      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-    });
+    if (permissions.value.state === CollaborationState.OK) {
+      const teamsAppPermission = permissions.value.permissions.find(
+        (permission: any) => permission.name === "Teams App"
+      );
+      const aadPermission = permissions.value.permissions.find(
+        (permission: any) => permission.name === "Azure AD App"
+      );
+      result =
+        (teamsAppPermission.roles?.includes("Administrator") ?? false) &&
+        (aadPermission.roles?.includes("Owner") ?? false);
+      ExtTelemetry.sendTelemetryEvent(Stage.checkPermission, {
+        [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+      });
+    } else {
+      result = false;
+    }
   } catch (e) {
     ExtTelemetry.sendTelemetryErrorEvent(Stage.checkPermission, e);
     result = false;

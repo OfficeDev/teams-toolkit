@@ -364,10 +364,6 @@ export class FxCore implements Core {
       return err(ProjectFolderNotExistError(projectPath ?? ""));
     }
 
-    if (isV2()) {
-      return err(new NotImplementedError("migrateV1Project"));
-    }
-
     const solution = await getAllSolutionPlugins()[0];
     const projectSettings: ProjectSettings = {
       appName: appName,
@@ -455,7 +451,7 @@ export class FxCore implements Core {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(isMultiEnvEnabled()),
+    EnvInfoLoaderMW(false),
     SolutionLoaderMW(),
     QuestionModelMW,
     ContextInjectorMW,
@@ -503,7 +499,7 @@ export class FxCore implements Core {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(isMultiEnvEnabled()),
+    EnvInfoLoaderMW(false),
     SolutionLoaderMW(),
     QuestionModelMW,
     ContextInjectorMW,
@@ -513,13 +509,13 @@ export class FxCore implements Core {
   async deployArtifacts(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     currentStage = Stage.deploy;
     if (isV2()) {
-      if (!ctx || !ctx.solutionV2 || !ctx.contextV2 || !ctx.provisionOutputs)
+      if (!ctx || !ctx.solutionV2 || !ctx.contextV2 || !ctx.envInfoV2)
         return err(new ObjectIsUndefinedError("Deploy input stuff"));
       if (ctx.solutionV2.deploy)
         return await ctx.solutionV2.deploy(
           ctx.contextV2,
           inputs,
-          ctx.provisionOutputs,
+          ctx.envInfoV2.profile,
           this.tools.tokenProvider.azureAccountProvider
         );
       else return ok(Void);
@@ -536,7 +532,7 @@ export class FxCore implements Core {
     ProjectMigratorMW,
     ProjectUpgraderMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(false),
+    EnvInfoLoaderMW(true),
     LocalSettingsLoaderMW,
     SolutionLoaderMW(),
     QuestionModelMW,
@@ -549,8 +545,9 @@ export class FxCore implements Core {
     currentStage = Stage.debug;
 
     if (isV2()) {
-      if (!ctx || !ctx.solutionV2 || !ctx.contextV2 || !ctx.localSettings)
+      if (!ctx || !ctx.solutionV2 || !ctx.contextV2)
         return err(new ObjectIsUndefinedError("localDebug input stuff"));
+      if (!ctx.localSettings) ctx.localSettings = {};
       if (ctx.solutionV2.provisionLocalResource) {
         const res = await ctx.solutionV2.provisionLocalResource(
           ctx.contextV2,
@@ -588,7 +585,7 @@ export class FxCore implements Core {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(isMultiEnvEnabled()),
+    EnvInfoLoaderMW(false),
     SolutionLoaderMW(),
     QuestionModelMW,
     ContextInjectorMW,
@@ -618,7 +615,7 @@ export class FxCore implements Core {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(isMultiEnvEnabled()),
+    EnvInfoLoaderMW(false),
     LocalSettingsLoaderMW,
     SolutionLoaderMW(),
     QuestionModelMW,
@@ -640,15 +637,16 @@ export class FxCore implements Core {
         if (!ctx || !ctx.solutionV2 || !ctx.envInfoV2)
           return err(new ObjectIsUndefinedError("executeUserTask input stuff"));
         if (!ctx.contextV2) ctx.contextV2 = createV2Context(this, newProjectSettings());
-        if (ctx.solutionV2.executeUserTask)
-          return await ctx.solutionV2.executeUserTask(
+        if (ctx.solutionV2.executeUserTask) {
+          const res = await ctx.solutionV2.executeUserTask(
             ctx.contextV2,
             inputs,
             func,
             ctx.envInfoV2,
             this.tools.tokenProvider
           );
-        else return err(FunctionRouterError(func));
+          return res;
+        } else return err(FunctionRouterError(func));
       } else {
         if (!ctx || !ctx.solution)
           return err(new ObjectIsUndefinedError("executeUserTask input stuff"));
@@ -665,7 +663,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(false),
+    EnvInfoLoaderMW(true),
     SolutionLoaderMW(),
     ContextInjectorMW,
     EnvInfoWriterMW(),
@@ -703,7 +701,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(false),
+    EnvInfoLoaderMW(true),
     SolutionLoaderMW(),
     ContextInjectorMW,
     EnvInfoWriterMW(),
@@ -735,7 +733,7 @@ export class FxCore implements Core {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(isMultiEnvEnabled()),
+    EnvInfoLoaderMW(false),
     LocalSettingsLoaderMW,
     ContextInjectorMW,
   ])
@@ -762,7 +760,7 @@ export class FxCore implements Core {
     ErrorHandlerMW,
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(isMultiEnvEnabled()),
+    EnvInfoLoaderMW(false),
     SolutionLoaderMW(),
     QuestionModelMW,
     ContextInjectorMW,
@@ -776,7 +774,7 @@ export class FxCore implements Core {
     ErrorHandlerMW,
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(isMultiEnvEnabled()),
+    EnvInfoLoaderMW(false),
     SolutionLoaderMW(),
     QuestionModelMW,
     ContextInjectorMW,
@@ -790,7 +788,7 @@ export class FxCore implements Core {
     ErrorHandlerMW,
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(isMultiEnvEnabled()),
+    EnvInfoLoaderMW(false),
     SolutionLoaderMW(),
     QuestionModelMW,
     ContextInjectorMW,
@@ -905,7 +903,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(false),
+    EnvInfoLoaderMW(true),
     ContextInjectorMW,
     EnvInfoWriterMW(),
   ])
@@ -920,7 +918,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(false),
+    EnvInfoLoaderMW(true),
     ContextInjectorMW,
     EnvInfoWriterMW(),
   ])
@@ -933,14 +931,14 @@ export class FxCore implements Core {
   }
 
   async buildArtifacts(inputs: Inputs): Promise<Result<Void, FxError>> {
-    throw TaskNotSupportError(Stage.build);
+    throw new TaskNotSupportError(Stage.build);
   }
 
   @hooks([
     ErrorHandlerMW,
     ProjectSettingsLoaderMW,
     SolutionLoaderMW(),
-    EnvInfoLoaderMW(isMultiEnvEnabled()),
+    EnvInfoLoaderMW(true),
     ContextInjectorMW,
   ])
   async createEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
@@ -964,7 +962,6 @@ export class FxCore implements Core {
     const createEnvResult = await this.createEnvCopy(
       createEnvCopyInput.targetEnvName,
       createEnvCopyInput.sourceEnvName,
-      projectSettings,
       inputs,
       core
     );
@@ -1020,7 +1017,6 @@ export class FxCore implements Core {
   async createEnvCopy(
     targetEnvName: string,
     sourceEnvName: string,
-    projectSettings: ProjectSettings,
     inputs: Inputs,
     core: FxCore
   ): Promise<Result<Void, FxError>> {
@@ -1165,7 +1161,7 @@ export async function createBasicFolderStructure(inputs: Inputs): Promise<Result
           description: "",
           author: "",
           scripts: {
-            test: 'echo "Error: no test specified" && exit 1',
+            test: "echo \"Error: no test specified\" && exit 1",
           },
           devDependencies: {
             "@microsoft/teamsfx-cli": "0.*",

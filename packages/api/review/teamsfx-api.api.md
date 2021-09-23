@@ -250,19 +250,24 @@ export class EmptyOptionError extends SystemError {
 export interface EnvConfig {
     // (undocumented)
     $schema?: string;
+    // (undocumented)
+    [k: string]: unknown;
     auth?: {
         clientId?: string;
         clientSecret?: string;
         objectId?: string;
         accessAsUserScopeId?: string;
+        [k: string]: unknown;
     };
     azure?: {
         subscriptionId?: string;
         resourceGroupName?: string;
+        [k: string]: unknown;
     };
     bot?: {
         appId?: string;
         appPassword?: string;
+        [k: string]: unknown;
     };
     manifest: {
         description?: string;
@@ -594,6 +599,8 @@ export interface InputResult<T> {
 
 // @public (undocumented)
 export interface Inputs extends Json {
+    // (undocumented)
+    askEnvSelect?: boolean;
     // (undocumented)
     ignoreConfigPersist?: boolean;
     // (undocumented)

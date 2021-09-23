@@ -8,6 +8,7 @@ export class SqlConfig {
   location = "";
   resourceNameSuffix = "";
   sqlServer = "";
+  sqlResourceId = "";
   sqlEndpoint = "";
   admin = "";
   adminPassword = "";
@@ -19,4 +20,5 @@ export class SqlConfig {
   identity = "";
   existSql = false;
   skipAddingUser = false;
+  prepareQuestions = false;
 }

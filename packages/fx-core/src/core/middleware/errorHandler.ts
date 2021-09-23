@@ -4,7 +4,7 @@
 
 import { HookContext, NextFunction, Middleware } from "@feathersjs/hooks";
 import { assembleError, err, Inputs, SystemError, UserError } from "@microsoft/teamsfx-api";
-import { FxCore } from "..";
+import { FxCore, isV2 } from "..";
 
 /**
  * in case there're some uncatched exceptions, this middleware will act as a guard
@@ -18,7 +18,10 @@ export const ErrorHandlerMW: Middleware = async (ctx: HookContext, next: NextFun
       ? core.tools.logProvider
       : undefined;
   try {
-    if (logger) logger.info(`[core] start task:${ctx.method}, inputs:${JSON.stringify(inputs)}`);
+    if (logger)
+      logger.info(
+        `[core] start task:${ctx.method}, inputs:${JSON.stringify(inputs)}, API v2: ${isV2()}`
+      );
     await next();
     if (logger) logger.info(`[core] finish task:${ctx.method}`);
   } catch (e) {
@@ -30,19 +33,14 @@ export const ErrorHandlerMW: Middleware = async (ctx: HookContext, next: NextFun
   }
 };
 
-const Reg1 =
-  /The client '.+' with object id '.+' does not have authorization to perform action '.+' over scope '.+' or the scope is invalid. If access was recently granted, please refresh your credentials\./;
+const Reg1 = /The client '.+' with object id '.+' does not have authorization to perform action '.+' over scope '.+' or the scope is invalid. If access was recently granted, please refresh your credentials\./;
 const Reg2 = /"resourceGroupName" with value ".+" should satisfy the constraint "Pattern"/;
 const Reg3 = /Resource '.+' was disallowed by policy./;
-const Reg4 =
-  /The subscription '.+' is disabled and therefore marked as read only. You cannot perform any write actions on this subscription until it is re-enabled\./;
-const Reg5 =
-  /The current subscription type is not permitted to perform operations on any provider namespace. Please use a different subscription\./;
-const Reg6 =
-  /The provided location '.+' is not available for resource group\. List of available regions is '.+'\./;
+const Reg4 = /The subscription '.+' is disabled and therefore marked as read only. You cannot perform any write actions on this subscription until it is re-enabled\./;
+const Reg5 = /The current subscription type is not permitted to perform operations on any provider namespace. Please use a different subscription\./;
+const Reg6 = /The provided location '.+' is not available for resource group\. List of available regions is '.+'\./;
 const Reg7 = /The subscription '.+' could not be found\./;
-const Reg8 =
-  /Invalid resource group location '.+'. The Resource group already exists in location '.+'\./;
+const Reg8 = /Invalid resource group location '.+'. The Resource group already exists in location '.+'\./;
 const Reg9 = /The access token is from the wrong issuer '.+'\./;
 const Reg10 = /Entry not found in cache\./;
 const Reg11 = /request to .+ failed, reason: .+/;

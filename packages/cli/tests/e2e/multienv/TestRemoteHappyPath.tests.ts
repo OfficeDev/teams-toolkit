@@ -3,13 +3,16 @@
 
 import fs from "fs-extra";
 import path from "path";
+import { expect } from "chai";
 
 import {
   AadValidator,
+  AppStudioValidator,
   BotValidator,
   FrontendValidator,
   FunctionValidator,
   SimpleAuthValidator,
+  SqlValidator,
 } from "../../commonlib";
 
 import {
@@ -19,6 +22,7 @@ import {
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
+  loadContext,
   mockTeamsfxMultiEnvFeatureFlag,
   setSimpleAuthSkuNameToB1Bicep,
 } from "../commonUtils";
@@ -33,39 +37,8 @@ import {
   PublishProfilesFolderName,
   EnvProfileFileNameTemplate,
   EnvNamePlaceholder,
+  AppPackageFolderName,
 } from "@microsoft/teamsfx-api";
-import { expect } from "chai";
-
-// Load envProfile with userdata (not decrypted)
-async function loadContext(projectPath: string, env: string): Promise<Result<any, FxError>> {
-  const context = await fs.readJson(
-    path.join(
-      projectPath,
-      `.${ConfigFolderName}`,
-      PublishProfilesFolderName,
-      EnvProfileFileNameTemplate.replace(EnvNamePlaceholder, env)
-    )
-  );
-  const userdataContent = await fs.readFile(
-    path.join(projectPath, `.${ConfigFolderName}`, PublishProfilesFolderName, `${env}.userdata`),
-    "utf8"
-  );
-  const userdata = deserializeDict(userdataContent);
-
-  const regex = /\{\{([^{}]+)\}\}/;
-  for (const component in context) {
-    for (const key in context[component]) {
-      const matchResult = regex.exec(context[component][key]);
-      if (matchResult) {
-        const userdataKey = matchResult[1];
-        if (userdataKey in userdata) {
-          context[component][key] = userdata[key];
-        }
-      }
-    }
-  }
-  return ok(context);
-}
 
 describe("Create single tab/bot/function", function () {
   const env = "e2e";
@@ -80,7 +53,7 @@ describe("Create single tab/bot/function", function () {
     try {
       let result;
       result = await execAsync(
-        `teamsfx new --interactive false --app-name ${appName} --capabilities tab bot --azure-resources function --programming-language javascript`,
+        `teamsfx new --interactive false --app-name ${appName} --capabilities tab bot --azure-resources function sql --programming-language javascript`,
         {
           cwd: testFolder,
           env: processEnv,
@@ -147,11 +120,14 @@ describe("Create single tab/bot/function", function () {
       );
 
       // provision
-      result = await execAsyncWithRetry(`teamsfx provision`, {
-        cwd: projectPath,
-        env: processEnv,
-        timeout: 0,
-      });
+      result = await execAsyncWithRetry(
+        `teamsfx provision --sql-admin-name e2e --sql-password 'Abc123456%'`,
+        {
+          cwd: projectPath,
+          env: processEnv,
+          timeout: 0,
+        }
+      );
       console.log(
         `[Successfully] provision, stdout: '${result.stdout}', stderr: '${result.stderr}'`
       );
@@ -179,7 +155,11 @@ describe("Create single tab/bot/function", function () {
 
         // Validate Function App
         const func = FunctionValidator.init(context);
-        await FunctionValidator.validateProvision(func, false);
+        await FunctionValidator.validateProvision(func, false, true);
+
+        // Validate SQL
+        await SqlValidator.init(context);
+        await SqlValidator.validateSql();
 
         // Validate Bot Provision
         const bot = BotValidator.init(context);
@@ -215,15 +195,16 @@ describe("Create single tab/bot/function", function () {
         await BotValidator.validateDeploy(bot);
       }
 
-      // validate
-      await execAsyncWithRetry(`teamsfx validate`, {
+      // validate manifest
+      result = await execAsyncWithRetry(`teamsfx validate`, {
         cwd: projectPath,
         env: processEnv,
         timeout: 0,
       });
 
       {
-        /// TODO: add check for validate
+        // Validate validate manifest
+        expect(result.stderr).to.be.empty;
       }
 
       // package
@@ -234,7 +215,30 @@ describe("Create single tab/bot/function", function () {
       });
 
       {
-        /// TODO: add check for package
+        // Validate package
+        const file = `${projectPath}/${AppPackageFolderName}/appPackage.${env}.zip`;
+        expect(await fs.pathExists(file)).to.be.true;
+      }
+
+      // publish
+      await execAsyncWithRetry(`teamsfx publish`, {
+        cwd: projectPath,
+        env: processEnv,
+        timeout: 0,
+      });
+
+      {
+        // Validate publish result
+        const contextResult = await loadContext(projectPath, env);
+        if (contextResult.isErr()) {
+          throw contextResult.error;
+        }
+        const context = contextResult.value;
+        const aad = AadValidator.init(context, false, AppStudioLogin);
+        const appId = aad.clientId;
+
+        AppStudioValidator.init(context);
+        await AppStudioValidator.validatePublish(appId);
       }
     } catch (e) {
       console.log("Unexpected exception is thrown when running test: " + e);
@@ -245,6 +249,6 @@ describe("Create single tab/bot/function", function () {
 
   after(async () => {
     // clean up
-    await cleanUp(appName, projectPath, true, false, false, true, env);
+    await cleanUp(appName, projectPath, true, true, false, true, env);
   });
 });

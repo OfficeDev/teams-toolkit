@@ -57,15 +57,7 @@ export class CommandsWebviewProvider implements vscode.WebviewViewProvider {
     // const styleVSCodeUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'vscode.css'));
     // const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'main.css'));
     const codiconsUri = webview.asWebviewUri(
-      vscode.Uri.file(
-        path.join(
-          ext.context.extensionPath,
-          "node_modules",
-          "@vscode/codicons",
-          "dist",
-          "codicon.css"
-        )
-      )
+      vscode.Uri.file(path.join(ext.context.extensionPath, "out", "resource", "codicon.css"))
     );
     // Use a nonce to only allow a specific script to be run.
     const nonce = getNonce();

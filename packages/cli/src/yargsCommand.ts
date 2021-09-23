@@ -5,7 +5,7 @@
 
 import { Argv, exit } from "yargs";
 
-import { FxError, Result, SystemError, UserError, LogLevel } from "@microsoft/teamsfx-api";
+import { FxError, Result, SystemError, UserError, LogLevel, Colors } from "@microsoft/teamsfx-api";
 
 import CLILogProvider from "./commonlib/log";
 import * as constants from "./constants";
@@ -16,6 +16,7 @@ import { readFileSync } from "fs";
 import path from "path";
 import { Correlator } from "@microsoft/teamsfx-core";
 import Progress from "./console/progress";
+import { getColorizedString } from "./utils";
 
 export abstract class YargsCommand {
   /**
@@ -88,15 +89,25 @@ export abstract class YargsCommand {
       if ("helpLink" in FxError && FxError.helpLink) {
         CLILogProvider.necessaryLog(
           LogLevel.Error,
-          `Get help from ${CLILogProvider.linkColor(
-            `${FxError.helpLink}#${FxError.source}${FxError.name}`
-          )}`
+          getColorizedString([
+            { content: "Get help from ", color: Colors.BRIGHT_RED },
+            {
+              content: `${FxError.helpLink}#${FxError.source}${FxError.name}`,
+              color: Colors.BRIGHT_CYAN,
+            },
+          ])
         );
       }
       if ("issueLink" in FxError && FxError.issueLink) {
         CLILogProvider.necessaryLog(
           LogLevel.Error,
-          `Report this issue at ${CLILogProvider.linkColor(FxError.issueLink)}`
+          getColorizedString([
+            { content: "Report this issue at ", color: Colors.BRIGHT_RED },
+            {
+              content: `${FxError.issueLink}`,
+              color: Colors.BRIGHT_CYAN,
+            },
+          ])
         );
       }
       if (CLILogProvider.getLogLevel() === constants.CLILogLevel.debug) {

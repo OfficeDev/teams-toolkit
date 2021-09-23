@@ -53,6 +53,7 @@ export function convert2PluginContext(
     logProvider: ctx.logProvider,
     telemetryReporter: ctx.telemetryReporter,
     cryptoProvider: ctx.cryptoProvider,
+    permissionRequestProvider: ctx.permissionRequestProvider,
     ui: ctx.userInteraction,
   };
   return pluginContext;
@@ -272,13 +273,14 @@ export async function executeUserTaskAdapter(
   if (!plugin.executeUserTask)
     return err(PluginHasNoTaskImpl(plugin.displayName, "executeUserTask"));
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
-  const config = ConfigMap.fromJSON(envInfo.profile) || new ConfigMap();
+  const config = ConfigMap.fromJSON(envInfo.profile[plugin.name]) || new ConfigMap();
   pluginContext.config = config;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
   const res = await plugin.executeUserTask(func, pluginContext);
   if (res.isErr()) return err(res.error);
+  envInfo.profile[plugin.name] = pluginContext.config.toJSON();
   return ok(res.value);
 }
 
@@ -301,7 +303,7 @@ export async function getQuestionsAdapter(
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (!plugin.getQuestions) return ok(undefined);
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs, true);
-  const config = ConfigMap.fromJSON(envInfo.profile) || new ConfigMap();
+  const config = ConfigMap.fromJSON(envInfo.profile[plugin.name]) || new ConfigMap();
   pluginContext.config = config;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
@@ -318,7 +320,7 @@ export async function getQuestionsForUserTaskAdapter(
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (!plugin.getQuestionsForUserTask) return ok(undefined);
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs, true);
-  const config = ConfigMap.fromJSON(envInfo.profile) || new ConfigMap();
+  const config = ConfigMap.fromJSON(envInfo.profile[plugin.name]) || new ConfigMap();
   pluginContext.config = config;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;

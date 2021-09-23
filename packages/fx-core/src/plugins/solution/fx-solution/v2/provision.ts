@@ -41,7 +41,6 @@ import { isUndefined } from "lodash";
 import { PluginDisplayName } from "../../../../common/constants";
 import { ProvisionContextAdapter } from "./adaptor";
 import { fillInCommonQuestions } from "../commonQuestions";
-import { askTargetEnvironment } from "../../../../core/middleware/envInfoLoader";
 import { deployArmTemplates } from "../arm";
 import Container from "typedi";
 import { ResourcePluginsV2 } from "../ResourcePluginContainer";
@@ -232,18 +231,11 @@ export async function askForProvisionConsent(ctx: SolutionContext): Promise<Resu
   if (isMultiEnvEnabled()) {
     const msgNew = util.format(
       getStrings().solution.ProvisionConfirmEnvNotice,
-      ctx.projectSettings!.activeEnvironment,
+      ctx.envInfo.envName,
       username,
       subscriptionName ? subscriptionName : subscriptionId
     );
-    confirmRes = await ctx.ui?.showMessage(
-      "warn",
-      msgNew,
-      true,
-      "Provision",
-      "Switch environment",
-      "Pricing calculator"
-    );
+    confirmRes = await ctx.ui?.showMessage("warn", msgNew, true, "Provision", "Pricing calculator");
   } else {
     confirmRes = await ctx.ui?.showMessage("warn", msg, true, "Provision", "Pricing calculator");
   }
@@ -252,17 +244,8 @@ export async function askForProvisionConsent(ctx: SolutionContext): Promise<Resu
   if (confirm !== "Provision") {
     if (confirm === "Pricing calculator") {
       ctx.ui?.openUrl("https://azure.microsoft.com/en-us/pricing/calculator/");
-    } else if (confirm === "Switch environment") {
-      const envName = await askTargetEnvironment(ctx as any, ctx.answers!);
-      if (envName) {
-        ctx.projectSettings!.activeEnvironment = envName;
-        ctx.ui?.showMessage(
-          "info",
-          `[${envName}] is activated. Please try to do provision again.`,
-          false
-        );
-      }
     }
+
     return err(
       returnUserError(
         new Error(getStrings().solution.CancelProvision),

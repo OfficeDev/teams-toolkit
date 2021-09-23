@@ -18,13 +18,19 @@ import { VsCodeUI } from "./qm/vsc_ui";
 import { exp } from "./exp";
 import { disableRunIcon, registerRunIcon } from "./debug/runIconHandler";
 import { CryptoCodeLensProvider } from "./codeLensProvider";
-import { Correlator, isMultiEnvEnabled, isRemoteCollaborateEnabled } from "@microsoft/teamsfx-core";
+import {
+  Correlator,
+  isMultiEnvEnabled,
+  isRemoteCollaborateEnabled,
+  isValidProject,
+} from "@microsoft/teamsfx-core";
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
 import { enableMigrateV1 } from "./utils/migrateV1";
 import { isTeamsfx, syncFeatureFlags } from "./utils/commonUtils";
 import { ConfigFolderName, PublishProfilesFolderName } from "@microsoft/teamsfx-api";
 import { ExtensionUpgrade } from "./utils/upgrade";
 import { registerEnvTreeHandler } from "./envTree";
+import { getWorkspacePath } from "./handlers";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -229,22 +235,6 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(viewEnvironmentWithIcon);
 
-  const activateEnvironment = vscode.commands.registerCommand(
-    "fx-extension.activateEnvironment",
-    (node) => {
-      Correlator.run(handlers.activateEnvironment, node.command.title);
-    }
-  );
-  context.subscriptions.push(activateEnvironment);
-
-  const activateEnvironmentWithIcon = vscode.commands.registerCommand(
-    "fx-extension.activateEnvironmentWithIcon",
-    (node) => {
-      Correlator.run(handlers.activateEnvironment, node.command.title);
-    }
-  );
-  context.subscriptions.push(activateEnvironmentWithIcon);
-
   const grantPermission = vscode.commands.registerCommand(
     "fx-extension.grantPermission",
     (node) => {
@@ -253,16 +243,17 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(grantPermission);
 
+  const workspacePath = getWorkspacePath();
   vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isMultiEnvEnabled",
-    isMultiEnvEnabled() && (await isTeamsfx())
+    isMultiEnvEnabled() && isValidProject(workspacePath)
   );
 
   vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isRemoteCollaborateEnabled",
-    isRemoteCollaborateEnabled() && (await isTeamsfx())
+    isRemoteCollaborateEnabled() && isValidProject(workspacePath)
   );
 
   // Setup CodeLens provider for userdata file

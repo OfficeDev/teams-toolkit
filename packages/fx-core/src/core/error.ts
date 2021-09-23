@@ -107,8 +107,10 @@ export function InvalidProjectSettingsFileError(msg?: string): UserError {
   );
 }
 
-export function TaskNotSupportError(task: Stage | string): SystemError {
-  return new SystemError("TaskNotSupport", `Task is not supported yet: ${task}`, CoreSource);
+export class TaskNotSupportError extends SystemError {
+  constructor(task: string) {
+    super(new.target.name, `Task is not supported yet: ${task}`, CoreSource);
+  }
 }
 
 export function FetchSampleError(): UserError {

@@ -629,6 +629,7 @@ describe("Core basic APIs", () => {
         [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
         projectPath: projectPath,
         solution: mockSolution.name,
+        env: "dev",
       };
 
       const newEnvName = "newEnv";
@@ -678,7 +679,7 @@ describe("Core basic APIs", () => {
       sandbox.stub(commonTools, "isMultiEnvEnabled").returns(true);
       const core = new FxCore(tools);
       {
-        const inputs: Inputs = { platform: Platform.CLI };
+        const inputs: Inputs = { platform: Platform.CLI, env: "dev" };
         const res = await core.createProject(inputs);
         assert.isTrue(res.isOk() && res.value === projectPath);
         assert.deepEqual(expectedInputs, inputs);
@@ -723,6 +724,7 @@ describe("Core basic APIs", () => {
         [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
         projectPath: projectPath,
         solution: mockSolution.name,
+        env: "dev",
       };
       sandbox
         .stub<any, any>(ui, "inputText")
@@ -770,7 +772,7 @@ describe("Core basic APIs", () => {
       sandbox.stub(commonTools, "isMultiEnvEnabled").returns(true);
       const core = new FxCore(tools);
       {
-        const inputs: Inputs = { platform: Platform.CLI };
+        const inputs: Inputs = { platform: Platform.CLI, env: "dev" };
         const res = await core.createProject(inputs);
         assert.isTrue(res.isOk() && res.value === projectPath);
         assert.deepEqual(expectedInputs, inputs);

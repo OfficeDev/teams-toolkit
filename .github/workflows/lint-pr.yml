@@ -37,10 +37,19 @@ jobs:
         run: |
           npm run setup
 
-      - name: prettier check files in PR
+      - name: prettier check files in PR on Fork
+        if: ${{ github.event.pull_request.head.repo.full_name != 'OfficeDev/TeamsFx' }}
+        run: |
+          git remote add -f b https://github.com/OfficeDev/TeamsFx.git
+          git fetch upstream/${{ github.event.pull_request.base.ref }}
+          VAR=$(realpath .github/scripts/lint-pr.sh)
+          npx lerna exec -- bash $VAR upstream/${{ github.event.pull_request.base.ref }}
+
+      - name: prettier check files in PR on local
+        if: ${{ github.event.pull_request.head.repo.full_name == 'OfficeDev/TeamsFx' }}
         run: |
           VAR=$(realpath .github/scripts/lint-pr.sh)
-          npx lerna exec -- bash $VAR ${{ github.event.pull_request.base.ref }}
+          npx lerna exec -- bash $VAR origin/${{ github.event.pull_request.base.ref }}
 
       - name: Check if there are changes
         id: changes
@@ -49,6 +58,8 @@ jobs:
           VAR=$(git diff --cached --name-only)
           if [ ! -z "$VAR" ]
           then 
-            echo "there has some prettier format error, you may run npm run setup local, and check your commit files is formatted."
+            echo "There may be some unformatted files in your PR, please run these commands on Git Bash terminal: \
+            1. VAR=$(realpath .github/scripts/lint-pr.sh) \
+            2. npx lerna exec – bash $VAR ${your-PR-target-branch}"
             exit 1
           fi

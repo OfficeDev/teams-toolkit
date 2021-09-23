@@ -40,8 +40,8 @@ jobs:
       - name: prettier check files in PR on Fork
         if: ${{ github.event.pull_request.head.repo.full_name != 'OfficeDev/TeamsFx' }}
         run: |
-          git remote add -f b https://github.com/OfficeDev/TeamsFx.git
-          git remote update
+          git remote add upstream https://github.com/OfficeDev/TeamsFx.git
+          git fetch upstream ${{ github.event.pull_request.base.ref }}
           VAR=$(realpath .github/scripts/lint-pr.sh)
           npx lerna exec -- bash $VAR upstream/${{ github.event.pull_request.base.ref }}
 

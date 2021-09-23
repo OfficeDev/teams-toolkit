@@ -57,6 +57,7 @@ import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import { Bicep, ConstantString, ResourcePlugins } from "../../../common/constants";
 import { getTemplatesFolder } from "../../..";
 import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
+import { IUserList } from "../appstudio/interfaces/IAppDefinition";
 
 export class AadAppForTeamsImpl {
   public async provision(ctx: PluginContext, isLocalDebug = false): Promise<AadResult> {
@@ -334,7 +335,10 @@ export class AadAppForTeamsImpl {
     return ResultFactory.Success(result);
   }
 
-  public async checkPermission(ctx: PluginContext): Promise<Result<ResourcePermission[], FxError>> {
+  public async checkPermission(
+    ctx: PluginContext,
+    userInfo: IUserList
+  ): Promise<Result<ResourcePermission[], FxError>> {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartCheckPermission);
 
@@ -342,7 +346,7 @@ export class AadAppForTeamsImpl {
     const config = new CheckGrantPermissionConfig();
     await config.restoreConfigFromContext(ctx);
 
-    const userObjectId = config?.userInfo["aadId"];
+    const userObjectId = userInfo.aadId;
     const isAadOwner = await AadAppClient.checkPermission(
       ctx,
       Messages.EndCheckPermission.telemetry,
@@ -387,7 +391,10 @@ export class AadAppForTeamsImpl {
     return ResultFactory.Success(owners);
   }
 
-  public async grantPermission(ctx: PluginContext): Promise<Result<ResourcePermission[], FxError>> {
+  public async grantPermission(
+    ctx: PluginContext,
+    userInfo: IUserList
+  ): Promise<Result<ResourcePermission[], FxError>> {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartGrantPermission);
 
@@ -395,7 +402,7 @@ export class AadAppForTeamsImpl {
     const config = new CheckGrantPermissionConfig(true);
     await config.restoreConfigFromContext(ctx);
 
-    const userObjectId = config?.userInfo["aadId"];
+    const userObjectId = userInfo.aadId;
     await AadAppClient.grantPermission(
       ctx,
       Messages.EndCheckPermission.telemetry,

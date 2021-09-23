@@ -59,11 +59,6 @@ export const SUBSCRIPTION_ID = "subscriptionId";
  */
 export const SUBSCRIPTION_NAME = "subscriptionName";
 
-/**
- * Config key whose value is the user info of collaborator
- */
-export const USER_INFO = "userInfo";
-
 export const DEFAULT_PERMISSION_REQUEST = [
   {
     resource: "Microsoft Graph",

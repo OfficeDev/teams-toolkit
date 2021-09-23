@@ -196,6 +196,7 @@ export async function deployAdapter(
   const solutionConfig = ConfigMap.fromJSON(json);
   const configOfOtherPlugins = new Map<string, ConfigMap>();
   if (solutionConfig) configOfOtherPlugins.set(GLOBAL_CONFIG, solutionConfig);
+  pluginContext.envInfo.profile = configOfOtherPlugins;
   const config = ConfigMap.fromJSON(provisionOutput);
   if (config) pluginContext.config = config;
 
@@ -273,8 +274,7 @@ export async function executeUserTaskAdapter(
   if (!plugin.executeUserTask)
     return err(PluginHasNoTaskImpl(plugin.displayName, "executeUserTask"));
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
-  const config = ConfigMap.fromJSON(envInfo.profile[plugin.name]) || new ConfigMap();
-  pluginContext.config = config;
+  setConfigs(plugin.name, pluginContext, envInfo.profile);
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;

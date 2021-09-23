@@ -26,6 +26,7 @@ import { Utils } from "../../../../src/plugins/resource/aad/utils/common";
 import { MockUserInteraction } from "../../../core/utils";
 import { DEFAULT_PERMISSION_REQUEST } from "../../../../src/plugins/solution/fx-solution/constants";
 import { newEnvInfo } from "../../../../src";
+import { IUserList } from "../../../../src/plugins/resource/appstudio/interfaces/IAppDefinition";
 
 const permissions = '[{"resource": "Microsoft Graph","delegated": ["User.Read"],"application":[]}]';
 const permissionsWrong =
@@ -112,12 +113,12 @@ const mockTelemetryReporter: TelemetryReporter = {
   },
 };
 
-const userList = {
+const userList: IUserList = {
   tenantId: faker.datatype.uuid(),
   aadId: faker.datatype.uuid(),
   displayName: "displayName",
   userPrincipalName: "userPrincipalName",
-  isOwner: true,
+  isAdministrator: true,
 };
 
 export class TestHelper {

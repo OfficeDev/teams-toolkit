@@ -114,3 +114,13 @@ If so, an error will show in the Tab page of your app, look like:
 To resolve this issue, open a new tab in the same browser, go to https://localhost:3000/index.html#/tab, click the "Advanced" button and then select "Proceed to localhost (unsafe)". After doing this, refresh the Teams web client.
 
 ![Continue-To-Localhost](../images/fx-core/localdebug/continue-to-localhost.png)
+
+## SPFx known issue on Teams workbench debug on macOS/Linux
+### Error
+![Error loading debug manifests](../images/fx-core/localdebug/error-loading-debug-manifests.png)
+### Reason
+For SPFx project, our toolkit will also help install the development certificate but it may be invalid on macOS/Linux system, thus on Teams workbench debug, it will fail to connect the local debug manifest url.
+### Mitigation
+To resolve this issue, open a new tab in the same browser, go to https://localhost:4321/temp/manifests.js, click the "Advanced" button and then select "Proceed to localhost (unsafe)". After doing this, refresh the Teams web client.
+
+![Continue To SPFx Localhost](../images/fx-core/localdebug/continue-to-spfx-localhost.png)

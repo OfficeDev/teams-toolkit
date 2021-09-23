@@ -17,6 +17,7 @@ import {
   SolutionContext,
   Tools,
   traverse,
+  UserCancelError,
 } from "@microsoft/teamsfx-api";
 import { isV2 } from "..";
 import { CoreHookContext, FxCore, isMultiEnvEnabled } from "../..";
@@ -45,8 +46,9 @@ import { PermissionRequestFileProvider } from "../permissionRequest";
 import { newEnvInfo } from "../tools";
 
 const newTargetEnvNameOption = "+ new environment";
-const activeMark = " (active)";
 let activeEnv: string | undefined;
+const lastUsedMark = " (last used)";
+let lastUsedEnv: string | undefined;
 
 export type CreateEnvCopyInput = {
   targetEnvName: string;
@@ -61,7 +63,7 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
     }
 
     const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-    if (inputs.previewType && inputs.previewType === "local") {
+    if ((inputs.previewType && inputs.previewType === "local") || inputs.ignoreEnvInfo) {
       skip = true;
     }
 
@@ -72,19 +74,29 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
 
     const core = ctx.self as FxCore;
 
-    let targetEnvName: string | undefined;
+    let targetEnvName: string;
     if (!skip && isMultiEnvEnabled()) {
       if (inputs.askEnvSelect) {
-        targetEnvName = await askTargetEnvironment(core.tools, inputs);
-        if (targetEnvName) {
-          ctx.ui?.showMessage(
-            "info",
-            `[${targetEnvName}] is selected as the target environment to ${inputs.stage}`,
-            false
-          );
+        const result = await askTargetEnvironment(core.tools, inputs);
+        if (result.isErr()) {
+          ctx.result = err(result.error);
+          return;
         }
+        targetEnvName = result.value;
+        ctx.ui?.showMessage(
+          "info",
+          `[${targetEnvName}] is selected as the target environment to ${inputs.stage}`,
+          false
+        );
+
+        lastUsedEnv = targetEnvName;
       } else if (inputs.env) {
-        targetEnvName = await useUserSetEnv(ctx, inputs);
+        const result = await useUserSetEnv(inputs);
+        if (result.isErr()) {
+          ctx.result = result.error;
+          return;
+        }
+        targetEnvName = result.value;
       } else if (activeEnv) {
         targetEnvName = activeEnv;
       } else {
@@ -95,35 +107,33 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
       targetEnvName = environmentManager.getDefaultEnvName();
     }
 
-    if (targetEnvName) {
-      const result = await loadSolutionContext(
-        core.tools,
-        inputs,
-        ctx.projectSettings,
-        ctx.projectIdMissing,
-        targetEnvName,
-        inputs.ignoreEnvInfo
-      );
-      if (result.isErr()) {
-        ctx.result = err(result.error);
-        return;
-      }
-
-      if (isV2()) {
-        const envInfo = result.value.envInfo;
-        const profile: Json = {};
-        for (const key of envInfo.profile.keys()) {
-          const map = envInfo.profile.get(key);
-          if (map) {
-            profile[key] = (map as ConfigMap).toJSON();
-          }
-        }
-        ctx.envInfoV2 = { envName: envInfo.envName, config: envInfo.config, profile: profile };
-      } else {
-        ctx.solutionContext = result.value;
-      }
-      await next();
+    const result = await loadSolutionContext(
+      core.tools,
+      inputs,
+      ctx.projectSettings,
+      ctx.projectIdMissing,
+      targetEnvName,
+      inputs.ignoreEnvInfo
+    );
+    if (result.isErr()) {
+      ctx.result = err(result.error);
+      return;
     }
+
+    if (isV2()) {
+      const envInfo = result.value.envInfo;
+      const profile: Json = {};
+      for (const key of envInfo.profile.keys()) {
+        const map = envInfo.profile.get(key);
+        if (map) {
+          profile[key] = (map as ConfigMap).toJSON();
+        }
+      }
+      ctx.envInfoV2 = { envName: envInfo.envName, config: envInfo.config, profile: profile };
+    } else {
+      ctx.solutionContext = result.value;
+    }
+    await next();
   };
 }
 
@@ -215,17 +225,16 @@ export function upgradeDefaultFunctionName(
   }
 }
 
-export async function askTargetEnvironment(
+async function askTargetEnvironment(
   tools: Tools,
-  inputs: Inputs,
-  lastUsed?: string
-): Promise<string | undefined> {
-  const getQuestionRes = await getQuestionsForTargetEnv(inputs, lastUsed ?? activeEnv);
+  inputs: Inputs
+): Promise<Result<string, FxError>> {
+  const getQuestionRes = await getQuestionsForTargetEnv(inputs, lastUsedEnv);
   if (getQuestionRes.isErr()) {
     tools.logProvider.error(
       `[core:env] failed to get questions for target environment: ${getQuestionRes.error.message}`
     );
-    return undefined;
+    return err(getQuestionRes.error);
   }
 
   tools.logProvider.debug(`[core:env] success to get questions for target environment.`);
@@ -235,7 +244,7 @@ export async function askTargetEnvironment(
     const res = await traverse(node, inputs, tools.ui);
     if (res.isErr()) {
       tools.logProvider.debug(`[core:env] failed to run question model for target environment.`);
-      return undefined;
+      return err(res.error);
     }
 
     const desensitized = desensitize(node, inputs);
@@ -246,19 +255,23 @@ export async function askTargetEnvironment(
     );
   }
 
-  let targetEnvName = inputs.targetEnvName;
-  if (targetEnvName?.endsWith(activeMark)) {
-    targetEnvName = targetEnvName.slice(0, targetEnvName.indexOf(activeMark));
+  if (!inputs.targetEnvName) {
+    return err(UserCancelError);
   }
 
-  return targetEnvName;
+  let targetEnvName = inputs.targetEnvName;
+  if (targetEnvName.endsWith(lastUsedMark)) {
+    targetEnvName = targetEnvName.slice(0, targetEnvName.indexOf(lastUsedMark));
+  }
+
+  return ok(targetEnvName);
 }
 
 export async function askNewEnvironment(
   ctx: CoreHookContext,
   inputs: Inputs
 ): Promise<CreateEnvCopyInput | undefined> {
-  const getQuestionRes = await getQuestionsForNewEnv(inputs);
+  const getQuestionRes = await getQuestionsForNewEnv(inputs, lastUsedEnv);
   const core = ctx.self as FxCore;
   if (getQuestionRes.isErr()) {
     core.tools.logProvider.error(
@@ -291,8 +304,8 @@ export async function askNewEnvironment(
 
   const sourceEnvName = inputs.sourceEnvName!;
   let selectedEnvName: string;
-  if (sourceEnvName?.endsWith(activeMark)) {
-    selectedEnvName = sourceEnvName.slice(0, sourceEnvName.indexOf(activeMark));
+  if (sourceEnvName?.endsWith(lastUsedMark)) {
+    selectedEnvName = sourceEnvName.slice(0, sourceEnvName.indexOf(lastUsedMark));
   } else {
     selectedEnvName = sourceEnvName;
   }
@@ -303,18 +316,18 @@ export async function askNewEnvironment(
   };
 }
 
-async function useUserSetEnv(ctx: CoreHookContext, inputs: Inputs): Promise<string | undefined> {
+async function useUserSetEnv(inputs: Inputs): Promise<Result<string, FxError>> {
   const checkEnv = await environmentManager.checkEnvExist(inputs.projectPath!, inputs.env);
   if (checkEnv.isErr()) {
-    ctx.result = checkEnv.error;
-    return undefined;
+    return err(checkEnv.error);
   }
-  if (checkEnv.value) {
-    return inputs.env;
-  } else {
-    ctx.result = err(ProjectEnvNotExistError(inputs.env));
-    return undefined;
+
+  const envExists = checkEnv.value;
+  if (!envExists) {
+    return err(ProjectEnvNotExistError(inputs.env));
   }
+
+  return ok(inputs.env);
 }
 
 async function getQuestionsForTargetEnv(
@@ -345,7 +358,8 @@ async function getQuestionsForTargetEnv(
 }
 
 async function getQuestionsForNewEnv(
-  inputs: Inputs
+  inputs: Inputs,
+  lastUsed?: string
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (!inputs.projectPath) {
     return err(NoProjectOpenedError());
@@ -358,10 +372,10 @@ async function getQuestionsForNewEnv(
     return err(envProfilesResult.error);
   }
 
-  const envList = reOrderEnvironments(envProfilesResult.value, activeEnv);
+  const envList = reOrderEnvironments(envProfilesResult.value, lastUsed);
   const selectSourceEnv = QuestionSelectSourceEnvironment;
   selectSourceEnv.staticOptions = envList;
-  selectSourceEnv.default = activeEnv + activeMark;
+  selectSourceEnv.default = lastUsed + lastUsedMark;
 
   const selectSourceEnvNode = new QTreeNode(selectSourceEnv);
   node.addChild(selectSourceEnvNode);
@@ -379,7 +393,7 @@ function reOrderEnvironments(environments: Array<string>, lastUsed?: string): Ar
     return environments;
   }
 
-  return [lastUsed + activeMark]
+  return [lastUsed + lastUsedMark]
     .concat(environments.slice(0, index))
     .concat(environments.slice(index + 1));
 }

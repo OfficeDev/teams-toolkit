@@ -81,9 +81,18 @@ export interface Plugin {
   /**
    * For grant and check permission in remote collaboration
    */
-  grantPermission?: (ctx: PluginContext) => Promise<Result<any, FxError>>;
+  grantPermission?: (
+    ctx: PluginContext,
+    userInfo: Record<string, any>
+  ) => Promise<Result<any, FxError>>;
 
-  checkPermission?: (ctx: PluginContext) => Promise<Result<any, FxError>>;
+  checkPermission?: (
+    ctx: PluginContext,
+    userInfo: Record<string, any>
+  ) => Promise<Result<any, FxError>>;
 
-  listCollaborator?: (ctx: PluginContext) => Promise<Result<any, FxError>>;
+  listCollaborator?: (
+    ctx: PluginContext,
+    userInfo: Record<string, any>
+  ) => Promise<Result<any, FxError>>;
 }

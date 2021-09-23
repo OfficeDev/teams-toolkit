@@ -97,7 +97,6 @@ import {
   SOLUTION_PROVISION_SUCCEEDED,
   SUBSCRIPTION_ID,
   SUBSCRIPTION_NAME,
-  USER_INFO,
   Void,
 } from "./constants";
 import { executeConcurrently, executeLifecycles, LifecyclesWithContext } from "./executor";
@@ -1341,7 +1340,6 @@ export class TeamsAppSolution implements Solution {
 
       progressBar?.start();
       progressBar?.next(`Grant permission for user ${email}`);
-      ctx.envInfo.profile.get(GLOBAL_CONFIG)?.set(USER_INFO, JSON.stringify(userInfo));
 
       const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, [
         this.AadPlugin,
@@ -1350,7 +1348,13 @@ export class TeamsAppSolution implements Solution {
 
       const grantPermissionWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(
         ([plugin, context]) => {
-          return [plugin?.grantPermission?.bind(plugin), context, plugin.name];
+          return [
+            plugin?.grantPermission
+              ? (ctx: PluginContext) => plugin!.grantPermission!.bind(plugin)(ctx, userInfo)
+              : undefined,
+            context,
+            plugin.name,
+          ];
         }
       );
 
@@ -1457,7 +1461,6 @@ export class TeamsAppSolution implements Solution {
       });
     } finally {
       await progressBar?.end(true);
-      ctx.envInfo.profile.get(GLOBAL_CONFIG)?.delete(USER_INFO);
       this.runningState = SolutionRunningState.Idle;
     }
   }
@@ -1494,8 +1497,6 @@ export class TeamsAppSolution implements Solution {
 
       const userInfo = result.value as IUserList;
 
-      ctx.envInfo.profile.get(GLOBAL_CONFIG)?.set(USER_INFO, JSON.stringify(userInfo));
-
       const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, [
         this.AadPlugin,
         this.AppStudioPlugin,
@@ -1503,7 +1504,13 @@ export class TeamsAppSolution implements Solution {
 
       const checkPermissionWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(
         ([plugin, context]) => {
-          return [plugin?.checkPermission?.bind(plugin), context, plugin.name];
+          return [
+            plugin?.checkPermission
+              ? (ctx: PluginContext) => plugin!.checkPermission!.bind(plugin)(ctx, userInfo)
+              : undefined,
+            context,
+            plugin.name,
+          ];
         }
       );
 
@@ -1611,7 +1618,6 @@ export class TeamsAppSolution implements Solution {
         permissions,
       });
     } finally {
-      ctx.envInfo.profile.get(GLOBAL_CONFIG)?.delete(USER_INFO);
       this.runningState = SolutionRunningState.Idle;
     }
   }
@@ -1655,7 +1661,13 @@ export class TeamsAppSolution implements Solution {
 
       const listCollaboratorWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(
         ([plugin, context]) => {
-          return [plugin?.listCollaborator?.bind(plugin), context, plugin.name];
+          return [
+            plugin?.listCollaborator
+              ? (ctx: PluginContext) => plugin!.listCollaborator!.bind(plugin)(ctx, userInfo)
+              : undefined,
+            context,
+            plugin.name,
+          ];
         }
       );
 

@@ -47,7 +47,6 @@ import {
   WEB_APPLICATION_INFO_SOURCE,
   PluginNames,
   SOLUTION_PROVISION_SUCCEEDED,
-  USER_INFO,
   REMOTE_TEAMS_APP_ID,
 } from "../../solution/fx-solution/constants";
 import { AppStudioError } from "./errors";
@@ -725,8 +724,10 @@ export class AppStudioPluginImpl {
     return ok(teamsAppId.value);
   }
 
-  public async checkPermission(ctx: PluginContext): Promise<ResourcePermission[]> {
-    let userInfoObject: IUserList;
+  public async checkPermission(
+    ctx: PluginContext,
+    userInfo: IUserList
+  ): Promise<ResourcePermission[]> {
     const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
 
     const teamsAppId = this.getTeamsAppId(ctx, false);
@@ -738,21 +739,10 @@ export class AppStudioPluginImpl {
       }
     }
 
-    const userInfo = ctx.envInfo.profile.get(SOLUTION)?.get(USER_INFO);
-    if (!userInfo) {
-      throw new Error(ErrorMessages.GetConfigError(USER_INFO, SOLUTION));
-    }
-
-    try {
-      userInfoObject = JSON.parse(userInfo) as IUserList;
-    } catch (error) {
-      throw new Error(ErrorMessages.ParseUserInfoError);
-    }
-
     const teamsAppRoles = await AppStudioClient.checkPermission(
       teamsAppId,
       appStudioToken as string,
-      userInfoObject.aadId
+      userInfo.aadId
     );
 
     const result: ResourcePermission[] = [
@@ -799,8 +789,10 @@ export class AppStudioPluginImpl {
     return teamsAppAdmin;
   }
 
-  public async grantPermission(ctx: PluginContext): Promise<ResourcePermission[]> {
-    let userInfoObject: IUserList;
+  public async grantPermission(
+    ctx: PluginContext,
+    userInfo: IUserList
+  ): Promise<ResourcePermission[]> {
     const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
 
     const teamsAppId = this.getTeamsAppId(ctx, false);
@@ -820,29 +812,8 @@ export class AppStudioPluginImpl {
       }
     }
 
-    const userInfo = ctx.envInfo.profile.get(SOLUTION)?.get(USER_INFO);
-    if (!userInfo) {
-      throw new Error(
-        AppStudioError.GrantPermissionFailedError.message(
-          ErrorMessages.GetConfigError(USER_INFO, SOLUTION),
-          teamsAppId
-        )
-      );
-    }
-
     try {
-      userInfoObject = JSON.parse(userInfo) as IUserList;
-    } catch (error) {
-      throw new Error(
-        AppStudioError.GrantPermissionFailedError.message(
-          ErrorMessages.ParseUserInfoError,
-          teamsAppId
-        )
-      );
-    }
-
-    try {
-      await AppStudioClient.grantPermission(teamsAppId, appStudioToken as string, userInfoObject);
+      await AppStudioClient.grantPermission(teamsAppId, appStudioToken as string, userInfo);
     } catch (error) {
       throw new Error(
         AppStudioError.GrantPermissionFailedError.message(error?.message, teamsAppId)

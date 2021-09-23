@@ -26,6 +26,7 @@ import { Links } from "../bot/constants";
 import { ArmResourcePlugin } from "../../../common/armInterface";
 import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
 import "./v2";
+import { IUserList } from "../appstudio/interfaces/IAppDefinition";
 @Service(ResourcePlugins.AadPlugin)
 export class AadAppForTeamsPlugin implements Plugin, ArmResourcePlugin {
   name = "fx-resource-aad-app-for-teams";
@@ -103,17 +104,23 @@ export class AadAppForTeamsPlugin implements Plugin, ArmResourcePlugin {
     );
   }
 
-  public async checkPermission(ctx: PluginContext): Promise<Result<ResourcePermission[], FxError>> {
+  public async checkPermission(
+    ctx: PluginContext,
+    userInfo: Record<string, any>
+  ): Promise<Result<ResourcePermission[], FxError>> {
     return await this.runWithExceptionCatchingAsync(
-      () => this.pluginImpl.checkPermission(ctx),
+      () => this.pluginImpl.checkPermission(ctx, userInfo as IUserList),
       ctx,
       Messages.EndCheckPermission.telemetry
     );
   }
 
-  public async grantPermission(ctx: PluginContext): Promise<Result<ResourcePermission[], FxError>> {
+  public async grantPermission(
+    ctx: PluginContext,
+    userInfo: Record<string, any>
+  ): Promise<Result<ResourcePermission[], FxError>> {
     return await this.runWithExceptionCatchingAsync(
-      () => this.pluginImpl.grantPermission(ctx),
+      () => this.pluginImpl.grantPermission(ctx, userInfo as IUserList),
       ctx,
       Messages.EndCheckPermission.telemetry
     );

@@ -118,7 +118,7 @@ describe("Other test case", () => {
 
   it("error: TaskNotSupportError", async () => {
     const error = new TaskNotSupportError(Stage.createEnv);
-    assert.isTrue(error.name === "TaskNotSupport");
+    assert.isTrue(error.name === "TaskNotSupportError");
   });
 
   it("error: FetchSampleError", async () => {

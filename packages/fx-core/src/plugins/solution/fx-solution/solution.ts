@@ -1365,7 +1365,6 @@ export class TeamsAppSolution implements Solution {
             content: `Starting grant permission for environment: `,
             color: Colors.BRIGHT_WHITE,
           },
-          // Todo, when multi-environment is ready, we will update to current environment
           { content: `${envName}\n`, color: Colors.BRIGHT_MAGENTA },
           { content: `Tenant ID: `, color: Colors.BRIGHT_WHITE },
           { content: aadAppTenantId + "\n", color: Colors.BRIGHT_MAGENTA },
@@ -1645,7 +1644,6 @@ export class TeamsAppSolution implements Solution {
             content: `Starting list all collaborators for environment: `,
             color: Colors.BRIGHT_WHITE,
           },
-          // Todo, when multi-environment is ready, we will update to current environment
           { content: `${envName}\n`, color: Colors.BRIGHT_MAGENTA },
           { content: `Tenant ID: `, color: Colors.BRIGHT_WHITE },
           { content: aadAppTenantId + "\n", color: Colors.BRIGHT_MAGENTA },

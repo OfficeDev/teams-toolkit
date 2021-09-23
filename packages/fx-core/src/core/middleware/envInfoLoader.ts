@@ -10,6 +10,7 @@ import {
   Inputs,
   Json,
   ok,
+  Platform,
   ProjectSettings,
   QTreeNode,
   Result,
@@ -76,7 +77,8 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
 
     let targetEnvName: string;
     if (!skip && isMultiEnvEnabled()) {
-      if (inputs.askEnvSelect) {
+      // Only ask user to select an env in VS Code
+      if (inputs.platform === Platform.VSCode) {
         const result = await askTargetEnvironment(core.tools, inputs);
         if (result.isErr()) {
           ctx.result = err(result.error);

@@ -15,10 +15,6 @@ set -euxo pipefail
 # In CI mode, @microsoft/teamsfx-cli is friendly for CI/CD. 
 export CI_ENABLED=true
 
-# To enable @microsoft/teamsfx-cli running in CI mode, turn on CI_ENABLED like below.
-# In CI mode, @microsoft/teamsfx-cli is friendly for CI/CD. 
-export CI_ENABLED=true
-
 # Setup environment.
 # Sufficient permissions are required to run the commands below.
 apt install -y nodejs npm git

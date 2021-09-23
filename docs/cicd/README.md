@@ -48,7 +48,9 @@ Steps to create environment variables in GitHub:
 
 ## CI/CD Pipeline Templates in Jenkins
 
-To add these templates to your repository, you will need your versions of [jenkins-ci-template.Jenkinsfile](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/jenkins-ci-template.Jenkinsfile) and  [jenkins-cd-template.Jenkinsfile](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/jenkins-cd-template.Jenkinsfile) to be located in your repository by branch. 
+To add these templates to your repository, you will need your versions of [jenkins-ci-template.Jenkinsfile](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/jenkins-ci-template.Jenkinsfile) and  [jenkins-cd-template.Jenkinsfile](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/jenkins-cd-template.Jenkinsfile) to be located in your repository by branch.
+
+Also, you need to create CI/CD pipelines in Jenkins which point to the specific `Jenkinsfile` correspondingly.
 
 ### Customize CI Pipeline
 There are some potential changes you can make to adapt your project:

@@ -276,7 +276,7 @@ namespace Microsoft.TeamsFx
         {
             try
             {
-                await jsRuntime.InvokeVoidAsync("import", "https://statics.teams.cdn.office.net/sdk/v1.7.0/js/MicrosoftTeams.min.js").ConfigureAwait(false);
+                await jsRuntime.InvokeVoidAsync("import", "https://statics.teams.cdn.office.net/sdk/v1.10.0/js/MicrosoftTeams.min.js").ConfigureAwait(false);
                 return await jsRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/Microsoft.TeamsFx/jsInterop.js").AsTask().ConfigureAwait(false);
             }
             catch (JSException e)

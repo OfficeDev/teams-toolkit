@@ -63,7 +63,7 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
     }
 
     const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-    if (inputs.previewType && inputs.previewType === "local") {
+    if ((inputs.previewType && inputs.previewType === "local") || inputs.ignoreEnvInfo) {
       skip = true;
     }
 

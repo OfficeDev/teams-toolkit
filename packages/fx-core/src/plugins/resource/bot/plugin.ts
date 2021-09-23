@@ -2,15 +2,9 @@
 // Licensed under the MIT license.
 import {
   PluginContext,
-  Result,
-  Stage,
-  QTreeNode,
-  FxError,
-  Func,
   ArchiveFolderName,
   ArchiveLogFileName,
   AppPackageFolderName,
-  ok,
 } from "@microsoft/teamsfx-api";
 
 import { AADRegistration } from "./aadRegistration";
@@ -23,13 +17,11 @@ import {
   ProgressBarConstants,
   DeployConfigs,
   FolderNames,
-  QuestionNames,
   WebAppConstants,
   TemplateProjectsConstants,
   AuthEnvNames,
   AuthValues,
   MaxLengths,
-  Links,
   IdentityConstants,
   AzureConstants,
   PathInfo,
@@ -41,18 +33,14 @@ import { getZipDeployEndpoint } from "./utils/zipDeploy";
 import * as appService from "@azure/arm-appservice";
 import * as fs from "fs-extra";
 import { CommonStrings, PluginBot, ConfigNames, PluginLocalDebug } from "./resources/strings";
-import { DialogUtils } from "./utils/dialog";
 import {
   CheckThrowSomethingMissing,
   MigrateV1ProjectError,
   PackDirExistenceError,
   PreconditionError,
   SomethingMissingError,
-  UserInputsError,
-  ExtractZipError,
 } from "./errors";
 import { TeamsBotConfig } from "./configs/teamsBotConfig";
-import AdmZip from "adm-zip";
 import { ProgressBarFactory } from "./progressBars";
 import { PluginActRoles } from "./enums/pluginActRoles";
 import { ResourceNameFactory } from "./utils/resourceNameFactory";
@@ -115,17 +103,7 @@ export class TeamsBotImpl {
     }
 
     await handler?.next(ProgressBarConstants.SCAFFOLD_STEP_FETCH_ZIP);
-    const zipContent: AdmZip = await LanguageStrategy.getTemplateProjectZip(
-      this.config.scaffold.programmingLanguage!,
-      group_name
-    );
-
-    await handler?.next(ProgressBarConstants.SCAFFOLD_STEP_UNZIP);
-    try {
-      zipContent.extractAllTo(this.config.scaffold.workingDir!, true);
-    } catch (err) {
-      throw new ExtractZipError(this.config.scaffold.workingDir!, err);
-    }
+    await LanguageStrategy.getTemplateProjectZip(group_name, this.config);
 
     this.config.saveConfigIntoContext(context);
     Logger.info(Messages.SuccessfullyScaffoldedBot);

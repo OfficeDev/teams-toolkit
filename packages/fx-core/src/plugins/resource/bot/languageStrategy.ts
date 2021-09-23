@@ -9,43 +9,63 @@ import { Commands } from "./resources/strings";
 import * as appService from "@azure/arm-appservice";
 import { NameValuePair } from "@azure/arm-appservice/esm/models";
 import AdmZip from "adm-zip";
-import { CommandExecutionError, SomethingMissingError } from "./errors";
+import {
+  CommandExecutionError,
+  SomethingMissingError,
+  TemplateZipFallbackError,
+  UnzipError,
+} from "./errors";
 import { downloadByUrl } from "./utils/downloadByUrl";
 import * as path from "path";
 import * as fs from "fs-extra";
 import { Logger } from "./logger";
 import { Messages } from "./resources/messages";
 import { getTemplatesFolder } from "../../..";
+import {
+  ScaffoldAction,
+  ScaffoldActionName,
+  ScaffoldContext,
+  scaffoldFromTemplates,
+} from "../../../common/templatesActions";
 
 export class LanguageStrategy {
-  public static async getTemplateProjectZip(
-    programmingLanguage: ProgrammingLanguage,
-    groupName: string
-  ): Promise<AdmZip> {
-    try {
-      const zipUrl = await LanguageStrategy.getTemplateProjectZipUrl(
-        programmingLanguage,
-        groupName
-      );
-      const zipBuffer = await downloadByUrl(zipUrl, DownloadConstants.TEMPLATES_TIMEOUT_MS);
-      Logger.info(Messages.SuccessfullyRetrievedTemplateZip(zipUrl));
-      return new AdmZip(zipBuffer);
-    } catch (e) {
-      const fallbackFilePath = await LanguageStrategy.generateLocalFallbackFilePath(
-        programmingLanguage,
-        groupName
-      );
-      Logger.info(Messages.FallingBackToUseLocalTemplateZip);
-      return new AdmZip(fallbackFilePath);
+  public static convertTemplateLanguage(language: ProgrammingLanguage): string {
+    switch (language) {
+      case ProgrammingLanguage.JavaScript:
+        return "js";
+      case ProgrammingLanguage.TypeScript:
+        return "ts";
     }
   }
 
-  public static async getTemplateProjectZipUrl(
-    programmingLanguage: ProgrammingLanguage,
-    groupName: string
-  ): Promise<string> {
-    const manifest: TemplateManifest = await TemplateManifest.newInstance();
-    return manifest.getNewestTemplateUrl(programmingLanguage, groupName);
+  public static async getTemplateProjectZip(group_name: string, config: any): Promise<void> {
+    await scaffoldFromTemplates({
+      group: group_name,
+      lang: LanguageStrategy.convertTemplateLanguage(config.scaffold.programmingLanguage!),
+      scenario: TemplateProjectsConstants.DEFAULT_SCENARIO_NAME,
+      templatesFolderName: TemplateProjectsConstants.TEMPLATE_FOLDER_NAME,
+      dst: config.scaffold.workingDir!,
+      onActionEnd: async (action: ScaffoldAction, context: ScaffoldContext) => {
+        if (action.name === ScaffoldActionName.FetchTemplatesUrlWithTag) {
+          Logger.info(Messages.SuccessfullyRetrievedTemplateZip(context.zipUrl ?? ""));
+        }
+      },
+      onActionError: async (action: ScaffoldAction, context: ScaffoldContext, error: Error) => {
+        Logger.info(error.toString());
+        switch (action.name) {
+          case ScaffoldActionName.FetchTemplatesUrlWithTag:
+          case ScaffoldActionName.FetchTemplatesZipFromUrl:
+            Logger.info(Messages.FallingBackToUseLocalTemplateZip);
+            break;
+          case ScaffoldActionName.FetchTemplateZipFromLocal:
+            throw new TemplateZipFallbackError();
+          case ScaffoldActionName.Unzip:
+            throw new UnzipError(context.dst);
+          default:
+            throw new Error(error.message);
+        }
+      },
+    });
   }
 
   public static getSiteEnvelope(
@@ -106,26 +126,5 @@ export class LanguageStrategy {
         throw new CommandExecutionError(`${Commands.NPM_INSTALL}`, e);
       }
     }
-  }
-
-  private static async generateLocalFallbackFilePath(
-    programmingLanguage: ProgrammingLanguage,
-    groupName: string
-  ): Promise<string> {
-    const langKey = utils.convertToLangKey(programmingLanguage);
-    const targetFilePath = path.join(
-      getTemplatesFolder(),
-      "plugins",
-      "resource",
-      "bot",
-      `${groupName}.${langKey}.${TemplateProjectsConstants.DEFAULT_SCENARIO_NAME}.zip`
-    );
-
-    const targetExisted = await fs.pathExists(targetFilePath);
-    if (!targetExisted) {
-      throw new SomethingMissingError(targetFilePath);
-    }
-
-    return targetFilePath;
   }
 }

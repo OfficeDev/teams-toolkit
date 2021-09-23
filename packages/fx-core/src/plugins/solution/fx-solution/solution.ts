@@ -1356,7 +1356,20 @@ export class TeamsAppSolution implements Solution {
 
       if (ctx.answers?.platform === Platform.CLI) {
         const aadAppTenantId = ctx.envInfo.profile?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
-        const envName = ctx.envInfo.envName ?? "dev";
+        const envName = ctx.envInfo.envName;
+        if (!envName) {
+          return err(
+            sendErrorTelemetryThenReturnError(
+              SolutionTelemetryEvent.CheckPermission,
+              returnSystemError(
+                new Error("Failed to get env name."),
+                "Solution",
+                SolutionError.FailedToGetEnvName
+              ),
+              ctx.telemetryReporter
+            )
+          );
+        }
 
         const message = [
           { content: `Account to grant permission: `, color: Colors.BRIGHT_WHITE },
@@ -1496,7 +1509,20 @@ export class TeamsAppSolution implements Solution {
 
       if (ctx.answers?.platform === Platform.CLI) {
         const aadAppTenantId = ctx.envInfo.profile?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
-        const envName = ctx.envInfo.envName ?? "dev";
+        const envName = ctx.envInfo.envName;
+        if (!envName) {
+          return err(
+            sendErrorTelemetryThenReturnError(
+              SolutionTelemetryEvent.CheckPermission,
+              returnSystemError(
+                new Error("Failed to get env name."),
+                "Solution",
+                SolutionError.FailedToGetEnvName
+              ),
+              ctx.telemetryReporter
+            )
+          );
+        }
 
         const message = [
           { content: `Account used to check: `, color: Colors.BRIGHT_WHITE },
@@ -1635,7 +1661,20 @@ export class TeamsAppSolution implements Solution {
 
       if (ctx.answers?.platform === Platform.CLI) {
         const aadAppTenantId = ctx.envInfo.profile?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
-        const envName = ctx.envInfo.envName ?? "dev";
+        const envName = ctx.envInfo.envName;
+        if (!envName) {
+          return err(
+            sendErrorTelemetryThenReturnError(
+              SolutionTelemetryEvent.CheckPermission,
+              returnSystemError(
+                new Error("Failed to get env name."),
+                "Solution",
+                SolutionError.FailedToGetEnvName
+              ),
+              ctx.telemetryReporter
+            )
+          );
+        }
 
         const message = [
           { content: `Account used to check: `, color: Colors.BRIGHT_WHITE },

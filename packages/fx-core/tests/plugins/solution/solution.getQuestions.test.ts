@@ -140,6 +140,7 @@ describe("getQuestionsForScaffolding()", async () => {
   });
 
   it("getQuestions - deploy", async () => {
+    (projectSettings.solutionSettings as AzureSolutionSettings).capabilities.push(TabOptionItem.id);
     const mockedCtx = new MockedV2Context(projectSettings);
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,

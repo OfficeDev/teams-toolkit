@@ -1356,6 +1356,7 @@ export class TeamsAppSolution implements Solution {
 
       if (ctx.answers?.platform === Platform.CLI) {
         const aadAppTenantId = ctx.envInfo.profile?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
+        const envName = ctx.envInfo.envName ?? "dev";
 
         const message = [
           { content: `Account to grant permission: `, color: Colors.BRIGHT_WHITE },
@@ -1365,7 +1366,7 @@ export class TeamsAppSolution implements Solution {
             color: Colors.BRIGHT_WHITE,
           },
           // Todo, when multi-environment is ready, we will update to current environment
-          { content: "default\n", color: Colors.BRIGHT_MAGENTA },
+          { content: `${envName}\n`, color: Colors.BRIGHT_MAGENTA },
           { content: `Tenant ID: `, color: Colors.BRIGHT_WHITE },
           { content: aadAppTenantId + "\n", color: Colors.BRIGHT_MAGENTA },
         ];
@@ -1496,6 +1497,7 @@ export class TeamsAppSolution implements Solution {
 
       if (ctx.answers?.platform === Platform.CLI) {
         const aadAppTenantId = ctx.envInfo.profile?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
+        const envName = ctx.envInfo.envName ?? "dev";
 
         const message = [
           { content: `Account used to check: `, color: Colors.BRIGHT_WHITE },
@@ -1504,8 +1506,7 @@ export class TeamsAppSolution implements Solution {
             content: `Starting check permission for environment: `,
             color: Colors.BRIGHT_WHITE,
           },
-          // Todo, when multi-environment is ready, we will update to current environment
-          { content: "default\n", color: Colors.BRIGHT_MAGENTA },
+          { content: `${envName}\n`, color: Colors.BRIGHT_MAGENTA },
           { content: `Tenant ID: `, color: Colors.BRIGHT_WHITE },
           { content: aadAppTenantId + "\n", color: Colors.BRIGHT_MAGENTA },
         ];
@@ -1635,6 +1636,8 @@ export class TeamsAppSolution implements Solution {
 
       if (ctx.answers?.platform === Platform.CLI) {
         const aadAppTenantId = ctx.envInfo.profile?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
+        const envName = ctx.envInfo.envName ?? "dev";
+
         const message = [
           { content: `Account used to check: `, color: Colors.BRIGHT_WHITE },
           { content: userInfo.userPrincipalName + "\n", color: Colors.BRIGHT_MAGENTA },
@@ -1643,7 +1646,7 @@ export class TeamsAppSolution implements Solution {
             color: Colors.BRIGHT_WHITE,
           },
           // Todo, when multi-environment is ready, we will update to current environment
-          { content: "default\n", color: Colors.BRIGHT_MAGENTA },
+          { content: `${envName}\n`, color: Colors.BRIGHT_MAGENTA },
           { content: `Tenant ID: `, color: Colors.BRIGHT_WHITE },
           { content: aadAppTenantId + "\n", color: Colors.BRIGHT_MAGENTA },
         ];

@@ -373,7 +373,7 @@ export class AppStudioPluginImpl {
     }
 
     let appDefinition: IAppDefinition;
-    if (this.isSPFxProject(ctx.projectSettings)) {
+    if (isSPFxProject(ctx.projectSettings)) {
       if (isMultiEnvEnabled()) {
         const view = {
           config: ctx.envInfo.config,
@@ -670,7 +670,7 @@ export class AppStudioPluginImpl {
     let manifestString = JSON.stringify(
       await fs.readJSON(await this.getManifestTemplatePath(ctx.root))
     );
-    if (this.isSPFxProject(ctx.projectSettings)) {
+    if (isSPFxProject(ctx.projectSettings)) {
       if (isMultiEnvEnabled()) {
         const view = {
           config: ctx.envInfo.config,

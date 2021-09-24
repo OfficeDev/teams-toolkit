@@ -85,7 +85,7 @@ export class PluginBot {
   public static readonly WEB_APPLICATION_INFO_RESOURCE = "webApplicationInfo.resource";
   public static readonly BOTS_SECTION = "bots";
   public static readonly BOT_CHANNEL_REGISTRATION = "botChannelReg";
-  public static readonly BOT_SERVICE_RESOURCE_ID = "botServiceResourceId";
+  public static readonly BOT_WEB_APP_RESOURCE_ID = "botWebAppResourceId";
   public static readonly UNPACK_FLAG = "unPackFlag";
   public static readonly MESSAGE_EXTENSION_SECTION = "composeExtensions";
   public static readonly LOCAL_REDIRECT_URI = "local_redirectUri";

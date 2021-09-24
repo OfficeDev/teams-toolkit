@@ -63,8 +63,8 @@ resource botWebApp 'Microsoft.Web/sites@2021-01-01' = {
 
 output botWebAppSKU string = botWebAppSKU
 output botServiceSKU string = botServiceSKU
-output botWebAppName string = botWebAppName
 output botDomain string = botWebAppHostname
 output appServicePlanName string = botServerfarmsName
-output botServiceResourceId string = botServices.id
+output botServiceName string = botServiceName
+output botWebAppResourceId string = botWebApp.id
 output botWebAppEndpoint string = botEndpoint

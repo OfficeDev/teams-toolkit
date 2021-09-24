@@ -276,7 +276,7 @@ export class BotArmOutput {
   static readonly WebAppName = "bot_webAppName";
   static readonly Domain = "bot_domain";
   static readonly AppServicePlanName = "bot_appServicePlanName";
-  static readonly BotServiceResourceId = "bot_serviceResourceId";
+  static readonly BotWebAppResourceId = "bot_webAppResourceId";
   static readonly WebAppEndpoint = "bot_webAppEndpoint";
   static readonly InitiateLoginEndpoint = "bot_initiateLoginEndpoint";
 }

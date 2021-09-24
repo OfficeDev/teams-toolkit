@@ -367,9 +367,9 @@ export class TeamsBotImpl {
       context,
       BotArmOutput.AppServicePlanName
     ) as string;
-    this.config.provision.botServiceResourceId = getArmOutput(
+    this.config.provision.botWebAppResourceId = getArmOutput(
       context,
-      BotArmOutput.BotServiceResourceId
+      BotArmOutput.BotWebAppResourceId
     ) as string;
     this.config.provision.siteEndpoint = getArmOutput(
       context,
@@ -525,7 +525,7 @@ export class TeamsBotImpl {
     if (isArmSupportEnabled()) {
       CheckThrowSomethingMissing(
         ConfigNames.BOT_SERVICE_RESOURCE_ID,
-        this.config.provision.botServiceResourceId
+        this.config.provision.botWebAppResourceId
       );
     }
     CheckThrowSomethingMissing(ConfigNames.SUBSCRIPTION_ID, this.config.provision.subscriptionId);
@@ -541,10 +541,10 @@ export class TeamsBotImpl {
     await this.config.restoreConfigFromContext(context);
 
     this.config.provision.subscriptionId = getSubscriptionIdFromResourceId(
-      this.config.provision.botServiceResourceId!
+      this.config.provision.botWebAppResourceId!
     );
     this.config.provision.resourceGroup = getResourceGroupNameFromResourceId(
-      this.config.provision.botServiceResourceId!
+      this.config.provision.botWebAppResourceId!
     );
 
     Logger.info(Messages.DeployingBot);

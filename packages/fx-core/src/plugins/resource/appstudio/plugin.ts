@@ -216,8 +216,7 @@ export class AppStudioPluginImpl {
    * @returns
    */
   public async createManifest(settings: ProjectSettings): Promise<TeamsAppManifest | undefined> {
-    const solutionSettings: AzureSolutionSettings =
-      settings.solutionSettings as AzureSolutionSettings;
+    const solutionSettings: AzureSolutionSettings = settings.solutionSettings as AzureSolutionSettings;
     if (
       !solutionSettings.capabilities ||
       (!solutionSettings.capabilities.includes(BotOptionItem.id) &&
@@ -290,9 +289,8 @@ export class AppStudioPluginImpl {
     manifest.id = "{appid}";
     manifest.validDomains = [];
 
-    const includeBot = (
-      ctx.projectSettings?.solutionSettings as AzureSolutionSettings
-    ).activeResourcePlugins?.includes(PluginNames.BOT);
+    const includeBot = (ctx.projectSettings
+      ?.solutionSettings as AzureSolutionSettings).activeResourcePlugins?.includes(PluginNames.BOT);
     if (includeBot) {
       if (manifest.bots !== undefined && manifest.bots.length > 0) {
         for (let index = 0; index < manifest.bots.length; ++index) {
@@ -360,24 +358,30 @@ export class AppStudioPluginImpl {
 
   public async postProvision(ctx: PluginContext): Promise<string> {
     const remoteTeamsAppId = this.getTeamsAppId(ctx, false);
-    let manifest: TeamsAppManifest;
+    let manifestString: string;
     const appDirectory = await getAppDirectory(ctx.root);
     const manifestPath = await this.getManifestTemplatePath(ctx.root);
     const manifestResult = await this.reloadManifestAndCheckRequiredFields(manifestPath);
     if (manifestResult.isErr()) {
       throw manifestResult;
     } else {
-      manifest = manifestResult.value;
+      manifestString = JSON.stringify(manifestResult.value);
     }
 
     let appDefinition: IAppDefinition;
     if (this.isSPFxProject(ctx)) {
-      appDefinition = this.convertToAppDefinition(manifest, false);
-
       if (isMultiEnvEnabled()) {
-        appDefinition.appName = ctx.envInfo.config.manifest.values.appName.short;
-        appDefinition.longName = ctx.envInfo.config.manifest.values.appName.full;
+        const view = {
+          config: ctx.envInfo.config,
+          profile: {
+            "fx-resource-appstudio": {
+              teamsAppId: remoteTeamsAppId,
+            },
+          },
+        };
+        manifestString = Mustache.render(manifestString, view);
       }
+      appDefinition = this.convertToAppDefinition(JSON.parse(manifestString), false);
     } else {
       const remoteManifest = await this.getAppDefinitionAndManifest(ctx, false);
       if (remoteManifest.isErr()) {
@@ -659,16 +663,22 @@ export class AppStudioPluginImpl {
     let manifest: TeamsAppManifest | undefined;
 
     const appDirectory = await getAppDirectory(ctx.root);
-    const manifestTpl: TeamsAppManifest = await fs.readJSON(
-      await this.getManifestTemplatePath(ctx.root)
+    let manifestString = JSON.stringify(
+      await fs.readJSON(await this.getManifestTemplatePath(ctx.root))
     );
     if (this.isSPFxProject(ctx)) {
-      manifest = manifestTpl;
       if (isMultiEnvEnabled()) {
-        manifest.id = this.getTeamsAppId(ctx, false);
-        manifest.name.short = ctx.envInfo.config.manifest.values.appName.short;
-        manifest.name.full = ctx.envInfo.config.manifest.values.appName.full;
+        const view = {
+          config: ctx.envInfo.config,
+          profile: {
+            "fx-resource-appstudio": {
+              teamsAppId: this.getTeamsAppId(ctx, false),
+            },
+          },
+        };
+        manifestString = Mustache.render(manifestString, view);
       }
+      manifest = JSON.parse(manifestString);
     } else {
       const fillinRes = await this.getAppDefinitionAndManifest(ctx, false);
       if (fillinRes.isOk()) {

@@ -81,7 +81,7 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
       if (inputs.env) {
         const result = await useUserSetEnv(inputs);
         if (result.isErr()) {
-          ctx.result = result.error;
+          ctx.result = result;
           return;
         }
         targetEnvName = result.value;

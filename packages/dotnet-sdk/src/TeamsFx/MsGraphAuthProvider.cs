@@ -65,6 +65,11 @@ namespace Microsoft.TeamsFx
             _logger?.LogInformation("Create Microsoft Graph Authentication Provider with {scopes}", _scopes);
         }
 
+        /// <summary>
+        /// Authenticates the specified request message.
+        /// </summary>
+        /// <param name="request">The System.Net.Http.HttpRequestMessage to authenticate.</param>
+        /// <returns>The task to await.</returns>
         public async Task AuthenticateRequestAsync(HttpRequestMessage request)
         {
             var tokenRequestContext = new TokenRequestContext(_scopes);
@@ -89,7 +94,7 @@ namespace Microsoft.TeamsFx
             if (accessToken.Token.Length == 0)
             {
                 var errorMsg = "Graph access token is undefined or empty";
-                 _logger?.LogError(errorMsg);
+                _logger?.LogError(errorMsg);
                 throw new ExceptionWithCode(errorMsg, ExceptionCode.InternalError);
             }
             return accessToken.Token;

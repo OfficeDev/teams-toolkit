@@ -199,9 +199,10 @@ async function getLocalEnv(
       namespace: "fx-solution-azure/fx-resource-local-debug",
       method: "getLocalDebugEnvs",
     };
-    const inputs = getSystemInputs(workspaceFolder, undefined, "local");
+    const inputs = getSystemInputs(workspaceFolder, undefined);
     inputs.ignoreLock = true;
     inputs.ignoreConfigPersist = true;
+    inputs.ignoreEnvInfo = true;
     const result = await core.executeUserTask(func, inputs);
     if (result.isErr()) {
       throw result.error;

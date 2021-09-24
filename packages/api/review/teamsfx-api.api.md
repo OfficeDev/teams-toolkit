@@ -606,8 +606,6 @@ export interface Inputs extends Json {
     // (undocumented)
     ignoreLock?: boolean;
     // (undocumented)
-    ignoreTypeCheck?: boolean;
-    // (undocumented)
     platform: Platform;
     // (undocumented)
     projectPath?: string;

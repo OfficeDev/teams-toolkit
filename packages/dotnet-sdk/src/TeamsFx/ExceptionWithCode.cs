@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.TeamsFx.Helper;
 using System;
 
 namespace Microsoft.TeamsFx
@@ -66,10 +65,6 @@ namespace Microsoft.TeamsFx
         /// Exception Code.
         /// </summary>
         public readonly ExceptionCode Code;
-        internal ExceptionWithCode(Exception e) : base(e.Message)
-        {
-            Code = ExceptionHelper.ParseExceptionCode(e);
-        }
 
         internal ExceptionWithCode(string message, ExceptionCode exceptionCode) : base(message)
         {

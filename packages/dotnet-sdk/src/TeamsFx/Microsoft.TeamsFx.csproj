@@ -4,7 +4,7 @@
     <TargetFramework>net5.0</TargetFramework>
     <AssemblyName>Microsoft.TeamsFx</AssemblyName>
     <RootNamespace>Microsoft.TeamsFx</RootNamespace>
-    <Version>0.1.0-rc</Version>
+    <Version>0.1.0</Version>
     <Authors>Microsoft</Authors>
     <Company>Microsoft</Company>
     <RepositoryUrl>https://github.com/OfficeDev/TeamsFx</RepositoryUrl>
@@ -15,7 +15,6 @@
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <Description>This package aims to reduce the developer tasks of implementing identity and access to cloud resources down to single-line statements with "zero configuration".</Description>
   </PropertyGroup>
-
 
   <ItemGroup>
     <SupportedPlatform Include="browser" />
@@ -31,17 +30,8 @@
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Graph" Version="4.5.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Microsoft.Graph" Version="4.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
-
-  <PropertyGroup>
-    <TeamsFxJsUrl>https://unpkg.com/@microsoft/teamsfx@0.2.5/dist/teamsfx.js</TeamsFxJsUrl>
-  </PropertyGroup>
-
-  <Target Name="DownloadContentFiles" BeforeTargets="Build">
-    <DownloadFile SourceUrl="$(TeamsFxJsUrl)" DestinationFileName="teamsfx.js" DestinationFolder="$(MSBuildProjectDirectory)\wwwroot">
-    </DownloadFile>
-  </Target>
 
 </Project>

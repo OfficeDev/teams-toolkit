@@ -315,7 +315,7 @@
       },
       {
         "command": "fx-extension.openSamples",
-        "title": "Teams: Samples"
+        "title": "Teams: View samples"
       },
       {
         "command": "fx-extension.openDocument",
@@ -323,35 +323,35 @@
       },
       {
         "command": "fx-extension.create",
-        "title": "Teams: Create New Project"
+        "title": "Teams: Create a new Teams app"
       },
       {
         "command": "fx-extension.update",
-        "title": "Teams: Add Resources"
+        "title": "Teams: Add cloud resources"
       },
       {
         "command": "fx-extension.addCapability",
-        "title": "Teams: Add Capability"
+        "title": "Teams: Add capabilities"
       },
       {
         "command": "fx-extension.openManifest",
-        "title": "Teams: Manifest Editor"
+        "title": "Teams: Edit manifest file"
       },
       {
         "command": "fx-extension.validateManifest",
-        "title": "Teams: Validate App Manifest File"
+        "title": "Teams: Validate manifest file"
       },
       {
         "command": "fx-extension.build",
-        "title": "Teams: Build Teams Package"
+        "title": "Teams: Zip Teams metadata package"
       },
       {
         "command": "fx-extension.provision",
-        "title": "Teams: Provision in the Cloud"
+        "title": "Teams: Provision in the could"
       },
       {
         "command": "fx-extension.deploy",
-        "title": "Teams: Deploy to the Cloud"
+        "title": "Teams: Deploy to the cloud"
       },
       {
         "command": "fx-extension.publish",
@@ -359,11 +359,11 @@
       },
       {
         "command": "fx-extension.openAppManagement",
-        "title": "Teams: Developer Portal"
+        "title": "Teams: Developer Portal for Teams"
       },
       {
         "command": "fx-extension.openReportIssues",
-        "title": "Teams: Report issues"
+        "title": "Teams: Report issues on GitHub"
       },
       {
         "command": "fx-extension.validate-dependencies",

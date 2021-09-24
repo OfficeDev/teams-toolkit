@@ -97,7 +97,6 @@ import {
   SOLUTION_PROVISION_SUCCEEDED,
   SUBSCRIPTION_ID,
   SUBSCRIPTION_NAME,
-  USER_INFO,
   Void,
 } from "./constants";
 import { executeConcurrently, executeLifecycles, LifecyclesWithContext } from "./executor";
@@ -1341,7 +1340,6 @@ export class TeamsAppSolution implements Solution {
 
       progressBar?.start();
       progressBar?.next(`Grant permission for user ${email}`);
-      ctx.envInfo.profile.get(GLOBAL_CONFIG)?.set(USER_INFO, JSON.stringify(userInfo));
 
       const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, [
         this.AadPlugin,
@@ -1350,12 +1348,32 @@ export class TeamsAppSolution implements Solution {
 
       const grantPermissionWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(
         ([plugin, context]) => {
-          return [plugin?.grantPermission?.bind(plugin), context, plugin.name];
+          return [
+            plugin?.grantPermission
+              ? (ctx: PluginContext) => plugin!.grantPermission!.bind(plugin)(ctx, userInfo)
+              : undefined,
+            context,
+            plugin.name,
+          ];
         }
       );
 
       if (ctx.answers?.platform === Platform.CLI) {
         const aadAppTenantId = ctx.envInfo.profile?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
+        const envName = ctx.envInfo.envName;
+        if (!envName) {
+          return err(
+            sendErrorTelemetryThenReturnError(
+              SolutionTelemetryEvent.GrantPermission,
+              returnSystemError(
+                new Error("Failed to get env name."),
+                "Solution",
+                SolutionError.FailedToGetEnvName
+              ),
+              ctx.telemetryReporter
+            )
+          );
+        }
 
         const message = [
           { content: `Account to grant permission: `, color: Colors.BRIGHT_WHITE },
@@ -1364,8 +1382,7 @@ export class TeamsAppSolution implements Solution {
             content: `Starting grant permission for environment: `,
             color: Colors.BRIGHT_WHITE,
           },
-          // Todo, when multi-environment is ready, we will update to current environment
-          { content: "default\n", color: Colors.BRIGHT_MAGENTA },
+          { content: `${envName}\n`, color: Colors.BRIGHT_MAGENTA },
           { content: `Tenant ID: `, color: Colors.BRIGHT_WHITE },
           { content: aadAppTenantId + "\n", color: Colors.BRIGHT_MAGENTA },
         ];
@@ -1444,7 +1461,6 @@ export class TeamsAppSolution implements Solution {
       });
     } finally {
       await progressBar?.end(true);
-      ctx.envInfo.profile.get(GLOBAL_CONFIG)?.delete(USER_INFO);
       this.runningState = SolutionRunningState.Idle;
     }
   }
@@ -1481,8 +1497,6 @@ export class TeamsAppSolution implements Solution {
 
       const userInfo = result.value as IUserList;
 
-      ctx.envInfo.profile.get(GLOBAL_CONFIG)?.set(USER_INFO, JSON.stringify(userInfo));
-
       const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, [
         this.AadPlugin,
         this.AppStudioPlugin,
@@ -1490,12 +1504,32 @@ export class TeamsAppSolution implements Solution {
 
       const checkPermissionWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(
         ([plugin, context]) => {
-          return [plugin?.checkPermission?.bind(plugin), context, plugin.name];
+          return [
+            plugin?.checkPermission
+              ? (ctx: PluginContext) => plugin!.checkPermission!.bind(plugin)(ctx, userInfo)
+              : undefined,
+            context,
+            plugin.name,
+          ];
         }
       );
 
       if (ctx.answers?.platform === Platform.CLI) {
         const aadAppTenantId = ctx.envInfo.profile?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
+        const envName = ctx.envInfo.envName;
+        if (!envName) {
+          return err(
+            sendErrorTelemetryThenReturnError(
+              SolutionTelemetryEvent.CheckPermission,
+              returnSystemError(
+                new Error("Failed to get env name."),
+                "Solution",
+                SolutionError.FailedToGetEnvName
+              ),
+              ctx.telemetryReporter
+            )
+          );
+        }
 
         const message = [
           { content: `Account used to check: `, color: Colors.BRIGHT_WHITE },
@@ -1504,8 +1538,7 @@ export class TeamsAppSolution implements Solution {
             content: `Starting check permission for environment: `,
             color: Colors.BRIGHT_WHITE,
           },
-          // Todo, when multi-environment is ready, we will update to current environment
-          { content: "default\n", color: Colors.BRIGHT_MAGENTA },
+          { content: `${envName}\n`, color: Colors.BRIGHT_MAGENTA },
           { content: `Tenant ID: `, color: Colors.BRIGHT_WHITE },
           { content: aadAppTenantId + "\n", color: Colors.BRIGHT_MAGENTA },
         ];
@@ -1585,7 +1618,6 @@ export class TeamsAppSolution implements Solution {
         permissions,
       });
     } finally {
-      ctx.envInfo.profile.get(GLOBAL_CONFIG)?.delete(USER_INFO);
       this.runningState = SolutionRunningState.Idle;
     }
   }
@@ -1629,12 +1661,33 @@ export class TeamsAppSolution implements Solution {
 
       const listCollaboratorWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(
         ([plugin, context]) => {
-          return [plugin?.listCollaborator?.bind(plugin), context, plugin.name];
+          return [
+            plugin?.listCollaborator
+              ? (ctx: PluginContext) => plugin!.listCollaborator!.bind(plugin)(ctx, userInfo)
+              : undefined,
+            context,
+            plugin.name,
+          ];
         }
       );
 
       if (ctx.answers?.platform === Platform.CLI) {
         const aadAppTenantId = ctx.envInfo.profile?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
+        const envName = ctx.envInfo.envName;
+        if (!envName) {
+          return err(
+            sendErrorTelemetryThenReturnError(
+              SolutionTelemetryEvent.ListCollaborator,
+              returnSystemError(
+                new Error("Failed to get env name."),
+                "Solution",
+                SolutionError.FailedToGetEnvName
+              ),
+              ctx.telemetryReporter
+            )
+          );
+        }
+
         const message = [
           { content: `Account used to check: `, color: Colors.BRIGHT_WHITE },
           { content: userInfo.userPrincipalName + "\n", color: Colors.BRIGHT_MAGENTA },
@@ -1642,8 +1695,7 @@ export class TeamsAppSolution implements Solution {
             content: `Starting list all collaborators for environment: `,
             color: Colors.BRIGHT_WHITE,
           },
-          // Todo, when multi-environment is ready, we will update to current environment
-          { content: "default\n", color: Colors.BRIGHT_MAGENTA },
+          { content: `${envName}\n`, color: Colors.BRIGHT_MAGENTA },
           { content: `Tenant ID: `, color: Colors.BRIGHT_WHITE },
           { content: aadAppTenantId + "\n", color: Colors.BRIGHT_MAGENTA },
         ];

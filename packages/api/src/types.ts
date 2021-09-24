@@ -168,10 +168,8 @@ export interface Inputs extends Json {
   stage?: Stage;
   vscodeEnv?: VsCodeEnv;
   ignoreLock?: boolean;
-  ignoreTypeCheck?: boolean;
   ignoreConfigPersist?: boolean;
   ignoreEnvInfo?: boolean;
-  askEnvSelect?: boolean;
 }
 
 export interface ProjectConfig {

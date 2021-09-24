@@ -600,15 +600,11 @@ export interface InputResult<T> {
 // @public (undocumented)
 export interface Inputs extends Json {
     // (undocumented)
-    askEnvSelect?: boolean;
-    // (undocumented)
     ignoreConfigPersist?: boolean;
     // (undocumented)
     ignoreEnvInfo?: boolean;
     // (undocumented)
     ignoreLock?: boolean;
-    // (undocumented)
-    ignoreTypeCheck?: boolean;
     // (undocumented)
     platform: Platform;
     // (undocumented)
@@ -878,7 +874,7 @@ interface Plugin_2 {
     activate(solutionSettings: AzureSolutionSettings): boolean;
     callFunc?: (func: Func, ctx: PluginContext) => Promise<Result<any, FxError>>;
     // (undocumented)
-    checkPermission?: (ctx: PluginContext) => Promise<Result<any, FxError>>;
+    checkPermission?: (ctx: PluginContext, userInfo: Record<string, any>) => Promise<Result<any, FxError>>;
     // (undocumented)
     deploy?: (ctx: PluginContext) => Promise<Result<any, FxError>>;
     // (undocumented)
@@ -886,9 +882,9 @@ interface Plugin_2 {
     executeUserTask?: (func: Func, ctx: PluginContext) => Promise<Result<any, FxError>>;
     getQuestions?: (stage: Stage, ctx: PluginContext) => Promise<Result<QTreeNode | undefined, FxError>>;
     getQuestionsForUserTask?: (func: Func, ctx: PluginContext) => Promise<Result<QTreeNode | undefined, FxError>>;
-    grantPermission?: (ctx: PluginContext) => Promise<Result<any, FxError>>;
+    grantPermission?: (ctx: PluginContext, userInfo: Record<string, any>) => Promise<Result<any, FxError>>;
     // (undocumented)
-    listCollaborator?: (ctx: PluginContext) => Promise<Result<any, FxError>>;
+    listCollaborator?: (ctx: PluginContext, userInfo: Record<string, any>) => Promise<Result<any, FxError>>;
     localDebug?: (ctx: PluginContext) => Promise<Result<any, FxError>>;
     // (undocumented)
     name: string;

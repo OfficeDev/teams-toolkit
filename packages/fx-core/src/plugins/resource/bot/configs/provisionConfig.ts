@@ -94,6 +94,7 @@ export class ProvisionConfig {
     this.siteEndpoint = context.config.get(PluginBot.SITE_ENDPOINT) as string;
 
     this.botChannelRegName = context.config.get(PluginBot.BOT_CHANNEL_REGISTRATION) as string;
+    this.botServiceResourceId = context.config.get(PluginBot.BOT_SERVICE_RESOURCE_ID) as string;
 
     this.validateRestoredConfig();
   }

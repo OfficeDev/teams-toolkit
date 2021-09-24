@@ -536,9 +536,6 @@ export class TeamsBotImpl {
     }
     CheckThrowSomethingMissing(ConfigNames.SUBSCRIPTION_ID, this.config.provision.subscriptionId);
     CheckThrowSomethingMissing(ConfigNames.RESOURCE_GROUP, this.config.provision.resourceGroup);
-    Logger.debug(
-      `[dilin-debug] subscription: ${this.config.provision.subscriptionId}\tresourceGroup: ${this.config.provision.resourceGroup}`
-    );
 
     this.config.saveConfigIntoContext(context);
 

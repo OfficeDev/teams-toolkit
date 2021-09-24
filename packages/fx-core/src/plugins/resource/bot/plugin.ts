@@ -527,12 +527,6 @@ export class TeamsBotImpl {
         ConfigNames.BOT_SERVICE_RESOURCE_ID,
         this.config.provision.botServiceResourceId
       );
-      this.config.provision.subscriptionId = getSubscriptionIdFromResourceId(
-        this.config.provision.botServiceResourceId!
-      );
-      this.config.provision.resourceGroup = getResourceGroupNameFromResourceId(
-        this.config.provision.botServiceResourceId!
-      );
     }
     CheckThrowSomethingMissing(ConfigNames.SUBSCRIPTION_ID, this.config.provision.subscriptionId);
     CheckThrowSomethingMissing(ConfigNames.RESOURCE_GROUP, this.config.provision.resourceGroup);
@@ -545,6 +539,14 @@ export class TeamsBotImpl {
   public async deploy(context: PluginContext): Promise<FxResult> {
     this.ctx = context;
     await this.config.restoreConfigFromContext(context);
+
+    this.config.provision.subscriptionId = getSubscriptionIdFromResourceId(
+      this.config.provision.botServiceResourceId!
+    );
+    this.config.provision.resourceGroup = getResourceGroupNameFromResourceId(
+      this.config.provision.botServiceResourceId!
+    );
+
     Logger.info(Messages.DeployingBot);
 
     const workingDir = this.config.scaffold.workingDir;

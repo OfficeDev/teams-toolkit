@@ -22,50 +22,50 @@ import { Logger } from "./logger";
 import { Messages } from "./resources/messages";
 import { getTemplatesFolder } from "../../..";
 import {
+  defaultActionSeq,
   ScaffoldAction,
   ScaffoldActionName,
   ScaffoldContext,
   scaffoldFromTemplates,
 } from "../../../common/templatesActions";
+import { TeamsBotConfig } from "./configs/teamsBotConfig";
 
 export class LanguageStrategy {
-  public static convertTemplateLanguage(language: ProgrammingLanguage): string {
-    switch (language) {
-      case ProgrammingLanguage.JavaScript:
-        return "js";
-      case ProgrammingLanguage.TypeScript:
-        return "ts";
-    }
-  }
-
-  public static async getTemplateProjectZip(group_name: string, config: any): Promise<void> {
-    await scaffoldFromTemplates({
-      group: group_name,
-      lang: LanguageStrategy.convertTemplateLanguage(config.scaffold.programmingLanguage!),
-      scenario: TemplateProjectsConstants.DEFAULT_SCENARIO_NAME,
-      templatesFolderName: TemplateProjectsConstants.TEMPLATE_FOLDER_NAME,
-      dst: config.scaffold.workingDir!,
-      onActionEnd: async (action: ScaffoldAction, context: ScaffoldContext) => {
-        if (action.name === ScaffoldActionName.FetchTemplatesUrlWithTag) {
-          Logger.info(Messages.SuccessfullyRetrievedTemplateZip(context.zipUrl ?? ""));
-        }
+  public static async getTemplateProject(
+    group_name: string,
+    config: TeamsBotConfig,
+    actions: ScaffoldAction[] = defaultActionSeq
+  ): Promise<void> {
+    await scaffoldFromTemplates(
+      {
+        group: group_name,
+        lang: utils.convertToLangKey(config.scaffold.programmingLanguage!),
+        scenario: TemplateProjectsConstants.DEFAULT_SCENARIO_NAME,
+        templatesFolderName: TemplateProjectsConstants.TEMPLATE_FOLDER_NAME,
+        dst: config.scaffold.workingDir!,
+        onActionEnd: async (action: ScaffoldAction, context: ScaffoldContext) => {
+          if (action.name === ScaffoldActionName.FetchTemplatesUrlWithTag) {
+            Logger.info(Messages.SuccessfullyRetrievedTemplateZip(context.zipUrl ?? ""));
+          }
+        },
+        onActionError: async (action: ScaffoldAction, context: ScaffoldContext, error: Error) => {
+          Logger.info(error.toString());
+          switch (action.name) {
+            case ScaffoldActionName.FetchTemplatesUrlWithTag:
+            case ScaffoldActionName.FetchTemplatesZipFromUrl:
+              Logger.info(Messages.FallingBackToUseLocalTemplateZip);
+              break;
+            case ScaffoldActionName.FetchTemplateZipFromLocal:
+              throw new TemplateZipFallbackError();
+            case ScaffoldActionName.Unzip:
+              throw new UnzipError(context.dst);
+            default:
+              throw new Error(error.message);
+          }
+        },
       },
-      onActionError: async (action: ScaffoldAction, context: ScaffoldContext, error: Error) => {
-        Logger.info(error.toString());
-        switch (action.name) {
-          case ScaffoldActionName.FetchTemplatesUrlWithTag:
-          case ScaffoldActionName.FetchTemplatesZipFromUrl:
-            Logger.info(Messages.FallingBackToUseLocalTemplateZip);
-            break;
-          case ScaffoldActionName.FetchTemplateZipFromLocal:
-            throw new TemplateZipFallbackError();
-          case ScaffoldActionName.Unzip:
-            throw new UnzipError(context.dst);
-          default:
-            throw new Error(error.message);
-        }
-      },
-    });
+      actions
+    );
   }
 
   public static getSiteEnvelope(

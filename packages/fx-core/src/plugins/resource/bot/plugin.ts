@@ -103,7 +103,7 @@ export class TeamsBotImpl {
     }
 
     await handler?.next(ProgressBarConstants.SCAFFOLD_STEP_FETCH_ZIP);
-    await LanguageStrategy.getTemplateProjectZip(group_name, this.config);
+    await LanguageStrategy.getTemplateProject(group_name, this.config);
 
     this.config.saveConfigIntoContext(context);
     Logger.info(Messages.SuccessfullyScaffoldedBot);

@@ -1678,36 +1678,6 @@ describe("Middleware", () => {
     const expectedResult = "ok";
     const projectPath = "mock/this/does/not/exists";
 
-    sandbox.stub(commonTools, "isMultiEnvEnabled").returns(true);
-
-    // stub environmentManager.loadEnvInfo()
-    const envConfig: EnvConfig = {
-      manifest: {
-        values: {
-          appName: {
-            short: "testApp",
-          },
-        },
-      },
-    };
-    const envProfile = new Map<string, any>();
-    const envInfo = {
-      envName: "test",
-      config: envConfig,
-      profile: envProfile,
-    };
-    sandbox.stub(environmentManager, "loadEnvInfo").returns(Promise.resolve(ok(envInfo)));
-
-    // mock fs.existsSync for EnvInfoLoader
-    const originalPathExists = fs.pathExists;
-    sandbox.stub(fs, "pathExists").callsFake(async (path: string) => {
-      if (path === projectPath) {
-        return true;
-      } else {
-        return originalPathExists(path);
-      }
-    });
-
     function MockProjectSettingsLoaderMW() {
       return async (ctx: CoreHookContext, next: NextFunction) => {
         ctx.projectSettings = {
@@ -1731,6 +1701,37 @@ describe("Middleware", () => {
     let solutionContext: SolutionContext | undefined;
     beforeEach(() => {
       solutionContext = undefined;
+
+      // stub functions before
+      sandbox.stub(commonTools, "isMultiEnvEnabled").returns(true);
+
+      // stub environmentManager.loadEnvInfo()
+      const envConfig: EnvConfig = {
+        manifest: {
+          values: {
+            appName: {
+              short: "testApp",
+            },
+          },
+        },
+      };
+      const envProfile = new Map<string, any>();
+      const envInfo = {
+        envName: "test",
+        config: envConfig,
+        profile: envProfile,
+      };
+      sandbox.stub(environmentManager, "loadEnvInfo").returns(Promise.resolve(ok(envInfo)));
+
+      // mock fs.existsSync for EnvInfoLoader
+      const originalPathExists = fs.pathExists;
+      sandbox.stub(fs, "pathExists").callsFake(async (path: string) => {
+        if (path === projectPath) {
+          return true;
+        } else {
+          return originalPathExists(path);
+        }
+      });
     });
 
     it("skip statically", async () => {

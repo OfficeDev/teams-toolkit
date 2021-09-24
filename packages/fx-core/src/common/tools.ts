@@ -15,6 +15,8 @@ import {
   returnUserError,
   SubscriptionInfo,
   UserInteraction,
+  ProjectSettings,
+  AzureSolutionSettings,
 } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import axios from "axios";
@@ -542,4 +544,13 @@ export function parseFromResourceId(pattern: RegExp, resourceId: string): string
 
 export async function waitSeconds(second: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, second * 1000));
+}
+
+export function isSPFxProject(projectSettings?: ProjectSettings): boolean {
+  const solutionSettings = projectSettings?.solutionSettings as AzureSolutionSettings;
+  if (solutionSettings) {
+    const selectedPlugins = solutionSettings.activeResourcePlugins;
+    return selectedPlugins && selectedPlugins.indexOf("fx-resource-spfx") !== -1;
+  }
+  return false;
 }

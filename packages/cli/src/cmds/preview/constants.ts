@@ -27,6 +27,7 @@ export const functionPluginName = "fx-resource-function";
 export const botPluginName = "fx-resource-bot";
 export const localDebugPluginName = "fx-resource-local-debug";
 export const solutionPluginName = "solution";
+export const appstudioPluginName = "fx-resource-appstudio";
 export const spfxPluginName = "fx-resource-spfx";
 
 export enum ProgrammingLanguage {
@@ -38,6 +39,7 @@ export const programmingLanguageConfigKey = "programmingLanguage";
 export const skipNgrokConfigKey = "skipNgrok";
 export const teamsAppTenantIdConfigKey = "teamsAppTenantId";
 export const remoteTeamsAppIdConfigKey = "remoteTeamsAppId";
+export const remoteTeamsAppIdConfigKeyNew = "teamsAppId";
 export const localTeamsAppIdConfigKey = "localDebugTeamsAppId";
 
 export const localSettingsTenantIdConfigKey = "tenantId";

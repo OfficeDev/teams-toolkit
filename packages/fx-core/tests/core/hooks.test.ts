@@ -530,8 +530,6 @@ describe("Middleware", () => {
       await my.other(inputs);
       inputs.platform = Platform.VS;
       await my.other(inputs);
-      inputs.ignoreTypeCheck = true;
-      await my.other(inputs);
     });
 
     it("failed to load: NoProjectOpenedError, PathNotExistError", async () => {

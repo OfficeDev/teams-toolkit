@@ -1753,7 +1753,7 @@ describe("Middleware", () => {
       assert.isTrue(res.isOk());
       assert(solutionContext);
       // envInfo should be set to a default value when envInfo loading is skipped.
-      assert.isTrue(solutionContext?.envInfo.envName === environmentManager.getDefaultEnvName());
+      assert.equal(solutionContext?.envInfo.envName, environmentManager.getDefaultEnvName());
     });
 
     it("skip dynamically with inputs.ignoreEnvInfo", async () => {
@@ -1777,7 +1777,7 @@ describe("Middleware", () => {
       assert.isTrue(res.isOk());
       assert(solutionContext);
       // envInfo should be set to a default value when envInfo loading is skipped.
-      assert.isTrue(solutionContext?.envInfo.envName === environmentManager.getDefaultEnvName());
+      assert.equal(solutionContext?.envInfo.envName, environmentManager.getDefaultEnvName());
     });
   });
 });

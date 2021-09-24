@@ -159,7 +159,8 @@ export async function loadSolutionContext(
   const cryptoProvider = new LocalCrypto(projectSettings.projectId);
 
   let envInfo: EnvInfo;
-  if (ignoreEnvInfo) {
+  // in pre-multi-env case, envInfo is always loaded.
+  if (ignoreEnvInfo && isMultiEnvEnabled()) {
     envInfo = newEnvInfo();
   } else {
     // ensure backwards compatibility:

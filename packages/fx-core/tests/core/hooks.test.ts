@@ -1535,7 +1535,6 @@ describe("Middleware", () => {
 
   describe("LocalSettingsLoaderMW, ContextInjectorMW", () => {
     it("NoProjectOpenedError", async () => {
-      console.log("no project opened");
       const original = process.env[FeatureFlagName.MultiEnv];
       process.env[FeatureFlagName.MultiEnv] = "true";
 

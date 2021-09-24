@@ -47,6 +47,9 @@ import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import _ from "lodash";
 import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
+import { isV2 } from "../../../..";
+import { REMOTE_TEAMS_APP_ID } from "..";
+import { Constants } from "../../../resource/appstudio/constants";
 
 export async function provisionResource(
   ctx: v2.Context,
@@ -124,7 +127,7 @@ export async function provisionResource(
           plugin.provisionResource!(
             ctx,
             { ...inputs, ...solutionInputs, projectPath: projectPath },
-            { ...newEnvInfo, profile: newEnvInfo.profile[plugin.name] },
+            { ...newEnvInfo, profile: newEnvInfo.profile },
             tokenProvider
           ),
       };
@@ -177,6 +180,10 @@ export async function provisionResource(
     }
   }
 
+  if (isV2()) {
+    solutionInputs.remoteTeamsAppId =
+      newEnvInfo.profile[PluginNames.APPST]["output"][Constants.TEAMS_APP_ID];
+  }
   const configureResourceThunks = plugins
     .filter((plugin) => !isUndefined(plugin.configureResource))
     .map((plugin) => {
@@ -188,7 +195,7 @@ export async function provisionResource(
           plugin.configureResource!(
             ctx,
             { ...inputs, ...solutionInputs, projectPath: projectPath },
-            { ...newEnvInfo, profile: newEnvInfo.profile[plugin.name] },
+            { ...newEnvInfo, profile: newEnvInfo.profile },
             tokenProvider
           ),
       };

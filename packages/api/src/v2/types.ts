@@ -41,6 +41,7 @@ export type SolutionInputs = {
   // default to East US for now
   location: string;
   teamsAppTenantId: string;
+  subscriptionId: string;
   remoteTeamsAppId?: string;
 };
 

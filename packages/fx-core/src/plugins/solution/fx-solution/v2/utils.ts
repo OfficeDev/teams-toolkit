@@ -57,6 +57,7 @@ export function extractSolutionInputs(record: Json): v2.SolutionInputs {
     location: record["location"],
     teamsAppTenantId: record["teamsAppTenantId"],
     remoteTeamsAppId: undefined,
+    subscriptionId: record["subscriptionId"],
   };
 }
 

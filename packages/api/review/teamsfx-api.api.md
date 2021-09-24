@@ -1192,6 +1192,7 @@ type SolutionInputs = {
     resourceGroupName: string;
     location: string;
     teamsAppTenantId: string;
+    subscriptionId: string;
     remoteTeamsAppId?: string;
 };
 

@@ -367,6 +367,10 @@ export class TeamsBotImpl {
       context,
       BotArmOutput.AppServicePlanName
     ) as string;
+    this.config.provision.botChannelRegName = getArmOutput(
+      context,
+      BotArmOutput.BotServiceName
+    ) as string;
     this.config.provision.botWebAppResourceId = getArmOutput(
       context,
       BotArmOutput.BotWebAppResourceId

@@ -1675,7 +1675,7 @@ describe("Middleware", () => {
       }
     });
   });
-  describe("EnvInfoLoaderMW", () => {
+  describe("EnvInfoLoaderMW with MultiEnv enabled", () => {
     const expectedResult = "ok";
     const projectPath = "mock/this/does/not/exists";
 

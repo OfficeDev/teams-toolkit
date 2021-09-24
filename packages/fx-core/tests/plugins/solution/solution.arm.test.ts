@@ -599,18 +599,13 @@ describe("Arm Template Failed Test", () => {
     mocker.restore();
   });
 
-  it("pollDeploymentStatus", async () => {
+  it("should get pollDeploymentStatus error", async () => {
     const mockedCtx = mockSolutionContext();
-    const mockedDeployCtx: any = {
-      resourceGroupName: "poll-deployment-rg",
-      deploymentName: "poll-deployment",
-      finished: false,
-      ctx: mockedCtx,
-      client: {
-        deploymentOperations: {
-          list: async () => {
-            throw new Error("mocked error");
-          },
+    const mockedDeployCtx: any = getMockedDeployCtx(mockedCtx);
+    mockedDeployCtx.client = {
+      deploymentOperations: {
+        list: async () => {
+          throw new Error("mocked error");
         },
       },
     };
@@ -623,4 +618,45 @@ describe("Arm Template Failed Test", () => {
     }
     chai.assert.isTrue(isErrorThrown);
   });
+
+  it("pollDeploymentStatus OK", async () => {
+    const mockedCtx = mockSolutionContext();
+    const operations = [
+      {
+        properties: {
+          targetResource: {
+            resourceName: "test resource",
+          },
+          provisioningState: "Running",
+          timestamp: Date.now(),
+        },
+      },
+    ];
+    const mockedDeployCtx: any = getMockedDeployCtx(mockedCtx);
+    let count = 0;
+    mockedDeployCtx.client = {
+      deploymentOperations: {
+        list: async () => {
+          if (count > 1) {
+            mockedDeployCtx.finished = true;
+          }
+          count++;
+          return operations;
+        },
+      },
+    };
+
+    const res = await pollDeploymentStatus(mockedDeployCtx);
+    chai.assert.isUndefined(res);
+  });
+
+  function getMockedDeployCtx(mockedCtx: any) {
+    return {
+      resourceGroupName: "poll-deployment-rg",
+      deploymentName: "poll-deployment",
+      finished: false,
+      deploymentStartTime: Date.now(),
+      ctx: mockedCtx,
+    };
+  }
 });

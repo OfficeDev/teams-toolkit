@@ -353,29 +353,38 @@ export class TeamsBotImpl {
     );
   }
 
+  private async syncArmOutput(context: PluginContext) {
+    await this.config.restoreConfigFromContext(context);
+
+    this.config.provision.validDomain = getArmOutput(context, BotArmOutput.Domain) as string;
+    this.config.provision.appServicePlan = getArmOutput(
+      context,
+      BotArmOutput.AppServicePlanName
+    ) as string;
+    this.config.provision.botChannelRegName = getArmOutput(
+      context,
+      BotArmOutput.BotServiceName
+    ) as string;
+    this.config.provision.siteEndpoint = getArmOutput(
+      context,
+      BotArmOutput.WebAppEndpoint
+    ) as string;
+    this.config.provision.skuName = getArmOutput(context, BotArmOutput.WebAppSKU) as string;
+    this.config.provision.siteName = getArmOutput(context, BotArmOutput.WebAppName) as string;
+
+    this.config.saveConfigIntoContext(context);
+  }
+
   public async postProvision(context: PluginContext): Promise<FxResult> {
     Logger.info(Messages.PostProvisioningStart);
 
     this.ctx = context;
-    await this.config.restoreConfigFromContext(context);
 
     if (isArmSupportEnabled()) {
-      this.config.provision.validDomain = getArmOutput(context, BotArmOutput.Domain) as string;
-      this.config.provision.appServicePlan = getArmOutput(
-        context,
-        BotArmOutput.AppServicePlanName
-      ) as string;
-      this.config.provision.botChannelRegName = getArmOutput(
-        context,
-        BotArmOutput.BotServiceName
-      ) as string;
-      this.config.provision.siteEndpoint = getArmOutput(
-        context,
-        BotArmOutput.WebAppEndpoint
-      ) as string;
-      this.config.provision.skuName = getArmOutput(context, BotArmOutput.WebAppSKU) as string;
-      this.config.provision.siteName = getArmOutput(context, BotArmOutput.WebAppName) as string;
+      await this.syncArmOutput(context);
     } else {
+      await this.config.restoreConfigFromContext(context);
+
       // 1. Get required config items from other plugins.
       // 2. Update bot hosting env"s app settings.
       const botId = this.config.scaffold.botId;
@@ -483,8 +492,10 @@ export class TeamsBotImpl {
       await this.updateMessageEndpointOnAzure(
         `${this.config.provision.siteEndpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`
       );
+
+      this.config.saveConfigIntoContext(context);
     }
-    this.config.saveConfigIntoContext(context);
+
     return ResultFactory.Success();
   }
 

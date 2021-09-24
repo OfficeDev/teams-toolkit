@@ -2,25 +2,14 @@
 // Licensed under the MIT license.
 import * as utils from "./utils/common";
 import { ProgrammingLanguage } from "./enums/programmingLanguage";
-import { TemplateManifest } from "./utils/templateManifest";
 import { DownloadConstants, TemplateProjectsConstants } from "./constants";
 import { Commands } from "./resources/strings";
 
 import * as appService from "@azure/arm-appservice";
 import { NameValuePair } from "@azure/arm-appservice/esm/models";
-import AdmZip from "adm-zip";
-import {
-  CommandExecutionError,
-  SomethingMissingError,
-  TemplateZipFallbackError,
-  UnzipError,
-} from "./errors";
-import { downloadByUrl } from "./utils/downloadByUrl";
-import * as path from "path";
-import * as fs from "fs-extra";
+import { CommandExecutionError, TemplateZipFallbackError, UnzipError } from "./errors";
 import { Logger } from "./logger";
 import { Messages } from "./resources/messages";
-import { getTemplatesFolder } from "../../..";
 import {
   defaultActionSeq,
   ScaffoldAction,

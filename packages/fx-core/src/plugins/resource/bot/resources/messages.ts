@@ -128,7 +128,7 @@ export class Messages {
     "Please check log in output channel and try to fix this issue.";
   public static readonly RegisterRequiredRP = (resourceProviders: string[]): string =>
     `Register ${resourceProviders.join(",")} resource provider for your subscription manually.`;
-  public static readonly ReopenWorkingDir = (path?: string): string =>
+  public static readonly ReopenWorkingDir = (path = ""): string =>
     `Please check whether the path ${path} exists and you have write access to it, if no, please move the project to a valid path.`;
   public static readonly PostProvisioningStart = "Start to Post Provision.";
 

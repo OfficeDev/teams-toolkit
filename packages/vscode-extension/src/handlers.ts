@@ -376,7 +376,7 @@ export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
           result = err(tmpResult.error);
         } else {
           const uri = Uri.file(tmpResult.value);
-          await commands.executeCommand("vscode.openFolder", uri);
+          commands.executeCommand("vscode.openFolder", uri);
           result = ok(null);
         }
         break;
@@ -387,7 +387,7 @@ export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
           result = err(tmpResult.error);
         } else {
           const uri = Uri.file(tmpResult.value);
-          await commands.executeCommand("vscode.openFolder", uri);
+          commands.executeCommand("vscode.openFolder", uri);
           result = ok(null);
         }
         break;

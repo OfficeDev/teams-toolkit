@@ -85,6 +85,7 @@ export class PluginBot {
   public static readonly WEB_APPLICATION_INFO_RESOURCE = "webApplicationInfo.resource";
   public static readonly BOTS_SECTION = "bots";
   public static readonly BOT_CHANNEL_REGISTRATION = "botChannelReg";
+  public static readonly BOT_SERVICE_RESOURCE_ID = "botServiceResourceId";
   public static readonly UNPACK_FLAG = "unPackFlag";
   public static readonly MESSAGE_EXTENSION_SECTION = "composeExtensions";
   public static readonly LOCAL_REDIRECT_URI = "local_redirectUri";
@@ -101,6 +102,7 @@ export class ConfigNames {
   public static readonly SERVICE_CLIENT_CREDENTIALS = "service client credentials";
   public static readonly LOCATION = "location";
   public static readonly SKU_NAME = "sku name";
+  public static readonly BOT_SERVICE_RESOURCE_ID = "bot service resource id";
   public static readonly RESOURCE_GROUP = "resource group";
   public static readonly LOCAL_ENDPOINT = "local endpoint";
 

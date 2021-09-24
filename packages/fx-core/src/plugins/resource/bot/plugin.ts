@@ -67,7 +67,13 @@ import path from "path";
 import { getTemplatesFolder } from "../../..";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import { Bicep, ConstantString } from "../../../common/constants";
-import { copyFiles, generateBicepFiles, isArmSupportEnabled } from "../../../common";
+import {
+  copyFiles,
+  generateBicepFiles,
+  getResourceGroupNameFromResourceId,
+  getSubscriptionIdFromResourceId,
+  isArmSupportEnabled,
+} from "../../../common";
 import { AzureSolutionSettings } from "@microsoft/teamsfx-api";
 import { getArmOutput } from "../utils4v2";
 
@@ -191,10 +197,10 @@ export class TeamsBotImpl {
     // 1. Do bot registration.
     await handler?.next(ProgressBarConstants.PROVISION_STEP_BOT_REG);
     const botAuthCreds = await this.createOrGetBotAppRegistration();
+
     if (!isArmSupportEnabled()) {
       await this.provisionBotServiceOnAzure(botAuthCreds);
-    }
-    if (!isArmSupportEnabled()) {
+
       await handler?.next(ProgressBarConstants.PROVISION_STEP_WEB_APP);
       // 2. Provision azure web app for hosting bot project.
       await this.provisionWebApp();
@@ -361,9 +367,9 @@ export class TeamsBotImpl {
       context,
       BotArmOutput.AppServicePlanName
     ) as string;
-    this.config.provision.botChannelRegName = getArmOutput(
+    this.config.provision.botServiceResourceId = getArmOutput(
       context,
-      BotArmOutput.BotServiceName
+      BotArmOutput.BotServiceResourceId
     ) as string;
     this.config.provision.siteEndpoint = getArmOutput(
       context,
@@ -505,9 +511,7 @@ export class TeamsBotImpl {
     Logger.info(Messages.PreDeployingBot);
 
     // Preconditions checking.
-    const packDir = this.config.scaffold.workingDir!;
-
-    const packDirExisted = await fs.pathExists(packDir);
+    const packDirExisted = await fs.pathExists(this.config.scaffold.workingDir!);
     if (!packDirExisted) {
       throw new PackDirExistenceError();
     }
@@ -517,8 +521,24 @@ export class TeamsBotImpl {
       ConfigNames.PROGRAMMING_LANGUAGE,
       this.config.scaffold.programmingLanguage
     );
+
+    if (isArmSupportEnabled()) {
+      CheckThrowSomethingMissing(
+        ConfigNames.BOT_SERVICE_RESOURCE_ID,
+        this.config.provision.botServiceResourceId
+      );
+      this.config.provision.subscriptionId = getSubscriptionIdFromResourceId(
+        this.config.provision.botServiceResourceId!
+      );
+      this.config.provision.resourceGroup = getResourceGroupNameFromResourceId(
+        this.config.provision.botServiceResourceId!
+      );
+    }
     CheckThrowSomethingMissing(ConfigNames.SUBSCRIPTION_ID, this.config.provision.subscriptionId);
     CheckThrowSomethingMissing(ConfigNames.RESOURCE_GROUP, this.config.provision.resourceGroup);
+    Logger.debug(
+      `[dilin-debug] subscription: ${this.config.provision.subscriptionId}\tresourceGroup: ${this.config.provision.resourceGroup}`
+    );
 
     this.config.saveConfigIntoContext(context);
 
@@ -530,15 +550,16 @@ export class TeamsBotImpl {
     await this.config.restoreConfigFromContext(context);
     Logger.info(Messages.DeployingBot);
 
-    if (!this.config.scaffold.workingDir) {
+    const workingDir = this.config.scaffold.workingDir;
+    if (!workingDir) {
       throw new PreconditionError(Messages.WorkingDirIsMissing, []);
     }
 
     const deployTimeCandidate = Date.now();
-    const deployMgr = new DeployMgr(this.config.scaffold.workingDir);
+    const deployMgr = new DeployMgr(workingDir);
     await deployMgr.init();
-    const needsRedeploy = await deployMgr.needsToRedeploy();
-    if (!needsRedeploy) {
+
+    if (!(await deployMgr.needsToRedeploy())) {
       Logger.debug(Messages.SkipDeployNoUpdates);
       return ResultFactory.Success();
     }
@@ -551,28 +572,21 @@ export class TeamsBotImpl {
 
     await handler?.start(ProgressBarConstants.DEPLOY_STEP_START);
 
-    const packDir = this.config.scaffold.workingDir;
-
     await handler?.next(ProgressBarConstants.DEPLOY_STEP_NPM_INSTALL);
-
     await LanguageStrategy.localBuild(
       this.config.scaffold.programmingLanguage!,
-      packDir,
+      workingDir,
       this.config.deploy.unPackFlag === "true" ? true : false
     );
 
     await handler?.next(ProgressBarConstants.DEPLOY_STEP_ZIP_FOLDER);
-    const zipBuffer = utils.zipAFolder(packDir, DeployConfigs.UN_PACK_DIRS, [
+    const zipBuffer = utils.zipAFolder(workingDir, DeployConfigs.UN_PACK_DIRS, [
       `${FolderNames.NODE_MODULES}/${FolderNames.KEYTAR}`,
     ]);
 
     // 2.2 Retrieve publishing credentials.
-    let publishingUserName = "";
-    let publishingPassword: string | undefined = undefined;
-
-    const serviceClientCredentials = await this.getAzureAccountCredenial();
     const webSiteMgmtClient = new appService.WebSiteManagementClient(
-      serviceClientCredentials,
+      await this.getAzureAccountCredenial(),
       this.config.provision.subscriptionId!
     );
     const listResponse = await AzureOperations.ListPublishingCredentials(
@@ -581,9 +595,12 @@ export class TeamsBotImpl {
       this.config.provision.siteName!
     );
 
-    publishingUserName = listResponse.publishingUserName;
-    publishingPassword = listResponse.publishingPassword;
-
+    const publishingUserName = listResponse.publishingUserName
+      ? listResponse.publishingUserName
+      : "";
+    const publishingPassword = listResponse.publishingPassword
+      ? listResponse.publishingPassword
+      : "";
     const encryptedCreds: string = utils.toBase64(`${publishingUserName}:${publishingPassword}`);
 
     const config = {

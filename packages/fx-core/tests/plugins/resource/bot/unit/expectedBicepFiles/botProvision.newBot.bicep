@@ -55,5 +55,5 @@ output botServiceSKU string = botServiceSKU
 output botWebAppName string = botWebAppName
 output botDomain string = botWebAppHostname
 output appServicePlanName string = botServerfarmsName
-output botServiceName string = botServiceName
+output botServiceResourceId string = botServices.id
 output botWebAppEndpoint string = botEndpoint

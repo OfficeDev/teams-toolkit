@@ -169,7 +169,7 @@ export default class Preview extends YargsCommand {
     const inputs: Inputs = {
       projectPath: workspaceFolder,
       platform: Platform.CLI,
-      previewType: "local",
+      ignoreEnvInfo: true, // local debug does not require environments
     };
 
     let configResult = await core.getProjectConfig(inputs);
@@ -491,7 +491,7 @@ export default class Preview extends YargsCommand {
     env: string | undefined
   ): Promise<Result<null, FxError>> {
     /* === get remote teams app id === */
-    const coreResult = await activate();
+    const coreResult = await activate(workspaceFolder);
     if (coreResult.isErr()) {
       return err(coreResult.error);
     }
@@ -525,9 +525,12 @@ export default class Preview extends YargsCommand {
     const tenantId = config?.config
       ?.get(constants.solutionPluginName)
       ?.get(constants.teamsAppTenantIdConfigKey) as string;
-    const remoteTeamsAppId = config?.config
-      ?.get(constants.solutionPluginName)
-      ?.get(constants.remoteTeamsAppIdConfigKey) as string;
+
+    const remoteTeamsAppId: string = isMultiEnvEnabled()
+      ? config?.config
+          ?.get(constants.appstudioPluginName)
+          ?.get(constants.remoteTeamsAppIdConfigKeyNew)
+      : config?.config?.get(constants.solutionPluginName)?.get(constants.remoteTeamsAppIdConfigKey);
     if (remoteTeamsAppId === undefined || remoteTeamsAppId.length === 0) {
       return err(errors.PreviewWithoutProvision());
     }

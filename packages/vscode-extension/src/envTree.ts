@@ -102,9 +102,9 @@ export async function getCollaboratorList(env: string): Promise<TreeItem[]> {
       const loginStatus = await AppStudioLogin.getInstance().getStatus();
       if (loginStatus.status == signedIn) {
         const canAddCollaborator = await checkPermission(env);
-        parentCommand.contextValue = canAddCollaborator
-          ? "environmentWithPermission"
-          : "environment";
+        if (canAddCollaborator) {
+          collaboratorParentNode.contextValue = "addCollaborator";
+        }
         if (isRemoteCollaborateEnabled()) {
           userList = await listCollaborator(env);
         }

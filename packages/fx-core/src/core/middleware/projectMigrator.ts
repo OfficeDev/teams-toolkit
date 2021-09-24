@@ -31,7 +31,12 @@ import path from "path";
 import { readJson } from "../../common/fileUtils";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { FxCore } from "..";
-import { isMultiEnvEnabled, isArmSupportEnabled, getStrings } from "../../common/tools";
+import {
+  isMultiEnvEnabled,
+  isArmSupportEnabled,
+  getStrings,
+  isSPFxProject,
+} from "../../common/tools";
 import { loadProjectSettings } from "./projectSettingsLoader";
 import { generateArmTemplate } from "../../plugins/solution/fx-solution/arm";
 import { loadSolutionContext } from "./envInfoLoader";
@@ -90,7 +95,14 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
   try {
     await removeBotConfig(ctx);
     await migrateMultiEnv(projectPath);
-    await migrateArm(ctx);
+    const loadRes = await loadProjectSettings(inputs);
+    if (loadRes.isErr()) {
+      throw ProjectSettingError();
+    }
+    const [projectSettings, _] = loadRes.value;
+    if (!isSPFxProject(projectSettings)) {
+      await migrateArm(ctx);
+    }
   } catch (err) {
     await cleanup(projectPath);
     throw err;
@@ -134,10 +146,33 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
 
   // appPackage
   await fs.copy(path.join(projectPath, AppPackageFolderName), templateAppPackage);
-  await fs.rename(
-    path.join(templateAppPackage, "manifest.source.json"),
-    path.join(templateAppPackage, "manifest.template.json")
+  const targetManifestFile = path.join(templateAppPackage, "manifest.template.json");
+  await fs.rename(path.join(templateAppPackage, "manifest.source.json"), targetManifestFile);
+
+  // update manifest to mustache template
+  let manifestString = (await fs.readFile(targetManifestFile)).toString();
+  manifestString = manifestString.replace(new RegExp("{version}", "g"), "1.0.0");
+  manifestString = manifestString.replace(
+    new RegExp("{baseUrl}", "g"),
+    "{{{profile.fx-resource-frontend-hosting.endpoint}}}"
   );
+  manifestString = manifestString.replace(
+    new RegExp("{appClientId}", "g"),
+    "{{profile.fx-resource-aad-app-for-teams.clientId}}"
+  );
+  manifestString = manifestString.replace(
+    new RegExp("{webApplicationInfoResource}", "g"),
+    "{{{profile.fx-resource-aad-app-for-teams.applicationIdUris}}}"
+  );
+  manifestString = manifestString.replace(
+    new RegExp("{botId}", "g"),
+    "{{profile.fx-resource-bot.botId}}"
+  );
+  const manifest: TeamsAppManifest = JSON.parse(manifestString);
+  manifest.name.short = "{{config.manifest.values.appName.short}}";
+  manifest.name.full = "{{config.manifest.values.appName.full}}";
+  manifest.id = "{{profile.fx-resource-appstudio.teamsAppId}}";
+  await fs.writeFile(targetManifestFile, JSON.stringify(manifest, null, 4));
   await moveIconsToResourceFolder(templateAppPackage);
 
   if (hasProvision) {
@@ -184,11 +219,15 @@ async function removeExpiredFields(devProfile: string, devUserData: string): Pro
   const profileData = await readJson(devProfile);
   const secrets: Record<string, string> = deserializeDict(await fs.readFile(devUserData, "UTF-8"));
 
+  profileData[PluginNames.APPST]["teamsAppId"] =
+    profileData[PluginNames.SOLUTION]["remoteTeamsAppId"];
+
   const expiredProfileKeys: [string, string][] = [
     [PluginNames.LDEBUG, ""],
     [PluginNames.SOLUTION, programmingLanguage],
     [PluginNames.SOLUTION, defaultFunctionName],
     [PluginNames.SOLUTION, "localDebugTeamsAppId"],
+    [PluginNames.SOLUTION, "remoteTeamsAppId"],
     [PluginNames.AAD, "local_clientId"],
     [PluginNames.AAD, "local_objectId"],
     [PluginNames.AAD, "local_tenantId"],

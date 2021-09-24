@@ -103,14 +103,6 @@ export class AppStudioPluginV2 implements ResourcePlugin {
       this.plugin
     );
   }
-  async deploy(
-    ctx: Context,
-    inputs: DeploymentInputs,
-    provisionOutput: Json,
-    tokenProvider: AzureAccountProvider
-  ): Promise<Result<Void, FxError>> {
-    return await deployAdapter(ctx, inputs, provisionOutput, tokenProvider, this.plugin);
-  }
 
   async executeUserTask(
     ctx: Context,

@@ -12,6 +12,7 @@ import {
   returnSystemError,
   ConfigFolderName,
   returnUserError,
+  constants,
 } from "@microsoft/teamsfx-api";
 import { environmentManager } from "../../../core/environment";
 import { ScaffoldArmTemplateResult, ArmResourcePlugin } from "../../../common/armInterface";
@@ -62,7 +63,7 @@ const solutionLevelParameterObject = {
 const templatesFolder = "./templates/azure";
 const configsFolder = `.${ConfigFolderName}/configs`;
 const modulesFolder = "modules";
-const parameterFileNameTemplate = "azure.parameters.@envName.json";
+const parameterFileNameTemplate = "azure.parameters.constants.EnvNamePlaceholder.json";
 
 // Get ARM template content from each resource plugin and output to project folder
 export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<any, FxError>> {
@@ -307,8 +308,14 @@ export async function copyParameterJson(
   }
 
   const parameterFolderPath = path.join(ctx.root, configsFolder);
-  const targetParameterFileName = parameterFileNameTemplate.replace("@envName", targetEnvName);
-  const sourceParameterFileName = parameterFileNameTemplate.replace("@envName", sourceEnvName);
+  const targetParameterFileName = parameterFileNameTemplate.replace(
+    constants.EnvNamePlaceholder,
+    targetEnvName
+  );
+  const sourceParameterFileName = parameterFileNameTemplate.replace(
+    "constants.EnvNamePlaceholder",
+    sourceEnvName
+  );
   const targetParameterFilePath = path.join(parameterFolderPath, targetParameterFileName);
   const sourceParameterFilePath = path.join(parameterFolderPath, sourceParameterFileName);
 
@@ -321,13 +328,20 @@ export async function getParameterJson(ctx: SolutionContext) {
     throw new Error("Failed to get target environment name from solution context.");
   }
 
-  const parameterFileName = parameterFileNameTemplate.replace("@envName", ctx.envInfo.envName);
+  const parameterFileName = parameterFileNameTemplate.replace(
+    "constants.EnvNamePlaceholder",
+    ctx.envInfo.envName
+  );
   const parameterFolderPath = path.join(ctx.root, configsFolder);
   const parameterFilePath = path.join(parameterFolderPath, parameterFileName);
   try {
     await fs.stat(parameterFilePath);
   } catch (err) {
     ctx.logProvider?.error(`[${PluginDisplayName.Solution}] ${parameterFilePath} does not exist.`);
+    const returnError = new Error(
+      `[${PluginDisplayName.Solution}] ${parameterFilePath} does not exist.`
+    );
+    throw returnUserError(returnError, "Solution", "ParameterFileNotExist");
   }
 
   if (!isMultiEnvEnabled()) {
@@ -398,7 +412,10 @@ async function doGenerateArmTemplate(ctx: SolutionContext): Promise<Result<any, 
     }
 
     // Output parameter file
-    const parameterFileName = parameterFileNameTemplate.replace("@envName", ctx.envInfo.envName);
+    const parameterFileName = parameterFileNameTemplate.replace(
+      "constants.EnvNamePlaceholder",
+      ctx.envInfo.envName
+    );
     const parameterEnvFolderPath = path.join(ctx.root, configsFolder);
     const parameterEnvFilePath = path.join(parameterEnvFolderPath, parameterFileName);
     const parameterFileContent = bicepOrchestrationTemplate.getParameterFileContent();

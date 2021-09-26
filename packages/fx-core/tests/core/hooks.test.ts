@@ -10,6 +10,8 @@ import {
   ConfigFolderName,
   ConfigMap,
   CoreCallbackEvent,
+  EnvConfig,
+  EnvInfo,
   err,
   Func,
   FunctionRouter,
@@ -23,10 +25,12 @@ import {
   ProjectSettings,
   QTreeNode,
   Result,
+  returnSystemError,
   Solution,
   SolutionContext,
   Stage,
   SystemError,
+  Tools,
   UserCancelError,
   UserError,
   UserInteraction,
@@ -37,7 +41,7 @@ import fs from "fs-extra";
 import "mocha";
 import * as os from "os";
 import * as path from "path";
-import sinon from "sinon";
+import sinon, { stub } from "sinon";
 import { Container } from "typedi";
 import {
   base64Encode,
@@ -60,6 +64,7 @@ import {
 import { ConcurrentLockerMW } from "../../src/core/middleware/concurrentLocker";
 import { ContextInjectorMW } from "../../src/core/middleware/contextInjector";
 import { EnvInfoLoaderMW } from "../../src/core/middleware/envInfoLoader";
+import * as envInfoLoader from "../../src/core/middleware/envInfoLoader";
 import { EnvInfoWriterMW } from "../../src/core/middleware/envInfoWriter";
 import { ErrorHandlerMW } from "../../src/core/middleware/errorHandler";
 import { LocalSettingsLoaderMW } from "../../src/core/middleware/localSettingsLoader";
@@ -87,6 +92,7 @@ import {
   MockUserInteraction,
   randomAppName,
 } from "./utils";
+import * as commonTools from "../../src/common/tools";
 import { ProjectMigratorMW, migrateArm } from "../../src/core/middleware/projectMigrator";
 import exp = require("constants");
 import mockedEnv from "mocked-env";
@@ -1682,6 +1688,113 @@ describe("Middleware", () => {
       } finally {
         await fs.rmdir(inputs.projectPath!, { recursive: true });
       }
+    });
+  });
+  describe("EnvInfoLoaderMW with MultiEnv enabled", () => {
+    const expectedResult = "ok";
+    const projectPath = "mock/this/does/not/exists";
+
+    function MockProjectSettingsLoaderMW() {
+      return async (ctx: CoreHookContext, next: NextFunction) => {
+        ctx.projectSettings = {
+          appName: "testApp",
+          version: "1.0",
+          projectId: "abcd",
+          solutionSettings: {
+            name: "fx-solution-azure",
+          },
+          activeEnvironment: "test",
+        };
+        await next();
+      };
+    }
+    async function SolutionContextSpyMW(ctx: CoreHookContext, next: NextFunction) {
+      await next();
+      solutionContext = ctx.solutionContext;
+    }
+
+    // test variables
+    let solutionContext: SolutionContext | undefined;
+    beforeEach(() => {
+      solutionContext = undefined;
+
+      // stub functions before
+      sandbox.stub(commonTools, "isMultiEnvEnabled").returns(true);
+
+      // stub environmentManager.loadEnvInfo()
+      const envConfig: EnvConfig = {
+        manifest: {
+          values: {
+            appName: {
+              short: "testApp",
+            },
+          },
+        },
+      };
+      const envProfile = new Map<string, any>();
+      const envInfo = {
+        envName: "test",
+        config: envConfig,
+        profile: envProfile,
+      };
+      sandbox.stub(environmentManager, "loadEnvInfo").returns(Promise.resolve(ok(envInfo)));
+
+      // mock fs.existsSync for EnvInfoLoader
+      const originalPathExists = fs.pathExists;
+      sandbox.stub(fs, "pathExists").callsFake(async (path: string) => {
+        if (path === projectPath) {
+          return true;
+        } else {
+          return originalPathExists(path);
+        }
+      });
+    });
+
+    it("skip statically", async () => {
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: projectPath,
+      };
+      class MyClass {
+        tools: Tools = new MockTools();
+        async myMethod(inputs: Inputs): Promise<Result<string, FxError>> {
+          return ok(expectedResult);
+        }
+      }
+
+      hooks(MyClass, {
+        myMethod: [MockProjectSettingsLoaderMW(), EnvInfoLoaderMW(true), SolutionContextSpyMW],
+      });
+      const my = new MyClass();
+      const res = await my.myMethod(inputs);
+      assert.isTrue(res.isOk());
+      assert(solutionContext);
+      // envInfo should be set to a default value when envInfo loading is skipped.
+      assert.equal(solutionContext?.envInfo.envName, environmentManager.getDefaultEnvName());
+    });
+
+    it("skip dynamically with inputs.ignoreEnvInfo", async () => {
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: projectPath,
+        ignoreEnvInfo: true,
+      };
+      class MyClass {
+        tools: Tools = new MockTools();
+        async myMethod(inputs: Inputs): Promise<Result<string, FxError>> {
+          return ok(expectedResult);
+        }
+      }
+
+      hooks(MyClass, {
+        myMethod: [MockProjectSettingsLoaderMW(), EnvInfoLoaderMW(false), SolutionContextSpyMW],
+      });
+      const my = new MyClass();
+      const res = await my.myMethod(inputs);
+      assert.isTrue(res.isOk());
+      assert(solutionContext);
+      // envInfo should be set to a default value when envInfo loading is skipped.
+      assert.equal(solutionContext?.envInfo.envName, environmentManager.getDefaultEnvName());
     });
   });
 });

@@ -98,10 +98,14 @@ export class FuncPluginAdapter implements IDepsAdapter {
 
   public async handleDotnetForLinux(checker: IDepsChecker): Promise<boolean> {
     const confirmMessage = await this.generateMsg(Messages.linuxDepsNotFound, [checker]);
-    return this.displayContinueWithLearnMoreLink(confirmMessage, dotnetManualInstallHelpLink);
+    return this.displayContinueWithLearnMoreLink(confirmMessage, dotnetManualInstallHelpLink, true);
   }
 
-  public async displayContinueWithLearnMoreLink(message: string, link: string): Promise<boolean> {
+  public async displayContinueWithLearnMoreLink(
+    message: string,
+    link: string,
+    loop = true
+  ): Promise<boolean> {
     if (!this._ctx.ui) {
       // no dialog, always continue
       return true;
@@ -118,7 +122,10 @@ export class FuncPluginAdapter implements IDepsAdapter {
     if (userSelected === Messages.learnMoreButtonText) {
       this._telemetry.sendEvent(DepsCheckerEvent.clickLearnMore);
       this._ctx.ui?.openUrl(link);
-      return this.displayContinueWithLearnMoreLink(message, link);
+      if (loop) {
+        return this.displayContinueWithLearnMoreLink(message, link);
+      }
+      return false;
     }
 
     if (userSelected === Messages.continueButtonText) {

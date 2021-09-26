@@ -71,6 +71,7 @@ import {
   copyFiles,
   generateBicepFiles,
   getResourceGroupNameFromResourceId,
+  getSiteNameFromResourceId,
   getSubscriptionIdFromResourceId,
   isArmSupportEnabled,
 } from "../../../common";
@@ -544,12 +545,17 @@ export class TeamsBotImpl {
     this.ctx = context;
     await this.config.restoreConfigFromContext(context);
 
-    this.config.provision.subscriptionId = getSubscriptionIdFromResourceId(
-      this.config.provision.botWebAppResourceId!
-    );
-    this.config.provision.resourceGroup = getResourceGroupNameFromResourceId(
-      this.config.provision.botWebAppResourceId!
-    );
+    if (isArmSupportEnabled()) {
+      this.config.provision.subscriptionId = getSubscriptionIdFromResourceId(
+        this.config.provision.botWebAppResourceId!
+      );
+      this.config.provision.resourceGroup = getResourceGroupNameFromResourceId(
+        this.config.provision.botWebAppResourceId!
+      );
+      this.config.provision.siteName = getSiteNameFromResourceId(
+        this.config.provision.botWebAppResourceId!
+      );
+    }
 
     Logger.info(Messages.DeployingBot);
 

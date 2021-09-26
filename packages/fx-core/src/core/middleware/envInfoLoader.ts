@@ -116,7 +116,7 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
       ctx.projectSettings,
       ctx.projectIdMissing,
       targetEnvName,
-      inputs.ignoreEnvInfo
+      skip
     );
     if (result.isErr()) {
       ctx.result = err(result.error);
@@ -157,26 +157,23 @@ export async function loadSolutionContext(
   }
 
   const cryptoProvider = new LocalCrypto(projectSettings.projectId);
-  // ensure backwards compatibility:
-  // no need to decrypt the secrets in *.userdata for previous TeamsFx project, which has no project id.
-  const envDataResult = await environmentManager.loadEnvInfo(
-    inputs.projectPath,
-    targetEnvName,
-    projectIdMissing ? undefined : cryptoProvider
-  );
 
   let envInfo: EnvInfo;
-  if (envDataResult.isErr()) {
-    if (ignoreEnvInfo) {
-      // ignore env loading error
-      tools.logProvider.info(
-        `[core:env] failed to load '${targetEnvName}' environment, skipping because ignoreEnvInfo is set to true, error: ${envDataResult.error.message}`
-      );
-      envInfo = newEnvInfo();
-    } else {
+  // in pre-multi-env case, envInfo is always loaded.
+  if (ignoreEnvInfo && isMultiEnvEnabled()) {
+    envInfo = newEnvInfo();
+  } else {
+    // ensure backwards compatibility:
+    // no need to decrypt the secrets in *.userdata for previous TeamsFx project, which has no project id.
+    const envDataResult = await environmentManager.loadEnvInfo(
+      inputs.projectPath,
+      targetEnvName,
+      projectIdMissing ? undefined : cryptoProvider
+    );
+
+    if (envDataResult.isErr()) {
       return err(envDataResult.error);
     }
-  } else {
     envInfo = envDataResult.value;
   }
 

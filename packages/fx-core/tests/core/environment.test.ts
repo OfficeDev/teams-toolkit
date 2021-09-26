@@ -139,6 +139,18 @@ describe("APIs of Environment Manager", () => {
         assert.fail("Failed to get expected error.");
       }
     });
+
+    it("load non existent env name", async () => {
+      const actualEnvDataResult = await environmentManager.loadEnvInfo(
+        projectPath,
+        "this does not exist"
+      );
+      if (actualEnvDataResult.isErr()) {
+        assert.equal(actualEnvDataResult.error.name, "ProjectEnvNotExistError");
+      } else {
+        assert.fail("Failed to get expected error.");
+      }
+    });
   });
 
   describe("Load Environment Profile File", () => {

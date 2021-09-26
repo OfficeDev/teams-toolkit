@@ -312,7 +312,7 @@ export async function copyParameterJson(
     targetEnvName
   );
   const sourceParameterFileName = parameterFileNameTemplate.replace(
-    "EnvNamePlaceholder",
+    EnvNamePlaceholder,
     sourceEnvName
   );
   const targetParameterFilePath = path.join(parameterFolderPath, targetParameterFileName);
@@ -328,7 +328,7 @@ export async function getParameterJson(ctx: SolutionContext) {
   }
 
   const parameterFileName = parameterFileNameTemplate.replace(
-    "EnvNamePlaceholder",
+    EnvNamePlaceholder,
     ctx.envInfo.envName
   );
   const parameterFolderPath = path.join(ctx.root, configsFolder);
@@ -412,7 +412,7 @@ async function doGenerateArmTemplate(ctx: SolutionContext): Promise<Result<any, 
 
     // Output parameter file
     const parameterFileName = parameterFileNameTemplate.replace(
-      "EnvNamePlaceholder",
+      EnvNamePlaceholder,
       ctx.envInfo.envName
     );
     const parameterEnvFolderPath = path.join(ctx.root, configsFolder);

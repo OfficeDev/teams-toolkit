@@ -118,7 +118,7 @@ export class FuncPluginAdapter implements IDepsAdapter {
     if (userSelected === Messages.learnMoreButtonText) {
       this._telemetry.sendEvent(DepsCheckerEvent.clickLearnMore);
       this._ctx.ui?.openUrl(link);
-      return this.displayContinueWithLearnMoreLink(message, link);
+      return false;
     }
 
     if (userSelected === Messages.continueButtonText) {

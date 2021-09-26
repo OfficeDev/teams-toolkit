@@ -13,6 +13,7 @@ import {
   ConfigFolderName,
   returnUserError,
 } from "@microsoft/teamsfx-api";
+import { environmentManager } from "../../../core/environment";
 import { ScaffoldArmTemplateResult, ArmResourcePlugin } from "../../../common/armInterface";
 import { getActivatedResourcePlugins } from "./ResourcePluginContainer";
 import { getPluginContext, sendErrorTelemetryThenReturnError } from "./utils/util";
@@ -26,6 +27,7 @@ import {
   CryptoDataMatchers,
   getResourceGroupNameFromResourceId,
   waitSeconds,
+  isMultiEnvEnabled,
 } from "../../../common/tools";
 import {
   ARM_TEMPLATE_OUTPUT,
@@ -57,11 +59,10 @@ const solutionLevelParameterObject = {
 };
 
 // New folder structure constants
-const templateFolderNew = "./templates/azure";
+const templatesFolder = "./templates/azure";
 const configsFolder = `.${ConfigFolderName}/configs`;
 const modulesFolder = "modules";
 const parameterFileNameTemplate = "azure.parameters.@envName.json";
-const parameterFileDefaultTemplate = "azure.parameters.dev.json";
 
 // Get ARM template content from each resource plugin and output to project folder
 export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<any, FxError>> {
@@ -169,7 +170,7 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
   const bicepCommand = await ensureBicep(ctx);
 
   // Compile bicep file to json
-  const templateDir = path.join(ctx.root, templateFolderNew);
+  const templateDir = path.join(ctx.root, templatesFolder);
   const bicepOrchestrationFilePath = path.join(templateDir, bicepOrchestrationFileName);
   const armTemplateJson = await compileBicepToJson(bicepCommand, bicepOrchestrationFilePath);
   ctx.logProvider?.info(
@@ -322,25 +323,16 @@ export async function getParameterJson(ctx: SolutionContext) {
 
   const parameterFileName = parameterFileNameTemplate.replace("@envName", ctx.envInfo.envName);
   const parameterFolderPath = path.join(ctx.root, configsFolder);
-  const parameterEnvFilePath = path.join(
-    path.join(ctx.root, configsFolder),
-    parameterFileDefaultTemplate
-  );
-
   const parameterFilePath = path.join(parameterFolderPath, parameterFileName);
-  let createNewParameterFile = false;
   try {
     await fs.stat(parameterFilePath);
   } catch (err) {
-    ctx.logProvider?.info(
-      `[${PluginDisplayName.Solution}] ${parameterFilePath} does not exist. Generate it using ${parameterEnvFilePath}.`
-    );
-    createNewParameterFile = true;
+    ctx.logProvider?.error(`[${PluginDisplayName.Solution}] ${parameterFilePath} does not exist.`);
   }
 
-  if (createNewParameterFile) {
-    await fs.ensureDir(parameterFolderPath);
-    await fs.copyFile(parameterEnvFilePath, parameterFilePath);
+  if (!isMultiEnvEnabled()) {
+    const parameterJson = await getExpandedParameter(ctx, parameterFilePath, false);
+    await fs.writeFile(parameterFilePath, JSON.stringify(parameterJson, undefined, 2));
   }
 
   const parameterJson = await getExpandedParameter(ctx, parameterFilePath, true); // only expand secrets in memory
@@ -390,7 +382,7 @@ async function doGenerateArmTemplate(ctx: SolutionContext): Promise<Result<any, 
     await backupExistingFilesIfNecessary(ctx);
     // Output main.bicep file
     const bicepOrchestrationFileContent = bicepOrchestrationTemplate.getOrchestrationFileContent();
-    const templateFolderPath = path.join(ctx.root, templateFolderNew);
+    const templateFolderPath = path.join(ctx.root, templatesFolder);
     await fs.ensureDir(templateFolderPath);
     await fs.writeFile(
       path.join(templateFolderPath, bicepOrchestrationFileName),
@@ -407,12 +399,11 @@ async function doGenerateArmTemplate(ctx: SolutionContext): Promise<Result<any, 
 
     // Output parameter file
     const parameterFileName = parameterFileNameTemplate.replace("@envName", ctx.envInfo.envName);
-    const parameterTemplateFolderPath = path.join(ctx.root, configsFolder);
-    const parameterTemplateFilePath = path.join(parameterTemplateFolderPath, parameterFileName);
+    const parameterEnvFolderPath = path.join(ctx.root, configsFolder);
+    const parameterEnvFilePath = path.join(parameterEnvFolderPath, parameterFileName);
     const parameterFileContent = bicepOrchestrationTemplate.getParameterFileContent();
-    await fs.ensureDir(parameterTemplateFolderPath);
-    await fs.writeFile(parameterTemplateFilePath, parameterFileContent);
-    generateResourceName(ctx);
+    await fs.ensureDir(parameterEnvFolderPath);
+    await fs.writeFile(parameterEnvFilePath, parameterFileContent);
 
     // Output .gitignore file
     const gitignoreContent = await fs.readFile(
@@ -420,7 +411,7 @@ async function doGenerateArmTemplate(ctx: SolutionContext): Promise<Result<any, 
       ConstantString.UTF8Encoding
     );
     const gitignoreFileName = ".gitignore";
-    const gitignoreFilePath = path.join(ctx.root, templateFolderNew, gitignoreFileName);
+    const gitignoreFilePath = path.join(ctx.root, templatesFolder, gitignoreFileName);
     if (!(await fs.pathExists(gitignoreFilePath))) {
       await fs.writeFile(gitignoreFilePath, gitignoreContent);
     }
@@ -675,22 +666,22 @@ function escapeSecretPlaceholders(variables: Record<string, string>) {
 
 // backup existing ARM template and parameter files to backup folder named with current timestamp
 async function backupExistingFilesIfNecessary(ctx: SolutionContext): Promise<void> {
-  const armBaseFolder = path.join(ctx.root, configsFolder);
-  const armTemplateFolder = path.join(armBaseFolder, templateFolder);
-  const armParameterFolder = path.join(armBaseFolder, parameterFolder);
+  const armBaseFolder = path.join(ctx.root, templatesFolder);
+  const parameterJsonFolder = path.join(ctx.root, configsFolder);
 
-  const needsBackup = !(await areFoldersEmpty([armTemplateFolder, armParameterFolder]));
+  const needsBackup = !(await areFoldersEmpty([armBaseFolder, parameterJsonFolder]));
   if (needsBackup) {
     const backupFolder = path.join(
-      armBaseFolder,
+      ctx.root,
+      templateFolder,
       "backup",
       dateFormat(new Date(), "yyyymmddHHMMssl")
     ); // example: ./infra/azure/backup/20210823080000000
     const templateBackupFolder = path.join(backupFolder, templateFolder);
     const parameterBackupFolder = path.join(backupFolder, parameterFolder);
 
-    await fs.move(armTemplateFolder, templateBackupFolder);
-    await fs.move(armParameterFolder, parameterBackupFolder);
+    await fs.move(armBaseFolder, templateBackupFolder);
+    await fs.move(parameterJsonFolder, parameterBackupFolder);
   }
 }
 

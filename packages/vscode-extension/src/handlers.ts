@@ -784,15 +784,14 @@ export async function openManifestHandler(args?: any[]): Promise<Result<null, Fx
       return err(FxError);
     }
   } else {
-    const FxError: FxError = {
-      name: "NoWorkspace",
-      source: ExtensionSource,
-      message: StringResources.vsc.handlers.noOpenWorkspace,
-      timestamp: new Date(),
-    };
-    showError(FxError);
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, FxError);
-    return err(FxError);
+    const noOpenWorkspaceError = new UserError(
+      ExtensionErrors.NoWorkspaceError,
+      StringResources.vsc.handlers.noOpenWorkspace,
+      ExtensionSource
+    );
+    showError(noOpenWorkspaceError);
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, noOpenWorkspaceError);
+    return err(noOpenWorkspaceError);
   }
 }
 

@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import os from "os";
 
 import sinon, { SinonSandbox } from "sinon";
 import yargs, { Options } from "yargs";
@@ -428,7 +429,7 @@ describe("Env List Command Tests", function () {
     await listCmd.handler(args);
 
     // Assert
-    expect(vars.value.logs).to.equal("dev (active)\ntest\nstaging\n");
+    expect(vars.value.logs).to.equal(`dev (active)${os.EOL}test${os.EOL}staging\n`);
   });
 
   it("accepts --folder parameter", async () => {

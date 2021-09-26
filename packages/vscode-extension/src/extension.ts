@@ -238,7 +238,8 @@ export async function activate(context: vscode.ExtensionContext) {
   const grantPermission = vscode.commands.registerCommand(
     "fx-extension.grantPermission",
     (node) => {
-      Correlator.run(handlers.grantPermission, node.command.title);
+      const envName = node.commandId.split(".").pop();
+      Correlator.run(handlers.grantPermission, envName);
     }
   );
   context.subscriptions.push(grantPermission);

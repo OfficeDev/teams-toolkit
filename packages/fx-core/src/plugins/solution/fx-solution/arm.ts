@@ -12,9 +12,8 @@ import {
   returnSystemError,
   ConfigFolderName,
   returnUserError,
-  constants,
+  EnvNamePlaceholder,
 } from "@microsoft/teamsfx-api";
-import { environmentManager } from "../../../core/environment";
 import { ScaffoldArmTemplateResult, ArmResourcePlugin } from "../../../common/armInterface";
 import { getActivatedResourcePlugins } from "./ResourcePluginContainer";
 import { getPluginContext, sendErrorTelemetryThenReturnError } from "./utils/util";
@@ -63,7 +62,7 @@ const solutionLevelParameterObject = {
 const templatesFolder = "./templates/azure";
 const configsFolder = `.${ConfigFolderName}/configs`;
 const modulesFolder = "modules";
-const parameterFileNameTemplate = "azure.parameters.constants.EnvNamePlaceholder.json";
+const parameterFileNameTemplate = `azure.parameters.${EnvNamePlaceholder}.json`;
 
 // Get ARM template content from each resource plugin and output to project folder
 export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<any, FxError>> {
@@ -309,11 +308,11 @@ export async function copyParameterJson(
 
   const parameterFolderPath = path.join(ctx.root, configsFolder);
   const targetParameterFileName = parameterFileNameTemplate.replace(
-    constants.EnvNamePlaceholder,
+    EnvNamePlaceholder,
     targetEnvName
   );
   const sourceParameterFileName = parameterFileNameTemplate.replace(
-    "constants.EnvNamePlaceholder",
+    "EnvNamePlaceholder",
     sourceEnvName
   );
   const targetParameterFilePath = path.join(parameterFolderPath, targetParameterFileName);
@@ -329,7 +328,7 @@ export async function getParameterJson(ctx: SolutionContext) {
   }
 
   const parameterFileName = parameterFileNameTemplate.replace(
-    "constants.EnvNamePlaceholder",
+    "EnvNamePlaceholder",
     ctx.envInfo.envName
   );
   const parameterFolderPath = path.join(ctx.root, configsFolder);
@@ -413,7 +412,7 @@ async function doGenerateArmTemplate(ctx: SolutionContext): Promise<Result<any, 
 
     // Output parameter file
     const parameterFileName = parameterFileNameTemplate.replace(
-      "constants.EnvNamePlaceholder",
+      "EnvNamePlaceholder",
       ctx.envInfo.envName
     );
     const parameterEnvFolderPath = path.join(ctx.root, configsFolder);

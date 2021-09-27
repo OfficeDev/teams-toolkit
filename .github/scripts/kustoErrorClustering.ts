@@ -285,7 +285,7 @@ async function runIncr() {
   for(const cluster of newClusters) {
     for(const index of cluster.memberIndexes){
       const log = logs[index];
-      log.raw.ErrorMsgPatternString = cluster.patternString;
+      log.raw.ErrorMsgPatternText = cluster.patternString;
       log.raw.ErrorMsgPatternId = cluster.patternId;
     }
     const count = Number(cluster.data) + cluster.memberIndexes.length;

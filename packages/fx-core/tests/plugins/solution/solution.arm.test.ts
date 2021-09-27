@@ -16,6 +16,7 @@ import {
   SolutionConfig,
   SolutionContext,
   SubscriptionInfo,
+  EnvNamePlaceholder,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs, { PathLike } from "fs-extra";
@@ -55,6 +56,8 @@ import "../../../src/plugins/resource/simpleauth";
 import "../../../src/plugins/resource/spfx";
 import "../../../src/plugins/resource/aad";
 import { environmentManager } from "../../../src";
+import { assert } from "sinon";
+let mockedEnvRestore: () => void;
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -66,11 +69,13 @@ const simpleAuthPlugin = Container.get<Plugin>(ResourcePlugins.SimpleAuthPlugin)
 const spfxPlugin = Container.get<Plugin>(ResourcePlugins.SpfxPlugin) as Plugin & ArmResourcePlugin;
 const aadPlugin = Container.get<Plugin>(ResourcePlugins.AadPlugin) as Plugin & ArmResourcePlugin;
 
-const baseFolder = "./infra/azure";
+const baseFolder = "./templates/azure";
+const templatesFolder = "./templates";
 const parameterFolderName = "parameters";
-const templateFolderName = "templates";
+const templateFolderName = "modules";
+const configFolderName = "./.fx/configs";
+const parameterFileNameTemplate = `azure.parameters.${EnvNamePlaceholder}.json`;
 const fileEncoding = "UTF8";
-const parameterFolder = path.join(baseFolder, parameterFolderName);
 const templateFolder = path.join(baseFolder, templateFolderName);
 
 function mockSolutionContext(): SolutionContext {
@@ -91,13 +96,22 @@ describe("Generate ARM Template for project", () => {
   const mocker = sinon.createSandbox();
   const testAppName = "my test app";
   const testFolder = "./tests/plugins/solution/testproject";
-
+  let parameterFileName: string;
   beforeEach(async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_MULTI_ENV: "false",
+      TEAMSFX_ARM_SUPPORT: "true",
+    });
+    parameterFileName = parameterFileNameTemplate.replace(
+      EnvNamePlaceholder,
+      environmentManager.getDefaultEnvName()
+    );
     await fs.ensureDir(testFolder);
   });
 
   afterEach(async () => {
     await fs.remove(testFolder);
+    mockedEnvRestore();
     mocker.restore();
   });
 
@@ -150,12 +164,12 @@ describe("Generate ARM Template for project", () => {
     });
 
     const projectArmTemplateFolder = path.join(testFolder, templateFolder);
-    const projectArmParameterFolder = path.join(testFolder, parameterFolder);
+    const projectArmParameterFolder = path.join(testFolder, configFolderName);
     const projectArmBaseFolder = path.join(testFolder, baseFolder);
     const result = await generateArmTemplate(mockedCtx);
     expect(result.isOk()).to.be.true;
     expect(
-      await fs.readFile(path.join(projectArmTemplateFolder, "main.bicep"), fileEncoding)
+      await fs.readFile(path.join(projectArmTemplateFolder, "../main.bicep"), fileEncoding)
     ).equals(
       `param resourceBaseName string
 Mocked frontend hosting parameter content
@@ -164,8 +178,8 @@ Mocked simple auth parameter content
 Mocked frontend hosting variable content
 Mocked simple auth variable content
 
-Mocked frontend hosting module content. Module path: ./frontendHostingProvision.bicep. Variable: Mocked simple auth endpoint
-Mocked simple auth module content. Module path: ./simpleAuthProvision.bicep. Variable: Mocked frontend hosting endpoint
+Mocked frontend hosting module content. Module path: ./modules/frontendHostingProvision.bicep. Variable: Mocked simple auth endpoint
+Mocked simple auth module content. Module path: ./modules/simpleAuthProvision.bicep. Variable: Mocked frontend hosting endpoint
 
 Mocked frontend hosting output content
 Mocked simple auth output content`
@@ -183,10 +197,7 @@ Mocked simple auth output content`
       )
     ).equals("Mocked simple auth provision module content");
     expect(
-      await fs.readFile(
-        path.join(projectArmParameterFolder, "parameters.template.json"),
-        fileEncoding
-      )
+      await fs.readFile(path.join(projectArmParameterFolder, parameterFileName), fileEncoding)
     ).equals(
       `{
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
@@ -222,21 +233,22 @@ Mocked simple auth output content`
 
     const projectArmBaseFolder = path.join(mockedCtx.root, baseFolder);
     const projectArmTemplateFolder = path.join(mockedCtx.root, templateFolder);
-    const projectArmParameterFolder = path.join(mockedCtx.root, parameterFolder);
+    const projectConfigFolder = path.join(mockedCtx.root, configFolderName);
     const mockedParameterDefaultJsonContent = "mocked parameter.default.json file";
     const mockedMainBicepContent = "mocked main.bicep file";
+    await fs.ensureDir(projectArmBaseFolder);
     await fs.ensureDir(projectArmTemplateFolder);
-    await fs.ensureDir(projectArmParameterFolder);
+    await fs.ensureDir(projectConfigFolder);
     await fs.writeFile(
-      path.join(projectArmParameterFolder, "parameter.default.json"),
+      path.join(projectConfigFolder, parameterFileName),
       mockedParameterDefaultJsonContent
     );
-    await fs.writeFile(path.join(projectArmTemplateFolder, "main.bicep"), mockedMainBicepContent);
+    await fs.writeFile(path.join(projectArmBaseFolder, "main.bicep"), mockedMainBicepContent);
 
     const result = await generateArmTemplate(mockedCtx);
 
     expect(result.isOk()).to.be.true;
-    const backupBaseFolder = path.join(projectArmBaseFolder, "backup");
+    const backupBaseFolder = path.join(mockedCtx.root, templatesFolder, "backup");
     expect(await fs.pathExists(backupBaseFolder)).to.be.true;
     const backupFolderItems = await fs.readdir(backupBaseFolder);
     expect(backupFolderItems.length).equals(1);
@@ -250,13 +262,9 @@ Mocked simple auth output content`
     expect(
       await fs.readFile(path.join(parameterBackupFolder, parameterBackupFiles[0]), fileEncoding)
     ).equals(mockedParameterDefaultJsonContent);
-    const templateBackupFolder = path.join(
-      backupBaseFolder,
-      backupFolderItems[0],
-      templateFolderName
-    );
+    const templateBackupFolder = path.join(backupBaseFolder, backupFolderItems[0], templatesFolder);
     const templateBackupFiles = await fs.readdir(templateBackupFolder);
-    expect(templateBackupFiles.length).equals(1);
+    expect(templateBackupFiles.length).equals(2);
     expect(
       await fs.readFile(path.join(templateBackupFolder, templateBackupFiles[0]), fileEncoding)
     ).equals(mockedMainBicepContent);
@@ -271,6 +279,7 @@ describe("Deploy ARM Template to Azure", () => {
   const testClientSecret = "test_client_secret";
   const testEnvValue = "test env value";
   const testResourceSuffix = "-testSuffix";
+  let parameterFileName: string;
   const testArmTemplateOutput = {
     frontendHosting_storageResourceId: {
       type: "String",
@@ -297,6 +306,14 @@ describe("Deploy ARM Template to Azure", () => {
   let fileContent: Map<string, any>;
 
   beforeEach(() => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_MULTI_ENV: "false",
+      TEAMSFX_ARM_SUPPORT: "true",
+    });
+    parameterFileName = parameterFileNameTemplate.replace(
+      EnvNamePlaceholder,
+      environmentManager.getDefaultEnvName()
+    );
     (
       mocker.stub(fs, "readFile") as unknown as sinon.SinonStub<
         [file: number | fs.PathLike],
@@ -321,7 +338,7 @@ describe("Deploy ARM Template to Azure", () => {
 
     fileContent = new Map([
       [
-        path.join(parameterFolder, "parameters.template.json"),
+        path.join(configFolderName, parameterFileName),
         `{
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
   "contentVersion": "1.0.0.0",
@@ -347,6 +364,7 @@ describe("Deploy ARM Template to Azure", () => {
 
   afterEach(() => {
     envRestore();
+    mockedEnvRestore();
     mocker.restore();
   });
 
@@ -395,6 +413,7 @@ describe("Deploy ARM Template to Azure", () => {
   it("should successfully update parameter and deploy arm templates to azure", async () => {
     // Arrange
     const mockedCtx = mockSolutionContext();
+    let parameterAfterDeploy = "";
     mockedCtx.projectSettings = {
       appName: testAppName,
       projectId: uuid.v4(),
@@ -427,6 +446,7 @@ describe("Deploy ARM Template to Azure", () => {
           deploymentName: string,
           parameters: ResourceManagementModels.Deployment
         ) => {
+          parameterAfterDeploy = parameters.properties.parameters;
           chai.assert.exists(parameters.properties.parameters?.aadClientSecret);
           chai.assert.notStrictEqual(
             parameters.properties.parameters?.aadClientSecret,
@@ -455,14 +475,9 @@ describe("Deploy ARM Template to Azure", () => {
 
     // Assert
     chai.assert.isTrue(result.isOk());
-
-    expect(
-      JSON.parse(fileContent.get(path.join(parameterFolder, "parameters.default.json")))
-    ).to.deep.equals(
+    chai.assert.isNotNull(parameterAfterDeploy);
+    expect(parameterAfterDeploy).to.deep.equals(
       JSON.parse(`{
-      "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
-      "contentVersion": "1.0.0.0",
-      "parameters": {
         "resourceBaseName": {
           "value": "mytestapp${testResourceSuffix}"
         },
@@ -470,12 +485,11 @@ describe("Deploy ARM Template to Azure", () => {
           "value": "${testClientId}"
         },
         "aadClientSecret": {
-          "value": "{{FX_RESOURCE_AAD_APP_FOR_TEAMS__CLIENTSECRET}}"
+          "value": "${testClientSecret}"
         },
         "envValue": {
           "value": "${testEnvValue}"
         }
-      }
       }`)
     );
     chai.assert.strictEqual(
@@ -501,7 +515,7 @@ describe("Deploy ARM Template to Azure", () => {
     mockArmDeploymentDependencies(mockedCtx);
 
     fileContent.set(
-      path.join(parameterFolder, "parameters.default.json"),
+      path.join(configFolderName, parameterFileName),
       `{
       "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
       "contentVersion": "1.0.0.0",

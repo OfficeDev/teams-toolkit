@@ -48,6 +48,7 @@ const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";
 const learnMoreText = "Learn More";
 const migrationGuideUrl = "https://aka.ms/teamsfx-migration-guide";
+const parameterFileNameTemplate = "azure.parameters.@envName.json";
 
 class EnvConfigName {
   static readonly StorageName = "storageName";
@@ -369,7 +370,10 @@ async function needMigrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<boolea
   if (!fxExist) {
     return false;
   }
-
+  const parameterEnvFileName = parameterFileNameTemplate.replace(
+    "@envName",
+    environmentManager.getDefaultEnvName()
+  );
   const envFileExist = await fs.pathExists(
     path.join(inputs.projectPath as string, ".fx", "env.default.json")
   );
@@ -377,7 +381,7 @@ async function needMigrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<boolea
     path.join(inputs.projectPath as string, ".fx", "configs")
   );
   const armParameterExist = await fs.pathExists(
-    path.join(inputs.projectPath as string, ".fx", "configs", "azure.parameters.dev.json")
+    path.join(inputs.projectPath as string, ".fx", "configs", parameterEnvFileName)
   );
   if (envFileExist && (!armParameterExist || !configDirExist)) {
     return true;
@@ -446,15 +450,14 @@ async function generateArmTempaltesFiles(ctx: CoreHookContext) {
   } catch (error) {
     throw error;
   }
-  if (await fs.pathExists(path.join(templateAzure, "parameters.template.json"))) {
-    await fs.move(
-      path.join(templateAzure, "parameters.template.json"),
-      path.join(fxConfig, "azure.parameters.dev.json")
-    );
-  } else {
+  const parameterEnvFileName = parameterFileNameTemplate.replace(
+    "@envName",
+    environmentManager.getDefaultEnvName()
+  );
+  if (!(await fs.pathExists(path.join(fxConfig, parameterEnvFileName)))) {
     throw err(
       returnSystemError(
-        new Error("Failed to generate parameter.dev.json"),
+        new Error(`Failed to generate ${parameterEnvFileName} on migration`),
         "Solution",
         "GenerateArmTemplateFailed"
       )
@@ -467,7 +470,11 @@ async function generateArmParameterJson(ctx: CoreHookContext) {
   const fx = path.join(inputs.projectPath as string, `.${ConfigFolderName}`);
   const fxConfig = path.join(fx, InputConfigsFolderName);
   const envConfig = await fs.readJson(path.join(fx, "env.default.json"));
-  const targetJson = await fs.readJson(path.join(fxConfig, "azure.parameters.dev.json"));
+  const parameterEnvFileName = parameterFileNameTemplate.replace(
+    "@envName",
+    environmentManager.getDefaultEnvName()
+  );
+  const targetJson = await fs.readJson(path.join(fxConfig, parameterEnvFileName));
   const ArmParameter = "parameters";
   // frontend hosting
   if (envConfig[ResourcePlugins.FrontendHosting]) {
@@ -528,7 +535,7 @@ async function generateArmParameterJson(ctx: CoreHookContext) {
     }
   }
   await fs.writeFile(
-    path.join(fxConfig, "azure.parameters.dev.json"),
+    path.join(fxConfig, parameterEnvFileName),
     JSON.stringify(targetJson, null, 4)
   );
 }

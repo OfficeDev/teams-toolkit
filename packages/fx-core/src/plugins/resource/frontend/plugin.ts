@@ -72,21 +72,9 @@ export class FrontendPluginImpl {
 
     const templateInfo = new TemplateInfo(ctx);
 
-    const zip = await runWithErrorCatchAndThrow(
-      new GetTemplateError(),
-      async () => await Scaffold.getTemplateZip(ctx, templateInfo)
-    );
-    await runWithErrorCatchAndThrow(
-      new UnzipTemplateError(),
-      async () =>
-        await Scaffold.scaffoldFromZip(
-          zip,
-          path.join(ctx.root, FrontendPathInfo.WorkingDir),
-          (filePath: string, data: Buffer) =>
-            filePath.replace(RegularExpr.ReplaceTemplateExt, Constants.EmptyString),
-          (filePath: string, data: Buffer) =>
-            Scaffold.fulfill(filePath, data, templateInfo.variables)
-        )
+    await Scaffold.scaffoldFromZipPackage(
+      path.join(ctx.root, FrontendPathInfo.WorkingDir),
+      templateInfo
     );
 
     await ProgressHelper.endScaffoldProgress(true);

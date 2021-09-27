@@ -12,9 +12,12 @@ import {
   FrontendPluginError,
   InvalidTemplateManifestError,
   runWithErrorCatchAndThrow,
-  UnknownFallbackError,
+  TemplateManifestError,
+  TemplateZipFallbackError,
+  UnknownScaffoldError,
+  UnzipTemplateError,
 } from "../resources/errors";
-import { Constants, FrontendPathInfo } from "../constants";
+import { Constants, FrontendPathInfo as PathInfo } from "../constants";
 import { Logger } from "../utils/logger";
 import { Messages } from "../resources/messages";
 import { PluginContext } from "@microsoft/teamsfx-api";
@@ -22,6 +25,14 @@ import { Utils } from "../utils";
 import { TemplateInfo, TemplateVariable } from "../resources/templateInfo";
 import { selectTag, tagListURL, templateURL } from "../../../../common/templates";
 import { TelemetryHelper } from "../utils/telemetry-helper";
+import {
+  genTemplateRenderReplaceFn,
+  removeTemplateExtReplaceFn,
+  ScaffoldAction,
+  ScaffoldActionName,
+  ScaffoldContext,
+  scaffoldFromTemplates,
+} from "../../../../common/templatesActions";
 
 export type Manifest = {
   [key: string]: {
@@ -35,6 +46,37 @@ export type Manifest = {
 };
 
 export class FrontendScaffold {
+  public static async scaffoldFromZipPackage(
+    componentPath: string,
+    templateInfo: TemplateInfo
+  ): Promise<void> {
+    await scaffoldFromTemplates({
+      group: templateInfo.group,
+      lang: templateInfo.language,
+      scenario: templateInfo.scenario,
+      templatesFolderName: PathInfo.TemplateFolderName,
+      dst: componentPath,
+      fileNameReplaceFn: removeTemplateExtReplaceFn,
+      fileDataReplaceFn: genTemplateRenderReplaceFn(templateInfo.variables),
+      onActionError: async (action: ScaffoldAction, context: ScaffoldContext, error: Error) => {
+        Logger.info(error.toString());
+        switch (action.name) {
+          case ScaffoldActionName.FetchTemplatesUrlWithTag:
+          case ScaffoldActionName.FetchTemplatesZipFromUrl:
+            TelemetryHelper.sendScaffoldFallbackEvent(new TemplateManifestError(error.message));
+            Logger.info(Messages.FailedFetchTemplate);
+            break;
+          case ScaffoldActionName.FetchTemplateZipFromLocal:
+            throw new TemplateZipFallbackError();
+          case ScaffoldActionName.Unzip:
+            throw new UnzipTemplateError();
+          default:
+            throw new UnknownScaffoldError();
+        }
+      },
+    });
+  }
+
   public static async fetchTemplateTagList(url: string): Promise<string> {
     const result = await runWithErrorCatchAndThrow(
       new FetchTemplateManifestError(),
@@ -103,7 +145,7 @@ export class FrontendScaffold {
       if (e instanceof FrontendPluginError) {
         TelemetryHelper.sendScaffoldFallbackEvent(e);
       } else {
-        TelemetryHelper.sendScaffoldFallbackEvent(new UnknownFallbackError());
+        TelemetryHelper.sendScaffoldFallbackEvent(new UnknownScaffoldError());
       }
 
       return FrontendScaffold.getTemplateZipFromLocal(templateInfo);
@@ -115,7 +157,7 @@ export class FrontendScaffold {
     data: Buffer,
     variables: TemplateVariable
   ): string | Buffer {
-    if (path.extname(filePath) === FrontendPathInfo.TemplateFileExt) {
+    if (path.extname(filePath) === PathInfo.TemplateFileExt) {
       return Mustache.render(data.toString(), variables);
     }
     return data;

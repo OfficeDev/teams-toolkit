@@ -8,9 +8,7 @@ import { InvalidTabLanguageError } from "./errors";
 import { getTemplatesFolder } from "../../../..";
 import { templatesVersion } from "../../../../common/templates";
 
-export interface TemplateVariable {
-  showFunction: boolean;
-}
+export type TemplateVariable = { [key: string]: string };
 
 export class TabLanguage {
   static readonly JavaScript = "javascript";
@@ -45,7 +43,7 @@ export class TemplateInfo {
       (pluginName) => pluginName === DependentPluginInfo.FunctionPluginName
     );
     this.variables = {
-      showFunction: isFunctionPlugin,
+      showFunction: isFunctionPlugin.toString(),
     };
 
     this.scenario = Scenario.Default;

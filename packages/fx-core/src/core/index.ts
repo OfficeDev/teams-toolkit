@@ -913,7 +913,18 @@ export class FxCore implements Core {
     inputs: Inputs,
     ctx?: CoreHookContext
   ): Promise<Result<string, FxError>> {
-    return ctx!.solutionContext!.cryptoProvider!.encrypt(plaintext);
+    if (!ctx) return err(new ObjectIsUndefinedError("ctx"));
+    if (isV2()) {
+      if (!ctx.contextV2 || !ctx.contextV2.cryptoProvider)
+        return err(new ObjectIsUndefinedError("ctx.contextV2 or ctx.contextV2.cryptoProvider"));
+      return ctx.contextV2.cryptoProvider.encrypt(plaintext);
+    } else {
+      if (!ctx.solutionContext || !ctx.solutionContext.cryptoProvider)
+        return err(
+          new ObjectIsUndefinedError("ctx.solutionContext or ctx.solutionContext.cryptoProvider")
+        );
+      return ctx.solutionContext.cryptoProvider.encrypt(plaintext);
+    }
   }
 
   @hooks([
@@ -928,7 +939,18 @@ export class FxCore implements Core {
     inputs: Inputs,
     ctx?: CoreHookContext
   ): Promise<Result<string, FxError>> {
-    return ctx!.solutionContext!.cryptoProvider!.decrypt(ciphertext);
+    if (!ctx) return err(new ObjectIsUndefinedError("ctx"));
+    if (isV2()) {
+      if (!ctx.contextV2 || !ctx.contextV2.cryptoProvider)
+        return err(new ObjectIsUndefinedError("ctx.contextV2 or ctx.contextV2.cryptoProvider"));
+      return ctx.contextV2.cryptoProvider.decrypt(ciphertext);
+    } else {
+      if (!ctx.solutionContext || !ctx.solutionContext.cryptoProvider)
+        return err(
+          new ObjectIsUndefinedError("ctx.solutionContext or ctx.solutionContext.cryptoProvider")
+        );
+      return ctx.solutionContext.cryptoProvider.decrypt(ciphertext);
+    }
   }
 
   async buildArtifacts(inputs: Inputs): Promise<Result<Void, FxError>> {

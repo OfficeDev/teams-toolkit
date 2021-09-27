@@ -537,7 +537,7 @@ describe("Core basic APIs", () => {
               result: expectedInputs[CoreQuestionNames.Folder] as string,
             });
           }
-          throw err(InvalidInputError("invalid question"));
+          throw InvalidInputError("invalid question");
         }
       );
     sandbox
@@ -550,7 +550,7 @@ describe("Core basic APIs", () => {
               result: expectedInputs[CoreQuestionNames.CreateFromScratch] as string,
             });
           }
-          throw err(InvalidInputError("invalid question"));
+          throw InvalidInputError("invalid question");
         }
       );
     const core = new FxCore(tools);

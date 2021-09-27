@@ -9,6 +9,7 @@ import { FxError, PluginContext, Result } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import chaiAsPromised from "chai-as-promised";
 import fs from "fs-extra";
+import * as fetch from "../../../../../src/common/templatesUtils";
 
 import { AzureStorageClient } from "../../../../../src/plugins/resource/frontend/clients";
 import {
@@ -25,15 +26,18 @@ import { FrontendConfig } from "../../../../../src/plugins/resource/frontend/con
 import {
   AzureErrorCode,
   FrontendConfigInfo,
+  FrontendPathInfo,
 } from "../../../../../src/plugins/resource/frontend/constants";
 import { FrontendPlugin } from "../../../../../src/plugins/resource/frontend/";
-import { FrontendScaffold } from "../../../../../src/plugins/resource/frontend/ops/scaffold";
 import { TestHelper } from "../helper";
 import { Utils } from "../../../../../src/plugins/resource/frontend/utils";
 import { StorageAccounts } from "@azure/arm-storage";
 import { AzureLib } from "../../../../../src/plugins/resource/frontend/utils/azure-client";
 import * as core from "../../../../../src";
 import { EnvironmentUtils } from "../../../../../src/plugins/resource/frontend/utils/environment-utils";
+import { getTemplatesFolder } from "../../../../../src";
+import mock from "mock-fs";
+import * as path from "path";
 
 chai.use(chaiAsPromised);
 
@@ -55,13 +59,40 @@ describe("FrontendPlugin", () => {
     });
 
     afterEach(() => {
+      fs.emptyDirSync(pluginContext.root);
+      fs.rmdirSync(pluginContext.root);
       sinon.restore();
     });
 
+    before(() => {
+      const config: any = {};
+      config[
+        path.join(
+          getTemplatesFolder(),
+          "plugins",
+          "resource",
+          FrontendPathInfo.TemplateFolderName,
+          "tab.js.default.zip"
+        )
+      ] = new AdmZip().toBuffer();
+      mock(config);
+    });
+
+    after(() => {
+      mock.restore();
+    });
+
     it("happy path", async () => {
-      sinon.stub(FrontendScaffold, "getTemplateURL").resolves(faker.internet.url());
-      sinon.stub(FrontendScaffold, "fetchZipFromUrl").resolves(new AdmZip());
-      sinon.stub(FrontendScaffold, "scaffoldFromZip");
+      sinon.stub(fetch, "fetchTemplateUrl").resolves(faker.internet.url());
+      sinon.stub(fetch, "fetchZipFromUrl").resolves(new AdmZip());
+
+      const result = await frontendPlugin.scaffold(pluginContext);
+
+      chai.assert.isTrue(result.isOk());
+    });
+
+    it("fallback", async () => {
+      sinon.stub(fetch, "fetchTemplateUrl").rejects(new Error());
 
       const result = await frontendPlugin.scaffold(pluginContext);
 

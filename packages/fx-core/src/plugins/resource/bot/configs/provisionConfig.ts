@@ -23,6 +23,7 @@ export class ProvisionConfig {
   public resourceGroup?: string;
   public location?: string;
   public appServicePlan?: string;
+  public botWebAppResourceId?: string;
   public botChannelRegName?: string;
   public siteName?: string;
   public skuName?: string;
@@ -93,6 +94,7 @@ export class ProvisionConfig {
     this.siteEndpoint = context.config.get(PluginBot.SITE_ENDPOINT) as string;
 
     this.botChannelRegName = context.config.get(PluginBot.BOT_CHANNEL_REGISTRATION) as string;
+    this.botWebAppResourceId = context.config.get(PluginBot.BOT_WEB_APP_RESOURCE_ID) as string;
 
     this.validateRestoredConfig();
   }
@@ -101,6 +103,7 @@ export class ProvisionConfig {
     utils.checkAndSaveConfig(context, PluginBot.VALID_DOMAIN, this.validDomain);
     utils.checkAndSaveConfig(context, PluginBot.APP_SERVICE_PLAN, this.appServicePlan);
     utils.checkAndSaveConfig(context, PluginBot.BOT_CHANNEL_REGISTRATION, this.botChannelRegName);
+    utils.checkAndSaveConfig(context, PluginBot.BOT_WEB_APP_RESOURCE_ID, this.botWebAppResourceId);
     utils.checkAndSaveConfig(context, PluginBot.SITE_NAME, this.siteName);
     utils.checkAndSaveConfig(context, PluginBot.SITE_ENDPOINT, this.siteEndpoint);
     utils.checkAndSaveConfig(context, PluginBot.SKU_NAME, this.skuName);

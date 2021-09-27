@@ -14,11 +14,9 @@ import { AzureStorageClient } from "./clients";
 import {
   CreateStorageAccountError,
   EnableStaticWebsiteError,
-  GetTemplateError,
   NoResourceGroupError,
   NoStorageError,
   StaticWebsiteDisabledError,
-  UnzipTemplateError,
   runWithErrorCatchAndThrow,
   CheckStorageError,
   CheckResourceGroupError,
@@ -33,13 +31,11 @@ import {
   ArmOutput,
   AzureErrorCode,
   AzureInfo,
-  Constants,
   DependentPluginInfo,
   EnvironmentVariables,
   FrontendOutputBicepSnippet,
   FrontendPathInfo,
   FrontendPluginInfo as PluginInfo,
-  RegularExpr,
 } from "./constants";
 import { FrontendConfig } from "./configs";
 import { FrontendDeployment } from "./ops/deploy";

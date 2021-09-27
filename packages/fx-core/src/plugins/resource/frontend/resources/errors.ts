@@ -231,42 +231,6 @@ export class GetContainerError extends FrontendPluginError {
   }
 }
 
-export class FetchTemplateManifestError extends FrontendPluginError {
-  constructor() {
-    super(ErrorType.User, "FetchTemplateManifestError", "Failed to fetch template manifest.", [
-      tips.checkNetwork,
-    ]);
-  }
-}
-
-export class InvalidTemplateManifestError extends FrontendPluginError {
-  constructor(compose: string) {
-    super(
-      ErrorType.System,
-      "InvalidTemplateManifestError",
-      `Failed to find template for ${compose}.`,
-      []
-    );
-  }
-}
-
-export class FetchTemplatePackageError extends FrontendPluginError {
-  constructor() {
-    super(ErrorType.User, "FetchTemplatePackageError", "Failed to fetch template package.", [
-      tips.checkNetwork,
-    ]);
-  }
-}
-
-export class GetTemplateError extends FrontendPluginError {
-  constructor() {
-    super(ErrorType.System, "GetTemplateError", "Failed to fetch template.", [
-      tips.checkNetwork,
-      tips.checkFsPermissions,
-    ]);
-  }
-}
-
 export class UnknownScaffoldError extends FrontendPluginError {
   constructor() {
     super(

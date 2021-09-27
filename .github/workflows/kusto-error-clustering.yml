@@ -35,5 +35,5 @@ jobs:
 
       - name: Run script kustoErrorClustering.ts
         run: |
-          npx ./.github/scripts/kustoErrorClustering.ts -c
+          npx ts-node ./.github/scripts/kustoErrorClustering.ts -c
  

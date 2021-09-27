@@ -115,26 +115,45 @@ type DeployContext = {
 export async function pollDeploymentStatus(deployCtx: DeployContext) {
   const failedCount = 4;
   let tryCount = 0;
+  let previousStatus: { [key: string]: string } = {};
+  deployCtx.ctx.logProvider?.info(
+    format(
+      getStrings().solution.DeployArmTemplates.PollDeploymentStatusNotice,
+      PluginDisplayName.Solution
+    )
+  );
   while (!deployCtx.finished) {
     await waitSeconds(10);
-    deployCtx.ctx.logProvider?.info(
-      format(
-        getStrings().solution.DeployArmTemplates.PollDeploymentStatusNotice,
-        PluginDisplayName.Solution
-      )
-    );
     try {
       const operations = await deployCtx.client.deploymentOperations.list(
         deployCtx.resourceGroupName,
         deployCtx.deploymentName
       );
+
+      if (deployCtx.finished) {
+        return;
+      }
+
+      const currentStatus: { [key: string]: string } = {};
       operations.forEach((operation) => {
-        if (operation.properties?.targetResource?.resourceName) {
-          deployCtx.ctx.logProvider?.info(
-            `[${PluginDisplayName.Solution}] ${operation.properties?.targetResource?.resourceName} -> ${operation.properties.provisioningState}`
-          );
+        if (
+          operation.properties?.targetResource?.resourceName &&
+          operation.properties.provisioningState &&
+          operation.properties?.timestamp &&
+          operation.properties.timestamp.getTime() > deployCtx.deploymentStartTime
+        ) {
+          currentStatus[operation.properties.targetResource.resourceName] =
+            operation.properties.provisioningState;
         }
       });
+      for (const key in currentStatus) {
+        if (currentStatus[key] !== previousStatus[key]) {
+          deployCtx.ctx.logProvider?.info(
+            `[${PluginDisplayName.Solution}] ${key} -> ${currentStatus[key]}`
+          );
+        }
+      }
+      previousStatus = currentStatus;
     } catch (error) {
       tryCount++;
       if (tryCount > failedCount) {
@@ -243,7 +262,7 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
       const deploymentError = result.value;
       ctx.logProvider?.error(
         `[${PluginDisplayName.Solution}] ${deploymentName} -> ${JSON.stringify(
-          result,
+          formattedDeploymentError(deploymentError),
           undefined,
           2
         )}`
@@ -821,4 +840,26 @@ function formattedDeploymentName(failedDeployments: string[]): Result<void, FxEr
     )}) for your project failed. Please refer to output channel for more error details.`
   );
   return err(returnUserError(returnError, "Solution", "ArmDeploymentFailed", ArmHelpLink));
+}
+
+export function formattedDeploymentError(deploymentError: any): any {
+  if (deploymentError.subErrors) {
+    const result: any = {};
+    for (const key in deploymentError.subErrors) {
+      const subError = deploymentError.subErrors[key];
+      if (subError.inner) {
+        result[key] = formattedDeploymentError(subError.inner);
+      } else {
+        const needFilter =
+          subError.error?.message?.includes("Template output evaluation skipped") &&
+          subError.error?.code === "DeploymentOperationFailed";
+        if (!needFilter) {
+          result[key] = subError.error;
+        }
+      }
+    }
+    return result;
+  } else {
+    return deploymentError.error;
+  }
 }

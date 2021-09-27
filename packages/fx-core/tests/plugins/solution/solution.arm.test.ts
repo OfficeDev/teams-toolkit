@@ -27,6 +27,7 @@ import {
 } from "../../../src/plugins/solution/fx-solution/question";
 import {
   deployArmTemplates,
+  formattedDeploymentError,
   generateArmTemplate,
   pollDeploymentStatus,
 } from "../../../src/plugins/solution/fx-solution/arm";
@@ -599,18 +600,13 @@ describe("Arm Template Failed Test", () => {
     mocker.restore();
   });
 
-  it("pollDeploymentStatus", async () => {
+  it("should get pollDeploymentStatus error", async () => {
     const mockedCtx = mockSolutionContext();
-    const mockedDeployCtx: any = {
-      resourceGroupName: "poll-deployment-rg",
-      deploymentName: "poll-deployment",
-      finished: false,
-      ctx: mockedCtx,
-      client: {
-        deploymentOperations: {
-          list: async () => {
-            throw new Error("mocked error");
-          },
+    const mockedDeployCtx: any = getMockedDeployCtx(mockedCtx);
+    mockedDeployCtx.client = {
+      deploymentOperations: {
+        list: async () => {
+          throw new Error("mocked error");
         },
       },
     };
@@ -623,4 +619,92 @@ describe("Arm Template Failed Test", () => {
     }
     chai.assert.isTrue(isErrorThrown);
   });
+
+  it("pollDeploymentStatus OK", async () => {
+    const mockedCtx = mockSolutionContext();
+    const operations = [
+      {
+        properties: {
+          targetResource: {
+            resourceName: "test resource",
+          },
+          provisioningState: "Running",
+          timestamp: Date.now(),
+        },
+      },
+    ];
+    const mockedDeployCtx: any = getMockedDeployCtx(mockedCtx);
+    let count = 0;
+    mockedDeployCtx.client = {
+      deploymentOperations: {
+        list: async () => {
+          if (count > 1) {
+            mockedDeployCtx.finished = true;
+          }
+          count++;
+          return operations;
+        },
+      },
+    };
+
+    const res = await pollDeploymentStatus(mockedDeployCtx);
+    chai.assert.isUndefined(res);
+  });
+
+  it("formattedDeploymentError OK", async () => {
+    const errors = {
+      error: {
+        code: "OutsideError",
+        message: "out side error",
+      },
+      subErrors: {
+        botProvision: {
+          error: {
+            code: "BotError",
+            message: "bot error",
+          },
+          inner: {
+            error: {
+              code: "BotInnerError",
+              message: "bot inner error",
+            },
+            subErrors: {
+              usefulError: {
+                error: {
+                  code: "usefulError",
+                  message: "useful error",
+                },
+              },
+              uselessError: {
+                error: {
+                  code: "DeploymentOperationFailed",
+                  message:
+                    "Template output evaluation skipped: at least one resource deployment operation failed. Please list deployment operations for details. Please see https://aka.ms/DeployOperations for usage details.",
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+    const res = formattedDeploymentError(errors);
+    chai.assert.deepEqual(res, {
+      botProvision: {
+        usefulError: {
+          code: "usefulError",
+          message: "useful error",
+        },
+      },
+    });
+  });
+
+  function getMockedDeployCtx(mockedCtx: any) {
+    return {
+      resourceGroupName: "poll-deployment-rg",
+      deploymentName: "poll-deployment",
+      finished: false,
+      deploymentStartTime: Date.now(),
+      ctx: mockedCtx,
+    };
+  }
 });

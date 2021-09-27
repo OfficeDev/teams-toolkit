@@ -16,6 +16,7 @@ import {
   SolutionConfig,
   SolutionContext,
   SubscriptionInfo,
+  EnvNamePlaceholder,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs, { PathLike } from "fs-extra";
@@ -54,6 +55,7 @@ import "../../../src/plugins/resource/simpleauth";
 import "../../../src/plugins/resource/spfx";
 import "../../../src/plugins/resource/aad";
 import { environmentManager } from "../../../src";
+import { assert } from "sinon";
 let mockedEnvRestore: () => void;
 
 chai.use(chaiAsPromised);
@@ -71,7 +73,7 @@ const templatesFolder = "./templates";
 const parameterFolderName = "parameters";
 const templateFolderName = "modules";
 const configFolderName = "./.fx/configs";
-const parameterFileNameTemplate = "azure.parameters.@envName.json";
+const parameterFileNameTemplate = `azure.parameters.${EnvNamePlaceholder}.json`;
 const fileEncoding = "UTF8";
 const templateFolder = path.join(baseFolder, templateFolderName);
 
@@ -100,7 +102,7 @@ describe("Generate ARM Template for project", () => {
       TEAMSFX_ARM_SUPPORT: "true",
     });
     parameterFileName = parameterFileNameTemplate.replace(
-      "@envName",
+      EnvNamePlaceholder,
       environmentManager.getDefaultEnvName()
     );
     await fs.ensureDir(testFolder);
@@ -308,7 +310,7 @@ describe("Deploy ARM Template to Azure", () => {
       TEAMSFX_ARM_SUPPORT: "true",
     });
     parameterFileName = parameterFileNameTemplate.replace(
-      "@envName",
+      EnvNamePlaceholder,
       environmentManager.getDefaultEnvName()
     );
     (
@@ -410,6 +412,7 @@ describe("Deploy ARM Template to Azure", () => {
   it("should successfully update parameter and deploy arm templates to azure", async () => {
     // Arrange
     const mockedCtx = mockSolutionContext();
+    let parameterAfterDeploy = "";
     mockedCtx.projectSettings = {
       appName: testAppName,
       projectId: uuid.v4(),
@@ -442,6 +445,7 @@ describe("Deploy ARM Template to Azure", () => {
           deploymentName: string,
           parameters: ResourceManagementModels.Deployment
         ) => {
+          parameterAfterDeploy = parameters.properties.parameters;
           chai.assert.exists(parameters.properties.parameters?.aadClientSecret);
           chai.assert.notStrictEqual(
             parameters.properties.parameters?.aadClientSecret,
@@ -470,14 +474,9 @@ describe("Deploy ARM Template to Azure", () => {
 
     // Assert
     chai.assert.isTrue(result.isOk());
-
-    expect(
-      JSON.parse(fileContent.get(path.join(configFolderName, parameterFileName)))
-    ).to.deep.equals(
+    chai.assert.isNotNull(parameterAfterDeploy);
+    expect(parameterAfterDeploy).to.deep.equals(
       JSON.parse(`{
-      "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
-      "contentVersion": "1.0.0.0",
-      "parameters": {
         "resourceBaseName": {
           "value": "mytestapp${testResourceSuffix}"
         },
@@ -485,12 +484,11 @@ describe("Deploy ARM Template to Azure", () => {
           "value": "${testClientId}"
         },
         "aadClientSecret": {
-          "value": "{{FX_RESOURCE_AAD_APP_FOR_TEAMS__CLIENTSECRET}}"
+          "value": "${testClientSecret}"
         },
         "envValue": {
           "value": "${testEnvValue}"
         }
-      }
       }`)
     );
     chai.assert.strictEqual(

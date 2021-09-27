@@ -27,7 +27,6 @@ import {
   CryptoDataMatchers,
   getResourceGroupNameFromResourceId,
   waitSeconds,
-  isMultiEnvEnabled,
 } from "../../../common/tools";
 import {
   ARM_TEMPLATE_OUTPUT,
@@ -341,11 +340,6 @@ export async function getParameterJson(ctx: SolutionContext) {
       `[${PluginDisplayName.Solution}] ${parameterFilePath} does not exist.`
     );
     throw returnUserError(returnError, "Solution", "ParameterFileNotExist");
-  }
-
-  if (!isMultiEnvEnabled()) {
-    const parameterJson = await getExpandedParameter(ctx, parameterFilePath, false);
-    await fs.writeFile(parameterFilePath, JSON.stringify(parameterJson, undefined, 2));
   }
 
   const parameterJson = await getExpandedParameter(ctx, parameterFilePath, true); // only expand secrets in memory

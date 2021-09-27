@@ -1608,21 +1608,6 @@ describe("Middleware", () => {
         await fs.pathExists(path.join(projectPath, "templates", "azure", "main.bicep"))
       );
       assert.isTrue(await fs.pathExists(path.join(projectPath, "templates", "azure", "modules")));
-      assert.isTrue(
-        await fs.pathExists(
-          path.join(projectPath, "templates", "azure", "modules", "frontendHostingProvision.bicep")
-        )
-      );
-      assert.isTrue(
-        await fs.pathExists(
-          path.join(projectPath, "templates", "azure", "modules", "azureSqlProvision.bicep")
-        )
-      );
-      assert.isTrue(
-        await fs.pathExists(
-          path.join(projectPath, "templates", "azure", "modules", "simpleAuthConfiguration.bicep")
-        )
-      );
       const armParam = await fs.readJson(
         path.join(projectPath, ".fx", "configs", "azure.parameters.dev.json")
       );

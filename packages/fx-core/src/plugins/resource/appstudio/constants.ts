@@ -24,6 +24,7 @@ export class ErrorMessages {
   static readonly GetConfigError = (configName: string, plugin: string) =>
     `Failed to get configuration value "${configName}" for ${plugin}.`;
   static readonly ParseUserInfoError = "Failed to parse userInfo.";
+  static readonly GrantPermissionFailed = "Response is empty or user is not added.";
 }
 
 /**

@@ -115,9 +115,9 @@ export function renderTemplateContent(
   filePath: string,
   data: Buffer,
   variables: { [key: string]: string }
-): string {
+): string | Buffer {
   if (path.extname(filePath) === templateFileExt) {
     return Mustache.render(data.toString(), variables);
   }
-  return data.toString();
+  return data;
 }

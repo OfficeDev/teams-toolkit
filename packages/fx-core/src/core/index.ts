@@ -741,10 +741,11 @@ export class FxCore implements Core {
     inputs: Inputs,
     ctx?: CoreHookContext
   ): Promise<Result<ProjectConfig | undefined, FxError>> {
+    if (!ctx) return err(new ObjectIsUndefinedError("getProjectConfig input stuff"));
     if (isV2()) {
       return ok({
         settings: ctx!.projectSettings,
-        config: ctx!.provisionOutputs,
+        config: ctx!.envInfoV2?.profile,
         localSettings: ctx!.localSettings,
       });
     } else {
@@ -1161,7 +1162,7 @@ export async function createBasicFolderStructure(inputs: Inputs): Promise<Result
           description: "",
           author: "",
           scripts: {
-            test: "echo \"Error: no test specified\" && exit 1",
+            test: 'echo "Error: no test specified" && exit 1',
           },
           devDependencies: {
             "@microsoft/teamsfx-cli": "0.*",

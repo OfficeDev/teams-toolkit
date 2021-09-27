@@ -115,7 +115,7 @@ type DeployContext = {
 export async function pollDeploymentStatus(deployCtx: DeployContext) {
   const failedCount = 4;
   let tryCount = 0;
-  let preStatus: { [key: string]: string } = {};
+  let previousStatus: { [key: string]: string } = {};
   deployCtx.ctx.logProvider?.info(
     format(
       getStrings().solution.DeployArmTemplates.PollDeploymentStatusNotice,
@@ -147,13 +147,13 @@ export async function pollDeploymentStatus(deployCtx: DeployContext) {
         }
       });
       for (const key in currentStatus) {
-        if (currentStatus[key] !== preStatus[key]) {
+        if (currentStatus[key] !== previousStatus[key]) {
           deployCtx.ctx.logProvider?.info(
             `[${PluginDisplayName.Solution}] ${key} -> ${currentStatus[key]}`
           );
         }
       }
-      preStatus = currentStatus;
+      previousStatus = currentStatus;
     } catch (error) {
       tryCount++;
       if (tryCount > failedCount) {
@@ -842,7 +842,7 @@ function formattedDeploymentName(failedDeployments: string[]): Result<void, FxEr
   return err(returnUserError(returnError, "Solution", "ArmDeploymentFailed", ArmHelpLink));
 }
 
-function formattedDeploymentError(deploymentError: any): any {
+export function formattedDeploymentError(deploymentError: any): any {
   if (deploymentError.subErrors) {
     const result: any = {};
     for (const key in deploymentError.subErrors) {
@@ -850,7 +850,10 @@ function formattedDeploymentError(deploymentError: any): any {
       if (subError.inner) {
         result[key] = formattedDeploymentError(subError.inner);
       } else {
-        if (!subError.error?.message?.includes("Template output evaluation skipped")) {
+        const needFilter =
+          subError.error?.message?.includes("Template output evaluation skipped") &&
+          subError.error?.code === "DeploymentOperationFailed";
+        if (!needFilter) {
           result[key] = subError.error;
         }
       }

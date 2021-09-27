@@ -27,6 +27,7 @@ import {
 } from "../../../src/plugins/solution/fx-solution/question";
 import {
   deployArmTemplates,
+  formattedDeploymentError,
   generateArmTemplate,
   pollDeploymentStatus,
 } from "../../../src/plugins/solution/fx-solution/arm";
@@ -648,6 +649,53 @@ describe("Arm Template Failed Test", () => {
 
     const res = await pollDeploymentStatus(mockedDeployCtx);
     chai.assert.isUndefined(res);
+  });
+
+  it("formattedDeploymentError OK", async () => {
+    const errors = {
+      error: {
+        code: "OutsideError",
+        message: "out side error",
+      },
+      subErrors: {
+        botProvision: {
+          error: {
+            code: "BotError",
+            message: "bot error",
+          },
+          inner: {
+            error: {
+              code: "BotInnerError",
+              message: "bot inner error",
+            },
+            subErrors: {
+              usefulError: {
+                error: {
+                  code: "usefulError",
+                  message: "useful error",
+                },
+              },
+              uselessError: {
+                error: {
+                  code: "DeploymentOperationFailed",
+                  message:
+                    "Template output evaluation skipped: at least one resource deployment operation failed. Please list deployment operations for details. Please see https://aka.ms/DeployOperations for usage details.",
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+    const res = formattedDeploymentError(errors);
+    chai.assert.deepEqual(res, {
+      botProvision: {
+        usefulError: {
+          code: "usefulError",
+          message: "useful error",
+        },
+      },
+    });
   });
 
   function getMockedDeployCtx(mockedCtx: any) {

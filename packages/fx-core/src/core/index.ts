@@ -802,7 +802,7 @@ export class FxCore implements Core {
     ErrorHandlerMW,
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(false),
+    EnvInfoLoaderMW(true),
     SolutionLoaderMW(),
     QuestionModelMW,
     ContextInjectorMW,

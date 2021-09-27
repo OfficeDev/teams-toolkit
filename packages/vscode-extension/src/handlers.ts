@@ -912,8 +912,6 @@ export async function listAllCollaborators(envs: string[]): Promise<Record<strin
   }
 
   const inputs: Inputs = getSystemInputs();
-  // Todo, remove this when we have better solution not to select env
-  inputs.env = envs[0];
   const userListRecordResult = await core.listAllCollaborators(inputs);
   if (userListRecordResult.isErr()) {
     fatalError = userListRecordResult.error;

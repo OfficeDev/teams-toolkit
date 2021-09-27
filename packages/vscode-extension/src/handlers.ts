@@ -905,78 +905,72 @@ export async function listAllCollaborators(envs: string[]): Promise<Record<strin
   const result: Record<string, TreeItem[]> = {};
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ListCollaboratorStart);
 
-  let fatalError;
   const checkCoreRes = checkCoreNotEmpty();
   if (checkCoreRes.isErr()) {
-    fatalError = checkCoreRes.error;
+    throw checkCoreRes.error;
   }
 
   const inputs: Inputs = getSystemInputs();
   const userListRecordResult = await core.listAllCollaborators(inputs);
-  if (userListRecordResult.isErr()) {
-    fatalError = userListRecordResult.error;
-  }
 
   for (const env of envs) {
     try {
-      if (fatalError) {
-        throw fatalError;
+      if (userListRecordResult.isErr()) {
+        throw userListRecordResult.error;
       }
 
-      if (!userListRecordResult.isErr()) {
-        const userList = userListRecordResult.value[env];
+      const userList = userListRecordResult.value[env];
 
-        if (userList.state === CollaborationState.OK) {
-          result[env] = userList.collaborators.map((user: any) => {
-            return {
-              commandId: `fx-extension.listcollaborator.${env}.${user.userObjectId}`,
-              label: user.userPrincipalName,
-              icon: user.isAadOwner ? "person" : "warning",
-              isCustom: !user.isAadOwner,
-              tooltip: {
-                value: user.isAadOwner ? "" : "This account doesn't have the AAD permission.",
-                isMarkdown: false,
-              },
-              parent: `fx-extension.listcollaborator.parentNode.${env}`,
-            };
-          });
-          if (!result[env] || result[env].length === 0) {
-            result[env] = [
-              {
-                commandId: `fx-extension.listcollaborator.${env}`,
-                label: StringResources.vsc.commandsTreeViewProvider.noPermissionToListCollaborators,
-                icon: "warning",
-                isCustom: true,
-                parent: `fx-extension.listcollaborator.parentNode.${env}`,
-              },
-            ];
-          }
-        } else if (userList.state !== CollaborationState.ERROR) {
-          let label = userList.message;
-          const toolTip = userList.message;
-          if (userList.state === CollaborationState.NotProvisioned) {
-            label = StringResources.vsc.commandsTreeViewProvider.unableToFindTeamsAppRegistration;
-          }
-
+      if (userList.state === CollaborationState.OK) {
+        result[env] = userList.collaborators.map((user: any) => {
+          return {
+            commandId: `fx-extension.listcollaborator.${env}.${user.userObjectId}`,
+            label: user.userPrincipalName,
+            icon: user.isAadOwner ? "person" : "warning",
+            isCustom: !user.isAadOwner,
+            tooltip: {
+              value: user.isAadOwner ? "" : "This account doesn't have the AAD permission.",
+              isMarkdown: false,
+            },
+            parent: `fx-extension.listcollaborator.parentNode.${env}`,
+          };
+        });
+        if (!result[env] || result[env].length === 0) {
           result[env] = [
             {
               commandId: `fx-extension.listcollaborator.${env}`,
-              label: label,
-              tooltip: {
-                value: toolTip,
-                isMarkdown: false,
-              },
+              label: StringResources.vsc.commandsTreeViewProvider.noPermissionToListCollaborators,
               icon: "warning",
               isCustom: true,
               parent: `fx-extension.listcollaborator.parentNode.${env}`,
             },
           ];
-          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ListCollaborator, {
-            [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-          });
-        } else {
-          throw userList.error;
         }
+      } else if (userList.state !== CollaborationState.ERROR) {
+        let label = userList.message;
+        const toolTip = userList.message;
+        if (userList.state === CollaborationState.NotProvisioned) {
+          label = StringResources.vsc.commandsTreeViewProvider.unableToFindTeamsAppRegistration;
+        }
+
+        result[env] = [
+          {
+            commandId: `fx-extension.listcollaborator.${env}`,
+            label: label,
+            tooltip: {
+              value: toolTip,
+              isMarkdown: false,
+            },
+            icon: "warning",
+            isCustom: true,
+            parent: `fx-extension.listcollaborator.parentNode.${env}`,
+          },
+        ];
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ListCollaborator, {
+          [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+        });
+      } else {
+        throw userList.error;
       }
     } catch (e) {
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ListCollaborator, e);

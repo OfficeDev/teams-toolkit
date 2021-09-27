@@ -7,13 +7,10 @@ import * as sinon from "sinon";
 import { default as chaiAsPromised } from "chai-as-promised";
 import AdmZip from "adm-zip";
 import path from "path";
-import { Stage } from "@microsoft/teamsfx-api";
 
 import { TeamsBot } from "../../../../../src/plugins/resource/bot/index";
 import { TeamsBotImpl } from "../../../../../src/plugins/resource/bot/plugin";
 
-import { QuestionNames } from "../../../../../src/plugins/resource/bot/constants";
-import * as downloadByUrl from "../../../../../src/plugins/resource/bot/utils/downloadByUrl";
 import * as utils from "../../../../../src/plugins/resource/bot/utils/common";
 import { ProgrammingLanguage } from "../../../../../src/plugins/resource/bot/enums/programmingLanguage";
 import { FxBotPluginResultFactory as ResultFactory } from "../../../../../src/plugins/resource/bot/result";
@@ -75,12 +72,6 @@ describe("Teams Bot Resource Plugin", () => {
       botPluginImpl.config.scaffold.programmingLanguage = ProgrammingLanguage.TypeScript;
       botPluginImpl.config.actRoles = [PluginActRoles.Bot];
 
-      // Prepare fake zip buffer
-      const zip = new AdmZip();
-      zip.addFile("anyfile", Buffer.from("anycontent"));
-
-      sinon.stub(downloadByUrl, "downloadByUrl").resolves(zip.toBuffer());
-
       const pluginContext = testUtils.newPluginContext();
       pluginContext.root = scaffoldDir;
 
@@ -95,12 +86,6 @@ describe("Teams Bot Resource Plugin", () => {
       // Arrange
       botPluginImpl.config.scaffold.programmingLanguage = ProgrammingLanguage.JavaScript;
       botPluginImpl.config.actRoles = [PluginActRoles.MessageExtension];
-
-      // Prepare fake zip buffer
-      const zip = new AdmZip();
-      zip.addFile("anyfile", Buffer.from("anycontent"));
-
-      sinon.stub(downloadByUrl, "downloadByUrl").resolves(zip.toBuffer());
 
       const pluginContext = testUtils.newPluginContext();
       pluginContext.root = scaffoldDir;

@@ -27,14 +27,6 @@ export default async function activate(rootPath?: string): Promise<Result<FxCore
       await AzureAccountManager.setSubscription(subscriptionInfo.subscriptionId);
     }
     CliTelemetry.setReporter(CliTelemetry.getReporter().withRootFolder(rootPath));
-
-    if (isMultiEnvEnabled()) {
-      const activeEnvResult = environmentManager.getActiveEnv(rootPath);
-      if (activeEnvResult.isErr()) {
-        return err(activeEnvResult.error);
-      }
-      setActiveEnv(activeEnvResult.value);
-    }
   }
 
   const tools: Tools = {

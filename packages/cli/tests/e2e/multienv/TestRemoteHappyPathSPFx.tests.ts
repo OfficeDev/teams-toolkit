@@ -68,16 +68,6 @@ describe("Start a new project", function () {
     });
     console.log(`[Successfully] env add, stdout: '${result.stdout}', stderr: '${result.stderr}'`);
 
-    // set active env
-    result = await execAsync(`teamsfx env activate ${env}`, {
-      cwd: projectPath,
-      env: processEnv,
-      timeout: 0,
-    });
-    console.log(
-      `[Successfully] env activate, stdout: '${result.stdout}', stderr: '${result.stderr}'`
-    );
-
     // list env
     result = await execAsync(`teamsfx env list`, {
       cwd: projectPath,
@@ -85,22 +75,12 @@ describe("Start a new project", function () {
       timeout: 0,
     });
     const envs = result.stdout.trim().split(/\r?\n/).sort();
-    expect(envs).to.deep.equal(["dev", "e2e (active)"]);
+    expect(envs).to.deep.equal(["dev", "e2e"]);
     expect(result.stderr).to.be.empty;
     console.log(`[Successfully] env list, stdout: '${result.stdout}', stderr: '${result.stderr}'`);
 
-    // show env
-    result = await execAsync(`teamsfx env`, {
-      cwd: projectPath,
-      env: processEnv,
-      timeout: 0,
-    });
-    expect(result.stdout).to.equal("e2e\n");
-    expect(result.stderr).to.be.empty;
-    console.log(`[Successfully] env show, stdout: '${result.stdout}', stderr: '${result.stderr}'`);
-
     // provision
-    result = await execAsyncWithRetry(`teamsfx provision`, {
+    result = await execAsyncWithRetry(`teamsfx provision --env ${env}`, {
       cwd: projectPath,
       env: processEnv,
       timeout: 0,
@@ -121,7 +101,7 @@ describe("Start a new project", function () {
     }
 
     // deploy
-    await execAsyncWithRetry(`teamsfx deploy`, {
+    await execAsyncWithRetry(`teamsfx deploy --env ${env}`, {
       cwd: projectPath,
       env: processEnv,
       timeout: 0,
@@ -135,7 +115,7 @@ describe("Start a new project", function () {
     }
 
     // validate manifest
-    result = await execAsyncWithRetry(`teamsfx validate`, {
+    result = await execAsyncWithRetry(`teamsfx validate --env ${env}`, {
       cwd: projectPath,
       env: processEnv,
       timeout: 0,
@@ -147,7 +127,7 @@ describe("Start a new project", function () {
     }
 
     // package
-    await execAsyncWithRetry(`teamsfx package`, {
+    await execAsyncWithRetry(`teamsfx package --env ${env}`, {
       cwd: projectPath,
       env: processEnv,
       timeout: 0,
@@ -160,7 +140,7 @@ describe("Start a new project", function () {
     }
 
     // publish
-    result = await execAsyncWithRetry(`teamsfx publish`, {
+    result = await execAsyncWithRetry(`teamsfx publish --env ${env}`, {
       cwd: projectPath,
       env: processEnv,
       timeout: 0,

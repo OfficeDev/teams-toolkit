@@ -51,7 +51,11 @@ export class ConfigMap extends Map<string, ConfigValue> {
   getOptionItem(k: string, defaultValue?: OptionItem): OptionItem | undefined {
     const v = super.get(k);
     if (!v) return defaultValue;
-    return v as OptionItem;
+    if (v instanceof ConfigMap) {
+      return v.toJSON() as OptionItem;
+    } else {
+      return v as OptionItem;
+    }
   }
   getOptionItemArray(k: string, defaultValue?: OptionItem[]): OptionItem[] | undefined {
     const v = super.get(k);

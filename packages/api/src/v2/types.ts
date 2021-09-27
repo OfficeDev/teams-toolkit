@@ -43,6 +43,9 @@ export type SolutionInputs = {
   teamsAppTenantId: string;
   subscriptionId: string;
   remoteTeamsAppId?: string;
+  // Used to track whether at least one successful provision has been made.
+  // Useful for fail fast when deploying in a fresh project.
+  provisionSucceeded?: boolean;
 };
 
 export type ProvisionInputs = Inputs & SolutionInputs & { projectPath: string };

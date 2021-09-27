@@ -1194,6 +1194,7 @@ type SolutionInputs = {
     teamsAppTenantId: string;
     subscriptionId: string;
     remoteTeamsAppId?: string;
+    provisionSucceeded?: boolean;
 };
 
 // @public (undocumented)

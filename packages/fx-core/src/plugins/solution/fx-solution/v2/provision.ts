@@ -33,6 +33,7 @@ import {
   GLOBAL_CONFIG,
   PluginNames,
   SolutionError,
+  SOLUTION_PROVISION_SUCCEEDED,
   SUBSCRIPTION_ID,
   SUBSCRIPTION_NAME,
 } from "../constants";
@@ -205,13 +206,24 @@ export async function provisionResource(
     configureResourceThunks,
     ctx.logProvider
   );
-  if (configureResourceResult.kind === "failure") {
-    return configureResourceResult;
-  } else if (configureResourceResult.kind === "partialSuccess") {
-    return new v2.FxPartialSuccess(
-      combineRecords(configureResourceResult.output),
-      configureResourceResult.error
-    );
+  ctx.logProvider?.info(
+    util.format(getStrings().solution.ConfigurationFinishNotice, PluginDisplayName.Solution)
+  );
+  if (
+    configureResourceResult.kind === "failure" ||
+    configureResourceResult.kind === "partialSuccess"
+  ) {
+    const msg = util.format(getStrings().solution.ProvisionFailNotice, ctx.projectSetting.appName);
+    ctx.logProvider.error(msg);
+    solutionInputs[SOLUTION_PROVISION_SUCCEEDED] = false;
+
+    if (configureResourceResult.kind === "failure") {
+      return configureResourceResult;
+    } else {
+      const output = configureResourceResult.output;
+      output.push({ name: GLOBAL_CONFIG, result: { output: solutionInputs, secrets: {} } });
+      return new v2.FxPartialSuccess(combineRecords(output), configureResourceResult.error);
+    }
   } else {
     if (
       newEnvInfo.profile[GLOBAL_CONFIG] &&
@@ -219,10 +231,18 @@ export async function provisionResource(
     ) {
       delete newEnvInfo.profile[GLOBAL_CONFIG][ARM_TEMPLATE_OUTPUT];
     }
-    ctx.logProvider?.info(
-      util.format(getStrings().solution.ConfigurationFinishNotice, PluginDisplayName.Solution)
+
+    const msg = util.format(
+      `Success: ${getStrings().solution.ProvisionSuccessNotice}`,
+      ctx.projectSetting.appName
     );
-    return new v2.FxSuccess(combineRecords(configureResourceResult.output));
+    ctx.logProvider?.info(msg);
+    ctx.userInteraction.showMessage("info", msg, false);
+    solutionInputs[SOLUTION_PROVISION_SUCCEEDED] = true;
+    const output = configureResourceResult.output;
+    output.push({ name: GLOBAL_CONFIG, result: { output: solutionInputs, secrets: {} } });
+
+    return new v2.FxSuccess(combineRecords(output));
   }
 }
 

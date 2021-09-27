@@ -128,7 +128,7 @@ import {
   getSolutionPluginByName,
   getSolutionPluginV2ByName,
 } from "./SolutionPluginContainer";
-import { newEnvInfo } from "./tools";
+import { flattenConfigJson, newEnvInfo } from "./tools";
 
 export interface CoreHookContext extends HookContext {
   projectSettings?: ProjectSettings;
@@ -477,9 +477,16 @@ export class FxCore implements Core {
         envInfo,
         this.tools.tokenProvider
       );
-      // todo(yefuwang): persist profile on success and partialSuccess
       if (result.kind === "success") {
+        // Remove all "output" and "secret" fields for backward compatibility.
+        // todo(yefuwang): handle "output" and "secret" fields in middlewares.
+        const profile = flattenConfigJson(result.output);
+        ctx.envInfoV2.profile = { ...ctx.envInfoV2.profile, ...profile };
         return ok(Void);
+      } else if (result.kind === "partialSuccess") {
+        const profile = flattenConfigJson(result.output);
+        ctx.envInfoV2.profile = { ...ctx.envInfoV2.profile, ...profile };
+        return err(result.error);
       } else {
         return err(result.error);
       }
@@ -1159,7 +1166,7 @@ export async function createBasicFolderStructure(inputs: Inputs): Promise<Result
           description: "",
           author: "",
           scripts: {
-            test: "echo \"Error: no test specified\" && exit 1",
+            test: 'echo "Error: no test specified" && exit 1',
           },
           devDependencies: {
             "@microsoft/teamsfx-cli": "0.*",

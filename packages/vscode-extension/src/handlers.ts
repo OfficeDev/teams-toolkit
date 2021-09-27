@@ -901,61 +901,96 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
   return result;
 }
 
-export async function listCollaborator(env: string): Promise<TreeItem[]> {
-  let result: TreeItem[] = [];
+export async function listAllCollaborators(envs: string[]): Promise<Record<string, TreeItem[]>> {
+  const result: Record<string, TreeItem[]> = {};
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ListCollaboratorStart);
 
-  try {
-    const checkCoreRes = checkCoreNotEmpty();
-    if (checkCoreRes.isErr()) {
-      throw checkCoreRes.error;
-    }
+  let fatalError;
+  const checkCoreRes = checkCoreNotEmpty();
+  if (checkCoreRes.isErr()) {
+    fatalError = checkCoreRes.error;
+  }
 
-    const inputs: Inputs = getSystemInputs();
-    inputs.env = env;
-    const userList = await core.listCollaborator(inputs);
-    if (userList.isErr()) {
-      throw userList.error;
-    }
+  const inputs: Inputs = getSystemInputs();
+  // Todo, remove this when we have better solution not to select env
+  inputs.env = envs[0];
+  const userListRecordResult = await core.listAllCollaborators(inputs);
+  if (userListRecordResult.isErr()) {
+    fatalError = userListRecordResult.error;
+  }
 
-    if (userList.value.state === CollaborationState.OK) {
-      result = userList.value.collaborators.map((user: any) => {
-        return {
-          commandId: `fx-extension.listcollaborator.${env}.${user.userObjectId}`,
-          label: user.userPrincipalName,
-          icon: user.isAadOwner ? "person" : "warning",
-          isCustom: !user.isAadOwner,
-          tooltip: {
-            value: user.isAadOwner ? "" : "This account doesn't have the AAD permission.",
-            isMarkdown: false,
-          },
-          parent: `fx-extension.listcollaborator.parentNode.${env}`,
-        };
-      });
-      if (!result || result.length === 0) {
-        result = [
-          {
-            commandId: `fx-extension.listcollaborator.${env}`,
-            label: StringResources.vsc.commandsTreeViewProvider.noPermissionToListCollaborators,
-            icon: "warning",
-            isCustom: true,
-            parent: `fx-extension.listcollaborator.parentNode.${env}`,
-          },
-        ];
-      }
-    } else {
-      let label = userList.value.message;
-      const toolTip = userList.value.message;
-      if (userList.value.state === CollaborationState.NotProvisioned) {
-        label = StringResources.vsc.commandsTreeViewProvider.unableToFindTeamsAppRegistration;
+  for (const env of envs) {
+    try {
+      if (fatalError) {
+        throw fatalError;
       }
 
-      result = [
+      if (!userListRecordResult.isErr()) {
+        const userList = userListRecordResult.value[env];
+
+        if (userList.state === CollaborationState.OK) {
+          result[env] = userList.collaborators.map((user: any) => {
+            return {
+              commandId: `fx-extension.listcollaborator.${env}.${user.userObjectId}`,
+              label: user.userPrincipalName,
+              icon: user.isAadOwner ? "person" : "warning",
+              isCustom: !user.isAadOwner,
+              tooltip: {
+                value: user.isAadOwner ? "" : "This account doesn't have the AAD permission.",
+                isMarkdown: false,
+              },
+              parent: `fx-extension.listcollaborator.parentNode.${env}`,
+            };
+          });
+          if (!result[env] || result[env].length === 0) {
+            result[env] = [
+              {
+                commandId: `fx-extension.listcollaborator.${env}`,
+                label: StringResources.vsc.commandsTreeViewProvider.noPermissionToListCollaborators,
+                icon: "warning",
+                isCustom: true,
+                parent: `fx-extension.listcollaborator.parentNode.${env}`,
+              },
+            ];
+          }
+        } else if (userList.state !== CollaborationState.ERROR) {
+          let label = userList.message;
+          const toolTip = userList.message;
+          if (userList.state === CollaborationState.NotProvisioned) {
+            label = StringResources.vsc.commandsTreeViewProvider.unableToFindTeamsAppRegistration;
+          }
+
+          result[env] = [
+            {
+              commandId: `fx-extension.listcollaborator.${env}`,
+              label: label,
+              tooltip: {
+                value: toolTip,
+                isMarkdown: false,
+              },
+              icon: "warning",
+              isCustom: true,
+              parent: `fx-extension.listcollaborator.parentNode.${env}`,
+            },
+          ];
+          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ListCollaborator, {
+            [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+          });
+        } else {
+          throw userList.error;
+        }
+      }
+    } catch (e) {
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ListCollaborator, e);
+      VsCodeLogInstance.warning(
+        `code:${e.source}.${e.name}, message: Failed to list collaborator for environment '${env}':  ${e.message}`
+      );
+      result[env] = [
         {
           commandId: `fx-extension.listcollaborator.${env}`,
-          label: label,
+          label: e.message,
           tooltip: {
-            value: toolTip,
+            value: e.message,
             isMarkdown: false,
           },
           icon: "warning",
@@ -964,28 +999,6 @@ export async function listCollaborator(env: string): Promise<TreeItem[]> {
         },
       ];
     }
-
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ListCollaborator, {
-      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-    });
-  } catch (e) {
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ListCollaborator, e);
-    VsCodeLogInstance.warning(
-      `code:${e.source}.${e.name}, message: Failed to list collaborator for environment '${env}':  ${e.message}`
-    );
-    result = [
-      {
-        commandId: `fx-extension.listcollaborator.${env}`,
-        label: e.message,
-        tooltip: {
-          value: e.message,
-          isMarkdown: false,
-        },
-        icon: "warning",
-        isCustom: true,
-        parent: `fx-extension.listcollaborator.parentNode.${env}`,
-      },
-    ];
   }
 
   return result;

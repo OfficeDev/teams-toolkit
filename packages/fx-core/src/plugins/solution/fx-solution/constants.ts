@@ -199,6 +199,9 @@ export enum SolutionTelemetryEvent {
   ListCollaboratorStart = "list-collaborator-start",
   ListCollaborator = "list-collaborator",
 
+  ListAllCollaboratorsStart = "list-all-collaborators-start",
+  ListAllCollaborators = "list-all-collaborators",
+
   GenerateArmTemplateStart = "generate-armtemplate-start",
   GenerateArmTemplate = "generate-armtemplate",
 

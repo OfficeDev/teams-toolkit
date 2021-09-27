@@ -144,6 +144,7 @@ import {
 } from "./v2/utils";
 import { askForProvisionConsent } from "./v2/provision";
 import { scaffoldReadmeAndLocalSettings } from "./v2/scaffolding";
+import { environmentManager } from "../../..";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -1617,6 +1618,171 @@ export class TeamsAppSolution implements Solution {
         state: CollaborationState.OK,
         permissions,
       });
+    } finally {
+      this.runningState = SolutionRunningState.Idle;
+    }
+  }
+
+  @hooks([ErrorHandlerMW])
+  async listAllCollaborators(
+    ctx: SolutionContext
+  ): Promise<Result<Record<string, ListCollaboratorResult>, FxError>> {
+    try {
+      ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.ListAllCollaboratorsStart, {
+        [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+      });
+      const collaboratorsResult: Record<string, ListCollaboratorResult> = {};
+
+      const envs = await environmentManager.listEnvConfigs(ctx.root);
+      if (envs.isErr()) {
+        return err(
+          sendErrorTelemetryThenReturnError(
+            SolutionTelemetryEvent.ListAllCollaborators,
+            envs.error,
+            ctx.telemetryReporter
+          )
+        );
+      }
+
+      const result = await this.getCurrentUserInfo(ctx);
+      if (result.isErr()) {
+        return err(
+          sendErrorTelemetryThenReturnError(
+            SolutionTelemetryEvent.ListAllCollaborators,
+            result.error,
+            ctx.telemetryReporter
+          )
+        );
+      }
+
+      const userInfo = result.value as IUserList;
+      for (const env of envs.value) {
+        try {
+          const envInfo = await environmentManager.loadEnvInfo(ctx.root, env);
+          if (envInfo.isErr()) {
+            throw envInfo.error;
+          }
+
+          ctx.envInfo = envInfo.value;
+
+          const stateResult = await this.getCurrentCollaborationState(ctx, result.value);
+
+          if (stateResult.state != CollaborationState.OK) {
+            if (ctx.answers?.platform === Platform.CLI) {
+              ctx.ui?.showMessage("warn", stateResult.message!, false);
+            }
+
+            collaboratorsResult[env] = {
+              state: stateResult.state,
+              message: stateResult.message,
+            };
+
+            continue;
+          }
+
+          const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, [
+            this.AppStudioPlugin,
+            this.AadPlugin,
+          ]);
+
+          const listCollaboratorWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(
+            ([plugin, context]) => {
+              return [
+                plugin?.listCollaborator
+                  ? (ctx: PluginContext) => plugin!.listCollaborator!.bind(plugin)(ctx, userInfo)
+                  : undefined,
+                context,
+                plugin.name,
+              ];
+            }
+          );
+
+          const results = await executeConcurrently("", listCollaboratorWithCtx);
+
+          const errors: any = [];
+
+          for (const result of results) {
+            if (result.isErr()) {
+              errors.push(result);
+            }
+          }
+
+          let errorMsg = "";
+          if (errors.length > 0) {
+            errorMsg += `Failed to list collaborator for the project.\n Error details: \n`;
+            for (const fxError of errors) {
+              errorMsg += fxError.error.message + "\n";
+            }
+          }
+
+          if (errorMsg) {
+            collaboratorsResult[env] = {
+              state: CollaborationState.ERROR,
+              error: err(
+                sendErrorTelemetryThenReturnError(
+                  SolutionTelemetryEvent.ListAllCollaborators,
+                  returnUserError(
+                    new Error(errorMsg),
+                    "Solution",
+                    SolutionError.FailedToListCollaborator
+                  ),
+                  ctx.telemetryReporter
+                )
+              ),
+            };
+            continue;
+          }
+
+          const teamsAppOwners: TeamsAppAdmin[] = results[0].isErr() ? [] : results[0].value;
+          const aadOwners: AadOwner[] = results[1].isErr() ? [] : results[1].value;
+          const collaborators: Collaborator[] = [];
+
+          for (const teamsAppOwner of teamsAppOwners) {
+            const aadOwner = aadOwners.find(
+              (owner) => owner.userObjectId === teamsAppOwner.userObjectId
+            );
+
+            collaborators.push({
+              // Sometimes app studio will return null as userPrincipalName, thus using aad's instead.
+              userPrincipalName:
+                teamsAppOwner.userPrincipalName ??
+                aadOwner?.userPrincipalName ??
+                teamsAppOwner.userObjectId,
+              userObjectId: teamsAppOwner.userObjectId,
+              isAadOwner: aadOwner ? true : false,
+              aadResourceId: aadOwner ? aadOwner.resourceId : undefined,
+              teamsAppResourceId: teamsAppOwner.resourceId,
+            });
+          }
+
+          const aadOwnerCount = collaborators.filter(
+            (collaborator) => collaborator.aadResourceId && collaborator.isAadOwner
+          ).length;
+          ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.ListAllCollaborators, {
+            [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+            [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
+            [SolutionTelemetryProperty.CollaboratorCount]: collaborators.length.toString(),
+            [SolutionTelemetryProperty.AadOwnerCount]: aadOwnerCount.toString(),
+          });
+
+          collaboratorsResult[env] = {
+            collaborators: collaborators,
+            state: CollaborationState.OK,
+          };
+        } catch (error) {
+          collaboratorsResult[env] = {
+            state: CollaborationState.ERROR,
+            error: err(
+              sendErrorTelemetryThenReturnError(
+                SolutionTelemetryEvent.ListAllCollaborators,
+                returnUserError(error, "Solution", SolutionError.FailedToListCollaborator),
+                ctx.telemetryReporter
+              )
+            ),
+          };
+        }
+      }
+      return ok(collaboratorsResult);
     } finally {
       this.runningState = SolutionRunningState.Idle;
     }

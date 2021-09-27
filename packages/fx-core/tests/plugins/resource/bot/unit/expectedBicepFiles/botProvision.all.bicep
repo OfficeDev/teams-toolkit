@@ -63,4 +63,5 @@ output botWebAppName string = botWebAppName
 output botDomain string = botWebAppHostname
 output appServicePlanName string = botServerfarmsName
 output botServiceName string = botServiceName
+output botWebAppResourceId string = botWebApp.id
 output botWebAppEndpoint string = botEndpoint

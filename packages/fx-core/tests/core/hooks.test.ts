@@ -12,6 +12,7 @@ import {
   CoreCallbackEvent,
   EnvConfig,
   EnvInfo,
+  Err,
   err,
   Func,
   FunctionRouter,
@@ -19,6 +20,7 @@ import {
   Inputs,
   InputTextConfig,
   Json,
+  Ok,
   ok,
   Platform,
   ProductName,
@@ -26,6 +28,8 @@ import {
   QTreeNode,
   Result,
   returnSystemError,
+  SingleSelectConfig,
+  SingleSelectResult,
   Solution,
   SolutionContext,
   Stage,
@@ -50,7 +54,6 @@ import {
   InvalidInputError,
   mapToJson,
   serializeDict,
-  sperateSecretData,
 } from "../../src";
 import { FeatureFlagName } from "../../src/common/constants";
 import { CallbackRegistry } from "../../src/core/callback";
@@ -94,7 +97,6 @@ import {
 } from "./utils";
 import * as commonTools from "../../src/common/tools";
 import { ProjectMigratorMW, migrateArm } from "../../src/core/middleware/projectMigrator";
-import exp = require("constants");
 import mockedEnv from "mocked-env";
 let mockedEnvRestore: () => void;
 describe("Middleware", () => {
@@ -1700,29 +1702,40 @@ describe("Middleware", () => {
 
     // test variables
     let solutionContext: SolutionContext | undefined;
+    let envLoaded: string | undefined = undefined;
     beforeEach(() => {
       solutionContext = undefined;
+      envLoaded = undefined;
 
       // stub functions before
       sandbox.stub(commonTools, "isMultiEnvEnabled").returns(true);
 
       // stub environmentManager.loadEnvInfo()
-      const envConfig: EnvConfig = {
-        manifest: {
-          values: {
-            appName: {
-              short: "testApp",
-            },
-          },
-        },
-      };
-      const envProfile = new Map<string, any>();
-      const envInfo = {
-        envName: "test",
-        config: envConfig,
-        profile: envProfile,
-      };
-      sandbox.stub(environmentManager, "loadEnvInfo").returns(Promise.resolve(ok(envInfo)));
+      sandbox
+        .stub(environmentManager, "loadEnvInfo")
+        .callsFake(
+          async (projectPath: string, maybeEnvName?: string): Promise<Result<EnvInfo, FxError>> => {
+            const envName = maybeEnvName ?? environmentManager.getDefaultEnvName();
+            envLoaded = envName;
+
+            const envConfig: EnvConfig = {
+              manifest: {
+                values: {
+                  appName: {
+                    short: "testApp",
+                  },
+                },
+              },
+            };
+            const envProfile = new Map<string, any>();
+            const envInfo = {
+              envName: envName,
+              config: envConfig,
+              profile: envProfile,
+            };
+            return ok(envInfo);
+          }
+        );
 
       // mock fs.existsSync for EnvInfoLoader
       const originalPathExists = fs.pathExists;
@@ -1735,51 +1748,515 @@ describe("Middleware", () => {
       });
     });
 
-    it("skip statically", async () => {
-      const inputs: Inputs = {
-        platform: Platform.VSCode,
-        projectPath: projectPath,
-      };
-      class MyClass {
-        tools: Tools = new MockTools();
-        async myMethod(inputs: Inputs): Promise<Result<string, FxError>> {
-          return ok(expectedResult);
+    describe("skipping logic", async () => {
+      it("skips on getQuestions of the create stage", async () => {
+        // Arrange
+        const inputs: Inputs = {
+          platform: Platform.VSCode,
+          projectPath: projectPath,
+        };
+        class MyClass {
+          tools: Tools = new MockTools();
+          async getQuestions(stage: Stage, inputs: Inputs): Promise<Result<string, FxError>> {
+            return ok(expectedResult);
+          }
         }
-      }
 
-      hooks(MyClass, {
-        myMethod: [MockProjectSettingsLoaderMW(), EnvInfoLoaderMW(true), SolutionContextSpyMW],
+        // Act
+        hooks(MyClass, {
+          getQuestions: [
+            MockProjectSettingsLoaderMW(),
+            EnvInfoLoaderMW(true),
+            SolutionContextSpyMW,
+          ],
+        });
+        const my = new MyClass();
+        const res = await my.getQuestions(Stage.create, inputs);
+
+        // Assert
+        assert.isUndefined(envLoaded);
+        assert.isTrue(res.isOk());
+        assert.isUndefined(solutionContext);
       });
-      const my = new MyClass();
-      const res = await my.myMethod(inputs);
-      assert.isTrue(res.isOk());
-      assert(solutionContext);
-      // envInfo should be set to a default value when envInfo loading is skipped.
-      assert.equal(solutionContext?.envInfo.envName, environmentManager.getDefaultEnvName());
+
+      it("skips statically", async () => {
+        // Arrange
+        const inputs: Inputs = {
+          platform: Platform.VSCode,
+          projectPath: projectPath,
+        };
+        class MyClass {
+          tools: Tools = new MockTools();
+          async myMethod(inputs: Inputs): Promise<Result<string, FxError>> {
+            return ok(expectedResult);
+          }
+        }
+
+        // Act
+        hooks(MyClass, {
+          myMethod: [MockProjectSettingsLoaderMW(), EnvInfoLoaderMW(true), SolutionContextSpyMW],
+        });
+        const my = new MyClass();
+        const res = await my.myMethod(inputs);
+
+        // Assert
+        assert.isUndefined(envLoaded);
+        assert.isTrue(res.isOk());
+        assert(solutionContext);
+        // envInfo should be set to a default value when envInfo loading is skipped.
+        assert.equal(solutionContext?.envInfo.envName, environmentManager.getDefaultEnvName());
+      });
+
+      it("skips dynamically with inputs.ignoreEnvInfo", async () => {
+        // Arrange
+        const inputs: Inputs = {
+          platform: Platform.VSCode,
+          projectPath: projectPath,
+          ignoreEnvInfo: true,
+        };
+        class MyClass {
+          tools: Tools = new MockTools();
+          async myMethod(inputs: Inputs): Promise<Result<string, FxError>> {
+            return ok(expectedResult);
+          }
+        }
+
+        // Act
+        hooks(MyClass, {
+          myMethod: [MockProjectSettingsLoaderMW(), EnvInfoLoaderMW(false), SolutionContextSpyMW],
+        });
+        const my = new MyClass();
+        const res = await my.myMethod(inputs);
+
+        // Assert
+        assert.isUndefined(envLoaded);
+        assert.isTrue(res.isOk());
+        assert(solutionContext);
+        // envInfo should be set to a default value when envInfo loading is skipped.
+        assert.equal(solutionContext?.envInfo.envName, environmentManager.getDefaultEnvName());
+      });
     });
 
-    it("skip dynamically with inputs.ignoreEnvInfo", async () => {
-      const inputs: Inputs = {
-        platform: Platform.VSCode,
-        projectPath: projectPath,
-        ignoreEnvInfo: true,
-      };
+    describe("using inputs.env", async () => {
+      it("accepts inputs.env", async () => {
+        // Arrange
+        const env = "staging";
+        const inputs: Inputs = {
+          platform: Platform.VSCode,
+          projectPath: projectPath,
+          env: env,
+        };
+        class MyClass {
+          tools: Tools = new MockTools();
+          async myMethod(inputs: Inputs): Promise<Result<string, FxError>> {
+            return ok(expectedResult);
+          }
+        }
+        sandbox
+          .stub(environmentManager, "checkEnvExist")
+          .callsFake(async (projectPath: string, envName: string) => {
+            if (envName === env) {
+              return ok(true);
+            } else {
+              throw new Error("unreachable");
+            }
+          });
+
+        // Act
+        hooks(MyClass, {
+          myMethod: [MockProjectSettingsLoaderMW(), EnvInfoLoaderMW(false), SolutionContextSpyMW],
+        });
+        const my = new MyClass();
+        const res = await my.myMethod(inputs);
+
+        // Assert
+        assert.equal(envLoaded, env);
+        assert.isTrue(res.isOk());
+        assert.equal((res as Ok<string, FxError>).value, expectedResult);
+        assert(solutionContext);
+        assert.equal(solutionContext?.envInfo.envName, env);
+      });
+
+      it("handles error for non-existent inputs.env", async () => {
+        // Arrange
+        const nonExistentEnvName = "nonExistentEnvName";
+        const inputs: Inputs = {
+          platform: Platform.VSCode,
+          projectPath: projectPath,
+          env: nonExistentEnvName,
+        };
+        class MyClass {
+          tools: Tools = new MockTools();
+          async myMethod(inputs: Inputs): Promise<Result<string, FxError>> {
+            return ok(expectedResult);
+          }
+        }
+        sandbox
+          .stub(environmentManager, "checkEnvExist")
+          .callsFake(async (projectPath: string, env: string) => {
+            if (env === nonExistentEnvName) {
+              return ok(false);
+            } else {
+              throw new Error("unreachable");
+            }
+          });
+
+        // Act
+        hooks(MyClass, {
+          myMethod: [MockProjectSettingsLoaderMW(), EnvInfoLoaderMW(false), SolutionContextSpyMW],
+        });
+        const my = new MyClass();
+        const res = await my.myMethod(inputs);
+
+        // Assert
+        assert.isTrue(res.isErr());
+        assert.equal((res as Err<string, FxError>).error.name, "ProjectEnvNotExistError");
+        assert(!solutionContext);
+      });
+    });
+
+    describe("asking env interactively", async () => {
+      it("asks env interactively and put the last used env first", async () => {
+        // Arrange
+        const inputs: Inputs = {
+          platform: Platform.VSCode,
+          projectPath: projectPath,
+        };
+        let envs = ["staging", "e2e", "test"];
+        class MockUserInteractionSelectFirst extends MockUserInteraction {
+          public async selectOption(
+            config: SingleSelectConfig
+          ): Promise<Result<SingleSelectResult, FxError>> {
+            if (config.options.length === 0) {
+              throw new Error("There is no options to select");
+            }
+            return ok({ type: "success", result: config.options[0] });
+          }
+        }
+        const tools = new MockTools();
+        tools.ui = new MockUserInteractionSelectFirst();
+        class MyClass {
+          tools: Tools = tools;
+          async myMethod(inputs: Inputs): Promise<Result<string, FxError>> {
+            return ok(expectedResult);
+          }
+        }
+        sandbox
+          .stub(environmentManager, "listEnvConfigs")
+          .callsFake(async (projectPath: string) => {
+            return ok(envs);
+          });
+        sandbox
+          .stub(environmentManager, "checkEnvExist")
+          .callsFake(async (projectPath: string, env: string) => {
+            return ok(env in envs);
+          });
+
+        // Act
+        hooks(MyClass, {
+          myMethod: [MockProjectSettingsLoaderMW(), EnvInfoLoaderMW(false), SolutionContextSpyMW],
+        });
+        const my = new MyClass();
+        const res = await my.myMethod(inputs);
+
+        // Assert
+        // mock question model always returns the first option
+        assert.equal(envLoaded, envs[0]);
+        assert.isTrue(res.isOk());
+        assert.equal((res as Ok<string, FxError>).value, expectedResult);
+        assert(solutionContext);
+        assert.equal(solutionContext?.envInfo.envName, envs[0]);
+
+        // Arrange
+        // reorder envs to check whether the lastUsedEnv appears first
+        envs = [envs[2], ...envs.slice(0, 2)];
+
+        // Act
+        hooks(MyClass, {
+          myMethod: [MockProjectSettingsLoaderMW(), EnvInfoLoaderMW(false), SolutionContextSpyMW],
+        });
+
+        // Assert
+        const res2 = await my.myMethod(inputs);
+        assert.equal(envLoaded, envs[1]);
+        assert.isTrue(res2.isOk());
+        assert.equal((res2 as Ok<string, FxError>).value, expectedResult);
+        assert(solutionContext);
+        assert.equal(solutionContext?.envInfo.envName, envs[1]);
+      });
+
+      it("handles user canceling", async () => {
+        // Arrange
+        const inputs: Inputs = {
+          platform: Platform.VSCode,
+          projectPath: projectPath,
+        };
+        const envs = ["staging", "e2e", "test"];
+        class MockUserInteractionSelectFirst extends MockUserInteraction {
+          public async selectOption(
+            config: SingleSelectConfig
+          ): Promise<Result<SingleSelectResult, FxError>> {
+            return err(UserCancelError);
+          }
+        }
+        const tools = new MockTools();
+        tools.ui = new MockUserInteractionSelectFirst();
+        class MyClass {
+          tools: Tools = tools;
+          async myMethod(inputs: Inputs): Promise<Result<string, FxError>> {
+            return ok(expectedResult);
+          }
+        }
+        sandbox
+          .stub(environmentManager, "listEnvConfigs")
+          .callsFake(async (projectPath: string) => {
+            return ok(envs);
+          });
+
+        // Act
+        hooks(MyClass, {
+          myMethod: [MockProjectSettingsLoaderMW(), EnvInfoLoaderMW(false)],
+        });
+        const my = new MyClass();
+        const res = await my.myMethod(inputs);
+
+        // Assert
+        // mock question model always returns the first option
+        assert.isTrue(res.isErr());
+        assert.equal((res as Err<string, FxError>).error.name, "UserCancel");
+      });
+    });
+
+    describe("CLI", async () => {
+      it("uses active env when not specified for CLI", async () => {
+        // Arrange
+        const env = "staging";
+        const inputs: Inputs = {
+          platform: Platform.CLI,
+          projectPath: projectPath,
+        };
+        class MyClass {
+          tools: Tools = new MockTools();
+          async myMethod(inputs: Inputs): Promise<Result<string, FxError>> {
+            return ok(expectedResult);
+          }
+        }
+        sandbox
+          .stub(environmentManager, "checkEnvExist")
+          .callsFake(async (projectPath: string, envName: string) => {
+            if (envName === env) {
+              return ok(true);
+            } else {
+              throw new Error("unreachable");
+            }
+          });
+
+        // Act
+        envInfoLoader.setActiveEnv(env);
+        hooks(MyClass, {
+          myMethod: [MockProjectSettingsLoaderMW(), EnvInfoLoaderMW(false), SolutionContextSpyMW],
+        });
+        const my = new MyClass();
+        const res = await my.myMethod(inputs);
+        // TODO: remove global var in envInfoLoader
+        // This is a workaround to reset global variable after test to prevent affecting other cases.
+        envInfoLoader.setActiveEnv(undefined as unknown as string);
+
+        // Assert
+        // mock question model always returns the first option
+        assert.equal(envLoaded, env);
+        assert.isTrue(res.isOk());
+        assert.equal((res as Ok<string, FxError>).value, expectedResult);
+        assert(solutionContext);
+        assert.equal(solutionContext?.envInfo.envName, env);
+      });
+    });
+
+    describe("order of precedence", async () => {
+      let tools: Tools;
+      const inputsEnv = "inputs";
+      const askUserEnv = "askUser";
+      const activeEnv = "active";
+      const envs = [inputsEnv, askUserEnv, activeEnv];
       class MyClass {
-        tools: Tools = new MockTools();
+        tools: Tools = tools;
         async myMethod(inputs: Inputs): Promise<Result<string, FxError>> {
           return ok(expectedResult);
         }
       }
+      beforeEach(async () => {
+        class MockUserInteractionSelectFirst extends MockUserInteraction {
+          public async selectOption(
+            config: SingleSelectConfig
+          ): Promise<Result<SingleSelectResult, FxError>> {
+            return ok({ type: "success", result: askUserEnv });
+          }
+        }
+        tools = new MockTools();
+        tools.ui = new MockUserInteractionSelectFirst();
 
-      hooks(MyClass, {
-        myMethod: [MockProjectSettingsLoaderMW(), EnvInfoLoaderMW(false), SolutionContextSpyMW],
+        sandbox
+          .stub(environmentManager, "listEnvConfigs")
+          .callsFake(async (projectPath: string) => {
+            return ok(envs);
+          });
+        sandbox.stub(environmentManager, "checkEnvExist").returns(Promise.resolve(ok(true)));
       });
-      const my = new MyClass();
-      const res = await my.myMethod(inputs);
-      assert.isTrue(res.isOk());
-      assert(solutionContext);
-      // envInfo should be set to a default value when envInfo loading is skipped.
-      assert.equal(solutionContext?.envInfo.envName, environmentManager.getDefaultEnvName());
+
+      it("prefers inputs.env than asking user", async () => {
+        // Arrange
+        const inputs: Inputs = {
+          platform: Platform.VSCode,
+          projectPath: projectPath,
+          env: inputsEnv,
+        };
+
+        // Act
+        hooks(MyClass, {
+          myMethod: [MockProjectSettingsLoaderMW(), EnvInfoLoaderMW(false), SolutionContextSpyMW],
+        });
+        const my = new MyClass();
+        const res = await my.myMethod(inputs);
+
+        // Assert
+        assert.isTrue(res.isOk());
+        assert.equal((res as Ok<string, FxError>).value, expectedResult);
+        assert(solutionContext);
+        assert.equal(envLoaded, inputsEnv);
+        assert.equal(solutionContext?.envInfo.envName, inputsEnv);
+      });
+
+      it("prefers inputs.env than active env", async () => {
+        // Arrange
+        const inputs: Inputs = {
+          platform: Platform.VSCode,
+          projectPath: projectPath,
+          env: inputsEnv,
+        };
+
+        // Act
+        envInfoLoader.setActiveEnv(activeEnv);
+        hooks(MyClass, {
+          myMethod: [MockProjectSettingsLoaderMW(), EnvInfoLoaderMW(false), SolutionContextSpyMW],
+        });
+        const my = new MyClass();
+        const res = await my.myMethod(inputs);
+        // reset active env
+        // TODO: fix typecasting
+        envInfoLoader.setActiveEnv(undefined as unknown as string);
+
+        // Assert
+        assert.isTrue(res.isOk());
+        assert.equal((res as Ok<string, FxError>).value, expectedResult);
+        assert(solutionContext);
+        assert.equal(envLoaded, inputsEnv);
+        assert.equal(solutionContext?.envInfo.envName, inputsEnv);
+      });
+
+      it("prefers to ask user than to use active env", async () => {
+        // Arrange
+        const inputs: Inputs = {
+          platform: Platform.VSCode,
+          projectPath: projectPath,
+        };
+
+        // Act
+        envInfoLoader.setActiveEnv(activeEnv);
+        hooks(MyClass, {
+          myMethod: [MockProjectSettingsLoaderMW(), EnvInfoLoaderMW(false), SolutionContextSpyMW],
+        });
+        const my = new MyClass();
+        const res = await my.myMethod(inputs);
+        // reset active env
+        // TODO: fix typecasting
+        envInfoLoader.setActiveEnv(undefined as unknown as string);
+
+        // Assert
+        assert.isTrue(res.isOk());
+        assert.equal((res as Ok<string, FxError>).value, expectedResult);
+        assert(solutionContext);
+        assert.equal(envLoaded, askUserEnv);
+        assert.equal(solutionContext?.envInfo.envName, askUserEnv);
+      });
+
+      it("will not ask user but use active env in CLI", async () => {
+        // Arrange
+        const inputs: Inputs = {
+          platform: Platform.CLI,
+          projectPath: projectPath,
+        };
+
+        // Act
+        envInfoLoader.setActiveEnv(activeEnv);
+        hooks(MyClass, {
+          myMethod: [MockProjectSettingsLoaderMW(), EnvInfoLoaderMW(false), SolutionContextSpyMW],
+        });
+        const my = new MyClass();
+        const res = await my.myMethod(inputs);
+        // reset active env
+        // TODO: fix typecasting
+        envInfoLoader.setActiveEnv(undefined as unknown as string);
+
+        // Assert
+        assert.isTrue(res.isOk());
+        assert.equal((res as Ok<string, FxError>).value, expectedResult);
+        assert(solutionContext);
+        assert.equal(envLoaded, activeEnv);
+        assert.equal(solutionContext?.envInfo.envName, activeEnv);
+      });
+    });
+
+    describe("error handling", async () => {
+      // Test cases for error handling
+      it("handles error when project settings is undefined", async () => {
+        // Arrange
+        const inputs: Inputs = {
+          platform: Platform.VSCode,
+          projectPath: projectPath,
+        };
+        class MyClass {
+          tools: Tools = new MockTools();
+          async myMethod(inputs: Inputs): Promise<Result<string, FxError>> {
+            return ok(expectedResult);
+          }
+        }
+
+        // Act
+        hooks(MyClass, {
+          myMethod: [EnvInfoLoaderMW(false)],
+        });
+        const my = new MyClass();
+        const res = await my.myMethod(inputs);
+
+        // Assert
+        assert.isTrue(res.isErr());
+        assert.equal((res as Err<string, FxError>).error.name, "ProjectSettingsUndefinedError");
+      });
+
+      it("handles error when no active env is set", async () => {
+        // Arrange
+        const inputs: Inputs = {
+          platform: Platform.CLI,
+          projectPath: projectPath,
+        };
+        class MyClass {
+          tools: Tools = new MockTools();
+          async myMethod(inputs: Inputs): Promise<Result<string, FxError>> {
+            return ok(expectedResult);
+          }
+        }
+
+        // Act
+        hooks(MyClass, {
+          myMethod: [MockProjectSettingsLoaderMW(), EnvInfoLoaderMW(false)],
+        });
+        const my = new MyClass();
+        const res = await my.myMethod(inputs);
+
+        // Assert
+        assert.isTrue(res.isErr());
+        assert.equal((res as Err<string, FxError>).error.name, "NonActiveEnvError");
+      });
     });
   });
 });

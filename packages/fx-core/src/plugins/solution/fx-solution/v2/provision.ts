@@ -94,6 +94,9 @@ export async function provisionResource(
   }
 
   const newEnvInfo: EnvInfoV2 = _.cloneDeep(envInfo);
+  if (!newEnvInfo.profile[GLOBAL_CONFIG]) {
+    newEnvInfo.profile[GLOBAL_CONFIG] = {};
+  }
   if (isAzureProject(azureSolutionSettings)) {
     const appName = ctx.projectSetting.appName;
     const contextAdaptor = new ProvisionContextAdapter([ctx, inputs, newEnvInfo, tokenProvider]);

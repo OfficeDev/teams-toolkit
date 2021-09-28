@@ -333,12 +333,12 @@ export async function copyParameterJson(
   const targetParameterFilePath = path.join(parameterFolderPath, targetParameterFileName);
   const sourceParameterFilePath = path.join(parameterFolderPath, sourceParameterFileName);
   const targetParameterContent = await fs.readJson(sourceParameterFilePath);
-  // if (targetParameterContent["parameters"][resourceBaseName]) {
-  const appName = ctx.projectSettings!.appName;
-  targetParameterContent["parameters"][resourceBaseName] = {
-    value: generateResourceBaseName(appName, targetEnvName),
-  };
-  // }
+  if (targetParameterContent["parameters"][resourceBaseName]) {
+    const appName = ctx.projectSettings!.appName;
+    targetParameterContent["parameters"][resourceBaseName] = {
+      value: generateResourceBaseName(appName, targetEnvName),
+    };
+  }
 
   await fs.ensureDir(parameterFolderPath);
   await fs.writeFile(targetParameterFilePath, JSON.stringify(targetParameterContent, undefined, 4));

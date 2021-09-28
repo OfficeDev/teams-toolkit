@@ -798,6 +798,20 @@ export class FxCore implements Core {
     return await ctx!.solution!.listCollaborator!(ctx!.solutionContext!);
   }
 
+  @hooks([
+    ErrorHandlerMW,
+    ProjectMigratorMW,
+    ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW(true),
+    SolutionLoaderMW(),
+    QuestionModelMW,
+    ContextInjectorMW,
+  ])
+  async listAllCollaborators(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    currentStage = Stage.listAllCollaborators;
+    return await ctx!.solution!.listAllCollaborators!(ctx!.solutionContext!);
+  }
+
   async _getQuestionsForUserTask(
     ctx: SolutionContext | v2.Context,
     solution: Solution | SolutionPlugin,
@@ -1161,7 +1175,7 @@ export async function createBasicFolderStructure(inputs: Inputs): Promise<Result
           description: "",
           author: "",
           scripts: {
-            test: "echo \"Error: no test specified\" && exit 1",
+            test: 'echo "Error: no test specified" && exit 1',
           },
           devDependencies: {
             "@microsoft/teamsfx-cli": "0.*",

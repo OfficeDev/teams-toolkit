@@ -13,6 +13,7 @@ export enum CollaborationState {
   NotProvisioned,
   M365TenantNotMatch,
   SolutionIsNotIdle,
+  ERROR,
 }
 
 export interface CollaborationStateResult {
@@ -24,6 +25,7 @@ export interface ListCollaboratorResult {
   state: CollaborationState;
   message?: string;
   collaborators?: Collaborator[];
+  error?: any;
 }
 
 export interface PermissionsResult {

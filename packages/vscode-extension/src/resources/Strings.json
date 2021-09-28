@@ -189,8 +189,10 @@
     },
     "qm": {
       "emptySelection": "select option is empty",
-      "ok": "ok",
-      "selectFileOrFolder": "Select file/folder"
+      "ok": "ok (Enter)",
+      "selectFileOrFolder": "Select file/folder",
+      "backKeyboard": " (Alt + LeftArrow to last step)",
+      "multiSelectKeyboard": " (Space key to check/uncheck)"
     },
     "webview": {
       "downloadSampleTitle": "Select folder to download the sample app",

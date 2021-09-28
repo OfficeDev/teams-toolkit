@@ -12,12 +12,12 @@ import { environmentManager } from "../environment";
 /**
  * This middleware will help to persist environment profile if necessary.
  */
-export function EnvInfoWriterMW(isScaffolding = false): Middleware {
+export function EnvInfoWriterMW(skip = false): Middleware {
   return async (ctx: CoreHookContext, next: NextFunction) => {
     try {
       await next();
     } finally {
-      if (isScaffolding && isMultiEnvEnabled()) {
+      if (skip && isMultiEnvEnabled()) {
         return;
       }
 

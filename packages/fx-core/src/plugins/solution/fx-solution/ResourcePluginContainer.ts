@@ -3,7 +3,7 @@
 import { v2, AzureSolutionSettings, Plugin, returnUserError } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Container } from "typedi";
-import { SolutionError } from "./constants";
+import { SolutionError, SolutionSource } from "./constants";
 
 export const ResourcePlugins = {
   SpfxPlugin: "SpfxPlugin",
@@ -99,7 +99,7 @@ export function getActivatedResourcePlugins(solutionSettings: AzureSolutionSetti
   if (activatedPlugins.length === 0) {
     throw returnUserError(
       new Error(`No plugin selected`),
-      "Solution",
+      SolutionSource,
       SolutionError.NoResourcePluginSelected
     );
   }
@@ -120,7 +120,7 @@ export function getActivatedV2ResourcePlugins(
   if (activatedPlugins.length === 0) {
     throw returnUserError(
       new Error(`No plugin selected`),
-      "Solution",
+      SolutionSource,
       SolutionError.NoResourcePluginSelected
     );
   }

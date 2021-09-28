@@ -228,3 +228,4 @@ export enum SolutionTelemetrySuccess {
 }
 
 export const SolutionTelemetryComponentName = "solution";
+export const SolutionSource = "Solution";

@@ -24,7 +24,13 @@ import {
   TokenProvider,
   UserError,
 } from "@microsoft/teamsfx-api";
-import { GLOBAL_CONFIG, LOCATION, RESOURCE_GROUP_NAME, SolutionError } from "./constants";
+import {
+  GLOBAL_CONFIG,
+  LOCATION,
+  RESOURCE_GROUP_NAME,
+  SolutionError,
+  SolutionSource,
+} from "./constants";
 import { v4 as uuidv4 } from "uuid";
 import { ResourceManagementClient } from "@azure/arm-resources";
 import { SubscriptionClient } from "@azure/arm-subscriptions";
@@ -85,7 +91,7 @@ export async function checkSubscription(
     return err(
       returnSystemError(
         new Error("azureAccountProvider is undefined"),
-        "Solution",
+        SolutionSource,
         SolutionError.InternelError
       )
     );
@@ -112,7 +118,7 @@ export async function checkSubscription(
           EnvNamePlaceholder,
           isV2() ? envInfo!.envName : (ctx as SolutionContext).envInfo.envName
         )}' file.`,
-        "Solution"
+        SolutionSource
       )
     );
   }
@@ -183,7 +189,7 @@ export async function askResourceGroupInfo(
     return err(
       returnSystemError(
         new Error(`Failed to list resource group`),
-        "Solution",
+        SolutionSource,
         SolutionError.FailedToListResourceGroup
       )
     );
@@ -232,7 +238,7 @@ export async function askResourceGroupInfo(
       return err(
         returnSystemError(
           new Error(`Failed to get user input for resource group info`),
-          "Solution",
+          SolutionSource,
           SolutionError.FailedToListResourceGroup
         )
       );
@@ -259,7 +265,7 @@ async function getLocations(
   } else {
     throw returnUserError(
       new Error(`Failed to get azure credential`),
-      "Solution",
+      SolutionSource,
       SolutionError.FailedToGetAzureCredential
     );
   }
@@ -278,7 +284,7 @@ async function getLocations(
     return err(
       returnUserError(
         new Error(`Failed to list resource group locations`),
-        "Solution",
+        SolutionSource,
         SolutionError.FailedToListResourceGroupLocation
       )
     );
@@ -324,7 +330,7 @@ async function askCommonQuestions(
     return err(
       returnSystemError(
         new Error("Graph token json is undefined"),
-        "Solution",
+        SolutionSource,
         SolutionError.NoAppStudioToken
       )
     );
@@ -352,7 +358,7 @@ async function askCommonQuestions(
     return err(
       returnUserError(
         new Error("Login to Azure using the Azure Account extension"),
-        "Solution",
+        SolutionSource,
         SolutionError.NotLoginToAzure
       )
     );
@@ -389,7 +395,7 @@ async function askCommonQuestions(
           new Error(
             `Resource group '${resourceGroupNameFromEnvConfig}' does not exist, please specify an existing resource group.`
           ),
-          "Solution",
+          SolutionSource,
           SolutionError.ResourceGroupNotFound
         )
       );
@@ -406,7 +412,7 @@ async function askCommonQuestions(
           new Error(
             `Resource group '${resourceGroupName}' does not exist, please check your '${envFile}' file.`
           ),
-          "Solution",
+          SolutionSource,
           SolutionError.ResourceGroupNotFound
         )
       );
@@ -429,7 +435,9 @@ async function askCommonQuestions(
         };
       }
     } catch (e) {
-      return err(returnUserError(e, "Solution", SolutionError.FailedToCheckResourceGroupExistence));
+      return err(
+        returnUserError(e, SolutionSource, SolutionError.FailedToCheckResourceGroupExistence)
+      );
     }
   } else if (ctx.answers && ctx.ui) {
     const resourceGroupInfoResult = await askResourceGroupInfo(
@@ -474,7 +482,7 @@ async function askCommonQuestions(
     return err(
       returnSystemError(
         new Error("Cannot find Teams app tenant id"),
-        "Solution",
+        SolutionSource,
         SolutionError.NoTeamsAppTenantId
       )
     );
@@ -555,7 +563,7 @@ async function createNewResourceGroup(
     }
 
     return err(
-      returnUserError(new Error(errMsg), "Solution", SolutionError.FailedToCreateResourceGroup)
+      returnUserError(new Error(errMsg), SolutionSource, SolutionError.FailedToCreateResourceGroup)
     );
   }
 
@@ -563,7 +571,7 @@ async function createNewResourceGroup(
     return err(
       returnSystemError(
         new Error(`Failed to create resource group ${rgInfo.name}`),
-        "Solution",
+        SolutionSource,
         SolutionError.FailedToCreateResourceGroup
       )
     );

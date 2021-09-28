@@ -39,6 +39,7 @@ import {
   SolutionTelemetryProperty,
   SolutionTelemetrySuccess,
   SUBSCRIPTION_ID,
+  SolutionSource,
 } from "./constants";
 import { ResourceManagementClient, ResourceManagementModels } from "@azure/arm-resources";
 import { DeployArmTemplatesSteps, ProgressHelper } from "./utils/progressHelper";
@@ -86,11 +87,7 @@ export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<
     }
   } catch (error) {
     result = err(
-      returnSystemError(
-        error,
-        PluginDisplayName.Solution,
-        SolutionError.FailedToGenerateArmTemplates
-      )
+      returnSystemError(error, SolutionSource, SolutionError.FailedToGenerateArmTemplates)
     );
     sendErrorTelemetryThenReturnError(
       SolutionTelemetryEvent.GenerateArmTemplate,
@@ -180,7 +177,7 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
     return err(
       returnSystemError(
         new Error("Failed to get resource group from project solution settings."),
-        "Solution",
+        SolutionSource,
         "NoResourceGroupFound"
       )
     );
@@ -300,7 +297,7 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
     }
   } catch (error) {
     result = err(
-      returnSystemError(
+      returnUserError(
         error,
         PluginDisplayName.Solution,
         SolutionError.FailedToDeployArmTemplatesToAzure
@@ -359,7 +356,7 @@ export async function getParameterJson(ctx: SolutionContext) {
     const returnError = new Error(
       `[${PluginDisplayName.Solution}] ${parameterFilePath} does not exist.`
     );
-    throw returnUserError(returnError, "Solution", "ParameterFileNotExist");
+    throw returnUserError(returnError, SolutionSource, "ParameterFileNotExist");
   }
 
   const parameterJson = await getExpandedParameter(ctx, parameterFilePath, true); // only expand secrets in memory
@@ -437,7 +434,7 @@ async function doGenerateArmTemplate(ctx: SolutionContext): Promise<Result<any, 
 
     // Output .gitignore file
     const gitignoreContent = await fs.readFile(
-      path.join(getTemplatesFolder(), "plugins", "solution", "armGitignore"),
+      path.join(getTemplatesFolder(), "plugins", SolutionSource, "armGitignore"),
       ConstantString.UTF8Encoding
     );
     const gitignoreFileName = ".gitignore";
@@ -737,7 +734,7 @@ async function wrapGetDeploymentError(
     const returnError = new Error(
       `resource deployments (${deployCtx.deploymentName} module) for your project failed and get the error message failed. Please refer to the resource group ${deployCtx.resourceGroupName} in portal for deployment error.`
     );
-    return err(returnUserError(returnError, "Solution", "GetDeploymentErrorFailed"));
+    return err(returnUserError(returnError, SolutionSource, "GetDeploymentErrorFailed"));
   }
 }
 
@@ -810,7 +807,7 @@ function formattedDeploymentName(failedDeployments: string[]): Result<void, FxEr
   return err(
     returnUserError(
       returnError,
-      "Solution",
+      SolutionSource,
       SolutionError.FailedToDeployArmTemplatesToAzure,
       ArmHelpLink
     )

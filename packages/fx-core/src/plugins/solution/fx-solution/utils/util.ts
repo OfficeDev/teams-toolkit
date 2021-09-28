@@ -15,6 +15,7 @@ import { SubscriptionClient } from "@azure/arm-subscriptions";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { SolutionTelemetryComponentName, SolutionTelemetryProperty } from "../constants";
 import * as fs from "fs-extra";
+import md5 from "md5";
 
 /**
  * A helper function to construct a plugin's context.
@@ -88,4 +89,8 @@ export function sendErrorTelemetryThenReturnError(
 
   reporter?.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
   return error;
+}
+
+export function getHashedValue(value: string): string {
+  return md5(value);
 }

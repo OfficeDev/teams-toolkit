@@ -459,9 +459,9 @@ export class LocalDebugPlugin implements Plugin {
         localEnvs[LocalEnvBotKeys.ClientSecret] = clientSecret;
         localEnvs[LocalEnvBotKeys.TenantID] = teamsAppTenantId;
         localEnvs[LocalEnvBotKeys.OauthAuthority] = "https://login.microsoftonline.com";
-        localEnvs[LocalEnvBotKeys.LoginEndpoint] = ctx.localSettings?.bot?.get(
-          LocalSettingsBotKeys.BotEndpoint
-        ) as string;
+        localEnvs[LocalEnvBotKeys.LoginEndpoint] = `${
+          ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotEndpoint) as string
+        }/auth-start.html`;
         localEnvs[LocalEnvBotKeys.ApplicationIdUri] = applicationIdUri;
       }
 

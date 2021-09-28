@@ -32,12 +32,17 @@ import open from "open";
 import { FxCore, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 import { getSystemInputs, getColorizedString } from "../../utils";
 
-export async function openBrowser(browser: constants.Browser, url: string): Promise<void> {
+export async function openBrowser(
+  browser: constants.Browser,
+  url: string,
+  browserArguments: string[] = []
+): Promise<void> {
   switch (browser) {
     case constants.Browser.chrome:
       await open(url, {
         app: {
           name: open.apps.chrome,
+          arguments: browserArguments,
         },
         wait: true,
         allowNonzeroExitCode: true,
@@ -47,6 +52,7 @@ export async function openBrowser(browser: constants.Browser, url: string): Prom
       await open(url, {
         app: {
           name: open.apps.edge,
+          arguments: browserArguments,
         },
         wait: true,
         allowNonzeroExitCode: true,

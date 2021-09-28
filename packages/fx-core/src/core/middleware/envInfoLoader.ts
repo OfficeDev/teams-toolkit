@@ -47,7 +47,6 @@ import { PermissionRequestFileProvider } from "../permissionRequest";
 import { newEnvInfo } from "../tools";
 
 const newTargetEnvNameOption = "+ new environment";
-let activeEnv: string | undefined;
 const lastUsedMark = " (last used)";
 let lastUsedEnv: string | undefined;
 
@@ -85,8 +84,7 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
           return;
         }
         targetEnvName = result.value;
-      } else if (inputs.platform === Platform.VSCode) {
-        // Only ask user to select an env in VS Code
+      } else {
         const result = await askTargetEnvironment(core.tools, inputs);
         if (result.isErr()) {
           ctx.result = err(result.error);
@@ -100,11 +98,6 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
         );
 
         lastUsedEnv = targetEnvName;
-      } else if (activeEnv) {
-        targetEnvName = activeEnv;
-      } else {
-        ctx.result = err(NonActiveEnvError);
-        return;
       }
     } else {
       targetEnvName = environmentManager.getDefaultEnvName();
@@ -138,10 +131,6 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
     }
     await next();
   };
-}
-
-export function setActiveEnv(env: string) {
-  activeEnv = env;
 }
 
 export async function loadSolutionContext(

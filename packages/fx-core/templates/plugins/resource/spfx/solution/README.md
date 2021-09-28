@@ -50,7 +50,7 @@ Version|Date|Comments
     It will provision an app in Teams App Studio. You may need to login with your M365 tenant admin account.
 
 4. Build and Deploy your SharePoint Package.
-    - Click `Deploy to the Cloud` in Teams Toolkit V2 sidebar, or run `Teams: Deploy to the Cloud` from command palette. This will generate a SharePoint package(*.sppkg) under sharepoint/solution folder.
+    - Click `Deploy to the cloud` in Teams Toolkit V2 sidebar, or run `Teams: Deploy to the cloud` from command palette. This will generate a SharePoint package(*.sppkg) under sharepoint/solution folder.
   
     Or you can use TeamsFx CLI with running this cmd under your project path:
         `teamsfx deploy`

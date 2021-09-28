@@ -36,7 +36,7 @@ Simply deploy your project to the cloud when it’s ready by following these ste
 You can do this using the Teams Toolkit in Visual Studio Code or using the TeamsFx CLI:
 | Using Teams Toolkit| Using TeamsFx CLI|
 | :------------------| :----------------|
-| <ul><li>Open Teams Toolkit, and sign into Azure by clicking the `Sign in to Azure` under the `ACCOUNTS` section from sidebar.<sup>\*</sup></li> <li>After you signed in, select a subscription under your account.<sup>\*</sup></li><li>Open Teams Toolkit, and sign into M365 by clicking the `Sign in to M365` under the `ACCOUNTS` section from sidebar.<sup>\*</sup></li><li>Open the command palette and select: `Teams: Provision in the Cloud`.</li><li>Open the command palette and select: `Teams: Deploy to the Cloud`.</li></ul> |<ul> <li>Run command `teamsfx account login azure`.<sup>\*</sup></li> <li>Run command `teamsfx account set --subscription $subscriptionId`.<sup>\*</sup></li> <li>Run command `teamsfx account login m365`.<sup>\*</sup></li> <li> Run command `teamsfx provision`.</li> <li>First-time: Run command `teamsfx deploy function apim --open-api-document openapi/openapi.json --api-prefix $apiPrefix --api-version $apiVersion`. </li><li>Non-first-time: Run command `teamsfx deploy function apim --api-version $apiVersion`. </li></ul>|
+| <ul><li>Open Teams Toolkit, and sign into Azure by clicking the `Sign in to Azure` under the `ACCOUNTS` section from sidebar.<sup>\*</sup></li> <li>After you signed in, select a subscription under your account.<sup>\*</sup></li><li>Open Teams Toolkit, and sign into M365 by clicking the `Sign in to M365` under the `ACCOUNTS` section from sidebar.<sup>\*</sup></li><li>Open the command palette and select: `Teams: Provision in the cloud`.</li><li>Open the command palette and select: `Teams: Deploy to the cloud`.</li></ul> |<ul> <li>Run command `teamsfx account login azure`.<sup>\*</sup></li> <li>Run command `teamsfx account set --subscription $subscriptionId`.<sup>\*</sup></li> <li>Run command `teamsfx account login m365`.<sup>\*</sup></li> <li> Run command `teamsfx provision`.</li> <li>First-time: Run command `teamsfx deploy function apim --open-api-document openapi/openapi.json --api-prefix $apiPrefix --api-version $apiVersion`. </li><li>Non-first-time: Run command `teamsfx deploy function apim --api-version $apiVersion`. </li></ul>|
 
 > \* Skip this step if you have already done in the previous steps.
 
@@ -50,7 +50,8 @@ In the deployment step, there will be some inputs needed:
 > Note: This may incur costs in your Azure Subscription if you choose to create a new instance in pervious step.
 
 ## Write OpenAPI Document
- We support both yaml and json format for the OpenAPI document. You need to follow the [OpenAPI Specification](https://swagger.io/resources/open-api/), author the OpenAPI document and ensure the API schema is aligned with the Azure Functions HTTP trigger implementation. 
+
+We support both yaml and json format for the OpenAPI document. You need to follow the [OpenAPI Specification](https://swagger.io/resources/open-api/), author the OpenAPI document and ensure the API schema is aligned with the Azure Functions HTTP trigger implementation.
 
 Below is a sample swagger file for the default HTTP trigger function. You can copy the content into `./openapi/openapi.json`, and change the content according to your modification (E.g. `/getUserProfile` -> `/$yourFunctionName` ).
 
@@ -94,6 +95,7 @@ Below is a sample swagger file for the default HTTP trigger function. You can co
   }
 }
 ```
+
 You can use your favorite tool to generate an OpenAPI document, such as [OpenAPI (Swagger) Editor](https://marketplace.visualstudio.com/items?itemName=42Crunch.vscode-openapi) and [swagger-jsdoc](https://github.com/Surnet/swagger-jsdoc/).
 
 ## Documentation

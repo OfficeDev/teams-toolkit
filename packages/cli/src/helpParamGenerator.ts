@@ -30,7 +30,6 @@ import { flattenNodes, getSingleOptionString, toYargsOptions } from "./utils";
 import { Options } from "yargs";
 import {
   CollaboratorEmailNode,
-  EnvNode,
   EnvNodeNoCreate,
   RootFolderNode,
   sqlPasswordConfirmQuestionName,
@@ -45,6 +44,7 @@ export class HelpParamGenerator {
   private static showEnvStage: string[] = [
     Stage.build,
     Stage.publish,
+    Stage.provision,
     Stage.deploy,
     Stage.grantPermission,
     Stage.checkPermission,
@@ -217,9 +217,7 @@ export class HelpParamGenerator {
 
     // Add env node
     if (isMultiEnvEnabled()) {
-      if (stage === Stage.provision) {
-        nodes = nodes.concat([EnvNode]);
-      } else if (HelpParamGenerator.showEnvStage.indexOf(stage) >= 0) {
+      if (HelpParamGenerator.showEnvStage.indexOf(stage) >= 0) {
         nodes = nodes.concat([EnvNodeNoCreate]);
       }
     }

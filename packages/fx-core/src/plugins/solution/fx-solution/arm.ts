@@ -89,7 +89,7 @@ export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<
       returnSystemError(
         error,
         PluginDisplayName.Solution,
-        SolutionError.FailedToDeployArmTemplatesToAzure
+        SolutionError.FailedToGenerateArmTemplates
       )
     );
     sendErrorTelemetryThenReturnError(
@@ -496,7 +496,7 @@ async function compileBicepToJson(
   bicepCommand: string,
   bicepOrchestrationFilePath: string
 ): Promise<JSON> {
-  const command = `${bicepCommand} build ${bicepOrchestrationFilePath} --stdout`;
+  const command = `${bicepCommand} build "${bicepOrchestrationFilePath}" --stdout`;
   try {
     const result = await Executor.execCommandAsync(command);
     return JSON.parse(result.stdout as string);
@@ -807,7 +807,14 @@ function formattedDeploymentName(failedDeployments: string[]): Result<void, FxEr
       ", "
     )}) for your project failed. Please refer to output channel for more error details.`
   );
-  return err(returnUserError(returnError, "Solution", "ArmDeploymentFailed", ArmHelpLink));
+  return err(
+    returnUserError(
+      returnError,
+      "Solution",
+      SolutionError.FailedToDeployArmTemplatesToAzure,
+      ArmHelpLink
+    )
+  );
 }
 
 export function formattedDeploymentError(deploymentError: any): any {

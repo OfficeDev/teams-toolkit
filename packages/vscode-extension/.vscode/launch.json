@@ -7,7 +7,7 @@
   "configurations": [
     {
       "name": "Run Extension",
-      "type": "pwa-extensionHost",
+      "type": "extensionHost",
       "request": "launch",
       "args": ["--extensionDevelopmentPath=${workspaceFolder}"],
       "resolveSourceMapLocations": [
@@ -19,7 +19,7 @@
     },
     {
       "name": "Run Extension with Failpoints",
-      "type": "pwa-extensionHost",
+      "type": "extensionHost",
       "request": "launch",
       "args": ["--extensionDevelopmentPath=${workspaceFolder}"],
       "resolveSourceMapLocations": [

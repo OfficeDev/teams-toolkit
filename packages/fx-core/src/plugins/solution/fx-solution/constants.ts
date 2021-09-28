@@ -133,6 +133,7 @@ export enum SolutionError {
   InvalidInput = "InvalidInput",
   FailedToCompileBicepFiles = "FailedToCompileBicepFiles",
   FailedToGetAzureCredential = "FailedToGetAzureCredential",
+  FailedToGenerateArmTemplates = "FailedToGenerateArmTemplates",
   FailedToDeployArmTemplatesToAzure = "FailedToDeployArmTemplatesToAzure",
   V1ProjectNotSupported = "V1ProjectNotSupported",
   FailedToRetrieveUserInfo = "FailedToRetrieveUserInfo",

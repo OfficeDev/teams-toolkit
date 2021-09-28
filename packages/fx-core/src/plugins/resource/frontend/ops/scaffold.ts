@@ -7,7 +7,7 @@ import {
   UnknownScaffoldError,
   UnzipTemplateError,
 } from "../resources/errors";
-import { FrontendPathInfo as PathInfo } from "../constants";
+import { Constants, FrontendPathInfo as PathInfo } from "../constants";
 import { Logger } from "../utils/logger";
 import { Messages } from "../resources/messages";
 import { TemplateInfo } from "../resources/templateInfo";
@@ -45,6 +45,11 @@ export class FrontendScaffold {
       dst: componentPath,
       fileNameReplaceFn: removeTemplateExtReplaceFn,
       fileDataReplaceFn: genTemplateRenderReplaceFn(templateInfo.variables),
+      onActionEnd: async (action: ScaffoldAction, context: ScaffoldContext) => {
+        if (action.name === ScaffoldActionName.FetchTemplatesUrlWithTag) {
+          Logger.info(Messages.getTemplateFrom(context.zipUrl ?? Constants.EmptyString));
+        }
+      },
       onActionError: async (action: ScaffoldAction, context: ScaffoldContext, error: Error) => {
         Logger.info(error.toString());
         switch (action.name) {

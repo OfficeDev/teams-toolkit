@@ -13,6 +13,7 @@ import {
   Func,
   FxError,
   GraphTokenProvider,
+  Inputs,
   InputTextConfig,
   InputTextResult,
   IProgressHandler,
@@ -44,6 +45,7 @@ import {
   TokenProvider,
   Tools,
   UserInteraction,
+  v2,
   Void,
 } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
@@ -52,26 +54,25 @@ import {
   PluginNames,
 } from "../../src/plugins/solution/fx-solution/constants";
 
+function solutionSettings(): AzureSolutionSettings {
+  return {
+    name: "fx-solution-azure",
+    version: "1.0.0",
+    hostType: "Azure",
+    capabilities: ["Tab"],
+    azureResources: [],
+    activeResourcePlugins: [PluginNames.FE, PluginNames.LDEBUG, PluginNames.AAD, PluginNames.SA],
+  } as AzureSolutionSettings;
+}
 export class MockSolution implements Solution {
   name = "fx-solution-azure";
 
   async create(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    ctx.projectSettings!.solutionSettings = this.solutionSettings();
+    ctx.projectSettings!.solutionSettings = solutionSettings();
     const config = new ConfigMap();
     config.set("create", true);
     ctx.envInfo.profile.set("solution", config);
     return ok(Void);
-  }
-
-  solutionSettings(): AzureSolutionSettings {
-    return {
-      name: this.name,
-      version: "1.0.0",
-      hostType: "Azure",
-      capabilities: ["Tab"],
-      azureResources: [],
-      activeResourcePlugins: [PluginNames.FE, PluginNames.LDEBUG, PluginNames.AAD, PluginNames.SA],
-    } as AzureSolutionSettings;
   }
 
   async scaffold(ctx: SolutionContext): Promise<Result<any, FxError>> {
@@ -119,10 +120,86 @@ export class MockSolution implements Solution {
   }
 
   async migrate(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    ctx.projectSettings!.solutionSettings = this.solutionSettings();
+    ctx.projectSettings!.solutionSettings = solutionSettings();
     const config = new ConfigMap();
     ctx.envInfo.profile.set("solution", config);
     return ok(Void);
+  }
+}
+
+export class MockSolutionV2 implements v2.SolutionPlugin {
+  name = "fx-solution-azure";
+  displayName = "Azure Solution V2 Mock";
+  async scaffoldSourceCode(ctx: v2.Context, inputs: Inputs): Promise<Result<Void, FxError>> {
+    ctx.projectSetting.solutionSettings = solutionSettings();
+    return ok(Void);
+  }
+  async generateResourceTemplate(ctx: v2.Context, inputs: Inputs): Promise<Result<Json, FxError>> {
+    return ok({});
+  }
+  async provisionResources(
+    ctx: v2.Context,
+    inputs: Inputs,
+    envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
+    tokenProvider: TokenProvider
+  ): Promise<v2.FxResult<v2.SolutionProvisionOutput, FxError>> {
+    return {
+      kind: "success",
+      output: {},
+    };
+  }
+  async deploy(
+    ctx: v2.Context,
+    inputs: Inputs,
+    provisionOutputs: Json,
+    tokenProvider: AzureAccountProvider
+  ): Promise<Result<Void, FxError>> {
+    return ok(Void);
+  }
+  async publishApplication(
+    ctx: v2.Context,
+    inputs: Inputs,
+    envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
+    tokenProvider: AppStudioTokenProvider
+  ): Promise<Result<Void, FxError>> {
+    return ok(Void);
+  }
+  async provisionLocalResource(
+    ctx: v2.Context,
+    inputs: Inputs,
+    localSettings: Json,
+    tokenProvider: TokenProvider
+  ): Promise<v2.FxResult<Json, FxError>> {
+    return {
+      kind: "success",
+      output: {},
+    };
+  }
+  async executeUserTask(
+    ctx: v2.Context,
+    inputs: Inputs,
+    func: Func,
+    envInfo: v2.EnvInfoV2,
+    tokenProvider: TokenProvider
+  ): Promise<Result<unknown, FxError>> {
+    return ok(Void);
+  }
+  async getQuestions(
+    ctx: v2.Context,
+    inputs: Inputs,
+    envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
+    tokenProvider: TokenProvider
+  ): Promise<Result<QTreeNode | undefined, FxError>> {
+    return ok(undefined);
+  }
+  async getQuestionsForUserTask(
+    ctx: v2.Context,
+    inputs: Inputs,
+    func: Func,
+    envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
+    tokenProvider: TokenProvider
+  ): Promise<Result<QTreeNode | undefined, FxError>> {
+    return ok(undefined);
   }
 }
 

@@ -1018,14 +1018,19 @@ export async function checkPermission(env: string): Promise<boolean> {
       result =
         (teamsAppPermission.roles?.includes("Administrator") ?? false) &&
         (aadPermission.roles?.includes("Owner") ?? false);
-      ExtTelemetry.sendTelemetryEvent(Stage.checkPermission, {
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CheckPermission, {
         [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+        [TelemetryProperty.CollaborationStage]: permissions.value.state.toString(),
       });
     } else {
       result = false;
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CheckPermission, {
+        [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+        [TelemetryProperty.CollaborationStage]: permissions.value.state.toString(),
+      });
     }
   } catch (e) {
-    ExtTelemetry.sendTelemetryErrorEvent(Stage.checkPermission, e);
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CheckPermission, e);
     result = false;
   }
 

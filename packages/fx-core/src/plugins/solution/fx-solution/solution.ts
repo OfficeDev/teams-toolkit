@@ -1458,6 +1458,7 @@ export class TeamsAppSolution implements Solution {
 
       return ok({
         state: CollaborationState.OK,
+        userInfo: userInfo,
         permissions,
       });
     } finally {

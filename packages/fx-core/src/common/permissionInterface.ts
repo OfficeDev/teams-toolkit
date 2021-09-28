@@ -31,6 +31,7 @@ export interface ListCollaboratorResult {
 export interface PermissionsResult {
   state: CollaborationState;
   message?: string;
+  userInfo?: Record<string, any>;
   permissions?: ResourcePermission[];
 }
 

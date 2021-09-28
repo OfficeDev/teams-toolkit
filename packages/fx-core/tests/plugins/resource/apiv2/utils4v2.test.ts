@@ -159,7 +159,7 @@ describe("API V2 adapter", () => {
       userInteraction: tools.ui,
       logProvider: tools.logProvider,
       telemetryReporter: tools.telemetryReporter,
-      cryptoProvider: tools.cryptoProvider,
+      // cryptoProvider: tools.cryptoProvider,
       projectSetting: projectSettings,
       permissionRequestProvider: tools.permissionRequestProvider,
     };

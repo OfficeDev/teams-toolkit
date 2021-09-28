@@ -538,7 +538,6 @@ export class FxCore implements Core {
     QuestionModelMW,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
-    EnvInfoWriterMW(),
     LocalSettingsWriterMW,
   ])
   async localDebug(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
@@ -914,13 +913,7 @@ export class FxCore implements Core {
     return ok(undefined);
   }
 
-  @hooks([
-    ErrorHandlerMW,
-    ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(true),
-    ContextInjectorMW,
-    EnvInfoWriterMW(),
-  ])
+  @hooks([ErrorHandlerMW, ProjectSettingsLoaderMW, EnvInfoLoaderMW(true), ContextInjectorMW])
   async encrypt(
     plaintext: string,
     inputs: Inputs,
@@ -929,13 +922,7 @@ export class FxCore implements Core {
     return ctx!.solutionContext!.cryptoProvider!.encrypt(plaintext);
   }
 
-  @hooks([
-    ErrorHandlerMW,
-    ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(true),
-    ContextInjectorMW,
-    EnvInfoWriterMW(),
-  ])
+  @hooks([ErrorHandlerMW, ProjectSettingsLoaderMW, EnvInfoLoaderMW(true), ContextInjectorMW])
   async decrypt(
     ciphertext: string,
     inputs: Inputs,

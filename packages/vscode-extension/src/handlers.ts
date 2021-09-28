@@ -1020,13 +1020,13 @@ export async function checkPermission(env: string): Promise<boolean> {
         (aadPermission.roles?.includes("Owner") ?? false);
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CheckPermission, {
         [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-        [TelemetryProperty.CollaborationStage]: permissions.value.state.toString(),
+        [TelemetryProperty.CollaborationState]: permissions.value.state.toString(),
       });
     } else {
       result = false;
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CheckPermission, {
         [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-        [TelemetryProperty.CollaborationStage]: permissions.value.state.toString(),
+        [TelemetryProperty.CollaborationState]: permissions.value.state.toString(),
       });
     }
   } catch (e) {

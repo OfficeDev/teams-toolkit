@@ -93,12 +93,13 @@ export class Utils {
 
   public static async listFilePaths(
     directoryPath: string,
+    matchPattern = "**",
     ignorePattern?: string
   ): Promise<string[]> {
     return new Promise<string[]>((resolve, reject) => {
       const ignore: string = ignorePattern ? path.join(directoryPath, ignorePattern) : "";
       glob(
-        path.join(directoryPath, "**"),
+        path.join(directoryPath, matchPattern),
         {
           dot: true, // Include .dot files
           nodir: true, // Only match files

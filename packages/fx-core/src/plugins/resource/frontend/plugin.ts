@@ -14,11 +14,9 @@ import { AzureStorageClient } from "./clients";
 import {
   CreateStorageAccountError,
   EnableStaticWebsiteError,
-  GetTemplateError,
   NoResourceGroupError,
   NoStorageError,
   StaticWebsiteDisabledError,
-  UnzipTemplateError,
   runWithErrorCatchAndThrow,
   CheckStorageError,
   CheckResourceGroupError,
@@ -33,13 +31,11 @@ import {
   ArmOutput,
   AzureErrorCode,
   AzureInfo,
-  Constants,
   DependentPluginInfo,
   EnvironmentVariables,
   FrontendOutputBicepSnippet,
   FrontendPathInfo,
   FrontendPluginInfo as PluginInfo,
-  RegularExpr,
 } from "./constants";
 import { FrontendConfig } from "./configs";
 import { FrontendDeployment } from "./ops/deploy";
@@ -72,21 +68,9 @@ export class FrontendPluginImpl {
 
     const templateInfo = new TemplateInfo(ctx);
 
-    const zip = await runWithErrorCatchAndThrow(
-      new GetTemplateError(),
-      async () => await Scaffold.getTemplateZip(ctx, templateInfo)
-    );
-    await runWithErrorCatchAndThrow(
-      new UnzipTemplateError(),
-      async () =>
-        await Scaffold.scaffoldFromZip(
-          zip,
-          path.join(ctx.root, FrontendPathInfo.WorkingDir),
-          (filePath: string, data: Buffer) =>
-            filePath.replace(RegularExpr.ReplaceTemplateExt, Constants.EmptyString),
-          (filePath: string, data: Buffer) =>
-            Scaffold.fulfill(filePath, data, templateInfo.variables)
-        )
+    await Scaffold.scaffoldFromZipPackage(
+      path.join(ctx.root, FrontendPathInfo.WorkingDir),
+      templateInfo
     );
 
     await ProgressHelper.endScaffoldProgress(true);

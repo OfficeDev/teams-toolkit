@@ -88,7 +88,7 @@ import { SPFxNodeChecker } from "./debug/depsChecker/spfxNodeChecker";
 import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
 import { VS_CODE_UI } from "./extension";
 import { registerAccountTreeHandler } from "./accountTree";
-import { registerEnvTreeHandler, updateCollaboratorList } from "./envTree";
+import { addCollaboratorToEnv, registerEnvTreeHandler } from "./envTree";
 import { selectAndDebug } from "./debug/runIconHandler";
 import * as path from "path";
 import { exp } from "./exp/index";
@@ -885,7 +885,11 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
         `Added account: '${inputs.email}' to the environment '${env}' as a collaborator`
       );
 
-      updateCollaboratorList(env);
+      await addCollaboratorToEnv(
+        env,
+        result.value.userInfo.userObjectId,
+        result.value.userInfo.userPrincipalName
+      );
     } else {
       window.showWarningMessage(result.value.message);
     }

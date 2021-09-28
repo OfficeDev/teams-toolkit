@@ -455,7 +455,7 @@ export class MockTools implements Tools {
   };
   telemetryReporter = new MockTelemetryReporter();
   ui = new MockUserInteraction();
-  // cryptoProvider = new MockCryptoProvider();
+  cryptoProvider = new MockCryptoProvider();
   permissionRequestProvider = new MockPermissionRequestProvider();
 }
 

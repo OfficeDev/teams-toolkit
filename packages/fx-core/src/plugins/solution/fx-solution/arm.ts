@@ -167,8 +167,6 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
   );
   await progressHandler?.next(DeployArmTemplatesSteps.ExecuteDeployment);
 
-  generateResourceName(ctx);
-
   // update parameters
   const parameterJson = await getParameterJson(ctx);
 
@@ -334,10 +332,12 @@ export async function copyParameterJson(
   const targetParameterFilePath = path.join(parameterFolderPath, targetParameterFileName);
   const sourceParameterFilePath = path.join(parameterFolderPath, sourceParameterFileName);
   const targetParameterContent = await fs.readJson(sourceParameterFilePath);
+  // if (targetParameterContent["parameters"][resourceBaseName]) {
   const appName = ctx.projectSettings!.appName;
   targetParameterContent["parameters"][resourceBaseName] = {
     value: generateResourceBaseName(appName, targetEnvName),
   };
+  // }
 
   await fs.ensureDir(parameterFolderPath);
   await fs.writeFile(targetParameterFilePath, JSON.stringify(targetParameterContent, undefined, 4));
@@ -684,16 +684,9 @@ function normalizeToEnvName(input: string): string {
 
 function generateResourceBaseName(appName: string, envName: string): string {
   const maxAppNameLength = 10;
+  const macEnvNameLength = 10;
   const normalizedAppName = appName.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
-  return normalizedAppName.substr(0, maxAppNameLength) + envName.substr(0, maxAppNameLength);
-}
-
-function generateResourceName(ctx: SolutionContext): void {
-  const appName = ctx.projectSettings!.appName;
-  const suffix = ctx.envInfo!.envName;
-  ctx.envInfo.profile
-    .get(GLOBAL_CONFIG)
-    ?.set("resource_base_name", generateResourceBaseName(appName, suffix));
+  return normalizedAppName.substr(0, maxAppNameLength) + envName.substr(0, macEnvNameLength);
 }
 
 function escapeSecretPlaceholders(variables: Record<string, string>) {

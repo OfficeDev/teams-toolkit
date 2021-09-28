@@ -2027,51 +2027,6 @@ describe("Middleware", () => {
       });
     });
 
-    describe("CLI", async () => {
-      it("uses active env when not specified for CLI", async () => {
-        // Arrange
-        const env = "staging";
-        const inputs: Inputs = {
-          platform: Platform.CLI,
-          projectPath: projectPath,
-        };
-        class MyClass {
-          tools: Tools = new MockTools();
-          async myMethod(inputs: Inputs): Promise<Result<string, FxError>> {
-            return ok(expectedResult);
-          }
-        }
-        sandbox
-          .stub(environmentManager, "checkEnvExist")
-          .callsFake(async (projectPath: string, envName: string) => {
-            if (envName === env) {
-              return ok(true);
-            } else {
-              throw new Error("unreachable");
-            }
-          });
-
-        // Act
-        envInfoLoader.setActiveEnv(env);
-        hooks(MyClass, {
-          myMethod: [MockProjectSettingsLoaderMW(), EnvInfoLoaderMW(false), SolutionContextSpyMW],
-        });
-        const my = new MyClass();
-        const res = await my.myMethod(inputs);
-        // TODO: remove global var in envInfoLoader
-        // This is a workaround to reset global variable after test to prevent affecting other cases.
-        envInfoLoader.setActiveEnv(undefined as unknown as string);
-
-        // Assert
-        // mock question model always returns the first option
-        assert.equal(envLoaded, env);
-        assert.isTrue(res.isOk());
-        assert.equal((res as Ok<string, FxError>).value, expectedResult);
-        assert(solutionContext);
-        assert.equal(solutionContext?.envInfo.envName, env);
-      });
-    });
-
     describe("order of precedence", async () => {
       let tools: Tools;
       const inputsEnv = "inputs";
@@ -2125,85 +2080,6 @@ describe("Middleware", () => {
         assert.equal(envLoaded, inputsEnv);
         assert.equal(solutionContext?.envInfo.envName, inputsEnv);
       });
-
-      it("prefers inputs.env than active env", async () => {
-        // Arrange
-        const inputs: Inputs = {
-          platform: Platform.VSCode,
-          projectPath: projectPath,
-          env: inputsEnv,
-        };
-
-        // Act
-        envInfoLoader.setActiveEnv(activeEnv);
-        hooks(MyClass, {
-          myMethod: [MockProjectSettingsLoaderMW(), EnvInfoLoaderMW(false), SolutionContextSpyMW],
-        });
-        const my = new MyClass();
-        const res = await my.myMethod(inputs);
-        // reset active env
-        // TODO: fix typecasting
-        envInfoLoader.setActiveEnv(undefined as unknown as string);
-
-        // Assert
-        assert.isTrue(res.isOk());
-        assert.equal((res as Ok<string, FxError>).value, expectedResult);
-        assert(solutionContext);
-        assert.equal(envLoaded, inputsEnv);
-        assert.equal(solutionContext?.envInfo.envName, inputsEnv);
-      });
-
-      it("prefers to ask user than to use active env", async () => {
-        // Arrange
-        const inputs: Inputs = {
-          platform: Platform.VSCode,
-          projectPath: projectPath,
-        };
-
-        // Act
-        envInfoLoader.setActiveEnv(activeEnv);
-        hooks(MyClass, {
-          myMethod: [MockProjectSettingsLoaderMW(), EnvInfoLoaderMW(false), SolutionContextSpyMW],
-        });
-        const my = new MyClass();
-        const res = await my.myMethod(inputs);
-        // reset active env
-        // TODO: fix typecasting
-        envInfoLoader.setActiveEnv(undefined as unknown as string);
-
-        // Assert
-        assert.isTrue(res.isOk());
-        assert.equal((res as Ok<string, FxError>).value, expectedResult);
-        assert(solutionContext);
-        assert.equal(envLoaded, askUserEnv);
-        assert.equal(solutionContext?.envInfo.envName, askUserEnv);
-      });
-
-      it("will not ask user but use active env in CLI", async () => {
-        // Arrange
-        const inputs: Inputs = {
-          platform: Platform.CLI,
-          projectPath: projectPath,
-        };
-
-        // Act
-        envInfoLoader.setActiveEnv(activeEnv);
-        hooks(MyClass, {
-          myMethod: [MockProjectSettingsLoaderMW(), EnvInfoLoaderMW(false), SolutionContextSpyMW],
-        });
-        const my = new MyClass();
-        const res = await my.myMethod(inputs);
-        // reset active env
-        // TODO: fix typecasting
-        envInfoLoader.setActiveEnv(undefined as unknown as string);
-
-        // Assert
-        assert.isTrue(res.isOk());
-        assert.equal((res as Ok<string, FxError>).value, expectedResult);
-        assert(solutionContext);
-        assert.equal(envLoaded, activeEnv);
-        assert.equal(solutionContext?.envInfo.envName, activeEnv);
-      });
     });
 
     describe("error handling", async () => {
@@ -2231,31 +2107,6 @@ describe("Middleware", () => {
         // Assert
         assert.isTrue(res.isErr());
         assert.equal((res as Err<string, FxError>).error.name, "ProjectSettingsUndefinedError");
-      });
-
-      it("handles error when no active env is set", async () => {
-        // Arrange
-        const inputs: Inputs = {
-          platform: Platform.CLI,
-          projectPath: projectPath,
-        };
-        class MyClass {
-          tools: Tools = new MockTools();
-          async myMethod(inputs: Inputs): Promise<Result<string, FxError>> {
-            return ok(expectedResult);
-          }
-        }
-
-        // Act
-        hooks(MyClass, {
-          myMethod: [MockProjectSettingsLoaderMW(), EnvInfoLoaderMW(false)],
-        });
-        const my = new MyClass();
-        const res = await my.myMethod(inputs);
-
-        // Assert
-        assert.isTrue(res.isErr());
-        assert.equal((res as Err<string, FxError>).error.name, "NonActiveEnvError");
       });
     });
   });

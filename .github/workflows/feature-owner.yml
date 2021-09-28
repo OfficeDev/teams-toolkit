@@ -18,7 +18,7 @@ jobs:
           node-version: 14
 
       - name: assign-reviewer
-        uses: LongOddCode/assign-reviewer@0.2.3
+        uses: LongOddCode/assign-reviewer@0.2.2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           reviewers: '["chagong", "XiaofuHuang", "hund030", "KennethBWSong"]'

@@ -42,7 +42,7 @@ export function EnvInfoWriterMW(skip = false): Middleware {
           provisionOutputs,
           inputs.projectPath,
           ctx.envName,
-          ctx.contextV2!.cryptoProvider
+          ctx.contextV2?.cryptoProvider
         );
 
         if (envProfilePath.isOk()) {

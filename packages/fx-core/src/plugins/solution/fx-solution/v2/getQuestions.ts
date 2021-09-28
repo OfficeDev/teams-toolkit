@@ -521,7 +521,7 @@ export async function getQuestionsForAddResource(
         AskSubscriptionQuestion.func = async (
           inputs: Inputs
         ): Promise<Result<SubscriptionInfo, FxError>> => {
-          const res = await checkSubscription(ctx, envInfo, tokenProvider);
+          const res = await checkSubscription(envInfo, tokenProvider.azureAccountProvider);
           if (res.isOk()) {
             const sub = res.value;
             inputs.subscriptionId = sub.subscriptionId;

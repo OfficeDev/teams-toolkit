@@ -31,8 +31,12 @@ import AzureAccountManager from "./commonlib/azureLogin";
 
 const showEnvList: Array<string> = [];
 let environmentTreeProvider: CommandsTreeViewProvider;
+let collaboratorsRecordCache: Record<string, TreeItem[]> = {};
+let permissionCache: Record<string, boolean> = {};
 
-export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
+export async function registerEnvTreeHandler(
+  forceUpdateCollaboratorList = true
+): Promise<Result<Void, FxError>> {
   if (isMultiEnvEnabled() && vscode.workspace.workspaceFolders) {
     const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];
     const workspacePath: string = workspaceFolder.uri.fsPath;
@@ -80,19 +84,32 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
       await environmentTreeProvider.add(envSubItems);
     }
 
-    const collaboratorsItem = await getAllCollaboratorList(envNamesResult.value);
+    const collaboratorsItem = await getAllCollaboratorList(
+      envNamesResult.value,
+      forceUpdateCollaboratorList
+    );
     await environmentTreeProvider.add(collaboratorsItem);
   }
   return ok(Void);
 }
 
-export async function getAllCollaboratorList(envs: string[]): Promise<TreeItem[]> {
+export async function getAllCollaboratorList(envs: string[], force = false): Promise<TreeItem[]> {
   let result: TreeItem[] = [];
 
   if (environmentTreeProvider && isRemoteCollaborateEnabled()) {
     const loginStatus = await AppStudioLogin.getInstance().getStatus();
 
-    const collaboratorsRecord = await listAllCollaborators(envs);
+    if (force || loginStatus.status !== signedIn) {
+      collaboratorsRecordCache = {};
+      permissionCache = {};
+    }
+
+    const collaboratorsRecord =
+      Object.keys(collaboratorsRecordCache).length > 0
+        ? collaboratorsRecordCache
+        : await listAllCollaborators(envs);
+    collaboratorsRecordCache = collaboratorsRecord;
+
     for (const env of envs) {
       const collaboratorParentNode: TreeItem = {
         commandId: `fx-extension.listcollaborator.parentNode.${env}`,
@@ -106,7 +123,8 @@ export async function getAllCollaboratorList(envs: string[]): Promise<TreeItem[]
       result.push(collaboratorParentNode);
 
       if (loginStatus.status === signedIn) {
-        const canAddCollaborator = await checkPermission(env);
+        const canAddCollaborator = permissionCache[env] ?? (await checkPermission(env));
+        permissionCache[env] = canAddCollaborator;
         if (canAddCollaborator) {
           collaboratorParentNode.contextValue = "addCollaborator";
         }
@@ -126,11 +144,24 @@ export async function getAllCollaboratorList(envs: string[]): Promise<TreeItem[]
   return result;
 }
 
-export async function updateCollaboratorList(env: string): Promise<void> {
-  const collaboratorsItem = await getAllCollaboratorList([env]);
-  if (collaboratorsItem && collaboratorsItem.length > 0) {
-    await environmentTreeProvider.add(collaboratorsItem);
-  }
+export async function addCollaboratorToEnv(
+  env: string,
+  userObjectId: string,
+  email: string
+): Promise<void> {
+  const newCollaborator = {
+    commandId: `fx-extension.listcollaborator.${env}.${userObjectId}`,
+    label: email,
+    icon: "person",
+    isCustom: false,
+    tooltip: {
+      value: "",
+      isMarkdown: false,
+    },
+    parent: `fx-extension.listcollaborator.parentNode.${env}`,
+  };
+  collaboratorsRecordCache[env].push(newCollaborator);
+  await environmentTreeProvider.add([newCollaborator]);
 }
 
 function getTreeViewItemIcon(envName: string, activeEnv: string | undefined) {

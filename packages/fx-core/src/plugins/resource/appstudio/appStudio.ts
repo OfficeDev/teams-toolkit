@@ -8,7 +8,7 @@ import { AppStudioError } from "./errors";
 import { IPublishingAppDenition } from "./interfaces/IPublishingAppDefinition";
 import { AppStudioResultFactory } from "./results";
 import { getAppStudioEndpoint } from "../../..";
-import { Constants } from "./constants";
+import { Constants, ErrorMessages } from "./constants";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AppStudioClient {
@@ -431,6 +431,10 @@ export namespace AppStudioClient {
       throw error;
     }
 
+    if (checkUser(app, newUser)) {
+      return;
+    }
+
     const findUser = app.userList?.findIndex((user: IUserList) => user["aadId"] === newUser.aadId);
     if (findUser && findUser >= 0) {
       return;
@@ -439,5 +443,17 @@ export namespace AppStudioClient {
     app.userList?.push(newUser);
     const requester = createRequesterWithToken(appStudioToken);
     const response = await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app);
+    if (!response || !response.data || !checkUser(response.data as IAppDefinition, newUser)) {
+      throw new Error(ErrorMessages.GrantPermissionFailed);
+    }
+  }
+
+  function checkUser(app: IAppDefinition, newUser: IUserList): boolean {
+    const findUser = app.userList?.findIndex((user: IUserList) => user["aadId"] === newUser.aadId);
+    if (findUser && findUser >= 0) {
+      return true;
+    } else {
+      return false;
+    }
   }
 }

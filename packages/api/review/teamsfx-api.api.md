@@ -194,6 +194,8 @@ export interface Core {
     getQuestionsForUserTask?: (router: FunctionRouter, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
     grantPermission: (inputs: Inputs) => Promise<Result<any, FxError>>;
     // (undocumented)
+    listAllCollaborators: (inputs: Inputs) => Promise<Result<any, FxError>>;
+    // (undocumented)
     listCollaborator: (inputs: Inputs) => Promise<Result<any, FxError>>;
     // (undocumented)
     localDebug: (inputs: Inputs) => Promise<Result<Void, FxError>>;
@@ -1157,6 +1159,8 @@ export interface Solution {
     getQuestionsForUserTask?: (func: Func, ctx: SolutionContext) => Promise<Result<QTreeNode | undefined, FxError>>;
     grantPermission?: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
     // (undocumented)
+    listAllCollaborators?: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
+    // (undocumented)
     listCollaborator?: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
     // (undocumented)
     localDebug: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
@@ -1247,6 +1251,8 @@ export enum Stage {
     deploy = "deploy",
     // (undocumented)
     grantPermission = "grantPermission",
+    // (undocumented)
+    listAllCollaborators = "listAllCollaborators",
     // (undocumented)
     listCollaborator = "listCollaborator",
     // (undocumented)

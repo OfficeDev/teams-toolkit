@@ -79,6 +79,11 @@ export default class Preview extends YargsCommand {
       choices: [constants.Browser.chrome, constants.Browser.edge, constants.Browser.default],
       default: constants.Browser.default,
     });
+    yargs.option("browser-arg", {
+      description:
+        'Argument to pass to the browser, requires --browser, can be used multiple times (e.g. --browser-args="--guest")',
+      string: true,
+    });
     yargs.option("sharepoint-site", {
       description:
         "SharePoint site URL, like {your-tenant-name}.sharepoint.com [only for SPFx project remote preview]",
@@ -117,6 +122,15 @@ export default class Preview extends YargsCommand {
       const browser = args.browser as constants.Browser;
       this.telemetryProperties[TelemetryProperty.PreviewBrowser] = browser;
 
+      const browserArguments: string[] = [];
+      if (args["browser-arg"]) {
+        if (Array.isArray(args["browser-arg"])) {
+          args["browser-arg"].forEach((x) => browserArguments.push(x));
+        } else {
+          browserArguments.push(args["browser-arg"] as string);
+        }
+      }
+
       // parse sharepoint site url to get workbench url
       if (args["sharepoint-site"]) {
         try {
@@ -139,8 +153,8 @@ export default class Preview extends YargsCommand {
 
       const result =
         previewType === "local"
-          ? await this.localPreview(workspaceFolder, browser)
-          : await this.remotePreview(workspaceFolder, browser, args.env as any);
+          ? await this.localPreview(workspaceFolder, browser, browserArguments)
+          : await this.remotePreview(workspaceFolder, browser, args.env as any, browserArguments);
       if (result.isErr()) {
         throw result.error;
       }
@@ -158,7 +172,8 @@ export default class Preview extends YargsCommand {
 
   private async localPreview(
     workspaceFolder: string,
-    browser: constants.Browser
+    browser: constants.Browser,
+    browserArguments: string[] = []
   ): Promise<Result<null, FxError>> {
     let coreResult = await activate();
     if (coreResult.isErr()) {
@@ -195,7 +210,12 @@ export default class Preview extends YargsCommand {
 
     if (includeSpfx) {
       const spfxRoot = path.join(workspaceFolder, constants.spfxFolderName);
-      return this.spfxPreview(spfxRoot, browser, "https://localhost:5432/workbench");
+      return this.spfxPreview(
+        spfxRoot,
+        browser,
+        "https://localhost:5432/workbench",
+        browserArguments
+      );
     }
 
     const frontendRoot = path.join(workspaceFolder, constants.frontendFolderName);
@@ -311,7 +331,8 @@ export default class Preview extends YargsCommand {
     result = await this.openTeamsWebClient(
       tenantId.length === 0 ? undefined : tenantId,
       localTeamsAppId,
-      browser
+      browser,
+      browserArguments
     );
     if (result.isErr()) {
       return result;
@@ -416,7 +437,8 @@ export default class Preview extends YargsCommand {
 
   private async openSPFxWebClient(
     browser: constants.Browser,
-    url: string
+    url: string,
+    browserArguments: string[] = []
   ): Promise<Result<null, FxError>> {
     cliTelemetry.sendTelemetryEvent(
       TelemetryEvent.PreviewSPFxOpenBrowserStart,
@@ -438,7 +460,7 @@ export default class Preview extends YargsCommand {
     ];
     cliLogger.necessaryLog(LogLevel.Info, utils.getColorizedString(message));
     try {
-      await commonUtils.openBrowser(browser, url);
+      await commonUtils.openBrowser(browser, url, browserArguments);
     } catch {
       const error = errors.OpeningBrowserFailed(browser);
       cliTelemetry.sendTelemetryErrorEvent(
@@ -465,7 +487,8 @@ export default class Preview extends YargsCommand {
   private async spfxPreview(
     spfxRoot: string,
     browser: constants.Browser,
-    url: string
+    url: string,
+    browserArguments: string[] = []
   ): Promise<Result<null, FxError>> {
     if (!(await fs.pathExists(spfxRoot))) {
       return err(errors.RequiredPathNotExists(spfxRoot));
@@ -477,7 +500,7 @@ export default class Preview extends YargsCommand {
       }
     }
     {
-      const result = await this.openSPFxWebClient(browser, url);
+      const result = await this.openSPFxWebClient(browser, url, browserArguments);
       if (result.isErr()) {
         return err(result.error);
       }
@@ -488,7 +511,8 @@ export default class Preview extends YargsCommand {
   private async remotePreview(
     workspaceFolder: string,
     browser: constants.Browser,
-    env: string | undefined
+    env: string | undefined,
+    browserArguments: string[] = []
   ): Promise<Result<null, FxError>> {
     /* === get remote teams app id === */
     const coreResult = await activate(workspaceFolder);
@@ -519,7 +543,7 @@ export default class Preview extends YargsCommand {
         return err(errors.NoUrlForSPFxRemotePreview());
       }
       const spfxRoot = path.join(workspaceFolder, constants.spfxFolderName);
-      return this.spfxPreview(spfxRoot, browser, this.sharepointSiteUrl);
+      return this.spfxPreview(spfxRoot, browser, this.sharepointSiteUrl, browserArguments);
     }
 
     const tenantId = config?.config
@@ -539,7 +563,8 @@ export default class Preview extends YargsCommand {
     const result = await this.openTeamsWebClient(
       tenantId.length === 0 ? undefined : tenantId,
       remoteTeamsAppId,
-      browser
+      browser,
+      browserArguments
     );
     if (result.isErr()) {
       return result;
@@ -945,7 +970,8 @@ export default class Preview extends YargsCommand {
   private async openTeamsWebClient(
     tenantIdFromConfig: string | undefined,
     teamsAppId: string,
-    browser: constants.Browser
+    browser: constants.Browser,
+    browserArguments: string[] = []
   ): Promise<Result<null, FxError>> {
     cliTelemetry.sendTelemetryEvent(
       TelemetryEvent.PreviewSideloadingStart,
@@ -997,7 +1023,7 @@ export default class Preview extends YargsCommand {
     ];
     cliLogger.necessaryLog(LogLevel.Info, utils.getColorizedString(message));
     try {
-      await commonUtils.openBrowser(browser, sideloadingUrl);
+      await commonUtils.openBrowser(browser, sideloadingUrl, browserArguments);
     } catch {
       const error = errors.OpeningBrowserFailed(browser);
       cliTelemetry.sendTelemetryErrorEvent(

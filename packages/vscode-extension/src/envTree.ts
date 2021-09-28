@@ -22,7 +22,7 @@ import { CommandsTreeViewProvider } from "./treeview/commandsTreeViewProvider";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
 import { LocalEnvironment } from "./constants";
 import * as StringResources from "./resources/Strings.json";
-import { checkPermission, listCollaborator, tools } from "./handlers";
+import { checkPermission, listAllCollaborators, tools } from "./handlers";
 import { signedIn } from "./commonlib/common/constant";
 import { AppStudioLogin } from "./commonlib/appStudioLogin";
 import * as fs from "fs-extra";
@@ -77,60 +77,59 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
       }
 
       envSubItems = envSubItems.concat(await getSubscriptionAndResourceGroupNode(item));
-      envSubItems = envSubItems.concat(await getCollaboratorList(item));
       await environmentTreeProvider.add(envSubItems);
     }
+
+    const collaboratorsItem = await getAllCollaboratorList(envNamesResult.value);
+    await environmentTreeProvider.add(collaboratorsItem);
   }
   return ok(Void);
 }
 
-export async function getCollaboratorList(env: string): Promise<TreeItem[]> {
+export async function getAllCollaboratorList(envs: string[]): Promise<TreeItem[]> {
+  let result: TreeItem[] = [];
+
   if (environmentTreeProvider && isRemoteCollaborateEnabled()) {
-    const collaboratorParentNode: TreeItem = {
-      commandId: `fx-extension.listcollaborator.parentNode.${env}`,
-      label: StringResources.vsc.commandsTreeViewProvider.collaboratorParentNode,
-      icon: "organization",
-      isCustom: false,
-      parent: "fx-extension.environment." + env,
-      expanded: false,
-    };
+    const loginStatus = await AppStudioLogin.getInstance().getStatus();
 
-    let userList: TreeItem[] = [];
+    const collaboratorsRecord = await listAllCollaborators(envs);
+    for (const env of envs) {
+      const collaboratorParentNode: TreeItem = {
+        commandId: `fx-extension.listcollaborator.parentNode.${env}`,
+        label: StringResources.vsc.commandsTreeViewProvider.collaboratorParentNode,
+        icon: "organization",
+        isCustom: false,
+        parent: "fx-extension.environment." + env,
+        expanded: false,
+      };
 
-    const parentCommand = environmentTreeProvider.findCommand("fx-extension.environment." + env);
-    if (parentCommand) {
-      const loginStatus = await AppStudioLogin.getInstance().getStatus();
-      if (loginStatus.status == signedIn) {
+      result.push(collaboratorParentNode);
+
+      if (loginStatus.status === signedIn) {
         const canAddCollaborator = await checkPermission(env);
         if (canAddCollaborator) {
           collaboratorParentNode.contextValue = "addCollaborator";
         }
-        if (isRemoteCollaborateEnabled()) {
-          userList = await listCollaborator(env);
-        }
+
+        result = result.concat(collaboratorsRecord[env]);
       } else {
-        userList = [
-          {
-            commandId: `fx-extension.listcollaborator.${env}`,
-            label: StringResources.vsc.commandsTreeViewProvider.loginM365AccountToViewCollaborators,
-            icon: "warning",
-            isCustom: true,
-            parent: `fx-extension.listcollaborator.parentNode.${env}`,
-          },
-        ];
+        result.push({
+          commandId: `fx-extension.listcollaborator.${env}`,
+          label: StringResources.vsc.commandsTreeViewProvider.loginM365AccountToViewCollaborators,
+          icon: "warning",
+          isCustom: true,
+          parent: `fx-extension.listcollaborator.parentNode.${env}`,
+        });
       }
     }
-
-    return [collaboratorParentNode].concat(userList);
-  } else {
-    return [];
   }
+  return result;
 }
 
 export async function updateCollaboratorList(env: string): Promise<void> {
-  const userList = await getCollaboratorList(env);
-  if (userList && userList.length > 0) {
-    await environmentTreeProvider.add(userList);
+  const collaboratorsItem = await getAllCollaboratorList([env]);
+  if (collaboratorsItem && collaboratorsItem.length > 0) {
+    await environmentTreeProvider.add(collaboratorsItem);
   }
 }
 

@@ -538,7 +538,7 @@ export class FxCore implements Core {
     QuestionModelMW,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
-    EnvInfoWriterMW(),
+    EnvInfoWriterMW(true),
     LocalSettingsWriterMW,
   ])
   async localDebug(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
@@ -799,6 +799,20 @@ export class FxCore implements Core {
     return await ctx!.solution!.listCollaborator!(ctx!.solutionContext!);
   }
 
+  @hooks([
+    ErrorHandlerMW,
+    ProjectMigratorMW,
+    ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW(true),
+    SolutionLoaderMW(),
+    QuestionModelMW,
+    ContextInjectorMW,
+  ])
+  async listAllCollaborators(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    currentStage = Stage.listAllCollaborators;
+    return await ctx!.solution!.listAllCollaborators!(ctx!.solutionContext!);
+  }
+
   async _getQuestionsForUserTask(
     ctx: SolutionContext | v2.Context,
     solution: Solution | SolutionPlugin,
@@ -901,13 +915,7 @@ export class FxCore implements Core {
     return ok(undefined);
   }
 
-  @hooks([
-    ErrorHandlerMW,
-    ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(true),
-    ContextInjectorMW,
-    EnvInfoWriterMW(),
-  ])
+  @hooks([ErrorHandlerMW, ProjectSettingsLoaderMW, EnvInfoLoaderMW(true), ContextInjectorMW])
   async encrypt(
     plaintext: string,
     inputs: Inputs,
@@ -927,13 +935,7 @@ export class FxCore implements Core {
     }
   }
 
-  @hooks([
-    ErrorHandlerMW,
-    ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(true),
-    ContextInjectorMW,
-    EnvInfoWriterMW(),
-  ])
+  @hooks([ErrorHandlerMW, ProjectSettingsLoaderMW, EnvInfoLoaderMW(true), ContextInjectorMW])
   async decrypt(
     ciphertext: string,
     inputs: Inputs,

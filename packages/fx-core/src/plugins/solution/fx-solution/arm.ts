@@ -45,6 +45,7 @@ import { DeployArmTemplatesSteps, ProgressHelper } from "./utils/progressHelper"
 import dateFormat from "dateformat";
 import { getTemplatesFolder } from "../../../folder";
 import { ensureBicep } from "./utils/depsChecker/bicepChecker";
+import { Utils } from "../../resource/frontend/utils";
 
 // Old folder structure constants
 const templateFolder = "templates";
@@ -698,8 +699,9 @@ async function backupExistingFilesIfNecessary(ctx: SolutionContext): Promise<voi
   const armBaseFolder = path.join(ctx.root, templatesFolder);
   const parameterJsonFolder = path.join(ctx.root, configsFolder);
 
-  const needsBackup = !(await areFoldersEmpty([armBaseFolder, parameterJsonFolder]));
-  if (needsBackup) {
+  const files = await Utils.listFilePaths(parameterJsonFolder, "azure.parameter*");
+  const armBaseFolderExist = await fs.pathExists(armBaseFolder);
+  if (armBaseFolderExist || files.length > 0) {
     const backupFolder = path.join(
       ctx.root,
       templateFolder,
@@ -708,24 +710,16 @@ async function backupExistingFilesIfNecessary(ctx: SolutionContext): Promise<voi
     ); // example: ./infra/azure/backup/20210823080000000
     const templateBackupFolder = path.join(backupFolder, templateFolder);
     const parameterBackupFolder = path.join(backupFolder, parameterFolder);
-
-    await fs.move(armBaseFolder, templateBackupFolder);
-    await fs.move(parameterJsonFolder, parameterBackupFolder);
-  }
-}
-
-async function areFoldersEmpty(folderPaths: string[]): Promise<boolean> {
-  let isEmpty = true;
-  for (const folderPath of folderPaths) {
-    if (await fs.pathExists(folderPath)) {
-      const files = await fs.readdir(folderPath);
-      if (files.length > 0) {
-        isEmpty = false;
-        break;
-      }
+    await fs.ensureDir(backupFolder);
+    await fs.ensureDir(parameterBackupFolder);
+    if (armBaseFolderExist) {
+      await fs.move(armBaseFolder, templateBackupFolder);
+    }
+    for (const file of files) {
+      const baseName = path.basename(file);
+      await fs.move(file, path.join(parameterBackupFolder, baseName));
     }
   }
-  return isEmpty;
 }
 
 async function wrapGetDeploymentError(

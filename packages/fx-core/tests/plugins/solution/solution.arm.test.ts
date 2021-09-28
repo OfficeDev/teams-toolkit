@@ -344,7 +344,7 @@ describe("Deploy ARM Template to Azure", () => {
   "contentVersion": "1.0.0.0",
   "parameters": {
     "resourceBaseName": {
-      "value": "{{SOLUTION__RESOURCE_BASE_NAME}}"
+      "value": "mytestappdefault"
     },
     "aadClientId": {
       "value": "{{FX_RESOURCE_AAD_APP_FOR_TEAMS__CLIENTID}}"

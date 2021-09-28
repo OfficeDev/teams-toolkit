@@ -61,6 +61,7 @@ const parameterFileNameTemplate = `azure.parameters.${EnvNamePlaceholder}.json`;
 
 // constant string
 const resourceBaseName = "resourceBaseName";
+const parameterName = "parameters";
 
 // Get ARM template content from each resource plugin and output to project folder
 export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<any, FxError>> {
@@ -333,9 +334,9 @@ export async function copyParameterJson(
   const targetParameterFilePath = path.join(parameterFolderPath, targetParameterFileName);
   const sourceParameterFilePath = path.join(parameterFolderPath, sourceParameterFileName);
   const targetParameterContent = await fs.readJson(sourceParameterFilePath);
-  if (targetParameterContent["parameters"][resourceBaseName]) {
+  if (targetParameterContent[parameterName][resourceBaseName]) {
     const appName = ctx.projectSettings!.appName;
-    targetParameterContent["parameters"][resourceBaseName] = {
+    targetParameterContent[parameterName][resourceBaseName] = {
       value: generateResourceBaseName(appName, targetEnvName),
     };
   }

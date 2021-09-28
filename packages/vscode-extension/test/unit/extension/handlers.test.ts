@@ -371,6 +371,10 @@ suite("handlers", () => {
         Promise.resolve(
           ok({
             state: CollaborationState.OK,
+            userInfo: {
+              userObjectId: "fake-user-object-id",
+              userPrincipalName: "fake-user-principle-name",
+            },
             permissions: [
               {
                 name: "name",

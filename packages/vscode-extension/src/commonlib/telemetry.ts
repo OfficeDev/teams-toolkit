@@ -60,7 +60,7 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
     properties?: { [p: string]: string },
     measurements?: { [p: string]: number }
   ): void {
-    this.logger.debug(eventName, properties, measurements);
+    this.logger?.debug(eventName, properties, measurements);
   }
 
   logTelemetryErrorEvent(
@@ -69,7 +69,7 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
     measurements?: { [p: string]: number },
     errorProps?: string[]
   ): void {
-    this.logger.debug(eventName, properties, measurements, errorProps);
+    this.logger?.debug(eventName, properties, measurements, errorProps);
   }
 
   logTelemetryException(
@@ -77,7 +77,7 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
     properties?: { [p: string]: string },
     measurements?: { [p: string]: number }
   ): void {
-    this.logger.debug(error, properties, measurements);
+    this.logger?.debug(error, properties, measurements);
   }
 
   sendTelemetryErrorEvent(

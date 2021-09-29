@@ -10,11 +10,6 @@ import {
   V1ManifestFileName,
   ProjectSettingsFileName,
   EnvConfig,
-  InputConfigsFolderName,
-  err,
-  FxError,
-  Result,
-  ok,
 } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import * as fs from "fs-extra";
@@ -31,7 +26,6 @@ import {
 import { environmentManager } from "./environment";
 import { ConstantString } from "../common/constants";
 import { isMultiEnvEnabled } from "../common";
-import { InvalidProjectError, InvalidProjectSettingsFileError, ReadFileError } from ".";
 
 export function validateProject(solutionContext: SolutionContext): string | undefined {
   const res = validateSettings(solutionContext.projectSettings);

@@ -44,12 +44,7 @@ import { isMultiEnvEnabled } from "../common";
 import Ajv from "ajv";
 import * as draft6MetaSchema from "ajv/dist/refs/json-schema-draft-06.json";
 import * as envConfigSchema from "@microsoft/teamsfx-api/build/schemas/envConfig.json";
-import {
-  InvalidProjectError,
-  InvalidProjectSettingsFileError,
-  isValidProject,
-  ReadFileError,
-} from ".";
+import { InvalidProjectSettingsFileError } from ".";
 
 export interface EnvProfileFiles {
   envProfile: string;

@@ -58,8 +58,9 @@ jobs:
           VAR=$(git diff --cached --name-only)
           if [ ! -z "$VAR" ]
           then 
-            echo "There may be some unformatted files such as $VAR in your PR, please run these commands on Git Bash terminal: "
-            echo "1. FILEPATH=$(realpath .github/scripts/lint-pr.sh)"
-            echo "2. npx lerna exec -- bash $FILEPATH ${your-PR-target-branch}"
+            echo "There may be some unformatted files such as $VAR in your PR, please run following commands on Git Bash terminal: "
+            echo "1. npm run setup"
+            echo "2. FILEPATH=$(realpath .github/scripts/lint-pr.sh)"
+            echo "3. npx lerna exec -- bash $FILEPATH ${your-PR-target-branch}"
             exit 1
           fi

@@ -7,6 +7,7 @@ import {
   err,
   Void,
   AzureSolutionSettings,
+  returnSystemError,
 } from "@microsoft/teamsfx-api";
 import { getStrings, isMultiEnvEnabled } from "../../../../common/tools";
 import {
@@ -23,10 +24,19 @@ import {
   getAzureSolutionSettings,
   getSelectedPlugins,
   fillInSolutionSettings,
+  isAzureProject,
 } from "./utils";
 import path from "path";
 import fs from "fs-extra";
-import { getTemplatesFolder } from "../../../..";
+import {
+  DEFAULT_PERMISSION_REQUEST,
+  getTemplatesFolder,
+  SolutionError,
+  SolutionTelemetryComponentName,
+  SolutionTelemetryEvent,
+  SolutionTelemetryProperty,
+  SolutionTelemetrySuccess,
+} from "../../../..";
 import { LocalSettingsProvider } from "../../../../common/localSettingsProvider";
 
 export async function scaffoldSourceCode(
@@ -36,6 +46,15 @@ export async function scaffoldSourceCode(
   const blockResult = blockV1Project(ctx.projectSetting.solutionSettings);
   if (blockResult.isErr()) {
     return err(blockResult.error);
+  }
+  if (inputs.projectPath === undefined) {
+    return err(
+      returnSystemError(
+        new Error("projectPath is undefined"),
+        "Solution",
+        SolutionError.InternelError
+      )
+    );
   }
   const lang = inputs[AzureSolutionQuestionNames.ProgrammingLanguage] as string;
   if (lang) {
@@ -70,6 +89,20 @@ export async function scaffoldSourceCode(
       `Success: ${getStrings().solution.ScaffoldSuccessNotice}`,
       false
     );
+
+    if (isAzureProject(solutionSettings)) {
+      await fs.writeJSON(`${inputs.projectPath}/permissions.json`, DEFAULT_PERMISSION_REQUEST, {
+        spaces: 4,
+      });
+      ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.Create, {
+        [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+        [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
+        [SolutionTelemetryProperty.Resources]: solutionSettings.azureResources.join(";"),
+        [SolutionTelemetryProperty.Capabilities]: solutionSettings.capabilities.join(";"),
+        [SolutionTelemetryProperty.ProgrammingLanguage]:
+          ctx.projectSetting?.programmingLanguage ?? "",
+      });
+    }
     return ok(Void);
   } else {
     return err(result.error);

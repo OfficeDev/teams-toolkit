@@ -32,6 +32,7 @@ import {
   deployAdapter,
   executeUserTaskAdapter,
   generateResourceTemplateAdapter,
+  provisionResourceAdapter,
   scaffoldSourceCodeAdapter,
 } from "../../utils4v2";
 
@@ -55,6 +56,15 @@ export class FrontendPluginV2 implements ResourcePlugin {
     inputs: Inputs
   ): Promise<Result<ResourceTemplate, FxError>> {
     return await generateResourceTemplateAdapter(ctx, inputs, this.plugin);
+  }
+
+  async provisionResource(
+    ctx: Context,
+    inputs: ProvisionInputs,
+    envInfo: Readonly<v2.EnvInfoV2>,
+    tokenProvider: TokenProvider
+  ): Promise<Result<ResourceProvisionOutput, FxError>> {
+    return provisionResourceAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
   }
 
   async configureResource(

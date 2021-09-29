@@ -6,6 +6,7 @@ import * as fs from "fs-extra";
 import {
   ConfigFolderName,
   ConfigMap,
+  CryptoProvider,
   InputConfigsFolderName,
   Json,
   LocalSettings,
@@ -20,6 +21,11 @@ import {
 import { isMultiEnvEnabled } from "./tools";
 
 export const localSettingsFileName = "localSettings.json";
+
+const crypto = "crypto";
+const clientSecret = "clientSecret";
+const SimpleAuthEnvironmentVariableParams = "SimpleAuthEnvironmentVariableParams";
+const botPassword = "botPassword";
 
 export class LocalSettingsProvider {
   public readonly localSettingsFilePath: string;
@@ -106,7 +112,7 @@ export class LocalSettingsProvider {
     return localSettings;
   }
 
-  public async load(): Promise<LocalSettings | undefined> {
+  public async load(cryptoProvider?: CryptoProvider): Promise<LocalSettings | undefined> {
     if (await fs.pathExists(this.localSettingsFilePath)) {
       const localSettingsJson = await fs.readJSON(this.localSettingsFilePath);
       const localSettings: LocalSettings = {
@@ -117,21 +123,95 @@ export class LocalSettingsProvider {
         bot: ConfigMap.fromJSON(localSettingsJson.bot),
       };
 
+      if (localSettings && cryptoProvider) {
+        this.decryptLocalSettings(localSettings, cryptoProvider);
+      }
       return localSettings;
     } else {
       return undefined;
     }
   }
-  public async loadV2(): Promise<Json | undefined> {
+
+  public async loadV2(cryptoProvider?: CryptoProvider): Promise<Json | undefined> {
     if (await fs.pathExists(this.localSettingsFilePath)) {
       const localSettingsJson: Json = await fs.readJSON(this.localSettingsFilePath);
+      if (localSettingsJson && cryptoProvider) {
+        this.decryptLocalSettings(localSettingsJson, cryptoProvider);
+      }
       return localSettingsJson;
     } else {
       return undefined;
     }
   }
-  public async save(localSettings: LocalSettings | Json): Promise<void> {
+
+  public decryptLocalSettings(
+    localSettings: LocalSettings | Json,
+    cryptoProvider: CryptoProvider
+  ): void {
+    if (localSettings.auth) {
+      if (
+        localSettings.auth.get(clientSecret) &&
+        localSettings.auth.get(clientSecret).startsWith(crypto)
+      ) {
+        const decryptedResult = cryptoProvider.decrypt(localSettings.auth.get(clientSecret));
+        if (decryptedResult.isOk()) {
+          localSettings.auth.set(clientSecret, decryptedResult.value);
+        }
+      }
+      if (
+        localSettings.auth.get(SimpleAuthEnvironmentVariableParams) &&
+        localSettings.auth.get(SimpleAuthEnvironmentVariableParams).startsWith(crypto)
+      ) {
+        const decryptedResult = cryptoProvider.decrypt(
+          localSettings.auth.get(SimpleAuthEnvironmentVariableParams)
+        );
+        if (decryptedResult.isOk()) {
+          localSettings.auth.set(SimpleAuthEnvironmentVariableParams, decryptedResult.value);
+        }
+      }
+    }
+    if (localSettings.bot) {
+      if (
+        localSettings.bot.get(botPassword) &&
+        localSettings.bot.get(botPassword).startsWith(crypto)
+      ) {
+        const decryptedResult = cryptoProvider.decrypt(localSettings.bot.get(botPassword));
+        if (decryptedResult.isOk()) {
+          localSettings.bot.set(botPassword, decryptedResult.value);
+        }
+      }
+    }
+  }
+
+  public async save(
+    localSettings: LocalSettings | Json,
+    cryptoProvider?: CryptoProvider
+  ): Promise<void> {
     await fs.createFile(this.localSettingsFilePath);
+    if (cryptoProvider) {
+      if (localSettings.auth) {
+        if (localSettings.auth.get(clientSecret)) {
+          const encryptedSecret = cryptoProvider.encrypt(localSettings.auth.get(clientSecret));
+          if (encryptedSecret.isOk()) {
+            localSettings.auth.set(clientSecret, encryptedSecret.value);
+          }
+        }
+        if (localSettings.auth.get(SimpleAuthEnvironmentVariableParams)) {
+          const encryptedSecret = cryptoProvider.encrypt(
+            localSettings.auth.get(SimpleAuthEnvironmentVariableParams)
+          );
+          if (encryptedSecret.isOk()) {
+            localSettings.auth.set(SimpleAuthEnvironmentVariableParams, encryptedSecret.value);
+          }
+        }
+      }
+      if (localSettings.bot && localSettings.bot.get(botPassword)) {
+        const encryptedSecret = cryptoProvider.encrypt(localSettings.bot.get(botPassword));
+        if (encryptedSecret.isOk()) {
+          localSettings.bot.set(botPassword, encryptedSecret.value);
+        }
+      }
+    }
     await fs.writeFile(this.localSettingsFilePath, JSON.stringify(localSettings, null, 4));
   }
 

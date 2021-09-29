@@ -108,7 +108,6 @@ jobs:
         run: |
           echo "::set-output name=CHANGED::$(git tag --points-at HEAD | xargs)"
           echo "::set-output name=TEMPLATE_VERSION::$(git tag --points-at HEAD | grep templates)"
-          echo "::set-output name=EXTENSION_VERSION_NUM::$(git tag --points-at HEAD | grep ms-teams-vscode-extension@ | cut -d '@' -f2)"
           echo "::set-output name=EXTENSION_VERSION::$(git tag --points-at HEAD | grep ms-teams-vscode-extension@)"
           echo "::set-output name=SIMPLEAUTH_VERSION::$(git tag --points-at HEAD | grep simpleauth)"
           echo "::set-output name=SIMPLEAUTH_VERSION_NUM::$(git tag --points-at HEAD| grep simpleauth| cut -d '@' -f2)"
@@ -302,14 +301,14 @@ jobs:
             npm install --only=production
             npx vsce package
 
-      - name: release daily VSCode extension to github
+      - name: release daily vscode extension as artifacts
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.ref == 'refs/heads/dev'  }}
-        uses: ncipollo/release-action@v1.7.3
+        uses: actions/upload-artifact@v2
         with:
-          token: ${{ secrets.CD_PAT }}
-          tag: 'vscode-extension-${{ steps.version-change.outputs.EXTENSION_VERSION_NUM }}'
-          artifacts: ./packages/**/*.vsix
-          prerelease: true
+          name: ${{ steps.version-change.outputs.EXTENSION_VERSION }}
+          path: ./packages/vscode-extension/*.vsix
+          if-no-files-found: error
+          retention-days: 20
 
       - name: release RC VSCode extension to github
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && contains(steps.version-change.outputs.CHANGED, 'rc') }}
@@ -317,7 +316,7 @@ jobs:
         with:
           token: ${{ secrets.CD_PAT }}
           tag: ${{ steps.version-change.outputs.EXTENSION_VERSION }}
-          artifacts: ./packages/**/*.vsix
+          artifacts: ./packages/vscode-extension/*.vsix
           prerelease: true
       
       - name: release stable VSCode extension to github
@@ -326,4 +325,4 @@ jobs:
         with:
           token: ${{ secrets.CD_PAT }}
           tag: ${{ steps.version-change.outputs.EXTENSION_VERSION }}
-          artifacts: ./packages/**/*.vsix
+          artifacts: ./packages/vscode-extension/*.vsix

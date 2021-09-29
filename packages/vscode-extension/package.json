@@ -98,7 +98,7 @@
         {
           "id": "teamsfx-accounts",
           "name": "Accounts",
-          "when": "!fx-extension.sidebarWelcome || fx-extension.sidebarWelcome.treeview"
+          "when": "fx-extension.sidebarWelcome.treeview"
         },
         {
           "id": "teamsfx-environment",
@@ -108,44 +108,44 @@
         {
           "id": "teamsfx-development",
           "name": "Development",
-          "when": "(!fx-extension.sidebarWelcome || fx-extension.sidebarWelcome.treeview) && !fx-extension.customizedTreeview"
+          "when": "fx-extension.sidebarWelcome.treeview && !fx-extension.customizedTreeview"
         },
         {
           "type": "webview",
           "id": "teamsfx-development-webview",
           "name": "Development",
-          "when": "(!fx-extension.sidebarWelcome || fx-extension.sidebarWelcome.treeview) && fx-extension.customizedTreeview"
+          "when": "fx-extension.sidebarWelcome.treeview && fx-extension.customizedTreeview"
         },
         {
           "id": "teamsfx-deployment",
           "name": "Deployment",
-          "when": "(!fx-extension.sidebarWelcome || fx-extension.sidebarWelcome.treeview) && !fx-extension.customizedTreeview"
+          "when": "fx-extension.sidebarWelcome.treeview && !fx-extension.customizedTreeview"
         },
         {
           "type": "webview",
           "id": "teamsfx-deployment-webview",
           "name": "Deployment",
-          "when": "(!fx-extension.sidebarWelcome || fx-extension.sidebarWelcome.treeview) && fx-extension.customizedTreeview"
+          "when": "fx-extension.sidebarWelcome.treeview && fx-extension.customizedTreeview"
         },
         {
           "id": "teamsfx-help-and-feedback",
           "name": "Help and feedback",
-          "when": "!fx-extension.sidebarWelcome || fx-extension.sidebarWelcome.treeview"
+          "when": "fx-extension.sidebarWelcome.treeview"
         },
         {
           "id": "teamsfx-empty-project",
           "name": "Teams Toolkit",
-          "when": "fx-extension.sidebarWelcome && fx-extension.sidebarWelcome.default"
+          "when": "fx-extension.sidebarWelcome.default"
         },
         {
           "id": "teamsfx-empty-project-top",
           "name": "Teams Toolkit",
-          "when": "fx-extension.sidebarWelcome && fx-extension.sidebarWelcome.top"
+          "when": "fx-extension.sidebarWelcome.top"
         },
         {
           "id": "teamsfx-empty-project-bottom",
           "name": "Teams Toolkit",
-          "when": "fx-extension.sidebarWelcome && fx-extension.sidebarWelcome.bottom"
+          "when": "fx-extension.sidebarWelcome.bottom"
         }
       ]
     },

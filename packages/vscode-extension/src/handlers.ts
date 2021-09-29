@@ -153,9 +153,8 @@ export async function activate(): Promise<Result<Void, FxError>> {
             break;
         }
       }
-      vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome", true);
     } else {
-      vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome", false);
+      vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.treeview", true);
     }
 
     const telemetry = ExtTelemetry.reporter;
@@ -314,7 +313,7 @@ export async function migrateV1ProjectHandler(args?: any[]): Promise<Result<null
   );
   const result = await runCommand(Stage.migrateV1);
   await openMarkdownHandler();
-  await vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome", false);
+  await vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.treeview", false);
   return result;
 }
 

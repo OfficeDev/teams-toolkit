@@ -92,7 +92,7 @@ import { addCollaboratorToEnv, registerEnvTreeHandler } from "./envTree";
 import { selectAndDebug } from "./debug/runIconHandler";
 import * as path from "path";
 import { exp } from "./exp/index";
-import { TreatmentVariables } from "./exp/treatmentVariables";
+import { TreatmentVariables, TreatmentVariableValue } from "./exp/treatmentVariables";
 import { StringContext } from "./utils/stringContext";
 import { ext } from "./extensionVariables";
 import { InputConfigsFolderName } from "@microsoft/teamsfx-api";
@@ -119,6 +119,40 @@ export async function activate(): Promise<Result<Void, FxError>> {
     }
 
     if (!validProject) {
+      const expService = exp.getExpService();
+      if (expService) {
+        switch (
+          expService.getTreatmentVariable(
+            TreatmentVariables.VSCodeConfig,
+            TreatmentVariables.QuickStartInSidebar
+          )
+        ) {
+          case TreatmentVariableValue.TopSidebar:
+            vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.top", true);
+            break;
+          case TreatmentVariableValue.BottomSidebar:
+            vscode.commands.executeCommand(
+              "setContext",
+              "fx-extension.sidebarWelcome.bottom",
+              true
+            );
+            break;
+          case TreatmentVariableValue.OriginalTreeView:
+            vscode.commands.executeCommand(
+              "setContext",
+              "fx-extension.sidebarWelcome.treeview",
+              true
+            );
+            break;
+          default:
+            vscode.commands.executeCommand(
+              "setContext",
+              "fx-extension.sidebarWelcome.default",
+              true
+            );
+            break;
+        }
+      }
       vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome", true);
     } else {
       vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome", false);

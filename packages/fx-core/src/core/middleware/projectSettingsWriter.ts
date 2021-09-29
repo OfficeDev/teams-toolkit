@@ -7,9 +7,11 @@ import {
   AzureSolutionSettings,
   ConfigFolderName,
   err,
+  FxError,
   InputConfigsFolderName,
   Inputs,
   ProjectSettingsFileName,
+  Result,
   StaticPlatforms,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
@@ -53,6 +55,8 @@ export const ProjectSettingsWriterMW: Middleware = async (
     await fs.writeFile(settingFile, JSON.stringify(projectSettings, null, 4));
     core.tools.logProvider.debug(`[core] persist project setting file: ${settingFile}`);
   } catch (e) {
-    ctx.res = err(WriteFileError(e));
+    if ((ctx.res as Result<any, FxError>).isOk()) {
+      ctx.res = err(WriteFileError(e));
+    }
   }
 };

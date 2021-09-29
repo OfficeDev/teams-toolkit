@@ -229,7 +229,7 @@ describe("Core basic APIs", () => {
 
   async function case1() {
     const expectedInputs: Inputs = {
-      platform: Platform.CLI,
+      platform: Platform.VSCode,
       [CoreQuestionNames.AppName]: appName,
       [CoreQuestionNames.Folder]: os.tmpdir(),
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
@@ -275,7 +275,7 @@ describe("Core basic APIs", () => {
       );
     const core = new FxCore(tools);
     {
-      const inputs: Inputs = { platform: Platform.CLI };
+      const inputs: Inputs = { platform: Platform.VSCode };
       const res = await core.createProject(inputs);
       assert.isTrue(res.isOk() && res.value === projectPath);
       assert.deepEqual(expectedInputs, inputs);
@@ -302,8 +302,8 @@ describe("Core basic APIs", () => {
       const validRes = validateProject(solutionContext);
       assert.isTrue(validRes === undefined);
 
-      const solutioConfig = solutionContext.envInfo.profile.get("solution");
-      assert.isTrue(solutioConfig !== undefined);
+      const solutionConfig = solutionContext.envInfo.profile.get("solution");
+      assert.isTrue(solutionConfig !== undefined);
     }
     {
       const inputs: Inputs = { platform: Platform.CLI, projectPath: projectPath };

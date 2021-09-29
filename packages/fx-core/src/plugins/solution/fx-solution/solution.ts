@@ -2539,7 +2539,7 @@ export class TeamsAppSolution implements Solution {
     if (method === "addResource") {
       return this.executeAddResource(ctx);
     }
-    if (namespace.includes(SolutionSource)) {
+    if (namespace.includes("solution")) {
       if (method === "registerTeamsAppAndAad") {
         const maybeParams = extractParamForRegisterTeamsAppAndAad(ctx.answers);
         if (maybeParams.isErr()) {

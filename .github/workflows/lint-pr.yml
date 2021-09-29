@@ -62,5 +62,6 @@ jobs:
             echo "1. npm run setup"
             echo "2. FILEPATH=$(realpath .github/scripts/lint-pr.sh)"
             echo "3. npx lerna exec -- bash $FILEPATH ${your-PR-target-branch}"
+            echo "replace the ${your-PR-target-branch} as your PR target branch, like origin/dev or upstream/dev"
             exit 1
           fi

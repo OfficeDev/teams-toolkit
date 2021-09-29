@@ -196,36 +196,36 @@ describe("Core basic APIs", () => {
     });
   });
 
-  // describe("API V2", () => {
-  //   let mockedEnvRestore: RestoreFn;
-  //   beforeEach(() => {
-  //     mockedEnvRestore = mockedEnv({  TEAMSFX_APIV2: "true"});
-  //   });
-  //   afterEach(async () => {
-  //     mockedEnvRestore();
-  //   });
-  //   it("happy path: create from new, provision, deploy, localDebug, publish, getQuestion, getQuestionsForUserTask, getProjectConfig (API V2)", async ()=> {
-  //     await case1();
-  //   });
-  //   it("happy path: create from sample (API v2)", async ()=>{
-  //     await case2();
-  //   });
-  //   it("happy path: getQuestions for create (API v2)", async () => {
-  //     await case3();
-  //   });
-  //   it("happy path: getQuestions, getQuestionsForUserTask for static question (API V2)", async () => {
-  //     await case4();
-  //   });
-  //   it("crypto: encrypt, decrypt secrets (API V2)", async () => {
-  //     await case5();
-  //   });
-  //   it(`happy path: scaffold and create new env copy (API V2)`, async () => {
-  //     await envCase1();
-  //   });
-  //   it(`happy path: create and activate env (API V2)`, async () => {
-  //     await envCase2();
-  //   });
-  // });
+  describe("API V2", () => {
+    let mockedEnvRestore: RestoreFn;
+    beforeEach(() => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_APIV2: "true" });
+    });
+    afterEach(async () => {
+      mockedEnvRestore();
+    });
+    it("happy path: create from new, provision, deploy, localDebug, publish, getQuestion, getQuestionsForUserTask, getProjectConfig (API V2)", async () => {
+      await case1();
+    });
+    it("happy path: create from sample (API v2)", async () => {
+      await case2();
+    });
+    it("happy path: getQuestions for create (API v2)", async () => {
+      await case3();
+    });
+    it("happy path: getQuestions, getQuestionsForUserTask for static question (API V2)", async () => {
+      await case4();
+    });
+    it("crypto: encrypt, decrypt secrets (API V2)", async () => {
+      await case5();
+    });
+    it(`happy path: scaffold and create new env copy (API V2)`, async () => {
+      await envCase1();
+    });
+    it(`happy path: create and activate env (API V2)`, async () => {
+      await envCase2();
+    });
+  });
 
   async function case1() {
     const expectedInputs: Inputs = {

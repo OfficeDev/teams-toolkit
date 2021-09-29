@@ -9,11 +9,13 @@ import {
   FxError,
   Inputs,
   Json,
+  mergeConfigMap,
   ok,
   Plugin,
   PluginContext,
   QTreeNode,
   Result,
+  Solution,
   Stage,
   TokenProvider,
   Void,
@@ -27,6 +29,7 @@ import {
   ProvisionInputs,
   ResourceProvisionOutput,
   ResourceTemplate,
+  SolutionInputs,
 } from "@microsoft/teamsfx-api/build/v2";
 import { CryptoDataMatchers } from "../../common";
 import { ArmResourcePlugin, ScaffoldArmTemplateResult } from "../../common/armInterface";
@@ -125,12 +128,14 @@ export async function provisionResourceAdapter(
   if (!profile) {
     return err(InvalidProfileError(plugin.name, envInfo.profile));
   }
+  const solutionInputs: SolutionInputs = inputs;
+  profile.set(GLOBAL_CONFIG, ConfigMap.fromJSON(solutionInputs));
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
   pluginContext.envInfo = newEnvInfo(ctx.projectSetting.activeEnvironment);
-  pluginContext.envInfo.profile = profile;
+  pluginContext.envInfo.profile = flattenConfigMap(profile);
   pluginContext.envInfo.config = envInfo.config as EnvConfig;
   pluginContext.config = pluginContext.envInfo.profile.get(plugin.name) ?? new ConfigMap();
   if (plugin.preProvision) {
@@ -139,26 +144,51 @@ export async function provisionResourceAdapter(
       return err(preRes.error);
     }
   }
+
   const res = await plugin.provision(pluginContext);
   if (res.isErr()) {
     return err(res.error);
   }
-  if (plugin.postProvision) {
-    const postRes = await plugin.postProvision(pluginContext);
-    if (postRes.isErr()) {
-      return err(postRes.error);
+  pluginContext.envInfo.profile.delete(GLOBAL_CONFIG);
+  return ok(legacyConfig2EnvProfile(pluginContext.config, plugin.name));
+}
+
+// flattens output/secrets fields in config map for backward compatibility
+function flattenConfigMap(configMap: ConfigMap): ConfigMap {
+  const map = new ConfigMap();
+  for (const [k, v] of configMap.entries()) {
+    if (v instanceof ConfigMap) {
+      const value = flattenConfigMap(v);
+      if (k === "output" || k === "secrets") {
+        for (const [k, v] of value.entries()) {
+          map.set(k, v);
+        }
+      } else {
+        map.set(k, value);
+      }
+    } else {
+      map.set(k, v);
     }
   }
-  const output = pluginContext.config.toJSON();
+
+  return map;
+}
+
+// Convert legacy config map to env profile with output and secrets fields
+function legacyConfig2EnvProfile(
+  config: ConfigMap,
+  pluginName: string
+): { output: Json; secrets: Json } {
+  const output = config.toJSON();
   //separate secret keys from output
   const secrets: Json = {};
   for (const key of Object.keys(output)) {
-    if (CryptoDataMatchers.has(`${plugin.name}.${key}`)) {
+    if (CryptoDataMatchers.has(`${pluginName}.${key}`)) {
       secrets[key] = output[key];
       delete output[key];
     }
   }
-  return ok({ output: output, secrets: secrets });
+  return { output, secrets };
 }
 
 export async function configureResourceAdapter(
@@ -170,15 +200,26 @@ export async function configureResourceAdapter(
 ): Promise<Result<ResourceProvisionOutput, FxError>> {
   if (!plugin.postProvision) return err(PluginHasNoTaskImpl(plugin.displayName, "postProvision"));
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
+
+  const profile: ConfigMap | undefined = ConfigMap.fromJSON(envInfo.profile);
+  if (!profile) {
+    return err(InvalidProfileError(plugin.name, envInfo.profile));
+  }
+  const solutionInputs: SolutionInputs = inputs;
+  profile.set(GLOBAL_CONFIG, ConfigMap.fromJSON(solutionInputs));
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
-  setConfigs(plugin.name, pluginContext, envInfo.profile);
+  pluginContext.appStudioToken = tokenProvider.appStudioToken;
+  pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
+  pluginContext.envInfo = newEnvInfo(ctx.projectSetting.activeEnvironment);
+  pluginContext.envInfo.profile = flattenConfigMap(profile);
   pluginContext.envInfo.config = envInfo.config as EnvConfig;
+  pluginContext.config = pluginContext.envInfo.profile.get(plugin.name) ?? new ConfigMap();
+
   const postRes = await plugin.postProvision(pluginContext);
   if (postRes.isErr()) {
     return err(postRes.error);
   }
-  setProvisionOutputs(envInfo.profile, pluginContext);
-  return ok({ output: envInfo.profile, secrets: {} });
+  return ok(legacyConfig2EnvProfile(pluginContext.config, plugin.name));
 }
 
 export async function deployAdapter(
@@ -274,13 +315,22 @@ export async function executeUserTaskAdapter(
   if (!plugin.executeUserTask)
     return err(PluginHasNoTaskImpl(plugin.displayName, "executeUserTask"));
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
-  setConfigs(plugin.name, pluginContext, envInfo.profile);
-  pluginContext.appStudioToken = tokenProvider.appStudioToken;
+
+  const profile: ConfigMap | undefined = ConfigMap.fromJSON(envInfo.profile);
+  if (!profile) {
+    return err(InvalidProfileError(plugin.name, envInfo.profile));
+  }
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
+  pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
+  pluginContext.envInfo = newEnvInfo(ctx.projectSetting.activeEnvironment);
+  pluginContext.envInfo.profile = flattenConfigMap(profile);
+  pluginContext.envInfo.config = envInfo.config as EnvConfig;
+  pluginContext.config = pluginContext.envInfo.profile.get(plugin.name) ?? new ConfigMap();
+
   const res = await plugin.executeUserTask(func, pluginContext);
   if (res.isErr()) return err(res.error);
-  envInfo.profile[plugin.name] = pluginContext.config.toJSON();
+  envInfo.profile[plugin.name] = legacyConfig2EnvProfile(pluginContext.config, plugin.name);
   return ok(res.value);
 }
 

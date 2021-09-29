@@ -53,17 +53,16 @@ const templateFolder = "templates";
 const parameterFolder = "parameters";
 const bicepOrchestrationFileName = "main.bicep";
 const solutionLevelParameters = `param resourceBaseName string\n`;
-const solutionLevelParameterObject = {
-  resourceBaseName: {
-    value: "{{SOLUTION__RESOURCE_BASE_NAME}}",
-  },
-};
 
 // New folder structure constants
 const templatesFolder = "./templates/azure";
 const configsFolder = `.${ConfigFolderName}/configs`;
 const modulesFolder = "modules";
 const parameterFileNameTemplate = `azure.parameters.${EnvNamePlaceholder}.json`;
+
+// constant string
+const resourceBaseName = "resourceBaseName";
+const parameterName = "parameters";
 
 // Get ARM template content from each resource plugin and output to project folder
 export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<any, FxError>> {
@@ -166,8 +165,6 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
     getPluginContext(ctx, PluginNames.SOLUTION)
   );
   await progressHandler?.next(DeployArmTemplatesSteps.ExecuteDeployment);
-
-  generateResourceName(ctx);
 
   // update parameters
   const parameterJson = await getParameterJson(ctx);
@@ -333,9 +330,16 @@ export async function copyParameterJson(
   );
   const targetParameterFilePath = path.join(parameterFolderPath, targetParameterFileName);
   const sourceParameterFilePath = path.join(parameterFolderPath, sourceParameterFileName);
+  const targetParameterContent = await fs.readJson(sourceParameterFilePath);
+  if (targetParameterContent[parameterName][resourceBaseName]) {
+    const appName = ctx.projectSettings!.appName;
+    targetParameterContent[parameterName][resourceBaseName] = {
+      value: generateResourceBaseName(appName, targetEnvName),
+    };
+  }
 
   await fs.ensureDir(parameterFolderPath);
-  await fs.copy(sourceParameterFilePath, targetParameterFilePath);
+  await fs.writeFile(targetParameterFilePath, JSON.stringify(targetParameterContent, undefined, 4));
 }
 
 export async function getParameterJson(ctx: SolutionContext) {
@@ -367,8 +371,11 @@ export async function getParameterJson(ctx: SolutionContext) {
 async function doGenerateArmTemplate(ctx: SolutionContext): Promise<Result<any, FxError>> {
   const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
   const plugins = getActivatedResourcePlugins(azureSolutionSettings); // This function ensures return result won't be empty
-
-  const bicepOrchestrationTemplate = new BicepOrchestrationContent(plugins.map((p) => p.name));
+  const baseName = generateResourceBaseName(ctx.projectSettings!.appName, ctx.envInfo!.envName);
+  const bicepOrchestrationTemplate = new BicepOrchestrationContent(
+    plugins.map((p) => p.name),
+    baseName
+  );
   const moduleFiles = new Map<string, string>();
 
   // Get bicep content from each resource plugin
@@ -551,8 +558,8 @@ class BicepOrchestrationContent {
   private RenderContenxt: ArmTemplateRenderContext;
   private TemplateAdded = false;
 
-  constructor(pluginNames: string[]) {
-    Object.assign(this.ParameterJsonTemplate, solutionLevelParameterObject);
+  constructor(pluginNames: string[], baseName: string) {
+    this.ParameterJsonTemplate[resourceBaseName] = { value: baseName };
     this.RenderContenxt = new ArmTemplateRenderContext(pluginNames);
   }
 
@@ -674,14 +681,11 @@ function normalizeToEnvName(input: string): string {
   return input.toUpperCase().replace(/-/g, "_").replace(/\./g, "__"); // replace "-" to "_" and "." to "__"
 }
 
-function generateResourceName(ctx: SolutionContext): void {
+function generateResourceBaseName(appName: string, envName: string): string {
   const maxAppNameLength = 10;
-  const appName = ctx.projectSettings!.appName;
-  const suffix = ctx.envInfo.profile.get(GLOBAL_CONFIG)?.getString("resourceNameSuffix");
+  const macEnvNameLength = 10;
   const normalizedAppName = appName.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
-  ctx.envInfo.profile
-    .get(GLOBAL_CONFIG)
-    ?.set("resource_base_name", normalizedAppName.substr(0, maxAppNameLength) + suffix);
+  return normalizedAppName.substr(0, maxAppNameLength) + envName.substr(0, macEnvNameLength);
 }
 
 function escapeSecretPlaceholders(variables: Record<string, string>) {

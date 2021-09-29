@@ -204,7 +204,7 @@ Mocked simple auth output content`
   "contentVersion": "1.0.0.0",
   "parameters": {
     "resourceBaseName": {
-      "value": "{{SOLUTION__RESOURCE_BASE_NAME}}"
+      "value": "mytestappdefault"
     },
     "FrontendParameter": "FrontendParameterValue",
     "SimpleAuthParameter": "SimpleAuthParameterValue"
@@ -344,7 +344,7 @@ describe("Deploy ARM Template to Azure", () => {
   "contentVersion": "1.0.0.0",
   "parameters": {
     "resourceBaseName": {
-      "value": "{{SOLUTION__RESOURCE_BASE_NAME}}"
+      "value": "mytestappdefault"
     },
     "aadClientId": {
       "value": "{{FX_RESOURCE_AAD_APP_FOR_TEAMS__CLIENTID}}"
@@ -479,7 +479,7 @@ describe("Deploy ARM Template to Azure", () => {
     expect(parameterAfterDeploy).to.deep.equals(
       JSON.parse(`{
         "resourceBaseName": {
-          "value": "mytestapp${testResourceSuffix}"
+          "value": "mytestappdefault"
         },
         "aadClientId": {
           "value": "${testClientId}"

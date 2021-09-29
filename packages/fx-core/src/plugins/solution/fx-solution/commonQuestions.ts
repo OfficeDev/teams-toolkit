@@ -44,7 +44,6 @@ import {
 } from "../../../core/question";
 import { desensitize } from "../../../core/middleware/questionModel";
 import { ResourceGroupsCreateOrUpdateResponse } from "@azure/arm-resources/esm/models";
-import { isV2 } from "../../../core";
 
 const MsResources = "Microsoft.Resources";
 const ResourceGroups = "resourceGroups";
@@ -80,25 +79,10 @@ class CommonQuestions {
  *
  */
 export async function checkSubscription(
-  ctx: SolutionContext | v2.Context,
-  envInfo?: v2.EnvInfoV2,
-  tokenProvider?: TokenProvider
+  envInfo: v2.EnvInfoV2,
+  azureAccountProvider: AzureAccountProvider
 ): Promise<Result<SubscriptionInfo, FxError>> {
-  const azureAccountProvider = isV2()
-    ? tokenProvider?.azureAccountProvider
-    : (ctx as SolutionContext).azureAccountProvider;
-  if (!azureAccountProvider) {
-    return err(
-      returnSystemError(
-        new Error("azureAccountProvider is undefined"),
-        SolutionSource,
-        SolutionError.InternelError
-      )
-    );
-  }
-  const subscriptionId = isV2()
-    ? envInfo?.config.azure?.subscriptionId
-    : (ctx as SolutionContext).envInfo.config.azure?.subscriptionId;
+  const subscriptionId = envInfo.config.azure?.subscriptionId;
   if (!isMultiEnvEnabled() || !subscriptionId) {
     const askSubRes = await azureAccountProvider.getSelectedSubscription(true);
     return ok(askSubRes!);
@@ -116,7 +100,7 @@ export async function checkSubscription(
         SolutionError.SubscriptionNotFound,
         `The subscription '${subscriptionId}' is not found in the current account, please check the '${EnvConfigFileNameTemplate.replace(
           EnvNamePlaceholder,
-          isV2() ? envInfo!.envName : (ctx as SolutionContext).envInfo.envName
+          envInfo.envName
         )}' file.`,
         SolutionSource
       )
@@ -336,10 +320,20 @@ async function askCommonQuestions(
     );
   }
 
+  if (!azureAccountProvider) {
+    return err(
+      returnSystemError(
+        new Error("azureAccountProvider is undefined"),
+        "Solution",
+        SolutionError.InternelError
+      )
+    );
+  }
+
   const commonQuestions = new CommonQuestions();
 
   //1. check subscriptionId
-  const subscriptionResult = await checkSubscription(ctx);
+  const subscriptionResult = await checkSubscription(ctx.envInfo, azureAccountProvider);
   if (subscriptionResult.isErr()) {
     return err(subscriptionResult.error);
   }

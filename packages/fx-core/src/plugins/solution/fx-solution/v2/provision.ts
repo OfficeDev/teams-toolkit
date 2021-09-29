@@ -28,6 +28,7 @@ import {
   GLOBAL_CONFIG,
   PluginNames,
   SolutionError,
+  SOLUTION_PROVISION_SUCCEEDED,
   SUBSCRIPTION_ID,
   SUBSCRIPTION_NAME,
   SolutionSource,
@@ -42,6 +43,10 @@ import Container from "typedi";
 import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import _ from "lodash";
 import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
+import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
+import { isV2 } from "../../../..";
+import { REMOTE_TEAMS_APP_ID } from "..";
+import { Constants } from "../../../resource/appstudio/constants";
 
 export async function provisionResource(
   ctx: v2.Context,
@@ -72,6 +77,9 @@ export async function provisionResource(
   await tokenProvider.appStudioToken.getAccessToken();
 
   if (isAzureProject(azureSolutionSettings)) {
+    if (ctx.permissionRequestProvider === undefined) {
+      ctx.permissionRequestProvider = new PermissionRequestFileProvider(inputs.projectPath);
+    }
     const result = await ensurePermissionRequest(
       azureSolutionSettings,
       ctx.permissionRequestProvider
@@ -82,6 +90,9 @@ export async function provisionResource(
   }
 
   const newEnvInfo: EnvInfoV2 = _.cloneDeep(envInfo);
+  if (!newEnvInfo.profile[GLOBAL_CONFIG]) {
+    newEnvInfo.profile[GLOBAL_CONFIG] = {};
+  }
   if (isAzureProject(azureSolutionSettings)) {
     const appName = ctx.projectSetting.appName;
     const contextAdaptor = new ProvisionContextAdapter([ctx, inputs, newEnvInfo, tokenProvider]);
@@ -104,6 +115,7 @@ export async function provisionResource(
   }
 
   const plugins = getSelectedPlugins(azureSolutionSettings);
+  const solutionInputs = extractSolutionInputs(newEnvInfo.profile[GLOBAL_CONFIG]);
   const provisionThunks = plugins
     .filter((plugin) => !isUndefined(plugin.provisionResource))
     .map((plugin) => {
@@ -114,8 +126,8 @@ export async function provisionResource(
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           plugin.provisionResource!(
             ctx,
-            { ...inputs, ...extractSolutionInputs(newEnvInfo.profile), projectPath: projectPath },
-            { ...newEnvInfo, profile: newEnvInfo.profile[plugin.name] },
+            { ...inputs, ...solutionInputs, projectPath: projectPath },
+            { ...newEnvInfo, profile: newEnvInfo.profile },
             tokenProvider
           ),
       };
@@ -160,7 +172,7 @@ export async function provisionResource(
         method: "setApplicationInContext",
         params: { isLocal: false },
       },
-      envInfo,
+      newEnvInfo,
       tokenProvider
     );
     if (result.isErr()) {
@@ -168,6 +180,10 @@ export async function provisionResource(
     }
   }
 
+  if (isV2()) {
+    solutionInputs.remoteTeamsAppId =
+      newEnvInfo.profile[PluginNames.APPST]["output"][Constants.TEAMS_APP_ID];
+  }
   const configureResourceThunks = plugins
     .filter((plugin) => !isUndefined(plugin.configureResource))
     .map((plugin) => {
@@ -178,8 +194,8 @@ export async function provisionResource(
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           plugin.configureResource!(
             ctx,
-            { ...inputs, ...extractSolutionInputs(newEnvInfo.profile), projectPath: projectPath },
-            { ...newEnvInfo, profile: newEnvInfo.profile[plugin.name] },
+            { ...inputs, ...solutionInputs, projectPath: projectPath },
+            { ...newEnvInfo, profile: newEnvInfo.profile },
             tokenProvider
           ),
       };
@@ -189,13 +205,24 @@ export async function provisionResource(
     configureResourceThunks,
     ctx.logProvider
   );
-  if (configureResourceResult.kind === "failure") {
-    return configureResourceResult;
-  } else if (configureResourceResult.kind === "partialSuccess") {
-    return new v2.FxPartialSuccess(
-      combineRecords(configureResourceResult.output),
-      configureResourceResult.error
-    );
+  ctx.logProvider?.info(
+    util.format(getStrings().solution.ConfigurationFinishNotice, PluginDisplayName.Solution)
+  );
+  if (
+    configureResourceResult.kind === "failure" ||
+    configureResourceResult.kind === "partialSuccess"
+  ) {
+    const msg = util.format(getStrings().solution.ProvisionFailNotice, ctx.projectSetting.appName);
+    ctx.logProvider.error(msg);
+    solutionInputs[SOLUTION_PROVISION_SUCCEEDED] = false;
+
+    if (configureResourceResult.kind === "failure") {
+      return configureResourceResult;
+    } else {
+      const output = configureResourceResult.output;
+      output.push({ name: GLOBAL_CONFIG, result: { output: solutionInputs, secrets: {} } });
+      return new v2.FxPartialSuccess(combineRecords(output), configureResourceResult.error);
+    }
   } else {
     if (
       newEnvInfo.profile[GLOBAL_CONFIG] &&
@@ -203,10 +230,18 @@ export async function provisionResource(
     ) {
       delete newEnvInfo.profile[GLOBAL_CONFIG][ARM_TEMPLATE_OUTPUT];
     }
-    ctx.logProvider?.info(
-      util.format(getStrings().solution.ConfigurationFinishNotice, PluginDisplayName.Solution)
+
+    const msg = util.format(
+      `Success: ${getStrings().solution.ProvisionSuccessNotice}`,
+      ctx.projectSetting.appName
     );
-    return new v2.FxSuccess(combineRecords(configureResourceResult.output));
+    ctx.logProvider?.info(msg);
+    ctx.userInteraction.showMessage("info", msg, false);
+    solutionInputs[SOLUTION_PROVISION_SUCCEEDED] = true;
+    const output = configureResourceResult.output;
+    output.push({ name: GLOBAL_CONFIG, result: { output: solutionInputs, secrets: {} } });
+
+    return new v2.FxSuccess(combineRecords(output));
   }
 }
 

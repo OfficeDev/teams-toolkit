@@ -781,6 +781,9 @@ export interface LogProvider {
 }
 
 // @public (undocumented)
+export function mergeConfigMap(lhs?: ConfigMap, rhs?: ConfigMap): ConfigMap | undefined;
+
+// @public (undocumented)
 export interface MultiFileQuestion extends UserInputQuestion {
     default?: string | LocalFunc<string | undefined>;
     // (undocumented)
@@ -1191,7 +1194,9 @@ type SolutionInputs = {
     resourceGroupName: string;
     location: string;
     teamsAppTenantId: string;
+    subscriptionId: string;
     remoteTeamsAppId?: string;
+    provisionSucceeded?: boolean;
 };
 
 // @public (undocumented)

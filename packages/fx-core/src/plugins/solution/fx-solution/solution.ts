@@ -56,6 +56,7 @@ import {
 } from "../../../common/permissionInterface";
 import {
   deepCopy,
+  getHashedEnv,
   getStrings,
   isArmSupportEnabled,
   isMultiEnvEnabled,
@@ -127,7 +128,7 @@ import {
   getAllResourcePlugins,
   ResourcePlugins,
 } from "./ResourcePluginContainer";
-import { getHashedValue, getPluginContext, sendErrorTelemetryThenReturnError } from "./utils/util";
+import { getPluginContext, sendErrorTelemetryThenReturnError } from "./utils/util";
 import {
   canAddCapability,
   canAddResource,
@@ -1764,7 +1765,7 @@ export class TeamsAppSolution implements Solution {
             [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
             [SolutionTelemetryProperty.CollaboratorCount]: collaborators.length.toString(),
             [SolutionTelemetryProperty.AadOwnerCount]: aadOwnerCount.toString(),
-            [SolutionTelemetryProperty.Env]: getHashedValue(env),
+            [SolutionTelemetryProperty.Env]: getHashedEnv(env),
           });
 
           collaboratorsResult[env] = {

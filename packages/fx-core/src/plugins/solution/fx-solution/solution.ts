@@ -1963,7 +1963,7 @@ export class TeamsAppSolution implements Solution {
         [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
         [SolutionTelemetryProperty.CollaboratorCount]: collaborators.length.toString(),
         [SolutionTelemetryProperty.AadOwnerCount]: aadOwnerCount.toString(),
-        [SolutionTelemetryProperty.Env]: getHashedValue(envName),
+        [SolutionTelemetryProperty.Env]: getHashedEnv(envName),
       });
 
       return ok({

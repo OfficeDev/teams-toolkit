@@ -247,6 +247,8 @@ export class FeatureFlags {
   static readonly MultiEnv = "TEAMSFX_MULTI_ENV";
 
   static readonly ArmSupport = "TEAMSFX_ARM_SUPPORT";
+
+  static readonly TelemetryTest = "TEAMSFX_TELEMETRY_TEST";
 }
 
 // Determine whether feature flag is enabled based on environment variable setting

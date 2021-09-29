@@ -3,6 +3,7 @@ export class TreatmentVariables {
   public static readonly EmbeddedSurvey = "embeddedsurvey";
   public static readonly CustomizeTreeview = "customizetreeview";
   public static readonly QuickStartInSidebar = "quickstartinsidebar";
+  public static readonly RefineScaffoldTooltip = "refinescaffoldhint";
 }
 
 export class TreatmentVariableValue {

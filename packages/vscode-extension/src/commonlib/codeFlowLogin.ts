@@ -61,6 +61,9 @@ export class CodeFlowLogin {
         this.account = dataCache;
         this.status = loggedIn;
       }
+    } else {
+      this.account = undefined;
+      this.status = loggedOut;
     }
   }
 

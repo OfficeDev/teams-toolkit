@@ -519,8 +519,15 @@ export function MockProjectSettings(appName: string): ProjectSettings {
       hostType: "Azure",
       capabilities: ["Tab"],
       azureResources: [],
-      activeResourcePlugins: [PluginNames.FE, PluginNames.LDEBUG, PluginNames.AAD, PluginNames.SA],
+      activeResourcePlugins: [
+        PluginNames.FE,
+        PluginNames.LDEBUG,
+        PluginNames.AAD,
+        PluginNames.SA,
+        PluginNames.APPST,
+      ],
     } as AzureSolutionSettings,
+    activeEnvironment: "dev",
   };
 }
 

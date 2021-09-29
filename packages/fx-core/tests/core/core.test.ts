@@ -102,98 +102,96 @@ describe("Core basic APIs", () => {
     it(`happy path: create and activate env (API V1)`, async () => {
       await envCase2();
     });
-    it("migrateV1", async () => {
-      const migrateV1Params = [
-        {
-          description: "skip ask app name",
-          appName: appName,
-          projectPath: path.resolve(os.tmpdir(), "v1projectpath", appName),
-          skipAppNameQuestion: true,
-        },
-        {
-          description: "ask app name",
-          appName: "v1projectname",
-          projectPath: path.resolve(os.tmpdir(), "v1-project-path", `${appName}-errorname`),
-          skipAppNameQuestion: false,
-        },
-      ];
+    // it("migrateV1", async () => {
+    const migrateV1Params = [
+      {
+        description: "skip ask app name",
+        appName: appName,
+        projectPath: path.resolve(os.tmpdir(), "v1projectpath", appName),
+        skipAppNameQuestion: true,
+      },
+      {
+        description: "ask app name",
+        appName: "v1projectname",
+        projectPath: path.resolve(os.tmpdir(), "v1-project-path", `${appName}-errorname`),
+        skipAppNameQuestion: false,
+      },
+    ];
 
-      migrateV1Params.forEach((testParam) => {
-        it(`happy path: migrate v1 project ${testParam.description}`, async () => {
-          await fs.ensureDir(testParam.projectPath);
-          await fs.writeJSON(path.join(testParam.projectPath, "package.json"), {
-            msteams: { teamsAppId: "testappid" },
+    migrateV1Params.forEach((testParam) => {
+      it(`happy path: migrate v1 project ${testParam.description}`, async () => {
+        await fs.ensureDir(testParam.projectPath);
+        await fs.writeJSON(path.join(testParam.projectPath, "package.json"), {
+          msteams: { teamsAppId: "testappid" },
+        });
+        await fs.ensureDir(path.join(testParam.projectPath, AppPackageFolderName));
+        await fs.writeJSON(
+          path.join(testParam.projectPath, AppPackageFolderName, V1ManifestFileName),
+          {}
+        );
+        const expectedInputs: Inputs = {
+          platform: Platform.VSCode,
+          projectPath: testParam.projectPath,
+        };
+
+        if (testParam.skipAppNameQuestion) {
+          expectedInputs[CoreQuestionNames.DefaultAppNameFunc] = testParam.appName;
+        } else {
+          expectedInputs[CoreQuestionNames.DefaultAppNameFunc] = undefined;
+          expectedInputs[CoreQuestionNames.AppName] = testParam.appName;
+        }
+
+        sandbox
+          .stub<any, any>(ui, "inputText")
+          .callsFake(async (config: InputTextConfig): Promise<Result<InputTextResult, FxError>> => {
+            if (config.name === CoreQuestionNames.AppName) {
+              return ok({
+                type: "success",
+                result: expectedInputs[CoreQuestionNames.AppName] as string,
+              });
+            }
+            throw err(InvalidInputError("invalid question"));
           });
-          await fs.ensureDir(path.join(testParam.projectPath, AppPackageFolderName));
-          await fs.writeJSON(
-            path.join(testParam.projectPath, AppPackageFolderName, V1ManifestFileName),
-            {}
-          );
-          const expectedInputs: Inputs = {
+        const core = new FxCore(tools);
+        {
+          const inputs: Inputs = {
             platform: Platform.VSCode,
             projectPath: testParam.projectPath,
           };
+          const res = await core.migrateV1Project(inputs);
+          assert.isTrue(res.isOk() && res.value === testParam.projectPath);
+          assert.deepEqual(expectedInputs, inputs);
+          inputs.projectPath = testParam.projectPath;
 
-          if (testParam.skipAppNameQuestion) {
-            expectedInputs[CoreQuestionNames.DefaultAppNameFunc] = testParam.appName;
-          } else {
-            expectedInputs[CoreQuestionNames.DefaultAppNameFunc] = undefined;
-            expectedInputs[CoreQuestionNames.AppName] = testParam.appName;
+          const projectSettingsResult = await loadProjectSettings(inputs);
+          if (projectSettingsResult.isErr()) {
+            assert.fail("failed to load project settings");
           }
 
-          sandbox
-            .stub<any, any>(ui, "inputText")
-            .callsFake(
-              async (config: InputTextConfig): Promise<Result<InputTextResult, FxError>> => {
-                if (config.name === CoreQuestionNames.AppName) {
-                  return ok({
-                    type: "success",
-                    result: expectedInputs[CoreQuestionNames.AppName] as string,
-                  });
-                }
-                throw err(InvalidInputError("invalid question"));
-              }
-            );
-          const core = new FxCore(tools);
-          {
-            const inputs: Inputs = {
-              platform: Platform.VSCode,
-              projectPath: testParam.projectPath,
-            };
-            const res = await core.migrateV1Project(inputs);
-            assert.isTrue(res.isOk() && res.value === testParam.projectPath);
-            assert.deepEqual(expectedInputs, inputs);
-            inputs.projectPath = testParam.projectPath;
+          const [projectSettings, projectIdMissing] = projectSettingsResult.value;
+          const validSettingsResult = validateSettings(projectSettings);
+          assert.isTrue(validSettingsResult === undefined);
 
-            const projectSettingsResult = await loadProjectSettings(inputs);
-            if (projectSettingsResult.isErr()) {
-              assert.fail("failed to load project settings");
-            }
-
-            const [projectSettings, projectIdMissing] = projectSettingsResult.value;
-            const validSettingsResult = validateSettings(projectSettings);
-            assert.isTrue(validSettingsResult === undefined);
-
-            const envInfoResult = await loadSolutionContext(
-              tools,
-              inputs,
-              projectSettings,
-              projectIdMissing
-            );
-            if (envInfoResult.isErr()) {
-              assert.fail("failed to load env info");
-            }
-
-            const solutionContext = envInfoResult.value;
-            const validRes = validateProject(solutionContext);
-            assert.isTrue(validRes === undefined);
-
-            const solutioConfig = solutionContext.envInfo.profile.get("solution");
-            assert.isTrue(solutioConfig !== undefined);
+          const envInfoResult = await loadSolutionContext(
+            tools,
+            inputs,
+            projectSettings,
+            projectIdMissing
+          );
+          if (envInfoResult.isErr()) {
+            assert.fail("failed to load env info");
           }
-        });
+
+          const solutionContext = envInfoResult.value;
+          const validRes = validateProject(solutionContext);
+          assert.isTrue(validRes === undefined);
+
+          const solutioConfig = solutionContext.envInfo.profile.get("solution");
+          assert.isTrue(solutioConfig !== undefined);
+        }
       });
     });
+    // });
   });
 
   describe("API V2", () => {

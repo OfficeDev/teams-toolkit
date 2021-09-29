@@ -6,7 +6,6 @@ import {
   AppPackageFolderName,
   ArchiveFolderName,
   AzureSolutionSettings,
-  Colors,
   ConfigFolderName,
   ConfigMap,
   CoreCallbackEvent,
@@ -17,6 +16,7 @@ import {
   Func,
   FunctionRouter,
   FxError,
+  InputConfigsFolderName,
   Inputs,
   InputTextConfig,
   Json,
@@ -24,10 +24,9 @@ import {
   ok,
   Platform,
   ProductName,
-  ProjectSettings,
+  ProjectSettingsFileName,
   QTreeNode,
   Result,
-  returnSystemError,
   SingleSelectConfig,
   SingleSelectResult,
   Solution,
@@ -37,25 +36,28 @@ import {
   Tools,
   UserCancelError,
   UserError,
-  UserInteraction,
 } from "@microsoft/teamsfx-api";
 import { assert, expect } from "chai";
 import * as dotenv from "dotenv";
 import fs from "fs-extra";
 import "mocha";
+import mockedEnv from "mocked-env";
 import * as os from "os";
 import * as path from "path";
-import sinon, { stub } from "sinon";
+import sinon from "sinon";
 import { Container } from "typedi";
+import * as uuid from "uuid";
 import {
   base64Encode,
   CoreHookContext,
   deserializeDict,
   InvalidInputError,
+  isV2,
   mapToJson,
   serializeDict,
 } from "../../src";
 import { FeatureFlagName } from "../../src/common/constants";
+import * as commonTools from "../../src/common/tools";
 import { CallbackRegistry } from "../../src/core/callback";
 import { environmentManager } from "../../src/core/environment";
 import {
@@ -67,11 +69,11 @@ import {
 import { ConcurrentLockerMW } from "../../src/core/middleware/concurrentLocker";
 import { ContextInjectorMW } from "../../src/core/middleware/contextInjector";
 import { EnvInfoLoaderMW } from "../../src/core/middleware/envInfoLoader";
-import * as envInfoLoader from "../../src/core/middleware/envInfoLoader";
 import { EnvInfoWriterMW } from "../../src/core/middleware/envInfoWriter";
 import { ErrorHandlerMW } from "../../src/core/middleware/errorHandler";
 import { LocalSettingsLoaderMW } from "../../src/core/middleware/localSettingsLoader";
 import { MigrateConditionHandlerMW } from "../../src/core/middleware/migrateConditionHandler";
+import { migrateArm, ProjectMigratorMW } from "../../src/core/middleware/projectMigrator";
 import {
   newSolutionContext,
   ProjectSettingsLoaderMW,
@@ -95,9 +97,14 @@ import {
   MockUserInteraction,
   randomAppName,
 } from "./utils";
-import * as commonTools from "../../src/common/tools";
-import { ProjectMigratorMW, migrateArm } from "../../src/core/middleware/projectMigrator";
-import mockedEnv from "mocked-env";
+
+const EnvParams = [
+  { TEAMSFX_APIV2: "false", TEAMSFX_MULTI_ENV: "false" },
+  { TEAMSFX_APIV2: "false", TEAMSFX_MULTI_ENV: "true" },
+  { TEAMSFX_APIV2: "true", TEAMSFX_MULTI_ENV: "false" },
+  { TEAMSFX_APIV2: "true", TEAMSFX_MULTI_ENV: "true" },
+];
+
 let mockedEnvRestore: () => void;
 describe("Middleware", () => {
   const sandbox = sinon.createSandbox();
@@ -487,10 +494,22 @@ describe("Middleware", () => {
   });
 
   describe("SolutionLoaderMW, ContextInjectorMW", () => {
-    it("load solution and inject", async () => {
+    const MockProjectSettingsMW = async (ctx: CoreHookContext, next: NextFunction) => {
+      ctx.projectSettings = {
+        appName: "testapp",
+        projectId: uuid.v4(),
+        version: "2.0.0",
+        solutionSettings: {
+          name: "fx-solution-azure",
+        },
+      };
+      await next();
+    };
+
+    it("load solution from zero and inject (API V1)", async () => {
+      const mockedEnvRestore = mockedEnv({ TEAMSFX_APIV2: "false" });
       class MyClass {
         tools?: any = new MockTools();
-
         async myMethod(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
           assert.isTrue(ctx !== undefined && ctx.solution !== undefined);
           return ok("");
@@ -504,29 +523,83 @@ describe("Middleware", () => {
       const inputs: Inputs = { platform: Platform.VSCode };
       const res = await my.myMethod(inputs);
       assert.isTrue(res.isOk() && res.value === "");
+      mockedEnvRestore();
+    });
+    it("load solution from zero and inject (API V2)", async () => {
+      const mockedEnvRestore = mockedEnv({ TEAMSFX_APIV2: "true" });
+      class MyClass {
+        tools?: any = new MockTools();
+        async myMethod(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+          assert.isTrue(ctx !== undefined && ctx.solutionV2 !== undefined);
+          return ok("");
+        }
+      }
+      hooks(MyClass, {
+        myMethod: [SolutionLoaderMW(), ContextInjectorMW],
+      });
+      const my = new MyClass();
+      const inputs: Inputs = { platform: Platform.VSCode };
+      const res = await my.myMethod(inputs);
+      assert.isTrue(res.isOk() && res.value === "");
+      mockedEnvRestore();
+    });
+    it("load solution from existing project and inject (API V1)", async () => {
+      const mockedEnvRestore = mockedEnv({ TEAMSFX_APIV2: "false" });
+      class MyClass {
+        tools?: any = new MockTools();
+        async myMethod(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+          assert.isTrue(ctx !== undefined && ctx.solution !== undefined);
+          return ok("");
+        }
+      }
+
+      hooks(MyClass, {
+        myMethod: [MockProjectSettingsMW, SolutionLoaderMW(), ContextInjectorMW],
+      });
+      const my = new MyClass();
+      const inputs: Inputs = { platform: Platform.VSCode };
+      const res = await my.myMethod(inputs);
+      assert.isTrue(res.isOk() && res.value === "");
+      mockedEnvRestore();
+    });
+    it("load solution from existing project and inject (API V2)", async () => {
+      const mockedEnvRestore = mockedEnv({ TEAMSFX_APIV2: "true" });
+      class MyClass {
+        tools?: any = new MockTools();
+        async myMethod(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+          assert.isTrue(ctx !== undefined && ctx.solutionV2 !== undefined);
+          return ok("");
+        }
+      }
+
+      hooks(MyClass, {
+        myMethod: [MockProjectSettingsMW, SolutionLoaderMW(), ContextInjectorMW],
+      });
+      const my = new MyClass();
+      const inputs: Inputs = { platform: Platform.VSCode };
+      const res = await my.myMethod(inputs);
+      assert.isTrue(res.isOk() && res.value === "");
+      mockedEnvRestore();
     });
   });
 
-  describe("ProjectSettingsLoaderMW, ContextInjecterMW part 1", () => {
-    it("fail to load: ignore", async () => {
+  describe("ProjectSettingsLoaderMW, ContextInjectorMW: part 1", () => {
+    it("ignore loading project settings", async () => {
       class MyClass {
         tools = new MockTools();
-
         async getQuestions(
           stage: Stage,
           inputs: Inputs,
           ctx?: CoreHookContext
         ): Promise<Result<any, FxError>> {
-          assert.isTrue(ctx !== undefined && ctx.solutionContext === undefined);
+          assert.isTrue(ctx !== undefined && ctx.projectSettings === undefined);
           return ok("");
         }
-
         async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-          assert.isTrue(ctx !== undefined && ctx.solutionContext === undefined);
+          assert.isTrue(ctx !== undefined && ctx.projectSettings === undefined);
           return ok("");
         }
       }
-
       hooks(MyClass, {
         getQuestions: [ProjectSettingsLoaderMW, ContextInjectorMW],
         other: [ProjectSettingsLoaderMW, ContextInjectorMW],
@@ -543,12 +616,10 @@ describe("Middleware", () => {
     it("failed to load: NoProjectOpenedError, PathNotExistError", async () => {
       class MyClass {
         tools?: any = new MockTools();
-
         async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
           return ok("");
         }
       }
-
       hooks(MyClass, {
         other: [ProjectSettingsLoaderMW, ContextInjectorMW],
       });
@@ -562,35 +633,27 @@ describe("Middleware", () => {
     });
   });
 
-  describe("ProjectSettingsLoaderMW, ContextInjecterMW part 2", () => {
+  describe("ProjectSettingsLoaderMW, ContextInjectorMW: part 2", () => {
     const sandbox = sinon.createSandbox();
-
     const appName = randomAppName();
-
     const projectSettings = MockProjectSettings(appName);
-
-    const envJson: Json = {
-      solution: {},
-    };
-
     const inputs: Inputs = { platform: Platform.VSCode };
     inputs.projectPath = path.join(os.tmpdir(), appName);
-    const envName = environmentManager.getDefaultEnvName();
     const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
-    const settingsFile = path.resolve(confFolderPath, "settings.json");
-    const envJsonFile = path.resolve(confFolderPath, `env.${envName}.json`);
-    const userDataFile = path.resolve(confFolderPath, `${envName}.userdata`);
+    const settingsFiles = [
+      path.resolve(confFolderPath, "settings.json"),
+      path.resolve(confFolderPath, InputConfigsFolderName, ProjectSettingsFileName),
+    ];
 
     beforeEach(() => {
       sandbox.stub<any, any>(fs, "readJson").callsFake(async (file: string) => {
-        if (settingsFile === file) return projectSettings;
-        if (envJsonFile === file) return envJson;
-        return {};
+        if (settingsFiles.includes(file)) return projectSettings;
+        return undefined;
       });
       sandbox.stub<any, any>(fs, "pathExists").callsFake(async (file: string) => {
-        if (userDataFile === file) return false;
+        if (settingsFiles.includes(file)) return true;
         if (inputs.projectPath === file) return true;
-        return {};
+        return false;
       });
     });
 
@@ -598,60 +661,65 @@ describe("Middleware", () => {
       sandbox.restore();
     });
 
-    it("success to load solutionContext happy path", async () => {
-      class MyClass {
-        version = "1";
-        name = "jay";
-        tools = new MockTools();
+    for (const param of EnvParams) {
+      describe(`Multi-Env: ${param.TEAMSFX_MULTI_ENV}, API V2:${param.TEAMSFX_APIV2}`, () => {
+        beforeEach(() => {
+          mockedEnvRestore = mockedEnv(param);
+        });
 
-        async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-          assert.isTrue(ctx !== undefined);
-          assert.isTrue(ctx!.solutionContext !== undefined);
-          const solutionContext = ctx!.solutionContext!;
-          assert.isTrue(solutionContext.envInfo.profile.get("solution") !== undefined);
-          assert.deepEqual(projectSettings, solutionContext.projectSettings);
-          return ok("");
-        }
-      }
+        afterEach(() => {
+          mockedEnvRestore();
+        });
 
-      hooks(MyClass, {
-        other: [ProjectSettingsLoaderMW, EnvInfoLoaderMW(true), ContextInjectorMW],
+        it(`success to load project settings`, async () => {
+          class MyClass {
+            tools = new MockTools();
+            async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+              assert.isTrue(ctx !== undefined);
+              if (ctx) {
+                assert.deepEqual(projectSettings, ctx.projectSettings);
+                if (isV2()) {
+                  assert.isTrue(ctx.contextV2 !== undefined);
+                }
+              }
+              return ok("");
+            }
+          }
+          hooks(MyClass, {
+            other: [ProjectSettingsLoaderMW, ContextInjectorMW],
+          });
+          const my = new MyClass();
+          const res = await my.other(inputs);
+          assert.isTrue(res.isOk() && res.value === "");
+        });
+
+        it(`case when missing activeEnvironment`, async () => {
+          class MyClass {
+            tools = new MockTools();
+            async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+              return ok("");
+            }
+          }
+          hooks(MyClass, {
+            other: [ProjectSettingsLoaderMW, ContextInjectorMW],
+          });
+          const my = new MyClass();
+          delete projectSettings.activeEnvironment;
+          const res = await my.other(inputs);
+          if (param.TEAMSFX_MULTI_ENV === "true") {
+            assert.isTrue(
+              res.isErr() &&
+                res.error.message.includes(
+                  `activeEnvironment is missing or not a string in ${ProjectSettingsFileName}`
+                )
+            );
+          } else {
+            assert.isTrue(res.isOk());
+          }
+          projectSettings.activeEnvironment = "dev";
+        });
       });
-      const my = new MyClass();
-      const res = await my.other(inputs);
-      assert.isTrue(res.isOk() && res.value === "");
-    });
-
-    it("fail to load solutionContext, missing plugins", async () => {
-      class MyClass {
-        version = "1";
-        name = "jay";
-        tools = new MockTools();
-
-        async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-          assert.isTrue(ctx !== undefined);
-          assert.isTrue(ctx!.solutionContext !== undefined);
-          const solutionContext = ctx!.solutionContext!;
-          assert.isTrue(solutionContext.projectSettings !== undefined);
-          assert.isTrue(solutionContext.projectSettings!.appName === appName);
-          assert.isTrue(solutionContext.envInfo.profile.get("solution") !== undefined);
-          return ok("");
-        }
-      }
-
-      hooks(MyClass, {
-        other: [ProjectSettingsLoaderMW, ContextInjectorMW],
-      });
-      const my = new MyClass();
-      (projectSettings.solutionSettings as AzureSolutionSettings).azureResources.push(
-        AzureResourceSQL.id
-      );
-      const res = await my.other(inputs);
-      assert.isTrue(
-        res.isErr() &&
-          res.error.message.includes(`${PluginNames.SQL} setting is missing in settings.json`)
-      );
-    });
+    }
   });
 
   describe("ProjectSettingsWriterMW", () => {
@@ -661,11 +729,8 @@ describe("Middleware", () => {
     });
     it("ignore write", async () => {
       const spy = sandbox.spy(fs, "writeFile");
-
       class MyClass {
-        version = "1";
         tools?: any = new MockTools();
-
         async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
           return ok("");
         }
@@ -696,49 +761,52 @@ describe("Middleware", () => {
       assert(spy.callCount === 0);
     });
 
-    it("write success", async () => {
+    it("write success for API V1 and API V2", async () => {
       const appName = randomAppName();
       const inputs: Inputs = { platform: Platform.VSCode };
       inputs.projectPath = path.join(os.tmpdir(), appName);
       const tools = new MockTools();
-      const solutionContext = await newSolutionContext(tools, inputs);
-      solutionContext.envInfo.profile.set("solution", new ConfigMap());
       const mockProjectSettings = MockProjectSettings(appName);
       const fileMap = new Map<string, any>();
-
       sandbox.stub<any, any>(fs, "writeFile").callsFake(async (file: string, data: any) => {
         fileMap.set(file, data);
       });
       sandbox.stub(fs, "pathExists").resolves(true);
-
-      const envName = environmentManager.getDefaultEnvName();
       const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
-      const settingsFile = path.resolve(confFolderPath, "settings.json");
-      const envJsonFile = path.resolve(confFolderPath, `env.${envName}.json`);
-
+      const settingsFileV1 = path.resolve(confFolderPath, "settings.json");
+      const settingsFileV2 = path.resolve(
+        confFolderPath,
+        InputConfigsFolderName,
+        ProjectSettingsFileName
+      );
       class MyClass {
-        version = "1";
         tools = tools;
-
         async myMethod(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-          ctx!.solutionContext = solutionContext;
-          ctx!.projectSettings = mockProjectSettings;
+          if (ctx) ctx.projectSettings = mockProjectSettings;
           return ok("");
         }
       }
 
       hooks(MyClass, {
-        myMethod: [ContextInjectorMW, ProjectSettingsWriterMW, EnvInfoWriterMW()],
+        myMethod: [ContextInjectorMW, ProjectSettingsWriterMW],
       });
       const my = new MyClass();
-      await my.myMethod(inputs);
-      let content = fileMap.get(settingsFile);
-      const settingsInFile = JSON.parse(content);
-      content = fileMap.get(envJsonFile);
-      const configInFile = JSON.parse(content);
-      const configExpected = mapToJson(solutionContext.envInfo.profile);
-      assert.deepEqual(mockProjectSettings, settingsInFile);
-      assert.deepEqual(configExpected, configInFile);
+      let mockedEnvRestore = mockedEnv({ TEAMSFX_MULTI_ENV: "false" });
+      {
+        await my.myMethod(inputs);
+        const content: string = fileMap.get(settingsFileV1);
+        const settingsInFile = JSON.parse(content);
+        assert.deepEqual(mockProjectSettings, settingsInFile);
+      }
+      mockedEnvRestore();
+      mockedEnvRestore = mockedEnv({ TEAMSFX_MULTI_ENV: "true" });
+      {
+        await my.myMethod(inputs);
+        const content: string = fileMap.get(settingsFileV2);
+        const settingsInFile = JSON.parse(content);
+        assert.deepEqual(mockProjectSettings, settingsInFile);
+      }
+      mockedEnvRestore();
     });
   });
 

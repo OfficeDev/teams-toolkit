@@ -191,7 +191,7 @@
       "emptySelection": "select option is empty",
       "ok": "ok (Enter)",
       "selectFileOrFolder": "Select file/folder",
-      "backKeyboard": " (Alt + LeftArrow to last step)",
+      "backKeyboard": " (Alt + LeftArrow to previous step)",
       "multiSelectKeyboard": " (Space key to check/uncheck)"
     },
     "webview": {

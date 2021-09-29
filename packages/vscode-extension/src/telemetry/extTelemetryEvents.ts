@@ -153,6 +153,7 @@ export enum TelemetryProperty {
   UpdateTeamsAppReason = "update-teams-app-reason",
   IsSideloadingAllowed = "is-sideloading-allowed",
   IsExistingUser = "is-existing-user",
+  CollaborationState = "collaboration-state",
 }
 
 export enum TelemetrySuccess {

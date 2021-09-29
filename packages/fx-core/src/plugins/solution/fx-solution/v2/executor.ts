@@ -58,7 +58,7 @@ export async function executeConcurrently<R>(
       failed = true;
       errors.push(result.error);
     } else {
-      ret.push({ name, result: result.value });
+      ret.push({ name: `${namedThunks[i].pluginName}`, result: result.value });
     }
   }
   if (logger)

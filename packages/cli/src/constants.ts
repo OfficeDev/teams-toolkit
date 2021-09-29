@@ -16,12 +16,6 @@ export const RootFolderNode = new QTreeNode({
   default: "./",
 });
 
-export const EnvNode = new QTreeNode({
-  type: "text",
-  name: "env",
-  title: "Select or create an environment for the project",
-});
-
 export const EnvNodeNoCreate = new QTreeNode({
   type: "text",
   name: "env",

@@ -366,11 +366,15 @@ suite("handlers", () => {
       sinon.stub(handlers, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      sinon.stub(envTree, "updateCollaboratorList").resolves();
+      sinon.stub(envTree, "addCollaboratorToEnv").resolves();
       sinon.stub(MockCore.prototype, "grantPermission").returns(
         Promise.resolve(
           ok({
             state: CollaborationState.OK,
+            userInfo: {
+              userObjectId: "fake-user-object-id",
+              userPrincipalName: "fake-user-principle-name",
+            },
             permissions: [
               {
                 name: "name",

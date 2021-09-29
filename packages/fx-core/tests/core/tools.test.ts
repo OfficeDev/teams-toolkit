@@ -1,9 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { base64Encode, isValidProject, newEnvInfo } from "../../src/core/tools";
+import { base64Encode, flattenConfigJson, isValidProject, newEnvInfo } from "../../src/core/tools";
 import "mocha";
 
-import { expect } from "chai";
+import { expect, assert } from "chai";
+import { Json } from "@microsoft/teamsfx-api";
 
 describe("tools", () => {
   it("base64 encode", () => {
@@ -21,5 +22,14 @@ describe("tools", () => {
 
   it("is not valid project", () => {
     expect(isValidProject()).is.false;
+  });
+});
+
+describe("flattenConfigJson", () => {
+  it("should flatten output and secrets fields", () => {
+    const config: Json = { a: { output: { b: 1 }, secrets: { value: 9 } }, c: 2 };
+    const expected: Json = { a: { b: 1, value: 9 }, c: 2 };
+    const result = flattenConfigJson(config);
+    assert.deepEqual(result, expected);
   });
 });

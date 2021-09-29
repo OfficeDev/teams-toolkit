@@ -51,7 +51,11 @@ export class ConfigMap extends Map<string, ConfigValue> {
   getOptionItem(k: string, defaultValue?: OptionItem): OptionItem | undefined {
     const v = super.get(k);
     if (!v) return defaultValue;
-    return v as OptionItem;
+    if (v instanceof ConfigMap) {
+      return v.toJSON() as OptionItem;
+    } else {
+      return v as OptionItem;
+    }
   }
   getOptionItemArray(k: string, defaultValue?: OptionItem[]): OptionItem[] | undefined {
     const v = super.get(k);
@@ -62,7 +66,11 @@ export class ConfigMap extends Map<string, ConfigValue> {
   toJSON(): Json {
     const out: Json = {};
     for (const entry of super.entries()) {
-      out[entry[0]] = entry[1];
+      if (entry[1] instanceof ConfigMap) {
+        out[entry[0]] = entry[1].toJSON();
+      } else {
+        out[entry[0]] = entry[1];
+      }
     }
     return out;
   }
@@ -71,7 +79,11 @@ export class ConfigMap extends Map<string, ConfigValue> {
     if (!obj) return undefined;
     const map = new ConfigMap();
     for (const entry of Object.entries(obj)) {
-      map.set(entry[0], entry[1]);
+      if (typeof entry[1] !== "object") {
+        map.set(entry[0], entry[1]);
+      } else {
+        map.set(entry[0], this.fromJSON(entry[1]));
+      }
     }
     return map;
   }
@@ -79,6 +91,16 @@ export class ConfigMap extends Map<string, ConfigValue> {
     super(entries);
     Object.setPrototypeOf(this, ConfigMap.prototype);
   }
+}
+
+export function mergeConfigMap(lhs?: ConfigMap, rhs?: ConfigMap): ConfigMap | undefined {
+  if (!lhs) {
+    return rhs;
+  }
+  if (!rhs) {
+    return lhs;
+  }
+  return new ConfigMap([...lhs.entries(), ...rhs.entries()]);
 }
 
 // eslint-disable-next-line @typescript-eslint/ban-types

@@ -63,7 +63,12 @@ import {
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
 } from "../../../src/plugins/solution/fx-solution/question";
-import { MockedGraphTokenProvider, MockedV2Context, validManifest } from "./util";
+import {
+  MockedGraphTokenProvider,
+  MockedUserInteraction,
+  MockedV2Context,
+  validManifest,
+} from "./util";
 import { IAppDefinition } from "../../../src/plugins/resource/appstudio/interfaces/IAppDefinition";
 import _ from "lodash";
 import { TokenCredential } from "@azure/core-auth";
@@ -89,6 +94,8 @@ import { ProvidersGetOptionalParams, ProvidersGetResponse } from "@azure/arm-res
 import { SolutionPluginsV2 } from "../../../src/core/SolutionPluginContainer";
 import { TeamsAppSolutionV2 } from "../../../src/plugins/solution/fx-solution/v2/solution";
 import { EnvInfoV2, ResourceProvisionOutput } from "@microsoft/teamsfx-api/build/v2";
+import frontend from "../../../src/plugins/resource/frontend";
+import { UnknownObject } from "@azure/core-http/types/latest/src/util/utils";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -942,6 +949,58 @@ describe("API v2 implementation", () => {
       };
       mockProvisionV2ThatAlwaysSucceed(spfxPluginV2);
       mockProvisionV2ThatAlwaysSucceed(appStudioPluginV2);
+
+      const solution = new TeamsAppSolutionV2();
+      const result = await solution.provisionResources(
+        mockedCtx,
+        mockedInputs,
+        mockedEnvInfo,
+        mockedTokenProvider
+      );
+      expect(result.kind).equals("success");
+    });
+  });
+
+  describe("Azure projects", () => {
+    const mocker = sinon.createSandbox();
+
+    beforeEach(() => {
+      mocker.stub(ResourceGroups.prototype, "createOrUpdate").resolves({ name: "my_app-rg" });
+    });
+    afterEach(() => {
+      mocker.restore();
+    });
+
+    it("should work on happy path", async () => {
+      const projectSettings: ProjectSettings = {
+        appName: "my app",
+        projectId: uuid.v4(),
+        solutionSettings: {
+          hostType: HostTypeOptionAzure.id,
+          name: "azure",
+          version: "1.0",
+          activeResourcePlugins: [fehostPluginV2.name, appStudioPluginV2.name, aadPluginV2.name],
+        },
+      };
+      const mockedCtx = new MockedV2Context(projectSettings);
+      mockedCtx.userInteraction = new MockUserInteraction();
+      const mockedInputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: "./",
+      };
+      const mockedTokenProvider: TokenProvider = {
+        azureAccountProvider: new MockedAzureTokenProvider(),
+        appStudioToken: new MockedAppStudioTokenProvider(),
+        graphTokenProvider: new MockedGraphTokenProvider(),
+      };
+      const mockedEnvInfo: EnvInfoV2 = {
+        envName: "default",
+        config: { manifest: { values: { appName: { short: "test-app" } } } },
+        profile: {},
+      };
+      mockProvisionV2ThatAlwaysSucceed(fehostPluginV2);
+      mockProvisionV2ThatAlwaysSucceed(appStudioPluginV2);
+      mockProvisionV2ThatAlwaysSucceed(aadPluginV2);
 
       const solution = new TeamsAppSolutionV2();
       const result = await solution.provisionResources(

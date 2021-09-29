@@ -128,7 +128,7 @@ import {
   getSolutionPluginByName,
   getSolutionPluginV2ByName,
 } from "./SolutionPluginContainer";
-import { newEnvInfo } from "./tools";
+import { flattenConfigJson, newEnvInfo } from "./tools";
 
 export interface CoreHookContext extends HookContext {
   projectSettings?: ProjectSettings;
@@ -145,7 +145,7 @@ export interface CoreHookContext extends HookContext {
 // API V2 feature flag
 export function isV2() {
   const flag = process.env[FeatureFlagName.APIV2];
-  if (flag === undefined) {
+  if (flag === undefined || flag.toLowerCase() === "false") {
     return false;
   } else {
     return flag === "1" || flag.toLowerCase() === "true";
@@ -465,31 +465,36 @@ export class FxCore implements Core {
         !ctx ||
         !ctx.solutionV2 ||
         !ctx.contextV2 ||
-        !ctx.provisionInputConfig ||
-        !ctx.contextV2.projectSetting.activeEnvironment ||
-        !ctx.provisionOutputs
-      )
+        !ctx.envInfoV2 ||
+        !ctx.contextV2.projectSetting.activeEnvironment
+      ) {
         return err(new ObjectIsUndefinedError("Provision input stuff"));
-      const envInfo: EnvInfoV2 = {
-        envName: ctx.contextV2.projectSetting.activeEnvironment,
-        config: ctx.provisionInputConfig as EnvConfig,
-        profile: ctx.provisionOutputs,
-      };
+      }
+      const envInfo = ctx.envInfoV2;
       const result = await ctx.solutionV2.provisionResources(
         ctx.contextV2,
         inputs,
         envInfo,
         this.tools.tokenProvider
       );
-      // todo(yefuwang): persist profile on success and partialSuccess
       if (result.kind === "success") {
+        // Remove all "output" and "secret" fields for backward compatibility.
+        // todo(yefuwang): handle "output" and "secret" fields in middlewares.
+        const profile = flattenConfigJson(result.output);
+        ctx.envInfoV2.profile = { ...ctx.envInfoV2.profile, ...profile };
         return ok(Void);
+      } else if (result.kind === "partialSuccess") {
+        const profile = flattenConfigJson(result.output);
+        ctx.envInfoV2.profile = { ...ctx.envInfoV2.profile, ...profile };
+        return err(result.error);
       } else {
         return err(result.error);
       }
     } else {
-      if (!ctx || !ctx.solution || !ctx.solutionContext)
+      if (!ctx || !ctx.solution || !ctx.solutionContext) {
         return err(new ObjectIsUndefinedError("Provision input stuff"));
+      }
+
       return await ctx.solution.provision(ctx.solutionContext);
     }
   }
@@ -741,10 +746,11 @@ export class FxCore implements Core {
     inputs: Inputs,
     ctx?: CoreHookContext
   ): Promise<Result<ProjectConfig | undefined, FxError>> {
+    if (!ctx) return err(new ObjectIsUndefinedError("getProjectConfig input stuff"));
     if (isV2()) {
       return ok({
         settings: ctx!.projectSettings,
-        config: ctx!.provisionOutputs,
+        config: ctx!.envInfoV2?.profile,
         localSettings: ctx!.localSettings,
       });
     } else {
@@ -920,7 +926,18 @@ export class FxCore implements Core {
     inputs: Inputs,
     ctx?: CoreHookContext
   ): Promise<Result<string, FxError>> {
-    return ctx!.solutionContext!.cryptoProvider!.encrypt(plaintext);
+    if (!ctx) return err(new ObjectIsUndefinedError("ctx"));
+    if (isV2()) {
+      if (!ctx.contextV2 || !ctx.contextV2.cryptoProvider)
+        return err(new ObjectIsUndefinedError("ctx.contextV2 or ctx.contextV2.cryptoProvider"));
+      return ctx.contextV2.cryptoProvider.encrypt(plaintext);
+    } else {
+      if (!ctx.solutionContext || !ctx.solutionContext.cryptoProvider)
+        return err(
+          new ObjectIsUndefinedError("ctx.solutionContext or ctx.solutionContext.cryptoProvider")
+        );
+      return ctx.solutionContext.cryptoProvider.encrypt(plaintext);
+    }
   }
 
   @hooks([ErrorHandlerMW, ProjectSettingsLoaderMW, EnvInfoLoaderMW(true), ContextInjectorMW])
@@ -929,7 +946,18 @@ export class FxCore implements Core {
     inputs: Inputs,
     ctx?: CoreHookContext
   ): Promise<Result<string, FxError>> {
-    return ctx!.solutionContext!.cryptoProvider!.decrypt(ciphertext);
+    if (!ctx) return err(new ObjectIsUndefinedError("ctx"));
+    if (isV2()) {
+      if (!ctx.contextV2 || !ctx.contextV2.cryptoProvider)
+        return err(new ObjectIsUndefinedError("ctx.contextV2 or ctx.contextV2.cryptoProvider"));
+      return ctx.contextV2.cryptoProvider.decrypt(ciphertext);
+    } else {
+      if (!ctx.solutionContext || !ctx.solutionContext.cryptoProvider)
+        return err(
+          new ObjectIsUndefinedError("ctx.solutionContext or ctx.solutionContext.cryptoProvider")
+        );
+      return ctx.solutionContext.cryptoProvider.decrypt(ciphertext);
+    }
   }
 
   async buildArtifacts(inputs: Inputs): Promise<Result<Void, FxError>> {

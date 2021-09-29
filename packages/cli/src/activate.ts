@@ -5,12 +5,7 @@
 
 import { Result, FxError, ok, Tools, err } from "@microsoft/teamsfx-api";
 
-import {
-  environmentManager,
-  FxCore,
-  isMultiEnvEnabled,
-  setActiveEnv,
-} from "@microsoft/teamsfx-core";
+import { FxCore } from "@microsoft/teamsfx-core";
 
 import AzureAccountManager from "./commonlib/azureLogin";
 import AppStudioTokenProvider from "./commonlib/appStudioLogin";

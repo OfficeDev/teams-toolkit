@@ -31,7 +31,7 @@ const TelemetryTestLoggerFile = "telemetryTest.log";
 export class VSCodeTelemetryReporter extends vscode.Disposable implements TelemetryReporter {
   private readonly reporter: Reporter;
   private readonly extVersion: string;
-  private readonly logger: Logger;
+  private readonly logger: Logger | undefined;
   private readonly testFeatureFlag: boolean;
 
   private sharedProperties: { [key: string]: string } = {};
@@ -40,13 +40,15 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
     super(async () => await this.reporter.dispose());
     this.reporter = new Reporter(extensionId, extensionVersion, key, true);
     this.extVersion = getPackageVersion(extensionVersion);
-    const logFile = path.join(os.homedir(), `.${ConfigFolderName}`, TelemetryTestLoggerFile);
-    configure({
-      appenders: { everything: { type: "file", filename: logFile } },
-      categories: { default: { appenders: ["everything"], level: "debug" } },
-    });
-    this.logger = getLogger("TelemTest");
     this.testFeatureFlag = isFeatureFlagEnabled(FeatureFlags.TelemetryTest);
+    if (this.testFeatureFlag) {
+      const logFile = path.join(os.homedir(), `.${ConfigFolderName}`, TelemetryTestLoggerFile);
+      configure({
+        appenders: { everything: { type: "file", filename: logFile } },
+        categories: { default: { appenders: ["everything"], level: "debug" } },
+      });
+      this.logger = getLogger("TelemTest");
+    }
   }
 
   addSharedProperty(name: string, value: string): void {

@@ -1,16 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { base64Encode, flattenConfigJson, isValidProject, newEnvInfo } from "../../src/core/tools";
-import "mocha";
-
-import { expect, assert } from "chai";
 import { Json } from "@microsoft/teamsfx-api";
+import { assert, expect } from "chai";
+import "mocha";
+import { flattenConfigJson, isValidProject, newEnvInfo } from "../../src/core/tools";
 
 describe("tools", () => {
-  it("base64 encode", () => {
-    const source = "Hello, World!";
-    expect(base64Encode(source)).to.equal("SGVsbG8sIFdvcmxkIQ==");
-  });
+  // it("base64 encode", () => {
+  //   const source = "Hello, World!";
+  //   expect(base64Encode(source)).to.equal("SGVsbG8sIFdvcmxkIQ==");
+  // });
 
   it("newEnvInfo should return valid object", () => {
     const result = newEnvInfo();

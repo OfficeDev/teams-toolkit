@@ -713,10 +713,10 @@ type JsonTemplate = {
 };
 
 // @public (undocumented)
-export function loadOptions(q: Question, inputs: Inputs): Promise<{
+export function loadOptions(q: Question, inputs: Inputs): Promise<Result<{
     autoSkip: boolean;
     options?: StaticOptions;
-}>;
+}, FxError>>;
 
 // @public
 export type LocalFunc<T> = (inputs: Inputs) => T | Promise<T>;

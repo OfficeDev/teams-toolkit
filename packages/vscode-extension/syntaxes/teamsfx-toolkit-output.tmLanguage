@@ -45,10 +45,14 @@
                         <string>token.error-token</string>
                     </dict>
                 </dict>
-                <key>match</key>
-                <string>(\[Error\].*)</string>
                 <key>name</key>
                 <string>teamsfx-toolkit.errorMessage</string>
+                <key>begin</key>
+                <string>(\[Error\])</string>
+                <key>end</key>
+                <string>^\[[\d\-TZ:.]*\]</string>
+                <key>contentName</key>
+                <string>token.error-token</string>
             </dict>
         </array>
     </dict>

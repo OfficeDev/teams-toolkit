@@ -103,6 +103,9 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
       targetEnvName = environmentManager.getDefaultEnvName();
     }
 
+    // make sure inputs.env always has value so telemetry can use it.
+    inputs.env = targetEnvName;
+
     const result = await loadSolutionContext(
       core.tools,
       inputs,

@@ -154,6 +154,7 @@ export enum TelemetryProperty {
   IsSideloadingAllowed = "is-sideloading-allowed",
   IsExistingUser = "is-existing-user",
   CollaborationState = "collaboration-state",
+  Env = "env",
 }
 
 export enum TelemetrySuccess {

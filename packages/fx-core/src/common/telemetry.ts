@@ -3,6 +3,7 @@
 
 import { FxError, TelemetryReporter, UserError } from "@microsoft/teamsfx-api";
 import { telemetryReporter } from "../core";
+import * as crypto from "crypto";
 
 export enum TelemetryProperty {
   TriggerFrom = "trigger-from",

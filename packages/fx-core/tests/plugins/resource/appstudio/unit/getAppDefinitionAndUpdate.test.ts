@@ -38,6 +38,7 @@ import sinon from "sinon";
 import { AppStudioResultFactory } from "../../../../../src/plugins/resource/appstudio/results";
 import { MockedAppStudioTokenProvider } from "../helper";
 import { newEnvInfo } from "../../../../../src";
+import { LocalCrypto } from "../../../../../src/core/crypto";
 
 describe("Get AppDefinition and Update", () => {
   let plugin: AppStudioPlugin;
@@ -87,6 +88,7 @@ describe("Get AppDefinition and Update", () => {
       envInfo: newEnvInfo(),
       config: new ConfigMap(),
       appStudioToken: new MockedAppStudioTokenProvider(),
+      cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -123,6 +125,7 @@ describe("Get AppDefinition and Update", () => {
       root: "./tests/plugins/resource/appstudio/resources/",
       envInfo: newEnvInfo(),
       config: new ConfigMap(),
+      cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -152,6 +155,7 @@ describe("Get AppDefinition and Update", () => {
       root: "./tests/plugins/resource/appstudio/resources/",
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
+      cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -184,6 +188,7 @@ describe("Get AppDefinition and Update", () => {
       root: "./tests/plugins/resource/appstudio/resources/",
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
+      cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -216,6 +221,7 @@ describe("Get AppDefinition and Update", () => {
       root: "./tests/plugins/resource/appstudio/resources/",
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
+      cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -250,6 +256,7 @@ describe("Get AppDefinition and Update", () => {
       root: "./tests/plugins/resource/appstudio/resources/",
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
+      cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -280,6 +287,7 @@ describe("Get AppDefinition and Update", () => {
       root: "./tests/plugins/resource/appstudio/resources/",
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
+      cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -318,6 +326,7 @@ describe("Get AppDefinition and Update", () => {
       root: "./tests/plugins/resource/appstudio/resources/",
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
+      cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -348,6 +357,7 @@ describe("Get AppDefinition and Update", () => {
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
       appStudioToken: new MockedAppStudioTokenProvider(),
+      cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -389,6 +399,7 @@ describe("Get AppDefinition and Update", () => {
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
       appStudioToken: new MockedAppStudioTokenProvider(),
+      cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -448,6 +459,7 @@ describe("Get AppDefinition and Update", () => {
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
       appStudioToken: new MockedAppStudioTokenProvider(),
+      cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -504,6 +516,7 @@ describe("Get AppDefinition and Update", () => {
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
       appStudioToken: new MockedAppStudioTokenProvider(),
+      cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -534,6 +547,7 @@ describe("Get AppDefinition and Update", () => {
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
       appStudioToken: new MockedAppStudioTokenProvider(),
+      cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -593,6 +607,7 @@ describe("Get AppDefinition and Update", () => {
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
       appStudioToken: new MockedAppStudioTokenProvider(),
+      cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
       appName: "my app",

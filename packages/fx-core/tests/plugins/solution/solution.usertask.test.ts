@@ -58,6 +58,7 @@ import { ProgrammingLanguage } from "../../../src/plugins/resource/bot/enums/pro
 import { MockGraphTokenProvider } from "../../core/utils";
 import { createEnv } from "../../../src/plugins/solution/fx-solution/v2/createEnv";
 import { ScaffoldingContextAdapter } from "../../../src/plugins/solution/fx-solution/v2/adaptor";
+import { LocalCrypto } from "../../../src/core/crypto";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -85,6 +86,7 @@ function mockSolutionContextWithPlatform(platform?: Platform): SolutionContext {
     envInfo: newEnvInfo(),
     answers: { platform: platform ? platform : Platform.VSCode },
     projectSettings: undefined,
+    cryptoProvider: new LocalCrypto(""),
   };
 }
 

@@ -41,6 +41,7 @@ import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/Resou
 import Container from "typedi";
 import { deploy } from "../../../src/plugins/solution/fx-solution/v2/deploy";
 import { ResourceProvisionOutput } from "@microsoft/teamsfx-api/build/v2";
+import { LocalCrypto } from "../../../src/core/crypto";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -53,6 +54,7 @@ function mockSolutionContext(): SolutionContext {
     envInfo: newEnvInfo(),
     answers: { platform: Platform.VSCode },
     projectSettings: undefined,
+    cryptoProvider: new LocalCrypto(""),
   };
 }
 

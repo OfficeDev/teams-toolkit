@@ -39,6 +39,7 @@ import { mockedFehostScaffoldArmResult, mockedSimpleAuthScaffoldArmResult } from
 import { getQuestionsForScaffolding } from "../../../src/plugins/solution/fx-solution/v2/getQuestions";
 import { MockTools } from "../../core/utils";
 import { assert } from "console";
+import { LocalCrypto } from "../../../src/core/crypto";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -57,6 +58,7 @@ function mockSolutionContext(): SolutionContext {
     envInfo: newEnvInfo(),
     answers: { platform: Platform.VSCode },
     projectSettings: undefined,
+    cryptoProvider: new LocalCrypto(""),
   };
 }
 

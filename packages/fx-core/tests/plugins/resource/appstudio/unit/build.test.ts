@@ -19,6 +19,7 @@ import { AppStudioPluginImpl } from "./../../../../../src/plugins/resource/appst
 import { TeamsBot } from "./../../../../../src/plugins/resource/bot";
 import AdmZip from "adm-zip";
 import { newEnvInfo } from "../../../../../src";
+import { LocalCrypto } from "../../../../../src/core/crypto";
 
 describe("Build Teams Package", () => {
   let plugin: AppStudioPlugin;
@@ -34,6 +35,7 @@ describe("Build Teams Package", () => {
       envInfo: newEnvInfo(),
       config: new ConfigMap(),
       answers: { platform: Platform.VSCode },
+      cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
       appName: "my app",

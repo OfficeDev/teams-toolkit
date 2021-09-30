@@ -21,6 +21,7 @@ import {
 } from "../../../src/plugins/solution/fx-solution/question";
 import * as uuid from "uuid";
 import { newEnvInfo } from "../../../src";
+import { LocalCrypto } from "../../../src/core/crypto";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -32,6 +33,7 @@ describe("Solution migrate()", async () => {
       envInfo: newEnvInfo(),
       answers: { platform: Platform.VSCode },
       projectSettings: undefined,
+      cryptoProvider: new LocalCrypto(""),
     };
   }
 
@@ -62,7 +64,7 @@ describe("Solution migrate()", async () => {
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
       projectId: uuid.v4(),
-      solutionSettings: (undefined as unknown) as SolutionSettings,
+      solutionSettings: undefined as unknown as SolutionSettings,
     };
     const result = await solution.migrate(mockedSolutionCtx);
     expect(result.isErr()).equals(true);
@@ -156,11 +158,11 @@ describe("Solution migrate()", async () => {
 });
 
 function cleanPlugins(solution: TeamsAppSolution, mocker: sinon.SinonSandbox) {
-  mocker.stub(solution.LocalDebugPlugin, "executeUserTask").callsFake(
-    async (): Promise<Result<any, FxError>> => {
+  mocker
+    .stub(solution.LocalDebugPlugin, "executeUserTask")
+    .callsFake(async (): Promise<Result<any, FxError>> => {
       return ok(undefined);
-    }
-  );
+    });
   mocker.stub(solution.AadPlugin, "activate").callsFake((): boolean => {
     return false;
   });

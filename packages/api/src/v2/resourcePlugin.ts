@@ -32,8 +32,8 @@ export type ResourceProvisionOutput = {
  * lifecycles by implementing the corresponding API.
  * Implementation of all lifecycles is expected to be idempotent. The return values
  * and observable side effects of each lifecycle are expected to be the same with the same input.
- * All lifecycles follow the same pattern of returning a Promise<Result<T, FxError>>.
  *
+ * All lifecycles follow the same pattern of returning a Promise<Result<T, FxError>>.
  * Please return {@link UserError} or {@link SystemError} when error happens
  * instead of throwing.
  */
@@ -45,14 +45,18 @@ export interface ResourcePlugin {
   displayName: string;
 
   /**
-   * resource plugin decide whether it need to be activated
+   * A resource plugin can decide whether it needs to be activated when the Toolkit initializes
+   * based on solution settings.
+   *
    * @param solutionSettings solution settings
+   *
+   * @returns whether to be activated
    */
   activate(solutionSettings: AzureSolutionSettings): boolean;
 
   /**
    * Called by Toolkit when creating a new project or adding a new resource.
-   * Scaffolds source code on disk, relative to context.projectPath.
+   * A resource plugin is expected to scaffold source code or files on disk, relative to context.projectPath.
    *
    * @example
    * ```
@@ -62,23 +66,21 @@ export interface ResourcePlugin {
    *   let path = path.join(ctx.projectPath, "myFolder");
    *   let sourcePath = "somePathhere";
    *   let result = await fs.copy(sourcePath, content);
-   *   // no output values
-   *   return { "output": {} };
+   *   return ok(Void);
    * }
    * ```
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {Inputs} inputs - User answers to questions defined in {@link getQuestionsForScaffolding} along with some system inputs.
    *
-   * @returns output values generated during scaffolding, which will be persisted by the Toolkit and made available to other plugins for other lifecyles.
-   *          For example, Azure Function plugin outputs "defaultFunctionName" in this lifecycle.
-   *          For most plugins, empty output is good enough.
+   * @returns Void because side effect is expected.
    */
   scaffoldSourceCode?: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
 
   /**
-   * Called when creating a new project or adding a new resource.
-   * Returns resource templates (e.g. Bicep templates/plain JSON) for provisioning.
+   * This method is called when creating a new project or adding a new resource.
+   * A resource plugin is expected to return a resource template(e.g. Bicep templates/plain JSON) which will be persisted
+   * by the Toolkit and will be used to provision resource when Provision command is called.
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {Inputs} inputs - User's answers to questions defined in {@link getQuestionsForScaffolding} along with some system inputs.
@@ -91,17 +93,21 @@ export interface ResourcePlugin {
   ) => Promise<Result<ResourceTemplate, FxError>>;
 
   /**
-   * This method is useful for resources that can't be provisioned using Bicep/ARM like AAD, AppStudio.
-   * Plugins are expected to provision using Azure SDK.
+   * provisionResource() runs before ARM/Bicep provision when Provision command is called.
+   * There are two reasons why a resource needs to implement this method:
+   * 1) to generate input for ARM/Bicep provision to consume.
+   * 2) the resource can't be provisioned using resource templates like ARM/Bicep.
+   * Two typical resources that need to implement this method are AAD(Azure Active Directory)
+   * and AppSudio, which statisfy both above criteria.
    *
-   * provisionResource is guaranteed to run before Bicep provision.
+   * A plugin can get access tokens to cloud service using TokenProvider.
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {ProvisionInputs} inputs - inputs injected by Toolkit runtime and solution.
-   * @param {DeepReadonly<EnvInfoV2>} envInfo - model for (config|profile).${env}.json
+   * @param {DeepReadonly<EnvInfoV2>} envInfo - a readonly view of environment info modeled after (config|profile).${env}.json
    * @param {TokenProvider} tokenProvider - Tokens for Azure and AppStudio
    *
-   * @returns {ResourceProvisionOutput} resource provision output
+   * @returns {ResourceProvisionOutput} resource provision output which will be persisted by the toolkit into envInfo's profile.
    */
   provisionResource?: (
     ctx: Context,
@@ -111,32 +117,34 @@ export interface ResourcePlugin {
   ) => Promise<Result<ResourceProvisionOutput, FxError>>;
 
   /**
-   * configureResource is guarantee to run after Bicep/ARM provisioning.
-   * Plugins are expected to read the provision output values of other plugins, and return a new copy of its own provision output,
-   * possibly with added fields.
+   * configureResource() is guaranteed to run after Bicep/ARM provision.
+   * Plugins are expected to read the provision output of other plugins via envInfo's profile,
+   * and return a new copy of its own provision output possibly with added and modified fields.
+   *
+   * Plugins can also sync their settings to the clould using access tokens provided by TokenProvider
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {ProvisionInputs} inputs - inputs injected by Toolkit runtime and solution.
-   * @param {Json} provisionInputConfig - model for config.${env}.json, in which, user can customize some inputs for provision
-   * @param {Readonly<SolutionProvisionOutput>} provisionOutputs - the profile (persist by core as `profile.${env}.json`) containing provision outputs
+   * @param {DeepReadonly<EnvInfoV2>} envInfo - a readonly view of environment info modeled after (config|profile).${env}.json
    * @param {TokenProvider} tokenProvider - Tokens for Azure and AppStudio
    *
-   * @returns {ResourceProvisionOutput} resource provision output
+   * @returns {ResourceProvisionOutput} resource provision output which will be persisted by the toolkit into envInfo's profile.
    */
   configureResource?: (
     ctx: Context,
     inputs: ProvisionInputs,
-    envInfo: Readonly<EnvInfoV2>,
+    envInfo: DeepReadonly<EnvInfoV2>,
     tokenProvider: TokenProvider
   ) => Promise<Result<ResourceProvisionOutput, FxError>>;
 
   /**
-   * Depends on the values returned by {@link provisionResource} and {@link configureResource}.
-   * Plugins are expected to deploy code to cloud using credentials provided by {@link AzureAccountProvider}.
+   * Depends on the provision output values returned by {@link provisionResource}, ARM/Bicep provision
+   * and {@link configureResource}.
+   * Plugins are expected to deploy code to cloud using access tokens provided by {@link AzureAccountProvider}.
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {DeploymentInputs} inputs - inputs injected by Toolkit runtime and solution.
-   * @param {Json} provisionOutputs - profile containing provision outputs
+   * @param {Json} provisionOutputs - profile containing provision outputs modeled after profile.${env}.json
    * @param {AzureAccountProvider} tokenProvider - Tokens for Azure and AppStudio
    */
   deploy?: (
@@ -150,8 +158,7 @@ export interface ResourcePlugin {
    * Depends on the output of {@link package}. Uploads Teams package to AppStudio
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {Inputs} inputs - system inputs.
-   * @param {Json} provisionInputConfig - contains the user customized values for manifest placeholders
-   * @param {Json} provisionOutputs - contains the provision output values for manifest placeholders
+   * @param {DeepReadonly<EnvInfoV2>} envInfo - a readonly view of environment info modeled after (config|profile).${env}.json
    * @param {AppStudioTokenProvider} tokenProvider - Token for AppStudio
    *
    * @returns Void because side effect is expected.
@@ -172,6 +179,7 @@ export interface ResourcePlugin {
    * @param {Json} localSettings - local debug settings generated by {@link provisionLocalResource}
    * @param {TokenProvider} tokenProvider - Tokens for Azure and AppStudio
    *
+   * @returns Void because side effect is expected.
    */
   provisionLocalResource?: (
     ctx: Context,
@@ -182,13 +190,13 @@ export interface ResourcePlugin {
 
   /**
    * configureLocalResource works like {@link configureResource} but only for local debugging resources.
-   * Plugins are expected to read the local provision output values of other plugins, and return a new copy of its own local provision output,
-   * possibly with added fields.
+   * Plugins are expected to read the local provision output values of other plugins, and modify in-place
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {Json} localSettings - local debug settings generated by {@link scaffoldSourceCode}
    * @param {TokenProvider} tokenProvider - Tokens for Azure and AppStudio
    *
+   * @returns Void because side effect is expected.
    */
   configureLocalResource?: (
     ctx: Context,
@@ -197,6 +205,17 @@ export interface ResourcePlugin {
     tokenProvider: TokenProvider
   ) => Promise<Result<Void, FxError>>;
 
+  /**
+   * Plugins that need to collect user input are expected to implement this method.
+   * Questions are organized as a tree. Please see {@link QTreeNode}.
+   *
+   * getQuestionsForScaffolding() is guaranteed to be called before scaffoldSourceCode().
+   *
+   * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
+   * @param {Inputs} inputs - system inputs.
+   *
+   * @returns question tree.
+   */
   getQuestionsForScaffolding?: (
     ctx: Context,
     inputs: Inputs

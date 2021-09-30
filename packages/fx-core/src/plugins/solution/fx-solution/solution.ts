@@ -1744,10 +1744,10 @@ export class TeamsAppSolution implements Solution {
             );
 
             collaborators.push({
-              // Sometimes app studio will return null as userPrincipalName, thus using aad's instead.
+              // For guest account, aadOwner.userPrincipalName will be user's email, and is easy to read.
               userPrincipalName:
-                teamsAppOwner.userPrincipalName ??
                 aadOwner?.userPrincipalName ??
+                teamsAppOwner.userPrincipalName ??
                 teamsAppOwner.userObjectId,
               userObjectId: teamsAppOwner.userObjectId,
               isAadOwner: aadOwner ? true : false,
@@ -1912,10 +1912,10 @@ export class TeamsAppSolution implements Solution {
         );
 
         collaborators.push({
-          // Sometimes app studio will return null as userPrincipalName, thus using aad's instead.
+          // For guest account, aadOwner.userPrincipalName will be user's email, and is easy to read.
           userPrincipalName:
-            teamsAppOwner.userPrincipalName ??
             aadOwner?.userPrincipalName ??
+            teamsAppOwner.userPrincipalName ??
             teamsAppOwner.userObjectId,
           userObjectId: teamsAppOwner.userObjectId,
           isAadOwner: aadOwner ? true : false,

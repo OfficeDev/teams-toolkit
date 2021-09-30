@@ -27,6 +27,7 @@ import {
   Inputs,
   VsCodeEnv,
   AppStudioTokenProvider,
+  SharepointTokenProvider,
   Void,
   Tools,
   AzureSolutionSettings,
@@ -53,6 +54,7 @@ import {
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
 import AppStudioTokenInstance from "./commonlib/appStudioLogin";
+import SharepointTokenInstance from "./commonlib/sharepointLogin";
 import AppStudioCodeSpaceTokenInstance from "./commonlib/appStudioCodeSpaceLogin";
 import VsCodeLogInstance from "./commonlib/log";
 import { TreeViewCommand } from "./treeview/commandsTreeViewProvider";
@@ -183,17 +185,24 @@ export async function activate(): Promise<Result<Void, FxError>> {
     if (vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode) {
       appstudioLogin = AppStudioCodeSpaceTokenInstance;
     }
+    const sharepointLogin: SharepointTokenProvider = SharepointTokenInstance;
 
-    appstudioLogin.setStatusChangeMap(
+    const m365NotificationCallback = (
+      status: string,
+      token: string | undefined,
+      accountInfo: Record<string, unknown> | undefined
+    ) => {
+      if (status === signedIn) {
+        window.showInformationMessage(StringResources.vsc.handlers.m365SignIn);
+      } else if (status === signedOut) {
+        window.showInformationMessage(StringResources.vsc.handlers.m365SignOut);
+      }
+      return Promise.resolve();
+    };
+    appstudioLogin.setStatusChangeMap("successfully-sign-in-m365", m365NotificationCallback, false);
+    sharepointLogin.setStatusChangeMap(
       "successfully-sign-in-m365",
-      (status, token, accountInfo) => {
-        if (status === signedIn) {
-          window.showInformationMessage(StringResources.vsc.handlers.m365SignIn);
-        } else if (status === signedOut) {
-          window.showInformationMessage(StringResources.vsc.handlers.m365SignOut);
-        }
-        return Promise.resolve();
-      },
+      m365NotificationCallback,
       false
     );
     tools = {
@@ -202,6 +211,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
         azureAccountProvider: AzureAccountManager,
         graphTokenProvider: GraphManagerInstance,
         appStudioToken: appstudioLogin,
+        sharepointTokenProvider: SharepointTokenInstance,
       },
       telemetryReporter: telemetry,
       treeProvider: TreeViewManagerInstance.getTreeView("teamsfx-accounts")!,
@@ -257,28 +267,28 @@ function registerCoreEvents() {
   const developmentView = TreeViewManagerInstance.getTreeView("teamsfx-development");
   if (developmentView instanceof CommandsWebviewProvider) {
     core.on(CoreCallbackEvent.lock, () => {
-      (
-        TreeViewManagerInstance.getTreeView("teamsfx-development") as CommandsWebviewProvider
-      ).onLockChanged(true);
+      (TreeViewManagerInstance.getTreeView(
+        "teamsfx-development"
+      ) as CommandsWebviewProvider).onLockChanged(true);
     });
     core.on(CoreCallbackEvent.unlock, () => {
-      (
-        TreeViewManagerInstance.getTreeView("teamsfx-development") as CommandsWebviewProvider
-      ).onLockChanged(false);
+      (TreeViewManagerInstance.getTreeView(
+        "teamsfx-development"
+      ) as CommandsWebviewProvider).onLockChanged(false);
     });
   }
 
   const deploymentView = TreeViewManagerInstance.getTreeView("teamsfx-deployment");
   if (deploymentView instanceof CommandsWebviewProvider) {
     core.on(CoreCallbackEvent.lock, () => {
-      (
-        TreeViewManagerInstance.getTreeView("teamsfx-deployment") as CommandsWebviewProvider
-      ).onLockChanged(true);
+      (TreeViewManagerInstance.getTreeView(
+        "teamsfx-deployment"
+      ) as CommandsWebviewProvider).onLockChanged(true);
     });
     core.on(CoreCallbackEvent.unlock, () => {
-      (
-        TreeViewManagerInstance.getTreeView("teamsfx-deployment") as CommandsWebviewProvider
-      ).onLockChanged(false);
+      (TreeViewManagerInstance.getTreeView(
+        "teamsfx-deployment"
+      ) as CommandsWebviewProvider).onLockChanged(false);
     });
   }
 }

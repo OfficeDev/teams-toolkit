@@ -62,8 +62,9 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
   let getSelectSubItem: undefined | ((token: any) => Promise<[TreeItem, boolean]>) = undefined;
   getSelectSubItem = async (token: any): Promise<[TreeItem, boolean]> => {
     let selectSubLabel = "";
-    const subscriptions: SubscriptionInfo[] | undefined =
-      await tools.tokenProvider.azureAccountProvider.listSubscriptions();
+    const subscriptions:
+      | SubscriptionInfo[]
+      | undefined = await tools.tokenProvider.azureAccountProvider.listSubscriptions();
     if (subscriptions) {
       const activeSubscriptionId = await getSubscriptionId();
       const activeSubscription = subscriptions.find(
@@ -254,65 +255,66 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
     return ok(null);
   };
 
-  tools.tokenProvider.appStudioToken?.setStatusChangeMap(
-    "tree-view",
-    async (
-      status: string,
-      token?: string | undefined,
-      accountInfo?: Record<string, unknown> | undefined
-    ) => {
-      if (status === "SignedIn") {
-        if (token !== undefined && accountInfo !== undefined) {
-          const treeItem = {
-            commandId: "fx-extension.signinM365",
-            label: (accountInfo.upn as string) ? (accountInfo.upn as string) : "",
-            callback: signinM365Callback,
-            parent: TreeCategory.Account,
-            contextValue: "signedinM365",
-            icon: "M365",
-          };
-          tools.treeProvider?.refresh([treeItem]);
-          const subItem = await getSideloadingItem(token);
-          if (subItem && subItem.length > 0) {
-            tools.treeProvider?.add(subItem);
+  const m365AccountCallback = async (
+    status: string,
+    token?: string | undefined,
+    accountInfo?: Record<string, unknown> | undefined
+  ) => {
+    if (status === "SignedIn") {
+      if (token !== undefined && accountInfo !== undefined) {
+        const treeItem = {
+          commandId: "fx-extension.signinM365",
+          label: (accountInfo.upn as string) ? (accountInfo.upn as string) : "",
+          callback: signinM365Callback,
+          parent: TreeCategory.Account,
+          contextValue: "signedinM365",
+          icon: "M365",
+        };
+        tools.treeProvider?.refresh([treeItem]);
+        const subItem = await getSideloadingItem(token);
+        if (subItem && subItem.length > 0) {
+          tools.treeProvider?.add(subItem);
 
-            // this is a workaround to expand this child, to be improved when TreeView.reveal is supported
-            treeItem.label += " ";
-            tools.treeProvider?.refresh([treeItem]);
-          }
+          // this is a workaround to expand this child, to be improved when TreeView.reveal is supported
+          treeItem.label += " ";
+          tools.treeProvider?.refresh([treeItem]);
         }
-      } else if (status === "SigningIn") {
-        tools.treeProvider?.refresh([
-          {
-            commandId: "fx-extension.signinM365",
-            label: StringResources.vsc.accountTree.signingInM365,
-            callback: signinM365Callback,
-            parent: TreeCategory.Account,
-            icon: "spinner",
-          },
-        ]);
-      } else if (status === "SignedOut") {
-        tools.treeProvider?.refresh([
-          {
-            commandId: "fx-extension.signinM365",
-            label: StringResources.vsc.handlers.signIn365,
-            callback: signinM365Callback,
-            parent: TreeCategory.Account,
-            icon: "M365",
-            contextValue: "signinM365",
-          },
-        ]);
-        tools.treeProvider?.remove([
-          {
-            commandId: "fx-extension.checkSideloading",
-            label: "",
-            parent: "fx-extension.signinM365",
-          },
-        ]);
       }
-      return Promise.resolve();
+    } else if (status === "SigningIn") {
+      tools.treeProvider?.refresh([
+        {
+          commandId: "fx-extension.signinM365",
+          label: StringResources.vsc.accountTree.signingInM365,
+          callback: signinM365Callback,
+          parent: TreeCategory.Account,
+          icon: "spinner",
+        },
+      ]);
+    } else if (status === "SignedOut") {
+      tools.treeProvider?.refresh([
+        {
+          commandId: "fx-extension.signinM365",
+          label: StringResources.vsc.handlers.signIn365,
+          callback: signinM365Callback,
+          parent: TreeCategory.Account,
+          icon: "M365",
+          contextValue: "signinM365",
+        },
+      ]);
+      tools.treeProvider?.remove([
+        {
+          commandId: "fx-extension.checkSideloading",
+          label: "",
+          parent: "fx-extension.signinM365",
+        },
+      ]);
     }
-  );
+    return Promise.resolve();
+  };
+
+  tools.tokenProvider.appStudioToken?.setStatusChangeMap("tree-view", m365AccountCallback);
+  tools.tokenProvider.sharepointTokenProvider?.setStatusChangeMap("tree-view", m365AccountCallback);
+
   tools.tokenProvider.azureAccountProvider?.setStatusChangeMap(
     "tree-view",
     async (

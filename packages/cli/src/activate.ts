@@ -10,6 +10,7 @@ import { FxCore } from "@microsoft/teamsfx-core";
 import AzureAccountManager from "./commonlib/azureLogin";
 import AppStudioTokenProvider from "./commonlib/appStudioLogin";
 import GraphTokenProvider from "./commonlib/graphLogin";
+import SharepointTokenProvider from "./commonlib/sharepointLogin";
 import CLILogProvider from "./commonlib/log";
 import { CliTelemetry } from "./telemetry/cliTelemetry";
 import CLIUIInstance from "./userInteraction";
@@ -30,6 +31,7 @@ export default async function activate(rootPath?: string): Promise<Result<FxCore
       azureAccountProvider: AzureAccountManager,
       graphTokenProvider: GraphTokenProvider,
       appStudioToken: AppStudioTokenProvider,
+      sharepointTokenProvider: SharepointTokenProvider,
     },
     telemetryReporter: CliTelemetry.getReporter(),
     ui: CLIUIInstance,

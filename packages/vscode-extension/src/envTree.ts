@@ -111,14 +111,7 @@ export async function getAllCollaboratorList(envs: string[], force = false): Pro
     collaboratorsRecordCache = collaboratorsRecord;
 
     for (const env of envs) {
-      const collaboratorParentNode: TreeItem = {
-        commandId: `fx-extension.listcollaborator.parentNode.${env}`,
-        label: StringResources.vsc.commandsTreeViewProvider.collaboratorParentNode,
-        icon: "organization",
-        isCustom: false,
-        parent: "fx-extension.environment." + env,
-        expanded: false,
-      };
+      const collaboratorParentNode: TreeItem = generateCollaboratorParentNode(env);
 
       result.push(collaboratorParentNode);
 
@@ -129,19 +122,31 @@ export async function getAllCollaboratorList(envs: string[], force = false): Pro
           collaboratorParentNode.contextValue = "addCollaborator";
         }
 
-        result = result.concat(collaboratorsRecord[env]);
+        if (collaboratorsRecord[env]) {
+          result = result.concat(collaboratorsRecord[env]);
+        }
       } else {
-        result.push({
-          commandId: `fx-extension.listcollaborator.${env}`,
-          label: StringResources.vsc.commandsTreeViewProvider.loginM365AccountToViewCollaborators,
-          icon: "warning",
-          isCustom: true,
-          parent: `fx-extension.listcollaborator.parentNode.${env}`,
-        });
+        result.push(
+          generateCollaboratorWarningNode(
+            env,
+            StringResources.vsc.commandsTreeViewProvider.loginM365AccountToViewCollaborators
+          )
+        );
       }
     }
   }
   return result;
+}
+
+export async function updateNewEnvCollaborators(env: string): Promise<void> {
+  const parentNode = generateCollaboratorParentNode(env);
+  const notProvisionedNode = generateCollaboratorWarningNode(
+    env,
+    StringResources.vsc.commandsTreeViewProvider.noPermissionToListCollaborators
+  );
+
+  collaboratorsRecordCache[env] = [parentNode, notProvisionedNode];
+  await environmentTreeProvider.add(collaboratorsRecordCache[env]);
 }
 
 export async function addCollaboratorToEnv(
@@ -149,19 +154,63 @@ export async function addCollaboratorToEnv(
   userObjectId: string,
   email: string
 ): Promise<void> {
-  const newCollaborator = {
+  const findDuplicated = collaboratorsRecordCache[env].find(
+    (collaborator) => collaborator.label === email
+  );
+  if (findDuplicated) {
+    return;
+  }
+  const newCollaborator = generateCollaboratorNode(env, userObjectId, email, true);
+  collaboratorsRecordCache[env].push(newCollaborator);
+  await environmentTreeProvider.add([newCollaborator]);
+}
+
+export function generateCollaboratorNode(
+  env: string,
+  userObjectId: string,
+  email: string,
+  isAadOwner: boolean
+): TreeItem {
+  return {
     commandId: `fx-extension.listcollaborator.${env}.${userObjectId}`,
     label: email,
-    icon: "person",
-    isCustom: false,
+    icon: isAadOwner ? "person" : "warning",
+    isCustom: !isAadOwner,
     tooltip: {
-      value: "",
+      value: isAadOwner ? "" : "This account doesn't have the AAD permission.",
       isMarkdown: false,
     },
     parent: `fx-extension.listcollaborator.parentNode.${env}`,
   };
-  collaboratorsRecordCache[env].push(newCollaborator);
-  await environmentTreeProvider.add([newCollaborator]);
+}
+
+export function generateCollaboratorWarningNode(
+  env: string,
+  nodeLabel: string,
+  toolTip?: string
+): TreeItem {
+  return {
+    commandId: `fx-extension.listcollaborator.${env}`,
+    label: nodeLabel,
+    icon: "warning",
+    tooltip: {
+      value: toolTip ?? nodeLabel,
+      isMarkdown: false,
+    },
+    isCustom: true,
+    parent: `fx-extension.listcollaborator.parentNode.${env}`,
+  };
+}
+
+function generateCollaboratorParentNode(env: string): TreeItem {
+  return {
+    commandId: `fx-extension.listcollaborator.parentNode.${env}`,
+    label: StringResources.vsc.commandsTreeViewProvider.collaboratorParentNode,
+    icon: "organization",
+    isCustom: false,
+    parent: "fx-extension.environment." + env,
+    expanded: false,
+  };
 }
 
 function getTreeViewItemIcon(envName: string, activeEnv: string | undefined) {

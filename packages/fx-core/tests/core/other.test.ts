@@ -180,7 +180,7 @@ describe("Other test case", () => {
   });
 
   it("isArmSupportEnabled: return correct result based on environment variable value", () => {
-    const armSupportFeatureFlagName = "TEAMSFX_ARM_SUPPORT";
+    const armSupportFeatureFlagName = "TEAMSFX_INSIDER_PREVIEW";
 
     let restore = mockedEnv({
       [armSupportFeatureFlagName]: undefined,

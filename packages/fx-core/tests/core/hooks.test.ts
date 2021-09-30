@@ -250,7 +250,7 @@ describe("Middleware - others", () => {
 
     it("Should not upgrade for the new multi env project", async () => {
       sandbox.stub(process, "env").get(() => {
-        return { TEAMSFX_MULTI_ENV: "true" };
+        return { TEAMSFX_INSIDER_PREVIEW: "true" };
       });
 
       envJson = MockLatestVersion2_3_0Context();
@@ -559,8 +559,7 @@ describe("Middleware - others", () => {
         path.join(projectPath, ".fx", "settings.json")
       );
       mockedEnvRestore = mockedEnv({
-        TEAMSFX_MULTI_ENV: "true",
-        TEAMSFX_ARM_SUPPORT: "true",
+        TEAMSFX_INSIDER_PREVIEW: "true",
       });
     });
     afterEach(async () => {
@@ -626,8 +625,7 @@ describe("Middleware - others", () => {
       await fs.ensureDir(projectPath);
       await fs.copy(path.join(__dirname, "../samples/migration/"), path.join(projectPath));
       mockedEnvRestore = mockedEnv({
-        TEAMSFX_MULTI_ENV: "true",
-        TEAMSFX_ARM_SUPPORT: "true",
+        TEAMSFX_INSIDER_PREVIEW: "true",
       });
       sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok("OK"));
     });

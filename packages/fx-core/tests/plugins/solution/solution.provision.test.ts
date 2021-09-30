@@ -518,7 +518,7 @@ describe("provision() happy path for SPFx projects", () => {
       },
     };
     mocker.stub(process, "env").get(() => {
-      return { TEAMSFX_ARM_SUPPORT: armEnabled.toString() };
+      return { TEAMSFX_INSIDER_PREVIEW: armEnabled.toString() };
     });
 
     expect(mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
@@ -764,7 +764,7 @@ describe("before provision() asking for resource group info", () => {
   beforeEach(() => {
     mocker.stub(solutionUtil, "getSubsriptionDisplayName").resolves(mockedSubscriptionName);
     mocker.stub(process, "env").get(() => {
-      return { TEAMSFX_MULTI_ENV: "true" };
+      return { TEAMSFX_INSIDER_PREVIEW: "true" };
     });
   });
 

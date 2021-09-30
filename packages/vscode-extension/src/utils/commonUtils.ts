@@ -222,23 +222,13 @@ export function getConfiguration(key: string): boolean {
 }
 
 export function syncFeatureFlags() {
-  // Sync arm support
-
-  process.env["TEAMSFX_ARM_SUPPORT"] = getConfiguration(
-    ConfigurationKey.ArmSupportEnabled
+  process.env["TEAMSFX_INSIDER_PREVIEW"] = getConfiguration(
+    ConfigurationKey.InsiderPreview
   ).toString();
 
   process.env["TEAMSFX_BICEP_ENV_CHECKER_ENABLE"] = getConfiguration(
     ConfigurationKey.BicepEnvCheckerEnable
   ).toString();
-
-  // Sync multi-env support (bundled ARM support & bicep env checker)
-  const flag = getConfiguration(ConfigurationKey.MultiEnvEnabled);
-  if (flag) {
-    process.env["TEAMSFX_MULTI_ENV"] = flag.toString();
-    process.env["TEAMSFX_ARM_SUPPORT"] = flag.toString();
-    process.env["TEAMSFX_BICEP_ENV_CHECKER_ENABLE"] = flag.toString();
-  }
 }
 
 export class FeatureFlags {

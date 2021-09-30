@@ -56,6 +56,7 @@ import {
 } from "../../../common/permissionInterface";
 import {
   deepCopy,
+  getHashedEnv,
   getStrings,
   isArmSupportEnabled,
   isMultiEnvEnabled,
@@ -1746,10 +1747,10 @@ export class TeamsAppSolution implements Solution {
             );
 
             collaborators.push({
-              // Sometimes app studio will return null as userPrincipalName, thus using aad's instead.
+              // For guest account, aadOwner.userPrincipalName will be user's email, and is easy to read.
               userPrincipalName:
-                teamsAppOwner.userPrincipalName ??
                 aadOwner?.userPrincipalName ??
+                teamsAppOwner.userPrincipalName ??
                 teamsAppOwner.userObjectId,
               userObjectId: teamsAppOwner.userObjectId,
               isAadOwner: aadOwner ? true : false,
@@ -1766,6 +1767,7 @@ export class TeamsAppSolution implements Solution {
             [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
             [SolutionTelemetryProperty.CollaboratorCount]: collaborators.length.toString(),
             [SolutionTelemetryProperty.AadOwnerCount]: aadOwnerCount.toString(),
+            [SolutionTelemetryProperty.Env]: getHashedEnv(env),
           });
 
           collaboratorsResult[env] = {
@@ -1840,9 +1842,9 @@ export class TeamsAppSolution implements Solution {
         }
       );
 
+      const envName = ctx.envInfo.envName;
       if (ctx.answers?.platform === Platform.CLI) {
         const aadAppTenantId = ctx.envInfo.profile?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
-        const envName = ctx.envInfo.envName;
         if (!envName) {
           return err(
             sendErrorTelemetryThenReturnError(
@@ -1914,10 +1916,10 @@ export class TeamsAppSolution implements Solution {
         );
 
         collaborators.push({
-          // Sometimes app studio will return null as userPrincipalName, thus using aad's instead.
+          // For guest account, aadOwner.userPrincipalName will be user's email, and is easy to read.
           userPrincipalName:
-            teamsAppOwner.userPrincipalName ??
             aadOwner?.userPrincipalName ??
+            teamsAppOwner.userPrincipalName ??
             teamsAppOwner.userObjectId,
           userObjectId: teamsAppOwner.userObjectId,
           isAadOwner: aadOwner ? true : false,
@@ -1963,6 +1965,7 @@ export class TeamsAppSolution implements Solution {
         [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
         [SolutionTelemetryProperty.CollaboratorCount]: collaborators.length.toString(),
         [SolutionTelemetryProperty.AadOwnerCount]: aadOwnerCount.toString(),
+        [SolutionTelemetryProperty.Env]: getHashedEnv(envName),
       });
 
       return ok({

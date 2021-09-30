@@ -154,6 +154,12 @@ export async function addCollaboratorToEnv(
   userObjectId: string,
   email: string
 ): Promise<void> {
+  const findDuplicated = collaboratorsRecordCache[env].find(
+    (collaborator) => collaborator.label === email
+  );
+  if (findDuplicated) {
+    return;
+  }
   const newCollaborator = generateCollaboratorNode(env, userObjectId, email, true);
   collaboratorsRecordCache[env].push(newCollaborator);
   await environmentTreeProvider.add([newCollaborator]);

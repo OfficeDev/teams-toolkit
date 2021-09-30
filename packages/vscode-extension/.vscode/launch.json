@@ -7,7 +7,7 @@
   "configurations": [
     {
       "name": "Run Extension",
-      "type": "extensionHost",
+      "type": "pwa-extensionHost",
       "request": "launch",
       "args": ["--extensionDevelopmentPath=${workspaceFolder}"],
       "resolveSourceMapLocations": [
@@ -34,7 +34,7 @@
     },
     {
       "name": "Extension Unit Tests",
-      "type": "extensionHost",
+      "type": "pwa-extensionHost",
       "request": "launch",
       "args": [
         "--extensionDevelopmentPath=${workspaceFolder}",

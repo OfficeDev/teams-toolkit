@@ -441,7 +441,7 @@ async function doGenerateArmTemplate(ctx: SolutionContext): Promise<Result<any, 
 
     // Output .gitignore file
     const gitignoreContent = await fs.readFile(
-      path.join(getTemplatesFolder(), "plugins", SolutionSource, "armGitignore"),
+      path.join(getTemplatesFolder(), "plugins", "solution", "armGitignore"),
       ConstantString.UTF8Encoding
     );
     const gitignoreFileName = ".gitignore";

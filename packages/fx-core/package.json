@@ -21,6 +21,7 @@
     "test:unit": "nyc mocha \"tests/**/*.test.ts\"",
     "test:solution": "nyc mocha \"tests/plugins/solution/*.test.ts\"",
     "test:core": "nyc mocha \"tests/core/*.test.ts\"",
+    "test:core-mw": "nyc mocha \"tests/core/middleware/EnvInfoMW.test.ts\"",
     "test:apiv2": "nyc mocha \"tests/plugins/resource/apiv2/*.test.ts\"",
     "clean": "rm -rf build",
     "build": "rimraf build && npx tsc -p ./",

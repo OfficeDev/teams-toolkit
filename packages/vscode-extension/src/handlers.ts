@@ -885,11 +885,7 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
         `Added account: '${inputs.email}' to the environment '${env}' as a collaborator`
       );
 
-      await addCollaboratorToEnv(
-        env,
-        result.value.userInfo.userObjectId,
-        result.value.userInfo.userPrincipalName
-      );
+      await addCollaboratorToEnv(env, result.value.userInfo.userObjectId, inputs.email);
     } else {
       window.showWarningMessage(result.value.message);
     }

@@ -149,6 +149,13 @@ export async function addCollaboratorToEnv(
   userObjectId: string,
   email: string
 ): Promise<void> {
+  const findDuplicated = collaboratorsRecordCache[env].find(
+    (collaborator) => collaborator.label === email
+  );
+  if (findDuplicated) {
+    return;
+  }
+
   const newCollaborator = {
     commandId: `fx-extension.listcollaborator.${env}.${userObjectId}`,
     label: email,

@@ -131,7 +131,8 @@ export namespace GraphClient {
           userObjectId: aadOwner.id,
           resourceId: objectId,
           displayName: aadOwner.displayName,
-          userPrincipalName: aadOwner.userPrincipalName,
+          // For guest account, aadOwner.userPrincipalName will contains "EXT", thus use mail instead.
+          userPrincipalName: aadOwner.mail ?? aadOwner.userPrincipalName,
         });
       }
       return aadOwners;

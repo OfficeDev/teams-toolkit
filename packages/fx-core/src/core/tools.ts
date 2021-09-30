@@ -7,6 +7,7 @@ import {
   EnvConfig,
   EnvInfo,
   Json,
+  ProductName,
   ProjectSettings,
   ProjectSettingsFileName,
   SolutionContext,
@@ -18,6 +19,8 @@ import { isMultiEnvEnabled } from "../common";
 import { ConstantString } from "../common/constants";
 import { GLOBAL_CONFIG } from "../plugins/solution/fx-solution/constants";
 import { environmentManager } from "./environment";
+import crypto from "crypto";
+import * as os from "os";
 
 export function validateProject(solutionContext: SolutionContext): string | undefined {
   const res = validateSettings(solutionContext.projectSettings);
@@ -132,7 +135,7 @@ export function newEnvInfo(
       manifest: {
         values: {
           appName: {
-            short: "",
+            short: "teamsfx_app",
           },
         },
       },
@@ -141,8 +144,11 @@ export function newEnvInfo(
   };
 }
 
-export function base64Encode(str: string): string {
-  return Buffer.from(str, "binary").toString("base64");
+export function getLockFolder(projectPath: string): string {
+  return path.join(
+    os.tmpdir(),
+    `${ProductName}-${crypto.createHash("md5").update(projectPath).digest("hex")}`
+  );
 }
 
 // flattens output/secrets fields in config map for backward compatibility

@@ -49,6 +49,7 @@ import {
   Void,
 } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
+import { environmentManager } from "../../src";
 import {
   DEFAULT_PERMISSION_REQUEST,
   PluginNames,
@@ -527,7 +528,7 @@ export function MockProjectSettings(appName: string): ProjectSettings {
         PluginNames.APPST,
       ],
     } as AzureSolutionSettings,
-    activeEnvironment: "dev",
+    activeEnvironment: environmentManager.getDefaultEnvName(),
   };
 }
 

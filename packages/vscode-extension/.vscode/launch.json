@@ -19,7 +19,7 @@
     },
     {
       "name": "Run Extension with Failpoints",
-      "type": "extensionHost",
+      "type": "pwa-extensionHost",
       "request": "launch",
       "args": ["--extensionDevelopmentPath=${workspaceFolder}"],
       "resolveSourceMapLocations": [
@@ -34,7 +34,7 @@
     },
     {
       "name": "Extension Unit Tests",
-      "type": "pwa-extensionHost",
+      "type": "extensionHost",
       "request": "launch",
       "args": [
         "--extensionDevelopmentPath=${workspaceFolder}",

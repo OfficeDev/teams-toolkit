@@ -313,7 +313,10 @@ export async function migrateV1ProjectHandler(args?: any[]): Promise<Result<null
   );
   const result = await runCommand(Stage.migrateV1);
   await openMarkdownHandler();
-  await vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.treeview", false);
+  await vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.treeview", true);
+  await vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.top", false);
+  await vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.bottom", false);
+  await vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.default", false);
   return result;
 }
 

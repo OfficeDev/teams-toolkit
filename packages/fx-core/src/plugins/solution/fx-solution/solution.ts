@@ -473,6 +473,8 @@ export class TeamsAppSolution implements Solution {
       } catch (e) {
         return err(CopyFileError(e));
       }
+
+      return ok(ctx.answers!.copy ? ctx.answers!.targetEnvName! : ctx.envInfo?.envName);
     }
     return ok(Void);
   }

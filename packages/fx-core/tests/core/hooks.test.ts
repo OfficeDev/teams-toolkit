@@ -519,30 +519,6 @@ describe("Middleware - others", () => {
     });
   });
 
-  describe("LocalSettingsLoaderMW, ContextInjectorMW", () => {
-    it("NoProjectOpenedError", async () => {
-      const original = process.env[FeatureFlagName.MultiEnv];
-      process.env[FeatureFlagName.MultiEnv] = "true";
-
-      class MyClass {
-        tools = new MockTools();
-
-        async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-          return ok("");
-        }
-      }
-
-      hooks(MyClass, {
-        other: [TelemetrySenderMW, LocalSettingsLoaderMW, ContextInjectorMW],
-      });
-      const my = new MyClass();
-      const inputs: Inputs = { platform: Platform.VSCode };
-      const res = await my.other(inputs);
-      assert.isTrue(res.isErr() && res.error.name === NoProjectOpenedError().name);
-      process.env[FeatureFlagName.MultiEnv] = original;
-    });
-  });
-
   describe("migrateArm success", () => {
     const sandbox = sinon.createSandbox();
     const appName = randomAppName();

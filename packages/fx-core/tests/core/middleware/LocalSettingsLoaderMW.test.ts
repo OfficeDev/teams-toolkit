@@ -30,6 +30,7 @@ import {
 import {
   ContextInjectorMW,
   LocalSettingsLoaderMW,
+  LocalSettingsWriterMW,
   ProjectSettingsLoaderMW,
 } from "../../../src/core/middleware";
 import { MockProjectSettings, MockTools, randomAppName } from "../utils";
@@ -156,5 +157,43 @@ describe("Middleware - LocalSettingsLoaderMW, ContextInjectorMW: part 2", () => 
     const my = new MyClass();
     const res = await my.other(inputs);
     assert.isTrue(res.isOk() && res.value === "");
+  });
+});
+
+describe("Middleware - LocalSettingsWriterMW", () => {
+  const sandbox = sinon.createSandbox();
+  const mockedEnvRestore = mockedEnv({ TEAMSFX_APIV2: "true", TEAMSFX_MULTI_ENV: "true" });
+  afterEach(function () {
+    sandbox.restore();
+    mockedEnvRestore();
+  });
+
+  it("write success", async () => {
+    const appName = randomAppName();
+    const inputs: Inputs = { platform: Platform.VSCode };
+    inputs.projectPath = path.join(os.tmpdir(), appName);
+    const tools = new MockTools();
+    const fileMap = new Map<string, any>();
+    sandbox.stub<any, any>(fs, "writeFile").callsFake(async (file: string, data: any) => {
+      fileMap.set(file, data);
+    });
+    sandbox.stub(fs, "pathExists").resolves(true);
+    const localSettingsProvider = new LocalSettingsProvider(inputs.projectPath);
+    const localSettingsFile = localSettingsProvider.localSettingsFilePath;
+    class MyClass {
+      tools = tools;
+      async myMethod(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+        if (ctx) ctx.localSettings = mockLocalSettings;
+        return ok("");
+      }
+    }
+    hooks(MyClass, {
+      myMethod: [ContextInjectorMW, LocalSettingsWriterMW],
+    });
+    const my = new MyClass();
+    await my.myMethod(inputs);
+    const content: string = fileMap.get(localSettingsFile);
+    const settingsInFile = JSON.parse(content);
+    assert.deepEqual(mockLocalSettings, settingsInFile);
   });
 });

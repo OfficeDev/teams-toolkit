@@ -77,26 +77,11 @@ describe("Middleware - LocalSettingsLoaderMW, ContextInjectorMW: part 1", () => 
 });
 
 describe("Middleware - LocalSettingsLoaderMW, ContextInjectorMW: part 2", () => {
-  const mockedEnvRestore = mockedEnv({ TEAMSFX_APIV2: "true", TEAMSFX_MULTI_ENV: "true" });
+  let mockedEnvRestore: RestoreFn;
   const sandbox = sinon.createSandbox();
-  const appName = randomAppName();
-  const projectSettings = MockProjectSettings(appName);
-  const inputs: Inputs = { platform: Platform.VSCode };
-  inputs.projectPath = path.join(os.tmpdir(), appName);
-  const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
-  const projectSettingsFiles = [
-    path.resolve(confFolderPath, "settings.json"),
-    path.resolve(confFolderPath, InputConfigsFolderName, ProjectSettingsFileName),
-  ];
-  const localSettingsProvider = new LocalSettingsProvider(inputs.projectPath);
-  const localSettingsFile = localSettingsProvider.localSettingsFilePath;
 
   beforeEach(() => {
-    sandbox.stub<any, any>(fs, "readJson").callsFake(async (file: string) => {
-      if (projectSettingsFiles.includes(file)) return projectSettings;
-      if (file === localSettingsFile) return mockLocalSettings;
-      return undefined;
-    });
+    mockedEnvRestore = mockedEnv({ TEAMSFX_APIV2: "true", TEAMSFX_MULTI_ENV: "true" });
   });
   afterEach(() => {
     sandbox.restore();
@@ -104,6 +89,22 @@ describe("Middleware - LocalSettingsLoaderMW, ContextInjectorMW: part 2", () => 
   });
 
   it(`success to load local settings -  load existing`, async () => {
+    const appName = randomAppName();
+    const projectPath = path.join(os.tmpdir(), appName);
+    const projectSettings = MockProjectSettings(appName);
+    const inputs: Inputs = { platform: Platform.VSCode, projectPath: projectPath };
+    const confFolderPath = path.resolve(projectPath, `.${ConfigFolderName}`);
+    const projectSettingsFiles = [
+      path.resolve(confFolderPath, "settings.json"),
+      path.resolve(confFolderPath, InputConfigsFolderName, ProjectSettingsFileName),
+    ];
+    const localSettingsProvider = new LocalSettingsProvider(projectPath);
+    const localSettingsFile = localSettingsProvider.localSettingsFilePath;
+    sandbox.stub<any, any>(fs, "readJson").callsFake(async (file: string) => {
+      if (projectSettingsFiles.includes(file)) return projectSettings;
+      if (file === localSettingsFile) return mockLocalSettings;
+      return undefined;
+    });
     sandbox.stub<any, any>(fs, "pathExists").callsFake(async (file: string) => {
       if (projectSettingsFiles.includes(file)) return true;
       if (inputs.projectPath === file) return true;
@@ -133,6 +134,22 @@ describe("Middleware - LocalSettingsLoaderMW, ContextInjectorMW: part 2", () => 
   });
 
   it(`success to load local settings - init from zero`, async () => {
+    const appName = randomAppName();
+    const projectPath = path.join(os.tmpdir(), appName);
+    const projectSettings = MockProjectSettings(appName);
+    const inputs: Inputs = { platform: Platform.VSCode, projectPath: projectPath };
+    const confFolderPath = path.resolve(projectPath, `.${ConfigFolderName}`);
+    const projectSettingsFiles = [
+      path.resolve(confFolderPath, "settings.json"),
+      path.resolve(confFolderPath, InputConfigsFolderName, ProjectSettingsFileName),
+    ];
+    const localSettingsProvider = new LocalSettingsProvider(projectPath);
+    const localSettingsFile = localSettingsProvider.localSettingsFilePath;
+    sandbox.stub<any, any>(fs, "readJson").callsFake(async (file: string) => {
+      if (projectSettingsFiles.includes(file)) return projectSettings;
+      if (file === localSettingsFile) return mockLocalSettings;
+      return undefined;
+    });
     sandbox.stub<any, any>(fs, "pathExists").callsFake(async (file: string) => {
       if (projectSettingsFiles.includes(file)) return true;
       if (inputs.projectPath === file) return true;
@@ -162,7 +179,10 @@ describe("Middleware - LocalSettingsLoaderMW, ContextInjectorMW: part 2", () => 
 
 describe("Middleware - LocalSettingsWriterMW", () => {
   const sandbox = sinon.createSandbox();
-  const mockedEnvRestore = mockedEnv({ TEAMSFX_APIV2: "true", TEAMSFX_MULTI_ENV: "true" });
+  let mockedEnvRestore: RestoreFn;
+  beforeEach(() => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_APIV2: "true", TEAMSFX_MULTI_ENV: "true" });
+  });
   afterEach(function () {
     sandbox.restore();
     mockedEnvRestore();
@@ -170,15 +190,16 @@ describe("Middleware - LocalSettingsWriterMW", () => {
 
   it("write success", async () => {
     const appName = randomAppName();
+    const projectPath = path.join(os.tmpdir(), appName);
     const inputs: Inputs = { platform: Platform.VSCode };
-    inputs.projectPath = path.join(os.tmpdir(), appName);
+    inputs.projectPath = projectPath;
     const tools = new MockTools();
     const fileMap = new Map<string, any>();
     sandbox.stub<any, any>(fs, "writeFile").callsFake(async (file: string, data: any) => {
       fileMap.set(file, data);
     });
     sandbox.stub(fs, "pathExists").resolves(true);
-    const localSettingsProvider = new LocalSettingsProvider(inputs.projectPath);
+    const localSettingsProvider = new LocalSettingsProvider(projectPath);
     const localSettingsFile = localSettingsProvider.localSettingsFilePath;
     class MyClass {
       tools = tools;

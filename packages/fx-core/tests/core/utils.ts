@@ -49,6 +49,7 @@ import {
   Void,
 } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
+import fs from "fs-extra";
 import { environmentManager } from "../../src";
 import {
   DEFAULT_PERMISSION_REQUEST,
@@ -585,4 +586,23 @@ export function MockLatestVersion2_3_0UserData(): Record<string, string> {
     "solution.teamsAppTenantId": "tenantId_new",
     "solution.localDebugTeamsAppId": "teamsAppId_new",
   };
+}
+
+export function deleteFolder(filePath?: string): void {
+  if (!filePath) return;
+  if (fs.existsSync(filePath)) {
+    const files = fs.readdirSync(filePath);
+    files.forEach((file) => {
+      const nextFilePath = `${filePath}/${file}`;
+      const states = fs.statSync(nextFilePath);
+      if (states.isDirectory()) {
+        //recurse
+        deleteFolder(nextFilePath);
+      } else {
+        //delete file
+        fs.unlinkSync(nextFilePath);
+      }
+    });
+    fs.rmdirSync(filePath);
+  }
 }

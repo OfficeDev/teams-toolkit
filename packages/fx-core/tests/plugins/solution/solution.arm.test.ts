@@ -267,337 +267,334 @@ Mocked simple auth output content`
   });
 });
 
-// describe("Deploy ARM Template to Azure", () => {
-//   const mocker = sinon.createSandbox();
-//   const testAppName = "my test app";
-//   let envRestore: () => void;
-//   const testClientId = "test_client_id";
-//   const testClientSecret = "test_client_secret";
-//   const testEnvValue = "test env value";
-//   const testResourceSuffix = "-testSuffix";
-//   let parameterFileName: string;
-//   const testArmTemplateOutput = {
-//     frontendHosting_storageResourceId: {
-//       type: "String",
-//       value: "test_storage_resource_id",
-//     },
-//     frontendHosting_endpoint: {
-//       type: "String",
-//       value: "https://test_frontendhosting_domain/",
-//     },
-//     frontendHosting_domain: {
-//       type: "String",
-//       value: "test_frontendhosting_domain",
-//     },
-//     simpleAuth_skuName: {
-//       type: "String",
-//       value: "B1",
-//     },
-//     simpleAuth_endpoint: {
-//       type: "String",
-//       value: "https://test_simpleauth_domain",
-//     },
-//   };
-//   const SOLUTION_CONFIG = "solution";
-//   let fileContent: Map<string, any>;
+describe("Deploy ARM Template to Azure", () => {
+  const mocker = sinon.createSandbox();
+  const testAppName = "my test app";
+  let envRestore: () => void;
+  const testClientId = "test_client_id";
+  const testClientSecret = "test_client_secret";
+  const testEnvValue = "test env value";
+  const testResourceSuffix = "-testSuffix";
+  let parameterFileName: string;
+  const testArmTemplateOutput = {
+    frontendHosting_storageResourceId: {
+      type: "String",
+      value: "test_storage_resource_id",
+    },
+    frontendHosting_endpoint: {
+      type: "String",
+      value: "https://test_frontendhosting_domain/",
+    },
+    frontendHosting_domain: {
+      type: "String",
+      value: "test_frontendhosting_domain",
+    },
+    simpleAuth_skuName: {
+      type: "String",
+      value: "B1",
+    },
+    simpleAuth_endpoint: {
+      type: "String",
+      value: "https://test_simpleauth_domain",
+    },
+  };
+  const SOLUTION_CONFIG = "solution";
+  let fileContent: Map<string, any>;
 
-//   beforeEach(() => {
-//     mockedEnvRestore = mockedEnv({
-//       TEAMSFX_INSIDER_PREVIEW: "true",
-//     });
-//     parameterFileName = parameterFileNameTemplate.replace(
-//       EnvNamePlaceholder,
-//       environmentManager.getDefaultEnvName()
-//     );
-//     (
-//       mocker.stub(fs, "readFile") as unknown as sinon.SinonStub<
-//         [file: number | fs.PathLike],
-//         Promise<string>
-//       >
-//     ).callsFake((file: number | PathLike): Promise<string> => {
-//       return fileContent.get(file.toString());
-//     });
-//     mocker.stub(fs, "stat").callsFake((filePath: PathLike): Promise<fs.Stats> => {
-//       if (fileContent.has(filePath.toString())) {
-//         return new Promise<fs.Stats>((resolve) => {
-//           resolve({} as fs.Stats);
-//         });
-//       }
-//       throw new Error(`${filePath} does not exist.`);
-//     });
-//     mocker.stub(fs, "writeFile").callsFake((path: number | PathLike, data: any) => {
-//       fileContent.set(path.toString(), data);
-//     });
-//     mocker.stub(bicepChecker, "ensureBicep").callsFake(async (ctx: SolutionContext) => "bicep");
-//     mocker.stub(tools, "waitSeconds").resolves();
+  beforeEach(() => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_INSIDER_PREVIEW: "true",
+    });
+    parameterFileName = parameterFileNameTemplate.replace(EnvNamePlaceholder, "default");
+    (
+      mocker.stub(fs, "readFile") as unknown as sinon.SinonStub<
+        [file: number | fs.PathLike],
+        Promise<string>
+      >
+    ).callsFake((file: number | PathLike): Promise<string> => {
+      return fileContent.get(file.toString());
+    });
+    mocker.stub(fs, "stat").callsFake((filePath: PathLike): Promise<fs.Stats> => {
+      if (fileContent.has(filePath.toString())) {
+        return new Promise<fs.Stats>((resolve) => {
+          resolve({} as fs.Stats);
+        });
+      }
+      throw new Error(`${filePath} does not exist.`);
+    });
+    mocker.stub(fs, "writeFile").callsFake((path: number | PathLike, data: any) => {
+      fileContent.set(path.toString(), data);
+    });
+    mocker.stub(bicepChecker, "ensureBicep").callsFake(async (ctx: SolutionContext) => "bicep");
+    mocker.stub(tools, "waitSeconds").resolves();
 
-//     fileContent = new Map([
-//       [
-//         path.join(configFolderName, parameterFileName),
-//         `{
-//   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
-//   "contentVersion": "1.0.0.0",
-//   "parameters": {
-//     "resourceBaseName": {
-//       "value": "mytestappdefault"
-//     },
-//     "aadClientId": {
-//       "value": "{{FX_RESOURCE_AAD_APP_FOR_TEAMS__CLIENTID}}"
-//     },
-//     "aadClientSecret": {
-//       "value": "{{FX_RESOURCE_AAD_APP_FOR_TEAMS__CLIENTSECRET}}"
-//     },
-//     "envValue": {
-//       "value": "{{MOCKED_EXPAND_VAR_TEST}}"
-//     }
-//   }
-//   }
-//   `,
-//       ],
-//     ]);
-//   });
+    fileContent = new Map([
+      [
+        path.join(configFolderName, parameterFileName),
+        `{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "resourceBaseName": {
+      "value": "mytestappdefault"
+    },
+    "aadClientId": {
+      "value": "{{FX_RESOURCE_AAD_APP_FOR_TEAMS__CLIENTID}}"
+    },
+    "aadClientSecret": {
+      "value": "{{FX_RESOURCE_AAD_APP_FOR_TEAMS__CLIENTSECRET}}"
+    },
+    "envValue": {
+      "value": "{{MOCKED_EXPAND_VAR_TEST}}"
+    }
+  }
+  }
+  `,
+      ],
+    ]);
+  });
 
-//   afterEach(() => {
-//     envRestore();
-//     mockedEnvRestore();
-//     mocker.restore();
-//   });
+  afterEach(() => {
+    envRestore();
+    mockedEnvRestore();
+    mocker.restore();
+  });
 
-//   it("should fail when main.bicep do not exist", async () => {
-//     // Arrange
-//     const mockedCtx = mockSolutionContext();
-//     mockedCtx.projectSettings = {
-//       appName: testAppName,
-//       projectId: uuid.v4(),
-//       solutionSettings: {
-//         hostType: HostTypeOptionAzure.id,
-//         name: "azure",
-//         version: "1.0",
-//         activeResourcePlugins: [fehostPlugin.name, simpleAuthPlugin.name],
-//         capabilities: [TabOptionItem.id],
-//       },
-//     };
-//     mockedCtx.envInfo.profile.set(
-//       "fx-resource-aad-app-for-teams",
-//       new ConfigMap([["clientId", testClientId]])
-//     );
-//     mockedCtx.envInfo.profile.set(
-//       SOLUTION_CONFIG,
-//       new ConfigMap([
-//         ["resource-base-name", "mocked resource base name"],
-//         ["resourceGroupName", "mocked resource group name"],
-//       ])
-//     );
+  it("should fail when main.bicep do not exist", async () => {
+    // Arrange
+    const mockedCtx = mockSolutionContext();
+    mockedCtx.projectSettings = {
+      appName: testAppName,
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [fehostPlugin.name, simpleAuthPlugin.name],
+        capabilities: [TabOptionItem.id],
+      },
+    };
+    mockedCtx.envInfo.profile.set(
+      "fx-resource-aad-app-for-teams",
+      new ConfigMap([["clientId", testClientId]])
+    );
+    mockedCtx.envInfo.profile.set(
+      SOLUTION_CONFIG,
+      new ConfigMap([
+        ["resource-base-name", "mocked resource base name"],
+        ["resourceGroupName", "mocked resource group name"],
+      ])
+    );
 
-//     envRestore = mockedEnv({
-//       MOCKED_EXPAND_VAR_TEST: "mocked environment variable",
-//     });
+    envRestore = mockedEnv({
+      MOCKED_EXPAND_VAR_TEST: "mocked environment variable",
+    });
 
-//     // Act
-//     const result = await deployArmTemplates(mockedCtx);
+    // Act
+    const result = await deployArmTemplates(mockedCtx);
 
-//     // Assert
-//     chai.assert.isTrue(result.isErr());
-//     const error = (result as Err<void, FxError>).error;
-//     chai.expect(error.name).to.equal("FailedToDeployArmTemplatesToAzure");
-//     chai
-//       .expect(error.message)
-//       .to.have.string("Failed to compile bicep files to Json arm templates file:");
-//   });
+    // Assert
+    chai.assert.isTrue(result.isErr());
+    const error = (result as Err<void, FxError>).error;
+    chai.expect(error.name).to.equal("FailedToDeployArmTemplatesToAzure");
+    chai
+      .expect(error.message)
+      .to.have.string("Failed to compile bicep files to Json arm templates file:");
+  });
 
-//   it("should successfully update parameter and deploy arm templates to azure", async () => {
-//     // Arrange
-//     const mockedCtx = mockSolutionContext();
-//     let parameterAfterDeploy = "";
-//     mockedCtx.projectSettings = {
-//       appName: testAppName,
-//       projectId: uuid.v4(),
-//       solutionSettings: {
-//         hostType: HostTypeOptionAzure.id,
-//         name: "azure",
-//         version: "1.0",
-//         activeResourcePlugins: [fehostPlugin.name, simpleAuthPlugin.name],
-//         capabilities: [TabOptionItem.id],
-//       },
-//     };
-//     mockArmDeploymentDependencies(mockedCtx);
+  it("should successfully update parameter and deploy arm templates to azure", async () => {
+    // Arrange
+    const mockedCtx = mockSolutionContext();
+    let parameterAfterDeploy = "";
+    mockedCtx.projectSettings = {
+      appName: testAppName,
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [fehostPlugin.name, simpleAuthPlugin.name],
+        capabilities: [TabOptionItem.id],
+      },
+    };
+    mockArmDeploymentDependencies(mockedCtx);
 
-//     mockedCtx.envInfo.profile.set(
-//       "fx-resource-aad-app-for-teams",
-//       new ConfigMap([
-//         ["clientId", testClientId],
-//         ["clientSecret", testClientSecret],
-//       ])
-//     );
-//     envRestore = mockedEnv({
-//       MOCKED_EXPAND_VAR_TEST: testEnvValue,
-//     });
+    mockedCtx.envInfo.profile.set(
+      "fx-resource-aad-app-for-teams",
+      new ConfigMap([
+        ["clientId", testClientId],
+        ["clientSecret", testClientSecret],
+      ])
+    );
+    envRestore = mockedEnv({
+      MOCKED_EXPAND_VAR_TEST: testEnvValue,
+    });
 
-//     mocker
-//       .stub(Deployments.prototype, "createOrUpdate")
-//       .callsFake(
-//         (
-//           resourceGroupName: string,
-//           deploymentName: string,
-//           parameters: ResourceManagementModels.Deployment
-//         ) => {
-//           parameterAfterDeploy = parameters.properties.parameters;
-//           chai.assert.exists(parameters.properties.parameters?.aadClientSecret);
-//           chai.assert.notStrictEqual(
-//             parameters.properties.parameters?.aadClientSecret,
-//             "{{FX_RESOURCE_AAD_APP_FOR_TEAMS__CLIENTSECRET}}"
-//           );
+    mocker
+      .stub(Deployments.prototype, "createOrUpdate")
+      .callsFake(
+        (
+          resourceGroupName: string,
+          deploymentName: string,
+          parameters: ResourceManagementModels.Deployment
+        ) => {
+          parameterAfterDeploy = parameters.properties.parameters;
+          chai.assert.exists(parameters.properties.parameters?.aadClientSecret);
+          chai.assert.notStrictEqual(
+            parameters.properties.parameters?.aadClientSecret,
+            "{{FX_RESOURCE_AAD_APP_FOR_TEAMS__CLIENTSECRET}}"
+          );
 
-//           return new Promise((resolve) => {
-//             resolve({
-//               properties: {
-//                 outputs: testArmTemplateOutput,
-//               },
-//               _response: {
-//                 request: {} as WebResourceLike,
-//                 status: 200,
-//                 headers: new HttpHeaders(),
-//                 bodyAsText: "",
-//                 parsedBody: {} as ResourceManagementModels.DeploymentExtended,
-//               },
-//             });
-//           });
-//         }
-//       );
+          return new Promise((resolve) => {
+            resolve({
+              properties: {
+                outputs: testArmTemplateOutput,
+              },
+              _response: {
+                request: {} as WebResourceLike,
+                status: 200,
+                headers: new HttpHeaders(),
+                bodyAsText: "",
+                parsedBody: {} as ResourceManagementModels.DeploymentExtended,
+              },
+            });
+          });
+        }
+      );
 
-//     // Act
-//     const result = await deployArmTemplates(mockedCtx);
+    // Act
+    const result = await deployArmTemplates(mockedCtx);
 
-//     // Assert
-//     chai.assert.isTrue(result.isOk());
-//     chai.assert.isNotNull(parameterAfterDeploy);
-//     expect(parameterAfterDeploy).to.deep.equals(
-//       JSON.parse(`{
-//         "resourceBaseName": {
-//           "value": "mytestappdefault"
-//         },
-//         "aadClientId": {
-//           "value": "${testClientId}"
-//         },
-//         "aadClientSecret": {
-//           "value": "${testClientSecret}"
-//         },
-//         "envValue": {
-//           "value": "${testEnvValue}"
-//         }
-//       }`)
-//     );
-//     chai.assert.strictEqual(
-//       mockedCtx.envInfo.profile.get(SOLUTION_CONFIG)?.get("armTemplateOutput"),
-//       testArmTemplateOutput
-//     );
-//   });
+    // Assert
+    chai.assert.isTrue(result.isOk());
+    chai.assert.isNotNull(parameterAfterDeploy);
+    expect(parameterAfterDeploy).to.deep.equals(
+      JSON.parse(`{
+        "resourceBaseName": {
+          "value": "mytestappdefault"
+        },
+        "aadClientId": {
+          "value": "${testClientId}"
+        },
+        "aadClientSecret": {
+          "value": "${testClientSecret}"
+        },
+        "envValue": {
+          "value": "${testEnvValue}"
+        }
+      }`)
+    );
+    chai.assert.strictEqual(
+      mockedCtx.envInfo.profile.get(SOLUTION_CONFIG)?.get("armTemplateOutput"),
+      testArmTemplateOutput
+    );
+  });
 
-//   it("should use existing parameter file", async () => {
-//     const mockedCtx = mockSolutionContext();
-//     mockedCtx.projectSettings = {
-//       appName: testAppName,
-//       projectId: uuid.v4(),
-//       solutionSettings: {
-//         hostType: HostTypeOptionAzure.id,
-//         name: "azure",
-//         version: "1.0",
-//         activeResourcePlugins: [fehostPlugin.name, simpleAuthPlugin.name],
-//         capabilities: [TabOptionItem.id],
-//       },
-//     };
+  it("should use existing parameter file", async () => {
+    const mockedCtx = mockSolutionContext();
+    mockedCtx.projectSettings = {
+      appName: testAppName,
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [fehostPlugin.name, simpleAuthPlugin.name],
+        capabilities: [TabOptionItem.id],
+      },
+    };
 
-//     mockArmDeploymentDependencies(mockedCtx);
+    mockArmDeploymentDependencies(mockedCtx);
 
-//     fileContent.set(
-//       path.join(configFolderName, parameterFileName),
-//       `{
-//       "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
-//       "contentVersion": "1.0.0.0",
-//       "parameters": {
-//           "existingFileTest": {
-//               "value": "mocked value"
-//           }
-//       }
-//   }`
-//     );
+    fileContent.set(
+      path.join(configFolderName, parameterFileName),
+      `{
+      "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+          "existingFileTest": {
+              "value": "mocked value"
+          }
+      }
+  }`
+    );
 
-//     let usedExistingParameterDefaultFile = false;
-//     mocker
-//       .stub(Deployments.prototype, "createOrUpdate")
-//       .callsFake(
-//         (
-//           resourceGroupName: string,
-//           deploymentName: string,
-//           parameters: ResourceManagementModels.Deployment
-//         ) => {
-//           if (parameters.properties.parameters?.existingFileTest) {
-//             usedExistingParameterDefaultFile = true;
-//           } //content of parameter.default.json should be used
+    let usedExistingParameterDefaultFile = false;
+    mocker
+      .stub(Deployments.prototype, "createOrUpdate")
+      .callsFake(
+        (
+          resourceGroupName: string,
+          deploymentName: string,
+          parameters: ResourceManagementModels.Deployment
+        ) => {
+          if (parameters.properties.parameters?.existingFileTest) {
+            usedExistingParameterDefaultFile = true;
+          } //content of parameter.default.json should be used
 
-//           return new Promise((resolve) => {
-//             resolve({
-//               properties: {
-//                 outputs: testArmTemplateOutput,
-//               },
-//               _response: {
-//                 request: {} as WebResourceLike,
-//                 status: 200,
-//                 headers: new HttpHeaders(),
-//                 bodyAsText: "",
-//                 parsedBody: {} as ResourceManagementModels.DeploymentExtended,
-//               },
-//             });
-//           });
-//         }
-//       );
+          return new Promise((resolve) => {
+            resolve({
+              properties: {
+                outputs: testArmTemplateOutput,
+              },
+              _response: {
+                request: {} as WebResourceLike,
+                status: 200,
+                headers: new HttpHeaders(),
+                bodyAsText: "",
+                parsedBody: {} as ResourceManagementModels.DeploymentExtended,
+              },
+            });
+          });
+        }
+      );
 
-//     // Act
-//     const result = await deployArmTemplates(mockedCtx);
-//     chai.assert.isTrue(result.isOk());
-//     chai.assert.strictEqual(usedExistingParameterDefaultFile, true);
-//   });
+    // Act
+    const result = await deployArmTemplates(mockedCtx);
+    chai.assert.isTrue(result.isOk());
+    chai.assert.strictEqual(usedExistingParameterDefaultFile, true);
+  });
 
-//   function mockArmDeploymentDependencies(mockedCtx: SolutionContext) {
-//     mockedCtx.envInfo.profile.set(
-//       SOLUTION_CONFIG,
-//       new ConfigMap([
-//         ["resourceGroupName", "mocked resource group name"],
-//         ["resourceNameSuffix", testResourceSuffix],
-//         ["subscriptionId", "mocked subscription id"],
-//       ])
-//     );
+  function mockArmDeploymentDependencies(mockedCtx: SolutionContext) {
+    mockedCtx.envInfo.profile.set(
+      SOLUTION_CONFIG,
+      new ConfigMap([
+        ["resourceGroupName", "mocked resource group name"],
+        ["resourceNameSuffix", testResourceSuffix],
+        ["subscriptionId", "mocked subscription id"],
+      ])
+    );
 
-//     mockedCtx.azureAccountProvider!.getAccountCredentialAsync = async function () {
-//       const azureToken = new UserTokenCredentials(
-//         testClientId,
-//         "test_domain",
-//         "test_username",
-//         "test_password"
-//       );
-//       return azureToken;
-//     };
+    mockedCtx.azureAccountProvider!.getAccountCredentialAsync = async function () {
+      const azureToken = new UserTokenCredentials(
+        testClientId,
+        "test_domain",
+        "test_username",
+        "test_password"
+      );
+      return azureToken;
+    };
 
-//     mockedCtx.azureAccountProvider!.getSelectedSubscription = async function () {
-//       const subscriptionInfo = {
-//         subscriptionId: "test_subsctiption_id",
-//         subscriptionName: "test_subsctiption_name",
-//       } as SubscriptionInfo;
-//       return subscriptionInfo;
-//     };
+    mockedCtx.azureAccountProvider!.getSelectedSubscription = async function () {
+      const subscriptionInfo = {
+        subscriptionId: "test_subsctiption_id",
+        subscriptionName: "test_subsctiption_name",
+      } as SubscriptionInfo;
+      return subscriptionInfo;
+    };
 
-//     mocker
-//       .stub(Executor, "execCommandAsync")
-//       .callsFake((command: string, options?: ExecOptions): Promise<any> => {
-//         return new Promise((resolve) => {
-//           resolve({
-//             stdout: `{"test_key": "test_value"}`,
-//             stderr: "",
-//           });
-//         });
-//       });
-//   }
-// });
+    mocker
+      .stub(Executor, "execCommandAsync")
+      .callsFake((command: string, options?: ExecOptions): Promise<any> => {
+        return new Promise((resolve) => {
+          resolve({
+            stdout: `{"test_key": "test_value"}`,
+            stderr: "",
+          });
+        });
+      });
+  }
+});
 
 describe("Arm Template Failed Test", () => {
   const mocker = sinon.createSandbox();

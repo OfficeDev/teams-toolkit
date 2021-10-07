@@ -521,8 +521,8 @@ describe("Middleware - others", () => {
 
   describe("LocalSettingsLoaderMW, ContextInjectorMW", () => {
     it("NoProjectOpenedError", async () => {
-      const original = process.env[FeatureFlagName.MultiEnv];
-      process.env[FeatureFlagName.MultiEnv] = "true";
+      const original = process.env[FeatureFlagName.InsiderPreview];
+      process.env[FeatureFlagName.InsiderPreview] = "true";
 
       class MyClass {
         tools = new MockTools();
@@ -539,7 +539,7 @@ describe("Middleware - others", () => {
       const inputs: Inputs = { platform: Platform.VSCode };
       const res = await my.other(inputs);
       assert.isTrue(res.isErr() && res.error.name === NoProjectOpenedError().name);
-      process.env[FeatureFlagName.MultiEnv] = original;
+      process.env[FeatureFlagName.InsiderPreview] = original;
     });
   });
 

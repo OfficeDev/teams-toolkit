@@ -38,10 +38,10 @@ import { MockProjectSettings, MockTools, randomAppName } from "../utils";
 describe("Middleware - EnvInfoWriterMW, EnvInfoLoaderMW", async () => {
   const sandbox = sinon.createSandbox();
   const EnvParams = [
-    { TEAMSFX_APIV2: "false", TEAMSFX_MULTI_ENV: "false" },
-    { TEAMSFX_APIV2: "false", TEAMSFX_MULTI_ENV: "true" },
-    { TEAMSFX_APIV2: "true", TEAMSFX_MULTI_ENV: "false" },
-    { TEAMSFX_APIV2: "true", TEAMSFX_MULTI_ENV: "true" },
+    { TEAMSFX_APIV2: "false", TEAMSFX_INSIDER_PREVIEW: "false" },
+    { TEAMSFX_APIV2: "false", TEAMSFX_INSIDER_PREVIEW: "true" },
+    { TEAMSFX_APIV2: "true", TEAMSFX_INSIDER_PREVIEW: "false" },
+    { TEAMSFX_APIV2: "true", TEAMSFX_INSIDER_PREVIEW: "true" },
   ];
 
   afterEach(() => {
@@ -49,7 +49,7 @@ describe("Middleware - EnvInfoWriterMW, EnvInfoLoaderMW", async () => {
   });
 
   for (const param of EnvParams) {
-    describe(`Multi-Env: ${param.TEAMSFX_MULTI_ENV}, API V2:${param.TEAMSFX_APIV2}`, async () => {
+    describe(`Multi-Env: ${param.TEAMSFX_INSIDER_PREVIEW}, API V2:${param.TEAMSFX_APIV2}`, async () => {
       let mockedEnvRestore: RestoreFn;
       beforeEach(() => {
         mockedEnvRestore = mockedEnv(param);

@@ -1,3 +1,4 @@
 templates/plugins/resource/spfx
 .prettierignore
 *.bicep
+*.png

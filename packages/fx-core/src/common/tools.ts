@@ -404,11 +404,11 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
 }
 
 export function isMultiEnvEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.MultiEnv, false);
+  return isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, false);
 }
 
 export function isArmSupportEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.ArmSupport, false);
+  return isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, false);
 }
 
 export function isBicepEnvCheckerEnabled(): boolean {
@@ -416,7 +416,7 @@ export function isBicepEnvCheckerEnabled(): boolean {
 }
 
 export function isRemoteCollaborateEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.RemoteCollaboration, false);
+  return isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, false);
 }
 
 export async function generateBicepFiles(

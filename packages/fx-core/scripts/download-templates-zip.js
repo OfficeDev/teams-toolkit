@@ -7,6 +7,8 @@ const fs = require("fs-extra");
 const path = require("path");
 const config = require("../src/common/templates-config.json");
 
+const stdin = process.stdin;
+
 const languages = ["js", "ts"];
 const templates = [
   ["function-base", "default", "function"],
@@ -32,14 +34,11 @@ async function step(desc, fn) {
   }
 }
 
-async function main() {
-  const rawTagList = await step(`Download tag list from ${config.tagListURL}`, async () => {
-    res = await axios.get(config.tagListURL);
-    return res.data;
-  });
-
+async function downloadLatestTemplates(rawTagList) {
   const tagList = rawTagList.toString().replace(/\r/g, "").split("\n");
-  const versionList = tagList.map((tag) => tag.replace(config.tagPrefix, ""));
+  const versionList = tagList
+    .filter((tag) => tag.startsWith(config.tagPrefix))
+    .map((tag) => tag.replace(config.tagPrefix, ""));
   const selectedVersion = semver.maxSatisfying(versionList, config.version);
   if (!selectedVersion) {
     console.error(`Failed to find a tag for the version, ${config.version}`);
@@ -60,6 +59,19 @@ async function main() {
       });
     }
   }
+}
+
+async function main() {
+  tags = "";
+  stdin.on("readable", () => {
+    let data = stdin.read();
+    if (data) {
+      tags += data;
+    }
+  });
+  stdin.on("end", async () => {
+    await downloadLatestTemplates(tags);
+  });
 }
 
 main();

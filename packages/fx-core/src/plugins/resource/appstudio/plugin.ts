@@ -17,6 +17,7 @@ import {
   AppPackageFolderName,
   ArchiveFolderName,
   V1ManifestFileName,
+  ConfigMap,
 } from "@microsoft/teamsfx-api";
 import { AppStudioClient } from "./appStudio";
 import {
@@ -99,6 +100,7 @@ import { v4 } from "uuid";
 import isUUID from "validator/lib/isUUID";
 import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
 import Mustache from "mustache";
+import { SolutionPlugin } from "../localdebug/constants";
 
 export class AppStudioPluginImpl {
   public async getAppDefinitionAndUpdate(
@@ -744,6 +746,14 @@ export class AppStudioPluginImpl {
     }
     if (teamsAppId.isErr()) {
       return teamsAppId;
+    }
+    if (isMultiEnvEnabled()) {
+      ctx.localSettings?.teamsApp.set(Constants.TEAMS_APP_ID, teamsAppId.value);
+    } else {
+      (ctx.envInfo.profile.get("solution") as ConfigMap).set(
+        LOCAL_DEBUG_TEAMS_APP_ID,
+        teamsAppId.value
+      );
     }
     return ok(teamsAppId.value);
   }

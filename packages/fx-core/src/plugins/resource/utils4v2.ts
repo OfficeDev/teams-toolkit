@@ -272,6 +272,7 @@ export async function provisionLocalResourceAdapter(
 ): Promise<Result<Json, FxError>> {
   if (!plugin.localDebug) return err(PluginHasNoTaskImpl(plugin.displayName, "localDebug"));
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
+  pluginContext.envInfo.profile.set(plugin.name, pluginContext.config);
   setLocalSettingsV1(pluginContext, localSettings);
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
@@ -293,6 +294,7 @@ export async function configureLocalResourceAdapter(
 ): Promise<Result<Json, FxError>> {
   if (!plugin.postLocalDebug) return err(PluginHasNoTaskImpl(plugin.displayName, "postLocalDebug"));
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
+  pluginContext.envInfo.profile.set(plugin.name, pluginContext.config);
   setLocalSettingsV1(pluginContext, localSettings);
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;

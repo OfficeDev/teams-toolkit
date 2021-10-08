@@ -232,11 +232,7 @@ export function syncFeatureFlags() {
 }
 
 export class FeatureFlags {
-  static readonly RemoteCollaboration = "TEAMSFX_REMOTE_COL";
-
-  static readonly MultiEnv = "TEAMSFX_MULTI_ENV";
-
-  static readonly ArmSupport = "TEAMSFX_ARM_SUPPORT";
+  static readonly InsiderPreview = "TEAMSFX_INSIDER_PREVIEW";
 
   static readonly TelemetryTest = "TEAMSFX_TELEMETRY_TEST";
 }

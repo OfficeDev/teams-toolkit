@@ -500,10 +500,10 @@ describe("provision() happy path for SPFx projects", () => {
   it("should succeed if app studio returns successfully", () =>
     provisionSpfxProjectShouldSucceed(false));
 
-  it("should succeed if arm support feature flag enabled", () =>
+  it.skip("should succeed if insider feature flag enabled", () =>
     provisionSpfxProjectShouldSucceed(true));
 
-  async function provisionSpfxProjectShouldSucceed(armEnabled = false): Promise<void> {
+  async function provisionSpfxProjectShouldSucceed(insiderEnabled = false): Promise<void> {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
     mockedCtx.root = "./tests/plugins/resource/appstudio/resources/";
@@ -518,7 +518,7 @@ describe("provision() happy path for SPFx projects", () => {
       },
     };
     mocker.stub(process, "env").get(() => {
-      return { TEAMSFX_INSIDER_PREVIEW: armEnabled.toString() };
+      return { TEAMSFX_INSIDER_PREVIEW: insiderEnabled.toString() };
     });
 
     expect(mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be

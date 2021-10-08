@@ -204,14 +204,14 @@ describe("Solution scaffold() reading valid manifest file", () => {
     const result = await solution.scaffold(mockedCtx);
     expect(result.isOk()).to.be.true;
     // only need to check whether related files exist, tests to the content is covered by other test cases
-    expect(fileContent.size).equals(7);
+    expect(fileContent.size).equals(6);
     expect(fileContent.has(path.join("./templates/azure", "main.bicep"))).to.be.true;
     expect(
       fileContent.has(path.join("./templates/azure/modules", "frontendHostingProvision.bicep"))
     ).to.be.true;
     expect(fileContent.has(path.join("./templates/azure/modules", "simpleAuthProvision.bicep"))).to
       .be.true;
-    expect(fileContent.has(path.join("./.fx/configs", "azure.parameters.default.json"))).to.be.true;
+    expect(fileContent.has(path.join("./.fx/configs", "azure.parameters.dev.json"))).to.be.true;
 
     restore();
   });

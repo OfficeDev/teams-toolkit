@@ -6,13 +6,8 @@ import {
   ok,
   err,
   returnUserError,
-  AzureAccountProvider,
   TokenProvider,
-  Json,
-  EnvInfo,
   ConfigMap,
-  UserInteraction,
-  ProjectSettings,
   Void,
   SolutionContext,
   returnSystemError,
@@ -36,6 +31,7 @@ import {
   SOLUTION_PROVISION_SUCCEEDED,
   SUBSCRIPTION_ID,
   SUBSCRIPTION_NAME,
+  SolutionSource,
 } from "../constants";
 import * as util from "util";
 import { isUndefined } from "lodash";
@@ -62,7 +58,7 @@ export async function provisionResource(
     return new v2.FxFailure(
       returnSystemError(
         new Error("projectPath is undefined"),
-        "Solution",
+        SolutionSource,
         SolutionError.InternelError
       )
     );
@@ -284,7 +280,7 @@ export async function askForProvisionConsent(ctx: SolutionContext): Promise<Resu
     return err(
       returnUserError(
         new Error(getStrings().solution.CancelProvision),
-        "Solution",
+        SolutionSource,
         getStrings().solution.CancelProvision
       )
     );

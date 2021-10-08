@@ -13,7 +13,12 @@ import { isUndefined } from "lodash";
 import * as util from "util";
 import { PluginDisplayName } from "../../../../common/constants";
 import { getStrings } from "../../../../common/tools";
-import { GLOBAL_CONFIG, SolutionError, SOLUTION_PROVISION_SUCCEEDED } from "../constants";
+import {
+  GLOBAL_CONFIG,
+  SolutionError,
+  SOLUTION_PROVISION_SUCCEEDED,
+  SolutionSource,
+} from "../constants";
 import { executeConcurrently } from "./executor";
 import { getAzureSolutionSettings, getSelectedPlugins, isAzureProject } from "./utils";
 
@@ -32,7 +37,7 @@ export async function publishApplication(
         new Error(
           util.format(getStrings().solution.NotProvisionedNotice, ctx.projectSetting.appName)
         ),
-        "Solution",
+        SolutionSource,
         SolutionError.CannotDeployBeforeProvision
       )
     );

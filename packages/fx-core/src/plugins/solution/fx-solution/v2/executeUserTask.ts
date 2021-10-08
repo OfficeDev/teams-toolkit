@@ -20,12 +20,12 @@ import {
 import { getStrings, isArmSupportEnabled } from "../../../../common/tools";
 import { blockV1Project, getAzureSolutionSettings, reloadV2Plugins } from "./utils";
 import {
-  PluginNames,
   SolutionError,
   SolutionTelemetryComponentName,
   SolutionTelemetryEvent,
   SolutionTelemetryProperty,
   SolutionTelemetrySuccess,
+  SolutionSource,
 } from "../constants";
 import * as util from "util";
 import {
@@ -71,7 +71,7 @@ export async function executeUserTask(
       return err(
         returnSystemError(
           new Error("Not implemented"),
-          "Solution",
+          SolutionSource,
           SolutionError.FeatureNotSupported
         )
       );
@@ -83,7 +83,7 @@ export async function executeUserTask(
         return err(
           returnSystemError(
             new Error(`VS publish is not supposed to run on platform ${inputs.platform}`),
-            "Solution",
+            SolutionSource,
             SolutionError.UnsupportedPlatform
           )
         );
@@ -125,7 +125,7 @@ export async function executeUserTask(
   return err(
     returnUserError(
       new Error(`executeUserTaskRouteFailed:${JSON.stringify(func)}`),
-      "Solution",
+      SolutionSource,
       `executeUserTaskRouteFailed`
     )
   );
@@ -138,7 +138,7 @@ export function canAddCapability(
   if (!(settings.hostType === HostTypeOptionAzure.id)) {
     const e = returnUserError(
       new Error("Add capability is not supported for SPFx project"),
-      "Solution",
+      SolutionSource,
       SolutionError.FailedToAddCapability
     );
     return err(
@@ -161,7 +161,7 @@ export function canAddResource(
   ) {
     const e = returnUserError(
       new Error("Add resource is only supported for Tab app hosted in Azure."),
-      "Solution",
+      SolutionSource,
       SolutionError.AddResourceNotSupport
     );
 
@@ -207,7 +207,7 @@ export async function addCapability(
   ) {
     const e = returnUserError(
       new Error("Application already contains a Bot and/or Messaging Extension"),
-      "Solution",
+      SolutionSource,
       SolutionError.FailedToAddCapability
     );
     return err(
@@ -349,7 +349,7 @@ export async function addResource(
     return err(
       returnUserError(
         new Error(`answer of ${AzureSolutionQuestionNames.AddResources} is empty!`),
-        "Solution",
+        SolutionSource,
         SolutionError.InvalidInput
       )
     );
@@ -362,7 +362,7 @@ export async function addResource(
   if ((alreadyHaveSql && addSQL) || (alreadyHaveApim && addApim)) {
     const e = returnUserError(
       new Error("SQL/APIM is already added."),
-      "Solution",
+      SolutionSource,
       SolutionError.AddResourceNotSupport
     );
     return err(
@@ -473,7 +473,7 @@ export function extractParamForRegisterTeamsAppAndAad(
     return err(
       returnSystemError(
         new Error("Input is undefined"),
-        "Solution",
+        SolutionSource,
         SolutionError.FailedToGetParamForRegisterTeamsAppAndAad
       )
     );
@@ -491,7 +491,7 @@ export function extractParamForRegisterTeamsAppAndAad(
       return err(
         returnSystemError(
           new Error(`${key} not found`),
-          "Solution",
+          SolutionSource,
           SolutionError.FailedToGetParamForRegisterTeamsAppAndAad
         )
       );

@@ -14,7 +14,12 @@ import {
   Json,
 } from "@microsoft/teamsfx-api";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
-import { GLOBAL_CONFIG, SolutionError, SOLUTION_PROVISION_SUCCEEDED } from "../constants";
+import {
+  GLOBAL_CONFIG,
+  SolutionError,
+  SOLUTION_PROVISION_SUCCEEDED,
+  SolutionSource,
+} from "../constants";
 import {
   AzureResourceApim,
   AzureResourceFunction,
@@ -80,7 +85,7 @@ export async function ensurePermissionRequest(
     return err(
       returnUserError(
         new Error("Cannot update permission for SPFx project"),
-        "Solution",
+        SolutionSource,
         SolutionError.CannotUpdatePermissionForSPFx
       )
     );
@@ -101,7 +106,7 @@ export function parseTeamsAppTenantId(
     return err(
       returnSystemError(
         new Error("Graph token json is undefined"),
-        "Solution",
+        SolutionSource,
         SolutionError.NoAppStudioToken
       )
     );
@@ -116,7 +121,7 @@ export function parseTeamsAppTenantId(
     return err(
       returnSystemError(
         new Error("Cannot find teams app tenant id"),
-        "Solution",
+        SolutionSource,
         SolutionError.NoTeamsAppTenantId
       )
     );
@@ -143,7 +148,7 @@ export function blockV1Project(solutionSettings?: SolutionSettings): Result<Void
     return err(
       returnUserError(
         new Error("Command is not supported in Teams Toolkit V1 Project"),
-        "Solution",
+        SolutionSource,
         SolutionError.V1ProjectNotSupported
       )
     );
@@ -158,7 +163,11 @@ export function fillInSolutionSettings(
   const capabilities = (answers[AzureSolutionQuestionNames.Capabilities] as string[]) || [];
   if (!capabilities || capabilities.length === 0) {
     return err(
-      returnSystemError(new Error("capabilities is empty"), "Solution", SolutionError.InternelError)
+      returnSystemError(
+        new Error("capabilities is empty"),
+        SolutionSource,
+        SolutionError.InternelError
+      )
     );
   }
   let hostType = answers[AzureSolutionQuestionNames.HostType] as string;
@@ -166,7 +175,11 @@ export function fillInSolutionSettings(
     hostType = HostTypeOptionAzure.id;
   if (!hostType) {
     return err(
-      returnSystemError(new Error("hostType is undefined"), "Solution", SolutionError.InternelError)
+      returnSystemError(
+        new Error("hostType is undefined"),
+        SolutionSource,
+        SolutionError.InternelError
+      )
     );
   }
   solutionSettings.hostType = hostType;

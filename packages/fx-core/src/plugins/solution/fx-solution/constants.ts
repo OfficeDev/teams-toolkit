@@ -133,6 +133,7 @@ export enum SolutionError {
   InvalidInput = "InvalidInput",
   FailedToCompileBicepFiles = "FailedToCompileBicepFiles",
   FailedToGetAzureCredential = "FailedToGetAzureCredential",
+  FailedToGenerateArmTemplates = "FailedToGenerateArmTemplates",
   FailedToDeployArmTemplatesToAzure = "FailedToDeployArmTemplatesToAzure",
   V1ProjectNotSupported = "V1ProjectNotSupported",
   FailedToRetrieveUserInfo = "FailedToRetrieveUserInfo",
@@ -228,3 +229,4 @@ export enum SolutionTelemetrySuccess {
 }
 
 export const SolutionTelemetryComponentName = "solution";
+export const SolutionSource = "Solution";

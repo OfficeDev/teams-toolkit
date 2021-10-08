@@ -21,7 +21,7 @@ import {
 import Container from "typedi";
 import { getStrings } from "../../../../common";
 import { checkSubscription } from "../commonQuestions";
-import { CancelError, SolutionError } from "../constants";
+import { CancelError, SolutionError, SolutionSource } from "../constants";
 import {
   addCapabilityQuestion,
   AskSubscriptionQuestion,
@@ -176,7 +176,7 @@ export async function getQuestions(
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   const stage = inputs.stage;
   if (!stage) {
-    return err(new InvalidInputError("Solution", "inputs.stage", "undefined"));
+    return err(new InvalidInputError(SolutionSource, "inputs.stage", "undefined"));
   }
   const isDynamicQuestion = DynamicPlatforms.includes(inputs.platform);
   const node = new QTreeNode({ type: "group" });
@@ -223,7 +223,7 @@ export async function getQuestions(
         return err(
           returnUserError(
             new Error(getStrings().solution.FailedToDeployBeforeProvision),
-            "Solution",
+            SolutionSource,
             SolutionError.CannotDeployBeforeProvision
           )
         );
@@ -240,7 +240,7 @@ export async function getQuestions(
       return err(
         returnUserError(
           new Error("No resource to deploy"),
-          "Solution",
+          SolutionSource,
           SolutionError.NoResourceToDeploy
         )
       );
@@ -284,7 +284,7 @@ export async function getQuestions(
         return err(
           returnUserError(
             new Error(getStrings().solution.FailedToPublishBeforeProvision),
-            "Solution",
+            SolutionSource,
             SolutionError.CannotPublishBeforeProvision
           )
         );
@@ -301,7 +301,7 @@ export async function getQuestions(
           return err(
             returnUserError(
               new Error(getStrings().solution.SPFxAskProvisionBeforePublish),
-              "Solution",
+              SolutionSource,
               SolutionError.CannotPublishBeforeProvision
             )
           );
@@ -372,7 +372,7 @@ export async function getQuestionsForAddCapability(
     return err(
       returnUserError(
         new Error("Add capability is not supported for SPFx project"),
-        "Solution",
+        SolutionSource,
         SolutionError.AddResourceNotSupport
       )
     );
@@ -436,7 +436,7 @@ export async function getQuestionsForAddResource(
       new UserError(
         SolutionError.AddResourceNotSupport,
         "Add resource is only supported for Tab app hosted in Azure.",
-        "Solution"
+        SolutionSource
       )
     );
   }
@@ -447,7 +447,7 @@ export async function getQuestionsForAddResource(
     return err(
       returnUserError(
         new Error("selectedPlugins is empty"),
-        "Solution",
+        SolutionSource,
         SolutionError.InternelError
       )
     );

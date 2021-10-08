@@ -500,13 +500,13 @@ describe("provision() happy path for SPFx projects", () => {
   it("should succeed if app studio returns successfully", () =>
     provisionSpfxProjectShouldSucceed(false));
 
-  it("should succeed if arm support feature flag enabled", () =>
+  it("should succeed if insider feature flag enabled", () =>
     provisionSpfxProjectShouldSucceed(true));
 
-  async function provisionSpfxProjectShouldSucceed(armEnabled = false): Promise<void> {
+  async function provisionSpfxProjectShouldSucceed(insiderEnabled = false): Promise<void> {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
-    mockedCtx.root = "./tests/plugins/resource/appstudio/resources/";
+    mockedCtx.root = "./tests/plugins/resource/appstudio/spfx-resources/";
     mockedCtx.projectSettings = {
       appName: "my app",
       projectId: uuid.v4(),
@@ -518,7 +518,7 @@ describe("provision() happy path for SPFx projects", () => {
       },
     };
     mocker.stub(process, "env").get(() => {
-      return { TEAMSFX_ARM_SUPPORT: armEnabled.toString() };
+      return { TEAMSFX_INSIDER_PREVIEW: insiderEnabled.toString() };
     });
 
     expect(mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
@@ -528,9 +528,16 @@ describe("provision() happy path for SPFx projects", () => {
     expect(result.isOk()).to.be.true;
     expect(mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
       .true;
-    expect(mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).equals(
-      mockedAppDef.teamsAppId
-    );
+
+    if (insiderEnabled) {
+      expect(mockedCtx.envInfo.profile.get("fx-resource-appstudio")?.get("teamsAppId")).equals(
+        mockedAppDef.teamsAppId
+      );
+    } else {
+      expect(mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).equals(
+        mockedAppDef.teamsAppId
+      );
+    }
     expect(solution.runningState).equals(SolutionRunningState.Idle);
   }
 });
@@ -764,7 +771,7 @@ describe("before provision() asking for resource group info", () => {
   beforeEach(() => {
     mocker.stub(solutionUtil, "getSubsriptionDisplayName").resolves(mockedSubscriptionName);
     mocker.stub(process, "env").get(() => {
-      return { TEAMSFX_MULTI_ENV: "true" };
+      return { TEAMSFX_INSIDER_PREVIEW: "true" };
     });
   });
 

@@ -33,17 +33,12 @@ import * as path from "path";
 import sinon from "sinon";
 import { Container } from "typedi";
 import { CoreHookContext, deserializeDict, serializeDict } from "../../src";
-import { FeatureFlagName } from "../../src/common/constants";
 import * as commonTools from "../../src/common/tools";
 import { environmentManager } from "../../src/core/environment";
-import { NoProjectOpenedError } from "../../src/core/error";
-import { ContextInjectorMW } from "../../src/core/middleware/contextInjector";
 import { EnvInfoLoaderMW } from "../../src/core/middleware/envInfoLoader";
-import { LocalSettingsLoaderMW } from "../../src/core/middleware/localSettingsLoader";
 import { MigrateConditionHandlerMW } from "../../src/core/middleware/migrateConditionHandler";
 import { migrateArm, ProjectMigratorMW } from "../../src/core/middleware/projectMigrator";
 import { ProjectUpgraderMW } from "../../src/core/middleware/projectUpgrader";
-import { TelemetrySenderMW } from "../../src/core/middleware/telemetrySender";
 import { SolutionPlugins } from "../../src/core/SolutionPluginContainer";
 import {
   MockLatestVersion2_3_0Context,
@@ -250,7 +245,7 @@ describe("Middleware - others", () => {
 
     it("Should not upgrade for the new multi env project", async () => {
       sandbox.stub(process, "env").get(() => {
-        return { TEAMSFX_MULTI_ENV: "true" };
+        return { TEAMSFX_INSIDER_PREVIEW: "true" };
       });
 
       envJson = MockLatestVersion2_3_0Context();
@@ -535,8 +530,7 @@ describe("Middleware - others", () => {
         path.join(projectPath, ".fx", "settings.json")
       );
       mockedEnvRestore = mockedEnv({
-        TEAMSFX_MULTI_ENV: "true",
-        TEAMSFX_ARM_SUPPORT: "true",
+        TEAMSFX_INSIDER_PREVIEW: "true",
       });
     });
     afterEach(async () => {
@@ -602,8 +596,7 @@ describe("Middleware - others", () => {
       await fs.ensureDir(projectPath);
       await fs.copy(path.join(__dirname, "../samples/migration/"), path.join(projectPath));
       mockedEnvRestore = mockedEnv({
-        TEAMSFX_MULTI_ENV: "true",
-        TEAMSFX_ARM_SUPPORT: "true",
+        TEAMSFX_INSIDER_PREVIEW: "true",
       });
       sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok("OK"));
     });
@@ -913,7 +906,7 @@ describe("Middleware - others", () => {
         sandbox
           .stub(environmentManager, "checkEnvExist")
           .callsFake(async (projectPath: string, env: string) => {
-            return ok(env in envs);
+            return ok(envs.includes(env));
           });
 
         // Act

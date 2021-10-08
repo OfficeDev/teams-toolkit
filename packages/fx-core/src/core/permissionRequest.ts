@@ -11,6 +11,7 @@ import {
   returnUserError,
 } from "@microsoft/teamsfx-api";
 import { SolutionError } from "../plugins/solution/fx-solution/constants";
+import { CoreSource } from ".";
 
 export class PermissionRequestFileProvider implements PermissionRequestProvider {
   private rootPath: string;
@@ -26,7 +27,7 @@ export class PermissionRequestFileProvider implements PermissionRequestProvider 
       return err(
         returnUserError(
           new Error(`${this.permissionFileName} is missing`),
-          "Solution",
+          CoreSource,
           SolutionError.MissingPermissionsJson
         )
       );

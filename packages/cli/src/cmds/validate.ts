@@ -50,8 +50,8 @@ export default class Validate extends YargsCommand {
         method: "validateManifest",
       };
 
-      const result = await core.executeUserTask!(func);
       inputs = getSystemInputs(rootFolder, args.env as any);
+      const result = await core.executeUserTask!(func, inputs);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, result.error);
         return err(result.error);

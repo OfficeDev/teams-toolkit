@@ -3,7 +3,6 @@
 
 import {
   AzureSolutionSettings,
-  ConfigValue,
   FxError,
   LogProvider,
   PluginContext,

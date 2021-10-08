@@ -30,7 +30,7 @@ import fs from "fs-extra";
 import path from "path";
 import { readJson } from "../../common/fileUtils";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
-import { FxCore } from "..";
+import { CoreSource, FxCore } from "..";
 import {
   isMultiEnvEnabled,
   isArmSupportEnabled,
@@ -458,7 +458,7 @@ async function generateArmTempaltesFiles(ctx: CoreHookContext) {
     throw err(
       returnSystemError(
         new Error(`Failed to generate ${parameterEnvFileName} on migration`),
-        "Solution",
+        CoreSource,
         "GenerateArmTemplateFailed"
       )
     );

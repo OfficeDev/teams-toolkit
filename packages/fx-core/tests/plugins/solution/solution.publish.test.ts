@@ -53,7 +53,7 @@ import {
 import Container from "typedi";
 import { newEnvInfo } from "../../../src";
 import { TeamsAppSolutionV2 } from "../../../src/plugins/solution/fx-solution/v2/solution";
-import { AppStudioTokenProvider } from "@microsoft/teamsfx-api/src";
+import { AppStudioTokenProvider } from "@microsoft/teamsfx-api";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;

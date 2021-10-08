@@ -81,8 +81,9 @@ export async function provisionLocalResource(
       {
         namespace: `${PluginNames.SOLUTION}/${PluginNames.AAD}`,
         method: "setApplicationInContext",
-        params: { isLocal: true, localSettings: localSettings },
+        params: { isLocal: true },
       },
+      localSettings,
       { envName: environmentManager.getDefaultEnvName(), config: {}, profile: {} },
       tokenProvider
     );

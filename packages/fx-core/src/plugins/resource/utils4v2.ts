@@ -309,6 +309,7 @@ export async function executeUserTaskAdapter(
   ctx: Context,
   inputs: Inputs,
   func: Func,
+  localSettings: Json,
   envInfo: EnvInfoV2,
   tokenProvider: TokenProvider,
   plugin: Plugin
@@ -328,15 +329,11 @@ export async function executeUserTaskAdapter(
   pluginContext.envInfo.profile = flattenConfigMap(profile);
   pluginContext.envInfo.config = envInfo.config as EnvConfig;
   pluginContext.config = pluginContext.envInfo.profile.get(plugin.name) ?? new ConfigMap();
-  if (func.params?.localSettings) {
-    setLocalSettingsV1(pluginContext, func.params.localSettings);
-  }
+  setLocalSettingsV1(pluginContext, localSettings);
   const res = await plugin.executeUserTask(func, pluginContext);
   if (res.isErr()) return err(res.error);
   envInfo.profile[plugin.name] = legacyConfig2EnvProfile(pluginContext.config, plugin.name);
-  if (func.params?.localSettings) {
-    setLocalSettingsV2(func.params.localSettings, pluginContext);
-  }
+  setLocalSettingsV2(localSettings, pluginContext);
   return ok(res.value);
 }
 

@@ -634,10 +634,12 @@ export class FxCore implements Core {
           return err(new ObjectIsUndefinedError("executeUserTask input stuff"));
         if (!ctx.contextV2) ctx.contextV2 = createV2Context(this, newProjectSettings());
         if (ctx.solutionV2.executeUserTask) {
+          if (!ctx.localSettings) ctx.localSettings = {};
           const res = await ctx.solutionV2.executeUserTask(
             ctx.contextV2,
             inputs,
             func,
+            ctx.localSettings,
             ctx.envInfoV2,
             this.tools.tokenProvider
           );

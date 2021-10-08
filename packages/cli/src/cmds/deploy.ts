@@ -7,7 +7,7 @@ import * as path from "path";
 import { Argv, Options } from "yargs";
 
 import { FxError, err, ok, Result, Stage, Inputs } from "@microsoft/teamsfx-api";
-import { hashTelemetryData } from "@microsoft/teamsfx-core";
+import { getHashedEnv } from "@microsoft/teamsfx-core";
 
 import activate from "../activate";
 import { YargsCommand } from "../yargsCommand";

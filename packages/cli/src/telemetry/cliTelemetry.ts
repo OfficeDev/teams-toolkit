@@ -10,13 +10,13 @@ import {
   TelemetryErrorType,
 } from "./cliTelemetryEvents";
 import { FxError, UserError } from "@microsoft/teamsfx-api";
-import { hashTelemetryData } from "@microsoft/teamsfx-core";
+import { getHashedEnv } from "@microsoft/teamsfx-core";
 import { getTeamsAppId } from "../utils";
 
 export function makeEnvProperty(
   env: string | undefined
 ): { [TelemetryProperty.Env]: string } | undefined {
-  return env ? { [TelemetryProperty.Env]: hashTelemetryData(env) } : undefined;
+  return env ? { [TelemetryProperty.Env]: getHashedEnv(env) } : undefined;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-namespace

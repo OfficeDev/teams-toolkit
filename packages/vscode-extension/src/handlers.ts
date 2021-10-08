@@ -48,7 +48,7 @@ import {
   isMultiEnvEnabled,
   LocalSettingsProvider,
   CollaborationState,
-  hashTelemetryData,
+  getHashedEnv,
 } from "@microsoft/teamsfx-core";
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -496,7 +496,7 @@ async function processResult(
 ) {
   const envProperty: { [TelemetryProperty.Env]?: string } = {};
   if (inputs?.env) {
-    envProperty[TelemetryProperty.Env] = hashTelemetryData(inputs.env);
+    envProperty[TelemetryProperty.Env] = getHashedEnv(inputs.env);
   }
 
   if (result.isErr()) {

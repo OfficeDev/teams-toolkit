@@ -20,7 +20,7 @@ import {
 import CLIUIInstance from "../userInteraction";
 import HelpParamGenerator from "../helpParamGenerator";
 import { sqlPasswordConfirmQuestionName, sqlPasswordQustionName } from "../constants";
-import { isMultiEnvEnabled, hashTelemetryData } from "@microsoft/teamsfx-core";
+import { isMultiEnvEnabled, getHashedEnv } from "@microsoft/teamsfx-core";
 
 export default class Provision extends YargsCommand {
   public readonly commandHead = `provision`;

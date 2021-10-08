@@ -558,9 +558,5 @@ export function isSPFxProject(projectSettings?: ProjectSettings): boolean {
 }
 
 export function getHashedEnv(envName: string): string {
-  return md5(envName);
-}
-
-export function hashTelemetryData(input: string): string {
-  return crypto.createHash("sha256").update(input).digest("hex");
+  return crypto.createHash("sha256").update(envName).digest("hex");
 }

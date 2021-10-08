@@ -500,13 +500,13 @@ describe("provision() happy path for SPFx projects", () => {
   it("should succeed if app studio returns successfully", () =>
     provisionSpfxProjectShouldSucceed(false));
 
-  it.skip("should succeed if insider feature flag enabled", () =>
+  it("should succeed if insider feature flag enabled", () =>
     provisionSpfxProjectShouldSucceed(true));
 
   async function provisionSpfxProjectShouldSucceed(insiderEnabled = false): Promise<void> {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
-    mockedCtx.root = "./tests/plugins/resource/appstudio/resources/";
+    mockedCtx.root = "./tests/plugins/resource/appstudio/spfx-resources/";
     mockedCtx.projectSettings = {
       appName: "my app",
       projectId: uuid.v4(),
@@ -528,9 +528,16 @@ describe("provision() happy path for SPFx projects", () => {
     expect(result.isOk()).to.be.true;
     expect(mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
       .true;
-    expect(mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).equals(
-      mockedAppDef.teamsAppId
-    );
+
+    if (insiderEnabled) {
+      expect(mockedCtx.envInfo.profile.get("fx-resource-appstudio")?.get("teamsAppId")).equals(
+        mockedAppDef.teamsAppId
+      );
+    } else {
+      expect(mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).equals(
+        mockedAppDef.teamsAppId
+      );
+    }
     expect(solution.runningState).equals(SolutionRunningState.Idle);
   }
 });

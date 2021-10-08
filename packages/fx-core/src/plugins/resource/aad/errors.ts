@@ -14,26 +14,26 @@ export interface AadError {
 
 export const GetAppError: AadError = {
   name: "AadGetAppError",
-  message: () =>
-    `Failed to get app info with current Object Id in env.default.json. ` +
+  message: (objectId: string, tenantId: string, fileName: string) =>
+    `Failed to get app info with Object Id "${objectId}" in tenant "${tenantId}". ` +
     "Please make sure object id is valid, " +
-    `or delete 'objectId' under ${Plugins.pluginNameComplex} in env.default.json and try again.`,
+    `or delete 'objectId' under ${Plugins.pluginNameComplex} in ${fileName} and try again.`,
   helpLink: aadHelpLink,
 };
 
 export const GetAppConfigError: AadError = {
   name: "AadGetAppConfigError",
-  message: (config: string) =>
+  message: (config: string, fileName: string) =>
     `Failed to get ${config} from Azure AD app settings.` +
     "Please make sure Azure AD app is correctly configured, " +
-    `or delete 'objectId' under ${Plugins.pluginNameComplex} in env.default.json and try again.`,
+    `or delete 'objectId' under ${Plugins.pluginNameComplex} in ${fileName} and try again.`,
 };
 
 export const GetSkipAppConfigError: AadError = {
   name: "AadGetSkipAppConfigError",
-  message: () =>
+  message: (fileName: string) =>
     `Failed to get all necessary info. You need to set ${ConfigKeys.objectId}, ${ConfigKeys.clientId}, ${ConfigKeys.clientSecret}, ` +
-    `${ConfigKeys.oauth2PermissionScopeId} under ${Plugins.pluginNameComplex} in env.default.json.`,
+    `${ConfigKeys.oauth2PermissionScopeId} under ${Plugins.pluginNameComplex} in ${fileName}.`,
   helpLink: aadHelpLink,
 };
 

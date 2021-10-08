@@ -7,10 +7,17 @@ import {
   TelemetryProperty,
   TelemetryComponentType,
   TelemetrySuccess,
-  TelemetryErrorType
+  TelemetryErrorType,
 } from "./cliTelemetryEvents";
 import { FxError, UserError } from "@microsoft/teamsfx-api";
+import { getHashedEnv } from "@microsoft/teamsfx-core";
 import { getTeamsAppId } from "../utils";
+
+export function makeEnvProperty(
+  env: string | undefined
+): { [TelemetryProperty.Env]: string } | undefined {
+  return env ? { [TelemetryProperty.Env]: getHashedEnv(env) } : undefined;
+}
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export class CliTelemetry {
@@ -54,7 +61,9 @@ export class CliTelemetry {
 
     properties[TelemetryProperty.AppId] = getTeamsAppId(CliTelemetry.rootFolder);
 
-    CliTelemetry.reporter.withRootFolder(CliTelemetry.rootFolder).sendTelemetryEvent(eventName, properties, measurements);
+    CliTelemetry.reporter
+      .withRootFolder(CliTelemetry.rootFolder)
+      .sendTelemetryEvent(eventName, properties, measurements);
   }
 
   public sendTelemetryErrorEvent(
@@ -84,7 +93,9 @@ export class CliTelemetry {
     properties[TelemetryProperty.ErrorCode] = `${error.source}.${error.name}`;
     properties[TelemetryProperty.ErrorMessage] = error.message;
 
-    CliTelemetry.reporter.withRootFolder(CliTelemetry.rootFolder).sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
+    CliTelemetry.reporter
+      .withRootFolder(CliTelemetry.rootFolder)
+      .sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
   }
 
   public sendTelemetryException(
@@ -102,7 +113,9 @@ export class CliTelemetry {
 
     properties[TelemetryProperty.AppId] = getTeamsAppId(CliTelemetry.rootFolder);
 
-    CliTelemetry.reporter.withRootFolder(CliTelemetry.rootFolder).sendTelemetryException(error, properties, measurements);
+    CliTelemetry.reporter
+      .withRootFolder(CliTelemetry.rootFolder)
+      .sendTelemetryException(error, properties, measurements);
   }
 
   public async flush(): Promise<void> {

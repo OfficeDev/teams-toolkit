@@ -90,6 +90,7 @@ export enum TelemetryProperty {
   PreviewOSRelease = "preview-os-release",
   ListAllCollaborators = "list-all-collaborators",
   FeatureFlags = "feature-flags",
+  Env = "env",
 }
 
 export enum TelemetrySuccess {

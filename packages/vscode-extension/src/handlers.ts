@@ -48,6 +48,7 @@ import {
   isMultiEnvEnabled,
   LocalSettingsProvider,
   CollaborationState,
+  getHashedEnv,
 } from "@microsoft/teamsfx-core";
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -363,13 +364,14 @@ export async function cicdGuideHandler(args?: any[]): Promise<boolean> {
 export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
   const eventName = ExtTelemetry.stageToEvent(stage);
   let result: Result<any, FxError> = ok(null);
+  let inputs: Inputs | undefined;
   try {
     const checkCoreRes = checkCoreNotEmpty();
     if (checkCoreRes.isErr()) {
       throw checkCoreRes.error;
     }
 
-    const inputs: Inputs = getSystemInputs();
+    inputs = getSystemInputs();
     inputs.stage = stage;
 
     switch (stage) {
@@ -432,7 +434,7 @@ export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
   } catch (e) {
     result = wrapError(e);
   }
-  await processResult(eventName, result);
+  await processResult(eventName, result, inputs);
 
   return result;
 }
@@ -463,20 +465,21 @@ export async function runUserTask(
   ignoreEnvInfo: boolean
 ): Promise<Result<any, FxError>> {
   let result: Result<any, FxError> = ok(null);
+  let inputs: Inputs | undefined;
   try {
     const checkCoreRes = checkCoreNotEmpty();
     if (checkCoreRes.isErr()) {
       throw checkCoreRes.error;
     }
 
-    const inputs: Inputs = getSystemInputs();
+    inputs = getSystemInputs();
     inputs.ignoreEnvInfo = ignoreEnvInfo;
     result = await core.executeUserTask(func, inputs);
   } catch (e) {
     result = wrapError(e);
   }
 
-  await processResult(eventName, result);
+  await processResult(eventName, result, inputs);
 
   return result;
 }
@@ -486,10 +489,19 @@ function isLoginFaiureError(error: FxError): boolean {
   return !!error.message && error.message.includes("Cannot get user login information");
 }
 
-async function processResult(eventName: string | undefined, result: Result<null, FxError>) {
+async function processResult(
+  eventName: string | undefined,
+  result: Result<null, FxError>,
+  inputs?: Inputs
+) {
+  const envProperty: { [TelemetryProperty.Env]?: string } = {};
+  if (inputs?.env) {
+    envProperty[TelemetryProperty.Env] = getHashedEnv(inputs.env);
+  }
+
   if (result.isErr()) {
     if (eventName) {
-      ExtTelemetry.sendTelemetryErrorEvent(eventName, result.error);
+      ExtTelemetry.sendTelemetryErrorEvent(eventName, result.error, envProperty);
     }
     const error = result.error;
     if (isUserCancelError(error)) {
@@ -504,6 +516,7 @@ async function processResult(eventName: string | undefined, result: Result<null,
     if (eventName) {
       ExtTelemetry.sendTelemetryEvent(eventName, {
         [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+        ...envProperty,
       });
     }
   }
@@ -874,13 +887,14 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.GrantPermission);
 
   const eventName = ExtTelemetry.stageToEvent(Stage.grantPermission);
+  let inputs: Inputs | undefined;
   try {
     const checkCoreRes = checkCoreNotEmpty();
     if (checkCoreRes.isErr()) {
       throw checkCoreRes.error;
     }
 
-    const inputs: Inputs = getSystemInputs();
+    inputs = getSystemInputs();
     inputs.env = env;
 
     result = await core.grantPermission(inputs);
@@ -900,7 +914,7 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
     result = wrapError(e);
   }
 
-  await processResult(eventName, result);
+  await processResult(eventName, result, inputs);
   return result;
 }
 

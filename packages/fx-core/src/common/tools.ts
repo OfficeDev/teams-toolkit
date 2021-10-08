@@ -30,6 +30,7 @@ import { promisify } from "util";
 import * as uuid from "uuid";
 import { getResourceFolder } from "../folder";
 import { ConstantString, FeatureFlagName } from "./constants";
+import * as crypto from "crypto";
 
 Handlebars.registerHelper("contains", (value, array, options) => {
   array = array instanceof Array ? array : [array];
@@ -557,5 +558,5 @@ export function isSPFxProject(projectSettings?: ProjectSettings): boolean {
 }
 
 export function getHashedEnv(envName: string): string {
-  return md5(envName);
+  return crypto.createHash("sha256").update(envName).digest("hex");
 }

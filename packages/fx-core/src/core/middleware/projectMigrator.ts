@@ -421,18 +421,14 @@ async function updateConfig(ctx: CoreHookContext) {
     configPrefix = `/subscriptions/${envConfig[solutionName][subscriptionId]}/resourcegroups/${envConfig["solution"][resourceGroupName]}`;
     needUpdate = true;
   }
-  if (needUpdate && envConfig[ResourcePlugins.FrontendHosting][EnvConfigName.StorageName]) {
+  if (needUpdate && envConfig[ResourcePlugins.FrontendHosting]?.[EnvConfigName.StorageName]) {
     envConfig[ResourcePlugins.FrontendHosting][
       EnvConfigName.StorageResourceId
     ] = `${configPrefix}/providers/Microsoft.Storage/storageAccounts/${
       envConfig[ResourcePlugins.FrontendHosting][EnvConfigName.StorageName]
     }`;
   }
-  if (
-    needUpdate &&
-    envConfig[ResourcePlugins.AzureSQL] &&
-    envConfig[ResourcePlugins.AzureSQL][EnvConfigName.SqlEndpoint]
-  ) {
+  if (needUpdate && envConfig[ResourcePlugins.AzureSQL]?.[EnvConfigName.SqlEndpoint]) {
     envConfig[ResourcePlugins.AzureSQL][
       EnvConfigName.SqlResourceId
     ] = `${configPrefix}/providers/Microsoft.Sql/servers/${
@@ -441,7 +437,7 @@ async function updateConfig(ctx: CoreHookContext) {
       )[0]
     }`;
   }
-  if (needUpdate && envConfig[ResourcePlugins.Function][EnvConfigName.FuncAppName]) {
+  if (needUpdate && envConfig[ResourcePlugins.Function]?.[EnvConfigName.FuncAppName]) {
     envConfig[ResourcePlugins.Function][
       EnvConfigName.FunctionId
     ] = `${configPrefix}/providers/Microsoft.Web/${

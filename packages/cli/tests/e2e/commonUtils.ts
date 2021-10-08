@@ -305,9 +305,8 @@ export async function readContext(projectPath: string): Promise<any> {
 
 export function mockTeamsfxMultiEnvFeatureFlag() {
   const env = Object.assign({}, process.env);
-  env["TEAMSFX_MULTI_ENV"] = "true";
-  env["TEAMSFX_ARM_SUPPORT"] = "true";
   env["TEAMSFX_BICEP_ENV_CHECKER_ENABLE"] = "true";
+  env["TEAMSFX_INSIDER_PREVIEW"] = "true";
   return env;
 }
 

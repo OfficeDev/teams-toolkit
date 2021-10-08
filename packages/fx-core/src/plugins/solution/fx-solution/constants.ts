@@ -91,6 +91,7 @@ export enum SolutionError {
   NoResourcePluginSelected = "NoResourcePluginSelected",
   NoAppStudioToken = "NoAppStudioToken",
   NoTeamsAppTenantId = "NoTeamsAppTenantId",
+  NoUserName = "NoUserName",
   FailedToCheckResourceGroupExistence = "FailedToCheckResourceGroupExistence",
   FailedToCreateResourceGroup = "FailedToCreateResourceGroup",
   FailedToListResourceGroup = "FailedToListResourceGrouop",
@@ -121,6 +122,7 @@ export enum SolutionError {
   UnknownSolutionRunningState = "UnknownSolutionRunningState",
   CannotDeployBeforeProvision = "CannotDeployBeforeProvision",
   CannotPublishBeforeProvision = "CannotPublishBeforeProvision",
+  CannotLocalDebugInDifferentTenant = "CannotLocalDebugInDifferentTenant",
   NoSubscriptionFound = "NoSubscriptionFound",
   NoSubscriptionSelected = "NoSubscriptionSelected",
   FailedToGetParamForRegisterTeamsAppAndAad = "FailedToGetParamForRegisterTeamsAppAndAad",
@@ -133,6 +135,7 @@ export enum SolutionError {
   InvalidInput = "InvalidInput",
   FailedToCompileBicepFiles = "FailedToCompileBicepFiles",
   FailedToGetAzureCredential = "FailedToGetAzureCredential",
+  FailedToGenerateArmTemplates = "FailedToGenerateArmTemplates",
   FailedToDeployArmTemplatesToAzure = "FailedToDeployArmTemplatesToAzure",
   V1ProjectNotSupported = "V1ProjectNotSupported",
   FailedToRetrieveUserInfo = "FailedToRetrieveUserInfo",
@@ -229,3 +232,4 @@ export enum SolutionTelemetrySuccess {
 }
 
 export const SolutionTelemetryComponentName = "solution";
+export const SolutionSource = "Solution";

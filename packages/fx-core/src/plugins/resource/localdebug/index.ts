@@ -487,7 +487,7 @@ export class LocalDebugPlugin implements Plugin {
         if (/^[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$/.test(remoteId)) {
           return ok(remoteId);
         } else {
-          return err(MissingStep("launching remote", "TeamsFx: Provision and TeamsFx: Deploy"));
+          return err(MissingStep("launching remote", "Teams: Provision and Teams: Deploy"));
         }
       } else {
         // return local teams app id

@@ -933,7 +933,7 @@ describe("Middleware - others", () => {
         sandbox
           .stub(environmentManager, "checkEnvExist")
           .callsFake(async (projectPath: string, env: string) => {
-            return ok(env in envs);
+            return ok(envs.includes(env));
           });
 
         // Act

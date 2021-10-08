@@ -92,7 +92,10 @@ export async function checkSubscription(
     return ok(askSubRes!);
   }
 
-  const subscriptionName = envInfo.profile?.get(PluginNames.SOLUTION)?.get(SUBSCRIPTION_NAME);
+  let subscriptionName = envInfo.profile?.get(PluginNames.SOLUTION)?.get(SUBSCRIPTION_NAME) ?? "";
+  if (subscriptionName.length > 0) {
+    subscriptionName = `(${subscriptionName})`;
+  }
   // make sure the user is logged in
   await azureAccountProvider.getAccountCredentialAsync(true);
 
@@ -103,7 +106,7 @@ export async function checkSubscription(
     return err(
       new UserError(
         SolutionError.SubscriptionNotFound,
-        `The subscription '${subscriptionId}'(${subscriptionName}) is not found in the current account, please check the '${EnvConfigFileNameTemplate.replace(
+        `The subscription '${subscriptionId}'${subscriptionName} is not found in the current account, please check the '${EnvConfigFileNameTemplate.replace(
           EnvNamePlaceholder,
           envInfo.envName
         )}' file.`,

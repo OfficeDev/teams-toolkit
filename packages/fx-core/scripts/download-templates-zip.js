@@ -42,7 +42,7 @@ async function downloadLatestTemplates(rawTagList) {
   const selectedVersion = semver.maxSatisfying(versionList, config.version);
   if (!selectedVersion) {
     console.error(`Failed to find a tag for the version, ${config.version}`);
-    process.exit(-1);
+    return;
   }
 
   const tag = config.tagPrefix + selectedVersion;

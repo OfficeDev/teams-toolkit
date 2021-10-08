@@ -24,7 +24,7 @@ export const ErrorHandlerMW: Middleware = async (ctx: HookContext, next: NextFun
       }, inputs:${JSON.stringify(inputs)}, API v2: ${isV2()}`
     );
     await next();
-    logger?.info(`[core] finish task:${ctx.method}, result: ${JSON.stringify(ctx.result)}`);
+    logger?.info(`[core] finish task:${ctx.method}`);
   } catch (e) {
     let fxError = assembleError(e);
     if (fxError instanceof SystemError) {

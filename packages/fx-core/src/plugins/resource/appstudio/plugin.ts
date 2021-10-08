@@ -750,7 +750,7 @@ export class AppStudioPluginImpl {
     if (isMultiEnvEnabled()) {
       ctx.localSettings?.teamsApp.set(Constants.TEAMS_APP_ID, teamsAppId.value);
     } else {
-      (ctx.envInfo.profile.get("solution") as ConfigMap).set(
+      (ctx.envInfo?.profile.get("solution") as ConfigMap)?.set(
         LOCAL_DEBUG_TEAMS_APP_ID,
         teamsAppId.value
       );

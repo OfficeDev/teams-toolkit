@@ -20,6 +20,12 @@ import { WorkspaceNotSupported } from "./preview/errors";
 import HelpParamGenerator from "../helpParamGenerator";
 import activate from "../activate";
 import { getSystemInputs, isWorkspaceSupported } from "../utils";
+import CliTelemetry, { makeEnvProperty } from "../telemetry/cliTelemetry";
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetrySuccess,
+} from "../telemetry/cliTelemetryEvents";
 
 export default class Env extends YargsCommand {
   public readonly commandHead = `env`;
@@ -74,6 +80,10 @@ class EnvAdd extends YargsCommand {
       return err(WorkspaceNotSupported(projectDir));
     }
 
+    CliTelemetry.withRootFolder(projectDir).sendTelemetryEvent(
+      TelemetryEvent.CreateNewEnvironmentStart
+    );
+
     const coreResult = await activate(projectDir);
     if (coreResult.isErr()) {
       return err(coreResult.error);
@@ -105,6 +115,11 @@ class EnvAdd extends YargsCommand {
     if (result.isErr()) {
       return err(result.error);
     }
+
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.CreateNewEnvironment, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+      ...makeEnvProperty(inputs.env),
+    });
 
     return ok(null);
   }
@@ -146,10 +161,16 @@ class EnvList extends YargsCommand {
       return err(WorkspaceNotSupported(projectDir));
     }
 
+    CliTelemetry.withRootFolder(projectDir).sendTelemetryEvent(TelemetryEvent.EnvListStart);
+
     const envResult = await environmentManager.listEnvConfigs(projectDir);
     if (envResult.isErr()) {
       return err(envResult.error);
     }
+
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.EnvList, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+    });
 
     // TODO: support --details
     const envList = envResult.value.join(os.EOL);

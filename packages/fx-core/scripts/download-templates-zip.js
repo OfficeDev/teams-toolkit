@@ -61,7 +61,7 @@ async function downloadLatestTemplates(rawTagList) {
   }
 }
 
-async function main() {
+function main() {
   tags = "";
   stdin.on("readable", () => {
     let data = stdin.read();
@@ -69,8 +69,8 @@ async function main() {
       tags += data;
     }
   });
-  stdin.on("end", async () => {
-    await downloadLatestTemplates(tags);
+  stdin.on("end", () => {
+    downloadLatestTemplates(tags);
   });
 }
 

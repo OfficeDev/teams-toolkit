@@ -48,7 +48,7 @@ export class OnBehalfOfUserCredential implements TokenCredential {
    *
    * @param {string} ssoToken - User token provided by Teams SSO feature.
    *
-   * @throws {@link ErrorCode|InvalidConfiguration} when client id, client secret, certificate path, authority host or tenant id is not found in config.
+   * @throws {@link ErrorCode|InvalidConfiguration} when client id, client secret, certificate content, authority host or tenant id is not found in config.
    * @throws {@link ErrorCode|InternalError} when SSO token is not valid.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
    *

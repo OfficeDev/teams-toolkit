@@ -688,6 +688,7 @@ async function openMarkdownHandler() {
   const afterScaffold = globalStateGet("openReadme", false);
   if (afterScaffold && workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
     await globalStateUpdate("openReadme", false);
+    showLocalDebugMessage();
     const workspaceFolder = workspace.workspaceFolders[0];
     const workspacePath: string = workspaceFolder.uri.fsPath;
     let targetFolder: string | undefined;
@@ -721,6 +722,7 @@ async function openSampleReadmeHandler() {
   const afterScaffold = globalStateGet("openSampleReadme", false);
   if (afterScaffold && workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
     globalStateUpdate("openSampleReadme", false);
+    showLocalDebugMessage();
     const workspaceFolder = workspace.workspaceFolders[0];
     const workspacePath: string = workspaceFolder.uri.fsPath;
     const uri = Uri.file(`${workspacePath}/README.md`);
@@ -728,6 +730,31 @@ async function openSampleReadmeHandler() {
       const PreviewMarkdownCommand = "markdown.showPreview";
       commands.executeCommand(PreviewMarkdownCommand, uri);
     });
+  }
+}
+
+function showLocalDebugMessage() {
+  // todo setup treatment variable
+  if (1 === 1) {
+    const localDebug = {
+      title: StringResources.vsc.handlers.localDebugTitle,
+      run: async (): Promise<void> => {
+        selectAndDebug();
+      },
+    };
+
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowLocalDebugNotification);
+    vscode.window
+      .showInformationMessage(
+        util.format(StringResources.vsc.handlers.localDebugDescription),
+        localDebug
+      )
+      .then((selection) => {
+        if (selection?.title === StringResources.vsc.handlers.localDebugTitle) {
+          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickLocalDebug);
+          selection.run();
+        }
+      });
   }
 }
 

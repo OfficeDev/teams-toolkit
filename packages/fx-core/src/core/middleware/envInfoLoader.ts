@@ -20,7 +20,7 @@ import {
   traverse,
   UserCancelError,
 } from "@microsoft/teamsfx-api";
-import { isV2, PathNotExistError } from "..";
+import { isV2 } from "..";
 import { CoreHookContext, FxCore, isMultiEnvEnabled } from "../..";
 import {
   NoProjectOpenedError,

@@ -47,6 +47,9 @@ import { LocalDebugConfigKeys } from "../../plugins/resource/localdebug/constant
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";
 const learnMoreText = "Learn More";
+const solutionName = "solution";
+const subscriptionId = "subscriptionId";
+const resourceGroupName = "resourceGroupName";
 const migrationGuideUrl = "https://aka.ms/teamsfx-migration-guide";
 const parameterFileNameTemplate = "azure.parameters.@envName.json";
 
@@ -414,8 +417,8 @@ async function updateConfig(ctx: CoreHookContext) {
   }
   let needUpdate = false;
   let configPrefix = "";
-  if (envConfig["solution"]["subscriptionId"] && envConfig["solution"]["resourceGroupName"]) {
-    configPrefix = `/subscriptions/${envConfig["solution"]["subscriptionId"]}/resourcegroups/${envConfig["solution"]["resourceGroupName"]}`;
+  if (envConfig[solutionName][subscriptionId] && envConfig[solutionName][resourceGroupName]) {
+    configPrefix = `/subscriptions/${envConfig[solutionName][subscriptionId]}/resourcegroups/${envConfig["solution"][resourceGroupName]}`;
     needUpdate = true;
   }
   if (needUpdate && envConfig[ResourcePlugins.FrontendHosting][EnvConfigName.StorageName]) {

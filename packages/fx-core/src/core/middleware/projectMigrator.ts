@@ -425,7 +425,11 @@ async function updateConfig(ctx: CoreHookContext) {
       envConfig[ResourcePlugins.FrontendHosting][EnvConfigName.StorageName]
     }`;
   }
-  if (needUpdate && envConfig[ResourcePlugins.AzureSQL][EnvConfigName.SqlEndpoint]) {
+  if (
+    needUpdate &&
+    envConfig[ResourcePlugins.AzureSQL] &&
+    envConfig[ResourcePlugins.AzureSQL][EnvConfigName.SqlEndpoint]
+  ) {
     envConfig[ResourcePlugins.AzureSQL][
       EnvConfigName.SqlResourceId
     ] = `${configPrefix}/providers/Microsoft.Sql/servers/${

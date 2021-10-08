@@ -168,7 +168,7 @@ class EnvList extends YargsCommand {
       return err(envResult.error);
     }
 
-    CliTelemetry.sendTelemetryEvent(TelemetryEvent.Deploy, {
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.EnvList, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
     });
 

@@ -81,7 +81,7 @@ export async function provisionLocalResource(
       {
         namespace: `${PluginNames.SOLUTION}/${PluginNames.AAD}`,
         method: "setApplicationInContext",
-        params: { isLocal: true },
+        params: { isLocal: true, localSettings: localSettings },
       },
       { envName: environmentManager.getDefaultEnvName(), config: {}, profile: {} },
       tokenProvider
@@ -123,7 +123,10 @@ export async function provisionLocalResource(
     ctx.logProvider
   );
   if (configureResourceResult.kind !== "success") {
-    return configureResourceResult;
+    if (configureResourceResult.kind === "partialSuccess") {
+      return new v2.FxPartialSuccess(localSettings, configureResourceResult.error);
+    }
+    return new v2.FxFailure(configureResourceResult.error);
   }
 
   return new v2.FxSuccess(localSettings);

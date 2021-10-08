@@ -97,7 +97,7 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   const projectPath = inputs.projectPath as string;
   try {
-    await removeBotConfig(ctx);
+    await updateConfig(ctx);
     await migrateMultiEnv(projectPath);
     const loadRes = await loadProjectSettings(inputs);
     if (loadRes.isErr()) {
@@ -404,7 +404,7 @@ export async function migrateArm(ctx: CoreHookContext) {
   await generateArmParameterJson(ctx);
 }
 
-async function removeBotConfig(ctx: CoreHookContext) {
+async function updateConfig(ctx: CoreHookContext) {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   const fx = path.join(inputs.projectPath as string, `.${ConfigFolderName}`);
   const envConfig = await fs.readJson(path.join(fx, "env.default.json"));
@@ -414,20 +414,18 @@ async function removeBotConfig(ctx: CoreHookContext) {
   }
   let needUpdate = false;
   let configPrefix = "";
-  if (envConfig["solution"]) {
-    if (envConfig["solution"]["subscriptionId"] && envConfig["solution"]["resourceGroupName"]) {
-      configPrefix = `/subscriptions/${envConfig["solution"]["subscriptionId"]}/resourcegroups/${envConfig["solution"]["resourceGroupName"]}`;
-      needUpdate = true;
-    }
+  if (envConfig["solution"]["subscriptionId"] && envConfig["solution"]["resourceGroupName"]) {
+    configPrefix = `/subscriptions/${envConfig["solution"]["subscriptionId"]}/resourcegroups/${envConfig["solution"]["resourceGroupName"]}`;
+    needUpdate = true;
   }
-  if (needUpdate && envConfig[ResourcePlugins.FrontendHosting]) {
+  if (needUpdate && envConfig[ResourcePlugins.FrontendHosting][EnvConfigName.StorageName]) {
     envConfig[ResourcePlugins.FrontendHosting][
       EnvConfigName.StorageResourceId
     ] = `${configPrefix}/providers/Microsoft.Storage/storageAccounts/${
       envConfig[ResourcePlugins.FrontendHosting][EnvConfigName.StorageName]
     }`;
   }
-  if (needUpdate && envConfig[ResourcePlugins.AzureSQL]) {
+  if (needUpdate && envConfig[ResourcePlugins.AzureSQL][EnvConfigName.SqlEndpoint]) {
     envConfig[ResourcePlugins.AzureSQL][
       EnvConfigName.SqlResourceId
     ] = `${configPrefix}/providers/Microsoft.Sql/servers/${
@@ -436,15 +434,19 @@ async function removeBotConfig(ctx: CoreHookContext) {
       )[0]
     }`;
   }
-  if (needUpdate && envConfig[ResourcePlugins.Function]) {
+  if (needUpdate && envConfig[ResourcePlugins.Function][EnvConfigName.FuncAppName]) {
     envConfig[ResourcePlugins.Function][
       EnvConfigName.FunctionId
     ] = `${configPrefix}/providers/Microsoft.Web/${
       envConfig[ResourcePlugins.Function][EnvConfigName.FuncAppName]
     }`;
     delete envConfig[ResourcePlugins.Function][EnvConfigName.FuncAppName];
-    delete envConfig[ResourcePlugins.Function][EnvConfigName.StorageAccountName];
-    delete envConfig[ResourcePlugins.Function][EnvConfigName.AppServicePlanName];
+    if (envConfig[ResourcePlugins.Function][EnvConfigName.StorageAccountName]) {
+      delete envConfig[ResourcePlugins.Function][EnvConfigName.StorageAccountName];
+    }
+    if (envConfig[ResourcePlugins.Function][EnvConfigName.AppServicePlanName]) {
+      delete envConfig[ResourcePlugins.Function][EnvConfigName.AppServicePlanName];
+    }
   }
   await fs.writeFile(path.join(fx, "new.env.default.json"), JSON.stringify(envConfig, null, 4));
 }

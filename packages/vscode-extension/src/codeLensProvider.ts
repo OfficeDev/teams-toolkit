@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import * as vscode from "vscode";
+import { localSettingsJsonName } from "./debug/constants";
 
 /**
  * CodelensProvider
@@ -22,8 +23,8 @@ export class CryptoCodeLensProvider implements vscode.CodeLensProvider {
   ): vscode.CodeLens[] | Thenable<vscode.CodeLens[]> {
     if (document.fileName.endsWith("userdata")) {
       return this.computeCodeLenses(document, this.userDataRegex);
-    } else if (document.fileName.endsWith("localSettings.json")) {
-      return this.computeCodeLensesForLocal(document, this.localDebugRegex);
+    } else if (document.fileName.endsWith(localSettingsJsonName)) {
+      return this.computeCodeLenses(document, this.localDebugRegex);
     } else {
       return [];
     }
@@ -38,45 +39,18 @@ export class CryptoCodeLensProvider implements vscode.CodeLensProvider {
     const regex = new RegExp(secretRegex);
     let matches;
     while ((matches = regex.exec(text)) !== null) {
+      const match = secretRegex === this.userDataRegex ? matches[1] : matches[6];
       const line = document.lineAt(document.positionAt(matches.index).line);
-      const indexOf = line.text.indexOf(matches[1]);
+      const indexOf = line.text.indexOf(match);
       const position = new vscode.Position(line.lineNumber, indexOf);
       const range = new vscode.Range(
         position,
-        new vscode.Position(line.lineNumber, indexOf + matches[1].length)
+        new vscode.Position(line.lineNumber, indexOf + match.length)
       );
       const command = {
         title: "🔑Decrypt secret",
         command: "fx-extension.decryptSecret",
-        arguments: [matches[1], range],
-      };
-      if (range) {
-        codeLenses.push(new vscode.CodeLens(range, command));
-      }
-    }
-    return codeLenses;
-  }
-
-  private computeCodeLensesForLocal(
-    document: vscode.TextDocument,
-    secretRegex: RegExp
-  ): vscode.CodeLens[] | Thenable<vscode.CodeLens[]> {
-    const codeLenses: vscode.CodeLens[] = [];
-    const text = document.getText();
-    const regex = new RegExp(secretRegex);
-    let matches;
-    while ((matches = regex.exec(text)) !== null) {
-      const line = document.lineAt(document.positionAt(matches.index).line);
-      const indexOf = line.text.indexOf(matches[6]);
-      const position = new vscode.Position(line.lineNumber, indexOf);
-      const range = new vscode.Range(
-        position,
-        new vscode.Position(line.lineNumber, indexOf + matches[6].length)
-      );
-      const command = {
-        title: "🔑Decrypt secret",
-        command: "fx-extension.decryptSecret",
-        arguments: [matches[6], range],
+        arguments: [match, range],
       };
       if (range) {
         codeLenses.push(new vscode.CodeLens(range, command));

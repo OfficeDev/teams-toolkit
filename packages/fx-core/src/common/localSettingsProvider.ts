@@ -17,15 +17,11 @@ import {
   LocalSettingsBotKeys,
   LocalSettingsFrontendKeys,
   LocalSettingsTeamsAppKeys,
+  LocalSettingsEncryptKeys,
 } from "./localSettingsConstants";
 import { isMultiEnvEnabled } from "./tools";
 
 export const localSettingsFileName = "localSettings.json";
-
-const crypto = "crypto";
-const clientSecret = "clientSecret";
-const SimpleAuthEnvironmentVariableParams = "SimpleAuthEnvironmentVariableParams";
-const botPassword = "botPassword";
 
 export class LocalSettingsProvider {
   public readonly localSettingsFilePath: string;
@@ -144,40 +140,49 @@ export class LocalSettingsProvider {
     }
   }
 
-  public decryptLocalSettings(
+  private decryptLocalSettings(
     localSettings: LocalSettings | Json,
     cryptoProvider: CryptoProvider
   ): void {
     if (localSettings.auth) {
       if (
-        localSettings.auth.get(clientSecret) &&
-        localSettings.auth.get(clientSecret).startsWith(crypto)
+        localSettings.auth.get(LocalSettingsEncryptKeys.ClientSecret) &&
+        localSettings.auth.get(LocalSettingsEncryptKeys.ClientSecret).startsWith(crypto)
       ) {
-        const decryptedResult = cryptoProvider.decrypt(localSettings.auth.get(clientSecret));
+        const decryptedResult = cryptoProvider.decrypt(
+          localSettings.auth.get(LocalSettingsEncryptKeys.ClientSecret)
+        );
         if (decryptedResult.isOk()) {
-          localSettings.auth.set(clientSecret, decryptedResult.value);
+          localSettings.auth.set(LocalSettingsEncryptKeys.ClientSecret, decryptedResult.value);
         }
       }
       if (
-        localSettings.auth.get(SimpleAuthEnvironmentVariableParams) &&
-        localSettings.auth.get(SimpleAuthEnvironmentVariableParams).startsWith(crypto)
+        localSettings.auth.get(LocalSettingsEncryptKeys.SimpleAuthEnvironmentVariableParams) &&
+        localSettings.auth
+          .get(LocalSettingsEncryptKeys.SimpleAuthEnvironmentVariableParams)
+          .startsWith(crypto)
       ) {
         const decryptedResult = cryptoProvider.decrypt(
-          localSettings.auth.get(SimpleAuthEnvironmentVariableParams)
+          localSettings.auth.get(LocalSettingsEncryptKeys.SimpleAuthEnvironmentVariableParams)
         );
         if (decryptedResult.isOk()) {
-          localSettings.auth.set(SimpleAuthEnvironmentVariableParams, decryptedResult.value);
+          localSettings.auth.set(
+            LocalSettingsEncryptKeys.SimpleAuthEnvironmentVariableParams,
+            decryptedResult.value
+          );
         }
       }
     }
     if (localSettings.bot) {
       if (
-        localSettings.bot.get(botPassword) &&
-        localSettings.bot.get(botPassword).startsWith(crypto)
+        localSettings.bot.get(LocalSettingsEncryptKeys.BotPassword) &&
+        localSettings.bot.get(LocalSettingsEncryptKeys.BotPassword).startsWith(crypto)
       ) {
-        const decryptedResult = cryptoProvider.decrypt(localSettings.bot.get(botPassword));
+        const decryptedResult = cryptoProvider.decrypt(
+          localSettings.bot.get(LocalSettingsEncryptKeys.BotPassword)
+        );
         if (decryptedResult.isOk()) {
-          localSettings.bot.set(botPassword, decryptedResult.value);
+          localSettings.bot.set(LocalSettingsEncryptKeys.BotPassword, decryptedResult.value);
         }
       }
     }
@@ -190,25 +195,32 @@ export class LocalSettingsProvider {
     await fs.createFile(this.localSettingsFilePath);
     if (cryptoProvider) {
       if (localSettings.auth) {
-        if (localSettings.auth.get(clientSecret)) {
-          const encryptedSecret = cryptoProvider.encrypt(localSettings.auth.get(clientSecret));
-          if (encryptedSecret.isOk()) {
-            localSettings.auth.set(clientSecret, encryptedSecret.value);
-          }
-        }
-        if (localSettings.auth.get(SimpleAuthEnvironmentVariableParams)) {
+        if (localSettings.auth.get(LocalSettingsEncryptKeys.ClientSecret)) {
           const encryptedSecret = cryptoProvider.encrypt(
-            localSettings.auth.get(SimpleAuthEnvironmentVariableParams)
+            localSettings.auth.get(LocalSettingsEncryptKeys.ClientSecret)
           );
           if (encryptedSecret.isOk()) {
-            localSettings.auth.set(SimpleAuthEnvironmentVariableParams, encryptedSecret.value);
+            localSettings.auth.set(LocalSettingsEncryptKeys.ClientSecret, encryptedSecret.value);
+          }
+        }
+        if (localSettings.auth.get(LocalSettingsEncryptKeys.SimpleAuthEnvironmentVariableParams)) {
+          const encryptedSecret = cryptoProvider.encrypt(
+            localSettings.auth.get(LocalSettingsEncryptKeys.SimpleAuthEnvironmentVariableParams)
+          );
+          if (encryptedSecret.isOk()) {
+            localSettings.auth.set(
+              LocalSettingsEncryptKeys.SimpleAuthEnvironmentVariableParams,
+              encryptedSecret.value
+            );
           }
         }
       }
-      if (localSettings.bot && localSettings.bot.get(botPassword)) {
-        const encryptedSecret = cryptoProvider.encrypt(localSettings.bot.get(botPassword));
+      if (localSettings.bot && localSettings.bot.get(LocalSettingsEncryptKeys.BotPassword)) {
+        const encryptedSecret = cryptoProvider.encrypt(
+          localSettings.bot.get(LocalSettingsEncryptKeys.BotPassword)
+        );
         if (encryptedSecret.isOk()) {
-          localSettings.bot.set(botPassword, encryptedSecret.value);
+          localSettings.bot.set(LocalSettingsEncryptKeys.BotPassword, encryptedSecret.value);
         }
       }
     }

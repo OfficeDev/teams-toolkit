@@ -35,6 +35,7 @@ import {
 import { ExtensionUpgrade } from "./utils/upgrade";
 import { registerEnvTreeHandler } from "./envTree";
 import { getWorkspacePath } from "./handlers";
+import { localSettingsJsonName } from "./debug/constants";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -274,7 +275,7 @@ export async function activate(context: vscode.ExtensionContext) {
     language: "json",
     scheme: "file",
     pattern: isMultiEnvEnabled()
-      ? `**/.${ConfigFolderName}/${InputConfigsFolderName}/localSettings.json`
+      ? `**/.${ConfigFolderName}/${InputConfigsFolderName}/${localSettingsJsonName}`
       : ``,
   };
   context.subscriptions.push(

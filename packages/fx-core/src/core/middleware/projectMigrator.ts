@@ -54,11 +54,14 @@ class EnvConfigName {
   static readonly StorageName = "storageName";
   static readonly IdentityName = "identity";
   static readonly SqlEndpoint = "sqlEndpoint";
+  static readonly SqlResourceId = "sqlResourceId";
   static readonly SqlDataBase = "databaseName";
   static readonly SkuName = "skuName";
   static readonly AppServicePlanName = "appServicePlanName";
   static readonly StorageAccountName = "storageAccountName";
+  static readonly StorageResourceId = "storageResourceId";
   static readonly FuncAppName = "functionAppName";
+  static readonly FunctionId = "functionAppId";
 }
 
 class ArmParameters {
@@ -408,6 +411,40 @@ async function removeBotConfig(ctx: CoreHookContext) {
   if (envConfig[ResourcePlugins.Bot]) {
     delete envConfig[ResourcePlugins.Bot];
     envConfig[ResourcePlugins.Bot] = { wayToRegisterBot: "create-new" };
+  }
+  let needUpdate = false;
+  let configPrefix = "";
+  if (envConfig["solution"]) {
+    if (envConfig["solution"]["subscriptionId"] && envConfig["solution"]["resourceGroupName"]) {
+      configPrefix = `/subscriptions/${envConfig["solution"]["subscriptionId"]}/resourcegroups/${envConfig["solution"]["resourceGroupName"]}`;
+      needUpdate = true;
+    }
+  }
+  if (needUpdate && envConfig[ResourcePlugins.FrontendHosting]) {
+    envConfig[ResourcePlugins.FrontendHosting][
+      EnvConfigName.StorageResourceId
+    ] = `${configPrefix}/providers/Microsoft.Storage/storageAccounts/${
+      envConfig[ResourcePlugins.FrontendHosting][EnvConfigName.StorageName]
+    }`;
+  }
+  if (needUpdate && envConfig[ResourcePlugins.AzureSQL]) {
+    envConfig[ResourcePlugins.AzureSQL][
+      EnvConfigName.SqlResourceId
+    ] = `${configPrefix}/providers/Microsoft.Sql/servers/${
+      envConfig[ResourcePlugins.AzureSQL][EnvConfigName.SqlEndpoint].split(
+        ".database.windows.net"
+      )[0]
+    }`;
+  }
+  if (needUpdate && envConfig[ResourcePlugins.Function]) {
+    envConfig[ResourcePlugins.Function][
+      EnvConfigName.FunctionId
+    ] = `${configPrefix}/providers/Microsoft.Web/${
+      envConfig[ResourcePlugins.Function][EnvConfigName.FuncAppName]
+    }`;
+    delete envConfig[ResourcePlugins.Function][EnvConfigName.FuncAppName];
+    delete envConfig[ResourcePlugins.Function][EnvConfigName.StorageAccountName];
+    delete envConfig[ResourcePlugins.Function][EnvConfigName.AppServicePlanName];
   }
   await fs.writeFile(path.join(fx, "new.env.default.json"), JSON.stringify(envConfig, null, 4));
 }

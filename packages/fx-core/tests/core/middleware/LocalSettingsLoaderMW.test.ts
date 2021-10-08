@@ -58,7 +58,7 @@ describe("Middleware - LocalSettingsLoaderMW, ContextInjectorMW: part 1", () => 
 
   let mockedEnvRestore: RestoreFn;
   beforeEach(() => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_MULTI_ENV: "true" });
+    mockedEnvRestore = mockedEnv({ TEAMSFX_INSIDER_PREVIEW: "true" });
   });
 
   afterEach(() => {
@@ -81,7 +81,7 @@ describe("Middleware - LocalSettingsLoaderMW, ContextInjectorMW: part 2", () => 
   const sandbox = sinon.createSandbox();
 
   beforeEach(() => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_APIV2: "true", TEAMSFX_MULTI_ENV: "true" });
+    mockedEnvRestore = mockedEnv({ TEAMSFX_APIV2: "true", TEAMSFX_INSIDER_PREVIEW: "true" });
   });
   afterEach(() => {
     sandbox.restore();
@@ -181,7 +181,7 @@ describe("Middleware - LocalSettingsWriterMW", () => {
   const sandbox = sinon.createSandbox();
   let mockedEnvRestore: RestoreFn;
   beforeEach(() => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_APIV2: "true", TEAMSFX_MULTI_ENV: "true" });
+    mockedEnvRestore = mockedEnv({ TEAMSFX_APIV2: "true", TEAMSFX_INSIDER_PREVIEW: "true" });
   });
   afterEach(function () {
     sandbox.restore();

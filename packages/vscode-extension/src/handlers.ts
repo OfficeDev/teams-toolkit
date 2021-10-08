@@ -820,7 +820,10 @@ export async function openManifestHandler(args?: any[]): Promise<Result<null, Fx
 }
 
 export async function createNewEnvironment(args?: any[]): Promise<Result<Void, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateNewEnvironmentStart);
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.CreateNewEnvironmentStart,
+    getTriggerFromProperty(args)
+  );
   const result = await runCommand(Stage.createEnv);
   if (!result.isErr()) {
     await registerEnvTreeHandler(false);

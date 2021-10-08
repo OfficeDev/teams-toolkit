@@ -17,7 +17,7 @@ import {
   getSelectedPlugins,
   loadTeamsAppTenantIdForLocal,
 } from "./utils";
-import { PluginNames, SolutionError } from "../constants";
+import { PluginNames, SolutionError, SolutionSource } from "../constants";
 import { isUndefined } from "lodash";
 import Container from "typedi";
 import { ResourcePluginsV2 } from "../ResourcePluginContainer";
@@ -93,7 +93,7 @@ export async function provisionLocalResource(
     return new v2.FxFailure(
       returnSystemError(
         new Error("AAD plugin not selected or executeUserTask is undefined"),
-        "Solution",
+        SolutionSource,
         SolutionError.InternelError
       )
     );

@@ -88,7 +88,13 @@ import { SPFxNodeChecker } from "./debug/depsChecker/spfxNodeChecker";
 import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
 import { VS_CODE_UI } from "./extension";
 import { registerAccountTreeHandler } from "./accountTree";
-import { addCollaboratorToEnv, registerEnvTreeHandler } from "./envTree";
+import {
+  addCollaboratorToEnv,
+  generateCollaboratorNode,
+  generateCollaboratorWarningNode,
+  registerEnvTreeHandler,
+  updateNewEnvCollaborators,
+} from "./envTree";
 import { selectAndDebug } from "./debug/runIconHandler";
 import * as path from "path";
 import { exp } from "./exp/index";
@@ -836,7 +842,8 @@ export async function createNewEnvironment(args?: any[]): Promise<Result<Void, F
   );
   const result = await runCommand(Stage.createEnv);
   if (!result.isErr()) {
-    await registerEnvTreeHandler();
+    await registerEnvTreeHandler(false);
+    await updateNewEnvCollaborators(result.value);
   }
   return result;
 }
@@ -922,11 +929,7 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
         `Added account: '${inputs.email}' to the environment '${env}' as a collaborator`
       );
 
-      await addCollaboratorToEnv(
-        env,
-        result.value.userInfo.userObjectId,
-        result.value.userInfo.userPrincipalName
-      );
+      await addCollaboratorToEnv(env, result.value.userInfo.aadId, inputs.email);
     } else {
       window.showWarningMessage(result.value.message);
     }
@@ -960,27 +963,19 @@ export async function listAllCollaborators(envs: string[]): Promise<Record<strin
 
       if (userList.state === CollaborationState.OK) {
         result[env] = userList.collaborators.map((user: any) => {
-          return {
-            commandId: `fx-extension.listcollaborator.${env}.${user.userObjectId}`,
-            label: user.userPrincipalName,
-            icon: user.isAadOwner ? "person" : "warning",
-            isCustom: !user.isAadOwner,
-            tooltip: {
-              value: user.isAadOwner ? "" : "This account doesn't have the AAD permission.",
-              isMarkdown: false,
-            },
-            parent: `fx-extension.listcollaborator.parentNode.${env}`,
-          };
+          return generateCollaboratorNode(
+            env,
+            user.userObjectId,
+            user.userPrincipalName,
+            user.isAadOwner
+          );
         });
         if (!result[env] || result[env].length === 0) {
           result[env] = [
-            {
-              commandId: `fx-extension.listcollaborator.${env}`,
-              label: StringResources.vsc.commandsTreeViewProvider.noPermissionToListCollaborators,
-              icon: "warning",
-              isCustom: true,
-              parent: `fx-extension.listcollaborator.parentNode.${env}`,
-            },
+            generateCollaboratorWarningNode(
+              env,
+              StringResources.vsc.commandsTreeViewProvider.noPermissionToListCollaborators
+            ),
           ];
         }
       } else if (userList.state !== CollaborationState.ERROR) {
@@ -990,19 +985,7 @@ export async function listAllCollaborators(envs: string[]): Promise<Record<strin
           label = StringResources.vsc.commandsTreeViewProvider.unableToFindTeamsAppRegistration;
         }
 
-        result[env] = [
-          {
-            commandId: `fx-extension.listcollaborator.${env}`,
-            label: label,
-            tooltip: {
-              value: toolTip,
-              isMarkdown: false,
-            },
-            icon: "warning",
-            isCustom: true,
-            parent: `fx-extension.listcollaborator.parentNode.${env}`,
-          },
-        ];
+        result[env] = [generateCollaboratorWarningNode(env, label, toolTip)];
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ListCollaborator, {
           [TelemetryProperty.Success]: TelemetrySuccess.Yes,
         });
@@ -1014,19 +997,7 @@ export async function listAllCollaborators(envs: string[]): Promise<Record<strin
       VsCodeLogInstance.warning(
         `code:${e.source}.${e.name}, message: Failed to list collaborator for environment '${env}':  ${e.message}`
       );
-      result[env] = [
-        {
-          commandId: `fx-extension.listcollaborator.${env}`,
-          label: e.message,
-          tooltip: {
-            value: e.message,
-            isMarkdown: false,
-          },
-          icon: "warning",
-          isCustom: true,
-          parent: `fx-extension.listcollaborator.parentNode.${env}`,
-        },
-      ];
+      result[env] = [generateCollaboratorWarningNode(env, e.message)];
     }
   }
 

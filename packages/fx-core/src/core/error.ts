@@ -89,16 +89,6 @@ export function InvalidProjectError(msg?: string): UserError {
   );
 }
 
-export class ConcurrentError extends UserError {
-  constructor() {
-    super(
-      new.target.name,
-      "Concurrent operation error, please wait until the running task finish or you can reload the window to cancel it.",
-      CoreSource
-    );
-  }
-}
-
 export function InvalidProjectSettingsFileError(msg?: string): UserError {
   return new UserError(
     "InvalidProjectSettingsFile",

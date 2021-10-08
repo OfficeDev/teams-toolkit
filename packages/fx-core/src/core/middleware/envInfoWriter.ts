@@ -47,7 +47,9 @@ async function writeEnvInfo(ctx: CoreHookContext, skip: boolean) {
     return;
 
   if (isV2()) {
-    const provisionOutputs = ctx.envInfoV2?.profile;
+    const envInfoV2 = ctx.envInfoV2;
+    if (!envInfoV2) return;
+    const provisionOutputs = envInfoV2.profile;
     if (provisionOutputs === undefined) return;
     // DO NOT persist local debug plugin config.
     if (isMultiEnvEnabled() && provisionOutputs[PluginNames.LDEBUG]) {
@@ -56,7 +58,7 @@ async function writeEnvInfo(ctx: CoreHookContext, skip: boolean) {
     const envProfilePath = await environmentManager.writeEnvProfile(
       provisionOutputs,
       inputs.projectPath,
-      ctx.envName,
+      envInfoV2.envName,
       ctx.contextV2?.cryptoProvider
     );
 
@@ -76,7 +78,7 @@ async function writeEnvInfo(ctx: CoreHookContext, skip: boolean) {
     const envProfilePath = await environmentManager.writeEnvProfile(
       solutionContext.envInfo.profile,
       inputs.projectPath,
-      solutionContext.envInfo?.envName,
+      solutionContext.envInfo.envName,
       solutionContext.cryptoProvider
     );
 

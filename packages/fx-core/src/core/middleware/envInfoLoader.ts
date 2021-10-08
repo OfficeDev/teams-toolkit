@@ -20,7 +20,7 @@ import {
   traverse,
   UserCancelError,
 } from "@microsoft/teamsfx-api";
-import { isV2 } from "..";
+import { isV2, PathNotExistError } from "..";
 import { CoreHookContext, FxCore, isMultiEnvEnabled } from "../..";
 import {
   NoProjectOpenedError,
@@ -72,13 +72,18 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
       return;
     }
 
+    if (!inputs.projectPath) {
+      ctx.result = err(NoProjectOpenedError());
+      return;
+    }
+
     const core = ctx.self as FxCore;
 
     let targetEnvName: string;
     if (!skip && isMultiEnvEnabled()) {
       // TODO: This is a workaround for collabrator feature to programmatically load an env in extension.
       if (inputs.env) {
-        const result = await useUserSetEnv(inputs);
+        const result = await useUserSetEnv(inputs.projectPath, inputs.env);
         if (result.isErr()) {
           ctx.result = result;
           return;
@@ -308,18 +313,18 @@ export async function askNewEnvironment(
   };
 }
 
-async function useUserSetEnv(inputs: Inputs): Promise<Result<string, FxError>> {
-  const checkEnv = await environmentManager.checkEnvExist(inputs.projectPath!, inputs.env);
+async function useUserSetEnv(projectPath: string, env: string): Promise<Result<string, FxError>> {
+  const checkEnv = await environmentManager.checkEnvExist(projectPath, env);
   if (checkEnv.isErr()) {
     return err(checkEnv.error);
   }
 
   const envExists = checkEnv.value;
   if (!envExists) {
-    return err(ProjectEnvNotExistError(inputs.env));
+    return err(ProjectEnvNotExistError(env));
   }
 
-  return ok(inputs.env);
+  return ok(env);
 }
 
 async function getQuestionsForTargetEnv(

@@ -58,6 +58,11 @@ export enum TelemetryEvent {
 
   GrantPermissionStart = "grant-permission-start",
   GrantPermission = "grant-permission",
+
+  EnvListStart = "env-list-start",
+  EnvList = "env-list",
+  CreateNewEnvironmentStart = "create-new-environment-start",
+  CreateNewEnvironment = "create-new-environment",
 }
 
 export enum TelemetryProperty {

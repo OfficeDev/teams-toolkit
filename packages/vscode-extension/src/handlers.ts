@@ -494,7 +494,7 @@ async function processResult(
   result: Result<null, FxError>,
   inputs?: Inputs
 ) {
-  const envProperty: { [TelemetryProperty.Env]?: string } = {};
+  const envProperty: { [key: string]: string } = {};
   if (inputs?.env) {
     envProperty[TelemetryProperty.Env] = getHashedEnv(inputs.env);
   }
@@ -514,6 +514,14 @@ async function processResult(
     showError(error);
   } else {
     if (eventName) {
+      if (eventName === TelemetryEvent.CreateNewEnvironment) {
+        if (inputs?.sourceEnvName) {
+          envProperty[TelemetryProperty.SourceEnv] = getHashedEnv(inputs.sourceEnvName);
+        }
+        if (inputs?.targetEnvName) {
+          envProperty[TelemetryProperty.TargetEnv] = getHashedEnv(inputs.targetEnvName);
+        }
+      }
       ExtTelemetry.sendTelemetryEvent(eventName, {
         [TelemetryProperty.Success]: TelemetrySuccess.Yes,
         ...envProperty,
@@ -812,10 +820,7 @@ export async function openManifestHandler(args?: any[]): Promise<Result<null, Fx
 }
 
 export async function createNewEnvironment(args?: any[]): Promise<Result<Void, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.CreateNewEnvironmentStart,
-    getTriggerFromProperty(args)
-  );
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateNewEnvironmentStart);
   const result = await runCommand(Stage.createEnv);
   if (!result.isErr()) {
     await registerEnvTreeHandler(false);
@@ -829,6 +834,13 @@ export async function refreshEnvironment(args?: any[]): Promise<Result<Void, FxE
 }
 
 export async function viewEnvironment(env: string): Promise<Result<Void, FxError>> {
+  const telemetryProperties: { [p: string]: string } = {};
+  if (env === LocalEnvironment) {
+    telemetryProperties[TelemetryProperty.Env] = LocalEnvironment;
+  } else {
+    telemetryProperties[TelemetryProperty.Env] = getHashedEnv(env);
+  }
+
   if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
     const projectRoot = workspace.workspaceFolders![0].uri.fsPath;
     const localSettingsProvider = new LocalSettingsProvider(projectRoot);
@@ -842,6 +854,7 @@ export async function viewEnvironment(env: string): Promise<Result<Void, FxError
     if (await fs.pathExists(envFilePath)) {
       vscode.workspace.openTextDocument(envPath).then(
         (a: vscode.TextDocument) => {
+          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ViewEnvironment, telemetryProperties);
           vscode.window.showTextDocument(a, 1, false);
         },
         (error: any) => {
@@ -854,7 +867,11 @@ export async function viewEnvironment(env: string): Promise<Result<Void, FxError
             error
           );
           showError(openEnvError);
-          ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ViewEnvironment, openEnvError);
+          ExtTelemetry.sendTelemetryErrorEvent(
+            TelemetryEvent.ViewEnvironment,
+            openEnvError,
+            telemetryProperties
+          );
           return err(openEnvError);
         }
       );
@@ -865,7 +882,11 @@ export async function viewEnvironment(env: string): Promise<Result<Void, FxError
         ExtensionSource
       );
       showError(noEnvError);
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ViewEnvironment, noEnvError);
+      ExtTelemetry.sendTelemetryErrorEvent(
+        TelemetryEvent.ViewEnvironment,
+        noEnvError,
+        telemetryProperties
+      );
       return err(noEnvError);
     }
   } else {
@@ -876,7 +897,11 @@ export async function viewEnvironment(env: string): Promise<Result<Void, FxError
       timestamp: new Date(),
     };
     showError(FxError);
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ViewEnvironment, FxError);
+    ExtTelemetry.sendTelemetryErrorEvent(
+      TelemetryEvent.ViewEnvironment,
+      FxError,
+      telemetryProperties
+    );
     return err(FxError);
   }
   return ok(Void);

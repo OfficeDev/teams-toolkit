@@ -155,6 +155,8 @@ export enum TelemetryProperty {
   IsExistingUser = "is-existing-user",
   CollaborationState = "collaboration-state",
   Env = "env",
+  SourceEnv = "sourceEnv",
+  TargetEnv = "targetEnv",
 }
 
 export enum TelemetrySuccess {

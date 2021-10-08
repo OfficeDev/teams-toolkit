@@ -180,7 +180,7 @@ describe("Other test case", () => {
   });
 
   it("isArmSupportEnabled: return correct result based on environment variable value", () => {
-    const armSupportFeatureFlagName = "TEAMSFX_ARM_SUPPORT";
+    const armSupportFeatureFlagName = "TEAMSFX_INSIDER_PREVIEW";
 
     let restore = mockedEnv({
       [armSupportFeatureFlagName]: undefined,
@@ -203,19 +203,19 @@ describe("Other test case", () => {
 
   it("isMultiEnvEnabled: return correct result based on environment variable value", () => {
     let restore = mockedEnv({
-      [FeatureFlagName.MultiEnv]: undefined,
+      [FeatureFlagName.InsiderPreview]: undefined,
     });
     assert.isFalse(isMultiEnvEnabled());
     restore();
 
     restore = mockedEnv({
-      [FeatureFlagName.MultiEnv]: "",
+      [FeatureFlagName.InsiderPreview]: "",
     });
     assert.isFalse(isMultiEnvEnabled());
     restore();
 
     restore = mockedEnv({
-      [FeatureFlagName.MultiEnv]: "true",
+      [FeatureFlagName.InsiderPreview]: "true",
     });
     assert.isTrue(isMultiEnvEnabled());
     restore();

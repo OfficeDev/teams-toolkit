@@ -25,6 +25,7 @@ import { GraphClient } from "./graph";
 import { IAADPassword } from "./interfaces/IAADApplication";
 import { IAADDefinition, RequiredResourceAccess } from "./interfaces/IAADDefinition";
 import { ResultFactory } from "./results";
+import { Utils } from "./utils/common";
 import { ProvisionConfig } from "./utils/configs";
 import { TelemetryUtils } from "./utils/telemetry";
 import { TokenAudience, TokenProvider } from "./utils/tokenProvider";
@@ -194,7 +195,9 @@ export class AadAppClient {
         )) as IAADDefinition;
       }
     } catch (error) {
-      throw AadAppClient.handleError(error, GetAppError);
+      const tenantId = await Utils.getCurrentTenantId(ctx);
+      const fileName = Utils.getConfigFileName(ctx, islocalDebug);
+      throw AadAppClient.handleError(error, GetAppError, objectId, tenantId, fileName);
     }
 
     const config = new ProvisionConfig(islocalDebug);
@@ -204,9 +207,10 @@ export class AadAppClient {
     ) {
       config.oauth2PermissionScopeId = getAppObject.api?.oauth2PermissionScopes[0].id;
     } else {
+      const fileName = Utils.getConfigFileName(ctx, islocalDebug);
       throw ResultFactory.UserError(
         GetAppConfigError.name,
-        GetAppConfigError.message(ConfigKeys.oauth2PermissionScopeId)
+        GetAppConfigError.message(ConfigKeys.oauth2PermissionScopeId, fileName)
       );
     }
     config.objectId = objectId;

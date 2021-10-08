@@ -129,6 +129,30 @@ export function parseTeamsAppTenantId(
   return ok(teamsAppTenantId);
 }
 
+export function parseUserName(appStudioToken?: Record<string, unknown>): Result<string, FxError> {
+  if (appStudioToken === undefined) {
+    return err(
+      returnSystemError(
+        new Error("Graph token json is undefined"),
+        "Solution",
+        SolutionError.NoAppStudioToken
+      )
+    );
+  }
+
+  const userName = appStudioToken["upn"];
+  if (userName === undefined || !(typeof userName === "string") || userName.length === 0) {
+    return err(
+      returnSystemError(
+        new Error("Cannot find user name from App Studio token."),
+        "Solution",
+        SolutionError.NoUserName
+      )
+    );
+  }
+  return ok(userName);
+}
+
 // Loads teams app tenant id into local settings.
 export function loadTeamsAppTenantIdForLocal(
   localSettings: v2.LocalSettings,

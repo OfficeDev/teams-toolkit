@@ -141,10 +141,12 @@ import {
   ensurePermissionRequest,
   parseTeamsAppTenantId,
   fillInSolutionSettings,
+  parseUserName,
 } from "./v2/utils";
 import { askForProvisionConsent } from "./v2/provision";
 import { scaffoldReadmeAndLocalSettings } from "./v2/scaffolding";
 import { environmentManager } from "../../..";
+import { LocalSettingsProvider } from "../../../common/localSettingsProvider";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -1182,6 +1184,39 @@ export class TeamsAppSolution implements Solution {
       // Because concurrent exectution of localDebug may getAccessToken() concurrently, which
       // causes 2 M365 logins before the token caching in common lib takes effect.
       await ctx.appStudioToken?.getAccessToken();
+
+      // Pop-up window to confirm if local debug in another tenant
+      const localDebugTenantId = ctx.localSettings?.teamsApp.get(
+        LocalSettingsTeamsAppKeys.TenantId
+      );
+      if (isMultiEnvEnabled() && localDebugTenantId) {
+        const m365TenantId = parseTeamsAppTenantId(await ctx.appStudioToken?.getJsonObject());
+        if (m365TenantId.isErr()) {
+          throw err(m365TenantId.error);
+        }
+
+        const m365UserAccount = parseUserName(await ctx.appStudioToken?.getJsonObject());
+        if (m365UserAccount.isErr()) {
+          throw err(m365UserAccount.error);
+        }
+
+        if (m365TenantId.value !== localDebugTenantId) {
+          const errorMessage: string = util.format(
+            getStrings().solution.LocalDebugTenantConfirmNotice,
+            localDebugTenantId,
+            m365UserAccount.value
+          );
+
+          return err(
+            returnUserError(
+              new Error(errorMessage),
+              "Solution",
+              SolutionError.CannotLocalDebugInDifferentTenant
+            )
+          );
+        }
+      }
+
       checkPoint = 3;
 
       //check point 4

@@ -602,6 +602,8 @@ export interface InputResult<T> {
 // @public (undocumented)
 export interface Inputs extends Json {
     // (undocumented)
+    env?: string;
+    // (undocumented)
     ignoreConfigPersist?: boolean;
     // (undocumented)
     ignoreEnvInfo?: boolean;

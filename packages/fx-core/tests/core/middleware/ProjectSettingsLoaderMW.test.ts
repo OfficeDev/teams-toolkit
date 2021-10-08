@@ -93,13 +93,13 @@ describe("Middleware - ProjectSettingsLoaderMW, ContextInjectorMW: part 2", () =
     sandbox.restore();
   });
   const EnvParams = [
-    { TEAMSFX_APIV2: "false", TEAMSFX_MULTI_ENV: "false" },
-    { TEAMSFX_APIV2: "false", TEAMSFX_MULTI_ENV: "true" },
-    { TEAMSFX_APIV2: "true", TEAMSFX_MULTI_ENV: "false" },
-    { TEAMSFX_APIV2: "true", TEAMSFX_MULTI_ENV: "true" },
+    { TEAMSFX_APIV2: "false", TEAMSFX_INSIDER_PREVIEW: "false" },
+    { TEAMSFX_APIV2: "false", TEAMSFX_INSIDER_PREVIEW: "true" },
+    { TEAMSFX_APIV2: "true", TEAMSFX_INSIDER_PREVIEW: "false" },
+    { TEAMSFX_APIV2: "true", TEAMSFX_INSIDER_PREVIEW: "true" },
   ];
   for (const param of EnvParams) {
-    describe(`Multi-Env: ${param.TEAMSFX_MULTI_ENV}, API V2:${param.TEAMSFX_APIV2}`, () => {
+    describe(`Multi-Env: ${param.TEAMSFX_INSIDER_PREVIEW}, API V2:${param.TEAMSFX_APIV2}`, () => {
       let mockedEnvRestore: RestoreFn;
       beforeEach(() => {
         mockedEnvRestore = mockedEnv(param);
@@ -134,7 +134,7 @@ describe("Middleware - ProjectSettingsLoaderMW, ContextInjectorMW: part 2", () =
         const my = new MyClass();
         delete projectSettings.activeEnvironment;
         const res = await my.other(inputs);
-        if (param.TEAMSFX_MULTI_ENV === "true") {
+        if (param.TEAMSFX_INSIDER_PREVIEW === "true") {
           assert.isTrue(
             res.isErr() &&
               res.error.message.includes(

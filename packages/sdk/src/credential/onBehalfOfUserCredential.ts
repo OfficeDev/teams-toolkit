@@ -10,10 +10,17 @@ import {
 import { config } from "../core/configurationProvider";
 import { UserInfo } from "../models/userinfo";
 import { internalLogger } from "../util/logger";
-import { formatString, getUserInfoFromSsoToken, parseJwt, validateScopesType } from "../util/utils";
+import {
+  ClientCertificate,
+  formatString,
+  getAuthority,
+  getScopesArray,
+  getUserInfoFromSsoToken,
+  parseCertificate,
+  parseJwt,
+  validateScopesType,
+} from "../util/utils";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
-import fs from "fs";
-import { createHash } from "crypto";
 
 /**
  * Represent on-behalf-of flow to get user identity, and it is designed to be used in server side.
@@ -59,9 +66,9 @@ export class OnBehalfOfUserCredential implements TokenCredential {
       missingConfigurations.push("authorityHost");
     }
 
-    if (!config?.authentication?.clientSecret && !config?.authentication?.certificatePath) {
+    if (!config?.authentication?.clientSecret && !config?.authentication?.certificateContent) {
       missingConfigurations.push("clientSecret");
-      missingConfigurations.push("certificatePath");
+      missingConfigurations.push("certificateContent");
     }
 
     if (!config?.authentication?.tenantId) {
@@ -78,10 +85,12 @@ export class OnBehalfOfUserCredential implements TokenCredential {
       throw new ErrorWithCode(errorMsg, ErrorCode.InvalidConfiguration);
     }
 
-    const normalizedAuthorityHost = config.authentication!.authorityHost!.replace(/\/+$/g, "");
-    const authority: string = normalizedAuthorityHost + "/" + config.authentication?.tenantId;
-    const clientCertificate: ClientCertificate | undefined = this.parseCertificate(
-      config.authentication!.certificatePath
+    const authority = getAuthority(
+      config.authentication!.authorityHost!,
+      config.authentication!.tenantId!
+    );
+    const clientCertificate: ClientCertificate | undefined = parseCertificate(
+      config.authentication!.certificateContent
     );
 
     const auth: NodeAuthOptions = {
@@ -145,8 +154,7 @@ export class OnBehalfOfUserCredential implements TokenCredential {
   ): Promise<AccessToken | null> {
     validateScopesType(scopes);
 
-    let scopesArray: string[] = typeof scopes === "string" ? scopes.split(" ") : scopes;
-    scopesArray = scopesArray.filter((x) => x !== null && x !== "");
+    const scopesArray = getScopesArray(scopes);
 
     let result: AccessToken | null;
     if (!scopesArray.length) {
@@ -229,37 +237,4 @@ export class OnBehalfOfUserCredential implements TokenCredential {
       return new ErrorWithCode(fullErrorMsg, ErrorCode.ServiceError);
     }
   }
-
-  private parseCertificate(certificatePath: string | undefined): ClientCertificate | undefined {
-    if (!certificatePath) {
-      return undefined;
-    }
-
-    const certificateContent = fs.readFileSync(certificatePath, "utf8");
-    const certificatePattern =
-      /(-+BEGIN CERTIFICATE-+)(\n\r?|\r\n?)([A-Za-z0-9+/\n\r]+=*)(\n\r?|\r\n?)(-+END CERTIFICATE-+)/;
-    const match = certificatePattern.exec(certificateContent);
-    if (!match) {
-      const errorMsg = "The file at the specified path does not contain a PEM-encoded certificate.";
-      internalLogger.error(errorMsg);
-      throw new ErrorWithCode(errorMsg, ErrorCode.InvalidCertificate);
-    }
-    const thumbprint = createHash("sha1")
-      .update(Buffer.from(match[3], "base64"))
-      .digest("hex")
-      .toUpperCase();
-
-    return {
-      thumbprint: thumbprint,
-      privateKey: certificateContent,
-    };
-  }
-}
-
-/**
- * @internal
- */
-interface ClientCertificate {
-  thumbprint: string;
-  privateKey: string;
 }

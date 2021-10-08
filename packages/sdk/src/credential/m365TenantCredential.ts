@@ -8,13 +8,19 @@ import {
   ClientSecretCredential,
   TokenCredentialOptions,
   AuthenticationError,
-  ClientCertificateCredential,
 } from "@azure/identity";
 import { AuthenticationConfiguration } from "../models/configuration";
 import { internalLogger } from "../util/logger";
-import { validateScopesType, formatString } from "../util/utils";
+import {
+  validateScopesType,
+  formatString,
+  getAuthority,
+  parseCertificate,
+  getScopesArray,
+} from "../util/utils";
 import { getAuthenticationConfiguration } from "../core/configurationProvider";
 import { ErrorCode, ErrorMessage, ErrorWithCode } from "../core/errors";
+import { ConfidentialClientApplication, NodeAuthOptions } from "@azure/msal-node";
 
 /**
  * Represent Microsoft 365 tenant identity, and it is usually used when user is not involved like time-triggered automation job.
@@ -31,7 +37,8 @@ import { ErrorCode, ErrorMessage, ErrorWithCode } from "../core/errors";
  * @beta
  */
 export class M365TenantCredential implements TokenCredential {
-  private readonly clientCredential: ClientSecretCredential | ClientCertificateCredential;
+  private readonly clientSecretCredential: ClientSecretCredential | undefined;
+  private readonly msalClient: ConfidentialClientApplication | undefined;
 
   /**
    * Constructor of M365TenantCredential.
@@ -49,18 +56,22 @@ export class M365TenantCredential implements TokenCredential {
 
     const config = this.loadAndValidateConfig();
 
-    if (config.certificatePath) {
-      this.clientCredential = new ClientCertificateCredential(
-        config.tenantId!,
-        config.clientId!,
-        config.certificatePath!
-      );
+    if (config.certificateContent) {
+      const auth: NodeAuthOptions = {
+        clientId: config.clientId!,
+        authority: getAuthority(config.authorityHost!, config.tenantId!),
+        clientCertificate: parseCertificate(config.certificateContent),
+      };
+
+      this.msalClient = new ConfidentialClientApplication({
+        auth,
+      });
     } else {
       const tokenCredentialOptions: TokenCredentialOptions = {
         authorityHost: config.authorityHost,
       };
 
-      this.clientCredential = new ClientSecretCredential(
+      this.clientSecretCredential = new ClientSecretCredential(
         config.tenantId!,
         config.clientId!,
         config.clientSecret!,
@@ -105,7 +116,20 @@ export class M365TenantCredential implements TokenCredential {
     internalLogger.info("Get access token with scopes: " + scopesStr);
 
     try {
-      accessToken = await this.clientCredential.getToken(scopes);
+      if (this.clientSecretCredential) {
+        accessToken = await this.clientSecretCredential.getToken(scopes);
+      } else {
+        const scopesArray = getScopesArray(scopes);
+        const authenticationResult = await this.msalClient!.acquireTokenByClientCredential({
+          scopes: scopesArray,
+        });
+        if (authenticationResult) {
+          accessToken = {
+            token: authenticationResult.accessToken,
+            expiresOnTimestamp: authenticationResult.expiresOn!.getTime(),
+          };
+        }
+      }
     } catch (err: any) {
       if (err instanceof AuthenticationError) {
         const authError = err as AuthenticationError;
@@ -146,7 +170,7 @@ export class M365TenantCredential implements TokenCredential {
       );
     }
 
-    if (config.clientId && (config.clientSecret || config.certificatePath) && config.tenantId) {
+    if (config.clientId && (config.clientSecret || config.certificateContent) && config.tenantId) {
       return config;
     }
 
@@ -156,9 +180,9 @@ export class M365TenantCredential implements TokenCredential {
       missingValues.push("clientId");
     }
 
-    if (!config.clientSecret && !config.certificatePath) {
+    if (!config.clientSecret && !config.certificateContent) {
       missingValues.push("clientSecret");
-      missingValues.push("certificatePath");
+      missingValues.push("certificateContent");
     }
 
     if (!config.tenantId) {

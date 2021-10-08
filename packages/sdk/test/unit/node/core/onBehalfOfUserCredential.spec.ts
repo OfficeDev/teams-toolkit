@@ -13,7 +13,6 @@ import {
 import sinon from "sinon";
 import mockedEnv from "mocked-env";
 import { AuthenticationResult, ConfidentialClientApplication } from "@azure/msal-node";
-import fs from "fs";
 
 chaiUse(chaiPromises);
 let mockedEnvRestore: () => void;
@@ -23,7 +22,12 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
   const scope = "fake_scope";
   const clientId = "fake_client_id";
   const clientSecret = "fake_client_secret";
-  const certificatePath = "fake_certificate.pem";
+  const certificateContent = `-----BEGIN PRIVATE KEY-----
+fakeKey
+-----END PRIVATE KEY-----
+-----BEGIN CERTIFICATE-----
+fakeCert
+-----END CERTIFICATE-----`;
   const authorityHost = "fake_authority_host";
   const tenantId = "fake_tenant_id";
   const accessToken = "fake_access_token";
@@ -60,16 +64,6 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
     uti: "test_uti",
     ver: "2.0",
   });
-
-  fs.writeFileSync(
-    certificatePath,
-    `-----BEGIN PRIVATE KEY-----
-fakeKey
------END PRIVATE KEY-----
------BEGIN CERTIFICATE-----
-fakeCert
------END CERTIFICATE-----`
-  );
 
   const sandbox = sinon.createSandbox();
 
@@ -113,23 +107,21 @@ fakeCert
   });
 
   it("create OnBehalfOfUserCredential instance should not throw InvalidConfiguration Error when clientSecret not found", async function () {
-    mockedEnvRestore = mockedEnv(
-      {
-        M365_CLIENT_ID: clientId,
-        M365_CERTIFICATE_PATH: certificatePath,
-        M365_AUTHORITY_HOST: authorityHost,
-        M365_TENANT_ID: tenantId,
+    loadConfiguration({
+      authentication: {
+        clientId: clientId,
+        certificateContent: certificateContent,
+        authorityHost: authorityHost,
+        tenantId: tenantId,
       },
-      { clear: true }
-    );
-    loadConfiguration();
+    });
 
     expect(() => {
       new OnBehalfOfUserCredential(ssoToken);
     }).to.not.throw();
   });
 
-  it("create OnBehalfOfUserCredential instance should not throw InvalidConfiguration Error when certificatePath not found", async function () {
+  it("create OnBehalfOfUserCredential instance should not throw InvalidConfiguration Error when certificateContent not found", async function () {
     mockedEnvRestore = mockedEnv(
       {
         M365_CLIENT_ID: clientId,
@@ -144,6 +136,27 @@ fakeCert
     expect(() => {
       new OnBehalfOfUserCredential(ssoToken);
     }).to.not.throw();
+  });
+
+  it("create OnBehalfOfUserCredential instance should not throw InvalidConfiguration Error and respect certificateContent when clientSecret and certificateContent are both set", async function () {
+    loadConfiguration({
+      authentication: {
+        clientId: clientId,
+        clientSecret: clientSecret,
+        certificateContent: certificateContent,
+        authorityHost: authorityHost,
+        tenantId: tenantId,
+      },
+    });
+
+    const oboCredential: any = new OnBehalfOfUserCredential(ssoToken);
+
+    // certificateContent has higher priority than clientSecret
+    assert.strictEqual(
+      oboCredential.msalClient.config.auth.clientCertificate.thumbprint,
+      "06BA994A93FF2138DC51E669EB284ABAB8112153" // thumbprint is calculated from certificate content "fakeCert"
+    );
+    assert.strictEqual(oboCredential.msalClient.config.auth.clientSecret, "");
   });
 
   it("create OnBehalfOfUserCredential instance should throw InvalidConfiguration Error when clientId not found", async function () {
@@ -182,7 +195,7 @@ fakeCert
       .with.property("code", InvalidConfiguration);
   });
 
-  it("create OnBehalfOfUserCredential instance should throw InvalidConfiguration Error when clientSecret, certificatePath not found", async function () {
+  it("create OnBehalfOfUserCredential instance should throw InvalidConfiguration Error when clientSecret, certificateContent not found", async function () {
     mockedEnvRestore = mockedEnv(
       {
         M365_CLIENT_ID: clientId,
@@ -198,7 +211,7 @@ fakeCert
     })
       .to.throw(
         ErrorWithCode,
-        "clientSecret, certificatePath in configuration is invalid: undefined"
+        "clientSecret, certificateContent in configuration is invalid: undefined"
       )
       .with.property("code", InvalidConfiguration);
   });
@@ -221,7 +234,7 @@ fakeCert
       .with.property("code", InvalidConfiguration);
   });
 
-  it("create OnBehalfOfUserCredential instance should throw InvalidConfiguration Error when clientId, clientSecret, certificatePath, authorityHost, tenantId not found", async function () {
+  it("create OnBehalfOfUserCredential instance should throw InvalidConfiguration Error when clientId, clientSecret, certificateContent, authorityHost, tenantId not found", async function () {
     mockedEnvRestore = mockedEnv({}, { clear: true });
     loadConfiguration();
 
@@ -230,7 +243,7 @@ fakeCert
     })
       .to.throw(
         ErrorWithCode,
-        "clientId, authorityHost, clientSecret, certificatePath, tenantId in configuration is invalid: undefined"
+        "clientId, authorityHost, clientSecret, certificateContent, tenantId in configuration is invalid: undefined"
       )
       .with.property("code", InvalidConfiguration);
   });
@@ -247,16 +260,14 @@ fakeCert
   });
 
   it("getToken should success for client certificate", async function () {
-    mockedEnvRestore = mockedEnv(
-      {
-        M365_CLIENT_ID: clientId,
-        M365_CERTIFICATE_PATH: certificatePath,
-        M365_AUTHORITY_HOST: authorityHost,
-        M365_TENANT_ID: tenantId,
+    loadConfiguration({
+      authentication: {
+        clientId: clientId,
+        certificateContent: certificateContent,
+        authorityHost: authorityHost,
+        tenantId: tenantId,
       },
-      { clear: true }
-    );
-    loadConfiguration();
+    });
     const oboCredential = new OnBehalfOfUserCredential(ssoToken);
     const token = await oboCredential.getToken(scope);
     assert.strictEqual(token!.token, accessToken);

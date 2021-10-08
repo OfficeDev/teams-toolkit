@@ -54,7 +54,6 @@ export function loadConfiguration(configuration?: Configuration): void {
       tenantId: process.env.M365_TENANT_ID,
       clientId: process.env.M365_CLIENT_ID,
       clientSecret: process.env.M365_CLIENT_SECRET,
-      certificatePath: process.env.M365_CERTIFICATE_PATH,
       simpleAuthEndpoint: process.env.SIMPLE_AUTH_ENDPOINT,
       initiateLoginEndpoint: process.env.INITIATE_LOGIN_ENDPOINT,
       applicationIdUri: process.env.M365_APPLICATION_ID_URI,

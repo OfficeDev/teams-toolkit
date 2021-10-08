@@ -19,7 +19,7 @@ import { TokenResponse } from 'botframework-schema';
 export interface AuthenticationConfiguration {
     readonly applicationIdUri?: string;
     readonly authorityHost?: string;
-    readonly certificatePath?: string;
+    readonly certificateContent?: string;
     readonly clientId?: string;
     readonly clientSecret?: string;
     readonly initiateLoginEndpoint?: string;

@@ -122,9 +122,10 @@ export async function activate(): Promise<Result<Void, FxError>> {
       const expService = exp.getExpService();
       if (expService) {
         switch (
-          expService.getTreatmentVariable(
+          await expService.getTreatmentVariableAsync(
             TreatmentVariables.VSCodeConfig,
-            TreatmentVariables.QuickStartInSidebar
+            TreatmentVariables.QuickStartInSidebar,
+            true
           )
         ) {
           case TreatmentVariableValue.TopSidebar:

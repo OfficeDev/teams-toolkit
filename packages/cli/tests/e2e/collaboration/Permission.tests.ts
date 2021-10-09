@@ -34,7 +34,7 @@ describe("Permission", function () {
 
     await setSimpleAuthSkuNameToB1(projectPath);
 
-    process.env[FeatureFlags.RemoteCollaboration] = "1";
+    process.env[FeatureFlags.InsiderPreview] = "1";
 
     // provision
     await execAsyncWithRetry(`teamsfx provision --subscription ${subscription}`, {

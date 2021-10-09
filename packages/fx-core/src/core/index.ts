@@ -8,6 +8,7 @@ import {
   ArchiveLogFileName,
   assembleError,
   ConfigFolderName,
+  ConfigMap,
   Core,
   CoreCallbackEvent,
   CoreCallbackFunc,
@@ -489,8 +490,24 @@ export class FxCore implements Core {
     if (!ctx || !ctx.solution || !ctx.solutionContext) {
       return err(new ObjectIsUndefinedError("Provision input stuff"));
     }
-
-    return await ctx.solution.provision(ctx.solutionContext);
+    const provisionRes = await ctx.solution.provision(ctx.solutionContext);
+    if (provisionRes.isErr()) {
+      return provisionRes;
+    }
+    //workaround
+    ctx.envInfoV2 = {
+      envName: ctx.solutionContext.envInfo.envName,
+      config: ctx.solutionContext.envInfo.config,
+      profile: {},
+    };
+    for (const key of ctx.solutionContext.envInfo.profile.keys()) {
+      const map = ctx.solutionContext.envInfo.profile.get(key) as ConfigMap;
+      const value = map?.toJSON();
+      if (value) {
+        ctx.envInfoV2.profile[key] = value;
+      }
+    }
+    return provisionRes;
     // }
   }
 

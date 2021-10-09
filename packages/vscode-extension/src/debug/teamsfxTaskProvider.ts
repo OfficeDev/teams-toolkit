@@ -78,8 +78,69 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     task: vscode.Task,
     token?: vscode.CancellationToken | undefined
   ): Promise<vscode.Task | undefined> {
-    // Return undefined since all tasks are provided and fully resolved
-    return undefined;
+    // Resolve "npm run dev" and "npm run watch" tasks
+    if (vscode.workspace.workspaceFolders) {
+      const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];
+      const workspacePath: string = workspaceFolder.uri.fsPath;
+      if (!(await commonUtils.isFxProject(workspacePath))) {
+        vscodeLogger.error(
+          `No ${TeamsfxTaskProvider.type} project. Cannot resolve ${TeamsfxTaskProvider.type} task.`
+        );
+        return undefined;
+      }
+
+      const command: string | undefined = task.definition.command;
+      const component: string | undefined = task.definition.component;
+      if (
+        command &&
+        task.scope !== undefined &&
+        task.scope !== vscode.TaskScope.Global &&
+        task.scope !== vscode.TaskScope.Workspace
+      ) {
+        let env: { [key: string]: string } | undefined;
+        let cwd: string | undefined;
+        let problemMatcher: string;
+        const isWatchTask = /^npm run watch/i.test(component + "");
+        if (component?.toLowerCase() === "frontend") {
+          env = isWatchTask ? undefined : await commonUtils.getFrontendLocalEnv();
+          cwd = await commonUtils.getProjectRoot(workspacePath, constants.frontendFolderName);
+          problemMatcher = isWatchTask
+            ? constants.tscWatchProblemMatcher
+            : constants.frontendProblemMatcher;
+        } else if (component?.toLowerCase() === "backend") {
+          env = isWatchTask ? undefined : await commonUtils.getBackendLocalEnv();
+          cwd = await commonUtils.getProjectRoot(workspacePath, constants.backendFolderName);
+          problemMatcher = isWatchTask
+            ? constants.tscWatchProblemMatcher
+            : constants.backendProblemMatcher;
+        } else if (component?.toLowerCase() === "bot") {
+          env = isWatchTask ? undefined : await commonUtils.getBotLocalEnv();
+          cwd = await commonUtils.getProjectRoot(workspacePath, constants.botFolderName);
+          problemMatcher = isWatchTask
+            ? constants.tscWatchProblemMatcher
+            : constants.botProblemMatcher;
+        } else {
+          vscodeLogger.error(
+            `Missing or wrong 'component' field in ${TeamsfxTaskProvider.type} task.`
+          );
+          return undefined;
+        }
+
+        const resolvedTask = new vscode.Task(
+          task.definition,
+          task.scope,
+          command,
+          TeamsfxTaskProvider.type,
+          new vscode.ShellExecution(command, { cwd: cwd, env: env }),
+          problemMatcher
+        );
+        resolvedTask.isBackground = true;
+        return resolvedTask;
+      }
+    } else {
+      vscodeLogger.error(`No workspace open. Cannot resolve ${TeamsfxTaskProvider.type} task.`);
+      return undefined;
+    }
   }
 
   private async createFrontendStartTask(

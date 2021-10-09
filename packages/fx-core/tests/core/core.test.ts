@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { StorageBrowserPolicy } from "@azure/storage-blob";
 import {
   AppPackageFolderName,
   err,
@@ -182,6 +183,7 @@ describe("Core basic APIs", () => {
         const expectedInputs: Inputs = {
           platform: Platform.VSCode,
           projectPath: testParam.projectPath,
+          stage: Stage.migrateV1,
         };
 
         if (testParam.skipAppNameQuestion) {
@@ -253,6 +255,7 @@ describe("Core basic APIs", () => {
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
       projectPath: projectPath,
       solution: mockSolution.name,
+      stage: Stage.create,
     };
     sandbox
       .stub<any, any>(ui, "inputText")
@@ -379,6 +382,7 @@ describe("Core basic APIs", () => {
       [CoreQuestionNames.Folder]: os.tmpdir(),
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionNoVSC.id,
       [CoreQuestionNames.Samples]: sampleOption,
+      stage: Stage.create,
     };
     sandbox
       .stub<any, any>(ui, "selectFolder")
@@ -441,6 +445,7 @@ describe("Core basic APIs", () => {
       [CoreQuestionNames.Folder]: os.tmpdir(),
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
       solution: mockSolution.name,
+      stage: Stage.getQuestions,
     };
     sandbox
       .stub<any, any>(ui, "inputText")
@@ -703,6 +708,7 @@ describe("Core basic APIs", () => {
       projectPath: projectPath,
       solution: mockSolution.name,
       env: "dev",
+      stage: Stage.create,
     };
 
     const newEnvName = "newEnv";
@@ -800,6 +806,7 @@ describe("Core basic APIs", () => {
       projectPath: projectPath,
       solution: mockSolution.name,
       env: "dev",
+      stage: Stage.create,
     };
     sandbox
       .stub<any, any>(ui, "inputText")

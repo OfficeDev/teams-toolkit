@@ -20,7 +20,7 @@ import {
   traverse,
   UserCancelError,
 } from "@microsoft/teamsfx-api";
-import { isV2 } from "..";
+import { isV2, TOOLS } from "..";
 import { CoreHookContext, FxCore, isMultiEnvEnabled } from "../..";
 import {
   NoProjectOpenedError,
@@ -45,6 +45,7 @@ import { desensitize } from "./questionModel";
 import { shouldIgnored } from "./projectSettingsLoader";
 import { PermissionRequestFileProvider } from "../permissionRequest";
 import { newEnvInfo } from "../tools";
+import { mapToJson } from "../../common";
 
 const newTargetEnvNameOption = "+ new environment";
 const lastUsedMark = " (last used)";
@@ -96,7 +97,7 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
           return;
         }
         targetEnvName = result.value;
-        ctx.ui?.showMessage(
+        TOOLS.ui?.showMessage(
           "info",
           `[${targetEnvName}] is selected as the target environment to ${inputs.stage}`,
           false
@@ -128,13 +129,7 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
 
     if (isV2()) {
       const envInfo = result.value.envInfo;
-      const profile: Json = {};
-      for (const key of envInfo.profile.keys()) {
-        const map = envInfo.profile.get(key);
-        if (map) {
-          profile[key] = (map as ConfigMap).toJSON();
-        }
-      }
+      const profile: Json = mapToJson(envInfo.profile);
       ctx.envInfoV2 = { envName: envInfo.envName, config: envInfo.config, profile: profile };
     }
     await next();

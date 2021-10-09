@@ -95,7 +95,6 @@ describe("API V2 adapter", () => {
       bot: undefined,
       frontend: undefined,
     };
-    assert.deepEqual(expected, localSettings);
     setLocalSettingsV1(pluginContext, expected);
     assert.equal(pluginContext.localSettings?.teamsApp.get("k1"), "v1");
     assert.equal(pluginContext.localSettings?.auth?.get("k2"), "v2");

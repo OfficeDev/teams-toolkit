@@ -27,6 +27,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import fs from "fs-extra";
+import { random } from "lodash";
 import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import * as os from "os";
@@ -52,7 +53,7 @@ import {
   ScratchOptionYesVSC,
 } from "../../src/core/question";
 import { SolutionPlugins, SolutionPluginsV2 } from "../../src/core/SolutionPluginContainer";
-import { MockSolution, MockSolutionV2, MockTools, randomAppName } from "./utils";
+import { deleteFolder, MockSolution, MockSolutionV2, MockTools, randomAppName } from "./utils";
 
 describe("Core basic APIs", () => {
   const sandbox = sinon.createSandbox();
@@ -70,10 +71,82 @@ describe("Core basic APIs", () => {
 
   afterEach(async () => {
     sandbox.restore();
-    await fs.rmdir(projectPath, { recursive: true });
+    deleteFolder(projectPath);
   });
 
-  describe("API V1", () => {
+  describe("Core's basic APIs", async () => {
+    const AllEnvParams = [
+      { TEAMSFX_APIV2: "false", TEAMSFX_INSIDER_PREVIEW: "false" },
+      { TEAMSFX_APIV2: "false", TEAMSFX_INSIDER_PREVIEW: "true" },
+      { TEAMSFX_APIV2: "true", TEAMSFX_INSIDER_PREVIEW: "false" },
+      { TEAMSFX_APIV2: "true", TEAMSFX_INSIDER_PREVIEW: "true" },
+    ];
+    const EnableMultiEnvParams = [
+      { TEAMSFX_APIV2: "false", TEAMSFX_INSIDER_PREVIEW: "true" },
+      { TEAMSFX_APIV2: "true", TEAMSFX_INSIDER_PREVIEW: "true" },
+    ];
+    const DisableMultiEnvParams = [
+      { TEAMSFX_APIV2: "false", TEAMSFX_INSIDER_PREVIEW: "false" },
+      { TEAMSFX_APIV2: "true", TEAMSFX_INSIDER_PREVIEW: "false" },
+    ];
+    for (const param of AllEnvParams) {
+      describe(`Multi-Env: ${param.TEAMSFX_INSIDER_PREVIEW}, API V2:${param.TEAMSFX_APIV2}`, () => {
+        let mockedEnvRestore: RestoreFn;
+        beforeEach(() => {
+          mockedEnvRestore = mockedEnv(param);
+        });
+
+        afterEach(() => {
+          mockedEnvRestore();
+        });
+        it("create from new, provision, deploy, localDebug, publish, getQuestion, getQuestionsForUserTask, getProjectConfig", async () => {
+          await case1();
+        });
+        it("getQuestions for create", async () => {
+          await case3();
+        });
+        it("getQuestions, getQuestionsForUserTask for static question", async () => {
+          await case4();
+        });
+        it("crypto: encrypt, decrypt secrets", async () => {
+          await case5();
+        });
+      });
+    }
+    for (const param of DisableMultiEnvParams) {
+      describe(`Multi-Env: ${param.TEAMSFX_INSIDER_PREVIEW}, API V2:${param.TEAMSFX_APIV2}`, () => {
+        let mockedEnvRestore: RestoreFn;
+        beforeEach(() => {
+          mockedEnvRestore = mockedEnv(param);
+        });
+        afterEach(() => {
+          mockedEnvRestore();
+        });
+        it("create from sample", async () => {
+          await case2();
+        });
+      });
+    }
+    for (const param of EnableMultiEnvParams) {
+      describe(`Multi-Env: ${param.TEAMSFX_INSIDER_PREVIEW}, API V2:${param.TEAMSFX_APIV2}`, () => {
+        let mockedEnvRestore: RestoreFn;
+        beforeEach(() => {
+          mockedEnvRestore = mockedEnv(param);
+        });
+        afterEach(() => {
+          mockedEnvRestore();
+        });
+        it("scaffold and create new env copy", async () => {
+          await envCase1();
+        });
+        it("scaffold and activate env", async () => {
+          await envCase2();
+        });
+      });
+    }
+  });
+
+  describe("migrateV1", () => {
     let mockedEnvRestore: RestoreFn;
     beforeEach(() => {
       mockedEnvRestore = mockedEnv({ TEAMSFX_APIV2: "false" });
@@ -81,28 +154,6 @@ describe("Core basic APIs", () => {
     afterEach(async () => {
       mockedEnvRestore();
     });
-    it("happy path: create from new, provision, deploy, localDebug, publish, getQuestion, getQuestionsForUserTask, getProjectConfig (API V1)", async () => {
-      await case1();
-    });
-    it("happy path: create from sample (API v1)", async () => {
-      await case2();
-    });
-    it("happy path: getQuestions for create (API v1)", async () => {
-      await case3();
-    });
-    it("happy path: getQuestions, getQuestionsForUserTask for static question (API V1)", async () => {
-      await case4();
-    });
-    it("crypto: encrypt, decrypt secrets (API V1)", async () => {
-      await case5();
-    });
-    it(`happy path: scaffold and create new env copy (API V1)`, async () => {
-      await envCase1();
-    });
-    it(`happy path: create and activate env (API V1)`, async () => {
-      await envCase2();
-    });
-    // it("migrateV1", async () => {
     const migrateV1Params = [
       {
         description: "skip ask app name",
@@ -117,7 +168,6 @@ describe("Core basic APIs", () => {
         skipAppNameQuestion: false,
       },
     ];
-
     migrateV1Params.forEach((testParam) => {
       it(`happy path: migrate v1 project ${testParam.description}`, async () => {
         await fs.ensureDir(testParam.projectPath);
@@ -191,41 +241,11 @@ describe("Core basic APIs", () => {
         }
       });
     });
-    // });
-  });
-
-  describe("API V2", () => {
-    let mockedEnvRestore: RestoreFn;
-    beforeEach(() => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_APIV2: "true" });
-    });
-    afterEach(async () => {
-      mockedEnvRestore();
-    });
-    it("happy path: create from new, provision, deploy, localDebug, publish, getQuestion, getQuestionsForUserTask, getProjectConfig (API V2)", async () => {
-      await case1();
-    });
-    it("happy path: create from sample (API v2)", async () => {
-      await case2();
-    });
-    it("happy path: getQuestions for create (API v2)", async () => {
-      await case3();
-    });
-    it("happy path: getQuestions, getQuestionsForUserTask for static question (API V2)", async () => {
-      await case4();
-    });
-    it("crypto: encrypt, decrypt secrets (API V2)", async () => {
-      await case5();
-    });
-    it(`happy path: scaffold and create new env copy (API V2)`, async () => {
-      await envCase1();
-    });
-    it(`happy path: create and activate env (API V2)`, async () => {
-      await envCase2();
-    });
   });
 
   async function case1() {
+    appName = randomAppName();
+    projectPath = path.resolve(os.tmpdir(), appName);
     const expectedInputs: Inputs = {
       platform: Platform.VSCode,
       [CoreQuestionNames.AppName]: appName,
@@ -278,7 +298,10 @@ describe("Core basic APIs", () => {
       assert.isTrue(res.isOk() && res.value === projectPath);
       assert.deepEqual(expectedInputs, inputs);
 
-      const projectSettingsResult = await loadProjectSettings(inputs);
+      const projectSettingsResult = await loadProjectSettings(
+        inputs,
+        commonTools.isMultiEnvEnabled()
+      );
       if (projectSettingsResult.isErr()) {
         assert.fail("failed to load project settings");
       }
@@ -286,22 +309,6 @@ describe("Core basic APIs", () => {
       const [projectSettings, projectIdMissing] = projectSettingsResult.value;
       const validSettingsResult = validateSettings(projectSettings);
       assert.isTrue(validSettingsResult === undefined);
-      const envInfoResult = await loadSolutionContext(
-        tools,
-        inputs,
-        projectSettings,
-        projectIdMissing
-      );
-      if (envInfoResult.isErr()) {
-        assert.fail("failed to load env info");
-      }
-
-      const solutionContext = envInfoResult.value;
-      const validRes = validateProject(solutionContext);
-      assert.isTrue(validRes === undefined);
-
-      const solutionConfig = solutionContext.envInfo.profile.get("solution");
-      assert.isTrue(solutionConfig !== undefined);
     }
     {
       const inputs: Inputs = { platform: Platform.CLI, projectPath: projectPath };
@@ -321,7 +328,10 @@ describe("Core basic APIs", () => {
       const res2 = await core.executeUserTask(func, inputs);
       assert.isTrue(res2.isOk());
 
-      const projectSettingsResult = await loadProjectSettings(inputs);
+      const projectSettingsResult = await loadProjectSettings(
+        inputs,
+        commonTools.isMultiEnvEnabled()
+      );
       if (projectSettingsResult.isErr()) {
         assert.fail("failed to load project settings");
       }
@@ -329,16 +339,6 @@ describe("Core basic APIs", () => {
       const [projectSettings, projectIdMissing] = projectSettingsResult.value;
       const validSettingsResult = validateSettings(projectSettings);
       assert.isTrue(validSettingsResult === undefined);
-
-      const envInfoResult = await loadSolutionContext(
-        tools,
-        inputs,
-        projectSettings,
-        projectIdMissing
-      );
-      if (envInfoResult.isErr()) {
-        assert.fail("failed to load env info");
-      }
     }
 
     //getQuestion
@@ -417,7 +417,10 @@ describe("Core basic APIs", () => {
       assert.deepEqual(expectedInputs, inputs);
       inputs.projectPath = projectPath;
 
-      const projectSettingsResult = await loadProjectSettings(inputs);
+      const projectSettingsResult = await loadProjectSettings(
+        inputs,
+        commonTools.isMultiEnvEnabled()
+      );
       if (projectSettingsResult.isErr()) {
         assert.fail("failed to load project settings");
       }
@@ -426,27 +429,12 @@ describe("Core basic APIs", () => {
       projectSettings.solutionSettings.name = mockSolution.name;
       const validSettingsResult = validateSettings(projectSettings);
       assert.isTrue(validSettingsResult === undefined);
-
-      const envInfoResult = await loadSolutionContext(
-        tools,
-        inputs,
-        projectSettings,
-        projectIdMissing
-      );
-      if (envInfoResult.isErr()) {
-        assert.fail("failed to load env info");
-      }
-
-      const solutionContext = envInfoResult.value;
-      const validRes = validateProject(solutionContext);
-      assert.isTrue(validRes === undefined);
-
-      const solutioConfig = solutionContext.envInfo.profile.get("solution");
-      assert.isTrue(solutioConfig !== undefined);
     }
   }
 
   async function case3() {
+    appName = randomAppName();
+    projectPath = path.resolve(os.tmpdir(), appName);
     const expectedInputs: Inputs = {
       platform: Platform.CLI,
       [CoreQuestionNames.AppName]: appName,
@@ -508,6 +496,8 @@ describe("Core basic APIs", () => {
   }
 
   async function case4() {
+    appName = randomAppName();
+    projectPath = path.resolve(os.tmpdir(), appName);
     const core = new FxCore(tools);
     {
       const inputs: Inputs = { platform: Platform.VS };
@@ -703,6 +693,8 @@ describe("Core basic APIs", () => {
   }
 
   async function envCase1() {
+    appName = randomAppName();
+    projectPath = path.resolve(os.tmpdir(), appName);
     const expectedInputs: Inputs = {
       platform: Platform.CLI,
       [CoreQuestionNames.AppName]: appName,
@@ -757,7 +749,6 @@ describe("Core basic APIs", () => {
           throw err(InvalidInputError("invalid question"));
         }
       );
-    sandbox.stub(commonTools, "isMultiEnvEnabled").returns(true);
     const core = new FxCore(tools);
     {
       const inputs: Inputs = { platform: Platform.CLI, env: "dev" };
@@ -765,7 +756,10 @@ describe("Core basic APIs", () => {
       assert.isTrue(res.isOk() && res.value === projectPath);
       assert.deepEqual(expectedInputs, inputs);
 
-      const projectSettingsResult = await loadProjectSettings(inputs, true);
+      const projectSettingsResult = await loadProjectSettings(
+        inputs,
+        commonTools.isMultiEnvEnabled()
+      );
       if (projectSettingsResult.isErr()) {
         assert.fail("failed to load project settings");
       }
@@ -796,6 +790,8 @@ describe("Core basic APIs", () => {
   }
 
   async function envCase2() {
+    appName = randomAppName();
+    projectPath = path.resolve(os.tmpdir(), appName);
     const expectedInputs: Inputs = {
       platform: Platform.CLI,
       [CoreQuestionNames.AppName]: appName,
@@ -848,7 +844,6 @@ describe("Core basic APIs", () => {
           throw err(InvalidInputError("invalid question"));
         }
       );
-    sandbox.stub(commonTools, "isMultiEnvEnabled").returns(true);
     const core = new FxCore(tools);
     {
       const inputs: Inputs = { platform: Platform.CLI, env: "dev" };
@@ -856,7 +851,10 @@ describe("Core basic APIs", () => {
       assert.isTrue(res.isOk() && res.value === projectPath);
       assert.deepEqual(expectedInputs, inputs);
 
-      const projectSettingsResult = await loadProjectSettings(inputs, true);
+      const projectSettingsResult = await loadProjectSettings(
+        inputs,
+        commonTools.isMultiEnvEnabled()
+      );
       if (projectSettingsResult.isErr()) {
         assert.fail("failed to load project settings");
       }

@@ -14,9 +14,7 @@ describe("Sharepoint login Tests", function () {
   sinon.stub(CodeFlowLogin.prototype, "getToken").callsFake(async () => {
     return "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6Imwzc1EtNTBjQ0g0eEJWWkxIVEd3blNSNzY4MCIsImtpZCI6Imwzc1EtNTBjQ0g0eEJWWkxIVEd3blNSNzY4MCJ9.eyJhdWQiOiJodHRwczo";
   });
-  sinon
-    .stub(axios.prototype, "get")
-    .returns({ data: { webUrl: "https://testtenant.sharepoint.com" } });
+  sinon.stub(axios, "get").resolves({ data: { webUrl: "https://testtenant.sharepoint.com" } });
 
   before(async () => {});
 

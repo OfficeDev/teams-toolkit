@@ -742,7 +742,9 @@ export class TeamsBotImpl {
       Logger.info(Messages.ProvisioningBotRegistration);
       botAuthCreds = await AADRegistration.registerAADAppAndGetSecretByAppStudio(
         appStudioToken!,
-        aadDisplayName
+        aadDisplayName,
+        this.config.localDebug.localObjectId,
+        this.config.localDebug.localBotId
       );
       Logger.info(Messages.SuccessfullyProvisionedBotRegistration);
     }
@@ -789,18 +791,15 @@ export class TeamsBotImpl {
       );
       botAuthCreds = await AADRegistration.registerAADAppAndGetSecretByAppStudio(
         appStudioToken!,
-        aadDisplayName
+        aadDisplayName,
+        this.config.scaffold.objectId,
+        this.config.scaffold.botId
       );
 
-      if (!this.config.scaffold.botId) {
-        this.config.scaffold.botId = botAuthCreds.clientId;
-      }
-      if (!this.config.scaffold.botPassword) {
-        this.config.scaffold.botPassword = botAuthCreds.clientSecret;
-      }
-      if (!this.config.scaffold.objectId) {
-        this.config.scaffold.objectId = botAuthCreds.objectId;
-      }
+      this.config.scaffold.botId = botAuthCreds.clientId;
+      this.config.scaffold.botPassword = botAuthCreds.clientSecret;
+      this.config.scaffold.objectId = botAuthCreds.objectId;
+
       this.config.saveConfigIntoContext(this.ctx!); // Checkpoint for aad app provision.
       Logger.info(Messages.SuccessfullyCreatedBotAadApp);
     } else {

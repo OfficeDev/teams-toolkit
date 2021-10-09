@@ -88,8 +88,8 @@ export async function scaffoldSourceCodeAdapter(
     }
   }
 
-  if (plugin.postDeploy) {
-    const postRes = await plugin.postDeploy(pluginContext);
+  if (plugin.postScaffold) {
+    const postRes = await plugin.postScaffold(pluginContext);
     if (postRes.isErr()) {
       return err(postRes.error);
     }

@@ -99,7 +99,7 @@ import {
 import { selectAndDebug } from "./debug/runIconHandler";
 import * as path from "path";
 import { exp } from "./exp/index";
-import { TreatmentVariables } from "./exp/treatmentVariables";
+import { TreatmentVariables, TreatmentVariableValue } from "./exp/treatmentVariables";
 import { StringContext } from "./utils/stringContext";
 import { ext } from "./extensionVariables";
 import { InputConfigsFolderName } from "@microsoft/teamsfx-api";
@@ -126,9 +126,43 @@ export async function activate(): Promise<Result<Void, FxError>> {
     }
 
     if (!validProject) {
-      vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome", true);
+      const expService = exp.getExpService();
+      if (expService) {
+        switch (
+          await expService.getTreatmentVariableAsync(
+            TreatmentVariables.VSCodeConfig,
+            TreatmentVariables.QuickStartInSidebar,
+            true
+          )
+        ) {
+          case TreatmentVariableValue.TopSidebar:
+            vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.top", true);
+            break;
+          case TreatmentVariableValue.BottomSidebar:
+            vscode.commands.executeCommand(
+              "setContext",
+              "fx-extension.sidebarWelcome.bottom",
+              true
+            );
+            break;
+          case TreatmentVariableValue.OriginalTreeView:
+            vscode.commands.executeCommand(
+              "setContext",
+              "fx-extension.sidebarWelcome.treeview",
+              true
+            );
+            break;
+          default:
+            vscode.commands.executeCommand(
+              "setContext",
+              "fx-extension.sidebarWelcome.default",
+              true
+            );
+            break;
+        }
+      }
     } else {
-      vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome", false);
+      vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.treeview", true);
     }
 
     const telemetry = ExtTelemetry.reporter;
@@ -287,7 +321,10 @@ export async function migrateV1ProjectHandler(args?: any[]): Promise<Result<null
   );
   const result = await runCommand(Stage.migrateV1);
   await openMarkdownHandler();
-  await vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome", false);
+  await vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.treeview", true);
+  await vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.top", false);
+  await vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.bottom", false);
+  await vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.default", false);
   return result;
 }
 
@@ -709,6 +746,7 @@ async function openMarkdownHandler() {
   const afterScaffold = globalStateGet("openReadme", false);
   if (afterScaffold && workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
     await globalStateUpdate("openReadme", false);
+    showLocalDebugMessage();
     const workspaceFolder = workspace.workspaceFolders[0];
     const workspacePath: string = workspaceFolder.uri.fsPath;
     let targetFolder: string | undefined;
@@ -742,6 +780,7 @@ async function openSampleReadmeHandler() {
   const afterScaffold = globalStateGet("openSampleReadme", false);
   if (afterScaffold && workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
     globalStateUpdate("openSampleReadme", false);
+    showLocalDebugMessage();
     const workspaceFolder = workspace.workspaceFolders[0];
     const workspacePath: string = workspaceFolder.uri.fsPath;
     const uri = Uri.file(`${workspacePath}/README.md`);
@@ -749,6 +788,38 @@ async function openSampleReadmeHandler() {
       const PreviewMarkdownCommand = "markdown.showPreview";
       commands.executeCommand(PreviewMarkdownCommand, uri);
     });
+  }
+}
+
+async function showLocalDebugMessage() {
+  if (
+    await exp
+      .getExpService()
+      .getTreatmentVariableAsync(
+        TreatmentVariables.VSCodeConfig,
+        TreatmentVariables.ShowLocalDebug,
+        true
+      )
+  ) {
+    const localDebug = {
+      title: StringResources.vsc.handlers.localDebugTitle,
+      run: async (): Promise<void> => {
+        selectAndDebug();
+      },
+    };
+
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowLocalDebugNotification);
+    vscode.window
+      .showInformationMessage(
+        util.format(StringResources.vsc.handlers.localDebugDescription),
+        localDebug
+      )
+      .then((selection) => {
+        if (selection?.title === StringResources.vsc.handlers.localDebugTitle) {
+          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickLocalDebug);
+          selection.run();
+        }
+      });
   }
 }
 

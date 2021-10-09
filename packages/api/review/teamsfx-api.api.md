@@ -289,6 +289,13 @@ export interface EnvConfig {
 // @public (undocumented)
 export const EnvConfigFileNameTemplate: string;
 
+declare namespace EnvConfigSchema {
+    export {
+
+    }
+}
+export { EnvConfigSchema }
+
 // @public (undocumented)
 export interface EnvInfo {
     // (undocumented)

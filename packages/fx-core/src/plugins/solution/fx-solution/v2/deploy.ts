@@ -14,7 +14,12 @@ import { isUndefined } from "lodash";
 import * as util from "util";
 import { PluginDisplayName } from "../../../../common/constants";
 import { getStrings } from "../../../../common/tools";
-import { GLOBAL_CONFIG, SolutionError, SOLUTION_PROVISION_SUCCEEDED } from "../constants";
+import {
+  GLOBAL_CONFIG,
+  SolutionError,
+  SOLUTION_PROVISION_SUCCEEDED,
+  SolutionSource,
+} from "../constants";
 import { AzureSolutionQuestionNames } from "../question";
 import { executeConcurrently, NamedThunk } from "./executor";
 import {
@@ -45,7 +50,7 @@ export async function deploy(
         new Error(
           util.format(getStrings().solution.NotProvisionedNotice, ctx.projectSetting.appName)
         ),
-        "Solution",
+        SolutionSource,
         SolutionError.CannotDeployBeforeProvision
       )
     );
@@ -56,7 +61,7 @@ export async function deploy(
     return err(
       returnUserError(
         new Error(`No plugin selected`),
-        "Solution",
+        SolutionSource,
         SolutionError.NoResourcePluginSelected
       )
     );

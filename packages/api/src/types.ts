@@ -192,6 +192,7 @@ export interface Inputs extends Json {
   ignoreLock?: boolean;
   ignoreConfigPersist?: boolean;
   ignoreEnvInfo?: boolean;
+  env?: string;
 }
 
 export interface ProjectConfig {

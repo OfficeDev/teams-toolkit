@@ -310,6 +310,12 @@ export interface UserInteraction {
     config: TaskConfig,
     ...args: any
   ): Promise<Result<T, FxError>>;
+
+  /**
+   * Reload window to update user interface. (Only works for VS Code)
+   * @returns A promise indicating if reload is successful.
+   */
+  reload?(): Promise<Result<boolean, FxError>>;
 }
 
 export interface IProgressHandler {

@@ -24,11 +24,13 @@ import { exec, ExecOptions } from "child_process";
 import * as fs from "fs-extra";
 import { glob } from "glob";
 import * as Handlebars from "handlebars";
+import md5 from "md5";
 import * as path from "path";
 import { promisify } from "util";
 import * as uuid from "uuid";
 import { getResourceFolder } from "../folder";
 import { ConstantString, FeatureFlagName } from "./constants";
+import * as crypto from "crypto";
 
 Handlebars.registerHelper("contains", (value, array, options) => {
   array = array instanceof Array ? array : [array];
@@ -402,11 +404,11 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
 }
 
 export function isMultiEnvEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.MultiEnv, false);
+  return isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, false);
 }
 
 export function isArmSupportEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.ArmSupport, false);
+  return isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, false);
 }
 
 export function isBicepEnvCheckerEnabled(): boolean {
@@ -414,7 +416,7 @@ export function isBicepEnvCheckerEnabled(): boolean {
 }
 
 export function isRemoteCollaborateEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.RemoteCollaboration, false);
+  return isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, false);
 }
 
 export async function generateBicepFiles(
@@ -553,4 +555,8 @@ export function isSPFxProject(projectSettings?: ProjectSettings): boolean {
     return selectedPlugins && selectedPlugins.indexOf("fx-resource-spfx") !== -1;
   }
   return false;
+}
+
+export function getHashedEnv(envName: string): string {
+  return crypto.createHash("sha256").update(envName).digest("hex");
 }

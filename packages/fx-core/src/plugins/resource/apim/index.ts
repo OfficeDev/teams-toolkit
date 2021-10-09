@@ -34,6 +34,8 @@ import { AzureResourceApim } from "../../solution/fx-solution/question";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import "./v2";
+import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
+import { isArmSupportEnabled } from "../../..";
 @Service(ResourcePlugins.ApimPlugin)
 export class ApimPlugin implements Plugin {
   name = "fx-resource-apim";
@@ -71,11 +73,27 @@ export class ApimPlugin implements Plugin {
     return await this.executeWithFxError(PluginLifeCycle.Scaffold, _scaffold, ctx);
   }
 
+  public async generateArmTemplates(ctx: PluginContext): Promise<Result<any, FxError>> {
+    return await this.executeWithFxError(
+      PluginLifeCycle.GenerateArmTemplates,
+      _generateArmTemplates,
+      ctx
+    );
+  }
+
   public async provision(ctx: PluginContext): Promise<Result<any, FxError>> {
+    if (isArmSupportEnabled()) {
+      return ok(undefined);
+    }
+
     return await this.executeWithFxError(PluginLifeCycle.Provision, _provision, ctx);
   }
 
   public async postProvision(ctx: PluginContext): Promise<Result<any, FxError>> {
+    if (isArmSupportEnabled()) {
+      return ok(undefined);
+    }
+
     return await this.executeWithFxError(PluginLifeCycle.PostProvision, _postProvision, ctx);
   }
 
@@ -207,6 +225,15 @@ async function _provision(ctx: PluginContext, progressBar: ProgressBar): Promise
     ProgressMessages[ProgressStep.Provision].CreateAad
   );
   await aadManager.provision(apimConfig, appName);
+}
+
+async function _generateArmTemplates(
+  ctx: PluginContext,
+  progressBar: ProgressBar
+): Promise<ScaffoldArmTemplateResult> {
+  const apimManager = await Factory.buildApimManager(ctx);
+  const solutionConfig = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
+  return await apimManager.generateArmTemplates(solutionConfig);
 }
 
 async function _postProvision(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {

@@ -1,0 +1,11 @@
+{
+  "apimClientId": {
+    "value": "{{FX_RESOURCE_APIM__CLIENTID}}"
+  },
+  "apimClientSecret": {
+    "value": "{{FX_RESOURCE_APIM__CLIENTSECRET}}"
+  },
+  "apimUserId": {
+    "value": "{{FX_RESOURCE_APIM__USERID}}"
+  }
+}

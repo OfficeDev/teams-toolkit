@@ -1,6 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ApimDefaultValues, ApimPluginConfigKeys, TeamsToolkitComponent } from "../constants";
+import {
+  ApimDefaultValues,
+  ApimPathInfo,
+  ApimPluginConfigKeys,
+  TeamsToolkitComponent,
+} from "../constants";
 import { AssertConfigNotEmpty, AssertNotEmpty } from "../error";
 import {
   IAadPluginConfig,
@@ -11,9 +16,21 @@ import {
 import { ApimService } from "../services/apimService";
 import { OpenApiProcessor } from "../utils/openApiProcessor";
 import { IAnswer } from "../answer";
-import { LogProvider, TelemetryReporter } from "@microsoft/teamsfx-api";
+import {
+  AzureSolutionSettings,
+  FxError,
+  LogProvider,
+  ok,
+  Result,
+  TelemetryReporter,
+} from "@microsoft/teamsfx-api";
 import { Lazy } from "../utils/commonUtils";
 import { NamingRules } from "../utils/namingRules";
+import { generateBicepFiles, getTemplatesFolder } from "../../../..";
+import path from "path";
+import { Bicep, ConstantString } from "../../../../common/constants";
+import { ScaffoldArmTemplateResult } from "../../../../common/armInterface";
+import * as fs from "fs-extra";
 
 export class ApimManager {
   private readonly logger: LogProvider | undefined;
@@ -180,5 +197,85 @@ export class ApimManager {
     apimConfig.apiPath = apiPath;
 
     await apimService.addApiToProduct(resourceGroupName, apimServiceName, productId, apiId);
+  }
+
+  public async generateArmTemplates(
+    solutionConfig: AzureSolutionSettings
+  ): Promise<ScaffoldArmTemplateResult> {
+    const bicepTemplateDir = path.join(getTemplatesFolder(), ApimPathInfo.BicepTemplateRelativeDir);
+
+    const handleBarsContext = {
+      Plugins: solutionConfig.activeResourcePlugins,
+    };
+
+    const provisionModuleContentResult = await generateBicepFiles(
+      path.join(bicepTemplateDir, ApimPathInfo.ProvisionModuleTemplateFileName),
+      handleBarsContext
+    );
+    if (provisionModuleContentResult.isErr()) {
+      throw provisionModuleContentResult.error;
+    }
+
+    const configurationModuleContentResult = await generateBicepFiles(
+      path.join(bicepTemplateDir, ApimPathInfo.ConfigurationModuleTemplateFileName),
+      handleBarsContext
+    );
+    if (configurationModuleContentResult.isErr()) {
+      throw configurationModuleContentResult.error;
+    }
+
+    const inputParameterContentResult = await generateBicepFiles(
+      path.join(bicepTemplateDir, Bicep.ParameterOrchestrationFileName),
+      handleBarsContext
+    );
+    if (inputParameterContentResult.isErr()) {
+      throw inputParameterContentResult.error;
+    }
+
+    const moduleOrchestrationContentResult = await generateBicepFiles(
+      path.join(bicepTemplateDir, Bicep.ModuleOrchestrationFileName),
+      handleBarsContext
+    );
+    if (moduleOrchestrationContentResult.isErr()) {
+      throw moduleOrchestrationContentResult.error;
+    }
+
+    const outputOrchestrationContentResult = await generateBicepFiles(
+      path.join(bicepTemplateDir, Bicep.OutputOrchestrationFileName),
+      handleBarsContext
+    );
+    if (outputOrchestrationContentResult.isErr()) {
+      throw outputOrchestrationContentResult.error;
+    }
+
+    const result: ScaffoldArmTemplateResult = {
+      Modules: {
+        apimProvision: {
+          Content: provisionModuleContentResult.value,
+        },
+        apimConfiguration: {
+          Content: configurationModuleContentResult.value,
+        },
+      },
+      Orchestration: {
+        ParameterTemplate: {
+          Content: inputParameterContentResult.value,
+          ParameterJson: JSON.parse(
+            await fs.readFile(
+              path.join(bicepTemplateDir, Bicep.ParameterFileName),
+              ConstantString.UTF8Encoding
+            )
+          ),
+        },
+        ModuleTemplate: {
+          Content: moduleOrchestrationContentResult.value,
+        },
+        OutputTemplate: {
+          Content: outputOrchestrationContentResult.value,
+        },
+      },
+    };
+
+    return result;
   }
 }

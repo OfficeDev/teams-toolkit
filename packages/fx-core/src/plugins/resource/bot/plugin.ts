@@ -205,7 +205,7 @@ export class TeamsBotImpl {
     };
 
     const provisionModuleContentResult = await generateBicepFiles(
-      path.join(bicepTemplateDir, PathInfo.provisionModuleTemplateFileName),
+      path.join(bicepTemplateDir, PathInfo.ProvisionModuleTemplateFileName),
       handleBarsContext
     );
     if (provisionModuleContentResult.isErr()) {
@@ -213,7 +213,7 @@ export class TeamsBotImpl {
     }
 
     const configurationModuleContentResult = await generateBicepFiles(
-      path.join(bicepTemplateDir, PathInfo.configurationModuleTemplateFileName),
+      path.join(bicepTemplateDir, PathInfo.ConfigurationModuleTemplateFileName),
       handleBarsContext
     );
     if (configurationModuleContentResult.isErr()) {

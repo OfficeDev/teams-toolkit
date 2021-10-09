@@ -12,7 +12,6 @@ import {
   PermissionRequestProvider,
 } from "../utils";
 import { EnvInfo } from "../context";
-import { SolutionProvisionOutput } from "./solutionPlugin";
 
 export type PluginName = string;
 

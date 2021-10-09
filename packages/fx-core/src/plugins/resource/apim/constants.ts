@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import path from "path";
 import { IName } from "./interfaces/IName";
 
 export class ProjectConstants {
@@ -153,6 +154,17 @@ export class ValidationConstants {
   };
 }
 
+export class ApimPathInfo {
+  public static readonly BicepTemplateRelativeDir = path.join(
+    "plugins",
+    "resource",
+    "apim",
+    "bicep"
+  );
+  public static readonly ProvisionModuleTemplateFileName = "apimProvision.bicep";
+  public static readonly ConfigurationModuleTemplateFileName = "apimConfiguration.bicep";
+}
+
 export class ApimPluginConfigKeys {
   public static readonly resourceGroupName: string = "resourceGroupName";
   public static readonly serviceName: string = "serviceName";
@@ -248,6 +260,7 @@ export enum PluginLifeCycle {
   GetQuestions = "get-questions",
   Scaffold = "scaffold",
   Provision = "provision",
+  GenerateArmTemplates = "generate-arm-templates",
   PostProvision = "post-provision",
   Deploy = "deploy",
   GetQuestionsForUserTask = "get-questions-for-user-task",
@@ -257,6 +270,7 @@ export enum ProgressStep {
   None = "",
   Scaffold = "Scaffolding OpenAPI document",
   Provision = "Provisioning API Management",
+  GenerateArmTemplates = "Generating ARM templates",
   PostProvision = "Configuring API Management",
   Deploy = "Importing API to API Management",
 }
@@ -266,6 +280,7 @@ export const PluginLifeCycleToProgressStep: { [key in PluginLifeCycle]: Progress
   [PluginLifeCycle.GetQuestions]: ProgressStep.None,
   [PluginLifeCycle.Scaffold]: ProgressStep.Scaffold,
   [PluginLifeCycle.Provision]: ProgressStep.Provision,
+  [PluginLifeCycle.GenerateArmTemplates]: ProgressStep.GenerateArmTemplates,
   [PluginLifeCycle.PostProvision]: ProgressStep.PostProvision,
   [PluginLifeCycle.Deploy]: ProgressStep.Deploy,
   [PluginLifeCycle.GetQuestionsForUserTask]: ProgressStep.None,
@@ -280,6 +295,7 @@ export const ProgressMessages: { [key in ProgressStep]: { [step: string]: string
     CreateApim: "Create API Management service",
     CreateAad: "Create client AAD app registration",
   },
+  [ProgressStep.GenerateArmTemplates]: {},
   [ProgressStep.PostProvision]: {
     ConfigApim: "Configure API Management service",
     ConfigClientAad: "Configure client AAD app registration",

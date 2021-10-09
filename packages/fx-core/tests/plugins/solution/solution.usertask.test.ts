@@ -162,6 +162,7 @@ describe("V2 implementation", () => {
       mockedCtx,
       mockedInputs,
       { namespace: "someInvalidNamespace", method: "invalid" },
+      {},
       { envName: "default", config: {}, profile: {} },
       mockedProvider
     );
@@ -189,6 +190,7 @@ describe("V2 implementation", () => {
       mockedCtx,
       mockedInputs,
       { namespace: "solution", method: "addCapability" },
+      {},
       { envName: "default", config: {}, profile: {} },
       mockedProvider
     );
@@ -217,6 +219,7 @@ describe("V2 implementation", () => {
       mockedCtx,
       mockedInputs,
       { namespace: "solution", method: "addResource" },
+      {},
       { envName: "default", config: {}, profile: {} },
       mockedProvider
     );
@@ -246,6 +249,7 @@ describe("V2 implementation", () => {
       mockedCtx,
       mockedInputs,
       { namespace: "solution", method: "addCapability" },
+      {},
       { envName: "default", config: {}, profile: {} },
       mockedProvider
     );
@@ -280,6 +284,7 @@ describe("V2 implementation", () => {
       mockedCtx,
       mockedInputs,
       { namespace: "solution", method: "addCapability" },
+      {},
       { envName: "default", config: {}, profile: {} },
       mockedProvider
     );
@@ -308,6 +313,7 @@ describe("V2 implementation", () => {
       mockedCtx,
       mockedInputs,
       { namespace: "solution", method: "addResource" },
+      {},
       { envName: "default", config: {}, profile: {} },
       mockedProvider
     );
@@ -339,6 +345,7 @@ describe("V2 implementation", () => {
       mockedCtx,
       mockedInputs,
       { namespace: "solution", method: "addResource" },
+      {},
       { envName: "default", config: {}, profile: {} },
       mockedProvider
     );
@@ -378,6 +385,7 @@ describe("V2 implementation", () => {
       mockedCtx,
       mockedInputs,
       { namespace: "solution", method: "addResource" },
+      {},
       { envName: "default", config: {}, profile: {} },
       mockedProvider
     );
@@ -417,6 +425,7 @@ describe("V2 implementation", () => {
       mockedCtx,
       mockedInputs,
       { namespace: "solution", method: "addResource" },
+      {},
       { envName: "default", config: {}, profile: {} },
       mockedProvider
     );
@@ -450,6 +459,7 @@ describe("V2 implementation", () => {
         mockedCtx,
         mockedInputs,
         { namespace: "solution", method: "VSpublish" },
+        {},
         { envName: "default", config: {}, profile: {} },
         mockedProvider
       );
@@ -461,6 +471,7 @@ describe("V2 implementation", () => {
           mockedCtx,
           mockedInputs,
           { namespace: "solution", method: "VSpublish" },
+          {},
           { envName: "default", config: {}, profile: {} },
           mockedProvider
         ));
@@ -489,6 +500,7 @@ describe("V2 implementation", () => {
           mockedCtx,
           mockedInputs,
           { namespace: "solution", method: "VSpublish" },
+          {},
           { envName: "default", config: {}, profile: {} },
           mockedProvider
         );

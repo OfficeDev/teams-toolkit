@@ -172,6 +172,7 @@ export async function provisionResource(
         method: "setApplicationInContext",
         params: { isLocal: false },
       },
+      {},
       newEnvInfo,
       tokenProvider
     );

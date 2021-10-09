@@ -16,6 +16,7 @@ import {
   SolutionSettings,
   TokenProvider,
   combine,
+  Json,
 } from "@microsoft/teamsfx-api";
 import { getStrings, isArmSupportEnabled } from "../../../../common/tools";
 import { blockV1Project, getAzureSolutionSettings, reloadV2Plugins } from "./utils";
@@ -49,6 +50,7 @@ export async function executeUserTask(
   ctx: v2.Context,
   inputs: Inputs,
   func: Func,
+  localSettings: Json,
   envInfo: v2.EnvInfoV2,
   tokenProvider: TokenProvider
 ): Promise<Result<unknown, FxError>> {
@@ -100,24 +102,45 @@ export async function executeUserTask(
     } else if (method === "validateManifest") {
       const appStudioPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin);
       if (appStudioPlugin.executeUserTask) {
-        return await appStudioPlugin.executeUserTask(ctx, inputs, func, envInfo, tokenProvider);
+        return await appStudioPlugin.executeUserTask(
+          ctx,
+          inputs,
+          func,
+          localSettings,
+          envInfo,
+          tokenProvider
+        );
       }
     } else if (method === "buildPackage") {
       const appStudioPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin);
       if (appStudioPlugin.executeUserTask) {
-        return await appStudioPlugin.executeUserTask(ctx, inputs, func, envInfo, tokenProvider);
+        return await appStudioPlugin.executeUserTask(
+          ctx,
+          inputs,
+          func,
+          localSettings,
+          envInfo,
+          tokenProvider
+        );
       }
     } else if (method === "validateManifest") {
       const appStudioPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin);
       if (appStudioPlugin.executeUserTask) {
-        return appStudioPlugin.executeUserTask(ctx, inputs, func, envInfo, tokenProvider);
+        return appStudioPlugin.executeUserTask(
+          ctx,
+          inputs,
+          func,
+          localSettings,
+          envInfo,
+          tokenProvider
+        );
       }
     } else if (array.length == 2) {
       const pluginName = array[1];
       const pluginMap = getAllV2ResourcePluginMap();
       const plugin = pluginMap.get(pluginName);
       if (plugin && plugin.executeUserTask) {
-        return plugin.executeUserTask(ctx, inputs, func, envInfo, tokenProvider);
+        return plugin.executeUserTask(ctx, inputs, func, localSettings, envInfo, tokenProvider);
       }
     }
   }
@@ -423,7 +446,14 @@ export async function addResource(
 
     if (scaffoldApim) {
       if (apimPlugin && apimPlugin.executeUserTask) {
-        const result = await apimPlugin.executeUserTask(ctx, inputs, func, envInfo, tokenProvider);
+        const result = await apimPlugin.executeUserTask(
+          ctx,
+          inputs,
+          func,
+          {},
+          envInfo,
+          tokenProvider
+        );
         if (result.isErr()) {
           scaffoldRes = combine([scaffoldRes, result]);
         }

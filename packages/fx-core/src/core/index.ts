@@ -139,10 +139,10 @@ export interface CoreHookContext extends HookContext {
 // API V2 feature flag
 export function isV2() {
   const flag = process.env[FeatureFlagName.APIV2];
-  if (flag !== undefined && flag.toLowerCase() === "false") {
-    return false;
-  } else {
+  if (flag !== undefined && flag.toLowerCase() === "true") {
     return true;
+  } else {
+    return false;
   }
 }
 

@@ -36,14 +36,14 @@
 /packages/cli/tests/unit/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @meifans @dooriya
 /packages/cli/tests/unit/cmds/preview @swatDong @kuojianlu @qinezh @a1exwang @meifans
 
-/packages/api @jayzhang @1yefuwang1 @LongOddCode
+/packages/api @jayzhang @1yefuwang1 @LongOddCode @nliu-ms
 /packages/api/src/qm @jayzhang @1yefuwang1 @LongOddCode @jiayi-ruan
 /packages/api/src/schemas @dooriya @qinezh @a1exwang @kimizhu
 
 /packages/sdk @tecton @blackchoey @SLdragon @dilin-MS @wenytang-ms @jiayi-ruan
 
-/packages/fx-core/src/core @jayzhang @LongOddCode @1yefuwang1
-/packages/fx-core/src/plugins/solution/fx-solution @1yefuwang1 @jayzhang @LongOddCode
+/packages/fx-core/src/core @jayzhang @LongOddCode @1yefuwang1 @nliu-ms
+/packages/fx-core/src/plugins/solution/fx-solution @1yefuwang1 @jayzhang @LongOddCode @nliu-ms
 /packages/fx-core/src/plugins/solution/fx-solution/utils/depsChecker @a1exwang @kimizhu @meifans @qinezh
 
 /packages/fx-core/src/plugins/resource/aad @KennethBWSong @adashen @SLdragon

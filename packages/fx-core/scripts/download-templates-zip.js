@@ -7,8 +7,6 @@ const fs = require("fs-extra");
 const path = require("path");
 const config = require("../src/common/templates-config.json");
 
-const stdin = process.stdin;
-
 const languages = ["js", "ts"];
 const templates = [
   ["function-base", "default", "function"],
@@ -34,18 +32,8 @@ async function step(desc, fn) {
   }
 }
 
-async function downloadLatestTemplates(rawTagList) {
-  const tagList = rawTagList.toString().replace(/\r/g, "").split("\n");
-  const versionList = tagList
-    .filter((tag) => tag.startsWith(config.tagPrefix))
-    .map((tag) => tag.replace(config.tagPrefix, ""));
-  const selectedVersion = semver.maxSatisfying(versionList, config.version);
-  if (!selectedVersion) {
-    console.error(`Failed to find a tag for the version, ${config.version}`);
-    return;
-  }
-
-  const tag = config.tagPrefix + selectedVersion;
+async function downloadTemplates(version) {
+  const tag = config.tagPrefix + version;
   for (let lang of languages) {
     for (let template of templates) {
       const fileName = `${template[0]}.${lang}.${template[1]}.zip`;
@@ -61,17 +49,35 @@ async function downloadLatestTemplates(rawTagList) {
   }
 }
 
-function main() {
-  tags = "";
-  stdin.on("readable", () => {
-    let data = stdin.read();
-    if (data) {
-      tags += data;
-    }
+function selectVersion(tagList) {
+  const versionList = tagList
+    .filter((tag) => tag.startsWith(config.tagPrefix))
+    .map((tag) => tag.replace(config.tagPrefix, ""));
+  return semver.maxSatisfying(versionList, config.version);
+}
+
+function selectVersionFromShellArgument() {
+  const tagList = process.argv.slice(2);
+  return selectVersion(tagList);
+}
+
+async function selectVersionFromRemoteTagList() {
+  const rawTagList = await step(`Download tag list from ${config.tagListURL}`, async () => {
+    res = await axios.get(config.tagListURL);
+    return res.data;
   });
-  stdin.on("end", () => {
-    downloadLatestTemplates(tags);
-  });
+  const tagList = rawTagList.toString().replace(/\r/g, "").split("\n");
+  return selectVersion(tagList);
+}
+
+async function main() {
+  const selectedVersion =
+    selectVersionFromShellArgument() || (await selectVersionFromRemoteTagList());
+  if (!selectVersion) {
+    console.error(`Failed to find a tag for the version, ${config.version}`);
+    process.exit(-1);
+  }
+  await downloadTemplates(selectedVersion);
 }
 
 main();

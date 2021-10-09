@@ -453,43 +453,45 @@ export class FxCore implements Core {
   ])
   async provisionResources(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     currentStage = Stage.provision;
-    if (isV2()) {
-      if (
-        !ctx ||
-        !ctx.solutionV2 ||
-        !ctx.contextV2 ||
-        !ctx.envInfoV2 ||
-        !ctx.contextV2.projectSetting.activeEnvironment
-      ) {
-        return err(new ObjectIsUndefinedError("Provision input stuff"));
-      }
-      const envInfo = ctx.envInfoV2;
-      const result = await ctx.solutionV2.provisionResources(
-        ctx.contextV2,
-        inputs,
-        envInfo,
-        this.tools.tokenProvider
-      );
-      if (result.kind === "success") {
-        // Remove all "output" and "secret" fields for backward compatibility.
-        // todo(yefuwang): handle "output" and "secret" fields in middlewares.
-        const profile = flattenConfigJson(result.output);
-        ctx.envInfoV2.profile = { ...ctx.envInfoV2.profile, ...profile };
-        return ok(Void);
-      } else if (result.kind === "partialSuccess") {
-        const profile = flattenConfigJson(result.output);
-        ctx.envInfoV2.profile = { ...ctx.envInfoV2.profile, ...profile };
-        return err(result.error);
-      } else {
-        return err(result.error);
-      }
-    } else {
-      if (!ctx || !ctx.solution || !ctx.solutionContext) {
-        return err(new ObjectIsUndefinedError("Provision input stuff"));
-      }
-
-      return await ctx.solution.provision(ctx.solutionContext);
+    // provision is not ready yet, so use API v1
+    // if (isV2()) {
+    //   if (
+    //     !ctx ||
+    //     !ctx.solutionV2 ||
+    //     !ctx.contextV2 ||
+    //     !ctx.envInfoV2 ||
+    //     !ctx.contextV2.projectSetting.activeEnvironment
+    //   ) {
+    //     return err(new ObjectIsUndefinedError("Provision input stuff"));
+    //   }
+    //   const envInfo = ctx.envInfoV2;
+    //   const result = await ctx.solutionV2.provisionResources(
+    //     ctx.contextV2,
+    //     inputs,
+    //     envInfo,
+    //     this.tools.tokenProvider
+    //   );
+    //   if (result.kind === "success") {
+    //     // Remove all "output" and "secret" fields for backward compatibility.
+    //     // todo(yefuwang): handle "output" and "secret" fields in middlewares.
+    //     const profile = flattenConfigJson(result.output);
+    //     ctx.envInfoV2.profile = { ...ctx.envInfoV2.profile, ...profile };
+    //     return ok(Void);
+    //   } else if (result.kind === "partialSuccess") {
+    //     const profile = flattenConfigJson(result.output);
+    //     ctx.envInfoV2.profile = { ...ctx.envInfoV2.profile, ...profile };
+    //     return err(result.error);
+    //   } else {
+    //     return err(result.error);
+    //   }
+    // }
+    // else {
+    if (!ctx || !ctx.solution || !ctx.solutionContext) {
+      return err(new ObjectIsUndefinedError("Provision input stuff"));
     }
+
+    return await ctx.solution.provision(ctx.solutionContext);
+    // }
   }
 
   @hooks([

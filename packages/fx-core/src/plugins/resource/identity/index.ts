@@ -92,8 +92,8 @@ export class IdentityPlugin implements Plugin {
     let defaultIdentity = `${ctx.projectSettings!.appName}-msi-${this.config.resourceNameSuffix}`;
     defaultIdentity = formatEndpoint(defaultIdentity);
     this.config.identity = defaultIdentity;
-    this.config.identityName = `/subscriptions/${this.config.azureSubscriptionId}/resourcegroups/${this.config.resourceGroup}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${this.config.identity}`;
-    ctx.logProvider?.debug(Message.identityName(this.config.identityName));
+    this.config.identityResourceId = `/subscriptions/${this.config.azureSubscriptionId}/resourcegroups/${this.config.resourceGroup}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${this.config.identity}`;
+    ctx.logProvider?.debug(Message.identityResourceId(this.config.identityResourceId));
 
     try {
       await this.loadArmTemplate(ctx);
@@ -111,9 +111,9 @@ export class IdentityPlugin implements Plugin {
       return err(error);
     }
 
-    ctx.config.set(Constants.identityName, this.config.identityName);
-    ctx.config.set(Constants.identityId, this.config.identityId);
-    ctx.config.set(Constants.identity, this.config.identity);
+    ctx.config.set(Constants.identityName, this.config.identity);
+    ctx.config.set(Constants.identityClientId, this.config.clientId);
+    ctx.config.set(Constants.identityResourceId, this.config.identityResourceId);
     TelemetryUtils.sendEvent(Telemetry.stage.provision, true);
     ctx.logProvider?.info(Message.endProvision);
     return ok(undefined);
@@ -170,8 +170,8 @@ export class IdentityPlugin implements Plugin {
           Content: await fs.readFile(moduleOrchestrationFilePath, ConstantString.UTF8Encoding),
           Outputs: {
             identityName: IdentityBicep.identityName,
-            identityId: IdentityBicep.identityId,
-            identity: IdentityBicep.identity,
+            identityClientId: IdentityBicep.identityClientId,
+            identityResourceId: IdentityBicep.identityResourceId,
           },
         },
         OutputTemplate: {
@@ -221,10 +221,10 @@ export class IdentityPlugin implements Plugin {
 
       ctx.logProvider?.info(Message.getIdentityId);
       const response = await client.resources.getById(
-        this.config.identityName,
+        this.config.identityResourceId,
         Constants.apiVersion
       );
-      this.config.identityId = response.properties.clientId;
+      this.config.clientId = response.properties.clientId;
     } catch (_error) {
       ctx.logProvider?.error(
         ErrorMessage.IdentityProvisionError.message(this.config.identity) + `:${_error.message}`
@@ -242,8 +242,14 @@ export class IdentityPlugin implements Plugin {
     const resourceId = getArmOutput(ctx, IdentityArmOutput.identityName);
 
     ctx.config.set(Constants.identityName, resourceId);
-    ctx.config.set(Constants.identityId, getArmOutput(ctx, IdentityArmOutput.identityId));
-    ctx.config.set(Constants.identity, getArmOutput(ctx, IdentityArmOutput.identity));
+    ctx.config.set(
+      Constants.identityClientId,
+      getArmOutput(ctx, IdentityArmOutput.identityClientId)
+    );
+    ctx.config.set(
+      Constants.identityResourceId,
+      getArmOutput(ctx, IdentityArmOutput.identityResourceId)
+    );
   }
 
   private loadConfig(ctx: PluginContext) {

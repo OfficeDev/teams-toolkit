@@ -7,6 +7,6 @@ export class IdentityConfig {
   location = "";
 
   identity = "";
-  identityId = "";
-  identityName = "";
+  clientId = "";
+  identityResourceId = "";
 }

@@ -157,8 +157,8 @@ describe("Bot Generates Arm Templates", () => {
         },
         "fx-resource-identity": {
           Outputs: {
-            identityId: "test_identity_id",
-            identityName: "test_identity_name",
+            identityClientId: "test_identity_id",
+            identityResourceId: "test_identity_resource_id",
           },
         },
       },

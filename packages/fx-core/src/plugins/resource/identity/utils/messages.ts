@@ -7,8 +7,8 @@ export class Message {
   public static readonly getIdentityId = `[${Constants.pluginName}] get identity id`;
   public static readonly checkProvider = `[${Constants.pluginName}] check identity resource provider`;
 
-  public static readonly identityName = (name: string) =>
-    `[${Constants.pluginName}] identity name is ${name}`;
+  public static readonly identityResourceId = (name: string) =>
+    `[${Constants.pluginName}] identity resource id is ${name}`;
 
   public static readonly registerResourceProviderFailed = (message: string) =>
     `[${Constants.pluginName}] Failed to register identity resource provider. Reason: ${message}.`;

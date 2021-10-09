@@ -32,6 +32,7 @@ import {
   MockAppStudioTokenProvider,
   MockAzureAccountProvider,
   MockGraphTokenProvider,
+  MockSharepointTokenProvider,
   MockTools,
   randomAppName,
 } from "../../../core/utils";
@@ -176,6 +177,7 @@ describe("API V2 adapter", () => {
       appStudioToken: new MockAppStudioTokenProvider(),
       graphTokenProvider: new MockGraphTokenProvider(),
       azureAccountProvider: new MockAzureAccountProvider(),
+      sharepointTokenProvider: new MockSharepointTokenProvider(),
     };
 
     const res = await provisionResourceAdapter(context, inputs, envInfo, tokenProvider, plugin);

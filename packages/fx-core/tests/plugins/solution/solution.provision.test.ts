@@ -65,6 +65,7 @@ import {
 } from "../../../src/plugins/solution/fx-solution/question";
 import {
   MockedGraphTokenProvider,
+  MockedSharepointProvider,
   MockedUserInteraction,
   MockedV2Context,
   validManifest,
@@ -703,66 +704,60 @@ function mockListResourceGroupResult(
   subscriptionId: string,
   resourceGroups: string[]
 ) {
-  mocker
-    .stub(ResourceGroups.prototype, "list")
-    .callsFake(
-      async (
-        options?: ResourceManagementModels.ResourceGroupsListOptionalParams
-      ): Promise<ResourceManagementModels.ResourceGroupsListResponse> => {
-        return resourceGroups.map((name) => {
-          return {
-            id: `/subscriptions/${subscriptionId}/resourceGroups/${name}`,
-            name: name,
-            location: "East US",
-            type: "Microsoft.Resources/resourceGroups",
-            properties: {
-              provisioningState: "Succeeded",
-            },
-          };
-        }) as ResourceManagementModels.ResourceGroupsListResponse;
-      }
-    );
+  mocker.stub(ResourceGroups.prototype, "list").callsFake(
+    async (
+      options?: ResourceManagementModels.ResourceGroupsListOptionalParams
+    ): Promise<ResourceManagementModels.ResourceGroupsListResponse> => {
+      return resourceGroups.map((name) => {
+        return {
+          id: `/subscriptions/${subscriptionId}/resourceGroups/${name}`,
+          name: name,
+          location: "East US",
+          type: "Microsoft.Resources/resourceGroups",
+          properties: {
+            provisioningState: "Succeeded",
+          },
+        };
+      }) as ResourceManagementModels.ResourceGroupsListResponse;
+    }
+  );
 }
 
 function mockListLocationResult(mocker: sinon.SinonSandbox, subscriptionId: string) {
-  mocker
-    .stub(Subscriptions.prototype, "listLocations")
-    .callsFake(
-      async (
-        subscriptionId: string,
-        options?: msRest.RequestOptionsBase
-      ): Promise<SubscriptionsListLocationsResponse> => {
-        return [
-          {
-            id: "location",
-            subscriptionId: subscriptionId,
-            name: "location",
-            displayName: "location",
-          },
-        ] as SubscriptionsListLocationsResponse;
-      }
-    );
+  mocker.stub(Subscriptions.prototype, "listLocations").callsFake(
+    async (
+      subscriptionId: string,
+      options?: msRest.RequestOptionsBase
+    ): Promise<SubscriptionsListLocationsResponse> => {
+      return [
+        {
+          id: "location",
+          subscriptionId: subscriptionId,
+          name: "location",
+          displayName: "location",
+        },
+      ] as SubscriptionsListLocationsResponse;
+    }
+  );
 }
 
 function mockProviderGetResult(mocker: sinon.SinonSandbox) {
-  mocker
-    .stub(Providers.prototype, "get")
-    .callsFake(
-      async (
-        resourceProviderNamespace: string,
-        options?: ProvidersGetOptionalParams
-      ): Promise<ProvidersGetResponse> => {
-        return {
-          id: "location",
-          resourceTypes: [
-            {
-              resourceType: "resourceGroups",
-              locations: ["location"],
-            },
-          ],
-        } as ProvidersGetResponse;
-      }
-    );
+  mocker.stub(Providers.prototype, "get").callsFake(
+    async (
+      resourceProviderNamespace: string,
+      options?: ProvidersGetOptionalParams
+    ): Promise<ProvidersGetResponse> => {
+      return {
+        id: "location",
+        resourceTypes: [
+          {
+            resourceType: "resourceGroups",
+            locations: ["location"],
+          },
+        ],
+      } as ProvidersGetResponse;
+    }
+  );
 }
 
 describe("before provision() asking for resource group info", () => {
@@ -884,15 +879,13 @@ describe("before provision() asking for resource group info", () => {
 
     const mockedCtx = mockCtxWithResourceGroupQuestions(false, mockResourceGroupName);
 
-    mocker
-      .stub(ResourceGroups.prototype, "list")
-      .callsFake(
-        async (
-          options?: ResourceManagementModels.ResourceGroupsListOptionalParams
-        ): Promise<ResourceManagementModels.ResourceGroupsListResponse> => {
-          throw new Error("mock failure to list resource groups");
-        }
-      );
+    mocker.stub(ResourceGroups.prototype, "list").callsFake(
+      async (
+        options?: ResourceManagementModels.ResourceGroupsListOptionalParams
+      ): Promise<ResourceManagementModels.ResourceGroupsListResponse> => {
+        throw new Error("mock failure to list resource groups");
+      }
+    );
 
     mockedCtx.projectSettings = {
       appName: "my app",
@@ -948,6 +941,7 @@ describe("API v2 implementation", () => {
         azureAccountProvider: new MockedAzureTokenProvider(),
         appStudioToken: new MockedAppStudioTokenProvider(),
         graphTokenProvider: new MockedGraphTokenProvider(),
+        sharepointTokenProvider: new MockedSharepointProvider(),
       };
       const mockedEnvInfo: EnvInfoV2 = {
         envName: "default",
@@ -999,6 +993,7 @@ describe("API v2 implementation", () => {
         azureAccountProvider: new MockedAzureTokenProvider(),
         appStudioToken: new MockedAppStudioTokenProvider(),
         graphTokenProvider: new MockedGraphTokenProvider(),
+        sharepointTokenProvider: new MockedSharepointProvider(),
       };
       const mockedEnvInfo: EnvInfoV2 = {
         envName: "default",

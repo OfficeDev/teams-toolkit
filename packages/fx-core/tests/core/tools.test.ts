@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { objectHooks } from "@feathersjs/hooks/lib";
 import { Json } from "@microsoft/teamsfx-api";
 import { assert, expect } from "chai";
 import "mocha";

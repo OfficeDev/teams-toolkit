@@ -12,6 +12,7 @@ import {
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
+  mockTeamsfxMultiEnvFeatureFlag,
   setSimpleAuthSkuNameToB1,
 } from "../commonUtils";
 
@@ -22,24 +23,23 @@ describe("Permission", function () {
   const projectPath = path.resolve(testFolder, appName);
   const collaborator = process.env["M365_ACCOUNT_COLLABORATOR"];
   const creator = process.env["M365_ACCOUNT_NAME"];
+  const processEnv = mockTeamsfxMultiEnvFeatureFlag();
 
   it("Permissions", async function () {
     // new a project
     await execAsync(`teamsfx new --interactive false --app-name ${appName}`, {
       cwd: testFolder,
-      env: process.env,
+      env: processEnv,
       timeout: 0,
     });
     console.log(`[Successfully] scaffold to ${projectPath}`);
 
-    await setSimpleAuthSkuNameToB1(projectPath);
-
-    process.env[FeatureFlags.InsiderPreview] = "1";
+    // await setSimpleAuthSkuNameToB1(projectPath);
 
     // provision
     await execAsyncWithRetry(`teamsfx provision --subscription ${subscription}`, {
       cwd: projectPath,
-      env: process.env,
+      env: processEnv,
       timeout: 0,
     });
     console.log("[Successfully] provision");
@@ -47,7 +47,7 @@ describe("Permission", function () {
     // Check Permission
     const checkPermissionResult = await execAsync(`teamsfx permission status`, {
       cwd: projectPath,
-      env: process.env,
+      env: processEnv,
       timeout: 0,
     });
 
@@ -64,7 +64,7 @@ describe("Permission", function () {
       `teamsfx permission grant --email ${collaborator}`,
       {
         cwd: projectPath,
-        env: process.env,
+        env: processEnv,
         timeout: 0,
       }
     );
@@ -81,7 +81,7 @@ describe("Permission", function () {
       `teamsfx permission status --list-all-collaborators`,
       {
         cwd: projectPath,
-        env: process.env,
+        env: processEnv,
         timeout: 0,
       }
     );
@@ -97,6 +97,6 @@ describe("Permission", function () {
 
   after(async () => {
     // clean up
-    await cleanUp(appName, projectPath, true, false, false);
+    await cleanUp(appName, projectPath, true, false, false, true);
   });
 });

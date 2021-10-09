@@ -63,6 +63,7 @@ import {
   downloadSampleHook,
   fetchCodeZip,
   isMultiEnvEnabled,
+  mapToJson,
   saveFilesRecursively,
 } from "../common/tools";
 import { PluginNames } from "../plugins";
@@ -180,6 +181,7 @@ export class FxCore implements Core {
       return err(new ObjectIsUndefinedError("CoreHookContext"));
     }
     currentStage = Stage.create;
+    inputs.stage = Stage.create;
     const folder = inputs[QuestionRootFolder.name] as string;
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
     let projectPath: string;
@@ -340,6 +342,7 @@ export class FxCore implements Core {
   ])
   async migrateV1Project(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     currentStage = Stage.migrateV1;
+    inputs.stage = Stage.migrateV1;
     const globalStateDescription = "openReadme";
 
     const appName = (inputs[DefaultAppNameFunc.name] ?? inputs[QuestionV1AppName.name]) as string;
@@ -454,6 +457,7 @@ export class FxCore implements Core {
   ])
   async provisionResources(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     currentStage = Stage.provision;
+    inputs.stage = Stage.provision;
     // provision is not ready yet, so use API v1
     // if (isV2()) {
     //   if (
@@ -500,13 +504,7 @@ export class FxCore implements Core {
       config: ctx.solutionContext.envInfo.config,
       profile: {},
     };
-    for (const key of ctx.solutionContext.envInfo.profile.keys()) {
-      const map = ctx.solutionContext.envInfo.profile.get(key) as ConfigMap;
-      const value = map?.toJSON();
-      if (value) {
-        ctx.envInfoV2.profile[key] = value;
-      }
-    }
+    ctx.envInfoV2.profile = mapToJson(ctx.solutionContext.envInfo.profile);
     return provisionRes;
     // }
   }
@@ -525,6 +523,7 @@ export class FxCore implements Core {
   ])
   async deployArtifacts(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     currentStage = Stage.deploy;
+    inputs.stage = Stage.deploy;
     if (isV2()) {
       if (!ctx || !ctx.solutionV2 || !ctx.contextV2 || !ctx.envInfoV2)
         return err(new ObjectIsUndefinedError("Deploy input stuff"));
@@ -560,7 +559,7 @@ export class FxCore implements Core {
   ])
   async localDebug(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     currentStage = Stage.debug;
-
+    inputs.stage = Stage.debug;
     if (isV2()) {
       if (isMultiEnvEnabled()) {
         if (!ctx || !ctx.solutionV2 || !ctx.contextV2)
@@ -614,6 +613,7 @@ export class FxCore implements Core {
   ])
   async publishApplication(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     currentStage = Stage.publish;
+    inputs.stage = Stage.publish;
     if (isV2()) {
       if (!ctx || !ctx.solutionV2 || !ctx.contextV2 || !ctx.envInfoV2)
         return err(new ObjectIsUndefinedError("publish input stuff"));
@@ -650,6 +650,7 @@ export class FxCore implements Core {
     ctx?: CoreHookContext
   ): Promise<Result<unknown, FxError>> {
     currentStage = Stage.userTask;
+    inputs.stage = Stage.userTask;
     const namespace = func.namespace;
     const array = namespace ? namespace.split("/") : [];
     if ("" !== namespace && array.length > 0) {
@@ -696,6 +697,8 @@ export class FxCore implements Core {
     ctx?: CoreHookContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     if (!ctx) return err(new ObjectIsUndefinedError("getQuestions input stuff"));
+    inputs.stage = Stage.getQuestions;
+    currentStage = Stage.getQuestions;
     if (stage === Stage.create) {
       delete inputs.projectPath;
       return await this._getQuestionsForCreateProject(inputs);
@@ -734,6 +737,8 @@ export class FxCore implements Core {
     ctx?: CoreHookContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     if (!ctx) return err(new ObjectIsUndefinedError("getQuestionsForUserTask input stuff"));
+    inputs.stage = Stage.getQuestions;
+    currentStage = Stage.getQuestions;
     if (isV2()) {
       const contextV2 = ctx.contextV2 ? ctx.contextV2 : createV2Context(this, newProjectSettings());
       const solutionV2 = ctx.solutionV2 ? ctx.solutionV2 : await getAllSolutionPluginsV2()[0];
@@ -764,6 +769,8 @@ export class FxCore implements Core {
     ctx?: CoreHookContext
   ): Promise<Result<ProjectConfig | undefined, FxError>> {
     if (!ctx) return err(new ObjectIsUndefinedError("getProjectConfig input stuff"));
+    inputs.stage = Stage.getProjectConfig;
+    currentStage = Stage.getProjectConfig;
     if (isV2()) {
       return ok({
         settings: ctx!.projectSettings,
@@ -790,6 +797,7 @@ export class FxCore implements Core {
   ])
   async grantPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     currentStage = Stage.grantPermission;
+    inputs.stage = Stage.grantPermission;
     return await ctx!.solution!.grantPermission!(ctx!.solutionContext!);
   }
 
@@ -804,6 +812,7 @@ export class FxCore implements Core {
   ])
   async checkPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     currentStage = Stage.checkPermission;
+    inputs.stage = Stage.checkPermission;
     return await ctx!.solution!.checkPermission!(ctx!.solutionContext!);
   }
 
@@ -818,6 +827,7 @@ export class FxCore implements Core {
   ])
   async listCollaborator(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     currentStage = Stage.listCollaborator;
+    inputs.stage = Stage.listCollaborator;
     return await ctx!.solution!.listCollaborator!(ctx!.solutionContext!);
   }
 
@@ -832,6 +842,7 @@ export class FxCore implements Core {
   ])
   async listAllCollaborators(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     currentStage = Stage.listAllCollaborators;
+    inputs.stage = Stage.listAllCollaborators;
     return await ctx!.solution!.listAllCollaborators!(ctx!.solutionContext!);
   }
 

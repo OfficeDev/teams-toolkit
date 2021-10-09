@@ -32,7 +32,7 @@ import {
   SolutionInputs,
 } from "@microsoft/teamsfx-api/build/v2";
 import { S_IFBLK } from "constants";
-import { CryptoDataMatchers } from "../../common";
+import { CryptoDataMatchers, mapToJson } from "../../common";
 import { ArmResourcePlugin, ScaffoldArmTemplateResult } from "../../common/armInterface";
 import {
   InvalidProfileError,
@@ -232,16 +232,16 @@ export async function deployAdapter(
 ): Promise<Result<Void, FxError>> {
   if (!plugin.deploy) return err(PluginHasNoTaskImpl(plugin.displayName, "deploy"));
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
+  setConfigs(plugin.name, pluginContext, provisionOutput);
   pluginContext.azureAccountProvider = tokenProvider;
-  const json: Json = {};
-  Object.assign(json, inputs);
-  const solutionConfig = ConfigMap.fromJSON(json);
-  const configOfOtherPlugins = new Map<string, ConfigMap>();
-  if (solutionConfig) configOfOtherPlugins.set(GLOBAL_CONFIG, solutionConfig);
-  pluginContext.envInfo.profile = configOfOtherPlugins;
-  const config = ConfigMap.fromJSON(provisionOutput);
-  if (config) pluginContext.config = config;
-
+  // const json: Json = {};
+  // Object.assign(json, inputs);
+  // const solutionConfig = ConfigMap.fromJSON(json);
+  // const configOfOtherPlugins = new Map<string, ConfigMap>();
+  // if (solutionConfig) configOfOtherPlugins.set(GLOBAL_CONFIG, solutionConfig);
+  // pluginContext.envInfo.profile = configOfOtherPlugins;
+  // const config = ConfigMap.fromJSON(provisionOutput);
+  // if (config) pluginContext.config = config;
   if (plugin.preDeploy) {
     const preRes = await plugin.preDeploy(pluginContext);
     if (preRes.isErr()) {
@@ -258,8 +258,10 @@ export async function deployAdapter(
       return err(postRes.error);
     }
   }
-  const output = pluginContext.config.toJSON();
-  Object.assign(provisionOutput, output);
+  const source = pluginContext.config.toJSON();
+  const subTarget = provisionOutput[plugin.name] || {};
+  assignJsonInc(subTarget, source);
+  provisionOutput[plugin.name] = subTarget;
   return ok(Void);
 }
 
@@ -407,7 +409,7 @@ export function setConfigs(
 export function setProvisionOutputs(provisionOutputs: Json, pluginContext: PluginContext): void {
   for (const key of pluginContext.envInfo.profile.keys()) {
     const map = pluginContext.envInfo.profile.get(key) as ConfigMap;
-    const value = map?.toJSON();
+    const value = mapToJson(map);
     if (value) {
       provisionOutputs[key] = value;
     }
@@ -415,23 +417,25 @@ export function setProvisionOutputs(provisionOutputs: Json, pluginContext: Plugi
 }
 
 export function setLocalSettingsV2(localSettings: Json, pluginContext: PluginContext): void {
-  localSettings.teamsApp = updateInc(
+  localSettings.teamsApp = assignJsonInc(
     localSettings.teamsApp,
-    pluginContext.localSettings?.teamsApp?.toJSON()
+    mapToJson(pluginContext.localSettings?.teamsApp)
   );
-  localSettings.auth = updateInc(localSettings.auth, pluginContext.localSettings?.auth?.toJSON());
-  localSettings.backend = updateInc(
+  localSettings.auth = assignJsonInc(
+    localSettings.auth,
+    mapToJson(pluginContext.localSettings?.auth)
+  );
+  localSettings.backend = assignJsonInc(
     localSettings.backend,
-    pluginContext.localSettings?.backend?.toJSON()
+    mapToJson(pluginContext.localSettings?.backend)
   );
-  localSettings.frontend = updateInc(
+  localSettings.frontend = assignJsonInc(
     localSettings.frontend,
-    pluginContext.localSettings?.frontend?.toJSON()
+    mapToJson(pluginContext.localSettings?.frontend)
   );
-  localSettings.bot = updateInc(localSettings.bot, pluginContext.localSettings?.bot?.toJSON());
+  localSettings.bot = assignJsonInc(localSettings.bot, mapToJson(pluginContext.localSettings?.bot));
 }
-
-export function updateInc(target?: Json, source?: Json): Json | undefined {
+export function assignJsonInc(target?: Json, source?: Json): Json | undefined {
   if (!target) return source;
   if (!source) return target;
   for (const key of Object.keys(source)) {

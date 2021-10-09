@@ -1256,6 +1256,10 @@ export enum Stage {
     // (undocumented)
     deploy = "deploy",
     // (undocumented)
+    getProjectConfig = "getProjectConfig",
+    // (undocumented)
+    getQuestions = "getQuestions",
+    // (undocumented)
     grantPermission = "grantPermission",
     // (undocumented)
     listAllCollaborators = "listAllCollaborators",

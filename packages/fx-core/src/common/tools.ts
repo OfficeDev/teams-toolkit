@@ -74,7 +74,8 @@ export async function ensureUniqueFolder(folderPath: string): Promise<string> {
  * @param {Map} map to convert.
  * @returns {Json} converted Json.
  */
-export function mapToJson(map: Map<any, any>): Json {
+export function mapToJson(map?: Map<any, any>): Json {
+  if (!map) return {};
   const out: Json = {};
   for (const entry of map.entries()) {
     if (entry[1] instanceof Map) {

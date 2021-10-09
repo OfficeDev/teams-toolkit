@@ -129,7 +129,7 @@ export class SharepointLogin extends login implements SharepointTokenProvider {
       if (!tenant) {
         return undefined;
       }
-      const scopes = [`https://${tenant.split("//")[1]}/Sites.FullControl.All`];
+      const scopes = [`${tenant}/Sites.FullControl.All`];
       return scopes;
     } catch (error) {
       throw error;

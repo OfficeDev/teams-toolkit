@@ -64,10 +64,6 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
     }
 
     const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-    if (inputs.ignoreEnvInfo) {
-      skip = true;
-    }
-
     if (!ctx.projectSettings) {
       ctx.result = err(ProjectSettingsUndefinedError());
       return;
@@ -81,7 +77,7 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
     const core = ctx.self as FxCore;
 
     let targetEnvName: string;
-    if (!skip && isMultiEnvEnabled()) {
+    if (!skip && !inputs.ignoreEnvInfo && isMultiEnvEnabled()) {
       // TODO: This is a workaround for collabrator feature to programmatically load an env in extension.
       if (inputs.env) {
         const result = await useUserSetEnv(inputs.projectPath, inputs.env);
@@ -118,7 +114,7 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
       ctx.projectSettings,
       ctx.projectIdMissing,
       targetEnvName,
-      skip
+      skip || inputs.ignoreEnvInfo
     );
     if (result.isErr()) {
       ctx.result = err(result.error);

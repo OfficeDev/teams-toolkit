@@ -100,7 +100,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
         let env: { [key: string]: string } | undefined;
         let cwd: string | undefined;
         let problemMatcher: string;
-        const isWatchTask = /^npm run watch/i.test(component + "");
+        const isWatchTask = /^npm run watch/i.test(command + "");
         if (component?.toLowerCase() === "frontend") {
           env = isWatchTask ? undefined : await commonUtils.getFrontendLocalEnv();
           cwd = await commonUtils.getProjectRoot(workspacePath, constants.frontendFolderName);

@@ -98,7 +98,6 @@ export enum TelemetryEvent {
   MigrateV1Project = "migrate-v1-project",
   MigrateV1ProjectNotificationStart = "migrate-v1-project-notification-start",
   MigrateV1ProjectNotification = "migrate-v1-project-notification",
-  OpenV1Project = "open-v1-project",
 
   ViewEnvironment = "view-environment",
 
@@ -116,6 +115,9 @@ export enum TelemetryEvent {
 
   ShowWhatIsNewNotification = "show-what-is-new-notification",
   ShowWhatIsNewContext = "show-what-is-new-context",
+
+  ShowLocalDebugNotification = "show-local-debug-notification",
+  ClickLocalDebug = "click-local-debug",
 }
 
 export enum TelemetryProperty {

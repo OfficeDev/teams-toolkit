@@ -124,6 +124,8 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
       return;
     }
 
+    ctx.solutionContext = result.value;
+
     if (isV2()) {
       const envInfo = result.value.envInfo;
       const profile: Json = {};
@@ -134,8 +136,6 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
         }
       }
       ctx.envInfoV2 = { envName: envInfo.envName, config: envInfo.config, profile: profile };
-    } else {
-      ctx.solutionContext = result.value;
     }
     await next();
   };

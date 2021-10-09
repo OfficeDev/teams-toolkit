@@ -13,6 +13,7 @@ import {
   env,
   ProgressLocation,
   ExtensionContext,
+  commands,
 } from "vscode";
 import {
   UserCancelError,
@@ -732,6 +733,15 @@ export class VsCodeUI implements UserInteraction {
           if (task.isCanceled) resolve(err(UserCancelError));
         }
       );
+    });
+  }
+
+  async reload(): Promise<Result<boolean, FxError>> {
+    return new Promise(async (resolve) => {
+      commands.executeCommand("workbench.action.reloadWindow").then((v) => {
+        if (v) resolve(ok(v as boolean));
+        else resolve(err(UserCancelError));
+      });
     });
   }
 }

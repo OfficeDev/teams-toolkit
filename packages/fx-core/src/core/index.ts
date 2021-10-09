@@ -34,6 +34,7 @@ import {
   SolutionConfig,
   SolutionContext,
   Stage,
+  SystemError,
   TelemetryReporter,
   Tools,
   v2,
@@ -68,6 +69,7 @@ import { getAllV2ResourcePlugins } from "../plugins/solution/fx-solution/Resourc
 import { CallbackRegistry } from "./callback";
 import {
   CopyFileError,
+  CoreSource,
   FetchSampleError,
   FunctionRouterError,
   InvalidInputError,
@@ -136,10 +138,10 @@ export interface CoreHookContext extends HookContext {
 // API V2 feature flag
 export function isV2() {
   const flag = process.env[FeatureFlagName.APIV2];
-  if (flag === undefined || flag.toLowerCase() === "false") {
+  if (flag !== undefined && flag.toLowerCase() === "false") {
     return false;
   } else {
-    return flag === "1" || flag.toLowerCase() === "true";
+    return true;
   }
 }
 
@@ -541,39 +543,42 @@ export class FxCore implements Core {
     currentStage = Stage.debug;
 
     if (isV2()) {
-      if (!ctx || !ctx.solutionV2 || !ctx.contextV2)
-        return err(new ObjectIsUndefinedError("localDebug input stuff"));
-      if (!ctx.localSettings) ctx.localSettings = {};
-      if (ctx.solutionV2.provisionLocalResource) {
-        const res = await ctx.solutionV2.provisionLocalResource(
-          ctx.contextV2,
-          inputs,
-          ctx.localSettings,
-          this.tools.tokenProvider
-        );
-        if (res.kind === "success") {
-          ctx.localSettings = res.output;
-          return ok(Void);
-        } else if (res.kind === "partialSuccess") {
-          ctx.localSettings = res.output;
-          return err(res.error);
+      if (isMultiEnvEnabled()) {
+        if (!ctx || !ctx.solutionV2 || !ctx.contextV2)
+          return err(new ObjectIsUndefinedError("localDebug input stuff"));
+        if (!ctx.localSettings) ctx.localSettings = {};
+        if (ctx.solutionV2.provisionLocalResource) {
+          const res = await ctx.solutionV2.provisionLocalResource(
+            ctx.contextV2,
+            inputs,
+            ctx.localSettings,
+            this.tools.tokenProvider
+          );
+          if (res.kind === "success") {
+            ctx.localSettings = res.output;
+            return ok(Void);
+          } else if (res.kind === "partialSuccess") {
+            ctx.localSettings = res.output;
+            return err(res.error);
+          } else {
+            return err(res.error);
+          }
         } else {
-          return err(res.error);
+          return ok(Void);
         }
-      } else return ok(Void);
-    } else {
-      if (!ctx || !ctx.solution || !ctx.solutionContext || !ctx.projectSettings)
-        return err(new ObjectIsUndefinedError("localDebug input stuff"));
-      upgradeProgrammingLanguage(
-        ctx.solutionContext.envInfo.profile as SolutionConfig,
-        ctx.projectSettings
-      );
-      upgradeDefaultFunctionName(
-        ctx.solutionContext.envInfo.profile as SolutionConfig,
-        ctx.projectSettings
-      );
-      return await ctx.solution.localDebug(ctx.solutionContext);
+      }
     }
+    if (!ctx || !ctx.solution || !ctx.solutionContext || !ctx.projectSettings)
+      return err(new ObjectIsUndefinedError("localDebug input stuff"));
+    upgradeProgrammingLanguage(
+      ctx.solutionContext.envInfo.profile as SolutionConfig,
+      ctx.projectSettings
+    );
+    upgradeDefaultFunctionName(
+      ctx.solutionContext.envInfo.profile as SolutionConfig,
+      ctx.projectSettings
+    );
+    return await ctx.solution.localDebug(ctx.solutionContext);
   }
 
   @hooks([
@@ -634,10 +639,12 @@ export class FxCore implements Core {
           return err(new ObjectIsUndefinedError("executeUserTask input stuff"));
         if (!ctx.contextV2) ctx.contextV2 = createV2Context(this, newProjectSettings());
         if (ctx.solutionV2.executeUserTask) {
+          if (!ctx.localSettings) ctx.localSettings = {};
           const res = await ctx.solutionV2.executeUserTask(
             ctx.contextV2,
             inputs,
             func,
+            ctx.localSettings,
             ctx.envInfoV2,
             this.tools.tokenProvider
           );

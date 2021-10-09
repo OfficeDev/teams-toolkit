@@ -1,7 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Inputs, Platform, Plugin, ProjectSettings } from "@microsoft/teamsfx-api";
+import {
+  FxError,
+  Inputs,
+  ok,
+  Platform,
+  Plugin,
+  PluginContext,
+  ProjectSettings,
+  Result,
+} from "@microsoft/teamsfx-api";
 import { Context, DeploymentInputs, SolutionInputs } from "@microsoft/teamsfx-api/build/v2";
 import { assert } from "chai";
 import fs from "fs-extra";
@@ -80,6 +89,9 @@ describe("SPFX V2", () => {
   });
 
   it("scaffoldSourceCode - happy path", async () => {
+    pluginV1.postScaffold = async function (ctx: PluginContext): Promise<Result<any, FxError>> {
+      return ok(undefined);
+    };
     inputs[SPFXQuestionNames.webpart_name] = "helloworld";
     inputs[SPFXQuestionNames.framework_type] = "test";
     inputs[SPFXQuestionNames.framework_type] = "none";

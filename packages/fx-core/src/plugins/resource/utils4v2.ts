@@ -31,6 +31,7 @@ import {
   ResourceTemplate,
   SolutionInputs,
 } from "@microsoft/teamsfx-api/build/v2";
+import { S_IFBLK } from "constants";
 import { CryptoDataMatchers } from "../../common";
 import { ArmResourcePlugin, ScaffoldArmTemplateResult } from "../../common/armInterface";
 import {
@@ -88,8 +89,8 @@ export async function scaffoldSourceCodeAdapter(
     }
   }
 
-  if (plugin.postDeploy) {
-    const postRes = await plugin.postDeploy(pluginContext);
+  if (plugin.postScaffold) {
+    const postRes = await plugin.postScaffold(pluginContext);
     if (postRes.isErr()) {
       return err(postRes.error);
     }
@@ -271,6 +272,7 @@ export async function provisionLocalResourceAdapter(
 ): Promise<Result<Json, FxError>> {
   if (!plugin.localDebug) return err(PluginHasNoTaskImpl(plugin.displayName, "localDebug"));
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
+  pluginContext.envInfo.profile.set(plugin.name, pluginContext.config);
   setLocalSettingsV1(pluginContext, localSettings);
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
@@ -292,6 +294,7 @@ export async function configureLocalResourceAdapter(
 ): Promise<Result<Json, FxError>> {
   if (!plugin.postLocalDebug) return err(PluginHasNoTaskImpl(plugin.displayName, "postLocalDebug"));
   const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
+  pluginContext.envInfo.profile.set(plugin.name, pluginContext.config);
   setLocalSettingsV1(pluginContext, localSettings);
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
@@ -308,6 +311,7 @@ export async function executeUserTaskAdapter(
   ctx: Context,
   inputs: Inputs,
   func: Func,
+  localSettings: Json,
   envInfo: EnvInfoV2,
   tokenProvider: TokenProvider,
   plugin: Plugin
@@ -327,10 +331,11 @@ export async function executeUserTaskAdapter(
   pluginContext.envInfo.profile = flattenConfigMap(profile);
   pluginContext.envInfo.config = envInfo.config as EnvConfig;
   pluginContext.config = pluginContext.envInfo.profile.get(plugin.name) ?? new ConfigMap();
-
+  setLocalSettingsV1(pluginContext, localSettings);
   const res = await plugin.executeUserTask(func, pluginContext);
   if (res.isErr()) return err(res.error);
   envInfo.profile[plugin.name] = legacyConfig2EnvProfile(pluginContext.config, plugin.name);
+  setLocalSettingsV2(localSettings, pluginContext);
   return ok(res.value);
 }
 
@@ -410,11 +415,39 @@ export function setProvisionOutputs(provisionOutputs: Json, pluginContext: Plugi
 }
 
 export function setLocalSettingsV2(localSettings: Json, pluginContext: PluginContext): void {
-  localSettings.teamsApp = pluginContext.localSettings?.teamsApp?.toJSON();
-  localSettings.auth = pluginContext.localSettings?.auth?.toJSON();
-  localSettings.backend = pluginContext.localSettings?.backend?.toJSON();
-  localSettings.bot = pluginContext.localSettings?.bot?.toJSON();
-  localSettings.frontend = pluginContext.localSettings?.frontend?.toJSON();
+  localSettings.teamsApp = updateInc(
+    localSettings.teamsApp,
+    pluginContext.localSettings?.teamsApp?.toJSON()
+  );
+  localSettings.auth = updateInc(localSettings.auth, pluginContext.localSettings?.auth?.toJSON());
+  localSettings.backend = updateInc(
+    localSettings.backend,
+    pluginContext.localSettings?.backend?.toJSON()
+  );
+  localSettings.frontend = updateInc(
+    localSettings.frontend,
+    pluginContext.localSettings?.frontend?.toJSON()
+  );
+  localSettings.bot = updateInc(localSettings.bot, pluginContext.localSettings?.bot?.toJSON());
+}
+
+export function updateInc(target?: Json, source?: Json): Json | undefined {
+  if (!target) return source;
+  if (!source) return target;
+  for (const key of Object.keys(source)) {
+    const sourceValue = source[key];
+    if (sourceValue !== undefined) {
+      const type = typeof sourceValue;
+      if (type === "string") {
+        if (sourceValue) {
+          target[key] = sourceValue;
+        }
+      } else {
+        target[key] = sourceValue;
+      }
+    }
+  }
+  return target;
 }
 
 export function setLocalSettingsV1(pluginContext: PluginContext, localSettings: Json): void {

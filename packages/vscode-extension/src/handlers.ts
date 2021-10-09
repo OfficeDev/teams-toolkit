@@ -791,9 +791,16 @@ async function openSampleReadmeHandler() {
   }
 }
 
-function showLocalDebugMessage() {
-  // todo setup treatment variable
-  if (1 === 1) {
+async function showLocalDebugMessage() {
+  if (
+    await exp
+      .getExpService()
+      .getTreatmentVariableAsync(
+        TreatmentVariables.VSCodeConfig,
+        TreatmentVariables.ShowLocalDebug,
+        true
+      )
+  ) {
     const localDebug = {
       title: StringResources.vsc.handlers.localDebugTitle,
       run: async (): Promise<void> => {

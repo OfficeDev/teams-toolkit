@@ -138,7 +138,7 @@ export class AppStudioPluginV2 implements ResourcePlugin {
     envInfo: DeepReadonly<v2.EnvInfoV2>,
     tokenProvider: AppStudioTokenProvider
   ): Promise<Result<Void, FxError>> {
-    const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
+    const pluginContext: PluginContext = convert2PluginContext(this.plugin.name, ctx, inputs);
     pluginContext.appStudioToken = tokenProvider;
 
     // run question model for publish

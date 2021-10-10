@@ -9,13 +9,11 @@ import {
   FxError,
   Inputs,
   Json,
-  mergeConfigMap,
   ok,
   Plugin,
   PluginContext,
   QTreeNode,
   Result,
-  Solution,
   Stage,
   TokenProvider,
   Void,
@@ -31,7 +29,6 @@ import {
   ResourceTemplate,
   SolutionInputs,
 } from "@microsoft/teamsfx-api/build/v2";
-import { S_IFBLK } from "constants";
 import { CryptoDataMatchers, mapToJson } from "../../common";
 import { ArmResourcePlugin, ScaffoldArmTemplateResult } from "../../common/armInterface";
 import {
@@ -40,18 +37,22 @@ import {
   NoProjectOpenedError,
   PluginHasNoTaskImpl,
 } from "../../core";
-import { GLOBAL_CONFIG, ARM_TEMPLATE_OUTPUT } from "../solution/fx-solution/constants";
+import { ARM_TEMPLATE_OUTPUT, GLOBAL_CONFIG } from "../solution/fx-solution/constants";
 
 export function convert2PluginContext(
+  pluginName: string,
   ctx: Context,
   inputs: Inputs,
   ignoreEmptyProjectPath = false
 ): PluginContext {
   if (!ignoreEmptyProjectPath && !inputs.projectPath) throw NoProjectOpenedError();
+  const envInfo = newEnvInfo();
+  const config = new ConfigMap();
+  envInfo.profile.set(pluginName, config);
   const pluginContext: PluginContext = {
     root: inputs.projectPath || "",
-    config: new ConfigMap(),
-    envInfo: newEnvInfo(),
+    config: config,
+    envInfo: envInfo,
     projectSettings: ctx.projectSetting,
     answers: inputs,
     logProvider: ctx.logProvider,
@@ -73,7 +74,7 @@ export async function scaffoldSourceCodeAdapter(
   if (!inputs.projectPath) {
     return err(NoProjectOpenedError());
   }
-  const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
+  const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
 
   if (plugin.preScaffold) {
     const preRes = await plugin.preScaffold(pluginContext);
@@ -105,7 +106,7 @@ export async function generateResourceTemplateAdapter(
 ): Promise<Result<ResourceTemplate, FxError>> {
   if (!plugin.generateArmTemplates)
     return err(PluginHasNoTaskImpl(plugin.displayName, "generateArmTemplates"));
-  const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
+  const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
   const armRes = await plugin.generateArmTemplates(pluginContext);
   if (armRes.isErr()) {
     return err(armRes.error);
@@ -131,7 +132,7 @@ export async function provisionResourceAdapter(
   }
   const solutionInputs: SolutionInputs = inputs;
   profile.set(GLOBAL_CONFIG, ConfigMap.fromJSON(solutionInputs));
-  const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
+  const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
@@ -200,7 +201,7 @@ export async function configureResourceAdapter(
   plugin: Plugin & ArmResourcePlugin
 ): Promise<Result<ResourceProvisionOutput, FxError>> {
   if (!plugin.postProvision) return err(PluginHasNoTaskImpl(plugin.displayName, "postProvision"));
-  const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
+  const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
 
   const profile: ConfigMap | undefined = ConfigMap.fromJSON(envInfo.profile);
   if (!profile) {
@@ -231,17 +232,9 @@ export async function deployAdapter(
   plugin: Plugin & ArmResourcePlugin
 ): Promise<Result<Void, FxError>> {
   if (!plugin.deploy) return err(PluginHasNoTaskImpl(plugin.displayName, "deploy"));
-  const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
-  setConfigs(plugin.name, pluginContext, provisionOutput);
+  const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
+  setEnvInfoV1ByProfileV2(plugin.name, pluginContext, provisionOutput);
   pluginContext.azureAccountProvider = tokenProvider;
-  // const json: Json = {};
-  // Object.assign(json, inputs);
-  // const solutionConfig = ConfigMap.fromJSON(json);
-  // const configOfOtherPlugins = new Map<string, ConfigMap>();
-  // if (solutionConfig) configOfOtherPlugins.set(GLOBAL_CONFIG, solutionConfig);
-  // pluginContext.envInfo.profile = configOfOtherPlugins;
-  // const config = ConfigMap.fromJSON(provisionOutput);
-  // if (config) pluginContext.config = config;
   if (plugin.preDeploy) {
     const preRes = await plugin.preDeploy(pluginContext);
     if (preRes.isErr()) {
@@ -258,10 +251,7 @@ export async function deployAdapter(
       return err(postRes.error);
     }
   }
-  const source = pluginContext.config.toJSON();
-  const subTarget = provisionOutput[plugin.name] || {};
-  assignJsonInc(subTarget, source);
-  provisionOutput[plugin.name] = subTarget;
+  setProfileV2ByConfigMapInc(plugin.name, provisionOutput, pluginContext.config);
   return ok(Void);
 }
 
@@ -273,7 +263,7 @@ export async function provisionLocalResourceAdapter(
   plugin: Plugin & ArmResourcePlugin
 ): Promise<Result<Json, FxError>> {
   if (!plugin.localDebug) return err(PluginHasNoTaskImpl(plugin.displayName, "localDebug"));
-  const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
+  const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
   pluginContext.envInfo.profile.set(plugin.name, pluginContext.config);
   setLocalSettingsV1(pluginContext, localSettings);
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
@@ -295,7 +285,7 @@ export async function configureLocalResourceAdapter(
   plugin: Plugin & ArmResourcePlugin
 ): Promise<Result<Json, FxError>> {
   if (!plugin.postLocalDebug) return err(PluginHasNoTaskImpl(plugin.displayName, "postLocalDebug"));
-  const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
+  const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
   pluginContext.envInfo.profile.set(plugin.name, pluginContext.config);
   setLocalSettingsV1(pluginContext, localSettings);
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
@@ -320,23 +310,15 @@ export async function executeUserTaskAdapter(
 ): Promise<Result<unknown, FxError>> {
   if (!plugin.executeUserTask)
     return err(PluginHasNoTaskImpl(plugin.displayName, "executeUserTask"));
-  const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
-
-  const profile: ConfigMap | undefined = ConfigMap.fromJSON(envInfo.profile);
-  if (!profile) {
-    return err(InvalidProfileError(plugin.name, envInfo.profile));
-  }
+  const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
-  pluginContext.envInfo = newEnvInfo(ctx.projectSetting.activeEnvironment);
-  pluginContext.envInfo.profile = flattenConfigMap(profile);
-  pluginContext.envInfo.config = envInfo.config as EnvConfig;
-  pluginContext.config = pluginContext.envInfo.profile.get(plugin.name) ?? new ConfigMap();
+  setEnvInfoV1ByProfileV2(plugin.name, pluginContext, envInfo.profile);
   setLocalSettingsV1(pluginContext, localSettings);
   const res = await plugin.executeUserTask(func, pluginContext);
   if (res.isErr()) return err(res.error);
-  envInfo.profile[plugin.name] = legacyConfig2EnvProfile(pluginContext.config, plugin.name);
+  setProfileV2ByConfigMapInc(plugin.name, envInfo.profile, pluginContext.config);
   setLocalSettingsV2(localSettings, pluginContext);
   return ok(res.value);
 }
@@ -347,7 +329,7 @@ export async function getQuestionsForScaffoldingAdapter(
   plugin: Plugin
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (!plugin.getQuestions) return ok(undefined);
-  const pluginContext: PluginContext = convert2PluginContext(ctx, inputs, true);
+  const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs, true);
   return await plugin.getQuestions(Stage.create, pluginContext);
 }
 
@@ -359,7 +341,7 @@ export async function getQuestionsAdapter(
   plugin: Plugin
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (!plugin.getQuestions) return ok(undefined);
-  const pluginContext: PluginContext = convert2PluginContext(ctx, inputs, true);
+  const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs, true);
   const config = ConfigMap.fromJSON(envInfo.profile[plugin.name]) || new ConfigMap();
   pluginContext.config = config;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
@@ -376,7 +358,7 @@ export async function getQuestionsForUserTaskAdapter(
   plugin: Plugin
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (!plugin.getQuestionsForUserTask) return ok(undefined);
-  const pluginContext: PluginContext = convert2PluginContext(ctx, inputs, true);
+  const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs, true);
   const config = ConfigMap.fromJSON(envInfo.profile[plugin.name]) || new ConfigMap();
   pluginContext.config = config;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
@@ -390,18 +372,33 @@ export function getArmOutput(ctx: PluginContext, key: string): string | undefine
   return output?.[key]?.value;
 }
 
-export function setConfigs(
+export function setProfileV2ByConfigMapInc(
+  pluginName: string,
+  profile: Json,
+  config: ConfigMap
+): void {
+  const source = mapToJson(config);
+  const subTarget = profile[pluginName] || {};
+  assignJsonInc(subTarget, source);
+  profile[pluginName] = subTarget;
+}
+
+export function setEnvInfoV1ByProfileV2(
   pluginName: string,
   pluginContext: PluginContext,
-  provisionOutputs: Json
+  profileV2: Json
 ): void {
   const envInfo = newEnvInfo();
-  for (const key in provisionOutputs) {
-    const output = provisionOutputs[key];
-    const configMap = ConfigMap.fromJSON(output);
-    if (configMap) envInfo.profile.set(key, configMap);
+  const profileV1: ConfigMap | undefined = ConfigMap.fromJSON(profileV2);
+  if (!profileV1) {
+    throw InvalidProfileError(pluginName, profileV2);
   }
-  const selfConfigMap = envInfo.profile.get(pluginName) || new ConfigMap();
+  let selfConfigMap: ConfigMap | undefined = profileV1.get(pluginName);
+  if (!selfConfigMap) {
+    selfConfigMap = new ConfigMap();
+    profileV1.set(pluginName, selfConfigMap);
+  }
+  envInfo.profile = profileV1;
   pluginContext.config = selfConfigMap;
   pluginContext.envInfo = envInfo;
 }

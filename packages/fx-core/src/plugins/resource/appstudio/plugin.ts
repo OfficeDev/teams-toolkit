@@ -1702,7 +1702,7 @@ export class AppStudioPluginImpl {
     return ok([appDefinition, updatedManifest]);
   }
 
-  private async getManifestTemplatePath(projectRoot: string): Promise<string> {
+  public async getManifestTemplatePath(projectRoot: string): Promise<string> {
     const appDir = await getAppDirectory(projectRoot);
     return isMultiEnvEnabled() ? `${appDir}/${MANIFEST_TEMPLATE}` : `${appDir}/${REMOTE_MANIFEST}`;
   }

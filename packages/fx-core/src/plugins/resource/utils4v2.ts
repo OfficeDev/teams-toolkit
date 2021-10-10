@@ -403,16 +403,6 @@ export function setEnvInfoV1ByProfileV2(
   pluginContext.envInfo = envInfo;
 }
 
-export function setProvisionOutputs(provisionOutputs: Json, pluginContext: PluginContext): void {
-  for (const key of pluginContext.envInfo.profile.keys()) {
-    const map = pluginContext.envInfo.profile.get(key) as ConfigMap;
-    const value = mapToJson(map);
-    if (value) {
-      provisionOutputs[key] = value;
-    }
-  }
-}
-
 export function setLocalSettingsV2(localSettings: Json, pluginContext: PluginContext): void {
   localSettings.teamsApp = assignJsonInc(
     localSettings.teamsApp,

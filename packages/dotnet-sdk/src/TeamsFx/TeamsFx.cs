@@ -187,5 +187,22 @@ namespace Microsoft.TeamsFx
             await jsInteropBase.DisposeAsync().ConfigureAwait(false);
             logFunctionCallbackRef?.Dispose();
         }
+
+        /// <summary>
+        /// Get current Teams context from Teams JS SDK. 
+        /// </summary>
+        /// <returns>Teams context as C# object</returns>
+        public async Task<Context> GetContext()
+        {
+            try
+            {
+                var module = await jsInteropBase.moduleTask.Value.ConfigureAwait(false);
+                return await module.InvokeAsync<Context>("getContext").ConfigureAwait(false);
+            }
+            catch (JSException e)
+            {
+                throw new ExceptionWithCode(e);
+            }
+        }
     }
 }

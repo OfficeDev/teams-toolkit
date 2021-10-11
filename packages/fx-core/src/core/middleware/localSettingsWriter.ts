@@ -32,7 +32,7 @@ export const LocalSettingsWriterMW: Middleware = async (
     if (isV2()) {
       if (ctx.localSettings === undefined) return;
       // persistent localSettings.json.
-      await localSettingsProvider.save(ctx.localSettings, ctx.contextV2?.cryptoProvider);
+      await localSettingsProvider.saveJson(ctx.localSettings, ctx.contextV2?.cryptoProvider);
     } else {
       const solutionContext = ctx.solutionContext;
       if (solutionContext === undefined || solutionContext.localSettings === undefined) return;

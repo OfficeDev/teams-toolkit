@@ -188,10 +188,7 @@ export class LocalSettingsProvider {
     }
   }
 
-  public async save(
-    localSettings: LocalSettings | Json,
-    cryptoProvider?: CryptoProvider
-  ): Promise<void> {
+  public async save(localSettings: LocalSettings, cryptoProvider?: CryptoProvider): Promise<void> {
     await fs.createFile(this.localSettingsFilePath);
     if (cryptoProvider) {
       if (localSettings.auth) {
@@ -225,6 +222,12 @@ export class LocalSettingsProvider {
       }
     }
     await fs.writeFile(this.localSettingsFilePath, JSON.stringify(localSettings, null, 4));
+  }
+
+  public async saveJson(localSettingsJson: Json, cryptoProvider?: CryptoProvider): Promise<Json> {
+    const localSettings = this.convertToLocalSettings(localSettingsJson);
+    await this.save(localSettings);
+    return this.convertToLocalSettingsJson(localSettings);
   }
 
   private convertToLocalSettings(localSettingsJson: Json): LocalSettings {

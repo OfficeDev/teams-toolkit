@@ -188,7 +188,7 @@ export async function scaffoldReadmeAndLocalSettings(
     if (localSettings !== undefined) {
       // Add local settings for the new added capability/resource
       localSettings = localSettingsProvider.incrementalInit(localSettings!, hasBackend, hasBot);
-      await localSettingsProvider.save(
+      await localSettingsProvider.saveJson(
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         localSettings
       );

@@ -966,8 +966,6 @@ export interface ProjectConfig {
 // @public
 export interface ProjectSettings {
     // (undocumented)
-    activeEnvironment?: string;
-    // (undocumented)
     appName: string;
     // (undocumented)
     defaultFunctionName?: string;

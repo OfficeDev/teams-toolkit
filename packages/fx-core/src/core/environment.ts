@@ -405,45 +405,6 @@ class EnvironmentManager {
       return this.defaultEnvName;
     }
   }
-
-  public getActiveEnv(projectRoot: string): Result<string, FxError> {
-    if (!isMultiEnvEnabled()) {
-      return ok("default");
-    }
-
-    const settingsJsonPath = path.join(
-      projectRoot,
-      `.${ConfigFolderName}/${InputConfigsFolderName}/${ProjectSettingsFileName}`
-    );
-    if (!fs.existsSync(settingsJsonPath)) {
-      return err(PathNotExistError(settingsJsonPath));
-    }
-
-    let settingsJson;
-    try {
-      settingsJson = fs.readJSONSync(settingsJsonPath, { encoding: "utf8" });
-    } catch (error) {
-      return err(
-        InvalidProjectSettingsFileError(
-          `Project settings file is not a valid JSON, error: '${error}'`
-        )
-      );
-    }
-
-    if (
-      !settingsJson ||
-      !settingsJson.activeEnvironment ||
-      typeof settingsJson.activeEnvironment !== "string"
-    ) {
-      return err(
-        InvalidProjectSettingsFileError(
-          "The property 'activeEnvironment' does not exist in project settings file."
-        )
-      );
-    }
-
-    return ok(settingsJson.activeEnvironment as string);
-  }
 }
 
 export const environmentManager = new EnvironmentManager();

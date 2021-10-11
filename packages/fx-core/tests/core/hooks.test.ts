@@ -643,7 +643,6 @@ describe("Middleware - others", () => {
           solutionSettings: {
             name: "fx-solution-azure",
           },
-          activeEnvironment: "test",
         };
         await next();
       };
@@ -986,8 +985,7 @@ describe("Middleware - others", () => {
       let tools: Tools;
       const inputsEnv = "inputs";
       const askUserEnv = "askUser";
-      const activeEnv = "active";
-      const envs = [inputsEnv, askUserEnv, activeEnv];
+      const envs = [inputsEnv, askUserEnv];
       class MyClass {
         tools: Tools = tools;
         async myMethod(inputs: Inputs): Promise<Result<string, FxError>> {

@@ -407,9 +407,6 @@ async function ensureProjectSettings(
     settings.programmingLanguage = envDefault[PluginNames.SOLUTION][programmingLanguage];
     settings.defaultFunctionName = envDefault[PluginNames.FUNC]?.[defaultFunctionName];
   }
-  if (!settings.activeEnvironment) {
-    settings.activeEnvironment = "dev";
-  }
   if (!settings.version) {
     settings.version = "1.0.0";
   }
@@ -421,16 +418,6 @@ async function ensureProjectSettings(
 async function getAppName(projectSettingPath: string): Promise<string> {
   const settings: ProjectSettings = await readJson(projectSettingPath);
   return settings.appName;
-}
-
-async function ensureActiveEnv(projectSettingPath: string): Promise<void> {
-  const settings: ProjectSettings = await readJson(projectSettingPath);
-  if (!settings.activeEnvironment) {
-    settings.activeEnvironment = "dev";
-    await fs.writeFile(projectSettingPath, JSON.stringify(settings, null, 4), {
-      encoding: "UTF-8",
-    });
-  }
 }
 
 async function cleanup(projectPath: string): Promise<void> {

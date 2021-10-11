@@ -25,7 +25,8 @@
     "LocalDebugTenantConfirmNotice": "You already run local debug for the Teams app in another tenant '%s'. You can sign out %s and sign in with the matched M365 account to re-use the previous local debug resource. If you really want to switch tenant for local debug, you can delete the localSettings.json file and re-run local debug.",
     "MigrateSuccessNotice": "Your project is now initialized with Teams Toolkit! You can debug your application by pressing F5. If you wish to host your application in Azure, we recommend you to re-create your project directly using the latest Teams Toolkit.",
     "MigrationToArmAndMultiEnvMessage": "We will update your project in order to continue using the latest Teams Toolkit. We recommend to initialize your workspace with git for better tracking file changes.",
-    "MigrationToArmAndMultiEnvSuccessMessage": "Migration Success! please run provision command before executing other commands, otherwise the commands may fail. Provision may create new resource, click the link for more information",
+    "MigrationToArmAndMultiEnvSuccessMessage": "Migration Success! please reload VSCode and run provision command before executing other commands, otherwise the commands may fail. Provision may create new resource, click the link for more information",
+    "NeedToUpdateTeamsToolkitVersionMessage": "Your project is not supported. Please update Teams Toolkit to the latest version from the VSCode Extension Marketplace and make sure the setting (fx-extension: Insider Preview) is enabled",
     "DeployArmTemplates": {
       "StartNotice": "[%s] Start deploying ARM templates.",
       "CompileBicepSuccessNotice": "[%s] Successfully compile bicep files to JSON.",

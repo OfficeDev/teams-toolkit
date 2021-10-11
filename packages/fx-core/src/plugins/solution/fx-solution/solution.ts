@@ -146,7 +146,8 @@ import {
 import { askForProvisionConsent } from "./v2/provision";
 import { scaffoldReadmeAndLocalSettings } from "./v2/scaffolding";
 import { environmentManager } from "../../..";
-import { LocalSettingsProvider } from "../../../common/localSettingsProvider";
+import { Json } from "@microsoft/teamsfx-api";
+import { setLocalSettingsV2 } from "../../resource/utils4v2";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -363,7 +364,13 @@ export class TeamsAppSolution implements Solution {
       .capabilities;
     const azureResources = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
       .azureResources;
-    await scaffoldReadmeAndLocalSettings(capabilities, azureResources, ctx.root, true);
+    await scaffoldReadmeAndLocalSettings(
+      capabilities,
+      azureResources,
+      ctx.root,
+      ctx.localSettings,
+      true
+    );
 
     ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.Migrate, {
       [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
@@ -452,7 +459,13 @@ export class TeamsAppSolution implements Solution {
         .capabilities;
       const azureResources = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
         .azureResources;
-      await scaffoldReadmeAndLocalSettings(capabilities, azureResources, ctx.root);
+
+      await scaffoldReadmeAndLocalSettings(
+        capabilities,
+        azureResources,
+        ctx.root,
+        ctx.localSettings
+      );
     }
 
     if (isArmSupportEnabled() && generateResourceTemplate && this.isAzureProject(ctx)) {
@@ -1186,7 +1199,7 @@ export class TeamsAppSolution implements Solution {
       await ctx.appStudioToken?.getAccessToken();
 
       // Pop-up window to confirm if local debug in another tenant
-      const localDebugTenantId = ctx.localSettings?.teamsApp.get(
+      const localDebugTenantId = ctx.localSettings?.teamsApp?.get(
         LocalSettingsTeamsAppKeys.TenantId
       );
       if (isMultiEnvEnabled() && localDebugTenantId) {
@@ -1287,7 +1300,7 @@ export class TeamsAppSolution implements Solution {
         postLocalDebugWithCtx.map(function (plugin, index) {
           if (plugin[2] === PluginNames.APPST) {
             if (isMultiEnvEnabled()) {
-              ctx.localSettings?.teamsApp.set(
+              ctx.localSettings?.teamsApp?.set(
                 LocalSettingsTeamsAppKeys.TeamsAppId,
                 combinedPostLocalDebugResults.value[index]
               );
@@ -2084,7 +2097,7 @@ export class TeamsAppSolution implements Solution {
     return parseTeamsAppTenantId(appStudioToken as Record<string, unknown> | undefined).andThen(
       (teamsAppTenantId) => {
         if (isLocalDebug && isMultiEnvEnabled()) {
-          ctx.localSettings?.teamsApp.set(LocalSettingsTeamsAppKeys.TenantId, teamsAppTenantId);
+          ctx.localSettings?.teamsApp?.set(LocalSettingsTeamsAppKeys.TenantId, teamsAppTenantId);
         } else {
           ctx.envInfo.profile.get(GLOBAL_CONFIG)?.set("teamsAppTenantId", teamsAppTenantId);
         }

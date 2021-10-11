@@ -740,7 +740,7 @@ export interface LocalSettings {
     // (undocumented)
     frontend?: ConfigMap;
     // (undocumented)
-    teamsApp: ConfigMap;
+    teamsApp?: ConfigMap;
 }
 
 // @public (undocumented)

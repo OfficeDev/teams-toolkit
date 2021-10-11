@@ -62,10 +62,10 @@ export async function executeUserTask(
   const method = func.method;
   const array = namespace.split("/");
   if (method === "addCapability") {
-    return addCapability(ctx, inputs);
+    return addCapability(ctx, inputs, localSettings);
   }
   if (method === "addResource") {
-    return addResource(ctx, inputs, func, envInfo, tokenProvider);
+    return addResource(ctx, inputs, localSettings, func, envInfo, tokenProvider);
   }
   if (namespace.includes("solution")) {
     if (method === "registerTeamsAppAndAad") {
@@ -197,7 +197,8 @@ export function canAddResource(
 
 export async function addCapability(
   ctx: v2.Context,
-  inputs: Inputs
+  inputs: Inputs,
+  localSettings: Json
 ): Promise<
   Result<{ solutionSettings?: SolutionSettings; solutionConfig?: Record<string, unknown> }, FxError>
 > {
@@ -276,7 +277,13 @@ export async function addCapability(
     settings.capabilities = capabilities;
     reloadV2Plugins(settings);
     ctx.logProvider?.info(`start scaffolding ${notifications.join(",")}.....`);
-    const scaffoldRes = await scaffoldCodeAndResourceTemplate(ctx, inputs, pluginsToScaffold, true);
+    const scaffoldRes = await scaffoldCodeAndResourceTemplate(
+      ctx,
+      inputs,
+      localSettings,
+      pluginsToScaffold,
+      true
+    );
     if (scaffoldRes.isErr()) {
       ctx.logProvider?.info(`failed to scaffold ${notifications.join(",")}!`);
       ctx.projectSetting.solutionSettings = originalSettings;
@@ -327,10 +334,11 @@ export async function confirmRegenerateArmTemplate(ui?: UserInteraction): Promis
 async function scaffoldCodeAndResourceTemplate(
   ctx: v2.Context,
   inputs: Inputs,
+  localSettings: Json,
   plugins: v2.ResourcePlugin[],
   generateTemplate: boolean
 ): Promise<Result<unknown, FxError>> {
-  const result = await scaffoldByPlugins(ctx, inputs, plugins);
+  const result = await scaffoldByPlugins(ctx, inputs, localSettings, plugins);
   if (result.isErr()) {
     return result;
   }
@@ -343,6 +351,7 @@ async function scaffoldCodeAndResourceTemplate(
 export async function addResource(
   ctx: v2.Context,
   inputs: Inputs,
+  localSettings: Json,
   func: Func,
   envInfo: v2.EnvInfoV2,
   tokenProvider: TokenProvider
@@ -440,6 +449,7 @@ export async function addResource(
     let scaffoldRes = await scaffoldCodeAndResourceTemplate(
       ctx,
       inputs,
+      localSettings,
       pluginsToScaffold,
       addNewResoruceToProvision
     );

@@ -50,7 +50,6 @@ export const LocalSettingsBotKeys = Object.freeze({
 });
 
 export const LocalSettingsEncryptKeys = Object.freeze({
-  Crypto: "crypto",
   ClientSecret: "clientSecret",
   SimpleAuthEnvironmentVariableParams: "SimpleAuthEnvironmentVariableParams",
   BotPassword: "botPassword",

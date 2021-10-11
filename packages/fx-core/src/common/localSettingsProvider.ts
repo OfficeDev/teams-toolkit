@@ -22,6 +22,7 @@ import {
 import { isMultiEnvEnabled } from "./tools";
 
 export const localSettingsFileName = "localSettings.json";
+const crypto = "crypto";
 
 export class LocalSettingsProvider {
   public readonly localSettingsFilePath: string;

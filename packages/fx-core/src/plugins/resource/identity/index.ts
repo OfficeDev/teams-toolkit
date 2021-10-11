@@ -91,14 +91,14 @@ export class IdentityPlugin implements Plugin {
 
     let defaultIdentity = `${ctx.projectSettings!.appName}-msi-${this.config.resourceNameSuffix}`;
     defaultIdentity = formatEndpoint(defaultIdentity);
-    this.config.identity = defaultIdentity;
-    this.config.identityResourceId = `/subscriptions/${this.config.azureSubscriptionId}/resourcegroups/${this.config.resourceGroup}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${this.config.identity}`;
+    this.config.identityName = defaultIdentity;
+    this.config.identityResourceId = `/subscriptions/${this.config.azureSubscriptionId}/resourcegroups/${this.config.resourceGroup}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${this.config.identityName}`;
     ctx.logProvider?.debug(Message.identityResourceId(this.config.identityResourceId));
 
     try {
       await this.loadArmTemplate(ctx);
       this.parameters.parameters.location.value = this.config.location;
-      this.parameters.parameters.identityName.value = this.config.identity;
+      this.parameters.parameters.identityName.value = this.config.identityName;
       await this.provisionWithArmTemplate(ctx);
     } catch (error) {
       const errorCode = error.source + "." + error.name;
@@ -111,8 +111,8 @@ export class IdentityPlugin implements Plugin {
       return err(error);
     }
 
-    ctx.config.set(Constants.identityName, this.config.identity);
-    ctx.config.set(Constants.identityClientId, this.config.clientId);
+    ctx.config.set(Constants.identityName, this.config.identityName);
+    ctx.config.set(Constants.identityClientId, this.config.identityClientId);
     ctx.config.set(Constants.identityResourceId, this.config.identityResourceId);
     TelemetryUtils.sendEvent(Telemetry.stage.provision, true);
     ctx.logProvider?.info(Message.endProvision);
@@ -224,14 +224,14 @@ export class IdentityPlugin implements Plugin {
         this.config.identityResourceId,
         Constants.apiVersion
       );
-      this.config.clientId = response.properties.clientId;
+      this.config.identityClientId = response.properties.clientId;
     } catch (_error) {
       ctx.logProvider?.error(
-        ErrorMessage.IdentityProvisionError.message(this.config.identity) + `:${_error.message}`
+        ErrorMessage.IdentityProvisionError.message(this.config.identityName) + `:${_error.message}`
       );
       const error = ResultFactory.UserError(
         ErrorMessage.IdentityProvisionError.name,
-        ErrorMessage.IdentityProvisionError.message(this.config.identity),
+        ErrorMessage.IdentityProvisionError.message(this.config.identityName),
         _error
       );
       throw error;
@@ -239,9 +239,7 @@ export class IdentityPlugin implements Plugin {
   }
 
   private syncArmOutput(ctx: PluginContext) {
-    const resourceId = getArmOutput(ctx, IdentityArmOutput.identityName);
-
-    ctx.config.set(Constants.identityName, resourceId);
+    ctx.config.set(Constants.identityName, getArmOutput(ctx, IdentityArmOutput.identityName));
     ctx.config.set(
       Constants.identityClientId,
       getArmOutput(ctx, IdentityArmOutput.identityClientId)

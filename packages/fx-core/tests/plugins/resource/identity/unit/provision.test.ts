@@ -47,7 +47,7 @@ describe("identityPlugin", () => {
     chai.assert.isTrue(provisionResult.isOk());
     chai.assert.strictEqual(
       pluginContext.config.get(Constants.identityName),
-      identityPlugin.config.identity
+      identityPlugin.config.identityName
     );
   });
 });

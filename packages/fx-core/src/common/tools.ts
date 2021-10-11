@@ -575,22 +575,6 @@ function isBasicJsonSchema(jsonSchema: unknown): jsonSchema is BasicJsonSchema {
   return typeof (jsonSchema as { type: unknown })["type"] === "string";
 }
 
-// Redact user content of "obj";
-//
-// DFS "obj" and "jsonSchema" together to redact the following things:
-// - properties that is not defined in jsonSchema
-// - the value of properties that is defined in jsonSchema, but the keys will remain
-// Example:
-//  Input:
-//  obj = {"name": "some name", "user defined property": {"key1": "value1"}}
-//  jsonSchema = {
-//    "type": "object",
-//    "properties": {
-//      "name": { "type": "string" }
-//    }
-//  }
-//  Output:
-//  {"name": null}
 function _redactObject(
   obj: unknown,
   jsonSchema: unknown,
@@ -606,34 +590,59 @@ function _redactObject(
   }
 
   if (
-    jsonSchema.type === "object" &&
-    jsonSchema.properties &&
-    typeof jsonSchema.properties === "object"
+    !(
+      jsonSchema.type === "object" &&
+      jsonSchema.properties &&
+      typeof jsonSchema.properties === "object"
+    )
   ) {
-    const newObj: { [key: string]: any } = {};
-    const objAny = obj as any;
-    for (const key in jsonSchema.properties) {
-      if (key in objAny && objAny[key] !== undefined) {
-        const filteredObj = _redactObject(
-          objAny[key],
-          jsonSchema.properties[key],
-          maxRecursionDepth,
-          depth + 1
-        );
-        newObj[key] = filteredObj;
-      }
-    }
-    return newObj;
-  } else {
-    // other basic type include unsupported types
+    // non-object types including unsupported types
     return null;
   }
+
+  const newObj: { [key: string]: any } = {};
+  const objAny = obj as any;
+  for (const key in jsonSchema.properties) {
+    if (key in objAny && objAny[key] !== undefined) {
+      const filteredObj = _redactObject(
+        objAny[key],
+        jsonSchema.properties[key],
+        maxRecursionDepth,
+        depth + 1
+      );
+      newObj[key] = filteredObj;
+    }
+  }
+  return newObj;
 }
 
-export function redactObject(
-  obj: unknown,
-  jsonSchema: unknown,
-  maxRecursionDepth = 8,
-): unknown {
+/** Redact user content in "obj";
+ *
+ * DFS "obj" and "jsonSchema" together to redact the following things:
+ * - properties that is not defined in jsonSchema
+ * - the value of properties that is defined in jsonSchema, but the keys will remain
+ *
+ * Example:
+ * Input:
+ * ```
+ *  obj = {
+ *    "name": "some name",
+ *    "user defined property": {
+ *      "key1": "value1"
+ *    }
+ *  }
+ *  jsonSchema = {
+ *    "type": "object",
+ *    "properties": {
+ *      "name": { "type": "string" }
+ *    }
+ *  }
+ * ```
+ * Output:
+ * ```
+ *  {"name": null}
+ * ```
+ **/
+export function redactObject(obj: unknown, jsonSchema: unknown, maxRecursionDepth = 8): unknown {
   return _redactObject(obj, jsonSchema, maxRecursionDepth, 0);
 }

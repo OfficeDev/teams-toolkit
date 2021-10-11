@@ -10,12 +10,13 @@ import { LocalSettingsProvider } from "../../common/localSettingsProvider";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { getActivatedResourcePlugins } from "../../plugins/solution/fx-solution/ResourcePluginContainer";
 import { ObjectIsUndefinedError } from "../error";
+import { shouldIgnored } from "./projectSettingsLoader";
 
 export const LocalSettingsLoaderMW: Middleware = async (
   ctx: CoreHookContext,
   next: NextFunction
 ) => {
-  if (isMultiEnvEnabled()) {
+  if (!shouldIgnored(ctx) && isMultiEnvEnabled()) {
     const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
     if (!inputs.projectPath) {
       ctx.result = err(NoProjectOpenedError());

@@ -12,6 +12,7 @@ import {
   combine,
   ConfigMap,
   DynamicPlatforms,
+  EnvConfigSchema,
   err,
   Func,
   FxError,
@@ -61,6 +62,7 @@ import {
   isArmSupportEnabled,
   isMultiEnvEnabled,
   isUserCancelError,
+  redactObject,
 } from "../../../common/tools";
 import { CopyFileError } from "../../../core";
 import { ErrorHandlerMW } from "../../../core/middleware/errorHandler";
@@ -148,6 +150,8 @@ import { scaffoldReadmeAndLocalSettings } from "./v2/scaffolding";
 import { environmentManager } from "../../..";
 import { Json } from "@microsoft/teamsfx-api";
 import { setLocalSettingsV2 } from "../../resource/utils4v2";
+import { LocalSettingsProvider } from "../../../common/localSettingsProvider";
+import { TelemetryEvent, TelemetryProperty } from "../../../common/telemetry";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -604,6 +608,14 @@ export class TeamsAppSolution implements Solution {
       return maybeSelectedPlugins;
     }
     const selectedPlugins = maybeSelectedPlugins.value;
+
+    // Send config telemetry before actually doing anything.
+    // If something fails, we can know whether it is related to the config.
+    const redactedEnvConfig = redactObject(ctx.envInfo.config, EnvConfigSchema);
+    ctx.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.EnvConfig, {
+      [TelemetryProperty.Env]: getHashedEnv(ctx.envInfo.envName),
+      [TelemetryProperty.EnvConfig]: JSON.stringify(redactedEnvConfig),
+    });
 
     if (this.isAzureProject(ctx)) {
       //1. ask common questions for azure resources.

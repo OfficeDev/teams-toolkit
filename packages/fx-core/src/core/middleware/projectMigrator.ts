@@ -9,6 +9,7 @@ import {
   err,
   InputConfigsFolderName,
   Inputs,
+  Platform,
   ProjectSettings,
   ProjectSettingsFileName,
   PublishProfilesFolderName,
@@ -47,6 +48,7 @@ import { LocalDebugConfigKeys } from "../../plugins/resource/localdebug/constant
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";
 const learnMoreText = "Learn More";
+const reloadText = "Reload";
 const migrationGuideUrl = "https://aka.ms/teamsfx-migration-guide";
 const parameterFileNameTemplate = "azure.parameters.@envName.json";
 
@@ -86,6 +88,15 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
       return;
     }
     await migrateToArmAndMultiEnv(ctx);
+  } else if (await needUpdateTeamsToolkitVersion(ctx)) {
+    // TODO: delete before Arm && Multi-env version released
+    // only for arm && multi-env project with unreleased teams toolkit version
+    const core = ctx.self as FxCore;
+    await core.tools.ui.showMessage(
+      "info",
+      getStrings().solution.NeedToUpdateTeamsToolkitVersionMessage,
+      false
+    );
   }
   await next();
 };
@@ -115,12 +126,17 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
       "info",
       getStrings().solution.MigrationToArmAndMultiEnvSuccessMessage,
       false,
+      reloadText,
       learnMoreText
     )
     .then((result) => {
       const userSelected = result.isOk() ? result.value : undefined;
       if (userSelected === learnMoreText) {
         core.tools.ui!.openUrl(migrationGuideUrl);
+      } else if (userSelected === reloadText) {
+        if (inputs.platform === Platform.VSCode) {
+          core.tools.ui.reload?.();
+        }
       }
     });
 }
@@ -387,6 +403,28 @@ async function needMigrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<boolea
     return true;
   }
   return false;
+}
+
+async function needUpdateTeamsToolkitVersion(ctx: CoreHookContext): Promise<boolean> {
+  if (preCheckEnvEnabled()) {
+    return false;
+  }
+  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+  if (!inputs.projectPath) {
+    return false;
+  }
+  const fx = path.join(inputs.projectPath as string, ".fx");
+  if (!(await fs.pathExists(fx))) {
+    return false;
+  }
+  // only for arm && multi-env project
+  const armParameter = path.join(
+    fx,
+    "configs",
+    parameterFileNameTemplate.replace("@envName", "dev")
+  );
+  const defaultEnv = path.join(fx, "env.default.json");
+  return (await fs.pathExists(armParameter)) && !(await fs.pathExists(defaultEnv));
 }
 
 function preCheckEnvEnabled() {

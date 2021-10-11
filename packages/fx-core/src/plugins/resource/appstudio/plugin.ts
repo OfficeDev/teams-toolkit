@@ -17,6 +17,7 @@ import {
   AppPackageFolderName,
   ArchiveFolderName,
   V1ManifestFileName,
+  ConfigMap,
 } from "@microsoft/teamsfx-api";
 import { AppStudioClient } from "./appStudio";
 import {
@@ -47,7 +48,6 @@ import {
   WEB_APPLICATION_INFO_SOURCE,
   PluginNames,
   SOLUTION_PROVISION_SUCCEEDED,
-  USER_INFO,
   REMOTE_TEAMS_APP_ID,
 } from "../../solution/fx-solution/constants";
 import { AppStudioError } from "./errors";
@@ -81,10 +81,15 @@ import {
 } from "./constants";
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
-import { getTemplatesFolder } from "../../..";
+import { getTemplatesFolder, isV2 } from "../../..";
 import path from "path";
 import { getArmOutput } from "../utils4v2";
-import { isArmSupportEnabled, isMultiEnvEnabled, getAppDirectory } from "../../../common";
+import {
+  isArmSupportEnabled,
+  isMultiEnvEnabled,
+  getAppDirectory,
+  isSPFxProject,
+} from "../../../common";
 import {
   LocalSettingsAuthKeys,
   LocalSettingsBotKeys,
@@ -95,6 +100,7 @@ import { v4 } from "uuid";
 import isUUID from "validator/lib/isUUID";
 import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
 import Mustache from "mustache";
+import { SolutionPlugin } from "../localdebug/constants";
 
 export class AppStudioPluginImpl {
   public async getAppDefinitionAndUpdate(
@@ -352,7 +358,7 @@ export class AppStudioPluginImpl {
       remoteTeamsAppId = result.value.teamsAppId!;
       ctx.logProvider?.info(`Teams app created ${remoteTeamsAppId}`);
     }
-    if (isMultiEnvEnabled()) {
+    if (isMultiEnvEnabled() || isV2()) {
       ctx.envInfo.profile.get(PluginNames.APPST)?.set(Constants.TEAMS_APP_ID, remoteTeamsAppId);
     }
     return ok(remoteTeamsAppId);
@@ -360,19 +366,30 @@ export class AppStudioPluginImpl {
 
   public async postProvision(ctx: PluginContext): Promise<string> {
     const remoteTeamsAppId = this.getTeamsAppId(ctx, false);
-    let manifest: TeamsAppManifest;
+    let manifestString: string;
     const appDirectory = await getAppDirectory(ctx.root);
     const manifestPath = await this.getManifestTemplatePath(ctx.root);
     const manifestResult = await this.reloadManifestAndCheckRequiredFields(manifestPath);
     if (manifestResult.isErr()) {
       throw manifestResult;
     } else {
-      manifest = manifestResult.value;
+      manifestString = JSON.stringify(manifestResult.value);
     }
 
     let appDefinition: IAppDefinition;
-    if (this.isSPFxProject(ctx)) {
-      appDefinition = this.convertToAppDefinition(manifest, false);
+    if (isSPFxProject(ctx.projectSettings)) {
+      if (isMultiEnvEnabled()) {
+        const view = {
+          config: ctx.envInfo.config,
+          profile: {
+            "fx-resource-appstudio": {
+              teamsAppId: remoteTeamsAppId,
+            },
+          },
+        };
+        manifestString = Mustache.render(manifestString, view);
+      }
+      appDefinition = this.convertToAppDefinition(JSON.parse(manifestString), false);
     } else {
       const remoteManifest = await this.getAppDefinitionAndManifest(ctx, false);
       if (remoteManifest.isErr()) {
@@ -404,7 +421,7 @@ export class AppStudioPluginImpl {
     const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
     let manifestString: string | undefined = undefined;
     const appDirectory = await getAppDirectory(ctx.root);
-    if (this.isSPFxProject(ctx)) {
+    if (isSPFxProject(ctx.projectSettings)) {
       manifestString = (await fs.readFile(await this.getManifestTemplatePath(ctx.root))).toString();
       if (isMultiEnvEnabled()) {
         const teamsAppId = this.getTeamsAppId(ctx, false);
@@ -486,7 +503,7 @@ export class AppStudioPluginImpl {
     let manifest: TeamsAppManifest | undefined;
     const templatesFolder = getTemplatesFolder();
 
-    if (this.isSPFxProject(ctx)) {
+    if (isSPFxProject(ctx.projectSettings)) {
       const templateManifestFolder = path.join(templatesFolder, "plugins", "resource", "spfx");
       const manifestFile = isMultiEnvEnabled()
         ? path.resolve(templateManifestFolder, "./solution/manifest_multi_env.json")
@@ -542,7 +559,7 @@ export class AppStudioPluginImpl {
       ? `${ctx.root}/${AppPackageFolderName}/appPackage.${ctx.envInfo.envName}.zip`
       : `${ctx.root}/${AppPackageFolderName}/appPackage.zip`;
 
-    if (this.isSPFxProject(ctx)) {
+    if (isSPFxProject(ctx.projectSettings)) {
       manifestString = (await fs.readFile(await this.getManifestTemplatePath(ctx.root))).toString();
       if (isMultiEnvEnabled()) {
         const view = {
@@ -615,7 +632,7 @@ export class AppStudioPluginImpl {
     zip.addLocalFile(outlineFile, isMultiEnvEnabled() ? "resources" : "");
     zip.writeZip(zipFileName);
 
-    if (this.isSPFxProject(ctx)) {
+    if (isSPFxProject(ctx.projectSettings)) {
       await fs.copyFile(zipFileName, `${ctx.root}/SPFx/teams/TeamsSPFxApp.zip`);
     }
 
@@ -654,14 +671,22 @@ export class AppStudioPluginImpl {
     let manifest: TeamsAppManifest | undefined;
 
     const appDirectory = await getAppDirectory(ctx.root);
-    const manifestTpl: TeamsAppManifest = await fs.readJSON(
-      await this.getManifestTemplatePath(ctx.root)
+    let manifestString = JSON.stringify(
+      await fs.readJSON(await this.getManifestTemplatePath(ctx.root))
     );
-    if (this.isSPFxProject(ctx)) {
-      manifest = manifestTpl;
+    if (isSPFxProject(ctx.projectSettings)) {
       if (isMultiEnvEnabled()) {
-        manifest.id = this.getTeamsAppId(ctx, false);
+        const view = {
+          config: ctx.envInfo.config,
+          profile: {
+            "fx-resource-appstudio": {
+              teamsAppId: this.getTeamsAppId(ctx, false),
+            },
+          },
+        };
+        manifestString = Mustache.render(manifestString, view);
       }
+      manifest = JSON.parse(manifestString);
     } else {
       const fillinRes = await this.getAppDefinitionAndManifest(ctx, false);
       if (fillinRes.isOk()) {
@@ -714,7 +739,7 @@ export class AppStudioPluginImpl {
       return err(manifest.error);
     }
     let teamsAppId;
-    if (this.isSPFxProject(ctx)) {
+    if (isSPFxProject(ctx.projectSettings)) {
       teamsAppId = await this.getSPFxLocalDebugAppDefinitionAndUpdate(ctx, manifest.value);
     } else {
       teamsAppId = await this.getAppDefinitionAndUpdate(ctx, "localDebug", manifest.value);
@@ -722,11 +747,21 @@ export class AppStudioPluginImpl {
     if (teamsAppId.isErr()) {
       return teamsAppId;
     }
+    if (isMultiEnvEnabled()) {
+      ctx.localSettings?.teamsApp?.set(Constants.TEAMS_APP_ID, teamsAppId.value);
+    } else {
+      (ctx.envInfo?.profile.get("solution") as ConfigMap)?.set(
+        LOCAL_DEBUG_TEAMS_APP_ID,
+        teamsAppId.value
+      );
+    }
     return ok(teamsAppId.value);
   }
 
-  public async checkPermission(ctx: PluginContext): Promise<ResourcePermission[]> {
-    let userInfoObject: IUserList;
+  public async checkPermission(
+    ctx: PluginContext,
+    userInfo: IUserList
+  ): Promise<ResourcePermission[]> {
     const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
 
     const teamsAppId = this.getTeamsAppId(ctx, false);
@@ -738,21 +773,10 @@ export class AppStudioPluginImpl {
       }
     }
 
-    const userInfo = ctx.envInfo.profile.get(SOLUTION)?.get(USER_INFO);
-    if (!userInfo) {
-      throw new Error(ErrorMessages.GetConfigError(USER_INFO, SOLUTION));
-    }
-
-    try {
-      userInfoObject = JSON.parse(userInfo) as IUserList;
-    } catch (error) {
-      throw new Error(ErrorMessages.ParseUserInfoError);
-    }
-
     const teamsAppRoles = await AppStudioClient.checkPermission(
       teamsAppId,
       appStudioToken as string,
-      userInfoObject.aadId
+      userInfo.aadId
     );
 
     const result: ResourcePermission[] = [
@@ -799,8 +823,10 @@ export class AppStudioPluginImpl {
     return teamsAppAdmin;
   }
 
-  public async grantPermission(ctx: PluginContext): Promise<ResourcePermission[]> {
-    let userInfoObject: IUserList;
+  public async grantPermission(
+    ctx: PluginContext,
+    userInfo: IUserList
+  ): Promise<ResourcePermission[]> {
     const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
 
     const teamsAppId = this.getTeamsAppId(ctx, false);
@@ -820,29 +846,8 @@ export class AppStudioPluginImpl {
       }
     }
 
-    const userInfo = ctx.envInfo.profile.get(SOLUTION)?.get(USER_INFO);
-    if (!userInfo) {
-      throw new Error(
-        AppStudioError.GrantPermissionFailedError.message(
-          ErrorMessages.GetConfigError(USER_INFO, SOLUTION),
-          teamsAppId
-        )
-      );
-    }
-
     try {
-      userInfoObject = JSON.parse(userInfo) as IUserList;
-    } catch (error) {
-      throw new Error(
-        AppStudioError.GrantPermissionFailedError.message(
-          ErrorMessages.ParseUserInfoError,
-          teamsAppId
-        )
-      );
-    }
-
-    try {
-      await AppStudioClient.grantPermission(teamsAppId, appStudioToken as string, userInfoObject);
+      await AppStudioClient.grantPermission(teamsAppId, appStudioToken as string, userInfo);
     } catch (error) {
       throw new Error(
         AppStudioError.GrantPermissionFailedError.message(error?.message, teamsAppId)
@@ -938,15 +943,6 @@ export class AppStudioPluginImpl {
     } finally {
       await publishProgress?.end(true);
     }
-  }
-
-  private isSPFxProject(ctx: PluginContext): boolean {
-    const solutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
-    if (solutionSettings) {
-      const selectedPlugins = solutionSettings.activeResourcePlugins;
-      return selectedPlugins && selectedPlugins.indexOf("fx-resource-spfx") !== -1;
-    }
-    return false;
   }
 
   private async checkFileExist(filePath: string): Promise<boolean> {
@@ -1354,7 +1350,7 @@ export class AppStudioPluginImpl {
     let teamsAppId: string;
     if (isLocalDebug) {
       teamsAppId = isMultiEnvEnabled()
-        ? ctx.localSettings?.teamsApp.get(LocalSettingsTeamsAppKeys.TeamsAppId)
+        ? ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TeamsAppId)
         : (ctx.envInfo.profile.get("solution")?.get(LOCAL_DEBUG_TEAMS_APP_ID) as string);
     } else {
       teamsAppId = isMultiEnvEnabled()
@@ -1706,7 +1702,7 @@ export class AppStudioPluginImpl {
     return ok([appDefinition, updatedManifest]);
   }
 
-  private async getManifestTemplatePath(projectRoot: string): Promise<string> {
+  public async getManifestTemplatePath(projectRoot: string): Promise<string> {
     const appDir = await getAppDirectory(projectRoot);
     return isMultiEnvEnabled() ? `${appDir}/${MANIFEST_TEMPLATE}` : `${appDir}/${REMOTE_MANIFEST}`;
   }

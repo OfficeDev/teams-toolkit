@@ -10,6 +10,7 @@ import {
   Inputs,
   Json,
   ok,
+  Platform,
   ProjectSettings,
   QTreeNode,
   Result,
@@ -19,7 +20,7 @@ import {
   traverse,
   UserCancelError,
 } from "@microsoft/teamsfx-api";
-import { isV2 } from "..";
+import { isV2, TOOLS } from "..";
 import { CoreHookContext, FxCore, isMultiEnvEnabled } from "../..";
 import {
   NoProjectOpenedError,
@@ -44,9 +45,9 @@ import { desensitize } from "./questionModel";
 import { shouldIgnored } from "./projectSettingsLoader";
 import { PermissionRequestFileProvider } from "../permissionRequest";
 import { newEnvInfo } from "../tools";
+import { mapToJson } from "../../common";
 
 const newTargetEnvNameOption = "+ new environment";
-let activeEnv: string | undefined;
 const lastUsedMark = " (last used)";
 let lastUsedEnv: string | undefined;
 
@@ -63,49 +64,49 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
     }
 
     const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-    if ((inputs.previewType && inputs.previewType === "local") || inputs.ignoreEnvInfo) {
-      skip = true;
-    }
-
     if (!ctx.projectSettings) {
       ctx.result = err(ProjectSettingsUndefinedError());
+      return;
+    }
+
+    if (!inputs.projectPath) {
+      ctx.result = err(NoProjectOpenedError());
       return;
     }
 
     const core = ctx.self as FxCore;
 
     let targetEnvName: string;
-    if (!skip && isMultiEnvEnabled()) {
-      if (inputs.askEnvSelect) {
+    if (!skip && !inputs.ignoreEnvInfo && isMultiEnvEnabled()) {
+      // TODO: This is a workaround for collabrator feature to programmatically load an env in extension.
+      if (inputs.env) {
+        const result = await useUserSetEnv(inputs.projectPath, inputs.env);
+        if (result.isErr()) {
+          ctx.result = result;
+          return;
+        }
+        targetEnvName = result.value;
+      } else {
         const result = await askTargetEnvironment(core.tools, inputs);
         if (result.isErr()) {
           ctx.result = err(result.error);
           return;
         }
         targetEnvName = result.value;
-        ctx.ui?.showMessage(
+        TOOLS.ui?.showMessage(
           "info",
           `[${targetEnvName}] is selected as the target environment to ${inputs.stage}`,
           false
         );
 
         lastUsedEnv = targetEnvName;
-      } else if (inputs.env) {
-        const result = await useUserSetEnv(inputs);
-        if (result.isErr()) {
-          ctx.result = result.error;
-          return;
-        }
-        targetEnvName = result.value;
-      } else if (activeEnv) {
-        targetEnvName = activeEnv;
-      } else {
-        ctx.result = err(NonActiveEnvError);
-        return;
       }
     } else {
       targetEnvName = environmentManager.getDefaultEnvName();
     }
+
+    // make sure inputs.env always has value so telemetry can use it.
+    inputs.env = targetEnvName;
 
     const result = await loadSolutionContext(
       core.tools,
@@ -113,32 +114,22 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
       ctx.projectSettings,
       ctx.projectIdMissing,
       targetEnvName,
-      inputs.ignoreEnvInfo
+      skip || inputs.ignoreEnvInfo
     );
     if (result.isErr()) {
       ctx.result = err(result.error);
       return;
     }
 
+    ctx.solutionContext = result.value;
+
     if (isV2()) {
       const envInfo = result.value.envInfo;
-      const profile: Json = {};
-      for (const key of envInfo.profile.keys()) {
-        const map = envInfo.profile.get(key);
-        if (map) {
-          profile[key] = (map as ConfigMap).toJSON();
-        }
-      }
+      const profile: Json = mapToJson(envInfo.profile);
       ctx.envInfoV2 = { envName: envInfo.envName, config: envInfo.config, profile: profile };
-    } else {
-      ctx.solutionContext = result.value;
     }
     await next();
   };
-}
-
-export function setActiveEnv(env: string) {
-  activeEnv = env;
 }
 
 export async function loadSolutionContext(
@@ -154,26 +145,23 @@ export async function loadSolutionContext(
   }
 
   const cryptoProvider = new LocalCrypto(projectSettings.projectId);
-  // ensure backwards compatibility:
-  // no need to decrypt the secrets in *.userdata for previous TeamsFx project, which has no project id.
-  const envDataResult = await environmentManager.loadEnvInfo(
-    inputs.projectPath,
-    targetEnvName,
-    projectIdMissing ? undefined : cryptoProvider
-  );
 
   let envInfo: EnvInfo;
-  if (envDataResult.isErr()) {
-    if (ignoreEnvInfo) {
-      // ignore env loading error
-      tools.logProvider.info(
-        `[core:env] failed to load '${targetEnvName}' environment, skipping because ignoreEnvInfo is set to true, error: ${envDataResult.error.message}`
-      );
-      envInfo = newEnvInfo();
-    } else {
+  // in pre-multi-env case, envInfo is always loaded.
+  if (ignoreEnvInfo && isMultiEnvEnabled()) {
+    envInfo = newEnvInfo();
+  } else {
+    // ensure backwards compatibility:
+    // no need to decrypt the secrets in *.userdata for previous TeamsFx project, which has no project id.
+    const envDataResult = await environmentManager.loadEnvInfo(
+      inputs.projectPath,
+      targetEnvName,
+      projectIdMissing ? undefined : cryptoProvider
+    );
+
+    if (envDataResult.isErr()) {
       return err(envDataResult.error);
     }
-  } else {
     envInfo = envDataResult.value;
   }
 
@@ -316,18 +304,18 @@ export async function askNewEnvironment(
   };
 }
 
-async function useUserSetEnv(inputs: Inputs): Promise<Result<string, FxError>> {
-  const checkEnv = await environmentManager.checkEnvExist(inputs.projectPath!, inputs.env);
+async function useUserSetEnv(projectPath: string, env: string): Promise<Result<string, FxError>> {
+  const checkEnv = await environmentManager.checkEnvExist(projectPath, env);
   if (checkEnv.isErr()) {
     return err(checkEnv.error);
   }
 
   const envExists = checkEnv.value;
   if (!envExists) {
-    return err(ProjectEnvNotExistError(inputs.env));
+    return err(ProjectEnvNotExistError(env));
   }
 
-  return ok(inputs.env);
+  return ok(env);
 }
 
 async function getQuestionsForTargetEnv(

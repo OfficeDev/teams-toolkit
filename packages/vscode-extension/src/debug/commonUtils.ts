@@ -303,7 +303,7 @@ function getLocalSetting(jsonSelector: (jsonObject: any) => any): string | undef
 export function getTeamsAppTenantId(): string | undefined {
   try {
     if (isMultiEnvEnabled()) {
-      return getLocalSetting((localSettingsJson) => localSettingsJson.teamsApp.tenantId);
+      return getLocalSetting((localSettingsJson) => localSettingsJson.teamsApp?.tenantId);
     } else {
       return getSettingWithUserData((envJson) => envJson.solution.teamsAppTenantId);
     }
@@ -316,7 +316,7 @@ export function getTeamsAppTenantId(): string | undefined {
 export function getLocalTeamsAppId(): string | undefined {
   try {
     if (isMultiEnvEnabled()) {
-      return getLocalSetting((localSettingsJson) => localSettingsJson.teamsApp.teamsAppId);
+      return getLocalSetting((localSettingsJson) => localSettingsJson.teamsApp?.teamsAppId);
     } else {
       return getSettingWithUserData((envJson) => envJson.solution.localDebugTeamsAppId);
     }

@@ -15,7 +15,7 @@ param sqlDatabaseName string
 param sqlEndpoint string
 {{/contains}}
 {{#contains 'fx-resource-identity' Plugins}}
-param identityId string
+param identityClientId string
 {{/contains}}
 
 var teamsMobileOrDesktopAppClientId = '1fec8e78-bce4-4aaf-ab1b-5451cc387264'
@@ -66,7 +66,7 @@ resource functionAppAppSettings 'Microsoft.Web/sites/config@2021-01-15' = {
     WEBSITE_RUN_FROM_PACKAGE: '1'
     WEBSITE_CONTENTSHARE: toLower(functionAppName)
     {{#contains 'fx-resource-identity' Plugins}}
-    IDENTITY_ID: identityId
+    IDENTITY_ID: identityClientId
     {{/contains}}
     {{#contains 'fx-resource-azure-sql' Plugins}}
     SQL_DATABASE_NAME: sqlDatabaseName

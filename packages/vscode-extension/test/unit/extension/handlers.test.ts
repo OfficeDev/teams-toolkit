@@ -366,11 +366,15 @@ suite("handlers", () => {
       sinon.stub(handlers, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      sinon.stub(envTree, "updateCollaboratorList").resolves();
+      sinon.stub(envTree, "addCollaboratorToEnv").resolves();
       sinon.stub(MockCore.prototype, "grantPermission").returns(
         Promise.resolve(
           ok({
             state: CollaborationState.OK,
+            userInfo: {
+              userObjectId: "fake-user-object-id",
+              userPrincipalName: "fake-user-principle-name",
+            },
             permissions: [
               {
                 name: "name",
@@ -388,32 +392,37 @@ suite("handlers", () => {
       sinon.restore();
     });
 
-    test("list collaborator: with user", async () => {
+    test("list all collaborators: with user", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      sinon.stub(MockCore.prototype, "listCollaborator").returns(
+      sinon.stub(MockCore.prototype, "listAllCollaborators").returns(
         Promise.resolve(
           ok({
-            state: CollaborationState.OK,
-            collaborators: [
-              {
-                userPrincipalName: "userName",
-                userObjectId: "userObjectId",
-                isAadOwner: true,
-                teamsAppResourceId: "teamsId",
-                aadResourceId: "aadId",
-              },
-            ],
+            env: {
+              state: CollaborationState.OK,
+              collaborators: [
+                {
+                  userPrincipalName: "userName",
+                  userObjectId: "userObjectId",
+                  isAadOwner: true,
+                  teamsAppResourceId: "teamsId",
+                  aadResourceId: "aadId",
+                },
+              ],
+            },
           })
         )
       );
 
-      const result = await handlers.listCollaborator("env");
-      chai.assert.equal(result[0].label, "userName");
-      chai.assert.equal(result[0].commandId, "fx-extension.listcollaborator.env.userObjectId");
-      chai.assert.equal(result[0].icon, "person");
-      chai.assert.equal(result[0].isCustom, false);
+      const result = await handlers.listAllCollaborators(["env"]);
+      chai.assert.equal(result["env"][0].label, "userName");
+      chai.assert.equal(
+        result["env"][0].commandId,
+        "fx-extension.listcollaborator.env.userObjectId"
+      );
+      chai.assert.equal(result["env"][0].icon, "person");
+      chai.assert.equal(result["env"][0].isCustom, false);
       sinon.restore();
     });
 
@@ -421,13 +430,21 @@ suite("handlers", () => {
       sinon.stub(handlers, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      sinon.stub(MockCore.prototype, "listCollaborator").throws(new Error("error"));
+      sinon.stub(MockCore.prototype, "listAllCollaborators").resolves(
+        err({
+          name: "error",
+          source: "extensionTest",
+          message: "error",
+          stack: new Error().stack,
+          timestamp: new Date(),
+        })
+      );
 
-      const result = await handlers.listCollaborator("env");
-      chai.assert.equal(result[0].label, "error");
-      chai.assert.equal(result[0].commandId, "fx-extension.listcollaborator.env");
-      chai.assert.equal(result[0].icon, "warning");
-      chai.assert.equal(result[0].isCustom, true);
+      const result = await handlers.listAllCollaborators(["env"]);
+      chai.assert.equal(result["env"][0].label, "error");
+      chai.assert.equal(result["env"][0].commandId, "fx-extension.listcollaborator.env");
+      chai.assert.equal(result["env"][0].icon, "warning");
+      chai.assert.equal(result["env"][0].isCustom, true);
       sinon.restore();
     });
 
@@ -435,20 +452,22 @@ suite("handlers", () => {
       sinon.stub(handlers, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      sinon.stub(MockCore.prototype, "listCollaborator").returns(
+      sinon.stub(MockCore.prototype, "listAllCollaborators").returns(
         Promise.resolve(
           ok({
-            state: CollaborationState.OK,
-            collaborators: [],
+            env: {
+              state: CollaborationState.OK,
+              collaborators: [],
+            },
           })
         )
       );
 
-      const result = await handlers.listCollaborator("env");
-      chai.assert.equal(result[0].label, "No permission to list collaborators");
-      chai.assert.equal(result[0].commandId, "fx-extension.listcollaborator.env");
-      chai.assert.equal(result[0].icon, "warning");
-      chai.assert.equal(result[0].isCustom, true);
+      const result = await handlers.listAllCollaborators(["env"]);
+      chai.assert.equal(result["env"][0].label, "No permission to list collaborators");
+      chai.assert.equal(result["env"][0].commandId, "fx-extension.listcollaborator.env");
+      chai.assert.equal(result["env"][0].icon, "warning");
+      chai.assert.equal(result["env"][0].isCustom, true);
       sinon.restore();
     });
 
@@ -514,7 +533,7 @@ suite("handlers", () => {
       sinon.restore();
     });
 
-    test("check permission: without permission", async () => {
+    test("check permission: throw error without permission", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");

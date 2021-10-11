@@ -30,6 +30,7 @@ import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContai
 import { Links } from "../bot/constants";
 import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
 import "./v2";
+import { IUserList } from "./interfaces/IAppDefinition";
 @Service(ResourcePlugins.AppStudioPlugin)
 export class AppStudioPlugin implements Plugin {
   name = "fx-resource-appstudio";
@@ -307,12 +308,18 @@ export class AppStudioPlugin implements Plugin {
     }
   }
 
-  public async checkPermission(ctx: PluginContext): Promise<Result<ResourcePermission[], FxError>> {
+  public async checkPermission(
+    ctx: PluginContext,
+    userInfo: Record<string, any>
+  ): Promise<Result<ResourcePermission[], FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.checkPermission);
 
     try {
-      const checkPermissionResult = await this.appStudioPluginImpl.checkPermission(ctx);
+      const checkPermissionResult = await this.appStudioPluginImpl.checkPermission(
+        ctx,
+        userInfo as IUserList
+      );
       TelemetryUtils.sendSuccessEvent(TelemetryEventName.checkPermission);
       return ok(checkPermissionResult);
     } catch (error) {
@@ -331,12 +338,18 @@ export class AppStudioPlugin implements Plugin {
     }
   }
 
-  public async grantPermission(ctx: PluginContext): Promise<Result<ResourcePermission[], FxError>> {
+  public async grantPermission(
+    ctx: PluginContext,
+    userInfo: Record<string, any>
+  ): Promise<Result<ResourcePermission[], FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.grantPermission);
 
     try {
-      const grantPermissionResult = await this.appStudioPluginImpl.grantPermission(ctx);
+      const grantPermissionResult = await this.appStudioPluginImpl.grantPermission(
+        ctx,
+        userInfo as IUserList
+      );
       TelemetryUtils.sendSuccessEvent(TelemetryEventName.grantPermission);
       return ok(grantPermissionResult);
     } catch (error) {
@@ -393,6 +406,9 @@ export class AppStudioPlugin implements Plugin {
       );
     } else if (func.method === "migrateV1Project") {
       return await this.migrateV1Project(ctx);
+    } else if (func.method === "getManifestTemplatePath") {
+      const filePath = await this.appStudioPluginImpl.getManifestTemplatePath(ctx.root);
+      return ok(filePath);
     }
     return err(
       new SystemError(

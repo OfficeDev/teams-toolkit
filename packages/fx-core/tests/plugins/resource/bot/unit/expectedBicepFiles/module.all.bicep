@@ -8,7 +8,7 @@ module botProvision './botProvision.all.bicep' = {
     botServiceSKU: bot_serviceSKU
     botWebAppName: bot_sitesName
     botWebAppSKU: bot_webAppSKU
-    identityName: test_identity_name
+    identityResourceId: test_identity_resource_id
   }
 }
 module botConfiguration './botConfiguration.all.bicep' = {
@@ -31,6 +31,6 @@ module botConfiguration './botConfiguration.all.bicep' = {
     functionEndpoint: test_function_endpoint
     sqlDatabaseName: test_sql_database_name
     sqlEndpoint: test_sql_endpoint
-    identityId: test_identity_id
+    identityClientId: test_identity_id
   }
 }

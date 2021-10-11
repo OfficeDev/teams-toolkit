@@ -353,7 +353,6 @@ export class UpdatePermissionConfig {
 }
 
 export class CheckGrantPermissionConfig {
-  public userInfo?: any;
   public objectId?: string;
   public isGrantPermission: boolean;
 
@@ -371,33 +370,6 @@ export class CheckGrantPermissionConfig {
         Utils.getPermissionErrorMessage(
           GetConfigError.message(Errors.GetConfigError(ConfigKeys.objectId, Plugins.pluginName)),
           this.isGrantPermission
-        )
-      );
-    }
-
-    const userInfo: ConfigValue = ctx.envInfo.profile
-      ?.get(Plugins.solution)
-      ?.get(ConfigKeysOfOtherPlugin.solutionUserInfo);
-    if (!userInfo) {
-      throw ResultFactory.SystemError(
-        GetConfigError.name,
-        Utils.getPermissionErrorMessage(
-          Errors.GetConfigError(ConfigKeysOfOtherPlugin.solutionUserInfo, Plugins.solution),
-          this.isGrantPermission,
-          this.objectId
-        )
-      );
-    }
-
-    try {
-      this.userInfo = JSON.parse(userInfo);
-    } catch (error) {
-      throw ResultFactory.SystemError(
-        GetConfigError.name,
-        Utils.getPermissionErrorMessage(
-          GetConfigError.message(error.message),
-          this.isGrantPermission,
-          this.objectId
         )
       );
     }

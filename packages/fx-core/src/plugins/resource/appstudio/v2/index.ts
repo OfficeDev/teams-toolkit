@@ -103,23 +103,24 @@ export class AppStudioPluginV2 implements ResourcePlugin {
       this.plugin
     );
   }
-  async deploy(
-    ctx: Context,
-    inputs: DeploymentInputs,
-    provisionOutput: Json,
-    tokenProvider: AzureAccountProvider
-  ): Promise<Result<Void, FxError>> {
-    return await deployAdapter(ctx, inputs, provisionOutput, tokenProvider, this.plugin);
-  }
 
   async executeUserTask(
     ctx: Context,
     inputs: Inputs,
     func: Func,
+    localSettings: Json,
     envInfo: v2.EnvInfoV2,
     tokenProvider: TokenProvider
   ): Promise<Result<unknown, FxError>> {
-    return await executeUserTaskAdapter(ctx, inputs, func, envInfo, tokenProvider, this.plugin);
+    return await executeUserTaskAdapter(
+      ctx,
+      inputs,
+      func,
+      localSettings,
+      envInfo,
+      tokenProvider,
+      this.plugin
+    );
   }
 
   async getQuestions(

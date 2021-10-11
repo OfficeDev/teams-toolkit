@@ -50,6 +50,7 @@ export class EnvironmentVariables {
 export class FrontendPathInfo {
   static WorkingDir = "tabs";
   static TemplateRelativeDir = path.join("plugins", "resource", "frontend");
+  static TemplateFolderName = "frontend";
   static BicepTemplateRelativeDir = path.join(FrontendPathInfo.TemplateRelativeDir, "bicep");
   static TemplateFileExt = ".tpl";
   static TemplatePackageExt = ".zip";

@@ -138,6 +138,7 @@ export interface SolutionPlugin {
     ctx: Context,
     inputs: Inputs,
     func: Func,
+    localSettings: Json,
     envInfo: EnvInfoV2,
     tokenProvider: TokenProvider
   ) => Promise<Result<unknown, FxError>>;

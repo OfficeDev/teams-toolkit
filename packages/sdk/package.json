@@ -111,6 +111,7 @@
     "cross-env": "^7.0.2",
     "dotenv": "^8.2.0",
     "eslint": "^7.15.0",
+    "eslint-plugin-prettier": "^4.0.0",
     "fs-extra": "^9.1.0",
     "got": "^11.8.2",
     "isomorphic-fetch": "^3.0.0",
@@ -131,6 +132,7 @@
     "mocked-env": "^1.3.2",
     "nyc": "^15.1.0",
     "playwright-chromium": "^1.11.1",
+    "prettier": "^2.4.1",
     "puppeteer": "^9.1.1",
     "rimraf": "^3.0.0",
     "rollup": "^2.41.0",
@@ -151,9 +153,6 @@
   "lint-staged": {
     "*.{js,jsx,css,ts,tsx}": [
       "npx eslint --cache --fix --quiet"
-    ],
-    "*": [
-      "npx prettier --config .prettierrc.js --ignore-unknown --write --ignore-path .prettierignore "
     ]
   }
 }

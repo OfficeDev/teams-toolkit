@@ -7,13 +7,10 @@ import * as sinon from "sinon";
 import { default as chaiAsPromised } from "chai-as-promised";
 import AdmZip from "adm-zip";
 import path from "path";
-import { Stage } from "@microsoft/teamsfx-api";
 
 import { TeamsBot } from "../../../../../src/plugins/resource/bot/index";
 import { TeamsBotImpl } from "../../../../../src/plugins/resource/bot/plugin";
 
-import { QuestionNames } from "../../../../../src/plugins/resource/bot/constants";
-import * as downloadByUrl from "../../../../../src/plugins/resource/bot/utils/downloadByUrl";
 import * as utils from "../../../../../src/plugins/resource/bot/utils/common";
 import { ProgrammingLanguage } from "../../../../../src/plugins/resource/bot/enums/programmingLanguage";
 import { FxBotPluginResultFactory as ResultFactory } from "../../../../../src/plugins/resource/bot/result";
@@ -26,6 +23,7 @@ import { AADRegistration } from "../../../../../src/plugins/resource/bot/aadRegi
 import { BotAuthCredential } from "../../../../../src/plugins/resource/bot/botAuthCredential";
 import { AppStudio } from "../../../../../src/plugins/resource/bot/appStudio/appStudio";
 import { LanguageStrategy } from "../../../../../src/plugins/resource/bot/languageStrategy";
+import mockedEnv from "mocked-env";
 
 chai.use(chaiAsPromised);
 
@@ -74,12 +72,6 @@ describe("Teams Bot Resource Plugin", () => {
       botPluginImpl.config.scaffold.programmingLanguage = ProgrammingLanguage.TypeScript;
       botPluginImpl.config.actRoles = [PluginActRoles.Bot];
 
-      // Prepare fake zip buffer
-      const zip = new AdmZip();
-      zip.addFile("anyfile", Buffer.from("anycontent"));
-
-      sinon.stub(downloadByUrl, "downloadByUrl").resolves(zip.toBuffer());
-
       const pluginContext = testUtils.newPluginContext();
       pluginContext.root = scaffoldDir;
 
@@ -94,12 +86,6 @@ describe("Teams Bot Resource Plugin", () => {
       // Arrange
       botPluginImpl.config.scaffold.programmingLanguage = ProgrammingLanguage.JavaScript;
       botPluginImpl.config.actRoles = [PluginActRoles.MessageExtension];
-
-      // Prepare fake zip buffer
-      const zip = new AdmZip();
-      zip.addFile("anyfile", Buffer.from("anycontent"));
-
-      sinon.stub(downloadByUrl, "downloadByUrl").resolves(zip.toBuffer());
 
       const pluginContext = testUtils.newPluginContext();
       pluginContext.root = scaffoldDir;
@@ -293,35 +279,62 @@ describe("Teams Bot Resource Plugin", () => {
     let botPlugin: TeamsBot;
     let botPluginImpl: TeamsBotImpl;
     let rootDir: string;
+    let mockedEnvRestore: () => void;
 
     beforeEach(() => {
       botPlugin = new TeamsBot();
       botPluginImpl = new TeamsBotImpl();
       botPlugin.teamsBotImpl = botPluginImpl;
       rootDir = path.join(__dirname, utils.genUUID());
+
+      sinon.stub(LanguageStrategy, "localBuild").resolves();
+      sinon.stub(utils, "zipAFolder").returns(new AdmZip().toBuffer());
+      sinon.stub(AzureOperations, "ListPublishingCredentials").resolves({
+        publishingUserName: "test-username",
+        publishingPassword: "test-password",
+      });
+      sinon.stub(AzureOperations, "ZipDeployPackage").resolves();
     });
 
     afterEach(async () => {
       sinon.restore();
+      mockedEnvRestore();
       await fs.remove(rootDir);
     });
 
-    it("Happy Path", async () => {
+    it("Happy Path with Arm support disabled", async () => {
       // Arrange
       const pluginContext = testUtils.newPluginContext();
       pluginContext.root = rootDir;
-      botPluginImpl.config.provision.siteName = "anything";
-      sinon.stub(LanguageStrategy, "localBuild").resolves();
-      sinon.stub(utils, "zipAFolder").returns(new AdmZip().toBuffer());
-      const fakeCreds = testUtils.generateFakeTokenCredentialsBase();
       sinon
         .stub(pluginContext.azureAccountProvider!, "getAccountCredentialAsync")
-        .resolves(fakeCreds);
-      sinon.stub(AzureOperations, "ListPublishingCredentials").resolves({
-        publishingUserName: "anything",
-        publishingPassword: "anything",
+        .resolves(testUtils.generateFakeTokenCredentialsBase());
+      botPluginImpl.config.provision.siteName = "test-site-name";
+      mockedEnvRestore = mockedEnv({
+        TEAMSFX_INSIDER_PREVIEW: "0",
       });
-      sinon.stub(AzureOperations, "ZipDeployPackage").resolves();
+
+      // Act
+      const result = await botPlugin.deploy(pluginContext);
+
+      // Assert
+      chai.assert.isTrue(result.isOk());
+    });
+
+    it("Happy Path with Arm support enabled", async () => {
+      // Arrange
+      const pluginContext = testUtils.newPluginContext();
+      pluginContext.root = rootDir;
+      sinon
+        .stub(pluginContext.azureAccountProvider!, "getAccountCredentialAsync")
+        .resolves(testUtils.generateFakeTokenCredentialsBase());
+      pluginContext.config.set(
+        "botWebAppResourceId",
+        "/subscriptions/test-subscription/resourceGroups/test-rg/providers/Microsoft.Web/sites/test-webapp"
+      );
+      mockedEnvRestore = mockedEnv({
+        TEAMSFX_INSIDER_PREVIEW: "1",
+      });
 
       // Act
       const result = await botPlugin.deploy(pluginContext);

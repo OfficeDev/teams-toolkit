@@ -97,7 +97,9 @@
       "editSecretTitle": "Edit the decrypted secret value",
       "decryptFailed": "Failed to decrypt secrect.",
       "openEnvFailed": "Can not open project environment %s.",
-      "findEnvFailed": "Can not find project environment %s."
+      "findEnvFailed": "Can not find project environment %s.",
+      "localDebugDescription": "Preview your project by running local debug",
+      "localDebugTitle": "Local debug"
     },
     "progressHandler": {
       "teamsToolkitComponent": "[Teams Toolkit]",
@@ -189,8 +191,10 @@
     },
     "qm": {
       "emptySelection": "select option is empty",
-      "ok": "ok",
-      "selectFileOrFolder": "Select file/folder"
+      "ok": "ok (Enter)",
+      "selectFileOrFolder": "Select file/folder",
+      "backKeyboard": " (Alt + LeftArrow to previous step)",
+      "multiSelectKeyboard": " (Space key to check/uncheck)"
     },
     "webview": {
       "downloadSampleTitle": "Select folder to download the sample app",

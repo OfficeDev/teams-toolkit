@@ -84,16 +84,6 @@ describe("Create single tab/bot/function", function () {
       await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
       console.log(`[Successfully] update simple auth sku to B1`);
 
-      // set active env
-      result = await execAsync(`teamsfx env activate ${env}`, {
-        cwd: projectPath,
-        env: processEnv,
-        timeout: 0,
-      });
-      console.log(
-        `[Successfully] env activate, stdout: '${result.stdout}', stderr: '${result.stderr}'`
-      );
-
       // list env
       result = await execAsync(`teamsfx env list`, {
         cwd: projectPath,
@@ -101,27 +91,15 @@ describe("Create single tab/bot/function", function () {
         timeout: 0,
       });
       const envs = result.stdout.trim().split(/\r?\n/).sort();
-      expect(envs).to.deep.equal(["dev", "e2e (active)"]);
+      expect(envs).to.deep.equal(["dev", "e2e"]);
       expect(result.stderr).to.be.empty;
       console.log(
         `[Successfully] env list, stdout: '${result.stdout}', stderr: '${result.stderr}'`
       );
 
-      // show env
-      result = await execAsync(`teamsfx env`, {
-        cwd: projectPath,
-        env: processEnv,
-        timeout: 0,
-      });
-      expect(result.stdout).to.equal("e2e\n");
-      expect(result.stderr).to.be.empty;
-      console.log(
-        `[Successfully] env show, stdout: '${result.stdout}', stderr: '${result.stderr}'`
-      );
-
       // provision
       result = await execAsyncWithRetry(
-        `teamsfx provision --sql-admin-name e2e --sql-password 'Abc123456%'`,
+        `teamsfx provision --sql-admin-name e2e --sql-password 'Abc123456%' --env ${env}`,
         {
           cwd: projectPath,
           env: processEnv,
@@ -167,7 +145,7 @@ describe("Create single tab/bot/function", function () {
       }
 
       // deploy
-      await execAsyncWithRetry(`teamsfx deploy`, {
+      await execAsyncWithRetry(`teamsfx deploy --env ${env}`, {
         cwd: projectPath,
         env: processEnv,
         timeout: 0,
@@ -196,7 +174,7 @@ describe("Create single tab/bot/function", function () {
       }
 
       // validate manifest
-      result = await execAsyncWithRetry(`teamsfx validate`, {
+      result = await execAsyncWithRetry(`teamsfx validate --env ${env}`, {
         cwd: projectPath,
         env: processEnv,
         timeout: 0,
@@ -208,7 +186,7 @@ describe("Create single tab/bot/function", function () {
       }
 
       // package
-      await execAsyncWithRetry(`teamsfx package`, {
+      await execAsyncWithRetry(`teamsfx package --env ${env}`, {
         cwd: projectPath,
         env: processEnv,
         timeout: 0,
@@ -221,7 +199,7 @@ describe("Create single tab/bot/function", function () {
       }
 
       // publish
-      await execAsyncWithRetry(`teamsfx publish`, {
+      await execAsyncWithRetry(`teamsfx publish --env ${env}`, {
         cwd: projectPath,
         env: processEnv,
         timeout: 0,

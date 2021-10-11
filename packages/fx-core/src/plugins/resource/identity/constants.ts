@@ -7,8 +7,8 @@ export class Constants {
   public static readonly deployName: string = "user-assigned-identity";
 
   public static readonly identityName: string = "identityName";
-  public static readonly identityId: string = "identityId";
-  public static readonly identity: string = "identity";
+  public static readonly identityClientId: string = "identityClientId";
+  public static readonly identityResourceId: string = "identityResourceId";
 
   public static readonly solution: string = "solution";
   public static readonly subscriptionId: string = "subscriptionId";
@@ -43,14 +43,16 @@ export class Telemetry {
 }
 export class IdentityBicep {
   static readonly identityName: string = "userAssignedIdentityProvision.outputs.identityName";
-  static readonly identityId: string = "userAssignedIdentityProvision.outputs.identityId";
-  static readonly identity: string = "userAssignedIdentityProvision.outputs.identity";
+  static readonly identityClientId: string =
+    "userAssignedIdentityProvision.outputs.identityClientId";
+  static readonly identityResourceId: string =
+    "userAssignedIdentityProvision.outputs.identityResourceId";
 }
 
 export class IdentityArmOutput {
   static readonly identityName: string = "identity_identityName";
-  static readonly identityId: string = "identity_identityId";
-  static readonly identity: string = "identity_identity";
+  static readonly identityClientId: string = "identity_identityClientId";
+  static readonly identityResourceId: string = "identity_identityResourceId";
 }
 
 export class IdentityBicepFile {

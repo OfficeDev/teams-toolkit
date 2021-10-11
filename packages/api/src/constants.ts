@@ -56,6 +56,9 @@ export enum Stage {
   grantPermission = "grantPermission",
   checkPermission = "checkPermission",
   listCollaborator = "listCollaborator",
+  listAllCollaborators = "listAllCollaborators",
+  getQuestions = "getQuestions",
+  getProjectConfig = "getProjectConfig",
 }
 
 export enum TelemetryEvent {

@@ -1,0 +1,28 @@
+{
+  "teamsApp": {
+    "tenantId": "72f988bf-86f1-41af-91ab-2d7cd01xxxxx",
+    "teamsAppId": "588dd465-abda-4261-bdea-c950132xxxxx"
+  },
+  "auth": {
+    "clientId": "5d9eaf54-a733-45b5-9b54-8902224xxxxx",
+    "clientSecret": "LSf7Q~Sz5yFzh5ovRKCAlmgMJ5c8nRjKxxxxx",
+    "objectId": "72e7d335-93f3-459a-b398-5b98a8911bea",
+    "oauth2PermissionScopeId": "80578684-a73e-4451-a1a6-2d0ba44xxxxx",
+    "oauthAuthority": "https://login.microsoftonline.com/72f988bf-86f1-41af-91ab-2d7cd01xxxxx",
+    "oauthHost": "https://login.microsoftonline.com",
+    "applicationIdUris": "api://localhost/5d9eaf54-a733-45b5-9b54-890222xxxxx",
+    "simpleAuthFilePath": "somepath\\templates\\plugins\\resource\\simpleauth\\SimpleAuth.zip",
+    "SimpleAuthEnvironmentVariableParams": "CLIENT_ID=\"5d9eaf54-a733-45b5-9b54-8902224xxxxx\" CLIENT_SECRET=\"LSf7Q~Sz5yFzh5ovRKCAlmgMJ5c8nRjKxxxxx\" OAUTH_AUTHORITY=\"https://login.microsoftonline.com/72f988bf-86f1-41af-91ab-2d7cd011db47\" IDENTIFIER_URI=\"api://localhost/5d9eaf54-a733-45b5-9b54-8902224ced62\" ALLOWED_APP_IDS=\"1fec8e78-bce4-4aaf-ab1b-5451cc387264;5e3ce6c0-2b1f-4285-8d4b-75ee78787346\" TAB_APP_ENDPOINT=\"https://localhost:3000\" AAD_METADATA_ADDRESS=\"https://login.microsoftonline.com/72f988bf-86f1-41af-91ab-2d7cd011db47/v2.0/.well-known/openid-configuration\"",
+    "AuthServiceEndpoint": "http://localhost:5000",
+    "tenantId": "72f988bf-86f1-41af-91ab-2d7cd01xxxxx"
+  },
+  "frontend": {
+    "browser": "none",
+    "https": true,
+    "trustDevCert": true,
+    "sslCertFile": "somepath/.fx/certificate/localhost.crt",
+    "sslKeyFile": "somepath/certificate/localhost.key",
+    "tabDomain": "localhost",
+    "tabEndpoint": "https://localhost:3000"
+  }
+}

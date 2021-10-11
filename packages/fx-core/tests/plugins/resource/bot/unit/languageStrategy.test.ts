@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 import "mocha";
 import * as chai from "chai";
-import * as sinon from "sinon";
 import mock from "mock-fs";
 import * as path from "path";
 
@@ -14,9 +13,17 @@ import { Messages } from "./messages";
 import { PluginError } from "../../../../../src/plugins/resource/bot/errors";
 import { getTemplatesFolder } from "../../../../../../fx-core/src";
 import AdmZip from "adm-zip";
+import { TeamsBotConfig } from "../../../../../src/plugins/resource/bot/configs/teamsBotConfig";
+import {
+  fetchTemplateZipFromLocalAction,
+  unzipAction,
+} from "../../../../../src/common/templatesActions";
 
 describe("Language Strategy", () => {
-  describe("getTemplateProjectZip", () => {
+  describe("getTemplateProject", () => {
+    const botConfig = {
+      scaffold: { programmingLanguage: ProgrammingLanguage.JavaScript, workingDir: __dirname },
+    } as TeamsBotConfig;
     before(() => {
       const commonPath = path.join(getTemplatesFolder(), "plugins", "resource", "bot");
       const botJsPath = path.join(
@@ -28,7 +35,6 @@ describe("Language Strategy", () => {
 
       const config: { [key: string]: any } = {};
       config[botJsPath] = new AdmZip().toBuffer();
-
       mock(config);
     });
 
@@ -38,27 +44,31 @@ describe("Language Strategy", () => {
 
     it("Fetch From Public Url", async () => {
       // Arrange
-      const programmingLanguage = ProgrammingLanguage.JavaScript;
-      const group_name = TemplateProjectsConstants.GROUP_NAME_BOT;
+      try {
+        const group_name = TemplateProjectsConstants.GROUP_NAME_BOT;
 
-      // Act
-      const zip = await LanguageStrategy.getTemplateProjectZip(programmingLanguage, group_name);
-
-      // Assert
-      chai.assert.isNotNull(zip);
+        // Act
+        await LanguageStrategy.getTemplateProject(group_name, botConfig);
+      } catch (e) {
+        // Assert
+        chai.assert.fail(Messages.ShouldNotReachHere);
+      }
     });
 
     it("Fetch From Local", async () => {
-      // Arrange
-      const programmingLanguage = ProgrammingLanguage.JavaScript;
-      const group_name = TemplateProjectsConstants.GROUP_NAME_BOT;
-      sinon.stub(LanguageStrategy, "getTemplateProjectZipUrl").resolves("");
+      try {
+        // Arrange
+        const group_name = TemplateProjectsConstants.GROUP_NAME_BOT;
 
-      // Act
-      const zip = await LanguageStrategy.getTemplateProjectZip(programmingLanguage, group_name);
-
-      // Assert
-      chai.assert.isNotNull(zip);
+        // Act
+        await LanguageStrategy.getTemplateProject(group_name, botConfig, [
+          fetchTemplateZipFromLocalAction,
+          unzipAction,
+        ]);
+      } catch (e) {
+        // Assert
+        chai.assert.fail(Messages.ShouldNotReachHere);
+      }
     });
   });
 

@@ -591,7 +591,7 @@ function isBasicJsonSchema(jsonSchema: unknown): jsonSchema is BasicJsonSchema {
 //  }
 //  Output:
 //  {"name": null}
-export function _redactObject(
+function _redactObject(
   obj: unknown,
   jsonSchema: unknown,
   maxRecursionDepth = 8,

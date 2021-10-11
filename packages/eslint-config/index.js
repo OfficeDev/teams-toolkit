@@ -9,13 +9,16 @@ module.exports = {
         sourceType: "module",
     },
     extends: [
-        "plugin:@typescript-eslint/recommended"
+        "plugin:@typescript-eslint/recommended",
+        "prettier"
     ],
     plugins: [
         "@typescript-eslint/eslint-plugin",
+        "prettier",
     ],
     rules: {
-        quotes: ["error", "double", {"allowTemplateLiterals": true}],
+        'prettier/prettier': 'error',
+        quotes: ["error", "double", { "allowTemplateLiterals": true, "avoidEscape": true }],
         semi: ["error", "always"],
         '@typescript-eslint/no-var-requires': 0,
         '@typescript-eslint/no-empty-function': 0,

@@ -253,7 +253,12 @@ class EnvironmentManager {
     }
 
     const validate = this.ajv.compile<EnvConfig>(envConfigSchema);
-    const data = await fs.readJson(envConfigPath);
+    let data;
+    try {
+      data = await fs.readJson(envConfigPath);
+    } catch (error) {
+      return err(InvalidEnvConfigError(envName, `Failed to read env config JSON: ${error}`));
+    }
     if (validate(data)) {
       return ok(data);
     }

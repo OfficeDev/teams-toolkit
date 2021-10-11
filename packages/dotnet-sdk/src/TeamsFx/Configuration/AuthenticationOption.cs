@@ -13,7 +13,7 @@ namespace Microsoft.TeamsFx.Configuration
         /// <summary>
         /// Entry name in configuration file.
         /// </summary>
-        public const string Authentication = "TeamsFxAuthentication";
+        public const string Authentication = "TeamsFx:Authentication";
 
         /// <summary>
         /// The client (application) ID of an App Registration in the tenant.

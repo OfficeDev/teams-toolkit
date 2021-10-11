@@ -31,10 +31,12 @@ Alternately, you can use the Package Manager.
 
 1. Add authentication options in appsettings.{Environment}.json file.
 ```json
-"TeamsFxAuthentication": {
-    "ClientId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-    "SimpleAuthEndpoint": "https://localhost:44357/",
-    "InitiateLoginEndpoint": "https://localhost:44357/auth-start.html"
+"TeamsFx": {
+    "Authentication": {
+        "ClientId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+        "SimpleAuthEndpoint": "https://localhost:44357/",
+        "InitiateLoginEndpoint": "https://localhost:44357/auth-start.html"
+    }
 }
 ```
 2. Add `TeamsFx` to services during startup.

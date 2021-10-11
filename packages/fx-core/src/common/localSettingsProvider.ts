@@ -133,7 +133,9 @@ export class LocalSettingsProvider {
     if (await fs.pathExists(this.localSettingsFilePath)) {
       const localSettingsJson: Json = await fs.readJson(this.localSettingsFilePath);
       if (localSettingsJson && cryptoProvider) {
-        this.decryptLocalSettings(localSettingsJson, cryptoProvider);
+        const localSettings: LocalSettings = this.convertToLocalSettings(localSettingsJson);
+        this.decryptLocalSettings(localSettings, cryptoProvider);
+        return this.convertToLocalSettingsJson(localSettings);
       }
       return localSettingsJson;
     } else {
@@ -141,10 +143,7 @@ export class LocalSettingsProvider {
     }
   }
 
-  private decryptLocalSettings(
-    localSettings: LocalSettings | Json,
-    cryptoProvider: CryptoProvider
-  ): void {
+  private decryptLocalSettings(localSettings: LocalSettings, cryptoProvider: CryptoProvider): void {
     if (localSettings.auth) {
       if (
         localSettings.auth.get(LocalSettingsEncryptKeys.ClientSecret) &&
@@ -226,6 +225,36 @@ export class LocalSettingsProvider {
       }
     }
     await fs.writeFile(this.localSettingsFilePath, JSON.stringify(localSettings, null, 4));
+  }
+
+  private convertToLocalSettings(localSettingsJson: Json): LocalSettings {
+    const localSettings: LocalSettings = {
+      teamsApp: ConfigMap.fromJSON(localSettingsJson.teamsApp)!,
+      auth: ConfigMap.fromJSON(localSettingsJson.auth),
+      frontend: ConfigMap.fromJSON(localSettingsJson.frontend),
+      backend: ConfigMap.fromJSON(localSettingsJson.backend),
+      bot: ConfigMap.fromJSON(localSettingsJson.bot),
+    };
+    return localSettings;
+  }
+
+  private convertToLocalSettingsJson(localSettings: LocalSettings): Json {
+    const localSettingsJson: Json = {
+      teamsApp: localSettings.teamsApp?.toJSON(),
+      auth: localSettings.auth?.toJSON(),
+    };
+
+    if (localSettings.frontend) {
+      localSettingsJson["frontend"] = localSettings.frontend.toJSON();
+    }
+    if (localSettings.backend) {
+      localSettingsJson["backend"] = localSettings.backend.toJSON();
+    }
+    if (localSettings.bot) {
+      localSettingsJson["bot"] = localSettings.bot.toJSON();
+    }
+
+    return localSettingsJson;
   }
 
   initSimpleAuth(): ConfigMap {

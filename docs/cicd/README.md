@@ -52,6 +52,12 @@ To add these templates to your repository, you will need your versions of [jenki
 
 Also, you need to create CI/CD pipelines in Jenkins which point to the specific `Jenkinsfile` correspondingly.
 
+To check how to connect Jenkins with different SCM platforms:
+1. [Jenkins with GitHub](https://www.jenkins.io/solutions/github/)
+2. [Jenkins with Azure DevOps](https://www.dragonspears.com/blog/ci-cd-with-jenkins-and-azure-devops-services)
+3. [Jenkins with GitLab](https://docs.gitlab.com/ee/integration/jenkins.html)
+4. [Jenkins with Bitbucket](https://medium.com/ampersand-academy/integrate-bitbucket-jenkins-c6e51103d0fe)
+
 ### Customize CI Pipeline
 There are some potential changes you can make to adapt your project:
 

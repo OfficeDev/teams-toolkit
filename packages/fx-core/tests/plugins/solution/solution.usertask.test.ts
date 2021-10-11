@@ -20,6 +20,7 @@ import * as sinon from "sinon";
 import { GLOBAL_CONFIG, SolutionError } from "../../../src/plugins/solution/fx-solution/constants";
 import {
   MockedAppStudioProvider,
+  MockedSharepointProvider,
   MockedV2Context,
   mockPublishThatAlwaysSucceed,
   mockV2PublishThatAlwaysSucceed,
@@ -74,6 +75,7 @@ const mockedProvider: TokenProvider = {
   appStudioToken: new MockedAppStudioProvider(),
   azureAccountProvider: new MockedAzureAccountProvider(),
   graphTokenProvider: new MockGraphTokenProvider(),
+  sharepointTokenProvider: new MockedSharepointProvider(),
 };
 function mockSolutionContextWithPlatform(platform?: Platform): SolutionContext {
   const config: SolutionConfig = new Map();

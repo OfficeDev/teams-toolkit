@@ -92,7 +92,7 @@ export class TestHelper {
               [Constants.solutionConfigKey.location, "eastus"],
             ]),
           ],
-          [Constants.identityPlugin, new Map([[Constants.identity, "zhaofeng-msi"]])],
+          [Constants.identityPlugin, new Map([[Constants.identityName, "zhaofeng-msi"]])],
         ])
       ),
       app: {

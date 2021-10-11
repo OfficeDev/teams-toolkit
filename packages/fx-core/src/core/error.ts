@@ -31,6 +31,22 @@ export function ProjectFolderNotExistError(path: string): UserError {
   );
 }
 
+export function ArchiveUserFileError(path: string, reason: string): UserError {
+  return new UserError(
+    "ArchiveUserFileError",
+    `Failed to archive path '${path}'. ${reason}. You can refer to .archive.log which provides detailed information about the archive process.`,
+    CoreSource
+  );
+}
+
+export function ArchiveProjectError(reason: string): UserError {
+  return new UserError(
+    "ArchiveProjectError",
+    `Failed to archive the project. ${reason}. You can refer to .archive.log which provides detailed information about the archive process.`,
+    CoreSource
+  );
+}
+
 export function EmptyProjectFolderError(): SystemError {
   return new SystemError("EmptyProjectFolderError", "Project path is empty", CoreSource);
 }

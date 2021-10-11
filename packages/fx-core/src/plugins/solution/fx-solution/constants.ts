@@ -149,6 +149,7 @@ export enum SolutionError {
   EmailCannotBeEmptyOrSame = "EmailCannotBeEmptyOrSame",
   FailedToExecuteTasks = "FailedToExecuteTasks",
   FailedToGetEnvName = "FailedToGetEnvName",
+  TeamsAppTenantIdNotRight = "TeamsAppTenantIdNotRight",
 }
 
 export const LOCAL_DEBUG_TAB_ENDPOINT = "localTabEndpoint";

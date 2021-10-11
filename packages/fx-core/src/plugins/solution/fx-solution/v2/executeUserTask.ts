@@ -16,6 +16,7 @@ import {
   SolutionSettings,
   TokenProvider,
   combine,
+  Json,
 } from "@microsoft/teamsfx-api";
 import { getStrings, isArmSupportEnabled } from "../../../../common/tools";
 import { blockV1Project, getAzureSolutionSettings, reloadV2Plugins } from "./utils";
@@ -49,6 +50,7 @@ export async function executeUserTask(
   ctx: v2.Context,
   inputs: Inputs,
   func: Func,
+  localSettings: Json,
   envInfo: v2.EnvInfoV2,
   tokenProvider: TokenProvider
 ): Promise<Result<unknown, FxError>> {
@@ -60,10 +62,10 @@ export async function executeUserTask(
   const method = func.method;
   const array = namespace.split("/");
   if (method === "addCapability") {
-    return addCapability(ctx, inputs);
+    return addCapability(ctx, inputs, localSettings);
   }
   if (method === "addResource") {
-    return addResource(ctx, inputs, func, envInfo, tokenProvider);
+    return addResource(ctx, inputs, localSettings, func, envInfo, tokenProvider);
   }
   if (namespace.includes("solution")) {
     if (method === "registerTeamsAppAndAad") {
@@ -100,24 +102,45 @@ export async function executeUserTask(
     } else if (method === "validateManifest") {
       const appStudioPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin);
       if (appStudioPlugin.executeUserTask) {
-        return await appStudioPlugin.executeUserTask(ctx, inputs, func, envInfo, tokenProvider);
+        return await appStudioPlugin.executeUserTask(
+          ctx,
+          inputs,
+          func,
+          localSettings,
+          envInfo,
+          tokenProvider
+        );
       }
     } else if (method === "buildPackage") {
       const appStudioPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin);
       if (appStudioPlugin.executeUserTask) {
-        return await appStudioPlugin.executeUserTask(ctx, inputs, func, envInfo, tokenProvider);
+        return await appStudioPlugin.executeUserTask(
+          ctx,
+          inputs,
+          func,
+          localSettings,
+          envInfo,
+          tokenProvider
+        );
       }
     } else if (method === "validateManifest") {
       const appStudioPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin);
       if (appStudioPlugin.executeUserTask) {
-        return appStudioPlugin.executeUserTask(ctx, inputs, func, envInfo, tokenProvider);
+        return appStudioPlugin.executeUserTask(
+          ctx,
+          inputs,
+          func,
+          localSettings,
+          envInfo,
+          tokenProvider
+        );
       }
     } else if (array.length == 2) {
       const pluginName = array[1];
       const pluginMap = getAllV2ResourcePluginMap();
       const plugin = pluginMap.get(pluginName);
       if (plugin && plugin.executeUserTask) {
-        return plugin.executeUserTask(ctx, inputs, func, envInfo, tokenProvider);
+        return plugin.executeUserTask(ctx, inputs, func, localSettings, envInfo, tokenProvider);
       }
     }
   }
@@ -174,7 +197,8 @@ export function canAddResource(
 
 export async function addCapability(
   ctx: v2.Context,
-  inputs: Inputs
+  inputs: Inputs,
+  localSettings: Json
 ): Promise<
   Result<{ solutionSettings?: SolutionSettings; solutionConfig?: Record<string, unknown> }, FxError>
 > {
@@ -253,7 +277,13 @@ export async function addCapability(
     settings.capabilities = capabilities;
     reloadV2Plugins(settings);
     ctx.logProvider?.info(`start scaffolding ${notifications.join(",")}.....`);
-    const scaffoldRes = await scaffoldCodeAndResourceTemplate(ctx, inputs, pluginsToScaffold, true);
+    const scaffoldRes = await scaffoldCodeAndResourceTemplate(
+      ctx,
+      inputs,
+      localSettings,
+      pluginsToScaffold,
+      true
+    );
     if (scaffoldRes.isErr()) {
       ctx.logProvider?.info(`failed to scaffold ${notifications.join(",")}!`);
       ctx.projectSetting.solutionSettings = originalSettings;
@@ -304,10 +334,11 @@ export async function confirmRegenerateArmTemplate(ui?: UserInteraction): Promis
 async function scaffoldCodeAndResourceTemplate(
   ctx: v2.Context,
   inputs: Inputs,
+  localSettings: Json,
   plugins: v2.ResourcePlugin[],
   generateTemplate: boolean
 ): Promise<Result<unknown, FxError>> {
-  const result = await scaffoldByPlugins(ctx, inputs, plugins);
+  const result = await scaffoldByPlugins(ctx, inputs, localSettings, plugins);
   if (result.isErr()) {
     return result;
   }
@@ -320,6 +351,7 @@ async function scaffoldCodeAndResourceTemplate(
 export async function addResource(
   ctx: v2.Context,
   inputs: Inputs,
+  localSettings: Json,
   func: Func,
   envInfo: v2.EnvInfoV2,
   tokenProvider: TokenProvider
@@ -417,13 +449,21 @@ export async function addResource(
     let scaffoldRes = await scaffoldCodeAndResourceTemplate(
       ctx,
       inputs,
+      localSettings,
       pluginsToScaffold,
       addNewResoruceToProvision
     );
 
     if (scaffoldApim) {
       if (apimPlugin && apimPlugin.executeUserTask) {
-        const result = await apimPlugin.executeUserTask(ctx, inputs, func, envInfo, tokenProvider);
+        const result = await apimPlugin.executeUserTask(
+          ctx,
+          inputs,
+          func,
+          {},
+          envInfo,
+          tokenProvider
+        );
         if (result.isErr()) {
           scaffoldRes = combine([scaffoldRes, result]);
         }

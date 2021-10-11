@@ -17,6 +17,7 @@ import {
   AppPackageFolderName,
   ArchiveFolderName,
   V1ManifestFileName,
+  ConfigMap,
 } from "@microsoft/teamsfx-api";
 import { AppStudioClient } from "./appStudio";
 import {
@@ -99,6 +100,7 @@ import { v4 } from "uuid";
 import isUUID from "validator/lib/isUUID";
 import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
 import Mustache from "mustache";
+import { SolutionPlugin } from "../localdebug/constants";
 
 export class AppStudioPluginImpl {
   public async getAppDefinitionAndUpdate(
@@ -745,6 +747,14 @@ export class AppStudioPluginImpl {
     if (teamsAppId.isErr()) {
       return teamsAppId;
     }
+    if (isMultiEnvEnabled()) {
+      ctx.localSettings?.teamsApp?.set(Constants.TEAMS_APP_ID, teamsAppId.value);
+    } else {
+      (ctx.envInfo?.profile.get("solution") as ConfigMap)?.set(
+        LOCAL_DEBUG_TEAMS_APP_ID,
+        teamsAppId.value
+      );
+    }
     return ok(teamsAppId.value);
   }
 
@@ -1340,7 +1350,7 @@ export class AppStudioPluginImpl {
     let teamsAppId: string;
     if (isLocalDebug) {
       teamsAppId = isMultiEnvEnabled()
-        ? ctx.localSettings?.teamsApp.get(LocalSettingsTeamsAppKeys.TeamsAppId)
+        ? ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TeamsAppId)
         : (ctx.envInfo.profile.get("solution")?.get(LOCAL_DEBUG_TEAMS_APP_ID) as string);
     } else {
       teamsAppId = isMultiEnvEnabled()
@@ -1692,7 +1702,7 @@ export class AppStudioPluginImpl {
     return ok([appDefinition, updatedManifest]);
   }
 
-  private async getManifestTemplatePath(projectRoot: string): Promise<string> {
+  public async getManifestTemplatePath(projectRoot: string): Promise<string> {
     const appDir = await getAppDirectory(projectRoot);
     return isMultiEnvEnabled() ? `${appDir}/${MANIFEST_TEMPLATE}` : `${appDir}/${REMOTE_MANIFEST}`;
   }

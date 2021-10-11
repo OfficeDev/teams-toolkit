@@ -20,7 +20,7 @@ import {
   traverse,
   UserCancelError,
 } from "@microsoft/teamsfx-api";
-import { isV2 } from "..";
+import { isV2, TOOLS } from "..";
 import { CoreHookContext, FxCore, isMultiEnvEnabled } from "../..";
 import {
   NoProjectOpenedError,
@@ -45,6 +45,7 @@ import { desensitize } from "./questionModel";
 import { shouldIgnored } from "./projectSettingsLoader";
 import { PermissionRequestFileProvider } from "../permissionRequest";
 import { newEnvInfo } from "../tools";
+import { mapToJson } from "../../common";
 
 const newTargetEnvNameOption = "+ new environment";
 const lastUsedMark = " (last used)";
@@ -63,10 +64,6 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
     }
 
     const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-    if (inputs.ignoreEnvInfo) {
-      skip = true;
-    }
-
     if (!ctx.projectSettings) {
       ctx.result = err(ProjectSettingsUndefinedError());
       return;
@@ -80,7 +77,7 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
     const core = ctx.self as FxCore;
 
     let targetEnvName: string;
-    if (!skip && isMultiEnvEnabled()) {
+    if (!skip && !inputs.ignoreEnvInfo && isMultiEnvEnabled()) {
       // TODO: This is a workaround for collabrator feature to programmatically load an env in extension.
       if (inputs.env) {
         const result = await useUserSetEnv(inputs.projectPath, inputs.env);
@@ -96,7 +93,7 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
           return;
         }
         targetEnvName = result.value;
-        ctx.ui?.showMessage(
+        TOOLS.ui?.showMessage(
           "info",
           `[${targetEnvName}] is selected as the target environment to ${inputs.stage}`,
           false
@@ -117,25 +114,19 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
       ctx.projectSettings,
       ctx.projectIdMissing,
       targetEnvName,
-      skip
+      skip || inputs.ignoreEnvInfo
     );
     if (result.isErr()) {
       ctx.result = err(result.error);
       return;
     }
 
+    ctx.solutionContext = result.value;
+
     if (isV2()) {
       const envInfo = result.value.envInfo;
-      const profile: Json = {};
-      for (const key of envInfo.profile.keys()) {
-        const map = envInfo.profile.get(key);
-        if (map) {
-          profile[key] = (map as ConfigMap).toJSON();
-        }
-      }
+      const profile: Json = mapToJson(envInfo.profile);
       ctx.envInfoV2 = { envName: envInfo.envName, config: envInfo.config, profile: profile };
-    } else {
-      ctx.solutionContext = result.value;
     }
     await next();
   };

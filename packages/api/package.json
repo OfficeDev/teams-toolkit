@@ -45,10 +45,12 @@
     "chai-spies": "^1.0.0",
     "cpy-cli": "^3.1.1",
     "eslint": "^7.22.0",
+    "eslint-plugin-prettier": "^4.0.0",
     "json-schema-to-typescript": "^10.1.4",
     "lint-staged": "^10.5.4",
     "mocha": "^8.2.1",
     "nyc": "^15.1.0",
+    "prettier": "^2.4.1",
     "sinon": "^9.2.2",
     "source-map-support": "^0.5.19",
     "ts-node": "^9.1.1",
@@ -71,9 +73,6 @@
   "lint-staged": {
     "*.{js,jsx,css,ts,tsx}": [
       "npx eslint --cache --fix --quiet"
-    ],
-    "*": [
-      "npx prettier --config .prettierrc.js --ignore-unknown --write --ignore-path .prettierignore "
     ]
   }
 }

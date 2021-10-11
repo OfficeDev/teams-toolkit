@@ -111,7 +111,7 @@ export class LocalSettingsProvider {
 
   public async load(cryptoProvider?: CryptoProvider): Promise<LocalSettings | undefined> {
     if (await fs.pathExists(this.localSettingsFilePath)) {
-      const localSettingsJson = await fs.readJSON(this.localSettingsFilePath);
+      const localSettingsJson = await fs.readJson(this.localSettingsFilePath);
       const localSettings: LocalSettings = {
         teamsApp: ConfigMap.fromJSON(localSettingsJson.teamsApp)!,
         auth: ConfigMap.fromJSON(localSettingsJson.auth),
@@ -131,7 +131,7 @@ export class LocalSettingsProvider {
 
   public async loadV2(cryptoProvider?: CryptoProvider): Promise<Json | undefined> {
     if (await fs.pathExists(this.localSettingsFilePath)) {
-      const localSettingsJson: Json = await fs.readJSON(this.localSettingsFilePath);
+      const localSettingsJson: Json = await fs.readJson(this.localSettingsFilePath);
       if (localSettingsJson && cryptoProvider) {
         this.decryptLocalSettings(localSettingsJson, cryptoProvider);
       }

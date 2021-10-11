@@ -288,7 +288,7 @@ export async function getAzureSolutionSettings(): Promise<AzureSolutionSettings 
   input.ignoreEnvInfo = true;
   const projectConfigRes = await core.getProjectConfig(input);
 
-  if (projectConfigRes.isOk()) {
+  if (projectConfigRes?.isOk()) {
     if (projectConfigRes.value) {
       return projectConfigRes.value.settings?.solutionSettings as AzureSolutionSettings;
     }

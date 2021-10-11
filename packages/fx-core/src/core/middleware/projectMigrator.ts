@@ -55,7 +55,11 @@ const parameterFileNameTemplate = "azure.parameters.@envName.json";
 
 class EnvConfigName {
   static readonly StorageName = "storageName";
-  static readonly IdentityName = "identity";
+  static readonly Identity = "identity";
+  static readonly IdentityId = "identityId";
+  static readonly IdentityName = "identityName";
+  static readonly IdentityResourceId = "identityResourceId";
+  static readonly IdentityClientId = "identityClientId";
   static readonly SqlEndpoint = "sqlEndpoint";
   static readonly SqlResourceId = "sqlResourceId";
   static readonly SqlDataBase = "databaseName";
@@ -450,6 +454,23 @@ async function updateConfig(ctx: CoreHookContext) {
     if (envConfig[ResourcePlugins.Function][EnvConfigName.AppServicePlanName]) {
       delete envConfig[ResourcePlugins.Function][EnvConfigName.AppServicePlanName];
     }
+  }
+
+  if (needUpdate && envConfig[ResourcePlugins.Identity]?.[EnvConfigName.Identity]) {
+    envConfig[ResourcePlugins.Identity][
+      EnvConfigName.IdentityResourceId
+    ] = `${configPrefix}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${
+      envConfig[ResourcePlugins.Identity][EnvConfigName.Identity]
+    }`;
+    envConfig[ResourcePlugins.Identity][EnvConfigName.IdentityName] =
+      envConfig[ResourcePlugins.Identity][EnvConfigName.Identity];
+    delete envConfig[ResourcePlugins.Identity][EnvConfigName.Identity];
+  }
+
+  if (needUpdate && envConfig[ResourcePlugins.Identity]?.[EnvConfigName.IdentityId]) {
+    envConfig[ResourcePlugins.Identity][EnvConfigName.IdentityClientId] =
+      envConfig[ResourcePlugins.Identity][EnvConfigName.IdentityId];
+    delete envConfig[ResourcePlugins.Identity][EnvConfigName.IdentityId];
   }
   await fs.writeFile(path.join(fx, "new.env.default.json"), JSON.stringify(envConfig, null, 4));
 }

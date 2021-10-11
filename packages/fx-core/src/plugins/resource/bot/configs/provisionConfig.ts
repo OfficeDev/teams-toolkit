@@ -32,8 +32,8 @@ export class ProvisionConfig {
   // Configs from SQL and Function.
   public sqlEndpoint?: string;
   public sqlDatabaseName?: string;
-  public identityId?: string;
-  public identityName?: string;
+  public identityClientId?: string;
+  public identityResourceId?: string;
   public sqlUserName?: string;
   public sqlPassword?: string;
   public functionEndpoint?: string;
@@ -67,13 +67,13 @@ export class ProvisionConfig {
       .get(PluginSql.PLUGIN_NAME)
       ?.get(PluginSql.SQL_PASSWORD) as string;
 
-    this.identityId = context.envInfo.profile
+    this.identityClientId = context.envInfo.profile
       .get(PluginIdentity.PLUGIN_NAME)
-      ?.get(PluginIdentity.IDENTITY_ID) as string;
+      ?.get(PluginIdentity.IDENTITY_ClIENT_ID) as string;
 
-    this.identityName = context.envInfo.profile
+    this.identityResourceId = context.envInfo.profile
       .get(PluginIdentity.PLUGIN_NAME)
-      ?.get(PluginIdentity.IDENTITY_NAME) as string;
+      ?.get(PluginIdentity.IDENTITY_RESOURCE_ID) as string;
 
     this.functionEndpoint = context.envInfo.profile
       .get(PluginFunction.PLUGIN_NAME)

@@ -949,8 +949,8 @@ export class FunctionPluginImpl {
         Logger.info(InfoMessages.dependPluginDetected(DependentPluginInfo.identityPluginName));
 
         const identityId: string = this.checkAndGet(
-          identityConfig.get(DependentPluginInfo.identityId) as string,
-          "identity Id"
+          identityConfig.get(DependentPluginInfo.identityClientId) as string,
+          "identity client id"
         );
         const databaseName: string = this.checkAndGet(
           sqlConfig.get(DependentPluginInfo.databaseName) as string,
@@ -960,9 +960,9 @@ export class FunctionPluginImpl {
           sqlConfig.get(DependentPluginInfo.sqlEndpoint) as string,
           "sql endpoint"
         );
-        const identityName: string = this.checkAndGet(
-          identityConfig.get(DependentPluginInfo.identityName) as string,
-          "identity name"
+        const identityResourceId: string = this.checkAndGet(
+          identityConfig.get(DependentPluginInfo.identityResourceId) as string,
+          "identity resource id"
         );
 
         FunctionProvision.updateFunctionSettingsForSQL(
@@ -970,7 +970,7 @@ export class FunctionPluginImpl {
           identityId,
           databaseName,
           sqlEndpoint,
-          identityName
+          identityResourceId
         );
       }
     }

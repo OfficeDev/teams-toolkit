@@ -147,6 +147,8 @@ export interface Context {
     // (undocumented)
     root: string;
     // (undocumented)
+    sharepointTokenProvider?: SharepointTokenProvider;
+    // (undocumented)
     telemetryReporter?: TelemetryReporter;
     // (undocumented)
     treeProvider?: TreeProvider;
@@ -1122,6 +1124,14 @@ export type SelectFolderConfig = UIConfig<string>;
 export type SelectFolderResult = InputResult<string>;
 
 // @public
+export interface SharepointTokenProvider {
+    getAccessToken(showDialog?: boolean): Promise<string | undefined>;
+    getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined>;
+    removeStatusChangeMap(name: string): Promise<boolean>;
+    setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>, immediateCall?: boolean): Promise<boolean>;
+}
+
+// @public
 export interface SingleFileQuestion extends UserInputQuestion {
     default?: string | LocalFunc<string | undefined>;
     // (undocumented)
@@ -1455,6 +1465,7 @@ export type TokenProvider = {
     azureAccountProvider: AzureAccountProvider;
     graphTokenProvider: GraphTokenProvider;
     appStudioToken: AppStudioTokenProvider;
+    sharepointTokenProvider: SharepointTokenProvider;
 };
 
 // @public (undocumented)

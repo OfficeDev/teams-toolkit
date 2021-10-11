@@ -65,6 +65,7 @@ import {
 } from "../../../src/plugins/solution/fx-solution/question";
 import {
   MockedGraphTokenProvider,
+  MockedSharepointProvider,
   MockedUserInteraction,
   MockedV2Context,
   validManifest,
@@ -948,6 +949,7 @@ describe("API v2 implementation", () => {
         azureAccountProvider: new MockedAzureTokenProvider(),
         appStudioToken: new MockedAppStudioTokenProvider(),
         graphTokenProvider: new MockedGraphTokenProvider(),
+        sharepointTokenProvider: new MockedSharepointProvider(),
       };
       const mockedEnvInfo: EnvInfoV2 = {
         envName: "default",
@@ -999,6 +1001,7 @@ describe("API v2 implementation", () => {
         azureAccountProvider: new MockedAzureTokenProvider(),
         appStudioToken: new MockedAppStudioTokenProvider(),
         graphTokenProvider: new MockedGraphTokenProvider(),
+        sharepointTokenProvider: new MockedSharepointProvider(),
       };
       const mockedEnvInfo: EnvInfoV2 = {
         envName: "default",

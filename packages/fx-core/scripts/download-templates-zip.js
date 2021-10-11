@@ -34,6 +34,8 @@ async function step(desc, fn) {
 
 async function downloadTemplates(version) {
   const tag = config.tagPrefix + version;
+  console.log(`Start to download templates with tag: ${tag}`);
+
   for (let lang of languages) {
     for (let template of templates) {
       const fileName = `${template[0]}.${lang}.${template[1]}.zip`;

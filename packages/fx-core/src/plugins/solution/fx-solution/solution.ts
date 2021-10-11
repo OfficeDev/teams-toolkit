@@ -12,6 +12,7 @@ import {
   combine,
   ConfigMap,
   DynamicPlatforms,
+  EnvConfigSchema,
   err,
   Func,
   FxError,
@@ -61,6 +62,7 @@ import {
   isArmSupportEnabled,
   isMultiEnvEnabled,
   isUserCancelError,
+  redactObject,
 } from "../../../common/tools";
 import { CopyFileError } from "../../../core";
 import { ErrorHandlerMW } from "../../../core/middleware/errorHandler";
@@ -146,7 +148,10 @@ import {
 import { askForProvisionConsent } from "./v2/provision";
 import { scaffoldReadmeAndLocalSettings } from "./v2/scaffolding";
 import { environmentManager } from "../../..";
+import { Json } from "@microsoft/teamsfx-api";
+import { setLocalSettingsV2 } from "../../resource/utils4v2";
 import { LocalSettingsProvider } from "../../../common/localSettingsProvider";
+import { TelemetryEvent, TelemetryProperty } from "../../../common/telemetry";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -363,7 +368,13 @@ export class TeamsAppSolution implements Solution {
       .capabilities;
     const azureResources = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
       .azureResources;
-    await scaffoldReadmeAndLocalSettings(capabilities, azureResources, ctx.root, true);
+    await scaffoldReadmeAndLocalSettings(
+      capabilities,
+      azureResources,
+      ctx.root,
+      ctx.localSettings,
+      true
+    );
 
     ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.Migrate, {
       [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
@@ -452,7 +463,13 @@ export class TeamsAppSolution implements Solution {
         .capabilities;
       const azureResources = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
         .azureResources;
-      await scaffoldReadmeAndLocalSettings(capabilities, azureResources, ctx.root);
+
+      await scaffoldReadmeAndLocalSettings(
+        capabilities,
+        azureResources,
+        ctx.root,
+        ctx.localSettings
+      );
     }
 
     if (isArmSupportEnabled() && generateResourceTemplate && this.isAzureProject(ctx)) {
@@ -591,6 +608,14 @@ export class TeamsAppSolution implements Solution {
       return maybeSelectedPlugins;
     }
     const selectedPlugins = maybeSelectedPlugins.value;
+
+    // Send config telemetry before actually doing anything.
+    // If something fails, we can know whether it is related to the config.
+    const redactedEnvConfig = redactObject(ctx.envInfo.config, EnvConfigSchema);
+    ctx.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.EnvConfig, {
+      [TelemetryProperty.Env]: getHashedEnv(ctx.envInfo.envName),
+      [TelemetryProperty.EnvConfig]: JSON.stringify(redactedEnvConfig),
+    });
 
     if (this.isAzureProject(ctx)) {
       //1. ask common questions for azure resources.
@@ -1186,7 +1211,7 @@ export class TeamsAppSolution implements Solution {
       await ctx.appStudioToken?.getAccessToken();
 
       // Pop-up window to confirm if local debug in another tenant
-      const localDebugTenantId = ctx.localSettings?.teamsApp.get(
+      const localDebugTenantId = ctx.localSettings?.teamsApp?.get(
         LocalSettingsTeamsAppKeys.TenantId
       );
       if (isMultiEnvEnabled() && localDebugTenantId) {
@@ -1287,7 +1312,7 @@ export class TeamsAppSolution implements Solution {
         postLocalDebugWithCtx.map(function (plugin, index) {
           if (plugin[2] === PluginNames.APPST) {
             if (isMultiEnvEnabled()) {
-              ctx.localSettings?.teamsApp.set(
+              ctx.localSettings?.teamsApp?.set(
                 LocalSettingsTeamsAppKeys.TeamsAppId,
                 combinedPostLocalDebugResults.value[index]
               );
@@ -2084,7 +2109,7 @@ export class TeamsAppSolution implements Solution {
     return parseTeamsAppTenantId(appStudioToken as Record<string, unknown> | undefined).andThen(
       (teamsAppTenantId) => {
         if (isLocalDebug && isMultiEnvEnabled()) {
-          ctx.localSettings?.teamsApp.set(LocalSettingsTeamsAppKeys.TenantId, teamsAppTenantId);
+          ctx.localSettings?.teamsApp?.set(LocalSettingsTeamsAppKeys.TenantId, teamsAppTenantId);
         } else {
           ctx.envInfo.profile.get(GLOBAL_CONFIG)?.set("teamsAppTenantId", teamsAppTenantId);
         }

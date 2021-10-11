@@ -33,6 +33,7 @@ import {
   MockAppStudioTokenProvider,
   MockAzureAccountProvider,
   MockGraphTokenProvider,
+  MockSharepointTokenProvider,
   MockTools,
   randomAppName,
 } from "../../../core/utils";
@@ -73,7 +74,7 @@ describe("API V2 adapter", () => {
       },
     };
     const localSettings: Json = {};
-    setLocalSettingsV2(localSettings, pluginContext);
+    setLocalSettingsV2(localSettings, pluginContext.localSettings);
     const expected: Json = {
       teamsApp: { k1: "v1" },
       auth: { k2: "v2" },
@@ -82,7 +83,7 @@ describe("API V2 adapter", () => {
       frontend: undefined,
     };
     setLocalSettingsV1(pluginContext, expected);
-    assert.equal(pluginContext.localSettings?.teamsApp.get("k1"), "v1");
+    assert.equal(pluginContext.localSettings?.teamsApp?.get("k1"), "v1");
     assert.equal(pluginContext.localSettings?.auth?.get("k2"), "v2");
   });
 
@@ -175,6 +176,7 @@ describe("API V2 adapter", () => {
       appStudioToken: new MockAppStudioTokenProvider(),
       graphTokenProvider: new MockGraphTokenProvider(),
       azureAccountProvider: new MockAzureAccountProvider(),
+      sharepointTokenProvider: new MockSharepointTokenProvider(),
     };
 
     const res = await provisionResourceAdapter(context, inputs, envInfo, tokenProvider, plugin);

@@ -10,6 +10,7 @@ import {
   TelemetryReporter,
   AzureAccountProvider,
   AppStudioTokenProvider,
+  SharepointTokenProvider,
   TreeProvider,
   PermissionRequestProvider,
 } from "./utils";
@@ -33,6 +34,8 @@ export interface Context {
   graphTokenProvider?: GraphTokenProvider;
 
   appStudioToken?: AppStudioTokenProvider;
+
+  sharepointTokenProvider?: SharepointTokenProvider;
 
   treeProvider?: TreeProvider;
 

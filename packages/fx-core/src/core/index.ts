@@ -405,7 +405,7 @@ export class FxCore implements Core {
     if (inputs.platform === Platform.VSCode) {
       await globalStateUpdate(globalStateDescription, true);
     }
-
+    this._setEnvInfoV2(ctx);
     return ok(projectPath);
   }
 
@@ -498,13 +498,7 @@ export class FxCore implements Core {
     if (provisionRes.isErr()) {
       return provisionRes;
     }
-    //workaround
-    ctx.envInfoV2 = {
-      envName: ctx.solutionContext.envInfo.envName,
-      config: ctx.solutionContext.envInfo.config,
-      profile: {},
-    };
-    ctx.envInfoV2.profile = mapToJson(ctx.solutionContext.envInfo.profile);
+    this._setEnvInfoV2(ctx);
     return provisionRes;
     // }
   }
@@ -596,7 +590,21 @@ export class FxCore implements Core {
       ctx.solutionContext.envInfo.profile as SolutionConfig,
       ctx.projectSettings
     );
-    return await ctx.solution.localDebug(ctx.solutionContext);
+    const res = await ctx.solution.localDebug(ctx.solutionContext);
+    this._setEnvInfoV2(ctx);
+    return res;
+  }
+
+  _setEnvInfoV2(ctx?: CoreHookContext) {
+    if (isV2() && ctx && ctx.solutionContext) {
+      //workaround, compatible to api v2
+      ctx.envInfoV2 = {
+        envName: ctx.solutionContext.envInfo.envName,
+        config: ctx.solutionContext.envInfo.config,
+        profile: {},
+      };
+      ctx.envInfoV2.profile = mapToJson(ctx.solutionContext.envInfo.profile);
+    }
   }
 
   @hooks([

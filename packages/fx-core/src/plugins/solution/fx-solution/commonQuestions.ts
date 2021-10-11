@@ -23,10 +23,13 @@ import {
   v2,
   TokenProvider,
   UserError,
+  Void,
 } from "@microsoft/teamsfx-api";
 import {
   GLOBAL_CONFIG,
   LOCATION,
+  PluginNames,
+  SUBSCRIPTION_NAME,
   RESOURCE_GROUP_NAME,
   SolutionError,
   SolutionSource,
@@ -45,6 +48,8 @@ import {
 import { getHashedEnv } from "../../../common/tools";
 import { desensitize } from "../../../core/middleware/questionModel";
 import { ResourceGroupsCreateOrUpdateResponse } from "@azure/arm-resources/esm/models";
+import { SUBSCRIPTION_ID } from ".";
+import { SolutionPlugin } from "../../resource/localdebug/constants";
 import {
   CustomizeResourceGroupType,
   TelemetryEvent,
@@ -88,23 +93,27 @@ export async function checkSubscription(
   envInfo: v2.EnvInfoV2,
   azureAccountProvider: AzureAccountProvider
 ): Promise<Result<SubscriptionInfo, FxError>> {
-  const subscriptionId = envInfo.config.azure?.subscriptionId;
+  const subscriptionId = envInfo.profile?.get(PluginNames.SOLUTION)?.get(SUBSCRIPTION_ID);
   if (!isMultiEnvEnabled() || !subscriptionId) {
     const askSubRes = await azureAccountProvider.getSelectedSubscription(true);
     return ok(askSubRes!);
   }
 
+  let subscriptionName = envInfo.profile?.get(PluginNames.SOLUTION)?.get(SUBSCRIPTION_NAME) ?? "";
+  if (subscriptionName.length > 0) {
+    subscriptionName = `(${subscriptionName})`;
+  }
   // make sure the user is logged in
   await azureAccountProvider.getAccountCredentialAsync(true);
 
-  // TODO: verify valid subscription (permission)
+  // verify valid subscription (permission)
   const subscriptions = await azureAccountProvider.listSubscriptions();
   const targetSubInfo = subscriptions.find((item) => item.subscriptionId === subscriptionId);
   if (!targetSubInfo) {
     return err(
       new UserError(
         SolutionError.SubscriptionNotFound,
-        `The subscription '${subscriptionId}' is not found in the current account, please check the '${EnvConfigFileNameTemplate.replace(
+        `The subscription '${subscriptionId}'${subscriptionName} is not found in the current account, please check the '${EnvConfigFileNameTemplate.replace(
           EnvNamePlaceholder,
           envInfo.envName
         )}' file.`,
@@ -113,6 +122,32 @@ export async function checkSubscription(
     );
   }
   return ok(targetSubInfo);
+}
+
+/**
+ * check m365 tenant is right
+ *
+ */
+export async function checkM365Tenant(
+  envInfo: v2.EnvInfoV2,
+  appStudioJson: object
+): Promise<Result<Void, FxError>> {
+  const m365TenantId = envInfo.profile
+    ?.get(PluginNames.SOLUTION)
+    ?.get(SolutionPlugin.TeamsAppTenantId);
+  if (!isMultiEnvEnabled() || !m365TenantId) {
+    return ok(Void);
+  }
+  if ((appStudioJson as any).tid && (appStudioJson as any).tid != m365TenantId) {
+    return err(
+      new UserError(
+        SolutionError.TeamsAppTenantIdNotRight,
+        `The m365 tenant id '${m365TenantId}' is not found in the current account.`,
+        "Solution"
+      )
+    );
+  }
+  return ok(Void);
 }
 
 async function getQuestionsForResourceGroup(
@@ -326,6 +361,10 @@ async function askCommonQuestions(
     );
   }
 
+  const m365TenantResult = await checkM365Tenant(ctx.envInfo, appstudioTokenJson);
+  if (m365TenantResult.isErr()) {
+    return err(m365TenantResult.error);
+  }
   if (!azureAccountProvider) {
     return err(
       returnSystemError(

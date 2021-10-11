@@ -46,7 +46,7 @@ import {
   getQuestionsForScaffolding,
   getQuestionsForUserTask,
 } from "../../../src/plugins/solution/fx-solution/v2/getQuestions";
-import { MockGraphTokenProvider } from "../../core/utils";
+import { MockGraphTokenProvider, MockSharepointTokenProvider } from "../../core/utils";
 import { MockedAppStudioProvider, MockedAzureAccountProvider, MockedV2Context } from "./util";
 
 chai.use(chaiAsPromised);
@@ -64,6 +64,7 @@ const mockedProvider: TokenProvider = {
   appStudioToken: new MockedAppStudioProvider(),
   azureAccountProvider: new MockedAzureAccountProvider(),
   graphTokenProvider: new MockGraphTokenProvider(),
+  sharepointTokenProvider: new MockSharepointTokenProvider(),
 };
 const envInfo: EnvInfoV2 = { envName: "default", config: {}, profile: { solution: {} } };
 

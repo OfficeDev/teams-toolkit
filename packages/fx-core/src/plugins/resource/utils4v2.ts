@@ -9,6 +9,7 @@ import {
   FxError,
   Inputs,
   Json,
+  LocalSettings,
   ok,
   Plugin,
   PluginContext,
@@ -273,7 +274,7 @@ export async function provisionLocalResourceAdapter(
   if (res.isErr()) {
     return err(res.error);
   }
-  setLocalSettingsV2(localSettings, pluginContext);
+  setLocalSettingsV2(localSettings, pluginContext.localSettings);
   return ok(Void);
 }
 
@@ -295,7 +296,7 @@ export async function configureLocalResourceAdapter(
   if (res.isErr()) {
     return err(res.error);
   }
-  setLocalSettingsV2(localSettings, pluginContext);
+  setLocalSettingsV2(localSettings, pluginContext.localSettings);
   return ok(Void);
 }
 
@@ -319,7 +320,7 @@ export async function executeUserTaskAdapter(
   const res = await plugin.executeUserTask(func, pluginContext);
   if (res.isErr()) return err(res.error);
   setProfileV2ByConfigMapInc(plugin.name, envInfo.profile, pluginContext.config);
-  setLocalSettingsV2(localSettings, pluginContext);
+  setLocalSettingsV2(localSettings, pluginContext.localSettings);
   return ok(res.value);
 }
 
@@ -403,25 +404,23 @@ export function setEnvInfoV1ByProfileV2(
   pluginContext.envInfo = envInfo;
 }
 
-export function setLocalSettingsV2(localSettings: Json, pluginContext: PluginContext): void {
-  localSettings.teamsApp = assignJsonInc(
-    localSettings.teamsApp,
-    mapToJson(pluginContext.localSettings?.teamsApp)
+export function setLocalSettingsV2(localSettingsJson: Json, localSettings?: LocalSettings): void {
+  localSettingsJson.teamsApp = assignJsonInc(
+    localSettingsJson.teamsApp,
+    mapToJson(localSettings?.teamsApp)
   );
-  localSettings.auth = assignJsonInc(
-    localSettings.auth,
-    mapToJson(pluginContext.localSettings?.auth)
+  localSettingsJson.auth = assignJsonInc(localSettingsJson.auth, mapToJson(localSettings?.auth));
+  localSettingsJson.backend = assignJsonInc(
+    localSettingsJson.backend,
+    mapToJson(localSettings?.backend)
   );
-  localSettings.backend = assignJsonInc(
-    localSettings.backend,
-    mapToJson(pluginContext.localSettings?.backend)
+  localSettingsJson.frontend = assignJsonInc(
+    localSettingsJson.frontend,
+    mapToJson(localSettings?.frontend)
   );
-  localSettings.frontend = assignJsonInc(
-    localSettings.frontend,
-    mapToJson(pluginContext.localSettings?.frontend)
-  );
-  localSettings.bot = assignJsonInc(localSettings.bot, mapToJson(pluginContext.localSettings?.bot));
+  localSettingsJson.bot = assignJsonInc(localSettingsJson.bot, mapToJson(localSettings?.bot));
 }
+
 export function assignJsonInc(target?: Json, source?: Json): Json | undefined {
   if (!target) return source;
   if (!source) return target;

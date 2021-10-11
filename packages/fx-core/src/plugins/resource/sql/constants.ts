@@ -47,7 +47,7 @@ export class Constants {
   };
 
   public static readonly identityPlugin: string = "fx-resource-identity";
-  public static readonly identity: string = "identity";
+  public static readonly identityName: string = "identityName";
 
   public static readonly userQuestion = {
     adminName: "Admin name of SQL",

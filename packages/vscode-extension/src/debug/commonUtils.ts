@@ -109,12 +109,11 @@ export async function getLocalDebugEnvs(): Promise<Record<string, string>> {
   return localDebugEnvs as Record<string, string>;
 }
 
-export async function getLocalDebugTeamsAppId(
+export async function getDebugConfig(
   isLocalSideloadingConfiguration: boolean
-): Promise<string | undefined> {
+): Promise<{appId: string, env?: string} | undefined> {
   const params = isLocalSideloadingConfiguration ? "local" : "remote";
-  const localDebugTeamsAppId = await executeLocalDebugUserTask("getLaunchInput", params);
-  return localDebugTeamsAppId as string;
+  return await executeLocalDebugUserTask("getLaunchInput", params);
 }
 
 export async function getProgrammingLanguage(): Promise<string | undefined> {

@@ -5,7 +5,7 @@ module functionProvision '{{PluginOutput.fx-resource-function.Modules.functionPr
     functionServerfarmsName: function_serverfarmsName
     functionStorageName: function_storageName
     {{#contains 'fx-resource-identity' Plugins}}
-    identityName: {{../PluginOutput.fx-resource-identity.Outputs.identityName}}
+    identityResourceId: {{../PluginOutput.fx-resource-identity.Outputs.identityResourceId}}
     {{/contains}}
   }
 }
@@ -30,7 +30,7 @@ module functionConfiguration '{{PluginOutput.fx-resource-function.Modules.functi
     sqlEndpoint: {{../PluginOutput.fx-resource-azure-sql.Outputs.sqlEndpoint}}
     {{/contains}}
     {{#contains 'fx-resource-identity' Plugins}}
-    identityId: {{../PluginOutput.fx-resource-identity.Outputs.identityId}}
+    identityClientId: {{../PluginOutput.fx-resource-identity.Outputs.identityClientId}}
     {{/contains}}
   }
 }

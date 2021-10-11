@@ -746,6 +746,7 @@ async function openMarkdownHandler() {
   const afterScaffold = globalStateGet("openReadme", false);
   if (afterScaffold && workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
     await globalStateUpdate("openReadme", false);
+    showLocalDebugMessage();
     const workspaceFolder = workspace.workspaceFolders[0];
     const workspacePath: string = workspaceFolder.uri.fsPath;
     let targetFolder: string | undefined;
@@ -779,6 +780,7 @@ async function openSampleReadmeHandler() {
   const afterScaffold = globalStateGet("openSampleReadme", false);
   if (afterScaffold && workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
     globalStateUpdate("openSampleReadme", false);
+    showLocalDebugMessage();
     const workspaceFolder = workspace.workspaceFolders[0];
     const workspacePath: string = workspaceFolder.uri.fsPath;
     const uri = Uri.file(`${workspacePath}/README.md`);
@@ -786,6 +788,38 @@ async function openSampleReadmeHandler() {
       const PreviewMarkdownCommand = "markdown.showPreview";
       commands.executeCommand(PreviewMarkdownCommand, uri);
     });
+  }
+}
+
+async function showLocalDebugMessage() {
+  if (
+    await exp
+      .getExpService()
+      .getTreatmentVariableAsync(
+        TreatmentVariables.VSCodeConfig,
+        TreatmentVariables.ShowLocalDebug,
+        true
+      )
+  ) {
+    const localDebug = {
+      title: StringResources.vsc.handlers.localDebugTitle,
+      run: async (): Promise<void> => {
+        selectAndDebug();
+      },
+    };
+
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowLocalDebugNotification);
+    vscode.window
+      .showInformationMessage(
+        util.format(StringResources.vsc.handlers.localDebugDescription),
+        localDebug
+      )
+      .then((selection) => {
+        if (selection?.title === StringResources.vsc.handlers.localDebugTitle) {
+          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickLocalDebug);
+          selection.run();
+        }
+      });
   }
 }
 
@@ -824,25 +858,35 @@ export async function openManifestHandler(args?: any[]): Promise<Result<null, Fx
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, invalidProjectError);
       return err(invalidProjectError);
     }
-    const manifestFile = `${appDirectory}/${constants.manifestFileName}`;
-    if (fs.existsSync(manifestFile)) {
-      workspace.openTextDocument(manifestFile).then((document) => {
-        window.showTextDocument(document);
-      });
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenManifestEditor, {
-        [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-      });
-      return ok(null);
+    const func: Func = {
+      namespace: "fx-solution-azure/fx-resource-appstudio",
+      method: "getManifestTemplatePath",
+    };
+    const res = await runUserTask(func, TelemetryEvent.ValidateManifest, true);
+    if (res.isOk()) {
+      const manifestFile = res.value as string;
+      if (fs.existsSync(manifestFile)) {
+        workspace.openTextDocument(manifestFile).then((document) => {
+          window.showTextDocument(document);
+        });
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenManifestEditor, {
+          [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+        });
+        return ok(null);
+      } else {
+        const FxError = new SystemError(
+          "FileNotFound",
+          util.format(StringResources.vsc.handlers.fileNotFound, manifestFile),
+          ExtensionSource
+        );
+        showError(FxError);
+        ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, FxError);
+        return err(FxError);
+      }
     } else {
-      const FxError: FxError = {
-        name: "FileNotFound",
-        source: ExtensionSource,
-        message: util.format(StringResources.vsc.handlers.fileNotFound, manifestFile),
-        timestamp: new Date(),
-      };
-      showError(FxError);
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, FxError);
-      return err(FxError);
+      showError(res.error);
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, res.error);
+      return err(res.error);
     }
   } else {
     const noOpenWorkspaceError = new UserError(

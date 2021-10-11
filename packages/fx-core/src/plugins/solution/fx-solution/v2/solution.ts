@@ -71,6 +71,7 @@ export class TeamsAppSolutionV2 implements v2.SolutionPlugin {
     ctx: v2.Context,
     inputs: Inputs,
     func: Func,
+    localSettings: Json,
     envInfo: EnvInfoV2,
     tokenProvider: TokenProvider
   ) => Promise<Result<unknown, FxError>> = executeUserTask;

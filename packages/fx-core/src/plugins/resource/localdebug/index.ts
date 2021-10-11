@@ -361,7 +361,7 @@ export class LocalDebugPlugin implements Plugin {
     const applicationIdUri = ctx.localSettings?.auth?.get(
       LocalSettingsAuthKeys.ApplicationIdUris
     ) as string;
-    const teamsAppTenantId = ctx.localSettings?.teamsApp.get(
+    const teamsAppTenantId = ctx.localSettings?.teamsApp?.get(
       LocalSettingsTeamsAppKeys.TenantId
     ) as string;
 
@@ -492,7 +492,7 @@ export class LocalDebugPlugin implements Plugin {
       } else {
         // return local teams app id
         const localTeamsAppId = isMultiEnvEnabled()
-          ? (ctx.localSettings?.teamsApp.get(LocalSettingsTeamsAppKeys.TeamsAppId) as string)
+          ? (ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TeamsAppId) as string)
           : (solutionConfigs?.get(SolutionPlugin.LocalTeamsAppId) as string);
         return ok(localTeamsAppId);
       }

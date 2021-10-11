@@ -49,6 +49,9 @@ const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";
 const learnMoreText = "Learn More";
 const reloadText = "Reload";
+const solutionName = "solution";
+const subscriptionId = "subscriptionId";
+const resourceGroupName = "resourceGroupName";
 const migrationGuideUrl = "https://aka.ms/teamsfx-migration-guide";
 const parameterFileNameTemplate = "azure.parameters.@envName.json";
 
@@ -56,11 +59,14 @@ class EnvConfigName {
   static readonly StorageName = "storageName";
   static readonly IdentityName = "identity";
   static readonly SqlEndpoint = "sqlEndpoint";
+  static readonly SqlResourceId = "sqlResourceId";
   static readonly SqlDataBase = "databaseName";
   static readonly SkuName = "skuName";
   static readonly AppServicePlanName = "appServicePlanName";
   static readonly StorageAccountName = "storageAccountName";
+  static readonly StorageResourceId = "storageResourceId";
   static readonly FuncAppName = "functionAppName";
+  static readonly FunctionId = "functionAppId";
 }
 
 class ArmParameters {
@@ -105,7 +111,7 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   const projectPath = inputs.projectPath as string;
   try {
-    await removeBotConfig(ctx);
+    await updateConfig(ctx);
     await migrateMultiEnv(projectPath);
     const loadRes = await loadProjectSettings(inputs);
     if (loadRes.isErr()) {
@@ -439,13 +445,49 @@ export async function migrateArm(ctx: CoreHookContext) {
   await generateArmParameterJson(ctx);
 }
 
-async function removeBotConfig(ctx: CoreHookContext) {
+async function updateConfig(ctx: CoreHookContext) {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   const fx = path.join(inputs.projectPath as string, `.${ConfigFolderName}`);
   const envConfig = await fs.readJson(path.join(fx, "env.default.json"));
   if (envConfig[ResourcePlugins.Bot]) {
     delete envConfig[ResourcePlugins.Bot];
     envConfig[ResourcePlugins.Bot] = { wayToRegisterBot: "create-new" };
+  }
+  let needUpdate = false;
+  let configPrefix = "";
+  if (envConfig[solutionName][subscriptionId] && envConfig[solutionName][resourceGroupName]) {
+    configPrefix = `/subscriptions/${envConfig[solutionName][subscriptionId]}/resourcegroups/${envConfig["solution"][resourceGroupName]}`;
+    needUpdate = true;
+  }
+  if (needUpdate && envConfig[ResourcePlugins.FrontendHosting]?.[EnvConfigName.StorageName]) {
+    envConfig[ResourcePlugins.FrontendHosting][
+      EnvConfigName.StorageResourceId
+    ] = `${configPrefix}/providers/Microsoft.Storage/storageAccounts/${
+      envConfig[ResourcePlugins.FrontendHosting][EnvConfigName.StorageName]
+    }`;
+  }
+  if (needUpdate && envConfig[ResourcePlugins.AzureSQL]?.[EnvConfigName.SqlEndpoint]) {
+    envConfig[ResourcePlugins.AzureSQL][
+      EnvConfigName.SqlResourceId
+    ] = `${configPrefix}/providers/Microsoft.Sql/servers/${
+      envConfig[ResourcePlugins.AzureSQL][EnvConfigName.SqlEndpoint].split(
+        ".database.windows.net"
+      )[0]
+    }`;
+  }
+  if (needUpdate && envConfig[ResourcePlugins.Function]?.[EnvConfigName.FuncAppName]) {
+    envConfig[ResourcePlugins.Function][
+      EnvConfigName.FunctionId
+    ] = `${configPrefix}/providers/Microsoft.Web/${
+      envConfig[ResourcePlugins.Function][EnvConfigName.FuncAppName]
+    }`;
+    delete envConfig[ResourcePlugins.Function][EnvConfigName.FuncAppName];
+    if (envConfig[ResourcePlugins.Function][EnvConfigName.StorageAccountName]) {
+      delete envConfig[ResourcePlugins.Function][EnvConfigName.StorageAccountName];
+    }
+    if (envConfig[ResourcePlugins.Function][EnvConfigName.AppServicePlanName]) {
+      delete envConfig[ResourcePlugins.Function][EnvConfigName.AppServicePlanName];
+    }
   }
   await fs.writeFile(path.join(fx, "new.env.default.json"), JSON.stringify(envConfig, null, 4));
 }

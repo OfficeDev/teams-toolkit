@@ -38,6 +38,7 @@ import {
   SystemError,
   TelemetryReporter,
   Tools,
+  UserCancelError,
   v2,
   Void,
 } from "@microsoft/teamsfx-api";
@@ -1022,7 +1023,7 @@ export class FxCore implements Core {
       !createEnvCopyInput.targetEnvName ||
       !createEnvCopyInput.sourceEnvName
     ) {
-      return ok(Void);
+      return err(UserCancelError);
     }
 
     const createEnvResult = await this.createEnvCopy(

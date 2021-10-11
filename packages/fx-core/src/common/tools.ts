@@ -591,7 +591,7 @@ function isBasicJsonSchema(jsonSchema: unknown): jsonSchema is BasicJsonSchema {
 //  }
 //  Output:
 //  {"name": null}
-export function redactObject(
+export function _redactObject(
   obj: unknown,
   jsonSchema: unknown,
   maxRecursionDepth = 8,
@@ -614,7 +614,7 @@ export function redactObject(
     const objAny = obj as any;
     for (const key in jsonSchema.properties) {
       if (key in objAny && objAny[key] !== undefined) {
-        const filteredObj = redactObject(
+        const filteredObj = _redactObject(
           objAny[key],
           jsonSchema.properties[key],
           maxRecursionDepth,
@@ -628,4 +628,12 @@ export function redactObject(
     // other basic type include unsupported types
     return null;
   }
+}
+
+export function redactObject(
+  obj: unknown,
+  jsonSchema: unknown,
+  maxRecursionDepth = 8,
+): unknown {
+  return _redactObject(obj, jsonSchema, maxRecursionDepth, 0);
 }

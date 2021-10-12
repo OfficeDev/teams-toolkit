@@ -218,8 +218,8 @@ function onDidStartDebugSessionHandler(event: vscode.DebugSession): void {
           (debugConfig.url as string) &&
           localAppId &&
           (debugConfig.url as string).includes(localAppId);
-        let appId: string = "";
-        let env: string = "";
+        let appId = "";
+        let env = "";
         if (isLocal) {
           appId = localAppId;
         } else {

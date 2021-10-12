@@ -111,7 +111,7 @@ export async function getLocalDebugEnvs(): Promise<Record<string, string>> {
 
 export async function getDebugConfig(
   isLocalSideloadingConfiguration: boolean
-): Promise<{appId: string, env?: string} | undefined> {
+): Promise<{ appId: string; env?: string } | undefined> {
   const params = isLocalSideloadingConfiguration ? "local" : "remote";
   return await executeLocalDebugUserTask("getLaunchInput", params);
 }

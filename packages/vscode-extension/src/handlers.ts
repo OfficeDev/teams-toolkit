@@ -233,6 +233,16 @@ export async function activate(): Promise<Result<Void, FxError>> {
       workspace.onDidDeleteFiles(async (event) => {
         await refreshEnvTreeOnFileChanged(workspacePath, event.files);
       });
+
+      workspace.onDidRenameFiles(async (event) => {
+        const files = [];
+        for (const f of event.files) {
+          files.push(f.newUri);
+          files.push(f.oldUri);
+        }
+
+        await refreshEnvTreeOnFileChanged(workspacePath, files);
+      });
     }
   } catch (e) {
     const FxError: FxError = {

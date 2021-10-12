@@ -104,6 +104,22 @@ export async function hasTeamsfxBackend(): Promise<boolean> {
   return backendRoot !== undefined;
 }
 
+export async function hasTeamsfxBot(): Promise<boolean> {
+  if (!vscode.workspace.workspaceFolders) {
+    return false;
+  }
+
+  const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];
+  const workspacePath: string = workspaceFolder.uri.fsPath;
+  if (!(await isFxProject(workspacePath))) {
+    return false;
+  }
+
+  const botRoot = await getProjectRoot(workspacePath, constants.botFolderName);
+
+  return botRoot !== undefined;
+}
+
 export async function getLocalDebugEnvs(): Promise<Record<string, string>> {
   const localDebugEnvs = await executeLocalDebugUserTask("getLocalDebugEnvs");
   return localDebugEnvs as Record<string, string>;
@@ -111,7 +127,7 @@ export async function getLocalDebugEnvs(): Promise<Record<string, string>> {
 
 export async function getDebugConfig(
   isLocalSideloadingConfiguration: boolean
-): Promise<{appId: string, env?: string} | undefined> {
+): Promise<{ appId: string; env?: string } | undefined> {
   const params = isLocalSideloadingConfiguration ? "local" : "remote";
   return await executeLocalDebugUserTask("getLaunchInput", params);
 }

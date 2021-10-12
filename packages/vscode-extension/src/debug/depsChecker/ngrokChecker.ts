@@ -1,0 +1,230 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+import * as fs from "fs-extra";
+import * as path from "path";
+import { cpUtils } from "./cpUtils";
+import { DepsInfo, IDepsAdapter, IDepsChecker, IDepsLogger, IDepsTelemetry } from "./checker";
+import { defaultHelpLink, DepsCheckerEvent, isWindows, Messages, TelemtryMessages } from "./common";
+import { DepsCheckerError } from "./errors";
+import * as os from "os";
+import { ConfigFolderName } from "@microsoft/teamsfx-api";
+
+const ngrokName = "ngrok";
+
+const installPackageVersion = "4.2.2";
+const supportedPackageVersions = [">=3.4.0"];
+const supportedBinVersions = ["2.3"];
+const displayNgrokName = `${ngrokName}@${installPackageVersion}`;
+
+const timeout = 5 * 60 * 1000;
+
+export class NgrokChecker implements IDepsChecker {
+  private readonly _adapter: IDepsAdapter;
+  private readonly _logger: IDepsLogger;
+  private readonly _telemetry: IDepsTelemetry;
+
+  constructor(adapter: IDepsAdapter, logger: IDepsLogger, telemetry: IDepsTelemetry) {
+    this._adapter = adapter;
+    this._logger = logger;
+    this._telemetry = telemetry;
+  }
+
+  public getDepsInfo(): Promise<DepsInfo> {
+    return Promise.resolve({
+      name: ngrokName,
+      installVersion: installPackageVersion,
+      supportedVersions: supportedPackageVersions,
+      details: new Map<string, string>(),
+    });
+  }
+
+  public async isEnabled(): Promise<boolean> {
+    // only for bot
+    const hasBot = await this._adapter.hasTeamsfxBot();
+    const checkerEnabled = await this._adapter.ngrokCheckerEnabled();
+    return hasBot && checkerEnabled;
+  }
+
+  public async isInstalled(): Promise<boolean> {
+    let isVersionSupported = false,
+      hasSentinel = false;
+    try {
+      const ngrokVersion = await this.queryNgrokBinVersion();
+      isVersionSupported = !ngrokVersion && supportedBinVersions.includes(ngrokVersion!);
+      hasSentinel = await fs.pathExists(NgrokChecker.getSentinelPath());
+    } catch (error) {
+      // do nothing
+      return false;
+    }
+    return isVersionSupported && hasSentinel;
+  }
+
+  public async install(): Promise<void> {
+    if (!(await this.hasNPM())) {
+      this.handleNpmNotFound();
+    }
+
+    await this.cleanup();
+    await this.installNgrok();
+
+    if (!(await this.validate())) {
+      await this.handleInstallNgrokFailed();
+    }
+
+    this._telemetry.sendEvent(DepsCheckerEvent.ngrokInstallCompleted);
+    await this._logger.info(Messages.finishInstallNgrok.replace("@NameVersion", displayNgrokName));
+  }
+
+  private async handleInstallNgrokFailed(): Promise<void> {
+    await this.cleanup();
+
+    this._telemetry.sendSystemErrorEvent(
+      DepsCheckerEvent.ngrokInstallError,
+      TelemtryMessages.failedToInstallNgrok,
+      Messages.failToValidateNgrok.replace("@NameVersion", displayNgrokName)
+    );
+    throw new DepsCheckerError(
+      Messages.failToInstallNgrok.split("@NameVersion").join(displayNgrokName),
+      defaultHelpLink
+    );
+  }
+
+  private async validate(): Promise<boolean> {
+    let isVersionSupported = false;
+    let hasSentinel = false;
+    try {
+      const portableNgrok = await this.queryNgrokBinVersion();
+      isVersionSupported = !portableNgrok && supportedBinVersions.includes(portableNgrok!);
+      hasSentinel = await fs.pathExists(NgrokChecker.getSentinelPath());
+    } catch (err) {
+      this._telemetry.sendSystemErrorEvent(
+        DepsCheckerEvent.ngrokValidationError,
+        TelemtryMessages.failedToValidateNgrok,
+        err
+      );
+    }
+
+    if (!isVersionSupported || !hasSentinel) {
+      this._telemetry.sendEvent(DepsCheckerEvent.ngrokValidationError, {
+        "ngrok-v": String(isVersionSupported),
+        sentinel: String(hasSentinel),
+      });
+    }
+    return isVersionSupported && hasSentinel;
+  }
+
+  private handleNpmNotFound() {
+    this._telemetry.sendEvent(DepsCheckerEvent.npmNotFound);
+    throw new DepsCheckerError(
+      Messages.needInstallNgrok.replace("@NameVersion", displayNgrokName),
+      defaultHelpLink
+    );
+  }
+
+  private static getDefaultInstallPath(): string {
+    return path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "ngrok");
+  }
+
+  private static getSentinelPath(): string {
+    return path.join(os.homedir(), `.${ConfigFolderName}`, "ngrok-sentinel");
+  }
+
+  private static getNgrokBinFolder(): string {
+    return path.join(NgrokChecker.getDefaultInstallPath(), "node_modules", "ngrok", "bin");
+  }
+
+  private async queryNgrokBinVersion(): Promise<string | undefined> {
+    const output = await cpUtils.executeCommand(
+      undefined,
+      this._logger,
+      {
+        shell: true,
+        env: { PATH: NgrokChecker.getNgrokBinFolder() },
+      },
+      ngrokName,
+      "version"
+    );
+
+    const regex =
+      /ngrok version (?<major_version>\d+)\.(?<minor_version>\d+)\.(?<patch_version>\d+)/gim;
+    const match = regex.exec(output);
+    if (!match || !match.groups) {
+      return undefined;
+    }
+
+    return `${match.groups.major_version}.${match.groups.minor_version}`;
+  }
+
+  private async hasNPM(): Promise<boolean> {
+    try {
+      const npmVersion = await cpUtils.executeCommand(
+        undefined,
+        this._logger,
+        { shell: true },
+        "npm",
+        "--version"
+      );
+      this._telemetry.sendEvent(DepsCheckerEvent.npmAlreadyInstalled, {
+        "npm-version": npmVersion,
+      });
+
+      return true;
+    } catch (error) {
+      this._telemetry.sendEvent(DepsCheckerEvent.npmNotFound);
+      return false;
+    }
+  }
+
+  private async cleanup(): Promise<void> {
+    try {
+      await fs.emptyDir(NgrokChecker.getDefaultInstallPath());
+      await fs.remove(NgrokChecker.getSentinelPath());
+    } catch (err) {
+      await this._logger.debug(
+        `Failed to clean up path: ${NgrokChecker.getDefaultInstallPath()}, error: ${err}`
+      );
+    }
+  }
+
+  private async installNgrok(): Promise<void> {
+    await this._telemetry.sendEventWithDuration(
+      DepsCheckerEvent.ngrokInstallScriptCompleted,
+      async () => {
+        await this._adapter.runWithProgressIndicator(
+          async () => await this.doInstallPortableNgrok()
+        );
+      }
+    );
+  }
+
+  private async doInstallPortableNgrok(): Promise<void> {
+    await this._logger.info(Messages.startInstallNgrok.replace("@NameVersion", displayNgrokName));
+
+    try {
+      await cpUtils.executeCommand(
+        undefined,
+        this._logger,
+        { timeout: timeout, shell: false },
+        this.getExecCommand("npm"),
+        "install",
+        // not use -f, to avoid npm@6 bug: exit code = 0, even if install fail
+        `${ngrokName}@${installPackageVersion}`,
+        "--prefix",
+        `${NgrokChecker.getDefaultInstallPath()}`
+      );
+
+      await fs.ensureFile(NgrokChecker.getSentinelPath());
+    } catch (error) {
+      this._telemetry.sendSystemErrorEvent(
+        DepsCheckerEvent.ngrokInstallScriptError,
+        TelemtryMessages.failedToInstallNgrok,
+        error
+      );
+    }
+  }
+
+  private getExecCommand(command: string): string {
+    return isWindows() ? `${command}.cmd` : command;
+  }
+}

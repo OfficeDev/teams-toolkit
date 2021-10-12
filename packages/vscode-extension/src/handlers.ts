@@ -34,6 +34,7 @@ import {
   ConfigFolderName,
   TreeItem,
   TreeCategory,
+  LocalEnvironmentName,
 } from "@microsoft/teamsfx-api";
 import {
   isUserCancelError,
@@ -107,7 +108,6 @@ import { ext } from "./extensionVariables";
 import { InputConfigsFolderName } from "@microsoft/teamsfx-api";
 import { CoreCallbackEvent } from "@microsoft/teamsfx-api";
 import { CommandsWebviewProvider } from "./treeview/commandsWebviewProvider";
-import { LocalEnvironment } from "./constants";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -931,8 +931,8 @@ export async function refreshEnvironment(args?: any[]): Promise<Result<Void, FxE
 
 export async function viewEnvironment(env: string): Promise<Result<Void, FxError>> {
   const telemetryProperties: { [p: string]: string } = {};
-  if (env === LocalEnvironment) {
-    telemetryProperties[TelemetryProperty.Env] = LocalEnvironment;
+  if (env === LocalEnvironmentName) {
+    telemetryProperties[TelemetryProperty.Env] = LocalEnvironmentName;
   } else {
     telemetryProperties[TelemetryProperty.Env] = getHashedEnv(env);
   }
@@ -942,7 +942,7 @@ export async function viewEnvironment(env: string): Promise<Result<Void, FxError
     const localSettingsProvider = new LocalSettingsProvider(projectRoot);
 
     const envFilePath =
-      env === LocalEnvironment
+      env === LocalEnvironmentName
         ? localSettingsProvider.localSettingsFilePath
         : environmentManager.getEnvConfigPath(env, projectRoot);
 

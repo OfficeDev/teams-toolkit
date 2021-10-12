@@ -8,6 +8,7 @@ import {
   TextInputQuestion,
   FuncQuestion,
   Inputs,
+  LocalEnvironmentName,
 } from "@microsoft/teamsfx-api";
 import * as jsonschema from "jsonschema";
 import * as path from "path";
@@ -117,19 +118,30 @@ export function getQuestionNewTargetEnvironmentName(projectPath: string): TextIn
     title: "New environment name",
     validation: {
       validFunc: async (input: string): Promise<string | undefined> => {
-        const targetEnvName = input as string;
+        const targetEnvName = input;
         const match = targetEnvName.match(environmentManager.envNameRegex);
         if (!match) {
           return "Environment name can only contain letters, digits, _ and -.";
         }
 
-        const envConfigs = await environmentManager.listEnvConfigs(projectPath);
-
-        if (!envConfigs.isErr() && envConfigs.value!.indexOf(targetEnvName!) >= 0) {
-          return `Project environment ${targetEnvName} already exists.`;
+        if (targetEnvName === LocalEnvironmentName) {
+          return `Cannot create an environment '${LocalEnvironmentName}'`;
         }
 
-        return undefined;
+        const envConfigs = await environmentManager.listEnvConfigs(projectPath);
+        if (envConfigs.isErr()) {
+          return `Failed to list env configs`;
+        }
+
+        const found =
+          envConfigs.value.find(
+            (env) => env.localeCompare(targetEnvName, undefined, { sensitivity: "base" }) === 0
+          ) !== undefined;
+        if (found) {
+          return `Project environment ${targetEnvName} already exists.`;
+        } else {
+          return undefined;
+        }
       },
     },
     placeholder: "New environment name",

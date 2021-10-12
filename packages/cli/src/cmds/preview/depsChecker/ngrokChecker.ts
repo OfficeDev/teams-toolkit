@@ -4,7 +4,14 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import { cpUtils } from "./cpUtils";
-import { DepsInfo, IDepsAdapter, IDepsChecker, IDepsLogger, IDepsTelemetry } from "./checker";
+import {
+  DepsChecker,
+  DepsInfo,
+  IDepsAdapter,
+  IDepsChecker,
+  IDepsLogger,
+  IDepsTelemetry,
+} from "./checker";
 import { defaultHelpLink, DepsCheckerEvent, isWindows, Messages, TelemtryMessages } from "./common";
 import { DepsCheckerError } from "./errors";
 import * as os from "os";
@@ -79,6 +86,25 @@ export class NgrokChecker implements IDepsChecker {
 
   public getNgrokBinFolder(): string {
     return path.join(this.getDefaultInstallPath(), "node_modules", "ngrok", "bin");
+  }
+
+  // TODO: integrate into checker.ts after checker supports linux
+  public async resolve(): Promise<boolean> {
+    try {
+      if ((await this.isEnabled()) && !(await this.isInstalled())) {
+        this._adapter.showOutputChannel();
+        await this.install();
+        this._logger.cleanup();
+      }
+    } catch (error) {
+      await this._logger.printDetailLog();
+      this._logger.cleanup();
+      await this._logger.error(`Failed to install 'ngrok', error = '${error}'`);
+      const continueNext = await DepsChecker.handleErrorWithDisplay(error, this._adapter);
+      return continueNext;
+    }
+
+    return true;
   }
 
   private async handleInstallNgrokFailed(): Promise<void> {

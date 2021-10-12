@@ -27,7 +27,7 @@ import {
 } from "../..";
 import { LocalSettingsProvider } from "../../common/localSettingsProvider";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
-import fs from "fs-extra";
+import fs, { CopyFilterAsync } from "fs-extra";
 import path from "path";
 import { readJson } from "../../common/fileUtils";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
@@ -129,6 +129,7 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
     await cleanup(projectPath);
     throw err;
   }
+  await backup(projectPath);
   await removeOldProjectFiles(projectPath);
   const core = ctx.self as FxCore;
   core.tools.ui
@@ -318,14 +319,37 @@ async function getMultiEnvFolders(projectPath: string): Promise<any> {
   return { fx, fxConfig, templateAppPackage, fxPublishProfile };
 }
 
+async function backup(projectPath: string): Promise<void> {
+  const fx = path.join(projectPath, `.${ConfigFolderName}`);
+  const backup = path.join(fx, "migrationbackup");
+  await fs.ensureDir(backup);
+  const fxFiles = [
+    "env.default.json",
+    "default.userdata",
+    "settings.json",
+    "local.env",
+    "subscriptionInfo.json",
+  ];
+
+  for (const file of fxFiles) {
+    if (fs.existsSync(path.join(fx, file))) {
+      await fs.copy(path.join(fx, file), path.join(backup, file));
+    }
+  }
+  if (fs.existsSync(path.join(projectPath, AppPackageFolderName))) {
+    await fs.copy(
+      path.join(projectPath, AppPackageFolderName),
+      path.join(backup, AppPackageFolderName)
+    );
+  } else if (fs.existsSync(path.join(fx, AppPackageFolderName))) {
+    // version <= 2.4.1
+    await fs.copy(path.join(fx, AppPackageFolderName), path.join(backup, AppPackageFolderName));
+  }
+}
+
 async function removeOldProjectFiles(projectPath: string): Promise<void> {
   const fx = path.join(projectPath, `.${ConfigFolderName}`);
-  // backup the env.default.json to migrationbackup folder.
-  await fs.ensureDir(path.join(fx, "migrationbackup"));
-  await fs.move(
-    path.join(fx, "env.default.json"),
-    path.join(fx, "migrationbackup", "env.default.json")
-  );
+  await fs.remove(path.join(fx, "env.default.json"));
   await fs.remove(path.join(fx, "default.userdata"));
   await fs.remove(path.join(fx, "settings.json"));
   await fs.remove(path.join(fx, "local.env"));

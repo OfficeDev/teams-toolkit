@@ -953,7 +953,7 @@ describe("API v2 implementation", () => {
       };
       const mockedEnvInfo: EnvInfoV2 = {
         envName: "default",
-        config: { manifest: { values: { appName: { short: "test-app" } } } },
+        config: { manifest: { appName: { short: "test-app" } } },
         profile: {},
       };
       mockProvisionV2ThatAlwaysSucceed(spfxPluginV2);
@@ -1005,7 +1005,7 @@ describe("API v2 implementation", () => {
       };
       const mockedEnvInfo: EnvInfoV2 = {
         envName: "default",
-        config: { manifest: { values: { appName: { short: "test-app" } } } },
+        config: { manifest: { appName: { short: "test-app" } } },
         profile: {},
       };
       mockProvisionV2ThatAlwaysSucceed(fehostPluginV2);

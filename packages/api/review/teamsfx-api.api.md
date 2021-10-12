@@ -273,14 +273,12 @@ export interface EnvConfig {
         appPassword?: string;
         [k: string]: unknown;
     };
+    // (undocumented)
+    description?: string;
     manifest: {
-        description?: string;
-        values: {
-            appName: {
-                short: string;
-                full?: string;
-                [k: string]: unknown;
-            };
+        appName: {
+            short: string;
+            full?: string;
             [k: string]: unknown;
         };
         [k: string]: unknown;

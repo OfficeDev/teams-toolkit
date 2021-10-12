@@ -165,7 +165,7 @@ describe("API V2 adapter", () => {
     };
     const provisionInputConfig: EnvConfig = {
       azure: { subscriptionId: "123455", resourceGroupName: "rg" },
-      manifest: { values: { appName: { short: appName } } },
+      manifest: { appName: { short: appName } },
     };
     const envInfo: EnvInfoV2 = {
       envName: "default",

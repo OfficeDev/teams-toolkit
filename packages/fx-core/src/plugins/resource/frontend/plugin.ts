@@ -246,28 +246,41 @@ export class FrontendPluginImpl {
 
   private async updateDotenv(ctx: PluginContext): Promise<void> {
     const envs: { [key: string]: string } = {};
+    const addToEnvs = (key: string, value: string | undefined) => {
+      if (value) {
+        envs[key] = value;
+      }
+    };
 
     const solutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
 
-    if (solutionSettings.azureResources.includes(AzureResourceFunction.id)) {
-      const functionPlugin = ctx.envInfo.profile.get(DependentPluginInfo.FunctionPluginName);
-      envs[EnvironmentVariables.FuncName] = ctx.projectSettings?.defaultFunctionName ?? "";
-      envs[EnvironmentVariables.FuncEndpoint] = functionPlugin.get(
-        DependentPluginInfo.FunctionEndpoint
-      ) as string;
+    if (solutionSettings?.azureResources?.includes(AzureResourceFunction.id)) {
+      addToEnvs(EnvironmentVariables.FuncName, ctx.projectSettings?.defaultFunctionName);
+      addToEnvs(
+        EnvironmentVariables.FuncEndpoint,
+        ctx.envInfo.profile
+          .get(DependentPluginInfo.FunctionPluginName)
+          ?.get(DependentPluginInfo.FunctionEndpoint) as string
+      );
     }
 
-    if (solutionSettings.activeResourcePlugins.includes(DependentPluginInfo.RuntimePluginName)) {
-      const authPlugin = ctx.envInfo.profile.get(DependentPluginInfo.RuntimePluginName);
-      envs[EnvironmentVariables.RuntimeEndpoint] = authPlugin.get(
-        DependentPluginInfo.RuntimeEndpoint
-      ) as string;
-      envs[EnvironmentVariables.StartLoginPage] = DependentPluginInfo.StartLoginPageURL;
+    if (solutionSettings?.activeResourcePlugins?.includes(DependentPluginInfo.RuntimePluginName)) {
+      addToEnvs(
+        EnvironmentVariables.RuntimeEndpoint,
+        ctx.envInfo.profile
+          .get(DependentPluginInfo.RuntimePluginName)
+          ?.get(DependentPluginInfo.RuntimeEndpoint) as string
+      );
+      addToEnvs(EnvironmentVariables.StartLoginPage, DependentPluginInfo.StartLoginPageURL);
     }
 
-    if (solutionSettings.activeResourcePlugins.includes(DependentPluginInfo.AADPluginName)) {
-      const aadPlugin = ctx.envInfo.profile.get(DependentPluginInfo.AADPluginName);
-      envs[EnvironmentVariables.ClientID] = aadPlugin.get(DependentPluginInfo.ClientID) as string;
+    if (solutionSettings?.activeResourcePlugins?.includes(DependentPluginInfo.AADPluginName)) {
+      addToEnvs(
+        EnvironmentVariables.ClientID,
+        ctx.envInfo.profile
+          .get(DependentPluginInfo.AADPluginName)
+          ?.get(DependentPluginInfo.ClientID) as string
+      );
     }
 
     const envFilePath = path.join(

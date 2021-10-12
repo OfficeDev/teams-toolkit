@@ -702,7 +702,7 @@ function escapeSecretPlaceholders(variables: Record<string, any>) {
   for (const key of CryptoDataMatchers) {
     const item = key.split(".");
     if (variables[item[0]]?.[item[1]]) {
-      variables[item[0]] = { [item[1]]: key };
+      variables[item[0]][item[1]] = key;
     }
   }
 }

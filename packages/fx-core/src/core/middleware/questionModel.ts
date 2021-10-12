@@ -29,6 +29,18 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
   if (method === "createProject") {
     getQuestionRes = await core._getQuestionsForCreateProject(inputs);
   } else if (method === "migrateV1Project") {
+    const res = await core.tools.ui.showMessage(
+      "warn",
+      "We will update your project to make it compatible with the latest Teams Toolkit. We recommend to use git for better tracking file changes before migration. Your original project files will be archived to the .archive folder. You can refer to .archive.log which provides detailed information about the archive process.",
+      true,
+      "OK"
+    );
+    const answer = res?.isOk() ? res.value : undefined;
+    if (!answer || answer != "OK") {
+      core.tools.logProvider.info(`[core] V1 project migration was canceled.`);
+      ctx.result = ok(null);
+      return;
+    }
     getQuestionRes = await core._getQuestionsForMigrateV1Project(inputs);
   } else {
     if ((isV2() && ctx.solutionV2 && ctx.contextV2) || (ctx.solution && ctx.solutionContext)) {

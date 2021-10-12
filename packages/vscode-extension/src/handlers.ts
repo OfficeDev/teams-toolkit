@@ -298,7 +298,7 @@ export async function getAzureSolutionSettings(): Promise<AzureSolutionSettings 
   input.ignoreEnvInfo = true;
   const projectConfigRes = await core.getProjectConfig(input);
 
-  if (projectConfigRes.isOk()) {
+  if (projectConfigRes?.isOk()) {
     if (projectConfigRes.value) {
       return projectConfigRes.value.settings?.solutionSettings as AzureSolutionSettings;
     }
@@ -438,8 +438,10 @@ export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
         if (tmpResult.isErr()) {
           result = err(tmpResult.error);
         } else {
-          const uri = Uri.file(tmpResult.value);
-          commands.executeCommand("vscode.openFolder", uri);
+          if (tmpResult?.value) {
+            const uri = Uri.file(tmpResult.value);
+            commands.executeCommand("vscode.openFolder", uri);
+          }
           result = ok(null);
         }
         break;

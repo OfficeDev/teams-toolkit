@@ -32,21 +32,10 @@ async function step(desc, fn) {
   }
 }
 
-async function main() {
-  const rawTagList = await step(`Download tag list from ${config.tagListURL}`, async () => {
-    res = await axios.get(config.tagListURL);
-    return res.data;
-  });
+async function downloadTemplates(version) {
+  const tag = config.tagPrefix + version;
+  console.log(`Start to download templates with tag: ${tag}`);
 
-  const tagList = rawTagList.toString().replace(/\r/g, "").split("\n");
-  const versionList = tagList.map((tag) => tag.replace(config.tagPrefix, ""));
-  const selectedVersion = semver.maxSatisfying(versionList, config.version);
-  if (!selectedVersion) {
-    console.error(`Failed to find a tag for the version, ${config.version}`);
-    exit(-1);
-  }
-
-  const tag = config.tagPrefix + selectedVersion;
   for (let lang of languages) {
     for (let template of templates) {
       const fileName = `${template[0]}.${lang}.${template[1]}.zip`;
@@ -60,6 +49,37 @@ async function main() {
       });
     }
   }
+}
+
+function selectVersion(tagList) {
+  const versionList = tagList
+    .filter((tag) => tag.startsWith(config.tagPrefix))
+    .map((tag) => tag.replace(config.tagPrefix, ""));
+  return semver.maxSatisfying(versionList, config.version);
+}
+
+function selectVersionFromShellArgument() {
+  const tagList = process.argv.slice(2);
+  return selectVersion(tagList);
+}
+
+async function selectVersionFromRemoteTagList() {
+  const rawTagList = await step(`Download tag list from ${config.tagListURL}`, async () => {
+    res = await axios.get(config.tagListURL);
+    return res.data;
+  });
+  const tagList = rawTagList.toString().replace(/\r/g, "").split("\n");
+  return selectVersion(tagList);
+}
+
+async function main() {
+  const selectedVersion =
+    selectVersionFromShellArgument() || (await selectVersionFromRemoteTagList());
+  if (!selectVersion) {
+    console.error(`Failed to find a tag for the version, ${config.version}`);
+    process.exit(-1);
+  }
+  await downloadTemplates(selectedVersion);
 }
 
 main();

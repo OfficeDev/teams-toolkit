@@ -389,12 +389,7 @@ export class AppStudioPlugin implements Plugin {
       return await this.buildTeamsPackage(ctx);
     } else if (func.method === "getAppDefinitionAndUpdate") {
       if (func.params && func.params.type && func.params.manifest) {
-        let isLocalDebug;
-        if ((func.params.type as string) === "localDebug") {
-          isLocalDebug = true;
-        } else {
-          isLocalDebug = false;
-        }
+        const isLocalDebug = (func.params.type as string) === "localDebug";
         return await this.getAppDefinitionAndUpdate(
           ctx,
           isLocalDebug,

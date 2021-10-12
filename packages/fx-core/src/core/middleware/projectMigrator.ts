@@ -46,6 +46,7 @@ import { loadSolutionContext } from "./envInfoLoader";
 import { ResourcePlugins } from "../../common/constants";
 import { getActivatedResourcePlugins } from "../../plugins/solution/fx-solution/ResourcePluginContainer";
 import { LocalDebugConfigKeys } from "../../plugins/resource/localdebug/constants";
+import { MANIFEST_LOCAL } from "../../plugins/resource/appstudio/constants";
 
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";
@@ -222,7 +223,7 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
       hasBotCapability,
       hasMessageExtensionCapability
     );
-    const localManifestFile = path.join(templateAppPackage, "manifest.local.json");
+    const localManifestFile = path.join(templateAppPackage, MANIFEST_LOCAL);
     await fs.writeFile(localManifestFile, JSON.stringify(localManifest, null, 4));
   }
 

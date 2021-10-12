@@ -130,7 +130,7 @@ export async function createTmpBackendProjectDir(
 
   const csprojPath = path.resolve(
     __dirname,
-    "../../../../../../../templates/function-base/ts/default/extensions.csproj"
+    "../../../../../../templates/function-base/ts/default/extensions.csproj"
   );
   const targetPath = path.join(dir, csprojFileName);
   await fs.copyFile(csprojPath, targetPath, fs.constants.COPYFILE_EXCL);

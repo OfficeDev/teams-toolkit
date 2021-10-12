@@ -18,6 +18,7 @@ import { getIsExistingUser, getTeamsAppId } from "../utils/commonUtils";
 export namespace ExtTelemetry {
   export let reporter: VSCodeTelemetryReporter;
   export let hasSentTelemetry = false;
+  export const isFromSample: boolean | undefined = undefined;
 
   export function setHasSentTelemetry(eventName: string) {
     if (eventName === "query-expfeature") return;
@@ -82,6 +83,10 @@ export namespace ExtTelemetry {
     const isExistingUser = getIsExistingUser();
     properties[TelemetryProperty.IsExistingUser] = isExistingUser ? isExistingUser : "";
 
+    if (isFromSample != undefined) {
+      properties![TelemetryProperty.IsFromSample] = isFromSample.toString();
+    }
+
     reporter.sendTelemetryEvent(eventName, properties, measurements);
   }
 
@@ -117,6 +122,10 @@ export namespace ExtTelemetry {
       error.stack ? "\nstack:\n" + error.stack : ""
     }`;
 
+    if (isFromSample != undefined) {
+      properties![TelemetryProperty.IsFromSample] = isFromSample.toString();
+    }
+
     reporter.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
   }
 
@@ -137,6 +146,10 @@ export namespace ExtTelemetry {
 
     const isExistingUser = getIsExistingUser();
     properties[TelemetryProperty.IsExistingUser] = isExistingUser ? isExistingUser : "";
+
+    if (isFromSample != undefined) {
+      properties![TelemetryProperty.IsFromSample] = isFromSample.toString();
+    }
 
     reporter.sendTelemetryException(error, properties, measurements);
   }

@@ -23,6 +23,7 @@ import {
 import path, { basename } from "path";
 import fs from "fs-extra";
 import jsum from "jsum";
+import * as dotenv from "dotenv";
 import {
   deserializeDict,
   dataNeedEncryption,
@@ -44,12 +45,7 @@ import { isMultiEnvEnabled } from "../common";
 import Ajv from "ajv";
 import * as draft6MetaSchema from "ajv/dist/refs/json-schema-draft-06.json";
 import * as envConfigSchema from "@microsoft/teamsfx-api/build/schemas/envConfig.json";
-import {
-  InvalidProjectError,
-  InvalidProjectSettingsFileError,
-  isValidProject,
-  ReadFileError,
-} from ".";
+import { InvalidProjectSettingsFileError } from ".";
 
 export interface EnvProfileFiles {
   envProfile: string;
@@ -67,8 +63,8 @@ class EnvironmentManager {
   private readonly checksumKey = "_checksum";
   private readonly schema =
     "https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/packages/api/src/schemas/envConfig.json";
-  private readonly manifestConfigDescription =
-    `You can customize the 'values' object to customize Teams app manifest for different environments.` +
+  private readonly envConfigDescription =
+    `You can customize the TeamsFx config for different environments.` +
     ` Visit https://aka.ms/teamsfx-config to learn more about this.`;
 
   constructor() {
@@ -102,13 +98,11 @@ class EnvironmentManager {
   public newEnvConfigData(appName: string): EnvConfig {
     const envConfig: EnvConfig = {
       $schema: this.schema,
+      description: this.envConfigDescription,
       manifest: {
-        description: this.manifestConfigDescription,
-        values: {
-          appName: {
-            short: appName,
-            full: `Full name for ${appName}`,
-          },
+        appName: {
+          short: appName,
+          full: `Full name for ${appName}`,
         },
       },
     };
@@ -247,7 +241,7 @@ class EnvironmentManager {
   ): Promise<Result<EnvConfig, FxError>> {
     if (!isMultiEnvEnabled()) {
       return ok({
-        manifest: { values: { appName: { short: "" } } },
+        manifest: { appName: { short: "" } },
       });
     }
 
@@ -257,7 +251,12 @@ class EnvironmentManager {
     }
 
     const validate = this.ajv.compile<EnvConfig>(envConfigSchema);
-    const data = await fs.readJson(envConfigPath);
+    let data;
+    try {
+      data = await fs.readJson(envConfigPath);
+    } catch (error) {
+      return err(InvalidEnvConfigError(envName, `Failed to read env config JSON: ${error}`));
+    }
     if (validate(data)) {
       return ok(data);
     }
@@ -314,7 +313,7 @@ class EnvironmentManager {
       : this.getConfigFolder(projectPath);
   }
 
-  private getEnvConfigsFolder(projectPath: string): string {
+  public getEnvConfigsFolder(projectPath: string): string {
     return path.resolve(this.getConfigFolder(projectPath), InputConfigsFolderName);
   }
 

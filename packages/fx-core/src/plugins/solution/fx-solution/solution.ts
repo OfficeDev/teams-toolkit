@@ -12,6 +12,7 @@ import {
   combine,
   ConfigMap,
   DynamicPlatforms,
+  EnvConfigSchema,
   err,
   Func,
   FxError,
@@ -56,10 +57,12 @@ import {
 } from "../../../common/permissionInterface";
 import {
   deepCopy,
+  getHashedEnv,
   getStrings,
   isArmSupportEnabled,
   isMultiEnvEnabled,
   isUserCancelError,
+  redactObject,
 } from "../../../common/tools";
 import { CopyFileError } from "../../../core";
 import { ErrorHandlerMW } from "../../../core/middleware/errorHandler";
@@ -95,9 +98,8 @@ import {
   SolutionTelemetryProperty,
   SolutionTelemetrySuccess,
   SOLUTION_PROVISION_SUCCEEDED,
-  SUBSCRIPTION_ID,
-  SUBSCRIPTION_NAME,
   Void,
+  SolutionSource,
 } from "./constants";
 import { executeConcurrently, executeLifecycles, LifecyclesWithContext } from "./executor";
 import {
@@ -141,10 +143,15 @@ import {
   ensurePermissionRequest,
   parseTeamsAppTenantId,
   fillInSolutionSettings,
+  parseUserName,
 } from "./v2/utils";
 import { askForProvisionConsent } from "./v2/provision";
 import { scaffoldReadmeAndLocalSettings } from "./v2/scaffolding";
 import { environmentManager } from "../../..";
+import { Json } from "@microsoft/teamsfx-api";
+import { setLocalSettingsV2 } from "../../resource/utils4v2";
+import { LocalSettingsProvider } from "../../../common/localSettingsProvider";
+import { TelemetryEvent, TelemetryProperty } from "../../../common/telemetry";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -201,7 +208,11 @@ export class TeamsAppSolution implements Solution {
   assertSettingsNotEmpty<T>(settings: T | undefined, key: string): Result<T, FxError> {
     if (!settings) {
       return err(
-        returnSystemError(new Error(`${key} is undefined`), "Solution", SolutionError.InternelError)
+        returnSystemError(
+          new Error(`${key} is undefined`),
+          SolutionSource,
+          SolutionError.InternelError
+        )
       );
     }
     return ok(settings);
@@ -238,7 +249,7 @@ export class TeamsAppSolution implements Solution {
       return err(
         returnSystemError(
           new Error("capabilities is empty"),
-          "Solution",
+          SolutionSource,
           SolutionError.InternelError
         )
       );
@@ -266,7 +277,7 @@ export class TeamsAppSolution implements Solution {
     });
     if (!ctx.projectSettings)
       return err(
-        new SystemError(SolutionError.InternelError, "projectSettings undefined", "Solution")
+        new SystemError(SolutionError.InternelError, "projectSettings undefined", SolutionSource)
       );
     // ensure that global namespace is present
     if (!ctx.envInfo.profile.has(GLOBAL_CONFIG)) {
@@ -357,7 +368,13 @@ export class TeamsAppSolution implements Solution {
       .capabilities;
     const azureResources = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
       .azureResources;
-    await scaffoldReadmeAndLocalSettings(capabilities, azureResources, ctx.root, true);
+    await scaffoldReadmeAndLocalSettings(
+      capabilities,
+      azureResources,
+      ctx.root,
+      ctx.localSettings,
+      true
+    );
 
     ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.Migrate, {
       [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
@@ -446,7 +463,13 @@ export class TeamsAppSolution implements Solution {
         .capabilities;
       const azureResources = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
         .azureResources;
-      await scaffoldReadmeAndLocalSettings(capabilities, azureResources, ctx.root);
+
+      await scaffoldReadmeAndLocalSettings(
+        capabilities,
+        azureResources,
+        ctx.root,
+        ctx.localSettings
+      );
     }
 
     if (isArmSupportEnabled() && generateResourceTemplate && this.isAzureProject(ctx)) {
@@ -469,6 +492,8 @@ export class TeamsAppSolution implements Solution {
       } catch (e) {
         return err(CopyFileError(e));
       }
+
+      return ok(ctx.answers!.copy ? ctx.answers!.targetEnvName! : ctx.envInfo?.envName);
     }
     return ok(Void);
   }
@@ -484,7 +509,7 @@ export class TeamsAppSolution implements Solution {
         return err(
           returnUserError(
             new Error("Provision in progress. Please wait for its completion."),
-            "Solution",
+            SolutionSource,
             SolutionError.ProvisionInProgress
           )
         );
@@ -492,7 +517,7 @@ export class TeamsAppSolution implements Solution {
         return err(
           returnUserError(
             new Error("Deployment in progress. Please wait for its completion."),
-            "Solution",
+            SolutionSource,
             SolutionError.DeploymentInProgress
           )
         );
@@ -500,7 +525,7 @@ export class TeamsAppSolution implements Solution {
         return err(
           returnUserError(
             new Error("Publish in progress. Please wait for its completion."),
-            "Solution",
+            SolutionSource,
             SolutionError.PublishInProgress
           )
         );
@@ -583,6 +608,14 @@ export class TeamsAppSolution implements Solution {
       return maybeSelectedPlugins;
     }
     const selectedPlugins = maybeSelectedPlugins.value;
+
+    // Send config telemetry before actually doing anything.
+    // If something fails, we can know whether it is related to the config.
+    const redactedEnvConfig = redactObject(ctx.envInfo.config, EnvConfigSchema);
+    ctx.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.EnvConfig, {
+      [TelemetryProperty.Env]: getHashedEnv(ctx.envInfo.envName),
+      [TelemetryProperty.EnvConfig]: JSON.stringify(redactedEnvConfig),
+    });
 
     if (this.isAzureProject(ctx)) {
       //1. ask common questions for azure resources.
@@ -701,7 +734,7 @@ export class TeamsAppSolution implements Solution {
           new Error(
             util.format(getStrings().solution.NotProvisionedNotice, ctx.projectSettings?.appName)
           ),
-          "Solution",
+          SolutionSource,
           SolutionError.CannotDeployBeforeProvision
         )
       );
@@ -754,7 +787,7 @@ export class TeamsAppSolution implements Solution {
       return err(
         returnUserError(
           new Error(`No plugin selected`),
-          "Solution",
+          SolutionSource,
           SolutionError.NoResourcePluginSelected
         )
       );
@@ -816,7 +849,7 @@ export class TeamsAppSolution implements Solution {
           new Error(
             util.format(getStrings().solution.NotProvisionedNotice, ctx.projectSettings?.appName)
           ),
-          "Solution",
+          SolutionSource,
           SolutionError.CannotPublishBeforeProvision
         )
       );
@@ -1018,7 +1051,7 @@ export class TeamsAppSolution implements Solution {
           return err(
             returnUserError(
               new Error(getStrings().solution.FailedToDeployBeforeProvision),
-              "Solution",
+              SolutionSource,
               SolutionError.CannotDeployBeforeProvision
             )
           );
@@ -1031,7 +1064,7 @@ export class TeamsAppSolution implements Solution {
           return err(
             returnUserError(
               new Error("No resource to deploy"),
-              "Solution",
+              SolutionSource,
               SolutionError.NoResourceToDeploy
             )
           );
@@ -1046,7 +1079,7 @@ export class TeamsAppSolution implements Solution {
         return err(
           returnUserError(
             new Error("No resource to deploy"),
-            "Solution",
+            SolutionSource,
             SolutionError.NoResourceToDeploy
           )
         );
@@ -1087,32 +1120,16 @@ export class TeamsAppSolution implements Solution {
         }
         const isAzureProject = this.isAzureProject(ctx);
         const provisioned = this.checkWetherProvisionSucceeded(ctx.envInfo.profile);
-        if (isAzureProject && !provisioned) {
+        if (!provisioned) {
           return err(
-            returnUserError(
-              new Error(getStrings().solution.FailedToPublishBeforeProvision),
-              "Solution",
-              SolutionError.CannotPublishBeforeProvision
+            new UserError(
+              SolutionError.CannotPublishBeforeProvision,
+              isAzureProject
+                ? getStrings().solution.FailedToPublishBeforeProvision
+                : getStrings().solution.SPFxAskProvisionBeforePublish,
+              SolutionSource
             )
           );
-        }
-        if (!provisioned && this.spfxSelected(ctx)) {
-          if (ctx.answers?.platform === Platform.VSCode) {
-            ctx.ui?.showMessage(
-              "error",
-              getStrings().solution.SPFxAskProvisionBeforePublish,
-              false
-            );
-            throw CancelError;
-          } else {
-            return err(
-              returnUserError(
-                new Error(getStrings().solution.SPFxAskProvisionBeforePublish),
-                "Solution",
-                SolutionError.CannotPublishBeforeProvision
-              )
-            );
-          }
         }
       }
       const pluginsToPublish = [this.AppStudioPlugin];
@@ -1152,7 +1169,7 @@ export class TeamsAppSolution implements Solution {
         return err(e);
       }
       return err(
-        new SystemError("UnknownError", "check point 1 - " + JSON.stringify(e), "Solution")
+        new SystemError("UnknownError", "check point 1 - " + JSON.stringify(e), SolutionSource)
       );
     }
     return await this.doLocalDebug(ctx);
@@ -1176,6 +1193,39 @@ export class TeamsAppSolution implements Solution {
       // Because concurrent exectution of localDebug may getAccessToken() concurrently, which
       // causes 2 M365 logins before the token caching in common lib takes effect.
       await ctx.appStudioToken?.getAccessToken();
+
+      // Pop-up window to confirm if local debug in another tenant
+      const localDebugTenantId = ctx.localSettings?.teamsApp?.get(
+        LocalSettingsTeamsAppKeys.TenantId
+      );
+      if (isMultiEnvEnabled() && localDebugTenantId) {
+        const m365TenantId = parseTeamsAppTenantId(await ctx.appStudioToken?.getJsonObject());
+        if (m365TenantId.isErr()) {
+          throw err(m365TenantId.error);
+        }
+
+        const m365UserAccount = parseUserName(await ctx.appStudioToken?.getJsonObject());
+        if (m365UserAccount.isErr()) {
+          throw err(m365UserAccount.error);
+        }
+
+        if (m365TenantId.value !== localDebugTenantId) {
+          const errorMessage: string = util.format(
+            getStrings().solution.LocalDebugTenantConfirmNotice,
+            localDebugTenantId,
+            m365UserAccount.value
+          );
+
+          return err(
+            returnUserError(
+              new Error(errorMessage),
+              "Solution",
+              SolutionError.CannotLocalDebugInDifferentTenant
+            )
+          );
+        }
+      }
+
       checkPoint = 3;
 
       //check point 4
@@ -1246,7 +1296,7 @@ export class TeamsAppSolution implements Solution {
         postLocalDebugWithCtx.map(function (plugin, index) {
           if (plugin[2] === PluginNames.APPST) {
             if (isMultiEnvEnabled()) {
-              ctx.localSettings?.teamsApp.set(
+              ctx.localSettings?.teamsApp?.set(
                 LocalSettingsTeamsAppKeys.TeamsAppId,
                 combinedPostLocalDebugResults.value[index]
               );
@@ -1268,7 +1318,7 @@ export class TeamsAppSolution implements Solution {
         new SystemError(
           "UnknownError",
           `check point ${checkPoint} - ${JSON.stringify(e)}`,
-          "Solution"
+          SolutionSource
         )
       );
     }
@@ -1313,7 +1363,7 @@ export class TeamsAppSolution implements Solution {
             SolutionTelemetryEvent.GrantPermission,
             returnUserError(
               new Error("Collaborator's email cannot be null or same as current user"),
-              "Solution",
+              SolutionSource,
               SolutionError.EmailCannotBeEmptyOrSame
             ),
             ctx.telemetryReporter
@@ -1331,7 +1381,7 @@ export class TeamsAppSolution implements Solution {
               new Error(
                 "Cannot find user in current tenant, please check whether your email address is correct"
               ),
-              "Solution",
+              SolutionSource,
               SolutionError.CannotFindUserInCurrentTenant
             ),
             ctx.telemetryReporter
@@ -1368,7 +1418,7 @@ export class TeamsAppSolution implements Solution {
               SolutionTelemetryEvent.GrantPermission,
               returnSystemError(
                 new Error("Failed to get env name."),
-                "Solution",
+                SolutionSource,
                 SolutionError.FailedToGetEnvName
               ),
               ctx.telemetryReporter
@@ -1445,7 +1495,11 @@ export class TeamsAppSolution implements Solution {
         return err(
           sendErrorTelemetryThenReturnError(
             SolutionTelemetryEvent.GrantPermission,
-            returnUserError(new Error(errorMsg), "Solution", SolutionError.FailedToGrantPermission),
+            returnUserError(
+              new Error(errorMsg),
+              SolutionSource,
+              SolutionError.FailedToGrantPermission
+            ),
             ctx.telemetryReporter
           )
         );
@@ -1458,6 +1512,7 @@ export class TeamsAppSolution implements Solution {
 
       return ok({
         state: CollaborationState.OK,
+        userInfo: userInfo,
         permissions,
       });
     } finally {
@@ -1524,7 +1579,7 @@ export class TeamsAppSolution implements Solution {
               SolutionTelemetryEvent.CheckPermission,
               returnSystemError(
                 new Error("Failed to get env name."),
-                "Solution",
+                SolutionSource,
                 SolutionError.FailedToGetEnvName
               ),
               ctx.telemetryReporter
@@ -1594,7 +1649,11 @@ export class TeamsAppSolution implements Solution {
         return err(
           sendErrorTelemetryThenReturnError(
             SolutionTelemetryEvent.CheckPermission,
-            returnUserError(new Error(errorMsg), "Solution", SolutionError.FailedToCheckPermission),
+            returnUserError(
+              new Error(errorMsg),
+              SolutionSource,
+              SolutionError.FailedToCheckPermission
+            ),
             ctx.telemetryReporter
           )
         );
@@ -1723,7 +1782,7 @@ export class TeamsAppSolution implements Solution {
                   SolutionTelemetryEvent.ListAllCollaborators,
                   returnUserError(
                     new Error(errorMsg),
-                    "Solution",
+                    SolutionSource,
                     SolutionError.FailedToListCollaborator
                   ),
                   ctx.telemetryReporter
@@ -1743,10 +1802,10 @@ export class TeamsAppSolution implements Solution {
             );
 
             collaborators.push({
-              // Sometimes app studio will return null as userPrincipalName, thus using aad's instead.
+              // For guest account, aadOwner.userPrincipalName will be user's email, and is easy to read.
               userPrincipalName:
-                teamsAppOwner.userPrincipalName ??
                 aadOwner?.userPrincipalName ??
+                teamsAppOwner.userPrincipalName ??
                 teamsAppOwner.userObjectId,
               userObjectId: teamsAppOwner.userObjectId,
               isAadOwner: aadOwner ? true : false,
@@ -1763,6 +1822,7 @@ export class TeamsAppSolution implements Solution {
             [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
             [SolutionTelemetryProperty.CollaboratorCount]: collaborators.length.toString(),
             [SolutionTelemetryProperty.AadOwnerCount]: aadOwnerCount.toString(),
+            [SolutionTelemetryProperty.Env]: getHashedEnv(env),
           });
 
           collaboratorsResult[env] = {
@@ -1775,7 +1835,7 @@ export class TeamsAppSolution implements Solution {
             error: err(
               sendErrorTelemetryThenReturnError(
                 SolutionTelemetryEvent.ListAllCollaborators,
-                returnUserError(error, "Solution", SolutionError.FailedToListCollaborator),
+                returnUserError(error, SolutionSource, SolutionError.FailedToListCollaborator),
                 ctx.telemetryReporter
               )
             ),
@@ -1837,16 +1897,16 @@ export class TeamsAppSolution implements Solution {
         }
       );
 
+      const envName = ctx.envInfo.envName;
       if (ctx.answers?.platform === Platform.CLI) {
         const aadAppTenantId = ctx.envInfo.profile?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
-        const envName = ctx.envInfo.envName;
         if (!envName) {
           return err(
             sendErrorTelemetryThenReturnError(
               SolutionTelemetryEvent.ListCollaborator,
               returnSystemError(
                 new Error("Failed to get env name."),
-                "Solution",
+                SolutionSource,
                 SolutionError.FailedToGetEnvName
               ),
               ctx.telemetryReporter
@@ -1893,7 +1953,7 @@ export class TeamsAppSolution implements Solution {
             SolutionTelemetryEvent.ListCollaborator,
             returnUserError(
               new Error(errorMsg),
-              "Solution",
+              SolutionSource,
               SolutionError.FailedToListCollaborator
             ),
             ctx.telemetryReporter
@@ -1911,10 +1971,10 @@ export class TeamsAppSolution implements Solution {
         );
 
         collaborators.push({
-          // Sometimes app studio will return null as userPrincipalName, thus using aad's instead.
+          // For guest account, aadOwner.userPrincipalName will be user's email, and is easy to read.
           userPrincipalName:
-            teamsAppOwner.userPrincipalName ??
             aadOwner?.userPrincipalName ??
+            teamsAppOwner.userPrincipalName ??
             teamsAppOwner.userObjectId,
           userObjectId: teamsAppOwner.userObjectId,
           isAadOwner: aadOwner ? true : false,
@@ -1960,6 +2020,7 @@ export class TeamsAppSolution implements Solution {
         [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
         [SolutionTelemetryProperty.CollaboratorCount]: collaborators.length.toString(),
         [SolutionTelemetryProperty.AadOwnerCount]: aadOwnerCount.toString(),
+        [SolutionTelemetryProperty.Env]: getHashedEnv(envName),
       });
 
       return ok({
@@ -1978,7 +2039,7 @@ export class TeamsAppSolution implements Solution {
       return err(
         returnSystemError(
           new Error("Failed to retrieve current user info from graph token"),
-          "Solution",
+          SolutionSource,
           SolutionError.FailedToRetrieveUserInfo
         )
       );
@@ -2032,7 +2093,7 @@ export class TeamsAppSolution implements Solution {
     return parseTeamsAppTenantId(appStudioToken as Record<string, unknown> | undefined).andThen(
       (teamsAppTenantId) => {
         if (isLocalDebug && isMultiEnvEnabled()) {
-          ctx.localSettings?.teamsApp.set(LocalSettingsTeamsAppKeys.TenantId, teamsAppTenantId);
+          ctx.localSettings?.teamsApp?.set(LocalSettingsTeamsAppKeys.TenantId, teamsAppTenantId);
         } else {
           ctx.envInfo.profile.get(GLOBAL_CONFIG)?.set("teamsAppTenantId", teamsAppTenantId);
         }
@@ -2069,7 +2130,7 @@ export class TeamsAppSolution implements Solution {
       return err(
         returnUserError(
           new Error("Add resource is only supported for Tab app hosted in Azure."),
-          "Solution",
+          SolutionSource,
           SolutionError.AddResourceNotSupport
         )
       );
@@ -2081,7 +2142,7 @@ export class TeamsAppSolution implements Solution {
       return err(
         returnUserError(
           new Error("selectedPlugins is empty"),
-          "Solution",
+          SolutionSource,
           SolutionError.InternelError
         )
       );
@@ -2146,7 +2207,16 @@ export class TeamsAppSolution implements Solution {
           AskSubscriptionQuestion.func = async (
             inputs: Inputs
           ): Promise<Result<SubscriptionInfo, FxError>> => {
-            const res = await checkSubscription(ctx);
+            if (!ctx.azureAccountProvider) {
+              return err(
+                returnSystemError(
+                  new Error("azureAccountProvider is undefined"),
+                  "Solution",
+                  SolutionError.InternelError
+                )
+              );
+            }
+            const res = await checkSubscription(ctx.envInfo, ctx.azureAccountProvider);
             if (res.isOk()) {
               const sub = res.value;
               inputs.subscriptionId = sub.subscriptionId;
@@ -2177,7 +2247,7 @@ export class TeamsAppSolution implements Solution {
       return err(
         returnUserError(
           new Error("Add capability is not supported for SPFx project"),
-          "Solution",
+          SolutionSource,
           SolutionError.AddResourceNotSupport
         )
       );
@@ -2267,7 +2337,7 @@ export class TeamsAppSolution implements Solution {
 
     if (!ctx.answers) {
       return err(
-        returnUserError(new Error(`answer is empty!`), "Solution", SolutionError.InternelError)
+        returnUserError(new Error(`answer is empty!`), SolutionSource, SolutionError.InternelError)
       );
     }
     const settings = this.getAzureSolutionSettings(ctx);
@@ -2291,7 +2361,7 @@ export class TeamsAppSolution implements Solution {
       return err(
         returnUserError(
           new Error(`answer of ${AzureSolutionQuestionNames.AddResources} is empty!`),
-          "Solution",
+          SolutionSource,
           SolutionError.InvalidInput
         )
       );
@@ -2304,7 +2374,7 @@ export class TeamsAppSolution implements Solution {
     if ((alreadyHaveSql && addSQL) || (alreadyHaveApim && addApim)) {
       const e = returnUserError(
         new Error("SQL/APIM is already added."),
-        "Solution",
+        SolutionSource,
         SolutionError.AddResourceNotSupport
       );
       return err(
@@ -2392,7 +2462,7 @@ export class TeamsAppSolution implements Solution {
     });
     if (!ctx.answers) {
       return err(
-        returnUserError(new Error(`answer is empty!`), "Solution", SolutionError.InternelError)
+        returnUserError(new Error(`answer is empty!`), SolutionSource, SolutionError.InternelError)
       );
     }
     const settings = this.getAzureSolutionSettings(ctx);
@@ -2420,7 +2490,7 @@ export class TeamsAppSolution implements Solution {
     ) {
       const e = returnUserError(
         new Error("Application already contains a Bot and/or Messaging Extension"),
-        "Solution",
+        SolutionSource,
         SolutionError.FailedToAddCapability
       );
       return err(
@@ -2507,7 +2577,7 @@ export class TeamsAppSolution implements Solution {
   async executeUserTask(func: Func, ctx: SolutionContext): Promise<Result<any, FxError>> {
     if (!ctx.answers)
       return err(
-        returnUserError(new Error(`answer is empty!`), "Solution", SolutionError.InternelError)
+        returnUserError(new Error(`answer is empty!`), SolutionSource, SolutionError.InternelError)
       );
     const namespace = func.namespace;
     const method = func.method;
@@ -2533,7 +2603,7 @@ export class TeamsAppSolution implements Solution {
           return err(
             returnSystemError(
               new Error(`VS publish is not supposed to run on platform ${ctx.answers?.platform}`),
-              "Solution",
+              SolutionSource,
               SolutionError.UnsupportedPlatform
             )
           );
@@ -2563,7 +2633,7 @@ export class TeamsAppSolution implements Solution {
     return err(
       returnUserError(
         new Error(`executeUserTaskRouteFailed:${JSON.stringify(func)}`),
-        "Solution",
+        SolutionSource,
         `executeUserTaskRouteFailed`
       )
     );
@@ -2599,7 +2669,7 @@ export class TeamsAppSolution implements Solution {
       return err(
         returnSystemError(
           new Error(`config ${LOCAL_DEBUG_AAD_ID} is missing`),
-          "Solution",
+          SolutionSource,
           SolutionError.RegisterTeamsAppAndAadError
         )
       );
@@ -2611,7 +2681,7 @@ export class TeamsAppSolution implements Solution {
       return err(
         returnSystemError(
           new Error(`config ${LOCAL_APPLICATION_ID_URIS} is missing`),
-          "Solution",
+          SolutionSource,
           SolutionError.RegisterTeamsAppAndAadError
         )
       );
@@ -2623,7 +2693,7 @@ export class TeamsAppSolution implements Solution {
       return err(
         returnSystemError(
           new Error(`config ${LOCAL_CLIENT_SECRET} is missing`),
-          "Solution",
+          SolutionSource,
           SolutionError.RegisterTeamsAppAndAadError
         )
       );

@@ -57,6 +57,7 @@ import "../../../src/plugins/resource/spfx";
 import "../../../src/plugins/resource/aad";
 import { environmentManager } from "../../../src";
 import { assert } from "sinon";
+
 let mockedEnvRestore: () => void;
 
 chai.use(chaiAsPromised);
@@ -99,13 +100,9 @@ describe("Generate ARM Template for project", () => {
   let parameterFileName: string;
   beforeEach(async () => {
     mockedEnvRestore = mockedEnv({
-      TEAMSFX_MULTI_ENV: "false",
-      TEAMSFX_ARM_SUPPORT: "true",
+      TEAMSFX_INSIDER_PREVIEW: "true",
     });
-    parameterFileName = parameterFileNameTemplate.replace(
-      EnvNamePlaceholder,
-      environmentManager.getDefaultEnvName()
-    );
+    parameterFileName = parameterFileNameTemplate.replace(EnvNamePlaceholder, "default");
     await fs.ensureDir(testFolder);
   });
 
@@ -163,6 +160,8 @@ describe("Generate ARM Template for project", () => {
       return ok(mockedAadScaffoldArmResult);
     });
 
+    mocker.stub(tools, "getUuid").returns("00000000-0000-0000-0000-000000000000");
+
     const projectArmTemplateFolder = path.join(testFolder, templateFolder);
     const projectArmParameterFolder = path.join(testFolder, configFolderName);
     const projectArmBaseFolder = path.join(testFolder, baseFolder);
@@ -204,7 +203,7 @@ Mocked simple auth output content`
   "contentVersion": "1.0.0.0",
   "parameters": {
     "resourceBaseName": {
-      "value": "{{SOLUTION__RESOURCE_BASE_NAME}}"
+      "value": "mytestappdefa000000"
     },
     "FrontendParameter": "FrontendParameterValue",
     "SimpleAuthParameter": "SimpleAuthParameterValue"
@@ -307,13 +306,9 @@ describe("Deploy ARM Template to Azure", () => {
 
   beforeEach(() => {
     mockedEnvRestore = mockedEnv({
-      TEAMSFX_MULTI_ENV: "false",
-      TEAMSFX_ARM_SUPPORT: "true",
+      TEAMSFX_INSIDER_PREVIEW: "true",
     });
-    parameterFileName = parameterFileNameTemplate.replace(
-      EnvNamePlaceholder,
-      environmentManager.getDefaultEnvName()
-    );
+    parameterFileName = parameterFileNameTemplate.replace(EnvNamePlaceholder, "default");
     (
       mocker.stub(fs, "readFile") as unknown as sinon.SinonStub<
         [file: number | fs.PathLike],
@@ -344,7 +339,7 @@ describe("Deploy ARM Template to Azure", () => {
   "contentVersion": "1.0.0.0",
   "parameters": {
     "resourceBaseName": {
-      "value": "{{SOLUTION__RESOURCE_BASE_NAME}}"
+      "value": "mytestappdefault"
     },
     "aadClientId": {
       "value": "{{FX_RESOURCE_AAD_APP_FOR_TEAMS__CLIENTID}}"
@@ -479,7 +474,7 @@ describe("Deploy ARM Template to Azure", () => {
     expect(parameterAfterDeploy).to.deep.equals(
       JSON.parse(`{
         "resourceBaseName": {
-          "value": "mytestapp${testResourceSuffix}"
+          "value": "mytestappdefault"
         },
         "aadClientId": {
           "value": "${testClientId}"

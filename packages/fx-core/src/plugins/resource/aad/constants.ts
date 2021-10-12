@@ -268,3 +268,10 @@ export class TemplatePathInfo {
     "bicep"
   );
 }
+
+export class ConfigFilePath {
+  static readonly Default = "env.default.json";
+  static readonly LocalSettings = "localSettings.json";
+  static readonly Profile = (env: string) => `profile.${env}.json`;
+  static readonly Input = (env: string) => `config.${env}.json`;
+}

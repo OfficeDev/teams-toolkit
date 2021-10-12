@@ -10,6 +10,7 @@ import {
   TreeCategory,
   TreeItem,
   SubscriptionInfo,
+  LocalEnvironmentName,
 } from "@microsoft/teamsfx-api";
 import {
   isMultiEnvEnabled,
@@ -20,7 +21,6 @@ import {
 import * as vscode from "vscode";
 import { CommandsTreeViewProvider } from "./treeview/commandsTreeViewProvider";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
-import { LocalEnvironment } from "./constants";
 import * as StringResources from "./resources/Strings.json";
 import { checkPermission, listAllCollaborators, tools } from "./handlers";
 import { signedIn } from "./commonlib/common/constant";
@@ -31,8 +31,12 @@ import AzureAccountManager from "./commonlib/azureLogin";
 
 const showEnvList: Array<string> = [];
 let environmentTreeProvider: CommandsTreeViewProvider;
+let collaboratorsRecordCache: Record<string, TreeItem[]> = {};
+let permissionCache: Record<string, boolean> = {};
 
-export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
+export async function registerEnvTreeHandler(
+  forceUpdateCollaboratorList = true
+): Promise<Result<Void, FxError>> {
   if (isMultiEnvEnabled() && vscode.workspace.workspaceFolders) {
     const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];
     const workspacePath: string = workspaceFolder.uri.fsPath;
@@ -49,7 +53,7 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
     showEnvList.splice(0);
 
     const envNames = (await localSettingsExists(workspacePath))
-      ? [LocalEnvironment].concat(envNamesResult.value)
+      ? [LocalEnvironmentName].concat(envNamesResult.value)
       : envNamesResult.value;
     for (const item of envNames) {
       showEnvList.push(item);
@@ -58,7 +62,7 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
           commandId: "fx-extension.environment." + item,
           label: item,
           parent: TreeCategory.Environment,
-          contextValue: item === LocalEnvironment ? "local" : "environment",
+          contextValue: item === LocalEnvironmentName ? "local" : "environment",
           icon: "symbol-folder",
           isCustom: false,
           // description:
@@ -80,64 +84,140 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
       await environmentTreeProvider.add(envSubItems);
     }
 
-    const collaboratorsItem = await getAllCollaboratorList(envNamesResult.value);
+    const collaboratorsItem = await getAllCollaboratorList(
+      envNamesResult.value,
+      forceUpdateCollaboratorList
+    );
     await environmentTreeProvider.add(collaboratorsItem);
   }
   return ok(Void);
 }
 
-export async function getAllCollaboratorList(envs: string[]): Promise<TreeItem[]> {
+export async function getAllCollaboratorList(envs: string[], force = false): Promise<TreeItem[]> {
   let result: TreeItem[] = [];
 
   if (environmentTreeProvider && isRemoteCollaborateEnabled()) {
     const loginStatus = await AppStudioLogin.getInstance().getStatus();
 
-    const collaboratorsRecord = await listAllCollaborators(envs);
+    if (force || loginStatus.status !== signedIn) {
+      collaboratorsRecordCache = {};
+      permissionCache = {};
+    }
+
+    const collaboratorsRecord =
+      Object.keys(collaboratorsRecordCache).length > 0 || loginStatus.status !== signedIn
+        ? collaboratorsRecordCache
+        : await listAllCollaborators(envs);
+    collaboratorsRecordCache = collaboratorsRecord;
+
     for (const env of envs) {
-      const collaboratorParentNode: TreeItem = {
-        commandId: `fx-extension.listcollaborator.parentNode.${env}`,
-        label: StringResources.vsc.commandsTreeViewProvider.collaboratorParentNode,
-        icon: "organization",
-        isCustom: false,
-        parent: "fx-extension.environment." + env,
-        expanded: false,
-      };
+      const collaboratorParentNode: TreeItem = generateCollaboratorParentNode(env);
 
       result.push(collaboratorParentNode);
 
       if (loginStatus.status === signedIn) {
-        const canAddCollaborator = await checkPermission(env);
+        const canAddCollaborator = permissionCache[env] ?? (await checkPermission(env));
+        permissionCache[env] = canAddCollaborator;
         if (canAddCollaborator) {
           collaboratorParentNode.contextValue = "addCollaborator";
         }
 
-        result = result.concat(collaboratorsRecord[env]);
+        if (collaboratorsRecord[env]) {
+          result = result.concat(collaboratorsRecord[env]);
+        }
       } else {
-        result.push({
-          commandId: `fx-extension.listcollaborator.${env}`,
-          label: StringResources.vsc.commandsTreeViewProvider.loginM365AccountToViewCollaborators,
-          icon: "warning",
-          isCustom: true,
-          parent: `fx-extension.listcollaborator.parentNode.${env}`,
-        });
+        result.push(
+          generateCollaboratorWarningNode(
+            env,
+            StringResources.vsc.commandsTreeViewProvider.loginM365AccountToViewCollaborators
+          )
+        );
       }
     }
   }
   return result;
 }
 
-export async function updateCollaboratorList(env: string): Promise<void> {
-  const collaboratorsItem = await getAllCollaboratorList([env]);
-  if (collaboratorsItem && collaboratorsItem.length > 0) {
-    await environmentTreeProvider.add(collaboratorsItem);
+export async function updateNewEnvCollaborators(env: string): Promise<void> {
+  const parentNode = generateCollaboratorParentNode(env);
+  const notProvisionedNode = generateCollaboratorWarningNode(
+    env,
+    StringResources.vsc.commandsTreeViewProvider.noPermissionToListCollaborators
+  );
+
+  collaboratorsRecordCache[env] = [parentNode, notProvisionedNode];
+  await environmentTreeProvider.add(collaboratorsRecordCache[env]);
+}
+
+export async function addCollaboratorToEnv(
+  env: string,
+  userObjectId: string,
+  email: string
+): Promise<void> {
+  const findDuplicated = collaboratorsRecordCache[env].find(
+    (collaborator) => collaborator.label === email
+  );
+  if (findDuplicated) {
+    return;
   }
+  const newCollaborator = generateCollaboratorNode(env, userObjectId, email, true);
+  collaboratorsRecordCache[env].push(newCollaborator);
+  await environmentTreeProvider.add([newCollaborator]);
+}
+
+export function generateCollaboratorNode(
+  env: string,
+  userObjectId: string,
+  email: string,
+  isAadOwner: boolean
+): TreeItem {
+  return {
+    commandId: `fx-extension.listcollaborator.${env}.${userObjectId}`,
+    label: email,
+    icon: isAadOwner ? "person" : "warning",
+    isCustom: !isAadOwner,
+    tooltip: {
+      value: isAadOwner ? "" : "This account doesn't have the AAD permission.",
+      isMarkdown: false,
+    },
+    parent: `fx-extension.listcollaborator.parentNode.${env}`,
+  };
+}
+
+export function generateCollaboratorWarningNode(
+  env: string,
+  nodeLabel: string,
+  toolTip?: string
+): TreeItem {
+  return {
+    commandId: `fx-extension.listcollaborator.${env}`,
+    label: nodeLabel,
+    icon: "warning",
+    tooltip: {
+      value: toolTip ?? nodeLabel,
+      isMarkdown: false,
+    },
+    isCustom: true,
+    parent: `fx-extension.listcollaborator.parentNode.${env}`,
+  };
+}
+
+function generateCollaboratorParentNode(env: string): TreeItem {
+  return {
+    commandId: `fx-extension.listcollaborator.parentNode.${env}`,
+    label: StringResources.vsc.commandsTreeViewProvider.collaboratorParentNode,
+    icon: "organization",
+    isCustom: false,
+    parent: "fx-extension.environment." + env,
+    expanded: false,
+  };
 }
 
 function getTreeViewItemIcon(envName: string, activeEnv: string | undefined) {
   switch (envName) {
     case activeEnv:
     // return "folder-active";
-    case LocalEnvironment:
+    case LocalEnvironmentName:
     // return "lock";
     default:
       return "symbol-folder";
@@ -153,7 +233,7 @@ export async function getSubscriptionAndResourceGroupNode(env: string): Promise<
   if (
     environmentTreeProvider &&
     environmentTreeProvider.findCommand("fx-extension.environment." + env) &&
-    env !== LocalEnvironment
+    env !== LocalEnvironmentName
   ) {
     let envSubItems: TreeItem[] = [];
     const subscriptionInfo = await getSubscriptionInfoFromEnv(env);

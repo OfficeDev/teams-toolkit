@@ -27,6 +27,7 @@ import {
   UpdatePermissionError,
   UpdateRedirectUriError,
 } from "../../../../../src/plugins/resource/aad/errors";
+import { Utils } from "../../../../../src/plugins/resource/aad/utils/common";
 
 describe("AAD App Client Test", () => {
   let ctx: PluginContext;
@@ -468,6 +469,8 @@ describe("AAD App Client Test", () => {
     it("System Error", async () => {
       TokenProvider.init(ctx, TokenAudience.Graph);
       const objectId = faker.datatype.uuid();
+      const tenantId = faker.datatype.uuid();
+      const fileName = "fileName";
       const secret = "secret";
 
       const error = {
@@ -477,17 +480,21 @@ describe("AAD App Client Test", () => {
         },
       };
       sinon.stub(AadAppClient, "retryHanlder").throws(error);
+      sinon.stub(Utils, "getCurrentTenantId").resolves(tenantId);
+      sinon.stub(Utils, "getConfigFileName").returns(fileName);
       try {
         const getResult = await AadAppClient.getAadApp(ctx, "getAadApp", objectId, true, secret);
       } catch (error) {
         chai.assert.isTrue(error instanceof SystemError);
-        chai.assert.equal(error.message, GetAppError.message());
+        chai.assert.equal(error.message, GetAppError.message(objectId, tenantId, fileName));
       }
     });
 
     it("User Error", async () => {
       TokenProvider.init(ctx, TokenAudience.Graph);
       const objectId = faker.datatype.uuid();
+      const tenantId = faker.datatype.uuid();
+      const fileName = "fileName";
       const secret = "secret";
 
       const error = {
@@ -497,11 +504,13 @@ describe("AAD App Client Test", () => {
         },
       };
       sinon.stub(AadAppClient, "retryHanlder").throws(error);
+      sinon.stub(Utils, "getCurrentTenantId").resolves(tenantId);
+      sinon.stub(Utils, "getConfigFileName").returns(fileName);
       try {
         const getResult = await AadAppClient.getAadApp(ctx, "getAadApp", objectId, true, secret);
       } catch (error) {
         chai.assert.isTrue(error instanceof UserError);
-        chai.assert.equal(error.message, GetAppError.message());
+        chai.assert.equal(error.message, GetAppError.message(objectId, tenantId, fileName));
       }
     });
   });

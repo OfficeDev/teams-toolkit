@@ -6,7 +6,7 @@ export class IdentityConfig {
   resourceNameSuffix = "";
   location = "";
 
-  identity = "";
-  identityId = "";
   identityName = "";
+  identityClientId = "";
+  identityResourceId = "";
 }

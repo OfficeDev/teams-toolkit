@@ -55,7 +55,7 @@ const context: any = {
       [
         DependentPluginInfo.identityPluginName,
         new Map<string, string>([
-          [DependentPluginInfo.identityId, "ut"],
+          [DependentPluginInfo.identityClientId, "ut"],
           [DependentPluginInfo.oauthHost, "ut"],
           [DependentPluginInfo.tenantId, "ut"],
         ]),

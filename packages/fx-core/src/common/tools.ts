@@ -24,11 +24,13 @@ import { exec, ExecOptions } from "child_process";
 import * as fs from "fs-extra";
 import { glob } from "glob";
 import * as Handlebars from "handlebars";
+import md5 from "md5";
 import * as path from "path";
 import { promisify } from "util";
 import * as uuid from "uuid";
 import { getResourceFolder } from "../folder";
 import { ConstantString, FeatureFlagName } from "./constants";
+import * as crypto from "crypto";
 
 Handlebars.registerHelper("contains", (value, array, options) => {
   array = array instanceof Array ? array : [array];
@@ -72,7 +74,8 @@ export async function ensureUniqueFolder(folderPath: string): Promise<string> {
  * @param {Map} map to convert.
  * @returns {Json} converted Json.
  */
-export function mapToJson(map: Map<any, any>): Json {
+export function mapToJson(map?: Map<any, any>): Json {
+  if (!map) return {};
   const out: Json = {};
   for (const entry of map.entries()) {
     if (entry[1] instanceof Map) {
@@ -402,11 +405,11 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
 }
 
 export function isMultiEnvEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.MultiEnv, false);
+  return isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, false);
 }
 
 export function isArmSupportEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.ArmSupport, false);
+  return isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, false);
 }
 
 export function isBicepEnvCheckerEnabled(): boolean {
@@ -414,7 +417,7 @@ export function isBicepEnvCheckerEnabled(): boolean {
 }
 
 export function isRemoteCollaborateEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.RemoteCollaboration, false);
+  return isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, false);
 }
 
 export async function generateBicepFiles(
@@ -546,6 +549,10 @@ export async function waitSeconds(second: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, second * 1000));
 }
 
+export function getUuid(): string {
+  return uuid.v4();
+}
+
 export function isSPFxProject(projectSettings?: ProjectSettings): boolean {
   const solutionSettings = projectSettings?.solutionSettings as AzureSolutionSettings;
   if (solutionSettings) {
@@ -553,4 +560,93 @@ export function isSPFxProject(projectSettings?: ProjectSettings): boolean {
     return selectedPlugins && selectedPlugins.indexOf("fx-resource-spfx") !== -1;
   }
   return false;
+}
+
+export function getHashedEnv(envName: string): string {
+  return crypto.createHash("sha256").update(envName).digest("hex");
+}
+
+interface BasicJsonSchema {
+  type: string;
+  properties?: {
+    [k: string]: unknown;
+  };
+}
+function isBasicJsonSchema(jsonSchema: unknown): jsonSchema is BasicJsonSchema {
+  if (!jsonSchema || typeof jsonSchema !== "object") {
+    return false;
+  }
+  return typeof (jsonSchema as { type: unknown })["type"] === "string";
+}
+
+function _redactObject(
+  obj: unknown,
+  jsonSchema: unknown,
+  maxRecursionDepth = 8,
+  depth = 0
+): unknown {
+  if (depth >= maxRecursionDepth) {
+    // prevent stack overflow if anything bad happens
+    return null;
+  }
+  if (!obj || !isBasicJsonSchema(jsonSchema)) {
+    return null;
+  }
+
+  if (
+    !(
+      jsonSchema.type === "object" &&
+      jsonSchema.properties &&
+      typeof jsonSchema.properties === "object"
+    )
+  ) {
+    // non-object types including unsupported types
+    return null;
+  }
+
+  const newObj: { [key: string]: any } = {};
+  const objAny = obj as any;
+  for (const key in jsonSchema.properties) {
+    if (key in objAny && objAny[key] !== undefined) {
+      const filteredObj = _redactObject(
+        objAny[key],
+        jsonSchema.properties[key],
+        maxRecursionDepth,
+        depth + 1
+      );
+      newObj[key] = filteredObj;
+    }
+  }
+  return newObj;
+}
+
+/** Redact user content in "obj";
+ *
+ * DFS "obj" and "jsonSchema" together to redact the following things:
+ * - properties that is not defined in jsonSchema
+ * - the value of properties that is defined in jsonSchema, but the keys will remain
+ *
+ * Example:
+ * Input:
+ * ```
+ *  obj = {
+ *    "name": "some name",
+ *    "user defined property": {
+ *      "key1": "value1"
+ *    }
+ *  }
+ *  jsonSchema = {
+ *    "type": "object",
+ *    "properties": {
+ *      "name": { "type": "string" }
+ *    }
+ *  }
+ * ```
+ * Output:
+ * ```
+ *  {"name": null}
+ * ```
+ **/
+export function redactObject(obj: unknown, jsonSchema: unknown, maxRecursionDepth = 8): unknown {
+  return _redactObject(obj, jsonSchema, maxRecursionDepth, 0);
 }

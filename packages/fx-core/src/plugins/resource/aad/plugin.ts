@@ -3,7 +3,6 @@
 
 import {
   AzureSolutionSettings,
-  ConfigValue,
   FxError,
   LogProvider,
   PluginContext,
@@ -100,9 +99,10 @@ export class AadAppForTeamsImpl {
         );
         return ResultFactory.Success();
       } else {
+        const fileName = Utils.getInputFileName(ctx);
         throw ResultFactory.UserError(
           GetSkipAppConfigError.name,
-          GetSkipAppConfigError.message(),
+          GetSkipAppConfigError.message(fileName),
           undefined,
           undefined,
           GetSkipAppConfigError.helpLink

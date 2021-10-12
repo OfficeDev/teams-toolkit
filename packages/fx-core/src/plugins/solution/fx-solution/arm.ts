@@ -27,6 +27,7 @@ import {
   CryptoDataMatchers,
   getResourceGroupNameFromResourceId,
   waitSeconds,
+  getUuid,
 } from "../../../common/tools";
 import {
   ARM_TEMPLATE_OUTPUT,
@@ -39,6 +40,7 @@ import {
   SolutionTelemetryProperty,
   SolutionTelemetrySuccess,
   SUBSCRIPTION_ID,
+  SolutionSource,
 } from "./constants";
 import { ResourceManagementClient, ResourceManagementModels } from "@azure/arm-resources";
 import { DeployArmTemplatesSteps, ProgressHelper } from "./utils/progressHelper";
@@ -52,17 +54,16 @@ const templateFolder = "templates";
 const parameterFolder = "parameters";
 const bicepOrchestrationFileName = "main.bicep";
 const solutionLevelParameters = `param resourceBaseName string\n`;
-const solutionLevelParameterObject = {
-  resourceBaseName: {
-    value: "{{SOLUTION__RESOURCE_BASE_NAME}}",
-  },
-};
 
 // New folder structure constants
 const templatesFolder = "./templates/azure";
 const configsFolder = `.${ConfigFolderName}/configs`;
 const modulesFolder = "modules";
 const parameterFileNameTemplate = `azure.parameters.${EnvNamePlaceholder}.json`;
+
+// constant string
+const resourceBaseName = "resourceBaseName";
+const parameterName = "parameters";
 
 // Get ARM template content from each resource plugin and output to project folder
 export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<any, FxError>> {
@@ -86,11 +87,7 @@ export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<
     }
   } catch (error) {
     result = err(
-      returnSystemError(
-        error,
-        PluginDisplayName.Solution,
-        SolutionError.FailedToDeployArmTemplatesToAzure
-      )
+      returnSystemError(error, SolutionSource, SolutionError.FailedToGenerateArmTemplates)
     );
     sendErrorTelemetryThenReturnError(
       SolutionTelemetryEvent.GenerateArmTemplate,
@@ -170,8 +167,6 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
   );
   await progressHandler?.next(DeployArmTemplatesSteps.ExecuteDeployment);
 
-  generateResourceName(ctx);
-
   // update parameters
   const parameterJson = await getParameterJson(ctx);
 
@@ -180,7 +175,7 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
     return err(
       returnSystemError(
         new Error("Failed to get resource group from project solution settings."),
-        "Solution",
+        SolutionSource,
         "NoResourceGroupFound"
       )
     );
@@ -300,7 +295,7 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
     }
   } catch (error) {
     result = err(
-      returnSystemError(
+      returnUserError(
         error,
         PluginDisplayName.Solution,
         SolutionError.FailedToDeployArmTemplatesToAzure
@@ -336,9 +331,16 @@ export async function copyParameterJson(
   );
   const targetParameterFilePath = path.join(parameterFolderPath, targetParameterFileName);
   const sourceParameterFilePath = path.join(parameterFolderPath, sourceParameterFileName);
+  const targetParameterContent = await fs.readJson(sourceParameterFilePath);
+  if (targetParameterContent[parameterName][resourceBaseName]) {
+    const appName = ctx.projectSettings!.appName;
+    targetParameterContent[parameterName][resourceBaseName] = {
+      value: generateResourceBaseName(appName, targetEnvName),
+    };
+  }
 
   await fs.ensureDir(parameterFolderPath);
-  await fs.copy(sourceParameterFilePath, targetParameterFilePath);
+  await fs.writeFile(targetParameterFilePath, JSON.stringify(targetParameterContent, undefined, 4));
 }
 
 export async function getParameterJson(ctx: SolutionContext) {
@@ -359,7 +361,7 @@ export async function getParameterJson(ctx: SolutionContext) {
     const returnError = new Error(
       `[${PluginDisplayName.Solution}] ${parameterFilePath} does not exist.`
     );
-    throw returnUserError(returnError, "Solution", "ParameterFileNotExist");
+    throw returnUserError(returnError, SolutionSource, "ParameterFileNotExist");
   }
 
   const parameterJson = await getExpandedParameter(ctx, parameterFilePath, true); // only expand secrets in memory
@@ -370,8 +372,11 @@ export async function getParameterJson(ctx: SolutionContext) {
 async function doGenerateArmTemplate(ctx: SolutionContext): Promise<Result<any, FxError>> {
   const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
   const plugins = getActivatedResourcePlugins(azureSolutionSettings); // This function ensures return result won't be empty
-
-  const bicepOrchestrationTemplate = new BicepOrchestrationContent(plugins.map((p) => p.name));
+  const baseName = generateResourceBaseName(ctx.projectSettings!.appName, ctx.envInfo!.envName);
+  const bicepOrchestrationTemplate = new BicepOrchestrationContent(
+    plugins.map((p) => p.name),
+    baseName
+  );
   const moduleFiles = new Map<string, string>();
 
   // Get bicep content from each resource plugin
@@ -496,7 +501,7 @@ async function compileBicepToJson(
   bicepCommand: string,
   bicepOrchestrationFilePath: string
 ): Promise<JSON> {
-  const command = `${bicepCommand} build ${bicepOrchestrationFilePath} --stdout`;
+  const command = `${bicepCommand} build "${bicepOrchestrationFilePath}" --stdout`;
   try {
     const result = await Executor.execCommandAsync(command);
     return JSON.parse(result.stdout as string);
@@ -554,8 +559,8 @@ class BicepOrchestrationContent {
   private RenderContenxt: ArmTemplateRenderContext;
   private TemplateAdded = false;
 
-  constructor(pluginNames: string[]) {
-    Object.assign(this.ParameterJsonTemplate, solutionLevelParameterObject);
+  constructor(pluginNames: string[], baseName: string) {
+    this.ParameterJsonTemplate[resourceBaseName] = { value: baseName };
     this.RenderContenxt = new ArmTemplateRenderContext(pluginNames);
   }
 
@@ -677,14 +682,16 @@ function normalizeToEnvName(input: string): string {
   return input.toUpperCase().replace(/-/g, "_").replace(/\./g, "__"); // replace "-" to "_" and "." to "__"
 }
 
-function generateResourceName(ctx: SolutionContext): void {
+function generateResourceBaseName(appName: string, envName: string): string {
   const maxAppNameLength = 10;
-  const appName = ctx.projectSettings!.appName;
-  const suffix = ctx.envInfo.profile.get(GLOBAL_CONFIG)?.getString("resourceNameSuffix");
+  const maxEnvNameLength = 4;
   const normalizedAppName = appName.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
-  ctx.envInfo.profile
-    .get(GLOBAL_CONFIG)
-    ?.set("resource_base_name", normalizedAppName.substr(0, maxAppNameLength) + suffix);
+  const normalizedEnvName = envName.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+  return (
+    normalizedAppName.substr(0, maxAppNameLength) +
+    normalizedEnvName.substr(0, maxEnvNameLength) +
+    getUuid().substr(0, 6)
+  );
 }
 
 function escapeSecretPlaceholders(variables: Record<string, string>) {
@@ -737,7 +744,7 @@ async function wrapGetDeploymentError(
     const returnError = new Error(
       `resource deployments (${deployCtx.deploymentName} module) for your project failed and get the error message failed. Please refer to the resource group ${deployCtx.resourceGroupName} in portal for deployment error.`
     );
-    return err(returnUserError(returnError, "Solution", "GetDeploymentErrorFailed"));
+    return err(returnUserError(returnError, SolutionSource, "GetDeploymentErrorFailed"));
   }
 }
 
@@ -807,7 +814,14 @@ function formattedDeploymentName(failedDeployments: string[]): Result<void, FxEr
       ", "
     )}) for your project failed. Please refer to output channel for more error details.`
   );
-  return err(returnUserError(returnError, "Solution", "ArmDeploymentFailed", ArmHelpLink));
+  return err(
+    returnUserError(
+      returnError,
+      SolutionSource,
+      SolutionError.FailedToDeployArmTemplatesToAzure,
+      ArmHelpLink
+    )
+  );
 }
 
 export function formattedDeploymentError(deploymentError: any): any {

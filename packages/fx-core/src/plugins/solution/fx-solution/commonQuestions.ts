@@ -23,8 +23,17 @@ import {
   v2,
   TokenProvider,
   UserError,
+  Void,
 } from "@microsoft/teamsfx-api";
-import { GLOBAL_CONFIG, LOCATION, RESOURCE_GROUP_NAME, SolutionError } from "./constants";
+import {
+  GLOBAL_CONFIG,
+  LOCATION,
+  PluginNames,
+  SUBSCRIPTION_NAME,
+  RESOURCE_GROUP_NAME,
+  SolutionError,
+  SolutionSource,
+} from "./constants";
 import { v4 as uuidv4 } from "uuid";
 import { ResourceManagementClient } from "@azure/arm-resources";
 import { SubscriptionClient } from "@azure/arm-subscriptions";
@@ -36,9 +45,16 @@ import {
   QuestionNewResourceGroupName,
   QuestionSelectResourceGroup,
 } from "../../../core/question";
+import { getHashedEnv } from "../../../common/tools";
 import { desensitize } from "../../../core/middleware/questionModel";
 import { ResourceGroupsCreateOrUpdateResponse } from "@azure/arm-resources/esm/models";
-import { isV2 } from "../../../core";
+import { SUBSCRIPTION_ID } from ".";
+import { SolutionPlugin } from "../../resource/localdebug/constants";
+import {
+  CustomizeResourceGroupType,
+  TelemetryEvent,
+  TelemetryProperty,
+} from "../../../common/telemetry";
 
 const MsResources = "Microsoft.Resources";
 const ResourceGroups = "resourceGroups";
@@ -74,49 +90,64 @@ class CommonQuestions {
  *
  */
 export async function checkSubscription(
-  ctx: SolutionContext | v2.Context,
-  envInfo?: v2.EnvInfoV2,
-  tokenProvider?: TokenProvider
+  envInfo: v2.EnvInfoV2,
+  azureAccountProvider: AzureAccountProvider
 ): Promise<Result<SubscriptionInfo, FxError>> {
-  const azureAccountProvider = isV2()
-    ? tokenProvider?.azureAccountProvider
-    : (ctx as SolutionContext).azureAccountProvider;
-  if (!azureAccountProvider) {
-    return err(
-      returnSystemError(
-        new Error("azureAccountProvider is undefined"),
-        "Solution",
-        SolutionError.InternelError
-      )
-    );
-  }
-  const subscriptionId = isV2()
-    ? envInfo?.config.azure?.subscriptionId
-    : (ctx as SolutionContext).envInfo.config.azure?.subscriptionId;
+  const subscriptionId = envInfo.profile?.get(PluginNames.SOLUTION)?.get(SUBSCRIPTION_ID);
   if (!isMultiEnvEnabled() || !subscriptionId) {
     const askSubRes = await azureAccountProvider.getSelectedSubscription(true);
     return ok(askSubRes!);
   }
 
+  let subscriptionName = envInfo.profile?.get(PluginNames.SOLUTION)?.get(SUBSCRIPTION_NAME) ?? "";
+  if (subscriptionName.length > 0) {
+    subscriptionName = `(${subscriptionName})`;
+  }
   // make sure the user is logged in
   await azureAccountProvider.getAccountCredentialAsync(true);
 
-  // TODO: verify valid subscription (permission)
+  // verify valid subscription (permission)
   const subscriptions = await azureAccountProvider.listSubscriptions();
   const targetSubInfo = subscriptions.find((item) => item.subscriptionId === subscriptionId);
   if (!targetSubInfo) {
     return err(
       new UserError(
         SolutionError.SubscriptionNotFound,
-        `The subscription '${subscriptionId}' is not found in the current account, please check the '${EnvConfigFileNameTemplate.replace(
+        `The subscription '${subscriptionId}'${subscriptionName} is not found in the current account, please check the '${EnvConfigFileNameTemplate.replace(
           EnvNamePlaceholder,
-          isV2() ? envInfo!.envName : (ctx as SolutionContext).envInfo.envName
+          envInfo.envName
         )}' file.`,
-        "Solution"
+        SolutionSource
       )
     );
   }
   return ok(targetSubInfo);
+}
+
+/**
+ * check m365 tenant is right
+ *
+ */
+export async function checkM365Tenant(
+  envInfo: v2.EnvInfoV2,
+  appStudioJson: object
+): Promise<Result<Void, FxError>> {
+  const m365TenantId = envInfo.profile
+    ?.get(PluginNames.SOLUTION)
+    ?.get(SolutionPlugin.TeamsAppTenantId);
+  if (!isMultiEnvEnabled() || !m365TenantId) {
+    return ok(Void);
+  }
+  if ((appStudioJson as any).tid && (appStudioJson as any).tid != m365TenantId) {
+    return err(
+      new UserError(
+        SolutionError.TeamsAppTenantIdNotRight,
+        `The m365 tenant id '${m365TenantId}' is not found in the current account.`,
+        "Solution"
+      )
+    );
+  }
+  return ok(Void);
 }
 
 async function getQuestionsForResourceGroup(
@@ -183,7 +214,7 @@ export async function askResourceGroupInfo(
     return err(
       returnSystemError(
         new Error(`Failed to list resource group`),
-        "Solution",
+        SolutionSource,
         SolutionError.FailedToListResourceGroup
       )
     );
@@ -232,7 +263,7 @@ export async function askResourceGroupInfo(
       return err(
         returnSystemError(
           new Error(`Failed to get user input for resource group info`),
-          "Solution",
+          SolutionSource,
           SolutionError.FailedToListResourceGroup
         )
       );
@@ -259,7 +290,7 @@ async function getLocations(
   } else {
     throw returnUserError(
       new Error(`Failed to get azure credential`),
-      "Solution",
+      SolutionSource,
       SolutionError.FailedToGetAzureCredential
     );
   }
@@ -278,7 +309,7 @@ async function getLocations(
     return err(
       returnUserError(
         new Error(`Failed to list resource group locations`),
-        "Solution",
+        SolutionSource,
         SolutionError.FailedToListResourceGroupLocation
       )
     );
@@ -324,8 +355,22 @@ async function askCommonQuestions(
     return err(
       returnSystemError(
         new Error("Graph token json is undefined"),
-        "Solution",
+        SolutionSource,
         SolutionError.NoAppStudioToken
+      )
+    );
+  }
+
+  const m365TenantResult = await checkM365Tenant(ctx.envInfo, appstudioTokenJson);
+  if (m365TenantResult.isErr()) {
+    return err(m365TenantResult.error);
+  }
+  if (!azureAccountProvider) {
+    return err(
+      returnSystemError(
+        new Error("azureAccountProvider is undefined"),
+        "Solution",
+        SolutionError.InternelError
       )
     );
   }
@@ -333,7 +378,7 @@ async function askCommonQuestions(
   const commonQuestions = new CommonQuestions();
 
   //1. check subscriptionId
-  const subscriptionResult = await checkSubscription(ctx);
+  const subscriptionResult = await checkSubscription(ctx.envInfo, azureAccountProvider);
   if (subscriptionResult.isErr()) {
     return err(subscriptionResult.error);
   }
@@ -352,18 +397,23 @@ async function askCommonQuestions(
     return err(
       returnUserError(
         new Error("Login to Azure using the Azure Account extension"),
-        "Solution",
+        SolutionSource,
         SolutionError.NotLoginToAzure
       )
     );
   }
 
   //2. check resource group
+  ctx.telemetryReporter?.sendTelemetryEvent(
+    TelemetryEvent.CheckResourceGroupStart,
+    ctx.answers?.env ? { [TelemetryProperty.Env]: getHashedEnv(ctx.answers.env) } : {}
+  );
+
   const rmClient = new ResourceManagementClient(azureToken, subscriptionId);
 
   // Resource group info precedence are:
-  //   1. ctx.answers, for CLI --resource-group argument, only support exsting resource group
-  //   2. env config (config.{envName}.json), for user customization, only support exsting resource group
+  //   1. ctx.answers, for CLI --resource-group argument, only support existing resource group
+  //   2. env config (config.{envName}.json), for user customization, only support existing resource group
   //   3. publish profile (profile.{envName}.json), for reprovision
   //   4. asking user with a popup
   const resourceGroupNameFromEnvConfig = ctx.envInfo.config.azure?.resourceGroupName;
@@ -375,6 +425,10 @@ async function askCommonQuestions(
     isMultiEnvEnabled() ? "-" + ctx.envInfo.envName : ""
   }-rg`;
   let resourceGroupInfo: ResourceGroupInfo;
+  const telemetryProperties: { [key: string]: string } = {};
+  if (ctx.answers?.env) {
+    telemetryProperties[TelemetryProperty.Env] = getHashedEnv(ctx.answers.env);
+  }
 
   if (ctx.answers?.targetResourceGroupName) {
     const maybeResourceGroupInfo = await getResourceGroupInfo(
@@ -389,11 +443,13 @@ async function askCommonQuestions(
           new Error(
             `Resource group '${resourceGroupNameFromEnvConfig}' does not exist, please specify an existing resource group.`
           ),
-          "Solution",
+          SolutionSource,
           SolutionError.ResourceGroupNotFound
         )
       );
     }
+    telemetryProperties[TelemetryProperty.CustomizeResourceGroupType] =
+      CustomizeResourceGroupType.CommandLine;
     resourceGroupInfo = maybeResourceGroupInfo;
   } else if (resourceGroupNameFromEnvConfig) {
     const resourceGroupName = resourceGroupNameFromEnvConfig;
@@ -406,11 +462,13 @@ async function askCommonQuestions(
           new Error(
             `Resource group '${resourceGroupName}' does not exist, please check your '${envFile}' file.`
           ),
-          "Solution",
+          SolutionSource,
           SolutionError.ResourceGroupNotFound
         )
       );
     }
+    telemetryProperties[TelemetryProperty.CustomizeResourceGroupType] =
+      CustomizeResourceGroupType.EnvConfig;
     resourceGroupInfo = maybeResourceGroupInfo;
   } else if (resourceGroupNameFromProfile && resourceGroupLocationFromProfile) {
     try {
@@ -428,8 +486,13 @@ async function askCommonQuestions(
           location: resourceGroupLocationFromProfile,
         };
       }
+
+      telemetryProperties[TelemetryProperty.CustomizeResourceGroupType] =
+        CustomizeResourceGroupType.EnvProfile;
     } catch (e) {
-      return err(returnUserError(e, "Solution", SolutionError.FailedToCheckResourceGroupExistence));
+      return err(
+        returnUserError(e, SolutionSource, SolutionError.FailedToCheckResourceGroupExistence)
+      );
     }
   } else if (ctx.answers && ctx.ui) {
     const resourceGroupInfoResult = await askResourceGroupInfo(
@@ -442,7 +505,20 @@ async function askCommonQuestions(
     if (resourceGroupInfoResult.isErr()) {
       return err(resourceGroupInfoResult.error);
     }
+
     resourceGroupInfo = resourceGroupInfoResult.value;
+    if (resourceGroupInfo.createNewResourceGroup) {
+      if (resourceGroupInfo.name === defaultResourceGroupName) {
+        telemetryProperties[TelemetryProperty.CustomizeResourceGroupType] =
+          CustomizeResourceGroupType.InteractiveCreateDefault;
+      } else {
+        telemetryProperties[TelemetryProperty.CustomizeResourceGroupType] =
+          CustomizeResourceGroupType.InteractiveCreateCustomized;
+      }
+    } else {
+      telemetryProperties[TelemetryProperty.CustomizeResourceGroupType] =
+        CustomizeResourceGroupType.InteractiveUseExisting;
+    }
   } else {
     // fall back to default values when user interaction is not available
     resourceGroupInfo = {
@@ -450,7 +526,12 @@ async function askCommonQuestions(
       name: defaultResourceGroupName,
       location: DefaultResourceGroupLocation,
     };
+    telemetryProperties[TelemetryProperty.CustomizeResourceGroupType] =
+      CustomizeResourceGroupType.FallbackDefault;
   }
+
+  ctx.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.CheckResourceGroup, telemetryProperties);
+
   if (resourceGroupInfo.createNewResourceGroup) {
     const maybeRgName = await createNewResourceGroup(rmClient, resourceGroupInfo, ctx.logProvider);
     if (maybeRgName.isErr()) {
@@ -474,7 +555,7 @@ async function askCommonQuestions(
     return err(
       returnSystemError(
         new Error("Cannot find Teams app tenant id"),
-        "Solution",
+        SolutionSource,
         SolutionError.NoTeamsAppTenantId
       )
     );
@@ -555,7 +636,7 @@ async function createNewResourceGroup(
     }
 
     return err(
-      returnUserError(new Error(errMsg), "Solution", SolutionError.FailedToCreateResourceGroup)
+      returnUserError(new Error(errMsg), SolutionSource, SolutionError.FailedToCreateResourceGroup)
     );
   }
 
@@ -563,7 +644,7 @@ async function createNewResourceGroup(
     return err(
       returnSystemError(
         new Error(`Failed to create resource group ${rgInfo.name}`),
-        "Solution",
+        SolutionSource,
         SolutionError.FailedToCreateResourceGroup
       )
     );

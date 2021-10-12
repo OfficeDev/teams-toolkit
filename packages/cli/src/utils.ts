@@ -490,7 +490,7 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
 }
 
 export function isRemoteCollaborationEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlags.RemoteCollaboration, false);
+  return isFeatureFlagEnabled(FeatureFlags.InsiderPreview, false);
 }
 
 export function getAllFeatureFlags(): string[] | undefined {

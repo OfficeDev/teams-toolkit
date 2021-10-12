@@ -379,7 +379,7 @@ describe("update()", () => {
 
   it("should ask for confirm regenerate ARM template when adding resources", async () => {
     const restore = mockedEnv({
-      TEAMSFX_ARM_SUPPORT: "1",
+      TEAMSFX_INSIDER_PREVIEW: "1",
     });
 
     const solution = new TeamsAppSolution();

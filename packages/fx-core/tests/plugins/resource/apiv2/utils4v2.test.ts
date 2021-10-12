@@ -22,58 +22,45 @@ import "mocha";
 import { newEnvInfo } from "../../../../src";
 import { TabLanguage } from "../../../../src/plugins/resource/frontend/resources/templateInfo";
 import {
+  assignJsonInc,
   provisionResourceAdapter,
-  setConfigs,
+  setEnvInfoV1ByProfileV2,
   setLocalSettingsV1,
   setLocalSettingsV2,
-  setProvisionOutputs,
+  setProfileV2ByConfigMapInc,
 } from "../../../../src/plugins/resource/utils4v2";
 import {
   MockAppStudioTokenProvider,
   MockAzureAccountProvider,
   MockGraphTokenProvider,
+  MockSharepointTokenProvider,
   MockTools,
   randomAppName,
 } from "../../../core/utils";
-import Container from "typedi";
-import {
-  ResourcePlugins,
-  ResourcePluginsV2,
-} from "../../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 
 describe("API V2 adapter", () => {
   beforeEach(() => {});
 
   afterEach(async () => {});
 
-  it("setProvisionOutputs", async () => {
-    const pluginContext: PluginContext = {
-      root: "",
-      config: new ConfigMap(),
-      envInfo: newEnvInfo(),
-    };
-    pluginContext.envInfo.profile.set(
-      "plugin1",
-      new ConfigMap([
-        ["k1", "v1"],
-        ["k2", "v2"],
-      ])
-    );
-    pluginContext.envInfo.profile.set(
-      "plugin2",
-      new ConfigMap([
-        ["k3", "v3"],
-        ["k4", "v4"],
-      ])
-    );
-    const provisionOutputs: Json = {};
-    setProvisionOutputs(provisionOutputs, pluginContext);
-    const expected: Json = {
-      plugin1: { k1: "v1", k2: "v2" },
-      plugin2: { k3: "v3", k4: "v4" },
-      solution: {},
-    };
-    assert.deepEqual(expected, provisionOutputs);
+  it("assignJsonInc", async () => {
+    const json1: Json = { k1: undefined, k2: "v2", k3: "" };
+    const json2: Json = { k1: 1, k3: "v3", k4: false };
+
+    {
+      const res = assignJsonInc(undefined, json2);
+      assert.isTrue(res === json2);
+    }
+
+    {
+      const res = assignJsonInc(json1, undefined);
+      assert.isTrue(res === json1);
+    }
+
+    {
+      const res = assignJsonInc(json1, json2);
+      assert.deepEqual(res, { k1: 1, k2: "v2", k3: "v3", k4: false });
+    }
   });
 
   it("setLocalSettings", async () => {
@@ -87,7 +74,7 @@ describe("API V2 adapter", () => {
       },
     };
     const localSettings: Json = {};
-    setLocalSettingsV2(localSettings, pluginContext);
+    setLocalSettingsV2(localSettings, pluginContext.localSettings);
     const expected: Json = {
       teamsApp: { k1: "v1" },
       auth: { k2: "v2" },
@@ -95,13 +82,12 @@ describe("API V2 adapter", () => {
       bot: undefined,
       frontend: undefined,
     };
-    assert.deepEqual(expected, localSettings);
     setLocalSettingsV1(pluginContext, expected);
-    assert.equal(pluginContext.localSettings?.teamsApp.get("k1"), "v1");
+    assert.equal(pluginContext.localSettings?.teamsApp?.get("k1"), "v1");
     assert.equal(pluginContext.localSettings?.auth?.get("k2"), "v2");
   });
 
-  it("setConfigs", async () => {
+  it("setEnvInfoV1ByProfileV2", async () => {
     const pluginContext: PluginContext = {
       root: "",
       config: new ConfigMap(),
@@ -111,9 +97,22 @@ describe("API V2 adapter", () => {
       plugin1: { k1: "v1" },
       plugin2: { k2: "v2" },
     };
-    setConfigs("plugin1", pluginContext, provisionOutputs);
+    setEnvInfoV1ByProfileV2("plugin1", pluginContext, provisionOutputs);
     assert.equal(pluginContext.config.get("k1"), "v1");
     assert.equal((pluginContext.envInfo.profile.get("plugin2") as ConfigMap).get("k2"), "v2");
+  });
+
+  it("setProfileV2ByConfigMapInc", async () => {
+    const config = new ConfigMap([
+      ["k1", "v1"],
+      ["k2", "v2"],
+    ]);
+    const provisionOutputs: Json = {
+      plugin1: { k1: "", k2: "" },
+      plugin2: { k2: "v2" },
+    };
+    setProfileV2ByConfigMapInc("plugin1", provisionOutputs, config);
+    assert.deepEqual(provisionOutputs["plugin1"], { k1: "v1", k2: "v2" });
   });
 
   it("provisionResourceAdapter", async () => {
@@ -140,6 +139,7 @@ describe("API V2 adapter", () => {
       resourceGroupName: "rwer",
       location: "US",
       teamsAppTenantId: "123",
+      subscriptionId: "xxx",
     };
     const projectSettings: ProjectSettings = {
       appName: appName,
@@ -165,7 +165,7 @@ describe("API V2 adapter", () => {
     };
     const provisionInputConfig: EnvConfig = {
       azure: { subscriptionId: "123455", resourceGroupName: "rg" },
-      manifest: { values: { appName: { short: appName } } },
+      manifest: { appName: { short: appName } },
     };
     const envInfo: EnvInfoV2 = {
       envName: "default",
@@ -176,6 +176,7 @@ describe("API V2 adapter", () => {
       appStudioToken: new MockAppStudioTokenProvider(),
       graphTokenProvider: new MockGraphTokenProvider(),
       azureAccountProvider: new MockAzureAccountProvider(),
+      sharepointTokenProvider: new MockSharepointTokenProvider(),
     };
 
     const res = await provisionResourceAdapter(context, inputs, envInfo, tokenProvider, plugin);

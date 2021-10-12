@@ -4,15 +4,11 @@
 import { AccessToken, TokenCredential, GetTokenOptions } from "@azure/identity";
 import { AuthenticationConfiguration } from "../models/configuration";
 import { internalLogger } from "../util/logger";
-import {
-  validateScopesType,
-  formatString,
-  getScopesArray,
-  createConfidentialClientApplication,
-} from "../util/utils";
+import { validateScopesType, formatString, getScopesArray } from "../util/utils";
 import { getAuthenticationConfiguration } from "../core/configurationProvider";
 import { ErrorCode, ErrorMessage, ErrorWithCode } from "../core/errors";
 import { ConfidentialClientApplication } from "@azure/msal-node";
+import { createConfidentialClientApplication } from "../util/utils.node";
 
 /**
  * Represent Microsoft 365 tenant identity, and it is usually used when user is not involved like time-triggered automation job.

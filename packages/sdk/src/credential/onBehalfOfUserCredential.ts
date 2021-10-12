@@ -7,7 +7,6 @@ import { config } from "../core/configurationProvider";
 import { UserInfo } from "../models/userinfo";
 import { internalLogger } from "../util/logger";
 import {
-  createConfidentialClientApplication,
   formatString,
   getScopesArray,
   getUserInfoFromSsoToken,
@@ -15,6 +14,7 @@ import {
   validateScopesType,
 } from "../util/utils";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
+import { createConfidentialClientApplication } from "../util/utils.node";
 
 /**
  * Represent on-behalf-of flow to get user identity, and it is designed to be used in server side.

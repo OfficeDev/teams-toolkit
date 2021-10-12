@@ -11,6 +11,8 @@ import {
   SystemError,
   UserError,
   Json,
+  EnvConfigFileNameTemplate,
+  EnvNamePlaceholder,
 } from "@microsoft/teamsfx-api";
 
 export const CoreSource = "Core";
@@ -212,7 +214,10 @@ export function ProjectEnvAlreadyExistError(env: string): FxError {
 export function InvalidEnvConfigError(env: string, errorMsg: string): UserError {
   return new UserError(
     "InvalidEnvConfigError",
-    `The configuration config.${env}.json is invalid, details: ${errorMsg}.`,
+    `The configuration ${EnvConfigFileNameTemplate.replace(
+      EnvNamePlaceholder,
+      env
+    )} is invalid, details: ${errorMsg}.`,
     CoreSource
   );
 }

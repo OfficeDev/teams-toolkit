@@ -140,6 +140,20 @@ describe("APIs of Environment Manager", () => {
       }
     });
 
+    it("load invalid JSON config file", async () => {
+      const envName = environmentManager.getDefaultEnvName();
+      const envConfigFile = environmentManager.getEnvConfigPath(envName, projectPath);
+      await fs.ensureFile(envConfigFile);
+      await fs.writeFile(envConfigFile, "not json");
+
+      const actualEnvDataResult = await environmentManager.loadEnvInfo(projectPath);
+      if (actualEnvDataResult.isErr()) {
+        assert.equal(actualEnvDataResult.error.name, "InvalidEnvConfigError");
+      } else {
+        assert.fail("Failed to get expected error.");
+      }
+    });
+
     it("load non existent env name", async () => {
       const actualEnvDataResult = await environmentManager.loadEnvInfo(
         projectPath,

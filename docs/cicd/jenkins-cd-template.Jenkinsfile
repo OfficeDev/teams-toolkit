@@ -19,6 +19,10 @@ pipeline {
         # To enable @microsoft/teamsfx-cli running in CI mode, turn on CI_ENABLED like below.
         # In CI mode, @microsoft/teamsfx-cli is friendly for CI/CD. 
         CI_ENABLED = 'true'
+        # Please uncomment the next line to enable insider preview features (multi-env, arm support and collaboration). 
+        #TEAMSFX_INSIDER_PREVIEW = 'true'
+        # Please uncomment the next line to specify the env name for multi-env feature.
+        #TEAMSFX_ENV_NAME = 'test'
     }
 
     stages {
@@ -56,6 +60,7 @@ pipeline {
         # You should save the content of .fx/default.userdata into credentials (https://www.jenkins.io/doc/book/using/using-credentials/) which can be refered by the stage with name 'Generate default.userdata'. 
         # stage('Provision hosting environment') {
         #     steps {
+        # To use the insider feature of multi-env, add option --env ${TEAMS_ENV_NAME} to the following command.
         #         sh 'npx teamsfx provision --subscription ${AZURE_SUBSCRIPTION_ID}'
         #     }
         # }
@@ -85,6 +90,7 @@ pipeline {
 
         stage('Deploy to hosting environment') {
             steps {
+                # To use the insider feature of multi-env, add option --env ${TEAMS_ENV_NAME} to the following command.
                 sh 'npx teamsfx deploy'
             }
         }
@@ -93,6 +99,7 @@ pipeline {
         # which can be used to be uploaded onto Teams Client for installation.
         stage('Package Teams App for publishing') {
             steps {
+                # To use the insider feature of multi-env, add option --env ${TEAMS_ENV_NAME} to the following command.
                 sh 'npx teamsfx package'
             }
         }
@@ -105,6 +112,7 @@ pipeline {
 
         stage('Publish Teams App') {
             steps {
+                # To use the insider feature of multi-env, add option --env ${TEAMS_ENV_NAME} to the following command.
                 sh 'npx teamsfx publish'
             }
         }

@@ -19,6 +19,11 @@ jobs:
       M365_ACCOUNT_NAME: ${{secrets.M365_ACCOUNT_NAME}}
       M365_ACCOUNT_PASSWORD: ${{secrets.M365_ACCOUNT_PASSWORD}}
 
+      # Please uncomment the next line to enable insider preview features (multi-env, arm support and collaboration). 
+      #TEAMSFX_INSIDER_PREVIEW: true
+      # Please uncomment the next line to specify the env name for multi-env feature.
+      #TEAMSFX_ENV_NAME: test
+
     steps:
       # Setup environment.
       - uses: actions/setup-node@v2
@@ -50,6 +55,8 @@ jobs:
       #  with:
       #    commands: provision
       #    subscription: ${{env.AZURE_SUBSCRIPTION_ID}}
+      # Uncomment the next line to use the insider feature of multi-env.
+      #    env: ${{env.TEAMSFX_ENV_NAME}}
 
       #- name: Commit provision configs if necessary
       #  uses: stefanzweifel/git-auto-commit-action@v4
@@ -73,6 +80,8 @@ jobs:
         uses: OfficeDev/teamsfx-cli-action@v1
         with:
           commands: deploy
+          # Uncomment the next line to use the insider feature of multi-env.
+          #env: ${{env.TEAMSFX_ENV_NAME}}
 
       # This step is to pack the Teams App as zip file,
       # which can be used to be uploaded onto Teams Client for installation.
@@ -80,6 +89,8 @@ jobs:
         uses: OfficeDev/teamsfx-cli-action@v1
         with:
           commands: package
+          # Uncomment the next line to use the insider feature of multi-env.
+          #env: ${{env.TEAMSFX_ENV_NAME}}
 
       - name: Upload Teams App's package as artifact
         uses: actions/upload-artifact@v2
@@ -91,3 +102,5 @@ jobs:
         uses: OfficeDev/teamsfx-cli-action@v1
         with:
           commands: publish
+          # Uncomment the next line to use the insider feature of multi-env.
+          #env: ${{env.TEAMSFX_ENV_NAME}}

@@ -11,6 +11,11 @@ set -euxo pipefail
 # export M365_ACCOUNT_NAME={M365_ACCOUNT_NAME}
 # export M365_ACCOUNT_PASSWORD={M365_ACCOUNT_PASSWORD}
 
+# Please uncomment the next line to enable insider preview features (multi-env, arm support and collaboration). 
+# export TEAMSFX_INSIDER_PREVIEW=true
+# Please uncomment the next line to specify the env name for multi-env feature.
+# export TEAMSFX_ENV_NAME=test
+
 # To enable @microsoft/teamsfx-cli running in CI mode, turn on CI_ENABLED like below.
 # In CI mode, @microsoft/teamsfx-cli is friendly for CI/CD. 
 export CI_ENABLED=true
@@ -45,7 +50,8 @@ npm run test
 # You should pick required secrets from .fx/default.userdata, and export them in your environment which can be refered by the step with name 'Generate default.userdata'. 
 
 # Provision hosting environment.
-# npx teamsfx provision --subscription ${AZURE_SUBSCRIPTION_ID}
+# To use the insider feature of multi-env, add option --env ${TEAMS_ENV_NAME} to the following command.
+# npx teamsfx provision --subscription ${AZURE_SUBSCRIPTION_ID} 
 
 # Commit provision configs if necessary.
 # git add .fx/env.default.json
@@ -56,11 +62,13 @@ npm run test
 [ ! -z "${USERDATA_CONTENT}" ] && echo "${USERDATA_CONTENT}" > .fx/default.userdata
 
 # Deploy to hosting environment.
+# To use the insider feature of multi-env, add option --env ${TEAMS_ENV_NAME} to the following command.
 cd .. && npx teamsfx deploy
 
 # This step is to pack the Teams App as zip file,
 # which can be used to be uploaded onto Teams Client for installation.
 # Build Teams App's Package.
+# To use the insider feature of multi-env, add option --env ${TEAMS_ENV_NAME} to the following command.
 npx teamsfx package
 
 # Upload Teams App's Package as artifacts.
@@ -68,4 +76,5 @@ npx teamsfx package
 # upload appPackage/appPackage.zip as artifacts.
 
 # Publish Teams App.
+# To use the insider feature of multi-env, add option --env ${TEAMS_ENV_NAME} to the following command.
 npx teamsfx publish

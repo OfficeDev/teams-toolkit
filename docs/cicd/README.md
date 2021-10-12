@@ -26,6 +26,7 @@ You may want to change:
 1. Create GitHub [repository secrets](https://docs.github.com/en/actions/reference/encrypted-secrets) by environment to hold Azure/M365 login credentials. The table below lists all the secrets you need to create on GitHub, and for detailed usage, please refer to the GitHub Actions [README.md](https://github.com/OfficeDev/teamsfx-cli-action/blob/main/README.md).
 1. Change the build scripts if necessary.
 1. Remove the test scripts if you don't have tests.
+1. Enable insider preview features if necessary.
 
 > Note: The provision step is expected to run separately by hand or by workflow. Please remember to commit after provisioning (results of provisioning will be deposited inside the `.fx` folder) and save the file content of `default.userdata` into Jenkins credentials to generate file `default.userdata`.
 
@@ -73,6 +74,7 @@ You may want to change:
 1. Create Jenkins [pipeline credentials](https://www.jenkins.io/doc/book/using/using-credentials/) to hold Azure/M365 login credentials. The table below lists all the credentials you need to create on Jenkins.
 1. Change the build scripts if necessary.
 1. Remove the test scripts if you don't have tests.
+1. Enable insider preview features if necessary.
 
 > Note: The provision step is expected to run separately by hand or by pipeline. Please remember to commit after provisioning (results of provisioning will be deposited inside the `.fx` folder) and save the file content of `default.userdata` into Jenkins credentials to generate file `default.userdata`.
 

@@ -114,6 +114,7 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
 async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   const projectPath = inputs.projectPath as string;
+  await backup(projectPath);
   try {
     await updateConfig(ctx);
     await migrateMultiEnv(projectPath);
@@ -129,7 +130,6 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
     await cleanup(projectPath);
     throw err;
   }
-  await backup(projectPath);
   await removeOldProjectFiles(projectPath);
   const core = ctx.self as FxCore;
   core.tools.ui

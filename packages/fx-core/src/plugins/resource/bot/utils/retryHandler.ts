@@ -19,7 +19,6 @@ export class RetryHandler {
         }
       }
     }
-
     return undefined;
   }
 }

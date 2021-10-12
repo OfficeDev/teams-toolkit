@@ -147,6 +147,8 @@ export interface Context {
     // (undocumented)
     root: string;
     // (undocumented)
+    sharepointTokenProvider?: SharepointTokenProvider;
+    // (undocumented)
     telemetryReporter?: TelemetryReporter;
     // (undocumented)
     treeProvider?: TreeProvider;
@@ -193,6 +195,8 @@ export interface Core {
     // (undocumented)
     getQuestionsForUserTask?: (router: FunctionRouter, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
     grantPermission: (inputs: Inputs) => Promise<Result<any, FxError>>;
+    // (undocumented)
+    listAllCollaborators: (inputs: Inputs) => Promise<Result<any, FxError>>;
     // (undocumented)
     listCollaborator: (inputs: Inputs) => Promise<Result<any, FxError>>;
     // (undocumented)
@@ -269,14 +273,12 @@ export interface EnvConfig {
         appPassword?: string;
         [k: string]: unknown;
     };
+    // (undocumented)
+    description?: string;
     manifest: {
-        description?: string;
-        values: {
-            appName: {
-                short: string;
-                full?: string;
-                [k: string]: unknown;
-            };
+        appName: {
+            short: string;
+            full?: string;
             [k: string]: unknown;
         };
         [k: string]: unknown;
@@ -286,6 +288,13 @@ export interface EnvConfig {
 
 // @public (undocumented)
 export const EnvConfigFileNameTemplate: string;
+
+declare namespace EnvConfigSchema {
+    export {
+
+    }
+}
+export { EnvConfigSchema }
 
 // @public (undocumented)
 export interface EnvInfo {
@@ -600,6 +609,8 @@ export interface InputResult<T> {
 // @public (undocumented)
 export interface Inputs extends Json {
     // (undocumented)
+    env?: string;
+    // (undocumented)
     ignoreConfigPersist?: boolean;
     // (undocumented)
     ignoreEnvInfo?: boolean;
@@ -711,10 +722,13 @@ type JsonTemplate = {
 };
 
 // @public (undocumented)
-export function loadOptions(q: Question, inputs: Inputs): Promise<{
+export function loadOptions(q: Question, inputs: Inputs): Promise<Result<{
     autoSkip: boolean;
     options?: StaticOptions;
-}>;
+}, FxError>>;
+
+// @public (undocumented)
+export const LocalEnvironmentName = "local";
 
 // @public
 export type LocalFunc<T> = (inputs: Inputs) => T | Promise<T>;
@@ -736,7 +750,7 @@ export interface LocalSettings {
     // (undocumented)
     frontend?: ConfigMap;
     // (undocumented)
-    teamsApp: ConfigMap;
+    teamsApp?: ConfigMap;
 }
 
 // @public (undocumented)
@@ -777,6 +791,9 @@ export interface LogProvider {
     trace(message: string): Promise<boolean>;
     warning(message: string): Promise<boolean>;
 }
+
+// @public (undocumented)
+export function mergeConfigMap(lhs?: ConfigMap, rhs?: ConfigMap): ConfigMap | undefined;
 
 // @public (undocumented)
 export interface MultiFileQuestion extends UserInputQuestion {
@@ -1035,16 +1052,15 @@ export type ResourceConfigs = ResourceTemplates;
 interface ResourcePlugin {
     activate(solutionSettings: AzureSolutionSettings): boolean;
     configureLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: Json, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
-    configureResource?: (ctx: Context_2, inputs: ProvisionInputs, envInfo: Readonly<EnvInfoV2>, tokenProvider: TokenProvider) => Promise<Result<ResourceProvisionOutput, FxError>>;
+    configureResource?: (ctx: Context_2, inputs: ProvisionInputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider) => Promise<Result<ResourceProvisionOutput, FxError>>;
     deploy?: (ctx: Context_2, inputs: DeploymentInputs, provisionOutputs: Json, tokenProvider: AzureAccountProvider) => Promise<Result<Void, FxError>>;
     // (undocumented)
     displayName: string;
     // (undocumented)
-    executeUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, envInfo: EnvInfoV2, tokenProvider: TokenProvider) => Promise<Result<unknown, FxError>>;
+    executeUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, localSettings: Json, envInfo: EnvInfoV2, tokenProvider: TokenProvider) => Promise<Result<unknown, FxError>>;
     generateResourceTemplate?: (ctx: Context_2, inputs: Inputs) => Promise<Result<ResourceTemplate_2, FxError>>;
     // (undocumented)
     getQuestions?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
-    // (undocumented)
     getQuestionsForScaffolding?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
     getQuestionsForUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
@@ -1109,6 +1125,14 @@ export type SelectFolderConfig = UIConfig<string>;
 export type SelectFolderResult = InputResult<string>;
 
 // @public
+export interface SharepointTokenProvider {
+    getAccessToken(showDialog?: boolean): Promise<string | undefined>;
+    getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined>;
+    removeStatusChangeMap(name: string): Promise<boolean>;
+    setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>, immediateCall?: boolean): Promise<boolean>;
+}
+
+// @public
 export interface SingleFileQuestion extends UserInputQuestion {
     default?: string | LocalFunc<string | undefined>;
     // (undocumented)
@@ -1157,6 +1181,8 @@ export interface Solution {
     getQuestionsForUserTask?: (func: Func, ctx: SolutionContext) => Promise<Result<QTreeNode | undefined, FxError>>;
     grantPermission?: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
     // (undocumented)
+    listAllCollaborators?: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
+    // (undocumented)
     listCollaborator?: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
     // (undocumented)
     localDebug: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
@@ -1187,7 +1213,9 @@ type SolutionInputs = {
     resourceGroupName: string;
     location: string;
     teamsAppTenantId: string;
+    subscriptionId: string;
     remoteTeamsAppId?: string;
+    provisionSucceeded?: boolean;
 };
 
 // @public (undocumented)
@@ -1200,7 +1228,7 @@ interface SolutionPlugin {
     deploy?: (ctx: Context_2, inputs: Inputs, provisionOutputs: Json, tokenProvider: AzureAccountProvider) => Promise<Result<Void, FxError>>;
     // (undocumented)
     displayName: string;
-    executeUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, envInfo: EnvInfoV2, tokenProvider: TokenProvider) => Promise<Result<unknown, FxError>>;
+    executeUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, localSettings: Json, envInfo: EnvInfoV2, tokenProvider: TokenProvider) => Promise<Result<unknown, FxError>>;
     generateResourceTemplate: (ctx: Context_2, inputs: Inputs) => Promise<Result<Json, FxError>>;
     // (undocumented)
     getQuestions?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
@@ -1246,7 +1274,13 @@ export enum Stage {
     // (undocumented)
     deploy = "deploy",
     // (undocumented)
+    getProjectConfig = "getProjectConfig",
+    // (undocumented)
+    getQuestions = "getQuestions",
+    // (undocumented)
     grantPermission = "grantPermission",
+    // (undocumented)
+    listAllCollaborators = "listAllCollaborators",
     // (undocumented)
     listCollaborator = "listCollaborator",
     // (undocumented)
@@ -1432,6 +1466,7 @@ export type TokenProvider = {
     azureAccountProvider: AzureAccountProvider;
     graphTokenProvider: GraphTokenProvider;
     appStudioToken: AppStudioTokenProvider;
+    sharepointTokenProvider: SharepointTokenProvider;
 };
 
 // @public (undocumented)
@@ -1569,6 +1604,7 @@ export interface UserInteraction {
     createProgressBar: (title: string, totalSteps: number) => IProgressHandler;
     inputText: (config: InputTextConfig) => Promise<Result<InputTextResult, FxError>>;
     openUrl(link: string): Promise<Result<boolean, FxError>>;
+    reload?(): Promise<Result<boolean, FxError>>;
     runWithProgress<T>(task: RunnableTask<T>, config: TaskConfig, ...args: any): Promise<Result<T, FxError>>;
     selectFile: (config: SelectFileConfig) => Promise<Result<SelectFileResult, FxError>>;
     selectFiles: (config: SelectFilesConfig) => Promise<Result<SelectFilesResult, FxError>>;

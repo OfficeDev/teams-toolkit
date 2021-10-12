@@ -63,7 +63,13 @@ import {
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
 } from "../../../src/plugins/solution/fx-solution/question";
-import { MockedGraphTokenProvider, MockedV2Context, validManifest } from "./util";
+import {
+  MockedGraphTokenProvider,
+  MockedSharepointProvider,
+  MockedUserInteraction,
+  MockedV2Context,
+  validManifest,
+} from "./util";
 import { IAppDefinition } from "../../../src/plugins/resource/appstudio/interfaces/IAppDefinition";
 import _ from "lodash";
 import { TokenCredential } from "@azure/core-auth";
@@ -89,6 +95,8 @@ import { ProvidersGetOptionalParams, ProvidersGetResponse } from "@azure/arm-res
 import { SolutionPluginsV2 } from "../../../src/core/SolutionPluginContainer";
 import { TeamsAppSolutionV2 } from "../../../src/plugins/solution/fx-solution/v2/solution";
 import { EnvInfoV2, ResourceProvisionOutput } from "@microsoft/teamsfx-api/build/v2";
+import frontend from "../../../src/plugins/resource/frontend";
+import { UnknownObject } from "@azure/core-http/types/latest/src/util/utils";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -493,13 +501,13 @@ describe("provision() happy path for SPFx projects", () => {
   it("should succeed if app studio returns successfully", () =>
     provisionSpfxProjectShouldSucceed(false));
 
-  it("should succeed if arm support feature flag enabled", () =>
+  it("should succeed if insider feature flag enabled", () =>
     provisionSpfxProjectShouldSucceed(true));
 
-  async function provisionSpfxProjectShouldSucceed(armEnabled = false): Promise<void> {
+  async function provisionSpfxProjectShouldSucceed(insiderEnabled = false): Promise<void> {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
-    mockedCtx.root = "./tests/plugins/resource/appstudio/resources/";
+    mockedCtx.root = "./tests/plugins/resource/appstudio/spfx-resources/";
     mockedCtx.projectSettings = {
       appName: "my app",
       projectId: uuid.v4(),
@@ -511,7 +519,7 @@ describe("provision() happy path for SPFx projects", () => {
       },
     };
     mocker.stub(process, "env").get(() => {
-      return { TEAMSFX_ARM_SUPPORT: armEnabled.toString() };
+      return { TEAMSFX_INSIDER_PREVIEW: insiderEnabled.toString() };
     });
 
     expect(mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
@@ -521,9 +529,16 @@ describe("provision() happy path for SPFx projects", () => {
     expect(result.isOk()).to.be.true;
     expect(mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
       .true;
-    expect(mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).equals(
-      mockedAppDef.teamsAppId
-    );
+
+    if (insiderEnabled) {
+      expect(mockedCtx.envInfo.profile.get("fx-resource-appstudio")?.get("teamsAppId")).equals(
+        mockedAppDef.teamsAppId
+      );
+    } else {
+      expect(mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).equals(
+        mockedAppDef.teamsAppId
+      );
+    }
     expect(solution.runningState).equals(SolutionRunningState.Idle);
   }
 });
@@ -757,7 +772,7 @@ describe("before provision() asking for resource group info", () => {
   beforeEach(() => {
     mocker.stub(solutionUtil, "getSubsriptionDisplayName").resolves(mockedSubscriptionName);
     mocker.stub(process, "env").get(() => {
-      return { TEAMSFX_MULTI_ENV: "true" };
+      return { TEAMSFX_INSIDER_PREVIEW: "true" };
     });
   });
 
@@ -934,14 +949,68 @@ describe("API v2 implementation", () => {
         azureAccountProvider: new MockedAzureTokenProvider(),
         appStudioToken: new MockedAppStudioTokenProvider(),
         graphTokenProvider: new MockedGraphTokenProvider(),
+        sharepointTokenProvider: new MockedSharepointProvider(),
       };
       const mockedEnvInfo: EnvInfoV2 = {
         envName: "default",
-        config: { manifest: { values: { appName: { short: "test-app" } } } },
+        config: { manifest: { appName: { short: "test-app" } } },
         profile: {},
       };
       mockProvisionV2ThatAlwaysSucceed(spfxPluginV2);
       mockProvisionV2ThatAlwaysSucceed(appStudioPluginV2);
+
+      const solution = new TeamsAppSolutionV2();
+      const result = await solution.provisionResources(
+        mockedCtx,
+        mockedInputs,
+        mockedEnvInfo,
+        mockedTokenProvider
+      );
+      expect(result.kind).equals("success");
+    });
+  });
+
+  describe("Azure projects", () => {
+    const mocker = sinon.createSandbox();
+
+    beforeEach(() => {
+      mocker.stub(ResourceGroups.prototype, "createOrUpdate").resolves({ name: "my_app-rg" });
+    });
+    afterEach(() => {
+      mocker.restore();
+    });
+
+    it("should work on happy path", async () => {
+      const projectSettings: ProjectSettings = {
+        appName: "my app",
+        projectId: uuid.v4(),
+        solutionSettings: {
+          hostType: HostTypeOptionAzure.id,
+          name: "azure",
+          version: "1.0",
+          activeResourcePlugins: [fehostPluginV2.name, appStudioPluginV2.name, aadPluginV2.name],
+        },
+      };
+      const mockedCtx = new MockedV2Context(projectSettings);
+      mockedCtx.userInteraction = new MockUserInteraction();
+      const mockedInputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: "./",
+      };
+      const mockedTokenProvider: TokenProvider = {
+        azureAccountProvider: new MockedAzureTokenProvider(),
+        appStudioToken: new MockedAppStudioTokenProvider(),
+        graphTokenProvider: new MockedGraphTokenProvider(),
+        sharepointTokenProvider: new MockedSharepointProvider(),
+      };
+      const mockedEnvInfo: EnvInfoV2 = {
+        envName: "default",
+        config: { manifest: { appName: { short: "test-app" } } },
+        profile: {},
+      };
+      mockProvisionV2ThatAlwaysSucceed(fehostPluginV2);
+      mockProvisionV2ThatAlwaysSucceed(appStudioPluginV2);
+      mockProvisionV2ThatAlwaysSucceed(aadPluginV2);
 
       const solution = new TeamsAppSolutionV2();
       const result = await solution.provisionResources(

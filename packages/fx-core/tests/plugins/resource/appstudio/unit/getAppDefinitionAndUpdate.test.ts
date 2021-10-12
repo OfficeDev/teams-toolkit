@@ -109,11 +109,7 @@ describe("Get AppDefinition and Update", () => {
       );
 
     sandbox.stub(ctx.appStudioToken!, "getAccessToken").resolves("anything");
-    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
-      ctx,
-      "localDebug",
-      manifest
-    );
+    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(ctx, true, manifest);
     chai.assert.isTrue(getAppDefinitionAndResult.isErr());
     if (getAppDefinitionAndResult.isErr()) {
       chai
@@ -137,11 +133,7 @@ describe("Get AppDefinition and Update", () => {
         capabilities: ["Bot"],
       },
     };
-    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
-      ctx,
-      "localDebug",
-      manifest
-    );
+    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(ctx, true, manifest);
     chai.assert.isTrue(getAppDefinitionAndResult.isErr());
     if (getAppDefinitionAndResult.isErr()) {
       chai
@@ -170,11 +162,7 @@ describe("Get AppDefinition and Update", () => {
         capabilities: ["Bot"],
       },
     };
-    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
-      ctx,
-      "localDebug",
-      manifest
-    );
+    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(ctx, true, manifest);
     chai.assert.isTrue(getAppDefinitionAndResult.isErr());
     if (getAppDefinitionAndResult.isErr()) {
       chai
@@ -206,11 +194,7 @@ describe("Get AppDefinition and Update", () => {
         capabilities: ["Bot"],
       },
     };
-    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
-      ctx,
-      "localDebug",
-      manifest
-    );
+    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(ctx, true, manifest);
     chai.assert.isTrue(getAppDefinitionAndResult.isErr());
     if (getAppDefinitionAndResult.isErr()) {
       chai
@@ -242,11 +226,7 @@ describe("Get AppDefinition and Update", () => {
         capabilities: ["Bot"],
       },
     };
-    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
-      ctx,
-      "localDebug",
-      manifest
-    );
+    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(ctx, true, manifest);
     chai.assert.isTrue(getAppDefinitionAndResult.isErr());
     if (getAppDefinitionAndResult.isErr()) {
       chai
@@ -280,11 +260,7 @@ describe("Get AppDefinition and Update", () => {
         capabilities: ["Bot"],
       },
     };
-    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
-      ctx,
-      "localDebug",
-      manifest
-    );
+    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(ctx, true, manifest);
     chai.assert.isTrue(getAppDefinitionAndResult.isErr());
     if (getAppDefinitionAndResult.isErr()) {
       chai
@@ -325,11 +301,7 @@ describe("Get AppDefinition and Update", () => {
           )
         )
       );
-    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
-      ctx,
-      "localDebug",
-      manifest
-    );
+    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(ctx, true, manifest);
     chai.assert.isTrue(getAppDefinitionAndResult.isErr());
     if (getAppDefinitionAndResult.isErr()) {
       chai
@@ -357,11 +329,7 @@ describe("Get AppDefinition and Update", () => {
       },
     };
 
-    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
-      ctx,
-      "localDebug",
-      manifest
-    );
+    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(ctx, true, manifest);
 
     chai.assert.isTrue(getAppDefinitionAndResult.isErr());
     if (getAppDefinitionAndResult.isErr()) {
@@ -402,11 +370,7 @@ describe("Get AppDefinition and Update", () => {
     });
     sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
-    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
-      ctx,
-      "localDebug",
-      manifest
-    );
+    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(ctx, true, manifest);
 
     chai.assert.isTrue(getAppDefinitionAndResult.isErr());
     if (getAppDefinitionAndResult.isErr()) {
@@ -465,11 +429,7 @@ describe("Get AppDefinition and Update", () => {
     sandbox.stub(axios, "create").returns(fakeAxiosInstance);
     sandbox.stub(AppStudioClient, "createApp").resolves(appDef);
 
-    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
-      ctx,
-      "localDebug",
-      manifest
-    );
+    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(ctx, true, manifest);
 
     chai.assert.isTrue(getAppDefinitionAndResult.isErr());
     if (getAppDefinitionAndResult.isErr()) {
@@ -530,11 +490,7 @@ describe("Get AppDefinition and Update", () => {
     sandbox.stub(axios, "create").returns(fakeAxiosInstance);
     sandbox.stub(AppStudioClient, "createApp").resolves(appDef);
 
-    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
-      ctx,
-      "localDebug",
-      manifest
-    );
+    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(ctx, true, manifest);
 
     chai.assert.isTrue(getAppDefinitionAndResult.isOk());
   });
@@ -559,11 +515,7 @@ describe("Get AppDefinition and Update", () => {
       },
     };
 
-    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
-      ctx,
-      "remote",
-      manifest
-    );
+    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(ctx, false, manifest);
 
     chai.assert.isTrue(getAppDefinitionAndResult.isErr());
     if (getAppDefinitionAndResult.isErr()) {
@@ -622,11 +574,7 @@ describe("Get AppDefinition and Update", () => {
     sandbox.stub(axios, "create").returns(fakeAxiosInstance);
     sandbox.stub(AppStudioClient, "createApp").resolves(appDef);
 
-    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
-      ctx,
-      "remote",
-      manifest
-    );
+    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(ctx, false, manifest);
 
     chai.assert.isTrue(getAppDefinitionAndResult.isErr());
     if (getAppDefinitionAndResult.isErr()) {
@@ -687,11 +635,7 @@ describe("Get AppDefinition and Update", () => {
     sandbox.stub(axios, "create").returns(fakeAxiosInstance);
     sandbox.stub(AppStudioClient, "createApp").resolves(appDef);
 
-    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
-      ctx,
-      "remote",
-      manifest
-    );
+    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(ctx, false, manifest);
 
     chai.assert.isTrue(getAppDefinitionAndResult.isOk());
   });

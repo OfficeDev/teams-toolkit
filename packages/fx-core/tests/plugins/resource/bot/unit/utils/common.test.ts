@@ -3,10 +3,18 @@
 import "mocha";
 import * as chai from "chai";
 import * as sinon from "sinon";
-
+import * as path from "path";
 import * as utils from "../../../../../../src/plugins/resource/bot/utils/common";
+import AdmZip from "adm-zip";
 
 describe("Common Utils", () => {
+  // describe("zipAFolder", () => {
+  //   it("zip folder", () => {
+  //     const tempFolder = path.join(__dirname, "testFolder");
+  //     const config[__dirname] = new AdmZip().toBuffer();
+  //   });
+  // });
+
   describe("toBase64", () => {
     it("Happy Path", async () => {
       // Arrange

@@ -27,8 +27,9 @@ import { ResourcePlugins } from "../../../../../src/plugins/solution/fx-solution
 import Container from "typedi";
 import { environmentManager } from "../../../../../src/core/environment";
 import { newEnvInfo } from "../../../../../src";
+import * as core from "../../../../../src";
 
-describe("Publish Teams app", () => {
+describe("Publish Teams app with Azure", () => {
   let plugin: AppStudioPlugin;
   let ctx: PluginContext;
   let BotPlugin: Plugin;
@@ -112,6 +113,95 @@ describe("Publish Teams app", () => {
         aadId: "aadId",
         botDomain: "botDomain",
         botId: "botId",
+        webApplicationInfoResource: "webApplicationInfoResource",
+      })
+    );
+
+    const teamsAppId = await plugin.publish(ctx);
+    chai.assert.isTrue(teamsAppId.isOk());
+    if (teamsAppId.isOk()) {
+      chai.assert.isNotEmpty(teamsAppId.value);
+    }
+  });
+});
+
+describe("Publish Teams app with SPFx", () => {
+  let plugin: AppStudioPlugin;
+  let ctx: PluginContext;
+  let BotPlugin: Plugin;
+  let selectedPlugins: Plugin[];
+  const sandbox = sinon.createSandbox();
+  const appPackagePath = path.resolve(__dirname, "./../spfx-resources/appPackage/appPackage.zip");
+
+  beforeEach(async () => {
+    plugin = new AppStudioPlugin();
+    ctx = {
+      root: path.resolve(__dirname, "./../spfx-resources"),
+      envInfo: newEnvInfo(),
+      config: new ConfigMap(),
+      appStudioToken: mockTokenProvider(),
+      answers: { platform: Platform.VSCode },
+    };
+    ctx.projectSettings = {
+      appName: "my app",
+      projectId: "project id",
+      solutionSettings: {
+        name: "spfx",
+        version: "1.0",
+        capabilities: ["Tab"],
+        activeResourcePlugins: ["fx-resource-spfx"],
+      },
+    };
+    sandbox.stub(AppStudioClient, "validateManifest").resolves([]);
+    sandbox.stub(AppStudioClient, "publishTeamsApp").resolves(uuid());
+    sandbox.stub(AppStudioClient, "publishTeamsAppUpdate").resolves(uuid());
+    sandbox.stub(AppStudioClient, "updateApp").resolves();
+    sandbox.stub(fs, "move").resolves();
+    sandbox.stub(core, "isMultiEnvEnabled").returns(true);
+    sandbox.stub(AppStudioPluginImpl.prototype, <any>"beforePublish").returns(uuid());
+  });
+
+  afterEach(async () => {
+    sandbox.restore();
+    if (await fs.pathExists(appPackagePath)) {
+      await fs.remove(appPackagePath);
+    }
+  });
+
+  it("Publish teams app", async () => {
+    sandbox.stub(AppStudioClient, "getAppByTeamsAppId").resolves(undefined);
+
+    sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns(
+      ok({
+        tabEndpoint: "tabEndpoint",
+        tabDomain: "tabDomain",
+        aadId: "aadId",
+        webApplicationInfoResource: "webApplicationInfoResource",
+      })
+    );
+
+    const teamsAppId = await plugin.publish(ctx);
+    chai.assert.isTrue(teamsAppId.isOk());
+    if (teamsAppId.isOk()) {
+      chai.assert.isNotEmpty(teamsAppId.value);
+    }
+  });
+
+  it("Update a submitted app", async () => {
+    const mockApp = {
+      lastModifiedDateTime: null,
+      publishingState: PublishingState.submitted,
+      teamsAppId: uuid(),
+      displayName: "TestApp",
+    };
+    sandbox.stub(AppStudioClient, "getAppByTeamsAppId").resolves(mockApp);
+    ctx.ui = new MockUserInteraction();
+
+    sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns(
+      ok({
+        tabEndpoint: "tabEndpoint",
+        tabDomain: "tabDomain",
+        aadId: "aadId",
         webApplicationInfoResource: "webApplicationInfoResource",
       })
     );

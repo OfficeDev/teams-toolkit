@@ -108,10 +108,19 @@ export class AppStudioPluginV2 implements ResourcePlugin {
     ctx: Context,
     inputs: Inputs,
     func: Func,
+    localSettings: Json,
     envInfo: v2.EnvInfoV2,
     tokenProvider: TokenProvider
   ): Promise<Result<unknown, FxError>> {
-    return await executeUserTaskAdapter(ctx, inputs, func, envInfo, tokenProvider, this.plugin);
+    return await executeUserTaskAdapter(
+      ctx,
+      inputs,
+      func,
+      localSettings,
+      envInfo,
+      tokenProvider,
+      this.plugin
+    );
   }
 
   async getQuestions(
@@ -129,7 +138,7 @@ export class AppStudioPluginV2 implements ResourcePlugin {
     envInfo: DeepReadonly<v2.EnvInfoV2>,
     tokenProvider: AppStudioTokenProvider
   ): Promise<Result<Void, FxError>> {
-    const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
+    const pluginContext: PluginContext = convert2PluginContext(this.plugin.name, ctx, inputs);
     pluginContext.appStudioToken = tokenProvider;
 
     // run question model for publish

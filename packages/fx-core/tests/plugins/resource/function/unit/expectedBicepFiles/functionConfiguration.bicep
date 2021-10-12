@@ -39,6 +39,10 @@ resource functionAppConfig 'Microsoft.Web/sites/config@2021-01-15' = {
 resource functionAppAppSettings 'Microsoft.Web/sites/config@2021-01-15' = {
   parent: functionApp
   name: 'appsettings'
+  dependsOn: [
+    functionAppConfig
+    functionAppAuthSettings
+  ]
   properties: {
     API_ENDPOINT: 'https://${functionApp.properties.hostNames[0]}'
     ALLOWED_APP_IDS: authorizedClientApplicationIds

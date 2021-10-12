@@ -6,7 +6,7 @@ param botWebAppSKU string = 'F1'
 param botServiceSKU string = 'F1'
 param botWebAppName string
 {{#contains 'fx-resource-identity' Plugins}}
-param identityName string
+param identityResourceId string
 {{/contains}}
 
 var botWebAppHostname = botWebApp.properties.hostNames[0]
@@ -55,7 +55,7 @@ resource botWebApp 'Microsoft.Web/sites@2021-01-01' = {
   identity: {
     type: 'UserAssigned'
     userAssignedIdentities: {
-      '${identityName}': {}
+      '${identityResourceId}': {}
     }
   }
   {{/contains}}
@@ -67,4 +67,5 @@ output botWebAppName string = botWebAppName
 output botDomain string = botWebAppHostname
 output appServicePlanName string = botServerfarmsName
 output botServiceName string = botServiceName
+output botWebAppResourceId string = botWebApp.id
 output botWebAppEndpoint string = botEndpoint

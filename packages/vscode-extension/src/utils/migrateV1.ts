@@ -10,10 +10,6 @@ import * as constants from "../constants";
 export async function enableMigrateV1(): Promise<void> {
   const v1ProjectErrorMessage = await validateV1Project(ext.workspaceUri?.fsPath);
   const validV1Project = !v1ProjectErrorMessage;
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenV1Project, {
-    v1: validV1Project ? "true" : "false",
-    reason: v1ProjectErrorMessage ?? "",
-  });
   vscode.commands.executeCommand("setContext", "fx-extension.v1Project", validV1Project);
   if (validV1Project) {
     showNotification();

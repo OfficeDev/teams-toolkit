@@ -9,10 +9,11 @@ export interface ResourcePermission {
 }
 
 export enum CollaborationState {
-  OK,
-  NotProvisioned,
-  M365TenantNotMatch,
-  SolutionIsNotIdle,
+  OK = "OK",
+  NotProvisioned = "NotProvisioned",
+  M365TenantNotMatch = "M365TenantNotMatch",
+  SolutionIsNotIdle = "SolutionIsNotIdle",
+  ERROR = "ERROR",
 }
 
 export interface CollaborationStateResult {
@@ -24,11 +25,13 @@ export interface ListCollaboratorResult {
   state: CollaborationState;
   message?: string;
   collaborators?: Collaborator[];
+  error?: any;
 }
 
 export interface PermissionsResult {
   state: CollaborationState;
   message?: string;
+  userInfo?: Record<string, any>;
   permissions?: ResourcePermission[];
 }
 

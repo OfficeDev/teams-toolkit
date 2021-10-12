@@ -13,6 +13,7 @@ import {
   Func,
   FxError,
   GraphTokenProvider,
+  Inputs,
   InputTextConfig,
   InputTextResult,
   IProgressHandler,
@@ -33,6 +34,7 @@ import {
   SelectFilesResult,
   SelectFolderConfig,
   SelectFolderResult,
+  SharepointTokenProvider,
   SingleSelectConfig,
   SingleSelectResult,
   Solution,
@@ -44,34 +46,36 @@ import {
   TokenProvider,
   Tools,
   UserInteraction,
+  v2,
   Void,
 } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
+import fs from "fs-extra";
+import { environmentManager } from "../../src";
 import {
   DEFAULT_PERMISSION_REQUEST,
   PluginNames,
 } from "../../src/plugins/solution/fx-solution/constants";
 
+function solutionSettings(): AzureSolutionSettings {
+  return {
+    name: "fx-solution-azure",
+    version: "1.0.0",
+    hostType: "Azure",
+    capabilities: ["Tab"],
+    azureResources: [],
+    activeResourcePlugins: [PluginNames.FE, PluginNames.LDEBUG, PluginNames.AAD, PluginNames.SA],
+  } as AzureSolutionSettings;
+}
 export class MockSolution implements Solution {
   name = "fx-solution-azure";
 
   async create(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    ctx.projectSettings!.solutionSettings = this.solutionSettings();
+    ctx.projectSettings!.solutionSettings = solutionSettings();
     const config = new ConfigMap();
     config.set("create", true);
     ctx.envInfo.profile.set("solution", config);
     return ok(Void);
-  }
-
-  solutionSettings(): AzureSolutionSettings {
-    return {
-      name: this.name,
-      version: "1.0.0",
-      hostType: "Azure",
-      capabilities: ["Tab"],
-      azureResources: [],
-      activeResourcePlugins: [PluginNames.FE, PluginNames.LDEBUG, PluginNames.AAD, PluginNames.SA],
-    } as AzureSolutionSettings;
   }
 
   async scaffold(ctx: SolutionContext): Promise<Result<any, FxError>> {
@@ -119,10 +123,87 @@ export class MockSolution implements Solution {
   }
 
   async migrate(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    ctx.projectSettings!.solutionSettings = this.solutionSettings();
+    ctx.projectSettings!.solutionSettings = solutionSettings();
     const config = new ConfigMap();
     ctx.envInfo.profile.set("solution", config);
     return ok(Void);
+  }
+}
+
+export class MockSolutionV2 implements v2.SolutionPlugin {
+  name = "fx-solution-azure";
+  displayName = "Azure Solution V2 Mock";
+  async scaffoldSourceCode(ctx: v2.Context, inputs: Inputs): Promise<Result<Void, FxError>> {
+    ctx.projectSetting.solutionSettings = solutionSettings();
+    return ok(Void);
+  }
+  async generateResourceTemplate(ctx: v2.Context, inputs: Inputs): Promise<Result<Json, FxError>> {
+    return ok({});
+  }
+  async provisionResources(
+    ctx: v2.Context,
+    inputs: Inputs,
+    envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
+    tokenProvider: TokenProvider
+  ): Promise<v2.FxResult<v2.SolutionProvisionOutput, FxError>> {
+    return {
+      kind: "success",
+      output: {},
+    };
+  }
+  async deploy(
+    ctx: v2.Context,
+    inputs: Inputs,
+    provisionOutputs: Json,
+    tokenProvider: AzureAccountProvider
+  ): Promise<Result<Void, FxError>> {
+    return ok(Void);
+  }
+  async publishApplication(
+    ctx: v2.Context,
+    inputs: Inputs,
+    envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
+    tokenProvider: AppStudioTokenProvider
+  ): Promise<Result<Void, FxError>> {
+    return ok(Void);
+  }
+  async provisionLocalResource(
+    ctx: v2.Context,
+    inputs: Inputs,
+    localSettings: Json,
+    tokenProvider: TokenProvider
+  ): Promise<v2.FxResult<Json, FxError>> {
+    return {
+      kind: "success",
+      output: {},
+    };
+  }
+  async executeUserTask(
+    ctx: v2.Context,
+    inputs: Inputs,
+    func: Func,
+    localSettings: Json,
+    envInfo: v2.EnvInfoV2,
+    tokenProvider: TokenProvider
+  ): Promise<Result<unknown, FxError>> {
+    return ok(Void);
+  }
+  async getQuestions(
+    ctx: v2.Context,
+    inputs: Inputs,
+    envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
+    tokenProvider: TokenProvider
+  ): Promise<Result<QTreeNode | undefined, FxError>> {
+    return ok(undefined);
+  }
+  async getQuestionsForUserTask(
+    ctx: v2.Context,
+    inputs: Inputs,
+    func: Func,
+    envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
+    tokenProvider: TokenProvider
+  ): Promise<Result<QTreeNode | undefined, FxError>> {
+    return ok(undefined);
   }
 }
 
@@ -272,6 +353,53 @@ export class MockAppStudioTokenProvider implements AppStudioTokenProvider {
   }
 }
 
+export class MockSharepointTokenProvider implements SharepointTokenProvider {
+  /**
+   * Get sharepoint access token
+   * @param showDialog Control whether the UI layer displays pop-up windows
+   */
+  getAccessToken(showDialog?: boolean): Promise<string | undefined> {
+    throw new Error("Method not implemented.");
+  }
+
+  /**
+   * Get sharepoint token JSON object
+   * - tid : tenantId
+   * - unique_name : user name
+   * - ...
+   * @param showDialog Control whether the UI layer displays pop-up windows
+   */
+  getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined> {
+    throw new Error("Method not implemented.");
+  }
+
+  /**
+   * Add update account info callback
+   * @param name callback name
+   * @param statusChange callback method
+   * @param immediateCall whether callback when register, the default value is true
+   */
+  setStatusChangeMap(
+    name: string,
+    statusChange: (
+      status: string,
+      token?: string,
+      accountInfo?: Record<string, unknown>
+    ) => Promise<void>,
+    immediateCall?: boolean
+  ): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+
+  /**
+   * Remove update account info callback
+   * @param name callback name
+   */
+  removeStatusChangeMap(name: string): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+}
+
 class MockTelemetryReporter implements TelemetryReporter {
   sendTelemetryErrorEvent(
     eventName: string,
@@ -375,6 +503,7 @@ export class MockTools implements Tools {
     azureAccountProvider: new MockAzureAccountProvider(),
     graphTokenProvider: new MockGraphTokenProvider(),
     appStudioToken: new MockAppStudioTokenProvider(),
+    sharepointTokenProvider: new MockSharepointTokenProvider(),
   };
   telemetryReporter = new MockTelemetryReporter();
   ui = new MockUserInteraction();
@@ -442,8 +571,15 @@ export function MockProjectSettings(appName: string): ProjectSettings {
       hostType: "Azure",
       capabilities: ["Tab"],
       azureResources: [],
-      activeResourcePlugins: [PluginNames.FE, PluginNames.LDEBUG, PluginNames.AAD, PluginNames.SA],
+      activeResourcePlugins: [
+        PluginNames.FE,
+        PluginNames.LDEBUG,
+        PluginNames.AAD,
+        PluginNames.SA,
+        PluginNames.APPST,
+      ],
     } as AzureSolutionSettings,
+    activeEnvironment: environmentManager.getDefaultEnvName(),
   };
 }
 
@@ -500,4 +636,23 @@ export function MockLatestVersion2_3_0UserData(): Record<string, string> {
     "solution.teamsAppTenantId": "tenantId_new",
     "solution.localDebugTeamsAppId": "teamsAppId_new",
   };
+}
+
+export function deleteFolder(filePath?: string): void {
+  if (!filePath) return;
+  if (fs.existsSync(filePath)) {
+    const files = fs.readdirSync(filePath);
+    files.forEach((file) => {
+      const nextFilePath = `${filePath}/${file}`;
+      const states = fs.statSync(nextFilePath);
+      if (states.isDirectory()) {
+        //recurse
+        deleteFolder(nextFilePath);
+      } else {
+        //delete file
+        fs.unlinkSync(nextFilePath);
+      }
+    });
+    fs.rmdirSync(filePath);
+  }
 }

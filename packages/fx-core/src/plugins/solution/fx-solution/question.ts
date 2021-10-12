@@ -12,7 +12,7 @@ import {
   TextInputQuestion,
   Void,
 } from "@microsoft/teamsfx-api";
-import { SolutionError } from "./constants";
+import { SolutionError, SolutionSource } from "./constants";
 
 export const TabOptionItem: OptionItem = {
   id: "Tab",
@@ -119,7 +119,7 @@ export const FrontendHostTypeQuestion: SingleSelectQuestion = {
     }
     throw returnSystemError(
       new Error("Capabilities is undefined"),
-      "Solution",
+      SolutionSource,
       SolutionError.InternelError
     );
   },

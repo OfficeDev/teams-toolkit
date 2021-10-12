@@ -21,7 +21,7 @@ import {
 import Container from "typedi";
 import { getStrings } from "../../../../common";
 import { checkSubscription } from "../commonQuestions";
-import { CancelError, SolutionError } from "../constants";
+import { CancelError, SolutionError, SolutionSource } from "../constants";
 import {
   addCapabilityQuestion,
   AskSubscriptionQuestion,
@@ -176,7 +176,7 @@ export async function getQuestions(
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   const stage = inputs.stage;
   if (!stage) {
-    return err(new InvalidInputError("Solution", "inputs.stage", "undefined"));
+    return err(new InvalidInputError(SolutionSource, "inputs.stage", "undefined"));
   }
   const isDynamicQuestion = DynamicPlatforms.includes(inputs.platform);
   const node = new QTreeNode({ type: "group" });
@@ -223,7 +223,7 @@ export async function getQuestions(
         return err(
           returnUserError(
             new Error(getStrings().solution.FailedToDeployBeforeProvision),
-            "Solution",
+            SolutionSource,
             SolutionError.CannotDeployBeforeProvision
           )
         );
@@ -240,7 +240,7 @@ export async function getQuestions(
       return err(
         returnUserError(
           new Error("No resource to deploy"),
-          "Solution",
+          SolutionSource,
           SolutionError.NoResourceToDeploy
         )
       );
@@ -280,32 +280,16 @@ export async function getQuestions(
       }
       const isAzure = isAzureProject(solutionSettings);
       const provisioned = checkWetherProvisionSucceeded(envInfo.profile);
-      if (isAzure && !provisioned) {
+      if (!provisioned) {
         return err(
-          returnUserError(
-            new Error(getStrings().solution.FailedToPublishBeforeProvision),
-            "Solution",
-            SolutionError.CannotPublishBeforeProvision
+          new UserError(
+            SolutionError.CannotPublishBeforeProvision,
+            isAzure
+              ? getStrings().solution.FailedToPublishBeforeProvision
+              : getStrings().solution.SPFxAskProvisionBeforePublish,
+            SolutionSource
           )
         );
-      }
-      if (!provisioned && !isAzure) {
-        if (inputs.platform === Platform.VSCode) {
-          ctx.userInteraction.showMessage(
-            "error",
-            getStrings().solution.SPFxAskProvisionBeforePublish,
-            false
-          );
-          return err(CancelError);
-        } else {
-          return err(
-            returnUserError(
-              new Error(getStrings().solution.SPFxAskProvisionBeforePublish),
-              "Solution",
-              SolutionError.CannotPublishBeforeProvision
-            )
-          );
-        }
       }
     }
     let plugins: v2.ResourcePlugin[] = [];
@@ -372,7 +356,7 @@ export async function getQuestionsForAddCapability(
     return err(
       returnUserError(
         new Error("Add capability is not supported for SPFx project"),
-        "Solution",
+        SolutionSource,
         SolutionError.AddResourceNotSupport
       )
     );
@@ -436,7 +420,7 @@ export async function getQuestionsForAddResource(
       new UserError(
         SolutionError.AddResourceNotSupport,
         "Add resource is only supported for Tab app hosted in Azure.",
-        "Solution"
+        SolutionSource
       )
     );
   }
@@ -447,7 +431,7 @@ export async function getQuestionsForAddResource(
     return err(
       returnUserError(
         new Error("selectedPlugins is empty"),
-        "Solution",
+        SolutionSource,
         SolutionError.InternelError
       )
     );
@@ -521,7 +505,7 @@ export async function getQuestionsForAddResource(
         AskSubscriptionQuestion.func = async (
           inputs: Inputs
         ): Promise<Result<SubscriptionInfo, FxError>> => {
-          const res = await checkSubscription(ctx, envInfo, tokenProvider);
+          const res = await checkSubscription(envInfo, tokenProvider.azureAccountProvider);
           if (res.isOk()) {
             const sub = res.value;
             inputs.subscriptionId = sub.subscriptionId;

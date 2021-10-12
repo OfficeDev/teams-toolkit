@@ -30,7 +30,7 @@ export interface ScaffoldContext {
 
   // Used by rendering template file.
   fileNameReplaceFn?: (name: string, data: Buffer) => string;
-  fileDataReplaceFn?: (name: string, data: Buffer) => string;
+  fileDataReplaceFn?: (name: string, data: Buffer) => string | Buffer;
 
   // Used by process.
   onActionStart?: (action: ScaffoldAction, context: ScaffoldContext) => Promise<void>;

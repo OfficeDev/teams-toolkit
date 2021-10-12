@@ -3,9 +3,21 @@
 import * as vscode from "vscode";
 import Reporter from "vscode-extension-telemetry";
 import { TelemetryReporter } from "@microsoft/teamsfx-api";
-import { getAllFeatureFlags, getPackageVersion, getProjectId } from "../utils/commonUtils";
+import {
+  getAllFeatureFlags,
+  getPackageVersion,
+  getProjectId,
+  isFeatureFlagEnabled,
+  FeatureFlags,
+} from "../utils/commonUtils";
 import { TelemetryProperty } from "../telemetry/extTelemetryEvents";
 import { Correlator } from "@microsoft/teamsfx-core";
+import { ConfigFolderName } from "@microsoft/teamsfx-api";
+import { configure, getLogger, Logger } from "log4js";
+import * as os from "os";
+import * as path from "path";
+
+const TelemetryTestLoggerFile = "telemetryTest.log";
 
 /**
  *  VSCode telemetry reporter used by fx-core.
@@ -19,6 +31,8 @@ import { Correlator } from "@microsoft/teamsfx-core";
 export class VSCodeTelemetryReporter extends vscode.Disposable implements TelemetryReporter {
   private readonly reporter: Reporter;
   private readonly extVersion: string;
+  private readonly logger: Logger | undefined;
+  private readonly testFeatureFlag: boolean;
 
   private sharedProperties: { [key: string]: string } = {};
 
@@ -26,10 +40,44 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
     super(async () => await this.reporter.dispose());
     this.reporter = new Reporter(extensionId, extensionVersion, key, true);
     this.extVersion = getPackageVersion(extensionVersion);
+    this.testFeatureFlag = isFeatureFlagEnabled(FeatureFlags.TelemetryTest);
+    if (this.testFeatureFlag) {
+      const logFile = path.join(os.homedir(), `.${ConfigFolderName}`, TelemetryTestLoggerFile);
+      configure({
+        appenders: { everything: { type: "file", filename: logFile } },
+        categories: { default: { appenders: ["everything"], level: "debug" } },
+      });
+      this.logger = getLogger("TelemTest");
+    }
   }
 
   addSharedProperty(name: string, value: string): void {
     this.sharedProperties[name] = value;
+  }
+
+  logTelemetryEvent(
+    eventName: string,
+    properties?: { [p: string]: string },
+    measurements?: { [p: string]: number }
+  ): void {
+    this.logger?.debug(eventName, properties, measurements);
+  }
+
+  logTelemetryErrorEvent(
+    eventName: string,
+    properties?: { [p: string]: string },
+    measurements?: { [p: string]: number },
+    errorProps?: string[]
+  ): void {
+    this.logger?.debug(eventName, properties, measurements, errorProps);
+  }
+
+  logTelemetryException(
+    error: Error,
+    properties?: { [p: string]: string },
+    measurements?: { [p: string]: number }
+  ): void {
+    this.logger?.debug(error, properties, measurements);
   }
 
   sendTelemetryErrorEvent(
@@ -50,7 +98,12 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
 
     const featureFlags = getAllFeatureFlags();
     properties[TelemetryProperty.FeatureFlags] = featureFlags ? featureFlags.join(";") : "";
-    this.reporter.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
+
+    if (this.testFeatureFlag) {
+      this.logTelemetryErrorEvent(eventName, properties, measurements, errorProps);
+    } else {
+      this.reporter.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
+    }
   }
 
   sendTelemetryEvent(
@@ -70,7 +123,12 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
 
     const featureFlags = getAllFeatureFlags();
     properties[TelemetryProperty.FeatureFlags] = featureFlags ? featureFlags.join(";") : "";
-    this.reporter.sendTelemetryEvent(eventName, properties, measurements);
+
+    if (this.testFeatureFlag) {
+      this.logTelemetryEvent(eventName, properties, measurements);
+    } else {
+      this.reporter.sendTelemetryEvent(eventName, properties, measurements);
+    }
   }
 
   sendTelemetryException(
@@ -90,6 +148,11 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
 
     const featureFlags = getAllFeatureFlags();
     properties[TelemetryProperty.FeatureFlags] = featureFlags ? featureFlags.join(";") : "";
-    this.reporter.sendTelemetryException(error, properties, measurements);
+
+    if (this.testFeatureFlag) {
+      this.logTelemetryException(error, properties, measurements);
+    } else {
+      this.reporter.sendTelemetryException(error, properties, measurements);
+    }
   }
 }

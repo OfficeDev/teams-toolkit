@@ -85,6 +85,8 @@ export class CodeFlowLogin {
       if (dataCache) {
         this.account = dataCache;
       }
+    } else {
+      this.account = undefined;
     }
   }
 

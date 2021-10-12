@@ -549,9 +549,9 @@ async function generateArmParameterJson(ctx: CoreHookContext) {
   }
   // manage identity
   if (envConfig[ResourcePlugins.Identity]) {
-    if (envConfig[ResourcePlugins.Identity][EnvConfigName.IdentityName]) {
+    if (envConfig[ResourcePlugins.Identity][EnvConfigName.Identity]) {
       targetJson[ArmParameter][ArmParameters.IdentityName] = {
-        value: envConfig[ResourcePlugins.Identity][EnvConfigName.IdentityName],
+        value: envConfig[ResourcePlugins.Identity][EnvConfigName.Identity],
       };
     }
   }

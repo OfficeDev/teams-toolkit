@@ -17,6 +17,7 @@ import {
   AppPackageFolderName,
   ArchiveFolderName,
   V1ManifestFileName,
+  ConfigMap,
 } from "@microsoft/teamsfx-api";
 import { AppStudioClient } from "./appStudio";
 import {
@@ -534,7 +535,6 @@ export class AppStudioPluginImpl {
           hasBot,
           hasMessageExtension
         );
-        // const localDebugManifest = await this.createManifest(ctx.projectSettings!, true);
         await fs.writeFile(
           `${appDir}/${MANIFEST_LOCAL}`,
           JSON.stringify(localDebugManifest, null, 4)
@@ -769,6 +769,14 @@ export class AppStudioPluginImpl {
     }
     if (teamsAppId.isErr()) {
       return teamsAppId;
+    }
+    if (isMultiEnvEnabled()) {
+      ctx.localSettings?.teamsApp?.set(Constants.TEAMS_APP_ID, teamsAppId.value);
+    } else {
+      (ctx.envInfo?.profile.get("solution") as ConfigMap)?.set(
+        LOCAL_DEBUG_TEAMS_APP_ID,
+        teamsAppId.value
+      );
     }
     return ok(teamsAppId.value);
   }
@@ -1354,7 +1362,7 @@ export class AppStudioPluginImpl {
     let teamsAppId: string;
     if (isLocalDebug) {
       teamsAppId = isMultiEnvEnabled()
-        ? ctx.localSettings?.teamsApp.get(LocalSettingsTeamsAppKeys.TeamsAppId)
+        ? ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TeamsAppId)
         : (ctx.envInfo.profile.get("solution")?.get(LOCAL_DEBUG_TEAMS_APP_ID) as string);
     } else {
       teamsAppId = isMultiEnvEnabled()
@@ -1713,10 +1721,7 @@ export class AppStudioPluginImpl {
     return ok([appDefinition, updatedManifest]);
   }
 
-  private async getManifestTemplatePath(
-    projectRoot: string,
-    isLocalDebug = false
-  ): Promise<string> {
+  public async getManifestTemplatePath(projectRoot: string, isLocalDebug = false): Promise<string> {
     const appDir = await getAppDirectory(projectRoot);
     if (isMultiEnvEnabled()) {
       return isLocalDebug ? `${appDir}/${MANIFEST_LOCAL}` : `${appDir}/${MANIFEST_TEMPLATE}`;

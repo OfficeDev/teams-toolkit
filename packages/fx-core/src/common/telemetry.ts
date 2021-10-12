@@ -15,6 +15,9 @@ export enum TelemetryProperty {
   SampleAppName = "sample-app-name",
   ProjectId = "project-id",
   CorrelationId = "correlation-id",
+  Env = "env",
+  CustomizeResourceGroupType = "customize-resource-group-type",
+  EnvConfig = "env-config",
 }
 
 export enum TelemetryEvent {
@@ -24,6 +27,9 @@ export enum TelemetryEvent {
   ProjectUpgradeStart = "project-upgrade-start",
   ReadJson = "read-json",
   DecryptUserdata = "decrypt-userdata",
+  CheckResourceGroupStart = "check-resource-group-start",
+  CheckResourceGroup = "check-resource-group",
+  EnvConfig = "env-config",
 }
 
 export enum TelemetrySuccess {
@@ -42,6 +48,16 @@ export enum Component {
   vs = "vs",
   core = "core",
   solution = "solution",
+}
+
+export enum CustomizeResourceGroupType {
+  CommandLine = "command-line",
+  EnvConfig = "env-config",
+  EnvProfile = "env-profile",
+  InteractiveCreateDefault = "interactive-create-default",
+  InteractiveCreateCustomized = "interactive-create-customized",
+  InteractiveUseExisting = "interactive-use-existing",
+  FallbackDefault = "fallback-default",
 }
 
 export function sendTelemetryEvent(

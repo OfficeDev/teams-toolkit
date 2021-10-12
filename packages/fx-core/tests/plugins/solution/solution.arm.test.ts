@@ -99,13 +99,9 @@ describe("Generate ARM Template for project", () => {
   let parameterFileName: string;
   beforeEach(async () => {
     mockedEnvRestore = mockedEnv({
-      TEAMSFX_MULTI_ENV: "false",
-      TEAMSFX_ARM_SUPPORT: "true",
+      TEAMSFX_INSIDER_PREVIEW: "true",
     });
-    parameterFileName = parameterFileNameTemplate.replace(
-      EnvNamePlaceholder,
-      environmentManager.getDefaultEnvName()
-    );
+    parameterFileName = parameterFileNameTemplate.replace(EnvNamePlaceholder, "default");
     await fs.ensureDir(testFolder);
   });
 
@@ -307,13 +303,9 @@ describe("Deploy ARM Template to Azure", () => {
 
   beforeEach(() => {
     mockedEnvRestore = mockedEnv({
-      TEAMSFX_MULTI_ENV: "false",
-      TEAMSFX_ARM_SUPPORT: "true",
+      TEAMSFX_INSIDER_PREVIEW: "true",
     });
-    parameterFileName = parameterFileNameTemplate.replace(
-      EnvNamePlaceholder,
-      environmentManager.getDefaultEnvName()
-    );
+    parameterFileName = parameterFileNameTemplate.replace(EnvNamePlaceholder, "default");
     (
       mocker.stub(fs, "readFile") as unknown as sinon.SinonStub<
         [file: number | fs.PathLike],

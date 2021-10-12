@@ -9,7 +9,7 @@ module botProvision '\{{PluginOutput.fx-resource-bot.Modules.botProvision.Path}}
     botWebAppName: bot_sitesName
     botWebAppSKU: bot_webAppSKU
     {{#contains 'fx-resource-identity' Plugins}}
-    identityName: \{{PluginOutput.fx-resource-identity.Outputs.identityName}}
+    identityResourceId: \{{PluginOutput.fx-resource-identity.Outputs.identityResourceId}}
     {{/contains}}
   }
 }
@@ -38,7 +38,7 @@ module botConfiguration '\{{PluginOutput.fx-resource-bot.Modules.botConfiguratio
     sqlEndpoint: \{{PluginOutput.fx-resource-azure-sql.Outputs.sqlEndpoint}}
     {{/contains}}
     {{#contains 'fx-resource-identity' Plugins}}
-    identityId: \{{PluginOutput.fx-resource-identity.Outputs.identityId}}
+    identityClientId: \{{PluginOutput.fx-resource-identity.Outputs.identityClientId}}
     {{/contains}}
   }
 }

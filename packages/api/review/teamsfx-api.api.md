@@ -147,6 +147,8 @@ export interface Context {
     // (undocumented)
     root: string;
     // (undocumented)
+    sharepointTokenProvider?: SharepointTokenProvider;
+    // (undocumented)
     telemetryReporter?: TelemetryReporter;
     // (undocumented)
     treeProvider?: TreeProvider;
@@ -288,6 +290,13 @@ export interface EnvConfig {
 
 // @public (undocumented)
 export const EnvConfigFileNameTemplate: string;
+
+declare namespace EnvConfigSchema {
+    export {
+
+    }
+}
+export { EnvConfigSchema }
 
 // @public (undocumented)
 export interface EnvInfo {
@@ -740,7 +749,7 @@ export interface LocalSettings {
     // (undocumented)
     frontend?: ConfigMap;
     // (undocumented)
-    teamsApp: ConfigMap;
+    teamsApp?: ConfigMap;
 }
 
 // @public (undocumented)
@@ -1047,7 +1056,7 @@ interface ResourcePlugin {
     // (undocumented)
     displayName: string;
     // (undocumented)
-    executeUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, envInfo: EnvInfoV2, tokenProvider: TokenProvider) => Promise<Result<unknown, FxError>>;
+    executeUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, localSettings: Json, envInfo: EnvInfoV2, tokenProvider: TokenProvider) => Promise<Result<unknown, FxError>>;
     generateResourceTemplate?: (ctx: Context_2, inputs: Inputs) => Promise<Result<ResourceTemplate_2, FxError>>;
     // (undocumented)
     getQuestions?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
@@ -1113,6 +1122,14 @@ export type SelectFolderConfig = UIConfig<string>;
 
 // @public (undocumented)
 export type SelectFolderResult = InputResult<string>;
+
+// @public
+export interface SharepointTokenProvider {
+    getAccessToken(showDialog?: boolean): Promise<string | undefined>;
+    getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined>;
+    removeStatusChangeMap(name: string): Promise<boolean>;
+    setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>, immediateCall?: boolean): Promise<boolean>;
+}
 
 // @public
 export interface SingleFileQuestion extends UserInputQuestion {
@@ -1210,7 +1227,7 @@ interface SolutionPlugin {
     deploy?: (ctx: Context_2, inputs: Inputs, provisionOutputs: Json, tokenProvider: AzureAccountProvider) => Promise<Result<Void, FxError>>;
     // (undocumented)
     displayName: string;
-    executeUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, envInfo: EnvInfoV2, tokenProvider: TokenProvider) => Promise<Result<unknown, FxError>>;
+    executeUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, localSettings: Json, envInfo: EnvInfoV2, tokenProvider: TokenProvider) => Promise<Result<unknown, FxError>>;
     generateResourceTemplate: (ctx: Context_2, inputs: Inputs) => Promise<Result<Json, FxError>>;
     // (undocumented)
     getQuestions?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
@@ -1255,6 +1272,10 @@ export enum Stage {
     debug = "debug",
     // (undocumented)
     deploy = "deploy",
+    // (undocumented)
+    getProjectConfig = "getProjectConfig",
+    // (undocumented)
+    getQuestions = "getQuestions",
     // (undocumented)
     grantPermission = "grantPermission",
     // (undocumented)
@@ -1444,6 +1465,7 @@ export type TokenProvider = {
     azureAccountProvider: AzureAccountProvider;
     graphTokenProvider: GraphTokenProvider;
     appStudioToken: AppStudioTokenProvider;
+    sharepointTokenProvider: SharepointTokenProvider;
 };
 
 // @public (undocumented)
@@ -1581,6 +1603,7 @@ export interface UserInteraction {
     createProgressBar: (title: string, totalSteps: number) => IProgressHandler;
     inputText: (config: InputTextConfig) => Promise<Result<InputTextResult, FxError>>;
     openUrl(link: string): Promise<Result<boolean, FxError>>;
+    reload?(): Promise<Result<boolean, FxError>>;
     runWithProgress<T>(task: RunnableTask<T>, config: TaskConfig, ...args: any): Promise<Result<T, FxError>>;
     selectFile: (config: SelectFileConfig) => Promise<Result<SelectFileResult, FxError>>;
     selectFiles: (config: SelectFilesConfig) => Promise<Result<SelectFilesResult, FxError>>;

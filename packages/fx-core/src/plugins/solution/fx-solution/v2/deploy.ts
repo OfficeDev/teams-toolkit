@@ -83,7 +83,7 @@ export async function deploy(
               ...extractSolutionInputs(provisionOutputs[GLOBAL_CONFIG]),
               projectPath: inputs.projectPath!,
             },
-            provisionOutputs[plugin.name],
+            provisionOutputs,
             tokenProvider
           ),
       };

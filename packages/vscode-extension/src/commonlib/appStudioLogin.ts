@@ -142,6 +142,7 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
   }
 
   async signout(): Promise<boolean> {
+    await AppStudioLogin.codeFlowInstance.reloadCache();
     const userConfirmation = await this.doesUserConfirmSignout();
     if (!userConfirmation) {
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SignOut, {

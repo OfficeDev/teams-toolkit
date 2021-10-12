@@ -74,9 +74,18 @@ export class LocalDebugPluginV2 implements ResourcePlugin {
     ctx: Context,
     inputs: Inputs,
     func: Func,
+    localSettings: Json,
     envInfo: v2.EnvInfoV2,
     tokenProvider: TokenProvider
   ): Promise<Result<unknown, FxError>> {
-    return await executeUserTaskAdapter(ctx, inputs, func, envInfo, tokenProvider, this.plugin);
+    return await executeUserTaskAdapter(
+      ctx,
+      inputs,
+      func,
+      localSettings,
+      envInfo,
+      tokenProvider,
+      this.plugin
+    );
   }
 }

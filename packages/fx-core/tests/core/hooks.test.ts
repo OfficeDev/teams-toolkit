@@ -27,23 +27,18 @@ import {
 import { assert } from "chai";
 import fs from "fs-extra";
 import "mocha";
-import mockedEnv from "mocked-env";
+import mockedEnv, { RestoreFn } from "mocked-env";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
 import { Container } from "typedi";
 import { CoreHookContext, deserializeDict, serializeDict } from "../../src";
-import { FeatureFlagName } from "../../src/common/constants";
 import * as commonTools from "../../src/common/tools";
 import { environmentManager } from "../../src/core/environment";
-import { NoProjectOpenedError } from "../../src/core/error";
-import { ContextInjectorMW } from "../../src/core/middleware/contextInjector";
 import { EnvInfoLoaderMW } from "../../src/core/middleware/envInfoLoader";
-import { LocalSettingsLoaderMW } from "../../src/core/middleware/localSettingsLoader";
 import { MigrateConditionHandlerMW } from "../../src/core/middleware/migrateConditionHandler";
 import { migrateArm, ProjectMigratorMW } from "../../src/core/middleware/projectMigrator";
 import { ProjectUpgraderMW } from "../../src/core/middleware/projectUpgrader";
-import { TelemetrySenderMW } from "../../src/core/middleware/telemetrySender";
 import { SolutionPlugins } from "../../src/core/SolutionPluginContainer";
 import {
   MockLatestVersion2_3_0Context,
@@ -250,7 +245,7 @@ describe("Middleware - others", () => {
 
     it("Should not upgrade for the new multi env project", async () => {
       sandbox.stub(process, "env").get(() => {
-        return { TEAMSFX_MULTI_ENV: "true" };
+        return { TEAMSFX_INSIDER_PREVIEW: "true" };
       });
 
       envJson = MockLatestVersion2_3_0Context();
@@ -519,30 +514,6 @@ describe("Middleware - others", () => {
     });
   });
 
-  describe("LocalSettingsLoaderMW, ContextInjectorMW", () => {
-    it("NoProjectOpenedError", async () => {
-      const original = process.env[FeatureFlagName.MultiEnv];
-      process.env[FeatureFlagName.MultiEnv] = "true";
-
-      class MyClass {
-        tools = new MockTools();
-
-        async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-          return ok("");
-        }
-      }
-
-      hooks(MyClass, {
-        other: [TelemetrySenderMW, LocalSettingsLoaderMW, ContextInjectorMW],
-      });
-      const my = new MyClass();
-      const inputs: Inputs = { platform: Platform.VSCode };
-      const res = await my.other(inputs);
-      assert.isTrue(res.isErr() && res.error.name === NoProjectOpenedError().name);
-      process.env[FeatureFlagName.MultiEnv] = original;
-    });
-  });
-
   describe("migrateArm success", () => {
     const sandbox = sinon.createSandbox();
     const appName = randomAppName();
@@ -559,8 +530,7 @@ describe("Middleware - others", () => {
         path.join(projectPath, ".fx", "settings.json")
       );
       mockedEnvRestore = mockedEnv({
-        TEAMSFX_MULTI_ENV: "true",
-        TEAMSFX_ARM_SUPPORT: "true",
+        TEAMSFX_INSIDER_PREVIEW: "true",
       });
     });
     afterEach(async () => {
@@ -626,8 +596,7 @@ describe("Middleware - others", () => {
       await fs.ensureDir(projectPath);
       await fs.copy(path.join(__dirname, "../samples/migration/"), path.join(projectPath));
       mockedEnvRestore = mockedEnv({
-        TEAMSFX_MULTI_ENV: "true",
-        TEAMSFX_ARM_SUPPORT: "true",
+        TEAMSFX_INSIDER_PREVIEW: "true",
       });
       sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok("OK"));
     });
@@ -687,7 +656,9 @@ describe("Middleware - others", () => {
     // test variables
     let solutionContext: SolutionContext | undefined;
     let envLoaded: string | undefined = undefined;
+    let mockedEnvRestore: RestoreFn;
     beforeEach(() => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_APIV2: "false" });
       solutionContext = undefined;
       envLoaded = undefined;
 
@@ -731,7 +702,9 @@ describe("Middleware - others", () => {
         }
       });
     });
-
+    afterEach(() => {
+      mockedEnvRestore();
+    });
     describe("skipping logic", async () => {
       it("skips on getQuestions of the create stage", async () => {
         // Arrange

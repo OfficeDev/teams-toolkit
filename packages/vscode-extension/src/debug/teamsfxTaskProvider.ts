@@ -246,7 +246,8 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     const command: string = constants.openWenClientCommand;
     definition = definition || { type: TeamsfxTaskProvider.type, command };
 
-    const localTeamsAppId: string | undefined = await commonUtils.getLocalDebugTeamsAppId(true);
+    const debugConfig = await commonUtils.getDebugConfig(true);
+    const localTeamsAppId: string | undefined = debugConfig?.appId;
     const commandLine = `npx open-cli https://teams.microsoft.com/_#/l/app/${localTeamsAppId}?installAppPackage=true`;
 
     const task = new vscode.Task(

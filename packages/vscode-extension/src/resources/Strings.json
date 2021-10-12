@@ -97,7 +97,9 @@
       "editSecretTitle": "Edit the decrypted secret value",
       "decryptFailed": "Failed to decrypt secrect.",
       "openEnvFailed": "Can not open project environment %s.",
-      "findEnvFailed": "Can not find project environment %s."
+      "findEnvFailed": "Can not find project environment %s.",
+      "localDebugDescription": "Preview your project by running local debug",
+      "localDebugTitle": "Local debug"
     },
     "progressHandler": {
       "teamsToolkitComponent": "[Teams Toolkit]",

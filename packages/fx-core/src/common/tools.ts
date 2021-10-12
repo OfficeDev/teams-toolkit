@@ -549,6 +549,10 @@ export async function waitSeconds(second: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, second * 1000));
 }
 
+export function getUuid(): string {
+  return uuid.v4();
+}
+
 export function isSPFxProject(projectSettings?: ProjectSettings): boolean {
   const solutionSettings = projectSettings?.solutionSettings as AzureSolutionSettings;
   if (solutionSettings) {

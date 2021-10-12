@@ -143,6 +143,14 @@ describe("Config Get Command Check", () => {
         return err(NonTeamsFxProjectFolder());
       });
     sandbox
+      .stub(Utils, "readSettingsFileSync")
+      .callsFake((rootFolder: string): Result<any, FxError> => {
+        if (rootFolder.endsWith("testProjectFolder")) {
+          return ok({});
+        }
+        return err(NonTeamsFxProjectFolder());
+      });
+    sandbox
       .stub(Utils, "readProjectSecrets")
       .returns(Promise.resolve(ok(dotenv.parse("fx-resource-bot.botPassword=password\ntest=abc"))));
   });
@@ -178,7 +186,8 @@ describe("Config Get Command Check", () => {
     });
 
     expect(logs.length).equals(1);
-    expect(logs[0]).includes(JSON.stringify(config, null, 2));
+    const result = JSON.parse(logs[0]);
+    expect(result).to.deep.equal(config);
 
     expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigGet]);
   });
@@ -189,7 +198,8 @@ describe("Config Get Command Check", () => {
     });
 
     expect(logs.length).equals(3);
-    expect(logs[0]).includes(JSON.stringify(config, null, 2));
+    const globalConfig = JSON.stringify(logs[0]);
+    expect(globalConfig).to.deep.equal(config);
     expect(logs[1]).includes("fx-resource-bot.botPassword: decrypted");
     expect(logs[2]).includes("test: abc");
 

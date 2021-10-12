@@ -13,6 +13,7 @@ import {
 import * as jsonschema from "jsonschema";
 import * as path from "path";
 import * as fs from "fs-extra";
+import * as os from "os";
 import { environmentManager } from "./environment";
 
 export enum CoreQuestionNames {
@@ -112,6 +113,7 @@ export const QuestionSelectTargetEnvironment: SingleSelectQuestion = {
 };
 
 export function getQuestionNewTargetEnvironmentName(projectPath: string): TextInputQuestion {
+  const WINDOWS_MAX_PATH_LENGTH = 260;
   return {
     type: "text",
     name: CoreQuestionNames.NewTargetEnvName,
@@ -122,6 +124,11 @@ export function getQuestionNewTargetEnvironmentName(projectPath: string): TextIn
         const match = targetEnvName.match(environmentManager.envNameRegex);
         if (!match) {
           return "Environment name can only contain letters, digits, _ and -.";
+        }
+
+        const envFilePath = environmentManager.getEnvConfigPath(targetEnvName, projectPath);
+        if (os.type() === "Windows_NT" && envFilePath.length >= WINDOWS_MAX_PATH_LENGTH) {
+          return "The length of environment config path will exceed the limitation of Windows.";
         }
 
         if (targetEnvName === LocalEnvironmentName) {

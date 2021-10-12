@@ -7,6 +7,7 @@ import {
   ArchiveFolderName,
   ArchiveLogFileName,
   AppPackageFolderName,
+  AzureSolutionSettings,
 } from "@microsoft/teamsfx-api";
 import path from "path";
 
@@ -59,6 +60,7 @@ import * as fs from "fs-extra";
 import { Bicep, ConstantString } from "../../../common/constants";
 import { EnvironmentUtils } from "./utils/environment-utils";
 import { copyFiles } from "../../../common";
+import { AzureResourceFunction } from "../../solution/fx-solution/question";
 
 export class FrontendPluginImpl {
   public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
@@ -245,24 +247,26 @@ export class FrontendPluginImpl {
   private async updateDotenv(ctx: PluginContext): Promise<void> {
     const envs: { [key: string]: string } = {};
 
-    const functionPlugin = ctx.envInfo.profile.get(DependentPluginInfo.FunctionPluginName);
-    if (functionPlugin) {
-      envs[EnvironmentVariables.FuncName] = ctx.projectSettings?.defaultFunctionName as string;
+    const solutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
+
+    if (solutionSettings.azureResources.includes(AzureResourceFunction.id)) {
+      const functionPlugin = ctx.envInfo.profile.get(DependentPluginInfo.FunctionPluginName);
+      envs[EnvironmentVariables.FuncName] = ctx.projectSettings?.defaultFunctionName ?? "";
       envs[EnvironmentVariables.FuncEndpoint] = functionPlugin.get(
         DependentPluginInfo.FunctionEndpoint
       ) as string;
     }
 
-    const authPlugin = ctx.envInfo.profile.get(DependentPluginInfo.RuntimePluginName);
-    if (authPlugin) {
+    if (solutionSettings.activeResourcePlugins.includes(DependentPluginInfo.RuntimePluginName)) {
+      const authPlugin = ctx.envInfo.profile.get(DependentPluginInfo.RuntimePluginName);
       envs[EnvironmentVariables.RuntimeEndpoint] = authPlugin.get(
         DependentPluginInfo.RuntimeEndpoint
       ) as string;
       envs[EnvironmentVariables.StartLoginPage] = DependentPluginInfo.StartLoginPageURL;
     }
 
-    const aadPlugin = ctx.envInfo.profile.get(DependentPluginInfo.AADPluginName);
-    if (aadPlugin) {
+    if (solutionSettings.activeResourcePlugins.includes(DependentPluginInfo.AADPluginName)) {
+      const aadPlugin = ctx.envInfo.profile.get(DependentPluginInfo.AADPluginName);
       envs[EnvironmentVariables.ClientID] = aadPlugin.get(DependentPluginInfo.ClientID) as string;
     }
 

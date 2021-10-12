@@ -336,12 +336,12 @@ async function backup(projectPath: string): Promise<void> {
       await fs.copy(path.join(fx, file), path.join(backup, file));
     }
   }
-  if (fs.existsSync(path.join(projectPath, AppPackageFolderName))) {
+  if (await fs.pathExists(path.join(projectPath, AppPackageFolderName))) {
     await fs.copy(
       path.join(projectPath, AppPackageFolderName),
       path.join(backup, AppPackageFolderName)
     );
-  } else if (fs.existsSync(path.join(fx, AppPackageFolderName))) {
+  } else if (await fs.pathExists(path.join(fx, AppPackageFolderName))) {
     // version <= 2.4.1
     await fs.copy(path.join(fx, AppPackageFolderName), path.join(backup, AppPackageFolderName));
   }

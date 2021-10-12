@@ -35,7 +35,7 @@ import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import "./v2";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
-import { isArmSupportEnabled } from "../../..";
+
 @Service(ResourcePlugins.ApimPlugin)
 export class ApimPlugin implements Plugin {
   name = "fx-resource-apim";
@@ -82,18 +82,10 @@ export class ApimPlugin implements Plugin {
   }
 
   public async provision(ctx: PluginContext): Promise<Result<any, FxError>> {
-    if (isArmSupportEnabled()) {
-      return ok(undefined);
-    }
-
     return await this.executeWithFxError(PluginLifeCycle.Provision, _provision, ctx);
   }
 
   public async postProvision(ctx: PluginContext): Promise<Result<any, FxError>> {
-    if (isArmSupportEnabled()) {
-      return ok(undefined);
-    }
-
     return await this.executeWithFxError(PluginLifeCycle.PostProvision, _postProvision, ctx);
   }
 
@@ -237,7 +229,6 @@ async function _generateArmTemplates(
 }
 
 async function _postProvision(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {
-  const solutionConfig = new SolutionConfig(ctx.envInfo.profile);
   const apimConfig = new ApimPluginConfig(ctx.config);
   const aadConfig = new AadPluginConfig(ctx.envInfo.profile);
 
@@ -257,7 +248,7 @@ async function _postProvision(ctx: PluginContext, progressBar: ProgressBar): Pro
     ProgressStep.PostProvision,
     ProgressMessages[ProgressStep.PostProvision].ConfigApim
   );
-  await apimManager.postProvision(apimConfig, solutionConfig, aadConfig, appName);
+  await apimManager.postProvision(apimConfig, ctx, aadConfig, appName);
 
   await progressBar.next(
     ProgressStep.PostProvision,

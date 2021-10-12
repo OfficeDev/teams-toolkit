@@ -1,6 +1,7 @@
 param apimServiceName string
 param productName string
-param userId string
+param publisherEmail string
+param publisherName string
 
 resource apimService 'Microsoft.ApiManagement/service@2021-01-01-preview' = {
   name: apimServiceName
@@ -10,8 +11,8 @@ resource apimService 'Microsoft.ApiManagement/service@2021-01-01-preview' = {
     capacity: 0
   }
   properties: {
-    publisherEmail: userId
-    publisherName: userId
+    publisherEmail: publisherEmail
+    publisherName: publisherName
   }
 }
 

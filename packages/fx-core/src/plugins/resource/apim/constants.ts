@@ -177,6 +177,11 @@ export class ApimPluginConfigKeys {
   public static readonly versionSetId: string = "versionSetId";
   public static readonly apiPath: string = "apiPath";
   public static readonly apiDocumentPath: string = "apiDocumentPath";
+  public static readonly serviceResourceId: string = "serviceResourceId";
+  public static readonly productResourceId: string = "productResourceId";
+  public static readonly authServerResourceId: string = "authServerResourceId";
+  public static readonly publisherEmail: string = "publisherEmail";
+  public static readonly publisherName: string = "publisherName";
 }
 
 export class FunctionPluginConfigKeys {
@@ -418,4 +423,12 @@ export enum OpenApiSchemaVersion {
 
 export class UserTask {
   static addResourceFuncName = "addResource";
+}
+
+export class ApimArmOutput {
+  static readonly ServiceResourceId = "apimServiceResourceId";
+  static readonly ProductResourceId = "apimProductResourceId";
+  static readonly AuthServerResourceId = "apimAuthServiceResourceId";
+  static readonly PublisherEmail = "apimPublisherEmail";
+  static readonly PublisherName = "apimPublisherName";
 }

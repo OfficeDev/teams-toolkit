@@ -4,12 +4,12 @@ param clientId string
 @secure()
 param clientSecret string
 param m365TenantId string
+param m365ApplicationIdUri string
 param m365OauthAuthorityHost string
-param oauthAuthorityHost string = 'https://login.microsoftonline.com'
 
-var scope =  '${m365OauthAuthorityHost}/.default'
-var authorizationEndpoint = uri(oauthAuthorityHost, '${m365TenantId}/oauth2/v2.0/authorize')
-var tokenEndpoint = uri(oauthAuthorityHost, '${m365TenantId}/oauth2/v2.0/token')
+var scope =  '${m365ApplicationIdUri}/.default'
+var authorizationEndpoint = uri(m365OauthAuthorityHost, '${m365TenantId}/oauth2/v2.0/authorize')
+var tokenEndpoint = uri(m365OauthAuthorityHost, '${m365TenantId}/oauth2/v2.0/token')
 
 resource apimServiceAuthServer 'Microsoft.ApiManagement/service/authorizationServers@2021-01-01-preview' = {
   name: '${apimServiceName}/${oauthServerName}'

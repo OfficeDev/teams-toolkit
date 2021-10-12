@@ -3,7 +3,8 @@ module apimProvision '\{{PluginOutput.fx-resource-apim.Modules.apimProvision.Pat
   params: {
     apimServiceName: apimServiceName
     productName: apimProductName
-    userId: apimUserId
+    publisherEmail: apimPublisherEmail
+    publisherName: apimPublisherName
   }
 }
 
@@ -18,7 +19,7 @@ module apimConfiguration '\{{PluginOutput.fx-resource-apim.Modules.apimConfigura
     clientId: apimClientId
     clientSecret: apimClientSecret
     m365TenantId: m365TenantId
+    m365ApplicationIdUri:m365ApplicationIdUri
     m365OauthAuthorityHost: m365OauthAuthorityHost
-    oauthAuthorityHost: oauthAuthorityHost
   }
 }

@@ -161,6 +161,7 @@ export enum TelemetryProperty {
   Env = "env",
   SourceEnv = "sourceEnv",
   TargetEnv = "targetEnv",
+  IsFromSample = "is-from-sample",
 }
 
 export enum TelemetrySuccess {

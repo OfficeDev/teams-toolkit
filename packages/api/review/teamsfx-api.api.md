@@ -273,14 +273,12 @@ export interface EnvConfig {
         appPassword?: string;
         [k: string]: unknown;
     };
+    // (undocumented)
+    description?: string;
     manifest: {
-        description?: string;
-        values: {
-            appName: {
-                short: string;
-                full?: string;
-                [k: string]: unknown;
-            };
+        appName: {
+            short: string;
+            full?: string;
             [k: string]: unknown;
         };
         [k: string]: unknown;
@@ -729,6 +727,9 @@ export function loadOptions(q: Question, inputs: Inputs): Promise<Result<{
     options?: StaticOptions;
 }, FxError>>;
 
+// @public (undocumented)
+export const LocalEnvironmentName = "local";
+
 // @public
 export type LocalFunc<T> = (inputs: Inputs) => T | Promise<T>;
 
@@ -970,6 +971,8 @@ export interface ProjectSettings {
     appName: string;
     // (undocumented)
     defaultFunctionName?: string;
+    // (undocumented)
+    isFromSample?: boolean;
     // (undocumented)
     programmingLanguage?: string;
     // (undocumented)

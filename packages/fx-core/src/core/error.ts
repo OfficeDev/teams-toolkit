@@ -11,6 +11,8 @@ import {
   SystemError,
   UserError,
   Json,
+  EnvConfigFileNameTemplate,
+  EnvNamePlaceholder,
 } from "@microsoft/teamsfx-api";
 
 export const CoreSource = "Core";
@@ -27,6 +29,22 @@ export function ProjectFolderNotExistError(path: string): UserError {
   return new UserError(
     "ProjectFolderNotExistError",
     `Path ${path} does not exist. Select a different folder.`,
+    CoreSource
+  );
+}
+
+export function ArchiveUserFileError(path: string, reason: string): UserError {
+  return new UserError(
+    "ArchiveUserFileError",
+    `Failed to archive path '${path}'. ${reason}. You can refer to .archive.log which provides detailed information about the archive process.`,
+    CoreSource
+  );
+}
+
+export function ArchiveProjectError(reason: string): UserError {
+  return new UserError(
+    "ArchiveProjectError",
+    `Failed to archive the project. ${reason}. You can refer to .archive.log which provides detailed information about the archive process.`,
     CoreSource
   );
 }
@@ -196,7 +214,10 @@ export function ProjectEnvAlreadyExistError(env: string): FxError {
 export function InvalidEnvConfigError(env: string, errorMsg: string): UserError {
   return new UserError(
     "InvalidEnvConfigError",
-    `The configuration config.${env}.json is invalid, details: ${errorMsg}.`,
+    `The configuration ${EnvConfigFileNameTemplate.replace(
+      EnvNamePlaceholder,
+      env
+    )} is invalid, details: ${errorMsg}.`,
     CoreSource
   );
 }

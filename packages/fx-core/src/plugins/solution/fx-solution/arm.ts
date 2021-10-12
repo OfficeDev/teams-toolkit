@@ -27,6 +27,7 @@ import {
   CryptoDataMatchers,
   getResourceGroupNameFromResourceId,
   waitSeconds,
+  getUuid,
 } from "../../../common/tools";
 import {
   ARM_TEMPLATE_OUTPUT,
@@ -689,9 +690,14 @@ function normalizeToEnvName(input: string): string {
 
 function generateResourceBaseName(appName: string, envName: string): string {
   const maxAppNameLength = 10;
-  const macEnvNameLength = 10;
+  const maxEnvNameLength = 4;
   const normalizedAppName = appName.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
-  return normalizedAppName.substr(0, maxAppNameLength) + envName.substr(0, macEnvNameLength);
+  const normalizedEnvName = envName.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+  return (
+    normalizedAppName.substr(0, maxAppNameLength) +
+    normalizedEnvName.substr(0, maxEnvNameLength) +
+    getUuid().substr(0, 6)
+  );
 }
 
 // backup existing ARM template and parameter files to backup folder named with current timestamp

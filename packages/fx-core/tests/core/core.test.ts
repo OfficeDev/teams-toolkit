@@ -204,6 +204,11 @@ describe("Core basic APIs", () => {
             }
             throw err(InvalidInputError("invalid question"));
           });
+        sandbox
+          .stub<any, any>(ui, "showMessage")
+          .callsFake(async (): Promise<Result<string, FxError>> => {
+            return ok("OK");
+          });
         const core = new FxCore(tools);
         {
           const inputs: Inputs = {

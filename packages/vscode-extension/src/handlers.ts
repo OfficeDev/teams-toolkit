@@ -34,6 +34,7 @@ import {
   ConfigFolderName,
   TreeItem,
   TreeCategory,
+  LocalEnvironmentName,
 } from "@microsoft/teamsfx-api";
 import {
   isUserCancelError,
@@ -107,7 +108,6 @@ import { ext } from "./extensionVariables";
 import { InputConfigsFolderName } from "@microsoft/teamsfx-api";
 import { CoreCallbackEvent } from "@microsoft/teamsfx-api";
 import { CommandsWebviewProvider } from "./treeview/commandsWebviewProvider";
-import { LocalEnvironment } from "./constants";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -223,6 +223,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
     await registerEnvTreeHandler();
     await openMarkdownHandler();
     await openSampleReadmeHandler();
+    ExtTelemetry.isFromSample = await getIsFromSample();
 
     if (workspacePath) {
       // refresh env tree when env config files added or deleted.
@@ -232,6 +233,16 @@ export async function activate(): Promise<Result<Void, FxError>> {
 
       workspace.onDidDeleteFiles(async (event) => {
         await refreshEnvTreeOnFileChanged(workspacePath, event.files);
+      });
+
+      workspace.onDidRenameFiles(async (event) => {
+        const files = [];
+        for (const f of event.files) {
+          files.push(f.newUri);
+          files.push(f.oldUri);
+        }
+
+        await refreshEnvTreeOnFileChanged(workspacePath, files);
       });
     }
   } catch (e) {
@@ -246,6 +257,22 @@ export async function activate(): Promise<Result<Void, FxError>> {
     return err(FxError);
   }
   return result;
+}
+
+async function getIsFromSample() {
+  if (core) {
+    const input = getSystemInputs();
+    input.ignoreEnvInfo = true;
+    const projectConfigRes = await core.getProjectConfig(input);
+
+    if (projectConfigRes.isOk() && projectConfigRes.value) {
+      const projectSettings = projectConfigRes.value.settings;
+      if (projectSettings) {
+        return projectSettings.isFromSample;
+      }
+    }
+    return undefined;
+  }
 }
 
 async function refreshEnvTreeOnFileChanged(workspacePath: string, files: readonly Uri[]) {
@@ -298,7 +325,7 @@ export async function getAzureSolutionSettings(): Promise<AzureSolutionSettings 
   input.ignoreEnvInfo = true;
   const projectConfigRes = await core.getProjectConfig(input);
 
-  if (projectConfigRes.isOk()) {
+  if (projectConfigRes?.isOk()) {
     if (projectConfigRes.value) {
       return projectConfigRes.value.settings?.solutionSettings as AzureSolutionSettings;
     }
@@ -438,8 +465,10 @@ export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
         if (tmpResult.isErr()) {
           result = err(tmpResult.error);
         } else {
-          const uri = Uri.file(tmpResult.value);
-          commands.executeCommand("vscode.openFolder", uri);
+          if (tmpResult?.value) {
+            const uri = Uri.file(tmpResult.value);
+            commands.executeCommand("vscode.openFolder", uri);
+          }
           result = ok(null);
         }
         break;
@@ -929,8 +958,8 @@ export async function refreshEnvironment(args?: any[]): Promise<Result<Void, FxE
 
 export async function viewEnvironment(env: string): Promise<Result<Void, FxError>> {
   const telemetryProperties: { [p: string]: string } = {};
-  if (env === LocalEnvironment) {
-    telemetryProperties[TelemetryProperty.Env] = LocalEnvironment;
+  if (env === LocalEnvironmentName) {
+    telemetryProperties[TelemetryProperty.Env] = LocalEnvironmentName;
   } else {
     telemetryProperties[TelemetryProperty.Env] = getHashedEnv(env);
   }
@@ -940,7 +969,7 @@ export async function viewEnvironment(env: string): Promise<Result<Void, FxError
     const localSettingsProvider = new LocalSettingsProvider(projectRoot);
 
     const envFilePath =
-      env === LocalEnvironment
+      env === LocalEnvironmentName
         ? localSettingsProvider.localSettingsFilePath
         : environmentManager.getEnvConfigPath(env, projectRoot);
 

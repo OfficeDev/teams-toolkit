@@ -8,10 +8,12 @@ import {
   TextInputQuestion,
   FuncQuestion,
   Inputs,
+  LocalEnvironmentName,
 } from "@microsoft/teamsfx-api";
 import * as jsonschema from "jsonschema";
 import * as path from "path";
 import * as fs from "fs-extra";
+import * as os from "os";
 import { environmentManager } from "./environment";
 
 export enum CoreQuestionNames {
@@ -111,25 +113,42 @@ export const QuestionSelectTargetEnvironment: SingleSelectQuestion = {
 };
 
 export function getQuestionNewTargetEnvironmentName(projectPath: string): TextInputQuestion {
+  const WINDOWS_MAX_PATH_LENGTH = 260;
   return {
     type: "text",
     name: CoreQuestionNames.NewTargetEnvName,
     title: "New environment name",
     validation: {
       validFunc: async (input: string): Promise<string | undefined> => {
-        const targetEnvName = input as string;
+        const targetEnvName = input;
         const match = targetEnvName.match(environmentManager.envNameRegex);
         if (!match) {
           return "Environment name can only contain letters, digits, _ and -.";
         }
 
-        const envConfigs = await environmentManager.listEnvConfigs(projectPath);
-
-        if (!envConfigs.isErr() && envConfigs.value!.indexOf(targetEnvName!) >= 0) {
-          return `Project environment ${targetEnvName} already exists.`;
+        const envFilePath = environmentManager.getEnvConfigPath(targetEnvName, projectPath);
+        if (os.type() === "Windows_NT" && envFilePath.length >= WINDOWS_MAX_PATH_LENGTH) {
+          return "The length of environment config path will exceed the limitation of Windows.";
         }
 
-        return undefined;
+        if (targetEnvName === LocalEnvironmentName) {
+          return `Cannot create an environment '${LocalEnvironmentName}'`;
+        }
+
+        const envConfigs = await environmentManager.listEnvConfigs(projectPath);
+        if (envConfigs.isErr()) {
+          return `Failed to list env configs`;
+        }
+
+        const found =
+          envConfigs.value.find(
+            (env) => env.localeCompare(targetEnvName, undefined, { sensitivity: "base" }) === 0
+          ) !== undefined;
+        if (found) {
+          return `Project environment ${targetEnvName} already exists.`;
+        } else {
+          return undefined;
+        }
       },
     },
     placeholder: "New environment name",

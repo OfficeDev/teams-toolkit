@@ -675,10 +675,8 @@ describe("Middleware - others", () => {
 
             const envConfig: EnvConfig = {
               manifest: {
-                values: {
-                  appName: {
-                    short: "testApp",
-                  },
+                appName: {
+                  short: "testApp",
                 },
               },
             };

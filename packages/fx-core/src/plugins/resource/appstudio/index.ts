@@ -71,10 +71,10 @@ export class AppStudioPlugin implements Plugin {
    */
   public async getAppDefinitionAndUpdate(
     ctx: PluginContext,
-    type: "localDebug" | "remote",
+    isLocalDebug: boolean,
     manifest: TeamsAppManifest
   ): Promise<Result<string, FxError>> {
-    return await this.appStudioPluginImpl.getAppDefinitionAndUpdate(ctx, type, manifest);
+    return await this.appStudioPluginImpl.getAppDefinitionAndUpdate(ctx, isLocalDebug, manifest);
   }
 
   /**
@@ -389,9 +389,10 @@ export class AppStudioPlugin implements Plugin {
       return await this.buildTeamsPackage(ctx);
     } else if (func.method === "getAppDefinitionAndUpdate") {
       if (func.params && func.params.type && func.params.manifest) {
+        const isLocalDebug = (func.params.type as string) === "localDebug";
         return await this.getAppDefinitionAndUpdate(
           ctx,
-          func.params.type as "localDebug" | "remote",
+          isLocalDebug,
           func.params.manifest as TeamsAppManifest
         );
       }

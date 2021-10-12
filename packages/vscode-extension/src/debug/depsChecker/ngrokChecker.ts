@@ -51,8 +51,9 @@ export class NgrokChecker implements IDepsChecker {
       hasSentinel = false;
     try {
       const ngrokVersion = await this.queryNgrokBinVersion();
-      isVersionSupported = !ngrokVersion && supportedBinVersions.includes(ngrokVersion!);
-      hasSentinel = await fs.pathExists(NgrokChecker.getSentinelPath());
+      isVersionSupported =
+        ngrokVersion !== undefined && supportedBinVersions.includes(ngrokVersion);
+      hasSentinel = await fs.pathExists(this.getSentinelPath());
     } catch (error) {
       // do nothing
       return false;
@@ -76,6 +77,10 @@ export class NgrokChecker implements IDepsChecker {
     await this._logger.info(Messages.finishInstallNgrok.replace("@NameVersion", displayNgrokName));
   }
 
+  public getNgrokBinFolder(): string {
+    return path.join(this.getDefaultInstallPath(), "node_modules", "ngrok", "bin");
+  }
+
   private async handleInstallNgrokFailed(): Promise<void> {
     await this.cleanup();
 
@@ -94,9 +99,9 @@ export class NgrokChecker implements IDepsChecker {
     let isVersionSupported = false;
     let hasSentinel = false;
     try {
-      const portableNgrok = await this.queryNgrokBinVersion();
-      isVersionSupported = !portableNgrok && supportedBinVersions.includes(portableNgrok!);
-      hasSentinel = await fs.pathExists(NgrokChecker.getSentinelPath());
+      const binVersion = await this.queryNgrokBinVersion();
+      isVersionSupported = binVersion !== undefined && supportedBinVersions.includes(binVersion);
+      hasSentinel = await fs.pathExists(this.getSentinelPath());
     } catch (err) {
       this._telemetry.sendSystemErrorEvent(
         DepsCheckerEvent.ngrokValidationError,
@@ -122,16 +127,12 @@ export class NgrokChecker implements IDepsChecker {
     );
   }
 
-  private static getDefaultInstallPath(): string {
+  private getDefaultInstallPath(): string {
     return path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "ngrok");
   }
 
-  private static getSentinelPath(): string {
+  private getSentinelPath(): string {
     return path.join(os.homedir(), `.${ConfigFolderName}`, "ngrok-sentinel");
-  }
-
-  private static getNgrokBinFolder(): string {
-    return path.join(NgrokChecker.getDefaultInstallPath(), "node_modules", "ngrok", "bin");
   }
 
   private async queryNgrokBinVersion(): Promise<string | undefined> {
@@ -140,7 +141,7 @@ export class NgrokChecker implements IDepsChecker {
       this._logger,
       {
         shell: true,
-        env: { PATH: NgrokChecker.getNgrokBinFolder() },
+        env: { PATH: this.getNgrokBinFolder() },
       },
       ngrokName,
       "version"
@@ -149,6 +150,7 @@ export class NgrokChecker implements IDepsChecker {
     const regex =
       /ngrok version (?<major_version>\d+)\.(?<minor_version>\d+)\.(?<patch_version>\d+)/gim;
     const match = regex.exec(output);
+
     if (!match || !match.groups) {
       return undefined;
     }
@@ -178,11 +180,11 @@ export class NgrokChecker implements IDepsChecker {
 
   private async cleanup(): Promise<void> {
     try {
-      await fs.emptyDir(NgrokChecker.getDefaultInstallPath());
-      await fs.remove(NgrokChecker.getSentinelPath());
+      await fs.emptyDir(this.getDefaultInstallPath());
+      await fs.remove(this.getSentinelPath());
     } catch (err) {
       await this._logger.debug(
-        `Failed to clean up path: ${NgrokChecker.getDefaultInstallPath()}, error: ${err}`
+        `Failed to clean up path: ${this.getDefaultInstallPath()}, error: ${err}`
       );
     }
   }
@@ -191,14 +193,12 @@ export class NgrokChecker implements IDepsChecker {
     await this._telemetry.sendEventWithDuration(
       DepsCheckerEvent.ngrokInstallScriptCompleted,
       async () => {
-        await this._adapter.runWithProgressIndicator(
-          async () => await this.doInstallPortableNgrok()
-        );
+        await this._adapter.runWithProgressIndicator(async () => await this.doInstallNgrok());
       }
     );
   }
 
-  private async doInstallPortableNgrok(): Promise<void> {
+  private async doInstallNgrok(): Promise<void> {
     await this._logger.info(Messages.startInstallNgrok.replace("@NameVersion", displayNgrokName));
 
     try {
@@ -211,10 +211,10 @@ export class NgrokChecker implements IDepsChecker {
         // not use -f, to avoid npm@6 bug: exit code = 0, even if install fail
         `${ngrokName}@${installPackageVersion}`,
         "--prefix",
-        `${NgrokChecker.getDefaultInstallPath()}`
+        `${this.getDefaultInstallPath()}`
       );
 
-      await fs.ensureFile(NgrokChecker.getSentinelPath());
+      await fs.ensureFile(this.getSentinelPath());
     } catch (error) {
       this._telemetry.sendSystemErrorEvent(
         DepsCheckerEvent.ngrokInstallScriptError,

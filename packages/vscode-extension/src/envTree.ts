@@ -105,7 +105,7 @@ export async function getAllCollaboratorList(envs: string[], force = false): Pro
     }
 
     const collaboratorsRecord =
-      Object.keys(collaboratorsRecordCache).length > 0
+      Object.keys(collaboratorsRecordCache).length > 0 || loginStatus.status !== signedIn
         ? collaboratorsRecordCache
         : await listAllCollaborators(envs);
     collaboratorsRecordCache = collaboratorsRecord;

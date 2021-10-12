@@ -642,17 +642,18 @@ function expandParameterPlaceholders(
 ): string {
   const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
   const plugins = getActivatedResourcePlugins(azureSolutionSettings); // This function ensures return result won't be empty
-  const availableVariables: Record<string, string> = {};
+  const profileVariables: Record<string, string> = {};
+  const availableVariables: Record<string, Record<string, string>> = { profile: profileVariables };
   // Add plugin contexts to available variables
   for (const plugin of plugins) {
     const pluginContext = getPluginContext(ctx, plugin.name);
     for (const configItem of pluginContext.config) {
       if (typeof configItem[1] === "string") {
         // Currently we only config with string type
-        const variableName = `profile.${normalizeToEnvName(plugin.name)}__${normalizeToEnvName(
+        const variableName = `${normalizeToEnvName(plugin.name)}__${normalizeToEnvName(
           configItem[0]
         )}`;
-        availableVariables[variableName] = configItem[1];
+        profileVariables[variableName] = configItem[1];
       }
     }
   }
@@ -662,16 +663,16 @@ function expandParameterPlaceholders(
     for (const configItem of solutionConfig) {
       if (typeof configItem[1] === "string") {
         // Currently we only config with string type
-        const variableName = `profile.SOLUTION__${normalizeToEnvName(configItem[0])}`;
-        availableVariables[variableName] = configItem[1];
+        const variableName = `SOLUTION__${normalizeToEnvName(configItem[0])}`;
+        profileVariables[variableName] = configItem[1];
       }
     }
   }
   // Add environment variable to available variables
-  Object.assign(availableVariables, process.env); // The environment variable has higher priority
+  Object.assign(profileVariables, process.env); // The environment variable has higher priority
 
   if (expandSecrets === false) {
-    escapeSecretPlaceholders(availableVariables);
+    escapeSecretPlaceholders(profileVariables);
   }
 
   return compileHandlebarsTemplateString(parameterContent, availableVariables);

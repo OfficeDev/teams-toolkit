@@ -474,10 +474,10 @@ describe("Deploy ARM Template to Azure", () => {
           "value": "mytestappdefault"
         },
         "aadClientId": {
-          "value": "${testClientId}"
+          "value": ""
         },
         "aadClientSecret": {
-          "value": "${testClientSecret}"
+          "value": ""
         },
         "envValue": {
           "value": "${testEnvValue}"

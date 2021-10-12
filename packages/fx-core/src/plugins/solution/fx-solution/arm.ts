@@ -645,7 +645,7 @@ function expandParameterPlaceholders(
   const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
   const plugins = getActivatedResourcePlugins(azureSolutionSettings); // This function ensures return result won't be empty
   const profileVariables: Record<string, Record<string, any>> = {};
-  const availableVariables: Record<string, Record<string, any>> = {};
+  const availableVariables: Record<string, Record<string, any>> = { profileName: profileVariables };
   // Add plugin contexts to available variables
   for (const plugin of plugins) {
     const pluginContext = getPluginContext(ctx, plugin.name);
@@ -658,10 +658,6 @@ function expandParameterPlaceholders(
     }
     profileVariables[plugin.name] = pluginVariables;
   }
-  if (expandSecrets === false) {
-    escapeSecretPlaceholders(profileVariables);
-  }
-  availableVariables[profileName] = profileVariables;
   // Add solution config to available variables
   const solutionConfig = ctx.envInfo.profile.get(GLOBAL_CONFIG);
   if (solutionConfig) {
@@ -672,12 +668,12 @@ function expandParameterPlaceholders(
         solutionVariables[configItem[0]] = configItem[1];
       }
     }
-    availableVariables[solutionName] = solutionVariables;
+    profileVariables[solutionName] = solutionVariables;
   }
-  // Add environment variable to available variables
 
+  // Add environment variable to available variables
   const processVariables: Record<string, string> = Object.keys(process.env)
-    .filter((key) => ![solutionName, profileName].includes(key))
+    .filter((key) => !profileName.includes(key))
     .reduce((obj: Record<string, string>, key: string) => {
       obj[key] = process.env[key] as string;
       return obj;
@@ -696,15 +692,6 @@ function generateResourceBaseName(appName: string, envName: string): string {
   const macEnvNameLength = 10;
   const normalizedAppName = appName.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
   return normalizedAppName.substr(0, maxAppNameLength) + envName.substr(0, macEnvNameLength);
-}
-
-function escapeSecretPlaceholders(variables: Record<string, any>) {
-  for (const key of CryptoDataMatchers) {
-    const item = key.split(".");
-    if (variables[item[0]]?.[item[1]]) {
-      delete variables[item[0]][item[1]];
-    }
-  }
 }
 
 // backup existing ARM template and parameter files to backup folder named with current timestamp

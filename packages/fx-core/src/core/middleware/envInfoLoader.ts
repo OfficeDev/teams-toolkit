@@ -95,7 +95,7 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
         targetEnvName = result.value;
         TOOLS.ui?.showMessage(
           "info",
-          `[${targetEnvName}] is selected as the target environment to ${inputs.stage}`,
+          `[${targetEnvName}] is selected as the target environment to ${ctx.method}`,
           false
         );
 
@@ -352,8 +352,10 @@ async function getQuestionsForNewEnv(
   if (!inputs.projectPath) {
     return err(NoProjectOpenedError());
   }
+  const group = new QTreeNode({ type: "group" });
 
-  const node = new QTreeNode(getQuestionNewTargetEnvironmentName(inputs.projectPath));
+  const newEnvNameNode = new QTreeNode(getQuestionNewTargetEnvironmentName(inputs.projectPath));
+  group.addChild(newEnvNameNode);
 
   const envProfilesResult = await environmentManager.listEnvConfigs(inputs.projectPath);
   if (envProfilesResult.isErr()) {
@@ -366,9 +368,9 @@ async function getQuestionsForNewEnv(
   selectSourceEnv.default = lastUsed + lastUsedMark;
 
   const selectSourceEnvNode = new QTreeNode(selectSourceEnv);
-  node.addChild(selectSourceEnvNode);
+  group.addChild(selectSourceEnvNode);
 
-  return ok(node.trim());
+  return ok(group.trim());
 }
 
 function reOrderEnvironments(environments: Array<string>, lastUsed?: string): Array<string> {

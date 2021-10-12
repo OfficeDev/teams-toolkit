@@ -133,10 +133,8 @@ export function newEnvInfo(
     envName: envName ?? environmentManager.getDefaultEnvName(),
     config: config ?? {
       manifest: {
-        values: {
-          appName: {
-            short: "teamsfx_app",
-          },
+        appName: {
+          short: "teamsfx_app",
         },
       },
     },

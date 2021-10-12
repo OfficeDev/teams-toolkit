@@ -7,6 +7,7 @@ import { Inputs, StaticPlatforms } from "@microsoft/teamsfx-api";
 import { CoreHookContext, FxCore, isV2 } from "..";
 import { isMultiEnvEnabled } from "../../common";
 import { LocalSettingsProvider } from "../../common/localSettingsProvider";
+import { shouldIgnored } from "./projectSettingsLoader";
 
 /**
  * This middleware will help to persist local settings if necessary.
@@ -16,7 +17,7 @@ export const LocalSettingsWriterMW: Middleware = async (
   next: NextFunction
 ) => {
   await next();
-  if (isMultiEnvEnabled()) {
+  if (!shouldIgnored(ctx) && isMultiEnvEnabled()) {
     const lastArg = ctx.arguments[ctx.arguments.length - 1];
     const inputs: Inputs = lastArg === ctx ? ctx.arguments[ctx.arguments.length - 2] : lastArg;
     if (

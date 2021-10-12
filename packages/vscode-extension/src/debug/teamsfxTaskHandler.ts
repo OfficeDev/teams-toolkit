@@ -9,7 +9,7 @@ import { ext } from "../extensionVariables";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
 import { getTeamsAppId } from "../utils/commonUtils";
-import { isValidProject } from "@microsoft/teamsfx-core";
+import { getHashedEnv, isValidProject } from "@microsoft/teamsfx-core";
 import { getNpmInstallLogInfo } from "./npmLogHandler";
 import * as path from "path";
 import { errorDetail, issueLink, issueTemplate } from "./constants";
@@ -20,6 +20,7 @@ import { globalStateGet, globalStateUpdate } from "@microsoft/teamsfx-core";
 import * as constants from "../debug/constants";
 import { ExtensionSurvey } from "../utils/survey";
 import { TreatmentVariableValue } from "../exp/treatmentVariables";
+import { TeamsfxDebugConfiguration } from "./teamsfxDebugProvider";
 
 interface IRunningTeamsfxTask {
   source: string;
@@ -202,7 +203,7 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
 
 function onDidStartDebugSessionHandler(event: vscode.DebugSession): void {
   if (ext.workspaceUri && isValidProject(ext.workspaceUri.fsPath)) {
-    const debugConfig = event.configuration;
+    const debugConfig = event.configuration as TeamsfxDebugConfiguration;
     if (
       debugConfig &&
       debugConfig.name &&
@@ -212,24 +213,37 @@ function onDidStartDebugSessionHandler(event: vscode.DebugSession): void {
       // and not a restart one
       // send f5 event telemetry
       try {
-        const remoteAppId = getTeamsAppId() as string;
         const localAppId = getLocalTeamsAppId() as string;
-        const isRemote =
+        const isLocal =
           (debugConfig.url as string) &&
-          remoteAppId &&
-          (debugConfig.url as string).includes(remoteAppId);
+          localAppId &&
+          (debugConfig.url as string).includes(localAppId);
+        let appId = "";
+        let env = "";
+        if (isLocal) {
+          appId = localAppId;
+        } else {
+          if (debugConfig.teamsfxAppId) {
+            appId = debugConfig.teamsfxAppId;
+          }
+          if (debugConfig.teamsfxEnv) {
+            env = getHashedEnv(event.configuration.env);
+          }
+        }
+
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugStart, {
           [TelemetryProperty.DebugSessionId]: event.id,
           [TelemetryProperty.DebugType]: debugConfig.type,
           [TelemetryProperty.DebugRequest]: debugConfig.request,
           [TelemetryProperty.DebugPort]: debugConfig.port + "",
-          [TelemetryProperty.DebugRemote]: isRemote ? "true" : "false",
-          [TelemetryProperty.DebugAppId]: isRemote ? remoteAppId : localAppId,
+          [TelemetryProperty.DebugRemote]: isLocal ? "false" : "true",
+          [TelemetryProperty.DebugAppId]: appId,
+          [TelemetryProperty.Env]: env,
         });
 
         if (
           debugConfig.request === "launch" &&
-          !isRemote &&
+          isLocal &&
           !globalStateGet(constants.SideloadingHintStateKeys.DoNotShowAgain, false)
         ) {
           vscode.window

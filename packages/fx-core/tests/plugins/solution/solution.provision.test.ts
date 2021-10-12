@@ -65,6 +65,7 @@ import {
 } from "../../../src/plugins/solution/fx-solution/question";
 import {
   MockedGraphTokenProvider,
+  MockedSharepointProvider,
   MockedUserInteraction,
   MockedV2Context,
   validManifest,
@@ -948,10 +949,11 @@ describe("API v2 implementation", () => {
         azureAccountProvider: new MockedAzureTokenProvider(),
         appStudioToken: new MockedAppStudioTokenProvider(),
         graphTokenProvider: new MockedGraphTokenProvider(),
+        sharepointTokenProvider: new MockedSharepointProvider(),
       };
       const mockedEnvInfo: EnvInfoV2 = {
         envName: "default",
-        config: { manifest: { values: { appName: { short: "test-app" } } } },
+        config: { manifest: { appName: { short: "test-app" } } },
         profile: {},
       };
       mockProvisionV2ThatAlwaysSucceed(spfxPluginV2);
@@ -999,10 +1001,11 @@ describe("API v2 implementation", () => {
         azureAccountProvider: new MockedAzureTokenProvider(),
         appStudioToken: new MockedAppStudioTokenProvider(),
         graphTokenProvider: new MockedGraphTokenProvider(),
+        sharepointTokenProvider: new MockedSharepointProvider(),
       };
       const mockedEnvInfo: EnvInfoV2 = {
         envName: "default",
-        config: { manifest: { values: { appName: { short: "test-app" } } } },
+        config: { manifest: { appName: { short: "test-app" } } },
         profile: {},
       };
       mockProvisionV2ThatAlwaysSucceed(fehostPluginV2);

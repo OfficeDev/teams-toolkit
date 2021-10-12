@@ -549,6 +549,10 @@ export async function waitSeconds(second: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, second * 1000));
 }
 
+export function getUuid(): string {
+  return uuid.v4();
+}
+
 export function isSPFxProject(projectSettings?: ProjectSettings): boolean {
   const solutionSettings = projectSettings?.solutionSettings as AzureSolutionSettings;
   if (solutionSettings) {
@@ -560,4 +564,89 @@ export function isSPFxProject(projectSettings?: ProjectSettings): boolean {
 
 export function getHashedEnv(envName: string): string {
   return crypto.createHash("sha256").update(envName).digest("hex");
+}
+
+interface BasicJsonSchema {
+  type: string;
+  properties?: {
+    [k: string]: unknown;
+  };
+}
+function isBasicJsonSchema(jsonSchema: unknown): jsonSchema is BasicJsonSchema {
+  if (!jsonSchema || typeof jsonSchema !== "object") {
+    return false;
+  }
+  return typeof (jsonSchema as { type: unknown })["type"] === "string";
+}
+
+function _redactObject(
+  obj: unknown,
+  jsonSchema: unknown,
+  maxRecursionDepth = 8,
+  depth = 0
+): unknown {
+  if (depth >= maxRecursionDepth) {
+    // prevent stack overflow if anything bad happens
+    return null;
+  }
+  if (!obj || !isBasicJsonSchema(jsonSchema)) {
+    return null;
+  }
+
+  if (
+    !(
+      jsonSchema.type === "object" &&
+      jsonSchema.properties &&
+      typeof jsonSchema.properties === "object"
+    )
+  ) {
+    // non-object types including unsupported types
+    return null;
+  }
+
+  const newObj: { [key: string]: any } = {};
+  const objAny = obj as any;
+  for (const key in jsonSchema.properties) {
+    if (key in objAny && objAny[key] !== undefined) {
+      const filteredObj = _redactObject(
+        objAny[key],
+        jsonSchema.properties[key],
+        maxRecursionDepth,
+        depth + 1
+      );
+      newObj[key] = filteredObj;
+    }
+  }
+  return newObj;
+}
+
+/** Redact user content in "obj";
+ *
+ * DFS "obj" and "jsonSchema" together to redact the following things:
+ * - properties that is not defined in jsonSchema
+ * - the value of properties that is defined in jsonSchema, but the keys will remain
+ *
+ * Example:
+ * Input:
+ * ```
+ *  obj = {
+ *    "name": "some name",
+ *    "user defined property": {
+ *      "key1": "value1"
+ *    }
+ *  }
+ *  jsonSchema = {
+ *    "type": "object",
+ *    "properties": {
+ *      "name": { "type": "string" }
+ *    }
+ *  }
+ * ```
+ * Output:
+ * ```
+ *  {"name": null}
+ * ```
+ **/
+export function redactObject(obj: unknown, jsonSchema: unknown, maxRecursionDepth = 8): unknown {
+  return _redactObject(obj, jsonSchema, maxRecursionDepth, 0);
 }

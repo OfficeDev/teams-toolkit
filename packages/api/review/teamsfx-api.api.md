@@ -147,6 +147,8 @@ export interface Context {
     // (undocumented)
     root: string;
     // (undocumented)
+    sharepointTokenProvider?: SharepointTokenProvider;
+    // (undocumented)
     telemetryReporter?: TelemetryReporter;
     // (undocumented)
     treeProvider?: TreeProvider;
@@ -271,14 +273,12 @@ export interface EnvConfig {
         appPassword?: string;
         [k: string]: unknown;
     };
+    // (undocumented)
+    description?: string;
     manifest: {
-        description?: string;
-        values: {
-            appName: {
-                short: string;
-                full?: string;
-                [k: string]: unknown;
-            };
+        appName: {
+            short: string;
+            full?: string;
             [k: string]: unknown;
         };
         [k: string]: unknown;
@@ -288,6 +288,13 @@ export interface EnvConfig {
 
 // @public (undocumented)
 export const EnvConfigFileNameTemplate: string;
+
+declare namespace EnvConfigSchema {
+    export {
+
+    }
+}
+export { EnvConfigSchema }
 
 // @public (undocumented)
 export interface EnvInfo {
@@ -720,6 +727,9 @@ export function loadOptions(q: Question, inputs: Inputs): Promise<Result<{
     options?: StaticOptions;
 }, FxError>>;
 
+// @public (undocumented)
+export const LocalEnvironmentName = "local";
+
 // @public
 export type LocalFunc<T> = (inputs: Inputs) => T | Promise<T>;
 
@@ -1115,6 +1125,14 @@ export type SelectFolderConfig = UIConfig<string>;
 export type SelectFolderResult = InputResult<string>;
 
 // @public
+export interface SharepointTokenProvider {
+    getAccessToken(showDialog?: boolean): Promise<string | undefined>;
+    getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined>;
+    removeStatusChangeMap(name: string): Promise<boolean>;
+    setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>, immediateCall?: boolean): Promise<boolean>;
+}
+
+// @public
 export interface SingleFileQuestion extends UserInputQuestion {
     default?: string | LocalFunc<string | undefined>;
     // (undocumented)
@@ -1448,6 +1466,7 @@ export type TokenProvider = {
     azureAccountProvider: AzureAccountProvider;
     graphTokenProvider: GraphTokenProvider;
     appStudioToken: AppStudioTokenProvider;
+    sharepointTokenProvider: SharepointTokenProvider;
 };
 
 // @public (undocumented)

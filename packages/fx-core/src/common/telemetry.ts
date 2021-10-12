@@ -17,6 +17,7 @@ export enum TelemetryProperty {
   CorrelationId = "correlation-id",
   Env = "env",
   CustomizeResourceGroupType = "customize-resource-group-type",
+  EnvConfig = "env-config",
 }
 
 export enum TelemetryEvent {
@@ -28,6 +29,7 @@ export enum TelemetryEvent {
   DecryptUserdata = "decrypt-userdata",
   CheckResourceGroupStart = "check-resource-group-start",
   CheckResourceGroup = "check-resource-group",
+  EnvConfig = "env-config",
 }
 
 export enum TelemetrySuccess {

@@ -10,6 +10,7 @@
  */
 export interface EnvConfig {
   $schema?: string;
+  description?: string;
   /**
    * Existing AAD app configuration.
    */
@@ -64,25 +65,18 @@ export interface EnvConfig {
    * The Teams App manifest related configuration.
    */
   manifest: {
-    description?: string;
     /**
-     * Configs to customize the Teams app manifest.
+     * Teams app name.
      */
-    values: {
+    appName: {
       /**
-       * Teams app name.
+       * A short display name for teams app.
        */
-      appName: {
-        /**
-         * A short display name for teams app.
-         */
-        short: string;
-        /**
-         * The full name for teams app.
-         */
-        full?: string;
-        [k: string]: unknown;
-      };
+      short: string;
+      /**
+       * The full name for teams app.
+       */
+      full?: string;
       [k: string]: unknown;
     };
     [k: string]: unknown;

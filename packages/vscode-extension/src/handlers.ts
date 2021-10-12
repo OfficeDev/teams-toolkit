@@ -27,12 +27,14 @@ import {
   Inputs,
   VsCodeEnv,
   AppStudioTokenProvider,
+  SharepointTokenProvider,
   Void,
   Tools,
   AzureSolutionSettings,
   ConfigFolderName,
   TreeItem,
   TreeCategory,
+  LocalEnvironmentName,
 } from "@microsoft/teamsfx-api";
 import {
   isUserCancelError,
@@ -53,6 +55,7 @@ import {
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
 import AppStudioTokenInstance from "./commonlib/appStudioLogin";
+import SharepointTokenInstance from "./commonlib/sharepointLogin";
 import AppStudioCodeSpaceTokenInstance from "./commonlib/appStudioCodeSpaceLogin";
 import VsCodeLogInstance from "./commonlib/log";
 import { TreeViewCommand } from "./treeview/commandsTreeViewProvider";
@@ -105,7 +108,6 @@ import { ext } from "./extensionVariables";
 import { InputConfigsFolderName } from "@microsoft/teamsfx-api";
 import { CoreCallbackEvent } from "@microsoft/teamsfx-api";
 import { CommandsWebviewProvider } from "./treeview/commandsWebviewProvider";
-import { LocalEnvironment } from "./constants";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -183,17 +185,24 @@ export async function activate(): Promise<Result<Void, FxError>> {
     if (vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode) {
       appstudioLogin = AppStudioCodeSpaceTokenInstance;
     }
+    const sharepointLogin: SharepointTokenProvider = SharepointTokenInstance;
 
-    appstudioLogin.setStatusChangeMap(
+    const m365NotificationCallback = (
+      status: string,
+      token: string | undefined,
+      accountInfo: Record<string, unknown> | undefined
+    ) => {
+      if (status === signedIn) {
+        window.showInformationMessage(StringResources.vsc.handlers.m365SignIn);
+      } else if (status === signedOut) {
+        window.showInformationMessage(StringResources.vsc.handlers.m365SignOut);
+      }
+      return Promise.resolve();
+    };
+    appstudioLogin.setStatusChangeMap("successfully-sign-in-m365", m365NotificationCallback, false);
+    sharepointLogin.setStatusChangeMap(
       "successfully-sign-in-m365",
-      (status, token, accountInfo) => {
-        if (status === signedIn) {
-          window.showInformationMessage(StringResources.vsc.handlers.m365SignIn);
-        } else if (status === signedOut) {
-          window.showInformationMessage(StringResources.vsc.handlers.m365SignOut);
-        }
-        return Promise.resolve();
-      },
+      m365NotificationCallback,
       false
     );
     tools = {
@@ -202,6 +211,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
         azureAccountProvider: AzureAccountManager,
         graphTokenProvider: GraphManagerInstance,
         appStudioToken: appstudioLogin,
+        sharepointTokenProvider: SharepointTokenInstance,
       },
       telemetryReporter: telemetry,
       treeProvider: TreeViewManagerInstance.getTreeView("teamsfx-accounts")!,
@@ -222,6 +232,16 @@ export async function activate(): Promise<Result<Void, FxError>> {
 
       workspace.onDidDeleteFiles(async (event) => {
         await refreshEnvTreeOnFileChanged(workspacePath, event.files);
+      });
+
+      workspace.onDidRenameFiles(async (event) => {
+        const files = [];
+        for (const f of event.files) {
+          files.push(f.newUri);
+          files.push(f.oldUri);
+        }
+
+        await refreshEnvTreeOnFileChanged(workspacePath, files);
       });
     }
   } catch (e) {
@@ -288,7 +308,7 @@ export async function getAzureSolutionSettings(): Promise<AzureSolutionSettings 
   input.ignoreEnvInfo = true;
   const projectConfigRes = await core.getProjectConfig(input);
 
-  if (projectConfigRes.isOk()) {
+  if (projectConfigRes?.isOk()) {
     if (projectConfigRes.value) {
       return projectConfigRes.value.settings?.solutionSettings as AzureSolutionSettings;
     }
@@ -428,8 +448,10 @@ export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
         if (tmpResult.isErr()) {
           result = err(tmpResult.error);
         } else {
-          const uri = Uri.file(tmpResult.value);
-          commands.executeCommand("vscode.openFolder", uri);
+          if (tmpResult?.value) {
+            const uri = Uri.file(tmpResult.value);
+            commands.executeCommand("vscode.openFolder", uri);
+          }
           result = ok(null);
         }
         break;
@@ -858,25 +880,35 @@ export async function openManifestHandler(args?: any[]): Promise<Result<null, Fx
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, invalidProjectError);
       return err(invalidProjectError);
     }
-    const manifestFile = `${appDirectory}/${constants.manifestFileName}`;
-    if (fs.existsSync(manifestFile)) {
-      workspace.openTextDocument(manifestFile).then((document) => {
-        window.showTextDocument(document);
-      });
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenManifestEditor, {
-        [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-      });
-      return ok(null);
+    const func: Func = {
+      namespace: "fx-solution-azure/fx-resource-appstudio",
+      method: "getManifestTemplatePath",
+    };
+    const res = await runUserTask(func, TelemetryEvent.ValidateManifest, true);
+    if (res.isOk()) {
+      const manifestFile = res.value as string;
+      if (fs.existsSync(manifestFile)) {
+        workspace.openTextDocument(manifestFile).then((document) => {
+          window.showTextDocument(document);
+        });
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenManifestEditor, {
+          [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+        });
+        return ok(null);
+      } else {
+        const FxError = new SystemError(
+          "FileNotFound",
+          util.format(StringResources.vsc.handlers.fileNotFound, manifestFile),
+          ExtensionSource
+        );
+        showError(FxError);
+        ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, FxError);
+        return err(FxError);
+      }
     } else {
-      const FxError: FxError = {
-        name: "FileNotFound",
-        source: ExtensionSource,
-        message: util.format(StringResources.vsc.handlers.fileNotFound, manifestFile),
-        timestamp: new Date(),
-      };
-      showError(FxError);
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, FxError);
-      return err(FxError);
+      showError(res.error);
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, res.error);
+      return err(res.error);
     }
   } else {
     const noOpenWorkspaceError = new UserError(
@@ -909,8 +941,8 @@ export async function refreshEnvironment(args?: any[]): Promise<Result<Void, FxE
 
 export async function viewEnvironment(env: string): Promise<Result<Void, FxError>> {
   const telemetryProperties: { [p: string]: string } = {};
-  if (env === LocalEnvironment) {
-    telemetryProperties[TelemetryProperty.Env] = LocalEnvironment;
+  if (env === LocalEnvironmentName) {
+    telemetryProperties[TelemetryProperty.Env] = LocalEnvironmentName;
   } else {
     telemetryProperties[TelemetryProperty.Env] = getHashedEnv(env);
   }
@@ -920,7 +952,7 @@ export async function viewEnvironment(env: string): Promise<Result<Void, FxError
     const localSettingsProvider = new LocalSettingsProvider(projectRoot);
 
     const envFilePath =
-      env === LocalEnvironment
+      env === LocalEnvironmentName
         ? localSettingsProvider.localSettingsFilePath
         : environmentManager.getEnvConfigPath(env, projectRoot);
 

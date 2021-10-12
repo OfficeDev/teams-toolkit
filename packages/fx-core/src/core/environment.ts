@@ -63,8 +63,8 @@ class EnvironmentManager {
   private readonly checksumKey = "_checksum";
   private readonly schema =
     "https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/packages/api/src/schemas/envConfig.json";
-  private readonly manifestConfigDescription =
-    `You can customize the 'values' object to customize Teams app manifest for different environments.` +
+  private readonly envConfigDescription =
+    `You can customize the TeamsFx config for different environments.` +
     ` Visit https://aka.ms/teamsfx-config to learn more about this.`;
 
   constructor() {
@@ -98,13 +98,11 @@ class EnvironmentManager {
   public newEnvConfigData(appName: string): EnvConfig {
     const envConfig: EnvConfig = {
       $schema: this.schema,
+      description: this.envConfigDescription,
       manifest: {
-        description: this.manifestConfigDescription,
-        values: {
-          appName: {
-            short: appName,
-            full: `Full name for ${appName}`,
-          },
+        appName: {
+          short: appName,
+          full: `Full name for ${appName}`,
         },
       },
     };
@@ -243,7 +241,7 @@ class EnvironmentManager {
   ): Promise<Result<EnvConfig, FxError>> {
     if (!isMultiEnvEnabled()) {
       return ok({
-        manifest: { values: { appName: { short: "" } } },
+        manifest: { appName: { short: "" } },
       });
     }
 
@@ -253,7 +251,12 @@ class EnvironmentManager {
     }
 
     const validate = this.ajv.compile<EnvConfig>(envConfigSchema);
-    const data = await fs.readJson(envConfigPath);
+    let data;
+    try {
+      data = await fs.readJson(envConfigPath);
+    } catch (error) {
+      return err(InvalidEnvConfigError(envName, `Failed to read env config JSON: ${error}`));
+    }
     if (validate(data)) {
       return ok(data);
     }

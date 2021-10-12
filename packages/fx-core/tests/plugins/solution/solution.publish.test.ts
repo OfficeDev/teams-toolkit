@@ -287,7 +287,7 @@ describe("v2 implementation for publish()", () => {
     const mockedTokenProvider: AppStudioTokenProvider = new MockedAppStudioProvider();
     const mockedEnvInfo: v2.EnvInfoV2 = {
       envName: "default",
-      config: { manifest: { values: { appName: { short: "test-app" } } } },
+      config: { manifest: { appName: { short: "test-app" } } },
       profile: { solution: {} },
     };
 

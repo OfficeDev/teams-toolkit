@@ -485,7 +485,10 @@ export class LocalDebugPlugin implements Plugin {
               ?.get(AppStudioPlugin.TeamsAppId) as string)
           : (solutionConfigs?.get(SolutionPlugin.RemoteTeamsAppId) as string);
         if (/^[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$/.test(remoteId)) {
-          return ok(remoteId);
+          return ok({
+            appId: remoteId,
+            env: ctx.envInfo.envName,
+          });
         } else {
           return err(MissingStep("launching remote", "Teams: Provision and Teams: Deploy"));
         }
@@ -494,7 +497,7 @@ export class LocalDebugPlugin implements Plugin {
         const localTeamsAppId = isMultiEnvEnabled()
           ? (ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TeamsAppId) as string)
           : (solutionConfigs?.get(SolutionPlugin.LocalTeamsAppId) as string);
-        return ok(localTeamsAppId);
+        return ok({ appId: localTeamsAppId });
       }
     } else if (func.method === "getProgrammingLanguage") {
       const programmingLanguage = ctx.projectSettings?.programmingLanguage;

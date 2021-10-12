@@ -27,7 +27,7 @@ import {
 } from "../..";
 import { LocalSettingsProvider } from "../../common/localSettingsProvider";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
-import fs, { CopyFilterAsync } from "fs-extra";
+import fs from "fs-extra";
 import path from "path";
 import { readJson } from "../../common/fileUtils";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";

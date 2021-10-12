@@ -40,7 +40,7 @@ import {
 } from "../../common/tools";
 import { loadProjectSettings } from "./projectSettingsLoader";
 import { generateArmTemplate } from "../../plugins/solution/fx-solution/arm";
-import { MessageExtensionItem } from "../../plugins/solution/fx-solution/question";
+import { BotOptionItem, MessageExtensionItem } from "../../plugins/solution/fx-solution/question";
 import { createLocalManifest } from "../../plugins/resource/appstudio/plugin";
 import { loadSolutionContext } from "./envInfoLoader";
 import { ResourcePlugins } from "../../common/constants";
@@ -157,12 +157,21 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
   const { fx, fxConfig, templateAppPackage, fxPublishProfile } = await getMultiEnvFolders(
     projectPath
   );
-  const { hasFrontend, hasBackend, hasBot, hasMessageExtension, hasProvision } =
-    await queryProjectStatus(fx);
+  const {
+    hasFrontend,
+    hasBackend,
+    hasBotPlugin,
+    hasBotCapability,
+    hasMessageExtensionCapability,
+    isSPFx,
+    hasProvision,
+  } = await queryProjectStatus(fx);
 
   //localSettings.json
   const localSettingsProvider = new LocalSettingsProvider(projectPath);
-  await localSettingsProvider.save(localSettingsProvider.init(hasFrontend, hasBackend, hasBot));
+  await localSettingsProvider.save(
+    localSettingsProvider.init(hasFrontend, hasBackend, hasBotPlugin)
+  );
   //projectSettings.json
   const projectSettings = path.join(fxConfig, ProjectSettingsFileName);
   await fs.copy(path.join(fx, "settings.json"), projectSettings);
@@ -206,14 +215,16 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
   await fs.writeFile(targetManifestFile, JSON.stringify(manifest, null, 4));
   await moveIconsToResourceFolder(templateAppPackage);
 
-  const localManifest: TeamsAppManifest = createLocalManifest(
-    appName,
-    hasFrontend,
-    hasBot,
-    hasMessageExtension
-  );
-  const localManifestFile = path.join(templateAppPackage, "manifest.local.json");
-  await fs.writeFile(localManifestFile, JSON.stringify(localManifest, null, 4));
+  if (!isSPFx) {
+    const localManifest: TeamsAppManifest = createLocalManifest(
+      appName,
+      hasFrontend,
+      hasBotCapability,
+      hasMessageExtensionCapability
+    );
+    const localManifestFile = path.join(templateAppPackage, "manifest.local.json");
+    await fs.writeFile(localManifestFile, JSON.stringify(localManifest, null, 4));
+  }
 
   if (hasProvision) {
     const devProfile = path.join(fxPublishProfile, "profile.dev.json");
@@ -317,9 +328,21 @@ async function queryProjectStatus(fx: string): Promise<any> {
   const hasFrontend = plugins?.some((plugin) => plugin.name === PluginNames.FE);
   const hasBackend = plugins?.some((plugin) => plugin.name === PluginNames.FUNC);
   const hasBot = plugins?.some((plugin) => plugin.name === PluginNames.BOT);
-  const hasMessageExtension = solutionSettings.capabilities.includes(MessageExtensionItem.id);
+  const hasBotCapability = solutionSettings.capabilities.includes(BotOptionItem.id);
+  const hasMessageExtensionCapability = solutionSettings.capabilities.includes(
+    MessageExtensionItem.id
+  );
+  const isSPFx = plugins?.some((plugin) => plugin.name === PluginNames.SPFX);
   const hasProvision = envDefaultJson.solution?.provisionSucceeded as boolean;
-  return { hasFrontend, hasBackend, hasBot, hasMessageExtension, hasProvision };
+  return {
+    hasFrontend,
+    hasBackend,
+    hasBot,
+    hasBotCapability,
+    hasMessageExtensionCapability,
+    isSPFx,
+    hasProvision,
+  };
 }
 
 async function getMultiEnvFolders(projectPath: string): Promise<any> {

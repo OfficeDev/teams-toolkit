@@ -24,11 +24,12 @@ There are two methods to mitigate this issue:
 1. Run `Provision` command again
 
 #### Method #2
-1. Open `.fx\configs\azure.parameters.default.json` file
+1. Open `.fx\configs\azure.parameters.{envName}.json` file
 1. Add papameter value of 'simpleAuth_sku' 
 
-    ![image](../../images/fx-core/arm/sku-config.png)
-
+    ![image](../../images/fx-core/arm/simple-auth-sku-config.png)
+1. If there is bot resource, Add papameter values of 'bot_webAppSKU' and 'bot_serviceSKU'
+    ![image](../../images/fx-core/arm/-sku-config.png)
 1. Run `Provision` command again
 
 ***
@@ -40,3 +41,5 @@ Cannot move or create server. Subscription 'xxx' will exceed server quota.
 
 1. Delete other SQL server
 1. Run `Provision` command again
+
+***

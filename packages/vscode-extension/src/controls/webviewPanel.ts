@@ -259,7 +259,7 @@ export class WebviewPanel {
     };
 
     AppStudioTokenInstance.setStatusChangeMap("quick-start-webview", m365WebviewCallback);
-    SharepointTokenInstance.setStatusChangeMap("quick-start-webview", m365WebviewCallback);
+    //SharepointTokenInstance.setStatusChangeMap("quick-start-webview", m365WebviewCallback);
 
     AzureAccountManager.setStatusChangeMap(
       "quick-start-webview",

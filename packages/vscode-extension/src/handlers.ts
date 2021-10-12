@@ -200,11 +200,11 @@ export async function activate(): Promise<Result<Void, FxError>> {
       return Promise.resolve();
     };
     appstudioLogin.setStatusChangeMap("successfully-sign-in-m365", m365NotificationCallback, false);
-    sharepointLogin.setStatusChangeMap(
-      "successfully-sign-in-m365",
-      m365NotificationCallback,
-      false
-    );
+    // sharepointLogin.setStatusChangeMap(
+    //   "successfully-sign-in-m365",
+    //   m365NotificationCallback,
+    //   false
+    // );
     tools = {
       logProvider: VsCodeLogInstance,
       tokenProvider: {

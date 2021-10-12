@@ -18,7 +18,8 @@ import { getIsExistingUser, getTeamsAppId } from "../utils/commonUtils";
 export namespace ExtTelemetry {
   export let reporter: VSCodeTelemetryReporter;
   export let hasSentTelemetry = false;
-  export const isFromSample: boolean | undefined = undefined;
+  /* eslint-disable prefer-const */
+  export let isFromSample: boolean | undefined = undefined;
 
   export function setHasSentTelemetry(eventName: string) {
     if (eventName === "query-expfeature") return;

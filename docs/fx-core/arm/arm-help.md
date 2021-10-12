@@ -1,4 +1,4 @@
-## Solution.ArmDeploymentFailed
+## Solution.FailedToDeployArmTemplatesToAzure
 
 ### Error Message
 

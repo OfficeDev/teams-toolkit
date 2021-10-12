@@ -198,7 +198,7 @@ describe("Config Get Command Check", () => {
     });
 
     expect(logs.length).equals(3);
-    const globalConfig = JSON.stringify(logs[0]);
+    const globalConfig = JSON.parse(logs[0]);
     expect(globalConfig).to.deep.equal(config);
     expect(logs[1]).includes("fx-resource-bot.botPassword: decrypted");
     expect(logs[2]).includes("test: abc");

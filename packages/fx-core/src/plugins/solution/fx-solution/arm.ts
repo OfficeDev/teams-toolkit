@@ -27,6 +27,7 @@ import {
   CryptoDataMatchers,
   getResourceGroupNameFromResourceId,
   waitSeconds,
+  getUuid,
 } from "../../../common/tools";
 import {
   ARM_TEMPLATE_OUTPUT,
@@ -47,7 +48,6 @@ import dateFormat from "dateformat";
 import { getTemplatesFolder } from "../../../folder";
 import { ensureBicep } from "./utils/depsChecker/bicepChecker";
 import { Utils } from "../../resource/frontend/utils";
-import { v4 as uuidv4 } from "uuid";
 
 // Old folder structure constants
 const templateFolder = "templates";
@@ -690,7 +690,7 @@ function generateResourceBaseName(appName: string, envName: string): string {
   return (
     normalizedAppName.substr(0, maxAppNameLength) +
     normalizedEnvName.substr(0, maxEnvNameLength) +
-    uuidv4().substr(0, 6)
+    getUuid().substr(0, 6)
   );
 }
 

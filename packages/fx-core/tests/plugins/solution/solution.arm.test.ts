@@ -57,6 +57,7 @@ import "../../../src/plugins/resource/spfx";
 import "../../../src/plugins/resource/aad";
 import { environmentManager } from "../../../src";
 import { assert } from "sinon";
+
 let mockedEnvRestore: () => void;
 
 chai.use(chaiAsPromised);
@@ -159,6 +160,8 @@ describe("Generate ARM Template for project", () => {
       return ok(mockedAadScaffoldArmResult);
     });
 
+    mocker.stub(tools, "getUuid").returns("00000000-0000-0000-0000-000000000000");
+
     const projectArmTemplateFolder = path.join(testFolder, templateFolder);
     const projectArmParameterFolder = path.join(testFolder, configFolderName);
     const projectArmBaseFolder = path.join(testFolder, baseFolder);
@@ -200,7 +203,7 @@ Mocked simple auth output content`
   "contentVersion": "1.0.0.0",
   "parameters": {
     "resourceBaseName": {
-      "value": "mytestappdefault"
+      "value": "mytestappdefa000000"
     },
     "FrontendParameter": "FrontendParameterValue",
     "SimpleAuthParameter": "SimpleAuthParameterValue"

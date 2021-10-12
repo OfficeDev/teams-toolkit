@@ -29,7 +29,7 @@ There are two methods to mitigate this issue:
 
     ![image](../../images/fx-core/arm/simple-auth-sku-config.png)
 1. If there is bot resource, Add papameter values of 'bot_webAppSKU' and 'bot_serviceSKU'
-    ![image](../../images/fx-core/arm/-sku-config.png)
+    ![image](../../images/fx-core/arm/bot-sku-config.png)
 1. Run `Provision` command again
 
 ***

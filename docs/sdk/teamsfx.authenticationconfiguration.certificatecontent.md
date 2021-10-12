@@ -7,7 +7,7 @@
 > This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
 > 
 
-The content of a PEM-encoded public/private key certificate. Default value comes from M365\_CERTIFICATE\_CONTENT environment variable
+The content of a PEM-encoded public/private key certificate.
 
 <b>Signature:</b>
 

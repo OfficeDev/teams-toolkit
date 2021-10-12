@@ -68,15 +68,12 @@ fakeCert
   const sandbox = sinon.createSandbox();
 
   beforeEach(function () {
-    mockedEnvRestore = mockedEnv(
-      {
-        M365_CLIENT_ID: clientId,
-        M365_CLIENT_SECRET: clientSecret,
-        M365_AUTHORITY_HOST: authorityHost,
-        M365_TENANT_ID: tenantId,
-      },
-      { clear: true }
-    );
+    mockedEnvRestore = mockedEnv({
+      M365_CLIENT_ID: clientId,
+      M365_CLIENT_SECRET: clientSecret,
+      M365_AUTHORITY_HOST: authorityHost,
+      M365_TENANT_ID: tenantId,
+    });
 
     // Mock ConfidentialClientApplication implementation
     sandbox
@@ -122,15 +119,12 @@ fakeCert
   });
 
   it("create OnBehalfOfUserCredential instance should not throw InvalidConfiguration Error when certificateContent not found", async function () {
-    mockedEnvRestore = mockedEnv(
-      {
-        M365_CLIENT_ID: clientId,
-        M365_CLIENT_SECRET: clientSecret,
-        M365_AUTHORITY_HOST: authorityHost,
-        M365_TENANT_ID: tenantId,
-      },
-      { clear: true }
-    );
+    mockedEnvRestore = mockedEnv({
+      M365_CLIENT_ID: clientId,
+      M365_CLIENT_SECRET: clientSecret,
+      M365_AUTHORITY_HOST: authorityHost,
+      M365_TENANT_ID: tenantId,
+    });
     loadConfiguration();
 
     expect(() => {

@@ -55,7 +55,7 @@ export interface AuthenticationConfiguration {
   readonly clientSecret?: string;
 
   /**
-   * The content of a PEM-encoded public/private key certificate. Default value comes from M365_CERTIFICATE_CONTENT environment variable
+   * The content of a PEM-encoded public/private key certificate.
    *
    * @readonly
    */

@@ -1,26 +1,18 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  AccessToken,
-  TokenCredential,
-  GetTokenOptions,
-  ClientSecretCredential,
-  TokenCredentialOptions,
-  AuthenticationError,
-} from "@azure/identity";
+import { AccessToken, TokenCredential, GetTokenOptions } from "@azure/identity";
 import { AuthenticationConfiguration } from "../models/configuration";
 import { internalLogger } from "../util/logger";
 import {
   validateScopesType,
   formatString,
-  getAuthority,
-  parseCertificate,
   getScopesArray,
+  createConfidentialClientApplication,
 } from "../util/utils";
 import { getAuthenticationConfiguration } from "../core/configurationProvider";
 import { ErrorCode, ErrorMessage, ErrorWithCode } from "../core/errors";
-import { ConfidentialClientApplication, NodeAuthOptions } from "@azure/msal-node";
+import { ConfidentialClientApplication } from "@azure/msal-node";
 
 /**
  * Represent Microsoft 365 tenant identity, and it is usually used when user is not involved like time-triggered automation job.
@@ -37,8 +29,7 @@ import { ConfidentialClientApplication, NodeAuthOptions } from "@azure/msal-node
  * @beta
  */
 export class M365TenantCredential implements TokenCredential {
-  private readonly clientSecretCredential: ClientSecretCredential | undefined;
-  private readonly msalClient: ConfidentialClientApplication | undefined;
+  private readonly msalClient: ConfidentialClientApplication;
 
   /**
    * Constructor of M365TenantCredential.
@@ -56,28 +47,7 @@ export class M365TenantCredential implements TokenCredential {
 
     const config = this.loadAndValidateConfig();
 
-    if (config.certificateContent) {
-      const auth: NodeAuthOptions = {
-        clientId: config.clientId!,
-        authority: getAuthority(config.authorityHost!, config.tenantId!),
-        clientCertificate: parseCertificate(config.certificateContent),
-      };
-
-      this.msalClient = new ConfidentialClientApplication({
-        auth,
-      });
-    } else {
-      const tokenCredentialOptions: TokenCredentialOptions = {
-        authorityHost: config.authorityHost,
-      };
-
-      this.clientSecretCredential = new ClientSecretCredential(
-        config.tenantId!,
-        config.clientId!,
-        config.clientSecret!,
-        tokenCredentialOptions
-      );
-    }
+    this.msalClient = createConfidentialClientApplication(config);
   }
 
   /**
@@ -116,32 +86,20 @@ export class M365TenantCredential implements TokenCredential {
     internalLogger.info("Get access token with scopes: " + scopesStr);
 
     try {
-      if (this.clientSecretCredential) {
-        accessToken = await this.clientSecretCredential.getToken(scopes);
-      } else {
-        const scopesArray = getScopesArray(scopes);
-        const authenticationResult = await this.msalClient!.acquireTokenByClientCredential({
-          scopes: scopesArray,
-        });
-        if (authenticationResult) {
-          accessToken = {
-            token: authenticationResult.accessToken,
-            expiresOnTimestamp: authenticationResult.expiresOn!.getTime(),
-          };
-        }
+      const scopesArray = getScopesArray(scopes);
+      const authenticationResult = await this.msalClient.acquireTokenByClientCredential({
+        scopes: scopesArray,
+      });
+      if (authenticationResult) {
+        accessToken = {
+          token: authenticationResult.accessToken,
+          expiresOnTimestamp: authenticationResult.expiresOn!.getTime(),
+        };
       }
     } catch (err: any) {
-      if (err instanceof AuthenticationError) {
-        const authError = err as AuthenticationError;
-        const errorMsg = `Get M365 tenant credential with authentication error: status code ${authError.statusCode}, error messages: ${authError.message}`;
-        internalLogger.error(errorMsg);
-
-        throw new ErrorWithCode(errorMsg, ErrorCode.ServiceError);
-      } else {
-        const errorMsg = "Get M365 tenant credential failed with error: " + err.message;
-        internalLogger.error(errorMsg);
-        throw new ErrorWithCode(errorMsg, ErrorCode.InternalError);
-      }
+      const errorMsg = "Get M365 tenant credential failed with error: " + err.message;
+      internalLogger.error(errorMsg);
+      throw new ErrorWithCode(errorMsg, ErrorCode.ServiceError);
     }
 
     if (!accessToken) {

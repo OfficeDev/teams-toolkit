@@ -2,21 +2,15 @@
 // Licensed under the MIT license.
 
 import { AccessToken, GetTokenOptions, TokenCredential } from "@azure/identity";
-import {
-  AuthenticationResult,
-  ConfidentialClientApplication,
-  NodeAuthOptions,
-} from "@azure/msal-node";
+import { AuthenticationResult, ConfidentialClientApplication } from "@azure/msal-node";
 import { config } from "../core/configurationProvider";
 import { UserInfo } from "../models/userinfo";
 import { internalLogger } from "../util/logger";
 import {
-  ClientCertificate,
+  createConfidentialClientApplication,
   formatString,
-  getAuthority,
   getScopesArray,
   getUserInfoFromSsoToken,
-  parseCertificate,
   parseJwt,
   validateScopesType,
 } from "../util/utils";
@@ -85,26 +79,7 @@ export class OnBehalfOfUserCredential implements TokenCredential {
       throw new ErrorWithCode(errorMsg, ErrorCode.InvalidConfiguration);
     }
 
-    const authority = getAuthority(
-      config.authentication!.authorityHost!,
-      config.authentication!.tenantId!
-    );
-    const clientCertificate: ClientCertificate | undefined = parseCertificate(
-      config.authentication!.certificateContent
-    );
-
-    const auth: NodeAuthOptions = {
-      clientId: config.authentication!.clientId!,
-      authority: authority,
-    };
-    if (clientCertificate) {
-      auth.clientCertificate = clientCertificate;
-    } else if (config?.authentication?.clientSecret) {
-      auth.clientSecret = config.authentication!.clientSecret;
-    }
-    this.msalClient = new ConfidentialClientApplication({
-      auth,
-    });
+    this.msalClient = createConfidentialClientApplication(config.authentication!);
 
     const decodedSsoToken = parseJwt(ssoToken);
     this.ssoToken = {

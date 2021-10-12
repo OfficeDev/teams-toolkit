@@ -17,7 +17,7 @@ let mockedEnvRestore: () => void;
 describe("M365TenantCredential Tests - Node", () => {
   const scopes = "fake_scope";
   const clientId = "fake_client_id";
-  const tenantId = "fake-tenant-id";
+  const tenantId = "fake_tenant_id";
   const clientSecret = "fake_client_secret";
   const certificateContent = `-----BEGIN PRIVATE KEY-----
 fakeKey
@@ -29,15 +29,12 @@ fakeCert
   const fakeToken = "fake_token";
 
   beforeEach(function () {
-    mockedEnvRestore = mockedEnv(
-      {
-        M365_CLIENT_ID: clientId,
-        M365_CLIENT_SECRET: clientSecret,
-        M365_TENANT_ID: tenantId,
-        M365_AUTHORITY_HOST: authorityHost,
-      },
-      { clear: true }
-    );
+    mockedEnvRestore = mockedEnv({
+      M365_CLIENT_ID: clientId,
+      M365_CLIENT_SECRET: clientSecret,
+      M365_TENANT_ID: tenantId,
+      M365_AUTHORITY_HOST: authorityHost,
+    });
     loadConfiguration();
   });
 
@@ -63,13 +60,9 @@ fakeCert
 
     const credential: any = new M365TenantCredential();
 
-    assert.strictEqual(credential.clientSecretCredential.clientId, clientId);
-    assert.strictEqual(credential.clientSecretCredential.tenantId, tenantId);
-    assert.strictEqual(credential.clientSecretCredential.clientSecret, clientSecret);
-    assert.strictEqual(
-      credential.clientSecretCredential.identityClient.authorityHost,
-      authorityHost
-    );
+    assert.strictEqual(credential.msalClient.config.auth.clientId, clientId);
+    assert.strictEqual(credential.msalClient.config.auth.authority, authorityHost + "/" + tenantId);
+    assert.strictEqual(credential.msalClient.config.auth.clientSecret, clientSecret);
   });
 
   it("create M365TenantCredential instance should success with valid config for Client Certificate", function () {
@@ -155,14 +148,23 @@ fakeCert
 
   it("getToken should success with valid config for Client Secret", async function () {
     sinon
-      .stub(ClientSecretCredential.prototype, "getToken")
-      .callsFake((): Promise<AccessToken | null> => {
-        const token: AccessToken = {
-          token: fakeToken,
-          expiresOnTimestamp: Date.now() + 10 * 1000 * 60,
+      .stub(ConfidentialClientApplication.prototype, "acquireTokenByClientCredential")
+      .callsFake((): Promise<AuthenticationResult | null> => {
+        const authResult: AuthenticationResult = {
+          authority: "fake_authority",
+          uniqueId: "fake_uniqueId",
+          tenantId: "fake_tenant_id",
+          scopes: [],
+          account: null,
+          idToken: "fake_id_token",
+          idTokenClaims: new Object(),
+          accessToken: fakeToken,
+          fromCache: false,
+          tokenType: "fake_tokenType",
+          expiresOn: new Date(),
         };
-        return new Promise((resolve) => {
-          resolve(token);
+        return new Promise<AuthenticationResult>((resolve) => {
+          resolve(authResult);
         });
       });
 
@@ -219,9 +221,9 @@ fakeCert
 
   it("getToken should throw ServiceError when authenticate failed", async function () {
     sinon
-      .stub(ClientSecretCredential.prototype, "getToken")
-      .callsFake((): Promise<AccessToken | null> => {
-        throw new AuthenticationError(401, "Authentication failed");
+      .stub(ConfidentialClientApplication.prototype, "acquireTokenByClientCredential")
+      .callsFake((): Promise<AuthenticationResult | null> => {
+        throw new Error("Authentication failed");
       });
 
     const credential = new M365TenantCredential();
@@ -232,34 +234,14 @@ fakeCert
 
     assert.strictEqual(errorResult.code, ErrorCode.ServiceError);
     assert.include(errorResult.message, "Authentication failed");
-    assert.include(errorResult.message, "status code 401");
-
-    sinon.restore();
-  });
-
-  it("getToken should throw InternalError with unknown error", async function () {
-    sinon
-      .stub(ClientSecretCredential.prototype, "getToken")
-      .callsFake((): Promise<AccessToken | null> => {
-        throw new Error("Unknown error");
-      });
-
-    const credential = new M365TenantCredential();
-
-    const errorResult = await expect(credential.getToken(scopes)).to.eventually.be.rejectedWith(
-      ErrorWithCode
-    );
-
-    assert.strictEqual(errorResult.code, ErrorCode.InternalError);
-    assert.include(errorResult.message, "Unknown error");
 
     sinon.restore();
   });
 
   it("getToken should throw InternalError when get empty access token", async function () {
     sinon
-      .stub(ClientSecretCredential.prototype, "getToken")
-      .callsFake((): Promise<AccessToken | null> => {
+      .stub(ConfidentialClientApplication.prototype, "acquireTokenByClientCredential")
+      .callsFake((): Promise<AuthenticationResult | null> => {
         return new Promise((resolve) => {
           resolve(null);
         });

@@ -6,6 +6,8 @@ import { UserInfo } from "../models/userinfo";
 import jwt_decode from "jwt-decode";
 import { internalLogger } from "./logger";
 import { createHash } from "crypto";
+import { ConfidentialClientApplication, NodeAuthOptions } from "@azure/msal-node";
+import { AuthenticationConfiguration } from "../models/configuration";
 
 /**
  * Parse jwt token payload
@@ -147,6 +149,33 @@ export function parseCertificate(
     thumbprint: thumbprint,
     privateKey: certificateContent,
   };
+}
+
+/**
+ * @internal
+ */
+export function createConfidentialClientApplication(
+  authentication: AuthenticationConfiguration
+): ConfidentialClientApplication {
+  const authority = getAuthority(authentication.authorityHost!, authentication.tenantId!);
+  const clientCertificate: ClientCertificate | undefined = parseCertificate(
+    authentication.certificateContent
+  );
+
+  const auth: NodeAuthOptions = {
+    clientId: authentication.clientId!,
+    authority: authority,
+  };
+
+  if (clientCertificate) {
+    auth.clientCertificate = clientCertificate;
+  } else {
+    auth.clientSecret = authentication.clientSecret;
+  }
+
+  return new ConfidentialClientApplication({
+    auth,
+  });
 }
 
 /**

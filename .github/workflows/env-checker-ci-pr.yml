@@ -10,7 +10,7 @@ on:
       - '.github/workflows/env-checker-ci-pr.yml'
       - '.github/env-checker'
       - 'packages/vscode-extension/src/debug/depsChecker/**'
-      - 'packages/vscode-extension/test/suite/envChecker/**'
+      - 'packages/vscode-extension/test/integration/envChecker/**'
   push:
     branches:
       - dev
@@ -20,7 +20,7 @@ on:
       - '.github/workflows/env-checker-ci-pr.yml'
       - '.github/env-checker'
       - 'packages/vscode-extension/src/debug/depsChecker/**'
-      - 'packages/vscode-extension/test/suite/envChecker/**'
+      - 'packages/vscode-extension/test/integration/envChecker/**'
   workflow_dispatch: # Manual trigger
 
 jobs:

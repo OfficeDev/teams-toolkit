@@ -332,7 +332,7 @@ async function backup(projectPath: string): Promise<void> {
   ];
 
   for (const file of fxFiles) {
-    if (fs.existsSync(path.join(fx, file))) {
+    if (await fs.pathExists(path.join(fx, file))) {
       await fs.copy(path.join(fx, file), path.join(backup, file));
     }
   }

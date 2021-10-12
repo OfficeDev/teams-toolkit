@@ -649,7 +649,7 @@ function expandParameterPlaceholders(
     for (const configItem of pluginContext.config) {
       if (typeof configItem[1] === "string") {
         // Currently we only config with string type
-        const variableName = `${normalizeToEnvName(plugin.name)}__${normalizeToEnvName(
+        const variableName = `profile.${normalizeToEnvName(plugin.name)}__${normalizeToEnvName(
           configItem[0]
         )}`;
         availableVariables[variableName] = configItem[1];
@@ -662,7 +662,7 @@ function expandParameterPlaceholders(
     for (const configItem of solutionConfig) {
       if (typeof configItem[1] === "string") {
         // Currently we only config with string type
-        const variableName = `SOLUTION__${normalizeToEnvName(configItem[0])}`;
+        const variableName = `profile.SOLUTION__${normalizeToEnvName(configItem[0])}`;
         availableVariables[variableName] = configItem[1];
       }
     }

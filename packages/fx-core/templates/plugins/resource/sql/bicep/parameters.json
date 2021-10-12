@@ -1,8 +1,8 @@
 {
   "azureSql_admin": {
-    "value": "{{FX_RESOURCE_AZURE_SQL__ADMIN}}"
+    "value": "{{profile.FX_RESOURCE_AZURE_SQL__ADMIN}}"
   },
   "azureSql_adminPassword": {
-    "value": "{{FX_RESOURCE_AZURE_SQL__ADMINPASSWORD}}"
+    "value": "{{profile.FX_RESOURCE_AZURE_SQL__ADMINPASSWORD}}"
   }
 }

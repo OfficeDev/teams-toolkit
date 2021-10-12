@@ -70,6 +70,8 @@ import { PluginNames } from "../plugins";
 import { getAllV2ResourcePlugins } from "../plugins/solution/fx-solution/ResourcePluginContainer";
 import { CallbackRegistry } from "./callback";
 import {
+  ArchiveProjectError,
+  ArchiveUserFileError,
   CopyFileError,
   CoreSource,
   FetchSampleError,
@@ -381,7 +383,11 @@ export class FxCore implements Core {
       answers: inputs,
     };
 
-    await this.archive(projectPath);
+    const archiveResult = await this.archive(projectPath);
+    if (archiveResult.isErr()) {
+      return err(archiveResult.error);
+    }
+
     await fs.ensureDir(projectPath);
     await fs.ensureDir(path.join(projectPath, `.${ConfigFolderName}`));
 
@@ -409,37 +415,42 @@ export class FxCore implements Core {
     return ok(projectPath);
   }
 
-  async archive(projectPath: string): Promise<void> {
-    const archiveFolderPath = path.join(projectPath, ArchiveFolderName);
-    await fs.ensureDir(archiveFolderPath);
+  async archive(projectPath: string): Promise<Result<Void, FxError>> {
+    try {
+      const archiveFolderPath = path.join(projectPath, ArchiveFolderName);
+      await fs.ensureDir(archiveFolderPath);
 
-    const fileNames = await fs.readdir(projectPath);
-    const archiveLog = async (projectPath: string, message: string): Promise<void> => {
-      await fs.appendFile(
-        path.join(projectPath, ArchiveLogFileName),
-        `[${new Date().toISOString()}] ${message}\n`
-      );
-    };
+      const fileNames = await fs.readdir(projectPath);
+      const archiveLog = async (projectPath: string, message: string): Promise<void> => {
+        await fs.appendFile(
+          path.join(projectPath, ArchiveLogFileName),
+          `[${new Date().toISOString()}] ${message}\n`
+        );
+      };
 
-    await archiveLog(projectPath, `Start to move files into '${ArchiveFolderName}' folder.`);
-    for (const fileName of fileNames) {
-      if (fileName === ArchiveFolderName || fileName === ArchiveLogFileName) {
-        continue;
+      await archiveLog(projectPath, `Start to move files into '${ArchiveFolderName}' folder.`);
+      for (const fileName of fileNames) {
+        if (fileName === ArchiveFolderName || fileName === ArchiveLogFileName) {
+          continue;
+        }
+
+        try {
+          await fs.move(path.join(projectPath, fileName), path.join(archiveFolderPath, fileName), {
+            overwrite: true,
+          });
+        } catch (e: any) {
+          await archiveLog(projectPath, `Failed to move '${fileName}'. ${e.message}`);
+          return err(ArchiveUserFileError(fileName, e.message));
+        }
+
+        await archiveLog(
+          projectPath,
+          `'${fileName}' has been moved to '${ArchiveFolderName}' folder.`
+        );
       }
-
-      try {
-        await fs.move(path.join(projectPath, fileName), path.join(archiveFolderPath, fileName), {
-          overwrite: true,
-        });
-      } catch (e: any) {
-        await archiveLog(projectPath, `Failed to move '${fileName}'. ${e.message}`);
-        throw e;
-      }
-
-      await archiveLog(
-        projectPath,
-        `'${fileName}' has been moved to '${ArchiveFolderName}' folder.`
-      );
+      return ok(Void);
+    } catch (e: any) {
+      return err(ArchiveProjectError(e.message));
     }
   }
 

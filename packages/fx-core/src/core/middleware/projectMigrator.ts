@@ -192,8 +192,8 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
     "{{profile.fx-resource-bot.botId}}"
   );
   const manifest: TeamsAppManifest = JSON.parse(manifestString);
-  manifest.name.short = "{{config.manifest.values.appName.short}}";
-  manifest.name.full = "{{config.manifest.values.appName.full}}";
+  manifest.name.short = "{{config.manifest.appName.short}}";
+  manifest.name.full = "{{config.manifest.appName.full}}";
   manifest.id = "{{profile.fx-resource-appstudio.teamsAppId}}";
   await fs.writeFile(targetManifestFile, JSON.stringify(manifest, null, 4));
   await moveIconsToResourceFolder(templateAppPackage);

@@ -117,7 +117,7 @@ fakeCert
     })
       .to.throw(
         ErrorWithCode,
-        "clientId, clientSecret, certificateContent, tenantId in configuration is invalid: undefined."
+        "clientId, clientSecret or certificateContent, tenantId in configuration is invalid: undefined."
       )
       .with.property("code", ErrorCode.InvalidConfiguration);
 
@@ -129,7 +129,7 @@ fakeCert
     })
       .to.throw(
         ErrorWithCode,
-        "clientSecret, certificateContent, tenantId in configuration is invalid: undefined."
+        "clientSecret or certificateContent, tenantId in configuration is invalid: undefined."
       )
       .with.property("code", ErrorCode.InvalidConfiguration);
 
@@ -141,7 +141,7 @@ fakeCert
     })
       .to.throw(
         ErrorWithCode,
-        "clientSecret, certificateContent in configuration is invalid: undefined."
+        "clientSecret or certificateContent in configuration is invalid: undefined."
       )
       .with.property("code", ErrorCode.InvalidConfiguration);
   });

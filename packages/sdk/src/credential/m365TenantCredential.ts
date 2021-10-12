@@ -135,8 +135,7 @@ export class M365TenantCredential implements TokenCredential {
     }
 
     if (!config.clientSecret && !config.certificateContent) {
-      missingValues.push("clientSecret");
-      missingValues.push("certificateContent");
+      missingValues.push("clientSecret or certificateContent");
     }
 
     if (!config.tenantId) {

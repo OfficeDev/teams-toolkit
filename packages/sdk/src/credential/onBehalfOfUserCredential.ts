@@ -61,8 +61,7 @@ export class OnBehalfOfUserCredential implements TokenCredential {
     }
 
     if (!config?.authentication?.clientSecret && !config?.authentication?.certificateContent) {
-      missingConfigurations.push("clientSecret");
-      missingConfigurations.push("certificateContent");
+      missingConfigurations.push("clientSecret or certificateContent");
     }
 
     if (!config?.authentication?.tenantId) {

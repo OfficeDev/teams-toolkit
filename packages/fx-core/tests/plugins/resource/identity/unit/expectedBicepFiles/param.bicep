@@ -1,3 +1,3 @@
 
-param identity_managedIdentityName string = 'managedIdentity-${uniqueString('${resourceBaseName}${utcNow()}')}'
+param identity_managedIdentityName string = '${resourceBaseName}-managedIdentity'
 

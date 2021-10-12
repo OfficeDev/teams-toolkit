@@ -47,6 +47,7 @@ import dateFormat from "dateformat";
 import { getTemplatesFolder } from "../../../folder";
 import { ensureBicep } from "./utils/depsChecker/bicepChecker";
 import { Utils } from "../../resource/frontend/utils";
+import { v4 as uuidv4 } from "uuid";
 
 // Old folder structure constants
 const templateFolder = "templates";
@@ -683,9 +684,14 @@ function normalizeToEnvName(input: string): string {
 
 function generateResourceBaseName(appName: string, envName: string): string {
   const maxAppNameLength = 10;
-  const macEnvNameLength = 10;
+  const maxEnvNameLength = 4;
   const normalizedAppName = appName.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
-  return normalizedAppName.substr(0, maxAppNameLength) + envName.substr(0, macEnvNameLength);
+  const normalizedEnvName = envName.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+  return (
+    normalizedAppName.substr(0, maxAppNameLength) +
+    normalizedEnvName.substr(0, maxEnvNameLength) +
+    uuidv4().substr(0, 6)
+  );
 }
 
 function escapeSecretPlaceholders(variables: Record<string, string>) {

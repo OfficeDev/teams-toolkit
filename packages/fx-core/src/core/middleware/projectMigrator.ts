@@ -57,6 +57,7 @@ const subscriptionId = "subscriptionId";
 const resourceGroupName = "resourceGroupName";
 const migrationGuideUrl = "https://aka.ms/teamsfx-migration-guide";
 const parameterFileNameTemplate = "azure.parameters.@envName.json";
+let updateNotificationFlag = false;
 
 class EnvConfigName {
   static readonly StorageName = "storageName";
@@ -101,14 +102,16 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
       return;
     }
     await migrateToArmAndMultiEnv(ctx);
-  } else if (await needUpdateTeamsToolkitVersion(ctx)) {
+  } else if ((await needUpdateTeamsToolkitVersion(ctx)) && !updateNotificationFlag) {
     // TODO: delete before Arm && Multi-env version released
     // only for arm && multi-env project with unreleased teams toolkit version
+    updateNotificationFlag = true;
     const core = ctx.self as FxCore;
     await core.tools.ui.showMessage(
       "info",
       getStrings().solution.NeedToUpdateTeamsToolkitVersionMessage,
-      false
+      false,
+      "OK"
     );
   }
   await next();

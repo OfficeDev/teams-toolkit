@@ -17,6 +17,11 @@ export enum ErrorCode {
   InvalidConfiguration = "InvalidConfiguration",
 
   /**
+   * Invalid certificate error.
+   */
+  InvalidCertificate = "InvalidCertificate",
+
+  /**
    * Internal error.
    */
   InternalError = "InternalError",

@@ -1,19 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  AccessToken,
-  TokenCredential,
-  GetTokenOptions,
-  ClientSecretCredential,
-  TokenCredentialOptions,
-  AuthenticationError,
-} from "@azure/identity";
+import { AccessToken, TokenCredential, GetTokenOptions } from "@azure/identity";
 import { AuthenticationConfiguration } from "../models/configuration";
 import { internalLogger } from "../util/logger";
-import { validateScopesType, formatString } from "../util/utils";
+import { validateScopesType, formatString, getScopesArray } from "../util/utils";
 import { getAuthenticationConfiguration } from "../core/configurationProvider";
 import { ErrorCode, ErrorMessage, ErrorWithCode } from "../core/errors";
+import { ConfidentialClientApplication } from "@azure/msal-node";
+import { createConfidentialClientApplication } from "../util/utils.node";
 
 /**
  * Represent Microsoft 365 tenant identity, and it is usually used when user is not involved like time-triggered automation job.
@@ -30,7 +25,7 @@ import { ErrorCode, ErrorMessage, ErrorWithCode } from "../core/errors";
  * @beta
  */
 export class M365TenantCredential implements TokenCredential {
-  private readonly clientSecretCredential: ClientSecretCredential;
+  private readonly msalClient: ConfidentialClientApplication;
 
   /**
    * Constructor of M365TenantCredential.
@@ -48,16 +43,7 @@ export class M365TenantCredential implements TokenCredential {
 
     const config = this.loadAndValidateConfig();
 
-    const tokenCredentialOptions: TokenCredentialOptions = {
-      authorityHost: config.authorityHost,
-    };
-
-    this.clientSecretCredential = new ClientSecretCredential(
-      config.tenantId!,
-      config.clientId!,
-      config.clientSecret!,
-      tokenCredentialOptions
-    );
+    this.msalClient = createConfidentialClientApplication(config);
   }
 
   /**
@@ -96,19 +82,20 @@ export class M365TenantCredential implements TokenCredential {
     internalLogger.info("Get access token with scopes: " + scopesStr);
 
     try {
-      accessToken = await this.clientSecretCredential.getToken(scopes);
-    } catch (err: any) {
-      if (err instanceof AuthenticationError) {
-        const authError = err as AuthenticationError;
-        const errorMsg = `Get M365 tenant credential with authentication error: status code ${authError.statusCode}, error messages: ${authError.message}`;
-        internalLogger.error(errorMsg);
-
-        throw new ErrorWithCode(errorMsg, ErrorCode.ServiceError);
-      } else {
-        const errorMsg = "Get M365 tenant credential failed with error: " + err.message;
-        internalLogger.error(errorMsg);
-        throw new ErrorWithCode(errorMsg, ErrorCode.InternalError);
+      const scopesArray = getScopesArray(scopes);
+      const authenticationResult = await this.msalClient.acquireTokenByClientCredential({
+        scopes: scopesArray,
+      });
+      if (authenticationResult) {
+        accessToken = {
+          token: authenticationResult.accessToken,
+          expiresOnTimestamp: authenticationResult.expiresOn!.getTime(),
+        };
       }
+    } catch (err: any) {
+      const errorMsg = "Get M365 tenant credential failed with error: " + err.message;
+      internalLogger.error(errorMsg);
+      throw new ErrorWithCode(errorMsg, ErrorCode.ServiceError);
     }
 
     if (!accessToken) {
@@ -137,7 +124,7 @@ export class M365TenantCredential implements TokenCredential {
       );
     }
 
-    if (config.clientId && config.clientSecret && config.tenantId) {
+    if (config.clientId && (config.clientSecret || config.certificateContent) && config.tenantId) {
       return config;
     }
 
@@ -147,8 +134,8 @@ export class M365TenantCredential implements TokenCredential {
       missingValues.push("clientId");
     }
 
-    if (!config.clientSecret) {
-      missingValues.push("clientSecret");
+    if (!config.clientSecret && !config.certificateContent) {
+      missingValues.push("clientSecret or certificateContent");
     }
 
     if (!config.tenantId) {

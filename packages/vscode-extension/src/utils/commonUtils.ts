@@ -76,29 +76,20 @@ export function isLinux() {
   return os.type() === "Linux";
 }
 
+// Only used for telemetry when multi-env is disable
 export function getTeamsAppId() {
+  if (isMultiEnvEnabled()) {
+    return undefined;
+  }
+
   try {
     const ws = ext.workspaceUri.fsPath;
 
     if (isValidProject(ws)) {
-      const envResult = environmentManager.getActiveEnv(ws);
-
-      // ignore env error for telemetry
-
-      if (envResult.isErr()) {
-        return undefined;
-      }
-
       const envJsonPath = path.join(
         ws,
-
-        isMultiEnvEnabled()
-          ? `.${ConfigFolderName}/${PublishProfilesFolderName}/${EnvProfileFileNameTemplate.replace(
-              "@envName",
-
-              envResult.value
-            )}`
-          : `.${ConfigFolderName}/env.${envResult.value}.json`
+        `.${ConfigFolderName}`,
+        `env.${environmentManager.getDefaultEnvName()}.json`
       );
 
       const envJson = JSON.parse(fs.readFileSync(envJsonPath, "utf8"));

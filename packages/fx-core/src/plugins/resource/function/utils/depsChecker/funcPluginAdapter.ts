@@ -72,7 +72,13 @@ export class FuncPluginAdapter implements IDepsAdapter {
   public hasTeamsfxBackend(): Promise<boolean> {
     throw new Error("Method not implemented.");
   }
+  public hasTeamsfxBot(): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
   public funcToolCheckerEnabled(): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  public ngrokCheckerEnabled(): Promise<boolean> {
     throw new Error("Method not implemented.");
   }
   public nodeCheckerEnabled(): Promise<boolean> {

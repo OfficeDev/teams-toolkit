@@ -2,7 +2,7 @@ import * as path from "path";
 import { window, workspace, WorkspaceConfiguration, MessageItem, commands, Uri } from "vscode";
 import { DepsCheckerEvent, Messages } from "./common";
 import { IDepsAdapter, IDepsTelemetry } from "./checker";
-import { hasTeamsfxBackend } from "../commonUtils";
+import { hasTeamsfxBackend, hasTeamsfxBot, getSkipNgrokConfig } from "../commonUtils";
 import { vscodeLogger as logger } from "./vscodeLogger";
 import { vscodeTelemetry } from "./vscodeTelemetry";
 
@@ -22,12 +22,21 @@ export class VSCodeAdapter implements IDepsAdapter {
     return hasTeamsfxBackend();
   }
 
+  public hasTeamsfxBot(): Promise<boolean> {
+    return hasTeamsfxBot();
+  }
+
   public dotnetCheckerEnabled(): Promise<boolean> {
     return Promise.resolve(this.checkerEnabled(this.validateDotnetSdkKey));
   }
 
   public funcToolCheckerEnabled(): Promise<boolean> {
     return Promise.resolve(this.checkerEnabled(this.validateFuncCoreToolsKey));
+  }
+
+  public async ngrokCheckerEnabled(): Promise<boolean> {
+    const skipNgrok = await getSkipNgrokConfig();
+    return !skipNgrok;
   }
 
   public nodeCheckerEnabled(): Promise<boolean> {

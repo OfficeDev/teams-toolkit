@@ -48,6 +48,12 @@ export const Messages = {
   failToInstallFuncCoreTool: `Failed to install @NameVersion. Install @NameVersion manually.`,
   failToValidateFuncCoreTool: `Failed to validate @NameVersion after installation.`,
 
+  startInstallNgrok: `Downloading and installing @NameVersion.`,
+  finishInstallNgrok: `Successfully installed @NameVersion.`,
+  needInstallNgrok: `You must have @NameVersion installed to debug your local bot.`,
+  failToInstallNgrok: `Failed to install @NameVersion. Install @NameVersion manually.`,
+  failToValidateNgrok: `Failed to validate @NameVersion after installation.`,
+
   downloadDotnet: `Downloading and installing the portable version of @NameVersion, which will be installed to @InstallDir and will not affect your environment.`,
   finishInstallDotnet: `Successfully installed @NameVersion.`,
   useGlobalDotnet: `Using dotnet from PATH:`,
@@ -113,6 +119,12 @@ export enum DepsCheckerEvent {
   clickContinue = "env-checker-click-continue",
   clickCancel = "env-checker-click-cancel",
 
+  ngrokInstallCompleted = "ngrok-install-completed",
+  ngrokInstallError = "ngrok-install-error",
+  ngrokInstallScriptCompleted = "ngrok-install-script-completed",
+  ngrokInstallScriptError = "ngrok-install-script-error",
+  ngrokValidationError = "ngrok-validation-error",
+
   nodeNotFound = "node-not-found",
   nodeNotSupportedForAzure = "node-not-supported-for-azure",
   nodeNotSupportedForSPFx = "node-not-supported-for-spfx",
@@ -128,6 +140,8 @@ export enum TelemtryMessages {
   failedToExecDotnetScript = "failed to exec dotnet script.",
   failedToValidateDotnet = "failed to validate dotnet.",
   failedToSearchDotnetSdks = "failed to search dotnet sdks.",
+  failedToInstallNgrok = "failed to install ngrok.",
+  failedToValidateNgrok = "failed to validate ngrok.",
 }
 
 export enum TelemetryMessurement {

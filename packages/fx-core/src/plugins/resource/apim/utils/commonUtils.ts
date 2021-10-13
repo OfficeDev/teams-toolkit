@@ -83,7 +83,6 @@ export function getApimServiceNameFromResourceId(resourceId: string): string {
   if (!result) {
     throw new Error("Failed to get API Management service name from resource id: " + resourceId);
   }
-  console.log(`getApimServiceNameFromResourceId: ${result}`);
   return result;
 }
 
@@ -92,7 +91,6 @@ export function getproductNameFromResourceId(resourceId: string): string {
   if (!result) {
     throw new Error("Failed to get product name from resource id: " + resourceId);
   }
-  console.log(`getproductNameFromResourceId: ${result}`);
   return result;
 }
 
@@ -101,6 +99,5 @@ export function getAuthServiceNameFromResourceId(resourceId: string): string {
   if (!result) {
     throw new Error("Failed to get auth server name from resource id: " + resourceId);
   }
-  console.log(`getAuthServiceNameFromResourceId: ${result}`);
   return result;
 }

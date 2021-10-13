@@ -274,7 +274,6 @@ export enum ProgressStep {
   None = "",
   Scaffold = "Scaffolding OpenAPI document",
   Provision = "Provisioning API Management",
-  GenerateArmTemplates = "Generating ARM templates",
   PostProvision = "Configuring API Management",
   Deploy = "Importing API to API Management",
 }
@@ -284,7 +283,7 @@ export const PluginLifeCycleToProgressStep: { [key in PluginLifeCycle]: Progress
   [PluginLifeCycle.GetQuestions]: ProgressStep.None,
   [PluginLifeCycle.Scaffold]: ProgressStep.Scaffold,
   [PluginLifeCycle.Provision]: ProgressStep.Provision,
-  [PluginLifeCycle.GenerateArmTemplates]: ProgressStep.GenerateArmTemplates,
+  [PluginLifeCycle.GenerateArmTemplates]: ProgressStep.None,
   [PluginLifeCycle.PostProvision]: ProgressStep.PostProvision,
   [PluginLifeCycle.Deploy]: ProgressStep.Deploy,
   [PluginLifeCycle.GetQuestionsForUserTask]: ProgressStep.None,
@@ -299,7 +298,6 @@ export const ProgressMessages: { [key in ProgressStep]: { [step: string]: string
     CreateApim: "Create API Management service",
     CreateAad: "Create client AAD app registration",
   },
-  [ProgressStep.GenerateArmTemplates]: {},
   [ProgressStep.PostProvision]: {
     ConfigApim: "Configure API Management service",
     ConfigClientAad: "Configure client AAD app registration",

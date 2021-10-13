@@ -15,7 +15,7 @@ export class CryptoCodeLensProvider implements vscode.CodeLensProvider {
     this.userDataRegex =
       /fx-resource-[a-zA-Z\-]+\.[a-zA-Z\-_]+(?:Secret|Password|VariableParams)=(.*)/g;
     this.localDebugRegex =
-      /( *|\t*)"((clientSecret)|(SimpleAuthEnvironmentVariableParams)|(botPassword))": "(.*)"/g;
+      /(?: *|\t*)"(?:clientSecret|SimpleAuthEnvironmentVariableParams|botPassword)": "(.*)"/g;
   }
 
   public provideCodeLenses(
@@ -39,7 +39,7 @@ export class CryptoCodeLensProvider implements vscode.CodeLensProvider {
     const regex = new RegExp(secretRegex);
     let matches;
     while ((matches = regex.exec(text)) !== null) {
-      const match = secretRegex === this.userDataRegex ? matches[1] : matches[6];
+      const match = matches[1];
       const line = document.lineAt(document.positionAt(matches.index).line);
       const indexOf = line.text.indexOf(match);
       const position = new vscode.Position(line.lineNumber, indexOf);

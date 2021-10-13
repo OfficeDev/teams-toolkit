@@ -232,31 +232,6 @@ export class ApimManager {
     const handleBarsContext = {
       Plugins: solutionConfig.activeResourcePlugins,
     };
-
-    const provisionModuleContentResult = await generateBicepFiles(
-      path.join(bicepTemplateDir, ApimPathInfo.ProvisionModuleTemplateFileName),
-      handleBarsContext
-    );
-    if (provisionModuleContentResult.isErr()) {
-      throw provisionModuleContentResult.error;
-    }
-
-    const configurationModuleContentResult = await generateBicepFiles(
-      path.join(bicepTemplateDir, ApimPathInfo.ConfigurationModuleTemplateFileName),
-      handleBarsContext
-    );
-    if (configurationModuleContentResult.isErr()) {
-      throw configurationModuleContentResult.error;
-    }
-
-    const inputParameterContentResult = await generateBicepFiles(
-      path.join(bicepTemplateDir, Bicep.ParameterOrchestrationFileName),
-      handleBarsContext
-    );
-    if (inputParameterContentResult.isErr()) {
-      throw inputParameterContentResult.error;
-    }
-
     const moduleOrchestrationContentResult = await generateBicepFiles(
       path.join(bicepTemplateDir, Bicep.ModuleOrchestrationFileName),
       handleBarsContext
@@ -265,26 +240,21 @@ export class ApimManager {
       throw moduleOrchestrationContentResult.error;
     }
 
-    const outputOrchestrationContentResult = await generateBicepFiles(
-      path.join(bicepTemplateDir, Bicep.OutputOrchestrationFileName),
-      handleBarsContext
-    );
-    if (outputOrchestrationContentResult.isErr()) {
-      throw outputOrchestrationContentResult.error;
-    }
-
     const result: ScaffoldArmTemplateResult = {
       Modules: {
         apimProvision: {
-          Content: provisionModuleContentResult.value,
-        },
-        apimConfiguration: {
-          Content: configurationModuleContentResult.value,
+          Content: await fs.readFile(
+            path.join(bicepTemplateDir, ApimPathInfo.ProvisionModuleTemplateFileName),
+            ConstantString.UTF8Encoding
+          ),
         },
       },
       Orchestration: {
         ParameterTemplate: {
-          Content: inputParameterContentResult.value,
+          Content: await fs.readFile(
+            path.join(bicepTemplateDir, Bicep.ParameterOrchestrationFileName),
+            ConstantString.UTF8Encoding
+          ),
           ParameterJson: JSON.parse(
             await fs.readFile(
               path.join(bicepTemplateDir, Bicep.ParameterFileName),
@@ -296,7 +266,10 @@ export class ApimManager {
           Content: moduleOrchestrationContentResult.value,
         },
         OutputTemplate: {
-          Content: outputOrchestrationContentResult.value,
+          Content: await fs.readFile(
+            path.join(bicepTemplateDir, Bicep.OutputOrchestrationFileName),
+            ConstantString.UTF8Encoding
+          ),
         },
       },
     };

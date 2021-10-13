@@ -5,16 +5,6 @@ module apimProvision '\{{PluginOutput.fx-resource-apim.Modules.apimProvision.Pat
     productName: apimProductName
     publisherEmail: apimPublisherEmail
     publisherName: apimPublisherName
-  }
-}
-
-module apimConfiguration '\{{PluginOutput.fx-resource-apim.Modules.apimConfiguration.Path}}' = {
-  name: 'apimConfiguration'
-  dependsOn: [
-    apimProvision
-  ]
-  params: {
-    apimServiceName: apimServiceName
     oauthServerName: apimOauthServerName
     clientId: apimClientId
     clientSecret: apimClientSecret

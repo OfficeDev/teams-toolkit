@@ -162,7 +162,6 @@ export class ApimPathInfo {
     "bicep"
   );
   public static readonly ProvisionModuleTemplateFileName = "apimProvision.bicep";
-  public static readonly ConfigurationModuleTemplateFileName = "apimConfiguration.bicep";
 }
 
 export class ApimPluginConfigKeys {

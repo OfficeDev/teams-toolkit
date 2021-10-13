@@ -42,7 +42,7 @@ import {
 } from "@microsoft/teamsfx-core";
 import { WorkspaceNotSupported } from "./cmds/preview/errors";
 
-type Json = { [_: string]: any };
+export type Json = { [_: string]: any };
 
 export function getChoicesFromQTNodeQuestion(data: Question): string[] | undefined {
   const option = "staticOptions" in data ? data.staticOptions : undefined;

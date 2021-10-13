@@ -136,3 +136,21 @@ export class EnvUndefined extends SystemError {
     );
   }
 }
+
+export class EnvNotSpecified extends UserError {
+  constructor() {
+    super(new.target.name, `The --env argument is not specified`, constants.cliSource);
+  }
+}
+
+export class EnvNotFound extends UserError {
+  constructor(env: string) {
+    super(new.target.name, `The environment "${env}" is not found`, constants.cliSource);
+  }
+}
+
+export class EnvNotProvisioned extends UserError {
+  constructor(env: string) {
+    super(new.target.name, `The environment "${env}" is not provisioned`, constants.cliSource);
+  }
+}

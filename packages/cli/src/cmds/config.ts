@@ -7,7 +7,7 @@ import { Argv } from "yargs";
 import * as path from "path";
 import { YargsCommand } from "../yargsCommand";
 import { FxError, Question, Result, ok, err, LogLevel } from "@microsoft/teamsfx-api";
-import { dataNeedEncryption, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
+import { dataNeedEncryption, environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 import { UserSettings, CliConfigOptions, CliConfigTelemetry } from "../userSetttings";
 import CLILogProvider from "../commonlib/log";
 import {
@@ -25,7 +25,7 @@ import {
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
 import activate from "../activate";
-import { NonTeamsFxProjectFolder, ConfigNameNotFound } from "../error";
+import { NonTeamsFxProjectFolder, ConfigNameNotFound, EnvNotSpecified } from "../error";
 import * as constants from "../constants";
 
 const GlobalOptions = new Set([
@@ -51,7 +51,6 @@ export class ConfigGet extends YargsCommand {
       return result.option("env", {
         description: "Environment name",
         type: "string",
-        demandOption: true,
       });
     } else {
       return result;
@@ -61,7 +60,18 @@ export class ConfigGet extends YargsCommand {
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     const rootFolder = path.resolve((args.folder as string) || "./");
     const inProject = readSettingsFileSync(rootFolder).isOk();
-    const env: string | undefined = isMultiEnvEnabled() ? args.env : undefined;
+    let env: string | undefined = undefined;
+    if (isMultiEnvEnabled()) {
+      if (!args.global) {
+        if (args.env) {
+          env = args.env;
+        } else {
+          return err(new EnvNotSpecified());
+        }
+      }
+    } else {
+      env = environmentManager.getDefaultEnvName();
+    }
 
     if (args.option === undefined) {
       // print all
@@ -230,7 +240,18 @@ export class ConfigSet extends YargsCommand {
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     const rootFolder = path.resolve((args.folder as string) || "./");
-    const env: string | undefined = isMultiEnvEnabled() ? args.env : undefined;
+    let env: string | undefined = undefined;
+    if (isMultiEnvEnabled()) {
+      if (!args.global) {
+        if (args.env) {
+          env = args.env;
+        } else {
+          return err(new EnvNotSpecified());
+        }
+      }
+    } else {
+      env = environmentManager.getDefaultEnvName();
+    }
     const inProject = (await readEnvJsonFile(rootFolder, env)).isOk();
 
     if (GlobalOptions.has(args.option) || args.global) {

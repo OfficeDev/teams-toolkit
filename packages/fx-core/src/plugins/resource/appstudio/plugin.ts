@@ -1718,6 +1718,17 @@ export class AppStudioPluginImpl {
 
     const appDefinition = this.convertToAppDefinition(updatedManifest, false);
 
+    if (isLocalDebug && !isMultiEnvEnabled()) {
+      const suffix = "-local-debug";
+      if (
+        suffix.length + (appDefinition.shortName ? appDefinition.shortName.length : 0) <=
+        TEAMS_APP_SHORT_NAME_MAX_LENGTH
+      ) {
+        appDefinition.shortName = appDefinition.shortName + suffix;
+        appDefinition.appName = appDefinition.shortName;
+      }
+    }
+
     return ok([appDefinition, updatedManifest]);
   }
 

@@ -383,6 +383,13 @@ export class LocalDebugPlugin implements Plugin {
 
     const localEnvs: { [key: string]: string } = {};
     if (includeFrontend) {
+      localEnvs[LocalEnvFrontendKeys.Browser] = ctx.localSettings?.frontend?.get(
+        LocalSettingsFrontendKeys.Browser
+      ) as string;
+      localEnvs[LocalEnvFrontendKeys.Https] = ctx.localSettings?.frontend?.get(
+        LocalSettingsFrontendKeys.Https
+      ) as string;
+
       if (includeAuth) {
         // frontend local envs
         localEnvs[LocalEnvFrontendKeys.TeamsFxEndpoint] = localAuthEndpoint;

@@ -10,6 +10,7 @@ export const ProjectSettingsFileName = "projectSettings.json";
 export const EnvNamePlaceholder = "@envName";
 export const EnvConfigFileNameTemplate = `config.${EnvNamePlaceholder}.json`;
 export const EnvProfileFileNameTemplate = `profile.${EnvNamePlaceholder}.json`;
+export const LocalEnvironmentName = "local";
 export const ProductName = "teamsfx";
 export const ArchiveFolderName = ".archive";
 export const ArchiveLogFileName = ".archive.log";
@@ -56,6 +57,9 @@ export enum Stage {
   grantPermission = "grantPermission",
   checkPermission = "checkPermission",
   listCollaborator = "listCollaborator",
+  listAllCollaborators = "listAllCollaborators",
+  getQuestions = "getQuestions",
+  getProjectConfig = "getProjectConfig",
 }
 
 export enum TelemetryEvent {

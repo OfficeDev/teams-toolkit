@@ -218,6 +218,21 @@ describe("error", function () {
           chai.assert.isTrue(error.stack && error.stack.includes("error.test.ts"));
           chai.assert.isTrue(error instanceof SystemError);
         }
+        {
+          try {
+            fs.readFileSync("12345" + new Date().getTime());
+            chai.assert.fail("Should not reach here");
+          } catch (e) {
+            const fxError = new SystemError(e, mySource, "ReadFileError");
+            chai.assert.isTrue(fxError instanceof SystemError);
+            chai.assert.isTrue(
+              fxError.message && fxError.message.includes("ENOENT: no such file or directory")
+            );
+            chai.assert.isTrue(fxError.name === "ReadFileError");
+            chai.assert.isTrue(fxError.source === mySource);
+            chai.assert.isTrue(fxError.stack === e.stack);
+          }
+        }
       });
     it("constructor with SystemErrorOptions object", () => {
       {
@@ -279,6 +294,27 @@ describe("error", function () {
         chai.assert.equal(error.source, "unknown");
         chai.assert.isTrue(error.stack && error.stack.includes("error.test.ts"));
         chai.assert.isTrue(error instanceof SystemError);
+      }
+      {
+        try {
+          fs.readFileSync("12345" + new Date().getTime());
+          chai.assert.fail("Should not reach here");
+        } catch (e) {
+          const fxError = new SystemError({
+            error: e,
+            source: mySource,
+            name: "ReadFileError",
+            message: myMessage,
+          });
+          chai.assert.isTrue(fxError instanceof SystemError);
+          chai.assert.isTrue(
+            fxError.message &&
+              fxError.message.includes("ENOENT: no such file or directory") &&
+              fxError.message.includes(myMessage)
+          );
+          chai.assert.isTrue(fxError.name === "ReadFileError");
+          chai.assert.isTrue(fxError.source === mySource);
+        }
       }
     });
   });

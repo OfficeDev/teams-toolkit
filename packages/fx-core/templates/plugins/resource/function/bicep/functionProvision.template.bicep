@@ -2,7 +2,7 @@ param functionServerfarmsName string
 param functionAppName string
 param functionStorageName string
 {{#contains 'fx-resource-identity' Plugins}}
-param identityName string
+param identityResourceId string
 {{/contains}}
 
 resource functionServerfarms 'Microsoft.Web/serverfarms@2020-06-01' = {
@@ -25,7 +25,7 @@ resource functionApp 'Microsoft.Web/sites@2020-06-01' = {
   identity: {
     type: 'UserAssigned'
     userAssignedIdentities: {
-      '${identityName}':{}
+      '${identityResourceId}':{}
     }
   }
   {{/contains}}

@@ -111,6 +111,8 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
         treeItem.commandId,
         (treeItem.subTreeItems && treeItem.subTreeItems.length > 0) || treeItem.expanded
           ? vscode.TreeItemCollapsibleState.Expanded
+          : treeItem.expanded === false
+          ? vscode.TreeItemCollapsibleState.Collapsed
           : undefined,
         typeof treeItem.parent === "number" ? (treeItem.parent as TreeCategory) : undefined,
         [],
@@ -131,7 +133,8 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
         parentCmd = this.findCommand(treeItem.parent! as string);
 
         if (parentCmd) {
-          parentCmd.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
+          parentCmd.collapsibleState =
+            parentCmd.collapsibleState ?? vscode.TreeItemCollapsibleState.Expanded;
           parentCmd.children?.push(command);
         }
       }

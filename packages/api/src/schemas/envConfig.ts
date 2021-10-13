@@ -10,6 +10,7 @@
  */
 export interface EnvConfig {
   $schema?: string;
+  description?: string;
   /**
    * Existing AAD app configuration.
    */
@@ -30,6 +31,7 @@ export interface EnvConfig {
      * The access_as_user scope id of existing AAD app for Teams app.
      */
     accessAsUserScopeId?: string;
+    [k: string]: unknown;
   };
   /**
    * The Azure resource related configuration.
@@ -43,6 +45,7 @@ export interface EnvConfig {
      * The default resource group of Azure resources.
      */
     resourceGroupName?: string;
+    [k: string]: unknown;
   };
   /**
    * Existing bot AAD app configuration.
@@ -56,30 +59,24 @@ export interface EnvConfig {
      * The password of existing bot AAD app.
      */
     appPassword?: string;
+    [k: string]: unknown;
   };
   /**
    * The Teams App manifest related configuration.
    */
   manifest: {
-    description?: string;
     /**
-     * Configs to customize the Teams app manifest.
+     * Teams app name.
      */
-    values: {
+    appName: {
       /**
-       * Teams app name.
+       * A short display name for teams app.
        */
-      appName: {
-        /**
-         * A short display name for teams app.
-         */
-        short: string;
-        /**
-         * The full name for teams app.
-         */
-        full?: string;
-        [k: string]: unknown;
-      };
+      short: string;
+      /**
+       * The full name for teams app.
+       */
+      full?: string;
       [k: string]: unknown;
     };
     [k: string]: unknown;
@@ -88,4 +85,5 @@ export interface EnvConfig {
    * Skip to add user during SQL provision.
    */
   skipAddingSqlUser?: boolean;
+  [k: string]: unknown;
 }

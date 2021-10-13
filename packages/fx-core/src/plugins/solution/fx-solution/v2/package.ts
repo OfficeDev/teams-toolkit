@@ -1,5 +1,15 @@
-import { v2, Inputs, FxError, Result, err, Void, returnSystemError } from "@microsoft/teamsfx-api";
-import { PluginNames, SolutionError } from "../constants";
+import {
+  v2,
+  Inputs,
+  FxError,
+  Result,
+  err,
+  Void,
+  returnSystemError,
+  SystemError,
+  NotImplementedError,
+} from "@microsoft/teamsfx-api";
+import { PluginNames, SolutionError, SolutionSource } from "../constants";
 import Container from "typedi";
 import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { blockV1Project } from "./utils";
@@ -17,7 +27,7 @@ export async function createPackage(
     return err(
       returnSystemError(
         new Error("package() not implemented"),
-        "Solution",
+        SolutionSource,
         SolutionError.InternelError
       )
     );
@@ -27,5 +37,6 @@ export async function createPackage(
     method: "buildPackage",
   };
 
-  return (await appStudioPlugin.executeUserTask(ctx, inputs, func)).map((_) => Void);
+  // return (await appStudioPlugin.executeUserTask(ctx, inputs, func)).map((_) => Void);
+  throw new NotImplementedError(SolutionSource, "createPackage");
 }

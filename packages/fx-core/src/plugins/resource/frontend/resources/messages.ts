@@ -42,6 +42,7 @@ export class Messages {
     `Successfully generated ARM templates '${name}'.`;
   static readonly StartMigrateV1Project = (name: string) => `Migrating '${name}'.`;
   static readonly EndMigrateV1Project = (name: string) => `Successfully migrated '${name}'.`;
+  static readonly getTemplateFrom = (url: string) => `Retrieving template from '${url}'.`;
 
   static readonly SkipBuild =
     "Skip building Tab frontend project because no change was detected since last build.";

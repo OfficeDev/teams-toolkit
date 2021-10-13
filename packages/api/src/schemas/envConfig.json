@@ -6,6 +6,9 @@
     "$schema": {
       "type": "string"
     },
+    "description": {
+      "type": "string"
+    },
     "auth": {
       "type": "object",
       "description": "Existing AAD app configuration.",
@@ -36,8 +39,7 @@
         "clientSecret": ["clientId", "objectId", "accessAsUserScopeId"],
         "objectId": ["clientId", "clientSecret", "accessAsUserScopeId"],
         "accessAsUserScopeId": ["clientId", "clientSecret", "objectId"]
-      },
-      "additionalProperties": false
+      }
     },
     "azure": {
       "type": "object",
@@ -54,8 +56,7 @@
           "minLength": 1,
           "pattern": "^[-\\w\\._\\(\\)]+$"
         }
-      },
-      "additionalProperties": false
+      }
     },
     "bot": {
       "type": "object",
@@ -75,49 +76,37 @@
       "dependencies": {
         "appId": ["appPassword"],
         "appPassword": ["appId"]
-      },
-      "additionalProperties": false
+      }
     },
     "manifest": {
       "type": "object",
       "description": "The Teams App manifest related configuration.",
       "properties": {
-        "description": {
-          "type": "string"
-        },
-        "values": {
+        "appName": {
           "type": "object",
-          "description": "Configs to customize the Teams app manifest.",
+          "description": "Teams app name.",
           "properties": {
-            "appName": {
-              "type": "object",
-              "description": "Teams app name.",
-              "properties": {
-                "short": {
-                  "type": "string",
-                  "description": "A short display name for teams app.",
-                  "maxLength": 30,
-                  "minLength": 1
-                },
-                "full": {
-                  "type": "string",
-                  "description": "The full name for teams app.",
-                  "maxLength": 100
-                }
-              },
-              "required": ["short"]
+            "short": {
+              "type": "string",
+              "description": "A short display name for teams app.",
+              "maxLength": 30,
+              "minLength": 1
+            },
+            "full": {
+              "type": "string",
+              "description": "The full name for teams app.",
+              "maxLength": 100
             }
           },
-          "required": ["appName"]
+          "required": ["short"]
         }
       },
-      "required": ["values"]
+      "required": ["appName"]
     },
     "skipAddingSqlUser": {
       "type": "boolean",
       "description": "Skip to add user during SQL provision."
     }
   },
-  "additionalProperties": false,
   "required": ["manifest"]
 }

@@ -18,7 +18,12 @@ import {
 import * as os from "os";
 
 import { LocalCertificateManager } from "./certificate";
-import { SolutionPlugin, LocalEnvBotKeys, LocalEnvBotKeysMigratedFromV1 } from "./constants";
+import {
+  SolutionPlugin,
+  LocalEnvBotKeys,
+  LocalEnvBotKeysMigratedFromV1,
+  AppStudioPlugin,
+} from "./constants";
 import {
   LocalDebugConfigKeys,
   LocalEnvFrontendKeys,
@@ -356,7 +361,7 @@ export class LocalDebugPlugin implements Plugin {
     const applicationIdUri = ctx.localSettings?.auth?.get(
       LocalSettingsAuthKeys.ApplicationIdUris
     ) as string;
-    const teamsAppTenantId = ctx.localSettings?.teamsApp.get(
+    const teamsAppTenantId = ctx.localSettings?.teamsApp?.get(
       LocalSettingsTeamsAppKeys.TenantId
     ) as string;
 
@@ -378,6 +383,13 @@ export class LocalDebugPlugin implements Plugin {
 
     const localEnvs: { [key: string]: string } = {};
     if (includeFrontend) {
+      localEnvs[LocalEnvFrontendKeys.Browser] = ctx.localSettings?.frontend?.get(
+        LocalSettingsFrontendKeys.Browser
+      ) as string;
+      localEnvs[LocalEnvFrontendKeys.Https] = ctx.localSettings?.frontend?.get(
+        LocalSettingsFrontendKeys.Https
+      ) as string;
+
       if (includeAuth) {
         // frontend local envs
         localEnvs[LocalEnvFrontendKeys.TeamsFxEndpoint] = localAuthEndpoint;
@@ -454,9 +466,9 @@ export class LocalDebugPlugin implements Plugin {
         localEnvs[LocalEnvBotKeys.ClientSecret] = clientSecret;
         localEnvs[LocalEnvBotKeys.TenantID] = teamsAppTenantId;
         localEnvs[LocalEnvBotKeys.OauthAuthority] = "https://login.microsoftonline.com";
-        localEnvs[LocalEnvBotKeys.LoginEndpoint] = ctx.localSettings?.bot?.get(
-          LocalSettingsBotKeys.BotEndpoint
-        ) as string;
+        localEnvs[LocalEnvBotKeys.LoginEndpoint] = `${
+          ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotEndpoint) as string
+        }/auth-start.html`;
         localEnvs[LocalEnvBotKeys.ApplicationIdUri] = applicationIdUri;
       }
 
@@ -474,18 +486,25 @@ export class LocalDebugPlugin implements Plugin {
       const solutionConfigs = ctx.envInfo.profile.get(SolutionPlugin.Name);
       if (env === "remote") {
         // return remote teams app id
-        const remoteId = solutionConfigs?.get(SolutionPlugin.RemoteTeamsAppId) as string;
+        const remoteId = isMultiEnvEnabled()
+          ? (ctx.envInfo.profile
+              .get(AppStudioPlugin.Name)
+              ?.get(AppStudioPlugin.TeamsAppId) as string)
+          : (solutionConfigs?.get(SolutionPlugin.RemoteTeamsAppId) as string);
         if (/^[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$/.test(remoteId)) {
-          return ok(remoteId);
+          return ok({
+            appId: remoteId,
+            env: ctx.envInfo.envName,
+          });
         } else {
-          return err(MissingStep("launching remote", "TeamsFx: Provision and TeamsFx: Deploy"));
+          return err(MissingStep("launching remote", "Teams: Provision and Teams: Deploy"));
         }
       } else {
         // return local teams app id
         const localTeamsAppId = isMultiEnvEnabled()
-          ? (ctx.localSettings?.teamsApp.get(LocalSettingsTeamsAppKeys.TeamsAppId) as string)
+          ? (ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TeamsAppId) as string)
           : (solutionConfigs?.get(SolutionPlugin.LocalTeamsAppId) as string);
-        return ok(localTeamsAppId);
+        return ok({ appId: localTeamsAppId });
       }
     } else if (func.method === "getProgrammingLanguage") {
       const programmingLanguage = ctx.projectSettings?.programmingLanguage;

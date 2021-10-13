@@ -98,7 +98,7 @@
         "email.address"
       ],
       "env": {
-        "TEAMSFX_MULTI_ENV": "true"
+        "TEAMSFX_INSIDER_PREVIEW": "true"
       },
       "outFiles": [
         "${workspaceFolder}/lib/**/*.js",

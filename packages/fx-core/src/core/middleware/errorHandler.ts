@@ -3,8 +3,8 @@
 "use strict";
 
 import { HookContext, NextFunction, Middleware } from "@feathersjs/hooks";
-import { assembleError, err, Inputs, SystemError, UserError } from "@microsoft/teamsfx-api";
-import { FxCore } from "..";
+import { assembleError, err, Func, Inputs, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { FxCore, isV2 } from "..";
 
 /**
  * in case there're some uncatched exceptions, this middleware will act as a guard
@@ -18,9 +18,13 @@ export const ErrorHandlerMW: Middleware = async (ctx: HookContext, next: NextFun
       ? core.tools.logProvider
       : undefined;
   try {
-    if (logger) logger.info(`[core] start task:${ctx.method}, inputs:${JSON.stringify(inputs)}`);
+    logger?.info(
+      `[core] start task:${ctx.method} ${
+        ctx.method === "executeUserTask" ? (ctx.arguments[0] as Func).method : ""
+      }, inputs:${JSON.stringify(inputs)}, API v2: ${isV2()}`
+    );
     await next();
-    if (logger) logger.info(`[core] finish task:${ctx.method}`);
+    logger?.info(`[core] finish task:${ctx.method}`);
   } catch (e) {
     let fxError = assembleError(e);
     if (fxError instanceof SystemError) {

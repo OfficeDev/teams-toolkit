@@ -6,13 +6,8 @@ import {
   ok,
   err,
   returnUserError,
-  AzureAccountProvider,
   TokenProvider,
-  Json,
-  EnvInfo,
   ConfigMap,
-  UserInteraction,
-  ProjectSettings,
   Void,
   SolutionContext,
   returnSystemError,
@@ -33,20 +28,25 @@ import {
   GLOBAL_CONFIG,
   PluginNames,
   SolutionError,
+  SOLUTION_PROVISION_SUCCEEDED,
   SUBSCRIPTION_ID,
   SUBSCRIPTION_NAME,
+  SolutionSource,
 } from "../constants";
 import * as util from "util";
 import { isUndefined } from "lodash";
 import { PluginDisplayName } from "../../../../common/constants";
 import { ProvisionContextAdapter } from "./adaptor";
 import { fillInCommonQuestions } from "../commonQuestions";
-import { askTargetEnvironment } from "../../../../core/middleware/envInfoLoader";
 import { deployArmTemplates } from "../arm";
 import Container from "typedi";
 import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import _ from "lodash";
 import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
+import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
+import { isV2 } from "../../../..";
+import { REMOTE_TEAMS_APP_ID } from "..";
+import { Constants } from "../../../resource/appstudio/constants";
 
 export async function provisionResource(
   ctx: v2.Context,
@@ -58,7 +58,7 @@ export async function provisionResource(
     return new v2.FxFailure(
       returnSystemError(
         new Error("projectPath is undefined"),
-        "Solution",
+        SolutionSource,
         SolutionError.InternelError
       )
     );
@@ -77,6 +77,9 @@ export async function provisionResource(
   await tokenProvider.appStudioToken.getAccessToken();
 
   if (isAzureProject(azureSolutionSettings)) {
+    if (ctx.permissionRequestProvider === undefined) {
+      ctx.permissionRequestProvider = new PermissionRequestFileProvider(inputs.projectPath);
+    }
     const result = await ensurePermissionRequest(
       azureSolutionSettings,
       ctx.permissionRequestProvider
@@ -87,6 +90,9 @@ export async function provisionResource(
   }
 
   const newEnvInfo: EnvInfoV2 = _.cloneDeep(envInfo);
+  if (!newEnvInfo.profile[GLOBAL_CONFIG]) {
+    newEnvInfo.profile[GLOBAL_CONFIG] = {};
+  }
   if (isAzureProject(azureSolutionSettings)) {
     const appName = ctx.projectSetting.appName;
     const contextAdaptor = new ProvisionContextAdapter([ctx, inputs, newEnvInfo, tokenProvider]);
@@ -109,6 +115,7 @@ export async function provisionResource(
   }
 
   const plugins = getSelectedPlugins(azureSolutionSettings);
+  const solutionInputs = extractSolutionInputs(newEnvInfo.profile[GLOBAL_CONFIG]);
   const provisionThunks = plugins
     .filter((plugin) => !isUndefined(plugin.provisionResource))
     .map((plugin) => {
@@ -119,8 +126,8 @@ export async function provisionResource(
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           plugin.provisionResource!(
             ctx,
-            { ...inputs, ...extractSolutionInputs(newEnvInfo.profile), projectPath: projectPath },
-            { ...newEnvInfo, profile: newEnvInfo.profile[plugin.name] },
+            { ...inputs, ...solutionInputs, projectPath: projectPath },
+            { ...newEnvInfo, profile: newEnvInfo.profile },
             tokenProvider
           ),
       };
@@ -157,16 +164,27 @@ export async function provisionResource(
 
   const aadPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin);
   if (plugins.some((plugin) => plugin.name === aadPlugin.name) && aadPlugin.executeUserTask) {
-    const result = await aadPlugin.executeUserTask(ctx, inputs, {
-      namespace: `${PluginNames.SOLUTION}/${PluginNames.AAD}`,
-      method: "setApplicationInContext",
-      params: { isLocal: false },
-    });
+    const result = await aadPlugin.executeUserTask(
+      ctx,
+      inputs,
+      {
+        namespace: `${PluginNames.SOLUTION}/${PluginNames.AAD}`,
+        method: "setApplicationInContext",
+        params: { isLocal: false },
+      },
+      {},
+      newEnvInfo,
+      tokenProvider
+    );
     if (result.isErr()) {
       return new v2.FxPartialSuccess(combineRecords(provisionResult.output), result.error);
     }
   }
 
+  if (isV2()) {
+    solutionInputs.remoteTeamsAppId =
+      newEnvInfo.profile[PluginNames.APPST]["output"][Constants.TEAMS_APP_ID];
+  }
   const configureResourceThunks = plugins
     .filter((plugin) => !isUndefined(plugin.configureResource))
     .map((plugin) => {
@@ -177,8 +195,8 @@ export async function provisionResource(
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           plugin.configureResource!(
             ctx,
-            { ...inputs, ...extractSolutionInputs(newEnvInfo.profile), projectPath: projectPath },
-            { ...newEnvInfo, profile: newEnvInfo.profile[plugin.name] },
+            { ...inputs, ...solutionInputs, projectPath: projectPath },
+            { ...newEnvInfo, profile: newEnvInfo.profile },
             tokenProvider
           ),
       };
@@ -188,13 +206,24 @@ export async function provisionResource(
     configureResourceThunks,
     ctx.logProvider
   );
-  if (configureResourceResult.kind === "failure") {
-    return configureResourceResult;
-  } else if (configureResourceResult.kind === "partialSuccess") {
-    return new v2.FxPartialSuccess(
-      combineRecords(configureResourceResult.output),
-      configureResourceResult.error
-    );
+  ctx.logProvider?.info(
+    util.format(getStrings().solution.ConfigurationFinishNotice, PluginDisplayName.Solution)
+  );
+  if (
+    configureResourceResult.kind === "failure" ||
+    configureResourceResult.kind === "partialSuccess"
+  ) {
+    const msg = util.format(getStrings().solution.ProvisionFailNotice, ctx.projectSetting.appName);
+    ctx.logProvider.error(msg);
+    solutionInputs[SOLUTION_PROVISION_SUCCEEDED] = false;
+
+    if (configureResourceResult.kind === "failure") {
+      return configureResourceResult;
+    } else {
+      const output = configureResourceResult.output;
+      output.push({ name: GLOBAL_CONFIG, result: { output: solutionInputs, secrets: {} } });
+      return new v2.FxPartialSuccess(combineRecords(output), configureResourceResult.error);
+    }
   } else {
     if (
       newEnvInfo.profile[GLOBAL_CONFIG] &&
@@ -202,10 +231,18 @@ export async function provisionResource(
     ) {
       delete newEnvInfo.profile[GLOBAL_CONFIG][ARM_TEMPLATE_OUTPUT];
     }
-    ctx.logProvider?.info(
-      util.format(getStrings().solution.ConfigurationFinishNotice, PluginDisplayName.Solution)
+
+    const msg = util.format(
+      `Success: ${getStrings().solution.ProvisionSuccessNotice}`,
+      ctx.projectSetting.appName
     );
-    return new v2.FxSuccess(combineRecords(configureResourceResult.output));
+    ctx.logProvider?.info(msg);
+    ctx.userInteraction.showMessage("info", msg, false);
+    solutionInputs[SOLUTION_PROVISION_SUCCEEDED] = true;
+    const output = configureResourceResult.output;
+    output.push({ name: GLOBAL_CONFIG, result: { output: solutionInputs, secrets: {} } });
+
+    return new v2.FxSuccess(combineRecords(output));
   }
 }
 
@@ -226,18 +263,11 @@ export async function askForProvisionConsent(ctx: SolutionContext): Promise<Resu
   if (isMultiEnvEnabled()) {
     const msgNew = util.format(
       getStrings().solution.ProvisionConfirmEnvNotice,
-      ctx.projectSettings!.activeEnvironment,
+      ctx.envInfo.envName,
       username,
       subscriptionName ? subscriptionName : subscriptionId
     );
-    confirmRes = await ctx.ui?.showMessage(
-      "warn",
-      msgNew,
-      true,
-      "Provision",
-      "Switch environment",
-      "Pricing calculator"
-    );
+    confirmRes = await ctx.ui?.showMessage("warn", msgNew, true, "Provision", "Pricing calculator");
   } else {
     confirmRes = await ctx.ui?.showMessage("warn", msg, true, "Provision", "Pricing calculator");
   }
@@ -246,21 +276,12 @@ export async function askForProvisionConsent(ctx: SolutionContext): Promise<Resu
   if (confirm !== "Provision") {
     if (confirm === "Pricing calculator") {
       ctx.ui?.openUrl("https://azure.microsoft.com/en-us/pricing/calculator/");
-    } else if (confirm === "Switch environment") {
-      const envName = await askTargetEnvironment(ctx as any, ctx.answers!);
-      if (envName) {
-        ctx.projectSettings!.activeEnvironment = envName;
-        ctx.ui?.showMessage(
-          "info",
-          `[${envName}] is activated. Please try to do provision again.`,
-          false
-        );
-      }
     }
+
     return err(
       returnUserError(
         new Error(getStrings().solution.CancelProvision),
-        "Solution",
+        SolutionSource,
         getStrings().solution.CancelProvision
       )
     );

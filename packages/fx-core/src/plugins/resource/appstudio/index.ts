@@ -30,6 +30,7 @@ import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContai
 import { Links } from "../bot/constants";
 import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
 import "./v2";
+import { IUserList } from "./interfaces/IAppDefinition";
 @Service(ResourcePlugins.AppStudioPlugin)
 export class AppStudioPlugin implements Plugin {
   name = "fx-resource-appstudio";
@@ -70,10 +71,10 @@ export class AppStudioPlugin implements Plugin {
    */
   public async getAppDefinitionAndUpdate(
     ctx: PluginContext,
-    type: "localDebug" | "remote",
+    isLocalDebug: boolean,
     manifest: TeamsAppManifest
   ): Promise<Result<string, FxError>> {
-    return await this.appStudioPluginImpl.getAppDefinitionAndUpdate(ctx, type, manifest);
+    return await this.appStudioPluginImpl.getAppDefinitionAndUpdate(ctx, isLocalDebug, manifest);
   }
 
   /**
@@ -256,7 +257,8 @@ export class AppStudioPlugin implements Plugin {
       );
       const properties: { [key: string]: string } = {};
       properties[TelemetryPropertyKey.updateExistingApp] = String(result.update);
-      TelemetryUtils.sendSuccessEvent(TelemetryEventName.publish);
+      properties[TelemetryPropertyKey.publishedAppId] = String(result.id);
+      TelemetryUtils.sendSuccessEvent(TelemetryEventName.publish, properties);
       return ok(result.id);
     } catch (error) {
       if (error instanceof SystemError || error instanceof UserError) {
@@ -306,12 +308,18 @@ export class AppStudioPlugin implements Plugin {
     }
   }
 
-  public async checkPermission(ctx: PluginContext): Promise<Result<ResourcePermission[], FxError>> {
+  public async checkPermission(
+    ctx: PluginContext,
+    userInfo: Record<string, any>
+  ): Promise<Result<ResourcePermission[], FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.checkPermission);
 
     try {
-      const checkPermissionResult = await this.appStudioPluginImpl.checkPermission(ctx);
+      const checkPermissionResult = await this.appStudioPluginImpl.checkPermission(
+        ctx,
+        userInfo as IUserList
+      );
       TelemetryUtils.sendSuccessEvent(TelemetryEventName.checkPermission);
       return ok(checkPermissionResult);
     } catch (error) {
@@ -330,12 +338,18 @@ export class AppStudioPlugin implements Plugin {
     }
   }
 
-  public async grantPermission(ctx: PluginContext): Promise<Result<ResourcePermission[], FxError>> {
+  public async grantPermission(
+    ctx: PluginContext,
+    userInfo: Record<string, any>
+  ): Promise<Result<ResourcePermission[], FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.grantPermission);
 
     try {
-      const grantPermissionResult = await this.appStudioPluginImpl.grantPermission(ctx);
+      const grantPermissionResult = await this.appStudioPluginImpl.grantPermission(
+        ctx,
+        userInfo as IUserList
+      );
       TelemetryUtils.sendSuccessEvent(TelemetryEventName.grantPermission);
       return ok(grantPermissionResult);
     } catch (error) {
@@ -375,9 +389,10 @@ export class AppStudioPlugin implements Plugin {
       return await this.buildTeamsPackage(ctx);
     } else if (func.method === "getAppDefinitionAndUpdate") {
       if (func.params && func.params.type && func.params.manifest) {
+        const isLocalDebug = (func.params.type as string) === "localDebug";
         return await this.getAppDefinitionAndUpdate(
           ctx,
-          func.params.type as "localDebug" | "remote",
+          isLocalDebug,
           func.params.manifest as TeamsAppManifest
         );
       }
@@ -392,6 +407,9 @@ export class AppStudioPlugin implements Plugin {
       );
     } else if (func.method === "migrateV1Project") {
       return await this.migrateV1Project(ctx);
+    } else if (func.method === "getManifestTemplatePath") {
+      const filePath = await this.appStudioPluginImpl.getManifestTemplatePath(ctx.root);
+      return ok(filePath);
     }
     return err(
       new SystemError(

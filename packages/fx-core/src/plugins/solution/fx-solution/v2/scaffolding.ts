@@ -7,10 +7,12 @@ import {
   err,
   Void,
   AzureSolutionSettings,
+  returnSystemError,
 } from "@microsoft/teamsfx-api";
 import { getStrings, isMultiEnvEnabled } from "../../../../common/tools";
 import {
   AzureResourceFunction,
+  AzureSolutionQuestionNames,
   BotOptionItem,
   MessageExtensionItem,
   TabOptionItem,
@@ -22,11 +24,21 @@ import {
   getAzureSolutionSettings,
   getSelectedPlugins,
   fillInSolutionSettings,
+  isAzureProject,
 } from "./utils";
 import path from "path";
 import fs from "fs-extra";
-import { getTemplatesFolder } from "../../../..";
+import {
+  DEFAULT_PERMISSION_REQUEST,
+  getTemplatesFolder,
+  SolutionError,
+  SolutionTelemetryComponentName,
+  SolutionTelemetryEvent,
+  SolutionTelemetryProperty,
+  SolutionTelemetrySuccess,
+} from "../../../..";
 import { LocalSettingsProvider } from "../../../../common/localSettingsProvider";
+import { Json } from "@microsoft/teamsfx-api";
 
 export async function scaffoldSourceCode(
   ctx: v2.Context,
@@ -35,6 +47,19 @@ export async function scaffoldSourceCode(
   const blockResult = blockV1Project(ctx.projectSetting.solutionSettings);
   if (blockResult.isErr()) {
     return err(blockResult.error);
+  }
+  if (inputs.projectPath === undefined) {
+    return err(
+      returnSystemError(
+        new Error("projectPath is undefined"),
+        "Solution",
+        SolutionError.InternelError
+      )
+    );
+  }
+  const lang = inputs[AzureSolutionQuestionNames.ProgrammingLanguage] as string;
+  if (lang) {
+    ctx.projectSetting.programmingLanguage = lang;
   }
   const solutionSettings: AzureSolutionSettings = getAzureSolutionSettings(ctx);
   const fillinRes = fillInSolutionSettings(solutionSettings, inputs);
@@ -65,6 +90,20 @@ export async function scaffoldSourceCode(
       `Success: ${getStrings().solution.ScaffoldSuccessNotice}`,
       false
     );
+
+    if (isAzureProject(solutionSettings)) {
+      await fs.writeJSON(`${inputs.projectPath}/permissions.json`, DEFAULT_PERMISSION_REQUEST, {
+        spaces: 4,
+      });
+      ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.Create, {
+        [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+        [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
+        [SolutionTelemetryProperty.Resources]: solutionSettings.azureResources.join(";"),
+        [SolutionTelemetryProperty.Capabilities]: solutionSettings.capabilities.join(";"),
+        [SolutionTelemetryProperty.ProgrammingLanguage]:
+          ctx.projectSetting?.programmingLanguage ?? "",
+      });
+    }
     return ok(Void);
   } else {
     return err(result.error);
@@ -74,6 +113,7 @@ export async function scaffoldSourceCode(
 export async function scaffoldByPlugins(
   ctx: v2.Context,
   inputs: Inputs,
+  localSettings: Json,
   plugins: v2.ResourcePlugin[]
 ): Promise<Result<Void, FxError>> {
   const blockResult = blockV1Project(ctx.projectSetting.solutionSettings);
@@ -98,7 +138,12 @@ export async function scaffoldByPlugins(
     const azureResources = solutionSettings.azureResources;
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    await scaffoldReadmeAndLocalSettings(capabilities, azureResources, inputs.projectPath!);
+    await scaffoldReadmeAndLocalSettings(
+      capabilities,
+      azureResources,
+      inputs.projectPath!,
+      localSettings
+    );
 
     ctx.userInteraction.showMessage(
       "info",
@@ -115,6 +160,7 @@ export async function scaffoldReadmeAndLocalSettings(
   capabilities: string[],
   azureResources: string[],
   projectPath: string,
+  localSettings?: Json,
   migrateFromV1?: boolean
 ): Promise<void> {
   const hasBot = capabilities.includes(BotOptionItem.id);
@@ -138,17 +184,18 @@ export async function scaffoldReadmeAndLocalSettings(
 
   if (isMultiEnvEnabled()) {
     const localSettingsProvider = new LocalSettingsProvider(projectPath);
-    const localSettings = await localSettingsProvider.load();
 
     if (localSettings !== undefined) {
       // Add local settings for the new added capability/resource
-      await localSettingsProvider.save(
+      localSettings = localSettingsProvider.incrementalInit(localSettings!, hasBackend, hasBot);
+      await localSettingsProvider.saveJson(
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        localSettingsProvider.incrementalInit(localSettings!, hasBackend, hasBot)
+        localSettings
       );
     } else {
       // Initialize a local settings on scaffolding
-      await localSettingsProvider.save(localSettingsProvider.init(hasTab, hasBackend, hasBot));
+      localSettings = localSettingsProvider.init(hasTab, hasBackend, hasBot || hasMsgExt);
+      await localSettingsProvider.save(localSettings);
     }
   }
 }

@@ -42,6 +42,7 @@ import Container from "typedi";
 import { MockUserInteraction } from "../../core/utils";
 import mockedEnv from "mocked-env";
 import { newEnvInfo } from "../../../src";
+import { LocalCrypto } from "../../../src/core/crypto";
 
 const fehostPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin);
 const localDebug = Container.get<Plugin>(ResourcePlugins.LocalDebugPlugin);
@@ -55,6 +56,7 @@ function mockSolutionContext(): SolutionContext {
     envInfo: newEnvInfo(),
     answers: { platform: Platform.VSCode },
     projectSettings: undefined,
+    cryptoProvider: new LocalCrypto(""),
   };
 }
 
@@ -379,7 +381,7 @@ describe("update()", () => {
 
   it("should ask for confirm regenerate ARM template when adding resources", async () => {
     const restore = mockedEnv({
-      TEAMSFX_ARM_SUPPORT: "1",
+      TEAMSFX_INSIDER_PREVIEW: "1",
     });
 
     const solution = new TeamsAppSolution();

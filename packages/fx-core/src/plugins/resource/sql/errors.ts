@@ -72,6 +72,12 @@ export class ErrorMessage {
       `Failed to get config value of '${configKey}' from '${pluginId}'.`,
   };
 
+  public static readonly SqlInvalidConfigError = {
+    name: "SqlInvalidConfigError",
+    message: (configKey: string, reason: string) =>
+      `The config value of '${configKey}' is invalid for ${reason}.`,
+  };
+
   public static readonly SqlCheckError = {
     name: "SqlCheckError",
     message: (sqlName: string, detail = "") => `Failed to check SQL Server '${sqlName}'. ${detail}`,

@@ -1,33 +1,35 @@
 import {
-  v2,
-  Inputs,
-  FxError,
-  Result,
-  ok,
-  err,
-  returnUserError,
   AppStudioTokenProvider,
+  err,
+  FxError,
+  Inputs,
+  ok,
+  Result,
+  returnUserError,
+  v2,
   Void,
-  EnvConfig,
-  Json,
 } from "@microsoft/teamsfx-api";
+import { isUndefined } from "lodash";
+import * as util from "util";
+import { PluginDisplayName } from "../../../../common/constants";
 import { getStrings } from "../../../../common/tools";
+import {
+  GLOBAL_CONFIG,
+  SolutionError,
+  SOLUTION_PROVISION_SUCCEEDED,
+  SolutionSource,
+} from "../constants";
 import { executeConcurrently } from "./executor";
 import { getAzureSolutionSettings, getSelectedPlugins, isAzureProject } from "./utils";
-import { GLOBAL_CONFIG, SolutionError, SOLUTION_PROVISION_SUCCEEDED } from "../constants";
-import * as util from "util";
-import { isUndefined } from "lodash";
-import { PluginDisplayName } from "../../../../common/constants";
 
 export async function publishApplication(
   ctx: v2.Context,
   inputs: Inputs,
-  provisionInputConfig: Json,
-  provisionOutputs: Json,
+  envInfo: v2.EnvInfoV2,
   tokenProvider: AppStudioTokenProvider
 ): Promise<Result<Void, FxError>> {
   const inAzureProject = isAzureProject(getAzureSolutionSettings(ctx));
-  const provisioned = provisionOutputs[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED];
+  const provisioned = envInfo.profile[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED];
 
   if (inAzureProject && !provisioned) {
     return err(
@@ -35,7 +37,7 @@ export async function publishApplication(
         new Error(
           util.format(getStrings().solution.NotProvisionedNotice, ctx.projectSetting.appName)
         ),
-        "Solution",
+        SolutionSource,
         SolutionError.CannotDeployBeforeProvision
       )
     );
@@ -49,14 +51,7 @@ export async function publishApplication(
         pluginName: `${plugin.name}`,
         taskName: "publishApplication",
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        thunk: () =>
-          plugin.publishApplication!(
-            ctx,
-            inputs,
-            provisionInputConfig,
-            provisionOutputs,
-            tokenProvider
-          ),
+        thunk: () => plugin.publishApplication!(ctx, inputs, envInfo, tokenProvider),
       };
     });
 

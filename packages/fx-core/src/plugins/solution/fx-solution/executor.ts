@@ -1,6 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ok, Result, FxError, PluginContext, LogProvider } from "@microsoft/teamsfx-api";
+import {
+  ok,
+  Result,
+  FxError,
+  PluginContext,
+  LogProvider,
+  err,
+  SystemError,
+  UserError,
+} from "@microsoft/teamsfx-api";
 import { PluginDisplayName } from "../../../common/constants";
 
 export type LifecyclesWithContext = [
@@ -78,44 +87,71 @@ export async function executeConcurrently(
     async (pair: LifecyclesWithContext): Promise<Result<any, FxError>> => {
       const lifecycle = pair[0];
       const context = pair[1];
+      const pluginName = pair[2];
+      const taskname = lifecycle?.name.replace("bound ", "");
       logger = context.logProvider;
       if (lifecycle) {
-        const res = lifecycle(context);
-        return res;
+        try {
+          const res = lifecycle(context);
+          return res;
+        } catch (e) {
+          if (e instanceof UserError || e instanceof SystemError) {
+            return err(e);
+          }
+          return err(
+            new SystemError(
+              "UnknownError",
+              `[Solution.executeConcurrently part 1] unknown error from plugin: ${pluginName}, taskName:${taskname}, error: ${JSON.stringify(
+                e
+              )}`,
+              "Solution"
+            )
+          );
+        }
       } else {
         return ok(undefined);
       }
     }
   );
-
-  const results = await Promise.all(promises);
-  if (logger)
-    logger?.info(
-      `${`[${PluginDisplayName.Solution}] Execute ${step}Task summary`.padEnd(64, "-")}`
-    );
-  let failed = false;
-  for (let i = 0; i < results.length; ++i) {
-    const pair = lifecycleAndContext[i];
-    const lifecycle = pair[0];
-    const context = pair[1];
-    const pluginName = pair[2];
-    const result = results[i];
-    if (!result || !lifecycle) continue;
-    const taskname = lifecycle?.name.replace("bound ", "");
-    context.logProvider?.info(
-      `${(pluginName + "." + taskname).padEnd(60, ".")} ${result.isOk() ? "[ok]" : "[failed]"}`
-    );
-    if (result.isErr()) {
-      failed = true;
+  try {
+    const results = await Promise.all(promises);
+    if (logger)
+      logger?.info(
+        `${`[${PluginDisplayName.Solution}] Execute ${step}Task summary`.padEnd(64, "-")}`
+      );
+    let failed = false;
+    for (let i = 0; i < results.length; ++i) {
+      const pair = lifecycleAndContext[i];
+      const lifecycle = pair[0];
+      const context = pair[1];
+      const pluginName = pair[2];
+      const result = results[i];
+      if (!result || !lifecycle) continue;
+      const taskname = lifecycle?.name.replace("bound ", "");
+      context.logProvider?.info(
+        `${(pluginName + "." + taskname).padEnd(60, ".")} ${result.isOk() ? "[ok]" : "[failed]"}`
+      );
+      if (result.isErr()) {
+        failed = true;
+      }
     }
-  }
-  if (logger)
-    logger?.info(
-      `${`[${PluginDisplayName.Solution}] ${step}Task overall result`.padEnd(60, ".")}${
-        failed ? "[failed]" : "[ok]"
-      }`
+    if (logger)
+      logger?.info(
+        `${`[${PluginDisplayName.Solution}] ${step}Task overall result`.padEnd(60, ".")}${
+          failed ? "[failed]" : "[ok]"
+        }`
+      );
+    return results;
+  } catch (e) {
+    if (e instanceof UserError || e instanceof SystemError) {
+      throw e;
+    }
+    throw new SystemError(
+      "UnknownError",
+      `[Solution.executeConcurrently part 2] unknown error: ${JSON.stringify(e)}`,
+      "Solution"
     );
-  return results;
+  }
 }
 
 /**

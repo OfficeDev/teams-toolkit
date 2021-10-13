@@ -1,7 +1,6 @@
-import { v2, Inputs, FxError, Result, err, returnSystemError, Json } from "@microsoft/teamsfx-api";
+import { v2, Inputs, FxError, Result, Json, ok } from "@microsoft/teamsfx-api";
 import { isArmSupportEnabled } from "../../../../common/tools";
 import { generateArmTemplate } from "../arm";
-import { SolutionError } from "../constants";
 import { ScaffoldingContextAdapter } from "./adaptor";
 
 export async function generateResourceTemplate(
@@ -9,13 +8,7 @@ export async function generateResourceTemplate(
   inputs: Inputs
 ): Promise<Result<Json, FxError>> {
   if (!isArmSupportEnabled()) {
-    return err(
-      returnSystemError(
-        new Error("Feature not supported"),
-        "Solution",
-        SolutionError.FeatureNotSupported
-      )
-    );
+    return ok({});
   }
   const legacyContext = new ScaffoldingContextAdapter([ctx, inputs]);
   // todo(yefuwang): replace generateArmTemplate when v2 implementation is ready.

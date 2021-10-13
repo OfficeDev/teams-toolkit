@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import "mocha";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
@@ -15,6 +16,7 @@ import {
   SolutionConfig,
   SolutionContext,
   SubscriptionInfo,
+  EnvNamePlaceholder,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs, { PathLike } from "fs-extra";
@@ -26,9 +28,10 @@ import {
 } from "../../../src/plugins/solution/fx-solution/question";
 import {
   deployArmTemplates,
+  formattedDeploymentError,
   generateArmTemplate,
+  pollDeploymentStatus,
 } from "../../../src/plugins/solution/fx-solution/arm";
-import * as arm from "../../../src/plugins/solution/fx-solution/arm";
 import * as bicepChecker from "../../../src/plugins/solution/fx-solution/utils/depsChecker/bicepChecker";
 import { it } from "mocha";
 import path from "path";
@@ -44,6 +47,8 @@ import {
 } from "./util";
 import { ExecOptions } from "child_process";
 import { Executor } from "../../../src/common/tools";
+import * as tools from "../../../src/common/tools";
+
 import * as os from "os";
 
 import "../../../src/plugins/resource/frontend";
@@ -51,6 +56,10 @@ import "../../../src/plugins/resource/simpleauth";
 import "../../../src/plugins/resource/spfx";
 import "../../../src/plugins/resource/aad";
 import { environmentManager } from "../../../src";
+import { assert } from "sinon";
+import { LocalCrypto } from "../../../src/core/crypto";
+
+let mockedEnvRestore: () => void;
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -62,11 +71,13 @@ const simpleAuthPlugin = Container.get<Plugin>(ResourcePlugins.SimpleAuthPlugin)
 const spfxPlugin = Container.get<Plugin>(ResourcePlugins.SpfxPlugin) as Plugin & ArmResourcePlugin;
 const aadPlugin = Container.get<Plugin>(ResourcePlugins.AadPlugin) as Plugin & ArmResourcePlugin;
 
-const baseFolder = "./infra/azure";
+const baseFolder = "./templates/azure";
+const templatesFolder = "./templates";
 const parameterFolderName = "parameters";
-const templateFolderName = "templates";
+const templateFolderName = "modules";
+const configFolderName = "./.fx/configs";
+const parameterFileNameTemplate = `azure.parameters.${EnvNamePlaceholder}.json`;
 const fileEncoding = "UTF8";
-const parameterFolder = path.join(baseFolder, parameterFolderName);
 const templateFolder = path.join(baseFolder, templateFolderName);
 
 function mockSolutionContext(): SolutionContext {
@@ -80,6 +91,7 @@ function mockSolutionContext(): SolutionContext {
     answers: { platform: Platform.VSCode },
     projectSettings: undefined,
     azureAccountProvider: Object as any & AzureAccountProvider,
+    cryptoProvider: new LocalCrypto(""),
   };
 }
 
@@ -87,13 +99,18 @@ describe("Generate ARM Template for project", () => {
   const mocker = sinon.createSandbox();
   const testAppName = "my test app";
   const testFolder = "./tests/plugins/solution/testproject";
-
+  let parameterFileName: string;
   beforeEach(async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_INSIDER_PREVIEW: "true",
+    });
+    parameterFileName = parameterFileNameTemplate.replace(EnvNamePlaceholder, "default");
     await fs.ensureDir(testFolder);
   });
 
   afterEach(async () => {
     await fs.remove(testFolder);
+    mockedEnvRestore();
     mocker.restore();
   });
 
@@ -145,13 +162,15 @@ describe("Generate ARM Template for project", () => {
       return ok(mockedAadScaffoldArmResult);
     });
 
+    mocker.stub(tools, "getUuid").returns("00000000-0000-0000-0000-000000000000");
+
     const projectArmTemplateFolder = path.join(testFolder, templateFolder);
-    const projectArmParameterFolder = path.join(testFolder, parameterFolder);
+    const projectArmParameterFolder = path.join(testFolder, configFolderName);
     const projectArmBaseFolder = path.join(testFolder, baseFolder);
     const result = await generateArmTemplate(mockedCtx);
     expect(result.isOk()).to.be.true;
     expect(
-      await fs.readFile(path.join(projectArmTemplateFolder, "main.bicep"), fileEncoding)
+      await fs.readFile(path.join(projectArmTemplateFolder, "../main.bicep"), fileEncoding)
     ).equals(
       `param resourceBaseName string
 Mocked frontend hosting parameter content
@@ -160,8 +179,8 @@ Mocked simple auth parameter content
 Mocked frontend hosting variable content
 Mocked simple auth variable content
 
-Mocked frontend hosting module content. Module path: ./frontendHostingProvision.bicep. Variable: Mocked simple auth endpoint
-Mocked simple auth module content. Module path: ./simpleAuthProvision.bicep. Variable: Mocked frontend hosting endpoint
+Mocked frontend hosting module content. Module path: ./modules/frontendHostingProvision.bicep. Variable: Mocked simple auth endpoint
+Mocked simple auth module content. Module path: ./modules/simpleAuthProvision.bicep. Variable: Mocked frontend hosting endpoint
 
 Mocked frontend hosting output content
 Mocked simple auth output content`
@@ -179,17 +198,14 @@ Mocked simple auth output content`
       )
     ).equals("Mocked simple auth provision module content");
     expect(
-      await fs.readFile(
-        path.join(projectArmParameterFolder, "parameters.template.json"),
-        fileEncoding
-      )
+      await fs.readFile(path.join(projectArmParameterFolder, parameterFileName), fileEncoding)
     ).equals(
       `{
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
     "resourceBaseName": {
-      "value": "{{SOLUTION__RESOURCE_BASE_NAME}}"
+      "value": "mytestappdefa000000"
     },
     "FrontendParameter": "FrontendParameterValue",
     "SimpleAuthParameter": "SimpleAuthParameterValue"
@@ -218,21 +234,22 @@ Mocked simple auth output content`
 
     const projectArmBaseFolder = path.join(mockedCtx.root, baseFolder);
     const projectArmTemplateFolder = path.join(mockedCtx.root, templateFolder);
-    const projectArmParameterFolder = path.join(mockedCtx.root, parameterFolder);
+    const projectConfigFolder = path.join(mockedCtx.root, configFolderName);
     const mockedParameterDefaultJsonContent = "mocked parameter.default.json file";
     const mockedMainBicepContent = "mocked main.bicep file";
+    await fs.ensureDir(projectArmBaseFolder);
     await fs.ensureDir(projectArmTemplateFolder);
-    await fs.ensureDir(projectArmParameterFolder);
+    await fs.ensureDir(projectConfigFolder);
     await fs.writeFile(
-      path.join(projectArmParameterFolder, "parameter.default.json"),
+      path.join(projectConfigFolder, parameterFileName),
       mockedParameterDefaultJsonContent
     );
-    await fs.writeFile(path.join(projectArmTemplateFolder, "main.bicep"), mockedMainBicepContent);
+    await fs.writeFile(path.join(projectArmBaseFolder, "main.bicep"), mockedMainBicepContent);
 
     const result = await generateArmTemplate(mockedCtx);
 
     expect(result.isOk()).to.be.true;
-    const backupBaseFolder = path.join(projectArmBaseFolder, "backup");
+    const backupBaseFolder = path.join(mockedCtx.root, templatesFolder, "backup");
     expect(await fs.pathExists(backupBaseFolder)).to.be.true;
     const backupFolderItems = await fs.readdir(backupBaseFolder);
     expect(backupFolderItems.length).equals(1);
@@ -246,13 +263,9 @@ Mocked simple auth output content`
     expect(
       await fs.readFile(path.join(parameterBackupFolder, parameterBackupFiles[0]), fileEncoding)
     ).equals(mockedParameterDefaultJsonContent);
-    const templateBackupFolder = path.join(
-      backupBaseFolder,
-      backupFolderItems[0],
-      templateFolderName
-    );
+    const templateBackupFolder = path.join(backupBaseFolder, backupFolderItems[0], templatesFolder);
     const templateBackupFiles = await fs.readdir(templateBackupFolder);
-    expect(templateBackupFiles.length).equals(1);
+    expect(templateBackupFiles.length).equals(2);
     expect(
       await fs.readFile(path.join(templateBackupFolder, templateBackupFiles[0]), fileEncoding)
     ).equals(mockedMainBicepContent);
@@ -267,6 +280,7 @@ describe("Deploy ARM Template to Azure", () => {
   const testClientSecret = "test_client_secret";
   const testEnvValue = "test env value";
   const testResourceSuffix = "-testSuffix";
+  let parameterFileName: string;
   const testArmTemplateOutput = {
     frontendHosting_storageResourceId: {
       type: "String",
@@ -293,6 +307,10 @@ describe("Deploy ARM Template to Azure", () => {
   let fileContent: Map<string, any>;
 
   beforeEach(() => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_INSIDER_PREVIEW: "true",
+    });
+    parameterFileName = parameterFileNameTemplate.replace(EnvNamePlaceholder, "default");
     (
       mocker.stub(fs, "readFile") as unknown as sinon.SinonStub<
         [file: number | fs.PathLike],
@@ -313,22 +331,23 @@ describe("Deploy ARM Template to Azure", () => {
       fileContent.set(path.toString(), data);
     });
     mocker.stub(bicepChecker, "ensureBicep").callsFake(async (ctx: SolutionContext) => "bicep");
+    mocker.stub(tools, "waitSeconds").resolves();
 
     fileContent = new Map([
       [
-        path.join(parameterFolder, "parameters.template.json"),
+        path.join(configFolderName, parameterFileName),
         `{
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
     "resourceBaseName": {
-      "value": "{{SOLUTION__RESOURCE_BASE_NAME}}"
+      "value": "mytestappdefault"
     },
     "aadClientId": {
-      "value": "{{FX_RESOURCE_AAD_APP_FOR_TEAMS__CLIENTID}}"
+      "value": "{{profile.fx-resource-aad-app-for-teams.clientId}}"
     },
     "aadClientSecret": {
-      "value": "{{FX_RESOURCE_AAD_APP_FOR_TEAMS__CLIENTSECRET}}"
+      "value": "{{profile.fx-resource-aad-app-for-teams.clientSecret}}"
     },
     "envValue": {
       "value": "{{MOCKED_EXPAND_VAR_TEST}}"
@@ -342,6 +361,7 @@ describe("Deploy ARM Template to Azure", () => {
 
   afterEach(() => {
     envRestore();
+    mockedEnvRestore();
     mocker.restore();
   });
 
@@ -390,6 +410,7 @@ describe("Deploy ARM Template to Azure", () => {
   it("should successfully update parameter and deploy arm templates to azure", async () => {
     // Arrange
     const mockedCtx = mockSolutionContext();
+    let parameterAfterDeploy = "";
     mockedCtx.projectSettings = {
       appName: testAppName,
       projectId: uuid.v4(),
@@ -422,10 +443,11 @@ describe("Deploy ARM Template to Azure", () => {
           deploymentName: string,
           parameters: ResourceManagementModels.Deployment
         ) => {
+          parameterAfterDeploy = parameters.properties.parameters;
           chai.assert.exists(parameters.properties.parameters?.aadClientSecret);
           chai.assert.notStrictEqual(
             parameters.properties.parameters?.aadClientSecret,
-            "{{FX_RESOURCE_AAD_APP_FOR_TEAMS__CLIENTSECRET}}"
+            "{{profile.fx-resource-aad-app-for-teams.clientSecret}}"
           );
 
           return new Promise((resolve) => {
@@ -444,34 +466,27 @@ describe("Deploy ARM Template to Azure", () => {
           });
         }
       );
-    mocker.stub(arm, "pollDeploymentStatus").resolves();
 
     // Act
     const result = await deployArmTemplates(mockedCtx);
 
     // Assert
     chai.assert.isTrue(result.isOk());
-
-    expect(
-      JSON.parse(fileContent.get(path.join(parameterFolder, "parameters.default.json")))
-    ).to.deep.equals(
+    chai.assert.isNotNull(parameterAfterDeploy);
+    expect(parameterAfterDeploy).to.deep.equals(
       JSON.parse(`{
-      "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
-      "contentVersion": "1.0.0.0",
-      "parameters": {
         "resourceBaseName": {
-          "value": "mytestapp${testResourceSuffix}"
+          "value": "mytestappdefault"
         },
         "aadClientId": {
           "value": "${testClientId}"
         },
         "aadClientSecret": {
-          "value": "{{FX_RESOURCE_AAD_APP_FOR_TEAMS__CLIENTSECRET}}"
+          "value": "${testClientSecret}"
         },
         "envValue": {
           "value": "${testEnvValue}"
         }
-      }
       }`)
     );
     chai.assert.strictEqual(
@@ -497,7 +512,7 @@ describe("Deploy ARM Template to Azure", () => {
     mockArmDeploymentDependencies(mockedCtx);
 
     fileContent.set(
-      path.join(parameterFolder, "parameters.default.json"),
+      path.join(configFolderName, parameterFileName),
       `{
       "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
       "contentVersion": "1.0.0.0",
@@ -538,7 +553,6 @@ describe("Deploy ARM Template to Azure", () => {
           });
         }
       );
-    mocker.stub(arm, "pollDeploymentStatus").resolves();
 
     // Act
     const result = await deployArmTemplates(mockedCtx);
@@ -589,37 +603,119 @@ describe("Deploy ARM Template to Azure", () => {
 
 describe("Arm Template Failed Test", () => {
   const mocker = sinon.createSandbox();
-  let clock: sinon.SinonFakeTimers;
-
   beforeEach(async () => {
-    clock = sinon.useFakeTimers();
+    mocker.stub(tools, "waitSeconds").resolves();
   });
 
   afterEach(async () => {
     mocker.restore();
-    clock.restore();
   });
 
-  it("pollDeploymentStatus", async () => {
-    mocker.stub(arm, "waitSeconds").resolves();
+  it("should get pollDeploymentStatus error", async () => {
     const mockedCtx = mockSolutionContext();
-    const mockedDeployCtx: any = {
-      resourceGroupName: "poll-deployment-rg",
-      deploymentName: "poll-deployment",
-      finished: false,
-      ctx: mockedCtx,
-      client: {
-        deploymentOperations: {
-          list: async () => {
-            throw new Error("mocked error");
+    const mockedDeployCtx: any = getMockedDeployCtx(mockedCtx);
+    mockedDeployCtx.client = {
+      deploymentOperations: {
+        list: async () => {
+          throw new Error("mocked error");
+        },
+      },
+    };
+    let isErrorThrown = false;
+    try {
+      await pollDeploymentStatus(mockedDeployCtx);
+    } catch (error) {
+      chai.assert.strictEqual(error.message, "mocked error");
+      isErrorThrown = true;
+    }
+    chai.assert.isTrue(isErrorThrown);
+  });
+
+  it("pollDeploymentStatus OK", async () => {
+    const mockedCtx = mockSolutionContext();
+    const operations = [
+      {
+        properties: {
+          targetResource: {
+            resourceName: "test resource",
+          },
+          provisioningState: "Running",
+          timestamp: Date.now(),
+        },
+      },
+    ];
+    const mockedDeployCtx: any = getMockedDeployCtx(mockedCtx);
+    let count = 0;
+    mockedDeployCtx.client = {
+      deploymentOperations: {
+        list: async () => {
+          if (count > 1) {
+            mockedDeployCtx.finished = true;
+          }
+          count++;
+          return operations;
+        },
+      },
+    };
+
+    const res = await pollDeploymentStatus(mockedDeployCtx);
+    chai.assert.isUndefined(res);
+  });
+
+  it("formattedDeploymentError OK", async () => {
+    const errors = {
+      error: {
+        code: "OutsideError",
+        message: "out side error",
+      },
+      subErrors: {
+        botProvision: {
+          error: {
+            code: "BotError",
+            message: "bot error",
+          },
+          inner: {
+            error: {
+              code: "BotInnerError",
+              message: "bot inner error",
+            },
+            subErrors: {
+              usefulError: {
+                error: {
+                  code: "usefulError",
+                  message: "useful error",
+                },
+              },
+              uselessError: {
+                error: {
+                  code: "DeploymentOperationFailed",
+                  message:
+                    "Template output evaluation skipped: at least one resource deployment operation failed. Please list deployment operations for details. Please see https://aka.ms/DeployOperations for usage details.",
+                },
+              },
+            },
           },
         },
       },
     };
-    try {
-      arm.pollDeploymentStatus(mockedDeployCtx);
-    } catch (error) {
-      chai.assert.strictEqual(error.message, "mocked error");
-    }
+    const res = formattedDeploymentError(errors);
+    chai.assert.deepEqual(res, {
+      botProvision: {
+        usefulError: {
+          code: "usefulError",
+          message: "useful error",
+        },
+      },
+    });
   });
+
+  function getMockedDeployCtx(mockedCtx: any) {
+    return {
+      resourceGroupName: "poll-deployment-rg",
+      deploymentName: "poll-deployment",
+      finished: false,
+      deploymentStartTime: Date.now(),
+      ctx: mockedCtx,
+    };
+  }
 });

@@ -18,17 +18,33 @@ import { VsCodeUI } from "./qm/vsc_ui";
 import { exp } from "./exp";
 import { disableRunIcon, registerRunIcon } from "./debug/runIconHandler";
 import { CryptoCodeLensProvider } from "./codeLensProvider";
-import { Correlator, isMultiEnvEnabled, isRemoteCollaborateEnabled } from "@microsoft/teamsfx-core";
+import {
+  Correlator,
+  isMultiEnvEnabled,
+  isRemoteCollaborateEnabled,
+  isValidProject,
+} from "@microsoft/teamsfx-core";
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
 import { enableMigrateV1 } from "./utils/migrateV1";
-import { isTeamsfx } from "./utils/commonUtils";
-import { ConfigFolderName, PublishProfilesFolderName } from "@microsoft/teamsfx-api";
+import { isTeamsfx, syncFeatureFlags } from "./utils/commonUtils";
+import {
+  ConfigFolderName,
+  InputConfigsFolderName,
+  PublishProfilesFolderName,
+} from "@microsoft/teamsfx-api";
 import { ExtensionUpgrade } from "./utils/upgrade";
+import { registerEnvTreeHandler } from "./envTree";
+import { getWorkspacePath } from "./handlers";
+import { localSettingsJsonName } from "./debug/constants";
 
 export let VS_CODE_UI: VsCodeUI;
 
 export async function activate(context: vscode.ExtensionContext) {
   VsCodeLogInstance.info(StringResources.vsc.extension.activate);
+
+  // load the feature flags.
+  syncFeatureFlags();
+
   VS_CODE_UI = new VsCodeUI(context);
   // Init context
   initializeExtensionVariables(context);
@@ -202,6 +218,12 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(createNewEnvironment);
 
+  const refreshEnvironment = vscode.commands.registerCommand(
+    "fx-extension.refreshEnvironment",
+    (...args) => Correlator.run(handlers.refreshEnvironment, args)
+  );
+  context.subscriptions.push(refreshEnvironment);
+
   const viewEnvironment = vscode.commands.registerCommand(
     "fx-extension.viewEnvironment",
     (node) => {
@@ -218,40 +240,26 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(viewEnvironmentWithIcon);
 
-  const activateEnvironment = vscode.commands.registerCommand(
-    "fx-extension.activateEnvironment",
-    (node) => {
-      Correlator.run(handlers.activateEnvironment, node.command.title);
-    }
-  );
-  context.subscriptions.push(activateEnvironment);
-
-  const activateEnvironmentWithIcon = vscode.commands.registerCommand(
-    "fx-extension.activateEnvironmentWithIcon",
-    (node) => {
-      Correlator.run(handlers.activateEnvironment, node.command.title);
-    }
-  );
-  context.subscriptions.push(activateEnvironmentWithIcon);
-
   const grantPermission = vscode.commands.registerCommand(
     "fx-extension.grantPermission",
     (node) => {
-      Correlator.run(handlers.grantPermission, node.command.title);
+      const envName = node.commandId.split(".").pop();
+      Correlator.run(handlers.grantPermission, envName);
     }
   );
   context.subscriptions.push(grantPermission);
 
+  const workspacePath = getWorkspacePath();
   vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isMultiEnvEnabled",
-    isMultiEnvEnabled() && (await isTeamsfx())
+    isMultiEnvEnabled() && isValidProject(workspacePath)
   );
 
   vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isRemoteCollaborateEnabled",
-    isRemoteCollaborateEnabled() && (await isTeamsfx())
+    isRemoteCollaborateEnabled() && isValidProject(workspacePath)
   );
 
   // Setup CodeLens provider for userdata file
@@ -263,8 +271,18 @@ export async function activate(context: vscode.ExtensionContext) {
       ? `**/.${ConfigFolderName}/${PublishProfilesFolderName}/*.userdata`
       : `**/.${ConfigFolderName}/*.userdata`,
   };
+  const localDebugDataSelector = {
+    language: "json",
+    scheme: "file",
+    pattern: isMultiEnvEnabled()
+      ? `**/.${ConfigFolderName}/${InputConfigsFolderName}/${localSettingsJsonName}`
+      : ``,
+  };
   context.subscriptions.push(
     vscode.languages.registerCodeLensProvider(userDataSelector, codelensProvider)
+  );
+  context.subscriptions.push(
+    vscode.languages.registerCodeLensProvider(localDebugDataSelector, codelensProvider)
   );
 
   // Register debug configuration provider

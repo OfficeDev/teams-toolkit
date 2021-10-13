@@ -4,6 +4,7 @@
 import {
   AzureAccountProvider,
   AzureSolutionSettings,
+  Func,
   FxError,
   Inputs,
   Json,
@@ -29,7 +30,9 @@ import {
 import {
   configureResourceAdapter,
   deployAdapter,
+  executeUserTaskAdapter,
   generateResourceTemplateAdapter,
+  provisionResourceAdapter,
   scaffoldSourceCodeAdapter,
 } from "../../utils4v2";
 
@@ -55,6 +58,15 @@ export class FrontendPluginV2 implements ResourcePlugin {
     return await generateResourceTemplateAdapter(ctx, inputs, this.plugin);
   }
 
+  async provisionResource(
+    ctx: Context,
+    inputs: ProvisionInputs,
+    envInfo: Readonly<v2.EnvInfoV2>,
+    tokenProvider: TokenProvider
+  ): Promise<Result<ResourceProvisionOutput, FxError>> {
+    return provisionResourceAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
+  }
+
   async configureResource(
     ctx: Context,
     inputs: ProvisionInputs,
@@ -71,5 +83,24 @@ export class FrontendPluginV2 implements ResourcePlugin {
     tokenProvider: AzureAccountProvider
   ): Promise<Result<Void, FxError>> {
     return await deployAdapter(ctx, inputs, provisionOutput, tokenProvider, this.plugin);
+  }
+
+  async executeUserTask(
+    ctx: Context,
+    inputs: Inputs,
+    func: Func,
+    localSettings: Json,
+    envInfo: v2.EnvInfoV2,
+    tokenProvider: TokenProvider
+  ): Promise<Result<unknown, FxError>> {
+    return await executeUserTaskAdapter(
+      ctx,
+      inputs,
+      func,
+      localSettings,
+      envInfo,
+      tokenProvider,
+      this.plugin
+    );
   }
 }

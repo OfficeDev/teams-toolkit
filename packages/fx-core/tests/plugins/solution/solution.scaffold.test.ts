@@ -39,6 +39,7 @@ import { mockedFehostScaffoldArmResult, mockedSimpleAuthScaffoldArmResult } from
 import { getQuestionsForScaffolding } from "../../../src/plugins/solution/fx-solution/v2/getQuestions";
 import { MockTools } from "../../core/utils";
 import { assert } from "console";
+import { LocalCrypto } from "../../../src/core/crypto";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -57,6 +58,7 @@ function mockSolutionContext(): SolutionContext {
     envInfo: newEnvInfo(),
     answers: { platform: Platform.VSCode },
     projectSettings: undefined,
+    cryptoProvider: new LocalCrypto(""),
   };
 }
 
@@ -169,7 +171,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
   it("should work and generate arm template when project requires Azure services", async () => {
     // add dedicated test case to test ARM feature enabled behavior
     const restore = mockedEnv({
-      TEAMSFX_ARM_SUPPORT: "1",
+      TEAMSFX_INSIDER_PREVIEW: "1",
     });
 
     fileContent.clear();
@@ -204,14 +206,14 @@ describe("Solution scaffold() reading valid manifest file", () => {
     const result = await solution.scaffold(mockedCtx);
     expect(result.isOk()).to.be.true;
     // only need to check whether related files exist, tests to the content is covered by other test cases
-    expect(fileContent.size).equals(5);
-    expect(fileContent.has(path.join("./infra/azure/templates", "main.bicep"))).to.be.true;
-    expect(fileContent.has(path.join("./infra/azure/templates", "frontendHostingProvision.bicep")))
-      .to.be.true;
-    expect(fileContent.has(path.join("./infra/azure/templates", "simpleAuthProvision.bicep"))).to.be
-      .true;
-    expect(fileContent.has(path.join("./infra/azure/parameters", "parameters.template.json"))).to.be
-      .true;
+    expect(fileContent.size).equals(6);
+    expect(fileContent.has(path.join("./templates/azure", "main.bicep"))).to.be.true;
+    expect(
+      fileContent.has(path.join("./templates/azure/modules", "frontendHostingProvision.bicep"))
+    ).to.be.true;
+    expect(fileContent.has(path.join("./templates/azure/modules", "simpleAuthProvision.bicep"))).to
+      .be.true;
+    expect(fileContent.has(path.join("./.fx/configs", "azure.parameters.dev.json"))).to.be.true;
 
     restore();
   });
@@ -219,7 +221,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
   it("should work and not generate arm template when project does not require Azure services", async () => {
     // add dedicated test case to test ARM feature enabled behavior
     const restore = mockedEnv({
-      TEAMSFX_ARM_SUPPORT: "1",
+      TEAMSFX_INSIDER_PREVIEW: "1",
     });
 
     fileContent.clear();
@@ -244,7 +246,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
     const result = await solution.scaffold(mockedCtx);
     expect(result.isOk()).to.be.true;
     // only need to check whether related files exist, tests to the content is covered by other test cases
-    expect(fileContent.size).equals(0);
+    expect(fileContent.size).equals(1);
 
     restore();
   });

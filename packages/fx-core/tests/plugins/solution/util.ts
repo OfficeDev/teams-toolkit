@@ -37,6 +37,7 @@ import {
   Inputs,
   PermissionRequestProvider,
   GraphTokenProvider,
+  SharepointTokenProvider,
 } from "@microsoft/teamsfx-api";
 import { MockPermissionRequestProvider } from "../../core/utils";
 
@@ -95,6 +96,12 @@ export function mockScaffoldCodeThatAlwaysSucceeds(plugin: v2.ResourcePlugin): v
     Result<{ output: Record<string, string> }, FxError>
   > {
     return ok({ output: {} });
+  };
+}
+
+export function mockExecuteUserTaskThatAlwaysSucceeds(plugin: v2.ResourcePlugin): void {
+  plugin.executeUserTask = async function (): Promise<Result<unknown, FxError>> {
+    return ok(Void);
   };
 }
 
@@ -341,6 +348,29 @@ export class MockedAppStudioProvider implements AppStudioTokenProvider {
   }
   async signout(): Promise<boolean> {
     return true;
+  }
+  async setStatusChangeMap(
+    name: string,
+    statusChange: (
+      status: string,
+      token?: string,
+      accountInfo?: Record<string, unknown>
+    ) => Promise<void>,
+    immediateCall?: boolean
+  ): Promise<boolean> {
+    return true;
+  }
+  async removeStatusChangeMap(name: string): Promise<boolean> {
+    return true;
+  }
+}
+
+export class MockedSharepointProvider implements SharepointTokenProvider {
+  async getAccessToken(showDialog?: boolean): Promise<string> {
+    return "fakeToken";
+  }
+  async getJsonObject(showDialog?: boolean): Promise<Record<string, unknown>> {
+    return {};
   }
   async setStatusChangeMap(
     name: string,

@@ -58,7 +58,7 @@ Under the Teams Toolkit extension tab, you can easily discover all applicable co
 Use the Teams Toolkit in Visual Studio Code to set up your first app project. Create your app project using the following steps:
 
 - Ensure you've installed the Microsoft Teams Toolkit
-- In Visual Studio Code, open the Command Palette (Ctrl+Shift+P / ⌘⇧-P or View -> Command - Palette) and type teams and choose TeamsFx - Start A New Project.
+- In Visual Studio Code, open the Command Palette (Ctrl+Shift+P / ⌘⇧-P or View -> Command - Palette) and type teams and choose 'Teams: Create a new Teams app'.
 - Type a name for your project and hit Enter
 - Next, Add capabilities comes up. Select capability you want then Next.
 - Choose options according to your purpose, i.e., front-end hosting type, language, cloud resources and so on.
@@ -96,14 +96,14 @@ If you want to have a better estimation of how the app will behave in the cloud 
 
 Deployment happens in two steps: Provisioning and Deployment. Provisioning creates all the necessary Azure resources that your application uses. It is typically done once. To provision your backend to an active Azure subscription:
 
-- In the Visual Studio Code Command Palette, enter the command TeamsFx - Provision Resource.
+- In the Visual Studio Code Command Palette, enter the command 'Teams: Provision in the cloud'.
 - You will be asked to sign into your Azure account. This is the account where Azure resources will be provisioned. Typically this is different from the M365 account you used to sign in earlier.
 - You will be asked to select a subscription to use from the Azure account.
 - Once provisioning is completed, Visual Studio Code will popup the notification with the message "[Teams Toolkit] provision finished successfully".
 
 Deploy copies your application to the provisioned Azure resources. It is typically done after every change to your application. To deploy your application to the provisioned resources in an active Azure subscription:
 
-- In the Visual Studio Code Command Palette, enter the command TeamsFx - Deploy Package.
+- In the Visual Studio Code Command Palette, enter the command 'Teams: Deploy to the cloud'.
 - Select Tab app and Backend to deploy.
 - Once deploy is finished, go to the Visual Studio Code Debug Panel (Ctrl+Shift+D / ⌘⇧-D or View -> Run) and select Launch Remote (Edge).
 - Press the start button (green arrow) to launch your app - now running remotely on Azure!
@@ -112,7 +112,7 @@ Deploy copies your application to the provisioned Azure resources. It is typical
 
 When your application resources and infrastructure are deployed successfully, you can publish and register your app to Teams app catalog to share with others in your organization.
 
-- In the Visual Studio Code Command Palette, enter the command TeamsFx - Publish to Teams.
+- In the Visual Studio Code Command Palette, enter the command 'Teams: Zip Teams metadata package'.
 - Depending on your permission, you can send your app to the admin portal directly, or manually submit the app package file to your admin to check.
 - Once your app is approved by your admin, you can see it under ‘Built for your org’ section in Teams Apps.
 

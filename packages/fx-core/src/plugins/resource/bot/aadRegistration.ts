@@ -6,7 +6,7 @@ import { AxiosInstance, default as axios } from "axios";
 import { AADRegistrationConstants } from "./constants";
 import { IAADDefinition } from "./appStudio/interfaces/IAADDefinition";
 import { AppStudio } from "./appStudio/appStudio";
-import { ProvisionError } from "./errors";
+import { CheckThrowSomethingMissing, ProvisionError } from "./errors";
 import { CommonStrings } from "./resources/strings";
 import { BotAuthCredential } from "./botAuthCredential";
 
@@ -72,7 +72,9 @@ export class AADRegistration {
 
   public static async registerAADAppAndGetSecretByAppStudio(
     appStudioToken: string,
-    displayName: string
+    displayName: string,
+    objectId?: string,
+    msAppId?: string
   ): Promise<BotAuthCredential> {
     const result = new BotAuthCredential();
 
@@ -80,10 +82,18 @@ export class AADRegistration {
       displayName: displayName,
     };
 
-    const app = await AppStudio.createAADAppV2(appStudioToken, appConfig);
-    result.clientId = app.appId;
-    result.objectId = app.id;
+    if (!objectId && !msAppId) {
+      const app = await AppStudio.createAADAppV2(appStudioToken, appConfig);
+      result.clientId = app.appId;
+      result.objectId = app.id;
+    } else {
+      CheckThrowSomethingMissing("objectId", objectId);
+      CheckThrowSomethingMissing("msAppId", msAppId);
+      result.objectId = objectId;
+      result.clientId = msAppId;
+    }
 
+    // if has objectId, just create password for this AAD
     const password = await AppStudio.createAADAppPassword(appStudioToken, result.objectId);
 
     if (!password || !password.value) {

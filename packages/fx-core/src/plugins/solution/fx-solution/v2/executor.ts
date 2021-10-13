@@ -2,15 +2,15 @@ import {
   FxError,
   LogProvider,
   Result,
-  ok,
   err,
   returnSystemError,
   v2,
   SystemError,
   returnUserError,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import { PluginDisplayName } from "../../../../common/constants";
-import { SolutionError } from "../constants";
+import { SolutionError, SolutionSource } from "../constants";
 
 export type Thunk<R> = () => Promise<Result<R, FxError>>;
 
@@ -23,7 +23,22 @@ export async function executeConcurrently<R>(
   const results = await Promise.all(
     namedThunks.map(async (namedThunk) => {
       logger.info(`Running ${namedThunk.pluginName} concurrently`);
-      return namedThunk.thunk();
+      try {
+        return namedThunk.thunk();
+      } catch (e) {
+        if (e instanceof UserError || e instanceof SystemError) {
+          return err(e);
+        }
+        return err(
+          new SystemError(
+            "UnknownError",
+            `[SolutionV2.executeConcurrently] unknown error, plugin: ${
+              namedThunk.pluginName
+            }, taskName: ${namedThunk.taskName}, error: ${JSON.stringify(e)}`,
+            SolutionSource
+          )
+        );
+      }
     })
   );
 
@@ -42,7 +57,7 @@ export async function executeConcurrently<R>(
       failed = true;
       errors.push(result.error);
     } else {
-      ret.push({ name, result: result.value });
+      ret.push({ name: `${namedThunks[i].pluginName}`, result: result.value });
     }
   }
   if (logger)
@@ -58,7 +73,7 @@ export async function executeConcurrently<R>(
       ? new v2.FxFailure(
           returnSystemError(
             new Error(`Failed to run tasks concurrently due to ${errMsg}`),
-            "Solution",
+            SolutionSource,
             SolutionError.InternelError
           )
         )
@@ -80,8 +95,12 @@ function mergeFxErrors(errors: FxError[]): FxError {
   return hasSystemError
     ? returnSystemError(
         new Error(errMsgs.join(";")),
-        "Solution",
+        SolutionSource,
         SolutionError.FailedToExecuteTasks
       )
-    : returnUserError(new Error(errMsgs.join(";")), "Solution", SolutionError.FailedToExecuteTasks);
+    : returnUserError(
+        new Error(errMsgs.join(";")),
+        SolutionSource,
+        SolutionError.FailedToExecuteTasks
+      );
 }

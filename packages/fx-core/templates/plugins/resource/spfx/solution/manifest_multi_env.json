@@ -11,8 +11,9 @@
         "termsOfUseUrl": "https://www.microsoft.com/en-us/servicesagreement"
     },
     "name": {
-        "short": "<%= componentNameUnescaped %>"
-    },
+        "short": "{{config.manifest.appName.short}}",
+        "full": "{{config.manifest.appName.full}}"
+},
     "description": {
         "short": "<%= componentNameUnescaped %>",
         "full": "<%= componentNameUnescaped %>"

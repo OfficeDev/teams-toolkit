@@ -23,6 +23,7 @@ export class ProvisionConfig {
   public resourceGroup?: string;
   public location?: string;
   public appServicePlan?: string;
+  public botWebAppResourceId?: string;
   public botChannelRegName?: string;
   public siteName?: string;
   public skuName?: string;
@@ -31,8 +32,8 @@ export class ProvisionConfig {
   // Configs from SQL and Function.
   public sqlEndpoint?: string;
   public sqlDatabaseName?: string;
-  public identityId?: string;
-  public identityName?: string;
+  public identityClientId?: string;
+  public identityResourceId?: string;
   public sqlUserName?: string;
   public sqlPassword?: string;
   public functionEndpoint?: string;
@@ -66,13 +67,13 @@ export class ProvisionConfig {
       .get(PluginSql.PLUGIN_NAME)
       ?.get(PluginSql.SQL_PASSWORD) as string;
 
-    this.identityId = context.envInfo.profile
+    this.identityClientId = context.envInfo.profile
       .get(PluginIdentity.PLUGIN_NAME)
-      ?.get(PluginIdentity.IDENTITY_ID) as string;
+      ?.get(PluginIdentity.IDENTITY_ClIENT_ID) as string;
 
-    this.identityName = context.envInfo.profile
+    this.identityResourceId = context.envInfo.profile
       .get(PluginIdentity.PLUGIN_NAME)
-      ?.get(PluginIdentity.IDENTITY_NAME) as string;
+      ?.get(PluginIdentity.IDENTITY_RESOURCE_ID) as string;
 
     this.functionEndpoint = context.envInfo.profile
       .get(PluginFunction.PLUGIN_NAME)
@@ -93,6 +94,7 @@ export class ProvisionConfig {
     this.siteEndpoint = context.config.get(PluginBot.SITE_ENDPOINT) as string;
 
     this.botChannelRegName = context.config.get(PluginBot.BOT_CHANNEL_REGISTRATION) as string;
+    this.botWebAppResourceId = context.config.get(PluginBot.BOT_WEB_APP_RESOURCE_ID) as string;
 
     this.validateRestoredConfig();
   }
@@ -101,6 +103,7 @@ export class ProvisionConfig {
     utils.checkAndSaveConfig(context, PluginBot.VALID_DOMAIN, this.validDomain);
     utils.checkAndSaveConfig(context, PluginBot.APP_SERVICE_PLAN, this.appServicePlan);
     utils.checkAndSaveConfig(context, PluginBot.BOT_CHANNEL_REGISTRATION, this.botChannelRegName);
+    utils.checkAndSaveConfig(context, PluginBot.BOT_WEB_APP_RESOURCE_ID, this.botWebAppResourceId);
     utils.checkAndSaveConfig(context, PluginBot.SITE_NAME, this.siteName);
     utils.checkAndSaveConfig(context, PluginBot.SITE_ENDPOINT, this.siteEndpoint);
     utils.checkAndSaveConfig(context, PluginBot.SKU_NAME, this.skuName);

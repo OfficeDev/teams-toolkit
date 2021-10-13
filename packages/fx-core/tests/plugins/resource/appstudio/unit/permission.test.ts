@@ -6,26 +6,21 @@ import * as chai from "chai";
 import sinon from "sinon";
 import { AppStudioPlugin } from "../../../../../src/plugins/resource/appstudio";
 import { ConfigMap, Platform, PluginContext } from "@microsoft/teamsfx-api";
-import {
-  Constants,
-  SOLUTION,
-  SOLUTION_USERINFO,
-} from "../../../../../src/plugins/resource/appstudio/constants";
+import { SOLUTION } from "../../../../../src/plugins/resource/appstudio/constants";
 import faker from "faker";
-import {
-  REMOTE_TEAMS_APP_ID,
-  USER_INFO,
-} from "../../../../../src/plugins/solution/fx-solution/constants";
+import { REMOTE_TEAMS_APP_ID } from "../../../../../src/plugins/solution/fx-solution/constants";
 import { AppStudioClient } from "./../../../../../src/plugins/resource/appstudio/appStudio";
 import { MockedAppStudioTokenProvider } from "../helper";
 import { newEnvInfo } from "../../../../../src";
+import { IUserList } from "../../../../../src/plugins/resource/appstudio/interfaces/IAppDefinition";
+import { LocalCrypto } from "../../../../../src/core/crypto";
 
-const userList = {
+const userList: IUserList = {
   tenantId: faker.datatype.uuid(),
   aadId: faker.datatype.uuid(),
   displayName: "displayName",
   userPrincipalName: "userPrincipalName",
-  isOwner: true,
+  isAdministrator: true,
 };
 
 describe("Remote Collaboration", () => {
@@ -47,7 +42,6 @@ describe("Remote Collaboration", () => {
     const appId = faker.datatype.uuid();
 
     const soltuionContext = new ConfigMap();
-    soltuionContext.set(USER_INFO, JSON.stringify(userList));
     soltuionContext.set(REMOTE_TEAMS_APP_ID, appId);
 
     configOfOtherPlugins.set(SOLUTION, soltuionContext);
@@ -58,6 +52,7 @@ describe("Remote Collaboration", () => {
       config: new ConfigMap(),
       answers: { platform: Platform.VSCode },
       appStudioToken: new MockedAppStudioTokenProvider(),
+      cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -71,7 +66,7 @@ describe("Remote Collaboration", () => {
     sandbox.stub(ctx.appStudioToken!, "getAccessToken").resolves("anything");
     sandbox.stub(AppStudioClient, "checkPermission").resolves("Administrator");
 
-    const checkPermission = await plugin.checkPermission(ctx);
+    const checkPermission = await plugin.checkPermission(ctx, userList);
     chai.assert.isTrue(checkPermission.isOk());
     if (checkPermission.isOk()) {
       chai.assert.deepEqual(checkPermission.value[0].roles, ["Administrator"]);
@@ -82,7 +77,6 @@ describe("Remote Collaboration", () => {
     const appId = faker.datatype.uuid();
 
     const soltuionContext = new ConfigMap();
-    soltuionContext.set(USER_INFO, JSON.stringify(userList));
     soltuionContext.set(REMOTE_TEAMS_APP_ID, appId);
 
     configOfOtherPlugins.set(SOLUTION, soltuionContext);
@@ -93,6 +87,7 @@ describe("Remote Collaboration", () => {
       config: new ConfigMap(),
       answers: { platform: Platform.VSCode },
       appStudioToken: new MockedAppStudioTokenProvider(),
+      cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -106,7 +101,7 @@ describe("Remote Collaboration", () => {
     sandbox.stub(ctx.appStudioToken!, "getAccessToken").resolves("anything");
     sandbox.stub(AppStudioClient, "grantPermission").resolves();
 
-    const grantPermission = await plugin.grantPermission(ctx);
+    const grantPermission = await plugin.grantPermission(ctx, userList);
     chai.assert.isTrue(grantPermission.isOk());
     if (grantPermission.isOk()) {
       chai.assert.deepEqual(grantPermission.value[0].roles, ["Administrator"]);
@@ -125,6 +120,7 @@ describe("Remote Collaboration", () => {
       config: new ConfigMap(),
       answers: { platform: Platform.VSCode },
       appStudioToken: new MockedAppStudioTokenProvider(),
+      cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
       appName: "my app",

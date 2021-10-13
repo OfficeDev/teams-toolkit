@@ -4,11 +4,11 @@
 "use strict";
 
 import { Argv, Options } from "yargs";
-import { FxError, err, ok, Result, Platform, Func, Stage } from "@microsoft/teamsfx-api";
+import { FxError, err, ok, Result, Platform, Func, Stage, Inputs } from "@microsoft/teamsfx-api";
 import activate from "../activate";
 import { YargsCommand } from "../yargsCommand";
 import { argsToInputs } from "../utils";
-import CliTelemetry from "../telemetry/cliTelemetry";
+import CliTelemetry, { makeEnvProperty } from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
   TelemetryProperty,
@@ -41,8 +41,7 @@ export default class Publish extends YargsCommand {
       CliTelemetry.sendTelemetryEvent(TelemetryEvent.PublishStart);
       result = await activate();
     } else {
-      const rootFolder = answers["folder"] as string;
-      delete answers.folder;
+      const rootFolder = answers.projectPath!;
       CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.PublishStart);
       result = await activate(rootFolder);
     }
@@ -70,6 +69,7 @@ export default class Publish extends YargsCommand {
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.Publish, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+      ...makeEnvProperty(answers.env),
     });
     return ok(null);
   }

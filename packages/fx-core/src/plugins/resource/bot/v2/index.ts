@@ -4,6 +4,7 @@
 import {
   AzureAccountProvider,
   AzureSolutionSettings,
+  Func,
   FxError,
   Inputs,
   Json,
@@ -31,6 +32,7 @@ import {
   configureLocalResourceAdapter,
   configureResourceAdapter,
   deployAdapter,
+  executeUserTaskAdapter,
   generateResourceTemplateAdapter,
   getQuestionsForScaffoldingAdapter,
   provisionLocalResourceAdapter,
@@ -48,12 +50,7 @@ export class BotPluginV2 implements ResourcePlugin {
   activate(solutionSettings: AzureSolutionSettings): boolean {
     return this.plugin.activate(solutionSettings);
   }
-  async getQuestionsForScaffolding(
-    ctx: Context,
-    inputs: Inputs
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
-    return await getQuestionsForScaffoldingAdapter(ctx, inputs, this.plugin);
-  }
+
   async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
     return await scaffoldSourceCodeAdapter(ctx, inputs, this.plugin);
   }
@@ -118,5 +115,24 @@ export class BotPluginV2 implements ResourcePlugin {
     tokenProvider: AzureAccountProvider
   ): Promise<Result<Void, FxError>> {
     return await deployAdapter(ctx, inputs, provisionOutput, tokenProvider, this.plugin);
+  }
+
+  async executeUserTask(
+    ctx: Context,
+    inputs: Inputs,
+    func: Func,
+    localSettings: Json,
+    envInfo: v2.EnvInfoV2,
+    tokenProvider: TokenProvider
+  ): Promise<Result<unknown, FxError>> {
+    return await executeUserTaskAdapter(
+      ctx,
+      inputs,
+      func,
+      localSettings,
+      envInfo,
+      tokenProvider,
+      this.plugin
+    );
   }
 }

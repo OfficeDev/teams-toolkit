@@ -19,7 +19,7 @@ param sqlDatabaseName string
 param sqlEndpoint string
 {{/contains}}
 {{#contains 'fx-resource-identity' Plugins}}
-param identityId string
+param identityClientId string
 {{/contains}}
 
 var initiateLoginEndpoint = uri(botEndpoint, authLoginUriSuffix)
@@ -53,7 +53,7 @@ resource botWebAppSettings 'Microsoft.Web/sites/config@2021-01-01' = {
       SQL_ENDPOINT: sqlEndpoint
       {{/contains}}
       {{#contains 'fx-resource-identity' Plugins}}
-      IDENTITY_ID: identityId
+      IDENTITY_ID: identityClientId
       {{/contains}}
      }
 }

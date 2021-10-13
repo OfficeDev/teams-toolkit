@@ -9,7 +9,7 @@ namespace Microsoft.TeamsFx
 {
     internal class JsInteropBase : IAsyncDisposable
     {
-        internal readonly Lazy<Task<IJSObjectReference>> moduleTask;
+        readonly internal Lazy<Task<IJSObjectReference>> moduleTask;
 
         internal JsInteropBase(IJSRuntime jsRuntime)
         {

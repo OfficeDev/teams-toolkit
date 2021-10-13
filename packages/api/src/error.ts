@@ -112,22 +112,28 @@ export class UserError extends Error implements FxError {
 
     //source
     this.source = option.source || "unknown";
-    this.helpLink = option.helpLink;
-    this.userData = option.userData;
 
-    this.timestamp = new Date();
-
+    //stack
     if (stack) {
       this.stack = stack;
     } else {
       Error.captureStackTrace(this, new.target);
     }
+
+    //prototype
     Object.setPrototypeOf(this, new.target.prototype);
+
+    //innerError
     if (typeof param1 === "string") {
       this.innerError = innerError;
     } else if (param1 instanceof Error) {
       this.innerError = param1;
     }
+
+    //other fields
+    this.helpLink = option.helpLink;
+    this.userData = option.userData;
+    this.timestamp = new Date();
   }
 }
 
@@ -212,22 +218,28 @@ export class SystemError extends Error implements FxError {
 
     //source
     this.source = option.source || "unknown";
-    this.issueLink = option.issueLink;
-    this.userData = option.userData;
 
-    this.timestamp = new Date();
-
+    //stack
     if (stack) {
       this.stack = stack;
     } else {
       Error.captureStackTrace(this, new.target);
     }
+
+    //prototype
     Object.setPrototypeOf(this, new.target.prototype);
+
+    //innerError
     if (typeof param1 === "string") {
       this.innerError = innerError;
     } else if (param1 instanceof Error) {
       this.innerError = param1;
     }
+
+    //other fields
+    this.issueLink = option.issueLink;
+    this.userData = option.userData;
+    this.timestamp = new Date();
   }
 }
 

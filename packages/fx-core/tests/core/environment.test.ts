@@ -45,17 +45,14 @@ describe("APIs of Environment Manager", () => {
   const appName = randomAppName();
   const projectPath = path.resolve(os.tmpdir(), appName);
   const fileMap = new Map<string, any>();
-  const encreptedSecret = "secretOfLife";
+  const encryptedSecret = "secretOfLife";
   const decryptedValue = "42";
-  const cryptoProvider = new MockCrypto(encreptedSecret, decryptedValue);
+  const cryptoProvider = new MockCrypto(encryptedSecret, decryptedValue);
   const targetEnvName = "dev";
   const validEnvConfigData = {
     manifest: {
-      description: "",
-      values: {
-        appName: {
-          short: appName,
-        },
+      appName: {
+        short: appName,
       },
     },
   };
@@ -101,7 +98,7 @@ describe("APIs of Environment Manager", () => {
     it("load valid environment config file without target env", async () => {
       await mockEnvConfigs(projectPath, validEnvConfigData);
 
-      const actualEnvDataResult = await environmentManager.loadEnvInfo(projectPath);
+      const actualEnvDataResult = await environmentManager.loadEnvInfo(projectPath, cryptoProvider);
       if (actualEnvDataResult.isErr()) {
         assert.fail("Error ocurrs while loading environment config.");
       }
@@ -109,32 +106,61 @@ describe("APIs of Environment Manager", () => {
       const envConfigInfo = actualEnvDataResult.value;
       assert.equal(envConfigInfo.envName, environmentManager.getDefaultEnvName());
       assert.isUndefined(envConfigInfo.config.azure);
-      assert.equal(envConfigInfo.config.manifest.description, "");
-      assert.equal(envConfigInfo.config.manifest.values.appName.short, appName);
+      assert.equal(envConfigInfo.config.manifest.appName.short, appName);
     });
 
     it("load valid environment config file with target env", async () => {
       const envName = "test";
       await mockEnvConfigs(projectPath, validEnvConfigData, envName);
 
-      const actualEnvDataResult = await environmentManager.loadEnvInfo(projectPath, envName);
+      const actualEnvDataResult = await environmentManager.loadEnvInfo(
+        projectPath,
+        cryptoProvider,
+        envName
+      );
       if (actualEnvDataResult.isErr()) {
-        assert.fail("Error ocurrs while loading environment config.");
+        assert.fail("Error occurs while loading environment config.");
       }
 
       const envConfigInfo = actualEnvDataResult.value;
       assert.equal(envConfigInfo.envName, envName);
       assert.isUndefined(envConfigInfo.config.azure);
-      assert.equal(envConfigInfo.config.manifest.description, "");
-      assert.equal(envConfigInfo.config.manifest.values.appName.short, appName);
+      assert.equal(envConfigInfo.config.manifest.appName.short, appName);
     });
 
-    it("load invalid enviornment config file", async () => {
+    it("load invalid environment config file", async () => {
       await mockEnvConfigs(projectPath, invalidEnvConfigData);
 
-      const actualEnvDataResult = await environmentManager.loadEnvInfo(projectPath);
+      const actualEnvDataResult = await environmentManager.loadEnvInfo(projectPath, cryptoProvider);
       if (actualEnvDataResult.isErr()) {
         assert.equal(actualEnvDataResult.error.name, "InvalidEnvConfigError");
+      } else {
+        assert.fail("Failed to get expected error.");
+      }
+    });
+
+    it("load invalid JSON config file", async () => {
+      const envName = environmentManager.getDefaultEnvName();
+      const envConfigFile = environmentManager.getEnvConfigPath(envName, projectPath);
+      await fs.ensureFile(envConfigFile);
+      await fs.writeFile(envConfigFile, "not json");
+
+      const actualEnvDataResult = await environmentManager.loadEnvInfo(projectPath, cryptoProvider);
+      if (actualEnvDataResult.isErr()) {
+        assert.equal(actualEnvDataResult.error.name, "InvalidEnvConfigError");
+      } else {
+        assert.fail("Failed to get expected error.");
+      }
+    });
+
+    it("load non existent env name", async () => {
+      const actualEnvDataResult = await environmentManager.loadEnvInfo(
+        projectPath,
+        cryptoProvider,
+        "this does not exist"
+      );
+      if (actualEnvDataResult.isErr()) {
+        assert.equal(actualEnvDataResult.error.name, "ProjectEnvNotExistError");
       } else {
         assert.fail("Failed to get expected error.");
       }
@@ -143,7 +169,7 @@ describe("APIs of Environment Manager", () => {
 
   describe("Load Environment Profile File", () => {
     const userData = {
-      "solution.teamsAppTenantId": encreptedSecret,
+      "solution.teamsAppTenantId": encryptedSecret,
     };
 
     before(async () => {
@@ -167,8 +193,8 @@ describe("APIs of Environment Manager", () => {
 
       const actualEnvDataResult = await environmentManager.loadEnvInfo(
         projectPath,
-        undefined,
-        cryptoProvider
+        cryptoProvider,
+        undefined
       );
       if (actualEnvDataResult.isErr()) {
         assert.fail("Error ocurrs while loading environment profile.");
@@ -183,8 +209,8 @@ describe("APIs of Environment Manager", () => {
 
       const actualEnvDataResult = await environmentManager.loadEnvInfo(
         projectPath,
-        targetEnvName,
-        cryptoProvider
+        cryptoProvider,
+        targetEnvName
       );
       if (actualEnvDataResult.isErr()) {
         assert.fail("Error ocurrs while loading environment profile.");
@@ -199,8 +225,8 @@ describe("APIs of Environment Manager", () => {
 
       const actualEnvDataResult = await environmentManager.loadEnvInfo(
         projectPath,
-        undefined,
-        cryptoProvider
+        cryptoProvider,
+        undefined
       );
       if (actualEnvDataResult.isErr()) {
         assert.fail("Error ocurrs while loading environment profile.");
@@ -220,8 +246,8 @@ describe("APIs of Environment Manager", () => {
 
       const actualEnvDataResult = await environmentManager.loadEnvInfo(
         projectPath,
-        targetEnvName,
-        cryptoProvider
+        cryptoProvider,
+        targetEnvName
       );
       if (actualEnvDataResult.isErr()) {
         assert.fail("Error ocurrs while loading environment profile.");
@@ -244,8 +270,8 @@ describe("APIs of Environment Manager", () => {
 
       const actualEnvDataResult = await environmentManager.loadEnvInfo(
         projectPath,
-        undefined,
-        cryptoProvider
+        cryptoProvider,
+        undefined
       );
       if (actualEnvDataResult.isErr()) {
         assert.fail("Error ocurrs while loading environment profile.");
@@ -265,8 +291,8 @@ describe("APIs of Environment Manager", () => {
 
       const actualEnvDataResult = await environmentManager.loadEnvInfo(
         projectPath,
-        targetEnvName,
-        undefined
+        cryptoProvider,
+        targetEnvName
       );
       if (actualEnvDataResult.isErr()) {
         assert.fail("Error ocurrs while loading environment profile.");
@@ -277,12 +303,12 @@ describe("APIs of Environment Manager", () => {
         string,
         string
       >;
-      assert.equal(envInfo.profile.get("solution").get("teamsAppTenantId"), encreptedSecret);
+      assert.equal(envInfo.profile.get("solution").get("teamsAppTenantId"), decryptedValue);
       assert.equal(envInfo.profile.get("solution").get("key"), expectedSolutionConfig.key);
     });
 
     it("environment profile doesn't exist", async () => {
-      const actualEnvDataResult = await environmentManager.loadEnvInfo(projectPath);
+      const actualEnvDataResult = await environmentManager.loadEnvInfo(projectPath, cryptoProvider);
       if (actualEnvDataResult.isErr()) {
         assert.fail("Error ocurrs while loading environment profile.");
       }
@@ -364,7 +390,8 @@ describe("APIs of Environment Manager", () => {
     it("no userdata: write environment profile without target env", async () => {
       await environmentManager.writeEnvProfile(
         tools.objectToMap(envProfileDataWithoutCredential),
-        projectPath
+        projectPath,
+        cryptoProvider
       );
       const envFiles = environmentManager.getEnvProfileFilesPath("default", projectPath);
 
@@ -380,6 +407,7 @@ describe("APIs of Environment Manager", () => {
       await environmentManager.writeEnvProfile(
         tools.objectToMap(envProfileDataWithoutCredential),
         projectPath,
+        cryptoProvider,
         targetEnvName
       );
       const envFiles = environmentManager.getEnvProfileFilesPath(targetEnvName, projectPath);
@@ -396,13 +424,13 @@ describe("APIs of Environment Manager", () => {
       await environmentManager.writeEnvProfile(
         envProfileDataObj,
         projectPath,
-        undefined,
-        cryptoProvider
+        cryptoProvider,
+        undefined
       );
       const envFiles = environmentManager.getEnvProfileFilesPath("default", projectPath);
 
       const expectedEnvProfileContent = JSON.stringify(envProfileDataWithCredential, null, 4);
-      const expectedUserDataFileContent = `solution.teamsAppTenantId=${encreptedSecret}\n_checksum=81595a4344a4345ecfd90232f9e3540ce2b72e50745b3b83adc484c8e5055a33`;
+      const expectedUserDataFileContent = `solution.teamsAppTenantId=${encryptedSecret}\n_checksum=81595a4344a4345ecfd90232f9e3540ce2b72e50745b3b83adc484c8e5055a33`;
       assert.equal(
         formatContent(fileMap.get(envFiles.envProfile)),
         formatContent(expectedEnvProfileContent)
@@ -417,13 +445,13 @@ describe("APIs of Environment Manager", () => {
       await environmentManager.writeEnvProfile(
         envProfileDataObj,
         projectPath,
-        targetEnvName,
-        cryptoProvider
+        cryptoProvider,
+        targetEnvName
       );
       const envFiles = environmentManager.getEnvProfileFilesPath(targetEnvName, projectPath);
 
       const expectedEnvProfileContent = JSON.stringify(envProfileDataWithCredential, null, 4);
-      const expectedUserDataFileContent = `solution.teamsAppTenantId=${encreptedSecret}\n_checksum=81595a4344a4345ecfd90232f9e3540ce2b72e50745b3b83adc484c8e5055a33`;
+      const expectedUserDataFileContent = `solution.teamsAppTenantId=${encryptedSecret}\n_checksum=81595a4344a4345ecfd90232f9e3540ce2b72e50745b3b83adc484c8e5055a33`;
       assert.equal(
         formatContent(fileMap.get(envFiles.envProfile)),
         formatContent(expectedEnvProfileContent)
@@ -435,7 +463,7 @@ describe("APIs of Environment Manager", () => {
     });
   });
 
-  describe("List Environment configs", () => {
+  describe("List Environment Configs", () => {
     const configFolder = path.resolve(projectPath, `.${ConfigFolderName}`, InputConfigsFolderName);
 
     beforeEach(async () => {
@@ -489,6 +517,34 @@ describe("APIs of Environment Manager", () => {
       }
 
       assert.isEmpty(envNamesResult.value);
+    });
+  });
+
+  describe("Check If File Is Environment Config", () => {
+    const configFolder = path.resolve(projectPath, `.${ConfigFolderName}`, InputConfigsFolderName);
+
+    it("correct env config", () => {
+      const fileName = "config.test1.json";
+      const isEnvConfig = environmentManager.isEnvConfig(
+        projectPath,
+        path.resolve(configFolder, fileName)
+      );
+      assert.isTrue(isEnvConfig);
+    });
+
+    it("file in incorrect folder", () => {
+      const fileName = "config.test1.json";
+      const isEnvConfig = environmentManager.isEnvConfig(projectPath, fileName);
+      assert.isFalse(isEnvConfig);
+    });
+
+    it("file with incorrect name", () => {
+      const fileName = "config.json";
+      const isEnvConfig = environmentManager.isEnvConfig(
+        projectPath,
+        path.resolve(configFolder, fileName)
+      );
+      assert.isFalse(isEnvConfig);
     });
   });
 });

@@ -34,6 +34,8 @@ export enum TelemetryEvent {
   ValidateManifestStart = "validate-manifest-start",
   ValidateManifest = "validate-manifest",
 
+  getManifestTemplatePath = "get-manifest-path",
+
   BuildStart = "build-start",
   Build = "build",
 
@@ -98,10 +100,8 @@ export enum TelemetryEvent {
   MigrateV1Project = "migrate-v1-project",
   MigrateV1ProjectNotificationStart = "migrate-v1-project-notification-start",
   MigrateV1ProjectNotification = "migrate-v1-project-notification",
-  OpenV1Project = "open-v1-project",
 
   ViewEnvironment = "view-environment",
-  ActivateEnvironment = "activate-environment",
 
   CheckSideloading = "check-sideloading",
 
@@ -117,6 +117,9 @@ export enum TelemetryEvent {
 
   ShowWhatIsNewNotification = "show-what-is-new-notification",
   ShowWhatIsNewContext = "show-what-is-new-context",
+
+  ShowLocalDebugNotification = "show-local-debug-notification",
+  ClickLocalDebug = "click-local-debug",
 }
 
 export enum TelemetryProperty {
@@ -154,6 +157,11 @@ export enum TelemetryProperty {
   UpdateTeamsAppReason = "update-teams-app-reason",
   IsSideloadingAllowed = "is-sideloading-allowed",
   IsExistingUser = "is-existing-user",
+  CollaborationState = "collaboration-state",
+  Env = "env",
+  SourceEnv = "sourceEnv",
+  TargetEnv = "targetEnv",
+  IsFromSample = "is-from-sample",
 }
 
 export enum TelemetrySuccess {

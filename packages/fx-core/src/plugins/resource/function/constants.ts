@@ -96,8 +96,8 @@ export class DependentPluginInfo {
   public static readonly sqlEndpoint: string = "sqlEndpoint";
 
   public static readonly identityPluginName: string = "fx-resource-identity";
-  public static readonly identityId: string = "identityId";
-  public static readonly identityName: string = "identityName";
+  public static readonly identityClientId: string = "identityClientId";
+  public static readonly identityResourceId: string = "identityResourceId";
 
   public static readonly frontendPluginName: string = "fx-resource-frontend-hosting";
   public static readonly frontendEndpoint: string = "endpoint";

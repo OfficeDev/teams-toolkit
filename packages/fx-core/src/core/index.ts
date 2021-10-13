@@ -7,14 +7,17 @@ import {
   ArchiveFolderName,
   ArchiveLogFileName,
   assembleError,
-  AzureSolutionSettings,
   ConfigFolderName,
+  ConfigMap,
   Core,
+  CoreCallbackEvent,
+  CoreCallbackFunc,
   err,
   Func,
   FunctionRouter,
   FxError,
   GroupOfTasks,
+  InputConfigsFolderName,
   Inputs,
   Json,
   LogProvider,
@@ -23,6 +26,7 @@ import {
   Platform,
   ProjectConfig,
   ProjectSettings,
+  PublishProfilesFolderName,
   QTreeNode,
   Result,
   RunnableTask,
@@ -30,26 +34,24 @@ import {
   Solution,
   SolutionConfig,
   SolutionContext,
-  SolutionSettings,
   Stage,
+  SystemError,
   TelemetryReporter,
   Tools,
+  UserCancelError,
   v2,
   Void,
-  InputConfigsFolderName,
-  PublishProfilesFolderName,
-  EnvConfig,
-  CoreCallbackEvent,
-  CoreCallbackFunc,
 } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import { AxiosResponse } from "axios";
 import * as fs from "fs-extra";
 import * as jsonschema from "jsonschema";
 import * as path from "path";
-import Container from "typedi";
 import * as uuid from "uuid";
+import { environmentManager } from "..";
+import { FeatureFlagName } from "../common/constants";
 import { globalStateUpdate } from "../common/globalState";
+import { localSettingsFileName } from "../common/localSettingsProvider";
 import {
   Component,
   sendTelemetryErrorEvent,
@@ -61,21 +63,24 @@ import {
 import {
   downloadSampleHook,
   fetchCodeZip,
-  isArmSupportEnabled,
   isMultiEnvEnabled,
+  mapToJson,
   saveFilesRecursively,
 } from "../common/tools";
-import { HostTypeOptionAzure } from "../plugins/solution/fx-solution/question";
-import { ProjectMigratorMW } from "./middleware/projectMigrator";
+import { PluginNames } from "../plugins";
+import { getAllV2ResourcePlugins } from "../plugins/solution/fx-solution/ResourcePluginContainer";
+import { CallbackRegistry } from "./callback";
 import {
+  ArchiveProjectError,
+  ArchiveUserFileError,
   CopyFileError,
+  CoreSource,
   FetchSampleError,
   FunctionRouterError,
   InvalidInputError,
   LoadSolutionError,
   MigrateNotImplementError,
   NonExistEnvNameError,
-  NotImplementedError,
   ObjectIsUndefinedError,
   ProjectFolderExistError,
   ProjectFolderNotExistError,
@@ -96,11 +101,12 @@ import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { LocalSettingsLoaderMW } from "./middleware/localSettingsLoader";
 import { LocalSettingsWriterMW } from "./middleware/localSettingsWriter";
 import { MigrateConditionHandlerMW } from "./middleware/migrateConditionHandler";
-import { environmentManager } from "..";
-import { newEnvInfo } from "./tools";
-// import { copyParameterJson, getParameterJson } from "../plugins/solution/fx-solution/arm";
-import { LocalCrypto } from "./crypto";
-import { PermissionRequestFileProvider } from "./permissionRequest";
+import { ProjectMigratorMW } from "./middleware/projectMigrator";
+import { newSolutionContext, ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
+import { ProjectSettingsWriterMW } from "./middleware/projectSettingsWriter";
+import { ProjectUpgraderMW } from "./middleware/projectUpgrader";
+import { QuestionModelMW } from "./middleware/questionModel";
+import { SolutionLoaderMW } from "./middleware/solutionLoader";
 import {
   CoreQuestionNames,
   DefaultAppNameFunc,
@@ -119,39 +125,28 @@ import {
   getAllSolutionPluginsV2,
   getSolutionPluginByName,
   getSolutionPluginV2ByName,
-  SolutionPlugins,
 } from "./SolutionPluginContainer";
-import { QuestionModelMW } from "./middleware/questionModel";
-import { ProjectSettingsWriterMW } from "./middleware/projectSettingsWriter";
-import { newSolutionContext, ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
-import { SolutionLoaderMW } from "./middleware/solutionLoader";
-import { ProjectUpgraderMW } from "./middleware/projectUpgrader";
-import { FeatureFlagName } from "../common/constants";
-import { localSettingsFileName } from "../common/localSettingsProvider";
-import { EnvInfoV2, SolutionPlugin } from "@microsoft/teamsfx-api/build/v2";
-import { CallbackRegistry } from "./callback";
+import { flattenConfigJson, newEnvInfo } from "./tools";
+import { LocalCrypto } from "./crypto";
 
 export interface CoreHookContext extends HookContext {
   projectSettings?: ProjectSettings;
-  projectIdMissing?: boolean;
   solutionContext?: SolutionContext;
   solution?: Solution;
   //for v2 api
   contextV2?: v2.Context;
   solutionV2?: v2.SolutionPlugin;
-  provisionInputConfig?: Json;
-  provisionOutputs?: Json;
-  envName?: string;
+  envInfoV2?: v2.EnvInfoV2;
   localSettings?: Json;
 }
 
 // API V2 feature flag
 export function isV2() {
   const flag = process.env[FeatureFlagName.APIV2];
-  if (flag === undefined) {
-    return false;
+  if (flag !== undefined && flag.toLowerCase() === "true") {
+    return true;
   } else {
-    return flag === "1" || flag.toLowerCase() === "true";
+    return false;
   }
 }
 
@@ -182,13 +177,14 @@ export class FxCore implements Core {
     QuestionModelMW,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
-    EnvInfoWriterMW(isMultiEnvEnabled()),
+    EnvInfoWriterMW(true),
   ])
   async createProject(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     if (!ctx) {
       return err(new ObjectIsUndefinedError("CoreHookContext"));
     }
     currentStage = Stage.create;
+    inputs.stage = Stage.create;
     const folder = inputs[QuestionRootFolder.name] as string;
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
     let projectPath: string;
@@ -241,8 +237,9 @@ export class FxCore implements Core {
         },
         version: "1.0.0",
         activeEnvironment: multiEnv ? environmentManager.getDefaultEnvName() : "default",
+        isFromSample: false,
       };
-
+      ctx.projectSettings = projectSettings;
       if (multiEnv) {
         const createEnvResult = await this.createEnvWithName(
           environmentManager.getDefaultEnvName(),
@@ -275,7 +272,7 @@ export class FxCore implements Core {
         if (generateResourceTemplateRes.isErr()) {
           return err(generateResourceTemplateRes.error);
         }
-        ctx.provisionInputConfig = generateResourceTemplateRes.value;
+        // ctx.provisionInputConfig = generateResourceTemplateRes.value;
         if (multiEnv) {
           if (solution.createEnv) {
             inputs.copy = false;
@@ -284,6 +281,18 @@ export class FxCore implements Core {
               return err(createEnvRes.error);
             }
           }
+        } else {
+          //TODO lagacy env.default.json
+          const profile: Json = { solution: {} };
+          for (const plugin of getAllV2ResourcePlugins()) {
+            profile[plugin.name] = {};
+          }
+          profile[PluginNames.LDEBUG]["trustDevCert"] = "true";
+          ctx.envInfoV2 = {
+            envName: environmentManager.getDefaultEnvName(),
+            config: {},
+            profile: profile,
+          };
         }
       } else {
         const solution = await getSolutionPluginByName(inputs[CoreQuestionNames.Solution]);
@@ -299,8 +308,8 @@ export class FxCore implements Core {
           ...this.tools,
           ...this.tools.tokenProvider,
           answers: inputs,
+          cryptoProvider: new LocalCrypto(projectSettings.projectId),
         };
-        ctx.projectSettings = projectSettings;
         ctx.solutionContext = solutionContext;
         const createRes = await solution.create(solutionContext);
         if (createRes.isErr()) {
@@ -338,6 +347,7 @@ export class FxCore implements Core {
   ])
   async migrateV1Project(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     currentStage = Stage.migrateV1;
+    inputs.stage = Stage.migrateV1;
     const globalStateDescription = "openReadme";
 
     const appName = (inputs[DefaultAppNameFunc.name] ?? inputs[QuestionV1AppName.name]) as string;
@@ -354,10 +364,6 @@ export class FxCore implements Core {
 
     if (!projectPath || !(await fs.pathExists(projectPath))) {
       return err(ProjectFolderNotExistError(projectPath ?? ""));
-    }
-
-    if (isV2()) {
-      return err(new NotImplementedError("migrateV1Project"));
     }
 
     const solution = await getAllSolutionPlugins()[0];
@@ -378,9 +384,14 @@ export class FxCore implements Core {
       ...this.tools,
       ...this.tools.tokenProvider,
       answers: inputs,
+      cryptoProvider: new LocalCrypto(projectSettings.projectId),
     };
 
-    await this.archive(projectPath);
+    const archiveResult = await this.archive(projectPath);
+    if (archiveResult.isErr()) {
+      return err(archiveResult.error);
+    }
+
     await fs.ensureDir(projectPath);
     await fs.ensureDir(path.join(projectPath, `.${ConfigFolderName}`));
 
@@ -404,41 +415,46 @@ export class FxCore implements Core {
     if (inputs.platform === Platform.VSCode) {
       await globalStateUpdate(globalStateDescription, true);
     }
-
+    this._setEnvInfoV2(ctx);
     return ok(projectPath);
   }
 
-  async archive(projectPath: string): Promise<void> {
-    const archiveFolderPath = path.join(projectPath, ArchiveFolderName);
-    await fs.ensureDir(archiveFolderPath);
+  async archive(projectPath: string): Promise<Result<Void, FxError>> {
+    try {
+      const archiveFolderPath = path.join(projectPath, ArchiveFolderName);
+      await fs.ensureDir(archiveFolderPath);
 
-    const fileNames = await fs.readdir(projectPath);
-    const archiveLog = async (projectPath: string, message: string): Promise<void> => {
-      await fs.appendFile(
-        path.join(projectPath, ArchiveLogFileName),
-        `[${new Date().toISOString()}] ${message}\n`
-      );
-    };
+      const fileNames = await fs.readdir(projectPath);
+      const archiveLog = async (projectPath: string, message: string): Promise<void> => {
+        await fs.appendFile(
+          path.join(projectPath, ArchiveLogFileName),
+          `[${new Date().toISOString()}] ${message}\n`
+        );
+      };
 
-    await archiveLog(projectPath, `Start to move files into '${ArchiveFolderName}' folder.`);
-    for (const fileName of fileNames) {
-      if (fileName === ArchiveFolderName || fileName === ArchiveLogFileName) {
-        continue;
+      await archiveLog(projectPath, `Start to move files into '${ArchiveFolderName}' folder.`);
+      for (const fileName of fileNames) {
+        if (fileName === ArchiveFolderName || fileName === ArchiveLogFileName) {
+          continue;
+        }
+
+        try {
+          await fs.move(path.join(projectPath, fileName), path.join(archiveFolderPath, fileName), {
+            overwrite: true,
+          });
+        } catch (e: any) {
+          await archiveLog(projectPath, `Failed to move '${fileName}'. ${e.message}`);
+          return err(ArchiveUserFileError(fileName, e.message));
+        }
+
+        await archiveLog(
+          projectPath,
+          `'${fileName}' has been moved to '${ArchiveFolderName}' folder.`
+        );
       }
-
-      try {
-        await fs.move(path.join(projectPath, fileName), path.join(archiveFolderPath, fileName), {
-          overwrite: true,
-        });
-      } catch (e: any) {
-        await archiveLog(projectPath, `Failed to move '${fileName}'. ${e.message}`);
-        throw e;
-      }
-
-      await archiveLog(
-        projectPath,
-        `'${fileName}' has been moved to '${ArchiveFolderName}' folder.`
-      );
+      return ok(Void);
+    } catch (e: any) {
+      return err(ArchiveProjectError(e.message));
     }
   }
 
@@ -447,7 +463,7 @@ export class FxCore implements Core {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(isMultiEnvEnabled()),
+    EnvInfoLoaderMW(false),
     SolutionLoaderMW(),
     QuestionModelMW,
     ContextInjectorMW,
@@ -456,38 +472,50 @@ export class FxCore implements Core {
   ])
   async provisionResources(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     currentStage = Stage.provision;
-    if (isV2()) {
-      if (
-        !ctx ||
-        !ctx.solutionV2 ||
-        !ctx.contextV2 ||
-        !ctx.provisionInputConfig ||
-        !ctx.contextV2.projectSetting.activeEnvironment ||
-        !ctx.provisionOutputs
-      )
-        return err(new ObjectIsUndefinedError("Provision input stuff"));
-      const envInfo: EnvInfoV2 = {
-        envName: ctx.contextV2.projectSetting.activeEnvironment,
-        config: ctx.provisionInputConfig as EnvConfig,
-        profile: ctx.provisionOutputs,
-      };
-      const result = await ctx.solutionV2.provisionResources(
-        ctx.contextV2,
-        inputs,
-        envInfo,
-        this.tools.tokenProvider
-      );
-      // todo(yefuwang): persist profile on success and partialSuccess
-      if (result.kind === "success") {
-        return ok(Void);
-      } else {
-        return err(result.error);
-      }
-    } else {
-      if (!ctx || !ctx.solution || !ctx.solutionContext)
-        return err(new ObjectIsUndefinedError("Provision input stuff"));
-      return await ctx.solution.provision(ctx.solutionContext);
+    inputs.stage = Stage.provision;
+    // provision is not ready yet, so use API v1
+    // if (isV2()) {
+    //   if (
+    //     !ctx ||
+    //     !ctx.solutionV2 ||
+    //     !ctx.contextV2 ||
+    //     !ctx.envInfoV2 ||
+    //     !ctx.contextV2.projectSetting.activeEnvironment
+    //   ) {
+    //     return err(new ObjectIsUndefinedError("Provision input stuff"));
+    //   }
+    //   const envInfo = ctx.envInfoV2;
+    //   const result = await ctx.solutionV2.provisionResources(
+    //     ctx.contextV2,
+    //     inputs,
+    //     envInfo,
+    //     this.tools.tokenProvider
+    //   );
+    //   if (result.kind === "success") {
+    //     // Remove all "output" and "secret" fields for backward compatibility.
+    //     // todo(yefuwang): handle "output" and "secret" fields in middlewares.
+    //     const profile = flattenConfigJson(result.output);
+    //     ctx.envInfoV2.profile = { ...ctx.envInfoV2.profile, ...profile };
+    //     return ok(Void);
+    //   } else if (result.kind === "partialSuccess") {
+    //     const profile = flattenConfigJson(result.output);
+    //     ctx.envInfoV2.profile = { ...ctx.envInfoV2.profile, ...profile };
+    //     return err(result.error);
+    //   } else {
+    //     return err(result.error);
+    //   }
+    // }
+    // else {
+    if (!ctx || !ctx.solution || !ctx.solutionContext) {
+      return err(new ObjectIsUndefinedError("Provision input stuff"));
     }
+    const provisionRes = await ctx.solution.provision(ctx.solutionContext);
+    if (provisionRes.isErr()) {
+      return provisionRes;
+    }
+    this._setEnvInfoV2(ctx);
+    return provisionRes;
+    // }
   }
 
   @hooks([
@@ -495,7 +523,7 @@ export class FxCore implements Core {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(isMultiEnvEnabled()),
+    EnvInfoLoaderMW(false),
     SolutionLoaderMW(),
     QuestionModelMW,
     ContextInjectorMW,
@@ -504,14 +532,15 @@ export class FxCore implements Core {
   ])
   async deployArtifacts(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     currentStage = Stage.deploy;
+    inputs.stage = Stage.deploy;
     if (isV2()) {
-      if (!ctx || !ctx.solutionV2 || !ctx.contextV2 || !ctx.provisionOutputs)
+      if (!ctx || !ctx.solutionV2 || !ctx.contextV2 || !ctx.envInfoV2)
         return err(new ObjectIsUndefinedError("Deploy input stuff"));
       if (ctx.solutionV2.deploy)
         return await ctx.solutionV2.deploy(
           ctx.contextV2,
           inputs,
-          ctx.provisionOutputs,
+          ctx.envInfoV2.profile,
           this.tools.tokenProvider.azureAccountProvider
         );
       else return ok(Void);
@@ -528,50 +557,68 @@ export class FxCore implements Core {
     ProjectMigratorMW,
     ProjectUpgraderMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(false),
+    EnvInfoLoaderMW(true),
     LocalSettingsLoaderMW,
     SolutionLoaderMW(),
     QuestionModelMW,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
-    EnvInfoWriterMW(),
+    EnvInfoWriterMW(true),
     LocalSettingsWriterMW,
   ])
   async localDebug(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     currentStage = Stage.debug;
-
+    inputs.stage = Stage.debug;
     if (isV2()) {
-      if (!ctx || !ctx.solutionV2 || !ctx.contextV2 || !ctx.localSettings)
-        return err(new ObjectIsUndefinedError("localDebug input stuff"));
-      if (ctx.solutionV2.provisionLocalResource) {
-        const res = await ctx.solutionV2.provisionLocalResource(
-          ctx.contextV2,
-          inputs,
-          ctx.localSettings,
-          this.tools.tokenProvider
-        );
-        if (res.kind === "success") {
-          ctx.localSettings = res.output;
-          return ok(Void);
-        } else if (res.kind === "partialSuccess") {
-          ctx.localSettings = res.output;
-          return err(res.error);
+      if (isMultiEnvEnabled()) {
+        if (!ctx || !ctx.solutionV2 || !ctx.contextV2)
+          return err(new ObjectIsUndefinedError("localDebug input stuff"));
+        if (!ctx.localSettings) ctx.localSettings = {};
+        if (ctx.solutionV2.provisionLocalResource) {
+          const res = await ctx.solutionV2.provisionLocalResource(
+            ctx.contextV2,
+            inputs,
+            ctx.localSettings,
+            this.tools.tokenProvider
+          );
+          if (res.kind === "success") {
+            ctx.localSettings = res.output;
+            return ok(Void);
+          } else if (res.kind === "partialSuccess") {
+            ctx.localSettings = res.output;
+            return err(res.error);
+          } else {
+            return err(res.error);
+          }
         } else {
-          return err(res.error);
+          return ok(Void);
         }
-      } else return ok(Void);
-    } else {
-      if (!ctx || !ctx.solution || !ctx.solutionContext || !ctx.projectSettings)
-        return err(new ObjectIsUndefinedError("localDebug input stuff"));
-      upgradeProgrammingLanguage(
-        ctx.solutionContext.envInfo.profile as SolutionConfig,
-        ctx.projectSettings
-      );
-      upgradeDefaultFunctionName(
-        ctx.solutionContext.envInfo.profile as SolutionConfig,
-        ctx.projectSettings
-      );
-      return await ctx.solution.localDebug(ctx.solutionContext);
+      }
+    }
+    if (!ctx || !ctx.solution || !ctx.solutionContext || !ctx.projectSettings)
+      return err(new ObjectIsUndefinedError("localDebug input stuff"));
+    upgradeProgrammingLanguage(
+      ctx.solutionContext.envInfo.profile as SolutionConfig,
+      ctx.projectSettings
+    );
+    upgradeDefaultFunctionName(
+      ctx.solutionContext.envInfo.profile as SolutionConfig,
+      ctx.projectSettings
+    );
+    const res = await ctx.solution.localDebug(ctx.solutionContext);
+    this._setEnvInfoV2(ctx);
+    return res;
+  }
+
+  _setEnvInfoV2(ctx?: CoreHookContext) {
+    if (isV2() && ctx && ctx.solutionContext) {
+      //workaround, compatible to api v2
+      ctx.envInfoV2 = {
+        envName: ctx.solutionContext.envInfo.envName,
+        config: ctx.solutionContext.envInfo.config,
+        profile: {},
+      };
+      ctx.envInfoV2.profile = mapToJson(ctx.solutionContext.envInfo.profile);
     }
   }
 
@@ -580,7 +627,7 @@ export class FxCore implements Core {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(isMultiEnvEnabled()),
+    EnvInfoLoaderMW(false),
     SolutionLoaderMW(),
     QuestionModelMW,
     ContextInjectorMW,
@@ -589,20 +636,14 @@ export class FxCore implements Core {
   ])
   async publishApplication(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     currentStage = Stage.publish;
+    inputs.stage = Stage.publish;
     if (isV2()) {
-      if (
-        !ctx ||
-        !ctx.solutionV2 ||
-        !ctx.contextV2 ||
-        !ctx.provisionOutputs ||
-        !ctx.provisionInputConfig
-      )
+      if (!ctx || !ctx.solutionV2 || !ctx.contextV2 || !ctx.envInfoV2)
         return err(new ObjectIsUndefinedError("publish input stuff"));
       return await ctx.solutionV2.publishApplication(
         ctx.contextV2,
         inputs,
-        ctx.provisionInputConfig,
-        ctx.provisionOutputs,
+        ctx.envInfoV2,
         this.tools.tokenProvider.appStudioToken
       );
     } else {
@@ -617,7 +658,7 @@ export class FxCore implements Core {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(isMultiEnvEnabled()),
+    EnvInfoLoaderMW(false),
     LocalSettingsLoaderMW,
     SolutionLoaderMW(),
     QuestionModelMW,
@@ -632,21 +673,26 @@ export class FxCore implements Core {
     ctx?: CoreHookContext
   ): Promise<Result<unknown, FxError>> {
     currentStage = Stage.userTask;
+    inputs.stage = Stage.userTask;
     const namespace = func.namespace;
     const array = namespace ? namespace.split("/") : [];
     if ("" !== namespace && array.length > 0) {
       if (isV2()) {
-        if (!ctx || !ctx.solutionV2)
+        if (!ctx || !ctx.solutionV2 || !ctx.envInfoV2)
           return err(new ObjectIsUndefinedError("executeUserTask input stuff"));
         if (!ctx.contextV2) ctx.contextV2 = createV2Context(this, newProjectSettings());
-        if (ctx.solutionV2.executeUserTask)
-          return await ctx.solutionV2.executeUserTask(
+        if (ctx.solutionV2.executeUserTask) {
+          if (!ctx.localSettings) ctx.localSettings = {};
+          const res = await ctx.solutionV2.executeUserTask(
             ctx.contextV2,
             inputs,
             func,
+            ctx.localSettings,
+            ctx.envInfoV2,
             this.tools.tokenProvider
           );
-        else return err(FunctionRouterError(func));
+          return res;
+        } else return err(FunctionRouterError(func));
       } else {
         if (!ctx || !ctx.solution)
           return err(new ObjectIsUndefinedError("executeUserTask input stuff"));
@@ -662,20 +708,21 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
-    ProjectMigratorMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(false),
+    EnvInfoLoaderMW(true),
     SolutionLoaderMW(),
     ContextInjectorMW,
     EnvInfoWriterMW(),
   ])
   async getQuestions(
-    task: Stage,
+    stage: Stage,
     inputs: Inputs,
     ctx?: CoreHookContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     if (!ctx) return err(new ObjectIsUndefinedError("getQuestions input stuff"));
-    if (task === Stage.create) {
+    inputs.stage = Stage.getQuestions;
+    currentStage = Stage.getQuestions;
+    if (stage === Stage.create) {
       delete inputs.projectPath;
       return await this._getQuestionsForCreateProject(inputs);
     } else {
@@ -684,22 +731,25 @@ export class FxCore implements Core {
           ? ctx.contextV2
           : createV2Context(this, newProjectSettings());
         const solutionV2 = ctx.solutionV2 ? ctx.solutionV2 : await getAllSolutionPluginsV2()[0];
-        return await this._getQuestions(contextV2, solutionV2, task, inputs);
+        const envInfoV2 = ctx.envInfoV2
+          ? ctx.envInfoV2
+          : { envName: environmentManager.getDefaultEnvName(), config: {}, profile: {} };
+        inputs.stage = stage;
+        return await this._getQuestions(contextV2, solutionV2, stage, inputs, envInfoV2);
       } else {
         const solutionContext = ctx.solutionContext
           ? ctx.solutionContext
           : await newSolutionContext(this.tools, inputs);
         const solution = ctx.solution ? ctx.solution : getAllSolutionPlugins()[0];
-        return await this._getQuestions(solutionContext, solution, task, inputs);
+        return await this._getQuestions(solutionContext, solution, stage, inputs);
       }
     }
   }
 
   @hooks([
     ErrorHandlerMW,
-    ProjectMigratorMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(false),
+    EnvInfoLoaderMW(true),
     SolutionLoaderMW(),
     ContextInjectorMW,
     EnvInfoWriterMW(),
@@ -709,15 +759,23 @@ export class FxCore implements Core {
     inputs: Inputs,
     ctx?: CoreHookContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
+    if (!ctx) return err(new ObjectIsUndefinedError("getQuestionsForUserTask input stuff"));
+    inputs.stage = Stage.getQuestions;
+    currentStage = Stage.getQuestions;
     if (isV2()) {
-      return err(new NotImplementedError("getQuestionsForUserTask"));
+      const contextV2 = ctx.contextV2 ? ctx.contextV2 : createV2Context(this, newProjectSettings());
+      const solutionV2 = ctx.solutionV2 ? ctx.solutionV2 : await getAllSolutionPluginsV2()[0];
+      const envInfoV2 = ctx.envInfoV2
+        ? ctx.envInfoV2
+        : { envName: environmentManager.getDefaultEnvName(), config: {}, profile: {} };
+      return await this._getQuestionsForUserTask(contextV2, solutionV2, func, inputs, envInfoV2);
+    } else {
+      const solutionContext = ctx.solutionContext
+        ? ctx.solutionContext
+        : await newSolutionContext(this.tools, inputs);
+      const solution = ctx.solution ? ctx.solution : getAllSolutionPlugins()[0];
+      return await this._getQuestionsForUserTask(solutionContext, solution, func, inputs);
     }
-    const solutionContext =
-      ctx!.solutionContext === undefined
-        ? await newSolutionContext(this.tools, inputs)
-        : ctx!.solutionContext;
-    const solution = ctx!.solution === undefined ? await getAllSolutionPlugins()[0] : ctx!.solution;
-    return await this._getQuestionsForUserTask(solutionContext, solution, func, inputs);
   }
 
   @hooks([
@@ -725,7 +783,7 @@ export class FxCore implements Core {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(isMultiEnvEnabled()),
+    EnvInfoLoaderMW(false),
     LocalSettingsLoaderMW,
     ContextInjectorMW,
   ])
@@ -733,10 +791,13 @@ export class FxCore implements Core {
     inputs: Inputs,
     ctx?: CoreHookContext
   ): Promise<Result<ProjectConfig | undefined, FxError>> {
+    if (!ctx) return err(new ObjectIsUndefinedError("getProjectConfig input stuff"));
+    inputs.stage = Stage.getProjectConfig;
+    currentStage = Stage.getProjectConfig;
     if (isV2()) {
       return ok({
         settings: ctx!.projectSettings,
-        config: ctx!.provisionOutputs,
+        config: ctx!.envInfoV2?.profile,
         localSettings: ctx!.localSettings,
       });
     } else {
@@ -752,13 +813,14 @@ export class FxCore implements Core {
     ErrorHandlerMW,
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(isMultiEnvEnabled()),
+    EnvInfoLoaderMW(false),
     SolutionLoaderMW(),
     QuestionModelMW,
     ContextInjectorMW,
   ])
   async grantPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     currentStage = Stage.grantPermission;
+    inputs.stage = Stage.grantPermission;
     return await ctx!.solution!.grantPermission!(ctx!.solutionContext!);
   }
 
@@ -766,13 +828,14 @@ export class FxCore implements Core {
     ErrorHandlerMW,
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(isMultiEnvEnabled()),
+    EnvInfoLoaderMW(false),
     SolutionLoaderMW(),
     QuestionModelMW,
     ContextInjectorMW,
   ])
   async checkPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     currentStage = Stage.checkPermission;
+    inputs.stage = Stage.checkPermission;
     return await ctx!.solution!.checkPermission!(ctx!.solutionContext!);
   }
 
@@ -780,27 +843,60 @@ export class FxCore implements Core {
     ErrorHandlerMW,
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(isMultiEnvEnabled()),
+    EnvInfoLoaderMW(false),
     SolutionLoaderMW(),
     QuestionModelMW,
     ContextInjectorMW,
   ])
   async listCollaborator(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     currentStage = Stage.listCollaborator;
+    inputs.stage = Stage.listCollaborator;
     return await ctx!.solution!.listCollaborator!(ctx!.solutionContext!);
   }
 
+  @hooks([
+    ErrorHandlerMW,
+    ProjectMigratorMW,
+    ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW(true),
+    SolutionLoaderMW(),
+    QuestionModelMW,
+    ContextInjectorMW,
+  ])
+  async listAllCollaborators(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    currentStage = Stage.listAllCollaborators;
+    inputs.stage = Stage.listAllCollaborators;
+    return await ctx!.solution!.listAllCollaborators!(ctx!.solutionContext!);
+  }
+
   async _getQuestionsForUserTask(
-    ctx: SolutionContext,
-    solution: Solution,
+    ctx: SolutionContext | v2.Context,
+    solution: Solution | v2.SolutionPlugin,
     func: FunctionRouter,
-    inputs: Inputs
+    inputs: Inputs,
+    envInfo?: v2.EnvInfoV2
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     const namespace = func.namespace;
     const array = namespace ? namespace.split("/") : [];
-    if (namespace && "" !== namespace && array.length > 0 && solution.getQuestionsForUserTask) {
-      ctx!.answers = inputs;
-      const res = await solution.getQuestionsForUserTask!(func, ctx!);
+    if (namespace && "" !== namespace && array.length > 0) {
+      let res: Result<QTreeNode | undefined, FxError> = ok(undefined);
+      if (isV2()) {
+        const solutionV2 = solution as v2.SolutionPlugin;
+        if (solutionV2.getQuestionsForUserTask) {
+          res = await solutionV2.getQuestionsForUserTask(
+            ctx as v2.Context,
+            inputs,
+            func,
+            envInfo!,
+            this.tools.tokenProvider
+          );
+        }
+      } else {
+        const solutionv1 = solution as Solution;
+        if (solutionv1.getQuestionsForUserTask) {
+          res = await solutionv1.getQuestionsForUserTask(func, ctx as SolutionContext);
+        }
+      }
       if (res.isOk()) {
         if (res.value) {
           const node = res.value.trim();
@@ -844,16 +940,22 @@ export class FxCore implements Core {
 
   async _getQuestions(
     ctx: SolutionContext | v2.Context,
-    solution: Solution | SolutionPlugin,
+    solution: Solution | v2.SolutionPlugin,
     stage: Stage,
-    inputs: Inputs
+    inputs: Inputs,
+    envInfo?: v2.EnvInfoV2
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     if (stage !== Stage.create) {
       let res: Result<QTreeNode | undefined, FxError> = ok(undefined);
       if (isV2()) {
-        const solutionV2 = solution as SolutionPlugin;
+        const solutionV2 = solution as v2.SolutionPlugin;
         if (solutionV2.getQuestions) {
-          res = await solutionV2.getQuestions(ctx as v2.Context, inputs);
+          res = await solutionV2.getQuestions(
+            ctx as v2.Context,
+            inputs,
+            envInfo!,
+            this.tools.tokenProvider
+          );
         }
       } else {
         res = await (solution as Solution).getQuestions(stage, ctx as SolutionContext);
@@ -869,45 +971,47 @@ export class FxCore implements Core {
     return ok(undefined);
   }
 
-  @hooks([
-    ErrorHandlerMW,
-    ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(false),
-    ContextInjectorMW,
-    EnvInfoWriterMW(),
-  ])
+  @hooks([ErrorHandlerMW, ProjectSettingsLoaderMW, EnvInfoLoaderMW(true), ContextInjectorMW])
   async encrypt(
     plaintext: string,
     inputs: Inputs,
     ctx?: CoreHookContext
   ): Promise<Result<string, FxError>> {
-    return ctx!.solutionContext!.cryptoProvider!.encrypt(plaintext);
+    if (!ctx) return err(new ObjectIsUndefinedError("ctx"));
+    if (isV2()) {
+      if (!ctx.contextV2) return err(new ObjectIsUndefinedError("ctx.contextV2"));
+      return ctx.contextV2.cryptoProvider.encrypt(plaintext);
+    } else {
+      if (!ctx.solutionContext) return err(new ObjectIsUndefinedError("ctx.solutionContext"));
+      return ctx.solutionContext.cryptoProvider.encrypt(plaintext);
+    }
   }
 
-  @hooks([
-    ErrorHandlerMW,
-    ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(false),
-    ContextInjectorMW,
-    EnvInfoWriterMW(),
-  ])
+  @hooks([ErrorHandlerMW, ProjectSettingsLoaderMW, EnvInfoLoaderMW(true), ContextInjectorMW])
   async decrypt(
     ciphertext: string,
     inputs: Inputs,
     ctx?: CoreHookContext
   ): Promise<Result<string, FxError>> {
-    return ctx!.solutionContext!.cryptoProvider!.decrypt(ciphertext);
+    if (!ctx) return err(new ObjectIsUndefinedError("ctx"));
+    if (isV2()) {
+      if (!ctx.contextV2) return err(new ObjectIsUndefinedError("ctx.contextV2"));
+      return ctx.contextV2.cryptoProvider.decrypt(ciphertext);
+    } else {
+      if (!ctx.solutionContext) return err(new ObjectIsUndefinedError("ctx.solutionContext"));
+      return ctx.solutionContext.cryptoProvider.decrypt(ciphertext);
+    }
   }
 
   async buildArtifacts(inputs: Inputs): Promise<Result<Void, FxError>> {
-    throw TaskNotSupportError(Stage.build);
+    throw new TaskNotSupportError(Stage.build);
   }
 
   @hooks([
     ErrorHandlerMW,
     ProjectSettingsLoaderMW,
     SolutionLoaderMW(),
-    EnvInfoLoaderMW(isMultiEnvEnabled()),
+    EnvInfoLoaderMW(true),
     ContextInjectorMW,
   ])
   async createEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
@@ -925,13 +1029,12 @@ export class FxCore implements Core {
       !createEnvCopyInput.targetEnvName ||
       !createEnvCopyInput.sourceEnvName
     ) {
-      return ok(Void);
+      return err(UserCancelError);
     }
 
     const createEnvResult = await this.createEnvCopy(
       createEnvCopyInput.targetEnvName,
       createEnvCopyInput.sourceEnvName,
-      projectSettings,
       inputs,
       core
     );
@@ -987,7 +1090,6 @@ export class FxCore implements Core {
   async createEnvCopy(
     targetEnvName: string,
     sourceEnvName: string,
-    projectSettings: ProjectSettings,
     inputs: Inputs,
     core: FxCore
   ): Promise<Result<Void, FxError>> {
@@ -1047,7 +1149,6 @@ export class FxCore implements Core {
       core.tools,
       inputs,
       ctx!.projectSettings,
-      ctx!.projectIdMissing,
       env
     );
 
@@ -1115,18 +1216,6 @@ export class FxCore implements Core {
     sampleNode.addChild(new QTreeNode(QuestionRootFolder));
     return ok(node.trim());
   }
-
-  async removeEnv(inputs: Inputs): Promise<Result<Void, FxError>> {
-    throw TaskNotSupportError(Stage.removeEnv);
-  }
-  async switchEnv(inputs: Inputs): Promise<Result<Void, FxError>> {
-    throw TaskNotSupportError(Stage.switchEnv);
-  }
-}
-
-function isAzureProject(solutionSettings: SolutionSettings): boolean {
-  const settings = solutionSettings as AzureSolutionSettings;
-  return settings?.hostType === HostTypeOptionAzure.id;
 }
 
 export async function createBasicFolderStructure(inputs: Inputs): Promise<Result<null, FxError>> {
@@ -1144,7 +1233,7 @@ export async function createBasicFolderStructure(inputs: Inputs): Promise<Result
           description: "",
           author: "",
           scripts: {
-            test: "echo \"Error: no test specified\" && exit 1",
+            test: 'echo "Error: no test specified" && exit 1',
           },
           devDependencies: {
             "@microsoft/teamsfx-cli": "0.*",
@@ -1248,7 +1337,7 @@ export async function downloadSample(
   return err(InvalidInputError(`invalid answer for '${CoreQuestionNames.Samples}'`, inputs));
 }
 
-export function newProjectSettings() {
+export function newProjectSettings(): ProjectSettings {
   const projectSettings: ProjectSettings = {
     appName: "",
     projectId: uuid.v4(),
@@ -1265,8 +1354,8 @@ export function createV2Context(core: FxCore, projectSettings: ProjectSettings):
     userInteraction: core.tools.ui,
     logProvider: core.tools.logProvider,
     telemetryReporter: core.tools.telemetryReporter!,
-    cryptoProvider: core.tools.cryptoProvider!,
-    permissionRequestProvider: core.tools.permissionRequest!,
+    cryptoProvider: new LocalCrypto(projectSettings.projectId),
+    permissionRequestProvider: core.tools.permissionRequest,
     projectSetting: projectSettings,
   };
   return context;

@@ -7,9 +7,11 @@ import {
   AzureSolutionSettings,
   ConfigFolderName,
   err,
+  FxError,
   InputConfigsFolderName,
   Inputs,
   ProjectSettingsFileName,
+  Result,
   StaticPlatforms,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
@@ -17,6 +19,7 @@ import * as path from "path";
 import { CoreHookContext, FxCore, isV2 } from "..";
 import { isMultiEnvEnabled } from "../../common";
 import { WriteFileError } from "../error";
+import { shouldIgnored } from "./projectSettingsLoader";
 
 /**
  * This middleware will help to persist project settings if necessary.
@@ -25,9 +28,8 @@ export const ProjectSettingsWriterMW: Middleware = async (
   ctx: CoreHookContext,
   next: NextFunction
 ) => {
-  try {
-    await next();
-  } finally {
+  await next();
+  if (!shouldIgnored(ctx)) {
     const lastArg = ctx.arguments[ctx.arguments.length - 1];
     const inputs: Inputs = lastArg === ctx ? ctx.arguments[ctx.arguments.length - 2] : lastArg;
     if (
@@ -55,7 +57,9 @@ export const ProjectSettingsWriterMW: Middleware = async (
       await fs.writeFile(settingFile, JSON.stringify(projectSettings, null, 4));
       core.tools.logProvider.debug(`[core] persist project setting file: ${settingFile}`);
     } catch (e) {
-      ctx.res = err(WriteFileError(e));
+      if ((ctx.result as Result<any, FxError>).isOk()) {
+        ctx.result = err(WriteFileError(e));
+      }
     }
   }
 };

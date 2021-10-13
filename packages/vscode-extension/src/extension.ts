@@ -27,10 +27,15 @@ import {
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
 import { enableMigrateV1 } from "./utils/migrateV1";
 import { isTeamsfx, syncFeatureFlags } from "./utils/commonUtils";
-import { ConfigFolderName, PublishProfilesFolderName } from "@microsoft/teamsfx-api";
+import {
+  ConfigFolderName,
+  InputConfigsFolderName,
+  PublishProfilesFolderName,
+} from "@microsoft/teamsfx-api";
 import { ExtensionUpgrade } from "./utils/upgrade";
 import { registerEnvTreeHandler } from "./envTree";
 import { getWorkspacePath } from "./handlers";
+import { localSettingsJsonName } from "./debug/constants";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -266,8 +271,18 @@ export async function activate(context: vscode.ExtensionContext) {
       ? `**/.${ConfigFolderName}/${PublishProfilesFolderName}/*.userdata`
       : `**/.${ConfigFolderName}/*.userdata`,
   };
+  const localDebugDataSelector = {
+    language: "json",
+    scheme: "file",
+    pattern: isMultiEnvEnabled()
+      ? `**/.${ConfigFolderName}/${InputConfigsFolderName}/${localSettingsJsonName}`
+      : ``,
+  };
   context.subscriptions.push(
     vscode.languages.registerCodeLensProvider(userDataSelector, codelensProvider)
+  );
+  context.subscriptions.push(
+    vscode.languages.registerCodeLensProvider(localDebugDataSelector, codelensProvider)
   );
 
   // Register debug configuration provider

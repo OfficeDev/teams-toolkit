@@ -13,6 +13,7 @@ import { AppStudioClient } from "./../../../../../src/plugins/resource/appstudio
 import { MockedAppStudioTokenProvider } from "../helper";
 import { newEnvInfo } from "../../../../../src";
 import { IUserList } from "../../../../../src/plugins/resource/appstudio/interfaces/IAppDefinition";
+import { LocalCrypto } from "../../../../../src/core/crypto";
 
 const userList: IUserList = {
   tenantId: faker.datatype.uuid(),
@@ -51,6 +52,7 @@ describe("Remote Collaboration", () => {
       config: new ConfigMap(),
       answers: { platform: Platform.VSCode },
       appStudioToken: new MockedAppStudioTokenProvider(),
+      cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -85,6 +87,7 @@ describe("Remote Collaboration", () => {
       config: new ConfigMap(),
       answers: { platform: Platform.VSCode },
       appStudioToken: new MockedAppStudioTokenProvider(),
+      cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -117,6 +120,7 @@ describe("Remote Collaboration", () => {
       config: new ConfigMap(),
       answers: { platform: Platform.VSCode },
       appStudioToken: new MockedAppStudioTokenProvider(),
+      cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
       appName: "my app",

@@ -59,8 +59,8 @@ async function writeEnvInfo(ctx: CoreHookContext, skip: boolean) {
     const envProfilePath = await environmentManager.writeEnvProfile(
       provisionOutputs,
       inputs.projectPath,
-      envInfoV2.envName,
-      ctx.contextV2?.cryptoProvider
+      ctx.contextV2!.cryptoProvider,
+      envInfoV2.envName
     );
 
     if (envProfilePath.isOk()) {
@@ -79,8 +79,8 @@ async function writeEnvInfo(ctx: CoreHookContext, skip: boolean) {
     const envProfilePath = await environmentManager.writeEnvProfile(
       solutionContext.envInfo.profile,
       inputs.projectPath,
-      solutionContext.envInfo.envName,
-      solutionContext.cryptoProvider
+      solutionContext.cryptoProvider,
+      solutionContext.envInfo.envName
     );
 
     if (envProfilePath.isOk()) {

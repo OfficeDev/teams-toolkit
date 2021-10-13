@@ -1717,7 +1717,7 @@ export class TeamsAppSolution implements Solution {
       const userInfo = result.value as IUserList;
       for (const env of envs.value) {
         try {
-          const envInfo = await environmentManager.loadEnvInfo(ctx.root, env);
+          const envInfo = await environmentManager.loadEnvInfo(ctx.root, ctx.cryptoProvider, env);
           if (envInfo.isErr()) {
             throw envInfo.error;
           }

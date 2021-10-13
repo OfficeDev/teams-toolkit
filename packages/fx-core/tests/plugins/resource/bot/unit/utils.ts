@@ -35,6 +35,7 @@ import {
   UserInteraction,
 } from "@microsoft/teamsfx-api";
 import { newEnvInfo } from "../../../../../src";
+import { LocalCrypto } from "../../../../../src/core/crypto";
 
 export class MockUserInteraction implements UserInteraction {
   selectOption(config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> {
@@ -207,6 +208,7 @@ export function newPluginContext(): PluginContext {
         capabilities: ["Bot"],
       },
     },
+    cryptoProvider: new LocalCrypto(""),
     appStudioToken: {
       getAccessToken: (showDialog?: boolean) => {
         return Promise.resolve(undefined);

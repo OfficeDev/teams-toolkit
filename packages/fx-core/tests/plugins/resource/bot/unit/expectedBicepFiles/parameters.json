@@ -1,8 +1,8 @@
 {
   "bot_aadClientId": {
-    "value": "{{FX_RESOURCE_BOT__BOTID}}"
+    "value": "{{profile.fx-resource-bot.botId}}"
   },
   "bot_aadClientSecret": {
-    "value": "{{FX_RESOURCE_BOT__BOTPASSWORD}}"
+    "value": "{{profile.fx-resource-bot.botPassword}}"
   }
 }

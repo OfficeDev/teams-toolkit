@@ -25,6 +25,7 @@ import {
 } from "../../../src/plugins/solution/fx-solution/question";
 import * as uuid from "uuid";
 import { newEnvInfo } from "../../../src";
+import { LocalCrypto } from "../../../src/core/crypto";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -43,6 +44,7 @@ describe("Solution create()", async () => {
       envInfo: newEnvInfo(),
       answers: { platform: Platform.VSCode },
       projectSettings: undefined,
+      cryptoProvider: new LocalCrypto(""),
     };
   }
 

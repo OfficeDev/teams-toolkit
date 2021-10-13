@@ -200,11 +200,11 @@ export async function activate(): Promise<Result<Void, FxError>> {
       return Promise.resolve();
     };
     appstudioLogin.setStatusChangeMap("successfully-sign-in-m365", m365NotificationCallback, false);
-    sharepointLogin.setStatusChangeMap(
-      "successfully-sign-in-m365",
-      m365NotificationCallback,
-      false
-    );
+    // sharepointLogin.setStatusChangeMap(
+    //   "successfully-sign-in-m365",
+    //   m365NotificationCallback,
+    //   false
+    // );
     tools = {
       logProvider: VsCodeLogInstance,
       tokenProvider: {
@@ -223,6 +223,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
     await registerEnvTreeHandler();
     await openMarkdownHandler();
     await openSampleReadmeHandler();
+    ExtTelemetry.isFromSample = await getIsFromSample();
 
     if (workspacePath) {
       // refresh env tree when env config files added or deleted.
@@ -256,6 +257,22 @@ export async function activate(): Promise<Result<Void, FxError>> {
     return err(FxError);
   }
   return result;
+}
+
+async function getIsFromSample() {
+  if (core) {
+    const input = getSystemInputs();
+    input.ignoreEnvInfo = true;
+    const projectConfigRes = await core.getProjectConfig(input);
+
+    if (projectConfigRes.isOk() && projectConfigRes.value) {
+      const projectSettings = projectConfigRes.value.settings;
+      if (projectSettings) {
+        return projectSettings.isFromSample;
+      }
+    }
+    return undefined;
+  }
 }
 
 async function refreshEnvTreeOnFileChanged(workspacePath: string, files: readonly Uri[]) {

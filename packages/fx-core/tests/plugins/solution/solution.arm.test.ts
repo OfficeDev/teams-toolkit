@@ -57,6 +57,7 @@ import "../../../src/plugins/resource/spfx";
 import "../../../src/plugins/resource/aad";
 import { environmentManager } from "../../../src";
 import { assert } from "sinon";
+import { LocalCrypto } from "../../../src/core/crypto";
 
 let mockedEnvRestore: () => void;
 
@@ -90,6 +91,7 @@ function mockSolutionContext(): SolutionContext {
     answers: { platform: Platform.VSCode },
     projectSettings: undefined,
     azureAccountProvider: Object as any & AzureAccountProvider,
+    cryptoProvider: new LocalCrypto(""),
   };
 }
 
@@ -342,10 +344,10 @@ describe("Deploy ARM Template to Azure", () => {
       "value": "mytestappdefault"
     },
     "aadClientId": {
-      "value": "{{FX_RESOURCE_AAD_APP_FOR_TEAMS__CLIENTID}}"
+      "value": "{{profile.fx-resource-aad-app-for-teams.clientId}}"
     },
     "aadClientSecret": {
-      "value": "{{FX_RESOURCE_AAD_APP_FOR_TEAMS__CLIENTSECRET}}"
+      "value": "{{profile.fx-resource-aad-app-for-teams.clientSecret}}"
     },
     "envValue": {
       "value": "{{MOCKED_EXPAND_VAR_TEST}}"
@@ -445,7 +447,7 @@ describe("Deploy ARM Template to Azure", () => {
           chai.assert.exists(parameters.properties.parameters?.aadClientSecret);
           chai.assert.notStrictEqual(
             parameters.properties.parameters?.aadClientSecret,
-            "{{FX_RESOURCE_AAD_APP_FOR_TEAMS__CLIENTSECRET}}"
+            "{{profile.fx-resource-aad-app-for-teams.clientSecret}}"
           );
 
           return new Promise((resolve) => {

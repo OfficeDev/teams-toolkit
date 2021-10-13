@@ -45,13 +45,15 @@ export const LocalSettingsLoaderMW: Middleware = async (
     const exists = await fs.pathExists(localSettingsProvider.localSettingsFilePath);
     if (isV2()) {
       if (exists) {
-        ctx.localSettings = await localSettingsProvider.loadV2();
+        ctx.localSettings = await localSettingsProvider.loadV2(ctx.contextV2?.cryptoProvider);
       } else {
         ctx.localSettings = localSettingsProvider.initV2(hasFrontend, hasBackend, hasBot);
       }
     } else if (ctx.solutionContext) {
       if (exists) {
-        ctx.solutionContext.localSettings = await localSettingsProvider.load();
+        ctx.solutionContext.localSettings = await localSettingsProvider.load(
+          ctx.solutionContext.cryptoProvider
+        );
       } else {
         ctx.solutionContext.localSettings = localSettingsProvider.init(
           hasFrontend,

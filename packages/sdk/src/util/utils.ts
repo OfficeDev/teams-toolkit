@@ -5,6 +5,7 @@ import { SSOTokenInfoBase, SSOTokenV1Info, SSOTokenV2Info } from "../models/ssoT
 import { UserInfo } from "../models/userinfo";
 import jwt_decode from "jwt-decode";
 import { internalLogger } from "./logger";
+import { createHash } from "crypto";
 
 /**
  * Parse jwt token payload
@@ -101,4 +102,57 @@ export function validateScopesType(value: any): void {
   const errorMsg = "The type of scopes is not valid, it must be string or string array";
   internalLogger.error(errorMsg);
   throw new ErrorWithCode(errorMsg, ErrorCode.InvalidParameter);
+}
+
+/**
+ * @internal
+ */
+export function getScopesArray(scopes: string | string[]): string[] {
+  const scopesArray: string[] = typeof scopes === "string" ? scopes.split(" ") : scopes;
+  return scopesArray.filter((x) => x !== null && x !== "");
+}
+
+/**
+ * @internal
+ */
+export function getAuthority(authorityHost: string, tenantId: string): string {
+  const normalizedAuthorityHost = authorityHost.replace(/\/+$/g, "");
+  return normalizedAuthorityHost + "/" + tenantId;
+}
+
+/**
+ * @internal
+ */
+export function parseCertificate(
+  certificateContent: string | undefined
+): ClientCertificate | undefined {
+  if (!certificateContent) {
+    return undefined;
+  }
+
+  const certificatePattern =
+    /(-+BEGIN CERTIFICATE-+)(\n\r?|\r\n?)([A-Za-z0-9+/\n\r]+=*)(\n\r?|\r\n?)(-+END CERTIFICATE-+)/;
+  const match = certificatePattern.exec(certificateContent);
+  if (!match) {
+    const errorMsg = "The certificate content does not contain a PEM-encoded certificate.";
+    internalLogger.error(errorMsg);
+    throw new ErrorWithCode(errorMsg, ErrorCode.InvalidCertificate);
+  }
+  const thumbprint = createHash("sha1")
+    .update(Buffer.from(match[3], "base64"))
+    .digest("hex")
+    .toUpperCase();
+
+  return {
+    thumbprint: thumbprint,
+    privateKey: certificateContent,
+  };
+}
+
+/**
+ * @internal
+ */
+export interface ClientCertificate {
+  thumbprint: string;
+  privateKey: string;
 }

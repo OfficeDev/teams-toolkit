@@ -6,6 +6,7 @@ import {
   AppPackageFolderName,
   ArchiveFolderName,
   ConfigFolderName,
+  CryptoProvider,
   EnvConfig,
   EnvInfo,
   Err,
@@ -669,7 +670,11 @@ describe("Middleware - others", () => {
       sandbox
         .stub(environmentManager, "loadEnvInfo")
         .callsFake(
-          async (projectPath: string, maybeEnvName?: string): Promise<Result<EnvInfo, FxError>> => {
+          async (
+            projectPath: string,
+            cryptoProvider: CryptoProvider,
+            maybeEnvName?: string
+          ): Promise<Result<EnvInfo, FxError>> => {
             const envName = maybeEnvName ?? environmentManager.getDefaultEnvName();
             envLoaded = envName;
 

@@ -308,7 +308,7 @@ export class FxCore implements Core {
           ...this.tools,
           ...this.tools.tokenProvider,
           answers: inputs,
-          cryptoProvider: new LocalCrypto(projectSettings.projectId)
+          cryptoProvider: new LocalCrypto(projectSettings.projectId),
         };
         ctx.solutionContext = solutionContext;
         const createRes = await solution.create(solutionContext);
@@ -384,7 +384,7 @@ export class FxCore implements Core {
       ...this.tools,
       ...this.tools.tokenProvider,
       answers: inputs,
-      cryptoProvider: new LocalCrypto(projectSettings.projectId)
+      cryptoProvider: new LocalCrypto(projectSettings.projectId),
     };
 
     const archiveResult = await this.archive(projectPath);
@@ -979,14 +979,10 @@ export class FxCore implements Core {
   ): Promise<Result<string, FxError>> {
     if (!ctx) return err(new ObjectIsUndefinedError("ctx"));
     if (isV2()) {
-      if (!ctx.contextV2)
-        return err(new ObjectIsUndefinedError("ctx.contextV2"));
+      if (!ctx.contextV2) return err(new ObjectIsUndefinedError("ctx.contextV2"));
       return ctx.contextV2.cryptoProvider.encrypt(plaintext);
     } else {
-      if (!ctx.solutionContext)
-        return err(
-          new ObjectIsUndefinedError("ctx.solutionContext")
-        );
+      if (!ctx.solutionContext) return err(new ObjectIsUndefinedError("ctx.solutionContext"));
       return ctx.solutionContext.cryptoProvider.encrypt(plaintext);
     }
   }
@@ -999,14 +995,10 @@ export class FxCore implements Core {
   ): Promise<Result<string, FxError>> {
     if (!ctx) return err(new ObjectIsUndefinedError("ctx"));
     if (isV2()) {
-      if (!ctx.contextV2)
-        return err(new ObjectIsUndefinedError("ctx.contextV2"));
+      if (!ctx.contextV2) return err(new ObjectIsUndefinedError("ctx.contextV2"));
       return ctx.contextV2.cryptoProvider.decrypt(ciphertext);
     } else {
-      if (!ctx.solutionContext)
-        return err(
-          new ObjectIsUndefinedError("ctx.solutionContext")
-        );
+      if (!ctx.solutionContext) return err(new ObjectIsUndefinedError("ctx.solutionContext"));
       return ctx.solutionContext.cryptoProvider.decrypt(ciphertext);
     }
   }

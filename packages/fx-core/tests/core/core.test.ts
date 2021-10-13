@@ -229,11 +229,7 @@ describe("Core basic APIs", () => {
           const validSettingsResult = validateSettings(projectSettings);
           assert.isTrue(validSettingsResult === undefined);
 
-          const envInfoResult = await loadSolutionContext(
-            tools,
-            inputs,
-            projectSettings
-          );
+          const envInfoResult = await loadSolutionContext(tools, inputs, projectSettings);
           if (envInfoResult.isErr()) {
             assert.fail("failed to load env info");
           }

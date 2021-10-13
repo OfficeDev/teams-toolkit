@@ -236,7 +236,6 @@ export class FxCore implements Core {
           version: "1.0.0",
         },
         version: "1.0.0",
-        activeEnvironment: multiEnv ? environmentManager.getDefaultEnvName() : "default",
         isFromSample: false,
       };
       ctx.projectSettings = projectSettings;
@@ -479,8 +478,7 @@ export class FxCore implements Core {
     //     !ctx ||
     //     !ctx.solutionV2 ||
     //     !ctx.contextV2 ||
-    //     !ctx.envInfoV2 ||
-    //     !ctx.contextV2.projectSetting.activeEnvironment
+    //     !ctx.envInfoV2
     //   ) {
     //     return err(new ObjectIsUndefinedError("Provision input stuff"));
     //   }
@@ -1116,6 +1114,7 @@ export class FxCore implements Core {
     return ok(Void);
   }
 
+  // deprecated
   @hooks([
     ErrorHandlerMW,
     ProjectMigratorMW,
@@ -1143,7 +1142,6 @@ export class FxCore implements Core {
       return err(NonExistEnvNameError(env));
     }
 
-    ctx!.projectSettings.activeEnvironment = env;
     const core = ctx!.self as FxCore;
     const solutionContext = await loadSolutionContext(
       core.tools,

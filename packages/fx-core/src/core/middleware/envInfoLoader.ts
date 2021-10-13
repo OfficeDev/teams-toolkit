@@ -26,7 +26,6 @@ import {
   NoProjectOpenedError,
   ProjectEnvNotExistError,
   ProjectSettingsUndefinedError,
-  NonActiveEnvError,
 } from "../error";
 import { LocalCrypto } from "../crypto";
 import { environmentManager } from "../environment";

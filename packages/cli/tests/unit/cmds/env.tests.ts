@@ -100,7 +100,6 @@ describe("Env Add Command Tests", function () {
   let checkedRootDir = "";
   let validProject = true;
   let envList = ["dev", "test", "staging"];
-  const activeEnv = envList[1];
   const sourceEnvFromArgs = envList[2];
   let createEnvError: FxError | undefined = undefined;
 
@@ -117,11 +116,6 @@ describe("Env Add Command Tests", function () {
     sandbox.stub(core.environmentManager, "listEnvConfigs").callsFake(async (projectPath) => {
       return ok(envList);
     });
-    sandbox
-      .stub(core.environmentManager, "getActiveEnv")
-      .callsFake((projectPath: string): Result<string, FxError> => {
-        return ok(activeEnv);
-      });
     sandbox
       .stub(core.FxCore.prototype, "createEnv")
       .callsFake(
@@ -156,12 +150,10 @@ describe("Env Add Command Tests", function () {
     };
 
     // Act
-    await addCmd.handler(args);
+    const result = addCmd.handler(args);
 
     // Assert
-    expect(sourceEnvName).to.equal(activeEnv);
-    expect(newTargetEnvName).to.equal(args.name);
-    expect(vars.value.logs).to.equal("");
+    expect(result).to.eventually.rejected;
   });
 
   it("adds a new env by copying from the specified env", async () => {
@@ -307,11 +299,6 @@ describe("Env List Command Tests", function () {
     sandbox.stub(core.environmentManager, "listEnvConfigs").callsFake(async (projectPath) => {
       return ok(envList);
     });
-    sandbox
-      .stub(core.environmentManager, "getActiveEnv")
-      .callsFake((projectPath: string): Result<string, FxError> => {
-        return ok(envList[0]);
-      });
   });
 
   after(() => {

@@ -233,7 +233,17 @@ export default class Preview extends YargsCommand {
       return err(errors.RequiredPathNotExists(botRoot));
     }
 
-    const envCheckerResult = await this.handleDependences(includeBackend);
+    let skipNgrok: boolean;
+    if (isMultiEnvEnabled()) {
+      skipNgrok = config?.localSettings?.bot?.get(constants.skipNgrokConfigKey) as boolean;
+    } else {
+      const skipNgrokConfig = config?.config
+        ?.get(constants.localDebugPluginName)
+        ?.get(constants.skipNgrokConfigKey) as string;
+      skipNgrok = skipNgrokConfig !== undefined && skipNgrokConfig.trim() === "true";
+    }
+
+    const envCheckerResult = await this.handleDependences(includeBackend, includeBot, skipNgrok);
     if (envCheckerResult.isErr()) {
       return err(envCheckerResult.error);
     }
@@ -246,16 +256,6 @@ export default class Preview extends YargsCommand {
     await this.serviceLogWriter.init();
 
     /* === start ngrok === */
-    let skipNgrok: boolean;
-    if (isMultiEnvEnabled()) {
-      skipNgrok = config?.localSettings?.bot?.get(constants.skipNgrokConfigKey) as boolean;
-    } else {
-      const skipNgrokConfig = config?.config
-        ?.get(constants.localDebugPluginName)
-        ?.get(constants.skipNgrokConfigKey) as string;
-      skipNgrok = skipNgrokConfig !== undefined && skipNgrokConfig.trim() === "true";
-    }
-
     if (includeBot && !skipNgrok) {
       const result = await this.startNgrok(botRoot);
       if (result.isErr()) {
@@ -1052,9 +1052,11 @@ export default class Preview extends YargsCommand {
   }
 
   private async handleDependences(
-    hasBackend: boolean
+    hasBackend: boolean,
+    hasBot: boolean,
+    skipNgrok: boolean
   ): Promise<Result<[FuncToolChecker, DotnetChecker], FxError>> {
-    const cliAdapter = new CLIAdapter(hasBackend, cliEnvCheckerTelemetry);
+    const cliAdapter = new CLIAdapter(hasBackend, hasBot, !skipNgrok, cliEnvCheckerTelemetry);
     const nodeChecker = new AzureNodeChecker(
       cliAdapter,
       cliEnvCheckerLogger,

@@ -30,6 +30,7 @@ Copy-Item "$CheckerRoot/cpUtils.ts" -Destination "$CLIRoot"
 Copy-Item "$CheckerRoot/dotnetChecker.ts" -Destination "$CLIRoot"
 Copy-Item "$CheckerRoot/errors.ts" -Destination "$CLIRoot"
 Copy-Item "$CheckerRoot/funcToolChecker.ts" -Destination "$CLIRoot"
+Copy-Item "$CheckerRoot/ngrokChecker.ts" -Destination "$CLIRoot"
 Copy-Item "$CheckerRoot/nodeChecker.ts" -Destination "$CLIRoot"
 Copy-Item "$CheckerRoot/spfxNodeChecker.ts" -Destination "$CLIRoot"
 

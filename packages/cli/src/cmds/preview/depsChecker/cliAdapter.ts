@@ -13,14 +13,27 @@ export class CLIAdapter implements IDepsAdapter {
   private readonly downloadIndicatorInterval = 1000; // same as vscode-dotnet-runtime
   private readonly _telemetry: IDepsTelemetry;
   private readonly _hasBackend: boolean;
+  private readonly _hasBot: boolean;
+  private readonly _enableNgrok: boolean;
 
-  constructor(hasBackend: boolean, telemetry: IDepsTelemetry) {
+  constructor(
+    hasBackend: boolean,
+    hasBot: boolean,
+    enableNgrok: boolean,
+    telemetry: IDepsTelemetry
+  ) {
     this._hasBackend = hasBackend;
+    this._hasBot = hasBot;
+    this._enableNgrok = enableNgrok;
     this._telemetry = telemetry;
   }
 
   public hasTeamsfxBackend(): Promise<boolean> {
     return Promise.resolve(this._hasBackend);
+  }
+
+  public hasTeamsfxBot(): Promise<boolean> {
+    return Promise.resolve(this._hasBot);
   }
 
   public dotnetCheckerEnabled(): Promise<boolean> {
@@ -29,6 +42,10 @@ export class CLIAdapter implements IDepsAdapter {
 
   public funcToolCheckerEnabled(): Promise<boolean> {
     return this.checkerEnabled(CliConfigOptions.EnvCheckerValidateFuncCoreTools);
+  }
+
+  public ngrokCheckerEnabled(): Promise<boolean> {
+    return Promise.resolve(this._enableNgrok);
   }
 
   public nodeCheckerEnabled(): Promise<boolean> {

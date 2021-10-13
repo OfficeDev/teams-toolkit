@@ -83,7 +83,7 @@ jobs:
       - name: Setup project with Retry
         uses: nick-invision/retry@v2
         with:
-          timeout_minutes: 5
+          timeout_minutes: 10
           max_attempts: 3
           retry_wait_seconds: 3
           on_retry_command: git clean -fXd .

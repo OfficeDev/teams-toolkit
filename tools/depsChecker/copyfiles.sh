@@ -31,6 +31,7 @@ cp \
   "${CHECKER_ROOT}/dotnetChecker.ts" \
   "${CHECKER_ROOT}/errors.ts" \
   "${CHECKER_ROOT}/funcToolChecker.ts" \
+  "${CHECKER_ROOT}/ngrokChecker.ts" \
   "${CHECKER_ROOT}/nodeChecker.ts" \
   "${CHECKER_ROOT}/spfxNodeChecker.ts" \
   "${CLI_ROOT}"

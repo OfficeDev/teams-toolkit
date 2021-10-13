@@ -194,7 +194,7 @@ export async function scaffoldReadmeAndLocalSettings(
       );
     } else {
       // Initialize a local settings on scaffolding
-      localSettings = localSettingsProvider.init(hasTab, hasBackend, hasBot);
+      localSettings = localSettingsProvider.init(hasTab, hasBackend, hasBot || hasMsgExt);
       await localSettingsProvider.save(localSettings);
     }
   }

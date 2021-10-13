@@ -23,7 +23,7 @@ constructor(ssoToken: string);
 
 ## Exceptions
 
-[InvalidConfiguration](./teamsfx.errorcode.md) when client id, client secret, authority host or tenant id is not found in config.
+[InvalidConfiguration](./teamsfx.errorcode.md) when client id, client secret, certificate content, authority host or tenant id is not found in config.
 
 [InternalError](./teamsfx.errorcode.md) when SSO token is not valid.
 

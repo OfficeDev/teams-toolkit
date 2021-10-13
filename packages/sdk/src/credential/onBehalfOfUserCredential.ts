@@ -6,8 +6,15 @@ import { AuthenticationResult, ConfidentialClientApplication } from "@azure/msal
 import { config } from "../core/configurationProvider";
 import { UserInfo } from "../models/userinfo";
 import { internalLogger } from "../util/logger";
-import { formatString, getUserInfoFromSsoToken, parseJwt, validateScopesType } from "../util/utils";
+import {
+  formatString,
+  getScopesArray,
+  getUserInfoFromSsoToken,
+  parseJwt,
+  validateScopesType,
+} from "../util/utils";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
+import { createConfidentialClientApplication } from "../util/utils.node";
 
 /**
  * Represent on-behalf-of flow to get user identity, and it is designed to be used in server side.
@@ -35,7 +42,7 @@ export class OnBehalfOfUserCredential implements TokenCredential {
    *
    * @param {string} ssoToken - User token provided by Teams SSO feature.
    *
-   * @throws {@link ErrorCode|InvalidConfiguration} when client id, client secret, authority host or tenant id is not found in config.
+   * @throws {@link ErrorCode|InvalidConfiguration} when client id, client secret, certificate content, authority host or tenant id is not found in config.
    * @throws {@link ErrorCode|InternalError} when SSO token is not valid.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
    *
@@ -53,8 +60,8 @@ export class OnBehalfOfUserCredential implements TokenCredential {
       missingConfigurations.push("authorityHost");
     }
 
-    if (!config?.authentication?.clientSecret) {
-      missingConfigurations.push("clientSecret");
+    if (!config?.authentication?.clientSecret && !config?.authentication?.certificateContent) {
+      missingConfigurations.push("clientSecret or certificateContent");
     }
 
     if (!config?.authentication?.tenantId) {
@@ -71,16 +78,7 @@ export class OnBehalfOfUserCredential implements TokenCredential {
       throw new ErrorWithCode(errorMsg, ErrorCode.InvalidConfiguration);
     }
 
-    const normalizedAuthorityHost = config.authentication!.authorityHost!.replace(/\/+$/g, "");
-    const authority: string =
-      normalizedAuthorityHost + "/" + config.authentication?.tenantId;
-    this.msalClient = new ConfidentialClientApplication({
-      auth: {
-        clientId: config.authentication!.clientId!,
-        authority: authority,
-        clientSecret: config.authentication!.clientSecret!,
-      },
-    });
+    this.msalClient = createConfidentialClientApplication(config.authentication!);
 
     const decodedSsoToken = parseJwt(ssoToken);
     this.ssoToken = {
@@ -130,8 +128,7 @@ export class OnBehalfOfUserCredential implements TokenCredential {
   ): Promise<AccessToken | null> {
     validateScopesType(scopes);
 
-    let scopesArray: string[] = typeof scopes === "string" ? scopes.split(" ") : scopes;
-    scopesArray = scopesArray.filter((x) => x !== null && x !== "");
+    const scopesArray = getScopesArray(scopes);
 
     let result: AccessToken | null;
     if (!scopesArray.length) {

@@ -44,17 +44,17 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
           debugConfiguration.timeout = 20000;
         }
 
-        const debugConfig = await commonUtils.getDebugConfig(
-          isLocalSideloadingConfiguration
-        );
+        const debugConfig = await commonUtils.getDebugConfig(isLocalSideloadingConfiguration);
 
         // Put env and appId in `debugConfiguration` so debug handlers can retrieve it and send telemetry
         debugConfiguration.teamsfxEnv = debugConfig?.env;
         debugConfiguration.teamsfxAppId = debugConfig?.appId;
+        /* eslint-disable  @typescript-eslint/no-non-null-asserted-optional-chain */
         debugConfiguration.url = (debugConfiguration.url as string).replace(
           isLocalSideloadingConfiguration ? localTeamsAppIdPlaceholder : teamsAppIdPlaceholder,
           debugConfig?.appId!
         );
+        /* eslint-enable  @typescript-eslint/no-non-null-asserted-optional-chain */
 
         const accountHintPlaceholder = "${account-hint}";
         const isaccountHintConfiguration: boolean = (debugConfiguration.url as string).includes(

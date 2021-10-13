@@ -40,10 +40,13 @@ import {
 } from "../../common/tools";
 import { loadProjectSettings } from "./projectSettingsLoader";
 import { generateArmTemplate } from "../../plugins/solution/fx-solution/arm";
+import { BotOptionItem, MessageExtensionItem } from "../../plugins/solution/fx-solution/question";
+import { createLocalManifest } from "../../plugins/resource/appstudio/plugin";
 import { loadSolutionContext } from "./envInfoLoader";
 import { ResourcePlugins } from "../../common/constants";
 import { getActivatedResourcePlugins } from "../../plugins/solution/fx-solution/ResourcePluginContainer";
 import { LocalDebugConfigKeys } from "../../plugins/resource/localdebug/constants";
+import { MANIFEST_LOCAL } from "../../plugins/resource/appstudio/constants";
 
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";
@@ -57,7 +60,11 @@ const parameterFileNameTemplate = "azure.parameters.@envName.json";
 
 class EnvConfigName {
   static readonly StorageName = "storageName";
-  static readonly IdentityName = "identity";
+  static readonly Identity = "identity";
+  static readonly IdentityId = "identityId";
+  static readonly IdentityName = "identityName";
+  static readonly IdentityResourceId = "identityResourceId";
+  static readonly IdentityClientId = "identityClientId";
   static readonly SqlEndpoint = "sqlEndpoint";
   static readonly SqlResourceId = "sqlResourceId";
   static readonly SqlDataBase = "databaseName";
@@ -110,6 +117,7 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
 async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   const projectPath = inputs.projectPath as string;
+  await backup(projectPath);
   try {
     await updateConfig(ctx);
     await migrateMultiEnv(projectPath);
@@ -151,20 +159,31 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
   const { fx, fxConfig, templateAppPackage, fxPublishProfile } = await getMultiEnvFolders(
     projectPath
   );
-  const { hasFrontend, hasBackend, hasBot, hasProvision } = await queryProjectStatus(fx);
+  const {
+    hasFrontend,
+    hasBackend,
+    hasBotPlugin,
+    hasBotCapability,
+    hasMessageExtensionCapability,
+    isSPFx,
+    hasProvision,
+  } = await queryProjectStatus(fx);
 
   //localSettings.json
   const localSettingsProvider = new LocalSettingsProvider(projectPath);
-  await localSettingsProvider.save(localSettingsProvider.init(hasFrontend, hasBackend, hasBot));
+  await localSettingsProvider.save(
+    localSettingsProvider.init(hasFrontend, hasBackend, hasBotPlugin)
+  );
   //projectSettings.json
   const projectSettings = path.join(fxConfig, ProjectSettingsFileName);
   await fs.copy(path.join(fx, "settings.json"), projectSettings);
   await ensureProjectSettings(projectSettings, path.join(fx, "env.default.json"));
 
   //config.dev.json
+  const appName = await getAppName(projectSettings);
   await fs.writeFile(
     path.join(fxConfig, "config.dev.json"),
-    JSON.stringify(getConfigDevJson(await getAppName(projectSettings)), null, 4)
+    JSON.stringify(getConfigDevJson(appName), null, 4)
   );
 
   // appPackage
@@ -192,11 +211,22 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
     "{{profile.fx-resource-bot.botId}}"
   );
   const manifest: TeamsAppManifest = JSON.parse(manifestString);
-  manifest.name.short = "{{config.manifest.values.appName.short}}";
-  manifest.name.full = "{{config.manifest.values.appName.full}}";
+  manifest.name.short = "{{config.manifest.appName.short}}";
+  manifest.name.full = "{{config.manifest.appName.full}}";
   manifest.id = "{{profile.fx-resource-appstudio.teamsAppId}}";
   await fs.writeFile(targetManifestFile, JSON.stringify(manifest, null, 4));
   await moveIconsToResourceFolder(templateAppPackage);
+
+  if (!isSPFx) {
+    const localManifest: TeamsAppManifest = createLocalManifest(
+      appName,
+      hasFrontend,
+      hasBotCapability,
+      hasMessageExtensionCapability
+    );
+    const localManifestFile = path.join(templateAppPackage, MANIFEST_LOCAL);
+    await fs.writeFile(localManifestFile, JSON.stringify(localManifest, null, 4));
+  }
 
   if (hasProvision) {
     const devProfile = path.join(fxPublishProfile, "profile.dev.json");
@@ -300,8 +330,21 @@ async function queryProjectStatus(fx: string): Promise<any> {
   const hasFrontend = plugins?.some((plugin) => plugin.name === PluginNames.FE);
   const hasBackend = plugins?.some((plugin) => plugin.name === PluginNames.FUNC);
   const hasBot = plugins?.some((plugin) => plugin.name === PluginNames.BOT);
+  const hasBotCapability = solutionSettings.capabilities.includes(BotOptionItem.id);
+  const hasMessageExtensionCapability = solutionSettings.capabilities.includes(
+    MessageExtensionItem.id
+  );
+  const isSPFx = plugins?.some((plugin) => plugin.name === PluginNames.SPFX);
   const hasProvision = envDefaultJson.solution?.provisionSucceeded as boolean;
-  return { hasFrontend, hasBackend, hasBot, hasProvision };
+  return {
+    hasFrontend,
+    hasBackend,
+    hasBot,
+    hasBotCapability,
+    hasMessageExtensionCapability,
+    isSPFx,
+    hasProvision,
+  };
 }
 
 async function getMultiEnvFolders(projectPath: string): Promise<any> {
@@ -314,14 +357,37 @@ async function getMultiEnvFolders(projectPath: string): Promise<any> {
   return { fx, fxConfig, templateAppPackage, fxPublishProfile };
 }
 
+async function backup(projectPath: string): Promise<void> {
+  const fx = path.join(projectPath, `.${ConfigFolderName}`);
+  const backup = path.join(fx, "migrationbackup");
+  await fs.ensureDir(backup);
+  const fxFiles = [
+    "env.default.json",
+    "default.userdata",
+    "settings.json",
+    "local.env",
+    "subscriptionInfo.json",
+  ];
+
+  for (const file of fxFiles) {
+    if (await fs.pathExists(path.join(fx, file))) {
+      await fs.copy(path.join(fx, file), path.join(backup, file));
+    }
+  }
+  if (await fs.pathExists(path.join(projectPath, AppPackageFolderName))) {
+    await fs.copy(
+      path.join(projectPath, AppPackageFolderName),
+      path.join(backup, AppPackageFolderName)
+    );
+  } else if (await fs.pathExists(path.join(fx, AppPackageFolderName))) {
+    // version <= 2.4.1
+    await fs.copy(path.join(fx, AppPackageFolderName), path.join(backup, AppPackageFolderName));
+  }
+}
+
 async function removeOldProjectFiles(projectPath: string): Promise<void> {
   const fx = path.join(projectPath, `.${ConfigFolderName}`);
-  // backup the env.default.json to migrationbackup folder.
-  await fs.ensureDir(path.join(fx, "migrationbackup"));
-  await fs.move(
-    path.join(fx, "env.default.json"),
-    path.join(fx, "migrationbackup", "env.default.json")
-  );
+  await fs.remove(path.join(fx, "env.default.json"));
   await fs.remove(path.join(fx, "default.userdata"));
   await fs.remove(path.join(fx, "settings.json"));
   await fs.remove(path.join(fx, "local.env"));
@@ -489,6 +555,23 @@ async function updateConfig(ctx: CoreHookContext) {
       delete envConfig[ResourcePlugins.Function][EnvConfigName.AppServicePlanName];
     }
   }
+
+  if (needUpdate && envConfig[ResourcePlugins.Identity]?.[EnvConfigName.Identity]) {
+    envConfig[ResourcePlugins.Identity][
+      EnvConfigName.IdentityResourceId
+    ] = `${configPrefix}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${
+      envConfig[ResourcePlugins.Identity][EnvConfigName.Identity]
+    }`;
+    envConfig[ResourcePlugins.Identity][EnvConfigName.IdentityName] =
+      envConfig[ResourcePlugins.Identity][EnvConfigName.Identity];
+    delete envConfig[ResourcePlugins.Identity][EnvConfigName.Identity];
+  }
+
+  if (needUpdate && envConfig[ResourcePlugins.Identity]?.[EnvConfigName.IdentityId]) {
+    envConfig[ResourcePlugins.Identity][EnvConfigName.IdentityClientId] =
+      envConfig[ResourcePlugins.Identity][EnvConfigName.IdentityId];
+    delete envConfig[ResourcePlugins.Identity][EnvConfigName.IdentityId];
+  }
   await fs.writeFile(path.join(fx, "new.env.default.json"), JSON.stringify(envConfig, null, 4));
 }
 
@@ -566,9 +649,9 @@ async function generateArmParameterJson(ctx: CoreHookContext) {
   }
   // manage identity
   if (envConfig[ResourcePlugins.Identity]) {
-    if (envConfig[ResourcePlugins.Identity][EnvConfigName.IdentityName]) {
+    if (envConfig[ResourcePlugins.Identity][EnvConfigName.Identity]) {
       targetJson[ArmParameter][ArmParameters.IdentityName] = {
-        value: envConfig[ResourcePlugins.Identity][EnvConfigName.IdentityName],
+        value: envConfig[ResourcePlugins.Identity][EnvConfigName.Identity],
       };
     }
   }

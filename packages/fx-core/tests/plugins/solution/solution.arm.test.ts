@@ -57,6 +57,7 @@ import "../../../src/plugins/resource/spfx";
 import "../../../src/plugins/resource/aad";
 import { environmentManager } from "../../../src";
 import { assert } from "sinon";
+
 let mockedEnvRestore: () => void;
 
 chai.use(chaiAsPromised);
@@ -159,6 +160,8 @@ describe("Generate ARM Template for project", () => {
       return ok(mockedAadScaffoldArmResult);
     });
 
+    mocker.stub(tools, "getUuid").returns("00000000-0000-0000-0000-000000000000");
+
     const projectArmTemplateFolder = path.join(testFolder, templateFolder);
     const projectArmParameterFolder = path.join(testFolder, configFolderName);
     const projectArmBaseFolder = path.join(testFolder, baseFolder);
@@ -200,7 +203,7 @@ Mocked simple auth output content`
   "contentVersion": "1.0.0.0",
   "parameters": {
     "resourceBaseName": {
-      "value": "mytestappdefault"
+      "value": "mytestappdefa000000"
     },
     "FrontendParameter": "FrontendParameterValue",
     "SimpleAuthParameter": "SimpleAuthParameterValue"
@@ -339,10 +342,10 @@ describe("Deploy ARM Template to Azure", () => {
       "value": "mytestappdefault"
     },
     "aadClientId": {
-      "value": "{{FX_RESOURCE_AAD_APP_FOR_TEAMS__CLIENTID}}"
+      "value": "{{profile.fx-resource-aad-app-for-teams.clientId}}"
     },
     "aadClientSecret": {
-      "value": "{{FX_RESOURCE_AAD_APP_FOR_TEAMS__CLIENTSECRET}}"
+      "value": "{{profile.fx-resource-aad-app-for-teams.clientSecret}}"
     },
     "envValue": {
       "value": "{{MOCKED_EXPAND_VAR_TEST}}"
@@ -442,7 +445,7 @@ describe("Deploy ARM Template to Azure", () => {
           chai.assert.exists(parameters.properties.parameters?.aadClientSecret);
           chai.assert.notStrictEqual(
             parameters.properties.parameters?.aadClientSecret,
-            "{{FX_RESOURCE_AAD_APP_FOR_TEAMS__CLIENTSECRET}}"
+            "{{profile.fx-resource-aad-app-for-teams.clientSecret}}"
           );
 
           return new Promise((resolve) => {

@@ -1120,32 +1120,16 @@ export class TeamsAppSolution implements Solution {
         }
         const isAzureProject = this.isAzureProject(ctx);
         const provisioned = this.checkWetherProvisionSucceeded(ctx.envInfo.profile);
-        if (isAzureProject && !provisioned) {
+        if (!provisioned) {
           return err(
-            returnUserError(
-              new Error(getStrings().solution.FailedToPublishBeforeProvision),
-              SolutionSource,
-              SolutionError.CannotPublishBeforeProvision
+            new UserError(
+              SolutionError.CannotPublishBeforeProvision,
+              isAzureProject
+                ? getStrings().solution.FailedToPublishBeforeProvision
+                : getStrings().solution.SPFxAskProvisionBeforePublish,
+              SolutionSource
             )
           );
-        }
-        if (!provisioned && this.spfxSelected(ctx)) {
-          if (ctx.answers?.platform === Platform.VSCode) {
-            ctx.ui?.showMessage(
-              "error",
-              getStrings().solution.SPFxAskProvisionBeforePublish,
-              false
-            );
-            throw CancelError;
-          } else {
-            return err(
-              returnUserError(
-                new Error(getStrings().solution.SPFxAskProvisionBeforePublish),
-                SolutionSource,
-                SolutionError.CannotPublishBeforeProvision
-              )
-            );
-          }
         }
       }
       const pluginsToPublish = [this.AppStudioPlugin];

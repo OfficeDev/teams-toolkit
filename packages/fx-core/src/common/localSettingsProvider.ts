@@ -35,7 +35,7 @@ export class LocalSettingsProvider {
   public init(
     includeFrontend: boolean,
     includeBackend: boolean,
-    includeBot: boolean
+    includeBotOrMessageExtension: boolean
   ): LocalSettings {
     // initialize Teams app related config for local debug.
     const teamsAppLocalConfig = new ConfigMap();
@@ -59,7 +59,7 @@ export class LocalSettingsProvider {
     }
 
     // initialize bot local settings.
-    if (includeBot) {
+    if (includeBotOrMessageExtension) {
       localSettings.bot = this.initBot();
     }
 

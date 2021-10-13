@@ -91,11 +91,7 @@ describe("Bot Generates Arm Templates", () => {
         )
       );
       chai.assert.strictEqual(
-        JSON.stringify(
-          compiledResult.Orchestration.ParameterTemplate!.ParameterJson,
-          undefined,
-          2
-        ) + "\n",
+        JSON.stringify(compiledResult.Orchestration.ParameterTemplate!.ParameterJson, undefined, 2),
         fs.readFileSync(
           path.join(expectedBicepFileDirectory, "parameters.json"),
           ConstantString.UTF8Encoding
@@ -207,11 +203,7 @@ describe("Bot Generates Arm Templates", () => {
         )
       );
       chai.assert.strictEqual(
-        JSON.stringify(
-          compiledResult.Orchestration.ParameterTemplate!.ParameterJson,
-          undefined,
-          2
-        ) + "\n",
+        JSON.stringify(compiledResult.Orchestration.ParameterTemplate!.ParameterJson, undefined, 2),
         fs.readFileSync(
           path.join(expectedBicepFileDirectory, "parameters.json"),
           ConstantString.UTF8Encoding

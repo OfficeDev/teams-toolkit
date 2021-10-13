@@ -646,7 +646,7 @@ function expandParameterPlaceholders(
   const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
   const plugins = getActivatedResourcePlugins(azureSolutionSettings); // This function ensures return result won't be empty
   const profileVariables: Record<string, Record<string, any>> = {};
-  const availableVariables: Record<string, Record<string, any>> = { profileName: profileVariables };
+  const availableVariables: Record<string, Record<string, any>> = { profile: profileVariables };
   // Add plugin contexts to available variables
   for (const plugin of plugins) {
     const pluginContext = getPluginContext(ctx, plugin.name);

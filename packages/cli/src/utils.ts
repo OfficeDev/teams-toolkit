@@ -31,13 +31,18 @@ import {
   InputConfigsFolderName,
 } from "@microsoft/teamsfx-api";
 
-import { ConfigNotFoundError, InvalidEnvFile, ReadFileError } from "./error";
+import { ConfigNotFoundError, EnvUndefined, InvalidEnvFile, ReadFileError } from "./error";
 import AzureAccountManager from "./commonlib/azureLogin";
 import { FeatureFlags } from "./constants";
-import { isMultiEnvEnabled, environmentManager, WriteFileError } from "@microsoft/teamsfx-core";
+import {
+  isMultiEnvEnabled,
+  environmentManager,
+  WriteFileError,
+  localSettingsFileName,
+} from "@microsoft/teamsfx-core";
 import { WorkspaceNotSupported } from "./cmds/preview/errors";
 
-type Json = { [_: string]: any };
+export type Json = { [_: string]: any };
 
 export function getChoicesFromQTNodeQuestion(data: Question): string[] | undefined {
   const option = "staticOptions" in data ? data.staticOptions : undefined;
@@ -126,20 +131,22 @@ export function getConfigPath(projectFolder: string, filePath: string): string {
 }
 
 // TODO: move config read/write utils to core
-export function getEnvFilePath(projectFolder: string): Result<string, FxError> {
+export function getEnvFilePath(
+  projectFolder: string,
+  env: string | undefined
+): Result<string, FxError> {
   if (!isMultiEnvEnabled()) {
     return ok(getConfigPath(projectFolder, `env.default.json`));
   }
-  const envResult = environmentManager.getActiveEnv(projectFolder);
-  if (envResult.isErr()) {
-    return err(envResult.error);
+  if (!env) {
+    return err(new EnvUndefined());
   }
   return ok(
     path.join(
       projectFolder,
       `.${ConfigFolderName}`,
       PublishProfilesFolderName,
-      EnvProfileFileNameTemplate.replace(EnvNamePlaceholder, envResult.value)
+      EnvProfileFileNameTemplate.replace(EnvNamePlaceholder, env)
     )
   );
 }
@@ -157,27 +164,24 @@ export function getSettingsFilePath(projectFolder: string) {
   }
 }
 
-export function getSecretFilePath(projectRoot: string): Result<string, FxError> {
+export function getSecretFilePath(
+  projectRoot: string,
+  env: string | undefined
+): Result<string, FxError> {
   if (!isMultiEnvEnabled()) {
     return ok(path.join(projectRoot, `.${ConfigFolderName}`, `default.userdata`));
   }
-  const envResult = environmentManager.getActiveEnv(projectRoot);
-  if (envResult.isErr()) {
-    return err(envResult.error);
-  }
 
   return ok(
-    path.join(
-      projectRoot,
-      `.${ConfigFolderName}`,
-      PublishProfilesFolderName,
-      `${envResult.value}.userdata`
-    )
+    path.join(projectRoot, `.${ConfigFolderName}`, PublishProfilesFolderName, `${env}.userdata`)
   );
 }
 
-export async function readEnvJsonFile(projectFolder: string): Promise<Result<Json, FxError>> {
-  const filePathResult = getEnvFilePath(projectFolder);
+export async function readEnvJsonFile(
+  projectFolder: string,
+  env: string | undefined
+): Promise<Result<Json, FxError>> {
+  const filePathResult = getEnvFilePath(projectFolder, env);
   if (filePathResult.isErr()) {
     return err(filePathResult.error);
   }
@@ -193,8 +197,11 @@ export async function readEnvJsonFile(projectFolder: string): Promise<Result<Jso
   }
 }
 
-export function readEnvJsonFileSync(projectFolder: string): Result<Json, FxError> {
-  const filePathResult = getEnvFilePath(projectFolder);
+export function readEnvJsonFileSync(
+  projectFolder: string,
+  env: string | undefined
+): Result<Json, FxError> {
+  const filePathResult = getEnvFilePath(projectFolder, env);
   if (filePathResult.isErr()) {
     return err(filePathResult.error);
   }
@@ -204,6 +211,24 @@ export function readEnvJsonFileSync(projectFolder: string): Result<Json, FxError
   }
   try {
     const config = fs.readJsonSync(filePath);
+    return ok(config);
+  } catch (e) {
+    return err(ReadFileError(e));
+  }
+}
+
+export function readLocalSettingsJsonFile(projectFolder: string): Result<Json, FxError> {
+  const localSettingsPath = path.join(
+    projectFolder,
+    `.${ConfigFolderName}`,
+    `${InputConfigsFolderName}`,
+    localSettingsFileName
+  );
+  if (!fs.existsSync(localSettingsPath)) {
+    return err(ConfigNotFoundError(localSettingsPath));
+  }
+  try {
+    const config = fs.readJsonSync(localSettingsPath);
     return ok(config);
   } catch (e) {
     return err(ReadFileError(e));
@@ -225,9 +250,10 @@ export function readSettingsFileSync(projectFolder: string): Result<Json, FxErro
 }
 
 export async function readProjectSecrets(
-  projectFolder: string
+  projectFolder: string,
+  env: string | undefined
 ): Promise<Result<dotenv.DotenvParseOutput, FxError>> {
-  const secretFileResult = getSecretFilePath(projectFolder);
+  const secretFileResult = getSecretFilePath(projectFolder, env);
   if (secretFileResult.isErr()) {
     return err(secretFileResult.error);
   }
@@ -245,14 +271,14 @@ export async function readProjectSecrets(
 
 export function writeSecretToFile(
   secrets: dotenv.DotenvParseOutput,
-  rootFolder: string
+  rootFolder: string,
+  env: string | undefined
 ): Result<null, FxError> {
-  const envResult = environmentManager.getActiveEnv(rootFolder);
-  if (envResult.isErr()) {
-    return err(envResult.error);
+  const secretFileResult = getSecretFilePath(rootFolder, env);
+  if (secretFileResult.isErr()) {
+    return err(secretFileResult.error);
   }
-
-  const secretFile = `${rootFolder}/.${ConfigFolderName}/${envResult.value}.userdata`;
+  const secretFile = secretFileResult.value;
   const array: string[] = [];
   for (const secretKey of Object.keys(secrets)) {
     const secretValue = secrets[secretKey];
@@ -266,31 +292,6 @@ export function writeSecretToFile(
   return ok(null);
 }
 
-export async function getSolutionPropertyFromEnvFile(
-  projectFolder: string,
-  propertyName: string
-): Promise<Result<any, FxError>> {
-  const envFilePathResult = getEnvFilePath(projectFolder);
-  if (envFilePathResult.isErr()) {
-    return err(envFilePathResult.error);
-  }
-  const result = await readEnvJsonFile(projectFolder);
-  if (result.isErr()) {
-    return err(result.error);
-  }
-  const env = result.value;
-  if ("solution" in env) {
-    return ok(env.solution[propertyName]);
-  } else {
-    return err(
-      InvalidEnvFile(
-        `The property \`solution\` does not exist in the project's env file.`,
-        envFilePathResult.value
-      )
-    );
-  }
-}
-
 export async function setSubscriptionId(
   subscriptionId?: string,
   rootFolder = "./"
@@ -301,7 +302,7 @@ export async function setSubscriptionId(
         return err(WorkspaceNotSupported(rootFolder));
       }
     } else {
-      const result = await readEnvJsonFile(rootFolder);
+      const result = readSettingsFileSync(rootFolder);
       if (result.isErr()) {
         return err(result.error);
       }
@@ -337,13 +338,14 @@ export function isWorkspaceSupported(workspace: string): boolean {
   return true;
 }
 
+// Only used when multi-env is disabled
 export function getTeamsAppId(rootfolder: string | undefined): any {
   if (!rootfolder) {
     return undefined;
   }
 
   if (isWorkspaceSupported(rootfolder)) {
-    const result = readEnvJsonFileSync(rootfolder);
+    const result = readEnvJsonFileSync(rootfolder, environmentManager.getDefaultEnvName());
     if (result.isErr()) {
       return undefined;
     }
@@ -364,33 +366,46 @@ export function getLocalTeamsAppId(rootfolder: string | undefined): any {
       return undefined;
     }
 
-    const result = readEnvJsonFileSync(rootfolder);
-    if (result.isErr()) {
-      return undefined;
-    }
-
-    // get final setting value from env.xxx.json and xxx.userdata
-    // Note: this is a workaround and need to be updated after multi-env
-    try {
-      const settingValue = result.value.solution.localDebugTeamsAppId as string;
-      if (settingValue && settingValue.startsWith("{{") && settingValue.endsWith("}}")) {
-        // setting in env.xxx.json is place holder and need to get actual value from xxx.userdata
-        const placeHolder = settingValue.replace("{{", "").replace("}}", "");
-        const userdataPath = getConfigPath(rootfolder, `default.userdata`);
-        if (fs.existsSync(userdataPath)) {
-          const userdata = fs.readFileSync(userdataPath, "utf8");
-          const userEnv = dotenv.parse(userdata);
-          return userEnv[placeHolder];
-        } else {
-          // in collaboration scenario, userdata may not exist
-          return undefined;
-        }
+    if (isMultiEnvEnabled()) {
+      const result = readLocalSettingsJsonFile(rootfolder);
+      if (result.isErr()) {
+        return undefined;
+      }
+      const localSettings = result.value;
+      try {
+        return localSettings.teamsApp.appId;
+      } catch (error) {
+        return undefined;
+      }
+    } else {
+      const result = readEnvJsonFileSync(rootfolder, environmentManager.getDefaultEnvName());
+      if (result.isErr()) {
+        return undefined;
       }
 
-      return settingValue;
-    } catch {
-      // in case structure changes
-      return undefined;
+      // get final setting value from env.xxx.json and xxx.userdata
+      // Note: this is a workaround and need to be updated after multi-env
+      try {
+        const settingValue = result.value.solution.localDebugTeamsAppId as string;
+        if (settingValue && settingValue.startsWith("{{") && settingValue.endsWith("}}")) {
+          // setting in env.xxx.json is place holder and need to get actual value from xxx.userdata
+          const placeHolder = settingValue.replace("{{", "").replace("}}", "");
+          const userdataPath = getConfigPath(rootfolder, `default.userdata`);
+          if (fs.existsSync(userdataPath)) {
+            const userdata = fs.readFileSync(userdataPath, "utf8");
+            const userEnv = dotenv.parse(userdata);
+            return userEnv[placeHolder];
+          } else {
+            // in collaboration scenario, userdata may not exist
+            return undefined;
+          }
+        }
+
+        return settingValue;
+      } catch {
+        // in case structure changes
+        return undefined;
+      }
     }
   }
 

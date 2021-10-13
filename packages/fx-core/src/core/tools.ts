@@ -32,14 +32,6 @@ export function validateSettings(projectSettings?: ProjectSettings): string | un
   if (!projectSettings.solutionSettings) return "empty solutionSettings";
   const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
   if (solutionSettings.hostType === undefined) return "empty solutionSettings.hostType";
-  if (isMultiEnvEnabled()) {
-    if (
-      !projectSettings.activeEnvironment ||
-      typeof projectSettings.activeEnvironment !== "string"
-    ) {
-      return `activeEnvironment is missing or not a string in ${ProjectSettingsFileName}`;
-    }
-  }
   return undefined;
 }
 

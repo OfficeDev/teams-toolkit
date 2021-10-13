@@ -579,7 +579,6 @@ export function MockProjectSettings(appName: string): ProjectSettings {
         PluginNames.APPST,
       ],
     } as AzureSolutionSettings,
-    activeEnvironment: environmentManager.getDefaultEnvName(),
   };
 }
 

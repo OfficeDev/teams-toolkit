@@ -226,10 +226,6 @@ export function NonExistEnvNameError(env: string): UserError {
   return new UserError("NonExistEnvNameError", `Can not find environment ${env}.`, CoreSource);
 }
 
-export function NonActiveEnvError(): UserError {
-  return new UserError("NonActiveEnvError", `Can not find active environment.`, CoreSource);
-}
-
 export function ModifiedSecretError(): UserError {
   return new UserError("ModifiedSecretError", "The secret file has been changed.", CoreSource);
 }

@@ -143,6 +143,7 @@ export interface ProjectSettings {
   defaultFunctionName?: string;
   solutionSettings: SolutionSettings;
   activeEnvironment?: string;
+  isFromSample?: boolean;
 }
 
 /**

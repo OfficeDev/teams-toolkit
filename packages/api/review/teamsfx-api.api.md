@@ -972,6 +972,8 @@ export interface ProjectSettings {
     // (undocumented)
     defaultFunctionName?: string;
     // (undocumented)
+    isFromSample?: boolean;
+    // (undocumented)
     programmingLanguage?: string;
     // (undocumented)
     projectId: string;

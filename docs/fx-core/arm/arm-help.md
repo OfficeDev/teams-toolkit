@@ -24,11 +24,11 @@ There are two methods to mitigate this issue:
 1. Run `Provision` command again
 
 #### Method #2
+1. Find the segment in output wrapped the error.
 1. Open `.fx\configs\azure.parameters.{envName}.json` file
-1. Add papameter value of 'simpleAuth_sku' 
-
+1. If the error happend in `simpleAuthProvision` segment, add parameter value of 'simpleAuth_sku' 
     ![image](../../images/fx-core/arm/simple-auth-sku-config.png)
-1. If there is bot resource, Add papameter values of 'bot_webAppSKU' and 'bot_serviceSKU'
+1. If the error happened in `botProvision` segment, add parameter value of 'bot_webAppSKU'
     ![image](../../images/fx-core/arm/bot-sku-config.png)
 1. Run `Provision` command again
 

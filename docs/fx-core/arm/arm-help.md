@@ -24,11 +24,11 @@ There are two methods to mitigate this issue:
 1. Run `Provision` command again
 
 #### Method #2
-1. Find the segment in output wrapped the error.
+1. Locate the segment wrapped the error in output.
 1. Open `.fx\configs\azure.parameters.{envName}.json` file
-1. If the error happend in `simpleAuthProvision` segment, add parameter value of 'simpleAuth_sku' 
+1. If the error wrapped by `simpleAuthProvision` segment, add parameter value of 'simpleAuth_sku' 
     ![image](../../images/fx-core/arm/simple-auth-sku-config.png)
-1. If the error happened in `botProvision` segment, add parameter value of 'bot_webAppSKU'
+1. If the error wrapped by `botProvision` segment, add parameter value of 'bot_webAppSKU'
     ![image](../../images/fx-core/arm/bot-sku-config.png)
 1. Run `Provision` command again
 

@@ -145,7 +145,7 @@ describe("APIs of Environment Manager", () => {
       await fs.ensureFile(envConfigFile);
       await fs.writeFile(envConfigFile, "not json");
 
-      const actualEnvDataResult = await environmentManager.loadEnvInfo(projectPath);
+      const actualEnvDataResult = await environmentManager.loadEnvInfo(projectPath, cryptoProvider);
       if (actualEnvDataResult.isErr()) {
         assert.equal(actualEnvDataResult.error.name, "InvalidEnvConfigError");
       } else {

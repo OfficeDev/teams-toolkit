@@ -181,7 +181,7 @@ export class FxCore implements Core {
   ])
   async createProject(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     if (!ctx) {
-      return err(new ObjectIsUndefinedError("CoreHookContext"));
+      return err(new ObjectIsUndefinedError("ctx for createProject"));
     }
     currentStage = Stage.create;
     inputs.stage = Stage.create;
@@ -505,7 +505,11 @@ export class FxCore implements Core {
     // }
     // else {
     if (!ctx || !ctx.solution || !ctx.solutionContext) {
-      return err(new ObjectIsUndefinedError("Provision input stuff"));
+      const name = undefinedName(
+        [ctx, ctx?.solution, ctx?.solutionContext],
+        ["ctx", "ctx.solution", "ctx.solutionContext"]
+      );
+      return err(new ObjectIsUndefinedError(`Provision input stuff: ${name}`));
     }
     const provisionRes = await ctx.solution.provision(ctx.solutionContext);
     if (provisionRes.isErr()) {
@@ -532,8 +536,14 @@ export class FxCore implements Core {
     currentStage = Stage.deploy;
     inputs.stage = Stage.deploy;
     if (isV2()) {
-      if (!ctx || !ctx.solutionV2 || !ctx.contextV2 || !ctx.envInfoV2)
-        return err(new ObjectIsUndefinedError("Deploy input stuff"));
+      if (!ctx || !ctx.solutionV2 || !ctx.contextV2 || !ctx.envInfoV2) {
+        const name = undefinedName(
+          [ctx, ctx?.solutionV2, ctx?.contextV2, ctx?.envInfoV2],
+          ["ctx", "ctx.solutionV2", "ctx.contextV2", "ctx.envInfoV2"]
+        );
+        return err(new ObjectIsUndefinedError(`Deploy input stuff: ${name}`));
+      }
+
       if (ctx.solutionV2.deploy)
         return await ctx.solutionV2.deploy(
           ctx.contextV2,
@@ -543,8 +553,13 @@ export class FxCore implements Core {
         );
       else return ok(Void);
     } else {
-      if (!ctx || !ctx.solution || !ctx.solutionContext)
-        return err(new ObjectIsUndefinedError("Deploy input stuff"));
+      if (!ctx || !ctx.solution || !ctx.solutionContext) {
+        const name = undefinedName(
+          [ctx, ctx?.solution, ctx?.solutionContext],
+          ["ctx", "ctx.solution", "ctx.solutionContext"]
+        );
+        return err(new ObjectIsUndefinedError(`Deploy input stuff: ${name}`));
+      }
       return await ctx.solution.deploy(ctx.solutionContext);
     }
   }
@@ -569,8 +584,13 @@ export class FxCore implements Core {
     inputs.stage = Stage.debug;
     if (isV2()) {
       if (isMultiEnvEnabled()) {
-        if (!ctx || !ctx.solutionV2 || !ctx.contextV2)
-          return err(new ObjectIsUndefinedError("localDebug input stuff"));
+        if (!ctx || !ctx.solutionV2 || !ctx.contextV2) {
+          const name = undefinedName(
+            [ctx, ctx?.solutionV2, ctx?.contextV2],
+            ["ctx", "ctx.solutionV2", "ctx.contextV2"]
+          );
+          return err(new ObjectIsUndefinedError(`localDebug input stuff (${name})`));
+        }
         if (!ctx.localSettings) ctx.localSettings = {};
         if (ctx.solutionV2.provisionLocalResource) {
           const res = await ctx.solutionV2.provisionLocalResource(
@@ -593,8 +613,14 @@ export class FxCore implements Core {
         }
       }
     }
-    if (!ctx || !ctx.solution || !ctx.solutionContext || !ctx.projectSettings)
-      return err(new ObjectIsUndefinedError("localDebug input stuff"));
+    if (!ctx || !ctx.solution || !ctx.solutionContext || !ctx.projectSettings) {
+      const name = undefinedName(
+        [ctx, ctx?.solution, ctx?.solutionContext, ctx?.projectSettings],
+        ["ctx", "ctx.solution", "ctx.solutionContext", "ctx.projectSettings"]
+      );
+      return err(new ObjectIsUndefinedError(`localDebug input stuff (${name})`));
+    }
+
     upgradeProgrammingLanguage(
       ctx.solutionContext.envInfo.profile as SolutionConfig,
       ctx.projectSettings
@@ -636,8 +662,13 @@ export class FxCore implements Core {
     currentStage = Stage.publish;
     inputs.stage = Stage.publish;
     if (isV2()) {
-      if (!ctx || !ctx.solutionV2 || !ctx.contextV2 || !ctx.envInfoV2)
-        return err(new ObjectIsUndefinedError("publish input stuff"));
+      if (!ctx || !ctx.solutionV2 || !ctx.contextV2 || !ctx.envInfoV2) {
+        const name = undefinedName(
+          [ctx, ctx?.solutionV2, ctx?.contextV2, ctx?.envInfoV2],
+          ["ctx", "ctx.solutionV2", "ctx.contextV2", "ctx.envInfoV2"]
+        );
+        return err(new ObjectIsUndefinedError(`publish input stuff: ${name}`));
+      }
       return await ctx.solutionV2.publishApplication(
         ctx.contextV2,
         inputs,
@@ -645,8 +676,13 @@ export class FxCore implements Core {
         this.tools.tokenProvider.appStudioToken
       );
     } else {
-      if (!ctx || !ctx.solution || !ctx.solutionContext)
-        return err(new ObjectIsUndefinedError("publish input stuff"));
+      if (!ctx || !ctx.solution || !ctx.solutionContext) {
+        const name = undefinedName(
+          [ctx, ctx?.solution, ctx?.solutionContext],
+          ["ctx", "ctx.solution", "ctx.solutionContext"]
+        );
+        return err(new ObjectIsUndefinedError(`publish input stuff: ${name}`));
+      }
       return await ctx.solution.publish(ctx.solutionContext);
     }
   }
@@ -676,8 +712,13 @@ export class FxCore implements Core {
     const array = namespace ? namespace.split("/") : [];
     if ("" !== namespace && array.length > 0) {
       if (isV2()) {
-        if (!ctx || !ctx.solutionV2 || !ctx.envInfoV2)
-          return err(new ObjectIsUndefinedError("executeUserTask input stuff"));
+        if (!ctx || !ctx.solutionV2 || !ctx.envInfoV2) {
+          const name = undefinedName(
+            [ctx, ctx?.solutionV2, ctx?.envInfoV2],
+            ["ctx", "ctx.solutionV2", "ctx.envInfoV2"]
+          );
+          return err(new ObjectIsUndefinedError(`executeUserTask input stuff: ${name}`));
+        }
         if (!ctx.contextV2) ctx.contextV2 = createV2Context(this, newProjectSettings());
         if (ctx.solutionV2.executeUserTask) {
           if (!ctx.localSettings) ctx.localSettings = {};
@@ -1357,6 +1398,15 @@ export function createV2Context(core: FxCore, projectSettings: ProjectSettings):
     projectSetting: projectSettings,
   };
   return context;
+}
+
+export function undefinedName(objs: any[], names: string[]) {
+  for (let i = 0; i < objs.length; ++i) {
+    if (objs[i] === undefined) {
+      return names[i];
+    }
+  }
+  return undefined;
 }
 
 export * from "./error";

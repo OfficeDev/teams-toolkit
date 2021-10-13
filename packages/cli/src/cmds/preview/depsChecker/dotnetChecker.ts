@@ -488,7 +488,7 @@ export class DotnetChecker implements IDepsChecker {
         error
       );
       await this._logger.debug(
-        `Failed to run hello world, dotnetPath = ${dotnetPath}, expected output = ${expected}, actual output = ${actual}, error = ${error}`
+        `Failed to run hello world, dotnetPath = ${dotnetPath}, error = ${error}`
       );
     } finally {
       await fs.remove(samplePath);

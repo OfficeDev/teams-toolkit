@@ -8,12 +8,21 @@ import * as path from "path";
 import { SPFXQuestionNames } from ".";
 import { Utils } from "./utils/utils";
 import { Constants, PlaceHolders, PreDeployProgressMessage } from "./utils/constants";
-import { BuildSPPackageError, NoSPPackageError, ScaffoldError } from "./error";
+import {
+  BuildSPPackageError,
+  GetGraphTokenFailedError,
+  GetSPOTokenFailedError,
+  InsufficientPermissionError,
+  NoSPPackageError,
+  ScaffoldError,
+} from "./error";
 import * as util from "util";
 import { ProgressHelper } from "./utils/progress-helper";
 import { getStrings, getAppDirectory, isMultiEnvEnabled } from "../../../common/tools";
 import { getTemplatesFolder } from "../../..";
 import { MANIFEST_TEMPLATE, REMOTE_MANIFEST } from "../appstudio/constants";
+import axios from "axios";
+import { SPOClient } from "./spoClient";
 
 export class SPFxPluginImpl {
   public async postScaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
@@ -207,10 +216,8 @@ export class SPFxPluginImpl {
       );
       await ProgressHelper.endPreDeployProgress(true);
 
-      const solutionConfig = await fs.readJson(`${ctx.root}/SPFx/config/package-solution.json`);
-      const sharepointPackage = `${ctx.root}/SPFx/sharepoint/${solutionConfig.paths.zippedPackage}`;
-      const fileExists = await this.checkFileExist(sharepointPackage);
-      if (!fileExists) {
+      const sharepointPackage = await this.getPackage(ctx.root);
+      if (!(await fs.pathExists(sharepointPackage))) {
         throw NoSPPackageError(sharepointPackage);
       }
 
@@ -254,35 +261,81 @@ export class SPFxPluginImpl {
   }
 
   public async preDeploy(ctx: PluginContext): Promise<Result<any, FxError>> {
-    const confirmRes = await ctx.ui?.showMessage(
-      "warn",
-      getStrings().plugins.SPFx.buildNotice,
-      true,
-      Constants.BUILD_SHAREPOINT_PACKAGE,
-      Constants.READ_MORE
-    );
-    const confirm = confirmRes?.isOk() ? confirmRes.value : undefined;
-    switch (confirm) {
-      case Constants.BUILD_SHAREPOINT_PACKAGE:
-        return this.buildSPPackge(ctx);
-      case Constants.READ_MORE:
-        ctx.ui?.openUrl(Constants.DEPLOY_GUIDE);
-      default:
-        return ok(undefined);
-    }
+    return this.buildSPPackge(ctx);
   }
 
   public async deploy(ctx: PluginContext): Promise<Result<any, FxError>> {
+    const tenant = await this.getTenant(ctx);
+    if (tenant.isErr()) {
+      return tenant;
+    }
+    SPOClient.setBaseUrl(tenant.value);
+
+    const spoToken = await ctx.sharepointTokenProvider?.getAccessToken();
+    if (!spoToken) {
+      return err(GetSPOTokenFailedError());
+    }
+
+    const appCatalogSite = await SPOClient.getAppCatalogSite(spoToken);
+    if (appCatalogSite) {
+      SPOClient.setBaseUrl(appCatalogSite);
+    } else {
+      // TODO: ensure app catalog?
+    }
+
+    const appPackage = await this.getPackage(ctx.root);
+    if (!(await fs.pathExists(appPackage))) {
+      return err(NoSPPackageError(appPackage));
+    }
+
+    const fileName = path.parse(appPackage).base;
+    const bytes = await fs.readFile(appPackage);
+    try {
+      await SPOClient.uploadAppPackage(spoToken, fileName, bytes);
+    } catch (e: any) {
+      if (e.response?.status === 403) {
+        return err(InsufficientPermissionError(appCatalogSite!));
+      }
+    }
+
+    const appID = await this.getAppID(ctx.root);
+    await SPOClient.deployAppPackage(spoToken, appID);
+
     return ok(undefined);
   }
 
-  private async checkFileExist(filePath: string): Promise<boolean> {
-    try {
-      await fs.stat(filePath);
-      return true;
-    } catch (error) {
-      return false;
+  private async getTenant(ctx: PluginContext): Promise<Result<string, FxError>> {
+    const graphToken = await ctx.graphTokenProvider?.getAccessToken();
+    if (!graphToken) {
+      return err(GetGraphTokenFailedError());
     }
+
+    const instance = axios.create({
+      baseURL: "https://graph.microsoft.com/v1.0",
+    });
+    instance.defaults.headers.common["Authorization"] = `Bearer ${graphToken}`;
+
+    let tenant = "";
+    try {
+      const res = await instance.get("/sites/root?$select=webUrl");
+      if (res && res.data && res.data.webUrl) {
+        tenant = res.data.webUrl;
+      } else {
+      }
+    } catch (e) {}
+    return ok(tenant);
+  }
+
+  private async getPackage(root: string): Promise<string> {
+    const solutionConfig = await fs.readJson(`${root}/SPFx/config/package-solution.json`);
+    const sharepointPackage = `${root}/SPFx/sharepoint/${solutionConfig.paths.zippedPackage}`;
+    return sharepointPackage;
+  }
+
+  private async getAppID(root: string): Promise<string> {
+    const solutionConfig = await fs.readJson(`${root}/SPFx/config/package-solution.json`);
+    const appID = solutionConfig["solution"]["id"];
+    return appID;
   }
 
   private static async findGulpCommand(rootPath: string): Promise<string> {

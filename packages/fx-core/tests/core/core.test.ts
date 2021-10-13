@@ -225,16 +225,11 @@ describe("Core basic APIs", () => {
             assert.fail("failed to load project settings");
           }
 
-          const [projectSettings, projectIdMissing] = projectSettingsResult.value;
+          const projectSettings = projectSettingsResult.value;
           const validSettingsResult = validateSettings(projectSettings);
           assert.isTrue(validSettingsResult === undefined);
 
-          const envInfoResult = await loadSolutionContext(
-            tools,
-            inputs,
-            projectSettings,
-            projectIdMissing
-          );
+          const envInfoResult = await loadSolutionContext(tools, inputs, projectSettings);
           if (envInfoResult.isErr()) {
             assert.fail("failed to load env info");
           }
@@ -314,7 +309,7 @@ describe("Core basic APIs", () => {
         assert.fail("failed to load project settings");
       }
 
-      const [projectSettings, projectIdMissing] = projectSettingsResult.value;
+      const projectSettings = projectSettingsResult.value;
       const validSettingsResult = validateSettings(projectSettings);
       assert.isTrue(validSettingsResult === undefined);
     }
@@ -344,7 +339,7 @@ describe("Core basic APIs", () => {
         assert.fail("failed to load project settings");
       }
 
-      const [projectSettings, projectIdMissing] = projectSettingsResult.value;
+      const projectSettings = projectSettingsResult.value;
       const validSettingsResult = validateSettings(projectSettings);
       assert.isTrue(validSettingsResult === undefined);
     }
@@ -434,7 +429,7 @@ describe("Core basic APIs", () => {
         assert.fail("failed to load project settings");
       }
 
-      const [projectSettings, projectIdMissing] = projectSettingsResult.value;
+      const projectSettings = projectSettingsResult.value;
       projectSettings.solutionSettings.name = mockSolution.name;
       const validSettingsResult = validateSettings(projectSettings);
       assert.isTrue(validSettingsResult === undefined);
@@ -783,7 +778,7 @@ describe("Core basic APIs", () => {
       assert.isTrue(envListResult.value.length === 1);
       assert.isTrue(envListResult.value[0] === environmentManager.getDefaultEnvName());
 
-      const [projectSettings, projectIdMissing] = projectSettingsResult.value;
+      const projectSettings = projectSettingsResult.value;
       const validSettingsResult = validateSettings(projectSettings);
       assert.isTrue(validSettingsResult === undefined);
 
@@ -871,7 +866,7 @@ describe("Core basic APIs", () => {
         assert.fail("failed to load project settings");
       }
 
-      const [projectSettings, projectIdMissing] = projectSettingsResult.value;
+      const projectSettings = projectSettingsResult.value;
       const validSettingsResult = validateSettings(projectSettings);
       assert.isTrue(validSettingsResult === undefined);
 

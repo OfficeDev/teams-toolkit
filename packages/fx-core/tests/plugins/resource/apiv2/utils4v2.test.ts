@@ -21,6 +21,7 @@ import { assert } from "chai";
 import "mocha";
 import { newEnvInfo } from "../../../../src";
 import { TabLanguage } from "../../../../src/plugins/resource/frontend/resources/templateInfo";
+import { LocalCrypto } from "../../../../src/core/crypto";
 import {
   assignJsonInc,
   provisionResourceAdapter,
@@ -72,6 +73,7 @@ describe("API V2 adapter", () => {
         teamsApp: new ConfigMap([["k1", "v1"]]),
         auth: new ConfigMap([["k2", "v2"]]),
       },
+      cryptoProvider: new LocalCrypto(""),
     };
     const localSettings: Json = {};
     setLocalSettingsV2(localSettings, pluginContext.localSettings);
@@ -92,6 +94,7 @@ describe("API V2 adapter", () => {
       root: "",
       config: new ConfigMap(),
       envInfo: newEnvInfo(),
+      cryptoProvider: new LocalCrypto(""),
     };
     const provisionOutputs: Json = {
       plugin1: { k1: "v1" },

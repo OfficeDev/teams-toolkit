@@ -74,8 +74,8 @@ class EnvironmentManager {
 
   public async loadEnvInfo(
     projectPath: string,
-    envName?: string,
-    cryptoProvider?: CryptoProvider
+    cryptoProvider: CryptoProvider,
+    envName?: string
   ): Promise<Result<EnvInfo, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
       return err(PathNotExistError(projectPath));
@@ -139,8 +139,8 @@ class EnvironmentManager {
   public async writeEnvProfile(
     envData: Map<string, any> | Json,
     projectPath: string,
-    envName?: string,
-    cryptoProvider?: CryptoProvider
+    cryptoProvider: CryptoProvider,
+    envName?: string
   ): Promise<Result<string, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
       return err(PathNotExistError(projectPath));
@@ -156,9 +156,7 @@ class EnvironmentManager {
 
     const data = envData instanceof Map ? mapToJson(envData) : envData;
     const secrets = sperateSecretData(data);
-    if (cryptoProvider) {
-      this.encrypt(secrets, cryptoProvider);
-    }
+    this.encrypt(secrets, cryptoProvider);
     if (Object.keys(secrets).length) {
       secrets[this.checksumKey] = jsum.digest(secrets, "SHA256", "hex");
     }
@@ -267,7 +265,7 @@ class EnvironmentManager {
   private async loadEnvProfile(
     projectPath: string,
     envName: string,
-    cryptoProvider?: CryptoProvider
+    cryptoProvider: CryptoProvider
   ): Promise<Result<Map<string, any>, FxError>> {
     const envFiles = this.getEnvProfileFilesPath(envName, projectPath);
     const userDataResult = await this.loadUserData(envFiles.userDataFile, cryptoProvider);
@@ -319,7 +317,7 @@ class EnvironmentManager {
 
   private async loadUserData(
     userDataPath: string,
-    cryptoProvider?: CryptoProvider
+    cryptoProvider: CryptoProvider
   ): Promise<Result<Record<string, string>, FxError>> {
     if (!(await fs.pathExists(userDataPath))) {
       return ok({});
@@ -327,9 +325,6 @@ class EnvironmentManager {
 
     const content = await fs.readFile(userDataPath, "UTF-8");
     const secrets = deserializeDict(content);
-    if (!cryptoProvider) {
-      return ok(secrets);
-    }
 
     const res = this.decrypt(secrets, cryptoProvider);
     if (res.isErr()) {

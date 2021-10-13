@@ -28,6 +28,7 @@ import Container from "typedi";
 import { environmentManager } from "../../../../../src/core/environment";
 import { newEnvInfo } from "../../../../../src";
 import * as core from "../../../../../src";
+import { LocalCrypto } from "../../../../../src/core/crypto";
 
 describe("Publish Teams app with Azure", () => {
   let plugin: AppStudioPlugin;
@@ -45,6 +46,7 @@ describe("Publish Teams app with Azure", () => {
       config: new ConfigMap(),
       appStudioToken: mockTokenProvider(),
       answers: { platform: Platform.VSCode },
+      cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -141,6 +143,7 @@ describe("Publish Teams app with SPFx", () => {
       config: new ConfigMap(),
       appStudioToken: mockTokenProvider(),
       answers: { platform: Platform.VSCode },
+      cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
       appName: "my app",

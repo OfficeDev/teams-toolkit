@@ -112,7 +112,6 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
       core.tools,
       inputs,
       ctx.projectSettings,
-      ctx.projectIdMissing,
       targetEnvName,
       skip || inputs.ignoreEnvInfo
     );
@@ -136,7 +135,6 @@ export async function loadSolutionContext(
   tools: Tools,
   inputs: Inputs,
   projectSettings: ProjectSettings,
-  projectIdMissing?: boolean,
   targetEnvName?: string,
   ignoreEnvInfo = false
 ): Promise<Result<SolutionContext, FxError>> {
@@ -152,11 +150,12 @@ export async function loadSolutionContext(
     envInfo = newEnvInfo();
   } else {
     // ensure backwards compatibility:
-    // no need to decrypt the secrets in *.userdata for previous TeamsFx project, which has no project id.
+    // project id will be generated for previous TeamsFx project.
+    // Decrypting the secrets in *.userdata with generated project id works because secrets doesn't have prefix.
     const envDataResult = await environmentManager.loadEnvInfo(
       inputs.projectPath,
-      targetEnvName,
-      projectIdMissing ? undefined : cryptoProvider
+      cryptoProvider,
+      targetEnvName
     );
 
     if (envDataResult.isErr()) {

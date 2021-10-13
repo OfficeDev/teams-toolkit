@@ -10,6 +10,7 @@ import { AppStudioPlugin } from "./../../../../../src/plugins/resource/appstudio
 import { TeamsBot } from "./../../../../../src/plugins/resource/bot";
 import { ConfigMap, PluginContext, TeamsAppManifest, ok, Plugin } from "@microsoft/teamsfx-api";
 import { newEnvInfo } from "../../../../../src";
+import { LocalCrypto } from "../../../../../src/core/crypto";
 
 describe("validate manifest", () => {
   let plugin: AppStudioPlugin;
@@ -23,6 +24,7 @@ describe("validate manifest", () => {
       root: "./",
       envInfo: newEnvInfo(),
       config: new ConfigMap(),
+      cryptoProvider: new LocalCrypto(""),
     };
 
     const botplugin: Plugin = new TeamsBot();

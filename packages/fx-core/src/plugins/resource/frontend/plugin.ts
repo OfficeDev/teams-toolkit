@@ -247,7 +247,8 @@ export class FrontendPluginImpl {
   private async updateDotenv(ctx: PluginContext): Promise<void> {
     const envs: { [key: string]: string } = {};
     const addToEnvs = (key: string, value: string | undefined) => {
-      if (value) {
+      // Check for both null and undefined, add to envs when value is "", 0 or false.
+      if (value != null) {
         envs[key] = value;
       }
     };

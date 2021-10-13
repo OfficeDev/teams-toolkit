@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import { parseFromResourceId } from "../../../..";
 import { ProjectConstants } from "../constants";
 
 export function getFileExtension(filePath: string): string {
@@ -72,4 +73,34 @@ export class Lazy<T> {
     }
     return this.factoryOutput;
   }
+}
+
+export function getApimServiceNameFromResourceId(resourceId: string): string {
+  const result = parseFromResourceId(
+    /providers\/Microsoft.ApiManagement\/service\/([^\/]*)/i,
+    resourceId
+  );
+  if (!result) {
+    throw new Error("Failed to get API Management service name from resource id: " + resourceId);
+  }
+  console.log(`getApimServiceNameFromResourceId: ${result}`);
+  return result;
+}
+
+export function getproductNameFromResourceId(resourceId: string): string {
+  const result = parseFromResourceId(/products\/([^\/]*)/i, resourceId);
+  if (!result) {
+    throw new Error("Failed to get product name from resource id: " + resourceId);
+  }
+  console.log(`getproductNameFromResourceId: ${result}`);
+  return result;
+}
+
+export function getAuthServiceNameFromResourceId(resourceId: string): string {
+  const result = parseFromResourceId(/authorizationServers\/([^\/]*)/i, resourceId);
+  if (!result) {
+    throw new Error("Failed to get auth server name from resource id: " + resourceId);
+  }
+  console.log(`getAuthServiceNameFromResourceId: ${result}`);
+  return result;
 }

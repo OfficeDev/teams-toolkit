@@ -24,9 +24,19 @@ import {
   PluginContext,
   TelemetryReporter,
 } from "@microsoft/teamsfx-api";
-import { Lazy } from "../utils/commonUtils";
+import {
+  getApimServiceNameFromResourceId,
+  getAuthServiceNameFromResourceId,
+  getproductNameFromResourceId,
+  Lazy,
+} from "../utils/commonUtils";
 import { NamingRules } from "../utils/namingRules";
-import { generateBicepFiles, getTemplatesFolder, isArmSupportEnabled } from "../../../..";
+import {
+  generateBicepFiles,
+  getResourceGroupNameFromResourceId,
+  getTemplatesFolder,
+  isArmSupportEnabled,
+} from "../../../..";
 import path from "path";
 import { Bicep, ConstantString } from "../../../../common/constants";
 import { ScaffoldArmTemplateResult } from "../../../../common/armInterface";
@@ -147,26 +157,52 @@ export class ApimManager {
     projectRootPath: string
   ): Promise<void> {
     const apimService: ApimService = await this.lazyApimService.getValue();
-    const resourceGroupName = apimConfig.resourceGroupName ?? solutionConfig.resourceGroupName;
-    const apimServiceName = AssertConfigNotEmpty(
-      TeamsToolkitComponent.ApimPlugin,
-      ApimPluginConfigKeys.serviceName,
-      apimConfig.serviceName
-    );
+
+    let resourceGroupName, apimServiceName, authServerId, productId;
+
+    if (isArmSupportEnabled()) {
+      const apimServiceResourceId = AssertConfigNotEmpty(
+        TeamsToolkitComponent.ApimPlugin,
+        ApimPluginConfigKeys.serviceResourceId,
+        apimConfig.serviceResourceId
+      );
+      const apimProductResourceId = AssertConfigNotEmpty(
+        TeamsToolkitComponent.ApimPlugin,
+        ApimPluginConfigKeys.productResourceId,
+        apimConfig.productResourceId
+      );
+      const authServerResourceId = AssertConfigNotEmpty(
+        TeamsToolkitComponent.ApimPlugin,
+        ApimPluginConfigKeys.authServerResourceId,
+        apimConfig.authServerResourceId
+      );
+      resourceGroupName = getResourceGroupNameFromResourceId(apimServiceResourceId);
+      apimServiceName = getApimServiceNameFromResourceId(apimServiceResourceId);
+      authServerId = getAuthServiceNameFromResourceId(authServerResourceId);
+      productId = getproductNameFromResourceId(apimProductResourceId);
+    } else {
+      resourceGroupName = apimConfig.resourceGroupName ?? solutionConfig.resourceGroupName;
+      apimServiceName = AssertConfigNotEmpty(
+        TeamsToolkitComponent.ApimPlugin,
+        ApimPluginConfigKeys.serviceName,
+        apimConfig.serviceName
+      );
+      authServerId = AssertConfigNotEmpty(
+        TeamsToolkitComponent.ApimPlugin,
+        ApimPluginConfigKeys.oAuthServerId,
+        apimConfig.oAuthServerId
+      );
+      productId = AssertConfigNotEmpty(
+        TeamsToolkitComponent.ApimPlugin,
+        ApimPluginConfigKeys.productId,
+        apimConfig.productId
+      );
+    }
+
     const apiPrefix = AssertConfigNotEmpty(
       TeamsToolkitComponent.ApimPlugin,
       ApimPluginConfigKeys.apiPrefix,
       apimConfig.apiPrefix
-    );
-    const oAuthServerId = AssertConfigNotEmpty(
-      TeamsToolkitComponent.ApimPlugin,
-      ApimPluginConfigKeys.oAuthServerId,
-      apimConfig.oAuthServerId
-    );
-    const productId = AssertConfigNotEmpty(
-      TeamsToolkitComponent.ApimPlugin,
-      ApimPluginConfigKeys.productId,
-      apimConfig.productId
     );
     const apiDocumentPath = AssertConfigNotEmpty(
       TeamsToolkitComponent.ApimPlugin,
@@ -215,7 +251,7 @@ export class ApimManager {
       apiPath,
       versionIdentity,
       versionSetId,
-      oAuthServerId,
+      authServerId,
       openApiDocument.schemaVersion,
       spec
     );

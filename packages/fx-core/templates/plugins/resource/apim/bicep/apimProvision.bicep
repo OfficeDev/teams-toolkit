@@ -40,7 +40,8 @@ resource apimServiceProduct 'Microsoft.ApiManagement/service/products@2020-12-01
 }
 
 resource apimServiceAuthServer 'Microsoft.ApiManagement/service/authorizationServers@2020-12-01' = {
-  name: '${apimServiceName}/${oauthServerName}'
+  parent: apimService
+  name: oauthServerName
   properties: {
     displayName: oauthServerName
     description: 'Created by TeamsFx.'

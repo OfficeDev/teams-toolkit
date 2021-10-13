@@ -30,6 +30,11 @@ export interface IApimPluginConfig {
   versionSetId?: string | undefined;
   apiPath?: string | undefined;
   apiDocumentPath?: string | undefined;
+  serviceResourceId?: string | undefined;
+  productResourceId?: string | undefined;
+  authServerResourceId?: string | undefined;
+  publisherEmail?: string | undefined;
+  publisherName?: string | undefined;
 }
 
 export interface IFunctionPluginConfig {
@@ -130,6 +135,36 @@ export class ApimPluginConfig implements IApimPluginConfig {
   }
   set apiDocumentPath(value: string | undefined) {
     this.setValue(ApimPluginConfigKeys.apiDocumentPath, value);
+  }
+  get serviceResourceId(): string | undefined {
+    return this.getValue(ApimPluginConfigKeys.serviceResourceId);
+  }
+  set serviceResourceId(value: string | undefined) {
+    this.setValue(ApimPluginConfigKeys.serviceResourceId, value);
+  }
+  get productResourceId(): string | undefined {
+    return this.getValue(ApimPluginConfigKeys.productResourceId);
+  }
+  set productResourceId(value: string | undefined) {
+    this.setValue(ApimPluginConfigKeys.productResourceId, value);
+  }
+  get authServerResourceId(): string | undefined {
+    return this.getValue(ApimPluginConfigKeys.authServerResourceId);
+  }
+  set authServerResourceId(value: string | undefined) {
+    this.setValue(ApimPluginConfigKeys.authServerResourceId, value);
+  }
+  get publisherEmail(): string | undefined {
+    return this.getValue(ApimPluginConfigKeys.publisherEmail);
+  }
+  set publisherEmail(value: string | undefined) {
+    this.setValue(ApimPluginConfigKeys.publisherEmail, value);
+  }
+  get publisherName(): string | undefined {
+    return this.getValue(ApimPluginConfigKeys.publisherName);
+  }
+  set publisherName(value: string | undefined) {
+    this.setValue(ApimPluginConfigKeys.publisherName, value);
   }
 
   private getValue(key: string, namingRule?: INamingRule): string | undefined {

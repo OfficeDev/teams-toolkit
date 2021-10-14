@@ -473,51 +473,45 @@ export class FxCore implements Core {
     currentStage = Stage.provision;
     inputs.stage = Stage.provision;
     // provision is not ready yet, so use API v1
-    // if (isV2()) {
-    //   if (
-    //     !ctx ||
-    //     !ctx.solutionV2 ||
-    //     !ctx.contextV2 ||
-    //     !ctx.envInfoV2
-    //   ) {
-    //     return err(new ObjectIsUndefinedError("Provision input stuff"));
-    //   }
-    //   const envInfo = ctx.envInfoV2;
-    //   const result = await ctx.solutionV2.provisionResources(
-    //     ctx.contextV2,
-    //     inputs,
-    //     envInfo,
-    //     this.tools.tokenProvider
-    //   );
-    //   if (result.kind === "success") {
-    //     // Remove all "output" and "secret" fields for backward compatibility.
-    //     // todo(yefuwang): handle "output" and "secret" fields in middlewares.
-    //     const profile = flattenConfigJson(result.output);
-    //     ctx.envInfoV2.profile = { ...ctx.envInfoV2.profile, ...profile };
-    //     return ok(Void);
-    //   } else if (result.kind === "partialSuccess") {
-    //     const profile = flattenConfigJson(result.output);
-    //     ctx.envInfoV2.profile = { ...ctx.envInfoV2.profile, ...profile };
-    //     return err(result.error);
-    //   } else {
-    //     return err(result.error);
-    //   }
-    // }
-    // else {
-    if (!ctx || !ctx.solution || !ctx.solutionContext) {
-      const name = undefinedName(
-        [ctx, ctx?.solution, ctx?.solutionContext],
-        ["ctx", "ctx.solution", "ctx.solutionContext"]
+    if (isV2()) {
+      if (!ctx || !ctx.solutionV2 || !ctx.contextV2 || !ctx.envInfoV2) {
+        return err(new ObjectIsUndefinedError("Provision input stuff"));
+      }
+      const envInfo = ctx.envInfoV2;
+      const result = await ctx.solutionV2.provisionResources(
+        ctx.contextV2,
+        inputs,
+        envInfo,
+        this.tools.tokenProvider
       );
-      return err(new ObjectIsUndefinedError(`Provision input stuff: ${name}`));
-    }
-    const provisionRes = await ctx.solution.provision(ctx.solutionContext);
-    if (provisionRes.isErr()) {
+      if (result.kind === "success") {
+        // Remove all "output" and "secret" fields for backward compatibility.
+        // todo(yefuwang): handle "output" and "secret" fields in middlewares.
+        const profile = flattenConfigJson(result.output);
+        ctx.envInfoV2.profile = { ...ctx.envInfoV2.profile, ...profile };
+        return ok(Void);
+      } else if (result.kind === "partialSuccess") {
+        const profile = flattenConfigJson(result.output);
+        ctx.envInfoV2.profile = { ...ctx.envInfoV2.profile, ...profile };
+        return err(result.error);
+      } else {
+        return err(result.error);
+      }
+    } else {
+      if (!ctx || !ctx.solution || !ctx.solutionContext) {
+        const name = undefinedName(
+          [ctx, ctx?.solution, ctx?.solutionContext],
+          ["ctx", "ctx.solution", "ctx.solutionContext"]
+        );
+        return err(new ObjectIsUndefinedError(`Provision input stuff: ${name}`));
+      }
+      const provisionRes = await ctx.solution.provision(ctx.solutionContext);
+      if (provisionRes.isErr()) {
+        return provisionRes;
+      }
+      this._setEnvInfoV2(ctx);
       return provisionRes;
     }
-    this._setEnvInfoV2(ctx);
-    return provisionRes;
-    // }
   }
 
   @hooks([

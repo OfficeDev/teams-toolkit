@@ -38,7 +38,7 @@ import * as commonTools from "../../src/common/tools";
 import { environmentManager } from "../../src/core/environment";
 import { EnvInfoLoaderMW } from "../../src/core/middleware/envInfoLoader";
 import { MigrateConditionHandlerMW } from "../../src/core/middleware/migrateConditionHandler";
-import { migrateArm, ProjectMigratorMW } from "../../src/core/middleware/projectMigrator";
+import { migrateArm, ProjectMigratorMW, disabled } from "../../src/core/middleware/projectMigrator";
 import { ProjectUpgraderMW } from "../../src/core/middleware/projectUpgrader";
 import { SolutionPlugins } from "../../src/core/SolutionPluginContainer";
 import {
@@ -600,6 +600,8 @@ describe("Middleware - others", () => {
         TEAMSFX_INSIDER_PREVIEW: "true",
       });
       sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok("OK"));
+      // TODO: recover it to enable migration
+      sandbox.stub(disabled).returns(false);
     });
 
     afterEach(async () => {
@@ -625,8 +627,7 @@ describe("Middleware - others", () => {
 
       try {
         const res = await my.other(inputs);
-        // TODO: recover it to enable migration
-        // assert.isTrue(res.isOk());
+        assert.isTrue(res.isOk());
       } finally {
         await fs.rmdir(inputs.projectPath!, { recursive: true });
       }

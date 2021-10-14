@@ -75,6 +75,7 @@ class EnvConfigName {
   static readonly StorageResourceId = "storageResourceId";
   static readonly FuncAppName = "functionAppName";
   static readonly FunctionId = "functionAppId";
+  static readonly Endpoint = "endpoint";
 }
 
 class ArmParameters {
@@ -87,6 +88,8 @@ class ArmParameters {
   static readonly functionStorageName = "function_storageName";
   static readonly functionAppName = "function_webappName";
   static readonly botWebAppSku = "bot_webAppSKU";
+  static readonly SimpleAuthWebAppName = "simpleAuth_webAppName";
+  static readonly SimpleAuthServerFarm = "simpleAuth_serverFarmsName";
 }
 
 export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
@@ -658,6 +661,17 @@ async function generateArmParameterJson(ctx: CoreHookContext) {
   if (envConfig[ResourcePlugins.SimpleAuth]?.[EnvConfigName.SkuName]) {
     targetJson[ArmParameter][ArmParameters.SimpleAuthSku] = {
       value: envConfig[ResourcePlugins.SimpleAuth][EnvConfigName.SkuName],
+    };
+  }
+
+  if (envConfig[ResourcePlugins.SimpleAuth]?.[EnvConfigName.Endpoint]) {
+    const simpleAuthHost = new URL(envConfig[ResourcePlugins.SimpleAuth]?.[EnvConfigName.Endpoint])
+      .hostname;
+    const simpleAuthName = simpleAuthHost.split(".")[0];
+    targetJson[ArmParameter][ArmParameters.SimpleAuthWebAppName] = targetJson[ArmParameter][
+      ArmParameters.SimpleAuthServerFarm
+    ] = {
+      value: simpleAuthName,
     };
   }
   // Function

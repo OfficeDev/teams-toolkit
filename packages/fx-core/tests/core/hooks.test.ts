@@ -601,7 +601,7 @@ describe("Middleware - others", () => {
       });
       sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok("OK"));
       // TODO: recover it to enable migration
-      sinon.replace(migrator, "disabled", false);
+      sandbox.stub(migrator, "isDisabled").callsFake(() => false);
     });
 
     afterEach(async () => {

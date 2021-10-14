@@ -58,7 +58,6 @@ const resourceGroupName = "resourceGroupName";
 const migrationGuideUrl = "https://aka.ms/teamsfx-migration-guide";
 const parameterFileNameTemplate = "azure.parameters.@envName.json";
 let updateNotificationFlag = false;
-export const disabled = true;
 
 class EnvConfigName {
   static readonly StorageName = "storageName";
@@ -91,7 +90,7 @@ class ArmParameters {
 
 export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
   // TODO: delete it to enable migration
-  if (disabled) {
+  if (isDisabled()) {
     await next();
     return;
   }
@@ -162,6 +161,10 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
         }
       }
     });
+}
+
+export function isDisabled(): boolean {
+  return true;
 }
 
 async function migrateMultiEnv(projectPath: string): Promise<void> {

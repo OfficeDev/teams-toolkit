@@ -1,5 +1,29 @@
 # Changelog
 
+
+## 2.7.0 - Sep 17, 2021
+
+Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
+
+New Feature:
+- Support Jenkins CI/CD pipeline.
+
+Preview Features:
+- Support management of multiple development environments.
+- Support project collaborations among multiple developers.
+- Support customize Azure resource provision.
+- support customize manifest.
+
+To enable the preview features, refer to the [preview guidance](https://github.com/OfficeDev/TeamsFx/wiki/Enable-Preview-Features-in-Teams-Toolkit)
+
+Enhancement:
+
+- Improves UI experience and command pallette experience.
+- UX A/B testing:
+  - Your Tree View(sidebar) may include or exclue quick start page.
+  - You may or may not be invited to do local debug after create new project.
+- SDK add certificate authentication.
+
 ## 2.7.0 - Sep 17, 2021
 
 Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:

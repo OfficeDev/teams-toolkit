@@ -600,8 +600,6 @@ describe("Middleware - others", () => {
         TEAMSFX_INSIDER_PREVIEW: "true",
       });
       sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok("OK"));
-      // TODO: recover it to enable migration
-      sandbox.stub(migrator, "isDisabled").callsFake(() => false);
     });
 
     afterEach(async () => {
@@ -618,7 +616,8 @@ describe("Middleware - others", () => {
         }
       }
       hooks(MyClass, {
-        other: [migrator.ProjectMigratorMW],
+        // TODO: recover it to enable migration
+        other: [migrator.migrate],
       });
 
       const inputs: Inputs = { platform: Platform.VSCode };

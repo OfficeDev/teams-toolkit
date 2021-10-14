@@ -87,13 +87,12 @@ class ArmParameters {
   static readonly functionStorageName = "function_storageName";
   static readonly functionAppName = "function_webappName";
 }
-
+// TODO: delete it to enable migration
 export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
-  // TODO: delete it to enable migration
-  if (isDisabled()) {
-    await next();
-    return;
-  }
+  await next();
+};
+
+export async function migrate(ctx: CoreHookContext, next: NextFunction) {
   if (await needMigrateToArmAndMultiEnv(ctx)) {
     const core = ctx.self as FxCore;
     const res = await core.tools.ui.showMessage(
@@ -120,7 +119,7 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
     );
   }
   await next();
-};
+}
 
 async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
@@ -161,10 +160,6 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
         }
       }
     });
-}
-
-export function isDisabled(): boolean {
-  return true;
 }
 
 async function migrateMultiEnv(projectPath: string): Promise<void> {

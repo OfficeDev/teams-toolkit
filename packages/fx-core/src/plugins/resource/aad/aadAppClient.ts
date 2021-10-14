@@ -203,6 +203,7 @@ export class AadAppClient {
     const config = new ProvisionConfig(islocalDebug);
     if (
       getAppObject.api?.oauth2PermissionScopes &&
+      getAppObject.api?.oauth2PermissionScopes[0] &&
       getAppObject.api?.oauth2PermissionScopes[0].id
     ) {
       config.oauth2PermissionScopeId = getAppObject.api?.oauth2PermissionScopes[0].id;

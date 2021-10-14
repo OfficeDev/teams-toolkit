@@ -142,7 +142,7 @@ export async function updateNewEnvCollaborators(env: string): Promise<void> {
   const parentNode = generateCollaboratorParentNode(env);
   const notProvisionedNode = generateCollaboratorWarningNode(
     env,
-    StringResources.vsc.commandsTreeViewProvider.noPermissionToListCollaborators
+    StringResources.vsc.commandsTreeViewProvider.unableToFindTeamsAppRegistration
   );
 
   collaboratorsRecordCache[env] = [parentNode, notProvisionedNode];

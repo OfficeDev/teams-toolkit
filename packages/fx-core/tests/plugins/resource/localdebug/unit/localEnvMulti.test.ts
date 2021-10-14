@@ -68,8 +68,8 @@ describe("LocalEnvProvider-MultiEnv", () => {
     it("backend", async () => {
       const raw =
         "\
-      AzureWebJobsStorage=a\n\
-      FUNCTIONS_WORKER_RUNTIME=b\n\
+        AzureWebJobsStorage=a\n\
+        FUNCTIONS_WORKER_RUNTIME=b\n\
         MYENV1=1\n\
         M365_AUTHORITY_HOST=c\n\
         M365_TENANT_ID=d\n\
@@ -112,8 +112,8 @@ describe("LocalEnvProvider-MultiEnv", () => {
     it("bot", async () => {
       const raw =
         "\
-      BOT_ID=a\n\
-      BOT_PASSWORD=b\n\
+        BOT_ID=a\n\
+        BOT_PASSWORD=b\n\
         MYENV1=1\n\
         M365_CLIENT_ID=c\n\
         \n\

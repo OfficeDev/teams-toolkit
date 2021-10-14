@@ -184,7 +184,7 @@ export default class Preview extends YargsCommand {
     const inputs: Inputs = {
       projectPath: workspaceFolder,
       platform: Platform.CLI,
-      ignoreEnvInfo: true, // local debug does not require environments
+      ignoreEnvInfo: isMultiEnvEnabled(), // local debug does not require environments
     };
 
     let configResult = await core.getProjectConfig(inputs);

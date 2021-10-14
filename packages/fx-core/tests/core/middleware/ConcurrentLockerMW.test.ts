@@ -30,11 +30,12 @@ import { ConcurrentLockerMW } from "../../../src/core/middleware";
 import { randomAppName } from "../utils";
 
 describe("Middleware - ConcurrentLockerMW", () => {
-  it("check lock folder existence", async () => {
+  it("check lock file existence", async () => {
     class MyClass1 {
       async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
         const lockFileDir = getLockFolder(inputs.projectPath!);
-        const exist = await fs.pathExists(lockFileDir);
+        const lockfilePath = path.join(lockFileDir, `${ConfigFolderName}.lock`);
+        const exist = await fs.pathExists(lockfilePath);
         assert.isTrue(exist);
         return ok("");
       }
@@ -50,7 +51,8 @@ describe("Middleware - ConcurrentLockerMW", () => {
       await fs.ensureDir(inputs.projectPath);
       await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`));
       await my.myMethod(inputs);
-      const exist = await fs.pathExists(lockFileDir);
+      const lockfilePath = path.join(lockFileDir, `${ConfigFolderName}.lock`);
+      const exist = await fs.pathExists(lockfilePath);
       assert.isFalse(exist);
     } finally {
       await fs.rmdir(inputs.projectPath!, { recursive: true });

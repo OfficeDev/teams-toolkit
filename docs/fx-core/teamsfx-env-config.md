@@ -58,6 +58,23 @@ The configuration is **required**. Teams Toolkit will use the value to render Te
 | manifest.appName.short | string | **Required**. The short display name for teams app. |
 | manifest.appName.full | string | The full name for teams app. |
 
+Above are predefined parameters for Teams app manifest customization. You can also add new parameters to the Teams app manifest template file named `manifest.source.json` under `templates/appPackage` and set its value in TeamsFx environment configuration. The Teams app manifest template file leverages [mustache](https://mustache.github.io/) as the template rendering engine, so you need define parameters with mustache syntax in the template.
+
+Here's a sample snippet from `manifest.source.json` with parameters using mustache syntax:
+
+```json
+{
+    "name": {
+        "short": "{{config.manifest.appName.short}}",
+        "full": "{{config.manifest.appName.full}}"
+    },
+    "description": {
+        "short": "Short description of {{config.manifest.appName.short}}",
+        "full": "Full description of {{config.manifest.appName.short}}"
+    },
+}
+```
+
 #### Others
 
 | Key | Type | Description |

@@ -28,7 +28,8 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
     core !== undefined && core.tools !== undefined && core.tools.logProvider !== undefined
       ? core.tools.logProvider
       : undefined;
-  const ignoreLock = inputs.ignoreLock === true || StaticPlatforms.includes(inputs.platform);
+  // const ignoreLock = inputs.ignoreLock === true || StaticPlatforms.includes(inputs.platform);
+  const ignoreLock = false;
   if (ignoreLock === false) {
     if (!inputs.projectPath) {
       ctx.result = err(NoProjectOpenedError());

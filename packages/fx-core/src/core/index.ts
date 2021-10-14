@@ -747,6 +747,7 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
+    ConcurrentLockerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),
     SolutionLoaderMW(),
@@ -787,6 +788,7 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
+    ConcurrentLockerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),
     SolutionLoaderMW(),
@@ -850,6 +852,7 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
+    ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
@@ -865,6 +868,7 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
+    ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
@@ -880,6 +884,7 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
+    ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
@@ -895,6 +900,7 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
+    ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),

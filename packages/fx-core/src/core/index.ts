@@ -1252,6 +1252,7 @@ export async function createBasicFolderStructure(inputs: Inputs): Promise<Result
             ".DS_Store",
             `${ArchiveFolderName}`,
             `${ArchiveLogFileName}`,
+            ".env.teamsfx.local",
           ].join("\n")
         : `node_modules\n/.${ConfigFolderName}/*.env\n/.${ConfigFolderName}/*.userdata\n.DS_Store\n${ArchiveFolderName}\n${ArchiveLogFileName}`
     );

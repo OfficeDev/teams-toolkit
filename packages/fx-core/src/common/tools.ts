@@ -31,6 +31,7 @@ import * as uuid from "uuid";
 import { getResourceFolder } from "../folder";
 import { ConstantString, FeatureFlagName } from "./constants";
 import * as crypto from "crypto";
+import { FailedToParseResourceIdError } from "..";
 
 Handlebars.registerHelper("contains", (value, array, options) => {
   array = array instanceof Array ? array : [array];
@@ -511,7 +512,7 @@ export function getStorageAccountNameFromResourceId(resourceId: string): string 
     resourceId
   );
   if (!result) {
-    throw new Error("Failed to get storage accounts name from resource id: " + resourceId);
+    throw FailedToParseResourceIdError("storage accounts name", resourceId);
   }
   return result;
 }
@@ -519,7 +520,7 @@ export function getStorageAccountNameFromResourceId(resourceId: string): string 
 export function getSiteNameFromResourceId(resourceId: string): string {
   const result = parseFromResourceId(/providers\/Microsoft.Web\/sites\/([^\/]*)/i, resourceId);
   if (!result) {
-    throw new Error("Failed to get site name from resource id: " + resourceId);
+    throw FailedToParseResourceIdError("site name", resourceId);
   }
   return result;
 }
@@ -527,7 +528,7 @@ export function getSiteNameFromResourceId(resourceId: string): string {
 export function getResourceGroupNameFromResourceId(resourceId: string): string {
   const result = parseFromResourceId(/\/resourceGroups\/([^\/]*)\//i, resourceId);
   if (!result) {
-    throw new Error("Failed to get resource group name from resource id: " + resourceId);
+    throw FailedToParseResourceIdError("resource group name", resourceId);
   }
   return result;
 }
@@ -535,7 +536,7 @@ export function getResourceGroupNameFromResourceId(resourceId: string): string {
 export function getSubscriptionIdFromResourceId(resourceId: string): string {
   const result = parseFromResourceId(/\/subscriptions\/([^\/]*)\//i, resourceId);
   if (!result) {
-    throw new Error("Failed to get subscription id from resource id: " + resourceId);
+    throw FailedToParseResourceIdError("subscription id", resourceId);
   }
   return result;
 }

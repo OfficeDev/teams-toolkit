@@ -24,7 +24,6 @@ import * as fs from "fs-extra";
 import { ArmHelpLink, ConstantString, PluginDisplayName } from "../../../common/constants";
 import {
   Executor,
-  CryptoDataMatchers,
   getResourceGroupNameFromResourceId,
   waitSeconds,
   getUuid,

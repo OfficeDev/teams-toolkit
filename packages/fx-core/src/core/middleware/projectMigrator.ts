@@ -40,13 +40,26 @@ import {
 } from "../../common/tools";
 import { loadProjectSettings } from "./projectSettingsLoader";
 import { generateArmTemplate } from "../../plugins/solution/fx-solution/arm";
-import { BotOptionItem, MessageExtensionItem } from "../../plugins/solution/fx-solution/question";
+import {
+  BotOptionItem,
+  HostTypeOptionAzure,
+  HostTypeOptionSPFx,
+  MessageExtensionItem,
+} from "../../plugins/solution/fx-solution/question";
 import { createLocalManifest } from "../../plugins/resource/appstudio/plugin";
 import { loadSolutionContext } from "./envInfoLoader";
 import { ResourcePlugins } from "../../common/constants";
 import { getActivatedResourcePlugins } from "../../plugins/solution/fx-solution/ResourcePluginContainer";
 import { LocalDebugConfigKeys } from "../../plugins/resource/localdebug/constants";
 import { MANIFEST_LOCAL } from "../../plugins/resource/appstudio/constants";
+import {
+  Component,
+  ProjectMigratorGuideStatus,
+  ProjectMigratorStatus,
+  sendTelemetryEvent,
+  TelemetryEvent,
+  TelemetryProperty,
+} from "../../common/telemetry";
 
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";
@@ -95,6 +108,8 @@ class ArmParameters {
 export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
   if (await needMigrateToArmAndMultiEnv(ctx)) {
     const core = ctx.self as FxCore;
+
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
     const res = await core.tools.ui.showMessage(
       "warn",
       getStrings().solution.MigrationToArmAndMultiEnvMessage,
@@ -103,8 +118,14 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
     );
     const answer = res?.isOk() ? res.value : undefined;
     if (!answer || answer != "OK") {
+      sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
+        [TelemetryProperty.Status]: ProjectMigratorStatus.Cancel,
+      });
       return;
     }
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
+      [TelemetryProperty.Status]: ProjectMigratorStatus.OK,
+    });
     await migrateToArmAndMultiEnv(ctx);
   } else if ((await needUpdateTeamsToolkitVersion(ctx)) && !updateNotificationFlag) {
     // TODO: delete before Arm && Multi-env version released
@@ -121,26 +142,76 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
   await next();
 };
 
+async function getOldProjectInfoForTelemetry(
+  projectPath: string
+): Promise<{ [key: string]: string }> {
+  try {
+    const inputs: Inputs = {
+      projectPath: projectPath,
+      // not used by `loadProjectSettings` but the type `Inputs` requires it.
+      platform: Platform.VSCode,
+    };
+    const loadRes = await loadProjectSettings(inputs, false);
+    if (loadRes.isErr()) {
+      return {};
+    }
+    const projectSettings = loadRes.value;
+    const solutionSettings = projectSettings.solutionSettings;
+    const hostType = solutionSettings.hostType;
+    const result: { [key: string]: string } = { [TelemetryProperty.HostType]: hostType };
+
+    if (hostType === HostTypeOptionAzure || hostType === HostTypeOptionSPFx) {
+      result[TelemetryProperty.ActivePlugins] = JSON.stringify(
+        solutionSettings.activeResourcePlugins
+      );
+      result[TelemetryProperty.Capabilities] = JSON.stringify(solutionSettings.capabilities);
+    }
+    if (hostType === HostTypeOptionAzure) {
+      const azureSolutionSettings = solutionSettings as AzureSolutionSettings;
+      result[TelemetryProperty.AzureResources] = JSON.stringify(
+        azureSolutionSettings.azureResources
+      );
+    }
+    return result;
+  } catch (error) {
+    // ignore telemetry errors
+    return {};
+  }
+}
+
 async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   const projectPath = inputs.projectPath as string;
+  const telemetryProperties = await getOldProjectInfoForTelemetry(projectPath);
+  sendTelemetryEvent(
+    Component.core,
+    TelemetryEvent.ProjectMigratorMigrateStart,
+    telemetryProperties
+  );
+
   await backup(projectPath);
   try {
     await updateConfig(ctx);
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateMultiEnvStart);
     await migrateMultiEnv(projectPath);
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateMultiEnv);
     const loadRes = await loadProjectSettings(inputs);
     if (loadRes.isErr()) {
       throw ProjectSettingError();
     }
     const projectSettings = loadRes.value;
     if (!isSPFxProject(projectSettings)) {
+      sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateArmStart);
       await migrateArm(ctx);
+      sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateArm);
     }
   } catch (err) {
     await cleanup(projectPath);
     throw err;
   }
   await removeOldProjectFiles(projectPath);
+  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrate);
+  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorGuideStart);
   const core = ctx.self as FxCore;
   core.tools.ui
     .showMessage(
@@ -153,11 +224,21 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
     .then((result) => {
       const userSelected = result.isOk() ? result.value : undefined;
       if (userSelected === learnMoreText) {
+        sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorGuide, {
+          [TelemetryProperty.Status]: ProjectMigratorGuideStatus.LearnMore,
+        });
         core.tools.ui!.openUrl(migrationGuideUrl);
       } else if (userSelected === reloadText) {
+        sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorGuide, {
+          [TelemetryProperty.Status]: ProjectMigratorGuideStatus.Reload,
+        });
         if (inputs.platform === Platform.VSCode) {
           core.tools.ui.reload?.();
         }
+      } else {
+        sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorGuide, {
+          [TelemetryProperty.Status]: ProjectMigratorGuideStatus.Cancel,
+        });
       }
     });
 }

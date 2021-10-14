@@ -14,7 +14,7 @@ Below is the introduction of all the available parameters.
 
 #### Auth
 
-This is for existing AAD app configuration. 
+This is for re-using an existing AAD app to enable auth in a Teams app. 
 
 The configuration is **optional**. If provided, Teams Toolkit will use this existing AAD app for auth usage and won't provision a new one.
 

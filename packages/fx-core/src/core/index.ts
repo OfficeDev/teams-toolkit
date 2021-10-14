@@ -236,6 +236,7 @@ export class FxCore implements Core {
           version: "1.0.0",
         },
         version: "1.0.0",
+        activeEnvironment: multiEnv ? environmentManager.getDefaultEnvName() : "default",
         isFromSample: false,
       };
       ctx.projectSettings = projectSettings;

@@ -152,6 +152,7 @@ The following sections provide several code snippets covering some of the most c
 - [Use Graph API in tab app](#use-graph-api-in-tab-app)
 - [Call Azure Function in tab app](#call-azure-function-in-tab-app)
 - [Access SQL database in Azure Function](#access-sql-database-in-azure-function)
+- [Use certificate-based authentication in Azure Function](#access-sql-database-in-azure-function)
 - [Use Graph API in Bot application](#use-graph-api-in-bot-application)
 
 ### Use Graph API in tab app
@@ -208,6 +209,19 @@ connection.on("connect", (error) => {
   if (error) {
     console.log(error);
   }
+});
+```
+
+### Use certificate-based authentication in Azure Function
+
+```ts
+teamsfx.loadConfiguration({
+  authentication: {
+    clientId: process.env.M365_CLIENT_ID,
+    certificateContent: "The content of a PEM-encoded public/private key certificate",
+    authorityHost: process.env.M365_AUTHORITY_HOST,
+    tenantId: process.env.M365_TENANT_ID,
+  },
 });
 ```
 

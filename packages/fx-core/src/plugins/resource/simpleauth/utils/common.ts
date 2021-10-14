@@ -1,12 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { LogProvider, PluginContext } from "@microsoft/teamsfx-api";
+import { FxError, LogProvider, PluginContext } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import * as fs from "fs-extra";
 import { Constants, Message } from "../constants";
 import {
   EndpointInvalidError,
   NoConfigError,
+  PluginError,
   VersionFileNotExist,
   ZipDownloadError,
 } from "../errors";
@@ -143,6 +144,17 @@ export class Utils {
       throw ResultFactory.SystemError(NoConfigError.name, NoConfigError.message(pluginId, key));
     }
     return configValue;
+  }
+
+  public static handleError(error: any, errorDetail: PluginError, ...args: string[]): FxError {
+    if (
+      error?.response?.status >= Constants.statusCodeUserError &&
+      error?.response?.status < Constants.statusCodeServerError
+    ) {
+      return ResultFactory.UserError(errorDetail.name, errorDetail.message(...args), error);
+    } else {
+      return ResultFactory.SystemError(errorDetail.name, errorDetail.message(...args), error);
+    }
   }
 
   private static getClientId(ctx: PluginContext, isLocalDebug: boolean): string {

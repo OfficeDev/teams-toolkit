@@ -17,6 +17,7 @@ import {
 import { ResultFactory } from "./result";
 import { DialogUtils } from "./utils/dialog";
 import { Providers, ResourceManagementClientContext } from "@azure/arm-resources";
+import { Utils } from "./utils/common";
 
 export class WebAppClient {
   private credentials: TokenCredentialsBase;
@@ -106,11 +107,7 @@ export class WebAppClient {
           Constants.HelpLink
         );
       }
-      throw ResultFactory.SystemError(
-        CreateAppServicePlanError.name,
-        CreateAppServicePlanError.message(error?.message),
-        error
-      );
+      throw Utils.handleError(error, CreateAppServicePlanError, error?.message);
     }
 
     try {
@@ -127,11 +124,7 @@ export class WebAppClient {
         skuName,
       };
     } catch (error) {
-      throw ResultFactory.SystemError(
-        CreateWebAppError.name,
-        CreateWebAppError.message(error?.message),
-        error
-      );
+      throw Utils.handleError(error, CreateWebAppError, error?.message);
     }
   }
 
@@ -151,11 +144,7 @@ export class WebAppClient {
       });
       this.ctx.logProvider?.info(Messages.getLog("zipdeploy is done: " + zipdeployResult.status));
     } catch (error) {
-      throw ResultFactory.SystemError(
-        ZipDeployError.name,
-        ZipDeployError.message(error?.message),
-        error
-      );
+      throw Utils.handleError(error, ZipDeployError, error?.message);
     }
   }
 
@@ -169,11 +158,7 @@ export class WebAppClient {
         }
       );
     } catch (error) {
-      throw ResultFactory.SystemError(
-        UpdateApplicationSettingsError.name,
-        UpdateApplicationSettingsError.message(error?.message),
-        error
-      );
+      throw Utils.handleError(error, UpdateApplicationSettingsError, error?.message);
     }
   }
 

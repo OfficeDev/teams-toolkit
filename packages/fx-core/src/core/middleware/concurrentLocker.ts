@@ -21,6 +21,7 @@ import { CallbackRegistry } from "../callback";
 import { CoreSource, InvalidProjectError, NoProjectOpenedError, PathNotExistError } from "../error";
 import { getLockFolder } from "../tools";
 import crypto from "crypto";
+import { shouldIgnored } from "./projectSettingsLoader";
 export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: NextFunction) => {
   const core = ctx.self as FxCore;
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
@@ -29,7 +30,7 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
       ? core.tools.logProvider
       : undefined;
   // const ignoreLock = inputs.ignoreLock === true || StaticPlatforms.includes(inputs.platform);
-  const ignoreLock = false;
+  const ignoreLock = shouldIgnored(ctx);
   if (ignoreLock === false) {
     if (!inputs.projectPath) {
       ctx.result = err(NoProjectOpenedError());

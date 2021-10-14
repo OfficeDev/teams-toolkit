@@ -215,7 +215,7 @@ connection.on("connect", (error) => {
 ### Use certificate-based authentication in Azure Function
 
 ```ts
-teamsfx.loadConfiguration({
+loadConfiguration({
   authentication: {
     clientId: process.env.M365_CLIENT_ID,
     certificateContent: "The content of a PEM-encoded public/private key certificate",

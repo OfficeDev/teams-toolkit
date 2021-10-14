@@ -1,14 +1,14 @@
-## TeamsFx Config
+## TeamsFx Environment Configuration
 
-TeamsFx config file is for user customization during the app development with Teams Toolkit, including the customization of provisioned azure resources, Teams app manifest, and data plane operations. Also, different environments can have different TeamsFx configs.
+TeamsFx environment configuration file is for user customization during the app development with Teams Toolkit, including the customization of provisioned azure resources, Teams app manifest, and data plane operations. Also, different environments can have different TeamsFx environment configurations.
 
-### Name of TeamsFx Config File
+### Name of TeamsFx Environment Configuration File
 
-When new environment is created, a new TeamsFx config file will be created under `.fx` with the name like `config.<env_name>.json`. Take the environment `test` for example, the corresponding TeamsFx config file is `config.test.json`.
+When new environment is created, a new TeamsFx environment configuration file will be created under `.fx` with the name like `config.<env_name>.json`. Take the environment `test` for example, the corresponding TeamsFx environment configuration file is `config.test.json`.
 
-### Schema of TeamsFx Config
+### Schema of TeamsFx Environment Configuration
 
-Json schema is used to define all the available parameters in TeamsFx config. The full definitions of the schema can be found [here](../../packages/api/src/schemas/envConfig.json).
+Json schema is used to define all the available parameters in TeamsFx environment configuration. The full definitions of the schema can be found [here](../../packages/api/src/schemas/envConfig.json).
 
 Below is the introduction of all the available parameters.
 
@@ -64,7 +64,7 @@ The configuration is **required**. Teams Toolkit will use the value to render Te
 | - | - | - |
 | skipAddingSqlUser | bool | Skip to add user during SQL provision. |
 
-#### Sample TeamsFx Config
+#### Sample TeamsFx Environment Configuration
 
 ```json
 {

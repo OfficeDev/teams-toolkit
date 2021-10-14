@@ -152,7 +152,7 @@ The following sections provide several code snippets covering some of the most c
 - [Use Graph API in tab app](#use-graph-api-in-tab-app)
 - [Call Azure Function in tab app](#call-azure-function-in-tab-app)
 - [Access SQL database in Azure Function](#access-sql-database-in-azure-function)
-- [Use certificate-based authentication in Azure Function](#access-sql-database-in-azure-function)
+- [Use certificate-based authentication in Azure Function](#use-certificate-based-authentication-in-azure-function)
 - [Use Graph API in Bot application](#use-graph-api-in-bot-application)
 
 ### Use Graph API in tab app

@@ -747,6 +747,7 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
+    ConcurrentLockerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),
     SolutionLoaderMW(),
@@ -787,6 +788,7 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
+    ConcurrentLockerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),
     SolutionLoaderMW(),
@@ -850,6 +852,7 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
+    ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
@@ -865,6 +868,7 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
+    ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
@@ -880,6 +884,7 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
+    ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
@@ -895,6 +900,7 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
+    ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),
@@ -1010,7 +1016,13 @@ export class FxCore implements Core {
     return ok(undefined);
   }
 
-  @hooks([ErrorHandlerMW, ProjectSettingsLoaderMW, EnvInfoLoaderMW(true), ContextInjectorMW])
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW(true),
+    ContextInjectorMW,
+  ])
   async encrypt(
     plaintext: string,
     inputs: Inputs,
@@ -1026,7 +1038,13 @@ export class FxCore implements Core {
     }
   }
 
-  @hooks([ErrorHandlerMW, ProjectSettingsLoaderMW, EnvInfoLoaderMW(true), ContextInjectorMW])
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW(true),
+    ContextInjectorMW,
+  ])
   async decrypt(
     ciphertext: string,
     inputs: Inputs,
@@ -1048,6 +1066,7 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
+    ConcurrentLockerMW,
     ProjectSettingsLoaderMW,
     SolutionLoaderMW(),
     EnvInfoLoaderMW(true),
@@ -1158,6 +1177,7 @@ export class FxCore implements Core {
   // deprecated
   @hooks([
     ErrorHandlerMW,
+    ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     SolutionLoaderMW(),

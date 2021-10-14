@@ -86,6 +86,7 @@ class ArmParameters {
   static readonly functionServerName = "function_serverfarmsName";
   static readonly functionStorageName = "function_storageName";
   static readonly functionAppName = "function_webappName";
+  static readonly botWebAppSku = "bot_webAppSKU";
 }
 
 export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
@@ -628,62 +629,59 @@ async function generateArmParameterJson(ctx: CoreHookContext) {
   const targetJson = await fs.readJson(path.join(fxConfig, parameterEnvFileName));
   const ArmParameter = "parameters";
   // frontend hosting
-  if (envConfig[ResourcePlugins.FrontendHosting]) {
-    if (envConfig[ResourcePlugins.FrontendHosting][EnvConfigName.StorageName]) {
-      targetJson[ArmParameter][ArmParameters.FEStorageName] = {
-        value: envConfig[ResourcePlugins.FrontendHosting][EnvConfigName.StorageName],
-      };
-    }
+  if (envConfig[ResourcePlugins.FrontendHosting]?.[EnvConfigName.StorageName]) {
+    targetJson[ArmParameter][ArmParameters.FEStorageName] = {
+      value: envConfig[ResourcePlugins.FrontendHosting][EnvConfigName.StorageName],
+    };
   }
   // manage identity
-  if (envConfig[ResourcePlugins.Identity]) {
-    if (envConfig[ResourcePlugins.Identity][EnvConfigName.Identity]) {
-      targetJson[ArmParameter][ArmParameters.IdentityName] = {
-        value: envConfig[ResourcePlugins.Identity][EnvConfigName.Identity],
-      };
-    }
+  if (envConfig[ResourcePlugins.Identity]?.[EnvConfigName.Identity]) {
+    targetJson[ArmParameter][ArmParameters.IdentityName] = {
+      value: envConfig[ResourcePlugins.Identity][EnvConfigName.Identity],
+    };
   }
   // azure SQL
-  if (envConfig[ResourcePlugins.AzureSQL]) {
-    if (envConfig[ResourcePlugins.AzureSQL][EnvConfigName.SqlEndpoint]) {
-      targetJson[ArmParameter][ArmParameters.SQLServer] = {
-        value:
-          envConfig[ResourcePlugins.AzureSQL][EnvConfigName.SqlEndpoint].split(
-            ".database.windows.net"
-          )[0],
-      };
-    }
-    if (envConfig[ResourcePlugins.AzureSQL][EnvConfigName.SqlDataBase]) {
-      targetJson[ArmParameter][ArmParameters.SQLDatabase] = {
-        value: envConfig[ResourcePlugins.AzureSQL][EnvConfigName.SqlDataBase],
-      };
-    }
+  if (envConfig[ResourcePlugins.AzureSQL]?.[EnvConfigName.SqlEndpoint]) {
+    targetJson[ArmParameter][ArmParameters.SQLServer] = {
+      value:
+        envConfig[ResourcePlugins.AzureSQL][EnvConfigName.SqlEndpoint].split(
+          ".database.windows.net"
+        )[0],
+    };
+  }
+  if (envConfig[ResourcePlugins.AzureSQL]?.[EnvConfigName.SqlDataBase]) {
+    targetJson[ArmParameter][ArmParameters.SQLDatabase] = {
+      value: envConfig[ResourcePlugins.AzureSQL][EnvConfigName.SqlDataBase],
+    };
   }
   // SimpleAuth
-  if (envConfig[ResourcePlugins.SimpleAuth]) {
-    if (envConfig[ResourcePlugins.SimpleAuth][EnvConfigName.SkuName]) {
-      targetJson[ArmParameter][ArmParameters.SimpleAuthSku] = {
-        value: envConfig[ResourcePlugins.SimpleAuth][EnvConfigName.SkuName],
-      };
-    }
+  if (envConfig[ResourcePlugins.SimpleAuth]?.[EnvConfigName.SkuName]) {
+    targetJson[ArmParameter][ArmParameters.SimpleAuthSku] = {
+      value: envConfig[ResourcePlugins.SimpleAuth][EnvConfigName.SkuName],
+    };
   }
   // Function
-  if (envConfig[ResourcePlugins.Function]) {
-    if (envConfig[ResourcePlugins.Function][EnvConfigName.AppServicePlanName]) {
-      targetJson[ArmParameter][ArmParameters.functionServerName] = {
-        value: envConfig[ResourcePlugins.Function][EnvConfigName.AppServicePlanName],
-      };
-    }
-    if (envConfig[ResourcePlugins.Function][EnvConfigName.StorageAccountName]) {
-      targetJson[ArmParameter][ArmParameters.functionStorageName] = {
-        value: envConfig[ResourcePlugins.Function][EnvConfigName.StorageAccountName],
-      };
-    }
-    if (envConfig[ResourcePlugins.Function][EnvConfigName.FuncAppName]) {
-      targetJson[ArmParameter][ArmParameters.functionAppName] = {
-        value: envConfig[ResourcePlugins.Function][EnvConfigName.FuncAppName],
-      };
-    }
+  if (envConfig[ResourcePlugins.Function]?.[EnvConfigName.AppServicePlanName]) {
+    targetJson[ArmParameter][ArmParameters.functionServerName] = {
+      value: envConfig[ResourcePlugins.Function][EnvConfigName.AppServicePlanName],
+    };
+  }
+  if (envConfig[ResourcePlugins.Function]?.[EnvConfigName.StorageAccountName]) {
+    targetJson[ArmParameter][ArmParameters.functionStorageName] = {
+      value: envConfig[ResourcePlugins.Function][EnvConfigName.StorageAccountName],
+    };
+  }
+  if (envConfig[ResourcePlugins.Function]?.[EnvConfigName.FuncAppName]) {
+    targetJson[ArmParameter][ArmParameters.functionAppName] = {
+      value: envConfig[ResourcePlugins.Function][EnvConfigName.FuncAppName],
+    };
+  }
+
+  // Bot
+  if (envConfig[ResourcePlugins.Bot]?.[EnvConfigName.SkuName]) {
+    targetJson[ArmParameter][ArmParameters.botWebAppSku] = {
+      value: envConfig[ResourcePlugins.Bot]?.[EnvConfigName.SkuName],
+    };
   }
   await fs.writeFile(
     path.join(fxConfig, parameterEnvFileName),

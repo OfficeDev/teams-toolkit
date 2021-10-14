@@ -158,39 +158,39 @@ describe("Middleware - ConcurrentLockerMW", () => {
     assert.isTrue(my.count === 1);
   });
 
-  it("concurrent: ignore lock", async () => {
-    class MyClass2 {
-      count1 = 0;
-      count2 = 0;
-      async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
-        this.count1++;
-        const inputs2: Inputs = { platform: Platform.VSCode, ignoreLock: true };
-        const res2 = await this.myMethod2(inputs2);
-        assert.isTrue(res2.isOk() && res2.value === "");
-        return ok("");
-      }
-      async myMethod2(inputs: Inputs): Promise<Result<any, FxError>> {
-        this.count2++;
-        return ok("");
-      }
-    }
-    hooks(MyClass2, {
-      myMethod: [ConcurrentLockerMW],
-      myMethod2: [ConcurrentLockerMW],
-    });
-    const inputs: Inputs = { platform: Platform.VSCode };
-    const my = new MyClass2();
-    try {
-      inputs.projectPath = path.join(os.tmpdir(), randomAppName());
-      await fs.ensureDir(inputs.projectPath);
-      await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`));
-      await my.myMethod(inputs);
-    } finally {
-      await fs.rmdir(inputs.projectPath!, { recursive: true });
-    }
-    assert.isTrue(my.count1 === 1);
-    assert.isTrue(my.count2 === 1);
-  });
+  // it("concurrent: ignore lock", async () => {
+  //   class MyClass2 {
+  //     count1 = 0;
+  //     count2 = 0;
+  //     async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
+  //       this.count1++;
+  //       const inputs2: Inputs = { platform: Platform.VSCode, ignoreLock: true };
+  //       const res2 = await this.myMethod2(inputs2);
+  //       assert.isTrue(res2.isOk() && res2.value === "");
+  //       return ok("");
+  //     }
+  //     async myMethod2(inputs: Inputs): Promise<Result<any, FxError>> {
+  //       this.count2++;
+  //       return ok("");
+  //     }
+  //   }
+  //   hooks(MyClass2, {
+  //     myMethod: [ConcurrentLockerMW],
+  //     myMethod2: [ConcurrentLockerMW],
+  //   });
+  //   const inputs: Inputs = { platform: Platform.VSCode };
+  //   const my = new MyClass2();
+  //   try {
+  //     inputs.projectPath = path.join(os.tmpdir(), randomAppName());
+  //     await fs.ensureDir(inputs.projectPath);
+  //     await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`));
+  //     await my.myMethod(inputs);
+  //   } finally {
+  //     await fs.rmdir(inputs.projectPath!, { recursive: true });
+  //   }
+  //   assert.isTrue(my.count1 === 1);
+  //   assert.isTrue(my.count2 === 1);
+  // });
 
   it("callback should work", async () => {
     class MyClass {

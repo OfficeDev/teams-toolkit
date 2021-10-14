@@ -58,6 +58,7 @@ const resourceGroupName = "resourceGroupName";
 const migrationGuideUrl = "https://aka.ms/teamsfx-migration-guide";
 const parameterFileNameTemplate = "azure.parameters.@envName.json";
 let updateNotificationFlag = false;
+const disabled = true;
 
 class EnvConfigName {
   static readonly StorageName = "storageName";
@@ -89,6 +90,11 @@ class ArmParameters {
 }
 
 export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
+  // TODO: delete it to enable migration
+  if (disabled) {
+    await next();
+    return;
+  }
   if (await needMigrateToArmAndMultiEnv(ctx)) {
     const core = ctx.self as FxCore;
     const res = await core.tools.ui.showMessage(

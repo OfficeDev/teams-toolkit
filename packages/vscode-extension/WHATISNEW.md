@@ -6,17 +6,15 @@
 
 Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
 
-New Features:
-- Support Jenkins CI/CD pipeline. Read [CICD templates](https://github.com/OfficeDev/TeamsFx/tree/dev/docs/cicd#cicd-pipeline-templates-in-jenkins) for more information.
-- Support certificate-based authentication for JavaScript SDK.
-
 Preview Features:
-- Support management of multiple development environments.
+- Support management of multiple environments.
 - Support project collaborations among multiple developers.
-- Support customize Azure resource provision.
-- support customize manifest.
+- Support customize manifest.
+- Improve the experience to customize Azure resource provision using ARM(Azure Resource Manager).
 
-To enable the preview features, refer to the [preview guidance](https://github.com/OfficeDev/TeamsFx/wiki/Enable-Preview-Features-in-Teams-Toolkit)
+The picture below shows how to enable preview features, more details refer to the [preview guidance](https://github.com/OfficeDev/TeamsFx/wiki/Enable-Preview-Features-in-Teams-Toolkit)
+
+![Alt Text](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/enable-preview.gif)
 
 Enhancement:
 

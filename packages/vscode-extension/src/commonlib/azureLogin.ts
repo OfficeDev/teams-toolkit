@@ -348,7 +348,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
             subscriptionName: item.subscription.displayName!,
             tenantId: item.session.tenantId,
           });
-          TreeViewManagerInstance.getTreeView("teamsfx-accounts")!.add([
+          TreeViewManagerInstance.getTreeView("teamsfx-accounts")?.add([
             {
               commandId: "fx-extension.selectSubscription",
               label: item.subscription.displayName!,

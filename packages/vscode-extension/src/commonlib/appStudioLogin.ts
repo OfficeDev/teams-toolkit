@@ -25,7 +25,6 @@ import {
   TelemetrySuccess,
 } from "../telemetry/extTelemetryEvents";
 import { getAppStudioEndpoint } from "@microsoft/teamsfx-core";
-import { registerEnvTreeHandler } from "../envTree";
 
 const accountName = "appStudio";
 const scopes = [`${getAppStudioEndpoint()}/AppDefinitions.ReadWrite`];
@@ -117,7 +116,6 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
           await AppStudioLogin.statusChange(signedIn, loginToken, tokenJson);
         }
         await this.notifyStatus();
-        await registerEnvTreeHandler();
         return loginToken;
       } catch (error) {
         this.notifyStatus();

@@ -279,6 +279,8 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
           tools.treeProvider?.refresh([treeItem]);
         }
       }
+
+      await registerEnvTreeHandler();
     } else if (status === "SigningIn") {
       tools.treeProvider?.refresh([
         {

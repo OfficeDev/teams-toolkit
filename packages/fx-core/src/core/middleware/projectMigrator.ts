@@ -71,6 +71,7 @@ const resourceGroupName = "resourceGroupName";
 const migrationGuideUrl = "https://aka.ms/teamsfx-migration-guide";
 const parameterFileNameTemplate = "azure.parameters.@envName.json";
 let updateNotificationFlag = false;
+let fromReloadFlag = false;
 
 class EnvConfigName {
   static readonly StorageName = "storageName";
@@ -106,7 +107,7 @@ class ArmParameters {
 }
 
 export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
-  if (await needMigrateToArmAndMultiEnv(ctx)) {
+  if ((await needMigrateToArmAndMultiEnv(ctx)) && (await checkMethod(ctx))) {
     const core = ctx.self as FxCore;
 
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
@@ -126,6 +127,7 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
       [TelemetryProperty.Status]: ProjectMigratorStatus.OK,
     });
+
     await migrateToArmAndMultiEnv(ctx);
   } else if ((await needUpdateTeamsToolkitVersion(ctx)) && !updateNotificationFlag) {
     // TODO: delete before Arm && Multi-env version released
@@ -141,6 +143,13 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
   }
   await next();
 };
+
+async function checkMethod(ctx: CoreHookContext) {
+  const getProjectConfigMethod = "getProjectConfig";
+  if (ctx.method === getProjectConfigMethod && fromReloadFlag) return false;
+  fromReloadFlag = ctx.method === getProjectConfigMethod;
+  return true;
+}
 
 async function getOldProjectInfoForTelemetry(
   projectPath: string

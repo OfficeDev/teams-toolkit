@@ -432,12 +432,12 @@ async function doGenerateArmTemplate(ctx: SolutionContext): Promise<Result<any, 
     }
 
     // Output parameter file
-    const parameterEnvFolderPath = path.join(ctx.root, configsFolder);
-    await fs.ensureDir(parameterEnvFolderPath);
     const envProfilesResult = await environmentManager.listEnvConfigs(ctx.root);
     if (envProfilesResult.isErr()) {
       return err(envProfilesResult.error);
     }
+    const parameterEnvFolderPath = path.join(ctx.root, configsFolder);
+    await fs.ensureDir(parameterEnvFolderPath);
     for (const env of envProfilesResult.value) {
       const parameterFileName = parameterFileNameTemplate.replace(EnvNamePlaceholder, env);
       const parameterEnvFilePath = path.join(parameterEnvFolderPath, parameterFileName);
@@ -677,10 +677,6 @@ function expandParameterPlaceholders(ctx: SolutionContext, parameterContent: str
   Object.assign(availableVariables, processVariables); // The environment variable has higher priority
 
   return compileHandlebarsTemplateString(parameterContent, availableVariables);
-}
-
-function normalizeToEnvName(input: string): string {
-  return input.toUpperCase().replace(/-/g, "_").replace(/\./g, "__"); // replace "-" to "_" and "." to "__"
 }
 
 function generateResourceBaseName(appName: string, envName: string): string {

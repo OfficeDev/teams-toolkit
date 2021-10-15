@@ -5,15 +5,11 @@
 
 Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
 
-New Feature:
-- Support Jenkins CI/CD pipeline.
-- Support certificate-based authentication for JavaScript SDK
-
 Preview Features:
-- Support management of multiple development environments.
+- Support management of multiple environments.
 - Support project collaborations among multiple developers.
-- Support customize Azure resource provision.
-- support customize manifest.
+- Support customize manifest.
+- Improve the experience to customize Azure resource provision using ARM(Azure Resource Manager).
 
 To enable the preview features, refer to the [preview guidance](https://github.com/OfficeDev/TeamsFx/wiki/Enable-Preview-Features-in-Teams-Toolkit)
 

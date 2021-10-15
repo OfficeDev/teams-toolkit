@@ -73,7 +73,12 @@ import * as commonUtils from "./debug/commonUtils";
 import { ExtensionErrors, ExtensionSource } from "./error";
 import { WebviewPanel } from "./controls/webviewPanel";
 import * as constants from "./debug/constants";
-import { anonymizeFilePaths, isSPFxProject, syncFeatureFlags } from "./utils/commonUtils";
+import {
+  anonymizeFilePaths,
+  getTeamsAppIdByEnv,
+  isSPFxProject,
+  syncFeatureFlags,
+} from "./utils/commonUtils";
 import * as fs from "fs-extra";
 import * as vscode from "vscode";
 import { DepsChecker } from "./debug/depsChecker/checker";
@@ -573,6 +578,9 @@ async function processResult(
   const envProperty: { [key: string]: string } = {};
   if (inputs?.env) {
     envProperty[TelemetryProperty.Env] = getHashedEnv(inputs.env);
+    if (isMultiEnvEnabled()) {
+      envProperty[TelemetryProperty.AapId] = getTeamsAppIdByEnv(inputs.env);
+    }
   }
 
   if (result.isErr()) {

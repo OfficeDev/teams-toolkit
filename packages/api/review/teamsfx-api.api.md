@@ -1214,6 +1214,7 @@ type SolutionInputs = {
     location: string;
     teamsAppTenantId: string;
     subscriptionId: string;
+    tenantId: string;
     remoteTeamsAppId?: string;
     provisionSucceeded?: boolean;
 };

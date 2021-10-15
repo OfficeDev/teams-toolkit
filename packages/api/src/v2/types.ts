@@ -41,6 +41,8 @@ export type SolutionInputs = {
   location: string;
   teamsAppTenantId: string;
   subscriptionId: string;
+  // Azure tenantId
+  tenantId: string;
   remoteTeamsAppId?: string;
   // Used to track whether at least one successful provision has been made.
   // Useful for fail fast when deploying in a fresh project.

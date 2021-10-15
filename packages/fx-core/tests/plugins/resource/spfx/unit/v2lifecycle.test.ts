@@ -107,6 +107,7 @@ describe("SPFX V2", () => {
       location: "",
       teamsAppTenantId: "",
       subscriptionId: "",
+      tenantId: "xx",
     };
     const deployInputs: DeploymentInputs = { ...inputs, ...solutionInputs, projectPath: "./" };
     mockDeployThatAlwaysSucceed(pluginV1);

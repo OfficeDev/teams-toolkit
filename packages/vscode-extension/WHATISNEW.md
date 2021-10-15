@@ -1,8 +1,8 @@
 
-- [2.7.1 - Oct 18 2021](#271---oct-18-2021)
+- [2.8.0 - Oct 18 2021](#280---oct-18-2021)
 - [2.7.0 - Sep 17 2021](#270---sep-17-2021)
 
-## 2.7.1 - Oct 18 2021
+## 2.8.0 - Oct 18 2021
 
 Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
 

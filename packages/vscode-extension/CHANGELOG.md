@@ -7,6 +7,7 @@ Incremental version for Teams Toolkit with multiple bugs fixes and the following
 
 New Feature:
 - Support Jenkins CI/CD pipeline.
+- Support certificate-based authentication for JavaScript SDK
 
 Preview Features:
 - Support management of multiple development environments.
@@ -18,11 +19,10 @@ To enable the preview features, refer to the [preview guidance](https://github.c
 
 Enhancement:
 
-- Improves UI experience and command pallette experience.
+- Improve UI experience and command pallette experience.
 - UX A/B testing:
   - Your Tree View(sidebar) may include or exclue quick start page.
   - You may or may not be invited to do local debug after create new project.
-- SDK add certificate authentication.
 
 ## 2.7.0 - Sep 17, 2021
 

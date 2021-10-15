@@ -107,7 +107,7 @@ class ArmParameters {
 }
 
 export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
-  if ((await needMigrateToArmAndMultiEnv(ctx)) && (await checkMethod(ctx))) {
+  if ((await needMigrateToArmAndMultiEnv(ctx)) && checkMethod(ctx)) {
     const core = ctx.self as FxCore;
 
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
@@ -144,7 +144,7 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
   await next();
 };
 
-async function checkMethod(ctx: CoreHookContext) {
+function checkMethod(ctx: CoreHookContext): boolean {
   const getProjectConfigMethod = "getProjectConfig";
   if (ctx.method === getProjectConfigMethod && fromReloadFlag) return false;
   fromReloadFlag = ctx.method === getProjectConfigMethod;

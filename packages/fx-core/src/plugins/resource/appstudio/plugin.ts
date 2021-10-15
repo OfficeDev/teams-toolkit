@@ -212,7 +212,7 @@ export class AppStudioPluginImpl {
       ctx,
       appDefinition,
       appStudioToken!,
-      true,
+      false,
       createIfNotExist,
       appDirectory,
       createIfNotExist ? undefined : localTeamsAppID,
@@ -756,15 +756,21 @@ export class AppStudioPluginImpl {
   }
 
   public async postLocalDebug(ctx: PluginContext): Promise<Result<string, FxError>> {
-    const manifestPath = await this.getManifestTemplatePath(ctx.root, true);
-    const manifest = await this.reloadManifestAndCheckRequiredFields(manifestPath);
-    if (manifest.isErr()) {
-      return err(manifest.error);
-    }
     let teamsAppId;
     if (isSPFxProject(ctx.projectSettings)) {
+      // Currently SPFx doesn't have manifest for local, use remote manifest as well
+      const manifestPath = await this.getManifestTemplatePath(ctx.root, false);
+      const manifest = await this.reloadManifestAndCheckRequiredFields(manifestPath);
+      if (manifest.isErr()) {
+        return err(manifest.error);
+      }
       teamsAppId = await this.getSPFxLocalDebugAppDefinitionAndUpdate(ctx, manifest.value);
     } else {
+      const manifestPath = await this.getManifestTemplatePath(ctx.root, true);
+      const manifest = await this.reloadManifestAndCheckRequiredFields(manifestPath);
+      if (manifest.isErr()) {
+        return err(manifest.error);
+      }
       teamsAppId = await this.getAppDefinitionAndUpdate(ctx, true, manifest.value);
     }
     if (teamsAppId.isErr()) {

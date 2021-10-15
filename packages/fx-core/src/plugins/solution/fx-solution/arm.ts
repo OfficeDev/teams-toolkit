@@ -28,6 +28,7 @@ import {
   waitSeconds,
   getUuid,
 } from "../../../common/tools";
+import { environmentManager } from "../../..";
 import {
   ARM_TEMPLATE_OUTPUT,
   GLOBAL_CONFIG,
@@ -365,7 +366,7 @@ export async function getParameterJson(ctx: SolutionContext) {
     throw returnUserError(returnError, SolutionSource, "ParameterFileNotExist");
   }
 
-  const parameterJson = await getExpandedParameter(ctx, parameterFilePath, true); // only expand secrets in memory
+  const parameterJson = await getExpandedParameter(ctx, parameterFilePath); // only expand secrets in memory
 
   return parameterJson;
 }
@@ -431,15 +432,18 @@ async function doGenerateArmTemplate(ctx: SolutionContext): Promise<Result<any, 
     }
 
     // Output parameter file
-    const parameterFileName = parameterFileNameTemplate.replace(
-      EnvNamePlaceholder,
-      ctx.envInfo.envName
-    );
     const parameterEnvFolderPath = path.join(ctx.root, configsFolder);
-    const parameterEnvFilePath = path.join(parameterEnvFolderPath, parameterFileName);
-    const parameterFileContent = bicepOrchestrationTemplate.getParameterFileContent();
     await fs.ensureDir(parameterEnvFolderPath);
-    await fs.writeFile(parameterEnvFilePath, parameterFileContent);
+    const envProfilesResult = await environmentManager.listEnvConfigs(ctx.root);
+    if (envProfilesResult.isErr()) {
+      return err(envProfilesResult.error);
+    }
+    for (const env of envProfilesResult.value) {
+      const parameterFileName = parameterFileNameTemplate.replace(EnvNamePlaceholder, env);
+      const parameterEnvFilePath = path.join(parameterEnvFolderPath, parameterFileName);
+      const parameterFileContent = bicepOrchestrationTemplate.getParameterFileContent();
+      await fs.writeFile(parameterEnvFilePath, parameterFileContent);
+    }
 
     // Output .gitignore file
     const gitignoreContent = await fs.readFile(
@@ -456,14 +460,10 @@ async function doGenerateArmTemplate(ctx: SolutionContext): Promise<Result<any, 
   return ok(undefined); // Nothing to return when success
 }
 
-async function getExpandedParameter(
-  ctx: SolutionContext,
-  filePath: string,
-  expandSecrets: boolean
-) {
+async function getExpandedParameter(ctx: SolutionContext, filePath: string) {
   try {
     const parameterTemplate = await fs.readFile(filePath, ConstantString.UTF8Encoding);
-    const parameterJsonString = expandParameterPlaceholders(ctx, parameterTemplate, expandSecrets);
+    const parameterJsonString = expandParameterPlaceholders(ctx, parameterTemplate);
     return JSON.parse(parameterJsonString);
   } catch (err) {
     ctx.logProvider?.error(
@@ -637,11 +637,7 @@ function generateBicepModuleFilePath(moduleFileName: string) {
   return `./modules/${moduleFileName}.bicep`;
 }
 
-function expandParameterPlaceholders(
-  ctx: SolutionContext,
-  parameterContent: string,
-  expandSecrets: boolean
-): string {
+function expandParameterPlaceholders(ctx: SolutionContext, parameterContent: string): string {
   const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
   const plugins = getActivatedResourcePlugins(azureSolutionSettings); // This function ensures return result won't be empty
   const profileVariables: Record<string, Record<string, any>> = {};

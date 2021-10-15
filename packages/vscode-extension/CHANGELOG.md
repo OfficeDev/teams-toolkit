@@ -21,7 +21,7 @@ Enhancement:
 
 - Improve UI experience and command pallette experience.
 - UX A/B testing:
-  - Your Tree View(sidebar) may include or exclue quick start page.
+  - Your Tree View(sidebar) may include or exclude quick start page.
   - You may or may not be invited to do local debug after create new project.
 
 ## 2.7.0 - Sep 17, 2021

@@ -1,3 +1,6 @@
+# 0.2.7
+- Support certificate-based authentication for TeamsFx SDK
+
 # 0.0.5
 
 - Read SQL database name from `SQL_DATABASE_NAME` environment variable

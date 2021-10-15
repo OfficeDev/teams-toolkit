@@ -187,10 +187,9 @@ export function createTaskStopCb(
   };
 }
 
-async function getLocalEnv(
+export async function getLocalEnv(
   core: FxCore,
-  workspaceFolder: string,
-  prefix = ""
+  workspaceFolder: string
 ): Promise<{ [key: string]: string } | undefined> {
   const localEnvFilePath: string = path.join(
     workspaceFolder,
@@ -225,6 +224,16 @@ async function getLocalEnv(
     env = dotenv.parse(contents);
   }
 
+  return env;
+}
+
+function getLocalEnvWithPrefix(
+  env: { [key: string]: string } | undefined,
+  prefix: string
+): { [key: string]: string } | undefined {
+  if (env === undefined) {
+    return undefined;
+  }
   const result: { [key: string]: string } = {};
   for (const key of Object.keys(env)) {
     if (key.startsWith(prefix) && env[key]) {
@@ -234,41 +243,33 @@ async function getLocalEnv(
   return Object.keys(result).length > 0 ? result : undefined;
 }
 
-export async function getFrontendLocalEnv(
-  core: FxCore,
-  workspaceFolder: string
-): Promise<{ [key: string]: string } | undefined> {
-  return getLocalEnv(core, workspaceFolder, constants.frontendLocalEnvPrefix);
+export function getFrontendLocalEnv(
+  env: { [key: string]: string } | undefined
+): { [key: string]: string } | undefined {
+  return getLocalEnvWithPrefix(env, constants.frontendLocalEnvPrefix);
 }
 
-export async function getBackendLocalEnv(
-  core: FxCore,
-  workspaceFolder: string
-): Promise<{ [key: string]: string } | undefined> {
-  return getLocalEnv(core, workspaceFolder, constants.backendLocalEnvPrefix);
+export function getBackendLocalEnv(
+  env: { [key: string]: string } | undefined
+): { [key: string]: string } | undefined {
+  return getLocalEnvWithPrefix(env, constants.backendLocalEnvPrefix);
 }
 
-export async function getAuthLocalEnv(
-  core: FxCore,
-  workspaceFolder: string
-): Promise<{ [key: string]: string } | undefined> {
+export function getAuthLocalEnv(
+  env: { [key: string]: string } | undefined
+): { [key: string]: string } | undefined {
   // SERVICE_PATH will also be included, but it has no side effect
-  return getLocalEnv(core, workspaceFolder, constants.authLocalEnvPrefix);
+  return getLocalEnvWithPrefix(env, constants.authLocalEnvPrefix);
 }
 
-export async function getAuthServicePath(
-  core: FxCore,
-  workspaceFolder: string
-): Promise<string | undefined> {
-  const result = await getLocalEnv(core, workspaceFolder);
-  return result ? result[constants.authServicePathEnvKey] : undefined;
+export function getAuthServicePath(env: { [key: string]: string } | undefined): string | undefined {
+  return env ? env[constants.authServicePathEnvKey] : undefined;
 }
 
-export async function getBotLocalEnv(
-  core: FxCore,
-  workspaceFolder: string
-): Promise<{ [key: string]: string } | undefined> {
-  return getLocalEnv(core, workspaceFolder, constants.botLocalEnvPrefix);
+export function getBotLocalEnv(
+  env: { [key: string]: string } | undefined
+): { [key: string]: string } | undefined {
+  return getLocalEnvWithPrefix(env, constants.botLocalEnvPrefix);
 }
 
 async function detectPortListeningImpl(port: number, host: string): Promise<boolean> {

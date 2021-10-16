@@ -23,6 +23,7 @@
     "test:core": "nyc mocha \"tests/core/*.test.ts\"",
     "test:core-mw": "nyc mocha \"tests/core/middleware/*.test.ts\"",
     "test:apiv2": "nyc mocha \"tests/plugins/resource/apiv2/*.test.ts\"",
+    "test:server": "nyc mocha \"tests/server/*.test.ts\"",
     "clean": "rm -rf build",
     "build": "rimraf build && npx tsc -p ./",
     "lint:fix": "eslint --fix \"src/**/*.ts\" \"tests/**/*.ts\"",

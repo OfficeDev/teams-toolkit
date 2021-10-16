@@ -4,9 +4,7 @@
 import {
   FuncQuestion,
   Inputs,
-  isAutoSkipSelect,
   Json,
-  MultiFileQuestion,
   MultiSelectQuestion,
   Platform,
   QTreeNode,

@@ -16,6 +16,19 @@
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector"
-    }
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch Server",
+      "skipFiles": [
+          "<node_internals>/**"
+      ],
+      "program": "${workspaceFolder}\\build\\server\\server.js",
+      "outFiles": [
+          "${workspaceFolder}/**/*.js"
+      ],
+      "preLaunchTask": "npm: build"
+  }
   ]
 }

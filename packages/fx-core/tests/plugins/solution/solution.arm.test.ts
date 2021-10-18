@@ -148,6 +148,7 @@ describe("Generate ARM Template for project", () => {
         capabilities: [TabOptionItem.id],
       },
     };
+    mocker.stub(environmentManager, "listEnvConfigs").resolves(ok(["default"]));
 
     // mock plugin behavior
     mocker.stub(fehostPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {

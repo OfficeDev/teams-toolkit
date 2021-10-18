@@ -522,6 +522,7 @@ describe("Middleware - others", () => {
     beforeEach(async () => {
       await fs.ensureDir(projectPath);
       await fs.ensureDir(path.join(projectPath, ".fx"));
+      sandbox.stub(environmentManager, "listEnvConfigs").resolves(ok(["dev"]));
       await fs.copy(
         path.join(__dirname, "../samples/migration/.fx/env.default.json"),
         path.join(projectPath, ".fx", "env.default.json")

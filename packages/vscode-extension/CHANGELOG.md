@@ -8,7 +8,7 @@ Incremental version for Teams Toolkit with multiple bugs fixes and the following
 Preview Features:
 - Support management of multiple environments.
 - Support project collaborations among multiple developers.
-- Support customize manifest.
+- Support Teams app manifest provision customization.
 - Improve the experience to customize Azure resource provision using ARM(Azure Resource Manager).
 
 To enable the preview features, refer to the [preview guidance](https://github.com/OfficeDev/TeamsFx/wiki/Enable-Preview-Features-in-Teams-Toolkit)

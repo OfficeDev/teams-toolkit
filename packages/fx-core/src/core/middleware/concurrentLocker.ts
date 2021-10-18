@@ -64,13 +64,14 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
       }
       try {
         await next();
-      } catch (e) {}
-      await unlock(configFolder, { lockfilePath: lockfilePath });
-      for (const f of CallbackRegistry.get(CoreCallbackEvent.unlock)) {
-        f();
+      } finally {
+        await unlock(configFolder, { lockfilePath: lockfilePath });
+        for (const f of CallbackRegistry.get(CoreCallbackEvent.unlock)) {
+          f();
+        }
+        logger?.debug(`[core] lock released on ${configFolder}`);
       }
-      logger?.debug(`[core] lock released on ${configFolder}`);
-      return;
+      break;
     } catch (e) {
       if (e["code"] === "ELOCKED") {
         logger?.warning(

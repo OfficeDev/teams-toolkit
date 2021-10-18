@@ -383,7 +383,7 @@ export async function addResourceHandler(args?: any[]): Promise<Result<null, FxE
     namespace: "fx-solution-azure",
     method: "addResource",
   };
-  return await runUserTask(func, TelemetryEvent.AddResource, true);
+  return await runUserTask(func, TelemetryEvent.AddResource, isMultiEnvEnabled());
 }
 
 export async function addCapabilityHandler(args: any[]): Promise<Result<null, FxError>> {

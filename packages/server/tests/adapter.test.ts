@@ -14,7 +14,7 @@ import {
 import { assert } from "chai";
 import "mocha";
 import sinon from "sinon";
-import { callFunc, questionToJson, reset, Rpc } from "../src/adapter";
+import { callFunc, questionToJson, reset, Rpc } from "../src/questionAdapter";
 
 describe("Core basic APIs", () => {
   const sandbox = sinon.createSandbox();

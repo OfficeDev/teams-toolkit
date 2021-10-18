@@ -865,6 +865,13 @@ export class TeamsAppSolution implements Solution {
     }
 
     try {
+      const appStudioTokenJson = await ctx.appStudioToken?.getJsonObject();
+
+      const checkM365 = await checkM365Tenant(ctx.envInfo, appStudioTokenJson as object);
+      if (checkM365.isErr()) {
+        return checkM365;
+      }
+
       this.runningState = SolutionRunningState.PublishInProgress;
 
       const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, [

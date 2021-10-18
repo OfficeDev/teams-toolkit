@@ -74,4 +74,19 @@ export function getAuthToken() {
     });
 }
 
+export function getContext() {
+
+    microsoftTeams.initialize();
+
+    return new Promise((resolve, reject) => {
+        try {
+            microsoftTeams.getContext((context) => {
+                resolve(context);
+            });
+        } catch (e) {
+            reject(e);
+        }
+    });
+}
+
 export * from "./teamsfx.js"

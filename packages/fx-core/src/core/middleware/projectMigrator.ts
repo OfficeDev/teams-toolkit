@@ -456,8 +456,11 @@ async function getMultiEnvFolders(projectPath: string): Promise<any> {
 
 async function backup(projectPath: string): Promise<void> {
   const fx = path.join(projectPath, `.${ConfigFolderName}`);
-  const backup = path.join(fx, "migrationbackup");
-  await fs.ensureDir(backup);
+  const backup = path.join(projectPath, ".backup");
+  const backupFx = path.join(backup, `.${ConfigFolderName}`);
+  const backupAppPackage = path.join(backup, AppPackageFolderName);
+  await fs.ensureDir(backupFx);
+  await fs.ensureDir(backupAppPackage);
   const fxFiles = [
     "env.default.json",
     "default.userdata",
@@ -468,17 +471,14 @@ async function backup(projectPath: string): Promise<void> {
 
   for (const file of fxFiles) {
     if (await fs.pathExists(path.join(fx, file))) {
-      await fs.copy(path.join(fx, file), path.join(backup, file));
+      await fs.copy(path.join(fx, file), path.join(backupFx, file));
     }
   }
   if (await fs.pathExists(path.join(projectPath, AppPackageFolderName))) {
-    await fs.copy(
-      path.join(projectPath, AppPackageFolderName),
-      path.join(backup, AppPackageFolderName)
-    );
+    await fs.copy(path.join(projectPath, AppPackageFolderName), backupAppPackage);
   } else if (await fs.pathExists(path.join(fx, AppPackageFolderName))) {
     // version <= 2.4.1
-    await fs.copy(path.join(fx, AppPackageFolderName), path.join(backup, AppPackageFolderName));
+    await fs.copy(path.join(fx, AppPackageFolderName), backupAppPackage);
   }
 }
 

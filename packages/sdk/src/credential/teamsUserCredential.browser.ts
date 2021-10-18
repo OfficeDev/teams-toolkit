@@ -9,7 +9,7 @@ import * as microsoftTeams from "@microsoft/teams-js";
 import { getAuthenticationConfiguration } from "../core/configurationProvider";
 import { AuthenticationConfiguration } from "../models/configuration";
 import { AuthCodeResult } from "../models/authCodeResult";
-import axios, { AxiosInstance } from "axios";
+import axios, { AxiosInstance, AxiosRequestHeaders } from "axios";
 import { GrantType } from "../models/grantType";
 import { AccessTokenResult } from "../models/accessTokenResult";
 import { validateScopesType, getUserInfoFromSsoToken, parseJwt } from "../util/utils";
@@ -234,7 +234,7 @@ export class TeamsUserCredential implements TokenCredential {
           grant_type: GrantType.authCode,
         });
 
-        const tokenResult: AccessTokenResult = response.data;
+        const tokenResult: AccessTokenResult = response.data as AccessTokenResult;
         const key = await this.getAccessTokenCacheKey(scopesStr);
         this.setTokenCache(key, {
           token: tokenResult.access_token,
@@ -272,7 +272,7 @@ export class TeamsUserCredential implements TokenCredential {
         grant_type: GrantType.ssoToken,
       });
 
-      const accessTokenResult: AccessTokenResult = response.data;
+      const accessTokenResult: AccessTokenResult = response.data as AccessTokenResult;
       const accessToken: AccessToken = {
         token: accessTokenResult.access_token,
         expiresOnTimestamp: accessTokenResult.expires_on,
@@ -404,7 +404,7 @@ export class TeamsUserCredential implements TokenCredential {
     });
 
     axiosInstance.interceptors.request.use((config) => {
-      config.headers.Authorization = "Bearer " + ssoToken.token;
+      config.headers!.Authorization = "Bearer " + ssoToken.token;
       return config;
     });
 

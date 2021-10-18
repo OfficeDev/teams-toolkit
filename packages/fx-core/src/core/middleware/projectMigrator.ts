@@ -65,6 +65,7 @@ const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";
 const learnMoreText = "Learn More";
 const reloadText = "Reload";
+const upgradeButton = "Upgrade";
 const solutionName = "solution";
 const subscriptionId = "subscriptionId";
 const resourceGroupName = "resourceGroupName";
@@ -115,10 +116,10 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
       "warn",
       getStrings().solution.MigrationToArmAndMultiEnvMessage,
       true,
-      "OK"
+      upgradeButton
     );
     const answer = res?.isOk() ? res.value : undefined;
-    if (!answer || answer != "OK") {
+    if (!answer || answer != upgradeButton) {
       sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
         [TelemetryProperty.Status]: ProjectMigratorStatus.Cancel,
       });

@@ -113,7 +113,7 @@ export async function checkSubscription(
     return err(
       new UserError(
         SolutionError.SubscriptionNotFound,
-        `The subscription '${subscriptionId}'${subscriptionName} is not found in the current account, please check the '${EnvConfigFileNameTemplate.replace(
+        `The subscription '${subscriptionId}'${subscriptionName} is not found in the current account, please use the right Azure account or check the '${EnvConfigFileNameTemplate.replace(
           EnvNamePlaceholder,
           envInfo.envName
         )}' file.`,
@@ -142,7 +142,10 @@ export async function checkM365Tenant(
     return err(
       new UserError(
         SolutionError.TeamsAppTenantIdNotRight,
-        `The m365 tenant id '${m365TenantId}' is not found in the current account.`,
+        `The M365 tenant id '${m365TenantId}'(which is used before) does not match the current account, please use the right M365 account or check the '${EnvConfigFileNameTemplate.replace(
+          EnvNamePlaceholder,
+          envInfo.envName
+        )}' file.`,
         "Solution"
       )
     );

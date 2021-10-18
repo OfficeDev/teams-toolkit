@@ -250,13 +250,18 @@ export async function traverse(
     if (curr.data.type !== "group") {
       const question = curr.data as Question;
       totalStep = step + stack.length;
-      const qvres = await questionVisitor(question, ui, inputs, step, totalStep);
-      sendTelemetryEvent(telemetryReporter, qvres, question, inputs);
-      if (qvres.isErr()) {
-        // Cancel or Error
-        return err(qvres.error);
+      let qvRes;
+      try {
+        qvRes = await questionVisitor(question, ui, inputs, step, totalStep);
+        sendTelemetryEvent(telemetryReporter, qvRes, question, inputs);
+      } catch (e) {
+        return err(assembleError(e));
       }
-      const inputResult = qvres.value;
+      if (qvRes.isErr()) {
+        // Cancel or Error
+        return err(qvRes.error);
+      }
+      const inputResult = qvRes.value;
       if (inputResult.type === "back") {
         //go back
         // if (curr.children) {

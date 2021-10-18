@@ -19,6 +19,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs, { PathLike } from "fs-extra";
+import { environmentManager } from "../../../src";
 import {
   BotOptionItem,
   HostTypeOptionAzure,
@@ -193,7 +194,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
     mockScaffoldThatAlwaysSucceed(simpleAuthPlugin);
     mockScaffoldThatAlwaysSucceed(localdebugPlugin);
     mockScaffoldThatAlwaysSucceed(appStudioPlugin);
-
+    mocker.stub(environmentManager, "listEnvConfigs").resolves(ok(["dev"]));
     // mock plugin behavior
     mocker.stub(fehostPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
       return ok(mockedFehostScaffoldArmResult);

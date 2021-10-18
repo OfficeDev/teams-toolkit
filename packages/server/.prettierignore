@@ -1,0 +1,4 @@
+coverage/
+.nyc_output/
+.prettierignore
+.gitignore

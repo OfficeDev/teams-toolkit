@@ -17,7 +17,7 @@
 	],
 	"preferGlobal": true,
 	"bin": {
-		"teamsfx": "./ser.js"
+		"teamsfx": "/server.js"
 	},
 	"scripts": {
 		"copy-files": "copyfiles -u 1 src/**/*.html src/**/*.css src/**/*.sh src/**/*.ps1 lib/",

@@ -488,7 +488,7 @@ async function askCommonQuestions(
       }
 
       telemetryProperties[TelemetryProperty.CustomizeResourceGroupType] =
-        CustomizeResourceGroupType.EnvProfile;
+        CustomizeResourceGroupType.EnvState;
     } catch (e) {
       return err(
         returnUserError(e, SolutionSource, SolutionError.FailedToCheckResourceGroupExistence)

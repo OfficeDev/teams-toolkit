@@ -147,9 +147,9 @@ describe("Middleware - EnvInfoWriterMW, EnvInfoLoaderMW", async () => {
         sandbox.stub(fs, "pathExists").resolves(true);
         const envName = environmentManager.getDefaultEnvName();
         const envConfigFile = environmentManager.getEnvConfigPath(envName, projectPath);
-        const envFiles = environmentManager.getEnvProfileFilesPath(envName, projectPath);
+        const envFiles = environmentManager.getEnvStateFilesPath(envName, projectPath);
         const userdataFile = envFiles.userDataFile;
-        const envJsonFile = envFiles.envProfile;
+        const envJsonFile = envFiles.envState;
         const confFolderPath = path.resolve(projectPath, `.${ConfigFolderName}`);
         const settingsFiles = [
           path.resolve(confFolderPath, "settings.json"),

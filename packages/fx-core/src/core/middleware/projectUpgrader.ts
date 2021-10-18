@@ -1,7 +1,7 @@
 import { Middleware, NextFunction } from "@feathersjs/hooks";
 import {
   ConfigFolderName,
-  PublishProfilesFolderName,
+  StatesFolderName,
   err,
   FxError,
   Inputs,
@@ -12,7 +12,7 @@ import {
   SystemError,
   ProjectSettingsFileName,
   InputConfigsFolderName,
-  EnvProfileFileNameTemplate,
+  EnvStateFileNameTemplate,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as path from "path";
@@ -90,24 +90,21 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<Result<undef
   const confFolderPath = isMultiEnvEnabled()
     ? path.resolve(inputs.projectPath, `.${ConfigFolderName}`, InputConfigsFolderName)
     : path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
-  const publishProfilesFolderPath = path.resolve(
+  const statesFolderPath = path.resolve(
     inputs.projectPath,
     `.${ConfigFolderName}`,
-    PublishProfilesFolderName
+    StatesFolderName
   );
 
   const defaultEnvName = environmentManager.getDefaultEnvName();
 
   const contextPath = isMultiEnvEnabled()
-    ? path.resolve(
-        publishProfilesFolderPath,
-        EnvProfileFileNameTemplate.replace("@envName", defaultEnvName)
-      )
+    ? path.resolve(statesFolderPath, EnvStateFileNameTemplate.replace("@envName", defaultEnvName))
     : path.resolve(confFolderPath, `env.${defaultEnvName}.json`);
 
   const userDataPath = path.resolve(confFolderPath, `${defaultEnvName}.userdata`);
 
-  // For the multi env scenario, profile.{envName}.json and {envName}.userdata are not created when scaffolding
+  // For the multi env scenario, state.{envName}.json and {envName}.userdata are not created when scaffolding
   // These projects must be the new projects, so skip upgrading.
   if (isMultiEnvEnabled()) {
     try {

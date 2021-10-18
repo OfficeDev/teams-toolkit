@@ -982,7 +982,7 @@ export async function viewEnvironment(env: string): Promise<Result<Void, FxError
         },
         (error: any) => {
           const openEnvError = new SystemError(
-            ExtensionErrors.OpenEnvProfileError,
+            ExtensionErrors.OpenEnvStateError,
             util.format(StringResources.vsc.handlers.openEnvFailed, env),
             ExtensionSource,
             undefined,
@@ -1000,7 +1000,7 @@ export async function viewEnvironment(env: string): Promise<Result<Void, FxError
       );
     } else {
       const noEnvError = new UserError(
-        ExtensionErrors.EnvProfileNotFoundError,
+        ExtensionErrors.EnvStateNotFoundError,
         util.format(StringResources.vsc.handlers.findEnvFailed, env),
         ExtensionSource
       );

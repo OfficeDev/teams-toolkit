@@ -4,10 +4,10 @@
 import {
   ConfigFolderName,
   EnvNamePlaceholder,
-  EnvProfileFileNameTemplate,
+  EnvStateFileNameTemplate,
   FxError,
   InputConfigsFolderName,
-  PublishProfilesFolderName,
+  StatesFolderName,
   Result,
   ok,
 } from "@microsoft/teamsfx-api";
@@ -81,8 +81,8 @@ function getEnvFilePathSuffix(isMultiEnvEnabled: boolean, envName: string) {
   if (isMultiEnvEnabled) {
     return path.join(
       ".fx",
-      PublishProfilesFolderName,
-      EnvProfileFileNameTemplate.replace(EnvNamePlaceholder, envName)
+      StatesFolderName,
+      EnvStateFileNameTemplate.replace(EnvNamePlaceholder, envName)
     );
   } else {
     return envFilePathSuffix;
@@ -321,12 +321,12 @@ export async function loadContext(projectPath: string, env: string): Promise<Res
     path.join(
       projectPath,
       `.${ConfigFolderName}`,
-      PublishProfilesFolderName,
-      EnvProfileFileNameTemplate.replace(EnvNamePlaceholder, env)
+      StatesFolderName,
+      EnvStateFileNameTemplate.replace(EnvNamePlaceholder, env)
     )
   );
   const userdataContent = await fs.readFile(
-    path.join(projectPath, `.${ConfigFolderName}`, PublishProfilesFolderName, `${env}.userdata`),
+    path.join(projectPath, `.${ConfigFolderName}`, StatesFolderName, `${env}.userdata`),
     "utf8"
   );
   const userdata = deserializeDict(userdataContent);

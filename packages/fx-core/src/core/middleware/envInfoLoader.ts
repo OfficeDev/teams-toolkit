@@ -92,7 +92,7 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
           return;
         }
         targetEnvName = result.value;
-        TOOLS.ui?.showMessage(
+        core.tools.ui?.showMessage(
           "info",
           `[${targetEnvName}] is selected as the target environment to ${ctx.method}`,
           false

@@ -330,11 +330,11 @@ export async function traverse(
 
     if (curr.children) {
       const matchChildren: QTreeNode[] = [];
-      const valudInMap = valueMap.get(curr);
+      const valueInMap = valueMap.get(curr);
       for (const child of curr.children) {
         if (!child) continue;
         if (child.condition) {
-          const validRes = await validate(child.condition, valudInMap as string | string[], inputs);
+          const validRes = await validate(child.condition, valueInMap as string | string[], inputs);
           if (validRes !== undefined) {
             continue;
           }

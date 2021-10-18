@@ -22,6 +22,14 @@ export interface Func extends FunctionRouter {
  * definition of a function that return some dynamic value
  */
 export type LocalFunc<T> = (inputs: Inputs) => T | Promise<T>;
+export type ValidateFunc<T> = (
+  input: T,
+  inputs?: Inputs
+) => string | undefined | Promise<string | undefined>;
+export type OnSelectionChangeFunc = (
+  currentSelectedIds: Set<string>,
+  previousSelectedIds: Set<string>
+) => Promise<Set<string>>;
 
 /**
  * Definition of option item in single selection or multiple selection
@@ -227,10 +235,7 @@ export interface MultiSelectQuestion extends UserInputQuestion {
    * @param previousSelectedIds previous selected option ids
    * @returns the final selected option ids
    */
-  onDidChangeSelection?: (
-    currentSelectedIds: Set<string>,
-    previousSelectedIds: Set<string>
-  ) => Promise<Set<string>>;
+  onDidChangeSelection?: OnSelectionChangeFunc;
 
   /**
    * validation schema for the answer values

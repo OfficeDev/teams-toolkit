@@ -142,10 +142,7 @@ export async function checkM365Tenant(
     return err(
       new UserError(
         SolutionError.TeamsAppTenantIdNotRight,
-        `The M365 tenant id '${m365TenantId}'(which is used before) does not match the current account, please use the right M365 account or check the '${EnvConfigFileNameTemplate.replace(
-          EnvNamePlaceholder,
-          envInfo.envName
-        )}' file.`,
+        `The M365 tenant id '${m365TenantId}'(which is used before) does not match the current account, please use the right M365 account.`,
         "Solution"
       )
     );

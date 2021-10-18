@@ -1115,7 +1115,7 @@ export async function listAllCollaborators(envs: string[]): Promise<Record<strin
           [TelemetryProperty.Success]: TelemetrySuccess.Yes,
         });
       } else {
-        throw userList.error;
+        throw userList.error.error;
       }
     } catch (e) {
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ListCollaborator, e);

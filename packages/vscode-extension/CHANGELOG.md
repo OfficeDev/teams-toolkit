@@ -8,14 +8,13 @@ Incremental version for Teams Toolkit with multiple bugs fixes and the following
 Preview Features:
 - Support management of multiple environments.
 - Support project collaborations among multiple developers.
-- Support Teams app manifest provision customization.
 - Improve the experience to customize Azure resource provision using ARM(Azure Resource Manager).
 
 To enable the preview features, refer to the [preview guidance](https://github.com/OfficeDev/TeamsFx/wiki/Enable-Preview-Features-in-Teams-Toolkit)
 
 Enhancement:
 
-- Improve UI experience and command pallette experience.
+- Improve UI: making the Tree View and Command Pallete text consistent.
 - UX A/B testing:
   - Your Tree View(sidebar) may include or exclude quick start page.
   - You may or may not be invited to do local debug after create new project.

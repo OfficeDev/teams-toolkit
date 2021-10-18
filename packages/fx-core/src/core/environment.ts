@@ -61,11 +61,10 @@ class EnvironmentManager {
   private readonly defaultEnvNameNew = "dev";
   private readonly ajv;
   private readonly checksumKey = "_checksum";
-  private readonly schema =
-    "https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/packages/api/src/schemas/envConfig.json";
+  private readonly schema = "https://aka.ms/teamsfx-env-config-schema";
   private readonly envConfigDescription =
     `You can customize the TeamsFx config for different environments.` +
-    ` Visit https://aka.ms/teamsfx-config to learn more about this.`;
+    ` Visit https://aka.ms/teamsfx-env-config to learn more about this.`;
 
   constructor() {
     this.ajv = new Ajv();

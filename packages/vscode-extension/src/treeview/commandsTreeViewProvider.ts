@@ -135,6 +135,9 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
         if (parentCmd) {
           parentCmd.collapsibleState =
             parentCmd.collapsibleState ?? vscode.TreeItemCollapsibleState.Expanded;
+          if (parentCmd.collapsibleState === vscode.TreeItemCollapsibleState.None) {
+            parentCmd.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
+          }
           parentCmd.children?.push(command);
         }
       }

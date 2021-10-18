@@ -17,14 +17,16 @@ export const ErrorHandlerMW: Middleware = async (ctx: HookContext, next: NextFun
     core !== undefined && core.tools !== undefined && core.tools.logProvider !== undefined
       ? core.tools.logProvider
       : undefined;
+  const taskName = `${ctx.method} ${
+    ctx.method === "executeUserTask" ? (ctx.arguments[0] as Func).method : ""
+  }`;
   try {
     logger?.info(
-      `[core] start task:${ctx.method} ${
-        ctx.method === "executeUserTask" ? (ctx.arguments[0] as Func).method : ""
-      }, inputs:${JSON.stringify(inputs)}, API v2: ${isV2()}`
+      `[core] start task:${taskName}, inputs:${JSON.stringify(inputs)}, API v2: ${isV2()}`
     );
+    const time = new Date().getTime();
     await next();
-    logger?.info(`[core] finish task:${ctx.method}`);
+    logger?.info(`[core] finish task:${taskName}, time: ${new Date().getTime() - time} ms`);
   } catch (e) {
     let fxError = assembleError(e);
     if (fxError instanceof SystemError) {

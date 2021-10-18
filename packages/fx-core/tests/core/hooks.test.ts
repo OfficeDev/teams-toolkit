@@ -38,7 +38,7 @@ import * as commonTools from "../../src/common/tools";
 import { environmentManager } from "../../src/core/environment";
 import { EnvInfoLoaderMW } from "../../src/core/middleware/envInfoLoader";
 import { MigrateConditionHandlerMW } from "../../src/core/middleware/migrateConditionHandler";
-import { migrateArm, ProjectMigratorMW } from "../../src/core/middleware/projectMigrator";
+import * as migrator from "../../src/core/middleware/projectMigrator";
 import { ProjectUpgraderMW } from "../../src/core/middleware/projectUpgrader";
 import { SolutionPlugins } from "../../src/core/SolutionPluginContainer";
 import {
@@ -547,7 +547,7 @@ describe("Middleware - others", () => {
         }
       }
       hooks(MyClass, {
-        other: [migrateArm],
+        other: [migrator.migrateArm],
       });
       const my = new MyClass();
       const inputs: Inputs = {
@@ -616,7 +616,8 @@ describe("Middleware - others", () => {
         }
       }
       hooks(MyClass, {
-        other: [ProjectMigratorMW],
+        // TODO: recover it to enable migration
+        other: [migrator.migrate],
       });
 
       const inputs: Inputs = { platform: Platform.VSCode };

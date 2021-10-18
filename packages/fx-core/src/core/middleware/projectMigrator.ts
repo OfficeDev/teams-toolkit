@@ -87,8 +87,12 @@ class ArmParameters {
   static readonly functionStorageName = "function_storageName";
   static readonly functionAppName = "function_webappName";
 }
-
+// TODO: delete it to enable migration
 export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
+  await next();
+};
+
+export async function migrate(ctx: CoreHookContext, next: NextFunction) {
   if (await needMigrateToArmAndMultiEnv(ctx)) {
     const core = ctx.self as FxCore;
     const res = await core.tools.ui.showMessage(
@@ -115,7 +119,7 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
     );
   }
   await next();
-};
+}
 
 async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;

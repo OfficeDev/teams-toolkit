@@ -23,7 +23,7 @@ import {
   TelemetrySuccess,
 } from "../telemetry/extTelemetryEvents";
 
-const accountName = "appstudio";
+const accountName = "appStudio";
 const cachePlugin = new CryptoCachePlugin(accountName);
 
 const graphScopes = ["https://graph.microsoft.com/User.ReadBasic.All"];

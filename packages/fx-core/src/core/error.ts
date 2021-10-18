@@ -7,7 +7,6 @@ import {
   Func,
   FxError,
   Inputs,
-  Stage,
   SystemError,
   UserError,
   Json,
@@ -226,10 +225,6 @@ export function NonExistEnvNameError(env: string): UserError {
   return new UserError("NonExistEnvNameError", `Can not find environment ${env}.`, CoreSource);
 }
 
-export function NonActiveEnvError(): UserError {
-  return new UserError("NonActiveEnvError", `Can not find active environment.`, CoreSource);
-}
-
 export function ModifiedSecretError(): UserError {
   return new UserError("ModifiedSecretError", "The secret file has been changed.", CoreSource);
 }
@@ -258,4 +253,12 @@ export function SolutionConfigError(): UserError {
 
 export function ProjectSettingError(): UserError {
   return new UserError("ProjectSettingError", "Load project settings failed.", CoreSource);
+}
+
+export function FailedToParseResourceIdError(name: string, resourceId: string): UserError {
+  return new UserError(
+    "FailedToParseResourceIdError",
+    `Failed to get '${name}' from resource id: '${resourceId}'`,
+    CoreSource
+  );
 }

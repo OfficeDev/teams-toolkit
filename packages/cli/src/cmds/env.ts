@@ -26,6 +26,7 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
+import { EnvNodeNoCreate } from "../constants";
 
 export default class Env extends YargsCommand {
   public readonly commandHead = `env`;
@@ -67,14 +68,14 @@ class EnvAdd extends YargsCommand {
       type: "string",
       require: true,
     });
-    return yargs.version(false).options(this.params);
+    return yargs.version(false).options(this.params).demandOption(EnvNodeNoCreate.data.name!);
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     const projectDir = args.folder || process.cwd();
     // args.name always exists because or `require: true` in builder
     const targetEnv = args.name as string;
-    const argsEnv = args.env as string | undefined;
+    const sourceEnv = args.env as string;
 
     if (!isWorkspaceSupported(projectDir)) {
       return err(WorkspaceNotSupported(projectDir));
@@ -89,18 +90,6 @@ class EnvAdd extends YargsCommand {
       return err(coreResult.error);
     }
     const fxCore = coreResult.value;
-
-    let sourceEnv;
-    if (argsEnv) {
-      sourceEnv = argsEnv;
-    } else {
-      // fallback to copy from current active environment
-      const activeEnvResult = environmentManager.getActiveEnv(projectDir);
-      if (activeEnvResult.isErr()) {
-        return err(activeEnvResult.error);
-      }
-      sourceEnv = activeEnvResult.value;
-    }
 
     const validNewTargetEnvResult = await this.validateNewTargetEnvName(projectDir, targetEnv);
     if (validNewTargetEnvResult.isErr()) {

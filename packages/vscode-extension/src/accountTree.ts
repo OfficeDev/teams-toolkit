@@ -15,7 +15,7 @@ import {
 import AppStudioLogin from "./commonlib/appStudioLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
 import { core, getSystemInputs, tools, getAzureSolutionSettings } from "./handlers";
-import { askSubscription } from "@microsoft/teamsfx-core";
+import { askSubscription, isValidProject } from "@microsoft/teamsfx-core";
 import { VS_CODE_UI } from "./extension";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import {
@@ -44,17 +44,9 @@ export async function getSubscriptionId(): Promise<string | undefined> {
 export async function isValid(): Promise<boolean> {
   const input = getSystemInputs();
   input.ignoreEnvInfo = true;
-  const projectConfigRes = await core.getProjectConfig(input);
 
-  let supported = false;
-  if (projectConfigRes.isOk()) {
-    if (projectConfigRes.value) {
-      supported = true;
-    }
-  }
-  // else {
-  //   showError(projectConfigRes.error);
-  // }
+  const supported = isValidProject(input.projectPath);
+
   return supported;
 }
 

@@ -137,7 +137,7 @@ export async function provisionResourceAdapter(
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
-  pluginContext.envInfo = newEnvInfo(ctx.projectSetting.activeEnvironment);
+  pluginContext.envInfo = newEnvInfo();
   pluginContext.envInfo.profile = flattenConfigMap(profile);
   pluginContext.envInfo.config = envInfo.config as EnvConfig;
   pluginContext.config = pluginContext.envInfo.profile.get(plugin.name) ?? new ConfigMap();
@@ -213,7 +213,7 @@ export async function configureResourceAdapter(
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
-  pluginContext.envInfo = newEnvInfo(ctx.projectSetting.activeEnvironment);
+  pluginContext.envInfo = newEnvInfo();
   pluginContext.envInfo.profile = flattenConfigMap(profile);
   pluginContext.envInfo.config = envInfo.config as EnvConfig;
   pluginContext.config = pluginContext.envInfo.profile.get(plugin.name) ?? new ConfigMap();
@@ -390,10 +390,11 @@ export function setEnvInfoV1ByProfileV2(
   profileV2: Json
 ): void {
   const envInfo = newEnvInfo();
-  const profileV1: ConfigMap | undefined = ConfigMap.fromJSON(profileV2);
+  let profileV1: ConfigMap | undefined = ConfigMap.fromJSON(profileV2);
   if (!profileV1) {
     throw InvalidProfileError(pluginName, profileV2);
   }
+  profileV1 = flattenConfigMap(profileV1);
   let selfConfigMap: ConfigMap | undefined = profileV1.get(pluginName);
   if (!selfConfigMap) {
     selfConfigMap = new ConfigMap();

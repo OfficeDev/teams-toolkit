@@ -32,6 +32,7 @@ import {
 } from "../../src/utils";
 import { expect } from "./utils";
 import AzureAccountManager from "../../src/commonlib/azureLogin";
+import { environmentManager } from "@microsoft/teamsfx-core";
 
 const staticOptions1: apis.StaticOptions = ["a", "b", "c"];
 const staticOptions2: apis.StaticOptions = [
@@ -230,17 +231,17 @@ describe("Utils Tests", function () {
     });
 
     it("Real Path", async () => {
-      const result = await readEnvJsonFile("real");
+      const result = await readEnvJsonFile("real", environmentManager.getDefaultEnvName());
       expect(result.isOk() ? result.value : result.error).deep.equals({});
     });
 
     it("Real Path but cannot read", async () => {
-      const result = await readEnvJsonFile("realbuterror");
+      const result = await readEnvJsonFile("realbuterror", environmentManager.getDefaultEnvName());
       expect(result.isOk() ? result.value : result.error.name).equals("ReadFileError");
     });
 
     it("Fake Path", async () => {
-      const result = await readEnvJsonFile("fake");
+      const result = await readEnvJsonFile("fake", environmentManager.getDefaultEnvName());
       expect(result.isOk() ? result.value : result.error.name).equals("ConfigNotFound");
     });
   });
@@ -266,17 +267,17 @@ describe("Utils Tests", function () {
     });
 
     it("Real Path", () => {
-      const result = readEnvJsonFileSync("real");
+      const result = readEnvJsonFileSync("real", environmentManager.getDefaultEnvName());
       expect(result.isOk() ? result.value : result.error).deep.equals({});
     });
 
     it("Real Path but cannot read", () => {
-      const result = readEnvJsonFileSync("realbuterror");
+      const result = readEnvJsonFileSync("realbuterror", environmentManager.getDefaultEnvName());
       expect(result.isOk() ? result.value : result.error.name).equals("ReadFileError");
     });
 
     it("Fake Path", () => {
-      const result = readEnvJsonFileSync("fake");
+      const result = readEnvJsonFileSync("fake", environmentManager.getDefaultEnvName());
       expect(result.isOk() ? result.value : result.error.name).equals("ConfigNotFound");
     });
   });
@@ -338,17 +339,20 @@ describe("Utils Tests", function () {
     });
 
     it("Real Path", async () => {
-      const result = await readProjectSecrets("real");
+      const result = await readProjectSecrets("real", environmentManager.getDefaultEnvName());
       expect(result.isOk() ? result.value : result.error).deep.equals({});
     });
 
     it("Real Path but cannot read", async () => {
-      const result = await readProjectSecrets("realbuterror");
+      const result = await readProjectSecrets(
+        "realbuterror",
+        environmentManager.getDefaultEnvName()
+      );
       expect(result.isOk() ? result.value : result.error.name).equals("ReadFileError");
     });
 
     it("Fake Path", async () => {
-      const result = await readProjectSecrets("fake");
+      const result = await readProjectSecrets("fake", environmentManager.getDefaultEnvName());
       expect(result.isOk() ? result.value : result.error.name).equals("ConfigNotFound");
     });
   });
@@ -361,6 +365,13 @@ describe("Utils Tests", function () {
         return path.toString().includes("real");
       });
       sandbox.stub(fs, "readJson").callsFake(async (path: string) => {
+        if (path.includes("real")) {
+          return { solution: {} };
+        } else {
+          throw Error("not real");
+        }
+      });
+      sandbox.stub(fs, "readJsonSync").callsFake((path: string) => {
         if (path.includes("real")) {
           return { solution: {} };
         } else {

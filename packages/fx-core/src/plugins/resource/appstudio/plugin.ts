@@ -1067,11 +1067,21 @@ export class AppStudioPluginImpl {
       // Object.assign(ctx.app, manifest);
       return ok(manifest);
     } catch (e) {
+      if (e.stack && e.stack.startsWith("SyntaxError")) {
+        return err(
+          AppStudioResultFactory.UserError(
+            AppStudioError.ManifestLoadFailedError.name,
+            AppStudioError.ManifestLoadFailedError.message(
+              `Failed to load manifest file from ${manifestPath}, due to ${e.message}`
+            )
+          )
+        );
+      }
       return err(
         AppStudioResultFactory.SystemError(
           AppStudioError.ManifestLoadFailedError.name,
           AppStudioError.ManifestLoadFailedError.message(
-            `Failed to load manifest file from ${manifestPath}`
+            `Failed to load manifest file from ${manifestPath}, due to ${e.message}`
           )
         )
       );

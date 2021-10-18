@@ -40,13 +40,26 @@ import {
 } from "../../common/tools";
 import { loadProjectSettings } from "./projectSettingsLoader";
 import { generateArmTemplate } from "../../plugins/solution/fx-solution/arm";
-import { BotOptionItem, MessageExtensionItem } from "../../plugins/solution/fx-solution/question";
+import {
+  BotOptionItem,
+  HostTypeOptionAzure,
+  HostTypeOptionSPFx,
+  MessageExtensionItem,
+} from "../../plugins/solution/fx-solution/question";
 import { createLocalManifest } from "../../plugins/resource/appstudio/plugin";
 import { loadSolutionContext } from "./envInfoLoader";
 import { ResourcePlugins } from "../../common/constants";
 import { getActivatedResourcePlugins } from "../../plugins/solution/fx-solution/ResourcePluginContainer";
 import { LocalDebugConfigKeys } from "../../plugins/resource/localdebug/constants";
 import { MANIFEST_LOCAL } from "../../plugins/resource/appstudio/constants";
+import {
+  Component,
+  ProjectMigratorGuideStatus,
+  ProjectMigratorStatus,
+  sendTelemetryEvent,
+  TelemetryEvent,
+  TelemetryProperty,
+} from "../../common/telemetry";
 
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";
@@ -58,6 +71,7 @@ const resourceGroupName = "resourceGroupName";
 const migrationGuideUrl = "https://aka.ms/teamsfx-migration-guide";
 const parameterFileNameTemplate = "azure.parameters.@envName.json";
 let updateNotificationFlag = false;
+let fromReloadFlag = false;
 
 class EnvConfigName {
   static readonly StorageName = "storageName";
@@ -75,6 +89,7 @@ class EnvConfigName {
   static readonly StorageResourceId = "storageResourceId";
   static readonly FuncAppName = "functionAppName";
   static readonly FunctionId = "functionAppId";
+  static readonly Endpoint = "endpoint";
 }
 
 class ArmParameters {
@@ -86,11 +101,16 @@ class ArmParameters {
   static readonly functionServerName = "function_serverfarmsName";
   static readonly functionStorageName = "function_storageName";
   static readonly functionAppName = "function_webappName";
+  static readonly botWebAppSku = "bot_webAppSKU";
+  static readonly SimpleAuthWebAppName = "simpleAuth_webAppName";
+  static readonly SimpleAuthServerFarm = "simpleAuth_serverFarmsName";
 }
 
 export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
-  if (await needMigrateToArmAndMultiEnv(ctx)) {
+  if ((await needMigrateToArmAndMultiEnv(ctx)) && checkMethod(ctx)) {
     const core = ctx.self as FxCore;
+
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
     const res = await core.tools.ui.showMessage(
       "warn",
       getStrings().solution.MigrationToArmAndMultiEnvMessage,
@@ -99,8 +119,15 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
     );
     const answer = res?.isOk() ? res.value : undefined;
     if (!answer || answer != "OK") {
+      sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
+        [TelemetryProperty.Status]: ProjectMigratorStatus.Cancel,
+      });
       return;
     }
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
+      [TelemetryProperty.Status]: ProjectMigratorStatus.OK,
+    });
+
     await migrateToArmAndMultiEnv(ctx);
   } else if ((await needUpdateTeamsToolkitVersion(ctx)) && !updateNotificationFlag) {
     // TODO: delete before Arm && Multi-env version released
@@ -117,26 +144,83 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
   await next();
 };
 
+function checkMethod(ctx: CoreHookContext): boolean {
+  const getProjectConfigMethod = "getProjectConfig";
+  if (ctx.method === getProjectConfigMethod && fromReloadFlag) return false;
+  fromReloadFlag = ctx.method === getProjectConfigMethod;
+  return true;
+}
+
+async function getOldProjectInfoForTelemetry(
+  projectPath: string
+): Promise<{ [key: string]: string }> {
+  try {
+    const inputs: Inputs = {
+      projectPath: projectPath,
+      // not used by `loadProjectSettings` but the type `Inputs` requires it.
+      platform: Platform.VSCode,
+    };
+    const loadRes = await loadProjectSettings(inputs, false);
+    if (loadRes.isErr()) {
+      return {};
+    }
+    const projectSettings = loadRes.value;
+    const solutionSettings = projectSettings.solutionSettings;
+    const hostType = solutionSettings.hostType;
+    const result: { [key: string]: string } = { [TelemetryProperty.HostType]: hostType };
+
+    if (hostType === HostTypeOptionAzure || hostType === HostTypeOptionSPFx) {
+      result[TelemetryProperty.ActivePlugins] = JSON.stringify(
+        solutionSettings.activeResourcePlugins
+      );
+      result[TelemetryProperty.Capabilities] = JSON.stringify(solutionSettings.capabilities);
+    }
+    if (hostType === HostTypeOptionAzure) {
+      const azureSolutionSettings = solutionSettings as AzureSolutionSettings;
+      result[TelemetryProperty.AzureResources] = JSON.stringify(
+        azureSolutionSettings.azureResources
+      );
+    }
+    return result;
+  } catch (error) {
+    // ignore telemetry errors
+    return {};
+  }
+}
+
 async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   const projectPath = inputs.projectPath as string;
+  const telemetryProperties = await getOldProjectInfoForTelemetry(projectPath);
+  sendTelemetryEvent(
+    Component.core,
+    TelemetryEvent.ProjectMigratorMigrateStart,
+    telemetryProperties
+  );
+
   await backup(projectPath);
   try {
     await updateConfig(ctx);
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateMultiEnvStart);
     await migrateMultiEnv(projectPath);
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateMultiEnv);
     const loadRes = await loadProjectSettings(inputs);
     if (loadRes.isErr()) {
       throw ProjectSettingError();
     }
     const projectSettings = loadRes.value;
     if (!isSPFxProject(projectSettings)) {
+      sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateArmStart);
       await migrateArm(ctx);
+      sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateArm);
     }
   } catch (err) {
     await cleanup(projectPath);
     throw err;
   }
   await removeOldProjectFiles(projectPath);
+  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrate);
+  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorGuideStart);
   const core = ctx.self as FxCore;
   core.tools.ui
     .showMessage(
@@ -149,11 +233,21 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
     .then((result) => {
       const userSelected = result.isOk() ? result.value : undefined;
       if (userSelected === learnMoreText) {
+        sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorGuide, {
+          [TelemetryProperty.Status]: ProjectMigratorGuideStatus.LearnMore,
+        });
         core.tools.ui!.openUrl(migrationGuideUrl);
       } else if (userSelected === reloadText) {
+        sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorGuide, {
+          [TelemetryProperty.Status]: ProjectMigratorGuideStatus.Reload,
+        });
         if (inputs.platform === Platform.VSCode) {
           core.tools.ui.reload?.();
         }
+      } else {
+        sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorGuide, {
+          [TelemetryProperty.Status]: ProjectMigratorGuideStatus.Cancel,
+        });
       }
     });
 }
@@ -410,9 +504,6 @@ async function ensureProjectSettings(
     settings.programmingLanguage = envDefault[PluginNames.SOLUTION][programmingLanguage];
     settings.defaultFunctionName = envDefault[PluginNames.FUNC]?.[defaultFunctionName];
   }
-  if (!settings.activeEnvironment) {
-    settings.activeEnvironment = "dev";
-  }
   if (!settings.version) {
     settings.version = "1.0.0";
   }
@@ -424,16 +515,6 @@ async function ensureProjectSettings(
 async function getAppName(projectSettingPath: string): Promise<string> {
   const settings: ProjectSettings = await readJson(projectSettingPath);
   return settings.appName;
-}
-
-async function ensureActiveEnv(projectSettingPath: string): Promise<void> {
-  const settings: ProjectSettings = await readJson(projectSettingPath);
-  if (!settings.activeEnvironment) {
-    settings.activeEnvironment = "dev";
-    await fs.writeFile(projectSettingPath, JSON.stringify(settings, null, 4), {
-      encoding: "UTF-8",
-    });
-  }
 }
 
 async function cleanup(projectPath: string): Promise<void> {
@@ -641,62 +722,70 @@ async function generateArmParameterJson(ctx: CoreHookContext) {
   const targetJson = await fs.readJson(path.join(fxConfig, parameterEnvFileName));
   const ArmParameter = "parameters";
   // frontend hosting
-  if (envConfig[ResourcePlugins.FrontendHosting]) {
-    if (envConfig[ResourcePlugins.FrontendHosting][EnvConfigName.StorageName]) {
-      targetJson[ArmParameter][ArmParameters.FEStorageName] = {
-        value: envConfig[ResourcePlugins.FrontendHosting][EnvConfigName.StorageName],
-      };
-    }
+  if (envConfig[ResourcePlugins.FrontendHosting]?.[EnvConfigName.StorageName]) {
+    targetJson[ArmParameter][ArmParameters.FEStorageName] = {
+      value: envConfig[ResourcePlugins.FrontendHosting][EnvConfigName.StorageName],
+    };
   }
   // manage identity
-  if (envConfig[ResourcePlugins.Identity]) {
-    if (envConfig[ResourcePlugins.Identity][EnvConfigName.Identity]) {
-      targetJson[ArmParameter][ArmParameters.IdentityName] = {
-        value: envConfig[ResourcePlugins.Identity][EnvConfigName.Identity],
-      };
-    }
+  if (envConfig[ResourcePlugins.Identity]?.[EnvConfigName.Identity]) {
+    targetJson[ArmParameter][ArmParameters.IdentityName] = {
+      value: envConfig[ResourcePlugins.Identity][EnvConfigName.Identity],
+    };
   }
   // azure SQL
-  if (envConfig[ResourcePlugins.AzureSQL]) {
-    if (envConfig[ResourcePlugins.AzureSQL][EnvConfigName.SqlEndpoint]) {
-      targetJson[ArmParameter][ArmParameters.SQLServer] = {
-        value:
-          envConfig[ResourcePlugins.AzureSQL][EnvConfigName.SqlEndpoint].split(
-            ".database.windows.net"
-          )[0],
-      };
-    }
-    if (envConfig[ResourcePlugins.AzureSQL][EnvConfigName.SqlDataBase]) {
-      targetJson[ArmParameter][ArmParameters.SQLDatabase] = {
-        value: envConfig[ResourcePlugins.AzureSQL][EnvConfigName.SqlDataBase],
-      };
-    }
+  if (envConfig[ResourcePlugins.AzureSQL]?.[EnvConfigName.SqlEndpoint]) {
+    targetJson[ArmParameter][ArmParameters.SQLServer] = {
+      value:
+        envConfig[ResourcePlugins.AzureSQL][EnvConfigName.SqlEndpoint].split(
+          ".database.windows.net"
+        )[0],
+    };
+  }
+  if (envConfig[ResourcePlugins.AzureSQL]?.[EnvConfigName.SqlDataBase]) {
+    targetJson[ArmParameter][ArmParameters.SQLDatabase] = {
+      value: envConfig[ResourcePlugins.AzureSQL][EnvConfigName.SqlDataBase],
+    };
   }
   // SimpleAuth
-  if (envConfig[ResourcePlugins.SimpleAuth]) {
-    if (envConfig[ResourcePlugins.SimpleAuth][EnvConfigName.SkuName]) {
-      targetJson[ArmParameter][ArmParameters.SimpleAuthSku] = {
-        value: envConfig[ResourcePlugins.SimpleAuth][EnvConfigName.SkuName],
-      };
-    }
+  if (envConfig[ResourcePlugins.SimpleAuth]?.[EnvConfigName.SkuName]) {
+    targetJson[ArmParameter][ArmParameters.SimpleAuthSku] = {
+      value: envConfig[ResourcePlugins.SimpleAuth][EnvConfigName.SkuName],
+    };
+  }
+
+  if (envConfig[ResourcePlugins.SimpleAuth]?.[EnvConfigName.Endpoint]) {
+    const simpleAuthHost = new URL(envConfig[ResourcePlugins.SimpleAuth]?.[EnvConfigName.Endpoint])
+      .hostname;
+    const simpleAuthName = simpleAuthHost.split(".")[0];
+    targetJson[ArmParameter][ArmParameters.SimpleAuthWebAppName] = targetJson[ArmParameter][
+      ArmParameters.SimpleAuthServerFarm
+    ] = {
+      value: simpleAuthName,
+    };
   }
   // Function
-  if (envConfig[ResourcePlugins.Function]) {
-    if (envConfig[ResourcePlugins.Function][EnvConfigName.AppServicePlanName]) {
-      targetJson[ArmParameter][ArmParameters.functionServerName] = {
-        value: envConfig[ResourcePlugins.Function][EnvConfigName.AppServicePlanName],
-      };
-    }
-    if (envConfig[ResourcePlugins.Function][EnvConfigName.StorageAccountName]) {
-      targetJson[ArmParameter][ArmParameters.functionStorageName] = {
-        value: envConfig[ResourcePlugins.Function][EnvConfigName.StorageAccountName],
-      };
-    }
-    if (envConfig[ResourcePlugins.Function][EnvConfigName.FuncAppName]) {
-      targetJson[ArmParameter][ArmParameters.functionAppName] = {
-        value: envConfig[ResourcePlugins.Function][EnvConfigName.FuncAppName],
-      };
-    }
+  if (envConfig[ResourcePlugins.Function]?.[EnvConfigName.AppServicePlanName]) {
+    targetJson[ArmParameter][ArmParameters.functionServerName] = {
+      value: envConfig[ResourcePlugins.Function][EnvConfigName.AppServicePlanName],
+    };
+  }
+  if (envConfig[ResourcePlugins.Function]?.[EnvConfigName.StorageAccountName]) {
+    targetJson[ArmParameter][ArmParameters.functionStorageName] = {
+      value: envConfig[ResourcePlugins.Function][EnvConfigName.StorageAccountName],
+    };
+  }
+  if (envConfig[ResourcePlugins.Function]?.[EnvConfigName.FuncAppName]) {
+    targetJson[ArmParameter][ArmParameters.functionAppName] = {
+      value: envConfig[ResourcePlugins.Function][EnvConfigName.FuncAppName],
+    };
+  }
+
+  // Bot
+  if (envConfig[ResourcePlugins.Bot]?.[EnvConfigName.SkuName]) {
+    targetJson[ArmParameter][ArmParameters.botWebAppSku] = {
+      value: envConfig[ResourcePlugins.Bot]?.[EnvConfigName.SkuName],
+    };
   }
   await fs.writeFile(
     path.join(fxConfig, parameterEnvFileName),

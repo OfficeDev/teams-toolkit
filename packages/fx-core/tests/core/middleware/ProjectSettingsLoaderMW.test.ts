@@ -129,23 +129,6 @@ describe("Middleware - ProjectSettingsLoaderMW, ContextInjectorMW: part 2", () =
         const res = await my.other(inputs);
         assert.isTrue(res.isOk() && res.value === "");
       });
-
-      it(`case when missing activeEnvironment`, async () => {
-        const my = new MyClass();
-        delete projectSettings.activeEnvironment;
-        const res = await my.other(inputs);
-        if (param.TEAMSFX_INSIDER_PREVIEW === "true") {
-          assert.isTrue(
-            res.isErr() &&
-              res.error.message.includes(
-                `activeEnvironment is missing or not a string in ${ProjectSettingsFileName}`
-              )
-          );
-        } else {
-          assert.isTrue(res.isOk());
-        }
-        projectSettings.activeEnvironment = "dev";
-      });
     });
   }
 });

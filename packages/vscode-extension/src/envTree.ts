@@ -65,8 +65,6 @@ export async function registerEnvTreeHandler(
           contextValue: item === LocalEnvironmentName ? "local" : "environment",
           icon: "symbol-folder",
           isCustom: false,
-          // description:
-          //   item === activeEnv ? StringResources.vsc.commandsTreeViewProvider.active : "",
           expanded: true,
         },
       ]);
@@ -211,17 +209,6 @@ function generateCollaboratorParentNode(env: string): TreeItem {
     parent: "fx-extension.environment." + env,
     expanded: false,
   };
-}
-
-function getTreeViewItemIcon(envName: string, activeEnv: string | undefined) {
-  switch (envName) {
-    case activeEnv:
-    // return "folder-active";
-    case LocalEnvironmentName:
-    // return "lock";
-    default:
-      return "symbol-folder";
-  }
 }
 
 async function localSettingsExists(projectRoot: string): Promise<boolean> {

@@ -522,6 +522,7 @@ describe("Middleware - others", () => {
     beforeEach(async () => {
       await fs.ensureDir(projectPath);
       await fs.ensureDir(path.join(projectPath, ".fx"));
+      sandbox.stub(environmentManager, "listEnvConfigs").resolves(ok(["dev"]));
       await fs.copy(
         path.join(__dirname, "../samples/migration/.fx/env.default.json"),
         path.join(projectPath, ".fx", "env.default.json")
@@ -644,7 +645,6 @@ describe("Middleware - others", () => {
           solutionSettings: {
             name: "fx-solution-azure",
           },
-          activeEnvironment: "test",
         };
         await next();
       };
@@ -991,8 +991,7 @@ describe("Middleware - others", () => {
       let tools: Tools;
       const inputsEnv = "inputs";
       const askUserEnv = "askUser";
-      const activeEnv = "active";
-      const envs = [inputsEnv, askUserEnv, activeEnv];
+      const envs = [inputsEnv, askUserEnv];
       class MyClass {
         tools: Tools = tools;
         async myMethod(inputs: Inputs): Promise<Result<string, FxError>> {

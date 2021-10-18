@@ -26,7 +26,6 @@ import {
   NoProjectOpenedError,
   ProjectEnvNotExistError,
   ProjectSettingsUndefinedError,
-  NonActiveEnvError,
 } from "../error";
 import { LocalCrypto } from "../crypto";
 import { environmentManager } from "../environment";
@@ -93,7 +92,7 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
           return;
         }
         targetEnvName = result.value;
-        TOOLS.ui?.showMessage(
+        core.tools.ui?.showMessage(
           "info",
           `[${targetEnvName}] is selected as the target environment to ${ctx.method}`,
           false

@@ -44,14 +44,17 @@ export class RemoteLogProvider implements LogProvider {
   constructor(connection: MessageConnection) {
     this.connection = connection;
   }
-  log(logLevel: LogLevel, message: string): Promise<boolean> {
-    throw new Error("Method not implemented.");
+  async log(logLevel: LogLevel, message: string): Promise<boolean> {
+    this.connection.sendNotification("logger.log", logLevel, message);
+    return true;
   }
-  trace(message: string): Promise<boolean> {
-    throw new Error("Method not implemented.");
+  async trace(message: string): Promise<boolean> {
+    this.connection.sendNotification("logger.trace", message);
+    return true;
   }
-  debug(message: string): Promise<boolean> {
-    throw new Error("Method not implemented.");
+  async debug(message: string): Promise<boolean> {
+    this.connection.sendNotification("logger.debug", message);
+    return true;
   }
   info(message: string): Promise<boolean>;
   info(message: { content: string; color: Colors }[]): Promise<boolean>;
@@ -59,14 +62,17 @@ export class RemoteLogProvider implements LogProvider {
     this.connection.sendNotification("logger.info", message);
     return true;
   }
-  warning(message: string): Promise<boolean> {
-    throw new Error("Method not implemented.");
+  async warning(message: string): Promise<boolean> {
+    this.connection.sendNotification("logger.warning", message);
+    return true;
   }
-  error(message: string): Promise<boolean> {
-    throw new Error("Method not implemented.");
+  async error(message: string): Promise<boolean> {
+    this.connection.sendNotification("logger.error", message);
+    return true;
   }
-  fatal(message: string): Promise<boolean> {
-    throw new Error("Method not implemented.");
+  async fatal(message: string): Promise<boolean> {
+    this.connection.sendNotification("logger.fatal", message);
+    return true;
   }
 }
 

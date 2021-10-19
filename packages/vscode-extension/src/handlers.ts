@@ -1050,9 +1050,17 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
       throw result.error;
     }
     if (result.value.state === CollaborationState.OK) {
-      window.showInformationMessage(
-        `Added account: '${inputs.email}' to the environment '${env}' as a collaborator`
+      const grantSucceededMsg = util.format(
+        StringResources.vsc.commandsTreeViewProvider.grantPermissionSucceeded,
+        inputs.email,
+        env
       );
+
+      const warningMsg = StringResources.vsc.commandsTreeViewProvider.grantPermissionWarning;
+      window.showInformationMessage(grantSucceededMsg + " " + warningMsg);
+
+      VsCodeLogInstance.info(grantSucceededMsg);
+      VsCodeLogInstance.warning(warningMsg);
 
       await addCollaboratorToEnv(env, result.value.userInfo.aadId, inputs.email);
     } else {

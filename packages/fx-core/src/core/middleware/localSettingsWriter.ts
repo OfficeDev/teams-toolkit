@@ -45,7 +45,7 @@ export const LocalSettingsWriterMW: Middleware = async (
 
     const core = ctx.self as FxCore;
     core.tools.logProvider.debug(
-      `[core] persist local settings profile: ${localSettingsProvider.localSettingsFilePath}`
+      `[core] persist local settings config file: ${localSettingsProvider.localSettingsFilePath}`
     );
   }
 };

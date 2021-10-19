@@ -1,14 +1,14 @@
 {
   "m365ClientId": {
-    "value": "{{profile.fx-resource-aad-app-for-teams.clientId}}"
+    "value": "{{state.fx-resource-aad-app-for-teams.clientId}}"
   },
   "m365ClientSecret": {
-    "value": "{{profile.fx-resource-aad-app-for-teams.clientSecret}}"
+    "value": "{{state.fx-resource-aad-app-for-teams.clientSecret}}"
   },
   "m365TenantId": {
-    "value": "{{profile.fx-resource-aad-app-for-teams.tenantId}}"
+    "value": "{{state.fx-resource-aad-app-for-teams.tenantId}}"
   },
   "m365OauthAuthorityHost": {
-    "value": "{{profile.fx-resource-aad-app-for-teams.oauthHost}}"
+    "value": "{{state.fx-resource-aad-app-for-teams.oauthHost}}"
   }
 }

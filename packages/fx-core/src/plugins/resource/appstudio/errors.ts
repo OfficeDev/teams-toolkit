@@ -127,7 +127,7 @@ export class AppStudioError {
   public static readonly GetRemoteConfigError = {
     name: "GetRemoteConfigError",
     message: (error: string) =>
-      `${error}. You must run 'Provision in the Cloud' first to fill out certain fields in manifest.`,
+      `${error}. You must run 'Provision in the cloud' first to fill out certain fields in manifest.`,
   };
 
   public static readonly UnhandledError = {

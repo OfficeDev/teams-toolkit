@@ -93,13 +93,13 @@ export async function checkSubscription(
   envInfo: v2.EnvInfoV2,
   azureAccountProvider: AzureAccountProvider
 ): Promise<Result<SubscriptionInfo, FxError>> {
-  const subscriptionId = envInfo.profile?.get(PluginNames.SOLUTION)?.get(SUBSCRIPTION_ID);
+  const subscriptionId = envInfo.state?.get(PluginNames.SOLUTION)?.get(SUBSCRIPTION_ID);
   if (!isMultiEnvEnabled() || !subscriptionId) {
     const askSubRes = await azureAccountProvider.getSelectedSubscription(true);
     return ok(askSubRes!);
   }
 
-  let subscriptionName = envInfo.profile?.get(PluginNames.SOLUTION)?.get(SUBSCRIPTION_NAME) ?? "";
+  let subscriptionName = envInfo.state?.get(PluginNames.SOLUTION)?.get(SUBSCRIPTION_NAME) ?? "";
   if (subscriptionName.length > 0) {
     subscriptionName = `(${subscriptionName})`;
   }
@@ -132,7 +132,7 @@ export async function checkM365Tenant(
   envInfo: v2.EnvInfoV2,
   appStudioJson: object
 ): Promise<Result<Void, FxError>> {
-  const m365TenantId = envInfo.profile
+  const m365TenantId = envInfo.state
     ?.get(PluginNames.SOLUTION)
     ?.get(SolutionPlugin.TeamsAppTenantId);
   if (!isMultiEnvEnabled() || !m365TenantId) {
@@ -414,13 +414,11 @@ async function askCommonQuestions(
   // Resource group info precedence are:
   //   1. ctx.answers, for CLI --resource-group argument, only support existing resource group
   //   2. env config (config.{envName}.json), for user customization, only support existing resource group
-  //   3. publish profile (profile.{envName}.json), for reprovision
+  //   3. states (state.{envName}.json), for reprovision
   //   4. asking user with a popup
   const resourceGroupNameFromEnvConfig = ctx.envInfo.config.azure?.resourceGroupName;
-  const resourceGroupNameFromProfile = ctx.envInfo.profile
-    .get(GLOBAL_CONFIG)
-    ?.get(RESOURCE_GROUP_NAME);
-  const resourceGroupLocationFromProfile = ctx.envInfo.profile.get(GLOBAL_CONFIG)?.get(LOCATION);
+  const resourceGroupNameFromState = ctx.envInfo.state.get(GLOBAL_CONFIG)?.get(RESOURCE_GROUP_NAME);
+  const resourceGroupLocationFromProfile = ctx.envInfo.state.get(GLOBAL_CONFIG)?.get(LOCATION);
   const defaultResourceGroupName = `${appName.replace(" ", "_")}${
     isMultiEnvEnabled() ? "-" + ctx.envInfo.envName : ""
   }-rg`;
@@ -438,6 +436,7 @@ async function askCommonQuestions(
     );
     if (!maybeResourceGroupInfo) {
       // Currently we do not support creating resource group from command line arguments
+
       return err(
         returnUserError(
           new Error(
@@ -470,28 +469,37 @@ async function askCommonQuestions(
     telemetryProperties[TelemetryProperty.CustomizeResourceGroupType] =
       CustomizeResourceGroupType.EnvConfig;
     resourceGroupInfo = maybeResourceGroupInfo;
-  } else if (resourceGroupNameFromProfile && resourceGroupLocationFromProfile) {
+  } else if (resourceGroupNameFromState && resourceGroupLocationFromProfile) {
     try {
-      const checkRes = await rmClient.resourceGroups.checkExistence(resourceGroupNameFromProfile);
+      const checkRes = await rmClient.resourceGroups.checkExistence(resourceGroupNameFromState);
       if (checkRes.body) {
         resourceGroupInfo = {
           createNewResourceGroup: false,
-          name: resourceGroupNameFromProfile,
+          name: resourceGroupNameFromState,
           location: resourceGroupLocationFromProfile,
         };
       } else {
         resourceGroupInfo = {
           createNewResourceGroup: true,
-          name: resourceGroupNameFromProfile,
+          name: resourceGroupNameFromState,
           location: resourceGroupLocationFromProfile,
         };
       }
 
       telemetryProperties[TelemetryProperty.CustomizeResourceGroupType] =
-        CustomizeResourceGroupType.EnvProfile;
+        CustomizeResourceGroupType.EnvState;
     } catch (e) {
+      let error;
+      const errorMessage = `Failed to check the existence of the resource group '${resourceGroupNameFromState}', error: '${e}'`;
+      if (e instanceof Error) {
+        // reuse the original error object to prevent losing the stack info
+        e.message = errorMessage;
+        error = e;
+      } else {
+        error = new Error(errorMessage);
+      }
       return err(
-        returnUserError(e, SolutionSource, SolutionError.FailedToCheckResourceGroupExistence)
+        returnUserError(error, SolutionSource, SolutionError.FailedToCheckResourceGroupExistence)
       );
     }
   } else if (ctx.answers && ctx.ui) {

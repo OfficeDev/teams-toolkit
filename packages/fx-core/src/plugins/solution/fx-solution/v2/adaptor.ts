@@ -85,14 +85,14 @@ export class ProvisionContextAdapter extends BaseSolutionContextAdaptor {
     this.ui = v2context.userInteraction;
     this.cryptoProvider = v2context.cryptoProvider;
     this.permissionRequestProvider = v2context.permissionRequestProvider;
-    const profile = ConfigMap.fromJSON(envInfo.profile);
-    if (!profile) {
-      throw new Error(`failed to convert profile ${JSON.stringify(envInfo.profile)}`);
+    const state = ConfigMap.fromJSON(envInfo.state);
+    if (!state) {
+      throw new Error(`failed to convert profile ${JSON.stringify(envInfo.state)}`);
     }
     this.envInfo = {
       envName: envInfo.envName,
       config: envInfo.config as EnvConfig,
-      profile: profile,
+      state: state,
     };
   }
 }

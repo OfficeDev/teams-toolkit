@@ -2,8 +2,7 @@
 // Licensed under the MIT license.
 import * as jsonschema from "jsonschema";
 import { Inputs } from "../types";
-
-
+import { ValidateFunc } from "./question";
 
 /**
  * Validation for Any Instance Type
@@ -21,8 +20,8 @@ export interface StaticValidation {
 }
 
 /**
-* Validation for Strings
-*/
+ * Validation for Strings
+ */
 export interface StringValidation extends StaticValidation {
   /**
    * A string instance is valid against this keyword if its length is less than, or equal to, the value of this keyword.
@@ -59,8 +58,8 @@ export interface StringValidation extends StaticValidation {
 }
 
 /**
-* Validation for String Arrays
-*/
+ * Validation for String Arrays
+ */
 export interface StringArrayValidation extends StaticValidation {
   /**
    * The value of this keyword MUST be a non-negative integer.
@@ -100,8 +99,8 @@ export interface StringArrayValidation extends StaticValidation {
 }
 
 /**
-* The validation is checked by a validFunc provided by user
-*/
+ * The validation is checked by a validFunc provided by user
+ */
 export interface FuncValidation<T extends string | string[] | undefined> {
   /**
    * A function that will be called to validate input and to give a hint to the user.
@@ -110,17 +109,13 @@ export interface FuncValidation<T extends string | string[] | undefined> {
    * @return A human-readable string which is presented as diagnostic message.
    * Return `undefined` when 'value' is valid.
    */
-  validFunc: (input: T, previousInputs?: Inputs) => string | undefined | Promise<string | undefined>;
+  validFunc: ValidateFunc<T>;
 }
 
 /**
  * Definition of validation schema, which is a union of `StringValidation`, `StringArrayValidation` and `FuncValidation<any>`
  */
-export type ValidationSchema =
-  | StringValidation
-  | StringArrayValidation
-  | FuncValidation<any>;
-
+export type ValidationSchema = StringValidation | StringArrayValidation | FuncValidation<any>;
 
 /**
  * A function to return a validation function according the validation schema
@@ -143,7 +138,7 @@ export function getValidationFunction<T extends string | string[] | undefined>(
  * @param value value to validate
  * @param inputs user inputs object, which works as the context of the validation
  * @returns A human-readable string which is presented as diagnostic message.
-   * Return `undefined` when 'value' is valid.
+ * Return `undefined` when 'value' is valid.
  */
 export async function validate<T extends string | string[] | undefined>(
   validSchema: ValidationSchema,
@@ -160,8 +155,7 @@ export async function validate<T extends string | string[] | undefined>(
   }
 
   if (!value) {
-    if ((validSchema as StaticValidation).required === true)
-      return `input value is required.`;
+    if ((validSchema as StaticValidation).required === true) return `input value is required.`;
   }
 
   {

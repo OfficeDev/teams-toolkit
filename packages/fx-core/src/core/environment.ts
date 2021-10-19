@@ -90,7 +90,7 @@ class EnvironmentManager {
       return err(stateResult.error);
     }
 
-    return ok({ envName, config: configResult.value, profile: stateResult.value });
+    return ok({ envName, config: configResult.value, state: stateResult.value });
   }
 
   public newEnvConfigData(appName: string): EnvConfig {

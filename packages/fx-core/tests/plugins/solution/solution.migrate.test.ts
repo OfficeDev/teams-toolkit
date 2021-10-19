@@ -53,7 +53,7 @@ describe("Solution migrate()", async () => {
     expect(result.isErr()).equals(true);
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.InternelError);
     expect(result._unsafeUnwrapErr().message).equals("projectSettings is undefined");
-    expect(mockedSolutionCtx.envInfo.profile.get(GLOBAL_CONFIG)).to.be.not.undefined;
+    expect(mockedSolutionCtx.envInfo.state.get(GLOBAL_CONFIG)).to.be.not.undefined;
   });
 
   it("should fail if projectSettings.solutionSettings is undefined", async () => {
@@ -70,7 +70,7 @@ describe("Solution migrate()", async () => {
     expect(result.isErr()).equals(true);
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.InternelError);
     expect(result._unsafeUnwrapErr().message).equals("solutionSettings is undefined");
-    expect(mockedSolutionCtx.envInfo.profile.get(GLOBAL_CONFIG)).to.be.not.undefined;
+    expect(mockedSolutionCtx.envInfo.state.get(GLOBAL_CONFIG)).to.be.not.undefined;
   });
 
   it("should fail if capability is undefined", async () => {
@@ -92,7 +92,7 @@ describe("Solution migrate()", async () => {
     expect(result.isErr()).equals(true);
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.InternelError);
     expect(result._unsafeUnwrapErr().message).equals("capabilities is empty");
-    expect(mockedSolutionCtx.envInfo.profile.get(GLOBAL_CONFIG)).to.be.not.undefined;
+    expect(mockedSolutionCtx.envInfo.state.get(GLOBAL_CONFIG)).to.be.not.undefined;
   });
 
   it("should succeed if projectSettings, solution settings and v1 capability are provided, language is javascript", async () => {
@@ -122,7 +122,7 @@ describe("Solution migrate()", async () => {
 
     const result = await solution.migrate(mockedSolutionCtx);
     expect(result.isOk()).equals(true);
-    expect(mockedSolutionCtx.envInfo.profile.get(GLOBAL_CONFIG)).is.not.undefined;
+    expect(mockedSolutionCtx.envInfo.state.get(GLOBAL_CONFIG)).is.not.undefined;
     const lang = mockedSolutionCtx.projectSettings.programmingLanguage;
     expect(lang).equals("javascript");
   });
@@ -151,7 +151,7 @@ describe("Solution migrate()", async () => {
 
     const result = await solution.migrate(mockedSolutionCtx);
     expect(result.isOk()).equals(true);
-    expect(mockedSolutionCtx.envInfo.profile.get(GLOBAL_CONFIG)).is.not.undefined;
+    expect(mockedSolutionCtx.envInfo.state.get(GLOBAL_CONFIG)).is.not.undefined;
     const lang = mockedSolutionCtx.projectSettings.programmingLanguage;
     expect(lang).equals("typescript");
   });

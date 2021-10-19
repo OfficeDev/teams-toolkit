@@ -282,15 +282,15 @@ export class FxCore implements Core {
           }
         } else {
           //TODO lagacy env.default.json
-          const profile: Json = { solution: {} };
+          const state: Json = { solution: {} };
           for (const plugin of getAllV2ResourcePlugins()) {
-            profile[plugin.name] = {};
+            state[plugin.name] = {};
           }
-          profile[PluginNames.LDEBUG]["trustDevCert"] = "true";
+          state[PluginNames.LDEBUG]["trustDevCert"] = "true";
           ctx.envInfoV2 = {
             envName: environmentManager.getDefaultEnvName(),
             config: {},
-            profile: profile,
+            state: state,
           };
         }
       } else {
@@ -487,12 +487,12 @@ export class FxCore implements Core {
       if (result.kind === "success") {
         // Remove all "output" and "secret" fields for backward compatibility.
         // todo(yefuwang): handle "output" and "secret" fields in middlewares.
-        const profile = flattenConfigJson(result.output);
-        ctx.envInfoV2.profile = { ...ctx.envInfoV2.profile, ...profile };
+        const state = flattenConfigJson(result.output);
+        ctx.envInfoV2.state = { ...ctx.envInfoV2.state, ...state };
         return ok(Void);
       } else if (result.kind === "partialSuccess") {
-        const profile = flattenConfigJson(result.output);
-        ctx.envInfoV2.profile = { ...ctx.envInfoV2.profile, ...profile };
+        const state = flattenConfigJson(result.output);
+        ctx.envInfoV2.state = { ...ctx.envInfoV2.state, ...state };
         return err(result.error);
       } else {
         return err(result.error);
@@ -542,7 +542,7 @@ export class FxCore implements Core {
         return await ctx.solutionV2.deploy(
           ctx.contextV2,
           inputs,
-          ctx.envInfoV2.profile,
+          ctx.envInfoV2.state,
           this.tools.tokenProvider.azureAccountProvider
         );
       else return ok(Void);
@@ -616,11 +616,11 @@ export class FxCore implements Core {
     }
 
     upgradeProgrammingLanguage(
-      ctx.solutionContext.envInfo.profile as SolutionConfig,
+      ctx.solutionContext.envInfo.state as SolutionConfig,
       ctx.projectSettings
     );
     upgradeDefaultFunctionName(
-      ctx.solutionContext.envInfo.profile as SolutionConfig,
+      ctx.solutionContext.envInfo.state as SolutionConfig,
       ctx.projectSettings
     );
     const res = await ctx.solution.localDebug(ctx.solutionContext);
@@ -634,9 +634,9 @@ export class FxCore implements Core {
       ctx.envInfoV2 = {
         envName: ctx.solutionContext.envInfo.envName,
         config: ctx.solutionContext.envInfo.config,
-        profile: {},
+        state: {},
       };
-      ctx.envInfoV2.profile = mapToJson(ctx.solutionContext.envInfo.profile);
+      ctx.envInfoV2.state = mapToJson(ctx.solutionContext.envInfo.state);
     }
   }
 
@@ -767,7 +767,7 @@ export class FxCore implements Core {
         const solutionV2 = ctx.solutionV2 ? ctx.solutionV2 : await getAllSolutionPluginsV2()[0];
         const envInfoV2 = ctx.envInfoV2
           ? ctx.envInfoV2
-          : { envName: environmentManager.getDefaultEnvName(), config: {}, profile: {} };
+          : { envName: environmentManager.getDefaultEnvName(), config: {}, state: {} };
         inputs.stage = stage;
         return await this._getQuestions(contextV2, solutionV2, stage, inputs, envInfoV2);
       } else {
@@ -802,7 +802,7 @@ export class FxCore implements Core {
       const solutionV2 = ctx.solutionV2 ? ctx.solutionV2 : await getAllSolutionPluginsV2()[0];
       const envInfoV2 = ctx.envInfoV2
         ? ctx.envInfoV2
-        : { envName: environmentManager.getDefaultEnvName(), config: {}, profile: {} };
+        : { envName: environmentManager.getDefaultEnvName(), config: {}, state: {} };
       return await this._getQuestionsForUserTask(contextV2, solutionV2, func, inputs, envInfoV2);
     } else {
       const solutionContext = ctx.solutionContext
@@ -832,13 +832,13 @@ export class FxCore implements Core {
     if (isV2()) {
       return ok({
         settings: ctx!.projectSettings,
-        config: ctx!.envInfoV2?.profile,
+        config: ctx!.envInfoV2?.state,
         localSettings: ctx!.localSettings,
       });
     } else {
       return ok({
         settings: ctx!.projectSettings,
-        config: ctx!.solutionContext?.envInfo.profile,
+        config: ctx!.solutionContext?.envInfo.state,
         localSettings: ctx!.solutionContext?.localSettings,
       });
     }
@@ -1131,9 +1131,9 @@ export class FxCore implements Core {
       return err(writeEnvResult.error);
     }
     this.tools.logProvider.debug(
-      `[core] persist ${targetEnvName} env profile to path ${
-        writeEnvResult.value
-      }: ${JSON.stringify(newEnvConfig)}`
+      `[core] persist ${targetEnvName} env state to path ${writeEnvResult.value}: ${JSON.stringify(
+        newEnvConfig
+      )}`
     );
     return ok(Void);
   }
@@ -1208,7 +1208,7 @@ export class FxCore implements Core {
       if (isV2()) {
         //TODO core should not know the details of envInfo
         ctx!.provisionInputConfig = solutionContext.value.envInfo.config;
-        ctx!.provisionOutputs = solutionContext.value.envInfo.profile;
+        ctx!.provisionOutputs = solutionContext.value.envInfo.state;
         ctx!.envName = solutionContext.value.envInfo.envName;
       } else {
         ctx!.solutionContext = solutionContext.value;

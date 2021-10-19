@@ -191,7 +191,7 @@ export async function getQuestions(
       if (v1Blocked.isErr()) {
         return err(v1Blocked.error);
       }
-      const provisioned = checkWetherProvisionSucceeded(envInfo.profile);
+      const provisioned = checkWetherProvisionSucceeded(envInfo.state);
       if (provisioned) return ok(undefined);
     }
     let plugins: v2.ResourcePlugin[] = [];
@@ -218,7 +218,7 @@ export async function getQuestions(
         return err(v1Blocked.error);
       }
       const isAzure = isAzureProject(solutionSettings);
-      const provisioned = checkWetherProvisionSucceeded(envInfo.profile);
+      const provisioned = checkWetherProvisionSucceeded(envInfo.state);
       if (isAzure && !provisioned) {
         return err(
           returnUserError(
@@ -279,7 +279,7 @@ export async function getQuestions(
         return err(v1Blocked.error);
       }
       const isAzure = isAzureProject(solutionSettings);
-      const provisioned = checkWetherProvisionSucceeded(envInfo.profile);
+      const provisioned = checkWetherProvisionSucceeded(envInfo.state);
       if (!provisioned) {
         return err(
           new UserError(

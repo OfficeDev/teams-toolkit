@@ -33,7 +33,7 @@ import {
 import { CryptoDataMatchers, mapToJson } from "../../common";
 import { ArmResourcePlugin, ScaffoldArmTemplateResult } from "../../common/armInterface";
 import {
-  InvalidProfileError,
+  InvalidStateError,
   newEnvInfo,
   NoProjectOpenedError,
   PluginHasNoTaskImpl,
@@ -49,7 +49,7 @@ export function convert2PluginContext(
   if (!ignoreEmptyProjectPath && !inputs.projectPath) throw NoProjectOpenedError();
   const envInfo = newEnvInfo();
   const config = new ConfigMap();
-  envInfo.profile.set(pluginName, config);
+  envInfo.state.set(pluginName, config);
   const pluginContext: PluginContext = {
     root: inputs.projectPath || "",
     config: config,
@@ -127,20 +127,20 @@ export async function provisionResourceAdapter(
   if (!plugin.provision) {
     return err(PluginHasNoTaskImpl(plugin.displayName, "provision"));
   }
-  const profile: ConfigMap | undefined = ConfigMap.fromJSON(envInfo.profile);
-  if (!profile) {
-    return err(InvalidProfileError(plugin.name, envInfo.profile));
+  const state: ConfigMap | undefined = ConfigMap.fromJSON(envInfo.state);
+  if (!state) {
+    return err(InvalidStateError(plugin.name, envInfo.state));
   }
   const solutionInputs: SolutionInputs = inputs;
-  profile.set(GLOBAL_CONFIG, ConfigMap.fromJSON(solutionInputs));
+  state.set(GLOBAL_CONFIG, ConfigMap.fromJSON(solutionInputs));
   const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
   pluginContext.envInfo = newEnvInfo();
-  pluginContext.envInfo.profile = flattenConfigMap(profile);
+  pluginContext.envInfo.state = flattenConfigMap(state);
   pluginContext.envInfo.config = envInfo.config as EnvConfig;
-  pluginContext.config = pluginContext.envInfo.profile.get(plugin.name) ?? new ConfigMap();
+  pluginContext.config = pluginContext.envInfo.state.get(plugin.name) ?? new ConfigMap();
   if (plugin.preProvision) {
     const preRes = await plugin.preProvision(pluginContext);
     if (preRes.isErr()) {
@@ -152,8 +152,8 @@ export async function provisionResourceAdapter(
   if (res.isErr()) {
     return err(res.error);
   }
-  pluginContext.envInfo.profile.delete(GLOBAL_CONFIG);
-  return ok(legacyConfig2EnvProfile(pluginContext.config, plugin.name));
+  pluginContext.envInfo.state.delete(GLOBAL_CONFIG);
+  return ok(legacyConfig2EnvState(pluginContext.config, plugin.name));
 }
 
 // flattens output/secrets fields in config map for backward compatibility
@@ -177,8 +177,8 @@ function flattenConfigMap(configMap: ConfigMap): ConfigMap {
   return map;
 }
 
-// Convert legacy config map to env profile with output and secrets fields
-function legacyConfig2EnvProfile(
+// Convert legacy config map to env state with output and secrets fields
+function legacyConfig2EnvState(
   config: ConfigMap,
   pluginName: string
 ): { output: Json; secrets: Json } {
@@ -204,25 +204,25 @@ export async function configureResourceAdapter(
   if (!plugin.postProvision) return err(PluginHasNoTaskImpl(plugin.displayName, "postProvision"));
   const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
 
-  const profile: ConfigMap | undefined = ConfigMap.fromJSON(envInfo.profile);
-  if (!profile) {
-    return err(InvalidProfileError(plugin.name, envInfo.profile));
+  const state: ConfigMap | undefined = ConfigMap.fromJSON(envInfo.state);
+  if (!state) {
+    return err(InvalidStateError(plugin.name, envInfo.state));
   }
   const solutionInputs: SolutionInputs = inputs;
-  profile.set(GLOBAL_CONFIG, ConfigMap.fromJSON(solutionInputs));
+  state.set(GLOBAL_CONFIG, ConfigMap.fromJSON(solutionInputs));
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
   pluginContext.envInfo = newEnvInfo();
-  pluginContext.envInfo.profile = flattenConfigMap(profile);
+  pluginContext.envInfo.state = flattenConfigMap(state);
   pluginContext.envInfo.config = envInfo.config as EnvConfig;
-  pluginContext.config = pluginContext.envInfo.profile.get(plugin.name) ?? new ConfigMap();
+  pluginContext.config = pluginContext.envInfo.state.get(plugin.name) ?? new ConfigMap();
 
   const postRes = await plugin.postProvision(pluginContext);
   if (postRes.isErr()) {
     return err(postRes.error);
   }
-  return ok(legacyConfig2EnvProfile(pluginContext.config, plugin.name));
+  return ok(legacyConfig2EnvState(pluginContext.config, plugin.name));
 }
 
 export async function deployAdapter(
@@ -234,7 +234,7 @@ export async function deployAdapter(
 ): Promise<Result<Void, FxError>> {
   if (!plugin.deploy) return err(PluginHasNoTaskImpl(plugin.displayName, "deploy"));
   const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
-  setEnvInfoV1ByProfileV2(plugin.name, pluginContext, provisionOutput);
+  setEnvInfoV1ByStateV2(plugin.name, pluginContext, provisionOutput);
   pluginContext.azureAccountProvider = tokenProvider;
   if (plugin.preDeploy) {
     const preRes = await plugin.preDeploy(pluginContext);
@@ -252,7 +252,7 @@ export async function deployAdapter(
       return err(postRes.error);
     }
   }
-  setProfileV2ByConfigMapInc(plugin.name, provisionOutput, pluginContext.config);
+  setStateV2ByConfigMapInc(plugin.name, provisionOutput, pluginContext.config);
   return ok(Void);
 }
 
@@ -265,7 +265,7 @@ export async function provisionLocalResourceAdapter(
 ): Promise<Result<Json, FxError>> {
   if (!plugin.localDebug) return err(PluginHasNoTaskImpl(plugin.displayName, "localDebug"));
   const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
-  pluginContext.envInfo.profile.set(plugin.name, pluginContext.config);
+  pluginContext.envInfo.state.set(plugin.name, pluginContext.config);
   setLocalSettingsV1(pluginContext, localSettings);
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
@@ -287,7 +287,7 @@ export async function configureLocalResourceAdapter(
 ): Promise<Result<Json, FxError>> {
   if (!plugin.postLocalDebug) return err(PluginHasNoTaskImpl(plugin.displayName, "postLocalDebug"));
   const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
-  pluginContext.envInfo.profile.set(plugin.name, pluginContext.config);
+  pluginContext.envInfo.state.set(plugin.name, pluginContext.config);
   setLocalSettingsV1(pluginContext, localSettings);
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
@@ -315,11 +315,11 @@ export async function executeUserTaskAdapter(
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
-  setEnvInfoV1ByProfileV2(plugin.name, pluginContext, envInfo.profile);
+  setEnvInfoV1ByStateV2(plugin.name, pluginContext, envInfo.state);
   setLocalSettingsV1(pluginContext, localSettings);
   const res = await plugin.executeUserTask(func, pluginContext);
   if (res.isErr()) return err(res.error);
-  setProfileV2ByConfigMapInc(plugin.name, envInfo.profile, pluginContext.config);
+  setStateV2ByConfigMapInc(plugin.name, envInfo.state, pluginContext.config);
   setLocalSettingsV2(localSettings, pluginContext.localSettings);
   return ok(res.value);
 }
@@ -343,7 +343,7 @@ export async function getQuestionsAdapter(
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (!plugin.getQuestions) return ok(undefined);
   const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs, true);
-  const config = ConfigMap.fromJSON(envInfo.profile[plugin.name]) || new ConfigMap();
+  const config = ConfigMap.fromJSON(envInfo.state[plugin.name]) || new ConfigMap();
   pluginContext.config = config;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
@@ -360,7 +360,7 @@ export async function getQuestionsForUserTaskAdapter(
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (!plugin.getQuestionsForUserTask) return ok(undefined);
   const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs, true);
-  const config = ConfigMap.fromJSON(envInfo.profile[plugin.name]) || new ConfigMap();
+  const config = ConfigMap.fromJSON(envInfo.state[plugin.name]) || new ConfigMap();
   pluginContext.config = config;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
@@ -368,39 +368,35 @@ export async function getQuestionsForUserTaskAdapter(
   return await plugin.getQuestionsForUserTask(func, pluginContext);
 }
 export function getArmOutput(ctx: PluginContext, key: string): string | undefined {
-  const solutionConfig = ctx.envInfo.profile.get("solution");
+  const solutionConfig = ctx.envInfo.state.get("solution");
   const output = solutionConfig?.get(ARM_TEMPLATE_OUTPUT);
   return output?.[key]?.value;
 }
 
-export function setProfileV2ByConfigMapInc(
-  pluginName: string,
-  profile: Json,
-  config: ConfigMap
-): void {
+export function setStateV2ByConfigMapInc(pluginName: string, state: Json, config: ConfigMap): void {
   const source = mapToJson(config);
-  const subTarget = profile[pluginName] || {};
+  const subTarget = state[pluginName] || {};
   assignJsonInc(subTarget, source);
-  profile[pluginName] = subTarget;
+  state[pluginName] = subTarget;
 }
 
-export function setEnvInfoV1ByProfileV2(
+export function setEnvInfoV1ByStateV2(
   pluginName: string,
   pluginContext: PluginContext,
-  profileV2: Json
+  stateV2: Json
 ): void {
   const envInfo = newEnvInfo();
-  let profileV1: ConfigMap | undefined = ConfigMap.fromJSON(profileV2);
-  if (!profileV1) {
-    throw InvalidProfileError(pluginName, profileV2);
+  let stateV1: ConfigMap | undefined = ConfigMap.fromJSON(stateV2);
+  if (!stateV1) {
+    throw InvalidStateError(pluginName, stateV2);
   }
-  profileV1 = flattenConfigMap(profileV1);
-  let selfConfigMap: ConfigMap | undefined = profileV1.get(pluginName);
+  stateV1 = flattenConfigMap(stateV1);
+  let selfConfigMap: ConfigMap | undefined = stateV1.get(pluginName);
   if (!selfConfigMap) {
     selfConfigMap = new ConfigMap();
-    profileV1.set(pluginName, selfConfigMap);
+    stateV1.set(pluginName, selfConfigMap);
   }
-  envInfo.profile = profileV1;
+  envInfo.state = stateV1;
   pluginContext.config = selfConfigMap;
   pluginContext.envInfo = envInfo;
 }

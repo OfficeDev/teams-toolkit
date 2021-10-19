@@ -104,10 +104,10 @@ export interface ResourcePlugin {
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {ProvisionInputs} inputs - inputs injected by Toolkit runtime and solution.
-   * @param {DeepReadonly<EnvInfoV2>} envInfo - a readonly view of environment info modeled after (config|profile).${env}.json
+   * @param {DeepReadonly<EnvInfoV2>} envInfo - a readonly view of environment info modeled after (config|state).${env}.json
    * @param {TokenProvider} tokenProvider - Tokens for Azure and AppStudio
    *
-   * @returns {ResourceProvisionOutput} resource provision output which will be persisted by the toolkit into envInfo's profile.
+   * @returns {ResourceProvisionOutput} resource provision output which will be persisted by the toolkit into envInfo's state.
    */
   provisionResource?: (
     ctx: Context,
@@ -118,17 +118,17 @@ export interface ResourcePlugin {
 
   /**
    * configureResource() is guaranteed to run after Bicep/ARM provision.
-   * Plugins are expected to read the provision output of other plugins via envInfo's profile,
+   * Plugins are expected to read the provision output of other plugins via envInfo's state,
    * and return a new copy of its own provision output possibly with added and modified fields.
    *
    * Plugins can also sync their settings to the clould using access tokens provided by TokenProvider
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {ProvisionInputs} inputs - inputs injected by Toolkit runtime and solution.
-   * @param {DeepReadonly<EnvInfoV2>} envInfo - a readonly view of environment info modeled after (config|profile).${env}.json
+   * @param {DeepReadonly<EnvInfoV2>} envInfo - a readonly view of environment info modeled after (config|state).${env}.json
    * @param {TokenProvider} tokenProvider - Tokens for Azure and AppStudio
    *
-   * @returns {ResourceProvisionOutput} resource provision output which will be persisted by the toolkit into envInfo's profile.
+   * @returns {ResourceProvisionOutput} resource provision output which will be persisted by the toolkit into envInfo's state.
    */
   configureResource?: (
     ctx: Context,
@@ -144,7 +144,7 @@ export interface ResourcePlugin {
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {DeploymentInputs} inputs - inputs injected by Toolkit runtime and solution.
-   * @param {Json} provisionOutputs - profile containing provision outputs modeled after profile.${env}.json
+   * @param {Json} provisionOutputs - state containing provision outputs modeled after state.${env}.json
    * @param {AzureAccountProvider} tokenProvider - Tokens for Azure and AppStudio
    */
   deploy?: (
@@ -158,7 +158,7 @@ export interface ResourcePlugin {
    * Depends on the output of {@link package}. Uploads Teams package to AppStudio
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {Inputs} inputs - system inputs.
-   * @param {DeepReadonly<EnvInfoV2>} envInfo - a readonly view of environment info modeled after (config|profile).${env}.json
+   * @param {DeepReadonly<EnvInfoV2>} envInfo - a readonly view of environment info modeled after (config|state).${env}.json
    * @param {AppStudioTokenProvider} tokenProvider - Token for AppStudio
    *
    * @returns Void because side effect is expected.

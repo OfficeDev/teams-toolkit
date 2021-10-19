@@ -201,7 +201,7 @@ describe("APIs of Environment Manager", () => {
       }
 
       const envInfo = actualEnvDataResult.value;
-      assert.equal(envInfo.profile.get("key"), envStateDataWithoutCredential.key);
+      assert.equal(envInfo.state.get("key"), envStateDataWithoutCredential.key);
     });
 
     it("no userdata: load environment state with target env", async () => {
@@ -217,7 +217,7 @@ describe("APIs of Environment Manager", () => {
       }
 
       const envInfo = actualEnvDataResult.value;
-      assert.equal(envInfo.profile.get("key"), envStateDataWithoutCredential.key);
+      assert.equal(envInfo.state.get("key"), envStateDataWithoutCredential.key);
     });
 
     it("with userdata: load environment state without target env", async () => {
@@ -234,8 +234,8 @@ describe("APIs of Environment Manager", () => {
 
       const envInfo = actualEnvDataResult.value;
       const expectedSolutionConfig = envStateDataWithCredential.solution as Record<string, string>;
-      assert.equal(envInfo.profile.get("solution").get("teamsAppTenantId"), decryptedValue);
-      assert.equal(envInfo.profile.get("solution").get("key"), expectedSolutionConfig.key);
+      assert.equal(envInfo.state.get("solution").get("teamsAppTenantId"), decryptedValue);
+      assert.equal(envInfo.state.get("solution").get("key"), expectedSolutionConfig.key);
     });
 
     it("with userdata: load environment state with target env", async () => {
@@ -252,8 +252,8 @@ describe("APIs of Environment Manager", () => {
 
       const envInfo = actualEnvDataResult.value;
       const expectedSolutionConfig = envStateDataWithCredential.solution as Record<string, string>;
-      assert.equal(envInfo.profile.get("solution").get("teamsAppTenantId"), decryptedValue);
-      assert.equal(envInfo.profile.get("solution").get("key"), expectedSolutionConfig.key);
+      assert.equal(envInfo.state.get("solution").get("teamsAppTenantId"), decryptedValue);
+      assert.equal(envInfo.state.get("solution").get("key"), expectedSolutionConfig.key);
     });
 
     it("with userdata (has checksum): load environment state without target env", async () => {
@@ -273,8 +273,8 @@ describe("APIs of Environment Manager", () => {
 
       const envInfo = actualEnvDataResult.value;
       const expectedSolutionConfig = envStateDataWithCredential.solution as Record<string, string>;
-      assert.equal(envInfo.profile.get("solution").get("teamsAppTenantId"), decryptedValue);
-      assert.equal(envInfo.profile.get("solution").get("key"), expectedSolutionConfig.key);
+      assert.equal(envInfo.state.get("solution").get("teamsAppTenantId"), decryptedValue);
+      assert.equal(envInfo.state.get("solution").get("key"), expectedSolutionConfig.key);
     });
 
     it("with userdata (legacy project): load environment state with target env", async () => {
@@ -291,8 +291,8 @@ describe("APIs of Environment Manager", () => {
 
       const envInfo = actualEnvDataResult.value;
       const expectedSolutionConfig = envStateDataWithCredential.solution as Record<string, string>;
-      assert.equal(envInfo.profile.get("solution").get("teamsAppTenantId"), decryptedValue);
-      assert.equal(envInfo.profile.get("solution").get("key"), expectedSolutionConfig.key);
+      assert.equal(envInfo.state.get("solution").get("teamsAppTenantId"), decryptedValue);
+      assert.equal(envInfo.state.get("solution").get("key"), expectedSolutionConfig.key);
     });
 
     it("Environment state doesn't exist", async () => {

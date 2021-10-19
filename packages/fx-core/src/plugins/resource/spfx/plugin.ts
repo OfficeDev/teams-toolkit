@@ -16,6 +16,7 @@ import {
   InsufficientPermissionError,
   NoSPPackageError,
   ScaffoldError,
+  GetTenantFailedError,
 } from "./error";
 import * as util from "util";
 import { ProgressHelper } from "./utils/progress-helper";
@@ -330,6 +331,9 @@ export class SPFxPluginImpl {
       return err(GetGraphTokenFailedError());
     }
 
+    const tokenJson = await ctx.graphTokenProvider?.getJsonObject();
+    const username = (tokenJson as any).unique_name;
+
     const instance = axios.create({
       baseURL: "https://graph.microsoft.com/v1.0",
     });
@@ -341,8 +345,11 @@ export class SPFxPluginImpl {
       if (res && res.data && res.data.webUrl) {
         tenant = res.data.webUrl;
       } else {
+        return err(GetTenantFailedError(username));
       }
-    } catch (e) {}
+    } catch (e) {
+      return err(GetTenantFailedError(username, e));
+    }
     return ok(tenant);
   }
 

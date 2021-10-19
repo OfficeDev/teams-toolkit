@@ -73,3 +73,15 @@ export function CreateAppCatalogFailedError(error: Error): SystemError {
     "CreateAppCatalogFailed"
   );
 }
+
+export function GetTenantFailedError(username?: string, error?: Error): SystemError {
+  return returnSystemError(
+    new Error(
+      `Cannot get tenant ` +
+        (username ? `for user ${username} ` : "") +
+        (error ? `due to error ${error.message}` : "")
+    ),
+    Constants.PLUGIN_NAME,
+    "GetTenantFailedError"
+  );
+}

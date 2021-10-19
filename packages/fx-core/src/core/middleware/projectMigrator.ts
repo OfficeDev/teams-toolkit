@@ -12,7 +12,7 @@ import {
   Platform,
   ProjectSettings,
   ProjectSettingsFileName,
-  PublishProfilesFolderName,
+  StatesFolderName,
   returnSystemError,
   TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
@@ -253,9 +253,7 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
 }
 
 async function migrateMultiEnv(projectPath: string): Promise<void> {
-  const { fx, fxConfig, templateAppPackage, fxPublishProfile } = await getMultiEnvFolders(
-    projectPath
-  );
+  const { fx, fxConfig, templateAppPackage, fxState } = await getMultiEnvFolders(projectPath);
   const {
     hasFrontend,
     hasBackend,
@@ -326,11 +324,11 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
   }
 
   if (hasProvision) {
-    const devProfile = path.join(fxPublishProfile, "profile.dev.json");
-    const devUserData = path.join(fxPublishProfile, "dev.userdata");
-    await fs.copy(path.join(fx, "new.env.default.json"), devProfile);
+    const devState = path.join(fxState, "state.dev.json");
+    const devUserData = path.join(fxState, "dev.userdata");
+    await fs.copy(path.join(fx, "new.env.default.json"), devState);
     await fs.copy(path.join(fx, "default.userdata"), devUserData);
-    await removeExpiredFields(devProfile, devUserData);
+    await removeExpiredFields(devState, devUserData);
   }
 }
 
@@ -448,10 +446,10 @@ async function getMultiEnvFolders(projectPath: string): Promise<any> {
   const fx = path.join(projectPath, `.${ConfigFolderName}`);
   const fxConfig = path.join(fx, InputConfigsFolderName);
   const templateAppPackage = path.join(projectPath, "templates", AppPackageFolderName);
-  const fxPublishProfile = path.join(fx, PublishProfilesFolderName);
+  const fxState = path.join(fx, StatesFolderName);
   await fs.ensureDir(fxConfig);
   await fs.ensureDir(templateAppPackage);
-  return { fx, fxConfig, templateAppPackage, fxPublishProfile };
+  return { fx, fxConfig, templateAppPackage, fxState };
 }
 
 async function backup(projectPath: string): Promise<void> {
@@ -518,12 +516,10 @@ async function getAppName(projectSettingPath: string): Promise<string> {
 }
 
 async function cleanup(projectPath: string): Promise<void> {
-  const { _, fxConfig, templateAppPackage, fxPublishProfile } = await getMultiEnvFolders(
-    projectPath
-  );
+  const { _, fxConfig, templateAppPackage, fxState } = await getMultiEnvFolders(projectPath);
   await fs.remove(fxConfig);
   await fs.remove(templateAppPackage);
-  await fs.remove(fxPublishProfile);
+  await fs.remove(fxState);
   await fs.remove(path.join(templateAppPackage, ".."));
   if (await fs.pathExists(path.join(fxConfig, "..", "new.env.default.json"))) {
     await fs.remove(path.join(fxConfig, "..", "new.env.default.json"));

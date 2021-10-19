@@ -56,16 +56,16 @@ async function writeEnvInfo(ctx: CoreHookContext, skip: boolean) {
     if (isMultiEnvEnabled() && provisionOutputs[PluginNames.LDEBUG]) {
       delete provisionOutputs[PluginNames.LDEBUG];
     }
-    const envProfilePath = await environmentManager.writeEnvProfile(
+    const envStatePath = await environmentManager.writeEnvState(
       provisionOutputs,
       inputs.projectPath,
       ctx.contextV2!.cryptoProvider,
       envInfoV2.envName
     );
 
-    if (envProfilePath.isOk()) {
+    if (envStatePath.isOk()) {
       const core = ctx.self as FxCore;
-      core.tools.logProvider.debug(`[core] persist env profile: ${envProfilePath.value}`);
+      core.tools.logProvider.debug(`[core] persist env profile: ${envStatePath.value}`);
     }
   } else {
     const solutionContext = ctx.solutionContext;
@@ -76,16 +76,16 @@ async function writeEnvInfo(ctx: CoreHookContext, skip: boolean) {
       solutionContext.envInfo.profile.delete(PluginNames.LDEBUG);
     }
 
-    const envProfilePath = await environmentManager.writeEnvProfile(
+    const envStatePath = await environmentManager.writeEnvState(
       solutionContext.envInfo.profile,
       inputs.projectPath,
       solutionContext.cryptoProvider,
       solutionContext.envInfo.envName
     );
 
-    if (envProfilePath.isOk()) {
+    if (envStatePath.isOk()) {
       const core = ctx.self as FxCore;
-      core.tools.logProvider.debug(`[core] persist env profile: ${envProfilePath.value}`);
+      core.tools.logProvider.debug(`[core] persist env state: ${envStatePath.value}`);
     }
   }
 }

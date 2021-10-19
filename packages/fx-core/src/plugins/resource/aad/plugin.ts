@@ -73,7 +73,9 @@ export class AadAppForTeamsImpl {
       : Messages.EndProvision.telemetry;
 
     await TokenProvider.init(ctx);
-    const skip: boolean = ctx.config.get(ConfigKeys.skip) as boolean;
+
+    // Move objectId etc. from input to output.
+    const skip = Utils.getAndMoveInput(ctx);
     if (skip) {
       ctx.logProvider?.info(Messages.getLog(Messages.SkipProvision));
 

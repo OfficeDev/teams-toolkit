@@ -3,7 +3,9 @@
 
 import { LogProvider, PluginContext } from "@microsoft/teamsfx-api";
 import { isMultiEnvEnabled } from "../../../..";
-import { ConfigFilePath, Constants, Messages } from "../constants";
+import { checkAndSaveConfig } from "../../bot/utils/common";
+import { ConfigFilePath, ConfigKeys, Constants, Messages } from "../constants";
+import { ConfigUtils } from "./configs";
 import { TelemetryUtils } from "./telemetry";
 
 export class Utils {
@@ -62,5 +64,31 @@ export class Utils {
     const tokenObject = await ctx.graphTokenProvider?.getJsonObject();
     const tenantId: string = (tokenObject as any).tid;
     return tenantId;
+  }
+
+  public static getAndMoveInput(ctx: PluginContext): boolean {
+    if (!isMultiEnvEnabled()) {
+      const skip = ctx.config.get(ConfigKeys.skip) as boolean;
+      return skip;
+    }
+
+    const objectId = ctx.envInfo.config.auth?.objectId;
+    const clientId = ctx.envInfo.config.auth?.clientId;
+    const oauth2PermissionScopeId = ctx.envInfo.config.auth?.accessAsUserScopeId;
+    const clientSecret = ctx.envInfo.config.auth?.clientSecret;
+    const skip = ctx.envInfo.config.auth?.[ConfigKeys.skip];
+
+    if (objectId && clientId && oauth2PermissionScopeId && clientSecret) {
+      checkAndSaveConfig(ctx, ConfigKeys.objectId, objectId as string);
+      checkAndSaveConfig(ctx, ConfigKeys.clientId, clientId as string);
+      checkAndSaveConfig(ctx, ConfigKeys.clientSecret, clientSecret as string);
+      checkAndSaveConfig(
+        ctx,
+        ConfigKeys.oauth2PermissionScopeId,
+        oauth2PermissionScopeId as string
+      );
+    }
+
+    return skip as boolean;
   }
 }

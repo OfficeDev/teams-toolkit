@@ -41,7 +41,7 @@ class MockCrypto implements CryptoProvider {
   }
 }
 
-describe("APIs of Environment Manager without Multi Env", () => {
+describe("APIs of Environment Manager", () => {
   const sandbox = sinon.createSandbox();
   const appName = randomAppName();
   const projectPath = path.resolve(os.tmpdir(), appName);

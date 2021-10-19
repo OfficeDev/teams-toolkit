@@ -31,7 +31,7 @@ import * as uuid from "uuid";
 import { getResourceFolder } from "../folder";
 import { ConstantString, FeatureFlagName } from "./constants";
 import * as crypto from "crypto";
-import { FailedToParseResourceIdError } from "..";
+import { FailedToParseResourceIdError } from "../core/error";
 
 Handlebars.registerHelper("contains", (value, array, options) => {
   array = array instanceof Array ? array : [array];

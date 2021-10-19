@@ -102,7 +102,10 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<Result<undef
     ? path.resolve(statesFolderPath, EnvStateFileNameTemplate.replace("@envName", defaultEnvName))
     : path.resolve(confFolderPath, `env.${defaultEnvName}.json`);
 
-  const userDataPath = path.resolve(confFolderPath, `${defaultEnvName}.userdata`);
+  const userDataPath = path.resolve(
+    isMultiEnvEnabled() ? statesFolderPath : confFolderPath,
+    `${defaultEnvName}.userdata`
+  );
 
   // For the multi env scenario, state.{envName}.json and {envName}.userdata are not created when scaffolding
   // These projects must be the new projects, so skip upgrading.

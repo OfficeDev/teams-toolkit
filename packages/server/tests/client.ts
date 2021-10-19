@@ -1,5 +1,6 @@
 import { createMessageConnection } from "vscode-jsonrpc/node";
 import WebSocket from "ws";
+import { Namespaces } from "../src/namespace";
 
 const ws = new WebSocket("ws://localhost:7920");
 ws.on("message", (ms) => {
@@ -10,7 +11,7 @@ const connection = createMessageConnection(wsStream, wsStream);
 connection.listen();
 
 connection
-  .sendRequest("createProject", { platform: "vsc" })
+  .sendRequest(`${Namespaces.Core}/createProject`, { platform: "vs" })
   .then((d) => {
     console.log(d);
   })

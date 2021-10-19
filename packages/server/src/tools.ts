@@ -15,6 +15,7 @@ import {
   LogProvider,
   MultiSelectConfig,
   MultiSelectResult,
+  NotImplementedError,
   PermissionRequestProvider,
   Result,
   RunnableTask,
@@ -28,6 +29,7 @@ import {
   SingleSelectConfig,
   SingleSelectResult,
   SubscriptionInfo,
+  SystemError,
   TaskConfig,
   TelemetryReporter,
   TokenProvider,
@@ -86,13 +88,15 @@ export class RemoteAzureAccountProvider implements AzureAccountProvider {
     showDialog?: boolean,
     tenantId?: string
   ): Promise<TokenCredentialsBase | undefined> {
-    throw new Error(
-      `Method not implemented:${Namespaces.AzureAccountProvider}/getAccountCredentialAsync`
+    throw new NotImplementedError(
+      "FxServer",
+      `${Namespaces.AzureAccountProvider}/getAccountCredentialAsync`
     );
   }
   getIdentityCredentialAsync(showDialog?: boolean): Promise<TokenCredential | undefined> {
-    throw new Error(
-      `Method not implemented:${Namespaces.AzureAccountProvider}/getIdentityCredentialAsync`
+    throw new NotImplementedError(
+      "FxServer",
+      `${Namespaces.AzureAccountProvider}/getIdentityCredentialAsync`
     );
   }
   signout(): Promise<boolean> {
@@ -107,28 +111,36 @@ export class RemoteAzureAccountProvider implements AzureAccountProvider {
     ) => Promise<void>,
     immediateCall?: boolean
   ): Promise<boolean> {
-    throw new Error(`Method not implemented:${Namespaces.AzureAccountProvider}/setStatusChangeMap`);
+    throw new NotImplementedError(
+      "FxServer",
+      `${Namespaces.AzureAccountProvider}/setStatusChangeMap`
+    );
   }
   removeStatusChangeMap(name: string): Promise<boolean> {
-    throw new Error(
-      `Method not implemented:${Namespaces.AzureAccountProvider}/removeStatusChangeMap`
+    throw new NotImplementedError(
+      "FxServer",
+      `${Namespaces.AzureAccountProvider}/removeStatusChangeMap`
     );
   }
   getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined> {
-    throw new Error(`Method not implemented:${Namespaces.AzureAccountProvider}/getJsonObject`);
+    throw new NotImplementedError("FxServer", `${Namespaces.AzureAccountProvider}/getJsonObject`);
   }
   listSubscriptions(): Promise<SubscriptionInfo[]> {
-    throw new Error(`Method not implemented:${Namespaces.AzureAccountProvider}/listSubscriptions`);
+    throw new NotImplementedError(
+      "FxServer",
+      `${Namespaces.AzureAccountProvider}/listSubscriptions`
+    );
   }
   setSubscription(subscriptionId: string): Promise<void> {
-    throw new Error(`Method not implemented:${Namespaces.AzureAccountProvider}/setSubscription`);
+    throw new NotImplementedError("FxServer", `${Namespaces.AzureAccountProvider}/setSubscription`);
   }
   getAccountInfo(): Record<string, string> | undefined {
-    throw new Error(`Method not implemented:${Namespaces.AzureAccountProvider}/getAccountInfo`);
+    throw new NotImplementedError("FxServer", `${Namespaces.AzureAccountProvider}/getAccountInfo`);
   }
   getSelectedSubscription(triggerUI?: boolean): Promise<SubscriptionInfo | undefined> {
-    throw new Error(
-      `Method not implemented:${Namespaces.AzureAccountProvider}/getSelectedSubscription`
+    throw new NotImplementedError(
+      "FxServer",
+      `${Namespaces.AzureAccountProvider}/getSelectedSubscription`
     );
   }
 }
@@ -139,13 +151,13 @@ export class RemoteGraphTokenProvider implements GraphTokenProvider {
     this.connection = connection;
   }
   getAccessToken(showDialog?: boolean): Promise<string | undefined> {
-    throw new Error(`Method not implemented:${Namespaces.GraphTokenProvider}/getAccessToken`);
+    throw new NotImplementedError("FxServer", `${Namespaces.GraphTokenProvider}/getAccessToken`);
   }
   getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined> {
-    throw new Error(`Method not implemented:${Namespaces.GraphTokenProvider}/getJsonObject`);
+    throw new NotImplementedError("FxServer", `${Namespaces.GraphTokenProvider}/getJsonObject`);
   }
   signout(): Promise<boolean> {
-    throw new Error(`Method not implemented:${Namespaces.GraphTokenProvider}/signout`);
+    throw new NotImplementedError("FxServer", `${Namespaces.GraphTokenProvider}/signout`);
   }
   setStatusChangeMap(
     name: string,
@@ -156,11 +168,15 @@ export class RemoteGraphTokenProvider implements GraphTokenProvider {
     ) => Promise<void>,
     immediateCall?: boolean
   ): Promise<boolean> {
-    throw new Error(`Method not implemented:${Namespaces.GraphTokenProvider}/setStatusChangeMap`);
+    throw new NotImplementedError(
+      "FxServer",
+      `${Namespaces.GraphTokenProvider}/setStatusChangeMap`
+    );
   }
   removeStatusChangeMap(name: string): Promise<boolean> {
-    throw new Error(
-      `Method not implemented:${Namespaces.GraphTokenProvider}/removeStatusChangeMap`
+    throw new NotImplementedError(
+      "FxServer",
+      `${Namespaces.GraphTokenProvider}/removeStatusChangeMap`
     );
   }
 }
@@ -171,13 +187,16 @@ export class RemoteAppStudioTokenProvider implements AppStudioTokenProvider {
     this.connection = connection;
   }
   getAccessToken(showDialog?: boolean): Promise<string | undefined> {
-    throw new Error(`Method not implemented:${Namespaces.AppStudioTokenProvider}/getAccessToken`);
+    throw new NotImplementedError(
+      "FxServer",
+      `${Namespaces.AppStudioTokenProvider}/getAccessToken`
+    );
   }
   getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined> {
-    throw new Error(`Method not implemented:${Namespaces.AppStudioTokenProvider}/getJsonObject`);
+    throw new NotImplementedError("FxServer", `${Namespaces.AppStudioTokenProvider}/getJsonObject`);
   }
   signout(): Promise<boolean> {
-    throw new Error(`Method not implemented:${Namespaces.AppStudioTokenProvider}/signout`);
+    throw new NotImplementedError("FxServer", `${Namespaces.AppStudioTokenProvider}/signout`);
   }
   setStatusChangeMap(
     name: string,
@@ -188,13 +207,15 @@ export class RemoteAppStudioTokenProvider implements AppStudioTokenProvider {
     ) => Promise<void>,
     immediateCall?: boolean
   ): Promise<boolean> {
-    throw new Error(
-      `Method not implemented:${Namespaces.AppStudioTokenProvider}/setStatusChangeMap`
+    throw new NotImplementedError(
+      "FxServer",
+      `${Namespaces.AppStudioTokenProvider}/setStatusChangeMap`
     );
   }
   removeStatusChangeMap(name: string): Promise<boolean> {
-    throw new Error(
-      `Method not implemented:${Namespaces.AppStudioTokenProvider}/removeStatusChangeMap`
+    throw new NotImplementedError(
+      "FxServer",
+      `${Namespaces.AppStudioTokenProvider}/removeStatusChangeMap`
     );
   }
 }
@@ -205,10 +226,16 @@ export class RemoteSharepointTokenProvider implements SharepointTokenProvider {
     this.connection = connection;
   }
   getAccessToken(showDialog?: boolean): Promise<string | undefined> {
-    throw new Error(`Method not implemented:${Namespaces.SharepointTokenProvider}/getAccessToken`);
+    throw new NotImplementedError(
+      "FxServer",
+      `${Namespaces.SharepointTokenProvider}/getAccessToken`
+    );
   }
   getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined> {
-    throw new Error(`Method not implemented:${Namespaces.SharepointTokenProvider}/getJsonObject`);
+    throw new NotImplementedError(
+      "FxServer",
+      `${Namespaces.SharepointTokenProvider}/getJsonObject`
+    );
   }
   setStatusChangeMap(
     name: string,
@@ -219,13 +246,15 @@ export class RemoteSharepointTokenProvider implements SharepointTokenProvider {
     ) => Promise<void>,
     immediateCall?: boolean
   ): Promise<boolean> {
-    throw new Error(
-      `Method not implemented:${Namespaces.SharepointTokenProvider}/setStatusChangeMap`
+    throw new NotImplementedError(
+      "FxServer",
+      `${Namespaces.SharepointTokenProvider}/setStatusChangeMap`
     );
   }
   removeStatusChangeMap(name: string): Promise<boolean> {
-    throw new Error(
-      `Method not implemented:${Namespaces.SharepointTokenProvider}/removeStatusChangeMap`
+    throw new NotImplementedError(
+      "FxServer",
+      `${Namespaces.SharepointTokenProvider}/removeStatusChangeMap`
     );
   }
 }
@@ -251,32 +280,32 @@ export class RemoteUserInteraction implements UserInteraction {
     this.connection = connection;
   }
   openUrl(link: string): Promise<Result<boolean, FxError>> {
-    throw new Error(`Method not implemented:${Namespaces.UserInteraction}/openUrl`);
+    throw new NotImplementedError("FxServer", `${Namespaces.UserInteraction}/openUrl`);
   }
   runWithProgress<T>(
     task: RunnableTask<T>,
     config: TaskConfig,
     ...args: any
   ): Promise<Result<T, FxError>> {
-    throw new Error(`Method not implemented:${Namespaces.UserInteraction}/runWithProgress`);
+    throw new NotImplementedError("FxServer", `${Namespaces.UserInteraction}/runWithProgress`);
   }
   async selectOption(config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> {
-    throw new Error(`Method not implemented:${Namespaces.UserInteraction}/selectOption`);
+    throw new NotImplementedError("FxServer", `${Namespaces.UserInteraction}/selectOption`);
   }
   selectOptions(config: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> {
-    throw new Error(`Method not implemented:${Namespaces.UserInteraction}/selectOptions`);
+    throw new NotImplementedError("FxServer", `${Namespaces.UserInteraction}/selectOptions`);
   }
   inputText(config: InputTextConfig): Promise<Result<InputTextResult, FxError>> {
-    throw new Error(`Method not implemented:${Namespaces.UserInteraction}/inputText`);
+    throw new NotImplementedError("FxServer", `${Namespaces.UserInteraction}/inputText`);
   }
   selectFile(config: SelectFileConfig): Promise<Result<SelectFileResult, FxError>> {
-    throw new Error(`Method not implemented:${Namespaces.UserInteraction}/selectFile`);
+    throw new NotImplementedError("FxServer", `${Namespaces.UserInteraction}/selectFile`);
   }
   selectFiles(config: SelectFilesConfig): Promise<Result<SelectFilesResult, FxError>> {
-    throw new Error(`Method not implemented:${Namespaces.UserInteraction}/selectFiles`);
+    throw new NotImplementedError("FxServer", `${Namespaces.UserInteraction}/selectFiles`);
   }
   selectFolder(config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> {
-    throw new Error(`Method not implemented:${Namespaces.UserInteraction}/selectFolder`);
+    throw new NotImplementedError("FxServer", `${Namespaces.UserInteraction}/selectFolder`);
   }
   public async showMessage(
     level: "info" | "warn" | "error",
@@ -298,10 +327,10 @@ export class RemoteUserInteraction implements UserInteraction {
     modal: boolean,
     ...items: string[]
   ): Promise<Result<string | undefined, FxError>> {
-    throw new Error(`Method not implemented:${Namespaces.UserInteraction}/showMessage`);
+    throw new NotImplementedError("FxServer", `${Namespaces.UserInteraction}/showMessage`);
   }
   createProgressBar(title: string, totalSteps: number): IProgressHandler {
-    throw new Error(`Method not implemented:${Namespaces.UserInteraction}/createProgressBar`);
+    throw new NotImplementedError("FxServer", `${Namespaces.UserInteraction}/createProgressBar`);
   }
 }
 
@@ -315,7 +344,12 @@ export class RemoteTelemetryReporter implements TelemetryReporter {
     properties?: { [key: string]: string },
     measurements?: { [key: string]: number }
   ): void {
-    throw new Error(`Method not implemented:${Namespaces.TelemetryReporter}/sendTelemetryEvent`);
+    this.connection.sendNotification(
+      `${Namespaces.TelemetryReporter}/sendTelemetryEvent`,
+      eventName,
+      properties,
+      measurements
+    );
   }
   sendTelemetryErrorEvent(
     eventName: string,
@@ -323,8 +357,12 @@ export class RemoteTelemetryReporter implements TelemetryReporter {
     measurements?: { [key: string]: number },
     errorProps?: string[]
   ): void {
-    throw new Error(
-      `Method not implemented:${Namespaces.TelemetryReporter}/sendTelemetryErrorEvent`
+    this.connection.sendNotification(
+      `${Namespaces.TelemetryReporter}/sendTelemetryErrorEvent`,
+      eventName,
+      properties,
+      measurements,
+      errorProps
     );
   }
   sendTelemetryException(
@@ -332,8 +370,11 @@ export class RemoteTelemetryReporter implements TelemetryReporter {
     properties?: { [key: string]: string },
     measurements?: { [key: string]: number }
   ): void {
-    throw new Error(
-      `Method not implemented:${Namespaces.TelemetryReporter}/sendTelemetryException`
+    this.connection.sendNotification(
+      `${Namespaces.TelemetryReporter}/sendTelemetryException`,
+      error,
+      properties,
+      measurements
     );
   }
 }

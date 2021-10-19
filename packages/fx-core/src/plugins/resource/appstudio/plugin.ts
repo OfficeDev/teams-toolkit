@@ -186,6 +186,27 @@ export class AppStudioPluginImpl {
       manifest.id = "";
       createIfNotExist = true;
     }
+
+    const suffix = "-local-debug";
+    let appName = ctx.projectSettings!.appName;
+    if (suffix.length + appName.length <= TEAMS_APP_SHORT_NAME_MAX_LENGTH) {
+      appName = appName + suffix;
+    }
+
+    if (isMultiEnvEnabled()) {
+      const view = {
+        config: {
+          manifest: {
+            appName: {
+              short: appName,
+              full: appName,
+            },
+          },
+        },
+      };
+      const manifestString = Mustache.render(JSON.stringify(manifest), view);
+      manifest = JSON.parse(manifestString);
+    }
     if (manifest.configurableTabs) {
       for (const tab of manifest.configurableTabs) {
         const reg = /[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}/;

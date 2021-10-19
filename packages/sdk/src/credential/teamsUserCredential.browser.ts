@@ -398,7 +398,6 @@ export class TeamsUserCredential implements TokenCredential {
    * @returns AxiosInstance
    */
   private async getAxiosInstance(): Promise<AxiosInstance> {
-    console.log("!!!!!!!!!!!!!!!check this!");
     const ssoToken = await this.getSSOToken();
     const axiosInstance: AxiosInstance = axios.create({
       baseURL: this.config.simpleAuthEndpoint,

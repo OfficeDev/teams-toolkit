@@ -207,7 +207,7 @@ jobs:
         id: unit-test
         shell: bash
         run: |
-          export TEAMSFX_PRIVATE_PREVIEW=true
+          export TEAMSFX_INSIDER_PREVIEW=true
           # replace with this eventually: xvfb-run -a npx lerna run test:unit
           cd packages/fx-core && xvfb-run -a npx mocha "tests/core/**/*.test.ts" && cd -
 

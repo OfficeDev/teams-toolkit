@@ -459,8 +459,8 @@
             "type": "string",
             "description": "The command to be executed on a teamsfx component.",
             "enum": [
-              "npm run dev",
-              "npm run watch"
+              "dev",
+              "watch"
             ]
           },
           "component": {

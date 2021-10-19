@@ -90,7 +90,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     task: vscode.Task,
     token?: vscode.CancellationToken | undefined
   ): Promise<vscode.Task | undefined> {
-    // Resolve "npm run dev" and "npm run watch" tasks
+    // Resolve "dev" and "watch" tasks
     if (vscode.workspace.workspaceFolders) {
       const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];
       const workspacePath: string = workspaceFolder.uri.fsPath;
@@ -102,31 +102,46 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       }
 
       const command: string | undefined = task.definition.command;
+      if (!command || (command?.toLowerCase() !== "dev" && command?.toLowerCase() !== "watch")) {
+        vscodeLogger.error(`Missing or wrong 'command' field in ${TeamsfxTaskProvider.type} task.`);
+        return undefined;
+      }
+
       const component: string | undefined = task.definition.component;
       if (
-        command &&
+        !component ||
+        (component?.toLowerCase() !== "frontend" &&
+          component?.toLowerCase() !== "backend" &&
+          component?.toLowerCase() !== "bot")
+      ) {
+        vscodeLogger.error(
+          `Missing or wrong 'component' field in ${TeamsfxTaskProvider.type} task.`
+        );
+        return undefined;
+      }
+
+      if (
         task.scope !== undefined &&
         task.scope !== vscode.TaskScope.Global &&
         task.scope !== vscode.TaskScope.Workspace
       ) {
-        let env: { [key: string]: string } | undefined;
+        const env: { [key: string]: string } | undefined = undefined;
         let cwd: string | undefined;
         let problemMatcher: string;
-        const isWatchTask = /^npm run watch/i.test(command + "");
+        const isWatchTask = command.toLowerCase() === "watch";
+        const shellCmd = isWatchTask ? "npm run watch:teamsfx" : "npm run dev:teamsfx";
         if (component?.toLowerCase() === "frontend") {
-          env = isWatchTask ? undefined : await commonUtils.getFrontendLocalEnv();
           cwd = await commonUtils.getProjectRoot(workspacePath, constants.frontendFolderName);
           problemMatcher = isWatchTask
             ? constants.tscWatchProblemMatcher
             : constants.frontendProblemMatcher;
         } else if (component?.toLowerCase() === "backend") {
-          env = isWatchTask ? undefined : await commonUtils.getBackendLocalEnv();
+          // TODO: add func path to env
           cwd = await commonUtils.getProjectRoot(workspacePath, constants.backendFolderName);
           problemMatcher = isWatchTask
             ? constants.tscWatchProblemMatcher
             : constants.backendProblemMatcher;
         } else if (component?.toLowerCase() === "bot") {
-          env = isWatchTask ? undefined : await commonUtils.getBotLocalEnv();
           cwd = await commonUtils.getProjectRoot(workspacePath, constants.botFolderName);
           problemMatcher = isWatchTask
             ? constants.tscWatchProblemMatcher
@@ -141,13 +156,16 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
         const resolvedTask = new vscode.Task(
           task.definition,
           task.scope,
-          command,
+          task.name,
           TeamsfxTaskProvider.type,
-          new vscode.ShellExecution(command, { cwd: cwd, env: env }),
+          new vscode.ShellExecution(shellCmd, { cwd: cwd, env: env }),
           problemMatcher
         );
         resolvedTask.isBackground = true;
         return resolvedTask;
+      } else {
+        vscodeLogger.error(`No task scope. Cannot resolve ${TeamsfxTaskProvider.type} task.`);
+        return undefined;
       }
     } else {
       vscodeLogger.error(`No workspace open. Cannot resolve ${TeamsfxTaskProvider.type} task.`);

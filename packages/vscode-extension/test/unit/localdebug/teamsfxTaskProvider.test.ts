@@ -13,7 +13,7 @@ suite("[debug > teamsfxTaskProvider]", () => {
   const taskProvider = new TeamsfxTaskProvider();
   const testWorkspaceFolder = {} as vscode.WorkspaceFolder;
   suite("resolveTask", () => {
-    test("frontend npm run dev", async () => {
+    test("frontend dev", async () => {
       sinon.stub(vscode.workspace, "workspaceFolders").value([
         {
           uri: vscode.Uri.file("test"),
@@ -33,23 +33,23 @@ suite("[debug > teamsfxTaskProvider]", () => {
       const inputTask = new vscode.Task(
         {
           type: "teamsfx",
-          command: "npm run dev",
+          command: "dev",
           component: "frontend",
         },
         testWorkspaceFolder,
-        "frontend npm run dev",
+        "frontend dev",
         "teamsfx"
       );
       const resolvedTask = await taskProvider.resolveTask(inputTask);
       chai.expect(resolvedTask).not.to.be.undefined;
-      chai.expect(resolvedTask!.name).equals("npm run dev");
+      chai.expect(resolvedTask!.name).equals("frontend dev");
       chai.expect(resolvedTask!.problemMatchers).eql(["$teamsfx-frontend-watch"]);
       chai.expect(resolvedTask!.isBackground).true;
 
       sinon.restore();
     });
 
-    test("backend npm run dev", async () => {
+    test("backend dev", async () => {
       sinon.stub(vscode.workspace, "workspaceFolders").value([
         {
           uri: vscode.Uri.file("test"),
@@ -69,23 +69,23 @@ suite("[debug > teamsfxTaskProvider]", () => {
       const inputTask = new vscode.Task(
         {
           type: "teamsfx",
-          command: "npm run dev",
+          command: "dev",
           component: "backend",
         },
         testWorkspaceFolder,
-        "backend npm run dev",
+        "backend dev",
         "teamsfx"
       );
       const resolvedTask = await taskProvider.resolveTask(inputTask);
       chai.expect(resolvedTask).not.to.be.undefined;
-      chai.expect(resolvedTask!.name).equals("npm run dev");
+      chai.expect(resolvedTask!.name).equals("backend dev");
       chai.expect(resolvedTask!.problemMatchers).eql(["$teamsfx-backend-watch"]);
       chai.expect(resolvedTask!.isBackground).true;
 
       sinon.restore();
     });
 
-    test("bot npm run dev", async () => {
+    test("bot dev", async () => {
       sinon.stub(vscode.workspace, "workspaceFolders").value([
         {
           uri: vscode.Uri.file("test"),
@@ -105,23 +105,23 @@ suite("[debug > teamsfxTaskProvider]", () => {
       const inputTask = new vscode.Task(
         {
           type: "teamsfx",
-          command: "npm run dev",
+          command: "dev",
           component: "bot",
         },
         testWorkspaceFolder,
-        "bot npm run dev",
+        "bot dev",
         "teamsfx"
       );
       const resolvedTask = await taskProvider.resolveTask(inputTask);
       chai.expect(resolvedTask).not.to.be.undefined;
-      chai.expect(resolvedTask!.name).equals("npm run dev");
+      chai.expect(resolvedTask!.name).equals("bot dev");
       chai.expect(resolvedTask!.problemMatchers).eql(["$teamsfx-bot-watch"]);
       chai.expect(resolvedTask!.isBackground).true;
 
       sinon.restore();
     });
 
-    test("bot npm run watch", async () => {
+    test("bot watch", async () => {
       sinon.stub(vscode.workspace, "workspaceFolders").value([
         {
           uri: vscode.Uri.file("test"),
@@ -141,18 +141,84 @@ suite("[debug > teamsfxTaskProvider]", () => {
       const inputTask = new vscode.Task(
         {
           type: "teamsfx",
-          command: "npm run watch",
+          command: "watch",
           component: "bot",
         },
         testWorkspaceFolder,
-        "bot npm run watch",
+        "bot watch",
         "teamsfx"
       );
       const resolvedTask = await taskProvider.resolveTask(inputTask);
       chai.expect(resolvedTask).not.to.be.undefined;
-      chai.expect(resolvedTask!.name).equals("npm run watch");
+      chai.expect(resolvedTask!.name).equals("bot watch");
       chai.expect(resolvedTask!.problemMatchers).eql(["$tsc-watch"]);
       chai.expect(resolvedTask!.isBackground).true;
+
+      sinon.restore();
+    });
+
+    test("invalid command", async () => {
+      sinon.stub(vscode.workspace, "workspaceFolders").value([
+        {
+          uri: vscode.Uri.file("test"),
+          name: "test",
+          index: 0,
+        } as vscode.WorkspaceFolder,
+      ]);
+      sinon.stub(commonUtils, "isFxProject").callsFake(async (folderPath: string) => {
+        return true;
+      });
+      sinon
+        .stub(commonUtils, "getProjectRoot")
+        .callsFake(async (folderPath: string, folderName: string) => {
+          return path.join(folderPath, folderName);
+        });
+
+      const inputTask = new vscode.Task(
+        {
+          type: "teamsfx",
+          command: "try", // invalid
+          component: "frontend",
+        },
+        testWorkspaceFolder,
+        "frontend try",
+        "teamsfx"
+      );
+      const resolvedTask = await taskProvider.resolveTask(inputTask);
+      chai.expect(resolvedTask).to.be.undefined;
+
+      sinon.restore();
+    });
+
+    test("invalid component", async () => {
+      sinon.stub(vscode.workspace, "workspaceFolders").value([
+        {
+          uri: vscode.Uri.file("test"),
+          name: "test",
+          index: 0,
+        } as vscode.WorkspaceFolder,
+      ]);
+      sinon.stub(commonUtils, "isFxProject").callsFake(async (folderPath: string) => {
+        return true;
+      });
+      sinon
+        .stub(commonUtils, "getProjectRoot")
+        .callsFake(async (folderPath: string, folderName: string) => {
+          return path.join(folderPath, folderName);
+        });
+
+      const inputTask = new vscode.Task(
+        {
+          type: "teamsfx",
+          command: "dev",
+          component: "try", // invalid
+        },
+        testWorkspaceFolder,
+        "try dev",
+        "teamsfx"
+      );
+      const resolvedTask = await taskProvider.resolveTask(inputTask);
+      chai.expect(resolvedTask).to.be.undefined;
 
       sinon.restore();
     });

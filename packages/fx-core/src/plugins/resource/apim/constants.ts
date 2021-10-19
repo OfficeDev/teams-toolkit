@@ -431,6 +431,4 @@ export class ApimArmOutput {
   static readonly ServiceResourceId = "apimServiceResourceId";
   static readonly ProductResourceId = "apimProductResourceId";
   static readonly AuthServerResourceId = "apimAuthServiceResourceId";
-  static readonly PublisherEmail = "apimPublisherEmail";
-  static readonly PublisherName = "apimPublisherName";
 }

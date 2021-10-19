@@ -47,7 +47,7 @@ export class Utils {
       if (isLocalDebug) {
         return ConfigFilePath.LocalSettings;
       } else {
-        return ConfigFilePath.Profile(ctx.envInfo.envName);
+        return ConfigFilePath.State(ctx.envInfo.envName);
       }
     } else {
       return ConfigFilePath.Default;

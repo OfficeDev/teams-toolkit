@@ -18,8 +18,8 @@ import {
   ConfigFolderName,
   InputConfigsFolderName,
   ProjectSettingsFileName,
-  EnvProfileFileNameTemplate,
-  PublishProfilesFolderName,
+  EnvStateFileNameTemplate,
+  StatesFolderName,
   EnvNamePlaceholder,
   Json,
   SubscriptionInfo,
@@ -327,9 +327,9 @@ async function getProvisionResultJson(env: string): Promise<Json | undefined> {
 
       isMultiEnvEnabled()
         ? path.join(
-            PublishProfilesFolderName,
+            StatesFolderName,
 
-            EnvProfileFileNameTemplate.replace(EnvNamePlaceholder, env)
+            EnvStateFileNameTemplate.replace(EnvNamePlaceholder, env)
           )
         : envDefaultJsonFile
     );

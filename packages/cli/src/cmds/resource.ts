@@ -43,15 +43,15 @@ async function checkAndReadEnvJson(
   if (!envsResult.value.includes(env)) {
     return err(new EnvNotFound(env));
   }
-  const envProfilePathResult = environmentManager.getEnvProfileFilesPath(env, rootFolder);
-  if (!existsSync(envProfilePathResult.envProfile)) {
+  const envStatePathResult = environmentManager.getEnvStateFilesPath(env, rootFolder);
+  if (!existsSync(envStatePathResult.envState)) {
     return err(new EnvNotProvisioned(env));
   }
   try {
-    const result = readJson(envProfilePathResult.envProfile);
+    const result = readJson(envStatePathResult.envState);
     return ok(result);
   } catch (error) {
-    return err(InvalidEnvFile("Failed to read env profile", envProfilePathResult.envProfile));
+    return err(InvalidEnvFile("Failed to read env state", envStatePathResult.envState));
   }
 }
 

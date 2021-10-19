@@ -24,10 +24,10 @@ import {
   Inputs,
   Platform,
   Colors,
-  PublishProfilesFolderName,
+  StatesFolderName,
   EnvNamePlaceholder,
   ProjectSettingsFileName,
-  EnvProfileFileNameTemplate,
+  EnvStateFileNameTemplate,
   InputConfigsFolderName,
 } from "@microsoft/teamsfx-api";
 
@@ -145,8 +145,8 @@ export function getEnvFilePath(
     path.join(
       projectFolder,
       `.${ConfigFolderName}`,
-      PublishProfilesFolderName,
-      EnvProfileFileNameTemplate.replace(EnvNamePlaceholder, env)
+      StatesFolderName,
+      EnvStateFileNameTemplate.replace(EnvNamePlaceholder, env)
     )
   );
 }
@@ -172,9 +172,7 @@ export function getSecretFilePath(
     return ok(path.join(projectRoot, `.${ConfigFolderName}`, `default.userdata`));
   }
 
-  return ok(
-    path.join(projectRoot, `.${ConfigFolderName}`, PublishProfilesFolderName, `${env}.userdata`)
-  );
+  return ok(path.join(projectRoot, `.${ConfigFolderName}`, StatesFolderName, `${env}.userdata`));
 }
 
 export async function readEnvJsonFile(

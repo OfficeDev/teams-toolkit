@@ -163,6 +163,8 @@ export async function scaffoldReadmeAndLocalSettings(
   localSettings?: Json,
   migrateFromV1?: boolean
 ): Promise<void> {
+  capabilities = capabilities || [];
+  azureResources = azureResources || [];
   const hasBot = capabilities.includes(BotOptionItem.id);
   const hasMsgExt = capabilities.includes(MessageExtensionItem.id);
   const hasTab = capabilities.includes(TabOptionItem.id);

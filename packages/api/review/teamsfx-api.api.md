@@ -327,7 +327,7 @@ export interface EnvMeta {
 export const EnvNamePlaceholder = "@envName";
 
 // @public (undocumented)
-export const EnvProfileFileNameTemplate: string;
+export const EnvStateFileNameTemplate: string;
 
 // @public (undocumented)
 export interface ErrorOptionBase {
@@ -1002,9 +1002,6 @@ type ProvisionInputs = Inputs & SolutionInputs & {
     projectPath: string;
 };
 
-// @public (undocumented)
-export const PublishProfilesFolderName = "publishProfiles";
-
 // @public
 export class QTreeNode {
     constructor(data: Question | Group);
@@ -1306,6 +1303,9 @@ export enum Stage {
     // (undocumented)
     userTask = "userTask"
 }
+
+// @public (undocumented)
+export const StatesFolderName = "states";
 
 // @public
 export type StaticOptions = string[] | OptionItem[];

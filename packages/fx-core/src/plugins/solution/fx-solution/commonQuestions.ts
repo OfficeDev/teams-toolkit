@@ -438,6 +438,7 @@ async function askCommonQuestions(
     );
     if (!maybeResourceGroupInfo) {
       // Currently we do not support creating resource group from command line arguments
+
       return err(
         returnUserError(
           new Error(
@@ -488,10 +489,19 @@ async function askCommonQuestions(
       }
 
       telemetryProperties[TelemetryProperty.CustomizeResourceGroupType] =
-        CustomizeResourceGroupType.EnvProfile;
+        CustomizeResourceGroupType.EnvState;
     } catch (e) {
+      let error;
+      const errorMessage = `Failed to check the existence of the resource group '${resourceGroupNameFromProfile}', error: '${e}'`;
+      if (e instanceof Error) {
+        // reuse the original error object to prevent losing the stack info
+        e.message = errorMessage;
+        error = e;
+      } else {
+        error = new Error(errorMessage);
+      }
       return err(
-        returnUserError(e, SolutionSource, SolutionError.FailedToCheckResourceGroupExistence)
+        returnUserError(error, SolutionSource, SolutionError.FailedToCheckResourceGroupExistence)
       );
     }
   } else if (ctx.answers && ctx.ui) {

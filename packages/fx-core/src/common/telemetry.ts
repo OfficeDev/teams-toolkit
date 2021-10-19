@@ -68,7 +68,7 @@ export enum Component {
 export enum CustomizeResourceGroupType {
   CommandLine = "command-line",
   EnvConfig = "env-config",
-  EnvProfile = "env-profile",
+  EnvState = "env-state",
   InteractiveCreateDefault = "interactive-create-default",
   InteractiveCreateCustomized = "interactive-create-customized",
   InteractiveUseExisting = "interactive-use-existing",

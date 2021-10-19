@@ -26,7 +26,7 @@ import {
   Platform,
   ProjectConfig,
   ProjectSettings,
-  PublishProfilesFolderName,
+  StatesFolderName,
   QTreeNode,
   Result,
   RunnableTask,
@@ -1302,7 +1302,7 @@ export async function createBasicFolderStructure(inputs: Inputs): Promise<Result
         ? [
             "node_modules",
             `.${ConfigFolderName}/${InputConfigsFolderName}/${localSettingsFileName}`,
-            `.${ConfigFolderName}/${PublishProfilesFolderName}/*.userdata`,
+            `.${ConfigFolderName}/${StatesFolderName}/*.userdata`,
             ".DS_Store",
             `${ArchiveFolderName}`,
             `${ArchiveLogFileName}`,

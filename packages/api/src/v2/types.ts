@@ -86,7 +86,7 @@ export type FxResult<T, Error = FxError> =
   | FxPartialSuccess<T, Error>
   | FxFailure<Error>;
 
-export type EnvInfoV2 = Omit<EnvInfo, "profile" | "config"> & { profile: Json } & { config: Json };
+export type EnvInfoV2 = Omit<EnvInfo, "state" | "config"> & { state: Json } & { config: Json };
 
 // This type has not been supported by TypeScript yet.
 // Check here https://github.com/microsoft/TypeScript/issues/13923.

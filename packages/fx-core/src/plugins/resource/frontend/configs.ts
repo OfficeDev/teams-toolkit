@@ -63,7 +63,7 @@ export class FrontendConfig {
       FrontendConfig.getResourceGroupName(ctx, getFromArmOutput),
       FrontendConfig.getConfig<string>(
         DependentPluginInfo.Location,
-        ctx.envInfo.profile.get(DependentPluginInfo.SolutionPluginName)
+        ctx.envInfo.state.get(DependentPluginInfo.SolutionPluginName)
       ),
       FrontendConfig.getStorageName(ctx, getFromArmOutput),
       credentials
@@ -94,7 +94,7 @@ export class FrontendConfig {
     if (!result) {
       const resourceNameSuffix = FrontendConfig.getConfig<string>(
         DependentPluginInfo.ResourceNameSuffix,
-        ctx.envInfo.profile.get(DependentPluginInfo.SolutionPluginName)
+        ctx.envInfo.state.get(DependentPluginInfo.SolutionPluginName)
       );
       result = Utils.generateStorageAccountName(
         ctx.projectSettings!.appName,
@@ -123,7 +123,7 @@ export class FrontendConfig {
       ? getSubscriptionIdFromResourceId(FrontendConfig.getStorageResourceId(ctx, getFromArmOutput))
       : FrontendConfig.getConfig<string>(
           DependentPluginInfo.SubscriptionId,
-          ctx.envInfo.profile.get(DependentPluginInfo.SolutionPluginName)
+          ctx.envInfo.state.get(DependentPluginInfo.SolutionPluginName)
         );
     if (!result) {
       throw new InvalidConfigError(DependentPluginInfo.SubscriptionId);
@@ -138,7 +138,7 @@ export class FrontendConfig {
         )
       : FrontendConfig.getConfig<string>(
           DependentPluginInfo.ResourceGroupName,
-          ctx.envInfo.profile.get(DependentPluginInfo.SolutionPluginName)
+          ctx.envInfo.state.get(DependentPluginInfo.SolutionPluginName)
         );
     if (!result) {
       throw new InvalidConfigError(DependentPluginInfo.ResourceGroupName);

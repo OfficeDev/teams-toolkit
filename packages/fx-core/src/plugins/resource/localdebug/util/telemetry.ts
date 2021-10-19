@@ -31,7 +31,7 @@ export class TelemetryUtils {
 
   public static init(ctx: PluginContext) {
     TelemetryUtils.ctx = ctx;
-    TelemetryUtils.localAppId = ctx.envInfo.profile
+    TelemetryUtils.localAppId = ctx.envInfo.state
       ?.get(SolutionPlugin.Name)
       ?.get(SolutionPlugin.LocalTeamsAppId) as string;
   }

@@ -120,7 +120,7 @@ export class ApimManager {
       apimConfig.publisherEmail = undefined;
       apimConfig.publisherName = undefined;
     } else {
-      const solutionConfig = new SolutionConfig(ctx.envInfo.profile);
+      const solutionConfig = new SolutionConfig(ctx.envInfo.state);
       const apimService: ApimService = await this.lazyApimService.getValue();
       const resourceGroupName = apimConfig.resourceGroupName ?? solutionConfig.resourceGroupName;
       const apimServiceName = AssertConfigNotEmpty(

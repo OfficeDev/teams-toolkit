@@ -123,8 +123,8 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
 
     if (isV2()) {
       const envInfo = result.value.envInfo;
-      const profile: Json = mapToJson(envInfo.profile);
-      ctx.envInfoV2 = { envName: envInfo.envName, config: envInfo.config, profile: profile };
+      const state: Json = mapToJson(envInfo.state);
+      ctx.envInfoV2 = { envName: envInfo.envName, config: envInfo.config, state };
     }
     await next();
   };
@@ -164,7 +164,7 @@ export async function loadSolutionContext(
   }
 
   // migrate programmingLanguage and defaultFunctionName to project settings if exists in previous env config
-  const solutionConfig = envInfo.profile as SolutionConfig;
+  const solutionConfig = envInfo.state as SolutionConfig;
   upgradeProgrammingLanguage(solutionConfig, projectSettings);
   upgradeDefaultFunctionName(solutionConfig, projectSettings);
 

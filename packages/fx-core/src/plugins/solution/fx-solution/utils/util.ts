@@ -24,11 +24,11 @@ export function getPluginContext(
   pluginIdentifier: string
 ): PluginContext {
   const baseCtx: Context = solutionCtx;
-  if (!solutionCtx.envInfo.profile.has(pluginIdentifier)) {
-    solutionCtx.envInfo.profile.set(pluginIdentifier, new ConfigMap());
+  if (!solutionCtx.envInfo.state.has(pluginIdentifier)) {
+    solutionCtx.envInfo.state.set(pluginIdentifier, new ConfigMap());
   }
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const pluginConfig: PluginConfig = solutionCtx.envInfo.profile.get(pluginIdentifier)!;
+  const pluginConfig: PluginConfig = solutionCtx.envInfo.state.get(pluginIdentifier)!;
   const pluginCtx: PluginContext = {
     ...baseCtx,
     envInfo: solutionCtx.envInfo,

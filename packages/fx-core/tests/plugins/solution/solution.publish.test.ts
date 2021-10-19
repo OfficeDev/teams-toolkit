@@ -54,6 +54,7 @@ import Container from "typedi";
 import { newEnvInfo } from "../../../src";
 import { TeamsAppSolutionV2 } from "../../../src/plugins/solution/fx-solution/v2/solution";
 import { AppStudioTokenProvider } from "@microsoft/teamsfx-api";
+import { LocalCrypto } from "../../../src/core/crypto";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -75,6 +76,7 @@ function mockSolutionContext(): SolutionContext {
     envInfo: newEnvInfo(),
     answers: { platform: Platform.VSCode },
     projectSettings: undefined,
+    cryptoProvider: new LocalCrypto(""),
   };
 }
 
@@ -287,7 +289,7 @@ describe("v2 implementation for publish()", () => {
     const mockedTokenProvider: AppStudioTokenProvider = new MockedAppStudioProvider();
     const mockedEnvInfo: v2.EnvInfoV2 = {
       envName: "default",
-      config: { manifest: { values: { appName: { short: "test-app" } } } },
+      config: { manifest: { appName: { short: "test-app" } } },
       profile: { solution: {} },
     };
 

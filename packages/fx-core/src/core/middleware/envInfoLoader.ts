@@ -20,13 +20,12 @@ import {
   traverse,
   UserCancelError,
 } from "@microsoft/teamsfx-api";
-import { isV2 } from "..";
+import { isV2, TOOLS } from "..";
 import { CoreHookContext, FxCore, isMultiEnvEnabled } from "../..";
 import {
   NoProjectOpenedError,
   ProjectEnvNotExistError,
   ProjectSettingsUndefinedError,
-  NonActiveEnvError,
 } from "../error";
 import { LocalCrypto } from "../crypto";
 import { environmentManager } from "../environment";
@@ -45,6 +44,7 @@ import { desensitize } from "./questionModel";
 import { shouldIgnored } from "./projectSettingsLoader";
 import { PermissionRequestFileProvider } from "../permissionRequest";
 import { newEnvInfo } from "../tools";
+import { mapToJson } from "../../common";
 
 const newTargetEnvNameOption = "+ new environment";
 const lastUsedMark = " (last used)";
@@ -63,10 +63,6 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
     }
 
     const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-    if (inputs.ignoreEnvInfo) {
-      skip = true;
-    }
-
     if (!ctx.projectSettings) {
       ctx.result = err(ProjectSettingsUndefinedError());
       return;
@@ -80,7 +76,7 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
     const core = ctx.self as FxCore;
 
     let targetEnvName: string;
-    if (!skip && isMultiEnvEnabled()) {
+    if (!skip && !inputs.ignoreEnvInfo && isMultiEnvEnabled()) {
       // TODO: This is a workaround for collabrator feature to programmatically load an env in extension.
       if (inputs.env) {
         const result = await useUserSetEnv(inputs.projectPath, inputs.env);
@@ -96,9 +92,9 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
           return;
         }
         targetEnvName = result.value;
-        ctx.ui?.showMessage(
+        core.tools.ui?.showMessage(
           "info",
-          `[${targetEnvName}] is selected as the target environment to ${inputs.stage}`,
+          `[${targetEnvName}] is selected as the target environment to ${ctx.method}`,
           false
         );
 
@@ -115,9 +111,8 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
       core.tools,
       inputs,
       ctx.projectSettings,
-      ctx.projectIdMissing,
       targetEnvName,
-      skip
+      skip || inputs.ignoreEnvInfo
     );
     if (result.isErr()) {
       ctx.result = err(result.error);
@@ -128,13 +123,7 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
 
     if (isV2()) {
       const envInfo = result.value.envInfo;
-      const profile: Json = {};
-      for (const key of envInfo.profile.keys()) {
-        const map = envInfo.profile.get(key);
-        if (map) {
-          profile[key] = (map as ConfigMap).toJSON();
-        }
-      }
+      const profile: Json = mapToJson(envInfo.profile);
       ctx.envInfoV2 = { envName: envInfo.envName, config: envInfo.config, profile: profile };
     }
     await next();
@@ -145,7 +134,6 @@ export async function loadSolutionContext(
   tools: Tools,
   inputs: Inputs,
   projectSettings: ProjectSettings,
-  projectIdMissing?: boolean,
   targetEnvName?: string,
   ignoreEnvInfo = false
 ): Promise<Result<SolutionContext, FxError>> {
@@ -161,11 +149,12 @@ export async function loadSolutionContext(
     envInfo = newEnvInfo();
   } else {
     // ensure backwards compatibility:
-    // no need to decrypt the secrets in *.userdata for previous TeamsFx project, which has no project id.
+    // project id will be generated for previous TeamsFx project.
+    // Decrypting the secrets in *.userdata with generated project id works because secrets doesn't have prefix.
     const envDataResult = await environmentManager.loadEnvInfo(
       inputs.projectPath,
-      targetEnvName,
-      projectIdMissing ? undefined : cryptoProvider
+      cryptoProvider,
+      targetEnvName
     );
 
     if (envDataResult.isErr()) {
@@ -361,8 +350,10 @@ async function getQuestionsForNewEnv(
   if (!inputs.projectPath) {
     return err(NoProjectOpenedError());
   }
+  const group = new QTreeNode({ type: "group" });
 
-  const node = new QTreeNode(getQuestionNewTargetEnvironmentName(inputs.projectPath));
+  const newEnvNameNode = new QTreeNode(getQuestionNewTargetEnvironmentName(inputs.projectPath));
+  group.addChild(newEnvNameNode);
 
   const envProfilesResult = await environmentManager.listEnvConfigs(inputs.projectPath);
   if (envProfilesResult.isErr()) {
@@ -375,9 +366,9 @@ async function getQuestionsForNewEnv(
   selectSourceEnv.default = lastUsed + lastUsedMark;
 
   const selectSourceEnvNode = new QTreeNode(selectSourceEnv);
-  node.addChild(selectSourceEnvNode);
+  group.addChild(selectSourceEnvNode);
 
-  return ok(node.trim());
+  return ok(group.trim());
 }
 
 function reOrderEnvironments(environments: Array<string>, lastUsed?: string): Array<string> {

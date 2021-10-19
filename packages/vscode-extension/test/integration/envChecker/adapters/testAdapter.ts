@@ -56,6 +56,8 @@ export class TestAdapter implements IDepsAdapter {
 
   private readonly _customScript: ICustomDotnetInstallScript;
 
+  private _hasTeamsfxBot = false;
+
   constructor(
     hasTeamsfxBackend: boolean,
     clickCancel = false,
@@ -104,12 +106,20 @@ export class TestAdapter implements IDepsAdapter {
     return Promise.resolve(this._hasTeamsfxBackend);
   }
 
+  hasTeamsfxBot(): Promise<boolean> {
+    return Promise.resolve(this._hasTeamsfxBot);
+  }
+
   dotnetCheckerEnabled(): Promise<boolean> {
     return Promise.resolve(this._dotnetCheckerEnabled);
   }
 
   funcToolCheckerEnabled(): Promise<boolean> {
     return Promise.resolve(this._funcToolCheckerEnabled);
+  }
+
+  ngrokCheckerEnabled(): Promise<boolean> {
+    return Promise.resolve(this._hasTeamsfxBot);
   }
 
   nodeCheckerEnabled(): Promise<boolean> {
@@ -123,5 +133,9 @@ export class TestAdapter implements IDepsAdapter {
   getResourceDir(): string {
     // use the same resources under vscode-extension/src/debug/depsChecker/resource
     return this._customScript.getScriptPath();
+  }
+
+  enableNgrok() {
+    this._hasTeamsfxBot = true;
   }
 }

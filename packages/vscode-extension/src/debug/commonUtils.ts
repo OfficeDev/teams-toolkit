@@ -6,16 +6,10 @@ import * as path from "path";
 import * as dotenv from "dotenv";
 import * as vscode from "vscode";
 import * as constants from "./constants";
-import {
-  ConfigFolderName,
-  Func,
-  InputConfigsFolderName,
-  PublishProfilesFolderName,
-} from "@microsoft/teamsfx-api";
+import { ConfigFolderName, Func, InputConfigsFolderName } from "@microsoft/teamsfx-api";
 import { core, getSystemInputs, showError } from "../handlers";
 import * as net from "net";
 import { ext } from "../extensionVariables";
-import { initializeFocusRects } from "@fluentui/utilities";
 import { isMultiEnvEnabled, isValidProject, isMigrateFromV1Project } from "@microsoft/teamsfx-core";
 
 export async function getProjectRoot(
@@ -27,7 +21,7 @@ export async function getProjectRoot(
   return projectExists ? projectRoot : undefined;
 }
 
-async function getLocalEnv(prefix = ""): Promise<{ [key: string]: string } | undefined> {
+export async function getLocalEnv(): Promise<{ [key: string]: string } | undefined> {
   if (!vscode.workspace.workspaceFolders) {
     return undefined;
   }
@@ -52,7 +46,16 @@ async function getLocalEnv(prefix = ""): Promise<{ [key: string]: string } | und
     const contents = await fs.readFile(localEnvFilePath);
     env = dotenv.parse(contents);
   }
+  return env;
+}
 
+function getLocalEnvWithPrefix(
+  env: { [key: string]: string } | undefined,
+  prefix: string
+): { [key: string]: string } | undefined {
+  if (env === undefined) {
+    return undefined;
+  }
   const result: { [key: string]: string } = {};
   for (const key of Object.keys(env)) {
     if (key.startsWith(prefix) && env[key]) {
@@ -62,26 +65,33 @@ async function getLocalEnv(prefix = ""): Promise<{ [key: string]: string } | und
   return Object.keys(result).length > 0 ? result : undefined;
 }
 
-export async function getFrontendLocalEnv(): Promise<{ [key: string]: string } | undefined> {
-  return getLocalEnv(constants.frontendLocalEnvPrefix);
+export function getFrontendLocalEnv(
+  env: { [key: string]: string } | undefined
+): { [key: string]: string } | undefined {
+  return getLocalEnvWithPrefix(env, constants.frontendLocalEnvPrefix);
 }
 
-export async function getBackendLocalEnv(): Promise<{ [key: string]: string } | undefined> {
-  return getLocalEnv(constants.backendLocalEnvPrefix);
+export function getBackendLocalEnv(
+  env: { [key: string]: string } | undefined
+): { [key: string]: string } | undefined {
+  return getLocalEnvWithPrefix(env, constants.backendLocalEnvPrefix);
 }
 
-export async function getAuthLocalEnv(): Promise<{ [key: string]: string } | undefined> {
+export function getAuthLocalEnv(
+  env: { [key: string]: string } | undefined
+): { [key: string]: string } | undefined {
   // SERVICE_PATH will also be included, but it has no side effect
-  return getLocalEnv(constants.authLocalEnvPrefix);
+  return getLocalEnvWithPrefix(env, constants.authLocalEnvPrefix);
 }
 
-export async function getAuthServicePath(): Promise<string | undefined> {
-  const result = await getLocalEnv();
-  return result ? result[constants.authServicePathEnvKey] : undefined;
+export function getAuthServicePath(env: { [key: string]: string } | undefined): string | undefined {
+  return env ? env[constants.authServicePathEnvKey] : undefined;
 }
 
-export async function getBotLocalEnv(): Promise<{ [key: string]: string } | undefined> {
-  return getLocalEnv(constants.botLocalEnvPrefix);
+export function getBotLocalEnv(
+  env: { [key: string]: string } | undefined
+): { [key: string]: string } | undefined {
+  return getLocalEnvWithPrefix(env, constants.botLocalEnvPrefix);
 }
 
 export async function isFxProject(folderPath: string): Promise<boolean> {
@@ -104,17 +114,32 @@ export async function hasTeamsfxBackend(): Promise<boolean> {
   return backendRoot !== undefined;
 }
 
+export async function hasTeamsfxBot(): Promise<boolean> {
+  if (!vscode.workspace.workspaceFolders) {
+    return false;
+  }
+
+  const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];
+  const workspacePath: string = workspaceFolder.uri.fsPath;
+  if (!(await isFxProject(workspacePath))) {
+    return false;
+  }
+
+  const botRoot = await getProjectRoot(workspacePath, constants.botFolderName);
+
+  return botRoot !== undefined;
+}
+
 export async function getLocalDebugEnvs(): Promise<Record<string, string>> {
   const localDebugEnvs = await executeLocalDebugUserTask("getLocalDebugEnvs");
   return localDebugEnvs as Record<string, string>;
 }
 
-export async function getLocalDebugTeamsAppId(
+export async function getDebugConfig(
   isLocalSideloadingConfiguration: boolean
-): Promise<string | undefined> {
+): Promise<{ appId: string; env?: string } | undefined> {
   const params = isLocalSideloadingConfiguration ? "local" : "remote";
-  const localDebugTeamsAppId = await executeLocalDebugUserTask("getLaunchInput", params);
-  return localDebugTeamsAppId as string;
+  return await executeLocalDebugUserTask("getLaunchInput", params);
 }
 
 export async function getProgrammingLanguage(): Promise<string | undefined> {
@@ -303,7 +328,7 @@ function getLocalSetting(jsonSelector: (jsonObject: any) => any): string | undef
 export function getTeamsAppTenantId(): string | undefined {
   try {
     if (isMultiEnvEnabled()) {
-      return getLocalSetting((localSettingsJson) => localSettingsJson.teamsApp.tenantId);
+      return getLocalSetting((localSettingsJson) => localSettingsJson.teamsApp?.tenantId);
     } else {
       return getSettingWithUserData((envJson) => envJson.solution.teamsAppTenantId);
     }
@@ -316,7 +341,7 @@ export function getTeamsAppTenantId(): string | undefined {
 export function getLocalTeamsAppId(): string | undefined {
   try {
     if (isMultiEnvEnabled()) {
-      return getLocalSetting((localSettingsJson) => localSettingsJson.teamsApp.teamsAppId);
+      return getLocalSetting((localSettingsJson) => localSettingsJson.teamsApp?.teamsAppId);
     } else {
       return getSettingWithUserData((envJson) => envJson.solution.localDebugTeamsAppId);
     }

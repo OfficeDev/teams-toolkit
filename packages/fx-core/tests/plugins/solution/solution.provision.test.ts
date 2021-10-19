@@ -65,6 +65,7 @@ import {
 } from "../../../src/plugins/solution/fx-solution/question";
 import {
   MockedGraphTokenProvider,
+  MockedSharepointProvider,
   MockedUserInteraction,
   MockedV2Context,
   validManifest,
@@ -96,6 +97,7 @@ import { TeamsAppSolutionV2 } from "../../../src/plugins/solution/fx-solution/v2
 import { EnvInfoV2, ResourceProvisionOutput } from "@microsoft/teamsfx-api/build/v2";
 import frontend from "../../../src/plugins/resource/frontend";
 import { UnknownObject } from "@azure/core-http/types/latest/src/util/utils";
+import { LocalCrypto } from "../../../src/core/crypto";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -290,6 +292,7 @@ function mockSolutionContext(): SolutionContext {
     projectSettings: undefined,
     appStudioToken: new MockedAppStudioTokenProvider(),
     azureAccountProvider: new MockedAzureTokenProvider(),
+    cryptoProvider: new LocalCrypto(""),
   };
 }
 
@@ -948,10 +951,11 @@ describe("API v2 implementation", () => {
         azureAccountProvider: new MockedAzureTokenProvider(),
         appStudioToken: new MockedAppStudioTokenProvider(),
         graphTokenProvider: new MockedGraphTokenProvider(),
+        sharepointTokenProvider: new MockedSharepointProvider(),
       };
       const mockedEnvInfo: EnvInfoV2 = {
         envName: "default",
-        config: { manifest: { values: { appName: { short: "test-app" } } } },
+        config: { manifest: { appName: { short: "test-app" } } },
         profile: {},
       };
       mockProvisionV2ThatAlwaysSucceed(spfxPluginV2);
@@ -999,10 +1003,11 @@ describe("API v2 implementation", () => {
         azureAccountProvider: new MockedAzureTokenProvider(),
         appStudioToken: new MockedAppStudioTokenProvider(),
         graphTokenProvider: new MockedGraphTokenProvider(),
+        sharepointTokenProvider: new MockedSharepointProvider(),
       };
       const mockedEnvInfo: EnvInfoV2 = {
         envName: "default",
-        config: { manifest: { values: { appName: { short: "test-app" } } } },
+        config: { manifest: { appName: { short: "test-app" } } },
         profile: {},
       };
       mockProvisionV2ThatAlwaysSucceed(fehostPluginV2);

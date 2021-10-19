@@ -24,6 +24,7 @@ import {
 } from "../../../../../src/plugins/resource/appstudio/constants";
 import path from "path";
 import { newEnvInfo } from "../../../../../src";
+import { LocalCrypto } from "../../../../../src/core/crypto";
 
 describe("Migrate", () => {
   let plugin: AppStudioPlugin;
@@ -46,6 +47,7 @@ describe("Migrate", () => {
       config: new ConfigMap(),
       answers: { platform: Platform.VSCode },
       projectSettings: undefined,
+      cryptoProvider: new LocalCrypto(""),
     };
 
     sandbox.stub(fs, "writeFile").callsFake(async (filePath: number | PathLike, data: any) => {

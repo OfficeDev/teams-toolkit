@@ -2,17 +2,18 @@
 // Licensed under the MIT license.
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { ResourceManagementClient } from "@azure/arm-resources";
+import { ServiceClientCredentials } from "@azure/ms-rest-js";
 import {
   AzureAccountProvider,
   GraphTokenProvider,
   PluginContext,
   ConfigMap,
   TeamsAppManifest,
-  OptionItem,
   Platform,
   SubscriptionInfo,
   Inputs,
   EnvInfo,
+  CryptoProvider,
 } from "@microsoft/teamsfx-api";
 import {
   AadOperationError,
@@ -36,6 +37,7 @@ import { IAadInfo } from "../../../../src/plugins/resource/apim/interfaces/IAadR
 import { ApiManagementClient } from "@azure/arm-apimanagement";
 import dotenv from "dotenv";
 import { newEnvInfo } from "../../../../src";
+import { LocalCrypto } from "../../../../src/core/crypto";
 
 dotenv.config();
 
@@ -62,6 +64,13 @@ export function beforeEach_if(condition: boolean, callback: Func | AsyncFunc): v
   }
 }
 
+export function generateFakeServiceClientCredentials(): ServiceClientCredentials {
+  return {
+    signRequest: (anything) => {
+      return Promise.resolve(anything);
+    },
+  };
+}
 export class MockAzureAccountProvider implements AzureAccountProvider {
   private credentials: TokenCredentialsBase | undefined;
 
@@ -179,6 +188,7 @@ export class MockPluginContext implements PluginContext {
   graphTokenProvider: MockGraphTokenProvider;
   answers: Inputs | undefined;
   platform: Platform = Platform.VSCode;
+  cryptoProvider: CryptoProvider = new LocalCrypto("");
 
   constructor(
     appName: string,

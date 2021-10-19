@@ -31,6 +31,7 @@ const UT_PRODUCT_NAME = "fx-apim-local-unit-test-product";
 const UT_OAUTH_SERVER_NAME = "fx-apim-local-unit-test-oauth-server";
 const UT_API_NAME = "fx-apim-local-unit-test-api";
 const UT_TEST_DATA_FOLDER = "./tests/plugins/resource/apim/unit/data/apimService";
+const UT_USER_ID = "mocked-user-id";
 
 describe("ApimService", () => {
   let apimClient: ApiManagementClient;
@@ -136,7 +137,12 @@ describe("ApimService", () => {
       const spy = sandbox.spy(apimClient.apiManagementService, "createOrUpdate");
 
       // Act
-      await apimService.createService(UT_RESOURCE_GROUP, newServiceName, EnvConfig.defaultLocation);
+      await apimService.createService(
+        UT_RESOURCE_GROUP,
+        newServiceName,
+        EnvConfig.defaultLocation,
+        UT_USER_ID
+      );
 
       // Assert
       sinon.assert.calledOnce(spy);
@@ -149,7 +155,12 @@ describe("ApimService", () => {
       const spy = sandbox.spy(apimClient.apiManagementService, "createOrUpdate");
 
       // Act
-      await apimService.createService(UT_RESOURCE_GROUP, UT_APIM_NAME, EnvConfig.defaultLocation);
+      await apimService.createService(
+        UT_RESOURCE_GROUP,
+        UT_APIM_NAME,
+        EnvConfig.defaultLocation,
+        UT_USER_ID
+      );
 
       // Assert
       sinon.assert.notCalled(spy);

@@ -280,32 +280,16 @@ export async function getQuestions(
       }
       const isAzure = isAzureProject(solutionSettings);
       const provisioned = checkWetherProvisionSucceeded(envInfo.profile);
-      if (isAzure && !provisioned) {
+      if (!provisioned) {
         return err(
-          returnUserError(
-            new Error(getStrings().solution.FailedToPublishBeforeProvision),
-            SolutionSource,
-            SolutionError.CannotPublishBeforeProvision
+          new UserError(
+            SolutionError.CannotPublishBeforeProvision,
+            isAzure
+              ? getStrings().solution.FailedToPublishBeforeProvision
+              : getStrings().solution.SPFxAskProvisionBeforePublish,
+            SolutionSource
           )
         );
-      }
-      if (!provisioned && !isAzure) {
-        if (inputs.platform === Platform.VSCode) {
-          ctx.userInteraction.showMessage(
-            "error",
-            getStrings().solution.SPFxAskProvisionBeforePublish,
-            false
-          );
-          return err(CancelError);
-        } else {
-          return err(
-            returnUserError(
-              new Error(getStrings().solution.SPFxAskProvisionBeforePublish),
-              SolutionSource,
-              SolutionError.CannotPublishBeforeProvision
-            )
-          );
-        }
       }
     }
     let plugins: v2.ResourcePlugin[] = [];

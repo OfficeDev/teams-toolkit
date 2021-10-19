@@ -31,6 +31,7 @@ import * as uuid from "uuid";
 import { getResourceFolder } from "../folder";
 import { ConstantString, FeatureFlagName } from "./constants";
 import * as crypto from "crypto";
+import { FailedToParseResourceIdError } from "..";
 
 Handlebars.registerHelper("contains", (value, array, options) => {
   array = array instanceof Array ? array : [array];
@@ -74,7 +75,8 @@ export async function ensureUniqueFolder(folderPath: string): Promise<string> {
  * @param {Map} map to convert.
  * @returns {Json} converted Json.
  */
-export function mapToJson(map: Map<any, any>): Json {
+export function mapToJson(map?: Map<any, any>): Json {
+  if (!map) return {};
   const out: Json = {};
   for (const entry of map.entries()) {
     if (entry[1] instanceof Map) {
@@ -510,7 +512,7 @@ export function getStorageAccountNameFromResourceId(resourceId: string): string 
     resourceId
   );
   if (!result) {
-    throw new Error("Failed to get storage accounts name from resource id: " + resourceId);
+    throw FailedToParseResourceIdError("storage accounts name", resourceId);
   }
   return result;
 }
@@ -518,7 +520,7 @@ export function getStorageAccountNameFromResourceId(resourceId: string): string 
 export function getSiteNameFromResourceId(resourceId: string): string {
   const result = parseFromResourceId(/providers\/Microsoft.Web\/sites\/([^\/]*)/i, resourceId);
   if (!result) {
-    throw new Error("Failed to get site name from resource id: " + resourceId);
+    throw FailedToParseResourceIdError("site name", resourceId);
   }
   return result;
 }
@@ -526,7 +528,7 @@ export function getSiteNameFromResourceId(resourceId: string): string {
 export function getResourceGroupNameFromResourceId(resourceId: string): string {
   const result = parseFromResourceId(/\/resourceGroups\/([^\/]*)\//i, resourceId);
   if (!result) {
-    throw new Error("Failed to get resource group name from resource id: " + resourceId);
+    throw FailedToParseResourceIdError("resource group name", resourceId);
   }
   return result;
 }
@@ -534,7 +536,7 @@ export function getResourceGroupNameFromResourceId(resourceId: string): string {
 export function getSubscriptionIdFromResourceId(resourceId: string): string {
   const result = parseFromResourceId(/\/subscriptions\/([^\/]*)\//i, resourceId);
   if (!result) {
-    throw new Error("Failed to get subscription id from resource id: " + resourceId);
+    throw FailedToParseResourceIdError("subscription id", resourceId);
   }
   return result;
 }
@@ -548,6 +550,10 @@ export async function waitSeconds(second: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, second * 1000));
 }
 
+export function getUuid(): string {
+  return uuid.v4();
+}
+
 export function isSPFxProject(projectSettings?: ProjectSettings): boolean {
   const solutionSettings = projectSettings?.solutionSettings as AzureSolutionSettings;
   if (solutionSettings) {
@@ -559,4 +565,89 @@ export function isSPFxProject(projectSettings?: ProjectSettings): boolean {
 
 export function getHashedEnv(envName: string): string {
   return crypto.createHash("sha256").update(envName).digest("hex");
+}
+
+interface BasicJsonSchema {
+  type: string;
+  properties?: {
+    [k: string]: unknown;
+  };
+}
+function isBasicJsonSchema(jsonSchema: unknown): jsonSchema is BasicJsonSchema {
+  if (!jsonSchema || typeof jsonSchema !== "object") {
+    return false;
+  }
+  return typeof (jsonSchema as { type: unknown })["type"] === "string";
+}
+
+function _redactObject(
+  obj: unknown,
+  jsonSchema: unknown,
+  maxRecursionDepth = 8,
+  depth = 0
+): unknown {
+  if (depth >= maxRecursionDepth) {
+    // prevent stack overflow if anything bad happens
+    return null;
+  }
+  if (!obj || !isBasicJsonSchema(jsonSchema)) {
+    return null;
+  }
+
+  if (
+    !(
+      jsonSchema.type === "object" &&
+      jsonSchema.properties &&
+      typeof jsonSchema.properties === "object"
+    )
+  ) {
+    // non-object types including unsupported types
+    return null;
+  }
+
+  const newObj: { [key: string]: any } = {};
+  const objAny = obj as any;
+  for (const key in jsonSchema.properties) {
+    if (key in objAny && objAny[key] !== undefined) {
+      const filteredObj = _redactObject(
+        objAny[key],
+        jsonSchema.properties[key],
+        maxRecursionDepth,
+        depth + 1
+      );
+      newObj[key] = filteredObj;
+    }
+  }
+  return newObj;
+}
+
+/** Redact user content in "obj";
+ *
+ * DFS "obj" and "jsonSchema" together to redact the following things:
+ * - properties that is not defined in jsonSchema
+ * - the value of properties that is defined in jsonSchema, but the keys will remain
+ *
+ * Example:
+ * Input:
+ * ```
+ *  obj = {
+ *    "name": "some name",
+ *    "user defined property": {
+ *      "key1": "value1"
+ *    }
+ *  }
+ *  jsonSchema = {
+ *    "type": "object",
+ *    "properties": {
+ *      "name": { "type": "string" }
+ *    }
+ *  }
+ * ```
+ * Output:
+ * ```
+ *  {"name": null}
+ * ```
+ **/
+export function redactObject(obj: unknown, jsonSchema: unknown, maxRecursionDepth = 8): unknown {
+  return _redactObject(obj, jsonSchema, maxRecursionDepth, 0);
 }

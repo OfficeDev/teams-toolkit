@@ -19,6 +19,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs, { PathLike } from "fs-extra";
+import { environmentManager } from "../../../src";
 import {
   BotOptionItem,
   HostTypeOptionAzure,
@@ -39,6 +40,7 @@ import { mockedFehostScaffoldArmResult, mockedSimpleAuthScaffoldArmResult } from
 import { getQuestionsForScaffolding } from "../../../src/plugins/solution/fx-solution/v2/getQuestions";
 import { MockTools } from "../../core/utils";
 import { assert } from "console";
+import { LocalCrypto } from "../../../src/core/crypto";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -57,6 +59,7 @@ function mockSolutionContext(): SolutionContext {
     envInfo: newEnvInfo(),
     answers: { platform: Platform.VSCode },
     projectSettings: undefined,
+    cryptoProvider: new LocalCrypto(""),
   };
 }
 
@@ -191,7 +194,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
     mockScaffoldThatAlwaysSucceed(simpleAuthPlugin);
     mockScaffoldThatAlwaysSucceed(localdebugPlugin);
     mockScaffoldThatAlwaysSucceed(appStudioPlugin);
-
+    mocker.stub(environmentManager, "listEnvConfigs").resolves(ok(["dev"]));
     // mock plugin behavior
     mocker.stub(fehostPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
       return ok(mockedFehostScaffoldArmResult);

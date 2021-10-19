@@ -8,6 +8,7 @@ import { CoreHookContext, FxCore, isV2 } from "..";
 import { isMultiEnvEnabled } from "../../common";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { environmentManager } from "../environment";
+import { shouldIgnored } from "./projectSettingsLoader";
 
 /**
  * This middleware will help to persist environment profile even if lifecycle task throws Error.
@@ -32,7 +33,7 @@ export function EnvInfoWriterMW(skip = false): Middleware {
 }
 
 async function writeEnvInfo(ctx: CoreHookContext, skip: boolean) {
-  if (skip && isMultiEnvEnabled()) {
+  if (shouldIgnored(ctx) || (skip && isMultiEnvEnabled())) {
     return;
   }
 
@@ -58,8 +59,8 @@ async function writeEnvInfo(ctx: CoreHookContext, skip: boolean) {
     const envProfilePath = await environmentManager.writeEnvProfile(
       provisionOutputs,
       inputs.projectPath,
-      envInfoV2.envName,
-      ctx.contextV2?.cryptoProvider
+      ctx.contextV2!.cryptoProvider,
+      envInfoV2.envName
     );
 
     if (envProfilePath.isOk()) {
@@ -78,8 +79,8 @@ async function writeEnvInfo(ctx: CoreHookContext, skip: boolean) {
     const envProfilePath = await environmentManager.writeEnvProfile(
       solutionContext.envInfo.profile,
       inputs.projectPath,
-      solutionContext.envInfo.envName,
-      solutionContext.cryptoProvider
+      solutionContext.cryptoProvider,
+      solutionContext.envInfo.envName
     );
 
     if (envProfilePath.isOk()) {

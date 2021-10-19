@@ -205,7 +205,7 @@ export class TeamsBotImpl {
     };
 
     const provisionModuleContentResult = await generateBicepFiles(
-      path.join(bicepTemplateDir, PathInfo.provisionModuleTemplateFileName),
+      path.join(bicepTemplateDir, PathInfo.ProvisionModuleTemplateFileName),
       handleBarsContext
     );
     if (provisionModuleContentResult.isErr()) {
@@ -213,7 +213,7 @@ export class TeamsBotImpl {
     }
 
     const configurationModuleContentResult = await generateBicepFiles(
-      path.join(bicepTemplateDir, PathInfo.configurationModuleTemplateFileName),
+      path.join(bicepTemplateDir, PathInfo.ConfigurationModuleTemplateFileName),
       handleBarsContext
     );
     if (configurationModuleContentResult.isErr()) {
@@ -437,10 +437,10 @@ export class TeamsBotImpl {
           value: this.config.provision.sqlPassword,
         });
       }
-      if (this.config.provision.identityId) {
+      if (this.config.provision.identityClientId) {
         appSettings.push({
           name: AuthEnvNames.IDENTITY_ID,
-          value: this.config.provision.identityId,
+          value: this.config.provision.identityClientId,
         });
       }
       if (this.config.provision.functionEndpoint) {
@@ -458,11 +458,11 @@ export class TeamsBotImpl {
           appSettings
         );
 
-      if (this.config.provision.identityName) {
+      if (this.config.provision.identityResourceId) {
         siteEnvelope.identity = {
           type: IdentityConstants.IDENTITY_TYPE_USER_ASSIGNED,
           userAssignedIdentities: {
-            [this.config.provision.identityName]: {},
+            [this.config.provision.identityResourceId]: {},
           },
         };
       }

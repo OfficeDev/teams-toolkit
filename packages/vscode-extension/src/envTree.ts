@@ -10,6 +10,7 @@ import {
   TreeCategory,
   TreeItem,
   SubscriptionInfo,
+  LocalEnvironmentName,
 } from "@microsoft/teamsfx-api";
 import {
   isMultiEnvEnabled,
@@ -20,7 +21,6 @@ import {
 import * as vscode from "vscode";
 import { CommandsTreeViewProvider } from "./treeview/commandsTreeViewProvider";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
-import { LocalEnvironment } from "./constants";
 import * as StringResources from "./resources/Strings.json";
 import { checkPermission, listAllCollaborators, tools } from "./handlers";
 import { signedIn } from "./commonlib/common/constant";
@@ -53,7 +53,7 @@ export async function registerEnvTreeHandler(
     showEnvList.splice(0);
 
     const envNames = (await localSettingsExists(workspacePath))
-      ? [LocalEnvironment].concat(envNamesResult.value)
+      ? [LocalEnvironmentName].concat(envNamesResult.value)
       : envNamesResult.value;
     for (const item of envNames) {
       showEnvList.push(item);
@@ -62,11 +62,9 @@ export async function registerEnvTreeHandler(
           commandId: "fx-extension.environment." + item,
           label: item,
           parent: TreeCategory.Environment,
-          contextValue: item === LocalEnvironment ? "local" : "environment",
+          contextValue: item === LocalEnvironmentName ? "local" : "environment",
           icon: "symbol-folder",
           isCustom: false,
-          // description:
-          //   item === activeEnv ? StringResources.vsc.commandsTreeViewProvider.active : "",
           expanded: true,
         },
       ]);
@@ -105,7 +103,7 @@ export async function getAllCollaboratorList(envs: string[], force = false): Pro
     }
 
     const collaboratorsRecord =
-      Object.keys(collaboratorsRecordCache).length > 0
+      Object.keys(collaboratorsRecordCache).length > 0 || loginStatus.status !== signedIn
         ? collaboratorsRecordCache
         : await listAllCollaborators(envs);
     collaboratorsRecordCache = collaboratorsRecord;
@@ -213,17 +211,6 @@ function generateCollaboratorParentNode(env: string): TreeItem {
   };
 }
 
-function getTreeViewItemIcon(envName: string, activeEnv: string | undefined) {
-  switch (envName) {
-    case activeEnv:
-    // return "folder-active";
-    case LocalEnvironment:
-    // return "lock";
-    default:
-      return "symbol-folder";
-  }
-}
-
 async function localSettingsExists(projectRoot: string): Promise<boolean> {
   const provider = new LocalSettingsProvider(projectRoot);
   return await fs.pathExists(provider.localSettingsFilePath);
@@ -233,7 +220,7 @@ export async function getSubscriptionAndResourceGroupNode(env: string): Promise<
   if (
     environmentTreeProvider &&
     environmentTreeProvider.findCommand("fx-extension.environment." + env) &&
-    env !== LocalEnvironment
+    env !== LocalEnvironmentName
   ) {
     let envSubItems: TreeItem[] = [];
     const subscriptionInfo = await getSubscriptionInfoFromEnv(env);

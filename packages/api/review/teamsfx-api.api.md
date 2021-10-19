@@ -133,7 +133,7 @@ export interface Context {
     // (undocumented)
     azureAccountProvider?: AzureAccountProvider;
     // (undocumented)
-    cryptoProvider?: CryptoProvider;
+    cryptoProvider: CryptoProvider;
     // (undocumented)
     graphTokenProvider?: GraphTokenProvider;
     // (undocumented)
@@ -147,6 +147,8 @@ export interface Context {
     // (undocumented)
     root: string;
     // (undocumented)
+    sharepointTokenProvider?: SharepointTokenProvider;
+    // (undocumented)
     telemetryReporter?: TelemetryReporter;
     // (undocumented)
     treeProvider?: TreeProvider;
@@ -157,7 +159,7 @@ export interface Context {
 // @public (undocumented)
 interface Context_2 {
     // (undocumented)
-    cryptoProvider?: CryptoProvider;
+    cryptoProvider: CryptoProvider;
     // (undocumented)
     logProvider: LogProvider;
     // (undocumented)
@@ -271,14 +273,12 @@ export interface EnvConfig {
         appPassword?: string;
         [k: string]: unknown;
     };
+    // (undocumented)
+    description?: string;
     manifest: {
-        description?: string;
-        values: {
-            appName: {
-                short: string;
-                full?: string;
-                [k: string]: unknown;
-            };
+        appName: {
+            short: string;
+            full?: string;
             [k: string]: unknown;
         };
         [k: string]: unknown;
@@ -288,6 +288,13 @@ export interface EnvConfig {
 
 // @public (undocumented)
 export const EnvConfigFileNameTemplate: string;
+
+declare namespace EnvConfigSchema {
+    export {
+
+    }
+}
+export { EnvConfigSchema }
 
 // @public (undocumented)
 export interface EnvInfo {
@@ -368,7 +375,7 @@ export interface FunctionRouter {
 
 // @public
 export interface FuncValidation<T extends string | string[] | undefined> {
-    validFunc: (input: T, previousInputs?: Inputs) => string | undefined | Promise<string | undefined>;
+    validFunc: ValidateFunc<T>;
 }
 
 // @public (undocumented)
@@ -720,6 +727,9 @@ export function loadOptions(q: Question, inputs: Inputs): Promise<Result<{
     options?: StaticOptions;
 }, FxError>>;
 
+// @public (undocumented)
+export const LocalEnvironmentName = "local";
+
 // @public
 export type LocalFunc<T> = (inputs: Inputs) => T | Promise<T>;
 
@@ -740,7 +750,7 @@ export interface LocalSettings {
     // (undocumented)
     frontend?: ConfigMap;
     // (undocumented)
-    teamsApp: ConfigMap;
+    teamsApp?: ConfigMap;
 }
 
 // @public (undocumented)
@@ -796,7 +806,7 @@ export interface MultiFileQuestion extends UserInputQuestion {
 
 // @public
 export interface MultiSelectConfig extends UIConfig<string[]> {
-    onDidChangeSelection?: (currentSelectedIds: Set<string>, previousSelectedIds: Set<string>) => Promise<Set<string>>;
+    onDidChangeSelection?: OnSelectionChangeFunc;
     options: StaticOptions;
     returnObject?: boolean;
 }
@@ -805,7 +815,7 @@ export interface MultiSelectConfig extends UIConfig<string[]> {
 export interface MultiSelectQuestion extends UserInputQuestion {
     default?: string[] | LocalFunc<string[] | undefined>;
     dynamicOptions?: DynamicOptions;
-    onDidChangeSelection?: (currentSelectedIds: Set<string>, previousSelectedIds: Set<string>) => Promise<Set<string>>;
+    onDidChangeSelection?: OnSelectionChangeFunc;
     returnObject?: boolean;
     skipSingleOption?: boolean;
     staticOptions: StaticOptions;
@@ -837,6 +847,9 @@ export class ObjectAlreadyExistsError extends UserError {
 export class ObjectNotExistError extends UserError {
     constructor(source: string, name: string);
 }
+
+// @public (undocumented)
+export type OnSelectionChangeFunc = (currentSelectedIds: Set<string>, previousSelectedIds: Set<string>) => Promise<Set<string>>;
 
 // @public
 export interface OptionItem {
@@ -956,11 +969,11 @@ export interface ProjectConfig {
 // @public
 export interface ProjectSettings {
     // (undocumented)
-    activeEnvironment?: string;
-    // (undocumented)
     appName: string;
     // (undocumented)
     defaultFunctionName?: string;
+    // (undocumented)
+    isFromSample?: boolean;
     // (undocumented)
     programmingLanguage?: string;
     // (undocumented)
@@ -1115,6 +1128,14 @@ export type SelectFolderConfig = UIConfig<string>;
 export type SelectFolderResult = InputResult<string>;
 
 // @public
+export interface SharepointTokenProvider {
+    getAccessToken(showDialog?: boolean): Promise<string | undefined>;
+    getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined>;
+    removeStatusChangeMap(name: string): Promise<boolean>;
+    setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>, immediateCall?: boolean): Promise<boolean>;
+}
+
+// @public
 export interface SingleFileQuestion extends UserInputQuestion {
     default?: string | LocalFunc<string | undefined>;
     // (undocumented)
@@ -1196,6 +1217,7 @@ type SolutionInputs = {
     location: string;
     teamsAppTenantId: string;
     subscriptionId: string;
+    tenantId: string;
     remoteTeamsAppId?: string;
     provisionSucceeded?: boolean;
 };
@@ -1255,6 +1277,10 @@ export enum Stage {
     debug = "debug",
     // (undocumented)
     deploy = "deploy",
+    // (undocumented)
+    getProjectConfig = "getProjectConfig",
+    // (undocumented)
+    getQuestions = "getQuestions",
     // (undocumented)
     grantPermission = "grantPermission",
     // (undocumented)
@@ -1444,6 +1470,7 @@ export type TokenProvider = {
     azureAccountProvider: AzureAccountProvider;
     graphTokenProvider: GraphTokenProvider;
     appStudioToken: AppStudioTokenProvider;
+    sharepointTokenProvider: SharepointTokenProvider;
 };
 
 // @public (undocumented)
@@ -1626,6 +1653,9 @@ export { v2 }
 
 // @public
 export function validate<T extends string | string[] | undefined>(validSchema: ValidationSchema, value: T, inputs?: Inputs): Promise<string | undefined>;
+
+// @public (undocumented)
+export type ValidateFunc<T> = (input: T, inputs?: Inputs) => string | undefined | Promise<string | undefined>;
 
 // @public
 export type ValidationSchema = StringValidation | StringArrayValidation | FuncValidation<any>;

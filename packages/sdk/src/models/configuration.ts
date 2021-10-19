@@ -55,6 +55,13 @@ export interface AuthenticationConfiguration {
   readonly clientSecret?: string;
 
   /**
+   * The content of a PEM-encoded public/private key certificate.
+   *
+   * @readonly
+   */
+  readonly certificateContent?: string;
+
+  /**
    * Endpoint of auth service provisioned by Teams Framework. Default value comes from SIMPLE_AUTH_ENDPOINT environment variable.
    *
    * @readonly

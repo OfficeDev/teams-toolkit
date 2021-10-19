@@ -14,7 +14,7 @@ param m365ApplicationIdUri string
 param functionEndpoint string
 param sqlDatabaseName string
 param sqlEndpoint string
-param identityId string
+param identityClientId string
 
 var initiateLoginEndpoint = uri(botEndpoint, authLoginUriSuffix)
 
@@ -42,6 +42,6 @@ resource botWebAppSettings 'Microsoft.Web/sites/config@2021-01-01' = {
       API_ENDPOINT: functionEndpoint
       SQL_DATABASE_NAME: sqlDatabaseName
       SQL_ENDPOINT: sqlEndpoint
-      IDENTITY_ID: identityId
+      IDENTITY_ID: identityClientId
      }
 }

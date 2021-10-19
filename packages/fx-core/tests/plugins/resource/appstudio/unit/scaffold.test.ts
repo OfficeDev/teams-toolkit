@@ -26,6 +26,7 @@ import {
   STATIC_TABS_TPL,
 } from "../../../../../src/plugins/resource/appstudio/constants";
 import { newEnvInfo } from "../../../../../src";
+import { LocalCrypto } from "../../../../../src/core/crypto";
 
 describe("Scaffold", () => {
   let plugin: AppStudioPlugin;
@@ -42,6 +43,7 @@ describe("Scaffold", () => {
       config: new ConfigMap(),
       answers: { platform: Platform.VSCode },
       projectSettings: undefined,
+      cryptoProvider: new LocalCrypto(""),
     };
 
     sandbox.stub(fs, "writeFile").callsFake((path: number | PathLike, data: any) => {

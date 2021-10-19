@@ -13,5 +13,3 @@ export enum SyncedState {
 export enum UserState {
   IsExisting = "teamsToolkit:user:isExisting",
 }
-
-export const LocalEnvironment = "local";

@@ -38,6 +38,7 @@ import sinon from "sinon";
 import fs from "fs-extra";
 import { AppStudioResultFactory } from "../../../../../src/plugins/resource/appstudio/results";
 import { newEnvInfo } from "../../../../../src";
+import { LocalCrypto } from "../../../../../src/core/crypto";
 
 class MockedAppStudioTokenProvider implements AppStudioTokenProvider {
   async getAccessToken(showDialog?: boolean): Promise<string> {
@@ -127,6 +128,7 @@ describe("Post Local Debug", () => {
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
       appStudioToken: new MockedAppStudioTokenProvider(),
+      cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -157,6 +159,7 @@ describe("Post Local Debug", () => {
       envInfo: newEnvInfo(),
       config: new ConfigMap(),
       appStudioToken: new MockedAppStudioTokenProvider(),
+      cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -196,6 +199,7 @@ describe("Post Local Debug", () => {
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
       appStudioToken: new MockedAppStudioTokenProvider(),
+      cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -249,6 +253,7 @@ describe("Post Local Debug", () => {
       envInfo: newEnvInfo(),
       config: new ConfigMap(),
       appStudioToken: new MockedAppStudioTokenProvider(),
+      cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
       appName: "my app",

@@ -20,6 +20,7 @@ import * as sinon from "sinon";
 import { GLOBAL_CONFIG, SolutionError } from "../../../src/plugins/solution/fx-solution/constants";
 import {
   MockedAppStudioProvider,
+  MockedSharepointProvider,
   MockedV2Context,
   mockPublishThatAlwaysSucceed,
   mockV2PublishThatAlwaysSucceed,
@@ -57,6 +58,7 @@ import { ProgrammingLanguage } from "../../../src/plugins/resource/bot/enums/pro
 import { MockGraphTokenProvider } from "../../core/utils";
 import { createEnv } from "../../../src/plugins/solution/fx-solution/v2/createEnv";
 import { ScaffoldingContextAdapter } from "../../../src/plugins/solution/fx-solution/v2/adaptor";
+import { LocalCrypto } from "../../../src/core/crypto";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -74,6 +76,7 @@ const mockedProvider: TokenProvider = {
   appStudioToken: new MockedAppStudioProvider(),
   azureAccountProvider: new MockedAzureAccountProvider(),
   graphTokenProvider: new MockGraphTokenProvider(),
+  sharepointTokenProvider: new MockedSharepointProvider(),
 };
 function mockSolutionContextWithPlatform(platform?: Platform): SolutionContext {
   const config: SolutionConfig = new Map();
@@ -83,6 +86,7 @@ function mockSolutionContextWithPlatform(platform?: Platform): SolutionContext {
     envInfo: newEnvInfo(),
     answers: { platform: platform ? platform : Platform.VSCode },
     projectSettings: undefined,
+    cryptoProvider: new LocalCrypto(""),
   };
 }
 

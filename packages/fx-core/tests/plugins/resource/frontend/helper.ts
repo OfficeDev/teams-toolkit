@@ -15,6 +15,7 @@ import { DependentPluginInfo } from "../../../../src/plugins/resource/frontend/c
 import { FrontendConfig } from "../../../../src/plugins/resource/frontend/configs";
 import { StorageAccountsCreateResponse } from "@azure/arm-storage/esm/models";
 import { newEnvInfo } from "../../../../src";
+import { LocalCrypto } from "../../../../src/core/crypto";
 
 export class TestHelper {
   static appName = "app-test";
@@ -116,6 +117,7 @@ export class TestHelper {
         },
       } as TeamsAppManifest,
       root: TestHelper.rootDir,
+      cryptoProvider: new LocalCrypto(""),
     } as PluginContext;
 
     return pluginContext;

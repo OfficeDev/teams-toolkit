@@ -1,4 +1,4 @@
 
 output identity_identityName string = userAssignedIdentityProvision.outputs.identityName
-output identity_identityId string = userAssignedIdentityProvision.outputs.identityId
-output identity_identity string = userAssignedIdentityProvision.outputs.identity
+output identity_identityClientId string = userAssignedIdentityProvision.outputs.identityClientId
+output identity_identityResourceId string = userAssignedIdentityProvision.outputs.identityResourceId

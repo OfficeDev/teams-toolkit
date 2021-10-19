@@ -12,7 +12,6 @@ import {
   PermissionRequestProvider,
 } from "../utils";
 import { EnvInfo } from "../context";
-import { SolutionProvisionOutput } from "./solutionPlugin";
 
 export type PluginName = string;
 
@@ -20,7 +19,7 @@ export interface Context {
   userInteraction: UserInteraction;
   logProvider: LogProvider;
   telemetryReporter: TelemetryReporter;
-  cryptoProvider?: CryptoProvider;
+  cryptoProvider: CryptoProvider;
   projectSetting: ProjectSettings;
   permissionRequestProvider?: PermissionRequestProvider;
 }
@@ -42,6 +41,8 @@ export type SolutionInputs = {
   location: string;
   teamsAppTenantId: string;
   subscriptionId: string;
+  // Azure tenantId
+  tenantId: string;
   remoteTeamsAppId?: string;
   // Used to track whether at least one successful provision has been made.
   // Useful for fail fast when deploying in a fresh project.

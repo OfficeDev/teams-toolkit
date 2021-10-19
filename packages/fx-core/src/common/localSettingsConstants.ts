@@ -48,3 +48,9 @@ export const LocalSettingsBotKeys = Object.freeze({
   BotDomain: "botDomain",
   BotEndpoint: "botEndpoint",
 });
+
+export const LocalSettingsEncryptKeys = Object.freeze({
+  ClientSecret: "clientSecret",
+  SimpleAuthEnvironmentVariableParams: "SimpleAuthEnvironmentVariableParams",
+  BotPassword: "botPassword",
+});

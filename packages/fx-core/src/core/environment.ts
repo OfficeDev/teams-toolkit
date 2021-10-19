@@ -61,11 +61,10 @@ class EnvironmentManager {
   private readonly defaultEnvNameNew = "dev";
   private readonly ajv;
   private readonly checksumKey = "_checksum";
-  private readonly schema =
-    "https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/packages/api/src/schemas/envConfig.json";
-  private readonly manifestConfigDescription =
-    `You can customize the 'values' object to customize Teams app manifest for different environments.` +
-    ` Visit https://aka.ms/teamsfx-config to learn more about this.`;
+  private readonly schema = "https://aka.ms/teamsfx-env-config-schema";
+  private readonly envConfigDescription =
+    `You can customize the TeamsFx config for different environments.` +
+    ` Visit https://aka.ms/teamsfx-env-config to learn more about this.`;
 
   constructor() {
     this.ajv = new Ajv();
@@ -74,8 +73,8 @@ class EnvironmentManager {
 
   public async loadEnvInfo(
     projectPath: string,
-    envName?: string,
-    cryptoProvider?: CryptoProvider
+    cryptoProvider: CryptoProvider,
+    envName?: string
   ): Promise<Result<EnvInfo, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
       return err(PathNotExistError(projectPath));
@@ -98,13 +97,11 @@ class EnvironmentManager {
   public newEnvConfigData(appName: string): EnvConfig {
     const envConfig: EnvConfig = {
       $schema: this.schema,
+      description: this.envConfigDescription,
       manifest: {
-        description: this.manifestConfigDescription,
-        values: {
-          appName: {
-            short: appName,
-            full: `Full name for ${appName}`,
-          },
+        appName: {
+          short: appName,
+          full: `Full name for ${appName}`,
         },
       },
     };
@@ -141,8 +138,8 @@ class EnvironmentManager {
   public async writeEnvProfile(
     envData: Map<string, any> | Json,
     projectPath: string,
-    envName?: string,
-    cryptoProvider?: CryptoProvider
+    cryptoProvider: CryptoProvider,
+    envName?: string
   ): Promise<Result<string, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
       return err(PathNotExistError(projectPath));
@@ -158,9 +155,7 @@ class EnvironmentManager {
 
     const data = envData instanceof Map ? mapToJson(envData) : envData;
     const secrets = sperateSecretData(data);
-    if (cryptoProvider) {
-      this.encrypt(secrets, cryptoProvider);
-    }
+    this.encrypt(secrets, cryptoProvider);
     if (Object.keys(secrets).length) {
       secrets[this.checksumKey] = jsum.digest(secrets, "SHA256", "hex");
     }
@@ -243,7 +238,7 @@ class EnvironmentManager {
   ): Promise<Result<EnvConfig, FxError>> {
     if (!isMultiEnvEnabled()) {
       return ok({
-        manifest: { values: { appName: { short: "" } } },
+        manifest: { appName: { short: "" } },
       });
     }
 
@@ -253,7 +248,12 @@ class EnvironmentManager {
     }
 
     const validate = this.ajv.compile<EnvConfig>(envConfigSchema);
-    const data = await fs.readJson(envConfigPath);
+    let data;
+    try {
+      data = await fs.readJson(envConfigPath);
+    } catch (error) {
+      return err(InvalidEnvConfigError(envName, `Failed to read env config JSON: ${error}`));
+    }
     if (validate(data)) {
       return ok(data);
     }
@@ -264,7 +264,7 @@ class EnvironmentManager {
   private async loadEnvProfile(
     projectPath: string,
     envName: string,
-    cryptoProvider?: CryptoProvider
+    cryptoProvider: CryptoProvider
   ): Promise<Result<Map<string, any>, FxError>> {
     const envFiles = this.getEnvProfileFilesPath(envName, projectPath);
     const userDataResult = await this.loadUserData(envFiles.userDataFile, cryptoProvider);
@@ -316,7 +316,7 @@ class EnvironmentManager {
 
   private async loadUserData(
     userDataPath: string,
-    cryptoProvider?: CryptoProvider
+    cryptoProvider: CryptoProvider
   ): Promise<Result<Record<string, string>, FxError>> {
     if (!(await fs.pathExists(userDataPath))) {
       return ok({});
@@ -324,9 +324,6 @@ class EnvironmentManager {
 
     const content = await fs.readFile(userDataPath, "UTF-8");
     const secrets = deserializeDict(content);
-    if (!cryptoProvider) {
-      return ok(secrets);
-    }
 
     const res = this.decrypt(secrets, cryptoProvider);
     if (res.isErr()) {
@@ -401,45 +398,6 @@ class EnvironmentManager {
     } else {
       return this.defaultEnvName;
     }
-  }
-
-  public getActiveEnv(projectRoot: string): Result<string, FxError> {
-    if (!isMultiEnvEnabled()) {
-      return ok("default");
-    }
-
-    const settingsJsonPath = path.join(
-      projectRoot,
-      `.${ConfigFolderName}/${InputConfigsFolderName}/${ProjectSettingsFileName}`
-    );
-    if (!fs.existsSync(settingsJsonPath)) {
-      return err(PathNotExistError(settingsJsonPath));
-    }
-
-    let settingsJson;
-    try {
-      settingsJson = fs.readJSONSync(settingsJsonPath, { encoding: "utf8" });
-    } catch (error) {
-      return err(
-        InvalidProjectSettingsFileError(
-          `Project settings file is not a valid JSON, error: '${error}'`
-        )
-      );
-    }
-
-    if (
-      !settingsJson ||
-      !settingsJson.activeEnvironment ||
-      typeof settingsJson.activeEnvironment !== "string"
-    ) {
-      return err(
-        InvalidProjectSettingsFileError(
-          "The property 'activeEnvironment' does not exist in project settings file."
-        )
-      );
-    }
-
-    return ok(settingsJson.activeEnvironment as string);
   }
 }
 

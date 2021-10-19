@@ -24,10 +24,11 @@ import * as fs from "fs-extra";
 import { ArmHelpLink, ConstantString, PluginDisplayName } from "../../../common/constants";
 import {
   Executor,
-  CryptoDataMatchers,
   getResourceGroupNameFromResourceId,
   waitSeconds,
+  getUuid,
 } from "../../../common/tools";
+import { environmentManager } from "../../..";
 import {
   ARM_TEMPLATE_OUTPUT,
   GLOBAL_CONFIG,
@@ -63,6 +64,8 @@ const parameterFileNameTemplate = `azure.parameters.${EnvNamePlaceholder}.json`;
 // constant string
 const resourceBaseName = "resourceBaseName";
 const parameterName = "parameters";
+const profileName = "profile";
+const solutionName = "solution";
 
 // Get ARM template content from each resource plugin and output to project folder
 export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<any, FxError>> {
@@ -363,7 +366,7 @@ export async function getParameterJson(ctx: SolutionContext) {
     throw returnUserError(returnError, SolutionSource, "ParameterFileNotExist");
   }
 
-  const parameterJson = await getExpandedParameter(ctx, parameterFilePath, true); // only expand secrets in memory
+  const parameterJson = await getExpandedParameter(ctx, parameterFilePath); // only expand secrets in memory
 
   return parameterJson;
 }
@@ -429,15 +432,18 @@ async function doGenerateArmTemplate(ctx: SolutionContext): Promise<Result<any, 
     }
 
     // Output parameter file
-    const parameterFileName = parameterFileNameTemplate.replace(
-      EnvNamePlaceholder,
-      ctx.envInfo.envName
-    );
+    const envProfilesResult = await environmentManager.listEnvConfigs(ctx.root);
+    if (envProfilesResult.isErr()) {
+      return err(envProfilesResult.error);
+    }
     const parameterEnvFolderPath = path.join(ctx.root, configsFolder);
-    const parameterEnvFilePath = path.join(parameterEnvFolderPath, parameterFileName);
-    const parameterFileContent = bicepOrchestrationTemplate.getParameterFileContent();
     await fs.ensureDir(parameterEnvFolderPath);
-    await fs.writeFile(parameterEnvFilePath, parameterFileContent);
+    for (const env of envProfilesResult.value) {
+      const parameterFileName = parameterFileNameTemplate.replace(EnvNamePlaceholder, env);
+      const parameterEnvFilePath = path.join(parameterEnvFolderPath, parameterFileName);
+      const parameterFileContent = bicepOrchestrationTemplate.getParameterFileContent();
+      await fs.writeFile(parameterEnvFilePath, parameterFileContent);
+    }
 
     // Output .gitignore file
     const gitignoreContent = await fs.readFile(
@@ -454,14 +460,10 @@ async function doGenerateArmTemplate(ctx: SolutionContext): Promise<Result<any, 
   return ok(undefined); // Nothing to return when success
 }
 
-async function getExpandedParameter(
-  ctx: SolutionContext,
-  filePath: string,
-  expandSecrets: boolean
-) {
+async function getExpandedParameter(ctx: SolutionContext, filePath: string) {
   try {
     const parameterTemplate = await fs.readFile(filePath, ConstantString.UTF8Encoding);
-    const parameterJsonString = expandParameterPlaceholders(ctx, parameterTemplate, expandSecrets);
+    const parameterJsonString = expandParameterPlaceholders(ctx, parameterTemplate);
     return JSON.parse(parameterJsonString);
   } catch (err) {
     ctx.logProvider?.error(
@@ -635,64 +637,58 @@ function generateBicepModuleFilePath(moduleFileName: string) {
   return `./modules/${moduleFileName}.bicep`;
 }
 
-function expandParameterPlaceholders(
-  ctx: SolutionContext,
-  parameterContent: string,
-  expandSecrets: boolean
-): string {
+function expandParameterPlaceholders(ctx: SolutionContext, parameterContent: string): string {
   const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
   const plugins = getActivatedResourcePlugins(azureSolutionSettings); // This function ensures return result won't be empty
-  const availableVariables: Record<string, string> = {};
+  const profileVariables: Record<string, Record<string, any>> = {};
+  const availableVariables: Record<string, Record<string, any>> = { profile: profileVariables };
   // Add plugin contexts to available variables
   for (const plugin of plugins) {
     const pluginContext = getPluginContext(ctx, plugin.name);
+    const pluginVariables: Record<string, string> = {};
     for (const configItem of pluginContext.config) {
       if (typeof configItem[1] === "string") {
         // Currently we only config with string type
-        const variableName = `${normalizeToEnvName(plugin.name)}__${normalizeToEnvName(
-          configItem[0]
-        )}`;
-        availableVariables[variableName] = configItem[1];
+        pluginVariables[configItem[0]] = configItem[1];
       }
     }
+    profileVariables[plugin.name] = pluginVariables;
   }
   // Add solution config to available variables
   const solutionConfig = ctx.envInfo.profile.get(GLOBAL_CONFIG);
   if (solutionConfig) {
+    const solutionVariables: Record<string, string> = {};
     for (const configItem of solutionConfig) {
       if (typeof configItem[1] === "string") {
         // Currently we only config with string type
-        const variableName = `SOLUTION__${normalizeToEnvName(configItem[0])}`;
-        availableVariables[variableName] = configItem[1];
+        solutionVariables[configItem[0]] = configItem[1];
       }
     }
+    profileVariables[solutionName] = solutionVariables;
   }
-  // Add environment variable to available variables
-  Object.assign(availableVariables, process.env); // The environment variable has higher priority
 
-  if (expandSecrets === false) {
-    escapeSecretPlaceholders(availableVariables);
-  }
+  // Add environment variable to available variables
+  const processVariables: Record<string, string> = Object.keys(process.env)
+    .filter((key) => !profileName.includes(key))
+    .reduce((obj: Record<string, string>, key: string) => {
+      obj[key] = process.env[key] as string;
+      return obj;
+    }, {});
+  Object.assign(availableVariables, processVariables); // The environment variable has higher priority
 
   return compileHandlebarsTemplateString(parameterContent, availableVariables);
 }
 
-function normalizeToEnvName(input: string): string {
-  return input.toUpperCase().replace(/-/g, "_").replace(/\./g, "__"); // replace "-" to "_" and "." to "__"
-}
-
 function generateResourceBaseName(appName: string, envName: string): string {
   const maxAppNameLength = 10;
-  const macEnvNameLength = 10;
+  const maxEnvNameLength = 4;
   const normalizedAppName = appName.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
-  return normalizedAppName.substr(0, maxAppNameLength) + envName.substr(0, macEnvNameLength);
-}
-
-function escapeSecretPlaceholders(variables: Record<string, string>) {
-  for (const key of CryptoDataMatchers) {
-    const normalizedKey = `${normalizeToEnvName(key)}`;
-    variables[normalizedKey] = `{{${normalizedKey}}}`; // replace value of 'SECRET_PLACEHOLDER' with '{{SECRET_PLACEHOLDER}}' so the placeholder remains unchanged
-  }
+  const normalizedEnvName = envName.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+  return (
+    normalizedAppName.substr(0, maxAppNameLength) +
+    normalizedEnvName.substr(0, maxEnvNameLength) +
+    getUuid().substr(0, 6)
+  );
 }
 
 // backup existing ARM template and parameter files to backup folder named with current timestamp

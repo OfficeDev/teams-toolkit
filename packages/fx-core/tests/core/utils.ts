@@ -34,6 +34,7 @@ import {
   SelectFilesResult,
   SelectFolderConfig,
   SelectFolderResult,
+  SharepointTokenProvider,
   SingleSelectConfig,
   SingleSelectResult,
   Solution,
@@ -352,6 +353,53 @@ export class MockAppStudioTokenProvider implements AppStudioTokenProvider {
   }
 }
 
+export class MockSharepointTokenProvider implements SharepointTokenProvider {
+  /**
+   * Get sharepoint access token
+   * @param showDialog Control whether the UI layer displays pop-up windows
+   */
+  getAccessToken(showDialog?: boolean): Promise<string | undefined> {
+    throw new Error("Method not implemented.");
+  }
+
+  /**
+   * Get sharepoint token JSON object
+   * - tid : tenantId
+   * - unique_name : user name
+   * - ...
+   * @param showDialog Control whether the UI layer displays pop-up windows
+   */
+  getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined> {
+    throw new Error("Method not implemented.");
+  }
+
+  /**
+   * Add update account info callback
+   * @param name callback name
+   * @param statusChange callback method
+   * @param immediateCall whether callback when register, the default value is true
+   */
+  setStatusChangeMap(
+    name: string,
+    statusChange: (
+      status: string,
+      token?: string,
+      accountInfo?: Record<string, unknown>
+    ) => Promise<void>,
+    immediateCall?: boolean
+  ): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+
+  /**
+   * Remove update account info callback
+   * @param name callback name
+   */
+  removeStatusChangeMap(name: string): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+}
+
 class MockTelemetryReporter implements TelemetryReporter {
   sendTelemetryErrorEvent(
     eventName: string,
@@ -455,6 +503,7 @@ export class MockTools implements Tools {
     azureAccountProvider: new MockAzureAccountProvider(),
     graphTokenProvider: new MockGraphTokenProvider(),
     appStudioToken: new MockAppStudioTokenProvider(),
+    sharepointTokenProvider: new MockSharepointTokenProvider(),
   };
   telemetryReporter = new MockTelemetryReporter();
   ui = new MockUserInteraction();
@@ -530,7 +579,6 @@ export function MockProjectSettings(appName: string): ProjectSettings {
         PluginNames.APPST,
       ],
     } as AzureSolutionSettings,
-    activeEnvironment: environmentManager.getDefaultEnvName(),
   };
 }
 

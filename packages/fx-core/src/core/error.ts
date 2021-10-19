@@ -7,10 +7,11 @@ import {
   Func,
   FxError,
   Inputs,
-  Stage,
   SystemError,
   UserError,
   Json,
+  EnvConfigFileNameTemplate,
+  EnvNamePlaceholder,
 } from "@microsoft/teamsfx-api";
 
 export const CoreSource = "Core";
@@ -27,6 +28,22 @@ export function ProjectFolderNotExistError(path: string): UserError {
   return new UserError(
     "ProjectFolderNotExistError",
     `Path ${path} does not exist. Select a different folder.`,
+    CoreSource
+  );
+}
+
+export function ArchiveUserFileError(path: string, reason: string): UserError {
+  return new UserError(
+    "ArchiveUserFileError",
+    `Failed to archive path '${path}'. ${reason}. You can refer to .archive.log which provides detailed information about the archive process.`,
+    CoreSource
+  );
+}
+
+export function ArchiveProjectError(reason: string): UserError {
+  return new UserError(
+    "ArchiveProjectError",
+    `Failed to archive the project. ${reason}. You can refer to .archive.log which provides detailed information about the archive process.`,
     CoreSource
   );
 }
@@ -196,17 +213,16 @@ export function ProjectEnvAlreadyExistError(env: string): FxError {
 export function InvalidEnvConfigError(env: string, errorMsg: string): UserError {
   return new UserError(
     "InvalidEnvConfigError",
-    `The configuration config.${env}.json is invalid, details: ${errorMsg}.`,
+    `The configuration ${EnvConfigFileNameTemplate.replace(
+      EnvNamePlaceholder,
+      env
+    )} is invalid, details: ${errorMsg}.`,
     CoreSource
   );
 }
 
 export function NonExistEnvNameError(env: string): UserError {
   return new UserError("NonExistEnvNameError", `Can not find environment ${env}.`, CoreSource);
-}
-
-export function NonActiveEnvError(): UserError {
-  return new UserError("NonActiveEnvError", `Can not find active environment.`, CoreSource);
 }
 
 export function ModifiedSecretError(): UserError {
@@ -237,4 +253,12 @@ export function SolutionConfigError(): UserError {
 
 export function ProjectSettingError(): UserError {
   return new UserError("ProjectSettingError", "Load project settings failed.", CoreSource);
+}
+
+export function FailedToParseResourceIdError(name: string, resourceId: string): UserError {
+  return new UserError(
+    "FailedToParseResourceIdError",
+    `Failed to get '${name}' from resource id: '${resourceId}'`,
+    CoreSource
+  );
 }

@@ -142,7 +142,7 @@ export interface ProjectSettings {
   programmingLanguage?: string;
   defaultFunctionName?: string;
   solutionSettings: SolutionSettings;
-  activeEnvironment?: string;
+  isFromSample?: boolean;
 }
 
 /**
@@ -165,7 +165,7 @@ export interface AzureSolutionSettings extends SolutionSettings {
  * local debug settings
  */
 export interface LocalSettings {
-  teamsApp: ConfigMap;
+  teamsApp?: ConfigMap;
   auth?: ConfigMap;
   frontend?: ConfigMap;
   backend?: ConfigMap;

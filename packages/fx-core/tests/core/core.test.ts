@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { StorageBrowserPolicy } from "@azure/storage-blob";
 import {
   AppPackageFolderName,
   err,
@@ -182,6 +183,7 @@ describe("Core basic APIs", () => {
         const expectedInputs: Inputs = {
           platform: Platform.VSCode,
           projectPath: testParam.projectPath,
+          stage: Stage.migrateV1,
         };
 
         if (testParam.skipAppNameQuestion) {
@@ -202,6 +204,11 @@ describe("Core basic APIs", () => {
             }
             throw err(InvalidInputError("invalid question"));
           });
+        sandbox
+          .stub<any, any>(ui, "showMessage")
+          .callsFake(async (): Promise<Result<string, FxError>> => {
+            return ok("OK");
+          });
         const core = new FxCore(tools);
         {
           const inputs: Inputs = {
@@ -218,16 +225,11 @@ describe("Core basic APIs", () => {
             assert.fail("failed to load project settings");
           }
 
-          const [projectSettings, projectIdMissing] = projectSettingsResult.value;
+          const projectSettings = projectSettingsResult.value;
           const validSettingsResult = validateSettings(projectSettings);
           assert.isTrue(validSettingsResult === undefined);
 
-          const envInfoResult = await loadSolutionContext(
-            tools,
-            inputs,
-            projectSettings,
-            projectIdMissing
-          );
+          const envInfoResult = await loadSolutionContext(tools, inputs, projectSettings);
           if (envInfoResult.isErr()) {
             assert.fail("failed to load env info");
           }
@@ -253,6 +255,7 @@ describe("Core basic APIs", () => {
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
       projectPath: projectPath,
       solution: mockSolution.name,
+      stage: Stage.create,
     };
     sandbox
       .stub<any, any>(ui, "inputText")
@@ -306,7 +309,7 @@ describe("Core basic APIs", () => {
         assert.fail("failed to load project settings");
       }
 
-      const [projectSettings, projectIdMissing] = projectSettingsResult.value;
+      const projectSettings = projectSettingsResult.value;
       const validSettingsResult = validateSettings(projectSettings);
       assert.isTrue(validSettingsResult === undefined);
     }
@@ -336,7 +339,7 @@ describe("Core basic APIs", () => {
         assert.fail("failed to load project settings");
       }
 
-      const [projectSettings, projectIdMissing] = projectSettingsResult.value;
+      const projectSettings = projectSettingsResult.value;
       const validSettingsResult = validateSettings(projectSettings);
       assert.isTrue(validSettingsResult === undefined);
     }
@@ -379,6 +382,7 @@ describe("Core basic APIs", () => {
       [CoreQuestionNames.Folder]: os.tmpdir(),
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionNoVSC.id,
       [CoreQuestionNames.Samples]: sampleOption,
+      stage: Stage.create,
     };
     sandbox
       .stub<any, any>(ui, "selectFolder")
@@ -425,7 +429,7 @@ describe("Core basic APIs", () => {
         assert.fail("failed to load project settings");
       }
 
-      const [projectSettings, projectIdMissing] = projectSettingsResult.value;
+      const projectSettings = projectSettingsResult.value;
       projectSettings.solutionSettings.name = mockSolution.name;
       const validSettingsResult = validateSettings(projectSettings);
       assert.isTrue(validSettingsResult === undefined);
@@ -441,6 +445,7 @@ describe("Core basic APIs", () => {
       [CoreQuestionNames.Folder]: os.tmpdir(),
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
       solution: mockSolution.name,
+      stage: Stage.getQuestions,
     };
     sandbox
       .stub<any, any>(ui, "inputText")
@@ -703,6 +708,7 @@ describe("Core basic APIs", () => {
       projectPath: projectPath,
       solution: mockSolution.name,
       env: "dev",
+      stage: Stage.create,
     };
 
     const newEnvName = "newEnv";
@@ -772,7 +778,7 @@ describe("Core basic APIs", () => {
       assert.isTrue(envListResult.value.length === 1);
       assert.isTrue(envListResult.value[0] === environmentManager.getDefaultEnvName());
 
-      const [projectSettings, projectIdMissing] = projectSettingsResult.value;
+      const projectSettings = projectSettingsResult.value;
       const validSettingsResult = validateSettings(projectSettings);
       assert.isTrue(validSettingsResult === undefined);
 
@@ -800,6 +806,7 @@ describe("Core basic APIs", () => {
       projectPath: projectPath,
       solution: mockSolution.name,
       env: "dev",
+      stage: Stage.create,
     };
     sandbox
       .stub<any, any>(ui, "inputText")
@@ -859,7 +866,7 @@ describe("Core basic APIs", () => {
         assert.fail("failed to load project settings");
       }
 
-      const [projectSettings, projectIdMissing] = projectSettingsResult.value;
+      const projectSettings = projectSettingsResult.value;
       const validSettingsResult = validateSettings(projectSettings);
       assert.isTrue(validSettingsResult === undefined);
 

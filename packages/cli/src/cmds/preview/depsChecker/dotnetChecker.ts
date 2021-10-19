@@ -456,8 +456,6 @@ export class DotnetChecker implements IDepsChecker {
     }
 
     const samplePath = path.join(os.homedir(), `.${ConfigFolderName}`, "dotnetSample");
-    const expected = "Hello World";
-    let actual = "";
     try {
       await fs.remove(samplePath);
 
@@ -472,7 +470,7 @@ export class DotnetChecker implements IDepsChecker {
         `${samplePath}`,
         "--force"
       );
-      actual = await cpUtils.executeCommand(
+      await cpUtils.executeCommand(
         undefined,
         this._logger,
         { shell: false },
@@ -482,7 +480,7 @@ export class DotnetChecker implements IDepsChecker {
         `${samplePath}`,
         "--force"
       );
-      return actual.includes(expected);
+      return true;
     } catch (error) {
       this._telemetry.sendSystemErrorEvent(
         DepsCheckerEvent.dotnetValidationError,
@@ -490,7 +488,7 @@ export class DotnetChecker implements IDepsChecker {
         error
       );
       await this._logger.debug(
-        `Failed to run hello world, dotnetPath = ${dotnetPath}, expected output = ${expected}, actual output = ${actual}, error = ${error}`
+        `Failed to run hello world, dotnetPath = ${dotnetPath}, error = ${error}`
       );
     } finally {
       await fs.remove(samplePath);

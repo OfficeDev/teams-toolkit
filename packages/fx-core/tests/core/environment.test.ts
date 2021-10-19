@@ -51,11 +51,8 @@ describe("APIs of Environment Manager", () => {
   const targetEnvName = "dev";
   const validEnvConfigData = {
     manifest: {
-      description: "",
-      values: {
-        appName: {
-          short: appName,
-        },
+      appName: {
+        short: appName,
       },
     },
   };
@@ -101,7 +98,7 @@ describe("APIs of Environment Manager", () => {
     it("load valid environment config file without target env", async () => {
       await mockEnvConfigs(projectPath, validEnvConfigData);
 
-      const actualEnvDataResult = await environmentManager.loadEnvInfo(projectPath);
+      const actualEnvDataResult = await environmentManager.loadEnvInfo(projectPath, cryptoProvider);
       if (actualEnvDataResult.isErr()) {
         assert.fail("Error ocurrs while loading environment config.");
       }
@@ -109,15 +106,18 @@ describe("APIs of Environment Manager", () => {
       const envConfigInfo = actualEnvDataResult.value;
       assert.equal(envConfigInfo.envName, environmentManager.getDefaultEnvName());
       assert.isUndefined(envConfigInfo.config.azure);
-      assert.equal(envConfigInfo.config.manifest.description, "");
-      assert.equal(envConfigInfo.config.manifest.values.appName.short, appName);
+      assert.equal(envConfigInfo.config.manifest.appName.short, appName);
     });
 
     it("load valid environment config file with target env", async () => {
       const envName = "test";
       await mockEnvConfigs(projectPath, validEnvConfigData, envName);
 
-      const actualEnvDataResult = await environmentManager.loadEnvInfo(projectPath, envName);
+      const actualEnvDataResult = await environmentManager.loadEnvInfo(
+        projectPath,
+        cryptoProvider,
+        envName
+      );
       if (actualEnvDataResult.isErr()) {
         assert.fail("Error occurs while loading environment config.");
       }
@@ -125,14 +125,27 @@ describe("APIs of Environment Manager", () => {
       const envConfigInfo = actualEnvDataResult.value;
       assert.equal(envConfigInfo.envName, envName);
       assert.isUndefined(envConfigInfo.config.azure);
-      assert.equal(envConfigInfo.config.manifest.description, "");
-      assert.equal(envConfigInfo.config.manifest.values.appName.short, appName);
+      assert.equal(envConfigInfo.config.manifest.appName.short, appName);
     });
 
     it("load invalid environment config file", async () => {
       await mockEnvConfigs(projectPath, invalidEnvConfigData);
 
-      const actualEnvDataResult = await environmentManager.loadEnvInfo(projectPath);
+      const actualEnvDataResult = await environmentManager.loadEnvInfo(projectPath, cryptoProvider);
+      if (actualEnvDataResult.isErr()) {
+        assert.equal(actualEnvDataResult.error.name, "InvalidEnvConfigError");
+      } else {
+        assert.fail("Failed to get expected error.");
+      }
+    });
+
+    it("load invalid JSON config file", async () => {
+      const envName = environmentManager.getDefaultEnvName();
+      const envConfigFile = environmentManager.getEnvConfigPath(envName, projectPath);
+      await fs.ensureFile(envConfigFile);
+      await fs.writeFile(envConfigFile, "not json");
+
+      const actualEnvDataResult = await environmentManager.loadEnvInfo(projectPath, cryptoProvider);
       if (actualEnvDataResult.isErr()) {
         assert.equal(actualEnvDataResult.error.name, "InvalidEnvConfigError");
       } else {
@@ -143,6 +156,7 @@ describe("APIs of Environment Manager", () => {
     it("load non existent env name", async () => {
       const actualEnvDataResult = await environmentManager.loadEnvInfo(
         projectPath,
+        cryptoProvider,
         "this does not exist"
       );
       if (actualEnvDataResult.isErr()) {
@@ -179,8 +193,8 @@ describe("APIs of Environment Manager", () => {
 
       const actualEnvDataResult = await environmentManager.loadEnvInfo(
         projectPath,
-        undefined,
-        cryptoProvider
+        cryptoProvider,
+        undefined
       );
       if (actualEnvDataResult.isErr()) {
         assert.fail("Error ocurrs while loading environment profile.");
@@ -195,8 +209,8 @@ describe("APIs of Environment Manager", () => {
 
       const actualEnvDataResult = await environmentManager.loadEnvInfo(
         projectPath,
-        targetEnvName,
-        cryptoProvider
+        cryptoProvider,
+        targetEnvName
       );
       if (actualEnvDataResult.isErr()) {
         assert.fail("Error ocurrs while loading environment profile.");
@@ -211,8 +225,8 @@ describe("APIs of Environment Manager", () => {
 
       const actualEnvDataResult = await environmentManager.loadEnvInfo(
         projectPath,
-        undefined,
-        cryptoProvider
+        cryptoProvider,
+        undefined
       );
       if (actualEnvDataResult.isErr()) {
         assert.fail("Error ocurrs while loading environment profile.");
@@ -232,8 +246,8 @@ describe("APIs of Environment Manager", () => {
 
       const actualEnvDataResult = await environmentManager.loadEnvInfo(
         projectPath,
-        targetEnvName,
-        cryptoProvider
+        cryptoProvider,
+        targetEnvName
       );
       if (actualEnvDataResult.isErr()) {
         assert.fail("Error ocurrs while loading environment profile.");
@@ -256,8 +270,8 @@ describe("APIs of Environment Manager", () => {
 
       const actualEnvDataResult = await environmentManager.loadEnvInfo(
         projectPath,
-        undefined,
-        cryptoProvider
+        cryptoProvider,
+        undefined
       );
       if (actualEnvDataResult.isErr()) {
         assert.fail("Error ocurrs while loading environment profile.");
@@ -277,8 +291,8 @@ describe("APIs of Environment Manager", () => {
 
       const actualEnvDataResult = await environmentManager.loadEnvInfo(
         projectPath,
-        targetEnvName,
-        undefined
+        cryptoProvider,
+        targetEnvName
       );
       if (actualEnvDataResult.isErr()) {
         assert.fail("Error ocurrs while loading environment profile.");
@@ -289,12 +303,12 @@ describe("APIs of Environment Manager", () => {
         string,
         string
       >;
-      assert.equal(envInfo.profile.get("solution").get("teamsAppTenantId"), encryptedSecret);
+      assert.equal(envInfo.profile.get("solution").get("teamsAppTenantId"), decryptedValue);
       assert.equal(envInfo.profile.get("solution").get("key"), expectedSolutionConfig.key);
     });
 
     it("environment profile doesn't exist", async () => {
-      const actualEnvDataResult = await environmentManager.loadEnvInfo(projectPath);
+      const actualEnvDataResult = await environmentManager.loadEnvInfo(projectPath, cryptoProvider);
       if (actualEnvDataResult.isErr()) {
         assert.fail("Error ocurrs while loading environment profile.");
       }
@@ -376,7 +390,8 @@ describe("APIs of Environment Manager", () => {
     it("no userdata: write environment profile without target env", async () => {
       await environmentManager.writeEnvProfile(
         tools.objectToMap(envProfileDataWithoutCredential),
-        projectPath
+        projectPath,
+        cryptoProvider
       );
       const envFiles = environmentManager.getEnvProfileFilesPath("default", projectPath);
 
@@ -392,6 +407,7 @@ describe("APIs of Environment Manager", () => {
       await environmentManager.writeEnvProfile(
         tools.objectToMap(envProfileDataWithoutCredential),
         projectPath,
+        cryptoProvider,
         targetEnvName
       );
       const envFiles = environmentManager.getEnvProfileFilesPath(targetEnvName, projectPath);
@@ -408,8 +424,8 @@ describe("APIs of Environment Manager", () => {
       await environmentManager.writeEnvProfile(
         envProfileDataObj,
         projectPath,
-        undefined,
-        cryptoProvider
+        cryptoProvider,
+        undefined
       );
       const envFiles = environmentManager.getEnvProfileFilesPath("default", projectPath);
 
@@ -429,8 +445,8 @@ describe("APIs of Environment Manager", () => {
       await environmentManager.writeEnvProfile(
         envProfileDataObj,
         projectPath,
-        targetEnvName,
-        cryptoProvider
+        cryptoProvider,
+        targetEnvName
       );
       const envFiles = environmentManager.getEnvProfileFilesPath(targetEnvName, projectPath);
 

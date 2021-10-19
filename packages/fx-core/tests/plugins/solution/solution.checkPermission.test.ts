@@ -33,6 +33,7 @@ import { EnvConfig, MockGraphTokenProvider } from "../resource/apim/testUtil";
 import Container from "typedi";
 import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import { CollaborationState, newEnvInfo } from "../../../src";
+import { LocalCrypto } from "../../../src/core/crypto";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -55,6 +56,7 @@ describe("checkPermission() for Teamsfx projects", () => {
       answers: { platform: Platform.VSCode },
       projectSettings: undefined,
       graphTokenProvider: mockGraphTokenProvider,
+      cryptoProvider: new LocalCrypto(""),
     };
   }
 

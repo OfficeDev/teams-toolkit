@@ -77,7 +77,7 @@ import {
   generateArmTemplate,
   getParameterJson,
 } from "./arm";
-import { checkSubscription, fillInCommonQuestions } from "./commonQuestions";
+import { checkM365Tenant, checkSubscription, fillInCommonQuestions } from "./commonQuestions";
 import {
   ARM_TEMPLATE_OUTPUT,
   CancelError,
@@ -748,7 +748,16 @@ export class TeamsAppSolution implements Solution {
         // Just to trigger M365 login before the concurrent execution of deploy.
         // Because concurrent exectution of deploy may getAccessToken() concurrently, which
         // causes 2 M365 logins before the token caching in common lib takes effect.
-        await ctx.appStudioToken?.getAccessToken();
+        const appStudioTokenJson = await ctx.appStudioToken?.getJsonObject();
+
+        const checkM365 = await checkM365Tenant(ctx.envInfo, appStudioTokenJson as object);
+        if (checkM365.isErr()) {
+          return checkM365;
+        }
+        const checkAzure = await checkSubscription(ctx.envInfo, ctx.azureAccountProvider!);
+        if (checkAzure.isErr()) {
+          return checkAzure;
+        }
       }
 
       this.runningState = SolutionRunningState.DeployInProgress;
@@ -860,6 +869,13 @@ export class TeamsAppSolution implements Solution {
     }
 
     try {
+      const appStudioTokenJson = await ctx.appStudioToken?.getJsonObject();
+
+      const checkM365 = await checkM365Tenant(ctx.envInfo, appStudioTokenJson as object);
+      if (checkM365.isErr()) {
+        return checkM365;
+      }
+
       this.runningState = SolutionRunningState.PublishInProgress;
 
       const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, [

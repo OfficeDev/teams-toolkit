@@ -34,6 +34,5 @@ setLogFunction((level: LogLevel, message: string) => {
     console.log(message);
   }
 });
-
 ```
 

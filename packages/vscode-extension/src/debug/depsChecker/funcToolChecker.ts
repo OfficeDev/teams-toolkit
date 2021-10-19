@@ -86,15 +86,8 @@ export class FuncToolChecker implements IDepsChecker {
       // to avoid "func -v" and "func new" work well, but "func start" fail.
       hasSentinel = await fs.pathExists(FuncToolChecker.getSentinelPath());
 
-      if (isWindows()) {
-        // delete func.ps1 when checking portable function
-        for (const funcFolder of this.getPortableFuncBinFolders()) {
-          const funcPath = path.join(funcFolder, "func.ps1");
-          if (await fs.pathExists(funcPath)) {
-            await this._logger.debug(`deleting func.ps1 from ${funcPath}`);
-            await fs.remove(funcPath);
-          }
-        }
+      if (isWindows() && isVersionSupported && hasSentinel) {
+        await this.cleanupPortablePs1();
       }
     } catch (error) {
       // do nothing
@@ -267,6 +260,17 @@ export class FuncToolChecker implements IDepsChecker {
     }
   }
 
+  private async cleanupPortablePs1(): Promise<void> {
+    // delete func.ps1 from portable function
+    for (const funcFolder of this.getPortableFuncBinFolders()) {
+      const funcPath = path.join(funcFolder, "func.ps1");
+      if (await fs.pathExists(funcPath)) {
+        await this._logger.debug(`deleting func.ps1 from ${funcPath}`);
+        await fs.remove(funcPath);
+      }
+    }
+  }
+
   private async installFunc(): Promise<void> {
     await this._telemetry.sendEventWithDuration(
       DepsCheckerEvent.funcInstallScriptCompleted,
@@ -307,14 +311,7 @@ export class FuncToolChecker implements IDepsChecker {
           await fs.remove(funcPSScript);
         }
 
-        // delete func.ps1 for portable version as well
-        for (const funcFolder of this.getPortableFuncBinFolders()) {
-          const funcPath = path.join(funcFolder, "func.ps1");
-          if (await fs.pathExists(funcPath)) {
-            await this._logger.debug(`deleting func.ps1 from ${funcPath}`);
-            await fs.remove(funcPath);
-          }
-        }
+        await this.cleanupPortablePs1();
       }
     } catch (error) {
       this._telemetry.sendSystemErrorEvent(

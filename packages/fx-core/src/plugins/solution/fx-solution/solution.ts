@@ -60,6 +60,7 @@ import {
   getHashedEnv,
   getStrings,
   isArmSupportEnabled,
+  isCheckAccountError,
   isMultiEnvEnabled,
   isUserCancelError,
   redactObject,
@@ -584,7 +585,10 @@ export class TeamsAppSolution implements Solution {
         ctx.ui?.showMessage("info", msg, false);
         ctx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
       } else {
-        if (!isUserCancelError(provisionResult.error)) {
+        if (
+          !isUserCancelError(provisionResult.error) &&
+          !isCheckAccountError(provisionResult.error)
+        ) {
           const msg = util.format(
             getStrings().solution.ProvisionFailNotice,
             ctx.projectSettings?.appName

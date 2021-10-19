@@ -101,7 +101,7 @@ describe("AadAppForTeamsPlugin: CI", () => {
     const provision = await plugin.provision(context);
     chai.assert.isTrue(provision.isOk());
 
-    mockProvisionResult(context);
+    mockProvisionResult(context, false, false);
     const setAppId = plugin.setApplicationInContext(context);
     chai.assert.isTrue(setAppId.isErr());
 
@@ -112,6 +112,7 @@ describe("AadAppForTeamsPlugin: CI", () => {
     const provisionSecond = await plugin.provision(context);
     chai.assert.isTrue(provisionSecond.isOk());
 
+    mockProvisionResult(context, false, true);
     const setAppIdSecond = plugin.setApplicationInContext(context);
     chai.assert.isTrue(setAppIdSecond.isOk());
 

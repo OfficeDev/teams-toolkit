@@ -14,6 +14,8 @@ import {
   Result,
   FxError,
   ok,
+  LocalSettings,
+  ConfigMap,
 } from "@microsoft/teamsfx-api";
 import sinon from "sinon";
 import {
@@ -29,6 +31,10 @@ import { isMultiEnvEnabled, newEnvInfo } from "../../../../src";
 import { IUserList } from "../../../../src/plugins/resource/appstudio/interfaces/IAppDefinition";
 import { ARM_TEMPLATE_OUTPUT } from "../../../../src/plugins/solution/fx-solution/constants";
 import { SOLUTION } from "../../../../src/plugins/resource/appstudio/constants";
+import {
+  LocalSettingsBotKeys,
+  LocalSettingsFrontendKeys,
+} from "../../../../src/common/localSettingsConstants";
 
 const permissions = '[{"resource": "Microsoft Graph","delegated": ["User.Read"],"application":[]}]';
 const permissionsWrong =
@@ -162,6 +168,26 @@ export class TestHelper {
       permissionRequestProvider: mockPermissionRequestProvider,
     } as unknown as PluginContext;
 
+    if (isMultiEnvEnabled()) {
+      const localSettings: LocalSettings = {
+        teamsApp: new ConfigMap(),
+        auth: new ConfigMap([[ConfigKeys.clientId, faker.datatype.uuid()]]),
+      };
+      if (frontend) {
+        localSettings.frontend = new ConfigMap([
+          [LocalSettingsFrontendKeys.TabDomain, domain],
+          [LocalSettingsFrontendKeys.TabEndpoint, endpoint],
+        ]);
+      }
+      if (bot) {
+        localSettings.bot = new ConfigMap([
+          [LocalSettingsBotKeys.BotEndpoint, botEndpoint],
+          [LocalSettingsBotKeys.BotId, botId],
+        ]);
+      }
+      pluginContext.localSettings = localSettings;
+    }
+
     return pluginContext;
   }
 }
@@ -203,24 +229,30 @@ function mockConfigOfOtherPluginsLocalDebug(
   botEndpoint: string | undefined,
   botId: string | undefined
 ) {
-  return new Map([
+  const result = new Map([
     [
       Plugins.solution,
       new Map([[ConfigKeysOfOtherPlugin.remoteTeamsAppId, faker.datatype.uuid()]]),
     ],
-    [
-      Plugins.localDebug,
-      new Map([
-        [ConfigKeysOfOtherPlugin.localDebugTabDomain, domain],
-        [ConfigKeysOfOtherPlugin.localDebugTabEndpoint, endpoint],
-        [ConfigKeysOfOtherPlugin.localDebugBotEndpoint, botEndpoint],
-      ]),
-    ],
     [Plugins.teamsBot, new Map([[ConfigKeysOfOtherPlugin.teamsBotIdLocal, botId]])],
   ]);
+  if (isMultiEnvEnabled()) {
+    // local debug config is stored in localSettings in multi-env
+    const localDebugConfig = new Map([
+      [ConfigKeysOfOtherPlugin.localDebugTabDomain, domain],
+      [ConfigKeysOfOtherPlugin.localDebugTabEndpoint, endpoint],
+      [ConfigKeysOfOtherPlugin.localDebugBotEndpoint, botEndpoint],
+    ]);
+    result.set(Plugins.localDebug, localDebugConfig);
+  }
+  return result;
 }
 
-export function mockProvisionResult(context: PluginContext, isLocalDebug = false) {
+export function mockProvisionResult(
+  context: PluginContext,
+  isLocalDebug = false,
+  hasFrontend = true
+) {
   context.config.set(
     Utils.addLocalDebugPrefix(isLocalDebug, ConfigKeys.clientId),
     faker.datatype.uuid()
@@ -233,9 +265,19 @@ export function mockProvisionResult(context: PluginContext, isLocalDebug = false
     Utils.addLocalDebugPrefix(isLocalDebug, ConfigKeys.clientSecret),
     faker.datatype.uuid()
   );
-  if (isMultiEnvEnabled()) {
-    const solutionProfile = context.envInfo.state.get(SOLUTION) ?? {};
-    solutionProfile[ConfigKeysOfOtherPlugin.frontendHostingDomain] = "frontendDomain";
+  if (isMultiEnvEnabled() && !isLocalDebug) {
+    // set context.envInfo.state.get(SOLUTION)[ARM_TEMPLATE_OUTPUT]["domain"] = some fake value
+    const solutionProfile = context.envInfo.state.get(SOLUTION) ?? new Map();
+    const armOutput = solutionProfile[ARM_TEMPLATE_OUTPUT] ?? {};
+
+    if (hasFrontend) {
+      armOutput[ConfigKeysOfOtherPlugin.frontendHostingDomainArm] = {
+        type: "String",
+        value: "fake.storage.domain.test",
+      };
+    }
+    solutionProfile.set(ARM_TEMPLATE_OUTPUT, armOutput);
+
     context.envInfo.state.set(SOLUTION, solutionProfile);
   }
 }

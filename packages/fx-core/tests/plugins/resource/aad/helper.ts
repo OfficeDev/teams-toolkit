@@ -25,8 +25,10 @@ import jwt_decode from "jwt-decode";
 import { Utils } from "../../../../src/plugins/resource/aad/utils/common";
 import { MockUserInteraction } from "../../../core/utils";
 import { DEFAULT_PERMISSION_REQUEST } from "../../../../src/plugins/solution/fx-solution/constants";
-import { newEnvInfo } from "../../../../src";
+import { isMultiEnvEnabled, newEnvInfo } from "../../../../src";
 import { IUserList } from "../../../../src/plugins/resource/appstudio/interfaces/IAppDefinition";
+import { ARM_TEMPLATE_OUTPUT } from "../../../../src/plugins/solution/fx-solution/constants";
+import { SOLUTION } from "../../../../src/plugins/resource/appstudio/constants";
 
 const permissions = '[{"resource": "Microsoft Graph","delegated": ["User.Read"],"application":[]}]';
 const permissionsWrong =
@@ -231,6 +233,11 @@ export function mockProvisionResult(context: PluginContext, isLocalDebug = false
     Utils.addLocalDebugPrefix(isLocalDebug, ConfigKeys.clientSecret),
     faker.datatype.uuid()
   );
+  if (isMultiEnvEnabled()) {
+    const solutionProfile = context.envInfo.state.get(SOLUTION) ?? {};
+    solutionProfile[ConfigKeysOfOtherPlugin.frontendHostingDomain] = "frontendDomain";
+    context.envInfo.state.set(SOLUTION, solutionProfile);
+  }
 }
 
 export function mockTokenProvider(): AppStudioTokenProvider {

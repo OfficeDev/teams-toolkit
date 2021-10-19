@@ -217,3 +217,42 @@ jobs:
           done  
           echo $coverages
           echo "::set-output name=coverages::$coverages"
+  multi-env-test2:
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Unit Test
+        shell: bash
+        run: |
+          cd / && bash -c "exit 15" && cd -
+          echo "exit code = $?"
+      - name: Unit Test
+        shell: bash
+        run: |
+          cd / && bash -c "exit 16" && cd -
+          echo "exit code = $?"
+      - name: Unit Test
+        shell: bash
+        run: |
+          cd / && bash -c "exit 17" && cd -
+          echo "exit code = $?"
+      - name: Unit Test
+        shell: bash
+        run: |
+          cd / && bash -c "exit 18" && cd -
+      - name: Unit Test
+        shell: bash
+        run: |
+          cd / && bash -c "exit 5" && cd -
+      - name: Unit Test
+        shell: bash
+        run: |
+          cd / && bash -c "exit 4" && cd -
+      - name: Unit Test
+        shell: bash
+        run: |
+          cd / && bash -c "exit 2" && cd -
+      - name: Unit Test
+        shell: bash
+        run: |
+          cd / && bash -c "exit 1" && cd -

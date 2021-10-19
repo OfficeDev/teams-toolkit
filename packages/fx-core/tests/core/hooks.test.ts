@@ -154,7 +154,6 @@ describe("Middleware - others", () => {
 
         async upgrade(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
           assert.equal(userData["fx-resource-aad-app-for-teams.local_clientId"], "local_clientId");
-          console.log(userData);
           assert.equal(userData["solution.localDebugTeamsAppId"], "teamsAppId");
           assert.equal(
             (envJson["solution"] as any)["localDebugTeamsAppId"],

@@ -20,6 +20,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { environmentManager } from "../../src/core/environment";
 import * as tools from "../../src/common/tools";
+import { isMultiEnvEnabled } from "../../src/common/tools";
 import sinon from "sinon";
 
 class MockCrypto implements CryptoProvider {
@@ -79,10 +80,10 @@ describe("APIs of Environment Manager", () => {
   };
 
   describe("Load Environment Config File", () => {
-    before(async () => {
-      sandbox.stub(tools, "isMultiEnvEnabled").returns(true);
-    });
-
+    // environment config exists only in multi-env
+    if (!isMultiEnvEnabled()) {
+      return;
+    }
     beforeEach(async () => {
       await fs.ensureDir(projectPath);
     });
@@ -190,6 +191,9 @@ describe("APIs of Environment Manager", () => {
 
     it("no userdata: load environment state without target env", async () => {
       await mockEnvStates(projectPath, envStateDataWithoutCredential);
+      if (isMultiEnvEnabled()) {
+        await mockEnvConfigs(projectPath, validEnvConfigData, targetEnvName);
+      }
 
       const actualEnvDataResult = await environmentManager.loadEnvInfo(
         projectPath,
@@ -197,7 +201,8 @@ describe("APIs of Environment Manager", () => {
         undefined
       );
       if (actualEnvDataResult.isErr()) {
-        assert.fail("Error ocurrs while loading environment state.");
+        // just throw the error so we get the error message and stack
+        throw actualEnvDataResult.error;
       }
 
       const envInfo = actualEnvDataResult.value;
@@ -206,6 +211,9 @@ describe("APIs of Environment Manager", () => {
 
     it("no userdata: load environment state with target env", async () => {
       await mockEnvStates(projectPath, envStateDataWithoutCredential, targetEnvName);
+      if (isMultiEnvEnabled()) {
+        await mockEnvConfigs(projectPath, validEnvConfigData, targetEnvName);
+      }
 
       const actualEnvDataResult = await environmentManager.loadEnvInfo(
         projectPath,
@@ -213,7 +221,7 @@ describe("APIs of Environment Manager", () => {
         targetEnvName
       );
       if (actualEnvDataResult.isErr()) {
-        assert.fail("Error ocurrs while loading environment state.");
+        throw actualEnvDataResult.error;
       }
 
       const envInfo = actualEnvDataResult.value;
@@ -222,6 +230,9 @@ describe("APIs of Environment Manager", () => {
 
     it("with userdata: load environment state without target env", async () => {
       await mockEnvStates(projectPath, envStateDataWithCredential, undefined, userData);
+      if (isMultiEnvEnabled()) {
+        await mockEnvConfigs(projectPath, validEnvConfigData, targetEnvName);
+      }
 
       const actualEnvDataResult = await environmentManager.loadEnvInfo(
         projectPath,
@@ -229,7 +240,7 @@ describe("APIs of Environment Manager", () => {
         undefined
       );
       if (actualEnvDataResult.isErr()) {
-        assert.fail("Error ocurrs while loading environment state.");
+        throw actualEnvDataResult.error;
       }
 
       const envInfo = actualEnvDataResult.value;
@@ -240,6 +251,9 @@ describe("APIs of Environment Manager", () => {
 
     it("with userdata: load environment state with target env", async () => {
       await mockEnvStates(projectPath, envStateDataWithCredential, targetEnvName, userData);
+      if (isMultiEnvEnabled()) {
+        await mockEnvConfigs(projectPath, validEnvConfigData, targetEnvName);
+      }
 
       const actualEnvDataResult = await environmentManager.loadEnvInfo(
         projectPath,
@@ -247,7 +261,7 @@ describe("APIs of Environment Manager", () => {
         targetEnvName
       );
       if (actualEnvDataResult.isErr()) {
-        assert.fail("Error ocurrs while loading environment state.");
+        throw actualEnvDataResult.error;
       }
 
       const envInfo = actualEnvDataResult.value;
@@ -261,6 +275,9 @@ describe("APIs of Environment Manager", () => {
         ...userData,
         _checksum: "81595a4344a4345ecfd90232f9e3540ce2b72e50745b3b83adc484c8e5055a33",
       });
+      if (isMultiEnvEnabled()) {
+        await mockEnvConfigs(projectPath, validEnvConfigData, targetEnvName);
+      }
 
       const actualEnvDataResult = await environmentManager.loadEnvInfo(
         projectPath,
@@ -268,7 +285,7 @@ describe("APIs of Environment Manager", () => {
         undefined
       );
       if (actualEnvDataResult.isErr()) {
-        assert.fail("Error ocurrs while loading environment state.");
+        throw actualEnvDataResult.error;
       }
 
       const envInfo = actualEnvDataResult.value;
@@ -279,6 +296,9 @@ describe("APIs of Environment Manager", () => {
 
     it("with userdata (legacy project): load environment state with target env", async () => {
       await mockEnvStates(projectPath, envStateDataWithCredential, targetEnvName, userData);
+      if (isMultiEnvEnabled()) {
+        await mockEnvConfigs(projectPath, validEnvConfigData, targetEnvName);
+      }
 
       const actualEnvDataResult = await environmentManager.loadEnvInfo(
         projectPath,
@@ -286,7 +306,7 @@ describe("APIs of Environment Manager", () => {
         targetEnvName
       );
       if (actualEnvDataResult.isErr()) {
-        assert.fail("Error ocurrs while loading environment state.");
+        throw actualEnvDataResult.error;
       }
 
       const envInfo = actualEnvDataResult.value;
@@ -296,11 +316,14 @@ describe("APIs of Environment Manager", () => {
     });
 
     it("Environment state doesn't exist", async () => {
+      if (isMultiEnvEnabled()) {
+        await mockEnvConfigs(projectPath, validEnvConfigData, targetEnvName);
+      }
       const actualEnvDataResult = await environmentManager.loadEnvInfo(projectPath, cryptoProvider);
       if (actualEnvDataResult.isErr()) {
-        assert.fail("Error ocurrs while loading environment state.");
+        throw actualEnvDataResult.error;
       }
-      assert.equal(actualEnvDataResult.value.envName, "default");
+      assert.equal(actualEnvDataResult.value.envName, environmentManager.getDefaultEnvName());
     });
   });
 
@@ -328,11 +351,7 @@ describe("APIs of Environment Manager", () => {
         assert.fail("Failed to write environment config.");
       }
 
-      const expectedContent = JSON.stringify(envConfig, null, 4);
-      assert.equal(
-        formatContent(fileMap.get(envConfigPathResult.value)),
-        formatContent(expectedContent)
-      );
+      assert.deepEqual(JSON.parse(fileMap.get(envConfigPathResult.value)), envConfig);
     });
 
     it("write environment config with target env", async () => {
@@ -381,13 +400,13 @@ describe("APIs of Environment Manager", () => {
         projectPath,
         cryptoProvider
       );
-      const envFiles = environmentManager.getEnvStateFilesPath("default", projectPath);
+      const envFiles = environmentManager.getEnvStateFilesPath(
+        environmentManager.getDefaultEnvName(),
+        projectPath
+      );
 
       const expectedEnvStateContent = JSON.stringify(envStateDataWithoutCredential, null, 4);
-      assert.equal(
-        formatContent(fileMap.get(envFiles.envState)),
-        formatContent(expectedEnvStateContent)
-      );
+      assert.deepEqual(JSON.parse(fileMap.get(envFiles.envState)), envStateDataWithoutCredential);
       assert.equal(fileMap.get(envFiles.userDataFile), "");
     });
 
@@ -415,14 +434,13 @@ describe("APIs of Environment Manager", () => {
         cryptoProvider,
         undefined
       );
-      const envFiles = environmentManager.getEnvStateFilesPath("default", projectPath);
-
-      const expectedEnvStateContent = JSON.stringify(envStateDataWithCredential, null, 4);
-      const expectedUserDataFileContent = `solution.teamsAppTenantId=${encryptedSecret}\n_checksum=81595a4344a4345ecfd90232f9e3540ce2b72e50745b3b83adc484c8e5055a33`;
-      assert.equal(
-        formatContent(fileMap.get(envFiles.envState)),
-        formatContent(expectedEnvStateContent)
+      const envFiles = environmentManager.getEnvStateFilesPath(
+        environmentManager.getDefaultEnvName(),
+        projectPath
       );
+
+      const expectedUserDataFileContent = `solution.teamsAppTenantId=${encryptedSecret}\n_checksum=81595a4344a4345ecfd90232f9e3540ce2b72e50745b3b83adc484c8e5055a33`;
+      assert.deepEqual(JSON.parse(fileMap.get(envFiles.envState)), envStateDataWithCredential);
       assert.equal(
         formatContent(fileMap.get(envFiles.userDataFile)),
         formatContent(expectedUserDataFileContent)

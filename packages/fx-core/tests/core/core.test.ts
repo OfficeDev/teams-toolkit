@@ -148,6 +148,10 @@ describe("Core basic APIs", () => {
   });
 
   describe("migrateV1", () => {
+    if (commonTools.isMultiEnvEnabled()) {
+      // TODO: add multi-env test case after migrateV1 for mult-env implemented
+      return;
+    }
     let mockedEnvRestore: RestoreFn;
     beforeEach(() => {
       mockedEnvRestore = mockedEnv({ TEAMSFX_APIV2: "false" });

@@ -4,13 +4,17 @@ on:
   pull_request:
 
 jobs:
-  run-tests:
+  feature-owner:
+    if: ${{ github.event.pull_request.head.repo.full_name == 'OfficeDev/TeamsFx' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
+
+      - name: Skip forked repo
+        run: |
 
       - name: Setup node
         uses: actions/setup-node@v2.1.2

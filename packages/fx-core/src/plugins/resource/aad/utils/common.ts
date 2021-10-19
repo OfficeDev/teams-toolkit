@@ -3,7 +3,6 @@
 
 import { LogProvider, PluginContext } from "@microsoft/teamsfx-api";
 import { isMultiEnvEnabled } from "../../../..";
-import { checkAndSaveConfig } from "../../bot/utils/common";
 import { ConfigFilePath, ConfigKeys, Constants, Messages } from "../constants";
 import { ConfigUtils } from "./configs";
 import { TelemetryUtils } from "./telemetry";
@@ -79,10 +78,10 @@ export class Utils {
     const skip = ctx.envInfo.config.auth?.[ConfigKeys.skip];
 
     if (objectId && clientId && oauth2PermissionScopeId && clientSecret) {
-      checkAndSaveConfig(ctx, ConfigKeys.objectId, objectId as string);
-      checkAndSaveConfig(ctx, ConfigKeys.clientId, clientId as string);
-      checkAndSaveConfig(ctx, ConfigKeys.clientSecret, clientSecret as string);
-      checkAndSaveConfig(
+      ConfigUtils.checkAndSaveConfig(ctx, ConfigKeys.objectId, objectId as string);
+      ConfigUtils.checkAndSaveConfig(ctx, ConfigKeys.clientId, clientId as string);
+      ConfigUtils.checkAndSaveConfig(ctx, ConfigKeys.clientSecret, clientSecret as string);
+      ConfigUtils.checkAndSaveConfig(
         ctx,
         ConfigKeys.oauth2PermissionScopeId,
         oauth2PermissionScopeId as string

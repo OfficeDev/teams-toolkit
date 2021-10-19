@@ -33,7 +33,7 @@ export class ConfigUtils {
       }
     } else {
       if (isMultiEnvEnabled()) {
-        return ctx.envInfo.profile.get(Plugins.pluginNameComplex).get(key) as string;
+        return ctx.envInfo.state.get(Plugins.pluginNameComplex).get(key) as string;
       } else {
         return ctx.config?.get(key) as string;
       }
@@ -77,14 +77,14 @@ export class ConfigUtils {
       return;
     }
 
-    if (isLocalDebug) {
-      if (isMultiEnvEnabled()) {
+    if (isMultiEnvEnabled()) {
+      if (isLocalDebug) {
         ctx.localSettings?.auth?.set(key, value);
       } else {
-        ctx.envInfo?.profile?.set(Utils.addLocalDebugPrefix(true, key), value);
+        ctx.envInfo.state.get(Plugins.pluginNameComplex)?.set(key, value);
       }
     } else {
-      ctx.config.set(key, value);
+      ctx.config.set(Utils.addLocalDebugPrefix(isLocalDebug, key), value);
     }
   }
 

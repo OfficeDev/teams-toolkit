@@ -86,12 +86,14 @@ export class FuncToolChecker implements IDepsChecker {
       // to avoid "func -v" and "func new" work well, but "func start" fail.
       hasSentinel = await fs.pathExists(FuncToolChecker.getSentinelPath());
 
-      // delete func.ps1 when checking portable function
-      for (const funcFolder in this.getPortableFuncBinFolders()) {
-        const funcPath = path.join(funcFolder, "func.ps1");
-        if (await fs.pathExists(funcPath)) {
-          await this._logger.debug(`deleting func.ps1 from ${funcPath}`);
-          await fs.remove(funcPath);
+      if (isWindows()) {
+        // delete func.ps1 when checking portable function
+        for (const funcFolder of this.getPortableFuncBinFolders()) {
+          const funcPath = path.join(funcFolder, "func.ps1");
+          if (await fs.pathExists(funcPath)) {
+            await this._logger.debug(`deleting func.ps1 from ${funcPath}`);
+            await fs.remove(funcPath);
+          }
         }
       }
     } catch (error) {
@@ -306,7 +308,7 @@ export class FuncToolChecker implements IDepsChecker {
         }
 
         // delete func.ps1 for portable version as well
-        for (const funcFolder in this.getPortableFuncBinFolders()) {
+        for (const funcFolder of this.getPortableFuncBinFolders()) {
           const funcPath = path.join(funcFolder, "func.ps1");
           if (await fs.pathExists(funcPath)) {
             await this._logger.debug(`deleting func.ps1 from ${funcPath}`);

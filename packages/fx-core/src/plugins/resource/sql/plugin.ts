@@ -169,6 +169,9 @@ export class SqlPluginImpl {
       ctx.logProvider?.info(Message.skipProvisionDatabase);
     }
 
+    ctx.config.set(Constants.sqlEndpoint, this.config.sqlEndpoint);
+    ctx.config.set(Constants.databaseName, this.config.databaseName);
+
     TelemetryUtils.sendEvent(Telemetry.stage.provision, true);
     ctx.logProvider?.info(Message.endProvision);
     await DialogUtils.progressBar?.end(true);
@@ -188,10 +191,9 @@ export class SqlPluginImpl {
     if (isArmSupportEnabled()) {
       this.syncArmOutput(ctx);
       ctx.config.set(Constants.sqlResourceId, this.config.sqlResourceId);
+      ctx.config.set(Constants.sqlEndpoint, this.config.sqlEndpoint);
+      ctx.config.set(Constants.databaseName, this.config.databaseName);
     }
-
-    ctx.config.set(Constants.sqlEndpoint, this.config.sqlEndpoint);
-    ctx.config.set(Constants.databaseName, this.config.databaseName);
 
     ctx.config.delete(Constants.adminPassword);
     this.config.prepareQuestions = false;

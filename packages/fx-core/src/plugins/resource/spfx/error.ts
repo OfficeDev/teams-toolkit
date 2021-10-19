@@ -63,3 +63,13 @@ export function InsufficientPermissionError(appCatalog: string): UserError {
     "InsufficientPermission"
   );
 }
+
+export function CreateAppCatalogFailedError(error: Error): SystemError {
+  return returnSystemError(
+    new Error(
+      `Failed to create tenant app catalog, due to ${error.message}, stack: ${error.stack}`
+    ),
+    Constants.PLUGIN_NAME,
+    "CreateAppCatalogFailed"
+  );
+}

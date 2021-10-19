@@ -77,4 +77,9 @@ export namespace SPOClient {
       deploySetting
     );
   }
+
+  export async function createAppCatalog(spoToken: string): Promise<any> {
+    const requester = createRequesterWithToken(spoToken);
+    await requester.post(`/_api/web/EnsureTenantAppCatalog(callerId='teamsdev'`);
+  }
 }

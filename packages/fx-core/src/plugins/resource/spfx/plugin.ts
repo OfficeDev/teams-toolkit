@@ -10,6 +10,7 @@ import { Utils } from "./utils/utils";
 import { Constants, PlaceHolders, PreDeployProgressMessage } from "./utils/constants";
 import {
   BuildSPPackageError,
+  CreateAppCatalogFailedError,
   GetGraphTokenFailedError,
   GetSPOTokenFailedError,
   InsufficientPermissionError,
@@ -222,7 +223,6 @@ export class SPFxPluginImpl {
       }
 
       const dir = path.normalize(path.parse(sharepointPackage).dir);
-      const fileName = path.parse(sharepointPackage).name + path.parse(sharepointPackage).ext;
 
       if (ctx.answers?.platform === Platform.CLI) {
         const guidance = [
@@ -231,27 +231,11 @@ export class SPFxPluginImpl {
             color: Colors.BRIGHT_GREEN,
           },
           { content: dir, color: Colors.BRIGHT_MAGENTA },
-          { content: " Visit Microsoft Admin Center: ", color: Colors.BRIGHT_GREEN },
-          { content: "https://admin.microsoft.com", color: Colors.BRIGHT_CYAN },
-          {
-            content: " and go to your tenant's SharePoint App Catalog site to upload the ",
-            color: Colors.BRIGHT_GREEN,
-          },
-          { content: fileName, color: Colors.BRIGHT_MAGENTA },
-          {
-            content: " Follow instructions to learn more about deploy to SharePoint: ",
-            color: Colors.BRIGHT_GREEN,
-          },
-          { content: Constants.DEPLOY_GUIDE, color: Colors.BRIGHT_CYAN },
         ];
         ctx.ui?.showMessage("info", guidance, false);
       } else {
-        const guidance = util.format(getStrings().plugins.SPFx.deployNotice, dir, fileName);
-        ctx.ui?.showMessage("info", guidance, false, "OK", Constants.READ_MORE).then((answer) => {
-          if (answer.isOk() && answer.value === Constants.READ_MORE) {
-            ctx.ui?.openUrl(Constants.DEPLOY_GUIDE);
-          }
-        });
+        const guidance = util.format(getStrings().plugins.SPFx.buildNotice, dir);
+        ctx.ui?.showMessage("info", guidance, false, "OK");
       }
       return ok(undefined);
     } catch (error) {
@@ -276,11 +260,40 @@ export class SPFxPluginImpl {
       return err(GetSPOTokenFailedError());
     }
 
-    const appCatalogSite = await SPOClient.getAppCatalogSite(spoToken);
+    let appCatalogSite = await SPOClient.getAppCatalogSite(spoToken);
     if (appCatalogSite) {
       SPOClient.setBaseUrl(appCatalogSite);
     } else {
-      // TODO: ensure app catalog?
+      const res = await ctx.ui?.showMessage(
+        "warn",
+        util.format(getStrings().plugins.SPFx.createAppCatalogNotice, tenant.value),
+        true,
+        "OK",
+        Constants.READ_MORE
+      );
+      const confirm = res?.isOk() ? res.value : undefined;
+      switch (confirm) {
+        case "OK":
+          try {
+            await SPOClient.createAppCatalog(spoToken);
+          } catch (e: any) {
+            return err(CreateAppCatalogFailedError(e));
+          }
+          appCatalogSite = await SPOClient.getAppCatalogSite(spoToken);
+          if (!appCatalogSite) {
+            return err(
+              CreateAppCatalogFailedError(
+                new Error("Cannot get app catalog site url after creation.")
+              )
+            );
+          }
+          break;
+        case Constants.READ_MORE:
+          ctx.ui?.openUrl(Constants.CREATE_APP_CATALOG_GUIDE);
+          break;
+        default:
+          return ok(undefined);
+      }
     }
 
     const appPackage = await this.getPackage(ctx.root);
@@ -300,6 +313,13 @@ export class SPFxPluginImpl {
 
     const appID = await this.getAppID(ctx.root);
     await SPOClient.deployAppPackage(spoToken, appID);
+
+    const guidance = util.format(
+      getStrings().plugins.SPFx.deployNotice,
+      appPackage,
+      appCatalogSite
+    );
+    ctx.ui?.showMessage("info", guidance, false, "OK");
 
     return ok(undefined);
   }

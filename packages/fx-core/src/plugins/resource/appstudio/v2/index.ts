@@ -153,8 +153,8 @@ export class AppStudioPluginV2 implements ResourcePlugin {
     //   }
     // }
     const configsOfOtherPlugins = new Map<string, ConfigMap>();
-    for (const key in envInfo.profile) {
-      const output = envInfo.profile[key];
+    for (const key in envInfo.state) {
+      const output = envInfo.state[key];
       const configMap = ConfigMap.fromJSON(output);
       if (configMap) configsOfOtherPlugins.set(key, configMap);
     }

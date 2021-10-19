@@ -29,19 +29,19 @@ export class TeamsBotConfig {
     await this.localDebug.restoreConfigFromContext(context);
     await this.deploy.restoreConfigFromContext(context);
 
-    this.teamsAppClientId = context.envInfo.profile
+    this.teamsAppClientId = context.envInfo.state
       .get(PluginAAD.PLUGIN_NAME)
       ?.get(PluginAAD.CLIENT_ID) as string;
 
-    this.teamsAppClientSecret = context.envInfo.profile
+    this.teamsAppClientSecret = context.envInfo.state
       .get(PluginAAD.PLUGIN_NAME)
       ?.get(PluginAAD.CLIENT_SECRET) as string;
 
-    this.teamsAppTenant = context.envInfo.profile
+    this.teamsAppTenant = context.envInfo.state
       .get(PluginSolution.PLUGIN_NAME)
       ?.get(PluginSolution.M365_TENANT_ID) as string;
 
-    this.applicationIdUris = context.envInfo.profile
+    this.applicationIdUris = context.envInfo.state
       .get(PluginAAD.PLUGIN_NAME)
       ?.get(PluginAAD.APPLICATION_ID_URIS) as string;
 
@@ -59,7 +59,7 @@ export class TeamsBotConfig {
       this.actRoles.push(PluginActRoles.MessageExtension);
     }
 
-    const resourceNameSuffixValue: ConfigValue = context.envInfo.profile
+    const resourceNameSuffixValue: ConfigValue = context.envInfo.state
       .get(PluginSolution.PLUGIN_NAME)
       ?.get(PluginSolution.RESOURCE_NAME_SUFFIX);
     this.resourceNameSuffix = resourceNameSuffixValue

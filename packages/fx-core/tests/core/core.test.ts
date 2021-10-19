@@ -238,7 +238,7 @@ describe("Core basic APIs", () => {
           const validRes = validateProject(solutionContext);
           assert.isTrue(validRes === undefined);
 
-          const solutioConfig = solutionContext.envInfo.profile.get("solution");
+          const solutioConfig = solutionContext.envInfo.state.get("solution");
           assert.isTrue(solutioConfig !== undefined);
         }
       });

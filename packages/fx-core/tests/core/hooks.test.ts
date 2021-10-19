@@ -685,11 +685,11 @@ describe("Middleware - others", () => {
                 },
               },
             };
-            const envProfile = new Map<string, any>();
+            const envState = new Map<string, any>();
             const envInfo = {
               envName: envName,
               config: envConfig,
-              profile: envProfile,
+              state: envState,
             };
             return ok(envInfo);
           }

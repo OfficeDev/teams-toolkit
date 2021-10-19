@@ -303,12 +303,12 @@ export interface EnvInfo {
     // (undocumented)
     envName: string;
     // (undocumented)
-    profile: Map<string, any>;
+    state: Map<string, any>;
 }
 
 // @public (undocumented)
-type EnvInfoV2 = Omit<EnvInfo, "profile" | "config"> & {
-    profile: Json;
+type EnvInfoV2 = Omit<EnvInfo, "state" | "config"> & {
+    state: Json;
 } & {
     config: Json;
 };

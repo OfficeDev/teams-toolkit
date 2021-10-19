@@ -62,7 +62,7 @@ export interface SolutionPlugin {
    * @param {DeepReadonly<EnvInfoV2>} envInfo - model for config.${env}.json, in which, user can customize some inputs for provision
    * @param {TokenProvider} tokenProvider - Tokens for Azure and AppStudio
    *
-   * @returns {EnvProfile} the profile (persist by core as `profile.${env}.json`) containing provision outputs, which will be used for deploy and publish
+   * @returns {EnvProfile} the state (persist by core as `state.${env}.json`) containing provision outputs, which will be used for deploy and publish
    */
   provisionResources: (
     ctx: Context,

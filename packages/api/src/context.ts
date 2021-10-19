@@ -57,7 +57,7 @@ export interface EnvInfo {
   // input
   config: EnvConfig;
   // output
-  profile: Map<string, any>;
+  state: Map<string, any>;
 }
 
 export interface SolutionContext extends Context {

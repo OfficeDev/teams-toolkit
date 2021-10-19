@@ -41,7 +41,7 @@ export class LocalDebugConfig {
         LocalSettingsBotKeys.BotRedirectUri
       ) as string;
     } else {
-      const localBotEndpoint: ConfigValue | undefined = context.envInfo.profile
+      const localBotEndpoint: ConfigValue | undefined = context.envInfo.state
         .get(PluginLocalDebug.PLUGIN_NAME)
         ?.get(PluginLocalDebug.LOCAL_BOT_ENDPOINT);
       this.localEndpoint = localBotEndpoint as string;

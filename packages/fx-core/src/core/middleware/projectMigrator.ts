@@ -291,24 +291,24 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
   manifestString = manifestString.replace(new RegExp("{version}", "g"), "1.0.0");
   manifestString = manifestString.replace(
     new RegExp("{baseUrl}", "g"),
-    "{{{profile.fx-resource-frontend-hosting.endpoint}}}"
+    "{{{state.fx-resource-frontend-hosting.endpoint}}}"
   );
   manifestString = manifestString.replace(
     new RegExp("{appClientId}", "g"),
-    "{{profile.fx-resource-aad-app-for-teams.clientId}}"
+    "{{state.fx-resource-aad-app-for-teams.clientId}}"
   );
   manifestString = manifestString.replace(
     new RegExp("{webApplicationInfoResource}", "g"),
-    "{{{profile.fx-resource-aad-app-for-teams.applicationIdUris}}}"
+    "{{{state.fx-resource-aad-app-for-teams.applicationIdUris}}}"
   );
   manifestString = manifestString.replace(
     new RegExp("{botId}", "g"),
-    "{{profile.fx-resource-bot.botId}}"
+    "{{state.fx-resource-bot.botId}}"
   );
   const manifest: TeamsAppManifest = JSON.parse(manifestString);
   manifest.name.short = "{{config.manifest.appName.short}}";
   manifest.name.full = "{{config.manifest.appName.full}}";
-  manifest.id = "{{profile.fx-resource-appstudio.teamsAppId}}";
+  manifest.id = "{{state.fx-resource-appstudio.teamsAppId}}";
   await fs.writeFile(targetManifestFile, JSON.stringify(manifest, null, 4));
   await moveIconsToResourceFolder(templateAppPackage);
 
@@ -363,14 +363,13 @@ async function moveIconsToResourceFolder(templateAppPackage: string): Promise<vo
   );
 }
 
-async function removeExpiredFields(devProfile: string, devUserData: string): Promise<void> {
-  const profileData = await readJson(devProfile);
+async function removeExpiredFields(devState: string, devUserData: string): Promise<void> {
+  const stateData = await readJson(devState);
   const secrets: Record<string, string> = deserializeDict(await fs.readFile(devUserData, "UTF-8"));
 
-  profileData[PluginNames.APPST]["teamsAppId"] =
-    profileData[PluginNames.SOLUTION]["remoteTeamsAppId"];
+  stateData[PluginNames.APPST]["teamsAppId"] = stateData[PluginNames.SOLUTION]["remoteTeamsAppId"];
 
-  const expiredProfileKeys: [string, string][] = [
+  const expiredStateKeys: [string, string][] = [
     [PluginNames.LDEBUG, ""],
     [PluginNames.SOLUTION, programmingLanguage],
     [PluginNames.SOLUTION, defaultFunctionName],
@@ -385,12 +384,12 @@ async function removeExpiredFields(devProfile: string, devUserData: string): Pro
     [PluginNames.SA, "filePath"],
     [PluginNames.SA, "environmentVariableParams"],
   ];
-  for (const [k, v] of expiredProfileKeys) {
-    if (profileData[k]) {
+  for (const [k, v] of expiredStateKeys) {
+    if (stateData[k]) {
       if (!v) {
-        delete profileData[k];
-      } else if (profileData[k][v]) {
-        delete profileData[k][v];
+        delete stateData[k];
+      } else if (stateData[k][v]) {
+        delete stateData[k][v];
       }
     }
   }
@@ -400,7 +399,7 @@ async function removeExpiredFields(devProfile: string, devUserData: string): Pro
   }
   deleteUserDataKey(secrets, `${PluginNames.AAD}.local_clientSecret`);
 
-  await fs.writeFile(devProfile, JSON.stringify(profileData, null, 4), { encoding: "UTF-8" });
+  await fs.writeFile(devState, JSON.stringify(stateData, null, 4), { encoding: "UTF-8" });
   await fs.writeFile(devUserData, serializeDict(secrets), { encoding: "UTF-8" });
 }
 

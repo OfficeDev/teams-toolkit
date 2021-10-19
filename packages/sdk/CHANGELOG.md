@@ -1,4 +1,4 @@
-# 0.2.7
+# 0.3.0
 - Support certificate-based authentication for TeamsFx SDK
 
 # 0.0.5

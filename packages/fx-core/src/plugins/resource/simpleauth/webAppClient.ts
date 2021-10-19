@@ -107,7 +107,19 @@ export class WebAppClient {
           Constants.HelpLink
         );
       }
-      throw Utils.handleError(error, CreateAppServicePlanError, error?.message);
+      if (Utils.isUserError(error)) {
+        throw ResultFactory.UserError(
+          CreateAppServicePlanError.name,
+          CreateAppServicePlanError.message(error?.message),
+          error
+        );
+      } else {
+        throw ResultFactory.SystemError(
+          CreateAppServicePlanError.name,
+          CreateAppServicePlanError.message(error?.message),
+          error
+        );
+      }
     }
 
     try {
@@ -124,7 +136,19 @@ export class WebAppClient {
         skuName,
       };
     } catch (error) {
-      throw Utils.handleError(error, CreateWebAppError, error?.message);
+      if (Utils.isUserError(error)) {
+        throw ResultFactory.UserError(
+          CreateWebAppError.name,
+          CreateWebAppError.message(error?.message),
+          error
+        );
+      } else {
+        throw ResultFactory.SystemError(
+          CreateWebAppError.name,
+          CreateWebAppError.message(error?.message),
+          error
+        );
+      }
     }
   }
 
@@ -144,7 +168,19 @@ export class WebAppClient {
       });
       this.ctx.logProvider?.info(Messages.getLog("zipdeploy is done: " + zipdeployResult.status));
     } catch (error) {
-      throw Utils.handleError(error, ZipDeployError, error?.message);
+      if (Utils.isUserError(error)) {
+        throw ResultFactory.UserError(
+          ZipDeployError.name,
+          ZipDeployError.message(error?.message),
+          error
+        );
+      } else {
+        throw ResultFactory.SystemError(
+          ZipDeployError.name,
+          ZipDeployError.message(error?.message),
+          error
+        );
+      }
     }
   }
 
@@ -158,7 +194,19 @@ export class WebAppClient {
         }
       );
     } catch (error) {
-      throw Utils.handleError(error, UpdateApplicationSettingsError, error?.message);
+      if (Utils.isUserError(error)) {
+        throw ResultFactory.UserError(
+          UpdateApplicationSettingsError.name,
+          UpdateApplicationSettingsError.message(error?.message),
+          error
+        );
+      } else {
+        throw ResultFactory.SystemError(
+          UpdateApplicationSettingsError.name,
+          UpdateApplicationSettingsError.message(error?.message),
+          error
+        );
+      }
     }
   }
 

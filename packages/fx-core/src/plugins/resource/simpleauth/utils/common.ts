@@ -146,14 +146,15 @@ export class Utils {
     return configValue;
   }
 
-  public static handleError(error: any, errorDetail: PluginError, ...args: string[]): FxError {
+  public static isUserError(error: any): boolean {
     if (
+      error?.response?.status &&
       error?.response?.status >= Constants.statusCodeUserError &&
       error?.response?.status < Constants.statusCodeServerError
     ) {
-      return ResultFactory.UserError(errorDetail.name, errorDetail.message(...args), error);
+      return true;
     } else {
-      return ResultFactory.SystemError(errorDetail.name, errorDetail.message(...args), error);
+      return false;
     }
   }
 

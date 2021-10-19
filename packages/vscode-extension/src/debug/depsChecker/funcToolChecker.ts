@@ -190,6 +190,13 @@ export class FuncToolChecker implements IDepsChecker {
     return "npx azure-functions-core-tools@3";
   }
 
+  public getPortableFuncBinFolders(): string[] {
+    return [
+      FuncToolChecker.getDefaultInstallPath(), // npm 6 (windows) https://github.com/npm/cli/issues/3489
+      path.join(FuncToolChecker.getDefaultInstallPath(), "node_modules", ".bin"),
+    ];
+  }
+
   private async queryFuncVersion(path: string): Promise<FuncVersion | null> {
     const output = await cpUtils.executeCommand(
       undefined,
@@ -287,6 +294,15 @@ export class FuncToolChecker implements IDepsChecker {
         if (await fs.pathExists(funcPSScript)) {
           await this._logger.debug(`deleting func.ps1 from ${funcPSScript}`);
           await fs.remove(funcPSScript);
+        }
+
+        // delete func.ps1 for portable version as well
+        for (const funcFolder in this.getPortableFuncBinFolders()) {
+          const funcPath = path.join(funcFolder, "func.ps1");
+          if (await fs.pathExists(funcPath)) {
+            await this._logger.debug(`deleting func.ps1 from ${funcPath}`);
+            await fs.remove(funcPath);
+          }
         }
       }
     } catch (error) {

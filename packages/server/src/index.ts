@@ -4,6 +4,7 @@
 import { createMessageConnection } from "vscode-jsonrpc/node";
 import WebSocket from "ws";
 import { createProject, initCore } from "./handler";
+import { Namespaces } from "./namespace";
 
 const port = 7920;
 const wss = new WebSocket.Server({ port: port });
@@ -16,7 +17,7 @@ wss.on("connection", async function cb(ws) {
   ws.on("message", (ms) => {
     console.log(ms.toString());
   });
-  connection.onRequest("createProject", createProject);
+  connection.onRequest(`${Namespaces.Core}/createProject`, createProject);
   connection.listen();
 });
 

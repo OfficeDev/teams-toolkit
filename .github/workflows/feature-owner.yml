@@ -13,9 +13,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Skip forked repo
-        run: |
-
       - name: Setup node
         uses: actions/setup-node@v2.1.2
         with:

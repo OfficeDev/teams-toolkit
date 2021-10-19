@@ -10,7 +10,6 @@ import { Mutex } from "async-mutex";
 import {
   returnSystemError,
   returnUserError,
-  SystemError,
   UserError,
   LogLevel,
   Colors,
@@ -163,7 +162,7 @@ export class CodeFlowLogin {
         })
         .catch((error) => {
           CliCodeLogInstance.necessaryLog(LogLevel.Error, "[Login] " + error.message);
-          deferredRedirect.reject(error);
+          deferredRedirect.reject(new UserError(error, ErrorMessage.loginComponent));
           res.status(500).send(error);
         });
     });
@@ -425,8 +424,8 @@ export function LoginFailureError(innerError?: any): UserError {
   );
 }
 
-export function LoginCodeFlowError(innerError?: any): SystemError {
-  return new SystemError(
+export function LoginCodeFlowError(innerError?: any): UserError {
+  return new UserError(
     ErrorMessage.loginCodeFlowFailureTitle,
     ErrorMessage.loginCodeFlowFailureDescription,
     ErrorMessage.loginComponent,

@@ -2,13 +2,13 @@
 // Licensed under the MIT license.
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { ResourceManagementClient } from "@azure/arm-resources";
+import { ServiceClientCredentials } from "@azure/ms-rest-js";
 import {
   AzureAccountProvider,
   GraphTokenProvider,
   PluginContext,
   ConfigMap,
   TeamsAppManifest,
-  OptionItem,
   Platform,
   SubscriptionInfo,
   Inputs,
@@ -64,6 +64,13 @@ export function beforeEach_if(condition: boolean, callback: Func | AsyncFunc): v
   }
 }
 
+export function generateFakeServiceClientCredentials(): ServiceClientCredentials {
+  return {
+    signRequest: (anything) => {
+      return Promise.resolve(anything);
+    },
+  };
+}
 export class MockAzureAccountProvider implements AzureAccountProvider {
   private credentials: TokenCredentialsBase | undefined;
 

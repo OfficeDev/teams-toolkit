@@ -9,7 +9,7 @@ import * as microsoftTeams from "@microsoft/teams-js";
 import { getAuthenticationConfiguration } from "../core/configurationProvider";
 import { AuthenticationConfiguration } from "../models/configuration";
 import { AuthCodeResult } from "../models/authCodeResult";
-import axios, { AxiosInstance, AxiosRequestHeaders } from "axios";
+import axios, { AxiosInstance } from "axios";
 import { GrantType } from "../models/grantType";
 import { AccessTokenResult } from "../models/accessTokenResult";
 import { validateScopesType, getUserInfoFromSsoToken, parseJwt } from "../util/utils";
@@ -398,6 +398,7 @@ export class TeamsUserCredential implements TokenCredential {
    * @returns AxiosInstance
    */
   private async getAxiosInstance(): Promise<AxiosInstance> {
+    console.log("!!!!!!!!!!!!!!!check this!");
     const ssoToken = await this.getSSOToken();
     const axiosInstance: AxiosInstance = axios.create({
       baseURL: this.config.simpleAuthEndpoint,

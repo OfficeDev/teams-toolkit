@@ -145,6 +145,13 @@ export const UnhandledError: IApimPluginError = {
   message: () => `Unhandled error.`,
 };
 
+export const FailedToParseResourceIdError: IApimPluginError = {
+  type: ErrorType.User,
+  code: "FailedToParseResourceId",
+  message: (name: string, resourceId: string) =>
+    `Failed to get '${name}' from resource id: '${resourceId}'`,
+};
+
 export function BuildError(
   pluginError: IApimPluginError,
   innerError: Error,

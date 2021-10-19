@@ -45,16 +45,19 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
         }
 
         const debugConfig = await commonUtils.getDebugConfig(isLocalSideloadingConfiguration);
+        if (!debugConfig) {
+          // The user cancels env selection.
+          // Returning the value 'undefined' prevents the debug session from starting.
+          return undefined;
+        }
 
         // Put env and appId in `debugConfiguration` so debug handlers can retrieve it and send telemetry
-        debugConfiguration.teamsfxEnv = debugConfig?.env;
-        debugConfiguration.teamsfxAppId = debugConfig?.appId;
-        /* eslint-disable  @typescript-eslint/no-non-null-asserted-optional-chain */
+        debugConfiguration.teamsfxEnv = debugConfig.env;
+        debugConfiguration.teamsfxAppId = debugConfig.appId;
         debugConfiguration.url = (debugConfiguration.url as string).replace(
           isLocalSideloadingConfiguration ? localTeamsAppIdPlaceholder : teamsAppIdPlaceholder,
-          debugConfig?.appId!
+          debugConfig.appId
         );
-        /* eslint-enable  @typescript-eslint/no-non-null-asserted-optional-chain */
 
         const accountHintPlaceholder = "${account-hint}";
         const isaccountHintConfiguration: boolean = (debugConfiguration.url as string).includes(
@@ -92,8 +95,7 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
       }
     } catch (err) {
       // TODO(kuojianlu): add log and telemetry
-    } finally {
-      return debugConfiguration;
     }
+    return debugConfiguration;
   }
 }

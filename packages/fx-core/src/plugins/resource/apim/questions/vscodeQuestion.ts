@@ -24,7 +24,8 @@ import { OpenApiProcessor } from "../utils/openApiProcessor";
 import { buildAnswer } from "../answer";
 import { NamingRules } from "../utils/namingRules";
 import { BaseQuestionService, IQuestionService } from "./question";
-import { Lazy } from "../utils/commonUtils";
+import { getApimServiceNameFromResourceId, Lazy } from "../utils/commonUtils";
+import { getResourceGroupNameFromResourceId, isArmSupportEnabled } from "../../../..";
 
 export class ApimServiceQuestion extends BaseQuestionService implements IQuestionService {
   private readonly lazyApimService: Lazy<ApimService>;
@@ -211,12 +212,23 @@ export class ApiVersionQuestion extends BaseQuestionService implements IQuestion
     const apimConfig = new ApimPluginConfig(ctx.config);
     const solutionConfig = new SolutionConfig(ctx.envInfo.profile);
     const answer = buildAnswer(inputs);
-    const resourceGroupName = apimConfig.resourceGroupName ?? solutionConfig.resourceGroupName;
-    const serviceName = AssertConfigNotEmpty(
-      TeamsToolkitComponent.ApimPlugin,
-      ApimPluginConfigKeys.serviceName,
-      apimConfig.serviceName
-    );
+    let resourceGroupName, serviceName;
+    if (isArmSupportEnabled()) {
+      const apimServiceResourceId = AssertConfigNotEmpty(
+        TeamsToolkitComponent.ApimPlugin,
+        ApimPluginConfigKeys.serviceResourceId,
+        apimConfig.serviceResourceId
+      );
+      resourceGroupName = getResourceGroupNameFromResourceId(apimServiceResourceId);
+      serviceName = getApimServiceNameFromResourceId(apimServiceResourceId);
+    } else {
+      resourceGroupName = apimConfig.resourceGroupName ?? solutionConfig.resourceGroupName;
+      serviceName = AssertConfigNotEmpty(
+        TeamsToolkitComponent.ApimPlugin,
+        ApimPluginConfigKeys.serviceName,
+        apimConfig.serviceName
+      );
+    }
     const apiPrefix =
       answer.apiPrefix ??
       AssertConfigNotEmpty(

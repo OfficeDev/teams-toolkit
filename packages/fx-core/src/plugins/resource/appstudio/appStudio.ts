@@ -450,7 +450,7 @@ export namespace AppStudioClient {
 
   function checkUser(app: IAppDefinition, newUser: IUserList): boolean {
     const findUser = app.userList?.findIndex((user: IUserList) => user["aadId"] === newUser.aadId);
-    if (findUser && findUser >= 0) {
+    if (findUser != undefined && findUser >= 0) {
       return true;
     } else {
       return false;

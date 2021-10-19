@@ -784,9 +784,11 @@ export default class Preview extends YargsCommand {
     dotnetChecker: DotnetChecker,
     funcToolChecker: FuncToolChecker
   ): Promise<Result<null, FxError>> {
+    const localEnv = await commonUtils.getLocalEnv(core, workspaceFolder);
+
     let frontendStartTask: Task | undefined;
     if (frontendRoot !== undefined) {
-      const env = await commonUtils.getFrontendLocalEnv(core, workspaceFolder);
+      const env = commonUtils.getFrontendLocalEnv(localEnv);
       frontendStartTask = new Task(
         constants.frontendStartTitle,
         true,
@@ -803,8 +805,8 @@ export default class Preview extends YargsCommand {
 
     let authStartTask: Task | undefined;
     if (frontendRoot !== undefined) {
-      const cwd = await commonUtils.getAuthServicePath(core, workspaceFolder);
-      const env = await commonUtils.getAuthLocalEnv(core, workspaceFolder);
+      const cwd = commonUtils.getAuthServicePath(localEnv);
+      const env = commonUtils.getAuthLocalEnv(localEnv);
       authStartTask = new Task(
         constants.authStartTitle,
         true,
@@ -823,7 +825,7 @@ export default class Preview extends YargsCommand {
     let backendStartTask: Task | undefined;
     let backendWatchTask: Task | undefined;
     if (backendRoot !== undefined) {
-      const env = await commonUtils.getBackendLocalEnv(core, workspaceFolder);
+      const env = commonUtils.getBackendLocalEnv(localEnv);
       const mergedEnv = commonUtils.mergeProcessEnv(env);
       const command =
         programmingLanguage === constants.ProgrammingLanguage.typescript
@@ -865,7 +867,7 @@ export default class Preview extends YargsCommand {
         programmingLanguage === constants.ProgrammingLanguage.typescript
           ? constants.botStartTsCommand
           : constants.botStartJsCommand;
-      const env = await commonUtils.getBotLocalEnv(core, workspaceFolder);
+      const env = commonUtils.getBotLocalEnv(localEnv);
       botStartTask = new Task(constants.botStartTitle, true, command, undefined, {
         shell: true,
         cwd: botRoot,

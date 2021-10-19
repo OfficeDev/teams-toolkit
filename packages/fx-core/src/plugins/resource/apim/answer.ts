@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { ApiContract } from "@azure/arm-apimanagement/src/models";
-import { Inputs, OptionItem, Platform, PluginContext } from "@microsoft/teamsfx-api";
+import { Inputs, OptionItem, Platform } from "@microsoft/teamsfx-api";
 import { OpenAPI } from "openapi-types";
 import { PluginLifeCycle, QuestionConstants, ValidationConstants } from "./constants";
 import { AssertNotEmpty, BuildError, InvalidCliOptionError, NotImplemented } from "./error";

@@ -7,7 +7,6 @@ import {
   Func,
   FxError,
   Inputs,
-  Stage,
   SystemError,
   UserError,
   Json,
@@ -254,4 +253,12 @@ export function SolutionConfigError(): UserError {
 
 export function ProjectSettingError(): UserError {
   return new UserError("ProjectSettingError", "Load project settings failed.", CoreSource);
+}
+
+export function FailedToParseResourceIdError(name: string, resourceId: string): UserError {
+  return new UserError(
+    "FailedToParseResourceIdError",
+    `Failed to get '${name}' from resource id: '${resourceId}'`,
+    CoreSource
+  );
 }

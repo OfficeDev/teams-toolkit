@@ -143,6 +143,7 @@ describe("API V2 adapter", () => {
       location: "US",
       teamsAppTenantId: "123",
       subscriptionId: "xxx",
+      tenantId: "xxxx",
     };
     const projectSettings: ProjectSettings = {
       appName: appName,

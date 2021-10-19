@@ -1,0 +1,14 @@
+{
+  "apimClientId": {
+    "value": "{{profile.fx-resource-apim.apimClientAADClientId}}"
+  },
+  "apimClientSecret": {
+    "value": "{{profile.fx-resource-apim.apimClientAADClientSecret}}"
+  },
+  "apimPublisherEmail": {
+    "value": "{{profile.fx-resource-apim.publisherEmail}}"
+  },
+  "apimPublisherName": {
+    "value": "{{profile.fx-resource-apim.publisherName}}"
+  }
+}

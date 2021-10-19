@@ -375,7 +375,7 @@ export interface FunctionRouter {
 
 // @public
 export interface FuncValidation<T extends string | string[] | undefined> {
-    validFunc: (input: T, previousInputs?: Inputs) => string | undefined | Promise<string | undefined>;
+    validFunc: ValidateFunc<T>;
 }
 
 // @public (undocumented)
@@ -806,7 +806,7 @@ export interface MultiFileQuestion extends UserInputQuestion {
 
 // @public
 export interface MultiSelectConfig extends UIConfig<string[]> {
-    onDidChangeSelection?: (currentSelectedIds: Set<string>, previousSelectedIds: Set<string>) => Promise<Set<string>>;
+    onDidChangeSelection?: OnSelectionChangeFunc;
     options: StaticOptions;
     returnObject?: boolean;
 }
@@ -815,7 +815,7 @@ export interface MultiSelectConfig extends UIConfig<string[]> {
 export interface MultiSelectQuestion extends UserInputQuestion {
     default?: string[] | LocalFunc<string[] | undefined>;
     dynamicOptions?: DynamicOptions;
-    onDidChangeSelection?: (currentSelectedIds: Set<string>, previousSelectedIds: Set<string>) => Promise<Set<string>>;
+    onDidChangeSelection?: OnSelectionChangeFunc;
     returnObject?: boolean;
     skipSingleOption?: boolean;
     staticOptions: StaticOptions;
@@ -847,6 +847,9 @@ export class ObjectAlreadyExistsError extends UserError {
 export class ObjectNotExistError extends UserError {
     constructor(source: string, name: string);
 }
+
+// @public (undocumented)
+export type OnSelectionChangeFunc = (currentSelectedIds: Set<string>, previousSelectedIds: Set<string>) => Promise<Set<string>>;
 
 // @public
 export interface OptionItem {
@@ -1214,6 +1217,7 @@ type SolutionInputs = {
     location: string;
     teamsAppTenantId: string;
     subscriptionId: string;
+    tenantId: string;
     remoteTeamsAppId?: string;
     provisionSucceeded?: boolean;
 };
@@ -1649,6 +1653,9 @@ export { v2 }
 
 // @public
 export function validate<T extends string | string[] | undefined>(validSchema: ValidationSchema, value: T, inputs?: Inputs): Promise<string | undefined>;
+
+// @public (undocumented)
+export type ValidateFunc<T> = (input: T, inputs?: Inputs) => string | undefined | Promise<string | undefined>;
 
 // @public
 export type ValidationSchema = StringValidation | StringArrayValidation | FuncValidation<any>;

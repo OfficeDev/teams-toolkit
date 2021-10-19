@@ -8,7 +8,7 @@ import { RemoteTools } from "./tools";
 
 let Core: FxCore;
 
-export function initHandler(connection: MessageConnection) {
+export function initCore(connection: MessageConnection) {
   Core = new FxCore(new RemoteTools(connection));
 }
 

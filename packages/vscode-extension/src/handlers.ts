@@ -760,6 +760,10 @@ export async function openWelcomeHandler(args?: any[]) {
   WebviewPanel.createOrShow(PanelType.QuickStart);
 }
 
+export async function checkUpgrade(args?: any[]) {
+  await runCommand(Stage.listCollaborator);
+}
+
 export async function openSurveyHandler(args?: any[]) {
   WebviewPanel.createOrShow(PanelType.Survey);
 }

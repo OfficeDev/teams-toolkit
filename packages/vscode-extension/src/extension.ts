@@ -147,6 +147,12 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(openWelcomeCmd);
 
+  const checkUpgradeCmd = vscode.commands.registerCommand(
+    "fx-extension.checkProjectUpgrade",
+    (...args) => Correlator.run(handlers.checkUpgrade, args)
+  );
+  context.subscriptions.push(checkUpgradeCmd);
+
   const openSurveyCmd = vscode.commands.registerCommand("fx-extension.openSurvey", (...args) =>
     Correlator.run(handlers.openSurveyHandler, args)
   );

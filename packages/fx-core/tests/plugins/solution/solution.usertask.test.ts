@@ -167,7 +167,7 @@ describe("V2 implementation", () => {
       mockedInputs,
       { namespace: "someInvalidNamespace", method: "invalid" },
       {},
-      { envName: "default", config: {}, profile: {} },
+      { envName: "default", config: {}, state: {} },
       mockedProvider
     );
     expect(result.isErr()).to.be.true;
@@ -195,7 +195,7 @@ describe("V2 implementation", () => {
       mockedInputs,
       { namespace: "solution", method: "addCapability" },
       {},
-      { envName: "default", config: {}, profile: {} },
+      { envName: "default", config: {}, state: {} },
       mockedProvider
     );
     expect(result.isErr()).to.be.true;
@@ -224,7 +224,7 @@ describe("V2 implementation", () => {
       mockedInputs,
       { namespace: "solution", method: "addResource" },
       {},
-      { envName: "default", config: {}, profile: {} },
+      { envName: "default", config: {}, state: {} },
       mockedProvider
     );
     expect(result.isErr()).to.be.true;
@@ -254,7 +254,7 @@ describe("V2 implementation", () => {
       mockedInputs,
       { namespace: "solution", method: "addCapability" },
       {},
-      { envName: "default", config: {}, profile: {} },
+      { envName: "default", config: {}, state: {} },
       mockedProvider
     );
     expect(result.isErr()).to.be.true;
@@ -289,7 +289,7 @@ describe("V2 implementation", () => {
       mockedInputs,
       { namespace: "solution", method: "addCapability" },
       {},
-      { envName: "default", config: {}, profile: {} },
+      { envName: "default", config: {}, state: {} },
       mockedProvider
     );
     expect(result.isOk()).to.be.true;
@@ -318,7 +318,7 @@ describe("V2 implementation", () => {
       mockedInputs,
       { namespace: "solution", method: "addResource" },
       {},
-      { envName: "default", config: {}, profile: {} },
+      { envName: "default", config: {}, state: {} },
       mockedProvider
     );
     expect(result.isErr()).to.be.true;
@@ -350,7 +350,7 @@ describe("V2 implementation", () => {
       mockedInputs,
       { namespace: "solution", method: "addResource" },
       {},
-      { envName: "default", config: {}, profile: {} },
+      { envName: "default", config: {}, state: {} },
       mockedProvider
     );
     expect(result.isErr()).to.be.true;
@@ -390,7 +390,7 @@ describe("V2 implementation", () => {
       mockedInputs,
       { namespace: "solution", method: "addResource" },
       {},
-      { envName: "default", config: {}, profile: {} },
+      { envName: "default", config: {}, state: {} },
       mockedProvider
     );
     expect(result.isOk()).to.be.true;
@@ -430,7 +430,7 @@ describe("V2 implementation", () => {
       mockedInputs,
       { namespace: "solution", method: "addResource" },
       {},
-      { envName: "default", config: {}, profile: {} },
+      { envName: "default", config: {}, state: {} },
       mockedProvider
     );
     expect(result.isOk()).to.be.true;
@@ -464,7 +464,7 @@ describe("V2 implementation", () => {
         mockedInputs,
         { namespace: "solution", method: "VSpublish" },
         {},
-        { envName: "default", config: {}, profile: {} },
+        { envName: "default", config: {}, state: {} },
         mockedProvider
       );
       expect(result.isErr()).to.be.true;
@@ -476,7 +476,7 @@ describe("V2 implementation", () => {
           mockedInputs,
           { namespace: "solution", method: "VSpublish" },
           {},
-          { envName: "default", config: {}, profile: {} },
+          { envName: "default", config: {}, state: {} },
           mockedProvider
         ));
       expect(result.isErr()).to.be.true;
@@ -505,7 +505,7 @@ describe("V2 implementation", () => {
           mockedInputs,
           { namespace: "solution", method: "VSpublish" },
           {},
-          { envName: "default", config: {}, profile: {} },
+          { envName: "default", config: {}, state: {} },
           mockedProvider
         );
         expect(result.isOk()).to.be.true;

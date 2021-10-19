@@ -15,6 +15,7 @@ import {
   LocalEnvBotKeysMigratedFromV1,
 } from "./constants";
 
+// Manage local envs for legacy project. For multi-env supported one, see `localEnvMulti.ts`.
 export class LocalEnvProvider {
   private readonly localEnvFilePath: string;
   constructor(workspaceFolder: string) {

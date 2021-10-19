@@ -1,6 +1,6 @@
 # TeamsFx .NET SDK
 
-A C# wrapper for Blazor projects to use the [TeamsFx SDK](https://github.com/OfficeDev/TeamsFx/tree/main/packages/sdk#teamsfx-sdk-for-typescriptjavascript) using [Blazor JavaScript interoperability](https://docs.microsoft.com/en-us/aspnet/core/blazor/javascript-interoperability).
+A NuGet package for Blazor projects which aims to reduce the developer tasks of implementing identity and access to cloud resources.
 
 [TeamsFx SDK for JavaScript/TypeScript](https://github.com/OfficeDev/TeamsFx/tree/main/packages/sdk) |
 [API reference documentation](https://aka.ms/teamsfx-sdk-help)
@@ -29,33 +29,34 @@ Alternately, you can use the Package Manager.
 
 ### Using Teams User Credential in Teams Tab app
 
-1. Add `TeamsFx` and `TeamsUserCredential` to services during startup.
+1. Add authentication options in appsettings.{Environment}.json file.
+```json
+"TeamsFx": {
+    "Authentication": {
+        "ClientId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+        "SimpleAuthEndpoint": "https://localhost:44357/",
+        "InitiateLoginEndpoint": "https://localhost:44357/auth-start.html"
+    }
+}
+```
+2. Add `TeamsFx` to services during startup.
 ```csharp
 public void ConfigureServices(IServiceCollection services)
 {
     ...
-    services.AddScoped<TeamsFx>();
-    services.AddScoped<TeamsUserCredential>();
+    services.AddTeamsFx(Configuration);
 }
 ```
-2. Add the required namespaces to the `_Imports.razor` file.
+3. Add the required namespaces to the `_Imports.razor` file.
 ```csharp
 @using Microsoft.TeamsFx
-@using Microsoft.TeamsFx.Model
 ```
-3. Inject the registered TeamsFx services for any page that needs them.
+4. Inject the registered TeamsFx services for any page that needs them.
 ```csharp
 @inject TeamsFx teamsfx
 @inject TeamsUserCredential teamsUserCredential
 ```
-4. `TeamsFx.LoadConfigurationAsync()` should be called to initialize the library. A common place to call this code is in `OnAfterRenderAsync` of a Blazor component or page when `firstRender` is `true`.
-```csharp
-AuthenticationConfiguration authentication = 
-    new AuthenticationConfiguration(clientId: _clientId, simpleAuthEndpoint: _endpoint, initiateLoginEndpoint: _endpoint + "auth-start.html");
-Configuration configuration = new Configuration(authentication);
-await teamsfx.LoadConfigurationAsync(configuration);
-```
-5. Call `TeamsUserCredential.GetTokenAsync()` to get token or pass it to other functions.
+5. Call `teamsUserCredential.GetTokenAsync()` to get token or pass `teamsUserCredential` to other functions.
 ```csharp
 try
 {
@@ -76,24 +77,8 @@ catch (ExceptionWithCode e)
 }
 ```
 
-### Enabling Logging by Setting Log Level
-Logging is turned off by default. Turn it on by the setting log level. It prints log information to console by default.
-
-```csharp
-// Only warning and error messages.
-await teamsfx.SetLogLevelAsync(LogLevel.Warn);
-```
-
-Redirect the log messages to custom outputs like server console using `SetLogLevelAsync`.
-The messages can be found in Output panel from "{AppName} - ASP.NET Core Web Server".
-```csharp
-await teamsfx.SetLogFunctionAsync(log);
-...
-private void log(LogLevel level, string message)
-{
-    Console.WriteLine(message);
-}
-```
+### Configure Logging
+`ILogger` is used to print logs. You can configure logging in appsettings.{Environment}.json. [Visit the ASP.NET documentation to learn more](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging/?view=aspnetcore-5.0#configure-logging-1) 
 
 ### Bot
 Will be supported in the future.

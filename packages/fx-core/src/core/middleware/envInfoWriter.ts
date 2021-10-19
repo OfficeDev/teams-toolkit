@@ -11,7 +11,7 @@ import { environmentManager } from "../environment";
 import { shouldIgnored } from "./projectSettingsLoader";
 
 /**
- * This middleware will help to persist environment profile even if lifecycle task throws Error.
+ * This middleware will help to persist environment state even if lifecycle task throws Error.
  */
 export function EnvInfoWriterMW(skip = false): Middleware {
   return async (ctx: CoreHookContext, next: NextFunction) => {
@@ -50,42 +50,42 @@ async function writeEnvInfo(ctx: CoreHookContext, skip: boolean) {
   if (isV2()) {
     const envInfoV2 = ctx.envInfoV2;
     if (!envInfoV2) return;
-    const provisionOutputs = envInfoV2.profile;
+    const provisionOutputs = envInfoV2.state;
     if (provisionOutputs === undefined) return;
     // DO NOT persist local debug plugin config.
     if (isMultiEnvEnabled() && provisionOutputs[PluginNames.LDEBUG]) {
       delete provisionOutputs[PluginNames.LDEBUG];
     }
-    const envProfilePath = await environmentManager.writeEnvProfile(
+    const envStatePath = await environmentManager.writeEnvState(
       provisionOutputs,
       inputs.projectPath,
       ctx.contextV2!.cryptoProvider,
       envInfoV2.envName
     );
 
-    if (envProfilePath.isOk()) {
+    if (envStatePath.isOk()) {
       const core = ctx.self as FxCore;
-      core.tools.logProvider.debug(`[core] persist env profile: ${envProfilePath.value}`);
+      core.tools.logProvider.debug(`[core] persist env state: ${envStatePath.value}`);
     }
   } else {
     const solutionContext = ctx.solutionContext;
     if (solutionContext === undefined) return;
 
     // DO NOT persist local debug plugin config.
-    if (isMultiEnvEnabled() && solutionContext.envInfo.profile.has(PluginNames.LDEBUG)) {
-      solutionContext.envInfo.profile.delete(PluginNames.LDEBUG);
+    if (isMultiEnvEnabled() && solutionContext.envInfo.state.has(PluginNames.LDEBUG)) {
+      solutionContext.envInfo.state.delete(PluginNames.LDEBUG);
     }
 
-    const envProfilePath = await environmentManager.writeEnvProfile(
-      solutionContext.envInfo.profile,
+    const envStatePath = await environmentManager.writeEnvState(
+      solutionContext.envInfo.state,
       inputs.projectPath,
       solutionContext.cryptoProvider,
       solutionContext.envInfo.envName
     );
 
-    if (envProfilePath.isOk()) {
+    if (envStatePath.isOk()) {
       const core = ctx.self as FxCore;
-      core.tools.logProvider.debug(`[core] persist env profile: ${envProfilePath.value}`);
+      core.tools.logProvider.debug(`[core] persist env state: ${envStatePath.value}`);
     }
   }
 }

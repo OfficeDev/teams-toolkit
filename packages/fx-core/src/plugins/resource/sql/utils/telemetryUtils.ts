@@ -49,7 +49,7 @@ export class TelemetryUtils {
 
   private static addProperties(properties: { [key: string]: string }) {
     properties[Telemetry.properties.component] = Telemetry.componentName;
-    const appId = this.ctx.envInfo.profile
+    const appId = this.ctx.envInfo.state
       .get(Constants.solution)
       ?.get(Constants.solutionConfigKey.remoteTeamsAppId);
     if (appId) {

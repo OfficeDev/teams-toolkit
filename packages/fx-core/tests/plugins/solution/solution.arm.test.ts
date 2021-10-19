@@ -85,7 +85,7 @@ function mockSolutionContext(): SolutionContext {
     root: "./",
     envInfo: {
       envName: "default",
-      profile: new Map<string, any>(),
+      state: new Map<string, any>(),
       config: environmentManager.newEnvConfigData("myApp"),
     },
     answers: { platform: Platform.VSCode },
@@ -345,10 +345,10 @@ describe("Deploy ARM Template to Azure", () => {
       "value": "mytestappdefault"
     },
     "aadClientId": {
-      "value": "{{profile.fx-resource-aad-app-for-teams.clientId}}"
+      "value": "{{state.fx-resource-aad-app-for-teams.clientId}}"
     },
     "aadClientSecret": {
-      "value": "{{profile.fx-resource-aad-app-for-teams.clientSecret}}"
+      "value": "{{state.fx-resource-aad-app-for-teams.clientSecret}}"
     },
     "envValue": {
       "value": "{{MOCKED_EXPAND_VAR_TEST}}"
@@ -380,11 +380,11 @@ describe("Deploy ARM Template to Azure", () => {
         capabilities: [TabOptionItem.id],
       },
     };
-    mockedCtx.envInfo.profile.set(
+    mockedCtx.envInfo.state.set(
       "fx-resource-aad-app-for-teams",
       new ConfigMap([["clientId", testClientId]])
     );
-    mockedCtx.envInfo.profile.set(
+    mockedCtx.envInfo.state.set(
       SOLUTION_CONFIG,
       new ConfigMap([
         ["resource-base-name", "mocked resource base name"],
@@ -425,7 +425,7 @@ describe("Deploy ARM Template to Azure", () => {
     };
     mockArmDeploymentDependencies(mockedCtx);
 
-    mockedCtx.envInfo.profile.set(
+    mockedCtx.envInfo.state.set(
       "fx-resource-aad-app-for-teams",
       new ConfigMap([
         ["clientId", testClientId],
@@ -448,7 +448,7 @@ describe("Deploy ARM Template to Azure", () => {
           chai.assert.exists(parameters.properties.parameters?.aadClientSecret);
           chai.assert.notStrictEqual(
             parameters.properties.parameters?.aadClientSecret,
-            "{{profile.fx-resource-aad-app-for-teams.clientSecret}}"
+            "{{state.fx-resource-aad-app-for-teams.clientSecret}}"
           );
 
           return new Promise((resolve) => {
@@ -491,7 +491,7 @@ describe("Deploy ARM Template to Azure", () => {
       }`)
     );
     chai.assert.strictEqual(
-      mockedCtx.envInfo.profile.get(SOLUTION_CONFIG)?.get("armTemplateOutput"),
+      mockedCtx.envInfo.state.get(SOLUTION_CONFIG)?.get("armTemplateOutput"),
       testArmTemplateOutput
     );
   });
@@ -562,7 +562,7 @@ describe("Deploy ARM Template to Azure", () => {
   });
 
   function mockArmDeploymentDependencies(mockedCtx: SolutionContext) {
-    mockedCtx.envInfo.profile.set(
+    mockedCtx.envInfo.state.set(
       SOLUTION_CONFIG,
       new ConfigMap([
         ["resourceGroupName", "mocked resource group name"],

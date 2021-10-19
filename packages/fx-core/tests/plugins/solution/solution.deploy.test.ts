@@ -102,7 +102,7 @@ describe("deploy() for Azure projects", () => {
         activeResourcePlugins: [aadPlugin.name],
       },
     };
-    mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+    mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
     const result = await solution.deploy(mockedCtx);
     expect(result.isErr()).to.be.true;
     expect(result._unsafeUnwrapErr().name).equals("NoResourcePluginSelected");
@@ -138,7 +138,7 @@ describe("deploy() for Azure projects", () => {
           activeResourcePlugins: [aadPlugin.name],
         },
       };
-      mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+      mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
       const result = await solution.deploy(mockedCtx);
       expect(result.isErr()).to.be.true;
       expect(result._unsafeUnwrapErr().name).equals(SolutionError.NoResourcePluginSelected);
@@ -157,7 +157,7 @@ describe("deploy() for Azure projects", () => {
           activeResourcePlugins: [aadPlugin.name],
         },
       };
-      mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+      mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
       mockedCtx.answers![AzureSolutionQuestionNames.PluginSelectionDeploy] = [fehostPlugin.name];
       mockDeployThatAlwaysSucceed(fehostPlugin);
 

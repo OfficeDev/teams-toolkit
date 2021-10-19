@@ -50,6 +50,7 @@ export class AadPlugin {
 }
 
 export class FunctionPlugin {
+  public static readonly FolderName: string = "api";
   public static readonly Name: string = "fx-resource-function";
   public static readonly DefaultFunctionName: string = "defaultFunctionName";
 }
@@ -78,10 +79,12 @@ export class AppStudioPlugin {
 }
 
 export class FrontendHostingPlugin {
+  public static readonly FolderName: string = "tabs";
   public static readonly Name: string = "fx-resource-frontend-hosting";
 }
 
 export class BotPlugin {
+  public static readonly FolderName: string = "bot";
   public static readonly Name: string = "fx-resource-bot";
   public static readonly LocalBotId: string = "localBotId";
   public static readonly LocalBotPassword: string = "localBotPassword";

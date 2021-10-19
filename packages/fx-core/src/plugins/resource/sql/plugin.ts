@@ -169,6 +169,9 @@ export class SqlPluginImpl {
       ctx.logProvider?.info(Message.skipProvisionDatabase);
     }
 
+    ctx.config.set(Constants.sqlEndpoint, this.config.sqlEndpoint);
+    ctx.config.set(Constants.databaseName, this.config.databaseName);
+
     TelemetryUtils.sendEvent(Telemetry.stage.provision, true);
     ctx.logProvider?.info(Message.endProvision);
     await DialogUtils.progressBar?.end(true);
@@ -188,10 +191,9 @@ export class SqlPluginImpl {
     if (isArmSupportEnabled()) {
       this.syncArmOutput(ctx);
       ctx.config.set(Constants.sqlResourceId, this.config.sqlResourceId);
+      ctx.config.set(Constants.sqlEndpoint, this.config.sqlEndpoint);
+      ctx.config.set(Constants.databaseName, this.config.databaseName);
     }
-
-    ctx.config.set(Constants.sqlEndpoint, this.config.sqlEndpoint);
-    ctx.config.set(Constants.databaseName, this.config.databaseName);
 
     ctx.config.delete(Constants.adminPassword);
     this.config.prepareQuestions = false;
@@ -364,7 +366,7 @@ export class SqlPluginImpl {
     if (isArmSupportEnabled()) {
       this.config.identity = getArmOutput(ctx, IdentityArmOutput.identityName)!;
     } else {
-      const identityConfig = ctx.envInfo.profile.get(Constants.identityPlugin);
+      const identityConfig = ctx.envInfo.state.get(Constants.identityPlugin);
       this.config.identity = identityConfig!.get(Constants.identityName) as string;
       if (!this.config.identity) {
         const error = SqlResultFactory.SystemError(

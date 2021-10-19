@@ -2,13 +2,13 @@
 // Licensed under the MIT license.
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { ResourceManagementClient } from "@azure/arm-resources";
+import { ServiceClientCredentials } from "@azure/ms-rest-js";
 import {
   AzureAccountProvider,
   GraphTokenProvider,
   PluginContext,
   ConfigMap,
   TeamsAppManifest,
-  OptionItem,
   Platform,
   SubscriptionInfo,
   Inputs,
@@ -64,6 +64,13 @@ export function beforeEach_if(condition: boolean, callback: Func | AsyncFunc): v
   }
 }
 
+export function generateFakeServiceClientCredentials(): ServiceClientCredentials {
+  return {
+    signRequest: (anything) => {
+      return Promise.resolve(anything);
+    },
+  };
+}
 export class MockAzureAccountProvider implements AzureAccountProvider {
   private credentials: TokenCredentialsBase | undefined;
 
@@ -198,18 +205,15 @@ export class MockPluginContext implements PluginContext {
     );
     this.azureAccountProvider = new MockAzureAccountProvider();
     this.envInfo = newEnvInfo();
-    this.envInfo.profile.set(
-      TeamsToolkitComponent.Solution,
-      new Map(Object.entries(solutionConfig))
-    );
+    this.envInfo.state.set(TeamsToolkitComponent.Solution, new Map(Object.entries(solutionConfig)));
     this.app.name.short = appName;
 
     if (aadConfig) {
-      this.envInfo.profile.set(TeamsToolkitComponent.AadPlugin, new Map(Object.entries(aadConfig)));
+      this.envInfo.state.set(TeamsToolkitComponent.AadPlugin, new Map(Object.entries(aadConfig)));
     }
 
     if (functionConfig) {
-      this.envInfo.profile.set(
+      this.envInfo.state.set(
         TeamsToolkitComponent.FunctionPlugin,
         new Map(Object.entries(functionConfig))
       );

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import * as path from "path";
 import * as vscode from "vscode";
 
 import * as constants from "./constants";
@@ -125,7 +126,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
         task.scope !== vscode.TaskScope.Global &&
         task.scope !== vscode.TaskScope.Workspace
       ) {
-        const env: { [key: string]: string } | undefined = undefined;
+        let env: { [key: string]: string } | undefined = undefined;
         let cwd: string | undefined;
         let problemMatcher: string;
         const isWatchTask = command.toLowerCase() === "watch";
@@ -136,11 +137,22 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
             ? constants.tscWatchProblemMatcher
             : constants.frontendProblemMatcher;
         } else if (component?.toLowerCase() === "backend") {
-          // TODO: add func path to env
           cwd = await commonUtils.getProjectRoot(workspacePath, constants.backendFolderName);
           problemMatcher = isWatchTask
             ? constants.tscWatchProblemMatcher
             : constants.backendProblemMatcher;
+
+          // prepare PATH to execute `func`
+          const funcChecker = new FuncToolChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
+          if ((await funcChecker.isEnabled()) && (await funcChecker.isPortableFuncInstalled())) {
+            const funcBinFolders = funcChecker.getPortableFuncBinFolders();
+            env = {
+              // put portable func at the end since func checker prefers global func
+              PATH: `${process.env.PATH ?? ""}${path.delimiter}${funcBinFolders.join(
+                path.delimiter
+              )}`,
+            };
+          }
         } else if (component?.toLowerCase() === "bot") {
           cwd = await commonUtils.getProjectRoot(workspacePath, constants.botFolderName);
           problemMatcher = isWatchTask

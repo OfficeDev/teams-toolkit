@@ -86,7 +86,9 @@ export class WebviewPanel {
             vscode.env.openExternal(vscode.Uri.parse(msg.data));
             break;
           case Commands.CloneSampleApp:
-            await this.downloadSampleApp(msg);
+            Correlator.run(async () => {
+              await this.downloadSampleApp(msg);
+            });
             break;
           case Commands.DisplayCommands:
             vscode.commands.executeCommand("workbench.action.quickOpen", `>${msg.data}`);
@@ -110,7 +112,10 @@ export class WebviewPanel {
             });
             break;
           case Commands.CreateNewProject:
-            await runCommand(Stage.create);
+            await vscode.commands.executeCommand(
+              "fx-extension.create",
+              TelemetryTiggerFrom.Webview
+            );
             break;
           case Commands.SwitchPanel:
             WebviewPanel.createOrShow(msg.data);

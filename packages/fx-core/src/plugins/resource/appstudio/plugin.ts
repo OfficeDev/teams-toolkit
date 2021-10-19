@@ -365,7 +365,7 @@ export class AppStudioPluginImpl {
       ctx.logProvider?.info(`Teams app created ${remoteTeamsAppId}`);
     }
     if (isMultiEnvEnabled() || isV2()) {
-      ctx.envInfo.profile.get(PluginNames.APPST)?.set(Constants.TEAMS_APP_ID, remoteTeamsAppId);
+      ctx.envInfo.state.get(PluginNames.APPST)?.set(Constants.TEAMS_APP_ID, remoteTeamsAppId);
     }
     return ok(remoteTeamsAppId);
   }
@@ -387,7 +387,7 @@ export class AppStudioPluginImpl {
       if (isMultiEnvEnabled()) {
         const view = {
           config: ctx.envInfo.config,
-          profile: {
+          state: {
             "fx-resource-appstudio": {
               teamsAppId: remoteTeamsAppId,
             },
@@ -441,7 +441,7 @@ export class AppStudioPluginImpl {
         }
         const view = {
           config: ctx.envInfo.config,
-          profile: {
+          state: {
             "fx-resource-appstudio": {
               teamsAppId: teamsAppId,
             },
@@ -453,7 +453,7 @@ export class AppStudioPluginImpl {
       const appDefinitionAndManifest = await this.getAppDefinitionAndManifest(ctx, false);
       if (appDefinitionAndManifest.isErr()) {
         ctx.logProvider?.error("[Teams Toolkit] Manifest Validation failed!");
-        const isProvisionSucceeded = !!(ctx.envInfo.profile
+        const isProvisionSucceeded = !!(ctx.envInfo.state
           .get("solution")
           ?.get(SOLUTION_PROVISION_SUCCEEDED) as boolean);
         if (
@@ -587,7 +587,7 @@ export class AppStudioPluginImpl {
       if (isMultiEnvEnabled()) {
         const view = {
           config: ctx.envInfo.config,
-          profile: {
+          state: {
             "fx-resource-appstudio": {
               teamsAppId: this.getTeamsAppId(ctx, false),
             },
@@ -601,7 +601,7 @@ export class AppStudioPluginImpl {
         manifestString = JSON.stringify(manifest.value[1]);
       } else {
         ctx.logProvider?.error("[Teams Toolkit] Teams Package build failed!");
-        const isProvisionSucceeded = !!(ctx.envInfo.profile
+        const isProvisionSucceeded = !!(ctx.envInfo.state
           .get("solution")
           ?.get(SOLUTION_PROVISION_SUCCEEDED) as boolean);
         if (
@@ -701,7 +701,7 @@ export class AppStudioPluginImpl {
       if (isMultiEnvEnabled()) {
         const view = {
           config: ctx.envInfo.config,
-          profile: {
+          state: {
             "fx-resource-appstudio": {
               teamsAppId: this.getTeamsAppId(ctx, false),
             },
@@ -773,7 +773,7 @@ export class AppStudioPluginImpl {
     if (isMultiEnvEnabled()) {
       ctx.localSettings?.teamsApp?.set(Constants.TEAMS_APP_ID, teamsAppId.value);
     } else {
-      (ctx.envInfo?.profile.get("solution") as ConfigMap)?.set(
+      (ctx.envInfo?.state.get("solution") as ConfigMap)?.set(
         LOCAL_DEBUG_TEAMS_APP_ID,
         teamsAppId.value
       );
@@ -1277,11 +1277,11 @@ export class AppStudioPluginImpl {
     if (isMultiEnvEnabled()) {
       tabEndpoint = isLocalDebug
         ? (ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabEndpoint) as string)
-        : (ctx.envInfo.profile.get(PluginNames.FE)?.get(FRONTEND_ENDPOINT) as string);
+        : (ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_ENDPOINT) as string);
     } else {
       tabEndpoint = isLocalDebug
-        ? (ctx.envInfo.profile.get(PluginNames.LDEBUG)?.get(LOCAL_DEBUG_TAB_ENDPOINT) as string)
-        : (ctx.envInfo.profile.get(PluginNames.FE)?.get(FRONTEND_ENDPOINT) as string);
+        ? (ctx.envInfo.state.get(PluginNames.LDEBUG)?.get(LOCAL_DEBUG_TAB_ENDPOINT) as string)
+        : (ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_ENDPOINT) as string);
     }
 
     return tabEndpoint;
@@ -1293,11 +1293,11 @@ export class AppStudioPluginImpl {
     if (isMultiEnvEnabled()) {
       tabDomain = isLocalDebug
         ? (ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabDomain) as string)
-        : (ctx.envInfo.profile.get(PluginNames.FE)?.get(FRONTEND_DOMAIN) as string);
+        : (ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_DOMAIN) as string);
     } else {
       tabDomain = isLocalDebug
-        ? (ctx.envInfo.profile.get(PluginNames.LDEBUG)?.get(LOCAL_DEBUG_TAB_DOMAIN) as string)
-        : (ctx.envInfo.profile.get(PluginNames.FE)?.get(FRONTEND_DOMAIN) as string);
+        ? (ctx.envInfo.state.get(PluginNames.LDEBUG)?.get(LOCAL_DEBUG_TAB_DOMAIN) as string)
+        : (ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_DOMAIN) as string);
     }
     return tabDomain;
   }
@@ -1308,9 +1308,9 @@ export class AppStudioPluginImpl {
     if (isMultiEnvEnabled()) {
       clientId = isLocalDebug
         ? (ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId) as string)
-        : (ctx.envInfo.profile.get(PluginNames.AAD)?.get(REMOTE_AAD_ID) as string);
+        : (ctx.envInfo.state.get(PluginNames.AAD)?.get(REMOTE_AAD_ID) as string);
     } else {
-      clientId = ctx.envInfo.profile
+      clientId = ctx.envInfo.state
         .get(PluginNames.AAD)
         ?.get(isLocalDebug ? LOCAL_DEBUG_AAD_ID : REMOTE_AAD_ID) as string;
     }
@@ -1324,9 +1324,9 @@ export class AppStudioPluginImpl {
     if (isMultiEnvEnabled()) {
       botId = isLocalDebug
         ? (ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotId) as string)
-        : (ctx.envInfo.profile.get(PluginNames.BOT)?.get(BOT_ID) as string);
+        : (ctx.envInfo.state.get(PluginNames.BOT)?.get(BOT_ID) as string);
     } else {
-      botId = ctx.envInfo.profile
+      botId = ctx.envInfo.state
         .get(PluginNames.BOT)
         ?.get(isLocalDebug ? LOCAL_BOT_ID : BOT_ID) as string;
     }
@@ -1340,11 +1340,11 @@ export class AppStudioPluginImpl {
     if (isMultiEnvEnabled()) {
       botDomain = isLocalDebug
         ? (ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotDomain) as string)
-        : (ctx.envInfo.profile.get(PluginNames.BOT)?.get(BOT_DOMAIN) as string);
+        : (ctx.envInfo.state.get(PluginNames.BOT)?.get(BOT_DOMAIN) as string);
     } else {
       botDomain = isLocalDebug
-        ? (ctx.envInfo.profile.get(PluginNames.LDEBUG)?.get(LOCAL_DEBUG_BOT_DOMAIN) as string)
-        : (ctx.envInfo.profile.get(PluginNames.BOT)?.get(BOT_DOMAIN) as string);
+        ? (ctx.envInfo.state.get(PluginNames.LDEBUG)?.get(LOCAL_DEBUG_BOT_DOMAIN) as string)
+        : (ctx.envInfo.state.get(PluginNames.BOT)?.get(BOT_DOMAIN) as string);
     }
 
     return botDomain;
@@ -1356,9 +1356,9 @@ export class AppStudioPluginImpl {
     if (isMultiEnvEnabled()) {
       applicationIdUris = isLocalDebug
         ? (ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ApplicationIdUris) as string)
-        : (ctx.envInfo.profile.get(PluginNames.AAD)?.get(WEB_APPLICATION_INFO_SOURCE) as string);
+        : (ctx.envInfo.state.get(PluginNames.AAD)?.get(WEB_APPLICATION_INFO_SOURCE) as string);
     } else {
-      applicationIdUris = ctx.envInfo.profile
+      applicationIdUris = ctx.envInfo.state
         .get(PluginNames.AAD)
         ?.get(
           isLocalDebug ? LOCAL_WEB_APPLICATION_INFO_SOURCE : WEB_APPLICATION_INFO_SOURCE
@@ -1373,11 +1373,11 @@ export class AppStudioPluginImpl {
     if (isLocalDebug) {
       teamsAppId = isMultiEnvEnabled()
         ? ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TeamsAppId)
-        : (ctx.envInfo.profile.get("solution")?.get(LOCAL_DEBUG_TEAMS_APP_ID) as string);
+        : (ctx.envInfo.state.get("solution")?.get(LOCAL_DEBUG_TEAMS_APP_ID) as string);
     } else {
       teamsAppId = isMultiEnvEnabled()
-        ? (ctx.envInfo.profile.get(PluginNames.APPST)?.get(Constants.TEAMS_APP_ID) as string)
-        : (ctx.envInfo.profile.get("solution")?.get(REMOTE_TEAMS_APP_ID) as string);
+        ? (ctx.envInfo.state.get(PluginNames.APPST)?.get(Constants.TEAMS_APP_ID) as string)
+        : (ctx.envInfo.state.get("solution")?.get(REMOTE_TEAMS_APP_ID) as string);
     }
     return teamsAppId;
   }
@@ -1625,7 +1625,7 @@ export class AppStudioPluginImpl {
     if (isMultiEnvEnabled()) {
       const view = {
         config: ctx.envInfo.config,
-        profile: {
+        state: {
           "fx-resource-frontend-hosting": {
             endpoint: tabEndpoint,
           },

@@ -210,7 +210,7 @@ export class ApiVersionQuestion extends BaseQuestionService implements IQuestion
   private async getDynamicOptions(inputs: Inputs, ctx: PluginContext): Promise<OptionItem[]> {
     const apimService = await this.lazyApimService.getValue();
     const apimConfig = new ApimPluginConfig(ctx.config);
-    const solutionConfig = new SolutionConfig(ctx.envInfo.profile);
+    const solutionConfig = new SolutionConfig(ctx.envInfo.state);
     const answer = buildAnswer(inputs);
     let resourceGroupName, serviceName;
     if (isArmSupportEnabled()) {

@@ -5,12 +5,12 @@ import {
   ConfigFolderName,
   ConfigMap,
   CryptoProvider,
-  EnvProfileFileNameTemplate,
+  EnvStateFileNameTemplate,
   EnvConfig,
   err,
   FxError,
   ok,
-  PublishProfilesFolderName,
+  StatesFolderName,
   Result,
   SystemError,
   InputConfigsFolderName,
@@ -45,17 +45,16 @@ import { isMultiEnvEnabled } from "../common";
 import Ajv from "ajv";
 import * as draft6MetaSchema from "ajv/dist/refs/json-schema-draft-06.json";
 import * as envConfigSchema from "@microsoft/teamsfx-api/build/schemas/envConfig.json";
-import { InvalidProjectSettingsFileError } from ".";
 
-export interface EnvProfileFiles {
-  envProfile: string;
+export interface EnvStateFiles {
+  envState: string;
   userDataFile: string;
 }
 
 class EnvironmentManager {
   public readonly envNameRegex = /^[\w\d-_]+$/;
   public readonly envConfigNameRegex = /^config\.(?<envName>[\w\d-_]+)\.json$/i;
-  public readonly envProfileNameRegex = /^profile\.(?<envName>[\w\d-_]+)\.json$/i;
+  public readonly envStateNameRegex = /^state\.(?<envName>[\w\d-_]+)\.json$/i;
 
   private readonly defaultEnvName = "default";
   private readonly defaultEnvNameNew = "dev";
@@ -86,12 +85,12 @@ class EnvironmentManager {
       return err(configResult.error);
     }
 
-    const profileResult = await this.loadEnvProfile(projectPath, envName, cryptoProvider);
-    if (profileResult.isErr()) {
-      return err(profileResult.error);
+    const stateResult = await this.loadEnvState(projectPath, envName, cryptoProvider);
+    if (stateResult.isErr()) {
+      return err(stateResult.error);
     }
 
-    return ok({ envName, config: configResult.value, profile: profileResult.value });
+    return ok({ envName, config: configResult.value, state: stateResult.value });
   }
 
   public newEnvConfigData(appName: string): EnvConfig {
@@ -135,7 +134,7 @@ class EnvironmentManager {
     return ok(envConfigPath);
   }
 
-  public async writeEnvProfile(
+  public async writeEnvState(
     envData: Map<string, any> | Json,
     projectPath: string,
     cryptoProvider: CryptoProvider,
@@ -145,13 +144,13 @@ class EnvironmentManager {
       return err(PathNotExistError(projectPath));
     }
 
-    const envProfilesFolder = this.getEnvProfilesFolder(projectPath);
-    if (!(await fs.pathExists(envProfilesFolder))) {
-      await fs.ensureDir(envProfilesFolder);
+    const envStatesFolder = this.getEnvStatesFolder(projectPath);
+    if (!(await fs.pathExists(envStatesFolder))) {
+      await fs.ensureDir(envStatesFolder);
     }
 
     envName = envName ?? this.getDefaultEnvName();
-    const envFiles = this.getEnvProfileFilesPath(envName, projectPath);
+    const envFiles = this.getEnvStateFilesPath(envName, projectPath);
 
     const data = envData instanceof Map ? mapToJson(envData) : envData;
     const secrets = sperateSecretData(data);
@@ -161,13 +160,13 @@ class EnvironmentManager {
     }
 
     try {
-      await fs.writeFile(envFiles.envProfile, JSON.stringify(data, null, 4));
+      await fs.writeFile(envFiles.envState, JSON.stringify(data, null, 4));
       await fs.writeFile(envFiles.userDataFile, serializeDict(secrets));
     } catch (error) {
       return err(WriteFileError(error));
     }
 
-    return ok(envFiles.envProfile);
+    return ok(envFiles.envState);
   }
 
   public async listEnvConfigs(projectPath: string): Promise<Result<Array<string>, FxError>> {
@@ -219,17 +218,17 @@ class EnvironmentManager {
     return path.resolve(basePath, EnvConfigFileNameTemplate.replace(EnvNamePlaceholder, envName));
   }
 
-  public getEnvProfileFilesPath(envName: string, projectPath: string): EnvProfileFiles {
-    const basePath = this.getEnvProfilesFolder(projectPath);
-    const envProfile = path.resolve(
+  public getEnvStateFilesPath(envName: string, projectPath: string): EnvStateFiles {
+    const basePath = this.getEnvStatesFolder(projectPath);
+    const envState = path.resolve(
       basePath,
       isMultiEnvEnabled()
-        ? EnvProfileFileNameTemplate.replace(EnvNamePlaceholder, envName)
+        ? EnvStateFileNameTemplate.replace(EnvNamePlaceholder, envName)
         : `env.${envName}.json`
     );
     const userDataFile = path.resolve(basePath, `${envName}.userdata`);
 
-    return { envProfile, userDataFile };
+    return { envState: envState, userDataFile };
   }
 
   private async loadEnvConfig(
@@ -261,25 +260,25 @@ class EnvironmentManager {
     return err(InvalidEnvConfigError(envName, JSON.stringify(validate.errors)));
   }
 
-  private async loadEnvProfile(
+  private async loadEnvState(
     projectPath: string,
     envName: string,
     cryptoProvider: CryptoProvider
   ): Promise<Result<Map<string, any>, FxError>> {
-    const envFiles = this.getEnvProfileFilesPath(envName, projectPath);
+    const envFiles = this.getEnvStateFilesPath(envName, projectPath);
     const userDataResult = await this.loadUserData(envFiles.userDataFile, cryptoProvider);
     if (userDataResult.isErr()) {
       return err(userDataResult.error);
     }
     const userData = userDataResult.value;
 
-    if (!(await fs.pathExists(envFiles.envProfile))) {
+    if (!(await fs.pathExists(envFiles.envState))) {
       const data = new Map<string, any>([[GLOBAL_CONFIG, new ConfigMap()]]);
 
       return ok(data);
     }
 
-    const envData = await readJson(envFiles.envProfile);
+    const envData = await readJson(envFiles.envState);
 
     mergeSerectData(userData, envData);
     const data = objectToMap(envData);
@@ -300,13 +299,13 @@ class EnvironmentManager {
     return path.resolve(projectPath, `.${ConfigFolderName}`);
   }
 
-  private getPublishProfilesFolder(projectPath: string): string {
-    return path.resolve(this.getConfigFolder(projectPath), PublishProfilesFolderName);
+  private getStatesFolder(projectPath: string): string {
+    return path.resolve(this.getConfigFolder(projectPath), StatesFolderName);
   }
 
-  private getEnvProfilesFolder(projectPath: string): string {
+  private getEnvStatesFolder(projectPath: string): string {
     return isMultiEnvEnabled()
-      ? this.getPublishProfilesFolder(projectPath)
+      ? this.getStatesFolder(projectPath)
       : this.getConfigFolder(projectPath);
   }
 

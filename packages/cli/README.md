@@ -15,7 +15,7 @@ Please refer to [TeamsFx CLI User Manual](/docs/cli/user-manual.md) for in-depth
 
 ## Extensibility Model
 
-TeamsFx CLI depends on [fx-core](/packages/fx-core) and [api](/packages/api) packages. [fx-core](/packages/fx-core) is designed to be extensible. See [EXTENSIBILITY.md](/packages/api/ETENSIBILITY.md) for more
+TeamsFx CLI depends on [fx-core](/packages/fx-core) and [api](/packages/api) packages. [fx-core](/packages/fx-core) is designed to be extensible. See [EXTENSIBILITY.md](/packages/api/EXTENSIBILITY.md) for more
 
 ## Data Collection.
 

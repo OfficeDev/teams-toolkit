@@ -157,7 +157,7 @@ describe("listAllCollaborators() for Teamsfx projects", () => {
         version: "1.0",
       },
     };
-    mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+    mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
 
     sandbox
       .stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject")
@@ -181,7 +181,7 @@ describe("listAllCollaborators() for Teamsfx projects", () => {
         version: "1.0",
       },
     };
-    mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+    mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
 
     sandbox.stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject").resolves({
       tid: "fake_tid",
@@ -190,8 +190,8 @@ describe("listAllCollaborators() for Teamsfx projects", () => {
       name: "fake_name",
     });
 
-    mockedCtx.envInfo.profile.set(PluginNames.AAD, new ConfigMap());
-    mockedCtx.envInfo.profile.get(PluginNames.AAD)?.set(REMOTE_TENANT_ID, mockProjectTenantId);
+    mockedCtx.envInfo.state.set(PluginNames.AAD, new ConfigMap());
+    mockedCtx.envInfo.state.get(PluginNames.AAD)?.set(REMOTE_TENANT_ID, mockProjectTenantId);
     sandbox.stub(environmentManager, "listEnvConfigs").resolves(ok([mockedCtx.envInfo.envName]));
     sandbox.stub(environmentManager, "loadEnvInfo").resolves(ok(mockedCtx.envInfo));
 
@@ -218,7 +218,7 @@ describe("listAllCollaborators() for Teamsfx projects", () => {
         version: "1.0",
       },
     };
-    mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+    mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
 
     sandbox.stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject").resolves({
       tid: mockProjectTenantId,
@@ -254,8 +254,8 @@ describe("listAllCollaborators() for Teamsfx projects", () => {
       ]);
     };
 
-    mockedCtx.envInfo.profile.set(PluginNames.AAD, new ConfigMap());
-    mockedCtx.envInfo.profile.get(PluginNames.AAD)?.set(REMOTE_TENANT_ID, mockProjectTenantId);
+    mockedCtx.envInfo.state.set(PluginNames.AAD, new ConfigMap());
+    mockedCtx.envInfo.state.get(PluginNames.AAD)?.set(REMOTE_TENANT_ID, mockProjectTenantId);
 
     const result = await solution.listAllCollaborators(mockedCtx);
     expect(result.isErr()).to.be.false;
@@ -280,7 +280,7 @@ describe("listAllCollaborators() for Teamsfx projects", () => {
         version: "1.0",
       },
     };
-    mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+    mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
 
     sandbox.stub(environmentManager, "listEnvConfigs").resolves(ok([mockedCtx.envInfo.envName]));
     sandbox.stub(environmentManager, "loadEnvInfo").resolves(ok(mockedCtx.envInfo));
@@ -317,8 +317,8 @@ describe("listAllCollaborators() for Teamsfx projects", () => {
         },
       ]);
     };
-    mockedCtx.envInfo.profile.set(PluginNames.AAD, new ConfigMap());
-    mockedCtx.envInfo.profile.get(PluginNames.AAD)?.set(REMOTE_TENANT_ID, mockProjectTenantId);
+    mockedCtx.envInfo.state.set(PluginNames.AAD, new ConfigMap());
+    mockedCtx.envInfo.state.get(PluginNames.AAD)?.set(REMOTE_TENANT_ID, mockProjectTenantId);
 
     const result = await solution.listAllCollaborators(mockedCtx);
     if (result.isErr()) {

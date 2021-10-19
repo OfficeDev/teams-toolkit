@@ -15,7 +15,6 @@ Preview Features:
 
 ![Alt Text](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/addCollaborator.png)
 
-- Support customize Teams app manifest.
 - Improve the experience to customize Azure resource provision using ARM(Azure Resource Manager).
 
 The picture below shows how to enable preview features, more details refer to the [preview guidance](https://github.com/OfficeDev/TeamsFx/wiki/Enable-Preview-Features-in-Teams-Toolkit)

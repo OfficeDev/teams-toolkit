@@ -77,10 +77,9 @@ import {
   generateArmTemplate,
   getParameterJson,
 } from "./arm";
-import { checkSubscription, fillInCommonQuestions } from "./commonQuestions";
+import { checkM365Tenant, checkSubscription, fillInCommonQuestions } from "./commonQuestions";
 import {
   ARM_TEMPLATE_OUTPUT,
-  CancelError,
   DEFAULT_PERMISSION_REQUEST,
   GLOBAL_CONFIG,
   LOCAL_APPLICATION_ID_URIS,
@@ -149,9 +148,6 @@ import {
 import { askForProvisionConsent } from "./v2/provision";
 import { scaffoldReadmeAndLocalSettings } from "./v2/scaffolding";
 import { environmentManager } from "../../..";
-import { Json } from "@microsoft/teamsfx-api";
-import { setLocalSettingsV2 } from "../../resource/utils4v2";
-import { LocalSettingsProvider } from "../../../common/localSettingsProvider";
 import { TelemetryEvent, TelemetryProperty } from "../../../common/telemetry";
 
 export type LoadedPlugin = Plugin;
@@ -748,7 +744,16 @@ export class TeamsAppSolution implements Solution {
         // Just to trigger M365 login before the concurrent execution of deploy.
         // Because concurrent exectution of deploy may getAccessToken() concurrently, which
         // causes 2 M365 logins before the token caching in common lib takes effect.
-        await ctx.appStudioToken?.getAccessToken();
+        const appStudioTokenJson = await ctx.appStudioToken?.getJsonObject();
+
+        const checkM365 = await checkM365Tenant(ctx.envInfo, appStudioTokenJson as object);
+        if (checkM365.isErr()) {
+          return checkM365;
+        }
+        const checkAzure = await checkSubscription(ctx.envInfo, ctx.azureAccountProvider!);
+        if (checkAzure.isErr()) {
+          return checkAzure;
+        }
       }
 
       this.runningState = SolutionRunningState.DeployInProgress;
@@ -860,6 +865,13 @@ export class TeamsAppSolution implements Solution {
     }
 
     try {
+      const appStudioTokenJson = await ctx.appStudioToken?.getJsonObject();
+
+      const checkM365 = await checkM365Tenant(ctx.envInfo, appStudioTokenJson as object);
+      if (checkM365.isErr()) {
+        return checkM365;
+      }
+
       this.runningState = SolutionRunningState.PublishInProgress;
 
       const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, [
@@ -2868,12 +2880,18 @@ export class TeamsAppSolution implements Solution {
         baseURL: "https://graph.microsoft.com/v1.0",
       });
       instance.defaults.headers.common["Authorization"] = `Bearer ${graphToken}`;
-      const res = await instance.get(`/users?$filter=startsWith(mail,'${email}')`);
+      const res = await instance.get(
+        `/users?$filter=startsWith(mail,'${email}') or startsWith(userPrincipalName, '${email}')`
+      );
       if (!res || !res.data || !res.data.value) {
         return undefined;
       }
 
-      const collaborator = res.data.value.find((user: any) => user.mail === email);
+      const collaborator = res.data.value.find(
+        (user: any) =>
+          user.mail.toLowerCase() === email.toLowerCase() ||
+          user.userPrincipalName.toLowerCase() === email.toLowerCase()
+      );
 
       if (!collaborator) {
         return undefined;

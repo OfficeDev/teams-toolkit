@@ -56,12 +56,14 @@ describe("FrontendConfig", () => {
       );
     });
 
-    it("invalid storage name/id", async () => {
+    it("invalid storage name", async () => {
+      const invalidStorageName = "dangerous.com/";
       if (isArmSupportEnabled()) {
-        const invalidStorageResourceId = `/subscriptions/${uuid()}/resourceGroups/app-test-rg/providers/Microsoft.Storage/storageAccounts/dangerous.com%2F`;
+        const invalidStorageResourceId = `/subscriptions/${uuid()}/resourceGroups/app-test-rg/providers/Microsoft.Storage/storageAccounts/${encodeURIComponent(
+          invalidStorageName
+        )}`;
         pluginContext.config.set(FrontendConfigInfo.StorageResourceId, invalidStorageResourceId);
       } else {
-        const invalidStorageName = "dangerous.com/";
         pluginContext.config.set(FrontendConfigInfo.StorageName, invalidStorageName);
       }
       await assertRejected(

@@ -36,7 +36,7 @@ import { StorageAccounts } from "@azure/arm-storage";
 import { AzureLib } from "../../../../../src/plugins/resource/frontend/utils/azure-client";
 import * as core from "../../../../../src";
 import { EnvironmentUtils } from "../../../../../src/plugins/resource/frontend/utils/environment-utils";
-import { getTemplatesFolder, isArmSupportEnabled, isMultiEnvEnabled } from "../../../../../src";
+import { getTemplatesFolder, isArmSupportEnabled } from "../../../../../src";
 import mock from "mock-fs";
 import * as path from "path";
 
@@ -216,7 +216,7 @@ describe("FrontendPlugin", () => {
 
     beforeEach(async () => {
       pluginContext = TestHelper.getFakePluginContext();
-      if (isMultiEnvEnabled()) {
+      if (isArmSupportEnabled()) {
         sinon
           .stub(AzureStorageClient.prototype, "enableStaticWebsite")
           .returns(Promise.resolve(undefined));

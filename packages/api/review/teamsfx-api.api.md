@@ -261,7 +261,6 @@ export interface EnvConfig {
         clientSecret?: string;
         objectId?: string;
         accessAsUserScopeId?: string;
-        skipProvision?: boolean;
         [k: string]: unknown;
     };
     azure?: {

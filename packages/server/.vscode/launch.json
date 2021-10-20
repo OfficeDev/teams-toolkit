@@ -7,7 +7,7 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Program",
+            "name": "Launch Server",
             "skipFiles": [
                 "<node_internals>/**"
             ],
@@ -16,6 +16,19 @@
                 "${workspaceFolder}/**/*.js"
             ],
             "preLaunchTask": "npm: build"
-        }
+        },
+        {
+          "type": "node",
+          "request": "launch",
+          "name": "Launch Client",
+          "skipFiles": [
+              "<node_internals>/**"
+          ],
+          "program": "${workspaceFolder}\\lib\\client.js",
+          "outFiles": [
+              "${workspaceFolder}/**/*.js"
+          ],
+          "preLaunchTask": "npm: build"
+      }
     ]
 }

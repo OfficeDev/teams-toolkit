@@ -3,9 +3,11 @@
 
 import {
   AppStudioTokenProvider,
+  assembleError,
   AzureAccountProvider,
   Colors,
   CryptoProvider,
+  err,
   FxError,
   GraphTokenProvider,
   InputTextConfig,
@@ -16,6 +18,7 @@ import {
   MultiSelectConfig,
   MultiSelectResult,
   NotImplementedError,
+  ok,
   PermissionRequestProvider,
   Result,
   RunnableTask,
@@ -29,7 +32,6 @@ import {
   SingleSelectConfig,
   SingleSelectResult,
   SubscriptionInfo,
-  SystemError,
   TaskConfig,
   TelemetryReporter,
   TokenProvider,
@@ -41,6 +43,7 @@ import { MessageConnection } from "vscode-jsonrpc";
 import { TokenCredential } from "../../api/node_modules/@azure/core-auth/types/latest/core-auth";
 import { TokenCredentialsBase } from "../../api/node_modules/@azure/ms-rest-nodeauth/dist/lib/msRestNodeAuth";
 import { Namespaces } from "./namespace";
+import { sendNotification, sendRequest } from "./utils";
 
 export class RemoteLogProvider implements LogProvider {
   connection: MessageConnection;
@@ -48,33 +51,33 @@ export class RemoteLogProvider implements LogProvider {
     this.connection = connection;
   }
   async log(logLevel: LogLevel, message: string): Promise<boolean> {
-    this.connection.sendNotification(`${Namespaces.Logger}/log`, logLevel, message);
+    sendNotification(this.connection, `${Namespaces.Logger}/log`, logLevel, message);
     return true;
   }
   async trace(message: string): Promise<boolean> {
-    this.connection.sendNotification(`${Namespaces.Logger}/trace`, message);
+    sendNotification(this.connection, `${Namespaces.Logger}/trace`, message);
     return true;
   }
   async debug(message: string): Promise<boolean> {
-    this.connection.sendNotification(`${Namespaces.Logger}/debug`, message);
+    sendNotification(this.connection, `${Namespaces.Logger}/debug`, message);
     return true;
   }
   info(message: string): Promise<boolean>;
   info(message: { content: string; color: Colors }[]): Promise<boolean>;
   async info(message: any): Promise<boolean> {
-    this.connection.sendNotification(`${Namespaces.Logger}/info`, message);
+    sendNotification(this.connection, `${Namespaces.Logger}/info`, message);
     return true;
   }
   async warning(message: string): Promise<boolean> {
-    this.connection.sendNotification(`${Namespaces.Logger}/warning`, message);
+    sendNotification(this.connection, `${Namespaces.Logger}/warning`, message);
     return true;
   }
   async error(message: string): Promise<boolean> {
-    this.connection.sendNotification(`${Namespaces.Logger}/error`, message);
+    sendNotification(this.connection, `${Namespaces.Logger}/error`, message);
     return true;
   }
   async fatal(message: string): Promise<boolean> {
-    this.connection.sendNotification(`${Namespaces.Logger}/fatal`, message);
+    sendNotification(this.connection, `${Namespaces.Logger}/fatal`, message);
     return true;
   }
 }
@@ -306,6 +309,7 @@ export class RemoteUserInteraction implements UserInteraction {
   }
   selectFolder(config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> {
     throw new NotImplementedError("FxServer", `${Namespaces.UserInteraction}/selectFolder`);
+    // return sendRequest(this.connection, `${Namespaces.UserInteraction}/selectFolder`, config);
   }
   public async showMessage(
     level: "info" | "warn" | "error",
@@ -327,7 +331,14 @@ export class RemoteUserInteraction implements UserInteraction {
     modal: boolean,
     ...items: string[]
   ): Promise<Result<string | undefined, FxError>> {
-    throw new NotImplementedError("FxServer", `${Namespaces.UserInteraction}/showMessage`);
+    return sendRequest(
+      this.connection,
+      `${Namespaces.UserInteraction}/showMessage`,
+      level,
+      message,
+      modal,
+      items
+    );
   }
   createProgressBar(title: string, totalSteps: number): IProgressHandler {
     throw new NotImplementedError("FxServer", `${Namespaces.UserInteraction}/createProgressBar`);

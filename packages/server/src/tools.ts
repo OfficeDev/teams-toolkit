@@ -37,12 +37,14 @@ import {
   TokenProvider,
   Tools,
   TreeProvider,
+  UIConfig,
   UserInteraction,
 } from "@microsoft/teamsfx-api";
 import { MessageConnection } from "vscode-jsonrpc";
 import { TokenCredential } from "../../api/node_modules/@azure/core-auth/types/latest/core-auth";
 import { TokenCredentialsBase } from "../../api/node_modules/@azure/ms-rest-nodeauth/dist/lib/msRestNodeAuth";
 import { Namespaces } from "./namespace";
+import { Rpc, setFunc } from "./questionAdapter";
 import { sendNotification, sendRequest } from "./utils";
 
 export class RemoteLogProvider implements LogProvider {
@@ -282,6 +284,14 @@ export class RemoteUserInteraction implements UserInteraction {
   constructor(connection: MessageConnection) {
     this.connection = connection;
   }
+  async selectOption(config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> {
+    this.convertConfigToJson(config);
+    return sendRequest(this.connection, `${Namespaces.UserInteraction}/selectOption`, config);
+  }
+  async inputText(config: InputTextConfig): Promise<Result<InputTextResult, FxError>> {
+    this.convertConfigToJson(config);
+    return sendRequest(this.connection, `${Namespaces.UserInteraction}/inputText`, config);
+  }
   openUrl(link: string): Promise<Result<boolean, FxError>> {
     throw new NotImplementedError("FxServer", `${Namespaces.UserInteraction}/openUrl`);
   }
@@ -292,14 +302,8 @@ export class RemoteUserInteraction implements UserInteraction {
   ): Promise<Result<T, FxError>> {
     throw new NotImplementedError("FxServer", `${Namespaces.UserInteraction}/runWithProgress`);
   }
-  async selectOption(config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> {
-    throw new NotImplementedError("FxServer", `${Namespaces.UserInteraction}/selectOption`);
-  }
   selectOptions(config: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> {
     throw new NotImplementedError("FxServer", `${Namespaces.UserInteraction}/selectOptions`);
-  }
-  inputText(config: InputTextConfig): Promise<Result<InputTextResult, FxError>> {
-    throw new NotImplementedError("FxServer", `${Namespaces.UserInteraction}/inputText`);
   }
   selectFile(config: SelectFileConfig): Promise<Result<SelectFileResult, FxError>> {
     throw new NotImplementedError("FxServer", `${Namespaces.UserInteraction}/selectFile`);
@@ -309,7 +313,6 @@ export class RemoteUserInteraction implements UserInteraction {
   }
   selectFolder(config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> {
     throw new NotImplementedError("FxServer", `${Namespaces.UserInteraction}/selectFolder`);
-    // return sendRequest(this.connection, `${Namespaces.UserInteraction}/selectFolder`, config);
   }
   public async showMessage(
     level: "info" | "warn" | "error",
@@ -342,6 +345,12 @@ export class RemoteUserInteraction implements UserInteraction {
   }
   createProgressBar(title: string, totalSteps: number): IProgressHandler {
     throw new NotImplementedError("FxServer", `${Namespaces.UserInteraction}/createProgressBar`);
+  }
+  private convertConfigToJson(config: UIConfig<any>) {
+    if (config.validation) {
+      const funcId = setFunc(config.validation);
+      (config as any).validation = { type: "ValidateFunc", id: funcId } as Rpc;
+    }
   }
 }
 

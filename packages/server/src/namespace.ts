@@ -10,4 +10,5 @@ export enum Namespaces {
   SharepointTokenProvider = "SharepointTokenProvider",
   UserInteraction = "UserInteraction",
   TelemetryReporter = "TelemetryReporter",
+  RemoteFunc = "RemoteFunc",
 }

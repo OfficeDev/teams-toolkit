@@ -33,7 +33,7 @@ export class ConfigUtils {
       }
     } else {
       if (isMultiEnvEnabled()) {
-        return ctx.envInfo.state.get(Plugins.pluginNameComplex).get(key) as string;
+        return ctx.envInfo.state.get(Plugins.pluginNameComplex)?.get(key) as string;
       } else {
         return ctx.config?.get(key) as string;
       }

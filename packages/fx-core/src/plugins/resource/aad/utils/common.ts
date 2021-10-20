@@ -77,7 +77,6 @@ export class Utils {
     const clientId = ctx.envInfo.config.auth?.clientId;
     const oauth2PermissionScopeId = ctx.envInfo.config.auth?.accessAsUserScopeId;
     const clientSecret = ctx.envInfo.config.auth?.clientSecret;
-    const skip = ctx.envInfo.config.auth?.[ConfigKeys.skip];
 
     if (objectId && clientId && oauth2PermissionScopeId && clientSecret) {
       ConfigUtils.checkAndSaveConfig(ctx, ConfigKeys.objectId, objectId as string);
@@ -88,13 +87,14 @@ export class Utils {
         ConfigKeys.oauth2PermissionScopeId,
         oauth2PermissionScopeId as string
       );
-    } else {
+      return true;
+    } else if (objectId || clientId || oauth2PermissionScopeId || clientSecret) {
       throw ResultFactory.UserError(
         GetSkipAppConfigError.name,
         GetSkipAppConfigError.message(Utils.getInputFileName(ctx))
       );
+    } else {
+      return false;
     }
-
-    return skip as boolean;
   }
 }

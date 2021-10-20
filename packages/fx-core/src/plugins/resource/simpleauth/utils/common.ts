@@ -145,6 +145,18 @@ export class Utils {
     return configValue;
   }
 
+  public static isUserError(error: any): boolean {
+    if (
+      error?.response?.status &&
+      error?.response?.status >= Constants.statusCodeUserError &&
+      error?.response?.status < Constants.statusCodeServerError
+    ) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   private static getClientId(ctx: PluginContext, isLocalDebug: boolean): string {
     let clientId: string;
     if (isMultiEnvEnabled()) {

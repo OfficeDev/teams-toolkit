@@ -161,6 +161,7 @@ describe("AadAppForTeamsPlugin: CI", () => {
     config.set(ConfigKeys.objectId, faker.datatype.uuid());
     context = await TestHelper.pluginContext(config, true, false, false);
     context.graphTokenProvider = mockTokenProviderGraph();
+    mockProvisionResult(context, false);
 
     const listCollaborator = await plugin.listCollaborator(context);
     chai.assert.isTrue(listCollaborator.isOk());

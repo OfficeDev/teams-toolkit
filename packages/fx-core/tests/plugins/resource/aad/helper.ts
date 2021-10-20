@@ -269,6 +269,10 @@ export function mockProvisionResult(
     // set context.envInfo.state.get(SOLUTION)[ARM_TEMPLATE_OUTPUT]["domain"] = some fake value
     const solutionProfile = context.envInfo.state.get(SOLUTION) ?? new Map();
     const armOutput = solutionProfile[ARM_TEMPLATE_OUTPUT] ?? {};
+    const aadProfile = context.envInfo.state.get(Plugins.pluginNameComplex) ?? new Map();
+    aadProfile.set(ConfigKeys.clientId, faker.datatype.uuid());
+    aadProfile.set(ConfigKeys.objectId, faker.datatype.uuid());
+    aadProfile.set(ConfigKeys.clientSecret, faker.datatype.uuid());
 
     if (hasFrontend) {
       armOutput[ConfigKeysOfOtherPlugin.frontendHostingDomainArm] = {
@@ -279,6 +283,7 @@ export function mockProvisionResult(
     solutionProfile.set(ARM_TEMPLATE_OUTPUT, armOutput);
 
     context.envInfo.state.set(SOLUTION, solutionProfile);
+    context.envInfo.state.set(Plugins.pluginNameComplex, aadProfile);
   }
 }
 

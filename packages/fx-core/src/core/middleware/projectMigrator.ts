@@ -19,7 +19,6 @@ import {
 import {
   CoreHookContext,
   deserializeDict,
-  NoProjectOpenedError,
   serializeDict,
   SolutionConfigError,
   ProjectSettingError,

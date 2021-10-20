@@ -632,7 +632,7 @@ describe("Middleware - others", () => {
       mockedEnvRestore = mockedEnv({
         TEAMSFX_INSIDER_PREVIEW: "true",
       });
-      sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok("OK"));
+      sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok("Upgrade"));
     });
 
     afterEach(async () => {

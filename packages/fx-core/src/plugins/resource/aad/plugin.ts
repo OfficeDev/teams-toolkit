@@ -75,7 +75,7 @@ export class AadAppForTeamsImpl {
     await TokenProvider.init(ctx);
 
     // Move objectId etc. from input to output.
-    const skip = Utils.getAndMoveInput(ctx);
+    const skip = Utils.skipAADProvision(ctx);
     if (skip) {
       ctx.logProvider?.info(Messages.getLog(Messages.SkipProvision));
 

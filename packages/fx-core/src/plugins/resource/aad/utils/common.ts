@@ -67,7 +67,7 @@ export class Utils {
     return tenantId;
   }
 
-  public static getAndMoveInput(ctx: PluginContext): boolean {
+  public static skipAADProvision(ctx: PluginContext): boolean {
     if (!isMultiEnvEnabled()) {
       const skip = ctx.config.get(ConfigKeys.skip) as boolean;
       return skip;

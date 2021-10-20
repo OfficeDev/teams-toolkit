@@ -1,5 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import * as fs from "fs-extra";
+import * as path from "path";
+import AdmZip from "adm-zip";
 import {
   PluginContext,
   AzureSolutionSettings,
@@ -8,6 +11,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import {
   AppSettingsKey,
+  AzureInfo,
   BlazorPluginInfo as PluginInfo,
   DefaultProvisionConfigs,
   DependentPluginInfo,
@@ -19,9 +23,12 @@ import { ProgressHelper } from "./utils/progress-helper";
 import { WebSiteManagementClient, WebSiteManagementModels } from "@azure/arm-appservice";
 import { v4 as uuid } from "uuid";
 import { BlazorNaming, BlazorProvision } from "./ops/provision";
-import { runWithErrorCatchAndThrow } from "./resources/errors";
 import { AzureClientFactory, AzureLib } from "./utils/azure-client";
 import { NameValuePair } from "@azure/arm-appservice/esm/models";
+import { execute } from "./utils/execute";
+import { forEachFileAndDir } from "./utils/dir-walk";
+import { sendRequestWithRetry } from "../../../common/templatesUtils";
+import axios from "axios";
 
 type Site = WebSiteManagementModels.Site;
 type AppServicePlan = WebSiteManagementModels.AppServicePlan;
@@ -244,8 +251,107 @@ export class BlazorPluginImpl {
     Logger.info(Messages.StartDeploy(PluginInfo.DisplayName));
     await ProgressHelper.startDeployProgressHandler(ctx);
 
+    const workingPath = ctx.root;
+    const webAppName = this.checkAndGet(this.config.webAppName, "web app name");
+    const resourceGroupName = this.checkAndGet(
+      this.config.resourceGroupName,
+      "resource group name"
+    );
+    const subscriptionId = this.checkAndGet(this.config.subscriptionId, "subscription id");
+    const credential = this.checkAndGet(
+      await ctx.azureAccountProvider?.getAccountCredentialAsync(),
+      "credential"
+    );
+
+    const runtime = "win-x86";
+    const framework = "net5.0";
+
+    const client = AzureClientFactory.getWebSiteManagementClient(credential, subscriptionId);
+
+    await this.build(workingPath, runtime);
+
+    const folderToBeZipped = path.join(
+      workingPath,
+      "bin",
+      "Release",
+      framework,
+      runtime,
+      "publish"
+    );
+    this.zipDeploy(client, resourceGroupName, webAppName, folderToBeZipped);
+
     await ProgressHelper.endDeployProgress(true);
     Logger.info(Messages.EndDeploy(PluginInfo.DisplayName));
     return ok(undefined);
+  }
+
+  private async build(path: string, runtime: string) {
+    const command = `dotnet publish --configuration Release --runtime ${runtime} --self-contained`;
+    await execute(command, path);
+  }
+
+  private async zipDeploy(
+    client: WebSiteManagementClient,
+    resourceGroupName: string,
+    webAppName: string,
+    componentPath: string
+  ) {
+    const zip = await this.generateZip(componentPath);
+    const zipContent = zip.toBuffer();
+
+    const publishCred = await client.webApps.listPublishingCredentials(
+      resourceGroupName,
+      webAppName
+    );
+    const username = publishCred.publishingUserName;
+    const password = publishCred.publishingPassword;
+
+    if (!password) {
+      throw new Error(password);
+    }
+
+    await sendRequestWithRetry(
+      async () =>
+        await axios.post(AzureInfo.zipDeployURL(webAppName), zipContent, {
+          headers: {
+            "Content-Type": "application/octet-stream",
+            "Cache-Control": "no-cache",
+          },
+          auth: {
+            username: username,
+            password: password,
+          },
+          maxContentLength: Infinity,
+          maxBodyLength: Infinity,
+          timeout: 10 * 60 * 1000,
+        }),
+      3
+    );
+  }
+
+  private async generateZip(componentPath: string) {
+    const zip = new AdmZip();
+    const tasks: Promise<void>[] = [];
+    const zipFiles = new Set<string>();
+
+    const addFileIntoZip = async (zip: AdmZip, filePath: string, zipPath: string) => {
+      const content = await fs.readFile(filePath);
+      zip.addFile(zipPath, content);
+    };
+
+    await forEachFileAndDir(componentPath, (itemPath: string, stats: fs.Stats) => {
+      const relativePath: string = path.relative(componentPath, itemPath);
+      if (relativePath && !stats.isDirectory()) {
+        zipFiles.add(relativePath);
+
+        // If fail to reuse cached entry, load it from disk.
+        const fullPath = path.join(componentPath, relativePath);
+        const task = addFileIntoZip(zip, fullPath, relativePath);
+        tasks.push(task);
+      }
+    });
+
+    await Promise.all(tasks);
+    return zip;
   }
 }

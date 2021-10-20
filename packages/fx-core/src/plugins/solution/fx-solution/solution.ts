@@ -80,7 +80,6 @@ import {
 import { checkM365Tenant, checkSubscription, fillInCommonQuestions } from "./commonQuestions";
 import {
   ARM_TEMPLATE_OUTPUT,
-  CancelError,
   DEFAULT_PERMISSION_REQUEST,
   GLOBAL_CONFIG,
   LOCAL_APPLICATION_ID_URIS,
@@ -149,9 +148,6 @@ import {
 import { askForProvisionConsent } from "./v2/provision";
 import { scaffoldReadmeAndLocalSettings } from "./v2/scaffolding";
 import { environmentManager } from "../../..";
-import { Json } from "@microsoft/teamsfx-api";
-import { setLocalSettingsV2 } from "../../resource/utils4v2";
-import { LocalSettingsProvider } from "../../../common/localSettingsProvider";
 import { TelemetryEvent, TelemetryProperty } from "../../../common/telemetry";
 
 export type LoadedPlugin = Plugin;

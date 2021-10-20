@@ -25,6 +25,7 @@ import {
   ProjectConstants,
   OperationStatus,
   UserTask,
+  ApimPluginConfigKeys,
 } from "./constants";
 import { Factory } from "./factory";
 import { ProgressBar } from "./utils/progressBar";
@@ -255,6 +256,10 @@ async function _postProvision(ctx: PluginContext, progressBar: ProgressBar): Pro
     ProgressMessages[ProgressStep.PostProvision].ConfigAppAad
   );
   await teamsAppAadManager.postProvision(aadConfig, apimConfig);
+
+  // Delete user sensitive configuration
+  ctx.config.delete(ApimPluginConfigKeys.publisherEmail);
+  ctx.config.delete(ApimPluginConfigKeys.publisherName);
 }
 
 async function _deploy(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {

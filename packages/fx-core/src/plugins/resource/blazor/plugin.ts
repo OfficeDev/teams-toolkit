@@ -1,7 +1,17 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { PluginContext, ok, ReadonlyPluginConfig } from "@microsoft/teamsfx-api";
-import { BlazorPluginInfo as PluginInfo, DefaultProvisionConfigs } from "./constants";
+import {
+  PluginContext,
+  AzureSolutionSettings,
+  ok,
+  ReadonlyPluginConfig,
+} from "@microsoft/teamsfx-api";
+import {
+  AppSettingsKey,
+  BlazorPluginInfo as PluginInfo,
+  DefaultProvisionConfigs,
+  DependentPluginInfo,
+} from "./constants";
 import { Logger } from "./utils/logger";
 import { Messages } from "./resources/messages";
 import { TeamsFxResult } from "./error-factory";
@@ -11,6 +21,7 @@ import { v4 as uuid } from "uuid";
 import { BlazorNaming, BlazorProvision } from "./ops/provision";
 import { runWithErrorCatchAndThrow } from "./resources/errors";
 import { AzureClientFactory, AzureLib } from "./utils/azure-client";
+import { NameValuePair } from "@azure/arm-appservice/esm/models";
 
 type Site = WebSiteManagementModels.Site;
 type AppServicePlan = WebSiteManagementModels.AppServicePlan;
@@ -62,6 +73,12 @@ export class BlazorPluginImpl {
       return v;
     }
     throw new Error(`No value: ${key}`);
+  }
+
+  private isPluginEnabled(ctx: PluginContext, plugin: string): boolean {
+    const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
+      .activeResourcePlugins;
+    return selectedPlugins.includes(plugin);
   }
 
   public async preProvision(ctx: PluginContext): Promise<TeamsFxResult> {
@@ -126,7 +143,101 @@ export class BlazorPluginImpl {
   }
 
   public async postProvision(ctx: PluginContext): Promise<TeamsFxResult> {
+    const webAppName = this.checkAndGet(this.config.webAppName, "webAppName");
+    const resourceGroupName = this.checkAndGet(this.config.resourceGroupName, "resourceGroupName");
+    const subscriptionId = this.checkAndGet(this.config.subscriptionId, "subscription");
+    const credential = this.checkAndGet(
+      await ctx.azureAccountProvider?.getAccountCredentialAsync(),
+      "credential"
+    );
+    const endpoint = this.checkAndGet(this.config.webAppEndpoint, "endpoint");
+
+    const site = this.checkAndGet(this.config.site, "site");
+    this.config.site = undefined;
+
+    const client = AzureClientFactory.getWebSiteManagementClient(credential, subscriptionId);
+    const res = await client.webApps.listApplicationSettings(resourceGroupName, webAppName);
+    if (res.properties) {
+      Object.entries(res.properties).forEach((kv: [string, string]) => {
+        this.pushAppSettings(site, kv[0], kv[1]);
+      });
+    }
+
+    const aadConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.profile.get(
+      DependentPluginInfo.AADPluginName
+    );
+    if (this.isPluginEnabled(ctx, DependentPluginInfo.AADPluginName) && aadConfig) {
+      const clientId: string = this.checkAndGet(
+        aadConfig.get(DependentPluginInfo.ClientID) as string,
+        "AAD client Id"
+      );
+      const clientSecret: string = this.checkAndGet(
+        aadConfig.get(DependentPluginInfo.aadClientSecret) as string,
+        "AAD secret"
+      );
+      const oauthHost: string = this.checkAndGet(
+        aadConfig.get(DependentPluginInfo.oauthHost) as string,
+        "OAuth Host"
+      );
+      const tenantId: string = this.checkAndGet(
+        aadConfig.get(DependentPluginInfo.tenantId) as string,
+        "Tenant Id"
+      );
+      const applicationIdUris: string = this.checkAndGet(
+        aadConfig.get(DependentPluginInfo.applicationIdUris) as string,
+        "Application Id URI"
+      );
+
+      this.pushAppSettings(site, AppSettingsKey.clientId, clientId);
+      this.pushAppSettings(site, AppSettingsKey.clientSecret, clientSecret);
+      this.pushAppSettings(site, AppSettingsKey.oauthHost, `${oauthHost}/${tenantId}`);
+      this.pushAppSettings(site, AppSettingsKey.identifierUri, applicationIdUris);
+      this.pushAppSettings(
+        site,
+        AppSettingsKey.aadMetadataAddress,
+        `https://login.microsoftonline.com/${tenantId}/v2.0/.well-known/openid-configuration`
+      );
+    }
+
+    const botConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.profile.get(
+      DependentPluginInfo.BotPluginName
+    );
+    if (this.isPluginEnabled(ctx, DependentPluginInfo.BotPluginName) && botConfig) {
+      const botId = this.checkAndGet(botConfig.get(DependentPluginInfo.botId) as string, "bot id");
+      const botPassword = this.checkAndGet(
+        botConfig.get(DependentPluginInfo.botPassword) as string,
+        "bot password"
+      );
+
+      this.pushAppSettings(site, AppSettingsKey.botId, botId);
+      this.pushAppSettings(site, AppSettingsKey.botPassword, botPassword);
+    }
+
+    this.pushAppSettings(site, AppSettingsKey.tabAppEndpoint, endpoint);
+    await client.webApps.update(resourceGroupName, webAppName, site);
     return ok(undefined);
+  }
+
+  public pushAppSettings(site: Site, newName: string, newValue: string, replace = true): void {
+    if (!site.siteConfig) {
+      site.siteConfig = {};
+    }
+
+    if (!site.siteConfig.appSettings) {
+      site.siteConfig.appSettings = [];
+    }
+
+    const kv: NameValuePair | undefined = site.siteConfig.appSettings.find(
+      (kv) => kv.name === newName
+    );
+    if (!kv) {
+      site.siteConfig.appSettings.push({
+        name: newName,
+        value: newValue,
+      });
+    } else if (replace) {
+      kv.value = newValue;
+    }
   }
 
   public async deploy(ctx: PluginContext): Promise<TeamsFxResult> {

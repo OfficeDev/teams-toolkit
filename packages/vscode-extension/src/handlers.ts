@@ -216,6 +216,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
       telemetryReporter: telemetry,
       treeProvider: TreeViewManagerInstance.getTreeView("teamsfx-accounts")!,
       ui: VS_CODE_UI,
+      expServiceProvider: exp.getExpService(),
     };
     core = new FxCore(tools);
     registerCoreEvents();

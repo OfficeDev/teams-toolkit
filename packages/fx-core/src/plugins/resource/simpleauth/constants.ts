@@ -115,6 +115,9 @@ export class Constants {
   static readonly HelpLink = "https://aka.ms/teamsfx-sa-help";
 
   static readonly RequiredResourceProviders = ["Microsoft.Web"];
+
+  static readonly statusCodeUserError = 400;
+  static readonly statusCodeServerError = 500;
 }
 
 export class Telemetry {

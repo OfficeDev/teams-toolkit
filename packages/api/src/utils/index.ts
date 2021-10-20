@@ -4,6 +4,7 @@
 
 import { UserInteraction } from "../qm/ui";
 import { CryptoProvider } from "./crypto";
+import { ExpServiceProvider } from "./exp";
 import { LogProvider } from "./log";
 import { TokenProvider } from "./login";
 import { PermissionRequestProvider } from "./permissionRequest";
@@ -16,6 +17,7 @@ export * from "./telemetry";
 export * from "./tree";
 export * from "./crypto";
 export * from "./permissionRequest";
+export * from "./exp";
 
 export interface Tools {
   logProvider: LogProvider;
@@ -25,4 +27,5 @@ export interface Tools {
   ui: UserInteraction;
   cryptoProvider?: CryptoProvider;
   permissionRequest?: PermissionRequestProvider;
+  expServiceProvider?: ExpServiceProvider;
 }

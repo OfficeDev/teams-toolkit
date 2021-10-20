@@ -140,9 +140,12 @@ export async function provisionResource(
   if (provisionResult.kind === "failure") {
     return provisionResult;
   } else if (provisionResult.kind === "partialSuccess") {
-    return new v2.FxPartialSuccess(combineRecords(provisionResult.output), provisionResult.error);
+    return new v2.FxPartialSuccess(
+      { ...newEnvInfo.state, ...combineRecords(provisionResult.output) },
+      provisionResult.error
+    );
   } else {
-    newEnvInfo.state = combineRecords(provisionResult.output);
+    newEnvInfo.state = { ...newEnvInfo.state, ...combineRecords(provisionResult.output) };
   }
 
   ctx.logProvider?.info(

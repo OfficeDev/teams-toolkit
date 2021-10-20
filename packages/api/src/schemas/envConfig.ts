@@ -31,6 +31,10 @@ export interface EnvConfig {
      * The access_as_user scope id of existing AAD app for Teams app.
      */
     accessAsUserScopeId?: string;
+    /**
+     * Skip to provision and config AAD app for Teams app
+     */
+    skipProvision?: boolean;
     [k: string]: unknown;
   };
   /**

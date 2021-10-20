@@ -4,6 +4,8 @@
 import { LogProvider, PluginContext } from "@microsoft/teamsfx-api";
 import { isMultiEnvEnabled } from "../../../..";
 import { ConfigFilePath, ConfigKeys, Constants, Messages } from "../constants";
+import { GetSkipAppConfigError } from "../errors";
+import { ResultFactory } from "../results";
 import { ConfigUtils } from "./configs";
 import { TelemetryUtils } from "./telemetry";
 
@@ -85,6 +87,11 @@ export class Utils {
         ctx,
         ConfigKeys.oauth2PermissionScopeId,
         oauth2PermissionScopeId as string
+      );
+    } else {
+      throw ResultFactory.UserError(
+        GetSkipAppConfigError.name,
+        GetSkipAppConfigError.message(Utils.getInputFileName(ctx))
       );
     }
 

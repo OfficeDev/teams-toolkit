@@ -32,6 +32,10 @@
           "type": "string",
           "description": "The access_as_user scope id of existing AAD app for Teams app.",
           "minLength": 1
+        },
+        "skipProvision": {
+          "type": "boolean",
+          "description": "Skip to provision and config AAD app for Teams app"
         }
       },
       "dependencies": {

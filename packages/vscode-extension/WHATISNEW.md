@@ -9,11 +9,11 @@ Incremental version for Teams Toolkit with multiple bugs fixes and the following
 Preview Features:
 - Support management of multiple environments.
 
-![Alt Text](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/manageEnv.png)
+  ![Alt Text](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/multi-env.gif)
 
 - Support project collaborations among multiple developers.
 
-![Alt Text](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/addCollaborator.png)
+  ![Alt Text](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/addCollaborator.png)
 
 - Improve the experience to customize Azure resource provision using ARM(Azure Resource Manager).
 

@@ -10,6 +10,7 @@ import {
   LogProvider,
   TelemetryReporter,
   PermissionRequestProvider,
+  ExpServiceProvider,
 } from "../utils";
 import { EnvInfo } from "../context";
 
@@ -22,6 +23,7 @@ export interface Context {
   cryptoProvider: CryptoProvider;
   projectSetting: ProjectSettings;
   permissionRequestProvider?: PermissionRequestProvider;
+  expServiceProvider?: ExpServiceProvider;
 }
 
 export interface LocalSettings extends Json {

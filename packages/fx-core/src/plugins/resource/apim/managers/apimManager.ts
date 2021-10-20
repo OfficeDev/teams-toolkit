@@ -116,9 +116,6 @@ export class ApimManager {
       apimConfig.serviceResourceId = getArmOutput(ctx, ApimArmOutput.ServiceResourceId);
       apimConfig.productResourceId = getArmOutput(ctx, ApimArmOutput.ProductResourceId);
       apimConfig.authServerResourceId = getArmOutput(ctx, ApimArmOutput.AuthServerResourceId);
-      // Remove publisherEmail and publisherName from config to avoid sensitive info being committed into git history
-      apimConfig.publisherEmail = undefined;
-      apimConfig.publisherName = undefined;
     } else {
       const solutionConfig = new SolutionConfig(ctx.envInfo.state);
       const apimService: ApimService = await this.lazyApimService.getValue();

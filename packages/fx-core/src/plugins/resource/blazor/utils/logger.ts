@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import { LogProvider } from "@microsoft/teamsfx-api";
 
-import { FrontendPluginInfo } from "../constants";
+import { BlazorPluginInfo } from "../constants";
 
 export class Logger {
   static logger: LogProvider | undefined;
@@ -12,18 +12,18 @@ export class Logger {
   }
 
   public static debug(message: string): void {
-    this.logger?.debug(`[${FrontendPluginInfo.DisplayName}] ${message}`);
+    this.logger?.debug(`[${BlazorPluginInfo.DisplayName}] ${message}`);
   }
 
   public static info(message: string): void {
-    this.logger?.info(`[${FrontendPluginInfo.DisplayName}] ${message}`);
+    this.logger?.info(`[${BlazorPluginInfo.DisplayName}] ${message}`);
   }
 
   public static warning(message: string): void {
-    this.logger?.warning(`[${FrontendPluginInfo.DisplayName}] ${message}`);
+    this.logger?.warning(`[${BlazorPluginInfo.DisplayName}] ${message}`);
   }
 
   public static error(message: string): void {
-    this.logger?.error(`[${FrontendPluginInfo.DisplayName}] ${message}`);
+    this.logger?.error(`[${BlazorPluginInfo.DisplayName}] ${message}`);
   }
 }

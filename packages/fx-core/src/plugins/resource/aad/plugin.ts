@@ -192,9 +192,7 @@ export class AadAppForTeamsImpl {
       isLocalDebug
     );
 
-    const skip: boolean = isMultiEnvEnabled()
-      ? (ctx.envInfo.config.auth?.[ConfigKeys.skip] as boolean)
-      : (ctx.config.get(ConfigKeys.skip) as boolean);
+    const skip = Utils.skipAADProvision(ctx);
     if (skip) {
       ctx.logProvider?.info(Messages.SkipProvision);
       Utils.addLogAndTelemetryWithLocalDebug(

@@ -761,6 +761,7 @@ export async function openWelcomeHandler(args?: any[]) {
 }
 
 export async function checkUpgrade(args?: any[]) {
+  // just for triggering upgrade check for multi-env && bicep.
   await runCommand(Stage.listCollaborator);
 }
 

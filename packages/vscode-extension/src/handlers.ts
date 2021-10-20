@@ -220,7 +220,6 @@ export async function activate(): Promise<Result<Void, FxError>> {
     core = new FxCore(tools);
     registerCoreEvents();
     await registerAccountTreeHandler();
-    await registerEnvTreeHandler();
     await openMarkdownHandler();
     await openSampleReadmeHandler();
     ExtTelemetry.isFromSample = await getIsFromSample();

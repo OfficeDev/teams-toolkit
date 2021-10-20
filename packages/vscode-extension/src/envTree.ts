@@ -26,7 +26,11 @@ import { checkPermission, listAllCollaborators, tools } from "./handlers";
 import { signedIn } from "./commonlib/common/constant";
 import { AppStudioLogin } from "./commonlib/appStudioLogin";
 import * as fs from "fs-extra";
-import { getResourceGroupNameFromEnv, getSubscriptionInfoFromEnv } from "./utils/commonUtils";
+import {
+  getM365TenantFromEnv,
+  getResourceGroupNameFromEnv,
+  getSubscriptionInfoFromEnv,
+} from "./utils/commonUtils";
 import AzureAccountManager from "./commonlib/azureLogin";
 
 const showEnvList: Array<string> = [];
@@ -69,29 +73,45 @@ export async function registerEnvTreeHandler(
         },
       ]);
     }
-
-    for (const item of envNamesResult.value) {
-      let envSubItems: TreeItem[] = [];
-
-      const warningItem = checkAzureAccountStatus(item);
-      if (warningItem) {
-        envSubItems.push(warningItem);
-      }
-
-      envSubItems = envSubItems.concat(await getSubscriptionAndResourceGroupNode(item));
-      await environmentTreeProvider.add(envSubItems);
-    }
+    const m365NotMatchEnvList: Array<string> = [];
+    await checkAllEnv(envNamesResult.value, m365NotMatchEnvList);
 
     const collaboratorsItem = await getAllCollaboratorList(
       envNamesResult.value,
-      forceUpdateCollaboratorList
+      forceUpdateCollaboratorList,
+      m365NotMatchEnvList
     );
     await environmentTreeProvider.add(collaboratorsItem);
   }
   return ok(Void);
 }
 
-export async function getAllCollaboratorList(envs: string[], force = false): Promise<TreeItem[]> {
+async function checkAllEnv(itemList: Array<string>, m365NotMatchEnvList: Array<string>) {
+  for (const item of itemList) {
+    let envSubItems: TreeItem[] = [];
+
+    const m365WarningItem = await checkM365AccountStatus(item);
+    if (m365WarningItem) {
+      envSubItems.push(m365WarningItem);
+    }
+
+    const warningItem = checkAzureAccountStatus(item);
+    if (warningItem) {
+      envSubItems.push(warningItem);
+    }
+
+    envSubItems = envSubItems.concat(
+      await getSubscriptionAndResourceGroupNode(item, m365NotMatchEnvList)
+    );
+    await environmentTreeProvider.add(envSubItems);
+  }
+}
+
+export async function getAllCollaboratorList(
+  envs: string[],
+  force = false,
+  m365NotMatchEnvList: Array<string>
+): Promise<TreeItem[]> {
   let result: TreeItem[] = [];
 
   if (environmentTreeProvider && isRemoteCollaborateEnabled()) {
@@ -113,6 +133,9 @@ export async function getAllCollaboratorList(envs: string[], force = false): Pro
 
       result.push(collaboratorParentNode);
 
+      if (m365NotMatchEnvList.indexOf(env) >= 0) {
+        continue;
+      }
       if (loginStatus.status === signedIn) {
         const canAddCollaborator = permissionCache[env] ?? (await checkPermission(env));
         permissionCache[env] = canAddCollaborator;
@@ -216,7 +239,10 @@ async function localSettingsExists(projectRoot: string): Promise<boolean> {
   return await fs.pathExists(provider.localSettingsFilePath);
 }
 
-export async function getSubscriptionAndResourceGroupNode(env: string): Promise<TreeItem[]> {
+export async function getSubscriptionAndResourceGroupNode(
+  env: string,
+  m365NotMatchEnvList: Array<string>
+): Promise<TreeItem[]> {
   if (
     environmentTreeProvider &&
     environmentTreeProvider.findCommand("fx-extension.environment." + env) &&
@@ -254,6 +280,15 @@ export async function getSubscriptionAndResourceGroupNode(env: string): Promise<
       }
     }
 
+    const m365TenantId = await getM365TenantFromEnv(env);
+    if (m365TenantId) {
+      const warningItem = await checkM365Permission(env, m365TenantId);
+      if (warningItem) {
+        m365NotMatchEnvList.push(env);
+        envSubItems = [warningItem].concat(envSubItems);
+      }
+    }
+
     return envSubItems;
   }
 
@@ -265,6 +300,21 @@ function checkAzureAccountStatus(env: string): TreeItem | undefined {
     return {
       commandId: `fx-extension.environment.${env}.checkAzureAccount`,
       label: StringResources.vsc.commandsTreeViewProvider.noAzureAccountSignedIn,
+      icon: "warning",
+      isCustom: true,
+      parent: `fx-extension.environment.${env}`,
+    };
+  } else {
+    return undefined;
+  }
+}
+
+async function checkM365AccountStatus(env: string): Promise<TreeItem | undefined> {
+  const loginStatus = await AppStudioLogin.getInstance().getStatus();
+  if (loginStatus.status !== signedIn) {
+    return {
+      commandId: `fx-extension.environment.${env}.checkM365Account`,
+      label: StringResources.vsc.commandsTreeViewProvider.noM365AccountSignedIn,
       icon: "warning",
       isCustom: true,
       parent: `fx-extension.environment.${env}`,
@@ -292,6 +342,34 @@ async function checkSubscriptionPermission(
       const warningTreeItem: TreeItem = {
         commandId: `fx-extension.environment.${env}.checkSubscription`,
         label: StringResources.vsc.commandsTreeViewProvider.noSubscriptionFoundInAzureAccount,
+        icon: "warning",
+        isCustom: true,
+        parent: `fx-extension.environment.${env}`,
+      };
+
+      return warningTreeItem;
+    }
+  }
+
+  return undefined;
+}
+
+async function checkM365Permission(
+  env: string,
+  m365TenantId: string
+): Promise<TreeItem | undefined> {
+  const loginStatus = await AppStudioLogin.getInstance().getStatus();
+  if (loginStatus.status === signedIn) {
+    let checkSucceeded = false;
+
+    if ((loginStatus.accountInfo as any).tid === m365TenantId) {
+      checkSucceeded = true;
+    }
+
+    if (!checkSucceeded) {
+      const warningTreeItem: TreeItem = {
+        commandId: `fx-extension.environment.${env}.checkM365Tenant`,
+        label: StringResources.vsc.commandsTreeViewProvider.m365TenantNotMatch,
         icon: "warning",
         isCustom: true,
         parent: `fx-extension.environment.${env}`,

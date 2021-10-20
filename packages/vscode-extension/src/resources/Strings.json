@@ -72,7 +72,9 @@
       "noAzureAccountSignedIn": "No Azure account signed in. Please sign in to Azure.",
       "noSubscriptionFoundInAzureAccount": "The subscription not found or you don't have permission to access it with current Azure account.",
       "grantPermissionSucceeded": "Added account: '%s' to the environment '%s' as a collaborator.",
-      "grantPermissionWarning": "You need to handle Azure resource permissions manually on Azure Portal."
+      "grantPermissionWarning": "You need to handle Azure resource permissions manually on Azure Portal.",
+      "noM365AccountSignedIn": "No M365 account signed in. Please sign in to M365.",
+      "m365TenantNotMatch": "Tenant id of your account and the provisioned Azure AD app does not match. Please check whether you logined with wrong account."
     },
     "handlers": {
       "concurrentTriggerTask": "Task '%s' is still running. Wait for it to complete before starting another task.",

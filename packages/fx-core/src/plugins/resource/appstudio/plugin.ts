@@ -206,6 +206,8 @@ export class AppStudioPluginImpl {
       };
       const manifestString = Mustache.render(JSON.stringify(manifest), view);
       manifest = JSON.parse(manifestString);
+    } else {
+      manifest.name.short = appName;
     }
     if (manifest.configurableTabs) {
       for (const tab of manifest.configurableTabs) {
@@ -233,7 +235,7 @@ export class AppStudioPluginImpl {
       ctx,
       appDefinition,
       appStudioToken!,
-      false,
+      true,
       createIfNotExist,
       appDirectory,
       createIfNotExist ? undefined : localTeamsAppID,
@@ -1473,8 +1475,12 @@ export class AppStudioPluginImpl {
         AppStudioError.NotADirectoryError.message(appDirectory)
       );
     }
+    // Currently multi-env SPFx doesn't have manifest for local, use remote manifest as well
     const manifest: TeamsAppManifest = await fs.readJSON(
-      await this.getManifestTemplatePath(ctx.root, isLocalDebug)
+      await this.getManifestTemplatePath(
+        ctx.root,
+        isLocalDebug && !isSPFxProject(ctx.projectSettings)
+      )
     );
     manifest.bots = undefined;
     manifest.composeExtensions = undefined;

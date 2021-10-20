@@ -100,6 +100,9 @@ describe("M365TenantCredential Tests - Node", () => {
       credential.getToken(defaultGraphScope)
     ).to.eventually.be.rejectedWith(ErrorWithCode);
     assert.strictEqual(errorResult.code, ErrorCode.ServiceError);
-    assert.include(errorResult.message, "Get M365 tenant credential failed with error: ");
+    assert.include(
+      errorResult.message,
+      "Get M365 tenant credential failed with error: invalid_client: 7000215"
+    );
   });
 });

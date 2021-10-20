@@ -1,49 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  AppStudioTokenProvider,
-  assembleError,
-  AzureAccountProvider,
-  Colors,
-  CryptoProvider,
-  err,
-  FxError,
-  GraphTokenProvider,
-  InputTextConfig,
-  InputTextResult,
-  IProgressHandler,
-  LogLevel,
-  LogProvider,
-  MultiSelectConfig,
-  MultiSelectResult,
-  NotImplementedError,
-  ok,
-  PermissionRequestProvider,
-  Result,
-  RunnableTask,
-  SelectFileConfig,
-  SelectFileResult,
-  SelectFilesConfig,
-  SelectFilesResult,
-  SelectFolderConfig,
-  SelectFolderResult,
-  SharepointTokenProvider,
-  SingleSelectConfig,
-  SingleSelectResult,
-  SubscriptionInfo,
-  TaskConfig,
-  TelemetryReporter,
-  TokenProvider,
-  Tools,
-  TreeProvider,
-  UIConfig,
-  UserInteraction,
-} from "@microsoft/teamsfx-api";
+import { NotImplementedError, SingleSelectConfig } from "@microsoft/teamsfx-api";
 import { createMessageConnection } from "vscode-jsonrpc/node";
 import WebSocket from "ws";
 import { Namespaces } from "./namespace";
 import { sendRequest } from "./utils";
+import os from "os";
 
 const ws = new WebSocket("ws://localhost:7920");
 ws.on("message", (ms) => {
@@ -92,7 +55,7 @@ async function test() {
   connection.onRequest(
     `${Namespaces.UserInteraction}/selectFolder`,
     async (config: SingleSelectConfig) => {
-      return { type: "success", result: "C:\\Users\\huajiezhang\\Documents\\workspace\\myapps" };
+      return { type: "success", result: os.tmpdir() };
     }
   );
   connection.onRequest(

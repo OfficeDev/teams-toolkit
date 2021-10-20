@@ -20,19 +20,6 @@ export class AzureInfo {
   public static readonly requiredResourceProviders = ["Microsoft.Web", "Microsoft.Storage"];
 }
 
-export class WebAppSettingKeys {
-  public static readonly clientId: string = "M365_CLIENT_ID";
-  public static readonly clientSecret: string = "M365_CLIENT_SECRET";
-  public static readonly oauthHost: string = "M365_AUTHORITY_HOST";
-  public static readonly tenantId: string = "M365_TENANT_ID";
-  public static readonly identityId: string = "IDENTITY_ID";
-  public static readonly databaseName: string = "SQL_DATABASE_NAME";
-  public static readonly sqlEndpoint: string = "SQL_ENDPOINT";
-  public static readonly allowedAppIds: string = "ALLOWED_APP_IDS";
-  public static readonly functionEndpoint: string = "API_ENDPOINT";
-  public static readonly applicationIdUris: string = "M365_APPLICATION_ID_URI";
-}
-
 export class RegularExpr {
   public static readonly validFunctionNamePattern: RegExp = /^[a-zA-Z][\w-]{0,126}$/;
   // See https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/resource-name-rules.
@@ -106,9 +93,25 @@ export class DependentPluginInfo {
 
   static readonly AADPluginName = "fx-resource-aad-app-for-teams";
   static readonly ClientID = "clientId";
+  public static readonly tenantId: string = "tenantId";
+  public static readonly aadClientSecret: string = "clientSecret";
+  public static readonly oauthHost: string = "oauthHost";
+  public static readonly applicationIdUris: string = "applicationIdUris";
 
-  static readonly LocalDebugPluginName = "fx-resource-local-debug";
-  static readonly LocalTabEndpoint = "localTabEndpoint";
+  static readonly BotPluginName = "fx-resource-bot";
+  public static readonly botId = "botId";
+  public static readonly botPassword = "botPassword";
 }
 
 export class BlazorConfigInfo {}
+
+export class AppSettingsKey {
+  static readonly clientSecret = "CLIENT_SECRET";
+  static readonly clientId = "CLIENT_ID";
+  static readonly oauthHost = "OAUTH_AUTHORITY";
+  static readonly tabAppEndpoint = "TAB_APP_ENDPOINT";
+  static readonly aadMetadataAddress = "AAD_METADATA_ADDRESS";
+  static readonly botId = "BOT_ID";
+  static readonly botPassword = "BOT_PASSWORD";
+  static readonly identifierUri = "IDENTIFIER_URI";
+}

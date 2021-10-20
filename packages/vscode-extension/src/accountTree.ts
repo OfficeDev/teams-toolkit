@@ -305,6 +305,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
 
   tools.tokenProvider.appStudioToken?.setStatusChangeMap("tree-view", m365AccountCallback);
   tools.tokenProvider.sharepointTokenProvider?.setStatusChangeMap("tree-view", m365AccountCallback);
+  tools.tokenProvider.graphTokenProvider?.setStatusChangeMap("tree-view", m365AccountCallback);
 
   tools.tokenProvider.azureAccountProvider?.setStatusChangeMap(
     "tree-view",

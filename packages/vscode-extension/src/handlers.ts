@@ -108,6 +108,7 @@ import { ext } from "./extensionVariables";
 import { InputConfigsFolderName } from "@microsoft/teamsfx-api";
 import { CoreCallbackEvent } from "@microsoft/teamsfx-api";
 import { CommandsWebviewProvider } from "./treeview/commandsWebviewProvider";
+import graphLogin from "./commonlib/graphLogin";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -205,6 +206,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
       m365NotificationCallback,
       false
     );
+    graphLogin.setStatusChangeMap("successfully-sign-in-m365", m365NotificationCallback, false);
     tools = {
       logProvider: VsCodeLogInstance,
       tokenProvider: {

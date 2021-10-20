@@ -13,6 +13,7 @@ import { glob } from "glob";
 import AzureAccountManager from "../commonlib/azureLogin";
 import AppStudioTokenInstance from "../commonlib/appStudioLogin";
 import SharepointTokenInstance from "../commonlib/sharepointLogin";
+import GraphTokenInstance from "../commonlib/graphLogin";
 import { runCommand } from "../handlers";
 import { returnSystemError, Stage, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { globalStateGet, globalStateUpdate, Correlator } from "@microsoft/teamsfx-core";
@@ -265,6 +266,7 @@ export class WebviewPanel {
 
     AppStudioTokenInstance.setStatusChangeMap("quick-start-webview", m365WebviewCallback);
     SharepointTokenInstance.setStatusChangeMap("quick-start-webview", m365WebviewCallback);
+    GraphTokenInstance.setStatusChangeMap("quick-start-webview", m365WebviewCallback);
 
     AzureAccountManager.setStatusChangeMap(
       "quick-start-webview",

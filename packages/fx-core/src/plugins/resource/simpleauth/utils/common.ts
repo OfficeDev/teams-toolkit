@@ -1,13 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { FxError, LogProvider, PluginContext } from "@microsoft/teamsfx-api";
+import { LogProvider, PluginContext } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import * as fs from "fs-extra";
 import { Constants, Message } from "../constants";
 import {
   EndpointInvalidError,
   NoConfigError,
-  PluginError,
   VersionFileNotExist,
   ZipDownloadError,
 } from "../errors";

@@ -15,7 +15,7 @@ wss.on("connection", async function cb(ws) {
   const connection = createMessageConnection(wsStream, wsStream);
   initCore(connection);
   ws.on("message", (ms) => {
-    console.log(ms.toString());
+    console.log(`recv:${ms.toString()}`);
   });
   connection.onRequest(`${Namespaces.Core}/createProject`, createProject);
   connection.listen();

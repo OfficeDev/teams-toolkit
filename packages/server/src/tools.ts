@@ -303,7 +303,8 @@ export class RemoteUserInteraction implements UserInteraction {
     throw new NotImplementedError("FxServer", `${Namespaces.UserInteraction}/runWithProgress`);
   }
   selectOptions(config: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> {
-    throw new NotImplementedError("FxServer", `${Namespaces.UserInteraction}/selectOptions`);
+    this.convertConfigToJson(config);
+    return sendRequest(this.connection, `${Namespaces.UserInteraction}/selectOptions`, config);
   }
   selectFile(config: SelectFileConfig): Promise<Result<SelectFileResult, FxError>> {
     throw new NotImplementedError("FxServer", `${Namespaces.UserInteraction}/selectFile`);
@@ -312,7 +313,8 @@ export class RemoteUserInteraction implements UserInteraction {
     throw new NotImplementedError("FxServer", `${Namespaces.UserInteraction}/selectFiles`);
   }
   selectFolder(config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> {
-    throw new NotImplementedError("FxServer", `${Namespaces.UserInteraction}/selectFolder`);
+    this.convertConfigToJson(config);
+    return sendRequest(this.connection, `${Namespaces.UserInteraction}/selectFolder`, config);
   }
   public async showMessage(
     level: "info" | "warn" | "error",
@@ -344,7 +346,13 @@ export class RemoteUserInteraction implements UserInteraction {
     );
   }
   createProgressBar(title: string, totalSteps: number): IProgressHandler {
-    throw new NotImplementedError("FxServer", `${Namespaces.UserInteraction}/createProgressBar`);
+    // throw new NotImplementedError("FxServer", `${Namespaces.UserInteraction}/createProgressBar`);
+    const handler: IProgressHandler = {
+      start: async (detail?: string) => {},
+      next: async (detail?: string) => {},
+      end: async (success: boolean) => {},
+    };
+    return handler;
   }
   private convertConfigToJson(config: UIConfig<any>) {
     if (config.validation) {

@@ -216,6 +216,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
       telemetryReporter: telemetry,
       treeProvider: TreeViewManagerInstance.getTreeView("teamsfx-accounts")!,
       ui: VS_CODE_UI,
+      expServiceProvider: exp.getExpService(),
     };
     core = new FxCore(tools);
     registerCoreEvents();
@@ -982,7 +983,7 @@ export async function viewEnvironment(env: string): Promise<Result<Void, FxError
         },
         (error: any) => {
           const openEnvError = new SystemError(
-            ExtensionErrors.OpenEnvProfileError,
+            ExtensionErrors.OpenEnvStateError,
             util.format(StringResources.vsc.handlers.openEnvFailed, env),
             ExtensionSource,
             undefined,
@@ -1000,7 +1001,7 @@ export async function viewEnvironment(env: string): Promise<Result<Void, FxError
       );
     } else {
       const noEnvError = new UserError(
-        ExtensionErrors.EnvProfileNotFoundError,
+        ExtensionErrors.EnvStateNotFoundError,
         util.format(StringResources.vsc.handlers.findEnvFailed, env),
         ExtensionSource
       );
@@ -1050,9 +1051,17 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
       throw result.error;
     }
     if (result.value.state === CollaborationState.OK) {
-      window.showInformationMessage(
-        `Added account: '${inputs.email}' to the environment '${env}' as a collaborator`
+      const grantSucceededMsg = util.format(
+        StringResources.vsc.commandsTreeViewProvider.grantPermissionSucceeded,
+        inputs.email,
+        env
       );
+
+      const warningMsg = StringResources.vsc.commandsTreeViewProvider.grantPermissionWarning;
+      window.showInformationMessage(grantSucceededMsg + " " + warningMsg);
+
+      VsCodeLogInstance.info(grantSucceededMsg);
+      VsCodeLogInstance.warning(warningMsg);
 
       await addCollaboratorToEnv(env, result.value.userInfo.aadId, inputs.email);
     } else {
@@ -1115,7 +1124,7 @@ export async function listAllCollaborators(envs: string[]): Promise<Record<strin
           [TelemetryProperty.Success]: TelemetrySuccess.Yes,
         });
       } else {
-        throw userList.error;
+        throw userList.error.error;
       }
     } catch (e) {
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ListCollaborator, e);

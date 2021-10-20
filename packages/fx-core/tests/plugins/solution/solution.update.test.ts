@@ -261,8 +261,8 @@ describe("update()", () => {
       return ok(Void);
     };
     // mock that provision already succeeded
-    mockedCtx.envInfo.profile.set(GLOBAL_CONFIG, new ConfigMap());
-    mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+    mockedCtx.envInfo.state.set(GLOBAL_CONFIG, new ConfigMap());
+    mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
     const result = await solution.update(mockedCtx);
     expect(result.isOk()).equals(true);
     expect(mockedCtx.projectSettings?.solutionSettings?.azureResources as string[]).contains(
@@ -271,8 +271,7 @@ describe("update()", () => {
     expect(mockedCtx.projectSettings?.solutionSettings?.azureResources as string[]).contains(
       AzureResourceFunction.id
     );
-    expect(mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).is
-      .false;
+    expect(mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).is.false;
   });
 
   it("should leave projectSettings unchanged if scaffold fails", async () => {
@@ -300,13 +299,13 @@ describe("update()", () => {
       return err(returnSystemError(new Error("Some fake error"), "SolutionTest", "FakeError"));
     };
     // mock that provision already succeeded
-    mockedCtx.envInfo.profile.set(GLOBAL_CONFIG, new ConfigMap());
-    mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+    mockedCtx.envInfo.state.set(GLOBAL_CONFIG, new ConfigMap());
+    mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
     const result = await solution.update(mockedCtx);
     expect(result.isOk()).equals(false);
     expect(mockedCtx.projectSettings).to.be.deep.equal(originalProjectSettings);
     // provisionSucceeded is not changed due to the failure of solution.update()
-    expect(mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
+    expect(mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
       .true;
   });
 
@@ -334,12 +333,12 @@ describe("update()", () => {
       return ok(Void);
     };
     // mock that provision already succeeded
-    mockedCtx.envInfo.profile.set(GLOBAL_CONFIG, new ConfigMap());
-    mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+    mockedCtx.envInfo.state.set(GLOBAL_CONFIG, new ConfigMap());
+    mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
     const result = await solution.update(mockedCtx);
     expect(result.isOk()).equals(true);
     // provisionSucceeded is not changed because function is already added.
-    expect(mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
+    expect(mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
       .true;
   });
 
@@ -370,12 +369,12 @@ describe("update()", () => {
       return ok(Void);
     };
     // mock that provision already succeeded
-    mockedCtx.envInfo.profile.set(GLOBAL_CONFIG, new ConfigMap());
-    mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+    mockedCtx.envInfo.state.set(GLOBAL_CONFIG, new ConfigMap());
+    mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
     const result = await solution.update(mockedCtx);
     expect(result.isOk()).equals(true);
     // provisionSucceeded is not changed because function is already added.
-    expect(mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
+    expect(mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
       .false;
   });
 

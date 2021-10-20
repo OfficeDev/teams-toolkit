@@ -34,8 +34,8 @@ import {
   Result,
   ok,
   ConfigFolderName,
-  PublishProfilesFolderName,
-  EnvProfileFileNameTemplate,
+  StatesFolderName,
+  EnvStateFileNameTemplate,
   EnvNamePlaceholder,
   AppPackageFolderName,
 } from "@microsoft/teamsfx-api";

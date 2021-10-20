@@ -28,7 +28,7 @@ namespace Microsoft.TeamsFx
     /// <remarks>
     /// Can only be used within Teams.
     /// </remarks>
-    public class TeamsUserCredentialV2 : TokenCredential, IAsyncDisposable
+    public class TeamsUserCredential : TokenCredential, IAsyncDisposable
     {
         private readonly AuthenticationOptions _authenticationOptions;
         internal AccessToken _ssoToken;
@@ -40,10 +40,10 @@ namespace Microsoft.TeamsFx
         #endregion
 
         #region Util
-        private readonly ILogger<TeamsUserCredentialV2> _logger;
+        private readonly ILogger<TeamsUserCredential> _logger;
         private readonly IHttpClientFactory _clientFactory;
         private readonly IMemoryCache _cache;
-        
+
         private const int HttpRequestMaxRetryCount = 3;
         private const int HttpRequestRetryTimeSpanInMillisecond = 3000;
         #endregion
@@ -58,10 +58,10 @@ namespace Microsoft.TeamsFx
         /// <param name="clientFactory">Http factory.</param>
         /// <param name="memoryCache">Memory cache used in Blazor server app.</param>
         /// <exception cref="ExceptionCode.InvalidConfiguration">When client id, initiate login endpoint or simple auth endpoint is missing or invalid in config.</exception>
-        public TeamsUserCredentialV2(
+        public TeamsUserCredential(
             IOptions<AuthenticationOptions> authenticationOptions,
             IJSRuntime jsRuntime,
-            ILogger<TeamsUserCredentialV2> logger,
+            ILogger<TeamsUserCredential> logger,
             IHttpClientFactory clientFactory,
             IMemoryCache memoryCache)
         {
@@ -77,7 +77,7 @@ namespace Microsoft.TeamsFx
             }
             _teamsSdkTask = new(() => ImportTeamsSdk(jsRuntime).AsTask());
             _jsRuntime = jsRuntime;
-            
+
             _clientFactory = clientFactory;
             _cache = memoryCache;
             _isWebAssembly = jsRuntime is IJSInProcessRuntime;
@@ -281,7 +281,7 @@ namespace Microsoft.TeamsFx
             }
             catch (JSException e)
             {
-                throw new ExceptionWithCode(e);
+                throw new ExceptionWithCode(e.Message, ExceptionCode.JSRuntimeError);
             }
         }
 

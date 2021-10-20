@@ -92,6 +92,8 @@ describe("deploy() for Azure projects", () => {
   it("should return error if manifest file is not found", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
+    const mockedProvider = new MockedAzureAccountProvider();
+    mockedCtx.azureAccountProvider = mockedProvider;
     mockedCtx.projectSettings = {
       appName: "my app",
       projectId: uuid.v4(),
@@ -102,7 +104,7 @@ describe("deploy() for Azure projects", () => {
         activeResourcePlugins: [aadPlugin.name],
       },
     };
-    mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+    mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
     const result = await solution.deploy(mockedCtx);
     expect(result.isErr()).to.be.true;
     expect(result._unsafeUnwrapErr().name).equals("NoResourcePluginSelected");
@@ -128,6 +130,8 @@ describe("deploy() for Azure projects", () => {
     it("should return error if no resource is selected to deploy", async () => {
       const solution = new TeamsAppSolution();
       const mockedCtx = mockSolutionContext();
+      const mockedProvider = new MockedAzureAccountProvider();
+      mockedCtx.azureAccountProvider = mockedProvider;
       mockedCtx.projectSettings = {
         appName: "my app",
         projectId: uuid.v4(),
@@ -138,7 +142,7 @@ describe("deploy() for Azure projects", () => {
           activeResourcePlugins: [aadPlugin.name],
         },
       };
-      mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+      mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
       const result = await solution.deploy(mockedCtx);
       expect(result.isErr()).to.be.true;
       expect(result._unsafeUnwrapErr().name).equals(SolutionError.NoResourcePluginSelected);
@@ -147,6 +151,8 @@ describe("deploy() for Azure projects", () => {
     it("should return ok on happy path and set solution status to idle", async () => {
       const solution = new TeamsAppSolution();
       const mockedCtx = mockSolutionContext();
+      const mockedProvider = new MockedAzureAccountProvider();
+      mockedCtx.azureAccountProvider = mockedProvider;
       mockedCtx.projectSettings = {
         appName: "my app",
         projectId: uuid.v4(),
@@ -157,7 +163,7 @@ describe("deploy() for Azure projects", () => {
           activeResourcePlugins: [aadPlugin.name],
         },
       };
-      mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+      mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
       mockedCtx.answers![AzureSolutionQuestionNames.PluginSelectionDeploy] = [fehostPlugin.name];
       mockDeployThatAlwaysSucceed(fehostPlugin);
 

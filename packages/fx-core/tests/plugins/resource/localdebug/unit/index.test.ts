@@ -9,7 +9,7 @@ import * as path from "path";
 import { LocalDebugPluginInfo } from "../../../../../src/plugins/resource/localdebug/constants";
 import { LocalDebugPlugin } from "../../../../../src/plugins/resource/localdebug";
 import * as uuid from "uuid";
-import { newEnvInfo } from "../../../../../src";
+import { newEnvInfo } from "../../../../../src/core/tools";
 chai.use(chaiAsPromised);
 
 interface TestParameter {

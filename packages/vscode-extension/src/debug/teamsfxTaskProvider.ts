@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import * as path from "path";
 import * as vscode from "vscode";
 
 import * as constants from "./constants";
@@ -90,8 +91,98 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     task: vscode.Task,
     token?: vscode.CancellationToken | undefined
   ): Promise<vscode.Task | undefined> {
-    // Return undefined since all tasks are provided and fully resolved
-    return undefined;
+    // Resolve "dev" and "watch" tasks
+    if (vscode.workspace.workspaceFolders) {
+      const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];
+      const workspacePath: string = workspaceFolder.uri.fsPath;
+      if (!(await commonUtils.isFxProject(workspacePath))) {
+        vscodeLogger.error(
+          `No ${TeamsfxTaskProvider.type} project. Cannot resolve ${TeamsfxTaskProvider.type} task.`
+        );
+        return undefined;
+      }
+
+      const command: string | undefined = task.definition.command;
+      if (!command || (command?.toLowerCase() !== "dev" && command?.toLowerCase() !== "watch")) {
+        vscodeLogger.error(`Missing or wrong 'command' field in ${TeamsfxTaskProvider.type} task.`);
+        return undefined;
+      }
+
+      const component: string | undefined = task.definition.component;
+      if (
+        !component ||
+        (component?.toLowerCase() !== "frontend" &&
+          component?.toLowerCase() !== "backend" &&
+          component?.toLowerCase() !== "bot")
+      ) {
+        vscodeLogger.error(
+          `Missing or wrong 'component' field in ${TeamsfxTaskProvider.type} task.`
+        );
+        return undefined;
+      }
+
+      if (
+        task.scope !== undefined &&
+        task.scope !== vscode.TaskScope.Global &&
+        task.scope !== vscode.TaskScope.Workspace
+      ) {
+        let env: { [key: string]: string } | undefined = undefined;
+        let cwd: string | undefined;
+        let problemMatcher: string;
+        const isWatchTask = command.toLowerCase() === "watch";
+        const shellCmd = isWatchTask ? "npm run watch:teamsfx" : "npm run dev:teamsfx";
+        if (component?.toLowerCase() === "frontend") {
+          cwd = await commonUtils.getProjectRoot(workspacePath, constants.frontendFolderName);
+          problemMatcher = isWatchTask
+            ? constants.tscWatchProblemMatcher
+            : constants.frontendProblemMatcher;
+        } else if (component?.toLowerCase() === "backend") {
+          cwd = await commonUtils.getProjectRoot(workspacePath, constants.backendFolderName);
+          problemMatcher = isWatchTask
+            ? constants.tscWatchProblemMatcher
+            : constants.backendProblemMatcher;
+
+          // prepare PATH to execute `func`
+          const funcChecker = new FuncToolChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
+          if ((await funcChecker.isEnabled()) && (await funcChecker.isPortableFuncInstalled())) {
+            const funcBinFolders = funcChecker.getPortableFuncBinFolders();
+            env = {
+              // put portable func at the end since func checker prefers global func
+              PATH: `${process.env.PATH ?? ""}${path.delimiter}${funcBinFolders.join(
+                path.delimiter
+              )}`,
+            };
+          }
+        } else if (component?.toLowerCase() === "bot") {
+          cwd = await commonUtils.getProjectRoot(workspacePath, constants.botFolderName);
+          problemMatcher = isWatchTask
+            ? constants.tscWatchProblemMatcher
+            : constants.botProblemMatcher;
+        } else {
+          vscodeLogger.error(
+            `Missing or wrong 'component' field in ${TeamsfxTaskProvider.type} task.`
+          );
+          return undefined;
+        }
+
+        const resolvedTask = new vscode.Task(
+          task.definition,
+          task.scope,
+          task.name,
+          TeamsfxTaskProvider.type,
+          new vscode.ShellExecution(shellCmd, { cwd: cwd, env: env }),
+          problemMatcher
+        );
+        resolvedTask.isBackground = true;
+        return resolvedTask;
+      } else {
+        vscodeLogger.error(`No task scope. Cannot resolve ${TeamsfxTaskProvider.type} task.`);
+        return undefined;
+      }
+    } else {
+      vscodeLogger.error(`No workspace open. Cannot resolve ${TeamsfxTaskProvider.type} task.`);
+      return undefined;
+    }
   }
 
   private async createFrontendStartTask(

@@ -138,11 +138,23 @@ export class Utils {
     isLocalDebug = false
   ): string {
     const key = Utils.addLocalDebugPrefix(isLocalDebug, configKey);
-    const configValue = ctx.envInfo.profile.get(pluginId)?.get(key);
+    const configValue = ctx.envInfo.state.get(pluginId)?.get(key);
     if (!configValue) {
       throw ResultFactory.SystemError(NoConfigError.name, NoConfigError.message(pluginId, key));
     }
     return configValue;
+  }
+
+  public static isUserError(error: any): boolean {
+    if (
+      error?.response?.status &&
+      error?.response?.status >= Constants.statusCodeUserError &&
+      error?.response?.status < Constants.statusCodeServerError
+    ) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   private static getClientId(ctx: PluginContext, isLocalDebug: boolean): string {

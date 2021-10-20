@@ -162,11 +162,11 @@ export function ContextUpgradeError(error: any, isUserError = false): FxError {
   }
 }
 
-export function InvalidProfileError(pluginName: string, profile: Json): SystemError {
+export function InvalidStateError(pluginName: string, state: Json): SystemError {
   return new SystemError(
     CoreSource,
     "InvalidProfileError",
-    `Plugin ${pluginName}'s profile(${JSON.stringify(profile)}) is invalid`
+    `Plugin ${pluginName}'s state(${JSON.stringify(state)}) is invalid`
   );
 }
 
